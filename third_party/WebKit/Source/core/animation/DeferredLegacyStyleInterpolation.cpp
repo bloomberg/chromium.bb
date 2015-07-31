@@ -89,14 +89,16 @@ bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const C
             || interpolationRequiresStyleResolve(*pair->second());
     }
 
-    if (Rect* rect = primitiveValue.getRectValue()) {
+    if (primitiveValue.isRect()) {
+        Rect* rect = primitiveValue.getRectValue();
         return interpolationRequiresStyleResolve(*rect->top())
             || interpolationRequiresStyleResolve(*rect->right())
             || interpolationRequiresStyleResolve(*rect->bottom())
             || interpolationRequiresStyleResolve(*rect->left());
     }
 
-    if (Quad* quad = primitiveValue.getQuadValue()) {
+    if (primitiveValue.isQuad()) {
+        Quad* quad = primitiveValue.getQuadValue();
         return interpolationRequiresStyleResolve(*quad->top())
             || interpolationRequiresStyleResolve(*quad->right())
             || interpolationRequiresStyleResolve(*quad->bottom())

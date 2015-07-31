@@ -663,8 +663,8 @@ void StyleBuilderFunctions::applyValueCSSPropertyWillChange(StyleResolverState& 
 
     for (auto& willChangeValue : toCSSValueList(*value)) {
         CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(willChangeValue.get());
-        if (CSSPropertyID propertyID = primitiveValue->getPropertyID())
-            willChangeProperties.append(propertyID);
+        if (primitiveValue->isPropertyID())
+            willChangeProperties.append(primitiveValue->getPropertyID());
         else if (primitiveValue->getValueID() == CSSValueContents)
             willChangeContents = true;
         else if (primitiveValue->getValueID() == CSSValueScrollPosition)

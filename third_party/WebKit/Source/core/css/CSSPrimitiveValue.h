@@ -186,7 +186,9 @@ public:
     bool isLength() const { return isLength(typeWithCalcResolved()); }
     bool isNumber() const { return typeWithCalcResolved() == UnitType::Number || typeWithCalcResolved() == UnitType::Integer; }
     bool isPercentage() const { return typeWithCalcResolved() == UnitType::Percentage; }
+    bool isPropertyID() const { return type() == UnitType::PropertyID; }
     bool isPx() const { return typeWithCalcResolved() == UnitType::Pixels; }
+    bool isQuad() const { return type() == UnitType::Quad; }
     bool isRect() const { return type() == UnitType::Rect; }
     bool isRGBColor() const { return type() == UnitType::RGBColor; }
     bool isShape() const { return type() == UnitType::Shape; }
@@ -270,21 +272,18 @@ public:
 
     String getStringValue() const;
 
-    Counter* getCounterValue() const { return type() != UnitType::Counter ? 0 : m_value.counter; }
+    Counter* getCounterValue() const { ASSERT(isCounter()); return m_value.counter; }
+    Rect* getRectValue() const { ASSERT(isRect()); return m_value.rect; }
+    Quad* getQuadValue() const { ASSERT(isQuad()); return m_value.quad; }
+    RGBA32 getRGBA32Value() const { ASSERT(isRGBColor()); return m_value.rgbcolor; }
 
-    Rect* getRectValue() const { return type() != UnitType::Rect ? 0 : m_value.rect; }
-
-    Quad* getQuadValue() const { return type() != UnitType::Quad ? 0 : m_value.quad; }
-
-    RGBA32 getRGBA32Value() const { return type() != UnitType::RGBColor ? 0 : m_value.rgbcolor; }
-
+    // TODO(timloh): Add isPair() and update callers so we can ASSERT(isPair())
     Pair* getPairValue() const { return type() != UnitType::Pair ? 0 : m_value.pair; }
 
-    CSSBasicShape* getShapeValue() const { return type() != UnitType::Shape ? 0 : m_value.shape; }
+    CSSBasicShape* getShapeValue() const { ASSERT(isShape()); return m_value.shape; }
+    CSSCalcValue* cssCalcValue() const { ASSERT(isCalculated()); return m_value.calc; }
+    CSSPropertyID getPropertyID() const { ASSERT(isPropertyID()); return m_value.propertyID; }
 
-    CSSCalcValue* cssCalcValue() const { return type() != UnitType::Calc ? 0 : m_value.calc; }
-
-    CSSPropertyID getPropertyID() const { return type() == UnitType::PropertyID ? m_value.propertyID : CSSPropertyInvalid; }
     CSSValueID getValueID() const { return type() == UnitType::ValueID ? m_value.valueID : CSSValueInvalid; }
 
     template<typename T> inline operator T() const; // Defined in CSSPrimitiveValueMappings.h
