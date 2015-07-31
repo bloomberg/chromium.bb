@@ -44,7 +44,7 @@ class TestPackageApk(TestPackage):
       self._package_info = constants.PACKAGE_INFO['gtest']
 
     if suite_name == 'net_unittests':
-      self._extras = {'RunInSubThread': ''}
+      self._extras = {'RunInSubThread': None}
     else:
       self._extras = []
 
