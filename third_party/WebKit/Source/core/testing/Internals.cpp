@@ -2166,8 +2166,8 @@ bool Internals::selectPopupItemStyleIsRtl(Node* node, int itemIndex)
         return false;
 
     LayoutMenuList& menuList = toLayoutMenuList(*layoutObject);
-    PopupMenuStyle itemStyle = menuList.itemStyle(itemIndex);
-    return itemStyle.textDirection() == RTL;
+    const ComputedStyle* itemStyle = menuList.computedStyleForItem(itemIndex);
+    return itemStyle && itemStyle->direction() == RTL;
 }
 
 int Internals::selectPopupItemStyleFontHeight(Node* node, int itemIndex)
@@ -2182,8 +2182,8 @@ int Internals::selectPopupItemStyleFontHeight(Node* node, int itemIndex)
         return false;
 
     LayoutMenuList& menuList = toLayoutMenuList(*layoutObject);
-    PopupMenuStyle itemStyle = menuList.itemStyle(itemIndex);
-    return itemStyle.font().fontMetrics().height();
+    const ComputedStyle* itemStyle = menuList.computedStyleForItem(itemIndex);
+    return itemStyle ? itemStyle->font().fontMetrics().height() : 0;
 }
 
 bool Internals::loseSharedGraphicsContext3D()

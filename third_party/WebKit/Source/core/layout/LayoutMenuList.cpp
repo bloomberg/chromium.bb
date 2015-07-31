@@ -405,6 +405,12 @@ const ComputedStyle* LayoutMenuList::computedStyleForItem(Element& element) cons
     return element.computedStyle() ? element.computedStyle() : element.ensureComputedStyle();
 }
 
+const ComputedStyle* LayoutMenuList::computedStyleForItem(unsigned listIndex) const
+{
+    Element& element = *selectElement()->listItems()[listIndex];
+    return element.computedStyle() ? element.computedStyle() : element.ensureComputedStyle();
+}
+
 void LayoutMenuList::didSetSelectedIndex(int listIndex)
 {
     didUpdateActiveOption(selectElement()->listToOptionIndex(listIndex));
@@ -489,69 +495,14 @@ bool LayoutMenuList::itemIsEnabled(unsigned listIndex) const
     return !element->isDisabledFormControl();
 }
 
-PopupMenuStyle LayoutMenuList::itemStyle(unsigned listIndex) const
+bool LayoutMenuList::itemIsDisplayNone(unsigned listIndex) const
 {
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement()->listItems();
-    if (listIndex >= listItems.size()) {
-        // If we are making an out of bounds access, then we want to use the style
-        // of a different option element (index 0). However, if there isn't an option element
-        // before at index 0, we fall back to the menu's style.
-        if (!listIndex)
-            return menuStyle();
-
-        // Try to retrieve the style of an option element we know exists (index 0).
-        listIndex = 0;
-    }
-    HTMLElement* element = listItems[listIndex];
-
-    Color itemBackgroundColor;
-    bool itemHasCustomBackgroundColor;
-    getItemBackgroundColor(listIndex, itemBackgroundColor, itemHasCustomBackgroundColor);
-
-    const ComputedStyle* style = element->computedStyle() ? element->computedStyle() : element->ensureComputedStyle();
-    return style ? PopupMenuStyle(resolveColor(*style, CSSPropertyColor), itemBackgroundColor, style->font(), style->visibility() == VISIBLE,
-        isHTMLOptionElement(*element) ? toHTMLOptionElement(*element).isDisplayNone() : style->display() == NONE,
-        style->textIndent(), style->direction(), isOverride(style->unicodeBidi()),
-        itemHasCustomBackgroundColor ? PopupMenuStyle::CustomBackgroundColor : PopupMenuStyle::DefaultBackgroundColor) : menuStyle();
-}
-
-void LayoutMenuList::getItemBackgroundColor(unsigned listIndex, Color& itemBackgroundColor, bool& itemHasCustomBackgroundColor) const
-{
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement()->listItems();
-    if (listIndex >= listItems.size()) {
-        itemBackgroundColor = resolveColor(CSSPropertyBackgroundColor);
-        itemHasCustomBackgroundColor = false;
-        return;
-    }
-    HTMLElement* element = listItems[listIndex];
-
-    Color backgroundColor;
-    if (const ComputedStyle* style = element->computedStyle())
-        backgroundColor = resolveColor(*style, CSSPropertyBackgroundColor);
-    itemHasCustomBackgroundColor = backgroundColor.alpha();
-    // If the item has an opaque background color, return that.
-    if (!backgroundColor.hasAlpha()) {
-        itemBackgroundColor = backgroundColor;
-        return;
-    }
-
-    // Otherwise, the item's background is overlayed on top of the menu background.
-    backgroundColor = resolveColor(CSSPropertyBackgroundColor).blend(backgroundColor);
-    if (!backgroundColor.hasAlpha()) {
-        itemBackgroundColor = backgroundColor;
-        return;
-    }
-
-    // If the menu background is not opaque, then add an opaque white background behind.
-    itemBackgroundColor = Color(Color::white).blend(backgroundColor);
-}
-
-PopupMenuStyle LayoutMenuList::menuStyle() const
-{
-    const LayoutObject* o = m_innerBlock ? m_innerBlock : this;
-    const ComputedStyle& style = o->styleRef();
-    return PopupMenuStyle(o->resolveColor(CSSPropertyColor), o->resolveColor(CSSPropertyBackgroundColor), style.font(), style.visibility() == VISIBLE,
-        style.display() == NONE, style.textIndent(), style.direction(), isOverride(style.unicodeBidi()));
+    Element& element = *selectElement()->listItems()[listIndex];
+    if (isHTMLOptionElement(element))
+        return toHTMLOptionElement(element).isDisplayNone();
+    if (const ComputedStyle* style = computedStyleForItem(element))
+        return style->display() == NONE;
+    return false;
 }
 
 LayoutUnit LayoutMenuList::clientPaddingLeft() const

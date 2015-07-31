@@ -6,6 +6,7 @@
 #include "web/ExternalPopupMenu.h"
 
 #include "core/HTMLNames.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/PinchViewport.h"
 #include "core/html/HTMLSelectElement.h"
@@ -26,11 +27,9 @@
 
 namespace blink {
 
-const size_t kListSize = 7;
-
 class TestPopupMenuClient : public PopupMenuClient {
 public:
-    TestPopupMenuClient() : m_listSize(0) { }
+    TestPopupMenuClient() { }
     ~TestPopupMenuClient() override { }
 
     void valueChanged(unsigned listIndex, bool fireEvents = true) override { }
@@ -41,39 +40,31 @@ public:
     String itemToolTip(unsigned listIndex) const override { return emptyString(); }
     String itemAccessibilityText(unsigned listIndex) const override { return emptyString(); }
     bool itemIsEnabled(unsigned listIndex) const override { return true; }
-    PopupMenuStyle itemStyle(unsigned listIndex) const override
-    {
-        FontDescription fontDescription;
-        fontDescription.setComputedSize(12.0);
-        Font font(fontDescription);
-        font.update(nullptr);
-        bool displayNone = m_displayNoneIndexSet.find(listIndex) != m_displayNoneIndexSet.end();
-        return PopupMenuStyle(Color::black, Color::white, font, true, displayNone, Length(), TextDirection(), false);
-    }
-    PopupMenuStyle menuStyle() const override { return itemStyle(0); }
     LayoutUnit clientPaddingLeft() const override { return 0; }
     LayoutUnit clientPaddingRight() const override { return 0; }
-    int listSize() const override { return m_listSize; }
+    int listSize() const override { return m_ownerElement->listItems().size(); }
     int selectedIndex() const override { return 0; }
     void popupDidHide() override { }
     void popupDidCancel() override { }
     bool itemIsSeparator(unsigned listIndex) const override { return false;}
     bool itemIsLabel(unsigned listIndex) const override { return false; }
     bool itemIsSelected(unsigned listIndex) const override { return listIndex == 0;}
+    bool itemIsDisplayNone(unsigned listIndex) const override { return computedStyleForItem(listIndex)->display() == NONE; }
     void provisionalSelectionChanged(unsigned listIndex) override { }
     bool multiple() const override { return false; }
     IntRect elementRectRelativeToViewport() const override { return IntRect(); }
     Element& ownerElement() const override { return *m_ownerElement; }
     const ComputedStyle* computedStyleForItem(Element& element) const override { return nullptr; }
+    const ComputedStyle* computedStyleForItem(unsigned listIndex) const override
+    {
+        Element* element = m_ownerElement->listItems()[listIndex];
+        return element->computedStyle() ? element->computedStyle() : element->ensureComputedStyle();
+    }
 
-    void setListSize(size_t size) { m_listSize = size; }
-    void setDisplayNoneIndex(unsigned index) { m_displayNoneIndexSet.insert(index); }
-    void setOwnerElement(PassRefPtrWillBeRawPtr<Element> element) { m_ownerElement = element; }
+    void setOwnerElement(PassRefPtrWillBeRawPtr<HTMLSelectElement> element) { m_ownerElement = element; }
 
 private:
-    size_t m_listSize;
-    std::set<unsigned> m_displayNoneIndexSet;
-    RefPtrWillBePersistent<Element> m_ownerElement;
+    RefPtrWillBePersistent<HTMLSelectElement> m_ownerElement;
 };
 
 class ExternalPopupMenuDisplayNoneItemsTest : public testing::Test {
@@ -83,16 +74,16 @@ public:
 protected:
     void SetUp() override
     {
-        m_popupMenuClient.setListSize(kListSize);
-
+        m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+        RefPtrWillBeRawPtr<HTMLSelectElement> element = HTMLSelectElement::create(m_dummyPageHolder->document());
         // Set the 4th an 5th items to have "display: none" property
-        m_popupMenuClient.setDisplayNoneIndex(3);
-        m_popupMenuClient.setDisplayNoneIndex(4);
-
-        OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-        m_popupMenuClient.setOwnerElement(HTMLSelectElement::create(dummyPageHolder->document()));
+        element->setInnerHTML("<option><option><option><option style='display:none;'><option style='display:none;'><option><option>", ASSERT_NO_EXCEPTION);
+        m_dummyPageHolder->document().body()->appendChild(element.get(), ASSERT_NO_EXCEPTION);
+        m_popupMenuClient.setOwnerElement(element.release());
+        m_dummyPageHolder->document().updateLayoutIgnorePendingStylesheets();
     }
 
+    OwnPtr<DummyPageHolder> m_dummyPageHolder;
     TestPopupMenuClient m_popupMenuClient;
 };
 

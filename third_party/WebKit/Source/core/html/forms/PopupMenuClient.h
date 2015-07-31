@@ -25,7 +25,7 @@
 #include "core/CoreExport.h"
 #include "platform/LayoutUnit.h"
 #include "platform/PlatformExport.h"
-#include "platform/PopupMenuStyle.h"
+#include "platform/geometry/IntRect.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -40,12 +40,12 @@ public:
     virtual void selectionChanged(unsigned listIndex, bool fireEvents = true) = 0;
     virtual void selectionCleared() = 0;
 
+    // TODO(tkent): Introduce itemElement(), and remove itemFoo() functions.
     virtual String itemText(unsigned listIndex) const = 0;
     virtual String itemToolTip(unsigned listIndex) const = 0;
     virtual String itemAccessibilityText(unsigned listIndex) const = 0;
     virtual bool itemIsEnabled(unsigned listIndex) const = 0;
-    virtual PopupMenuStyle itemStyle(unsigned listIndex) const = 0;
-    virtual PopupMenuStyle menuStyle() const = 0;
+    virtual bool itemIsDisplayNone(unsigned listIndex) const = 0;
     virtual LayoutUnit clientPaddingLeft() const = 0;
     virtual LayoutUnit clientPaddingRight() const = 0;
     virtual int listSize() const = 0;
@@ -60,7 +60,10 @@ public:
     virtual void provisionalSelectionChanged(unsigned) = 0;
     virtual IntRect elementRectRelativeToViewport() const = 0;
     virtual Element& ownerElement() const = 0;
+    // computedStyleForItem() returns nullptr only if the owner Document is not
+    // active.  So, It returns a valid object when we open a popup.
     virtual const ComputedStyle* computedStyleForItem(Element&) const = 0;
+    virtual const ComputedStyle* computedStyleForItem(unsigned listIndex) const = 0;
 
     virtual void listBoxSelectItem(int /*listIndex*/, bool /*allowMultiplySelections*/, bool /*shift*/, bool /*fireOnChangeNow*/ = true) { ASSERT_NOT_REACHED(); }
     virtual bool multiple() const

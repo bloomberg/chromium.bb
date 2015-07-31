@@ -51,7 +51,7 @@ public:
 
     String text() const;
 
-    PopupMenuStyle itemStyle(unsigned listIndex) const override;
+    const ComputedStyle* computedStyleForItem(unsigned listIndex) const override;
 
     const char* name() const override { return "LayoutMenuList"; }
 
@@ -85,7 +85,7 @@ private:
     String itemToolTip(unsigned listIndex) const override;
     String itemAccessibilityText(unsigned listIndex) const override;
     bool itemIsEnabled(unsigned listIndex) const override;
-    PopupMenuStyle menuStyle() const override;
+    bool itemIsDisplayNone(unsigned listIndex) const override;
     LayoutUnit clientPaddingLeft() const override;
     LayoutUnit clientPaddingRight() const override;
     int listSize() const override;
@@ -112,8 +112,6 @@ private:
     }
     int firstLineBoxBaseline() const override { return LayoutBlock::firstLineBoxBaseline(); }
     int inlineBlockBaseline(LineDirectionMode direction) const override { return LayoutBlock::inlineBlockBaseline(direction); }
-
-    void getItemBackgroundColor(unsigned listIndex, Color&, bool& itemHasCustomBackgroundColor) const;
 
     void createInnerBlock();
     void adjustInnerStyle();

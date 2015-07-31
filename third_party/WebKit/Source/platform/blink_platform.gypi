@@ -96,7 +96,6 @@
       'PluginScriptForbiddenScope.cpp',
       'PluginScriptForbiddenScope.h',
       'PopupMenu.h',
-      'PopupMenuStyle.h',
       'Prerender.cpp',
       'Prerender.h',
       'PrerenderClient.h',

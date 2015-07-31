@@ -422,6 +422,9 @@ bool HTMLOptionElement::isDisplayNone() const
         return false;
 
     if (m_style->display() != NONE) {
+        // We need to check the parent's display property.  Parent's
+        // display:none doesn't override children's display properties in
+        // ComputedStyle.
         Element* parent = parentElement();
         ASSERT(parent);
         if (isHTMLOptGroupElement(*parent)) {

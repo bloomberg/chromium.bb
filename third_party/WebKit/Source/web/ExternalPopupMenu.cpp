@@ -31,12 +31,14 @@
 #include "config.h"
 #include "web/ExternalPopupMenu.h"
 
+#include "core/dom/NodeComputedStyle.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/PinchViewport.h"
 #include "core/html/forms/PopupMenuClient.h"
 #include "core/page/Page.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/text/TextDirection.h"
@@ -194,8 +196,7 @@ void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo& info, PopupMenuClient
     int count = 0;
     Vector<WebMenuItemInfo> items(static_cast<size_t>(itemCount));
     for (int i = 0; i < itemCount; ++i) {
-        PopupMenuStyle style = popupMenuClient.itemStyle(i);
-        if (style.isDisplayNone())
+        if (popupMenuClient.itemIsDisplayNone(i))
             continue;
 
         WebMenuItemInfo& popupItem = items[count++];
@@ -209,14 +210,16 @@ void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo& info, PopupMenuClient
             popupItem.type = WebMenuItemInfo::Option;
         popupItem.enabled = popupMenuClient.itemIsEnabled(i);
         popupItem.checked = popupMenuClient.itemIsSelected(i);
-        popupItem.textDirection = toWebTextDirection(style.textDirection());
-        popupItem.hasTextDirectionOverride = style.hasTextDirectionOverride();
+        const ComputedStyle& style = *popupMenuClient.computedStyleForItem(i);
+        popupItem.textDirection = toWebTextDirection(style.direction());
+        popupItem.hasTextDirectionOverride = isOverride(style.unicodeBidi());
     }
 
-    info.itemHeight = popupMenuClient.menuStyle().font().fontMetrics().height();
-    info.itemFontSize = static_cast<int>(popupMenuClient.menuStyle().font().fontDescription().computedSize());
+    const ComputedStyle& menuStyle = popupMenuClient.ownerElement().computedStyle() ? *popupMenuClient.ownerElement().computedStyle() : *popupMenuClient.ownerElement().ensureComputedStyle();
+    info.itemHeight = menuStyle.font().fontMetrics().height();
+    info.itemFontSize = static_cast<int>(menuStyle.font().fontDescription().computedSize());
     info.selectedIndex = toExternalPopupMenuItemIndex(popupMenuClient.selectedIndex(), popupMenuClient);
-    info.rightAligned = popupMenuClient.menuStyle().textDirection() == RTL;
+    info.rightAligned = menuStyle.direction() == RTL;
     info.allowMultipleSelection = popupMenuClient.multiple();
     if (count < itemCount)
         items.shrink(count);
@@ -232,7 +235,7 @@ int ExternalPopupMenu::toPopupMenuItemIndex(int externalPopupMenuItemIndex, Popu
     int itemCount = popupMenuClient.listSize();
     int indexTracker = 0;
     for (int i = 0; i < itemCount ; ++i) {
-        if (popupMenuClient.itemStyle(i).isDisplayNone())
+        if (popupMenuClient.itemIsDisplayNone(i))
             continue;
         if (indexTracker++ == externalPopupMenuItemIndex)
             return i;
@@ -248,7 +251,7 @@ int ExternalPopupMenu::toExternalPopupMenuItemIndex(int popupMenuItemIndex, Popu
     int itemCount = popupMenuClient.listSize();
     int indexTracker = 0;
     for (int i = 0; i < itemCount; ++i) {
-        if (popupMenuClient.itemStyle(i).isDisplayNone())
+        if (popupMenuClient.itemIsDisplayNone(i))
             continue;
         if (popupMenuItemIndex == i)
             return indexTracker;
