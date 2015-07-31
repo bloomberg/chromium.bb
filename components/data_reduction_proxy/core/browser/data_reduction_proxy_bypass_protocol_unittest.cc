@@ -85,9 +85,9 @@ class DataReductionProxyProtocolTest : public testing::Test {
   }
 
   void SetUp() override {
+    net::NetworkChangeNotifier::SetTestNotificationsOnly(true);
     test_context_ = DataReductionProxyTestContext::Builder().Build();
     network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
-    net::NetworkChangeNotifier::SetTestNotificationsOnly(true);
     test_context_->RunUntilIdle();
   }
 

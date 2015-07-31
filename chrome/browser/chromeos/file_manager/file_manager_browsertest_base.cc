@@ -506,6 +506,11 @@ void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
   }
 }
 
+void FileManagerBrowserTestBase::SetUp() {
+  net::NetworkChangeNotifier::SetTestNotificationsOnly(true);
+  ExtensionApiTest::SetUp();
+}
+
 void FileManagerBrowserTestBase::SetUpOnMainThread() {
   ExtensionApiTest::SetUpOnMainThread();
   ASSERT_TRUE(local_volume_->Mount(profile()));
@@ -519,8 +524,6 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
     drive_volume_->ConfigureShareUrlBase(share_url_base);
     test_util::WaitUntilDriveMountPointIsAdded(profile());
   }
-
-  net::NetworkChangeNotifier::SetTestNotificationsOnly(true);
 }
 
 void FileManagerBrowserTestBase::SetUpCommandLine(

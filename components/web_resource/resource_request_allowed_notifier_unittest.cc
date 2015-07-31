@@ -23,7 +23,8 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
   void SimulateNetworkConnectionChange(
       net::NetworkChangeNotifier::ConnectionType type) {
     connection_type_to_return_ = type;
-    net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChange();
+    net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
+        connection_type_to_return_);
     base::MessageLoop::current()->RunUntilIdle();
   }
 

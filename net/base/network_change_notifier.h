@@ -312,7 +312,8 @@ class NET_EXPORT NetworkChangeNotifier {
 
   // Enable or disable notifications from the host. After setting to true, be
   // sure to pump the RunLoop until idle to finish any preexisting
-  // notifications.
+  // notifications. To use this, it must must be called before a
+  // NetworkChangeNotifier is created.
   static void SetTestNotificationsOnly(bool test_only);
 
   // Return a string equivalent to |type|.
@@ -451,7 +452,7 @@ class NET_EXPORT NetworkChangeNotifier {
   scoped_ptr<NetworkChangeCalculator> network_change_calculator_;
 
   // Set true to disable non-test notifications (to prevent flakes in tests).
-  bool test_notifications_only_;
+  static bool test_notifications_only_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifier);
 };

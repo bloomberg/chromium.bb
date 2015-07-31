@@ -20,18 +20,20 @@ class NetInfoBrowserTest : public content::ContentBrowserTest {
     command_line->AppendSwitch(switches::kEnableNetworkInformation);
   }
 
-#if defined(OS_CHROMEOS)
   void SetUp() override {
+    net::NetworkChangeNotifier::SetTestNotificationsOnly(true);
+
+#if defined(OS_CHROMEOS)
     // ChromeOS's NetworkChangeNotifier isn't known to content and therefore
     // doesn't get created in content_browsertests. Insert a mock
     // NetworkChangeNotifier.
     net::NetworkChangeNotifier::CreateMock();
-    content::ContentBrowserTest::SetUp();
-  }
 #endif
 
+    content::ContentBrowserTest::SetUp();
+  }
+
   void SetUpOnMainThread() override {
-    net::NetworkChangeNotifier::SetTestNotificationsOnly(true);
     base::RunLoop().RunUntilIdle();
   }
 

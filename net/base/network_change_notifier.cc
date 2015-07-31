@@ -53,6 +53,9 @@ class MockNetworkChangeNotifier : public NetworkChangeNotifier {
 
 }  // namespace
 
+// static
+bool NetworkChangeNotifier::test_notifications_only_ = false;
+
 // The main observer class that records UMAs for network events.
 class HistogramWatcher
     : public NetworkChangeNotifier::ConnectionTypeObserver,
@@ -789,8 +792,8 @@ void NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigReadForTests() {
 
 // static
 void NetworkChangeNotifier::SetTestNotificationsOnly(bool test_only) {
-  if (g_network_change_notifier)
-    g_network_change_notifier->test_notifications_only_ = test_only;
+  DCHECK(!g_network_change_notifier);
+  NetworkChangeNotifier::test_notifications_only_ = test_only;
 }
 
 NetworkChangeNotifier::NetworkChangeNotifier(
@@ -807,14 +810,13 @@ NetworkChangeNotifier::NetworkChangeNotifier(
           new base::ObserverListThreadSafe<DNSObserver>(
               base::ObserverListBase<DNSObserver>::NOTIFY_EXISTING_ONLY)),
       network_change_observer_list_(new base::ObserverListThreadSafe<
-          NetworkChangeObserver>(
+                                    NetworkChangeObserver>(
           base::ObserverListBase<NetworkChangeObserver>::NOTIFY_EXISTING_ONLY)),
       max_bandwidth_observer_list_(new base::ObserverListThreadSafe<
-          MaxBandwidthObserver>(
+                                   MaxBandwidthObserver>(
           base::ObserverListBase<MaxBandwidthObserver>::NOTIFY_EXISTING_ONLY)),
       network_state_(new NetworkState()),
-      network_change_calculator_(new NetworkChangeCalculator(params)),
-      test_notifications_only_(false) {
+      network_change_calculator_(new NetworkChangeCalculator(params)) {
   DCHECK(!g_network_change_notifier);
   g_network_change_notifier = this;
   network_change_calculator_->Init();
@@ -914,7 +916,7 @@ double NetworkChangeNotifier::GetMaxBandwidthForConnectionSubtype(
 // static
 void NetworkChangeNotifier::NotifyObserversOfIPAddressChange() {
   if (g_network_change_notifier &&
-      !g_network_change_notifier->test_notifications_only_) {
+      !NetworkChangeNotifier::test_notifications_only_) {
     g_network_change_notifier->NotifyObserversOfIPAddressChangeImpl();
   }
 }
@@ -922,7 +924,7 @@ void NetworkChangeNotifier::NotifyObserversOfIPAddressChange() {
 // static
 void NetworkChangeNotifier::NotifyObserversOfConnectionTypeChange() {
   if (g_network_change_notifier &&
-      !g_network_change_notifier->test_notifications_only_) {
+      !NetworkChangeNotifier::test_notifications_only_) {
     g_network_change_notifier->NotifyObserversOfConnectionTypeChangeImpl(
         GetConnectionType());
   }
@@ -932,7 +934,7 @@ void NetworkChangeNotifier::NotifyObserversOfConnectionTypeChange() {
 void NetworkChangeNotifier::NotifyObserversOfNetworkChange(
     ConnectionType type) {
   if (g_network_change_notifier &&
-      !g_network_change_notifier->test_notifications_only_) {
+      !NetworkChangeNotifier::test_notifications_only_) {
     g_network_change_notifier->NotifyObserversOfNetworkChangeImpl(type);
   }
 }
@@ -941,7 +943,7 @@ void NetworkChangeNotifier::NotifyObserversOfNetworkChange(
 void NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChange(
     double max_bandwidth_mbps) {
   if (g_network_change_notifier &&
-      !g_network_change_notifier->test_notifications_only_) {
+      !NetworkChangeNotifier::test_notifications_only_) {
     g_network_change_notifier->NotifyObserversOfMaxBandwidthChangeImpl(
         max_bandwidth_mbps);
   }
@@ -950,7 +952,7 @@ void NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChange(
 // static
 void NetworkChangeNotifier::NotifyObserversOfDNSChange() {
   if (g_network_change_notifier &&
-      !g_network_change_notifier->test_notifications_only_) {
+      !NetworkChangeNotifier::test_notifications_only_) {
     g_network_change_notifier->NotifyObserversOfDNSChangeImpl();
   }
 }
@@ -958,7 +960,7 @@ void NetworkChangeNotifier::NotifyObserversOfDNSChange() {
 // static
 void NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigRead() {
   if (g_network_change_notifier &&
-      !g_network_change_notifier->test_notifications_only_) {
+      !NetworkChangeNotifier::test_notifications_only_) {
     g_network_change_notifier->NotifyObserversOfInitialDNSConfigReadImpl();
   }
 }

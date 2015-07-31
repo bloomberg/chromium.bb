@@ -34,6 +34,8 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
   FileManagerBrowserTestBase();
   ~FileManagerBrowserTestBase() override;
 
+  void SetUp() override;
+
   void SetUpInProcessBrowserTestFixture() override;
 
   void SetUpOnMainThread() override;

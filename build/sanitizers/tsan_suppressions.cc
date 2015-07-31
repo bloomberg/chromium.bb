@@ -292,9 +292,6 @@ char kTSanDefaultSuppressions[] =
 // https://crbug.com/448203
 "race:blink::RemoteFrame::detach\n"
 
-// https://crbug.com/454652
-"race:net::NetworkChangeNotifier::SetTestNotificationsOnly\n"
-
 // https://crbug.com/455638
 "deadlock:dbus::Bus::ShutdownAndBlock\n"
 
