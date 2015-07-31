@@ -31,7 +31,16 @@ void SingleWebContentsDialogManagerCocoa::Show() {
   if (shown_)
     return;
 
-  DCHECK(host_);
+  // If a dialog is initially shown on a hidden/background WebContents, the
+  // |delegate_| will defer the Show() until the WebContents is shown. If the
+  // defer happens during tab closure or tab dragging, a suspected data race or
+  // ObserverList ordering may result in |host_| being null here. If the tab is
+  // closing anyway, it doesn't matter. For tab dragging, avoid a crash, but the
+  // user may have to switch tabs again to see the dialog. See
+  // http://crbug.com/514826 for details.
+  if (!host_)
+    return;
+
   NSView* parent_view = host_->GetHostView();
   // Note that simply [parent_view window] for an inactive tab is nil. However,
   // the following should always be non-nil for all WebContents containers.
