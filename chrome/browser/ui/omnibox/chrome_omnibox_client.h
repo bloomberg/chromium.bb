@@ -29,6 +29,10 @@ class ChromeOmniboxClient : public OmniboxClient {
   bool IsPasteAndGoEnabled() const override;
   content::NavigationController& GetNavigationController() const override;
   const SessionID& GetSessionID() const override;
+  bookmarks::BookmarkModel* GetBookmarkModel() override;
+  TemplateURLService* GetTemplateURLService() override;
+  gfx::Image GetIconIfExtensionMatch(
+      const AutocompleteMatch& match) const override;
   bool ProcessExtensionKeyword(TemplateURL* template_url,
                                const AutocompleteMatch& match,
                                WindowOpenDisposition disposition) override;

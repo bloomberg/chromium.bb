@@ -14,8 +14,13 @@ class AutocompleteResult;
 class GURL;
 class SessionID;
 class TemplateURL;
+class TemplateURLService;
 struct AutocompleteMatch;
 struct OmniboxLog;
+
+namespace bookmarks {
+class BookmarkModel;
+}
 
 namespace content {
 class NavigationController;
@@ -59,6 +64,14 @@ class OmniboxClient {
 
   // Returns the session ID of the current page.
   virtual const SessionID& GetSessionID() const = 0;
+
+  virtual bookmarks::BookmarkModel* GetBookmarkModel() = 0;
+  virtual TemplateURLService* GetTemplateURLService() = 0;
+
+  // Returns the icon corresponding to |match| if match is an extension match
+  // and an empty icon otherwise.
+  virtual gfx::Image GetIconIfExtensionMatch(
+      const AutocompleteMatch& match) const = 0;
 
   // Checks whether |template_url| is an extension keyword; if so, asks the
   // ExtensionOmniboxEventRouter to process |match| for it and returns true.

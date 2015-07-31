@@ -8,10 +8,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/omnibox/omnibox_client.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_popup_model_observer.h"
@@ -169,8 +166,7 @@ void OmniboxPopupModel::SetSelectedLine(size_t line,
   // eliminated and just become a call to the observer on the edit.
   base::string16 keyword;
   bool is_keyword_hint;
-  TemplateURLService* service =
-      TemplateURLServiceFactory::GetForProfile(edit_model_->profile());
+  TemplateURLService* service = edit_model_->client()->GetTemplateURLService();
   match.GetKeywordUIState(service, &keyword, &is_keyword_hint);
 
   if (reset_to_default) {
@@ -253,21 +249,11 @@ void OmniboxPopupModel::TryDeletingCurrentItem() {
 
 gfx::Image OmniboxPopupModel::GetIconIfExtensionMatch(
     const AutocompleteMatch& match) const {
-  Profile* profile = edit_model_->profile();
-  TemplateURLService* service =
-      TemplateURLServiceFactory::GetForProfile(profile);
-  const TemplateURL* template_url = match.GetTemplateURL(service, false);
-  if (template_url &&
-      (template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION)) {
-    return extensions::OmniboxAPI::Get(profile)->GetOmniboxPopupIcon(
-        template_url->GetExtensionId());
-  }
-  return gfx::Image();
+  return edit_model_->client()->GetIconIfExtensionMatch(match);
 }
 
 bool OmniboxPopupModel::IsStarredMatch(const AutocompleteMatch& match) const {
-  Profile* profile = edit_model_->profile();
-  BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile);
+  BookmarkModel* bookmark_model = edit_model_->client()->GetBookmarkModel();
   return bookmark_model && bookmark_model->IsBookmarked(match.destination_url);
 }
 

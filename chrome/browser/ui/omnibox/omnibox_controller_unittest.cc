@@ -36,6 +36,12 @@ class TestOmniboxClient : public OmniboxClient {
     return web_contents_->GetController();
   }
   const SessionID& GetSessionID() const override { return session_id_; }
+  bookmarks::BookmarkModel* GetBookmarkModel() override { return nullptr; }
+  TemplateURLService* GetTemplateURLService() override { return nullptr; }
+  gfx::Image GetIconIfExtensionMatch(
+      const AutocompleteMatch& match) const override {
+    return gfx::Image();
+  }
   bool ProcessExtensionKeyword(TemplateURL* template_url,
                                const AutocompleteMatch& match,
                                WindowOpenDisposition disposition) override {

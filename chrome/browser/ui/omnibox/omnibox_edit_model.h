@@ -100,6 +100,10 @@ class OmniboxEditModel {
 
   OmniboxEditController* controller() const { return controller_; }
 
+  OmniboxClient* client() { return client_.get(); }
+
+  // TODO(blundell): Kill this method once all callsites have been converted to
+  // use client() instead.
   Profile* profile() const { return profile_; }
 
   // Returns the current state.  This assumes we are switching tabs, and changes

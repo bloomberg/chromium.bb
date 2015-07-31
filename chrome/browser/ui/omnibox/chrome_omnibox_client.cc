@@ -11,6 +11,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
@@ -160,6 +161,27 @@ content::NavigationController&
 const SessionID& ChromeOmniboxClient::GetSessionID() const {
   return SessionTabHelper::FromWebContents(
       controller_->GetWebContents())->session_id();
+}
+
+bookmarks::BookmarkModel* ChromeOmniboxClient::GetBookmarkModel() {
+  return BookmarkModelFactory::GetForProfile(profile_);
+}
+
+TemplateURLService* ChromeOmniboxClient::GetTemplateURLService() {
+  return TemplateURLServiceFactory::GetForProfile(profile_);
+}
+
+gfx::Image ChromeOmniboxClient::GetIconIfExtensionMatch(
+    const AutocompleteMatch& match) const {
+  TemplateURLService* service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  const TemplateURL* template_url = match.GetTemplateURL(service, false);
+  if (template_url &&
+      (template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION)) {
+    return extensions::OmniboxAPI::Get(profile_)
+        ->GetOmniboxPopupIcon(template_url->GetExtensionId());
+  }
+  return gfx::Image();
 }
 
 bool ChromeOmniboxClient::ProcessExtensionKeyword(
