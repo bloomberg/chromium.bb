@@ -8,35 +8,33 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/background_sync_context.h"
 
 namespace content {
 
 class BackgroundSyncManager;
 class ServiceWorkerContextWrapper;
 
-// One instance of this exists per StoragePartition, and services multiple
-// child processes/origins. Most logic is delegated to the owned
-// BackgroundSyncManager instance, which is only accessed on the IO
-// thread.
-// TODO(jkarlin): Make a public/ BackgroundSyncContext.
-class CONTENT_EXPORT BackgroundSyncContextImpl
-    : public base::RefCountedThreadSafe<BackgroundSyncContextImpl> {
+// Implements the BackgroundSyncContext. One instance of this exists per
+// StoragePartition, and services multiple child processes/origins. Most logic
+// is delegated to the owned BackgroundSyncManager instance, which is only
+// accessed on the IO thread.
+class CONTENT_EXPORT BackgroundSyncContextImpl : public BackgroundSyncContext {
  public:
   BackgroundSyncContextImpl();
 
-  // Init and Shutdown are for use on the UI thread when the profile,
-  // storagepartition is being setup and torn down.
+  // Init and Shutdown are for use on the UI thread when the
+  // StoragePartition is being setup and torn down.
   void Init(const scoped_refptr<ServiceWorkerContextWrapper>& context);
   void Shutdown();
 
   // Only callable on the IO thread.
-  BackgroundSyncManager* background_sync_manager() const;
+  BackgroundSyncManager* background_sync_manager() const override;
+
+ protected:
+  ~BackgroundSyncContextImpl() override;
 
  private:
-  friend class base::RefCountedThreadSafe<BackgroundSyncContextImpl>;
-
-  ~BackgroundSyncContextImpl();
-
   void CreateBackgroundSyncManager(
       const scoped_refptr<ServiceWorkerContextWrapper>& context);
 

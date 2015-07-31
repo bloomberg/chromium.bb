@@ -79,6 +79,7 @@
       'public/browser/appcache_service.h',
       'public/browser/ax_event_notification_details.cc',
       'public/browser/ax_event_notification_details.h',
+      'public/browser/background_sync_context.h',
       'public/browser/background_tracing_config.cc',
       'public/browser/background_tracing_config.h',
       'public/browser/background_tracing_manager.h',

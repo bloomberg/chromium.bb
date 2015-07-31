@@ -39,6 +39,7 @@ class DatabaseTracker;
 namespace content {
 
 class AppCacheService;
+class BackgroundSyncContext;
 class BrowserContext;
 class HostZoomLevelContext;
 class HostZoomMap;
@@ -74,6 +75,7 @@ class CONTENT_EXPORT StoragePartition {
   virtual ZoomLevelDelegate* GetZoomLevelDelegate() = 0;
   virtual NavigatorConnectContext* GetNavigatorConnectContext() = 0;
   virtual PlatformNotificationContext* GetPlatformNotificationContext() = 0;
+  virtual BackgroundSyncContext* GetBackgroundSyncContext() = 0;
 
   static const uint32 REMOVE_DATA_MASK_APPCACHE        = 1 << 0;
   static const uint32 REMOVE_DATA_MASK_COOKIES         = 1 << 1;

@@ -56,7 +56,7 @@ class StoragePartitionImpl : public StoragePartition {
   ZoomLevelDelegate* GetZoomLevelDelegate() override;
   NavigatorConnectContextImpl* GetNavigatorConnectContext() override;
   PlatformNotificationContextImpl* GetPlatformNotificationContext() override;
-  BackgroundSyncContextImpl* GetBackgroundSyncContext();
+  BackgroundSyncContextImpl* GetBackgroundSyncContext() override;
 
   void ClearDataForOrigin(uint32 remove_mask,
                           uint32 quota_storage_remove_mask,
