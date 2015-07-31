@@ -4240,7 +4240,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cookie.PriorityBlockingTime" units="ms">
-  <owner>erikwright@chromium.org</owner>
+  <owner>rdsmith@chromium.org</owner>
   <summary>
     This histogram records the total duration of time during which at least one
     web request was blocked waiting for the cookie store to load. If no requests
@@ -4251,7 +4251,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cookie.PriorityLoadCount">
-  <owner>erikwright@chromium.org</owner>
+  <owner>rdsmith@chromium.org</owner>
   <summary>
     The number of distinct Effective Top-Level Domains Plus One (ETLD+1, i.e.,
     google.com, bbc.co.uk) for which a priority cookie load occurred.
@@ -4346,7 +4346,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cookie.TimeBlockedOnLoad" units="ms">
-  <owner>erikwright@chromium.org</owner>
+  <owner>rdsmith@chromium.org</owner>
   <summary>
     The amount of time (ms) between the cookie store load starting and
     completing.
@@ -4357,7 +4357,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 04/2015. The migration has finished for most users.
   </obsolete>
-  <owner>erikwright@chromium.org</owner>
+  <owner>rdsmith@chromium.org</owner>
   <summary>The amount of time (ms) to migrate a v4 database to v5.</summary>
 </histogram>
 
@@ -4365,7 +4365,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 04/2015. The migration has finished for most users.
   </obsolete>
-  <owner>erikwright@chromium.org</owner>
+  <owner>rdsmith@chromium.org</owner>
   <summary>The amount of time (ms) to migrate a v5 database to v6.</summary>
 </histogram>
 
@@ -4373,7 +4373,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 04/2015. The migration has finished for most users.
   </obsolete>
-  <owner>erikwright@chromium.org</owner>
+  <owner>rdsmith@chromium.org</owner>
   <summary>The amount of time (ms) to migrate a v6 database to v7.</summary>
 </histogram>
 
@@ -4381,7 +4381,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 04/2015. The migration has finished for most users.
   </obsolete>
-  <owner>erikwright@chromium.org</owner>
+  <owner>rdsmith@chromium.org</owner>
   <summary>The amount of time (ms) to migrate a v7 database to v8.</summary>
 </histogram>
 
@@ -4414,7 +4414,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cookie.TimeKeyLoadDBQueueWait" units="ms">
-  <owner>erikwright@chromium.org</owner>
+  <owner>rdsmith@chromium.org</owner>
   <summary>
     This histogram records the wall-clock delay between a priority load task
     being posted to the DB-thread and its execution.
@@ -4431,7 +4431,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cookie.TimeLoad" units="ms">
-  <owner>erikwright@chromium.org</owner>
+  <owner>rdsmith@chromium.org</owner>
   <summary>
     This histogram records the sum of the durations of all initial tasks loading
     cookies from the database.
@@ -4487,7 +4487,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="CrashReport.BreakpadCrashDumpOutcome" enum="DumpOutcome">
-  <owner>erikwright@chromium.org</owner>
   <owner>siggi@chromium.org</owner>
   <summary>
     Reports the result of an attempt to report a crash dump via Breakpad.
@@ -4500,7 +4499,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="CrashReport.BreakpadDumpWithoutCrashOutcome"
     enum="DumpOutcome">
-  <owner>erikwright@chromium.org</owner>
   <owner>siggi@chromium.org</owner>
   <summary>
     Reports the result of an attempt to report a dump via Breakpad without
@@ -4530,7 +4528,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="CrashReport.PermanentUploadFailure" enum="BooleanHit">
-  <owner>erikwright@chromium.org</owner>
+  <owner>siggi@chromium.org</owner>
   <summary>
     Counts crash reports that the Kasko crash reporter fails to upload and hands
     off to Chrome. Kasko stores the failed reports in a location specified by
@@ -38120,7 +38118,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Search.MigratedPrefToDictionaryValue" enum="BooleanHit">
-  <owner>erikwright@chromium.org</owner>
+  <owner>caitkp@chromium.org</owner>
   <summary>
     The number of times that a user-selected DSE was migrated from separate
     String/List/..Value preferences to the new single DictionaryValue used in
@@ -42742,7 +42740,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Stability.BrowserExitCodes" enum="WindowsExitCode">
   <owner>siggi@chromium.org</owner>
-  <owner>erikwright@chromium.org</owner>
   <summary>
     Records the exit code of the browser process (on Windows) from the previous
     launch. On crash, the exit code will indicate the exception code of the
@@ -46319,7 +46316,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UMA.CleanExitBeaconConsistency" enum="UmaCleanExitConsistency">
-  <owner>erikwright@chromium.org</owner>
+  <owner>siggi@chromium.org</owner>
   <summary>
     Reports the combined state of distinct clean exit beacons stored in Local
     State and the Windows registry. They are normally expected to be identical.
