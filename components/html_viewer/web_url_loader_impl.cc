@@ -91,6 +91,7 @@ void WebURLLoaderImpl::loadSynchronously(
     blink::WebURLError& error,
     blink::WebData& data) {
   NOTIMPLEMENTED();
+  error.reason = net::ERR_NOT_IMPLEMENTED;
 }
 
 void WebURLLoaderImpl::loadAsynchronously(const blink::WebURLRequest& request,
