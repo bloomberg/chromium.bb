@@ -1158,7 +1158,7 @@ void ReplaceSelectionCommand::doApply()
 
     // We inserted before the enclosingBlockOfInsertionPos to prevent nesting, and the content before the enclosingBlockOfInsertionPos wasn't in its own block and
     // didn't have a br after it, so the inserted content ended up in the same paragraph.
-    if (!startOfInsertedContent.isNull() && enclosingBlockOfInsertionPos && insertionPos.anchorNode() == enclosingBlockOfInsertionPos->parentNode() && (unsigned)insertionPos.deprecatedEditingOffset() < enclosingBlockOfInsertionPos->nodeIndex() && !isStartOfParagraph(startOfInsertedContent))
+    if (!startOfInsertedContent.isNull() && enclosingBlockOfInsertionPos && insertionPos.anchorNode() == enclosingBlockOfInsertionPos->parentNode() && (unsigned)insertionPos.computeEditingOffset() < enclosingBlockOfInsertionPos->nodeIndex() && !isStartOfParagraph(startOfInsertedContent))
         insertNodeAt(createBreakElement(document()).get(), startOfInsertedContent.deepEquivalent());
 
     if (endBR && (plainTextFragment || (shouldRemoveEndBR(endBR, originalVisPosBeforeEndBR) && !(fragment.hasInterchangeNewlineAtEnd() && selectionIsPlainText)))) {
