@@ -6,6 +6,8 @@ header("Content-Type: text/event-stream");
 
 $count = intval($_GET["count"]);
 
+if ($_GET["cors"])
+    header("Access-Control-Allow-Origin: " . $_GET["cors"]);
 if ($count == 1 || $count == 2)
     header("Access-Control-Allow-Origin: *");
 else if ($count > 2)

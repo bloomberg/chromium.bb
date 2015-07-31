@@ -138,7 +138,7 @@ void EventSource::connect()
     options.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(&executionContext) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
 
     ResourceLoaderOptions resourceLoaderOptions;
-    resourceLoaderOptions.allowCredentials = (origin->canRequest(m_url) || m_withCredentials) ? AllowStoredCredentials : DoNotAllowStoredCredentials;
+    resourceLoaderOptions.allowCredentials = (origin->canRequestNoSuborigin(m_url) || m_withCredentials) ? AllowStoredCredentials : DoNotAllowStoredCredentials;
     resourceLoaderOptions.credentialsRequested = m_withCredentials ? ClientRequestedCredentials : ClientDidNotRequestCredentials;
     resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;
     resourceLoaderOptions.securityOrigin = origin;
