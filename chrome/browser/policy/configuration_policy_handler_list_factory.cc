@@ -488,6 +488,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDataCompressionProxyEnabled,
     data_reduction_proxy::prefs::kDataReductionProxyEnabled,
     base::Value::TYPE_BOOLEAN },
+  { key::kAuthAndroidNegotiateAccountType,
+    prefs::kAuthAndroidNegotiateAccountType,
+    base::Value::TYPE_STRING },
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)

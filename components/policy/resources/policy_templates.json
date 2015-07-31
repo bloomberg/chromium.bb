@@ -123,7 +123,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 304
+#   For your editing convenience: highest ID currently used: 305
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1641,7 +1641,7 @@
           'name': 'AuthSchemes',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:9-'],
+          'supported_on': ['chrome.*:9-','android:46-'],
           'features': {
             'dynamic_refresh': False,
             'per_profile': False,
@@ -1659,7 +1659,7 @@
           'name': 'DisableAuthNegotiateCnameLookup',
           'type': 'main',
           'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome.*:9-'],
+          'supported_on': ['chrome.*:9-','android:46-'],
           'features': {
             'dynamic_refresh': False,
             'per_profile': False,
@@ -1695,7 +1695,7 @@
           'name': 'AuthServerWhitelist',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:9-'],
+          'supported_on': ['chrome.*:9-','android:46-'],
           'features': {
             'dynamic_refresh': False,
             'per_profile': False,
@@ -1713,7 +1713,7 @@
           'name': 'AuthNegotiateDelegateWhitelist',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:9-'],
+          'supported_on': ['chrome.*:9-','android:46-'],
           'features': {
             'dynamic_refresh': False,
             'per_profile': False,
@@ -1742,6 +1742,22 @@
           'desc': '''Specifies which GSSAPI library to use for HTTP Authentication. You can set either just a library name, or a full path.
 
           If no setting is provided, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will fall back to using a default library name.''',
+        },
+        {
+          'name': 'AuthAndroidNegotiateAccountType',
+          'type': 'string',
+          'schema': { 'type': 'string' },
+          'supported_on': ['android:46-'],
+          'features': {
+            'dynamic_refresh': False,
+            'per_profile': False,
+          },
+          'example_value': 'com.example.spnego',
+          'id': 305,
+          'caption': '''Account Type for Negotiate Authentication''',
+          'desc': '''Specifies the account type of the accounts provided by the Android authentication app that supports HTTP Negotiate authentication (e.g. Kerberos authentication). This information should be available from the supplier of the Authentication app. For more details see https://goo.gl/hajyfN.
+
+          If no setting is provided then Negotiate Authentication will be disabled on Android.''',
         },
         {
           'name': 'AllowCrossOriginAuthPrompt',

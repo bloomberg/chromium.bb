@@ -590,7 +590,7 @@
   },
 
   "AuthSchemes": {
-    "os": ["win", "linux", "mac", "chromeos"],
+    "os": ["win", "linux", "mac", "chromeos", "android"],
     "test_policy": { "AuthSchemes": "AuthSchemes" },
     "pref_mappings": [
       { "pref": "auth.schemes",
@@ -600,7 +600,7 @@
   },
 
   "DisableAuthNegotiateCnameLookup": {
-    "os": ["win", "linux", "mac", "chromeos"],
+    "os": ["win", "linux", "mac", "chromeos", "android"],
     "test_policy": { "DisableAuthNegotiateCnameLookup": true },
     "pref_mappings": [
       { "pref": "auth.disable_negotiate_cname_lookup",
@@ -620,7 +620,7 @@
   },
 
   "AuthServerWhitelist": {
-    "os": ["win", "linux", "mac", "chromeos"],
+    "os": ["win", "linux", "mac", "chromeos", "android"],
     "test_policy": { "AuthServerWhitelist": "localhost" },
     "pref_mappings": [
       { "pref": "auth.server_whitelist",
@@ -630,7 +630,7 @@
   },
 
   "AuthNegotiateDelegateWhitelist": {
-    "os": ["win", "linux", "mac", "chromeos"],
+    "os": ["win", "linux", "mac", "chromeos", "android"],
     "test_policy": { "AuthNegotiateDelegateWhitelist": "localhost" },
     "pref_mappings": [
       { "pref": "auth.negotiate_delegate_whitelist",
@@ -644,6 +644,16 @@
     "test_policy": { "GSSAPILibraryName": "libwhatever.so" },
     "pref_mappings": [
       { "pref": "auth.gssapi_library_name",
+        "local_state": true
+      }
+    ]
+  },
+
+  "AuthAndroidNegotiateAccountType": {
+    "os": ["android"],
+    "test_policy": { "AuthAndroidNegotiateAccountType": "com.example.spnego" },
+    "pref_mappings": [
+      { "pref": "auth.android_negotiate_account_type",
         "local_state": true
       }
     ]
