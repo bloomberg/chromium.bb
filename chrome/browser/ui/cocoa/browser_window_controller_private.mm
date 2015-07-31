@@ -597,6 +597,10 @@ willPositionSheet:(NSWindow*)sheet
   // When exiting fullscreen mode, we need to call layoutSubviews manually.
   [savedRegularWindow_ autorelease];
   savedRegularWindow_ = nil;
+
+  // No close event is thrown when a window is dealloc'd after orderOut.
+  // Explicitly close the window to notify bubbles.
+  [fullscreenWindow_.get() close];
   fullscreenWindow_.reset();
   [self layoutSubviews];
 
