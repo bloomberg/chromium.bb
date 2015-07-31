@@ -17,6 +17,7 @@
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/debug/micro_benchmark_impl.h"
 #include "cc/debug/traced_value.h"
+#include "cc/input/scroll_state.h"
 #include "cc/layers/layer_utils.h"
 #include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/output/copy_output_request.h"
@@ -195,6 +196,30 @@ void LayerImpl::SetScrollChildren(std::set<LayerImpl*>* children) {
     return;
   scroll_children_.reset(children);
   SetNeedsPushProperties();
+}
+
+void LayerImpl::DistributeScroll(ScrollState* scroll_state) {
+  DCHECK(scroll_state);
+  if (scroll_state->FullyConsumed())
+    return;
+
+  scroll_state->DistributeToScrollChainDescendant();
+
+  // If the scroll doesn't propagate, and we're currently scrolling
+  // a layer other than this one, prevent the scroll from
+  // propagating to this layer.
+  if (!scroll_state->should_propagate() &&
+      scroll_state->delta_consumed_for_scroll_sequence() &&
+      scroll_state->current_native_scrolling_layer() != this) {
+    return;
+  }
+
+  ApplyScroll(scroll_state);
+}
+
+void LayerImpl::ApplyScroll(ScrollState* scroll_state) {
+  DCHECK(scroll_state);
+  layer_tree_impl()->ApplyScroll(this, scroll_state);
 }
 
 void LayerImpl::SetNumDescendantsThatDrawContent(int num_descendants) {

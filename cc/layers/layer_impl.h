@@ -67,6 +67,7 @@ class ScrollbarLayerImplBase;
 class SimpleEnclosedRegion;
 class Tile;
 class TransformTree;
+class ScrollState;
 
 struct AppendQuadsData;
 
@@ -148,6 +149,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   const std::set<LayerImpl*>* scroll_children() const {
     return scroll_children_.get();
   }
+
+  void DistributeScroll(ScrollState* scroll_state);
+  void ApplyScroll(ScrollState* scroll_state);
 
   void set_property_tree_sequence_number(int sequence_number) {}
 

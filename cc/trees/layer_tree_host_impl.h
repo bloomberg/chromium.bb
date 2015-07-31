@@ -168,6 +168,7 @@ class CC_EXPORT LayerTreeHostImpl
   InputHandler::ScrollStatus ScrollAnimated(
       const gfx::Point& viewport_point,
       const gfx::Vector2dF& scroll_delta) override;
+  void ApplyScroll(LayerImpl* layer, ScrollState* scroll_state);
   InputHandlerScrollResult ScrollBy(
       const gfx::Point& viewport_point,
       const gfx::Vector2dF& scroll_delta) override;

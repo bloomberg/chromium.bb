@@ -32,6 +32,7 @@
       'debug/frame_timing_tracker_unittest.cc',
       'debug/micro_benchmark_controller_unittest.cc',
       'debug/rendering_stats_unittest.cc',
+      'input/scroll_state_unittest.cc',
       'input/top_controls_manager_unittest.cc',
       'layers/delegated_frame_provider_unittest.cc',
       'layers/delegated_frame_resource_collection_unittest.cc',

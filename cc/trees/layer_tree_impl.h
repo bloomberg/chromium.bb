@@ -275,6 +275,10 @@ class CC_EXPORT LayerTreeImpl {
   // The outer viewport scroll layer scrolls first.
   void DistributeRootScrollOffset();
 
+  void ApplyScroll(LayerImpl* layer, ScrollState* scroll_state) {
+    layer_tree_host_impl_->ApplyScroll(layer, scroll_state);
+  }
+
   // Call this function when you expect there to be a swap buffer.
   // See swap_promise.h for how to use SwapPromise.
   void QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise);

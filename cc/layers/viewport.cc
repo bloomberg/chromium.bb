@@ -148,6 +148,8 @@ bool Viewport::ShouldTopControlsConsumeScroll(
 }
 
 gfx::Vector2dF Viewport::AdjustOverscroll(const gfx::Vector2dF& delta) const {
+  // TODO(tdresser): Use a more rational epsilon. See crbug.com/510550 for
+  // details.
   const float kEpsilon = 0.1f;
   gfx::Vector2dF adjusted = delta;
 
