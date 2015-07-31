@@ -2962,7 +2962,7 @@ PositionWithAffinity LayoutObject::createPositionWithAffinity(int offset, EAffin
     if (Node* node = nonPseudoNode()) {
         if (!node->hasEditableStyle()) {
             // If it can be found, we prefer a visually equivalent position that is editable.
-            Position position = createLegacyEditingPosition(node, offset);
+            const Position position = Position(node, offset);
             Position candidate = position.downstream(CanCrossEditingBoundary);
             if (candidate.anchorNode()->hasEditableStyle())
                 return PositionWithAffinity(candidate, affinity);
