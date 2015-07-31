@@ -111,7 +111,7 @@ class PerfControl(object):
     if cpus:
       logging.info('Successfully set %s to %r on: %s', path, value, cpus)
     else:
-      logging.warning('Failed to set %s to %r on any cpus')
+      logging.warning('Failed to set %s to %r on any cpus', path, value)
 
   def _SetScalingGovernorInternal(self, value):
     self._WriteEachCpuFile('cpufreq/scaling_governor', value)
