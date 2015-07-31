@@ -148,6 +148,7 @@ blah /* hey! */
 }
 
 .mixed-in {
+  display: none;
   --css-mixin: {
     color: red;
   };  /* This should be ignored. */

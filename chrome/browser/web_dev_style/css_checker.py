@@ -33,6 +33,7 @@ class CSSChecker(object):
       s = _remove_ats(s)
       s = _remove_comments(s)
       s = _remove_template_expressions(s)
+      s = _remove_mixins(s)
       return s
 
     def _remove_ats(s):
@@ -46,6 +47,9 @@ class CSSChecker(object):
 
     def _remove_comments(s):
       return re.sub(re.compile(r'/\*.*?\*/', re.DOTALL), '', s)
+
+    def _remove_mixins(s):
+      return re.sub(re.compile(r'--[\d\w-]+: {.*?};', re.DOTALL), '', s)
 
     def _remove_template_expressions(s):
       return re.sub(re.compile(r'\${[^}]*}', re.DOTALL), '', s)
@@ -70,6 +74,7 @@ class CSSChecker(object):
 
     def alphabetize_props(contents):
       errors = []
+      # TODO(dbeam): make this smart enough to detect issues in mixins.
       for rule in re.finditer(r'{(.*?)}', contents, re.DOTALL):
         semis = map(lambda t: t.strip(), rule.group(1).split(';'))[:-1]
         rules = filter(lambda r: ': ' in r, semis)
