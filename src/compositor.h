@@ -503,9 +503,9 @@ struct weston_seat {
 	struct wl_list base_resource_list;
 
 	struct wl_global *global;
-	struct weston_pointer *pointer;
-	struct weston_keyboard *keyboard;
-	struct weston_touch *touch;
+	struct weston_pointer *pointer_state;
+	struct weston_keyboard *keyboard_state;
+	struct weston_touch *touch_state;
 	int pointer_device_count;
 	int keyboard_device_count;
 	int touch_device_count;
@@ -1586,6 +1586,15 @@ weston_parse_transform(const char *transform, uint32_t *out);
 
 const char *
 weston_transform_to_string(uint32_t output_transform);
+
+struct weston_keyboard *
+weston_seat_get_keyboard(struct weston_seat *seat);
+
+struct weston_pointer *
+weston_seat_get_pointer(struct weston_seat *seat);
+
+struct weston_touch *
+weston_seat_get_touch(struct weston_seat *seat);
 
 #ifdef  __cplusplus
 }

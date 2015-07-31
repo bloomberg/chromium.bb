@@ -129,11 +129,12 @@ WL_EXPORT void
 weston_output_update_zoom(struct weston_output *output)
 {
 	struct weston_seat *seat = output->zoom.seat;
+	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
 
 	assert(output->zoom.active);
 
-	output->zoom.current.x = seat->pointer->x;
-	output->zoom.current.y = seat->pointer->y;
+	output->zoom.current.x = pointer->x;
+	output->zoom.current.y = pointer->y;
 
 	weston_zoom_transition(output);
 	weston_output_update_zoom_transform(output);
@@ -154,13 +155,15 @@ WL_EXPORT void
 weston_output_activate_zoom(struct weston_output *output,
 			    struct weston_seat *seat)
 {
+	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
+
 	if (output->zoom.active)
 		return;
 
 	output->zoom.active = true;
 	output->zoom.seat = seat;
 	output->disable_planes++;
-	wl_signal_add(&seat->pointer->motion_signal,
+	wl_signal_add(&pointer->motion_signal,
 		      &output->zoom.motion_listener);
 }
 

@@ -83,7 +83,7 @@ static void
 notify_pointer_position(struct weston_test *test, struct wl_resource *resource)
 {
 	struct weston_seat *seat = get_seat(test);
-	struct weston_pointer *pointer = seat->pointer;
+	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
 
 	weston_test_send_pointer_position(resource, pointer->x, pointer->y);
 }
@@ -144,7 +144,7 @@ move_pointer(struct wl_client *client, struct wl_resource *resource,
 {
 	struct weston_test *test = wl_resource_get_user_data(resource);
 	struct weston_seat *seat = get_seat(test);
-	struct weston_pointer *pointer = seat->pointer;
+	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
 
 	notify_motion(seat, 100,
 		      wl_fixed_from_int(x) - pointer->x,
@@ -171,12 +171,13 @@ activate_surface(struct wl_client *client, struct wl_resource *resource,
 		wl_resource_get_user_data(surface_resource) : NULL;
 	struct weston_test *test = wl_resource_get_user_data(resource);
 	struct weston_seat *seat;
+	struct weston_keyboard *keyboard;
 
 	seat = get_seat(test);
-
+	keyboard = weston_seat_get_keyboard(seat);
 	if (surface) {
 		weston_surface_activate(surface, seat);
-		notify_keyboard_focus_in(seat, &seat->keyboard->keys,
+		notify_keyboard_focus_in(seat, &keyboard->keys,
 					 STATE_UPDATE_AUTOMATIC);
 	}
 	else {

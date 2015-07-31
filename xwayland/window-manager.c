@@ -1316,12 +1316,16 @@ weston_wm_pick_seat_for_window(struct weston_wm_window *window)
 
 	seat = NULL;
 	wl_list_for_each(s, &wm->server->compositor->seat_list, link) {
-		if (s->pointer != NULL && s->pointer->focus &&
-		    s->pointer->focus->surface == window->surface &&
-		    s->pointer->button_count > 0 &&
-		    (seat == NULL ||
-		     s->pointer->grab_serial -
-		     seat->pointer->grab_serial < (1 << 30)))
+		struct weston_pointer *pointer = weston_seat_get_pointer(s);
+		struct weston_pointer *old_pointer =
+			weston_seat_get_pointer(seat);
+
+		if (pointer && pointer->focus &&
+		    pointer->focus->surface == window->surface &&
+		    pointer->button_count > 0 &&
+		    (!seat ||
+		     pointer->grab_serial -
+		     old_pointer->grab_serial < (1 << 30)))
 			seat = s;
 	}
 
@@ -1345,13 +1349,14 @@ weston_wm_window_handle_moveresize(struct weston_wm_window *window,
 
 	struct weston_wm *wm = window->wm;
 	struct weston_seat *seat = weston_wm_pick_seat_for_window(window);
+	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
 	int detail;
 	struct weston_shell_interface *shell_interface =
 		&wm->server->compositor->shell_interface;
 
-	if (seat == NULL || seat->pointer->button_count != 1
-	    || !seat->pointer->focus
-	    || seat->pointer->focus->surface != window->surface)
+	if (!pointer || pointer->button_count != 1
+	    || !pointer->focus
+	    || pointer->focus->surface != window->surface)
 		return;
 
 	detail = client_message->data.data32[2];

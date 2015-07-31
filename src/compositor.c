@@ -95,7 +95,7 @@ static void weston_mode_switch_finish(struct weston_output *output,
 	/* If a pointer falls outside the outputs new geometry, move it to its
 	 * lower-right corner */
 	wl_list_for_each(seat, &output->compositor->seat_list, link) {
-		struct weston_pointer *pointer = seat->pointer;
+		struct weston_pointer *pointer = weston_seat_get_pointer(seat);
 		int32_t x, y;
 
 		if (!pointer)
@@ -1752,15 +1752,20 @@ weston_view_unmap(struct weston_view *view)
 		return;
 
 	wl_list_for_each(seat, &view->surface->compositor->seat_list, link) {
-		if (seat->keyboard && seat->keyboard->focus == view->surface)
-			weston_keyboard_set_focus(seat->keyboard, NULL);
-		if (seat->pointer && seat->pointer->focus == view)
-			weston_pointer_set_focus(seat->pointer,
+		struct weston_touch *touch = weston_seat_get_touch(seat);
+		struct weston_pointer *pointer = weston_seat_get_pointer(seat);
+		struct weston_keyboard *keyboard =
+			weston_seat_get_keyboard(seat);
+
+		if (keyboard && keyboard->focus == view->surface)
+			weston_keyboard_set_focus(keyboard, NULL);
+		if (pointer && pointer->focus == view)
+			weston_pointer_set_focus(pointer,
 						 NULL,
 						 wl_fixed_from_int(0),
 						 wl_fixed_from_int(0));
-		if (seat->touch && seat->touch->focus == view)
-			weston_touch_set_focus(seat->touch, NULL);
+		if (touch && touch->focus == view)
+			weston_touch_set_focus(touch, NULL);
 	}
 }
 
@@ -4587,10 +4592,10 @@ weston_compositor_set_default_pointer_grab(struct weston_compositor *ec,
 
 	ec->default_pointer_grab = interface;
 	wl_list_for_each(seat, &ec->seat_list, link) {
-		if (seat->pointer) {
-			weston_pointer_set_default_grab(seat->pointer,
-							interface);
-		}
+		struct weston_pointer *pointer = weston_seat_get_pointer(seat);
+
+		if (pointer)
+			weston_pointer_set_default_grab(pointer, interface);
 	}
 }
 

@@ -154,6 +154,7 @@ handle_enter(struct weston_wm *wm, xcb_client_message_event_t *client_message)
 {
 	struct dnd_data_source *source;
 	struct weston_seat *seat = weston_wm_pick_seat(wm);
+	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
 	char **p;
 	const char *name;
 	uint32_t *types;
@@ -213,7 +214,7 @@ handle_enter(struct weston_wm *wm, xcb_client_message_event_t *client_message)
 	}
 
 	free(reply);
-	weston_pointer_start_drag(seat->pointer, &source->base, NULL, NULL);
+	weston_pointer_start_drag(pointer, &source->base, NULL, NULL);
 }
 
 int

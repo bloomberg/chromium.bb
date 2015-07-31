@@ -60,6 +60,7 @@ device_added(struct udev_input *input, struct libinput_device *libinput_device)
 	struct libinput_seat *libinput_seat;
 	struct weston_seat *seat;
 	struct udev_seat *udev_seat;
+	struct weston_pointer *pointer;
 
 	c = input->compositor;
 	libinput_seat = libinput_device_get_seat(libinput_device);
@@ -77,10 +78,11 @@ device_added(struct udev_input *input, struct libinput_device *libinput_device)
 	udev_seat = (struct udev_seat *) seat;
 	wl_list_insert(udev_seat->devices_list.prev, &device->link);
 
-	if (seat->output && seat->pointer)
-		weston_pointer_clamp(seat->pointer,
-				     &seat->pointer->x,
-				     &seat->pointer->y);
+	pointer = weston_seat_get_pointer(seat);
+	if (seat->output && pointer)
+		weston_pointer_clamp(pointer,
+				     &pointer->x,
+				     &pointer->y);
 
 	output_name = libinput_device_get_output_name(libinput_device);
 	if (output_name) {
@@ -378,8 +380,11 @@ udev_seat_create(struct udev_input *input, const char *seat_name)
 static void
 udev_seat_destroy(struct udev_seat *seat)
 {
+	struct weston_keyboard *keyboard =
+		weston_seat_get_keyboard(&seat->base);
+
 	udev_seat_remove_devices(seat);
-	if (seat->base.keyboard)
+	if (keyboard)
 		notify_keyboard_focus_out(&seat->base);
 	weston_seat_release(&seat->base);
 	wl_list_remove(&seat->output_create_listener.link);

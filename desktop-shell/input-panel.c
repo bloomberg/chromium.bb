@@ -68,9 +68,12 @@ show_input_panel_surface(struct input_panel_surface *ipsurf)
 	float x, y;
 
 	wl_list_for_each(seat, &shell->compositor->seat_list, link) {
-		if (!seat->keyboard || !seat->keyboard->focus)
+		struct weston_keyboard *keyboard =
+			weston_seat_get_keyboard(seat);
+
+		if (!keyboard || !keyboard->focus)
 			continue;
-		focus = weston_surface_get_main_surface(seat->keyboard->focus);
+		focus = weston_surface_get_main_surface(keyboard->focus);
 		ipsurf->output = focus->output;
 		x = ipsurf->output->x + (ipsurf->output->width - ipsurf->surface->width) / 2;
 		y = ipsurf->output->y + ipsurf->output->height - ipsurf->surface->height;

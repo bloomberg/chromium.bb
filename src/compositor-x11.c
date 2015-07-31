@@ -174,7 +174,9 @@ x11_backend_get_keymap(struct x11_backend *b)
 static uint32_t
 get_xkb_mod_mask(struct x11_backend *b, uint32_t in)
 {
-	struct weston_xkb_info *info = b->core_seat.keyboard->xkb_info;
+	struct weston_keyboard *keyboard =
+		weston_seat_get_keyboard(&b->core_seat);
+	struct weston_xkb_info *info = keyboard->xkb_info;
 	uint32_t ret = 0;
 
 	if ((in & ShiftMask) && info->shift_mod != XKB_MOD_INVALID)
@@ -206,6 +208,7 @@ x11_backend_setup_xkb(struct x11_backend *b)
 	b->xkb_event_base = 0;
 	return;
 #else
+	struct weston_keyboard *keyboard;
 	const xcb_query_extension_reply_t *ext;
 	xcb_generic_error_t *error;
 	xcb_void_cookie_t select;
@@ -285,7 +288,8 @@ x11_backend_setup_xkb(struct x11_backend *b)
 		return;
 	}
 
-	xkb_state_update_mask(b->core_seat.keyboard->xkb_state.state,
+	keyboard = weston_seat_get_keyboard(&b->core_seat);
+	xkb_state_update_mask(keyboard->xkb_state.state,
 			      get_xkb_mod_mask(b, state_reply->baseMods),
 			      get_xkb_mod_mask(b, state_reply->latchedMods),
 			      get_xkb_mod_mask(b, state_reply->lockedMods),
@@ -975,7 +979,10 @@ static void delete_cb(void *data)
 static void
 update_xkb_state(struct x11_backend *b, xcb_xkb_state_notify_event_t *state)
 {
-	xkb_state_update_mask(b->core_seat.keyboard->xkb_state.state,
+	struct weston_keyboard *keyboard =
+		weston_seat_get_keyboard(&b->core_seat);
+
+	xkb_state_update_mask(keyboard->xkb_state.state,
 			      get_xkb_mod_mask(b, state->baseMods),
 			      get_xkb_mod_mask(b, state->latchedMods),
 			      get_xkb_mod_mask(b, state->lockedMods),
@@ -1003,9 +1010,10 @@ static void
 update_xkb_state_from_core(struct x11_backend *b, uint16_t x11_mask)
 {
 	uint32_t mask = get_xkb_mod_mask(b, x11_mask);
-	struct weston_keyboard *keyboard = b->core_seat.keyboard;
+	struct weston_keyboard *keyboard
+		= weston_seat_get_keyboard(&b->core_seat);
 
-	xkb_state_update_mask(b->core_seat.keyboard->xkb_state.state,
+	xkb_state_update_mask(keyboard->xkb_state.state,
 			      keyboard->modifiers.mods_depressed & mask,
 			      keyboard->modifiers.mods_latched & mask,
 			      keyboard->modifiers.mods_locked & mask,

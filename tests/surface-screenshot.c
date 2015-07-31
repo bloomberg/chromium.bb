@@ -139,6 +139,7 @@ trigger_binding(struct weston_keyboard *keyboard, uint32_t time, uint32_t key,
 	char fname[1024];
 	struct weston_surface *surface;
 	struct weston_seat *seat = keyboard->seat;
+	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
 	int width, height;
 	char desc[512];
 	void *pixels;
@@ -147,12 +148,10 @@ trigger_binding(struct weston_keyboard *keyboard, uint32_t time, uint32_t key,
 	int ret;
 	FILE *fp;
 
-	if (seat->pointer_device_count == 0 ||
-	    !seat->pointer ||
-	    !seat->pointer->focus)
+	if (!pointer || !pointer->focus)
 		return;
 
-	surface = seat->pointer->focus->surface;
+	surface = pointer->focus->surface;
 
 	weston_surface_get_content_size(surface, &width, &height);
 

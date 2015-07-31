@@ -96,15 +96,17 @@ static void
 seat_caps_changed(struct wl_listener *l, void *data)
 {
 	struct weston_seat *seat = data;
+	struct weston_keyboard *keyboard = weston_seat_get_keyboard(seat);
+	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
 	struct pointer_focus_listener *listener;
 	struct fs_output *fsout;
 
 	listener = container_of(l, struct pointer_focus_listener, seat_caps);
 
 	/* no pointer */
-	if (seat->pointer_device_count) {
+	if (pointer) {
 		if (!listener->pointer_focus.link.prev) {
-			wl_signal_add(&seat->pointer->focus_signal,
+			wl_signal_add(&pointer->focus_signal,
 				      &listener->pointer_focus);
 		}
 	} else {
@@ -113,7 +115,7 @@ seat_caps_changed(struct wl_listener *l, void *data)
 		}
 	}
 
-	if (seat->keyboard_device_count && seat->keyboard->focus != NULL) {
+	if (keyboard && keyboard->focus != NULL) {
 		wl_list_for_each(fsout, &listener->shell->output_list, link) {
 			if (fsout->surface) {
 				weston_surface_activate(fsout->surface, seat);
@@ -681,7 +683,10 @@ fullscreen_shell_present_surface(struct wl_client *client,
 
 	if (surface) {
 		wl_list_for_each(seat, &shell->compositor->seat_list, link) {
-			if (seat->keyboard && seat->keyboard->focus == NULL)
+			struct weston_keyboard *keyboard =
+				weston_seat_get_keyboard(seat);
+
+			if (keyboard && !keyboard->focus)
 				weston_surface_activate(surface, seat);
 		}
 	}
@@ -729,7 +734,10 @@ fullscreen_shell_present_surface_for_mode(struct wl_client *client,
 				       fsout, mode_feedback_destroyed);
 
 	wl_list_for_each(seat, &shell->compositor->seat_list, link) {
-		if (seat->keyboard && seat->keyboard->focus == NULL)
+		struct weston_keyboard *keyboard =
+			weston_seat_get_keyboard(seat);
+
+		if (keyboard && !keyboard->focus)
 			weston_surface_activate(surface, seat);
 	}
 }

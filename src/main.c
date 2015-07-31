@@ -798,8 +798,11 @@ int main(int argc, char *argv[])
 	weston_config_section_get_bool(section, "numlock-on", &numlock_on, 0);
 	if (numlock_on) {
 		wl_list_for_each(seat, &ec->seat_list, link) {
-			if (seat->keyboard)
-				weston_keyboard_set_locks(seat->keyboard,
+			struct weston_keyboard *keyboard =
+				weston_seat_get_keyboard(seat);
+
+			if (keyboard)
+				weston_keyboard_set_locks(keyboard,
 							  WESTON_NUM_LOCK,
 							  WESTON_NUM_LOCK);
 		}

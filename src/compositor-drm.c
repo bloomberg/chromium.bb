@@ -2075,6 +2075,7 @@ setup_output_seat_constraint(struct drm_backend *b,
 			     const char *s)
 {
 	if (strcmp(s, "") != 0) {
+		struct weston_pointer *pointer;
 		struct udev_seat *seat;
 
 		seat = udev_seat_get_named(&b->input, s);
@@ -2083,10 +2084,11 @@ setup_output_seat_constraint(struct drm_backend *b,
 
 		seat->base.output = output;
 
-		if (seat->base.pointer)
-			weston_pointer_clamp(seat->base.pointer,
-					     &seat->base.pointer->x,
-					     &seat->base.pointer->y);
+		pointer = weston_seat_get_pointer(&seat->base);
+		if (pointer)
+			weston_pointer_clamp(pointer,
+					     &pointer->x,
+					     &pointer->y);
 	}
 }
 

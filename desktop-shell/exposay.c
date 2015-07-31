@@ -525,14 +525,16 @@ static enum exposay_layout_state
 exposay_set_inactive(struct desktop_shell *shell)
 {
 	struct weston_seat *seat = shell->exposay.seat;
+	struct weston_keyboard *keyboard = weston_seat_get_keyboard(seat);
+	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
 
-	if (seat->pointer_device_count)
-		weston_pointer_end_grab(seat->pointer);
+	if (pointer)
+		weston_pointer_end_grab(pointer);
 
-	if (seat->keyboard_device_count) {
-		weston_keyboard_end_grab(seat->keyboard);
-		if (seat->keyboard->input_method_resource)
-			seat->keyboard->grab = &seat->keyboard->input_method_grab;
+	if (keyboard) {
+		weston_keyboard_end_grab(keyboard);
+		if (keyboard->input_method_resource)
+			keyboard->grab = &keyboard->input_method_grab;
 	}
 
 	return EXPOSAY_LAYOUT_INACTIVE;
@@ -566,28 +568,30 @@ static enum exposay_layout_state
 exposay_transition_active(struct desktop_shell *shell)
 {
 	struct weston_seat *seat = shell->exposay.seat;
+	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
+	struct weston_keyboard *keyboard = weston_seat_get_keyboard(seat);
 	struct shell_output *shell_output;
 	bool animate = false;
 
 	shell->exposay.workspace = get_current_workspace(shell);
-	shell->exposay.focus_prev = get_default_view (seat->keyboard->focus);
-	shell->exposay.focus_current = get_default_view (seat->keyboard->focus);
+	shell->exposay.focus_prev = get_default_view(keyboard->focus);
+	shell->exposay.focus_current = get_default_view(keyboard->focus);
 	shell->exposay.clicked = NULL;
 	wl_list_init(&shell->exposay.surface_list);
 
 	lower_fullscreen_layer(shell, NULL);
 	shell->exposay.grab_kbd.interface = &exposay_kbd_grab;
-	weston_keyboard_start_grab(seat->keyboard,
+	weston_keyboard_start_grab(keyboard,
 	                           &shell->exposay.grab_kbd);
-	weston_keyboard_set_focus(seat->keyboard, NULL);
+	weston_keyboard_set_focus(keyboard, NULL);
 
 	shell->exposay.grab_ptr.interface = &exposay_ptr_grab;
-	if (seat->pointer_device_count) {
-		weston_pointer_start_grab(seat->pointer,
+	if (pointer) {
+		weston_pointer_start_grab(pointer,
 		                          &shell->exposay.grab_ptr);
-		weston_pointer_set_focus(seat->pointer, NULL,
-				         seat->pointer->x,
-					 seat->pointer->y);
+		weston_pointer_set_focus(pointer, NULL,
+				         pointer->x,
+					 pointer->y);
 	}
 	wl_list_for_each(shell_output, &shell->output_list, link) {
 		enum exposay_layout_state state;

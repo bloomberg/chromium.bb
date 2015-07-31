@@ -1469,15 +1469,18 @@ enum HMI_GRAB_DEVICE {
 static enum HMI_GRAB_DEVICE
 get_hmi_grab_device(struct weston_seat *seat, uint32_t serial)
 {
-	if (seat->pointer &&
-	    seat->pointer->focus &&
-	    seat->pointer->button_count &&
-	    seat->pointer->grab_serial == serial)
+	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
+	struct weston_touch *touch = weston_seat_get_touch(seat);
+
+	if (pointer &&
+	    pointer->focus &&
+	    pointer->button_count &&
+	    pointer->grab_serial == serial)
 		return HMI_GRAB_DEVICE_POINTER;
 
-	if (seat->touch &&
-	    seat->touch->focus &&
-	    seat->touch->grab_serial == serial)
+	if (touch &&
+	    touch->focus &&
+	    touch->grab_serial == serial)
 		return HMI_GRAB_DEVICE_TOUCH;
 
 	return HMI_GRAB_DEVICE_NONE;
@@ -1568,6 +1571,9 @@ ivi_hmi_controller_workspace_control(struct wl_client *client,
 	struct pointer_move_grab *pnt_move_grab = NULL;
 	struct touch_move_grab *tch_move_grab = NULL;
 	struct weston_seat *seat = NULL;
+	struct weston_pointer *pointer;
+	struct weston_touch *touch;
+
 	enum HMI_GRAB_DEVICE device;
 
 	if (hmi_ctrl->workspace_count < 2)
@@ -1586,21 +1592,23 @@ ivi_hmi_controller_workspace_control(struct wl_client *client,
 
 	switch (device) {
 	case HMI_GRAB_DEVICE_POINTER:
-		pnt_move_grab = create_workspace_pointer_move(seat->pointer,
+		pointer = weston_seat_get_pointer(seat);
+		pnt_move_grab = create_workspace_pointer_move(pointer,
 							      resource);
 
 		pointer_grab_start(&pnt_move_grab->base, layer,
 				   &pointer_move_grab_workspace_interface,
-				   seat->pointer);
+				   pointer);
 		break;
 
 	case HMI_GRAB_DEVICE_TOUCH:
-		tch_move_grab = create_workspace_touch_move(seat->touch,
+		touch = weston_seat_get_touch(seat);
+		tch_move_grab = create_workspace_touch_move(touch,
 							    resource);
 
 		touch_grab_start(&tch_move_grab->base, layer,
 				 &touch_move_grab_workspace_interface,
-				 seat->touch);
+				 touch);
 		break;
 
 	default:

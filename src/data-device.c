@@ -662,23 +662,25 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 		       struct wl_resource *icon_resource, uint32_t serial)
 {
 	struct weston_seat *seat = wl_resource_get_user_data(resource);
+	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
+	struct weston_touch *touch = weston_seat_get_touch(seat);
 	struct weston_surface *origin = wl_resource_get_user_data(origin_resource);
 	struct weston_data_source *source = NULL;
 	struct weston_surface *icon = NULL;
 	int is_pointer_grab, is_touch_grab;
 	int32_t ret = 0;
 
-	is_pointer_grab = seat->pointer &&
-			  seat->pointer->button_count == 1 &&
-			  seat->pointer->grab_serial == serial &&
-			  seat->pointer->focus &&
-			  seat->pointer->focus->surface == origin;
+	is_pointer_grab = pointer &&
+			  pointer->button_count == 1 &&
+			  pointer->grab_serial == serial &&
+			  pointer->focus &&
+			  pointer->focus->surface == origin;
 
-	is_touch_grab = seat->touch &&
-			seat->touch->num_tp == 1 &&
-			seat->touch->grab_serial == serial &&
-			seat->touch->focus &&
-			seat->touch->focus->surface == origin;
+	is_touch_grab = touch &&
+			touch->num_tp == 1 &&
+			touch->grab_serial == serial &&
+			touch->focus &&
+			touch->focus->surface == origin;
 
 	if (!is_pointer_grab && !is_touch_grab)
 		return;
@@ -698,9 +700,9 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 	}
 
 	if (is_pointer_grab)
-		ret = weston_pointer_start_drag(seat->pointer, source, icon, client);
+		ret = weston_pointer_start_drag(pointer, source, icon, client);
 	else if (is_touch_grab)
-		ret = weston_touch_start_drag(seat->touch, source, icon, client);
+		ret = weston_touch_start_drag(touch, source, icon, client);
 
 	if (ret < 0)
 		wl_resource_post_no_memory(resource);
@@ -711,13 +713,14 @@ destroy_selection_data_source(struct wl_listener *listener, void *data)
 {
 	struct weston_seat *seat = container_of(listener, struct weston_seat,
 						selection_data_source_listener);
+	struct weston_keyboard *keyboard = weston_seat_get_keyboard(seat);
 	struct wl_resource *data_device;
 	struct weston_surface *focus = NULL;
 
 	seat->selection_data_source = NULL;
 
-	if (seat->keyboard)
-		focus = seat->keyboard->focus;
+	if (keyboard)
+		focus = keyboard->focus;
 	if (focus && focus->resource) {
 		data_device = wl_resource_find_for_client(&seat->drag_resource_list,
 							  wl_resource_get_client(focus->resource));
@@ -766,6 +769,7 @@ weston_seat_set_selection(struct weston_seat *seat,
 			  struct weston_data_source *source, uint32_t serial)
 {
 	struct weston_surface *focus = NULL;
+	struct weston_keyboard *keyboard = weston_seat_get_keyboard(seat);
 
 	if (seat->selection_data_source &&
 	    seat->selection_serial - serial < UINT32_MAX / 2)
@@ -780,8 +784,8 @@ weston_seat_set_selection(struct weston_seat *seat,
 	seat->selection_data_source = source;
 	seat->selection_serial = serial;
 
-	if (seat->keyboard)
-		focus = seat->keyboard->focus;
+	if (keyboard)
+		focus = keyboard->focus;
 	if (focus && focus->resource) {
 		weston_seat_send_selection(seat, wl_resource_get_client(focus->resource));
 	}
@@ -939,11 +943,12 @@ WL_EXPORT void
 wl_data_device_set_keyboard_focus(struct weston_seat *seat)
 {
 	struct weston_surface *focus;
+	struct weston_keyboard *keyboard = weston_seat_get_keyboard(seat);
 
-	if (!seat->keyboard)
+	if (!keyboard)
 		return;
 
-	focus = seat->keyboard->focus;
+	focus = keyboard->focus;
 	if (!focus || !focus->resource)
 		return;
 
