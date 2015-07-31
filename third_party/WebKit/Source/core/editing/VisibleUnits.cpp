@@ -714,8 +714,6 @@ enum LineEndpointComputationMode { UseLogicalOrdering, UseInlineBoxOrdering };
 template <typename Strategy>
 static PositionWithAffinityTemplate<Strategy> startPositionForLine(const PositionWithAffinityTemplate<Strategy>& c, LineEndpointComputationMode mode)
 {
-    using PositionType = PositionAlgorithm<Strategy>;
-
     if (c.isNull())
         return PositionWithAffinityTemplate<Strategy>();
 
@@ -723,7 +721,7 @@ static PositionWithAffinityTemplate<Strategy> startPositionForLine(const Positio
     if (!rootBox) {
         // There are VisiblePositions at offset 0 in blocks without
         // RootInlineBoxes, like empty editable blocks and bordered blocks.
-        PositionType p = c.position();
+        PositionAlgorithm<Strategy> p = c.position();
         if (p.anchorNode()->layoutObject() && p.anchorNode()->layoutObject()->isLayoutBlock() && !p.deprecatedEditingOffset())
             return c;
 
@@ -752,13 +750,12 @@ static PositionWithAffinityTemplate<Strategy> startPositionForLine(const Positio
         }
     }
 
-    return PositionWithAffinityTemplate<Strategy>(startNode->isTextNode() ? PositionType(toText(startNode), toInlineTextBox(startBox)->start()) : PositionType::beforeNode(startNode));
+    return PositionWithAffinityTemplate<Strategy>(startNode->isTextNode() ? PositionAlgorithm<Strategy>(toText(startNode), toInlineTextBox(startBox)->start()) : PositionAlgorithm<Strategy>::beforeNode(startNode));
 }
 
 template <typename Strategy>
 static PositionWithAffinityTemplate<Strategy> startOfLine(const PositionWithAffinityTemplate<Strategy>& c, LineEndpointComputationMode mode)
 {
-    using PositionType = PositionAlgorithm<Strategy>;
     // TODO: this is the current behavior that might need to be fixed.
     // Please refer to https://bugs.webkit.org/show_bug.cgi?id=49107 for detail.
     PositionWithAffinityTemplate<Strategy> visPos = startPositionForLine(c, mode);
@@ -766,7 +763,7 @@ static PositionWithAffinityTemplate<Strategy> startOfLine(const PositionWithAffi
     if (mode == UseLogicalOrdering) {
         if (ContainerNode* editableRoot = highestEditableRoot(c.position())) {
             if (!editableRoot->contains(visPos.position().containerNode()))
-                return PositionWithAffinityTemplate<Strategy>(PositionType::firstPositionInNode(editableRoot));
+                return PositionWithAffinityTemplate<Strategy>(PositionAlgorithm<Strategy>::firstPositionInNode(editableRoot));
         }
     }
 
