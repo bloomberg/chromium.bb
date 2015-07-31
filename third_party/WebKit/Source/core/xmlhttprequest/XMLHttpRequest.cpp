@@ -1128,13 +1128,13 @@ void XMLHttpRequest::handleRequestError(ExceptionCode exceptionCode, const Atomi
 
     InspectorInstrumentation::didFailXHRLoading(executionContext(), this, this, m_method, m_url);
 
-    // The request error steps for event 'type' and exception 'exceptionCode'.
-
-    if (!m_async && exceptionCode) {
+    if (!m_async) {
+        ASSERT(exceptionCode);
         m_state = DONE;
         m_exceptionCode = exceptionCode;
         return;
     }
+
     // With m_error set, the state change steps are minimal: any pending
     // progress event is flushed + a readystatechange is dispatched.
     // No new progress events dispatched; as required, that happens at
