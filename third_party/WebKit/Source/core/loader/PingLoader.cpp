@@ -59,6 +59,13 @@
 
 namespace blink {
 
+static void finishPingRequestInitialization(ResourceRequest& request, LocalFrame* frame)
+{
+    request.setRequestContext(WebURLRequest::RequestContextPing);
+    frame->document()->fetcher()->context().addAdditionalRequestHeaders(request, FetchSubresource);
+    frame->document()->fetcher()->context().setFirstPartyForCookies(request);
+}
+
 void PingLoader::loadImage(LocalFrame* frame, const KURL& url)
 {
     if (!frame->document()->securityOrigin()->canDisplay(url)) {
@@ -67,10 +74,8 @@ void PingLoader::loadImage(LocalFrame* frame, const KURL& url)
     }
 
     ResourceRequest request(url);
-    request.setRequestContext(WebURLRequest::RequestContextPing);
     request.setHTTPHeaderField("Cache-Control", "max-age=0");
-    frame->document()->fetcher()->context().addAdditionalRequestHeaders(request, FetchSubresource);
-    frame->document()->fetcher()->context().setFirstPartyForCookies(request);
+    finishPingRequestInitialization(request, frame);
 
     FetchInitiatorInfo initiatorInfo;
     initiatorInfo.name = FetchInitiatorTypeNames::ping;
@@ -81,13 +86,11 @@ void PingLoader::loadImage(LocalFrame* frame, const KURL& url)
 void PingLoader::sendLinkAuditPing(LocalFrame* frame, const KURL& pingURL, const KURL& destinationURL)
 {
     ResourceRequest request(pingURL);
-    request.setRequestContext(WebURLRequest::RequestContextPing);
     request.setHTTPMethod("POST");
     request.setHTTPContentType("text/ping");
     request.setHTTPBody(FormData::create("PING"));
     request.setHTTPHeaderField("Cache-Control", "max-age=0");
-    frame->document()->fetcher()->context().addAdditionalRequestHeaders(request, FetchSubresource);
-    frame->document()->fetcher()->context().setFirstPartyForCookies(request);
+    finishPingRequestInitialization(request, frame);
 
     RefPtr<SecurityOrigin> pingOrigin = SecurityOrigin::create(pingURL);
     // addAdditionalRequestHeaders() will have added a referrer for same origin requests,
@@ -110,12 +113,10 @@ void PingLoader::sendLinkAuditPing(LocalFrame* frame, const KURL& pingURL, const
 void PingLoader::sendViolationReport(LocalFrame* frame, const KURL& reportURL, PassRefPtr<FormData> report, ViolationReportType type)
 {
     ResourceRequest request(reportURL);
-    request.setRequestContext(WebURLRequest::RequestContextPing);
     request.setHTTPMethod("POST");
     request.setHTTPContentType(type == ContentSecurityPolicyViolationReport ? "application/csp-report" : "application/json");
     request.setHTTPBody(report);
-    frame->document()->fetcher()->context().addAdditionalRequestHeaders(request, FetchSubresource);
-    frame->document()->fetcher()->context().setFirstPartyForCookies(request);
+    finishPingRequestInitialization(request, frame);
 
     FetchInitiatorInfo initiatorInfo;
     initiatorInfo.name = FetchInitiatorTypeNames::violationreport;
