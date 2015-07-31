@@ -73,18 +73,6 @@
   return [self evaluate:fillFormJS stringResultHandler:stringResultHandler];
 }
 
-- (void)fillFormForInstantBuy:(NSString*)dataString
-            completionHandler:(ProceduralBlock)completionHandler {
-  DCHECK(completionHandler);
-  NSString* fillFormJS = [NSString
-      stringWithFormat:@"__gCrWeb.autofill.fillFormForInstantBuy(%@);",
-                       dataString];
-  id stringResultHandler = ^(NSString*, NSError*) {
-    completionHandler();
-  };
-  return [self evaluate:fillFormJS stringResultHandler:stringResultHandler];
-}
-
 - (void)clearAutofilledFieldsForFormNamed:(NSString*)formName
                         completionHandler:(ProceduralBlock)completionHandler {
   DCHECK(completionHandler);

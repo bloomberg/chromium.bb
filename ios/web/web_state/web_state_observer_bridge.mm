@@ -105,21 +105,6 @@ void WebStateObserverBridge::FormActivityRegistered(
   }
 }
 
-void WebStateObserverBridge::AutocompleteRequested(const GURL& source_url,
-                                                   const std::string& form_name,
-                                                   bool user_initiated) {
-  SEL selector = @selector(webState:
-      requestAutocompleteForFormNamed:
-                            sourceURL:
-                        userInitiated:);
-  if ([observer_ respondsToSelector:selector]) {
-    [observer_ webState:web_state()
-        requestAutocompleteForFormNamed:form_name
-                              sourceURL:source_url
-                          userInitiated:user_initiated];
-  }
-}
-
 void WebStateObserverBridge::FaviconUrlUpdated(
     const std::vector<FaviconURL>& candidates) {
   SEL selector = @selector(webState:didUpdateFaviconURLCandidates:);

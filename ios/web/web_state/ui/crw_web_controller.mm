@@ -463,9 +463,6 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
 // Handles 'form.activity' message.
 - (BOOL)handleFormActivityMessage:(base::DictionaryValue*)message
                           context:(NSDictionary*)context;
-// Handles 'form.requestAutocomplete' message.
-- (BOOL)handleFormRequestAutocompleteMessage:(base::DictionaryValue*)message
-                                     context:(NSDictionary*)context;
 // Handles 'navigator.credentials.request' message.
 - (BOOL)handleCredentialsRequestedMessage:(base::DictionaryValue*)message
                                   context:(NSDictionary*)context;
@@ -2057,8 +2054,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         @selector(handleExternalRequestMessage:context:);
     (*handlers)["form.activity"] =
         @selector(handleFormActivityMessage:context:);
-    (*handlers)["form.requestAutocomplete"] =
-        @selector(handleFormRequestAutocompleteMessage:context:);
     (*handlers)["navigator.credentials.request"] =
         @selector(handleCredentialsRequestedMessage:context:);
     (*handlers)["navigator.credentials.notifySignedIn"] =
@@ -2293,20 +2288,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     keyCode = web::WebStateObserver::kInvalidFormKeyCode;
   _webStateImpl->OnFormActivityRegistered(formName, fieldName, type, value,
                                           keyCode, inputMissing);
-  return YES;
-}
-
-- (BOOL)handleFormRequestAutocompleteMessage:(base::DictionaryValue*)message
-                                     context:(NSDictionary*)context {
-  std::string formName;
-  if (!message->GetString("formName", &formName)) {
-    DLOG(WARNING) << "JS message parameter not found: formName";
-    return NO;
-  }
-  DCHECK(context[web::kUserIsInteractingKey]);
-  _webStateImpl->OnAutocompleteRequested(
-      net::GURLWithNSURL(context[web::kOriginURLKey]), formName,
-      [context[web::kUserIsInteractingKey] boolValue]);
   return YES;
 }
 

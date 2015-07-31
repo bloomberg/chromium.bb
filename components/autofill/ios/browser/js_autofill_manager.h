@@ -48,13 +48,6 @@
     forceFillFieldName:(NSString*)forceFillFieldName
      completionHandler:(ProceduralBlock)completionHandler;
 
-// Fills a number of fields in the same named form for InstantBuy. Always fills
-// all fields, doesn't style elements, and doesn't fire change events.
-// |completionHandler| is called after the forms are filled. |completionHandler|
-// cannot be nil.
-- (void)fillFormForInstantBuy:(NSString*)dataString
-            completionHandler:(ProceduralBlock)completionHandler;
-
 // Clear autofilled fields of the specified form. Fields that are not currently
 // autofilled are not modified. Field contents are cleared, and Autofill flag
 // and styling are removed. 'change' events are sent for fields whose contents

@@ -109,11 +109,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
                                 int key_code,
                                 bool input_missing);
 
-  // Called when autocomplete is requested.
-  void OnAutocompleteRequested(const GURL& source_url,
-                               const std::string& form_name,
-                               bool user_initiated);
-
   // Called when new FaviconURL candidates are received.
   void OnFaviconUrlUpdated(const std::vector<FaviconURL>& candidates);
 

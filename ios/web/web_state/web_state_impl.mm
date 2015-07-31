@@ -167,14 +167,6 @@ void WebStateImpl::OnFormActivityRegistered(const std::string& form_name,
                                            key_code, input_missing));
 }
 
-void WebStateImpl::OnAutocompleteRequested(const GURL& source_url,
-                                           const std::string& form_name,
-                                           bool user_initiated) {
-  FOR_EACH_OBSERVER(
-      WebStateObserver, observers_,
-      AutocompleteRequested(source_url, form_name, user_initiated));
-}
-
 void WebStateImpl::OnFaviconUrlUpdated(
     const std::vector<FaviconURL>& candidates) {
   FOR_EACH_OBSERVER(WebStateObserver, observers_,

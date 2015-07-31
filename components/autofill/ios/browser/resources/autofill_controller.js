@@ -544,26 +544,6 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldName) {
 };
 
 /**
- * Fills a number of fields in the same named form.
- *
- * @param {Object<AutofillFormData>} data The data to fill in.
- */
-__gCrWeb.autofill['fillFormForInstantBuy'] = function(data) {
-  var form = __gCrWeb.common.getFormElementFromIdentifier(data.formName);
-  var controlElements = __gCrWeb.common.getFormControlElements(form);
-  for (var i = 0; i < controlElements.length; ++i) {
-    var element = controlElements[i];
-    if (!__gCrWeb.autofill.isAutofillableElement(element)) {
-      continue;
-    }
-    var value = data.fields[__gCrWeb['common'].nameForAutofill(element)];
-    if (value) {
-      element.value = value;
-    }
-  }
-};
-
-/**
  * Clear autofilled fields of the specified form. Fields that are not currently
  * autofilled are not modified.
  * Field contents are cleared, and Autofill flag and styling are removed.

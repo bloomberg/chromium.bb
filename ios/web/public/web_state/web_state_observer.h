@@ -76,14 +76,6 @@ class WebStateObserver {
                                       int key_code,
                                       bool input_missing) {}
 
-  // Notifies the observer that the requestAutocomplete API was invoked from
-  // |source_url| for the form with the specified |form_name|.
-  // |user_initiated| indicates whether the API was invoked in response to a
-  // user interaction.
-  virtual void AutocompleteRequested(const GURL& source_url,
-                                     const std::string& form_name,
-                                     bool user_initiated) {}
-
   // Invoked when new favicon URL candidates are received.
   virtual void FaviconUrlUpdated(const std::vector<FaviconURL>& candidates) {}
 

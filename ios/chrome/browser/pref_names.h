@@ -28,7 +28,6 @@ extern const char kLastSessionExitedCleanly[];
 extern const char kMetricsReportingWifiOnly[];
 extern const char kNetworkPredictionWifiOnly[];
 extern const char kNtpShownBookmarksFolder[];
-extern const char kPaymentsPreferredUserId[];
 extern const char kShowMemoryDebuggingTools[];
 
 extern const char kVoiceSearchLocale[];
