@@ -69,6 +69,20 @@ def process_auth_options(parser, options):
     parser.error(str(exc))
 
 
+def normalize_host_url(url):
+  """Makes sure URL starts with http:// or https://."""
+  url = url.lower().rstrip('/')
+  if url.startswith('https://'):
+    return url
+  if url.startswith('http://'):
+    allowed = ('http://localhost:', 'http://127.0.0.1:', 'http://::1:')
+    if not url.startswith(allowed):
+      raise ValueError(
+          'URL must start with https:// or be on localhost with port number')
+    return url
+  return 'https://' + url
+
+
 def ensure_logged_in(server_url):
   """Checks that user is logged in, asking to do it if not.
 
@@ -78,12 +92,7 @@ def ensure_logged_in(server_url):
   # It's just a waste of time on a headless bot (it can't do interactive login).
   if tools.is_headless() or net.get_oauth_config().disabled:
     return None
-  server_url = server_url.lower().rstrip('/')
-  allowed = (
-      'https://',
-      'http://localhost:', 'http://127.0.0.1:', 'http://::1:')
-  if not server_url.startswith(allowed):
-    raise ValueError('URL must start with https:// or be http:// to localhost')
+  server_url = normalize_host_url(server_url)
   service = AuthService(server_url)
   try:
     service.login(False)
@@ -141,7 +150,7 @@ class OptionParserAuth(logging_utils.OptionParserWithLogging):
   def __init__(self, **kwargs):
     logging_utils.OptionParserWithLogging.__init__(
         self, prog='auth.py', **kwargs)
-    self.server_group = tools.optparse.OptionGroup(self, 'Server')
+    self.server_group = optparse.OptionGroup(self, 'Server')
     self.server_group.add_option(
         '-S', '--service',
         metavar='URL', default='',
@@ -152,9 +161,12 @@ class OptionParserAuth(logging_utils.OptionParserWithLogging):
   def parse_args(self, *args, **kwargs):
     options, args = logging_utils.OptionParserWithLogging.parse_args(
         self, *args, **kwargs)
-    options.service = options.service.rstrip('/')
     if not options.service:
       self.error('--service is required.')
+    try:
+      options.service = normalize_host_url(options.service)
+    except ValueError as exc:
+      self.error(str(exc))
     on_error.report_on_exception_exit(options.service)
     return options, args
 
