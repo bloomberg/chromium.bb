@@ -371,4 +371,19 @@ TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
   service.log_manager_.FinishCurrentLog();
 }
 
+TEST_F(MetricsServiceTest,
+       MetricsProviderOnRecordingDisabledCalledOnInitialStop) {
+  TestMetricsServiceClient client;
+  TestMetricsService service(
+      GetMetricsStateManager(), &client, GetLocalState());
+
+  TestMetricsProvider* test_provider = new TestMetricsProvider();
+  service.RegisterMetricsProvider(scoped_ptr<MetricsProvider>(test_provider));
+
+  service.InitializeMetricsRecordingState();
+  service.Stop();
+
+  EXPECT_TRUE(test_provider->on_recording_disabled_called());
+}
+
 }  // namespace metrics

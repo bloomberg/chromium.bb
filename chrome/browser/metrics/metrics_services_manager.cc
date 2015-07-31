@@ -153,7 +153,7 @@ void MetricsServicesManager::UpdateRunningServices() {
       metrics->EnableReporting();
     else
       metrics->DisableReporting();
-  } else if (metrics->recording_active() || metrics->reporting_active()) {
+  } else {
     metrics->Stop();
   }
 

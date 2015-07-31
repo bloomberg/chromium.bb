@@ -4,18 +4,23 @@
 
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 
+#include <algorithm>
 #include <cstring>
 #include <map>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/singleton.h"
 #include "base/metrics/field_trial.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/lock.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "components/metrics/metrics_hashes.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 
@@ -25,11 +30,175 @@ namespace metrics {
 
 namespace {
 
-// Accepts and ignores the completed profiles. Used when metrics reporting is
-// disabled.
+// ProfilesState --------------------------------------------------------------
+
+// A set of profiles and the CallStackProfileMetricsProvider state associated
+// with them.
+struct ProfilesState {
+  ProfilesState(const CallStackProfileMetricsProvider::Params& params,
+                const base::StackSamplingProfiler::CallStackProfiles& profiles,
+                base::TimeTicks start_timestamp);
+
+  // The metrics-related parameters provided to
+  // CallStackProfileMetricsProvider::GetProfilerCallback().
+  CallStackProfileMetricsProvider::Params params;
+
+  // The call stack profiles collected by the profiler.
+  base::StackSamplingProfiler::CallStackProfiles profiles;
+
+  // The time at which the CallStackProfileMetricsProvider became aware of the
+  // request for profiling. In particular, this is when callback was requested
+  // via CallStackProfileMetricsProvider::GetProfilerCallback(). Used to
+  // determine if collection was disabled during the collection of the profile.
+  base::TimeTicks start_timestamp;
+};
+
+ProfilesState::ProfilesState(
+    const CallStackProfileMetricsProvider::Params& params,
+    const base::StackSamplingProfiler::CallStackProfiles& profiles,
+    base::TimeTicks start_timestamp)
+    : params(params),
+      profiles(profiles),
+      start_timestamp(start_timestamp) {
+}
+
+// PendingProfiles ------------------------------------------------------------
+
+// Singleton class responsible for retaining profiles received via the callback
+// created by CallStackProfileMetricsProvider::GetProfilerCallback(). These are
+// then sent to UMA on the invocation of
+// CallStackProfileMetricsProvider::ProvideGeneralMetrics(). We need to store
+// the profiles outside of a CallStackProfileMetricsProvider instance since
+// callers may start profiling before the CallStackProfileMetricsProvider is
+// created.
+//
+// Member functions on this class may be called on any thread.
+class PendingProfiles {
+ public:
+  static PendingProfiles* GetInstance();
+
+  void Clear();
+  void Swap(std::vector<ProfilesState>* profiles);
+
+  // Enables the collection of profiles by CollectProfilesIfCollectionEnabled if
+  // |enabled| is true. Otherwise, clears current profiles and ignores profiles
+  // provided to future invocations of CollectProfilesIfCollectionEnabled.
+  void SetCollectionEnabled(bool enabled);
+
+  // True if profiles are being collected.
+  bool IsCollectionEnabled() const;
+
+  // Adds |profile| to the list of profiles if collection is enabled.
+  void CollectProfilesIfCollectionEnabled(const ProfilesState& profiles);
+
+  // Allows testing against the initial state multiple times.
+  void ResetToDefaultStateForTesting();
+
+ private:
+  friend struct DefaultSingletonTraits<PendingProfiles>;
+
+  PendingProfiles();
+  ~PendingProfiles();
+
+  mutable base::Lock lock_;
+
+  // If true, profiles provided to CollectProfilesIfCollectionEnabled should be
+  // collected. Otherwise they will be ignored.
+  bool collection_enabled_;
+
+  // The last time collection was disabled. Used to determine if collection was
+  // disabled at any point since a profile was started.
+  base::TimeTicks last_collection_disable_time_;
+
+  // The set of completed profiles that should be reported.
+  std::vector<ProfilesState> profiles_;
+
+  DISALLOW_COPY_AND_ASSIGN(PendingProfiles);
+};
+
+// static
+PendingProfiles* PendingProfiles::GetInstance() {
+  // Leaky for performance rather than correctness reasons.
+  return Singleton<PendingProfiles,
+                   LeakySingletonTraits<PendingProfiles>>::get();
+}
+
+void PendingProfiles::Clear() {
+  base::AutoLock scoped_lock(lock_);
+  profiles_.clear();
+}
+
+void PendingProfiles::Swap(std::vector<ProfilesState>* profiles) {
+  base::AutoLock scoped_lock(lock_);
+  profiles_.swap(*profiles);
+}
+
+void PendingProfiles::SetCollectionEnabled(bool enabled) {
+  base::AutoLock scoped_lock(lock_);
+
+  collection_enabled_ = enabled;
+
+  if (!collection_enabled_) {
+    profiles_.clear();
+    last_collection_disable_time_ = base::TimeTicks::Now();
+  }
+}
+
+bool PendingProfiles::IsCollectionEnabled() const {
+  base::AutoLock scoped_lock(lock_);
+  return collection_enabled_;
+}
+
+void PendingProfiles::CollectProfilesIfCollectionEnabled(
+    const ProfilesState& profiles) {
+  base::AutoLock scoped_lock(lock_);
+
+  // Only collect if collection is not disabled and hasn't been disabled
+  // since the start of collection for this profile.
+  if (!collection_enabled_ ||
+      (!last_collection_disable_time_.is_null() &&
+       last_collection_disable_time_ >= profiles.start_timestamp)) {
+    return;
+  }
+
+  profiles_.push_back(profiles);
+}
+
+void PendingProfiles::ResetToDefaultStateForTesting() {
+  base::AutoLock scoped_lock(lock_);
+
+  collection_enabled_ = true;
+  last_collection_disable_time_ = base::TimeTicks();
+  profiles_.clear();
+}
+
+// |collection_enabled_| is initialized to true to collect any profiles that are
+// generated prior to creation of the CallStackProfileMetricsProvider. The
+// ultimate disposition of these pre-creation collected profiles will be
+// determined by the initial recording state provided to
+// CallStackProfileMetricsProvider.
+PendingProfiles::PendingProfiles() : collection_enabled_(true) {}
+
+PendingProfiles::~PendingProfiles() {}
+
+// Functions to process completed profiles ------------------------------------
+
+// Invoked on the profiler's thread. Provides the profiles to PendingProfiles to
+// append, if the collecting state allows.
+void ReceiveCompletedProfiles(
+    const CallStackProfileMetricsProvider::Params& params,
+    base::TimeTicks start_timestamp,
+    const StackSamplingProfiler::CallStackProfiles& profiles) {
+  PendingProfiles::GetInstance()->CollectProfilesIfCollectionEnabled(
+      ProfilesState(params, profiles, start_timestamp));
+}
+
+// Invoked on an arbitrary thread. Ignores the provided profiles.
 void IgnoreCompletedProfiles(
     const StackSamplingProfiler::CallStackProfiles& profiles) {
 }
+
+// Functions to encode protobufs ----------------------------------------------
 
 // The protobuf expects the MD5 checksum prefix of the module name.
 uint64 HashModuleFilename(const base::FilePath& filename) {
@@ -67,11 +236,12 @@ void CopySampleToProto(
 // Transcode |profile| into |proto_profile|.
 void CopyProfileToProto(
     const StackSamplingProfiler::CallStackProfile& profile,
+    bool preserve_sample_ordering,
     CallStackProfile* proto_profile) {
   if (profile.samples.empty())
     return;
 
-  if (profile.preserve_sample_ordering) {
+  if (preserve_sample_ordering) {
     // Collapse only consecutive repeated samples together.
     CallStackProfile::Sample* current_sample_proto = nullptr;
     for (auto it = profile.samples.begin(); it != profile.samples.end(); ++it) {
@@ -140,78 +310,84 @@ SampledProfile::TriggerEvent ToSampledProfileTriggerEvent(
 
 }  // namespace
 
+// CallStackProfileMetricsProvider::Params ------------------------------------
+
+CallStackProfileMetricsProvider::Params::Params(
+    CallStackProfileMetricsProvider::Trigger trigger)
+    : Params(trigger, false) {
+}
+
+CallStackProfileMetricsProvider::Params::Params(
+    CallStackProfileMetricsProvider::Trigger trigger,
+    bool preserve_sample_ordering)
+    : trigger(trigger),
+      preserve_sample_ordering(preserve_sample_ordering) {
+}
+
+// CallStackProfileMetricsProvider --------------------------------------------
+
 const char CallStackProfileMetricsProvider::kFieldTrialName[] =
     "StackProfiling";
 const char CallStackProfileMetricsProvider::kReportProfilesGroupName[] =
     "Report profiles";
 
-CallStackProfileMetricsProvider::CallStackProfileMetricsProvider()
-    : weak_factory_(this) {
+CallStackProfileMetricsProvider::CallStackProfileMetricsProvider() {
 }
 
 CallStackProfileMetricsProvider::~CallStackProfileMetricsProvider() {
-  StackSamplingProfiler::SetDefaultCompletedCallback(
-      StackSamplingProfiler::CompletedCallback());
+}
+
+// This function can be invoked on an abitrary thread.
+base::StackSamplingProfiler::CompletedCallback
+CallStackProfileMetricsProvider::GetProfilerCallback(const Params& params) {
+  // Ignore the profiles if the collection is disabled. If the collection state
+  // changes while collecting, this will be detected by the callback and
+  // profiles will be ignored at that point.
+  if (!PendingProfiles::GetInstance()->IsCollectionEnabled())
+    return base::Bind(&IgnoreCompletedProfiles);
+
+  return base::Bind(&ReceiveCompletedProfiles, params, base::TimeTicks::Now());
 }
 
 void CallStackProfileMetricsProvider::OnRecordingEnabled() {
-  StackSamplingProfiler::SetDefaultCompletedCallback(base::Bind(
-      &CallStackProfileMetricsProvider::ReceiveCompletedProfiles,
-      base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr()));
+  PendingProfiles::GetInstance()->SetCollectionEnabled(true);
 }
 
 void CallStackProfileMetricsProvider::OnRecordingDisabled() {
-  StackSamplingProfiler::SetDefaultCompletedCallback(
-      base::Bind(&IgnoreCompletedProfiles));
-  pending_profiles_.clear();
+  PendingProfiles::GetInstance()->SetCollectionEnabled(false);
 }
 
 void CallStackProfileMetricsProvider::ProvideGeneralMetrics(
     ChromeUserMetricsExtension* uma_proto) {
-  DCHECK(IsSamplingProfilingReportingEnabled() || pending_profiles_.empty());
-  for (const StackSamplingProfiler::CallStackProfile& profile :
-       pending_profiles_) {
-    SampledProfile* sampled_profile = uma_proto->add_sampled_profile();
-    sampled_profile->set_trigger_event(ToSampledProfileTriggerEvent(
-        static_cast<CallStackProfileMetricsProvider::Trigger>(
-            profile.user_data)));
-    CopyProfileToProto(profile, sampled_profile->mutable_call_stack_profile());
-  }
-  pending_profiles_.clear();
-}
+  std::vector<ProfilesState> pending_profiles;
+  PendingProfiles::GetInstance()->Swap(&pending_profiles);
 
-void CallStackProfileMetricsProvider::AppendSourceProfilesForTesting(
-    const std::vector<StackSamplingProfiler::CallStackProfile>& profiles) {
-  AppendCompletedProfiles(profiles);
+  DCHECK(IsReportingEnabledByFieldTrial() || pending_profiles.empty());
+
+  for (const ProfilesState& profiles_state : pending_profiles) {
+    for (const StackSamplingProfiler::CallStackProfile& profile :
+             profiles_state.profiles) {
+      SampledProfile* sampled_profile = uma_proto->add_sampled_profile();
+      sampled_profile->set_trigger_event(ToSampledProfileTriggerEvent(
+          profiles_state.params.trigger));
+      CopyProfileToProto(profile,
+                         profiles_state.params.preserve_sample_ordering,
+                         sampled_profile->mutable_call_stack_profile());
+    }
+  }
 }
 
 // static
-bool CallStackProfileMetricsProvider::IsSamplingProfilingReportingEnabled() {
+void CallStackProfileMetricsProvider::ResetStaticStateForTesting() {
+  PendingProfiles::GetInstance()->ResetToDefaultStateForTesting();
+}
+
+// static
+bool CallStackProfileMetricsProvider::IsReportingEnabledByFieldTrial() {
   const std::string group_name = base::FieldTrialList::FindFullName(
       CallStackProfileMetricsProvider::kFieldTrialName);
   return group_name ==
       CallStackProfileMetricsProvider::kReportProfilesGroupName;
-}
-
-// static
-// Posts a message back to our own thread to collect the profiles.
-void CallStackProfileMetricsProvider::ReceiveCompletedProfiles(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    base::WeakPtr<CallStackProfileMetricsProvider> provider,
-    const StackSamplingProfiler::CallStackProfiles& profiles) {
-  task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&CallStackProfileMetricsProvider::AppendCompletedProfiles,
-                 provider, profiles));
-}
-
-void CallStackProfileMetricsProvider::AppendCompletedProfiles(
-    const StackSamplingProfiler::CallStackProfiles& profiles) {
-  // Don't bother to record profiles if reporting is not enabled.
-  if (IsSamplingProfilingReportingEnabled()) {
-    pending_profiles_.insert(pending_profiles_.end(), profiles.begin(),
-                             profiles.end());
-  }
 }
 
 }  // namespace metrics

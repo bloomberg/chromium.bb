@@ -15,17 +15,20 @@ namespace metrics {
 class TestMetricsProvider : public MetricsProvider {
  public:
   TestMetricsProvider()
-      : has_initial_stability_metrics_(false),
+      : on_recording_disabled_called_(false),
+        has_initial_stability_metrics_(false),
         provide_initial_stability_metrics_called_(false),
         provide_stability_metrics_called_(false) {}
 
   // MetricsProvider:
+  void OnRecordingDisabled() override;
   bool HasInitialStabilityMetrics() override;
   void ProvideInitialStabilityMetrics(
       SystemProfileProto* system_profile_proto) override;
   void ProvideStabilityMetrics(
       SystemProfileProto* system_profile_proto) override;
 
+  bool on_recording_disabled_called() { return on_recording_disabled_called_; }
   void set_has_initial_stability_metrics(bool has_initial_stability_metrics) {
     has_initial_stability_metrics_ = has_initial_stability_metrics;
   }
@@ -37,6 +40,7 @@ class TestMetricsProvider : public MetricsProvider {
   }
 
  private:
+  bool on_recording_disabled_called_;
   bool has_initial_stability_metrics_;
   bool provide_initial_stability_metrics_called_;
   bool provide_stability_metrics_called_;

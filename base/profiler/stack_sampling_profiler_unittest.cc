@@ -4,13 +4,22 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_vector.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/profiler/stack_sampling_profiler.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+// STACK_SAMPLING_PROFILER_SUPPORTED is used to conditionally enable the tests
+// below for supported platforms (currently Win x64).
+#if defined(_WIN64)
+#define STACK_SAMPLING_PROFILER_SUPPORTED 1
+#endif
 
 namespace base {
 
@@ -124,9 +133,8 @@ void WithTargetThread(Function function) {
 // Captures profiles as specified by |params| on the TargetThread, and returns
 // them in |profiles|. Waits up to |profiler_wait_time| for the profiler to
 // complete.
-void CaptureProfilesWithObjectCallback(const SamplingParams& params,
-                                       CallStackProfiles* profiles,
-                                       TimeDelta profiler_wait_time) {
+void CaptureProfiles(const SamplingParams& params, TimeDelta profiler_wait_time,
+                     CallStackProfiles* profiles) {
   profiles->clear();
 
   WithTargetThread([&params, profiles, profiler_wait_time](
@@ -140,43 +148,6 @@ void CaptureProfilesWithObjectCallback(const SamplingParams& params,
     sampling_thread_completed.TimedWait(profiler_wait_time);
     profiler.Stop();
     sampling_thread_completed.Wait();
-  });
-}
-
-// Captures profiles as specified by |params| on the TargetThread, and returns
-// them in |profiles|. Uses the default callback rather than a per-object
-// callback.
-void CaptureProfilesWithDefaultCallback(const SamplingParams& params,
-                                        CallStackProfiles* profiles) {
-  profiles->clear();
-
-  WithTargetThread([&params, profiles](PlatformThreadId target_thread_id) {
-    WaitableEvent sampling_thread_completed(false, false);
-    StackSamplingProfiler::SetDefaultCompletedCallback(
-        Bind(&SaveProfilesAndSignalEvent, Unretained(profiles),
-             Unretained(&sampling_thread_completed)));
-
-    StackSamplingProfiler profiler(target_thread_id, params);
-    profiler.Start();
-    sampling_thread_completed.Wait();
-
-    StackSamplingProfiler::SetDefaultCompletedCallback(
-        StackSamplingProfiler::CompletedCallback());
-  });
-}
-
-// Runs the profiler with |params| on the TargetThread, with no default or
-// per-object callback.
-void RunProfilerWithNoCallback(const SamplingParams& params,
-                               TimeDelta profiler_wait_time) {
-  WithTargetThread([&params, profiler_wait_time](
-      PlatformThreadId target_thread_id) {
-    StackSamplingProfiler profiler(target_thread_id, params);
-    profiler.Start();
-    // Since we don't specify a callback, we don't have a synchronization
-    // mechanism with the sampling thread. Just sleep instead.
-    PlatformThread::Sleep(profiler_wait_time);
-    profiler.Stop();
   });
 }
 
@@ -239,13 +210,9 @@ TimeDelta AVeryLongTimeDelta() { return TimeDelta::FromDays(1); }
 
 }  // namespace
 
-
-// The tests below are enabled for Win x64 only, pending implementation of the
-// tested functionality on other platforms/architectures.
-
 // Checks that the basic expected information is present in a sampled call stack
 // profile.
-#if defined(_WIN64)
+#if defined(STACK_SAMPLING_PROFILER_SUPPORTED)
 #define MAYBE_Basic Basic
 #else
 #define MAYBE_Basic DISABLED_Basic
@@ -254,11 +221,9 @@ TEST(StackSamplingProfilerTest, MAYBE_Basic) {
   SamplingParams params;
   params.sampling_interval = TimeDelta::FromMilliseconds(0);
   params.samples_per_burst = 1;
-  params.user_data = 100;
-  params.preserve_sample_ordering = true;
 
   std::vector<CallStackProfile> profiles;
-  CaptureProfilesWithObjectCallback(params, &profiles, AVeryLongTimeDelta());
+  CaptureProfiles(params, AVeryLongTimeDelta(), &profiles);
 
   // Check that the profile and samples sizes are correct, and the module
   // indices are in range.
@@ -271,8 +236,6 @@ TEST(StackSamplingProfilerTest, MAYBE_Basic) {
     ASSERT_GE(frame.module_index, 0u);
     ASSERT_LT(frame.module_index, profile.modules.size());
   }
-  EXPECT_EQ(100u, profile.user_data);
-  EXPECT_EQ(true, profile.preserve_sample_ordering);
 
   // Check that the stack contains a frame for
   // TargetThread::SignalAndWaitUntilSignaled() and that the frame has this
@@ -296,9 +259,36 @@ TEST(StackSamplingProfilerTest, MAYBE_Basic) {
   EXPECT_EQ(executable_path, profile.modules[loc->module_index].filename);
 }
 
+// Checks that the fire-and-forget interface works.
+#if defined(STACK_SAMPLING_PROFILER_SUPPORTED)
+#define MAYBE_StartAndRunAsync StartAndRunAsync
+#else
+#define MAYBE_StartAndRunAsync DISABLED_StartAndRunAsync
+#endif
+TEST(StackSamplingProfilerTest, MAYBE_StartAndRunAsync) {
+  // StartAndRunAsync requires the caller to have a message loop.
+  MessageLoop message_loop;
+
+  SamplingParams params;
+  params.samples_per_burst = 1;
+
+  CallStackProfiles profiles;
+  WithTargetThread([&params, &profiles](PlatformThreadId target_thread_id) {
+    WaitableEvent sampling_thread_completed(false, false);
+    const StackSamplingProfiler::CompletedCallback callback =
+        Bind(&SaveProfilesAndSignalEvent, Unretained(&profiles),
+             Unretained(&sampling_thread_completed));
+    StackSamplingProfiler::StartAndRunAsync(target_thread_id, params, callback);
+    RunLoop().RunUntilIdle();
+    sampling_thread_completed.Wait();
+  });
+
+  ASSERT_EQ(1u, profiles.size());
+}
+
 // Checks that the expected number of profiles and samples are present in the
 // call stack profiles produced.
-#if defined(_WIN64)
+#if defined(STACK_SAMPLING_PROFILER_SUPPORTED)
 #define MAYBE_MultipleProfilesAndSamples MultipleProfilesAndSamples
 #else
 #define MAYBE_MultipleProfilesAndSamples DISABLED_MultipleProfilesAndSamples
@@ -311,7 +301,7 @@ TEST(StackSamplingProfilerTest, MAYBE_MultipleProfilesAndSamples) {
   params.samples_per_burst = 3;
 
   std::vector<CallStackProfile> profiles;
-  CaptureProfilesWithObjectCallback(params, &profiles, AVeryLongTimeDelta());
+  CaptureProfiles(params, AVeryLongTimeDelta(), &profiles);
 
   ASSERT_EQ(2u, profiles.size());
   EXPECT_EQ(3u, profiles[0].samples.size());
@@ -320,7 +310,7 @@ TEST(StackSamplingProfilerTest, MAYBE_MultipleProfilesAndSamples) {
 
 // Checks that no call stack profiles are captured if the profiling is stopped
 // during the initial delay.
-#if defined(_WIN64)
+#if defined(STACK_SAMPLING_PROFILER_SUPPORTED)
 #define MAYBE_StopDuringInitialDelay StopDuringInitialDelay
 #else
 #define MAYBE_StopDuringInitialDelay DISABLED_StopDuringInitialDelay
@@ -330,15 +320,14 @@ TEST(StackSamplingProfilerTest, MAYBE_StopDuringInitialDelay) {
   params.initial_delay = TimeDelta::FromSeconds(60);
 
   std::vector<CallStackProfile> profiles;
-  CaptureProfilesWithObjectCallback(params, &profiles,
-                                    TimeDelta::FromMilliseconds(0));
+  CaptureProfiles(params, TimeDelta::FromMilliseconds(0), &profiles);
 
   EXPECT_TRUE(profiles.empty());
 }
 
 // Checks that the single completed call stack profile is captured if the
 // profiling is stopped between bursts.
-#if defined(_WIN64)
+#if defined(STACK_SAMPLING_PROFILER_SUPPORTED)
 #define MAYBE_StopDuringInterBurstInterval StopDuringInterBurstInterval
 #else
 #define MAYBE_StopDuringInterBurstInterval DISABLED_StopDuringInterBurstInterval
@@ -351,15 +340,14 @@ TEST(StackSamplingProfilerTest, MAYBE_StopDuringInterBurstInterval) {
   params.samples_per_burst = 1;
 
   std::vector<CallStackProfile> profiles;
-  CaptureProfilesWithObjectCallback(params, &profiles,
-                                    TimeDelta::FromMilliseconds(50));
+  CaptureProfiles(params, TimeDelta::FromMilliseconds(50), &profiles);
 
   ASSERT_EQ(1u, profiles.size());
   EXPECT_EQ(1u, profiles[0].samples.size());
 }
 
 // Checks that only completed call stack profiles are captured.
-#if defined(_WIN64)
+#if defined(STACK_SAMPLING_PROFILER_SUPPORTED)
 #define MAYBE_StopDuringInterSampleInterval StopDuringInterSampleInterval
 #else
 #define MAYBE_StopDuringInterSampleInterval \
@@ -371,54 +359,13 @@ TEST(StackSamplingProfilerTest, MAYBE_StopDuringInterSampleInterval) {
   params.samples_per_burst = 2;
 
   std::vector<CallStackProfile> profiles;
-  CaptureProfilesWithObjectCallback(params, &profiles,
-                                    TimeDelta::FromMilliseconds(50));
+  CaptureProfiles(params, TimeDelta::FromMilliseconds(50), &profiles);
 
   EXPECT_TRUE(profiles.empty());
 }
 
-// Checks that profiles are captured via the default completed callback.
-#if defined(_WIN64)
-#define MAYBE_DefaultCallback DefaultCallback
-#else
-#define MAYBE_DefaultCallback DISABLED_DefaultCallback
-#endif
-TEST(StackSamplingProfilerTest, MAYBE_DefaultCallback) {
-  SamplingParams params;
-  params.samples_per_burst = 1;
-
-  CallStackProfiles profiles;
-  CaptureProfilesWithDefaultCallback(params, &profiles);
-
-  EXPECT_EQ(1u, profiles.size());
-  EXPECT_EQ(1u, profiles[0].samples.size());
-}
-
-// Checks that profiles are queued until a default callback is set, then
-// delivered.
-#if defined(_WIN64)
-#define MAYBE_ProfilesQueuedWithNoCallback ProfilesQueuedWithNoCallback
-#else
-#define MAYBE_ProfilesQueuedWithNoCallback DISABLED_ProfilesQueuedWithNoCallback
-#endif
-TEST(StackSamplingProfilerTest, MAYBE_ProfilesQueuedWithNoCallback) {
-  SamplingParams params;
-  params.samples_per_burst = 1;
-
-  RunProfilerWithNoCallback(params, TimeDelta::FromMilliseconds(50));
-
-  CallStackProfiles profiles;
-  // This should immediately call SaveProfiles on this thread.
-  StackSamplingProfiler::SetDefaultCompletedCallback(
-      Bind(&SaveProfiles, Unretained(&profiles)));
-  EXPECT_EQ(1u, profiles.size());
-  EXPECT_EQ(1u, profiles[0].samples.size());
-  StackSamplingProfiler::SetDefaultCompletedCallback(
-      StackSamplingProfiler::CompletedCallback());
-}
-
 // Checks that we can destroy the profiler while profiling.
-#if defined(_WIN64)
+#if defined(STACK_SAMPLING_PROFILER_SUPPORTED)
 #define MAYBE_DestroyProfilerWhileProfiling DestroyProfilerWhileProfiling
 #else
 #define MAYBE_DestroyProfilerWhileProfiling \
@@ -439,6 +386,73 @@ TEST(StackSamplingProfilerTest, MAYBE_DestroyProfilerWhileProfiling) {
     // Wait longer than a sample interval to catch any use-after-free actions by
     // the profiler thread.
     PlatformThread::Sleep(TimeDelta::FromMilliseconds(50));
+  });
+}
+
+// Checks that the same profiler may be run multiple times.
+#if defined(STACK_SAMPLING_PROFILER_SUPPORTED)
+#define MAYBE_CanRunMultipleTimes CanRunMultipleTimes
+#else
+#define MAYBE_CanRunMultipleTimes DISABLED_CanRunMultipleTimes
+#endif
+TEST(StackSamplingProfilerTest, MAYBE_CanRunMultipleTimes) {
+  SamplingParams params;
+  params.sampling_interval = TimeDelta::FromMilliseconds(0);
+  params.samples_per_burst = 1;
+
+  std::vector<CallStackProfile> profiles;
+  CaptureProfiles(params, AVeryLongTimeDelta(), &profiles);
+  ASSERT_EQ(1u, profiles.size());
+
+  profiles.clear();
+  CaptureProfiles(params, AVeryLongTimeDelta(), &profiles);
+  ASSERT_EQ(1u, profiles.size());
+}
+
+// Checks that requests to start profiling while another profile is taking place
+// are ignored.
+#if defined(STACK_SAMPLING_PROFILER_SUPPORTED)
+#define MAYBE_ConcurrentProfiling ConcurrentProfiling
+#else
+#define MAYBE_ConcurrentProfiling DISABLED_ConcurrentProfiling
+#endif
+TEST(StackSamplingProfilerTest, MAYBE_ConcurrentProfiling) {
+  WithTargetThread([](PlatformThreadId target_thread_id) {
+    SamplingParams params[2];
+    params[0].initial_delay = TimeDelta::FromMilliseconds(10);
+    params[0].sampling_interval = TimeDelta::FromMilliseconds(0);
+    params[0].samples_per_burst = 1;
+
+    params[1].sampling_interval = TimeDelta::FromMilliseconds(0);
+    params[1].samples_per_burst = 1;
+
+    CallStackProfiles profiles[2];
+    ScopedVector<WaitableEvent> sampling_completed;
+    ScopedVector<StackSamplingProfiler> profiler;
+    for (int i = 0; i < 2; ++i) {
+      sampling_completed.push_back(new WaitableEvent(false, false));
+      const StackSamplingProfiler::CompletedCallback callback =
+          Bind(&SaveProfilesAndSignalEvent, Unretained(&profiles[i]),
+               Unretained(sampling_completed[i]));
+      profiler.push_back(
+          new StackSamplingProfiler(target_thread_id, params[i], callback));
+    }
+
+    profiler[0]->Start();
+    profiler[1]->Start();
+
+    // Wait for the first profiler to finish.
+    sampling_completed[0]->Wait();
+    EXPECT_EQ(1u, profiles[0].size());
+
+    // Give the second profiler a chance to run and observe that it hasn't.
+    EXPECT_FALSE(
+        sampling_completed[1]->TimedWait(TimeDelta::FromMilliseconds(25)));
+
+    // Start the second profiler again and it should run.
+    profiler[1]->Start();
+    sampling_completed[1]->Wait();
+    EXPECT_EQ(1u, profiles[1].size());
   });
 }
 

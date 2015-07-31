@@ -292,7 +292,7 @@ MetricsService::MetricsService(MetricsStateManager* state_manager,
       client_(client),
       local_state_(local_state),
       clean_exit_beacon_(client->GetRegistryBackupKey(), local_state),
-      recording_active_(false),
+      recording_state_(UNSET),
       reporting_active_(false),
       test_mode_active_(false),
       state_(INITIALIZED),
@@ -335,13 +335,6 @@ void MetricsService::Start() {
   HandleIdleSinceLastTransmission(false);
   EnableRecording();
   EnableReporting();
-}
-
-bool MetricsService::StartIfMetricsReportingEnabled() {
-  const bool enabled = state_manager_->IsMetricsReportingEnabled();
-  if (enabled)
-    Start();
-  return enabled;
 }
 
 void MetricsService::StartRecordingForTests() {
@@ -393,9 +386,9 @@ MetricsService::CreateEntropyProvider() {
 void MetricsService::EnableRecording() {
   DCHECK(IsSingleThreaded());
 
-  if (recording_active_)
+  if (recording_state_ == ACTIVE)
     return;
-  recording_active_ = true;
+  recording_state_ = ACTIVE;
 
   state_manager_->ForceClientIdCreation();
   client_->SetMetricsClientId(state_manager_->client_id());
@@ -414,9 +407,9 @@ void MetricsService::EnableRecording() {
 void MetricsService::DisableRecording() {
   DCHECK(IsSingleThreaded());
 
-  if (!recording_active_)
+  if (recording_state_ == INACTIVE)
     return;
-  recording_active_ = false;
+  recording_state_ = INACTIVE;
 
   client_->OnRecordingDisabled();
 
@@ -430,7 +423,7 @@ void MetricsService::DisableRecording() {
 
 bool MetricsService::recording_active() const {
   DCHECK(IsSingleThreaded());
-  return recording_active_;
+  return recording_state_ == ACTIVE;
 }
 
 bool MetricsService::reporting_active() const {
@@ -471,7 +464,7 @@ void MetricsService::HandleIdleSinceLastTransmission(bool in_idle) {
 }
 
 void MetricsService::OnApplicationNotIdle() {
-  if (recording_active_)
+  if (recording_state_ == ACTIVE)
     HandleIdleSinceLastTransmission(false);
 }
 
