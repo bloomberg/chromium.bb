@@ -98,27 +98,6 @@ const int kBandwidthHistogramBuckets = 100;
 const int kRandomSeedSize = 1024;
 #endif  // defined(USE_OPENSSL)
 
-std::string ConnectionStateToString(protocol::ConnectionToHost::State state) {
-  // Values returned by this function must match the
-  // remoting.ClientSession.State enum in JS code.
-  switch (state) {
-    case protocol::ConnectionToHost::INITIALIZING:
-      return "INITIALIZING";
-    case protocol::ConnectionToHost::CONNECTING:
-      return "CONNECTING";
-    case protocol::ConnectionToHost::AUTHENTICATED:
-      return "AUTHENTICATED";
-    case protocol::ConnectionToHost::CONNECTED:
-      return "CONNECTED";
-    case protocol::ConnectionToHost::CLOSED:
-      return "CLOSED";
-    case protocol::ConnectionToHost::FAILED:
-      return "FAILED";
-  }
-  NOTREACHED();
-  return std::string();
-}
-
 // TODO(sergeyu): Ideally we should just pass ErrorCode to the webapp
 // and let it handle it, but it would be hard to fix it now because
 // client plugin and webapp versions may not be in sync. It should be
@@ -486,7 +465,7 @@ void ChromotingInstance::OnConnectionState(
     protocol::ConnectionToHost::State state,
     protocol::ErrorCode error) {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
-  data->SetString("state", ConnectionStateToString(state));
+  data->SetString("state", protocol::ConnectionToHost::StateToString(state));
   data->SetString("error", ConnectionErrorToString(error));
   PostLegacyJsonMessage("onConnectionStatus", data.Pass());
 }

@@ -118,6 +118,7 @@
       'protocol/content_description.cc',
       'protocol/content_description.h',
       'protocol/datagram_channel_factory.h',
+      'protocol/errors.cc',
       'protocol/errors.h',
       'protocol/host_control_dispatcher.cc',
       'protocol/host_control_dispatcher.h',

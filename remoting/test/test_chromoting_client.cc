@@ -60,72 +60,6 @@ void FetchSecret(
   secret_fetched_callback.Run(client_secret);
 }
 
-const char* ConnectionStateToFriendlyString(
-    remoting::protocol::ConnectionToHost::State state) {
-  switch (state) {
-    case remoting::protocol::ConnectionToHost::INITIALIZING:
-      return "INITIALIZING";
-
-    case remoting::protocol::ConnectionToHost::CONNECTING:
-      return "CONNECTING";
-
-    case remoting::protocol::ConnectionToHost::AUTHENTICATED:
-      return "AUTHENTICATED";
-
-    case remoting::protocol::ConnectionToHost::CONNECTED:
-      return "CONNECTED";
-
-    case remoting::protocol::ConnectionToHost::CLOSED:
-      return "CLOSED";
-
-    case remoting::protocol::ConnectionToHost::FAILED:
-      return "FAILED";
-
-    default:
-      LOG(ERROR) << "Unknown connection state: '" << state << "'";
-      return "UNKNOWN";
-  }
-}
-
-const char* ProtocolErrorToFriendlyString(
-    remoting::protocol::ErrorCode error_code) {
-  switch (error_code) {
-    case remoting::protocol::OK:
-      return "NONE";
-
-    case remoting::protocol::PEER_IS_OFFLINE:
-      return "PEER_IS_OFFLINE";
-
-    case remoting::protocol::SESSION_REJECTED:
-      return "SESSION_REJECTED";
-
-    case remoting::protocol::AUTHENTICATION_FAILED:
-      return "AUTHENTICATION_FAILED";
-
-    case remoting::protocol::INCOMPATIBLE_PROTOCOL:
-      return "INCOMPATIBLE_PROTOCOL";
-
-    case remoting::protocol::HOST_OVERLOAD:
-      return "HOST_OVERLOAD";
-
-    case remoting::protocol::CHANNEL_CONNECTION_ERROR:
-      return "CHANNEL_CONNECTION_ERROR";
-
-    case remoting::protocol::SIGNALING_ERROR:
-      return "SIGNALING_ERROR";
-
-    case remoting::protocol::SIGNALING_TIMEOUT:
-      return "SIGNALING_TIMEOUT";
-
-    case remoting::protocol::UNKNOWN_ERROR:
-      return "UNKNOWN_ERROR";
-
-    default:
-      LOG(ERROR) << "Unrecognized error code: '" << error_code << "'";
-      return "UNKNOWN_ERROR";
-  }
-}
-
 }  // namespace
 
 namespace remoting {
@@ -264,8 +198,8 @@ void TestChromotingClient::OnConnectionState(
     protocol::ConnectionToHost::State state,
     protocol::ErrorCode error_code) {
   VLOG(1) << "TestChromotingClient::OnConnectionState("
-          << "state: " << ConnectionStateToFriendlyString(state) << ", "
-          << "error_code: " << ProtocolErrorToFriendlyString(error_code)
+          << "state: " << protocol::ConnectionToHost::StateToString(state)
+          << ", error_code: " << protocol::ErrorCodeToString(error_code)
           << ") Called";
 
   connection_error_code_ = error_code;

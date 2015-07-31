@@ -25,6 +25,9 @@ enum ErrorCode {
   UNKNOWN_ERROR,
 };
 
+// Returns the literal string of |error|.
+const char* ErrorCodeToString(ErrorCode error);
+
 }  // namespace protocol
 }  // namespace remoting
 

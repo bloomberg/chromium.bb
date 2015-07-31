@@ -183,7 +183,7 @@ int main(int argc, char* argv[]) {
       argc, argv, base::Bind(&NoAtExitBaseTestSuite::RunTestSuite, argc, argv));
   }
 
-  // Update the logging verbosity level is user specified one.
+  // Update the logging verbosity level if user specified one.
   std::string verbosity_level(
       command_line->GetSwitchValueASCII(switches::kLoggingLevelSwitchName));
   if (!verbosity_level.empty()) {

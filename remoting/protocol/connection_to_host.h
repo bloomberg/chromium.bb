@@ -46,6 +46,9 @@ class ConnectionToHost {
     CLOSED,
   };
 
+  // Returns the literal string of |state|.
+  static const char* StateToString(State state);
+
   class HostEventCallback {
    public:
     virtual ~HostEventCallback() {}
