@@ -25,8 +25,6 @@
 
 #include "core/layout/BidiRun.h"
 #include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutText.h"
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/api/LineLayoutInline.h"
 #include "core/layout/api/LineLayoutText.h"
@@ -456,17 +454,17 @@ inline bool InlineBidiResolver::isEndOfLine(const InlineIterator& end)
     return inEndOfLine;
 }
 
-static inline bool isCollapsibleSpace(UChar character, LayoutText* layoutObject)
+static inline bool isCollapsibleSpace(UChar character, LineLayoutText layoutText)
 {
     if (character == ' ' || character == '\t' || character == softHyphenCharacter)
         return true;
     if (character == '\n')
-        return !layoutObject->style()->preserveNewline();
+        return !layoutText.style()->preserveNewline();
     return false;
 }
 
 template <typename CharacterType>
-static inline int findFirstTrailingSpace(LayoutText* lastText, const CharacterType* characters, int start, int stop)
+static inline int findFirstTrailingSpace(LineLayoutText lastText, const CharacterType* characters, int start, int stop)
 {
     int firstSpace = stop;
     while (firstSpace > start) {
@@ -487,12 +485,12 @@ inline int InlineBidiResolver::findFirstTrailingSpaceAtRun(BidiRun* run)
     if (!lastObject.isText())
         return run->m_stop;
 
-    LayoutText* lastText = toLayoutText(lastObject);
+    LineLayoutText lastText(lastObject);
     int firstSpace;
-    if (lastText->is8Bit())
-        firstSpace = findFirstTrailingSpace(lastText, lastText->characters8(), run->start(), run->stop());
+    if (lastText.is8Bit())
+        firstSpace = findFirstTrailingSpace(lastText, lastText.characters8(), run->start(), run->stop());
     else
-        firstSpace = findFirstTrailingSpace(lastText, lastText->characters16(), run->start(), run->stop());
+        firstSpace = findFirstTrailingSpace(lastText, lastText.characters16(), run->start(), run->stop());
     return firstSpace;
 }
 
