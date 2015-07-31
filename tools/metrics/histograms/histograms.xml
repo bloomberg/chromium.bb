@@ -13036,6 +13036,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.DoLinkProgramTime" units="milliseconds">
+  <owner>jmadill@chromium.org</owner>
+  <summary>
+    The time we spend in GLES2DecoderImpl::DoLinkProgram. Related to how much
+    time we spend compiling shaders during startup.
+  </summary>
+</histogram>
+
 <histogram name="GPU.FenceSupport" enum="BooleanAvailable">
   <owner>reveman@chromium.org</owner>
   <summary>
