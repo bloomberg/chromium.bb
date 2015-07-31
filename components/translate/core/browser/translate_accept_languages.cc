@@ -70,8 +70,7 @@ void TranslateAcceptLanguages::InitAcceptLanguages(PrefService* prefs) {
     size_t index = lang.find('-');
     if (index != base::StringPiece::npos && lang != "zh-CN" && lang != "zh-TW")
       accept_languages_.insert(lang.substr(0, index).as_string());
-    else
-      accept_languages_.insert(lang.as_string());
+    accept_languages_.insert(lang.as_string());
   }
 }
 
