@@ -316,6 +316,11 @@ public class ContextualSearchManager extends ContextualSearchObservable
         return mPolicy.isPromoAvailable();
     }
 
+    @Override
+    public int getControlContainerHeightResource() {
+        return mActivity.getControlContainerHeightResource();
+    }
+
     /**
      * Hides the Contextual Search UX.
      * @param reason The {@link StateChangeReason} for hiding Contextual Search.

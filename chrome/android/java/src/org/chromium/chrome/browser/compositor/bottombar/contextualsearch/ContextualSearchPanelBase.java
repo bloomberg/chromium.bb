@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.privacy.ContextualSearchPreferenceFragment;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -177,32 +178,32 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     /**
      * The height of the Toolbar in dps.
      */
-    private final float mToolbarHeight;
+    private float mToolbarHeight;
 
     /**
      * The padding top of the Search Bar.
      */
-    private final float mSearchBarPaddingTop;
+    private float mSearchBarPaddingTop;
 
     /**
      * The height of the Search Bar when the Panel is peeking, in dps.
      */
-    private final float mSearchBarHeightPeeking;
+    private float mSearchBarHeightPeeking;
 
     /**
      * The height of the Search Bar when the Panel is expanded, in dps.
      */
-    private final float mSearchBarHeightExpanded;
+    private float mSearchBarHeightExpanded;
 
     /**
      * The height of the Search Bar when the Panel is maximized, in dps.
      */
-    private final float mSearchBarHeightMaximized;
+    private float mSearchBarHeightMaximized;
 
     /**
      * Ratio of dps per pixel.
      */
-    private final float mPxToDp;
+    private float mPxToDp;
 
     /**
      * The approximate Y coordinate of the selection in pixels.
@@ -225,6 +226,12 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      */
     private final Context mContext;
 
+    /**
+     * The object for handling global Contextual Search management duties
+     */
+    private ContextualSearchManagementDelegate mManagementDelegate;
+
+
     // ============================================================================================
     // Constructor
     // ============================================================================================
@@ -234,21 +241,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      */
     public ContextualSearchPanelBase(Context context) {
         mContext = context;
-
-        mPxToDp = 1.f / context.getResources().getDisplayMetrics().density;
-
-        mToolbarHeight = context.getResources().getDimension(
-                R.dimen.control_container_height) * mPxToDp;
-
-        mSearchBarPaddingTop = PANEL_SHADOW_HEIGHT_DP;
-
-        mSearchBarHeightPeeking = context.getResources().getDimension(
-                R.dimen.contextual_search_bar_height) * mPxToDp;
-        mSearchBarHeightMaximized = mToolbarHeight;
-        mSearchBarHeightExpanded =
-                Math.round((mSearchBarHeightPeeking + mSearchBarHeightMaximized) / 2.f);
-
-        initializeUiState();
     }
 
     // ============================================================================================
@@ -284,6 +276,30 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      * @param reason The reason the panel is closing.
      */
     protected abstract void onClose(StateChangeReason reason);
+
+    // ============================================================================================
+    // Contextual Search Manager Integration
+    // ============================================================================================
+
+    /**
+     * Sets the {@code ContextualSearchManagementDelegate} associated with this Layout.
+     * @param delegate The {@code ContextualSearchManagementDelegate}.
+     */
+    public void setManagementDelegate(ContextualSearchManagementDelegate delegate) {
+        if (mManagementDelegate != delegate) {
+            mManagementDelegate = delegate;
+            if (delegate != null) {
+                initializeUiState();
+            }
+        }
+    }
+
+    /**
+     * @return The {@code ContextualSearchManagementDelegate} associated with this Layout.
+     */
+    public ContextualSearchManagementDelegate getManagementDelegate() {
+        return mManagementDelegate;
+    }
 
     // ============================================================================================
     // Layout Integration
@@ -844,10 +860,22 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     /**
      * Initializes the UI state.
      */
-    private void initializeUiState() {
+    protected void initializeUiState() {
         mIsShowing = false;
 
         // Static values.
+        mPxToDp = 1.f / mContext.getResources().getDisplayMetrics().density;
+
+        mToolbarHeight = mContext.getResources().getDimension(
+                mManagementDelegate.getControlContainerHeightResource()) * mPxToDp;
+
+        mSearchBarPaddingTop = PANEL_SHADOW_HEIGHT_DP;
+
+        mSearchBarHeightPeeking = mContext.getResources().getDimension(
+                R.dimen.contextual_search_bar_height) * mPxToDp;
+        mSearchBarHeightMaximized = mToolbarHeight;
+        mSearchBarHeightExpanded =
+                Math.round((mSearchBarHeightPeeking + mSearchBarHeightMaximized) / 2.f);
         mSearchBarMarginSide = SEARCH_BAR_ICON_SIDE_PADDING_DP;
         mProgressBarHeight = PROGRESS_BAR_HEIGHT_DP;
         mSearchBarBorderHeight = SEARCH_BAR_BORDER_HEIGHT_DP;

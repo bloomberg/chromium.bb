@@ -113,4 +113,9 @@ public interface ContextualSearchManagementDelegate {
      * @return Contextual Search Panel's {@code ContentViewCore}.
      */
     ContentViewCore getSearchContentViewCore();
+
+    /**
+     * @return The resource id that contains how large the top controls are.
+     */
+    int getControlContainerHeightResource();
 }

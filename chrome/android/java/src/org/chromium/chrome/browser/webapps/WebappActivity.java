@@ -295,7 +295,7 @@ public class WebappActivity extends FullScreenActivity {
     }
 
     @Override
-    protected int getControlContainerHeightResource() {
+    public int getControlContainerHeightResource() {
         return R.dimen.webapp_control_container_height;
     }
 

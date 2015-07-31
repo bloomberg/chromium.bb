@@ -8,7 +8,6 @@ import android.content.Context;
 import android.os.Handler;
 
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 
 /**
  * Controls the Contextual Search Panel.
@@ -81,11 +80,6 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      */
     private ContextualSearchPanelHost mSearchPanelHost;
 
-    /**
-     * The object for handling global Contextual Search management duties
-     */
-    private ContextualSearchManagementDelegate mManagementDelegate;
-
     // ============================================================================================
     // Constructor
     // ============================================================================================
@@ -115,52 +109,37 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     // ============================================================================================
 
     /**
-     * Sets the {@code ContextualSearchManagementDelegate} associated with this Layout.
-     * @param delegate The {@code ContextualSearchManagementDelegate}.
-     */
-    public void setManagementDelegate(ContextualSearchManagementDelegate delegate) {
-        mManagementDelegate = delegate;
-    }
-
-    /**
-     * @return The {@code ContextualSearchManagementDelegate} associated with this Layout.
-     */
-    public ContextualSearchManagementDelegate getManagementDelegate() {
-        return mManagementDelegate;
-    }
-
-    /**
      * Sets the visibility of the Search Content View.
      * @param isVisible True to make it visible.
      */
     public void setSearchContentViewVisibility(boolean isVisible) {
-        if (mManagementDelegate != null) {
-            mManagementDelegate.setSearchContentViewVisibility(isVisible);
+        if (getManagementDelegate() != null) {
+            getManagementDelegate().setSearchContentViewVisibility(isVisible);
         }
     }
 
     @Override
     public void setPreferenceState(boolean enabled) {
-        if (mManagementDelegate != null) {
-            mManagementDelegate.setPreferenceState(enabled);
+        if (getManagementDelegate() != null) {
+            getManagementDelegate().setPreferenceState(enabled);
         }
     }
 
     @Override
     protected boolean isPromoAvailable() {
-        return mManagementDelegate != null && mManagementDelegate.isPromoAvailable();
+        return getManagementDelegate() != null && getManagementDelegate().isPromoAvailable();
     }
 
     @Override
     public void onPromoButtonClick(boolean accepted) {
         super.onPromoButtonClick(accepted);
-        mManagementDelegate.logPromoOutcome();
+        getManagementDelegate().logPromoOutcome();
         setIsPromoActive(false);
     }
 
     @Override
     protected void onClose(StateChangeReason reason) {
-        mManagementDelegate.onCloseContextualSearch(reason);
+        getManagementDelegate().onCloseContextualSearch(reason);
     }
 
     // ============================================================================================
@@ -188,7 +167,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
         if (ty > 0 && getPanelState() == PanelState.MAXIMIZED) {
             // Resets the Search Content View scroll position when swiping the Panel down
             // after being maximized.
-            mManagementDelegate.resetSearchContentViewScroll();
+            getManagementDelegate().resetSearchContentViewScroll();
         }
 
         // Negative ty value means an upward movement so subtracting ty means expanding the panel.
@@ -234,8 +213,8 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
             closePanel(StateChangeReason.BASE_PAGE_TAP, true);
         } else if (isCoordinateInsideSearchBar(x, y)) {
             if (isPeeking()) {
-                if (mManagementDelegate.isRunningInCompatibilityMode()) {
-                    mManagementDelegate.openResolvedSearchUrlInNewTab();
+                if (getManagementDelegate().isRunningInCompatibilityMode()) {
+                    getManagementDelegate().openResolvedSearchUrlInNewTab();
                 } else {
                     if (isFullscreenSizePanel()) {
                         expandPanel(StateChangeReason.SEARCH_BAR_TAP);
@@ -247,7 +226,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
                 peekPanel(StateChangeReason.SEARCH_BAR_TAP);
             } else if (isMaximized()) {
                 if (ContextualSearchPanelFeatures.isSearchTermRefiningAvailable()) {
-                    mManagementDelegate.promoteToTab(true);
+                    getManagementDelegate().promoteToTab(true);
                 }
                 if (ContextualSearchPanelFeatures.isCloseButtonAvailable()
                         && isCoordinateInsideCloseButton(x, y)) {
@@ -356,7 +335,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
 
         if (mShouldPromoteToTabAfterMaximizing && getPanelState() == PanelState.MAXIMIZED) {
             mShouldPromoteToTabAfterMaximizing = false;
-            mManagementDelegate.promoteToTab(false);
+            getManagementDelegate().promoteToTab(false);
         }
     }
 

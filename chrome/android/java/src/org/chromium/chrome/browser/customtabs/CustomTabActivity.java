@@ -265,7 +265,7 @@ public class CustomTabActivity extends ChromeActivity {
     }
 
     @Override
-    protected int getControlContainerHeightResource() {
+    public int getControlContainerHeightResource() {
         return R.dimen.custom_tabs_control_container_height;
     }
 
