@@ -41,7 +41,7 @@ public:
 
     ~CSSSelectorList();
 
-    void adopt(CSSSelectorList& list);
+    void adopt(CSSSelectorList&);
     void adoptSelectorVector(Vector<OwnPtr<CSSParserSelector>>& selectorVector);
 
     bool isValid() const { return !!m_selectorArray; }

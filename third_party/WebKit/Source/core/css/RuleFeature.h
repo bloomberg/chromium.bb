@@ -39,7 +39,7 @@ class StyleRule;
 struct RuleFeature {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
-    RuleFeature(StyleRule* rule, unsigned selectorIndex, bool hasDocumentSecurityOrigin);
+    RuleFeature(StyleRule*, unsigned selectorIndex, bool hasDocumentSecurityOrigin);
 
     DECLARE_TRACE();
 

@@ -246,8 +246,9 @@ String StylePropertySerializer::asText() const
                     shorthandPropertyAppeared.set(CSSPropertyBorder - firstCSSProperty);
                 else
                     shorthandPropertyID = CSSPropertyBorder;
-            } else if (shorthandPropertyUsed.get(CSSPropertyBorder - firstCSSProperty))
+            } else if (shorthandPropertyUsed.get(CSSPropertyBorder - firstCSSProperty)) {
                 shorthandPropertyID = CSSPropertyBorder;
+            }
             if (!shorthandPropertyID)
                 shorthandPropertyID = borderFallbackShorthandProperty;
             break;

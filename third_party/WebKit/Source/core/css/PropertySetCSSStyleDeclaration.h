@@ -88,8 +88,7 @@ protected:
     RawPtrWillBeMember<MutableStylePropertySet> m_propertySet; // Cannot be null
 };
 
-class StyleRuleCSSStyleDeclaration : public PropertySetCSSStyleDeclaration
-{
+class StyleRuleCSSStyleDeclaration : public PropertySetCSSStyleDeclaration {
 public:
     static PassRefPtrWillBeRawPtr<StyleRuleCSSStyleDeclaration> create(MutableStylePropertySet& propertySet, CSSRule* parentRule)
     {
@@ -124,8 +123,7 @@ protected:
     RawPtrWillBeMember<CSSRule> m_parentRule;
 };
 
-class InlineCSSStyleDeclaration final : public AbstractPropertySetCSSStyleDeclaration
-{
+class InlineCSSStyleDeclaration final : public AbstractPropertySetCSSStyleDeclaration {
 public:
     explicit InlineCSSStyleDeclaration(Element* parentElement)
         : m_parentElement(parentElement)

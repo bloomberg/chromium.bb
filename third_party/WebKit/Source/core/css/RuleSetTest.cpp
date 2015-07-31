@@ -28,8 +28,9 @@
  */
 
 #include "config.h"
-#include "core/css/CSSTestHelper.h"
 #include "core/css/RuleSet.h"
+
+#include "core/css/CSSTestHelper.h"
 
 #include <gtest/gtest.h>
 

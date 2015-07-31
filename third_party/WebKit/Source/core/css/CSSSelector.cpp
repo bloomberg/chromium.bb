@@ -46,7 +46,7 @@ using namespace HTMLNames;
 
 struct SameSizeAsCSSSelector {
     unsigned bitfields;
-    void *pointers[1];
+    void* pointers[1];
 };
 
 static_assert(sizeof(CSSSelector) == sizeof(SameSizeAsCSSSelector), "CSSSelector should stay small");
@@ -587,9 +587,9 @@ String CSSSelector::selectorText(const String& rightSide) const
     StringBuilder str;
 
     if (m_match == Tag && !m_tagIsImplicit) {
-        if (tagQName().prefix().isNull())
+        if (tagQName().prefix().isNull()) {
             str.append(tagQName().localName());
-        else {
+        } else {
             str.append(tagQName().prefix().string());
             str.append('|');
             str.append(tagQName().localName());
