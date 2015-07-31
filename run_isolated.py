@@ -79,8 +79,12 @@ def get_as_zip_package(executable=True):
   return package
 
 
-def make_temp_dir(prefix, root_dir):
-  """Returns a temporary directory on the same file system as root_dir."""
+def make_temp_dir(prefix, root_dir=None):
+  """Returns a temporary directory.
+
+  If root_dir is given and /tmp is on same file system as root_dir, uses /tmp.
+  Otherwise makes a new temp directory under root_dir.
+  """
   base_temp_dir = None
   if (root_dir and
       not file_path.is_same_filesystem(root_dir, tempfile.gettempdir())):
@@ -148,8 +152,9 @@ def run_tha_test(isolated_hash, storage, cache, leak_temp_dir, extra_args):
     extra_args: optional arguments to add to the command stated in the .isolate
                 file.
   """
-  run_dir = make_temp_dir(u'run_tha_test', cache.cache_dir)
-  out_dir = unicode(make_temp_dir(u'isolated_out', cache.cache_dir))
+  tmp_root = os.path.dirname(cache.cache_dir) if cache.cache_dir else None
+  run_dir = make_temp_dir(u'run_tha_test', tmp_root)
+  out_dir = unicode(make_temp_dir(u'isolated_out', tmp_root))
   result = 0
   try:
     try:
@@ -204,8 +209,8 @@ def run_tha_test(isolated_hash, storage, cache, leak_temp_dir, extra_args):
                 'successful task run and still be marked as successful.\n'
                 'Fix your stuff.')
             result = result or 1
-        except OSError:
-          logging.warning('Leaking %s', run_dir)
+        except OSError as exc:
+          logging.error('Leaking run_dir %s: %s', run_dir, exc)
           result = 1
 
       # HACK(vadimsh): On Windows rmtree(run_dir) call above has
@@ -258,12 +263,13 @@ def run_tha_test(isolated_hash, storage, cache, leak_temp_dir, extra_args):
     finally:
       try:
         if os.path.isdir(out_dir) and not file_path.rmtree(out_dir):
+          logging.error('Failed to remove out_dir %s', out_dir)
           result = result or 1
-      except OSError:
-        # The error was already printed out. Report it but that's it. Only
-        # report on non-Windows or on Windows when the process had succeeded.
-        # Due to the way file sharing works on Windows, it's sadly expected that
-        # file deletion may fail when a test failed.
+      except OSError as exc:
+        # Only report on non-Windows or on Windows when the process had
+        # succeeded. Due to the way file sharing works on Windows, it's sadly
+        # expected that file deletion may fail when a test failed.
+        logging.error('Failed to remove out_dir %s: %s', out_dir, exc)
         if sys.platform != 'win32' or not result:
           on_error.report(None)
         result = 1
