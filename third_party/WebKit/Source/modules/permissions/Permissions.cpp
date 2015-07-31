@@ -108,6 +108,31 @@ ScriptPromise Permissions::query(ScriptState* scriptState, const ScriptValue& ra
     return promise;
 }
 
+ScriptPromise Permissions::request(ScriptState* scriptState, const ScriptValue& rawPermission)
+{
+    WebPermissionClient* client = getClient(scriptState->executionContext());
+    if (!client)
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't request permissions."));
+
+    TrackExceptionState exceptionState;
+    PermissionDescriptor permission = NativeValueTraits<PermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
+
+    if (exceptionState.hadException())
+        return ScriptPromise::reject(scriptState, v8::Exception::TypeError(v8String(scriptState->isolate(), exceptionState.message())));
+
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+
+    String name = permission.name();
+    WebPermissionType type = convertPermissionStringToType(name);
+
+    if (handleDefaultBehaviour(scriptState, rawPermission, resolver, type, exceptionState))
+        return promise;
+
+    client->requestPermission(type, KURL(KURL(), scriptState->executionContext()->securityOrigin()->toString()), new PermissionCallback(resolver, type));
+    return promise;
+}
+
 ScriptPromise Permissions::revoke(ScriptState* scriptState, const ScriptValue& rawPermission)
 {
     WebPermissionClient* client = getClient(scriptState->executionContext());

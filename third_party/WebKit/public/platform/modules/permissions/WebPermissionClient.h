@@ -23,6 +23,9 @@ public:
     // Query the permission status of a given origin for a specific permission.
     virtual void queryPermission(WebPermissionType, const WebURL&, WebPermissionCallback*) { }
 
+    // Request a specific permission for a given origin.
+    virtual void requestPermission(WebPermissionType, const WebURL&, WebPermissionCallback*) { }
+
     // Revoke a specific permission for a given origin.
     virtual void revokePermission(WebPermissionType, const WebURL&, WebPermissionCallback*) { }
 

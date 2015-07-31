@@ -3717,6 +3717,7 @@ interface PermissionStatus
 interface Permissions
     method constructor
     method query
+    method request
     method revoke
 interface Plugin
     getter description

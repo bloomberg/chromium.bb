@@ -11,5 +11,6 @@
     RuntimeEnabled=Permissions
 ] interface Permissions {
     [CallWith=ScriptState, Measure] Promise<PermissionStatus> query(object permission);
+    [RuntimeEnabled=PermissionsRequestRevoke, CallWith=ScriptState, Measure] Promise<PermissionStatus> request(object permission);
     [RuntimeEnabled=PermissionsRequestRevoke, CallWith=ScriptState, Measure] Promise<PermissionStatus> revoke(object permission);
 };

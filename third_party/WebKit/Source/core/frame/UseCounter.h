@@ -807,6 +807,7 @@ public:
         AudioParamSetTargetAtTime = 912,
         AudioParamSetValueCurveAtTime = 913,
         AudioParamCancelScheduledValues = 914,
+        V8Permissions_Request_Method = 915,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
