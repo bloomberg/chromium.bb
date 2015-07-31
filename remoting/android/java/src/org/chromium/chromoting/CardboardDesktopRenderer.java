@@ -36,18 +36,9 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     private static final float DESKTOP_POSITION_X = 0.0f;
     private static final float DESKTOP_POSITION_Y = 0.0f;
     private static final float DESKTOP_POSITION_Z = -2.0f;
-    private static final float HALF_DESKTOP_LENGTH = 1.0f;
 
-    // TODO(shichengfeng): Get the height and width from real desktop image.
-    private static final FloatBuffer DESKTOP_COORDINATES = makeFloatBuffer(new float[] {
-            // Desktop model coordinates.
-            -HALF_DESKTOP_LENGTH, HALF_DESKTOP_LENGTH, 0.0f,
-            -HALF_DESKTOP_LENGTH, -HALF_DESKTOP_LENGTH, 0.0f,
-            HALF_DESKTOP_LENGTH, HALF_DESKTOP_LENGTH, 0.0f,
-            -HALF_DESKTOP_LENGTH, -HALF_DESKTOP_LENGTH, 0.0f,
-            HALF_DESKTOP_LENGTH, -HALF_DESKTOP_LENGTH, 0.0f,
-            HALF_DESKTOP_LENGTH, HALF_DESKTOP_LENGTH, 0.0f
-    });
+    // Fix the desktop height and adjust width accordingly.
+    private static final float HALF_DESKTOP_HEIGHT = 1.0f;
 
     private static final FloatBuffer DESKTOP_TEXTURE_COORDINATES = makeFloatBuffer(new float[] {
             // Texture coordinate data.
@@ -93,6 +84,8 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
 
     private final Context mActivityContext;
 
+    private float mHalfDesktopWidth;
+
     // Flag to indicate whether reload the desktop texture or not.
     private boolean mReloadTexture;
 
@@ -128,6 +121,8 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
 
     /** Lock to allow multithreaded access to mReloadTexture. */
     private Object mReloadTextureLock = new Object();
+
+    private FloatBuffer mDesktopCoordinates;
 
     public CardboardDesktopRenderer(Context context) {
         mActivityContext = context;
@@ -266,25 +261,29 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         Matrix.multiplyMM(mDesktopCombinedMatrix, 0, mProjectionMatrix,
                 0, mDesktopCombinedMatrix, 0);
 
-
         // Pass in model view project matrix.
         GLES20.glUniformMatrix4fv(mDesktopCombinedMatrixHandle, 1, false,
                 mDesktopCombinedMatrix, 0);
 
-        // Pass in texture data.
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureDataHandle);
-        GLES20.glUniform1i(mTextureUniformHandle, 0);
-
+        if (mDesktopCoordinates == null) {
+            // This can happen if the client is connected, but a complete video frame has not yet
+            // been decoded.
+            return;
+        }
         // Pass in the desktop position.
         GLES20.glVertexAttribPointer(mPositionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false,
-                0, DESKTOP_COORDINATES);
+                0, mDesktopCoordinates);
         GLES20.glEnableVertexAttribArray(mPositionHandle);
 
         // Pass in texture coordinate.
         GLES20.glVertexAttribPointer(mTextureCoordinateHandle, TEXTURE_COORDINATE_DATA_SIZE,
                 GLES20.GL_FLOAT, false, 0, DESKTOP_TEXTURE_COORDINATES);
         GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
+
+        // Pass in texture data.
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureDataHandle);
+        GLES20.glUniform1i(mTextureUniformHandle, 0);
 
         // Draw the desktop.
         int totalPointNumber = 6;
@@ -325,8 +324,8 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
      * Check whether user is looking at desktop or not.
      */
     private boolean isLookingAtDesktop() {
-        return Math.abs(mEyePositionVector[0]) <= HALF_DESKTOP_LENGTH
-                && Math.abs(mEyePositionVector[1]) <= HALF_DESKTOP_LENGTH;
+        return Math.abs(mEyePositionVector[0]) <= mHalfDesktopWidth
+                && Math.abs(mEyePositionVector[1]) <= HALF_DESKTOP_HEIGHT;
     }
 
     /**
@@ -363,6 +362,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
             return;
         }
 
+        updateDesktopCoordinatesBuffer(bitmap);
         TextureHelper.linkTexture(textureDataHandle, bitmap);
 
         synchronized (mReloadTextureLock) {
@@ -379,5 +379,27 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
         result.put(data).position(0);
         return result;
+    }
+
+    /**
+     *  Update the desktop coordinates based on the new bitmap. Note here we fix the
+     *  height of the desktop and vary width accordingly.
+     */
+    private void updateDesktopCoordinatesBuffer(Bitmap bitmap) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        float newHalfDesktopWidth = width * HALF_DESKTOP_HEIGHT / height;
+        if (Math.abs(mHalfDesktopWidth - newHalfDesktopWidth) > 0.0001) {
+            mHalfDesktopWidth = newHalfDesktopWidth;
+            mDesktopCoordinates = makeFloatBuffer(new float[] {
+                // Desktop model coordinates.
+                -mHalfDesktopWidth, HALF_DESKTOP_HEIGHT, 0.0f,
+                -mHalfDesktopWidth, -HALF_DESKTOP_HEIGHT, 0.0f,
+                mHalfDesktopWidth, HALF_DESKTOP_HEIGHT, 0.0f,
+                -mHalfDesktopWidth, -HALF_DESKTOP_HEIGHT, 0.0f,
+                mHalfDesktopWidth, -HALF_DESKTOP_HEIGHT, 0.0f,
+                mHalfDesktopWidth, HALF_DESKTOP_HEIGHT, 0.0f
+            });
+        }
     }
 }
