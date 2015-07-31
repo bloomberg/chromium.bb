@@ -214,13 +214,13 @@ static bool expandSelectionToGranularity(LocalFrame& frame, TextGranularity gran
 {
     VisibleSelection selection = frame.selection().selection();
     selection.expandUsingGranularity(granularity);
-    RefPtrWillBeRawPtr<Range> newRange = selection.toNormalizedRange();
-    if (!newRange)
+    const EphemeralRange newRange = selection.toNormalizedEphemeralRange();
+    if (newRange.isNull())
         return false;
-    if (newRange->collapsed())
+    if (newRange.isCollapsed())
         return false;
     EAffinity affinity = frame.selection().affinity();
-    frame.selection().setSelectedRange(newRange.get(), affinity, FrameSelection::NonDirectional, FrameSelection::CloseTyping);
+    frame.selection().setSelectedRange(newRange, affinity, FrameSelection::NonDirectional, FrameSelection::CloseTyping);
     return true;
 }
 
