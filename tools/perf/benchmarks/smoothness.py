@@ -309,6 +309,14 @@ class SmoothnessToughScrollingCases(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'smoothness.tough_scrolling_cases'
 
+class SmoothnessToughImageDecodeCases(perf_benchmark.PerfBenchmark):
+  test = smoothness.Smoothness
+  page_set = page_sets.ToughImageDecodeCasesPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'smoothness.tough_image_decode_cases'
+
 @benchmark.Disabled('android')  # http://crbug.com/513699
 class SmoothnessImageDecodingCases(perf_benchmark.PerfBenchmark):
   """Measures decoding statistics for jpeg images.
