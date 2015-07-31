@@ -38,7 +38,7 @@ var Dir = AutomationUtil.Dir;
  * @ prefix: used to substitute a message. Note the ability to specify params to
  *     the message.  For example, '@tag_html' '@selected_index($text_sel_start,
  *     $text_sel_end').
- * @@ prefix: similar to @, used to substitue a message, but also pulls the
+ * @@ prefix: similar to @, used to substitute a message, but also pulls the
  *     localized string through goog.i18n.MessageFormat to support locale
  *     aware plural handling.  The first argument should be a number which will
  *     be passed as a COUNT named parameter to MessageFormat.
@@ -52,7 +52,7 @@ var Dir = AutomationUtil.Dir;
 Output = function() {
   // TODO(dtseng): Include braille specific rules.
   /** @type {!Array<cvox.Spannable>} */
-  this.buffer_ = [];
+  this.speechBuffer_ = [];
   /** @type {!Array<cvox.Spannable>} */
   this.brailleBuffer_ = [];
   /** @type {!Array<Object>} */
@@ -172,6 +172,10 @@ Output.ROLE_INFO_ = {
   },
   image: {
     msgId: 'aria_role_img',
+  },
+  inputTime: {
+    msgId: 'input_type_time',
+    inherits: 'abstractContainer'
   },
   link: {
     msgId: 'tag_link',
@@ -492,34 +496,35 @@ Output.RULES = {
 
 /**
  * Custom actions performed while rendering an output string.
- * @param {function()} action
  * @constructor
  */
-Output.Action = function(action) {
-  this.action_ = action;
+Output.Action = function() {
 };
 
 Output.Action.prototype = {
   run: function() {
-    this.action_();
   }
 };
 
 /**
- * Action to play a earcon.
+ * Action to play an earcon.
  * @param {string} earconId
  * @constructor
  * @extends {Output.Action}
  */
 Output.EarconAction = function(earconId) {
-  Output.Action.call(this, function() {
-    cvox.ChromeVox.earcons.playEarcon(
-        cvox.AbstractEarcons[earconId]);
-  });
+  Output.Action.call(this);
+  /** @type {string} */
+  this.earconId = earconId;
 };
 
 Output.EarconAction.prototype = {
-  __proto__: Output.Action.prototype
+  __proto__: Output.Action.prototype,
+
+  /** @override */
+  run: function() {
+    cvox.ChromeVox.earcons.playEarcon(cvox.AbstractEarcons[this.earconId]);
+  }
 };
 
 /**
@@ -544,27 +549,25 @@ Output.EventType = {
 
 Output.prototype = {
   /**
-   * Gets the output buffer for speech.
-   * @param {string=} opt_separator Used to join components of the output.
+   * Gets the spoken output with separator '|'.
    * @return {!cvox.Spannable}
    */
-  toSpannable: function(opt_separator) {
-    opt_separator = opt_separator || '';
-    return this.buffer_.reduce(function(prev, cur) {
+  get speechOutputForTest() {
+    return this.speechBuffer_.reduce(function(prev, cur) {
       if (prev === null)
         return cur;
-      prev.append(opt_separator);
+      prev.append('|');
       prev.append(cur);
       return prev;
     }, null);
   },
 
   /**
-   * Gets the output buffer for speech with separator '|'.
+   * Gets the output buffer for braille.
    * @return {!cvox.Spannable}
    */
-  toSpannableForTest: function() {
-    return this.toSpannable('|');
+  get brailleOutputForTest() {
+    return this.createBrailleOutput_();
   },
 
   /**
@@ -576,7 +579,7 @@ Output.prototype = {
    */
   withSpeech: function(range, prevRange, type) {
     this.formatOptions_ = {speech: true, braille: false, location: true};
-    this.render_(range, prevRange, type, this.buffer_);
+    this.render_(range, prevRange, type, this.speechBuffer_);
     return this;
   },
 
@@ -614,7 +617,7 @@ Output.prototype = {
    */
   format: function(formatStr) {
     this.formatOptions_ = {speech: true, braille: false, location: true};
-    this.format_(null, formatStr, this.buffer_);
+    this.format_(null, formatStr, this.speechBuffer_);
 
     this.formatOptions_ = {speech: false, braille: true, location: false};
     this.format_(null, formatStr, this.brailleBuffer_);
@@ -640,7 +643,7 @@ Output.prototype = {
   go: function() {
     // Speech.
     var queueMode = cvox.QueueMode.FLUSH;
-    this.buffer_.forEach(function(buff, i, a) {
+    this.speechBuffer_.forEach(function(buff, i, a) {
       if (buff.toString()) {
         (function() {
           var scopedBuff = buff;
@@ -665,36 +668,31 @@ Output.prototype = {
     }.bind(this));
 
     // Braille.
-    var buff = this.brailleBuffer_.reduce(function(prev, cur) {
-      if (prev.getLength() > 0 && cur.getLength() > 0)
-        prev.append(Output.SPACE);
-      prev.append(cur);
-      return prev;
-    }, new cvox.Spannable());
+    if (this.brailleBuffer_.length) {
+      var buff = this.createBrailleOutput_();
+      var selSpan =
+          buff.getSpanInstanceOf(Output.SelectionSpan);
+      var startIndex = -1, endIndex = -1;
+      if (selSpan) {
+        // Casts ok, since the span is known to be in the spannable.
+        var valueStart =
+            /** @type {number} */ (buff.getSpanStart(selSpan));
+        var valueEnd =
+            /** @type {number} */ (buff.getSpanEnd(selSpan));
+        startIndex = valueStart + selSpan.startIndex;
+        endIndex = valueStart + selSpan.endIndex;
+        buff.setSpan(new cvox.ValueSpan(0), valueStart, valueEnd);
+        buff.setSpan(new cvox.ValueSelectionSpan(), startIndex, endIndex);
+      }
 
-    var selSpan =
-        buff.getSpanInstanceOf(Output.SelectionSpan);
-    var startIndex = -1, endIndex = -1;
-    if (selSpan) {
-      // Casts ok, since the span is known to be in the spannable.
-      var valueStart =
-          /** @type {number} */ (buff.getSpanStart(selSpan));
-      var valueEnd =
-          /** @type {number} */ (buff.getSpanEnd(selSpan));
-      startIndex = valueStart + selSpan.startIndex;
-      endIndex = valueStart + selSpan.endIndex;
-      buff.setSpan(new cvox.ValueSpan(0), valueStart, valueEnd);
-      buff.setSpan(new cvox.ValueSelectionSpan(), startIndex, endIndex);
-    }
+      var output = new cvox.NavBraille({
+        text: buff,
+        startIndex: startIndex,
+        endIndex: endIndex
+      });
 
-    var output = new cvox.NavBraille({
-      text: buff,
-      startIndex: startIndex,
-      endIndex: endIndex
-    });
-
-    if (this.brailleBuffer_)
       cvox.ChromeVox.braille.write(output);
+    }
 
     // Display.
     chrome.accessibilityPrivate.setFocusRing(this.locations_);
@@ -746,7 +744,7 @@ Output.prototype = {
       // Parse the token.
       var tree;
       if (typeof(token) == 'string')
-        tree = this.createParseTree(token);
+        tree = this.createParseTree_(token);
       else
         tree = token;
 
@@ -785,15 +783,17 @@ Output.prototype = {
           this.append_(buff, text, options);
         } else if (token == 'name') {
           options.annotation.push(token);
-          var earconFinder = node;
-          while (earconFinder) {
-            var info = Output.ROLE_INFO_[earconFinder.role];
-            if (info && info.earconId) {
-              options.annotation.push(
-                  new Output.EarconAction(info.earconId));
-              break;
+          if (this.formatOptions_.speech) {
+            var earconFinder = node;
+            while (earconFinder) {
+              var info = Output.ROLE_INFO_[earconFinder.role];
+              if (info && info.earconId) {
+                options.annotation.push(
+                    new Output.EarconAction(info.earconId));
+                break;
+              }
+              earconFinder = earconFinder.parent;
             }
-            earconFinder = earconFinder.parent;
           }
 
           // Pending finalization of name calculation; we must use the
@@ -885,7 +885,7 @@ Output.prototype = {
             resolvedInfo = node.state[token] ? stateInfo.on : stateInfo.off;
           if (!resolvedInfo)
             return;
-          if (resolvedInfo.earconId) {
+          if (this.formatOptions_.speech && resolvedInfo.earconId) {
             options.annotation.push(
                 new Output.EarconAction(resolvedInfo.earconId));
           }
@@ -904,6 +904,9 @@ Output.prototype = {
             else
               this.format_(node, cond.nextSibling.nextSibling, buff);
           } else if (token == 'earcon') {
+            // Ignore unless we're generating speech output.
+            if (!this.formatOptions_.speech)
+              return;
             // Assumes there's existing output in our buffer.
             var lastBuff = buff[buff.length - 1];
             if (!lastBuff)
@@ -1172,8 +1175,9 @@ Output.prototype = {
    * Parses the token containing a custom function and returns a tree.
    * @param {string} inputStr
    * @return {Object}
+   * @private
    */
-  createParseTree: function(inputStr) {
+  createParseTree_: function(inputStr) {
     var root = {value: ''};
     var currentNode = root;
     var index = 0;
@@ -1205,6 +1209,20 @@ Output.prototype = {
       throw 'Unbalanced parenthesis.';
 
     return root;
+  },
+
+  /**
+   * Converts the currently rendered braille buffers to a single spannable.
+   * @return {!cvox.Spannable}
+   * @private
+   */
+  createBrailleOutput_: function() {
+    return this.brailleBuffer_.reduce(function(prev, cur) {
+      if (prev.getLength() > 0 && cur.getLength() > 0)
+        prev.append(Output.SPACE);
+      prev.append(cur);
+      return prev;
+    }, new cvox.Spannable());
   }
 };
 

@@ -1652,6 +1652,12 @@
       <message desc="Brailles an &lt;input&gt; element with type=datetime." name="IDS_CHROMEVOX_INPUT_TYPE_DATETIME_BRL">
         date time
       </message>
+      <message desc="Describes an &lt;input&gt; element with type=datetime." name="IDS_CHROMEVOX_INPUT_TYPE_TIME">
+        Time control
+      </message>
+      <message desc="Brailles an &lt;input&gt; element with type=datetime." name="IDS_CHROMEVOX_INPUT_TYPE_TIME_BRL">
+        time
+      </message>
       <message desc="Describes an &lt;input&gt; element with type=datetime-local." name="IDS_CHROMEVOX_INPUT_TYPE_DATETIME_LOCAL">
         Date time control
       </message>

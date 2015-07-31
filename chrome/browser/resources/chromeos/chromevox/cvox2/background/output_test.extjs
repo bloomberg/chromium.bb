@@ -6,6 +6,22 @@ GEN_INCLUDE(['../../testing/assert_additions.js']);
 GEN_INCLUDE(['../../testing/chromevox_next_e2e_test_base.js']);
 
 /**
+ * Gets the braille output and asserts that it matches expected values.
+ * Annotations in the output that are primitive strings are ignored.
+ */
+function checkBrailleOutput(expectedText, expectedSpans, output) {
+  var actualOutput = output.brailleOutputForTest;
+  // Remove string annotations.  These are tested in the speech output and
+  // there's no need to clutter the tests with the corresponding braille
+  // annotations.
+  actualOutput.spans_ = actualOutput.spans_.filter(function(span) {
+    return (typeof span.value !== 'string');
+  });
+  assertEqualsJSON({string_: expectedText, spans_: expectedSpans},
+                   actualOutput);
+}
+
+/**
  * Test fixture for output.js.
  * @constructor
  * @extends {ChromeVoxNextE2ETestBase}
@@ -29,15 +45,16 @@ TEST_F('OutputE2ETest', 'Links', function() {
       var el = root.firstChild.firstChild;
       var range = cursors.Range.fromNode(el);
       var o = new Output().withSpeechAndBraille(range, null, 'navigate');
-      assertEqualsJSON({string_: 'Click hereLink', 'spans_': [
+      assertEqualsJSON({string_: 'Click here|Link', 'spans_': [
         // Attributes.
         {value: 'name', start: 0, end: 10},
 
         // Link earcon (based on the name).
-        {value: {}, start: 0, end: 10},
+        {value: {earconId: 'LINK'}, start: 0, end: 10},
 
-        {value: 'role', start: 10, end: 14}
-      ]}, o.toSpannable());
+        {value: 'role', start: 11, end: 15}
+      ]}, o.speechOutputForTest);
+      checkBrailleOutput('Click here lnk', [], o);
   });
 });
 
@@ -47,15 +64,16 @@ TEST_F('OutputE2ETest', 'Checkbox', function() {
       var el = root.firstChild.firstChild;
       var range = cursors.Range.fromNode(el);
       var o = new Output().withSpeechAndBraille(range, null, 'navigate');
-      assertEqualsJSON({string_: 'Check boxnot checked', 'spans_': [
+      assertEqualsJSON({string_: '|Check box|not checked', 'spans_': [
         // Attributes.
         {value: 'name', start: 0, end: 0},
-        {value: 'role', start: 0, end: 9},
-        {value: 'state', start: 9, end: 20},
+        {value: 'role', start: 1, end: 10},
+        {value: 'state', start: 11, end: 22},
 
-        // Link earcon (based on the state).
-        {value: {}, start: 9, end: 20}
-      ]}, o.toSpannable());
+        // Checkbox earcon (based on the state).
+        {value: {earconId: 'CHECK_OFF'}, start: 11, end: 22}
+      ]}, o.speechOutputForTest);
+      checkBrailleOutput('chk ( )', [], o);
   });
 });
 
@@ -69,19 +87,21 @@ TEST_F('OutputE2ETest', 'InLineTextBoxValueGetsIgnored', function() {
       assertEqualsJSON({string_: 'OK', 'spans_': [
         // Attributes.
         {value: 'name', start: 0, end: 2}
-      ]}, o.toSpannable());
+      ]}, o.speechOutputForTest);
+      checkBrailleOutput('OK', [], o);
 
       el = root.firstChild.firstChild;
       assertEquals('staticText', el.role);
       range = cursors.Range.fromNode(el);
       o = new Output().withSpeechAndBraille(range, null, 'navigate');
-      assertEqualsJSON({string_: 'OK', 'spans_': [
+      assertEqualsJSON({string_: 'OK|', 'spans_': [
         // Attributes.
         {value: 'value', start: 0, end: 2},
 
         // The name is an empty string.
-        {value: 'name', start: 2, end: 2}
-      ]}, o.toSpannable());
+        {value: 'name', start: 3, end: 3}
+      ]}, o.speechOutputForTest);
+      checkBrailleOutput('OK', [], o);
   });
 });
 
@@ -91,62 +111,27 @@ TEST_F('OutputE2ETest', 'Headings', function() {
       <h1><a href="a.com">b</a></h1> */},
     function(root) {
       var el = root.firstChild;
-      var range = cursors.Range.fromNode(el);
-      var o = new Output().withSpeechAndBraille(range, null, 'navigate');
-      assertEqualsJSON({string_: 'Heading 1a', 'spans_': [
-        // Attributes.
-        {value: 'nameOrDescendants', start: 9, end: 10}
-      ]}, o.toSpannable());
+      for (var i = 1; i <= 6; ++i) {
+        var range = cursors.Range.fromNode(el);
+        var o = new Output().withSpeechAndBraille(range, null, 'navigate');
+        var letter = String.fromCharCode('a'.charCodeAt(0) + i -1);
+        assertEqualsJSON({string_: 'Heading ' + i + '|' + letter, 'spans_': [
+          // Attributes.
+          {value: 'nameOrDescendants', start: 10, end: 11}
+        ]}, o.speechOutputForTest);
+        checkBrailleOutput('h' + i + ' ' + letter, [], o);
+        el = el.nextSibling;
+      }
 
-      el = el.nextSibling;
-      range = cursors.Range.fromNode(el);
-      o = new Output().withSpeechAndBraille(range, null, 'navigate');
-      assertEqualsJSON({string_: 'Heading 2b', 'spans_': [
-        // Attributes.
-        {value: 'nameOrDescendants', start: 9, end: 10}
-      ]}, o.toSpannable());
-
-      el = el.nextSibling;
-      range = cursors.Range.fromNode(el);
-      o = new Output().withSpeechAndBraille(range, null, 'navigate');
-      assertEqualsJSON({string_: 'Heading 3c', 'spans_': [
-        // Attributes.
-        {value: 'nameOrDescendants', start: 9, end: 10}
-      ]}, o.toSpannable());
-
-      el = el.nextSibling;
-      range = cursors.Range.fromNode(el);
-      o = new Output().withSpeechAndBraille(range, null, 'navigate');
-      assertEqualsJSON({string_: 'Heading 4d', 'spans_': [
-        // Attributes.
-        {value: 'nameOrDescendants', start: 9, end: 10}
-      ]}, o.toSpannable());
-
-      el = el.nextSibling;
-      range = cursors.Range.fromNode(el);
-      o = new Output().withSpeechAndBraille(range, null, 'navigate');
-      assertEqualsJSON({string_: 'Heading 5e', 'spans_': [
-        // Attributes.
-        {value: 'nameOrDescendants', start: 9, end: 10}
-      ]}, o.toSpannable());
-
-      el = el.nextSibling;
-      range = cursors.Range.fromNode(el);
-      o = new Output().withSpeechAndBraille(range, null, 'navigate');
-      assertEqualsJSON({string_: 'Heading 6f', 'spans_': [
-        // Attributes.
-        {value: 'nameOrDescendants', start: 9, end: 10}
-      ]}, o.toSpannable());
-
-      el = el.nextSibling;
       range = cursors.Range.fromNode(el);
       o = new Output().withSpeechAndBraille(range, null, 'navigate');
       assertEqualsJSON({string_: 'Heading 1|b|Link', 'spans_': [
         // Link.
         {value: 'name', start: 10, end: 11},
-        {value: {}, start: 10, end: 11},
+        {value: {earconId: "LINK"}, start: 10, end: 11},
         {value: 'role', start: 12, end: 16}
-      ]}, o.toSpannableForTest());
+      ]}, o.speechOutputForTest);
+      checkBrailleOutput('h1 b lnk', [], o);
   });
 });
 
@@ -165,13 +150,14 @@ TEST_F('OutputE2ETest', 'Audio', function() {
               [{value: 'name', start: 23, end: 23},
 
               // Button earcon.
-              {value: {}, start: 23, end: 23},
+              {value: {earconId: "BUTTON"}, start: 23, end: 23},
 
               {value: 'value', start: 24, end: 24},
               {value: 'description', start: 25, end: 29},
               {value: 'help', start: 30, end: 44},
               {value: 'role', start: 45, end: 51}]
-          }, o.toSpannableForTest());
+          }, o.speechOutputForTest);
+      checkBrailleOutput('media control tlbar play begin playback btn', [], o);
 
       el = el.nextSibling;
       var prevRange = range;
@@ -180,7 +166,9 @@ TEST_F('OutputE2ETest', 'Audio', function() {
       assertEqualsJSON({string_: '0, , slider|audio time scrubber',
           spans_:
               [{value: 'help', start: 12, end: 31}]
-          }, o.toSpannableForTest());
+          }, o.speechOutputForTest);
+      // TODO(plundblad): Investigate this.
+      checkBrailleOutput('0, , slider audio time scrubber', [], o);
   });
 });
 
@@ -198,7 +186,7 @@ TEST_F('OutputE2ETest', 'Input', function() {
               {value: 'name', start: 0, end: 0},
 
               // Earcon
-              {value: {}, start: 0, end: 0},
+              {value: {earconId: 'EDITABLE_TEXT'}, start: 0, end: 0},
 
               // Selection span.
               {value: {startIndex: 0, endIndex: 0}, start: 1, end: 1},
@@ -206,33 +194,60 @@ TEST_F('OutputE2ETest', 'Input', function() {
               {value: 'value', start: 1, end: 1}
       ]};
 
-      var expectedValues = [
+      var expectedSpeechValues = [
         '||Edit text',
         '||Edit text, email entry',
         '||Password edit text',
         '||Edit text, number entry',
         {string_: '||Spin button', spans_: [{value: 'name', start: 0, end: 0},
-            {value: {}, start: 0, end: 0},
+            {value: {earconId:'LISTBOX'}, start: 0, end: 0},
             {value: {startIndex: 0, endIndex: 0}, start: 1, end: 1},
             {value: 'value', start: 1, end: 1},
             {value: 'role', start: 2, end: 13}]},
-        {string_: '||inputTime', spans_: [{value: 'name', start: 0, end: 0},
+        {string_: '||Time control', spans_: [{value: 'name', start: 0, end: 0},
             {value: 'value', start: 1, end: 1},
-            {value: 'role', start: 2, end: 11}]},
+            {value: 'role', start: 2, end: 14}]},
         {string_: '||Date control', spans_: [{value: 'name', start: 0, end: 0},
             {value: 'value', start: 1, end: 1},
             {value: 'role', start: 2, end: 14}]}
       ];
+      // TODO(plundblad): Some of these are wrong, there should be an initial
+      // space for the cursor in edit fields.
+      var expectedBrailleValues = [
+        'ed',
+        '@ed',
+        'pwded',
+        '#ed',
+        'spnbtn',
+        {string_: 'time', spans_: []},
+        {string_: 'date', spans_: []}
+      ];
+      assertEquals(expectedSpeechValues.length, expectedBrailleValues.length);
 
       var el = root.firstChild.firstChild;
-      expectedValues.forEach(function(expectedValue) {
+      expectedSpeechValues.forEach(function(expectedValue) {
         var range = cursors.Range.fromNode(el);
         var o = new Output().withSpeechAndBraille(range, null, 'navigate');
         if (typeof expectedValue == 'object') {
-          assertEqualsJSON(expectedValue, o.toSpannableForTest());
+          assertEqualsJSON(expectedValue, o.speechOutputForTest);
         } else {
           expected.string_ = expectedValue;
-          assertEqualsJSON(expected, o.toSpannableForTest());
+          assertEqualsJSON(expected, o.speechOutputForTest);
+        }
+        el = el.nextSibling;
+      });
+
+      el = root.firstChild.firstChild;
+      expectedBrailleValues.forEach(function(expectedValue) {
+        var range = cursors.Range.fromNode(el);
+        var o = new Output().withBraille(range, null, 'navigate');
+        if (typeof expectedValue === 'string') {
+          checkBrailleOutput(expectedValue,
+                             [{'value': {'startIndex': 0, 'endIndex':0},
+                               'start': 0,
+                               'end': 0}], o);
+        } else {
+          checkBrailleOutput(expectedValue.string_, expectedValue.spans_, o);
         }
         el = el.nextSibling;
       });
@@ -248,10 +263,13 @@ TEST_F('OutputE2ETest', 'List', function() {
       var o = new Output().withSpeechAndBraille(range, null, 'navigate');
       assertEqualsJSON({string_: 'list|with 3 items|a||List item', spans_: [
           {value: 'name', start: 18, end: 19},
-          {value: {}, start: 18, end: 19},
+          {value: {earconId:'LIST_ITEM'}, start: 18, end: 19},
           {value: 'value', start:20, end: 20},
           {value: 'role', start: 21, end: 30}
-      ]}, o.toSpannableForTest());
+      ]}, o.speechOutputForTest);
+      // TODO(0lundblad): This output is wrong.  Add special handling for
+      // braille here.
+      checkBrailleOutput('list + a lstitm', [], o);
   });
 });
 
@@ -279,7 +297,9 @@ TEST_F('OutputE2ETest', 'Tree', function() {
           // InLineTextBox.
           {value: 'value', start: 57, end: 58},
           {value: 'name', start: 59, end: 59}
-    ]}, o.toSpannableForTest());
+    ]}, o.speechOutputForTest);
+    // TODO(plundblad): Braille output is wrong.
+    checkBrailleOutput('tree + tritm - 1/3  level 1  a', [], o);
 
     el = root.firstChild.children[1].firstChild;
     var range = cursors.Range.fromNode(el);
@@ -295,7 +315,9 @@ TEST_F('OutputE2ETest', 'Tree', function() {
           // InLineTextBox.
           {value: 'value', start: 48, end: 49},
           {value: 'name', start: 50, end: 50}
-    ]}, o.toSpannableForTest());
+    ]}, o.speechOutputForTest);
+    // TODO(plundblad): Braille output is wrong.
+    checkBrailleOutput('tree + tritm 2/3  level 1  b', [], o);
 
     el = root.firstChild.children[2].firstChild;
     var range = cursors.Range.fromNode(el);
@@ -312,7 +334,9 @@ TEST_F('OutputE2ETest', 'Tree', function() {
           // InLineTextBox.
           {value: 'value', start: 58, end: 59},
           {value: 'name', start: 60, end: 60}
-    ]}, o.toSpannableForTest());
+    ]}, o.speechOutputForTest);
+    // TODO(plundblad): Braille output is wrong.
+    checkBrailleOutput('tree + tritm + 3/3  level 1  c', [], o);
   });
 });
 
@@ -330,7 +354,8 @@ TEST_F('OutputE2ETest', 'Menu', function() {
             '|Menu|with 1 item|a|Menu item| 1 of 1 ', spans_: [
         {value: 'name', start: 18, end: 19},
         {value: 'role', start:20, end: 29}
-    ]}, o.toSpannableForTest());
+    ]}, o.speechOutputForTest);
+    checkBrailleOutput('mnu + a mnuitm 1/1', [], o);
   });
 });
 
@@ -349,24 +374,37 @@ TEST_F('OutputE2ETest', 'ListBox', function() {
         spans_: [
           // ListBox.
           // Earcon.
-          {value: {}, start: 0, end: 0},
+          {value: {earconId:'LISTBOX'}, start: 0, end: 0},
 
           {value: 'name', start: 23, end: 23},
 
           // Earcon.
-          {value: {}, start: 23, end: 23},
+          {value: {earconId: 'LIST_ITEM'}, start: 23, end: 23},
 
           {value: 'role', start:24, end: 33}
-    ]}, o.toSpannableForTest());
+    ]}, o.speechOutputForTest);
+    checkBrailleOutput('lstbx + lstitm 1/2', [], o);
   });
 });
 
-SYNC_TEST_F('OutputE2ETest', 'MessageIdValidity', function() {
+SYNC_TEST_F('OutputE2ETest', 'MessageIdAndEarconValidity', function() {
   for (var key in Output.ROLE_INFO_) {
     var value = Output.ROLE_INFO_[key];
     cvox.ChromeVox.msgs.getMsg(value.msgId);
+    cvox.ChromeVox.msgs.getMsg(value.msgId + '_brl');
     assertFalse(/[A-Z]+/.test(value.msgId));
     if (value.earconId)
       assertNotNullNorUndefined(cvox.AbstractEarcons[value.earconId]);
+  }
+  for (var key in Output.STATE_INFO_) {
+    var value = Output.STATE_INFO_[key];
+    for (innerKey in value) {
+      var innerValue = value[innerKey];
+      cvox.ChromeVox.msgs.getMsg(innerValue.msgId);
+      cvox.ChromeVox.msgs.getMsg(innerValue.msgId + '_brl');
+      assertFalse(/[A-Z]+/.test(innerValue.msgId));
+      if (innerValue.earconId)
+        assertNotNullNorUndefined(cvox.AbstractEarcons[innerValue.earconId]);
+    }
   }
 });
