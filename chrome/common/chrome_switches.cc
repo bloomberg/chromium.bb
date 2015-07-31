@@ -626,6 +626,9 @@ const char kForceFirstRun[]                 = "force-first-run";
 // prefixed with the character "t" will be treated as Trigger Variation Ids.
 const char kForceVariationIds[]             = "force-variation-ids";
 
+// Forces Chrome to use localNTP instead of server (GWS) NTP.
+const char kForceLocalNtp[]                 = "force-local-ntp";
+
 // Enables grouping websites by domain and filtering them by period.
 const char kHistoryEnableGroupByDomain[]    = "enable-grouped-history";
 

@@ -279,6 +279,11 @@ struct NewTabURLDetails {
 
   static NewTabURLDetails ForProfile(Profile* profile) {
     const GURL local_url(chrome::kChromeSearchLocalNtpUrl);
+
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(switches::kForceLocalNtp))
+      return NewTabURLDetails(local_url, NEW_TAB_URL_VALID);
+
     TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
     if (!profile || !template_url)
       return NewTabURLDetails(local_url, NEW_TAB_URL_BAD);

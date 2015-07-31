@@ -179,6 +179,7 @@ extern const char kForceAppMode[];
 extern const char kForceFieldTrialParams[];
 extern const char kForceFirstRun[];
 extern const char kForceVariationIds[];
+extern const char kForceLocalNtp[];
 extern const char kHistoryEnableGroupByDomain[];
 extern const char kHomePage[];
 extern const char kHostRules[];
