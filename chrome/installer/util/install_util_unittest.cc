@@ -2,25 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/installer/util/install_util.h"
+
 #include <string>
 #include <utility>
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/product_unittest.h"
 #include "chrome/installer/util/work_item.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::RegKey;
-using registry_util::RegistryOverrideManager;
 using ::testing::_;
 using ::testing::Return;
 using ::testing::StrEq;
@@ -30,8 +33,25 @@ class MockRegistryValuePredicate : public InstallUtil::RegistryValuePredicate {
   MOCK_CONST_METHOD1(Evaluate, bool(const std::wstring&));
 };
 
-class InstallUtilTest : public TestWithTempDirAndDeleteTempOverrideKeys {
+class InstallUtilTest : public testing::Test {
  protected:
+  InstallUtilTest() {}
+
+  void SetUp() override {
+    ResetRegistryOverrides();
+  }
+
+  void ResetRegistryOverrides() {
+    registry_override_manager_.reset(
+        new registry_util::RegistryOverrideManager);
+    registry_override_manager_->OverrideRegistry(HKEY_CURRENT_USER);
+    registry_override_manager_->OverrideRegistry(HKEY_LOCAL_MACHINE);
+  }
+
+ private:
+  scoped_ptr<registry_util::RegistryOverrideManager> registry_override_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(InstallUtilTest);
 };
 
 TEST_F(InstallUtilTest, ComposeCommandLine) {
@@ -84,8 +104,7 @@ TEST_F(InstallUtilTest, UpdateInstallerStageAP) {
 
   // Update the stage when there's no "ap" value.
   {
-    RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root);
+    ResetRegistryOverrides();
     RegKey(root, state_key_path.c_str(), KEY_SET_VALUE);
     InstallUtil::UpdateInstallerStage(system_level, state_key_path,
                                       installer::BUILDING);
@@ -98,8 +117,7 @@ TEST_F(InstallUtilTest, UpdateInstallerStageAP) {
 
   // Update the stage when there is an "ap" value.
   {
-    RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root);
+    ResetRegistryOverrides();
     RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
         .WriteValue(google_update::kRegApField, L"2.0-dev");
     InstallUtil::UpdateInstallerStage(system_level, state_key_path,
@@ -113,8 +131,7 @@ TEST_F(InstallUtilTest, UpdateInstallerStageAP) {
 
   // Clear the stage.
   {
-    RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root);
+    ResetRegistryOverrides();
     RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
       .WriteValue(google_update::kRegApField, L"2.0-dev-stage:building");
     InstallUtil::UpdateInstallerStage(system_level, state_key_path,
@@ -134,8 +151,7 @@ TEST_F(InstallUtilTest, UpdateInstallerStage) {
 
   // Update the stage when there's no "InstallerExtraCode1" value.
   {
-    RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root);
+    ResetRegistryOverrides();
     RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
         .DeleteValue(installer::kInstallerExtraCode1);
     InstallUtil::UpdateInstallerStage(system_level, state_key_path,
@@ -149,8 +165,7 @@ TEST_F(InstallUtilTest, UpdateInstallerStage) {
 
   // Update the stage when there is an "InstallerExtraCode1" value.
   {
-    RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root);
+    ResetRegistryOverrides();
     RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
         .WriteValue(installer::kInstallerExtraCode1,
                     static_cast<DWORD>(installer::UNPACKING));
@@ -165,8 +180,7 @@ TEST_F(InstallUtilTest, UpdateInstallerStage) {
 
   // Clear the stage.
   {
-    RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root);
+    ResetRegistryOverrides();
     RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
         .WriteValue(installer::kInstallerExtraCode1, static_cast<DWORD>(5));
     InstallUtil::UpdateInstallerStage(system_level, state_key_path,
@@ -186,105 +200,88 @@ TEST_F(InstallUtilTest, DeleteRegistryKeyIf) {
   const wchar_t value_name[] = L"some_value_name";
   const wchar_t value[] = L"hi mom";
 
+  // Nothing to delete if the keys aren't even there.
   {
-    RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root);
-    // Nothing to delete if the keys aren't even there.
-    {
-      MockRegistryValuePredicate pred;
+    MockRegistryValuePredicate pred;
 
-      EXPECT_CALL(pred, Evaluate(_)).Times(0);
-      ASSERT_FALSE(RegKey(root, parent_key_path.c_str(),
-                          KEY_QUERY_VALUE).Valid());
-      EXPECT_EQ(InstallUtil::NOT_FOUND,
-                InstallUtil::DeleteRegistryKeyIf(root, parent_key_path,
-                                                 child_key_path,
-                                                 WorkItem::kWow64Default,
-                                                 value_name, pred));
-      EXPECT_FALSE(RegKey(root, parent_key_path.c_str(),
-                          KEY_QUERY_VALUE).Valid());
-    }
+    EXPECT_CALL(pred, Evaluate(_)).Times(0);
+    ASSERT_FALSE(
+        RegKey(root, parent_key_path.c_str(), KEY_QUERY_VALUE).Valid());
+    EXPECT_EQ(InstallUtil::NOT_FOUND,
+              InstallUtil::DeleteRegistryKeyIf(
+                  root, parent_key_path, child_key_path,
+                  WorkItem::kWow64Default, value_name, pred));
+    EXPECT_FALSE(
+        RegKey(root, parent_key_path.c_str(), KEY_QUERY_VALUE).Valid());
+  }
 
-    // Parent exists, but not child: no delete.
-    {
-      MockRegistryValuePredicate pred;
+  // Parent exists, but not child: no delete.
+  {
+    MockRegistryValuePredicate pred;
 
-      EXPECT_CALL(pred, Evaluate(_)).Times(0);
-      ASSERT_TRUE(RegKey(root, parent_key_path.c_str(), KEY_SET_VALUE).Valid());
-      EXPECT_EQ(InstallUtil::NOT_FOUND,
-                InstallUtil::DeleteRegistryKeyIf(root, parent_key_path,
-                                                 child_key_path,
-                                                 WorkItem::kWow64Default,
-                                                 value_name, pred));
-      EXPECT_TRUE(RegKey(root, parent_key_path.c_str(),
-                         KEY_QUERY_VALUE).Valid());
-    }
+    EXPECT_CALL(pred, Evaluate(_)).Times(0);
+    ASSERT_TRUE(RegKey(root, parent_key_path.c_str(), KEY_SET_VALUE).Valid());
+    EXPECT_EQ(InstallUtil::NOT_FOUND,
+              InstallUtil::DeleteRegistryKeyIf(
+                  root, parent_key_path, child_key_path,
+                  WorkItem::kWow64Default, value_name, pred));
+    EXPECT_TRUE(RegKey(root, parent_key_path.c_str(), KEY_QUERY_VALUE).Valid());
+  }
 
-    // Child exists, but no value: no delete.
-    {
-      MockRegistryValuePredicate pred;
+  // Child exists, but no value: no delete.
+  {
+    MockRegistryValuePredicate pred;
 
-      EXPECT_CALL(pred, Evaluate(_)).Times(0);
-      ASSERT_TRUE(RegKey(root, child_key_path.c_str(), KEY_SET_VALUE).Valid());
-      EXPECT_EQ(InstallUtil::NOT_FOUND,
-                InstallUtil::DeleteRegistryKeyIf(root, parent_key_path,
-                                                 child_key_path,
-                                                 WorkItem::kWow64Default,
-                                                 value_name, pred));
-      EXPECT_TRUE(RegKey(root, parent_key_path.c_str(),
-                         KEY_QUERY_VALUE).Valid());
-    }
+    EXPECT_CALL(pred, Evaluate(_)).Times(0);
+    ASSERT_TRUE(RegKey(root, child_key_path.c_str(), KEY_SET_VALUE).Valid());
+    EXPECT_EQ(InstallUtil::NOT_FOUND,
+              InstallUtil::DeleteRegistryKeyIf(
+                  root, parent_key_path, child_key_path,
+                  WorkItem::kWow64Default, value_name, pred));
+    EXPECT_TRUE(RegKey(root, parent_key_path.c_str(), KEY_QUERY_VALUE).Valid());
+  }
 
-    // Value exists, but doesn't match: no delete.
-    {
-      MockRegistryValuePredicate pred;
+  // Value exists, but doesn't match: no delete.
+  {
+    MockRegistryValuePredicate pred;
 
-      EXPECT_CALL(pred, Evaluate(StrEq(L"foosball!"))).WillOnce(Return(false));
-      ASSERT_EQ(ERROR_SUCCESS,
-                RegKey(root, child_key_path.c_str(),
-                       KEY_SET_VALUE).WriteValue(value_name, L"foosball!"));
-      EXPECT_EQ(InstallUtil::NOT_FOUND,
-                InstallUtil::DeleteRegistryKeyIf(root, parent_key_path,
-                                                 child_key_path,
-                                                 WorkItem::kWow64Default,
-                                                 value_name, pred));
-      EXPECT_TRUE(RegKey(root, parent_key_path.c_str(),
-                         KEY_QUERY_VALUE).Valid());
-    }
+    EXPECT_CALL(pred, Evaluate(StrEq(L"foosball!"))).WillOnce(Return(false));
+    ASSERT_EQ(ERROR_SUCCESS, RegKey(root, child_key_path.c_str(), KEY_SET_VALUE)
+                                 .WriteValue(value_name, L"foosball!"));
+    EXPECT_EQ(InstallUtil::NOT_FOUND,
+              InstallUtil::DeleteRegistryKeyIf(
+                  root, parent_key_path, child_key_path,
+                  WorkItem::kWow64Default, value_name, pred));
+    EXPECT_TRUE(RegKey(root, parent_key_path.c_str(), KEY_QUERY_VALUE).Valid());
+  }
 
-    // Value exists, and matches: delete.
-    {
-      MockRegistryValuePredicate pred;
+  // Value exists, and matches: delete.
+  {
+    MockRegistryValuePredicate pred;
 
-      EXPECT_CALL(pred, Evaluate(StrEq(value))).WillOnce(Return(true));
-      ASSERT_EQ(ERROR_SUCCESS,
-                RegKey(root, child_key_path.c_str(),
-                       KEY_SET_VALUE).WriteValue(value_name, value));
-      EXPECT_EQ(InstallUtil::DELETED,
-                InstallUtil::DeleteRegistryKeyIf(root, parent_key_path,
-                                                 child_key_path,
-                                                 WorkItem::kWow64Default,
-                                                 value_name, pred));
-      EXPECT_FALSE(RegKey(root, parent_key_path.c_str(),
-                          KEY_QUERY_VALUE).Valid());
-    }
+    EXPECT_CALL(pred, Evaluate(StrEq(value))).WillOnce(Return(true));
+    ASSERT_EQ(ERROR_SUCCESS, RegKey(root, child_key_path.c_str(), KEY_SET_VALUE)
+                                 .WriteValue(value_name, value));
+    EXPECT_EQ(InstallUtil::DELETED,
+              InstallUtil::DeleteRegistryKeyIf(
+                  root, parent_key_path, child_key_path,
+                  WorkItem::kWow64Default, value_name, pred));
+    EXPECT_FALSE(
+        RegKey(root, parent_key_path.c_str(), KEY_QUERY_VALUE).Valid());
+  }
 
-    // Default value exists and matches: delete.
-    {
-      MockRegistryValuePredicate pred;
+  // Default value exists and matches: delete.
+  {
+    MockRegistryValuePredicate pred;
 
-      EXPECT_CALL(pred, Evaluate(StrEq(value))).WillOnce(Return(true));
-      ASSERT_EQ(ERROR_SUCCESS,
-                RegKey(root, child_key_path.c_str(),
-                       KEY_SET_VALUE).WriteValue(NULL, value));
-      EXPECT_EQ(InstallUtil::DELETED,
-                InstallUtil::DeleteRegistryKeyIf(root, parent_key_path,
-                                                 child_key_path,
-                                                 WorkItem::kWow64Default,
-                                                 NULL, pred));
-      EXPECT_FALSE(RegKey(root, parent_key_path.c_str(),
-                          KEY_QUERY_VALUE).Valid());
-    }
+    EXPECT_CALL(pred, Evaluate(StrEq(value))).WillOnce(Return(true));
+    ASSERT_EQ(ERROR_SUCCESS, RegKey(root, child_key_path.c_str(), KEY_SET_VALUE)
+                                 .WriteValue(NULL, value));
+    EXPECT_EQ(InstallUtil::DELETED, InstallUtil::DeleteRegistryKeyIf(
+                                        root, parent_key_path, child_key_path,
+                                        WorkItem::kWow64Default, NULL, pred));
+    EXPECT_FALSE(
+        RegKey(root, parent_key_path.c_str(), KEY_QUERY_VALUE).Valid());
   }
 }
 
@@ -295,8 +292,7 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
   const wchar_t value[] = L"hi mom";
 
   {
-    RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root);
+    ResetRegistryOverrides();
     // Nothing to delete if the key isn't even there.
     {
       MockRegistryValuePredicate pred;
@@ -359,8 +355,7 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
   }
 
   {
-    RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root);
+    ResetRegistryOverrides();
     // Default value matches: delete using empty string.
     {
       MockRegistryValuePredicate pred;
@@ -380,8 +375,7 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
   }
 
   {
-    RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root);
+    ResetRegistryOverrides();
     // Default value matches: delete using NULL.
     {
       MockRegistryValuePredicate pred;
@@ -412,11 +406,13 @@ TEST_F(InstallUtilTest, ValueEquals) {
 }
 
 TEST_F(InstallUtilTest, ProgramCompare) {
-  base::FilePath some_long_dir(
-      test_dir_.path().Append(L"Some Long Directory Name"));
-  base::FilePath expect(some_long_dir.Append(L"file.txt"));
-  base::FilePath expect_upcase(some_long_dir.Append(L"FILE.txt"));
-  base::FilePath other(some_long_dir.Append(L"otherfile.txt"));
+  base::ScopedTempDir test_dir;
+  ASSERT_TRUE(test_dir.CreateUniqueTempDir());
+  const base::FilePath some_long_dir(
+      test_dir.path().Append(L"Some Long Directory Name"));
+  const base::FilePath expect(some_long_dir.Append(L"file.txt"));
+  const base::FilePath expect_upcase(some_long_dir.Append(L"FILE.txt"));
+  const base::FilePath other(some_long_dir.Append(L"otherfile.txt"));
 
   // Tests where the expected file doesn't exist.
 
