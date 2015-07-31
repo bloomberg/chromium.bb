@@ -1265,6 +1265,7 @@
       'browser/chromeos/login/saml/saml_offline_signin_limiter_unittest.cc',
       'browser/chromeos/login/signin/merge_session_load_page_unittest.cc',
       'browser/chromeos/login/supervised/supervised_user_authentication_unittest.cc',
+      'browser/chromeos/login/users/affiliation_unittest.cc',
       'browser/chromeos/login/users/multi_profile_user_controller_unittest.cc',
       'browser/chromeos/login/users/user_manager_unittest.cc',
       'browser/chromeos/login/users/wallpaper/wallpaper_manager_unittest.cc',

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 
+#include <set>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -14,6 +16,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/chromeos/login/users/affiliation.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
@@ -272,6 +276,22 @@ void UserCloudPolicyManagerChromeOS::OnClientError(
 void UserCloudPolicyManagerChromeOS::OnComponentCloudPolicyUpdated() {
   CloudPolicyManager::OnComponentCloudPolicyUpdated();
   StartRefreshSchedulerIfReady();
+}
+
+void UserCloudPolicyManagerChromeOS::OnStoreLoaded(
+    CloudPolicyStore* cloud_policy_store) {
+  CloudPolicyManager::OnStoreLoaded(cloud_policy_store);
+
+  em::PolicyData const* const policy_data = cloud_policy_store->policy();
+
+  if (policy_data) {
+    chromeos::AffiliationIDSet set_of_user_affiliation_ids(
+        policy_data->user_affiliation_ids().begin(),
+        policy_data->user_affiliation_ids().end());
+
+    chromeos::ChromeUserManager::Get()->SetUserAffiliation(
+        policy_data->username(), set_of_user_affiliation_ids);
+  }
 }
 
 void UserCloudPolicyManagerChromeOS::GetChromePolicy(PolicyMap* policy_map) {

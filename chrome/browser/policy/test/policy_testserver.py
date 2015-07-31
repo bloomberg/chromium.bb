@@ -812,6 +812,16 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       # username from the configuration file or use a default.
       policy_data.username = policy.get('policy_user', 'user@example.com')
     policy_data.device_id = token_info['device_id']
+
+    # Set affiliation IDs so that user was managed on the device.
+    device_affiliation_ids = policy.get('device_affiliation_ids')
+    if device_affiliation_ids:
+      policy_data.device_affiliation_ids.extend(device_affiliation_ids)
+
+    user_affiliation_ids = policy.get('user_affiliation_ids')
+    if user_affiliation_ids:
+      policy_data.user_affiliation_ids.extend(user_affiliation_ids)
+
     signed_data = policy_data.SerializeToString()
 
     response.policy_data = signed_data

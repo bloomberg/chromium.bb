@@ -165,6 +165,9 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // True if the user Profile is created.
   bool is_profile_created() const { return profile_is_created_; }
 
+  // True if the user is affiliated to the device.
+  bool is_affiliated() const { return is_affiliated_; }
+
  protected:
   friend class UserManagerBase;
   friend class chromeos::ChromeUserManagerImpl;
@@ -243,6 +246,10 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // True if user has google account (not a guest or managed user).
   bool has_gaia_account() const;
 
+  void set_affiliation(bool is_affiliated) {
+    is_affiliated_ = is_affiliated;
+  }
+
  private:
   std::string email_;
   base::string16 display_name_;
@@ -284,6 +291,9 @@ class USER_MANAGER_EXPORT User : public UserInfo {
 
   // True if user Profile is created
   bool profile_is_created_;
+
+  // True if the user is affiliated to the device.
+  bool is_affiliated_;
 
   DISALLOW_COPY_AND_ASSIGN(User);
 };

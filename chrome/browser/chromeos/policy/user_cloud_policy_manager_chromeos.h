@@ -103,6 +103,9 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // ComponentCloudPolicyService::Delegate:
   void OnComponentCloudPolicyUpdated() override;
 
+  // CloudPolicyManager:
+  void OnStoreLoaded(CloudPolicyStore* cloud_policy_store) override;
+
  protected:
   // CloudPolicyManager:
   void GetChromePolicy(PolicyMap* policy_map) override;
