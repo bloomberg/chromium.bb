@@ -1467,6 +1467,10 @@ html[dir='rtl'] .thumbnail-view .scrollbar {
   border: solid 2px rgb(27, 168, 243);
 }
 
+.thumbnail-view .thumbnail.error {
+  display: none;
+}
+
 .thumbnail-view .thumbnail.transparent {
   opacity: 0;
 }

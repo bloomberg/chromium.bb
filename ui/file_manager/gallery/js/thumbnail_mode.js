@@ -54,16 +54,10 @@ ThumbnailMode.prototype.hasActiveTool = function() { return true; };
 ThumbnailMode.prototype.onKeyDown = function(event) {
   switch (event.keyIdentifier) {
     case 'Right':
-      if (isRTL())
-        this.thumbnailView_.selectPreviousItem();
-      else
-        this.thumbnailView_.selectNextItem();
+      this.thumbnailView_.moveSelection(isRTL() ? -1 : 1);
       return true;
     case 'Left':
-      if (isRTL())
-        this.thumbnailView_.selectNextItem();
-      else
-        this.thumbnailView_.selectPreviousItem();
+      this.thumbnailView_.moveSelection(isRTL() ? 1 : -1);
       return true;
     case 'Enter':
       this.changeToSlideModeCallback_();
@@ -299,25 +293,25 @@ ThumbnailView.prototype.onScroll_ = function(event) {
 };
 
 /**
- * Selects next item to the current selection.
+ * Moves selection to specified direction.
+ * @param {number} direction Direction.
+ * @param {number=} opt_index Base index.
  */
-ThumbnailView.prototype.selectNextItem = function() {
-  var index = this.selectionModel_.selectedIndex;
-  if (index + 1 < this.dataModel_.length) {
-    this.selectionModel_.selectedIndex = index + 1;
-    this.scrollTo_(index + 1);
-  }
-};
+ThumbnailView.prototype.moveSelection = function(direction, opt_index) {
+  var index = opt_index || this.selectionModel_.selectedIndex;
+  if (index + direction < 0 || index + direction >= this.dataModel_.length)
+    return;
 
-/**
- * Selects previous item to the current selection.
- */
-ThumbnailView.prototype.selectPreviousItem = function() {
-  var index = this.selectionModel_.selectedIndex;
-  if (index - 1 >= 0) {
-    this.selectionModel_.selectedIndex = index - 1;
-    this.scrollTo_(index - 1);
+  // Skip error thumbnail.
+  var thumbnail = this.getThumbnailAt_(index + direction);
+  if (thumbnail.isError()) {
+    this.moveSelection(direction, index + direction);
+    return;
   }
+
+  // Move selection.
+  this.selectionModel_.selectedIndex = index + direction;
+  this.scrollTo_(index + direction);
 };
 
 /**
@@ -563,8 +557,8 @@ ThumbnailView.prototype.performEnterAnimation = function(index, rect) {
   var thumbnailRect = this.getThumbnailRect(index);
   var thumbnail = this.getThumbnailAt_(index);
 
-  // If thumbnail is not loaded yet, do not perform animation.
-  if (!thumbnail.getBackgroundImage())
+  // If thumbnail is not loaded yet or failed to load, do not perform animation.
+  if (!thumbnail.getBackgroundImage() || thumbnail.isError())
     return;
 
   // Hide animating thumbnail.
@@ -628,6 +622,11 @@ ThumbnailView.Thumbnail = function(galleryItem) {
    * @private {number}
    */
   this.width_ = 0;
+
+  /**
+   * @private {*}
+   */
+  this.error_ = null;
 
   /**
    * @private {!HTMLElement}
@@ -701,6 +700,24 @@ ThumbnailView.Thumbnail.prototype.getWidth = function() {
 };
 
 /**
+ * Returns whether this has failed to load thumbnail or not.
+ * @return {boolean} True if thumbnail load has failed.
+ */
+ThumbnailView.Thumbnail.prototype.isError = function() {
+  return !!this.error_;
+};
+
+/**
+ * Sets error.
+ * @param {*} error Error object. Set null to clear error.
+ * @private
+ */
+ThumbnailView.Thumbnail.prototype.setError_ = function(error) {
+  this.error_ = error;
+  this.container_.classList.toggle('error', !!this.error_);
+};
+
+/**
  * Sets width of this thumbnail.
  * @param {number} width Width.
  * @private
@@ -741,7 +758,6 @@ ThumbnailView.Thumbnail.prototype.update = function() {
   if (thumbnailMetadata) {
     this.thumbnailLoadRequestId_++;
 
-    // TODO(yawano): Add error handling.
     this.thumbnailLoader_ = new ThumbnailLoader(
         this.galleryItem_.getEntry(), undefined, thumbnailMetadata);
     this.thumbnailLoader_.loadAsDataUrl(ThumbnailLoader.FillMode.FIT)
@@ -755,6 +771,8 @@ ThumbnailView.Thumbnail.prototype.update = function() {
               ~~(result.width * ThumbnailView.ROW_HEIGHT / result.height));
 
           this.imageFrame_.style.backgroundImage = 'url(' + result.data + ')';
-        }.bind(this, this.thumbnailLoadRequestId_));
+          this.setError_(null);
+        }.bind(this, this.thumbnailLoadRequestId_))
+        .catch(this.setError_.bind(this));
   }
 };
