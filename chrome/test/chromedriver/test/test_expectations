@@ -216,22 +216,18 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
 
     # https://code.google.com/p/chromedriver/issues/detail?id=1176
     'ChromeDriverTests.clientLogShouldBeEnabledByDefault',
+
+    # https://code.google.com/p/chromedriver/issues/detail?id=1119
+    'CombinedInputActionsTest.testCanClickOnLinksWithAnOffset',
+    'CombinedInputActionsTest.testMouseMovementWorksWhenNavigatingToAnotherPage',
 ]
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
     _OS_NEGATIVE_FILTER['android:chrome'])
 _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
-    _OS_NEGATIVE_FILTER['android:chrome'] + [
-        'ClickTest.testShouldClickOnFirstBoundingClientRectWithNonZeroSize',
-        'CombinedInputActionsTest.testCanClickOnLinksWithAnOffset',
-        'CombinedInputActionsTest.testMouseMovementWorksWhenNavigatingToAnotherPage',
-    ]
+    _OS_NEGATIVE_FILTER['android:chrome'])
 )
 _OS_NEGATIVE_FILTER['android:chrome_shell'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
-        # https://code.google.com/p/chromedriver/issues/detail?id=1119
-        'ClickTest.testShouldClickOnFirstBoundingClientRectWithNonZeroSize',
-        'CombinedInputActionsTest.testCanClickOnLinksWithAnOffset',
-        'CombinedInputActionsTest.testMouseMovementWorksWhenNavigatingToAnotherPage',
         # https://code.google.com/p/chromedriver/issues/detail?id=1171
         'ChromeDriverTests.testOptionsForUninitializedWebDriver',
     ]

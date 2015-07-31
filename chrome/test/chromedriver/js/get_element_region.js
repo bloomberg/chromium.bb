@@ -76,8 +76,14 @@ function getElementRegion(element) {
         'height': box.height
     };
   } else {
-    var clientRect = clientRects[0];
     var box = element.getBoundingClientRect();
+    var clientRect = clientRects[0];
+    for (var i = 0; i < clientRects.length; i++) {
+      if (clientRects[i].height != 0 && clientRects[i].width != 0) {
+        clientRect = clientRects[i];
+        break;
+      }
+    }
     return {
         'left': clientRect.left - box.left,
         'top': clientRect.top - box.top,
