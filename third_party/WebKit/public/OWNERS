@@ -10,5 +10,10 @@ pfeldman@chromium.org
 philipj@opera.com
 rbyers@chromium.org
 tkent@chromium.org
+
+# This is for the common case of adding or renaming files. If you're doing
+# structural changes, please get a review from a reviewer in this file.
+per-file BUILD.gn=*
+
 per-file blink_skia_config.gypi=bungeman@chromium.org
 per-file blink_skia_config.gypi=reed@chromium.org
