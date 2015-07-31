@@ -65,7 +65,8 @@ class MockDeviceStatusCollector : public policy::DeviceStatusCollector {
             nullptr,
             policy::DeviceStatusCollector::LocationUpdateRequester(),
             policy::DeviceStatusCollector::VolumeInfoFetcher(),
-            policy::DeviceStatusCollector::CPUStatisticsFetcher()) {}
+            policy::DeviceStatusCollector::CPUStatisticsFetcher(),
+            policy::DeviceStatusCollector::CPUTempFetcher()) {}
 
   MOCK_METHOD1(GetDeviceStatus, bool(em::DeviceStatusReportRequest*));
   MOCK_METHOD1(GetDeviceSessionStatus, bool(em::SessionStatusReportRequest*));

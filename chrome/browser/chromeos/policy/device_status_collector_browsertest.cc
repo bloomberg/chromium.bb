@@ -15,6 +15,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
@@ -96,12 +97,14 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
           location_update_requester,
       const policy::DeviceStatusCollector::VolumeInfoFetcher&
           volume_info_fetcher,
-      const policy::DeviceStatusCollector::CPUStatisticsFetcher& cpu_fetcher)
+      const policy::DeviceStatusCollector::CPUStatisticsFetcher& cpu_fetcher,
+      const policy::DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher)
       : policy::DeviceStatusCollector(local_state,
                                       provider,
                                       location_update_requester,
                                       volume_info_fetcher,
-                                      cpu_fetcher) {
+                                      cpu_fetcher,
+                                      cpu_temp_fetcher) {
     // Set the baseline time to a fixed value (1 AM) to prevent test flakiness
     // due to a single activity period spanning two days.
     SetBaselineTime(Time::Now().LocalMidnight() + TimeDelta::FromHours(1));
@@ -218,6 +221,15 @@ std::vector<em::VolumeInfo> GetFakeVolumeInfo(
   return volume_info;
 }
 
+std::vector<em::CPUTempInfo> GetEmptyCPUTempInfo() {
+  return std::vector<em::CPUTempInfo>();
+}
+
+std::vector<em::CPUTempInfo> GetFakeCPUTempInfo(
+    const std::vector<em::CPUTempInfo>& cpu_temp_info) {
+  return cpu_temp_info;
+}
+
 }  // namespace
 
 namespace policy {
@@ -277,7 +289,8 @@ class DeviceStatusCollectorTest : public testing::Test {
         settings_helper_.CreateOwnerSettingsService(nullptr);
 
     RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
-                           base::Bind(&GetEmptyCPUStatistics));
+                           base::Bind(&GetEmptyCPUStatistics),
+                           base::Bind(&GetEmptyCPUTempInfo));
   }
 
   void AddMountPoint(const std::string& mount_point) {
@@ -306,12 +319,14 @@ class DeviceStatusCollectorTest : public testing::Test {
 
   void RestartStatusCollector(
       const policy::DeviceStatusCollector::VolumeInfoFetcher& volume_info,
-      const policy::DeviceStatusCollector::CPUStatisticsFetcher& cpu_stats) {
+      const policy::DeviceStatusCollector::CPUStatisticsFetcher& cpu_stats,
+      const policy::DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher) {
     policy::DeviceStatusCollector::LocationUpdateRequester callback =
         base::Bind(&MockPositionUpdateRequester);
     std::vector<em::VolumeInfo> expected_volume_info;
     status_collector_.reset(new TestingDeviceStatusCollector(
-        &prefs_, &fake_statistics_provider_, callback, volume_info, cpu_stats));
+        &prefs_, &fake_statistics_provider_, callback, volume_info, cpu_stats,
+        cpu_temp_fetcher));
   }
 
   void GetStatus() {
@@ -480,7 +495,8 @@ TEST_F(DeviceStatusCollectorTest, StateKeptInPref) {
   // able to count the active periods found by the original collector, because
   // the results are stored in a pref.
   RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
-                         base::Bind(&GetEmptyCPUStatistics));
+                         base::Bind(&GetEmptyCPUStatistics),
+                         base::Bind(&GetEmptyCPUTempInfo));
   status_collector_->Simulate(test_states,
                               sizeof(test_states) / sizeof(ui::IdleState));
 
@@ -731,7 +747,8 @@ TEST_F(DeviceStatusCollectorTest, Location) {
   // retrieved from local state without requesting a geolocation update.
   SetMockPositionToReturnNext(valid_fix);
   RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
-                         base::Bind(&GetEmptyCPUStatistics));
+                         base::Bind(&GetEmptyCPUStatistics),
+                         base::Bind(&GetEmptyCPUTempInfo));
   CheckThatAValidLocationIsReported();
   EXPECT_TRUE(mock_position_to_return_next.get());
 
@@ -810,7 +827,8 @@ TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
   EXPECT_FALSE(expected_volume_info.empty());
 
   RestartStatusCollector(base::Bind(&GetFakeVolumeInfo, expected_volume_info),
-                         base::Bind(&GetEmptyCPUStatistics));
+                         base::Bind(&GetEmptyCPUStatistics),
+                         base::Bind(&GetEmptyCPUTempInfo));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   message_loop_.RunUntilIdle();
@@ -862,7 +880,8 @@ TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
   // Mock 100% CPU usage.
   std::string full_cpu_usage("cpu  500 0 500 0 0 0 0");
   RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
-                         base::Bind(&GetFakeCPUStatistics, full_cpu_usage));
+                         base::Bind(&GetFakeCPUStatistics, full_cpu_usage),
+                         base::Bind(&GetEmptyCPUTempInfo));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   message_loop_.RunUntilIdle();
@@ -899,6 +918,47 @@ TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
   settings_helper_.SetBoolean(chromeos::kReportDeviceHardwareStatus, false);
   GetStatus();
   EXPECT_EQ(0, status_.cpu_utilization_pct().size());
+}
+
+TEST_F(DeviceStatusCollectorTest, TestCPUTemp) {
+  std::vector<em::CPUTempInfo> expected_temp_info;
+  int cpu_cnt = 12;
+  for (int i = 0; i < cpu_cnt; ++i) {
+    em::CPUTempInfo info;
+    info.set_cpu_temp(i * 10 + 100);
+    info.set_cpu_label(base::StringPrintf("Core %d", i));
+    expected_temp_info.push_back(info);
+  }
+
+  RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
+                         base::Bind(&GetEmptyCPUStatistics),
+                         base::Bind(&GetFakeCPUTempInfo, expected_temp_info));
+  // Force finishing tasks posted by ctor of DeviceStatusCollector.
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  message_loop_.RunUntilIdle();
+
+  GetStatus();
+  EXPECT_EQ(expected_temp_info.size(),
+            static_cast<size_t>(status_.cpu_temp_info_size()));
+
+  // Walk the returned CPUTempInfo to make sure it matches.
+  for (const em::CPUTempInfo& expected_info : expected_temp_info) {
+    bool found = false;
+    for (const em::CPUTempInfo& info : status_.cpu_temp_info()) {
+      if (info.cpu_label() == expected_info.cpu_label()) {
+        EXPECT_EQ(expected_info.cpu_temp(), info.cpu_temp());
+        found = true;
+        break;
+      }
+    }
+    EXPECT_TRUE(found) << "No matching CPUTempInfo for "
+                       << expected_info.cpu_label();
+  }
+
+  // Now turn off hardware status reporting - should have no data.
+  settings_helper_.SetBoolean(chromeos::kReportDeviceHardwareStatus, false);
+  GetStatus();
+  EXPECT_EQ(0, status_.cpu_temp_info_size());
 }
 
 TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfNotKioskMode) {

@@ -66,15 +66,22 @@ class DeviceStatusCollector {
   //   cpu  user_time nice_time system_time idle_time
   using CPUStatisticsFetcher = base::Callback<std::string(void)>;
 
-  // Constructor. Callers can inject their own VolumeInfoFetcher and
-  // CPUStatisticsFetcher. A null callback can be passed for either parameter,
-  // to use the default implementation.
+  // Reads CPU temperatures from /sys/class/hwmon/hwmon*/temp*_input and
+  // appropriate labels from /sys/class/hwmon/hwmon*/temp*_label.
+  using CPUTempFetcher =
+      base::Callback<std::vector<enterprise_management::CPUTempInfo>()>;
+
+  // Constructor. Callers can inject their own VolumeInfoFetcher,
+  // CPUStatisticsFetcher and CPUTempFetcher. These callbacks are executed on
+  // Blocking Pool. A null callback can be passed for either parameter, to use
+  // the default implementation.
   DeviceStatusCollector(
       PrefService* local_state,
       chromeos::system::StatisticsProvider* provider,
       const LocationUpdateRequester& location_update_requester,
       const VolumeInfoFetcher& volume_info_fetcher,
-      const CPUStatisticsFetcher& cpu_statistics_fetcher);
+      const CPUStatisticsFetcher& cpu_statistics_fetcher,
+      const CPUTempFetcher& cpu_temp_fetcher);
   virtual ~DeviceStatusCollector();
 
   // Fills in the passed proto with device status information. Will return
@@ -185,6 +192,10 @@ class DeviceStatusCollector {
   // Callback invoked to update our cpu usage information.
   void ReceiveCPUStatistics(const std::string& statistics);
 
+  // Callback invoked to update our CPU temp information.
+  void StoreCPUTempInfo(
+      const std::vector<enterprise_management::CPUTempInfo>& info);
+
   // Helper routine to convert from Shill-provided signal strength (percent)
   // to dBm units expected by server.
   int ConvertWifiSignalStrength(int signal_strength);
@@ -216,6 +227,9 @@ class DeviceStatusCollector {
   // Cached disk volume information.
   std::vector<enterprise_management::VolumeInfo> volume_info_;
 
+  // Cached CPU temp information.
+  std::vector<enterprise_management::CPUTempInfo> cpu_temp_info_;
+
   struct ResourceUsage {
     // Sample of percentage-of-CPU-used.
     int cpu_usage_percent;
@@ -234,6 +248,9 @@ class DeviceStatusCollector {
 
   // Callback invoked to fetch information about cpu usage.
   CPUStatisticsFetcher cpu_statistics_fetcher_;
+
+  // Callback invoked to fetch information about cpu temperature.
+  CPUTempFetcher cpu_temp_fetcher_;
 
   chromeos::system::StatisticsProvider* statistics_provider_;
 

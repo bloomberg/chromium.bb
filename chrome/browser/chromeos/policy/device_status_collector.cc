@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/location.h"
@@ -22,6 +23,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
@@ -85,6 +87,12 @@ const char kTimestamp[] = "timestamp";
 // The location we read our CPU statistics from.
 const char kProcStat[] = "/proc/stat";
 
+// The location we read our CPU temperature and channel label from.
+const char kHwmonDir[] = "/sys/class/hwmon/";
+const char kDeviceDir[] = "device";
+const char kHwmonDirectoryPattern[] = "hwmon*";
+const char kCPUTempFilePattern[] = "temp*_input";
+
 // Determine the day key (milliseconds since epoch for corresponding day in UTC)
 // for a given |timestamp|.
 int64 TimestampToDayKey(Time timestamp) {
@@ -139,6 +147,64 @@ std::string ReadCPUStatistics() {
   return std::string();
 }
 
+// Reads the CPU temperature info from
+// /sys/class/hwmon/hwmon*/device/temp*_input and
+// /sys/class/hwmon/hwmon*/device/temp*_label files.
+//
+// temp*_input contains CPU temperature in millidegree Celsius
+// temp*_label contains appropriate temperature channel label.
+std::vector<em::CPUTempInfo> ReadCPUTempInfo() {
+  std::vector<em::CPUTempInfo> contents;
+  // Get directories /sys/class/hwmon/hwmon*
+  base::FileEnumerator hwmon_enumerator(base::FilePath(kHwmonDir), false,
+                                        base::FileEnumerator::DIRECTORIES,
+                                        kHwmonDirectoryPattern);
+
+  for (base::FilePath hwmon_path = hwmon_enumerator.Next(); !hwmon_path.empty();
+       hwmon_path = hwmon_enumerator.Next()) {
+    // Get files /sys/class/hwmon/hwmon*/device/temp*_input
+    const base::FilePath hwmon_device_dir = hwmon_path.Append(kDeviceDir);
+    base::FileEnumerator enumerator(hwmon_device_dir, false,
+                                    base::FileEnumerator::FILES,
+                                    kCPUTempFilePattern);
+    for (base::FilePath temperature_path = enumerator.Next();
+         !temperature_path.empty(); temperature_path = enumerator.Next()) {
+      // Get appropriate temp*_label file.
+      std::string label_path = temperature_path.MaybeAsASCII();
+      if (label_path.empty()) {
+        LOG(WARNING) << "Unable to parse a path to temp*_input file as ASCII";
+        continue;
+      }
+      base::ReplaceSubstringsAfterOffset(&label_path, 0, "input", "label");
+
+      // Read label.
+      std::string label;
+      if (!base::PathExists(base::FilePath(label_path)) ||
+          !base::ReadFileToString(base::FilePath(label_path), &label)) {
+        label = std::string();
+      }
+
+      // Read temperature in millidegree Celsius.
+      std::string temperature_string;
+      int32 temperature = 0;
+      if (base::ReadFileToString(temperature_path, &temperature_string) &&
+          sscanf(temperature_string.c_str(), "%d", &temperature) == 1) {
+        // CPU temp in millidegree Celsius to Celsius
+        temperature /= 1000;
+
+        em::CPUTempInfo info;
+        info.set_cpu_label(label);
+        info.set_cpu_temp(temperature);
+        contents.push_back(info);
+      } else {
+        LOG(WARNING) << "Unable to read CPU temp from "
+                     << temperature_path.MaybeAsASCII();
+      }
+    }
+  }
+  return contents;
+}
+
 // Returns the DeviceLocalAccount associated with the current kiosk session.
 // Returns null if there is no active kiosk session, or if that kiosk
 // session has been removed from policy since the session started, in which
@@ -172,7 +238,8 @@ DeviceStatusCollector::DeviceStatusCollector(
     chromeos::system::StatisticsProvider* provider,
     const LocationUpdateRequester& location_update_requester,
     const VolumeInfoFetcher& volume_info_fetcher,
-    const CPUStatisticsFetcher& cpu_statistics_fetcher)
+    const CPUStatisticsFetcher& cpu_statistics_fetcher,
+    const CPUTempFetcher& cpu_temp_fetcher)
     : max_stored_past_activity_days_(kMaxStoredPastActivityDays),
       max_stored_future_activity_days_(kMaxStoredFutureActivityDays),
       local_state_(local_state),
@@ -182,6 +249,7 @@ DeviceStatusCollector::DeviceStatusCollector(
       geolocation_update_in_progress_(false),
       volume_info_fetcher_(volume_info_fetcher),
       cpu_statistics_fetcher_(cpu_statistics_fetcher),
+      cpu_temp_fetcher_(cpu_temp_fetcher),
       statistics_provider_(provider),
       last_cpu_active_(0),
       last_cpu_idle_(0),
@@ -200,6 +268,9 @@ DeviceStatusCollector::DeviceStatusCollector(
 
   if (cpu_statistics_fetcher_.is_null())
     cpu_statistics_fetcher_ = base::Bind(&ReadCPUStatistics);
+
+  if (cpu_temp_fetcher_.is_null())
+    cpu_temp_fetcher_ = base::Bind(&ReadCPUTempInfo);
 
   idle_poll_timer_.Start(FROM_HERE,
                          TimeDelta::FromSeconds(kIdlePollIntervalSeconds),
@@ -492,7 +563,7 @@ void DeviceStatusCollector::SampleHardwareStatus() {
     mount_points.push_back(mount_info.first);
   }
 
-  // Call out to the blocking pool to measure disk and CPU usage.
+  // Call out to the blocking pool to measure disk, CPU usage and CPU temp.
   base::PostTaskAndReplyWithResult(
       content::BrowserThread::GetBlockingPool(),
       FROM_HERE,
@@ -504,6 +575,11 @@ void DeviceStatusCollector::SampleHardwareStatus() {
       content::BrowserThread::GetBlockingPool(), FROM_HERE,
       cpu_statistics_fetcher_,
       base::Bind(&DeviceStatusCollector::ReceiveCPUStatistics,
+                 weak_factory_.GetWeakPtr()));
+
+  base::PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(), FROM_HERE, cpu_temp_fetcher_,
+      base::Bind(&DeviceStatusCollector::StoreCPUTempInfo,
                  weak_factory_.GetWeakPtr()));
 }
 
@@ -558,6 +634,16 @@ void DeviceStatusCollector::ReceiveCPUStatistics(const std::string& stats) {
   // sample.
   if (resource_usage_.size() > kMaxResourceUsageSamples)
     resource_usage_.pop_front();
+}
+
+void DeviceStatusCollector::StoreCPUTempInfo(
+    const std::vector<em::CPUTempInfo>& info) {
+  if (info.empty()) {
+    DLOG(WARNING) << "Unable to read CPU temp information.";
+  }
+
+  if (report_hardware_status_)
+    cpu_temp_info_ = info;
 }
 
 void DeviceStatusCollector::GetActivityTimes(
@@ -806,6 +892,12 @@ void DeviceStatusCollector::GetHardwareStatus(
   for (const ResourceUsage& usage : resource_usage_) {
     status->add_cpu_utilization_pct(usage.cpu_usage_percent);
     status->add_system_ram_free(usage.bytes_of_ram_free);
+  }
+
+  // Add CPU temp info.
+  status->clear_cpu_temp_info();
+  for (const em::CPUTempInfo& info : cpu_temp_info_) {
+    *status->add_cpu_temp_info() = info;
   }
 }
 
