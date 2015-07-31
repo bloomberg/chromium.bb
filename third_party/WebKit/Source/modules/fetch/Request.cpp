@@ -49,8 +49,7 @@ FetchRequestData* createCopyOfFetchRequestDataForFetch(ScriptState* scriptState,
 Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Request* inputRequest, const String& inputString, const RequestInit& init, ExceptionState& exceptionState)
 {
     // "1. Let |temporaryBody| be null."
-    Request* temporaryBodyRequest = nullptr;
-    BodyStreamBuffer* temporaryBodyBuffer = nullptr;
+    BodyStreamBuffer* temporaryBody = nullptr;
 
     if (inputRequest) {
         // We check bodyUsed even when the body is null in spite of the
@@ -70,9 +69,7 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
             exceptionState.throwTypeError("Cannot construct a Request with a Request object that has already been used.");
             return nullptr;
         }
-        // We call createDrainingStream() later and not here, because
-        // createDrainingStream() has side effects on |inputRequest|'s body.
-        temporaryBodyRequest = inputRequest;
+        temporaryBody = inputRequest->bodyBuffer();
     }
 
     // "3. Let |request| be |input|'s request, if |input| is a Request object,
@@ -186,7 +183,7 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
         headers = r->headers()->clone();
     }
     // "24. Empty |r|'s request's header list."
-    r->clearHeaderList();
+    r->m_request->headerList()->clearList();
     // "25. If |r|'s request's mode is no CORS, run these substeps:
     if (r->request()->mode() == WebURLRequest::FetchRequestModeNoCORS) {
         // "1. If |r|'s request's method is not a simple method, throw a
@@ -213,7 +210,7 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
 
     // "27. If either |init|'s body member is present or |temporaryBody| is
     // non-null, and |request|'s method is `GET` or `HEAD`, throw a TypeError.
-    if (init.bodyBlobHandle || temporaryBodyRequest) {
+    if (init.bodyBlobHandle || temporaryBody) {
         if (request->method() == "GET" || request->method() == "HEAD") {
             exceptionState.throwTypeError("Request with GET/HEAD method cannot have body.");
             return nullptr;
@@ -229,8 +226,7 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
         //  contains no header named `Content-Type`, append
         //  `Content-Type`/|Content-Type| to |r|'s Headers object. Rethrow any
         //  exception."
-        temporaryBodyBuffer = BodyStreamBuffer::create(FetchBlobDataConsumerHandle::create(scriptState->executionContext(), init.bodyBlobHandle));
-        temporaryBodyRequest = nullptr;
+        temporaryBody = new BodyStreamBuffer(FetchBlobDataConsumerHandle::create(scriptState->executionContext(), init.bodyBlobHandle));
         if (!init.bodyBlobHandle->type().isEmpty() && !r->headers()->has("Content-Type", exceptionState)) {
             r->headers()->append("Content-Type", init.bodyBlobHandle->type(), exceptionState);
         }
@@ -239,10 +235,8 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
     }
 
     // "29. Set |r|'s body to |temporaryBody|.
-    if (temporaryBodyBuffer)
-        r->setBuffer(temporaryBodyBuffer);
-    else if (temporaryBodyRequest)
-        r->setBuffer(temporaryBodyRequest->createDrainingStream()->leakBuffer());
+    if (temporaryBody)
+        r->m_request->setBuffer(temporaryBody);
 
     // "30. Set |r|'s MIME type to the result of extracting a MIME type from
     // |r|'s request's header list."
@@ -254,9 +248,9 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
     // spec. See https://github.com/whatwg/fetch/issues/61 for details.
     if (inputRequest) {
         // "1. Set |input|'s body to null."
-        inputRequest->setBuffer(nullptr);
+        inputRequest->m_request->setBuffer(new BodyStreamBuffer);
         // "2. Set |input|'s used flag."
-        inputRequest->lockBody(PassBody);
+        inputRequest->setBodyPassed();
     }
 
     // "32. Return |r|."
@@ -293,9 +287,7 @@ Request* Request::create(ScriptState* scriptState, Request* input, const Diction
 
 Request* Request::create(ExecutionContext* context, FetchRequestData* request)
 {
-    Request* r = new Request(context, request);
-    r->suspendIfNeeded();
-    return r;
+    return new Request(context, request);
 }
 
 Request::Request(ExecutionContext* context, FetchRequestData* request)
@@ -304,21 +296,14 @@ Request::Request(ExecutionContext* context, FetchRequestData* request)
     , m_headers(Headers::create(m_request->headerList()))
 {
     m_headers->setGuard(Headers::RequestGuard);
-
-    refreshBody();
 }
 
 Request::Request(ExecutionContext* context, FetchRequestData* request, Headers* headers)
-    : Body(context) , m_request(request) , m_headers(headers)
-{
-    refreshBody();
-}
+    : Body(context) , m_request(request) , m_headers(headers) {}
 
 Request* Request::create(ExecutionContext* context, const WebServiceWorkerRequest& webRequest)
 {
-    Request* r = new Request(context, webRequest);
-    r->suspendIfNeeded();
-    return r;
+    return new Request(context, webRequest);
 }
 
 Request::Request(ExecutionContext* context, const WebServiceWorkerRequest& webRequest)
@@ -327,8 +312,6 @@ Request::Request(ExecutionContext* context, const WebServiceWorkerRequest& webRe
     , m_headers(Headers::create(m_request->headerList()))
 {
     m_headers->setGuard(Headers::RequestGuard);
-
-    refreshBody();
 }
 
 String Request::method() const
@@ -477,32 +460,23 @@ Request* Request::clone(ExceptionState& exceptionState)
         return nullptr;
     }
 
-    if (OwnPtr<DrainingBodyStreamBuffer> buffer = createDrainingStream())
-        m_request->setBuffer(buffer->leakBuffer());
-
     FetchRequestData* request = m_request->clone(executionContext());
     Headers* headers = Headers::create(request->headerList());
     headers->setGuard(m_headers->guard());
-    Request* r = new Request(executionContext(), request, headers);
-    r->suspendIfNeeded();
-
-    // Lock the old body and set |body| property to the new one.
-    lockBody();
-    refreshBody();
-    return r;
+    return new Request(executionContext(), request, headers);
 }
 
 FetchRequestData* Request::passRequestData()
 {
     ASSERT(!bodyUsed());
-
-    if (OwnPtr<DrainingBodyStreamBuffer> buffer = createDrainingStream())
-        m_request->setBuffer(buffer->leakBuffer());
-
-    lockBody(PassBody);
+    setBodyPassed();
     FetchRequestData* newRequestData = m_request->pass(executionContext());
-    refreshBody();
     return newRequestData;
+}
+
+bool Request::hasBody() const
+{
+    return bodyBuffer()->hasBody();
 }
 
 void Request::populateWebServiceWorkerRequest(WebServiceWorkerRequest& webRequest) const
@@ -521,22 +495,6 @@ void Request::populateWebServiceWorkerRequest(WebServiceWorkerRequest& webReques
     webRequest.setReferrer(m_request->referrer().referrer().referrer, static_cast<WebReferrerPolicy>(m_request->referrer().referrer().referrerPolicy));
     // FIXME: How can we set isReload properly? What is the correct place to load it in to the Request object? We should investigate the right way
     // to plumb this information in to here.
-}
-
-void Request::setBuffer(BodyStreamBuffer* buffer)
-{
-    m_request->setBuffer(buffer);
-    refreshBody();
-}
-
-void Request::refreshBody()
-{
-    setBody(m_request->buffer());
-}
-
-void Request::clearHeaderList()
-{
-    m_request->headerList()->clearList();
 }
 
 String Request::mimeType() const

@@ -31,7 +31,7 @@ FetchRequestData* FetchRequestData::create(ExecutionContext* executionContext, c
     for (HTTPHeaderMap::const_iterator it = webRequest.headers().begin(); it != webRequest.headers().end(); ++it)
         request->m_headerList->append(it->key, it->value);
     if (webRequest.blobDataHandle())
-        request->setBuffer(BodyStreamBuffer::create(FetchBlobDataConsumerHandle::create(executionContext, webRequest.blobDataHandle())));
+        request->setBuffer(new BodyStreamBuffer(FetchBlobDataConsumerHandle::create(executionContext, webRequest.blobDataHandle())));
     request->setContext(webRequest.requestContext());
     request->m_referrer.setURL(webRequest.referrer());
     request->setMode(webRequest.mode());
@@ -40,19 +40,13 @@ FetchRequestData* FetchRequestData::create(ExecutionContext* executionContext, c
     return request;
 }
 
-FetchRequestData* FetchRequestData::clone(ExecutionContext* executionContext)
+FetchRequestData* FetchRequestData::cloneExceptBody()
 {
     FetchRequestData* request = FetchRequestData::create();
     request->m_url = m_url;
     request->m_method = m_method;
     request->m_headerList = m_headerList->clone();
     request->m_unsafeRequestFlag = m_unsafeRequestFlag;
-    if (m_buffer) {
-        OwnPtr<FetchDataConsumerHandle> dest1, dest2;
-        DataConsumerTee::create(executionContext, m_buffer->releaseHandle(), &dest1, &dest2);
-        m_buffer = BodyStreamBuffer::create(dest1.release());
-        request->m_buffer = BodyStreamBuffer::create(dest2.release());
-    }
     request->m_origin = m_origin;
     request->m_sameOriginDataURLFlag = m_sameOriginDataURLFlag;
     request->m_context = m_context;
@@ -64,9 +58,27 @@ FetchRequestData* FetchRequestData::clone(ExecutionContext* executionContext)
     return request;
 }
 
+FetchRequestData* FetchRequestData::clone(ExecutionContext* executionContext)
+{
+    FetchRequestData* request = FetchRequestData::cloneExceptBody();
+    if (m_buffer->hasBody()) {
+        OwnPtr<FetchDataConsumerHandle> dest1, dest2;
+        // TODO(yhirano): unlock the buffer.
+        DataConsumerTee::create(executionContext, m_buffer->lock(executionContext), &dest1, &dest2);
+        m_buffer = new BodyStreamBuffer(dest1.release());
+        request->m_buffer = new BodyStreamBuffer(dest2.release());
+    } else {
+        m_buffer = new BodyStreamBuffer;
+    }
+    return request;
+}
+
 FetchRequestData* FetchRequestData::pass(ExecutionContext* executionContext)
 {
-    return clone(executionContext);
+    FetchRequestData* request = FetchRequestData::cloneExceptBody();
+    request->m_buffer = m_buffer;
+    m_buffer = new BodyStreamBuffer;
+    return request;
 }
 
 FetchRequestData::~FetchRequestData()
@@ -82,6 +94,7 @@ FetchRequestData::FetchRequestData()
     , m_mode(WebURLRequest::FetchRequestModeNoCORS)
     , m_credentials(WebURLRequest::FetchCredentialsModeOmit)
     , m_responseTainting(BasicTainting)
+    , m_buffer(new BodyStreamBuffer)
 {
 }
 

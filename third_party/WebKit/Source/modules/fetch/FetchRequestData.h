@@ -96,6 +96,8 @@ public:
 private:
     FetchRequestData();
 
+    FetchRequestData* cloneExceptBody();
+
     AtomicString m_method;
     KURL m_url;
     Member<FetchHeaderList> m_headerList;

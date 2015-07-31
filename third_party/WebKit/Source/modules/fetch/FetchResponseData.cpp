@@ -167,23 +167,24 @@ FetchResponseData* FetchResponseData::clone(ExecutionContext* executionContext)
         break;
     case DefaultType: {
         ASSERT(!m_internalResponse);
-        if (!m_buffer)
-            return newResponse;
-
-        OwnPtr<WebDataConsumerHandle> handle1;
-        OwnPtr<WebDataConsumerHandle> handle2;
-        DataConsumerTee::create(executionContext, m_buffer->releaseHandle(), &handle1, &handle2);
-        m_buffer = BodyStreamBuffer::create(createFetchDataConsumerHandleFromWebHandle(handle1.release()));
-        newResponse->m_buffer = BodyStreamBuffer::create(createFetchDataConsumerHandleFromWebHandle(handle2.release()));
+        if (m_buffer->hasBody()) {
+            OwnPtr<WebDataConsumerHandle> handle1, handle2;
+            // TODO(yhirano): unlock the buffer appropriately.
+            DataConsumerTee::create(executionContext, m_buffer->lock(executionContext), &handle1, &handle2);
+            m_buffer = new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(handle1.release()));
+            newResponse->m_buffer = new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(handle2.release()));
+        } else {
+            m_buffer = new BodyStreamBuffer;
+        }
         break;
     }
     case ErrorType:
         ASSERT(!m_internalResponse);
-        ASSERT(!m_buffer);
+        ASSERT(!m_buffer->hasBody());
         break;
     case OpaqueType:
         ASSERT(m_internalResponse);
-        ASSERT(!m_buffer);
+        ASSERT(!m_buffer->hasBody());
         ASSERT(m_internalResponse->m_type == DefaultType);
         newResponse->m_internalResponse = m_internalResponse->clone(executionContext);
         break;
@@ -214,6 +215,7 @@ FetchResponseData::FetchResponseData(Type type, unsigned short status, AtomicStr
     , m_status(status)
     , m_statusMessage(statusMessage)
     , m_headerList(FetchHeaderList::create())
+    , m_buffer(new BodyStreamBuffer)
 {
 }
 

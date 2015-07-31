@@ -6,161 +6,221 @@
 #include "modules/fetch/BodyStreamBuffer.h"
 
 #include "core/dom/DOMArrayBuffer.h"
+#include "core/dom/DOMTypedArray.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/fetch/DataConsumerHandleUtil.h"
+#include "platform/blob/BlobData.h"
 
 namespace blink {
 
-BodyStreamBuffer* BodyStreamBuffer::createEmpty()
-{
-    return BodyStreamBuffer::create(createFetchDataConsumerHandleFromWebHandle(createDoneDataConsumerHandle()));
-}
-
-FetchDataConsumerHandle* BodyStreamBuffer::handle() const
-{
-    ASSERT(!m_fetchDataLoader);
-    ASSERT(!m_drainingStreamNotificationClient);
-    return m_handle.get();
-}
-
-PassOwnPtr<FetchDataConsumerHandle> BodyStreamBuffer::releaseHandle()
-{
-    ASSERT(!m_fetchDataLoader);
-    ASSERT(!m_drainingStreamNotificationClient);
-    return m_handle.release();
-}
-
-class ClientWithFinishNotification final : public GarbageCollectedFinalized<ClientWithFinishNotification>, public FetchDataLoader::Client {
-    USING_GARBAGE_COLLECTED_MIXIN(ClientWithFinishNotification);
+class BodyStreamBuffer::LoaderHolder final : public GarbageCollectedFinalized<LoaderHolder>, public FetchDataLoader::Client {
+    WTF_MAKE_NONCOPYABLE(LoaderHolder);
+    USING_GARBAGE_COLLECTED_MIXIN(LoaderHolder);
 public:
-    ClientWithFinishNotification(BodyStreamBuffer* buffer, FetchDataLoader::Client* client)
-        : m_buffer(buffer)
-        , m_client(client)
+    LoaderHolder(BodyStreamBuffer* buffer, FetchDataLoader* loader, FetchDataLoader::Client* client) : m_buffer(buffer), m_loader(loader), m_client(client) {}
+
+    void start(PassOwnPtr<FetchDataConsumerHandle> handle) { m_loader->start(handle.get(), this); }
+
+    void didFetchDataLoadedBlobHandle(PassRefPtr<BlobDataHandle> blobDataHandle) override
     {
+        m_buffer->endLoading(this, EndLoadingDone);
+        m_client->didFetchDataLoadedBlobHandle(blobDataHandle);
     }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
+    void didFetchDataLoadedArrayBuffer(PassRefPtr<DOMArrayBuffer> arrayBuffer) override
+    {
+        m_buffer->endLoading(this, EndLoadingDone);
+        m_client->didFetchDataLoadedArrayBuffer(arrayBuffer);
+    }
+
+    void didFetchDataLoadedString(const String& string) override
+    {
+        m_buffer->endLoading(this, EndLoadingDone);
+        m_client->didFetchDataLoadedString(string);
+    }
+
+    void didFetchDataLoadedStream() override
+    {
+        m_buffer->endLoading(this, EndLoadingDone);
+        m_client->didFetchDataLoadedStream();
+    }
+
+    void didFetchDataLoadFailed() override
+    {
+        m_buffer->endLoading(this, EndLoadingErrored);
+        m_client->didFetchDataLoadFailed();
+    }
+
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_buffer);
+        visitor->trace(m_loader);
         visitor->trace(m_client);
         FetchDataLoader::Client::trace(visitor);
     }
 
 private:
-    void didFetchDataLoadedBlobHandle(PassRefPtr<BlobDataHandle> blobDataHandle) override
-    {
-        if (m_client)
-            m_client->didFetchDataLoadedBlobHandle(blobDataHandle);
-        m_buffer->didFetchDataLoadFinished();
-    }
-    void didFetchDataLoadedArrayBuffer(PassRefPtr<DOMArrayBuffer> arrayBuffer) override
-    {
-        if (m_client)
-            m_client->didFetchDataLoadedArrayBuffer(arrayBuffer);
-        m_buffer->didFetchDataLoadFinished();
-    }
-    void didFetchDataLoadedString(const String& str) override
-    {
-        if (m_client)
-            m_client->didFetchDataLoadedString(str);
-        m_buffer->didFetchDataLoadFinished();
-    }
-    void didFetchDataLoadedStream() override
-    {
-        if (m_client)
-            m_client->didFetchDataLoadedStream();
-        m_buffer->didFetchDataLoadFinished();
-    }
-    void didFetchDataLoadFailed() override
-    {
-        if (m_client)
-            m_client->didFetchDataLoadFailed();
-        m_buffer->didFetchDataLoadFinished();
-    }
-
     Member<BodyStreamBuffer> m_buffer;
+    Member<FetchDataLoader> m_loader;
     Member<FetchDataLoader::Client> m_client;
 };
 
-void BodyStreamBuffer::setDrainingStreamNotificationClient(DrainingStreamNotificationClient* client)
+BodyStreamBuffer::BodyStreamBuffer(PassOwnPtr<FetchDataConsumerHandle> handle)
+    : m_handle(handle)
+    , m_reader(m_handle ? m_handle->obtainReader(this) : nullptr)
+    , m_stream(new ReadableByteStream(this, new ReadableByteStream::StrictStrategy))
+    , m_lockLevel(0)
+    , m_hasBody(m_handle)
+    , m_streamNeedsMore(false)
 {
-    ASSERT(!m_fetchDataLoader);
-    ASSERT(!m_drainingStreamNotificationClient);
-    m_drainingStreamNotificationClient = client;
+    if (m_hasBody) {
+        m_stream->didSourceStart();
+    } else {
+        // a null body corresponds to an empty stream.
+        close();
+    }
 }
 
-void BodyStreamBuffer::startLoading(FetchDataLoader* fetchDataLoader, FetchDataLoader::Client* client)
+PassRefPtr<BlobDataHandle> BodyStreamBuffer::drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::BlobSizePolicy policy)
 {
-    ASSERT(!m_fetchDataLoader);
-    m_fetchDataLoader = fetchDataLoader;
-    m_fetchDataLoader->start(m_handle.get(), new ClientWithFinishNotification(this, client));
+    ASSERT(!isLocked());
+    if (ReadableStream::Closed == m_stream->stateInternal() || ReadableStream::Errored == m_stream->stateInternal())
+        return nullptr;
+
+    RefPtr<BlobDataHandle> blobDataHandle = m_reader->drainAsBlobDataHandle(policy);
+    if (blobDataHandle) {
+        close();
+        return blobDataHandle.release();
+    }
+    return nullptr;
 }
 
-void BodyStreamBuffer::doDrainingStreamNotification()
+PassOwnPtr<FetchDataConsumerHandle> BodyStreamBuffer::lock(ExecutionContext* executionContext)
 {
-    ASSERT(!m_fetchDataLoader);
-    DrainingStreamNotificationClient* client = m_drainingStreamNotificationClient;
-    m_drainingStreamNotificationClient.clear();
-    if (client)
-        client->didFetchDataLoadFinishedFromDrainingStream();
+    ASSERT(!isLocked());
+    ++m_lockLevel;
+    m_reader = nullptr;
+    OwnPtr<FetchDataConsumerHandle> handle = m_handle.release();
+    if (ReadableStream::Closed == m_stream->stateInternal() || !m_hasBody)
+        return createFetchDataConsumerHandleFromWebHandle(createDoneDataConsumerHandle());
+    if (ReadableStream::Errored == m_stream->stateInternal())
+        return createFetchDataConsumerHandleFromWebHandle(createUnexpectedErrorDataConsumerHandle());
+
+    TrackExceptionState exceptionState;
+    m_streamReader = m_stream->getBytesReader(executionContext, exceptionState);
+    return handle.release();
 }
 
-void BodyStreamBuffer::clearDrainingStreamNotification()
+void BodyStreamBuffer::startLoading(ExecutionContext* executionContext, FetchDataLoader* loader, FetchDataLoader::Client* client)
 {
-    ASSERT(!m_fetchDataLoader);
-    m_drainingStreamNotificationClient.clear();
+    OwnPtr<FetchDataConsumerHandle> handle = lock(executionContext);
+    auto holder = new LoaderHolder(this, loader, client);
+    m_loaders.add(holder);
+    holder->start(handle.release());
 }
 
-void BodyStreamBuffer::didFetchDataLoadFinished()
+void BodyStreamBuffer::pullSource()
 {
-    ASSERT(m_fetchDataLoader);
-    m_fetchDataLoader.clear();
-    doDrainingStreamNotification();
+    ASSERT(!m_streamNeedsMore);
+    m_streamNeedsMore = true;
+    processData();
 }
 
-DrainingBodyStreamBuffer::~DrainingBodyStreamBuffer()
+ScriptPromise BodyStreamBuffer::cancelSource(ScriptState* scriptState, ScriptValue)
 {
-    if (m_buffer)
-        m_buffer->doDrainingStreamNotification();
+    close();
+    return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
 }
 
-void DrainingBodyStreamBuffer::startLoading(FetchDataLoader* fetchDataLoader, FetchDataLoader::Client* client)
+void BodyStreamBuffer::didGetReadable()
 {
-    if (!m_buffer)
+    if (!m_reader)
         return;
 
-    m_buffer->startLoading(fetchDataLoader, client);
-    m_buffer.clear();
+    if (!m_streamNeedsMore) {
+        // Perform zero-length read to call close()/error() early.
+        size_t readSize;
+        WebDataConsumerHandle::Result result = m_reader->read(nullptr, 0, WebDataConsumerHandle::FlagNone, &readSize);
+        switch (result) {
+        case WebDataConsumerHandle::Ok:
+        case WebDataConsumerHandle::ShouldWait:
+            return;
+        case WebDataConsumerHandle::Done:
+            close();
+            return;
+        case WebDataConsumerHandle::Busy:
+        case WebDataConsumerHandle::ResourceExhausted:
+        case WebDataConsumerHandle::UnexpectedError:
+            error();
+            return;
+        }
+        return;
+    }
+    processData();
 }
 
-BodyStreamBuffer* DrainingBodyStreamBuffer::leakBuffer()
+void BodyStreamBuffer::close()
 {
-    if (!m_buffer)
-        return nullptr;
-
-    m_buffer->clearDrainingStreamNotification();
-    BodyStreamBuffer* buffer = m_buffer;
-    m_buffer.clear();
-    return buffer;
+    m_reader = nullptr;
+    m_stream->close();
 }
 
-PassRefPtr<BlobDataHandle> DrainingBodyStreamBuffer::drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::BlobSizePolicy blobSizePolicy)
+void BodyStreamBuffer::error()
 {
-    if (!m_buffer)
-        return nullptr;
-
-    RefPtr<BlobDataHandle> blobDataHandle = m_buffer->m_handle->obtainReader(nullptr)->drainAsBlobDataHandle(blobSizePolicy);
-    if (!blobDataHandle)
-        return nullptr;
-    m_buffer->doDrainingStreamNotification();
-    m_buffer.clear();
-    return blobDataHandle.release();
+    m_reader = nullptr;
+    m_stream->error(DOMException::create(NetworkError, "network error"));
 }
 
-DrainingBodyStreamBuffer::DrainingBodyStreamBuffer(BodyStreamBuffer* buffer, BodyStreamBuffer::DrainingStreamNotificationClient* client)
-    : m_buffer(buffer)
+void BodyStreamBuffer::processData()
 {
-    ASSERT(client);
-    m_buffer->setDrainingStreamNotificationClient(client);
+    ASSERT(m_reader);
+    while (m_streamNeedsMore) {
+        const void* buffer;
+        size_t available;
+        WebDataConsumerHandle::Result result = m_reader->beginRead(&buffer, WebDataConsumerHandle::FlagNone, &available);
+        switch (result) {
+        case WebDataConsumerHandle::Ok:
+            m_streamNeedsMore = m_stream->enqueue(DOMUint8Array::create(static_cast<const unsigned char*>(buffer), available));
+            m_reader->endRead(available);
+            break;
+
+        case WebDataConsumerHandle::Done:
+            close();
+            return;
+
+        case WebDataConsumerHandle::ShouldWait:
+            return;
+
+        case WebDataConsumerHandle::Busy:
+        case WebDataConsumerHandle::ResourceExhausted:
+        case WebDataConsumerHandle::UnexpectedError:
+            error();
+            return;
+        }
+    }
+}
+
+void BodyStreamBuffer::unlock()
+{
+    ASSERT(m_lockLevel > 0);
+    if (m_streamReader) {
+        m_streamReader->releaseLock();
+        m_streamReader = nullptr;
+    }
+    --m_lockLevel;
+}
+
+void BodyStreamBuffer::endLoading(FetchDataLoader::Client* client, EndLoadingMode mode)
+{
+    ASSERT(m_loaders.contains(client));
+    m_loaders.remove(client);
+    unlock();
+    if (mode == EndLoadingDone) {
+        close();
+    } else {
+        ASSERT(mode == EndLoadingErrored);
+        error();
+    }
 }
 
 } // namespace blink

@@ -59,6 +59,16 @@ const String getMessageForResponseError(WebServiceWorkerResponseError error, con
     return errorMessage;
 }
 
+class NoopLoaderClient final : public GarbageCollectedFinalized<NoopLoaderClient>, public FetchDataLoader::Client {
+    WTF_MAKE_NONCOPYABLE(NoopLoaderClient);
+    USING_GARBAGE_COLLECTED_MIXIN(NoopLoaderClient);
+public:
+    NoopLoaderClient() = default;
+    void didFetchDataLoadedStream() override {}
+    void didFetchDataLoadFailed() override {}
+    DEFINE_INLINE_TRACE() { FetchDataLoader::Client::trace(visitor); }
+};
+
 } // namespace
 
 class RespondWithObserver::ThenFunction final : public ScriptFunction {
@@ -189,26 +199,20 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
         return;
     }
 
-    response->lockBody(Body::PassBody);
-    if (OwnPtr<DrainingBodyStreamBuffer> buffer = response->createInternalDrainingStream()) {
-        WebServiceWorkerResponse webResponse;
-        response->populateWebServiceWorkerResponse(webResponse);
-        if (RefPtr<BlobDataHandle> blobDataHandle = buffer->drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize)) {
-            webResponse.setBlobDataHandle(blobDataHandle);
-            ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleFetchEvent(m_eventID, webResponse);
-            m_state = Done;
-            return;
-        }
-        Stream* outStream = Stream::create(executionContext(), "");
-        webResponse.setStreamURL(outStream->url());
-        ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleFetchEvent(m_eventID, webResponse);
-        FetchDataLoader* loader = FetchDataLoader::createLoaderAsStream(outStream);
-        buffer->startLoading(loader, nullptr);
-        m_state = Done;
-        return;
-    }
+    response->setBodyPassed();
     WebServiceWorkerResponse webResponse;
     response->populateWebServiceWorkerResponse(webResponse);
+    BodyStreamBuffer* buffer = response->internalBodyBuffer();
+    if (buffer->hasBody()) {
+        RefPtr<BlobDataHandle> blobDataHandle = buffer->drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize);
+        if (blobDataHandle) {
+            webResponse.setBlobDataHandle(blobDataHandle);
+        } else {
+            Stream* outStream = Stream::create(executionContext(), "");
+            webResponse.setStreamURL(outStream->url());
+            buffer->startLoading(executionContext(), FetchDataLoader::createLoaderAsStream(outStream), new NoopLoaderClient);
+        }
+    }
     ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleFetchEvent(m_eventID, webResponse);
     m_state = Done;
 }

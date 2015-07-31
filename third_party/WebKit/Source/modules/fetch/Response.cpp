@@ -25,7 +25,7 @@ namespace {
 
 FetchResponseData* createFetchResponseDataFromWebResponse(ExecutionContext* executionContext, const WebServiceWorkerResponse& webResponse)
 {
-    FetchResponseData* response = 0;
+    FetchResponseData* response = nullptr;
     if (webResponse.status() > 0)
         response = FetchResponseData::create();
     else
@@ -39,7 +39,7 @@ FetchResponseData* createFetchResponseDataFromWebResponse(ExecutionContext* exec
         response->headerList()->append(i->key, i->value);
     }
 
-    response->replaceBodyStreamBuffer(BodyStreamBuffer::create(FetchBlobDataConsumerHandle::create(executionContext, webResponse.blobDataHandle())));
+    response->replaceBodyStreamBuffer(new BodyStreamBuffer(FetchBlobDataConsumerHandle::create(executionContext, webResponse.blobDataHandle())));
 
     // Filter the response according to |webResponse|'s ResponseType.
     switch (webResponse.responseType()) {
@@ -170,7 +170,6 @@ Response* Response::create(ExecutionContext* context, Blob* body, const Response
     // "3. Let |r| be a new Response object, associated with a new response,
     // Headers object, and Body object."
     Response* r = new Response(context);
-    r->suspendIfNeeded();
 
     // "4. Set |r|'s response's status to |init|'s status member."
     r->m_response->setStatus(responseInit.status);
@@ -207,8 +206,7 @@ Response* Response::create(ExecutionContext* context, Blob* body, const Response
         // Step 3, Blob:
         // "If object's type attribute is not the empty byte sequence, set
         // Content-Type to its value."
-        r->m_response->replaceBodyStreamBuffer(BodyStreamBuffer::create(FetchBlobDataConsumerHandle::create(context, body->blobDataHandle())));
-        r->refreshBody();
+        r->m_response->replaceBodyStreamBuffer(new BodyStreamBuffer(FetchBlobDataConsumerHandle::create(context, body->blobDataHandle())));
         if (!body->type().isEmpty() && !r->m_response->headerList()->has("Content-Type"))
             r->m_response->headerList()->append("Content-Type", body->type());
     }
@@ -223,17 +221,13 @@ Response* Response::create(ExecutionContext* context, Blob* body, const Response
 
 Response* Response::create(ExecutionContext* context, FetchResponseData* response)
 {
-    Response* r = new Response(context, response);
-    r->suspendIfNeeded();
-    return r;
+    return new Response(context, response);
 }
 
 Response* Response::create(ExecutionContext* context, const WebServiceWorkerResponse& webResponse)
 {
     FetchResponseData* responseData = createFetchResponseDataFromWebResponse(context, webResponse);
-    Response* r = new Response(context, responseData);
-    r->suspendIfNeeded();
-    return r;
+    return new Response(context, responseData);
 }
 
 Response* Response::error(ExecutionContext* context)
@@ -241,7 +235,6 @@ Response* Response::error(ExecutionContext* context)
     FetchResponseData* responseData = FetchResponseData::createNetworkErrorResponse();
     Response* r = new Response(context, responseData);
     r->m_headers->setGuard(Headers::ImmutableGuard);
-    r->suspendIfNeeded();
     return r;
 }
 
@@ -259,7 +252,6 @@ Response* Response::redirect(ExecutionContext* context, const String& url, unsig
     }
 
     Response* r = new Response(context);
-    r->suspendIfNeeded();
     r->m_headers->setGuard(Headers::ImmutableGuard);
     r->m_response->setStatus(status);
     r->m_response->headerList()->set("Location", parsedURL);
@@ -330,27 +322,17 @@ Response* Response::clone(ExceptionState& exceptionState)
         return nullptr;
     }
 
-    if (OwnPtr<DrainingBodyStreamBuffer> buffer = createDrainingStream())
-        m_response->replaceBodyStreamBuffer(buffer->leakBuffer());
-
     FetchResponseData* response = m_response->clone(executionContext());
     Headers* headers = Headers::create(response->headerList());
     headers->setGuard(m_headers->guard());
-    Response* r = new Response(executionContext(), response, headers);
-    r->suspendIfNeeded();
-
-    // Lock the old body and set |body| property to the new one.
-    lockBody();
-    refreshBody();
-
-    return r;
+    return new Response(executionContext(), response, headers);
 }
 
 bool Response::hasPendingActivity() const
 {
     if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
         return false;
-    if (m_isInternalDrained)
+    if (internalBodyBuffer()->hasPendingActivity())
         return true;
     return Body::hasPendingActivity();
 }
@@ -364,7 +346,6 @@ Response::Response(ExecutionContext* context)
     : Body(context)
     , m_response(FetchResponseData::create())
     , m_headers(Headers::create(m_response->headerList()))
-    , m_isInternalDrained(false)
 {
     m_headers->setGuard(Headers::ResponseGuard);
 }
@@ -373,27 +354,16 @@ Response::Response(ExecutionContext* context, FetchResponseData* response)
     : Body(context)
     , m_response(response)
     , m_headers(Headers::create(m_response->headerList()))
-    , m_isInternalDrained(false)
 {
     m_headers->setGuard(Headers::ResponseGuard);
-
-    refreshBody();
 }
 
 Response::Response(ExecutionContext* context, FetchResponseData* response, Headers* headers)
-    : Body(context) , m_response(response) , m_headers(headers), m_isInternalDrained(false)
-{
-    refreshBody();
-}
+    : Body(context) , m_response(response) , m_headers(headers) {}
 
 bool Response::hasBody() const
 {
-    return m_response->internalBuffer();
-}
-
-void* Response::bufferForTest() const
-{
-    return m_response->buffer();
+    return m_response->internalBuffer()->hasBody();
 }
 
 String Response::mimeType() const
@@ -401,36 +371,9 @@ String Response::mimeType() const
     return m_response->mimeType();
 }
 
-void* Response::internalBufferForTest() const
-{
-    return m_response->internalBuffer();
-}
-
 String Response::internalMIMEType() const
 {
     return m_response->internalMIMEType();
-}
-
-PassOwnPtr<DrainingBodyStreamBuffer> Response::createInternalDrainingStream()
-{
-    if (BodyStreamBuffer* buffer = m_response->internalBuffer()) {
-        if (buffer == m_response->buffer())
-            return createDrainingStream();
-        m_isInternalDrained = true;
-        return DrainingBodyStreamBuffer::create(buffer, this);
-    }
-    return nullptr;
-}
-
-void Response::didFetchDataLoadFinishedFromDrainingStream()
-{
-    ASSERT(m_isInternalDrained);
-    m_isInternalDrained = false;
-}
-
-void Response::refreshBody()
-{
-    setBody(m_response->buffer());
 }
 
 DEFINE_TRACE(Response)

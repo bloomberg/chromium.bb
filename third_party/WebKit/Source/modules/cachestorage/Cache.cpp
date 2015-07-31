@@ -471,15 +471,16 @@ ScriptPromise Cache::putImpl(ScriptState* scriptState, const HeapVector<Member<R
         }
 
         if (requests[i]->hasBody())
-            requests[i]->lockBody(Body::PassBody);
+            requests[i]->setBodyPassed();
         if (responses[i]->hasBody())
-            responses[i]->lockBody(Body::PassBody);
+            responses[i]->setBodyPassed();
 
-        if (OwnPtr<DrainingBodyStreamBuffer> buffer = responses[i]->createInternalDrainingStream()) {
+        BodyStreamBuffer* buffer = responses[i]->internalBodyBuffer();
+        if (buffer->hasBody()) {
             // If the response has body, read the all data and create
             // the blob handle and dispatch the put batch asynchronously.
             FetchDataLoader* loader = FetchDataLoader::createLoaderAsBlobHandle(responses[i]->internalMIMEType());
-            buffer->startLoading(loader, new BlobHandleCallbackForPut(i, barrierCallback, requests[i], responses[i]));
+            buffer->startLoading(scriptState->executionContext(), loader, new BlobHandleCallbackForPut(i, barrierCallback, requests[i], responses[i]));
             continue;
         }
 

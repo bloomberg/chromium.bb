@@ -42,7 +42,7 @@ public:
     };
 
     // Client gets notification from the pipe.
-    class Client {
+    class BLINK_PLATFORM_EXPORT Client {
     public:
         virtual ~Client() { }
         // The associated handle gets readable. This function will be called

@@ -7,13 +7,14 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Heap.h"
 
 namespace blink {
 
 class ScriptState;
 
-class UnderlyingSource : public GarbageCollectedMixin {
+class CORE_EXPORT UnderlyingSource : public GarbageCollectedMixin {
 public:
     virtual ~UnderlyingSource() { }
 

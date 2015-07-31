@@ -19,7 +19,6 @@
 namespace blink {
 
 class Blob;
-class DrainingBodyStreamBuffer;
 class DOMArrayBuffer;
 class ExceptionState;
 class ResponseInit;
@@ -27,9 +26,9 @@ class WebServiceWorkerResponse;
 
 typedef BlobOrArrayBufferOrArrayBufferViewOrFormDataOrUSVString BodyInit;
 
-class MODULES_EXPORT Response final : public Body, public BodyStreamBuffer::DrainingStreamNotificationClient {
+class MODULES_EXPORT Response final : public Body {
     DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(Response);
+    WTF_MAKE_NONCOPYABLE(Response);
 public:
     ~Response() override { }
 
@@ -66,19 +65,13 @@ public:
     void populateWebServiceWorkerResponse(WebServiceWorkerResponse& /* response */);
 
     bool hasBody() const;
+    BodyStreamBuffer* bodyBuffer() override { return m_response->buffer(); }
+    const BodyStreamBuffer* bodyBuffer() const override { return m_response->buffer(); }
+    BodyStreamBuffer* internalBodyBuffer() { return m_response->internalBuffer(); }
+    const BodyStreamBuffer* internalBodyBuffer() const { return m_response->internalBuffer(); }
 
     String mimeType() const override;
     String internalMIMEType() const;
-
-    // Do not call leakBuffer() on the returned buffer because
-    // hasPendingActivity() assumes didFetchDataLoadFinishedFromDrainingStream()
-    // will be called.
-    PassOwnPtr<DrainingBodyStreamBuffer> createInternalDrainingStream();
-    void didFetchDataLoadFinishedFromDrainingStream() override;
-
-    // Only for tests (null checks and identity checks).
-    void* bufferForTest() const;
-    void* internalBufferForTest() const;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -87,11 +80,8 @@ private:
     Response(ExecutionContext*, FetchResponseData*);
     Response(ExecutionContext*, FetchResponseData*, Headers*);
 
-    void refreshBody();
-
     const Member<FetchResponseData> m_response;
     const Member<Headers> m_headers;
-    bool m_isInternalDrained;
 };
 
 } // namespace blink

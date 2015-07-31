@@ -6,89 +6,90 @@
 #define BodyStreamBuffer_h
 
 #include "core/dom/DOMException.h"
+#include "core/streams/ReadableByteStream.h"
+#include "core/streams/ReadableByteStreamReader.h"
+#include "core/streams/UnderlyingSource.h"
 #include "modules/ModulesExport.h"
-#include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FetchDataConsumerHandle.h"
 #include "modules/fetch/FetchDataLoader.h"
-#include "platform/blob/BlobData.h"
-#include "platform/heap/Heap.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebDataConsumerHandle.h"
-#include "wtf/Deque.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
-class DrainingBodyStreamBuffer;
+class ExecutionContext;
 
-class MODULES_EXPORT BodyStreamBuffer final : public GarbageCollectedFinalized<BodyStreamBuffer> {
+// A BodyStreamBuffer constructed with a null handle is said to have null body.
+// One can observe if a buffer has null body by calling |hasBody| function.
+// |stream| function returns a non-null stream even when the buffer has null
+// body.
+class MODULES_EXPORT BodyStreamBuffer final : public GarbageCollectedFinalized<BodyStreamBuffer>, public UnderlyingSource, public WebDataConsumerHandle::Client {
+    WTF_MAKE_NONCOPYABLE(BodyStreamBuffer);
+    USING_GARBAGE_COLLECTED_MIXIN(BodyStreamBuffer);
 public:
-    static BodyStreamBuffer* create(PassOwnPtr<FetchDataConsumerHandle> handle) { return new BodyStreamBuffer(handle); }
-    static BodyStreamBuffer* createEmpty();
+    BodyStreamBuffer() : BodyStreamBuffer(nullptr) {}
+    // |handle| can be null, but cannot be locked.
+    explicit BodyStreamBuffer(PassOwnPtr<FetchDataConsumerHandle> /* handle */);
 
-    FetchDataConsumerHandle* handle() const;
-    PassOwnPtr<FetchDataConsumerHandle> releaseHandle();
+    ReadableByteStream* stream() { return m_stream; }
 
-    class MODULES_EXPORT DrainingStreamNotificationClient : public GarbageCollectedMixin {
-    public:
-        virtual ~DrainingStreamNotificationClient() { }
-        // Called after FetchDataLoader::Client methods.
-        virtual void didFetchDataLoadFinishedFromDrainingStream() = 0;
-    };
+    // Callable only when not locked.
+    PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::BlobSizePolicy);
+
+    // Callable only when not locked. Returns a non-null handle even when
+    // having null body.
+    // Note: There is a case that calling |lock| doesn't make the buffer
+    // locked. |unlock| should be called even in such cases when a user finishes
+    // to use the returned handle, in order to maintain hasPendingActivity().
+    PassOwnPtr<FetchDataConsumerHandle> lock(ExecutionContext*);
+
+    // This function will lock |this| object. |client| cannot be null.
+    void startLoading(ExecutionContext*, FetchDataLoader*, FetchDataLoader::Client* /* client */);
+
+    bool isLocked() const { return m_stream->isLocked(); }
+    bool hasBody() const { return m_hasBody; }
+    bool hasPendingActivity() const { return isLocked() || m_lockLevel > 0; }
+
+    // UnderlyingSource
+    void pullSource() override;
+    ScriptPromise cancelSource(ScriptState*, ScriptValue reason) override;
+
+    // WebDataConsumerHandle::Client
+    void didGetReadable() override;
 
     DEFINE_INLINE_TRACE()
     {
-        visitor->trace(m_fetchDataLoader);
-        visitor->trace(m_drainingStreamNotificationClient);
+        visitor->trace(m_stream);
+        visitor->trace(m_streamReader);
+        visitor->trace(m_loaders);
+        UnderlyingSource::trace(visitor);
     }
 
-    void didFetchDataLoadFinished();
-
 private:
-    explicit BodyStreamBuffer(PassOwnPtr<FetchDataConsumerHandle> handle) : m_handle(handle) { }
-
-    void setDrainingStreamNotificationClient(DrainingStreamNotificationClient*);
-
-    void startLoading(FetchDataLoader*, FetchDataLoader::Client*);
-    // Call DrainingStreamNotificationClient.
-    void doDrainingStreamNotification();
-    // Clear DrainingStreamNotificationClient without calling.
-    void clearDrainingStreamNotification();
-
-    friend class DrainingBodyStreamBuffer;
+    class LoaderHolder;
+    enum EndLoadingMode {
+        EndLoadingDone,
+        EndLoadingErrored,
+    };
+    void close();
+    void error();
+    void processData();
+    void unlock();
+    void endLoading(FetchDataLoader::Client*, EndLoadingMode);
 
     OwnPtr<FetchDataConsumerHandle> m_handle;
-    Member<FetchDataLoader> m_fetchDataLoader;
-    Member<DrainingStreamNotificationClient> m_drainingStreamNotificationClient;
-};
-
-// DrainingBodyStreamBuffer wraps BodyStreamBuffer returned from
-// Body::createDrainingStream() and calls DrainingStreamNotificationClient
-// callbacks unless leakBuffer() is called:
-// - If startLoading() is called, the callback is called after loading finished.
-// - If drainAsBlobDataHandle() is called, the callback is called immediately.
-// - If leakBuffer() is called, the callback is no longer called.
-// Any calls to DrainingBodyStreamBuffer methods after a call to either of
-// methods above is no-op.
-// After calling one of the methods above, we don't have to keep
-// DrainingBodyStreamBuffer alive.
-// If DrainingBodyStreamBuffer is destructed before any of above is called,
-// the callback is called at destruction.
-class MODULES_EXPORT DrainingBodyStreamBuffer final {
-public:
-    static PassOwnPtr<DrainingBodyStreamBuffer> create(BodyStreamBuffer* buffer, BodyStreamBuffer::DrainingStreamNotificationClient* client)
-    {
-        return adoptPtr(new DrainingBodyStreamBuffer(buffer, client));
-    }
-    ~DrainingBodyStreamBuffer();
-    void startLoading(FetchDataLoader*, FetchDataLoader::Client*);
-    BodyStreamBuffer* leakBuffer();
-    PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::BlobSizePolicy);
-
-private:
-    DrainingBodyStreamBuffer(BodyStreamBuffer*, BodyStreamBuffer::DrainingStreamNotificationClient*);
-
-    Persistent<BodyStreamBuffer> m_buffer;
+    OwnPtr<FetchDataConsumerHandle::Reader> m_reader;
+    Member<ReadableByteStream> m_stream;
+    Member<ReadableByteStreamReader> m_streamReader;
+    HeapHashSet<Member<FetchDataLoader::Client>> m_loaders;
+    // We need this variable because we cannot lock closed or erroed stream
+    // although we should return true for hasPendingActivity() when someone
+    // calls |startLoading| but the loding is not yet done.
+    unsigned m_lockLevel;
+    const bool m_hasBody;
+    bool m_streamNeedsMore;
 };
 
 } // namespace blink

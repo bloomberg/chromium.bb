@@ -121,7 +121,7 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
             break;
         }
     }
-    FetchResponseData* responseData = FetchResponseData::createWithBuffer(BodyStreamBuffer::create(createFetchDataConsumerHandleFromWebHandle(handle)));
+    FetchResponseData* responseData = FetchResponseData::createWithBuffer(new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(handle)));
     responseData->setStatus(response.httpStatusCode());
     responseData->setStatusMessage(response.httpStatusText());
     for (auto& it : response.httpHeaderFields())
@@ -327,7 +327,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
 
     if (m_request->method() != "GET" && m_request->method() != "HEAD") {
         if (BodyStreamBuffer* buffer = m_request->buffer()) {
-            RefPtr<BlobDataHandle> blobDataHandle = buffer->handle()->obtainReader(nullptr)->drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize);
+            RefPtr<BlobDataHandle> blobDataHandle = buffer->drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize);
             RefPtr<FormData> httpBody(FormData::create());
             if (blobDataHandle)
                 httpBody->appendBlob(blobDataHandle->uuid(), blobDataHandle);

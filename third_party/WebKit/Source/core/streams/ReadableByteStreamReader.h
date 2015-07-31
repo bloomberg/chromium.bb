@@ -27,6 +27,7 @@ public:
     ScriptPromise cancel(ScriptState* scriptState) { return m_reader->cancel(scriptState); }
     ScriptPromise cancel(ScriptState* scriptState, ScriptValue reason) { return m_reader->cancel(scriptState, reason); }
     void releaseLock(ExceptionState& es) { return m_reader->releaseLock(es); }
+    void releaseLock() { return m_reader->releaseLock(); }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
