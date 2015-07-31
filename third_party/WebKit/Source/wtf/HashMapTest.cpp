@@ -303,6 +303,62 @@ TEST(HashMapTest, ValueTypeDestructed)
     EXPECT_EQ(0, InstanceCounter::counter);
 }
 
+class CopyCounter {
+public:
+    CopyCounter() = default;
+    explicit CopyCounter(int data) : m_data(data) { }
+
+    CopyCounter(const CopyCounter& copy) : m_data(copy.m_data) { ++s_counter; }
+
+    int data() const { return m_data; }
+
+    bool isHashTableDeletedValue() const { return m_data == HashTableDeletedValue; }
+
+    static int s_counter;
+private:
+    int m_data;
+};
+
+int CopyCounter::s_counter = 0;
+
+struct CopyCounterHash {
+    static unsigned hash(const CopyCounter& key)
+    {
+        return IntHash<unsigned>::hash(key.data());
+    }
+
+    static bool equal(const CopyCounter& a, const CopyCounter& b)
+    {
+        return a.data() == b.data();
+    }
+
+    static const bool safeToCompareToEmptyOrDeleted = true;
+};
+
+struct CopyCounterHashTraits: SimpleClassHashTraits<CopyCounter> {
+#if COMPILER(MSVC)
+    // Need this in order to enable RVO on VS2013 (the default traits
+    // implementation would produce an unneeded copy).
+    static CopyCounter emptyValue()
+    {
+        CopyCounter empty;
+        return empty;
+    }
+#endif
+    static const bool hasIsEmptyValueFunction = true;
+    static bool isEmptyValue(const CopyCounter& counter) { return !counter.data(); }
+};
+
+TEST(HashMapTest, LookupNoKeyCopies)
+{
+    HashMap<CopyCounter, int, CopyCounterHash, CopyCounterHashTraits> map;
+
+    map.contains(CopyCounter(1));
+    auto it = map.find(CopyCounter(1));
+    ALLOW_UNUSED_LOCAL(it);
+    EXPECT_EQ(0, CopyCounter::s_counter);
+}
+
 } // anonymous namespace
 
 } // namespace WTF
