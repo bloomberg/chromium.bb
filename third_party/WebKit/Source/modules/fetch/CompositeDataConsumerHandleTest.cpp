@@ -47,6 +47,9 @@ public:
     static PassOwnPtr<StrictMock<MockHandle>> create() { return adoptPtr(new StrictMock<MockHandle>); }
 
     MOCK_METHOD1(obtainReaderInternal, Reader*(Client*));
+
+private:
+    const char* debugName() const override { return "MockHandle in CompositeDataConsumerHandleTest"; }
 };
 
 class ThreadingRegistrationTest : public DataConsumerHandleTestUtil::ThreadingTestBase {

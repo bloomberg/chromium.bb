@@ -205,6 +205,8 @@ public:
             DataConsumerHandle(const String& name, PassRefPtr<Context> context) : m_name(name.isolatedCopy()), m_context(context) { }
 
             Reader* obtainReaderInternal(Client*) { return new ReaderImpl(m_name, m_context); }
+            const char* debugName() const override { return "ThreadingTestBase::DataConsumerHandle"; }
+
             const String m_name;
             RefPtr<Context> m_context;
         };
@@ -303,6 +305,9 @@ public:
     public:
         static PassOwnPtr<::testing::StrictMock<MockFetchDataConsumerHandle>> create() { return adoptPtr(new ::testing::StrictMock<MockFetchDataConsumerHandle>); }
         MOCK_METHOD1(obtainReaderInternal, Reader*(Client*));
+
+    private:
+        const char* debugName() const override { return "MockFetchDataConsumerHandle"; }
     };
 
     class MockFetchDataConsumerReader : public FetchDataConsumerHandle::Reader {
@@ -424,6 +429,7 @@ public:
 
         ReplayingHandle();
         Reader* obtainReaderInternal(Client*) override;
+        const char* debugName() const override { return "ReplayingHandle"; }
 
         RefPtr<Context> m_context;
     };

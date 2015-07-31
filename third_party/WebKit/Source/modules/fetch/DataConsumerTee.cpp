@@ -333,9 +333,8 @@ public:
 
 private:
     DestinationHandle(PassRefPtr<DestinationContext::Proxy> contextProxy) : m_contextProxy(contextProxy) { }
-
-private:
     DestinationReader* obtainReaderInternal(Client* client) { return new DestinationReader(m_contextProxy, client); }
+    const char* debugName() const override { return "DestinationHandle"; }
 
     RefPtr<DestinationContext::Proxy> m_contextProxy;
 };
