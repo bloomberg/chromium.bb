@@ -145,7 +145,7 @@ public:
     {
         if (m_isLegacyEditingPosition || !isAfterAnchorOrAfterChildren())
             return m_offset;
-        return Strategy::lastOffsetForEditing(m_anchorNode.get());
+        return offsetForPositionAfterAnchor();
     }
 
     // These are convenience methods which are smart about whether the position is neighbor anchored or parent anchored
@@ -257,6 +257,8 @@ private:
     {
         return isAfterAnchor() || isAfterChildren();
     }
+
+    int offsetForPositionAfterAnchor() const;
 
     int renderedOffset() const;
 
