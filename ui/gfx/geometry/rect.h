@@ -220,6 +220,8 @@ GFX_EXPORT Rect BoundingRect(const Point& p1, const Point& p2);
 inline Rect ScaleToEnclosingRect(const Rect& rect,
                                  float x_scale,
                                  float y_scale) {
+  if (x_scale == 1.f && y_scale == 1.f)
+    return rect;
   // These next functions cast instead of using e.g. ToFlooredInt() because we
   // haven't checked to ensure that the clamping behavior of the helper
   // functions doesn't degrade performance, and callers shouldn't be passing
@@ -248,6 +250,8 @@ inline Rect ScaleToEnclosingRect(const Rect& rect, float scale) {
 inline Rect ScaleToEnclosedRect(const Rect& rect,
                                 float x_scale,
                                 float y_scale) {
+  if (x_scale == 1.f && y_scale == 1.f)
+    return rect;
   DCHECK(base::IsValueInRangeForNumericType<int>(
       std::ceil(rect.x() * x_scale)));
   DCHECK(base::IsValueInRangeForNumericType<int>(

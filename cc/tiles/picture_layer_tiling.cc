@@ -456,11 +456,10 @@ PictureLayerTiling::CoverageIterator::operator++() {
   gfx::Rect content_rect = tiling_->tiling_data_.TileBounds(tile_i_, tile_j_);
 
   current_geometry_rect_ =
-      gfx::ScaleToEnclosingRect(content_rect,
-                                1 / dest_to_content_scale_,
-                                1 / dest_to_content_scale_);
+      gfx::ScaleToEnclosingRect(content_rect, 1 / dest_to_content_scale_);
 
   current_geometry_rect_.Intersect(dest_rect_);
+  DCHECK(!current_geometry_rect_.IsEmpty());
 
   if (first_time)
     return *this;

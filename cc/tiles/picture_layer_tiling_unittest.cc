@@ -1772,5 +1772,22 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeTilesAndUpdateToCurrent) {
   EXPECT_EQ(0u, tiling_->AllTilesForTesting().size());
 }
 
+// This test runs into floating point issues because of big numbers.
+TEST_F(PictureLayerTilingIteratorTest, GiantRect) {
+  gfx::Size tile_size(256, 256);
+  gfx::Size layer_size(33554432, 33554432);
+  bool filled = false;
+  float contents_scale = 1.f;
+
+  client_.SetTileSize(tile_size);
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreatePile(tile_size, layer_size, filled);
+  tiling_ = TestablePictureLayerTiling::Create(
+      PENDING_TREE, contents_scale, pile, &client_, LayerTreeSettings());
+
+  gfx::Rect content_rect(25554432, 25554432, 950, 860);
+  VerifyTilesExactlyCoverRect(contents_scale, content_rect);
+}
+
 }  // namespace
 }  // namespace cc
