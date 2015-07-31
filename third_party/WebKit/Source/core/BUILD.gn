@@ -276,6 +276,8 @@ source_set("remaining") {
       "layout/LayoutThemeDefault.h",
       "layout/LayoutThemeFontProvider.cpp",
       "layout/LayoutThemeFontProvider.h",
+      "paint/ThemePainterDefault.cpp",
+      "paint/ThemePainterDefault.h",
     ]
     libs += [ "Carbon.framework" ]
     # Some Mac-specific parts of WebKit won't compile without having this
