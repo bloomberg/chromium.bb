@@ -187,7 +187,9 @@ int MainDllLoader::Launch(HINSTANCE instance) {
 
     base::win::ScopedHandle parent_process;
     base::win::ScopedHandle on_initialized_event;
+    DWORD main_thread_id = 0;
     if (!InterpretChromeWatcherCommandLine(cmd_line, &parent_process,
+                                           &main_thread_id,
                                            &on_initialized_event)) {
       return chrome::RESULT_CODE_UNSUPPORTED_PARAM;
     }
@@ -218,7 +220,8 @@ int MainDllLoader::Launch(HINSTANCE instance) {
         reinterpret_cast<ChromeWatcherMainFunction>(
             ::GetProcAddress(watcher_dll, kChromeWatcherDLLEntrypoint));
     return watcher_main(chrome::kBrowserExitCodesRegistryPath,
-                        parent_process.Take(), on_initialized_event.Take(),
+                        parent_process.Take(), main_thread_id,
+                        on_initialized_event.Take(),
                         watcher_data_directory.value().c_str(),
                         message_window_name.c_str(), channel_name.c_str());
   }

@@ -11,16 +11,17 @@
 namespace {
 
 // Because we can only bind parameters from the left, |parent_process| must be
-// the last parameter of the method that we bind int a
+// the last parameter of the method that we bind into a
 // BrowserWatcherClient::CommandLineGenerator. The ChromeWatcherClient API is
 // more intuitive if the ChromeWatcherClient::CommandLineGenerator takes
-// |parent_process| as its second (of three) parameters, so we use this
-// intermediate function to swap the order.
+// |parent_process| as its second parameter, so we use this intermediate
+// function to swap the order.
 base::CommandLine InvokeCommandLineGenerator(
     const ChromeWatcherClient::CommandLineGenerator& command_line_generator,
     HANDLE on_initialized_event,
     HANDLE parent_process) {
-  return command_line_generator.Run(parent_process, on_initialized_event);
+  return command_line_generator.Run(parent_process, ::GetCurrentThreadId(),
+                                    on_initialized_event);
 }
 
 }  // namespace

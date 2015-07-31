@@ -23,14 +23,16 @@ TEST(ChromeWatcherCommandLineTest, BasicTest) {
 
   HANDLE event = ::CreateEvent(nullptr, FALSE, FALSE, nullptr);
   ASSERT_NE(nullptr, event);
-
+  DWORD current_thread_id = ::GetCurrentThreadId();
   base::CommandLine cmd_line = GenerateChromeWatcherCommandLine(
-      base::FilePath(L"example.exe"), current, event);
+      base::FilePath(L"example.exe"), current, current_thread_id, event);
 
   base::win::ScopedHandle current_result;
+  DWORD current_thread_id_result = 0;
   base::win::ScopedHandle event_result;
-  ASSERT_TRUE(InterpretChromeWatcherCommandLine(cmd_line, &current_result,
-                                                &event_result));
+  ASSERT_TRUE(InterpretChromeWatcherCommandLine(
+      cmd_line, &current_result, &current_thread_id_result, &event_result));
   ASSERT_EQ(current, current_result.Get());
+  ASSERT_EQ(current_thread_id, current_thread_id_result);
   ASSERT_EQ(event, event_result.Get());
 }

@@ -19,12 +19,15 @@
 class ChromeWatcherClient {
  public:
   // A CommandLineGenerator generates command lines that will launch a separate
-  // process and pass the supplied HANDLE values to WatcherMain in that process.
-  // The first HANDLE is the process that the watcher process should watch. The
-  // second HANDLE is an event that should be signaled when the watcher process
-  // is fully initialized. The process will be launched such that the HANDLEs
-  // are inherited by the new process.
-  typedef base::Callback<base::CommandLine(HANDLE, HANDLE)>
+  // process and pass the supplied values to WatcherMain in that process.
+  // |parent_process| is the process that the watcher process should watch;
+  // |main_thread_id| is the parent process' main thread ID.
+  // |on_initialized_event| should be signaled when the watcher process is fully
+  // initialized. The process will be launched such that the HANDLEs are
+  // inherited by the new process.
+  typedef base::Callback<base::CommandLine(HANDLE parent_process,
+                                           DWORD main_thread_id,
+                                           HANDLE on_initialized_event)>
       CommandLineGenerator;
 
   // Constructs an instance that launches its watcher process using the command

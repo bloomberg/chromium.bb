@@ -235,7 +235,8 @@ void OnWindowEvent(
 }
 
 #ifdef KASKO
-void DumpHungBrowserProcess(const base::string16& channel,
+void DumpHungBrowserProcess(DWORD main_thread_id,
+                            const base::string16& channel,
                             const base::Process& process) {
   // TODO(erikwright): Rather than recreating these crash keys here, it would be
   // ideal to read them directly from the browser process.
@@ -274,10 +275,17 @@ void DumpHungBrowserProcess(const base::string16& channel,
   }
   key_buffers.push_back(nullptr);
   value_buffers.push_back(nullptr);
+
+  // Synthesize an exception for the main thread.
+  CONTEXT thread_context = {};
+  EXCEPTION_RECORD exception_record = {};
+  exception_record.ExceptionCode = EXCEPTION_ARRAY_BOUNDS_EXCEEDED;
+  EXCEPTION_POINTERS exception_pointers = {&exception_record, &thread_context};
+
   // TODO(erikwright): Make the dump-type channel-dependent.
-  kasko::api::SendReportForProcess(process.Handle(),
-                                   kasko::api::LARGER_DUMP_TYPE,
-                                   key_buffers.data(), value_buffers.data());
+  kasko::api::SendReportForProcess(
+      process.Handle(), main_thread_id, &exception_pointers,
+      kasko::api::LARGER_DUMP_TYPE, key_buffers.data(), value_buffers.data());
 }
 
 void LoggedDeregisterEventSource(HANDLE event_source_handle) {
@@ -349,6 +357,7 @@ void OnCrashReportUpload(void* context,
 // mangling.
 extern "C" int WatcherMain(const base::char16* registry_path,
                            HANDLE process_handle,
+                           DWORD main_thread_id,
                            HANDLE on_initialized_event_handle,
                            const base::char16* browser_data_directory,
                            const base::char16* message_window_name,
@@ -385,7 +394,8 @@ extern "C" int WatcherMain(const base::char16* registry_path,
 #ifdef KASKO_HANG_REPORTS
   if (launched_kasko &&
       base::StringPiece16(channel_name) == installer::kChromeChannelCanary) {
-    on_hung_callback = base::Bind(&DumpHungBrowserProcess, channel_name);
+    on_hung_callback =
+        base::Bind(&DumpHungBrowserProcess, main_thread_id, channel_name);
   }
 #endif  // KASKO_HANG_REPORTS
 #endif  // KASKO
