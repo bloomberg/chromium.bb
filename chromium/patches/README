@@ -1,8 +1,7 @@
-Current Status as of Mar 24, 2015
+Current Status as of July 30, 2015
 
 Upstream cherry-picks:
-
-  None
+  f8b81a02c980609c450992a0c261330a1ae95d86 - Fixes ogg seeking.
 
 Current patches:
   autorename_* files are renamed copies of various files that would cause
