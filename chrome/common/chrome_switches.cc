@@ -530,6 +530,12 @@ const char kEnableSessionCrashedBubble[] = "enable-session-crashed-bubble";
 const char kEnableSettingsWindow[]           = "enable-settings-window";
 const char kDisableSettingsWindow[]          = "disable-settings-window";
 
+// A new user experience for transitioning into fullscreen and mouse pointer
+// lock states.
+const char kEnableSimplifiedFullscreenUI[]  = "enable-simplified-fullscreen-ui";
+const char kDisableSimplifiedFullscreenUI[] =
+    "disable-simplified-fullscreen-ui";
+
 // Enable the Site Engagement service, which records interaction with sites and
 // allocates certain resources accordingly.
 const char kEnableSiteEngagementService[]   = "enable-site-engagement-service";

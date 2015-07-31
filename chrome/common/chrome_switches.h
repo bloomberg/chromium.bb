@@ -154,6 +154,8 @@ extern const char kEnableSdchPersistence[];
 extern const char kEnableSessionCrashedBubble[];
 extern const char kEnableSettingsWindow[];
 extern const char kDisableSettingsWindow[];
+extern const char kEnableSimplifiedFullscreenUI[];
+extern const char kDisableSimplifiedFullscreenUI[];
 extern const char kEnableSiteEngagementService[];
 extern const char kEnableSuggestionsService[];
 extern const char kEnableSupervisedUserManagedBookmarksFolder[];

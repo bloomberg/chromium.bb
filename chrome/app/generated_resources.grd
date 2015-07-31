@@ -7046,6 +7046,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enables the use of the new and optimized implementation of the chrome task manager.
         </message>
       </if>
+      <message name="IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_NAME" desc="Name of the flag to enable the new simplified fullscreen and mouse lock UI.">
+        Simplified fullscreen / mouse lock UI.
+      </message>
+      <message name="IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_DESCRIPTION" desc="Description of the flag to enable the new simplified fullscreen and mouse lock UI.">
+        An experimental new user experience when entering page-triggered fullscreen or mouse pointer lock states.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

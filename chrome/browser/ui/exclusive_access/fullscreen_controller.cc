@@ -509,6 +509,12 @@ void FullscreenController::ExitFullscreenModeInternal() {
 ContentSetting FullscreenController::GetFullscreenSetting() const {
   DCHECK(exclusive_access_tab());
 
+  // If simplified UI is enabled, never ask the user, just auto-allow.
+  // TODO(mgiuca): Should we allow the user to block use of fullscreen?
+  // http://crbug.com/515747.
+  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled())
+    return CONTENT_SETTING_ALLOW;
+
   GURL url = GetRequestingOrigin();
 
   // Always ask on file:// URLs, since we can't meaningfully make the

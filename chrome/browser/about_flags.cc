@@ -2068,6 +2068,13 @@ const Experiment kExperiments[] = {
      SINGLE_VALUE_TYPE(switches::kEnableNewTaskManager)
     },
 #endif  // defined(ENABLE_TASK_MANAGER)
+    {"simplified-fullscreen-ui",
+     IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_NAME,
+     IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_DESCRIPTION,
+     kOsDesktop,
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSimplifiedFullscreenUI,
+                               switches::kDisableSimplifiedFullscreenUI)
+    },
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

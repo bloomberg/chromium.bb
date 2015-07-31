@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/mouse_lock_controller.h"
+#include "chrome/common/chrome_switches.h"
 
 using content::WebContents;
 
@@ -82,6 +84,21 @@ GURL ExclusiveAccessManager::GetExclusiveAccessBubbleURL() const {
   if (!result.is_valid())
     result = mouse_lock_controller_.GetURLForExclusiveAccessBubble();
   return result;
+}
+
+// static
+bool ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSimplifiedFullscreenUI)) {
+    return true;
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSimplifiedFullscreenUI)) {
+    return false;
+  }
+
+  return false;
 }
 
 void ExclusiveAccessManager::OnTabDeactivated(WebContents* web_contents) {
