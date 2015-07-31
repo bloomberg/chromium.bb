@@ -200,6 +200,7 @@ test("message_center_unittests") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
+    "//ui/gl:test_support",
     "//ui/resources",
     "//ui/resources:ui_test_pak",
     "//url",
