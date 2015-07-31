@@ -448,7 +448,13 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillViaDownArrow) {
   ExpectFilledTestForm();
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillSelectViaTab) {
+// Flaky on the official cros-trunk. crbug.com/516052
+#if defined(OFFICIAL_BUILD)
+#define MAYBE_AutofillSelectViaTab DISABLED_AutofillSelectViaTab
+#else
+#define MAYBE_AutofillSelectViaTab AutofillSelectViaTab
+#endif  // defined(OFFICIAL_BUILD)
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillSelectViaTab) {
   CreateTestProfile();
 
   // Load the test page.
@@ -473,7 +479,13 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillSelectViaTab) {
   ExpectFilledTestForm();
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillViaClick) {
+// Flaky on the official cros-trunk. crbug.com/516052
+#if defined(OFFICIAL_BUILD)
+#define MAYBE_AutofillViaClick DISABLED_AutofillViaClick
+#else
+#define MAYBE_AutofillViaClick AutofillViaClick
+#endif  // defined(OFFICIAL_BUILD)
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillViaClick) {
   CreateTestProfile();
 
   // Load the test page.
@@ -1134,11 +1146,12 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterTranslate) {
 // field, invoke the autofill popup list, select the first profile within the
 // list, and commit to the profile to populate the form.
 // Flakily times out on windows. http://crbug.com/390564
-#if defined(OS_WIN)
+// Flaky on the official cros-trunk crbug.com/516052
+#if defined(OS_WIN) || defined(OFFICIAL_BUILD)
 #define MAYBE_ComparePhoneNumbers DISABLED_ComparePhoneNumbers
 #else
 #define MAYBE_ComparePhoneNumbers ComparePhoneNumbers
-#endif
+#endif  // defined(OS_WIN) || defined(OFFICIAL_BUILD)
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_ComparePhoneNumbers) {
   ASSERT_TRUE(test_server()->Start());
 
@@ -1176,7 +1189,14 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_ComparePhoneNumbers) {
 }
 
 // Test that Autofill does not fill in read-only fields.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, NoAutofillForReadOnlyFields) {
+// Flaky on the official cros-trunk. crbug.com/516052
+#if defined(OFFICIAL_BUILD)
+#define MAYBE_NoAutofillForReadOnlyFields DISABLED_NoAutofillForReadOnlyFields
+#else
+#define MAYBE_NoAutofillForReadOnlyFields NoAutofillForReadOnlyFields
+#endif  // defined(OFFICIAL_BUILD)
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       MAYBE_NoAutofillForReadOnlyFields) {
   ASSERT_TRUE(test_server()->Start());
 
   std::string addr_line1("1234 H St.");
