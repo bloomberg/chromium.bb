@@ -230,8 +230,7 @@ TEST_F(CrossDevicePromoTest, PartiallyInitialized) {
   histogram_tester()->ExpectUniqueSample("Signin.XDevicePromo.Initialized",
                                          signin_metrics::NO_VARIATIONS_CONFIG,
                                          2);
-  EXPECT_FALSE(histogram_tester()->GetHistogramSamplesSinceCreation(
-      "Signin.XDevicePromo.Eligibility"));
+  histogram_tester()->ExpectTotalCount("Signin.XDevicePromo.Eligibility", 0);
 }
 
 TEST_F(CrossDevicePromoTest, FullyInitialized) {
