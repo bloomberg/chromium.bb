@@ -33,8 +33,12 @@ public class WebViewLayoutTest
             Environment.getExternalStorageDirectory().getAbsolutePath() + "/";
     private static final String BASE_WEBVIEW_TEST_PATH = "android_webview/tools/WebViewShell/test/";
     private static final String BASE_BLINK_TEST_PATH = "third_party/WebKit/LayoutTests/";
+    private static final String BASE_BLINK_STABLE_TEST_PATH =
+            BASE_BLINK_TEST_PATH + "virtual/stable/";
     private static final String PATH_WEBVIEW_PREFIX = EXTERNAL_PREFIX + BASE_WEBVIEW_TEST_PATH;
     private static final String PATH_BLINK_PREFIX = EXTERNAL_PREFIX + BASE_BLINK_TEST_PATH;
+    private static final String PATH_BLINK_STABLE_PREFIX =
+            EXTERNAL_PREFIX + BASE_BLINK_STABLE_TEST_PATH;
 
     private static final long TIMEOUT_SECONDS = 20;
 
@@ -98,6 +102,38 @@ public class WebViewLayoutTest
             }
         }
         assertEquals("Unexpected webview interfaces found", "", unexpected.toString());
+    }
+
+    public void testWebViewIncludedStableInterfaces() throws Exception {
+        ensureJsTestCopied();
+        loadUrlWebViewAsync("file://" + PATH_BLINK_PREFIX
+                + "webexposed/global-interface-listing.html", mTestActivity);
+        String blinkStableExpected = readFile(PATH_BLINK_STABLE_PREFIX
+                + "webexposed/global-interface-listing-expected.txt");
+        String webviewExcluded = readFile(PATH_WEBVIEW_PREFIX
+                + "webexposed/not-webview-exposed.txt");
+        mTestActivity.waitForFinish(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        String result = mTestActivity.getTestResult();
+
+        HashMap<String, HashSet<String>> webviewExcludedInterfacesMap =
+                buildHashMap(webviewExcluded);
+        HashMap<String, HashSet<String>> webviewInterfacesMap = buildHashMap(result);
+        HashMap<String, HashSet<String>> blinkStableInterfacesMap =
+                buildHashMap(blinkStableExpected);
+        StringBuilder missing = new StringBuilder();
+
+        // Check that each stable blink interface is present in webview except the excluded
+        // interfaces.
+        for (String interfaceS : blinkStableInterfacesMap.keySet()) {
+            // TODO(timvolodine): consider implementing matching of subsets as well.
+            HashSet<String> subsetExcluded = webviewExcludedInterfacesMap.get(interfaceS);
+            if (subsetExcluded != null && subsetExcluded.isEmpty()) continue;
+
+            if (webviewInterfacesMap.get(interfaceS) == null) {
+                missing.append(interfaceS + "\n");
+            }
+        }
+        assertEquals("Missing webview interfaces found", "", missing.toString());
     }
 
     // test helper methods

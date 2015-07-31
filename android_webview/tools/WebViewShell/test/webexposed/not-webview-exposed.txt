@@ -17,6 +17,10 @@ interface Notification
 # not yet supported in webview.
 interface SharedWorker
 
+# push API not supported in webview
+interface PushManager
+interface PushSubscription
+
 # TODO(timvolodine): check screen orientation lock api
 # TODO(timvolodine): check notifications in service workers
 # TODO(timvolodine): add Presentation API
