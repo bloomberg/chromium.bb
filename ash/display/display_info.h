@@ -297,6 +297,10 @@ class ASH_EXPORT DisplayInfo {
   // If you add a new member, you need to update Copy().
 };
 
+// Resets the synthesized display id for testing. This
+// is necessary to avoid overflowing the output index.
+ASH_EXPORT void ResetDisplayIdForTest();
+
 }  // namespace ash
 
 #endif  //  ASH_DISPLAY_DISPLAY_INFO_H_

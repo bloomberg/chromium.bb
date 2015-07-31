@@ -24,6 +24,11 @@
 namespace ash {
 namespace {
 
+// Use larger than max int to catch overflow early.
+const int64 kSynthesizedDisplayIdStart = 2200000000LL;
+
+int64 synthesized_display_id = kSynthesizedDisplayIdStart;
+
 bool use_125_dsf_for_ui_scaling = true;
 
 // Check the content of |spec| and fill |bounds| and |device_scale_factor|.
@@ -107,9 +112,6 @@ DisplayInfo DisplayInfo::CreateFromSpec(const std::string& spec) {
 // static
 DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
                                               int64 id) {
-  // Use larger than max int to catch overflow early.
-  static int64 synthesized_display_id = 2200000000LL;
-
 #if defined(OS_WIN)
   gfx::Rect bounds_in_native(aura::WindowTreeHost::GetNativeScreenSize());
 #else
@@ -443,6 +445,10 @@ void DisplayInfo::AddInputDevice(int id) {
 
 void DisplayInfo::ClearInputDevices() {
   input_devices_.clear();
+}
+
+void ResetDisplayIdForTest() {
+  synthesized_display_id = kSynthesizedDisplayIdStart;
 }
 
 }  // namespace ash
