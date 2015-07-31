@@ -33,6 +33,21 @@ gfx::Point GetScreenLocationFromEvent(const ui::LocatedEvent& event) {
   return screen_location;
 }
 
+blink::WebInputEvent::Modifiers DomCodeToWebInputEventModifiers(
+    ui::DomCode code) {
+  switch (ui::KeycodeConverter::DomCodeToLocation(code)) {
+    case ui::DomKeyLocation::LEFT:
+      return blink::WebInputEvent::IsLeft;
+    case ui::DomKeyLocation::RIGHT:
+      return blink::WebInputEvent::IsRight;
+    case ui::DomKeyLocation::NUMPAD:
+      return blink::WebInputEvent::IsKeyPad;
+    case ui::DomKeyLocation::STANDARD:
+      break;
+  }
+  return static_cast<blink::WebInputEvent::Modifiers>(0);
+}
+
 }  // namespace
 
 #if defined(OS_WIN)
@@ -51,20 +66,8 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
   blink::WebKeyboardEvent webkit_event;
 
   webkit_event.timeStampSeconds = event.time_stamp().InSecondsF();
-  webkit_event.modifiers = ui::EventFlagsToWebEventModifiers(event.flags());
-  switch (ui::KeycodeConverter::DomCodeToLocation(event.code())) {
-    case ui::DomKeyLocation::LEFT:
-      webkit_event.modifiers |= blink::WebInputEvent::IsLeft;
-      break;
-    case ui::DomKeyLocation::RIGHT:
-      webkit_event.modifiers |= blink::WebInputEvent::IsRight;
-      break;
-    case ui::DomKeyLocation::NUMPAD:
-      webkit_event.modifiers |= blink::WebInputEvent::IsKeyPad;
-      break;
-    case ui::DomKeyLocation::STANDARD:
-      break;
-  }
+  webkit_event.modifiers = ui::EventFlagsToWebEventModifiers(event.flags()) |
+                           DomCodeToWebInputEventModifiers(event.code());
 
   switch (event.type()) {
     case ui::ET_KEY_PRESSED:
@@ -275,6 +278,7 @@ blink::WebKeyboardEvent MakeWebKeyboardEvent(const ui::KeyEvent& event) {
     // Key events require no translation by the aura system.
     blink::WebKeyboardEvent webkit_event(
         MakeWebKeyboardEventFromNativeEvent(event.native_event()));
+    webkit_event.modifiers |= DomCodeToWebInputEventModifiers(event.code());
     webkit_event.domCode = static_cast<int>(event.code());
     return webkit_event;
   }

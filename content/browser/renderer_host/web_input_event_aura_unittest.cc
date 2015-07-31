@@ -25,7 +25,7 @@ namespace content {
 // crbug.com/127142
 TEST(WebInputEventAuraTest, TestMakeWebKeyboardEvent) {
   {
-    // Press Ctrl.
+    // Press left Ctrl.
     ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL,
                        ui::DomCode::CONTROL_LEFT, ui::EF_CONTROL_DOWN);
     blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(event);
@@ -36,13 +36,34 @@ TEST(WebInputEventAuraTest, TestMakeWebKeyboardEvent) {
               webkit_event.domCode);
   }
   {
-    // Release Ctrl.
+    // Release left Ctrl.
     ui::KeyEvent event(ui::ET_KEY_RELEASED, ui::VKEY_CONTROL,
                        ui::DomCode::CONTROL_LEFT, ui::EF_NONE);
     blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(event);
     // However, modifier bit for Control in |webkit_event| shouldn't be set.
     EXPECT_EQ(blink::WebInputEvent::IsLeft, webkit_event.modifiers);
     EXPECT_EQ(static_cast<int>(ui::DomCode::CONTROL_LEFT),
+              webkit_event.domCode);
+  }
+  {
+    // Press right Ctrl.
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL,
+                       ui::DomCode::CONTROL_RIGHT, ui::EF_CONTROL_DOWN);
+    blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(event);
+    // However, modifier bit for Control in |webkit_event| should be set.
+    EXPECT_EQ(blink::WebInputEvent::ControlKey | blink::WebInputEvent::IsRight,
+              webkit_event.modifiers);
+    EXPECT_EQ(static_cast<int>(ui::DomCode::CONTROL_RIGHT),
+              webkit_event.domCode);
+  }
+  {
+    // Release right Ctrl.
+    ui::KeyEvent event(ui::ET_KEY_RELEASED, ui::VKEY_CONTROL,
+                       ui::DomCode::CONTROL_RIGHT, ui::EF_NONE);
+    blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(event);
+    // However, modifier bit for Control in |webkit_event| shouldn't be set.
+    EXPECT_EQ(blink::WebInputEvent::IsRight, webkit_event.modifiers);
+    EXPECT_EQ(static_cast<int>(ui::DomCode::CONTROL_RIGHT),
               webkit_event.domCode);
   }
 #if defined(USE_X11)
