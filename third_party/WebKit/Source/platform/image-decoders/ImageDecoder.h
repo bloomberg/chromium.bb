@@ -103,13 +103,16 @@ public:
 
     bool isAllDataReceived() const { return m_isAllDataReceived; }
 
-    virtual void setData(SharedBuffer* data, bool allDataReceived)
+    void setData(SharedBuffer* data, bool allDataReceived)
     {
         if (m_failed)
             return;
         m_data = data;
         m_isAllDataReceived = allDataReceived;
+        onSetData(data);
     }
+
+    virtual void onSetData(SharedBuffer* data) { }
 
     bool isSizeAvailable()
     {

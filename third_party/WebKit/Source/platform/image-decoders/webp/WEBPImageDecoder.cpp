@@ -163,12 +163,8 @@ void WEBPImageDecoder::clearDecoder()
     m_frameBackgroundHasAlpha = false;
 }
 
-void WEBPImageDecoder::setData(SharedBuffer* data, bool allDataReceived)
+void WEBPImageDecoder::onSetData(SharedBuffer*)
 {
-    if (failed())
-        return;
-
-    ImageDecoder::setData(data, allDataReceived);
     m_haveAlreadyParsedThisData = false;
 }
 

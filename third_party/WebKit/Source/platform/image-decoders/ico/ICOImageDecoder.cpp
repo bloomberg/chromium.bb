@@ -54,13 +54,8 @@ ICOImageDecoder::~ICOImageDecoder()
 {
 }
 
-void ICOImageDecoder::setData(SharedBuffer* data, bool allDataReceived)
+void ICOImageDecoder::onSetData(SharedBuffer* data)
 {
-    if (failed())
-        return;
-
-    ImageDecoder::setData(data, allDataReceived);
-
     for (BMPReaders::iterator i(m_bmpReaders.begin()); i != m_bmpReaders.end(); ++i) {
         if (*i)
             (*i)->setData(data);

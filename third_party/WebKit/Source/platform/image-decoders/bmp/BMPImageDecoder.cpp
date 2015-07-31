@@ -46,12 +46,8 @@ BMPImageDecoder::BMPImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOp
 {
 }
 
-void BMPImageDecoder::setData(SharedBuffer* data, bool allDataReceived)
+void BMPImageDecoder::onSetData(SharedBuffer* data)
 {
-    if (failed())
-        return;
-
-    ImageDecoder::setData(data, allDataReceived);
     if (m_reader)
         m_reader->setData(data);
 }

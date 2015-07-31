@@ -45,7 +45,7 @@ public:
     // ImageDecoder:
     String filenameExtension() const override { return "webp"; }
     bool hasColorProfile() const override { return m_hasColorProfile; }
-    void setData(SharedBuffer* data, bool allDataReceived) override;
+    void onSetData(SharedBuffer* data) override;
     int repetitionCount() const override;
     bool frameIsCompleteAtIndex(size_t) const override;
     float frameDurationAtIndex(size_t) const override;

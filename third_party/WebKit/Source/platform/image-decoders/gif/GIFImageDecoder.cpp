@@ -43,12 +43,8 @@ GIFImageDecoder::~GIFImageDecoder()
 {
 }
 
-void GIFImageDecoder::setData(SharedBuffer* data, bool allDataReceived)
+void GIFImageDecoder::onSetData(SharedBuffer* data)
 {
-    if (failed())
-        return;
-
-    ImageDecoder::setData(data, allDataReceived);
     if (m_reader)
         m_reader->setData(data);
 }
