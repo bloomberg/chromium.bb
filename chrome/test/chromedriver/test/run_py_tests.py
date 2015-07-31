@@ -1019,8 +1019,9 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals(0, self._driver.ExecuteScript(scroll_top))
     events = self._driver.FindElement('id', 'events')
     self._driver.TouchScroll(events, 47, 53)
-    self.assertEquals(47, self._driver.ExecuteScript(scroll_left))
-    self.assertEquals(53, self._driver.ExecuteScript(scroll_top))
+    # https://code.google.com/p/chromedriver/issues/detail?id=1179
+    self.assertAlmostEqual(47, self._driver.ExecuteScript(scroll_left), delta=1)
+    self.assertAlmostEqual(53, self._driver.ExecuteScript(scroll_top), delta=1)
 
   def testTouchDoubleTapElement(self):
     self._driver.Load(self.GetHttpUrlForFile(
