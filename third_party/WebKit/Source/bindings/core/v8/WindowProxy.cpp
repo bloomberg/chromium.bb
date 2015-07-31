@@ -273,26 +273,17 @@ void configureInnerGlobalObjectTemplate(v8::Local<v8::ObjectTemplate> templ, v8:
 
 v8::Local<v8::ObjectTemplate> getInnerGlobalObjectTemplate(v8::Isolate* isolate)
 {
-    if (DOMWrapperWorld::current(isolate).isMainWorld()) {
-        DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, V8WindowInnerGlobalObjectCacheForMainWorld, ());
-        if (V8WindowInnerGlobalObjectCacheForMainWorld.IsEmpty()) {
-            TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "BuildDOMTemplate");
-            v8::Local<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
-            configureInnerGlobalObjectTemplate(templ, isolate);
-            V8WindowInnerGlobalObjectCacheForMainWorld.Reset(isolate, templ);
-            return templ;
-        }
-        return v8::Local<v8::ObjectTemplate>::New(isolate, V8WindowInnerGlobalObjectCacheForMainWorld);
-    }
-    DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, V8WindowInnerGlobalObjectCacheForNonMainWorld, ());
-    if (V8WindowInnerGlobalObjectCacheForNonMainWorld.IsEmpty()) {
+    // It is OK to share the same object template between the main world and
+    // non-main worlds because the inner global object doesn't install any
+    // DOM attributes/methods.
+    DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, innerGlobalObjectTemplate, ());
+    if (innerGlobalObjectTemplate.IsEmpty()) {
         TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "BuildDOMTemplate");
         v8::Local<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
         configureInnerGlobalObjectTemplate(templ, isolate);
-        V8WindowInnerGlobalObjectCacheForNonMainWorld.Reset(isolate, templ);
-        return templ;
+        innerGlobalObjectTemplate.Reset(isolate, templ);
     }
-    return v8::Local<v8::ObjectTemplate>::New(isolate, V8WindowInnerGlobalObjectCacheForNonMainWorld);
+    return v8::Local<v8::ObjectTemplate>::New(isolate, innerGlobalObjectTemplate);
 }
 
 } // namespace
