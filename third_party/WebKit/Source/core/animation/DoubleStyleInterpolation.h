@@ -15,9 +15,9 @@ class CORE_EXPORT DoubleStyleInterpolation : public StyleInterpolation {
 public:
     typedef void NonInterpolableType;
 
-    static PassRefPtrWillBeRawPtr<DoubleStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id, CSSPrimitiveValue::UnitType type, InterpolationRange clamp)
+    static PassRefPtrWillBeRawPtr<DoubleStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id, bool isNumber, InterpolationRange clamp)
     {
-        return adoptRefWillBeNoop(new DoubleStyleInterpolation(doubleToInterpolableValue(start), doubleToInterpolableValue(end), id, type == CSSPrimitiveValue::UnitType::Number || type == CSSPrimitiveValue::UnitType::Integer, clamp, false));
+        return adoptRefWillBeNoop(new DoubleStyleInterpolation(doubleToInterpolableValue(start), doubleToInterpolableValue(end), id, isNumber, clamp, false));
     }
 
     static PassRefPtrWillBeRawPtr<DoubleStyleInterpolation> maybeCreateFromMotionRotation(const CSSValue& start, const CSSValue& end, CSSPropertyID);

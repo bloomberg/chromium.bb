@@ -220,7 +220,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyfram
             return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, RangeNonNegative);
 
         if (DoubleStyleInterpolation::canCreateFrom(*fromCSSValue) && DoubleStyleInterpolation::canCreateFrom(*toCSSValue))
-            return DoubleStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, CSSPrimitiveValue::UnitType::Number, RangeNonNegative);
+            return DoubleStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, true, RangeNonNegative);
 
         break;
     case CSSPropertyBorderBottomWidth:
@@ -302,7 +302,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyfram
     case CSSPropertyStrokeOpacity:
     case CSSPropertyStrokeMiterlimit:
         if (DoubleStyleInterpolation::canCreateFrom(*fromCSSValue) && DoubleStyleInterpolation::canCreateFrom(*toCSSValue))
-            return DoubleStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, toCSSPrimitiveValue(fromCSSValue)->typeWithCalcResolved(), setRange(property));
+            return DoubleStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, toCSSPrimitiveValue(fromCSSValue)->isNumber(), setRange(property));
         break;
 
     case CSSPropertyMotionRotation: {

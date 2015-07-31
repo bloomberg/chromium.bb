@@ -38,7 +38,7 @@ protected:
 
     static PassRefPtrWillBeRawPtr<CSSValue> roundTrip(PassRefPtrWillBeRawPtr<CSSValue> value)
     {
-        return interpolableValueToDouble(doubleToInterpolableValue(*value).get(), toCSSPrimitiveValue(value.get())->typeWithCalcResolved() == CSSPrimitiveValue::UnitType::Number, RangeAll);
+        return interpolableValueToDouble(doubleToInterpolableValue(*value).get(), toCSSPrimitiveValue(value.get())->isNumber(), RangeAll);
     }
 
     static PassRefPtrWillBeRawPtr<CSSValue> roundTripMotionRotation(PassRefPtrWillBeRawPtr<CSSValue> value, bool flag)
@@ -103,7 +103,7 @@ TEST_F(AnimationDoubleStyleInterpolationTest, Clamping)
         *CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Number),
         *CSSPrimitiveValue::create(0.6, CSSPrimitiveValue::UnitType::Number),
         CSSPropertyLineHeight,
-        CSSPrimitiveValue::UnitType::Number,
+        true,
         RangeAll);
     interpolableDouble->interpolate(0, 0.4);
     // progVal = start*(1-prog) + end*prog

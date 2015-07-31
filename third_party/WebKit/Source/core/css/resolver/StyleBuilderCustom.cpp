@@ -571,7 +571,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitClipPath(StyleResolverSta
             state.style()->setClipPath(nullptr);
         } else if (primitiveValue->isShape()) {
             state.style()->setClipPath(ShapeClipPathOperation::create(basicShapeForValue(state, primitiveValue->getShapeValue())));
-        } else if (primitiveValue->typeWithCalcResolved() == CSSPrimitiveValue::UnitType::URI) {
+        } else if (primitiveValue->isURI()) {
             String cssURLValue = primitiveValue->getStringValue();
             KURL url = state.document().completeURL(cssURLValue);
             // FIXME: It doesn't work with forward or external SVG references (see https://bugs.webkit.org/show_bug.cgi?id=90405)

@@ -557,7 +557,7 @@ double CSSPrimitiveValue::computeLengthDouble(const CSSToLengthConversionData& c
 
     double factor;
 
-    switch (typeWithCalcResolved()) {
+    switch (type()) {
     case UnitType::Ems:
         factor = conversionData.emFontSize();
         break;

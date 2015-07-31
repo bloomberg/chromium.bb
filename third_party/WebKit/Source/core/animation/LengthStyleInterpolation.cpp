@@ -55,7 +55,7 @@ bool LengthStyleInterpolation::canCreateFrom(const CSSValue& value, CSSPropertyI
 {
     if (value.isPrimitiveValue()) {
         const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-        if (primitiveValue.cssCalcValue())
+        if (primitiveValue.isCalculated())
             return true;
 
         if (primitiveValue.isValueID()) {
@@ -64,9 +64,7 @@ bool LengthStyleInterpolation::canCreateFrom(const CSSValue& value, CSSPropertyI
             return pixelsForKeyword(property, valueID, pixels);
         }
 
-        CSSPrimitiveValue::LengthUnitType type;
-        // Only returns true if the type is a primitive length unit.
-        return CSSPrimitiveValue::unitTypeToLengthUnitType(primitiveValue.typeWithCalcResolved(), type);
+        return primitiveValue.isLength() || primitiveValue.isPercentage() || primitiveValue.isCalculatedPercentageWithLength();
     }
     return value.isCalcValue();
 }

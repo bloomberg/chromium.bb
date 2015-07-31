@@ -130,12 +130,8 @@ PassOwnPtrWillBeRawPtr<InterpolationValue> LengthInterpolationType::maybeConvert
         arrayOfTypes.set(CSSPrimitiveValue::UnitTypePixels);
         arrayOfValues[CSSPrimitiveValue::UnitTypePixels] = pixels;
     } else {
-        if (!primitiveValue.isCalculated() && !primitiveValue.isCalculatedPercentageWithLength()) {
-            CSSPrimitiveValue::LengthUnitType type;
-            // Only returns true if the type is a primitive length unit.
-            if (!CSSPrimitiveValue::unitTypeToLengthUnitType(primitiveValue.typeWithCalcResolved(), type))
-                return nullptr;
-        }
+        if (!primitiveValue.isLength() && !primitiveValue.isPercentage() && !primitiveValue.isCalculatedPercentageWithLength())
+            return nullptr;
         primitiveValue.accumulateLengthArray(arrayOfValues, arrayOfTypes);
     }
 
