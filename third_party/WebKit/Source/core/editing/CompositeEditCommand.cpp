@@ -335,7 +335,7 @@ void CompositeEditCommand::insertNodeAt(PassRefPtrWillBeRawPtr<Node> insertChild
     // likewise for replaced elements, brs, etc.
     Position p = editingPosition.parentAnchoredEquivalent();
     Node* refChild = p.anchorNode();
-    int offset = p.deprecatedEditingOffset();
+    int offset = p.offsetInContainerNode();
 
     if (canHaveChildrenForEditing(refChild)) {
         Node* child = refChild->firstChild();
