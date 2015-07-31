@@ -1,9 +1,11 @@
+*.announce
 *.deps
 *.jpg
 *.la
 *.lo
 *.o
 *.pc
+*.sig
 *.so
 *.swp
 *.3
