@@ -236,6 +236,7 @@ public:
     virtual void setSpatialNavigationEnabled(bool) = 0;
     virtual void setStandardFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
     virtual void setStrictMixedContentChecking(bool) = 0;
+    virtual void setStrictMixedContentCheckingForPlugin(bool) = 0;
     virtual void setStrictPowerfulFeatureRestrictions(bool) = 0;
     virtual void setStrictlyBlockBlockableMixedContent(bool) = 0;
     virtual void setSupportDeprecatedTargetDensityDPI(bool) = 0;

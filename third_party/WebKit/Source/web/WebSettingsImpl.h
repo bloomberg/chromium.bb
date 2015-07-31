@@ -153,6 +153,7 @@ public:
     void setSpatialNavigationEnabled(bool) override;
     void setStandardFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) override;
     void setStrictMixedContentChecking(bool) override;
+    void setStrictMixedContentCheckingForPlugin(bool) override;
     void setStrictPowerfulFeatureRestrictions(bool) override;
     void setStrictlyBlockBlockableMixedContent(bool) override;
     void setSupportDeprecatedTargetDensityDPI(bool) override;

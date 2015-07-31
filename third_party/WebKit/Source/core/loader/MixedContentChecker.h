@@ -78,7 +78,7 @@ private:
 
     static LocalFrame* inWhichFrameIsContentMixed(LocalFrame*, WebURLRequest::FrameType, const KURL&);
 
-    static ContextType contextTypeFromContext(WebURLRequest::RequestContext);
+    static ContextType contextTypeFromContext(WebURLRequest::RequestContext, LocalFrame*);
     static const char* typeNameFromContext(WebURLRequest::RequestContext);
     static void logToConsoleAboutFetch(LocalFrame*, const KURL&, WebURLRequest::RequestContext, bool allowed);
     static void logToConsoleAboutWebSocket(LocalFrame*, const KURL&, bool allowed);
