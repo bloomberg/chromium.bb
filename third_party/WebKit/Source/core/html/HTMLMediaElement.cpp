@@ -71,12 +71,9 @@
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/AudioSourceProviderClient.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebInbandTextTrack.h"
 #include "wtf/CurrentTime.h"
@@ -86,8 +83,9 @@
 #include <limits>
 
 #if ENABLE(WEB_AUDIO)
-#include "platform/audio/AudioSourceProvider.h"
+#include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioSourceProviderClient.h"
+#include "public/platform/WebAudioSourceProvider.h"
 #endif
 
 using blink::WebInbandTextTrack;

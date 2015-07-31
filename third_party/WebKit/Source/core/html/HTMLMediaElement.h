@@ -32,10 +32,13 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/track/TextTrack.h"
 #include "platform/Supplementable.h"
-#include "platform/audio/AudioSourceProvider.h"
-#include "public/platform/WebAudioSourceProviderClient.h"
 #include "public/platform/WebMediaPlayerClient.h"
 #include "public/platform/WebMimeRegistry.h"
+
+#if ENABLE(WEB_AUDIO)
+#include "platform/audio/AudioSourceProvider.h"
+#include "public/platform/WebAudioSourceProviderClient.h"
+#endif
 
 namespace blink {
 class WebInbandTextTrack;
@@ -45,8 +48,8 @@ class WebLayer;
 namespace blink {
 
 #if ENABLE(WEB_AUDIO)
-class AudioSourceProvider;
 class AudioSourceProviderClient;
+class WebAudioSourceProvider;
 #endif
 class AudioTrackList;
 class ContentType;
