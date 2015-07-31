@@ -30,10 +30,18 @@ class SafeBrowsingResourceThrottleFactory {
   // caller has to make sure the factory stays alive and properly destroyed.
   static void RegisterFactory(SafeBrowsingResourceThrottleFactory* factory);
 
-  // Creates a new resource throttle for safe browsing
+  // Creates a new resource throttle for safe browsing, using the factory
+  // if there is one registered.
   static content::ResourceThrottle* Create(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
+      content::ResourceType resource_type,
+      SafeBrowsingService* service);
+
+  // Like above, but bypass the registered factory and create a true
+  // SafeBrowsingResourceThrottle.
+  static content::ResourceThrottle* CreateWithoutRegisteredFactory(
+      net::URLRequest* request,
       content::ResourceType resource_type,
       SafeBrowsingService* service);
 

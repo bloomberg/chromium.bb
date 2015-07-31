@@ -43,10 +43,15 @@ DataReductionProxyResourceThrottleFactory::CreateResourceThrottle(
     content::ResourceType resource_type,
     SafeBrowsingService* service) {
 #if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+  // Send requests through Safe Browsing if we can't process them.
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   if (io_data->IsOffTheRecord() || !io_data->IsDataReductionProxyEnabled() ||
-      request->url().SchemeIsSecure())
-    return new SafeBrowsingResourceThrottle(request, resource_type, service);
+      request->url().SchemeIsSecure()) {
+    // *this is already registered as the SafeBrowsingResourceThrottleFactory,
+    // so need to bypass that and use its base implementation.
+    return SafeBrowsingResourceThrottleFactory::CreateWithoutRegisteredFactory(
+        request, resource_type, service);
+  }
 #endif
   return new DataReductionProxyResourceThrottle(request, resource_type,
                                                 service);

@@ -40,9 +40,22 @@ ResourceThrottle* SafeBrowsingResourceThrottleFactory::Create(
     return factory_->CreateResourceThrottle(
         request, resource_context, resource_type, service);
 
-#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
-  // Throttle consults a local or remote database before proceeding.
-  return new SafeBrowsingResourceThrottle(request, resource_type, service);
+  return CreateWithoutRegisteredFactory(request, resource_type, service);
+}
+
+ResourceThrottle*
+SafeBrowsingResourceThrottleFactory::CreateWithoutRegisteredFactory(
+    net::URLRequest* request,
+    content::ResourceType resource_type,
+    SafeBrowsingService* service) {
+#if defined(SAFE_BROWSING_DB_LOCAL)
+  // Throttle consults a local database before starting the resource request.
+  return new SafeBrowsingResourceThrottle(request, resource_type, service,
+                                          true /* defer_at_start */);
+#elif defined(SAFE_BROWSING_DB_REMOTE)
+  // Throttle consults a remote database before processing the response.
+  return new SafeBrowsingResourceThrottle(request, resource_type, service,
+                                          false /* defer_at_start */);
 #else
   return NULL;
 #endif

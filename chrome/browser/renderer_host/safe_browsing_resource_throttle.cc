@@ -28,8 +28,10 @@ static const int kCheckUrlTimeoutMs = 5000;
 SafeBrowsingResourceThrottle::SafeBrowsingResourceThrottle(
     const net::URLRequest* request,
     content::ResourceType resource_type,
-    SafeBrowsingService* safe_browsing)
-    : state_(STATE_NONE),
+    SafeBrowsingService* safe_browsing,
+    bool defer_at_start)
+    : defer_at_start_(defer_at_start),
+      state_(STATE_NONE),
       defer_state_(DEFERRED_NONE),
       threat_type_(SB_THREAT_TYPE_SAFE),
       database_manager_(safe_browsing->database_manager()),
@@ -49,30 +51,53 @@ void SafeBrowsingResourceThrottle::WillStartRequest(bool* defer) {
   if (CheckUrl(request_->url()))
     return;
 
+  if (!defer_at_start_)
+    return;
+
   // If the URL couldn't be verified synchronously, defer starting the
   // request until the check has completed.
   defer_state_ = DEFERRED_START;
+  defer_start_time_ = base::TimeTicks::Now();
   *defer = true;
+}
+
+void SafeBrowsingResourceThrottle::WillProcessResponse(bool* defer) {
+  CHECK_EQ(defer_state_, DEFERRED_NONE);
+  if (defer_at_start_)
+    return;
+
+  if (state_ == STATE_CHECKING_URL ||
+      state_ == STATE_DISPLAYING_BLOCKING_PAGE) {
+    defer_state_ = DEFERRED_PROCESSING;
+    defer_start_time_ = base::TimeTicks::Now();
+    *defer = true;
+  }
 }
 
 void SafeBrowsingResourceThrottle::WillRedirectRequest(
     const net::RedirectInfo& redirect_info,
     bool* defer) {
-  CHECK(state_ == STATE_NONE);
-  CHECK(defer_state_ == DEFERRED_NONE);
+  CHECK_EQ(defer_state_, DEFERRED_NONE);
 
-  // Save the redirect urls for possible malware detail reporting later.
-  redirect_urls_.push_back(redirect_info.new_url);
+  // Prev check completed and was safe.
+  if (state_ == STATE_NONE) {
+    // Save the redirect urls for possible malware detail reporting later.
+    redirect_urls_.push_back(redirect_info.new_url);
 
-  // We need to check the new URL before following the redirect.
-  if (CheckUrl(redirect_info.new_url))
-    return;
+    // We need to check the new URL before following the redirect.
+    if (CheckUrl(redirect_info.new_url))
+      return;
+    defer_state_ = DEFERRED_REDIRECT;
+  } else {
+    CHECK(state_ == STATE_CHECKING_URL ||
+          state_ == STATE_DISPLAYING_BLOCKING_PAGE);
+    // We can't check this new URL until we have finished checking
+    // the prev one, or resumed from the blocking page.
+    unchecked_redirect_url_ = redirect_info.new_url;
+    defer_state_ = DEFERRED_UNCHECKED_REDIRECT;
+  }
 
-  // If the URL couldn't be verified synchronously, defer following the
-  // redirect until the SafeBrowsing check is complete. Store the redirect
-  // context so we can pass it on to other handlers once we have completed
-  // our check.
-  defer_state_ = DEFERRED_REDIRECT;
+  defer_start_time_ = base::TimeTicks::Now();
   *defer = true;
 }
 
@@ -86,27 +111,26 @@ void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
     const GURL& url,
     SBThreatType threat_type,
     const std::string& metadata) {
-  CHECK(state_ == STATE_CHECKING_URL);
-  CHECK(defer_state_ != DEFERRED_NONE);
-  CHECK(url == url_being_checked_) << "Was expecting: " << url_being_checked_
-                                   << " but got: " << url;
+  CHECK_EQ(state_, STATE_CHECKING_URL);
+  CHECK_EQ(url, url_being_checked_);
 
   timer_.Stop();  // Cancel the timeout timer.
   threat_type_ = threat_type;
   state_ = STATE_NONE;
 
   if (threat_type == SB_THREAT_TYPE_SAFE) {
-    // Log how much time the safe browsing check cost us.
-    ui_manager_->LogPauseDelay(base::TimeTicks::Now() - url_check_start_time_);
-
-    // Continue the request.
-    ResumeRequest();
+    if (defer_state_ != DEFERRED_NONE) {
+      // Log how much time the safe browsing check cost us.
+      ui_manager_->LogPauseDelay(base::TimeTicks::Now() - defer_start_time_);
+      ResumeRequest();
+    } else {
+      ui_manager_->LogPauseDelay(base::TimeDelta());
+    }
     return;
   }
 
   if (request_->load_flags() & net::LOAD_PREFETCH) {
-    // Don't prefetch resources that fail safe browsing, disallow
-    // them.
+    // Don't prefetch resources that fail safe browsing, disallow them.
     controller()->Cancel();
     return;
   }
@@ -140,8 +164,6 @@ void SafeBrowsingResourceThrottle::StartDisplayingBlockingPage(
     const base::WeakPtr<SafeBrowsingResourceThrottle>& throttle,
     scoped_refptr<SafeBrowsingUIManager> ui_manager,
     const SafeBrowsingUIManager::UnsafeResource& resource) {
-  bool should_show_blocking_page = true;
-
   content::RenderViewHost* rvh = content::RenderViewHost::FromID(
       resource.render_process_host_id, resource.render_view_id);
   if (rvh) {
@@ -149,12 +171,10 @@ void SafeBrowsingResourceThrottle::StartDisplayingBlockingPage(
         content::WebContents::FromRenderViewHost(rvh);
     prerender::PrerenderContents* prerender_contents =
         prerender::PrerenderContents::FromWebContents(web_contents);
+
     if (prerender_contents) {
       prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
-      should_show_blocking_page = false;
-    }
-
-    if (should_show_blocking_page)  {
+    } else {
       ui_manager->DisplayBlockingPage(resource);
       return;
     }
@@ -175,19 +195,21 @@ void SafeBrowsingResourceThrottle::Cancel() {
 // thread when the user has decided to proceed with the current request, or
 // go back.
 void SafeBrowsingResourceThrottle::OnBlockingPageComplete(bool proceed) {
-  CHECK(state_ == STATE_DISPLAYING_BLOCKING_PAGE);
+  CHECK_EQ(state_, STATE_DISPLAYING_BLOCKING_PAGE);
   state_ = STATE_NONE;
 
   if (proceed) {
     threat_type_ = SB_THREAT_TYPE_SAFE;
-    ResumeRequest();
+    if (defer_state_ != DEFERRED_NONE) {
+      ResumeRequest();
+    }
   } else {
     controller()->Cancel();
   }
 }
 
 bool SafeBrowsingResourceThrottle::CheckUrl(const GURL& url) {
-  CHECK(state_ == STATE_NONE);
+  CHECK_EQ(state_, STATE_NONE);
   bool succeeded_synchronously = database_manager_->CheckBrowseUrl(url, this);
   if (succeeded_synchronously) {
     threat_type_ = SB_THREAT_TYPE_SAFE;
@@ -198,10 +220,9 @@ bool SafeBrowsingResourceThrottle::CheckUrl(const GURL& url) {
   state_ = STATE_CHECKING_URL;
   url_being_checked_ = url;
 
-  // Record the start time of the check.
-  url_check_start_time_ = base::TimeTicks::Now();
-
   // Start a timer to abort the check if it takes too long.
+  // TODO(nparker): Set this only when we defer, based on remaining time,
+  // so we don't cancel earlier than necessary.
   timer_.Start(FROM_HERE,
                base::TimeDelta::FromMilliseconds(kCheckUrlTimeoutMs),
                this, &SafeBrowsingResourceThrottle::OnCheckUrlTimeout);
@@ -210,8 +231,7 @@ bool SafeBrowsingResourceThrottle::CheckUrl(const GURL& url) {
 }
 
 void SafeBrowsingResourceThrottle::OnCheckUrlTimeout() {
-  CHECK(state_ == STATE_CHECKING_URL);
-  CHECK(defer_state_ != DEFERRED_NONE);
+  CHECK_EQ(state_, STATE_CHECKING_URL);
 
   database_manager_->CancelCheck(this);
   OnCheckBrowseUrlResult(
@@ -219,9 +239,22 @@ void SafeBrowsingResourceThrottle::OnCheckUrlTimeout() {
 }
 
 void SafeBrowsingResourceThrottle::ResumeRequest() {
-  CHECK(state_ == STATE_NONE);
-  CHECK(defer_state_ != DEFERRED_NONE);
+  CHECK_EQ(state_, STATE_NONE);
+  CHECK_NE(defer_state_, DEFERRED_NONE);
 
-  defer_state_ = DEFERRED_NONE;
-  controller()->Resume();
+  bool resume = true;
+  if (defer_state_ == DEFERRED_UNCHECKED_REDIRECT) {
+    // Save the redirect urls for possible malware detail reporting later.
+    redirect_urls_.push_back(unchecked_redirect_url_);
+    if (!CheckUrl(unchecked_redirect_url_)) {
+      // We're now waiting for the unchecked_redirect_url_.
+      defer_state_ = DEFERRED_REDIRECT;
+      resume = false;
+    }
+  }
+
+  if (resume) {
+    defer_state_ = DEFERRED_NONE;
+    controller()->Resume();
+  }
 }
