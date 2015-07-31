@@ -3441,6 +3441,7 @@ interface Navigator
     getter serviceWorker
     getter services
     getter storageQuota
+    getter usb
     getter userAgent
     getter vendor
     getter vendorSub
@@ -5520,6 +5521,9 @@ interface URL
     setter protocol
     setter search
     setter username
+interface USBDevice
+    getter guid
+    method constructor
 interface VTTCue
     getter align
     getter line

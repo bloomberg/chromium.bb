@@ -289,6 +289,8 @@
       'webmidi/MIDIPort.idl',
       'websockets/CloseEvent.idl',
       'websockets/WebSocket.idl',
+      'webusb/USB.idl',
+      'webusb/USBDevice.idl',
     ],
     # 'partial interface' or target (right side of) 'implements'
     'modules_dependency_idl_files': [
@@ -364,6 +366,7 @@
       'webgl/WebGL2RenderingContextBase.idl',
       'webgl/WebGLRenderingContextBase.idl',
       'webmidi/NavigatorWebMIDI.idl',
+      'webusb/NavigatorUSB.idl',
     ],
     # interfaces that inherit from Event
     'modules_event_idl_files': [
@@ -464,6 +467,8 @@
       'webmidi/MIDIMessageEventInit.idl',
       'webmidi/MIDIOptions.idl',
       'websockets/CloseEventInit.idl',
+      'webusb/USBDeviceEnumerationOptions.idl',
+      'webusb/USBDeviceFilter.idl',
     ],
     'generated_modules_files': [
       # .cpp files from make_modules_generated actions.
@@ -599,6 +604,10 @@
       '<(blink_modules_output_dir)/webmidi/MIDIOptions.h',
       '<(blink_modules_output_dir)/websockets/CloseEventInit.cpp',
       '<(blink_modules_output_dir)/websockets/CloseEventInit.h',
+      '<(blink_modules_output_dir)/webusb/USBDeviceEnumerationOptions.cpp',
+      '<(blink_modules_output_dir)/webusb/USBDeviceEnumerationOptions.h',
+      '<(blink_modules_output_dir)/webusb/USBDeviceFilter.cpp',
+      '<(blink_modules_output_dir)/webusb/USBDeviceFilter.h',
     ],
     'modules_files': [
       '<@(extra_blink_module_files)',
@@ -1668,6 +1677,13 @@
       'websockets/WebSocketFrame.h',
       'websockets/WorkerWebSocketChannel.cpp',
       'websockets/WorkerWebSocketChannel.h',
+      'webusb/NavigatorUSB.cpp',
+      'webusb/NavigatorUSB.h',
+      'webusb/USB.cpp',
+      'webusb/USB.h',
+      'webusb/USBController.cpp',
+      'webusb/USBController.h',
+      'webusb/USBDevice.h',
     ],
     # 'partial interface' or target (right side of) 'implements'
     'modules_testing_dependency_idl_files' : [

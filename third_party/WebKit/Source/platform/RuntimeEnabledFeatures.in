@@ -171,6 +171,7 @@ WebAudio condition=WEB_AUDIO, status=stable
 WebBluetooth
 WebGLDraftExtensions status=experimental
 WebGLImageChromium
+WebUSB status=experimental
 WebVR depends_on=GeometryInterfaces
 WebVTTRegions depends_on=Media, status=experimental
 V8IdleTasks

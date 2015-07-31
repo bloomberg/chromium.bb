@@ -163,6 +163,7 @@
 #include "modules/screen_orientation/ScreenOrientationController.h"
 #include "modules/vr/VRController.h"
 #include "modules/wake_lock/ScreenWakeLock.h"
+#include "modules/webusb/USBController.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "platform/UserGestureIndicator.h"
@@ -1725,6 +1726,8 @@ void WebLocalFrameImpl::setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame> frame)
             PresentationController::provideTo(*m_frame, m_client ? m_client->presentationClient() : nullptr);
         if (RuntimeEnabledFeatures::permissionsEnabled())
             PermissionController::provideTo(*m_frame, m_client ? m_client->permissionClient() : nullptr);
+        if (RuntimeEnabledFeatures::webUSBEnabled())
+            USBController::provideTo(*m_frame, m_client ? m_client->usbClient() : nullptr);
         if (RuntimeEnabledFeatures::webVREnabled())
             VRController::provideTo(*m_frame, m_client ? m_client->webVRClient() : nullptr);
         if (RuntimeEnabledFeatures::wakeLockEnabled())

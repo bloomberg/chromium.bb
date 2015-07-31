@@ -89,6 +89,7 @@ class WebScreenOrientationClient;
 class WebString;
 class WebURL;
 class WebURLResponse;
+class WebUSBClient;
 class WebUserMediaClient;
 class WebVRClient;
 class WebWakeLockClient;
@@ -668,6 +669,9 @@ public:
 
     // Bluetooth -----------------------------------------------------------
     virtual WebBluetooth* bluetooth() { return 0; }
+
+    // WebUSB --------------------------------------------------------------
+    virtual WebUSBClient* usbClient() { return nullptr; }
 
 protected:
     virtual ~WebFrameClient() { }
