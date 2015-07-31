@@ -547,7 +547,6 @@ group("both_gn_and_gyp") {
       "//extensions:extensions_unittests",  # TODO(GYP)
       "//mojo",  # TODO(GYP)
       "//mojo/application/public/cpp",  # TODO(GYP)
-      "//net:net_unittests",  # TODO(GYP)
 
       # TODO(GYP): Re-enable this as soon as we can link Blink binaries on mac.
       "//third_party/WebKit/Source/platform:heap_unittests",
