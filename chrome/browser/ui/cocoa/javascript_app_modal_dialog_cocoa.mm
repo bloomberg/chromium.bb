@@ -29,18 +29,6 @@ namespace {
 const int kSlotsPerLine = 50;
 const int kMessageTextMaxSlots = 2000;
 
-// The presentation of the NSAlert is delayed, due to an AppKit bug. See
-// JavaScriptAppModalDialogCocoa::ShowAppModalDialog for more details.  If the
-// NSAlert has not yet been presented, then actions that affect the NSAlert
-// should be delayed as well. Due to the destructive nature of these actions,
-// at most one action should be queued.
-enum AlertAction {
-  ACTION_NONE,
-  ACTION_CLOSE,
-  ACTION_ACCEPT,
-  ACTION_CANCEL
-};
-
 }  // namespace
 
 // Helper object that receives the notification that the dialog/sheet is
@@ -51,21 +39,12 @@ enum AlertAction {
   JavaScriptAppModalDialogCocoa* nativeDialog_;  // Weak.
   base::scoped_nsobject<NSTextField> textField_;
   BOOL alertShown_;
-  AlertAction queuedAction_;
 }
 
 // Creates an NSAlert if one does not already exist. Otherwise returns the
 // existing NSAlert.
 - (NSAlert*)alert;
 - (void)addTextFieldWithPrompt:(NSString*)prompt;
-- (void)alertDidEnd:(NSAlert*)alert
-         returnCode:(int)returnCode
-        contextInfo:(void*)contextInfo;
-
-// If the alert has been presented, immediately play the action. Otherwise
-// queue the action for replay immediately after the alert is presented.
-- (void)playOrQueueAction:(AlertAction)action;
-- (void)queueAction:(AlertAction)action;
 
 // Presents an AppKit blocking dialog.
 - (void)showAlert;
@@ -94,10 +73,8 @@ enum AlertAction {
 - (instancetype)initWithNativeDialog:(JavaScriptAppModalDialogCocoa*)dialog {
   DCHECK(dialog);
   self = [super init];
-  if (self) {
+  if (self)
     nativeDialog_ = dialog;
-    queuedAction_ = ACTION_NONE;
-  }
   return self;
 }
 
@@ -121,72 +98,33 @@ enum AlertAction {
 - (void)alertDidEnd:(NSAlert*)alert
          returnCode:(int)returnCode
         contextInfo:(void*)contextInfo {
-  DCHECK(nativeDialog_);
-  base::string16 input;
-  if (textField_)
-    input = base::SysNSStringToUTF16([textField_ stringValue]);
-  bool shouldSuppress = false;
-  if ([alert showsSuppressionButton])
-    shouldSuppress = [[alert suppressionButton] state] == NSOnState;
   switch (returnCode) {
     case NSAlertFirstButtonReturn:  {  // OK
-      nativeDialog_->dialog()->OnAccept(input, shouldSuppress);
+      [self sendAcceptToNativeDialog];
       break;
     }
     case NSAlertSecondButtonReturn:  {  // Cancel
       // If the user wants to stay on this page, stop quitting (if a quit is in
       // progress).
-      if (nativeDialog_->dialog()->is_before_unload_dialog())
-        chrome_browser_application_mac::CancelTerminate();
-      nativeDialog_->dialog()->OnCancel(shouldSuppress);
+      [self sendCancelToNativeDialog];
       break;
     }
     case NSRunStoppedResponse: {  // Window was closed underneath us
-      // Need to call OnCancel() because there is some cleanup that needs
+      // Need to call OnClose() because there is some cleanup that needs
       // to be done.  It won't call back to the javascript since the
       // JavaScriptAppModalDialog knows that the WebContents was destroyed.
-      nativeDialog_->dialog()->OnCancel(shouldSuppress);
+      [self sendCloseToNativeDialog];
       break;
     }
     default:  {
       NOTREACHED();
     }
   }
-
-  delete nativeDialog_;  // Careful, this will delete us.
-}
-
-- (void)playOrQueueAction:(AlertAction)action {
-  if (alertShown_)
-    [self playAlertAction:action];
-  else
-    [self queueAction:action];
-}
-
-- (void)queueAction:(AlertAction)action {
-  DCHECK(!alertShown_);
-  DCHECK(queuedAction_ == ACTION_NONE);
-
-  queuedAction_ = action;
-}
-
-- (void)playAlertAction:(AlertAction)action {
-  switch (action) {
-    case ACTION_NONE:
-      break;
-    case ACTION_CLOSE:
-      [self closeWindow];
-      break;
-    case ACTION_CANCEL:
-      [self cancelAlert];
-      break;
-    case ACTION_ACCEPT:
-      [self acceptAlert];
-      break;
-  }
 }
 
 - (void)showAlert {
+  DCHECK(nativeDialog_);
+  DCHECK(!alertShown_);
   alertShown_ = YES;
   NSAlert* alert = [self alert];
   [alert beginSheetModalForWindow:nil  // nil here makes it app-modal
@@ -196,26 +134,77 @@ enum AlertAction {
 
   if ([alert accessoryView])
     [[alert window] makeFirstResponder:[alert accessoryView]];
-
-  [self playAlertAction:queuedAction_];
 }
 
 - (void)acceptAlert {
+  DCHECK(nativeDialog_);
+  if (!alertShown_) {
+    [self sendAcceptToNativeDialog];
+    return;
+  }
   NSButton* first = [[[self alert] buttons] objectAtIndex:0];
   [first performClick:nil];
 }
 
 - (void)cancelAlert {
-  NSAlert* alert = [self alert];
-  DCHECK([[alert buttons] count] >= 2);
-  NSButton* second = [[alert buttons] objectAtIndex:1];
+  DCHECK(nativeDialog_);
+  if (!alertShown_) {
+    [self sendCancelToNativeDialog];
+    return;
+  }
+  DCHECK_GE([[[self alert] buttons] count], 2U);
+  NSButton* second = [[[self alert] buttons] objectAtIndex:1];
   [second performClick:nil];
 }
 
 - (void)closeWindow {
-  DCHECK([self alert]);
-
+  DCHECK(nativeDialog_);
+  if (!alertShown_) {
+    [self sendCloseToNativeDialog];
+    return;
+  }
   [NSApp endSheet:[[self alert] window]];
+}
+
+- (void)sendAcceptToNativeDialog {
+  DCHECK(nativeDialog_);
+  nativeDialog_->dialog()->OnAccept([self input], [self shouldSuppress]);
+  [self destroyNativeDialog];
+}
+
+- (void)sendCancelToNativeDialog {
+  DCHECK(nativeDialog_);
+  // If the user wants to stay on this page, stop quitting (if a quit is in
+  // progress).
+  if (nativeDialog_->dialog()->is_before_unload_dialog())
+    chrome_browser_application_mac::CancelTerminate();
+  nativeDialog_->dialog()->OnCancel([self shouldSuppress]);
+  [self destroyNativeDialog];
+}
+
+- (void)sendCloseToNativeDialog {
+  DCHECK(nativeDialog_);
+  nativeDialog_->dialog()->OnClose();
+  [self destroyNativeDialog];
+}
+
+- (void)destroyNativeDialog {
+  DCHECK(nativeDialog_);
+  JavaScriptAppModalDialogCocoa* nativeDialog = nativeDialog_;
+  nativeDialog_ = nil;  // Need to fail on DCHECK if something wrong happens.
+  delete nativeDialog;  // Careful, this will delete us.
+}
+
+- (base::string16)input {
+  if (textField_)
+    return base::SysNSStringToUTF16([textField_ stringValue]);
+  return base::string16();
+}
+
+- (bool)shouldSuppress {
+  if ([[self alert] showsSuppressionButton])
+    return [[[self alert] suppressionButton] state] == NSOnState;
+  return false;
 }
 
 @end
@@ -434,15 +423,15 @@ void JavaScriptAppModalDialogCocoa::ActivateAppModalDialog() {
 }
 
 void JavaScriptAppModalDialogCocoa::CloseAppModalDialog() {
-  [helper_ playOrQueueAction:ACTION_CLOSE];
+  [helper_ closeWindow];
 }
 
 void JavaScriptAppModalDialogCocoa::AcceptAppModalDialog() {
-  [helper_ playOrQueueAction:ACTION_ACCEPT];
+  [helper_ acceptAlert];
 }
 
 void JavaScriptAppModalDialogCocoa::CancelAppModalDialog() {
-  [helper_ playOrQueueAction:ACTION_CANCEL];
+  [helper_ cancelAlert];
 }
 
 bool JavaScriptAppModalDialogCocoa::IsShowing() const {
