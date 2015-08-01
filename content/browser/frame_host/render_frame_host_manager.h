@@ -222,10 +222,8 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // there is no current one.
   RenderWidgetHostView* GetRenderWidgetHostView() const;
 
-  // Returns whether this manager belongs to a FrameTreeNode that is a main
-  // frame in an inner WebContents.
-  // TODO(lazyboy): Make this work correctly for subframes inside inner
-  // WebContents too.
+  // Returns whether this manager belongs to a FrameTreeNode that belongs to an
+  // inner WebContents.
   bool ForInnerDelegate();
 
   // Returns the RenderWidgetHost of the outer WebContents (if any) that can be

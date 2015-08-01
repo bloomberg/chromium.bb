@@ -1334,6 +1334,54 @@ function testNavOnConsecutiveSrcAttributeChanges() {
   webview.src = testPage3;
 }
 
+function testNestedCrossOriginSubframes() {
+  var webview = document.createElement('webview');
+  var nestedFrameURL = embedder.baseGuestURL +
+      '/extensions/platform_apps/web_view/shim/parent_frame.html';
+  webview.onconsolemessage = function(e) {
+    window.console.log('guest.consolemessage ' + e.message);
+  };
+  webview.onloadstop = function() {
+    window.onmessage = function(e) {
+      if (e.data == 'frames-loaded') {
+        embedder.test.succeed();
+      }
+    };
+
+    // Ask the <webview> to load nested frames. It will reply via postMessage
+    // once frames have finished loading.
+    webview.contentWindow.postMessage('load-frames', '*');
+  };
+  webview.onloadabort = embedder.test.fail;
+
+  webview.src = nestedFrameURL;
+  document.body.appendChild(webview);
+}
+
+function testNestedSubframes() {
+  var webview = document.createElement('webview');
+  webview.partition = 'foobar';
+  var nestedFrameURL = 'parent_frame.html';
+  webview.onconsolemessage = function(e) {
+    window.console.log('guest.consolemessage ' + e.message);
+  };
+  webview.onloadstop = function() {
+    window.onmessage = function(e) {
+      if (e.data == 'frames-loaded') {
+        embedder.test.succeed();
+      }
+    };
+
+    // Ask the <webview> to load nested frames. It will reply via postMessage
+    // once frames have finished loading.
+    webview.contentWindow.postMessage('load-frames', '*');
+  };
+  webview.onloadabort = embedder.test.fail;
+
+  webview.src = nestedFrameURL;
+  document.body.appendChild(webview);
+}
+
 // This test verifies that we can set the <webview> src multiple times and the
 // changes will cause a navigation.
 function testNavOnSrcAttributeChange() {
@@ -2852,6 +2900,8 @@ embedder.test.testList = {
   'testNavOnConsecutiveSrcAttributeChanges':
       testNavOnConsecutiveSrcAttributeChanges,
   'testNavOnSrcAttributeChange': testNavOnSrcAttributeChange,
+  'testNestedCrossOriginSubframes': testNestedCrossOriginSubframes,
+  'testNestedSubframes': testNestedSubframes,
   'testReassignSrcAttribute': testReassignSrcAttribute,
   'testRemoveSrcAttribute': testRemoveSrcAttribute,
   'testPluginLoadInternalResource': testPluginLoadInternalResource,

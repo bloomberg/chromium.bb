@@ -58,7 +58,8 @@ RenderFrameProxyHost::RenderFrameProxyHost(SiteInstance* site_instance,
           RenderFrameProxyHostID(GetProcess()->GetID(), routing_id_),
           this)).second);
   CHECK_IMPLIES(!render_view_host,
-                frame_tree_node_->render_manager()->ForInnerDelegate());
+                frame_tree_node_->render_manager()->ForInnerDelegate() &&
+                    frame_tree_node_->IsMainFrame());
   if (render_view_host)
     frame_tree_node_->frame_tree()->AddRenderViewHostRef(render_view_host_);
 
@@ -67,12 +68,14 @@ RenderFrameProxyHost::RenderFrameProxyHost(SiteInstance* site_instance,
                                     ->render_manager()
                                     ->current_frame_host()
                                     ->GetSiteInstance() == site_instance;
+  bool is_proxy_to_outer_delegate =
+      frame_tree_node_->IsMainFrame() &&
+      frame_tree_node_->render_manager()->ForInnerDelegate();
 
   // If this is a proxy to parent frame or this proxy is for the inner
   // WebContents's FrameTreeNode in outer WebContents's SiteInstance, then we
   // need a CrossProcessFrameConnector.
-  if (is_proxy_to_parent ||
-      frame_tree_node_->render_manager()->ForInnerDelegate()) {
+  if (is_proxy_to_parent || is_proxy_to_outer_delegate) {
     // The RenderFrameHost navigating cross-process is destroyed and a proxy for
     // it is created in the parent's process. CrossProcessFrameConnector
     // initialization only needs to happen on an initial cross-process
@@ -199,6 +202,8 @@ void RenderFrameProxyHost::DisownOpener() {
 
 void RenderFrameProxyHost::OnDetach() {
   if (frame_tree_node_->render_manager()->ForInnerDelegate()) {
+    // Only main frame proxy can detach for inner WebContents.
+    DCHECK(frame_tree_node_->IsMainFrame());
     frame_tree_node_->render_manager()->RemoveOuterDelegateFrame();
     return;
   }

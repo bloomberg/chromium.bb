@@ -259,17 +259,13 @@ RenderWidgetHostView* RenderFrameHostManager::GetRenderWidgetHostView() const {
 }
 
 bool RenderFrameHostManager::ForInnerDelegate() {
-  // TODO(lazyboy): Subframes inside inner WebContents needs to be tested and
-  // we have to make sure that IsMainFrame() check below is appropriate. See
-  // http://crbug.com/500957.
-  return frame_tree_node_->IsMainFrame() &&
-         delegate_->GetOuterDelegateFrameTreeNodeID() !=
-             FrameTreeNode::kFrameTreeNodeInvalidID;
+  return delegate_->GetOuterDelegateFrameTreeNodeID() !=
+      FrameTreeNode::kFrameTreeNodeInvalidID;
 }
 
 RenderWidgetHostImpl*
 RenderFrameHostManager::GetOuterRenderWidgetHostForKeyboardInput() {
-  if (!ForInnerDelegate())
+  if (!ForInnerDelegate() || !frame_tree_node_->IsMainFrame())
     return nullptr;
 
   FrameTreeNode* outer_contents_frame_tree_node =
@@ -1801,6 +1797,11 @@ int RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
 
 void RenderFrameHostManager::CreateProxiesForChildFrame(FrameTreeNode* child) {
   for (const auto& pair : *proxy_hosts_) {
+    // Do not create proxies for subframes in the outer delegate's process,
+    // since the outer delegate does not need to interact with them.
+    if (ForInnerDelegate() && pair.second == GetProxyToOuterDelegate())
+      continue;
+
     child->render_manager()->CreateRenderFrameProxy(
         pair.second->GetSiteInstance());
   }
@@ -1852,7 +1853,7 @@ void RenderFrameHostManager::CreateOuterDelegateProxy(
 
 void RenderFrameHostManager::SetRWHViewForInnerContents(
     RenderWidgetHostView* child_rwhv) {
-  DCHECK(ForInnerDelegate());
+  DCHECK(ForInnerDelegate() && frame_tree_node_->IsMainFrame());
   GetProxyToOuterDelegate()->SetChildRWHView(child_rwhv);
 }
 

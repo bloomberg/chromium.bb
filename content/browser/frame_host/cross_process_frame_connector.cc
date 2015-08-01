@@ -152,6 +152,7 @@ void CrossProcessFrameConnector::GetScreenInfo(blink::WebScreenInfo* results) {
   if (frame_proxy_in_parent_renderer_->frame_tree_node()
           ->render_manager()
           ->ForInnerDelegate()) {
+    DCHECK(frame_proxy_in_parent_renderer_->frame_tree_node()->IsMainFrame());
     return;
   }
 
