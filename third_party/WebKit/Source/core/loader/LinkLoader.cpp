@@ -52,13 +52,17 @@
 
 namespace blink {
 
-static unsigned prerenderRelTypesFromRelAttribute(const LinkRelAttribute& relAttribute)
+static unsigned prerenderRelTypesFromRelAttribute(const LinkRelAttribute& relAttribute, Document& document)
 {
     unsigned result = 0;
-    if (relAttribute.isLinkPrerender())
+    if (relAttribute.isLinkPrerender()) {
         result |= PrerenderRelTypePrerender;
-    if (relAttribute.isLinkNext())
+        UseCounter::count(document, UseCounter::LinkRelPrerender);
+    }
+    if (relAttribute.isLinkNext()) {
         result |= PrerenderRelTypeNext;
+        UseCounter::count(document, UseCounter::LinkRelNext);
+    }
 
     return result;
 }
@@ -239,14 +243,21 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const AtomicStri
     if ((relAttribute.isLinkPrefetch() || relAttribute.isLinkSubresource()) && href.isValid() && document.frame()) {
         if (!m_client->shouldLoadLink())
             return false;
-        Resource::Type type = relAttribute.isLinkSubresource() ?  Resource::LinkSubresource : Resource::LinkPrefetch;
+        Resource::Type type = Resource::LinkPrefetch;
+        if (relAttribute.isLinkSubresource()) {
+            type = Resource::LinkSubresource;
+            UseCounter::count(document, UseCounter::LinkRelSubresource);
+        } else {
+            UseCounter::count(document, UseCounter::LinkRelPrefetch);
+        }
+
         FetchRequest linkRequest(ResourceRequest(document.completeURL(href)), FetchInitiatorTypeNames::link);
         if (!crossOriginMode.isNull())
             linkRequest.setCrossOriginAccessControl(document.securityOrigin(), crossOriginMode);
         setResource(LinkFetchResource::fetch(type, linkRequest, document.fetcher()));
     }
 
-    if (const unsigned prerenderRelTypes = prerenderRelTypesFromRelAttribute(relAttribute)) {
+    if (const unsigned prerenderRelTypes = prerenderRelTypesFromRelAttribute(relAttribute, document)) {
         if (!m_prerender) {
             m_prerender = PrerenderHandle::create(document, this, href, prerenderRelTypes);
         } else if (m_prerender->url() != href) {
