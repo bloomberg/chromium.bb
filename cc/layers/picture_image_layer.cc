@@ -7,6 +7,7 @@
 #include "cc/layers/picture_image_layer_impl.h"
 #include "cc/playback/drawing_display_item.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/skia_util.h"
 
@@ -45,6 +46,13 @@ void PictureImageLayer::SetBitmap(const SkBitmap& bitmap) {
   bitmap_ = bitmap;
   UpdateDrawsContent(HasDrawableContent());
   SetNeedsDisplay();
+}
+
+void PictureImageLayer::SetImage(const SkImage* image) {
+  // Transitional bridge.
+  SkBitmap bitmap;
+  if (image->asLegacyBitmap(&bitmap, SkImage::kRO_LegacyBitmapMode))
+    SetBitmap(bitmap);
 }
 
 void PictureImageLayer::PaintContents(

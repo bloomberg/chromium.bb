@@ -11,6 +11,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 
+class SkImage;
+
 namespace cc {
 
 class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
@@ -18,6 +20,7 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
   static scoped_refptr<PictureImageLayer> Create(const LayerSettings& settings);
 
   void SetBitmap(const SkBitmap& image);
+  void SetImage(const SkImage* image);
 
   // Layer implementation.
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
