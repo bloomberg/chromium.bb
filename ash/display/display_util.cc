@@ -339,15 +339,19 @@ int FindDisplayIndexContainingPoint(const std::vector<gfx::Display>& displays,
 }
 
 DisplayIdPair CreateDisplayIdPair(int64 id1, int64 id2) {
+  return CompareDisplayIds(id1, id2) ? std::make_pair(id1, id2)
+                                     : std::make_pair(id2, id1);
+}
+
+bool CompareDisplayIds(int64 id1, int64 id2) {
   DCHECK_NE(id1, id2);
   // Output index is stored in the first 8 bits. See GetDisplayIdFromEDID
   // in edid_parser.cc.
   int index_1 = id1 & 0xFF;
   int index_2 = id2 & 0xFF;
-  if (gfx::Display::IsInternalDisplayId(id2) || index_2 < index_1)
-    return std::make_pair(id2, id1);
-  else
-    return std::make_pair(id1, id2);
+  DCHECK_NE(index_1, index_2) << id1 << " and " << id2;
+  return gfx::Display::IsInternalDisplayId(id1) ||
+         (index_1 < index_2 && !gfx::Display::IsInternalDisplayId(id2));
 }
 
 }  // namespace ash

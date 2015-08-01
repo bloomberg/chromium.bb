@@ -51,8 +51,6 @@ ASH_EXPORT extern const char kForceAshToDesktop[];
 #if defined(OS_CHROMEOS)
 // True if the pointer (cursor) position should be kept inside root windows.
 ASH_EXPORT bool ConstrainPointerToRoot();
-
-ASH_EXPORT bool UnifiedDesktopEnabled();
 #endif
 
 }  // namespace switches

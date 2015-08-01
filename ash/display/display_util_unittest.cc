@@ -98,11 +98,27 @@ TEST_F(DisplayUtilTest, CreateDisplayIdPair) {
   pair = CreateDisplayIdPair(10, 100);
   EXPECT_EQ(10, pair.first);
   EXPECT_EQ(100, pair.second);
+  {
+    test::ScopedSetInternalDisplayId set_internal(100);
+    pair = CreateDisplayIdPair(10, 100);
+    EXPECT_EQ(100, pair.first);
+    EXPECT_EQ(10, pair.second);
 
-  test::ScopedSetInternalDisplayId set_internal(100);
-  pair = CreateDisplayIdPair(10, 100);
-  EXPECT_EQ(100, pair.first);
-  EXPECT_EQ(10, pair.second);
+    pair = CreateDisplayIdPair(100, 10);
+    EXPECT_EQ(100, pair.first);
+    EXPECT_EQ(10, pair.second);
+  }
+
+  {
+    test::ScopedSetInternalDisplayId set_internal(10);
+    pair = CreateDisplayIdPair(10, 100);
+    EXPECT_EQ(10, pair.first);
+    EXPECT_EQ(100, pair.second);
+
+    pair = CreateDisplayIdPair(100, 10);
+    EXPECT_EQ(10, pair.first);
+    EXPECT_EQ(100, pair.second);
+  }
 }
 
 }  // namespace

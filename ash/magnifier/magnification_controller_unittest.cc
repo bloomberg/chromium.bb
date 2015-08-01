@@ -4,9 +4,9 @@
 
 #include "ash/magnifier/magnification_controller.h"
 
+#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/display_manager_test_api.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_utils.h"
@@ -670,7 +670,7 @@ TEST_F(MagnificationControllerTest, CenterTextCaretInViewport) {
 TEST_F(MagnificationControllerTest, EnableMagnifierInUnifiedDesktop) {
   if (!SupportsMultipleDisplays())
     return;
-  test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
+  Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(true);
 
   EXPECT_EQ(1.0f, GetMagnificationController()->GetScale());
 

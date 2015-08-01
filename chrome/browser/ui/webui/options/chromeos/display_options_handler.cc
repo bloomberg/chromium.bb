@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "ash/ash_switches.h"
 #include "ash/display/display_configurator_animation.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/resolution_notification_controller.h"
@@ -331,7 +330,7 @@ void DisplayOptionsHandler::SendDisplayInfo(
 
 void DisplayOptionsHandler::UpdateDisplaySettingsEnabled() {
   bool enabled = GetDisplayManager()->num_connected_displays() <= 2;
-  bool show_unified_desktop = ash::switches::UnifiedDesktopEnabled();
+  bool show_unified_desktop = GetDisplayManager()->unified_desktop_enabled();
 
   web_ui()->CallJavascriptFunction(
       "options.BrowserOptions.enableDisplaySettings",
@@ -488,10 +487,10 @@ void DisplayOptionsHandler::HandleSetColorProfile(const base::ListValue* args) {
 
 void DisplayOptionsHandler::HandleSetUnifiedDesktopEnabled(
     const base::ListValue* args) {
-  DCHECK(ash::switches::UnifiedDesktopEnabled());
+  DCHECK(GetDisplayManager()->unified_desktop_enabled());
   bool enable = false;
   if (args->GetBoolean(0, &enable)) {
-    GetDisplayManager()->SetDefaultMultiDisplayMode(
+    GetDisplayManager()->SetDefaultMultiDisplayModeForCurrentDisplays(
         enable ? DisplayManager::UNIFIED : DisplayManager::EXTENDED);
     GetDisplayManager()->ReconfigureDisplays();
   }

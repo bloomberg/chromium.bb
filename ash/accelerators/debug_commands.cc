@@ -148,6 +148,10 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
     case DEBUG_ADD_REMOVE_DISPLAY:
       Shell::GetInstance()->display_manager()->AddRemoveDisplay();
       break;
+    case DEBUG_TOGGLE_UNIFIED_DESKTOP:
+      Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(
+          !Shell::GetInstance()->display_manager()->unified_desktop_enabled());
+      break;
 #endif
     case DEBUG_PRINT_LAYER_HIERARCHY:
       HandlePrintLayerHierarchy();

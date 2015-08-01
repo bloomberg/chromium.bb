@@ -315,9 +315,7 @@ TEST_F(TrayDisplayTest, InternalDisplayResized) {
   CheckAccessibleName();
 
   // Unified mode
-  test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
-  display_manager->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
-  display_manager->SetMultiDisplayMode(DisplayManager::UNIFIED);
+  display_manager->SetUnifiedDesktopEnabled(true);
   UpdateDisplay("300x200,400x500");
   // Update the cache variables as the primary root window changed.
   GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);

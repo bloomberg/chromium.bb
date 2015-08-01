@@ -51,8 +51,6 @@
 #include "base/win/windows_version.h"
 #endif
 
-#include "base/debug/stack_trace.h"
-
 namespace ash {
 typedef std::vector<gfx::Display> DisplayList;
 typedef std::vector<DisplayInfo> DisplayInfoList;
@@ -69,13 +67,13 @@ const int kMinimumOverlapForInvalidOffset = 100;
 
 struct DisplaySortFunctor {
   bool operator()(const gfx::Display& a, const gfx::Display& b) {
-    return a.id() < b.id();
+    return CompareDisplayIds(a.id(), b.id());
   }
 };
 
 struct DisplayInfoSortFunctor {
   bool operator()(const DisplayInfo& a, const DisplayInfo& b) {
-    return a.id() < b.id();
+    return CompareDisplayIds(a.id(), b.id());
   }
 };
 
@@ -137,13 +135,16 @@ DisplayManager::DisplayManager()
       force_bounds_changed_(false),
       change_display_upon_host_resize_(false),
       multi_display_mode_(EXTENDED),
-      default_multi_display_mode_(EXTENDED),
+      current_default_multi_display_mode_(EXTENDED),
       mirroring_display_id_(gfx::Display::kInvalidDisplayID),
       registered_internal_display_rotation_lock_(false),
       registered_internal_display_rotation_(gfx::Display::ROTATE_0),
+      unified_desktop_enabled_(false),
       weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
   change_display_upon_host_resize_ = !base::SysInfo::IsRunningOnChromeOS();
+  unified_desktop_enabled_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAshEnableUnifiedDesktop);
 #endif
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE, screen_.get());
   gfx::Screen* current_native =
@@ -621,19 +622,14 @@ void DisplayManager::OnNativeDisplaysChanged(
   }
 
 #if defined(OS_CHROMEOS)
-  if (new_display_info_list.size() > 1) {
-    std::sort(new_display_info_list.begin(), new_display_info_list.end(),
-              DisplayInfoSortFunctor());
+  if (!base::SysInfo::IsRunningOnChromeOS() &&
+      new_display_info_list.size() > 1) {
     DisplayIdPair pair = CreateDisplayIdPair(new_display_info_list[0].id(),
                                              new_display_info_list[1].id());
     DisplayLayout layout = layout_store_->GetRegisteredDisplayLayout(pair);
-    default_multi_display_mode_ =
-        (layout.default_unified && switches::UnifiedDesktopEnabled())
-            ? UNIFIED
-            : EXTENDED;
     // Mirror mode is set by DisplayConfigurator on the device.
     // Emulate it when running on linux desktop.
-    if (!base::SysInfo::IsRunningOnChromeOS() && layout.mirrored)
+    if (layout.mirrored)
       SetMultiDisplayMode(MIRRORING);
   }
 #endif
@@ -664,8 +660,17 @@ void DisplayManager::UpdateDisplays(
             new_display_info_list.end(),
             DisplayInfoSortFunctor());
 
+  if (new_display_info_list.size() > 1) {
+    DisplayIdPair pair = CreateDisplayIdPair(new_display_info_list[0].id(),
+                                             new_display_info_list[1].id());
+    DisplayLayout layout = layout_store_->GetRegisteredDisplayLayout(pair);
+    current_default_multi_display_mode_ =
+        (layout.default_unified && unified_desktop_enabled_) ? UNIFIED
+                                                             : EXTENDED;
+  }
+
   if (multi_display_mode_ != MIRRORING)
-    multi_display_mode_ = default_multi_display_mode_;
+    multi_display_mode_ = current_default_multi_display_mode_;
 
   CreateSoftwareMirroringDisplayInfo(&new_display_info_list);
 
@@ -871,6 +876,11 @@ bool DisplayManager::IsInMirrorMode() const {
   return mirroring_display_id_ != gfx::Display::kInvalidDisplayID;
 }
 
+void DisplayManager::SetUnifiedDesktopEnabled(bool enable) {
+  unified_desktop_enabled_ = enable;
+  ReconfigureDisplays();
+}
+
 bool DisplayManager::IsInUnifiedMode() const {
   return multi_display_mode_ == UNIFIED &&
          !software_mirroring_display_list_.empty();
@@ -925,7 +935,8 @@ void DisplayManager::SetMirrorMode(bool mirror) {
     Shell::GetInstance()->display_configurator()->SetDisplayMode(new_state);
     return;
   }
-  multi_display_mode_ = mirror ? MIRRORING : default_multi_display_mode_;
+  multi_display_mode_ =
+      mirror ? MIRRORING : current_default_multi_display_mode_;
   ReconfigureDisplays();
   if (Shell::GetInstance()->display_configurator_animation()) {
     Shell::GetInstance()->display_configurator_animation()->
@@ -975,7 +986,8 @@ void DisplayManager::ToggleDisplayScaleFactor() {
 
 #if defined(OS_CHROMEOS)
 void DisplayManager::SetSoftwareMirroring(bool enabled) {
-  SetMultiDisplayMode(enabled ? MIRRORING : default_multi_display_mode_);
+  SetMultiDisplayMode(enabled ? MIRRORING
+                              : current_default_multi_display_mode_);
 }
 
 bool DisplayManager::SoftwareMirroringEnabled() const {
@@ -983,15 +995,18 @@ bool DisplayManager::SoftwareMirroringEnabled() const {
 }
 #endif
 
+void DisplayManager::SetDefaultMultiDisplayModeForCurrentDisplays(
+    MultiDisplayMode mode) {
+  DCHECK_NE(MIRRORING, mode);
+  DisplayIdPair pair = GetCurrentDisplayIdPair();
+  layout_store_->UpdateMultiDisplayState(pair, IsInMirrorMode(),
+                                         mode == UNIFIED);
+}
+
 void DisplayManager::SetMultiDisplayMode(MultiDisplayMode mode) {
   multi_display_mode_ = mode;
   mirroring_display_id_ = gfx::Display::kInvalidDisplayID;
   software_mirroring_display_list_.clear();
-}
-
-void DisplayManager::SetDefaultMultiDisplayMode(MultiDisplayMode mode) {
-  DCHECK_NE(mode, MIRRORING);
-  default_multi_display_mode_ = mode;
 }
 
 void DisplayManager::ReconfigureDisplays() {

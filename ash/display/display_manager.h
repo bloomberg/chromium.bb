@@ -250,6 +250,12 @@ class ASH_EXPORT DisplayManager
   const DisplayList& software_mirroring_display_list() const {
     return software_mirroring_display_list_;
   }
+
+  // Sets/gets if the unified desktop feature is enabled.
+  void SetUnifiedDesktopEnabled(bool enabled);
+  bool unified_desktop_enabled() const { return unified_desktop_enabled_; }
+
+  // Returns true if it's in unified desktop mode.
   bool IsInUnifiedMode() const;
 
   // Returns the display used for software mirrroring. Returns invalid
@@ -282,14 +288,14 @@ class ASH_EXPORT DisplayManager
   bool SoftwareMirroringEnabled() const override;
 #endif
 
-  // Sets/gets multi display mode.
-  void SetMultiDisplayMode(MultiDisplayMode mode);
-
   // Sets/gets default multi display mode.
-  void SetDefaultMultiDisplayMode(MultiDisplayMode mode);
-  MultiDisplayMode default_multi_display_mode() const {
-    return default_multi_display_mode_;
+  void SetDefaultMultiDisplayModeForCurrentDisplays(MultiDisplayMode mode);
+  MultiDisplayMode current_default_multi_display_mode() const {
+    return current_default_multi_display_mode_;
   }
+
+  // Sets multi display mode.
+  void SetMultiDisplayMode(MultiDisplayMode mode);
 
   // Reconfigure display configuration using the same
   // physical display. TODO(oshima): Refactor and move this
@@ -421,7 +427,7 @@ private:
   bool change_display_upon_host_resize_;
 
   MultiDisplayMode multi_display_mode_;
-  MultiDisplayMode default_multi_display_mode_;
+  MultiDisplayMode current_default_multi_display_mode_;
 
   int64 mirroring_display_id_;
   DisplayList software_mirroring_display_list_;
@@ -431,6 +437,8 @@ private:
 
   // User preference for the rotation of the internal display.
   gfx::Display::Rotation registered_internal_display_rotation_;
+
+  bool unified_desktop_enabled_;
 
   base::WeakPtrFactory<DisplayManager> weak_ptr_factory_;
 

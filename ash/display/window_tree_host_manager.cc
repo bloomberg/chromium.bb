@@ -841,13 +841,11 @@ void WindowTreeHostManager::PostDisplayConfigurationChange() {
   DisplayLayoutStore* layout_store = display_manager->layout_store();
   if (display_manager->num_connected_displays() > 1) {
     DisplayIdPair pair = display_manager->GetCurrentDisplayIdPair();
+    DisplayLayout layout = layout_store->GetRegisteredDisplayLayout(pair);
     layout_store->UpdateMultiDisplayState(
-        pair, display_manager->IsInMirrorMode(),
-        display_manager->default_multi_display_mode() ==
-            DisplayManager::UNIFIED);
+        pair, display_manager->IsInMirrorMode(), layout.default_unified);
 
     if (Shell::GetScreen()->GetNumDisplays() > 1) {
-      DisplayLayout layout = layout_store->GetRegisteredDisplayLayout(pair);
       int64 primary_id = layout.primary_id;
       SetPrimaryDisplayId(primary_id == gfx::Display::kInvalidDisplayID
                               ? pair.first

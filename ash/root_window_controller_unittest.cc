@@ -293,7 +293,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Modal) {
 TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   if (!SupportsMultipleDisplays())
     return;
-  test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
+  Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(true);
 
   UpdateDisplay("500x500");
   const int kLockScreenWindowId = 1000;

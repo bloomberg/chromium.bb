@@ -173,8 +173,9 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
       kContainerIdsToMove + arraysize(kContainerIdsToMove));
   // Check the default_multi_display_mode because this is also necessary
   // in trasition between mirror <-> unified mode.
-  if (Shell::GetInstance()->display_manager()->default_multi_display_mode() ==
-      DisplayManager::UNIFIED) {
+  if (Shell::GetInstance()
+          ->display_manager()
+          ->current_default_multi_display_mode() == DisplayManager::UNIFIED) {
     for (int id : kExtraContainerIdsToMoveInUnifiedMode)
       container_ids.push_back(id);
   }

@@ -136,11 +136,6 @@ bool ConstrainPointerToRoot() {
              kAshConstrainPointerToRoot);
 }
 
-bool UnifiedDesktopEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kAshEnableUnifiedDesktop);
-}
-
 #endif
 
 }  // namespace switches

@@ -2349,7 +2349,7 @@ TEST_F(ShelfLayoutManagerTest, ShutdownHandlesWindowActivation) {
 TEST_F(ShelfLayoutManagerTest, ShelfLayoutInUnifiedDesktop) {
   if (!SupportsMultipleDisplays())
     return;
-  test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
+  Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(true);
 
   UpdateDisplay("500x500, 500x500");
 

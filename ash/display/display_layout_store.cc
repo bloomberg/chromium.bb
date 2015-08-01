@@ -51,11 +51,6 @@ void DisplayLayoutStore::RegisterLayoutForDisplayIdPair(
     const DisplayLayout& layout) {
   auto key = CreateDisplayIdPair(id1, id2);
   paired_layouts_[key] = layout;
-#if defined(OS_CHROMEOS)
-  // Force disabling unified desktop if the flag is not set.
-  if (!switches::UnifiedDesktopEnabled())
-    paired_layouts_[key].default_unified = false;
-#endif
 }
 
 DisplayLayout DisplayLayoutStore::GetRegisteredDisplayLayout(

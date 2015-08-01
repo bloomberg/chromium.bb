@@ -876,11 +876,11 @@ TEST_F(DisplayPreferencesTest, RotationLockTriggersStore) {
 }
 
 TEST_F(DisplayPreferencesTest, SaveUnifiedMode) {
-  ash::test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
 
   LoggedInAsUser();
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
+  display_manager->SetUnifiedDesktopEnabled(true);
 
   UpdateDisplay("200x200,100x100");
   ash::DisplayIdPair pair = display_manager->GetCurrentDisplayIdPair();
@@ -928,7 +928,8 @@ TEST_F(DisplayPreferencesTest, SaveUnifiedMode) {
   EXPECT_FALSE(stored_layout.mirrored);
 
   // Exit unified mode.
-  display_manager->SetDefaultMultiDisplayMode(ash::DisplayManager::EXTENDED);
+  display_manager->SetDefaultMultiDisplayModeForCurrentDisplays(
+      ash::DisplayManager::EXTENDED);
   display_manager->ReconfigureDisplays();
   ASSERT_TRUE(
       secondary_displays->GetDictionary(ToPairString(pair), &new_value));
@@ -953,7 +954,7 @@ TEST_F(DisplayPreferencesTest, RestoreUnifiedMode) {
   EXPECT_FALSE(display_manager->IsInUnifiedMode());
 
   // Restored to unified.
-  ash::test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
+  display_manager->SetUnifiedDesktopEnabled(true);
   StoreDisplayBoolPropertyForPair(pair, "default_unified", true);
   LoadDisplayPreferences(false);
   UpdateDisplay("100x100,200x200");

@@ -658,7 +658,7 @@ TEST_F(DisplayManagerTest, DisplayAddRemoveAtTheSameTime) {
   DisplayInfo secondary_info = display_manager()->GetDisplayInfo(secondary_id);
 
   // An id which is different from primary and secondary.
-  const int64 third_id = primary_id + secondary_id;
+  const int64 third_id = secondary_id + 1;
 
   DisplayInfo third_info =
       CreateDisplayInfo(third_id, gfx::Rect(0, 0, 600, 600));
@@ -1120,13 +1120,11 @@ TEST_F(DisplayManagerTest, Use125DSFForUIScaling) {
 TEST_F(DisplayManagerTest, ResolutionChangeInUnifiedMode) {
   if (!SupportsMultipleDisplays())
     return;
-
-  test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
-
   // Don't check root window destruction in unified mode.
   Shell::GetPrimaryRootWindow()->RemoveObserver(this);
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  display_manager->SetUnifiedDesktopEnabled(true);
 
   UpdateDisplay("200x200, 400x400");
 
@@ -1520,12 +1518,14 @@ TEST_F(DisplayManagerTest, MAYBE_UpdateDisplayWithHostOrigin) {
 TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
   if (!SupportsMultipleDisplays())
     return;
-  test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
 
   // Don't check root window destruction in unified mode.
   Shell::GetPrimaryRootWindow()->RemoveObserver(this);
 
   UpdateDisplay("400x500,300x200");
+
+  // Enable after extended mode.
+  display_manager()->SetUnifiedDesktopEnabled(true);
 
   // Defaults to the unified desktop.
   gfx::Screen* screen =
@@ -1562,10 +1562,26 @@ TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
   }
 
   // Switch back to extended desktop.
-  display_manager()->SetDefaultMultiDisplayMode(DisplayManager::EXTENDED);
-  display_manager()->ReconfigureDisplays();
+  display_manager()->SetUnifiedDesktopEnabled(false);
   EXPECT_EQ("500x300", screen->GetPrimaryDisplay().size().ToString());
   EXPECT_EQ("400x500", ScreenUtil::GetSecondaryDisplay().size().ToString());
+}
+
+TEST_F(DisplayManagerTest, UnifiedDesktopEnabledWithExtended) {
+  if (!SupportsMultipleDisplays())
+    return;
+  // Don't check root window destruction in unified mode.
+  Shell::GetPrimaryRootWindow()->RemoveObserver(this);
+
+  UpdateDisplay("400x500,300x200");
+  DisplayIdPair pair = display_manager()->GetCurrentDisplayIdPair();
+  DisplayLayout layout =
+      display_manager()->layout_store()->GetRegisteredDisplayLayout(pair);
+  layout.default_unified = false;
+  display_manager()->layout_store()->RegisterLayoutForDisplayIdPair(
+      pair.first, pair.second, layout);
+  display_manager()->SetUnifiedDesktopEnabled(true);
+  EXPECT_FALSE(display_manager()->IsInUnifiedMode());
 }
 
 TEST_F(DisplayManagerTest, UnifiedDesktopWith2xDSF) {
@@ -1574,7 +1590,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWith2xDSF) {
   // Don't check root window destruction in unified mode.
   Shell::GetPrimaryRootWindow()->RemoveObserver(this);
 
-  test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
+  display_manager()->SetUnifiedDesktopEnabled(true);
   gfx::Screen* screen =
       gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
 
@@ -1690,7 +1706,7 @@ TEST_F(DisplayManagerTest, ConfigureUnifiedTwice) {
 TEST_F(DisplayManagerTest, NoRotateUnifiedDesktop) {
   if (!SupportsMultipleDisplays())
     return;
-  test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
+  display_manager()->SetUnifiedDesktopEnabled(true);
 
   // Don't check root window destruction in unified mode.
   Shell::GetPrimaryRootWindow()->RemoveObserver(this);
@@ -1717,7 +1733,7 @@ TEST_F(DisplayManagerTest, NoRotateUnifiedDesktop) {
 TEST_F(DisplayManagerTest, UnifiedWithDockWindows) {
   if (!SupportsMultipleDisplays())
     return;
-  test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
+  display_manager()->SetUnifiedDesktopEnabled(true);
 
   // Don't check root window destruction in unified mode.
   Shell::GetPrimaryRootWindow()->RemoveObserver(this);

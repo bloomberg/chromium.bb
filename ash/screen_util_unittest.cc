@@ -117,11 +117,9 @@ TEST_F(ScreenUtilTest, ConvertRect) {
 TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktop) {
   if (!SupportsMultipleDisplays())
     return;
-  test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
-
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
-  display_manager->SetMultiDisplayMode(DisplayManager::UNIFIED);
+
+  display_manager->SetUnifiedDesktopEnabled(true);
 
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
       NULL, CurrentContext(), gfx::Rect(10, 10, 100, 100));

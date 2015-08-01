@@ -66,6 +66,7 @@ struct ASH_EXPORT DisplayLayout {
   int64 primary_id;
 
   // Returns string representation of the layout for debugging/testing.
+  // This includes "unified" only if the unified desktop feature is enabled.
   std::string ToString() const;
 };
 

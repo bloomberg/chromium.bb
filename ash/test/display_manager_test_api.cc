@@ -95,18 +95,6 @@ bool DisplayManagerTestApi::TestIfMouseWarpsAt(
   }
 }
 
-// static
-void DisplayManagerTestApi::EnableUnifiedDesktopForTest() {
-#if defined(OS_CHROMEOS)
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshEnableUnifiedDesktop);
-  Shell::GetInstance()
-      ->display_manager()
-      ->layout_store()
-      ->SetDefaultDisplayLayout(DisplayLayout());
-#endif
-}
-
 DisplayManagerTestApi::DisplayManagerTestApi()
     : display_manager_(Shell::GetInstance()->display_manager()) {}
 

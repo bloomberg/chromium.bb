@@ -34,8 +34,6 @@ class DisplayManagerTestApi {
   static bool TestIfMouseWarpsAt(ui::test::EventGenerator& event_generator,
                                  const gfx::Point& point_in_screen);
 
-  static void EnableUnifiedDesktopForTest();
-
   DisplayManagerTestApi();
   virtual ~DisplayManagerTestApi();
 
