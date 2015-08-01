@@ -1113,7 +1113,10 @@ rdp_peer_init(freerdp_peer *client, struct rdp_backend *b)
 	}
 	settings->NlaSecurity = FALSE;
 
-	client->Initialize(client);
+	if (!client->Initialize(client)) {
+		weston_log("peer initialization failed\n");
+		goto error_initialize;
+	}
 
 	settings->OsMajorType = OSMAJORTYPE_UNIX;
 	settings->OsMinorType = OSMINORTYPE_PSEUDO_XSERVER;
@@ -1123,7 +1126,6 @@ rdp_peer_init(freerdp_peer *client, struct rdp_backend *b)
 	settings->NSCodec = TRUE;
 	settings->FrameMarkerCommandEnabled = TRUE;
 	settings->SurfaceFrameMarkerEnabled = TRUE;
-
 
 	client->Capabilities = xf_peer_capabilities;
 	client->PostConnect = xf_peer_post_connect;
@@ -1140,7 +1142,7 @@ rdp_peer_init(freerdp_peer *client, struct rdp_backend *b)
 
 	if (!client->GetFileDescriptor(client, rfds, &rcount)) {
 		weston_log("unable to retrieve client fds\n");
-		return -1;
+		goto error_initialize;
 	}
 
 	loop = wl_display_get_event_loop(b->compositor->wl_display);
@@ -1155,6 +1157,10 @@ rdp_peer_init(freerdp_peer *client, struct rdp_backend *b)
 
 	wl_list_insert(&b->output->peers, &peerCtx->item.link);
 	return 0;
+
+error_initialize:
+	client->Close(client);
+	return -1;
 }
 
 
@@ -1163,7 +1169,7 @@ rdp_incoming_peer(freerdp_listener *instance, freerdp_peer *client)
 {
 	struct rdp_backend *b = (struct rdp_backend *)instance->param4;
 	if (rdp_peer_init(client, b) < 0) {
-		weston_log("error when treating incoming peer");
+		weston_log("error when treating incoming peer\n");
 		FREERDP_CB_RETURN(FALSE);
 	}
 
