@@ -688,7 +688,7 @@ cr.define('options', function() {
 
       $('display-options-set-primary').disabled = display.isPrimary;
       $('display-options-toggle-mirroring').disabled =
-          (this.displays_.length <= 1);
+          (this.displays_.length <= 1 && !this.unifiedDesktopEnabled_);
       $('selected-display-start-calibrating-overscan').disabled =
           display.isInternal;
 
