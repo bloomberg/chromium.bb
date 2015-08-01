@@ -11,6 +11,12 @@ Tests that filenames that contain colons are handled correctly.
 
 import os
 import sys
+
+if sys.platform == 'win32':
+  print "This test is currently disabled: https://crbug.com/483696."
+  sys.exit(0)
+
+
 import TestGyp
 
 # TODO: Make colons in filenames work with make, if required.

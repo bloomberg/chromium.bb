@@ -14,6 +14,9 @@ import os
 import sys
 
 if sys.platform == 'win32':
+  print "This test is currently disabled: https://crbug.com/483696."
+  sys.exit(0)
+
   test = TestGyp.TestGyp()
 
   CHDIR = 'compiler-flags'
