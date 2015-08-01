@@ -41,6 +41,8 @@ function expectNextState(assert, expectedState) {
 
 QUnit.module('XmppConnection', {
   beforeEach: function() {
+    remoting.settings = new remoting.Settings();
+
     onStanzaStr = sinon.spy();
     /** @param {Element} stanza */
     function onStanza(stanza) {
@@ -54,6 +56,9 @@ QUnit.module('XmppConnection', {
     connection.setSocketForTests(socket);
     connection.setStateChangedCallback(onStateChange);
     connection.setIncomingStanzaCallback(onStanza);
+  },
+  afterEach: function() {
+    remoting.settings = null;
   }
 });
 

@@ -7,6 +7,15 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
+/** @enum {number} */
+remoting.TlsMode = {
+  NO_TLS: 0,
+  WITH_HANDSHAKE: 1,
+  WITHOUT_HANDSHAKE: 2
+};
+
+(function () {
+
 /**
  * XmppLoginHandler handles authentication handshake for XmppConnection. It
  * receives incoming data using onDataReceived(), calls |sendMessageCallback|
@@ -18,8 +27,7 @@ var remoting = remoting || {};
  * @param {string} server Domain name of the server we are connecting to.
  * @param {string} username Username.
  * @param {string} authToken OAuth2 token.
- * @param {boolean} needHandshakeBeforeTls Set to true when <starttls> handshake
- *     is required before starting TLS. Otherwise TLS can be started right away.
+ * @param {remoting.TlsMode} tlsMode
  * @param {function(string):void} sendMessageCallback Callback to call to send
  *     a message.
  * @param {function():void} startTlsCallback Callback to call to start TLS on
@@ -34,7 +42,7 @@ var remoting = remoting || {};
 remoting.XmppLoginHandler = function(server,
                                      username,
                                      authToken,
-                                     needHandshakeBeforeTls,
+                                     tlsMode,
                                      sendMessageCallback,
                                      startTlsCallback,
                                      onHandshakeDoneCallback,
@@ -46,7 +54,7 @@ remoting.XmppLoginHandler = function(server,
   /** @private */
   this.authToken_ = authToken;
   /** @private */
-  this.needHandshakeBeforeTls_ = needHandshakeBeforeTls;
+  this.tlsMode_ = tlsMode;
   /** @private */
   this.sendMessageCallback_ = sendMessageCallback;
   /** @private */
@@ -63,7 +71,7 @@ remoting.XmppLoginHandler = function(server,
 
   /** @private {remoting.XmppStreamParser} */
   this.streamParser_ = null;
-}
+};
 
 /** @return {function(string, remoting.XmppStreamParser):void} */
 remoting.XmppLoginHandler.prototype.getHandshakeDoneCallbackForTesting =
@@ -122,15 +130,26 @@ remoting.XmppLoginHandler.State = {
 };
 
 remoting.XmppLoginHandler.prototype.start = function() {
-  if (this.needHandshakeBeforeTls_) {
-    this.state_ = remoting.XmppLoginHandler.State.WAIT_STREAM_HEADER;
-    this.startStream_('<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>');
-  } else {
-    // If <starttls> handshake is not required then start TLS right away.
-    this.state_ = remoting.XmppLoginHandler.State.STARTING_TLS;
-    this.startTlsCallback_();
+  switch (this.tlsMode_) {
+    case remoting.TlsMode.NO_TLS:
+      this.state_ =
+          remoting.XmppLoginHandler.State.WAIT_STREAM_HEADER_AFTER_TLS;
+      this.startAuthStream_();
+      console.assert(remoting.settings.XMPP_SERVER_USE_TLS === false,
+                     'NO_TLS should only be used in Dev builds.');
+      break;
+    case remoting.TlsMode.WITH_HANDSHAKE:
+      this.state_ = remoting.XmppLoginHandler.State.WAIT_STREAM_HEADER;
+      this.startStream_('<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>');
+      break;
+    case remoting.TlsMode.WITHOUT_HANDSHAKE:
+      this.state_ = remoting.XmppLoginHandler.State.STARTING_TLS;
+      this.startTlsCallback_();
+      break;
+    default:
+      console.assert(false, 'Unrecognized Tls mode :' + this.tlsMode_);
   }
-}
+};
 
 /** @param {ArrayBuffer} data */
 remoting.XmppLoginHandler.prototype.onDataReceived = function(data) {
@@ -140,7 +159,7 @@ remoting.XmppLoginHandler.prototype.onDataReceived = function(data) {
                 'onDataReceived() called in state ' + this.state_ + '.');
 
   this.streamParser_.appendData(data);
-}
+};
 
 /**
  * @param {Element} stanza
@@ -243,13 +262,17 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
       console.error('onStanza_() called in state ' + this.state_ + '.');
       break;
   }
-}
+};
 
 remoting.XmppLoginHandler.prototype.onTlsStarted = function() {
-  console.assert(this.state_ ==
-                 remoting.XmppLoginHandler.State.STARTING_TLS,
-                'onTlsStarted() called in state ' + this.state_ + '.');
+  console.assert(this.state_ == remoting.XmppLoginHandler.State.STARTING_TLS,
+                 'onTlsStarted() called in state ' + this.state_ + '.');
   this.state_ = remoting.XmppLoginHandler.State.WAIT_STREAM_HEADER_AFTER_TLS;
+  this.startAuthStream_();
+};
+
+/** @private */
+remoting.XmppLoginHandler.prototype.startAuthStream_ = function() {
   var cookie = window.btoa('\0' + this.username_ + '\0' + this.authToken_);
 
   this.startStream_(
@@ -269,7 +292,7 @@ remoting.XmppLoginHandler.prototype.onTlsStarted = function() {
  */
 remoting.XmppLoginHandler.prototype.onParserError_ = function(text) {
   this.onError_(remoting.Error.unexpected(), text);
-}
+};
 
 /**
  * @param {string} firstMessage Message to send after stream header.
@@ -283,7 +306,7 @@ remoting.XmppLoginHandler.prototype.startStream_ = function(firstMessage) {
   this.streamParser_ = new remoting.XmppStreamParser();
   this.streamParser_.setCallbacks(this.onStanza_.bind(this),
                                   this.onParserError_.bind(this));
-}
+};
 
 /**
  * @param {!remoting.Error} error
@@ -297,4 +320,6 @@ remoting.XmppLoginHandler.prototype.onError_ = function(error, text) {
   } else {
     console.error(text);
   }
-}
+};
+
+})();

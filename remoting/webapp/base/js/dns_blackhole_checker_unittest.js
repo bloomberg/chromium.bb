@@ -34,6 +34,7 @@ QUnit.module('dns_blackhole_checker', {
       fakeXhr = xhr;
     };
 
+    remoting.settings = new remoting.Settings();
     onStateChange = sinon.spy();
     onIncomingStanzaCallback = sinon.spy();
     signalStrategy = new remoting.MockSignalStrategy();
@@ -50,14 +51,14 @@ QUnit.module('dns_blackhole_checker', {
                             'authToken');
 
     assert.equal(
-        fakeXhr.url, remoting.DnsBlackholeChecker.URL_TO_REQUEST_,
+        fakeXhr.url, checker.url_,
         'the correct URL is requested');
   },
   afterEach: function() {
     base.dispose(checker);
     sinon.assert.calledWith(onStateChange,
                             remoting.SignalStrategy.State.CLOSED);
-
+    remoting.settings = null;
     onStateChange = null;
     onIncomingStanzaCallback = null;
     checker = null;

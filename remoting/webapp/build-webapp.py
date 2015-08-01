@@ -351,7 +351,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
 
   # Use a wildcard in the manifest.json host specs if the prefixes differ.
   talkGadgetHostJs = talkGadgetHostPrefix + talkGadgetHostSuffix
-  talkGadgetBaseUrl = talkGadgetHostJs + '/talkgadget/'
+  talkGadgetBaseUrl = talkGadgetHostJs + '/talkgadget'
   if talkGadgetHostPrefix == oauth2RedirectHostPrefix:
     talkGadgetHostJson = talkGadgetHostJs
   else:
@@ -380,9 +380,12 @@ def buildWebApp(buildtype, version, destination, zip_path,
                    "'OAUTH2_REDIRECT_URL'", oauth2RedirectUrlJs)
 
     # Configure xmpp server and directory bot settings in the plugin.
+    xmpp_server_user_tls = getenvBool('XMPP_SERVER_USE_TLS', True)
+    if (buildtype != 'Dev' and not xmpp_server_user_tls):
+      raise Exception('TLS can must be enabled in non Dev builds.')
+
     replaceBool(
-        destination, 'XMPP_SERVER_USE_TLS',
-        getenvBool('XMPP_SERVER_USE_TLS', True))
+        destination, 'XMPP_SERVER_USE_TLS', xmpp_server_user_tls)
     replaceString(destination, 'XMPP_SERVER', xmppServer)
     replaceString(destination, 'DIRECTORY_BOT_JID',
                   os.environ.get('DIRECTORY_BOT_JID',
@@ -402,7 +405,9 @@ def buildWebApp(buildtype, version, destination, zip_path,
           app_client_id + '"')
     apiClientIdV2 = app_client_id + '.apps.googleusercontent.com'
   else:
-    apiClientIdV2 = google_api_keys.GetClientID('REMOTING_IDENTITY_API')
+    apiClientIdV2 = os.environ.get(
+        'REMOTING_IDENTITY_API_CLIENT_ID',
+        google_api_keys.GetClientID('REMOTING_IDENTITY_API'))
 
   if not is_app_remoting_webapp:
     replaceString(destination, 'API_CLIENT_ID', apiClientId)
@@ -450,6 +455,9 @@ def buildWebApp(buildtype, version, destination, zip_path,
         'OAUTH_GDRIVE_SCOPE': '',
         'USE_GCD': use_gcd,
         'XMPP_SERVER': xmppServer,
+        # An URL match pattern that is added to the |permissions| section of the
+        # manifest in case some URLs are redirected by corporate proxies.
+        'PROXY_URL' : os.environ.get('PROXY_URL', ''),
     }
     if 'CLOUD_PRINT' in app_capabilities:
       context['OAUTH_CLOUD_PRINT_SCOPE'] = ('"https://www.googleapis.com/auth/cloudprint",')

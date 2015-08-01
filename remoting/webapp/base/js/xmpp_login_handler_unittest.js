@@ -46,8 +46,9 @@ QUnit.module('XmppLoginHandler', {
     onError = /** @type {function(remoting.Error, string):void} */(onError_spy);
 
     loginHandler = new remoting.XmppLoginHandler(
-        'google.com', testUsername, testToken, false,
-        sendMessage, startTls, onHandshakeDone, onError);
+        'google.com', testUsername, testToken,
+        remoting.TlsMode.WITHOUT_HANDSHAKE, sendMessage, startTls,
+        onHandshakeDone, onError);
   }
 });
 
@@ -124,8 +125,8 @@ QUnit.test('should authenticate', function() {
 
 QUnit.test('use <starttls> handshake', function() {
   loginHandler = new remoting.XmppLoginHandler(
-      'google.com', testUsername, testToken, true, sendMessage,
-      startTls, onHandshakeDone, onError);
+      'google.com', testUsername, testToken, remoting.TlsMode.WITH_HANDSHAKE,
+      sendMessage, startTls, onHandshakeDone, onError);
   loginHandler.start();
 
   sinon.assert.calledWith(

@@ -72,6 +72,9 @@
     "{{ TELEMETRY_API_BASE_URL }}/*",
     "{{ TALK_GADGET_HOST }}/talkgadget/*",
     "https://relay.google.com/*",
+{% if PROXY_URL != '' %}
+    "{{ PROXY_URL }}",
+{% endif %}
     "storage",
     "clipboardRead",
     "clipboardWrite",

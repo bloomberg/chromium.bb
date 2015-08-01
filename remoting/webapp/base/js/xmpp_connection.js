@@ -95,13 +95,18 @@ remoting.XmppConnection.prototype.connect =
   if (xmppServer == 'talk.google.com')
     xmppServer = 'google.com';
 
-  // <starttls> handshake before starting TLS is not needed when connecting on
-  // the HTTPS port.
-  var needHandshakeBeforeTls = this.port_ != 443;
+  var tlsMode = remoting.TlsMode.WITH_HANDSHAKE;
+  if (this.port_ === 443) {
+    // <starttls> handshake before starting TLS is not needed when connecting on
+    // the HTTPS port.
+    tlsMode = remoting.TlsMode.WITHOUT_HANDSHAKE;
+  } else if (remoting.settings.XMPP_SERVER_USE_TLS === false) {
+    tlsMode = remoting.TlsMode.NO_TLS;
+  }
 
   /** @type {remoting.XmppLoginHandler} */
   this.loginHandler_ = new remoting.XmppLoginHandler(
-      xmppServer, username, authToken, needHandshakeBeforeTls,
+      xmppServer, username, authToken, tlsMode,
       this.sendString_.bind(this), this.startTls_.bind(this),
       this.onHandshakeDone_.bind(this), this.onError_.bind(this));
   this.setState_(remoting.SignalStrategy.State.CONNECTING);

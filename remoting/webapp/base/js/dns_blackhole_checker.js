@@ -40,15 +40,11 @@ remoting.DnsBlackholeChecker = function(signalStrategy) {
 
   /** @private {?remoting.Xhr} */
   this.xhr_ = null;
-};
 
-/**
- * @const
- * @private
- */
-remoting.DnsBlackholeChecker.URL_TO_REQUEST_ =
-    "https://chromoting-client.talkgadget.google.com/talkgadget/oauth/" +
-    "chrome-remote-desktop-client";
+  /** @const @private */
+  this.url_ =
+      remoting.settings.TALK_GADGET_URL + '/oauth/chrome-remote-desktop-client';
+};
 
 /**
  * @param {?function(remoting.SignalStrategy.State):void} onStateChangedCallback
@@ -88,7 +84,7 @@ remoting.DnsBlackholeChecker.prototype.connect = function(server,
 
   this.xhr_ = new remoting.Xhr({
     method: 'GET',
-    url: remoting.DnsBlackholeChecker.URL_TO_REQUEST_
+    url: this.url_
   });
   this.xhr_.start().then(this.onHttpRequestDone_.bind(this));
 };
