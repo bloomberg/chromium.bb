@@ -173,7 +173,7 @@ static const struct wl_pointer_listener ss_seat_pointer_listener = {
 };
 
 static void
-ss_seat_handle_keymap(void *data, struct wl_keyboard *keyboard,
+ss_seat_handle_keymap(void *data, struct wl_keyboard *wl_keyboard,
 		      uint32_t format, int fd, uint32_t size)
 {
 	struct ss_seat *seat = data;
@@ -213,7 +213,7 @@ ss_seat_handle_keymap(void *data, struct wl_keyboard *keyboard,
 
 	close(fd);
 
-	if (seat->base.keyboard)
+	if (seat->base.keyboard_device_count)
 		weston_seat_update_keymap(&seat->base, keymap);
 	else
 		weston_seat_init_keyboard(&seat->base, keymap);
@@ -264,13 +264,14 @@ ss_seat_handle_key(void *data, struct wl_keyboard *keyboard,
 }
 
 static void
-ss_seat_handle_modifiers(void *data, struct wl_keyboard *keyboard,
+ss_seat_handle_modifiers(void *data, struct wl_keyboard *wl_keyboard,
 			 uint32_t serial_in, uint32_t mods_depressed,
 			 uint32_t mods_latched, uint32_t mods_locked,
 			 uint32_t group)
 {
 	struct ss_seat *seat = data;
-	struct weston_compositor *c = seat->output->output->compositor;
+	struct weston_compositor *c = seat->base.compositor;
+	struct weston_keyboard *keyboard;
 	uint32_t serial_out;
 
 	/* If we get a key event followed by a modifier event with the
@@ -281,7 +282,8 @@ ss_seat_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 	else
 		serial_out = wl_display_next_serial(c->wl_display);
 
-	xkb_state_update_mask(seat->base.keyboard->xkb_state.state,
+	keyboard = weston_seat_get_keyboard(&seat->base);
+	xkb_state_update_mask(keyboard->xkb_state.state,
 			      mods_depressed, mods_latched,
 			      mods_locked, 0, 0, group);
 	notify_modifiers(&seat->base, serial_out);
@@ -1066,20 +1068,22 @@ weston_output_find(struct weston_compositor *c, int32_t x, int32_t y)
 }
 
 static void
-share_output_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
+share_output_binding(struct weston_keyboard *keyboard, uint32_t time, uint32_t key,
 		     void *data)
 {
 	struct weston_output *output;
+	struct weston_pointer *pointer;
 	struct screen_share *ss = data;
 
-	if (!seat->pointer) {
+	pointer = weston_seat_get_pointer(keyboard->seat);
+	if (!pointer) {
 		weston_log("Cannot pick output: Seat does not have pointer\n");
 		return;
 	}
 
-	output = weston_output_find(seat->compositor,
-				    wl_fixed_to_int(seat->pointer->x),
-				    wl_fixed_to_int(seat->pointer->y));
+	output = weston_output_find(pointer->seat->compositor,
+				    wl_fixed_to_int(pointer->x),
+				    wl_fixed_to_int(pointer->y));
 	if (!output) {
 		weston_log("Cannot pick output: Pointer not on any output\n");
 		return;
