@@ -300,6 +300,7 @@ class GPU_EXPORT CommandBufferHelper {
 
   void ClearUsable() {
     usable_ = false;
+    context_lost_ = true;
     CalcImmediateEntries(0);
   }
 
