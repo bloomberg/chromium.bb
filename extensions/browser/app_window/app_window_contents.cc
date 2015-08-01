@@ -110,11 +110,14 @@ void AppWindowContentsImpl::UpdateDraggableRegions(
 void AppWindowContentsImpl::SuspendRenderFrameHost(
     content::RenderFrameHost* rfh) {
   DCHECK(rfh);
+  // The ResourceDispatcherHost only accepts RenderViewHost child ids.
+  // TODO(devlin): This will need to change for site isolation.
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&content::ResourceDispatcherHost::BlockRequestsForRoute,
                  base::Unretained(content::ResourceDispatcherHost::Get()),
-                 rfh->GetProcess()->GetID(), rfh->GetRoutingID()));
+                 rfh->GetProcess()->GetID(),
+                 rfh->GetRenderViewHost()->GetRoutingID()));
 }
 
 }  // namespace extensions

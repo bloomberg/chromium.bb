@@ -105,7 +105,8 @@ void AppWindowCustomBindings::GetFrame(
   blink::WebLocalFrame* app_web_frame = app_frame->GetWebFrame();
   app_web_frame->setOpener(opener);
   content::RenderThread::Get()->Send(
-      new ExtensionHostMsg_ResumeRequests(app_frame->GetRoutingID()));
+      new ExtensionHostMsg_ResumeRequests(
+          app_frame->GetRenderView()->GetRoutingID()));
 
   v8::Local<v8::Value> window =
       app_web_frame->mainWorldScriptContext()->Global();
