@@ -270,7 +270,6 @@ private:
     unsigned m_inResizeMode : 1;
     unsigned m_scrollsOverflow : 1;
 
-    unsigned m_scrollDimensionsDirty : 1;
     unsigned m_inOverflowRelayout : 1;
 
     DeprecatedPaintLayer* m_nextTopmostScrollChild;

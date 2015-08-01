@@ -82,7 +82,6 @@ DeprecatedPaintLayerScrollableArea::DeprecatedPaintLayerScrollableArea(Deprecate
     : m_layer(layer)
     , m_inResizeMode(false)
     , m_scrollsOverflow(false)
-    , m_scrollDimensionsDirty(true)
     , m_inOverflowRelayout(false)
     , m_nextTopmostScrollChild(0)
     , m_topmostScrollChild(0)
@@ -102,7 +101,6 @@ DeprecatedPaintLayerScrollableArea::DeprecatedPaintLayerScrollableArea(Deprecate
             scrollAnimator()->setCurrentPosition(FloatPoint(m_scrollOffset.width(), m_scrollOffset.height()));
         element->setSavedLayerScrollOffset(IntSize());
     }
-
     updateResizerAreaSet();
 }
 
@@ -382,10 +380,6 @@ void DeprecatedPaintLayerScrollableArea::setScrollOffset(const IntPoint& newScro
 
 void DeprecatedPaintLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffset, ScrollType)
 {
-    // Ensure that the dimensions will be computed if they need to be (for overflow:hidden blocks).
-    if (m_scrollDimensionsDirty)
-        computeScrollDimensions();
-
     if (scrollOffset() == toDoubleSize(newScrollOffset))
         return;
 
@@ -607,15 +601,11 @@ DeprecatedPaintLayer* DeprecatedPaintLayerScrollableArea::layer() const
 
 LayoutUnit DeprecatedPaintLayerScrollableArea::scrollWidth() const
 {
-    if (m_scrollDimensionsDirty)
-        const_cast<DeprecatedPaintLayerScrollableArea*>(this)->computeScrollDimensions();
     return m_overflowRect.width();
 }
 
 LayoutUnit DeprecatedPaintLayerScrollableArea::scrollHeight() const
 {
-    if (m_scrollDimensionsDirty)
-        const_cast<DeprecatedPaintLayerScrollableArea*>(this)->computeScrollDimensions();
     return m_overflowRect.height();
 }
 
@@ -631,8 +621,6 @@ int DeprecatedPaintLayerScrollableArea::pixelSnappedScrollHeight() const
 
 void DeprecatedPaintLayerScrollableArea::computeScrollDimensions()
 {
-    m_scrollDimensionsDirty = false;
-
     m_overflowRect = box().layoutOverflowRect();
     box().flipForWritingMode(m_overflowRect);
 
@@ -655,9 +643,7 @@ void DeprecatedPaintLayerScrollableArea::updateAfterLayout()
 {
     ASSERT(box().hasOverflowClip());
 
-    m_scrollDimensionsDirty = true;
     DoubleSize originalScrollOffset = adjustedScrollOffset();
-
     computeScrollDimensions();
 
     // Layout may cause us to be at an invalid scroll position. In this case we need
@@ -756,15 +742,11 @@ ScrollBehavior DeprecatedPaintLayerScrollableArea::scrollBehaviorStyle() const
 
 bool DeprecatedPaintLayerScrollableArea::hasHorizontalOverflow() const
 {
-    ASSERT(!m_scrollDimensionsDirty);
-
     return pixelSnappedScrollWidth() > box().pixelSnappedClientWidth();
 }
 
 bool DeprecatedPaintLayerScrollableArea::hasVerticalOverflow() const
 {
-    ASSERT(!m_scrollDimensionsDirty);
-
     return pixelSnappedScrollHeight() > box().pixelSnappedClientHeight();
 }
 
@@ -801,7 +783,8 @@ static bool canHaveOverflowScrollbars(const LayoutBox& box)
 
 void DeprecatedPaintLayerScrollableArea::updateAfterStyleChange(const ComputedStyle* oldStyle)
 {
-    if (!m_scrollDimensionsDirty)
+    // Don't do this on first style recalc, before layout has ever happened.
+    if (!overflowRect().size().isZero())
         updateScrollableAreaSet(hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow());
 
     if (!canHaveOverflowScrollbars(box()))
