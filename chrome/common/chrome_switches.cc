@@ -1218,6 +1218,9 @@ const char kEnableZeroSuggestMostVisitedWithoutSerp[] =
 // Triggers prerendering of search base page to prefetch results for the typed
 // omnibox query. Only has an effect when prerender is enabled.
 const char kPrefetchSearchResults[]         = "prefetch-search-results";
+
+// Specifies Android phone page loading progress bar animation.
+const char kProgressBarAnimation[]          = "progress-bar-animation";
 #endif  // defined(OS_ANDROID)
 
 #if defined(USE_ASH)

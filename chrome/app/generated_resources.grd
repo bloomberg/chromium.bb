@@ -7055,6 +7055,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_DESCRIPTION" desc="Description of the flag to enable the new simplified fullscreen and mouse lock UI.">
         An experimental new user experience when entering page-triggered fullscreen or mouse pointer lock states.
       </message>
+      <if expr="is_android">
+        <message name="IDS_FLAGS_PROGRESS_BAR_ANIMATION_NAME" desc="Name of the flag to configure Android page loading progress bar animation.">
+          Android phone page loading progress bar animation
+        </message>
+        <message name="IDS_FLAGS_PROGRESS_BAR_ANIMATION_DESCRIPTION" desc="Description of the flag to configure Android page loading progress bar animation.">
+          Configures Android phone page loading progress bar animation.
+        </message>
+        <message name="IDS_FLAGS_PROGRESS_BAR_ANIMATION_SMOOTH" desc="Smooth progress bar animation style">
+          Smooth
+        </message>
+        <message name="IDS_FLAGS_PROGRESS_BAR_ANIMATION_FAST_START" desc="Fast start progress bar animation style">
+          Fast start
+        </message>
+      </if>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

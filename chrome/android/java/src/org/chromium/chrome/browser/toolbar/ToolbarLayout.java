@@ -168,6 +168,7 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      */
     public void onNativeLibraryReady() {
         mNativeLibraryReady = true;
+        mProgressBar.initializeAnimation();
     }
 
     /**

@@ -4,27 +4,79 @@
 
 package org.chromium.chrome.browser.widget;
 
+import android.animation.TimeAnimator;
+import android.animation.TimeAnimator.TimeListener;
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 /**
  * Progress bar for use in the Toolbar view.
  */
 public class ToolbarProgressBar extends ClipDrawableProgressBar {
-    private long mAlphaAnimationDurationMs = 130;
+
+    /**
+     * Interface for progress bar animation interpolation logics.
+     */
+    interface AnimationLogic {
+        /**
+         * Resets internal data. It must be called on every loading start.
+         */
+        void reset();
+
+        /**
+         * Returns interpolated progress for animation.
+         *
+         * @param targetProgress Actual page loading progress.
+         * @param frameTimeSec   Duration since the last call.
+         * @param resolution     Resolution of the displayed progress bar. Mainly for rounding.
+         */
+        float updateProgress(float targetProgress, float frameTimeSec, int resolution);
+    }
+
+    private static final long PROGRESS_FRAME_TIME_CAP_MS = 50;
+    private long mAlphaAnimationDurationMs = 140;
     private long mHidingDelayMs = 100;
 
     private boolean mIsStarted;
+    private float mTargetProgress;
     private float mTargetAlpha = 0.0f;
+    AnimationLogic mAnimationLogic;
+
     private final Runnable mHideRunnable = new Runnable() {
         @Override
         public void run() {
             animateAlphaTo(0.0f);
         }
     };
+
+    private final TimeAnimator mProgressAnimator = new TimeAnimator();
+    {
+        mProgressAnimator.setTimeListener(new TimeListener() {
+            @Override
+            public void onTimeUpdate(TimeAnimator animation, long totalTimeMs, long deltaTimeMs) {
+                // Cap progress bar animation frame time so that it doesn't jump too much even when
+                // the animation is janky.
+                ToolbarProgressBar.super.setProgress(mAnimationLogic.updateProgress(
+                        mTargetProgress,
+                        Math.max(deltaTimeMs, PROGRESS_FRAME_TIME_CAP_MS) * 0.001f,
+                        getWidth()));
+
+                if (getProgress() == mTargetProgress) {
+                    if (mTargetProgress == 1.0f && !mIsStarted) {
+                        postDelayed(mHideRunnable, mHidingDelayMs);
+                    }
+                    mProgressAnimator.end();
+                    return;
+                }
+            }
+        });
+    }
 
     /**
      * Creates a toolbar progress bar.
@@ -38,10 +90,28 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     }
 
     /**
+     * Initializes animation based on command line configuration. This must be called when native
+     * library is ready.
+     */
+    public void initializeAnimation() {
+        assert mAnimationLogic == null;
+
+        String animation = CommandLine.getInstance().getSwitchValue(
+                ChromeSwitches.PROGRESS_BAR_ANIMATION);
+        if (TextUtils.equals(animation, "smooth")) {
+            mAnimationLogic = new ProgressAnimationSmooth();
+        } else if (TextUtils.equals(animation, "fast-start")) {
+            mAnimationLogic = new ProgressAnimationFastStart();
+        }
+    }
+
+    /**
      * Start showing progress bar animation.
      */
     public void start() {
         mIsStarted = true;
+        super.setProgress(0.0f);
+        if (mAnimationLogic != null) mAnimationLogic.reset();
         removeCallbacks(mHideRunnable);
         animateAlphaTo(1.0f);
     }
@@ -53,10 +123,8 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     public void finish(boolean delayed) {
         mIsStarted = false;
 
-        removeCallbacks(mHideRunnable);
-
         if (delayed) {
-            postDelayed(mHideRunnable, mHidingDelayMs);
+            updateVisibleProgress();
         } else {
             mTargetAlpha = 0.0f;
             setAlpha(0.0f);
@@ -93,11 +161,25 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
         }
     }
 
+    private void updateVisibleProgress() {
+        if (mAnimationLogic == null) {
+            super.setProgress(mTargetProgress);
+            if (!mIsStarted) {
+                postDelayed(mHideRunnable, mHidingDelayMs);
+            }
+        } else {
+            if (!mProgressAnimator.isStarted()) mProgressAnimator.start();
+        }
+    }
+
     // ClipDrawableProgressBar implementation.
 
     @Override
     public void setProgress(float progress) {
         assert mIsStarted;
-        super.setProgress(progress);
+        assert getProgress() <= progress;
+
+        mTargetProgress = progress;
+        updateVisibleProgress();
     }
 }

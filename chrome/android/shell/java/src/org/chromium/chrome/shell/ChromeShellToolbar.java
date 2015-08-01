@@ -36,20 +36,24 @@ import org.chromium.content.common.ContentSwitches;
 public class ChromeShellToolbar extends LinearLayout {
 
     private final Runnable mUpdateProgressRunnable = new Runnable() {
+        private boolean mIsStarted = false;
+
         @Override
         public void run() {
             mStopReloadButton.setImageResource(
                     mLoading ? R.drawable.btn_close : R.drawable.btn_toolbar_reload);
 
-            // Note: We have an assertion in setProgress that checks if it's started.
-            //       Calling mProgressBar.start(); here is not ideal as it could be redundant.
-            //       But currently we didn't hook loading start/end events in Chrome shell and
-            //       anyways we will be deleting Chrome shell soon, so will leave as it is.
-            mProgressBar.start();
             if (mProgress == 100.0f) {
-                if (mProgressBar.getProgress() != 1.0f) mProgressBar.setProgress(1.0f);
-                mProgressBar.finish(true);
+                if (mIsStarted) {
+                    if (mProgressBar.getProgress() != 1.0f) mProgressBar.setProgress(1.0f);
+                    mProgressBar.finish(true);
+                    mIsStarted = false;
+                }
             } else {
+                if (!mIsStarted) {
+                    mProgressBar.start();
+                    mIsStarted = true;
+                }
                 mProgressBar.setProgress(mProgress / 100.0f);
             }
         }
@@ -137,6 +141,7 @@ public class ChromeShellToolbar extends LinearLayout {
         super.onFinishInflate();
 
         mProgressBar = (ToolbarProgressBar) findViewById(R.id.progress);
+        mProgressBar.initializeAnimation();
         initializeUrlField();
         initializeTabSwitcherButton();
         initializeMenuButton();

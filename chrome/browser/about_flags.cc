@@ -546,6 +546,18 @@ const Experiment::Choice kV8CacheOptionsChoices[] = {
   { IDS_FLAGS_V8_CACHE_OPTIONS_CODE, switches::kV8CacheOptions, "code" },
 };
 
+#if defined(OS_ANDROID)
+const Experiment::Choice kProgressBarAnimationChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+      switches::kProgressBarAnimation, "disabled" },
+  { IDS_FLAGS_PROGRESS_BAR_ANIMATION_SMOOTH,
+      switches::kProgressBarAnimation, "smooth" },
+  { IDS_FLAGS_PROGRESS_BAR_ANIMATION_FAST_START,
+      switches::kProgressBarAnimation, "fast-start" },
+};
+#endif  // defined(OS_ANDROID)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -2079,6 +2091,14 @@ const Experiment kExperiments[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSimplifiedFullscreenUI,
                                switches::kDisableSimplifiedFullscreenUI)
     },
+#if defined(OS_ANDROID)
+    {"progress-bar-animation",
+     IDS_FLAGS_PROGRESS_BAR_ANIMATION_NAME,
+     IDS_FLAGS_PROGRESS_BAR_ANIMATION_DESCRIPTION,
+     kOsAndroid,
+     MULTI_VALUE_TYPE(kProgressBarAnimationChoices)},
+#endif  // defined(OS_ANDROID)
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

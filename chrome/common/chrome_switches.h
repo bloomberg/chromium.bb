@@ -337,6 +337,7 @@ extern const char kEnableReaderModeToolbarIcon[];
 extern const char kEnableZeroSuggestMostVisited[];
 extern const char kEnableZeroSuggestMostVisitedWithoutSerp[];
 extern const char kPrefetchSearchResults[];
+extern const char kProgressBarAnimation[];
 #endif  // defined(OS_ANDROID)
 
 #if defined(USE_ASH)
