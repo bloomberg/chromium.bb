@@ -21,17 +21,9 @@
 
 #route-information {
   -webkit-padding-start: 30px;
-  height: 75px;
-  line-height: 1.125em;
-}
-
-#route-status {
-  color: rgb(125, 125, 125);
-  margin: 8px 0;
-}
-
-#route-title {
-  font-weight: bold;
-  margin: 8px 0;
+  background-color: white;
+  font-size: 1.2em;
+  height: 40px;
   overflow: hidden;
+  padding: 20px 30px;
 }

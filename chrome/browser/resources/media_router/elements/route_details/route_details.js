@@ -34,7 +34,6 @@ Polymer({
     sink: {
       type: Object,
       value: null,
-      observer: 'updateActivityStatus_',
     },
 
     /**
@@ -89,10 +88,15 @@ Polymer({
   /**
    * Loads the custom controller if |route.customControllerPath| exists.
    * Falls back to the default route details view otherwise, or if load fails.
+   * Updates |activityStatus_| for the default view.
    *
    * @private
    */
   maybeLoadCustomController_: function() {
+    this.activityStatus_ = this.route ?
+        loadTimeData.getStringF('castingActivityStatus', this.route.title) :
+        '';
+
     if (!this.route || !this.route.customControllerPath ||
         !this.routeProviderExtensionId) {
       this.isCustomControllerHidden_ = true;
@@ -115,14 +119,4 @@ Polymer({
       that.isCustomControllerHidden_ = true;
     });
   },
-
-  /**
-   * Updates |activityStatus_| with the name of |sink|.
-   *
-   * @private
-   */
-  updateActivityStatus_: function() {
-    this.activityStatus_ = this.sink ?
-        loadTimeData.getStringF('castingActivityStatus', this.sink.name) : '';
-  }
 });

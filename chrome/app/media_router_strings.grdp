@@ -61,7 +61,7 @@
 
   <!-- Route Details -->
   <message name="IDS_MEDIA_ROUTER_CASTING_ACTIVITY_STATUS" desc="Label of activity status.">
-    Casting to <ph name="sinkName">$1<ex>Living Room TV</ex></ph>
+    Casting: <ph name="routeTitle">$1<ex>Video</ex></ph>
   </message>
   <message name="IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON" desc="Text of Stop casting button.">
     Stop casting
