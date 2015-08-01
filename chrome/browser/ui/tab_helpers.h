@@ -25,6 +25,8 @@ class PrerenderContents;
 // (or the equivalent on Android). The TabHelpers class allows specific classes
 // to attach the set of tab helpers that is used for tab contents.
 //
+// https://www.chromium.org/developers/design-documents/tab-helpers
+//
 // TODO(avi): This list is rather large, and for most callers it's due to the
 // fact that they need tab helpers attached early to deal with arbitrary
 // content loaded into a WebContents that will later be added to the tabstrip.
@@ -49,6 +51,10 @@ class TabHelpers {
   // Prerendering loads pages that have arbitrary external content; it needs
   // the full set of tab helpers to deal with it.
   friend class prerender::PrerenderContents;
+
+  // FYI: Do NOT add any more friends here. The functions above are the ONLY
+  // ones that need to call AttachTabHelpers; if you think you do, re-read the
+  // design document linked above, especially the section "Reusing tab helpers".
 
   // Adopts the specified WebContents as a full-fledged browser tab, attaching
   // all the associated tab helpers that are needed for the WebContents to
