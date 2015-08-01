@@ -562,6 +562,7 @@ test("content_unittests") {
       "//third_party/icu",
       "//third_party/leveldatabase",
       "//third_party/libjingle",
+      "//ui/compositor:test_support",
       "//ui/gl",
       "//ui/gl:test_support",
     ]

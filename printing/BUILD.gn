@@ -235,7 +235,8 @@ if (use_cups) {
     defines = [ "USE_CUPS" ]
 
     if (is_mac) {
-      ldflags = [ "$mac_sdk_path/usr/lib/libcups.dylib" ]
+      libs = [ "cups" ]
+      lib_dirs = [ "$mac_sdk_path/usr/lib" ]
     } else {
       libs = exec_script("cups_config_helper.py", [ "--libs-for-gn" ], "value")
     }

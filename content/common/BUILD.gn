@@ -6,6 +6,9 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//content/common/common.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+if (is_mac) {
+  import("//build/config/mac/mac_sdk.gni")
+}
 
 if (is_chromeos && current_cpu != "arm") {
   action("libva_generate_stubs") {
@@ -228,10 +231,12 @@ source_set("common") {
       "//third_party/WebKit/public:resources",
       "//ui/accelerated_widget_mac",
     ]
+    lib_dirs = [ "$mac_sdk_path/usr/lib" ]
     libs += [
       "IOSurface.framework",
       "OpenGL.framework",
       "QuartzCore.framework",
+      "sandbox",
     ]
   }
 
