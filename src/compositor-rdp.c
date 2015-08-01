@@ -1233,12 +1233,9 @@ err_output:
 err_compositor:
 	weston_compositor_shutdown(compositor);
 err_free_strings:
-	if (b->rdp_key)
-		free(b->rdp_key);
-	if (b->server_cert)
-		free(b->server_cert);
-	if (b->server_key)
-		free(b->server_key);
+	free(b->rdp_key);
+	free(b->server_cert);
+	free(b->server_key);
 	free(b);
 	return NULL;
 }
