@@ -11629,26 +11629,6 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(uint32 immediate_data_size,
       break;
     case GL_COMMANDS_COMPLETED_CHROMIUM:
       if (!features().chromium_sync_query) {
-#if defined(OS_MACOSX)
-        // TODO(dyen): Remove once we know what is failing.
-        uint32_t boolean_flags = 0;
-        if (gfx::g_driver_gl.ext.b_GL_ARB_sync)
-          boolean_flags |= 1;
-        if (gfx::g_driver_gl.ext.b_GL_APPLE_fence)
-          boolean_flags |= 2;
-        if (gfx::g_driver_gl.ext.b_GL_NV_fence)
-          boolean_flags |= 4;
-
-        CHECK(boolean_flags != 0) << "Nothing supported";
-        CHECK(boolean_flags != 1) << "ARB";
-        CHECK(boolean_flags != 2) << "APPLE";
-        CHECK(boolean_flags != 3) << "ARB APPLE";
-        CHECK(boolean_flags != 4) << "NV";
-        CHECK(boolean_flags != 5) << "NV ARB";
-        CHECK(boolean_flags != 6) << "NV APPLE";
-        CHECK(boolean_flags != 7) << "NV ARB APPLE";
-        CHECK(false) << "Unknown error.";
-#endif
         LOCAL_SET_GL_ERROR(
             GL_INVALID_OPERATION, "glBeginQueryEXT",
             "not enabled for commands completed queries");
@@ -11681,21 +11661,12 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(uint32 immediate_data_size,
   }
 
   if (query_manager_->GetActiveQuery(target)) {
-#if defined(OS_MACOSX)
-    // TODO(dyen): Remove once we know what is failing.
-    CHECK(target != GL_COMMANDS_COMPLETED_CHROMIUM)
-        << "Query already in progress";
-#endif
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION, "glBeginQueryEXT", "query already in progress");
     return error::kNoError;
   }
 
   if (client_id == 0) {
-#if defined(OS_MACOSX)
-    // TODO(dyen): Remove once we know what is failing.
-    CHECK(target != GL_COMMANDS_COMPLETED_CHROMIUM) << "Id is 0";
-#endif
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginQueryEXT", "id is 0");
     return error::kNoError;
   }
@@ -11703,10 +11674,6 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(uint32 immediate_data_size,
   QueryManager::Query* query = query_manager_->GetQuery(client_id);
   if (!query) {
     if (!query_manager_->IsValidQuery(client_id)) {
-#if defined(OS_MACOSX)
-      // TODO(dyen): Remove once we know what is failing.
-      CHECK(target != GL_COMMANDS_COMPLETED_CHROMIUM) << "Invalid ID";
-#endif
       LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
                          "glBeginQueryEXT",
                          "id not made by glGenQueriesEXT");
@@ -11717,10 +11684,6 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(uint32 immediate_data_size,
   }
 
   if (query->target() != target) {
-#if defined(OS_MACOSX)
-    // TODO(dyen): Remove once we know what is failing.
-    CHECK(target != GL_COMMANDS_COMPLETED_CHROMIUM) << "Non-Matching Target";
-#endif
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION, "glBeginQueryEXT", "target does not match");
     return error::kNoError;
@@ -11731,10 +11694,6 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(uint32 immediate_data_size,
   }
 
   if (!query_manager_->BeginQuery(query)) {
-#if defined(OS_MACOSX)
-    // TODO(dyen): Remove once we know what is failing.
-    CHECK(target != GL_COMMANDS_COMPLETED_CHROMIUM) << "Out of bounds";
-#endif
     return error::kOutOfBounds;
   }
 
@@ -11750,20 +11709,12 @@ error::Error GLES2DecoderImpl::HandleEndQueryEXT(uint32 immediate_data_size,
 
   QueryManager::Query* query = query_manager_->GetActiveQuery(target);
   if (!query) {
-#if defined(OS_MACOSX)
-    // TODO(dyen): Remove once we know what is failing.
-    CHECK(target != GL_COMMANDS_COMPLETED_CHROMIUM) << "Target not active";
-#endif
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION, "glEndQueryEXT", "No active query");
     return error::kNoError;
   }
 
   if (!query_manager_->EndQuery(query, submit_count)) {
-#if defined(OS_MACOSX)
-    // TODO(dyen): Remove once we know what is failing.
-    CHECK(target != GL_COMMANDS_COMPLETED_CHROMIUM) << "Out of bounds";
-#endif
     return error::kOutOfBounds;
   }
 
