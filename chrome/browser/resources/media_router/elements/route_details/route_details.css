@@ -5,7 +5,7 @@
 #close-route-button {
   background-color: white;
   color: rgb(33, 150, 243);
-  text-align: -webkit-right;
+  text-align: end;
 }
 
 #custom-controller {
