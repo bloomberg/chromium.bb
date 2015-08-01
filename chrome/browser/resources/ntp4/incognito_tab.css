@@ -9,8 +9,8 @@
 .icon {
   -webkit-margin-start: 25px;
   content: -webkit-image-set(
-      url(../../../browser/resources/ntp4/images/incognito_icon.png) 1x,
-      url(../../../browser/resources/ntp4/images/2x/incognito_icon.png) 2x);
+      url(../../../../ui/webui/resources/images/incognito_icon.png) 1x,
+      url(../../../../ui/webui/resources/images/2x/incognito_icon.png) 2x);
   float: right;
   height: 128px;
   margin-bottom: 10px;

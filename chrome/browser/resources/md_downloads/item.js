@@ -31,9 +31,16 @@ cr.define('downloads', function() {
         observer: 'onScrollbarWidthChange_',
       },
 
+      /** @private */
       isDangerous_: {type: Boolean, value: false},
 
-      /** Only set when |isDangerous| is true. */
+      /** @private */
+      isIncognito_: {type: Boolean, value: false},
+
+      /**
+       * Only set when |isDangerous| is true.
+       * @private
+       */
       isMalware_: Boolean,
     },
 
@@ -41,6 +48,8 @@ cr.define('downloads', function() {
     update: function(data) {
       assert(!this.id_ || data.id == this.id_);
       this.id_ = data.id;  // This is the only thing saved from |data|.
+
+      this.isIncognito_ = data.otr;
 
       // Danger-independent UI and controls.
       this.ensureTextIs_(this.$.since, data.since_string);
