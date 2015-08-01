@@ -2,7 +2,7 @@
 <!-- Settings-specific strings (included from generated_resources.grd). -->
 <grit-part>
   <!-- Accessibility Page -->
-  <message name="IDS_SETTINGS_ACCESSIBILITY_PAGE_TITLE" desc="Name of the settings page which displays accessibility preferences.">
+  <message name="IDS_SETTINGS_ACCESSIBILITY" desc="Name of the settings page which displays accessibility preferences.">
     Accessibility
   </message>
   <message name="IDS_SETTINGS_MORE_FEATURES_LINK" desc="Link which opens page where users can install extensions which provide additional accessibility features.">
@@ -61,12 +61,12 @@
   </message>
 
   <!-- Advanced Page -->
-  <message name="IDS_SETTINGS_ADVANCED_PAGE_TITLE" desc="Name of the settings page which displays advanced preferences.">
+  <message name="IDS_SETTINGS_ADVANCED" desc="Name of the settings page which displays advanced preferences.">
     Advanced
   </message>
 
   <!-- Appearance Page -->
-  <message name="IDS_SETTINGS_APPEARANCE_PAGE_TITLE" desc="Name of the settings page which displays appearance preferences.">
+  <message name="IDS_SETTINGS_APPEARANCE" desc="Name of the settings page which displays appearance preferences.">
     Appearance
   </message>
   <message name="IDS_SETTINGS_SET_WALLPAPER" desc="Name of the control which allows the user to set the wallpaper.">
@@ -92,12 +92,12 @@
   </message>
 
   <!-- Basic Page -->
-  <message name="IDS_SETTINGS_BASIC_PAGE_TITLE" desc="Name of the settings page which displays advanced preferences.">
+  <message name="IDS_SETTINGS_BASIC" desc="Name of the settings page which displays advanced preferences.">
     Basic
   </message>
 
   <!-- Downloads Page -->
-  <message name="IDS_SETTINGS_DOWNLOADS_PAGE_TITLE" desc="Name of the settings page which displays download preferences.">
+  <message name="IDS_SETTINGS_DOWNLOADS" desc="Name of the settings page which displays download preferences.">
     Downloads
   </message>
   <message name="IDS_SETTINGS_DOWNLOAD_LOCATION" desc="Label for the input which allows the user to specify the default download directory.">
@@ -111,7 +111,7 @@
   </message>
 
   <!-- Date/time Page -->
-  <message name="IDS_SETTINGS_DATE_TIME_PAGE_TITLE" desc="Name of the settings page which displays date and time preferences.">
+  <message name="IDS_SETTINGS_DATE_TIME" desc="Name of the settings page which displays date and time preferences.">
     Date &amp; Time
   </message>
   <message name="IDS_SETTINGS_TIME_ZONE" desc="Label for the picker which allows users to choose their time zone.">
@@ -125,15 +125,15 @@
   </message>
 
   <!-- Internet Page -->
-  <message name="IDS_SETTINGS_INTERNET_PAGE_TITLE" desc="Name of the settings page which displays internet preferences.">
+  <message name="IDS_SETTINGS_INTERNET" desc="Name of the settings page which displays internet preferences.">
     Internet Connection
   </message>
-  <message name="IDS_SETTINGS_INTERNET_DETAIL_PAGE_TITLE" desc="Name of the settings page which displays network details.">
+  <message name="IDS_SETTINGS_INTERNET_DETAIL" desc="Name of the settings page which displays network details.">
     Network Details
   </message>
 
   <!-- Privacy Page -->
-  <message name="IDS_SETTINGS_PRIVACY_PAGE_TITLE" desc="Name of the settings page which allows users to modify privacy and security settings.">
+  <message name="IDS_SETTINGS_PRIVACY" desc="Name of the settings page which allows users to modify privacy and security settings.">
     Privacy &amp; Security
   </message>
   <message name="IDS_SETTINGS_LINKDOCTOR_PREF" desc="The documentation string of the 'Use Link Doctor' preference to help with navigation errors.">
@@ -177,7 +177,7 @@
   </message>
 
   <!-- Search Page -->
-  <message name="IDS_SETTINGS_SEARCH_PAGE_TITLE" desc="Name of the settings page which displays search engine preferences.">
+  <message name="IDS_SETTINGS_SEARCH" desc="Name of the settings page which displays search engine preferences.">
     Search
   </message>
   <message name="IDS_SETTINGS_SEARCH_EXPLANATION" desc="Explanation for the search engine dropdown setting.">
@@ -197,7 +197,7 @@
   </message>
 
   <!-- Search Engines Page -->
-  <message name="IDS_SETTINGS_SEARCH_ENGINES_PAGE_TITLE" desc="Name of the settings page which manages search engines.">
+  <message name="IDS_SETTINGS_SEARCH_ENGINES" desc="Name of the settings page which manages search engines.">
     Search Engines
   </message>
   <message name="IDS_SETTINGS_SEARCH_ENGINES_ADD_SEARCH_ENGINE_LABEL" desc="Label for section for adding a new search engine.">
@@ -223,7 +223,7 @@
   </message>
 
   <!-- Sync Page -->
-  <message name="IDS_SETTINGS_SYNC_PAGE_TITLE" desc="Name of the settings page which manages syncing data between multiple browser instances with the same Google profile.">
+  <message name="IDS_SETTINGS_SYNC" desc="Name of the settings page which manages syncing data between multiple browser instances with the same Google profile.">
     Advanced sync settings
   </message>
   <message name="IDS_SETTINGS_SYNC_EVERYTHING_MENU_OPTION" desc="Name of the menu option which, when selected, causes all properties to be synced.">
@@ -259,7 +259,7 @@
   <message name="IDS_SETTINGS_OPEN_TABS_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing open tabs between multiple browser instances.">
     Open Tabs
   </message>
-  <message name="IDS_SETTINGS_ENCRYPTION_OPTIONS_TITLE" desc="Title for the section which includes options for encrypting sync settings.">
+  <message name="IDS_SETTINGS_ENCRYPTION_OPTIONS" desc="Title for the section which includes options for encrypting sync settings.">
     Encryption options
   </message>
   <message name="IDS_SETTINGS_ENCRYPT_WITH_GOOGLE_CREDENTIALS_LABEL" desc="Label for the radio button which, when selected, causes synced settings to be encrypted with the Google login for the current browser profile.">
@@ -282,7 +282,7 @@
   </message>
 
   <!-- Users Page -->
-  <message name="IDS_SETTINGS_USERS_PAGE_TITLE" desc="Name of the settings page which manages users on the device.">
+  <message name="IDS_SETTINGS_USERS" desc="Name of the settings page which manages users on the device.">
     Manage other users
   </message>
   <message name="IDS_SETTINGS_USERS_MODIFIED_BY_OWNER_LABEL" desc="Label saying settings may only be modified by the device owner.">

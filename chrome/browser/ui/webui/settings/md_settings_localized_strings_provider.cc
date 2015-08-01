@@ -21,7 +21,7 @@ const char kLocalizedStringsFile[] = "strings.js";
 
 void AddA11yStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
-      "a11yPageTitle", IDS_SETTINGS_ACCESSIBILITY_PAGE_TITLE);
+      "a11yPageTitle", IDS_SETTINGS_ACCESSIBILITY);
   html_source->AddLocalizedString(
       "moreFeaturesLink", IDS_SETTINGS_MORE_FEATURES_LINK);
   html_source->AddLocalizedString(
@@ -63,7 +63,7 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
 
 void AddAppearanceStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
-      "appearancePageTitle", IDS_SETTINGS_APPEARANCE_PAGE_TITLE);
+      "appearancePageTitle", IDS_SETTINGS_APPEARANCE);
   html_source->AddLocalizedString(
       "setWallpaper", IDS_SETTINGS_SET_WALLPAPER);
   html_source->AddLocalizedString(
@@ -88,7 +88,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source) {
 
 void AddDownloadsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
-      "downloadsPageTitle", IDS_SETTINGS_DOWNLOADS_PAGE_TITLE);
+      "downloadsPageTitle", IDS_SETTINGS_DOWNLOADS);
   html_source->AddLocalizedString(
       "downloadLocation", IDS_SETTINGS_DOWNLOAD_LOCATION);
   html_source->AddLocalizedString(
@@ -99,7 +99,7 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
 
 void AddDateTimeStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
-      "dateTimePageTitle", IDS_SETTINGS_DATE_TIME_PAGE_TITLE);
+      "dateTimePageTitle", IDS_SETTINGS_DATE_TIME);
   html_source->AddLocalizedString(
       "timeZone", IDS_SETTINGS_TIME_ZONE);
   html_source->AddLocalizedString(
@@ -111,15 +111,15 @@ void AddDateTimeStrings(content::WebUIDataSource* html_source) {
 #if defined(OS_CHROMEOS)
 void AddInternetStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
-      "internetPageTitle", IDS_SETTINGS_INTERNET_PAGE_TITLE);
+      "internetPageTitle", IDS_SETTINGS_INTERNET);
   html_source->AddLocalizedString(
-      "internetDetailPageTitle", IDS_SETTINGS_INTERNET_DETAIL_PAGE_TITLE);
+      "internetDetailPageTitle", IDS_SETTINGS_INTERNET_DETAIL);
 }
 #endif
 
 void AddPrivacyStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("privacyPageTitle",
-                                  IDS_SETTINGS_PRIVACY_PAGE_TITLE);
+                                  IDS_SETTINGS_PRIVACY);
   html_source->AddString("improveBrowsingExperience",
                          l10n_util::GetStringFUTF16(
                              IDS_SETTINGS_IMPROVE_BROWSING_EXPERIENCE,
@@ -157,7 +157,7 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source) {
 
 void AddSearchStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("searchPageTitle",
-                                  IDS_SETTINGS_SEARCH_PAGE_TITLE);
+                                  IDS_SETTINGS_SEARCH);
   html_source->AddLocalizedString("searchExplanation",
                                   IDS_SETTINGS_SEARCH_EXPLANATION);
   html_source->AddLocalizedString("searchManageButtonLabel",
@@ -174,7 +174,7 @@ void AddSearchStrings(content::WebUIDataSource* html_source) {
 
 void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("searchEnginesPageTitle",
-                                  IDS_SETTINGS_SEARCH_ENGINES_PAGE_TITLE);
+                                  IDS_SETTINGS_SEARCH_ENGINES);
   html_source->AddLocalizedString(
       "searchEnginesAddSearchEngineLabel",
       IDS_SETTINGS_SEARCH_ENGINES_ADD_SEARCH_ENGINE_LABEL);
@@ -195,7 +195,7 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
 
 void AddSyncStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("syncPageTitle",
-                                  IDS_SETTINGS_SYNC_PAGE_TITLE);
+                                  IDS_SETTINGS_SYNC);
   html_source->AddLocalizedString("syncEverythingMenuOption",
                                   IDS_SETTINGS_SYNC_EVERYTHING_MENU_OPTION);
   html_source->AddLocalizedString("chooseWhatToSyncMenuOption",
@@ -220,7 +220,7 @@ void AddSyncStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("openTabsCheckboxLabel",
                                   IDS_SETTINGS_OPEN_TABS_CHECKBOX_LABEL);
   html_source->AddLocalizedString("encryptionOptionsTitle",
-                                  IDS_SETTINGS_ENCRYPTION_OPTIONS_TITLE);
+                                  IDS_SETTINGS_ENCRYPTION_OPTIONS);
   html_source->AddLocalizedString("syncDataEncryptedText",
                                   IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT);
   html_source->AddLocalizedString(
@@ -242,7 +242,7 @@ void AddSyncStrings(content::WebUIDataSource* html_source) {
 
 void AddUsersStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("usersPageTitle",
-                                  IDS_SETTINGS_USERS_PAGE_TITLE);
+                                  IDS_SETTINGS_USERS);
   html_source->AddLocalizedString("usersModifiedByOwnerLabel",
                                   IDS_SETTINGS_USERS_MODIFIED_BY_OWNER_LABEL);
   html_source->AddLocalizedString("guestBrowsingLabel",
@@ -265,9 +265,9 @@ namespace settings {
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("basicPageTitle",
-                                  IDS_SETTINGS_BASIC_PAGE_TITLE);
+                                  IDS_SETTINGS_BASIC);
   html_source->AddLocalizedString("advancedPageTitle",
-                                  IDS_SETTINGS_ADVANCED_PAGE_TITLE);
+                                  IDS_SETTINGS_ADVANCED);
 
   AddA11yStrings(html_source);
   AddAppearanceStrings(html_source);
