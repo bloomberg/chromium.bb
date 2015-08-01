@@ -4460,7 +4460,8 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--site-per-process",
+          "--gtest_filter=-CaptivePortalTabHelperTest.HttpsSubframe*"
         ],
         "test": "unit_tests"
       }
@@ -4490,7 +4491,8 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--site-per-process",
+          "--gtest_filter=-CaptivePortalTabHelperTest.HttpsSubframe*"
         ],
         "test": "unit_tests"
       }
