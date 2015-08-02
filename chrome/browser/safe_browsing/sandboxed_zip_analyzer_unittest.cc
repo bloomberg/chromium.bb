@@ -81,6 +81,23 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
     run_loop.Run();
   }
 
+#if defined(OS_WIN)
+  void ExpectPEHeaders(const BinaryData& data,
+                       const ClientDownloadRequest_ArchivedBinary& binary) {
+    ASSERT_EQ(data.is_signed, binary.has_signature());
+    if (data.is_signed) {
+      ASSERT_LT(0, binary.signature().signed_data_size());
+      ASSERT_NE(0U, binary.signature().signed_data(0).size());
+    }
+    ASSERT_TRUE(binary.has_image_headers());
+    ASSERT_TRUE(binary.image_headers().has_pe_headers());
+    EXPECT_TRUE(binary.image_headers().pe_headers().has_dos_header());
+    EXPECT_TRUE(binary.image_headers().pe_headers().has_file_header());
+    EXPECT_TRUE(binary.image_headers().pe_headers().has_optional_headers32());
+    EXPECT_FALSE(binary.image_headers().pe_headers().has_optional_headers64());
+  }
+#endif
+
   // Verifies expectations about a binary found by the analyzer.
   void ExpectBinary(const BinaryData& data,
                     const ClientDownloadRequest_ArchivedBinary& binary) {
@@ -97,28 +114,24 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
     EXPECT_FALSE(binary.digests().has_md5());
     ASSERT_TRUE(binary.has_length());
     EXPECT_EQ(data.length, binary.length());
-#if defined(OS_WIN)  // ExtractImageFeatures is only implemented for Win.
-    ASSERT_EQ(data.is_signed, binary.has_signature());
-    if (data.is_signed) {
-      ASSERT_LT(0, binary.signature().signed_data_size());
-      ASSERT_NE(0U, binary.signature().signed_data(0).size());
+#if defined(OS_WIN)
+    // ExtractImageFeatures only implemented for Windows, and only works on PE
+    // files.
+    if (binary.file_basename().find(".exe") != std::string::npos) {
+      ExpectPEHeaders(data, binary);
+      return;
     }
-    ASSERT_TRUE(binary.has_image_headers());
-    ASSERT_TRUE(binary.image_headers().has_pe_headers());
-    EXPECT_TRUE(binary.image_headers().pe_headers().has_dos_header());
-    EXPECT_TRUE(binary.image_headers().pe_headers().has_file_header());
-    EXPECT_TRUE(binary.image_headers().pe_headers().has_optional_headers32());
-    EXPECT_FALSE(binary.image_headers().pe_headers().has_optional_headers64());
-#else  // OS_WIN
+#endif  // OS_WIN
     ASSERT_FALSE(binary.has_signature());
     ASSERT_FALSE(binary.has_image_headers());
-#endif  // !OS_WIN
   }
 
   static const uint8_t kUnsignedDigest[];
   static const uint8_t kSignedDigest[];
+  static const uint8_t kJSEFileDigest[];
   static const BinaryData kUnsignedExe;
   static const BinaryData kSignedExe;
+  static const BinaryData kJSEFile;
 
   base::FilePath dir_test_data_;
   content::TestBrowserThreadBundle browser_thread_bundle_;
@@ -127,15 +140,17 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
 
 // static
 const uint8_t SandboxedZipAnalyzerTest::kUnsignedDigest[] = {
-  0x1e, 0x95, 0x4d, 0x9c, 0xe0, 0x38, 0x9e, 0x2b, 0xa7, 0x44, 0x72, 0x16,
-  0xf2, 0x17, 0x61, 0xf9, 0x8d, 0x1e, 0x65, 0x40, 0xc2, 0xab, 0xec, 0xdb,
-  0xec, 0xff, 0x57, 0x0e, 0x36, 0xc4, 0x93, 0xdb
-};
+    0x1e, 0x95, 0x4d, 0x9c, 0xe0, 0x38, 0x9e, 0x2b, 0xa7, 0x44, 0x72,
+    0x16, 0xf2, 0x17, 0x61, 0xf9, 0x8d, 0x1e, 0x65, 0x40, 0xc2, 0xab,
+    0xec, 0xdb, 0xec, 0xff, 0x57, 0x0e, 0x36, 0xc4, 0x93, 0xdb};
 const uint8_t SandboxedZipAnalyzerTest::kSignedDigest[] = {
-  0xe1, 0x1f, 0xfa, 0x0c, 0x9f, 0x25, 0x23, 0x44, 0x53, 0xa9, 0xed, 0xd1,
-  0xcb, 0x25, 0x1d, 0x46, 0x10, 0x7f, 0x34, 0xb5, 0x36, 0xad, 0x74, 0x64,
-  0x2a, 0x85, 0x84, 0xac, 0xa8, 0xc1, 0xa8, 0xce
-};
+    0xe1, 0x1f, 0xfa, 0x0c, 0x9f, 0x25, 0x23, 0x44, 0x53, 0xa9, 0xed,
+    0xd1, 0xcb, 0x25, 0x1d, 0x46, 0x10, 0x7f, 0x34, 0xb5, 0x36, 0xad,
+    0x74, 0x64, 0x2a, 0x85, 0x84, 0xac, 0xa8, 0xc1, 0xa8, 0xce};
+const uint8_t SandboxedZipAnalyzerTest::kJSEFileDigest[] = {
+    0x58, 0x91, 0xb5, 0xb5, 0x22, 0xd5, 0xdf, 0x08, 0x6d, 0x0f, 0xf0,
+    0xb1, 0x10, 0xfb, 0xd9, 0xd2, 0x1b, 0xb4, 0xfc, 0x71, 0x63, 0xaf,
+    0x34, 0xd0, 0x82, 0x86, 0xa2, 0xe8, 0x46, 0xf6, 0xbe, 0x03};
 const SandboxedZipAnalyzerTest::BinaryData
     SandboxedZipAnalyzerTest::kUnsignedExe = {
   "unsigned.exe",
@@ -151,6 +166,14 @@ const SandboxedZipAnalyzerTest::BinaryData
   &kSignedDigest[0],
   37768,
   true,  // is_signed
+};
+const SandboxedZipAnalyzerTest::BinaryData SandboxedZipAnalyzerTest::kJSEFile =
+    {
+        "hello.jse",
+        ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
+        &kJSEFileDigest[0],
+        6,
+        false,  // is_signed
 };
 
 TEST_F(SandboxedZipAnalyzerTest, NoBinaries) {
@@ -183,6 +206,54 @@ TEST_F(SandboxedZipAnalyzerTest, TwoBinariesOneSigned) {
   ASSERT_EQ(2, results.archived_binary.size());
   ExpectBinary(kUnsignedExe, results.archived_binary.Get(0));
   ExpectBinary(kSignedExe, results.archived_binary.Get(1));
+}
+
+TEST_F(SandboxedZipAnalyzerTest, ZippedArchiveNoBinaries) {
+  zip_analyzer::Results results;
+  RunAnalyzer(dir_test_data_.AppendASCII("zipfile_archive_no_binaries.zip"),
+              &results);
+  ASSERT_TRUE(results.success);
+  EXPECT_FALSE(results.has_executable);
+  EXPECT_TRUE(results.has_archive);
+  EXPECT_EQ(0, results.archived_binary.size());
+  ASSERT_EQ(1u, results.archived_archive_filetypes.size());
+  EXPECT_EQ(FILE_PATH_LITERAL(".zip"), results.archived_archive_filetypes[0]);
+}
+
+TEST_F(SandboxedZipAnalyzerTest, ZippedRarArchiveNoBinaries) {
+  zip_analyzer::Results results;
+  RunAnalyzer(dir_test_data_.AppendASCII("zipfile_rar_archive_no_binaries.zip"),
+              &results);
+  ASSERT_TRUE(results.success);
+  EXPECT_FALSE(results.has_executable);
+  EXPECT_TRUE(results.has_archive);
+  EXPECT_EQ(0, results.archived_binary.size());
+  ASSERT_EQ(1u, results.archived_archive_filetypes.size());
+  EXPECT_EQ(FILE_PATH_LITERAL(".rar"), results.archived_archive_filetypes[0]);
+}
+
+TEST_F(SandboxedZipAnalyzerTest, ZippedArchiveAndBinaries) {
+  zip_analyzer::Results results;
+  RunAnalyzer(dir_test_data_.AppendASCII("zipfile_archive_and_binaries.zip"),
+              &results);
+  ASSERT_TRUE(results.success);
+  EXPECT_TRUE(results.has_executable);
+  EXPECT_TRUE(results.has_archive);
+  ASSERT_EQ(1, results.archived_binary.size());
+  ExpectBinary(kSignedExe, results.archived_binary.Get(0));
+  ASSERT_EQ(1u, results.archived_archive_filetypes.size());
+  EXPECT_EQ(FILE_PATH_LITERAL(".7z"), results.archived_archive_filetypes[0]);
+}
+
+TEST_F(SandboxedZipAnalyzerTest, ZippedJSEFile) {
+  zip_analyzer::Results results;
+  RunAnalyzer(dir_test_data_.AppendASCII("zipfile_one_jse_file.zip"), &results);
+  ASSERT_TRUE(results.success);
+  EXPECT_TRUE(results.has_executable);
+  EXPECT_FALSE(results.has_archive);
+  ASSERT_EQ(1, results.archived_binary.size());
+  ExpectBinary(kJSEFile, results.archived_binary.Get(0));
+  EXPECT_TRUE(results.archived_archive_filetypes.empty());
 }
 
 }  // namespace safe_browsing

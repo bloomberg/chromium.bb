@@ -11,14 +11,39 @@ namespace safe_browsing {
 namespace download_protection_util {
 
 bool IsArchiveFile(const base::FilePath& file) {
-  // TODO(mattm): should .dmg be checked here instead of IsBinaryFile?
-  return file.MatchesExtension(FILE_PATH_LITERAL(".zip"));
+  // List of interesting archive file formats. These are by no means exhaustive,
+  // but are currently file types that Safe Browsing would like to see pings for
+  // due to the possibility of them being used as wrapper formats for malicious
+  // payloads.
+  const base::FilePath::CharType* kArchiveFileTypes[] = {
+    FILE_PATH_LITERAL(".zip"),
+    FILE_PATH_LITERAL(".rar"),
+    FILE_PATH_LITERAL(".7z"),
+    FILE_PATH_LITERAL(".cab"),
+    FILE_PATH_LITERAL(".xz"),
+    FILE_PATH_LITERAL(".gz"),
+    FILE_PATH_LITERAL(".tgz"),
+    FILE_PATH_LITERAL(".bz2"),
+    FILE_PATH_LITERAL(".tar"),
+    FILE_PATH_LITERAL(".arj"),
+    FILE_PATH_LITERAL(".lzh"),
+    FILE_PATH_LITERAL(".lha"),
+    FILE_PATH_LITERAL(".wim"),
+    FILE_PATH_LITERAL(".z"),
+    FILE_PATH_LITERAL(".lzma"),
+    FILE_PATH_LITERAL(".cpio"),
+  };
+  for (const auto& extension : kArchiveFileTypes) {
+    if (file.MatchesExtension(extension))
+      return true;
+  }
+  // TODO(mattm): should .dmg be checked here instead of IsSupportedBinaryFile?
+  return false;
 }
 
-bool IsBinaryFile(const base::FilePath& file) {
+bool IsSupportedBinaryFile(const base::FilePath& file) {
   const base::FilePath::CharType* kSupportedBinaryFileTypes[] = {
       // Executable extensions for MS Windows.
-      FILE_PATH_LITERAL(".cab"),
       FILE_PATH_LITERAL(".cmd"),
       FILE_PATH_LITERAL(".com"),
       FILE_PATH_LITERAL(".dll"),
@@ -72,20 +97,25 @@ bool IsBinaryFile(const base::FilePath& file) {
     if (file.MatchesExtension(extension))
       return true;
 
-  // Archives _may_ contain binaries, we'll check in ExtractFileFeatures.
-  return IsArchiveFile(file);
+  // .zip files are examined for any executables or other archives they may
+  // contain. Currently no other archive formats are supported.
+  return file.MatchesExtension(FILE_PATH_LITERAL(".zip"));
 }
 
 ClientDownloadRequest::DownloadType GetDownloadType(
     const base::FilePath& file) {
-  DCHECK(IsBinaryFile(file));
+  DCHECK(IsSupportedBinaryFile(file));
   if (file.MatchesExtension(FILE_PATH_LITERAL(".apk")))
     return ClientDownloadRequest::ANDROID_APK;
   else if (file.MatchesExtension(FILE_PATH_LITERAL(".crx")))
     return ClientDownloadRequest::CHROME_EXTENSION;
-  // For zip files, we use the ZIPPED_EXECUTABLE type since we will only send
-  // the pingback if we find an executable inside the zip archive.
   else if (file.MatchesExtension(FILE_PATH_LITERAL(".zip")))
+    // DownloadProtectionService doesn't send a ClientDownloadRequest for ZIP
+    // files unless they contain either executables or archives. The resulting
+    // DownloadType is either ZIPPED_EXECUTABLE or ZIPPED_ARCHIVE respectively.
+    // This function will return ZIPPED_EXECUTABLE for ZIP files as a
+    // placeholder. The correct DownloadType will be determined based on the
+    // result of analyzing the ZIP file.
     return ClientDownloadRequest::ZIPPED_EXECUTABLE;
   else if (file.MatchesExtension(FILE_PATH_LITERAL(".dmg")) ||
            file.MatchesExtension(FILE_PATH_LITERAL(".pkg")) ||

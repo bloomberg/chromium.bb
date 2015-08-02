@@ -36798,6 +36798,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SBClientDownload.ArchivedArchiveExtensions"
+    enum="SBClientDownloadCheckDownloadStats">
+  <owner>asanka@chromium.org</owner>
+  <summary>
+    Records a histogram of archive file types that were found while examining a
+    downloaded ZIP file. Each archive file type in a single ZIP file is recorded
+    at most once. The relative incidence rate of each filetype in this histogram
+    should indicate the probability of finding that file type in a ZIP file
+    given that that ZIP file contains an archive file.
+  </summary>
+</histogram>
+
 <histogram name="SBClientDownload.CheckDownloadStats"
     enum="SBClientDownloadCheckDownloadStats">
   <owner>mattm@chromium.org</owner>
@@ -67533,6 +67545,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="49" label="SCF"/>
   <int value="50" label="SCT"/>
   <int value="51" label="WSF"/>
+  <int value="52" label="7Z"/>
+  <int value="53" label="XZ"/>
+  <int value="54" label="GZ"/>
+  <int value="55" label="TGZ"/>
+  <int value="56" label="BZ2"/>
+  <int value="57" label="TAR"/>
+  <int value="58" label="ARJ"/>
+  <int value="59" label="LZH"/>
+  <int value="60" label="LHA"/>
+  <int value="61" label="WIM"/>
+  <int value="62" label="Z"/>
+  <int value="63" label="LZMA"/>
+  <int value="64" label="CPIO"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary" type="int">

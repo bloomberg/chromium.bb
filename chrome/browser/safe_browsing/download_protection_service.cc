@@ -120,26 +120,53 @@ const base::FilePath::CharType* const kDangerousFileTypes[] = {
     FILE_PATH_LITERAL(".scf"),
     FILE_PATH_LITERAL(".sct"),
     FILE_PATH_LITERAL(".wsf"),
+    FILE_PATH_LITERAL(".7z"),
+    FILE_PATH_LITERAL(".xz"),
+    FILE_PATH_LITERAL(".gz"),
+    FILE_PATH_LITERAL(".tgz"),
+    FILE_PATH_LITERAL(".bz2"),
+    FILE_PATH_LITERAL(".tar"),
+    FILE_PATH_LITERAL(".arj"),
+    FILE_PATH_LITERAL(".lzh"),
+    FILE_PATH_LITERAL(".lha"),
+    FILE_PATH_LITERAL(".wim"),
+    FILE_PATH_LITERAL(".z"),
+    FILE_PATH_LITERAL(".lzma"),
+    FILE_PATH_LITERAL(".cpio"),
 };
 
 // UMA enumeration value for unrecognized file types. This is the array index of
 // the "Other" bucket in kDangerousFileTypes.
 const int EXTENSION_OTHER = 18;
 
-void RecordFileExtensionType(const base::FilePath& file) {
+// Maximum extension ID returned by GetExtensionTypeForUMA() + 1.
+const int EXTENSION_MAX = arraysize(kDangerousFileTypes);
+
+int GetExtensionTypeForUMA(const base::FilePath::StringType& extension) {
   DCHECK_EQ(static_cast<base::FilePath::CharType*>(nullptr),
             kDangerousFileTypes[EXTENSION_OTHER]);
+  DCHECK(extension.find(base::FilePath::kExtensionSeparator) == 0 ||
+         extension.empty());
+  DCHECK_EQ(extension, base::FilePath(extension).FinalExtension());
 
-  int extension_type = EXTENSION_OTHER;
-  for (const auto& extension : kDangerousFileTypes) {
-    if (extension && file.MatchesExtension(extension)) {
-      extension_type = &extension - kDangerousFileTypes;
-      break;
-    }
+  for (const auto& dangerous_extension : kDangerousFileTypes) {
+    if (dangerous_extension &&
+        base::FilePath::CompareEqualIgnoreCase(dangerous_extension, extension))
+      return &dangerous_extension - kDangerousFileTypes;
   }
+  return EXTENSION_OTHER;
+}
 
+void RecordFileExtensionType(const base::FilePath& file) {
   UMA_HISTOGRAM_ENUMERATION("SBClientDownload.DownloadExtensions",
-                            extension_type, arraysize(kDangerousFileTypes));
+                            GetExtensionTypeForUMA(file.FinalExtension()),
+                            EXTENSION_MAX);
+}
+
+void RecordArchivedArchiveFileExtensionType(
+    const base::FilePath::StringType& extension) {
+  UMA_HISTOGRAM_ENUMERATION("SBClientDownload.ArchivedArchiveExtensions",
+                            GetExtensionTypeForUMA(extension), EXTENSION_MAX);
 }
 
 // Enumerate for histogramming purposes.
@@ -502,7 +529,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
       *reason = REASON_INVALID_URL;
       return false;
     }
-    if (!download_protection_util::IsBinaryFile(target_path)) {
+    if (!download_protection_util::IsSupportedBinaryFile(target_path)) {
       *reason = REASON_NOT_BINARY_FILE;
       return false;
     }
@@ -601,6 +628,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
   void OnZipAnalysisFinished(const zip_analyzer::Results& results) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK_EQ(ClientDownloadRequest::ZIPPED_EXECUTABLE, type_);
     if (!service_)
       return;
     if (results.success) {
@@ -618,11 +646,16 @@ class DownloadProtectionService::CheckClientDownloadRequest
                           results.has_archive && !zipped_executable_);
     UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractZipFeaturesTime",
                         base::TimeTicks::Now() - zip_analysis_start_time_);
+    for (const auto& file_extension : results.archived_archive_filetypes)
+      RecordArchivedArchiveFileExtensionType(file_extension);
 
-    if (!zipped_executable_) {
+    if (!zipped_executable_ && !results.has_archive) {
       PostFinishTask(UNKNOWN, REASON_ARCHIVE_WITHOUT_BINARIES);
       return;
     }
+
+    if (!zipped_executable_ && results.has_archive)
+      type_ = ClientDownloadRequest::ZIPPED_ARCHIVE;
     OnFileFeatureExtractionDone();
   }
 

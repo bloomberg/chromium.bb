@@ -4,6 +4,8 @@
 
 #include "chrome/common/safe_browsing/zip_analyzer.h"
 
+#include <set>
+
 #include "base/i18n/streaming_utf8_validator.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -90,6 +92,7 @@ void AnalyzeContainedFile(
 void AnalyzeZipFile(base::File zip_file,
                     base::File temp_file,
                     Results* results) {
+  std::set<base::FilePath::StringType> archived_archive_filetypes;
   scoped_refptr<BinaryFeatureExtractor> binary_feature_extractor(
       new BinaryFeatureExtractor());
   zip::ZipReader reader;
@@ -109,21 +112,21 @@ void AnalyzeZipFile(base::File zip_file,
       continue;
     }
     const base::FilePath& file = reader.current_entry_info()->file_path();
-    if (download_protection_util::IsBinaryFile(file)) {
-      // Don't consider an archived archive to be executable, but record
-      // a histogram.
-      if (download_protection_util::IsArchiveFile(file)) {
-        results->has_archive = true;
-      } else {
-        DVLOG(2) << "Downloaded a zipped executable: " << file.value();
-        results->has_executable = true;
-        AnalyzeContainedFile(binary_feature_extractor, file, &reader,
-                             &temp_file, results->archived_binary.Add());
-      }
+    if (download_protection_util::IsArchiveFile(file)) {
+      DVLOG(2) << "Downloaded a zipped archive: " << file.value();
+      results->has_archive = true;
+      archived_archive_filetypes.insert(file.FinalExtension());
+    } else if (download_protection_util::IsSupportedBinaryFile(file)) {
+      DVLOG(2) << "Downloaded a zipped executable: " << file.value();
+      results->has_executable = true;
+      AnalyzeContainedFile(binary_feature_extractor, file, &reader, &temp_file,
+                           results->archived_binary.Add());
     } else {
       DVLOG(3) << "Ignoring non-binary file: " << file.value();
     }
   }
+  results->archived_archive_filetypes.assign(archived_archive_filetypes.begin(),
+                                             archived_archive_filetypes.end());
   results->success = true;
 }
 

@@ -245,7 +245,8 @@ message ClientDownloadRequest {
     ANDROID_APK = 2;       // .apk files.
     // .zip files containing one of the other executable types.
     ZIPPED_EXECUTABLE = 3;
-    MAC_EXECUTABLE = 4;    // .dmg, .pkg, etc.
+    MAC_EXECUTABLE = 4;  // .dmg, .pkg, etc.
+    ZIPPED_ARCHIVE = 5;  // .zip file containing another archive.
   }
   optional DownloadType download_type = 10 [default = WIN_EXECUTABLE];
 

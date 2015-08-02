@@ -8,6 +8,9 @@
 #ifndef CHROME_COMMON_SAFE_BROWSING_ZIP_ANALYZER_RESULTS_H_
 #define CHROME_COMMON_SAFE_BROWSING_ZIP_ANALYZER_RESULTS_H_
 
+#include <vector>
+
+#include "base/files/file_path.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 
 namespace safe_browsing {
@@ -19,6 +22,7 @@ struct Results {
   bool has_archive;
   google::protobuf::RepeatedPtrField<ClientDownloadRequest_ArchivedBinary>
       archived_binary;
+  std::vector<base::FilePath::StringType> archived_archive_filetypes;
   Results();
   ~Results();
 };

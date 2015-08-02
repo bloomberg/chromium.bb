@@ -47,7 +47,7 @@ int64 GetEndTime(const ClientIncidentReport_DownloadDetails& details) {
 bool IsBinaryDownload(const history::DownloadRow& row) {
   // TODO(grt): Peek into archives to see if they contain binaries;
   // http://crbug.com/386915.
-  return (download_protection_util::IsBinaryFile(row.target_path) &&
+  return (download_protection_util::IsSupportedBinaryFile(row.target_path) &&
           !download_protection_util::IsArchiveFile(row.target_path));
 }
 

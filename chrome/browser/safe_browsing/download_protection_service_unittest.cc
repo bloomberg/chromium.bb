@@ -1074,6 +1074,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
   EXPECT_TRUE(HasClientDownloadRequest());
   const ClientDownloadRequest& request = *GetClientDownloadRequest();
+  EXPECT_TRUE(request.has_download_type());
+  EXPECT_EQ(ClientDownloadRequest_DownloadType_ZIPPED_EXECUTABLE,
+            request.download_type());
   EXPECT_EQ(1, request.archived_binary_size());
   const ClientDownloadRequest_ArchivedBinary* archived_binary =
       GetRequestArchivedBinary(request, "file.exe");
@@ -1110,6 +1113,59 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   EXPECT_TRUE(HasClientDownloadRequest());
   ClearClientDownloadRequest();
 #else
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+  EXPECT_FALSE(HasClientDownloadRequest());
+#endif
+  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+
+  // Repeat the test with an archive inside the zip file in addition to the
+  // executable.
+  ASSERT_EQ(static_cast<int>(file_contents.size()),
+            base::WriteFile(
+                zip_source_dir.path().Append(FILE_PATH_LITERAL("file.rar")),
+                file_contents.data(), file_contents.size()));
+  ASSERT_TRUE(zip::Zip(zip_source_dir.path(), a_tmp, false));
+
+  download_service_->CheckClientDownload(
+      &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                        base::Unretained(this)));
+  MessageLoop::current()->Run();
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  ASSERT_TRUE(HasClientDownloadRequest());
+  EXPECT_EQ(1, GetClientDownloadRequest()->archived_binary_size());
+  EXPECT_TRUE(GetClientDownloadRequest()->has_download_type());
+  EXPECT_EQ(ClientDownloadRequest_DownloadType_ZIPPED_EXECUTABLE,
+            GetClientDownloadRequest()->download_type());
+  ClearClientDownloadRequest();
+#else
+  // For !(OS_WIN || OS_MACOSX), no file types are currently supported. Hence
+  // the resulting verdict is UNKNOWN.
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+  EXPECT_FALSE(HasClientDownloadRequest());
+#endif
+  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+
+  // Repeat the test with just the archive inside the zip file.
+  ASSERT_TRUE(
+      base::DeleteFile(zip_source_dir.path().AppendASCII("file.exe"), false));
+  ASSERT_TRUE(zip::Zip(zip_source_dir.path(), a_tmp, false));
+
+  download_service_->CheckClientDownload(
+      &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                        base::Unretained(this)));
+  MessageLoop::current()->Run();
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  ASSERT_TRUE(HasClientDownloadRequest());
+  EXPECT_EQ(0, GetClientDownloadRequest()->archived_binary_size());
+  EXPECT_TRUE(GetClientDownloadRequest()->has_download_type());
+  EXPECT_EQ(ClientDownloadRequest_DownloadType_ZIPPED_ARCHIVE,
+            GetClientDownloadRequest()->download_type());
+  ClearClientDownloadRequest();
+#else
+  // For !(OS_WIN || OS_MACOSX), no file types are currently supported. Hence
+  // the resulting verdict is UNKNOWN.
   EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
   EXPECT_FALSE(HasClientDownloadRequest());
 #endif
