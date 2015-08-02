@@ -63,7 +63,6 @@ public:
     ~PageOverlay();
 
     void update();
-    void paintWebFrame(GraphicsContext&);
 
     GraphicsLayer* graphicsLayer() const { return m_layer.get(); }
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
@@ -75,10 +74,9 @@ public:
 
 private:
     PageOverlay(WebViewImpl*, PassOwnPtr<PageOverlay::Delegate>);
-    void invalidateWebFrame();
 
     WebViewImpl* m_viewImpl;
-    OwnPtr<PageOverlay::Delegate> m_overlay;
+    OwnPtr<PageOverlay::Delegate> m_delegate;
     OwnPtr<GraphicsLayer> m_layer;
 };
 

@@ -4013,17 +4013,6 @@ void WebViewImpl::setPageOverlayColor(WebColor color)
     m_pageColorOverlay->update();
 }
 
-void WebViewImpl::setOverlayLayer(GraphicsLayer* layer)
-{
-    if (!m_rootGraphicsLayer)
-        return;
-
-    if (!m_page->mainFrame()->isLocalFrame())
-        return;
-
-    m_page->frameHost().visualViewport().containerLayer()->addChild(layer);
-}
-
 Element* WebViewImpl::focusedElement() const
 {
     Frame* frame = m_page->focusController().focusedFrame();

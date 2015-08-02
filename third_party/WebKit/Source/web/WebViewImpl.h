@@ -296,8 +296,6 @@ public:
 
     WebColor backgroundColorOverride() const { return m_backgroundColorOverride; }
 
-    void setOverlayLayer(GraphicsLayer*);
-
     const WebPoint& lastMouseDownPoint() const
     {
         return m_lastMouseDownPoint;
