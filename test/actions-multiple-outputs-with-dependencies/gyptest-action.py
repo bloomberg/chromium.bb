@@ -15,7 +15,7 @@ import os
 import sys
 import time
 
-if sys.platform == 'win32':
+if sys.platform in ('darwin', 'win32'):
   print "This test is currently disabled: https://crbug.com/483696."
   sys.exit(0)
 

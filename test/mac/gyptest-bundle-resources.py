@@ -14,6 +14,10 @@ import os
 import stat
 import sys
 
+if sys.platform in ('darwin'):
+  print "This test is currently disabled: https://crbug.com/483696."
+  sys.exit(0)
+
 
 def check_attribs(path, expected_exec_bit):
   out_path = test.built_file_path(

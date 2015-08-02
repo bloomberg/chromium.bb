@@ -13,6 +13,10 @@ import TestGyp
 import os
 import sys
 
+if sys.platform == 'darwin':
+  print "This test is currently disabled: https://crbug.com/483696."
+  sys.exit(0)
+
 
 def ls(path):
   '''Returns a list of all files in a directory, relative to the directory.'''

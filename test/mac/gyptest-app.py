@@ -17,6 +17,11 @@ import subprocess
 import sys
 
 
+if sys.platform in ('darwin', 'win32'):
+  print "This test is currently disabled: https://crbug.com/483696."
+  sys.exit(0)
+
+
 def CheckFileXMLPropertyList(file):
   output = subprocess.check_output(['file', file])
   # The double space after XML is intentional.

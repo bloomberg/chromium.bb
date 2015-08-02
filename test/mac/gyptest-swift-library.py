@@ -16,6 +16,9 @@ import sys
 import subprocess
 
 if sys.platform == 'darwin':
+  print "This test is currently disabled: https://crbug.com/483696."
+  sys.exit(0)
+
   test = TestGyp.TestGyp(formats=['xcode'])
 
   # Ensures that the given symbol is present in the given file, by running nm.

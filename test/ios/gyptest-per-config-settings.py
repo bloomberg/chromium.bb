@@ -16,6 +16,10 @@ import subprocess
 import sys
 import tempfile
 
+if sys.platform == 'darwin':
+  print "This test is currently disabled: https://crbug.com/483696."
+  sys.exit(0)
+
 
 def CheckFileType(file, expected):
   proc = subprocess.Popen(['lipo', '-info', file], stdout=subprocess.PIPE)

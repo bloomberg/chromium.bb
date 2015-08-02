@@ -16,6 +16,9 @@ import plistlib
 import subprocess
 import sys
 
+if sys.platform == 'darwin':
+  print "This test is currently disabled: https://crbug.com/483696."
+  sys.exit(0)
 
 def ExpectEq(expected, actual):
   if expected != actual:
