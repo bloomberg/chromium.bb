@@ -451,7 +451,6 @@ source_set("blink_headers") {
     "web/WebDOMMouseEvent.h",
     "web/WebFrame.h",
     "web/WebViewClient.h",
-    "web/WebPageOverlay.h",
     "web/WebHistoryCommitType.h",
     "web/WebSecurityPolicy.h",
     "web/mac/WebInputEventFactory.h",

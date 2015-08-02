@@ -31,31 +31,30 @@
 
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsLayer.h"
-#include "web/PageOverlayList.h"
 
 using namespace blink;
 
 namespace blink {
 
-void ContinuousPainter::setNeedsDisplayRecursive(GraphicsLayer* layer, PageOverlayList* pageOverlays)
+void ContinuousPainter::setNeedsDisplayRecursive(GraphicsLayer* layer, GraphicsLayer* overlayLayer)
 {
     if (!layer)
         return;
 
-    if (pageOverlays && pageOverlays->findGraphicsLayer(layer) != WTF::kNotFound)
+    if (layer == overlayLayer)
         return;
 
     TRACE_EVENT0("blink", "ContinuousPainter::setNeedsDisplayRecursive");
     layer->setNeedsDisplay();
 
-    setNeedsDisplayRecursive(layer->maskLayer(), pageOverlays);
-    setNeedsDisplayRecursive(layer->contentsClippingMaskLayer(), pageOverlays);
-    setNeedsDisplayRecursive(layer->replicaLayer(), pageOverlays);
+    setNeedsDisplayRecursive(layer->maskLayer(), overlayLayer);
+    setNeedsDisplayRecursive(layer->contentsClippingMaskLayer(), overlayLayer);
+    setNeedsDisplayRecursive(layer->replicaLayer(), overlayLayer);
 
     const Vector<GraphicsLayer*>& children = layer->children();
     Vector<GraphicsLayer*>::const_iterator it;
     for (it = children.begin(); it != children.end(); ++it)
-        setNeedsDisplayRecursive(*it, pageOverlays);
+        setNeedsDisplayRecursive(*it, overlayLayer);
 }
 
 } // namespace blink

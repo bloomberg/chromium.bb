@@ -153,6 +153,7 @@
 #include "web/GraphicsLayerFactoryChromium.h"
 #include "web/InspectorOverlayImpl.h"
 #include "web/LinkHighlightImpl.h"
+#include "web/PageOverlay.h"
 #include "web/PrerendererClientImpl.h"
 #include "web/ResizeViewportAnchor.h"
 #include "web/RotationViewportAnchor.h"
@@ -294,7 +295,7 @@ private:
     }
 };
 
-class ColorOverlay : public WebPageOverlay {
+class ColorOverlay : public PageOverlay::Delegate {
 public:
     ColorOverlay(WebColor color)
         : m_color(color)
@@ -1900,7 +1901,13 @@ void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
         PageWidgetDelegate::animate(*m_page, validFrameTime.lastFrameTimeMonotonic, *m_page->deprecatedLocalMainFrame());
 
     if (m_continuousPaintingEnabled) {
-        ContinuousPainter::setNeedsDisplayRecursive(m_rootGraphicsLayer, m_pageOverlays.get());
+        GraphicsLayer* inspectorOverlayLayer = nullptr;
+        if (m_inspectorOverlay) {
+            PageOverlay* inspectorPageOverlay = m_inspectorOverlay->pageOverlay();
+            if (inspectorPageOverlay)
+                inspectorOverlayLayer = inspectorPageOverlay->graphicsLayer();
+        }
+        ContinuousPainter::setNeedsDisplayRecursive(m_rootGraphicsLayer, inspectorOverlayLayer);
         m_client->scheduleAnimation();
     }
 }
@@ -3659,8 +3666,7 @@ void WebViewImpl::sendResizeEventAndRepaint()
             m_client->didInvalidateRect(damagedRect);
         }
     }
-    if (m_pageOverlays)
-        m_pageOverlays->update();
+    updatePageOverlays();
     m_devToolsEmulator->viewportChanged();
 }
 
@@ -3995,32 +4001,16 @@ void WebViewImpl::setZoomFactorOverride(float zoomFactor)
     setZoomLevel(zoomLevel());
 }
 
-void WebViewImpl::addPageOverlay(WebPageOverlay* overlay, int zOrder)
-{
-    if (!m_pageOverlays)
-        m_pageOverlays = PageOverlayList::create(this);
-
-    m_pageOverlays->add(overlay, zOrder);
-}
-
 void WebViewImpl::setPageOverlayColor(WebColor color)
 {
-    if (m_pageColorOverlay) {
-        removePageOverlay(m_pageColorOverlay.get());
+    if (m_pageColorOverlay)
         m_pageColorOverlay.clear();
-    }
 
     if (color == Color::transparent)
         return;
 
-    m_pageColorOverlay = adoptPtr(new ColorOverlay(color));
-    addPageOverlay(m_pageColorOverlay.get(), 0);
-}
-
-void WebViewImpl::removePageOverlay(WebPageOverlay* overlay)
-{
-    if (m_pageOverlays && m_pageOverlays->remove(overlay) && m_pageOverlays->empty())
-        m_pageOverlays = nullptr;
+    m_pageColorOverlay = PageOverlay::create(this, adoptPtr(new ColorOverlay(color)));
+    m_pageColorOverlay->update();
 }
 
 void WebViewImpl::setOverlayLayer(GraphicsLayer* layer)
@@ -4118,9 +4108,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         // We register viewport layers here since there may not be a layer
         // tree view prior to this point.
         page()->frameHost().visualViewport().registerLayersWithTreeView(m_layerTreeView);
-        if (m_pageOverlays)
-            m_pageOverlays->update();
-
+        updatePageOverlays();
         // TODO(enne): Work around page visibility changes not being
         // propogated to the WebView in some circumstances.  This needs to
         // be refreshed here when setting a new root layer to avoid being
@@ -4435,6 +4423,17 @@ void WebViewImpl::forceNextWebGLContextCreationToFail()
 void WebViewImpl::forceNextDrawingBufferCreationToFail()
 {
     DrawingBuffer::forceNextDrawingBufferCreationToFail();
+}
+
+void WebViewImpl::updatePageOverlays()
+{
+    if (m_pageColorOverlay)
+        m_pageColorOverlay->update();
+    if (m_inspectorOverlay) {
+        PageOverlay* inspectorPageOverlay = m_inspectorOverlay->pageOverlay();
+        if (inspectorPageOverlay)
+            inspectorPageOverlay->update();
+    }
 }
 
 } // namespace blink

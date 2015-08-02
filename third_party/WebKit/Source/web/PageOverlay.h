@@ -29,6 +29,7 @@
 #ifndef PageOverlay_h
 #define PageOverlay_h
 
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "wtf/OwnPtr.h"
@@ -38,28 +39,29 @@
 namespace blink {
 
 class GraphicsContext;
-class GraphicsLayer;
 class WebPageOverlay;
 class WebViewImpl;
+class WebGraphicsContext;
 
 // Manages a layer that is overlaid on a WebView's content.
 // Clients can paint by implementing WebPageOverlay.
 //
 // With Slimming Paint, internal clients can extract a GraphicsContext to add
-// to the DisplayItemList owned by the GraphicsLayer.
+// to the DisplayItemList owned by the GraphicsLayer
 class PageOverlay : public GraphicsLayerClient {
 public:
-    static PassOwnPtr<PageOverlay> create(WebViewImpl*, WebPageOverlay*);
 
-    ~PageOverlay() { }
+    class Delegate {
+    public:
+        // Paints page overlay contents.
+        virtual void paintPageOverlay(WebGraphicsContext*, const WebSize& webViewSize) = 0;
+        virtual ~Delegate() { }
+    };
 
-    WebPageOverlay* overlay() const { return m_overlay; }
-    void setOverlay(WebPageOverlay* overlay) { m_overlay = overlay; }
+    static PassOwnPtr<PageOverlay> create(WebViewImpl*, PassOwnPtr<PageOverlay::Delegate>);
 
-    int zOrder() const { return m_zOrder; }
-    void setZOrder(int zOrder) { m_zOrder = zOrder; }
+    ~PageOverlay();
 
-    void clear();
     void update();
     void paintWebFrame(GraphicsContext&);
 
@@ -72,13 +74,12 @@ public:
     String debugName(const GraphicsLayer*) override;
 
 private:
-    PageOverlay(WebViewImpl*, WebPageOverlay*);
+    PageOverlay(WebViewImpl*, PassOwnPtr<PageOverlay::Delegate>);
     void invalidateWebFrame();
 
     WebViewImpl* m_viewImpl;
-    WebPageOverlay* m_overlay;
+    OwnPtr<PageOverlay::Delegate> m_overlay;
     OwnPtr<GraphicsLayer> m_layer;
-    int m_zOrder;
 };
 
 } // namespace blink

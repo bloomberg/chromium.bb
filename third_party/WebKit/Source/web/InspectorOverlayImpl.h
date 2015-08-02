@@ -38,7 +38,6 @@
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
 #include "public/web/WebInputEvent.h"
-#include "public/web/WebPageOverlay.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -50,13 +49,15 @@ class Color;
 class EmptyChromeClient;
 class LocalFrame;
 class GraphicsContext;
+class GraphicsLayer;
 class JSONValue;
+class LayoutEditor;
 class Node;
 class Page;
+class PageOverlay;
 class WebViewImpl;
-class LayoutEditor;
 
-class InspectorOverlayImpl final : public NoBaseWillBeGarbageCollectedFinalized<InspectorOverlayImpl>, public InspectorOverlay, public WebPageOverlay, public InspectorOverlayHost::DebuggerListener {
+class InspectorOverlayImpl final : public NoBaseWillBeGarbageCollectedFinalized<InspectorOverlayImpl>, public InspectorOverlay, public InspectorOverlayHost::DebuggerListener {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorOverlayImpl);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlayImpl);
 public:
@@ -87,15 +88,14 @@ public:
 
     bool handleInputEvent(const WebInputEvent&);
     void layout();
+    PageOverlay* pageOverlay() { return m_pageOverlay.get(); };
 private:
     explicit InspectorOverlayImpl(WebViewImpl*);
     class InspectorOverlayChromeClient;
+    class InspectorPageOverlayDelegate;
     // InspectorOverlayHost::DebuggerListener implementation.
     void overlayResumed() override;
     void overlaySteppedOver() override;
-
-    // WebPageOverlay implementation.
-    void paintPageOverlay(WebGraphicsContext*, const WebSize& webViewSize) override;
 
     bool isEmpty();
     void drawNodeHighlight();
@@ -132,6 +132,7 @@ private:
     bool m_needsUpdate;
     RawPtrWillBeMember<InspectorOverlay::Listener> m_listener;
     OwnPtrWillBeMember<LayoutEditor> m_layoutEditor;
+    OwnPtr<PageOverlay> m_pageOverlay;
 };
 
 } // namespace blink

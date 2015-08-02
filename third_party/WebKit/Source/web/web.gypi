@@ -65,8 +65,6 @@
       'OpenedFrameTracker.h',
       'PageOverlay.cpp',
       'PageOverlay.h',
-      'PageOverlayList.cpp',
-      'PageOverlayList.h',
       'PageWidgetDelegate.cpp',
       'PageWidgetDelegate.h',
       'PluginPlaceholderImpl.cpp',

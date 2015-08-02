@@ -36,7 +36,6 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "public/platform/WebLayer.h"
-#include "public/web/WebPageOverlay.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebGraphicsContextImpl.h"
@@ -44,19 +43,18 @@
 
 namespace blink {
 
-PassOwnPtr<PageOverlay> PageOverlay::create(WebViewImpl* viewImpl, WebPageOverlay* overlay)
+PassOwnPtr<PageOverlay> PageOverlay::create(WebViewImpl* viewImpl, PassOwnPtr<PageOverlay::Delegate> overlay)
 {
     return adoptPtr(new PageOverlay(viewImpl, overlay));
 }
 
-PageOverlay::PageOverlay(WebViewImpl* viewImpl, WebPageOverlay* overlay)
+PageOverlay::PageOverlay(WebViewImpl* viewImpl, PassOwnPtr<PageOverlay::Delegate> overlay)
     : m_viewImpl(viewImpl)
     , m_overlay(overlay)
-    , m_zOrder(0)
 {
 }
 
-void PageOverlay::clear()
+PageOverlay::~PageOverlay()
 {
     invalidateWebFrame();
 

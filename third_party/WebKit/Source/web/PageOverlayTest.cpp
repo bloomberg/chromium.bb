@@ -14,7 +14,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebThread.h"
-#include "public/web/WebPageOverlay.h"
 #include "public/web/WebSettings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -61,7 +60,6 @@ protected:
         webViewImpl()->resize(WebSize(viewportWidth, viewportHeight));
         webViewImpl()->layout();
         ASSERT_EQ(compositingMode == AcceleratedCompositing, webViewImpl()->isAcceleratedCompositingActive());
-        ASSERT_TRUE(!webViewImpl()->pageOverlays() || webViewImpl()->pageOverlays()->empty());
     }
 
     WebViewImpl* webViewImpl() const { return m_helper.webViewImpl(); }
@@ -73,8 +71,8 @@ private:
     FrameTestHelpers::WebViewHelper m_helper;
 };
 
-// WebPageOverlay that uses a WebCanvas to draw a solid color.
-class SimpleCanvasOverlay : public WebPageOverlay {
+// PageOverlay that uses a WebCanvas to draw a solid color.
+class SimpleCanvasOverlay : public PageOverlay::Delegate {
 public:
     SimpleCanvasOverlay(SkColor color) : m_color(color) { }
 
@@ -93,9 +91,9 @@ private:
     SkColor m_color;
 };
 
-// WebPageOverlay that uses the underlying blink::GraphicsContext to paint a
+// PageOverlay that uses the underlying blink::GraphicsContext to paint a
 // solid color.
-class PrivateGraphicsContextOverlay : public WebPageOverlay {
+class PrivateGraphicsContextOverlay : public PageOverlay::Delegate {
 public:
     PrivateGraphicsContextOverlay(Color color) : m_color(color) { }
 
@@ -138,9 +136,8 @@ void PageOverlayTest::runPageOverlayTestWithAcceleratedCompositing()
     initialize(AcceleratedCompositing);
     webViewImpl()->layerTreeView()->setViewportSize(WebSize(viewportWidth, viewportHeight));
 
-    OverlayType overlay(SK_ColorYELLOW);
-    webViewImpl()->addPageOverlay(&overlay, 0 /* zOrder */);
-    EXPECT_TRUE(webViewImpl()->pageOverlays() && !webViewImpl()->pageOverlays()->empty());
+    OwnPtr<PageOverlay> pageOverlay = PageOverlay::create(webViewImpl(), adoptPtr(new OverlayType(SK_ColorYELLOW)));
+    pageOverlay->update();
     webViewImpl()->layout();
 
     // Ideally, we would get results from the compositor that showed that this
@@ -151,7 +148,7 @@ void PageOverlayTest::runPageOverlayTestWithAcceleratedCompositing()
     EXPECT_CALL(canvas, onDrawRect(_, _)).Times(AtLeast(0));
     EXPECT_CALL(canvas, onDrawRect(SkRect::MakeWH(viewportWidth, viewportHeight), Property(&SkPaint::getColor, SK_ColorYELLOW)));
 
-    GraphicsLayer* graphicsLayer = webViewImpl()->pageOverlays()->graphicsLayerForTesting();
+    GraphicsLayer* graphicsLayer = pageOverlay->graphicsLayer();
     WebRect rect(0, 0, viewportWidth, viewportHeight);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         // If slimming paint is on, we paint the layer with a null canvas to get

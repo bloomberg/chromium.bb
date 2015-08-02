@@ -55,7 +55,6 @@
 #include "web/DragClientImpl.h"
 #include "web/EditorClientImpl.h"
 #include "web/MediaKeysClientImpl.h"
-#include "web/PageOverlayList.h"
 #include "web/PageWidgetDelegate.h"
 #include "web/SpellCheckerClientImpl.h"
 #include "web/StorageClientImpl.h"
@@ -73,6 +72,7 @@ class FullscreenController;
 class InspectorOverlay;
 class InspectorOverlayImpl;
 class LinkHighlightImpl;
+class PageOverlay;
 class PageScaleConstraintsSet;
 class DeprecatedPaintLayerCompositor;
 class TopControls;
@@ -261,9 +261,7 @@ public:
     void showContextMenu() override;
     void extractSmartClipData(WebRect, WebString&, WebString&, WebRect&) override;
     void hidePopups() override;
-    void addPageOverlay(WebPageOverlay*, int /* zOrder */) override;
     void setPageOverlayColor(WebColor) override;
-    void removePageOverlay(WebPageOverlay*) override;
     void transferActiveWheelFlingAnimation(const WebActiveWheelFlingParameters&) override;
     bool endActiveFlingAnimation() override;
     void setShowPaintRects(bool) override;
@@ -297,8 +295,6 @@ public:
     Color baseBackgroundColor() const { return m_baseBackgroundColor; }
 
     WebColor backgroundColorOverride() const { return m_backgroundColorOverride; }
-
-    PageOverlayList* pageOverlays() const { return m_pageOverlays.get(); }
 
     void setOverlayLayer(GraphicsLayer*);
 
@@ -620,6 +616,7 @@ private:
     void disablePopupMouseWheelEventListener();
 
     void cancelPagePopup();
+    void updatePageOverlays();
 
     WebViewClient* m_client; // Can be 0 (e.g. unittests, shared workers, etc.)
     WebSpellCheckClient* m_spellCheckClient;
@@ -713,7 +710,7 @@ private:
 
     OwnPtrWillBePersistent<InspectorOverlayImpl> m_inspectorOverlay;
     OwnPtrWillBePersistent<DevToolsEmulator> m_devToolsEmulator;
-    OwnPtr<PageOverlayList> m_pageOverlays;
+    OwnPtr<PageOverlay> m_pageColorOverlay;
 
     // Whether the webview is rendering transparently.
     bool m_isTransparent;
@@ -760,7 +757,6 @@ private:
     FloatSize m_elasticOverscroll;
 
     RefPtrWillBePersistent<EventListener> m_popupMouseWheelEventListener;
-    OwnPtr<WebPageOverlay> m_pageColorOverlay;
 };
 
 DEFINE_TYPE_CASTS(WebViewImpl, WebWidget, widget, widget->isWebView(), widget.isWebView());

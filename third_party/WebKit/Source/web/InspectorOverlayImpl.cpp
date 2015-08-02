@@ -48,16 +48,12 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
+#include "web/PageOverlay.h"
 #include "web/WebGraphicsContextImpl.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include <v8.h>
-
-namespace OverlayZOrders {
-// Use 99 as a big z-order number so that highlight is above other overlays.
-static const int highlight = 99;
-}
 
 namespace blink {
 
@@ -91,6 +87,28 @@ DEFINE_TRACE(InspectorOverlayStub)
 }
 
 } // anonymous namespace
+
+class InspectorOverlayImpl::InspectorPageOverlayDelegate : public PageOverlay::Delegate {
+public:
+    InspectorPageOverlayDelegate(InspectorOverlayImpl& overlay)
+        : m_overlay(overlay)
+    { }
+
+    void paintPageOverlay(WebGraphicsContext* context, const WebSize& webViewSize)
+    {
+        if (m_overlay.isEmpty())
+            return;
+
+        GraphicsContext& graphicsContext = toWebGraphicsContextImpl(context)->graphicsContext();
+        FrameView* view = m_overlay.overlayMainFrame()->view();
+        ASSERT(!view->needsLayout());
+        view->paint(&graphicsContext, IntRect(0, 0, view->width(), view->height()));
+    }
+
+private:
+    InspectorOverlayImpl& m_overlay;
+};
+
 
 class InspectorOverlayImpl::InspectorOverlayChromeClient final: public EmptyChromeClient {
 public:
@@ -165,20 +183,12 @@ DEFINE_TRACE(InspectorOverlayImpl)
     InspectorOverlay::trace(visitor);
 }
 
-void InspectorOverlayImpl::paintPageOverlay(WebGraphicsContext* context, const WebSize& webViewSize)
-{
-    if (isEmpty())
-        return;
-
-    GraphicsContext& graphicsContext = toWebGraphicsContextImpl(context)->graphicsContext();
-    FrameView* view = overlayMainFrame()->view();
-    ASSERT(!view->needsLayout());
-    view->paint(&graphicsContext, IntRect(0, 0, view->width(), view->height()));
-}
-
 void InspectorOverlayImpl::invalidate()
 {
-    m_webViewImpl->addPageOverlay(this, OverlayZOrders::highlight);
+    if (!m_pageOverlay)
+        m_pageOverlay = PageOverlay::create(m_webViewImpl, adoptPtr(new InspectorPageOverlayDelegate(*this)));
+
+    m_pageOverlay->update();
 }
 
 void InspectorOverlayImpl::layout()
@@ -288,7 +298,8 @@ bool InspectorOverlayImpl::isEmpty()
 void InspectorOverlayImpl::update()
 {
     if (isEmpty()) {
-        m_webViewImpl->removePageOverlay(this);
+        if (m_pageOverlay)
+            m_pageOverlay.clear();
         return;
     }
     m_needsUpdate = true;
@@ -508,6 +519,5 @@ void InspectorOverlayImpl::setLayoutEditor(PassOwnPtrWillBeRawPtr<LayoutEditor> 
     m_layoutEditor = layoutEditor;
     m_overlayHost->setLayoutEditorListener(m_layoutEditor.get());
 }
-
 
 } // namespace blink

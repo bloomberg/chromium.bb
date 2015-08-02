@@ -448,19 +448,8 @@ public:
 
     // PageOverlay ----------------------------------------------------------
 
-    // Adds/removes page overlay to this WebView. These functions change the
-    // graphical appearance of the WebView. WebPageOverlay paints the
-    // contents of the page overlay. It also provides an z-order number for
-    // the page overlay. The z-order number defines the paint order the page
-    // overlays. Page overlays with larger z-order number will be painted after
-    // page overlays with smaller z-order number. That is, they appear above
-    // the page overlays with smaller z-order number. If two page overlays have
-    // the same z-order number, the later added one will be on top.
-    virtual void addPageOverlay(WebPageOverlay*, int /*z-order*/) = 0;
-
     // Overlay this WebView with a solid color.
     virtual void setPageOverlayColor(WebColor) = 0;
-    virtual void removePageOverlay(WebPageOverlay*) = 0;
 
 
     // i18n -----------------------------------------------------------------
