@@ -3755,11 +3755,7 @@ void HTMLMediaElement::AudioSourceProviderImpl::setClient(AudioSourceProviderCli
 
 void HTMLMediaElement::AudioSourceProviderImpl::provideInput(AudioBus* bus, size_t framesToProcess)
 {
-    // TODO(srirama.m): Investigate whether the bus can be null or not
-    // and remove either ASSERT or null check appropriately.
     ASSERT(bus);
-    if (!bus)
-        return;
 
     MutexTryLocker tryLocker(provideInputLock);
     if (!tryLocker.locked() || !m_webAudioSourceProvider || !m_client.get()) {
