@@ -130,8 +130,6 @@ class Executive(object):
             return None
         if first_line.find('python') > -1:
             return sys.executable
-        if first_line.find('perl') > -1:
-            return 'perl'
         if first_line.find('ruby') > -1:
             return 'ruby'
         return None
