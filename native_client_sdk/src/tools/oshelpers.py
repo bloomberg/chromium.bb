@@ -7,13 +7,14 @@
 
 from __future__ import print_function
 
+import argparse
 import fnmatch
 import glob
-import argparse
 import os
 import posixpath
 import shutil
 import stat
+import subprocess
 import sys
 import time
 import zipfile
@@ -299,7 +300,13 @@ def Remove(args):
           for _ in range(5):
             try:
               if os.path.isdir(dst):
-                shutil.rmtree(dst)
+                if sys.platform == 'win32':
+                  # shutil.rmtree doesn't handle junctions properly. Let's just
+                  # shell out to rd for this.
+                  subprocess.check_call([
+                      'rd', '/s', '/q', os.path.normpath(dst)], shell=True)
+                else:
+                  shutil.rmtree(dst)
               break
             except OSError as error:
               print('Failed rmtree with %s, retrying' % error)
