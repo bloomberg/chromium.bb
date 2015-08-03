@@ -236,16 +236,16 @@ bool ShouldAddStudy(
 
 }  // namespace internal
 
-void FilterAndValidateStudies(
-    const VariationsSeed& seed,
-    const std::string& locale,
-    const base::Time& reference_date,
-    const base::Version& version,
-    Study_Channel channel,
-    Study_FormFactor form_factor,
-    const std::string& hardware_class,
-    const std::string& permanent_consistency_country,
-    std::vector<ProcessedStudy>* filtered_studies) {
+void FilterAndValidateStudies(const VariationsSeed& seed,
+                              const std::string& locale,
+                              const base::Time& reference_date,
+                              const base::Version& version,
+                              Study_Channel channel,
+                              Study_FormFactor form_factor,
+                              const std::string& hardware_class,
+                              const std::string& session_consistency_country,
+                              const std::string& permanent_consistency_country,
+                              std::vector<ProcessedStudy>* filtered_studies) {
   DCHECK(version.IsValid());
 
   // Add expired studies (in a disabled state) only after all the non-expired
@@ -264,8 +264,7 @@ void FilterAndValidateStudies(
     std::string country;
     switch (study.consistency()) {
       case Study_Consistency_SESSION:
-        if (seed.has_country_code())
-          country = seed.country_code();
+        country = session_consistency_country;
         break;
       case Study_Consistency_PERMANENT:
         // Use the saved |permanent_consistency_country| for permanent

@@ -60,6 +60,7 @@ class VariationsSeedSimulator {
                              Study_Channel channel,
                              Study_FormFactor form_factor,
                              const std::string& hardware_class,
+                             const std::string& session_consistency_country,
                              const std::string& permanent_consistency_country);
 
  private:

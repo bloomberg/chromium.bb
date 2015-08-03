@@ -445,7 +445,7 @@ TEST(VariationsStudyFilteringTest, FilterAndValidateStudies) {
   std::vector<ProcessedStudy> processed_studies;
   FilterAndValidateStudies(seed, "en-CA", base::Time::Now(),
                            base::Version("20.0.0.0"), Study_Channel_STABLE,
-                           Study_FormFactor_DESKTOP, "", "",
+                           Study_FormFactor_DESKTOP, "", "", "",
                            &processed_studies);
 
   // Check that only the first kTrial1Name study was kept.
@@ -485,7 +485,6 @@ TEST(VariationsStudyFilteringTest, FilterAndValidateStudiesWithCountry) {
 
   for (const auto& test : test_cases) {
     VariationsSeed seed;
-    seed.set_country_code(kSessionCountry);
     Study* study = seed.add_study();
     study->set_name("study");
     study->set_default_experiment_name("Default");
@@ -499,8 +498,8 @@ TEST(VariationsStudyFilteringTest, FilterAndValidateStudiesWithCountry) {
     std::vector<ProcessedStudy> processed_studies;
     FilterAndValidateStudies(seed, "en-CA", base::Time::Now(),
                              base::Version("20.0.0.0"), Study_Channel_STABLE,
-                             Study_FormFactor_DESKTOP, "", kPermanentCountry,
-                             &processed_studies);
+                             Study_FormFactor_DESKTOP, "", kSessionCountry,
+                             kPermanentCountry, &processed_studies);
 
     EXPECT_EQ(test.expect_study_kept, !processed_studies.empty());
   }

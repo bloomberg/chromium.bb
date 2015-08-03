@@ -32,8 +32,7 @@ class VariationsSeedProcessor {
   virtual ~VariationsSeedProcessor();
 
   // Creates field trials from the specified variations |seed|, based on the
-  // specified configuration (locale, current date, version, channel, form
-  // factor, hardware_class, and permanent_consistency_country).
+  // specified configuration, as specified in the parameters.
   void CreateTrialsFromSeed(const VariationsSeed& seed,
                             const std::string& locale,
                             const base::Time& reference_date,
@@ -41,6 +40,7 @@ class VariationsSeedProcessor {
                             Study_Channel channel,
                             Study_FormFactor form_factor,
                             const std::string& hardware_class,
+                            const std::string& session_consistency_country,
                             const std::string& permanent_consistency_country,
                             const UIStringOverrideCallback& override_callback);
 

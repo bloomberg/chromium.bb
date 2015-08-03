@@ -219,7 +219,7 @@ class VariationsService
   // to experiment churn while traveling.
   std::string LoadPermanentConsistencyCountry(
       const base::Version& version,
-      const variations::VariationsSeed& seed);
+      const std::string& latest_country);
 
   // The pref service used to store persist the variations seed.
   PrefService* local_state_;

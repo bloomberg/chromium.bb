@@ -4,8 +4,6 @@
 
 #include "chrome/browser/metrics/variations/variations_service.h"
 
-#include <set>
-
 #include "base/build_time.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
@@ -267,15 +265,13 @@ bool VariationsService::CreateTrialsFromSeed() {
   variations::Study_Channel channel = GetChannelForVariations();
   UMA_HISTOGRAM_SPARSE_SLOWLY("Variations.UserChannel", channel);
 
+  const std::string latest_country =
+      local_state_->GetString(prefs::kVariationsCountry);
   variations::VariationsSeedProcessor().CreateTrialsFromSeed(
-      seed,
-      g_browser_process->GetApplicationLocale(),
-      GetReferenceDateForExpiryChecks(local_state_),
-      current_version,
-      channel,
-      GetCurrentFormFactor(),
-      GetHardwareClass(),
-      LoadPermanentConsistencyCountry(current_version, seed),
+      seed, g_browser_process->GetApplicationLocale(),
+      GetReferenceDateForExpiryChecks(local_state_), current_version, channel,
+      GetCurrentFormFactor(), GetHardwareClass(), latest_country,
+      LoadPermanentConsistencyCountry(current_version, latest_country),
       base::Bind(&OverrideUIString));
 
   const base::Time now = base::Time::Now();
@@ -418,6 +414,7 @@ void VariationsService::RegisterPrefs(PrefRegistrySimple* registry) {
   // This preference keeps track of the country code used to filter
   // permanent-consistency studies.
   registry->RegisterListPref(prefs::kVariationsPermanentConsistencyCountry);
+  registry->RegisterListPref(prefs::kVariationsCountry);
 }
 
 // static
@@ -623,12 +620,15 @@ void VariationsService::PerformSimulationWithVersion(
       state_manager_->CreateEntropyProvider();
   variations::VariationsSeedSimulator seed_simulator(*entropy_provider);
 
+  const std::string latest_country =
+      local_state_->GetString(prefs::kVariationsCountry);
   const variations::VariationsSeedSimulator::Result result =
       seed_simulator.SimulateSeedStudies(
           *seed, g_browser_process->GetApplicationLocale(),
           GetReferenceDateForExpiryChecks(local_state_), version,
           GetChannelForVariations(), GetCurrentFormFactor(), GetHardwareClass(),
-          LoadPermanentConsistencyCountry(version, *seed));
+          latest_country,
+          LoadPermanentConsistencyCountry(version, latest_country));
 
   UMA_HISTOGRAM_COUNTS_100("Variations.SimulateSeed.NormalChanges",
                            result.normal_group_change_count);
@@ -656,7 +656,7 @@ std::string VariationsService::GetInvalidVariationsSeedSignature() const {
 
 std::string VariationsService::LoadPermanentConsistencyCountry(
     const base::Version& version,
-    const variations::VariationsSeed& seed) {
+    const std::string& latest_country) {
   DCHECK(version.IsValid());
 
   const base::ListValue* list_value =
@@ -676,19 +676,19 @@ std::string VariationsService::LoadPermanentConsistencyCountry(
       is_pref_valid && version.Equals(base::Version(stored_version_string));
 
   // Determine if the country in the saved pref matches the country in |seed|.
-  const bool does_country_match = is_pref_valid && seed.has_country_code() &&
-                                  stored_country == seed.country_code();
+  const bool does_country_match = is_pref_valid && !latest_country.empty() &&
+                                  stored_country == latest_country;
 
   // Record a histogram for how the saved pref value compares to the current
   // version and the country code in the variations seed.
   LoadPermanentConsistencyCountryResult result;
   if (!is_pref_present) {
-    result = seed.has_country_code() ? LOAD_COUNTRY_NO_PREF_HAS_SEED
+    result = !latest_country.empty() ? LOAD_COUNTRY_NO_PREF_HAS_SEED
                                      : LOAD_COUNTRY_NO_PREF_NO_SEED;
   } else if (!is_pref_valid) {
-    result = seed.has_country_code() ? LOAD_COUNTRY_INVALID_PREF_HAS_SEED
+    result = !latest_country.empty() ? LOAD_COUNTRY_INVALID_PREF_HAS_SEED
                                      : LOAD_COUNTRY_INVALID_PREF_NO_SEED;
-  } else if (!seed.has_country_code()) {
+  } else if (latest_country.empty()) {
     result = does_version_match ? LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_EQ
                                 : LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_NEQ;
   } else if (does_version_match) {
@@ -706,23 +706,23 @@ std::string VariationsService::LoadPermanentConsistencyCountry(
   if (is_pref_present && does_version_match)
     return stored_country;
 
-  if (!seed.has_country_code()) {
-    // Clear the pref so that the next country code from the server will be used
-    // as the permanent consistency country code.
-    local_state_->ClearPref(prefs::kVariationsPermanentConsistencyCountry);
-    // Use an empty country so that it won't pass any filters that
-    // specifically include countries, but so that it will pass any filters that
-    // specifically exclude countries.
+  if (latest_country.empty()) {
+    if (!is_pref_valid)
+      local_state_->ClearPref(prefs::kVariationsPermanentConsistencyCountry);
+    // If we've never received a country code from the server, use an empty
+    // country so that it won't pass any filters that specifically include
+    // countries, but so that it will pass any filters that specifically exclude
+    // countries.
     return std::string();
   }
 
   // Otherwise, update the pref with the current Chrome version and country.
   base::ListValue new_list_value;
   new_list_value.AppendString(version.GetString());
-  new_list_value.AppendString(seed.country_code());
+  new_list_value.AppendString(latest_country);
   local_state_->Set(prefs::kVariationsPermanentConsistencyCountry,
                     new_list_value);
-  return seed.country_code();
+  return latest_country;
 }
 
 }  // namespace chrome_variations

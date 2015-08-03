@@ -228,15 +228,9 @@ TEST_F(VariationsSeedProcessorTest,
   {
     base::FieldTrialList field_trial_list(NULL);
     study1->set_expiry_date(TimeToProtoTime(year_ago));
-    seed_processor.CreateTrialsFromSeed(seed,
-                                        "en-CA",
-                                        base::Time::Now(),
-                                        version,
-                                        Study_Channel_STABLE,
-                                        Study_FormFactor_DESKTOP,
-                                        "",
-                                        "",
-                                        override_callback_.callback());
+    seed_processor.CreateTrialsFromSeed(
+        seed, "en-CA", base::Time::Now(), version, Study_Channel_STABLE,
+        Study_FormFactor_DESKTOP, "", "", "", override_callback_.callback());
     EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrialName));
   }
 
@@ -246,15 +240,9 @@ TEST_F(VariationsSeedProcessorTest,
     base::FieldTrialList field_trial_list(NULL);
     study1->clear_expiry_date();
     study2->set_expiry_date(TimeToProtoTime(year_ago));
-    seed_processor.CreateTrialsFromSeed(seed,
-                                        "en-CA",
-                                        base::Time::Now(),
-                                        version,
-                                        Study_Channel_STABLE,
-                                        Study_FormFactor_DESKTOP,
-                                        "",
-                                        "",
-                                        override_callback_.callback());
+    seed_processor.CreateTrialsFromSeed(
+        seed, "en-CA", base::Time::Now(), version, Study_Channel_STABLE,
+        Study_FormFactor_DESKTOP, "", "", "", override_callback_.callback());
     EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrialName));
   }
 }
@@ -456,15 +444,10 @@ TEST_F(VariationsSeedProcessorTest, StartsActive) {
   study3->set_activation_type(Study_ActivationType_ACTIVATION_EXPLICIT);
 
   VariationsSeedProcessor seed_processor;
-  seed_processor.CreateTrialsFromSeed(seed,
-                                      "en-CA",
-                                      base::Time::Now(),
-                                      base::Version("20.0.0.0"),
-                                      Study_Channel_STABLE,
-                                      Study_FormFactor_DESKTOP,
-                                      "",
-                                      "",
-                                      override_callback_.callback());
+  seed_processor.CreateTrialsFromSeed(
+      seed, "en-CA", base::Time::Now(), base::Version("20.0.0.0"),
+      Study_Channel_STABLE, Study_FormFactor_DESKTOP, "", "", "",
+      override_callback_.callback());
 
   // Non-specified and ACTIVATION_EXPLICIT should not start active, but
   // ACTIVATION_AUTO should.

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
@@ -218,6 +219,15 @@ class TestVariationsPrefsStore {
   DISALLOW_COPY_AND_ASSIGN(TestVariationsPrefsStore);
 };
 
+// Converts |list_value| to a string, to make it easier for debugging.
+std::string ListValueToString(const base::ListValue& list_value) {
+  std::string json;
+  JSONStringValueSerializer serializer(&json);
+  serializer.set_pretty_print(true);
+  serializer.Serialize(list_value);
+  return json;
+}
+
 }  // namespace
 
 class VariationsServiceTest : public ::testing::Test {
@@ -428,8 +438,8 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
     // Comma separated list, NULL if the pref isn't set initially.
     const char* pref_value_before;
     const char* version;
-    // NULL indicates that no country code is present in the seed.
-    const char* seed_country_code;
+    // NULL indicates that no latest country code is present.
+    const char* latest_country_code;
     // Comma separated list.
     const char* expected_pref_value_after;
     std::string expected_country;
@@ -448,7 +458,7 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
        VariationsService::LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_NEQ},
       {"19.0.0.0,us", "20.0.0.0", "us", "20.0.0.0,us", "us",
        VariationsService::LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_EQ},
-      {"19.0.0.0,ca", "20.0.0.0", nullptr, "", "",
+      {"19.0.0.0,ca", "20.0.0.0", nullptr, "19.0.0.0,ca", "",
        VariationsService::LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_NEQ},
 
       // No existing pref value present.
@@ -484,28 +494,38 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
 
     if (test.pref_value_before) {
       base::ListValue list_value;
-      for (const std::string& component : base::SplitString(
-               test.pref_value_before, ",",
-               base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
+      for (const std::string& component :
+           base::SplitString(test.pref_value_before, ",", base::TRIM_WHITESPACE,
+                             base::SPLIT_WANT_ALL)) {
         list_value.AppendString(component);
+      }
       prefs.Set(prefs::kVariationsPermanentConsistencyCountry, list_value);
     }
 
     variations::VariationsSeed seed(CreateTestSeed());
-    if (test.seed_country_code)
-      seed.set_country_code(test.seed_country_code);
+    std::string latest_country;
+    if (test.latest_country_code)
+      latest_country = test.latest_country_code;
 
     base::HistogramTester histogram_tester;
-    EXPECT_EQ(test.expected_country, service.LoadPermanentConsistencyCountry(
-                                         base::Version(test.version), seed));
+    EXPECT_EQ(test.expected_country,
+              service.LoadPermanentConsistencyCountry(
+                  base::Version(test.version), latest_country))
+        << test.pref_value_before << ", " << test.version << ", "
+        << test.latest_country_code;
 
     base::ListValue expected_list_value;
-    for (const std::string& component : base::SplitString(
-             test.expected_pref_value_after, ",",
-             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
+    for (const std::string& component :
+         base::SplitString(test.expected_pref_value_after, ",",
+                           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
       expected_list_value.AppendString(component);
-    EXPECT_TRUE(expected_list_value.Equals(
-        prefs.GetList(prefs::kVariationsPermanentConsistencyCountry)));
+    }
+    const base::ListValue* pref_value =
+        prefs.GetList(prefs::kVariationsPermanentConsistencyCountry);
+    EXPECT_EQ(ListValueToString(expected_list_value),
+              ListValueToString(*pref_value))
+        << test.pref_value_before << ", " << test.version << ", "
+        << test.latest_country_code;
 
     histogram_tester.ExpectUniqueSample(
         "Variations.LoadPermanentConsistencyCountryResult",
