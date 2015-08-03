@@ -234,7 +234,6 @@ files-toggle-ripple::shadow .ripple.activated {
   align-items: center;
   display: flex;
   height: 100%;
-  opacity: 0;
   position: absolute;
   z-index: 100;
 }
@@ -247,10 +246,6 @@ files-toggle-ripple::shadow .ripple.activated {
   right: 16px;
 }
 
-.gallery[tools] .arrow-box[active] .arrow {
-  opacity: 1;
-}
-
 /* The arrow icons are in nested divs so that their opacity can be manipulated
  * independently from their parent (which can be dimmed when the crop frame
  * overlaps it) */
@@ -259,14 +254,14 @@ files-toggle-ripple::shadow .ripple.activated {
   height: 48px;
   opacity: 0;
   width: 48px;
+}
+
+.gallery[tools]:not([editing]) .arrow-box[active] .arrow div {
+  opacity: 0.4;
   pointer-events: auto;
 }
 
-.gallery[tools] .arrow-box[active] .arrow div {
-  opacity: 0.4;
-}
-
-.gallery[tools] .arrow-box[active] .arrow div:hover {
+.gallery[tools]:not([editing]) .arrow-box[active] .arrow div:hover {
   opacity: 1;
 }
 

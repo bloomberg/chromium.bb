@@ -648,7 +648,7 @@ ImageEditor.prototype.onKeyDown = function(event) {
     case 'U+001B': // Escape
     case 'Enter':
       if (this.getMode()) {
-        this.leaveMode(event.keyIdentifier == 'Enter');
+        this.leaveMode(event.keyIdentifier === 'Enter');
         return true;
       }
       break;

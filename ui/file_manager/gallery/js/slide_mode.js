@@ -1096,9 +1096,7 @@ SlideMode.prototype.onKeyDown = function(event) {
     return true;  // Consume all keystrokes in the slideshow mode.
   }
 
-  if (this.isEditing() && this.editor_.onKeyDown(event))
-    return true;
-
+  // Handles shortcut keys common for both modes (editing and not-editing).
   switch (keyID) {
     case 'Ctrl-U+0050':  // Ctrl+'p' prints the current image.
       if (!this.printButton_.disabled)
@@ -1109,30 +1107,45 @@ SlideMode.prototype.onKeyDown = function(event) {
       if (!this.editButton_.disabled)
         this.toggleEditor(event);
       return true;
+  }
 
+  // Handles shortcurt keys for editing mode.
+  if (this.isEditing()) {
+    if (this.editor_.onKeyDown(event))
+      return true;
+
+    if (keyID === 'U+001B') { // Escape
+      this.toggleEditor(event);
+      return true;
+    }
+
+    return false;
+  }
+
+  // Handles shortcut keys for not-editing mode.
+  switch (keyID) {
     case 'U+001B':  // Escape
-      if (this.isEditing()) {
-        this.toggleEditor(event);
-      } else if (this.viewport_.isZoomed()) {
+      if (this.viewport_.isZoomed()) {
         this.viewport_.resetView();
         this.touchHandlers_.stopOperation();
         this.imageView_.applyViewportChange();
-      } else {
-        return false;  // Not handled.
+        return true;
       }
-      return true;
+      break;
 
     case 'Home':
       this.selectFirst();
       return true;
+
     case 'End':
       this.selectLast();
       return true;
+
     case 'Up':
     case 'Down':
     case 'Left':
     case 'Right':
-      if (!this.isEditing() && this.viewport_.isZoomed()) {
+      if (this.viewport_.isZoomed()) {
         var delta = SlideMode.KEY_OFFSET_MAP[keyID];
         this.viewport_.setOffset(
             ~~(this.viewport_.getOffsetX() +
@@ -1145,33 +1158,28 @@ SlideMode.prototype.onKeyDown = function(event) {
         this.advanceWithKeyboard(keyID);
       }
       return true;
+
     case 'MediaNextTrack':
     case 'MediaPreviousTrack':
       this.advanceWithKeyboard(keyID);
       return true;
 
     case 'Ctrl-U+00BB':  // Ctrl+'=' zoom in.
-      if (!this.isEditing()) {
-        this.viewport_.zoomIn();
-        this.touchHandlers_.stopOperation();
-        this.imageView_.applyViewportChange();
-      }
+      this.viewport_.zoomIn();
+      this.touchHandlers_.stopOperation();
+      this.imageView_.applyViewportChange();
       return true;
 
     case 'Ctrl-U+00BD':  // Ctrl+'-' zoom out.
-      if (!this.isEditing()) {
-        this.viewport_.zoomOut();
-        this.touchHandlers_.stopOperation();
-        this.imageView_.applyViewportChange();
-      }
+      this.viewport_.zoomOut();
+      this.touchHandlers_.stopOperation();
+      this.imageView_.applyViewportChange();
       return true;
 
     case 'Ctrl-U+0030': // Ctrl+'0' zoom reset.
-      if (!this.isEditing()) {
-        this.viewport_.setZoom(1.0);
-        this.touchHandlers_.stopOperation();
-        this.imageView_.applyViewportChange();
-      }
+      this.viewport_.setZoom(1.0);
+      this.touchHandlers_.stopOperation();
+      this.imageView_.applyViewportChange();
       return true;
   }
 
