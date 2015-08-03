@@ -17,7 +17,7 @@
 #include "components/secure_display/elide_url.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/core/SkRRect.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
