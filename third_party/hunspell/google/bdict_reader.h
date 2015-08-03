@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "third_party/hunspell/google/bdict.h"
 
 namespace hunspell {
@@ -145,7 +145,7 @@ class BDictReader {
 
   const BDict::AffHeader* aff_header_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(BDictReader);
+  DISALLOW_COPY_AND_ASSIGN(BDictReader);
 };
 
 }  // namespace hunspell
