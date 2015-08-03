@@ -37,7 +37,6 @@ class DeviceCloudPolicyStoreChromeOS;
 class EnterpriseInstallAttributes;
 class HeartbeatScheduler;
 class StatusUploader;
-class SystemLogUploader;
 
 // CloudPolicyManager specialization for device policy on Chrome OS.
 class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
@@ -132,14 +131,11 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // state.
   scoped_ptr<StatusUploader> status_uploader_;
 
-  // Helper object that handles uploading system logs to the server.
-  scoped_ptr<SystemLogUploader> syslog_uploader_;
-
   // Helper object that handles sending heartbeats over the GCM channel to
   // the server, to monitor connectivity.
   scoped_ptr<HeartbeatScheduler> heartbeat_scheduler_;
 
-  // The TaskRunner used to do device status and log uploads.
+  // The TaskRunner used to do device status uploads.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   ServerBackedStateKeysBroker::Subscription state_keys_update_subscription_;
