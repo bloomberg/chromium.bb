@@ -116,7 +116,9 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
         ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(getActivity(),
                 android.R.layout.simple_spinner_item);
 
+        // Populate the month dropdown.
         Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
         SimpleDateFormat formatter = new SimpleDateFormat("MMMM (MM)", Locale.getDefault());
 
         for (int month = 0; month < 12; month++) {
@@ -126,6 +128,7 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mExpirationMonth.setAdapter(adapter);
 
+        // Populate the year dropdown.
         adapter = new ArrayAdapter<CharSequence>(getActivity(),
                 android.R.layout.simple_spinner_item);
         int initialYear = calendar.get(Calendar.YEAR);
