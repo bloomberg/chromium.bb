@@ -10,7 +10,6 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
@@ -23,6 +22,7 @@
 #include "chrome/grit/common_resources.h"
 #include "chrome/grit/extensions_api_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/version_info/version_info.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/api/generated_schemas.h"
 #include "extensions/common/common_manifest_handlers.h"
@@ -71,7 +71,7 @@ SimpleFeature* CreateFeature() {
   return feature;
 }
 
-// Mirrors chrome::VersionInfo for histograms.
+// Mirrors version_info::Channel for histograms.
 enum ChromeChannelForHistogram {
   CHANNEL_UNKNOWN,
   CHANNEL_CANARY,

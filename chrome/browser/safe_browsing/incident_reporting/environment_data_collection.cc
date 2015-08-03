@@ -8,8 +8,9 @@
 
 #include "base/cpu.h"
 #include "base/sys_info.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "components/version_info/version_info.h"
 
 namespace safe_browsing {
 
@@ -39,19 +40,18 @@ ClientIncidentReport_EnvironmentData_Process_Channel MapChannelToProtobuf(
 
 // Populates |process| with data related to the chrome browser process.
 void CollectProcessData(ClientIncidentReport_EnvironmentData_Process* process) {
-  chrome::VersionInfo version_info;
   // TODO(grt): Move this logic into VersionInfo (it also appears in
   // ChromeMetricsServiceClient).
-  std::string version(version_info.Version());
+  std::string version(version_info::GetVersionNumber());
 #if defined(ARCH_CPU_64_BITS)
   version += "-64";
 #endif  // defined(ARCH_CPU_64_BITS)
-  if (!version_info.IsOfficialBuild())
+  if (!version_info::IsOfficialBuild())
     version += "-devel";
   process->set_version(version);
 
   process->set_chrome_update_channel(
-      MapChannelToProtobuf(chrome::VersionInfo::GetChannel()));
+      MapChannelToProtobuf(chrome::GetChannel()));
 
   CollectPlatformProcessData(process);
 }

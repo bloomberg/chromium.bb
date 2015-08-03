@@ -15,8 +15,9 @@
 #include "chrome/browser/extensions/settings_api_helpers.h"
 #include "chrome/browser/extensions/suspicious_extension_bubble_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
+#include "components/version_info/version_info.h"
 #include "extensions/common/feature_switch.h"
 
 namespace {
@@ -75,7 +76,7 @@ bool EnableDevModeBubble() {
     return true;
 
 #if defined(OS_WIN)
-  if (chrome::VersionInfo::GetChannel() >= version_info::Channel::BETA)
+  if (chrome::GetChannel() >= version_info::Channel::BETA)
     return true;
 #endif
 

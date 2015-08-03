@@ -12,7 +12,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
-#include "chrome/common/chrome_version_info.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -30,9 +29,7 @@ const char kEventEndpoint[] = "event";
 const int kRequestTimeoutSeconds = 10;
 
 std::string GetUserAgent() {
-  chrome::VersionInfo version_info;
-  return browser_sync::LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi(
-      version_info);
+  return browser_sync::LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi();
 }
 
 }  // namespace

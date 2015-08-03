@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/shared_module_service.h"
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
@@ -9,9 +11,9 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
-#include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "components/crx_file/id_util.h"
+#include "components/version_info/version_info.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/uninstall_reason.h"

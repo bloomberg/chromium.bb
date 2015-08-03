@@ -41,7 +41,6 @@
 #include "chrome/browser/themes/theme_syncable_service.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"

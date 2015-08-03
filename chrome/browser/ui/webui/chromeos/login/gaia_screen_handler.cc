@@ -28,7 +28,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
@@ -38,6 +38,7 @@
 #include "chromeos/system/version_loader.h"
 #include "components/login/localized_values_builder.h"
 #include "components/user_manager/user_manager.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -290,14 +291,13 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
     if (!enterprise_domain.empty())
       params.SetString("enterpriseDomain", enterprise_domain);
 
-    chrome::VersionInfo version_info;
     params.SetString("chromeType", GetChromeType());
     params.SetString("clientId",
                      GaiaUrls::GetInstance()->oauth2_chrome_client_id());
-    params.SetString("clientVersion", version_info.Version());
+    params.SetString("clientVersion", version_info::GetVersionNumber());
     if (!platform_version.empty())
       params.SetString("platformVersion", platform_version);
-    params.SetString("releaseChannel", chrome::VersionInfo::GetChannelString());
+    params.SetString("releaseChannel", chrome::GetChannelString());
     params.SetString("endpointGen", kEndpointGen);
 
     std::string email_domain;

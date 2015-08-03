@@ -14,7 +14,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/content_browser_client.h"
 
 class ChromeContentBrowserClientParts;
@@ -33,6 +32,10 @@ class BrowserPermissionsPolicyDelegate;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
+}
+
+namespace version_info {
+enum class Channel;
 }
 
 namespace chrome {

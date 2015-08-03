@@ -12,7 +12,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/about_sync_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
@@ -53,8 +53,7 @@ void ChromeInternalLogSource::Fetch(const SysLogsSourceCallback& callback) {
 
   SystemLogsResponse response;
 
-  chrome::VersionInfo version_info;
-  response[kChromeVersionTag] =  version_info.CreateVersionString();
+  response[kChromeVersionTag] = chrome::GetVersionString();
 
 #if !defined(OS_CHROMEOS)
   // On ChromeOS, this will be pulled in from the LSB_RELEASE.

@@ -15,10 +15,10 @@
 #include "chrome/browser/crash_upload_list.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -176,8 +176,7 @@ void CrashesDOMHandler::UpdateUI() {
   base::FundamentalValue enabled(crash_reporting_enabled);
   base::FundamentalValue dynamic_backend(system_crash_reporter);
 
-  const chrome::VersionInfo version_info;
-  base::StringValue version(version_info.Version());
+  base::StringValue version(version_info::GetVersionNumber());
 
   web_ui()->CallJavascriptFunction("updateCrashList", enabled, dynamic_backend,
                                    crash_list, version);

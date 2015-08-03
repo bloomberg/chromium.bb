@@ -12,7 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "net/base/mime_util.h"
 #include "url/gurl.h"
@@ -25,9 +25,7 @@ namespace {
 // required by cloud print server.
 PrinterTags PreparePrinterTags(const PrinterTags& printer_tags) {
   PrinterTags printer_tags_out = printer_tags;
-  chrome::VersionInfo version_info;
-  printer_tags_out[kChromeVersionTagName] =
-      version_info.CreateVersionString();
+  printer_tags_out[kChromeVersionTagName] = chrome::GetVersionString();
   printer_tags_out[kSystemNameTagName] =
       base::SysInfo::OperatingSystemName();
   printer_tags_out[kSystemVersionTagName] =

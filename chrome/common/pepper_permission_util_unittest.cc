@@ -9,6 +9,7 @@
 
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "components/crx_file/id_util.h"
+#include "components/version_info/version_info.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_set.h"
 #include "testing/gtest/include/gtest/gtest.h"

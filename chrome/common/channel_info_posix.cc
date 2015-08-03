@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
 
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "components/version_info/version_info.h"
 
 namespace chrome {
 
@@ -46,16 +47,14 @@ version_info::Channel GetChannelImpl(std::string* modifier_out) {
 
 }  // namespace
 
-// static
-std::string VersionInfo::GetVersionStringModifier() {
+std::string GetChannelString() {
   std::string modifier;
   GetChannelImpl(&modifier);
   return modifier;
 }
 
-// static
-version_info::Channel VersionInfo::GetChannel() {
-  return GetChannelImpl(NULL);
+version_info::Channel GetChannel() {
+  return GetChannelImpl(nullptr);
 }
 
 }  // namespace chrome

@@ -28,12 +28,13 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_mac.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/google_chrome_strings.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/manifest_handlers/file_handler_info.h"
@@ -89,7 +90,7 @@ const CGFloat kDistanceMovedOnShow = 20;
 scoped_ptr<web_app::ShortcutInfo> GetAppListShortcutInfo(
     const base::FilePath& profile_path) {
   scoped_ptr<web_app::ShortcutInfo> shortcut_info(new web_app::ShortcutInfo);
-  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::GetChannel();
   if (channel == version_info::Channel::CANARY) {
     shortcut_info->title =
         l10n_util::GetStringUTF16(IDS_APP_LIST_SHORTCUT_NAME_CANARY);
@@ -112,7 +113,7 @@ void CreateAppListShim(const base::FilePath& profile_path) {
       GetAppListShortcutInfo(profile_path);
 
   ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();
-  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::GetChannel();
   if (channel == version_info::Channel::CANARY) {
 #if defined(GOOGLE_CHROME_BUILD)
     shortcut_info->favicon.Add(

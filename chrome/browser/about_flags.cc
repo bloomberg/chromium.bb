@@ -19,9 +19,9 @@
 #include "base/values.h"
 #include "cc/base/switches.h"
 #include "chrome/browser/flags_storage.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/google_chrome_strings.h"
@@ -35,6 +35,7 @@
 #include "components/plugins/common/plugins_switches.h"
 #include "components/proximity_auth/switches.h"
 #include "components/search/search_switches.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/user_metrics.h"
 #include "media/base/media_switches.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -2205,7 +2206,7 @@ void GetSanitizedEnabledFlags(
 }
 
 bool SkipConditionalExperiment(const Experiment& experiment) {
-  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::GetChannel();
 
 #if defined(OS_ANDROID)
   // enable-data-reduction-proxy-dev is only available for the Dev/Beta channel.

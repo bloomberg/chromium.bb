@@ -20,13 +20,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/profiling.h"
@@ -39,6 +39,7 @@
 #include "components/component_updater/component_updater_paths.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
+#include "components/version_info/version_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "extensions/common/constants.h"
@@ -272,20 +273,18 @@ bool SubprocessNeedsResourceBundle(const std::string& process_type) {
 // Check for --version and --product-version; return true if we encountered
 // one of these switches and should exit now.
 bool HandleVersionSwitches(const base::CommandLine& command_line) {
-  const chrome::VersionInfo version_info;
-
 #if !defined(OS_MACOSX)
   if (command_line.HasSwitch(switches::kProductVersion)) {
-    printf("%s\n", version_info.Version().c_str());
+    printf("%s\n", version_info::GetVersionNumber().c_str());
     return true;
   }
 #endif
 
   if (command_line.HasSwitch(switches::kVersion)) {
     printf("%s %s %s\n",
-           version_info.Name().c_str(),
-           version_info.Version().c_str(),
-           chrome::VersionInfo::GetVersionStringModifier().c_str());
+           version_info::GetProductName().c_str(),
+           version_info::GetVersionNumber().c_str(),
+           chrome::GetChannelString().c_str());
     return true;
   }
 
@@ -980,7 +979,7 @@ ChromeMainDelegate::CreateContentUtilityClient() {
 }
 
 bool ChromeMainDelegate::ShouldEnableProfilerRecording() {
-  switch (chrome::VersionInfo::GetChannel()) {
+  switch (chrome::GetChannel()) {
     case version_info::Channel::UNKNOWN:
     case version_info::Channel::CANARY:
       return true;

@@ -8,6 +8,7 @@
 #include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/common/extensions/features/feature_channel.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/common/extension.h"

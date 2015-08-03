@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
+
+#include "components/version_info/version_info.h"
 
 namespace chrome {
 
 static version_info::Channel chromeos_channel = version_info::Channel::UNKNOWN;
 
-// static
-std::string VersionInfo::GetVersionStringModifier() {
+std::string GetChannelString() {
 #if defined(GOOGLE_CHROME_BUILD)
   switch (chromeos_channel) {
     case version_info::Channel::STABLE:
@@ -27,13 +28,11 @@ std::string VersionInfo::GetVersionStringModifier() {
   return std::string();
 }
 
-// static
-version_info::Channel VersionInfo::GetChannel() {
+version_info::Channel GetChannel() {
   return chromeos_channel;
 }
 
-// static
-void VersionInfo::SetChannel(const std::string& channel) {
+void SetChannel(const std::string& channel) {
 #if defined(GOOGLE_CHROME_BUILD)
   if (channel == "stable-channel") {
     chromeos_channel = version_info::Channel::STABLE;

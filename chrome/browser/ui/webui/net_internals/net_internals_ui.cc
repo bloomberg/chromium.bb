@@ -40,8 +40,8 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
@@ -49,6 +49,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/onc/onc_constants.h"
 #include "components/url_fixer/url_fixer.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -1171,17 +1172,14 @@ base::Value* NetInternalsUI::GetConstants() {
   {
     base::DictionaryValue* dict = new base::DictionaryValue();
 
-    chrome::VersionInfo version_info;
-
     // We have everything we need to send the right values.
-    dict->SetString("name", version_info.Name());
-    dict->SetString("version", version_info.Version());
-    dict->SetString("cl", version_info.LastChange());
-    dict->SetString("version_mod",
-                    chrome::VersionInfo::GetVersionStringModifier());
-    dict->SetString("official",
-                    version_info.IsOfficialBuild() ? "official" : "unofficial");
-    dict->SetString("os_type", version_info.OSType());
+    dict->SetString("name", version_info::GetProductName());
+    dict->SetString("version", version_info::GetVersionNumber());
+    dict->SetString("cl", version_info::GetLastChange());
+    dict->SetString("version_mod", chrome::GetChannelString());
+    dict->SetString("official", version_info::IsOfficialBuild() ? "official"
+                                                                : "unofficial");
+    dict->SetString("os_type", version_info::GetOSType());
     dict->SetString(
         "command_line",
         base::CommandLine::ForCurrentProcess()->GetCommandLineString());

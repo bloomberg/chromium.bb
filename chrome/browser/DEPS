@@ -97,6 +97,7 @@ include_rules = [
   "+components/url_matcher",
   "+components/user_manager",
   "+components/user_prefs",
+  "+components/version_info",
   "+components/web_modal",
   "+components/web_cache/browser",
   "+components/webdata/common",

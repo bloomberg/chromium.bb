@@ -21,10 +21,11 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_brand.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/network_time/network_time_tracker.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_WIN)
@@ -98,7 +99,7 @@ bool IsUnstableChannel() {
   // but no anymore. But other platform may still need the file thread.
   // crbug.com/366647.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::GetChannel();
   return channel == version_info::Channel::DEV ||
          channel == version_info::Channel::CANARY;
 }
@@ -317,8 +318,7 @@ void UpgradeDetectorImpl::DetectUpgradeTask(
       GetCurrentlyInstalledVersionImpl(&critical_update);
 
   // Get the version of the currently *running* instance of Chrome.
-  chrome::VersionInfo version_info;
-  Version running_version(version_info.Version());
+  Version running_version(version_info::GetVersionNumber());
   if (!running_version.IsValid()) {
     NOTREACHED();
     return;

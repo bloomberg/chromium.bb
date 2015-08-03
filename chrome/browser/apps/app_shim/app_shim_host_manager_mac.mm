@@ -21,8 +21,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/mac/app_mode_common.h"
+#include "components/version_info/version_info.h"
 
 using content::BrowserThread;
 
@@ -140,7 +140,7 @@ void AppShimHostManager::InitOnFileThread() {
   base::FilePath version_path =
       user_data_dir.Append(app_mode::kRunningChromeVersionSymlinkName);
   base::DeleteFile(version_path, false);
-  base::CreateSymbolicLink(base::FilePath(chrome::VersionInfo().Version()),
+  base::CreateSymbolicLink(base::FilePath(version_info::GetVersionNumber()),
                            version_path);
 
   BrowserThread::PostTask(

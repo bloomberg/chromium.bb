@@ -34,7 +34,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/network/device_state.h"
@@ -47,6 +46,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -679,8 +679,7 @@ void DeviceStatusCollector::GetActivityTimes(
 
 void DeviceStatusCollector::GetVersionInfo(
     em::DeviceStatusReportRequest* request) {
-  chrome::VersionInfo version_info;
-  request->set_browser_version(version_info.Version());
+  request->set_browser_version(version_info::GetVersionNumber());
   request->set_os_version(os_version_);
   request->set_firmware_version(firmware_version_);
 }

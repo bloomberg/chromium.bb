@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
 
 #include "base/base_paths.h"
 #include "base/debug/profiler.h"
@@ -13,11 +13,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
+#include "components/version_info/version_info.h"
 
 namespace chrome {
 
-// static
-std::string VersionInfo::GetVersionStringModifier() {
+std::string GetChannelString() {
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
   // fixed.
   tracked_objects::ScopedTracker tracking_profile(
@@ -42,8 +42,7 @@ std::string VersionInfo::GetVersionStringModifier() {
 #endif
 }
 
-// static
-version_info::Channel VersionInfo::GetChannel() {
+version_info::Channel GetChannel() {
 #if defined(GOOGLE_CHROME_BUILD)
   std::wstring channel(L"unknown");
 

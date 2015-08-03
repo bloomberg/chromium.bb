@@ -14,10 +14,11 @@
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
@@ -26,8 +27,7 @@ const char kChannelsFileName[] = "Channels";
 
 std::string GetChannelMarkForThisExecutable() {
   std::string product_channel_name;
-  version_info::Channel product_channel(
-      chrome::VersionInfo::GetChannel());
+  version_info::Channel product_channel(chrome::GetChannel());
   switch (product_channel) {
     case version_info::Channel::UNKNOWN: {
       // Add the channel mark even for Chromium builds (which do not have
@@ -36,8 +36,7 @@ std::string GetChannelMarkForThisExecutable() {
       // as additional piece of information for debugging (it can't make
       // a meaningful difference for the code since unknown does not match any
       // real channel name).
-      std::string version_string_modifier(
-          chrome::VersionInfo::GetVersionStringModifier());
+      std::string version_string_modifier(chrome::GetChannelString());
       product_channel_name = "unknown (" + version_string_modifier + ")";
       break;
     }

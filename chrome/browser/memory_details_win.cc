@@ -15,9 +15,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/process_type.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -130,8 +130,7 @@ void MemoryDetails::CollectProcessData(
       // Get Version Information.
       TCHAR name[MAX_PATH];
       if (index2 == CHROME_BROWSER || index2 == CHROME_NACL_PROCESS) {
-        chrome::VersionInfo version_info;
-        info.version = base::ASCIIToUTF16(version_info.Version());
+        info.version = base::ASCIIToUTF16(version_info::GetVersionNumber());
         // Check if this is one of the child processes whose data we collected
         // on the IO thread, and if so copy over that data.
         for (size_t child = 0; child < child_info.size(); child++) {

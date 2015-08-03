@@ -14,6 +14,7 @@
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_CHROMEOS)
@@ -21,7 +22,7 @@
 #endif
 
 #if !defined(OS_WIN)
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #endif
@@ -112,7 +113,7 @@ void ShellIntegration::AppendProfileArgs(const base::FilePath& profile_path,
 #if !defined(OS_WIN)
 
 base::string16 ShellIntegration::GetAppShortcutsSubdirName() {
-  if (chrome::VersionInfo::GetChannel() == version_info::Channel::CANARY)
+  if (chrome::GetChannel() == version_info::Channel::CANARY)
     return l10n_util::GetStringUTF16(IDS_APP_SHORTCUTS_SUBDIR_NAME_CANARY);
   return l10n_util::GetStringUTF16(IDS_APP_SHORTCUTS_SUBDIR_NAME);
 }

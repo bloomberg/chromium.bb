@@ -14,7 +14,6 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
-#include "chrome/common/chrome_version_info.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"

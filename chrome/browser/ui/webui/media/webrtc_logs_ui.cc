@@ -18,9 +18,9 @@
 #include "chrome/browser/media/webrtc_log_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/upload_list.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -175,8 +175,7 @@ void WebRtcLogsDOMHandler::UpdateUI() {
     upload_list.Append(upload);
   }
 
-  const chrome::VersionInfo version_info;
-  base::StringValue version(version_info.Version());
+  base::StringValue version(version_info::GetVersionNumber());
 
   web_ui()->CallJavascriptFunction("updateWebRtcLogsList", upload_list,
                                    version);

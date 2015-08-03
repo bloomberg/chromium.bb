@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/extensions/api/copresence.h"
 #include "chrome/common/extensions/manifest_handlers/copresence_manifest.h"
 #include "chrome/common/pref_names.h"
@@ -173,7 +173,7 @@ net::URLRequestContextGetter* CopresenceService::GetRequestContext() const {
 }
 
 const std::string CopresenceService::GetPlatformVersionString() const {
-  return chrome::VersionInfo().CreateVersionString();
+  return chrome::GetVersionString();
 }
 
 const std::string

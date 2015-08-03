@@ -8,9 +8,10 @@
 #include "chrome/browser/plugins/plugin_info_message_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pepper_permission_util.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/render_process_host.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
@@ -136,7 +137,7 @@ bool ChromeContentBrowserClientPluginsPart::IsPluginAllowedToUseDevChannelAPIs(
     return true;
   }
 #endif
-  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::GetChannel();
   // Allow dev channel APIs to be used on "Canary", "Dev", and "Unknown"
   // releases of Chrome. Permitting "Unknown" allows these APIs to be used on
   // Chromium builds as well.

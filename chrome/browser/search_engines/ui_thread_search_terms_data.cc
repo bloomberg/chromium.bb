@@ -17,13 +17,14 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/search/search.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
@@ -168,15 +169,15 @@ std::string UIThreadSearchTermsData::NTPIsThemedParam() const {
 }
 
 // It's acutally OK to call this method on any thread, but it's currently placed
-// in UIThreadSearchTermsData since SearchTermsData cannot depend on
-// VersionInfo.
+// in UIThreadSearchTermsData since SearchTermsData cannot depend on src/chrome
+// as it is shared with iOS.
 std::string UIThreadSearchTermsData::GoogleImageSearchSource() const {
-  chrome::VersionInfo version_info;
-  std::string version(version_info.Name() + " " + version_info.Version());
-  if (version_info.IsOfficialBuild())
+  std::string version(version_info::GetProductName() + " " +
+                      version_info::GetVersionNumber());
+  if (version_info::IsOfficialBuild())
     version += " (Official)";
-  version += " " + version_info.OSType();
-  std::string modifier(version_info.GetVersionStringModifier());
+  version += " " + version_info::GetOSType();
+  std::string modifier(chrome::GetChannelString());
   if (!modifier.empty())
     version += " " + modifier;
   return version;

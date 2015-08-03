@@ -76,10 +76,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/network_connect_delegate_chromeos.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
@@ -296,7 +296,7 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
   const char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
   std::string channel;
   if (base::SysInfo::GetLsbReleaseValue(kChromeOSReleaseTrack, &channel))
-    chrome::VersionInfo::SetChannel(channel);
+    chrome::SetChannel(channel);
 #endif
 
   ChromeBrowserMainPartsLinux::PreEarlyInitialization();

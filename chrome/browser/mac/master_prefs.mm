@@ -6,8 +6,9 @@
 
 #include "base/files/file_util.h"
 #include "base/mac/foundation_util.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths_internal.h"
-#include "chrome/common/chrome_version_info.h"
+#include "components/version_info/version_info.h"
 
 namespace {
 
@@ -31,7 +32,7 @@ namespace master_prefs {
 base::FilePath MasterPrefsPath() {
 #if defined(GOOGLE_CHROME_BUILD)
   // Don't load master preferences for the canary.
-  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::GetChannel();
   if (channel == version_info::Channel::CANARY)
     return base::FilePath();
 #endif  // GOOGLE_CHROME_BUILD

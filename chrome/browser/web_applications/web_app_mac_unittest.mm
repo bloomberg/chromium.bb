@@ -19,8 +19,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #import "chrome/common/mac/app_mode_common.h"
+#include "components/version_info/version_info.h"
 #include "grit/theme_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -135,7 +135,7 @@ TEST_F(WebAppShortcutCreatorTest, CreateShortcuts) {
   EXPECT_NSEQ(base::SysUTF8ToNSString(info_->url.spec()),
               [plist objectForKey:app_mode::kCrAppModeShortcutURLKey]);
 
-  EXPECT_NSEQ(base::SysUTF8ToNSString(chrome::VersionInfo().Version()),
+  EXPECT_NSEQ(base::SysUTF8ToNSString(version_info::GetVersionNumber()),
               [plist objectForKey:app_mode::kCrBundleVersionKey]);
   EXPECT_NSEQ(base::SysUTF8ToNSString(info_->version_for_display),
               [plist objectForKey:app_mode::kCFBundleShortVersionStringKey]);

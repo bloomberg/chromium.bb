@@ -45,8 +45,9 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/version_info/version_info.h"
 #endif
 
 namespace chrome {
@@ -322,7 +323,7 @@ bool ChromeCrashReporterClient::GetCollectStatsConsent() {
   bool is_guest_session = base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kGuestSession);
   bool is_stable_channel =
-      chrome::VersionInfo::GetChannel() == version_info::Channel::STABLE;
+      chrome::GetChannel() == version_info::Channel::STABLE;
 
   if (is_guest_session && is_stable_channel)
     return false;

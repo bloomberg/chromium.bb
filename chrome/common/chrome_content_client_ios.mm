@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
+#include "components/version_info/version_info.h"
 #include "content/public/common/user_agent.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -36,9 +36,8 @@ void ChromeContentClient::AddAdditionalSchemes(
 }
 
 std::string ChromeContentClient::GetProduct() const {
-  chrome::VersionInfo version_info;
   std::string product("CriOS/");
-  product += version_info.Version();
+  product += version_info::GetVersionNumber();
   return product;
 }
 
@@ -69,5 +68,5 @@ gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) const {
 
 std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {
   DCHECK(false) << "Unknown child process type!";
-  return "Unknown"; 
+  return "Unknown";
 }

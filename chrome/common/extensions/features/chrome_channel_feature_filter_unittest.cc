@@ -8,16 +8,14 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/features/feature_channel.h"
+#include "components/version_info/version_info.h"
 #include "extensions/common/features/base_feature_provider.h"
 #include "extensions/common/features/complex_feature.h"
 #include "extensions/common/features/permission_feature.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using chrome::VersionInfo;
 
 namespace extensions {
 namespace {

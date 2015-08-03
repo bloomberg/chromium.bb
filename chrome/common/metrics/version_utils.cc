@@ -5,6 +5,7 @@
 #include "chrome/common/metrics/version_utils.h"
 
 #include "base/logging.h"
+#include "components/version_info/version_info.h"
 #include "components/version_info/version_info_values.h"
 
 namespace metrics {

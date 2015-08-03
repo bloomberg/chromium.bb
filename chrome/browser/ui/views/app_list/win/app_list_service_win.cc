@@ -32,11 +32,12 @@
 #include "chrome/browser/ui/views/app_list/win/app_list_controller_delegate_win.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_win.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/base/ui_base_switches.h"
@@ -329,7 +330,7 @@ void AppListServiceWin::ScheduleWarmup() {
   // To make all invocations of AppListServiceWin::LoadProfileForWarmup visible
   // to the server-side analysis tool, reducing this period to 10 sec in Dev
   // builds and Canary, where profiler instrumentations are enabled.
-  switch (chrome::VersionInfo::GetChannel()) {
+  switch (chrome::GetChannel()) {
     case version_info::Channel::UNKNOWN:
     case version_info::Channel::CANARY:
       kInitWindowDelay = 10;

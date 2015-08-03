@@ -25,10 +25,10 @@
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/common/chrome_content_client.h"
-#include "chrome/common/chrome_version_info.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "components/history/core/browser/top_sites.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/android/devtools_auth.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -205,8 +205,6 @@ void DevToolsServer::Start(bool allow_debug_permission) {
       allow_debug_permission ?
           base::Bind(&AuthorizeSocketAccessWithDebugPermission) :
           base::Bind(&content::CanUserConnectToDevTools);
-  chrome::VersionInfo version_info;
-
   scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
       new UnixDomainServerSocketFactory(socket_name_, auth_callback));
   devtools_http_handler_.reset(new DevToolsHttpHandler(
@@ -215,7 +213,7 @@ void DevToolsServer::Start(bool allow_debug_permission) {
       new DevToolsServerDelegate(),
       base::FilePath(),
       base::FilePath(),
-      version_info.ProductNameAndVersionForUserAgent(),
+      version_info::GetProductNameAndVersionForUserAgent(),
       ::GetUserAgent()));
 }
 

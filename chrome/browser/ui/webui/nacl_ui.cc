@@ -21,12 +21,13 @@
 #include "base/values.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -178,16 +179,15 @@ bool NaClDomHandler::isPluginEnabled(size_t plugin_index) {
 
 void NaClDomHandler::AddOperatingSystemInfo(base::ListValue* list) {
   // Obtain the Chrome version info.
-  chrome::VersionInfo version_info;
   AddPair(list,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-          ASCIIToUTF16(version_info.Version() + " (" +
-                       chrome::VersionInfo::GetVersionStringModifier() + ")"));
+          ASCIIToUTF16(version_info::GetVersionNumber() + " (" +
+                       chrome::GetChannelString() + ")"));
 
   // OS version information.
   // TODO(jvoung): refactor this to share the extra windows labeling
   // with about:flash, or something.
-  std::string os_label = version_info.OSType();
+  std::string os_label = version_info::GetOSType();
 #if defined(OS_WIN)
   base::win::OSInfo* os = base::win::OSInfo::GetInstance();
   switch (os->version()) {

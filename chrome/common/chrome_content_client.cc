@@ -20,13 +20,13 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pepper_flash.h"
 #include "chrome/common/secure_origin_whitelist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/common_resources.h"
 #include "components/dom_distiller/core/url_constants.h"
+#include "components/version_info/version_info.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -375,8 +375,7 @@ bool GetSystemPepperFlash(content::PepperPluginInfo* plugin) {
 #endif  //  defined(ENABLE_PLUGINS)
 
 std::string GetProduct() {
-  chrome::VersionInfo version_info;
-  return version_info.ProductNameAndVersionForUserAgent();
+  return version_info::GetProductNameAndVersionForUserAgent();
 }
 
 }  // namespace

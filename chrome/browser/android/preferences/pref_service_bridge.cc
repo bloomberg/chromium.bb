@@ -24,7 +24,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/android/android_about_app_info.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -34,6 +33,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_pref_names.h"
+#include "components/version_info/version_info.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
@@ -741,15 +741,14 @@ static void ResetAcceptLanguages(JNIEnv* env,
 // Sends all information about the different versions to Java.
 // From browser_about_handler.cc
 static jobject GetAboutVersionStrings(JNIEnv* env, jobject obj) {
-  chrome::VersionInfo version_info;
-  std::string os_version = version_info.OSType();
+  std::string os_version = version_info::GetOSType();
   os_version += " " + AndroidAboutAppInfo::GetOsInfo();
 
   base::android::BuildInfo* android_build_info =
         base::android::BuildInfo::GetInstance();
   std::string application(android_build_info->package_label());
   application.append(" ");
-  application.append(version_info.Version());
+  application.append(version_info::GetVersionNumber());
 
   // OK to release, returning to Java.
   return Java_PrefServiceBridge_createAboutVersionStrings(

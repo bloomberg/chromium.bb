@@ -6,8 +6,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/grit/chromium_strings.h"
+#include "components/version_info/version_info.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -39,8 +39,7 @@ bool MinimumChromeVersionChecker::Parse(Extension* extension,
     return false;
   }
 
-  chrome::VersionInfo current_version_info;
-  Version current_version(current_version_info.Version());
+  Version current_version(version_info::GetVersionNumber());
   if (!current_version.IsValid()) {
     NOTREACHED();
     return false;

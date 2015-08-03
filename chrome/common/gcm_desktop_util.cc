@@ -8,12 +8,13 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/sync_util.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_driver_desktop.h"
+#include "components/version_info/version_info.h"
 #include "url/gurl.h"
 
 namespace gcm {
@@ -42,7 +43,7 @@ GCMClient::ChromePlatform GetPlatform() {
 }
 
 GCMClient::ChromeChannel GetChannel() {
-  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::GetChannel();
   switch (channel) {
     case version_info::Channel::UNKNOWN:
       return GCMClient::CHANNEL_UNKNOWN;
@@ -61,8 +62,7 @@ GCMClient::ChromeChannel GetChannel() {
 }
 
 std::string GetVersion() {
-  chrome::VersionInfo version_info;
-  return version_info.Version();
+  return version_info::GetVersionNumber();
 }
 
 GCMClient::ChromeBuildInfo GetChromeBuildInfo() {
@@ -79,8 +79,7 @@ std::string GetChannelStatusRequestUrl() {
 }
 
 std::string GetUserAgent() {
-  chrome::VersionInfo version_info;
-  return MakeDesktopUserAgentForSync(version_info);
+  return MakeDesktopUserAgentForSync();
 }
 
 }  // namespace

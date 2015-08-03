@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
 
 #include "base/android/build_info.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "components/version_info/version_info.h"
 
 namespace chrome {
 
-// static
-std::string VersionInfo::GetVersionStringModifier() {
+std::string GetChannelString() {
   switch (GetChannel()) {
     case version_info::Channel::UNKNOWN: return "unknown";
     case version_info::Channel::CANARY: return "canary";
@@ -23,13 +23,12 @@ std::string VersionInfo::GetVersionStringModifier() {
   return std::string();
 }
 
-// static
-version_info::Channel VersionInfo::GetChannel() {
+version_info::Channel GetChannel() {
   const base::android::BuildInfo* bi = base::android::BuildInfo::GetInstance();
   DCHECK(bi && bi->package_name());
 
-  if (!strcmp(bi->package_name(), "com.android.chrome")
-       || !strcmp(bi->package_name(), "com.chrome.work"))
+  if (!strcmp(bi->package_name(), "com.android.chrome") ||
+      !strcmp(bi->package_name(), "com.chrome.work"))
     return version_info::Channel::STABLE;
   if (!strcmp(bi->package_name(), "com.chrome.beta"))
     return version_info::Channel::BETA;

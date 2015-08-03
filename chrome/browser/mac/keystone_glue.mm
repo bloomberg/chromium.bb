@@ -24,10 +24,11 @@
 #include "build/build_config.h"
 #import "chrome/browser/mac/keystone_registration.h"
 #include "chrome/browser/mac/obsolete_system.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/version_info/version_info.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -331,7 +332,7 @@ NSString* const kVersionKey = @"KSVersion";
     brandFileType_ = kBrandFileTypeNone;
 
     // Only the stable channel has a brand code.
-    version_info::Channel channel = chrome::VersionInfo::GetChannel();
+    version_info::Channel channel = chrome::GetChannel();
 
     if (channel == version_info::Channel::DEV ||
         channel == version_info::Channel::BETA) {

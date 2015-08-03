@@ -14,9 +14,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/localized_error.h"
@@ -68,6 +68,7 @@
 #include "components/pdf/renderer/pepper_pdf_host.h"
 #include "components/plugins/renderer/mobile_youtube_plugin.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/version_info/version_info.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "components/web_cache/renderer/web_cache_render_process_observer.h"
 #include "content/public/common/content_constants.h"
@@ -1540,7 +1541,7 @@ bool ChromeContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {
     return true;
   }
 
-  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::GetChannel();
   // Allow dev channel APIs to be used on "Canary", "Dev", and "Unknown"
   // releases of Chrome. Permitting "Unknown" allows these APIs to be used on
   // Chromium builds as well.
@@ -1573,7 +1574,7 @@ bool ChromeContentRendererClient::IsPluginAllowedToUseCompositorAPI(
   if (IsExtensionOrSharedModuleWhitelisted(url, allowed_compositor_origins_))
     return true;
 
-  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::GetChannel();
   return channel <= version_info::Channel::DEV;
 #else
   return false;

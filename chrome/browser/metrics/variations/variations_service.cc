@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/variations/generated_resources_map.h"
 #include "chrome/browser/metrics/variations/variations_url_constants.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -26,6 +27,7 @@
 #include "components/variations/proto/variations_seed.pb.h"
 #include "components/variations/variations_seed_processor.h"
 #include "components/variations/variations_seed_simulator.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -64,7 +66,7 @@ const int64 kServerTimeResolutionMs = 1000;
 // will return the fake channel. Failing that, this will return the UNKNOWN
 // channel.
 variations::Study_Channel GetChannelForVariations() {
-  switch (chrome::VersionInfo::GetChannel()) {
+  switch (chrome::GetChannel()) {
     case version_info::Channel::CANARY:
       return variations::Study_Channel_CANARY;
     case version_info::Channel::DEV:
@@ -125,7 +127,7 @@ base::Version GetVersionForSimulation() {
 
   // TODO(asvitkine): Get the version that will be used on restart instead of
   // the current version on Android, iOS and ChromeOS.
-  return base::Version(chrome::VersionInfo().Version());
+  return base::Version(version_info::GetVersionNumber());
 }
 
 // Gets the restrict parameter from |policy_pref_service| or from Chrome OS
@@ -257,8 +259,7 @@ bool VariationsService::CreateTrialsFromSeed() {
   if (!seed_store_.LoadSeed(&seed))
     return false;
 
-  const chrome::VersionInfo current_version_info;
-  const base::Version current_version(current_version_info.Version());
+  const base::Version current_version(version_info::GetVersionNumber());
   if (!current_version.IsValid())
     return false;
 

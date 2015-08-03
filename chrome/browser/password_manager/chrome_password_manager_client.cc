@@ -20,8 +20,8 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_controller_impl.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
@@ -40,6 +40,7 @@
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -139,8 +140,7 @@ ChromePasswordManagerClient::~ChromePasswordManagerClient() {
 bool ChromePasswordManagerClient::IsAutomaticPasswordSavingEnabled() const {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
              password_manager::switches::kEnableAutomaticPasswordSaving) &&
-         chrome::VersionInfo::GetChannel() ==
-             version_info::Channel::UNKNOWN;
+         chrome::GetChannel() == version_info::Channel::UNKNOWN;
 }
 
 bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage()

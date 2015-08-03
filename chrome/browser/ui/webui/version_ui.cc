@@ -8,11 +8,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/version_handler.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -46,13 +47,11 @@ WebUIDataSource* CreateVersionUIDataSource() {
   // Localized and data strings.
   html_source->AddLocalizedString("title", IDS_ABOUT_VERSION_TITLE);
   html_source->AddLocalizedString("application_label", IDS_PRODUCT_NAME);
-  chrome::VersionInfo version_info;
-  html_source->AddString("version", version_info.Version());
-  html_source->AddString("version_modifier",
-                         chrome::VersionInfo::GetVersionStringModifier());
+  html_source->AddString("version", version_info::GetVersionNumber());
+  html_source->AddString("version_modifier", chrome::GetChannelString());
   html_source->AddLocalizedString("os_name", IDS_ABOUT_VERSION_OS);
   html_source->AddLocalizedString("platform", IDS_PLATFORM_LABEL);
-  html_source->AddString("os_type", version_info.OSType());
+  html_source->AddString("os_type", version_info::GetOSType());
   html_source->AddString("blink_version", content::GetWebKitVersion());
   html_source->AddString("js_engine", "V8");
   html_source->AddString("js_version", v8::V8::GetVersion());
@@ -78,10 +77,11 @@ WebUIDataSource* CreateVersionUIDataSource() {
       l10n_util::GetStringFUTF16(IDS_ABOUT_VERSION_COPYRIGHT,
                                  base::IntToString16(exploded_time.year)));
   html_source->AddLocalizedString("revision", IDS_ABOUT_VERSION_REVISION);
-  html_source->AddString("cl", version_info.LastChange());
+  html_source->AddString("cl", version_info::GetLastChange());
   html_source->AddLocalizedString("official",
-      version_info.IsOfficialBuild() ? IDS_ABOUT_VERSION_OFFICIAL :
-                                       IDS_ABOUT_VERSION_UNOFFICIAL);
+                                  version_info::IsOfficialBuild()
+                                      ? IDS_ABOUT_VERSION_OFFICIAL
+                                      : IDS_ABOUT_VERSION_UNOFFICIAL);
 #if defined(ARCH_CPU_64_BITS)
   html_source->AddLocalizedString("version_bitsize", IDS_ABOUT_VERSION_64BIT);
 #else

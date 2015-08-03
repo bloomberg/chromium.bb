@@ -23,10 +23,11 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/plugin_service.h"
@@ -233,19 +234,16 @@ void FlashDOMHandler::MaybeRespondToPage() {
   // need to jump through hoops to offload this to the IO thread.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
-  // Obtain the Chrome version info.
-  chrome::VersionInfo version_info;
-
   base::ListValue* list = new base::ListValue();
 
   // Chrome version information.
   AddPair(list,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-          version_info.Version() + " (" +
-          chrome::VersionInfo::GetVersionStringModifier() + ")");
+          version_info::GetVersionNumber() + " (" +
+          chrome::GetChannelString() + ")");
 
   // OS version information.
-  std::string os_label = version_info.OSType();
+  std::string os_label = version_info::GetOSType();
 #if defined(OS_WIN)
   base::win::OSInfo* os = base::win::OSInfo::GetInstance();
   switch (os->version()) {

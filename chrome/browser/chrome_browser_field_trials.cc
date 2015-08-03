@@ -11,7 +11,6 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 

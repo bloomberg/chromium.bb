@@ -11,7 +11,6 @@
 #include "chrome/browser/sync/glue/invalidation_adapter.h"
 #include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
-#include "chrome/common/chrome_version_info.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "sync/internal_api/public/events/protocol_event.h"
@@ -409,9 +408,8 @@ void SyncBackendHostCore::DoInitialize(
 
   // Finish initializing the HttpBridgeFactory.  We do this here because
   // building the user agent may block on some platforms.
-  chrome::VersionInfo version_info;
   options->http_bridge_factory->Init(
-      LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi(version_info));
+      LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi());
 
   // Blow away the partial or corrupt sync data folder before doing any more
   // initialization, if necessary.

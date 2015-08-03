@@ -17,9 +17,9 @@
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/version_info/version_info.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
@@ -245,8 +245,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, ForceShutdown) {
   base::ProcessId service_pid;
   EXPECT_TRUE(GetServiceProcessData(NULL, &service_pid));
   EXPECT_NE(static_cast<base::ProcessId>(0), service_pid);
-  chrome::VersionInfo version_info;
-  ForceServiceProcessShutdown(version_info.Version(), service_pid);
+  ForceServiceProcessShutdown(version_info::GetVersionNumber(), service_pid);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, CheckPid) {

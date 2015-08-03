@@ -15,10 +15,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "chrome/common/mac/app_shim_messages.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/version_info/version_info.h"
 #include "content/public/test/test_utils.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
@@ -280,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTestSocketFiles,
   // Check that the RunningChromeVersion file is correctly written.
   base::FilePath version;
   EXPECT_TRUE(base::ReadSymbolicLink(version_path_, &version));
-  EXPECT_EQ(chrome::VersionInfo().Version(), version.value());
+  EXPECT_EQ(version_info::GetVersionNumber(), version.value());
 }
 
 }  // namespace

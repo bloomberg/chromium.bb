@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
 
 #import <Foundation/Foundation.h>
 
 #include "base/basictypes.h"
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/version_info/version_info.h"
 
 namespace chrome {
 
-// static
-std::string VersionInfo::GetVersionStringModifier() {
+std::string GetChannelString() {
 #if defined(GOOGLE_CHROME_BUILD)
   // Use the main Chrome application bundle and not the framework bundle.
   // Keystone keys don't live in the framework.
@@ -42,10 +42,9 @@ std::string VersionInfo::GetVersionStringModifier() {
 #endif
 }
 
-// static
-version_info::Channel VersionInfo::GetChannel() {
+version_info::Channel GetChannel() {
 #if defined(GOOGLE_CHROME_BUILD)
-  std::string channel = GetVersionStringModifier();
+  std::string channel = GetChannelString();
   if (channel.empty()) {
     return version_info::Channel::STABLE;
   } else if (channel == "beta") {

@@ -7,7 +7,8 @@
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
+#include "components/version_info/version_info.h"
 
 namespace {
 
@@ -35,14 +36,14 @@ ChromeUpdateQueryParamsDelegate::GetInstance() {
 }
 
 std::string ChromeUpdateQueryParamsDelegate::GetExtraParams() {
-  return base::StringPrintf("&prodchannel=%s&prodversion=%s&lang=%s",
-                            GetChannelString(),
-                            chrome::VersionInfo().Version().c_str(), GetLang());
+  return base::StringPrintf(
+      "&prodchannel=%s&prodversion=%s&lang=%s", GetChannelString(),
+      version_info::GetVersionNumber().c_str(), GetLang());
 }
 
 // static
 const char* ChromeUpdateQueryParamsDelegate::GetChannelString() {
-  switch (chrome::VersionInfo::GetChannel()) {
+  switch (chrome::GetChannel()) {
     case version_info::Channel::STABLE:
       return kStable;
       break;

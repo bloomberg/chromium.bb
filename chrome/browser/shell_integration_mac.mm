@@ -7,13 +7,13 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
+#include "components/version_info/version_info.h"
 #import "third_party/mozilla/NSWorkspace+Utils.h"
 
 ShellIntegration::DefaultWebClientSetPermission
     ShellIntegration::CanSetAsDefaultBrowser() {
-  if (chrome::VersionInfo::GetChannel() !=
-          version_info::Channel::CANARY) {
+  if (chrome::GetChannel() != version_info::Channel::CANARY) {
     return SET_DEFAULT_UNATTENDED;
   }
 

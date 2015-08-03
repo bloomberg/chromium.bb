@@ -81,10 +81,10 @@
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pepper_permission_util.h"
@@ -110,6 +110,7 @@
 #include "components/translate/core/common/translate_switches.h"
 #include "components/url_fixer/url_fixer.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_ppapi_host.h"
@@ -1320,7 +1321,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #if defined(ENABLE_WEBRTC)
     MaybeCopyDisableWebRtcEncryptionSwitch(command_line,
                                            browser_command_line,
-                                           VersionInfo::GetChannel());
+                                           chrome::GetChannel());
 #endif
 
     if (process) {
@@ -2358,8 +2359,7 @@ base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
   base::string16 sid;
 
 #if defined(GOOGLE_CHROME_BUILD)
-  const version_info::Channel channel =
-      chrome::VersionInfo::GetChannel();
+  const version_info::Channel channel = chrome::GetChannel();
 
   // It's possible to have a SxS installation running at the same time as a
   // non-SxS so isolate them from each other.

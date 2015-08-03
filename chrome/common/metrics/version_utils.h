@@ -7,8 +7,11 @@
 
 #include <string>
 
-#include "chrome/common/chrome_version_info.h"
 #include "components/metrics/proto/system_profile.pb.h"
+
+namespace version_info {
+enum class Channel;
+}
 
 namespace metrics {
 

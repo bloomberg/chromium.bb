@@ -14,7 +14,8 @@
 #include "base/win/iat_patch_function.h"
 #include "base/win/pe_image.h"
 #include "base/win/scoped_handle.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
+#include "components/version_info/version_info.h"
 
 namespace {
 
@@ -184,7 +185,7 @@ bool UseHooks() {
 #if defined(ARCH_CPU_X86_64)
   return false;
 #elif defined(NDEBUG)
-  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::GetChannel();
   if (channel == version_info::Channel::CANARY ||
       channel == version_info::Channel::DEV ||
       channel == version_info::Channel::UNKNOWN) {

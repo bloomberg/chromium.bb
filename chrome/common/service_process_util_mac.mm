@@ -26,8 +26,8 @@
 #include "base/version.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/mac/launchd.h"
+#include "components/version_info/version_info.h"
 #include "ipc/unix_domain_socket_util.h"
 
 using ::base::FilePathWatcher;
@@ -208,8 +208,7 @@ bool CheckServiceProcessReady() {
   if (!service_version.IsValid()) {
     ready = false;
   } else {
-    chrome::VersionInfo version_info;
-    Version running_version(version_info.Version());
+    Version running_version(version_info::GetVersionNumber());
     if (!running_version.IsValid()) {
       // Our own version is invalid. This is an error case. Pretend that we
       // are out of date.

@@ -22,10 +22,11 @@
 #include "chrome/browser/media/webrtc_log_uploader.h"
 #include "chrome/browser/media/webrtc_rtp_dump_handler.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/media/webrtc_logging_messages.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -573,9 +574,8 @@ void WebRtcLoggingHandlerHost::LogInitialInfoOnIOThread(
   }
 
   // Chrome version
-  chrome::VersionInfo version_info;
-  LogToCircularBuffer("Chrome version: " + version_info.Version() + " " +
-                      chrome::VersionInfo::GetVersionStringModifier());
+  LogToCircularBuffer("Chrome version: " + version_info::GetVersionNumber() +
+                      " " + chrome::GetChannelString());
 
   // OS
   LogToCircularBuffer(base::SysInfo::OperatingSystemName() + " " +

@@ -6,9 +6,9 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/version.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/version_info/version_info.h"
 
 // static
 void ChromeVersionService::RegisterProfilePrefs(
@@ -30,13 +30,10 @@ std::string ChromeVersionService::GetVersion(PrefService* prefs) {
 // static
 void ChromeVersionService::OnProfileLoaded(PrefService* prefs,
                                            bool is_new_profile) {
-  // Obtain the Chrome version info.
-  chrome::VersionInfo version_info;
-
   // If this is a new profile set version to current version, otherwise
   // (pre-existing profile), leave pref at default value (1.0.0.0) to
   // avoid any first-run behavior.
-  std::string version = version_info.Version();
+  std::string version = version_info::GetVersionNumber();
   if (prefs->FindPreference(prefs::kProfileCreatedByVersion)->
       IsDefaultValue() && is_new_profile) {
     SetVersion(prefs, version);

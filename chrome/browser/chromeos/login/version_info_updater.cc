@@ -17,10 +17,10 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -101,13 +101,11 @@ void VersionInfoUpdater::UpdateVersionLabel() {
 
   UpdateSerialNumberInfo();
 
-  chrome::VersionInfo version_info;
   std::string label_text = l10n_util::GetStringFUTF8(
       IDS_LOGIN_VERSION_LABEL_FORMAT,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-      base::UTF8ToUTF16(version_info.Version()),
-      base::UTF8ToUTF16(version_text_),
-      base::UTF8ToUTF16(serial_number_text_));
+      base::UTF8ToUTF16(version_info::GetVersionNumber()),
+      base::UTF8ToUTF16(version_text_), base::UTF8ToUTF16(serial_number_text_));
 
   // Workaround over incorrect width calculation in old fonts.
   // TODO(glotov): remove the following line when new fonts are used.

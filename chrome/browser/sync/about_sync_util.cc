@@ -10,8 +10,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/version_info/version_info.h"
 #include "sync/api/time.h"
 #include "sync/internal_api/public/util/sync_string_conversions.h"
 #include "sync/protocol/proto_enum_conversions.h"
@@ -142,23 +143,20 @@ void IntSyncStat::SetValue(int value) {
 std::string GetVersionString() {
   // Build a version string that matches MakeUserAgentForSyncApi with the
   // addition of channel info and proper OS names.
-  chrome::VersionInfo chrome_version;
-  // GetVersionStringModifier returns empty string for stable channel or
+  // chrome::GetChannelString() returns empty string for stable channel or
   // unofficial builds, the channel string otherwise. We want to have "-devel"
   // for unofficial builds only.
-  std::string version_modifier =
-      chrome::VersionInfo::GetVersionStringModifier();
+  std::string version_modifier = chrome::GetChannelString();
   if (version_modifier.empty()) {
-    if (chrome::VersionInfo::GetChannel() !=
-            version_info::Channel::STABLE) {
+    if (chrome::GetChannel() != version_info::Channel::STABLE) {
       version_modifier = "-devel";
     }
   } else {
     version_modifier = " " + version_modifier;
   }
-  return chrome_version.Name() + " " + chrome_version.OSType() + " " +
-      chrome_version.Version() + " (" + chrome_version.LastChange() + ")" +
-      version_modifier;
+  return version_info::GetProductName() + " " + version_info::GetOSType() +
+         " " + version_info::GetVersionNumber() + " (" +
+         version_info::GetLastChange() + ")" + version_modifier;
 }
 
 std::string GetTimeStr(base::Time time, const std::string& default_msg) {

@@ -17,9 +17,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/mac/launchd.h"
 #include "chrome/common/service_process_util.h"
+#include "components/version_info/version_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 static sockaddr_un* throwaway_sockaddr_un;
@@ -49,8 +49,6 @@ bool MockLaunchd::MakeABundle(const base::FilePath& dst,
     return false;
   }
 
-  chrome::VersionInfo version_info;
-
   const char info_plist_format[] =
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
       "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" "
@@ -75,7 +73,7 @@ bool MockLaunchd::MakeABundle(const base::FilePath& dst,
       base::StringPrintf(info_plist_format,
                          name.c_str(),
                          name.c_str(),
-                         version_info.Version().c_str());
+                         version_info::GetVersionNumber().c_str());
   len = info_plist_data.length();
   if (base::WriteFile(info_plist, info_plist_data.c_str(), len) != len) {
     return false;

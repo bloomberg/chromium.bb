@@ -20,9 +20,10 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/metrics/thread_watcher_report_hang.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/notification_service.h"
 
 #if defined(OS_WIN)
@@ -449,7 +450,7 @@ void ThreadWatcherList::ParseCommandLine(
 
   // Increase the unresponsive_threshold on the Stable and Beta channels to
   // reduce the number of crashes due to ThreadWatcher.
-  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::GetChannel();
   if (channel == version_info::Channel::STABLE) {
     *unresponsive_threshold *= 4;
   } else if (channel == version_info::Channel::BETA) {
@@ -542,7 +543,7 @@ void ThreadWatcherList::InitializeAndStartWatching(
   // stable channel, disable ThreadWatcher in stable and unknown channels. We
   // will also not collect histogram data in these channels until
   // http://crbug.com/426203 is fixed.
-  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::GetChannel();
   if (channel == version_info::Channel::STABLE ||
       channel == version_info::Channel::UNKNOWN) {
     return;
@@ -919,7 +920,7 @@ void ShutdownWatcherHelper::Arm(const base::TimeDelta& duration) {
   DCHECK(!shutdown_watchdog_);
   base::TimeDelta actual_duration = duration;
 
-  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::GetChannel();
   if (channel == version_info::Channel::STABLE) {
     actual_duration *= 20;
   } else if (channel == version_info::Channel::BETA ||

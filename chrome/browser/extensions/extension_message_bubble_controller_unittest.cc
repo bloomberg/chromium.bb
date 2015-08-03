@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/settings_api_bubble_controller.h"
 #include "chrome/browser/extensions/suspicious_extension_bubble_controller.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"

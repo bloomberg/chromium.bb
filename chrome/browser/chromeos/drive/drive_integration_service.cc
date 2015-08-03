@@ -31,7 +31,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/drive/drive_api_util.h"
@@ -42,6 +41,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -77,8 +77,7 @@ const base::FilePath::CharType kTemporaryFileDirectory[] =
 std::string GetDriveUserAgent() {
   const char kDriveClientName[] = "chromedrive";
 
-  chrome::VersionInfo version_info;
-  const std::string version = version_info.Version();
+  const std::string version = version_info::GetVersionNumber();
 
   // This part is <client_name>/<version>.
   const char kLibraryInfo[] = "chrome-cc/none";

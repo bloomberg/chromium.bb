@@ -14,7 +14,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/sync_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"

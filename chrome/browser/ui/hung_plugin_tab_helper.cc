@@ -12,11 +12,12 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -355,7 +356,7 @@ void HungPluginTabHelper::KillPlugin(int child_id) {
   // diagnose inter-process deadlocks.
   // Only do that on the Canary channel, for 20% of pepper plugin hangs.
   if (base::RandInt(0, 100) < 20) {
-    version_info::Channel channel = chrome::VersionInfo::GetChannel();
+    version_info::Channel channel = chrome::GetChannel();
     if (channel == version_info::Channel::CANARY) {
       scoped_ptr<OwnedHandleVector> renderer_handles(new OwnedHandleVector);
       HANDLE current_process = ::GetCurrentProcess();

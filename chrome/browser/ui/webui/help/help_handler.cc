@@ -25,13 +25,14 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -382,11 +383,9 @@ void HelpHandler::Observe(int type, const content::NotificationSource& source,
 
 // static
 base::string16 HelpHandler::BuildBrowserVersionString() {
-  chrome::VersionInfo version_info;
+  std::string version = version_info::GetVersionNumber();
 
-  std::string version = version_info.Version();
-
-  std::string modifier = chrome::VersionInfo::GetVersionStringModifier();
+  std::string modifier = chrome::GetChannelString();
   if (!modifier.empty())
     version += " " + modifier;
 

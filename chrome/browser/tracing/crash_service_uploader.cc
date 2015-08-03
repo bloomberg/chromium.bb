@@ -15,7 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "chrome/common/chrome_version_info.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/mime_util.h"
@@ -147,11 +147,10 @@ void TraceCrashServiceUploader::DoUploadOnFileThread(
 #error Platform not supported.
 #endif
 
-  // VersionInfo::ProductNameAndVersionForUserAgent() returns a string like
+  // version_info::GetProductNameAndVersionForUserAgent() returns a string like
   // "Chrome/aa.bb.cc.dd", split out the part before the "/".
-  chrome::VersionInfo version_info;
   std::vector<std::string> product_components = base::SplitString(
-      version_info.ProductNameAndVersionForUserAgent(), "/",
+      version_info::GetProductNameAndVersionForUserAgent(), "/",
       base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   DCHECK_EQ(2U, product_components.size());
   std::string version;

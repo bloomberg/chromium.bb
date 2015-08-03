@@ -11,7 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_version_info.h"
+#include "components/version_info/version_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -84,7 +84,7 @@ TEST(ChromeLocatorTest, GetChromeBundleInfoWithLatestVersion) {
   base::FilePath version_path;
   base::FilePath framework_path;
   EXPECT_TRUE(app_mode::GetChromeBundleInfo(chrome_bundle_path,
-                                            chrome::VersionInfo().Version(),
+                                            version_info::GetVersionNumber(),
                                             &executable_path,
                                             &version_path,
                                             &framework_path));
@@ -121,8 +121,9 @@ TEST(ChromeLocatorTest, GetChromeBundleInfoWithPreviousVersion) {
   base::FilePath fake_version_directory = chrome_bundle_path.Append("Contents")
                                               .Append("Versions")
                                               .Append("previous_version");
-  EXPECT_TRUE(base::CreateSymbolicLink(
-      base::FilePath(chrome::VersionInfo().Version()), fake_version_directory));
+  EXPECT_TRUE(
+      base::CreateSymbolicLink(base::FilePath(version_info::GetVersionNumber()),
+                               fake_version_directory));
 
   base::FilePath executable_path;
   base::FilePath version_path;

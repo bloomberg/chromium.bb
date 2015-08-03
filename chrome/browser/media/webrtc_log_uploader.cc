@@ -17,8 +17,8 @@
 #include "chrome/browser/media/media_url_constants.h"
 #include "chrome/browser/media/webrtc_log_list.h"
 #include "chrome/browser/media/webrtc_log_util.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/partial_circular_buffer.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/mime_util.h"
 #include "net/url_request/url_fetcher.h"
@@ -351,8 +351,8 @@ void WebRtcLogUploader::SetupMultipart(
 #endif
   net::AddMultipartValueForUpload("prod", product, kMultipartBoundary,
                                   "", post_data);
-  chrome::VersionInfo version_info;
-  net::AddMultipartValueForUpload("ver", version_info.Version() + "-webrtc",
+  net::AddMultipartValueForUpload("ver",
+                                  version_info::GetVersionNumber() + "-webrtc",
                                   kMultipartBoundary, "", post_data);
   net::AddMultipartValueForUpload("guid", "0", kMultipartBoundary,
                                   "", post_data);

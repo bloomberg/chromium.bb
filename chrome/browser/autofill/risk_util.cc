@@ -13,11 +13,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_content_client.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/content/browser/risk/fingerprint.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "components/metrics/metrics_service.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"
 
 #if !defined(OS_ANDROID)
@@ -81,7 +81,7 @@ void LoadRiskData(uint64 obfuscated_gaia_id,
       g_browser_process->metrics_service()->GetInstallDate());
 
   risk::GetFingerprint(obfuscated_gaia_id, window_bounds, web_contents,
-                       chrome::VersionInfo().Version(), charset,
+                       version_info::GetVersionNumber(), charset,
                        accept_languages, install_time,
                        g_browser_process->GetApplicationLocale(),
                        GetUserAgent(), base::Bind(PassRiskData, callback));

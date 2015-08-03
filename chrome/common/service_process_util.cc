@@ -19,8 +19,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
+#include "components/version_info/version_info.h"
 #include "content/public/common/content_paths.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "ui/base/ui_base_switches.h"
@@ -77,8 +77,7 @@ ServiceProcessRunningState GetServiceProcessRunningState(
     return SERVICE_OLDER_VERSION_RUNNING;
 
   // Get the version of the currently *running* instance of Chrome.
-  chrome::VersionInfo version_info;
-  Version running_version(version_info.Version());
+  Version running_version(version_info::GetVersionNumber());
   if (!running_version.IsValid()) {
     NOTREACHED() << "Failed to parse version info";
     // Our own version is invalid. This is an error case. Pretend that we
@@ -102,8 +101,7 @@ ServiceProcessRunningState GetServiceProcessRunningState(
 std::string GetServiceProcessScopedVersionedName(
     const std::string& append_str) {
   std::string versioned_str;
-  chrome::VersionInfo version_info;
-  versioned_str.append(version_info.Version());
+  versioned_str.append(version_info::GetVersionNumber());
   versioned_str.append(append_str);
   return GetServiceProcessScopedName(versioned_str);
 }
@@ -235,11 +233,10 @@ bool ServiceProcessState::HandleOtherVersion() {
 }
 
 bool ServiceProcessState::CreateSharedData() {
-  chrome::VersionInfo version_info;
-  if (version_info.Version().length() >= kMaxVersionStringLength) {
-    NOTREACHED() << "Version string length is << " <<
-        version_info.Version().length() << "which is longer than" <<
-        kMaxVersionStringLength;
+  if (version_info::GetVersionNumber().length() >= kMaxVersionStringLength) {
+    NOTREACHED() << "Version string length is << "
+                 << version_info::GetVersionNumber().length()
+                 << " which is longer than" << kMaxVersionStringLength;
     return false;
   }
 
@@ -261,8 +258,9 @@ bool ServiceProcessState::CreateSharedData() {
   ServiceProcessSharedData* shared_data =
       reinterpret_cast<ServiceProcessSharedData*>(
           shared_mem_service_data->memory());
-  memcpy(shared_data->service_process_version, version_info.Version().c_str(),
-         version_info.Version().length());
+  memcpy(shared_data->service_process_version,
+         version_info::GetVersionNumber().c_str(),
+         version_info::GetVersionNumber().length());
   shared_data->service_process_pid = base::GetCurrentProcId();
   shared_mem_service_data_.reset(shared_mem_service_data.release());
   return true;

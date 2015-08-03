@@ -6,14 +6,13 @@
 
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "chrome/app/android/chrome_main_delegate_android.h"
-#include "chrome/common/chrome_version_info.h"
+#include "components/version_info/version_info.h"
 #include "content/public/app/content_main.h"
 
 bool RunChrome() {
   // Pass the library version number to content so that we can check it from the
   // Java side before continuing initialization
-  chrome::VersionInfo vi;
-  base::android::SetVersionNumber(vi.Version().c_str());
+  base::android::SetVersionNumber(version_info::GetVersionNumber().c_str());
   content::SetContentMainDelegate(ChromeMainDelegateAndroid::Create());
 
   return true;

@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -39,8 +38,7 @@ TEST(SyncUtilTest, GetSyncServiceURLWithBadCommandLineSwitch) {
 }
 
 TEST(SyncUtilTest, MakeUserAgentForSync) {
-  chrome::VersionInfo version_info;
-  std::string user_agent = MakeUserAgentForSync(version_info, "TEST");
+  std::string user_agent = MakeUserAgentForSync("TEST");
   ASSERT_TRUE(base::StartsWith(user_agent, "Chrome TEST",
                                base::CompareCase::SENSITIVE));
 }

@@ -6,8 +6,9 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
+#include "components/version_info/version_info.h"
 #include "url/gurl.h"
 
 namespace {
@@ -45,7 +46,7 @@ GURL GetSyncServiceURL(const base::CommandLine& command_line) {
   // will go to the standard sync servers.
   GURL result(internal::kSyncDevServerUrl);
 
-  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::GetChannel();
   if (channel == version_info::Channel::STABLE ||
       channel == version_info::Channel::BETA) {
     result = GURL(internal::kSyncServerUrl);
@@ -69,8 +70,7 @@ GURL GetSyncServiceURL(const base::CommandLine& command_line) {
   return result;
 }
 
-std::string MakeDesktopUserAgentForSync(
-    const chrome::VersionInfo& version_info) {
+std::string MakeDesktopUserAgentForSync() {
   std::string system = "";
 #if defined(OS_WIN)
   system = "WIN ";
@@ -83,21 +83,19 @@ std::string MakeDesktopUserAgentForSync(
 #elif defined(OS_MACOSX)
   system = "MAC ";
 #endif
-  return MakeUserAgentForSync(version_info, system);
+  return MakeUserAgentForSync(system);
 }
 
-std::string MakeUserAgentForSync(const chrome::VersionInfo& version_info,
-                                 const std::string& system) {
+std::string MakeUserAgentForSync(const std::string& system) {
   std::string user_agent;
   user_agent = "Chrome ";
   user_agent += system;
-  user_agent += version_info.Version();
-  user_agent += " (" + version_info.LastChange() + ")";
-  if (!version_info.IsOfficialBuild()) {
+  user_agent += version_info::GetVersionNumber();
+  user_agent += " (" + version_info::GetLastChange() + ")";
+  if (!version_info::IsOfficialBuild()) {
     user_agent += "-devel";
   } else {
-    user_agent +=
-        " channel(" + ChannelToString(version_info.GetChannel()) + ")";
+    user_agent += " channel(" + ChannelToString(chrome::GetChannel()) + ")";
   }
   return user_agent;
 }

@@ -23,7 +23,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
+#include "components/version_info/version_info.h"
 #include "testing/multiprocess_func_list.h"
 
 #if defined(OS_WIN)
@@ -62,10 +62,10 @@ void ShutdownTask(base::MessageLoop* loop) {
 TEST(ServiceProcessUtilTest, ScopedVersionedName) {
   std::string test_str = "test";
   std::string scoped_name = GetServiceProcessScopedVersionedName(test_str);
-  chrome::VersionInfo version_info;
   EXPECT_TRUE(base::EndsWith(scoped_name, test_str,
                              base::CompareCase::SENSITIVE));
-  EXPECT_NE(std::string::npos, scoped_name.find(version_info.Version()));
+  EXPECT_NE(std::string::npos,
+            scoped_name.find(version_info::GetVersionNumber()));
 }
 
 class ServiceProcessStateTest : public base::MultiProcessTest {

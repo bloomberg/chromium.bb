@@ -15,9 +15,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/version_info/version_info.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
@@ -126,8 +127,7 @@ bool ShowFirstRun(Profile* profile) {
 // True when the stats checkbox should be checked by default. This is only
 // the case when the canary is running.
 bool StatsCheckboxDefault() {
-  return chrome::VersionInfo::GetChannel() ==
-      version_info::Channel::CANARY;
+  return chrome::GetChannel() == version_info::Channel::CANARY;
 }
 
 }  // namespace

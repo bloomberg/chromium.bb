@@ -5,8 +5,9 @@
 #include "chrome/browser/guest_view/web_view/context_menu_content_type_web_view.h"
 
 #include "base/command_line.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
+#include "components/version_info/version_info.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
@@ -47,8 +48,7 @@ bool ContextMenuContentTypeWebView::SupportsGroup(int group) {
       return true;
     case ITEM_GROUP_DEVELOPER:
       {
-        if (chrome::VersionInfo::GetChannel() >=
-                version_info::Channel::DEV) {
+      if (chrome::GetChannel() >= version_info::Channel::DEV) {
           // Hide dev tools items in guests inside WebUI if we are not running
           // canary or tott.
           auto web_view_guest =

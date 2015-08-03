@@ -10,10 +10,10 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome_elf/chrome_elf_constants.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/version_info/version_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "version.h"  // NOLINT
@@ -76,8 +76,7 @@ TEST_F(ChromeBlacklistTrialTest, DefaultRun) {
   // Ensure the beacon values are now correct, indicating the
   // blacklist beacon was setup.
   ASSERT_EQ(blacklist::BLACKLIST_ENABLED, GetBlacklistState());
-  chrome::VersionInfo version_info;
-  base::string16 version(base::UTF8ToUTF16(version_info.Version()));
+  base::string16 version(base::UTF8ToUTF16(version_info::GetVersionNumber()));
   ASSERT_EQ(version, GetBlacklistVersion());
 }
 
@@ -112,8 +111,7 @@ TEST_F(ChromeBlacklistTrialTest, VerifyFirstRun) {
   // Verify the state is properly set after the first run.
   ASSERT_EQ(blacklist::BLACKLIST_ENABLED, GetBlacklistState());
 
-  chrome::VersionInfo version_info;
-  base::string16 version(base::UTF8ToUTF16(version_info.Version()));
+  base::string16 version(base::UTF8ToUTF16(version_info::GetVersionNumber()));
   ASSERT_EQ(version, GetBlacklistVersion());
 }
 
@@ -146,8 +144,8 @@ TEST_F(ChromeBlacklistTrialTest, VersionChanged) {
   // The beacon should now be marked as enabled for the current version.
   ASSERT_EQ(blacklist::BLACKLIST_ENABLED, GetBlacklistState());
 
-  chrome::VersionInfo version_info;
-  base::string16 expected_version(base::UTF8ToUTF16(version_info.Version()));
+  base::string16 expected_version(
+      base::UTF8ToUTF16(version_info::GetVersionNumber()));
   ASSERT_EQ(expected_version, GetBlacklistVersion());
 
   // The counter should be reset.

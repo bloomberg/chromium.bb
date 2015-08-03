@@ -12,8 +12,8 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
+#include "components/version_info/version_info.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 
@@ -30,11 +30,10 @@ SafeBrowsingProtocolConfig::~SafeBrowsingProtocolConfig() {
 
 // static
 std::string SafeBrowsingProtocolManagerHelper::Version() {
-  chrome::VersionInfo version_info;
-  if (version_info.Version().empty())
+  if (version_info::GetVersionNumber().empty())
     return "0.1";
   else
-    return version_info.Version();
+    return version_info::GetVersionNumber();
 }
 
 // static

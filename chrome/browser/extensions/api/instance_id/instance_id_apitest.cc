@@ -15,6 +15,7 @@
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h"
+#include "components/version_info/version_info.h"
 #include "extensions/test/result_catcher.h"
 
 using extensions::ResultCatcher;

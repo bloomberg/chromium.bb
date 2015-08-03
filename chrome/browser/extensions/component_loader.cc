@@ -23,14 +23,15 @@
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/crx_file/id_util.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "extensions/common/constants.h"
@@ -395,7 +396,7 @@ void ComponentLoader::AddGoogleNowExtension() {
 
   // Enable the feature on trybots and trunk builds.
   bool enabled_via_trunk_build =
-      chrome::VersionInfo::GetChannel() == version_info::Channel::UNKNOWN;
+      chrome::GetChannel() == version_info::Channel::UNKNOWN;
 
   bool is_authenticated =
       SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated();

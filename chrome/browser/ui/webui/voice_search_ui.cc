@@ -22,14 +22,15 @@
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/browser/ui/webui/version_handler.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/url_data_source.h"
@@ -209,14 +210,13 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
   // Adds information regarding the system and chrome version info to list.
   void AddOperatingSystemInfo(base::ListValue* list)  {
     // Obtain the Chrome version info.
-    chrome::VersionInfo version_info;
     AddPair(list,
             l10n_util::GetStringUTF8(IDS_PRODUCT_NAME),
-            version_info.Version() + " (" +
-            chrome::VersionInfo::GetVersionStringModifier() + ")");
+            version_info::GetVersionNumber() + " (" +
+            chrome::GetChannelString() + ")");
 
     // OS version information.
-    std::string os_label = version_info.OSType();
+    std::string os_label = version_info::GetOSType();
 #if defined(OS_WIN)
     base::win::OSInfo* os = base::win::OSInfo::GetInstance();
     switch (os->version()) {

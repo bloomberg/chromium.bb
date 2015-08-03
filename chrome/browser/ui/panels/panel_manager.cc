@@ -16,8 +16,9 @@
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/ui/panels/panel_resize_controller.h"
 #include "chrome/browser/ui/panels/stacked_panel_collection.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/base/hit_test.h"
@@ -122,7 +123,7 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
   }
 #endif  // USE_X11 && !OS_CHROMEOS
 
-  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::GetChannel();
   if (channel == version_info::Channel::STABLE ||
       channel == version_info::Channel::BETA) {
     return base::CommandLine::ForCurrentProcess()->HasSwitch(

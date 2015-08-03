@@ -18,11 +18,12 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -186,7 +187,7 @@ void FlagsDOMHandler::HandleRequestFlagsExperiments(
                      access_ == about_flags::kGeneralAccessFlagsOnly);
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::GetChannel();
   results.SetBoolean("showBetaChannelPromotion",
                      channel == version_info::Channel::STABLE);
   results.SetBoolean("showDevChannelPromotion",

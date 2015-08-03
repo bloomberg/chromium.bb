@@ -36,14 +36,15 @@
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/common/user_agent.h"
@@ -866,7 +867,7 @@ void IOThread::Init() {
   globals_->proxy_script_fetcher_context.reset(
       ConstructProxyScriptFetcherContext(globals_, net_log_));
 
-  const version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  const version_info::Channel channel = chrome::GetChannel();
   if (channel == version_info::Channel::UNKNOWN ||
       channel == version_info::Channel::CANARY ||
       channel == version_info::Channel::DEV) {
@@ -1316,12 +1317,11 @@ void IOThread::ConfigureQuicGlobals(
     globals->quic_max_packet_length.set(max_packet_length);
   }
 
-  std::string quic_user_agent_id =
-      chrome::VersionInfo::GetVersionStringModifier();
+  std::string quic_user_agent_id = chrome::GetChannelString();
   if (!quic_user_agent_id.empty())
     quic_user_agent_id.push_back(' ');
-  chrome::VersionInfo version_info;
-  quic_user_agent_id.append(version_info.ProductNameAndVersionForUserAgent());
+  quic_user_agent_id.append(
+      version_info::GetProductNameAndVersionForUserAgent());
   quic_user_agent_id.push_back(' ');
   quic_user_agent_id.append(content::BuildOSCpuInfo());
   globals->quic_user_agent_id.set(quic_user_agent_id);

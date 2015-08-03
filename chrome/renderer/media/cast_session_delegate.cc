@@ -10,9 +10,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/renderer/media/cast_threads.h"
 #include "chrome/renderer/media/cast_transport_sender_ipc.h"
+#include "components/version_info/version_info.h"
 #include "content/public/renderer/render_thread.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
@@ -211,10 +211,9 @@ void CastSessionDelegate::GetEventLogsAndReset(
     metadata.set_extra_data(extra_data);
   media::cast::proto::GeneralDescription* gen_desc =
       metadata.mutable_general_description();
-  chrome::VersionInfo version_info;
-  gen_desc->set_product(version_info.Name());
-  gen_desc->set_product_version(version_info.Version());
-  gen_desc->set_os(version_info.OSType());
+  gen_desc->set_product(version_info::GetProductName());
+  gen_desc->set_product_version(version_info::GetVersionNumber());
+  gen_desc->set_os(version_info::GetOSType());
 
   scoped_ptr<char[]> serialized_log(new char[media::cast::kMaxSerializedBytes]);
   int output_bytes;

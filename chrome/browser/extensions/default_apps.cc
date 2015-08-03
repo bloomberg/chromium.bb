@@ -14,10 +14,10 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/version_info/version_info.h"
 #include "extensions/common/extension.h"
 
 namespace {
@@ -76,9 +76,8 @@ bool Provider::ShouldInstallInProfile() {
       // Only new installations and profiles get default apps. In theory the
       // new profile checks should catch new installations, but that is not
       // always the case (http:/crbug.com/145351).
-      chrome::VersionInfo version_info;
-      bool is_new_profile =
-          profile_->WasCreatedByVersionOrLater(version_info.Version().c_str());
+      bool is_new_profile = profile_->WasCreatedByVersionOrLater(
+          version_info::GetVersionNumber());
       bool is_first_run = first_run::IsChromeFirstRun();
       if (!is_first_run && !is_new_profile)
         install_apps = false;

@@ -4,7 +4,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/sync_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/util/get_session_name.h"
@@ -47,17 +47,16 @@ LocalDeviceInfoProviderImpl::~LocalDeviceInfoProviderImpl() {
 }
 
 // static.
-std::string LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi(
-    const chrome::VersionInfo& version_info) {
+std::string LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi() {
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  return MakeDesktopUserAgentForSync(version_info);
+  return MakeDesktopUserAgentForSync();
 #elif defined(OS_CHROMEOS)
-  return MakeUserAgentForSync(version_info, "CROS ");
+  return MakeUserAgentForSync("CROS ");
 #elif defined(OS_ANDROID)
   if (IsTabletUI())
-    return MakeUserAgentForSync(version_info, "ANDROID-TABLET ");
+    return MakeUserAgentForSync("ANDROID-TABLET ");
   else
-    return MakeUserAgentForSync(version_info, "ANDROID-PHONE ");
+    return MakeUserAgentForSync("ANDROID-PHONE ");
 #endif
 }
 
@@ -94,13 +93,11 @@ void LocalDeviceInfoProviderImpl::InitializeContinuation(
     const std::string& guid,
     const std::string& signin_scoped_device_id,
     const std::string& session_name) {
-  chrome::VersionInfo version_info;
-
   local_device_info_.reset(
       new sync_driver::DeviceInfo(guid,
                                   session_name,
-                                  version_info.CreateVersionString(),
-                                  MakeUserAgentForSyncApi(version_info),
+                                  chrome::GetVersionString(),
+                                  MakeUserAgentForSyncApi(),
                                   GetLocalDeviceType(),
                                   signin_scoped_device_id));
 

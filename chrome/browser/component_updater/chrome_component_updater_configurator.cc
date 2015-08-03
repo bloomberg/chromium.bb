@@ -17,9 +17,9 @@
 #include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
 #include "chrome/browser/component_updater/component_updater_url_constants.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
-#include "chrome/common/chrome_version_info.h"
 #include "components/component_updater/component_updater_switches.h"
 #include "components/update_client/configurator.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
@@ -218,7 +218,7 @@ std::vector<GURL> ChromeConfigurator::PingUrl() const {
 }
 
 base::Version ChromeConfigurator::GetBrowserVersion() const {
-  return base::Version(chrome::VersionInfo().Version());
+  return base::Version(version_info::GetVersionNumber());
 }
 
 std::string ChromeConfigurator::GetChannel() const {
@@ -230,7 +230,7 @@ std::string ChromeConfigurator::GetLang() const {
 }
 
 std::string ChromeConfigurator::GetOSLongName() const {
-  return chrome::VersionInfo().OSType();
+  return version_info::GetOSType();
 }
 
 std::string ChromeConfigurator::ExtraRequestParams() const {

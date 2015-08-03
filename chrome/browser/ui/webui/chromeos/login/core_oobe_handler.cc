@@ -19,12 +19,13 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_constants.h"
 #include "components/login/localized_values_builder.h"
+#include "components/version_info/version_info.h"
 #include "grit/components_strings.h"
 #include "ui/chromeos/accessibility_types.h"
 #include "ui/gfx/display.h"
@@ -344,7 +345,7 @@ void CoreOobeHandler::UpdateA11yState() {
 void CoreOobeHandler::UpdateOobeUIVisibility() {
   // Don't show version label on the stable channel by default.
   bool should_show_version = true;
-  version_info::Channel channel = chrome::VersionInfo::GetChannel();
+  version_info::Channel channel = chrome::GetChannel();
   if (channel == version_info::Channel::STABLE ||
       channel == version_info::Channel::BETA) {
     should_show_version = false;

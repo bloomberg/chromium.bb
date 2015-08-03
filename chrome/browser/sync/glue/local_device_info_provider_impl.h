@@ -9,10 +9,6 @@
 #include "components/sync_driver/device_info.h"
 #include "components/sync_driver/local_device_info_provider.h"
 
-namespace chrome {
-class VersionInfo;
-}
-
 namespace browser_sync {
 
 class LocalDeviceInfoProviderImpl
@@ -32,8 +28,7 @@ class LocalDeviceInfoProviderImpl
   // Helper to construct a user agent string (ASCII) suitable for use by
   // the syncapi for any HTTP communication. This string is used by the sync
   // backend for classifying client types when calculating statistics.
-  static std::string MakeUserAgentForSyncApi(
-      const chrome::VersionInfo& version_info);
+  static std::string MakeUserAgentForSyncApi();
 
  private:
   void InitializeContinuation(const std::string& guid,

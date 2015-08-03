@@ -14,7 +14,7 @@
 #include "base/version.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/ui/kiosk_external_update_notification.h"
-#include "chrome/common/chrome_version_info.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/common/extension.h"
@@ -384,9 +384,8 @@ bool KioskExternalUpdater::ShouldDoExternalUpdate(
 
   // Check minimum browser version.
   if (!min_browser_version.empty()) {
-    chrome::VersionInfo current_version_info;
-    if (!ShouldUpdateForHigherVersion(
-            min_browser_version, current_version_info.Version(), true)) {
+    if (!ShouldUpdateForHigherVersion(min_browser_version,
+                                      version_info::GetVersionNumber(), true)) {
       external_updates_[app_id].error = l10n_util::GetStringFUTF16(
           IDS_KIOSK_EXTERNAL_UPDATE_REQUIRE_HIGHER_BROWSER_VERSION,
           base::UTF8ToUTF16(min_browser_version));

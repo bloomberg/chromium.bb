@@ -4,7 +4,7 @@
 
 #include "chrome/common/extensions/features/feature_channel.h"
 
-using chrome::VersionInfo;
+#include "components/version_info/version_info.h"
 
 namespace {
 

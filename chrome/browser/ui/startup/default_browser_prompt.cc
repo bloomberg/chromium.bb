@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -29,6 +28,7 @@
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
@@ -270,8 +270,7 @@ void ShowDefaultBrowserPrompt(Profile* profile, HostDesktopType desktop_type) {
     const Version disable_version(disable_version_string);
     DCHECK(disable_version_string.empty() || disable_version.IsValid());
     if (disable_version.IsValid()) {
-      const chrome::VersionInfo version_info;
-      if (disable_version.Equals(Version(version_info.Version())))
+      if (disable_version.Equals(Version(version_info::GetVersionNumber())))
         show_prompt = false;
     }
   }

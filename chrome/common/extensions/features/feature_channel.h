@@ -5,7 +5,11 @@
 #ifndef CHROME_COMMON_EXTENSIONS_FEATURES_FEATURE_CHANNEL_H_
 #define CHROME_COMMON_EXTENSIONS_FEATURES_FEATURE_CHANNEL_H_
 
-#include "chrome/common/chrome_version_info.h"
+#include "base/macros.h"
+
+namespace version_info {
+enum class Channel;
+}
 
 namespace extensions {
 
@@ -13,8 +17,8 @@ namespace extensions {
 version_info::Channel GetCurrentChannel();
 
 // Sets the current channel as seen by the Feature system. In the browser
-// process this should be chrome::VersionInfo::GetChannel(), and in the
-// renderer this will need to come from an IPC.
+// process this should be chrome::GetChannel(), and in the renderer this will
+// need to come from an IPC.
 void SetCurrentChannel(version_info::Channel channel);
 
 // Gets the default channel as seen by the Feature system.

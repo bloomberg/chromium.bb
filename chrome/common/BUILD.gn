@@ -87,7 +87,7 @@ static_library("common") {
   if (is_ios) {
     sources += [
       # Use this Mac file that was filtered out.
-      "chrome_version_info_mac.mm",
+      "channel_info_mac.mm",
     ]
     sources -= [
       "resource_usage_reporter_type_converters.cc",
@@ -193,7 +193,7 @@ static_library("common") {
   if (is_android) {
     sources -= [
       "badge_util.cc",
-      "chrome_version_info_posix.cc",
+      "channel_info_posix.cc",
       "icon_with_badge_image_source.cc",
       "media_galleries/metadata_types.h",
     ]
@@ -204,7 +204,7 @@ static_library("common") {
   }
 
   if (is_chromeos) {
-    sources -= [ "chrome_version_info_posix.cc" ]
+    sources -= [ "channel_info_posix.cc" ]
   }
 
   if (is_win) {
@@ -219,7 +219,7 @@ static_library("common") {
   }
 
   if (is_mac) {
-    sources -= [ "chrome_version_info_posix.cc" ]
+    sources -= [ "channel_info_posix.cc" ]
     deps += [
       "//third_party/mach_override",
       "//third_party/google_toolbox_for_mac",

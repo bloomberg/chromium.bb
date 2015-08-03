@@ -33,13 +33,14 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #import "chrome/common/mac/app_mode_common.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/crx_file/id_util.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -318,7 +319,7 @@ base::FilePath GetLocalizableAppShortcutsSubdirName() {
   static const char kChromeAppDirName[] = "Chrome Apps.localized";
   static const char kChromeCanaryAppDirName[] = "Chrome Canary Apps.localized";
 
-  switch (chrome::VersionInfo::GetChannel()) {
+  switch (chrome::GetChannel()) {
     case version_info::Channel::UNKNOWN:
       return base::FilePath(kChromiumAppDirName);
 
@@ -871,7 +872,7 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
   }
 
   // 2. Fill in other values.
-  [plist setObject:base::SysUTF8ToNSString(chrome::VersionInfo().Version())
+  [plist setObject:base::SysUTF8ToNSString(version_info::GetVersionNumber())
             forKey:app_mode::kCrBundleVersionKey];
   [plist setObject:base::SysUTF8ToNSString(info_->version_for_display)
             forKey:app_mode::kCFBundleShortVersionStringKey];

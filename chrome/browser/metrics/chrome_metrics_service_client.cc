@@ -24,6 +24,7 @@
 #include "chrome/browser/metrics/time_ticks_experiment_win.h"
 #include "chrome/browser/process_resource_usage.h"
 #include "chrome/browser/ui/browser_otr_state.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -40,6 +41,7 @@
 #include "components/metrics/profiler/tracking_synchronizer.h"
 #include "components/metrics/url_constants.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/notification_service.h"
@@ -204,7 +206,7 @@ bool ChromeMetricsServiceClient::GetBrand(std::string* brand_code) {
 }
 
 metrics::SystemProfileProto::Channel ChromeMetricsServiceClient::GetChannel() {
-  return metrics::AsProtobufChannel(chrome::VersionInfo::GetChannel());
+  return metrics::AsProtobufChannel(chrome::GetChannel());
 }
 
 std::string ChromeMetricsServiceClient::GetVersionString() {
@@ -380,7 +382,7 @@ void ChromeMetricsServiceClient::Initialize() {
 
   // Report exit funnels for canary and dev only.
   bool report_exit_funnels = false;
-  switch (chrome::VersionInfo::GetChannel()) {
+  switch (chrome::GetChannel()) {
     case version_info::Channel::CANARY:
     case version_info::Channel::DEV:
       report_exit_funnels = true;

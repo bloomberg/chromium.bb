@@ -16,7 +16,7 @@
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/channel_info.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/metrics/metrics_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -183,8 +183,7 @@ bool ChromeSigninClient::ShouldMergeSigninCredentialsIntoCookieJar() {
 }
 
 std::string ChromeSigninClient::GetProductVersion() {
-  chrome::VersionInfo chrome_version;
-  return chrome_version.CreateVersionString();
+  return chrome::GetVersionString();
 }
 
 bool ChromeSigninClient::IsFirstRun() const {

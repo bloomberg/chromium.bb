@@ -8,9 +8,9 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_version_info.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_model.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/version_info/version_info.h"
 
 namespace {
 const char kVersionPrefix[] = "chrome.";
@@ -45,7 +45,7 @@ KeyedService* EnhancedBookmarkModelFactory::BuildServiceInstanceFor(
 
   return new EnhancedBookmarkModel(
       BookmarkModelFactory::GetForProfile(profile),
-      kVersionPrefix + chrome::VersionInfo().Version());
+      kVersionPrefix + version_info::GetVersionNumber());
 }
 
 content::BrowserContext* EnhancedBookmarkModelFactory::GetBrowserContextToUse(

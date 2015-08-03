@@ -6,8 +6,8 @@
 
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
-#include "chrome/common/chrome_version_info.h"
 #include "components/update_client/update_query_params.h"
+#include "components/version_info/version_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPrintf;
@@ -37,9 +37,9 @@ void TestParams(update_client::UpdateQueryParams::ProdId prod_id) {
       params,
       StringPrintf("prodchannel=%s",
                    ChromeUpdateQueryParamsDelegate::GetChannelString())));
-  EXPECT_TRUE(Contains(
-      params,
-      StringPrintf("prodversion=%s", chrome::VersionInfo().Version().c_str())));
+  EXPECT_TRUE(
+      Contains(params, StringPrintf("prodversion=%s",
+                                    version_info::GetVersionNumber().c_str())));
   EXPECT_TRUE(Contains(
       params,
       StringPrintf("lang=%s", ChromeUpdateQueryParamsDelegate::GetLang())));

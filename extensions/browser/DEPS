@@ -8,6 +8,7 @@ include_rules = [
   "+components/ui/zoom",
   "+components/update_client",
   "+components/variations",
+  "+components/version_info",
   "+components/web_cache",
   "+components/web_modal",
   "+content/public/browser",
