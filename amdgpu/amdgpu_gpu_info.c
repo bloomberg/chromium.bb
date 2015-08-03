@@ -162,6 +162,7 @@ int amdgpu_query_gpu_info_init(amdgpu_device_handle dev)
 	dev->info.vram_bit_width = dev->dev_info.vram_bit_width;
 	dev->info.ce_ram_size = dev->dev_info.ce_ram_size;
 	dev->info.vce_harvest_config = dev->dev_info.vce_harvest_config;
+	dev->info.pci_rev_id = dev->dev_info.pci_rev;
 
 	for (i = 0; i < (int)dev->info.num_shader_engines; i++) {
 		unsigned instance = (i << AMDGPU_INFO_MMR_SE_INDEX_SHIFT) |

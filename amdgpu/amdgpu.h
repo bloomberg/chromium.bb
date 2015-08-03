@@ -466,6 +466,8 @@ struct amdgpu_gpu_info {
 	uint32_t ce_ram_size;
 	/* vce harvesting instance */
 	uint32_t vce_harvest_config;
+	/* PCI revision ID */
+	uint32_t pci_rev_id;
 };
 
 
