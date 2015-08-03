@@ -52,7 +52,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                 allPages.get(0).getOfflineUrl().startsWith("file:///"));
         assertTrue("Offline page item offline file doesn't have the right name.",
                 allPages.get(0).getOfflineUrl().endsWith("About.mhtml"));
-        assertEquals("Offline page item size incorrect.", 627, allPages.get(0).getFileSize());
+        assertEquals("Offline page item size incorrect.", 626, allPages.get(0).getFileSize());
     }
 
     private void savePage(final int expectedResult, final String expectedUrl)
