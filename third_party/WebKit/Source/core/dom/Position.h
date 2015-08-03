@@ -141,12 +141,7 @@ public:
     int computeEditingOffset() const;
 
     // New code should not use this function.
-    int deprecatedEditingOffset() const
-    {
-        if (m_isLegacyEditingPosition || !isAfterAnchorOrAfterChildren())
-            return m_offset;
-        return offsetForPositionAfterAnchor();
-    }
+    int deprecatedEditingOffset() const;
 
     // These are convenience methods which are smart about whether the position is neighbor anchored or parent anchored
     Node* computeNodeBeforePosition() const;
@@ -257,8 +252,6 @@ private:
     {
         return isAfterAnchor() || isAfterChildren();
     }
-
-    int offsetForPositionAfterAnchor() const;
 
     int renderedOffset() const;
 
