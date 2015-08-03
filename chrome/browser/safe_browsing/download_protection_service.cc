@@ -63,110 +63,20 @@ const char DownloadProtectionService::kDownloadRequestUrl[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/download";
 
 namespace {
-// List of extensions for which we track some UMA stats. The position of the
-// extension in kDangerousFileTypes is considered to be the UMA enumeration
-// value. Naturally, new values should only be added at the end.
-const base::FilePath::CharType* const kDangerousFileTypes[] = {
-    FILE_PATH_LITERAL(".exe"),
-    FILE_PATH_LITERAL(".msi"),
-    FILE_PATH_LITERAL(".cab"),
-    FILE_PATH_LITERAL(".sys"),
-    FILE_PATH_LITERAL(".scr"),
-    FILE_PATH_LITERAL(".drv"),
-    FILE_PATH_LITERAL(".bat"),
-    FILE_PATH_LITERAL(".zip"),
-    FILE_PATH_LITERAL(".rar"),
-    FILE_PATH_LITERAL(".dll"),
-    FILE_PATH_LITERAL(".pif"),
-    FILE_PATH_LITERAL(".com"),
-    FILE_PATH_LITERAL(".jar"),
-    FILE_PATH_LITERAL(".class"),
-    FILE_PATH_LITERAL(".pdf"),
-    FILE_PATH_LITERAL(".vb"),
-    FILE_PATH_LITERAL(".reg"),
-    FILE_PATH_LITERAL(".grp"),
-    nullptr,  // The "Other" bucket. This is in the middle of the array due to
-              // historical reasons.
-    FILE_PATH_LITERAL(".crx"),
-    FILE_PATH_LITERAL(".apk"),
-    FILE_PATH_LITERAL(".dmg"),
-    FILE_PATH_LITERAL(".pkg"),
-    FILE_PATH_LITERAL(".torrent"),
-    FILE_PATH_LITERAL(".website"),
-    FILE_PATH_LITERAL(".url"),
-    FILE_PATH_LITERAL(".vbe"),
-    FILE_PATH_LITERAL(".vbs"),
-    FILE_PATH_LITERAL(".js"),
-    FILE_PATH_LITERAL(".jse"),
-    FILE_PATH_LITERAL(".mht"),
-    FILE_PATH_LITERAL(".mhtml"),
-    FILE_PATH_LITERAL(".msc"),
-    FILE_PATH_LITERAL(".msp"),
-    FILE_PATH_LITERAL(".mst"),
-    FILE_PATH_LITERAL(".bas"),
-    FILE_PATH_LITERAL(".hta"),
-    FILE_PATH_LITERAL(".msh"),
-    FILE_PATH_LITERAL(".msh1"),
-    FILE_PATH_LITERAL(".msh1xml"),
-    FILE_PATH_LITERAL(".msh2"),
-    FILE_PATH_LITERAL(".msh2xml"),
-    FILE_PATH_LITERAL(".mshxml"),
-    FILE_PATH_LITERAL(".ps1"),
-    FILE_PATH_LITERAL(".ps1xml"),
-    FILE_PATH_LITERAL(".ps2"),
-    FILE_PATH_LITERAL(".ps2xml"),
-    FILE_PATH_LITERAL(".psc1"),
-    FILE_PATH_LITERAL(".psc2"),
-    FILE_PATH_LITERAL(".scf"),
-    FILE_PATH_LITERAL(".sct"),
-    FILE_PATH_LITERAL(".wsf"),
-    FILE_PATH_LITERAL(".7z"),
-    FILE_PATH_LITERAL(".xz"),
-    FILE_PATH_LITERAL(".gz"),
-    FILE_PATH_LITERAL(".tgz"),
-    FILE_PATH_LITERAL(".bz2"),
-    FILE_PATH_LITERAL(".tar"),
-    FILE_PATH_LITERAL(".arj"),
-    FILE_PATH_LITERAL(".lzh"),
-    FILE_PATH_LITERAL(".lha"),
-    FILE_PATH_LITERAL(".wim"),
-    FILE_PATH_LITERAL(".z"),
-    FILE_PATH_LITERAL(".lzma"),
-    FILE_PATH_LITERAL(".cpio"),
-};
-
-// UMA enumeration value for unrecognized file types. This is the array index of
-// the "Other" bucket in kDangerousFileTypes.
-const int EXTENSION_OTHER = 18;
-
-// Maximum extension ID returned by GetExtensionTypeForUMA() + 1.
-const int EXTENSION_MAX = arraysize(kDangerousFileTypes);
-
-int GetExtensionTypeForUMA(const base::FilePath::StringType& extension) {
-  DCHECK_EQ(static_cast<base::FilePath::CharType*>(nullptr),
-            kDangerousFileTypes[EXTENSION_OTHER]);
-  DCHECK(extension.find(base::FilePath::kExtensionSeparator) == 0 ||
-         extension.empty());
-  DCHECK_EQ(extension, base::FilePath(extension).FinalExtension());
-
-  for (const auto& dangerous_extension : kDangerousFileTypes) {
-    if (dangerous_extension &&
-        base::FilePath::CompareEqualIgnoreCase(dangerous_extension, extension))
-      return &dangerous_extension - kDangerousFileTypes;
-  }
-  return EXTENSION_OTHER;
-}
-
 void RecordFileExtensionType(const base::FilePath& file) {
-  UMA_HISTOGRAM_ENUMERATION("SBClientDownload.DownloadExtensions",
-                            GetExtensionTypeForUMA(file.FinalExtension()),
-                            EXTENSION_MAX);
+  UMA_HISTOGRAM_ENUMERATION(
+      "SBClientDownload.DownloadExtensions",
+      download_protection_util::GetSBClientDownloadExtensionValueForUMA(file),
+      download_protection_util::kSBClientDownloadExtensionsMax);
 }
 
 void RecordArchivedArchiveFileExtensionType(
     const base::FilePath::StringType& extension) {
-  UMA_HISTOGRAM_ENUMERATION("SBClientDownload.ArchivedArchiveExtensions",
-                            GetExtensionTypeForUMA(extension), EXTENSION_MAX);
+  UMA_HISTOGRAM_ENUMERATION(
+      "SBClientDownload.ArchivedArchiveExtensions",
+      download_protection_util::GetSBClientDownloadExtensionValueForUMA(
+          base::FilePath(extension)),
+      download_protection_util::kSBClientDownloadExtensionsMax);
 }
 
 // Enumerate for histogramming purposes.

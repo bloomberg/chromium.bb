@@ -24,6 +24,12 @@ bool IsArchiveFile(const base::FilePath& file);
 // for paths that satisfy IsSupportedBinaryFile() above.
 ClientDownloadRequest::DownloadType GetDownloadType(const base::FilePath& file);
 
+// The maximum value returned by GetSBClientDownloadExtensionValueForUMA() + 1.
+extern const int kSBClientDownloadExtensionsMax;
+
+// SBClientDownloadExtensions UMA enum value corresponding to |file|.
+int GetSBClientDownloadExtensionValueForUMA(const base::FilePath& file);
+
 }  // namespace download_protection_util
 }  // namespace safe_browsing
 

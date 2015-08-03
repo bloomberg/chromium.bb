@@ -67574,6 +67574,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="62" label="Z"/>
   <int value="63" label="LZMA"/>
   <int value="64" label="CPIO"/>
+  <int value="65" label="CMD"/>
+  <int value="66" label="APP"/>
+  <int value="67" label="OSX"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary" type="int">
