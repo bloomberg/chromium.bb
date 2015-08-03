@@ -1687,6 +1687,8 @@
       'webusb/USBController.cpp',
       'webusb/USBController.h',
       'webusb/USBDevice.h',
+      'webusb/USBError.cpp',
+      'webusb/USBError.h',
     ],
     # 'partial interface' or target (right side of) 'implements'
     'modules_testing_dependency_idl_files' : [

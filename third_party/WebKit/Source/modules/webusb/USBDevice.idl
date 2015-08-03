@@ -9,4 +9,18 @@
     RuntimeEnabled=WebUSB,
 ] interface USBDevice {
     readonly attribute DOMString guid;
+    readonly attribute octet usbVersionMajor;
+    readonly attribute octet usbVersionMinor;
+    readonly attribute octet usbVersionSubminor;
+    readonly attribute octet deviceClass;
+    readonly attribute octet deviceSubclass;
+    readonly attribute octet deviceProtocol;
+    readonly attribute unsigned short vendorId;
+    readonly attribute unsigned short productId;
+    readonly attribute octet deviceVersionMajor;
+    readonly attribute octet deviceVersionMinor;
+    readonly attribute octet deviceVersionSubminor;
+    readonly attribute DOMString? manufacturerName;
+    readonly attribute DOMString? productName;
+    readonly attribute DOMString? serialNumber;
 };
