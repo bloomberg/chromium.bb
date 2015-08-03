@@ -10,6 +10,7 @@ cr.define('device_emulator', function() {
 
   function initialize() {
     chrome.send('requestPowerInfo');
+    chrome.send('requestBluetoothInfo');
 
     var toggles = document.getElementsByClassName('menu-item-toggle');
     for (var i = 0; i < toggles.length; ++i) {

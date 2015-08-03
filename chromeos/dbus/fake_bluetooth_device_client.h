@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/scoped_ptr_map.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/bluetooth_agent_service_provider.h"
@@ -36,6 +37,26 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
     void GetAll() override;
     void Set(dbus::PropertyBase* property,
              dbus::PropertySet::SetCallback callback) override;
+  };
+
+  struct SimulatedPairingOptions {
+    std::string pairing_method;
+    std::string pairing_auth_token;
+  };
+
+  // Stores properties of a device that is about to be created.
+  struct IncomingDeviceProperties {
+    IncomingDeviceProperties();
+    ~IncomingDeviceProperties();
+
+    std::string device_name;
+    std::string device_alias;
+    std::string device_address;
+    std::string device_path;
+    std::string pairing_method;
+    std::string pairing_auth_token;
+    int device_class = 0;
+    bool is_trusted = true;
   };
 
   FakeBluetoothDeviceClient();
@@ -85,6 +106,13 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
   // Creates a device from the set we return for the given adapter.
   void CreateDevice(const dbus::ObjectPath& adapter_path,
                     const dbus::ObjectPath& device_path);
+
+  // Creates a device with the given properties.
+  void CreateDeviceWithProperties(const dbus::ObjectPath& adapter_path,
+                                  const IncomingDeviceProperties& props);
+
+  SimulatedPairingOptions* GetPairingOptions(
+      const dbus::ObjectPath& object_path);
 
   // Removes a device from the set we return for the given adapter.
   void RemoveDevice(const dbus::ObjectPath& adapter_path,
@@ -246,10 +274,17 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
   // List of observers interested in event notifications from us.
   base::ObserverList<Observer> observers_;
 
-  // Static properties we return.
-  typedef std::map<const dbus::ObjectPath, Properties *> PropertiesMap;
+  using PropertiesMap =
+      base::ScopedPtrMap<const dbus::ObjectPath, scoped_ptr<Properties>>;
   PropertiesMap properties_map_;
   std::vector<dbus::ObjectPath> device_list_;
+
+  // Properties which are used to decied which method of pairing should
+  // be done on request.
+  using PairingOptionsMap =
+      base::ScopedPtrMap<const dbus::ObjectPath,
+                         scoped_ptr<SimulatedPairingOptions>>;
+  PairingOptionsMap pairing_options_map_;
 
   int simulation_interval_ms_;
   uint32_t discovery_simulation_step_;

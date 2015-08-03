@@ -42,7 +42,8 @@ content::WebUIDataSource* CreateDeviceEmulatorUIDataSource() {
 
 DeviceEmulatorUI::DeviceEmulatorUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  DeviceEmulatorMessageHandler* handler = new DeviceEmulatorMessageHandler();
+  chromeos::DeviceEmulatorMessageHandler* handler =
+      new chromeos::DeviceEmulatorMessageHandler();
   handler->Init();
   web_ui->AddMessageHandler(handler);
 

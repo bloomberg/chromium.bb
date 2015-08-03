@@ -35,6 +35,11 @@ paper-toggle-button {
   width: 80%;
 }
 
+.device-field {
+  margin-bottom: 1em;
+  margin-top: 1em;
+}
+
 .bluetooth-device {
   margin: 15px;
 }
