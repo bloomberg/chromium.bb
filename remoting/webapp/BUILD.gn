@@ -8,23 +8,6 @@ import("//build/config/features.gni")
 import("//remoting/webapp/build_template.gni")
 import("//remoting/webapp/files.gni")
 
-group("webapp") {
-  deps = [
-    ":webapp_v1",
-    ":ar_sample_app",
-    ":credits",
-    ":ar_shared_module",
-  ]
-
-  if (enable_internal_app_remoting_targets) {
-    deps += [ "//remoting/internal:ar_internal_apps" ]
-  }
-
-  if (enable_nacl) {
-    deps += [ ":webapp_v2" ]
-  }
-}
-
 # GYP version: remoting/remoting_client:remoting_credits
 action("credits") {
   about_credits_file = "$target_gen_dir/credits.html"
@@ -49,15 +32,8 @@ action("credits") {
   ]
 }
 
-desktop_remoting_webapp("webapp_v1") {
-  webapp_type = "v1"
-  output_dir = "remoting/remoting-webapp"
-  zip_path = "remoting/remoting-webapp.zip"
-  extra_files = []
-}
-
-desktop_remoting_webapp("webapp_v2") {
-  webapp_type = "v2_pnacl"
+desktop_remoting_webapp("webapp") {
+  webapp_type = "desktop"
   output_dir = "remoting/remoting-webapp.v2"
   zip_path = "remoting/remoting-webapp.v2.zip"
   extra_files = [
