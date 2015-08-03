@@ -307,6 +307,10 @@ TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::resourceTypeJson(Inspe
         return TypeBuilder::Page::ResourceType::TextTrack;
     case XHRResource:
         return TypeBuilder::Page::ResourceType::XHR;
+    case FetchResource:
+        return TypeBuilder::Page::ResourceType::Fetch;
+    case EventSourceResource:
+        return TypeBuilder::Page::ResourceType::EventSource;
     case WebSocketResource:
         return TypeBuilder::Page::ResourceType::WebSocket;
     case OtherResource:

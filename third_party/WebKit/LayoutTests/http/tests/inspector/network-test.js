@@ -6,6 +6,48 @@ function xhrLoadedCallback()
     console.log("XHR loaded: " + (++lastXHRIndex));
 }
 
+function makeSimpleXHR(method, url, async, callback)
+{
+    makeSimpleXHRWithPayload(method, url, async, null, callback);
+}
+
+function makeSimpleXHRWithPayload(method, url, async, payload, callback)
+{
+    makeXHR(method, url, async, undefined, undefined, [], false, payload, callback)
+}
+
+function makeXHR(method, url, async, user, password, headers, withCredentials, payload, type, callback)
+{
+    var xhr = new XMLHttpRequest();
+    if (type == undefined)
+        xhr.responseType = "";
+    else
+        xhr.responseType = type;
+    xhr.onreadystatechange = function()
+    {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (typeof(callback) === "function")
+                callback();
+        }
+    }
+    xhr.open(method, url, async, user, password);
+    xhr.withCredentials = withCredentials;
+    for (var  i = 0; i < headers.length; ++i)
+        xhr.setRequestHeader(headers[i][0], headers[i][1]);
+    xhr.send(payload);
+}
+
+function makeXHRForJSONArguments(jsonArgs)
+{
+    var args = JSON.parse(jsonArgs);
+    makeXHR(args.method, args.url, args.async, args.user, args.password, args.headers || [], args.withCredentials, args.payload, args.type, xhrLoadedCallback);
+}
+
+function makeFetch(url, requestInitializer, callback)
+{
+    fetch(url, requestInitializer).then(callback).catch(callback);
+}
+
 var initialize_NetworkTest = function() {
 
 InspectorTest.preloadPanel("network");
@@ -65,6 +107,11 @@ InspectorTest.makeXHR = function(method, url, async, user, password, headers, wi
     InspectorTest.evaluateInPage("makeXHRForJSONArguments(\"" + jsonArgs + "\")");
 }
 
+InspectorTest.makeFetch = function(url, requestInitializer, callback)
+{
+    InspectorTest.invokePageFunctionAsync("makeFetch", url, requestInitializer, callback);
+}
+
 InspectorTest.HARPropertyFormatters = {
     bodySize: "formatAsTypeName",
     compression: "formatAsTypeName",
@@ -89,40 +136,3 @@ InspectorTest.HARPropertyFormattersWithSize = JSON.parse(JSON.stringify(Inspecto
 InspectorTest.HARPropertyFormattersWithSize.size = "formatAsTypeName";
 
 };
-
-function makeSimpleXHR(method, url, async, callback)
-{
-    makeSimpleXHRWithPayload(method, url, async, null, callback);
-}
-
-function makeSimpleXHRWithPayload(method, url, async, payload, callback)
-{
-    makeXHR(method, url, async, undefined, undefined, [], false, payload, callback)
-}
-
-function makeXHR(method, url, async, user, password, headers, withCredentials, payload, type, callback)
-{
-    var xhr = new XMLHttpRequest();
-    if (type == undefined)
-        xhr.responseType = "";
-    else
-        xhr.responseType = type;
-    xhr.onreadystatechange = function()
-    {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-            if (typeof(callback) === "function")
-                callback();
-        }
-    }
-    xhr.open(method, url, async, user, password);
-    xhr.withCredentials = withCredentials;
-    for (var  i = 0; i < headers.length; ++i)
-        xhr.setRequestHeader(headers[i][0], headers[i][1]);
-    xhr.send(payload);
-}
-
-function makeXHRForJSONArguments(jsonArgs)
-{
-    var args = JSON.parse(jsonArgs);
-    makeXHR(args.method, args.url, args.async, args.user, args.password, args.headers || [], args.withCredentials, args.payload, args.type, xhrLoadedCallback);
-}

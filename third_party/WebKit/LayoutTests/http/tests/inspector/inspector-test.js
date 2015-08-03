@@ -114,25 +114,35 @@ InspectorTest.didInvokePageFunctionPromise = function(callId, value, didResolve)
     callback(value);
 }
 
-InspectorTest.invokePageFunctionAsync = function(functionName, callback)
+/**
+ * @param {string} functionName
+ * @param {...} varArgs
+ * @param {function()} callback
+ */
+InspectorTest.invokePageFunctionAsync = function(functionName, varArgs)
 {
     var id = ++lastEvalId;
+    var args = Array.prototype.slice.call(arguments, 1);
+    var callback = args.pop();
     pendingEvalRequests[id] = InspectorTest.safeWrap(callback);
-    var asyncEvalWrapper = function(callId, functionName)
+    var asyncEvalWrapper = function(callId, functionName, argsString)
     {
         function evalCallback(result)
         {
             testRunner.evaluateInWebInspector(evalCallbackCallId, "InspectorTest.didInvokePageFunctionAsync(" + callId + ", " + JSON.stringify(result) + ");");
         }
-
+        var argsArray = argsString.replace(/^\[(.*)\]$/, "$1");
+        if (argsArray.length)
+            argsArray += ",";
         try {
-            eval(functionName + "(" + evalCallback + ")");
+            eval(functionName + "(" + argsArray + evalCallback + ")");
         } catch(e) {
             InspectorTest.addResult("Error: " + e);
             evalCallback(String(e));
         }
     }
-    InspectorTest.evaluateInPage("(" + asyncEvalWrapper.toString() + ")(" + id + ", unescape('" + escape(functionName) + "'))");
+    var escapedJSONArgs = JSON.stringify(JSON.stringify(args));
+    InspectorTest.evaluateInPage("(" + asyncEvalWrapper.toString() + ")(" + id + ", unescape('" + escape(functionName) + "')," + escapedJSONArgs + ")");
 }
 
 InspectorTest.didInvokePageFunctionAsync = function(callId, value)

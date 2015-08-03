@@ -68,6 +68,8 @@ public:
         ScriptResource,
         TextTrackResource,
         XHRResource,
+        FetchResource,
+        EventSourceResource,
         WebSocketResource,
         OtherResource
     };

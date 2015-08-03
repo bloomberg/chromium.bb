@@ -273,6 +273,15 @@ interface InspectorInstrumentation {
     void didFinishXHRLoading([Keep] ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url);
 
     [Resource]
+    void willStartFetch(ExecutionContext*, ThreadableLoaderClient*);
+
+    [Resource]
+    void didFailFetch(ExecutionContext*, ThreadableLoaderClient*);
+
+    [Resource]
+    void didFinishFetch([Keep] ExecutionContext*, ThreadableLoaderClient*, const AtomicString& method, const String& url);
+
+    [Resource]
     void scriptImported(ExecutionContext*, unsigned long identifier, const String& sourceString);
 
     [Debugger]

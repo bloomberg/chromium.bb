@@ -17,6 +17,7 @@
 #include "core/frame/Frame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/page/ChromeClient.h"
@@ -156,7 +157,7 @@ void FetchManager::Loader::didFinishLoading(unsigned long, double)
         && m_responseHttpStatusCode >= 200 && m_responseHttpStatusCode < 300) {
         document()->frame()->page()->chromeClient().ajaxSucceeded(document()->frame());
     }
-
+    InspectorInstrumentation::didFinishFetch(executionContext(), this, m_request->method(), m_request->url().string());
     notifyFinished();
 }
 
@@ -381,6 +382,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
         threadableLoaderOptions.crossOriginRequestPolicy = UseAccessControl;
         break;
     }
+    InspectorInstrumentation::willStartFetch(executionContext(), this);
     m_loader = ThreadableLoader::create(*executionContext(), this, request, threadableLoaderOptions, resourceLoaderOptions);
     if (!m_loader)
         performNetworkError("Can't create ThreadableLoader");
@@ -400,6 +402,7 @@ void FetchManager::Loader::failed(const String& message)
         ScriptState::Scope scope(state);
         m_resolver->reject(V8ThrowException::createTypeError(state->isolate(), "Failed to fetch"));
     }
+    InspectorInstrumentation::didFailFetch(executionContext(), this);
     notifyFinished();
 }
 

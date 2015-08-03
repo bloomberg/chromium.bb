@@ -311,7 +311,7 @@ DEFINE_TRACE(InspectorResourceAgent)
     visitor->trace(m_replayXHRsToBeDeleted);
 
 #if ENABLE(OILPAN)
-    visitor->trace(m_pendingXHRReplayData);
+    visitor->trace(m_pendingRequest);
 #endif
     InspectorBaseAgent::trace(visitor);
 }
@@ -412,9 +412,10 @@ void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsig
     InspectorPageAgent::ResourceType type = cachedResource ? InspectorPageAgent::cachedResourceType(*cachedResource) : InspectorPageAgent::OtherResource;
     // Override with already discovered resource type.
     InspectorPageAgent::ResourceType savedType = m_resourcesData->resourceType(requestId);
-    if (savedType == InspectorPageAgent::ScriptResource || savedType == InspectorPageAgent::XHRResource || savedType == InspectorPageAgent::DocumentResource)
+    if (savedType == InspectorPageAgent::ScriptResource || savedType == InspectorPageAgent::XHRResource || savedType == InspectorPageAgent::DocumentResource
+        || savedType == InspectorPageAgent::FetchResource || savedType == InspectorPageAgent::EventSourceResource) {
         type = savedType;
-
+    }
     if (type == InspectorPageAgent::DocumentResource && loader && loader->substituteData().isValid())
         return;
 
@@ -488,27 +489,25 @@ void InspectorResourceAgent::documentThreadableLoaderStartedLoadingForClient(uns
 {
     if (!client)
         return;
-
-    if (client == m_pendingEventSource) {
-        m_eventSourceRequestIdMap.set(client, identifier);
-        m_pendingEventSource = nullptr;
-    }
-
-    if (client == m_pendingXHR) {
-        String requestId = IdentifiersFactory::requestId(identifier);
-        m_resourcesData->setResourceType(requestId, InspectorPageAgent::XHRResource);
+    ASSERT(client == m_pendingRequest || !m_pendingRequest);
+    if (client != m_pendingRequest)
+        return;
+    m_knownRequestIdMap.set(client, identifier);
+    String requestId = IdentifiersFactory::requestId(identifier);
+    m_resourcesData->setResourceType(requestId, m_pendingRequestType);
+    if (m_pendingRequestType == InspectorPageAgent::XHRResource) {
         m_resourcesData->setXHRReplayData(requestId, m_pendingXHRReplayData.get());
-        m_xhrRequestIdMap.set(client, identifier);
-        m_pendingXHR = nullptr;
         m_pendingXHRReplayData.clear();
     }
+    m_pendingRequest = nullptr;
 }
 
 void InspectorResourceAgent::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, PassRefPtr<FormData> formData, const HTTPHeaderMap& headers, bool includeCredentials)
 {
     ASSERT(xhr);
-    ASSERT(!m_pendingXHR);
-    m_pendingXHR = client;
+    ASSERT(!m_pendingRequest);
+    m_pendingRequest = client;
+    m_pendingRequestType = InspectorPageAgent::XHRResource;
     m_pendingXHRReplayData = XHRReplayData::create(xhr->executionContext(), method, urlWithoutFragment(url), async, formData.get(), includeCredentials);
     for (const auto& header : headers)
         m_pendingXHRReplayData->addHeader(header.key, header.value);
@@ -536,15 +535,15 @@ void InspectorResourceAgent::didFinishXHRLoading(ExecutionContext* context, XMLH
 
 void InspectorResourceAgent::didFinishXHRInternal(ExecutionContext* context, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url, bool success)
 {
-    m_pendingXHR = nullptr;
+    m_pendingRequest = nullptr;
     m_pendingXHRReplayData.clear();
 
     // This method will be called from the XHR.
     // We delay deleting the replay XHR, as deleting here may delete the caller.
     delayedRemoveReplayXHR(xhr);
 
-    ThreadableLoaderClientRequestIdMap::iterator it = m_xhrRequestIdMap.find(client);
-    if (it == m_xhrRequestIdMap.end())
+    ThreadableLoaderClientRequestIdMap::iterator it = m_knownRequestIdMap.find(client);
+    if (it == m_knownRequestIdMap.end())
         return;
 
     if (m_state->getBoolean(ResourceAgentState::monitoringXHR)) {
@@ -553,28 +552,55 @@ void InspectorResourceAgent::didFinishXHRInternal(ExecutionContext* context, XML
         consoleMessage->setRequestIdentifier(it->value);
         m_pageAgent->frameHost()->consoleMessageStorage().reportMessage(context, consoleMessage.release());
     }
-    m_xhrRequestIdMap.remove(client);
+    m_knownRequestIdMap.remove(client);
+}
+
+void InspectorResourceAgent::willStartFetch(ThreadableLoaderClient* client)
+{
+    ASSERT(!m_pendingRequest);
+    m_pendingRequest = client;
+    m_pendingRequestType = InspectorPageAgent::FetchResource;
+}
+
+void InspectorResourceAgent::didFailFetch(ThreadableLoaderClient* client)
+{
+    m_knownRequestIdMap.remove(client);
+}
+
+void InspectorResourceAgent::didFinishFetch(ExecutionContext* context, ThreadableLoaderClient* client, const AtomicString& method, const String& url)
+{
+    ThreadableLoaderClientRequestIdMap::iterator it = m_knownRequestIdMap.find(client);
+    if (it == m_knownRequestIdMap.end())
+        return;
+
+    if (m_state->getBoolean(ResourceAgentState::monitoringXHR)) {
+        String message = "Fetch complete: " + method + " \"" + url + "\".";
+        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, DebugMessageLevel, message);
+        consoleMessage->setRequestIdentifier(it->value);
+        m_pageAgent->frameHost()->consoleMessageStorage().reportMessage(context, consoleMessage.release());
+    }
+    m_knownRequestIdMap.remove(client);
 }
 
 void InspectorResourceAgent::willSendEventSourceRequest(ThreadableLoaderClient* eventSource)
 {
-    ASSERT(!m_pendingEventSource);
-    m_pendingEventSource = eventSource;
+    ASSERT(!m_pendingRequest);
+    m_pendingRequest = eventSource;
+    m_pendingRequestType = InspectorPageAgent::EventSourceResource;
 }
 
 void InspectorResourceAgent::willDispachEventSourceEvent(ThreadableLoaderClient* eventSource, const AtomicString& eventName, const AtomicString& eventId, const Vector<UChar>& data)
 {
-    ThreadableLoaderClientRequestIdMap::iterator it = m_eventSourceRequestIdMap.find(eventSource);
-    if (it == m_eventSourceRequestIdMap.end())
+    ThreadableLoaderClientRequestIdMap::iterator it = m_knownRequestIdMap.find(eventSource);
+    if (it == m_knownRequestIdMap.end())
         return;
     frontend()->eventSourceMessageReceived(IdentifiersFactory::requestId(it->value), monotonicallyIncreasingTime(), eventName.string(), eventId.string(), String(data));
 }
 
 void InspectorResourceAgent::didFinishEventSourceRequest(ThreadableLoaderClient* eventSource)
 {
-    m_eventSourceRequestIdMap.remove(eventSource);
-    if (eventSource == m_pendingEventSource)
-        m_pendingEventSource = nullptr;
+    m_knownRequestIdMap.remove(eventSource);
+    m_pendingRequest = nullptr;
 }
 
 void InspectorResourceAgent::willDestroyResource(Resource* cachedResource)
@@ -723,12 +749,12 @@ void InspectorResourceAgent::enable()
 
 void InspectorResourceAgent::disable(ErrorString*)
 {
-    ASSERT(!m_pendingXHR);
-    ASSERT(!m_pendingEventSource);
+    ASSERT(!m_pendingRequest);
     m_state->setBoolean(ResourceAgentState::resourceAgentEnabled, false);
     m_state->setString(ResourceAgentState::userAgentOverride, "");
     m_instrumentingAgents->setInspectorResourceAgent(0);
     m_resourcesData->clear();
+    m_knownRequestIdMap.clear();
 }
 
 void InspectorResourceAgent::setUserAgentOverride(ErrorString*, const String& userAgent)
@@ -924,8 +950,7 @@ InspectorResourceAgent::InspectorResourceAgent(InspectorPageAgent* pageAgent)
     : InspectorBaseAgent<InspectorResourceAgent, InspectorFrontend::Network>("Network")
     , m_pageAgent(pageAgent)
     , m_resourcesData(adoptPtr(new NetworkResourcesData()))
-    , m_pendingXHR(nullptr)
-    , m_pendingEventSource(nullptr)
+    , m_pendingRequest(nullptr)
     , m_isRecalculatingStyle(false)
     , m_removeFinishedReplayXHRTimer(this, &InspectorResourceAgent::removeFinishedReplayXHRFired)
 {
