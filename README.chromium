@@ -9,12 +9,22 @@ License Android Compatible: yes
 Description:
 This consists of the components:
 * A partial copy of libjpeg-turbo 1.3.1 (r1219);
-* Revision r1188 cherry-picked from upstream trunk into config.h;
-* Revision r1220 cherry-picked from upstream trunk into jchuff.c;
+* Revision r1188 cherry-picked from upstream trunk into config.h to fix
+  compiler warning on newer versions of gcc;
+* Revision r1220 cherry-picked from upstream trunk into jchuff.c to use
+  clz/bsr instructions on ARM for bit counting rather than the lookup table
+  (reduces memory footprint and can improve performance in some cases);
 * Revisions r1108, r1109, r1333, r1375, r1386, r1389 and r1390 cherry-picked
-  from upstream trunk for Arm64;
+  from upstream trunk for Arm64 NEON SIMD support;
+* CR Bug 515694: Revisions r1582, r1583, r1586, r1587, r1591, and
+  commit 91eceba0a132a3fc70388a82c75616e67725a93a (code moved to GitHub)
+  cherry-picked from upstream trunk for partial decoding optimization.
 * A build file (libjpeg.gyp), and;
 * Patched header files used by Chromium.
+
+More details on cherry-picked revisions and commits can be found at:
+https://sourceforge.net/p/libjpeg-turbo/code/commit_browser
+https://github.com/libjpeg-turbo/libjpeg-turbo/commits/master
 
 This libjpeg-turbo can replace our libjpeg-6b without any modifications in the
 Chromium code.
@@ -28,18 +38,12 @@ following changes which are not merged to upstream:
 * Added the 'private_extern' flags on Mac (or the 'hidden' flags on Linux) to
   all the global symbols in '.asm' files to prevent making them external ones.
 * Supported motion-JPEG frames that do not have DHT markers.
-* Removed .func / .endfunc lines from arm assembly
-  ( https://sourceforge.net/p/libjpeg-turbo/bugs/72/ , landed at
-  https://sourceforge.net/p/libjpeg-turbo/code/1375 ).
 * Fix libjpeg_turbo svn r64 libjpeg6b compat issue: make the fast path Huffman
   decoder fallback to slow decoding if the Huffman decoding bit sentinel > 16,
   this to match the exact behavior of jpeg_huff_decode().
   http://crbug.com/398235
 * Fixed an issue with the ARM NEON build.
   http://crbug.com/451035
-
-The 'google.patch' file represents our changes from the original
-libjpeg-turbo-1.2.
 
 Refer to working-with-nested-repos [1] for details of how to setup your git
 svn client to update the code (for making local changes, cherry picking from

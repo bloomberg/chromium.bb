@@ -6,6 +6,7 @@
  * Modified 2002-2009 by Guido Vollbeding.
  * Modifications:
  * Copyright (C) 2009-2011, 2013, D. R. Commander.
+ * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README file.
  *
  * This file defines the application interface for the JPEG library.
@@ -1089,6 +1090,8 @@ EXTERN(boolean) jpeg_start_decompress JPP((j_decompress_ptr cinfo));
 EXTERN(JDIMENSION) jpeg_read_scanlines JPP((j_decompress_ptr cinfo,
 					    JSAMPARRAY scanlines,
 					    JDIMENSION max_lines));
+EXTERN(JDIMENSION) jpeg_skip_scanlines (j_decompress_ptr cinfo,
+                                        JDIMENSION num_lines);
 EXTERN(boolean) jpeg_finish_decompress JPP((j_decompress_ptr cinfo));
 
 /* Replaces jpeg_read_scanlines when reading raw downsampled data. */
