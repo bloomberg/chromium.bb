@@ -1010,13 +1010,13 @@ void GraphicsLayer::setContentsRect(const IntRect& rect)
 
 void GraphicsLayer::setContentsToImage(Image* image)
 {
-    SkBitmap bitmap;
-    if (image && image->deprecatedBitmapForCurrentFrame(&bitmap)) {
+    RefPtr<SkImage> skImage = image ? image->imageForCurrentFrame() : nullptr;
+    if (image && skImage) {
         if (!m_imageLayer) {
             m_imageLayer = adoptPtr(Platform::current()->compositorSupport()->createImageLayer());
             registerContentsLayer(m_imageLayer->layer());
         }
-        m_imageLayer->setImageBitmap(bitmap);
+        m_imageLayer->setImage(skImage.get());
         m_imageLayer->layer()->setOpaque(image->currentFrameKnownToBeOpaque());
         updateContentsRect();
     } else {
