@@ -106,6 +106,20 @@ void WebSchedulerImpl::postTimerTask(
       base::TimeDelta::FromMilliseconds(delayMs));
 }
 
+void WebSchedulerImpl::postTimerTask(
+    const blink::WebTraceLocation& web_location,
+    blink::WebThread::Task* task,
+    double delaySecs) {
+  DCHECK(timer_task_runner_);
+  scoped_ptr<blink::WebThread::Task> scoped_task(task);
+  tracked_objects::Location location(web_location.functionName(),
+                                     web_location.fileName(), -1, nullptr);
+  timer_task_runner_->PostDelayedTask(
+      location,
+      base::Bind(&WebSchedulerImpl::runTask, base::Passed(&scoped_task)),
+      base::TimeDelta::FromSecondsD(delaySecs));
+}
+
 void WebSchedulerImpl::postTimerTaskAt(
     const blink::WebTraceLocation& web_location,
     blink::WebThread::Task* task,

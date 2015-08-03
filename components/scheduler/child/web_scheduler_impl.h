@@ -43,11 +43,14 @@ class SCHEDULER_EXPORT WebSchedulerImpl : public blink::WebScheduler {
                                        blink::WebThread::IdleTask* task);
   virtual void postLoadingTask(const blink::WebTraceLocation& location,
                                blink::WebThread::Task* task);
+  // TODO(alexclarke): Remove when possible.
   virtual void postTimerTaskAt(const blink::WebTraceLocation& location,
                                blink::WebThread::Task* task,
                                double monotonicTime);
-
-  // TODO(skyostil): Remove once the Blink side patch lands.
+  virtual void postTimerTask(const blink::WebTraceLocation& location,
+                             blink::WebThread::Task* task,
+                             double delaySecs);
+  // TODO(alexclarke): Remove once the Blink side patch lands.
   virtual void postTimerTask(const blink::WebTraceLocation& location,
                              blink::WebThread::Task* task,
                              long long delayMs);
