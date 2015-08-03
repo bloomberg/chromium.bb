@@ -44,10 +44,6 @@ class TcpNode : public SocketNode {
                         socklen_t len);
   virtual Error GetSockOpt(int lvl, int optname, void* optval, socklen_t* len);
   virtual Error Listen(int backlog);
-  virtual Error SetSockOpt(int lvl,
-                           int optname,
-                           const void* optval,
-                           socklen_t len);
   virtual Error Shutdown(int how);
 
   virtual void SetError_Locked(int pp_error_num);
@@ -66,6 +62,11 @@ class TcpNode : public SocketNode {
                             PP_Resource addr,
                             int* out_len);
 
+  virtual Error SetSockOptSocket(int opname, const void* optval, socklen_t len);
+
+  virtual Error SetSockOptTCP(int optname, const void* optval, socklen_t len);
+
+ protected:
   ScopedTcpEventEmitter emitter_;
   PP_Resource accepted_socket_;
   bool tcp_nodelay_;

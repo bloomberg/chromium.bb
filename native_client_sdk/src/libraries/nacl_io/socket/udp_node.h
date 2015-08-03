@@ -35,11 +35,6 @@ class UdpNode : public SocketNode {
                         const struct sockaddr* addr,
                         socklen_t len);
 
-  virtual Error SetSockOpt(int lvl,
-                           int optname,
-                           const void* optval,
-                           socklen_t len);
-
  protected:
   virtual Error Recv_Locked(void* buf,
                             size_t len,
@@ -51,6 +46,13 @@ class UdpNode : public SocketNode {
                             PP_Resource addr,
                             int* out_len);
 
+  virtual Error SetSockOptSocket(int opname, const void* optval, socklen_t len);
+
+  virtual Error SetSockOptIP(int optname, const void* optval, socklen_t len);
+
+  virtual Error SetSockOptIPV6(int optname, const void* optval, socklen_t len);
+
+ protected:
   ScopedUdpEventEmitter emitter_;
 };
 

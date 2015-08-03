@@ -942,4 +942,54 @@ TEST_F(SocketTestTCP, Sockopt_BUFSIZE) {
       << "failed with: " << strerror(errno);
 }
 
+TEST_F(SocketTest, Sockopt_IP_MULTICAST) {
+  int ttl = 1;
+  socklen_t ttl_len = sizeof(ttl);
+  int loop = 1;
+  socklen_t loop_len = sizeof(loop);
+
+  // Modify the test to verify the change by calling getsockopt
+  // once UDPInterface supports GetOption() call
+  //
+  // Setting multicast options on TCP socket should fail
+  sock1_ = ki_socket(AF_INET, SOCK_STREAM, 0);
+  ASSERT_GT(sock1_, -1);
+  ASSERT_EQ(-1,
+            ki_setsockopt(sock1_, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, ttl_len));
+  ASSERT_EQ(ENOPROTOOPT, errno);
+  ASSERT_EQ(-1, ki_setsockopt(sock1_, IPPROTO_IP, IP_MULTICAST_LOOP, &loop,
+                              loop_len));
+  ASSERT_EQ(ENOPROTOOPT, errno);
+  EXPECT_EQ(0, Bind(sock1_, LOCAL_HOST, PORT1));
+
+  // Setting SO_BROADCAST on UDP socket should work
+  sock2_ = ki_socket(AF_INET, SOCK_DGRAM, 0);
+  ASSERT_GT(sock2_, -1);
+
+  // Test invalid values for IP_MULTICAST_TTL (0 <= ttl < 256)
+  ttl = -1;
+  ASSERT_EQ(-1,
+            ki_setsockopt(sock2_, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, ttl_len));
+  ASSERT_EQ(EINVAL, errno);
+  ttl = 256;
+  ASSERT_EQ(-1,
+            ki_setsockopt(sock2_, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, ttl_len));
+  ASSERT_EQ(EINVAL, errno);
+
+  // Valid IP_MULTICAST_TTL value
+  ttl = 1;
+  ASSERT_EQ(0,
+            ki_setsockopt(sock2_, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, ttl_len));
+  ASSERT_EQ(1, ttl);
+  ASSERT_EQ(sizeof(ttl), ttl_len);
+
+  // IP_MULTICAST_LOOP
+  ASSERT_EQ(
+      0, ki_setsockopt(sock2_, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, loop_len));
+  ASSERT_EQ(1, loop);
+  ASSERT_EQ(sizeof(loop), loop_len);
+
+  EXPECT_EQ(0, Bind(sock2_, LOCAL_HOST, PORT2));
+}
+
 #endif  // PROVIDES_SOCKET_API

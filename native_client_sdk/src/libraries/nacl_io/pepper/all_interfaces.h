@@ -209,8 +209,9 @@ BEGIN_INTERFACE(TCPSocketInterface, PPB_TCPSocket_1_1,
 END_INTERFACE(TCPSocketInterface, PPB_TCPSocket_1_1)
 
 /* Chrome M44 required */
-BEGIN_INTERFACE(UDPSocketInterface, PPB_UDPSocket_1_1,
-                PPB_UDPSOCKET_INTERFACE_1_1)
+BEGIN_INTERFACE(UDPSocketInterface,
+                PPB_UDPSocket_1_2,
+                PPB_UDPSOCKET_INTERFACE_1_2)
   METHOD1(UDPSocketInterface, PP_Resource, Create, PP_Instance)
   METHOD1(UDPSocketInterface, PP_Bool, IsUDPSocket, PP_Resource)
   METHOD3(UDPSocketInterface, int32_t, Bind, PP_Resource, PP_Resource,
@@ -223,4 +224,16 @@ BEGIN_INTERFACE(UDPSocketInterface, PPB_UDPSocket_1_1,
   METHOD1(UDPSocketInterface, void, Close, PP_Resource)
   METHOD4(UDPSocketInterface, int32_t, SetOption, PP_Resource,
           PP_UDPSocket_Option, PP_Var, PP_CompletionCallback)
-END_INTERFACE(UDPSocketInterface, PPB_UDPSocket_1_1)
+  METHOD3(UDPSocketInterface,
+          int32_t,
+          JoinGroup,
+          PP_Resource,
+          PP_Resource,
+          PP_CompletionCallback)
+  METHOD3(UDPSocketInterface,
+          int32_t,
+          LeaveGroup,
+          PP_Resource,
+          PP_Resource,
+          PP_CompletionCallback)
+  END_INTERFACE(UDPSocketInterface, PPB_UDPSocket_1_2)

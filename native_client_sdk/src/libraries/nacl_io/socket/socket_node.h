@@ -143,11 +143,24 @@ class SocketNode : public StreamNode {
   UDPSocketInterface* UDPInterface();
 
   PP_Resource SockAddrToResource(const struct sockaddr* addr, socklen_t len);
+
+  PP_Resource SockAddrInToResource(const sockaddr_in* sin, socklen_t len);
+
+  PP_Resource SockAddrIn6ToResource(const sockaddr_in6* sin, socklen_t len);
+
   socklen_t ResourceToSockAddr(PP_Resource addr,
                                socklen_t len,
                                struct sockaddr* out_addr);
 
   bool IsEquivalentAddress(PP_Resource addr1, PP_Resource addr2);
+
+  virtual Error SetSockOptSocket(int opname, const void* optval, socklen_t len);
+
+  virtual Error SetSockOptTCP(int optname, const void* optval, socklen_t len);
+
+  virtual Error SetSockOptIP(int optname, const void* optval, socklen_t len);
+
+  virtual Error SetSockOptIPV6(int optname, const void* optval, socklen_t len);
 
  protected:
   PP_Resource socket_resource_;

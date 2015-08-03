@@ -110,37 +110,43 @@ PP_Resource SocketNode::SockAddrToResource(const struct sockaddr* addr,
     return 0;
 
   if (AF_INET == addr->sa_family) {
-    PP_NetAddress_IPv4 addr4;
     const sockaddr_in* sin = reinterpret_cast<const sockaddr_in*>(addr);
-
-    if (len != sizeof(sockaddr_in))
-      return 0;
-
-    memset(&addr4, 0, sizeof(addr4));
-
-    addr4.port = sin->sin_port;
-    memcpy(addr4.addr, &sin->sin_addr, sizeof(addr4.addr));
-    return filesystem_->ppapi()
-        ->GetNetAddressInterface()
-        ->CreateFromIPv4Address(filesystem_->ppapi()->GetInstance(), &addr4);
+    return SockAddrInToResource(sin, len);
   }
 
   if (AF_INET6 == addr->sa_family) {
-    PP_NetAddress_IPv6 addr6;
     const sockaddr_in6* sin = reinterpret_cast<const sockaddr_in6*>(addr);
-
-    if (len != sizeof(sockaddr_in6))
-      return 0;
-
-    memset(&addr6, 0, sizeof(addr6));
-
-    addr6.port = sin->sin6_port;
-    memcpy(addr6.addr, &sin->sin6_addr, sizeof(addr6.addr));
-    return filesystem_->ppapi()
-        ->GetNetAddressInterface()
-        ->CreateFromIPv6Address(filesystem_->ppapi()->GetInstance(), &addr6);
+    return SockAddrIn6ToResource(sin, len);
   }
   return 0;
+}
+
+PP_Resource SocketNode::SockAddrInToResource(const sockaddr_in* sin,
+                                             socklen_t len) {
+  if (len != sizeof(sockaddr_in))
+    return 0;
+
+  PP_NetAddress_IPv4 addr4;
+  memset(&addr4, 0, sizeof(addr4));
+
+  addr4.port = sin->sin_port;
+  memcpy(addr4.addr, &sin->sin_addr, sizeof(addr4.addr));
+  return filesystem_->ppapi()->GetNetAddressInterface()->CreateFromIPv4Address(
+      filesystem_->ppapi()->GetInstance(), &addr4);
+}
+
+PP_Resource SocketNode::SockAddrIn6ToResource(const sockaddr_in6* sin,
+                                              socklen_t len) {
+  if (len != sizeof(sockaddr_in6))
+    return 0;
+
+  PP_NetAddress_IPv6 addr6;
+  memset(&addr6, 0, sizeof(addr6));
+
+  addr6.port = sin->sin6_port;
+  memcpy(addr6.addr, &sin->sin6_addr, sizeof(addr6.addr));
+  return filesystem_->ppapi()->GetNetAddressInterface()->CreateFromIPv6Address(
+      filesystem_->ppapi()->GetInstance(), &addr6);
 }
 
 socklen_t SocketNode::ResourceToSockAddr(PP_Resource addr,
@@ -270,13 +276,31 @@ Error SocketNode::SetSockOpt(int lvl,
                              int optname,
                              const void* optval,
                              socklen_t len) {
-  size_t buflen = static_cast<size_t>(len);
-
-  if (lvl != SOL_SOCKET)
-    return ENOPROTOOPT;
-
   AUTO_LOCK(node_lock_);
 
+  switch (lvl) {
+    case SOL_SOCKET: {
+      return SetSockOptSocket(optname, optval, len);
+    }
+    case IPPROTO_TCP: {
+      return SetSockOptTCP(optname, optval, len);
+    }
+    case IPPROTO_IP: {
+      return SetSockOptIP(optname, optval, len);
+    }
+    case IPPROTO_IPV6: {
+      return SetSockOptIPV6(optname, optval, len);
+    }
+    default: { break; }
+  }
+
+  return ENOPROTOOPT;
+}
+
+Error SocketNode::SetSockOptSocket(int optname,
+                                   const void* optval,
+                                   socklen_t len) {
+  size_t buflen = static_cast<size_t>(len);
   switch (optname) {
     case SO_REUSEADDR: {
       // SO_REUSEADDR is effectivly always on since we can't
@@ -312,6 +336,22 @@ Error SocketNode::SetSockOpt(int lvl,
     }
   }
 
+  return ENOPROTOOPT;
+}
+
+Error SocketNode::SetSockOptTCP(int optname,
+                                const void* optval,
+                                socklen_t len) {
+  return ENOPROTOOPT;
+}
+
+Error SocketNode::SetSockOptIP(int optname, const void* optval, socklen_t len) {
+  return ENOPROTOOPT;
+}
+
+Error SocketNode::SetSockOptIPV6(int optname,
+                                 const void* optval,
+                                 socklen_t len) {
   return ENOPROTOOPT;
 }
 

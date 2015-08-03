@@ -213,48 +213,6 @@ void UdpNode::QueueOutput() {
   stream()->EnqueueWork(work);
 }
 
-Error UdpNode::SetSockOpt(int lvl,
-                          int optname,
-                          const void* optval,
-                          socklen_t len) {
-  if (lvl == SOL_SOCKET && optname == SO_RCVBUF) {
-    if (static_cast<size_t>(len) < sizeof(int))
-      return EINVAL;
-    AUTO_LOCK(node_lock_);
-    int bufsize = *static_cast<const int*>(optval);
-    int32_t error =
-          UDPInterface()->SetOption(socket_resource_,
-                       PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE,
-                       PP_MakeInt32(bufsize),
-                       PP_BlockUntilComplete());
-    return PPERROR_TO_ERRNO(error);
-  } else if (lvl == SOL_SOCKET && optname == SO_SNDBUF) {
-    if (static_cast<size_t>(len) < sizeof(int))
-      return EINVAL;
-    AUTO_LOCK(node_lock_);
-    int bufsize = *static_cast<const int*>(optval);
-    int32_t error =
-        UDPInterface()->SetOption(socket_resource_,
-                PP_UDPSOCKET_OPTION_SEND_BUFFER_SIZE,
-                PP_MakeInt32(bufsize),
-                PP_BlockUntilComplete());
-    return PPERROR_TO_ERRNO(error);
-  } else if (lvl == SOL_SOCKET && optname == SO_BROADCAST) {
-    if (static_cast<size_t>(len) < sizeof(int))
-      return EINVAL;
-    AUTO_LOCK(node_lock_);
-    int broadcast = *static_cast<const int*>(optval);
-    int32_t error =
-        UDPInterface()->SetOption(socket_resource_,
-                PP_UDPSOCKET_OPTION_BROADCAST,
-                PP_MakeBool(broadcast ? PP_TRUE : PP_FALSE),
-                PP_BlockUntilComplete());
-    return PPERROR_TO_ERRNO(error);
-  }
-
-  return SocketNode::SetSockOpt(lvl, optname, optval, len);
-}
-
 Error UdpNode::Bind(const struct sockaddr* addr, socklen_t len) {
   if (0 == socket_resource_)
     return EBADF;
@@ -356,6 +314,148 @@ Error UdpNode::Send_Locked(const void* buf,
   emitter_->WriteTXPacket_Locked(packet);
   *out_len = capped_len;
   return 0;
+}
+
+Error UdpNode::SetSockOptSocket(int optname,
+                                const void* optval,
+                                socklen_t len) {
+  if (static_cast<size_t>(len) < sizeof(int))
+    return EINVAL;
+
+  switch (optname) {
+    case SO_RCVBUF: {
+      int bufsize = *static_cast<const int*>(optval);
+      int32_t error = UDPInterface()->SetOption(
+          socket_resource_, PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE,
+          PP_MakeInt32(bufsize), PP_BlockUntilComplete());
+      return PPERROR_TO_ERRNO(error);
+    }
+    case SO_SNDBUF: {
+      int bufsize = *static_cast<const int*>(optval);
+      int32_t error = UDPInterface()->SetOption(
+          socket_resource_, PP_UDPSOCKET_OPTION_SEND_BUFFER_SIZE,
+          PP_MakeInt32(bufsize), PP_BlockUntilComplete());
+      return PPERROR_TO_ERRNO(error);
+    }
+    case SO_BROADCAST: {
+      int broadcast = *static_cast<const int*>(optval);
+      int32_t error = UDPInterface()->SetOption(
+          socket_resource_, PP_UDPSOCKET_OPTION_BROADCAST,
+          PP_MakeBool(broadcast ? PP_TRUE : PP_FALSE), PP_BlockUntilComplete());
+      return PPERROR_TO_ERRNO(error);
+    }
+    default: { break; }
+  }
+
+  return SocketNode::SetSockOptSocket(optname, optval, len);
+}
+
+Error UdpNode::SetSockOptIP(int optname, const void* optval, socklen_t len) {
+  if (static_cast<size_t>(len) < sizeof(int))
+    return EINVAL;
+
+  switch (optname) {
+    case IP_MULTICAST_LOOP: {
+      int loop = *static_cast<const int*>(optval);
+      int32_t error = UDPInterface()->SetOption(
+          socket_resource_, PP_UDPSOCKET_OPTION_MULTICAST_LOOP,
+          PP_MakeBool(loop ? PP_TRUE : PP_FALSE), PP_BlockUntilComplete());
+      return PPERROR_TO_ERRNO(error);
+    }
+    case IP_MULTICAST_TTL: {
+      unsigned int ttl = *static_cast<const unsigned int*>(optval);
+      int32_t error = UDPInterface()->SetOption(
+          socket_resource_, PP_UDPSOCKET_OPTION_MULTICAST_TTL,
+          PP_MakeInt32(ttl), PP_BlockUntilComplete());
+      return PPERROR_TO_ERRNO(error);
+    }
+    case IP_MULTICAST_IF: {
+      // PPAPI does not expose this option, but we pretend to support it.
+      // TODO(etrunko): store value to be returned by GetSockOpt() when it is
+      // implemented.
+      return 0;
+    }
+    case IP_ADD_MEMBERSHIP: {
+      const struct ip_mreq* mreq = static_cast<const struct ip_mreq*>(optval);
+      struct sockaddr_in sin = {0};
+      sin.sin_family = AF_INET;
+      memcpy(&sin.sin_addr, &mreq->imr_multiaddr, sizeof(struct in_addr));
+
+      PP_Resource net_addr = SockAddrInToResource(&sin, sizeof(sin));
+      int32_t error = UDPInterface()->JoinGroup(socket_resource_, net_addr,
+                                                PP_BlockUntilComplete());
+      return PPERROR_TO_ERRNO(error);
+    }
+    case IP_DROP_MEMBERSHIP: {
+      const struct ip_mreq* mreq = static_cast<const struct ip_mreq*>(optval);
+      struct sockaddr_in sin = {0};
+      sin.sin_family = AF_INET;
+      memcpy(&sin.sin_addr, &mreq->imr_multiaddr, sizeof(struct in_addr));
+
+      PP_Resource net_addr = SockAddrInToResource(&sin, sizeof(sin));
+      int32_t error = UDPInterface()->LeaveGroup(socket_resource_, net_addr,
+                                                 PP_BlockUntilComplete());
+      return PPERROR_TO_ERRNO(error);
+    }
+    default: { break; }
+  }
+
+  return SocketNode::SetSockOptIP(optname, optval, len);
+}
+
+Error UdpNode::SetSockOptIPV6(int optname, const void* optval, socklen_t len) {
+  if (static_cast<size_t>(len) < sizeof(int))
+    return EINVAL;
+
+  switch (optname) {
+    case IPV6_MULTICAST_LOOP: {
+      int loop = *static_cast<const int*>(optval);
+      int32_t error = UDPInterface()->SetOption(
+          socket_resource_, PP_UDPSOCKET_OPTION_MULTICAST_LOOP,
+          PP_MakeBool(loop ? PP_TRUE : PP_FALSE), PP_BlockUntilComplete());
+      return PPERROR_TO_ERRNO(error);
+    }
+    case IPV6_MULTICAST_HOPS: {
+      unsigned int ttl = *static_cast<const unsigned int*>(optval);
+      int32_t error = UDPInterface()->SetOption(
+          socket_resource_, PP_UDPSOCKET_OPTION_MULTICAST_TTL,
+          PP_MakeInt32(ttl), PP_BlockUntilComplete());
+      return PPERROR_TO_ERRNO(error);
+    }
+    case IPV6_MULTICAST_IF: {
+      // PPAPI does not expose this option, but we pretend to support it.
+      // TODO(etrunko): store value to be returned by GetSockOpt() when it is
+      // implemented.
+      return 0;
+    }
+    case IPV6_JOIN_GROUP: {
+      const struct ipv6_mreq* mreq =
+          static_cast<const struct ipv6_mreq*>(optval);
+      struct sockaddr_in6 sin = {0};
+      sin.sin6_family = AF_INET6;
+      memcpy(&sin.sin6_addr, &mreq->ipv6mr_multiaddr, sizeof(struct in6_addr));
+
+      PP_Resource net_addr = SockAddrIn6ToResource(&sin, sizeof(sin));
+      int32_t error = UDPInterface()->LeaveGroup(socket_resource_, net_addr,
+                                                 PP_BlockUntilComplete());
+      return PPERROR_TO_ERRNO(error);
+    }
+    case IPV6_LEAVE_GROUP: {
+      const struct ipv6_mreq* mreq =
+          static_cast<const struct ipv6_mreq*>(optval);
+      struct sockaddr_in6 sin = {0};
+      sin.sin6_family = AF_INET6;
+      memcpy(&sin.sin6_addr, &mreq->ipv6mr_multiaddr, sizeof(struct in6_addr));
+
+      PP_Resource net_addr = SockAddrIn6ToResource(&sin, sizeof(sin));
+      int32_t error = UDPInterface()->LeaveGroup(socket_resource_, net_addr,
+                                                 PP_BlockUntilComplete());
+      return PPERROR_TO_ERRNO(error);
+    }
+    default: { break; }
+  }
+
+  return SocketNode::SetSockOptIPV6(optname, optval, len);
 }
 
 }  // namespace nacl_io
