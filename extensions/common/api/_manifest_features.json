@@ -271,7 +271,7 @@
     "extension_types": ["platform_app"]
   },
   "usb_printers": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["platform_app"]
   },
   "version": {
