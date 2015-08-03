@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.OnTabStateReadCallback;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
+import org.chromium.chrome.browser.tabmodel.document.ActivityDelegateImpl;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Entry;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.InitializationObserver;
@@ -98,7 +99,7 @@ public class DocumentMigrationHelper {
      * Stores a list of "tasks" that are meant to be returned by the ActivityManager for migration.
      * The tasks are inserted manually during the migration from classic mode to document mode.
      */
-    private static class MigrationActivityDelegate extends ActivityDelegate {
+    private static class MigrationActivityDelegate extends ActivityDelegateImpl {
         private final List<Entry> mEntries;
         private final int mSelectedTabId;
 

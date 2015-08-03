@@ -37,7 +37,7 @@ public class MockStorageDelegate extends StorageDelegate {
     }
 
     @Override
-    public byte[] readTaskFileBytes(boolean encrypted) {
+    protected byte[] readMetadataFileBytes(boolean encrypted) {
         if (encrypted) return null;
         return mTaskFileBytes == null ? null : mTaskFileBytes.clone();
     }

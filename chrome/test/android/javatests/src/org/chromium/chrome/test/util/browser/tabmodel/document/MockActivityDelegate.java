@@ -40,8 +40,22 @@ public class MockActivityDelegate extends ActivityDelegate {
     }
 
     @Override
+    public void moveTaskToFront(boolean isIncognito, int tabId) {
+    }
+
+    @Override
     public List<Entry> getTasksFromRecents(boolean isIncognito) {
         return isIncognito ? mIncognitoTasks : mRegularTasks;
+    }
+
+    @Override
+    public boolean isIncognitoDocumentAccessibleToUser() {
+        return false;
+    }
+
+    @Override
+    protected boolean isActivityDestroyed(Activity activity) {
+        return true;
     }
 
     @Override

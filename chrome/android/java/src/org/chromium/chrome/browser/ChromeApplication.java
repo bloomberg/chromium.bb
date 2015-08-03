@@ -81,7 +81,7 @@ import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
+import org.chromium.chrome.browser.tabmodel.document.ActivityDelegateImpl;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.StorageDelegate;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
@@ -767,8 +767,9 @@ public class ChromeApplication extends ContentApplication {
     public static DocumentTabModelSelector getDocumentTabModelSelector() {
         ThreadUtils.assertOnUiThread();
         if (sDocumentTabModelSelector == null) {
-            sDocumentTabModelSelector = new DocumentTabModelSelector(
-                    new ActivityDelegate(DocumentActivity.class, IncognitoDocumentActivity.class),
+            ActivityDelegateImpl activityDelegate = new ActivityDelegateImpl(
+                    DocumentActivity.class, IncognitoDocumentActivity.class);
+            sDocumentTabModelSelector = new DocumentTabModelSelector(activityDelegate,
                     new StorageDelegate(), new TabDelegate(false), new TabDelegate(true));
         }
         return sDocumentTabModelSelector;

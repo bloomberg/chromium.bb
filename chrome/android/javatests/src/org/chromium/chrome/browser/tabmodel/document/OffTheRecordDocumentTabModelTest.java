@@ -5,12 +5,10 @@
 package org.chromium.chrome.browser.tabmodel.document;
 
 import android.content.Context;
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.OffTheRecordTabModel.OffTheRecordTabModelDelegate;
@@ -27,7 +25,6 @@ import org.chromium.content.browser.test.NativeLibraryTestBase;
  * internal list, instead of loading a task file containing an explicit list like the regular
  * DocumentTabModelTests do.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
 public class OffTheRecordDocumentTabModelTest extends NativeLibraryTestBase {
     private MockActivityDelegate mActivityDelegate;
     private MockStorageDelegate mStorageDelegate;
@@ -36,8 +33,6 @@ public class OffTheRecordDocumentTabModelTest extends NativeLibraryTestBase {
     private OffTheRecordDocumentTabModel mTabModel;
     private Profile mProfile;
     private Context mContext;
-
-    static final String INIT_SWITCHES[] = { "chrome_shell" };
 
     @Override
     protected void setUp() throws Exception {
@@ -52,7 +47,7 @@ public class OffTheRecordDocumentTabModelTest extends NativeLibraryTestBase {
     }
 
     private void createTabModel() {
-        OffTheRecordTabModelDelegate delegate = new OffTheRecordTabModelDelegate() {
+        final OffTheRecordTabModelDelegate delegate = new OffTheRecordTabModelDelegate() {
             private DocumentTabModel mModel;
 
             @Override
@@ -68,13 +63,19 @@ public class OffTheRecordDocumentTabModelTest extends NativeLibraryTestBase {
             }
 
         };
-        mTabModel = new OffTheRecordDocumentTabModel(delegate, mActivityDelegate);
-    }
-
-    private void initializeNativeTabModel() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
+                mTabModel = new OffTheRecordDocumentTabModel(delegate, mActivityDelegate);
+            }
+        });
+    }
+
+    private void initializeTabModel() throws Exception {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mTabModel.startTabStateLoad();
                 mTabModel.initializeNative();
                 mProfile = mTabModel.getProfile();
                 assertTrue(mProfile.isNativeInitialized());
@@ -108,8 +109,7 @@ public class OffTheRecordDocumentTabModelTest extends NativeLibraryTestBase {
         createTabModel();
         assertEquals(2, mTabModel.getCount());
         assertTrue(mTabModel.isDocumentTabModelImplCreated());
-        mTabModel.startTabStateLoad();
-        initializeNativeTabModel();
+        initializeTabModel();
 
         mActivityDelegate.removeTask(true, 11684);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -172,8 +172,7 @@ public class OffTheRecordDocumentTabModelTest extends NativeLibraryTestBase {
         createTabModel();
         assertEquals(2, mTabModel.getCount());
         assertTrue(mTabModel.isDocumentTabModelImplCreated());
-        mTabModel.startTabStateLoad();
-        initializeNativeTabModel();
+        initializeTabModel();
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -208,8 +207,7 @@ public class OffTheRecordDocumentTabModelTest extends NativeLibraryTestBase {
         createTabModel();
         assertEquals(2, mTabModel.getCount());
         assertTrue(mTabModel.isDocumentTabModelImplCreated());
-        mTabModel.startTabStateLoad();
-        initializeNativeTabModel();
+        initializeTabModel();
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override

@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.document.IncognitoDocumentActivity;
 import org.chromium.chrome.browser.ntp.RecentlyClosedBridge.RecentlyClosedTab;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
+import org.chromium.chrome.browser.tabmodel.document.ActivityDelegateImpl;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Entry;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.test.util.ActivityUtils;
@@ -38,7 +39,7 @@ import java.util.concurrent.Callable;
 public class DocumentModeRecentlyClosedTest extends DocumentModeTestBase {
 
     /** Used to report that a fake Task is sitting in Android's Overview menu. */
-    private static class TestActivityDelegate extends ActivityDelegate {
+    private static class TestActivityDelegate extends ActivityDelegateImpl {
         private Entry mExtraRegularTask;
 
         TestActivityDelegate() {
@@ -236,7 +237,7 @@ public class DocumentModeRecentlyClosedTest extends DocumentModeTestBase {
                 ChromeApplication.getDocumentTabModelSelector();
         assertEquals("Wrong tab count", 3, selector.getTotalTabCount());
         ActivityDelegate delegate =
-                new ActivityDelegate(DocumentActivity.class, IncognitoDocumentActivity.class);
+                new ActivityDelegateImpl(DocumentActivity.class, IncognitoDocumentActivity.class);
         delegate.finishAndRemoveTask(false, tabIds[0]);
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override

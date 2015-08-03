@@ -4,35 +4,29 @@
 
 package org.chromium.chrome.browser.tabmodel.document;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
-import android.os.Build;
 import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.DocumentActivity;
-import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Entry;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Interfaces with the ActivityManager to identify Tabs/Tasks that are being tracked by
  * Android's Recents list.
  */
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-public class ActivityDelegate {
+public abstract class ActivityDelegate {
     private final Class<?> mRegularClass;
     private final Class<?> mIncognitoClass;
 
@@ -86,56 +80,21 @@ public class ActivityDelegate {
      * Get a map of the Chrome tasks displayed by Android's Recents.
      * @param isIncognito Whether or not the TabList is managing incognito tabs.
      */
-    public List<Entry> getTasksFromRecents(boolean isIncognito) {
-        Context context = ApplicationStatus.getApplicationContext();
-        ActivityManager activityManager =
-                (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-
-        List<Entry> entries = new ArrayList<Entry>();
-        for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
-            Intent intent = DocumentUtils.getBaseIntentFromTask(task);
-            if (!isValidActivity(isIncognito, intent)) continue;
-
-            int tabId = getTabIdFromIntent(intent);
-            if (tabId == Tab.INVALID_TAB_ID) continue;
-
-            String initialUrl = getInitialUrlForDocument(intent);
-            entries.add(new Entry(tabId, initialUrl));
-        }
-        return entries;
-    }
+    public abstract List<Entry> getTasksFromRecents(boolean isIncognito);
 
     /**
      * Moves the given task to the front, if it exists.
      * @param isIncognito Whether or not the TabList is managing incognito tabs.
      * @param tabId ID of the tab to move to front.
      */
-    public void moveTaskToFront(boolean isIncognito, int tabId) {
-        ActivityManager.AppTask task = getTask(isIncognito, tabId);
-        if (task != null) task.moveToFront();
-    }
+    public abstract void moveTaskToFront(boolean isIncognito, int tabId);
 
     /**
      * Finishes and removes the task.
      * @param isIncognito Whether or not the TabList is managing incognito tabs.
      * @param tabId ID of the tab to move to front.
      */
-    public void finishAndRemoveTask(boolean isIncognito, int tabId) {
-        ActivityManager.AppTask task = getTask(isIncognito, tabId);
-        if (task != null) task.finishAndRemoveTask();
-    }
-
-    private ActivityManager.AppTask getTask(boolean isIncognito, int tabId) {
-        Context context = ApplicationStatus.getApplicationContext();
-        ActivityManager activityManager =
-                (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
-            Intent intent = DocumentUtils.getBaseIntentFromTask(task);
-            int taskId = getTabIdFromIntent(intent);
-            if (taskId == tabId && isValidActivity(isIncognito, intent)) return task;
-        }
-        return null;
-    }
+    public abstract void finishAndRemoveTask(boolean isIncognito, int tabId);
 
     /**
      * Check if the Tab is associated with an Activity that hasn't been destroyed.
@@ -151,7 +110,7 @@ public class ActivityDelegate {
             if (activity != null
                     && isValidActivity(isIncognito, activity.getIntent())
                     && getTabIdFromIntent(activity.getIntent()) == tabId
-                    && !activity.isDestroyed()) {
+                    && !isActivityDestroyed(activity)) {
                 return true;
             }
         }
@@ -192,21 +151,13 @@ public class ActivityDelegate {
     }
 
     /**
-     * Return whether any incognito tabs are visible to the user in Android's Overview list.
+     * @return Whether any incognito tabs are visible to the user in Android's Overview list.
      */
-    public boolean isIncognitoDocumentAccessibleToUser() {
-        Context context = ApplicationStatus.getApplicationContext();
-        ActivityManager activityManager =
-                (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+    public abstract boolean isIncognitoDocumentAccessibleToUser();
 
-        for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
-            Intent intent = DocumentUtils.getBaseIntentFromTask(task);
-            if (isValidActivity(true, intent)) return true;
-        }
-        return false;
-    }
-
-    /** @return Running Activity that owns the given Tab, null if the Activity couldn't be found. */
+    /**
+     * @return Running Activity that owns the given Tab, null if the Activity couldn't be found.
+     */
     public static Activity getActivityForTabId(int id) {
         if (id == Tab.INVALID_TAB_ID) return null;
 
@@ -220,4 +171,9 @@ public class ActivityDelegate {
         }
         return null;
     }
+
+    /**
+     * @return Whether or not the given Activity is destroyed.
+     */
+    protected abstract boolean isActivityDestroyed(Activity activity);
 }

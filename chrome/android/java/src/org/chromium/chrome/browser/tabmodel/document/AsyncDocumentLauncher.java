@@ -103,7 +103,7 @@ public class AsyncDocumentLauncher {
 
     private AsyncDocumentLauncher() {
         mHandler = new Handler(Looper.getMainLooper());
-        mActivityDelegate = new ActivityDelegate(
+        mActivityDelegate = new ActivityDelegateImpl(
                 DocumentActivity.class, IncognitoDocumentActivity.class);
         mQueue = new ArrayList<LaunchRunnable>();
     }
