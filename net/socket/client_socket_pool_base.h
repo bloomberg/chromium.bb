@@ -346,8 +346,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   void OnIPAddressChanged() override;
 
  private:
-  friend class base::RefCounted<ClientSocketPoolBaseHelper>;
-
   // Entry for a persistent socket which became idle at time |start_time|.
   struct IdleSocket {
     IdleSocket() : socket(NULL) {}
