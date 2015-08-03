@@ -26,8 +26,8 @@ symbols exported from the shared library.
 The last issue is a cause of a lot of headaches in the GYP build. If you
 annotate a symbol as exported (i.e. `BASE_EXPORT`) then you can't have
 it in a file that goes into a static library because the function might
-be [http://blogs.msdn.com/b/oldnewthing/archive/2014/03/21/10509670.aspx
-stripped out] if it's not called from within the static library. This
+be [stripped out](http://blogs.msdn.com/b/oldnewthing/archive/2014/03/21/10509670.aspx)
+if it's not called from within the static library. This
 prevents composing components of static libraries and exporting their
 symbols. A source set avoids this issue and `EXPORT` has the desired
 meaning of "export from the component this gets linked into" with no
@@ -113,9 +113,9 @@ iterate over a set of sources.
     ],
   }],
 ],
-```  
+```
 
-### GN 
+### GN
 
 ```
 sources = [
@@ -167,7 +167,7 @@ places are noted in the table below.
 | `arm_neon_optional` (0/1)                       | `arm_optionally_use_neon` (true/false)     | `//build/config/arm.gni`                       |
 | `arm_version`                                   | `arm_version`                              | `//build/config/arm.gni`                       |
 | `asan` (0/1)                                    | `is_asan` (true/false)                     | (global)                                       |
-| `branding` ("Chromium"/"Chrome"")               | `is_chrome_branded` (true/false)           | `//build/config/chrome_build.gni`              |
+| `branding` ("Chromium"/"Chrome")                | `is_chrome_branded` (true/false)           | `//build/config/chrome_build.gni`              |
 | `build_for_tool=="drmemory"`                    | `disable_iterator_debugging` (true/false)  | (internal to `//build/config/BUILD.gn`)        |
 | `build_for_tool=="tsan"`                        | `disable_iterator_debugging` (true/false)  | (internal to `//build/config/BUILD.gn`)        |
 | `buildtype` ("Official"/"Dev")                  | `is_official_build` (true/false)           | `//build/config/chrome_build.gni`              |
@@ -195,7 +195,7 @@ places are noted in the table below.
 | `tsan` (0/1)                                    | `is_tsan` (true/false)                     | (global)                                       |
 | `windows_sdk_path`                              | `windows_sdk_path`                         | (internal to `//build/config/win/BUILD.gn`)    |
 
-### Feature flags 
+### Feature flags
 
 | *GYP*                                   | *GN*                                           | *GN import*                   |
 |:----------------------------------------|:-----------------------------------------------|:------------------------------|
@@ -260,7 +260,7 @@ places are noted in the table below.
 | `win_pdf_metafile_for_printing` (0/1)   | `win_pdf_metafile_for_printing` (true/false)   | `//build/config/features.gni` |
 | `win_use_allocator_shim` (0/1)          |                                                | (See "Allocator" below)       |
 
-### Common target conversion 
+### Common target conversion
 
 Some targets that lots of projects depend on and how the GN ones
 correspond to GYP ones. (This is for commonly-depended-on or weird
@@ -329,14 +329,14 @@ the cycle.
 
 ##  Other stuff
 
-### Target conditions 
+### Target conditions
 
 `target_conditions` are like normal conditions but expanded in a
 different phase of GYP. You can generally just convert the conditions
 inside and not worry about the `conditions`/`target_conditions`
 difference.
 
-### xcode_settings 
+### xcode_settings
 
 Some xcode settings are obvious:
 
@@ -360,11 +360,10 @@ These all correspond to various flags that get passed to the compiler or
 linker. You can use your favorite search engine to see what it
 corresponds to, but many of them are not well documented. You can also
 search for the string in
-[https://code.google.com/p/chromium/codesearch#chromium/src/tools/gyp/pylib/gyp/xcode_emulation.py
-tools/gyp/pylib/gyp/xcode_emulation.py]. GYP uses this file to decode
+[tools/gyp/pylib/gyp/xcode_emulation.py](https://code.google.com/p/chromium/codesearch#chromium/src/tools/gyp/pylib/gyp/xcode_emulation.py). GYP uses this file to decode
 the Xcode settings into command line flags for the ninja build.
 
-### wexit-time destructors 
+### wexit-time destructors
 
 Replace
 
@@ -378,7 +377,7 @@ with
 configs += [ "//build/config/compiler:wexit_time_destructors" ]
 ```
 
-### Chromium code 
+### Chromium code
 
 In GYP code is "non-Chromium" by default, and you opt into higher warning levels using:
 
@@ -395,7 +394,7 @@ configs -= [ "//build/config/compiler:chromium_code" ]
 configs += [ "//build/config/compiler:no_chromium_code" ]
 ```
 
-### -fvisibility 
+### -fvisibility
 
 All symbols in the build have "hidden" visibility by default (this means
 that symbols aren't exported from shared libraries, a concept different
@@ -419,7 +418,7 @@ if (!is_win) {
 }
 ```
 
-### Dependent settings 
+### Dependent settings
 
 In GYP you'll see stuff like this, especially in third-party code.
 
@@ -466,7 +465,7 @@ GYP would say `export_dependent_settings` to forward
 dependency in the `public_deps` section and this will happen
 automatically.
 
-### MSVS disabled warnings 
+### MSVS disabled warnings
 
 In GYP you'll see for third-party code:
 
@@ -500,7 +499,7 @@ if (is_win) {
 
 (Use `=` instead of `+=` is you haven't already defined a `cflags` variable.)
 
-### Mac frameworks 
+### Mac frameworks
 
 GN knows to convert `.framework` files in the `libs` list to the right
 thing on Mac. You don't need to specify the directories either. So
@@ -520,7 +519,7 @@ to this:
 libs = [ "Accelerate.framework" ]
 ```
 
-### hard_dependency 
+### hard_dependency
 
 GYP code sometimes sets
 
@@ -531,7 +530,7 @@ GYP code sometimes sets
 to indicate that the current target must be build before its dependents.
 GN can deduce this internally, so you can ignore this directive.
 
-### Allocator 
+### Allocator
 
 GYP has `win_use_allocator_shim` and `use_allocator`. In GN, these are
 merged into `use_allocator` which is defined in
@@ -560,7 +559,7 @@ Becomes:
 As in GYP, the allocator should only be depended on by executables (and
 tests). Libraries should not set the allocator.
 
-### optimize: max 
+### optimize: max
 
 In Gyp:
 
@@ -583,7 +582,7 @@ affects Posix systems. Some components might additionally specify `-O2`
 on Posix further optimize, in which case you can remove the `is_win`
 check.
 
-### Protobufs 
+### Protobufs
 
 ```
 import("//third_party/protobuf/proto_library.gni")
@@ -596,7 +595,7 @@ proto_library("myproto") {
 See the `third_party/protobuf/proto_library.gni` file for full
 documentation and extra flags.
 
-### Java stuff 
+### Java stuff
 
 JNI generator in GYP:
 
@@ -627,7 +626,7 @@ if (is_android) {
 }
 ```
 
-### Grit 
+### Grit
 
 ```
 import("//tools/grit/grit_rule.gni")
@@ -639,7 +638,7 @@ grit("resources") {
 
 See `src/build/secondary/tools/grit/grit_rule.gni` for more documentation.
 
-### Mojo 
+### Mojo
 
 ```
 import("//mojo/public/tools/bindings/mojom.gni")
