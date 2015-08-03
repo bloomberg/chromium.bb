@@ -16,8 +16,8 @@
 #include "remoting/host/desktop_process.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_main.h"
-#include "remoting/host/ipc_constants.h"
 #include "remoting/host/me2me_desktop_environment.h"
+#include "remoting/host/switches.h"
 #include "remoting/host/win/session_desktop_environment.h"
 
 namespace remoting {

@@ -24,6 +24,7 @@
 #include "remoting/host/host_main.h"
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/ipc_util.h"
+#include "remoting/host/switches.h"
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/win/worker_process_launcher.h"
 #include "remoting/host/win/wts_terminal_monitor.h"

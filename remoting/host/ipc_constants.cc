@@ -10,8 +10,6 @@
 
 namespace remoting {
 
-const char kDaemonPipeSwitchName[] = "daemon-pipe";
-
 const base::FilePath::CharType kHostBinaryName[] =
     FILE_PATH_LITERAL("remoting_host");
 

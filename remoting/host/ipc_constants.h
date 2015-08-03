@@ -9,9 +9,6 @@
 
 namespace remoting {
 
-// The command line switch specifying the daemon IPC endpoint.
-extern const char kDaemonPipeSwitchName[];
-
 // Name of the host process binary.
 extern const base::FilePath::CharType kHostBinaryName[];
 

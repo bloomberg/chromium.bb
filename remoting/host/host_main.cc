@@ -23,6 +23,7 @@
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/logging.h"
 #include "remoting/host/setup/me2me_native_messaging_host.h"
+#include "remoting/host/switches.h"
 #include "remoting/host/usage_stats_consent.h"
 
 #if defined(OS_MACOSX)
@@ -44,24 +45,9 @@ int DesktopProcessMain();
 int RdpDesktopSessionMain();
 #endif  // defined(OS_WIN)
 
-const char kElevateSwitchName[] = "elevate";
-const char kProcessTypeSwitchName[] = "type";
-
-const char kProcessTypeDaemon[] = "daemon";
-const char kProcessTypeDesktop[] = "desktop";
-const char kProcessTypeHost[] = "host";
-const char kProcessTypeRdpDesktopSession[] = "rdp_desktop_session";
-
 namespace {
 
 typedef int (*MainRoutineFn)();
-
-// "--help" or "--?" prints the usage message.
-const char kHelpSwitchName[] = "help";
-const char kQuestionSwitchName[] = "?";
-
-// The command line switch used to get version of the daemon.
-const char kVersionSwitchName[] = "version";
 
 const char kUsageMessage[] =
   "Usage: %s [options]\n"
