@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/lazy_instance.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/vector_icon_types.h"

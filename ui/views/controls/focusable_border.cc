@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/focusable_border.h"
 
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/skia_util.h"

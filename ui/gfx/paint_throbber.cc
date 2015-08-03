@@ -5,6 +5,7 @@
 #include "ui/gfx/paint_throbber.h"
 
 #include "base/time/time.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
