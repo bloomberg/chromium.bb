@@ -32,11 +32,13 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/web_contents_tester.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::SiteInstance;
 using content::WebContents;
+using content::WebContentsTester;
 using extensions::Extension;
 
 namespace {
@@ -2177,6 +2179,32 @@ TEST_F(TabStripModelTest, DiscardWebContentsAt) {
   tabstrip.CloseAllTabs();
 }
 
+// Makes sure that reloading a discarded tab without activating it unmarks the
+// tab as discarded so it won't reload on activation.
+TEST_F(TabStripModelTest, ReloadDiscardedTabContextMenu) {
+  TabStripDummyDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+
+  // Create 2 tabs because the active tab cannot be discarded.
+  tabstrip.AppendWebContents(CreateWebContents(), true);
+  content::WebContents* test_contents =
+      WebContentsTester::CreateTestWebContents(browser_context(), nullptr);
+  tabstrip.AppendWebContents(test_contents, false);  // Opened in background.
+
+  // Navigate to a web page. This is necessary to set a current entry in memory
+  // so the reload can happen.
+  WebContentsTester::For(test_contents)
+      ->NavigateAndCommit(GURL("chrome://newtab"));
+  EXPECT_FALSE(tabstrip.IsTabDiscarded(1));
+
+  tabstrip.DiscardWebContentsAt(1);
+  EXPECT_TRUE(tabstrip.IsTabDiscarded(1));
+
+  tabstrip.GetWebContentsAt(1)->GetController().Reload(false);
+  EXPECT_FALSE(tabstrip.IsTabDiscarded(1));
+
+  tabstrip.CloseAllTabs();
+}
 // Makes sure TabStripModel handles the case of deleting a tab while removing
 // another tab.
 TEST_F(TabStripModelTest, DeleteFromDestroy) {

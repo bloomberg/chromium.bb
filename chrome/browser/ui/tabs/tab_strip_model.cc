@@ -176,6 +176,10 @@ class TabStripModel::WebContentsData : public content::WebContentsObserver {
   // is properly removed from the tab strip.
   void WebContentsDestroyed() override;
 
+  // Marks the tab as no longer discarded if it has been reloaded from another
+  // source (ie: context menu).
+  void DidStartLoading() override;
+
   // The WebContents being tracked by this WebContentsData. The
   // WebContentsObserver does keep a reference, but when the WebContents is
   // deleted, the WebContentsObserver reference is NULLed and thus inaccessible.
@@ -245,6 +249,10 @@ void TabStripModel::WebContentsData::WebContentsDestroyed() {
   int index = tab_strip_model_->GetIndexOfWebContents(web_contents());
   DCHECK_NE(TabStripModel::kNoTab, index);
   tab_strip_model_->DetachWebContentsAt(index);
+}
+
+void TabStripModel::WebContentsData::DidStartLoading() {
+  set_discarded(false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
