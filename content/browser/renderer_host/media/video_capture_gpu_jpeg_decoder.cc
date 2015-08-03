@@ -38,11 +38,6 @@ VideoCaptureGpuJpegDecoder::~VideoCaptureGpuJpegDecoder() {
   gpu_channel_host_ = nullptr;
 }
 
-bool VideoCaptureGpuJpegDecoder::IsDecoding_Locked() const {
-  lock_.AssertAcquired();
-  return !decode_done_closure_.is_null();
-}
-
 void VideoCaptureGpuJpegDecoder::Initialize() {
   DCHECK(CalledOnValidThread());
 
@@ -73,85 +68,6 @@ VideoCaptureGpuJpegDecoder::STATUS VideoCaptureGpuJpegDecoder::GetStatus()
   DCHECK(CalledOnValidThread());
   base::AutoLock lock(lock_);
   return decoder_status_;
-}
-
-// static
-void VideoCaptureGpuJpegDecoder::EstablishGpuChannelOnUIThread(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    base::WeakPtr<VideoCaptureGpuJpegDecoder> weak_this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(BrowserGpuChannelHostFactory::instance());
-
-  BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
-      CAUSE_FOR_GPU_LAUNCH_JPEGDECODEACCELERATOR_INITIALIZE,
-      base::Bind(&VideoCaptureGpuJpegDecoder::GpuChannelEstablishedOnUIThread,
-                 task_runner, weak_this));
-}
-
-// static
-void VideoCaptureGpuJpegDecoder::GpuChannelEstablishedOnUIThread(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    base::WeakPtr<VideoCaptureGpuJpegDecoder> weak_this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  scoped_refptr<GpuChannelHost> gpu_channel_host(
-      BrowserGpuChannelHostFactory::instance()->GetGpuChannel());
-  task_runner->PostTask(
-      FROM_HERE, base::Bind(&VideoCaptureGpuJpegDecoder::FinishInitialization,
-                            weak_this, base::Passed(&gpu_channel_host)));
-}
-
-void VideoCaptureGpuJpegDecoder::FinishInitialization(
-    scoped_refptr<GpuChannelHost> gpu_channel_host) {
-  DCHECK(CalledOnValidThread());
-  base::AutoLock lock(lock_);
-  if (!gpu_channel_host) {
-    LOG(ERROR) << "Failed to establish GPU channel for JPEG decoder";
-    decoder_status_ = FAILED;
-    return;
-  }
-
-  if (gpu_channel_host->gpu_info().jpeg_decode_accelerator_supported) {
-    gpu_channel_host_ = gpu_channel_host.Pass();
-    decoder_ = gpu_channel_host_->CreateJpegDecoder(this);
-  }
-  decoder_status_ = decoder_ ? INIT_PASSED : FAILED;
-}
-
-void VideoCaptureGpuJpegDecoder::VideoFrameReady(int32_t bitstream_buffer_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  TRACE_EVENT0("jpeg", "VideoCaptureGpuJpegDecoder::VideoFrameReady");
-  base::AutoLock lock(lock_);
-
-  if (!IsDecoding_Locked()) {
-    LOG(ERROR) << "Got decode response while not decoding";
-    return;
-  }
-
-  if (bitstream_buffer_id != in_buffer_id_) {
-    LOG(ERROR) << "Unexpected bitstream_buffer_id " << bitstream_buffer_id
-               << ", expected " << in_buffer_id_;
-    return;
-  }
-  in_buffer_id_ = media::JpegDecodeAccelerator::kInvalidBitstreamBufferId;
-
-  decode_done_closure_.Run();
-  decode_done_closure_.Reset();
-
-  TRACE_EVENT_ASYNC_END0("jpeg", "VideoCaptureGpuJpegDecoder decoding",
-                         bitstream_buffer_id);
-}
-
-void VideoCaptureGpuJpegDecoder::NotifyError(
-    int32_t bitstream_buffer_id,
-    media::JpegDecodeAccelerator::Error error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  LOG(ERROR) << "Decode error, bitstream_buffer_id=" << bitstream_buffer_id
-             << ", error=" << error;
-
-  base::AutoLock lock(lock_);
-  decode_done_closure_.Reset();
-  decoder_status_ = FAILED;
 }
 
 void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
@@ -231,6 +147,90 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
 #else
   NOTREACHED();
 #endif
+}
+
+void VideoCaptureGpuJpegDecoder::VideoFrameReady(int32_t bitstream_buffer_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  TRACE_EVENT0("jpeg", "VideoCaptureGpuJpegDecoder::VideoFrameReady");
+  base::AutoLock lock(lock_);
+
+  if (!IsDecoding_Locked()) {
+    LOG(ERROR) << "Got decode response while not decoding";
+    return;
+  }
+
+  if (bitstream_buffer_id != in_buffer_id_) {
+    LOG(ERROR) << "Unexpected bitstream_buffer_id " << bitstream_buffer_id
+               << ", expected " << in_buffer_id_;
+    return;
+  }
+  in_buffer_id_ = media::JpegDecodeAccelerator::kInvalidBitstreamBufferId;
+
+  decode_done_closure_.Run();
+  decode_done_closure_.Reset();
+
+  TRACE_EVENT_ASYNC_END0("jpeg", "VideoCaptureGpuJpegDecoder decoding",
+                         bitstream_buffer_id);
+}
+
+void VideoCaptureGpuJpegDecoder::NotifyError(
+    int32_t bitstream_buffer_id,
+    media::JpegDecodeAccelerator::Error error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  LOG(ERROR) << "Decode error, bitstream_buffer_id=" << bitstream_buffer_id
+             << ", error=" << error;
+
+  base::AutoLock lock(lock_);
+  decode_done_closure_.Reset();
+  decoder_status_ = FAILED;
+}
+
+// static
+void VideoCaptureGpuJpegDecoder::EstablishGpuChannelOnUIThread(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    base::WeakPtr<VideoCaptureGpuJpegDecoder> weak_this) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(BrowserGpuChannelHostFactory::instance());
+
+  BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
+      CAUSE_FOR_GPU_LAUNCH_JPEGDECODEACCELERATOR_INITIALIZE,
+      base::Bind(&VideoCaptureGpuJpegDecoder::GpuChannelEstablishedOnUIThread,
+                 task_runner, weak_this));
+}
+
+// static
+void VideoCaptureGpuJpegDecoder::GpuChannelEstablishedOnUIThread(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    base::WeakPtr<VideoCaptureGpuJpegDecoder> weak_this) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_refptr<GpuChannelHost> gpu_channel_host(
+      BrowserGpuChannelHostFactory::instance()->GetGpuChannel());
+  task_runner->PostTask(
+      FROM_HERE, base::Bind(&VideoCaptureGpuJpegDecoder::FinishInitialization,
+                            weak_this, base::Passed(&gpu_channel_host)));
+}
+
+void VideoCaptureGpuJpegDecoder::FinishInitialization(
+    scoped_refptr<GpuChannelHost> gpu_channel_host) {
+  DCHECK(CalledOnValidThread());
+  base::AutoLock lock(lock_);
+  if (!gpu_channel_host) {
+    LOG(ERROR) << "Failed to establish GPU channel for JPEG decoder";
+    decoder_status_ = FAILED;
+    return;
+  }
+
+  if (gpu_channel_host->gpu_info().jpeg_decode_accelerator_supported) {
+    gpu_channel_host_ = gpu_channel_host.Pass();
+    decoder_ = gpu_channel_host_->CreateJpegDecoder(this);
+  }
+  decoder_status_ = decoder_ ? INIT_PASSED : FAILED;
+}
+
+bool VideoCaptureGpuJpegDecoder::IsDecoding_Locked() const {
+  lock_.AssertAcquired();
+  return !decode_done_closure_.is_null();
 }
 
 }  // namespace content
