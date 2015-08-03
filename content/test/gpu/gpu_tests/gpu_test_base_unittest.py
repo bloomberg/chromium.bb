@@ -5,10 +5,10 @@ import os
 import unittest
 
 from telemetry import benchmark
-from telemetry.core import discover
 from telemetry.core import util
 from telemetry.story import story_set as story_set_module
 from telemetry.testing import fakes
+from telemetry.util import classes_util
 
 util.AddDirToPythonPath(util.GetTelemetryDir(), 'third_party', 'mock')
 import mock # pylint: disable=import-error
@@ -23,10 +23,8 @@ def _GetGpuDir(*subdirs):
 
 class NoOverridesTest(unittest.TestCase):
   def testValidatorBase(self):
-    all_validators = discover.DiscoverClasses(
-      _GetGpuDir('gpu_tests'), _GetGpuDir(),
-      gpu_test_base.ValidatorBase,
-      index_by_class_name=True).values()
+    all_validators = classes_util.DiscoverClasses(
+      _GetGpuDir('gpu_tests'), _GetGpuDir(), gpu_test_base.ValidatorBase)
     self.assertGreater(len(all_validators), 0)
     for validator in all_validators:
       self.assertEquals(gpu_test_base.ValidatorBase.ValidateAndMeasurePage,
@@ -35,10 +33,8 @@ class NoOverridesTest(unittest.TestCase):
                         % validator.__name__)
 
   def testPageBase(self):
-    all_pages = discover.DiscoverClasses(
-      _GetGpuDir(), _GetGpuDir(),
-      gpu_test_base.PageBase,
-      index_by_class_name=True).values()
+    all_pages = classes_util.DiscoverClasses(
+      _GetGpuDir(), _GetGpuDir(), gpu_test_base.PageBase)
     self.assertGreater(len(all_pages), 0)
     for page in all_pages:
       self.assertEquals(gpu_test_base.PageBase.RunNavigateSteps,

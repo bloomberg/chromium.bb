@@ -104,11 +104,11 @@ def load_tests(loader, standard_tests, pattern):
   benchmarks_dir = os.path.dirname(__file__)
   top_level_dir = os.path.dirname(benchmarks_dir)
 
-  # Using the default of |index_by_class_name=False| means that if a module
-  # has multiple benchmarks, only the last one is returned.
+  # Using the default of |one_class_per_module=True| means that if a module
+  # has multiple benchmarks, only the first one is returned.
   all_benchmarks = discover.DiscoverClasses(
       benchmarks_dir, top_level_dir, benchmark_module.Benchmark,
-      index_by_class_name=False).values()
+      one_class_per_module=True)
   for benchmark in all_benchmarks:
     if sys.modules[benchmark.__module__] in _BLACK_LIST_TEST_MODULES:
       continue
