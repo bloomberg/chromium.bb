@@ -86,10 +86,13 @@ bool NativeWidgetMac::IsWindowModalSheet() const {
 }
 
 void NativeWidgetMac::OnWindowWillClose() {
-  delegate_->OnNativeWidgetDestroying();
   // Note: If closed via CloseNow(), |bridge_| will already be reset. If closed
-  // by the user, or via Close() and a RunLoop, this will reset it.
-  bridge_.reset();
+  // by the user, or via Close() and a RunLoop, notify observers while |bridge_|
+  // is still a valid pointer, then reset it.
+  if (bridge_) {
+    delegate_->OnNativeWidgetDestroying();
+    bridge_.reset();
+  }
   delegate_->OnNativeWidgetDestroyed();
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
     delete this;
@@ -337,6 +340,11 @@ void NativeWidgetMac::Close() {
 }
 
 void NativeWidgetMac::CloseNow() {
+  if (!bridge_)
+    return;
+
+  // Notify observers while |bridged_| is still valid.
+  delegate_->OnNativeWidgetDestroying();
   // Reset |bridge_| to NULL before destroying it.
   scoped_ptr<BridgedNativeWidget> bridge(bridge_.Pass());
 }

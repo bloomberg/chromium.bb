@@ -1980,6 +1980,7 @@ class WidgetBoundsObserver : public WidgetObserver {
 
   // WidgetObserver:
   void OnWidgetDestroying(Widget* widget) override {
+    EXPECT_TRUE(widget->GetNativeWindow());
     bounds_ = widget->GetWindowBoundsInScreen();
   }
 
@@ -2042,6 +2043,37 @@ TEST_F(WidgetTest, CloseWidgetWhileAnimating) {
   }
   EXPECT_TRUE(animation_observer.animation_completed());
   EXPECT_EQ(widget_observer.bounds(), bounds);
+}
+
+// Test that the NativeWidget is still valid during OnNativeWidgetDestroying(),
+// and properties that depend on it are valid, when closed via CloseNow().
+TEST_F(WidgetTest, ValidDuringOnNativeWidgetDestroyingFromCloseNow) {
+  Widget* widget = CreateNativeDesktopWidget();
+  widget->Show();
+  gfx::Rect screen_rect(50, 50, 100, 100);
+  widget->SetBounds(screen_rect);
+  WidgetBoundsObserver observer;
+  widget->AddObserver(&observer);
+  widget->CloseNow();
+  EXPECT_EQ(screen_rect, observer.bounds());
+}
+
+// Test that the NativeWidget is still valid during OnNativeWidgetDestroying(),
+// and properties that depend on it are valid, when closed via Close().
+TEST_F(WidgetTest, ValidDuringOnNativeWidgetDestroyingFromClose) {
+  Widget* widget = CreateNativeDesktopWidget();
+  widget->Show();
+  gfx::Rect screen_rect(50, 50, 100, 100);
+  widget->SetBounds(screen_rect);
+  WidgetBoundsObserver observer;
+  widget->AddObserver(&observer);
+  widget->Close();
+  EXPECT_EQ(gfx::Rect(), observer.bounds());
+  base::RunLoop().RunUntilIdle();
+// Broken on Linux. See http://crbug.com/515379.
+#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
+  EXPECT_EQ(screen_rect, observer.bounds());
+#endif
 }
 
 // Tests that we do not crash when a Widget is destroyed by going out of

@@ -1002,8 +1002,15 @@ void BridgedNativeWidget::InitCompositor() {
 }
 
 void BridgedNativeWidget::DestroyCompositor() {
-  if (layer())
+  if (layer()) {
+    // LayerOwner supports a change in ownership, e.g., to animate a closing
+    // window, but that won't work as expected for the root layer in
+    // BridgedNativeWidget.
+    DCHECK_EQ(this, layer()->owner());
+    layer()->CompleteAllAnimations();
+    layer()->SuppressPaint();
     layer()->set_delegate(nullptr);
+  }
   DestroyLayer();
 
   if (!compositor_widget_) {
