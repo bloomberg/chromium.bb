@@ -31,6 +31,8 @@
 
 namespace blink {
 
+static const int kPaintOrderBitwidth = 2;
+
 SVGComputedStyle::SVGComputedStyle()
 {
     static SVGComputedStyle* initialStyle = new SVGComputedStyle(CreateInitial);
@@ -236,7 +238,7 @@ bool SVGComputedStyle::diffNeedsPaintInvalidation(const SVGComputedStyle* other)
         || svg_inherited_flags._fillRule != other->svg_inherited_flags._fillRule
         || svg_inherited_flags._colorInterpolation != other->svg_inherited_flags._colorInterpolation
         || svg_inherited_flags._colorInterpolationFilters != other->svg_inherited_flags._colorInterpolationFilters
-        || svg_inherited_flags._paintOrder != other->svg_inherited_flags._paintOrder)
+        || svg_inherited_flags.paintOrder != other->svg_inherited_flags.paintOrder)
         return true;
 
     if (svg_noninherited_flags.f.bufferedRendering != other->svg_noninherited_flags.f.bufferedRendering)
@@ -248,10 +250,38 @@ bool SVGComputedStyle::diffNeedsPaintInvalidation(const SVGComputedStyle* other)
     return false;
 }
 
+unsigned paintOrderSequence(EPaintOrderType first, EPaintOrderType second, EPaintOrderType third)
+{
+    return (((third << kPaintOrderBitwidth) | second) << kPaintOrderBitwidth) | first;
+}
+
 EPaintOrderType SVGComputedStyle::paintOrderType(unsigned index) const
 {
+    unsigned pt = 0;
     ASSERT(index < ((1 << kPaintOrderBitwidth)-1));
-    unsigned pt = (paintOrder() >> (kPaintOrderBitwidth*index)) & ((1u << kPaintOrderBitwidth) - 1);
+    switch (this->paintOrder()) {
+    case PaintOrderNormal:
+    case PaintOrderFillStrokeMarkers:
+        pt = paintOrderSequence(PT_FILL, PT_STROKE, PT_MARKERS);
+        break;
+    case PaintOrderFillMarkersStroke:
+        pt = paintOrderSequence(PT_FILL, PT_MARKERS, PT_STROKE);
+        break;
+    case PaintOrderStrokeFillMarkers:
+        pt = paintOrderSequence(PT_STROKE, PT_FILL, PT_MARKERS);
+        break;
+    case PaintOrderStrokeMarkersFill:
+        pt = paintOrderSequence(PT_STROKE, PT_MARKERS, PT_FILL);
+        break;
+    case PaintOrderMarkersFillStroke:
+        pt = paintOrderSequence(PT_MARKERS, PT_FILL, PT_STROKE);
+        break;
+    case PaintOrderMarkersStrokeFill:
+        pt = paintOrderSequence(PT_MARKERS, PT_STROKE, PT_FILL);
+        break;
+    }
+
+    pt = (pt >> (kPaintOrderBitwidth*index)) & ((1u << kPaintOrderBitwidth) - 1);
     return (EPaintOrderType)pt;
 }
 

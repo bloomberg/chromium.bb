@@ -7879,50 +7879,49 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parsePaintOrder() const
     CSSParserValue* value = m_valueList->current();
     ASSERT(value);
 
-    RefPtrWillBeRawPtr<CSSValueList> parsedValues = CSSValueList::createSpaceSeparated();
-
-    // The default paint-order is: Fill, Stroke, Markers.
-    bool seenFill = false, seenStroke = false, seenMarkers = false;
-
-    for (; value; value = m_valueList->next()) {
-        switch (value->id) {
-        case CSSValueNormal:
-            // normal inside [fill || stroke || markers] not valid
+    Vector<CSSValueID, 3> paintTypeList;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> fill = nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> stroke = nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> markers = nullptr;
+    while (value) {
+        if (value->id == CSSValueFill && !fill)
+            fill = CSSPrimitiveValue::createIdentifier(value->id);
+        else if (value->id == CSSValueStroke && !stroke)
+            stroke = CSSPrimitiveValue::createIdentifier(value->id);
+        else if (value->id == CSSValueMarkers && !markers)
+            markers = CSSPrimitiveValue::createIdentifier(value->id);
+        else
             return nullptr;
-        case CSSValueFill:
-            if (seenFill)
-                return nullptr;
-
-            seenFill = true;
-            break;
-        case CSSValueStroke:
-            if (seenStroke)
-                return nullptr;
-
-            seenStroke = true;
-            break;
-        case CSSValueMarkers:
-            if (seenMarkers)
-                return nullptr;
-
-            seenMarkers = true;
-            break;
-        default:
-            return nullptr;
-        }
-
-        parsedValues->append(CSSPrimitiveValue::createIdentifier(value->id));
+        paintTypeList.append(value->id);
+        value = m_valueList->next();
     }
 
-    // fill out the rest of the paint order
-    if (!seenFill)
-        parsedValues->append(CSSPrimitiveValue::createIdentifier(CSSValueFill));
-    if (!seenStroke)
-        parsedValues->append(CSSPrimitiveValue::createIdentifier(CSSValueStroke));
-    if (!seenMarkers)
-        parsedValues->append(CSSPrimitiveValue::createIdentifier(CSSValueMarkers));
+    // After parsing we serialize the paint-order list. Since it is not possible to
+    // pop a last list items from CSSValueList without bigger cost, we create the
+    // list after parsing.
+    CSSValueID firstPaintOrderType = paintTypeList.at(0);
+    RefPtrWillBeRawPtr<CSSValueList> paintOrderList = CSSValueList::createSpaceSeparated();
+    switch (firstPaintOrderType) {
+    case CSSValueFill:
+    case CSSValueStroke:
+        paintOrderList->append(firstPaintOrderType == CSSValueFill ? fill.release() : stroke.release());
+        if (paintTypeList.size() > 1) {
+            if (paintTypeList.at(1) == CSSValueMarkers)
+                paintOrderList->append(markers.release());
+        }
+        break;
+    case CSSValueMarkers:
+        paintOrderList->append(markers.release());
+        if (paintTypeList.size() > 1) {
+            if (paintTypeList.at(1) == CSSValueStroke)
+                paintOrderList->append(stroke.release());
+        }
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
 
-    return parsedValues.release();
+    return paintOrderList.release();
 }
 
 class TransformOperationInfo {

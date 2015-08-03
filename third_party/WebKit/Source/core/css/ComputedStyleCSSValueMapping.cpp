@@ -1185,11 +1185,11 @@ static PassRefPtrWillBeRawPtr<CSSValue> strokeDashArrayToCSSValueList(const SVGD
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> paintOrderToCSSValueList(EPaintOrder paintorder)
+static PassRefPtrWillBeRawPtr<CSSValue> paintOrderToCSSValueList(const SVGComputedStyle& svgStyle)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-    do {
-        EPaintOrderType paintOrderType = (EPaintOrderType)(paintorder & ((1 << kPaintOrderBitwidth) - 1));
+    for (int i = 0; i < 3; i++) {
+        EPaintOrderType paintOrderType = svgStyle.paintOrderType(i);
         switch (paintOrderType) {
         case PT_FILL:
         case PT_STROKE:
@@ -1201,7 +1201,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> paintOrderToCSSValueList(EPaintOrder pai
             ASSERT_NOT_REACHED();
             break;
         }
-    } while (paintorder >>= kPaintOrderBitwidth);
+    }
 
     return list.release();
 }
@@ -2623,7 +2623,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return nullptr;
     }
     case CSSPropertyPaintOrder:
-        return paintOrderToCSSValueList(svgStyle.paintOrder());
+        return paintOrderToCSSValueList(svgStyle);
     case CSSPropertyVectorEffect:
         return CSSPrimitiveValue::create(svgStyle.vectorEffect());
     case CSSPropertyMaskType:

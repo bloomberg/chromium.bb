@@ -706,31 +706,21 @@ LengthPoint StyleBuilderConverter::convertPerspectiveOrigin(StyleResolverState& 
 EPaintOrder StyleBuilderConverter::convertPaintOrder(StyleResolverState&, CSSValue* cssPaintOrder)
 {
     if (cssPaintOrder->isValueList()) {
-        int paintOrder = 0;
-        const CSSValueList& list = *toCSSValueList(cssPaintOrder);
-        for (size_t i = 0; i < list.length(); ++i) {
-            EPaintOrderType paintOrderType = PT_NONE;
-            switch (toCSSPrimitiveValue(list.item(i))->getValueID()) {
-            case CSSValueFill:
-                paintOrderType = PT_FILL;
-                break;
-            case CSSValueStroke:
-                paintOrderType = PT_STROKE;
-                break;
-            case CSSValueMarkers:
-                paintOrderType = PT_MARKERS;
-                break;
-            default:
-                ASSERT_NOT_REACHED();
-                break;
-            }
-
-            paintOrder |= (paintOrderType << kPaintOrderBitwidth*i);
+        const CSSValueList& orderTypeList = *toCSSValueList(cssPaintOrder);
+        switch (toCSSPrimitiveValue(orderTypeList.item(0))->getValueID()) {
+        case CSSValueFill:
+            return orderTypeList.length() > 1 ? PaintOrderFillMarkersStroke : PaintOrderFillStrokeMarkers;
+        case CSSValueStroke:
+            return orderTypeList.length() > 1 ? PaintOrderStrokeMarkersFill : PaintOrderStrokeFillMarkers;
+        case CSSValueMarkers:
+            return orderTypeList.length() > 1 ? PaintOrderMarkersStrokeFill : PaintOrderMarkersFillStroke;
+        default:
+            ASSERT_NOT_REACHED();
+            return PaintOrderNormal;
         }
-        return (EPaintOrder)paintOrder;
     }
 
-    return PO_NORMAL;
+    return PaintOrderNormal;
 }
 
 Length StyleBuilderConverter::convertQuirkyLength(StyleResolverState& state, CSSValue* value)
