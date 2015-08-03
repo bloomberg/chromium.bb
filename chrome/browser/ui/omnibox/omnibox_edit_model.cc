@@ -21,12 +21,6 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
-#include "chrome/browser/net/predictor.h"
-#include "chrome/browser/predictors/autocomplete_action_predictor.h"
-#include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
-#include "chrome/browser/prerender/prerender_field_trial.h"
-#include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -34,7 +28,6 @@
 #include "chrome/browser/ui/omnibox/omnibox_navigation_observer.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
-#include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -59,7 +52,6 @@
 
 using bookmarks::BookmarkModel;
 using metrics::OmniboxEventProto;
-using predictors::AutocompleteActionPredictor;
 
 
 // Helpers --------------------------------------------------------------------
@@ -344,63 +336,18 @@ bool OmniboxEditModel::CommitSuggestedText() {
 }
 
 void OmniboxEditModel::OnChanged() {
+  // Hide any suggestions we might be showing.
+  view_->SetGrayTextAutocompletion(base::string16());
+
   // Don't call CurrentMatch() when there's no editing, as in this case we'll
   // never actually use it.  This avoids running the autocomplete providers (and
   // any systems they then spin up) during startup.
   const AutocompleteMatch& current_match = user_input_in_progress_ ?
       CurrentMatch(NULL) : AutocompleteMatch();
 
-  AutocompleteActionPredictor::Action recommended_action =
-      AutocompleteActionPredictor::ACTION_NONE;
-  if (user_input_in_progress_) {
-    InstantSearchPrerenderer* prerenderer =
-        InstantSearchPrerenderer::GetForProfile(profile_);
-    if (prerenderer &&
-        prerenderer->IsAllowed(current_match, controller_->GetWebContents()) &&
-        popup_model()->IsOpen() && has_focus()) {
-      recommended_action = AutocompleteActionPredictor::ACTION_PRERENDER;
-    } else {
-      AutocompleteActionPredictor* action_predictor =
-          predictors::AutocompleteActionPredictorFactory::GetForProfile(
-              profile_);
-      action_predictor->RegisterTransitionalMatches(user_text_, result());
-      // Confer with the AutocompleteActionPredictor to determine what action,
-      // if any, we should take. Get the recommended action here even if we
-      // don't need it so we can get stats for anyone who is opted in to UMA,
-      // but only get it if the user has actually typed something to avoid
-      // constructing it before it's needed. Note: This event is triggered as
-      // part of startup when the initial tab transitions to the start page.
-      recommended_action =
-          action_predictor->RecommendAction(user_text_, current_match);
-    }
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.Action",
-                            recommended_action,
-                            AutocompleteActionPredictor::LAST_PREDICT_ACTION);
-
-  // Hide any suggestions we might be showing.
-  view_->SetGrayTextAutocompletion(base::string16());
-
-  switch (recommended_action) {
-    case AutocompleteActionPredictor::ACTION_PRERENDER:
-      // It's possible that there is no current page, for instance if the tab
-      // has been closed or on return from a sleep state.
-      // (http://crbug.com/105689)
-      if (!client_->CurrentPageExists())
-        break;
-      // Ask for prerendering if the destination URL is different than the
-      // current URL.
-      if (current_match.destination_url != client_->GetURL())
-        client_->DoPrerender(current_match);
-      break;
-    case AutocompleteActionPredictor::ACTION_PRECONNECT:
-      client_->DoPreconnect(current_match);
-      break;
-    case AutocompleteActionPredictor::ACTION_NONE:
-      break;
-  }
-
+  client_->OnTextChanged(current_match, user_input_in_progress_, user_text_,
+                         result(), popup_model() && popup_model()->IsOpen(),
+                         has_focus());
   controller_->OnChanged();
 }
 
@@ -536,10 +483,7 @@ void OmniboxEditModel::Revert() {
   view_->SetWindowTextAndCaretPos(permanent_text_,
                                   has_focus() ? permanent_text_.length() : 0,
                                   false, true);
-  AutocompleteActionPredictor* action_predictor =
-      predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_);
-  action_predictor->ClearTransitionalMatches();
-  action_predictor->CancelPrerender();
+  client_->OnRevert();
 }
 
 void OmniboxEditModel::StartAutocomplete(
@@ -690,32 +634,7 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     match.transition = ui::PAGE_TRANSITION_LINK;
   }
 
-  // While the user is typing, the instant search base page may be prerendered
-  // in the background. Even though certain inputs may not be eligible for
-  // prerendering, the prerender isn't automatically cancelled as the user
-  // continues typing, in hopes the final input will end up making use of the
-  // prerenderer. Intermediate inputs that are legal for prerendering will be
-  // sent to the prerendered page to keep it up to date; then once the user
-  // commits a navigation, it will trigger code in chrome::Navigate() to swap in
-  // the prerenderer.
-  //
-  // Unfortunately, that swap code only has the navigated URL, so it doesn't
-  // actually know whether the prerenderer has been sent the relevant input
-  // already, or whether instead the user manually navigated to something that
-  // looks like a search URL (which won't have been sent to the prerenderer).
-  // In this case, we need to ensure the prerenderer is cancelled here so that
-  // code can't attempt to wrongly swap-in, or it could swap in an empty page in
-  // place of the correct navigation.
-  //
-  // This would be clearer if we could swap in the prerenderer here instead of
-  // over in chrome::Navigate(), but we have to wait until then because the
-  // final decision about whether to use the prerendered page depends on other
-  // parts of the chrome::NavigateParams struct not available until then.
-  InstantSearchPrerenderer* prerenderer =
-      InstantSearchPrerenderer::GetForProfile(profile_);
-  if (prerenderer &&
-      !prerenderer->IsAllowed(match, controller_->GetWebContents()))
-    prerenderer->Cancel();
+  client_->OnInputAccepted(match);
 
   DCHECK(popup_model());
   view_->OpenMatch(match, disposition, alternate_nav_url, base::string16(),

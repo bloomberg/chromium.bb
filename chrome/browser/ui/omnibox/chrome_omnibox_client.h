@@ -47,14 +47,24 @@ class ChromeOmniboxClient : public OmniboxClient {
                        const base::Callback<void(const SkBitmap& bitmap)>&
                            on_bitmap_fetched) override;
   void OnCurrentMatchChanged(const AutocompleteMatch& match) override;
+  void OnTextChanged(const AutocompleteMatch& current_match,
+                     bool user_input_in_progress,
+                     base::string16& user_text,
+                     const AutocompleteResult& result,
+                     bool is_popup_open,
+                     bool has_focus) override;
+  void OnInputAccepted(const AutocompleteMatch& match) override;
+  void OnRevert() override;
   void DiscardNonCommittedNavigations() override;
   void OnURLOpenedFromOmnibox(OmniboxLog* log) override;
-  void DoPrerender(const AutocompleteMatch& match) override;
-
-  // TODO(blundell): Make private once OmniboxEditModel no longer refers to it.
-  void DoPreconnect(const AutocompleteMatch& match) override;
 
  private:
+  // Performs prerendering for |match|.
+  void DoPrerender(const AutocompleteMatch& match);
+
+  // Performs preconnection for |match|.
+  void DoPreconnect(const AutocompleteMatch& match);
+
   // Sends the current SearchProvider suggestion to the Instant page if any.
   void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
 

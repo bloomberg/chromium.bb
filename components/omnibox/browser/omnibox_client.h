@@ -91,6 +91,20 @@ class OmniboxClient {
   // Called when the current autocomplete match has changed.
   virtual void OnCurrentMatchChanged(const AutocompleteMatch& match) = 0;
 
+  // Called when the text may have changed in the edit.
+  virtual void OnTextChanged(const AutocompleteMatch& current_match,
+                             bool user_input_in_progress,
+                             base::string16& user_text,
+                             const AutocompleteResult& result,
+                             bool is_popup_open,
+                             bool has_focus) = 0;
+
+  // Called when input has been accepted.
+  virtual void OnInputAccepted(const AutocompleteMatch& match) = 0;
+
+  // Called when the edit model is being reverted back to its unedited state.
+  virtual void OnRevert() = 0;
+
   // Called to notify clients that a URL was opened from the omnibox.
   // TODO(blundell): Eliminate this method in favor of having all //chrome-
   // level listeners of the OMNIBOX_OPENED_URL instead observe OmniboxEditModel.
@@ -102,14 +116,6 @@ class OmniboxClient {
 
   // Discards the state for all pending and transient navigations.
   virtual void DiscardNonCommittedNavigations() = 0;
-
-  // Performs prerendering for |match|.
-  virtual void DoPrerender(const AutocompleteMatch& match) = 0;
-
-  // Performs preconnection for |match|.
-  // TODO(blundell): Remove from this interface once OmniboxEditModel no
-  // longer refers to it.
-  virtual void DoPreconnect(const AutocompleteMatch& match) = 0;
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_CLIENT_H_

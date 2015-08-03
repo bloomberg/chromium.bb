@@ -49,10 +49,16 @@ class TestOmniboxClient : public OmniboxClient {
                        const base::Callback<void(const SkBitmap& bitmap)>&
                            on_bitmap_fetched) override {}
   void OnCurrentMatchChanged(const AutocompleteMatch& match) override {}
+  void OnTextChanged(const AutocompleteMatch& current_match,
+                     bool user_input_in_progress,
+                     base::string16& user_text,
+                     const AutocompleteResult& result,
+                     bool is_popup_open,
+                     bool has_focus) override {}
+  void OnInputAccepted(const AutocompleteMatch& match) override {}
+  void OnRevert() override {}
   void OnURLOpenedFromOmnibox(OmniboxLog* log) override {}
   void DiscardNonCommittedNavigations() override {}
-  void DoPrerender(const AutocompleteMatch& match) override {}
-  void DoPreconnect(const AutocompleteMatch& match) override {}
 
  private:
   Profile* profile_;
