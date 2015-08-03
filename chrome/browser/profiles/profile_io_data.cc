@@ -647,7 +647,8 @@ ProfileIOData::~ProfileIOData() {
 
   // Destroy certificate_report_sender_ before main_request_context_,
   // since the former has a reference to the latter.
-  transport_security_state_->SetReportSender(nullptr);
+  if (transport_security_state_)
+    transport_security_state_->SetReportSender(nullptr);
   certificate_report_sender_.reset();
 
   // TODO(ajwong): These AssertNoURLRequests() calls are unnecessary since they
