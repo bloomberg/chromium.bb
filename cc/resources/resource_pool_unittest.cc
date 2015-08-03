@@ -4,6 +4,7 @@
 
 #include "cc/resources/resource_pool.h"
 
+#include "cc/resources/resource_util.h"
 #include "cc/resources/scoped_resource.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -54,7 +55,8 @@ TEST_F(ResourcePoolTest, AccountingSingleResource) {
 
   gfx::Size size(100, 100);
   ResourceFormat format = RGBA_8888;
-  size_t resource_bytes = Resource::UncheckedMemorySizeBytes(size, format);
+  size_t resource_bytes =
+      ResourceUtil::UncheckedSizeInBytes<size_t>(size, format);
   scoped_ptr<ScopedResource> resource =
       resource_pool_->AcquireResource(size, format);
 

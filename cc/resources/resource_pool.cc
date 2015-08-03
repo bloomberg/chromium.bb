@@ -5,6 +5,7 @@
 #include "cc/resources/resource_pool.h"
 
 #include "cc/resources/resource_provider.h"
+#include "cc/resources/resource_util.h"
 #include "cc/resources/scoped_resource.h"
 
 namespace cc {
@@ -48,7 +49,7 @@ scoped_ptr<ScopedResource> ResourcePool::AcquireResource(
 
     unused_resources_.erase(it);
     unused_memory_usage_bytes_ -=
-        Resource::UncheckedMemorySizeBytes(size, format);
+        ResourceUtil::UncheckedSizeInBytes<size_t>(size, format);
     return make_scoped_ptr(resource);
   }
 
@@ -56,9 +57,10 @@ scoped_ptr<ScopedResource> ResourcePool::AcquireResource(
       ScopedResource::Create(resource_provider_);
   resource->AllocateManaged(size, target_, format);
 
-  DCHECK(Resource::VerifySizeInBytes(resource->size(), resource->format()));
-  memory_usage_bytes_ +=
-      Resource::UncheckedMemorySizeBytes(resource->size(), resource->format());
+  DCHECK(ResourceUtil::VerifySizeInBytes<size_t>(resource->size(),
+                                                 resource->format()));
+  memory_usage_bytes_ += ResourceUtil::UncheckedSizeInBytes<size_t>(
+      resource->size(), resource->format());
   ++resource_count_;
   return resource.Pass();
 }
@@ -78,8 +80,8 @@ scoped_ptr<ScopedResource> ResourcePool::TryAcquireResourceWithContentId(
   DCHECK(resource_provider_->CanLockForWrite(resource->id()));
 
   unused_resources_.erase(it);
-  unused_memory_usage_bytes_ -=
-      Resource::UncheckedMemorySizeBytes(resource->size(), resource->format());
+  unused_memory_usage_bytes_ -= ResourceUtil::UncheckedSizeInBytes<size_t>(
+      resource->size(), resource->format());
   return make_scoped_ptr(resource);
 }
 
@@ -112,7 +114,7 @@ void ResourcePool::ReduceResourceUsage() {
     // memory is necessarily returned to the OS.
     ScopedResource* resource = unused_resources_.front().resource;
     unused_resources_.pop_front();
-    unused_memory_usage_bytes_ -= Resource::UncheckedMemorySizeBytes(
+    unused_memory_usage_bytes_ -= ResourceUtil::UncheckedSizeInBytes<size_t>(
         resource->size(), resource->format());
     DeleteResource(resource);
   }
@@ -129,8 +131,8 @@ bool ResourcePool::ResourceUsageTooHigh() {
 }
 
 void ResourcePool::DeleteResource(ScopedResource* resource) {
-  size_t resource_bytes =
-      Resource::UncheckedMemorySizeBytes(resource->size(), resource->format());
+  size_t resource_bytes = ResourceUtil::UncheckedSizeInBytes<size_t>(
+      resource->size(), resource->format());
   memory_usage_bytes_ -= resource_bytes;
   --resource_count_;
   delete resource;
@@ -160,8 +162,8 @@ void ResourcePool::CheckBusyResources(bool wait_if_needed) {
 
 void ResourcePool::DidFinishUsingResource(ScopedResource* resource,
                                           uint64_t content_id) {
-  unused_memory_usage_bytes_ +=
-      Resource::UncheckedMemorySizeBytes(resource->size(), resource->format());
+  unused_memory_usage_bytes_ += ResourceUtil::UncheckedSizeInBytes<size_t>(
+      resource->size(), resource->format());
   unused_resources_.push_back(PoolResource(resource, content_id));
 }
 

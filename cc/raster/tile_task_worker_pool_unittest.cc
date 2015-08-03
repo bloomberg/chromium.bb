@@ -406,8 +406,8 @@ TEST_P(TileTaskWorkerPoolTest, LargeResources) {
         ScopedResource::Create(resource_provider_.get()));
     resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                        RGBA_8888);
-    EXPECT_GE(Resource::UncheckedMemorySizeBytes(resource->size(),
-                                                 resource->format()),
+    EXPECT_GE(ResourceUtil::UncheckedSizeInBytes<size_t>(resource->size(),
+                                                         resource->format()),
               kMaxTransferBufferUsageBytes);
   }
 

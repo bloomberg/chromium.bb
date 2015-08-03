@@ -305,16 +305,18 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       gfx::Size resource_size_pixels = plane_resource.resource_size;
       // The |video_stride_pixels| is the width of the video frame we are
       // uploading (including non-frame data to fill in the stride).
-      size_t video_stride_pixels = video_frame->stride(i);
+      int video_stride_pixels = video_frame->stride(i);
 
-      size_t bytes_per_pixel = BitsPerPixel(plane_resource.resource_format) / 8;
+      size_t bytes_per_row = ResourceUtil::UncheckedWidthInBytes<size_t>(
+          resource_size_pixels.width(), plane_resource.resource_format);
       // Use 4-byte row alignment (OpenGL default) for upload performance.
       // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
-      size_t upload_image_stride = MathUtil::RoundUp<size_t>(
-          bytes_per_pixel * resource_size_pixels.width(), 4u);
+      size_t upload_image_stride = MathUtil::RoundUp<size_t>(bytes_per_row, 4u);
 
       const uint8_t* pixels;
-      if (upload_image_stride == video_stride_pixels * bytes_per_pixel) {
+      size_t video_bytes_per_row = ResourceUtil::UncheckedWidthInBytes<size_t>(
+          video_stride_pixels, plane_resource.resource_format);
+      if (upload_image_stride == video_bytes_per_row) {
         pixels = video_frame->data(i);
       } else {
         // Avoid malloc for each frame/plane if possible.
@@ -324,9 +326,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
           upload_pixels_.resize(needed_size);
         for (int row = 0; row < resource_size_pixels.height(); ++row) {
           uint8_t* dst = &upload_pixels_[upload_image_stride * row];
-          const uint8_t* src = video_frame->data(i) +
-                               bytes_per_pixel * video_stride_pixels * row;
-          memcpy(dst, src, resource_size_pixels.width() * bytes_per_pixel);
+          const uint8_t* src =
+              video_frame->data(i) + (video_bytes_per_row * row);
+          memcpy(dst, src, bytes_per_row);
         }
         pixels = &upload_pixels_[0];
       }

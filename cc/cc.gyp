@@ -451,6 +451,7 @@
         'resources/resource_pool.h',
         'resources/resource_provider.cc',
         'resources/resource_provider.h',
+        'resources/resource_util.h',
         'resources/returned_resource.h',
         'resources/scoped_resource.cc',
         'resources/scoped_resource.h',

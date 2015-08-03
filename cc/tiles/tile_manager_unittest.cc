@@ -1386,8 +1386,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
   EXPECT_EQ(RGBA_8888, host_impl_.resource_provider()->best_texture_format());
 
   ManagedMemoryPolicy policy = host_impl_.ActualManagedMemoryPolicy();
-  policy.bytes_limit_when_visible =
-      Resource::UncheckedMemorySizeBytes(gfx::Size(256, 256), RGBA_8888);
+  policy.bytes_limit_when_visible = ResourceUtil::UncheckedSizeInBytes<size_t>(
+      gfx::Size(256, 256), RGBA_8888);
   host_impl_.SetMemoryPolicy(policy);
 
   EXPECT_FALSE(host_impl_.is_likely_to_require_a_draw());

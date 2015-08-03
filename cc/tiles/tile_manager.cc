@@ -1045,9 +1045,10 @@ TileManager::MemoryUsage::MemoryUsage(size_t memory_bytes,
 TileManager::MemoryUsage TileManager::MemoryUsage::FromConfig(
     const gfx::Size& size,
     ResourceFormat format) {
-  // We can use UncheckedMemorySizeBytes here since this is used with a tile
+  // We can use UncheckedSizeInBytes here since this is used with a tile
   // size which is determined by the compositor (it's at most max texture size).
-  return MemoryUsage(Resource::UncheckedMemorySizeBytes(size, format), 1);
+  return MemoryUsage(ResourceUtil::UncheckedSizeInBytes<size_t>(size, format),
+                     1);
 }
 
 // static

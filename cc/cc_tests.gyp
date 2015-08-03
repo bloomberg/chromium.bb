@@ -97,6 +97,7 @@
       'resources/platform_color_unittest.cc',
       'resources/resource_pool_unittest.cc',
       'resources/resource_provider_unittest.cc',
+      'resources/resource_util_unittest.cc',
       'resources/scoped_resource_unittest.cc',
       'resources/video_resource_updater_unittest.cc',
       'scheduler/begin_frame_source_unittest.cc',

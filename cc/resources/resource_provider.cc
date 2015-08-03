@@ -14,8 +14,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/base/math_util.h"
 #include "cc/resources/platform_color.h"
+#include "cc/resources/resource_util.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/resources/transferable_resource.h"
@@ -724,13 +724,10 @@ void ResourceProvider::CopyToResource(ResourceId id,
     gl->BindTexture(GL_TEXTURE_2D, resource->gl_id);
 
     if (resource->format == ETC1) {
-      base::CheckedNumeric<int> num_bytes = BitsPerPixel(ETC1);
-      num_bytes *= image_size.width();
-      num_bytes *= image_size.height();
-      num_bytes /= 8;
+      int image_bytes = ResourceUtil::CheckedSizeInBytes<int>(image_size, ETC1);
       gl->CompressedTexImage2D(GL_TEXTURE_2D, 0, GLInternalFormat(ETC1),
                                image_size.width(), image_size.height(), 0,
-                               num_bytes.ValueOrDie(), image);
+                               image_bytes, image);
     } else {
       gl->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image_size.width(),
                         image_size.height(), GLDataFormat(resource->format),
@@ -1531,12 +1528,10 @@ void ResourceProvider::AcquirePixelBuffer(ResourceId id) {
     resource->gl_pixel_buffer_id = buffer_id_allocator_->NextId();
   gl->BindBuffer(GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM,
                  resource->gl_pixel_buffer_id);
-  unsigned bytes_per_pixel = BitsPerPixel(resource->format) / 8;
-  gl->BufferData(
-      GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM,
-      resource->size.height() *
-          MathUtil::RoundUp(bytes_per_pixel * resource->size.width(), 4u),
-      NULL, GL_DYNAMIC_DRAW);
+  size_t resource_bytes = ResourceUtil::UncheckedSizeInBytesAligned<size_t>(
+      resource->size, resource->format);
+  gl->BufferData(GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM, resource_bytes, NULL,
+                 GL_DYNAMIC_DRAW);
   gl->BindBuffer(GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM, 0);
 }
 
