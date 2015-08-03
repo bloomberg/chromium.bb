@@ -119,6 +119,7 @@ public:
     void didLayout();
     void didScroll();
     void didResizeMainFrame();
+    void didRecalculateStyle(int);
 
     // Inspector Controller API
     void disable(ErrorString*) override;
