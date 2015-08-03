@@ -64,4 +64,46 @@ void CloseWidgetView::OnEvent(ui::Event* event) {
   }
 }
 
+EventCountView::EventCountView()
+    : last_flags_(0), handle_mode_(PROPAGATE_EVENTS) {}
+
+EventCountView::~EventCountView() {}
+
+int EventCountView::GetEventCount(ui::EventType type) {
+  return event_count_[type];
+}
+
+void EventCountView::ResetCounts() {
+  event_count_.clear();
+}
+
+void EventCountView::OnMouseMoved(const ui::MouseEvent& event) {
+  // MouseMove events are not re-dispatched from the RootView.
+  ++event_count_[ui::ET_MOUSE_MOVED];
+  last_flags_ = 0;
+}
+
+void EventCountView::OnKeyEvent(ui::KeyEvent* event) {
+  RecordEvent(event);
+}
+
+void EventCountView::OnMouseEvent(ui::MouseEvent* event) {
+  RecordEvent(event);
+}
+
+void EventCountView::OnScrollEvent(ui::ScrollEvent* event) {
+  RecordEvent(event);
+}
+
+void EventCountView::OnGestureEvent(ui::GestureEvent* event) {
+  RecordEvent(event);
+}
+
+void EventCountView::RecordEvent(ui::Event* event) {
+  ++event_count_[event->type()];
+  last_flags_ = event->flags();
+  if (handle_mode_ == CONSUME_EVENTS)
+    event->SetHandled();
+}
+
 }  // namespace views
