@@ -447,7 +447,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
     if (m_upstreamStart.isNull())
         return;
 
-    int startOffset = m_upstreamStart.deprecatedEditingOffset();
+    int startOffset = m_upstreamStart.computeEditingOffset();
     Node* startNode = m_upstreamStart.anchorNode();
     ASSERT(startNode);
 
@@ -477,13 +477,13 @@ void DeleteSelectionCommand::handleGeneralDelete()
         return;
 
     if (startNode == m_downstreamEnd.anchorNode()) {
-        if (m_downstreamEnd.deprecatedEditingOffset() - startOffset > 0) {
+        if (m_downstreamEnd.computeEditingOffset() - startOffset > 0) {
             if (startNode->isTextNode()) {
                 // in a text node that needs to be trimmed
                 Text* text = toText(startNode);
                 deleteTextFromNode(text, startOffset, m_downstreamEnd.computeOffsetInContainerNode() - startOffset);
             } else {
-                removeChildrenInRange(startNode, startOffset, m_downstreamEnd.deprecatedEditingOffset());
+                removeChildrenInRange(startNode, startOffset, m_downstreamEnd.computeEditingOffset());
                 m_endingPosition = m_upstreamStart;
             }
         }
@@ -525,7 +525,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
                 node = nextNode.get();
             } else {
                 Node& n = NodeTraversal::lastWithinOrSelf(*node);
-                if (m_downstreamEnd.anchorNode() == n && m_downstreamEnd.deprecatedEditingOffset() >= caretMaxOffset(&n)) {
+                if (m_downstreamEnd.anchorNode() == n && m_downstreamEnd.computeEditingOffset() >= caretMaxOffset(&n)) {
                     removeNode(node.get());
                     node = nullptr;
                 } else {
@@ -534,7 +534,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
             }
         }
 
-        if (m_downstreamEnd.anchorNode() != startNode && !m_upstreamStart.anchorNode()->isDescendantOf(m_downstreamEnd.anchorNode()) && m_downstreamEnd.inDocument() && m_downstreamEnd.deprecatedEditingOffset() >= caretMinOffset(m_downstreamEnd.anchorNode())) {
+        if (m_downstreamEnd.anchorNode() != startNode && !m_upstreamStart.anchorNode()->isDescendantOf(m_downstreamEnd.anchorNode()) && m_downstreamEnd.inDocument() && m_downstreamEnd.computeEditingOffset() >= caretMinOffset(m_downstreamEnd.anchorNode())) {
             if (m_downstreamEnd.atLastEditingPositionForNode() && !canHaveChildrenForEditing(m_downstreamEnd.anchorNode())) {
                 // The node itself is fully selected, not just its contents.  Delete it.
                 removeNode(m_downstreamEnd.anchorNode());
@@ -542,8 +542,8 @@ void DeleteSelectionCommand::handleGeneralDelete()
                 if (m_downstreamEnd.anchorNode()->isTextNode()) {
                     // in a text node that needs to be trimmed
                     Text* text = toText(m_downstreamEnd.anchorNode());
-                    if (m_downstreamEnd.deprecatedEditingOffset() > 0) {
-                        deleteTextFromNode(text, 0, m_downstreamEnd.deprecatedEditingOffset());
+                    if (m_downstreamEnd.computeEditingOffset() > 0) {
+                        deleteTextFromNode(text, 0, m_downstreamEnd.computeEditingOffset());
                     }
                 // Remove children of m_downstreamEnd.anchorNode() that come after m_upstreamStart.
                 // Don't try to remove children if m_upstreamStart was inside m_downstreamEnd.anchorNode()
@@ -560,7 +560,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
                         if (n)
                             offset = n->nodeIndex() + 1;
                     }
-                    removeChildrenInRange(m_downstreamEnd.anchorNode(), offset, m_downstreamEnd.deprecatedEditingOffset());
+                    removeChildrenInRange(m_downstreamEnd.anchorNode(), offset, m_downstreamEnd.computeEditingOffset());
                     m_downstreamEnd = createLegacyEditingPosition(m_downstreamEnd.anchorNode(), offset);
                 }
             }
