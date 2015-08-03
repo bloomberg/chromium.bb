@@ -75,6 +75,8 @@ void ShowSettings(Browser* browser);
 void ShowSettingsSubPage(Browser* browser, const std::string& sub_page);
 void ShowSettingsSubPageForProfile(Profile* profile,
                                    const std::string& sub_page);
+void ShowContentSettingsExceptions(Browser* browser,
+                                   ContentSettingsType content_settings_type);
 void ShowContentSettings(Browser* browser,
                          ContentSettingsType content_settings_type);
 void ShowSettingsSubPageInTabbedBrowser(Browser* browser,

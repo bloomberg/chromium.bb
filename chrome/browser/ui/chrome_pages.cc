@@ -295,11 +295,20 @@ void ShowSettingsSubPageInTabbedBrowser(Browser* browser,
   ShowSingletonTabOverwritingNTP(browser, params);
 }
 
+void ShowContentSettingsExceptions(Browser* browser,
+                                   ContentSettingsType content_settings_type) {
+  ShowSettingsSubPage(
+      browser,
+      kContentSettingsExceptionsSubPage + std::string(kHashMark) +
+          options::ContentSettingsHandler::ContentSettingsTypeToGroupName(
+              content_settings_type));
+}
+
 void ShowContentSettings(Browser* browser,
                          ContentSettingsType content_settings_type) {
   ShowSettingsSubPage(
       browser,
-      kContentSettingsExceptionsSubPage + std::string(kHashMark) +
+      kContentSettingsSubPage + std::string(kHashMark) +
           options::ContentSettingsHandler::ContentSettingsTypeToGroupName(
               content_settings_type));
 }

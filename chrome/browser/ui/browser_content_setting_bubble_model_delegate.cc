@@ -45,8 +45,16 @@ void BrowserContentSettingBubbleModelDelegate::ShowContentSettingsPage(
     case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
       chrome::ShowSettingsSubPage(browser_, chrome::kHandlerSettingsSubPage);
       return;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+      // If the user requested to see the settings page for both camera
+      // and microphone, point them to the default settings instead of
+      // exceptions, as camera and microphone exceptions are now in two
+      // different overlays. Specifically, point them to the microphone
+      // default settings, as those appear first in the list.
+      chrome::ShowContentSettings(
+          browser_, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
     default:
-      chrome::ShowContentSettings(browser_, type);
+      chrome::ShowContentSettingsExceptions(browser_, type);
       return;
   }
 }
