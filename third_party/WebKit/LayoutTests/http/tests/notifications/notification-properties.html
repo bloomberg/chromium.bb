@@ -20,8 +20,15 @@
                 tag: "notification",
                 icon: "http://localhost/my_icon.png",
                 silent: true,
-                data: "my data"
+                data: "my data",
+                actions: []
             };
+            // Deliberately add more actions than are supported.
+            for (var i = 0; i < 2 * Notification.maxActions; i++) {
+                options.actions.push({
+                    title: "Action " + i
+                });
+            }
 
             var notification = new Notification("My Notification", options);
 
@@ -33,6 +40,17 @@
             assert_equals(notification.icon, options.icon);
             assert_true(notification.silent);
             assert_equals(notification.data, options.data);
+            // Only the first maxActions actions should be reflected.
+            assert_object_equals(notification.actions, options.actions.slice(0, Notification.maxActions));
+
+            // Notification.actions should be immutable.
+            notification.actions.push({ title: "Foo" });
+            notification.actions.foo = "bar";
+            if (notification.actions.length) {
+                notification.actions[0].title = "Changed";
+                notification.actions[0].foo = "bar";
+            }
+            assert_object_equals(notification.actions, options.actions.slice(0, Notification.maxActions));
 
             var emptyNotification = new Notification("My Notification");
 
@@ -45,6 +63,7 @@
             assert_equals(notification.vibrate, null);
             assert_false(emptyNotification.silent);
             assert_equals(emptyNotification.data, null);
+            assert_array_equals(emptyNotification.actions, []);
 
             var invalidIconNotification = new Notification("My Notification", {
                 icon: "http://test:test/"
@@ -103,6 +122,19 @@
                     vibrate: 1000
                 });
             }, 'Set vibrate, when silent is true.');
+
+            // Check exception is thrown when an action doesn't contain title,
+            // or title is an empty string.
+            assert_throws(new TypeError(), function() {
+                var notification = new Notification("My Notification", {
+                    actions: [{}]
+                });
+            }, 'Provide action without title.');
+            assert_throws(new TypeError(), function() {
+                var notification = new Notification("My Notification", {
+                    actions: [{title: ""}]
+                });
+            }, 'Provide action with empty title.');
 
       }, 'Checks the properties exposed on the Notification object.');
     </script>

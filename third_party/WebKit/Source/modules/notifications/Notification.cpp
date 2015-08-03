@@ -93,6 +93,13 @@ Notification* Notification::create(ExecutionContext* context, const String& titl
             return nullptr;
     }
 
+    for (const NotificationAction& action : options.actions()) {
+        if (action.title().isEmpty()) {
+            exceptionState.throwTypeError("Notification action titles must not be empty.");
+            return nullptr;
+        }
+    }
+
     Notification* notification = new Notification(title, context);
 
     notification->setBody(options.body());
@@ -107,6 +114,9 @@ Notification* Notification::create(ExecutionContext* context, const String& titl
         if (!iconUrl.isEmpty() && iconUrl.isValid())
             notification->setIconUrl(iconUrl);
     }
+    HeapVector<NotificationAction> actions;
+    actions.appendRange(options.actions().begin(), options.actions().begin() + std::min(maxActions(), options.actions().size()));
+    notification->setActions(actions);
 
     String insecureOriginMessage;
     UseCounter::Feature feature = context->isPrivilegedContext(insecureOriginMessage)
@@ -144,6 +154,10 @@ Notification* Notification::create(ExecutionContext* context, int64_t persistent
         notification->setSerializedData(SerializedScriptValueFactory::instance().createFromWireBytes(dataBytes.data(), dataBytes.size()));
         notification->serializedData()->registerMemoryAllocatedWithCurrentScriptContext();
     }
+
+    HeapVector<NotificationAction> actions;
+    webActionsToActions(data.actions, &actions);
+    notification->setActions(actions);
 
     notification->setState(NotificationStateShowing);
     notification->suspendIfNeeded();
@@ -192,7 +206,10 @@ void Notification::show()
     // they were created by, and thus the data doesn't have to be known to the embedder.
     Vector<char> emptyDataWireBytes;
 
-    WebNotificationData notificationData(m_title, dir, m_lang, m_body, m_tag, m_iconUrl, m_vibrate, m_silent, emptyDataWireBytes);
+    WebVector<WebNotificationAction> webActions;
+    actionsToWebActions(m_actions, &webActions);
+
+    WebNotificationData notificationData(m_title, dir, m_lang, m_body, m_tag, m_iconUrl, m_vibrate, m_silent, emptyDataWireBytes, webActions);
     notificationManager()->show(WebSecurityOrigin(origin), notificationData, this);
 
     m_state = NotificationStateShowing;
@@ -247,7 +264,7 @@ void Notification::dispatchCloseEvent()
     dispatchEvent(Event::create(EventTypeNames::close));
 }
 
-NavigatorVibration::VibrationPattern Notification::vibrate(bool& isNull) const
+const NavigatorVibration::VibrationPattern& Notification::vibrate(bool& isNull) const
 {
     isNull = m_vibrate.isEmpty();
     return m_vibrate;
@@ -300,9 +317,26 @@ ScriptPromise Notification::requestPermission(ScriptState* scriptState, Notifica
     return permissionClient->requestPermission(scriptState, deprecatedCallback);
 }
 
-unsigned Notification::maxActions()
+size_t Notification::maxActions()
 {
     return notificationManager()->maxActions();
+}
+
+void Notification::actionsToWebActions(const HeapVector<NotificationAction>& actions, WebVector<WebNotificationAction>* webActions)
+{
+    size_t count = std::min(maxActions(), actions.size());
+    WebVector<WebNotificationAction> clearedAndResized(count);
+    webActions->swap(clearedAndResized);
+    for (size_t i = 0; i < count; ++i)
+        (*webActions)[i].title = actions[i].title();
+}
+
+void Notification::webActionsToActions(const WebVector<WebNotificationAction>& webActions, HeapVector<NotificationAction>* actions)
+{
+    actions->clear();
+    actions->grow(webActions.size());
+    for (size_t i = 0; i < webActions.size(); ++i)
+        (*actions)[i].setTitle(webActions[i].title);
 }
 
 bool Notification::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
@@ -340,6 +374,7 @@ ScriptValue Notification::data(ScriptState* scriptState) const
 
 DEFINE_TRACE(Notification)
 {
+    visitor->trace(m_actions);
     RefCountedGarbageCollectedEventTargetWithInlineData<Notification>::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }

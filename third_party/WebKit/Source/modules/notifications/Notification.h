@@ -36,11 +36,14 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
+#include "modules/notifications/NotificationAction.h"
 #include "modules/vibration/NavigatorVibration.h"
 #include "platform/AsyncMethodRunner.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebVector.h"
+#include "public/platform/modules/notifications/WebNotificationAction.h"
 #include "public/platform/modules/notifications/WebNotificationDelegate.h"
 #include "public/platform/modules/notifications/WebNotificationPermission.h"
 #include "wtf/PassOwnPtr.h"
@@ -91,9 +94,10 @@ public:
     String body() const { return m_body; }
     String tag() const { return m_tag; }
     String icon() const { return m_iconUrl; }
-    NavigatorVibration::VibrationPattern vibrate(bool& isNull) const;
+    const NavigatorVibration::VibrationPattern& vibrate(bool& isNull) const;
     bool silent() const { return m_silent; }
     ScriptValue data(ScriptState*) const;
+    const HeapVector<NotificationAction>& actions() const { return m_actions; }
 
     TextDirection direction() const;
     KURL iconURL() const { return m_iconUrl; }
@@ -104,7 +108,9 @@ public:
     static WebNotificationPermission checkPermission(ExecutionContext*);
     static ScriptPromise requestPermission(ScriptState*, NotificationPermissionCallback*);
 
-    static unsigned maxActions();
+    static size_t maxActions();
+
+    static void actionsToWebActions(const HeapVector<NotificationAction>& actions, WebVector<WebNotificationAction>* webActions);
 
     // EventTarget interface.
     ExecutionContext* executionContext() const final { return ActiveDOMObject::executionContext(); }
@@ -121,6 +127,8 @@ protected:
     bool dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) final;
 
 private:
+    static void webActionsToActions(const WebVector<WebNotificationAction>& webActions, HeapVector<NotificationAction>* actions);
+
     Notification(const String& title, ExecutionContext*);
 
     void scheduleShow();
@@ -140,10 +148,10 @@ private:
     void setVibrate(const NavigatorVibration::VibrationPattern& vibrate) { m_vibrate = vibrate; }
     void setSilent(bool silent) { m_silent = silent; }
     void setSerializedData(PassRefPtr<SerializedScriptValue> data) { m_serializedData = data; }
+    void setActions(const HeapVector<NotificationAction>& actions) { m_actions = actions; }
 
     void setPersistentId(int64_t persistentId) { m_persistentId = persistentId; }
 
-private:
     String m_title;
     String m_dir;
     String m_lang;
@@ -152,6 +160,7 @@ private:
     NavigatorVibration::VibrationPattern m_vibrate;
     bool m_silent;
     RefPtr<SerializedScriptValue> m_serializedData;
+    HeapVector<NotificationAction> m_actions;
 
     KURL m_iconUrl;
 

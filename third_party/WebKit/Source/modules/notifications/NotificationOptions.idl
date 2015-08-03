@@ -20,4 +20,5 @@ dictionary NotificationOptions {
     (unsigned long or sequence<unsigned long>) vibrate;
     boolean silent = false;
     any data = null;
+    [RuntimeEnabled=NotificationExperimental] sequence<NotificationAction> actions = [];
 };

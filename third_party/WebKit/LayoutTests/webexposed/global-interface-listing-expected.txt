@@ -3548,6 +3548,7 @@ interface NodeList
     method constructor
     method item
 interface Notification
+    getter actions
     getter body
     getter data
     getter dir

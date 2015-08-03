@@ -73,6 +73,11 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
         data->toWireBytes(dataAsWireBytes);
     }
 
+    for (const NotificationAction& action : options.actions()) {
+        if (action.title().isEmpty())
+            return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Notification action titles must not be empty."));
+    }
+
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
@@ -87,7 +92,9 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
 
     WebNotificationData::Direction dir = options.dir() == "rtl" ? WebNotificationData::DirectionRightToLeft : WebNotificationData::DirectionLeftToRight;
     NavigatorVibration::VibrationPattern vibrate = NavigatorVibration::sanitizeVibrationPattern(options.vibrate());
-    WebNotificationData notification(title, dir, options.lang(), options.body(), options.tag(), iconUrl, vibrate, options.silent(), dataAsWireBytes);
+    WebVector<WebNotificationAction> webActions;
+    Notification::actionsToWebActions(options.actions(), &webActions);
+    WebNotificationData notification(title, dir, options.lang(), options.body(), options.tag(), iconUrl, vibrate, options.silent(), dataAsWireBytes, webActions);
     WebNotificationShowCallbacks* callbacks = new CallbackPromiseAdapter<void, void>(resolver);
 
     SecurityOrigin* origin = executionContext->securityOrigin();

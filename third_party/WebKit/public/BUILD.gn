@@ -257,6 +257,7 @@ source_set("blink_headers") {
     "platform/modules/notifications/WebNotificationDelegate.h",
     "platform/modules/notifications/WebNotificationManager.h",
     "platform/modules/notifications/WebNotificationData.h",
+    "platform/modules/notifications/WebNotificationAction.h",
     "platform/modules/push_messaging/WebPushSubscription.h",
     "platform/modules/push_messaging/WebPushPermissionStatus.h",
     "platform/modules/push_messaging/WebPushClient.h",
