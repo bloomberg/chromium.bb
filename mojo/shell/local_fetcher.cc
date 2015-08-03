@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "mojo/common/common_type_converters.h"
@@ -63,6 +64,7 @@ URLResponsePtr LocalFetcher::AsURLResponse(base::TaskRunner* task_runner,
     header->value = base::StringPrintf("%" PRId64, file_size);
     response->headers[0] = header.Pass();
   }
+  response->mime_type = String::From(MimeType());
   common::CopyFromFile(path_, data_pipe.producer_handle.Pass(), skip,
                        task_runner, base::Bind(&IgnoreResult));
   return response.Pass();
@@ -77,7 +79,16 @@ void LocalFetcher::AsPath(
 }
 
 std::string LocalFetcher::MimeType() {
-  return "";
+  // TODO(msw): Expand support; use net::GetMimeTypeFromExtension or similar.
+  std::string extension(base::FilePath(path_.Extension()).AsUTF8Unsafe());
+  if (base::EqualsCaseInsensitiveASCII(extension, ".html") ||
+      base::EqualsCaseInsensitiveASCII(extension, ".htm") ||
+      base::EqualsCaseInsensitiveASCII(extension, ".shtml") ||
+      base::EqualsCaseInsensitiveASCII(extension, ".shtm") ||
+      base::EqualsCaseInsensitiveASCII(extension, ".ehtml")) {
+    return "text/html";
+  }
+  return std::string();
 }
 
 bool LocalFetcher::HasMojoMagic() {
