@@ -86,13 +86,18 @@ String ServiceWorkerRegistration::scope() const
     return m_outerRegistration->scope().string();
 }
 
-void ServiceWorkerRegistration::update(ScriptState* scriptState, ExceptionState& exceptionState)
+ScriptPromise ServiceWorkerRegistration::update(ScriptState* scriptState)
 {
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+
     if (!m_provider) {
-        exceptionState.throwDOMException(InvalidStateError, "Failed to update a ServiceWorkerRegistration: No associated provider is available.");
-        return;
+        resolver->reject(DOMException::create(InvalidStateError, "Failed to update a ServiceWorkerRegistration: No associated provider is available."));
+        return promise;
     }
-    m_outerRegistration->update(m_provider);
+
+    m_outerRegistration->update(m_provider, new CallbackPromiseAdapter<void, ServiceWorkerError>(resolver));
+    return promise;
 }
 
 ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* scriptState)
