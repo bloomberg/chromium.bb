@@ -94,6 +94,8 @@ class PluginMetricsProvider : public metrics::MetricsProvider,
                                   int exit_code) override;
   void BrowserChildProcessInstanceCreated(
       const content::ChildProcessData& data) override;
+  void BrowserChildProcessHostDisconnected(
+      const content::ChildProcessData& data) override;
 
   PrefService* local_state_;
 

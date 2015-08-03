@@ -366,6 +366,13 @@ void PluginMetricsProvider::BrowserChildProcessInstanceCreated(
   RecordCurrentStateWithDelay(kRecordStateDelayMs);
 }
 
+void PluginMetricsProvider::BrowserChildProcessHostDisconnected(
+      const content::ChildProcessData& data) {
+  // Treat a disconnect as a crash.
+  GetChildProcessStats(data).process_crashes++;
+  RecordCurrentStateWithDelay(kRecordStateDelayMs);
+}
+
 bool PluginMetricsProvider::RecordCurrentStateWithDelay(int delay_sec) {
   if (weak_ptr_factory_.HasWeakPtrs())
     return false;

@@ -170,6 +170,10 @@ TEST_F(PluginMetricsProviderTest, ProvideStabilityMetricsWhenPendingTask) {
   content::ChildProcessData child_process_data(content::PROCESS_TYPE_PLUGIN);
   child_process_data.name = base::UTF8ToUTF16("p1");
   provider.BrowserChildProcessInstanceCreated(child_process_data);
+  provider.BrowserChildProcessCrashed(child_process_data, 1);
+
+  provider.BrowserChildProcessInstanceCreated(child_process_data);
+  provider.BrowserChildProcessHostDisconnected(child_process_data);
 
   // Call ProvideStabilityMetrics to check that it will force pending tasks to
   // be executed immediately.
@@ -178,5 +182,6 @@ TEST_F(PluginMetricsProviderTest, ProvideStabilityMetricsWhenPendingTask) {
   // Check current number of instances created.
   const metrics::SystemProfileProto_Stability& stability =
       system_profile.stability();
-  EXPECT_EQ(1, stability.plugin_stability(0).instance_count());
+  EXPECT_EQ(2, stability.plugin_stability(0).instance_count());
+  EXPECT_EQ(2, stability.plugin_stability(0).crash_count());
 }
