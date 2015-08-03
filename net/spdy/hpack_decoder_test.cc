@@ -76,7 +76,7 @@ class HpackDecoderTest : public ::testing::Test {
 
   bool DecodeHeaderBlock(StringPiece str) {
     return decoder_.HandleControlFrameHeadersData(0, str.data(), str.size()) &&
-        decoder_.HandleControlFrameHeadersComplete(0);
+           decoder_.HandleControlFrameHeadersComplete(0, nullptr);
   }
 
   const SpdyHeaderBlock& decoded_block() const {
@@ -122,7 +122,7 @@ TEST_F(HpackDecoderTest, HandleControlFrameHeadersComplete) {
 
   // Incremental cookie buffer should be emitted and cleared.
   decoder_.HandleControlFrameHeadersData(0, "\x82\x85", 2);
-  decoder_.HandleControlFrameHeadersComplete(0);
+  decoder_.HandleControlFrameHeadersComplete(0, nullptr);
 
   EXPECT_THAT(decoded_block(), ElementsAre(
       Pair(":method", "GET"),
@@ -159,7 +159,7 @@ TEST_F(HpackDecoderTest, HandleHeaderRepresentation) {
   decoder_peer_.HandleHeaderRepresentation("cookie", " fin!");
 
   // Finish and emit all headers.
-  decoder_.HandleControlFrameHeadersComplete(0);
+  decoder_.HandleControlFrameHeadersComplete(0, nullptr);
 
   EXPECT_THAT(decoded_block(), ElementsAre(
       Pair("cookie", " part 1; part 2 ; part3;  fin!"),

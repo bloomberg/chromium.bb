@@ -44,10 +44,14 @@ bool HpackDecoder::HandleControlFrameHeadersData(SpdyStreamId id,
   return true;
 }
 
-bool HpackDecoder::HandleControlFrameHeadersComplete(SpdyStreamId id) {
+bool HpackDecoder::HandleControlFrameHeadersComplete(SpdyStreamId id,
+                                                     size_t* compressed_len) {
   HpackInputStream input_stream(max_string_literal_size_,
                                 headers_block_buffer_);
   regular_header_seen_ = false;
+  if (compressed_len) {
+    *compressed_len = headers_block_buffer_.size();
+  }
   while (input_stream.HasMoreData()) {
     if (!DecodeNextOpcode(&input_stream)) {
       headers_block_buffer_.clear();

@@ -51,12 +51,18 @@ class NET_EXPORT_PRIVATE HpackDecoder {
                                      size_t headers_data_length);
 
   // Called after a headers block has been completely delivered via
-  // HandleControlFrameHeadersData(). Returns false if an error occurred.
-  // TODO(jgraettinger): A future version of this method will simply deliver
-  // the Cookie header (which has been incrementally reconstructed) and notify
-  // the visitor that the block is finished. For now, this method decodes the
-  // complete buffered block, and stores results to |decoded_block_|.
-  bool HandleControlFrameHeadersComplete(SpdyStreamId stream_id);
+  // HandleControlFrameHeadersData(). Returns false if an error
+  // occurred.  |compressed_len| if non-null will be set to the size
+  // of the encoded buffered block that was accumulated in
+  // HandleControlFrameHeadersData(), to support subsequent
+  // calculation of compression percentage.  TODO(jgraettinger): A
+  // future version of this method will simply deliver the Cookie
+  // header (which has been incrementally reconstructed) and notify
+  // the visitor that the block is finished. For now, this method
+  // decodes the complete buffered block, and stores results to
+  // |decoded_block_|.
+  bool HandleControlFrameHeadersComplete(SpdyStreamId stream_id,
+                                         size_t* compressed_len);
 
   // Accessor for the most recently decoded headers block. Valid until the next
   // call to HandleControlFrameHeadersData().

@@ -13,6 +13,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/third_party/valgrind/memcheck.h"
 #include "net/spdy/hpack_constants.h"
 #include "net/spdy/spdy_frame_builder.h"
@@ -1078,8 +1079,8 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
       // check above. However, we DLOG(FATAL) here in an effort to painfully
       // club the head of the developer who failed to keep this file in sync
       // with spdy_protocol.h.
-      DLOG(FATAL);
       set_error(SPDY_INVALID_CONTROL_FRAME);
+      DLOG(FATAL);
       break;
   }
 
@@ -1672,18 +1673,18 @@ size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
       processed_successfully) {
     if (expect_continuation_ == 0) {
       if (is_hpack_header_block) {
-        if (!GetHpackDecoder()->HandleControlFrameHeadersComplete(
-                current_frame_stream_id_)) {
-          set_error(SPDY_DECOMPRESS_FAILURE);
-          processed_successfully = false;
-        } else {
+        size_t compressed_len = 0;
+        if (GetHpackDecoder()->HandleControlFrameHeadersComplete(
+                current_frame_stream_id_, &compressed_len)) {
           // TODO(jgraettinger): To be removed with migration to
           // SpdyHeadersHandlerInterface. Serializes the HPACK block as a SPDY3
           // block, delivered via reentrant call to
           // ProcessControlFrameHeaderBlock().
-          DeliverHpackBlockAsSpdy3Block();
+          DeliverHpackBlockAsSpdy3Block(compressed_len);
           return process_bytes;
         }
+        set_error(SPDY_DECOMPRESS_FAILURE);
+        processed_successfully = false;
       } else {
         // The complete header block has been delivered. We send a zero-length
         // OnControlFrameHeaderData() to indicate this.
@@ -1760,7 +1761,7 @@ size_t SpdyFramer::ProcessSettingsFramePayload(const char* data,
   return processed_bytes;
 }
 
-void SpdyFramer::DeliverHpackBlockAsSpdy3Block() {
+void SpdyFramer::DeliverHpackBlockAsSpdy3Block(size_t compressed_len) {
   DCHECK_LT(SPDY3, protocol_version());
   DCHECK_EQ(remaining_padding_payload_length_, remaining_data_length_);
 
@@ -1770,9 +1771,8 @@ void SpdyFramer::DeliverHpackBlockAsSpdy3Block() {
     ProcessControlFrameHeaderBlock(NULL, 0, false);
     return;
   }
-  SpdyFrameBuilder builder(
-      GetSerializedLength(protocol_version(), &block),
-      SPDY3);
+  size_t payload_len = GetSerializedLength(protocol_version(), &block);
+  SpdyFrameBuilder builder(payload_len, SPDY3);
 
   SerializeHeaderBlockWithoutCompression(&builder, block);
   scoped_ptr<SpdyFrame> frame(builder.take());
@@ -1782,6 +1782,13 @@ void SpdyFramer::DeliverHpackBlockAsSpdy3Block() {
 
   remaining_padding_payload_length_ = 0;
   remaining_data_length_ = frame->size();
+
+  if (payload_len != 0) {
+    int compression_pct = 100 - (100 * compressed_len) / payload_len;
+    DVLOG(1) << "Net.SpdyHpackDecompressionPercentage: " << compression_pct;
+    UMA_HISTOGRAM_PERCENTAGE("Net.SpdyHpackDecompressionPercentage",
+                             compression_pct);
+  }
 
   ProcessControlFrameHeaderBlock(frame->data(), frame->size(), false);
 

@@ -23361,6 +23361,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.SpdyHpackDecompressionPercentage" units="%">
+  <owner>ckrasic@chromium.org</owner>
+  <summary>
+    The compression percentage in received HPACK compressed header frames.
+  </summary>
+</histogram>
+
 <histogram name="Net.SpdyHpackEncodedCharacterFrequency" units="ASCII codes">
   <obsolete>
     Obsolete as HTTP/2 standard is finalized.

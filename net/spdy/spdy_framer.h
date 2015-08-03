@@ -628,11 +628,12 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t ProcessIgnoredControlFramePayload(/*const char* data,*/ size_t len);
 
   // TODO(jgraettinger): To be removed with migration to
-  // SpdyHeadersHandlerInterface.
-  // Serializes the last-processed header block of |hpack_decoder_| as
-  // a SPDY3 format block, and delivers it to the visitor via reentrant
-  // call to ProcessControlFrameHeaderBlock().
-  void DeliverHpackBlockAsSpdy3Block();
+  // SpdyHeadersHandlerInterface.  Serializes the last-processed
+  // header block of |hpack_decoder_| as a SPDY3 format block, and
+  // delivers it to the visitor via reentrant call to
+  // ProcessControlFrameHeaderBlock().  |compressed_len| is used for
+  // logging compression percentage.
+  void DeliverHpackBlockAsSpdy3Block(size_t compressed_len);
 
   // Helpers for above internal breakouts from ProcessInput.
   void ProcessControlFrameHeader(int control_frame_type_field);
