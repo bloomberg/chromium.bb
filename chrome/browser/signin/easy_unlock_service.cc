@@ -288,6 +288,7 @@ void EasyUnlockService::RegisterProfilePrefs(
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
+  proximity_auth::CryptAuthGCMManager::RegisterPrefs(registry);
   proximity_auth::CryptAuthDeviceManager::RegisterPrefs(registry);
   proximity_auth::CryptAuthEnrollmentManager::RegisterPrefs(registry);
 
@@ -684,6 +685,11 @@ cryptauth::DeviceClassifier EasyUnlockService::GetDeviceClassifier() {
 
   device_classifier.set_device_software_package(version_info::GetProductName());
   return device_classifier;
+}
+
+std::string EasyUnlockService::GetAccountId() {
+  return SigninManagerFactory::GetForProfile(profile())
+      ->GetAuthenticatedAccountId();
 }
 
 gcm::GCMDriver* EasyUnlockService::GetGCMDriver() {

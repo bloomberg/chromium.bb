@@ -18,23 +18,22 @@ class ClientObserver {
  public:
   // Called when sending an "Easy Unlock used"  local event message completes.
   // |success| is true iff the event was sent successfully.
-  virtual void OnUnlockEventSent(bool success) = 0;
+  virtual void OnUnlockEventSent(bool success){};
 
   // Called when a RemoteStatusUpdate is received.
-  virtual void OnRemoteStatusUpdate(
-      const RemoteStatusUpdate& status_update) = 0;
+  virtual void OnRemoteStatusUpdate(const RemoteStatusUpdate& status_update){};
 
   // Called when a response to a 'decrypt_request' is received, with the
   // |decrypted_bytes| that were returned by the remote device. A null pointer
   // indicates failure.
-  virtual void OnDecryptResponse(scoped_ptr<std::string> decrypted_bytes) = 0;
+  virtual void OnDecryptResponse(scoped_ptr<std::string> decrypted_bytes){};
 
   // Called when a response to a 'unlock_request' is received.
   // |success| is true iff the request was made successfully.
-  virtual void OnUnlockResponse(bool success) = 0;
+  virtual void OnUnlockResponse(bool success){};
 
   // Called when the underlying secure channel disconnects.
-  virtual void OnDisconnected() = 0;
+  virtual void OnDisconnected(){};
 };
 
 }  // namespace proximity_auth

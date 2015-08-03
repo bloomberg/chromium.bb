@@ -215,10 +215,11 @@ void OnInnerMessageUnwrappedForResponderAuth(
   if (!verified)
     PA_LOG(INFO) << "Failed to unwrap inner [Responder Auth] message.";
 
+  // Note: The GMS Core implementation does not properly set the metadata
+  // version, so we only check that the type is UNLOCK_KEY_SIGNED_CHALLENGE.
   cryptauth::GcmMetadata gcm_metadata;
   if (!gcm_metadata.ParseFromString(header.public_metadata()) ||
-      gcm_metadata.type() != cryptauth::UNLOCK_KEY_SIGNED_CHALLENGE ||
-      gcm_metadata.version() != kGcmMetadataVersion) {
+      gcm_metadata.type() != cryptauth::UNLOCK_KEY_SIGNED_CHALLENGE) {
     PA_LOG(WARNING) << "Failed to validate GcmMetadata in inner-most "
                     << "[Responder Auth] message.";
     context.callback.Run(false, std::string());

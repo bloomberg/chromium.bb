@@ -4,23 +4,38 @@
 
 #include "components/proximity_auth/webui/proximity_auth_webui_handler.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/prefs/pref_service.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
+#include "components/proximity_auth/bluetooth_connection.h"
+#include "components/proximity_auth/bluetooth_util.h"
+#include "components/proximity_auth/client_impl.h"
 #include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/proximity_auth/cryptauth/cryptauth_gcm_manager_impl.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
+#include "components/proximity_auth/cryptauth/secure_message_delegate.h"
+#include "components/proximity_auth/device_to_device_authenticator.h"
 #include "components/proximity_auth/logging/logging.h"
+#include "components/proximity_auth/remote_status_update.h"
+#include "components/proximity_auth/secure_context.h"
 #include "components/proximity_auth/webui/cryptauth_enroller_factory_impl.h"
 #include "components/proximity_auth/webui/proximity_auth_ui_delegate.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 
 namespace proximity_auth {
 
 namespace {
+
+// The UUID of the Smart Lock Bluetooth service.
+const char kBluetoothServiceUUID[] = "704EE561-3782-405A-A14B-2D47A2DDCDDF";
 
 // Keys in the JSON representation of a log message.
 const char kLogMessageTextKey[] = "text";
@@ -55,45 +70,18 @@ scoped_ptr<base::DictionaryValue> LogMessageToDictionary(
 // Keys in the JSON representation of an ExternalDeviceInfo proto.
 const char kExternalDevicePublicKey[] = "publicKey";
 const char kExternalDeviceFriendlyName[] = "friendlyDeviceName";
+const char kExternalDeviceBluetoothAddress[] = "bluetoothAddress";
 const char kExternalDeviceUnlockKey[] = "unlockKey";
 const char kExternalDeviceConnectionStatus[] = "connectionStatus";
+const char kExternalDeviceRemoteState[] = "remoteState";
 
 // The possible values of the |kExternalDeviceConnectionStatus| field.
+const char kExternalDeviceConnected[] = "connected";
 const char kExternalDeviceDisconnected[] = "disconnected";
-
-// Converts an ExternalDeviceInfo proto to a JSON dictionary used in JavaScript.
-scoped_ptr<base::DictionaryValue> ExternalDeviceInfoToDictionary(
-    const cryptauth::ExternalDeviceInfo& device_info) {
-  std::string base64_public_key;
-  Base64UrlEncode(device_info.public_key(), &base64_public_key);
-
-  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
-  dictionary->SetString(kExternalDevicePublicKey, base64_public_key);
-  dictionary->SetString(kExternalDeviceFriendlyName,
-                        device_info.friendly_device_name());
-  dictionary->SetBoolean(kExternalDeviceUnlockKey, device_info.unlock_key());
-  dictionary->SetString(kExternalDeviceConnectionStatus,
-                        kExternalDeviceDisconnected);
-  return dictionary.Pass();
-}
+const char kExternalDeviceConnecting[] = "connecting";
 
 // Keys in the JSON representation of an IneligibleDevice proto.
 const char kIneligibleDeviceReasons[] = "ineligibilityReasons";
-
-// Converts an IneligibleDevice proto to a JSON dictionary used in JavaScript.
-scoped_ptr<base::DictionaryValue> IneligibleDeviceToDictionary(
-    const cryptauth::IneligibleDevice& ineligible_device) {
-  scoped_ptr<base::ListValue> ineligibility_reasons(new base::ListValue());
-  for (const std::string& reason : ineligible_device.reasons()) {
-    ineligibility_reasons->AppendString(reason);
-  }
-
-  scoped_ptr<base::DictionaryValue> device_dictionary =
-      ExternalDeviceInfoToDictionary(ineligible_device.device());
-  device_dictionary->Set(kIneligibleDeviceReasons,
-                         ineligibility_reasons.Pass());
-  return device_dictionary;
-}
 
 // Creates a SyncState JSON object that can be passed to the WebUI.
 scoped_ptr<base::DictionaryValue> CreateSyncStateDictionary(
@@ -115,14 +103,14 @@ scoped_ptr<base::DictionaryValue> CreateSyncStateDictionary(
 
 ProximityAuthWebUIHandler::ProximityAuthWebUIHandler(
     ProximityAuthUIDelegate* delegate)
-    : delegate_(delegate), weak_ptr_factory_(this) {
+    : delegate_(delegate),
+      web_contents_initialized_(false),
+      weak_ptr_factory_(this) {
   cryptauth_client_factory_ = delegate_->CreateCryptAuthClientFactory();
 }
 
 ProximityAuthWebUIHandler::~ProximityAuthWebUIHandler() {
   LogBuffer::GetInstance()->RemoveObserver(this);
-  if (enrollment_manager_)
-    enrollment_manager_->RemoveObserver(this);
 }
 
 void ProximityAuthWebUIHandler::RegisterMessages() {
@@ -140,7 +128,7 @@ void ProximityAuthWebUIHandler::RegisterMessages() {
                  base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
-      "getSyncStates", base::Bind(&ProximityAuthWebUIHandler::GetSyncStates,
+      "getLocalState", base::Bind(&ProximityAuthWebUIHandler::GetLocalState,
                                   base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
@@ -151,11 +139,15 @@ void ProximityAuthWebUIHandler::RegisterMessages() {
       "forceDeviceSync", base::Bind(&ProximityAuthWebUIHandler::ForceDeviceSync,
                                     base::Unretained(this)));
 
-  LogBuffer::GetInstance()->AddObserver(this);
+  web_ui()->RegisterMessageCallback(
+      "toggleConnection",
+      base::Bind(&ProximityAuthWebUIHandler::ToggleConnection,
+                 base::Unretained(this)));
 
   InitGCMManager();
   InitEnrollmentManager();
   InitDeviceManager();
+  LogBuffer::GetInstance()->AddObserver(this);
 }
 
 void ProximityAuthWebUIHandler::OnLogMessageAdded(
@@ -172,7 +164,7 @@ void ProximityAuthWebUIHandler::OnLogBufferCleared() {
 
 void ProximityAuthWebUIHandler::OnEnrollmentStarted() {
   web_ui()->CallJavascriptFunction(
-      "SyncStateInterface.onEnrollmentStateChanged",
+      "LocalStateInterface.onEnrollmentStateChanged",
       *GetEnrollmentStateDictionary());
 }
 
@@ -182,12 +174,12 @@ void ProximityAuthWebUIHandler::OnEnrollmentFinished(bool success) {
   PA_LOG(INFO) << "Enrollment attempt completed with success=" << success
                << ":\n" << *enrollment_state;
   web_ui()->CallJavascriptFunction(
-      "SyncStateInterface.onEnrollmentStateChanged", *enrollment_state);
+      "LocalStateInterface.onEnrollmentStateChanged", *enrollment_state);
 }
 
 void ProximityAuthWebUIHandler::OnSyncStarted() {
   web_ui()->CallJavascriptFunction(
-      "SyncStateInterface.onDeviceSyncStateChanged",
+      "LocalStateInterface.onDeviceSyncStateChanged",
       *GetDeviceSyncStateDictionary());
 }
 
@@ -199,7 +191,16 @@ void ProximityAuthWebUIHandler::OnSyncFinished(
   PA_LOG(INFO) << "Device sync completed with result="
                << static_cast<int>(sync_result) << ":\n" << *device_sync_state;
   web_ui()->CallJavascriptFunction(
-      "SyncStateInterface.onDeviceSyncStateChanged", *device_sync_state);
+      "LocalStateInterface.onDeviceSyncStateChanged", *device_sync_state);
+
+  if (device_change_result ==
+      CryptAuthDeviceManager::DeviceChangeResult::CHANGED) {
+    scoped_ptr<base::ListValue> unlock_keys = GetUnlockKeysList();
+    PA_LOG(INFO) << "New unlock keys obtained after device sync:\n"
+                 << *unlock_keys;
+    web_ui()->CallJavascriptFunction("LocalStateInterface.onUnlockKeysChanged",
+                                     *unlock_keys);
+  }
 }
 
 void ProximityAuthWebUIHandler::GetLogMessages(const base::ListValue* args) {
@@ -243,6 +244,44 @@ void ProximityAuthWebUIHandler::ForceDeviceSync(const base::ListValue* args) {
     device_manager_->ForceSyncNow(cryptauth::INVOCATION_REASON_MANUAL);
 }
 
+void ProximityAuthWebUIHandler::ToggleConnection(const base::ListValue* args) {
+  std::string b64_public_key;
+  std::string public_key;
+  if (!device_manager_ || !args->GetSize() ||
+      !args->GetString(0, &b64_public_key) ||
+      !Base64UrlDecode(b64_public_key, &public_key)) {
+    return;
+  }
+
+  Connection* connection = GetConnection();
+  for (const auto& unlock_key : device_manager_->unlock_keys()) {
+    if (unlock_key.public_key() == public_key) {
+      // Check if there is an existing connection to disconnect from first.
+      if (connection && connection->IsConnected() &&
+          connection->remote_device().public_key == public_key) {
+        PA_LOG(INFO) << "Disconnecting from "
+                     << unlock_key.friendly_device_name() << "["
+                     << unlock_key.bluetooth_address() << "]";
+        connection->Disconnect();
+        return;
+      }
+
+      // Derive the PSK before connecting to the device.
+      PA_LOG(INFO) << "Connecting to " << unlock_key.friendly_device_name()
+                   << "[" << unlock_key.bluetooth_address() << "]";
+      secure_message_delegate_ = delegate_->CreateSecureMessageDelegate();
+      secure_message_delegate_->DeriveKey(
+          user_private_key_, unlock_key.public_key(),
+          base::Bind(&ProximityAuthWebUIHandler::OnPSKDerived,
+                     weak_ptr_factory_.GetWeakPtr(), unlock_key));
+
+      return;
+    }
+  }
+
+  PA_LOG(ERROR) << "Unlock key (" << b64_public_key << ") not found";
+}
+
 void ProximityAuthWebUIHandler::InitGCMManager() {
   gcm_manager_.reset(new CryptAuthGCMManagerImpl(delegate_->GetGCMDriver(),
                                                  delegate_->GetPrefService()));
@@ -254,13 +293,11 @@ void ProximityAuthWebUIHandler::InitEnrollmentManager() {
   // development and testing purposes until it is ready to be moved into Chrome.
   // The public/private key pair has been generated and serialized in a previous
   // session.
-  std::string user_public_key;
   Base64UrlDecode(
       "CAESRgohAD1lP_wgQ8XqVVwz4aK_89SqdvAQG5L_NZH5zXxwg5UbEiEAZFMlgCZ9h8OlyE4"
       "QYKY5oiOBu0FmLSKeTAXEq2jnVJI=",
-      &user_public_key);
+      &user_public_key_);
 
-  std::string user_private_key;
   Base64UrlDecode(
       "MIIBeQIBADCCAQMGByqGSM49AgEwgfcCAQEwLAYHKoZIzj0BAQIhAP____8AAAABAAAAAAA"
       "AAAAAAAAA________________MFsEIP____8AAAABAAAAAAAAAAAAAAAA______________"
@@ -270,7 +307,7 @@ void ProximityAuthWebUIHandler::InitEnrollmentManager() {
       "RAgEBBG0wawIBAQQgKZ4Dsm5xe4p5U2XPGxjrG376ZWWIa9E6r0y1BdjIntyhRANCAAQ9ZT"
       "_8IEPF6lVcM-Giv_PUqnbwEBuS_zWR-c18cIOVG2RTJYAmfYfDpchOEGCmOaIjgbtBZi0in"
       "kwFxKto51SS",
-      &user_private_key);
+      &user_private_key_);
 
   // This serialized DeviceInfo proto was previously captured from a real
   // CryptAuth enrollment, and is replayed here for testing purposes.
@@ -302,7 +339,7 @@ void ProximityAuthWebUIHandler::InitEnrollmentManager() {
   enrollment_manager_.reset(new CryptAuthEnrollmentManager(
       make_scoped_ptr(new base::DefaultClock()),
       make_scoped_ptr(new CryptAuthEnrollerFactoryImpl(delegate_)),
-      user_public_key, user_private_key, device_info, gcm_manager_.get(),
+      user_public_key_, user_private_key_, device_info, gcm_manager_.get(),
       delegate_->GetPrefService()));
   enrollment_manager_->AddObserver(this);
   enrollment_manager_->Start();
@@ -346,15 +383,20 @@ void ProximityAuthWebUIHandler::OnFoundEligibleUnlockDevices(
                                    eligible_devices, ineligible_devices);
 }
 
-void ProximityAuthWebUIHandler::GetSyncStates(const base::ListValue* args) {
+void ProximityAuthWebUIHandler::GetLocalState(const base::ListValue* args) {
   scoped_ptr<base::DictionaryValue> enrollment_state =
       GetEnrollmentStateDictionary();
   scoped_ptr<base::DictionaryValue> device_sync_state =
       GetDeviceSyncStateDictionary();
-  PA_LOG(INFO) << "Enrollment State: \n" << *enrollment_state
-               << "Device Sync State: \n" << *device_sync_state;
-  web_ui()->CallJavascriptFunction("SyncStateInterface.onGotSyncStates",
-                                   *enrollment_state, *device_sync_state);
+  scoped_ptr<base::ListValue> unlock_keys = GetUnlockKeysList();
+
+  PA_LOG(INFO) << "==== Got Local State ====\n"
+               << "Enrollment State: \n" << *enrollment_state
+               << "Device Sync State: \n" << *device_sync_state
+               << "Unlock Keys: \n" << *unlock_keys;
+  web_ui()->CallJavascriptFunction("LocalStateInterface.onGotLocalState",
+                                   *enrollment_state, *device_sync_state,
+                                   *unlock_keys);
 }
 
 scoped_ptr<base::DictionaryValue>
@@ -379,6 +421,213 @@ ProximityAuthWebUIHandler::GetDeviceSyncStateDictionary() {
       device_manager_->GetTimeToNextAttempt().InMillisecondsF(),
       device_manager_->IsRecoveringFromFailure(),
       device_manager_->IsSyncInProgress());
+}
+
+scoped_ptr<base::ListValue> ProximityAuthWebUIHandler::GetUnlockKeysList() {
+  scoped_ptr<base::ListValue> unlock_keys(new base::ListValue());
+  if (!device_manager_)
+    return unlock_keys;
+
+  for (const auto& unlock_key : device_manager_->unlock_keys()) {
+    unlock_keys->Append(ExternalDeviceInfoToDictionary(unlock_key));
+  }
+
+  return unlock_keys;
+}
+
+Connection* ProximityAuthWebUIHandler::GetConnection() {
+  Connection* connection = bluetooth_connection_.get();
+  if (client_) {
+    DCHECK(!connection);
+    connection = client_->connection();
+  }
+  return connection;
+}
+
+void ProximityAuthWebUIHandler::OnPSKDerived(
+    const cryptauth::ExternalDeviceInfo& unlock_key,
+    const std::string& persistent_symmetric_key) {
+  if (persistent_symmetric_key.empty()) {
+    PA_LOG(ERROR) << "Failed to derive PSK.";
+    return;
+  }
+
+  RemoteDevice remote_device(
+      unlock_key.friendly_device_name(), unlock_key.public_key(),
+      unlock_key.bluetooth_address(), persistent_symmetric_key);
+
+  bluetooth_connection_.reset(new BluetoothConnection(
+      remote_device, device::BluetoothUUID(kBluetoothServiceUUID)));
+  bluetooth_connection_->AddObserver(this);
+
+  // This SeekDeviceByAddress operation is needed to connect to a device if
+  // it is not already known to the local device.
+  bluetooth_util::SeekDeviceByAddress(
+      remote_device.bluetooth_address,
+      base::Bind(&ProximityAuthWebUIHandler::OnSeekedDeviceByAddress,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ProximityAuthWebUIHandler::OnSeekedDeviceByAddressError,
+                 weak_ptr_factory_.GetWeakPtr()),
+      content::BrowserThread::GetBlockingPool()
+          ->GetTaskRunnerWithShutdownBehavior(
+              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)
+          .get());
+}
+
+void ProximityAuthWebUIHandler::OnSeekedDeviceByAddress() {
+  PA_LOG(INFO) << "Found Bluetooth device: "
+               << bluetooth_connection_->remote_device().bluetooth_address;
+  bluetooth_connection_->Connect();
+}
+
+void ProximityAuthWebUIHandler::OnSeekedDeviceByAddressError(
+    const std::string& error_message) {
+  PA_LOG(WARNING) << "Failed to seek device by address: "
+                  << bluetooth_connection_->remote_device().bluetooth_address;
+}
+
+void ProximityAuthWebUIHandler::OnAuthenticationResult(
+    Authenticator::Result result,
+    scoped_ptr<SecureContext> secure_context) {
+  secure_context_ = secure_context.Pass();
+
+  // Create the ClientImpl asynchronously. |client_| registers itself as an
+  // observer of |bluetooth_connection_|, so creating it synchronously would
+  // trigger |OnSendComplete()| as an observer call for |client_|.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&ProximityAuthWebUIHandler::CreateStatusUpdateClient,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ProximityAuthWebUIHandler::CreateStatusUpdateClient() {
+  client_.reset(
+      new ClientImpl(bluetooth_connection_.Pass(), secure_context_.Pass()));
+  client_->AddObserver(this);
+}
+
+scoped_ptr<base::DictionaryValue>
+ProximityAuthWebUIHandler::ExternalDeviceInfoToDictionary(
+    const cryptauth::ExternalDeviceInfo& device_info) {
+  std::string base64_public_key;
+  Base64UrlEncode(device_info.public_key(), &base64_public_key);
+
+  // Set the fields in the ExternalDeviceInfo proto.
+  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
+  dictionary->SetString(kExternalDevicePublicKey, base64_public_key);
+  dictionary->SetString(kExternalDeviceFriendlyName,
+                        device_info.friendly_device_name());
+  dictionary->SetString(kExternalDeviceBluetoothAddress,
+                        device_info.bluetooth_address());
+  dictionary->SetBoolean(kExternalDeviceUnlockKey, device_info.unlock_key());
+  dictionary->SetString(kExternalDeviceConnectionStatus,
+                        kExternalDeviceDisconnected);
+
+  if (!device_manager_)
+    return dictionary;
+
+  // If |device_info| is a known unlock key, then combine the proto data with
+  // the corresponding local device data (e.g. connection status and remote
+  // status updates).
+  std::string public_key = device_info.public_key();
+  auto iterator = std::find_if(
+      device_manager_->unlock_keys().begin(),
+      device_manager_->unlock_keys().end(),
+      [&public_key](const cryptauth::ExternalDeviceInfo& unlock_key) {
+        return unlock_key.public_key() == public_key;
+      });
+
+  if (iterator == device_manager_->unlock_keys().end())
+    return dictionary;
+
+  // Fill in the current Bluetooth connection status.
+  Connection* connection = GetConnection();
+  if (!connection ||
+      connection->remote_device().public_key != device_info.public_key())
+    return dictionary;
+
+  std::string connection_status = kExternalDeviceDisconnected;
+  if (connection->IsConnected()) {
+    connection_status = kExternalDeviceConnected;
+  } else if (connection->status() == Connection::IN_PROGRESS) {
+    connection_status = kExternalDeviceConnecting;
+  }
+  dictionary->SetString(kExternalDeviceConnectionStatus, connection_status);
+
+  // Fill the remote status dictionary.
+  if (last_remote_status_update_) {
+    scoped_ptr<base::DictionaryValue> status_dictionary(
+        new base::DictionaryValue());
+    status_dictionary->SetInteger("userPresent",
+                                  last_remote_status_update_->user_presence);
+    status_dictionary->SetInteger(
+        "secureScreenLock",
+        last_remote_status_update_->secure_screen_lock_state);
+    status_dictionary->SetInteger(
+        "trustAgent", last_remote_status_update_->trust_agent_state);
+    dictionary->Set(kExternalDeviceRemoteState, status_dictionary.Pass());
+  }
+
+  return dictionary;
+}
+
+scoped_ptr<base::DictionaryValue>
+ProximityAuthWebUIHandler::IneligibleDeviceToDictionary(
+    const cryptauth::IneligibleDevice& ineligible_device) {
+  scoped_ptr<base::ListValue> ineligibility_reasons(new base::ListValue());
+  for (const std::string& reason : ineligible_device.reasons()) {
+    ineligibility_reasons->AppendString(reason);
+  }
+
+  scoped_ptr<base::DictionaryValue> device_dictionary =
+      ExternalDeviceInfoToDictionary(ineligible_device.device());
+  device_dictionary->Set(kIneligibleDeviceReasons,
+                         ineligibility_reasons.Pass());
+  return device_dictionary;
+}
+
+void ProximityAuthWebUIHandler::OnConnectionStatusChanged(
+    Connection* connection,
+    Connection::Status old_status,
+    Connection::Status new_status) {
+  PA_LOG(INFO) << "Connection status changed from " << old_status << " to "
+               << new_status;
+  if (new_status == Connection::CONNECTED) {
+    authenticator_.reset(new DeviceToDeviceAuthenticator(
+        connection, delegate_->GetAccountId(),
+        delegate_->CreateSecureMessageDelegate()));
+    authenticator_->Authenticate(
+        base::Bind(&ProximityAuthWebUIHandler::OnAuthenticationResult,
+                   weak_ptr_factory_.GetWeakPtr()));
+  } else if (new_status == Connection::DISCONNECTED) {
+    last_remote_status_update_.reset();
+  }
+
+  scoped_ptr<base::ListValue> unlock_keys = GetUnlockKeysList();
+  web_ui()->CallJavascriptFunction("LocalStateInterface.onUnlockKeysChanged",
+                                   *unlock_keys);
+}
+
+void ProximityAuthWebUIHandler::OnMessageReceived(const Connection& connection,
+                                                  const WireMessage& message) {
+  std::string address = connection.remote_device().bluetooth_address;
+  PA_LOG(INFO) << "Message received from " << address;
+}
+
+void ProximityAuthWebUIHandler::OnRemoteStatusUpdate(
+    const RemoteStatusUpdate& status_update) {
+  PA_LOG(INFO) << "Remote status update:"
+               << "\n  user_presence: "
+               << static_cast<int>(status_update.user_presence)
+               << "\n  secure_screen_lock_state: "
+               << static_cast<int>(status_update.secure_screen_lock_state)
+               << "\n  trust_agent_state: "
+               << static_cast<int>(status_update.trust_agent_state);
+
+  last_remote_status_update_.reset(new RemoteStatusUpdate(status_update));
+  scoped_ptr<base::ListValue> unlock_keys = GetUnlockKeysList();
+  web_ui()->CallJavascriptFunction("LocalStateInterface.onUnlockKeysChanged",
+                                   *unlock_keys);
 }
 
 }  // namespace proximity_auth

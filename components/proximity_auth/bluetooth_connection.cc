@@ -9,6 +9,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/wire_message.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -26,19 +27,20 @@ BluetoothConnection::BluetoothConnection(const RemoteDevice& remote_device,
 }
 
 BluetoothConnection::~BluetoothConnection() {
-  Disconnect();
+  if (status() != DISCONNECTED)
+    Disconnect();
 }
 
 void BluetoothConnection::Connect() {
   if (status() != DISCONNECTED) {
-    VLOG(1)
-        << "[BC] Ignoring attempt to connect a non-disconnected connection.";
+    PA_LOG(WARNING)
+        << "Ignoring attempt to connect a non-disconnected connection.";
     return;
   }
 
   if (!device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
-    VLOG(1)
-        << "[BC] Connection failed: Bluetooth is unsupported on this platform.";
+    PA_LOG(WARNING)
+        << "Connection failed: Bluetooth is unsupported on this platform.";
     return;
   }
 
@@ -50,8 +52,8 @@ void BluetoothConnection::Connect() {
 
 void BluetoothConnection::Disconnect() {
   if (status() == DISCONNECTED) {
-    VLOG(1)
-        << "[BC] Ignoring attempt to disconnect a non-connected connection.";
+    PA_LOG(WARNING)
+        << "Ignoring attempt to disconnect a non-connected connection.";
     return;
   }
 
@@ -93,7 +95,7 @@ void BluetoothConnection::DeviceRemoved(device::BluetoothAdapter* adapter,
     return;
 
   DCHECK_NE(status(), DISCONNECTED);
-  VLOG(1) << "[BC] Device disconnected...";
+  PA_LOG(INFO) << "Device disconnected...";
   Disconnect();
 }
 
@@ -109,8 +111,8 @@ void BluetoothConnection::OnAdapterInitialized(
   const std::string address = remote_device().bluetooth_address;
   device::BluetoothDevice* bluetooth_device = adapter->GetDevice(address);
   if (!bluetooth_device) {
-    VLOG(1) << "[BC] Device with address " << address
-            << " is not known to the system Bluetooth daemon.";
+    PA_LOG(WARNING) << "Device with address " << address
+                    << " is not known to the system Bluetooth daemon.";
     // TOOD(isherman): Optimistically attempt to seek the device and connect
     // anyway, as was previously implemented in BluetoothConnectionFinder.
     Disconnect();
@@ -133,31 +135,31 @@ void BluetoothConnection::OnConnected(
     // This case is reachable if the client of |this| connection called
     // |Disconnect()| while the backing Bluetooth connection was pending.
     DCHECK_EQ(status(), DISCONNECTED);
-    VLOG(1) << "[BC] Ignoring successful backend Bluetooth connection to an "
-            << "already disconnected logical connection.";
+    PA_LOG(WARNING) << "Ignoring successful backend Bluetooth connection to an "
+                    << "already disconnected logical connection.";
     return;
   }
 
-  VLOG(1) << "[BC] Connection established with "
-          << remote_device().bluetooth_address;
+  PA_LOG(INFO) << "Connection established with "
+               << remote_device().bluetooth_address;
   socket_ = socket;
   SetStatus(CONNECTED);
   StartReceive();
 }
 
 void BluetoothConnection::OnConnectionError(const std::string& error_message) {
-  VLOG(1) << "[BC] Connection failed: " << error_message;
+  PA_LOG(WARNING) << "Connection failed: " << error_message;
   Disconnect();
 }
 
 void BluetoothConnection::OnSend(int bytes_sent) {
-  VLOG(1) << "[BC] Successfully sent " << bytes_sent << " bytes.";
+  PA_LOG(INFO) << "Successfully sent " << bytes_sent << " bytes.";
   OnDidSendMessage(*pending_message_, true);
   pending_message_.reset();
 }
 
 void BluetoothConnection::OnSendError(const std::string& error_message) {
-  VLOG(1) << "[BC] Error when sending bytes: " << error_message;
+  PA_LOG(WARNING) << "Error when sending bytes: " << error_message;
   OnDidSendMessage(*pending_message_, false);
   pending_message_.reset();
 
@@ -166,7 +168,7 @@ void BluetoothConnection::OnSendError(const std::string& error_message) {
 
 void BluetoothConnection::OnReceive(int bytes_received,
                                     scoped_refptr<net::IOBuffer> buffer) {
-  VLOG(1) << "[BC] Received " << bytes_received << " bytes.";
+  PA_LOG(INFO) << "Received " << bytes_received << " bytes.";
   OnBytesReceived(std::string(buffer->data(), bytes_received));
 
   // Post a task to delay the read until the socket is available, as
@@ -179,7 +181,7 @@ void BluetoothConnection::OnReceive(int bytes_received,
 void BluetoothConnection::OnReceiveError(
     device::BluetoothSocket::ErrorReason error_reason,
     const std::string& error_message) {
-  VLOG(1) << "[BC] Error receiving bytes: " << error_message;
+  PA_LOG(WARNING) << "Error receiving bytes: " << error_message;
 
   // Post a task to delay the read until the socket is available, as
   // calling StartReceive at this point would error with ERR_IO_PENDING.

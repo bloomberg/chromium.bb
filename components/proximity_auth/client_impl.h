@@ -42,9 +42,10 @@ class ClientImpl : public Client, public ConnectionObserver {
   void RequestDecryption(const std::string& challenge) override;
   void RequestUnlock() override;
 
- protected:
   // Exposed for testing.
   Connection* connection() { return connection_.get(); }
+
+ protected:
   SecureContext* secure_context() { return secure_context_.get(); }
 
  private:

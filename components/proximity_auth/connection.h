@@ -54,13 +54,13 @@ class Connection {
   // Disconnects from the remote device.
   virtual void Disconnect() = 0;
 
+  Status status() const { return status_; }
+
  protected:
   // Sets the connection's status to |status|. If this is different from the
   // previous status, notifies observers of the change in status.
   // Virtual for testing.
   virtual void SetStatus(Status status);
-
-  Status status() const { return status_; }
 
   // Called after attempting to send bytes over the connection, whether the
   // message was successfully sent or not.

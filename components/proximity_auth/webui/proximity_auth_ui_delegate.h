@@ -38,6 +38,9 @@ class ProximityAuthUIDelegate {
   // API requests.
   virtual cryptauth::DeviceClassifier GetDeviceClassifier() = 0;
 
+  // Returns the account id of the user.
+  virtual std::string GetAccountId() = 0;
+
   // Returns the GCMDriver instance used by Chrome.
   virtual gcm::GCMDriver* GetGCMDriver() = 0;
 };

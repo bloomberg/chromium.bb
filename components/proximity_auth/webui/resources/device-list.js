@@ -23,6 +23,15 @@ Polymer({
   },
 
   /**
+   * Handles when the toggle connection button is clicked for a list item.
+   * @param {Event} event
+   */
+  toggleConnection_: function(event) {
+    var deviceInfo = event.model.item;
+    chrome.send('toggleConnection', [deviceInfo.publicKey]);
+  },
+
+  /**
    * @param {string} reason The device ineligibility reason.
    * @return {string} The prettified ineligibility reason.
    * @private
@@ -92,5 +101,44 @@ Polymer({
       default:
         return 'error';
     };
-  }
+  },
+
+  /**
+   * @param {number} userPresence
+   * @return {string}
+   */
+  getUserPresenceText_: function(userPresence) {
+    var userPresenceMap = {
+      0: 'User Present',
+      1: 'User Absent',
+      2: 'User Presence Unknown',
+    };
+    return userPresenceMap[userPresence];
+  },
+
+  /**
+   * @param {number} screenLock
+   * @return {string}
+   */
+  getScreenLockText_: function(screenLock) {
+    var screenLockMap = {
+      0: 'Secure Screen Lock Enabled',
+      1: 'Secure Screen Lock Disabled',
+      2: 'Secure Screen Lock State Unknown',
+    };
+    return screenLockMap[screenLock];
+  },
+
+  /**
+   * @param {number} trustAgent
+   * @return {string}
+   */
+  getTrustAgentText_: function(trustAgent) {
+    var trustAgentMap = {
+      0: 'Trust Agent Enabled',
+      1: 'Trust Agent Disabled',
+      2: 'Trust Agent Unsupported',
+    };
+    return trustAgentMap[trustAgent];
+  },
 });

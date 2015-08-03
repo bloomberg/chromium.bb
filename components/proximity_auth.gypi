@@ -14,6 +14,7 @@
       ],
       'dependencies': [
         ':cryptauth',
+        ':cryptauth_proto',
         ':proximity_auth_logging',
         '../base/base.gyp:base',
         '../base/base.gyp:base_prefs',
@@ -84,6 +85,10 @@
         "proximity_auth/throttled_bluetooth_connection_finder.h",
         "proximity_auth/wire_message.cc",
         "proximity_auth/wire_message.h",
+      ],
+
+      'export_dependent_settings': [
+        'cryptauth_proto',
       ],
     },
     {
@@ -217,6 +222,7 @@
         '../ui/resources/ui_resources.gyp:ui_resources',
         'components_resources.gyp:components_resources',
         'cryptauth',
+        'cryptauth_proto',
         'proximity_auth',
       ],
       'include_dirs': [

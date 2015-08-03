@@ -104,7 +104,7 @@ class CryptAuthDeviceManager : public SyncScheduler::Delegate,
   bool IsRecoveringFromFailure() const;
 
   // Returns a list of remote devices that can unlock the user's other devices.
-  const std::vector<cryptauth::ExternalDeviceInfo>& unlock_keys() {
+  const std::vector<cryptauth::ExternalDeviceInfo>& unlock_keys() const {
     return unlock_keys_;
   }
 

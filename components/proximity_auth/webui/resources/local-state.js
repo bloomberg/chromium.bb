@@ -67,8 +67,8 @@ Polymer({
    * Called when the page is about to be shown.
    */
   activate: function() {
-    SyncStateInterface = this;
-    chrome.send('getSyncStates');
+    LocalStateInterface = this;
+    chrome.send('getLocalState');
   },
 
   /**
@@ -102,13 +102,23 @@ Polymer({
   },
 
   /**
+   * Called when the locally stored unlock keys change.
+   * @param {Array<DeviceInfo>} unlockKeys
+   */
+  onUnlockKeysChanged: function(unlockKeys) {
+    this.unlockKeys_ = unlockKeys;
+  },
+
+  /**
    * Called for the chrome.send('getSyncStates') response.
    * @param {SyncState} enrollmentState
    * @param {SyncState} deviceSyncState
+   * @param {Array<DeviceInfo>} unlockKeys
    */
-  onGotSyncStates: function(enrollmentState, deviceSyncState) {
+  onGotLocalState: function(enrollmentState, deviceSyncState, unlockKeys) {
     this.enrollmentState_ = enrollmentState;
     this.deviceSyncState_ = deviceSyncState;
+    this.unlockKeys_ = unlockKeys;
   },
 
   /**
@@ -170,9 +180,12 @@ Polymer({
   },
 });
 
-// Interface with the native WebUI component for the CryptAuthSync state (i.e.
-// enrollment and device sync).
-SyncStateInterface = {
+// Interface with the native WebUI component for getting the local state and
+// being notified when the local state changes.
+// The local state refers to state stored on the device rather than online in
+// CryptAuth. This state includes the enrollment and device sync states, as well
+// as the list of unlock keys.
+LocalStateInterface = {
   /**
    * Called when the enrollment state changes. For example, when a new
    * enrollment is initiated.
@@ -188,9 +201,14 @@ SyncStateInterface = {
   onDeviceSyncStateChanged: function(deviceSyncState) {},
 
   /**
-   * Called in response to chrome.send('getSyncStates') with the current
-   * enrollment and device sync states of the user and device.
-   * @type {function(SyncState, SyncState)}
+   * Called when the locally stored unlock keys changes.
+   * @type {function(Array<DeviceInfo>)}
    */
-  onGotSyncStates: function(enrollmentState, deviceSyncState) {},
+  onUnlockKeysChanged: function(unlockKeys) {},
+
+  /**
+   * Called in response to chrome.send('getLocalState') with the local state.
+   * @type {function(SyncState, SyncState, Array<DeviceInfo>)}
+   */
+  onGotLocalState: function(enrollmentState, deviceSyncState, unlockKeys) {},
 };

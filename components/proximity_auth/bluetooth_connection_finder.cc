@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/proximity_auth/bluetooth_connection.h"
+#include "components/proximity_auth/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
 using device::BluetoothAdapter;
@@ -34,12 +35,12 @@ BluetoothConnectionFinder::~BluetoothConnectionFinder() {
 void BluetoothConnectionFinder::Find(
     const ConnectionCallback& connection_callback) {
   if (!device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
-    VLOG(1) << "[BCF] Bluetooth is unsupported on this platform. Aborting.";
+    PA_LOG(WARNING) << "Bluetooth is unsupported on this platform. Aborting.";
     return;
   }
 
   DCHECK(start_time_.is_null());
-  VLOG(1) << "[BCF] Finding Bluetooth connection...";
+  PA_LOG(WARNING) << "Finding Bluetooth connection...";
 
   start_time_ = base::TimeTicks::Now();
   connection_callback_ = connection_callback;
@@ -56,8 +57,8 @@ scoped_ptr<Connection> BluetoothConnectionFinder::CreateConnection() {
 bool BluetoothConnectionFinder::IsReadyToPoll() {
   bool is_adapter_available =
       adapter_.get() && adapter_->IsPresent() && adapter_->IsPowered();
-  VLOG(1) << "[BCF] Readiness: adapter="
-          << (is_adapter_available ? "available" : "unavailable");
+  PA_LOG(INFO) << "Readiness: adapter="
+               << (is_adapter_available ? "available" : "unavailable");
   return is_adapter_available;
 }
 
@@ -76,7 +77,7 @@ void BluetoothConnectionFinder::PollIfReady() {
   if (connection_)
     return;
 
-  VLOG(1) << "[BCF] Polling for connection...";
+  PA_LOG(INFO) << "Polling for connection...";
   connection_ = CreateConnection();
   connection_->AddObserver(this);
   connection_->Connect();
@@ -127,12 +128,13 @@ void BluetoothConnectionFinder::OnConnectionStatusChanged(
 
   if (connection_->IsConnected()) {
     base::TimeDelta elapsed = base::TimeTicks::Now() - start_time_;
-    VLOG(1) << "[BCF] Connection found! Elapsed Time: "
-            << elapsed.InMilliseconds() << "ms.";
+    PA_LOG(WARNING) << "Connection found! Elapsed Time: "
+                    << elapsed.InMilliseconds() << "ms.";
     UnregisterAsObserver();
     connection_callback_.Run(connection_.Pass());
   } else if (old_status == Connection::IN_PROGRESS) {
-    VLOG(1) << "[BCF] Connection failed! Scheduling another polling iteration.";
+    PA_LOG(WARNING)
+        << "Connection failed! Scheduling another polling iteration.";
     connection_.reset();
     has_delayed_poll_scheduled_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

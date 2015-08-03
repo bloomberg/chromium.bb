@@ -95,15 +95,21 @@
                 <div hidden>
                   <div>
                     User Present:
-                    <span>[[item.remoteState.userPresent]]</span>
+                    <span>
+                      [[getUserPresenceText_(item.remoteState.userPresent)]]
+                    </span>
                   </div>
                   <div>
                     Secure Screen Lock:
-                    <span>[[item.remoteState.secureScreenLock]]</span>
+                    <span>
+                      [[getScreenLockText_(item.remoteState.secureScreenLock)]]
+                    </span>
                   </div>
                   <div>
                     Trust Agent:
-                    <span>[[item.remoteState.trustAgent]]</span>
+                    <span>
+                      [[getTrustAgentText_(item.remoteState.trustAgent)]]
+                    </span>
                   </div>
                 </div>
               </core-tooltip>
@@ -123,6 +129,8 @@
             </template>
           </div>
           <paper-icon-button class="end-icon"
+              bluetooth-address="[[item.bluetoothAddress]]"
+              on-click="toggleConnection_"
               icon="[[getIconForConnection_(item.connectionStatus)]]"
               hidden$="{{!item.unlockKey}}">
           </paper-icon-button>

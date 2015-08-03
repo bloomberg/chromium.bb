@@ -70,7 +70,7 @@
     <log-buffer id='logBuffer' logs="{{logs}}"></log-buffer>
     <div id="list" class="flex">
       <template is="dom-repeat" items="[[logs]]">
-        <div class="list-item" severity="[[item.severity]]">
+        <div class="list-item" severity$="[[item.severity]]">
           <div class="item-metadata layout horizontal">
             <div>[[item.time]]</div>
             <div class="flex"></div>
