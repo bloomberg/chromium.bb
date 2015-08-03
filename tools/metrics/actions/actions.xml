@@ -2806,6 +2806,114 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="DownloadNotification.Button_AlwaysOpenType">
+  <owner>yoshiki@chromium.org</owner>
+  <description>
+    User pushes &quot;Always open type&quot; button on download notification.
+  </description>
+</action>
+
+<action name="DownloadNotification.Button_Cancel">
+  <owner>yoshiki@chromium.org</owner>
+  <description>
+    User pushes &quot;Cancel&quot; button on download notification.
+  </description>
+</action>
+
+<action name="DownloadNotification.Button_Discard">
+  <owner>yoshiki@chromium.org</owner>
+  <description>
+    User pushes &quot;Discard&quot; button on download notification.
+  </description>
+</action>
+
+<action name="DownloadNotification.Button_Keep">
+  <owner>yoshiki@chromium.org</owner>
+  <description>
+    User pushes &quot;Keep&quot; button on download notification.
+  </description>
+</action>
+
+<action name="DownloadNotification.Button_LearnInterrupted">
+  <owner>yoshiki@chromium.org</owner>
+  <description>
+    User pushes &quot;Learn More about Interrupted&quot; button on download
+    notification.
+  </description>
+</action>
+
+<action name="DownloadNotification.Button_LearnScanning">
+  <owner>yoshiki@chromium.org</owner>
+  <description>
+    User pushes &quot;Learn More about Scanning&quot; button on download
+    notification.
+  </description>
+</action>
+
+<action name="DownloadNotification.Button_OpenWhenComplete">
+  <owner>yoshiki@chromium.org</owner>
+  <description>
+    User pushes &quot;Open When Completed&quot; button on download notification.
+  </description>
+</action>
+
+<action name="DownloadNotification.Button_Pause">
+  <owner>yoshiki@chromium.org</owner>
+  <description>
+    User pushes &quot;Pause&quot; button on download notification.
+  </description>
+</action>
+
+<action name="DownloadNotification.Button_PlatformOpen">
+  <owner>yoshiki@chromium.org</owner>
+  <description>
+    User pushes &quot;Open&quot; button on download notification.
+  </description>
+</action>
+
+<action name="DownloadNotification.Button_Resume">
+  <owner>yoshiki@chromium.org</owner>
+  <description>
+    User pushes &quot;Resume&quot; button on download notification.
+  </description>
+</action>
+
+<action name="DownloadNotification.Button_ShowInFolder">
+  <owner>yoshiki@chromium.org</owner>
+  <description>
+    User pushes &quot;Show in folder&quot; button on download notification.
+  </description>
+</action>
+
+<action name="DownloadNotification.Click_Completed">
+  <owner>yoshiki@chromium.org</owner>
+  <description>
+    User pushes a download notification, which indicates a completed download.
+  </description>
+</action>
+
+<action name="DownloadNotification.Click_Dangerous">
+  <owner>yoshiki@chromium.org</owner>
+  <description>
+    User pushes a download notification, which indicates a dangerous download.
+  </description>
+</action>
+
+<action name="DownloadNotification.Click_InProgress">
+  <owner>yoshiki@chromium.org</owner>
+  <description>
+    User pushes a download notification, which indicates a download in progress.
+  </description>
+</action>
+
+<action name="DownloadNotification.Click_Stopped">
+  <owner>yoshiki@chromium.org</owner>
+  <description>
+    User pushes a download notification, which indicates a cancelled or
+    interrupted download.
+  </description>
+</action>
+
 <action name="Duplicate">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

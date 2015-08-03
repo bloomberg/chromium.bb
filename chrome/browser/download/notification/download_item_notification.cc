@@ -22,6 +22,7 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "net/base/mime_util.h"
@@ -30,6 +31,8 @@
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center.h"
+
+using base::UserMetricsAction;
 
 namespace {
 
@@ -51,6 +54,55 @@ std::string ReadNotificationImage(const base::FilePath& file_path) {
   DCHECK_LE(data.size(), static_cast<size_t>(kMaxImagePreviewSize));
 
   return data;
+}
+
+void RecordButtonClickAction(DownloadCommands::Command command) {
+  switch (command) {
+    case DownloadCommands::SHOW_IN_FOLDER:
+      content::RecordAction(
+          UserMetricsAction("DownloadNotification.Button_ShowInFolder"));
+      break;
+    case DownloadCommands::OPEN_WHEN_COMPLETE:
+      content::RecordAction(
+          UserMetricsAction("DownloadNotification.Button_OpenWhenComplete"));
+      break;
+    case DownloadCommands::ALWAYS_OPEN_TYPE:
+      content::RecordAction(
+          UserMetricsAction("DownloadNotification.Button_AlwaysOpenType"));
+      break;
+    case DownloadCommands::PLATFORM_OPEN:
+      content::RecordAction(
+          UserMetricsAction("DownloadNotification.Button_PlatformOpen"));
+      break;
+    case DownloadCommands::CANCEL:
+      content::RecordAction(
+          UserMetricsAction("DownloadNotification.Button_Cancel"));
+      break;
+    case DownloadCommands::DISCARD:
+      content::RecordAction(
+          UserMetricsAction("DownloadNotification.Button_Discard"));
+      break;
+    case DownloadCommands::KEEP:
+      content::RecordAction(
+          UserMetricsAction("DownloadNotification.Button_Keep"));
+      break;
+    case DownloadCommands::LEARN_MORE_SCANNING:
+      content::RecordAction(
+          UserMetricsAction("DownloadNotification.Button_LearnScanning"));
+      break;
+    case DownloadCommands::LEARN_MORE_INTERRUPTED:
+      content::RecordAction(
+          UserMetricsAction("DownloadNotification.Button_LearnInterrupted"));
+      break;
+    case DownloadCommands::PAUSE:
+      content::RecordAction(
+          UserMetricsAction("DownloadNotification.Button_Pause"));
+      break;
+    case DownloadCommands::RESUME:
+      content::RecordAction(
+          UserMetricsAction("DownloadNotification.Button_Resume"));
+      break;
+  }
 }
 
 }  // anonymous namespace
@@ -97,16 +149,22 @@ void DownloadItemNotification::OnNotificationClose() {
 
 void DownloadItemNotification::OnNotificationClick() {
   if (item_->IsDangerous()) {
+    content::RecordAction(
+        UserMetricsAction("DownloadNotification.Click_Dangerous"));
     // Do nothing.
     return;
   }
 
   switch (item_->GetState()) {
     case content::DownloadItem::IN_PROGRESS:
+      content::RecordAction(
+          UserMetricsAction("DownloadNotification.Click_InProgress"));
       item_->SetOpenWhenComplete(!item_->GetOpenWhenComplete());  // Toggle
       break;
     case content::DownloadItem::CANCELLED:
     case content::DownloadItem::INTERRUPTED:
+      content::RecordAction(
+          UserMetricsAction("DownloadNotification.Click_Stopped"));
       GetBrowser()->OpenURL(content::OpenURLParams(
           GURL(chrome::kChromeUIDownloadsURL), content::Referrer(),
           NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
@@ -114,6 +172,8 @@ void DownloadItemNotification::OnNotificationClick() {
       CloseNotificationByUser();
       break;
     case content::DownloadItem::COMPLETE:
+      content::RecordAction(
+          UserMetricsAction("DownloadNotification.Click_Completed"));
       item_->OpenDownload();
       CloseNotificationByUser();
       break;
@@ -131,6 +191,8 @@ void DownloadItemNotification::OnNotificationButtonClick(int button_index) {
   }
 
   DownloadCommands::Command command = button_actions_->at(button_index);
+  RecordButtonClickAction(command);
+
   if (command != DownloadCommands::PAUSE &&
       command != DownloadCommands::RESUME) {
     CloseNotificationByUser();
