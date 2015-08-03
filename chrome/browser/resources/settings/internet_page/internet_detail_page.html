@@ -60,13 +60,21 @@
             Advanced
           </cr-button>
           <span class="flex"></span>
-          <cr-button hidden$="[[!canDisconnect_(networkState)]]"
-              on-click="onDisconnectClicked_">
-            Disconnect
+          <cr-button hidden$="[[!showViewAccount_(networkState)]]"
+              on-click="onViewAccountClicked_">
+            View Account
+          </cr-button>
+          <cr-button hidden$="[[!canActivate_(networkState)]]"
+              on-click="onActivateClicked_">
+            Activate
           </cr-button>
           <cr-button hidden$="[[!canConnect_(networkState)]]"
               on-click="onConnectClicked_">
             Connect
+          </cr-button>
+          <cr-button hidden$="[[!canDisconnect_(networkState)]]"
+              on-click="onDisconnectClicked_">
+            Disconnect
           </cr-button>
         </div>
 

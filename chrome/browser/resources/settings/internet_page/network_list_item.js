@@ -89,17 +89,24 @@ Polymer({
       var name = getText(network.Name) || getText(network.Type);
       this.$.networkName.textContent = name;
       this.$.networkName.classList.toggle('connected', !isDisconnected);
-    } else if (network.Name && network.ConnectionState) {
+      return;
+    }
+    if (network.Name && network.ConnectionState) {
       this.$.networkName.textContent = getText(network.Type);
       this.$.networkName.classList.toggle('connected', false);
       this.$.networkStateText.textContent =
           getConnectionStateText(network.ConnectionState, network.Name);
       this.$.networkStateText.classList.toggle('connected', !isDisconnected);
-    } else {
-      this.$.networkName.textContent = getText(network.Type);
-      this.$.networkName.classList.toggle('connected', false);
-      this.$.networkStateText.textContent = getText('Disabled');
-      this.$.networkStateText.classList.toggle('connected', false);
+      return;
+    }
+    this.$.networkName.textContent = getText(network.Type);
+    this.$.networkName.classList.toggle('connected', false);
+    this.$.networkStateText.textContent = getText('Disabled');
+    this.$.networkStateText.classList.toggle('connected', false);
+
+    if (network.Type == CrOnc.Type.CELLULAR) {
+      if (!network.GUID)
+        this.$.networkStateText.textContent = getText('Uninitialized');
     }
   },
 

@@ -407,7 +407,10 @@ namespace networkingPrivate {
     static void startDisconnect(DOMString networkGuid,
                                 optional VoidCallback callback);
 
-    // Starts activation of the Cellular network with networkGuid.
+    // Starts activation of the Cellular network with networkGuid. If called
+    // for a network that is already activated, or for a network with a carrier
+    // that can not be directly activated, this will show the account details
+    // page for the carrier if possible.
     // |networkGuid|: The GUID of the Cellular network to activate.
     // |carrier|: Optional name of carrier to activate.
     // |callback|: Called when the activation request has been sent. See note

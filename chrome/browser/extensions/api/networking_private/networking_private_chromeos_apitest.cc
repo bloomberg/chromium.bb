@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_ui_delegate_chromeos.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -85,6 +86,8 @@ const char kCellular1ServicePath[] = "stub_cellular1";
 // Stub Verify* methods implementation to satisfy expectations of
 // networking_private_apitest.
 class CryptoVerifyStub : public NetworkingPrivateDelegate::VerifyDelegate {
+ private:
+  // VerifyDelegate
   void VerifyDestination(const VerificationProperties& verification_properties,
                          const BoolCallback& success_callback,
                          const FailureCallback& failure_callback) override {
@@ -107,6 +110,20 @@ class CryptoVerifyStub : public NetworkingPrivateDelegate::VerifyDelegate {
     success_callback.Run("encrypted_data");
   }
 };
+
+class UIDelegateStub : public NetworkingPrivateDelegate::UIDelegate {
+ public:
+  static int s_show_account_details_called_;
+
+ private:
+  // UIDelegate
+  void ShowAccountDetails(const std::string& guid) const override {
+    ++s_show_account_details_called_;
+  }
+};
+
+// static
+int UIDelegateStub::s_show_account_details_called_ = 0;
 
 class TestListener : public content::NotificationObserver {
  public:
@@ -192,6 +209,8 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
   }
 
   void SetupCellular() {
+    UIDelegateStub::s_show_account_details_called_ = 0;
+
     // Add a Cellular GSM Device.
     device_test_->AddDevice(kCellularDevicePath, shill::kTypeCellular,
                             "stub_cellular_device1");
@@ -239,8 +258,12 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
   static scoped_ptr<KeyedService> CreateNetworkingPrivateServiceClient(
       content::BrowserContext* context) {
     scoped_ptr<CryptoVerifyStub> crypto_verify(new CryptoVerifyStub);
-    return make_scoped_ptr(
+    scoped_ptr<NetworkingPrivateDelegate> result(
         new NetworkingPrivateChromeOS(context, crypto_verify.Pass()));
+    scoped_ptr<NetworkingPrivateDelegate::UIDelegate> ui_delegate(
+        new UIDelegateStub);
+    result->set_ui_delegate(ui_delegate.Pass());
+    return result.Pass();
   }
 
   void SetUpOnMainThread() override {
@@ -412,6 +435,17 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, StartDisconnect) {
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, StartActivate) {
   SetupCellular();
   EXPECT_TRUE(RunNetworkingSubtest("startActivate")) << message_;
+  EXPECT_EQ(1, UIDelegateStub::s_show_account_details_called_);
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, StartActivateSprint) {
+  SetupCellular();
+  // Set the carrier to Sprint.
+  device_test_->SetDeviceProperty(kCellularDevicePath,
+                                  shill::kCarrierProperty,
+                                  base::StringValue(shill::kCarrierSprint));
+  EXPECT_TRUE(RunNetworkingSubtest("startActivateSprint")) << message_;
+  EXPECT_EQ(0, UIDelegateStub::s_show_account_details_called_);
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,

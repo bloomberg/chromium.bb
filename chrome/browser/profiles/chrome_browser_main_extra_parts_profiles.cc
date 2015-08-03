@@ -63,6 +63,7 @@
 #include "apps/browser_context_keyed_service_factories.h"
 #include "chrome/browser/apps/ephemeral_app_service_factory.h"
 #include "chrome/browser/apps/shortcut_manager_factory.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_ui_delegate_factory_impl.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_verify_delegate_factory_impl.h"
 #include "chrome/browser/extensions/browser_context_keyed_service_factories.h"
 #include "chrome/browser/extensions/extension_management.h"
@@ -256,6 +257,11 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::NetworkingPrivateDelegateFactory::GetInstance()
       ->SetVerifyDelegateFactory(
           networking_private_verify_delegate_factory.Pass());
+  scoped_ptr<extensions::NetworkingPrivateUIDelegateFactoryImpl>
+      networking_private_ui_delegate_factory(
+          new extensions::NetworkingPrivateUIDelegateFactoryImpl);
+  extensions::NetworkingPrivateDelegateFactory::GetInstance()
+      ->SetUIDelegateFactory(networking_private_ui_delegate_factory.Pass());
 #endif
 #endif
 #if !defined(OS_ANDROID)

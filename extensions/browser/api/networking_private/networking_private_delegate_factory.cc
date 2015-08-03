@@ -29,6 +29,10 @@ NetworkingPrivateDelegateFactory::VerifyDelegateFactory::
     ~VerifyDelegateFactory() {
 }
 
+NetworkingPrivateDelegateFactory::UIDelegateFactory::UIDelegateFactory() {}
+
+NetworkingPrivateDelegateFactory::UIDelegateFactory::~UIDelegateFactory() {}
+
 // static
 NetworkingPrivateDelegate*
 NetworkingPrivateDelegateFactory::GetForBrowserContext(
@@ -57,24 +61,38 @@ void NetworkingPrivateDelegateFactory::SetVerifyDelegateFactory(
   verify_factory_.reset(factory.release());
 }
 
+void NetworkingPrivateDelegateFactory::SetUIDelegateFactory(
+    scoped_ptr<UIDelegateFactory> factory) {
+  ui_factory_.reset(factory.release());
+}
+
 KeyedService* NetworkingPrivateDelegateFactory::BuildServiceInstanceFor(
     BrowserContext* browser_context) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   scoped_ptr<NetworkingPrivateDelegate::VerifyDelegate> verify_delegate;
   if (verify_factory_)
     verify_delegate = verify_factory_->CreateDelegate().Pass();
+
+  NetworkingPrivateDelegate* delegate;
 #if defined(OS_CHROMEOS)
-  return new NetworkingPrivateChromeOS(browser_context, verify_delegate.Pass());
+  delegate =
+      new NetworkingPrivateChromeOS(browser_context, verify_delegate.Pass());
 #elif defined(OS_LINUX)
-  return new NetworkingPrivateLinux(browser_context, verify_delegate.Pass());
+  delegate =
+      new NetworkingPrivateLinux(browser_context, verify_delegate.Pass());
 #elif defined(OS_WIN) || defined(OS_MACOSX)
   scoped_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
-  return new NetworkingPrivateServiceClient(wifi_service.Pass(),
-                                            verify_delegate.Pass());
+  delegate = new NetworkingPrivateServiceClient(wifi_service.Pass(),
+                                                verify_delegate.Pass());
 #else
   NOTREACHED();
-  return nullptr;
+  delegate = nullptr;
 #endif
+
+  if (ui_factory_)
+    delegate->set_ui_delegate(ui_factory_->CreateDelegate().Pass());
+
+  return delegate;
 }
 
 BrowserContext* NetworkingPrivateDelegateFactory::GetBrowserContextToUse(

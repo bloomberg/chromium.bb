@@ -25,9 +25,10 @@ class NetworkingPrivateDelegateFactory
     : public BrowserContextKeyedServiceFactory {
  public:
   // There needs to be a way to allow the application (e.g. Chrome) to provide
-  // a verify delegate to the API (in src/extensions). Since this factory is
-  // already a singleton, it provides a good place to hold the verify delegate
-  // factory. See NetworkingPrivateDelegate regarding the verify delegate.
+  // additional delegates to the API (in src/extensions). Since this factory is
+  // already a singleton, it provides a good place to hold these delegate
+  // factories. See NetworkingPrivateDelegate for the delegate declarations.
+
   class VerifyDelegateFactory {
    public:
     VerifyDelegateFactory();
@@ -40,8 +41,21 @@ class NetworkingPrivateDelegateFactory
     DISALLOW_COPY_AND_ASSIGN(VerifyDelegateFactory);
   };
 
-  // Provide an optional factory for creating VerifyDelegate instances.
+  class UIDelegateFactory {
+   public:
+    UIDelegateFactory();
+    virtual ~UIDelegateFactory();
+
+    virtual scoped_ptr<NetworkingPrivateDelegate::UIDelegate>
+    CreateDelegate() = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(UIDelegateFactory);
+  };
+
+  // Provide optional factories for creating delegate instances.
   void SetVerifyDelegateFactory(scoped_ptr<VerifyDelegateFactory> factory);
+  void SetUIDelegateFactory(scoped_ptr<UIDelegateFactory> factory);
 
   static NetworkingPrivateDelegate* GetForBrowserContext(
       content::BrowserContext* browser_context);
@@ -62,6 +76,7 @@ class NetworkingPrivateDelegateFactory
   bool ServiceIsNULLWhileTesting() const override;
 
   scoped_ptr<VerifyDelegateFactory> verify_factory_;
+  scoped_ptr<UIDelegateFactory> ui_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateDelegateFactory);
 };

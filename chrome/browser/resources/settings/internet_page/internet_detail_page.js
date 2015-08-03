@@ -10,6 +10,9 @@
  * @group Chrome Settings Elements
  * @element cr-settings-internet-detail
  */
+(function() {
+
+/** @const */ var CARRIER_VERIZON = 'Verizon Wireless';
 
 Polymer({
   is: 'cr-settings-internet-detail-page',
@@ -235,7 +238,7 @@ Polymer({
   },
 
   /**
-   * Calls networkingPrivate.getState for this.guid.
+   * Calls networkingPrivate.getProperties for this.guid.
    * @private
    */
   getNetworkDetails_: function() {
@@ -251,6 +254,11 @@ Polymer({
    * @private
    */
   getPropertiesCallback_: function(state) {
+    if (!state) {
+      // If state is null, close the page.
+      MoreRouting.navigateTo('internet');
+      return;
+    }
     this.networkState = state;
   },
 
@@ -314,8 +322,58 @@ Polymer({
    * @private
    */
   canConnect_: function(state) {
+    if (this.canActivate_(state))
+      return false;
     return state && state.Type != CrOnc.Type.ETHERNET &&
            state.ConnectionState == CrOnc.ConnectionState.NOT_CONNECTED;
+  },
+
+  /**
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @return {boolean} Whether or not the network can be activated.
+   * @private
+   */
+  canActivate_: function(state) {
+    if (!state || state.Type != CrOnc.Type.CELLULAR)
+      return false;
+    var activation = state.Cellular.ActivationState;
+    return activation == CrOnc.ActivationState.NOT_ACTIVATED ||
+           activation == CrOnc.ActivationState.PARTIALLY_ACTIVATED;
+  },
+
+  /**
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @return {boolean} Whether or not to show the 'View Account' button.
+   * @private
+   */
+  showViewAccount_: function(state) {
+    // Only show for activated networks.
+    if (this.canActivate_())
+      return false;
+
+    if (!state || state.Type != CrOnc.Type.CELLULAR || !state.Cellular)
+      return false;
+    var cellular = state.Cellular;
+
+    // Only show if online payment URL is provided or the carrier is Verizon.
+    if (cellular.Carrier != CARRIER_VERIZON) {
+      var paymentUrl = cellular.PaymentPortal && cellular.PaymentPortal.Url;
+      if (!paymentUrl)
+        return false;
+    }
+
+    // Only show for connected networks or LTE networks with a valid MDN.
+    if (!this.isConnectedState_(state)) {
+      var technology = cellular.NetworkTechnology;
+      if (technology != CrOnc.NetworkTechnology.LTE &&
+          technology != CrOnc.NetworkTechnology.LTEAdvanced) {
+        return false;
+      }
+      if (!cellular.MDN)
+        return false;
+    }
+
+    return true;
   },
 
   /**
@@ -342,6 +400,23 @@ Polymer({
    */
   onDisconnectClicked_: function() {
     chrome.networkingPrivate.startDisconnect(this.guid);
+  },
+
+  /**
+   * Callback when the Activate button is clicked.
+   * @private
+   */
+  onActivateClicked_: function() {
+    chrome.networkingPrivate.startActivate(this.guid);
+  },
+
+  /**
+   * Callback when the View Account button is clicked.
+   * @private
+   */
+  onViewAccountClicked_: function() {
+    // startActivate() will show the account page for activated networks.
+    chrome.networkingPrivate.startActivate(this.guid);
   },
 
   /**
@@ -585,3 +660,4 @@ Polymer({
     return state && (state.Type == type);
   }
 });
+})();

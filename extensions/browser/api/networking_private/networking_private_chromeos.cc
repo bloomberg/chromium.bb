@@ -331,17 +331,43 @@ void NetworkingPrivateChromeOS::StartDisconnect(
 
 void NetworkingPrivateChromeOS::StartActivate(
     const std::string& guid,
-    const std::string& carrier,
+    const std::string& specified_carrier,
     const VoidCallback& success_callback,
     const FailureCallback& failure_callback) {
-  std::string service_path, error;
-  if (!GetServicePathFromGuid(guid, &service_path, &error)) {
-    failure_callback.Run(error);
+  const chromeos::NetworkState* network =
+      GetStateHandler()->GetNetworkStateFromGuid(guid);
+  if (!network) {
+    failure_callback.Run(
+        extensions::networking_private::kErrorInvalidNetworkGuid);
+    return;
+  }
+
+  std::string carrier(specified_carrier);
+  if (carrier.empty()) {
+    const chromeos::DeviceState* device =
+        GetStateHandler()->GetDeviceState(network->device_path());
+    if (device)
+      carrier = device->carrier();
+  }
+  if (carrier != shill::kCarrierSprint) {
+    // Only Sprint is directly activated. For other carriers, show the
+    // account details page.
+    if (ui_delegate())
+      ui_delegate()->ShowAccountDetails(guid);
+    success_callback.Run();
+    return;
+  }
+
+  if (!network->RequiresActivation()) {
+    // If no activation is required, show the account details page.
+    if (ui_delegate())
+      ui_delegate()->ShowAccountDetails(guid);
+    success_callback.Run();
     return;
   }
 
   NetworkHandler::Get()->network_activation_handler()->Activate(
-      service_path, carrier, success_callback,
+      network->path(), carrier, success_callback,
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }
 

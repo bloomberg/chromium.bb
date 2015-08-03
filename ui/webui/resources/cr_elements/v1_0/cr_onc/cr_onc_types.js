@@ -104,12 +104,11 @@ CrOnc.ProxySettings;
 CrOnc.APNProperties;
 
 /** @enum {string} */
-CrOnc.Type = {
-  CELLULAR: 'Cellular',
-  ETHERNET: 'Ethernet',
-  VPN: 'VPN',
-  WIFI: 'WiFi',
-  WIMAX: 'WiMAX',
+CrOnc.ActivationState = {
+  ACTIVATED: 'Activated',
+  ACTIVATING: 'Activating',
+  NOT_ACTIVATED: 'NotActivated',
+  PARTIALLY_ACTIVATED: 'PartiallyActivated',
 };
 
 /** @enum {string} */
@@ -169,6 +168,15 @@ CrOnc.Security = {
   WEP_PSK: 'WEP-PSK',
   WPA_EAP: 'WPA-EAP',
   WPA_PSK: 'WPA-PSK',
+};
+
+/** @enum {string} */
+CrOnc.Type = {
+  CELLULAR: 'Cellular',
+  ETHERNET: 'Ethernet',
+  VPN: 'VPN',
+  WIFI: 'WiFi',
+  WIMAX: 'WiMAX',
 };
 
 /**

@@ -80,11 +80,31 @@ class NetworkingPrivateDelegate : public KeyedService {
     DISALLOW_COPY_AND_ASSIGN(VerifyDelegate);
   };
 
+  // Delegate for forwarding UI requests, e.g. for showing the account UI.
+  class UIDelegate {
+   public:
+    UIDelegate();
+    virtual ~UIDelegate();
+
+    // Navigate to the acoount details page for the cellular network associated
+    // with |guid|.
+    virtual void ShowAccountDetails(const std::string& guid) const = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(UIDelegate);
+  };
+
   // If |verify_delegate| is not NULL, the Verify* methods will be forwarded
   // to the delegate. Otherwise they will fail with a NotSupported error.
   explicit NetworkingPrivateDelegate(
       scoped_ptr<VerifyDelegate> verify_delegate);
   ~NetworkingPrivateDelegate() override;
+
+  void set_ui_delegate(scoped_ptr<UIDelegate> ui_delegate) {
+    ui_delegate_.reset(ui_delegate.release());
+  }
+
+  const UIDelegate* ui_delegate() { return ui_delegate_.get(); }
 
   // Asynchronous methods
   virtual void GetProperties(const std::string& guid,
@@ -188,8 +208,11 @@ class NetworkingPrivateDelegate : public KeyedService {
       const FailureCallback& failure_callback);
 
  private:
-  // Interface for Verify* methods. May be NULL.
+  // Interface for Verify* methods. May be null.
   scoped_ptr<VerifyDelegate> verify_delegate_;
+
+  // Interface for UI methods. May be null.
+  scoped_ptr<UIDelegate> ui_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateDelegate);
 };
