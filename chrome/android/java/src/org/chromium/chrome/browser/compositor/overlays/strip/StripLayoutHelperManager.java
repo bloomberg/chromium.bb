@@ -65,6 +65,7 @@ public class StripLayoutHelperManager implements SceneOverlay {
     // UI State
     private float mWidth;
     private final float mHeight;
+    private int mOrientation;
     private final CompositorButton mModelSelectorButton;
 
     private TabStripSceneLayer mTabStripTreeProvider;
@@ -130,8 +131,10 @@ public class StripLayoutHelperManager implements SceneOverlay {
     }
 
     @Override
-    public void onSizeChanged(float width, float height, float visibleViewportOffsetY) {
+    public void onSizeChanged(
+            float width, float height, float visibleViewportOffsetY, int orientation) {
         mWidth = width;
+        mOrientation = orientation;
         mModelSelectorButton.setX(
                 mWidth - MODEL_SELECTOR_BUTTON_WIDTH_DP - MODEL_SELECTOR_BUTTON_RIGHT_PADDING_DP);
         mNormalHelper.onSizeChanged(mWidth, mHeight);
@@ -189,6 +192,10 @@ public class StripLayoutHelperManager implements SceneOverlay {
 
     public float getWidth() {
         return mWidth;
+    }
+
+    public int getOrientation() {
+        return mOrientation;
     }
 
     public float getBorderOpacity() {

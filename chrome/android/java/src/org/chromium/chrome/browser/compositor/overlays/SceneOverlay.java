@@ -39,8 +39,9 @@ public interface SceneOverlay {
      * @param width                  The new width of the viewport available in dp.
      * @param height                 The new height of the viewport available in dp.
      * @param visibleViewportOffsetY The visible viewport Y offset in dp.
+     * @param orientation            The new orientation.
      */
-    void onSizeChanged(float width, float height, float visibleViewportOffsetY);
+    void onSizeChanged(float width, float height, float visibleViewportOffsetY, int orientation);
 
     /**
      * @param views A list of virtual views representing compositor rendered views.

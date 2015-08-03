@@ -43,7 +43,8 @@ class TabStripSceneLayer : public SceneLayer {
                            jfloat width,
                            jfloat height,
                            jfloat y_offset,
-                           jfloat strip_brightness);
+                           jfloat strip_brightness,
+                           jboolean should_readd_background);
   void UpdateNewTabButton(JNIEnv* env,
                           jobject jobj,
                           jint resource_id,

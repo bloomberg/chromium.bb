@@ -398,7 +398,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
 
         // 5. TODO(dtrainor): Notify the overlay objects.
         for (int i = 0; i < mSceneOverlays.size(); i++) {
-            mSceneOverlays.get(i).onSizeChanged(width, height, visibleViewport.top);
+            mSceneOverlays.get(i).onSizeChanged(width, height, visibleViewport.top, orientation);
         }
     }
 
