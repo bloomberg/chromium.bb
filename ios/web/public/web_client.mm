@@ -28,10 +28,6 @@ WebMainParts* WebClient::CreateWebMainParts() {
   return nullptr;
 }
 
-WebViewFactory* WebClient::GetWebViewFactory() const {
-  return nullptr;
-}
-
 std::string WebClient::GetAcceptLangs(BrowserState* state) const {
   return std::string();
 }

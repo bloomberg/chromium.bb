@@ -14,8 +14,6 @@
 
 namespace web {
 
-class WebViewFactory;
-
 // A WebClient used for testing purposes.
 class TestWebClient : public web::WebClient {
  public:

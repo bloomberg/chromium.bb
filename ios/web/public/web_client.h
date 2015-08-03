@@ -33,7 +33,6 @@ class BrowserState;
 class BrowserURLRewriter;
 class WebClient;
 class WebMainParts;
-class WebViewFactory;
 
 // Setter and getter for the client.  The client should be set early, before any
 // web code is called.
@@ -56,9 +55,6 @@ class WebClient {
   // Gives the embedder a chance to set up the given web view before presenting
   // it in the UI.
   virtual void PostWebViewCreation(UIWebView* web_view) const {}
-
-  // Returns a factory that vends WebViews.
-  virtual WebViewFactory* GetWebViewFactory() const;
 
   // Returns the languages used in the Accept-Languages HTTP header.
   // Used to decide URL formating.
