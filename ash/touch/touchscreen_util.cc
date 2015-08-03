@@ -27,8 +27,10 @@ void AssociateTouchscreens(std::vector<DisplayInfo>* displays,
 
   std::set<int> no_match_touchscreen;
   for (size_t i = 0; i < devices.size(); ++i) {
-    if (internal_state &&
-        devices[i].type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL) {
+    if (devices[i].type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL) {
+      // Don't try and map internal touchscreens to external displays.
+      if (!internal_state)
+        continue;
       VLOG(2) << "Found internal device for display " << internal_state->id()
               << " with device id " << devices[i].id << " size "
               << devices[i].size.ToString();

@@ -226,12 +226,12 @@ TEST_F(TouchscreenUtilTest, TestWithNoInternalDisplay) {
       ui::TouchscreenDevice(2, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "",
                             gfx::Size(9999, 888), 0));
 
+  // Internal touchscreen should not be associated with any display
   AssociateTouchscreens(&displays_, devices);
 
   EXPECT_EQ(1u, displays_[0].input_devices().size());
   EXPECT_EQ(1, displays_[0].input_devices()[0]);
-  EXPECT_EQ(1u, displays_[1].input_devices().size());
-  EXPECT_EQ(2, displays_[1].input_devices()[0]);
+  EXPECT_EQ(0u, displays_[1].input_devices().size());
   EXPECT_EQ(0u, displays_[2].input_devices().size());
   EXPECT_EQ(0u, displays_[3].input_devices().size());
 }
