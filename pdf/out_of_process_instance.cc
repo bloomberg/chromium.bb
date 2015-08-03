@@ -1130,6 +1130,11 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
   if (!engine_->HasPermission(PDFEngine::PERMISSION_COPY))
     content_restrictions |= CONTENT_RESTRICTION_COPY;
 
+  if (!engine_->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY) &&
+      !engine_->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY)) {
+    content_restrictions |= CONTENT_RESTRICTION_PRINT;
+  }
+
   pp::PDF::SetContentRestriction(this, content_restrictions);
 
   uma_.HistogramCustomCounts("PDF.PageCount", page_count,
