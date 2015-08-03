@@ -33,14 +33,14 @@ class Paths(object):
         subdir += '_dcheck'
       self.build_dir = os.path.join(self.src_root, 'out', subdir)
 
-    self.mojo_runner = os.path.join(self.build_dir, 'mojo_runner')
+    self.mojo_runner = [os.path.join(self.build_dir, 'mojo_runner')]
     if config.target_os == Config.OS_WINDOWS:
-      self.mojo_runner += '.exe'
+      self.mojo_runner[0] += '.exe'
     if config.target_os == Config.OS_ANDROID:
       self.apk_path = os.path.join(self.build_dir, 'apks', config.apk_name)
-      self.mojo_runner = os.path.join(self.src_root, 'mojo', 'tools',
-                                      'android_mojo_shell.py',
-                                      '--apk', self.apk_path)
+      self.mojo_runner = [os.path.join(self.src_root, 'mojo', 'tools',
+                                       'android_mojo_shell.py'),
+                          '--apk', self.apk_path]
 
   def RelPath(self, path):
     '''Returns the given path, relative to the current directory.'''
