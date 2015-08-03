@@ -12,31 +12,10 @@ TestPermissionMessageProvider::TestPermissionMessageProvider() {
 TestPermissionMessageProvider::~TestPermissionMessageProvider() {
 }
 
-PermissionMessageIDs
-TestPermissionMessageProvider::GetLegacyPermissionMessageIDs(
-    const PermissionSet* permissions,
-    Manifest::Type extension_type) const {
-  return PermissionMessageIDs();
-}
-
 CoalescedPermissionMessages
 TestPermissionMessageProvider::GetCoalescedPermissionMessages(
     const PermissionIDSet& permissions) const {
   return CoalescedPermissionMessages();
-}
-
-std::vector<base::string16>
-TestPermissionMessageProvider::GetLegacyWarningMessages(
-    const PermissionSet* permissions,
-    Manifest::Type extension_type) const {
-  return std::vector<base::string16>();
-}
-
-std::vector<base::string16>
-TestPermissionMessageProvider::GetLegacyWarningMessagesDetails(
-    const PermissionSet* permissions,
-    Manifest::Type extension_type) const {
-  return std::vector<base::string16>();
 }
 
 bool TestPermissionMessageProvider::IsPrivilegeIncrease(

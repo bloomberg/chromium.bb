@@ -111,8 +111,13 @@ class PermissionMessagesUnittest : public testing::Test {
  private:
   std::vector<base::string16> GetMessages(
       scoped_refptr<const PermissionSet> permissions) {
-    return message_provider_->GetLegacyWarningMessages(permissions.get(),
-                                                       app_->GetType());
+    std::vector<base::string16> messages;
+    for (const PermissionMessageString& str :
+         message_provider_->GetPermissionMessageStrings(permissions.get(),
+                                                        app_->GetType())) {
+      messages.push_back(str.message);
+    }
+    return messages;
   }
 
   extensions::TestExtensionEnvironment env_;

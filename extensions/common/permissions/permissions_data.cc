@@ -194,15 +194,6 @@ bool PermissionsData::HasEffectiveAccessToAllHosts() const {
   return active_permissions()->HasEffectiveAccessToAllHosts();
 }
 
-PermissionMessageIDs PermissionsData::GetLegacyPermissionMessageIDs() const {
-  if (ShouldSkipPermissionWarnings(extension_id_)) {
-    return PermissionMessageIDs();
-  } else {
-    return PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
-        active_permissions().get(), manifest_type_);
-  }
-}
-
 PermissionMessageStrings PermissionsData::GetPermissionMessageStrings() const {
   if (ShouldSkipPermissionWarnings(extension_id_))
     return PermissionMessageStrings();

@@ -10,26 +10,6 @@
 
 namespace extensions {
 
-namespace {
-
-ForceForTesting g_force_permission_system_for_testing =
-    ForceForTesting::DONT_FORCE;
-
-bool IsNewPermissionMessageSystemEnabled() {
-  if (g_force_permission_system_for_testing != ForceForTesting::DONT_FORCE)
-    return g_force_permission_system_for_testing == ForceForTesting::FORCE_NEW;
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("PermissionMessageSystem");
-  return group_name != "OldSystem";
-}
-
-}  // namespace
-
-void ForcePermissionMessageSystemForTesting(
-    ForceForTesting force) {
-  g_force_permission_system_for_testing = force;
-}
-
 PermissionMessageString::PermissionMessageString(
     const CoalescedPermissionMessage& message)
     : message(message.message()), submessages(message.submessages()) {
@@ -63,21 +43,11 @@ PermissionMessageStrings
 PermissionMessageProvider::GetPermissionMessageStrings(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
+  CoalescedPermissionMessages messages = GetCoalescedPermissionMessages(
+      GetAllPermissionIDs(permissions, extension_type));
   PermissionMessageStrings strings;
-  if (IsNewPermissionMessageSystemEnabled()) {
-    CoalescedPermissionMessages messages = GetCoalescedPermissionMessages(
-        GetAllPermissionIDs(permissions, extension_type));
-    for (const CoalescedPermissionMessage& msg : messages)
-      strings.push_back(PermissionMessageString(msg));
-  } else {
-    std::vector<base::string16> messages =
-        GetLegacyWarningMessages(permissions, extension_type);
-    std::vector<base::string16> details =
-        GetLegacyWarningMessagesDetails(permissions, extension_type);
-    DCHECK_EQ(messages.size(), details.size());
-    for (size_t i = 0; i < messages.size(); i++)
-      strings.push_back(PermissionMessageString(messages[i], details[i]));
-  }
+  for (const CoalescedPermissionMessage& msg : messages)
+    strings.push_back(PermissionMessageString(msg));
   return strings;
 }
 

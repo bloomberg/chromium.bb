@@ -65,13 +65,6 @@ PermissionIDSet MakePermissionIDSet(const APIPermissionSet& permissions) {
   return set;
 }
 
-std::string LegacyPermissionIDsToString(const PermissionMessageIDs& ids) {
-  std::vector<std::string> strs;
-  for (const PermissionMessage::ID& id : ids)
-    strs.push_back(base::IntToString(id));
-  return base::StringPrintf("[ %s ]", base::JoinString(strs, ", ").c_str());
-}
-
 std::string PermissionIDsToString(const PermissionIDSet& ids) {
   std::vector<std::string> strs;
   for (const PermissionID& id : ids)
@@ -88,21 +81,12 @@ std::string CoalescedPermissionIDsToString(
 }
 
 // Check that the given |permissions| produce a single warning message,
-// identified by |expected_legacy_id| in the old system, and by the set of
-// |expected_ids| in the new system.
+// identified by the set of |expected_ids|.
 testing::AssertionResult PermissionSetProducesMessage(
     const PermissionSet* permissions,
     Manifest::Type extension_type,
-    PermissionMessage::ID expected_legacy_id,
     const PermissionIDSet& expected_ids) {
   const PermissionMessageProvider* provider = PermissionMessageProvider::Get();
-  PermissionMessageIDs legacy_ids =
-      provider->GetLegacyPermissionMessageIDs(permissions, extension_type);
-  if (legacy_ids.size() != 1 || expected_legacy_id != legacy_ids[0]) {
-    return testing::AssertionFailure()
-           << "Expected single legacy permission ID " << expected_legacy_id
-           << " but got " << LegacyPermissionIDsToString(legacy_ids);
-  }
 
   CoalescedPermissionMessages msgs = provider->GetCoalescedPermissionMessages(
       provider->GetAllPermissionIDs(permissions, extension_type));
@@ -877,7 +861,6 @@ TEST(PermissionsTest, FileSystemPermissionMessages) {
                         URLPatternSet(), URLPatternSet()));
   EXPECT_TRUE(PermissionSetProducesMessage(
       permissions.get(), Manifest::TYPE_PLATFORM_APP,
-      PermissionMessage::kFileSystemDirectory,
       MakePermissionIDSet(api_permissions)));
 }
 
@@ -923,7 +906,6 @@ TEST(PermissionsTest, HiddenFileSystemPermissionMessages) {
                         URLPatternSet(), URLPatternSet()));
   EXPECT_TRUE(PermissionSetProducesMessage(
       permissions.get(), Manifest::TYPE_PLATFORM_APP,
-      PermissionMessage::kFileSystemWriteDirectory,
       MakePermissionIDSet(api_permissions)));
 }
 
@@ -939,7 +921,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
         new PermissionSet(api_permissions, ManifestPermissionSet(),
                           hosts, URLPatternSet()));
     EXPECT_TRUE(PermissionSetProducesMessage(
-        permissions.get(), Manifest::TYPE_EXTENSION, PermissionMessage::kTabs,
+        permissions.get(), Manifest::TYPE_EXTENSION,
         MakePermissionIDSet(APIPermission::kTab, APIPermission::kFavicon)));
   }
   {
@@ -954,7 +936,6 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
                           hosts, URLPatternSet()));
     EXPECT_TRUE(PermissionSetProducesMessage(
         permissions.get(), Manifest::TYPE_EXTENSION,
-        PermissionMessage::kBrowsingHistory,
         MakePermissionIDSet(APIPermission::kHistory, APIPermission::kFavicon)));
   }
   {
@@ -967,7 +948,6 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
         api_permissions, ManifestPermissionSet(), hosts, URLPatternSet()));
     EXPECT_TRUE(PermissionSetProducesMessage(
         permissions.get(), Manifest::TYPE_EXTENSION,
-        PermissionMessage::kHostsAll,
         MakePermissionIDSet(APIPermission::kHostsAll, APIPermission::kTab)));
   }
   {
@@ -980,7 +960,6 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
         api_permissions, ManifestPermissionSet(), hosts, URLPatternSet()));
     EXPECT_TRUE(PermissionSetProducesMessage(
         permissions.get(), Manifest::TYPE_EXTENSION,
-        PermissionMessage::kHostsAll,
         MakePermissionIDSet(APIPermission::kHostsAll,
                             APIPermission::kTopSites)));
   }
@@ -994,7 +973,6 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
         api_permissions, ManifestPermissionSet(), hosts, URLPatternSet()));
     EXPECT_TRUE(PermissionSetProducesMessage(
         permissions.get(), Manifest::TYPE_EXTENSION,
-        PermissionMessage::kHostsAll,
         MakePermissionIDSet(APIPermission::kHostsAll,
                             APIPermission::kDeclarativeWebRequest)));
   }
@@ -1011,7 +989,6 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
                           URLPatternSet(), URLPatternSet()));
     EXPECT_TRUE(PermissionSetProducesMessage(
         permissions.get(), Manifest::TYPE_EXTENSION,
-        PermissionMessage::kBrowsingHistory,
         MakePermissionIDSet(api_permissions)));
   }
   {
@@ -1025,7 +1002,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
         new PermissionSet(api_permissions, ManifestPermissionSet(),
                           URLPatternSet(), URLPatternSet()));
     EXPECT_TRUE(PermissionSetProducesMessage(
-        permissions.get(), Manifest::TYPE_EXTENSION, PermissionMessage::kTabs,
+        permissions.get(), Manifest::TYPE_EXTENSION,
         MakePermissionIDSet(api_permissions)));
   }
 }
@@ -1783,8 +1760,6 @@ TEST(PermissionsTest, ChromeURLs) {
   scoped_refptr<PermissionSet> permissions(
       new PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
                         allowed_hosts, URLPatternSet()));
-  PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
-      permissions.get(), Manifest::TYPE_EXTENSION);
   PermissionMessageProvider::Get()->GetCoalescedPermissionMessages(
       PermissionMessageProvider::Get()->GetAllPermissionIDs(
           permissions.get(), Manifest::TYPE_EXTENSION));

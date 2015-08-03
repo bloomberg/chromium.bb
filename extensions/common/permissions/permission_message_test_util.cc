@@ -13,46 +13,17 @@
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_data.h"
 
-// TODO(treib): Remove the legacy messages once we've fully switched to the new
-// permission message system.
-
 namespace extensions {
 
 namespace {
 
-class ScopedForcePermissionMessageSystem {
- public:
-  ScopedForcePermissionMessageSystem(ForceForTesting force) {
-    extensions::ForcePermissionMessageSystemForTesting(force);
-  }
-  ~ScopedForcePermissionMessageSystem() {
-    extensions::ForcePermissionMessageSystemForTesting(
-        ForceForTesting::DONT_FORCE);
-  }
-};
-
-PermissionMessageStrings GetLegacyMessages(
-    const PermissionsData* permissions_data) {
-  ScopedForcePermissionMessageSystem force(ForceForTesting::FORCE_OLD);
-  return permissions_data->GetPermissionMessageStrings();
-}
-
-PermissionMessageStrings GetLegacyMessages(const PermissionSet* permissions,
-                                           Manifest::Type extension_type) {
-  ScopedForcePermissionMessageSystem force(ForceForTesting::FORCE_OLD);
-  return PermissionMessageProvider::Get()->GetPermissionMessageStrings(
-      permissions, extension_type);
-}
-
 PermissionMessageStrings GetNewMessages(
     const PermissionsData* permissions_data) {
-  ScopedForcePermissionMessageSystem force(ForceForTesting::FORCE_NEW);
   return permissions_data->GetPermissionMessageStrings();
 }
 
 PermissionMessageStrings GetNewMessages(const PermissionSet* permissions,
                                         Manifest::Type extension_type) {
-  ScopedForcePermissionMessageSystem force(ForceForTesting::FORCE_NEW);
   return PermissionMessageProvider::Get()->GetPermissionMessageStrings(
       permissions, extension_type);
 }
@@ -115,7 +86,6 @@ base::string16 MessagesToString(const PermissionMessageStrings& messages) {
 
 bool CheckThatSubmessagesMatch(
     const PermissionMessageString& expected_message,
-    const std::vector<base::string16>& actual_legacy_submessages,
     const std::vector<base::string16>& actual_submessages) {
   bool result = true;
 
@@ -123,20 +93,6 @@ bool CheckThatSubmessagesMatch(
   for (const base::string16& submessage : expected_message.submessages)
     expected_sorted.push_back(submessage);
   std::sort(expected_sorted.begin(), expected_sorted.end());
-
-  std::vector<base::string16> actual_legacy_sorted(actual_legacy_submessages);
-  std::sort(actual_legacy_sorted.begin(), actual_legacy_sorted.end());
-  if (expected_sorted != actual_legacy_sorted) {
-    // This is always a failure, even within an EXPECT_FALSE.
-    // Message: Expected details for "Message" to be { "Foo" }, but got
-    // { "Bar", "Baz" } in the legacy system
-    ADD_FAILURE() << "Expected details for \"" << expected_message.message
-                  << "\" to be:\n" << MessagesVectorToString(expected_sorted)
-                  << "But got:\n"
-                  << MessagesVectorToString(actual_legacy_sorted)
-                  << "in the legacy system";
-    result = false;
-  }
 
   std::vector<base::string16> actual_sorted(actual_submessages);
   std::sort(actual_sorted.begin(), actual_sorted.end());
@@ -155,32 +111,13 @@ bool CheckThatSubmessagesMatch(
 
 testing::AssertionResult VerifyHasPermissionMessageImpl(
     const PermissionMessageString& expected_message,
-    const PermissionMessageStrings& actual_legacy_messages,
     const PermissionMessageStrings& actual_messages) {
-  auto legacy_message_it =
-      std::find_if(actual_legacy_messages.begin(), actual_legacy_messages.end(),
-                   [&expected_message](const PermissionMessageString& msg) {
-                     return msg.message == expected_message.message;
-                   });
-  bool legacy_found = legacy_message_it != actual_legacy_messages.end();
-
   auto message_it =
       std::find_if(actual_messages.begin(), actual_messages.end(),
                    [&expected_message](const PermissionMessageString& msg) {
                      return msg.message == expected_message.message;
                    });
   bool found = message_it != actual_messages.end();
-
-  if (legacy_found != found) {
-    // This is always a failure, even within an EXPECT_FALSE.
-    ADD_FAILURE()
-        << "Mismatch between legacy and new system when looking for \""
-        << expected_message.message << "\".\nLegacy system returned:\n"
-        << MessagesToString(actual_legacy_messages)
-        << "New system returned:\n" << MessagesToString(actual_messages);
-    return testing::AssertionFailure();
-  }
-
   if (!found) {
     // Message: Expected messages to contain "Foo", but got { "Bar", "Baz" }
     return testing::AssertionFailure() << "Expected messages to contain \""
@@ -189,9 +126,7 @@ testing::AssertionResult VerifyHasPermissionMessageImpl(
                                        << MessagesToString(actual_messages);
   }
 
-  if (!CheckThatSubmessagesMatch(expected_message,
-                                 legacy_message_it->submessages,
-                                 message_it->submessages)) {
+  if (!CheckThatSubmessagesMatch(expected_message, message_it->submessages)) {
     return testing::AssertionFailure();
   }
 
@@ -204,20 +139,8 @@ testing::AssertionResult VerifyHasPermissionMessageImpl(
 
 testing::AssertionResult VerifyPermissionMessagesWithSubmessagesImpl(
     const PermissionMessageStrings& expected_messages,
-    const PermissionMessageStrings& actual_legacy_messages,
     const PermissionMessageStrings& actual_messages,
     bool check_order) {
-  if (expected_messages.size() != actual_legacy_messages.size()) {
-    // Message: Expected 2 messages { "Bar", "Baz" }, but got 0 {} in the
-    // legacy system
-    return testing::AssertionFailure()
-           << "Expected " << expected_messages.size() << " messages:\n"
-           << MessagesToString(expected_messages) << "But got "
-           << actual_legacy_messages.size() << " messages:\n"
-           << MessagesToString(actual_legacy_messages)
-           << "in the legacy system";
-  }
-
   if (expected_messages.size() != actual_messages.size()) {
     // Message: Expected 2 messages { "Bar", "Baz" }, but got 0 {}
     return testing::AssertionFailure()
@@ -229,16 +152,6 @@ testing::AssertionResult VerifyPermissionMessagesWithSubmessagesImpl(
 
   if (check_order) {
     for (size_t i = 0; i < expected_messages.size(); i++) {
-      if (expected_messages[i].message != actual_legacy_messages[i].message) {
-        // Message: Expected messages to be { "Foo" }, but got { "Bar", "Baz" }
-        // in the legacy system
-        return testing::AssertionFailure()
-               << "Expected messages to be:\n"
-               << MessagesToString(expected_messages) << "But got:\n"
-               << MessagesToString(actual_legacy_messages)
-               << "in the legacy system";
-      }
-
       if (expected_messages[i].message != actual_messages[i].message) {
         // Message: Expected messages to be { "Foo" }, but got { "Bar", "Baz" }
         return testing::AssertionFailure()
@@ -248,15 +161,14 @@ testing::AssertionResult VerifyPermissionMessagesWithSubmessagesImpl(
       }
 
       if (!CheckThatSubmessagesMatch(expected_messages[i],
-                                     actual_legacy_messages[i].submessages,
                                      actual_messages[i].submessages)) {
         return testing::AssertionFailure();
       }
     }
   } else {
     for (size_t i = 0; i < expected_messages.size(); i++) {
-      testing::AssertionResult result = VerifyHasPermissionMessageImpl(
-          expected_messages[i], actual_legacy_messages, actual_messages);
+      testing::AssertionResult result =
+          VerifyHasPermissionMessageImpl(expected_messages[i], actual_messages);
       if (!result)
         return result;
     }
@@ -278,7 +190,7 @@ testing::AssertionResult VerifyHasPermissionMessage(
     const base::string16& expected_message) {
   return VerifyHasPermissionMessageImpl(
       PermissionMessageString(expected_message),
-      GetLegacyMessages(permissions_data), GetNewMessages(permissions_data));
+      GetNewMessages(permissions_data));
 }
 
 testing::AssertionResult VerifyHasPermissionMessage(
@@ -295,7 +207,6 @@ testing::AssertionResult VerifyHasPermissionMessage(
     const base::string16& expected_message) {
   return VerifyHasPermissionMessageImpl(
       PermissionMessageString(expected_message),
-      GetLegacyMessages(permissions, extension_type),
       GetNewMessages(permissions, extension_type));
 }
 
@@ -325,7 +236,6 @@ testing::AssertionResult VerifyOnePermissionMessage(
     const base::string16& expected_message) {
   return VerifyPermissionMessagesWithSubmessagesImpl(
       PermissionMessageStrings(1, PermissionMessageString(expected_message)),
-      GetLegacyMessages(permissions, extension_type),
       GetNewMessages(permissions, extension_type), true);
 }
 
@@ -407,8 +317,7 @@ testing::AssertionResult VerifyPermissionMessagesWithSubmessages(
                                                expected_submessages[i]));
   }
   return VerifyPermissionMessagesWithSubmessagesImpl(
-      expected, GetLegacyMessages(permissions_data),
-      GetNewMessages(permissions_data), check_order);
+      expected, GetNewMessages(permissions_data), check_order);
 }
 
 }  // namespace extensions

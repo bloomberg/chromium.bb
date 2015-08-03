@@ -26,20 +26,8 @@ class ChromePermissionMessageProvider : public PermissionMessageProvider {
   ~ChromePermissionMessageProvider() override;
 
   // PermissionMessageProvider implementation.
-  // See comments in permission_message_provider.h. TL;DR: You want to use only
-  // GetPermissionMessageStrings to get messages, not the *Legacy* or
-  // *Coalesced* methods.
-  PermissionMessageIDs GetLegacyPermissionMessageIDs(
-      const PermissionSet* permissions,
-      Manifest::Type extension_type) const override;
   CoalescedPermissionMessages GetCoalescedPermissionMessages(
       const PermissionIDSet& permissions) const override;
-  std::vector<base::string16> GetLegacyWarningMessages(
-      const PermissionSet* permissions,
-      Manifest::Type extension_type) const override;
-  std::vector<base::string16> GetLegacyWarningMessagesDetails(
-      const PermissionSet* permissions,
-      Manifest::Type extension_type) const override;
   bool IsPrivilegeIncrease(const PermissionSet* old_permissions,
                            const PermissionSet* new_permissions,
                            Manifest::Type extension_type) const override;
@@ -48,11 +36,6 @@ class ChromePermissionMessageProvider : public PermissionMessageProvider {
       Manifest::Type extension_type) const override;
 
  private:
-  // TODO(treib): Remove this once we've switched to the new system.
-  PermissionMessages GetLegacyPermissionMessages(
-      const PermissionSet* permissions,
-      Manifest::Type extension_type) const;
-
   // Gets the permission messages for the API permissions. Also adds any
   // permission IDs from API Permissions to |permission_ids|.
   // TODO(sashab): Deprecate the |permissions| argument, and rename this to
@@ -78,16 +61,6 @@ class ChromePermissionMessageProvider : public PermissionMessageProvider {
       const PermissionSet* permissions,
       PermissionIDSet* permission_ids,
       Manifest::Type extension_type) const;
-
-  // Applies coalescing rules and writes the resulting messages and their
-  // details into |message_strings| and |message_details_strings|.
-  // TODO(treib): Remove this method as soon as we've fully switched to the
-  // new system.
-  void CoalesceWarningMessages(
-      const PermissionSet* permissions,
-      Manifest::Type extension_type,
-      std::vector<base::string16>* message_strings,
-      std::vector<base::string16>* message_details_strings) const;
 
   // Returns true if |new_permissions| has an elevated API privilege level
   // compared to |old_permissions|.
