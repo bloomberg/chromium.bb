@@ -74,7 +74,7 @@ std::string BluetoothLowEnergyDeviceMac::GetIdentifier() const {
 }
 
 uint32 BluetoothLowEnergyDeviceMac::GetBluetoothClass() const {
-  return 0;
+  return 0x1F00;  // Unspecified Device Class
 }
 
 std::string BluetoothLowEnergyDeviceMac::GetAddress() const {

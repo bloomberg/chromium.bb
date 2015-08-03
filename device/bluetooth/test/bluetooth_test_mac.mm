@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/bluetooth/test/bluetooth_test_mac.h"
+
 #include "base/strings/string_number_conversions.h"
 #include "device/bluetooth/bluetooth_adapter_mac.h"
-#include "device/bluetooth/test/bluetooth_test_mac.h"
 #include "device/bluetooth/test/mock_bluetooth_central_manager_mac.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 
@@ -18,19 +19,20 @@ namespace device {
 
 namespace {
 
-CBPeripheral* CreateMockPeripheral(NSString* identifier) {
+CBPeripheral* CreateMockPeripheral(NSString* peripheral_identifier) {
   Class peripheral_class = NSClassFromString(@"CBPeripheral");
   id mock_peripheral = [OCMockObject mockForClass:[peripheral_class class]];
-  [static_cast<CBPeripheral*>(
-      [[mock_peripheral stub] andReturnValue:@(CBPeripheralStateDisconnected)])
+  [[[mock_peripheral stub] andReturnValue:@(CBPeripheralStateDisconnected)]
       performSelector:@selector(state)];
-  [[[mock_peripheral stub] andReturn:[NSString string]] name];
   Class uuid_class = NSClassFromString(@"NSUUID");
   [[[mock_peripheral stub]
       andReturn:[[uuid_class performSelector:@selector(UUID)]
                     performSelector:@selector(initWithUUIDString:)
-                         withObject:identifier]] identifier];
-
+                         withObject:peripheral_identifier]]
+      performSelector:@selector(identifier)];
+  [[[mock_peripheral stub]
+      andReturn:[NSString stringWithUTF8String:BluetoothTest::kTestDeviceName
+                                                   .c_str()]] name];
   return mock_peripheral;
 }
 

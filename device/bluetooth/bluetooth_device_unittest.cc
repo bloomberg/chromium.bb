@@ -12,6 +12,8 @@
 
 #if defined(OS_ANDROID)
 #include "device/bluetooth/test/bluetooth_test_android.h"
+#elif defined(OS_MACOSX)
+#include "device/bluetooth/test/bluetooth_test_mac.h"
 #endif
 
 namespace device {
@@ -63,9 +65,13 @@ TEST(BluetoothDeviceTest, CanonicalizeAddressFormat_RejectsInvalidFormats) {
   }
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Verifies basic device properties, e.g. GetAddress, GetName, ...
-TEST_F(BluetoothTest, DeviceProperties) {
+TEST_F(BluetoothTest, LowEnergyDeviceProperties) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   InitWithFakeAdapter();
   TestBluetoothAdapterObserver observer(adapter_);
 
@@ -82,17 +88,21 @@ TEST_F(BluetoothTest, DeviceProperties) {
   EXPECT_EQ(0, device->GetVendorID());
   EXPECT_EQ(0, device->GetProductID());
   EXPECT_EQ(0, device->GetDeviceID());
-  EXPECT_EQ(base::UTF8ToUTF16("FakeBluetoothDevice"), device->GetName());
-  EXPECT_EQ(true, device->IsPaired());
+  EXPECT_EQ(base::UTF8ToUTF16(kTestDeviceName), device->GetName());
+  EXPECT_FALSE(device->IsPaired());
   BluetoothDevice::UUIDList uuids = device->GetUUIDs();
-  EXPECT_TRUE(ContainsValue(uuids, BluetoothUUID("1800")));
-  EXPECT_TRUE(ContainsValue(uuids, BluetoothUUID("1801")));
+  EXPECT_TRUE(ContainsValue(uuids, BluetoothUUID(kTestUUIDGenericAccess)));
+  EXPECT_TRUE(ContainsValue(uuids, BluetoothUUID(kTestUUIDGenericAttribute)));
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Device with no advertised Service UUIDs.
-TEST_F(BluetoothTest, DeviceNoUUIDs) {
+TEST_F(BluetoothTest, LowEnergyDeviceNoUUIDs) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   InitWithFakeAdapter();
   TestBluetoothAdapterObserver observer(adapter_);
 
@@ -106,7 +116,7 @@ TEST_F(BluetoothTest, DeviceNoUUIDs) {
   BluetoothDevice::UUIDList uuids = device->GetUUIDs();
   EXPECT_EQ(0u, uuids.size());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 // TODO(scheib): Test with a device with no name. http://crbug.com/506415
 // BluetoothDevice::GetAddressWithLocalizedDeviceTypeName() will run, which

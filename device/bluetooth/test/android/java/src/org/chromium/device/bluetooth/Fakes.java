@@ -198,7 +198,7 @@ class Fakes {
 
         @Override
         public int getBondState() {
-            return BluetoothDevice.BOND_BONDED;
+            return BluetoothDevice.BOND_NONE;
         }
 
         @Override
