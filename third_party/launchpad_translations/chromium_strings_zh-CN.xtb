@@ -57,9 +57,11 @@
 <translation id="8628626585870903697">Chromium 未包含运行打印预览所需的 PDF 查看器。</translation>
 <translation id="7138853919861947730">Chromium 可能会使用网络服务改善您的浏览体验。</translation>
 <translation id="4743926867934016338">接受并搜索</translation>
+<translation id="2636877269779209383">Chromium 需要具有摄像头使用权限，才能批准此网站的分享请求。</translation>
 <translation id="2347108572062610441">此扩展程序更改了 Chromium 启动后系统显示的页面。</translation>
 <translation id="3849925841547750267">抱歉，无法在 Mozilla Firefox 浏览器运行时获取其设置。要将其设置导入 Chromium，请保存您手头的工作并关闭所有 Firefox 窗口，然后点击“继续”。</translation>
 <translation id="7027298027173928763">Chromium无法自动更新到最新版本，因此其中缺少一些非常棒的新功能和安全修复程序。要获得这些内容，您需要手动重新安装Chromium。</translation>
+<translation id="1816404578968201294">Chromium 需要具有位置信息访问权限，才能批准此网站的分享请求。</translation>
 <translation id="2718390899429598676">为了提高安全性，Chromium 将对您的数据进行加密。</translation>
 <translation id="8897323336392112261">它还能够控制您启动Chromium或点击“主页”按钮后系统显示的页面。</translation>
 <translation id="4330585738697551178">已知此模块与 Chromium 存在冲突。</translation>
@@ -192,10 +194,12 @@
 <translation id="705851970750939768">更新 Chromium</translation>
 <translation id="5772805321386874569">（需要<ph name="BEGIN_BUTTON"/>重新启动<ph name="END_BUTTON"/> Chromium）</translation>
 <translation id="1688750314291223739">您可以设置同步以将个性化浏览器功能保存到网上，以便在任意计算机上的 Chromium 中使用这些功能。</translation>
+<translation id="8033665941300843262">Chromium 需要具有这些功能的使用权限，才能批准此网站的分享请求。</translation>
 <translation id="8610831143142469229">对防火墙或防病毒软件进行设置，以允许 Chromium 访问该网络。</translation>
 <translation id="6424492062988593837">Chromium 刚刚经过了改进！新版本已推出。</translation>
 <translation id="811857857463334932">此计算机将不再接收Chromium更新，因为其硬件不再受支持。</translation>
 <translation id="2910007522516064972">关于 Chromium(&amp;C)</translation>
+<translation id="6637001341228460105">Chromium 需要具有麦克风使用权限，才能批准此网站的分享请求。</translation>
 <translation id="8453117565092476964">安装程序归档损坏或无效。请重新下载 Chromium。</translation>
 <translation id="2558641060352364164">此网站使用的 Chromium 内嵌框架插件即将不受支持。请卸载该插件，然后升级到新型浏览器。</translation>
 <translation id="3889543394854987837">点击您的姓名即可打开Chromium并开始浏览。</translation>

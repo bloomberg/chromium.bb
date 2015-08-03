@@ -124,6 +124,7 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 <translation id="7019652137705190998">Siirry incognito-tilaan ja selaa yksityisesti tai kirjaudu tilapäisesti.</translation>
 <translation id="932327136139879170">Etusivu</translation>
 <translation id="1061441684050139317">Chrome tarvitsee mikrofonin käyttöoikeuden voidakseen jakaa sen tämän sivuston kanssa.</translation>
+<translation id="5302048478445481009">Kieli</translation>
 <translation id="963967414714199900">Viimeisin synkronointi: juuri nyt</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, verkkosovellus. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Korvaa tiedosto.</translation>
@@ -315,7 +316,6 @@ Palaa painamalla edellinen-painiketta.</translation>
 <translation id="1530275467657053295">Muokattu toimintopainike</translation>
 <translation id="4619298195800598081">Avaa alkup. uudella välilehd.</translation>
 <translation id="8798099450830957504">Oletus</translation>
-<translation id="5308603654685598744">Kun tämä ominaisuus on käytössä, Chrome tarjoaa vieraskielisten sivujen käännöksiä Google Kääntäjän avulla.</translation>
 <translation id="2409301052052350563">Ääntä toistetaan</translation>
 <translation id="4002066346123236978">Nimi</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE"/> suljettiin</translation>

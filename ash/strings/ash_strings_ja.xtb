@@ -34,6 +34,7 @@
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME"/> へ画面を拡張しています</translation>
 <translation id="8206859287963243715">携帯電話</translation>
 <translation id="6596816719288285829">IP アドレス</translation>
+<translation id="8517041960877371778"><ph name="DEVICE_TYPE"/> は電源がオンでも充電できない可能性があります。</translation>
 <translation id="3621712662352432595">オーディオ設定</translation>
 <translation id="1812696562331527143">入力方法を <ph name="INPUT_METHOD_ID"/>*（<ph name="BEGIN_LINK"/>サードパーティ<ph name="END_LINK"/>）に変更しました。
 切り替えるには Shift+Alt キーを押します。</translation>
@@ -103,6 +104,7 @@
 <translation id="3963445509666917109">スピーカー（内蔵）</translation>
 <translation id="1747827819627189109">画面キーボードが有効です</translation>
 <translation id="2208323208084708176">デスクトップ統合モード</translation>
+<translation id="5759815399269068793">外付けのディスプレイを接続している間は、カバーを閉じても <ph name="DEVICE_TYPE"/> を使い続けることができます。</translation>
 <translation id="2825619548187458965">シェルフ</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -138,7 +140,6 @@
 <translation id="2761704814324807722">ステータス トレイ、時刻 <ph name="TIME"/>、<ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">ロック</translation>
 <translation id="2805756323405976993">アプリ</translation>
-<translation id="8697119993436624257">新しいログイン画面が無効になっています</translation>
 <translation id="2872961005593481000">終了</translation>
 <translation id="3433830597744061105">アカウントを管理</translation>
 <translation id="742594950370306541">カメラが使用中です。</translation>
@@ -147,6 +148,7 @@
 <translation id="511445211639755999"><ph name="RESOLUTION"/>、<ph name="OVERSCAN"/></translation>
 <translation id="3019353588588144572">バッテリーがフル充電されるまであと: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">画面拡大鏡</translation>
+<translation id="7957227661277029961"><ph name="DEVICE_TYPE"/> は電源がオンでも充電できない可能性があります。正規の充電器のご利用をおすすめします。</translation>
 <translation id="882279321799040148">クリックして表示</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> は <ph name="SPECIFIED_RESOLUTION"/> に対応していません。解像度は <ph name="FALLBACK_RESOLUTION"/> に変更されました</translation>
@@ -157,7 +159,6 @@
 <translation id="5977415296283489383">ヘッドホン</translation>
 <translation id="225680501294068881">デバイスをスキャンしています...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/> (<ph name="SHORT_WEEKDAY"/>)</translation>
-<translation id="3527846106059622359">新しいログイン画面が有効になっています</translation>
 <translation id="5978382165065462689">リモート サポート経由で画面の制御を共有しています。</translation>
 <translation id="737451040872859086">マイク（内蔵）</translation>
 <translation id="2475982808118771221">エラーが発生しました</translation>

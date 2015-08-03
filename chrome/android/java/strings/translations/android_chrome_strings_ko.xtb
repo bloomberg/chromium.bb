@@ -81,6 +81,7 @@
 <translation id="119944043368869598">모두 삭제</translation>
 <translation id="7665369617277396874">계정 추가</translation>
 <translation id="6458785801851713928">도메인에 대해 동기화를 사용할 수 없습니다.</translation>
+<translation id="8275818695183729150">허용(검색주소창 검색)</translation>
 <translation id="7788788617745289808">이 사이트에 공유하려면 Chrome에 카메라 액세스 권한이 있어야 합니다.</translation>
 <translation id="7765158879357617694">이동</translation>
 <translation id="2731700343119398978">잠시 기다려 주세요...</translation>
@@ -124,6 +125,7 @@
 <translation id="7019652137705190998">시크릿 모드를 사용하여 비공개로 탐색하거나 일시적으로 로그인</translation>
 <translation id="932327136139879170">홈</translation>
 <translation id="1061441684050139317">이 사이트에 공유하려면 Chrome에 마이크 액세스 권한이 있어야 합니다.</translation>
+<translation id="5302048478445481009">언어</translation>
 <translation id="963967414714199900">최근 동기화: 방금 전</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, 웹 앱. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">파일 바꾸기</translation>
@@ -315,7 +317,6 @@
 <translation id="1530275467657053295">작업 버튼 맞춤설정</translation>
 <translation id="4619298195800598081">새 탭에서 원본 이미지 열기</translation>
 <translation id="8798099450830957504">기본값</translation>
-<translation id="5308603654685598744">이 기능을 사용하도록 설정하면 Chrome에서 Google 번역을 사용하여 외국어로 작성된 페이지에 대한 번역을 제공합니다.</translation>
 <translation id="2409301052052350563">오디오 재생 중</translation>
 <translation id="4002066346123236978">제목</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE"/> 닫음</translation>

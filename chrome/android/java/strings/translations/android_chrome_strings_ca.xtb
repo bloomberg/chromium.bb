@@ -124,6 +124,7 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="7019652137705190998">Passeu al mode d'incògnit per navegar de manera privada o per iniciar la sessió temporalment</translation>
 <translation id="932327136139879170">Pàgina d'inici</translation>
 <translation id="1061441684050139317">Chrome necessita accés al micròfon per compartir-lo amb aquest lloc web.</translation>
+<translation id="5302048478445481009">Idioma</translation>
 <translation id="963967414714199900">Última sincronització: ara mateix</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, aplicació web. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Substitueix el fitxer</translation>
@@ -315,7 +316,6 @@ Premeu el botó Enrere per sortir-ne.</translation>
 <translation id="1530275467657053295">Botó d'acció personalitzat</translation>
 <translation id="4619298195800598081">Obre imatge orig. a pest. nova</translation>
 <translation id="8798099450830957504">Predeterminat</translation>
-<translation id="5308603654685598744">Quan aquesta funció està activada, Chrome oferirà la possibilitat de traduir pàgines escrites en altres idiomes mitjançant Traductor de Google.</translation>
 <translation id="2409301052052350563">L'àudio s'està reproduint</translation>
 <translation id="4002066346123236978">Títol</translation>
 <translation id="213279576345780926">Pestanya <ph name="TAB_TITLE"/> tancada</translation>

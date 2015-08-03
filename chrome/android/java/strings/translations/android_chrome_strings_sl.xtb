@@ -81,6 +81,7 @@
 <translation id="119944043368869598">Izbriši vse</translation>
 <translation id="7665369617277396874">Dodaj račun</translation>
 <translation id="6458785801851713928">Sinhronizacija ni na voljo za vašo domeno.</translation>
+<translation id="8275818695183729150">Omogočeno (za iskanja v naslovni vrstici)</translation>
 <translation id="7788788617745289808">Chrome potrebuje dostop do kamere, če želite, da temu spletnemu mestu omogoči dostop do nje.</translation>
 <translation id="7765158879357617694">Premakni</translation>
 <translation id="2731700343119398978">Počakajte ...</translation>
@@ -124,6 +125,7 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="7019652137705190998">Izberite način brez beleženja zgodovine, če želite zasebno brskati ali če se želite začasno prijaviti</translation>
 <translation id="932327136139879170">Domov</translation>
 <translation id="1061441684050139317">Chrome potrebuje dostop do mikrofona, če želite, da temu spletnemu mestu omogoči dostop do njega.</translation>
+<translation id="5302048478445481009">Jezik</translation>
 <translation id="963967414714199900">Zadnja sinhronizacija: pravkar</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, spletna aplikacija. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Zamenjava datoteke</translation>
@@ -315,7 +317,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="1530275467657053295">Gumb za dejanje po meri</translation>
 <translation id="4619298195800598081">Izvirna slika na novem zavihku</translation>
 <translation id="8798099450830957504">Privzeto</translation>
-<translation id="5308603654685598744">Kadar je ta funkcija vklopljena, Chrome ponuja prevajanje strani v drugih jezikih z Google Prevajalnikom.</translation>
 <translation id="2409301052052350563">Zvok se predvaja</translation>
 <translation id="4002066346123236978">Naslov</translation>
 <translation id="213279576345780926">Zaprt zavihek: <ph name="TAB_TITLE"/></translation>

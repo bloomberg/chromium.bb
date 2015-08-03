@@ -68,9 +68,11 @@
 <translation id="8628626585870903697">Chromium, Baskı Önizleme için gerekli olan PDF görüntüleyiciyi içermez.</translation>
 <translation id="7138853919861947730">Chromium, tarama deneyiminizi iyileştirmek için Web hizmetlerinden yararlanabilir.</translation>
 <translation id="4743926867934016338">Kabul Et ve Ara</translation>
+<translation id="2636877269779209383">Chromium'un, bu siteyle paylaşmak için kameraya erişmesi gerekiyor.</translation>
 <translation id="2347108572062610441">Bu uzantı, Chromium'u başlattığınızda gösterilen sayfayı değiştirdi.</translation>
 <translation id="3849925841547750267">Maalesef bu tarayıcı çalışırken Mozilla Firefox ayarlarınız kullanılamaz. Bu ayarları Chromium'a içe aktarmak için çalışmanızı kaydedin ve tüm Firefox pencerelerini kapatın. Sonra Devam'ı tıklatın.</translation>
 <translation id="7027298027173928763">Chromium en yeni sürüme güncellenemedi, bundan dolayı yeni ve harika özelliklerin yanı sıra güvenlik düzeltmelerinden mahrum kalıyorsunuz. Chromium'u manuel olarak yeniden yüklemelisiniz.</translation>
+<translation id="1816404578968201294">Chromium'un, bu siteyle paylaşmak için konum bilgilerine erişmesi gerekiyor.</translation>
 <translation id="2718390899429598676">Chromium ek güvenlik için verilerinizi şifreler.</translation>
 <translation id="8897323336392112261">Ayrıca Chromium'u başlattığınızda veya Ana Sayfa düğmesini tıkladığınızda gösterilecek sayfayı da denetler.</translation>
 <translation id="4330585738697551178">Bu modülün Chromium'la çakıştığı biliniyor.</translation>
@@ -213,11 +215,13 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="705851970750939768">Chromium'u güncelle</translation>
 <translation id="5772805321386874569">(Chromium'un <ph name="BEGIN_BUTTON"/>yeniden başlatılmasını<ph name="END_BUTTON"/> gerektirir)</translation>
 <translation id="1688750314291223739">Kişiselleştirilmiş tarayıcı özelliklerinizi Web'e kaydetmek ve herhangi bir bilgisayardan Chromium ile bu özelliklere erişmek için senkronizasyonu ayarlayın.</translation>
+<translation id="8033665941300843262">Chromium, bu siteyle paylaşmak için erişim izinlerine gerek duyuyor.</translation>
 <translation id="8610831143142469229">Güvenlik duvarınızın veya virüsten korunma programınızın ayarlarından, Chromium'un
         ağa erişmesine izin verin.</translation>
 <translation id="6424492062988593837">Chromium daha da iyi hale geldi! Yeni bir sürüm var.</translation>
 <translation id="811857857463334932">Bu bilgisayarın donanımı artık desteklenmediğinden, Chromium güncellemelerini artık almayacak.</translation>
 <translation id="2910007522516064972">&amp;Chromium hakkında</translation>
+<translation id="6637001341228460105">Chromium'un, bu siteyle paylaşmak için mikrofona erişmesi gerekiyor.</translation>
 <translation id="8453117565092476964">Yükleyici arşivi bozuk veya geçersiz. Lütfen Chromium'u yeniden indirin.</translation>
 <translation id="2558641060352364164">Bu site, kısa bir süre sonra artık destek verilmeyecek olan Chromium Frame eklentisini kullanıyor. Lütfen bu eklentinin yüklemesini kaldırın ve modern bir tarayıcı sürümüne geçin.</translation>
 <translation id="3889543394854987837">Chromium'u açmak ve göz atmaya başlamak için adınızı tıklayın.</translation>

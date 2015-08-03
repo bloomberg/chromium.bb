@@ -83,7 +83,7 @@
 <translation id="739024184232394898">其他...</translation>
 <translation id="383465348367842624">「<ph name="ATSIGN"/>」後面的部分不應包含「<ph name="INVALIDCHARACTER"/>」符號。</translation>
 <translation id="5468998798572797635">退出全螢幕</translation>
-<translation id="3822383571486410024">請將這段文字增長至 <ph name="MIN_CHARACTERS"/> 個字元以上 (目前使用字元數：<ph name="CURRENT_LENGTH"/>)。</translation>
+<translation id="3822383571486410024">請將這段文字加長到 <ph name="MIN_CHARACTERS"/> 個字元以上 (目前使用字元數：<ph name="CURRENT_LENGTH"/>)。</translation>
 <translation id="5546461542133609677">取消靜音</translation>
 <translation id="6663448176199120256">最近的搜尋</translation>
 <translation id="1020833440720551630">將音軌設為靜音</translation>
@@ -116,7 +116,7 @@
 <translation id="6270583010843788609">電影時間軸捲動方塊</translation>
 <translation id="8053789581856978548">搜尋文字欄位</translation>
 <translation id="5641012560118721995">暫停播放</translation>
-<translation id="6404546809543547843">音訊時間拖曳工具</translation>
+<translation id="6404546809543547843">音訊時間點拖曳工具</translation>
 <translation id="1591562245178063882">本月</translation>
 <translation id="6119846243427417423">啟動</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> 個檔案</translation>

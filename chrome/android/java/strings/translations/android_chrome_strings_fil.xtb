@@ -81,6 +81,7 @@
 <translation id="119944043368869598">I-clear lahat</translation>
 <translation id="7665369617277396874">Magdagdag ng account</translation>
 <translation id="6458785801851713928">Hindi available ang pag-sync para sa iyong domain.</translation>
+<translation id="8275818695183729150">Payagan (para sa mga paghahanap sa address bar)</translation>
 <translation id="7788788617745289808">Kailangan ng Chrome ng access sa camera upang maibahagi ito sa site na ito.</translation>
 <translation id="7765158879357617694">Ilipat</translation>
 <translation id="2731700343119398978">Mangyaring maghintay...</translation>
@@ -124,6 +125,7 @@ Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator
 <translation id="7019652137705190998">Mag-incognito upang pribadong mag-browse o pansamantalang mag-sign in</translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="1061441684050139317">Kailangan ng Chrome ng access sa mikropono upang maibahagi ito sa site na ito.</translation>
+<translation id="5302048478445481009">Wika</translation>
 <translation id="963967414714199900">Huling na-sync: ngayon lang</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, web app. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Magpalit ng file</translation>
@@ -315,7 +317,6 @@ Pindutin ang button na bumalik upang lumabas.</translation>
 <translation id="1530275467657053295">Custom na action button</translation>
 <translation id="4619298195800598081">Buksan ang orihinal na larawan sa bagong tab</translation>
 <translation id="8798099450830957504">Default</translation>
-<translation id="5308603654685598744">Kapag naka-on ang feature na ito, mag-aalok ang Chrome na magsalin ng mga page na nakasulat sa iba pang mga wika gamit ang Google Translate.</translation>
 <translation id="2409301052052350563">May nagpe-play na audio</translation>
 <translation id="4002066346123236978">Pamagat</translation>
 <translation id="213279576345780926">Isinarang <ph name="TAB_TITLE"/></translation>

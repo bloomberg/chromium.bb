@@ -34,6 +34,7 @@
 <translation id="6459472438155181876">Inapanua skrini kwenye <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Simu ya Mkononi</translation>
 <translation id="6596816719288285829">Anwani ya IP</translation>
+<translation id="8517041960877371778">Huenda kifaa chako cha <ph name="DEVICE_TYPE"/> kisichaji kikiwa kimewashwa.</translation>
 <translation id="3621712662352432595">Mipangilio ya Sauti</translation>
 <translation id="1812696562331527143">Mbinu yako ingizo imebadilika hadi <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>mhusika mwingine<ph name="END_LINK"/>).
 Bonyeza Shift + Alt ili kubadilisha.</translation>
@@ -103,6 +104,7 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="3963445509666917109">Spika (Ya ndani)</translation>
 <translation id="1747827819627189109">Kibodi ya skrini imewashwa</translation>
 <translation id="2208323208084708176">Hali ya eneo-kazi iliyounganishwa</translation>
+<translation id="5759815399269068793">Unaweza kuendelea kutumia kifaa chako cha <ph name="DEVICE_TYPE"/> kikiwa kimeunganishwa kwenye onyesho la nje, hata kifuniko kikiwa kimefungwa.</translation>
 <translation id="2825619548187458965">Rafu</translation>
 <translation id="4430019312045809116">Kiwango</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -138,7 +140,6 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="2761704814324807722">Treya ya hali, saa <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Funga</translation>
 <translation id="2805756323405976993">Programu</translation>
-<translation id="8697119993436624257">Kiolesura kipya cha kuingia katika akaunti KIMEZIMWA</translation>
 <translation id="2872961005593481000">Zima</translation>
 <translation id="3433830597744061105">Simamia akaunti</translation>
 <translation id="742594950370306541">Kamera inatumika.</translation>
@@ -147,6 +148,7 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="3019353588588144572">Muda unaosalia hadi betri itakapochajiwa kikamilifu, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Kikuza skrini</translation>
+<translation id="7957227661277029961">Huenda kifaa chako cha <ph name="DEVICE_TYPE"/> kisichaji kikiwa kimewashwa. Jaribu kutumia chaja rasmi.</translation>
 <translation id="882279321799040148">Bofya ili kutazama</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> haitumiki kwa <ph name="SPECIFIED_RESOLUTION"/>. Ubora ulibadilishwa hadi <ph name="FALLBACK_RESOLUTION"/></translation>
@@ -157,7 +159,6 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="5977415296283489383">Vipokea sauti</translation>
 <translation id="225680501294068881">Inatambazaa vifaa...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
-<translation id="3527846106059622359">Kiolesura kipya cha kuingia katika akaunti KIMEWASHWA</translation>
 <translation id="5978382165065462689">Kushiriki udhibiti wa skrini yako kupitia Usaidizi wa Mbali.</translation>
 <translation id="737451040872859086">Maikrofoni (Ya Ndani)</translation>
 <translation id="2475982808118771221">Hitilafu fulani imetokea</translation>

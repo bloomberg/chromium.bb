@@ -81,6 +81,7 @@
 <translation id="119944043368869598">Удалить все</translation>
 <translation id="7665369617277396874">Добавить аккаунт</translation>
 <translation id="6458785801851713928">В вашем домене синхронизация отключена</translation>
+<translation id="8275818695183729150">Разрешать (для поиска в адресной строке)</translation>
 <translation id="7788788617745289808">Предоставьте браузеру Chrome доступ к камере, чтобы пользоваться ею на этом сайте.</translation>
 <translation id="7765158879357617694">Переместить</translation>
 <translation id="2731700343119398978">Подождите…</translation>
@@ -124,6 +125,7 @@
 <translation id="7019652137705190998">Используйте режим инкогнито для анонимного просмотра и временного доступа</translation>
 <translation id="932327136139879170">Главная страница</translation>
 <translation id="1061441684050139317">Предоставьте браузеру Chrome доступ к микрофону, чтобы пользоваться им на этом сайте.</translation>
+<translation id="5302048478445481009">Язык</translation>
 <translation id="963967414714199900">Синхронизировано только что</translation>
 <translation id="2206488550163399966">Приложение &quot;<ph name="APP_NAME"/>&quot; (<ph name="APP_URL"/>)</translation>
 <translation id="200669432486043882">Заменить файл</translation>
@@ -315,7 +317,6 @@
 <translation id="1530275467657053295">Настраиваемая кнопка</translation>
 <translation id="4619298195800598081">Оригинал в новой вкладке</translation>
 <translation id="8798099450830957504">По умолчанию</translation>
-<translation id="5308603654685598744">Если включить эту функцию, Chrome будет предлагать перевести страницы на другие языки с помощью приложения &quot;Google Переводчик&quot;.</translation>
 <translation id="2409301052052350563">Воспроизводится аудио</translation>
 <translation id="4002066346123236978">Название</translation>
 <translation id="213279576345780926">Вкладка &quot;<ph name="TAB_TITLE"/>&quot; закрыта</translation>

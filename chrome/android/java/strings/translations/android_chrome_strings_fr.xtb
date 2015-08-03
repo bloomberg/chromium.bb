@@ -124,6 +124,7 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 <translation id="7019652137705190998">Mode navigation privée sur le Web ou connexion temporaire</translation>
 <translation id="932327136139879170">Accueil</translation>
 <translation id="1061441684050139317">Chrome doit disposer de l'accès au micro pour le partager avec ce site.</translation>
+<translation id="5302048478445481009">Langue</translation>
 <translation id="963967414714199900">Dernière synchronisation il y a quelques secondes</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, application Web : <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Remplacer un fichier</translation>
@@ -315,7 +316,6 @@ Appuyez sur le bouton &quot;Retour&quot; pour quitter ce mode.</translation>
 <translation id="1530275467657053295">Bouton d'action personnalisé</translation>
 <translation id="4619298195800598081">Ouvrir original autre onglet</translation>
 <translation id="8798099450830957504">Par défaut</translation>
-<translation id="5308603654685598744">Si cette fonctionnalité est activée, une proposition de traduction des pages rédigées dans d'autres langues à l'aide de Google Traduction vous est envoyée dans Chrome.</translation>
 <translation id="2409301052052350563">Audio en cours de lecture</translation>
 <translation id="4002066346123236978">Titre</translation>
 <translation id="213279576345780926">L'onglet &quot;<ph name="TAB_TITLE"/>&quot; a été fermé.</translation>

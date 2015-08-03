@@ -70,9 +70,11 @@
 <translation id="8628626585870903697">A Chromium nem tartalmazza a PDF Viewer alkalmazást, amely a Nyomtatási előnézet működéséhez szükséges.</translation>
 <translation id="7138853919861947730">A Chromium internetes szolgáltatások használatával javíthatja a böngészési élményt.</translation>
 <translation id="4743926867934016338">Elfogadás és keresés</translation>
+<translation id="2636877269779209383">A Chromiumnak hozzáférésre van szüksége a kamerához, hogy megoszthassa azt a webhellyel.</translation>
 <translation id="2347108572062610441">Ez a bővítmény módosította, hogy melyik oldal jelenjen meg a Chromium indításakor.</translation>
 <translation id="3849925841547750267">Sajnos a Mozilla Firefox beállításai nem érhetők el, amikor a böngésző fut. Ahhoz, hogy importálhassa ezeket a beállításokat a Chromiumba, mentse, amin dolgozik, majd zárja be az összes Firefox-ablakot. Ezután kattintson a &quot;Folytatás&quot; gombra.</translation>
 <translation id="7027298027173928763">A Chromium nem tudott frissíteni a legújabb verzióra, ezért Ön nem rendelkezik a remek új funkciókkal és biztonsági javításokkal. A Chromium kézi újratelepítése szükséges.</translation>
+<translation id="1816404578968201294">A Chromiumnak hozzáférésre van szüksége a helyadatokhoz, hogy megoszthassa azokat a webhellyel.</translation>
 <translation id="2718390899429598676">A nagyobb biztonság érdekében a Chromium titkosítja az Ön adatait.</translation>
 <translation id="8897323336392112261">Továbbá azt is szabályozza, hogy melyik oldal jelenik meg a Chromium indításakor vagy a Kezdőlap gombra történő kattintáskor.</translation>
 <translation id="4330585738697551178">Ismereteink szerint ez a modul ütközik a Chromiummal.</translation>
@@ -214,11 +216,13 @@
 <translation id="705851970750939768">A Chromium frissítése</translation>
 <translation id="5772805321386874569">(a Chromium <ph name="BEGIN_BUTTON"/>újraindítását<ph name="END_BUTTON"/> igényli)</translation>
 <translation id="1688750314291223739">A szinkronizálás beállításával személyre szabott beállításait az interneten tárolhatja, így azok elérhetők a Chromiumból bármelyik számítógépen.</translation>
+<translation id="8033665941300843262">A Chromiumnak hozzáférésre van szüksége az engedélyekhez, hogy megoszthassa azokat a webhellyel.</translation>
 <translation id="8610831143142469229">A hálózat elérésének engedélyezése a Chromium számára a
         tűzfal- vagy vírusirtó-beállításokban.</translation>
 <translation id="6424492062988593837">A Chromium most még jobb lett! Új verzió áll rendelkezésre.</translation>
 <translation id="811857857463334932">Mivel a hardver támogatása megszűnik, ez a számítógép a továbbiakban nem kap Chromium-frissítéseket.</translation>
 <translation id="2910007522516064972">A &amp;Chromium névjegye</translation>
+<translation id="6637001341228460105">A Chromiumnak hozzáférésre van szüksége a mikrofonhoz, hogy megoszthassa azt a webhellyel.</translation>
 <translation id="8453117565092476964">A telepítő tömörített állománya megsérült vagy érvénytelen. Kérjük, töltse le újra a Chromium böngészőt.</translation>
 <translation id="2558641060352364164">Ez a webhely a Chromium Frame beépülő modult használja, amelynek támogatása hamarosan megszűnik. Kérjük, távolítsa el, majd frissítsen egy modern böngészőre.</translation>
 <translation id="3889543394854987837">Kattintson a nevére a Chromium megnyitásához és a böngészés megkezdéséhez.</translation>

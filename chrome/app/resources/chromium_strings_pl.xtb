@@ -71,9 +71,11 @@
 <translation id="8628626585870903697">Chromium nie zawiera przeglądarki PDF wymaganej przez podgląd wydruku.</translation>
 <translation id="7138853919861947730">Chromium może poprawić wygodę użytkownika, korzystając z usług internetowych.</translation>
 <translation id="4743926867934016338">Zaakceptuj i szukaj</translation>
+<translation id="2636877269779209383">Chromium potrzebuje dostępu do kamery, by móc ją udostępnić tej stronie.</translation>
 <translation id="2347108572062610441">To rozszerzenie ustawiło inną stronę wyświetlaną po uruchomieniu Chromium.</translation>
 <translation id="3849925841547750267">Niestety, ustawienia Firefoksa są niedostępne, gdy aplikacja jest uruchomiona. Aby importować te ustawienia do Chromium, zapisz bieżącą pracę i zamknij wszystkie okna Firefoksa. Następnie kliknij Kontynuuj.</translation>
 <translation id="7027298027173928763">Nie udało się zaktualizować Chromium do najnowszej wersji, więc nie masz nowych, przydatnych funkcji ani poprawek zabezpieczeń. Musisz ręcznie zainstalować Chromium ponownie.</translation>
+<translation id="1816404578968201294">Chromium potrzebuje dostępu do lokalizacji, by móc ją udostępnić tej stronie.</translation>
 <translation id="2718390899429598676">Dla większego bezpieczeństwa Chromium szyfruje dane.</translation>
 <translation id="8897323336392112261">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chromium lub kliknięciu przycisku strony startowej.</translation>
 <translation id="4330585738697551178">Znane są przypadki konfliktu tego modułu z Chromium.</translation>
@@ -217,11 +219,13 @@ Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub uż
 <translation id="705851970750939768">Zaktualizuj Chromium</translation>
 <translation id="5772805321386874569">(wymaga <ph name="BEGIN_BUTTON"/>ponownego uruchomienia<ph name="END_BUTTON"/> Chromium)</translation>
 <translation id="1688750314291223739">Skonfiguruj synchronizację, by zapisać w internecie własne funkcje przeglądarki i mieć do nich dostęp w Chromium na każdym komputerze.</translation>
+<translation id="8033665941300843262">Chromium potrzebuje dostępu do uprawnień, by móc je udostępnić tej stronie.</translation>
 <translation id="8610831143142469229">Zezwalaj Chromium na korzystanie z sieci w ustawieniach zapory sieciowej
         lub oprogramowania antywirusowego.</translation>
 <translation id="6424492062988593837">Chromium jest teraz jeszcze lepsze! Dostępna jest nowa wersja.</translation>
 <translation id="811857857463334932">Ten komputer nie będzie otrzymywać aktualizacji Chromium, ponieważ zawiera sprzęt, który nie jest już obsługiwany.</translation>
 <translation id="2910007522516064972">&amp;Chromium – informacje</translation>
+<translation id="6637001341228460105">Chromium potrzebuje dostępu do mikrofonu, by móc go udostępnić tej stronie.</translation>
 <translation id="8453117565092476964">Archiwum instalatora jest uszkodzone lub nieprawidłowe. Pobierz Chromium ponownie.</translation>
 <translation id="2558641060352364164">Ta strona korzysta z wtyczki Chromium Frame, która wkrótce nie będzie obsługiwana. Odinstaluj wtyczkę i przejdź na nowoczesną przeglądarkę.</translation>
 <translation id="3889543394854987837">Otwórz Chromium, klikając swoją nazwę i rozpocznij przeglądanie.</translation>

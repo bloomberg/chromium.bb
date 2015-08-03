@@ -81,6 +81,7 @@
 <translation id="119944043368869598">Alles wissen</translation>
 <translation id="7665369617277396874">Account toevoegen</translation>
 <translation id="6458785801851713928">De synchronisatieservice is niet beschikbaar voor je domein.</translation>
+<translation id="8275818695183729150">Toestaan (voor zoekopdrachten via adresbalk)</translation>
 <translation id="7788788617745289808">Chrome heeft cameratoegang nodig om het item te delen met deze site.</translation>
 <translation id="7765158879357617694">Verplaatsen</translation>
 <translation id="2731700343119398978">Even geduld...</translation>
@@ -124,6 +125,7 @@ Je logt in met een beheerd account en geeft de beheerder controle over je Chrome
 <translation id="7019652137705190998">Ga incognito om privé te browsen of tijdelijk in te loggen</translation>
 <translation id="932327136139879170">Startpagina</translation>
 <translation id="1061441684050139317">Chrome heeft microfoontoegang nodig om het item te delen met deze site.</translation>
+<translation id="5302048478445481009">Taal</translation>
 <translation id="963967414714199900">Laatst gesynchroniseerd: zojuist</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, webapp. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Bestand vervangen</translation>
@@ -315,7 +317,6 @@ Klik op de knop 'Terug' om te sluiten.</translation>
 <translation id="1530275467657053295">Knop voor aangepaste actie</translation>
 <translation id="4619298195800598081">Origineel op nieuw tabblad</translation>
 <translation id="8798099450830957504">Standaard</translation>
-<translation id="5308603654685598744">Wanneer deze functie is ingeschakeld, biedt Chrome aan pagina's die zijn geschreven in andere talen, te vertalen met Google Translate.</translation>
 <translation id="2409301052052350563">Audio wordt afgespeeld</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE"/> gesloten</translation>

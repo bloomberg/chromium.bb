@@ -73,9 +73,11 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="8628626585870903697">Chromium does not include the PDF viewer which is required for Print Preview to function.</translation>
 <translation id="7138853919861947730">Chromium may use web services to improve your browsing experience.</translation>
 <translation id="4743926867934016338">Accept &amp; Search</translation>
+<translation id="2636877269779209383">Chromium needs camera access to share it with this site.</translation>
 <translation id="2347108572062610441">This extension has changed the page that is shown when you start Chromium.</translation>
 <translation id="3849925841547750267">Unfortunately, your Mozilla Firefox settings are not available while that browser is running. To import those settings to Chromium, save your work and close all Firefox windows. Then click Continue.</translation>
 <translation id="7027298027173928763">Chromium could not update itself to the latest version, so you are missing out on amazing new features and security fixes. You need to manually reinstall Chromium.</translation>
+<translation id="1816404578968201294">Chromium needs location access to share it with this site.</translation>
 <translation id="2718390899429598676">For added security, Chromium will encrypt your data.</translation>
 <translation id="8897323336392112261">It also controls what page is shown when you start Chromium or click the Home button.</translation>
 <translation id="4330585738697551178">This module is known to conflict with Chromium.</translation>
@@ -222,11 +224,13 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="705851970750939768">Update Chromium</translation>
 <translation id="5772805321386874569">(requires Chromium <ph name="BEGIN_BUTTON"/>restart<ph name="END_BUTTON"/>)</translation>
 <translation id="1688750314291223739">Set up Sync to save your personalised browser features to the web and access them from Chromium on any computer.</translation>
+<translation id="8033665941300843262">Chromium needs permissions access to share them with this site.</translation>
 <translation id="8610831143142469229">Allow Chromium to access the network in your firewall or antivirus
         settings.</translation>
 <translation id="6424492062988593837">Chromium just got better! A new version is available.</translation>
 <translation id="811857857463334932">This computer will no longer receive Chromium updates because its hardware is no longer supported.</translation>
 <translation id="2910007522516064972">About &amp;Chromium</translation>
+<translation id="6637001341228460105">Chromium needs microphone access to share it with this site.</translation>
 <translation id="8453117565092476964">The installer archive is corrupted or invalid. Please download Chromium again.</translation>
 <translation id="2558641060352364164">This site is using the Chromium Frame plug-in which will soon be unsupported. Please uninstall it and upgrade to a modern browser.</translation>
 <translation id="3889543394854987837">Click your name to open Chromium and start browsing.</translation>

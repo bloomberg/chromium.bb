@@ -124,6 +124,7 @@
 <translation id="7019652137705190998">Преминете в режим „инкогнито“, за да сърфирате частно или да влезете временно в профила си</translation>
 <translation id="932327136139879170">Начална страница</translation>
 <translation id="1061441684050139317">Chrome се нуждае от достъп до микрофона, за да го сподели с този сайт.</translation>
+<translation id="5302048478445481009">Език</translation>
 <translation id="963967414714199900">Последно синхронизиране: току-що</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, уеб приложение. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Замяна на файла</translation>
@@ -315,7 +316,6 @@
 <translation id="1530275467657053295">Бутон за персонализирано действие</translation>
 <translation id="4619298195800598081">Оригинал: Отв. в нов раздел</translation>
 <translation id="8798099450830957504">По подразбиране</translation>
-<translation id="5308603654685598744">Когато тази функция е включена, Chrome ще предложи да преведе посредством Google Преводач страниците, написани на други езици.</translation>
 <translation id="2409301052052350563">Възпроизвежда се звук</translation>
 <translation id="4002066346123236978">Заглавие</translation>
 <translation id="213279576345780926">Затворихте „<ph name="TAB_TITLE"/>“</translation>

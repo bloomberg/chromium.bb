@@ -73,9 +73,11 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="8628626585870903697">Chromium bevat niet de pdf-viewer die nodig is om de functie 'Afdrukvoorbeeld' te laten werken.</translation>
 <translation id="7138853919861947730">Chromium gebruikt mogelijk webservices om je surfervaring te verbeteren.</translation>
 <translation id="4743926867934016338">Accepteren en zoeken</translation>
+<translation id="2636877269779209383">Chromium heeft cameratoegang nodig om het item te delen met deze site.</translation>
 <translation id="2347108572062610441">Deze extensie heeft gewijzigd welke pagina wordt weergegeven wanneer je Chromium start.</translation>
 <translation id="3849925841547750267">Je instellingen voor Mozilla Firefox zijn niet beschikbaar terwijl de browser actief is. Als je deze instellingen wilt importeren naar Chromium, slaat je je werk op en sluit je alle Firefox-vensters. Klik vervolgens op 'Doorgaan'.</translation>
 <translation id="7027298027173928763">Chromium kan niet automatisch worden geüpdatet naar de nieuwste versie, waardoor je geweldige nieuwe functies en beveiligingsoplossingen misloopt. Je moet Chromium handmatig opnieuw installeren.</translation>
+<translation id="1816404578968201294">Chromium heeft locatietoegang nodig om het item te delen met deze site.</translation>
 <translation id="2718390899429598676">Je gegevens worden voor extra beveiliging door Chromium gecodeerd.</translation>
 <translation id="8897323336392112261">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je Chromium start of op de knop 'Startpagina' klikt.</translation>
 <translation id="4330585738697551178">Van deze module is bekend dat deze conflicteert met  Chromium.</translation>
@@ -216,10 +218,12 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 <translation id="705851970750939768">Chromium updaten</translation>
 <translation id="5772805321386874569">(je moet Chromium <ph name="BEGIN_BUTTON"/>opnieuw starten<ph name="END_BUTTON"/>)</translation>
 <translation id="1688750314291223739">Stel synchronisatie in om je persoonlijke browserfuncties online op te slaan en toegang te hebben tot deze functies via Chromium, vanaf elke computer.</translation>
+<translation id="8033665941300843262">Chromium heeft toegang tot rechten nodig om ze te delen met deze site.</translation>
 <translation id="8610831143142469229">Chromium via je firewall- of antivirusinstellingen toestaan het netwerk te gebruiken.</translation>
 <translation id="6424492062988593837">Chromium is nu nog beter! Er is een nieuwe versie beschikbaar.</translation>
 <translation id="811857857463334932">Deze computer ontvangt geen Chromium-updates meer omdat de hardware van de computer niet meer wordt ondersteund.</translation>
 <translation id="2910007522516064972">Over &amp;Chromium</translation>
+<translation id="6637001341228460105">Chromium heeft microfoontoegang nodig om het item te delen met deze site.</translation>
 <translation id="8453117565092476964">Het archief van het installatieprogramma is beschadigd of ongeldig. Download Chromium opnieuw.</translation>
 <translation id="2558641060352364164">Deze site maakt gebruik van de plug-in Chromium Frame die binnenkort niet meer wordt ondersteund. Verwijder deze en voer een upgrade naar een moderne browser uit.</translation>
 <translation id="3889543394854987837">Klik op je naam om Chromium te openen en begin met surfen.</translation>

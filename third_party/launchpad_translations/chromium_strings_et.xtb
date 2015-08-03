@@ -71,9 +71,11 @@
 <translation id="8628626585870903697">Chromium ei sisalda PDF-vaaturit, mida on printimise eelvaate jaoks vaja.</translation>
 <translation id="7138853919861947730">Chromium võib kasutada veebiteenuseid sirvimiskogemuse täiustamiseks.</translation>
 <translation id="4743926867934016338">Nõustun, otsi</translation>
+<translation id="2636877269779209383">Chromiumil on vaja kaamerale juurdepääsu selle jagamiseks saidiga.</translation>
 <translation id="2347108572062610441">See laiendus muutis seda, milline leht kuvatakse Chromiumi käivitamisel.</translation>
 <translation id="3849925841547750267">Kahjuks ei ole Mozilla Firefoxi seaded saadaval, kui brauser töötab. Seadete Chromiumi importimiseks salvestage töö ja sulgege kõik Firefoxi aknad. Seejärel klõpsake käsul Jätka.</translation>
 <translation id="7027298027173928763">Chromium ei suutnud ennast uusimale versioonile värskendada, nii et te ei saa kasutada lahedaid uusi funktsioone ja turvaparandusi. Peate Chromiumi käsitsi uuesti installima.</translation>
+<translation id="1816404578968201294">Chromiumil on vaja asukohale juurdepääsu selle jagamiseks saidiga.</translation>
 <translation id="2718390899429598676">Turvalisuse suurendamiseks krüptib Chromium teie andmed.</translation>
 <translation id="8897323336392112261">Lisaks juhib see seda, mis leht kuvatakse Chromiumi käivitamisel või avalehe nupul klõpsamisel.</translation>
 <translation id="4330585738697551178">See moodul põhjustab teadaolevalt Chromiumiga vastuolusid.</translation>
@@ -220,11 +222,13 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
 <translation id="705851970750939768">Värskenda Chromiumi</translation>
 <translation id="5772805321386874569">(nõuab Chromiumi <ph name="BEGIN_BUTTON"/>taaskäivitamist<ph name="END_BUTTON"/>)</translation>
 <translation id="1688750314291223739">Seadistage sünkroonimine, et salvestada isikupärastatud brauserifunktsioonid veebi, misjuhul pääsete igast arvutist Chromiumi kaudu nende juurde.</translation>
+<translation id="8033665941300843262">Chromiumil on vaja lubadele juurdepääsu nende jagamiseks saidiga.</translation>
 <translation id="8610831143142469229">Juurdepääsuks võrgule tulemüüri või viirusetõrje seadetes lubage
         Chromium.</translation>
 <translation id="6424492062988593837">Chromium muutus just veelgi paremaks! Saadaval on uus versioon.</translation>
 <translation id="811857857463334932">See arvuti ei saa enam Chromiumi värskendusi, kuna selle riistvara ei toetata enam.</translation>
 <translation id="2910007522516064972">Teave &amp;Chromiumi kohta</translation>
+<translation id="6637001341228460105">Chromiumil on vaja mikrofonile juurdepääsu selle jagamiseks saidiga.</translation>
 <translation id="8453117565092476964">Installeri arhiiv on rikutud või kehtetu. Laadige Chromium uuesti alla.</translation>
 <translation id="2558641060352364164">See sait kasutab pistikprogrammi Chromium Frame, mille tugi peagi lõpeb. Desinstallige see ja täiendage moodsale brauserile.</translation>
 <translation id="3889543394854987837">Chromiumi avamiseks ja sirvimise alustamiseks klõpsake oma nimel.</translation>

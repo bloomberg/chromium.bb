@@ -222,7 +222,7 @@
 <translation id="8866481888320382733">Помилка аналізу налаштувань правила</translation>
 <translation id="4120075327926916474">Зберігати дані цієї кредитної картки в Google Chrome для заповнення веб-форм?</translation>
 <translation id="6644283850729428850">Це правило більше не використовується.</translation>
-<translation id="1693754753824026215">Повідомлення від сторінки за адресою <ph name="SITE"/>:</translation>
+<translation id="1693754753824026215">Повідомлення від сторінки <ph name="SITE"/>:</translation>
 <translation id="4269787794583293679">(Немає імені користувача)</translation>
 <translation id="7988324688042446538">Закладки для настільного комп’ютера</translation>
 <translation id="8488350697529856933">Застосовується до:</translation>
@@ -240,6 +240,7 @@
 <translation id="2835170189407361413">Очистити форму</translation>
 <translation id="6550675742724504774">Параметри</translation>
 <translation id="8804164990146287819">Політика конфіденційності</translation>
+<translation id="988159990683914416">Конструкція розробника</translation>
 <translation id="7334320624316649418">&amp;Повторити перевпорядкування</translation>
 <translation id="7182878459783632708">Правила не встановлено</translation>
 <translation id="5019198164206649151">Резервний носій пошкоджено</translation>

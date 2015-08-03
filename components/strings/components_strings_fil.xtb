@@ -222,7 +222,7 @@
 <translation id="8866481888320382733">Error sa pag-parse ng mga setting ng patakaran</translation>
 <translation id="4120075327926916474">Gusto mo bang i-save ng Chrome ang impormasyon ng credit card na ito para sa pagkumpleto ng mga form ng web?</translation>
 <translation id="6644283850729428850">Hindi na ginagamit ang patakarang ito.</translation>
-<translation id="1693754753824026215">Isinaad ng pahina sa <ph name="SITE"/> na:</translation>
+<translation id="1693754753824026215">Isinasaad ng page sa <ph name="SITE"/> na:</translation>
 <translation id="4269787794583293679">(Walang username)</translation>
 <translation id="7988324688042446538">Mga bookmark sa desktop</translation>
 <translation id="8488350697529856933">Nalalapat sa</translation>
@@ -240,6 +240,7 @@
 <translation id="2835170189407361413">I-clear ang form</translation>
 <translation id="6550675742724504774">Mga Pagpipilian</translation>
 <translation id="8804164990146287819">Patakaran sa Privacy</translation>
+<translation id="988159990683914416">Bumuo ang Developer</translation>
 <translation id="7334320624316649418">&amp;Gawing muli ang pagbabago sa ayos</translation>
 <translation id="7182878459783632708">Walang nakatakdang mga patakaran</translation>
 <translation id="5019198164206649151">Hindi maganda ang katayuan ng backing store</translation>

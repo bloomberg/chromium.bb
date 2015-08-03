@@ -81,6 +81,7 @@
 <translation id="119944043368869598">Vymazať všetko</translation>
 <translation id="7665369617277396874">Pridať účet</translation>
 <translation id="6458785801851713928">Synchronizácia nie je pre vašu doménu k dispozícii.</translation>
+<translation id="8275818695183729150">Povoliť (pre vyhľadávania v paneli s adresou)</translation>
 <translation id="7788788617745289808">Na zdieľanie obsahu s týmito stránkami vyžaduje Chrome prístup k fotoaparátu.</translation>
 <translation id="7765158879357617694">Presunúť</translation>
 <translation id="2731700343119398978">Počkajte...</translation>
@@ -124,6 +125,7 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="7019652137705190998">Ak chcete prehliadať v súkromí alebo sa len dočasne prihlásiť, prejdite do režimu inkognito.</translation>
 <translation id="932327136139879170">Domov</translation>
 <translation id="1061441684050139317">Na to, aby Chrome mohol s týmito webovými stránkami zdieľať mikrofón, musí mať k nemu prístup.</translation>
+<translation id="5302048478445481009">Jazyk</translation>
 <translation id="963967414714199900">Posledná synchronizácia: práve teraz</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, webová aplikácia: <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Nahradiť súbor</translation>
@@ -315,7 +317,6 @@ Toto zobrazenie ukončíte pomocou tlačidla Späť.</translation>
 <translation id="1530275467657053295">Tlačidlo na spustenie vlastnej akcie</translation>
 <translation id="4619298195800598081">Pôv. obrázok na novej karte</translation>
 <translation id="8798099450830957504">Predvolené</translation>
-<translation id="5308603654685598744">Keď je táto funkcia zapnutá, prehliadač Chrome vám ponúkne preklad stránok napísaných v iných jazykoch pomocou služby Prekladač Google.</translation>
 <translation id="2409301052052350563">Prehráva sa zvuk</translation>
 <translation id="4002066346123236978">Názov</translation>
 <translation id="213279576345780926">Karta <ph name="TAB_TITLE"/> je zavretá</translation>

@@ -83,7 +83,7 @@
 <translation id="739024184232394898">Altres...</translation>
 <translation id="383465348367842624">Un nom d'usuari seguit de &quot;<ph name="ATSIGN"/>&quot; no pot contenir el símbol &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
 <translation id="5468998798572797635">surt de la pantalla completa</translation>
-<translation id="3822383571486410024">Allargueu aquest text a un mínim de <ph name="MIN_CHARACTERS"/> caràcters (ara n'utilitzeu <ph name="CURRENT_LENGTH"/>).</translation>
+<translation id="3822383571486410024">Allargueu aquest text fins a un mínim de <ph name="MIN_CHARACTERS"/> caràcters (ara n'utilitzeu <ph name="CURRENT_LENGTH"/>).</translation>
 <translation id="5546461542133609677">activa el so</translation>
 <translation id="6663448176199120256">Cerques recents</translation>
 <translation id="1020833440720551630">silencia la pista d'àudio</translation>

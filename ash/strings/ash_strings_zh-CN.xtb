@@ -34,6 +34,7 @@
 <translation id="6459472438155181876">正在将屏幕扩展到<ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">蜂窝网络设备</translation>
 <translation id="6596816719288285829">IP 地址</translation>
+<translation id="8517041960877371778">您的 <ph name="DEVICE_TYPE"/> 在开启时可能无法充电。</translation>
 <translation id="3621712662352432595">音频设置</translation>
 <translation id="1812696562331527143">您的输入法已更改为“<ph name="INPUT_METHOD_ID"/>”*（<ph name="BEGIN_LINK"/>第三方<ph name="END_LINK"/>）。
 按 Shift + Alt 键可切换。</translation>
@@ -103,6 +104,7 @@
 <translation id="3963445509666917109">扬声器（内部）</translation>
 <translation id="1747827819627189109">屏幕键盘已启用</translation>
 <translation id="2208323208084708176">统一桌面模式</translation>
+<translation id="5759815399269068793"><ph name="DEVICE_TYPE"/> 连接到外接显示器时，即使合上盖子，也可继续使用。</translation>
 <translation id="2825619548187458965">文件架</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -138,7 +140,6 @@
 <translation id="2761704814324807722">状态栏，时间为<ph name="TIME"/>，<ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">锁定</translation>
 <translation id="2805756323405976993">应用</translation>
-<translation id="8697119993436624257">新版登录界面处于停用状态</translation>
 <translation id="2872961005593481000">关闭</translation>
 <translation id="3433830597744061105">管理帐户</translation>
 <translation id="742594950370306541">摄像头处于使用状态。</translation>
@@ -147,6 +148,7 @@
 <translation id="511445211639755999"><ph name="RESOLUTION"/>，<ph name="OVERSCAN"/></translation>
 <translation id="3019353588588144572">电池电量将在 <ph name="TIME_REMAINING"/>后充满</translation>
 <translation id="3473479545200714844">屏幕放大镜</translation>
+<translation id="7957227661277029961">您的 <ph name="DEVICE_TYPE"/> 在开启时可能无法充电。建议您使用原装充电器。</translation>
 <translation id="882279321799040148">点击即可查看</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/>不支持<ph name="SPECIFIED_RESOLUTION"/>。分辨率已改为<ph name="FALLBACK_RESOLUTION"/></translation>
@@ -157,7 +159,6 @@
 <translation id="5977415296283489383">耳机</translation>
 <translation id="225680501294068881">正在查找设备...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/><ph name="SHORT_WEEKDAY"/></translation>
-<translation id="3527846106059622359">新版登录界面处于启用状态</translation>
 <translation id="5978382165065462689">正在通过远程协助共享您屏幕的控制权限。</translation>
 <translation id="737451040872859086">麦克风（内部）</translation>
 <translation id="2475982808118771221">出现错误</translation>

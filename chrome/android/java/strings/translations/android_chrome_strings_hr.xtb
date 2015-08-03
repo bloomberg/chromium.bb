@@ -124,6 +124,7 @@ Prijavljujete se svojim upravljanim računom i njenom administratoru dajete nadz
 <translation id="7019652137705190998">Anonimni način omogućuje vam privatno pregledavanje ili privremenu prijavu</translation>
 <translation id="932327136139879170">Početna stranica</translation>
 <translation id="1061441684050139317">Chrome treba imati pristup mikrofonu da bi ga dijelio s ovom web-lokacijom.</translation>
+<translation id="5302048478445481009">Jezik</translation>
 <translation id="963967414714199900">Posljednja sinkronizacija: upravo sada</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, web-aplikacija. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Zamijeni datoteku</translation>
@@ -315,7 +316,6 @@ Za izlazak pritisnite gumb Natrag.</translation>
 <translation id="1530275467657053295">Gumb za prilagođenu radnju</translation>
 <translation id="4619298195800598081">Izvornik na novoj kartici</translation>
 <translation id="8798099450830957504">Zadano</translation>
-<translation id="5308603654685598744">Kada je ta značajka uključena, Chrome će nuditi prevođenje stranica napisanih na drugim jezicima Google prevoditeljem.</translation>
 <translation id="2409301052052350563">Reproducira se zvuk</translation>
 <translation id="4002066346123236978">Naslov</translation>
 <translation id="213279576345780926">Zatvorena je kartica <ph name="TAB_TITLE"/></translation>

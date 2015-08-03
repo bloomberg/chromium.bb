@@ -71,9 +71,11 @@
 <translation id="8628626585870903697">Chromium tidak menyertakan penampil PDF yang dibutuhkan agar Pratinjau Cetak berfungsi.</translation>
 <translation id="7138853919861947730">Chromium dapat menggunakan layanan web untuk meningkatkan pengalaman penjelajahan Anda.</translation>
 <translation id="4743926867934016338">Terima &amp; Telusuri</translation>
+<translation id="2636877269779209383">Chromium memerlukan akses kamera untuk membagikannya dengan situs ini.</translation>
 <translation id="2347108572062610441">Ekstensi ini telah mengubah apa yang ditampilkan oleh laman saat Anda memulai Chromium.</translation>
 <translation id="3849925841547750267">Sayangnya, setelan Mozilla Firefox Anda tidak tersedia sewaktu browser berjalan. Untuk mengimpor setelan ke Chromium, simpan pekerjaan dan tutup semua jendela Firefox. Kemudian klik Lanjutkan.</translation>
 <translation id="7027298027173928763">Chromium tidak dapat memperbarui dirinya sendiri ke versi terbaru, jadi Anda ketinggalan perbaikan keamanan dan fitur baru yang keren. Anda perlu memasang ulang Chromium secara manual.</translation>
+<translation id="1816404578968201294">Chromium memerlukan akses lokasi untuk membagikannya dengan situs ini.</translation>
 <translation id="2718390899429598676">Untuk keamanan tambahan, Chromium akan mengenkripsi data Anda.</translation>
 <translation id="8897323336392112261">Juga mengontrol laman apa yang ditampilkan saat Anda memulai Chromium atau mengeklik tombol Beranda.</translation>
 <translation id="4330585738697551178">Modul ini biasanya konflik dengan Chromium.</translation>
@@ -220,11 +222,13 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="705851970750939768">Perbarui Chromium</translation>
 <translation id="5772805321386874569">(Chromium perlu <ph name="BEGIN_BUTTON"/>dimulai ulang<ph name="END_BUTTON"/>)</translation>
 <translation id="1688750314291223739">Siapkan Sinkronisasi untuk menyimpan fitur browser hasil personalisasi Anda ke web dan mengaksesnya dari Chromium di komputer mana saja.</translation>
+<translation id="8033665941300843262">Chromium memerlukan akses izin untuk membagikannya dengan situs ini.</translation>
 <translation id="8610831143142469229">Izinkan Chromium untuk mengakses jaringan di setelan firewall atau antivirus
         Anda.</translation>
 <translation id="6424492062988593837">Chromium jadi semakin baik! Versi baru telah tersedia.</translation>
 <translation id="811857857463334932">Komputer ini tidak akan lagi menerima pembaruan Chromium karena perangkat kerasnya tidak didukung lagi.</translation>
 <translation id="2910007522516064972">Tentang &amp;Chromium</translation>
+<translation id="6637001341228460105">Chromium memerlukan akses mikrofon untuk membagikannya dengan situs ini.</translation>
 <translation id="8453117565092476964">Arsip pemasang rusak atau tidak valid. Unduh Chromium lagi.</translation>
 <translation id="2558641060352364164">Situs ini menggunakan plugin Chromium Frame yang akan segera tidak didukung. Copot pemasangannya dan tingkatkan versi ke browser modern.</translation>
 <translation id="3889543394854987837">Klik nama Anda untuk membuka Chromium dan mulai menjelajah.</translation>

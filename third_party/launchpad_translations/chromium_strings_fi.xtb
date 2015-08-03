@@ -71,9 +71,11 @@
 <translation id="8628626585870903697">Chromium ei sisällä PDF-katseluohjelmaa, joka tarvitaan tulostuksen esikatseluun.</translation>
 <translation id="7138853919861947730">Chromium voi käyttää verkkopalveluita parantaakseen selauskokemusta.</translation>
 <translation id="4743926867934016338">Hyväksy ja hae</translation>
+<translation id="2636877269779209383">Chromium tarvitsee kameran käyttöoikeuden, jotta voi jakaa sen sivustolle.</translation>
 <translation id="2347108572062610441">Tämä laajennus on vaihtanut Chromiumin aloitussivun.</translation>
 <translation id="3849925841547750267">Mozilla Firefoxin asetukset eivät ole käytettävissä selaimen ollessa käynnissä. Jos haluat tuoda ne Chromiumiin, tallenna työsi ja sulje Firefoxin kaikki ikkunat. Valitse sitten Jatka.</translation>
 <translation id="7027298027173928763">Chromium ei voinut päivittää uusimpaan versioon, joten uudet ominaisuudet ja tietoturvapäivitykset eivät ole käytössäsi. Asenna Chromium uudelleen manuaalisesti.</translation>
+<translation id="1816404578968201294">Chromium tarvitsee sijaintisi käyttöoikeuden, jotta voi jakaa sen sivustolle.</translation>
 <translation id="2718390899429598676">Chromium lisää suojausta salaamalla tietosi.</translation>
 <translation id="8897323336392112261">Määrittää myös Chromiumin aloitussivun ja Etusivu-painikkeella avattavan sivun.</translation>
 <translation id="4330585738697551178">Tämän moduulin tiedetään aiheuttavan ristiriitoja Chromiumin kanssa.</translation>
@@ -219,10 +221,12 @@ Kaikki ominaisuudet eivät ehkä ole käytettävissä. Määritä jokin muu prof
 <translation id="705851970750939768">Päivitä Chromium</translation>
 <translation id="5772805321386874569">(vaatii Chromiumin <ph name="BEGIN_BUTTON"/>uudelleenkäynnistyksen<ph name="END_BUTTON"/>)</translation>
 <translation id="1688750314291223739">Määrittämällä synkronoinnin voit tallentaa selaimesi tiedot verkkoon ja käyttää niitä minkä tahansa tietokoneen Chromiumilla.</translation>
+<translation id="8033665941300843262">Chromium tarvitsee lupien käyttöoikeuden, jotta voi jakaa sen sivustolle.</translation>
 <translation id="8610831143142469229">Salli verkon käyttö Chromiumille palomuurin tai virustorjunnan asetuksissa.</translation>
 <translation id="6424492062988593837">Chromiumista tuli juuri entistä parempi! Uusi versio on saatavilla.</translation>
 <translation id="811857857463334932">Tämän tietokoneen Chromium-päivitykset päättyvät, sillä sen laitteistoa ei enää tueta.</translation>
 <translation id="2910007522516064972">Tietoja &amp;Chromiumista</translation>
+<translation id="6637001341228460105">Chromium tarvitsee mikrofonin käyttöoikeuden, jotta voi jakaa sen sivustolle.</translation>
 <translation id="8453117565092476964">Asennusarkisto on virheellinen. Lataa Chromium uudelleen.</translation>
 <translation id="2558641060352364164">Tämä sivusto käyttää Chromium-kehyslaajennusta, jonka tukeminen lopetetaan pian. Poista se ja asenna uudempi selain.</translation>
 <translation id="3889543394854987837">Avaa Chromium klikkaamalla nimeäsi ja aloita selaaminen.</translation>

@@ -73,9 +73,11 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="8628626585870903697">Hindi isinasama ng Chromium ang PDF viewer na kinakailangan upang gumana ang Preview ng Pag-print.</translation>
 <translation id="7138853919861947730">Maaaring gumamit ang Chromium ng mga serbisyo sa web upang mapahusay ang iyong karanasan sa pagba-browse.</translation>
 <translation id="4743926867934016338">Tanggapin at Maghanap</translation>
+<translation id="2636877269779209383">Nangangailangan ang Chromium ng access sa camera upang maibahagi ito sa site na ito.</translation>
 <translation id="2347108572062610441">Binago ng extension na ito ang ipinapakitang page kapag sinimulan mo ang Chronium.</translation>
 <translation id="3849925841547750267">Sa kasamaang palad, hindi available ang mga setting ng iyong Mozilla Firefox habang tumatakbo ang browser na iyon. Upang i-import sa Chromium ang mga setting na iyon, i-save ang iyong gawa at isara ang lahat ng window sa Firefox. Pagkatapos, i-click ang Magpatuloy.</translation>
 <translation id="7027298027173928763">Hindi ma-update ng Chromium ang sarili nito patungo sa pinakabagong bersyon, kaya napapalampas mo ang mahuhusay na bagong feature at pag-aayos sa seguridad. Kailangan mong muling i-install ang Chromium nang manu-mano.</translation>
+<translation id="1816404578968201294">Nangangailangan ang Chromium ng access sa lokasyon upang maibahagi ito sa site na ito.</translation>
 <translation id="2718390899429598676">Para sa karagdagang seguridad, ie-encrypt ng Chromium ang iyong data.</translation>
 <translation id="8897323336392112261">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chromium o na-click ang button ng Home.</translation>
 <translation id="4330585738697551178">Natuklasang sumasalungat sa Chromium ang module na ito.</translation>
@@ -222,11 +224,13 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="705851970750939768">I-update ang Chromium</translation>
 <translation id="5772805321386874569">(kinakailangang <ph name="BEGIN_BUTTON"/>i-restart<ph name="END_BUTTON"/> ang Chromium)</translation>
 <translation id="1688750314291223739">I-set up ang Pag-sync upang i-save ang iyong personalized na mga tampok ng browser sa web at i-access ang mga iyon mula sa Chromium sa anumang computer.</translation>
+<translation id="8033665941300843262">Nangangailangan ang Chromium ng access sa mga pahintulot upang maibahagi ang mga ito sa site na ito.</translation>
 <translation id="8610831143142469229">Payagan ang Chromium na i-access ang network sa mga setting ng iyong firewall
         o antivirus.</translation>
 <translation id="6424492062988593837">Naging mas mahusay na ang Chromium! Available na ang bagong bersyon.</translation>
 <translation id="811857857463334932">Hindi na makakatanggap ng mga update sa Chromium ang computer na ito dahil hindi na sinusuportahan ang hardware nito.</translation>
 <translation id="2910007522516064972">Tungkol sa &amp;Chromium</translation>
+<translation id="6637001341228460105">Nangangailangan ang Chromium ng access sa mikropono upang maibahagi ito sa site na ito.</translation>
 <translation id="8453117565092476964">Sira o di-wasto ang archive ng installer. Mangyaring i-download muli ang Chromium.</translation>
 <translation id="2558641060352364164">Ginagamit ng site na ito ang plugin na Chromium Frame na malapit nang hindi suportahan. Paki-uninstall ito at mag-upgrade sa isang modernong browser.</translation>
 <translation id="3889543394854987837">I-click ang iyong pangalan upang buksan ang Chromium at simulan ang pagba-browse.</translation>

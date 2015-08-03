@@ -71,9 +71,11 @@
 <translation id="8628626585870903697">O Chromium não inclui o visualizador de PDF que é necessário para que a visualização de impressão funcione.</translation>
 <translation id="7138853919861947730">O Chromium pode usar os serviços da web para melhorar sua experiência de navegação.</translation>
 <translation id="4743926867934016338">Aceitar e pesquisar</translation>
+<translation id="2636877269779209383">O Chromium precisa de acesso à câmera para compartilhá-la com este site.</translation>
 <translation id="2347108572062610441">Esta extensão alterou a página que é exibida quando você inicia o Chromium.</translation>
 <translation id="3849925841547750267">Suas configurações do Mozilla Firefox não ficam disponíveis enquanto esse navegador é executado. Para importar essas configurações para o Chromium, salve seu trabalho e feche todas as janelas do Firefox. Em seguida, clique em Continuar.</translation>
 <translation id="7027298027173928763">Não foi possível atualizar o Chromium para a versão mais recente. Com isso, você está perdendo novos recursos e correções de segurança incríveis. Reinstale o Chromium manualmente.</translation>
+<translation id="1816404578968201294">O Chromium precisa de acesso ao local para compartilhá-lo com este site.</translation>
 <translation id="2718390899429598676">Para maior segurança, o Chromium criptografará seus dados.</translation>
 <translation id="8897323336392112261">Controla também qual página deve ser exibida quando você inicia o Chromium ou clica no botão &quot;Página inicial&quot;.</translation>
 <translation id="4330585738697551178">Este módulo é conhecido por entrar em conflito com o Chromium.</translation>
@@ -216,11 +218,13 @@ incomuns e incorretas. Um invasor está tentando fingir ser <ph name="SITE"/>, o
 <translation id="705851970750939768">Atualizar o Chromium</translation>
 <translation id="5772805321386874569">(requer a <ph name="BEGIN_BUTTON"/>reinicialização<ph name="END_BUTTON"/> do Chromium)</translation>
 <translation id="1688750314291223739">Configure a sincronização para salvar suas características de navegador personalizadas na web e acessá-las do Chromium em qualquer computador.</translation>
+<translation id="8033665941300843262">O Chromium precisa de acesso às permissões para compartilhá-las com este site.</translation>
 <translation id="8610831143142469229">Permitir que o Chromium acesse a rede em suas configurações de
         firewall ou antivírus.</translation>
 <translation id="6424492062988593837">O Chromium ficou ainda melhor! Uma nova versão está disponível.</translation>
 <translation id="811857857463334932">Este computador não receberá mais atualizações do Chromium, porque seu hardware não é mais suportado.</translation>
 <translation id="2910007522516064972">Sobre o &amp;Chromium</translation>
+<translation id="6637001341228460105">O Chromium precisa de acesso ao microfone para compartilhá-lo com este site.</translation>
 <translation id="8453117565092476964">O arquivo de instalação está corrompido ou não é válido. Faça o download do Chromium novamente.</translation>
 <translation id="2558641060352364164">Este site está usando o plug-in Chromium Frame, que não será mais compatível em breve. Desinstale-o e faça upgrade para um navegador moderno.</translation>
 <translation id="3889543394854987837">Clique no seu nome para abrir o Chromium e começar a navegar.</translation>

@@ -73,9 +73,11 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="8628626585870903697">„Chromium“ neįtraukta PDF žiūryklė, reikalinga, kad veiktų „Spaudinio peržiūra“.</translation>
 <translation id="7138853919861947730">„Chromium“ gali naudoti žiniatinklio paslaugas naršymo kokybei pagerinti.</translation>
 <translation id="4743926867934016338">Sutikti ir ieškoti</translation>
+<translation id="2636877269779209383">„Chromium“ reikia pasiekti fotoaparatą, kad galėtų bendrinti jį su šia svetaine.</translation>
 <translation id="2347108572062610441">Šis plėtinys pakeitė, kuris puslapis rodomas paleidus „Chromium“.</translation>
 <translation id="3849925841547750267">Apgailestaujame, bet „Mozilla Firefox“ nustatymai nepasiekiami, kol paleista ši naršyklė. Jei norite importuoti šiuos nustatymus į „Chromium“, išsaugokite darbą ir uždarykite visus „Firefox“ langus. Tada spustelėkite „Tęsti“.</translation>
 <translation id="7027298027173928763">„Chromium“ nepavyko atsinaujinti į naujausią versiją, todėl negalite naudoti puikių naujų funkcijų ir saugos pataisymų. Reikės neautomatiškai iš naujo įdiegti „Chromium“.</translation>
+<translation id="1816404578968201294">„Chromium“ reikia pasiekti vietovės informaciją, kad galėtų bendrinti ją su šia svetaine.</translation>
 <translation id="2718390899429598676">Kad būtų papildomai užtikrintas saugumas, „Chromium“ užšifruos jūsų duomenis.</translation>
 <translation id="8897323336392112261">Ji taip pat kontroliuoja, koks puslapis rodomas, kai paleidžiate „Chromium“ arba spustelėjate pagrindinio puslapio mygtuką.</translation>
 <translation id="4330585738697551178">Šis modulis žinomas kaip prieštaraujantis „Chromium“.</translation>
@@ -221,11 +223,13 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="705851970750939768">Atnaujinti „Chromium“</translation>
 <translation id="5772805321386874569">(„Chromium“ būtina <ph name="BEGIN_BUTTON"/>paleisti iš naujo<ph name="END_BUTTON"/>)</translation>
 <translation id="1688750314291223739">Nustatykite sinchronizavimą, kad žiniatinklyje išsaugotumėte suasmenintas naršyklės funkcijas ir pasiektumėte jas iš „Chromium“ bet kuriuo kompiuteriu.</translation>
+<translation id="8033665941300843262">„Chromium“ reikia pasiekti leidimus, kad galėtų bendrinti juos su šia svetaine.</translation>
 <translation id="8610831143142469229">Leiskite „Chromium“ pasiekti tinklą užkardos ar antivirusinės
         programos nustatymuose.</translation>
 <translation id="6424492062988593837">„Chromium“ patobulėjo! Galima nauja versija.</translation>
 <translation id="811857857463334932">Šiame kompiuteryje nebebus gaunami „Chromium“ naujiniai, nes jo aparatinė įranga nebepalaikoma.</translation>
 <translation id="2910007522516064972">Apie &amp;„Chromium“</translation>
+<translation id="6637001341228460105">„Chromium“ reikia pasiekti mikrofoną, kad galėtų bendrinti jį su šia svetaine.</translation>
 <translation id="8453117565092476964">Diegimo programos archyvas sugadintas arba negalioja. Atsisiųskite „Chromium“ dar kartą.</translation>
 <translation id="2558641060352364164">Šioje svetainėje naudojamas „Chromium“ rėmelio papildinys, kuris greitai bus nepalaikomas. Pašalinkite jį ir atsisiųskite modernią naršyklę.</translation>
 <translation id="3889543394854987837">Spustelėkite savo vardą, kad atidarytumėte „Chromium“ ir pradėtumėte naršyti.</translation>

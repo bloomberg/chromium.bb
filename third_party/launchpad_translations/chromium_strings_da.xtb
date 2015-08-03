@@ -71,9 +71,11 @@
 <translation id="8628626585870903697">Chromium inkluderer ikke PDF-fremviseren, som er påkrævet, for at Vis udskrift kan fungere.</translation>
 <translation id="7138853919861947730">Chromium kan bruge webtjenester til at forbedre din søgeoplevelse.</translation>
 <translation id="4743926867934016338">Acceptér, og søg</translation>
+<translation id="2636877269779209383">Chromium skal have adgang til dit kamera, før det kan deles med dette website.</translation>
 <translation id="2347108572062610441">Denne udvidelse har ændret din startside i Chromium.</translation>
 <translation id="3849925841547750267">Dine indstillinger i Mozilla Firefox-indstillinger er desværre ikke tilgængelige, når browseren kører. Hvis du vil importere disse indstillinger til Chromium, skal du gemme dit arbejde og lukke alle Firefox-vinduer. Derefter klikker du på Fortsæt.</translation>
 <translation id="7027298027173928763">Chromium kunne ikke opdatere sig selv til den nyeste version, så du går glip af nye fantastiske funktioner og sikkerhedsrettelser. Du skal geninstallere Chromium manuelt.</translation>
+<translation id="1816404578968201294">Chromium skal have adgang til din placering, før den kan deles med dette website.</translation>
 <translation id="2718390899429598676">Som et ekstra sikkerhedsniveau krypterer Chromium dine data.</translation>
 <translation id="8897323336392112261">Den styrer også, hvilken side der vises, når du åbner Chromium eller klikker på knappen Startside.</translation>
 <translation id="4330585738697551178">Dette modul modstrider Chromium.</translation>
@@ -219,11 +221,13 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="705851970750939768">Opdater Chromium</translation>
 <translation id="5772805321386874569">(kræver en <ph name="BEGIN_BUTTON"/>genstart<ph name="END_BUTTON"/> af Chromium)</translation>
 <translation id="1688750314291223739">Konfigurer Synkronisering for at gemme dine personlige browserfunktioner på nettet, og få adgang til dem fra Chromium på en computer.</translation>
+<translation id="8033665941300843262">Chromium skal have adgang til dine tilladelser, før de kan deles med dette website.</translation>
 <translation id="8610831143142469229">Tillad, at Chromium får adgang til netværket i dine indstillinger for firewall eller
         antivirus.</translation>
 <translation id="6424492062988593837">Chromium er lige blevet bedre! Der er en ny tilgængelig version.</translation>
 <translation id="811857857463334932">Denne computer vil ikke længere modtage Chromium-opdateringer, fordi dens hardware ikke understøttes længere.</translation>
 <translation id="2910007522516064972">Om &amp;Chromium</translation>
+<translation id="6637001341228460105">Chromium skal have adgang til din mikrofon, før den kan deles med dette website.</translation>
 <translation id="8453117565092476964">Installationsarkivet er beskadiget eller ugyldigt. Download Chromium igen.</translation>
 <translation id="2558641060352364164">Dette website anvender Chromium Frame-pluginnet, som snart ikke understøttes længere. Afinstaller det, og opgrader til en moderne browser.</translation>
 <translation id="3889543394854987837">Klik på dit navn for at åbne Chromium og gå i gang med at browse.</translation>

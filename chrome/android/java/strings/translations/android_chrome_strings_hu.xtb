@@ -124,6 +124,7 @@
 <translation id="7019652137705190998">Privát böngészéshez használja az inkognitómódot, vagy jelentkezzen be csak átmenetileg</translation>
 <translation id="932327136139879170">Főoldal</translation>
 <translation id="1061441684050139317">A Chrome-nak rendelkeznie kell hozzáféréssel a mikrofonhoz, hogy megoszthassa ezzel a webhellyel.</translation>
+<translation id="5302048478445481009">Nyelv</translation>
 <translation id="963967414714199900">Utolsó szinkronizálás: most</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, internetes alkalmazás. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Fájl cseréje</translation>
@@ -315,7 +316,6 @@ A kilépéshez nyomja meg a vissza billentyűt.</translation>
 <translation id="1530275467657053295">Egyéni műveletgomb</translation>
 <translation id="4619298195800598081">Eredeti kép megnyitása új lapon</translation>
 <translation id="8798099450830957504">Alapértelmezett</translation>
-<translation id="5308603654685598744">Ha a funkció be van kapcsolva, a Chrome felajánlja az idegen nyelven írt oldalak fordítását a Google Fordítóval.</translation>
 <translation id="2409301052052350563">Hanglejátszás folyamatban</translation>
 <translation id="4002066346123236978">Cím</translation>
 <translation id="213279576345780926">Bezárva: <ph name="TAB_TITLE"/></translation>

@@ -34,6 +34,7 @@
 <translation id="6459472438155181876">화면을 <ph name="DISPLAY_NAME"/>(으)로 확장</translation>
 <translation id="8206859287963243715">휴대전화</translation>
 <translation id="6596816719288285829">IP 주소</translation>
+<translation id="8517041960877371778"><ph name="DEVICE_TYPE"/>이(가) 켜져 있는 동안에는 충전되지 않을 수 있습니다.</translation>
 <translation id="3621712662352432595">오디오 설정</translation>
 <translation id="1812696562331527143">입력 방법이 <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>타사<ph name="END_LINK"/>)(으)로 변경되었습니다.
 전환하려면 Shift+Alt를 누르세요.</translation>
@@ -103,6 +104,7 @@
 <translation id="3963445509666917109">스피커(내부)</translation>
 <translation id="1747827819627189109">터치 키보드 사용 설정됨</translation>
 <translation id="2208323208084708176">통합 바탕화면 모드</translation>
+<translation id="5759815399269068793">외부 디스플레이에 연결되어 있는 동안에는 덮개가 닫혀 있더라도 <ph name="DEVICE_TYPE"/>을(를) 계속 사용할 수 있습니다.</translation>
 <translation id="2825619548187458965">임시보관함</translation>
 <translation id="4430019312045809116">볼륨</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -138,7 +140,6 @@
 <translation id="2761704814324807722">상태 표시줄, 시간 <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">잠금</translation>
 <translation id="2805756323405976993">앱</translation>
-<translation id="8697119993436624257">새 로그인 UI 사용 안함</translation>
 <translation id="2872961005593481000">종료</translation>
 <translation id="3433830597744061105">계정 관리</translation>
 <translation id="742594950370306541">카메라가 사용 중입니다.</translation>
@@ -147,6 +148,7 @@
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="3019353588588144572">배터리 충전이 완료될 때까지 남은 시간은 <ph name="TIME_REMAINING"/>입니다.</translation>
 <translation id="3473479545200714844">화면 돋보기</translation>
+<translation id="7957227661277029961"><ph name="DEVICE_TYPE"/>이(가) 켜져 있는 동안에는 충전되지 않을 수 있습니다. 정품 충전기를 사용하는 것이 좋습니다.</translation>
 <translation id="882279321799040148">클릭하여 보기</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/>에서 <ph name="SPECIFIED_RESOLUTION"/>을(를) 지원하지 않습니다. 해상도가 <ph name="FALLBACK_RESOLUTION"/>(으)로 변경되었습니다.</translation>
@@ -157,7 +159,6 @@
 <translation id="5977415296283489383">헤드폰</translation>
 <translation id="225680501294068881">기기 검색 중...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/> <ph name="SHORT_WEEKDAY"/></translation>
-<translation id="3527846106059622359">새 로그인 UI 사용</translation>
 <translation id="5978382165065462689">원격 지원을 통해 화면 제어 공유</translation>
 <translation id="737451040872859086">마이크(내부)</translation>
 <translation id="2475982808118771221">오류가 발생했습니다.</translation>

@@ -71,9 +71,11 @@
 <translation id="8628626585870903697">Chromium không bao gồm trình xem PDF được yêu cầu để tính năng xem trước bản in hoạt động.</translation>
 <translation id="7138853919861947730">Chromium có thể sử dụng các dịch vụ web để cải thiện trải nghiệm duyệt web của bạn.</translation>
 <translation id="4743926867934016338">Chấp nhận và tìm kiếm</translation>
+<translation id="2636877269779209383">Chromium cần quyền truy cập vào máy ảnh để chia sẻ máy ảnh với trang web này.</translation>
 <translation id="2347108572062610441">Tiện ích này đã thay đổi trang nào được hiển thị khi bạn khởi động Chromium.</translation>
 <translation id="3849925841547750267">Rất tiếc, các cài đặt Mozilla Firefox của bạn không khả dụng khi trình duyệt đó đang chạy. Để nhập các cài đặt đó vào Chromium, hãy lưu công việc của bạn và đóng tất cả các cửa sổ Firefox. Sau đó nhấp vào Tiếp tục.</translation>
 <translation id="7027298027173928763">Chromium không thể tự cập nhật lên phiên bản mới nhất nên bạn đã bỏ lỡ các tính năng mới tuyệt vời và các bản vá bảo mật. Bạn cần cài đặt lại Chromium theo cách thủ công.</translation>
+<translation id="1816404578968201294">Chromium cần quyền truy cập vào vị trí để chia sẻ vị trí với trang web này.</translation>
 <translation id="2718390899429598676">Để bảo mật hơn, Chromium sẽ mã hóa dữ liệu của bạn.</translation>
 <translation id="8897323336392112261">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chromium hoặc nhấp vào nút Trang chủ.</translation>
 <translation id="4330585738697551178">Mô-đun này được xác định xung đột với Chromium.</translation>
@@ -219,11 +221,13 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="705851970750939768">Cập nhật Chromium</translation>
 <translation id="5772805321386874569">(yêu cầu Chromium <ph name="BEGIN_BUTTON"/>khởi động lại<ph name="END_BUTTON"/>)</translation>
 <translation id="1688750314291223739">Thiết lập đồng bộ hóa để lưu các tính năng trình duyệt được cá nhân hóa của bạn vào web và truy cập chúng từ Chromium trên bất kỳ máy tính nào.</translation>
+<translation id="8033665941300843262">Chromium cần quyền truy cập vào các quyền để chia sẻ chúng với trang web này.</translation>
 <translation id="8610831143142469229">Cho phép Chrome truy cập mạng trong cài đặt tường lửa hoặc diệt vi-rút 
         của bạn.</translation>
 <translation id="6424492062988593837">Chromium được cải tiến hơn! Đã có phiên bản mới.</translation>
 <translation id="811857857463334932">Máy tính này sẽ không còn nhận được bản cập nhật của Chromium vì phần cứng của máy không được hỗ trợ nữa.</translation>
 <translation id="2910007522516064972">Giới thiệu về &amp;Chromium</translation>
+<translation id="6637001341228460105">Chromium cần quyền truy cập vào micrô để chia sẻ micrô với trang web này.</translation>
 <translation id="8453117565092476964">Tệp lưu trữ trình cài đặt bị hỏng hoặc không hợp lệ. Hãy tải xuống Chromium lại lần nữa.</translation>
 <translation id="2558641060352364164">Trang web này đang sử dụng plugin Chromium Frame sắp không còn được hỗ trợ. Vui lòng gỡ cài đặt plugin này và nâng cấp lên một trình duyệt hiện đại.</translation>
 <translation id="3889543394854987837">Nhấp vào tên của bạn để mở Chromium và bắt đầu duyệt web.</translation>

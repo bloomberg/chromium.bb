@@ -81,6 +81,7 @@
 <translation id="119944043368869598">全部清除</translation>
 <translation id="7665369617277396874">添加帐户</translation>
 <translation id="6458785801851713928">您的网域不支持同步。</translation>
+<translation id="8275818695183729150">允许（针对地址栏搜索）</translation>
 <translation id="7788788617745289808">Chrome 需要具有摄像头使用权限，才能批准此网站的分享请求。</translation>
 <translation id="7765158879357617694">移动</translation>
 <translation id="2731700343119398978">请稍候...</translation>
@@ -124,6 +125,7 @@
 <translation id="7019652137705190998">进入隐身模式可进行私密浏览或临时登录</translation>
 <translation id="932327136139879170">家庭</translation>
 <translation id="1061441684050139317">Chrome 需要具有麦克风使用权限，才能批准此网站的分享请求。</translation>
+<translation id="5302048478445481009">语言</translation>
 <translation id="963967414714199900">上次同步时间：刚才</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>，网络应用。<ph name="APP_URL"/></translation>
 <translation id="200669432486043882">替换文件</translation>
@@ -315,7 +317,6 @@
 <translation id="1530275467657053295">自定义操作按钮</translation>
 <translation id="4619298195800598081">在新标签页中打开原始图片</translation>
 <translation id="8798099450830957504">默认</translation>
-<translation id="5308603654685598744">该功能处于开启状态时，Chrome 将使用 Google 翻译对其他语言的网页进行翻译。</translation>
 <translation id="2409301052052350563">正在播放音频</translation>
 <translation id="4002066346123236978">标题</translation>
 <translation id="213279576345780926">已关闭<ph name="TAB_TITLE"/></translation>

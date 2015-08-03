@@ -124,6 +124,7 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="7019652137705190998">Włącz tryb incognito, by przeglądać prywatnie lub zalogować się tymczasowo</translation>
 <translation id="932327136139879170">Strona główna</translation>
 <translation id="1061441684050139317">Aby zezwolić stronie na wykorzystanie mikrofonu, Chrome musi mieć do niego dostęp.</translation>
+<translation id="5302048478445481009">Język</translation>
 <translation id="963967414714199900">Ostatnia synchronizacja: przed chwilą</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/> – aplikacja internetowa. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Zastąp plik</translation>
@@ -315,7 +316,6 @@ Aby go wyłączyć, kliknij przycisk Wstecz.</translation>
 <translation id="1530275467657053295">Niestandardowy przycisk polecenia</translation>
 <translation id="4619298195800598081">Otwórz oryginał w nowej karcie</translation>
 <translation id="8798099450830957504">Domyślny</translation>
-<translation id="5308603654685598744">Po włączeniu tej funkcji Chrome będzie proponować tłumaczenie stron w innych językach przez Tłumacza Google.</translation>
 <translation id="2409301052052350563">Odtwarzam dźwięk</translation>
 <translation id="4002066346123236978">Tytuł</translation>
 <translation id="213279576345780926">Zamknięto <ph name="TAB_TITLE"/></translation>

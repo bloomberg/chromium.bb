@@ -71,9 +71,11 @@
 <translation id="8628626585870903697">Pārlūka Chromium komplektācijā nav PDF skatītāja, kas nepieciešams funkcijas Drukas priekšskatījums darbībai.</translation>
 <translation id="7138853919861947730">Lai uzlabotu pārlūkošanu, Chromium var izmantot tīmekļa pakalpojumus.</translation>
 <translation id="4743926867934016338">Pieņemt un meklēt</translation>
+<translation id="2636877269779209383">Chromium sistēmām ir nepieciešama piekļuve kamerai, lai kopīgotu to ar šo vietni.</translation>
 <translation id="2347108572062610441">Šis paplašinājums mainīja iestatījumu, kura lapa tiek parādīta, palaižot pārlūku Chromium.</translation>
 <translation id="3849925841547750267">Diemžēl jūsu Mozilla Firefox iestatījumi nav pieejami pārlūka darbības laikā. Lai šos iestatījumus importētu uz pārlūku Chromium, saglabājiet savu darbu un aizveriet visus Firefox logus. Pēc tam noklikšķiniet uz Turpināt.</translation>
 <translation id="7027298027173928763">Pārlūku Chromium nevarēja automātiski atjaunināt uz jaunāko versiju, tāpēc jums nav pieejamas vairākas jaunas, noderīgas funkcijas un drošības uzlabojumi. Jums manuāli jāpārinstalē pārlūks Chromium.</translation>
+<translation id="1816404578968201294">Chromium sistēmām ir nepieciešama piekļuve atrašanās vietas informācijai, lai kopīgotu to ar šo vietni.</translation>
 <translation id="2718390899429598676">Papildu drošības nolūkos Chromium šifrēs jūsu datus.</translation>
 <translation id="8897323336392112261">Tas nosaka arī to, kāda lapa tiks rādīta, kad atvērsiet pārlūku Chromium vai noklikšķināsiet uz pogas “Sākums”.</translation>
 <translation id="4330585738697551178">Ir zināms, ka šis modulis konfliktē ar Chromium.</translation>
@@ -219,11 +221,13 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="705851970750939768">Atjaunināt Chromium</translation>
 <translation id="5772805321386874569">(ir <ph name="BEGIN_BUTTON"/>jārestartē<ph name="END_BUTTON"/> operētājsistēma Chromium)</translation>
 <translation id="1688750314291223739">Iestatiet sinhronizāciju, lai saglabātu savas personalizētās pārlūka funkcijas tīmeklī un piekļūtu tām no Chromium jebkurā datorā.</translation>
+<translation id="8033665941300843262">Chromium sistēmām ir nepieciešama piekļuve atļaujām, lai kopīgotu tās ar šo vietni.</translation>
 <translation id="8610831143142469229">Atļaušana operētājsistēmai Chromium piekļūt tīklam jūsu ugunsmūra vai pretvīrusu programmas
         iestatījumos.</translation>
 <translation id="6424492062988593837">Lietojumprogramma Chromium ir uzlabota! Ir pieejama jauna versija.</translation>
 <translation id="811857857463334932">Šis dators vairs nesaņems Chromium atjauninājumus, jo tā aparatūra vairs netiek atbalstīta.</translation>
 <translation id="2910007522516064972">Par &amp;Chromium</translation>
+<translation id="6637001341228460105">Chromium sistēmām ir nepieciešama piekļuve mikrofonam, lai kopīgotu to ar šo vietni.</translation>
 <translation id="8453117565092476964">Instalēšanas programmas arhīvs ir bojāts vai nav derīgs. Lejupielādējiet Chromium vēlreiz.</translation>
 <translation id="2558641060352364164">Šajā vietnē tiek izmantots spraudnis Chromium Frame, kas drīzumā vairs netiks atbalstīts. Lūdzu, atinstalējiet to un veiciet jaunināšanu uz modernu pārlūku.</translation>
 <translation id="3889543394854987837">Noklikšķiniet uz sava vārda, lai atvērtu Chromium un sāktu pārlūkošanu.</translation>

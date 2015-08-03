@@ -81,6 +81,7 @@
 <translation id="119944043368869598">Tümünü temizle</translation>
 <translation id="7665369617277396874">Hesap ekle</translation>
 <translation id="6458785801851713928">Senkronizasyon özelliği alan adınızda kullanılamıyor.</translation>
+<translation id="8275818695183729150">İzin ver (adres çubuğu aramaları için)</translation>
 <translation id="7788788617745289808">Chrome'un kamerayı bu siteyle paylaşması için kamera erişimine ihtiyacı var.</translation>
 <translation id="7765158879357617694">Taşı</translation>
 <translation id="2731700343119398978">Lütfen bekleyin...</translation>
@@ -124,6 +125,7 @@ Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilin
 <translation id="7019652137705190998">Gizli olarak göz atmak veya geçici olarak oturum açmak için gizli moda geçin.</translation>
 <translation id="932327136139879170">Ana Sayfa</translation>
 <translation id="1061441684050139317">Chrome'un mikrofonu bu siteyle paylaşması için mikrofon erişimine ihtiyacı var.</translation>
+<translation id="5302048478445481009">Dil</translation>
 <translation id="963967414714199900">Son senkronizasyon: Az önce</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, web uygulaması. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Dosyayı değiştir</translation>
@@ -315,7 +317,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="1530275467657053295">Özel işlem düğmesi</translation>
 <translation id="4619298195800598081">Orijinal resmi yeni sekmede aç</translation>
 <translation id="8798099450830957504">Varsayılan</translation>
-<translation id="5308603654685598744">Bu özellik açıldığında, Chrome, başka dilde yazılmış sayfaları Google Çeviri'yi kullanarak çevirmeyi önerir.</translation>
 <translation id="2409301052052350563">Ses çalınıyor</translation>
 <translation id="4002066346123236978">Başlık</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE"/> kapatıldı</translation>

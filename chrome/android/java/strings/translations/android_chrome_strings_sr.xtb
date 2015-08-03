@@ -124,6 +124,7 @@
 <translation id="7019652137705190998">Пређите у режим без архивирања да бисте прегледали приватно или се привремено пријавили</translation>
 <translation id="932327136139879170">Почетна</translation>
 <translation id="1061441684050139317">Chrome-у је потребан приступ за микрофон да би га делио са овим сајтом.</translation>
+<translation id="5302048478445481009">Језик</translation>
 <translation id="963967414714199900">Последња синхронизација: малопре</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, веб-апликација. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Замени датотеку</translation>
@@ -315,7 +316,6 @@
 <translation id="1530275467657053295">Прилагођено дугме за радњу</translation>
 <translation id="4619298195800598081">Отвори оригин. у новој картици</translation>
 <translation id="8798099450830957504">Подразумевано</translation>
-<translation id="5308603654685598744">Када је ова функција укључена, Chrome ће нудити да преводи странице написане на другим језицима помоћу Google преводиоца.</translation>
 <translation id="2409301052052350563">Чује се звук</translation>
 <translation id="4002066346123236978">Наслов</translation>
 <translation id="213279576345780926">Затворили сте картицу <ph name="TAB_TITLE"/></translation>

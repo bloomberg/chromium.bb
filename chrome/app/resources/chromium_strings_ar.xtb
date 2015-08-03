@@ -71,9 +71,11 @@
 <translation id="8628626585870903697">‏لا يتضمن Chromium عارض PDF المطلوب لإجراء معاينة الطباعة.</translation>
 <translation id="7138853919861947730">‏قد يستخدم Chromium خدمات الويب لتحسين تجربة التصفح لديك.</translation>
 <translation id="4743926867934016338">موافقة وبحث</translation>
+<translation id="2636877269779209383">‏يحتاج Chromium الوصول إلى الكاميرا لمشاركتها مع هذا الموقع.</translation>
 <translation id="2347108572062610441">‏غيّرت هذه الإضافة الصفحة التي تظهر عند بدء Chromium.</translation>
 <translation id="3849925841547750267">‏عذرًا، فإن إعدادات موزيلا فَيَرفُكس غير متاحة أثناء تشغيل هذا المتصفح. لاستيراد هذه الإعدادات إلى Chromium، قم بحفظ عملك وإغلاق جميع نوافذ فَيَرفُكس. بعد ذلك انقر على &quot;استمرار&quot;.</translation>
 <translation id="7027298027173928763">‏تعذر تحديث Chromium إلى أحدث إصدار، وبالتالي تفوتك ميزات جديدة رائعة وإصلاحات للأمان. يلزمك إعادة تثبيت Chromium يدويًا.</translation>
+<translation id="1816404578968201294">‏يحتاج Chromium الوصول إلى الموقع لمشاركته مع هذا الموقع.</translation>
 <translation id="2718390899429598676">‏لمزيد من الأمان، سيشفر Chromium بياناتك</translation>
 <translation id="8897323336392112261">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chromium أو النقر على زر الصفحة الرئيسية.</translation>
 <translation id="4330585738697551178">‏هذه الوحدة معروف أنها تتعارض مع Chromium.</translation>
@@ -217,11 +219,13 @@
 <translation id="705851970750939768">‏تحديث Chromium</translation>
 <translation id="5772805321386874569">‏(<ph name="BEGIN_BUTTON"/>إعادة تشغيل<ph name="END_BUTTON"/> Chromium مطلوبة)</translation>
 <translation id="1688750314291223739">‏يمكنك إعداد المزامنة لحفظ ميزات المتصفح المخصصة على الويب والدخول إليها من Chromium على أي كمبيوتر.</translation>
+<translation id="8033665941300843262">‏يحتاج Chromium الوصول إلى الأذونات لمشاركتها مع هذا الموقع.</translation>
 <translation id="8610831143142469229">‏اسمح للمتصفح Chromium بالدخول إلى الشبكة من خلال إعدادات الجدار الناري أو
         برنامج مكافحة الفيروسات.</translation>
 <translation id="6424492062988593837">‏لقد أصبح Chromium أفضل من ذي قبل! يتوفر إصدار جديد.</translation>
 <translation id="811857857463334932">‏لن يتلقى هذا الكمبيوتر تحديثات Chromium بعد الآن نظرًا لأن أجهزته لم تعد متوافقة.</translation>
 <translation id="2910007522516064972">‏حو&amp;ل Chromium</translation>
+<translation id="6637001341228460105">‏يحتاج Chromium الوصول إلى الميكروفون لمشاركته مع هذا الموقع.</translation>
 <translation id="8453117565092476964">‏أرشيف أداة التثبيت تالف أو غير صالح. الرجاء إعادة تنزيل Chromium.</translation>
 <translation id="2558641060352364164">‏هذا الموقع يستخدم المكون الإضافي Chromium Frame والذي سيصبح غير معتمد قريبًا. يُرجى إلغاء تثبيته والترقية إلى متصفّح حديث.</translation>
 <translation id="3889543394854987837">‏انقر على اسمك لفتح Chromium وبدء التصفح.</translation>
