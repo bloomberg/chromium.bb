@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "components/html_viewer/html_document.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -78,6 +79,8 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
   std::set<HTMLDocumentOOPIF*> documents2_;
 
   HTMLDocumentCreationCallback html_document_creation_callback_;
+
+  base::WeakPtrFactory<HTMLDocumentApplicationDelegate> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLDocumentApplicationDelegate);
 };

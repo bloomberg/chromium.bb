@@ -79,7 +79,8 @@ HTMLDocumentApplicationDelegate::HTMLDocumentApplicationDelegate(
       url_(response->url),
       initial_response_(response.Pass()),
       global_state_(global_state),
-      html_document_creation_callback_(base::Bind(CreateHTMLDocument)) {
+      html_document_creation_callback_(base::Bind(CreateHTMLDocument)),
+      weak_factory_(this) {
 }
 
 HTMLDocumentApplicationDelegate::~HTMLDocumentApplicationDelegate() {
@@ -145,8 +146,8 @@ bool HTMLDocumentApplicationDelegate::ConfigureIncomingConnection(
     raw_loader->Start(
         request.Pass(),
         base::Bind(&HTMLDocumentApplicationDelegate::OnResponseReceived,
-                   base::Unretained(this), base::Passed(&loader), connection,
-                   base::Passed(&service_connector_queue)));
+                   weak_factory_.GetWeakPtr(), base::Passed(&loader),
+                   connection, base::Passed(&service_connector_queue)));
   }
   return true;
 }
