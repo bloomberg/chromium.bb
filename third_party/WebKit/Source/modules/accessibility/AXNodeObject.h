@@ -168,7 +168,7 @@ protected:
     String computedName() const override;
 
     // New AX name calculation.
-    String textAlternative(bool recursive, bool inAriaLabelledByTraversal, WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited, AXNameFrom*, WillBeHeapVector<RawPtrWillBeMember<AXObject>>* nameObjects) override;
+    String textAlternative(bool recursive, bool inAriaLabelledByTraversal, WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited, AXNameFrom&, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects, NameSources*) override;
 
     // Location and click point in frame-relative coordinates.
     LayoutRect elementRect() const override;
@@ -212,9 +212,14 @@ protected:
 private:
     RawPtrWillBeMember<Node> m_node;
 
-    String alternativeTextForWebArea() const;
-    void alternativeText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>&) const;
-    void ariaLabelledbyText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>&) const;
+    String deprecatedAlternativeTextForWebArea() const;
+    void deprecatedAlternativeText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>&) const;
+    void deprecatedAriaLabelledbyText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>&) const;
+
+    String textFromDescendants(WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited);
+    String textFromElements(WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited, WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects);
+    String textFromAriaLabelledby(WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects);
+    String nativeTextAlternative(AXNameFrom&, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects);
     float stepValueForRange() const;
     AXObject* findChildWithTagName(const HTMLQualifiedName&) const;
     bool isDescendantOfElementType(const HTMLQualifiedName& tagName) const;

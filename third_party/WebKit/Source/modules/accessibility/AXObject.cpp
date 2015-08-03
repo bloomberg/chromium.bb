@@ -674,8 +674,17 @@ bool AXObject::isPresentationalChild() const
 String AXObject::name(AXNameFrom& nameFrom, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects)
 {
     WillBeHeapHashSet<RawPtrWillBeMember<AXObject>> visited;
-    return textAlternative(false, false, visited, &nameFrom, &nameObjects);
+    return textAlternative(false, false, visited, nameFrom, nameObjects, nullptr);
 }
+
+String AXObject::name(NameSources* nameSources)
+{
+    WillBeHeapHashSet<RawPtrWillBeMember<AXObject>> visited;
+    AXNameFrom tmpNameFrom;
+    WillBeHeapVector<RawPtrWillBeMember<AXObject>> tmpNameObjects;
+    return textAlternative(false, false, visited, tmpNameFrom, tmpNameObjects, nameSources);
+}
+
 
 // In ARIA 1.1, the default value for aria-orientation changed from horizontal to undefined.
 AccessibilityOrientation AXObject::orientation() const

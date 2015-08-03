@@ -53,6 +53,8 @@ class LayoutObject;
 class ScrollableArea;
 class Widget;
 
+struct NameSource;
+
 typedef unsigned AXID;
 
 enum AccessibilityRole {
@@ -317,6 +319,7 @@ enum TextUnderElementMode {
 // because on some platforms this determines how the accessible name
 // is exposed.
 enum AXNameFrom {
+    AXNameFromUninitialized = -1,
     AXNameFromAttribute = 0,
     AXNameFromContents,
     AXNameFromPlaceholder,
@@ -370,6 +373,28 @@ public:
     DEFINE_INLINE_TRACE()
     {
         visitor->trace(relatedObject);
+    }
+};
+
+struct NameSource {
+    String text;
+    bool superseded = false;
+    bool invalid = false;
+    AXNameFrom type = AXNameFromUninitialized;
+    const QualifiedName& attribute;
+    AtomicString attributeValue;
+    WillBeHeapVector<RawPtrWillBeMember<AXObject>> nameObjects;
+
+    explicit NameSource(bool superseded, const QualifiedName& attr)
+        : superseded(superseded)
+        , attribute(attr)
+    {
+    }
+
+    explicit NameSource(bool superseded)
+        : superseded(superseded)
+        , attribute(QualifiedName::null())
+    {
     }
 };
 
@@ -591,6 +616,11 @@ public:
     // was derived from, and a list of objects that were used to derive the name, if any.
     virtual String name(AXNameFrom&, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects);
 
+    typedef Vector<NameSource> NameSources;
+    // Retrieves the accessible name of the object and a list of all potential sources
+    // for the name, indicating which were used.
+    virtual String name(NameSources*);
+
     // Takes the result of nameFrom from calling |name|, above, and retrieves the
     // accessible description of the object, which is secondary to |name|, an enum indicating
     // where the description was derived from, and a list of objects that were used to
@@ -603,7 +633,7 @@ public:
     virtual String placeholder(AXNameFrom, AXDescriptionFrom) { return String(); }
 
     // Internal function used by name and description, above.
-    virtual String textAlternative(bool recursive, bool inAriaLabelledByTraversal, WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited, AXNameFrom*, WillBeHeapVector<RawPtrWillBeMember<AXObject>>* nameObjects) { return String(); }
+    virtual String textAlternative(bool recursive, bool inAriaLabelledByTraversal, WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited, AXNameFrom& nameFrom, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects, NameSources* nameSources) { return String(); }
 
     // Returns result of Accessible Name Calculation algorithm.
     // This is a simpler high-level interface to |name| used by Inspector.

@@ -16,7 +16,6 @@
 test(function(t){
     var axDiv = accessibilityController.accessibleElementById("div");
     assert_equals(axDiv.name, "");
-    assert_equals(axDiv.nameFrom, "attribute");
 }, "A simple div with inner text should not have an accessible name.");
 </script>
 
@@ -100,8 +99,8 @@ test(function(t){
 <script>
 test(function(t){
     var axLabelledby5 = accessibilityController.accessibleElementById("labelledby5");
-    assert_equals(axLabelledby5.name, "");
-    assert_equals(axLabelledby5.nameFrom, "relatedElement");
+    assert_equals(axLabelledby5.name, "Contents");
+    assert_equals(axLabelledby5.nameFrom, "contents");
     assert_equals(axLabelledby5.nameElementCount(), 0);
 }, "aria-labelledby reference to nonexistant element.");
 </script>
