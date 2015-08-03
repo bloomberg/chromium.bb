@@ -418,6 +418,7 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
     }
 
     case kColorId_ChromeIconGrey:
+    case kColorId_GoogleBlue:
     case kColorId_NumColors:
       NOTREACHED();
       break;

@@ -94,15 +94,21 @@ void PaintVectorIcon(Canvas* canvas,
                      SkColor color) {
   DCHECK(VectorIconId::VECTOR_ICON_NONE != id);
   const PathElement* path_elements = GetPathForVectorIcon(id);
-  SkPath path;
-  path.setFillType(SkPath::kEvenOdd_FillType);
-  if (dip_size != kReferenceSizeDip) {
-    SkScalar scale = SkIntToScalar(dip_size) / SkIntToScalar(kReferenceSizeDip);
-    canvas->sk_canvas()->scale(scale, scale);
-  }
+
+  std::vector<SkPath> paths;
+  paths.push_back(SkPath());
+  paths.back().setFillType(SkPath::kEvenOdd_FillType);
+  size_t canvas_size = kReferenceSizeDip;
 
   for (size_t i = 0; path_elements[i].type != END; i++) {
+    SkPath& path = paths.back();
     switch (path_elements[i].type) {
+      case NEW_PATH: {
+        paths.push_back(SkPath());
+        paths.back().setFillType(SkPath::kEvenOdd_FillType);
+        break;
+      }
+
       case MOVE_TO: {
         SkScalar x = path_elements[++i].arg;
         SkScalar y = path_elements[++i].arg;
@@ -194,6 +200,12 @@ void PaintVectorIcon(Canvas* canvas,
         break;
       }
 
+      case CANVAS_DIMENSIONS: {
+        SkScalar width = path_elements[++i].arg;
+        canvas_size = SkScalarTruncToInt(width);
+        break;
+      }
+
       case END:
         NOTREACHED();
         break;
@@ -204,7 +216,14 @@ void PaintVectorIcon(Canvas* canvas,
   paint.setStyle(SkPaint::kFill_Style);
   paint.setAntiAlias(true);
   paint.setColor(color);
-  canvas->DrawPath(path, paint);
+
+  if (dip_size != canvas_size) {
+    SkScalar scale = SkIntToScalar(dip_size) / SkIntToScalar(canvas_size);
+    canvas->sk_canvas()->scale(scale, scale);
+  }
+
+  for (const auto& path : paths)
+    canvas->DrawPath(path, paint);
 }
 
 ImageSkia CreateVectorIcon(VectorIconId id, size_t dip_size, SkColor color) {

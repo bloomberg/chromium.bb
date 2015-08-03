@@ -115,6 +115,9 @@ bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color) {
     case NativeTheme::kColorId_ChromeIconGrey:
       *color = kChromeIconGrey;
       break;
+    case NativeTheme::kColorId_GoogleBlue:
+      *color = kGoogleBlue;
+      break;
     // Material spinner/throbber
     case NativeTheme::kColorId_ThrobberSpinningColor:
       *color = kGoogleBlue;

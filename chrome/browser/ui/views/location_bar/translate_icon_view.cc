@@ -13,6 +13,10 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public2.h"
+#include "ui/native_theme/common_theme.h"
+#include "ui/native_theme/native_theme.h"
 
 TranslateIconView::TranslateIconView(CommandUpdater* command_updater)
     : BubbleIconView(command_updater, IDC_TRANSLATE_PAGE) {
@@ -25,8 +29,12 @@ TranslateIconView::~TranslateIconView() {
 }
 
 void TranslateIconView::SetToggled(bool on) {
-  SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      on ? IDR_TRANSLATE_ACTIVE : IDR_TRANSLATE));
+  SkColor color;
+  CHECK(ui::CommonThemeGetSystemColor(
+      on ? ui::NativeTheme::kColorId_GoogleBlue
+         : ui::NativeTheme::kColorId_ChromeIconGrey,
+      &color));
+  SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::TRANSLATE, 16, color));
 }
 
 void TranslateIconView::OnExecuting(
