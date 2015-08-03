@@ -209,7 +209,7 @@ void BrowserActionsContainer::OnMouseEnteredToolbarActionView() {
           browser_->profile())) {
     ExtensionToolbarIconSurfacingBubble* bubble =
         new ExtensionToolbarIconSurfacingBubble(
-            toolbar_action_views_[0],
+            this,
             make_scoped_ptr(new ExtensionToolbarIconSurfacingBubbleDelegate(
                 browser_->profile())));
     views::BubbleDelegateView::CreateBubble(bubble);

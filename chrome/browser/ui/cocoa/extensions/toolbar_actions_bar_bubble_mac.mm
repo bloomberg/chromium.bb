@@ -19,6 +19,7 @@
 
 namespace {
 BOOL g_animations_enabled = false;
+CGFloat kMinWidth = 320.0;
 }
 
 @interface ToolbarActionsBarBubbleMac ()
@@ -220,9 +221,9 @@ BOOL g_animations_enabled = false;
   if (learnMoreButton_)
     buttonStripWidth += learnMoreSize.width + kButtonPadding;
 
-  CGFloat headingWidth = headingSize.width + 50.0;
-
-  CGFloat windowWidth = std::max(buttonStripWidth, headingWidth);
+  CGFloat headingWidth = headingSize.width;
+  CGFloat windowWidth =
+      std::max(std::max(kMinWidth, buttonStripWidth), headingWidth);
 
   NSTextField* content =
       [self addTextFieldWithString:delegate_->GetBodyText()

@@ -25,9 +25,11 @@ class ExtensionToolbarIconSurfacingBubble : public views::BubbleDelegateView,
   void Show();
 
  private:
+  // views::BubbleDelegateView:
   void Init() override;
   void OnWidgetDestroying(views::Widget* widget) override;
 
+  // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   scoped_ptr<ToolbarActionsBarBubbleDelegate> delegate_;

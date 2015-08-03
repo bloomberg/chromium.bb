@@ -165,7 +165,7 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // menu if no |anchorAction| is null.
 - (ToolbarActionsBarBubbleMac*)createMessageBubble:
     (scoped_ptr<ToolbarActionsBarBubbleDelegate>)delegate
-    anchorAction:(ToolbarActionViewController*)anchorAction;
+    anchorToSelf:(BOOL)anchorToSelf;
 
 // Called when the window for the active bubble is closing, and sets the active
 // bubble to nil.
@@ -293,7 +293,7 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
   ExtensionMessageBubbleBridge* weak_bridge = bridge.get();
   ToolbarActionsBarBubbleMac* bubble =
       [controller_ createMessageBubble:bridge.Pass()
-                          anchorAction:anchor_action];
+                          anchorToSelf:anchor_action != nil];
   weak_bridge->SetBubble(bubble);
   weak_bridge->controller()->Show(weak_bridge);
 }
@@ -804,13 +804,11 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
   if (!activeBubble_ &&  // only show one bubble at a time
       ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
           browser_->profile())) {
-    ToolbarActionViewController* anchorAction = [buttons_ count] > 0 ?
-        [[self buttonAtIndex:0] viewController] : nullptr;
     scoped_ptr<ToolbarActionsBarBubbleDelegate> delegate(
         new ExtensionToolbarIconSurfacingBubbleDelegate(browser_->profile()));
     ToolbarActionsBarBubbleMac* bubble =
         [self createMessageBubble:delegate.Pass()
-                     anchorAction:anchorAction];
+                     anchorToSelf:YES];
     [bubble showWindow:nil];
   }
   [containerView_ setTrackingEnabled:NO];
@@ -898,9 +896,9 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 - (NSPoint)popupPointForView:(NSView*)view
                   withBounds:(NSRect)bounds {
   // Anchor point just above the center of the bottom.
-  DCHECK([view isFlipped]);
-  NSPoint anchor = NSMakePoint(NSMidX(bounds),
-                               NSMaxY(bounds) - kBrowserActionBubbleYOffset);
+  int y = [view isFlipped] ? NSMaxY(bounds) - kBrowserActionBubbleYOffset :
+                             kBrowserActionBubbleYOffset;
+  NSPoint anchor = NSMakePoint(NSMidX(bounds), y);
   // Convert the point to the container view's frame, and adjust for animation.
   NSPoint anchorInContainer =
       [containerView_ convertPoint:anchor fromView:view];
@@ -1032,16 +1030,12 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 
 - (ToolbarActionsBarBubbleMac*)createMessageBubble:
     (scoped_ptr<ToolbarActionsBarBubbleDelegate>)delegate
-    anchorAction:(ToolbarActionViewController*)anchorAction {
+    anchorToSelf:(BOOL)anchorToSelf {
   DCHECK_GE([buttons_ count], 0u);
-  NSPoint anchor;
-  if (anchorAction) {
-    anchor = [self popupPointForId:anchorAction->GetId()];
-  } else {
-    NSView* wrenchButton = [[self toolbarController] wrenchButton];
-    anchor = [self popupPointForView:wrenchButton
-                          withBounds:[wrenchButton bounds]];
-  }
+  NSView* anchorView =
+      anchorToSelf ? containerView_ : [[self toolbarController] wrenchButton];
+  NSPoint anchor = [self popupPointForView:anchorView
+                                withBounds:[anchorView bounds]];
 
   anchor = [[containerView_ window] convertBaseToScreen:anchor];
   activeBubble_ = [[ToolbarActionsBarBubbleMac alloc]
