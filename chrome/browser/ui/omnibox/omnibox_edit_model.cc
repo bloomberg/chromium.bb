@@ -31,7 +31,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/favicon/content/content_favicon_driver.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
@@ -356,10 +355,8 @@ void OmniboxEditModel::GetDataForURLExport(GURL* url,
                                            gfx::Image* favicon) {
   *url = CurrentMatch(NULL).destination_url;
   if (*url == client_->GetURL()) {
-    content::WebContents* web_contents = controller_->GetWebContents();
-    *title = web_contents->GetTitle();
-    *favicon = favicon::ContentFaviconDriver::FromWebContents(web_contents)
-                   ->GetFavicon();
+    *title = client_->GetTitle();
+    *favicon = client_->GetFavicon();
   }
 }
 

@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/instant_types.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/search_provider.h"
@@ -135,6 +136,16 @@ bool ChromeOmniboxClient::CurrentPageExists() const {
 
 const GURL& ChromeOmniboxClient::GetURL() const {
   return controller_->GetWebContents()->GetVisibleURL();
+}
+
+const base::string16& ChromeOmniboxClient::GetTitle() const {
+  return controller_->GetWebContents()->GetTitle();
+}
+
+gfx::Image ChromeOmniboxClient::GetFavicon() const {
+  return favicon::ContentFaviconDriver::FromWebContents(
+             controller_->GetWebContents())
+      ->GetFavicon();
 }
 
 bool ChromeOmniboxClient::IsInstantNTP() const {

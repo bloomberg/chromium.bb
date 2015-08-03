@@ -22,6 +22,10 @@ namespace bookmarks {
 class BookmarkModel;
 }
 
+namespace gfx {
+class Image;
+}
+
 typedef base::Callback<void(const SkBitmap& bitmap)> BitmapFetchedCallback;
 
 // Interface that allows the omnibox component to interact with its embedder
@@ -42,6 +46,12 @@ class OmniboxClient {
 
   // Returns the URL of the current page.
   virtual const GURL& GetURL() const = 0;
+
+  // Returns the title of the current page.
+  virtual const base::string16& GetTitle() const = 0;
+
+  // Returns the favicon of the current page.
+  virtual gfx::Image GetFavicon() const = 0;
 
   // Returns true if the visible entry is a New Tab Page rendered by Instant.
   virtual bool IsInstantNTP() const = 0;

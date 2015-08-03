@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/string_util.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/ui/omnibox/omnibox_controller.h"
 #include "chrome/test/base/testing_profile.h"
@@ -25,6 +26,10 @@ class TestOmniboxClient : public OmniboxClient {
   }
   bool CurrentPageExists() const override { return true; }
   const GURL& GetURL() const override { return GURL::EmptyGURL(); }
+  const base::string16& GetTitle() const override {
+    return base::EmptyString16();
+  }
+  gfx::Image GetFavicon() const override { return gfx::Image(); }
   bool IsInstantNTP() const override { return false; }
   bool IsSearchResultsPage() const override { return false; }
   bool IsLoading() const override { return false; }

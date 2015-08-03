@@ -27,6 +27,8 @@ class ChromeOmniboxClient : public OmniboxClient {
       CreateAutocompleteProviderClient() override;
   bool CurrentPageExists() const override;
   const GURL& GetURL() const override;
+  const base::string16& GetTitle() const override;
+  gfx::Image GetFavicon() const override;
   bool IsInstantNTP() const override;
   bool IsSearchResultsPage() const override;
   bool IsLoading() const override;
