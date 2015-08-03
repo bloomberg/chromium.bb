@@ -7503,6 +7503,35 @@ TEST_F(WebFrameTest, WindowOpenRemoteClose)
     view->close();
 }
 
+TEST_F(WebFrameTest, NavigateRemoteToLocalWithOpener)
+{
+    FrameTestHelpers::WebViewHelper mainWebView;
+    mainWebView.initialize(true);
+    WebFrame* mainFrame = mainWebView.webView()->mainFrame();
+
+    // Create a popup with a remote frame and set its opener to the main frame.
+    FrameTestHelpers::TestWebViewClient popupViewClient;
+    WebView* popupView = WebView::create(&popupViewClient);
+    FrameTestHelpers::TestWebRemoteFrameClient popupRemoteClient;
+    WebRemoteFrame* popupRemoteFrame = popupRemoteClient.frame();
+    popupView->setMainFrame(popupRemoteFrame);
+    popupRemoteFrame->setOpener(mainFrame);
+    popupRemoteFrame->setReplicatedOrigin(WebSecurityOrigin::createFromString("http://foo.com"));
+    EXPECT_FALSE(mainFrame->securityOrigin().canAccess(popupView->mainFrame()->securityOrigin()));
+
+    // Do a remote-to-local swap in the popup.
+    FrameTestHelpers::TestWebFrameClient popupLocalClient;
+    WebLocalFrame* popupLocalFrame = WebLocalFrame::create(WebTreeScopeType::Document, &popupLocalClient);
+    popupLocalFrame->initializeToReplaceRemoteFrame(popupRemoteFrame, "", WebSandboxFlags::None);
+    popupRemoteFrame->swap(popupLocalFrame);
+
+    // The initial document created during the remote-to-local swap should have
+    // inherited its opener's SecurityOrigin.
+    EXPECT_TRUE(mainFrame->securityOrigin().canAccess(popupView->mainFrame()->securityOrigin()));
+
+    popupView->close();
+}
+
 class CommitTypeWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     explicit CommitTypeWebFrameClient()

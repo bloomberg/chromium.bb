@@ -2014,6 +2014,7 @@ void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFra
         toRemoteBridgeFrameOwner(m_frame->owner())->setSandboxFlags(static_cast<SandboxFlags>(flags));
     m_frame->tree().setName(name);
     setParent(oldWebFrame->parent());
+    setOpener(oldWebFrame->opener());
     // We must call init() after m_frame is assigned because it is referenced
     // during init(). Note that this may dispatch JS events; the frame may be
     // detached after init() returns.
