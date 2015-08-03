@@ -1223,15 +1223,9 @@ int caretMinOffset(const Node* n)
     return r ? r->caretMinOffset() : 0;
 }
 
-// If a node can contain candidates for VisiblePositions, return the offset of the last candidate, otherwise
-// return the number of children for container nodes and the length for unrendered text nodes.
 int caretMaxOffset(const Node* n)
 {
-    // For rendered text nodes, return the last position that a caret could occupy.
-    if (n->isTextNode() && n->layoutObject())
-        return n->layoutObject()->caretMaxOffset();
-    // For containers return the number of children. For others do the same as above.
-    return lastOffsetForEditing(n);
+    return EditingStrategy::caretMaxOffset(*n);
 }
 
 bool lineBreakExistsAtVisiblePosition(const VisiblePosition& visiblePosition)

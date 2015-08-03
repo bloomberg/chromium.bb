@@ -3731,6 +3731,7 @@
             'dom/TreeScopeTest.cpp',
             'dom/shadow/ComposedTreeTraversalTest.cpp',
             'editing/CompositionUnderlineRangeFilterTest.cpp',
+            'editing/EditingStrategyTest.cpp',
             'editing/EditingTestBase.cpp',
             'editing/EditingTestBase.h',
             'editing/FrameSelectionTest.cpp',

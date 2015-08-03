@@ -6,8 +6,24 @@
 #include "core/editing/EditingStrategy.h"
 
 #include "core/editing/htmlediting.h"
+#include "core/layout/LayoutObject.h"
 
 namespace blink {
+
+// If a node can contain candidates for VisiblePositions, return the offset of
+// the last candidate, otherwise return the number of children for container
+// nodes and the length for unrendered text nodes.
+template <typename Traversal>
+int EditingAlgorithm<Traversal>::caretMaxOffset(const Node& node)
+{
+    // For rendered text nodes, return the last position that a caret could
+    // occupy.
+    if (node.isTextNode() && node.layoutObject())
+        return node.layoutObject()->caretMaxOffset();
+    // For containers return the number of children. For others do the same as
+    // above.
+    return lastOffsetForEditing(&node);
+}
 
 template <typename Traversal>
 bool EditingAlgorithm<Traversal>::isEmptyNonEditableNodeInEditable(const Node* node)
@@ -50,7 +66,7 @@ int EditingAlgorithm<Traversal>::lastOffsetForEditing(const Node* node)
     return 1;
 }
 
-template class EditingAlgorithm<NodeTraversal>;
-template class EditingAlgorithm<ComposedTreeTraversal>;
+template class CORE_TEMPLATE_EXPORT EditingAlgorithm<NodeTraversal>;
+template class CORE_TEMPLATE_EXPORT EditingAlgorithm<ComposedTreeTraversal>;
 
 } // namespace blink
