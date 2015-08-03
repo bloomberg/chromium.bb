@@ -1370,8 +1370,7 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
     RefPtr<Image> image;
     SourceImageStatus sourceImageStatus = InvalidSourceImageStatus;
     if (!imageSource->isVideoElement()) {
-        SourceImageMode mode = canvas() == imageSource ? CopySourceImageIfVolatile : DontCopySourceImage; // Thunking for ==
-        image = imageSource->getSourceImageForCanvas(mode, &sourceImageStatus);
+        image = imageSource->getSourceImageForCanvas(&sourceImageStatus);
         if (sourceImageStatus == UndecodableSourceImageStatus)
             exceptionState.throwDOMException(InvalidStateError, "The HTMLImageElement provided is in the 'broken' state.");
         if (!image || !image->width() || !image->height())
@@ -1398,14 +1397,6 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
 
     if (imageSource->isVideoElement())
         canvas()->buffer()->willDrawVideo();
-
-    // FIXME: crbug.com/447218
-    // We make the destination canvas fall out of display list mode by calling
-    // willAccessPixels. This is to prevent run-away memory consumption caused by SkSurface
-    // copyOnWrite when the source canvas is animated and consumed at a rate higher than the
-    // presentation frame rate of the destination canvas.
-    if (imageSource->isCanvasElement())
-        canvas()->buffer()->willAccessPixels();
 
     draw(
         [this, &imageSource, &image, &srcRect, dstRect](const SkPaint* paint) // draw lambda
@@ -1436,8 +1427,20 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
             buffer->setHasExpensiveOp();
     }
 
-    if (sourceImageStatus == ExternalSourceImageStatus && isAccelerated() && canvas()->buffer())
-        canvas()->buffer()->flush();
+    if (imageSource->isCanvasElement()) {
+        if (static_cast<HTMLCanvasElement*>(imageSource)->is3D()) {
+            // WebGL to 2D canvas: must flush graphics context to prevent a race
+            // FIXME: crbug.com/516331 Fix the underlying synchronization issue so this flush can be eliminated.
+            canvas()->buffer()->flushGpu();
+        } else {
+            // FIXME: crbug.com/447218
+            // We make the destination canvas fall out of display list mode by calling
+            // flush. This is to prevent run-away memory consumption caused by SkSurface
+            // copyOnWrite when the source canvas is animated and consumed at a rate higher than the
+            // presentation frame rate of the destination canvas.
+            canvas()->buffer()->flush();
+        }
+    }
 
     if (canvas()->originClean() && wouldTaintOrigin(imageSource))
         canvas()->setOriginTainted();
@@ -1483,7 +1486,7 @@ CanvasPattern* CanvasRenderingContext2D::createPattern(const CanvasImageSourceUn
 
     SourceImageStatus status;
     CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource);
-    RefPtr<Image> imageForRendering = imageSourceInternal->getSourceImageForCanvas(CopySourceImageIfVolatile, &status);
+    RefPtr<Image> imageForRendering = imageSourceInternal->getSourceImageForCanvas(&status);
 
     switch (status) {
     case NormalSourceImageStatus:
@@ -1500,7 +1503,6 @@ CanvasPattern* CanvasRenderingContext2D::createPattern(const CanvasImageSourceUn
     case IncompleteSourceImageStatus:
         return nullptr;
     default:
-    case ExternalSourceImageStatus: // should not happen when mode is CopySourceImageIfVolatile
         ASSERT_NOT_REACHED();
         return nullptr;
     }

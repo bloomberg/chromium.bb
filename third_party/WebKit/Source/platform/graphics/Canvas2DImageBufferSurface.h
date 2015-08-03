@@ -56,7 +56,7 @@ public:
 
     // ImageBufferSurface implementation
     void finalizeFrame(const FloatRect &dirtyRect) override { m_layerBridge->finalizeFrame(dirtyRect); }
-    void willAccessPixels() override { m_layerBridge->willAccessPixels(); }
+    void willOverwriteCanvas() override { m_layerBridge->willOverwriteCanvas(); }
     SkCanvas* canvas() const override { return m_layerBridge->canvas(); }
     bool isValid() const override { return m_layerBridge && m_layerBridge->checkSurfaceValid(); }
     bool restore() override { return m_layerBridge->restoreSurface(); }
@@ -66,8 +66,11 @@ public:
     void setIsHidden(bool hidden) override { m_layerBridge->setIsHidden(hidden); }
     void setImageBuffer(ImageBuffer* imageBuffer) override { m_layerBridge->setImageBuffer(imageBuffer); }
     void didDraw(const FloatRect& rect) override { m_layerBridge->didDraw(); }
+    void flush() override { m_layerBridge->flush(); }
+    void flushGpu() override { m_layerBridge->flushGpu(); }
+    bool writePixels(const SkImageInfo& origInfo, const void* pixels, size_t rowBytes, int x, int y) override { return m_layerBridge->writePixels(origInfo, pixels, rowBytes, x, y); }
 
-    PassRefPtr<SkImage> newImageSnapshot() const override { return m_layerBridge->newImageSnapshot(); }
+    PassRefPtr<SkImage> newImageSnapshot() override { return m_layerBridge->newImageSnapshot(); }
 private:
     RefPtr<Canvas2DLayerBridge> m_layerBridge;
 };

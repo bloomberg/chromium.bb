@@ -906,7 +906,7 @@ void DrawingBuffer::paintFramebufferToCanvas(int framebuffer, int width, int hei
 {
     unsigned char* pixels = 0;
 
-    const SkBitmap& canvasBitmap = imageBuffer->bitmap();
+    const SkBitmap& canvasBitmap = imageBuffer->deprecatedBitmapForOverwrite();
     const SkBitmap* readbackBitmap = 0;
     ASSERT(canvasBitmap.colorType() == kN32_SkColorType);
     if (canvasBitmap.width() == width && canvasBitmap.height() == height) {

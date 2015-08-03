@@ -65,16 +65,6 @@ enum Multiply {
     Unmultiplied
 };
 
-enum BackingStoreCopy {
-    CopyBackingStore, // Guarantee subsequent draws don't affect the copy.
-    DontCopyBackingStore // Subsequent draws may affect the copy.
-};
-
-enum ScaleBehavior {
-    Scaled,
-    Unscaled
-};
-
 class PLATFORM_EXPORT ImageBuffer {
     WTF_MAKE_NONCOPYABLE(ImageBuffer); WTF_MAKE_FAST_ALLOCATED(ImageBuffer);
 public:
@@ -110,15 +100,13 @@ public:
 
     bool isDirty();
 
-    const SkBitmap& bitmap() const;
+    // FIXME: crbug.com/485243
+    // Prefer writePixels() and canvas()->draw*() for writing, and newImageSnapshot() for reading
+    const SkBitmap& deprecatedBitmapForOverwrite() const;
 
-    void willAccessPixels() { m_surface->willAccessPixels(); }
+    bool writePixels(const SkImageInfo&, const void* pixels, size_t rowBytes, int x, int y);
+
     void willOverwriteCanvas() { m_surface->willOverwriteCanvas(); }
-
-    PassRefPtr<Image> copyImage(BackingStoreCopy = CopyBackingStore, ScaleBehavior = Scaled) const;
-    // Give hints on the faster copyImage Mode, return DontCopyBackingStore if it supports the DontCopyBackingStore behavior
-    // or return CopyBackingStore if it doesn't.
-    static BackingStoreCopy fastCopyImageMode();
 
     bool getImageData(Multiply, const IntRect&, WTF::ArrayBufferContents&) const;
 
@@ -135,11 +123,13 @@ public:
 
     bool copyRenderingResultsFromDrawingBuffer(DrawingBuffer*, SourceDrawingBuffer);
 
-    void flush();
+    void flush(); // process deferred draw commands immediately
+    void flushGpu(); // Like flush(), but flushes all the way down to the Gpu context if the surface is accelerated
 
     void notifySurfaceInvalid();
 
-    PassRefPtr<SkImage> newImageSnapshot() const;
+    PassRefPtr<SkImage> newSkImageSnapshot() const;
+    PassRefPtr<Image> newImageSnapshot() const;
 
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
     String debugName() const { return "ImageBuffer"; }

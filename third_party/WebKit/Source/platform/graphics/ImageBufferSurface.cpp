@@ -66,14 +66,8 @@ void ImageBufferSurface::clear()
             canvas()->drawARGB(255, 0, 0, 0, SkXfermode::kSrc_Mode);
         else
             canvas()->drawARGB(0, 0, 0, 0, SkXfermode::kClear_Mode);
+        didDraw(FloatRect(FloatPoint(0, 0), size()));
     }
-}
-
-const SkBitmap& ImageBufferSurface::bitmap()
-{
-    ASSERT(canvas());
-    willAccessPixels();
-    return canvas()->getDevice()->accessBitmap(false);
 }
 
 void ImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode op)
@@ -84,6 +78,23 @@ void ImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRec
 
     RefPtr<Image> image = StaticBitmapImage::create(snapshot.release());
     context->drawImage(image.get(), destRect, srcRect, op);
+}
+
+const SkBitmap& ImageBufferSurface::deprecatedBitmapForOverwrite()
+{
+    ASSERT_NOT_REACHED(); // should only be called on non-accelerated surface types, which have overrides
+    return canvas()->getDevice()->accessBitmap(false); // Because we have to return something for the code to compile, and it can't be a local (by address).
+}
+
+
+void ImageBufferSurface::flush()
+{
+    canvas()->flush();
+}
+
+bool ImageBufferSurface::writePixels(const SkImageInfo& origInfo, const void* pixels, size_t rowBytes, int x, int y)
+{
+    return canvas()->writePixels(origInfo, pixels, rowBytes, x, y);
 }
 
 } // namespace blink

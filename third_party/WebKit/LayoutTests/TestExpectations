@@ -1301,6 +1301,20 @@ crbug.com/449023 http/tests/security/mixedContent/insecure-image-in-main-frame-a
 
 crbug.com/425113 svg/clip-path/clip-path-multiple-children.svg [ ImageOnlyFailure ]
 
+crbug.com/512991 fast/canvas/canvas-as-image-incremental-repaint.html [ NeedsRebaseline ]
+crbug.com/512991 fast/canvas/canvas-as-image.html [ NeedsRebaseline ]
+crbug.com/512991 fast/canvas/canvas-bg-zoom.html [ NeedsRebaseline ]
+crbug.com/512991 virtual/display_list_2d_canvas/fast/canvas/canvas-as-image-incremental-repaint.html [ NeedsRebaseline ]
+crbug.com/512991 virtual/display_list_2d_canvas/fast/canvas/canvas-as-image.html [ NeedsRebaseline ]
+crbug.com/512991 virtual/display_list_2d_canvas/fast/canvas/canvas-bg-zoom.html [ NeedsRebaseline ]
+crbug.com/512991 virtual/gpu/fast/canvas/canvas-as-image-incremental-repaint.html [ NeedsRebaseline ]
+crbug.com/512991 virtual/gpu/fast/canvas/canvas-as-image.html [ NeedsRebaseline ]
+crbug.com/512991 virtual/gpu/fast/canvas/canvas-bg-zoom.html [ NeedsRebaseline ]
+crbug.com/512991 virtual/gpu/fast/canvas/canvas-drawImage-video.html [ NeedsRebaseline ]
+crbug.com/512991 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
+crbug.com/512991 virtual/gpu/fast/canvas/canvas-toDataURL-webp.html [ NeedsRebaseline ]
+crbug.com/512991 inspector/layers/layer-canvas-log.html [ NeedsRebaseline ]
+
 crbug.com/454729 svg/animations/dynamic-modify-transform-without-baseval.html [ Pass Timeout ]
 
 crbug.com/455140 http/tests/loading/bad-scheme-subframe.html [ Pass Failure ]
@@ -1455,8 +1469,9 @@ crbug.com/479181 inspector-protocol/animation/animation-multiple-frames.html [ P
 
 crbug.com/479202 fast/forms/select/select-typeahead-with-spacekey.html [ Pass Failure ]
 
-crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-bg-zoom.html [ Failure ]
-crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-as-image.html [ Failure ]
+# Re-check these after the re-baseline for crbug.com/512991
+#crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-bg-zoom.html [ Failure ]
+#crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-as-image.html [ Failure ]
 
 # Temporary, until we stop use_system_harfbuzz on Linux including non-official builds
 crbug.com/462689 [ Linux ] fast/text/unicode-variation-selector.html [ ImageOnlyFailure ]

@@ -4158,7 +4158,7 @@ PassRefPtr<Image> WebGLRenderingContextBase::drawImageIntoBuffer(Image* image, i
     IntRect destRect(0, 0, size.width(), size.height());
     SkPaint paint;
     image->draw(buf->canvas(), paint, destRect, srcRect, DoNotRespectImageOrientation, Image::DoNotClampImageToSourceRect);
-    return buf->copyImage(ImageBuffer::fastCopyImageMode());
+    return buf->newImageSnapshot();
 }
 
 void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum internalformat,
@@ -4308,7 +4308,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     texture->setLevelInfo(target, level, internalformat, canvas->width(), canvas->height(), 1, type);
 }
 
-PassRefPtr<Image> WebGLRenderingContextBase::videoFrameToImage(HTMLVideoElement* video, BackingStoreCopy backingStoreCopy)
+PassRefPtr<Image> WebGLRenderingContextBase::videoFrameToImage(HTMLVideoElement* video)
 {
     IntSize size(video->videoWidth(), video->videoHeight());
     ImageBuffer* buf = m_generatedImageCache.imageBuffer(size);
@@ -4318,7 +4318,7 @@ PassRefPtr<Image> WebGLRenderingContextBase::videoFrameToImage(HTMLVideoElement*
     }
     IntRect destRect(0, 0, size.width(), size.height());
     video->paintCurrentFrame(buf->canvas(), destRect, nullptr);
-    return buf->copyImage(backingStoreCopy);
+    return buf->newImageSnapshot();
 }
 
 void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum internalformat,
@@ -4361,7 +4361,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     }
 
     // Normal pure SW path.
-    RefPtr<Image> image = videoFrameToImage(video, ImageBuffer::fastCopyImageMode());
+    RefPtr<Image> image = videoFrameToImage(video);
     if (!image)
         return;
     texImage2DImpl(target, level, internalformat, format, type, image.get(), WebGLImageConversion::HtmlDomVideo, m_unpackFlipY, m_unpackPremultiplyAlpha);
@@ -4583,7 +4583,7 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
         || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceHTMLVideoElement, target, level, 0, video->videoWidth(), video->videoHeight(), 0, format, type, xoffset, yoffset))
         return;
 
-    RefPtr<Image> image = videoFrameToImage(video, ImageBuffer::fastCopyImageMode());
+    RefPtr<Image> image = videoFrameToImage(video);
     if (!image)
         return;
     texSubImage2DImpl(target, level, xoffset, yoffset, format, type, image.get(), WebGLImageConversion::HtmlDomVideo, m_unpackFlipY, m_unpackPremultiplyAlpha);

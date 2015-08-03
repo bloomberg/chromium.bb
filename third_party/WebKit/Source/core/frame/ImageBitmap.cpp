@@ -11,6 +11,7 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "wtf/RefPtr.h"
@@ -77,7 +78,7 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
     buffer->canvas()->translate(-srcRect.x(), -srcRect.y());
 
     video->paintCurrentFrame(buffer->canvas(), videoRect, nullptr);
-    m_bitmap = buffer->copyImage(DontCopyBackingStore);
+    m_bitmap = buffer->newImageSnapshot();
     m_bitmapRect = IntRect(IntPoint(std::max(0, -cropRect.x()), std::max(0, -cropRect.y())), srcRect.size());
 }
 
@@ -105,7 +106,7 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
     if (srcRect.width() > 0 && srcRect.height() > 0)
         buffer->putByteArray(Premultiplied, data->data()->data(), data->size(), srcRect, IntPoint(std::min(0, -cropRect.x()), std::min(0, -cropRect.y())));
 
-    m_bitmap = buffer->copyImage(DontCopyBackingStore);
+    m_bitmap = buffer->newImageSnapshot();
     m_bitmapRect = IntRect(IntPoint(std::max(0, -cropRect.x()), std::max(0, -cropRect.y())),  srcRect.size());
 }
 
@@ -196,7 +197,7 @@ PassRefPtr<Image> ImageBitmap::bitmapImage() const
     return m_bitmap;
 }
 
-PassRefPtr<Image> ImageBitmap::getSourceImageForCanvas(SourceImageMode, SourceImageStatus* status) const
+PassRefPtr<Image> ImageBitmap::getSourceImageForCanvas(SourceImageStatus* status) const
 {
     *status = NormalSourceImageStatus;
     return bitmapImage();

@@ -36,10 +36,10 @@
 #include "GrContext.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/ImageBufferClient.h"
+#include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
@@ -93,9 +93,14 @@ SkCanvas* ImageBuffer::canvas() const
     return m_surface->canvas();
 }
 
-const SkBitmap& ImageBuffer::bitmap() const
+bool ImageBuffer::writePixels(const SkImageInfo& info, const void* pixels, size_t rowBytes, int x, int y)
 {
-    return m_surface->bitmap();
+    return m_surface->writePixels(info, pixels, rowBytes, x, y);
+}
+
+const SkBitmap& ImageBuffer::deprecatedBitmapForOverwrite() const
+{
+    return m_surface->deprecatedBitmapForOverwrite();
 }
 
 bool ImageBuffer::isSurfaceValid() const
@@ -137,32 +142,21 @@ void ImageBuffer::resetCanvas(SkCanvas* canvas)
         m_client->restoreCanvasMatrixClipStack();
 }
 
-PassRefPtr<SkImage> ImageBuffer::newImageSnapshot() const
+PassRefPtr<SkImage> ImageBuffer::newSkImageSnapshot() const
 {
+    if (!isSurfaceValid())
+        return nullptr;
     return m_surface->newImageSnapshot();
 }
 
-static SkBitmap deepSkBitmapCopy(const SkBitmap& bitmap)
-{
-    SkBitmap tmp;
-    if (!bitmap.deepCopyTo(&tmp))
-        bitmap.copyTo(&tmp, bitmap.colorType());
-
-    return tmp;
-}
-
-PassRefPtr<Image> ImageBuffer::copyImage(BackingStoreCopy copyBehavior, ScaleBehavior) const
+PassRefPtr<Image> ImageBuffer::newImageSnapshot() const
 {
     if (!isSurfaceValid())
-        return BitmapImage::create(SkBitmap());
-
-    const SkBitmap& bitmap = m_surface->bitmap();
-    return BitmapImage::create(copyBehavior == CopyBackingStore ? deepSkBitmapCopy(bitmap) : bitmap);
-}
-
-BackingStoreCopy ImageBuffer::fastCopyImageMode()
-{
-    return DontCopyBackingStore;
+        return nullptr;
+    RefPtr<SkImage> snapshot = m_surface->newImageSnapshot();
+    if (!snapshot)
+        return nullptr;
+    return StaticBitmapImage::create(snapshot);
 }
 
 WebLayer* ImageBuffer::platformLayer() const
@@ -254,7 +248,14 @@ void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, cons
 void ImageBuffer::flush()
 {
     if (m_surface->canvas()) {
-        m_surface->canvas()->flush();
+        m_surface->flush();
+    }
+}
+
+void ImageBuffer::flushGpu()
+{
+    if (m_surface->canvas()) {
+        m_surface->flushGpu();
     }
 }
 
@@ -287,9 +288,11 @@ bool ImageBuffer::getImageData(Multiply multiplied, const IntRect& rect, WTF::Ar
     SkAlphaType alphaType = (multiplied == Premultiplied) ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
     SkImageInfo info = SkImageInfo::Make(rect.width(), rect.height(), kRGBA_8888_SkColorType, alphaType);
 
-    m_surface->willAccessPixels();
     ASSERT(canvas());
-    canvas()->readPixels(info, result.data(), 4 * rect.width(), rect.x(), rect.y());
+    RefPtr<SkImage> snapshot = m_surface->newImageSnapshot();
+    if (!snapshot)
+        return false;
+    snapshot->readPixels(info, result.data(), 4 * rect.width(), rect.x(), rect.y());
     result.transfer(contents);
     return true;
 }
@@ -320,10 +323,7 @@ void ImageBuffer::putByteArray(Multiply multiplied, const unsigned char* source,
     const void* srcAddr = source + originY * srcBytesPerRow + originX * 4;
     SkAlphaType alphaType = (multiplied == Premultiplied) ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
     SkImageInfo info = SkImageInfo::Make(sourceRect.width(), sourceRect.height(), kRGBA_8888_SkColorType, alphaType);
-
-    m_surface->willAccessPixels();
-
-    canvas()->writePixels(info, srcAddr, srcBytesPerRow, destX, destY);
+    m_surface->writePixels(info, srcAddr, srcBytesPerRow, destX, destY);
 }
 
 static bool encodeImage(const ImageDataBuffer& source, const String& mimeType, const double* quality, Vector<char>* output)

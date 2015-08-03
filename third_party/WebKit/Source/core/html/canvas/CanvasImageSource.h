@@ -35,14 +35,8 @@ namespace blink {
 class Image;
 class SecurityOrigin;
 
-enum SourceImageMode {
-    CopySourceImageIfVolatile,
-    DontCopySourceImage
-};
-
 enum SourceImageStatus {
     NormalSourceImageStatus,
-    ExternalSourceImageStatus, // Shared with another GPU context
     UndecodableSourceImageStatus, // Image element with a 'broken' image
     ZeroSizeCanvasSourceImageStatus, // Source is a canvas with width or heigh of zero
     IncompleteSourceImageStatus, // Image element with no source media
@@ -51,7 +45,7 @@ enum SourceImageStatus {
 
 class CORE_EXPORT CanvasImageSource {
 public:
-    virtual PassRefPtr<Image> getSourceImageForCanvas(SourceImageMode, SourceImageStatus* = 0) const = 0;
+    virtual PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus* = 0) const = 0;
 
     // IMPORTANT: Result must be independent of whether destinationContext is
     // already tainted because this function may be used to determine whether

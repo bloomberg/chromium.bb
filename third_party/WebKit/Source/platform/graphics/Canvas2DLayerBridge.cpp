@@ -32,7 +32,6 @@
 #include "SkSurface.h"
 
 #include "platform/TraceEvent.h"
-#include "platform/graphics/Canvas2DLayerManager.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "public/platform/Platform.h"
@@ -40,6 +39,7 @@
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/RefCountedLeakCounter.h"
 
@@ -74,32 +74,28 @@ PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(const IntSize& size,
     if (!surface)
         return nullptr;
     RefPtr<Canvas2DLayerBridge> layerBridge;
-    OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(surface.get()));
-    layerBridge = adoptRef(new Canvas2DLayerBridge(contextProvider.release(), canvas.release(), surface.release(), msaaSampleCount, opacityMode));
+    layerBridge = adoptRef(new Canvas2DLayerBridge(contextProvider.release(), surface.release(), msaaSampleCount, opacityMode));
     return layerBridge.release();
 }
 
-Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, PassOwnPtr<SkDeferredCanvas> canvas, PassRefPtr<SkSurface> surface, int msaaSampleCount, OpacityMode opacityMode)
-    : m_canvas(canvas)
-    , m_surface(surface)
+Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, PassRefPtr<SkSurface> surface, int msaaSampleCount, OpacityMode opacityMode)
+    : m_surface(surface)
     , m_contextProvider(contextProvider)
     , m_imageBuffer(0)
     , m_msaaSampleCount(msaaSampleCount)
     , m_bytesAllocated(0)
-    , m_didRecordDrawCommand(false)
+    , m_haveRecordedDrawCommands(false)
     , m_isSurfaceValid(true)
     , m_framesPending(0)
     , m_destructionInProgress(false)
     , m_rateLimitingEnabled(false)
     , m_filterQuality(kLow_SkFilterQuality)
     , m_isHidden(false)
-    , m_next(0)
-    , m_prev(0)
     , m_lastImageId(0)
     , m_lastFilter(GL_LINEAR)
     , m_opacityMode(opacityMode)
+    , m_size(m_surface->width(), m_surface->height())
 {
-    ASSERT(m_canvas);
     ASSERT(m_surface);
     ASSERT(m_contextProvider);
     // Used by browser tests to detect the use of a Canvas2DLayerBridge.
@@ -110,7 +106,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider
     GraphicsLayer::registerContentsLayer(m_layer->layer());
     m_layer->setRateLimitContext(m_rateLimitingEnabled);
     m_layer->setNearestNeighbor(m_filterQuality == kNone_SkFilterQuality);
-    m_canvas->setNotificationClient(this);
+    startRecording();
 #ifndef NDEBUG
     canvas2DLayerBridgeInstanceCounter.increment();
 #endif
@@ -119,10 +115,6 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider
 Canvas2DLayerBridge::~Canvas2DLayerBridge()
 {
     ASSERT(m_destructionInProgress);
-    // TODO(junov): This can go back to a regular ASSERT once crbug.com/466793 is resolved.
-    RELEASE_ASSERT(!Canvas2DLayerManager::get().isInList(this));
-    if (m_canvas)
-        m_canvas->setNotificationClient(nullptr);
     m_layer.clear();
     ASSERT(m_mailboxes.size() == 0);
 #ifndef NDEBUG
@@ -130,19 +122,38 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge()
 #endif
 }
 
+void Canvas2DLayerBridge::startRecording()
+{
+    m_recorder = adoptPtr(new SkPictureRecorder);
+    m_recorder->beginRecording(m_surface->width(), m_surface->height(), nullptr);
+    if (m_imageBuffer) {
+        m_imageBuffer->resetCanvas(m_recorder->getRecordingCanvas());
+    }
+}
+
+SkCanvas* Canvas2DLayerBridge::canvas() const
+{
+    return m_recorder->getRecordingCanvas();
+}
+
+void Canvas2DLayerBridge::setImageBuffer(ImageBuffer* imageBuffer)
+{
+    m_imageBuffer = imageBuffer;
+    if (m_imageBuffer) {
+        m_imageBuffer->resetCanvas(m_recorder->getRecordingCanvas());
+    }
+}
+
 void Canvas2DLayerBridge::beginDestruction()
 {
     ASSERT(!m_destructionInProgress);
     setRateLimitingEnabled(false);
-    m_canvas->silentFlush();
-    m_imageBuffer = 0;
-    freeTransientResources();
     setIsHidden(true);
+    m_recorder.clear();
+    m_imageBuffer = nullptr;
     m_destructionInProgress = true;
     GraphicsLayer::unregisterContentsLayer(m_layer->layer());
-    m_canvas->setNotificationClient(0);
     m_surface.clear();
-    m_canvas.clear();
     m_layer->clearTexture();
     // Orphaning the layer is required to trigger the recration of a new layer
     // in the case where destruction is caused by a canvas resize. Test:
@@ -173,14 +184,18 @@ void Canvas2DLayerBridge::setIsHidden(bool hidden)
     }
 }
 
-void Canvas2DLayerBridge::willAccessPixels()
+bool Canvas2DLayerBridge::writePixels(const SkImageInfo& origInfo, const void* pixels, size_t rowBytes, int x, int y)
 {
-    // A readback operation may alter the texture parameters, which may affect
-    // the compositor's behavior. Therefore, we must trigger copy-on-write
-    // even though we are not technically writing to the texture, only to its
-    // parameters.
-    if (m_isSurfaceValid)
-        m_surface->notifyContentWillChange(SkSurface::kRetain_ContentChangeMode);
+    if (!m_isSurfaceValid)
+        return false;
+    if (x <= 0 && y <= 0 && x + origInfo.width() >= m_size.width() && y + origInfo.height() >= m_size.height()) {
+        skipQueuedDrawCommands();
+    } else {
+        flush();
+    }
+    ASSERT(!m_haveRecordedDrawCommands);
+    // call write pixels on the surface, not the recording canvas
+    return m_surface->getCanvas()->writePixels(origInfo, pixels, rowBytes, x, y);
 }
 
 void Canvas2DLayerBridge::freeTransientResources()
@@ -189,76 +204,18 @@ void Canvas2DLayerBridge::freeTransientResources()
     if (!m_isSurfaceValid)
         return;
     flush();
-    freeMemoryIfPossible(bytesAllocated());
-    ASSERT(!hasTransientResources());
 }
 
-bool Canvas2DLayerBridge::hasTransientResources() const
+void Canvas2DLayerBridge::skipQueuedDrawCommands()
 {
-    return !m_destructionInProgress && bytesAllocated();
-}
-
-void Canvas2DLayerBridge::limitPendingFrames()
-{
-    ASSERT(!m_destructionInProgress);
-    if (isHidden()) {
-        freeTransientResources();
-        return;
+    if (m_haveRecordedDrawCommands) {
+        adoptRef(m_recorder->endRecording());
+        startRecording();
+        m_haveRecordedDrawCommands = false;
     }
-    if (m_didRecordDrawCommand) {
-        m_framesPending++;
-        m_didRecordDrawCommand = false;
-        if (m_framesPending > 1) {
-            // Turn on the rate limiter if this layer tends to accumulate a
-            // non-discardable multi-frame backlog of draw commands.
-            setRateLimitingEnabled(true);
-        }
-        if (m_rateLimitingEnabled) {
-            flush();
-        }
-    }
-}
-
-void Canvas2DLayerBridge::prepareForDraw()
-{
-    ASSERT(!m_destructionInProgress);
-    ASSERT(m_layer);
-    if (!checkSurfaceValid()) {
-        if (m_canvas) {
-            // drop pending commands because there is no surface to draw to
-            m_canvas->silentFlush();
-        }
-        return;
-    }
-}
-
-void Canvas2DLayerBridge::storageAllocatedForRecordingChanged(size_t bytesAllocated)
-{
-    ASSERT(!m_destructionInProgress);
-    intptr_t delta = (intptr_t)bytesAllocated - (intptr_t)m_bytesAllocated;
-    m_bytesAllocated = bytesAllocated;
-    Canvas2DLayerManager::get().layerTransientResourceAllocationChanged(this, delta);
-}
-
-size_t Canvas2DLayerBridge::storageAllocatedForRecording()
-{
-    return m_canvas->storageAllocatedForRecording();
-}
-
-void Canvas2DLayerBridge::flushedDrawCommands()
-{
-    ASSERT(!m_destructionInProgress);
-    storageAllocatedForRecordingChanged(storageAllocatedForRecording());
-    m_framesPending = 0;
-}
-
-void Canvas2DLayerBridge::skippedPendingDrawCommands()
-{
-    ASSERT(!m_destructionInProgress);
     // Stop triggering the rate limiter if SkDeferredCanvas is detecting
     // and optimizing overdraw.
     setRateLimitingEnabled(false);
-    flushedDrawCommands();
 }
 
 void Canvas2DLayerBridge::setRateLimitingEnabled(bool enabled)
@@ -270,24 +227,26 @@ void Canvas2DLayerBridge::setRateLimitingEnabled(bool enabled)
     }
 }
 
-size_t Canvas2DLayerBridge::freeMemoryIfPossible(size_t bytesToFree)
-{
-    ASSERT(!m_destructionInProgress);
-    size_t bytesFreed = m_canvas->freeMemoryIfPossible(bytesToFree);
-    m_bytesAllocated -= bytesFreed;
-    if (bytesFreed)
-        Canvas2DLayerManager::get().layerTransientResourceAllocationChanged(this, -((intptr_t)bytesFreed));
-    return bytesFreed;
-}
-
 void Canvas2DLayerBridge::flush()
 {
     ASSERT(!m_destructionInProgress);
-    if (m_canvas->hasPendingCommands()) {
+    if (m_haveRecordedDrawCommands) {
         TRACE_EVENT0("cc", "Canvas2DLayerBridge::flush");
-        m_canvas->flush();
+        RefPtr<SkPicture> picture = adoptRef(m_recorder->endRecording());
+        picture->playback(m_surface->getCanvas());
+        startRecording();
+        m_haveRecordedDrawCommands = false;
     }
+    m_surface->getCanvas()->flush();
 }
+
+void Canvas2DLayerBridge::flushGpu()
+{
+    flush();
+    if (WebGraphicsContext3D* webContext = context())
+        webContext->flush();
+}
+
 
 WebGraphicsContext3D* Canvas2DLayerBridge::context()
 {
@@ -331,12 +290,10 @@ bool Canvas2DLayerBridge::restoreSurface()
         sharedContext = m_contextProvider->context3d();
 
     if (sharedContext && !sharedContext->isContextLost()) {
-        SkISize skSize = m_canvas->getBaseLayerSize();
-        IntSize size(skSize.width(), skSize.height());
-        RefPtr<SkSurface> surface(createSkSurface(m_contextProvider->grContext(), size, m_msaaSampleCount, m_opacityMode));
+        GrContext* grCtx = m_contextProvider->grContext();
+        RefPtr<SkSurface> surface(createSkSurface(grCtx, m_size, m_msaaSampleCount, m_opacityMode));
         if (surface.get()) {
             m_surface = surface.release();
-            m_canvas->setSurface(m_surface.get());
             m_isSurfaceValid = true;
             // FIXME: draw sad canvas picture into new buffer crbug.com/243842
         }
@@ -360,7 +317,7 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
         // should only happen in tests that use fake graphics contexts
         // or in Android WebView in software mode. In this case, we do
         // not care about producing any results for this canvas.
-        m_canvas->silentFlush();
+        skipQueuedDrawCommands();
         m_lastImageId = 0;
         return false;
     }
@@ -369,12 +326,7 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
 
     WebGraphicsContext3D* webContext = context();
 
-    // Release to skia textures that were previouosly released by the
-    // compositor. We do this before acquiring the next snapshot in
-    // order to cap maximum gpu memory consumption.
-    flush();
-
-    RefPtr<SkImage> image = adoptRef(m_canvas->newImageSnapshot());
+    RefPtr<SkImage> image = newImageSnapshot();
 
     // Early exit if canvas was not drawn to since last prepareMailbox
     GLenum filter = m_filterQuality == kNone_SkFilterQuality ? GL_NEAREST : GL_LINEAR;
@@ -493,8 +445,6 @@ void Canvas2DLayerBridge::mailboxReleased(const WebExternalTextureMailbox& mailb
     // 2) Release the SkImage, which will return the texture to skia's scratch
     //    texture pool.
     m_mailboxes.remove(releasedMailboxInfo);
-
-    Canvas2DLayerManager::get().layerTransientResourceAllocationChanged(this);
 }
 
 WebLayer* Canvas2DLayerBridge::layer() const
@@ -506,21 +456,41 @@ WebLayer* Canvas2DLayerBridge::layer() const
 
 void Canvas2DLayerBridge::didDraw()
 {
-    Canvas2DLayerManager::get().layerDidDraw(this);
+    m_haveRecordedDrawCommands = true;
 }
 
 void Canvas2DLayerBridge::finalizeFrame(const FloatRect &dirtyRect)
 {
     ASSERT(!m_destructionInProgress);
     m_layer->layer()->invalidateRect(enclosingIntRect(dirtyRect));
-    m_didRecordDrawCommand = true;
+
+    m_framesPending++;
+    if (m_framesPending > 1) {
+        // Turn on the rate limiter if this layer tends to accumulate a
+        // non-discardable multi-frame backlog of draw commands.
+        setRateLimitingEnabled(true);
+    }
+    if (m_rateLimitingEnabled) {
+        flush();
+    }
 }
 
 PassRefPtr<SkImage> Canvas2DLayerBridge::newImageSnapshot()
 {
     if (!checkSurfaceValid())
         return nullptr;
-    return adoptRef(m_canvas->newImageSnapshot());
+    flush();
+    // A readback operation may alter the texture parameters, which may affect
+    // the compositor's behavior. Therefore, we must trigger copy-on-write
+    // even though we are not technically writing to the texture, only to its
+    // parameters.
+    m_surface->notifyContentWillChange(SkSurface::kRetain_ContentChangeMode);
+    return adoptRef(m_surface->newImageSnapshot());
+}
+
+void Canvas2DLayerBridge::willOverwriteCanvas()
+{
+    skipQueuedDrawCommands();
 }
 
 Canvas2DLayerBridge::MailboxInfo::MailboxInfo(const MailboxInfo& other) {

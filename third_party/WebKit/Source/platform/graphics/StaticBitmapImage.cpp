@@ -16,6 +16,8 @@ namespace blink {
 
 PassRefPtr<Image> StaticBitmapImage::create(PassRefPtr<SkImage> image)
 {
+    if (!image)
+        return nullptr;
     return adoptRef(new StaticBitmapImage(image));
 }
 

@@ -36,21 +36,22 @@ public:
     // Implementation of ImageBufferSurface interfaces
     SkCanvas* canvas() const override;
     PassRefPtr<SkPicture> getPicture() override;
+    void flush() override;
     void willDrawVideo() override;
     void didDraw(const FloatRect&) override;
     bool isValid() const override { return true; }
     bool isRecording() const override { return !m_fallbackSurface; }
-    void willAccessPixels() override;
+    bool writePixels(const SkImageInfo& origInfo, const void* pixels, size_t rowBytes, int x, int y) override;
     void willOverwriteCanvas() override;
     virtual void finalizeFrame(const FloatRect&);
     void setImageBuffer(ImageBuffer*) override;
-    PassRefPtr<SkImage> newImageSnapshot() const override;
+    PassRefPtr<SkImage> newImageSnapshot() override;
     void draw(GraphicsContext*, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode) override;
     bool isExpensiveToPaint() override;
     void setHasExpensiveOp() override { m_currentFrameHasExpensiveOp = true; }
 
     // Passthroughs to fallback surface
-    const SkBitmap& bitmap() override;
+    const SkBitmap& deprecatedBitmapForOverwrite() override;
     bool restore() override;
     WebLayer* layer() const override;
     bool isAccelerated() const override;

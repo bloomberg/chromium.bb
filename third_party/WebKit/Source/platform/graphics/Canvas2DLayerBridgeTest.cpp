@@ -25,7 +25,6 @@
 #include "config.h"
 #include "platform/graphics/Canvas2DLayerBridge.h"
 
-#include "SkDeferredCanvas.h"
 #include "SkSurface.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/test/MockWebGraphicsContext3D.h"
@@ -115,12 +114,11 @@ protected:
         MockCanvasContext mainMock;
         OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
         RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(300, 150));
-        OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(surface.get()));
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
         {
-            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), canvas.release(), surface, 0, NonOpaque)));
+            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), surface, 0, NonOpaque)));
 
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
@@ -138,12 +136,11 @@ protected:
         MockCanvasContext mainMock;
         OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
         RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(300, 150));
-        OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(surface.get()));
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
         {
-            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), canvas.release(), surface, 0, NonOpaque)));
+            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), surface, 0, NonOpaque)));
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
             EXPECT_TRUE(bridge->checkSurfaceValid());
             SkPaint paint;
@@ -170,9 +167,8 @@ protected:
     {
         MockCanvasContext mainMock;
         RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(300, 150));
-        OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(surface.get()));
         OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
-        Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), canvas.release(), surface, 0, NonOpaque)));
+        Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), surface, 0, NonOpaque)));
         bridge->m_lastImageId = 1;
 
         NullWebExternalBitmap bitmap;
@@ -190,21 +186,19 @@ protected:
         // This test passes by not crashing and not triggering assertions.
         {
             WebExternalTextureMailbox mailbox;
-            OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(surface.get()));
             OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
-            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), canvas.release(), surface, 0, NonOpaque)));
+            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), surface, 0, NonOpaque)));
             bridge->prepareMailbox(&mailbox, 0);
             bridge->mailboxReleased(mailbox, lostResource);
         }
 
         // Retry with mailbox released while bridge destruction is in progress
         {
-            OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(surface.get()));
             OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
             WebExternalTextureMailbox mailbox;
             Canvas2DLayerBridge* rawBridge;
             {
-                Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), canvas.release(), surface, 0, NonOpaque)));
+                Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), surface, 0, NonOpaque)));
                 bridge->prepareMailbox(&mailbox, 0);
                 rawBridge = bridge.get();
             } // bridge goes out of scope, but object is kept alive by self references

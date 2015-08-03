@@ -458,7 +458,7 @@ protected:
 
     PassRefPtr<Image> drawImageIntoBuffer(Image*, int width, int height, const char* functionName);
 
-    PassRefPtr<Image> videoFrameToImage(HTMLVideoElement*, BackingStoreCopy);
+    PassRefPtr<Image> videoFrameToImage(HTMLVideoElement*);
 
     WebGLRenderbuffer* ensureEmulatedStencilBuffer(GLenum target, WebGLRenderbuffer*);
 

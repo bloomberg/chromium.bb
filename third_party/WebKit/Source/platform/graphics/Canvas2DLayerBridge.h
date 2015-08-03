@@ -34,12 +34,12 @@
 #include "public/platform/WebExternalTextureMailbox.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/utils/SkDeferredCanvas.h"
 #include "wtf/Deque.h"
-#include "wtf/DoublyLinkedList.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+
+class SkPictureRecorder;
 
 namespace blink {
 
@@ -48,7 +48,7 @@ class ImageBuffer;
 class WebGraphicsContext3D;
 class WebGraphicsContext3DProvider;
 
-class PLATFORM_EXPORT Canvas2DLayerBridge : public WebExternalTextureLayerClient, public SkDeferredCanvas::NotificationClient, public DoublyLinkedListNode<Canvas2DLayerBridge>, public RefCounted<Canvas2DLayerBridge> {
+class PLATFORM_EXPORT Canvas2DLayerBridge : public WebExternalTextureLayerClient, public RefCounted<Canvas2DLayerBridge> {
     WTF_MAKE_NONCOPYABLE(Canvas2DLayerBridge);
 public:
     static PassRefPtr<Canvas2DLayerBridge> create(const IntSize&, OpacityMode, int msaaSampleCount);
@@ -59,52 +59,47 @@ public:
     bool prepareMailbox(WebExternalTextureMailbox*, WebExternalBitmap*) override;
     void mailboxReleased(const WebExternalTextureMailbox&, bool lostResource) override;
 
-    // SkDeferredCanvas::NotificationClient implementation
-    void prepareForDraw() override;
-    void storageAllocatedForRecordingChanged(size_t) override;
-    void flushedDrawCommands() override;
-    void skippedPendingDrawCommands() override;
-
     // ImageBufferSurface implementation
     void finalizeFrame(const FloatRect &dirtyRect);
-    void willAccessPixels();
-    SkCanvas* canvas() const { return m_canvas.get(); }
+    void willWritePixels();
+    void willOverwriteAllPixels();
+    void willOverwriteCanvas();
+    SkCanvas* canvas() const;
     bool checkSurfaceValid();
     bool restoreSurface();
     WebLayer* layer() const;
     bool isAccelerated() const { return true; }
     void setFilterQuality(SkFilterQuality);
     void setIsHidden(bool);
-    void setImageBuffer(ImageBuffer* imageBuffer) { m_imageBuffer = imageBuffer; }
+    void setImageBuffer(ImageBuffer*);
     void didDraw();
+    bool writePixels(const SkImageInfo&, const void* pixels, size_t rowBytes, int x, int y);
+    void flush();
+    void flushGpu();
 
-    // Methods used by Canvas2DLayerManager
-    virtual size_t freeMemoryIfPossible(size_t); // virtual for mocking
-    virtual void flush(); // virtual for mocking
-    virtual size_t storageAllocatedForRecording(); // virtual for faking
-    size_t bytesAllocated() const { return m_bytesAllocated; }
     void limitPendingFrames();
     void freeTransientResources();
-    bool hasTransientResources() const;
     bool isHidden() { return m_isHidden; }
 
     void beginDestruction();
 
     PassRefPtr<SkImage> newImageSnapshot();
 
-protected:
-    Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider>, PassOwnPtr<SkDeferredCanvas>, PassRefPtr<SkSurface>, int, OpacityMode);
+private:
+    Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider>, PassRefPtr<SkSurface>, int, OpacityMode);
     void setRateLimitingEnabled(bool);
     WebGraphicsContext3D* context();
+    void startRecording();
+    void skipQueuedDrawCommands();
 
-    OwnPtr<SkDeferredCanvas> m_canvas;
+    OwnPtr<SkPictureRecorder> m_recorder;
     RefPtr<SkSurface> m_surface;
     OwnPtr<WebExternalTextureLayer> m_layer;
     OwnPtr<WebGraphicsContext3DProvider> m_contextProvider;
     ImageBuffer* m_imageBuffer;
     int m_msaaSampleCount;
     size_t m_bytesAllocated;
-    bool m_didRecordDrawCommand;
+    bool m_haveRecordedDrawCommands;
     bool m_isSurfaceValid;
     int m_framesPending;
     int m_framesSinceMailboxRelease;
@@ -113,10 +108,7 @@ protected:
     SkFilterQuality m_filterQuality;
     bool m_isHidden;
 
-    friend class WTF::DoublyLinkedListNode<Canvas2DLayerBridge>;
     friend class Canvas2DLayerBridgeTest;
-    Canvas2DLayerBridge* m_next;
-    Canvas2DLayerBridge* m_prev;
 
     struct MailboxInfo {
         WebExternalTextureMailbox m_mailbox;
@@ -138,6 +130,7 @@ protected:
     Deque<MailboxInfo, MaxActiveMailboxes> m_mailboxes;
     GLenum m_lastFilter;
     OpacityMode m_opacityMode;
+    IntSize m_size;
 };
 
 } // namespace blink

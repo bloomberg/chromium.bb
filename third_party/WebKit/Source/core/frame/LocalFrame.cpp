@@ -617,7 +617,7 @@ PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(
     RefPtr<const SkPicture> recording = pictureBuilder.endRecording();
     buffer->canvas()->drawPicture(recording.get());
 
-    RefPtr<Image> image = buffer->copyImage();
+    RefPtr<Image> image = buffer->newImageSnapshot();
     return DragImage::create(image.get(), shouldRespectImageOrientation, deviceScaleFactor);
 }
 

@@ -46,8 +46,9 @@ public:
 
     SkCanvas* canvas() const override;
     bool isValid() const override;
+    const SkBitmap& deprecatedBitmapForOverwrite() override;
 
-    PassRefPtr<SkImage> newImageSnapshot() const override;
+    PassRefPtr<SkImage> newImageSnapshot() override;
 private:
     RefPtr<SkSurface> m_surface;
 };

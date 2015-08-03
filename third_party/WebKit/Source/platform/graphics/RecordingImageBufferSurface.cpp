@@ -59,12 +59,15 @@ void RecordingImageBufferSurface::setImageBuffer(ImageBuffer* imageBuffer)
     }
 }
 
-void RecordingImageBufferSurface::willAccessPixels()
+bool RecordingImageBufferSurface::writePixels(const SkImageInfo& origInfo, const void* pixels, size_t rowBytes, int x, int y)
 {
-    if (m_fallbackSurface)
-        m_fallbackSurface->willAccessPixels();
-    else
+    if (!m_fallbackSurface) {
+        if (x <= 0 && y <= 0 && x + origInfo.width() >= size().width() && y + origInfo.height() >= size().height()) {
+            willOverwriteCanvas();
+        }
         fallBackToRasterCanvas();
+    }
+    return m_fallbackSurface->writePixels(origInfo, pixels, rowBytes, x, y);
 }
 
 void RecordingImageBufferSurface::fallBackToRasterCanvas()
@@ -94,10 +97,10 @@ void RecordingImageBufferSurface::fallBackToRasterCanvas()
 
 }
 
-PassRefPtr<SkImage> RecordingImageBufferSurface::newImageSnapshot() const
+PassRefPtr<SkImage> RecordingImageBufferSurface::newImageSnapshot()
 {
     if (!m_fallbackSurface)
-        const_cast<RecordingImageBufferSurface*>(this)->fallBackToRasterCanvas();
+        fallBackToRasterCanvas();
     return m_fallbackSurface->newImageSnapshot();
 }
 
@@ -136,6 +139,13 @@ void RecordingImageBufferSurface::finalizeFrame(const FloatRect &dirtyRect)
 
     if (!finalizeFrameInternal())
         fallBackToRasterCanvas();
+}
+
+void RecordingImageBufferSurface::flush()
+{
+    if (!m_fallbackSurface)
+        fallBackToRasterCanvas();
+    m_fallbackSurface->flush();
 }
 
 void RecordingImageBufferSurface::willOverwriteCanvas()
@@ -236,14 +246,16 @@ bool RecordingImageBufferSurface::isExpensiveToPaint()
     return false;
 }
 
-// Fallback passthroughs
-
-const SkBitmap& RecordingImageBufferSurface::bitmap()
+const SkBitmap& RecordingImageBufferSurface::deprecatedBitmapForOverwrite()
 {
-    if (m_fallbackSurface)
-        return m_fallbackSurface->bitmap();
-    return ImageBufferSurface::bitmap();
+    if (!m_fallbackSurface) {
+        willOverwriteCanvas();
+        fallBackToRasterCanvas();
+    }
+    return m_fallbackSurface->deprecatedBitmapForOverwrite();
 }
+
+// Fallback passthroughs
 
 bool RecordingImageBufferSurface::restore()
 {

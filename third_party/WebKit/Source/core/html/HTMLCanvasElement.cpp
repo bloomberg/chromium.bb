@@ -474,18 +474,26 @@ ImageData* HTMLCanvasElement::toImageData(SourceDrawingBuffer sourceBuffer) cons
 
         m_context->paintRenderingResultsToCanvas(sourceBuffer);
         imageData = ImageData::create(m_size);
-        SkImageInfo imageInfo = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
-        buffer()->bitmap().readPixels(imageInfo, imageData->data()->data(), imageInfo.minRowBytes(), 0, 0);
+        RefPtr<SkImage> snapshot = buffer()->newSkImageSnapshot();
+        if (snapshot) {
+            SkImageInfo imageInfo = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
+            snapshot->readPixels(imageInfo, imageData->data()->data(), imageInfo.minRowBytes(), 0, 0);
+        }
         return imageData;
     }
 
     imageData = ImageData::create(m_size);
 
-    if (m_context) {
-        ASSERT(m_context->is2d());
+    if (!m_context)
+        return imageData;
+
+    ASSERT(m_context->is2d());
+    RefPtr<SkImage> snapshot = buffer()->newSkImageSnapshot();
+    if (snapshot) {
         SkImageInfo imageInfo = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
-        buffer()->bitmap().readPixels(imageInfo, imageData->data()->data(), imageInfo.minRowBytes(), 0, 0);
+        snapshot->readPixels(imageInfo, imageData->data()->data(), imageInfo.minRowBytes(), 0, 0);
     }
+
     return imageData;
 }
 
@@ -785,7 +793,7 @@ PassRefPtr<Image> HTMLCanvasElement::copiedImage(SourceDrawingBuffer sourceBuffe
     if (m_context->is3d())
         needToUpdate |= m_context->paintRenderingResultsToCanvas(sourceBuffer);
     if (needToUpdate && buffer()) {
-        m_copiedImage = buffer()->copyImage(CopyBackingStore, Unscaled);
+        m_copiedImage = buffer()->newImageSnapshot();
         updateExternallyAllocatedMemory();
     }
     return m_copiedImage;
@@ -840,7 +848,7 @@ void HTMLCanvasElement::didMoveToNewDocument(Document& oldDocument)
     HTMLElement::didMoveToNewDocument(oldDocument);
 }
 
-PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(SourceImageMode mode, SourceImageStatus* status) const
+PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(SourceImageStatus* status) const
 {
     if (!width() || !height()) {
         *status = ZeroSizeCanvasSourceImageStatus;
@@ -857,13 +865,11 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(SourceImageMode mod
         return createTransparentImage(size());
     }
 
-    m_imageBuffer->willAccessPixels();
-
     if (m_context->is3d()) {
         m_context->paintRenderingResultsToCanvas(BackBuffer);
     }
 
-    RefPtr<SkImage> image = buffer()->newImageSnapshot();
+    RefPtr<SkImage> image = buffer()->newSkImageSnapshot();
     if (image) {
         *status = NormalSourceImageStatus;
         return StaticBitmapImage::create(image.release());
