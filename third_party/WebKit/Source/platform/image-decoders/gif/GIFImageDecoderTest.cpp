@@ -32,13 +32,11 @@
 #include "platform/image-decoders/gif/GIFImageDecoder.h"
 
 #include "platform/SharedBuffer.h"
-#include "public/platform/Platform.h"
+#include "platform/image-decoders/ImageDecoderTestHelpers.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebSize.h"
-#include "public/platform/WebUnitTestSupport.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/StringHasher.h"
 #include "wtf/Vector.h"
 #include <gtest/gtest.h>
 
@@ -50,36 +48,9 @@ const char decodersTestingDir[] = "Source/platform/image-decoders/testing";
 const char layoutTestResourcesDir[] = "LayoutTests/fast/images/resources";
 const char webTestsDataDir[] = "Source/web/tests/data";
 
-PassRefPtr<SharedBuffer> readFile(const char* dir, const char* fileName)
-{
-    String filePath = Platform::current()->unitTestSupport()->webKitRootDir();
-    filePath.append("/");
-    filePath.append(dir);
-    filePath.append("/");
-    filePath.append(fileName);
-
-    return Platform::current()->unitTestSupport()->readFromFile(filePath);
-}
-
-PassOwnPtr<GIFImageDecoder> createDecoder()
+PassOwnPtr<ImageDecoder> createDecoder()
 {
     return adoptPtr(new GIFImageDecoder(ImageDecoder::AlphaNotPremultiplied, ImageDecoder::GammaAndColorProfileApplied, ImageDecoder::noDecodedImageByteLimit));
-}
-
-unsigned hashSkBitmap(const SkBitmap& bitmap)
-{
-    return StringHasher::hashMemory(bitmap.getPixels(), bitmap.getSize());
-}
-
-void createDecodingBaseline(SharedBuffer* data, Vector<unsigned>* baselineHashes)
-{
-    OwnPtr<GIFImageDecoder> decoder = createDecoder();
-    decoder->setData(data, true);
-    size_t frameCount = decoder->frameCount();
-    for (size_t i = 0; i < frameCount; ++i) {
-        ImageFrame* frame = decoder->frameBufferAtIndex(i);
-        baselineHashes->append(hashSkBitmap(frame->getSkBitmap()));
-    }
 }
 
 void testRandomFrameDecode(const char* dir, const char* gifFile)
@@ -89,18 +60,18 @@ void testRandomFrameDecode(const char* dir, const char* gifFile)
     RefPtr<SharedBuffer> fullData = readFile(dir, gifFile);
     ASSERT_TRUE(fullData.get());
     Vector<unsigned> baselineHashes;
-    createDecodingBaseline(fullData.get(), &baselineHashes);
+    createDecodingBaseline(&createDecoder, fullData.get(), &baselineHashes);
     size_t frameCount = baselineHashes.size();
 
     // Random decoding should get the same results as sequential decoding.
-    OwnPtr<GIFImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
     decoder->setData(fullData.get(), true);
     const size_t skippingStep = 5;
     for (size_t i = 0; i < skippingStep; ++i) {
         for (size_t j = i; j < frameCount; j += skippingStep) {
             SCOPED_TRACE(testing::Message() << "Random i:" << i << " j:" << j);
             ImageFrame* frame = decoder->frameBufferAtIndex(j);
-            EXPECT_EQ(baselineHashes[j], hashSkBitmap(frame->getSkBitmap()));
+            EXPECT_EQ(baselineHashes[j], hashBitmap(frame->getSkBitmap()));
         }
     }
 
@@ -110,7 +81,7 @@ void testRandomFrameDecode(const char* dir, const char* gifFile)
     for (size_t i = frameCount; i; --i) {
         SCOPED_TRACE(testing::Message() << "Reverse i:" << i);
         ImageFrame* frame = decoder->frameBufferAtIndex(i - 1);
-        EXPECT_EQ(baselineHashes[i - 1], hashSkBitmap(frame->getSkBitmap()));
+        EXPECT_EQ(baselineHashes[i - 1], hashBitmap(frame->getSkBitmap()));
     }
 }
 
@@ -121,10 +92,10 @@ void testRandomDecodeAfterClearFrameBufferCache(const char* dir, const char* gif
     RefPtr<SharedBuffer> data = readFile(dir, gifFile);
     ASSERT_TRUE(data.get());
     Vector<unsigned> baselineHashes;
-    createDecodingBaseline(data.get(), &baselineHashes);
+    createDecodingBaseline(&createDecoder, data.get(), &baselineHashes);
     size_t frameCount = baselineHashes.size();
 
-    OwnPtr<GIFImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
     decoder->setData(data.get(), true);
     for (size_t clearExceptFrame = 0; clearExceptFrame < frameCount; ++clearExceptFrame) {
         decoder->clearCacheExceptFrame(clearExceptFrame);
@@ -133,7 +104,7 @@ void testRandomDecodeAfterClearFrameBufferCache(const char* dir, const char* gif
             for (size_t j = 0; j < frameCount; j += skippingStep) {
                 SCOPED_TRACE(testing::Message() << "Random i:" << i << " j:" << j);
                 ImageFrame* frame = decoder->frameBufferAtIndex(j);
-                EXPECT_EQ(baselineHashes[j], hashSkBitmap(frame->getSkBitmap()));
+                EXPECT_EQ(baselineHashes[j], hashBitmap(frame->getSkBitmap()));
             }
         }
     }
@@ -143,7 +114,7 @@ void testRandomDecodeAfterClearFrameBufferCache(const char* dir, const char* gif
 
 TEST(GIFImageDecoderTest, decodeTwoFrames)
 {
-    OwnPtr<GIFImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
 
     RefPtr<SharedBuffer> data = readFile(layoutTestResourcesDir, "animated.gif");
     ASSERT_TRUE(data.get());
@@ -169,7 +140,7 @@ TEST(GIFImageDecoderTest, decodeTwoFrames)
 
 TEST(GIFImageDecoderTest, parseAndDecode)
 {
-    OwnPtr<GIFImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
 
     RefPtr<SharedBuffer> data = readFile(layoutTestResourcesDir, "animated.gif");
     ASSERT_TRUE(data.get());
@@ -193,7 +164,7 @@ TEST(GIFImageDecoderTest, parseAndDecode)
 
 TEST(GIFImageDecoderTest, parseByteByByte)
 {
-    OwnPtr<GIFImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
 
     RefPtr<SharedBuffer> data = readFile(layoutTestResourcesDir, "animated.gif");
     ASSERT_TRUE(data.get());
@@ -218,7 +189,7 @@ TEST(GIFImageDecoderTest, parseByteByByte)
 
 TEST(GIFImageDecoderTest, parseAndDecodeByteByByte)
 {
-    OwnPtr<GIFImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
 
     RefPtr<SharedBuffer> data = readFile(layoutTestResourcesDir, "animated-gif-with-offsets.gif");
     ASSERT_TRUE(data.get());
@@ -246,7 +217,7 @@ TEST(GIFImageDecoderTest, parseAndDecodeByteByByte)
 
 TEST(GIFImageDecoderTest, brokenSecondFrame)
 {
-    OwnPtr<GIFImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
 
     RefPtr<SharedBuffer> data = readFile(webTestsDataDir, "broken.gif");
     ASSERT_TRUE(data.get());
@@ -264,7 +235,7 @@ TEST(GIFImageDecoderTest, progressiveDecode)
     ASSERT_TRUE(fullData.get());
     const size_t fullLength = fullData->size();
 
-    OwnPtr<GIFImageDecoder> decoder;
+    OwnPtr<ImageDecoder> decoder;
     ImageFrame* frame;
 
     Vector<unsigned> truncatedHashes;
@@ -281,7 +252,7 @@ TEST(GIFImageDecoderTest, progressiveDecode)
             truncatedHashes.append(0);
             continue;
         }
-        truncatedHashes.append(hashSkBitmap(frame->getSkBitmap()));
+        truncatedHashes.append(hashBitmap(frame->getSkBitmap()));
     }
 
     // Compute hashes when the file is progressively decoded.
@@ -295,7 +266,7 @@ TEST(GIFImageDecoderTest, progressiveDecode)
             progressiveHashes.append(0);
             continue;
         }
-        progressiveHashes.append(hashSkBitmap(frame->getSkBitmap()));
+        progressiveHashes.append(hashBitmap(frame->getSkBitmap()));
     }
     EXPECT_EQ(cAnimationNone, decoder->repetitionCount());
 
@@ -311,7 +282,7 @@ TEST(GIFImageDecoderTest, progressiveDecode)
 
 TEST(GIFImageDecoderTest, allDataReceivedTruncation)
 {
-    OwnPtr<GIFImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
 
     RefPtr<SharedBuffer> data = readFile(layoutTestResourcesDir, "animated.gif");
     ASSERT_TRUE(data.get());
@@ -331,7 +302,7 @@ TEST(GIFImageDecoderTest, allDataReceivedTruncation)
 
 TEST(GIFImageDecoderTest, frameIsComplete)
 {
-    OwnPtr<GIFImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
 
     RefPtr<SharedBuffer> data = readFile(layoutTestResourcesDir, "animated.gif");
     ASSERT_TRUE(data.get());
@@ -346,7 +317,7 @@ TEST(GIFImageDecoderTest, frameIsComplete)
 
 TEST(GIFImageDecoderTest, frameIsCompleteLoading)
 {
-    OwnPtr<GIFImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
 
     RefPtr<SharedBuffer> data = readFile(layoutTestResourcesDir, "animated.gif");
     ASSERT_TRUE(data.get());
@@ -373,24 +344,24 @@ TEST(GIFImageDecoderTest, badTerminator)
     ASSERT_TRUE(referenceData.get());
     ASSERT_TRUE(testData.get());
 
-    OwnPtr<GIFImageDecoder> referenceDecoder(createDecoder());
+    OwnPtr<ImageDecoder> referenceDecoder = createDecoder();
     referenceDecoder->setData(referenceData.get(), true);
     EXPECT_EQ(1u, referenceDecoder->frameCount());
     ImageFrame* referenceFrame = referenceDecoder->frameBufferAtIndex(0);
     ASSERT(referenceFrame);
 
-    OwnPtr<GIFImageDecoder> testDecoder(createDecoder());
+    OwnPtr<ImageDecoder> testDecoder = createDecoder();
     testDecoder->setData(testData.get(), true);
     EXPECT_EQ(1u, testDecoder->frameCount());
     ImageFrame* testFrame = testDecoder->frameBufferAtIndex(0);
     ASSERT(testFrame);
 
-    EXPECT_EQ(hashSkBitmap(referenceFrame->getSkBitmap()), hashSkBitmap(testFrame->getSkBitmap()));
+    EXPECT_EQ(hashBitmap(referenceFrame->getSkBitmap()), hashBitmap(testFrame->getSkBitmap()));
 }
 
 TEST(GIFImageDecoderTest, updateRequiredPreviousFrameAfterFirstDecode)
 {
-    OwnPtr<GIFImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
 
     RefPtr<SharedBuffer> fullData = readFile(layoutTestResourcesDir, "animated-10color.gif");
     ASSERT_TRUE(fullData.get());
@@ -437,10 +408,10 @@ TEST(GIFImageDecoderTest, resumePartialDecodeAfterClearFrameBufferCache)
     RefPtr<SharedBuffer> fullData = readFile(layoutTestResourcesDir, "animated-10color.gif");
     ASSERT_TRUE(fullData.get());
     Vector<unsigned> baselineHashes;
-    createDecodingBaseline(fullData.get(), &baselineHashes);
+    createDecodingBaseline(&createDecoder, fullData.get(), &baselineHashes);
     size_t frameCount = baselineHashes.size();
 
-    OwnPtr<GIFImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
 
     // Let frame 0 be partially decoded.
     size_t partialSize = 1;
@@ -454,13 +425,13 @@ TEST(GIFImageDecoderTest, resumePartialDecodeAfterClearFrameBufferCache)
     decoder->setData(fullData.get(), true);
     EXPECT_EQ(frameCount, decoder->frameCount());
     ImageFrame* lastFrame = decoder->frameBufferAtIndex(frameCount - 1);
-    EXPECT_EQ(baselineHashes[frameCount - 1], hashSkBitmap(lastFrame->getSkBitmap()));
+    EXPECT_EQ(baselineHashes[frameCount - 1], hashBitmap(lastFrame->getSkBitmap()));
     decoder->clearCacheExceptFrame(kNotFound);
 
     // Resume decoding of the first frame.
     ImageFrame* firstFrame = decoder->frameBufferAtIndex(0);
     EXPECT_EQ(ImageFrame::FrameComplete, firstFrame->status());
-    EXPECT_EQ(baselineHashes[0], hashSkBitmap(firstFrame->getSkBitmap()));
+    EXPECT_EQ(baselineHashes[0], hashBitmap(firstFrame->getSkBitmap()));
 }
 
 // The first LZW codes in the image are invalid values that try to create a loop
@@ -470,7 +441,7 @@ TEST(GIFImageDecoderTest, badInitialCode)
     RefPtr<SharedBuffer> testData = readFile(decodersTestingDir, "bad-initial-code.gif");
     ASSERT_TRUE(testData.get());
 
-    OwnPtr<GIFImageDecoder> testDecoder(createDecoder());
+    OwnPtr<ImageDecoder> testDecoder = createDecoder();
     testDecoder->setData(testData.get(), true);
     EXPECT_EQ(1u, testDecoder->frameCount());
     ASSERT_TRUE(testDecoder->frameBufferAtIndex(0));
@@ -483,7 +454,7 @@ TEST(GIFImageDecoderTest, badCode)
     RefPtr<SharedBuffer> testData = readFile(decodersTestingDir, "bad-code.gif");
     ASSERT_TRUE(testData.get());
 
-    OwnPtr<GIFImageDecoder> testDecoder(createDecoder());
+    OwnPtr<ImageDecoder> testDecoder = createDecoder();
     testDecoder->setData(testData.get(), true);
     EXPECT_EQ(1u, testDecoder->frameCount());
     ASSERT_TRUE(testDecoder->frameBufferAtIndex(0));
@@ -492,7 +463,7 @@ TEST(GIFImageDecoderTest, badCode)
 
 TEST(GIFImageDecoderTest, invalidDisposalMethod)
 {
-    OwnPtr<GIFImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
 
     // The image has 2 frames, with disposal method 4 and 5, respectively.
     RefPtr<SharedBuffer> data = readFile(webTestsDataDir, "invalid-disposal-method.gif");
@@ -511,7 +482,7 @@ TEST(GIFImageDecoderTest, firstFrameHasGreaterSizeThanScreenSize)
     RefPtr<SharedBuffer> fullData = readFile(decodersTestingDir, "first-frame-has-greater-size-than-screen-size.gif");
     ASSERT_TRUE(fullData.get());
 
-    OwnPtr<GIFImageDecoder> decoder;
+    OwnPtr<ImageDecoder> decoder;
     IntSize frameSize;
 
     // Compute hashes when the file is truncated.

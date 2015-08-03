@@ -6,20 +6,12 @@
 #include "platform/image-decoders/bmp/BMPImageDecoder.h"
 
 #include "platform/SharedBuffer.h"
-#include "public/platform/WebUnitTestSupport.h"
+#include "platform/image-decoders/ImageDecoderTestHelpers.h"
 #include <gtest/gtest.h>
 
 namespace blink {
 
 namespace {
-
-PassRefPtr<SharedBuffer> readFile(const char* fileName)
-{
-    String filePath = Platform::current()->unitTestSupport()->webKitRootDir();
-    filePath.append(fileName);
-
-    return Platform::current()->unitTestSupport()->readFromFile(filePath);
-}
 
 PassOwnPtr<BMPImageDecoder> createDecoder()
 {

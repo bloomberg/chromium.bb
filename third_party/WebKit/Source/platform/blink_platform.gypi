@@ -1014,6 +1014,7 @@
       'graphics/ImageLayerChromiumTest.cpp',
       'graphics/test/MockImageDecoder.h',
       'graphics/test/MockWebGraphicsContext3D.h',
+      'image-decoders/ImageDecoderTestHelpers.cpp',
       'image-decoders/bmp/BMPImageDecoderTest.cpp',
       'image-decoders/gif/GIFImageDecoderTest.cpp',
       'image-decoders/jpeg/JPEGImageDecoderTest.cpp',

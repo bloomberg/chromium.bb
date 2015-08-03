@@ -32,13 +32,12 @@
 #include "platform/image-decoders/jpeg/JPEGImageDecoder.h"
 
 #include "platform/SharedBuffer.h"
-#include "public/platform/Platform.h"
+#include "platform/image-decoders/ImageAnimation.h"
+#include "platform/image-decoders/ImageDecoderTestHelpers.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebSize.h"
-#include "public/platform/WebUnitTestSupport.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/StringHasher.h"
 #include <gtest/gtest.h>
 
 namespace blink {
@@ -47,17 +46,14 @@ static const size_t LargeEnoughSize = 1000 * 1000;
 
 namespace {
 
-PassRefPtr<SharedBuffer> readFile(const char* fileName)
-{
-    String filePath = Platform::current()->unitTestSupport()->webKitRootDir();
-    filePath.append(fileName);
-
-    return Platform::current()->unitTestSupport()->readFromFile(filePath);
-}
-
-PassOwnPtr<JPEGImageDecoder> createDecoder(size_t maxDecodedBytes = ImageDecoder::noDecodedImageByteLimit)
+PassOwnPtr<ImageDecoder> createDecoder(size_t maxDecodedBytes)
 {
     return adoptPtr(new JPEGImageDecoder(ImageDecoder::AlphaNotPremultiplied, ImageDecoder::GammaAndColorProfileApplied, maxDecodedBytes));
+}
+
+PassOwnPtr<ImageDecoder> createDecoder()
+{
+    return createDecoder(ImageDecoder::noDecodedImageByteLimit);
 }
 
 } // anonymous namespace
@@ -67,7 +63,7 @@ void downsample(size_t maxDecodedBytes, unsigned* outputWidth, unsigned* outputH
     RefPtr<SharedBuffer> data = readFile(imageFilePath);
     ASSERT_TRUE(data);
 
-    OwnPtr<JPEGImageDecoder> decoder = createDecoder(maxDecodedBytes);
+    OwnPtr<ImageDecoder> decoder = createDecoder(maxDecodedBytes);
     decoder->setData(data.get(), true);
 
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
@@ -82,7 +78,7 @@ void readYUV(size_t maxDecodedBytes, unsigned* outputYWidth, unsigned* outputYHe
     RefPtr<SharedBuffer> data = readFile(imageFilePath);
     ASSERT_TRUE(data);
 
-    OwnPtr<JPEGImageDecoder> decoder = createDecoder(maxDecodedBytes);
+    OwnPtr<ImageDecoder> decoder = createDecoder(maxDecodedBytes);
     decoder->setData(data.get(), true);
 
     OwnPtr<ImagePlanes> imagePlanes = adoptPtr(new ImagePlanes());
@@ -109,7 +105,7 @@ void readYUV(size_t maxDecodedBytes, unsigned* outputYWidth, unsigned* outputYHe
 // Tests failure on a too big image.
 TEST(JPEGImageDecoderTest, tooBig)
 {
-    OwnPtr<JPEGImageDecoder> decoder = createDecoder(100);
+    OwnPtr<ImageDecoder> decoder = createDecoder(100);
     EXPECT_FALSE(decoder->setSize(10000, 10000));
     EXPECT_TRUE(decoder->failed());
 }
@@ -226,7 +222,7 @@ TEST(JPEGImageDecoderTest, yuv)
     RefPtr<SharedBuffer> data = readFile(jpegFile);
     ASSERT_TRUE(data);
 
-    OwnPtr<JPEGImageDecoder> decoder = createDecoder(230 * 230 * 4);
+    OwnPtr<ImageDecoder> decoder = createDecoder(230 * 230 * 4);
     decoder->setData(data.get(), true);
 
     OwnPtr<ImagePlanes> imagePlanes = adoptPtr(new ImagePlanes());
@@ -235,63 +231,13 @@ TEST(JPEGImageDecoderTest, yuv)
     ASSERT_FALSE(decoder->canDecodeToYUV());
 }
 
-// TODO (scroggo): These functions are similar to functions in other
-// ImageDecoderTests. Share code with them.
-unsigned hashSkBitmap(const SkBitmap& bitmap)
-{
-    return StringHasher::hashMemory(bitmap.getPixels(), bitmap.getSize());
-}
-
-void createDecodingBaseline(SharedBuffer* data, Vector<unsigned>* baselineHashes)
-{
-    OwnPtr<JPEGImageDecoder> decoder = createDecoder();
-    decoder->setData(data, true);
-    size_t frameCount = decoder->frameCount();
-    for (size_t i = 0; i < frameCount; ++i) {
-        ImageFrame* frame = decoder->frameBufferAtIndex(i);
-        baselineHashes->append(hashSkBitmap(frame->getSkBitmap()));
-    }
-}
-
-void testByteByByteDecode(const char* jpegFile)
-{
-    OwnPtr<JPEGImageDecoder> decoder = createDecoder();
-    RefPtr<SharedBuffer> data = readFile(jpegFile);
-    ASSERT_TRUE(data);
-
-    Vector<unsigned> baselineHashes;
-    createDecodingBaseline(data.get(), &baselineHashes);
-
-    // Pass data to decoder byte by byte.
-    for (size_t length = 1; length <= data->size(); ++length) {
-        RefPtr<SharedBuffer> tempData = SharedBuffer::create(data->data(), length);
-        decoder->setData(tempData.get(), length == data->size());
-
-        if (decoder->isSizeAvailable()) {
-            // If we have decoded the size, attempt to decode the whole image.
-            decoder->frameBufferAtIndex(0);
-        }
-
-        if (decoder->failed())
-            break;
-    }
-
-    EXPECT_FALSE(decoder->failed());
-    EXPECT_EQ(1u, decoder->frameCount());
-
-    ImageFrame* frame = decoder->frameBufferAtIndex(0);
-    ASSERT_TRUE(frame);
-
-    EXPECT_EQ(baselineHashes[0], hashSkBitmap(frame->getSkBitmap()));
-}
-
 TEST(JPEGImageDecoderTest, byteByByte)
 {
-    testByteByByteDecode("/LayoutTests/fast/images/resources/lenna.jpg");
+    testByteByByteDecode(&createDecoder, "/LayoutTests/fast/images/resources/lenna.jpg", 1u, cAnimationNone);
     // Progressive image
-    testByteByByteDecode("/LayoutTests/fast/images/resources/flowchart.jpg");
+    testByteByByteDecode(&createDecoder, "/LayoutTests/fast/images/resources/flowchart.jpg", 1u, cAnimationNone);
     // Image with restart markers
-    testByteByByteDecode("/LayoutTests/fast/images/resources/red-at-12-oclock-with-color-profile.jpg");
+    testByteByByteDecode(&createDecoder, "/LayoutTests/fast/images/resources/red-at-12-oclock-with-color-profile.jpg", 1u, cAnimationNone);
 }
 
 } // namespace blink

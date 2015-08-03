@@ -33,13 +33,11 @@
 
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
-#include "public/platform/Platform.h"
+#include "platform/image-decoders/ImageDecoderTestHelpers.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebSize.h"
-#include "public/platform/WebUnitTestSupport.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/StringHasher.h"
 #include "wtf/Vector.h"
 #include "wtf/dtoa/utils.h"
 #include <gtest/gtest.h>
@@ -48,33 +46,14 @@ namespace blink {
 
 namespace {
 
-PassRefPtr<SharedBuffer> readFile(const char* fileName)
-{
-    String filePath = Platform::current()->unitTestSupport()->webKitRootDir();
-    filePath.append(fileName);
-
-    return Platform::current()->unitTestSupport()->readFromFile(filePath);
-}
-
-PassOwnPtr<WEBPImageDecoder> createDecoder(ImageDecoder::AlphaOption alphaOption = ImageDecoder::AlphaNotPremultiplied)
+PassOwnPtr<ImageDecoder> createDecoder(ImageDecoder::AlphaOption alphaOption)
 {
     return adoptPtr(new WEBPImageDecoder(alphaOption, ImageDecoder::GammaAndColorProfileApplied, ImageDecoder::noDecodedImageByteLimit));
 }
 
-unsigned hashSkBitmap(const SkBitmap& bitmap)
+PassOwnPtr<ImageDecoder> createDecoder()
 {
-    return StringHasher::hashMemory(bitmap.getPixels(), bitmap.getSize());
-}
-
-void createDecodingBaseline(SharedBuffer* data, Vector<unsigned>* baselineHashes)
-{
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
-    decoder->setData(data, true);
-    size_t frameCount = decoder->frameCount();
-    for (size_t i = 0; i < frameCount; ++i) {
-        ImageFrame* frame = decoder->frameBufferAtIndex(i);
-        baselineHashes->append(hashSkBitmap(frame->getSkBitmap()));
-    }
+    return createDecoder(ImageDecoder::AlphaNotPremultiplied);
 }
 
 void testRandomFrameDecode(const char* webpFile)
@@ -84,18 +63,18 @@ void testRandomFrameDecode(const char* webpFile)
     RefPtr<SharedBuffer> fullData = readFile(webpFile);
     ASSERT_TRUE(fullData.get());
     Vector<unsigned> baselineHashes;
-    createDecodingBaseline(fullData.get(), &baselineHashes);
+    createDecodingBaseline(&createDecoder, fullData.get(), &baselineHashes);
     size_t frameCount = baselineHashes.size();
 
     // Random decoding should get the same results as sequential decoding.
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
     decoder->setData(fullData.get(), true);
     const size_t skippingStep = 5;
     for (size_t i = 0; i < skippingStep; ++i) {
         for (size_t j = i; j < frameCount; j += skippingStep) {
             SCOPED_TRACE(testing::Message() << "Random i:" << i << " j:" << j);
             ImageFrame* frame = decoder->frameBufferAtIndex(j);
-            EXPECT_EQ(baselineHashes[j], hashSkBitmap(frame->getSkBitmap()));
+            EXPECT_EQ(baselineHashes[j], hashBitmap(frame->getSkBitmap()));
         }
     }
 
@@ -105,7 +84,7 @@ void testRandomFrameDecode(const char* webpFile)
     for (size_t i = frameCount; i; --i) {
         SCOPED_TRACE(testing::Message() << "Reverse i:" << i);
         ImageFrame* frame = decoder->frameBufferAtIndex(i - 1);
-        EXPECT_EQ(baselineHashes[i - 1], hashSkBitmap(frame->getSkBitmap()));
+        EXPECT_EQ(baselineHashes[i - 1], hashBitmap(frame->getSkBitmap()));
     }
 }
 
@@ -116,10 +95,10 @@ void testRandomDecodeAfterClearFrameBufferCache(const char* webpFile)
     RefPtr<SharedBuffer> data = readFile(webpFile);
     ASSERT_TRUE(data.get());
     Vector<unsigned> baselineHashes;
-    createDecodingBaseline(data.get(), &baselineHashes);
+    createDecodingBaseline(&createDecoder, data.get(), &baselineHashes);
     size_t frameCount = baselineHashes.size();
 
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
     decoder->setData(data.get(), true);
     for (size_t clearExceptFrame = 0; clearExceptFrame < frameCount; ++clearExceptFrame) {
         decoder->clearCacheExceptFrame(clearExceptFrame);
@@ -128,7 +107,7 @@ void testRandomDecodeAfterClearFrameBufferCache(const char* webpFile)
             for (size_t j = 0; j < frameCount; j += skippingStep) {
                 SCOPED_TRACE(testing::Message() << "Random i:" << i << " j:" << j);
                 ImageFrame* frame = decoder->frameBufferAtIndex(j);
-                EXPECT_EQ(baselineHashes[j], hashSkBitmap(frame->getSkBitmap()));
+                EXPECT_EQ(baselineHashes[j], hashBitmap(frame->getSkBitmap()));
             }
         }
     }
@@ -136,7 +115,7 @@ void testRandomDecodeAfterClearFrameBufferCache(const char* webpFile)
 
 void testDecodeAfterReallocatingData(const char* webpFile)
 {
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
     RefPtr<SharedBuffer> data = readFile(webpFile);
     ASSERT_TRUE(data.get());
 
@@ -156,40 +135,9 @@ void testDecodeAfterReallocatingData(const char* webpFile)
     }
 }
 
-void testByteByByteDecode(const char* webpFile, size_t expectedFrameCount, int expectedRepetitionCount)
-{
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
-    RefPtr<SharedBuffer> data = readFile(webpFile);
-    ASSERT_TRUE(data.get());
-
-    size_t frameCount = 0;
-    size_t framesDecoded = 0;
-
-    // Pass data to decoder byte by byte.
-    for (size_t length = 1; length <= data->size(); ++length) {
-        RefPtr<SharedBuffer> tempData = SharedBuffer::create(data->data(), length);
-        decoder->setData(tempData.get(), length == data->size());
-
-        EXPECT_LE(frameCount, decoder->frameCount());
-        frameCount = decoder->frameCount();
-
-        ImageFrame* frame = decoder->frameBufferAtIndex(frameCount - 1);
-        if (frame && frame->status() == ImageFrame::FrameComplete && framesDecoded < frameCount)
-            ++framesDecoded;
-
-        if (decoder->failed())
-            break;
-    }
-
-    EXPECT_FALSE(decoder->failed());
-    EXPECT_EQ(expectedFrameCount, decoder->frameCount());
-    EXPECT_EQ(expectedFrameCount, framesDecoded);
-    EXPECT_EQ(expectedRepetitionCount, decoder->repetitionCount());
-}
-
 void testByteByByteSizeAvailable(const char* webpFile, size_t frameOffset, bool hasColorProfile, int expectedRepetitionCount)
 {
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
     RefPtr<SharedBuffer> data = readFile(webpFile);
     ASSERT_TRUE(data.get());
     EXPECT_LT(frameOffset, data->size());
@@ -234,7 +182,7 @@ void testByteByByteSizeAvailable(const char* webpFile, size_t frameOffset, bool 
 // call); else error is expected during decode (frameBufferAtIndex() call).
 void testInvalidImage(const char* webpFile, bool parseErrorExpected)
 {
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
 
     RefPtr<SharedBuffer> data = readFile(webpFile);
     ASSERT_TRUE(data.get());
@@ -295,10 +243,10 @@ void testAlphaBlending(const char* webpFile)
     RefPtr<SharedBuffer> data = readFile(webpFile);
     ASSERT_TRUE(data.get());
 
-    OwnPtr<WEBPImageDecoder> decoderA = createDecoder(ImageDecoder::AlphaPremultiplied);
+    OwnPtr<ImageDecoder> decoderA = createDecoder(ImageDecoder::AlphaPremultiplied);
     decoderA->setData(data.get(), true);
 
-    OwnPtr<WEBPImageDecoder> decoderB = createDecoder(ImageDecoder::AlphaNotPremultiplied);
+    OwnPtr<ImageDecoder> decoderB = createDecoder(ImageDecoder::AlphaNotPremultiplied);
     decoderB->setData(data.get(), true);
 
     size_t frameCount = decoderA->frameCount();
@@ -312,7 +260,7 @@ void testAlphaBlending(const char* webpFile)
 
 TEST(AnimatedWebPTests, uniqueGenerationIDs)
 {
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
 
     RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/webp-animated.webp");
     ASSERT_TRUE(data.get());
@@ -328,7 +276,7 @@ TEST(AnimatedWebPTests, uniqueGenerationIDs)
 
 TEST(AnimatedWebPTests, verifyAnimationParametersTransparentImage)
 {
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
     EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
 
     RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/webp-animated.webp");
@@ -370,7 +318,7 @@ TEST(AnimatedWebPTests, verifyAnimationParametersTransparentImage)
 
 TEST(AnimatedWebPTests, verifyAnimationParametersOpaqueFramesTransparentBackground)
 {
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
     EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
 
     RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/webp-animated-opaque.webp");
@@ -413,7 +361,7 @@ TEST(AnimatedWebPTests, verifyAnimationParametersOpaqueFramesTransparentBackgrou
 
 TEST(AnimatedWebPTests, verifyAnimationParametersBlendOverwrite)
 {
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
     EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
 
     RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/webp-animated-no-blend.webp");
@@ -456,8 +404,8 @@ TEST(AnimatedWebPTests, verifyAnimationParametersBlendOverwrite)
 
 TEST(AnimatedWebPTests, parseAndDecodeByteByByte)
 {
-    testByteByByteDecode("/LayoutTests/fast/images/resources/webp-animated.webp", 3u, cAnimationLoopInfinite);
-    testByteByByteDecode("/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp", 13u, 31999);
+    testByteByByteDecode(&createDecoder, "/LayoutTests/fast/images/resources/webp-animated.webp", 3u, cAnimationLoopInfinite);
+    testByteByByteDecode(&createDecoder, "/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp", 13u, 31999);
 }
 
 TEST(AnimatedWebPTests, invalidImages)
@@ -470,7 +418,7 @@ TEST(AnimatedWebPTests, invalidImages)
 
 TEST(AnimatedWebPTests, truncatedLastFrame)
 {
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
 
     RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/invalid-animated-webp2.webp");
     ASSERT_TRUE(data.get());
@@ -493,7 +441,7 @@ TEST(AnimatedWebPTests, truncatedLastFrame)
 
 TEST(AnimatedWebPTests, truncatedInBetweenFrame)
 {
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
 
     RefPtr<SharedBuffer> fullData = readFile("/LayoutTests/fast/images/resources/invalid-animated-webp4.webp");
     ASSERT_TRUE(fullData.get());
@@ -512,7 +460,7 @@ TEST(AnimatedWebPTests, truncatedInBetweenFrame)
 // Reproduce a crash that used to happen for a specific file with specific sequence of method calls.
 TEST(AnimatedWebPTests, reproCrash)
 {
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
 
     RefPtr<SharedBuffer> fullData = readFile("/LayoutTests/fast/images/resources/invalid_vp8_vp8x.webp");
     ASSERT_TRUE(fullData.get());
@@ -544,7 +492,7 @@ TEST(AnimatedWebPTests, progressiveDecode)
     ASSERT_TRUE(fullData.get());
     const size_t fullLength = fullData->size();
 
-    OwnPtr<WEBPImageDecoder>  decoder;
+    OwnPtr<ImageDecoder>  decoder;
     ImageFrame* frame;
 
     Vector<unsigned> truncatedHashes;
@@ -561,7 +509,7 @@ TEST(AnimatedWebPTests, progressiveDecode)
             truncatedHashes.append(0);
             continue;
         }
-        truncatedHashes.append(hashSkBitmap(frame->getSkBitmap()));
+        truncatedHashes.append(hashBitmap(frame->getSkBitmap()));
     }
 
     // Compute hashes when the file is progressively decoded.
@@ -574,7 +522,7 @@ TEST(AnimatedWebPTests, progressiveDecode)
             progressiveHashes.append(0);
             continue;
         }
-        progressiveHashes.append(hashSkBitmap(frame->getSkBitmap()));
+        progressiveHashes.append(hashBitmap(frame->getSkBitmap()));
     }
 
     bool match = true;
@@ -589,7 +537,7 @@ TEST(AnimatedWebPTests, progressiveDecode)
 
 TEST(AnimatedWebPTests, frameIsCompleteAndDuration)
 {
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
 
     RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/webp-animated.webp");
     ASSERT_TRUE(data.get());
@@ -617,7 +565,7 @@ TEST(AnimatedWebPTests, frameIsCompleteAndDuration)
 
 TEST(AnimatedWebPTests, updateRequiredPreviousFrameAfterFirstDecode)
 {
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
 
     RefPtr<SharedBuffer> fullData = readFile("/LayoutTests/fast/images/resources/webp-animated.webp");
     ASSERT_TRUE(fullData.get());
@@ -662,10 +610,10 @@ TEST(AnimatedWebPTests, DISABLED_resumePartialDecodeAfterClearFrameBufferCache)
     RefPtr<SharedBuffer> fullData = readFile("/LayoutTests/fast/images/resources/webp-animated-large.webp");
     ASSERT_TRUE(fullData.get());
     Vector<unsigned> baselineHashes;
-    createDecodingBaseline(fullData.get(), &baselineHashes);
+    createDecodingBaseline(&createDecoder, fullData.get(), &baselineHashes);
     size_t frameCount = baselineHashes.size();
 
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
 
     // Let frame 0 be partially decoded.
     size_t partialSize = 1;
@@ -679,13 +627,13 @@ TEST(AnimatedWebPTests, DISABLED_resumePartialDecodeAfterClearFrameBufferCache)
     decoder->setData(fullData.get(), true);
     EXPECT_EQ(frameCount, decoder->frameCount());
     ImageFrame* lastFrame = decoder->frameBufferAtIndex(frameCount - 1);
-    EXPECT_EQ(baselineHashes[frameCount - 1], hashSkBitmap(lastFrame->getSkBitmap()));
+    EXPECT_EQ(baselineHashes[frameCount - 1], hashBitmap(lastFrame->getSkBitmap()));
     decoder->clearCacheExceptFrame(kNotFound);
 
     // Resume decoding of the first frame.
     ImageFrame* firstFrame = decoder->frameBufferAtIndex(0);
     EXPECT_EQ(ImageFrame::FrameComplete, firstFrame->status());
-    EXPECT_EQ(baselineHashes[0], hashSkBitmap(firstFrame->getSkBitmap()));
+    EXPECT_EQ(baselineHashes[0], hashBitmap(firstFrame->getSkBitmap()));
 }
 
 TEST(AnimatedWebPTests, decodeAfterReallocatingData)
@@ -721,7 +669,7 @@ TEST(StaticWebPTests, truncatedImage)
 TEST(StaticWebPTests, incrementalDecode)
 {
     // Regression test for a bug where some valid images were failing to decode incrementally.
-    testByteByByteDecode("/LayoutTests/fast/images/resources/crbug.364830.webp", 1u, cAnimationNone);
+    testByteByByteDecode(&createDecoder, "/LayoutTests/fast/images/resources/crbug.364830.webp", 1u, cAnimationNone);
 }
 
 TEST(StaticWebPTests, isSizeAvailable)
@@ -732,7 +680,7 @@ TEST(StaticWebPTests, isSizeAvailable)
 
 TEST(StaticWebPTests, notAnimated)
 {
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+    OwnPtr<ImageDecoder> decoder = createDecoder();
     RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/webp-color-profile-lossy.webp");
     ASSERT_TRUE(data.get());
     decoder->setData(data.get(), true);
