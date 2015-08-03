@@ -58,6 +58,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   typedef base::Callback<void(ServiceWorkerStatusCode status,
                               const std::string& status_message,
                               int64 registration_id)> RegistrationCallback;
+  typedef base::Callback<void(ServiceWorkerStatusCode status,
+                              const std::string& status_message,
+                              int64 registration_id)> UpdateCallback;
   typedef base::Callback<
       void(ServiceWorkerStatusCode status)> UnregistrationCallback;
   typedef IDMap<ServiceWorkerProviderHost, IDMapOwnPointer> ProviderMap;
@@ -182,6 +185,10 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                                 const UnregistrationCallback& callback);
   void UpdateServiceWorker(ServiceWorkerRegistration* registration,
                            bool force_bypass_cache);
+  void UpdateServiceWorker(ServiceWorkerRegistration* registration,
+                           bool force_bypass_cache,
+                           ServiceWorkerProviderHost* provider_host,
+                           const UpdateCallback& callback);
 
   // This class maintains collections of live instances, this class
   // does not own these object or influence their lifetime.
@@ -244,6 +251,11 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                             ServiceWorkerStatusCode status,
                             const std::string& status_message,
                             ServiceWorkerRegistration* registration);
+
+  void UpdateComplete(const UpdateCallback& callback,
+                      ServiceWorkerStatusCode status,
+                      const std::string& status_message,
+                      ServiceWorkerRegistration* registration);
 
   void UnregistrationComplete(const GURL& pattern,
                               const UnregistrationCallback& callback,

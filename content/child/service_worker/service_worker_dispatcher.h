@@ -52,6 +52,8 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
  public:
   typedef blink::WebServiceWorkerProvider::WebServiceWorkerRegistrationCallbacks
       WebServiceWorkerRegistrationCallbacks;
+  typedef blink::WebServiceWorkerRegistration::WebServiceWorkerUpdateCallbacks
+      WebServiceWorkerUpdateCallbacks;
   typedef blink::WebServiceWorkerRegistration::
       WebServiceWorkerUnregistrationCallbacks
           WebServiceWorkerUnregistrationCallbacks;
@@ -80,7 +82,9 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
       const GURL& script_url,
       WebServiceWorkerRegistrationCallbacks* callbacks);
   // Corresponds to ServiceWorkerRegistration.update().
-  void UpdateServiceWorker(int provider_id, int64 registration_id);
+  void UpdateServiceWorker(int provider_id,
+                           int64 registration_id,
+                           WebServiceWorkerUpdateCallbacks* callbacks);
   // Corresponds to ServiceWorkerRegistration.unregister().
   void UnregisterServiceWorker(
       int provider_id,
@@ -153,6 +157,8 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
  private:
   typedef IDMap<WebServiceWorkerRegistrationCallbacks,
       IDMapOwnPointer> RegistrationCallbackMap;
+  typedef IDMap<WebServiceWorkerUpdateCallbacks, IDMapOwnPointer>
+      UpdateCallbackMap;
   typedef IDMap<WebServiceWorkerUnregistrationCallbacks,
       IDMapOwnPointer> UnregistrationCallbackMap;
   typedef IDMap<WebServiceWorkerGetRegistrationCallbacks,
@@ -192,6 +198,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
                     int request_id,
                     const ServiceWorkerRegistrationObjectInfo& info,
                     const ServiceWorkerVersionAttributes& attrs);
+  void OnUpdated(int thread_id, int request_id);
   void OnUnregistered(int thread_id,
                       int request_id,
                       bool is_success);
@@ -213,6 +220,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
                            int request_id,
                            blink::WebServiceWorkerError::ErrorType error_type,
                            const base::string16& message);
+  void OnUpdateError(int thread_id,
+                     int request_id,
+                     blink::WebServiceWorkerError::ErrorType error_type,
+                     const base::string16& message);
   void OnUnregistrationError(int thread_id,
                              int request_id,
                              blink::WebServiceWorkerError::ErrorType error_type,
@@ -264,6 +275,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
       const ServiceWorkerVersionAttributes& attrs);
 
   RegistrationCallbackMap pending_registration_callbacks_;
+  UpdateCallbackMap pending_update_callbacks_;
   UnregistrationCallbackMap pending_unregistration_callbacks_;
   GetRegistrationCallbackMap pending_get_registration_callbacks_;
   GetRegistrationsCallbackMap pending_get_registrations_callbacks_;

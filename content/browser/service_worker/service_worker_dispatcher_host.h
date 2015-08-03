@@ -88,7 +88,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                                int provider_id,
                                const GURL& pattern,
                                const GURL& script_url);
-  void OnUpdateServiceWorker(int provider_id, int64 registration_id);
+  void OnUpdateServiceWorker(int thread_id,
+                             int request_id,
+                             int provider_id,
+                             int64 registration_id);
   void OnUnregisterServiceWorker(int thread_id,
                                  int request_id,
                                  int provider_id,
@@ -150,6 +153,13 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                             ServiceWorkerStatusCode status,
                             const std::string& status_message,
                             int64 registration_id);
+
+  void UpdateComplete(int thread_id,
+                      int provider_id,
+                      int request_id,
+                      ServiceWorkerStatusCode status,
+                      const std::string& status_message,
+                      int64 registration_id);
 
   void UnregistrationComplete(int thread_id,
                               int request_id,

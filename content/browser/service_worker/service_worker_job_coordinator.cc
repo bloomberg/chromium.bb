@@ -133,6 +133,21 @@ void ServiceWorkerJobCoordinator::Update(
                                        force_bypass_cache)));
 }
 
+void ServiceWorkerJobCoordinator::Update(
+    ServiceWorkerRegistration* registration,
+    bool force_bypass_cache,
+    ServiceWorkerProviderHost* provider_host,
+    const ServiceWorkerRegisterJob::RegistrationCallback& callback) {
+  DCHECK(registration);
+  DCHECK(registration->GetNewestVersion());
+  ServiceWorkerRegisterJob* queued_job = static_cast<ServiceWorkerRegisterJob*>(
+      job_queues_[registration->pattern()].Push(
+          make_scoped_ptr<ServiceWorkerRegisterJobBase>(
+              new ServiceWorkerRegisterJob(context_, registration,
+                                           force_bypass_cache))));
+  queued_job->AddCallback(callback, provider_host);
+}
+
 void ServiceWorkerJobCoordinator::AbortAll() {
   for (RegistrationJobMap::iterator it = job_queues_.begin();
        it != job_queues_.end(); ++it) {

@@ -38,6 +38,11 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
 
   void Update(ServiceWorkerRegistration* registration, bool force_bypass_cache);
 
+  void Update(ServiceWorkerRegistration* registration,
+              bool force_bypass_cache,
+              ServiceWorkerProviderHost* provider_host,
+              const ServiceWorkerRegisterJob::RegistrationCallback& callback);
+
   // Calls ServiceWorkerRegisterJobBase::Abort() on all jobs and removes them.
   void AbortAll();
 

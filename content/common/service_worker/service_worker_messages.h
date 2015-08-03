@@ -138,7 +138,9 @@ IPC_MESSAGE_CONTROL5(ServiceWorkerHostMsg_RegisterServiceWorker,
                      GURL /* scope */,
                      GURL /* script_url */)
 
-IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_UpdateServiceWorker,
+IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_UpdateServiceWorker,
+                     int /* thread_id */,
+                     int /* request_id */,
                      int /* provider_id */,
                      int64 /* registration_id */)
 
@@ -321,6 +323,11 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerRegistered,
                      content::ServiceWorkerRegistrationObjectInfo,
                      content::ServiceWorkerVersionAttributes)
 
+// Response to ServiceWorkerHostMsg_UpdateServiceWorker.
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_ServiceWorkerUpdated,
+                     int /* thread_id */,
+                     int /* request_id */)
+
 // Response to ServiceWorkerHostMsg_UnregisterServiceWorker.
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerUnregistered,
                      int /* thread_id */,
@@ -351,6 +358,14 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_DidGetRegistrationForReady,
 // Sent when any kind of registration error occurs during a
 // RegisterServiceWorker handler above.
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerRegistrationError,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     blink::WebServiceWorkerError::ErrorType /* code */,
+                     base::string16 /* message */)
+
+// Sent when any kind of update error occurs during a
+// UpdateServiceWorker handler above.
+IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerUpdateError,
                      int /* thread_id */,
                      int /* request_id */,
                      blink::WebServiceWorkerError::ErrorType /* code */,

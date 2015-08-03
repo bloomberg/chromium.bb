@@ -114,14 +114,15 @@ blink::WebURL WebServiceWorkerRegistrationImpl::scope() const {
 }
 
 void WebServiceWorkerRegistrationImpl::update(
-    blink::WebServiceWorkerProvider* provider) {
+    blink::WebServiceWorkerProvider* provider,
+    WebServiceWorkerUpdateCallbacks* callbacks) {
   WebServiceWorkerProviderImpl* provider_impl =
       static_cast<WebServiceWorkerProviderImpl*>(provider);
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
   DCHECK(dispatcher);
   dispatcher->UpdateServiceWorker(provider_impl->provider_id(),
-                                  registration_id());
+                                  registration_id(), callbacks);
 }
 
 void WebServiceWorkerRegistrationImpl::unregister(

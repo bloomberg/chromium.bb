@@ -68,6 +68,7 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DisassociateRegistration,
                         OnDisassociateRegistration)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerRegistered, OnRegistered)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUpdated, OnUpdated)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUnregistered,
                         OnUnregistered)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetRegistration,
@@ -78,6 +79,8 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnDidGetRegistrationForReady)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerRegistrationError,
                         OnRegistrationError)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUpdateError,
+                        OnUpdateError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUnregistrationError,
                         OnUnregistrationError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerGetRegistrationError,
@@ -133,10 +136,14 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
       CurrentWorkerId(), request_id, provider_id, pattern, script_url));
 }
 
-void ServiceWorkerDispatcher::UpdateServiceWorker(int provider_id,
-                                                  int64 registration_id) {
+void ServiceWorkerDispatcher::UpdateServiceWorker(
+    int provider_id,
+    int64 registration_id,
+    WebServiceWorkerUpdateCallbacks* callbacks) {
+  DCHECK(callbacks);
+  int request_id = pending_update_callbacks_.Add(callbacks);
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_UpdateServiceWorker(
-      provider_id, registration_id));
+      CurrentWorkerId(), request_id, provider_id, registration_id));
 }
 
 void ServiceWorkerDispatcher::UnregisterServiceWorker(
@@ -383,6 +390,23 @@ void ServiceWorkerDispatcher::OnRegistered(
   pending_registration_callbacks_.Remove(request_id);
 }
 
+void ServiceWorkerDispatcher::OnUpdated(int thread_id, int request_id) {
+  TRACE_EVENT_ASYNC_STEP_INTO0("ServiceWorker",
+                               "ServiceWorkerDispatcher::UpdateServiceWorker",
+                               request_id, "OnUpdated");
+  TRACE_EVENT_ASYNC_END0("ServiceWorker",
+                         "ServiceWorkerDispatcher::UpdateServiceWorker",
+                         request_id);
+  WebServiceWorkerUpdateCallbacks* callbacks =
+      pending_update_callbacks_.Lookup(request_id);
+  DCHECK(callbacks);
+  if (!callbacks)
+    return;
+
+  callbacks->onSuccess();
+  pending_update_callbacks_.Remove(request_id);
+}
+
 void ServiceWorkerDispatcher::OnUnregistered(int thread_id,
                                              int request_id,
                                              bool is_success) {
@@ -514,6 +538,27 @@ void ServiceWorkerDispatcher::OnRegistrationError(
       new WebServiceWorkerError(error_type, message));
   callbacks->onError(error.release());
   pending_registration_callbacks_.Remove(request_id);
+}
+
+void ServiceWorkerDispatcher::OnUpdateError(
+    int thread_id,
+    int request_id,
+    WebServiceWorkerError::ErrorType error_type,
+    const base::string16& message) {
+  TRACE_EVENT_ASYNC_STEP_INTO0("ServiceWorker",
+                               "ServiceWorkerDispatcher::UpdateServiceWorker",
+                               request_id, "OnUpdateError");
+  TRACE_EVENT_ASYNC_END0("ServiceWorker",
+                         "ServiceWorkerDispatcher::UpdateServiceWorker",
+                         request_id);
+  WebServiceWorkerUpdateCallbacks* callbacks =
+      pending_update_callbacks_.Lookup(request_id);
+  DCHECK(callbacks);
+  if (!callbacks)
+    return;
+
+  callbacks->onError(new WebServiceWorkerError(error_type, message));
+  pending_update_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerDispatcher::OnUnregistrationError(

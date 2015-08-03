@@ -271,6 +271,33 @@ void ServiceWorkerContextCore::RegisterServiceWorker(
                  callback));
 }
 
+void ServiceWorkerContextCore::UpdateServiceWorker(
+    ServiceWorkerRegistration* registration,
+    bool force_bypass_cache) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (storage()->IsDisabled())
+    return;
+
+  job_coordinator_->Update(registration, force_bypass_cache);
+}
+
+void ServiceWorkerContextCore::UpdateServiceWorker(
+    ServiceWorkerRegistration* registration,
+    bool force_bypass_cache,
+    ServiceWorkerProviderHost* provider_host,
+    const UpdateCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (storage()->IsDisabled()) {
+    callback.Run(SERVICE_WORKER_ERROR_ABORT, std::string(),
+                 kInvalidServiceWorkerRegistrationId);
+    return;
+  }
+
+  job_coordinator_->Update(registration, force_bypass_cache, provider_host,
+                           base::Bind(&ServiceWorkerContextCore::UpdateComplete,
+                                      AsWeakPtr(), callback));
+}
+
 void ServiceWorkerContextCore::UnregisterServiceWorker(
     const GURL& pattern,
     const UnregistrationCallback& callback) {
@@ -325,15 +352,6 @@ void ServiceWorkerContextCore::DidGetAllRegistrationsForUnregisterForOrigin(
   }
 }
 
-void ServiceWorkerContextCore::UpdateServiceWorker(
-    ServiceWorkerRegistration* registration,
-    bool force_bypass_cache) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (storage()->IsDisabled())
-    return;
-  job_coordinator_->Update(registration, force_bypass_cache);
-}
-
 void ServiceWorkerContextCore::RegistrationComplete(
     const GURL& pattern,
     const ServiceWorkerContextCore::RegistrationCallback& callback,
@@ -356,6 +374,21 @@ void ServiceWorkerContextCore::RegistrationComplete(
                            &ServiceWorkerContextObserver::OnRegistrationStored,
                            registration->id(), pattern);
   }
+}
+
+void ServiceWorkerContextCore::UpdateComplete(
+    const ServiceWorkerContextCore::UpdateCallback& callback,
+    ServiceWorkerStatusCode status,
+    const std::string& status_message,
+    ServiceWorkerRegistration* registration) {
+  if (status != SERVICE_WORKER_OK) {
+    DCHECK(!registration);
+    callback.Run(status, status_message, kInvalidServiceWorkerRegistrationId);
+    return;
+  }
+
+  DCHECK(registration);
+  callback.Run(status, status_message, registration->id());
 }
 
 void ServiceWorkerContextCore::UnregistrationComplete(

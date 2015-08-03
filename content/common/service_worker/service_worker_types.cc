@@ -8,6 +8,8 @@ namespace content {
 
 const char kServiceWorkerRegisterErrorPrefix[] =
     "Failed to register a ServiceWorker: ";
+const char kServiceWorkerUpdateErrorPrefix[] =
+    "Failed to update a ServiceWorker: ";
 const char kServiceWorkerUnregisterErrorPrefix[] =
     "Failed to unregister a ServiceWorkerRegistration: ";
 const char kServiceWorkerGetRegistrationErrorPrefix[] =
