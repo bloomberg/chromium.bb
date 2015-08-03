@@ -158,6 +158,15 @@
           'dependencies': [
             '../net/net.gyp:net_small',
           ],
+          'conditions': [
+            ['enable_data_reduction_proxy_support==1',
+              {
+                'dependencies': [
+                  '../components/components.gyp:data_reduction_proxy_core_browser_small',
+                ],
+              },
+            ],
+          ],
           'includes': [ 'cronet/cronet_static.gypi' ],
         },
         {
@@ -167,6 +176,15 @@
           'dependencies': [
             '../base/base.gyp:base_i18n',
             '../net/net.gyp:net',
+          ],
+          'conditions': [
+            ['enable_data_reduction_proxy_support==1',
+              {
+                'dependencies': [
+                  '../components/components.gyp:data_reduction_proxy_core_browser',
+                ],
+              },
+            ],
           ],
           'includes': [ 'cronet/cronet_static.gypi' ],
         },
@@ -358,6 +376,15 @@
           ],
           'defines': [
             'CRONET_TEST=1',
+          ],
+          'conditions': [
+            ['enable_data_reduction_proxy_support==1',
+              {
+                'dependencies': [
+                  '../components/components.gyp:data_reduction_proxy_core_browser',
+                ],
+              },
+            ],
           ],
           'includes': [ 'cronet/cronet_static.gypi' ],
         },
