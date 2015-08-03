@@ -273,15 +273,16 @@ bool ImageBuffer::getImageData(Multiply multiplied, const IntRect& rect, WTF::Ar
         return true;
     }
 
-    const bool hasStrayArea =
-        rect.x() < 0
+    const bool mayHaveStrayArea =
+        m_surface->isAccelerated() // GPU readback may fail silently
+        || rect.x() < 0
         || rect.y() < 0
         || rect.maxX() > m_surface->size().width()
         || rect.maxY() > m_surface->size().height();
     WTF::ArrayBufferContents result(
         rect.width() * rect.height(), 4,
         WTF::ArrayBufferContents::NotShared,
-        hasStrayArea
+        mayHaveStrayArea
         ? WTF::ArrayBufferContents::ZeroInitialize
         : WTF::ArrayBufferContents::DontInitialize);
 
