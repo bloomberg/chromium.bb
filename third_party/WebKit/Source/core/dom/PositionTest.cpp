@@ -12,6 +12,19 @@ namespace blink {
 class PositionTest : public EditingTestBase {
 };
 
+TEST_F(PositionTest, NextNodeIndex)
+{
+    const char* bodyContent = "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";
+    const char* shadowContent = "<content select=#two></content><content select=#one></content>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
+    Node* host = document().getElementById("host");
+    Node* two = document().getElementById("two");
+
+    EXPECT_EQ(Position(host, 3), Position(two, 2).next());
+    EXPECT_EQ(PositionInComposedTree(host, 1), PositionInComposedTree(two, 2).next());
+}
+
 TEST_F(PositionTest, NodeAsRangeLastNodeNull)
 {
     EXPECT_EQ(nullptr, Position().nodeAsRangeLastNode());

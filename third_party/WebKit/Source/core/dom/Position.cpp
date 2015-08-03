@@ -455,7 +455,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::next(PositionMoveType m
     }
 
     if (ContainerNode* parent = Strategy::parent(*node))
-        return createLegacyEditingPosition(parent, node->nodeIndex() + 1);
+        return createLegacyEditingPosition(parent, Strategy::index(*node) + 1);
     return PositionAlgorithm<Strategy>(*this);
 }
 
