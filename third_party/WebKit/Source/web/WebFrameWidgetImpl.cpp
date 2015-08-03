@@ -564,8 +564,8 @@ bool WebFrameWidgetImpl::selectionTextDirection(WebTextDirection& start, WebText
     FrameSelection& selection = frame->selection();
     if (selection.selection().toNormalizedEphemeralRange().isNull())
         return false;
-    start = toWebTextDirection(selection.start().primaryDirection());
-    end = toWebTextDirection(selection.end().primaryDirection());
+    start = toWebTextDirection(primaryDirectionOf(*selection.start().anchorNode()));
+    end = toWebTextDirection(primaryDirectionOf(*selection.end().anchorNode()));
     return true;
 }
 

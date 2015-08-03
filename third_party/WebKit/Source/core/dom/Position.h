@@ -215,8 +215,6 @@ public:
     InlineBoxPosition computeInlineBoxPosition(EAffinity) const;
     InlineBoxPosition computeInlineBoxPosition(EAffinity, TextDirection primaryDirection) const;
 
-    TextDirection primaryDirection() const;
-
     static bool hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject*);
     static bool nodeIsUserSelectNone(Node*);
     static bool nodeIsUserSelectAll(const Node*);
@@ -464,6 +462,9 @@ inline PositionInComposedTree fromPositionInDOMTree<EditingInComposedTreeStrateg
 {
     return toPositionInComposedTree(position);
 }
+
+// TODO(yosin) We should move |primaryDirectionOf()| to "htmlediting.h".
+CORE_EXPORT TextDirection primaryDirectionOf(const Node&);
 
 } // namespace blink
 

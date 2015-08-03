@@ -1142,7 +1142,7 @@ bool PositionAlgorithm<Strategy>::rendersInDifferentPosition(const PositionAlgor
 template <typename Strategy>
 InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(EAffinity affinity) const
 {
-    return computeInlineBoxPosition(affinity, primaryDirection());
+    return computeInlineBoxPosition(affinity, primaryDirectionOf(*anchorNode()));
 }
 
 static bool isNonTextLeafChild(LayoutObject* object)
@@ -1360,11 +1360,10 @@ InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(EAffinit
     return InlineBoxPosition(inlineBox, caretOffset);
 }
 
-template <typename Strategy>
-TextDirection PositionAlgorithm<Strategy>::primaryDirection() const
+TextDirection primaryDirectionOf(const Node& node)
 {
     TextDirection primaryDirection = LTR;
-    for (const LayoutObject* r = m_anchorNode->layoutObject(); r; r = r->parent()) {
+    for (const LayoutObject* r = node.layoutObject(); r; r = r->parent()) {
         if (r->isLayoutBlockFlow()) {
             primaryDirection = r->style()->direction();
             break;

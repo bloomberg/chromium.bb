@@ -118,7 +118,7 @@ Position VisiblePosition::leftVisuallyDistinctCandidate() const
         return Position();
 
     Position downstreamStart = p.downstream();
-    TextDirection primaryDirection = p.primaryDirection();
+    TextDirection primaryDirection = primaryDirectionOf(*p.anchorNode());
 
     while (true) {
         InlineBoxPosition boxPosition = p.computeInlineBoxPosition(m_affinity, primaryDirection);
@@ -277,7 +277,7 @@ Position VisiblePosition::rightVisuallyDistinctCandidate() const
         return Position();
 
     Position downstreamStart = p.downstream();
-    TextDirection primaryDirection = p.primaryDirection();
+    TextDirection primaryDirection = primaryDirectionOf(*p.anchorNode());
 
     while (true) {
         InlineBoxPosition boxPosition = p.computeInlineBoxPosition(m_affinity, primaryDirection);

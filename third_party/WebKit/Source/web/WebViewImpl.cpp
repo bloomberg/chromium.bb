@@ -2590,8 +2590,8 @@ bool WebViewImpl::selectionTextDirection(WebTextDirection& start, WebTextDirecti
     FrameSelection& selection = toLocalFrame(frame)->selection();
     if (selection.selection().toNormalizedEphemeralRange().isNull())
         return false;
-    start = toWebTextDirection(selection.start().primaryDirection());
-    end = toWebTextDirection(selection.end().primaryDirection());
+    start = toWebTextDirection(primaryDirectionOf(*selection.start().anchorNode()));
+    end = toWebTextDirection(primaryDirectionOf(*selection.end().anchorNode()));
     return true;
 }
 

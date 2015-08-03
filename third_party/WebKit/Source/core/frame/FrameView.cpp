@@ -1605,8 +1605,8 @@ bool FrameView::computeCompositedSelection(LocalFrame& frame, CompositedSelectio
         if (HTMLTextFormControlElement* enclosingTextFormControlElement = enclosingTextFormControl(visibleSelection.rootEditableElement()))
             selection.isEmptyTextFormControl = enclosingTextFormControlElement->value().isEmpty();
     }
-    selection.start.isTextDirectionRTL = visibleSelection.start().primaryDirection() == RTL;
-    selection.end.isTextDirectionRTL = visibleSelection.end().primaryDirection() == RTL;
+    selection.start.isTextDirectionRTL = primaryDirectionOf(*visibleSelection.start().anchorNode()) == RTL;
+    selection.end.isTextDirectionRTL = primaryDirectionOf(*visibleSelection.end().anchorNode()) == RTL;
 
     return true;
 }
