@@ -21,8 +21,8 @@ import SocketServer
 
 #pylint: disable=relative-import
 import common_lib
+import jsonrpclib
 import rpc_methods
-import ssl_util
 import SimpleJSONRPCServer
 
 
@@ -47,13 +47,13 @@ class RequestHandler(SimpleJSONRPCServer.SimpleJSONRPCRequestHandler):
       return SimpleJSONRPCServer.SimpleJSONRPCRequestHandler.do_POST(self)
 
 
-class RpcServer(ssl_util.SslRpcServer,
+class RpcServer(SimpleJSONRPCServer.SimpleJSONRPCServer,
                 SocketServer.ThreadingMixIn):
   """Restricts all endpoints to only specified IP addresses."""
 
   def __init__(self, authorized_address,
                idle_timeout_secs=common_lib.DEFAULT_TIMEOUT_SECS):
-    ssl_util.SslRpcServer.__init__(
+    SimpleJSONRPCServer.SimpleJSONRPCServer.__init__(
         self, (common_lib.SERVER_ADDRESS, common_lib.SERVER_PORT),
         allow_none=True, logRequests=False,
         requestHandler=RequestHandler)
@@ -126,3 +126,10 @@ class RpcServer(ssl_util.SslRpcServer,
     # We timed out, kill the server
     logging.warning('Shutting down the server due to the idle timeout')
     self.shutdown()
+
+  @staticmethod
+  def Connect(server, port=common_lib.SERVER_PORT):
+    """Creates and returns a connection to an RPC server."""
+    addr = 'http://%s:%d' % (server, port)
+    logging.debug('Connecting to RPC server at %s', addr)
+    return jsonrpclib.ServerProxy(addr, allow_none=True)

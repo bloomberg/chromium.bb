@@ -14,7 +14,6 @@ import time
 #pylint: disable=relative-import
 import common_lib
 import rpc_server
-import ssl_util
 
 
 def main():
@@ -35,8 +34,8 @@ def main():
   logging.info(
       'Registering with registration server at %s using OTP "%s"',
       args.controller, args.otp)
-  ssl_util.SslRpcServer.Connect(args.controller).RegisterTask(
-      args.otp, common_lib.MY_IP)
+  rpc_server.RpcServer.Connect(args.controller).RegisterTask(args.otp,
+                                                             common_lib.MY_IP)
 
   server = rpc_server.RpcServer(args.controller, args.idle_timeout)
 

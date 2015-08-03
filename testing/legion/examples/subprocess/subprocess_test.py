@@ -98,6 +98,7 @@ class ExampleTestController(legion_test_case.TestCase):
             'sys.stderr.write("Hello stderr")')
     self.task.rpc.WriteFile('test.py', code)
     proc = self.task.Process(['python', 'test.py'],)
+    proc.Wait()
 
     self.CheckProcessOutput('stdout', proc.key, 'Hello stdout')
     self.CheckProcessOutput('stderr', proc.key, 'Hello stderr')
@@ -108,7 +109,8 @@ class ExampleTestController(legion_test_case.TestCase):
             'sys.stdout.write("Hello CustomKey stdout")\n'
             'sys.stderr.write("Hello CustomKey stderr")')
     self.task.rpc.WriteFile('test.py', code)
-    self.task.Process(['python', 'test.py'], key='CustomKey')
+    proc = self.task.Process(['python', 'test.py'], key='CustomKey')
+    proc.Wait()
 
     self.CheckProcessOutput('stdout', 'CustomKey', 'Hello CustomKey stdout')
     self.CheckProcessOutput('stderr', 'CustomKey', 'Hello CustomKey stderr')

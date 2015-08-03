@@ -16,12 +16,16 @@ This module only depends on default Python modules, as well as jsonrpclib
 which also uses only default modules. No third party code is required to
 use this module.
 """
-import fcntl
+
 import json
 import SimpleXMLRPCServer as _base
 import SocketServer
 import sys
 import traceback
+try:
+  import fcntl
+except ImportError:
+  fcntl = None
 try:
   import gzip
 except ImportError:
