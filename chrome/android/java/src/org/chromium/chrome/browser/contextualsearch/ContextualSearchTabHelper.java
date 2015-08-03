@@ -68,15 +68,12 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
     }
 
     @Override
-    public void onPageLoadFinished(Tab tab) {
-        // Native initialization happens after a page loads to ensure profile is initialized.
+    public void onContentChanged(Tab tab) {
+        // Native initialization happens after a page loads or content is changed to ensure profile
+        // is initialized.
         if (mNativeHelper == 0) {
             mNativeHelper = nativeInit(tab.getProfile());
         }
-    }
-
-    @Override
-    public void onContentChanged(Tab tab) {
         updateHooksForNewContentViewCore(tab);
     }
 
