@@ -1194,13 +1194,13 @@ TEST_F(SQLConnectionTest, TimeQuery) {
   EXPECT_EQ(11, samples->sum());
 
   samples = tester.GetHistogramSamplesSinceCreation(kUpdateTime);
-  EXPECT_TRUE(!samples || samples->sum() == 0);
+  EXPECT_EQ(0, samples->sum());
 
   samples = tester.GetHistogramSamplesSinceCreation(kCommitTime);
-  EXPECT_TRUE(!samples || samples->sum() == 0);
+  EXPECT_EQ(0, samples->sum());
 
   samples = tester.GetHistogramSamplesSinceCreation(kAutoCommitTime);
-  EXPECT_TRUE(!samples || samples->sum() == 0);
+  EXPECT_EQ(0, samples->sum());
 }
 
 // Autocommit update allocates time to QueryTime, UpdateTime, and
@@ -1237,7 +1237,7 @@ TEST_F(SQLConnectionTest, TimeUpdateAutocommit) {
   EXPECT_EQ(11, samples->sum());
 
   samples = tester.GetHistogramSamplesSinceCreation(kCommitTime);
-  EXPECT_TRUE(!samples || samples->sum() == 0);
+  EXPECT_EQ(0, samples->sum());
 
   samples = tester.GetHistogramSamplesSinceCreation(kAutoCommitTime);
   ASSERT_TRUE(samples);
@@ -1296,7 +1296,7 @@ TEST_F(SQLConnectionTest, TimeUpdateTransaction) {
   EXPECT_EQ(101, samples->sum());
 
   samples = tester.GetHistogramSamplesSinceCreation(kAutoCommitTime);
-  EXPECT_TRUE(!samples || samples->sum() == 0);
+  EXPECT_EQ(0, samples->sum());
 }
 
 }  // namespace

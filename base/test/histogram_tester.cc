@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/metrics/sample_map.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -112,8 +113,14 @@ HistogramTester::CountsMap HistogramTester::GetTotalCountsForPrefix(
 scoped_ptr<HistogramSamples> HistogramTester::GetHistogramSamplesSinceCreation(
     const std::string& histogram_name) const {
   HistogramBase* histogram = StatisticsRecorder::FindHistogram(histogram_name);
+  // Whether the histogram exists or not may not depend on the current test
+  // calling this method, but rather on which tests ran before and possibly
+  // generated a histogram or not (see http://crbug.com/473689). To provide a
+  // response which is independent of the previously run tests, this method
+  // creates empty samples in the absence of the histogram, rather than
+  // returning null.
   if (!histogram)
-    return scoped_ptr<HistogramSamples>();
+    return scoped_ptr<HistogramSamples>(new SampleMap);
   scoped_ptr<HistogramSamples> named_samples(histogram->SnapshotSamples());
   auto original_samples_it = histograms_snapshot_.find(histogram_name);
   if (original_samples_it != histograms_snapshot_.end())
