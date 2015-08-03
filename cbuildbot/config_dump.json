@@ -188,7 +188,8 @@
         "MANIFEST_VERSIONS_GOB_URL_TEST": "https://chromium.googlesource.com/chromiumos/manifest-versions-test",
         "MANIFEST_VERSIONS_GS_URL": "gs://chromeos-manifest-versions",
         "MANIFEST_VERSIONS_INT_GOB_URL": "https://chrome-internal.googlesource.com/chromeos/manifest-versions",
-        "MANIFEST_VERSIONS_INT_GOB_URL_TEST": "https://chrome-internal.googlesource.com/chromeos/manifest-versions-test"
+        "MANIFEST_VERSIONS_INT_GOB_URL_TEST": "https://chrome-internal.googlesource.com/chromeos/manifest-versions-test",
+        "REPO_URL": "https://chromium.googlesource.com/external/repo"
     },
     "_templates": {
         "asan": {

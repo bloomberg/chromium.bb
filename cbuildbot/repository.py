@@ -178,8 +178,8 @@ class RepoRepository(object):
 
   def __init__(self, manifest_repo_url, directory, branch=None,
                referenced_repo=None, manifest=constants.DEFAULT_MANIFEST,
-               depth=None, repo_url=constants.REPO_URL, repo_branch=None,
-               groups=None, repo_cmd='repo'):
+               depth=None, repo_url=site_config.params.REPO_URL,
+               repo_branch=None, groups=None, repo_cmd='repo'):
     """Initialize.
 
     Args:

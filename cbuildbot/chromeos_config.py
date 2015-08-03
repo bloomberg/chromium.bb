@@ -776,7 +776,10 @@ def GetConfig():
 
       # Standard directories under buildroot for cloning these repos.
       EXTERNAL_MANIFEST_VERSIONS_PATH='manifest-versions',
-      INTERNAL_MANIFEST_VERSIONS_PATH='manifest-versions-internal'
+      INTERNAL_MANIFEST_VERSIONS_PATH='manifest-versions-internal',
+
+      # URL of the repo project.
+      REPO_URL='%s/external/repo' % site_params['EXTERNAL_GOB_URL']
   )
 
   # Site specific adjustments for default BuildConfig values.

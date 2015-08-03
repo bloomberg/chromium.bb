@@ -252,9 +252,6 @@ GITCOOKIES_PATH = os.path.expanduser('~/.gitcookies')
 # Dec 02 17:48:06 2014' and is assumed to be in UTC.
 GOB_COMMIT_TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
 
-REPO_PROJECT = 'external/repo'
-REPO_URL = '%s/%s' % (EXTERNAL_GOB_URL, REPO_PROJECT)
-
 CHROMITE_PROJECT = 'chromiumos/chromite'
 CHROMITE_URL = '%s/%s' % (EXTERNAL_GOB_URL, CHROMITE_PROJECT)
 CHROMIUM_SRC_PROJECT = 'chromium/src'

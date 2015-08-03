@@ -838,7 +838,10 @@ def DefaultSiteParameters():
 
       # Standard directories under buildroot for cloning these repos.
       EXTERNAL_MANIFEST_VERSIONS_PATH=None,
-      INTERNAL_MANIFEST_VERSIONS_PATH=None
+      INTERNAL_MANIFEST_VERSIONS_PATH=None,
+
+      # URL of the repo project.
+      REPO_URL=None
   )
 
   return default_site_params
