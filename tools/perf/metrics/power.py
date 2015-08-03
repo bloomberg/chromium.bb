@@ -153,15 +153,15 @@ class PowerMetric(Metric):
           important=False))
 
     # Add temperature measurements.
-    whole_package_utilization = component_utilization.get('whole_package', {})
-    board_temperature_c = whole_package_utilization.get('average_temperature_c')
+    platform_info_utilization = self._results.get('platform_info', {})
+    board_temperature_c = platform_info_utilization.get('average_temperature_c')
     if board_temperature_c is not None:
       results.AddValue(scalar.ScalarValue(
           results.current_page, 'board_temperature', 'celsius',
           board_temperature_c, important=False))
 
     # Add CPU frequency measurements.
-    frequency_hz = whole_package_utilization.get('frequency_percent')
+    frequency_hz = platform_info_utilization.get('frequency_percent')
     if frequency_hz is not None:
       frequency_sum = 0.0
       for freq, percent in frequency_hz.iteritems():
@@ -171,7 +171,7 @@ class PowerMetric(Metric):
           frequency_sum, important=False))
 
     # Add CPU c-state residency measurements.
-    cstate_percent = whole_package_utilization.get('cstate_residency_percent')
+    cstate_percent = platform_info_utilization.get('cstate_residency_percent')
     if cstate_percent is not None:
       for state, percent in cstate_percent.iteritems():
         results.AddValue(scalar.ScalarValue(
