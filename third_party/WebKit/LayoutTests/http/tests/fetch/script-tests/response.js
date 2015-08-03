@@ -112,13 +112,22 @@ test(function() {
   }, 'Response content type test');
 
 test(function() {
-    [0, 1, 100, 199, 600, 700].forEach(function(status) {
+    [0, 1, 100, 101, 199, 600, 700].forEach(function(status) {
         assert_throws({name: 'RangeError'},
                       function() {
                         new Response(new Blob(), {status: status});
                       },
                       'new Response with status = ' + status +
                       ' should throw');
+      });
+
+    [204, 205, 304].forEach(function(status) {
+        assert_throws({name: 'TypeError'},
+                      function() {
+                        new Response(new Blob(), {status: status});
+                      },
+                      'new Response with null body status = ' + status +
+                      ' and body is non-null should throw');
       });
 
     [300, 0, 304, 305, 306, 309, 500].forEach(function(status) {

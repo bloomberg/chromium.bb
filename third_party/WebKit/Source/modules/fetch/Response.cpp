@@ -62,6 +62,16 @@ FetchResponseData* createFetchResponseDataFromWebResponse(ExecutionContext* exec
     return response;
 }
 
+// Checks whether |status| is a null body status.
+// Spec: https://fetch.spec.whatwg.org/#null-body-status
+bool isNullBodyStatus(unsigned short status)
+{
+    if (status == 101 || status == 204 || status == 205 || status == 304)
+        return true;
+
+    return false;
+}
+
 // Check whether |statusText| is a ByteString and
 // matches the Reason-Phrase token production.
 // RFC 2616: https://tools.ietf.org/html/rfc2616
@@ -153,10 +163,12 @@ Response* Response::create(ExecutionContext* context, const BodyInit& body, cons
 
 Response* Response::create(ExecutionContext* context, Blob* body, const ResponseInit& responseInit, ExceptionState& exceptionState)
 {
-    // "1. If |init|'s status member is not in the range 200 to 599, throw a
+    unsigned short status = responseInit.status;
+
+    // "1. If |init|'s status member is not in the range 200 to 599, inclusive, throw a
     // RangeError."
-    if (responseInit.status < 200 || 599 < responseInit.status) {
-        exceptionState.throwRangeError("Invalid status");
+    if (status < 200 || 599 < status) {
+        exceptionState.throwRangeError(ExceptionMessages::indexOutsideRange<unsigned>("status", status, 200, ExceptionMessages::InclusiveBound, 599, ExceptionMessages::InclusiveBound));
         return 0;
     }
 
@@ -197,15 +209,20 @@ Response* Response::create(ExecutionContext* context, Blob* body, const Response
     }
     // "7. If body is given, run these substeps:"
     if (body) {
-        // "1. Let |stream| and |Content-Type| be the result of extracting body."
-        // "2. Set |r|'s response's body to |stream|."
-        // "3. If |Content-Type| is non-null and |r|'s response's header list
+        // "1. If |init|'s status member is a null body status, throw a TypeError."
+        // "2. Let |stream| and |Content-Type| be the result of extracting body."
+        // "3. Set |r|'s response's body to |stream|."
+        // "4. If |Content-Type| is non-null and |r|'s response's header list
         // contains no header named `Content-Type`, append `Content-Type`/
         // |Content-Type| to |r|'s response's header list."
         // https://fetch.spec.whatwg.org/#concept-bodyinit-extract
         // Step 3, Blob:
         // "If object's type attribute is not the empty byte sequence, set
         // Content-Type to its value."
+        if (isNullBodyStatus(status)) {
+            exceptionState.throwTypeError("Response with null body status cannot have body");
+            return 0;
+        }
         r->m_response->replaceBodyStreamBuffer(new BodyStreamBuffer(FetchBlobDataConsumerHandle::create(context, body->blobDataHandle())));
         if (!body->type().isEmpty() && !r->m_response->headerList()->has("Content-Type"))
             r->m_response->headerList()->append("Content-Type", body->type());
