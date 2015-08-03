@@ -152,6 +152,9 @@ def RunSetupTest(args):
     logger.info('Starting Smart Lock setup flow...')
     app = settings.StartSetupAndReturnApp()
 
+    if app is None:
+      raise SmartLockSetupError('Failed to obtain set up app window')
+
     _NavigateSetupDialog(chromeos, app)
 
 def main():
