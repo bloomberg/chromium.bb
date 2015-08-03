@@ -36,6 +36,7 @@ public:
     void selectionChanged(unsigned listIndex, bool fireEvents = true) override { }
     void selectionCleared() override { }
 
+    Element& itemElement(unsigned listIndex) const override { return *m_ownerElement->listItems()[listIndex]; }
     String itemText(unsigned listIndex) const override { return emptyString(); }
     String itemToolTip(unsigned listIndex) const override { return emptyString(); }
     String itemAccessibilityText(unsigned listIndex) const override { return emptyString(); }
@@ -54,7 +55,6 @@ public:
     bool multiple() const override { return false; }
     IntRect elementRectRelativeToViewport() const override { return IntRect(); }
     Element& ownerElement() const override { return *m_ownerElement; }
-    const ComputedStyle* computedStyleForItem(Element& element) const override { return nullptr; }
     const ComputedStyle* computedStyleForItem(unsigned listIndex) const override
     {
         Element* element = m_ownerElement->listItems()[listIndex];

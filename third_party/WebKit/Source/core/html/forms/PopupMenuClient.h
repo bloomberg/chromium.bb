@@ -33,6 +33,7 @@ namespace blink {
 class Element;
 class ComputedStyle;
 
+// TODO(tkent): Remove this interface.  crbug.com/515013.
 class CORE_EXPORT PopupMenuClient {
 public:
     virtual ~PopupMenuClient() { }
@@ -40,7 +41,8 @@ public:
     virtual void selectionChanged(unsigned listIndex, bool fireEvents = true) = 0;
     virtual void selectionCleared() = 0;
 
-    // TODO(tkent): Introduce itemElement(), and remove itemFoo() functions.
+    virtual Element& itemElement(unsigned listIndex) const = 0;
+    // TODO(tkent): Remove itemFoo() functions. Use itemElement() instead.
     virtual String itemText(unsigned listIndex) const = 0;
     virtual String itemToolTip(unsigned listIndex) const = 0;
     virtual String itemAccessibilityText(unsigned listIndex) const = 0;
@@ -62,7 +64,6 @@ public:
     virtual Element& ownerElement() const = 0;
     // computedStyleForItem() returns nullptr only if the owner Document is not
     // active.  So, It returns a valid object when we open a popup.
-    virtual const ComputedStyle* computedStyleForItem(Element&) const = 0;
     virtual const ComputedStyle* computedStyleForItem(unsigned listIndex) const = 0;
 
     virtual void listBoxSelectItem(int /*listIndex*/, bool /*allowMultiplySelections*/, bool /*shift*/, bool /*fireOnChangeNow*/ = true) { ASSERT_NOT_REACHED(); }

@@ -165,6 +165,7 @@ public:
         , m_textTransform(style.textTransform())
         , m_fontDescription(style.fontDescription())
         , m_listIndex(0)
+        , m_isInGroup(false)
         , m_buffer(buffer)
     {
         ASSERT(m_buffer);
@@ -198,6 +199,20 @@ public:
         PagePopupClient::addString("},\n", m_buffer);
     }
 
+    void startGroupChildren()
+    {
+        ASSERT(!m_isInGroup);
+        PagePopupClient::addString("children: [", m_buffer);
+        m_isInGroup = true;
+    }
+    void finishGroupIfNecessary()
+    {
+        if (!m_isInGroup)
+            return;
+        PagePopupClient::addString("],},\n", m_buffer);
+        m_isInGroup = false;
+    }
+
     int fontSize() const { return m_fontDescription.computedPixelSize(); }
     FontStyle fontStyle() const { return m_fontDescription.style(); }
     FontVariant fontVariant() const { return m_fontDescription.variant(); }
@@ -210,6 +225,7 @@ public:
     const FontDescription& m_fontDescription;
 
     int m_listIndex;
+    bool m_isInGroup;
     SharedBuffer* m_buffer;
 };
 
@@ -252,14 +268,18 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
     ItemIterationContext context(*ownerStyle, data);
     context.serializeBaseStyle();
     PagePopupClient::addString("children: [\n", data);
-    for (HTMLElement& child : Traversal<HTMLElement>::childrenOf(ownerElement())) {
+    for (; context.m_listIndex < m_client->listSize(); ++context.m_listIndex) {
+        Element& child = m_client->itemElement(context.m_listIndex);
+        if (!isHTMLOptGroupElement(child.parentNode()))
+            context.finishGroupIfNecessary();
         if (isHTMLOptionElement(child))
             addOption(context, toHTMLOptionElement(child));
-        if (isHTMLOptGroupElement(child))
+        else if (isHTMLOptGroupElement(child))
             addOptGroup(context, toHTMLOptGroupElement(child));
-        if (isHTMLHRElement(child))
+        else if (isHTMLHRElement(child))
             addSeparator(context, toHTMLHRElement(child));
     }
+    context.finishGroupIfNecessary();
     PagePopupClient::addString("],\n", data);
 
     addProperty("anchorRectInScreen", anchorRectInScreen, data);
@@ -274,7 +294,7 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
 
 void PopupMenuImpl::addElementStyle(ItemIterationContext& context, HTMLElement& element)
 {
-    const ComputedStyle* style = m_client->computedStyleForItem(element);
+    const ComputedStyle* style = m_client->computedStyleForItem(context.m_listIndex);
     ASSERT(style);
     SharedBuffer* data = context.m_buffer;
     // TODO(tkent): We generate unnecessary "style: {\n},\n" even if no
@@ -324,8 +344,7 @@ void PopupMenuImpl::addOption(ItemIterationContext& context, HTMLOptionElement& 
     SharedBuffer* data = context.m_buffer;
     PagePopupClient::addString("{", data);
     addProperty("label", element.text(), data);
-    ASSERT(context.m_listIndex == element.listIndex());
-    addProperty("value", context.m_listIndex++, data);
+    addProperty("value", context.m_listIndex, data);
     if (!element.title().isEmpty())
         addProperty("title", element.title(), data);
     const AtomicString& ariaLabel = element.fastGetAttribute(HTMLNames::aria_labelAttr);
@@ -340,7 +359,6 @@ void PopupMenuImpl::addOption(ItemIterationContext& context, HTMLOptionElement& 
 void PopupMenuImpl::addOptGroup(ItemIterationContext& context, HTMLOptGroupElement& element)
 {
     SharedBuffer* data = context.m_buffer;
-    ++context.m_listIndex;
     PagePopupClient::addString("{\n", data);
     PagePopupClient::addString("type: \"optgroup\",\n", data);
     addProperty("label", element.groupLabelText(), data);
@@ -348,21 +366,13 @@ void PopupMenuImpl::addOptGroup(ItemIterationContext& context, HTMLOptGroupEleme
     addProperty("ariaLabel", element.fastGetAttribute(HTMLNames::aria_labelAttr), data);
     addProperty("disabled", element.isDisabledFormControl(), data);
     addElementStyle(context, element);
-    PagePopupClient::addString("children: [", data);
-    for (HTMLElement& child : Traversal<HTMLElement>::childrenOf(element)) {
-        if (isHTMLOptionElement(child))
-            addOption(context, toHTMLOptionElement(child));
-        if (isHTMLHRElement(child))
-            addSeparator(context, toHTMLHRElement(child));
-    }
-    PagePopupClient::addString("],\n", data);
-    PagePopupClient::addString("},\n", data);
+    context.startGroupChildren();
+    // We should call ItemIterationContext::finishGroupIfNecessary() later.
 }
 
 void PopupMenuImpl::addSeparator(ItemIterationContext& context, HTMLHRElement& element)
 {
     SharedBuffer* data = context.m_buffer;
-    ++context.m_listIndex;
     PagePopupClient::addString("{\n", data);
     PagePopupClient::addString("type: \"separator\",\n", data);
     addProperty("title", element.title(), data);
@@ -476,14 +486,18 @@ void PopupMenuImpl::update()
     ItemIterationContext context(*ownerElement().computedStyle(), data.get());
     context.serializeBaseStyle();
     PagePopupClient::addString("children: [", data.get());
-    for (HTMLElement& child : Traversal<HTMLElement>::childrenOf(ownerElement())) {
+    for (; context.m_listIndex < m_client->listSize(); ++context.m_listIndex) {
+        Element& child = m_client->itemElement(context.m_listIndex);
+        if (!isHTMLOptGroupElement(child.parentNode()))
+            context.finishGroupIfNecessary();
         if (isHTMLOptionElement(child))
             addOption(context, toHTMLOptionElement(child));
-        if (isHTMLOptGroupElement(child))
+        else if (isHTMLOptGroupElement(child))
             addOptGroup(context, toHTMLOptGroupElement(child));
-        if (isHTMLHRElement(child))
+        else if (isHTMLHRElement(child))
             addSeparator(context, toHTMLHRElement(child));
     }
+    context.finishGroupIfNecessary();
     PagePopupClient::addString("],\n", data.get());
     PagePopupClient::addString("}\n", data.get());
     m_popup->postMessage(String::fromUTF8(data->data(), data->size()));

@@ -400,11 +400,6 @@ Element& LayoutMenuList::ownerElement() const
     return *selectElement();
 }
 
-const ComputedStyle* LayoutMenuList::computedStyleForItem(Element& element) const
-{
-    return element.computedStyle() ? element.computedStyle() : element.ensureComputedStyle();
-}
-
 const ComputedStyle* LayoutMenuList::computedStyleForItem(unsigned listIndex) const
 {
     Element& element = *selectElement()->listItems()[listIndex];
@@ -438,6 +433,11 @@ void LayoutMenuList::didUpdateActiveOption(int optionIndex)
     }
 
     document().existingAXObjectCache()->handleUpdateActiveMenuOption(this, optionIndex);
+}
+
+Element& LayoutMenuList::itemElement(unsigned listIndex) const
+{
+    return *selectElement()->listItems()[listIndex];
 }
 
 String LayoutMenuList::itemText(unsigned listIndex) const
@@ -500,7 +500,7 @@ bool LayoutMenuList::itemIsDisplayNone(unsigned listIndex) const
     Element& element = *selectElement()->listItems()[listIndex];
     if (isHTMLOptionElement(element))
         return toHTMLOptionElement(element).isDisplayNone();
-    if (const ComputedStyle* style = computedStyleForItem(element))
+    if (const ComputedStyle* style = computedStyleForItem(listIndex))
         return style->display() == NONE;
     return false;
 }

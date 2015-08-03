@@ -81,6 +81,7 @@ private:
     void valueChanged(unsigned listIndex, bool fireOnChange = true) override;
     void selectionChanged(unsigned, bool) override { }
     void selectionCleared() override { }
+    Element& itemElement(unsigned listIndex) const override;
     String itemText(unsigned listIndex) const override;
     String itemToolTip(unsigned listIndex) const override;
     String itemAccessibilityText(unsigned listIndex) const override;
@@ -100,7 +101,6 @@ private:
     bool multiple() const override;
     IntRect elementRectRelativeToViewport() const override;
     Element& ownerElement() const override;
-    const ComputedStyle* computedStyleForItem(Element&) const override;
 
     bool hasLineIfEmpty() const override { return true; }
 
