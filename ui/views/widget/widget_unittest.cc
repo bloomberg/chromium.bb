@@ -41,6 +41,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
+#include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
 
 namespace views {
@@ -1158,49 +1159,67 @@ TEST_F(WidgetTest, GetWindowBoundsInScreen) {
   widget->CloseNow();
 }
 
-// Before being enabled on Mac, this was #ifdef(false).
-// TODO(tapted): Fix this for DesktopNativeWidgets on other platforms.
+// Non-Desktop widgets need the shell to maximize/fullscreen window.
+// Disable on Linux because windows restore to the wrong bounds.
+// See http://crbug.com/515369.
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#define MAYBE_GetRestoredBounds DISABLED_GetRestoredBounds
+#else
+#define MAYBE_GetRestoredBounds GetRestoredBounds
+#endif
+
+// Test that GetRestoredBounds() returns the original bounds of the window.
+TEST_F(WidgetTest, MAYBE_GetRestoredBounds) {
 #if defined(OS_MACOSX)
-// Aura needs shell to maximize/fullscreen window.
-// NativeWidgetGtk doesn't implement GetRestoredBounds.
-TEST_F(WidgetTest, GetRestoredBounds) {
-  Widget* toplevel = CreateTopLevelPlatformWidget();
-  EXPECT_EQ(toplevel->GetWindowBoundsInScreen().ToString(),
-            toplevel->GetRestoredBounds().ToString());
+  // Fullscreen on Mac requires an interactive UI test, fake them here.
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
+#endif
+
+  Widget* toplevel = CreateNativeDesktopWidget();
   toplevel->Show();
+  // Initial restored bounds have non-zero size.
+  EXPECT_FALSE(toplevel->GetRestoredBounds().IsEmpty());
+
+  const gfx::Rect bounds(100, 100, 200, 200);
+  toplevel->SetBounds(bounds);
+  EXPECT_EQ(bounds, toplevel->GetWindowBoundsInScreen());
+  EXPECT_EQ(bounds, toplevel->GetRestoredBounds());
+
   toplevel->Maximize();
   RunPendingMessages();
 #if defined(OS_MACOSX)
   // Current expectation on Mac is to do nothing on Maximize.
-  EXPECT_EQ(toplevel->GetWindowBoundsInScreen().ToString(),
-            toplevel->GetRestoredBounds().ToString());
+  EXPECT_EQ(toplevel->GetWindowBoundsInScreen(), toplevel->GetRestoredBounds());
 #else
-  EXPECT_NE(toplevel->GetWindowBoundsInScreen().ToString(),
-            toplevel->GetRestoredBounds().ToString());
+  EXPECT_NE(toplevel->GetWindowBoundsInScreen(), toplevel->GetRestoredBounds());
 #endif
-  EXPECT_GT(toplevel->GetRestoredBounds().width(), 0);
-  EXPECT_GT(toplevel->GetRestoredBounds().height(), 0);
+  EXPECT_EQ(bounds, toplevel->GetRestoredBounds());
 
   toplevel->Restore();
   RunPendingMessages();
-  EXPECT_EQ(toplevel->GetWindowBoundsInScreen().ToString(),
-            toplevel->GetRestoredBounds().ToString());
+  EXPECT_EQ(bounds, toplevel->GetWindowBoundsInScreen());
+  EXPECT_EQ(bounds, toplevel->GetRestoredBounds());
 
   toplevel->SetFullscreen(true);
   RunPendingMessages();
 
   if (IsTestingSnowLeopard()) {
     // Fullscreen not implemented for Snow Leopard.
-    EXPECT_EQ(toplevel->GetWindowBoundsInScreen().ToString(),
-              toplevel->GetRestoredBounds().ToString());
+    EXPECT_EQ(toplevel->GetWindowBoundsInScreen(),
+              toplevel->GetRestoredBounds());
   } else {
-    EXPECT_NE(toplevel->GetWindowBoundsInScreen().ToString(),
-              toplevel->GetRestoredBounds().ToString());
+    EXPECT_NE(toplevel->GetWindowBoundsInScreen(),
+              toplevel->GetRestoredBounds());
   }
-  EXPECT_GT(toplevel->GetRestoredBounds().width(), 0);
-  EXPECT_GT(toplevel->GetRestoredBounds().height(), 0);
+  EXPECT_EQ(bounds, toplevel->GetRestoredBounds());
+
+  toplevel->SetFullscreen(false);
+  RunPendingMessages();
+  EXPECT_EQ(bounds, toplevel->GetWindowBoundsInScreen());
+  EXPECT_EQ(bounds, toplevel->GetRestoredBounds());
+
+  toplevel->CloseNow();
 }
-#endif
 
 // The key-event propagation from Widget happens differently on aura and
 // non-aura systems because of the difference in IME. So this test works only on
