@@ -102,9 +102,17 @@ void NativeWidgetViewManager::OnViewFocusChanged(mojo::View* gained_focus,
 
 void NativeWidgetViewManager::OnViewInputEvent(mojo::View* view,
                                                const mojo::EventPtr& event) {
-  scoped_ptr<ui::Event> ui_event(event.To<scoped_ptr<ui::Event> >());
-  if (ui_event)
+  scoped_ptr<ui::Event> ui_event(event.To<scoped_ptr<ui::Event>>());
+  if (!ui_event)
+    return;
+
+  if (ui_event->IsKeyEvent()) {
+    window_tree_host_->GetInputMethod()->DispatchKeyEvent(
+        *static_cast<ui::KeyEvent*>(ui_event.get()));
+    ui_event->StopPropagation();
+  } else {
     window_tree_host_->SendEventToProcessor(ui_event.get());
+  }
 }
 
 }  // namespace mandoline

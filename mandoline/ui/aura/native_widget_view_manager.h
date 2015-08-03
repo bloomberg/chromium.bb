@@ -33,7 +33,7 @@ namespace mandoline {
 class WindowTreeHostMojo;
 
 class NativeWidgetViewManager : public views::NativeWidgetAura,
-                                       public mojo::ViewObserver {
+                                public mojo::ViewObserver {
  public:
   NativeWidgetViewManager(views::internal::NativeWidgetDelegate* delegate,
                           mojo::Shell* shell,

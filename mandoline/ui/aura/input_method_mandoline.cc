@@ -41,9 +41,7 @@ bool InputMethodMandoline::DispatchKeyEvent(const ui::KeyEvent& event) {
   // character event, we instead check to see if this is a character event and
   // send out the key if it is. (We fallback to normal dispatch if it isn't.)
   if (event.is_char()) {
-    const uint16 ch = event.GetCharacter();
-    if (GetTextInputClient())
-      GetTextInputClient()->InsertChar(ch, event.flags());
+    GetTextInputClient()->InsertChar(event.GetCharacter(), event.flags());
 
     return false;
   }
