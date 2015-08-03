@@ -31,21 +31,12 @@ NET_EXPORT bool ParseBoolRelaxed(const Input& in, bool* out) WARN_UNUSED_RESULT;
 NET_EXPORT bool ParseUint64(const Input& in, uint64_t* out) WARN_UNUSED_RESULT;
 
 // Reads a DER-encoded ASN.1 BIT STRING value from |in| and puts the resulting
-// octet string into |bytes|, and the number of unused bits into |unused_bits|.
-//
-// The bits are ordered within each octet of |bytes| from most to
-// least significant, as in the DER encoding.
+// octet string and number of unused bits into |bit_string|
 //
 // Returns true on success, otherwise returns false and does not modify the
 // out-parameters.
-//
-// On success it can be assumed that:
-//   * |*unused_bits| < 8
-//   * The final byte of |bytes| has its |*unused_bits| least significant bits
-//     set to 0.
 NET_EXPORT bool ParseBitString(const Input& in,
-                               Input* bytes,
-                               uint8_t* unused_bits) WARN_UNUSED_RESULT;
+                               BitString* bit_string) WARN_UNUSED_RESULT;
 
 struct GeneralizedTime {
   uint16_t year;

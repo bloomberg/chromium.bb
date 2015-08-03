@@ -150,21 +150,11 @@ class NET_EXPORT Parser {
   // input may or may not have been advanced).
   bool ReadUint64(uint64_t* out) WARN_UNUSED_RESULT;
 
-  // Reads a BIT STRING. On success |bytes| is set to the octet string
-  // containing the bits, and |unused_bits| is set to the number of
-  // bits (in the range 0-7) that are unused.
-  //
-  // The bits are ordered within each octet of |bytes| from most to
-  // least significant, as in the DER encoding.
+  // Reads a BIT STRING. On success fills |out| and returns true.
   //
   // Note that on failure the Parser is left in an undefined state (the
   // input may or may not have been advanced).
-  bool ReadBitString(Input* bytes, uint8_t* unused_bits) WARN_UNUSED_RESULT;
-
-  // Same as ReadBitString() except it will only succeed when the number of
-  // bits in the bit string is a multiple of 8. In other words, there can be
-  // no unused bits in the octet string |*bytes|.
-  bool ReadBitStringNoUnusedBits(Input* bytes) WARN_UNUSED_RESULT;
+  bool ReadBitString(BitString* out) WARN_UNUSED_RESULT;
 
   // Lower level methods. The previous methods couple reading data from the
   // input with advancing the Parser's internal pointer to the next TLV; these

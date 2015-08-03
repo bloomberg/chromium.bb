@@ -164,9 +164,7 @@ bool ParseUint64(const Input& in, uint64_t* out) {
   return true;
 }
 
-bool ParseBitString(const Input& in,
-                    Input* out_bytes,
-                    uint8_t* out_unused_bits) {
+bool ParseBitString(const Input& in, BitString* out) {
   ByteReader reader(in);
 
   // From ITU-T X.690, section 8.6.2.2 (applies to BER, CER, DER):
@@ -203,8 +201,7 @@ bool ParseBitString(const Input& in,
       return false;
   }
 
-  *out_bytes = bytes;
-  *out_unused_bits = unused_bits;
+  *out = BitString(bytes, unused_bits);
   return true;
 }
 

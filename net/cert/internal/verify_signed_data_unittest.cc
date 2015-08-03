@@ -12,6 +12,7 @@
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/pem_tokenizer.h"
 #include "net/der/input.h"
+#include "net/der/parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -133,13 +134,17 @@ void RunTestCase(VerifyResult expected_result, const char* file_name) {
       SignatureAlgorithm::CreateFromDer(InputFromString(&algorithm));
   ASSERT_TRUE(signature_algorithm);
 
+  der::BitString signature_value_bit_string;
+  der::Parser signature_value_parser(InputFromString(&signature_value));
+  ASSERT_TRUE(signature_value_parser.ReadBitString(&signature_value_bit_string))
+      << "The signature value is not a valid BIT STRING";
+
   bool expected_result_bool = expected_result == SUCCESS;
 
-  EXPECT_EQ(
-      expected_result_bool,
-      VerifySignedData(*signature_algorithm, InputFromString(&signed_data),
-                       InputFromString(&signature_value),
-                       InputFromString(&public_key)));
+  EXPECT_EQ(expected_result_bool,
+            VerifySignedData(
+                *signature_algorithm, InputFromString(&signed_data),
+                signature_value_bit_string, InputFromString(&public_key)));
 }
 
 // Read the descriptions in the test files themselves for details on what is
@@ -272,8 +277,8 @@ TEST(VerifySignedDataTest, RsaPkcs1Sha256SpkiNonNullParams) {
   RunTestCase(SUCCESS, "rsa-pkcs1-sha256-spki-non-null-params.pem");
 }
 
-TEST(VerifySignedDataTest, EcdsaPrime256v1Sha512SignatureNotBitString) {
-  RunTestCase(FAILURE, "ecdsa-prime256v1-sha512-signature-not-bitstring.pem");
+TEST(VerifySignedDataTest, EcdsaPrime256v1Sha512UnusedBitsSignature) {
+  RunTestCase(FAILURE, "ecdsa-prime256v1-sha512-unused-bits-signature.pem");
 }
 
 }  // namespace

@@ -11,6 +11,7 @@
 namespace net {
 
 namespace der {
+class BitString;
 class Input;
 }  // namespace der
 
@@ -21,15 +22,13 @@ class SignatureAlgorithm;
 //
 //   |signature_algorithm| - The parsed AlgorithmIdentifier
 //   |signed_data| - The blob of data to verify
-//   |signature_value_bit_string| - The DER-encoded BIT STRING representing the
-//       signature's value (to be interpreted according to the signature
-//       algorithm).
+//   |signature_value| - The BIT STRING for the signature's value
 //   |public_key| - A DER-encoded SubjectPublicKeyInfo.
 //
 // Returns true if verification was successful.
 NET_EXPORT bool VerifySignedData(const SignatureAlgorithm& signature_algorithm,
                                  const der::Input& signed_data,
-                                 const der::Input& signature_value_bit_string,
+                                 const der::BitString& signature_value,
                                  const der::Input& public_key)
     WARN_UNUSED_RESULT;
 

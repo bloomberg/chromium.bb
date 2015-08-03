@@ -17,7 +17,7 @@ namespace net {
 
 bool VerifySignedData(const SignatureAlgorithm& signature_algorithm,
                       const der::Input& signed_data,
-                      const der::Input& signature_value_bit_string,
+                      const der::BitString& signature_value,
                       const der::Input& public_key) {
   NOTIMPLEMENTED();
   return false;
@@ -165,16 +165,19 @@ WARN_UNUSED_RESULT bool ParseRsaKeyFromSpki(const der::Input& public_key_spki,
 }
 
 // Does signature verification using either RSA or ECDSA.
-//
-// Note that the |signature_value| input is expected to be a byte string (and
-// not a DER-encoded BIT STRING)
 WARN_UNUSED_RESULT bool DoVerify(const SignatureAlgorithm& algorithm,
                                  const der::Input& signed_data,
-                                 const der::Input& signature_value,
+                                 const der::BitString& signature_value,
                                  EVP_PKEY* public_key) {
   DCHECK(algorithm.algorithm() == SignatureAlgorithmId::RsaPkcs1 ||
          algorithm.algorithm() == SignatureAlgorithmId::RsaPss ||
          algorithm.algorithm() == SignatureAlgorithmId::Ecdsa);
+
+  // For the supported algorithms the signature value must be a whole
+  // number of bytes.
+  if (signature_value.unused_bits() != 0)
+    return false;
+  const der::Input& signature_value_bytes = signature_value.bytes();
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
@@ -199,8 +202,9 @@ WARN_UNUSED_RESULT bool DoVerify(const SignatureAlgorithm& algorithm,
     return false;
   }
 
-  return 1 == EVP_DigestVerifyFinal(ctx.get(), signature_value.UnsafeData(),
-                                    signature_value.Length());
+  return 1 == EVP_DigestVerifyFinal(ctx.get(),
+                                    signature_value_bytes.UnsafeData(),
+                                    signature_value_bytes.Length());
 }
 
 // Returns true if the given curve is allowed for ECDSA. The input is a
@@ -281,7 +285,7 @@ WARN_UNUSED_RESULT bool ParseEcKeyFromSpki(const der::Input& public_key_spki,
 
 bool VerifySignedData(const SignatureAlgorithm& signature_algorithm,
                       const der::Input& signed_data,
-                      const der::Input& signature_value_bit_string,
+                      const der::BitString& signature_value,
                       const der::Input& public_key_spki) {
   crypto::ScopedEVP_PKEY public_key;
 
@@ -297,17 +301,6 @@ bool VerifySignedData(const SignatureAlgorithm& signature_algorithm,
         return false;
       break;
   }
-
-  // Extract the bytes of the signature_value. Assume that the BIT STRING has
-  // no unused bits (in other words, is a multiple of 8 bits), since that is the
-  // case for all of the currently supported algorithms.
-  der::Input signature_value;
-  der::Parser parser(signature_value_bit_string);
-  if (!parser.ReadBitStringNoUnusedBits(&signature_value))
-    return false;
-  // By definition signature_value_bit_string must be a single BIT STRING.
-  if (parser.HasMore())
-    return false;
 
   return DoVerify(signature_algorithm, signed_data, signature_value,
                   public_key.get());

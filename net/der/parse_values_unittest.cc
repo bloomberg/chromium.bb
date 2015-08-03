@@ -199,21 +199,19 @@ TEST(ParseValuesTest, ParseUint64) {
 TEST(ParseValuesTest, ParseBitStringEmptyNoUnusedBits) {
   const uint8_t kData[] = {0x00};
 
-  Input bytes;
-  uint8_t unused_bits;
-  ASSERT_TRUE(ParseBitString(Input(kData), &bytes, &unused_bits));
+  BitString bit_string;
+  ASSERT_TRUE(ParseBitString(Input(kData), &bit_string));
 
-  EXPECT_EQ(0u, unused_bits);
-  EXPECT_EQ(0u, bytes.Length());
+  EXPECT_EQ(0u, bit_string.unused_bits());
+  EXPECT_EQ(0u, bit_string.bytes().Length());
 }
 
 // Tests parsing an empty BIT STRING that incorrectly claims one unused bit.
 TEST(ParseValuesTest, ParseBitStringEmptyOneUnusedBit) {
   const uint8_t kData[] = {0x01};
 
-  Input bytes;
-  uint8_t unused_bits;
-  EXPECT_FALSE(ParseBitString(Input(kData), &bytes, &unused_bits));
+  BitString bit_string;
+  EXPECT_FALSE(ParseBitString(Input(kData), &bit_string));
 }
 
 // Tests parsing an empty BIT STRING that is not minmally encoded (the entire
@@ -221,22 +219,20 @@ TEST(ParseValuesTest, ParseBitStringEmptyOneUnusedBit) {
 TEST(ParseValuesTest, ParseBitStringNonEmptyTooManyUnusedBits) {
   const uint8_t kData[] = {0x08, 0x00};
 
-  Input bytes;
-  uint8_t unused_bits;
-  EXPECT_FALSE(ParseBitString(Input(kData), &bytes, &unused_bits));
+  BitString bit_string;
+  EXPECT_FALSE(ParseBitString(Input(kData), &bit_string));
 }
 
 // Tests parsing a BIT STRING of 7 bits each of which are 1.
 TEST(ParseValuesTest, ParseBitStringSevenOneBits) {
   const uint8_t kData[] = {0x01, 0xFE};
 
-  Input bytes;
-  uint8_t unused_bits;
-  ASSERT_TRUE(ParseBitString(Input(kData), &bytes, &unused_bits));
+  BitString bit_string;
+  ASSERT_TRUE(ParseBitString(Input(kData), &bit_string));
 
-  EXPECT_EQ(1u, unused_bits);
-  EXPECT_EQ(1u, bytes.Length());
-  EXPECT_EQ(0xFE, bytes.UnsafeData()[0]);
+  EXPECT_EQ(1u, bit_string.unused_bits());
+  EXPECT_EQ(1u, bit_string.bytes().Length());
+  EXPECT_EQ(0xFE, bit_string.bytes().UnsafeData()[0]);
 }
 
 // Tests parsing a BIT STRING of 7 bits each of which are 1. The unused bit
@@ -244,9 +240,8 @@ TEST(ParseValuesTest, ParseBitStringSevenOneBits) {
 TEST(ParseValuesTest, ParseBitStringSevenOneBitsUnusedBitIsOne) {
   const uint8_t kData[] = {0x01, 0xFF};
 
-  Input bytes;
-  uint8_t unused_bits;
-  EXPECT_FALSE(ParseBitString(Input(kData), &bytes, &unused_bits));
+  BitString bit_string;
+  EXPECT_FALSE(ParseBitString(Input(kData), &bit_string));
 }
 
 }  // namespace test
