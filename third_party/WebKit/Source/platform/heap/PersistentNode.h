@@ -77,6 +77,11 @@ public:
         return !m_trace;
     }
 
+    void* self() const
+    {
+        return m_self;
+    }
+
 private:
     // If this PersistentNode is in use:
     //   - m_self points to the corresponding Persistent handle.
@@ -94,6 +99,7 @@ private:
     PersistentNodeSlots* m_next;
     PersistentNode m_slot[slotCount];
     friend class PersistentRegion;
+    friend class CrossThreadPersistentRegion;
 };
 
 // PersistentRegion provides a region of PersistentNodes. PersistentRegion
@@ -139,6 +145,8 @@ public:
     int numberOfPersistents();
 
 private:
+    friend CrossThreadPersistentRegion;
+
     void ensurePersistentNodeSlots(void*, TraceCallback);
 
     PersistentNode* m_freeListHead;
@@ -169,6 +177,8 @@ public:
         MutexLocker lock(m_mutex);
         m_persistentRegion->tracePersistentNodes(visitor);
     }
+
+    void prepareForThreadStateTermination(ThreadState*);
 
 private:
     // We don't make CrossThreadPersistentRegion inherit from PersistentRegion

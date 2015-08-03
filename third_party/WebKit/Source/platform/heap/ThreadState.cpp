@@ -241,7 +241,9 @@ void ThreadState::cleanup()
         // Set the terminate flag on all heap pages of this thread. This is used to
         // ensure we don't trace pages on other threads that are not part of the
         // thread local GC.
-        prepareHeapForTermination();
+        prepareForThreadStateTermination();
+
+        ThreadState::crossThreadPersistentRegion().prepareForThreadStateTermination(this);
 
         // Do thread local GC's as long as the count of thread local Persistents
         // changes and is above zero.
@@ -1153,7 +1155,7 @@ void ThreadState::postSweep()
     }
 }
 
-void ThreadState::prepareHeapForTermination()
+void ThreadState::prepareForThreadStateTermination()
 {
     ASSERT(checkThread());
     for (int i = 0; i < NumberOfHeaps; ++i)

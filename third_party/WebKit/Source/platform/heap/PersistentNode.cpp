@@ -5,6 +5,8 @@
 #include "config.h"
 #include "platform/heap/PersistentNode.h"
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
 PersistentRegion::~PersistentRegion()
@@ -88,6 +90,40 @@ void PersistentRegion::tracePersistentNodes(Visitor* visitor)
         }
     }
     ASSERT(persistentCount == m_persistentCount);
+}
+
+void CrossThreadPersistentRegion::prepareForThreadStateTermination(ThreadState* threadState)
+{
+    // For heaps belonging to a thread that's detaching, any cross-thread persistents
+    // pointing into them needs to be disabled. Do that by clearing out the underlying
+    // heap reference.
+    MutexLocker lock(m_mutex);
+
+    class Object;
+    using GCObject = GarbageCollected<Object>;
+
+    // TODO(sof): consider ways of reducing overhead. (e.g., tracking number of active
+    // CrossThreadPersistent<>s pointing into the heaps of each ThreadState and use that
+    // count to bail out early.)
+    PersistentNodeSlots* slots = m_persistentRegion->m_slots;
+    while (slots) {
+        for (int i = 0; i < PersistentNodeSlots::slotCount; ++i) {
+            if (slots->m_slot[i].isUnused())
+                continue;
+
+            // 'self' is in use, containing the cross-thread persistent wrapper object.
+            CrossThreadPersistent<GCObject>* persistent = reinterpret_cast<CrossThreadPersistent<GCObject>*>(slots->m_slot[i].self());
+            ASSERT(persistent);
+            void* rawObject = persistent->get();
+            if (!rawObject)
+                continue;
+            BasePage* page = pageFromObject(rawObject);
+            ASSERT(page);
+            if (page->heap()->threadState() == threadState)
+                persistent->clear();
+        }
+        slots = slots->m_next;
+    }
 }
 
 } // namespace blink

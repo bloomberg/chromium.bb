@@ -499,23 +499,31 @@ public:
     }
 
 protected:
+    using GlobalIntWrapperPersistent = CrossThreadPersistent<IntWrapper>;
+
+    PassOwnPtr<GlobalIntWrapperPersistent> createGlobalPersistent(int value)
+    {
+        return adoptPtr(new GlobalIntWrapperPersistent(IntWrapper::create(value)));
+    }
+
     void runThread() override
     {
+        OwnPtr<GlobalIntWrapperPersistent> longLivingPersistent;
         ThreadState::attach();
 
+        longLivingPersistent = createGlobalPersistent(0x2a2a2a2a);
         int gcCount = 0;
         while (!done()) {
             ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
             {
                 Persistent<IntWrapper> wrapper;
 
-                typedef CrossThreadPersistent<IntWrapper> GlobalIntWrapperPersistent;
-                OwnPtr<GlobalIntWrapperPersistent> globalPersistent = adoptPtr(new GlobalIntWrapperPersistent(IntWrapper::create(0x0ed0cabb)));
+                OwnPtr<GlobalIntWrapperPersistent> globalPersistent = createGlobalPersistent(0x0ed0cabb);
 
                 for (int i = 0; i < numberOfAllocations; i++) {
                     wrapper = IntWrapper::create(0x0bbac0de);
                     if (!(i % 10)) {
-                        globalPersistent = adoptPtr(new GlobalIntWrapperPersistent(IntWrapper::create(0x0ed0cabb)));
+                        globalPersistent = createGlobalPersistent(0x0ed0cabb);
                     }
                     SafePointScope scope(ThreadState::NoHeapPointersOnStack);
                     Platform::current()->yieldCurrentThread();
@@ -538,6 +546,13 @@ protected:
             SafePointScope scope(ThreadState::NoHeapPointersOnStack);
             Platform::current()->yieldCurrentThread();
         }
+
+        // Intentionally leak the cross-thread persistent so as to verify
+        // that later GCs correctly handle cross-thread persistents that
+        // refer to finalized objects after their heaps have been detached
+        // and freed.
+        EXPECT_TRUE(longLivingPersistent.leakPtr());
+
         ThreadState::detach();
         atomicDecrement(&m_threadsToFinish);
     }

@@ -544,7 +544,6 @@ public:
     void threadLocalWeakProcessing();
 
     size_t objectPayloadSizeForTesting();
-    void prepareHeapForTermination();
 
     // Register the pre-finalizer for the |self| object. This method is normally
     // called in the constructor of the |self| object. The class T must have
@@ -704,6 +703,8 @@ private:
     // in the dangling pointer situation.
     void cleanup();
     void cleanupPages();
+
+    void prepareForThreadStateTermination();
 
     void invokePreFinalizers();
 
