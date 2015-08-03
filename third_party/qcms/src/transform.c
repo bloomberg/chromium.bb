@@ -1145,9 +1145,14 @@ qcms_transform* qcms_transform_precacheLUT_float(qcms_transform *transform, qcms
 			transform->g_clut = &lut[1]; // g
 			transform->b_clut = &lut[2]; // b
 			transform->grid_size = samples;
+
 			if (in_type == QCMS_DATA_RGBA_8) {
 #if defined(SSE2_ENABLE)
-				transform->transform_fn = qcms_transform_data_tetra_clut_rgba_sse2;
+				if (sse_version_available() >= 2) {
+					transform->transform_fn = qcms_transform_data_tetra_clut_rgba_sse2;
+				} else {
+					transform->transform_fn = qcms_transform_data_tetra_clut_rgba;
+				}
 #else
 				transform->transform_fn = qcms_transform_data_tetra_clut_rgba;
 #endif
