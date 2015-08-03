@@ -1218,6 +1218,21 @@ TEST_F(RenderFrameHostManagerTest, WebUIWasCleared) {
 // Also tests that only user-gesture navigations can interrupt cross-process
 // navigations. http://crbug.com/75195
 TEST_F(RenderFrameHostManagerTest, PageDoesBackAndReload) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    // PlzNavigate uses a significantly different logic for renderer initiated
+    // navigations and navigation cancellation. Adapting this test would make it
+    // full of special cases and almost unreadable.
+    // There are tests that exercise these concerns for PlzNavigate, all from
+    // NavigatorTestWithBrowserSideNavigation:
+    // - BrowserInitiatedNavigationCancel
+    // - RendererUserInitiatedNavigationCancel
+    // - RendererNonUserInitiatedNavigationDoesntCancelRendererUserInitiated
+    // - RendererNonUserInitiatedNavigationDoesntCancelBrowserInitiated
+    // - RendererNonUserInitiatedNavigationCancelSimilarNavigation
+    SUCCEED() << "Test is not applicable with browser side navigation enabled";
+    return;
+  }
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.evil-site.com/");
 
