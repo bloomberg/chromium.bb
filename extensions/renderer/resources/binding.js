@@ -353,9 +353,7 @@ Binding.prototype = {
           return;
         }
 
-        // TODO(aa): It would be best to run this in a unit test, but in order
-        // to do that we would need to better factor this code so that it
-        // doesn't depend on so much v8::Extension machinery.
+        // TODO(kalman): Unit test this with a ModuleSystemTest.
         if (logging.DCHECK_IS_ON() &&
             schemaUtils.isFunctionSignatureAmbiguous(apiFunction.definition)) {
           throw new Error(
