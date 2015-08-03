@@ -142,7 +142,8 @@ bool DesktopProcess::Start(
   daemon_channel_ = IPC::ChannelProxy::Create(daemon_channel_name_,
                                               IPC::Channel::MODE_CLIENT,
                                               this,
-                                              io_task_runner.get());
+                                              io_task_runner.get(),
+                                              nullptr);
 
   // Pass |desktop_pipe| to the daemon.
   daemon_channel_->Send(

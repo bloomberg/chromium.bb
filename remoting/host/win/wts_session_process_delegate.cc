@@ -383,7 +383,8 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
       IPC::ChannelProxy::Create(IPC::ChannelHandle(pipe.Get()),
                                 IPC::Channel::MODE_SERVER,
                                 this,
-                                io_task_runner_));
+                                io_task_runner_,
+                                nullptr));
 
   // Pass the name of the IPC channel to use.
   command_line.AppendSwitchNative(kDaemonPipeSwitchName,

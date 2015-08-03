@@ -398,7 +398,8 @@ void IpcDesktopEnvironmentTest::CreateDesktopProcess() {
       IPC::ChannelProxy::Create(IPC::ChannelHandle(desktop_channel_name_),
                                 IPC::Channel::MODE_SERVER,
                                 &desktop_listener_,
-                                io_task_runner_.get());
+                                io_task_runner_.get(),
+                                nullptr);
 
   // Create and start the desktop process.
   desktop_process_.reset(new DesktopProcess(task_runner_,

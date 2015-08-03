@@ -178,7 +178,8 @@ void DesktopProcessTest::ConnectNetworkChannel(
   network_channel_ = IPC::ChannelProxy::Create(channel_handle,
                                                IPC::Channel::MODE_CLIENT,
                                                &network_listener_,
-                                               io_task_runner_.get());
+                                               io_task_runner_.get(),
+                                               nullptr);
 }
 
 void DesktopProcessTest::OnDesktopAttached(
@@ -249,7 +250,8 @@ void DesktopProcessTest::RunDesktopProcess() {
   daemon_channel_ = IPC::ChannelProxy::Create(IPC::ChannelHandle(channel_name),
                                               IPC::Channel::MODE_SERVER,
                                               &daemon_listener_,
-                                              io_task_runner_.get());
+                                              io_task_runner_.get(),
+                                              nullptr);
 
   scoped_ptr<MockDesktopEnvironmentFactory> desktop_environment_factory(
       new MockDesktopEnvironmentFactory());
