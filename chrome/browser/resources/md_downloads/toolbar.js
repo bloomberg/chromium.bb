@@ -32,13 +32,7 @@ cr.define('downloads', function() {
 
     /** @return {boolean} Whether "Clear all" should be allowed. */
     canClearAll: function() {
-      return !this.$['search-term'].value && this.downloadsShowing;
-    },
-
-    ready: function() {
-      var term = this.$['search-term'];
-      term.addEventListener('input', this.onSearchTermInput_.bind(this));
-      term.addEventListener('keydown', this.onSearchTermKeydown_.bind(this));
+      return !this.$['search-input'].value && this.downloadsShowing;
     },
 
     /** @private */
@@ -53,8 +47,8 @@ cr.define('downloads', function() {
     },
 
     /** @private */
-    onSearchTermInput_: function() {
-      this.actionService_.search(this.$['search-term'].value);
+    onSearchTermSearch_: function() {
+      this.actionService_.search(this.$['search-input'].value);
       this.updateClearAll_();
     },
 
@@ -75,10 +69,10 @@ cr.define('downloads', function() {
       this.showingSearch_ = !this.showingSearch_;
 
       if (this.showingSearch_) {
-        this.$['search-term'].focus();
+        this.$['search-input'].focus();
       } else {
-        this.$['search-term'].value = '';
-        this.onSearchTermInput_();
+        this.$['search-input'].value = '';
+        this.onSearchTermSearch_();
       }
     },
 

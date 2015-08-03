@@ -41,13 +41,40 @@
   --paper-input-container-color: rgba(255, 255, 255, .5);
   --paper-input-container-focus-color: white;
   --paper-input-container-input: {
+    font-family: inherit;
     font-size: 14px;
   };
   --paper-input-container-input-color: white;
   --paper-input-container-label: {
+    font-family: inherit;
     font-size: 14px;
   };
   -webkit-margin-end: 8px;
+  z-index: 0;
+}
+
+#search-term input[type='search']::-webkit-search-cancel-button,
+#search-term input[type='search']::-webkit-search-results-button {
+  -webkit-appearance: none;
+}
+
+#search-term paper-icon-button {
+  --iron-icon-height: 16px;
+  --iron-icon-width: 16px;
+  --paper-icon-button: {
+    height: 16px;
+    padding: 6px;
+    width: 16px;
+  };
+  position: absolute;
+  right: 0;
+  top: -4px;
+  z-index: 1;
+}
+
+:host-context([dir='rtl']) #search-term paper-icon-button {
+  left: 0;
+  right: auto;
 }
 
 paper-menu-button {
