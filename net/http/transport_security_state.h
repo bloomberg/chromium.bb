@@ -299,6 +299,14 @@ class NET_EXPORT TransportSecurityState
                const HashValueVector& hashes,
                const GURL& report_uri);
 
+  // Parses |value| as a Public-Key-Pins-Report-Only header value and
+  // sends a HPKP report for |host_port_pair| if |ssl_info| violates the
+  // pin. Returns true if |value| parses and includes a valid
+  // report-uri, and false otherwise.
+  bool ProcessHPKPReportOnlyHeader(const std::string& value,
+                                   const HostPortPair& host_port_pair,
+                                   const SSLInfo& ssl_info);
+
   // Returns true iff we have any static public key pins for the |host| and
   // iff its set of required pins is the set we expect for Google
   // properties.

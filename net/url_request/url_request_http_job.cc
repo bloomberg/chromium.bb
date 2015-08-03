@@ -883,15 +883,20 @@ void URLRequestHttpJob::ProcessPublicKeyPinsHeader() {
   if (request_info_.url.HostIsIPAddress())
     return;
 
-  // http://tools.ietf.org/html/draft-ietf-websec-key-pinning:
+  // http://tools.ietf.org/html/rfc7469:
   //
   //   If a UA receives more than one PKP header field in an HTTP
   //   response message over secure transport, then the UA MUST process
   //   only the first such header field.
   HttpResponseHeaders* headers = GetResponseHeaders();
   std::string value;
-  if (headers->EnumerateHeader(NULL, "Public-Key-Pins", &value))
+  if (headers->EnumerateHeader(nullptr, "Public-Key-Pins", &value))
     security_state->AddHPKPHeader(request_info_.url.host(), value, ssl_info);
+  if (headers->EnumerateHeader(nullptr, "Public-Key-Pins-Report-Only",
+                               &value)) {
+    security_state->ProcessHPKPReportOnlyHeader(
+        value, HostPortPair::FromURL(request_info_.url), ssl_info);
+  }
 }
 
 void URLRequestHttpJob::OnStartCompleted(int result) {
