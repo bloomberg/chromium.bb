@@ -57,15 +57,6 @@
 - (void)clearAutofilledFieldsForFormNamed:(NSString*)formName
                         completionHandler:(ProceduralBlock)completionHandler;
 
-// Dispatches the autocomplete event to the form element with the given
-// |formName|.
-- (void)dispatchAutocompleteEvent:(NSString*)formName;
-
-// Dispatches the autocomplete error event to the form element with the given
-// |formName|, supplying the given reason.
-- (void)dispatchAutocompleteErrorEvent:(NSString*)formName
-                            withReason:(NSString*)reason;
-
 // Marks up the form with autofill field prediction data (diagnostic tool).
 - (void)fillPredictionData:(NSString*)dataString;
 

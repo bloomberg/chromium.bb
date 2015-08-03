@@ -87,24 +87,6 @@
   [self evaluate:js stringResultHandler:resultHandler];
 }
 
-- (void)dispatchAutocompleteEvent:(NSString*)formName {
-  NSString* dispatchAutocompleteEventJS = [NSString
-      stringWithFormat:@"__gCrWeb.autofill.dispatchAutocompleteEvent(%s);",
-                       base::GetQuotedJSONString([formName UTF8String])
-                           .c_str()];
-  [self evaluate:dispatchAutocompleteEventJS stringResultHandler:nil];
-}
-
-- (void)dispatchAutocompleteErrorEvent:(NSString*)formName
-                            withReason:(NSString*)reason {
-  NSString* autocompleteErrorJS = [NSString
-      stringWithFormat:
-          @"__gCrWeb.autofill.dispatchAutocompleteErrorEvent(%s, %s);",
-          base::GetQuotedJSONString([formName UTF8String]).c_str(),
-          base::GetQuotedJSONString([reason UTF8String]).c_str()];
-  [self evaluate:autocompleteErrorJS stringResultHandler:nil];
-}
-
 - (void)fillPredictionData:(NSString*)dataString {
   [self deferredEvaluate:
             [NSString

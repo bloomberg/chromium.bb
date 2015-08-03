@@ -648,12 +648,4 @@ goog.require('__crWeb.message');
   };
 
   __gCrWeb.core.documentInject();
-
-  // Form prototype loaded with event to supply Autocomplete API
-  // functionality.
-  HTMLFormElement.prototype.requestAutocomplete = function() {
-    invokeOnHost_(
-         {'command': 'form.requestAutocomplete',
-         'formName': __gCrWeb.common.getFormIdentifier(this)});
-  };
 }());  // End of anonymous object

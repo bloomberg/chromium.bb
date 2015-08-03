@@ -583,31 +583,6 @@ __gCrWeb.autofill['clearAutofilledFields'] = function(formName) {
 };
 
 /**
- * Dispatch an autocomplete event to the named form.
- *
- * @param {string} name Identifier for form element (from getFormIdentifier).
- */
-__gCrWeb.autofill['dispatchAutocompleteEvent'] = function(name) {
-  var formElement = __gCrWeb.common.getFormElementFromIdentifier(name);
-  var event = new CustomEvent('autocomplete', {});
-  formElement.dispatchEvent(event);
-};
-
-/**
- * Dispatch an autocomplete error event to the named form.
- *
- * @param {string} name Identifier for form element (from getFormIdentifier).
- * @param {string} reason Reason to supply in event.reason; one of 'cancel',
- *     'invalid' or 'disabled'; see requestAutocomplete spec.
- * @suppress {checkTypes}
- */
-__gCrWeb.autofill['dispatchAutocompleteErrorEvent'] = function(name, reason) {
-  var formElement = __gCrWeb.common.getFormElementFromIdentifier(name);
-  var event = new CustomEvent('autocompleteerror', {'reason': reason});
-  formElement.dispatchEvent(event);
-};
-
-/**
  * See extractFormsAndFormElements below.
  *
  * @param {HTMLFrameElement|Window} frame A window or a frame containing forms
