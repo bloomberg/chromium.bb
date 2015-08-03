@@ -280,7 +280,7 @@ ImageEditor.prototype.updateUndoRedo = function() {
   var canUndo = this.commandQueue_ && this.commandQueue_.canUndo();
   var canRedo = this.commandQueue_ && this.commandQueue_.canRedo();
   ImageUtil.setAttribute(this.undoButton_, 'disabled', !canUndo);
-  this.redoButton_.hidden = !canRedo;
+  ImageUtil.setAttribute(this.redoButton_, 'disabled', !canRedo);
 };
 
 /**
