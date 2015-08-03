@@ -494,6 +494,8 @@
         'scheduler/video_frame_controller.h',
         'tiles/eviction_tile_priority_queue.cc',
         'tiles/eviction_tile_priority_queue.h',
+        'tiles/image_decode_controller.cc',
+        'tiles/image_decode_controller.h',
         'tiles/picture_layer_tiling.cc',
         'tiles/picture_layer_tiling.h',
         'tiles/picture_layer_tiling_set.cc',

@@ -153,47 +153,6 @@ class RasterTaskImpl : public RasterTask {
   DISALLOW_COPY_AND_ASSIGN(RasterTaskImpl);
 };
 
-class ImageDecodeTaskImpl : public ImageDecodeTask {
- public:
-  ImageDecodeTaskImpl(SkPixelRef* pixel_ref,
-                      uint64_t source_prepare_tiles_id,
-                      const base::Callback<void(bool was_canceled)>& reply)
-      : pixel_ref_(skia::SharePtr(pixel_ref)),
-        source_prepare_tiles_id_(source_prepare_tiles_id),
-        reply_(reply) {}
-
-  // Overridden from Task:
-  void RunOnWorkerThread() override {
-    TRACE_EVENT1("cc", "ImageDecodeTaskImpl::RunOnWorkerThread",
-                 "source_prepare_tiles_id", source_prepare_tiles_id_);
-
-    devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
-        pixel_ref_.get());
-    // This will cause the image referred to by pixel ref to be decoded.
-    pixel_ref_->lockPixels();
-    pixel_ref_->unlockPixels();
-
-    // Release the reference after decoding image to ensure that it is not
-    // kept alive unless needed.
-    pixel_ref_.clear();
-  }
-
-  // Overridden from TileTask:
-  void ScheduleOnOriginThread(TileTaskClient* client) override {}
-  void CompleteOnOriginThread(TileTaskClient* client) override {}
-  void RunReplyOnOriginThread() override { reply_.Run(!HasFinishedRunning()); }
-
- protected:
-  ~ImageDecodeTaskImpl() override {}
-
- private:
-  skia::RefPtr<SkPixelRef> pixel_ref_;
-  uint64_t source_prepare_tiles_id_;
-  const base::Callback<void(bool was_canceled)> reply_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageDecodeTaskImpl);
-};
-
 const char* TaskSetName(TaskSet task_set) {
   switch (task_set) {
     case TileManager::ALL:
@@ -324,14 +283,7 @@ void TileManager::CleanUpReleasedTiles() {
     DCHECK(tiles_.find(tile->id()) != tiles_.end());
     tiles_.erase(tile->id());
 
-    LayerCountMap::iterator layer_it =
-        used_layer_counts_.find(tile->layer_id());
-    DCHECK_GT(layer_it->second, 0);
-    if (--layer_it->second == 0) {
-      used_layer_counts_.erase(layer_it);
-      image_decode_tasks_.erase(tile->layer_id());
-    }
-
+    image_decode_controller_.SubtractLayerUsedCount(tile->layer_id());
     delete tile;
   }
   released_tiles_.swap(tiles_to_retain);
@@ -712,16 +664,6 @@ void TileManager::ScheduleTasks(
   did_check_for_completed_tasks_since_last_schedule_tasks_ = false;
 }
 
-scoped_refptr<ImageDecodeTask> TileManager::CreateImageDecodeTask(
-    Tile* tile,
-    SkPixelRef* pixel_ref) {
-  return make_scoped_refptr(new ImageDecodeTaskImpl(
-      pixel_ref, prepare_tiles_count_,
-      base::Bind(&TileManager::OnImageDecodeTaskCompleted,
-                 base::Unretained(this), tile->layer_id(),
-                 base::Unretained(pixel_ref))));
-}
-
 scoped_refptr<RasterTask> TileManager::CreateRasterTask(
     const PrioritizedTile& prioritized_tile) {
   Tile* tile = prioritized_tile.tile();
@@ -746,25 +688,12 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
 
   // Create and queue all image decode tasks that this tile depends on.
   ImageDecodeTask::Vector decode_tasks;
-  PixelRefTaskMap& existing_pixel_refs = image_decode_tasks_[tile->layer_id()];
   std::vector<SkPixelRef*> pixel_refs;
   prioritized_tile.raster_source()->GatherPixelRefs(
       tile->content_rect(), tile->contents_scale(), &pixel_refs);
   for (SkPixelRef* pixel_ref : pixel_refs) {
-    uint32_t id = pixel_ref->getGenerationID();
-
-    // Append existing image decode task if available.
-    PixelRefTaskMap::iterator decode_task_it = existing_pixel_refs.find(id);
-    if (decode_task_it != existing_pixel_refs.end()) {
-      decode_tasks.push_back(decode_task_it->second);
-      continue;
-    }
-
-    // Create and append new image decode task for this pixel ref.
-    scoped_refptr<ImageDecodeTask> decode_task =
-        CreateImageDecodeTask(tile, pixel_ref);
-    decode_tasks.push_back(decode_task);
-    existing_pixel_refs[id] = decode_task;
+    decode_tasks.push_back(image_decode_controller_.GetTaskForPixelRef(
+        pixel_ref, tile->layer_id(), prepare_tiles_count_));
   }
 
   return make_scoped_refptr(new RasterTaskImpl(
@@ -777,26 +706,6 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
       base::Bind(&TileManager::OnRasterTaskCompleted, base::Unretained(this),
                  tile->id(), base::Passed(&resource)),
       &decode_tasks));
-}
-
-void TileManager::OnImageDecodeTaskCompleted(int layer_id,
-                                             SkPixelRef* pixel_ref,
-                                             bool was_canceled) {
-  // If the task was canceled, we need to clean it up
-  // from |image_decode_tasks_|.
-  if (!was_canceled)
-    return;
-
-  LayerPixelRefTaskMap::iterator layer_it = image_decode_tasks_.find(layer_id);
-  if (layer_it == image_decode_tasks_.end())
-    return;
-
-  PixelRefTaskMap& pixel_ref_tasks = layer_it->second;
-  PixelRefTaskMap::iterator task_it =
-      pixel_ref_tasks.find(pixel_ref->getGenerationID());
-
-  if (task_it != pixel_ref_tasks.end())
-    pixel_ref_tasks.erase(task_it);
 }
 
 void TileManager::OnRasterTaskCompleted(
@@ -863,7 +772,7 @@ ScopedTilePtr TileManager::CreateTile(const gfx::Size& desired_texture_size,
   DCHECK(tiles_.find(tile->id()) == tiles_.end());
 
   tiles_[tile->id()] = tile.get();
-  used_layer_counts_[tile->layer_id()]++;
+  image_decode_controller_.AddLayerUsedCount(tile->layer_id());
   return tile;
 }
 
