@@ -31,16 +31,11 @@ cr.define('downloads', function() {
         observer: 'onScrollbarWidthChange_',
       },
 
-      /** @private */
       isDangerous_: {type: Boolean, value: false},
 
-      /** @private */
       isIncognito_: {type: Boolean, value: false},
 
-      /**
-       * Only set when |isDangerous| is true.
-       * @private
-       */
+      /** Only set when |isDangerous| is true. */
       isMalware_: Boolean,
     },
 
