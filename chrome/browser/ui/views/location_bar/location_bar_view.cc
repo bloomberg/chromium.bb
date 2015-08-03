@@ -130,7 +130,7 @@ LocationBarView::LocationBarView(Browser* browser,
                                  Delegate* delegate,
                                  bool is_popup_mode)
     : LocationBar(profile),
-      OmniboxEditController(command_updater),
+      ChromeOmniboxEditController(command_updater),
       browser_(browser),
       omnibox_view_(NULL),
       delegate_(delegate),

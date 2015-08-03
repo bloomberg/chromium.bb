@@ -89,7 +89,7 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
                                        Profile* profile,
                                        Browser* browser)
     : LocationBar(profile),
-      OmniboxEditController(command_updater),
+      ChromeOmniboxEditController(command_updater),
       omnibox_view_(new OmniboxViewMac(this, profile, command_updater, field)),
       field_(field),
       location_icon_decoration_(new LocationIconDecoration(this)),
@@ -560,16 +560,16 @@ void LocationBarViewMac::ShowURL() {
   omnibox_view_->ShowURL();
 }
 
-WebContents* LocationBarViewMac::GetWebContents() {
-  return browser_->tab_strip_model()->GetActiveWebContents();
-}
-
 ToolbarModel* LocationBarViewMac::GetToolbarModel() {
   return browser_->toolbar_model();
 }
 
 const ToolbarModel* LocationBarViewMac::GetToolbarModel() const {
   return browser_->toolbar_model();
+}
+
+WebContents* LocationBarViewMac::GetWebContents() {
+  return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
 NSImage* LocationBarViewMac::GetKeywordImage(const base::string16& keyword) {

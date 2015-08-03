@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
+#include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,21 +50,20 @@ class TestingOmniboxViewViews : public OmniboxViewViews {
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxViewViews);
 };
 
-class TestingOmniboxEditController : public OmniboxEditController {
+class TestingOmniboxEditController : public ChromeOmniboxEditController {
  public:
   explicit TestingOmniboxEditController(CommandUpdater* command_updater)
-      : OmniboxEditController(command_updater) {
-  }
+      : ChromeOmniboxEditController(command_updater) {}
 
  protected:
-  // OmniboxEditController:
+  // ChromeOmniboxEditController:
   void UpdateWithoutTabRestore() override {}
   void OnChanged() override {}
   void OnSetFocus() override {}
   void ShowURL() override {}
-  content::WebContents* GetWebContents() override { return NULL; }
-  ToolbarModel* GetToolbarModel() override { return NULL; }
-  const ToolbarModel* GetToolbarModel() const override { return NULL; }
+  ToolbarModel* GetToolbarModel() override { return nullptr; }
+  const ToolbarModel* GetToolbarModel() const override { return nullptr; }
+  content::WebContents* GetWebContents() override { return nullptr; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxEditController);

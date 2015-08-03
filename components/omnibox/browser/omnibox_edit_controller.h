@@ -1,35 +1,26 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_EDIT_CONTROLLER_H_
-#define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_EDIT_CONTROLLER_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EDIT_CONTROLLER_H_
+#define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EDIT_CONTROLLER_H_
 
 #include "base/strings/string16.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
-class CommandUpdater;
 class ToolbarModel;
-
-namespace content {
-class WebContents;
-}
 
 namespace gfx {
 class Image;
 }
 
-// I am in hack-and-slash mode right now.
-// http://code.google.com/p/chromium/issues/detail?id=6772
-
-// Embedders of an AutocompleteEdit widget must implement this class.
 class OmniboxEditController {
  public:
-  void OnAutocompleteAccept(const GURL& destination_url,
-                            WindowOpenDisposition disposition,
-                            ui::PageTransition transition);
+  virtual void OnAutocompleteAccept(const GURL& destination_url,
+                                    WindowOpenDisposition disposition,
+                                    ui::PageTransition transition);
 
   // Called when the the controller should update itself without restoring any
   // tab state.
@@ -46,17 +37,11 @@ class OmniboxEditController {
   // Shows the URL.
   virtual void ShowURL() = 0;
 
-  // Returns the WebContents of the currently active tab.
-  virtual content::WebContents* GetWebContents() = 0;
-
   virtual ToolbarModel* GetToolbarModel() = 0;
   virtual const ToolbarModel* GetToolbarModel() const = 0;
 
-  CommandUpdater* command_updater() { return command_updater_; }
-  const CommandUpdater* command_updater() const { return command_updater_; }
-
  protected:
-  explicit OmniboxEditController(CommandUpdater* command_updater);
+  OmniboxEditController();
   virtual ~OmniboxEditController();
 
   GURL destination_url() const { return destination_url_; }
@@ -64,8 +49,6 @@ class OmniboxEditController {
   ui::PageTransition transition() const { return transition_; }
 
  private:
-  CommandUpdater* command_updater_;
-
   // The details necessary to open the user's desired omnibox match.
   GURL destination_url_;
   WindowOpenDisposition disposition_;
@@ -74,4 +57,4 @@ class OmniboxEditController {
   DISALLOW_COPY_AND_ASSIGN(OmniboxEditController);
 };
 
-#endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_EDIT_CONTROLLER_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EDIT_CONTROLLER_H_

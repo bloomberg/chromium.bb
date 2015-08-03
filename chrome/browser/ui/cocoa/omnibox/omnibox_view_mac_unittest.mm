@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
-#include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
+#include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
@@ -78,25 +78,23 @@ class TestingToolbarModelDelegate : public ToolbarModelDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestingToolbarModelDelegate);
 };
 
-class TestingOmniboxEditController : public OmniboxEditController {
+class TestingOmniboxEditController : public ChromeOmniboxEditController {
  public:
   explicit TestingOmniboxEditController(ToolbarModel* toolbar_model)
-      : OmniboxEditController(NULL),
-        toolbar_model_(toolbar_model) {
-  }
+      : ChromeOmniboxEditController(NULL), toolbar_model_(toolbar_model) {}
   ~TestingOmniboxEditController() override {}
 
  protected:
-  // Overridden from OmniboxEditController:
+  // Overridden from ChromeOmniboxEditController:
   void UpdateWithoutTabRestore() override {}
   void OnChanged() override {}
   void OnSetFocus() override {}
   void ShowURL() override {}
-  content::WebContents* GetWebContents() override { return NULL; }
   ToolbarModel* GetToolbarModel() override { return toolbar_model_; }
   const ToolbarModel* GetToolbarModel() const override {
     return toolbar_model_;
   }
+  content::WebContents* GetWebContents() override { return nullptr; }
 
  private:
   ToolbarModel* toolbar_model_;

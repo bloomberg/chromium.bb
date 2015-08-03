@@ -12,7 +12,7 @@
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
-#include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
+#include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/browser/ui/toolbar/chrome_toolbar_model.h"
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
@@ -76,7 +76,7 @@ class LocationBarView : public LocationBar,
                         public views::ButtonListener,
                         public views::DragController,
                         public gfx::AnimationDelegate,
-                        public OmniboxEditController,
+                        public ChromeOmniboxEditController,
                         public DropdownBarHostDelegate,
                         public TemplateURLServiceObserver,
                         public SearchModelObserver,
@@ -250,7 +250,7 @@ class LocationBarView : public LocationBar,
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
 
-  // OmniboxEditController:
+  // ChromeOmniboxEditController:
   void UpdateWithoutTabRestore() override;
   void ShowURL() override;
   ToolbarModel* GetToolbarModel() override;
@@ -379,7 +379,7 @@ class LocationBarView : public LocationBar,
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
 
-  // OmniboxEditController:
+  // ChromeOmniboxEditController:
   void OnChanged() override;
   void OnSetFocus() override;
   const ToolbarModel* GetToolbarModel() const override;

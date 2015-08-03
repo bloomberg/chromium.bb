@@ -25,7 +25,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
+#include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/instant_types.h"
@@ -114,7 +114,7 @@ void AnswerImageObserver::OnImageChanged(
 
 ChromeOmniboxClient::ChromeOmniboxClient(OmniboxEditController* controller,
                                          Profile* profile)
-    : controller_(controller),
+    : controller_(static_cast<ChromeOmniboxEditController*>(controller)),
       profile_(profile),
       request_id_(BitmapFetcherService::REQUEST_ID_INVALID) {}
 

@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
-#include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
+#include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/ui/zoom/zoom_event_manager_observer.h"
@@ -45,7 +45,7 @@ class ZoomDecorationTest;
 
 class LocationBarViewMac : public LocationBar,
                            public LocationBarTesting,
-                           public OmniboxEditController,
+                           public ChromeOmniboxEditController,
                            public SearchModelObserver,
                            public ui_zoom::ZoomEventManagerObserver {
  public:
@@ -160,14 +160,14 @@ class LocationBarViewMac : public LocationBar,
   // Clears any location bar state stored for |contents|.
   void ResetTabState(content::WebContents* contents);
 
-  // OmniboxEditController:
+  // ChromeOmniboxEditController:
   void UpdateWithoutTabRestore() override;
   void OnChanged() override;
   void OnSetFocus() override;
   void ShowURL() override;
-  content::WebContents* GetWebContents() override;
   ToolbarModel* GetToolbarModel() override;
   const ToolbarModel* GetToolbarModel() const override;
+  content::WebContents* GetWebContents() override;
 
   NSImage* GetKeywordImage(const base::string16& keyword);
 

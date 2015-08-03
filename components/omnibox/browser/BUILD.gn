@@ -45,6 +45,8 @@ source_set("browser") {
     "keyword_provider.cc",
     "keyword_provider.h",
     "omnibox_client.h",
+    "omnibox_edit_controller.cc",
+    "omnibox_edit_controller.h",
     "omnibox_field_trial.cc",
     "omnibox_field_trial.h",
     "omnibox_log.cc",

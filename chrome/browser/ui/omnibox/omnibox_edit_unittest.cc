@@ -6,7 +6,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
-#include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
+#include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_model.h"
@@ -94,24 +94,22 @@ class TestingOmniboxView : public OmniboxView {
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxView);
 };
 
-class TestingOmniboxEditController : public OmniboxEditController {
+class TestingOmniboxEditController : public ChromeOmniboxEditController {
  public:
   explicit TestingOmniboxEditController(ToolbarModel* toolbar_model)
-      : OmniboxEditController(NULL),
-        toolbar_model_(toolbar_model) {
-  }
+      : ChromeOmniboxEditController(NULL), toolbar_model_(toolbar_model) {}
 
  protected:
-  // OmniboxEditController:
+  // ChromeOmniboxEditController:
   void UpdateWithoutTabRestore() override {}
   void OnChanged() override {}
   void OnSetFocus() override {}
   void ShowURL() override {}
-  WebContents* GetWebContents() override { return NULL; }
   ToolbarModel* GetToolbarModel() override { return toolbar_model_; }
   const ToolbarModel* GetToolbarModel() const override {
     return toolbar_model_;
   }
+  WebContents* GetWebContents() override { return nullptr; }
 
  private:
   ToolbarModel* toolbar_model_;

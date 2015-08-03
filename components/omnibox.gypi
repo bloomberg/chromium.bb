@@ -81,6 +81,8 @@
         'omnibox/browser/keyword_provider.cc',
         'omnibox/browser/keyword_provider.h',
         'omnibox/browser/omnibox_client.h',
+        'omnibox/browser/omnibox_edit_controller.cc',
+        'omnibox/browser/omnibox_edit_controller.h',
         'omnibox/browser/omnibox_field_trial.cc',
         'omnibox/browser/omnibox_field_trial.h',
         'omnibox/browser/omnibox_log.cc',

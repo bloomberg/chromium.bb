@@ -10,6 +10,7 @@
 #include "chrome/common/instant_types.h"
 #include "components/omnibox/browser/omnibox_client.h"
 
+class ChromeOmniboxEditController;
 class OmniboxEditController;
 class Profile;
 
@@ -73,7 +74,7 @@ class ChromeOmniboxClient : public OmniboxClient {
   void OnBitmapFetched(const BitmapFetchedCallback& callback,
                        const SkBitmap& bitmap);
 
-  OmniboxEditController* controller_;
+  ChromeOmniboxEditController* controller_;
   Profile* profile_;
   BitmapFetcherService::RequestId request_id_;
 
