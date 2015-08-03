@@ -122,7 +122,10 @@ CastConfigDelegateChromeos::~CastConfigDelegateChromeos() {
 }
 
 bool CastConfigDelegateChromeos::HasCastExtension() const {
-  return FindCastExtension() != nullptr;
+  // TODO(jdufault): Temporarily disable the cast tray integration until we
+  // figure out how to get ExecuteJavaScriptInIsolatedWorld to work as expected.
+  // See crbug.com/514952.
+  return false;
 }
 
 void CastConfigDelegateChromeos::GetReceiversAndActivities(
