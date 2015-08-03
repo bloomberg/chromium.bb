@@ -161,6 +161,9 @@ class MEDIA_EXPORT VideoCaptureOracle {
   // Determines video capture frame sizes.
   CaptureResolutionChooser resolution_chooser_;
 
+  // The timestamp of the frame just before the last call to SetSourceSize().
+  base::TimeTicks source_size_change_time_;
+
   // The current capture size.  |resolution_chooser_| may hold an updated value
   // because the oracle prevents this size from changing too frequently.  This
   // avoids over-stressing consumers (e.g., when a window is being activly

@@ -48,6 +48,13 @@ const int kMinSizeChangePeriodMicros = 3000000;  // 3 seconds
 // is an unexpected pause in events.
 const int kMaxTimeSinceLastFeedbackUpdateMicros = 1000000;  // 1 second
 
+// The amount of time, since the source size last changed, to allow frequent
+// increases in capture area.  This allows the system a period of time to
+// quickly explore up and down to find an ideal point before being more careful
+// about capture size increases.
+const int kExplorationPeriodAfterSourceSizeChangeMicros =
+    3 * kMinSizeChangePeriodMicros;
+
 // The amount of additional time, since content animation was last detected, to
 // continue being extra-careful about increasing the capture size.  This is used
 // to prevent breif periods of non-animating content from throwing off the
@@ -117,6 +124,8 @@ void VideoCaptureOracle::SetSourceSize(const gfx::Size& source_size) {
   resolution_chooser_.SetSourceSize(source_size);
   // If the |resolution_chooser_| computed a new capture size, that will become
   // visible via a future call to ObserveEventAndDecideCapture().
+  source_size_change_time_ = (next_frame_number_ == 0) ?
+      base::TimeTicks() : GetFrameTimestamp(next_frame_number_ - 1);
 }
 
 bool VideoCaptureOracle::ObserveEventAndDecideCapture(
@@ -340,10 +349,6 @@ void VideoCaptureOracle::CommitCaptureSizeAndReset(
   const base::TimeTicks ignore_before_time = JustAfter(last_frame_time);
   buffer_pool_utilization_.Reset(1.0, ignore_before_time);
   estimated_capable_area_.Reset(capture_size_.GetArea(), ignore_before_time);
-
-  // With the new capture size, erase any prior conclusion about the end-to-end
-  // system being under-utilized.
-  start_time_of_underutilization_ = base::TimeTicks();
 }
 
 void VideoCaptureOracle::AnalyzeAndAdjust(const base::TimeTicks analyze_time) {
@@ -403,6 +408,9 @@ int VideoCaptureOracle::AnalyzeForDecreasedArea(base::TimeTicks analyze_time) {
     decreased_area = std::min(
         capable_area,
         resolution_chooser_.FindSmallerFrameSize(current_area, 1).GetArea());
+    VLOG_IF(2, !start_time_of_underutilization_.is_null())
+        << "Contiguous period of under-utilization ends: "
+           "System is suddenly over-utilized.";
     start_time_of_underutilization_ = base::TimeTicks();
     VLOG(2) << "Proposing a "
             << (100.0 * (current_area - decreased_area) / current_area)
@@ -435,6 +443,9 @@ int VideoCaptureOracle::AnalyzeForIncreasedArea(base::TimeTicks analyze_time) {
     const int buffer_capable_area = base::saturated_cast<int>(
         current_area / buffer_pool_utilization_.current());
     if (buffer_capable_area < increased_area) {
+      VLOG_IF(2, !start_time_of_underutilization_.is_null())
+          << "Contiguous period of under-utilization ends: "
+             "Buffer pool is no longer under-utilized.";
       start_time_of_underutilization_ = base::TimeTicks();
       return -1;  // Buffer pool is not under-utilized.
     }
@@ -443,6 +454,9 @@ int VideoCaptureOracle::AnalyzeForIncreasedArea(base::TimeTicks analyze_time) {
   // Determine whether the consumer could handle an increase in area.
   if (HasSufficientRecentFeedback(estimated_capable_area_, analyze_time)) {
     if (estimated_capable_area_.current() < increased_area) {
+      VLOG_IF(2, !start_time_of_underutilization_.is_null())
+          << "Contiguous period of under-utilization ends: "
+             "Consumer is no longer under-utilized.";
       start_time_of_underutilization_ = base::TimeTicks();
       return -1;  // Consumer is not under-utilized.
     }
@@ -454,7 +468,6 @@ int VideoCaptureOracle::AnalyzeForIncreasedArea(base::TimeTicks analyze_time) {
     // Consumer is providing feedback, but hasn't reported it recently.  Just in
     // case it's stalled, don't make things worse by increasing the capture
     // area.
-    start_time_of_underutilization_ = base::TimeTicks();
     return -1;
   }
 
@@ -463,26 +476,46 @@ int VideoCaptureOracle::AnalyzeForIncreasedArea(base::TimeTicks analyze_time) {
   if (start_time_of_underutilization_.is_null())
     start_time_of_underutilization_ = analyze_time;
 
+  // If the under-utilization started soon after the last source size change,
+  // permit an immediate increase in the capture area.  This allows the system
+  // to quickly step-up to an ideal point.
+  if ((start_time_of_underutilization_ -
+           source_size_change_time_).InMicroseconds() <=
+      kExplorationPeriodAfterSourceSizeChangeMicros) {
+    VLOG(2) << "Proposing a "
+            << (100.0 * (increased_area - current_area) / current_area)
+            << "% increase in capture area after source size change.  :-)";
+    return increased_area;
+  }
+
   // While content is animating, require a "proving period" of contiguous
   // under-utilization before increasing the capture area.  This will mitigate
-  // the risk of causing frames to be dropped when increasing the load.  If
-  // content is not animating, be aggressive about increasing the capture area,
-  // to improve the quality of non-animating content (where frame drops are not
-  // much of a concern).
+  // the risk of frames getting dropped when the data volume increases.
   if ((analyze_time - last_time_animation_was_detected_).InMicroseconds() <
       kDebouncingPeriodForAnimatedContentMicros) {
     if ((analyze_time - start_time_of_underutilization_).InMicroseconds() <
         kProvingPeriodForAnimatedContentMicros) {
-      // Content is animating and the system has not been contiguously
-      // under-utilizated for long enough.
+      // Content is animating but the system needs to be under-utilized for a
+      // longer period of time.
       return -1;
+    } else {
+      // Content is animating and the system has been contiguously
+      // under-utilized for a good long time.
+      VLOG(2) << "Proposing a *cautious* "
+              << (100.0 * (increased_area - current_area) / current_area)
+              << "% increase in capture area while content is animating.  :-)";
+      // Reset the "proving period."
+      start_time_of_underutilization_ = base::TimeTicks();
+      return increased_area;
     }
   }
 
+  // Content is not animating, so permit an immediate increase in the capture
+  // area.  This allows the system to quickly improve the quality of
+  // non-animating content (frame drops are not much of a concern).
   VLOG(2) << "Proposing a "
           << (100.0 * (increased_area - current_area) / current_area)
-          << "% increase in capture area.  :-)";
-
+          << "% increase in capture area for non-animating content.  :-)";
   return increased_area;
 }
 

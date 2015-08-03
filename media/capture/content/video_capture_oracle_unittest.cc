@@ -19,8 +19,16 @@ base::TimeDelta Get30HzPeriod() {
   return base::TimeDelta::FromSeconds(1) / 30;
 }
 
+gfx::Size Get1080pSize() {
+  return gfx::Size(1920, 1080);
+}
+
 gfx::Size Get720pSize() {
   return gfx::Size(1280, 720);
+}
+
+gfx::Size Get360pSize() {
+  return gfx::Size(640, 360);
 }
 
 }  // namespace
@@ -460,6 +468,119 @@ TEST(VideoCaptureOracleTest, AutoThrottlesBasedOnUtilizationFeedback) {
   RunAutoThrottleTest(false, true);
   RunAutoThrottleTest(true, false);
   RunAutoThrottleTest(true, true);
+}
+
+// Tests that, while content is animating, VideoCaptureOracle can make frequent
+// capture size increases only just after the source size has changed.
+// Otherwise, capture size increases should only be made cautiously, after a
+// long "proving period of under-utilization" has elapsed.
+TEST(VideoCaptureOracleTest, IncreasesFrequentlyOnlyAfterSourceSizeChange) {
+  VideoCaptureOracle oracle(Get30HzPeriod(), Get720pSize(),
+                            media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT, true);
+
+  // Start out the source size at 360p, so there is room to grow to the 720p
+  // maximum.
+  oracle.SetSourceSize(Get360pSize());
+
+  // Run 10 seconds of frame captures with under-utilization to represent a
+  // machine that can do more, but won't because the source size is small.
+  base::TimeTicks t = InitialTestTimeTicks();
+  const base::TimeDelta event_increment = Get30HzPeriod() * 2;
+  base::TimeTicks end_t = t + base::TimeDelta::FromSeconds(10);
+  for (; t < end_t; t += event_increment) {
+    if (!oracle.ObserveEventAndDecideCapture(
+            VideoCaptureOracle::kCompositorUpdate, gfx::Rect(Get360pSize()),
+            t)) {
+      continue;
+    }
+    ASSERT_EQ(Get360pSize(), oracle.capture_size());
+    const int frame_number = oracle.RecordCapture(0.25);
+    base::TimeTicks ignored;
+    ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
+  }
+
+  // Now, set the source size to 720p, continuing to report under-utilization,
+  // and expect the capture size increases to reach a full 720p within 15
+  // seconds.
+  oracle.SetSourceSize(Get720pSize());
+  gfx::Size last_capture_size = oracle.capture_size();
+  end_t = t + base::TimeDelta::FromSeconds(15);
+  for (; t < end_t; t += event_increment) {
+    if (!oracle.ObserveEventAndDecideCapture(
+            VideoCaptureOracle::kCompositorUpdate, gfx::Rect(Get720pSize()),
+            t)) {
+      continue;
+    }
+    ASSERT_LE(last_capture_size.width(), oracle.capture_size().width());
+    ASSERT_LE(last_capture_size.height(), oracle.capture_size().height());
+    last_capture_size = oracle.capture_size();
+    const int frame_number = oracle.RecordCapture(0.25);
+    base::TimeTicks ignored;
+    ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
+  }
+  ASSERT_EQ(Get720pSize(), oracle.capture_size());
+
+  // Now, change the source size again, but report over-utilization so the
+  // capture size will decrease.  Once it decreases one step, report 90%
+  // utilization to achieve a steady-state.
+  oracle.SetSourceSize(Get1080pSize());
+  gfx::Size stepped_down_size;
+  end_t = t + base::TimeDelta::FromSeconds(10);
+  for (; t < end_t; t += event_increment) {
+    if (!oracle.ObserveEventAndDecideCapture(
+            VideoCaptureOracle::kCompositorUpdate, gfx::Rect(Get1080pSize()),
+            t)) {
+      continue;
+    }
+
+    if (stepped_down_size.IsEmpty()) {
+      if (oracle.capture_size() != Get720pSize()) {
+        stepped_down_size = oracle.capture_size();
+        ASSERT_GT(Get720pSize().width(), stepped_down_size.width());
+        ASSERT_GT(Get720pSize().height(), stepped_down_size.height());
+      }
+    } else {
+      ASSERT_EQ(stepped_down_size, oracle.capture_size());
+    }
+
+    const double utilization = stepped_down_size.IsEmpty() ? 1.5 : 0.9;
+    const int frame_number = oracle.RecordCapture(utilization);
+    base::TimeTicks ignored;
+    ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
+  }
+  ASSERT_FALSE(stepped_down_size.IsEmpty());
+
+  // Now, if we report under-utilization again (without any source size change),
+  // there should be a long "proving period" before there is any increase in
+  // capture size made by the oracle.
+  const base::TimeTicks proving_period_end_time =
+      t + base::TimeDelta::FromSeconds(15);
+  gfx::Size stepped_up_size;
+  end_t = t + base::TimeDelta::FromSeconds(60);
+  for (; t < end_t; t += event_increment) {
+    if (!oracle.ObserveEventAndDecideCapture(
+            VideoCaptureOracle::kCompositorUpdate, gfx::Rect(Get1080pSize()),
+            t)) {
+      continue;
+    }
+
+    if (stepped_up_size.IsEmpty()) {
+      if (oracle.capture_size() != stepped_down_size) {
+        ASSERT_LT(proving_period_end_time, t);
+        stepped_up_size = oracle.capture_size();
+        ASSERT_LT(stepped_down_size.width(), stepped_up_size.width());
+        ASSERT_LT(stepped_down_size.height(), stepped_up_size.height());
+      }
+    } else {
+      ASSERT_EQ(stepped_up_size, oracle.capture_size());
+    }
+
+    const double utilization = stepped_up_size.IsEmpty() ? 0.25 : 0.9;
+    const int frame_number = oracle.RecordCapture(utilization);
+    base::TimeTicks ignored;
+    ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
+  }
+  ASSERT_FALSE(stepped_up_size.IsEmpty());
 }
 
 // Tests that VideoCaptureOracle does not change the capture size if
