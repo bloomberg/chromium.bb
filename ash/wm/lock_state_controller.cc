@@ -52,9 +52,24 @@ const int kMaxShutdownSoundDurationMs = 1500;
 
 }  // namespace
 
-const int LockStateController::kLockTimeoutMs = 400;
-const int LockStateController::kShutdownTimeoutMs = 400;
-const int LockStateController::kLockFailTimeoutMs = 8000;
+// ASan/TSan/MSan instrument each memory access. This may slow the execution
+// down significantly.
+#if defined(MEMORY_SANITIZER)
+// For MSan the slowdown depends heavily on the value of msan_track_origins GYP
+// flag. The multiplier below corresponds to msan_track_origins=1.
+static const int kTimeoutMultiplier = 6;
+#elif defined(ADDRESS_SANITIZER) && defined(OS_WIN)
+// Asan/Win has not been optimized yet, give it a higher
+// timeout multiplier. See http://crbug.com/412471
+static const int kTimeoutMultiplier = 3;
+#elif defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
+    defined(SYZYASAN)
+static const int kTimeoutMultiplier = 2;
+#else
+static const int kTimeoutMultiplier = 1;
+#endif
+
+const int LockStateController::kLockFailTimeoutMs = 8000 * kTimeoutMultiplier;
 const int LockStateController::kLockToShutdownTimeoutMs = 150;
 const int LockStateController::kShutdownRequestDelayMs = 50;
 
@@ -514,10 +529,6 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
       base::StartsWith(board, "daisy", base::CompareCase::SENSITIVE)) {
     timeout *= 2;
   }
-// Times out on ASAN bots.
-#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER)
-  timeout *= 4;
-#endif
 #endif
   lock_fail_timer_.Start(
       FROM_HERE, timeout, this, &LockStateController::OnLockFailTimeout);
