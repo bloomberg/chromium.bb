@@ -38543,6 +38543,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.URLRequestJob.FallbackedRequestMode"
+    enum="FetchRequestMode">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    Records the the mode of request that was fallbacked to the network by the
+    Service Worker.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.URLRequestJob.MainResource.Result"
     enum="ServiceWorkerURLRequestJobResult">
   <owner>falken@chromium.org</owner>
@@ -58290,6 +58299,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="913" label="AudioParamSetValueCurveAtTime"/>
   <int value="914" label="AudioParamCancelScheduledValues"/>
   <int value="915" label="V8Permissions_Request_Method"/>
+</enum>
+
+<enum name="FetchRequestMode" type="int">
+  <int value="0" label="SameOrigin"/>
+  <int value="1" label="NoCORS"/>
+  <int value="2" label="CORS"/>
+  <int value="3" label="CORSWithForcedPreflight"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">

@@ -8,6 +8,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_util.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/user_metrics.h"
@@ -218,6 +219,11 @@ void ServiceWorkerMetrics::RecordStatusZeroResponseError(
         "ServiceWorker.URLRequestJob.Subresource.StatusZeroError", error,
         blink::WebServiceWorkerResponseErrorLast + 1);
   }
+}
+
+void ServiceWorkerMetrics::RecordFallbackedRequestMode(FetchRequestMode mode) {
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.URLRequestJob.FallbackedRequestMode",
+                            mode, FETCH_REQUEST_MODE_LAST + 1);
 }
 
 }  // namespace content

@@ -148,6 +148,9 @@ class ServiceWorkerMetrics {
       bool is_main_resource,
       blink::WebServiceWorkerResponseError error);
 
+  // Records the mode of request that was fallbacked to the network.
+  static void RecordFallbackedRequestMode(FetchRequestMode mode);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);
 };

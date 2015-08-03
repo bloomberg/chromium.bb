@@ -602,6 +602,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   }
 
   if (fetch_result == SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK) {
+    ServiceWorkerMetrics::RecordFallbackedRequestMode(request_mode_);
     // When the request_mode is |CORS| or |CORS-with-forced-preflight| we can't
     // simply fallback to the network in the browser process. It is because the
     // CORS preflight logic is implemented in the renderer. So we returns a
