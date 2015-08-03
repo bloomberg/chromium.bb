@@ -62,7 +62,7 @@ TEST_F(ValidationDisableNonTemporalsTests, NotDisableNonTemporals) {
 
 TEST_F(ValidationDisableNonTemporalsTests, DisableNonTemporals) {
   memcpy(code_buffer, movnti_code, MOVNTI_CODE_SIZE);
-  NaClValidationStatus status = Validate(DISABLE_NONTEMPORALS);
+  NaClValidationStatus status = Validate(NACL_DISABLE_NONTEMPORALS_X86);
   // Disable non-temporal instructions.
   EXPECT_EQ(NaClValidationFailed, status);
   // Code should not change.

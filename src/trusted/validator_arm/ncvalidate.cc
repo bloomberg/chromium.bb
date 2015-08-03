@@ -150,7 +150,7 @@ static NaClValidationStatus ApplyValidatorArm(
     struct NaClValidationCache *cache) {
   // The ARM validator never modifies the text, so this flag can be ignored.
   UNREFERENCED_PARAMETER(readonly_text);
-  CHECK((flags & ARM_VALIDATION_FLAGS_MASK) == 0);
+  CHECK((flags & NACL_VALIDATION_FLAGS_MASK_ARM) == 0);
   CheckAddressAlignAndOverflow((uint8_t *) guest_addr, size);
   CheckAddressOverflow(data, size);
   CheckAddressOverflow(data, size);

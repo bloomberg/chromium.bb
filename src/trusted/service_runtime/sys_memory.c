@@ -727,7 +727,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
         goto cleanup;
       }
 
-      val_flags = nap->pnacl_mode ? DISABLE_NONTEMPORALS : 0;
+      val_flags = nap->pnacl_mode ? NACL_DISABLE_NONTEMPORALS_X86 : 0;
       /* Ask validator / validation cache */
       NaClMetadataFromNaClDescCtor(&metadata, ndp);
       validator_status = NACL_FI("MMAP_FORCE_MMAP_VALIDATION_FAIL",

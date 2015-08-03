@@ -99,7 +99,7 @@ Bool ProcessInstruction(
 
   // If we are not disabling non-temporals, they should pass validation, and
   // the corresponding validation_info bit is simply cleared.
-  if (user_data.flags != DISABLE_NONTEMPORALS)
+  if ((user_data.flags & NACL_DISABLE_NONTEMPORALS_X86) == 0)
     validation_info &= ~UNSUPPORTED_INSTRUCTION;
 
   Bool result = (validation_info & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET))
@@ -210,7 +210,7 @@ Bool ProcessError(
   // We do the same thing as in ProcessInstruction(): If we are not disabling
   // non-temporals, they should pass validation, and the corresponding
   // validation_info bit is simply cleared.
-  if (user_data.flags != DISABLE_NONTEMPORALS)
+  if ((user_data.flags & NACL_DISABLE_NONTEMPORALS_X86) == 0)
     validation_info &= ~UNSUPPORTED_INSTRUCTION;
 
   Bool result = (validation_info & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET))
@@ -362,7 +362,7 @@ void ParseOptions(int argc, char **argv, Options *options) {
         options->verbose = true;
         break;
       case 'd':
-        options->flags = DISABLE_NONTEMPORALS;
+        options->flags = NACL_DISABLE_NONTEMPORALS_X86;
         break;
       default:
         fprintf(stderr, "ERROR: unknown option: [%c]\n\n", opt);

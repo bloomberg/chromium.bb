@@ -44,7 +44,7 @@ Bool NaClDfaStubOutUnsupportedInstruction(const uint8_t *begin,
     memset((uint8_t *)begin, NACL_HALT_OPCODE, end - begin);
     return TRUE;
   } else if ((info & VALIDATION_ERRORS_MASK) == UNSUPPORTED_INSTRUCTION) {
-    if (data->flags == DISABLE_NONTEMPORALS) {
+    if (data->flags & NACL_DISABLE_NONTEMPORALS_X86) {
       return FALSE;
     } else {
       /* TODO(ruiq): rewrite instruction. For now, we keep the original

@@ -123,7 +123,7 @@ static NaClValidationStatus ApplyValidatorMips(
     const NaClCPUFeatures *cpu_features,
     const struct NaClValidationMetadata *metadata,
     struct NaClValidationCache *cache) {
-  CHECK((flags & MIPS_VALIDATION_FLAGS_MASK) == 0);
+  CHECK((flags & NACL_VALIDATION_FLAGS_MASK_MIPS) == 0);
   void *query = NULL;
   const NaClCPUFeaturesMips *features =
       (const NaClCPUFeaturesMips *) cpu_features;

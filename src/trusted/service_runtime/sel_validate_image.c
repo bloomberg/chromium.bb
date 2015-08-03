@@ -35,7 +35,7 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
   NaClValidationStatus status = NaClValidationSucceeded;
   struct NaClValidationCache *cache = nap->validation_cache;
   const struct NaClValidatorInterface *validator = nap->validator;
-  uint32_t flags = nap->pnacl_mode ? DISABLE_NONTEMPORALS : 0;
+  uint32_t flags = nap->pnacl_mode ? NACL_DISABLE_NONTEMPORALS_X86 : 0;
 
   if (size < kMinimumCachedCodeSize) {
     /*

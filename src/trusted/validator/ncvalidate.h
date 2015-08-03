@@ -22,10 +22,10 @@ struct NaClValidationMetadata;
 
 /* Defines possible validation flags. */
 typedef enum NaClValidationFlags {
-  DISABLE_NONTEMPORALS = 0x1,
-  X86_VALIDATION_FLAGS_MASK = 0x1,
-  ARM_VALIDATION_FLAGS_MASK = 0x0,
-  MIPS_VALIDATION_FLAGS_MASK = 0x0
+  NACL_DISABLE_NONTEMPORALS_X86 = 0x1,
+  NACL_VALIDATION_FLAGS_MASK_X86 = 0x1,
+  NACL_VALIDATION_FLAGS_MASK_ARM = 0x0,
+  NACL_VALIDATION_FLAGS_MASK_MIPS = 0x0
 } NaClValidationFlags;
 
 /* Defines possible validation status values. */

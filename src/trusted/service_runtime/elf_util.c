@@ -648,7 +648,7 @@ static NaClErrorCode NaClElfFileMapSegment(struct NaClApp *nap,
                      (uint8_t *) image_sys_addr,
                      segment_size,  /* actual size */
                      0,  /* stubout_mode: no */
-                     nap->pnacl_mode ? DISABLE_NONTEMPORALS : 0,
+                     nap->pnacl_mode ? NACL_DISABLE_NONTEMPORALS_X86 : 0,
                      1,  /* readonly_text: yes */
                      nap->cpu_features,
                      &metadata,
