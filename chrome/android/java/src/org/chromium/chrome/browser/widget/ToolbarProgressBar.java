@@ -47,6 +47,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     private float mTargetProgress;
     private float mTargetAlpha = 0.0f;
     AnimationLogic mAnimationLogic;
+    private boolean mAnimationInitialized;
 
     private final Runnable mHideRunnable = new Runnable() {
         @Override
@@ -94,6 +95,9 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
      * library is ready.
      */
     public void initializeAnimation() {
+        if (mAnimationInitialized) return;
+        mAnimationInitialized = true;
+
         assert mAnimationLogic == null;
 
         String animation = CommandLine.getInstance().getSwitchValue(
