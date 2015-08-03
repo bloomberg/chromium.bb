@@ -727,10 +727,12 @@ public:
 #define RefPtrWillBeRawPtr WTF::RawPtr
 #define RefPtrWillBeMember blink::Member
 #define RefPtrWillBeWeakMember blink::WeakMember
+#define RefPtrWillBeWeakPersistent blink::WeakPersistent
 #define RefPtrWillBeCrossThreadPersistent blink::CrossThreadPersistent
 #define RawPtrWillBeMember blink::Member
 #define RawPtrWillBePersistent blink::Persistent
 #define RawPtrWillBeWeakMember blink::WeakMember
+#define RawPtrWillBeWeakPersistent blink::WeakPersistent
 #define OwnPtrWillBeCrossThreadPersistent blink::CrossThreadPersistent
 #define OwnPtrWillBeMember blink::Member
 #define OwnPtrWillBePersistent blink::Persistent
@@ -739,6 +741,7 @@ public:
 #define WeakPtrWillBeMember blink::Member
 #define WeakPtrWillBeRawPtr WTF::RawPtr
 #define WeakPtrWillBeWeakMember blink::WeakMember
+#define WeakPtrWillBeWeakPersistent blink::WeakPersistent
 #define NoBaseWillBeGarbageCollected blink::GarbageCollected
 #define NoBaseWillBeGarbageCollectedFinalized blink::GarbageCollectedFinalized
 #define NoBaseWillBeRefCountedGarbageCollected blink::RefCountedGarbageCollected
@@ -806,10 +809,12 @@ template<typename T> T* adoptPtrWillBeNoop(T* ptr)
 #define RefPtrWillBeRawPtr WTF::RefPtr
 #define RefPtrWillBeMember WTF::RefPtr
 #define RefPtrWillBeWeakMember WTF::RefPtr
+#define RefPtrWillBeWeakPersistent WTF::RefPtr
 #define RefPtrWillBeCrossThreadPersistent WTF::RefPtr
 #define RawPtrWillBeMember WTF::RawPtr
 #define RawPtrWillBePersistent WTF::RawPtr
 #define RawPtrWillBeWeakMember WTF::RawPtr
+#define RawPtrWillBeWeakPersistent WTF::RawPtr
 #define OwnPtrWillBeCrossThreadPersistent WTF::OwnPtr
 #define OwnPtrWillBeMember WTF::OwnPtr
 #define OwnPtrWillBePersistent WTF::OwnPtr
@@ -818,6 +823,7 @@ template<typename T> T* adoptPtrWillBeNoop(T* ptr)
 #define WeakPtrWillBeMember WTF::WeakPtr
 #define WeakPtrWillBeRawPtr WTF::WeakPtr
 #define WeakPtrWillBeWeakMember WTF::WeakPtr
+#define WeakPtrWillBeWeakPersistent WTF::WeakPtr
 #define NoBaseWillBeGarbageCollected blink::DummyBase
 #define NoBaseWillBeGarbageCollectedFinalized blink::DummyBase
 #define NoBaseWillBeRefCountedGarbageCollected blink::DummyBase

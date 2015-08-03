@@ -117,7 +117,7 @@ public:
 
     void clearLoader()
     {
-        m_loader = 0;
+        m_loader = nullptr;
         m_scriptState.clear();
     }
 
@@ -127,7 +127,7 @@ public:
     }
 
 private:
-    ImageLoader* m_loader;
+    RawPtrWillBeWeakPersistent<ImageLoader> m_loader;
     BypassMainWorldBehavior m_shouldBypassMainWorldCSP;
     UpdateFromElementBehavior m_updateBehavior;
     RefPtr<ScriptState> m_scriptState;
@@ -164,8 +164,10 @@ void ImageLoader::dispose()
     WTF_LOG(Timers, "~ImageLoader %p; m_hasPendingLoadEvent=%d, m_hasPendingErrorEvent=%d",
         this, m_hasPendingLoadEvent, m_hasPendingErrorEvent);
 
+#if !ENABLE(OILPAN)
     if (m_pendingTask)
         m_pendingTask->clearLoader();
+#endif
 
 #if ENABLE(OILPAN)
     for (const auto& client : m_clients)
