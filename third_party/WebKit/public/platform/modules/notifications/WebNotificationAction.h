@@ -15,11 +15,13 @@ struct WebNotificationAction {
     WebNotificationAction() = default;
     WebNotificationAction(const WebNotificationAction&) = default;
 
-    WebNotificationAction(const WebString& title)
-        : title(title)
+    WebNotificationAction(const WebString& action, const WebString& title)
+        : action(action)
+        , title(title)
     {
     }
 
+    WebString action;
     WebString title;
 };
 

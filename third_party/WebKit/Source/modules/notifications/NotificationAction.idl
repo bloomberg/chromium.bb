@@ -5,5 +5,6 @@
 // https://notifications.spec.whatwg.org/#dictdef-notificationaction
 
 dictionary NotificationAction {
+    required DOMString action;
     required DOMString title;
 };

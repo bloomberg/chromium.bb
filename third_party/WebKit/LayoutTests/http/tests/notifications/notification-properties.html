@@ -26,6 +26,7 @@
             // Deliberately add more actions than are supported.
             for (var i = 0; i < 2 * Notification.maxActions; i++) {
                 options.actions.push({
+                    action: i,
                     title: "Action " + i
                 });
             }
@@ -123,18 +124,28 @@
                 });
             }, 'Set vibrate, when silent is true.');
 
-            // Check exception is thrown when an action doesn't contain title,
-            // or title is an empty string.
+            // Check exception is thrown when a NotificationAction is missing
+            // action or title, or when action or title is an empty string.
             assert_throws(new TypeError(), function() {
                 var notification = new Notification("My Notification", {
-                    actions: [{}]
+                    actions: [{title: "Foo"}]
                 });
-            }, 'Provide action without title.');
+            }, 'NotificationAction without action.');
             assert_throws(new TypeError(), function() {
                 var notification = new Notification("My Notification", {
-                    actions: [{title: ""}]
+                    actions: [{action: "foo"}]
                 });
-            }, 'Provide action with empty title.');
+            }, 'NotificationAction without title.');
+            assert_throws(new TypeError(), function() {
+                var notification = new Notification("My Notification", {
+                    actions: [{action: "", title: "Foo"}]
+                });
+            }, 'NotificationAction with empty action.');
+            assert_throws(new TypeError(), function() {
+                var notification = new Notification("My Notification", {
+                    actions: [{action: "foo", title: ""}]
+                });
+            }, 'NotificationAction with empty title.');
 
       }, 'Checks the properties exposed on the Notification object.');
     </script>

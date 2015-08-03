@@ -74,8 +74,10 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
     }
 
     for (const NotificationAction& action : options.actions()) {
+        if (action.action().isEmpty())
+            return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "NotificationAction action must not be empty."));
         if (action.title().isEmpty())
-            return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Notification action titles must not be empty."));
+            return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "NotificationAction title must not be empty."));
     }
 
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);

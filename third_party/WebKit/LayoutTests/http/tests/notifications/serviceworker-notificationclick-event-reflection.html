@@ -34,7 +34,9 @@
                     scalar: true },
                   12.15
               ],
-              actions: [{title: "Action 1"}, {title: "Action 2"}, {title: "Action 3"}]
+              actions: [{ action: "one", title: "Action 1" },
+                        { action: "two", title: "Action 2" },
+                        { action: "three", title: "Action 3" }]
           };
 
           testRunner.setPermission('notifications', 'granted', location.origin, location.origin);

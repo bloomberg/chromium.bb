@@ -16,13 +16,30 @@
       testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
 
       async_test(function(test) {
+          var scope = 'resources/scope/' + location.pathname + "/noaction";
+
+          getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(workerInfo) {
+              assert_inherits(workerInfo.registration, 'showNotification', 'showNotification() must be exposed.');
+
+              workerInfo.registration.showNotification('Title', {
+                  actions: [{ title: "Foo" }]
+              }).then(unreached_fulfillment(test)).catch(function(error) {
+                  assert_equals(error.name, 'TypeError');
+                  assert_equals(error.message, "Failed to execute 'showNotification' on 'ServiceWorkerRegistration': required member action is undefined.");
+                  test.done();
+              });
+          }).catch(unreached_rejection(test));
+
+      }, 'showNotification() must reject if a NotificationAction has no action.');
+
+      async_test(function(test) {
           var scope = 'resources/scope/' + location.pathname + "/notitle";
 
           getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(workerInfo) {
               assert_inherits(workerInfo.registration, 'showNotification', 'showNotification() must be exposed.');
 
               workerInfo.registration.showNotification('Title', {
-                  actions: [{}]
+                  actions: [{ action: "foo" }]
               }).then(unreached_fulfillment(test)).catch(function(error) {
                   assert_equals(error.name, 'TypeError');
                   assert_equals(error.message, "Failed to execute 'showNotification' on 'ServiceWorkerRegistration': required member title is undefined.");
@@ -30,7 +47,24 @@
               });
           }).catch(unreached_rejection(test));
 
-      }, 'showNotification() must reject if an action has no title.');
+      }, 'showNotification() must reject if a NotificationAction has no title.');
+
+      async_test(function(test) {
+          var scope = 'resources/scope/' + location.pathname + "/emptyaction";
+
+          getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(workerInfo) {
+              assert_inherits(workerInfo.registration, 'showNotification', 'showNotification() must be exposed.');
+
+              workerInfo.registration.showNotification('Title', {
+                  actions: [{ action: "", title: "Foo" }]
+              }).then(unreached_fulfillment(test)).catch(function(error) {
+                  assert_equals(error.name, 'TypeError');
+                  assert_equals(error.message, 'NotificationAction action must not be empty.');
+                  test.done();
+              });
+          }).catch(unreached_rejection(test));
+
+      }, 'showNotification() must reject if a NotificationAction has an empty action.');
 
       async_test(function(test) {
           var scope = 'resources/scope/' + location.pathname + "/emptytitle";
@@ -39,15 +73,15 @@
               assert_inherits(workerInfo.registration, 'showNotification', 'showNotification() must be exposed.');
 
               workerInfo.registration.showNotification('Title', {
-                  actions: [{title: ""}]
+                  actions: [{ action: "foo", title: "" }]
               }).then(unreached_fulfillment(test)).catch(function(error) {
                   assert_equals(error.name, 'TypeError');
-                  assert_equals(error.message, 'Notification action titles must not be empty.');
+                  assert_equals(error.message, 'NotificationAction title must not be empty.');
                   test.done();
               });
           }).catch(unreached_rejection(test));
 
-      }, 'showNotification() must reject if an action has an empty title.');
+      }, 'showNotification() must reject if a NotificationAction has an empty title.');
     </script>
   </body>
 </html>

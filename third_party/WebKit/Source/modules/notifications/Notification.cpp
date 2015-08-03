@@ -94,8 +94,12 @@ Notification* Notification::create(ExecutionContext* context, const String& titl
     }
 
     for (const NotificationAction& action : options.actions()) {
+        if (action.action().isEmpty()) {
+            exceptionState.throwTypeError("NotificationAction action must not be empty.");
+            return nullptr;
+        }
         if (action.title().isEmpty()) {
-            exceptionState.throwTypeError("Notification action titles must not be empty.");
+            exceptionState.throwTypeError("NotificationAction title must not be empty.");
             return nullptr;
         }
     }
@@ -327,16 +331,20 @@ void Notification::actionsToWebActions(const HeapVector<NotificationAction>& act
     size_t count = std::min(maxActions(), actions.size());
     WebVector<WebNotificationAction> clearedAndResized(count);
     webActions->swap(clearedAndResized);
-    for (size_t i = 0; i < count; ++i)
+    for (size_t i = 0; i < count; ++i) {
+        (*webActions)[i].action = actions[i].action();
         (*webActions)[i].title = actions[i].title();
+    }
 }
 
 void Notification::webActionsToActions(const WebVector<WebNotificationAction>& webActions, HeapVector<NotificationAction>* actions)
 {
     actions->clear();
     actions->grow(webActions.size());
-    for (size_t i = 0; i < webActions.size(); ++i)
+    for (size_t i = 0; i < webActions.size(); ++i) {
+        (*actions)[i].setAction(webActions[i].action);
         (*actions)[i].setTitle(webActions[i].title);
+    }
 }
 
 bool Notification::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
