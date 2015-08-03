@@ -138,6 +138,14 @@ Value RunForEach(Scope* scope,
                  const ListNode* args_list,
                  Err* err);
 
+extern const char kForwardVariablesFrom[];
+extern const char kForwardVariablesFrom_HelpShort[];
+extern const char kForwardVariablesFrom_Help[];
+Value RunForwardVariablesFrom(Scope* scope,
+                              const FunctionCallNode* function,
+                              const ListNode* args_list,
+                              Err* err);
+
 extern const char kGetEnv[];
 extern const char kGetEnv_HelpShort[];
 extern const char kGetEnv_Help[];
@@ -270,6 +278,15 @@ Value RunStaticLibrary(Scope* scope,
                        const std::vector<Value>& args,
                        BlockNode* block,
                        Err* err);
+
+extern const char kTarget[];
+extern const char kTarget_HelpShort[];
+extern const char kTarget_Help[];
+Value RunTarget(Scope* scope,
+                const FunctionCallNode* function,
+                const std::vector<Value>& args,
+                BlockNode* block,
+                Err* err);
 
 extern const char kTemplate[];
 extern const char kTemplate_HelpShort[];

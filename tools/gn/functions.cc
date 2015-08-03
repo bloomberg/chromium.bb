@@ -709,6 +709,7 @@ struct FunctionInfoInitializer {
     INSERT_FUNCTION(SharedLibrary, true)
     INSERT_FUNCTION(SourceSet, true)
     INSERT_FUNCTION(StaticLibrary, true)
+    INSERT_FUNCTION(Target, true)
 
     INSERT_FUNCTION(Assert, false)
     INSERT_FUNCTION(Config, false)
@@ -716,6 +717,7 @@ struct FunctionInfoInitializer {
     INSERT_FUNCTION(Defined, false)
     INSERT_FUNCTION(ExecScript, false)
     INSERT_FUNCTION(ForEach, false)
+    INSERT_FUNCTION(ForwardVariablesFrom, false)
     INSERT_FUNCTION(GetEnv, false)
     INSERT_FUNCTION(GetLabelInfo, false)
     INSERT_FUNCTION(GetPathInfo, false)
@@ -769,10 +771,9 @@ Value RunFunction(Scope* scope,
   }
 
   if (found_function->second.self_evaluating_args_runner) {
-    // Self evaluating args functions are special weird built-ins. Currently,
-    // only foreach() takes a block following it. Rather than force them all to
-    // check that they have a block or no block and risk bugs for new additions,
-    // check a whitelist here.
+    // Self evaluating args functions are special weird built-ins like foreach.
+    // Rather than force them all to check that they have a block or no block
+    // and risk bugs for new additions, check a whitelist here.
     if (found_function->second.self_evaluating_args_runner != &RunForEach) {
       if (!VerifyNoBlockForFunctionCall(function, block, err))
         return Value();

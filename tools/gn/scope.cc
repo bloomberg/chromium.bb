@@ -61,7 +61,7 @@ Scope::~Scope() {
 
 const Value* Scope::GetValue(const base::StringPiece& ident,
                              bool counts_as_used) {
-  // First check for programatically-provided values.
+  // First check for programmatically-provided values.
   for (const auto& provider : programmatic_providers_) {
     const Value* v = provider->GetProgrammaticValue(ident);
     if (v)
@@ -85,7 +85,7 @@ const Value* Scope::GetValue(const base::StringPiece& ident,
 
 Value* Scope::GetMutableValue(const base::StringPiece& ident,
                               bool counts_as_used) {
-  // Don't do programatic values, which are not mutable.
+  // Don't do programmatic values, which are not mutable.
   RecordMap::iterator found = values_.find(ident);
   if (found != values_.end()) {
     if (counts_as_used)
@@ -114,6 +114,17 @@ Value* Scope::GetValueForcedToCurrentScope(const base::StringPiece& ident,
     }
   }
   return nullptr;
+}
+
+base::StringPiece Scope::GetStorageKey(const base::StringPiece& ident) const {
+  RecordMap::const_iterator found = values_.find(ident);
+  if (found != values_.end())
+    return found->first;
+
+  // Search in parent scope.
+  if (containing())
+    return containing()->GetStorageKey(ident);
+  return base::StringPiece();
 }
 
 const Value* Scope::GetValue(const base::StringPiece& ident) const {
@@ -178,6 +189,11 @@ void Scope::MarkUsed(const base::StringPiece& ident) {
     return;
   }
   found->second.used = true;
+}
+
+void Scope::MarkAllUsed() {
+  for (auto& cur : values_)
+    cur.second.used = true;
 }
 
 void Scope::MarkUnused(const base::StringPiece& ident) {
@@ -255,7 +271,7 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
     }
     dest->values_[pair.first] = pair.second;
 
-    if (options.mark_used)
+    if (options.mark_dest_used)
       dest->MarkUsed(pair.first);
   }
 

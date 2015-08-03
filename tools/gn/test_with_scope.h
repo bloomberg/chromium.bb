@@ -13,6 +13,7 @@
 #include "tools/gn/input_file.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/scope.h"
+#include "tools/gn/scope_per_file_provider.h"
 #include "tools/gn/settings.h"
 #include "tools/gn/target.h"
 #include "tools/gn/token.h"
@@ -58,6 +59,9 @@ class TestWithScope {
   Settings settings_;
   Toolchain toolchain_;
   Scope scope_;
+
+  // Supplies the scope with built-in variables like root_out_dir.
+  ScopePerFileProvider scope_progammatic_provider_;
 
   std::string print_output_;
 

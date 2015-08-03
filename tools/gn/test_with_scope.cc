@@ -12,7 +12,8 @@ TestWithScope::TestWithScope()
     : build_settings_(),
       settings_(&build_settings_, std::string()),
       toolchain_(&settings_, Label(SourceDir("//toolchain/"), "default")),
-      scope_(&settings_) {
+      scope_(&settings_),
+      scope_progammatic_provider_(&scope_, true) {
   build_settings_.SetBuildDir(SourceDir("//out/Debug/"));
   build_settings_.set_print_callback(
       base::Bind(&TestWithScope::AppendPrintOutput, base::Unretained(this)));

@@ -68,7 +68,7 @@ class Scope {
     MergeOptions()
         : clobber_existing(false),
           skip_private_vars(false),
-          mark_used(false) {
+          mark_dest_used(false) {
     }
 
     // When set, all existing avlues in the destination scope will be
@@ -90,7 +90,7 @@ class Scope {
     // so won't trigger an unused variable warning. You want this when doing an
     // import, for example, or files that don't need a variable from the .gni
     // file will throw an error.
-    bool mark_used;
+    bool mark_dest_used;
   };
 
   // Creates an empty toplevel scope.
@@ -155,6 +155,14 @@ class Scope {
   Value* GetValueForcedToCurrentScope(const base::StringPiece& ident,
                                       const ParseNode* set_node);
 
+  // Returns the StringPiece used to identify the value. This string piece
+  // will have the same contents as "ident" passed in, but may point to a
+  // different underlying buffer. This is useful because this StringPiece is
+  // static and won't be deleted for the life of the program, so it can be used
+  // as keys in places that may outlive a temporary. It will return an empty
+  // string for programmatic and nonexistant values.
+  base::StringPiece GetStorageKey(const base::StringPiece& ident) const;
+
   // The set_node indicates the statement that caused the set, for displaying
   // errors later. Returns a pointer to the value in the current scope (a copy
   // is made for storage).
@@ -179,6 +187,7 @@ class Scope {
 
   // Marks the given identifier as (un)used in the current scope.
   void MarkUsed(const base::StringPiece& ident);
+  void MarkAllUsed();
   void MarkUnused(const base::StringPiece& ident);
 
   // Checks to see if the scope has a var set that hasn't been used. This is

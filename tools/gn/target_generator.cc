@@ -113,8 +113,8 @@ void TargetGenerator::GenerateTarget(Scope* scope,
                                     Target::STATIC_LIBRARY, err);
     generator.Run();
   } else {
-    *err = Err(function_call, "Not a known output type",
-               "I am very confused.");
+    *err = Err(function_call, "Not a known target type",
+               "I am very confused by the target type \"" + output_type + "\"");
   }
 
   if (err->has_error())

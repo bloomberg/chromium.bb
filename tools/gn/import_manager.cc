@@ -86,7 +86,7 @@ bool ImportManager::DoImport(const SourceFile& file,
 
   Scope::MergeOptions options;
   options.skip_private_vars = true;
-  options.mark_used = true;  // Don't require all imported values be used.
+  options.mark_dest_used = true;  // Don't require all imported values be used.
   return imported_scope->NonRecursiveMergeTo(scope, options, node_for_err,
                                              "import", err);
 }

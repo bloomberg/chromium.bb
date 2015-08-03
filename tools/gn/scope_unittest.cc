@@ -179,13 +179,13 @@ TEST(Scope, NonRecursiveMergeTo) {
     EXPECT_TRUE(err.has_error());
   }
 
-  // Mark used.
+  // Mark dest used.
   {
     Scope new_scope(setup.settings());
 
     Err err;
     Scope::MergeOptions options;
-    options.mark_used = true;
+    options.mark_dest_used = true;
     EXPECT_TRUE(setup.scope()->NonRecursiveMergeTo(
         &new_scope, options, &assignment, "error", &err));
     EXPECT_FALSE(err.has_error());
