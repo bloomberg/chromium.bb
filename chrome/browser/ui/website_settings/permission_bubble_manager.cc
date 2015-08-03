@@ -273,7 +273,8 @@ void PermissionBubbleManager::NavigationEntryCommitted(
   // the navigation is really to the same page.
   if ((request_url_.GetAsReferrer() !=
        web_contents()->GetLastCommittedURL().GetAsReferrer()) ||
-      details.type == content::NAVIGATION_TYPE_EXISTING_PAGE) {
+      (details.type == content::NAVIGATION_TYPE_EXISTING_PAGE &&
+       !details.is_in_page)) {
     // Kill off existing bubble and cancel any pending requests.
     CancelPendingQueues();
     FinalizeBubble();
