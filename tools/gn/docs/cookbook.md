@@ -168,16 +168,16 @@ places are noted in the table below.
 | `arm_version`                                   | `arm_version`                              | `//build/config/arm.gni`                       |
 | `asan` (0/1)                                    | `is_asan` (true/false)                     | (global)                                       |
 | `branding` ("Chromium"/"Chrome")                | `is_chrome_branded` (true/false)           | `//build/config/chrome_build.gni`              |
-| `build_for_tool=="drmemory"`                    | `disable_iterator_debugging` (true/false)  | (internal to `//build/config/BUILD.gn`)        |
-| `build_for_tool=="tsan"`                        | `disable_iterator_debugging` (true/false)  | (internal to `//build/config/BUILD.gn`)        |
+| `build_for_tool=="drmemory"`                    | `enable_iterator_debugging=false`          | (internal to `//build/config/BUILD.gn`)        |
+| `build_for_tool=="tsan"`                        | `enable_iterator_debugging=false`          | (internal to `//build/config/BUILD.gn`)        |
 | `buildtype` ("Official"/"Dev")                  | `is_official_build` (true/false)           | `//build/config/chrome_build.gni`              |
 | `chrome_multiple_dll` (0/1)                     | `is_multi_dll_chrome` (true/false)         | `//build/config/chrome_build.gni`              |
 | `clang` (0/1)                                   | `is_clang` (true/false)                    | (global)                                       |
 | `clang_use_chrome_plugins` (0/1)                | `clang_use_chrome_plugins` (true/false)    | (internal to `//build/config/clang/BUILD.gn`)  |
 | `component` ("shared_library"/"static_library") | `is_component_build` (true/false)          | (global)                                       |
 | `desktop_linux` (0/1)                           | `is_desktop_linux` (true/false)            | (global)                                       |
-| `disable_glibcxx_debug` (0/1)                   | `disable_iterator_debugging` (true/false)  | (internal to `//build/config/BUILD.gn`)        |
-| `fastbuild` (0/1/2)                             | `symbol_level` (2/1/0 — values inverted)   | (global)                                       |
+| `disable_glibcxx_debug` (0/1)                   | `enable_iterator_debugging` (true/false)   | (internal to `//build/config/BUILD.gn`)        |
+| `fastbuild` (0/1/2)                             | `symbol_level` (2/1/0 — values inverted) | (global)                                       |
 | `gomadir`                                       | `goma_dir`                                 | `//build/toolchain/goma.gni`                   |
 | `ios_deployment_target` (string)                | `ios_deployment_target`                    | `//build/config/ios/ios_sdk.gni`               |
 | `GYP_MSVS_OVERRIDE_PATH` environment variable   | `visual_studio_path`                       | `//build/config/win/visual_studio_version.gni` |

@@ -214,6 +214,11 @@ action("last_commit_position") {
   ]
 }
 
+# Note for Windows debugging: GN is super-multithreaded and uses a lot of STL.
+# Iterator debugging on Windows does locking for every access, which ends up
+# slowing down debug runtime from 0:36 to 9:40. If you want to run debug builds
+# of GN over the large Chrome build, you will want to set the arg:
+#   enable_iterator_debugging = false
 executable("gn") {
   sources = [
     "gn_main.cc",
