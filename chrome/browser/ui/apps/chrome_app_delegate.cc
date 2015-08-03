@@ -304,6 +304,8 @@ int ChromeAppDelegate::PreferredIconSize() {
 void ChromeAppDelegate::SetWebContentsBlocked(
     content::WebContents* web_contents,
     bool blocked) {
+  if (!blocked)
+    web_contents->Focus();
   // RenderViewHost may be NULL during shutdown.
   content::RenderViewHost* host = web_contents->GetRenderViewHost();
   if (host) {
