@@ -164,7 +164,7 @@ void HTMLOptGroupElement::didAddUserAgentShadowRoot(ShadowRoot& root)
     root.appendChild(label);
 
     RefPtrWillBeRawPtr<HTMLContentElement> content = HTMLContentElement::create(document());
-    content->setAttribute(selectAttr, "option,optgroup,hr");
+    content->setAttribute(selectAttr, "option,hr");
     root.appendChild(content);
 }
 

@@ -63,7 +63,14 @@ DEFINE_TYPE_CASTS(HTMLOptionsCollection, LiveNodeListBase, collection, collectio
 
 inline bool HTMLOptionsCollection::elementMatches(const HTMLElement& element) const
 {
-    return isHTMLOptionElement(element);
+    if (!isHTMLOptionElement(element))
+        return false;
+    Node* parent = element.parentNode();
+    if (!parent)
+        return false;
+    if (parent == &rootNode())
+        return true;
+    return isHTMLOptGroupElement(*parent) && parent->parentNode() == &rootNode();
 }
 
 } // namespace blink

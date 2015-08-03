@@ -41,6 +41,10 @@ menu.appendChild(document.createElement('hr'));
 menu.appendChild(new Option('after separator'));
 var group = document.getElementById('group');
 group.appendChild(document.createElement('hr'));
+var nestedGroup = document.createElement('optgroup');
+nestedGroup.label = 'Nested group';
+nestedGroup.innerHTML = '<option>Should not be shown</option>';
+group.appendChild(nestedGroup);
 openPicker(menu, finishJSTest, function () {
     testFailed('picker didn\'t open')
     finishJSTest();

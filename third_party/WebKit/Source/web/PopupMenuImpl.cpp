@@ -352,9 +352,6 @@ void PopupMenuImpl::addOptGroup(ItemIterationContext& context, HTMLOptGroupEleme
     for (HTMLElement& child : Traversal<HTMLElement>::childrenOf(element)) {
         if (isHTMLOptionElement(child))
             addOption(context, toHTMLOptionElement(child));
-        // TODO(tkent): Ignore nested OPTGROUP. crbug.com/502101.
-        if (isHTMLOptGroupElement(child))
-            addOptGroup(context, toHTMLOptGroupElement(child));
         if (isHTMLHRElement(child))
             addSeparator(context, toHTMLHRElement(child));
     }

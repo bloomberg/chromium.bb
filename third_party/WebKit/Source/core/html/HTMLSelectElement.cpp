@@ -799,10 +799,14 @@ void HTMLSelectElement::recalcListItems(bool updateSelectedStates) const
         }
         HTMLElement& current = toHTMLElement(*currentElement);
 
-        // optgroup tags may not nest. However, both FireFox and IE will
-        // flatten the tree automatically, so we follow suit.
-        // (http://www.w3.org/TR/html401/interact/forms.html#h-17.6)
+        // We should ignore nested optgroup elements. The HTML parser flatten
+        // them.  However we need to ignore nested optgroups built by DOM APIs.
+        // This behavior matches to IE and Firefox.
         if (isHTMLOptGroupElement(current)) {
+            if (current.parentNode() != this) {
+                currentElement = ElementTraversal::nextSkippingChildren(current, this);
+                continue;
+            }
             m_listItems.append(&current);
             if (Element* nextElement = ElementTraversal::firstWithin(current)) {
                 currentElement = nextElement;
