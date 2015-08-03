@@ -1135,7 +1135,7 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
 
     Node* node = startNode;
     ContainerNode* highestRoot = highestEditableRoot(p);
-    int offset = p.deprecatedEditingOffset();
+    int offset = p.computeEditingOffset();
     PositionAnchorType type = p.anchorType();
 
     Node* n = startNode;
