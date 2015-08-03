@@ -116,8 +116,11 @@ void DisplayListRasterSource::RasterCommon(
   DCHECK(display_list_.get());
   gfx::Rect canvas_target_playback_rect =
       canvas_playback_rect - canvas_bitmap_rect.OffsetFromOrigin();
-  display_list_->Raster(canvas, callback, canvas_target_playback_rect,
-                        contents_scale);
+  int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
+  for (int i = 0; i < repeat_count; ++i) {
+    display_list_->Raster(canvas, callback, canvas_target_playback_rect,
+                          contents_scale);
+  }
 }
 
 skia::RefPtr<SkPicture> DisplayListRasterSource::GetFlattenedPicture() {

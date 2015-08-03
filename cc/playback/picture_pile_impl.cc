@@ -243,7 +243,7 @@ void PicturePileImpl::RasterCommon(SkCanvas* canvas,
 
     int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
 
-    for (int j = 0; j < repeat_count; ++j)
+    for (int i = 0; i < repeat_count; ++i)
       picture->Raster(canvas, callback, negated_clip_region, contents_scale);
   }
 

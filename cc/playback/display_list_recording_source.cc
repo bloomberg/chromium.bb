@@ -180,16 +180,10 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
       NOTREACHED();
   }
 
-  int repeat_count = 1;
-  if (slow_down_raster_scale_factor_for_debug_ > 1) {
-    repeat_count = slow_down_raster_scale_factor_for_debug_;
-    painting_control = ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED;
-  }
-
-  for (int i = 0; i < repeat_count; ++i) {
-    display_list_ = painter->PaintContentsToDisplayList(recorded_viewport_,
-                                                        painting_control);
-  }
+  // TODO(vmpstr): Add a slow_down_recording_scale_factor_for_debug_ to be able
+  // to slow down recording.
+  display_list_ =
+      painter->PaintContentsToDisplayList(recorded_viewport_, painting_control);
   painter_reported_memory_usage_ = painter->GetApproximateUnsharedMemoryUsage();
 
   is_suitable_for_gpu_rasterization_ =

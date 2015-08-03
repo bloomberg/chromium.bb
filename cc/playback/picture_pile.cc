@@ -514,27 +514,25 @@ void PicturePile::CreatePictures(ContentLayerClient* painter,
   for (const auto& record_rect : record_rects) {
     gfx::Rect padded_record_rect = PadRect(record_rect);
 
-    int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
-    scoped_refptr<Picture> picture;
+    // TODO(vmpstr): Add a slow_down_recording_scale_factor_for_debug_ to be
+    // able to slow down recording.
+    scoped_refptr<Picture> picture =
+        Picture::Create(padded_record_rect, painter, tile_grid_size_,
+                        gather_pixel_refs_, recording_mode);
+    // Note the '&&' with previous is-suitable state.
+    // This means that once a picture-pile becomes unsuitable for gpu
+    // rasterization due to some content, it will continue to be unsuitable even
+    // if that content is replaced by gpu-friendly content. This is an
+    // optimization to avoid iterating though all pictures in the pile after
+    // each invalidation.
+    if (is_suitable_for_gpu_rasterization_) {
+      const char* reason = nullptr;
+      is_suitable_for_gpu_rasterization_ &=
+          picture->IsSuitableForGpuRasterization(&reason);
 
-    for (int i = 0; i < repeat_count; i++) {
-      picture = Picture::Create(padded_record_rect, painter, tile_grid_size_,
-                                gather_pixel_refs_, recording_mode);
-      // Note the '&&' with previous is-suitable state.
-      // This means that once a picture-pile becomes unsuitable for gpu
-      // rasterization due to some content, it will continue to be unsuitable
-      // even if that content is replaced by gpu-friendly content.
-      // This is an optimization to avoid iterating though all pictures in
-      // the pile after each invalidation.
-      if (is_suitable_for_gpu_rasterization_) {
-        const char* reason = nullptr;
-        is_suitable_for_gpu_rasterization_ &=
-            picture->IsSuitableForGpuRasterization(&reason);
-
-        if (!is_suitable_for_gpu_rasterization_) {
-          TRACE_EVENT_INSTANT1("cc", "GPU Rasterization Veto",
-                               TRACE_EVENT_SCOPE_THREAD, "reason", reason);
-        }
+      if (!is_suitable_for_gpu_rasterization_) {
+        TRACE_EVENT_INSTANT1("cc", "GPU Rasterization Veto",
+                             TRACE_EVENT_SCOPE_THREAD, "reason", reason);
       }
     }
 
