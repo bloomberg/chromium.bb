@@ -245,10 +245,10 @@ chrome.fileManagerPrivate.executeTask = function(taskId, entries, callback) {};
 
 /**
  * Sets the default task for the supplied MIME types and path extensions.
- * Lists of MIME types and URLs may contain duplicates.
- * |taskId| The unique identifier of task to mark as default. |fileUrls| Array
- * of selected file URLs to extract path extensions from. |mimeTypes| Array of
- * selected file MIME types. |callback|
+ * Lists of MIME types and entries may contain duplicates.
+ * |taskId| The unique identifier of task to mark as default. |entries| Array
+ * of selected file entries to extract path extensions from. |mimeTypes| Array
+ * of selected file MIME types. |callback|
  * @param {string} taskId
  * @param {!Array<!Entry>} entries
  * @param {!Array<string>} mimeTypes
@@ -262,7 +262,7 @@ chrome.fileManagerPrivate.setDefaultTask = function(taskId, entries, mimeTypes,
  * Array of selected entries |callback|
  * @param {!Array<!Entry>} entries
  * @param {function((!Array<!FileTask>|undefined))} callback |tasks| The list of
- *     matched file URL patterns for this task.
+ *     matched file entries for this task.
  */
 chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {};
 
@@ -330,7 +330,7 @@ chrome.fileManagerPrivate.selectFile = function(selectedPath, index, forOpening,
     shouldReturnLocalPath, callback) {};
 
 /**
- * Requests additional properties for files. |fileUrls| list of URLs of files
+ * Requests additional properties for files. |entries| list of entries of files
  * |callback|
  * @param {!Array<!Entry>} entries
  * @param {!Array<string>} names
@@ -342,7 +342,7 @@ chrome.fileManagerPrivate.getEntryProperties = function(entries, names,
     callback) {};
 
 /**
- * Pins/unpins a Drive file in the cache. |fileUrl| URL of a file to pin/unpin.
+ * Pins/unpins a Drive file in the cache. |entry| Entry of a file to pin/unpin.
  * |pin| Pass true to pin the file. |callback| Completion callback.
  * $(ref:runtime.lastError) will be set if     there was an error.
  * @param {!Entry} entry
@@ -386,12 +386,12 @@ chrome.fileManagerPrivate.removeMount = function(volumeId) {};
 chrome.fileManagerPrivate.getVolumeMetadataList = function(callback) {};
 
 /**
- * Cancels ongoing file transfers for selected files. |fileUrls| Array of files
+ * Cancels ongoing file transfers for selected files. |entries| Array of files
  * for which ongoing transfer should be canceled.
- * @param {!Array<string>} fileUrls
+ * @param {!Array<!FileEntry>} entries
  * @param {function()} callback
  */
-chrome.fileManagerPrivate.cancelFileTransfers = function(fileUrls, callback) {};
+chrome.fileManagerPrivate.cancelFileTransfers = function(entries, callback) {};
 
 /**
  * Cancels all ongoing file transfers.
@@ -401,7 +401,7 @@ chrome.fileManagerPrivate.cancelAllFileTransfers = function(callback) {};
 
 /**
  * Starts to copy an entry. If the source is a directory, the copy is done
- * recursively. |sourceUrl| URL of the source entry to be copied. |parent| Entry
+ * recursively. |entry| Entry of the source entry to be copied. |parent| Entry
  * of the destination directory. |newName| Name of the new entry. It must not
  * contain '/'. |callback| Completion callback.
  * @param {!Entry} entry

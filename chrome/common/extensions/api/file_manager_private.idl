@@ -544,7 +544,7 @@ callback BooleanCallback = void(boolean result);
 // |result| Result of the task execution.
 callback ExecuteTaskCallback = void(TaskResult result);
 
-// |tasks| The list of matched file URL patterns for this task.
+// |tasks| The list of matched file entries for this task.
 callback GetFileTasksCallback = void(FileTask[] tasks);
 
 // |result| Mime type of the file.
@@ -621,7 +621,7 @@ callback GetProfilesCallback = void(ProfileInfo[] profiles,
                                     DOMString runningProfile,
                                     DOMString displayProfile);
 
-// |entryUrl| URL of an entry in a normal file system.
+// |entries| External entries.
 callback ResolveEntriesCallback =
     void([instanceOf=Entry] object[] entries);
 
