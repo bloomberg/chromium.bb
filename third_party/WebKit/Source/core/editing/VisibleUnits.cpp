@@ -722,7 +722,7 @@ static PositionWithAffinityTemplate<Strategy> startPositionForLine(const Positio
         // There are VisiblePositions at offset 0 in blocks without
         // RootInlineBoxes, like empty editable blocks and bordered blocks.
         PositionAlgorithm<Strategy> p = c.position();
-        if (p.anchorNode()->layoutObject() && p.anchorNode()->layoutObject()->isLayoutBlock() && !p.deprecatedEditingOffset())
+        if (p.anchorNode()->layoutObject() && p.anchorNode()->layoutObject()->isLayoutBlock() && !p.computeEditingOffset())
             return c;
 
         return PositionWithAffinityTemplate<Strategy>();
