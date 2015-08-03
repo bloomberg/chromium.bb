@@ -1,1 +1,7 @@
-{}
+{
+    "SdchPersistence": [
+        {
+            "group_name": "Enabled"
+        }
+    ]
+}

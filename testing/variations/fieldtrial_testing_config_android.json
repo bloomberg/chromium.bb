@@ -188,5 +188,10 @@
         {
             "group_name": "v=1:Prefetching=Learning"
         }
+    ],
+    "SdchPersistence": [
+        {
+            "group_name": "Enabled"
+        }
     ]
 }

@@ -45,5 +45,10 @@
         {
             "group_name": "DontShowAndDontSend"
         }
+    ],
+    "SdchPersistence": [
+        {
+            "group_name": "Enabled"
+        }
     ]
 }
