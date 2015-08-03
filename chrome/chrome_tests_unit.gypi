@@ -2480,7 +2480,7 @@
             '../ui/events/devices/events_devices.gyp:events_devices',
           ],
         }],
-        [ 'cld_version==0 or cld_version==2', {
+        [ 'cld_version==2', {
           'dependencies': [
             # Unit tests should be independent of the CLD2 access mechanism,
             # just use static for simplicity.

@@ -449,7 +449,7 @@ if (!is_android) {
       ldflags += [ "-Wl,-ObjC" ]
     }
 
-    if (cld_version == 0 || cld_version == 2) {
+    if (cld_version == 2) {
       # Interactive tests should use whatever CLD2 data access mode that the
       # application embedder is using.
       deps += [ "//third_party/cld_2:cld2_platform_impl" ]
@@ -678,7 +678,7 @@ if (!is_android) {
     #         'UseLibraryDependencyInputs': "true",
     # }
 
-    if (cld_version == 0 || cld_version == 2) {
+    if (cld_version == 2) {
       # Because the browser_tests use translate, they need CLD data.
       deps += [ "//third_party/cld_2:cld2_platform_impl" ]
     }
@@ -1077,7 +1077,7 @@ if (!is_android) {
 
     data_deps = [ "//third_party/mesa:osmesa" ]
 
-    if (cld_version == 0 || cld_version == 2) {
+    if (cld_version == 2) {
       # Language detection is irrelevant to sync, so it can depend on any
       # implementation for CLD2. Dynamic is smaller, so go with dynamic.
       deps += [ "//third_party/cld_2:cld2_dynamic" ]
@@ -1148,7 +1148,7 @@ if (!is_android) {
       "//testing/gtest",
     ]
 
-    if (cld_version == 0 || cld_version == 2) {
+    if (cld_version == 2) {
       # Language detection is irrelevant to sync, so it can depend on any
       # implementation for CLD2. Dynamic is smaller, so go with dynamic.
       deps += [ "//third_party/cld_2:cld2_dynamic" ]
@@ -1612,7 +1612,7 @@ if (!is_android) {
     } else {
       sources -= [ "../browser/password_manager/password_store_x_unittest.cc" ]
     }
-    if (cld_version == 0 || cld_version == 2) {
+    if (cld_version == 2) {
       # Unit tests should be independent of the CLD2 access mechanism, just use
       # static for simplicity.
       deps += [ "//third_party/cld_2:cld2_static" ]
@@ -1813,7 +1813,7 @@ if (!is_android) {
         "//base/test:run_all_unittests",
         "//base/test:test_support",
       ]
-      if (cld_version == 0 || cld_version == 2) {
+      if (cld_version == 2) {
         # Use whatever CLD2 data access mode that the
         # application embedder is using.
         deps += [ "//third_party/cld_2:cld2_platform_impl" ]
@@ -1860,7 +1860,7 @@ if (!is_android) {
         sources -= [ "perf/mach_ports_performancetest.cc" ]
       }
 
-      if (cld_version == 0 || cld_version == 2) {
+      if (cld_version == 2) {
         # Use whatever CLD2 data access mode that the
         # application embedder is using.
         deps += [ "//third_party/cld_2:cld2_platform_impl" ]

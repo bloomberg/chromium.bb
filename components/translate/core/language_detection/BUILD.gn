@@ -16,10 +16,10 @@ static_library("language_detection") {
     "//url",
   ]
 
-  if (cld_version == 0 || cld_version == 1) {
+  if (cld_version == 1) {
     deps += [ "//third_party/cld" ]
   }
-  if (cld_version == 0 || cld_version == 2) {
+  if (cld_version == 2) {
     deps += [ "//third_party/cld_2" ]
   }
 }

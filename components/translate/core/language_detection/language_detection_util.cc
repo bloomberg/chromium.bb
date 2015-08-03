@@ -5,7 +5,6 @@
 #include "components/translate/core/language_detection/language_detection_util.h"
 
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -14,12 +13,12 @@
 #include "components/translate/core/common/translate_metrics.h"
 #include "components/translate/core/common/translate_util.h"
 
-#if !defined(CLD_VERSION) || CLD_VERSION==1
+#if CLD_VERSION==1
 #include "third_party/cld/encodings/compact_lang_det/compact_lang_det.h"
 #include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
 #endif
 
-#if !defined(CLD_VERSION) || CLD_VERSION==2
+#if CLD_VERSION==2
 #include "third_party/cld_2/src/public/compact_lang_det.h"
 #endif
 
@@ -70,18 +69,6 @@ void ApplyLanguageCodeCorrection(std::string* code) {
   translate::ToTranslateLanguageSynonym(code);
 }
 
-int GetCLDMajorVersion() {
-#if !defined(CLD_VERSION)
-  std::string group_name = base::FieldTrialList::FindFullName("CLD1VsCLD2");
-  if (group_name == "CLD2")
-    return 2;
-  else
-    return 1;
-#else
-  return CLD_VERSION;
-#endif
-}
-
 // Returns the ISO 639 language code of the specified |text|, or 'unknown' if it
 // failed.
 // |is_cld_reliable| will be set as true if CLD says the detection is reliable.
@@ -96,45 +83,36 @@ std::string DetermineTextLanguage(const base::string16& text,
   int cld_language = 0;
   bool is_valid_language = false;
 
-  switch (GetCLDMajorVersion()) {
-#if !defined(CLD_VERSION) || CLD_VERSION==1
-    case 1: {
-      int num_languages = 0;
-      cld_language = DetectLanguageOfUnicodeText(
-          NULL, text.c_str(), is_plain_text, &is_reliable, &num_languages, NULL,
-          &num_bytes_evaluated);
-      is_valid_language = cld_language != NUM_LANGUAGES &&
-          cld_language != UNKNOWN_LANGUAGE &&
-          cld_language != TG_UNKNOWN_LANGUAGE;
-      break;
-    }
-#endif
-#if !defined(CLD_VERSION) || CLD_VERSION==2
-    case 2: {
-      const std::string utf8_text(base::UTF16ToUTF8(text));
-      const int num_utf8_bytes = static_cast<int>(utf8_text.size());
-      const char* raw_utf8_bytes = utf8_text.c_str();
-      cld_language = CLD2::DetectLanguageCheckUTF8(
-          raw_utf8_bytes, num_utf8_bytes, is_plain_text, &is_reliable,
-          &num_bytes_evaluated);
+#if CLD_VERSION==1
+  int num_languages = 0;
+  cld_language = DetectLanguageOfUnicodeText(
+      NULL, text.c_str(), is_plain_text, &is_reliable, &num_languages, NULL,
+      &num_bytes_evaluated);
+  is_valid_language = cld_language != NUM_LANGUAGES &&
+      cld_language != UNKNOWN_LANGUAGE &&
+      cld_language != TG_UNKNOWN_LANGUAGE;
+#elif CLD_VERSION==2
+  const std::string utf8_text(base::UTF16ToUTF8(text));
+  const int num_utf8_bytes = static_cast<int>(utf8_text.size());
+  const char* raw_utf8_bytes = utf8_text.c_str();
+  cld_language = CLD2::DetectLanguageCheckUTF8(
+      raw_utf8_bytes, num_utf8_bytes, is_plain_text, &is_reliable,
+      &num_bytes_evaluated);
 
-      if (num_bytes_evaluated < num_utf8_bytes &&
-          cld_language == CLD2::UNKNOWN_LANGUAGE) {
-        // Invalid UTF8 encountered, see bug http://crbug.com/444258.
-        // Retry using only the valid characters. This time the check for valid
-        // UTF8 can be skipped since the precise number of valid bytes is known.
-        cld_language = CLD2::DetectLanguage(raw_utf8_bytes, num_bytes_evaluated,
-                                            is_plain_text, &is_reliable);
-      }
-      is_valid_language = cld_language != CLD2::NUM_LANGUAGES &&
-          cld_language != CLD2::UNKNOWN_LANGUAGE &&
-          cld_language != CLD2::TG_UNKNOWN_LANGUAGE;
-      break;
-    }
-#endif
-    default:
-      NOTREACHED();
+  if (num_bytes_evaluated < num_utf8_bytes &&
+      cld_language == CLD2::UNKNOWN_LANGUAGE) {
+    // Invalid UTF8 encountered, see bug http://crbug.com/444258.
+    // Retry using only the valid characters. This time the check for valid
+    // UTF8 can be skipped since the precise number of valid bytes is known.
+    cld_language = CLD2::DetectLanguage(raw_utf8_bytes, num_bytes_evaluated,
+                                        is_plain_text, &is_reliable);
   }
+  is_valid_language = cld_language != CLD2::NUM_LANGUAGES &&
+      cld_language != CLD2::UNKNOWN_LANGUAGE &&
+      cld_language != CLD2::TG_UNKNOWN_LANGUAGE;
+#else
+# error "CLD_VERSION must be 1 or 2"
+#endif
 
   if (is_cld_reliable != NULL)
     *is_cld_reliable = is_reliable;
@@ -152,37 +130,27 @@ std::string DetermineTextLanguage(const base::string16& text,
     // |LanguageCodeWithDialect| will go through ISO 639-1, ISO-639-2 and
     // 'other' tables to do the 'right' thing. In addition, it'll return zh-CN
     // for Simplified Chinese.
-    switch (GetCLDMajorVersion()) {
-#if !defined(CLD_VERSION) || CLD_VERSION==1
-      case 1:
-        language =
-            LanguageCodeWithDialects(static_cast<Language>(cld_language));
-        break;
+#if CLD_VERSION==1
+    language = LanguageCodeWithDialects(static_cast<Language>(cld_language));
+#elif CLD_VERSION==2
+    // (1) CLD2's LanguageCode returns general Chinese 'zh' for
+    // CLD2::CHINESE, but Translate server doesn't accept it. This is
+    // converted to 'zh-CN' in the same way as CLD1's
+    // LanguageCodeWithDialects.
+    //
+    // (2) CLD2's LanguageCode returns zh-Hant instead of zh-TW for
+    // CLD2::CHINESE_T. This is technically more precise for the language
+    // code of traditional Chinese, while Translate server hasn't accepted
+    // zh-Hant yet.
+    if (cld_language == CLD2::CHINESE)
+      language = "zh-CN";
+    else if (cld_language == CLD2::CHINESE_T)
+      language = "zh-TW";
+    else
+      language = CLD2::LanguageCode(static_cast<CLD2::Language>(cld_language));
+#else
+# error "CLD_VERSION must be 1 or 2"
 #endif
-#if !defined(CLD_VERSION) || CLD_VERSION==2
-      case 2:
-        // (1) CLD2's LanguageCode returns general Chinese 'zh' for
-        // CLD2::CHINESE, but Translate server doesn't accept it. This is
-        // converted to 'zh-CN' in the same way as CLD1's
-        // LanguageCodeWithDialects.
-        //
-        // (2) CLD2's LanguageCode returns zh-Hant instead of zh-TW for
-        // CLD2::CHINESE_T. This is technically more precise for the language
-        // code of traditional Chinese, while Translate server hasn't accepted
-        // zh-Hant yet.
-        if (cld_language == CLD2::CHINESE) {
-          language = "zh-CN";
-        } else if (cld_language == CLD2::CHINESE_T) {
-          language = "zh-TW";
-        } else {
-          language =
-              CLD2::LanguageCode(static_cast<CLD2::Language>(cld_language));
-        }
-        break;
-#endif
-      default:
-        NOTREACHED();
-    }
   }
   VLOG(9) << "Detected lang_id: " << language << ", from Text:\n" << text
           << "\n*************************************\n";

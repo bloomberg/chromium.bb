@@ -113,7 +113,7 @@
             '<(DEPTH)/third_party/cld/cld.gyp:cld',
           ],
         }],
-        ['cld_version==0 or cld_version==2', {
+        ['cld_version==2', {
           'dependencies': [
             '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld_2',
           ],
@@ -207,7 +207,7 @@
             'translate/content/renderer/translate_helper.h',
            ],
           'conditions': [
-            ['cld_version==0 or cld_version==2', {
+            ['cld_version==2', {
               'dependencies': [
                 '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld_2',
               ],

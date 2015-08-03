@@ -1573,7 +1573,7 @@
         '<@(chrome_interactive_ui_test_sources)',
       ],
       'conditions': [
-        [ 'cld_version==0 or cld_version==2', {
+        [ 'cld_version==2', {
           'dependencies': [
             # Interactive tests should use whatever CLD2 data access mode that
             # the application embedder is using.
@@ -2139,7 +2139,7 @@
         },
       },
       'conditions': [
-        [ 'cld_version==0 or cld_version==2', {
+        [ 'cld_version==2', {
           'dependencies': [
             # Because the browser_tests use translate, they need CLD data.
             '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_platform_impl', ],
@@ -2612,7 +2612,7 @@
         },
       ],
       'conditions': [
-        [ 'cld_version==0 or cld_version==2', {
+        [ 'cld_version==2', {
           'dependencies': [
             # Interactive tests should use whatever CLD2 data access mode that
             # the application embedder is using.
@@ -2799,7 +2799,7 @@
         '<@(sync_integration_tests_sources)',
       ],
       'conditions': [
-        [ 'cld_version==0 or cld_version==2', {
+        [ 'cld_version==2', {
           'dependencies': [
             # Language detection is irrelevant to sync, so it can depend on
             # any implementation for CLD2. Dynamic is smaller, so go with
@@ -2909,7 +2909,7 @@
         '<@(sync_performance_tests_sources)',
       ],
       'conditions': [
-        [ 'cld_version==0 or cld_version==2', {
+        [ 'cld_version==2', {
           'dependencies': [
             # Language detection is irrelevant to sync, so it can depend on
             # any implementation for CLD2. Dynamic is smaller, so go with

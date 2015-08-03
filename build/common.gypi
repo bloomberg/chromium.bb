@@ -556,7 +556,6 @@
       'enable_print_preview%': 1,
 
       # Set the version of CLD.
-      #   0: Don't specify the version. This option is for the Finch testing.
       #   1: Use only CLD1.
       #   2: Use only CLD2.
       'cld_version%': 2,
@@ -2628,6 +2627,7 @@
     'defines': [
       # Don't use deprecated V8 APIs anywhere.
       'V8_DEPRECATION_WARNINGS',
+      'CLD_VERSION=<(cld_version)',
     ],
     'include_dirs': [
       '<(SHARED_INTERMEDIATE_DIR)',
@@ -2993,9 +2993,6 @@
       }],
       ['enable_google_now==1', {
         'defines': ['ENABLE_GOOGLE_NOW=1'],
-      }],
-      ['cld_version!=0', {
-        'defines': ['CLD_VERSION=<(cld_version)'],
       }],
       ['enable_basic_printing==1 or enable_print_preview==1', {
         # Convenience define for ENABLE_BASIC_PRINTING || ENABLE_PRINT_PREVIEW.
