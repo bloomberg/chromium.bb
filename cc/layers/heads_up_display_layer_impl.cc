@@ -22,6 +22,7 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
 #include "ui/gfx/geometry/point.h"
