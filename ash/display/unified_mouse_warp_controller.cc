@@ -62,22 +62,23 @@ bool UnifiedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
     ComputeBounds();
 
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  gfx::Point point_in_screen = event->location();
-  ::wm::ConvertPointToScreen(target, &point_in_screen);
+  gfx::Point point_in_unified_host = event->location();
+  ::wm::ConvertPointToScreen(target, &point_in_unified_host);
+  // The display bounds of the mirroring windows isn't scaled, so
+  // transform back to the host coordinates.
+  target->GetHost()->GetRootTransform().TransformPoint(&point_in_unified_host);
 
   // A native event may not exist in unit test. Generate the native point
   // from the screen point instead.
   if (!event->HasNativeEvent()) {
     if (!allow_non_native_event_)
       return false;
-    aura::Window* target_root = target->GetRootWindow();
-    gfx::Point point_in_native = point_in_screen;
-    ::wm::ConvertPointFromScreen(target_root, &point_in_native);
+    gfx::Point point_in_native = point_in_unified_host;
     aura::WindowTreeHost* host =
-        FindMirroringWindowTreeHostFromScreenPoint(point_in_screen);
+        FindMirroringWindowTreeHostFromScreenPoint(point_in_unified_host);
     DCHECK(host);
     host->ConvertPointToNativeScreen(&point_in_native);
-    return WarpMouseCursorInNativeCoords(point_in_native, point_in_screen,
+    return WarpMouseCursorInNativeCoords(point_in_native, point_in_unified_host,
                                          true);
   }
 
@@ -90,13 +91,14 @@ bool UnifiedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
   // Native events in Ozone are in the native window coordinate system. We need
   // to translate them to get the global position.
   aura::WindowTreeHost* host =
-      FindMirroringWindowTreeHostFromScreenPoint(point_in_screen);
+      FindMirroringWindowTreeHostFromScreenPoint(point_in_unified_host);
   if (!host)
     return false;
   point_in_native.Offset(host->GetBounds().x(), host->GetBounds().y());
 #endif
 
-  return WarpMouseCursorInNativeCoords(point_in_native, point_in_screen, false);
+  return WarpMouseCursorInNativeCoords(point_in_native, point_in_unified_host,
+                                       false);
 }
 
 void UnifiedMouseWarpController::SetEnabled(bool enabled) {
@@ -132,7 +134,7 @@ void UnifiedMouseWarpController::ComputeBounds() {
 
 bool UnifiedMouseWarpController::WarpMouseCursorInNativeCoords(
     const gfx::Point& point_in_native,
-    const gfx::Point& point_in_screen,
+    const gfx::Point& point_in_unified_host,
     bool update_mouse_location_now) {
   bool in_first_edge = first_edge_bounds_in_native_.Contains(point_in_native);
   bool in_second_edge = second_edge_bounds_in_native_.Contains(point_in_native);
@@ -145,7 +147,8 @@ bool UnifiedMouseWarpController::WarpMouseCursorInNativeCoords(
   AshWindowTreeHost* target_ash_host =
       GetMirroringAshWindowTreeHostForDisplayId(
           in_first_edge ? display_list[1].id() : display_list[0].id());
-  MoveCursorTo(target_ash_host, point_in_screen, update_mouse_location_now);
+  MoveCursorTo(target_ash_host, point_in_unified_host,
+               update_mouse_location_now);
   return true;
 }
 
