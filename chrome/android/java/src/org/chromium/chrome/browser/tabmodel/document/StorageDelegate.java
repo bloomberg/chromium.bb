@@ -5,20 +5,12 @@
 package org.chromium.chrome.browser.tabmodel.document;
 
 import android.content.Context;
-import android.os.StrictMode;
-import android.util.SparseArray;
-
-import com.google.protobuf.nano.MessageNano;
+import android.util.Log;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.chrome.browser.TabState;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabPersister;
-import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Entry;
-import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelInfo.DocumentEntry;
-import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelInfo.DocumentList;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -26,14 +18,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Contains functions for interacting with the file system.
  */
 public class StorageDelegate extends TabPersister {
-    private static final String TAG = "cr.StorageDelegate";
+    private static final String TAG = "StorageDelegate";
 
     /** Filename to use for the DocumentTabModel that stores regular tabs. */
     private static final String REGULAR_FILE_NAME = "chrome_document_activity.store";
@@ -50,7 +40,7 @@ public class StorageDelegate extends TabPersister {
      * @param encrypted Whether or not the file corresponds to an OffTheRecord TabModel.
      * @return Byte buffer containing the task file's data, or null if it wasn't read.
      */
-    protected byte[] readMetadataFileBytes(boolean encrypted) {
+    public byte[] readTaskFileBytes(boolean encrypted) {
         // Incognito mode doesn't save its state out.
         if (encrypted) return null;
 
@@ -127,73 +117,5 @@ public class StorageDelegate extends TabPersister {
      */
     private String getFilename(boolean encrypted) {
         return encrypted ? null : REGULAR_FILE_NAME;
-    }
-
-    /**
-     * Constructs the DocumentTabModel's entries by combining the tasks currently listed in Android
-     * with information stored out in a metadata file.
-     * @param isIncognito               Whether to build an Incognito tab list.
-     * @param activityDelegate          Interacts with the Activitymanager.
-     * @param entryMap                  Map to fill with {@link DocumentTabModel.Entry}s about Tabs.
-     * @param tabIdList                 List to fill with live Tab IDs.
-     * @param recentlyClosedTabIdList   List to fill with IDs of recently closed tabs.
-     */
-    public void restoreTabEntries(boolean isIncognito, ActivityDelegate activityDelegate,
-            SparseArray<Entry> entryMap, ArrayList<Integer> tabIdList,
-            ArrayList<Integer> recentlyClosedTabIdList) {
-        assert entryMap.size() == 0;
-        assert tabIdList.isEmpty();
-        assert recentlyClosedTabIdList.isEmpty();
-
-        // Run through Android's Overview to see what Chrome tabs are still listed.
-        List<Entry> entries = activityDelegate.getTasksFromRecents(isIncognito);
-        for (Entry entry : entries) {
-            int tabId = entry.tabId;
-            if (tabId != Tab.INVALID_TAB_ID) {
-                if (!tabIdList.contains(tabId)) tabIdList.add(tabId);
-                entryMap.put(tabId, entry);
-            }
-
-            // Prevent these tabs from being retargeted until we have had the opportunity to load
-            // more information about them.
-            entry.canGoBack = true;
-        }
-
-        // Read the metadata file, which saved out the list of Tabs from when Chrome was last alive.
-        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/496348
-        byte[] metadataBytes = null;
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            metadataBytes = readMetadataFileBytes(isIncognito);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
-
-        if (metadataBytes != null) {
-            DocumentList list = null;
-            try {
-                list = MessageNano.mergeFrom(new DocumentList(), metadataBytes);
-            } catch (IOException e) {
-                Log.e(TAG, "I/O exception", e);
-            }
-            if (list == null) return;
-
-            for (int i = 0; i < list.entries.length; i++) {
-                DocumentEntry savedEntry = list.entries[i];
-                int tabId = savedEntry.tabId;
-
-                // If the tab ID isn't in the list, it must have been closed after Chrome died.
-                if (entryMap.indexOfKey(tabId) < 0) {
-                    recentlyClosedTabIdList.add(tabId);
-                    continue;
-                }
-
-                // Restore information about the Tab.
-                entryMap.get(tabId).canGoBack = savedEntry.canGoBack;
-                entryMap.get(tabId).isCoveredByChildActivity =
-                        (savedEntry.isCoveredByChildActivity == null)
-                        ? false : savedEntry.isCoveredByChildActivity;
-            }
-        }
     }
 }
