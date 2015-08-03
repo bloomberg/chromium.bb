@@ -1317,6 +1317,9 @@ crbug.com/512991 inspector/layers/layer-canvas-log.html [ NeedsRebaseline ]
 
 crbug.com/454729 svg/animations/dynamic-modify-transform-without-baseval.html [ Pass Timeout ]
 
+crbug.com/516364 svg/animations/smil-leak-element-instances.svg [ Failure Pass ]
+crbug.com/516364 svg/animations/smil-leak-dynamically-added-element-instances.svg [ Failure Pass ]
+
 crbug.com/455140 http/tests/loading/bad-scheme-subframe.html [ Pass Failure ]
 
 crbug.com/472970 [ Win Mac ] http/tests/fetch/window/stream-reader.html [ Pass Failure ]
