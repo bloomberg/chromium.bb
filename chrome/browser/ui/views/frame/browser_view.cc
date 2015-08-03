@@ -448,8 +448,8 @@ const char BrowserView::kViewClassName[] = "BrowserView";
 
 BrowserView::BrowserView()
     : views::ClientView(nullptr, nullptr),
-      last_focused_view_storage_id_(
-          views::ViewStorage::GetInstance()->CreateStorageID()),
+      last_focused_view_storage_id_(views::ViewStorage::GetInstance()
+                                        ->CreateStorageID()),
       frame_(nullptr),
       top_container_(nullptr),
       tabstrip_(nullptr),
@@ -457,6 +457,7 @@ BrowserView::BrowserView()
       find_bar_host_view_(nullptr),
       infobar_container_(nullptr),
       contents_web_view_(nullptr),
+      devtools_web_view_(nullptr),
       contents_container_(nullptr),
       initialized_(false),
       in_process_fullscreen_(false),

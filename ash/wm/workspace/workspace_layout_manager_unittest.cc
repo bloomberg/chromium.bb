@@ -813,7 +813,7 @@ namespace {
 
 class WorkspaceLayoutManagerBackdropTest : public test::AshTestBase {
  public:
-  WorkspaceLayoutManagerBackdropTest() {}
+  WorkspaceLayoutManagerBackdropTest() : default_container_(nullptr) {}
   ~WorkspaceLayoutManagerBackdropTest() override {}
 
   void SetUp() override {
@@ -1001,7 +1001,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, ShelfVisibilityChangesBounds) {
 
 class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
  public:
-  WorkspaceLayoutManagerKeyboardTest() {}
+  WorkspaceLayoutManagerKeyboardTest() : layout_manager_(nullptr) {}
   ~WorkspaceLayoutManagerKeyboardTest() override {}
 
   void SetUp() override {

@@ -46,6 +46,7 @@ AutoEnrollmentCheckScreen::AutoEnrollmentCheckScreen(
     AutoEnrollmentCheckScreenActor* actor)
     : BaseScreen(base_screen_delegate),
       actor_(actor),
+      auto_enrollment_controller_(nullptr),
       captive_portal_status_(
           NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN),
       auto_enrollment_state_(policy::AUTO_ENROLLMENT_STATE_IDLE),

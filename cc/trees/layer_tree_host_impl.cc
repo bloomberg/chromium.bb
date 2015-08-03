@@ -170,8 +170,8 @@ size_t GetDefaultMemoryAllocationLimit() {
 
 }  // namespace
 
-LayerTreeHostImpl::FrameData::FrameData() : has_no_damage(false) {
-}
+LayerTreeHostImpl::FrameData::FrameData()
+    : render_surface_layer_list(nullptr), has_no_damage(false) {}
 
 LayerTreeHostImpl::FrameData::~FrameData() {}
 

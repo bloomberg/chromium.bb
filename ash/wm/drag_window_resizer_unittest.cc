@@ -35,7 +35,7 @@ const int kRootHeight = 600;
 
 class DragWindowResizerTest : public test::AshTestBase {
  public:
-  DragWindowResizerTest() {}
+  DragWindowResizerTest() : transient_child_(nullptr) {}
   ~DragWindowResizerTest() override {}
 
   void SetUp() override {

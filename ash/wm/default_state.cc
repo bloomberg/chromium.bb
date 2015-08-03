@@ -172,7 +172,7 @@ void CycleSnapDock(WindowState* window_state, WMEventType event) {
 }  // namespace;
 
 DefaultState::DefaultState(WindowStateType initial_state_type)
-    : state_type_(initial_state_type) {}
+    : state_type_(initial_state_type), stored_window_state_(nullptr) {}
 DefaultState::~DefaultState() {}
 
 void DefaultState::OnWMEvent(WindowState* window_state,

@@ -550,7 +550,9 @@ ShelfLayoutManager* ShelfLayoutManager::ForShelf(aura::Window* window) {
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, private:
 
-ShelfLayoutManager::TargetBounds::TargetBounds() : opacity(0.0f) {}
+ShelfLayoutManager::TargetBounds::TargetBounds()
+    : opacity(0.0f), status_opacity(0.0f) {}
+
 ShelfLayoutManager::TargetBounds::~TargetBounds() {}
 
 void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {

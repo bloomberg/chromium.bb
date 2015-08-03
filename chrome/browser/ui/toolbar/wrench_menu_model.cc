@@ -859,10 +859,10 @@ void WrenchMenuModel::Observe(int type,
 // For testing.
 WrenchMenuModel::WrenchMenuModel()
     : ui::SimpleMenuModel(this),
+      uma_action_recorded_(false),
       provider_(NULL),
       browser_(NULL),
-      tab_strip_model_(NULL) {
-}
+      tab_strip_model_(NULL) {}
 
 bool WrenchMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
   if (browser_->profile()->IsGuestSession())

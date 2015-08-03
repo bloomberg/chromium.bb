@@ -51,9 +51,6 @@ const int WindowResizer::kBoundsChangeDirection_Horizontal = 1;
 // static
 const int WindowResizer::kBoundsChangeDirection_Vertical = 2;
 
-WindowResizer::WindowResizer() {
-}
-
 WindowResizer::WindowResizer(wm::WindowState* window_state)
     : window_state_(window_state) {
   DCHECK(window_state_->drag_details());

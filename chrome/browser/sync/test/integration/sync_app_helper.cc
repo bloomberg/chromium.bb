@@ -41,7 +41,8 @@ struct AppState {
 
 typedef std::map<std::string, AppState> AppStateMap;
 
-AppState::AppState() : launch_type(extensions::LAUNCH_TYPE_INVALID) {}
+AppState::AppState()
+    : launch_type(extensions::LAUNCH_TYPE_INVALID), from_bookmark(false) {}
 
 AppState::~AppState() {}
 

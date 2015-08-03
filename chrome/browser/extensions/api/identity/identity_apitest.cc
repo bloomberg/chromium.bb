@@ -236,7 +236,8 @@ class WaitForGURLAndCloseWindow : public content::WindowedNotificationObserver {
       : WindowedNotificationObserver(
             content::NOTIFICATION_LOAD_STOP,
             content::NotificationService::AllSources()),
-        url_(url) {}
+        url_(url),
+        embedder_web_contents_(nullptr) {}
 
   // NotificationObserver:
   void Observe(int type,
@@ -281,6 +282,7 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
         auto_login_access_token_(true),
         login_ui_result_(true),
         scope_ui_result_(true),
+        scope_ui_failure_(GaiaWebAuthFlow::WINDOW_CLOSED),
         login_ui_shown_(false),
         scope_ui_shown_(false) {}
 

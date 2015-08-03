@@ -169,7 +169,7 @@ class KeyboardContainerObserver : public aura::WindowObserver {
 class KeyboardControllerTest : public testing::Test,
                                public KeyboardControllerObserver {
  public:
-  KeyboardControllerTest() : number_of_calls_(0) {}
+  KeyboardControllerTest() : number_of_calls_(0), proxy_(nullptr) {}
   ~KeyboardControllerTest() override {}
 
   void SetUp() override {

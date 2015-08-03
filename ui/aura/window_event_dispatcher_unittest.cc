@@ -2439,7 +2439,7 @@ TEST_F(WindowEventDispatcherTest,
 class AsyncWindowDelegate : public test::TestWindowDelegate {
  public:
   AsyncWindowDelegate(WindowEventDispatcher* dispatcher)
-      : dispatcher_(dispatcher) {}
+      : dispatcher_(dispatcher), window_(nullptr) {}
 
   void set_window(Window* window) {
     window_ = window;
