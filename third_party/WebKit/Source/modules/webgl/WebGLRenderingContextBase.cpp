@@ -222,249 +222,249 @@ void WebGLRenderingContextBase::willDestroyContext(WebGLRenderingContextBase* co
 
 namespace {
 
-    // ScopedDrawingBufferBinder is used for ReadPixels/CopyTexImage2D/CopySubImage2D to read from
-    // a multisampled DrawingBuffer. In this situation, we need to blit to a single sampled buffer
-    // for reading, during which the bindings could be changed and need to be recovered.
-    class ScopedDrawingBufferBinder {
-        STACK_ALLOCATED();
-    public:
-        ScopedDrawingBufferBinder(DrawingBuffer* drawingBuffer, WebGLFramebuffer* framebufferBinding)
-            : m_drawingBuffer(drawingBuffer)
-            , m_readFramebufferBinding(framebufferBinding)
-        {
-            // Commit DrawingBuffer if needed (e.g., for multisampling)
-            if (!m_readFramebufferBinding && m_drawingBuffer)
-                m_drawingBuffer->commit();
-        }
+// ScopedDrawingBufferBinder is used for ReadPixels/CopyTexImage2D/CopySubImage2D to read from
+// a multisampled DrawingBuffer. In this situation, we need to blit to a single sampled buffer
+// for reading, during which the bindings could be changed and need to be recovered.
+class ScopedDrawingBufferBinder {
+    STACK_ALLOCATED();
+public:
+    ScopedDrawingBufferBinder(DrawingBuffer* drawingBuffer, WebGLFramebuffer* framebufferBinding)
+        : m_drawingBuffer(drawingBuffer)
+        , m_readFramebufferBinding(framebufferBinding)
+    {
+        // Commit DrawingBuffer if needed (e.g., for multisampling)
+        if (!m_readFramebufferBinding && m_drawingBuffer)
+            m_drawingBuffer->commit();
+    }
 
-        ~ScopedDrawingBufferBinder()
-        {
-            // Restore DrawingBuffer if needed
-            if (!m_readFramebufferBinding && m_drawingBuffer)
-                m_drawingBuffer->restoreFramebufferBindings();
-        }
+    ~ScopedDrawingBufferBinder()
+    {
+        // Restore DrawingBuffer if needed
+        if (!m_readFramebufferBinding && m_drawingBuffer)
+            m_drawingBuffer->restoreFramebufferBindings();
+    }
 
-    private:
-        DrawingBuffer* m_drawingBuffer;
-        RawPtrWillBeMember<WebGLFramebuffer> m_readFramebufferBinding;
+private:
+    DrawingBuffer* m_drawingBuffer;
+    RawPtrWillBeMember<WebGLFramebuffer> m_readFramebufferBinding;
+};
+
+GLint clamp(GLint value, GLint min, GLint max)
+{
+    if (value < min)
+        value = min;
+    if (value > max)
+        value = max;
+    return value;
+}
+
+// Return true if a character belongs to the ASCII subset as defined in
+// GLSL ES 1.0 spec section 3.1.
+bool validateCharacter(unsigned char c)
+{
+    // Printing characters are valid except " $ ` @ \ ' DEL.
+    if (c >= 32 && c <= 126
+        && c != '"' && c != '$' && c != '`' && c != '@' && c != '\\' && c != '\'')
+        return true;
+    // Horizontal tab, line feed, vertical tab, form feed, carriage return
+    // are also valid.
+    if (c >= 9 && c <= 13)
+        return true;
+    return false;
+}
+
+bool isPrefixReserved(const String& name)
+{
+    if (name.startsWith("gl_") || name.startsWith("webgl_") || name.startsWith("_webgl_"))
+        return true;
+    return false;
+}
+
+// Strips comments from shader text. This allows non-ASCII characters
+// to be used in comments without potentially breaking OpenGL
+// implementations not expecting characters outside the GLSL ES set.
+class StripComments {
+public:
+    StripComments(const String& str)
+        : m_parseState(BeginningOfLine)
+        , m_sourceString(str)
+        , m_length(str.length())
+        , m_position(0)
+    {
+        parse();
+    }
+
+    String result()
+    {
+        return m_builder.toString();
+    }
+
+private:
+    bool hasMoreCharacters() const
+    {
+        return (m_position < m_length);
+    }
+
+    void parse()
+    {
+        while (hasMoreCharacters()) {
+            process(current());
+            // process() might advance the position.
+            if (hasMoreCharacters())
+                advance();
+        }
+    }
+
+    void process(UChar);
+
+    bool peek(UChar& character) const
+    {
+        if (m_position + 1 >= m_length)
+            return false;
+        character = m_sourceString[m_position + 1];
+        return true;
+    }
+
+    UChar current()
+    {
+        ASSERT_WITH_SECURITY_IMPLICATION(m_position < m_length);
+        return m_sourceString[m_position];
+    }
+
+    void advance()
+    {
+        ++m_position;
+    }
+
+    static bool isNewline(UChar character)
+    {
+        // Don't attempt to canonicalize newline related characters.
+        return (character == '\n' || character == '\r');
+    }
+
+    void emit(UChar character)
+    {
+        m_builder.append(character);
+    }
+
+    enum ParseState {
+        // Have not seen an ASCII non-whitespace character yet on
+        // this line. Possible that we might see a preprocessor
+        // directive.
+        BeginningOfLine,
+
+        // Have seen at least one ASCII non-whitespace character
+        // on this line.
+        MiddleOfLine,
+
+        // Handling a preprocessor directive. Passes through all
+        // characters up to the end of the line. Disables comment
+        // processing.
+        InPreprocessorDirective,
+
+        // Handling a single-line comment. The comment text is
+        // replaced with a single space.
+        InSingleLineComment,
+
+        // Handling a multi-line comment. Newlines are passed
+        // through to preserve line numbers.
+        InMultiLineComment
     };
 
-    GLint clamp(GLint value, GLint min, GLint max)
-    {
-        if (value < min)
-            value = min;
-        if (value > max)
-            value = max;
-        return value;
+    ParseState m_parseState;
+    String m_sourceString;
+    unsigned m_length;
+    unsigned m_position;
+    StringBuilder m_builder;
+};
+
+void StripComments::process(UChar c)
+{
+    if (isNewline(c)) {
+        // No matter what state we are in, pass through newlines
+        // so we preserve line numbers.
+        emit(c);
+
+        if (m_parseState != InMultiLineComment)
+            m_parseState = BeginningOfLine;
+
+        return;
     }
 
-    // Return true if a character belongs to the ASCII subset as defined in
-    // GLSL ES 1.0 spec section 3.1.
-    bool validateCharacter(unsigned char c)
-    {
-        // Printing characters are valid except " $ ` @ \ ' DEL.
-        if (c >= 32 && c <= 126
-            && c != '"' && c != '$' && c != '`' && c != '@' && c != '\\' && c != '\'')
-            return true;
-        // Horizontal tab, line feed, vertical tab, form feed, carriage return
-        // are also valid.
-        if (c >= 9 && c <= 13)
-            return true;
-        return false;
-    }
-
-    bool isPrefixReserved(const String& name)
-    {
-        if (name.startsWith("gl_") || name.startsWith("webgl_") || name.startsWith("_webgl_"))
-            return true;
-        return false;
-    }
-
-    // Strips comments from shader text. This allows non-ASCII characters
-    // to be used in comments without potentially breaking OpenGL
-    // implementations not expecting characters outside the GLSL ES set.
-    class StripComments {
-    public:
-        StripComments(const String& str)
-            : m_parseState(BeginningOfLine)
-            , m_sourceString(str)
-            , m_length(str.length())
-            , m_position(0)
-        {
-            parse();
-        }
-
-        String result()
-        {
-            return m_builder.toString();
-        }
-
-    private:
-        bool hasMoreCharacters() const
-        {
-            return (m_position < m_length);
-        }
-
-        void parse()
-        {
-            while (hasMoreCharacters()) {
-                process(current());
-                // process() might advance the position.
-                if (hasMoreCharacters())
-                    advance();
-            }
-        }
-
-        void process(UChar);
-
-        bool peek(UChar& character) const
-        {
-            if (m_position + 1 >= m_length)
-                return false;
-            character = m_sourceString[m_position + 1];
-            return true;
-        }
-
-        UChar current()
-        {
-            ASSERT_WITH_SECURITY_IMPLICATION(m_position < m_length);
-            return m_sourceString[m_position];
-        }
-
-        void advance()
-        {
-            ++m_position;
-        }
-
-        static bool isNewline(UChar character)
-        {
-            // Don't attempt to canonicalize newline related characters.
-            return (character == '\n' || character == '\r');
-        }
-
-        void emit(UChar character)
-        {
-            m_builder.append(character);
-        }
-
-        enum ParseState {
-            // Have not seen an ASCII non-whitespace character yet on
-            // this line. Possible that we might see a preprocessor
-            // directive.
-            BeginningOfLine,
-
-            // Have seen at least one ASCII non-whitespace character
-            // on this line.
-            MiddleOfLine,
-
-            // Handling a preprocessor directive. Passes through all
-            // characters up to the end of the line. Disables comment
-            // processing.
-            InPreprocessorDirective,
-
-            // Handling a single-line comment. The comment text is
-            // replaced with a single space.
-            InSingleLineComment,
-
-            // Handling a multi-line comment. Newlines are passed
-            // through to preserve line numbers.
-            InMultiLineComment
-        };
-
-        ParseState m_parseState;
-        String m_sourceString;
-        unsigned m_length;
-        unsigned m_position;
-        StringBuilder m_builder;
-    };
-
-    void StripComments::process(UChar c)
-    {
-        if (isNewline(c)) {
-            // No matter what state we are in, pass through newlines
-            // so we preserve line numbers.
-            emit(c);
-
-            if (m_parseState != InMultiLineComment)
-                m_parseState = BeginningOfLine;
-
-            return;
-        }
-
-        UChar temp = 0;
-        switch (m_parseState) {
-        case BeginningOfLine:
-            if (WTF::isASCIISpace(c)) {
-                emit(c);
-                break;
-            }
-
-            if (c == '#') {
-                m_parseState = InPreprocessorDirective;
-                emit(c);
-                break;
-            }
-
-            // Transition to normal state and re-handle character.
-            m_parseState = MiddleOfLine;
-            process(c);
-            break;
-
-        case MiddleOfLine:
-            if (c == '/' && peek(temp)) {
-                if (temp == '/') {
-                    m_parseState = InSingleLineComment;
-                    emit(' ');
-                    advance();
-                    break;
-                }
-
-                if (temp == '*') {
-                    m_parseState = InMultiLineComment;
-                    // Emit the comment start in case the user has
-                    // an unclosed comment and we want to later
-                    // signal an error.
-                    emit('/');
-                    emit('*');
-                    advance();
-                    break;
-                }
-            }
-
+    UChar temp = 0;
+    switch (m_parseState) {
+    case BeginningOfLine:
+        if (WTF::isASCIISpace(c)) {
             emit(c);
             break;
+        }
 
-        case InPreprocessorDirective:
-            // No matter what the character is, just pass it
-            // through. Do not parse comments in this state. This
-            // might not be the right thing to do long term, but it
-            // should handle the #error preprocessor directive.
+        if (c == '#') {
+            m_parseState = InPreprocessorDirective;
             emit(c);
             break;
+        }
 
-        case InSingleLineComment:
-            // The newline code at the top of this function takes care
-            // of resetting our state when we get out of the
-            // single-line comment. Swallow all other characters.
-            break;
+        // Transition to normal state and re-handle character.
+        m_parseState = MiddleOfLine;
+        process(c);
+        break;
 
-        case InMultiLineComment:
-            if (c == '*' && peek(temp) && temp == '/') {
-                emit('*');
-                emit('/');
-                m_parseState = MiddleOfLine;
+    case MiddleOfLine:
+        if (c == '/' && peek(temp)) {
+            if (temp == '/') {
+                m_parseState = InSingleLineComment;
+                emit(' ');
                 advance();
                 break;
             }
 
-            // Swallow all other characters. Unclear whether we may
-            // want or need to just emit a space per character to try
-            // to preserve column numbers for debugging purposes.
+            if (temp == '*') {
+                m_parseState = InMultiLineComment;
+                // Emit the comment start in case the user has
+                // an unclosed comment and we want to later
+                // signal an error.
+                emit('/');
+                emit('*');
+                advance();
+                break;
+            }
+        }
+
+        emit(c);
+        break;
+
+    case InPreprocessorDirective:
+        // No matter what the character is, just pass it
+        // through. Do not parse comments in this state. This
+        // might not be the right thing to do long term, but it
+        // should handle the #error preprocessor directive.
+        emit(c);
+        break;
+
+    case InSingleLineComment:
+        // The newline code at the top of this function takes care
+        // of resetting our state when we get out of the
+        // single-line comment. Swallow all other characters.
+        break;
+
+    case InMultiLineComment:
+        if (c == '*' && peek(temp) && temp == '/') {
+            emit('*');
+            emit('/');
+            m_parseState = MiddleOfLine;
+            advance();
             break;
         }
-    }
 
-    static bool shouldFailContextCreationForTesting = false;
+        // Swallow all other characters. Unclear whether we may
+        // want or need to just emit a space per character to try
+        // to preserve column numbers for debugging purposes.
+        break;
+    }
+}
+
+static bool shouldFailContextCreationForTesting = false;
 } // namespace anonymous
 
 class ScopedTexture2DRestorer {
@@ -6395,25 +6395,25 @@ void WebGLRenderingContextBase::LRUImageBufferCache::bubbleToFront(int idx)
 
 namespace {
 
-    String GetErrorString(GLenum error)
-    {
-        switch (error) {
-        case GL_INVALID_ENUM:
-            return "INVALID_ENUM";
-        case GL_INVALID_VALUE:
-            return "INVALID_VALUE";
-        case GL_INVALID_OPERATION:
-            return "INVALID_OPERATION";
-        case GL_OUT_OF_MEMORY:
-            return "OUT_OF_MEMORY";
-        case GL_INVALID_FRAMEBUFFER_OPERATION:
-            return "INVALID_FRAMEBUFFER_OPERATION";
-        case GC3D_CONTEXT_LOST_WEBGL:
-            return "CONTEXT_LOST_WEBGL";
-        default:
-            return String::format("WebGL ERROR(0x%04X)", error);
-        }
+String GetErrorString(GLenum error)
+{
+    switch (error) {
+    case GL_INVALID_ENUM:
+        return "INVALID_ENUM";
+    case GL_INVALID_VALUE:
+        return "INVALID_VALUE";
+    case GL_INVALID_OPERATION:
+        return "INVALID_OPERATION";
+    case GL_OUT_OF_MEMORY:
+        return "OUT_OF_MEMORY";
+    case GL_INVALID_FRAMEBUFFER_OPERATION:
+        return "INVALID_FRAMEBUFFER_OPERATION";
+    case GC3D_CONTEXT_LOST_WEBGL:
+        return "CONTEXT_LOST_WEBGL";
+    default:
+        return String::format("WebGL ERROR(0x%04X)", error);
     }
+}
 
 } // namespace anonymous
 
