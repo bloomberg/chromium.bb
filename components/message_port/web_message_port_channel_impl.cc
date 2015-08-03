@@ -124,6 +124,10 @@ void WebMessagePortChannelImpl::WaitForNextMessage() {
 }
 
 void WebMessagePortChannelImpl::OnMessageAvailable(MojoResult result) {
+  // Called when the message loop shuts down.
+  if (result == MOJO_RESULT_ABORTED)
+    return;
+
   DCHECK_EQ(MOJO_RESULT_OK, result);
   if (!client_)
     return;
