@@ -56,6 +56,10 @@ bool ShouldPersistContentSetting(ContentSetting setting,
   if (origin.SchemeIsSecure())
     return true;
 
+  // We persist requests from extensions.
+  if (origin.SchemeIs(extensions::kExtensionScheme))
+    return true;
+
   return false;
 }
 
