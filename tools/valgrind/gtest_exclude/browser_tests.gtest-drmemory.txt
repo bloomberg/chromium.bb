@@ -49,3 +49,7 @@ NaClBrowserTestGLibc.SuccessfulLoadUMA
 
 # https://crbug.com/512140
 PluginPowerSaverBrowserTest.BackgroundTabPlugins
+
+# https://crbug.com/504885
+# The test takes too long.
+SmartSessionRestoreMRUTest.PRE_CorrectLoadingOrder
