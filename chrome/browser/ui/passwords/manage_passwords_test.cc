@@ -96,12 +96,11 @@ void ManagePasswordsTest::SetupAutoSignin(
   GetController()->OnAutoSignin(local_credentials.Pass());
 }
 
-base::HistogramSamples* ManagePasswordsTest::GetSamples(
+scoped_ptr<base::HistogramSamples> ManagePasswordsTest::GetSamples(
     const char* histogram) {
   // Ensure that everything has been properly recorded before pulling samples.
   content::RunAllPendingInMessageLoop();
-  return histogram_tester_.GetHistogramSamplesSinceCreation(histogram)
-      .release();
+  return histogram_tester_.GetHistogramSamplesSinceCreation(histogram).Pass();
 }
 
 ManagePasswordsUIController* ManagePasswordsTest::GetController() {
