@@ -481,10 +481,12 @@ void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents,
                                int element_instance_id,
                                bool is_full_page_plugin,
                                const base::Closure& callback) {
+  // Stop tracking the old embedder's zoom level.
+  if (owner_web_contents())
+    StopTrackingEmbedderZoomLevel();
+
   if (owner_web_contents_ != embedder_web_contents) {
     DCHECK_EQ(owner_contents_observer_->web_contents(), owner_web_contents_);
-    // Stop tracking the old embedder's zoom level.
-    StopTrackingEmbedderZoomLevel();
     owner_web_contents_ = embedder_web_contents;
     owner_contents_observer_.reset(
         new OwnerContentsObserver(this, embedder_web_contents));

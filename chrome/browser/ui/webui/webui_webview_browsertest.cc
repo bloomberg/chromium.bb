@@ -20,6 +20,8 @@ class WebUIWebViewBrowserTest : public WebUIBrowserTest {
     WebUIBrowserTest::SetUpOnMainThread();
     AddLibrary(
         base::FilePath(FILE_PATH_LITERAL("webview_content_script_test.js")));
+    AddLibrary(
+        base::FilePath(FILE_PATH_LITERAL("webview_basic.js")));
 
     base::FilePath test_data_dir;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
@@ -38,6 +40,17 @@ class WebUIWebViewBrowserTest : public WebUIBrowserTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(WebUIWebViewBrowserTest);
 };
+
+// Checks that hiding and showing the WebUI host page doesn't break guests in
+// it.
+// Regression test for http://crbug.com/515268
+IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, DisplayNone) {
+  ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
+
+  ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
+      "testDisplayNone",
+      new base::StringValue(GetTestUrl("empty.html").spec())));
+}
 
 IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, ExecuteScriptCode) {
   ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
