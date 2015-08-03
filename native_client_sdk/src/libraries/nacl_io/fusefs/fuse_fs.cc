@@ -97,6 +97,7 @@ Error FuseFs::OpenWithMode(const Path& path, int open_flags, mode_t mode,
         Error error = node->Init(open_flags);
         if (error)
           return error;
+        node->stat_ = statbuf;
 
         *out_node = node;
         return 0;

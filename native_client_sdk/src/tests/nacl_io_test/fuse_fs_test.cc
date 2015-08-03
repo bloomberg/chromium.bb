@@ -75,6 +75,11 @@ int testfs_getattr(const char* path, struct stat* stbuf) {
     return 0;
   }
 
+  if (strcmp(path, "/foo") == 0) {
+    stbuf->st_mode = S_IFDIR | 0755;
+    return 0;
+  }
+
   File* file = FindFile(path);
   if (file == NULL)
     return -ENOENT;
@@ -451,4 +456,8 @@ TEST_F(KernelProxyFuseTest, Basic) {
   ASSERT_EQ(sizeof(hello_world), ki_read(fd, buffer, sizeof(buffer)));
   EXPECT_STREQ(hello_world, buffer);
   EXPECT_EQ(0, ki_close(fd));
+}
+
+TEST_F(KernelProxyFuseTest, Chdir) {
+  ASSERT_EQ(0, ki_chdir("/foo"));
 }
