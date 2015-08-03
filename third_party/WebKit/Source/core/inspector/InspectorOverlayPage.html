@@ -654,7 +654,7 @@ function createAnchor(anchorInfo)
     context.save();
     context.shadowColor = "rgba(0, 0, 0, 0.34)";
     context.shadowBlur = 2;
-    context.fillStyle = anchorColorForProperty(anchorInfo.propertyName);
+    context.fillStyle = anchorColorForProperty(anchorInfo);
     context.beginPath();
     context.arc(anchorInfo.x, anchorInfo.y, handleWidth, 0, 2 * Math.PI);
     context.fill();
@@ -664,7 +664,8 @@ function createAnchor(anchorInfo)
     anchorElement.className = "editor-anchor";
     anchorElement.style.left = anchorInfo.x - handleWidth + "px";
     anchorElement.style.top = anchorInfo.y - handleWidth + "px";
-    anchorElement.addEventListener("mousedown", onAnchorMouseDown.bind(null, anchorInfo));
+    if (anchorInfo.propertyValue.mutable)
+        anchorElement.addEventListener("mousedown", onAnchorMouseDown.bind(null, anchorInfo));
     anchorElement.addEventListener("mouseenter", onAnchorMouseEnter.bind(null, anchorInfo));
     anchorElement.addEventListener("mouseleave", onAnchorMouseLeave.bind(null, anchorInfo));
     return anchorElement;
@@ -705,10 +706,10 @@ function showLabel(anchorInfo)
 {
     var context =  labelsCanvas.getContext("2d");
     var secondaryColor = "rgba(255, 255, 255, 0.7)";
-    var labelColor = labelColorForProperty(anchorInfo.propertyName);
+    var labelColor = labelColorForProperty(anchorInfo);
     _drawLabel(context, anchorInfo.x, anchorInfo.y, labelColor, [
         {string: anchorInfo.propertyName + ": ", color: secondaryColor},
-        {string: anchorInfo.propertyValue.value, color: "white"},
+        {string: anchorInfo.propertyValue.value, color: "white" },
         {string: "\u2009" + anchorInfo.propertyValue.unit, color: secondaryColor}
     ], anchorInfo.deltaVector.x < 0);
 }
@@ -804,25 +805,35 @@ function _drawLabel(context, anchorX, anchorY, labelColor, textDescription, toLe
         textX = anchorX - right + paddingX / 2;
     else
         textX = anchorX + left + paddingX / 2;
-    
+
     var textY = anchorY + top + fontSize;
     for (var part of textDescription) {
         context.fillStyle = part.color;
         context.fillText(part.string, textX, textY);
         textX += context.measureText(part.string).width;
     }
-    context.restore();      
+    context.restore();
 }
 
-function labelColorForProperty(propertyName)
+function labelColorForProperty(anchorInfo)
 {
+    // TODO: find a better color
+    if (!anchorInfo.propertyValue.mutable)
+        return "rgb(159, 188, 191)";
+
+    var propertyName = anchorInfo.propertyName;
     if (propertyName.startsWith("margin"))
         return "rgb(246, 167, 35)";
     return "rgb(91, 181, 0)";
 }
 
-function anchorColorForProperty(propertyName)
+function anchorColorForProperty(anchorInfo)
 {
+    // TODO: find a better color
+    if (!anchorInfo.propertyValue.mutable)
+        return "rgb(159, 188, 191)";
+
+    var propertyName = anchorInfo.propertyName;
     if (propertyName.startsWith("margin"))
         return "rgb(246, 167, 35)";
     return "rgb(107, 213, 0)";

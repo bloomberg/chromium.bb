@@ -177,12 +177,14 @@ RefPtrWillBeRawPtr<CSSPrimitiveValue> LayoutEditor::getPropertyCSSValue(CSSPrope
 PassRefPtr<JSONObject> LayoutEditor::createValueDescription(const String& propertyName) const
 {
     RefPtrWillBeRawPtr<CSSPrimitiveValue> cssValue = getPropertyCSSValue(cssPropertyID(propertyName));
-    if (cssValue && !cssValue->isPx())
+    if (cssValue && !(cssValue->isLength() || cssValue->isPercentage()))
         return nullptr;
 
     RefPtr<JSONObject> object = JSONObject::create();
     object->setNumber("value", cssValue ? cssValue->getFloatValue() : 0);
-    object->setString("unit", "px");
+    object->setString("unit", CSSPrimitiveValue::unitTypeToString(cssValue ? cssValue->typeWithCalcResolved() : CSSPrimitiveValue::UnitType::Pixels));
+    // TODO: Support an editing of other popular units like: em, rem
+    object->setBoolean("mutable", !cssValue || cssValue->isPx());
     return object.release();
 }
 
