@@ -779,6 +779,7 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
     self.assertEquals(0, len(status.healthchecks))
 
 
+@cros_test_lib.NetworkTest()
 class CheckFileModificationTest(cros_test_lib.MockTempDirTestCase):
   """Unittests for checking when live changes are made to a checkfile."""
 
