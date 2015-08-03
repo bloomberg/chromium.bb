@@ -297,6 +297,10 @@ void QuicHttpStream::OnDataAvailable() {
   CHECK(user_buffer_.get());
   CHECK_NE(0, user_buffer_len_);
   int rv = ReadAvailableData(user_buffer_.get(), user_buffer_len_);
+  if (rv == ERR_IO_PENDING) {
+    // This was a spurrious notification. Wait for the next one.
+    return;
+  }
 
   CHECK(!callback_.is_null());
   user_buffer_ = nullptr;
