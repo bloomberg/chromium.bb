@@ -1500,35 +1500,40 @@ void URLRequestHttpJob::RecordPerfHistograms(CompletionCause reason) {
   }
 
   if (response_info_) {
-    bool is_google = request() && HasGoogleHost(request()->url());
+    // QUIC (by default) supports https scheme only, thus track https URLs only
+    // for QUIC.
+    bool is_https_google = request() && request()->url().SchemeIs("https") &&
+                           HasGoogleHost(request()->url());
     bool used_quic = response_info_->DidUseQuic();
-    if (is_google) {
+    if (is_https_google) {
       if (used_quic) {
-        UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpJob.TotalTime.Quic", total_time);
+        UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpJob.TotalTime.Secure.Quic",
+                                   total_time);
       } else {
-        UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpJob.TotalTime.NotQuic", total_time);
+        UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpJob.TotalTime.Secure.NotQuic",
+                                   total_time);
       }
     }
     if (response_info_->was_cached) {
       UMA_HISTOGRAM_TIMES("Net.HttpJob.TotalTimeCached", total_time);
-      if (is_google) {
+      if (is_https_google) {
         if (used_quic) {
-          UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpJob.TotalTimeCached.Quic",
+          UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpJob.TotalTimeCached.Secure.Quic",
                                      total_time);
         } else {
-          UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpJob.TotalTimeCached.NotQuic",
-                                     total_time);
+          UMA_HISTOGRAM_MEDIUM_TIMES(
+              "Net.HttpJob.TotalTimeCached.Secure.NotQuic", total_time);
         }
       }
     } else  {
       UMA_HISTOGRAM_TIMES("Net.HttpJob.TotalTimeNotCached", total_time);
-      if (is_google) {
+      if (is_https_google) {
         if (used_quic) {
-          UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpJob.TotalTimeNotCached.Quic",
-                                     total_time);
+          UMA_HISTOGRAM_MEDIUM_TIMES(
+              "Net.HttpJob.TotalTimeNotCached.Secure.Quic", total_time);
         } else {
-          UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpJob.TotalTimeNotCached.NotQuic",
-                                     total_time);
+          UMA_HISTOGRAM_MEDIUM_TIMES(
+              "Net.HttpJob.TotalTimeNotCached.Secure.NotQuic", total_time);
         }
       }
     }

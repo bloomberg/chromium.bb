@@ -75995,11 +75995,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="ThreadWatcher.UnresponsiveThreads"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="TotalTimeToGoogle" separator=".">
-  <suffix name="Quic"
-      label="Recorded for Google servers only when QUIC is used."/>
-  <suffix name="NotQuic"
-      label="Recorded for Google servers only when QUIC is not used."/>
+<histogram_suffixes name="TotalTimeToHttpsGoogle" separator=".">
+  <suffix name="Quic">
+    <obsolete>
+      Deprecated as of 08/2015. Use Net.HttpJob.*Secure.Quic instead.
+    </obsolete>
+  </suffix>
+  <suffix name="NotQuic">
+    <obsolete>
+      Deprecated as of 08/2015. Use Net.HttpJob.*Secure.NotQuic instead.
+    </obsolete>
+  </suffix>
+  <suffix name="Secure.Quic"
+      label="Recorded for Google servers (https) only when QUIC is used."/>
+  <suffix name="Secure.NotQuic"
+      label="Recorded for Google servers (https) only when QUIC is not used."/>
   <affected-histogram name="Net.HttpJob.TotalTime"/>
   <affected-histogram name="Net.HttpJob.TotalTimeCached"/>
   <affected-histogram name="Net.HttpJob.TotalTimeNotCached"/>
