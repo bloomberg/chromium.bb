@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 
 #include <algorithm>
 
@@ -14,15 +14,17 @@
 #endif
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/url_formatter/url_formatter.h"
 #include "net/base/escape.h"
 #include "net/base/filename_util.h"
-#include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_file.h"
 #include "url/url_util.h"
 
-const char* url_fixer::home_directory_override = NULL;
+namespace url_formatter {
+
+const char* home_directory_override = nullptr;
 
 namespace {
 
@@ -124,8 +126,8 @@ std::string FixupHomedir(const std::string& text) {
 
   if (text.length() == 1 || text[1] == '/') {
     base::FilePath file_path;
-    if (url_fixer::home_directory_override)
-      file_path = base::FilePath(url_fixer::home_directory_override);
+    if (home_directory_override)
+      file_path = base::FilePath(home_directory_override);
     else
       PathService::Get(base::DIR_HOME, &file_path);
 
@@ -180,13 +182,9 @@ std::string FixupPath(const std::string& text) {
   // Here, we know the input looks like a file.
   GURL file_url = net::FilePathToFileURL(base::FilePath(filename));
   if (file_url.is_valid()) {
-    return base::UTF16ToUTF8(net::FormatUrl(file_url,
-                                            std::string(),
-                                            net::kFormatUrlOmitUsernamePassword,
-                                            net::UnescapeRule::NORMAL,
-                                            NULL,
-                                            NULL,
-                                            NULL));
+    return base::UTF16ToUTF8(url_formatter::FormatUrl(
+        file_url, std::string(), url_formatter::kFormatUrlOmitUsernamePassword,
+        net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr));
   }
 
   // Invalid file URL, just return the input.
@@ -210,8 +208,7 @@ void AddDesiredTLD(const std::string& desired_tld, std::string* domain) {
   // "www.mail.yahoo.com".
   const size_t registry_length =
       net::registry_controlled_domains::GetRegistryLength(
-          *domain,
-          net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+          *domain, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
           net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
   if ((registry_length != 0) && (registry_length != std::string::npos))
     return;
@@ -360,8 +357,8 @@ bool GetValidScheme(const std::string& text,
   canon_scheme->clear();
 
   // Locate everything up to (but not including) the first ':'
-  if (!url::ExtractScheme(
-          text.data(), static_cast<int>(text.length()), scheme_component)) {
+  if (!url::ExtractScheme(text.data(), static_cast<int>(text.length()),
+                          scheme_component)) {
     return false;
   }
 
@@ -370,10 +367,8 @@ bool GetValidScheme(const std::string& text,
   // brackets are not in the whitelist.
   url::StdStringCanonOutput canon_scheme_output(canon_scheme);
   url::Component canon_scheme_component;
-  if (!url::CanonicalizeScheme(text.data(),
-                               *scheme_component,
-                               &canon_scheme_output,
-                               &canon_scheme_component)) {
+  if (!url::CanonicalizeScheme(text.data(), *scheme_component,
+                               &canon_scheme_output, &canon_scheme_component)) {
     return false;
   }
 
@@ -396,7 +391,7 @@ bool GetValidScheme(const std::string& text,
   return true;
 }
 
-// Performs the work for url_fixer::SegmentURL. |text| may be modified on
+// Performs the work for url_formatter::SegmentURL. |text| may be modified on
 // output on success: a semicolon following a valid scheme is replaced with a
 // colon.
 std::string SegmentURLInternal(std::string* text, url::Parsed* parts) {
@@ -436,9 +431,10 @@ std::string SegmentURLInternal(std::string* text, url::Parsed* parts) {
     if (!found_scheme) {
       // Couldn't determine the scheme, so just pick one.
       parts->scheme.reset();
-      scheme = base::StartsWith(*text, "ftp.",
-                                base::CompareCase::INSENSITIVE_ASCII) ?
-          url::kFtpScheme : url::kHttpScheme;
+      scheme =
+          base::StartsWith(*text, "ftp.", base::CompareCase::INSENSITIVE_ASCII)
+              ? url::kFtpScheme
+              : url::kHttpScheme;
     }
   }
 
@@ -453,15 +449,15 @@ std::string SegmentURLInternal(std::string* text, url::Parsed* parts) {
 
   if (scheme == url::kFileSystemScheme) {
     // Have the GURL parser do the heavy lifting for us.
-    url::ParseFileSystemURL(
-        text->data(), static_cast<int>(text->length()), parts);
+    url::ParseFileSystemURL(text->data(), static_cast<int>(text->length()),
+                            parts);
     return scheme;
   }
 
   if (parts->scheme.is_valid()) {
     // Have the GURL parser do the heavy lifting for us.
-    url::ParseStandardURL(
-        text->data(), static_cast<int>(text->length()), parts);
+    url::ParseStandardURL(text->data(), static_cast<int>(text->length()),
+                          parts);
     return scheme;
   }
 
@@ -480,32 +476,31 @@ std::string SegmentURLInternal(std::string* text, url::Parsed* parts) {
   text_to_parse.append(first_nonwhite, text->end());
 
   // Have the GURL parser do the heavy lifting for us.
-  url::ParseStandardURL(
-      text_to_parse.data(), static_cast<int>(text_to_parse.length()), parts);
+  url::ParseStandardURL(text_to_parse.data(),
+                        static_cast<int>(text_to_parse.length()), parts);
 
   // Offset the results of the parse to match the original text.
   const int offset = -static_cast<int>(inserted_text.length());
-  url_fixer::OffsetComponent(offset, &parts->scheme);
-  url_fixer::OffsetComponent(offset, &parts->username);
-  url_fixer::OffsetComponent(offset, &parts->password);
-  url_fixer::OffsetComponent(offset, &parts->host);
-  url_fixer::OffsetComponent(offset, &parts->port);
-  url_fixer::OffsetComponent(offset, &parts->path);
-  url_fixer::OffsetComponent(offset, &parts->query);
-  url_fixer::OffsetComponent(offset, &parts->ref);
+  OffsetComponent(offset, &parts->scheme);
+  OffsetComponent(offset, &parts->username);
+  OffsetComponent(offset, &parts->password);
+  OffsetComponent(offset, &parts->host);
+  OffsetComponent(offset, &parts->port);
+  OffsetComponent(offset, &parts->path);
+  OffsetComponent(offset, &parts->query);
+  OffsetComponent(offset, &parts->ref);
 
   return scheme;
 }
 
 }  // namespace
 
-std::string url_fixer::SegmentURL(const std::string& text, url::Parsed* parts) {
+std::string SegmentURL(const std::string& text, url::Parsed* parts) {
   std::string mutable_text(text);
   return SegmentURLInternal(&mutable_text, parts);
 }
 
-base::string16 url_fixer::SegmentURL(const base::string16& text,
-                                     url::Parsed* parts) {
+base::string16 SegmentURL(const base::string16& text, url::Parsed* parts) {
   std::string text_utf8 = base::UTF16ToUTF8(text);
   url::Parsed parts_utf8;
   std::string scheme_utf8 = SegmentURL(text_utf8, &parts_utf8);
@@ -513,8 +508,7 @@ base::string16 url_fixer::SegmentURL(const base::string16& text,
   return base::UTF8ToUTF16(scheme_utf8);
 }
 
-GURL url_fixer::FixupURL(const std::string& text,
-                         const std::string& desired_tld) {
+GURL FixupURL(const std::string& text, const std::string& desired_tld) {
   std::string trimmed;
   TrimWhitespaceUTF8(text, base::TRIM_ALL, &trimmed);
   if (trimmed.empty())
@@ -596,8 +590,8 @@ GURL url_fixer::FixupURL(const std::string& text,
 // fixup will look for cues that it is actually a file path before trying to
 // figure out what file it is.  If our logic doesn't work, we will fall back on
 // regular fixup.
-GURL url_fixer::FixupRelativeFile(const base::FilePath& base_dir,
-                                  const base::FilePath& text) {
+GURL FixupRelativeFile(const base::FilePath& base_dir,
+                       const base::FilePath& text) {
   base::FilePath old_cur_directory;
   if (!base_dir.empty()) {
     // Save the old current directory before we move to the new one.
@@ -640,14 +634,10 @@ GURL url_fixer::FixupRelativeFile(const base::FilePath& base_dir,
   if (is_file) {
     GURL file_url = net::FilePathToFileURL(full_path);
     if (file_url.is_valid())
-      return GURL(
-          base::UTF16ToUTF8(net::FormatUrl(file_url,
-                                           std::string(),
-                                           net::kFormatUrlOmitUsernamePassword,
-                                           net::UnescapeRule::NORMAL,
-                                           NULL,
-                                           NULL,
-                                           NULL)));
+      return GURL(base::UTF16ToUTF8(url_formatter::FormatUrl(
+          file_url, std::string(),
+          url_formatter::kFormatUrlOmitUsernamePassword,
+          net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr)));
     // Invalid files fall through to regular processing.
   }
 
@@ -660,7 +650,7 @@ GURL url_fixer::FixupRelativeFile(const base::FilePath& base_dir,
   return FixupURL(text_utf8, std::string());
 }
 
-void url_fixer::OffsetComponent(int offset, url::Component* part) {
+void OffsetComponent(int offset, url::Component* part) {
   DCHECK(part);
 
   if (part->is_valid()) {
@@ -673,9 +663,11 @@ void url_fixer::OffsetComponent(int offset, url::Component* part) {
   }
 }
 
-bool url_fixer::IsEquivalentScheme(const std::string& scheme1,
-                                   const std::string& scheme2) {
+bool IsEquivalentScheme(const std::string& scheme1,
+                        const std::string& scheme2) {
   return scheme1 == scheme2 ||
-      (scheme1 == url::kAboutScheme && scheme2 == kChromeUIScheme) ||
-      (scheme1 == kChromeUIScheme && scheme2 == url::kAboutScheme);
+         (scheme1 == url::kAboutScheme && scheme2 == kChromeUIScheme) ||
+         (scheme1 == kChromeUIScheme && scheme2 == url::kAboutScheme);
 }
+
+}  // namespace url_formatter

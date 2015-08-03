@@ -18,7 +18,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/search/search.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 
 using metrics::OmniboxEventProto;
 
@@ -250,7 +250,7 @@ void AutocompleteResult::SortAndCull(
           const std::string& in_scheme = base::UTF16ToUTF8(input.scheme());
           const std::string& dest_scheme =
               default_match_->destination_url.scheme();
-          DCHECK(url_fixer::IsEquivalentScheme(in_scheme, dest_scheme))
+          DCHECK(url_formatter::IsEquivalentScheme(in_scheme, dest_scheme))
               << debug_info;
         }
       }

@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 
 bool FixupBrowserAboutURL(GURL* url,
                           content::BrowserContext* browser_context) {
@@ -24,7 +24,7 @@ bool FixupBrowserAboutURL(GURL* url,
   // phase that determines the virtual URL, by including it in an initial
   // URLHandler.  This prevents minor changes from producing a virtual URL,
   // which could lead to a URL spoof.
-  *url = url_fixer::FixupURL(url->possibly_invalid_spec(), std::string());
+  *url = url_formatter::FixupURL(url->possibly_invalid_spec(), std::string());
   return true;
 }
 
@@ -34,11 +34,11 @@ bool WillHandleBrowserAboutURL(GURL* url,
   //            then hopefully we can remove this forced fixup.
   FixupBrowserAboutURL(url, browser_context);
 
-  // Check that about: URLs are fixed up to chrome: by url_fixer::FixupURL.
+  // Check that about: URLs are fixed up to chrome: by url_formatter::FixupURL.
   DCHECK((*url == GURL(url::kAboutBlankURL)) ||
          !url->SchemeIs(url::kAboutScheme));
 
-  // Only handle chrome://foo/, url_fixer::FixupURL translates about:foo.
+  // Only handle chrome://foo/, url_formatter::FixupURL translates about:foo.
   if (!url->SchemeIs(content::kChromeUIScheme))
     return false;
 

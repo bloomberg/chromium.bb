@@ -33,7 +33,7 @@
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -728,7 +728,7 @@ TEST_F(HistoryURLProviderTest, IntranetURLsWithPaths) {
       RunTest(ASCIIToUTF16(test_cases[i].input), std::string(), false, NULL, 0);
     } else {
       const UrlAndLegalDefault output[] = {
-          {url_fixer::FixupURL(test_cases[i].input, std::string()).spec(),
+          {url_formatter::FixupURL(test_cases[i].input, std::string()).spec(),
            true}};
       ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16(test_cases[i].input),
                               std::string(), false, output, arraysize(output)));
@@ -1042,8 +1042,9 @@ TEST_F(HistoryURLProviderTest, HUPScoringExperiment) {
       if (test_cases[i].matches[max_matches].url == NULL)
         break;
       output[max_matches].url =
-          url_fixer::FixupURL(test_cases[i].matches[max_matches].url,
-                              std::string()).spec();
+          url_formatter::FixupURL(test_cases[i].matches[max_matches].url,
+                                  std::string())
+              .spec();
       output[max_matches].allowed_to_be_default_match = true;
     }
     autocomplete_->scoring_params_ = test_cases[i].scoring_params;

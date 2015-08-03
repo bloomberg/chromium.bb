@@ -32,12 +32,12 @@
 #include "chrome/common/pref_names.h"
 #include "components/sync_driver/glue/synced_session.h"
 #include "components/sync_driver/open_tabs_ui_delegate.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/error_utils.h"
-#include "net/base/net_util.h"
 #include "ui/base/layout.h"
 
 namespace extensions {
@@ -93,8 +93,8 @@ scoped_ptr<tabs::Tab> CreateTabModelHelper(
   } else {
     const std::string languages =
         profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-    tab_struct->title.reset(
-        new std::string(base::UTF16ToUTF8(net::FormatUrl(url, languages))));
+    tab_struct->title.reset(new std::string(
+        base::UTF16ToUTF8(url_formatter::FormatUrl(url, languages))));
   }
   tab_struct->index = index;
   tab_struct->pinned = pinned;

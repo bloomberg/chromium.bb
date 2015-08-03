@@ -23,11 +23,11 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/error_page/common/error_page_params.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/public/common/url_constants.h"
 #include "grit/components_strings.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -146,7 +146,7 @@ GURL SanitizeURL(const GURL& url) {
 
 // Sanitizes and formats a URL for upload to the error correction service.
 std::string PrepareUrlForUpload(const GURL& url) {
-  // TODO(yuusuke): Change to net::FormatUrl when Link Doctor becomes
+  // TODO(yuusuke): Change to url_formatter::FormatUrl when Link Doctor becomes
   // unicode-capable.
   std::string spec_to_send = SanitizeURL(url).spec();
 
@@ -265,9 +265,9 @@ std::string CreateClickTrackingUrlRequestBody(
 base::string16 FormatURLForDisplay(const GURL& url, bool is_rtl,
                                    const std::string accept_languages) {
   // Translate punycode into UTF8, unescape UTF8 URLs.
-  base::string16 url_for_display(net::FormatUrl(
-      url, accept_languages, net::kFormatUrlOmitNothing,
-      net::UnescapeRule::NORMAL, NULL, NULL, NULL));
+  base::string16 url_for_display(url_formatter::FormatUrl(
+      url, accept_languages, url_formatter::kFormatUrlOmitNothing,
+      net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr));
   // URLs are always LTR.
   if (is_rtl)
     base::i18n::WrapStringWithLTRFormatting(&url_for_display);

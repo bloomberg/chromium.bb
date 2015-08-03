@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "net/base/net_util.h"
+#include "components/url_formatter/url_formatter.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
@@ -216,12 +216,11 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, kBubbleOuterMargin, 0, kItemMajorSpacing));
 
-  hostname_ = net::FormatUrl(requests[0]->GetRequestingHostname(),
-                             languages,
-                             net::kFormatUrlOmitUsernamePassword |
-                             net::kFormatUrlOmitTrailingSlashOnBareHostname,
-                             net::UnescapeRule::SPACES,
-                             nullptr, nullptr, nullptr);
+  hostname_ = url_formatter::FormatUrl(
+      requests[0]->GetRequestingHostname(), languages,
+      url_formatter::kFormatUrlOmitUsernamePassword |
+          url_formatter::kFormatUrlOmitTrailingSlashOnBareHostname,
+      net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   for (size_t index = 0; index < requests.size(); index++) {

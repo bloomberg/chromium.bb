@@ -15,7 +15,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/policy/policy_helpers.h"
 #include "components/policy/core/common/policy_pref_names.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -25,7 +25,7 @@
 // TODO(joaodasilva): this file should be moved next to
 // components/policy/core/browser/url_blacklist_manager.(cc|h).
 // However, url_fixer_upper.h can't be included from the component. Rather
-// than having it mocked out, the actual url_fixer::SegmentURL call is used
+// than having it mocked out, the actual url_formatter::SegmentURL call is used
 // to make sure that the parsing of URL filters is correct.
 
 namespace policy {
@@ -34,7 +34,7 @@ namespace {
 
 // Helper to get the disambiguated SegmentURL() function.
 URLBlacklist::SegmentURLCallback GetSegmentURLCallback() {
-  return url_fixer::SegmentURL;
+  return url_formatter::SegmentURL;
 }
 
 class TestingURLBlacklistManager : public URLBlacklistManager {

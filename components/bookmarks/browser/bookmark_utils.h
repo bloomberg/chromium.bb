@@ -112,12 +112,12 @@ void AddIfNotBookmarked(BookmarkModel* model,
 void RemoveAllBookmarks(BookmarkModel* model, const GURL& url);
 
 // Truncates an overly-long URL, unescapes it and interprets the characters
-// as UTF-8 (both via net::FormatUrl()), and lower-cases it, returning the
-// result.  |languages| is passed to net::FormatUrl().  |adjustments|, if
-// non-NULL, is set to reflect the transformations the URL spec underwent to
-// become the return value.  If a caller computes offsets (e.g., for the
-// position of matched text) in this cleaned-up string, it can use
-// |adjustments| to calculate the location of these offsets in the original
+// as UTF-8 (both via url_formatter::FormatUrl()), and lower-cases it, returning
+// the result.  |languages| is passed to url_formatter::FormatUrl().
+// |adjustments|, if non-NULL, is set to reflect the transformations the URL
+// spec underwent to become the return value.  If a caller computes offsets
+// (e.g., for the position of matched text) in this cleaned-up string, it can
+// use |adjustments| to calculate the location of these offsets in the original
 // string (via base::OffsetAdjuster::UnadjustOffsets()).  This is useful if
 // later the original string gets formatted in a different way for displaying.
 // In this case, knowing the offsets in the original string will allow them to

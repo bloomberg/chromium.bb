@@ -18,13 +18,13 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "grit/theme_resources.h"
-#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
@@ -112,7 +112,8 @@ base::string16 GetTitle(WebContents* web_contents) {
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
     std::string languages =
         profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-    if (tab_title == net::FormatUrl(web_contents->GetURL(), languages))
+    if (tab_title ==
+        url_formatter::FormatUrl(web_contents->GetURL(), languages))
       tab_title = GetSecurityOrigin(web_contents);
   }
 

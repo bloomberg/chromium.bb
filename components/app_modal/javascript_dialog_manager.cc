@@ -12,6 +12,7 @@
 #include "components/app_modal/javascript_dialog_extensions_client.h"
 #include "components/app_modal/javascript_native_dialog_factory.h"
 #include "components/app_modal/native_app_modal_dialog.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/public/common/javascript_message_type.h"
 #include "grit/components_strings.h"
 #include "net/base/net_util.h"
@@ -209,7 +210,7 @@ base::string16 JavaScriptDialogManager::GetTitle(
 
   // Otherwise, return the formatted URL.
   // In this case, force URL to have LTR directionality.
-  base::string16 url_string = net::FormatUrl(origin_url, accept_lang);
+  base::string16 url_string = url_formatter::FormatUrl(origin_url, accept_lang);
   return l10n_util::GetStringFUTF16(
       is_alert ? IDS_JAVASCRIPT_ALERT_TITLE
       : IDS_JAVASCRIPT_MESSAGEBOX_TITLE,

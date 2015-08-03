@@ -27,10 +27,10 @@
 #include "components/omnibox/browser/search_provider.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/url_formatter/url_formatter.h"
 #include "components/variations/net/variations_http_header_provider.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
-#include "net/base/net_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
@@ -288,8 +288,9 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
 
   // Zero suggest results should always omit protocols and never appear bold.
   const std::string languages(client()->GetAcceptLanguages());
-  match.contents = net::FormatUrl(navigation.url(), languages,
-      net::kFormatUrlOmitAll, net::UnescapeRule::SPACES, NULL, NULL, NULL);
+  match.contents = url_formatter::FormatUrl(
+      navigation.url(), languages, url_formatter::kFormatUrlOmitAll,
+      net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
   match.fill_into_edit +=
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
           navigation.url(), match.contents, client()->GetSchemeClassifier());

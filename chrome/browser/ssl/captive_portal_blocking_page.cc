@@ -17,6 +17,7 @@
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/common/pref_names.h"
 #include "components/captive_portal/captive_portal_detector.h"
+#include "components/url_formatter/url_formatter.h"
 #include "components/wifi/wifi_service.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -169,7 +170,8 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
         web_contents()->GetBrowserContext());
     if (profile)
       languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-    base::string16 login_host = net::IDNToUnicode(login_url_.host(), languages);
+    base::string16 login_host =
+        url_formatter::IDNToUnicode(login_url_.host(), languages);
     if (base::i18n::IsRTL())
       base::i18n::WrapStringWithLTRFormatting(&login_host);
 

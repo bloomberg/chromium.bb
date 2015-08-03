@@ -25,7 +25,7 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/query_parser/query_parser.h"
-#include "net/base/net_util.h"
+#include "components/url_formatter/url_formatter.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/models/tree_node_iterator.h"
 #include "url/gurl.h"
@@ -96,13 +96,14 @@ bool DoesBookmarkTextContainWords(const base::string16& text,
 bool DoesBookmarkContainWords(const BookmarkNode* node,
                               const std::vector<base::string16>& words,
                               const std::string& languages) {
-  return
-      DoesBookmarkTextContainWords(node->GetTitle(), words) ||
-      DoesBookmarkTextContainWords(
-          base::UTF8ToUTF16(node->url().spec()), words) ||
-      DoesBookmarkTextContainWords(net::FormatUrl(
-          node->url(), languages, net::kFormatUrlOmitNothing,
-          net::UnescapeRule::NORMAL, NULL, NULL, NULL), words);
+  return DoesBookmarkTextContainWords(node->GetTitle(), words) ||
+         DoesBookmarkTextContainWords(base::UTF8ToUTF16(node->url().spec()),
+                                      words) ||
+         DoesBookmarkTextContainWords(
+             url_formatter::FormatUrl(
+                 node->url(), languages, url_formatter::kFormatUrlOmitNothing,
+                 net::UnescapeRule::NORMAL, NULL, NULL, NULL),
+             words);
 }
 
 // This is used with a tree iterator to skip subtrees which are not visible.
@@ -516,11 +517,11 @@ base::string16 CleanUpUrlForMatching(
     const std::string& languages,
     base::OffsetAdjuster::Adjustments* adjustments) {
   base::OffsetAdjuster::Adjustments tmp_adjustments;
-  return base::i18n::ToLower(net::FormatUrlWithAdjustments(
+  return base::i18n::ToLower(url_formatter::FormatUrlWithAdjustments(
       GURL(TruncateUrl(gurl.spec())), languages,
-      net::kFormatUrlOmitUsernamePassword,
-      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS,
-      NULL, NULL, adjustments ? adjustments : &tmp_adjustments));
+      url_formatter::kFormatUrlOmitUsernamePassword,
+      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS, NULL,
+      NULL, adjustments ? adjustments : &tmp_adjustments));
 }
 
 base::string16 CleanUpTitleForMatching(const base::string16& title) {

@@ -31,11 +31,11 @@
 #include "components/search/search.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/url_formatter/url_formatter.h"
 #include "components/variations/net/variations_http_header_provider.h"
 #include "grit/components_strings.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
-#include "net/base/net_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
@@ -1379,8 +1379,9 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
       navigation.formatted_url().find(input) : prefix->prefix.length();
   bool trim_http = !AutocompleteInput::HasHTTPScheme(input) &&
       (!prefix || (match_start != 0));
-  const net::FormatUrlTypes format_types =
-      net::kFormatUrlOmitAll & ~(trim_http ? 0 : net::kFormatUrlOmitHTTP);
+  const url_formatter::FormatUrlTypes format_types =
+      url_formatter::kFormatUrlOmitAll &
+      ~(trim_http ? 0 : url_formatter::kFormatUrlOmitHTTP);
 
   const std::string languages(client()->GetAcceptLanguages());
   size_t inline_autocomplete_offset = (prefix == NULL) ?
@@ -1388,9 +1389,9 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   match.fill_into_edit +=
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
           navigation.url(),
-          net::FormatUrl(navigation.url(), languages, format_types,
-                         net::UnescapeRule::SPACES, NULL, NULL,
-                         &inline_autocomplete_offset),
+          url_formatter::FormatUrl(navigation.url(), languages, format_types,
+                                   net::UnescapeRule::SPACES, nullptr, nullptr,
+                                   &inline_autocomplete_offset),
           client()->GetSchemeClassifier());
   // Preserve the forced query '?' prefix in |match.fill_into_edit|.
   // Otherwise, user edits to a suggestion would show non-Search results.

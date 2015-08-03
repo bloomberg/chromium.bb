@@ -25,6 +25,7 @@
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/search_terms_data.h"
+#include "components/url_formatter/url_formatter.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
@@ -1217,7 +1218,7 @@ base::string16 TemplateURL::GenerateKeyword(
   // convert to Unicode using the user's accept-languages, so it won't look like
   // a confusing punycode string.
   base::string16 keyword =
-      net::StripWWW(net::IDNToUnicode(url.host(), accept_languages));
+      net::StripWWW(url_formatter::IDNToUnicode(url.host(), accept_languages));
   // Special case: if the host was exactly "www." (not sure this can happen but
   // perhaps with some weird intranet and custom DNS server?), ensure we at
   // least don't return the empty string.

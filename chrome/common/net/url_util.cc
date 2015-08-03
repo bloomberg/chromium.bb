@@ -5,8 +5,8 @@
 #include "chrome/common/net/url_util.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/url_formatter/url_formatter.h"
 #include "net/base/escape.h"
-#include "net/base/net_util.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -19,10 +19,12 @@ void WriteURLToClipboard(const GURL& url, const std::string& languages) {
 
   // Unescaping path and query is not a good idea because other applications
   // may not encode non-ASCII characters in UTF-8.  See crbug.com/2820.
-  base::string16 text = url.SchemeIs(url::kMailToScheme) ?
-      base::ASCIIToUTF16(url.path()) :
-      net::FormatUrl(url, languages, net::kFormatUrlOmitNothing,
-                     net::UnescapeRule::NONE, NULL, NULL, NULL);
+  base::string16 text =
+      url.SchemeIs(url::kMailToScheme)
+          ? base::ASCIIToUTF16(url.path())
+          : url_formatter::FormatUrl(
+                url, languages, url_formatter::kFormatUrlOmitNothing,
+                net::UnescapeRule::NONE, nullptr, nullptr, nullptr);
 
   ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
   scw.WriteURL(text);

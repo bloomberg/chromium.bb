@@ -10,7 +10,8 @@
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
+#include "components/url_formatter/url_formatter.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/url_canon_ip.h"
@@ -188,7 +189,7 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
   url::Parsed local_parts;
   if (!parts)
     parts = &local_parts;
-  const base::string16 parsed_scheme(url_fixer::SegmentURL(text, parts));
+  const base::string16 parsed_scheme(url_formatter::SegmentURL(text, parts));
   if (scheme)
     *scheme = parsed_scheme;
   const std::string parsed_scheme_utf8(base::UTF16ToUTF8(parsed_scheme));
@@ -200,7 +201,7 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
   if (!canonicalized_url)
     canonicalized_url = &placeholder_canonicalized_url;
   *canonicalized_url =
-      url_fixer::FixupURL(base::UTF16ToUTF8(text), desired_tld);
+      url_formatter::FixupURL(base::UTF16ToUTF8(text), desired_tld);
   if (!canonicalized_url->is_valid())
     return metrics::OmniboxInputType::QUERY;
 
@@ -255,7 +256,7 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
         &http_parts.ref,
       };
       for (size_t i = 0; i < arraysize(components); ++i) {
-        url_fixer::OffsetComponent(
+        url_formatter::OffsetComponent(
             -static_cast<int>(http_scheme_prefix.length()), components[i]);
       }
 
@@ -504,7 +505,7 @@ base::string16 AutocompleteInput::FormattedStringWithEquivalentMeaning(
     const GURL& url,
     const base::string16& formatted_url,
     const AutocompleteSchemeClassifier& scheme_classifier) {
-  if (!net::CanStripTrailingSlash(url))
+  if (!url_formatter::CanStripTrailingSlash(url))
     return formatted_url;
   const base::string16 url_with_path(formatted_url + base::char16('/'));
   return (AutocompleteInput::Parse(formatted_url, std::string(),

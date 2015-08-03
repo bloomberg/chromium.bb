@@ -52,6 +52,7 @@
         '../components/components.gyp:web_cache_renderer',
         '../components/components.gyp:plugins_renderer',
         '../components/test_runner/test_runner.gyp:test_runner',
+        '../components/url_formatter/url_formatter.gyp:url_formatter',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
         '../gin/gin.gyp:gin',

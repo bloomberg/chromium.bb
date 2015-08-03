@@ -18,8 +18,8 @@
 #include "components/omnibox/browser/autocomplete_i18n.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/url_prefix.h"
-#include "components/url_fixer/url_fixer.h"
-#include "net/base/net_util.h"
+#include "components/url_formatter/url_fixer.h"
+#include "components/url_formatter/url_formatter.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "url/url_constants.h"
@@ -226,13 +226,22 @@ SearchSuggestionParser::NavigationResult::NavigationResult(
     bool relevance_from_server,
     const base::string16& input_text,
     const std::string& languages)
-    : Result(from_keyword_provider, relevance, relevance_from_server, type,
+    : Result(from_keyword_provider,
+             relevance,
+             relevance_from_server,
+             type,
              deletion_url),
       url_(url),
       formatted_url_(AutocompleteInput::FormattedStringWithEquivalentMeaning(
-          url, net::FormatUrl(url, languages,
-                              net::kFormatUrlOmitAll & ~net::kFormatUrlOmitHTTP,
-                              net::UnescapeRule::SPACES, NULL, NULL, NULL),
+          url,
+          url_formatter::FormatUrl(url,
+                                   languages,
+                                   url_formatter::kFormatUrlOmitAll &
+                                       ~url_formatter::kFormatUrlOmitHTTP,
+                                   net::UnescapeRule::SPACES,
+                                   nullptr,
+                                   nullptr,
+                                   nullptr),
           scheme_classifier)),
       description_(description) {
   DCHECK(url_.is_valid());
@@ -262,11 +271,13 @@ SearchSuggestionParser::NavigationResult::CalculateAndClassifyMatchContents(
       formatted_url_.find(input_text) : prefix->prefix.length();
   bool trim_http = !AutocompleteInput::HasHTTPScheme(input_text) &&
                    (!prefix || (match_start != 0));
-  const net::FormatUrlTypes format_types =
-      net::kFormatUrlOmitAll & ~(trim_http ? 0 : net::kFormatUrlOmitHTTP);
+  const url_formatter::FormatUrlTypes format_types =
+      url_formatter::kFormatUrlOmitAll &
+      ~(trim_http ? 0 : url_formatter::kFormatUrlOmitHTTP);
 
-  base::string16 match_contents = net::FormatUrl(url_, languages, format_types,
-      net::UnescapeRule::SPACES, NULL, NULL, &match_start);
+  base::string16 match_contents = url_formatter::FormatUrl(
+      url_, languages, format_types, net::UnescapeRule::SPACES, nullptr,
+      nullptr, &match_start);
   // If the first match in the untrimmed string was inside a scheme that we
   // trimmed, look for a subsequent match.
   if (match_start == base::string16::npos)
@@ -470,8 +481,8 @@ bool SearchSuggestionParser::ParseSuggestResults(
     if ((match_type == AutocompleteMatchType::NAVSUGGEST) ||
         (match_type == AutocompleteMatchType::NAVSUGGEST_PERSONALIZED)) {
       // Do not blindly trust the URL coming from the server to be valid.
-      GURL url(
-          url_fixer::FixupURL(base::UTF16ToUTF8(suggestion), std::string()));
+      GURL url(url_formatter::FixupURL(base::UTF16ToUTF8(suggestion),
+                                       std::string()));
       if (url.is_valid() && allow_navsuggest) {
         base::string16 title;
         if (descriptions != NULL)

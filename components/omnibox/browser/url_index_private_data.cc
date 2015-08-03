@@ -26,7 +26,7 @@
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/omnibox/browser/in_memory_url_index.h"
-#include "net/base/net_util.h"
+#include "components/url_formatter/url_formatter.h"
 
 #if defined(USE_SYSTEM_PROTOBUF)
 #include <google/protobuf/repeated_field.h>
@@ -707,10 +707,9 @@ bool URLIndexPrivateData::IndexRow(
 
   history::URLID row_id = row.id();
   // Strip out username and password before saving and indexing.
-  base::string16 url(net::FormatUrl(gurl, languages,
-      net::kFormatUrlOmitUsernamePassword,
-      net::UnescapeRule::NONE,
-      NULL, NULL, NULL));
+  base::string16 url(url_formatter::FormatUrl(
+      gurl, languages, url_formatter::kFormatUrlOmitUsernamePassword,
+      net::UnescapeRule::NONE, nullptr, nullptr, nullptr));
 
   HistoryID history_id = static_cast<HistoryID>(row_id);
   DCHECK_LT(history_id, std::numeric_limits<HistoryID>::max());

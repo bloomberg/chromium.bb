@@ -23,6 +23,7 @@ static_library("app_modal") {
     "//base",
     "//base:i18n",
     "//components/strings",
+    "//components/url_formatter",
     "//content/public/browser",
     "//content/public/common",
     "//net",

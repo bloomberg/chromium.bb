@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "net/base/net_util.h"
+#include "components/url_formatter/url_formatter.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/text_elider.h"
 
@@ -138,9 +138,9 @@ const base::string16& NavigationItemImpl::GetTitleForDisplay(
   // Use the virtual URL first if any, and fall back on using the real URL.
   base::string16 title;
   if (!virtual_url_.is_empty()) {
-    title = net::FormatUrl(virtual_url_, languages);
+    title = url_formatter::FormatUrl(virtual_url_, languages);
   } else if (!url_.is_empty()) {
-    title = net::FormatUrl(url_, languages);
+    title = url_formatter::FormatUrl(url_, languages);
   }
 
   // For file:// URLs use the filename as the title, not the full path.

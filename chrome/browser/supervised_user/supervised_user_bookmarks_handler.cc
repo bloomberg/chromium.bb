@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 
 namespace {
 
@@ -187,7 +187,7 @@ void SupervisedUserBookmarksHandler::AddFoldersToTree() {
 void SupervisedUserBookmarksHandler::AddLinksToTree() {
   for (const auto& link : links_) {
     scoped_ptr<base::DictionaryValue> node(new base::DictionaryValue);
-    GURL url = url_fixer::FixupURL(link.url, std::string());
+    GURL url = url_formatter::FixupURL(link.url, std::string());
     if (!url.is_valid()) {
       LOG(WARNING) << "Got invalid URL: " << link.url;
       continue;

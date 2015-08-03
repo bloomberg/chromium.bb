@@ -1,7 +1,7 @@
 include_rules = [
   "+components/auto_login_parser",
   "+components/favicon/core",
-  "+components/secure_display",
   "+components/toolbar",
+  "+components/url_formatter",
   "-chrome/browser/ui/views",
 ]

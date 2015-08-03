@@ -42,7 +42,7 @@ check_targets = [
   "//components/pref_registry/*",
   "//components/undo/*",
   "//components/update_client/*",
-  "//components/url_fixer/*",
+  "//components/url_formatter/*",
   "//components/url_matcher/*",
   "//components/user_manager/*",
   "//components/user_prefs/*",

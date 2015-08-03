@@ -19,11 +19,11 @@
 #include "chrome/grit/locale_settings.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
-#include "net/base/net_util.h"
 #include "storage/common/quota/quota_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -93,14 +93,14 @@ int QuotaPermissionRequest::GetIconID() const {
 
 base::string16 QuotaPermissionRequest::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
-      (requested_quota_ > kRequestLargeQuotaThreshold ?
-          IDS_REQUEST_LARGE_QUOTA_INFOBAR_QUESTION :
-          IDS_REQUEST_QUOTA_INFOBAR_QUESTION),
-      net::FormatUrl(origin_url_, display_languages_,
-                     net::kFormatUrlOmitUsernamePassword |
-                     net::kFormatUrlOmitTrailingSlashOnBareHostname,
-                     net::UnescapeRule::SPACES, NULL, NULL, NULL)
-  );
+      (requested_quota_ > kRequestLargeQuotaThreshold
+           ? IDS_REQUEST_LARGE_QUOTA_INFOBAR_QUESTION
+           : IDS_REQUEST_QUOTA_INFOBAR_QUESTION),
+      url_formatter::FormatUrl(
+          origin_url_, display_languages_,
+          url_formatter::kFormatUrlOmitUsernamePassword |
+              url_formatter::kFormatUrlOmitTrailingSlashOnBareHostname,
+          net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
 }
 
 base::string16 QuotaPermissionRequest::GetMessageTextFragment() const {
@@ -219,14 +219,14 @@ base::string16 RequestQuotaInfoBarDelegate::GetMessageText() const {
   // If the site requested larger quota than this threshold, show a different
   // message to the user.
   return l10n_util::GetStringFUTF16(
-      (requested_quota_ > kRequestLargeQuotaThreshold ?
-          IDS_REQUEST_LARGE_QUOTA_INFOBAR_QUESTION :
-          IDS_REQUEST_QUOTA_INFOBAR_QUESTION),
-      net::FormatUrl(origin_url_, display_languages_,
-                     net::kFormatUrlOmitUsernamePassword |
-                     net::kFormatUrlOmitTrailingSlashOnBareHostname,
-                     net::UnescapeRule::SPACES, NULL, NULL, NULL)
-      );
+      (requested_quota_ > kRequestLargeQuotaThreshold
+           ? IDS_REQUEST_LARGE_QUOTA_INFOBAR_QUESTION
+           : IDS_REQUEST_QUOTA_INFOBAR_QUESTION),
+      url_formatter::FormatUrl(
+          origin_url_, display_languages_,
+          url_formatter::kFormatUrlOmitUsernamePassword |
+              url_formatter::kFormatUrlOmitTrailingSlashOnBareHostname,
+          net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
 }
 
 bool RequestQuotaInfoBarDelegate::Accept() {

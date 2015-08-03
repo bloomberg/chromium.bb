@@ -4,6 +4,7 @@ include_rules = [
   "+components/pref_registry",
   "+components/query_parser",
   "+components/startup_metric_utils",
+  "+components/url_formatter",
   "+grit/components_strings.h",
   "+jni",
   "+net/base",

@@ -6,7 +6,7 @@ include_rules = [
   "+components/policy/core",
   "+components/pref_registry",
   "+components/rappor",
-  "+components/url_fixer",
+  "+components/url_formatter",
   "+components/webdata",
   "+google_apis",
   "+grit/components_strings.h",

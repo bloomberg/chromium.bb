@@ -21,6 +21,7 @@
 #include "components/scheduler/child/web_scheduler_impl.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/child/database_util.h"
 #include "content/child/file_info_util.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
@@ -69,7 +70,6 @@
 #include "media/base/mime_util.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/filters/stream_parser_factory.h"
-#include "net/base/net_util.h"
 #include "storage/common/database/database_identifier.h"
 #include "storage/common/quota/quota_types.h"
 #include "third_party/WebKit/public/platform/WebBatteryStatusListener.h"
@@ -1033,7 +1033,7 @@ blink::WebCompositorSupport* RendererBlinkPlatformImpl::compositorSupport() {
 blink::WebString RendererBlinkPlatformImpl::convertIDNToUnicode(
     const blink::WebString& host,
     const blink::WebString& languages) {
-  return net::IDNToUnicode(host.utf8(), languages.utf8());
+  return url_formatter::IDNToUnicode(host.utf8(), languages.utf8());
 }
 
 //------------------------------------------------------------------------------

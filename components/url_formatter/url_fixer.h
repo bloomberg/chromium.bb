@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_URL_FIXER_URL_FIXER_H_
-#define COMPONENTS_URL_FIXER_URL_FIXER_H_
+#ifndef COMPONENTS_URL_FORMATTER_URL_FIXER_H_
+#define COMPONENTS_URL_FORMATTER_URL_FIXER_H_
 
 #include <string>
 
@@ -23,7 +23,7 @@ struct Parsed;
 // know are valid. For example, user typing in the URL bar or command line
 // options. This is NOT the place for converting between different types of URLs
 // or parsing them, see net_util.h for that.
-namespace url_fixer {
+namespace url_formatter {
 
 // Segments the given text string into parts of a URL. This is most useful for
 // schemes such as http, https, and ftp where |SegmentURL| will find many
@@ -82,6 +82,6 @@ bool IsEquivalentScheme(const std::string& scheme1, const std::string& scheme2);
 // For tests, we allow our idea of $HOME to be overriden by this variable.
 extern const char* home_directory_override;
 
-}  // namespace url_fixer
+}  // namespace url_formatter
 
-#endif  // COMPONENTS_URL_FIXER_URL_FIXER_H_
+#endif  // COMPONENTS_URL_FORMATTER_URL_FIXER_H_

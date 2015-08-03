@@ -4,6 +4,7 @@ include_rules = [
   "+components/keyed_service/core",
   "+components/plugins/common",
   "+components/pref_registry",
+  "+components/url_formatter",
   "+net/base",
   "+net/cookies",
 ]

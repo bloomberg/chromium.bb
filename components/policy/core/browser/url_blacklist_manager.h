@@ -37,7 +37,7 @@ namespace policy {
 // against this set. The filters are currently kept in memory.
 class POLICY_EXPORT URLBlacklist {
  public:
-  // This is meant to be bound to url_fixer::SegmentURL. See that function
+  // This is meant to be bound to url_formatter::SegmentURL. See that function
   // for documentation on the parameters and return value.
   typedef std::string (*SegmentURLCallback)(const std::string&, url::Parsed*);
 

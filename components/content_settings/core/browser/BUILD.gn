@@ -48,6 +48,7 @@ static_library("browser") {
     "//components/content_settings/core/common",
     "//components/plugins/common",
     "//components/pref_registry:pref_registry",
+    "//components/url_formatter",
     "//net",
     "//url",
   ]

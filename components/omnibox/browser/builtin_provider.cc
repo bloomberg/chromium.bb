@@ -12,7 +12,7 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/history_provider.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 
 const int BuiltinProvider::kRelevance = 860;
 
@@ -61,7 +61,7 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
       AddMatch(url, base::string16(), styles);
   } else {
     // Match input about: or |embedderAbout| URL input against builtin URLs.
-    GURL url = url_fixer::FixupURL(base::UTF16ToUTF8(text), std::string());
+    GURL url = url_formatter::FixupURL(base::UTF16ToUTF8(text), std::string());
     // BuiltinProvider doesn't know how to suggest valid ?query or #fragment
     // extensions to builtin URLs.
     if (url.SchemeIs(

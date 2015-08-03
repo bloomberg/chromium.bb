@@ -27,6 +27,7 @@
         'pref_registry',
         'query_parser',
         'startup_metric_utils',
+        'url_formatter/url_formatter.gyp:url_formatter',
       ],
       'sources': [
         'bookmarks/browser/base_bookmark_model_observer.cc',

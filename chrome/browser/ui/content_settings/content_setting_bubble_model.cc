@@ -29,7 +29,7 @@
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "components/secure_display/elide_url.h"
+#include "components/url_formatter/elide_url.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -275,7 +275,7 @@ bool ContentSettingSingleRadioGroup::settings_changed() const {
 // content type and setting the default value based on the content setting.
 void ContentSettingSingleRadioGroup::SetRadioGroup() {
   GURL url = web_contents()->GetURL();
-  base::string16 display_host = secure_display::FormatUrlForSecurityDisplay(
+  base::string16 display_host = url_formatter::FormatUrlForSecurityDisplay(
       url, profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
   if (display_host.empty())
     display_host = base::ASCIIToUTF16(url.spec());
@@ -719,7 +719,7 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
   radio_group.url = url;
 
   base::string16 display_host_utf16 =
-      secure_display::FormatUrlForSecurityDisplay(
+      url_formatter::FormatUrlForSecurityDisplay(
           url, profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
   std::string display_host(base::UTF16ToUTF8(display_host_utf16));
   if (display_host.empty())

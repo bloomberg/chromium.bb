@@ -24,7 +24,7 @@ static_library("browser") {
     "//components/keyed_service/core",
     "//components/pref_registry",
     "//components/strings",
-    "//components/url_fixer",
+    "//components/url_formatter",
     "//net",
     "//url",
   ]

@@ -1,0 +1,11 @@
+include_rules = [
+  # This is a shared component (Mandoline, iOS, content), and as such, MUST NOT
+  # depend on content or other components that do.
+  "-components/html_viewer",
+  "-content",
+  "-ios",
+  "-mandoline",
+
+  "+net",
+  "+ui/gfx",
+]

@@ -10,7 +10,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
-#include "net/base/net_util.h"
+#include "components/url_formatter/url_formatter.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace x509_certificate_model {
@@ -21,7 +21,7 @@ std::string ProcessIDN(const std::string& input) {
   input16.reserve(input.length());
   input16.insert(input16.end(), input.begin(), input.end());
 
-  base::string16 output16 = net::IDNToUnicode(input, std::string());
+  base::string16 output16 = url_formatter::IDNToUnicode(input, std::string());
   if (input16 == output16)
     return input;  // Input did not contain any encoded data.
 

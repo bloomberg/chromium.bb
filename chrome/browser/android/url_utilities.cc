@@ -5,7 +5,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "components/google/core/browser/google_util.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "jni/UrlUtilities_jni.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
@@ -80,7 +80,7 @@ static jstring FixupUrl(JNIEnv* env,
                         jstring url,
                         jstring optional_desired_tld) {
   DCHECK(url);
-  GURL fixed_url = url_fixer::FixupURL(
+  GURL fixed_url = url_formatter::FixupURL(
       base::android::ConvertJavaStringToUTF8(env, url),
       optional_desired_tld
           ? base::android::ConvertJavaStringToUTF8(env, optional_desired_tld)

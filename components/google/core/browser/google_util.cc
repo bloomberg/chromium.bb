@@ -15,7 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/google/core/browser/google_switches.h"
 #include "components/google/core/browser/google_url_tracker.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
@@ -153,7 +153,7 @@ GURL CommandLineGoogleBaseURL() {
           switches::kGoogleBaseURL));
   if (current_switch_value != switch_value) {
     switch_value = current_switch_value;
-    base_url = url_fixer::FixupURL(switch_value, std::string());
+    base_url = url_formatter::FixupURL(switch_value, std::string());
     if (!base_url.is_valid() || base_url.has_query() || base_url.has_ref())
       base_url = GURL();
   }

@@ -32,7 +32,7 @@
 #include "components/search_engines/template_url_service_client.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/search_engines/util.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sync/api/sync_change.h"
@@ -1725,8 +1725,8 @@ void TemplateURLService::AddTabToSearchVisit(const TemplateURL& t_url) {
   if (!client_)
     return;
 
-  GURL url(
-      url_fixer::FixupURL(base::UTF16ToUTF8(t_url.keyword()), std::string()));
+  GURL url(url_formatter::FixupURL(base::UTF16ToUTF8(t_url.keyword()),
+                                   std::string()));
   if (!url.is_valid())
     return;
 

@@ -61,7 +61,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/search_engines/util.h"
 #include "components/signin/core/common/profile_management_switches.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_controller.h"
@@ -473,7 +473,7 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     // 'about' if the browser was started with a about:foo argument.
     if (!url.is_valid()) {
       base::ThreadRestrictions::ScopedAllowIO allow_io;
-      url = url_fixer::FixupRelativeFile(cur_dir, param);
+      url = url_formatter::FixupRelativeFile(cur_dir, param);
     }
     // Exclude dangerous schemes.
     if (url.is_valid()) {

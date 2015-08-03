@@ -14,8 +14,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "components/secure_display/elide_url.h"
-#include "net/base/net_util.h"
+#include "components/url_formatter/elide_url.h"
+#include "components/url_formatter/url_formatter.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "ui/base/theme_provider.h"
@@ -695,7 +695,7 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::string& languages) {
   int text_width = static_cast<int>(popup_bounds.width() -
       (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding - 1);
   url_text_ =
-      secure_display::ElideUrl(url, gfx::FontList(), text_width, languages);
+      url_formatter::ElideUrl(url, gfx::FontList(), text_width, languages);
 
   // An URL is always treated as a left-to-right string. On right-to-left UIs
   // we need to explicitly mark the URL as LTR to make sure it is displayed
@@ -711,7 +711,8 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::string& languages) {
     // size (shrinking or expanding). Otherwise delay.
     if (is_expanded_ && !url.is_empty()) {
       ExpandBubble();
-    } else if (net::FormatUrl(url, languages).length() > url_text_.length()) {
+    } else if (url_formatter::FormatUrl(url, languages).length() >
+               url_text_.length()) {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::Bind(&StatusBubbleViews::ExpandBubble,
                                 expand_timer_factory_.GetWeakPtr()),
@@ -858,7 +859,7 @@ void StatusBubbleViews::ExpandBubble() {
   gfx::Rect popup_bounds = popup_->GetWindowBoundsInScreen();
   int max_status_bubble_width = GetMaxStatusBubbleWidth();
   const gfx::FontList font_list;
-  url_text_ = secure_display::ElideUrl(url_, font_list, max_status_bubble_width,
+  url_text_ = url_formatter::ElideUrl(url_, font_list, max_status_bubble_width,
                                        languages_);
   int expanded_bubble_width =
       std::max(GetStandardStatusBubbleWidth(),
