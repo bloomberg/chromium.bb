@@ -25,10 +25,13 @@ public:
     void set{{setting.name|upper_first}}({{setting.type|to_passing_type}} {{setting.name}});
     {% endfor %}
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_page);
+    }
 
 private:
-    Page* m_page;
+    RawPtrWillBeMember<Page> m_page;
 
     {% for setting in settings if setting.type|to_idl_type %}
     {{setting.type}} m_{{setting.name}};
