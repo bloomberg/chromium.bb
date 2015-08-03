@@ -11,6 +11,7 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/view_targeter_delegate.h"
+#include "ui/views/views_switches.h"
 #include "ui/views/widget/root_view.h"
 
 namespace views {
@@ -399,7 +400,13 @@ TEST_F(ViewTargeterTest, TargetContentsAndRootView) {
   center_point = bounding_box.CenterPoint();
   tap = GestureEventForTest(details);
 
-  EXPECT_EQ(content, targeter->FindTargetForEvent(root_view, &tap));
+  // This only applies if rect-based targeting is enabled.
+  if (views::switches::IsRectBasedTargetingEnabled()) {
+    EXPECT_EQ(content, targeter->FindTargetForEvent(root_view, &tap));
+  } else {
+    EXPECT_EQ(widget.GetRootView(),
+              targeter->FindTargetForEvent(root_view, &tap));
+  }
 
   // A gesture event not overlapping the contents view by at least
   // 60% and not having its center within the contents view should
