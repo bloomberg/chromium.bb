@@ -441,13 +441,13 @@ namespace WTF {
         template<typename HashTranslator, typename T, typename Extra> AddResult add(const T& key, const Extra&);
         template<typename HashTranslator, typename T, typename Extra> AddResult addPassingHashCode(const T& key, const Extra&);
 
-        iterator find(KeyPeekInType key) { return find<IdentityTranslatorType>(key); }
-        const_iterator find(KeyPeekInType key) const { return find<IdentityTranslatorType>(key); }
-        bool contains(KeyPeekInType key) const { return contains<IdentityTranslatorType>(key); }
+        iterator find(KeyPeekInType);
+        const_iterator find(KeyPeekInType) const;
+        bool contains(KeyPeekInType key) const { return lookup(key); }
 
         template<typename HashTranslator, typename T> iterator find(const T&);
         template<typename HashTranslator, typename T> const_iterator find(const T&) const;
-        template<typename HashTranslator, typename T> bool contains(const T&) const;
+        template<typename HashTranslator, typename T> bool contains(const T& key) const { return lookup<HashTranslator>(key); }
 
         void remove(KeyPeekInType);
         void remove(iterator);
@@ -459,6 +459,7 @@ namespace WTF {
         static bool isEmptyOrDeletedBucket(const ValueType& value) { return HashTableHelper<ValueType, Extractor, KeyTraits>:: isEmptyOrDeletedBucket(value); }
 
         ValueType* lookup(KeyPeekInType key) { return lookup<IdentityTranslatorType, KeyPeekInType>(key); }
+        const ValueType* lookup(KeyPeekInType key) const { return lookup<IdentityTranslatorType, KeyPeekInType>(key); }
         template<typename HashTranslator, typename T> ValueType* lookup(T);
         template<typename HashTranslator, typename T> const ValueType* lookup(T) const;
 
@@ -898,6 +899,20 @@ namespace WTF {
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    inline auto HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::find(KeyPeekInType key) -> iterator {
+        if (ValueType* entry = lookup(key))
+            return makeKnownGoodIterator(entry);
+        return end();
+    }
+
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    inline auto HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::find(KeyPeekInType key) const -> const_iterator {
+        if (ValueType* entry = const_cast<HashTable*>(this)->lookup(key))
+            return makeKnownGoodConstIterator(entry);
+        return end();
+    }
+
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     template <typename HashTranslator, typename T>
     inline typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::iterator HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::find(const T& key)
     {
@@ -917,13 +932,6 @@ namespace WTF {
             return end();
 
         return makeKnownGoodConstIterator(entry);
-    }
-
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
-    template <typename HashTranslator, typename T>
-    bool HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::contains(const T& key) const
-    {
-        return const_cast<HashTable*>(this)->lookup<HashTranslator>(key);
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
