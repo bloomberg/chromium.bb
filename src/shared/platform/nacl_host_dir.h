@@ -76,6 +76,14 @@ extern int NaClHostDirRewind(struct NaClHostDir *d);
  */
 extern int NaClHostDirClose(struct NaClHostDir  *d);
 
+extern int NaClHostDirFchdir(struct NaClHostDir *d) NACL_WUR;
+
+extern int NaClHostDirFchmod(struct NaClHostDir *d, int mode) NACL_WUR;
+
+extern int NaClHostDirFsync(struct NaClHostDir *d) NACL_WUR;
+
+extern int NaClHostDirFdatasync(struct NaClHostDir *d) NACL_WUR;
+
 EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_HOST_DIR_H__ */

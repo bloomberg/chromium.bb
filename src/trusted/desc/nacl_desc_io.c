@@ -295,6 +295,32 @@ static int NaClDescIoDescFstat(struct NaClDesc         *vself,
   return NaClAbiStatHostDescStatXlateCtor(statbuf, &hstatbuf);
 }
 
+static int NaClDescIoDescFchmod(struct NaClDesc *vself,
+                                int             mode) {
+  struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
+
+  return NaClHostDescFchmod(self->hd, mode);
+}
+
+static int NaClDescIoDescFsync(struct NaClDesc *vself) {
+  struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
+
+  return NaClHostDescFsync(self->hd);
+}
+
+static int NaClDescIoDescFdatasync(struct NaClDesc *vself) {
+  struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
+
+  return NaClHostDescFdatasync(self->hd);
+}
+
+static int NaClDescIoDescFtruncate(struct NaClDesc  *vself,
+                                   nacl_abi_off_t   length) {
+  struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
+
+  return NaClHostDescFtruncate(self->hd, length);
+}
+
 static int32_t NaClDescIoIsatty(struct NaClDesc *vself) {
   struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
 
@@ -357,6 +383,11 @@ static struct NaClDescVtbl const kNaClDescIoDescVtbl = {
   NaClDescIoDescPRead,
   NaClDescIoDescPWrite,
   NaClDescIoDescFstat,
+  NaClDescFchdirNotImplemented,
+  NaClDescIoDescFchmod,
+  NaClDescIoDescFsync,
+  NaClDescIoDescFdatasync,
+  NaClDescIoDescFtruncate,
   NaClDescGetdentsNotImplemented,
   NaClDescIoDescExternalizeSize,
   NaClDescIoDescExternalize,

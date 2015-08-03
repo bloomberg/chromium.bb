@@ -44,7 +44,10 @@ Default(inputs)
 node = env.CommandSelLdrTestNacl(
     'syscalls_test.out',
     syscalls_nexe,
-    args=[env.File('file_ok_rdwr.txt')],
+    # Arg 1) Test file name
+    # Arg 2) 'w' if running on windows, else 'p'.
+    args=[env.File('file_ok_rdwr.txt'),
+          'w' if env.Bit('host_windows') else 'p'],
     sel_ldr_flags=['-a'])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_syscall_test')
 

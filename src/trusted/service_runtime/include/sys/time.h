@@ -11,6 +11,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_TIME_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_TIME_H_
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 
 #ifdef __cplusplus
@@ -31,10 +32,26 @@ typedef int32_t   nacl_abi_suseconds_t;
 typedef long int  nacl_abi_clock_t;  /* to be deprecated */
 #endif
 
+/*
+ * Without this 8-byte alignment, it is possible that the nacl_abi_timeval
+ * struct is 12 bytes. However, the equivalent untrusted version of timeval
+ * is aligned to 16 bytes. For the utimes function, where an array of
+ * "struct timeval" is turned into an array of "struct nacl_abi_timeval",
+ * this misalignment can cause an untrusted 32 byte array to be interpreted
+ * as a 24 byte trusted array, which is incorrect. This alignment causes
+ * the trusted array to be correctly considered 32 bytes in length.
+ */
+#if NACL_WINDOWS
+__declspec(align(8))
+#endif
 struct nacl_abi_timeval {
   nacl_abi_time_t      nacl_abi_tv_sec;
   nacl_abi_suseconds_t nacl_abi_tv_usec;
+#if NACL_WINDOWS
 };
+#else
+} __attribute__((aligned(8)));
+#endif
 
 /* obsolete.  should not be used */
 struct nacl_abi_timezone {

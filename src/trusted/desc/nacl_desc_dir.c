@@ -142,6 +142,31 @@ static int NaClDescDirDescFstat(struct NaClDesc          *vself,
   return 0;
 }
 
+static int NaClDescDirDescFchdir(struct NaClDesc *vself) {
+  struct NaClDescDirDesc *self = (struct NaClDescDirDesc *) vself;
+
+  return NaClHostDirFchdir(self->hd);
+}
+
+static int NaClDescDirDescFchmod(struct NaClDesc  *vself,
+                                 int              mode) {
+  struct NaClDescDirDesc *self = (struct NaClDescDirDesc *) vself;
+
+  return NaClHostDirFchmod(self->hd, mode);
+}
+
+static int NaClDescDirDescFsync(struct NaClDesc *vself) {
+  struct NaClDescDirDesc *self = (struct NaClDescDirDesc *) vself;
+
+  return NaClHostDirFsync(self->hd);
+}
+
+static int NaClDescDirDescFdatasync(struct NaClDesc *vself) {
+  struct NaClDescDirDesc *self = (struct NaClDescDirDesc *) vself;
+
+  return NaClHostDirFdatasync(self->hd);
+}
+
 static struct NaClDescVtbl const kNaClDescDirDescVtbl = {
   {
     NaClDescDirDescDtor,
@@ -154,6 +179,11 @@ static struct NaClDescVtbl const kNaClDescDirDescVtbl = {
   NaClDescPReadNotImplemented,
   NaClDescPWriteNotImplemented,
   NaClDescDirDescFstat,
+  NaClDescDirDescFchdir,
+  NaClDescDirDescFchmod,
+  NaClDescDirDescFsync,
+  NaClDescDirDescFdatasync,
+  NaClDescFtruncateNotImplemented,
   NaClDescDirDescGetdents,
   NaClDescExternalizeSizeNotImplemented,
   NaClDescExternalizeNotImplemented,

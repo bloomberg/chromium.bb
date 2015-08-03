@@ -31,7 +31,6 @@
 #define NACL_sys_fstat                  17
 #define NACL_sys_chmod                  18
 #define NACL_sys_isatty                 19
-/* no fchmod emulation on windows */
 
 #define NACL_sys_brk                    20
 #define NACL_sys_mmap                   21
@@ -42,6 +41,10 @@
 #define NACL_sys_mprotect               24
 
 #define NACL_sys_list_mappings          25
+
+#define NACL_sys_fsync                  26
+#define NACL_sys_fdatasync              27
+#define NACL_sys_fchmod                 28
 
 #define NACL_sys_exit                   30
 #define NACL_sys_getpid                 31
@@ -59,6 +62,9 @@
 #define NACL_sys_chdir                  47
 #define NACL_sys_getcwd                 48
 #define NACL_sys_unlink                 49
+#define NACL_sys_fchdir                 50
+
+#define NACL_sys_ftruncate              52
 
 /* 50-58 previously used for multimedia syscalls */
 

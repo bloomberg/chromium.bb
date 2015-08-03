@@ -83,6 +83,17 @@ typedef int (*TYPE_nacl_lseek) (int desc,
 
 typedef int (*TYPE_nacl_stat) (const char *file, struct stat *st);
 
+typedef int (*TYPE_nacl_fchdir) (int fd);
+
+typedef int (*TYPE_nacl_fchmod) (int fd, mode_t mode);
+
+typedef int (*TYPE_nacl_fsync) (int fd);
+
+typedef int (*TYPE_nacl_fdatasync) (int fd);
+
+typedef int (*TYPE_nacl_ftruncate) (int fd,
+                                    off_t *length); /* 64 bit value */
+
 typedef int (*TYPE_nacl_pread) (int fd, void *buf, size_t count, off_t *offset);
 
 typedef int (*TYPE_nacl_pwrite) (int fd,

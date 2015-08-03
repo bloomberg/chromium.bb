@@ -18,6 +18,7 @@
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/trusted/service_runtime/include/sys/time.h"
 
 #if NACL_LINUX || NACL_OSX
 # include "native_client/src/shared/platform/posix/nacl_host_desc_types.h"
@@ -64,7 +65,6 @@ typedef struct stat nacl_host_stat_t;
 typedef struct _stati64 nacl_host_stat_t;
 # define NACL_HOST_FSTAT64 _fstat64
 # define NACL_HOST_STAT64 _stati64
-# define NACL_HOST_LSTAT64 _lstati64
 #elif defined __native_client__
 /* nacl_host_stat_t not exposed to NaCl module code */
 #else
@@ -359,11 +359,12 @@ extern int NaClHostDescRename(const char *oldpath,
 /*
  * Create a new symlink called 'newpath', pointing to 'oldpath'.
  */
-extern int NaClHostDescSymlink(const char *oldpath, const char *newpath);
+extern int NaClHostDescSymlink(const char *oldpath,
+                               const char *newpath) NACL_WUR;
 
-extern int NaClHostDescChmod(const char *path, nacl_abi_mode_t amode);
+extern int NaClHostDescChmod(const char *path, nacl_abi_mode_t amode) NACL_WUR;
 
-extern int NaClHostDescAccess(const char *path, int amode);
+extern int NaClHostDescAccess(const char *path, int amode) NACL_WUR;
 
 /*
  * Find the target of a symlink.
@@ -372,6 +373,19 @@ extern int NaClHostDescAccess(const char *path, int amode);
  * Returns -1 and sets errno on error.
  */
 extern int NaClHostDescReadlink(const char *path, char *buf, size_t bufsize);
+
+extern int NaClHostDescUtimes(const char *filename,
+                              const struct nacl_abi_timeval *times) NACL_WUR;
+
+extern int NaClHostDescFchmod(struct NaClHostDesc *d,
+                              nacl_abi_mode_t mode) NACL_WUR;
+
+extern int NaClHostDescFsync(struct NaClHostDesc *d) NACL_WUR;
+
+extern int NaClHostDescFdatasync(struct NaClHostDesc *d) NACL_WUR;
+
+extern int NaClHostDescFtruncate(struct NaClHostDesc *d,
+                                 nacl_off64_t length) NACL_WUR;
 
 /*
  * Maps NACI_ABI_ versions of the mmap prot argument to host ABI versions

@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <utime.h>
 
 #include "native_client/src/include/build_config.h"
 
@@ -718,4 +719,70 @@ int NaClHostDescReadlink(const char *path, char *buf, size_t bufsize) {
   if (retval < 0)
     return -NaClXlateErrno(errno);
   return retval;
+}
+
+int NaClHostDescUtimes(const char *filename,
+                       const struct nacl_abi_timeval *times) {
+  struct timeval host_times[2];
+  if (times != NULL) {
+    host_times[0].tv_sec = times[0].nacl_abi_tv_sec;
+    host_times[0].tv_usec = times[0].nacl_abi_tv_usec;
+    host_times[1].tv_sec = times[1].nacl_abi_tv_sec;
+    host_times[1].tv_usec = times[1].nacl_abi_tv_usec;
+  }
+  if (-1 == utimes(filename, (times != NULL ? host_times : NULL))) {
+    return -NaClXlateErrno(errno);
+  }
+  return 0;
+}
+
+int NaClHostDescFchdir(struct NaClHostDesc *d) {
+  NaClHostDescCheckValidity("NaClHostDescFchdir", d);
+  if (-1 == fchdir(d->d)) {
+    return -NaClXlateErrno(errno);
+  }
+  return 0;
+}
+
+int NaClHostDescFchmod(struct NaClHostDesc *d, nacl_abi_mode_t mode) {
+  NaClHostDescCheckValidity("NaClHostDescFchmod", d);
+  if (-1 == fchmod(d->d, NaClMapMode(mode))) {
+    return -NaClXlateErrno(errno);
+  }
+  return 0;
+}
+
+int NaClHostDescFsync(struct NaClHostDesc *d) {
+  NaClHostDescCheckValidity("NaClHostDescFsync", d);
+  if (-1 == fsync(d->d)) {
+    return -NaClXlateErrno(errno);
+  }
+  return 0;
+}
+
+int NaClHostDescFdatasync(struct NaClHostDesc *d) {
+  NaClHostDescCheckValidity("NaClHostDescFdatasync", d);
+  /* fdatasync does not exist for osx. */
+#if NACL_OSX
+  if (-1 == fsync(d->d)) {
+#else
+  if (-1 == fdatasync(d->d)) {
+#endif
+    return -NaClXlateErrno(errno);
+  }
+  return 0;
+}
+
+int NaClHostDescFtruncate(struct NaClHostDesc *d, nacl_off64_t length) {
+  NaClHostDescCheckValidity("NaClHostDescFtruncate", d);
+#if NACL_LINUX
+  if (-1 == ftruncate64(d->d, length)) {
+#elif NACL_OSX
+  if (-1 == ftruncate(d->d, length)) {
+#else
+# error Unsupported platform
+#endif
+    return -NaClXlateErrno(errno);
+  }
+  return 0;
 }

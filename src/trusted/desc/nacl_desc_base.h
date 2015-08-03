@@ -219,6 +219,18 @@ struct NaClDescVtbl {
   int (*Fstat)(struct NaClDesc      *vself,
                struct nacl_abi_stat *statbuf);
 
+  int (*Fchdir)(struct NaClDesc *vself) NACL_WUR;
+
+  int (*Fchmod)(struct NaClDesc *vself,
+                int             mode) NACL_WUR;
+
+  int (*Fsync)(struct NaClDesc *vself) NACL_WUR;
+
+  int (*Fdatasync)(struct NaClDesc *vself) NACL_WUR;
+
+  int (*Ftruncate)(struct NaClDesc  *vself,
+                   nacl_abi_off_t   length) NACL_WUR;
+
   /*
    * Directory access support.  Directories require support for getdents.
    */
@@ -585,6 +597,18 @@ ssize_t NaClDescPWriteNotImplemented(struct NaClDesc *vself,
 
 int NaClDescFstatNotImplemented(struct NaClDesc       *vself,
                                 struct nacl_abi_stat  *statbuf);
+
+int NaClDescFchdirNotImplemented(struct NaClDesc *vself);
+
+int NaClDescFchmodNotImplemented(struct NaClDesc *vself,
+                                 int             mode);
+
+int NaClDescFsyncNotImplemented(struct NaClDesc *vself);
+
+int NaClDescFdatasyncNotImplemented(struct NaClDesc *vself);
+
+int NaClDescFtruncateNotImplemented(struct NaClDesc  *vself,
+                                    nacl_abi_off_t   length);
 
 ssize_t NaClDescGetdentsNotImplemented(struct NaClDesc  *vself,
                                        void             *dirp,

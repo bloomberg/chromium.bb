@@ -428,3 +428,134 @@ int32_t NaClSysFstat(struct NaClAppThread *natp,
 cleanup:
   return retval;
 }
+
+int32_t NaClSysFchdir(struct NaClAppThread *natp,
+                      int                  d) {
+  struct NaClApp  *nap = natp->nap;
+  struct NaClDesc *ndp;
+  int32_t         retval = -NACL_ABI_EINVAL;
+
+  NaClLog(3,
+          ("Entered NaClSysFchdir(0x%08"NACL_PRIxPTR", %d)\n"),
+          (uintptr_t) natp, d);
+
+  ndp = NaClAppGetDesc(nap, d);
+  if (NULL == ndp) {
+    retval = -NACL_ABI_EBADF;
+    goto cleanup;
+  }
+
+  retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
+            Fchdir)(ndp);
+
+  NaClDescUnref(ndp);
+cleanup:
+  return retval;
+}
+
+int32_t NaClSysFchmod(struct NaClAppThread *natp,
+                      int                  d,
+                      int                  mode) {
+  struct NaClApp  *nap = natp->nap;
+  struct NaClDesc *ndp;
+  int32_t         retval = -NACL_ABI_EINVAL;
+
+  NaClLog(3,
+          ("Entered NaClSysFchmod(0x%08"NACL_PRIxPTR", %d, 0x%x)\n"),
+          (uintptr_t) natp, d, mode);
+
+  ndp = NaClAppGetDesc(nap, d);
+  if (NULL == ndp) {
+    retval = -NACL_ABI_EBADF;
+    goto cleanup;
+  }
+
+  retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
+            Fchmod)(ndp, mode);
+
+  NaClDescUnref(ndp);
+cleanup:
+  return retval;
+}
+
+int32_t NaClSysFsync(struct NaClAppThread *natp,
+                     int                  d) {
+  struct NaClApp  *nap = natp->nap;
+  struct NaClDesc *ndp;
+  int32_t         retval = -NACL_ABI_EINVAL;
+
+  NaClLog(3,
+          ("Entered NaClSysFsync(0x%08"NACL_PRIxPTR", %d)\n"),
+          (uintptr_t) natp, d);
+
+  ndp = NaClAppGetDesc(nap, d);
+  if (NULL == ndp) {
+    retval = -NACL_ABI_EBADF;
+    goto cleanup;
+  }
+
+  retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
+            Fsync)(ndp);
+
+  NaClDescUnref(ndp);
+cleanup:
+  return retval;
+}
+
+int32_t NaClSysFdatasync(struct NaClAppThread *natp,
+                         int                  d) {
+  struct NaClApp  *nap = natp->nap;
+  struct NaClDesc *ndp;
+  int32_t         retval = -NACL_ABI_EINVAL;
+
+  NaClLog(3,
+          ("Entered NaClSysFdatasync(0x%08"NACL_PRIxPTR", %d)\n"),
+          (uintptr_t) natp, d);
+
+  ndp = NaClAppGetDesc(nap, d);
+  if (NULL == ndp) {
+    retval = -NACL_ABI_EBADF;
+    goto cleanup;
+  }
+
+  retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
+            Fdatasync)(ndp);
+
+  NaClDescUnref(ndp);
+cleanup:
+  return retval;
+}
+
+int32_t NaClSysFtruncate(struct NaClAppThread *natp,
+                         int                  d,
+                         uint32_t             lengthp) {
+  struct NaClApp  *nap = natp->nap;
+  struct NaClDesc *ndp;
+  nacl_abi_off_t  length;
+  int32_t         retval = -NACL_ABI_EINVAL;
+
+  NaClLog(3,
+          ("Entered NaClSysFtruncate(0x%08"NACL_PRIxPTR", %d,"
+           " 0x%"NACL_PRIx32")\n"),
+          (uintptr_t) natp, d, lengthp);
+
+  ndp = NaClAppGetDesc(nap, d);
+  if (NULL == ndp) {
+    retval = -NACL_ABI_EBADF;
+    goto cleanup;
+  }
+  if (!NaClCopyInFromUser(nap, &length, lengthp, sizeof length)) {
+    retval = -NACL_ABI_EFAULT;
+    goto cleanup_unref;
+  }
+  NaClLog(4, "length 0x%08"NACL_PRIx64"\n", (uint64_t) length);
+
+
+  retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
+            Ftruncate)(ndp, length);
+
+cleanup_unref:
+  NaClDescUnref(ndp);
+cleanup:
+  return retval;
+}

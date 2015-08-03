@@ -388,6 +388,11 @@ static struct NaClDescVtbl const kNaClDescImcConnectedDescVtbl = {
   NaClDescPReadNotImplemented,
   NaClDescPWriteNotImplemented,
   NaClDescFstatNotImplemented,
+  NaClDescFchdirNotImplemented,
+  NaClDescFchmodNotImplemented,
+  NaClDescFsyncNotImplemented,
+  NaClDescFdatasyncNotImplemented,
+  NaClDescFtruncateNotImplemented,
   NaClDescGetdentsNotImplemented,
   NaClDescExternalizeSizeNotImplemented,
   NaClDescExternalizeNotImplemented,
@@ -428,6 +433,11 @@ static struct NaClDescVtbl const kNaClDescImcDescVtbl = {
   NaClDescPReadNotImplemented,
   NaClDescPWriteNotImplemented,
   NaClDescImcDescFstat,  /* diff */
+  NaClDescFchdirNotImplemented,
+  NaClDescFchmodNotImplemented,
+  NaClDescFsyncNotImplemented,
+  NaClDescFdatasyncNotImplemented,
+  NaClDescFtruncateNotImplemented,
   NaClDescGetdentsNotImplemented,
   NaClDescExternalizeSizeNotImplemented,
   NaClDescExternalizeNotImplemented,
@@ -468,6 +478,11 @@ static struct NaClDescVtbl const kNaClDescXferableDataDescVtbl = {
   NaClDescPReadNotImplemented,
   NaClDescPWriteNotImplemented,
   NaClDescXferableDataDescFstat,  /* diff */
+  NaClDescFchdirNotImplemented,
+  NaClDescFchmodNotImplemented,
+  NaClDescFsyncNotImplemented,
+  NaClDescFdatasyncNotImplemented,
+  NaClDescFtruncateNotImplemented,
   NaClDescGetdentsNotImplemented,
   NaClDescXferableDataDescExternalizeSize,  /* diff */
   NaClDescXferableDataDescExternalize,  /* diff */

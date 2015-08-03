@@ -93,6 +93,16 @@ void _start(void *info);
 static __thread void *g_tls_value;
 
 /*
+ * TODO(smklein): Once these decls are added to unistd.h, remove these externs.
+ */
+extern int fchdir(int fd);
+extern int fchmod(int fd, mode_t mode);
+extern int fsync(int fd);
+extern int fdatasync(int fd);
+extern int ftruncate(int fd, off_t length);
+extern int utimes(const char *filename, const struct timeval *times);
+
+/*
  * The IRT functions in irt.h are declared as taking "struct timespec"
  * and "struct timeval" pointers, but these are really "struct
  * nacl_abi_timespec" and "struct nacl_abi_timeval" pointers in this
@@ -517,6 +527,30 @@ static int irt_chdir(const char *pathname) {
   return check_error(chdir(pathname));
 }
 
+static int irt_fchdir(int fd) {
+  return check_error(fchdir(fd));
+}
+
+static int irt_fchmod(int fd, mode_t mode) {
+  return check_error(fchmod(fd, mode));
+}
+
+static int irt_fsync(int fd) {
+  return check_error(fsync(fd));
+}
+
+static int irt_fdatasync(int fd) {
+  return check_error(fdatasync(fd));
+}
+
+static int irt_ftruncate(int fd, nacl_irt_off_t length) {
+  return check_error(ftruncate(fd, length));
+}
+
+static int irt_utimes(const char *filename, const struct timeval *times) {
+  return check_error(utimes(filename, times));
+}
+
 static int irt_getcwd(char *pathname, size_t len) {
   if (getcwd(pathname, len) == NULL)
     return errno;
@@ -584,6 +618,22 @@ const struct nacl_irt_basic nacl_irt_basic = {
 };
 
 DEFINE_STUB(getdents)
+const struct nacl_irt_dev_fdio_v0_2 nacl_irt_dev_fdio_v0_2 = {
+  irt_close,
+  irt_dup,
+  irt_dup2,
+  irt_read,
+  irt_write,
+  irt_seek,
+  irt_fstat,
+  USE_STUB(nacl_irt_dev_fdio_v0_2, getdents),
+  irt_fchdir,
+  irt_fchmod,
+  irt_fsync,
+  irt_fdatasync,
+  irt_ftruncate,
+};
+
 const struct nacl_irt_fdio nacl_irt_fdio = {
   irt_close,
   irt_dup,
@@ -637,7 +687,6 @@ const struct nacl_irt_clock nacl_irt_clock = {
 };
 #endif
 
-DEFINE_STUB(utimes)
 const struct nacl_irt_dev_filename nacl_irt_dev_filename = {
   irt_open,
   irt_stat,
@@ -654,7 +703,7 @@ const struct nacl_irt_dev_filename nacl_irt_dev_filename = {
   irt_chmod,
   irt_access,
   irt_readlink,
-  USE_STUB(nacl_irt_dev_filename, utimes),
+  irt_utimes,
 };
 
 const struct nacl_irt_dev_getpid nacl_irt_dev_getpid = {
@@ -692,6 +741,8 @@ static int irt_dev_filter(void) {
 
 static const struct nacl_irt_interface irt_interfaces[] = {
   { NACL_IRT_BASIC_v0_1, &nacl_irt_basic, sizeof(nacl_irt_basic), NULL },
+  { NACL_IRT_DEV_FDIO_v0_2, &nacl_irt_dev_fdio_v0_2,
+    sizeof(nacl_irt_dev_fdio_v0_2), NULL },
   { NACL_IRT_FDIO_v0_1, &nacl_irt_fdio, sizeof(nacl_irt_fdio), NULL },
   { NACL_IRT_MEMORY_v0_3, &nacl_irt_memory, sizeof(nacl_irt_memory), NULL },
   { NACL_IRT_TLS_v0_1, &nacl_irt_tls, sizeof(nacl_irt_tls), NULL },

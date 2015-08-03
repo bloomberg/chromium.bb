@@ -361,6 +361,31 @@ int chdir(const char *path) {
   return errno_value_call(linux_syscall1(__NR_chdir, (uintptr_t) path));
 }
 
+int fchdir(int fd) {
+  return errno_value_call(linux_syscall1(__NR_fchdir, fd));
+}
+
+int fchmod(int fd, mode_t mode) {
+  return errno_value_call(linux_syscall2(__NR_fchmod, fd, mode));
+}
+
+int fsync(int fd) {
+  return errno_value_call(linux_syscall1(__NR_fsync, fd));
+}
+
+int fdatasync(int fd) {
+  return errno_value_call(linux_syscall1(__NR_fdatasync, fd));
+}
+
+int ftruncate(int fd, off_t length) {
+  return errno_value_call(linux_syscall2(__NR_ftruncate, fd, length));
+}
+
+int utimes(const char *filename, const struct timeval *times) {
+  return errno_value_call(linux_syscall2(__NR_utimes, (uintptr_t) filename,
+        (uintptr_t) times));
+}
+
 char *__getcwd_without_malloc(char *buffer, size_t len) {
   int rc = errno_value_call(
       linux_syscall2(__NR_getcwd, (uintptr_t) buffer, len));

@@ -361,6 +361,52 @@ int NaClDescFstatNotImplemented(struct NaClDesc         *vself,
   return -NACL_ABI_EINVAL;
 }
 
+int NaClDescFchdirNotImplemented(struct NaClDesc *vself) {
+  NaClLog(LOG_ERROR,
+          "Fchdir method is not implemented for object of type %s\n",
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
+  return -NACL_ABI_EINVAL;
+}
+
+int NaClDescFchmodNotImplemented(struct NaClDesc *vself,
+                                 int             mode) {
+  UNREFERENCED_PARAMETER(mode);
+
+  NaClLog(LOG_ERROR,
+          "Fchmod method is not implemented for object of type %s\n",
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
+  return -NACL_ABI_EINVAL;
+}
+
+int NaClDescFsyncNotImplemented(struct NaClDesc *vself) {
+  NaClLog(LOG_ERROR,
+          "Fsync method is not implemented for object of type %s\n",
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
+  return -NACL_ABI_EINVAL;
+}
+
+int NaClDescFdatasyncNotImplemented(struct NaClDesc *vself) {
+  NaClLog(LOG_ERROR,
+          "Fdatasync method is not implemented for object of type %s\n",
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
+  return -NACL_ABI_EINVAL;
+}
+
+int NaClDescFtruncateNotImplemented(struct NaClDesc  *vself,
+                                    nacl_abi_off_t   length) {
+  UNREFERENCED_PARAMETER(length);
+
+  NaClLog(LOG_ERROR,
+          "Ftruncate method is not implemented for object of type %s\n",
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
+  return -NACL_ABI_EINVAL;
+}
+
 ssize_t NaClDescGetdentsNotImplemented(struct NaClDesc          *vself,
                                        void                     *dirp,
                                        size_t                   count) {
@@ -697,6 +743,11 @@ struct NaClDescVtbl const kNaClDescVtbl = {
   NaClDescPReadNotImplemented,
   NaClDescPWriteNotImplemented,
   NaClDescFstatNotImplemented,
+  NaClDescFchdirNotImplemented,
+  NaClDescFchmodNotImplemented,
+  NaClDescFsyncNotImplemented,
+  NaClDescFdatasyncNotImplemented,
+  NaClDescFtruncateNotImplemented,
   NaClDescGetdentsNotImplemented,
   NaClDescExternalizeSizeNotImplemented,
   NaClDescExternalizeNotImplemented,

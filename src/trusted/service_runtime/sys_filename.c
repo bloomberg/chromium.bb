@@ -514,20 +514,34 @@ int32_t NaClSysReadlink(struct NaClAppThread *natp,
 int32_t NaClSysUtimes(struct NaClAppThread *natp,
                       uint32_t             path,
                       uint32_t             times) {
-  struct NaClApp *nap = natp->nap;
-  char           pathname[NACL_CONFIG_PATH_MAX];
-  int32_t        retval = -NACL_ABI_EINVAL;
+  struct NaClApp          *nap = natp->nap;
+  char                    kern_path[NACL_CONFIG_PATH_MAX];
+  struct nacl_abi_timeval kern_times[2];
+  int32_t                 retval = -NACL_ABI_EINVAL;
 
-  if (!NaClAclBypassChecks)
-    return -NACL_ABI_EACCES;
+  NaClLog(3,
+          ("Entered NaClSysUtimes(0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR","
+           " 0x%08"NACL_PRIxPTR")\n"),
+          (uintptr_t) natp, (uintptr_t) path, (uintptr_t) times);
 
-  retval = CopyPathFromUser(nap, pathname, sizeof pathname, path);
-  if (0 != retval)
-    return retval;
+  if (!NaClAclBypassChecks) {
+    retval = -NACL_ABI_EACCES;
+    goto cleanup;
+  }
 
-  if (times == 0)
-    return -NACL_ABI_EACCES;
+  retval = CopyPathFromUser(nap, kern_path, sizeof kern_path, path);
+  if (0 != retval) {
+    goto cleanup;
+  }
 
-  /* TODO(sbc): implement in terms of NaClHost function. */
-  return -NACL_ABI_ENOSYS;
+  if (times != 0 &&
+      !NaClCopyInFromUser(nap, &kern_times, (uintptr_t) times,
+                          sizeof kern_times)) {
+    retval = -NACL_ABI_EFAULT;
+    goto cleanup;
+  }
+
+  retval = NaClHostDescUtimes(kern_path, (times != 0) ? kern_times : NULL);
+cleanup:
+  return retval;
 }

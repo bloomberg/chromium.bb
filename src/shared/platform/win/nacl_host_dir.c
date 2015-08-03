@@ -270,3 +270,37 @@ int NaClHostDirClose(struct NaClHostDir *d) {
   }
   return 0;
 }
+
+int NaClHostDirFchdir(struct NaClHostDir *d) {
+  NaClLog(1, "NaClHostDirFchdir Not yet implemented.\n");
+
+  return -NACL_ABI_ENOSYS;
+}
+
+int NaClHostDirFchmod(struct NaClHostDir *d, int mode) {
+  NaClLog(1, "NaClHostDirFchmod Not yet implemented.\n");
+
+  return -NACL_ABI_ENOSYS;
+}
+
+int NaClHostDirFsync(struct NaClHostDir *d) {
+  DWORD err;
+
+  if (!FlushFileBuffers(d->handle)) {
+    err = GetLastError();
+    return -NaClXlateSystemError(err);
+  }
+
+  return 0;
+}
+
+int NaClHostDirFdatasync(struct NaClHostDir *d) {
+  DWORD err;
+
+  if (!FlushFileBuffers(d->handle)) {
+    err = GetLastError();
+    return -NaClXlateSystemError(err);
+  }
+
+  return 0;
+}

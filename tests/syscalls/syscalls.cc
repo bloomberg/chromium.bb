@@ -18,13 +18,15 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <utime.h>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 #define PRINT_HEADER 0
 #define TEXT_LINE_SIZE 1024
+
+bool isWindows = false;
 
 /*
  * TODO(sbc): remove this test once these declarations get added to the
@@ -33,9 +35,13 @@
 #ifndef __GLIBC__
 extern "C" {
 int gethostname(char *name, size_t len);
-int utimes(const char *filename, const struct timeval times[2]);
-int utime(const char *filename, const struct utimbuf *times);
 int eaccess(const char *pathname, int mode);
+int fchdir(int fd);
+int fchmod(int fd, mode_t mode);
+int fsync(int fd);
+int fdatasync(int fd);
+int ftruncate(int fd, off_t length);
+int utimes(const char *filename, const struct timeval *times);
 }
 #endif
 
@@ -67,7 +73,7 @@ static char *split_name(char *full_name) {
   char *basename = strrchr(full_name, '/');
   if (basename == NULL) {
     basename = strrchr(full_name, '\\');
-    ASSERT_NE_MSG(basename, NULL, "test_file contains no dir seperator");
+    ASSERT_NE_MSG(basename, NULL, "test_file contains no dir separator");
     if (!basename)
       return NULL;
   }
@@ -137,8 +143,73 @@ bool test_chdir() {
   return passed("test_chdir", "all");
 }
 
+bool test_fchdir() {
+  // TODO(smklein): Re-enable when nonsfi mode translates O_* values.
+  // See "test_open_directory" test for more details.
+#if defined(__arm__) || defined(__pnacl__)
+  if (NONSFI_MODE)
+    return true;
+#endif
+  char dirname[PATH_MAX] = { '\0' };
+  char newdir[PATH_MAX] = { '\0' };
+  char parent[PATH_MAX] = { '\0' };
+  int retcode;
+  int fd;
+  char *rtn = getcwd(dirname, PATH_MAX);
+  ASSERT_EQ_MSG(rtn, dirname, "getcwd() failed");
+
+  // Calculate parent directory.
+  strncpy(parent, dirname, PATH_MAX);
+  char *basename_start;
+  if (isWindows) {
+    basename_start = strrchr(parent, '\\');
+  } else {
+    basename_start = strrchr(parent, '/');
+  }
+
+  if (basename_start == NULL) {
+    basename_start = strrchr(parent, '\\');
+    ASSERT_NE_MSG(basename_start, NULL, "test_file contains no dir separator");
+  }
+  basename_start[0] = '\0';
+
+  // Open parent directory
+  fd = open(parent, O_RDONLY | O_DIRECTORY);
+  ASSERT_MSG(fd >= 0, "open() failed to open parent directory");
+
+  retcode = fchdir(fd);
+  if (isWindows) {
+    // TODO(smklein) Update this once fchdir is implemented.
+    ASSERT_NE_MSG(retcode, 0, "fchdir() should have failed");
+    return passed("test_fchdir", "all");
+  } else {
+    ASSERT_EQ_MSG(retcode, 0, "fchdir() failed");
+  }
+
+  rtn = getcwd(newdir, PATH_MAX);
+  ASSERT_EQ_MSG(rtn, newdir, "getcwd() failed");
+
+  ASSERT_MSG(strcmp(newdir, parent) == 0, "getcwd() failed to change cwd");
+
+  ASSERT_EQ_MSG(close(fd), 0, "close() failed");
+
+  // Let's go back to the child directory
+  fd = open(dirname, O_RDONLY | O_DIRECTORY);
+  ASSERT_NE_MSG(fd, -1, "open() failed to open child directory");
+
+  retcode = fchdir(fd);
+  ASSERT_EQ_MSG(retcode, 0, "fchdir() failed");
+  ASSERT_EQ_MSG(close(fd), 0, "close() failed");
+
+  rtn = getcwd(newdir, PATH_MAX);
+  ASSERT_EQ_MSG(rtn, newdir, "getcwd() failed");
+
+  ASSERT_MSG(strcmp(newdir, dirname) == 0, "getcwd() failed to change cwd");
+  return passed("test fchdir", "all");
+}
+
 bool test_mkdir_rmdir(const char *test_file) {
-  // Use a temporary direcotry name alongside the test_file which
+  // Use a temporary directory name alongside the test_file which
   // was passed in.
   char dirname[PATH_MAX];
   strncpy(dirname, test_file, PATH_MAX);
@@ -205,12 +276,12 @@ bool test_getcwd() {
   ASSERT_EQ(rtn, NULL);
   ASSERT_EQ(errno, ERANGE);
 
-  // Calculate parent folder.
+  // Calculate parent directory.
   strncpy(parent, dirname, PATH_MAX);
   char *basename_start = strrchr(parent, '/');
   if (basename_start == NULL) {
     basename_start = strrchr(parent, '\\');
-    ASSERT_NE_MSG(basename_start, NULL, "test_file contains no dir seperator");
+    ASSERT_NE_MSG(basename_start, NULL, "test_file contains no dir separator");
   }
   basename_start[0] = '\0';
 
@@ -309,7 +380,7 @@ bool test_link(const char *test_file) {
   ASSERT_EQ(close(fd), 0);
 
   int rtn = link(target_filename, link_filename);
-  if (rtn != 0 && errno == ENOSYS) {
+  if (rtn != 0 && errno == ENOSYS && isWindows) {
     // If we get ENOSYS, assume we are on Windows, where link() is expected
     // to fail.
     return passed("test_link", "all");
@@ -365,7 +436,7 @@ bool test_symlinks(const char *test_file) {
 
   // Create this link
   int rtn = symlink(basename, link_filename);
-  if (rtn != 0 && errno == ENOSYS) {
+  if (rtn != 0 && errno == ENOSYS && isWindows) {
     // If we get ENOSYS, assume we are on Windows, where symlink() and
     // readlink() are expected to fail.
     return passed("test_symlinks", "all");
@@ -412,6 +483,7 @@ bool test_chmod(const char *test_file) {
   char temp_file[PATH_MAX];
   snprintf(temp_file, PATH_MAX, "%s.tmp_chmod", test_file);
 
+  ensure_file_is_absent(temp_file);
   int fd = open(temp_file, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
   ASSERT(fd >= 0);
   ASSERT_EQ(close(fd), 0);
@@ -427,6 +499,36 @@ bool test_chmod(const char *test_file) {
 
   ASSERT_EQ(remove(temp_file), 0);
   return passed("test_chmod", "all");
+}
+
+bool test_fchmod(const char *test_file) {
+  struct stat buf;
+  char temp_file[PATH_MAX];
+  int retcode;
+  snprintf(temp_file, PATH_MAX, "%s.tmp_fchmod", test_file);
+
+  ensure_file_is_absent(temp_file);
+  int fd = open(temp_file, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+  ASSERT(fd >= 0);
+
+  ASSERT_EQ(stat(temp_file, &buf), 0);
+  ASSERT_EQ(buf.st_mode & ~S_IFMT, S_IRUSR | S_IWUSR);
+
+  // change the file to readonly and verify the change
+  retcode = fchmod(fd, S_IRUSR);
+  if (isWindows) {
+    // TODO(smklein) Update this once fchmod is implemented.
+    ASSERT_NE_MSG(retcode, 0, "fchmod() should have failed");
+  } else {
+    ASSERT_EQ(retcode, 0);
+    ASSERT_EQ(stat(temp_file, &buf), 0);
+    ASSERT_EQ(buf.st_mode & ~S_IFMT, S_IRUSR);
+    ASSERT(open(temp_file, O_WRONLY) < 0);
+  }
+
+  ASSERT_EQ(close(fd), 0);
+  ASSERT_EQ(remove(temp_file), 0);
+  return passed("test_fchmod", "all");
 }
 
 static void test_access_call(const char *path, int mode, int expected_result) {
@@ -471,29 +573,79 @@ bool test_utimes(const char *test_file) {
   // TODO(mseaborn): Implement utimes for unsandboxed mode.
   if (NONSFI_MODE)
     return true;
-  struct timeval times[2];
-  // utimes() is currently not implemented and should always
-  // fail with ENOSYS
-  ASSERT_EQ(utimes("dummy", times), -1);
-  ASSERT_EQ(errno, ENOSYS);
+  // These numbers are close enough to the epoch time. Windows
+  // does not like going back in time.
+  const time_t a_sec = 2132067496;
+  const time_t m_sec = 2132067497;
+  struct timeval times[2] = {
+    {a_sec, 0},
+    {m_sec, 0}
+  };
+  char temp_file[PATH_MAX];
+  snprintf(temp_file, PATH_MAX, "%s.tmp_utimes", test_file);
+  ensure_file_is_absent(temp_file);
+
+  int fd = open(temp_file, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+  ASSERT(fd >= 0);
+  ASSERT_EQ(close(fd), 0);
+
+  // Use the times we generated earlier (and check the second resolution)
+  ASSERT_EQ(utimes(temp_file, times), 0);
+
+  // Verify the actime + modtime.
+  struct stat s;
+  ASSERT_EQ(stat(temp_file, &s), 0);
+  ASSERT_EQ(s.st_atime, a_sec);
+  ASSERT_EQ(s.st_mtime, m_sec);
+
+  // "NULL" should be a valid time.
+  ASSERT_EQ(utimes(temp_file, NULL), 0);
+  ASSERT_EQ(stat(temp_file, &s), 0);
+  ASSERT_NE(s.st_atime, a_sec);
+  ASSERT_NE(s.st_mtime, m_sec);
   return passed("test_utimes", "all");
 }
 
-bool test_utime(const char *test_file) {
-  // TODO(mseaborn): Implement utimes for unsandboxed mode.
-  if (NONSFI_MODE)
-    return true;
-  printf("test_utime");
-  struct utimbuf times;
-  times.actime = 0;
-  times.modtime = 0;
-  // utimes() is currently not implemented and should always
-  // fail with ENOSYS
-  printf("test_utime 2");
+bool test_fsync(const char *test_file) {
+  char temp_file[PATH_MAX];
+  snprintf(temp_file, PATH_MAX, "%s.tmp_fsync", test_file);
 
-  ASSERT_EQ(utime("dummy", &times), -1);
-  ASSERT_EQ(errno, ENOSYS);
-  return passed("test_utime", "all");
+  char buffer[100];
+  for (size_t i = 0; i < sizeof(buffer); i++)
+    buffer[i] = i;
+
+  // Write 100 sequential chars to the test file.
+  int fd = open(temp_file, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+  ASSERT(fd >= 0);
+  ASSERT_EQ(100, write(fd, buffer, 100));
+
+  // For now, only testing that fsync does not return an error.
+  // TODO(smklein): This test is weak -- improve it.
+  ASSERT_EQ(0, fsync(fd));
+  ASSERT_EQ(0, close(fd));
+
+  return passed("test_fsync", "all");
+}
+
+bool test_fdatasync(const char *test_file) {
+  char temp_file[PATH_MAX];
+  snprintf(temp_file, PATH_MAX, "%s.tmp_fdatasync", test_file);
+
+  char buffer[100];
+  for (size_t i = 0; i < sizeof(buffer); i++)
+    buffer[i] = i;
+
+  // Write 100 sequential chars to the test file.
+  int fd = open(temp_file, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+  ASSERT(fd >= 0);
+  ASSERT_EQ(100, write(fd, buffer, 100));
+
+  // For now, only testing that fdatasync does not return an error.
+  // TODO(smklein): This test is weak -- improve it.
+  ASSERT_EQ(0, fdatasync(fd));
+  ASSERT_EQ(0, close(fd));
+
+  return passed("test_fdatasync", "all");
 }
 
 bool test_truncate(const char *test_file) {
@@ -520,7 +672,7 @@ bool test_truncate(const char *test_file) {
   ASSERT_EQ(stat(temp_file, &buf), 0);
   ASSERT_EQ(buf.st_size, 200);
 
-  // Verify the new content, which should not be 100
+  // Verify the new content, which should be 100
   // bytes of sequential chars and 100 bytes of '\0'
   fd = open(temp_file, O_RDONLY);
   ASSERT(fd >= 0);
@@ -545,6 +697,59 @@ bool test_truncate(const char *test_file) {
   ASSERT_EQ(remove(temp_file), 0);
   return passed("test_truncate", "all");
 }
+
+bool test_ftruncate(const char *test_file) {
+  char temp_file[PATH_MAX];
+  snprintf(temp_file, PATH_MAX, "%s.tmp_ftruncate", test_file);
+
+  char buffer[100];
+  char read_buffer[200];
+  struct stat buf;
+  for (size_t i = 0; i < sizeof(buffer); i++)
+    buffer[i] = i;
+
+  // Write 100 sequential chars to the test file.
+  int fd = open(temp_file, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+  ASSERT(fd >= 0);
+  ASSERT_EQ(100, write(fd, buffer, 100));
+
+  ASSERT_EQ(0, close(fd));
+  fd = open(temp_file, O_WRONLY, S_IRUSR | S_IWUSR);
+  ASSERT_EQ(stat(temp_file, &buf), 0);
+  ASSERT_EQ(buf.st_size, 100);
+
+  // ftruncate the file beyond its current length
+  ASSERT_EQ(ftruncate(fd, 200), 0);
+  ASSERT_EQ(0, close(fd));
+  ASSERT_EQ(stat(temp_file, &buf), 0);
+  ASSERT_EQ(buf.st_size, 200);
+
+  // Verify the new content, which should not be 100
+  // bytes of sequential chars and 100 bytes of '\0'
+  fd = open(temp_file, O_RDWR);
+  ASSERT(fd >= 0);
+  ASSERT_EQ(read(fd, read_buffer, 200), 200);
+  ASSERT_EQ(memcmp(read_buffer, buffer, 100), 0);
+  for (int i = 100; i < 200; i++)
+    ASSERT_EQ(read_buffer[i], 0);
+
+  // Now ftruncate the file to a size smaller than the
+  // original
+  ASSERT_EQ(ftruncate(fd, 50), 0);
+  ASSERT_EQ(0, close(fd));
+  ASSERT_EQ(stat(temp_file, &buf), 0);
+  ASSERT_EQ(buf.st_size, 50);
+
+  fd = open(temp_file, O_RDONLY);
+  ASSERT(fd >= 0);
+  ASSERT_EQ(read(fd, read_buffer, 50), 50);
+  ASSERT_EQ(memcmp(read_buffer, buffer, 50), 0);
+  ASSERT_EQ(0, close(fd));
+
+  ASSERT_EQ(remove(temp_file), 0);
+  return passed("test_ftruncate", "all");
+}
+
 
 bool test_open_trunc(const char *test_file) {
   int fd;
@@ -1176,6 +1381,7 @@ bool testSuite(const char *test_file) {
 #if !defined(__GLIBC__) || TESTS_USE_IRT
   ret &= test_unlink(test_file);
   ret &= test_chdir();
+  ret &= test_fchdir();
   ret &= test_mkdir_rmdir(test_file);
   ret &= test_getcwd();
   ret &= test_mkdir_rmdir(test_file);
@@ -1184,16 +1390,19 @@ bool testSuite(const char *test_file) {
   ret &= test_link(test_file);
   ret &= test_symlinks(test_file);
   ret &= test_chmod(test_file);
+  ret &= test_fchmod(test_file);
   ret &= test_access(test_file);
+  ret &= test_fsync(test_file);
+  ret &= test_fdatasync(test_file);
+  ret &= test_utimes(test_file);
 #endif
 // TODO(sbc): remove this restriction once glibc's truncate calls
 // is hooked up to the IRT dev-filename-0.2 interface:
 // https://code.google.com/p/nativeclient/issues/detail?id=3709
 #if !(defined(__GLIBC__) && __GLIBC__ == 2 && __GLIBC_MINOR__ == 9)
   ret &= test_truncate(test_file);
+  ret &= test_ftruncate(test_file);
 #endif
-  ret &= test_utimes(test_file);
-  ret &= test_utime(test_file);
   return ret;
 }
 
@@ -1208,9 +1417,12 @@ bool testSuite(const char *test_file) {
 int main(const int argc, const char *argv[]) {
   bool passed;
 
-  if (argc != 2) {
+  if (argc != 3) {
     printf("Please specify the test file name\n");
     exit(-1);
+  }
+  if (argv[2][0] == 'w') {
+    isWindows = true;
   }
   // run the full test suite
   passed = testSuite(argv[1]);

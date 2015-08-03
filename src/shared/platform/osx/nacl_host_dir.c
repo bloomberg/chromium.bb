@@ -156,3 +156,48 @@ int NaClHostDirClose(struct NaClHostDir *d) {
   NaClMutexDtor(&d->mu);
   return (-1 == retval) ? -NaClXlateErrno(errno) : retval;
 }
+
+int NaClHostDirFchdir(struct NaClHostDir *d) {
+  int fd = dirfd(d->dirp);
+  if (-1 == fd) {
+    return -NaClXlateErrno(errno);
+  }
+  if (-1 == fchdir(fd)) {
+    return -NaClXlateErrno(errno);
+  }
+  return 0;
+}
+
+int NaClHostDirFchmod(struct NaClHostDir *d, int mode) {
+  int fd = dirfd(d->dirp);
+  if (-1 == fd) {
+    return -NaClXlateErrno(errno);
+  }
+  if (-1 == fchmod(fd, mode)) {
+    return -NaClXlateErrno(errno);
+  }
+  return 0;
+}
+
+int NaClHostDirFsync(struct NaClHostDir *d) {
+  int fd = dirfd(d->dirp);
+  if (-1 == fd) {
+    return -NaClXlateErrno(errno);
+  }
+  if (-1 == fsync(fd)) {
+    return -NaClXlateErrno(errno);
+  }
+  return 0;
+}
+
+int NaClHostDirFdatasync(struct NaClHostDir *d) {
+  int fd = dirfd(d->dirp);
+  if (-1 == fd) {
+    return -NaClXlateErrno(errno);
+  }
+  /* fdatasync does not exist for osx. */
+  if (-1 == fsync(fd)) {
+    return -NaClXlateErrno(errno);
+  }
+  return 0;
+}

@@ -2568,7 +2568,9 @@ def MakeMacEnv(platform=None):
 
   subarch_flag = '-m%s' % mac_env['BUILD_SUBARCH']
   mac_env.Append(
-      CCFLAGS=[subarch_flag, '-fPIC'],
+      # '-Wno-gnu' is required for the statement expression defining dirfd
+      # for OSX -- otherwise, a warning is generated.
+      CCFLAGS=[subarch_flag, '-fPIC', '-Wno-gnu'],
       ASFLAGS=[subarch_flag],
       LINKFLAGS=[subarch_flag, '-fPIC'],
       CPPDEFINES = [# defining _DARWIN_C_SOURCE breaks 10.4

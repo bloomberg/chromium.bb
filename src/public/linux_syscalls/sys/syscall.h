@@ -44,11 +44,16 @@ int syscall(int number, ...);
 # define __NR_symlink            83
 # define __NR_readlink           85
 # define __NR_munmap             91
+# define __NR_ftruncate          93
+# define __NR_fchmod             94
 # define __NR_socketcall         102
 # define __NR_wait4              114
+# define __NR_fsync              118
 # define __NR_clone              120
 # define __NR_mprotect           125
+# define __NR_fchdir             133
 # define __NR__llseek            140
+# define __NR_fdatasync          148
 # define __NR_sched_yield        158
 # define __NR_nanosleep          162
 # define __NR_poll               168
@@ -71,6 +76,7 @@ int syscall(int number, ...);
 # define __NR_exit_group         252
 # define __NR_clock_gettime      265
 # define __NR_clock_getres       266
+# define __NR_utimes             271
 # define __NR_openat             295
 # define __NR_fstatat64          300
 
@@ -99,10 +105,15 @@ int syscall(int number, ...);
 # define __NR_symlink            83
 # define __NR_readlink           85
 # define __NR_munmap             91
+# define __NR_ftruncate          93
+# define __NR_fchmod             94
 # define __NR_wait4              114
+# define __NR_fsync              118
 # define __NR_clone              120
 # define __NR_mprotect           125
+# define __NR_fchdir             133
 # define __NR__llseek            140
+# define __NR_fdatasync          148
 # define __NR_sched_yield        158
 # define __NR_nanosleep          162
 # define __NR_poll               168
@@ -124,6 +135,7 @@ int syscall(int number, ...);
 # define __NR_exit_group         248
 # define __NR_clock_gettime      263
 # define __NR_clock_getres       264
+# define __NR_utimes             271
 # define __NR_socketpair         288
 # define __NR_shutdown           293
 # define __NR_sendmsg            296

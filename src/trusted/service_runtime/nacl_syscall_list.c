@@ -52,6 +52,11 @@ NACL_DEFINE_SYSCALL_2(NaClSysClockGetTime)
 NACL_DEFINE_SYSCALL_2(NaClSysMkdir)
 NACL_DEFINE_SYSCALL_1(NaClSysRmdir)
 NACL_DEFINE_SYSCALL_1(NaClSysChdir)
+NACL_DEFINE_SYSCALL_1(NaClSysFchdir)
+NACL_DEFINE_SYSCALL_2(NaClSysFchmod)
+NACL_DEFINE_SYSCALL_2(NaClSysFtruncate)
+NACL_DEFINE_SYSCALL_1(NaClSysFsync)
+NACL_DEFINE_SYSCALL_1(NaClSysFdatasync)
 NACL_DEFINE_SYSCALL_2(NaClSysGetcwd)
 NACL_DEFINE_SYSCALL_1(NaClSysUnlink)
 NACL_DEFINE_SYSCALL_2(NaClSysTruncate)
@@ -134,6 +139,11 @@ void NaClAppRegisterDefaultSyscalls(struct NaClApp *nap) {
   NACL_REGISTER_SYSCALL(nap, NaClSysMkdir, NACL_sys_mkdir);
   NACL_REGISTER_SYSCALL(nap, NaClSysRmdir, NACL_sys_rmdir);
   NACL_REGISTER_SYSCALL(nap, NaClSysChdir, NACL_sys_chdir);
+  NACL_REGISTER_SYSCALL(nap, NaClSysFchdir, NACL_sys_fchdir);
+  NACL_REGISTER_SYSCALL(nap, NaClSysFchmod, NACL_sys_fchmod);
+  NACL_REGISTER_SYSCALL(nap, NaClSysFtruncate, NACL_sys_ftruncate);
+  NACL_REGISTER_SYSCALL(nap, NaClSysFsync, NACL_sys_fsync);
+  NACL_REGISTER_SYSCALL(nap, NaClSysFdatasync, NACL_sys_fdatasync);
   NACL_REGISTER_SYSCALL(nap, NaClSysGetcwd, NACL_sys_getcwd);
   NACL_REGISTER_SYSCALL(nap, NaClSysUnlink, NACL_sys_unlink);
   NACL_REGISTER_SYSCALL(nap, NaClSysTruncate, NACL_sys_truncate);

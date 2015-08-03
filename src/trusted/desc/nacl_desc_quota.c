@@ -266,6 +266,38 @@ int NaClDescQuotaFstat(struct NaClDesc      *vself,
   return (*NACL_VTBL(NaClDesc, self->desc)->Fstat)(self->desc, statbuf);
 }
 
+int NaClDescQuotaFchdir(struct NaClDesc *vself) {
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->Fchdir)(self->desc);
+}
+
+int NaClDescQuotaFchmod(struct NaClDesc *vself,
+                        int             mode) {
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->Fchmod)(self->desc, mode);
+}
+
+int NaClDescQuotaFsync(struct NaClDesc *vself) {
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->Fsync)(self->desc);
+}
+
+int NaClDescQuotaFdatasync(struct NaClDesc *vself) {
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->Fdatasync)(self->desc);
+}
+
+int NaClDescQuotaFtruncate(struct NaClDesc  *vself,
+                           nacl_abi_off_t   length) {
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->Ftruncate)(self->desc, length);
+}
+
 ssize_t NaClDescQuotaGetdents(struct NaClDesc *vself,
                               void            *dirp,
                               size_t          count) {
@@ -434,6 +466,11 @@ static struct NaClDescVtbl const kNaClDescQuotaVtbl = {
   NaClDescQuotaPRead,
   NaClDescQuotaPWrite,
   NaClDescQuotaFstat,
+  NaClDescQuotaFchdir,
+  NaClDescQuotaFchmod,
+  NaClDescQuotaFsync,
+  NaClDescQuotaFdatasync,
+  NaClDescQuotaFtruncate,
   NaClDescQuotaGetdents,
   NaClDescExternalizeSizeNotImplemented,
   NaClDescExternalizeNotImplemented,

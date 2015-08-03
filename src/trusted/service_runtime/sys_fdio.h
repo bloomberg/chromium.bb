@@ -51,6 +51,23 @@ int32_t NaClSysGetdents(struct NaClAppThread  *natp,
                         uint32_t              dirp,
                         size_t                count);
 
+int32_t NaClSysFchdir(struct NaClAppThread *natp,
+                      int                  d);
+
+int32_t NaClSysFchmod(struct NaClAppThread *natp,
+                      int                  d,
+                      int                  mode);
+
+int32_t NaClSysFsync(struct NaClAppThread *natp,
+                     int                  d);
+
+int32_t NaClSysFdatasync(struct NaClAppThread *natp,
+                         int                  d);
+
+int32_t NaClSysFtruncate(struct NaClAppThread *natp,
+                         int                  d,
+                         uint32_t             length);
+
 int32_t NaClSysIsatty(struct NaClAppThread *natp,
                       int                  d);
 

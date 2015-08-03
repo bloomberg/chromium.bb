@@ -68,23 +68,23 @@ static int nacl_irt_getdents(int fd, struct dirent *buf, size_t count,
 }
 
 static int nacl_irt_fchdir(int fd) {
-  return ENOSYS;
+  return -NACL_SYSCALL(fchdir)(fd);
 }
 
 static int nacl_irt_fchmod(int fd, mode_t mode) {
-  return ENOSYS;
+  return -NACL_SYSCALL(fchmod)(fd, mode);
 }
 
 static int nacl_irt_fsync(int fd) {
-  return ENOSYS;
+  return -NACL_SYSCALL(fsync)(fd);
 }
 
 static int nacl_irt_fdatasync(int fd) {
-  return ENOSYS;
+  return -NACL_SYSCALL(fdatasync)(fd);
 }
 
-static int nacl_irt_ftruncate(int fd, off_t legnth) {
-  return ENOSYS;
+static int nacl_irt_ftruncate(int fd, off_t length) {
+  return -NACL_SYSCALL(ftruncate)(fd, &length);
 }
 
 static int nacl_irt_isatty(int fd, int *result) {
@@ -104,6 +104,22 @@ const struct nacl_irt_fdio nacl_irt_fdio = {
   nacl_irt_seek,
   nacl_irt_fstat,
   nacl_irt_getdents,
+};
+
+const struct nacl_irt_dev_fdio_v0_2 nacl_irt_dev_fdio_v0_2 = {
+  nacl_irt_close,
+  nacl_irt_dup,
+  nacl_irt_dup2,
+  nacl_irt_read,
+  nacl_irt_write,
+  nacl_irt_seek,
+  nacl_irt_fstat,
+  nacl_irt_getdents,
+  nacl_irt_fchdir,
+  nacl_irt_fchmod,
+  nacl_irt_fsync,
+  nacl_irt_fdatasync,
+  nacl_irt_ftruncate,
 };
 
 const struct nacl_irt_dev_fdio nacl_irt_dev_fdio = {

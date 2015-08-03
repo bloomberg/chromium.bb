@@ -160,6 +160,26 @@ off_t lseek(int fd, off_t offset, int whence) {
   return offset;
 }
 
+int fchdir(int fd) {
+  return errno_value_call(NACL_SYSCALL(fchdir)(fd));
+}
+
+int fchmod(int fd, mode_t mode) {
+  return errno_value_call(NACL_SYSCALL(fchmod)(fd, mode));
+}
+
+int fsync(int fd) {
+  return errno_value_call(NACL_SYSCALL(fsync)(fd));
+}
+
+int fdatasync(int fd) {
+  return errno_value_call(NACL_SYSCALL(fdatasync)(fd));
+}
+
+int ftruncate(int fd, off_t length) {
+  return errno_value_call(NACL_SYSCALL(ftruncate)(fd, &length));
+}
+
 int dup(int fd) {
   return errno_value_call(NACL_SYSCALL(dup)(fd));
 }
@@ -252,7 +272,7 @@ int readlink(const char *path, char *buf, int bufsize) {
   return errno_value_call(NACL_SYSCALL(readlink)(path, buf, bufsize));
 }
 
-int utimes(const char *path, const struct timeval times[2]) {
+int utimes(const char *path, const struct timeval *times) {
   return errno_value_call(NACL_SYSCALL(utimes)(path, times));
 }
 

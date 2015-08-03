@@ -15,9 +15,9 @@ void __libnacl_irt_dev_fdio_init(void) {
      * Fall back to old 'fdio' interface if the dev interface is
      * not found.
      */
-    if (!__libnacl_irt_query(NACL_IRT_FDIO_v0_1,
+    if (!__libnacl_irt_query(NACL_IRT_DEV_FDIO_v0_2,
                              &__libnacl_irt_dev_fdio,
-                             sizeof(struct nacl_irt_fdio))) {
+                             sizeof(struct nacl_irt_dev_fdio_v0_2))) {
       __libnacl_irt_query(NACL_IRT_DEV_FDIO_v0_1,
                           &__libnacl_irt_dev_fdio,
                           sizeof(struct nacl_irt_fdio));

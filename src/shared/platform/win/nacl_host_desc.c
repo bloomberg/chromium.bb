@@ -15,8 +15,10 @@
 #include <direct.h>
 #include <io.h>
 #include <sys/types.h>
-#include <sys/stat.h>
+#include <sys/utime.h>
 #include <share.h>
+#include <accctrl.h>
+#include <aclapi.h>
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_platform.h"
@@ -35,9 +37,9 @@
 #include "native_client/src/trusted/service_runtime/sel_util-inl.h"
 
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
+#include "native_client/src/trusted/service_runtime/include/bits/stat.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
-#include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 #include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
 
 #define OFFSET_FOR_FILEPOS_LOCK (GG_LONGLONG(0x7000000000000000))
@@ -1445,23 +1447,9 @@ int NaClHostDescUnlink(const char *path) {
   return 0;
 }
 
-int NaClHostDescTruncate(char const *path, nacl_abi_off_t length) {
+static int DoTruncate(HANDLE hfile, nacl_abi_off_t length) {
   LARGE_INTEGER win_length;
   DWORD err;
-
-  HANDLE hfile = CreateFileA(path,
-      GENERIC_READ | GENERIC_WRITE,
-      FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-      NULL,
-      OPEN_EXISTING,
-      FILE_ATTRIBUTE_NORMAL | FILE_FLAG_POSIX_SEMANTICS,
-      NULL);
-
-  if (INVALID_HANDLE_VALUE == hfile) {
-    err = GetLastError();
-    NaClLog(3, "NaClHostDescTruncate: CreateFile failed %d\n", err);
-    return -NaClXlateSystemError(err);
-  }
 
   win_length.QuadPart = length;
   if (!SetFilePointerEx(hfile, win_length, NULL, FILE_BEGIN)) {
@@ -1513,6 +1501,8 @@ int NaClHostDescRename(const char *oldpath, const char *newpath) {
 int NaClHostDescSymlink(const char *oldpath, const char *newpath) {
   /*
    * Symlinks are not supported on win32.
+   * TODO(smklein): Look into symlink support for windows, and identify if
+   * linux-style symlinks can be emulated.
    */
   NaClLog(1, "NaClHostDescSymlink: symbolic links not supported on windows.\n");
   return -NACL_ABI_ENOSYS;
@@ -1525,7 +1515,7 @@ int NaClHostDescChmod(const char *path, nacl_abi_mode_t mode) {
 }
 
 int NaClHostDescAccess(const char *path, int amode) {
-  if (_access(path, NaClMapAccessMode(amode)) != 0)
+  if (_access_s(path, NaClMapAccessMode(amode)) != 0)
     return -NaClXlateErrno(errno);
   return 0;
 }
@@ -1535,8 +1525,119 @@ int NaClHostDescReadlink(const char *path, char *buf, size_t bufsize) {
    * readlink(2) sets errno to EINVAL when the file in question is
    * not a symlink.  Since win32 does not support symlinks we simply
    * return EINVAL in all cases here.
+   *
+   * Partial implementation exists here:
+   * https://chromiumcodereview.appspot.com/24889002/
+   * TODO(phosek/smklein): Complete the partial implementation of readlink
+   * if basic symlink support arrives on nacl for windows.
    */
   NaClLog(1,
           "NaClHostDescReadlink: symbolic links not supported on Windows.\n");
   return -NACL_ABI_EINVAL;
+}
+
+int NaClHostDescUtimes(const char *filename,
+                       const struct nacl_abi_timeval *times) {
+  struct _utimbuf host_time;
+  if (times != NULL) {
+    /* Sec + rounded up usec */
+    host_time.actime = times[0].nacl_abi_tv_sec +
+                       (times[0].nacl_abi_tv_usec >= 500000);
+    host_time.modtime = times[1].nacl_abi_tv_sec +
+                        (times[1].nacl_abi_tv_usec >= 500000);
+  }
+  if (_utime(filename, (times != NULL ? &host_time : NULL)) == -1) {
+    return -NaClXlateErrno(errno);
+  }
+  return 0;
+}
+
+int NaClHostDescFcntl(struct NaClHostDesc *d, int cmd, long arg) {
+  NaClHostDescCheckValidity("NaClHostDescFcntl", d);
+  NaClLog(1,
+          "NaClHostDescFcntl: Fcntl not yet supported on Windows.\n");
+  return -NACL_ABI_EINVAL;
+}
+
+int NaClHostDescFchmod(struct NaClHostDesc *d, nacl_abi_mode_t mode) {
+  NaClHostDescCheckValidity("NaClHostDescFchmod", d);
+  /*
+   * TODO(smklein): Use the following
+   * https://msdn.microsoft.com/en-us/library/ks2530z6.aspx
+   * and
+   * https://msdn.microsoft.com/en-us/library/aa366789(VS.85).aspx
+   * to get the path. Then, call chmod.
+   */
+  NaClLog(1,
+          "NaClHostDescFchmod: Fchmod not yet supported on Windows.\n");
+  return -NACL_ABI_EINVAL;
+}
+
+int NaClHostDescFsync(struct NaClHostDesc *d) {
+  HANDLE hFile;
+  DWORD err;
+
+  NaClHostDescCheckValidity("NaClHostDescFsync", d);
+
+  hFile = (HANDLE) _get_osfhandle(d->d);
+  CHECK(INVALID_HANDLE_VALUE != hFile);
+
+  if (!FlushFileBuffers(hFile)) {
+    err = GetLastError();
+    return -NaClXlateSystemError(err);
+  }
+
+  return 0;
+}
+
+int NaClHostDescFdatasync(struct NaClHostDesc *d) {
+  HANDLE hFile;
+  DWORD err;
+
+  NaClHostDescCheckValidity("NaClHostDescFdatasync", d);
+
+  hFile = (HANDLE) _get_osfhandle(d->d);
+  CHECK(INVALID_HANDLE_VALUE != hFile);
+
+  if (!FlushFileBuffers(hFile)) {
+    err = GetLastError();
+    return -NaClXlateSystemError(err);
+  }
+
+  return 0;
+}
+
+int NaClHostDescFtruncate(struct NaClHostDesc *d, nacl_off64_t length) {
+  NaClHostDescCheckValidity("NaClHostDescFtruncate", d);
+
+  return DoTruncate((HANDLE) _get_osfhandle(d->d), length);
+}
+
+int NaClHostDescTruncate(char const *path, nacl_abi_off_t length) {
+  int retval;
+
+  HANDLE hfile = CreateFileA(path,
+      GENERIC_READ | GENERIC_WRITE,
+      FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+      NULL,
+      OPEN_EXISTING,
+      FILE_ATTRIBUTE_NORMAL | FILE_FLAG_POSIX_SEMANTICS,
+      NULL);
+
+  if (INVALID_HANDLE_VALUE == hfile) {
+    DWORD err = GetLastError();
+    NaClLog(3, "NaClHostDescTruncate: CreateFileA failed %d\n", err);
+    return -NaClXlateSystemError(err);
+  }
+
+  retval = DoTruncate(hfile, length);
+
+  if (!CloseHandle(hfile)) {
+    DWORD err = GetLastError();
+    NaClLog(3, "NaClHostDescTruncate: CloseHandle failed %d\n", err);
+    if (retval == 0)
+      retval = -NaClXlateSystemError(err);
+  }
+
+  return retval;
 }
