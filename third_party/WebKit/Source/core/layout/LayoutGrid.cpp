@@ -1624,11 +1624,12 @@ void LayoutGrid::applyStretchAlignmentToChildIfNeeded(LayoutBox& child)
     // values were set.
     child.clearOverrideSize();
 
+    auto& childStyle = child.styleRef();
     bool isHorizontalMode = isHorizontalWritingMode();
-    bool hasAutoSizeInRowAxis = isHorizontalMode ? child.styleRef().width().isAuto() : child.styleRef().height().isAuto();
-    bool allowedToStretchChildAlongRowAxis = hasAutoSizeInRowAxis && !child.styleRef().marginStartUsing(style()).isAuto() && !child.styleRef().marginEndUsing(style()).isAuto();
-    if (!allowedToStretchChildAlongRowAxis || ComputedStyle::resolveJustification(styleRef(), child.styleRef(), ItemPositionStretch) != ItemPositionStretch) {
-        bool hasAutoMinSizeInRowAxis = isHorizontalMode ? child.styleRef().minWidth().isAuto() : child.styleRef().minHeight().isAuto();
+    bool hasAutoSizeInRowAxis = isHorizontalMode ? childStyle.width().isAuto() : childStyle.height().isAuto();
+    bool allowedToStretchChildAlongRowAxis = hasAutoSizeInRowAxis && !childStyle.marginStartUsing(style()).isAuto() && !childStyle.marginEndUsing(style()).isAuto();
+    if (!allowedToStretchChildAlongRowAxis || ComputedStyle::resolveJustification(styleRef(), childStyle, ItemPositionStretch) != ItemPositionStretch) {
+        bool hasAutoMinSizeInRowAxis = isHorizontalMode ? childStyle.minWidth().isAuto() : childStyle.minHeight().isAuto();
         bool canShrinkToFitInRowAxisForChild = !hasAutoMinSizeInRowAxis || child.minPreferredLogicalWidth() <= child.overrideContainingBlockContentLogicalWidth();
         // TODO(lajava): how to handle orthogonality in this case ?.
         // TODO(lajava): grid track sizing and positioning do not support orthogonal modes yet.
@@ -1641,9 +1642,9 @@ void LayoutGrid::applyStretchAlignmentToChildIfNeeded(LayoutBox& child)
         }
     }
 
-    bool hasAutoSizeInColumnAxis = isHorizontalMode ? child.styleRef().height().isAuto() : child.styleRef().width().isAuto();
-    bool allowedToStretchChildAlongColumnAxis = hasAutoSizeInColumnAxis && !child.styleRef().marginBeforeUsing(style()).isAuto() && !child.styleRef().marginAfterUsing(style()).isAuto();
-    if (allowedToStretchChildAlongColumnAxis && ComputedStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch) == ItemPositionStretch) {
+    bool hasAutoSizeInColumnAxis = isHorizontalMode ? childStyle.height().isAuto() : childStyle.width().isAuto();
+    bool allowedToStretchChildAlongColumnAxis = hasAutoSizeInColumnAxis && !childStyle.marginBeforeUsing(style()).isAuto() && !childStyle.marginAfterUsing(style()).isAuto();
+    if (allowedToStretchChildAlongColumnAxis && ComputedStyle::resolveAlignment(styleRef(), childStyle, ItemPositionStretch) == ItemPositionStretch) {
         // TODO (lajava): If the child has orthogonal flow, then it already has an override height set, so use it.
         // TODO (lajava): grid track sizing and positioning do not support orthogonal modes yet.
         if (child.isHorizontalWritingMode() == isHorizontalMode) {
