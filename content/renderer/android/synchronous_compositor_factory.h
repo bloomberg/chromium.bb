@@ -64,7 +64,7 @@ class SynchronousCompositorFactory {
   // Methods below should not be called if OverrideWithFactory is false.
   // Instead, just fallback to default implementation, as if factory
   // does not exist.
-  virtual bool OverrideWithFactory();
+  virtual bool OverrideWithFactory() = 0;
   virtual scoped_refptr<cc_blink::ContextProviderWebContext>
   CreateOffscreenContextProvider(
       const blink::WebGraphicsContext3D::Attributes& attributes,
