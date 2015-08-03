@@ -146,6 +146,14 @@ static PassRefPtrWillBeRawPtr<MutableStylePropertySet> editingStyleFromComputedS
     return copyEditingProperties(style.get(), type);
 }
 
+static PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> ensureComputedStyle(const Position& position)
+{
+    Element* elem = position.element();
+    if (!elem)
+        return nullptr;
+    return CSSComputedStyleDeclaration::create(elem);
+}
+
 static PassRefPtrWillBeRawPtr<MutableStylePropertySet> getPropertiesNotIn(StylePropertySet* styleWithRedundantProperties, CSSStyleDeclaration* baseStyle);
 enum LegacyFontSizeMode { AlwaysUseLegacyFontSize, UseLegacyFontSizeOnlyIfPixelValuesMatch };
 static int legacyFontSizeFromCSSValue(Document*, CSSPrimitiveValue*, bool, LegacyFontSizeMode);
@@ -1459,7 +1467,7 @@ StyleChange::StyleChange(EditingStyle* style, const Position& position)
     if (!style || !style->style() || !document || !document->frame() || !position.element())
         return;
 
-    RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyle = position.ensureComputedStyle();
+    RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyle = ensureComputedStyle(position);
     // FIXME: take care of background-color in effect
     RefPtrWillBeRawPtr<MutableStylePropertySet> mutableStyle = getPropertiesNotIn(style->style(), computedStyle.get());
     ASSERT(mutableStyle);

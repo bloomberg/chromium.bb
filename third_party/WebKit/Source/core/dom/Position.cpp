@@ -376,15 +376,6 @@ Element* PositionAlgorithm<Strategy>::element() const
     return parent && parent->isElementNode() ? toElement(parent) : nullptr;
 }
 
-template <typename Strategy>
-PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> PositionAlgorithm<Strategy>::ensureComputedStyle() const
-{
-    Element* elem = element();
-    if (!elem)
-        return nullptr;
-    return CSSComputedStyleDeclaration::create(elem);
-}
-
 int comparePositions(const PositionInComposedTree& positionA, const PositionInComposedTree& positionB)
 {
     ASSERT(positionA.isNotNull());

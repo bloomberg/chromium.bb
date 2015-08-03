@@ -39,7 +39,6 @@
 
 namespace blink {
 
-class CSSComputedStyleDeclaration;
 class Element;
 class InlineBox;
 class Node;
@@ -177,7 +176,6 @@ public:
     bool isOrphan() const { return m_anchorNode && !m_anchorNode->inDocument(); }
 
     Element* element() const;
-    PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> ensureComputedStyle() const;
 
     // Move up or down the DOM by one position.
     // Offsets are computed using layout text for nodes that have layoutObjects - but note that even when
