@@ -11,6 +11,8 @@
       <paper-icon-button icon="arrow-back" id="back-button" on-click="back_">
       </paper-icon-button>
       <span id="sink-name">[[sink.name]]</span>
+      <paper-icon-button icon="close" id="close-button"
+          on-click="onCloseButtonClick_">
     </paper-toolbar>
     <div id="route-information" hidden$="[[!isCustomControllerHidden_]]">
       <span>[[activityStatus_]]</span>

@@ -8,6 +8,10 @@
   text-align: end;
 }
 
+#close-button {
+  -webkit-margin-start: auto;
+}
+
 #custom-controller {
   display: inline-block;
   height: 160px;

@@ -97,6 +97,15 @@ cr.define('route_details', function() {
         MockInteractions.tap(details.$['back-button']);
       });
 
+      // Tests for 'close-button-click' event firing when the close button
+      // is clicked.
+      test('close button click', function(done) {
+        details.addEventListener('close-button-click', function() {
+          done();
+        });
+        MockInteractions.tap(details.$['close-button']);
+      });
+
       // Tests for 'close-route-click' event firing when the
       // 'close-route-button' button is clicked.
       test('close route button click', function(done) {

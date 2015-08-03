@@ -119,4 +119,13 @@ Polymer({
       that.isCustomControllerHidden_ = true;
     });
   },
+
+  /**
+   * Handles a click on the close button by firing a close-button-click event.
+   *
+   * @private
+   */
+  onCloseButtonClick_: function() {
+    this.fire('close-button-click');
+  },
 });
