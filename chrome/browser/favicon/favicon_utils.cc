@@ -45,7 +45,7 @@ bool ShouldDisplayFavicon(content::WebContents* web_contents) {
   }
 
   // No favicon on Instant New Tab Pages.
-  if (chrome::IsInstantNTP(web_contents))
+  if (search::IsInstantNTP(web_contents))
     return false;
 
   return true;

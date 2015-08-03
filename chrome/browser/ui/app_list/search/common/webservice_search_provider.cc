@@ -47,9 +47,8 @@ void WebserviceSearchProvider::StartThrottledQuery(
 bool WebserviceSearchProvider::IsValidQuery(const base::string16& query) {
   // If |query| contains sensitive data, bail out and do not create the place
   // holder "search-web-store" result.
-  if (IsSensitiveInput(query) ||
-      (query.size() < kMinimumQueryLength) ||
-      !chrome::IsSuggestPrefEnabled(profile_)) {
+  if (IsSensitiveInput(query) || (query.size() < kMinimumQueryLength) ||
+      !search::IsSuggestPrefEnabled(profile_)) {
     return false;
   }
 

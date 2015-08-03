@@ -18,6 +18,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_url_tracker.h"
+#include "components/search/search.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/entropy_provider.h"
@@ -31,7 +32,7 @@ InstantUnitTestBase::~InstantUnitTestBase() {
 }
 
 void InstantUnitTestBase::SetUp() {
-  chrome::EnableQueryExtractionForTesting();
+  search::EnableQueryExtractionForTesting();
   SetUpHelper();
 }
 

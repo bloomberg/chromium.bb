@@ -100,8 +100,4 @@ rappor::RapporService* ChromeBrowserProvider::GetRapporService() {
   return nullptr;
 }
 
-SearchProvider* ChromeBrowserProvider::GetSearchProvider() {
-  return nullptr;
-}
-
 }  // namespace ios

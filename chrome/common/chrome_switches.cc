@@ -506,9 +506,6 @@ const char kEnablePrintPreviewRegisterPromos[] =
 // during chrome_browser_main.
 const char kEnableProfiling[]               = "enable-profiling";
 
-// Enables query in the omnibox.
-const char kEnableQueryExtraction[]         = "enable-query-extraction";
-
 // Enables support for the QUIC protocol.  This is a temporary testing flag.
 const char kEnableQuic[]                    = "enable-quic";
 
@@ -1214,10 +1211,6 @@ const char kEnableZeroSuggestMostVisited[] =
 // sites on non-search-result pages as default suggestions.
 const char kEnableZeroSuggestMostVisitedWithoutSerp[] =
     "enable-zero-suggest-most-visited-without-serp";
-
-// Triggers prerendering of search base page to prefetch results for the typed
-// omnibox query. Only has an effect when prerender is enabled.
-const char kPrefetchSearchResults[]         = "prefetch-search-results";
 
 // Specifies Android phone page loading progress bar animation.
 const char kProgressBarAnimation[]          = "progress-bar-animation";

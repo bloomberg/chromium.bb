@@ -318,7 +318,7 @@ TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {
   base::FieldTrialList::CreateFieldTrial(
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
 
-  if (chrome::IsInstantExtendedAPIEnabled()) {
+  if (search::IsInstantExtendedAPIEnabled()) {
     // Tests with Instant Extended enabled.
     // Tests for rule 1.
     ExpectRuleValue("rule1-4-1-value",

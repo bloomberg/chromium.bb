@@ -337,8 +337,8 @@ void AutocompleteControllerAndroid::OnResultChanged(
   const AutocompleteResult::const_iterator default_match(
       result.default_match());
   if ((default_match != result.end()) && default_match_changed &&
-      chrome::IsInstantExtendedAPIEnabled() &&
-      chrome::ShouldPrefetchSearchResults()) {
+      search::IsInstantExtendedAPIEnabled() &&
+      search::ShouldPrefetchSearchResults()) {
     InstantSuggestion prefetch_suggestion;
     // If the default match should be prefetched, do that.
     if (SearchProvider::ShouldPrefetch(*default_match)) {

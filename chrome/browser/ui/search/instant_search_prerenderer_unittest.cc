@@ -224,17 +224,17 @@ TEST_F(InstantSearchPrerendererTest, GetSearchTermsFromPrerenderedPage) {
   GURL url(GetPrerenderURL());
   EXPECT_EQ(GURL("https://www.google.com/instant?ion=1&foo=foo#foo=foo&strk"),
             url);
-  EXPECT_EQ(base::UTF16ToASCII(prerenderer->get_last_query()),
-            base::UTF16ToASCII(
-                chrome::ExtractSearchTermsFromURL(profile(), url)));
+  EXPECT_EQ(
+      base::UTF16ToASCII(prerenderer->get_last_query()),
+      base::UTF16ToASCII(search::ExtractSearchTermsFromURL(profile(), url)));
 
   // Assume the prerendered page prefetched search results for the query
   // "flowers".
   SetLastQuery(ASCIIToUTF16("flowers"));
   EXPECT_EQ("flowers", base::UTF16ToASCII(prerenderer->get_last_query()));
-  EXPECT_EQ(base::UTF16ToASCII(prerenderer->get_last_query()),
-            base::UTF16ToASCII(
-                chrome::ExtractSearchTermsFromURL(profile(), url)));
+  EXPECT_EQ(
+      base::UTF16ToASCII(prerenderer->get_last_query()),
+      base::UTF16ToASCII(search::ExtractSearchTermsFromURL(profile(), url)));
 }
 
 TEST_F(InstantSearchPrerendererTest, PrefetchSearchResults) {
@@ -347,9 +347,10 @@ TEST_F(InstantSearchPrerendererTest, PrerenderingAllowed) {
   // used only when the underlying page doesn't support Instant.
   NavigateAndCommitActiveTab(GURL("https://www.google.com/alt#quux=foo&strk"));
   active_tab = GetActiveWebContents();
-  EXPECT_FALSE(chrome::ExtractSearchTermsFromURL(profile(),
-                                                 active_tab->GetURL()).empty());
-  EXPECT_FALSE(chrome::ShouldPrefetchSearchResultsOnSRP());
+  EXPECT_FALSE(
+      search::ExtractSearchTermsFromURL(profile(), active_tab->GetURL())
+          .empty());
+  EXPECT_FALSE(search::ShouldPrefetchSearchResultsOnSRP());
   EXPECT_FALSE(prerenderer->IsAllowed(search_type_match, active_tab));
 }
 

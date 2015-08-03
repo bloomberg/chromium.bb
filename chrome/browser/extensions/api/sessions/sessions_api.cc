@@ -267,7 +267,7 @@ scoped_ptr<windows::Window> SessionsGetDevicesFunction::CreateWindowModel(
       continue;
     const sessions::SerializedNavigationEntry& current_navigation =
         tab->navigations.at(tab->normalized_navigation_index());
-    if (chrome::IsNTPURL(current_navigation.virtual_url(), GetProfile())) {
+    if (search::IsNTPURL(current_navigation.virtual_url(), GetProfile())) {
       continue;
     }
     tabs_in_window.push_back(tab);

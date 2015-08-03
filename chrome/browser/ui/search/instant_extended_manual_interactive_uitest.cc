@@ -21,6 +21,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
+#include "components/search/search.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -73,7 +74,7 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
 
  protected:
   void SetUpInProcessBrowserTestFixture() override {
-    chrome::EnableQueryExtractionForTesting();
+    search::EnableQueryExtractionForTesting();
   }
 
   content::WebContents* active_tab() {

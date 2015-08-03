@@ -15,8 +15,6 @@
 #include "ios/chrome/browser/google/google_brand.h"
 #include "ios/chrome/browser/google/google_url_tracker_factory.h"
 #include "ios/chrome/common/channel_info.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/search_provider.h"
 #include "ios/web/public/web_thread.h"
 #include "url/gurl.h"
 
@@ -83,7 +81,7 @@ std::string UIThreadSearchTermsData::GetSearchClient() const {
 
 std::string UIThreadSearchTermsData::GetSuggestClient() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return chrome::IsInstantExtendedAPIEnabled() ? "chrome-omni" : "chrome";
+  return search::IsInstantExtendedAPIEnabled() ? "chrome-omni" : "chrome";
 }
 
 std::string UIThreadSearchTermsData::GetSuggestRequestIdentifier() const {
@@ -93,37 +91,31 @@ std::string UIThreadSearchTermsData::GetSuggestRequestIdentifier() const {
 
 bool UIThreadSearchTermsData::IsShowingSearchTermsOnSearchResultsPages() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return chrome::IsInstantExtendedAPIEnabled() &&
-         ios::GetChromeBrowserProvider()
-             ->GetSearchProvider()
-             ->IsQueryExtractionEnabled();
+  return search::IsInstantExtendedAPIEnabled() &&
+         search::IsQueryExtractionEnabled();
 }
 
 std::string UIThreadSearchTermsData::InstantExtendedEnabledParam(
     bool for_search) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return ios::GetChromeBrowserProvider()
-      ->GetSearchProvider()
-      ->InstantExtendedEnabledParam(for_search);
+  return search::InstantExtendedEnabledParam(for_search);
 }
 
 std::string UIThreadSearchTermsData::ForceInstantResultsParam(
     bool for_prerender) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return ios::GetChromeBrowserProvider()
-      ->GetSearchProvider()
-      ->ForceInstantResultsParam(for_prerender);
+  return search::ForceInstantResultsParam(for_prerender);
 }
 
 int UIThreadSearchTermsData::OmniboxStartMargin() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return ios::GetChromeBrowserProvider()
-      ->GetSearchProvider()
-      ->OmniboxStartMargin();
+  // iOS has not InstantService.
+  return search::kDisableStartMargin;
 }
 
 std::string UIThreadSearchTermsData::NTPIsThemedParam() const {
   DCHECK(thread_checker_.CalledOnValidThread());
+  // iOS does not supports themed NTP.
   return std::string();
 }
 

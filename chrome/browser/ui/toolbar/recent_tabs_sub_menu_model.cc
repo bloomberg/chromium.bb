@@ -493,7 +493,7 @@ void RecentTabsSubMenuModel::BuildTabsFromOtherDevices() {
           continue;
         const sessions::SerializedNavigationEntry& current_navigation =
             tab->navigations.at(tab->normalized_navigation_index());
-        if (chrome::IsNTPURL(current_navigation.virtual_url(),
+        if (search::IsNTPURL(current_navigation.virtual_url(),
                              browser_->profile())) {
           continue;
         }

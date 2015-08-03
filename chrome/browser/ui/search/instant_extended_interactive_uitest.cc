@@ -56,6 +56,7 @@
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/search_provider.h"
+#include "components/search/search.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/serialized_navigation_entry.h"
 #include "content/public/browser/navigation_controller.h"
@@ -140,7 +141,7 @@ class InstantExtendedTest : public InProcessBrowserTest,
   }
  protected:
   void SetUpInProcessBrowserTestFixture() override {
-    chrome::EnableQueryExtractionForTesting();
+    search::EnableQueryExtractionForTesting();
     ASSERT_TRUE(https_test_server().Start());
     GURL instant_url = https_test_server().GetURL(
         "files/instant_extended.html?strk=1&");
@@ -255,7 +256,7 @@ class InstantExtendedPrefetchTest : public InstantExtendedTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    chrome::EnableQueryExtractionForTesting();
+    search::EnableQueryExtractionForTesting();
     ASSERT_TRUE(https_test_server().Start());
     GURL instant_url = https_test_server().GetURL(
         "files/instant_extended.html?strk=1&");
@@ -750,7 +751,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_NavigateBackToNTP) {
   load_stop_observer_2.Wait();
 
   active_tab = browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(chrome::IsInstantNTP(active_tab));
+  EXPECT_TRUE(search::IsInstantNTP(active_tab));
 }
 
 // Flaky: crbug.com/267119

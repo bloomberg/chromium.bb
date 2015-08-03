@@ -27,44 +27,44 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessSetVoiceSearchSupport() {
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldProcessFocusOmnibox(bool is_active_tab) {
-  return is_active_tab && !is_incognito_ && chrome::IsInstantNTP(web_contents_);
+  return is_active_tab && !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldProcessNavigateToURL(bool is_active_tab) {
-  return is_active_tab && !is_incognito_ && chrome::IsInstantNTP(web_contents_);
+  return is_active_tab && !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldProcessDeleteMostVisitedItem() {
-  return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldProcessUndoMostVisitedDeletion() {
-  return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldProcessUndoAllMostVisitedDeletions() {
-  return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldProcessLogEvent() {
-  return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldProcessPasteIntoOmnibox(
     bool is_active_tab) {
-  return is_active_tab && !is_incognito_ && chrome::IsInstantNTP(web_contents_);
+  return is_active_tab && !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldProcessChromeIdentityCheck() {
-  return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldProcessHistorySyncCheck() {
-  return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldSendSetPromoInformation() {
-  return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldSendSetDisplayInstantResults() {
@@ -89,11 +89,11 @@ bool SearchIPCRouterPolicyImpl::ShouldSendOmniboxFocusChanged() {
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldSendMostVisitedItems() {
-  return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldSendThemeBackgroundInfo() {
-  return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldSendToggleVoiceSearch() {

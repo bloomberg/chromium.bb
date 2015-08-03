@@ -28,6 +28,7 @@
 #include "components/favicon/core/large_icon_service.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/search/search.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -52,7 +53,7 @@
 InstantService::InstantService(Profile* profile)
     : profile_(profile),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile_)),
-      omnibox_start_margin_(chrome::kDisableStartMargin),
+      omnibox_start_margin_(search::kDisableStartMargin),
       weak_ptr_factory_(this) {
   // The initialization below depends on a typical set of browser threads. Skip
   // it if we are running in a unit test without the full suite.
@@ -245,7 +246,7 @@ void InstantService::Observe(int type,
 
 void InstantService::SendSearchURLsToRenderer(content::RenderProcessHost* rph) {
   rph->Send(new ChromeViewMsg_SetSearchURLs(
-      chrome::GetSearchURLs(profile_), chrome::GetNewTabPageURL(profile_)));
+      search::GetSearchURLs(profile_), search::GetNewTabPageURL(profile_)));
 }
 
 void InstantService::OnOmniboxStartMarginChanged(int start_margin) {
@@ -461,10 +462,10 @@ void InstantService::TopSitesChanged(history::TopSites* top_sites,
 }
 
 void InstantService::ResetInstantSearchPrerenderer() {
-  if (!chrome::ShouldPrefetchSearchResults())
+  if (!search::ShouldPrefetchSearchResults())
     return;
 
-  GURL url(chrome::GetSearchResultPrefetchBaseURL(profile_));
+  GURL url(search::GetSearchResultPrefetchBaseURL(profile_));
   instant_prerenderer_.reset(
       url.is_valid() ? new InstantSearchPrerenderer(profile_, url) : NULL);
 }

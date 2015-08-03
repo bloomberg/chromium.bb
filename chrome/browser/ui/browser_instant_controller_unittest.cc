@@ -141,11 +141,10 @@ TEST_F(BrowserInstantControllerTest, DefaultSearchProviderChanged) {
 
     if (test.should_reload) {
       // Validate final instant state.
-      EXPECT_EQ(
-          test.end_in_instant_process,
-          chrome::ShouldAssignURLToInstantRenderer(
-              observer->current_url(), profile()))
-        << test.description;
+      EXPECT_EQ(test.end_in_instant_process,
+                search::ShouldAssignURLToInstantRenderer(
+                    observer->current_url(), profile()))
+          << test.description;
     }
 
     // Ensure only the expected tabs(contents) reloaded.
@@ -185,11 +184,10 @@ TEST_F(BrowserInstantControllerTest, GoogleBaseURLUpdated) {
     FakeWebContentsObserver* observer = observers[i];
 
     // Validate final instant state.
-    EXPECT_EQ(
-        test.end_in_instant_process,
-        chrome::ShouldAssignURLToInstantRenderer(
-            observer->current_url(), profile()))
-      << test.description;
+    EXPECT_EQ(test.end_in_instant_process,
+              search::ShouldAssignURLToInstantRenderer(observer->current_url(),
+                                                       profile()))
+        << test.description;
 
     // Ensure only the expected tabs(contents) reloaded.
     EXPECT_EQ(test.should_reload ? 1 : 0, observer->num_reloads())

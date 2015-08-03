@@ -601,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ClearPendingOnFailUnlessNTP) {
   ASSERT_TRUE(test_server()->Start());
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  GURL ntp_url(chrome::GetNewTabPageURL(browser()->profile()));
+  GURL ntp_url(search::GetNewTabPageURL(browser()->profile()));
   ui_test_utils::NavigateToURL(browser(), ntp_url);
 
   // Navigate to a 204 URL (aborts with no content) on the NTP and make sure it

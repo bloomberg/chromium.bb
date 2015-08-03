@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, NewTabPageURL) {
   GURL url(chrome::kChromeUINewTabURL);
   TestURLNotShown(url);
   // Check that the actual URL corresponds to the new tab URL.
-  EXPECT_TRUE(chrome::IsNTPURL(GetNavigationEntry()->GetURL(), profile()));
+  EXPECT_TRUE(search::IsNTPURL(GetNavigationEntry()->GetURL(), profile()));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, NewTabPageURLOverride) {

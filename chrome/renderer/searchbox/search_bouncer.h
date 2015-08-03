@@ -26,7 +26,7 @@ class SearchBouncer : public content::RenderProcessObserver {
   static SearchBouncer* GetInstance();
 
   // Returns whether a navigation to |url| should bounce back to the browser as
-  // a potential Instant url. See chrome::ShouldAssignURLToInstantRenderer().
+  // a potential Instant url. See search::ShouldAssignURLToInstantRenderer().
   bool ShouldFork(const GURL& url) const;
 
   // Returns whether |url| is a valid Instant new tab page URL.

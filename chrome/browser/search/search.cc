@@ -41,22 +41,13 @@
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #endif
 
-namespace chrome {
+namespace search {
 
 namespace {
 
 const char kPrefetchSearchResultsOnSRP[] = "prefetch_results_srp";
-const char kAllowPrefetchNonDefaultMatch[] = "allow_prefetch_non_default_match";
 const char kPrerenderInstantUrlOnOmniboxFocus[] =
     "prerender_instant_url_on_omnibox_focus";
-
-#if defined(OS_ANDROID)
-const char kPrefetchSearchResultsFlagName[] = "prefetch_results";
-
-// Controls whether to reuse prerendered Instant Search base page to commit any
-// search query.
-const char kReuseInstantSearchBasePage[] = "reuse_instant_search_base_page";
-#endif
 
 // Controls whether to use the alternate Instant search base URL. This allows
 // experimentation of Instant search.
@@ -65,9 +56,6 @@ const char kUseSearchPathForInstant[] = "use_search_path_for_instant";
 const char kAltInstantURLPath[] = "search";
 const char kAltInstantURLQueryParams[] = "&qbp=1";
 
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-const char kEnableQueryExtractionFlagName[] = "query_extraction";
-#endif
 const char kShouldShowGoogleLocalNTPFlagName[] = "google_local_ntp";
 
 // Status of the New Tab URL for the default Search provider. NOTE: Used in a
@@ -152,31 +140,18 @@ bool MatchesAnySearchURL(const GURL& url,
                          const SearchTermsData& search_terms_data) {
   GURL search_url = TemplateURLRefToGURL(template_url->url_ref(),
                                          search_terms_data, false, false);
-  if (search_url.is_valid() &&
-      search::MatchesOriginAndPath(url, search_url))
+  if (search_url.is_valid() && MatchesOriginAndPath(url, search_url))
     return true;
 
   // "URLCount() - 1" because we already tested url_ref above.
   for (size_t i = 0; i < template_url->URLCount() - 1; ++i) {
     TemplateURLRef ref(template_url, i);
     search_url = TemplateURLRefToGURL(ref, search_terms_data, false, false);
-    if (search_url.is_valid() &&
-        search::MatchesOriginAndPath(url, search_url))
+    if (search_url.is_valid() && MatchesOriginAndPath(url, search_url))
       return true;
   }
 
   return false;
-}
-
-
-
-// |url| should either have a secure scheme or have a non-HTTPS base URL that
-// the user specified using --google-base-url. (This allows testers to use
-// --google-base-url to point at non-HTTPS servers, which eases testing.)
-bool IsSuitableURLForInstant(const GURL& url, const TemplateURL* template_url) {
-  return template_url->HasSearchTermsReplacementKey(url) &&
-         (url.SchemeIsCryptographic() ||
-          google_util::StartsWithCommandLineGoogleBaseURL(url));
 }
 
 // Returns true if |url| can be used as an Instant URL for |profile|.
@@ -188,8 +163,7 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
     return false;
 
   const GURL new_tab_url(GetNewTabPageURL(profile));
-  if (new_tab_url.is_valid() &&
-      search::MatchesOriginAndPath(url, new_tab_url))
+  if (new_tab_url.is_valid() && MatchesOriginAndPath(url, new_tab_url))
     return true;
 
   TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
@@ -206,7 +180,7 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
   if (!instant_url.is_valid())
     return false;
 
-  if (search::MatchesOriginAndPath(url, instant_url))
+  if (MatchesOriginAndPath(url, instant_url))
     return true;
 
   return IsQueryExtractionEnabled() &&
@@ -310,39 +284,6 @@ struct NewTabURLDetails {
 };
 
 }  // namespace
-
-// Negative start-margin values prevent the "es_sm" parameter from being used.
-const int kDisableStartMargin = -1;
-
-std::string InstantExtendedEnabledParam(bool for_search) {
-  if (for_search && !chrome::IsQueryExtractionEnabled())
-    return std::string();
-  return std::string(google_util::kInstantExtendedAPIParam) + "=" +
-      base::Uint64ToString(EmbeddedSearchPageVersion()) + "&";
-}
-
-std::string ForceInstantResultsParam(bool for_prerender) {
-  return (for_prerender || !IsInstantExtendedAPIEnabled()) ?
-      "ion=1&" : std::string();
-}
-
-bool IsQueryExtractionEnabled() {
-#if defined(OS_IOS) || defined(OS_ANDROID)
-  return true;
-#else
-  if (!IsInstantExtendedAPIEnabled())
-    return false;
-
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableQueryExtraction))
-    return true;
-
-  FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
-      kEnableQueryExtractionFlagName, false, flags);
-#endif  // defined(OS_IOS) || defined(OS_ANDROID)
-}
 
 base::string16 ExtractSearchTermsFromURL(Profile* profile, const GURL& url) {
   if (url.is_valid() && url == GetSearchResultPrefetchBaseURL(profile)) {
@@ -460,7 +401,7 @@ bool NavEntryIsInstantNTP(const content::WebContents* contents,
 
   GURL new_tab_url(GetNewTabPageURL(profile));
   return new_tab_url.is_valid() &&
-      search::MatchesOriginAndPath(entry->GetURL(), new_tab_url);
+         MatchesOriginAndPath(entry->GetURL(), new_tab_url);
 }
 
 bool IsSuggestPrefEnabled(Profile* profile) {
@@ -532,33 +473,6 @@ GURL GetSearchResultPrefetchBaseURL(Profile* profile) {
   return ShouldPrefetchSearchResults() ? GetInstantURL(profile, true) : GURL();
 }
 
-bool ShouldPrefetchSearchResults() {
-  if (!IsInstantExtendedAPIEnabled())
-    return false;
-
-#if defined(OS_ANDROID)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kPrefetchSearchResults)) {
-    return true;
-  }
-
-  FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
-      kPrefetchSearchResultsFlagName, false, flags);
-#else
-  return true;
-#endif
-}
-
-bool ShouldAllowPrefetchNonDefaultMatch() {
-  if (!ShouldPrefetchSearchResults())
-    return false;
-
-  FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
-      kAllowPrefetchNonDefaultMatch, false, flags);
-}
-
 bool ShouldPrerenderInstantUrlOnOmniboxFocus() {
   if (!ShouldPrefetchSearchResults())
     return false;
@@ -566,19 +480,6 @@ bool ShouldPrerenderInstantUrlOnOmniboxFocus() {
   FieldTrialFlags flags;
   return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
       kPrerenderInstantUrlOnOmniboxFocus, false, flags);
-}
-
-bool ShouldReuseInstantSearchBasePage() {
-  if (!ShouldPrefetchSearchResults())
-    return false;
-
-#if defined(OS_ANDROID)
-  FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
-      kReuseInstantSearchBasePage, false, flags);
-#else
-  return true;
-#endif
 }
 
 GURL GetLocalInstantURL(Profile* profile) {
@@ -611,7 +512,7 @@ GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
   std::string remote_ntp_host(chrome::kChromeSearchRemoteNtpHost);
   NewTabURLDetails details = NewTabURLDetails::ForProfile(profile);
   if (details.state == NEW_TAB_URL_VALID &&
-      search::MatchesOriginAndPath(url, details.url)) {
+      MatchesOriginAndPath(url, details.url)) {
     replacements.SetHost(remote_ntp_host.c_str(),
                          url::Component(0, remote_ntp_host.length()));
   }
@@ -650,15 +551,13 @@ bool HandleNewTabURLReverseRewrite(GURL* url,
   if (profile && profile->IsOffTheRecord())
     return false;
 
-  if (search::MatchesOriginAndPath(
-      GURL(chrome::kChromeSearchLocalNtpUrl), *url)) {
+  if (MatchesOriginAndPath(GURL(chrome::kChromeSearchLocalNtpUrl), *url)) {
     *url = GURL(chrome::kChromeUINewTabURL);
     return true;
   }
 
   GURL new_tab_url(GetNewTabPageURL(profile));
-  if (new_tab_url.is_valid() &&
-      search::MatchesOriginAndPath(new_tab_url, *url)) {
+  if (new_tab_url.is_valid() && MatchesOriginAndPath(new_tab_url, *url)) {
     *url = GURL(chrome::kChromeUINewTabURL);
     return true;
   }
@@ -690,11 +589,6 @@ bool ShouldPrefetchSearchResultsOnSRP() {
       kPrefetchSearchResultsOnSRP, false, flags);
 }
 
-void EnableQueryExtractionForTesting() {
-  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-  cl->AppendSwitch(switches::kEnableQueryExtraction);
-}
-
 bool ShouldUseAltInstantURL() {
   FieldTrialFlags flags;
   return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
@@ -707,4 +601,4 @@ bool ShouldUseSearchPathForInstant() {
       kUseSearchPathForInstant, false, flags);
 }
 
-}  // namespace chrome
+}  // namespace search

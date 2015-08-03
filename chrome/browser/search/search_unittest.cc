@@ -38,7 +38,7 @@
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #endif
 
-namespace chrome {
+namespace search {
 
 class SearchTest : public BrowserWithTestWindowTest {
  protected:
@@ -389,7 +389,7 @@ TEST_F(SearchTest, InstantCacheableNTPNavigationEntry) {
   EXPECT_FALSE(NavEntryIsInstantNTP(contents,
                                     controller.GetLastCommittedEntry()));
   // Test Cacheable NTP
-  NavigateAndCommitActiveTab(chrome::GetNewTabPageURL(profile()));
+  NavigateAndCommitActiveTab(GetNewTabPageURL(profile()));
   EXPECT_TRUE(NavEntryIsInstantNTP(contents,
                                    controller.GetLastCommittedEntry()));
 }
@@ -411,7 +411,7 @@ TEST_F(SearchTest, InstantCacheableNTPNavigationEntryNewProfile) {
 
 TEST_F(SearchTest, NoRewriteInIncognito) {
   profile()->ForceIncognito(true);
-  EXPECT_EQ(GURL(), chrome::GetNewTabPageURL(profile()));
+  EXPECT_EQ(GURL(), GetNewTabPageURL(profile()));
   GURL new_tab_url(chrome::kChromeUINewTabURL);
   EXPECT_FALSE(HandleNewTabURLRewrite(&new_tab_url, profile()));
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), new_tab_url);
@@ -421,7 +421,7 @@ TEST_F(SearchTest, UseLocalNTPIfNTPURLIsInsecure) {
   // Set an insecure new tab page URL and verify that it's ignored.
   SetSearchProvider(true, true);
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
-            chrome::GetNewTabPageURL(profile()));
+            GetNewTabPageURL(profile()));
   GURL new_tab_url(chrome::kChromeUINewTabURL);
   EXPECT_TRUE(HandleNewTabURLRewrite(&new_tab_url, profile()));
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl), new_tab_url);
@@ -431,7 +431,7 @@ TEST_F(SearchTest, UseLocalNTPIfNTPURLIsNotSet) {
   // Set an insecure new tab page URL and verify that it's ignored.
   SetSearchProvider(false, true);
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
-            chrome::GetNewTabPageURL(profile()));
+            GetNewTabPageURL(profile()));
   GURL new_tab_url(chrome::kChromeUINewTabURL);
   EXPECT_TRUE(HandleNewTabURLRewrite(&new_tab_url, profile()));
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl), new_tab_url);
@@ -449,7 +449,7 @@ TEST_F(SearchTest, UseLocalNTPIfNTPURLIsBlockedForSupervisedUser) {
   url_filter->SetManualHosts(&hosts);
 
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
-            chrome::GetNewTabPageURL(profile()));
+            GetNewTabPageURL(profile()));
   GURL new_tab_url(chrome::kChromeUINewTabURL);
   EXPECT_TRUE(HandleNewTabURLRewrite(&new_tab_url, profile()));
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl), new_tab_url);
@@ -554,48 +554,6 @@ TEST_F(SearchTest, CommandLineOverrides) {
   EXPECT_EQ("http://www.bar.com/webhp?a=b&strk", instant_url.spec());
 }
 
-TEST_F(SearchTest, ShouldPrefetchSearchResults_InstantExtendedAPIEnabled) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2"));
-#if defined(OS_IOS)
-  EXPECT_EQ(1ul, EmbeddedSearchPageVersion());
-  EXPECT_TRUE(ShouldPrefetchSearchResults());
-#else
-  EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
-  EXPECT_TRUE(ShouldPrefetchSearchResults());
-#endif
-}
-
-TEST_F(SearchTest, ShouldPrefetchSearchResults_Default) {
-#if defined(OS_IOS)
-  EXPECT_FALSE(ShouldPrefetchSearchResults());
-#else
-  EXPECT_TRUE(ShouldPrefetchSearchResults());
-#endif
-}
-
-TEST_F(SearchTest, ShouldReuseInstantSearchBasePage_Default) {
-#if defined(OS_IOS)
-  EXPECT_FALSE(ShouldReuseInstantSearchBasePage());
-#else
-  EXPECT_TRUE(ShouldReuseInstantSearchBasePage());
-#endif
-}
-
-TEST_F(SearchTest, ShouldAllowPrefetchNonDefaultMatch_DisabledViaFieldTrial) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:89 allow_prefetch_non_default_match:0"));
-  EXPECT_FALSE(ShouldAllowPrefetchNonDefaultMatch());
-  EXPECT_EQ(89ul, EmbeddedSearchPageVersion());
-}
-
-TEST_F(SearchTest, ShouldAllowPrefetchNonDefaultMatch_EnabledViaFieldTrial) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:80 allow_prefetch_non_default_match:1"));
-  EXPECT_TRUE(ShouldAllowPrefetchNonDefaultMatch());
-  EXPECT_EQ(80ul, EmbeddedSearchPageVersion());
-}
-
 TEST_F(SearchTest, ShouldUseAltInstantURL_DisabledViaFieldTrial) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:8 use_alternate_instant_url:0"));
@@ -664,7 +622,7 @@ TEST_F(SearchTest, IsNTPURL) {
   GURL ntp_url(chrome::kChromeUINewTabURL);
   GURL local_ntp_url(GetLocalInstantURL(profile()));
 
-  EXPECT_FALSE(chrome::IsNTPURL(invalid_url, profile()));
+  EXPECT_FALSE(IsNTPURL(invalid_url, profile()));
   // No margin.
   EnableQueryExtractionForTesting();
   profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
@@ -672,17 +630,17 @@ TEST_F(SearchTest, IsNTPURL) {
   GURL search_url_with_search_terms("https://foo.com/url?strk&bar=abc");
   GURL search_url_without_search_terms("https://foo.com/url?strk&bar");
 
-  EXPECT_FALSE(chrome::IsNTPURL(ntp_url, profile()));
-  EXPECT_TRUE(chrome::IsNTPURL(local_ntp_url, profile()));
-  EXPECT_TRUE(chrome::IsNTPURL(remote_ntp_url, profile()));
-  EXPECT_FALSE(chrome::IsNTPURL(search_url_with_search_terms, profile()));
-  EXPECT_TRUE(chrome::IsNTPURL(search_url_without_search_terms, profile()));
+  EXPECT_FALSE(IsNTPURL(ntp_url, profile()));
+  EXPECT_TRUE(IsNTPURL(local_ntp_url, profile()));
+  EXPECT_TRUE(IsNTPURL(remote_ntp_url, profile()));
+  EXPECT_FALSE(IsNTPURL(search_url_with_search_terms, profile()));
+  EXPECT_TRUE(IsNTPURL(search_url_without_search_terms, profile()));
 
-  EXPECT_FALSE(chrome::IsNTPURL(ntp_url, NULL));
-  EXPECT_FALSE(chrome::IsNTPURL(local_ntp_url, NULL));
-  EXPECT_FALSE(chrome::IsNTPURL(remote_ntp_url, NULL));
-  EXPECT_FALSE(chrome::IsNTPURL(search_url_with_search_terms, NULL));
-  EXPECT_FALSE(chrome::IsNTPURL(search_url_without_search_terms, NULL));
+  EXPECT_FALSE(IsNTPURL(ntp_url, NULL));
+  EXPECT_FALSE(IsNTPURL(local_ntp_url, NULL));
+  EXPECT_FALSE(IsNTPURL(remote_ntp_url, NULL));
+  EXPECT_FALSE(IsNTPURL(search_url_with_search_terms, NULL));
+  EXPECT_FALSE(IsNTPURL(search_url_without_search_terms, NULL));
 }
 
 TEST_F(SearchTest, GetSearchURLs) {
@@ -703,14 +661,6 @@ TEST_F(SearchTest, GetSearchResultPrefetchBaseURL) {
 #endif
 }
 
-TEST_F(SearchTest, ForceInstantResultsParam) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
-                                                     "Group1 espv:2"));
-  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
-  EXPECT_EQ("ion=1&", ForceInstantResultsParam(true));
-  EXPECT_EQ(std::string(), ForceInstantResultsParam(false));
-}
-
 struct ExtractSearchTermsTestCase {
   const char* url;
   const char* expected_result;
@@ -728,11 +678,10 @@ TEST_F(SearchTest, ExtractSearchTermsFromURL) {
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     const ExtractSearchTermsTestCase& test = kTestCases[i];
-    EXPECT_EQ(
-        test.expected_result,
-        base::UTF16ToASCII(chrome::ExtractSearchTermsFromURL(profile(),
-                                                             GURL(test.url))))
-            << test.url << " " << test.comment;
+    EXPECT_EQ(test.expected_result,
+              base::UTF16ToASCII(
+                  ExtractSearchTermsFromURL(profile(), GURL(test.url))))
+        << test.url << " " << test.comment;
   }
 }
 
@@ -756,7 +705,7 @@ TEST_F(SearchTest, IsQueryExtractionAllowedForURL) {
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     const QueryExtractionAllowedTestCase& test = kTestCases[i];
     EXPECT_EQ(test.expected_result,
-              chrome::IsQueryExtractionAllowedForURL(profile(), GURL(test.url)))
+              IsQueryExtractionAllowedForURL(profile(), GURL(test.url)))
         << test.url << " " << test.comment;
   }
 }
@@ -805,80 +754,4 @@ TEST_F(SearchURLTest, QueryExtractionDisabled) {
   EXPECT_EQ("http://www.google.com/search?q=foo", result.spec());
 }
 
-typedef SearchTest InstantExtendedEnabledParamTest;
-
-TEST_F(InstantExtendedEnabledParamTest, QueryExtractionDisabled) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
-                                                     "Group1 espv:12"));
-  // Make sure InstantExtendedEnabledParam() returns an empty string for search
-  // requests.
-#if defined(OS_IOS)
-  // Query extraction is always enabled on mobile.
-  EXPECT_TRUE(IsQueryExtractionEnabled());
-  EXPECT_EQ("espv=12&", InstantExtendedEnabledParam(true));
-#else
-  EXPECT_FALSE(IsQueryExtractionEnabled());
-  EXPECT_EQ("", InstantExtendedEnabledParam(true));
-#endif
-  EXPECT_EQ("espv=12&", InstantExtendedEnabledParam(false));
-}
-
-TEST_F(InstantExtendedEnabledParamTest, QueryExtractionEnabled) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:10 query_extraction:1"));
-  EXPECT_TRUE(IsQueryExtractionEnabled());
-  // Make sure InstantExtendedEnabledParam() returns a non-empty param string
-  // for search requests.
-  EXPECT_EQ("espv=10&", InstantExtendedEnabledParam(true));
-  EXPECT_EQ("espv=10&", InstantExtendedEnabledParam(false));
-}
-
-TEST_F(InstantExtendedEnabledParamTest, UseDefaultEmbeddedSearchPageVersion) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:-1 query_extraction:1"));
-  EXPECT_TRUE(IsQueryExtractionEnabled());
-#if defined(OS_IOS)
-  EXPECT_EQ("espv=1&", InstantExtendedEnabledParam(true));
-  EXPECT_EQ("espv=1&", InstantExtendedEnabledParam(false));
-#else
-  EXPECT_EQ("espv=2&", InstantExtendedEnabledParam(true));
-  EXPECT_EQ("espv=2&", InstantExtendedEnabledParam(false));
-#endif
-}
-
-typedef SearchTest IsQueryExtractionEnabledTest;
-
-TEST_F(IsQueryExtractionEnabledTest, NotSet) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2"));
-  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
-  EXPECT_FALSE(IsQueryExtractionEnabled());
-  EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
-}
-
-TEST_F(IsQueryExtractionEnabledTest, EnabledViaFieldTrial) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2 query_extraction:1"));
-  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
-  EXPECT_TRUE(IsQueryExtractionEnabled());
-  EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
-}
-
-TEST_F(IsQueryExtractionEnabledTest, DisabledViaFieldTrial) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2 query_extraction:0"));
-  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
-  EXPECT_FALSE(IsQueryExtractionEnabled());
-  EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
-}
-
-TEST_F(IsQueryExtractionEnabledTest, EnabledViaCommandLine) {
-  EnableQueryExtractionForTesting();
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2 query_extraction:0"));
-  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
-  EXPECT_TRUE(IsQueryExtractionEnabled());
-  EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
-}
-
-}  // namespace chrome
+}  // namespace search

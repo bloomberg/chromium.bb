@@ -141,7 +141,7 @@ scoped_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
 std::string GetConfigData(Profile* profile) {
   base::DictionaryValue config_data;
   bool is_google = DefaultSearchProviderIsGoogle(profile) &&
-      chrome::ShouldShowGoogleLocalNTP();
+                   search::ShouldShowGoogleLocalNTP();
   config_data.Set("translatedStrings",
                   GetTranslatedStrings(is_google).release());
   config_data.SetBoolean("isGooglePage", is_google);

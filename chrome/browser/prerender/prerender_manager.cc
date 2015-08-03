@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/prerender_types.h"
+#include "components/search/search.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
@@ -301,7 +302,7 @@ PrerenderHandle* PrerenderManager::AddPrerenderForInstant(
     const GURL& url,
     content::SessionStorageNamespace* session_storage_namespace,
     const gfx::Size& size) {
-  DCHECK(chrome::ShouldPrefetchSearchResults());
+  DCHECK(search::ShouldPrefetchSearchResults());
   return AddPrerender(ORIGIN_INSTANT, url, content::Referrer(), size,
                       session_storage_namespace);
 }

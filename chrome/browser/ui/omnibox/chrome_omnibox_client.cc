@@ -61,7 +61,7 @@ namespace {
 // shown); for other matches, we think the likelihood of the user selecting
 // them is low enough that prefetching isn't worth doing.
 const AutocompleteMatch* GetMatchToPrefetch(const AutocompleteResult& result) {
-  if (chrome::ShouldAllowPrefetchNonDefaultMatch()) {
+  if (search::ShouldAllowPrefetchNonDefaultMatch()) {
     const AutocompleteResult::const_iterator prefetch_match = std::find_if(
         result.begin(), result.end(), SearchProvider::ShouldPrefetch);
     return prefetch_match != result.end() ? &(*prefetch_match) : NULL;
@@ -138,7 +138,7 @@ const GURL& ChromeOmniboxClient::GetURL() const {
 }
 
 bool ChromeOmniboxClient::IsInstantNTP() const {
-  return chrome::IsInstantNTP(controller_->GetWebContents());
+  return search::IsInstantNTP(controller_->GetWebContents());
 }
 
 bool ChromeOmniboxClient::IsSearchResultsPage() const {
@@ -224,9 +224,9 @@ void ChromeOmniboxClient::OnResultChanged(
     const AutocompleteResult& result,
     bool default_match_changed,
     const base::Callback<void(const SkBitmap& bitmap)>& on_bitmap_fetched) {
-  if (chrome::IsInstantExtendedAPIEnabled() &&
+  if (search::IsInstantExtendedAPIEnabled() &&
       ((default_match_changed && result.default_match() != result.end()) ||
-       (chrome::ShouldAllowPrefetchNonDefaultMatch() && !result.empty()))) {
+       (search::ShouldAllowPrefetchNonDefaultMatch() && !result.empty()))) {
     InstantSuggestion prefetch_suggestion;
     const AutocompleteMatch* match_to_prefetch = GetMatchToPrefetch(result);
     if (match_to_prefetch) {
@@ -405,11 +405,11 @@ void ChromeOmniboxClient::DoPreconnect(const AutocompleteMatch& match) {
 
 void ChromeOmniboxClient::SetSuggestionToPrefetch(
       const InstantSuggestion& suggestion) {
-  DCHECK(chrome::IsInstantExtendedAPIEnabled());
+  DCHECK(search::IsInstantExtendedAPIEnabled());
   content::WebContents* web_contents = controller_->GetWebContents();
   if (web_contents &&
       SearchTabHelper::FromWebContents(web_contents)->IsSearchResultsPage()) {
-    if (chrome::ShouldPrefetchSearchResultsOnSRP()) {
+    if (search::ShouldPrefetchSearchResultsOnSRP()) {
       SearchTabHelper::FromWebContents(web_contents)->
           SetSuggestionToPrefetch(suggestion);
     }

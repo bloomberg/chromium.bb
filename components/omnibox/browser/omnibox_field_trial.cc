@@ -497,7 +497,7 @@ std::string OmniboxFieldTrial::GetValueForRuleInContext(
   const std::string page_classification_str =
       base::IntToString(static_cast<int>(page_classification));
   const std::string instant_extended =
-      chrome::IsInstantExtendedAPIEnabled() ? "1" : "0";
+      search::IsInstantExtendedAPIEnabled() ? "1" : "0";
   // Look up rule in this exact context.
   VariationParams::const_iterator it = params.find(
       rule + ":" + page_classification_str + ":" + instant_extended);

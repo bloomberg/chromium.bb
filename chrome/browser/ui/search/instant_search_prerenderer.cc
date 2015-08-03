@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/search/search.h"
 #include "components/search_engines/template_url_service.h"
 
 namespace {
@@ -132,7 +133,7 @@ bool InstantSearchPrerenderer::UsePrerenderedPage(
     const GURL& url,
     chrome::NavigateParams* params) {
   base::string16 search_terms =
-      chrome::ExtractSearchTermsFromURL(profile_, url);
+      search::ExtractSearchTermsFromURL(profile_, url);
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(profile_);
   if (search_terms.empty() || !params->target_contents ||
@@ -191,7 +192,7 @@ content::WebContents* InstantSearchPrerenderer::prerender_contents() const {
 
 bool InstantSearchPrerenderer::QueryMatchesPrefetch(
     const base::string16& query) const {
-  if (chrome::ShouldReuseInstantSearchBasePage())
+  if (search::ShouldReuseInstantSearchBasePage())
     return true;
   return last_instant_suggestion_.text == query;
 }

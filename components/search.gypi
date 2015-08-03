@@ -8,7 +8,10 @@
       'target_name': 'search',
       'type': 'static_library',
       'dependencies': [
-        '../base/base.gyp:base'
+        '../base/base.gyp:base',
+        '../url/url.gyp:url_lib',
+        'google_core_browser',
+        'search_engines',
       ],
       'include_dirs': [
         '..',

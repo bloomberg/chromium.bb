@@ -32,7 +32,7 @@ SearchModel::~SearchModel() {
 }
 
 void SearchModel::SetState(const State& new_state) {
-  DCHECK(chrome::IsInstantExtendedAPIEnabled())
+  DCHECK(search::IsInstantExtendedAPIEnabled())
       << "Please do not try to set the SearchModel mode without first "
       << "checking if Search is enabled.";
 
@@ -47,7 +47,7 @@ void SearchModel::SetState(const State& new_state) {
 }
 
 void SearchModel::SetMode(const SearchMode& new_mode) {
-  DCHECK(chrome::IsInstantExtendedAPIEnabled())
+  DCHECK(search::IsInstantExtendedAPIEnabled())
       << "Please do not try to set the SearchModel mode without first "
       << "checking if Search is enabled.";
 
@@ -62,7 +62,7 @@ void SearchModel::SetMode(const SearchMode& new_mode) {
 }
 
 void SearchModel::SetInstantSupportState(InstantSupportState instant_support) {
-  DCHECK(chrome::IsInstantExtendedAPIEnabled())
+  DCHECK(search::IsInstantExtendedAPIEnabled())
       << "Please do not try to set the SearchModel state without first "
       << "checking if Search is enabled.";
 
@@ -76,7 +76,7 @@ void SearchModel::SetInstantSupportState(InstantSupportState instant_support) {
 }
 
 void SearchModel::SetVoiceSearchSupported(bool supported) {
-  DCHECK(chrome::IsInstantExtendedAPIEnabled())
+  DCHECK(search::IsInstantExtendedAPIEnabled())
       << "Please do not try to set the SearchModel state without first "
       << "checking if Search is enabled.";
 

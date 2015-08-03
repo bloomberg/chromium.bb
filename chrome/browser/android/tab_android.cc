@@ -552,7 +552,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(JNIEnv* env,
         InstantSearchPrerenderer::GetForProfile(GetProfile());
     if (prerenderer) {
       const base::string16& search_terms =
-          chrome::ExtractSearchTermsFromURL(GetProfile(), gurl);
+          search::ExtractSearchTermsFromURL(GetProfile(), gurl);
       if (!search_terms.empty() &&
           prerenderer->CanCommitQuery(web_contents_.get(), search_terms)) {
         EmbeddedSearchRequestParams request_params(gurl);
@@ -603,7 +603,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(JNIEnv* env,
           static_cast<blink::WebReferrerPolicy>(referrer_policy));
     }
     const base::string16 search_terms =
-        chrome::ExtractSearchTermsFromURL(GetProfile(), gurl);
+        search::ExtractSearchTermsFromURL(GetProfile(), gurl);
     SearchTabHelper* search_tab_helper =
         SearchTabHelper::FromWebContents(web_contents_.get());
     if (!search_terms.empty() && search_tab_helper &&

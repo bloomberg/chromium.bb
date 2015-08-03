@@ -58,7 +58,7 @@ class ToolbarModelImpl : public ChromeToolbarModel {
   // Helper method to extract the profile from the navigation controller.
   Profile* GetProfile() const;
 
-  // Returns search terms as in chrome::GetSearchTerms() if such terms should
+  // Returns search terms as in search::GetSearchTerms() if such terms should
   // appear in the omnibox (i.e. the page is sufficiently secure, search term
   // replacement is enabled, editing is not in progress, etc.).  If
   // |ignore_editing| is true, the "editing not in progress" check is skipped.

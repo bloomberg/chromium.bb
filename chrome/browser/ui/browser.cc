@@ -413,7 +413,7 @@ Browser::Browser(const CreateParams& params)
   encoding_auto_detect_.Init(prefs::kWebKitUsesUniversalDetector,
                              profile_->GetPrefs());
 
-  if (chrome::IsInstantExtendedAPIEnabled() && is_type_tabbed())
+  if (search::IsInstantExtendedAPIEnabled() && is_type_tabbed())
     instant_controller_.reset(new BrowserInstantController(this));
 
   if (extensions::HostedAppBrowserController::IsForHostedApp(this)) {
@@ -1037,7 +1037,7 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
   // Propagate the profile to the location bar.
   UpdateToolbar((reason & CHANGE_REASON_REPLACED) == 0);
 
-  if (chrome::IsInstantExtendedAPIEnabled())
+  if (search::IsInstantExtendedAPIEnabled())
     search_delegate_->OnTabActivated(new_contents);
 
   // Update reload/stop state.
@@ -1193,7 +1193,7 @@ bool Browser::ShouldPreserveAbortedURLs(WebContents* source) {
   if (!profile || !source->GetController().GetLastCommittedEntry())
     return false;
   GURL committed_url(source->GetController().GetLastCommittedEntry()->GetURL());
-  return chrome::IsNTPURL(committed_url, profile);
+  return search::IsNTPURL(committed_url, profile);
 }
 
 void Browser::SetFocusToLocationBar(bool select_all) {
@@ -1591,7 +1591,7 @@ bool Browser::ShouldFocusLocationBarByDefault(WebContents* source) {
     }
   }
 
-  return chrome::NavEntryIsInstantNTP(source, entry);
+  return search::NavEntryIsInstantNTP(source, entry);
 }
 
 void Browser::ViewSourceForTab(WebContents* source, const GURL& page_url) {
@@ -1859,7 +1859,7 @@ gfx::Size Browser::GetSizeForNewRenderView(WebContents* web_contents) const {
   const NavigationEntry* pending_entry =
       web_contents->GetController().GetPendingEntry();
   if (pending_entry &&
-      !chrome::IsNTPURL(pending_entry->GetVirtualURL(), profile_)) {
+      !search::IsNTPURL(pending_entry->GetVirtualURL(), profile_)) {
     size.Enlarge(
         0, window()->GetRenderViewHeightInsetWithDetachedBookmarkBar());
   }

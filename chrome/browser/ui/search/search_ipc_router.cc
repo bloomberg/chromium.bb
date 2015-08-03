@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/render_messages.h"
+#include "components/search/search.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 
@@ -80,10 +81,10 @@ void SearchIPCRouter::SetDisplayInstantResults() {
   if (!policy_->ShouldSendSetDisplayInstantResults())
     return;
 
-  bool is_search_results_page = !chrome::GetSearchTerms(web_contents()).empty();
-  bool display_instant_results = is_search_results_page ?
-      chrome::ShouldPrefetchSearchResultsOnSRP() :
-          chrome::ShouldPrefetchSearchResults();
+  bool is_search_results_page = !search::GetSearchTerms(web_contents()).empty();
+  bool display_instant_results =
+      is_search_results_page ? search::ShouldPrefetchSearchResultsOnSRP()
+                             : search::ShouldPrefetchSearchResults();
   Send(new ChromeViewMsg_SearchBoxSetDisplayInstantResults(
        routing_id(), display_instant_results));
 }
@@ -165,7 +166,7 @@ bool SearchIPCRouter::OnMessageReceived(const IPC::Message& message) {
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  if (!chrome::IsRenderedInInstantProcess(web_contents(), profile))
+  if (!search::IsRenderedInInstantProcess(web_contents(), profile))
     return false;
 
   bool handled = true;

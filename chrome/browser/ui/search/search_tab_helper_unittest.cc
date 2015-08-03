@@ -401,7 +401,7 @@ class SearchTabHelperPrerenderTest : public InstantUnitTestBase {
   }
 
   bool IsInstantURLMarkedForPrerendering() {
-    GURL instant_url(chrome::GetSearchResultPrefetchBaseURL(profile()));
+    GURL instant_url(search::GetSearchResultPrefetchBaseURL(profile()));
     prerender::PrerenderManager* prerender_manager =
         prerender::PrerenderManagerFactory::GetForProfile(profile());
     return prerender_manager->HasPrerenderedUrl(instant_url, web_contents());

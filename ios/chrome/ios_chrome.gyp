@@ -273,6 +273,8 @@
         'browser/prefs/pref_observer_bridge.h',
         'browser/prefs/pref_observer_bridge.mm',
         'browser/procedural_block_types.h',
+        'browser/search/search_util.cc',
+        'browser/search/search_util.h',
         'browser/search_engines/search_engines_util.cc',
         'browser/search_engines/search_engines_util.h',
         'browser/search_engines/template_url_service_client_impl.cc',

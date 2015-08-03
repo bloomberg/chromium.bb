@@ -60,8 +60,8 @@ namespace {
 bool IsCacheableNTP(const content::WebContents* contents) {
   const content::NavigationEntry* entry =
       contents->GetController().GetLastCommittedEntry();
-  return chrome::NavEntryIsInstantNTP(contents, entry) &&
-      entry->GetURL() != GURL(chrome::kChromeSearchLocalNtpUrl);
+  return search::NavEntryIsInstantNTP(contents, entry) &&
+         entry->GetURL() != GURL(chrome::kChromeSearchLocalNtpUrl);
 }
 
 bool IsNTP(const content::WebContents* contents) {
@@ -72,11 +72,11 @@ bool IsNTP(const content::WebContents* contents) {
   if (entry && entry->GetVirtualURL() == GURL(chrome::kChromeUINewTabURL))
     return true;
 
-  return chrome::IsInstantNTP(contents);
+  return search::IsInstantNTP(contents);
 }
 
 bool IsSearchResults(const content::WebContents* contents) {
-  return !chrome::GetSearchTerms(contents).empty();
+  return !search::GetSearchTerms(contents).empty();
 }
 
 bool IsLocal(const content::WebContents* contents) {
@@ -143,7 +143,7 @@ bool OmniboxHasFocus(OmniboxView* omnibox) {
 
 SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
-      is_search_enabled_(chrome::IsInstantExtendedAPIEnabled()),
+      is_search_enabled_(search::IsInstantExtendedAPIEnabled()),
       web_contents_(web_contents),
       ipc_router_(web_contents,
                   this,
@@ -194,7 +194,7 @@ void SearchTabHelper::OmniboxFocusChanged(OmniboxFocusState state,
 
     InstantSearchPrerenderer* prerenderer =
         InstantSearchPrerenderer::GetForProfile(profile());
-    if (!prerenderer || !chrome::ShouldPrerenderInstantUrlOnOmniboxFocus())
+    if (!prerenderer || !search::ShouldPrerenderInstantUrlOnOmniboxFocus())
       return;
 
     if (state == OMNIBOX_FOCUS_NONE) {
@@ -229,7 +229,7 @@ void SearchTabHelper::InstantSupportChanged(bool instant_support) {
   content::NavigationEntry* entry =
       web_contents_->GetController().GetLastCommittedEntry();
   if (entry) {
-    chrome::SetInstantSupportStateInNavigationEntry(new_state, entry);
+    search::SetInstantSupportStateInNavigationEntry(new_state, entry);
     if (delegate_ && !instant_support)
       delegate_->OnWebContentsInstantSupportDisabled(web_contents_);
   }
@@ -253,7 +253,7 @@ void SearchTabHelper::OnTabActivated() {
   ipc_router_.OnTabActivated();
 
   OmniboxView* omnibox_view = GetOmniboxView();
-  if (chrome::ShouldPrerenderInstantUrlOnOmniboxFocus() &&
+  if (search::ShouldPrerenderInstantUrlOnOmniboxFocus() &&
       omnibox_has_focus_fn_(omnibox_view)) {
     InstantSearchPrerenderer* prerenderer =
         InstantSearchPrerenderer::GetForProfile(profile());
@@ -285,7 +285,7 @@ void SearchTabHelper::RenderViewCreated(
 void SearchTabHelper::DidStartNavigationToPendingEntry(
     const GURL& url,
     content::NavigationController::ReloadType /* reload_type */) {
-  if (chrome::IsNTPURL(url, profile())) {
+  if (search::IsNTPURL(url, profile())) {
     // Set the title on any pending entry corresponding to the NTP. This
     // prevents any flickering of the tab title.
     content::NavigationEntry* entry =
@@ -300,8 +300,8 @@ void SearchTabHelper::DidNavigateMainFrame(
     const content::FrameNavigateParams& params) {
   if (IsCacheableNTP(web_contents_)) {
     UMA_HISTOGRAM_ENUMERATION("InstantExtended.CacheableNTPLoad",
-                              chrome::CACHEABLE_NTP_LOAD_SUCCEEDED,
-                              chrome::CACHEABLE_NTP_LOAD_MAX);
+                              search::CACHEABLE_NTP_LOAD_SUCCEEDED,
+                              search::CACHEABLE_NTP_LOAD_MAX);
   }
 
   // Always set the title on the new tab page to be the one from our UI
@@ -318,7 +318,7 @@ void SearchTabHelper::DidNavigateMainFrame(
       web_contents_->GetController().GetLastCommittedEntry();
   if (entry && entry->GetTitle().empty() &&
       (entry->GetVirtualURL() == GURL(chrome::kChromeUINewTabURL) ||
-       chrome::NavEntryIsInstantNTP(web_contents_, entry))) {
+       search::NavEntryIsInstantNTP(web_contents_, entry))) {
     entry->SetTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
   }
 }
@@ -326,7 +326,7 @@ void SearchTabHelper::DidNavigateMainFrame(
 void SearchTabHelper::DidFinishLoad(content::RenderFrameHost* render_frame_host,
                                     const GURL& /* validated_url */) {
   if (!render_frame_host->GetParent()) {
-    if (chrome::IsInstantNTP(web_contents_))
+    if (search::IsInstantNTP(web_contents_))
       RecordNewTabLoadTime(web_contents_);
 
     DetermineIfPageSupportsInstant();
@@ -341,7 +341,7 @@ void SearchTabHelper::NavigationEntryCommitted(
   if (!load_details.is_main_frame)
     return;
 
-  if (chrome::ShouldAssignURLToInstantRenderer(web_contents_->GetURL(),
+  if (search::ShouldAssignURLToInstantRenderer(web_contents_->GetURL(),
                                                profile())) {
     InstantService* instant_service =
         InstantServiceFactory::GetForProfile(profile());
@@ -363,7 +363,7 @@ void SearchTabHelper::NavigationEntryCommitted(
     // support for the navigated page. So, copy over the Instant support from
     // the previous entry. If the page does not support Instant, update the
     // location bar from here to turn off search terms replacement.
-    chrome::SetInstantSupportStateInNavigationEntry(model_.instant_support(),
+    search::SetInstantSupportStateInNavigationEntry(model_.instant_support(),
                                                     entry);
     if (delegate_ && model_.instant_support() == INSTANT_SUPPORT_NO)
       delegate_->OnWebContentsInstantSupportDisabled(web_contents_);
@@ -372,7 +372,7 @@ void SearchTabHelper::NavigationEntryCommitted(
 
   model_.SetInstantSupportState(INSTANT_SUPPORT_UNKNOWN);
   model_.SetVoiceSearchSupported(false);
-  chrome::SetInstantSupportStateInNavigationEntry(model_.instant_support(),
+  search::SetInstantSupportStateInNavigationEntry(model_.instant_support(),
                                                   entry);
 
   if (InInstantProcess(profile(), web_contents_))

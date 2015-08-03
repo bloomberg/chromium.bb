@@ -1167,7 +1167,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
              translate::TranslateDownloadManager::IsSupportedLanguage(
                  target_lang) &&
              // Disable on the Instant Extended NTP.
-             !chrome::IsInstantNTP(embedder_web_contents_);
+             !search::IsInstantNTP(embedder_web_contents_);
     }
 
     case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB:

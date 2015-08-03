@@ -190,7 +190,7 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
 
   void OnMessageReceived(const IPC::Message& message) {
     bool should_handle_message =
-        chrome::IsRenderedInInstantProcess(web_contents(), profile());
+        search::IsRenderedInInstantProcess(web_contents(), profile());
     bool handled = GetSearchIPCRouter().OnMessageReceived(message);
     ASSERT_EQ(should_handle_message, handled);
   }

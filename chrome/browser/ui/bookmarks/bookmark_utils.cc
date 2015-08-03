@@ -295,8 +295,8 @@ bool HasBookmarkURLsAllowedInIncognitoMode(
 
 GURL GetURLToBookmark(content::WebContents* web_contents) {
   DCHECK(web_contents);
-  return IsInstantNTP(web_contents) ?
-      GURL(kChromeUINewTabURL) : web_contents->GetURL();
+  return search::IsInstantNTP(web_contents) ? GURL(kChromeUINewTabURL)
+                                            : web_contents->GetURL();
 }
 
 void GetURLAndTitleToBookmark(content::WebContents* web_contents,
@@ -342,7 +342,7 @@ bool IsAppsShortcutEnabled(Profile* profile,
   if (host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH)
     return false;
 
-  return chrome::IsInstantExtendedAPIEnabled() && !profile->IsOffTheRecord();
+  return search::IsInstantExtendedAPIEnabled() && !profile->IsOffTheRecord();
 }
 
 bool ShouldShowAppsShortcutInBookmarkBar(

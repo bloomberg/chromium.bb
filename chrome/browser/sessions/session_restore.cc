@@ -780,7 +780,7 @@ void SessionRestore::RestoreSessionAfterCrash(Browser* browser) {
     const content::WebContents* active_tab =
         browser->tab_strip_model()->GetWebContentsAt(0);
     if (active_tab->GetURL() == GURL(chrome::kChromeUINewTabURL) ||
-        chrome::IsInstantNTP(active_tab)) {
+        search::IsInstantNTP(active_tab)) {
       // There is only one tab and its the new tab page, make session restore
       // clobber it.
       behavior = SessionRestore::CLOBBER_CURRENT_TAB;

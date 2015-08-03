@@ -901,8 +901,8 @@ GURL ChromeContentBrowserClient::GetEffectiveURL(
 
   // If the input |url| should be assigned to the Instant renderer, make its
   // effective URL distinct from other URLs on the search provider's domain.
-  if (chrome::ShouldAssignURLToInstantRenderer(url, profile))
-    return chrome::GetEffectiveURLForInstant(url, profile);
+  if (search::ShouldAssignURLToInstantRenderer(url, profile))
+    return search::GetEffectiveURLForInstant(url, profile);
 
 #if defined(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientExtensionsPart::GetEffectiveURL(
@@ -923,7 +923,7 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
   if (!profile)
     return false;
 
-  if (chrome::ShouldUseProcessPerSiteForInstantURL(effective_url, profile))
+  if (search::ShouldUseProcessPerSiteForInstantURL(effective_url, profile))
     return true;
 
 #if defined(ENABLE_EXTENSIONS)
@@ -1034,7 +1034,7 @@ bool ChromeContentBrowserClient::IsSuitableHost(
     bool is_instant_process = instant_service->IsInstantProcess(
         process_host->GetID());
     bool should_be_in_instant_process =
-        chrome::ShouldAssignURLToInstantRenderer(site_url, profile);
+        search::ShouldAssignURLToInstantRenderer(site_url, profile);
     if (is_instant_process || should_be_in_instant_process)
       return is_instant_process && should_be_in_instant_process;
   }
@@ -1091,8 +1091,8 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
 
   // Remember the ID of the Instant process to signal the renderer process
   // on startup in |AppendExtraCommandLineSwitches| below.
-  if (chrome::ShouldAssignURLToInstantRenderer(
-          site_instance->GetSiteURL(), profile)) {
+  if (search::ShouldAssignURLToInstantRenderer(site_instance->GetSiteURL(),
+                                               profile)) {
     InstantService* instant_service =
         InstantServiceFactory::GetForProfile(profile);
     if (instant_service)
@@ -2179,8 +2179,8 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
                           BrowserURLHandler::null_handler());
 #else
   // Handler to rewrite chrome://newtab for InstantExtended.
-  handler->AddHandlerPair(&chrome::HandleNewTabURLRewrite,
-                          &chrome::HandleNewTabURLReverseRewrite);
+  handler->AddHandlerPair(&search::HandleNewTabURLRewrite,
+                          &search::HandleNewTabURLReverseRewrite);
 #endif
 
   // chrome: & friends.

@@ -1003,7 +1003,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       // If we've already hit the limit on non-server-scored suggestions, and
       // this isn't a server-scored suggestion we can add, skip it.
       if ((num_suggestions >= kMaxMatches) &&
-          (!chrome::IsInstantExtendedAPIEnabled() ||
+          (!search::IsInstantExtendedAPIEnabled() ||
            (i->GetAdditionalInfo(kRelevanceFromServerKey) != kTrue))) {
         continue;
       }

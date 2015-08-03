@@ -269,7 +269,7 @@ bool BrowserTabStripController::IsNewTabPage(int model_index) const {
 
   const WebContents* contents = model_->GetWebContentsAt(model_index);
   return contents && (contents->GetURL() == GURL(chrome::kChromeUINewTabURL) ||
-      chrome::IsInstantNTP(contents));
+                      search::IsInstantNTP(contents));
 }
 
 void BrowserTabStripController::SelectTab(int model_index) {

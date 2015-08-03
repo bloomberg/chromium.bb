@@ -28,7 +28,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-namespace chrome {
+namespace search {
 
 // For reporting Cacheable NTP navigations.
 enum CacheableNTPLoad {
@@ -47,33 +47,8 @@ enum OptInState {
   INSTANT_EXTENDED_OPT_IN_STATE_ENUM_COUNT,
 };
 
-// Use this value for "start margin" to prevent the "es_sm" parameter from
-// being used.
-extern const int kDisableStartMargin;
-
 // Returns whether the suggest is enabled for the given |profile|.
 bool IsSuggestPrefEnabled(Profile* profile);
-
-// Returns a string indicating whether InstantExtended is enabled, suitable
-// for adding as a query string param to the homepage or search requests.
-// Returns an empty string otherwise.
-//
-// |for_search| should be set to true for search requests, in which case this
-// returns a non-empty string only if query extraction is enabled.
-std::string InstantExtendedEnabledParam(bool for_search);
-
-// Returns a string that will cause the search results page to update
-// incrementally. Currently, Instant Extended passes a different param to
-// search results pages that also has this effect, so by default this function
-// returns the empty string when Instant Extended is enabled. However, when
-// doing instant search result prerendering, we still need to pass this param,
-// as Instant Extended does not cause incremental updates by default for the
-// prerender page. Callers should set |for_prerender| in this case to force
-// the returned string to be non-empty.
-std::string ForceInstantResultsParam(bool for_prerender);
-
-// Returns whether query extraction is enabled.
-bool IsQueryExtractionEnabled();
 
 // Extracts and returns search terms from |url|. Does not consider
 // IsQueryExtractionEnabled() and Instant support state of the page and does
@@ -148,23 +123,10 @@ std::vector<GURL> GetSearchURLs(Profile* profile);
 // trials.
 GURL GetSearchResultPrefetchBaseURL(Profile* profile);
 
-// Returns true if 'prefetch_results' flag is set to true in field trials to
-// prefetch high-confidence search suggestions.
-bool ShouldPrefetchSearchResults();
-
-// Returns true if 'allow_prefetch_non_default_match' flag is enabled in field
-// trials to allow prefetching the suggestion marked to be prefetched by the
-// suggest server even if it is not the default match.
-bool ShouldAllowPrefetchNonDefaultMatch();
-
 // Returns true if 'prerender_instant_url_on_omnibox_focus' flag is enabled in
 // field trials to prerender Instant search base page when the omnibox is
 // focused.
 bool ShouldPrerenderInstantUrlOnOmniboxFocus();
-
-// Returns true if 'reuse_instant_search_base_page' flag is set to true in field
-// trials to reuse the prerendered page to commit any search query.
-bool ShouldReuseInstantSearchBasePage();
 
 // Returns the Local Instant URL of the New Tab Page.
 // TODO(kmadhusu): Remove this function and update the call sites.
@@ -220,9 +182,6 @@ bool ShouldPrefetchSearchResultsOnSRP();
 // The following APIs are exposed for use in tests only.
 // -----------------------------------------------------
 
-// Forces query in the omnibox to be on for tests.
-void EnableQueryExtractionForTesting();
-
 // Returns the Cacheable New Tab Page URL for the given |profile|.
 GURL GetNewTabPageURL(Profile* profile);
 
@@ -237,6 +196,6 @@ bool ShouldUseAltInstantURL();
 // search.
 bool ShouldUseSearchPathForInstant();
 
-}  // namespace chrome
+}  // namespace search
 
 #endif  // CHROME_BROWSER_SEARCH_SEARCH_H_

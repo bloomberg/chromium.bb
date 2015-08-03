@@ -209,7 +209,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
       prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);
   source->AddBoolean("allowDeletingHistory", allow_deleting_history);
   source->AddBoolean("isInstantExtendedApiEnabled",
-                     chrome::IsInstantExtendedAPIEnabled());
+                     search::IsInstantExtendedAPIEnabled());
   source->AddBoolean("isSupervisedProfile", profile->IsSupervised());
   source->AddBoolean("hideDeleteVisitUI",
                      profile->IsSupervised() && !allow_deleting_history);
@@ -1037,7 +1037,7 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // On mobile we deal with foreign sessions differently.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  if (chrome::IsInstantExtendedAPIEnabled()) {
+  if (search::IsInstantExtendedAPIEnabled()) {
     web_ui->AddMessageHandler(new browser_sync::ForeignSessionHandler());
     web_ui->AddMessageHandler(new HistoryLoginHandler());
   }

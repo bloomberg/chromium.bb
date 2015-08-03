@@ -27,7 +27,7 @@ const int kThumbnailHeight = 142;
 
 // True if thumbnail retargeting feature is enabled (Finch/flags).
 bool IsThumbnailRetargetingEnabled() {
-  if (!chrome::IsInstantExtendedAPIEnabled())
+  if (!search::IsInstantExtendedAPIEnabled())
     return false;
 
   return base::CommandLine::ForCurrentProcess()->HasSwitch(

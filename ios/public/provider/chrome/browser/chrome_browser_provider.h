@@ -47,7 +47,6 @@ namespace ios {
 class ChromeBrowserProvider;
 class ChromeBrowserStateManager;
 class GeolocationUpdaterProvider;
-class SearchProvider;
 class StringProvider;
 class UpdatableResourceProvider;
 
@@ -102,8 +101,6 @@ class ChromeBrowserProvider {
   virtual std::string GetRiskData();
   // Returns the RapporService. May be null.
   virtual rappor::RapporService* GetRapporService();
-  // Returns the SearchProvider.
-  virtual SearchProvider* GetSearchProvider();
 };
 
 }  // namespace ios

@@ -146,7 +146,6 @@ extern const char kEnablePotentiallyAnnoyingSecurityFeatures[];
 extern const char kEnablePowerOverlay[];
 extern const char kEnablePrintPreviewRegisterPromos[];
 extern const char kEnableProfiling[];
-extern const char kEnableQueryExtraction[];
 extern const char kEnableQuic[];
 extern const char kEnableQuicPortSelection[];
 extern const char kEnableSavePasswordBubble[];
@@ -336,7 +335,6 @@ extern const char kEnableHostedMode[];
 extern const char kEnableReaderModeToolbarIcon[];
 extern const char kEnableZeroSuggestMostVisited[];
 extern const char kEnableZeroSuggestMostVisitedWithoutSerp[];
-extern const char kPrefetchSearchResults[];
 extern const char kProgressBarAnimation[];
 #endif  // defined(OS_ANDROID)
 

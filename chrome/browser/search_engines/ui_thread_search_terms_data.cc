@@ -111,7 +111,7 @@ std::string UIThreadSearchTermsData::GetSuggestClient() const {
   return ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE ?
       "chrome" : "chrome-omni";
 #else
-  return chrome::IsInstantExtendedAPIEnabled() ? "chrome-omni" : "chrome";
+  return search::IsInstantExtendedAPIEnabled() ? "chrome-omni" : "chrome";
 #endif
 }
 
@@ -126,33 +126,33 @@ std::string UIThreadSearchTermsData::GetSuggestRequestIdentifier() const {
 }
 
 bool UIThreadSearchTermsData::IsShowingSearchTermsOnSearchResultsPages() const {
-  return chrome::IsInstantExtendedAPIEnabled() &&
-      chrome::IsQueryExtractionEnabled();
+  return search::IsInstantExtendedAPIEnabled() &&
+         search::IsQueryExtractionEnabled();
 }
 
 std::string UIThreadSearchTermsData::InstantExtendedEnabledParam(
     bool for_search) const {
-  return chrome::InstantExtendedEnabledParam(for_search);
+  return search::InstantExtendedEnabledParam(for_search);
 }
 
 std::string UIThreadSearchTermsData::ForceInstantResultsParam(
     bool for_prerender) const {
-  return chrome::ForceInstantResultsParam(for_prerender);
+  return search::ForceInstantResultsParam(for_prerender);
 }
 
 int UIThreadSearchTermsData::OmniboxStartMargin() const {
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(profile_);
   // Android and iOS have no InstantService.
-  return instant_service ?
-      instant_service->omnibox_start_margin() : chrome::kDisableStartMargin;
+  return instant_service ? instant_service->omnibox_start_margin()
+                         : search::kDisableStartMargin;
 }
 
 std::string UIThreadSearchTermsData::NTPIsThemedParam() const {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
 #if defined(ENABLE_THEMES)
-  if (!chrome::IsInstantExtendedAPIEnabled())
+  if (!search::IsInstantExtendedAPIEnabled())
     return std::string();
 
   // TODO(dhollowa): Determine fraction of custom themes that don't affect the

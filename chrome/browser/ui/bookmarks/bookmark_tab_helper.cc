@@ -41,7 +41,7 @@ bool IsInstantNTP(content::WebContents* web_contents) {
       web_contents->GetController().GetLastCommittedEntry();
   if (!entry)
     entry = web_contents->GetController().GetVisibleEntry();
-  return chrome::NavEntryIsInstantNTP(web_contents, entry);
+  return search::NavEntryIsInstantNTP(web_contents, entry);
 }
 
 }  // namespace

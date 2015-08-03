@@ -10,9 +10,12 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/google/core/browser/google_util.h"
 #include "components/search/search_switches.h"
+#include "components/search_engines/template_url.h"
+#include "url/gurl.h"
 
-namespace chrome {
+namespace search {
 
 namespace {
 
@@ -49,7 +52,24 @@ const char kEmbeddedSearchFieldTrialName[] = "EmbeddedSearch";
 // be ignored and Instant Extended will not be enabled by default.
 const char kDisablingSuffix[] = "DISABLED";
 
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+const char kEnableQueryExtractionFlagName[] = "query_extraction";
+#endif
+
+const char kAllowPrefetchNonDefaultMatch[] = "allow_prefetch_non_default_match";
+
+#if defined(OS_ANDROID)
+const char kPrefetchSearchResultsFlagName[] = "prefetch_results";
+
+// Controls whether to reuse prerendered Instant Search base page to commit any
+// search query.
+const char kReuseInstantSearchBasePage[] = "reuse_instant_search_base_page";
+#endif
+
 }  // namespace
+
+// Negative start-margin values prevent the "es_sm" parameter from being used.
+const int kDisableStartMargin = -1;
 
 bool IsInstantExtendedAPIEnabled() {
 #if defined(OS_IOS)
@@ -144,4 +164,94 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
   return !!GetUInt64ValueForFlagWithDefault(flag, default_value ? 1 : 0, flags);
 }
 
-}  // namespace chrome
+std::string InstantExtendedEnabledParam(bool for_search) {
+  if (for_search && !IsQueryExtractionEnabled())
+    return std::string();
+  return std::string(google_util::kInstantExtendedAPIParam) + "=" +
+         base::Uint64ToString(EmbeddedSearchPageVersion()) + "&";
+}
+
+std::string ForceInstantResultsParam(bool for_prerender) {
+  return (for_prerender || !IsInstantExtendedAPIEnabled()) ? "ion=1&"
+                                                           : std::string();
+}
+
+bool IsQueryExtractionEnabled() {
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  return true;
+#else
+  if (!IsInstantExtendedAPIEnabled())
+    return false;
+
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableQueryExtraction))
+    return true;
+
+  FieldTrialFlags flags;
+  return GetFieldTrialInfo(&flags) &&
+         GetBoolValueForFlagWithDefault(kEnableQueryExtractionFlagName, false,
+                                        flags);
+#endif  // defined(OS_IOS) || defined(OS_ANDROID)
+}
+
+bool ShouldPrefetchSearchResults() {
+  if (!IsInstantExtendedAPIEnabled())
+    return false;
+
+#if defined(OS_ANDROID)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPrefetchSearchResults)) {
+    return true;
+  }
+
+  FieldTrialFlags flags;
+  return GetFieldTrialInfo(&flags) &&
+         GetBoolValueForFlagWithDefault(kPrefetchSearchResultsFlagName, false,
+                                        flags);
+#else
+  return true;
+#endif
+}
+
+bool ShouldReuseInstantSearchBasePage() {
+  if (!ShouldPrefetchSearchResults())
+    return false;
+
+#if defined(OS_ANDROID)
+  FieldTrialFlags flags;
+  return GetFieldTrialInfo(&flags) &&
+         GetBoolValueForFlagWithDefault(kReuseInstantSearchBasePage, false,
+                                        flags);
+#else
+  return true;
+#endif
+}
+
+bool ShouldAllowPrefetchNonDefaultMatch() {
+  if (!ShouldPrefetchSearchResults())
+    return false;
+
+  FieldTrialFlags flags;
+  return GetFieldTrialInfo(&flags) &&
+         GetBoolValueForFlagWithDefault(kAllowPrefetchNonDefaultMatch, false,
+                                        flags);
+}
+
+// |url| should either have a secure scheme or have a non-HTTPS base URL that
+// the user specified using --google-base-url. (This allows testers to use
+// --google-base-url to point at non-HTTPS servers, which eases testing.)
+bool IsSuitableURLForInstant(const GURL& url, const TemplateURL* template_url) {
+  return template_url->HasSearchTermsReplacementKey(url) &&
+         (url.SchemeIsCryptographic() ||
+          google_util::StartsWithCommandLineGoogleBaseURL(url));
+}
+
+void EnableQueryExtractionForTesting() {
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
+  cl->AppendSwitch(switches::kEnableQueryExtraction);
+#endif
+}
+
+}  // namespace search

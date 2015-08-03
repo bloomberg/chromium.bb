@@ -77,8 +77,8 @@ class NewTabPageInterceptor : public net::URLRequestInterceptor {
 
     // Failure to load the NTP correctly; redirect to Local NTP.
     UMA_HISTOGRAM_ENUMERATION("InstantExtended.CacheableNTPLoad",
-                              chrome::CACHEABLE_NTP_LOAD_FAILED,
-                              chrome::CACHEABLE_NTP_LOAD_MAX);
+                              search::CACHEABLE_NTP_LOAD_FAILED,
+                              search::CACHEABLE_NTP_LOAD_MAX);
     return new net::URLRequestRedirectJob(
         request, network_delegate, GURL(chrome::kChromeSearchLocalNtpUrl),
         net::URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT,
@@ -106,7 +106,7 @@ NewTabPageInterceptorService::~NewTabPageInterceptorService() {
 
 void NewTabPageInterceptorService::OnTemplateURLServiceChanged() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  GURL new_tab_page_url(chrome::GetNewTabPageURL(profile_));
+  GURL new_tab_page_url(search::GetNewTabPageURL(profile_));
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&NewTabPageInterceptor::SetNewTabPageURL, interceptor_,
@@ -117,7 +117,7 @@ scoped_ptr<net::URLRequestInterceptor>
 NewTabPageInterceptorService::CreateInterceptor() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   scoped_ptr<NewTabPageInterceptor> interceptor(
-      new NewTabPageInterceptor(chrome::GetNewTabPageURL(profile_)));
+      new NewTabPageInterceptor(search::GetNewTabPageURL(profile_)));
   interceptor_ = interceptor->GetWeakPtr();
   return interceptor.Pass();
 }

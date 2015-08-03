@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/google/core/browser/google_switches.h"
+#include "components/search/search.h"
 #include "components/toolbar/toolbar_model.h"
 #include "components/variations/entropy_provider.h"
 #include "content/public/browser/navigation_entry.h"
@@ -248,7 +249,7 @@ TEST_F(ToolbarModelTest, ShouldDisplayURL_QueryExtraction) {
   AddTab(browser(), GURL(url::kAboutBlankURL));
 
   // Before we enable instant extended, query extraction is disabled.
-  EXPECT_FALSE(chrome::IsQueryExtractionEnabled())
+  EXPECT_FALSE(search::IsQueryExtractionEnabled())
       << "This test expects query extraction to be disabled.";
   for (size_t i = 0; i < arraysize(test_items); ++i) {
     const TestItem& test_item = test_items[i];
@@ -257,8 +258,8 @@ TEST_F(ToolbarModelTest, ShouldDisplayURL_QueryExtraction) {
                          false, test_item.should_display_url);
   }
 
-  chrome::EnableQueryExtractionForTesting();
-  EXPECT_TRUE(chrome::IsQueryExtractionEnabled());
+  search::EnableQueryExtractionForTesting();
+  EXPECT_TRUE(search::IsQueryExtractionEnabled());
   EXPECT_TRUE(browser()->toolbar_model()->url_replacement_enabled());
   for (size_t i = 0; i < arraysize(test_items); ++i) {
     const TestItem& test_item = test_items[i];
@@ -280,7 +281,7 @@ TEST_F(ToolbarModelTest, ShouldDisplayURL_QueryExtraction) {
 
  // Verify that search terms are extracted while the page is loading.
 TEST_F(ToolbarModelTest, SearchTermsWhileLoading) {
-  chrome::EnableQueryExtractionForTesting();
+  search::EnableQueryExtractionForTesting();
   AddTab(browser(), GURL(url::kAboutBlankURL));
 
   // While loading, we should be willing to extract search terms.
@@ -306,7 +307,7 @@ TEST_F(ToolbarModelTest, SearchTermsWhileLoading) {
 // search terms from URLs that start with that base URL even when they're not
 // secure.
 TEST_F(ToolbarModelTest, GoogleBaseURL) {
-  chrome::EnableQueryExtractionForTesting();
+  search::EnableQueryExtractionForTesting();
   AddTab(browser(), GURL(url::kAboutBlankURL));
 
   // If the Google base URL wasn't specified on the command line, then if it's
@@ -332,7 +333,7 @@ TEST_F(PopupToolbarModelTest, ShouldDisplayURL) {
   AddTab(browser(), GURL(url::kAboutBlankURL));
 
   // Check with query extraction disabled.
-  EXPECT_FALSE(chrome::IsQueryExtractionEnabled());
+  EXPECT_FALSE(search::IsQueryExtractionEnabled());
   for (size_t i = 0; i < arraysize(test_items); ++i) {
     const TestItem& test_item = test_items[i];
     NavigateAndCheckText(test_item.url,
@@ -341,8 +342,8 @@ TEST_F(PopupToolbarModelTest, ShouldDisplayURL) {
   }
 
   // With query extraction enabled, search term replacement should be performed.
-  chrome::EnableQueryExtractionForTesting();
-  EXPECT_TRUE(chrome::IsQueryExtractionEnabled());
+  search::EnableQueryExtractionForTesting();
+  EXPECT_TRUE(search::IsQueryExtractionEnabled());
   EXPECT_TRUE(browser()->toolbar_model()->url_replacement_enabled());
   for (size_t i = 0; i < arraysize(test_items); ++i) {
     const TestItem& test_item = test_items[i];
