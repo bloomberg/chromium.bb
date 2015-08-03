@@ -6,11 +6,12 @@
 
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager.h"
+#include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_content_script_manager.h"
@@ -78,8 +79,8 @@ GuestViewManager* ExtensionsGuestViewMessageFilter::
   if (!manager) {
     manager = GuestViewManager::CreateWithDelegate(
         browser_context_,
-        scoped_ptr<GuestViewManagerDelegate>(
-            new ExtensionsGuestViewManagerDelegate(browser_context_)));
+        ExtensionsAPIClient::Get()->CreateGuestViewManagerDelegate(
+            browser_context_));
   }
   return manager;
 }

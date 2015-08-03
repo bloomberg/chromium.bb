@@ -12,6 +12,7 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/guest_view/app_view/app_view_guest.h"
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
@@ -22,6 +23,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 
+using extensions::ExtensionsAPIClient;
 using guest_view::GuestViewManager;
 using guest_view::TestGuestViewManagerFactory;
 
@@ -130,7 +132,7 @@ class AppViewTest : public extensions::PlatformAppBrowserTest {
         guest_view::GuestViewManager::CreateWithDelegate(
             browser()->profile(),
             scoped_ptr<guest_view::GuestViewManagerDelegate>(
-                new extensions::ExtensionsGuestViewManagerDelegate(
+                ExtensionsAPIClient::Get()->CreateGuestViewManagerDelegate(
                     browser()->profile()))));
   }
 

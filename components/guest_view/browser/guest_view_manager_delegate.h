@@ -14,6 +14,10 @@ namespace base {
 class DictionaryValue;
 }  // namespace base
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 namespace guest_view {
 
 class GuestViewBase;
@@ -28,6 +32,12 @@ class GuestViewManagerDelegate {
  public:
   GuestViewManagerDelegate();
   virtual ~GuestViewManagerDelegate();
+
+  // Attaches the task-manager-specific tag for the GuestViews to its
+  // |guest_web_contents| so that their corresponding tasks show up in the task
+  // manager.
+  virtual void AttachTaskManagerGuestTag(
+      content::WebContents* guest_web_contents) const {}
 
   // Dispatches the event with |name| with the provided |args| to the embedder
   // of the given |guest| with |instance_id| for routing.

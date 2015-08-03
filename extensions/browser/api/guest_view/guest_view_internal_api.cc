@@ -6,10 +6,11 @@
 
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager.h"
+#include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/common/guest_view_constants.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/common/api/guest_view_internal.h"
 #include "extensions/common/permissions/permissions_data.h"
 
@@ -39,8 +40,7 @@ bool GuestViewInternalCreateGuestFunction::RunAsync() {
   if (!guest_view_manager) {
     guest_view_manager = GuestViewManager::CreateWithDelegate(
         browser_context(),
-        scoped_ptr<GuestViewManagerDelegate>(
-            new ExtensionsGuestViewManagerDelegate(context_)));
+        ExtensionsAPIClient::Get()->CreateGuestViewManagerDelegate(context_));
   }
 
   GuestViewManager::WebContentsCreatedCallback callback =

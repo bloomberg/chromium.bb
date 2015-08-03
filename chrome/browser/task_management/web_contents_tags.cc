@@ -6,11 +6,13 @@
 
 #include "chrome/browser/task_management/providers/web_contents/background_contents_tag.h"
 #include "chrome/browser/task_management/providers/web_contents/devtools_tag.h"
+#include "chrome/browser/task_management/providers/web_contents/guest_tag.h"
 #include "chrome/browser/task_management/providers/web_contents/panel_tag.h"
 #include "chrome/browser/task_management/providers/web_contents/prerender_tag.h"
 #include "chrome/browser/task_management/providers/web_contents/printing_tag.h"
 #include "chrome/browser/task_management/providers/web_contents/tab_contents_tag.h"
 #include "chrome/browser/task_management/providers/web_contents/web_contents_tags_manager.h"
+#include "components/guest_view/browser/guest_view_base.h"
 #include "content/public/browser/web_contents.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -112,6 +114,19 @@ void WebContentsTags::CreateForPrintingContents(
                    WebContentsTag::kTagKey);
   }
 #endif  // defined(ENABLE_TASK_MANAGER) && defined(ENABLE_PRINT_PREVIEW)
+}
+
+// static
+void WebContentsTags::CreateForGuestContents(
+    content::WebContents* web_contents) {
+#if defined(ENABLE_TASK_MANAGER)
+  DCHECK(guest_view::GuestViewBase::IsGuest(web_contents));
+  if (!WebContentsTag::FromWebContents(web_contents)) {
+    TagWebContents(web_contents,
+                   new GuestTag(web_contents),
+                   WebContentsTag::kTagKey);
+  }
+#endif  // defined(ENABLE_TASK_MANAGER)
 }
 
 // static

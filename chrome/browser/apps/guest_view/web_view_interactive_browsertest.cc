@@ -18,6 +18,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager.h"
+#include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -28,9 +29,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
-#include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/ime/composition_text.h"
@@ -39,7 +40,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using extensions::AppWindow;
-using extensions::ExtensionsGuestViewManagerDelegate;
+using extensions::ExtensionsAPIClient;
 using guest_view::GuestViewBase;
 using guest_view::GuestViewManager;
 using guest_view::TestGuestViewManager;
@@ -66,9 +67,8 @@ class WebViewInteractiveTest
       manager = static_cast<TestGuestViewManager*>(
           GuestViewManager::CreateWithDelegate(
               browser()->profile(),
-              scoped_ptr<guest_view::GuestViewManagerDelegate>(
-                  new ExtensionsGuestViewManagerDelegate(
-                      browser()->profile()))));
+              ExtensionsAPIClient::Get()->CreateGuestViewManagerDelegate(
+                  browser()->profile())));
     }
     return manager;
   }

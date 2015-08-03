@@ -8,6 +8,7 @@
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/guest_view/app_view/app_view_guest.h"
 #include "extensions/browser/guest_view/extension_options/extension_options_guest.h"

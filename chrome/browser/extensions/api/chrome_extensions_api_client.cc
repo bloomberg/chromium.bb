@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/guest_view/app_view/chrome_app_view_guest_delegate.h"
+#include "chrome/browser/guest_view/chrome_guest_view_manager_delegate.h"
 #include "chrome/browser/guest_view/extension_options/chrome_extension_options_guest_delegate.h"
 #include "chrome/browser/guest_view/mime_handler_view/chrome_mime_handler_view_guest_delegate.h"
 #include "chrome/browser/guest_view/web_view/chrome_web_view_guest_delegate.h"
@@ -94,6 +95,12 @@ ExtensionOptionsGuestDelegate*
 ChromeExtensionsAPIClient::CreateExtensionOptionsGuestDelegate(
     ExtensionOptionsGuest* guest) const {
   return new ChromeExtensionOptionsGuestDelegate(guest);
+}
+
+scoped_ptr<guest_view::GuestViewManagerDelegate>
+ChromeExtensionsAPIClient::CreateGuestViewManagerDelegate(
+    content::BrowserContext* context) const {
+  return make_scoped_ptr(new ChromeGuestViewManagerDelegate(context));
 }
 
 scoped_ptr<MimeHandlerViewGuestDelegate>

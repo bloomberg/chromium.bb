@@ -9,6 +9,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
@@ -16,7 +17,7 @@
 #include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
-using extensions::ExtensionsGuestViewManagerDelegate;
+using extensions::ExtensionsAPIClient;
 using extensions::MimeHandlerViewGuest;
 using extensions::TestMimeHandlerViewGuest;
 using guest_view::GuestViewManager;
@@ -50,9 +51,8 @@ class MimeHandlerViewTest : public ExtensionApiTest {
       manager = static_cast<TestGuestViewManager*>(
           GuestViewManager::CreateWithDelegate(
               browser()->profile(),
-              scoped_ptr<GuestViewManagerDelegate>(
-                  new ExtensionsGuestViewManagerDelegate(
-                      browser()->profile()))));
+              ExtensionsAPIClient::Get()->CreateGuestViewManagerDelegate(
+                  browser()->profile())));
     }
     return manager;
   }

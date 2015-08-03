@@ -6,13 +6,14 @@
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/guest_view/browser/guest_view_manager.h"
+#include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/test/browser_test_utils.h"
-#include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/test/extension_test_message_listener.h"
 
-using extensions::ExtensionsGuestViewManagerDelegate;
+using extensions::ExtensionsAPIClient;
 using guest_view::GuestViewManager;
 using guest_view::TestGuestViewManager;
 using guest_view::TestGuestViewManagerFactory;
@@ -32,9 +33,8 @@ class ExtensionViewTest : public extensions::PlatformAppBrowserTest {
       manager = static_cast<TestGuestViewManager*>(
           GuestViewManager::CreateWithDelegate(
               browser()->profile(),
-              scoped_ptr<guest_view::GuestViewManagerDelegate>(
-                  new ExtensionsGuestViewManagerDelegate(
-                      browser()->profile()))));
+              ExtensionsAPIClient::Get()->CreateGuestViewManagerDelegate(
+                  browser()->profile())));
     }
     return manager;
   }

@@ -24,6 +24,10 @@ class BrowserContext;
 class WebContents;
 }
 
+namespace guest_view {
+class GuestViewManagerDelegate;
+}  // namespace guest_view
+
 namespace extensions {
 
 class AppViewGuestDelegate;
@@ -82,6 +86,10 @@ class ExtensionsAPIClient {
   // ExtensionOptionsGuestDelegate.
   virtual ExtensionOptionsGuestDelegate* CreateExtensionOptionsGuestDelegate(
       ExtensionOptionsGuest* guest) const;
+
+  // Returns a delegate for GuestViewManagerDelegate.
+  virtual scoped_ptr<guest_view::GuestViewManagerDelegate>
+  CreateGuestViewManagerDelegate(content::BrowserContext* context) const;
 
   // Creates a delegate for MimeHandlerViewGuest.
   virtual scoped_ptr<MimeHandlerViewGuestDelegate>

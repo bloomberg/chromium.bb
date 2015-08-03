@@ -8,6 +8,7 @@
 #include "extensions/browser/api/device_permissions_prompt.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/browser/api/web_request/web_request_event_router_delegate.h"
+#include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper_delegate.h"
 
@@ -45,6 +46,12 @@ ExtensionOptionsGuestDelegate*
 ExtensionsAPIClient::CreateExtensionOptionsGuestDelegate(
     ExtensionOptionsGuest* guest) const {
   return NULL;
+}
+
+scoped_ptr<guest_view::GuestViewManagerDelegate>
+ExtensionsAPIClient::CreateGuestViewManagerDelegate(
+    content::BrowserContext* context) const {
+  return make_scoped_ptr(new ExtensionsGuestViewManagerDelegate(context));
 }
 
 scoped_ptr<MimeHandlerViewGuestDelegate>
