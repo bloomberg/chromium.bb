@@ -108,6 +108,15 @@ Polymer({
 
   /**
    * @param {?DeviceStateProperties} deviceState The state of a device.
+   * @return {boolean} Whether or not the scanning spinner should be shown.
+   * @private
+   */
+  showScanning_: function(deviceState) {
+    return this.expanded && deviceState.Scanning;
+  },
+
+  /**
+   * @param {?DeviceStateProperties} deviceState The state of a device.
    * @return {boolean} Whether or not the device state is enabled.
    * @private
    */

@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_toggle_button/cr_toggle_button.html">
 <link rel="import" href="network_list.html">
@@ -8,10 +9,13 @@
   <link rel="import" type="css" href="network_summary_item.css">
   <template>
     <div class="layout vertical" hidden$="[[isHidden]]">
-      <div id="details" class="layout horizontal" on-click="onDetailsClicked_">
-        <network-list-item id="detailsItem" class="flex"
+      <div id="details" class="layout horizontal center"
+          on-click="onDetailsClicked_">
+        <network-list-item id="detailsItem"
             network-state="[[networkState]]">
         </network-list-item>
+        <paper-spinner active="[[showScanning_(deviceState)]]"></paper-spinner>
+        <span class="flex"></span>
         <div id="buttons" class="layout horizontal">
           <cr-expand-button id="expandListButton"
               class$="[[getExpandButtonClass_(deviceState, networkStateList)]]"

@@ -70,7 +70,7 @@ Polymer({
      */
     networkType:  {
       type: String,
-      value: null,
+      value: undefined,
       observer: 'networkTypeChanged_'
     },
 
@@ -131,7 +131,7 @@ Polymer({
     if (!this.networkState)
       return;
 
-    this.networkType = null;
+    this.networkType = undefined;
     this.iconType_ = getIconTypeFromNetworkType(this.networkState.Type);
     var strength = /** @type {number} */ (
         CrOnc.getTypeProperty(this.networkState, 'SignalStrength') || 0);
