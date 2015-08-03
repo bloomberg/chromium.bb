@@ -561,43 +561,56 @@ TEST(GURLTest, HostNoBrackets) {
 }
 
 TEST(GURLTest, DomainIs) {
-  const char google_domain[] = "google.com";
+  GURL url_1("http://google.com/foo");
+  EXPECT_TRUE(url_1.DomainIs("google.com"));
 
-  GURL url_1("http://www.google.com:99/foo");
-  EXPECT_TRUE(url_1.DomainIs(google_domain));
+  // Subdomain and port are ignored.
+  GURL url_2("http://www.google.com:99/foo");
+  EXPECT_TRUE(url_2.DomainIs("google.com"));
 
-  GURL url_2("http://google.com:99/foo");
-  EXPECT_TRUE(url_2.DomainIs(google_domain));
+  // Different top-level domain.
+  GURL url_3("http://www.google.com.cn/foo");
+  EXPECT_FALSE(url_3.DomainIs("google.com"));
 
-  GURL url_3("http://google.com./foo");
-  EXPECT_TRUE(url_3.DomainIs(google_domain));
+  // Different host name.
+  GURL url_4("http://www.iamnotgoogle.com/foo");
+  EXPECT_FALSE(url_4.DomainIs("google.com"));
 
-  GURL url_4("http://google.com/foo");
-  EXPECT_FALSE(url_4.DomainIs("google.com."));
+  // The input must be lower-cased otherwise DomainIs returns false.
+  GURL url_5("http://www.google.com/foo");
+  EXPECT_FALSE(url_5.DomainIs("Google.com"));
 
-  GURL url_5("http://google.com./foo");
-  EXPECT_TRUE(url_5.DomainIs("google.com."));
+  // If the URL is invalid, DomainIs returns false.
+  GURL invalid_url("google.com");
+  EXPECT_FALSE(invalid_url.is_valid());
+  EXPECT_FALSE(invalid_url.DomainIs("google.com"));
+}
 
-  GURL url_6("http://www.google.com./foo");
-  EXPECT_TRUE(url_6.DomainIs(".com."));
+TEST(GURLTest, DomainIsTerminatingDotBehavior) {
+  // If the host part ends with a dot, it matches input domains
+  // with or without a dot.
+  GURL url_with_dot("http://www.google.com./foo");
+  EXPECT_TRUE(url_with_dot.DomainIs("google.com"));
+  EXPECT_TRUE(url_with_dot.DomainIs("google.com."));
+  EXPECT_TRUE(url_with_dot.DomainIs(".com"));
+  EXPECT_TRUE(url_with_dot.DomainIs(".com."));
 
-  GURL url_7("http://www.balabala.com/foo");
-  EXPECT_FALSE(url_7.DomainIs(google_domain));
+  // But, if the host name doesn't end with a dot and the input
+  // domain does, then it's considered to not match.
+  GURL url_without_dot("http://google.com/foo");
+  EXPECT_FALSE(url_without_dot.DomainIs("google.com."));
 
-  GURL url_8("http://www.google.com.cn/foo");
-  EXPECT_FALSE(url_8.DomainIs(google_domain));
+  // If the URL ends with two dots, it doesn't match.
+  GURL url_with_two_dots("http://www.google.com../foo");
+  EXPECT_FALSE(url_with_two_dots.DomainIs("google.com"));
+}
 
-  GURL url_9("http://www.iamnotgoogle.com/foo");
-  EXPECT_FALSE(url_9.DomainIs(google_domain));
+TEST(GURLTest, DomainIsWithFilesystemScheme) {
+  GURL url_1("filesystem:http://www.google.com:99/foo/");
+  EXPECT_TRUE(url_1.DomainIs("google.com"));
 
-  GURL url_10("http://www.iamnotgoogle.com../foo");
-  EXPECT_FALSE(url_10.DomainIs(".com"));
-
-  GURL url_11("filesystem:http://www.google.com:99/foo/");
-  EXPECT_TRUE(url_11.DomainIs(google_domain));
-
-  GURL url_12("filesystem:http://www.iamnotgoogle.com/foo/");
-  EXPECT_FALSE(url_12.DomainIs(google_domain));
+  GURL url_2("filesystem:http://www.iamnotgoogle.com/foo/");
+  EXPECT_FALSE(url_2.DomainIs("google.com"));
 }
 
 // Newlines should be stripped from inputs.

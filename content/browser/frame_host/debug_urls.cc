@@ -68,7 +68,7 @@ void HandlePpapiFlashDebugURL(const GURL& url) {
 bool IsKaskoDebugURL(const GURL& url) {
 #if defined(KASKO)
   return (url.is_valid() && url.SchemeIs(kChromeUIScheme) &&
-          url.DomainIs(kKaskoCrashDomain, sizeof(kKaskoCrashDomain) - 1) &&
+          url.DomainIs(kKaskoCrashDomain) &&
           url.path() == kKaskoSendReport);
 #else
   return false;
@@ -101,7 +101,7 @@ bool IsAsanDebugURL(const GURL& url) {
 #endif
 
   if (!(url.is_valid() && url.SchemeIs(kChromeUIScheme) &&
-        url.DomainIs(kAsanCrashDomain, sizeof(kAsanCrashDomain) - 1) &&
+        url.DomainIs(kAsanCrashDomain) &&
         url.has_path())) {
     return false;
   }

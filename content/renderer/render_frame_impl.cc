@@ -338,7 +338,7 @@ NOINLINE void MaybeTriggerAsanError(const GURL& url) {
   const char kCorruptHeap[] = "/corrupt-heap";
 #endif
 
-  if (!url.DomainIs(kCrashDomain, sizeof(kCrashDomain) - 1))
+  if (!url.DomainIs(kCrashDomain))
     return;
 
   if (!url.has_path())

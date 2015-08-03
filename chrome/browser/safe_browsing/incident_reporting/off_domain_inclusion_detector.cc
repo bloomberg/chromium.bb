@@ -203,7 +203,7 @@ void OffDomainInclusionDetector::BeginAnalysis(
   } else if (!main_frame_is_ip && !request_is_ip) {
     // Neither are: compare as domains
     is_off_domain = !off_domain_inclusion_info->request_url.DomainIs(
-        off_domain_inclusion_info->main_frame_domain.c_str());
+        off_domain_inclusion_info->main_frame_domain);
   } else {
     // Just one is an IP
     is_off_domain = true;

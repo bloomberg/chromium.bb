@@ -13,7 +13,7 @@ namespace {
 
 bool DomainMatch(const GURL& gurl, const std::string& restriction) {
   // TODO(jar): This is not precisely a domain match definition.
-  return gurl.DomainIs(restriction.data(), restriction.size());
+  return gurl.DomainIs(restriction);
 }
 
 }  // namespace
