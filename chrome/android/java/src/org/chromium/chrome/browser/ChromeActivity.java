@@ -502,6 +502,18 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             public void onCrash(Tab tab, boolean sadTabShown) {
                 postDeferredStartupIfNeeded();
             }
+
+            @Override
+            public void onDidChangeThemeColor(Tab tab, int color) {
+                if (getToolbarManager() == null) return;
+                if (getActivityTab() != tab) return;
+
+                getToolbarManager().updatePrimaryColor(color);
+
+                ControlContainer controlContainer =
+                        (ControlContainer) findViewById(R.id.control_container);
+                controlContainer.getToolbarResourceAdapter().invalidate(null);
+            }
         };
 
         if (mAssistStatusHandler != null) {

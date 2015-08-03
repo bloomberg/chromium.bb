@@ -237,7 +237,7 @@ public class WebappActivity extends FullScreenActivity {
             }
 
             @Override
-            public void onDidChangeThemeColor(int color) {
+            public void onDidChangeThemeColor(Tab tab, int color) {
                 if (!isWebappDomain()) return;
                 mBrandColor = color;
                 updateTaskDescription();

@@ -111,7 +111,7 @@ public class EmptyTabObserver implements TabObserver {
     public void didFirstVisuallyNonEmptyPaint(Tab tab) { }
 
     @Override
-    public void onDidChangeThemeColor(int color) { }
+    public void onDidChangeThemeColor(Tab tab, int color) { }
 
     @Override
     public void onDidAttachInterstitialPage(Tab tab) { }

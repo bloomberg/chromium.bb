@@ -270,9 +270,10 @@ public interface TabObserver {
 
     /**
      * Called when the theme color is changed
+     * @param tab   The notifying {@link Tab}.
      * @param color the new color in ARGB format.
      */
-    public void onDidChangeThemeColor(int color);
+    public void onDidChangeThemeColor(Tab tab, int color);
 
     /**
      * Called when an interstitial page gets attached to the tab content.

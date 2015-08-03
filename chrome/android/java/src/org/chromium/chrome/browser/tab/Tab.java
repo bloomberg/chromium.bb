@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tab;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.text.TextUtils;
@@ -317,6 +318,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * Reference to the current sadTabView if one is defined.
      */
     private View mSadTabView;
+
+    private final int mDefaultThemeColor;
+    private int mThemeColor;
 
     /**
      * A default {@link ChromeContextMenuItemDelegate} that supports some of the context menu
@@ -685,8 +689,19 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         @Override
         public void didChangeThemeColor(int color) {
+            int securityLevel = getSecurityLevel();
+            if (securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
+                    || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING
+                    || securityLevel == ConnectionSecurityLevel.SECURITY_POLICY_WARNING) {
+                color = mDefaultThemeColor;
+            }
+            if (isShowingInterstitialPage()) color = mDefaultThemeColor;
+            if (color == Color.TRANSPARENT) color = mDefaultThemeColor;
+            color |= 0xFF000000;
+            if (mThemeColor == color) return;
+            mThemeColor = color;
             for (TabObserver observer : mObservers) {
-                observer.onDidChangeThemeColor(color);
+                observer.onDidChangeThemeColor(Tab.this, mThemeColor);
             }
         }
 
@@ -694,6 +709,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         public void didAttachInterstitialPage() {
             getInfoBarContainer().setVisibility(View.INVISIBLE);
             showRenderedPage();
+            didChangeThemeColor(mDefaultThemeColor);
 
             for (TabObserver observer : mObservers) {
                 observer.onDidAttachInterstitialPage(Tab.this);
@@ -706,6 +722,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         @Override
         public void didDetachInterstitialPage() {
             getInfoBarContainer().setVisibility(View.VISIBLE);
+            didChangeThemeColor(getWebContents().getThemeColor(mDefaultThemeColor));
 
             for (TabObserver observer : mObservers) {
                 observer.onDidDetachInterstitialPage(Tab.this);
@@ -782,8 +799,14 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         mLaunchType = type;
         if (mContext != null) {
             mNumPixel16DP = (int) (DeviceDisplayInfo.create(mContext).getDIPScale() * 16);
+            Resources resources = mContext.getResources();
+            mDefaultThemeColor = mIncognito ? resources.getColor(R.color.incognito_primary_color)
+                    : resources.getColor(R.color.default_primary_color);
+            mThemeColor = mDefaultThemeColor;
+        } else {
+            mDefaultThemeColor = 0;
+            mNumPixel16DP = 16;
         }
-        if (mNumPixel16DP == 0) mNumPixel16DP = 16;
 
         // Restore data from the TabState, if it existed.
         if (frozenState == null) {
@@ -1101,6 +1124,14 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         if (mNativePage != null) return mNativePage.getBackgroundColor();
         if (getWebContents() != null) return getWebContents().getBackgroundColor();
         return Color.WHITE;
+    }
+
+    /**
+     * @return The current theme color based on the value passed from the web contents and the
+     *         security state.
+     */
+    public int getThemeColor() {
+        return mThemeColor;
     }
 
     /**
@@ -2261,6 +2292,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         mContentViewCore.onShow();
         mContentViewCore.attachImeAdapter();
         destroyNativePageInternal(previousNativePage);
+        mWebContentsObserver.didChangeThemeColor(
+                getWebContents().getThemeColor(mDefaultThemeColor));
         for (TabObserver observer : mObservers) {
             observer.onWebContentsSwapped(this, didStartLoad, didFinishLoad);
         }
