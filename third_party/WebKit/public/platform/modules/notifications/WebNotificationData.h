@@ -16,7 +16,8 @@ namespace blink {
 struct WebNotificationData {
     enum Direction {
         DirectionLeftToRight,
-        DirectionRightToLeft
+        DirectionRightToLeft,
+        DirectionAuto
     };
 
     WebNotificationData()
