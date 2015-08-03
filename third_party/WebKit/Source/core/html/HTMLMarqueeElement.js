@@ -199,7 +199,8 @@ privateScriptController.installClass('HTMLMarqueeElement', function(HTMLMarqueeE
     });
 
     HTMLMarqueeElementPrototype.getGetMetrics_ = function() {
-        if (this.direction === 'up' || this.direction === 'down')
+        var direction = this.direction.toLowerCase();
+        if (direction === 'up' || direction === 'down')
             this.mover_.style.height = '-webkit-max-content';
         else
             this.mover_.style.width = '-webkit-max-content';
@@ -213,7 +214,7 @@ privateScriptController.installClass('HTMLMarqueeElement', function(HTMLMarqueeE
         metrics.marqueeWidth = parseInt(marqueeStyle.width);
         metrics.marqueeHeight = parseInt(marqueeStyle.height);
 
-        if (this.direction === 'up' || this.direction === 'down')
+        if (direction === 'up' || direction === 'down')
             this.mover_.style.height = '';
         else
             this.mover_.style.width = '';
@@ -230,11 +231,12 @@ privateScriptController.installClass('HTMLMarqueeElement', function(HTMLMarqueeE
         var innerHeight = metrics.marqueeHeight - metrics.contentHeight;
 
         var parameters = {};
+        var direction = this.direction.toLowerCase();
 
         switch (this.behavior) {
         case kBehaviorScroll:
         default:
-            switch (this.direction) {
+            switch (direction) {
             case kDirectionLeft:
             default:
                 parameters.transformBegin = 'translateX(' + metrics.marqueeWidth + 'px)';
@@ -259,7 +261,7 @@ privateScriptController.installClass('HTMLMarqueeElement', function(HTMLMarqueeE
             }
             break;
         case kBehaviorAlternate:
-            switch (this.direction) {
+            switch (direction) {
             case kDirectionLeft:
             default:
                 parameters.transformBegin = 'translateX(' + innerWidth + 'px)';
@@ -291,7 +293,7 @@ privateScriptController.installClass('HTMLMarqueeElement', function(HTMLMarqueeE
 
             break;
         case kBehaviorSlide:
-            switch (this.direction) {
+            switch (direction) {
             case kDirectionLeft:
             default:
                 parameters.transformBegin = 'translateX(' + metrics.marqueeWidth + 'px)';

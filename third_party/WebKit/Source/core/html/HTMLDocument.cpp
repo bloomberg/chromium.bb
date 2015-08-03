@@ -230,6 +230,7 @@ static HashSet<StringImpl*>* createHtmlCaseInsensitiveAttributesSet()
     addLocalNameToSet(attrSet, declareAttr);
     addLocalNameToSet(attrSet, deferAttr);
     addLocalNameToSet(attrSet, dirAttr);
+    addLocalNameToSet(attrSet, directionAttr);
     addLocalNameToSet(attrSet, disabledAttr);
     addLocalNameToSet(attrSet, enctypeAttr);
     addLocalNameToSet(attrSet, faceAttr);
