@@ -1,8 +1,0 @@
-include_rules = [
-  # Android specific code is not considered blocking for the componentization of
-  # chrome/browser/history, so it is allowed to use chrome/browser and
-  # components/.
-  "+chrome/browser",
-  "+components/bookmarks",
-  "+components/favicon",
-]
