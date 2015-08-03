@@ -699,14 +699,14 @@ void ApplyStyleCommand::fixRangeAndApplyInlineStyle(EditingStyle* style, const P
     Node* startNode = start.anchorNode();
     ASSERT(startNode);
 
-    if (start.deprecatedEditingOffset() >= caretMaxOffset(start.anchorNode())) {
+    if (start.computeEditingOffset() >= caretMaxOffset(start.anchorNode())) {
         startNode = NodeTraversal::next(*startNode);
         if (!startNode || comparePositions(end, firstPositionInOrBeforeNode(startNode)) < 0)
             return;
     }
 
     Node* pastEndNode = end.anchorNode();
-    if (end.deprecatedEditingOffset() >= caretMaxOffset(end.anchorNode()))
+    if (end.computeEditingOffset() >= caretMaxOffset(end.anchorNode()))
         pastEndNode = NodeTraversal::nextSkippingChildren(*end.anchorNode());
 
     // FIXME: Callers should perform this operation on a Range that includes the br
@@ -1324,7 +1324,7 @@ bool ApplyStyleCommand::mergeStartWithPreviousIfIdentical(const Position& start,
         int startOffsetAdjustment = startChild->nodeIndex();
         int endOffsetAdjustment = startNode == end.anchorNode() ? startOffsetAdjustment : 0;
         updateStartEnd(Position(startNode, startOffsetAdjustment),
-            Position(end.anchorNode(), end.deprecatedEditingOffset() + endOffsetAdjustment));
+            Position(end.anchorNode(), end.computeEditingOffset() + endOffsetAdjustment));
         return true;
     }
 
