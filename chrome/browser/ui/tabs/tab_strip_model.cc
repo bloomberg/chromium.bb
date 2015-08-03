@@ -33,6 +33,20 @@ using content::WebContents;
 
 namespace {
 
+// Enumeration for UMA tab discarding events.
+enum UMATabDiscarding {
+  UMA_TAB_DISCARDING_SWITCH_TO_LOADED_TAB,
+  UMA_TAB_DISCARDING_SWITCH_TO_DISCARDED_TAB,
+  UMA_TAB_DISCARDING_DISCARD_TAB,
+  UMA_TAB_DISCARDING_TAB_DISCARDING_MAX
+};
+
+// Records an UMA tab discarding event.
+void RecordUMATabDiscarding(UMATabDiscarding event) {
+  UMA_HISTOGRAM_ENUMERATION("Tab.Discarding", event,
+                            UMA_TAB_DISCARDING_TAB_DISCARDING_MAX);
+}
+
 // Returns true if the specified transition is one of the types that cause the
 // opener relationships for the tab in which the transition occurred to be
 // forgotten. This is generally any navigation that isn't a link click (i.e.
@@ -377,7 +391,10 @@ WebContents* TabStripModel::DiscardWebContentsAt(int index) {
   // Replace the tab we're discarding with the null version.
   ReplaceWebContentsAt(index, null_contents);
   // Mark the tab so it will reload when we click.
-  contents_data_[index]->set_discarded(true);
+  if (!contents_data_[index]->discarded()) {
+    contents_data_[index]->set_discarded(true);
+    RecordUMATabDiscarding(UMA_TAB_DISCARDING_DISCARD_TAB);
+  }
   // Discard the old tab's renderer.
   // TODO(jamescook): This breaks script connections with other tabs.
   // We need to find a different approach that doesn't do that, perhaps based
@@ -1295,7 +1312,12 @@ void TabStripModel::NotifyIfActiveTabChanged(WebContents* old_contents,
                          reason));
     in_notify_ = false;
     // Activating a discarded tab reloads it, so it is no longer discarded.
-    contents_data_[active_index()]->set_discarded(false);
+    if (contents_data_[active_index()]->discarded()) {
+      contents_data_[active_index()]->set_discarded(false);
+      RecordUMATabDiscarding(UMA_TAB_DISCARDING_SWITCH_TO_DISCARDED_TAB);
+    } else {
+      RecordUMATabDiscarding(UMA_TAB_DISCARDING_SWITCH_TO_LOADED_TAB);
+    }
   }
 }
 

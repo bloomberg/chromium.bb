@@ -1123,8 +1123,12 @@ void ChromeBrowserMainParts::PreBrowserStart() {
 #if defined(OS_CHROMEOS)
   g_browser_process->GetOomPriorityManager()->Start();
 #elif defined(OS_WIN) || defined(OS_MACOSX)
-  if (parsed_command_line().HasSwitch(switches::kEnableTabDiscarding))
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("AutomaticTabDiscarding");
+  if (parsed_command_line().HasSwitch(switches::kEnableTabDiscarding) ||
+      base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE)) {
     g_browser_process->GetOomPriorityManager()->Start();
+  }
 #endif
 }
 

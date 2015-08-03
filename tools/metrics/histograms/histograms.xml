@@ -45246,6 +45246,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Tab.Discarding" enum="TabBackgroundLoadStatus">
+  <owner>georgesak@chromium.org</owner>
+  <summary>
+    Metric to track counts of actions related to tab discarding. Namely, we get
+    an event for every tab switch, split into two groups, whether it was a
+    discarded tab not. We also get an event whenever a tab gets discarded.
+  </summary>
+</histogram>
+
 <histogram name="Tab.EvictedTabWasActive" enum="Boolean">
   <owner>lliabraa@chromium.org</owner>
   <summary>
@@ -70018,6 +70027,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Loaded on creation and shown"/>
   <int value="1" label="Loaded on creation and lost"/>
   <int value="2" label="Not loaded on creation"/>
+</enum>
+
+<enum name="TabDiscardingEvents" type="int">
+  <int value="0" label="Switched to an active tab"/>
+  <int value="1" label="Switched to a discarded tab"/>
+  <int value="2" label="Discarded a tab"/>
 </enum>
 
 <enum name="TabRendererCrashStatus" type="int">
