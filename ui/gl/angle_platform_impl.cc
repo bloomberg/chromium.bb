@@ -29,6 +29,18 @@ const unsigned char* ANGLEPlatformImpl::getTraceCategoryEnabledFlag(
   return TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(category_group);
 }
 
+void ANGLEPlatformImpl::logError(const char* errorMessage) {
+  LOG(ERROR) << errorMessage;
+}
+
+void ANGLEPlatformImpl::logWarning(const char* warningMessage) {
+  LOG(WARNING) << warningMessage;
+}
+
+void ANGLEPlatformImpl::logInfo(const char* infoMessage) {
+  LOG(INFO) << infoMessage;
+}
+
 angle::Platform::TraceEventHandle ANGLEPlatformImpl::addTraceEvent(
     char phase,
     const unsigned char* category_group_enabled,

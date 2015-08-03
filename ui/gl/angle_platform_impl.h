@@ -22,6 +22,9 @@ class ANGLEPlatformImpl : public angle::Platform {
   // angle::Platform:
   double currentTime() override;
   double monotonicallyIncreasingTime() override;
+  void logError(const char* errorMessage) override;
+  void logWarning(const char* warningMessage) override;
+  void logInfo(const char* infoMessage) override;
   const unsigned char* getTraceCategoryEnabledFlag(
       const char* category_group) override;
   TraceEventHandle addTraceEvent(char phase,
