@@ -391,7 +391,6 @@ files-toggle-ripple::shadow .ripple.activated {
   display: flex;
   flex: none;
   justify-content: flex-end;
-  width: 252px; /* 42px button x 6 */
 }
 
 /* Thumbnails */
