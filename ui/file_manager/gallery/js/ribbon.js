@@ -438,15 +438,23 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
 Ribbon.prototype.setThumbnailImage_ = function(thumbnail, item) {
   if (!item.getThumbnailMetadataItem())
     return;
+
   this.thumbnailModel_.get([item.getEntry()]).then(function(metadataList) {
     var loader = new ThumbnailLoader(
         item.getEntry(),
         ThumbnailLoader.LoaderType.IMAGE,
         metadataList[0]);
+    // Pass 0.35 as auto fill threshold. This value allows to fill 4:3 and 3:2
+    // photos in 16:9 box (ratio factors for them are ~1.34 and ~1.18
+    // respectively).
     loader.load(
         thumbnail.querySelector('.image-wrapper'),
-        ThumbnailLoader.FillMode.FIT,
-        ThumbnailLoader.OptimizationMode.NEVER_DISCARD);
+        ThumbnailLoader.FillMode.AUTO,
+        ThumbnailLoader.OptimizationMode.NEVER_DISCARD,
+        undefined /* opt_onSuccess */,
+        undefined /* opt_onError */,
+        undefined /* opt_onGeneric */,
+        0.35 /* opt_autoFillThreshold */);
   });
 };
 
