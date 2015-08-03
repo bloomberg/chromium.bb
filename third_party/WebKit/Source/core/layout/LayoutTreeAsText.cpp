@@ -755,13 +755,13 @@ static void writeSelection(TextStream& ts, const LayoutObject* o)
 
     VisibleSelection selection = frame->selection().selection();
     if (selection.isCaret()) {
-        ts << "caret: position " << selection.start().deprecatedEditingOffset() << " of " << nodePositionAsStringForTesting(selection.start().anchorNode());
+        ts << "caret: position " << selection.start().computeEditingOffset() << " of " << nodePositionAsStringForTesting(selection.start().anchorNode());
         if (selection.affinity() == UPSTREAM)
             ts << " (upstream affinity)";
         ts << "\n";
     } else if (selection.isRange()) {
-        ts << "selection start: position " << selection.start().deprecatedEditingOffset() << " of " << nodePositionAsStringForTesting(selection.start().anchorNode()) << "\n"
-            << "selection end:   position " << selection.end().deprecatedEditingOffset() << " of " << nodePositionAsStringForTesting(selection.end().anchorNode()) << "\n";
+        ts << "selection start: position " << selection.start().computeEditingOffset() << " of " << nodePositionAsStringForTesting(selection.start().anchorNode()) << "\n"
+            << "selection end:   position " << selection.end().computeEditingOffset() << " of " << nodePositionAsStringForTesting(selection.end().anchorNode()) << "\n";
     }
 }
 
