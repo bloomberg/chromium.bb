@@ -6,6 +6,7 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SYNC_INTERFACE_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 
@@ -17,6 +18,8 @@ namespace password_manager {
 // thread only.
 class PasswordStoreSync {
  public:
+  PasswordStoreSync();
+
   // Overwrites |forms| with all stored non-blacklisted credentials. Returns
   // true on success.
   virtual bool FillAutofillableLogins(
@@ -44,6 +47,13 @@ class PasswordStoreSync {
 
  protected:
   virtual ~PasswordStoreSync();
+
+  bool is_alive() { return is_alive_; }
+
+ private:
+  bool is_alive_;  // TODO(vabr): Remove when http://crbug.com/514040 is fixed.
+
+  DISALLOW_COPY_AND_ASSIGN(PasswordStoreSync);
 };
 
 }  // namespace password_manager

@@ -210,6 +210,7 @@ void PasswordStore::RemoveObserver(Observer* observer) {
 }
 
 bool PasswordStore::ScheduleTask(const base::Closure& task) {
+  CHECK(is_alive());
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
       GetBackgroundTaskRunner());
   if (task_runner.get())
