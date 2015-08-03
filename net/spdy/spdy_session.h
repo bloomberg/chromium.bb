@@ -57,7 +57,7 @@ const int kMaxConcurrentPushedStreams = 1000;
 // If more than this many bytes have been read or more than that many
 // milliseconds have passed, return ERR_IO_PENDING from ReadLoop.
 const int kYieldAfterBytesRead = 32 * 1024;
-const int kYieldAfterDurationMilliseconds = 50;
+const int kYieldAfterDurationMilliseconds = 20;
 
 // First and last valid stream IDs. As we always act as the client,
 // start at 1 for the first stream id.
