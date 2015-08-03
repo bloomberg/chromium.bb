@@ -10,10 +10,29 @@
         <video id="testVideo"></video>
         <div id="log"></div>
         <script>
+            // For debugging timeouts, keep track of the number of the
+            // various events received.
+            var debugEncryptedEventCount = 0;
+            var debugWaitingForKeyEventCount = 0;
+            var debugTimeUpdateEventCount = 0;
+            var debugMessage = '';
+
             promise_test(function(test)
             {
                 var video = document.getElementById('testVideo');
                 var mediaKeySession;
+
+                test.timeout = function()
+                {
+                    var message = 'timeout. message = ' + debugMessage
+                                   + ', encrypted: ' + debugEncryptedEventCount
+                                   + ', waitingforkey: ' + debugWaitingForKeyEventCount
+                                   + ', timeupdate: ' + debugTimeUpdateEventCount;
+                    test.force_timeout();
+                    test.timeout_id = null;
+                    test.set_status(2, message);
+                    test.done();
+                };
 
                 // As this code doesn't wait for the 'message' event to avoid
                 // race conditions with 'waitingforkey', specify the key ID and
@@ -23,16 +42,20 @@
                                              0x68, 0xef, 0x12, 0x2a, 0xfc, 0xe4, 0xae, 0x3c]);
 
                 return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                    debugMessage = 'createMediaKeys()';
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
+                    debugMessage = 'setMediaKeys()';
                     return video.setMediaKeys(mediaKeys);
                 }).then(function() {
                     video.src = '../content/test-encrypted.webm';
                     video.play();
+                    debugMessage = 'wait_for_encrypted_event()';
                     return wait_for_encrypted_event(video);
                 }).then(function(e) {
                     // Received the 'encrypted' event(s), so create a session.
                     mediaKeySession = video.mediaKeys.createSession();
+                    debugMessage = 'generateRequest()';
                     return mediaKeySession.generateRequest(e.initDataType, e.initData);
                 }).then(function() {
                     // Wait until the video indicates that it needs a key to
@@ -41,6 +64,7 @@
                     // ignore it since we already know what keyId is needed and
                     // this avoids a race condition between it and the
                     // 'waitingforkey' event.
+                    debugMessage = 'wait_for_waitingforkey_event()';
                     return wait_for_waitingforkey_event(video);
                 }).then(function() {
                     // Make sure the video is NOT paused and not progressing
@@ -51,14 +75,21 @@
 
                     // Add the key needed to decrypt.
                     var jwkSet = stringToUint8Array(createJWKSet(createJWK(keyId, rawKey)));
+                    debugMessage = 'update()';
                     return mediaKeySession.update(jwkSet);
                 }).then(function() {
                     // Video should start playing now that it can decrypt the
                     // streams, so wait until a little bit of the video has
                     // played.
+                    debugMessage = 'wait_for_timeupdate_event()';
                     return wait_for_timeupdate_event(video);
                 });
-            }, 'Waiting for a key.');
+
+                // Typical test duration is 6 seconds on release builds
+                // (12 seconds on debug). Since the test is timing out anyway,
+                // make the duration 5 seconds so that the timeout function
+                // is actually called (instead of simply aborting the test).
+            }, 'Waiting for a key.', { timeout: 5000 });
 
             // Wait for a pair of 'encrypted' events. Promise resolved on
             // second event.
@@ -74,6 +105,7 @@
                         // The same decryption key is used by both the audio
                         // and the video streams so wait for the second event
                         // to ensure we see both events.
+                        ++debugEncryptedEventCount;
                         if (++encryptedEventCount != 2)
                             return;
 
@@ -93,6 +125,7 @@
                         assert_equals(e.target, video);
                         assert_equals(e.type, 'waitingforkey');
 
+                        ++debugWaitingForKeyEventCount;
                         ++waitingForKeyEventCount;
                         // TODO(jrummell): waitingforkey event should only
                         // occur once. http://crbug.com/461903
@@ -111,6 +144,7 @@
                 return new Promise(function(resolve) {
                     video.addEventListener('timeupdate', function listener(e) {
                         assert_equals(e.target, video);
+                        ++debugTimeUpdateEventCount;
                         if (video.currentTime < 0.2)
                             return;
                         video.removeEventListener(listener);
