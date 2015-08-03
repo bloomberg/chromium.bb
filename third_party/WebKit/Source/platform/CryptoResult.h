@@ -36,8 +36,17 @@
 
 namespace blink {
 
+// Result cancellation status interface to allow non-Blink webcrypto threads
+// to query for status.
+class CryptoResultCancel : public ThreadSafeRefCounted<CryptoResultCancel> {
+public:
+    virtual ~CryptoResultCancel() { }
+
+    virtual bool cancelled() const = 0;
+};
+
 // Receives notification of completion of the crypto operation.
-class CryptoResult : public ThreadSafeRefCounted<CryptoResult> {
+class CryptoResult : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<CryptoResult> {
 public:
     virtual ~CryptoResult() { }
 
@@ -47,14 +56,10 @@ public:
     virtual void completeWithBoolean(bool) = 0;
     virtual void completeWithKey(const WebCryptoKey&) = 0;
     virtual void completeWithKeyPair(const WebCryptoKey& publicKey, const WebCryptoKey& privateKey) = 0;
-    virtual bool cancelled() const = 0;
 
-    WebCryptoResult result()
-    {
-        return WebCryptoResult(this);
-    }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 } // namespace blink
 
-#endif
+#endif // CryptoResult_h

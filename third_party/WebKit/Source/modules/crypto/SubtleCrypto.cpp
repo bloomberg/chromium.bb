@@ -395,7 +395,7 @@ ScriptPromise SubtleCrypto::deriveBits(ScriptState* scriptState, const Algorithm
 
 ScriptPromise SubtleCrypto::deriveKey(ScriptState* scriptState, const AlgorithmIdentifier& rawAlgorithm, CryptoKey* baseKey, const AlgorithmIdentifier& rawDerivedKeyType, bool extractable, const Vector<String>& rawKeyUsages)
 {
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
+    RefPtrWillBeRawPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
     if (!canAccessWebCrypto(scriptState, result.get()))
