@@ -151,8 +151,16 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TestOpenPopupIncognito) {
 // Tests that an extension can open a popup in the last active incognito window
 // even from a background page with a non-incognito profile.
 // (crbug.com/448853)
+#if defined(OS_WIN)
+// Fails on XP: http://crbug.com/515717
+#define MAYBE_TestOpenPopupIncognitoFromBackground \
+  DISABLED_TestOpenPopupIncognitoFromBackground
+#else
+#define MAYBE_TestOpenPopupIncognitoFromBackground \
+  TestOpenPopupIncognitoFromBackground
+#endif
 IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
-                       TestOpenPopupIncognitoFromBackground) {
+                       MAYBE_TestOpenPopupIncognitoFromBackground) {
   if (!ShouldRunPopupTest())
     return;
 

@@ -532,8 +532,15 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, RulesPersistence) {
 }
 
 // http://crbug.com/304373
+#if defined(OS_WIN)
+// Fails on XP: http://crbug.com/515717
+#define MAYBE_UninstallWhileActivePageAction \
+  DISABLED_UninstallWhileActivePageAction
+#else
+#define MAYBE_UninstallWhileActivePageAction UninstallWhileActivePageAction
+#endif
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
-                       UninstallWhileActivePageAction) {
+                       MAYBE_UninstallWhileActivePageAction) {
   ext_dir_.WriteManifest(kDeclarativeContentManifest);
   ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundHelpers);
   const Extension* extension = LoadExtension(ext_dir_.unpacked_path());
