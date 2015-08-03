@@ -40,6 +40,7 @@ extern const char kSupervisedUserCustodianProfileImageURL[];
 extern const char kSupervisedUserCustodianProfileURL[];
 extern const char kSupervisedUserManualHosts[];
 extern const char kSupervisedUserManualURLs[];
+extern const char kSupervisedUserSafeSites[];
 extern const char kSupervisedUserSecondCustodianEmail[];
 extern const char kSupervisedUserSecondCustodianName[];
 extern const char kSupervisedUserSecondCustodianProfileImageURL[];

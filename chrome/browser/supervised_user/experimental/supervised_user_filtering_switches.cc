@@ -6,7 +6,10 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 
 namespace {
 
@@ -19,22 +22,29 @@ enum class SafeSitesState {
 
 const char kSafeSitesFieldTrialName[] = "SafeSites";
 
-SafeSitesState GetState() {
+SafeSitesState GetState(Profile* profile) {
+  // SafeSites is only supported for child accounts.
+  if (!profile->IsChild())
+    return SafeSitesState::DISABLED;
+
   // Note: It's important to query the field trial state first, to ensure that
   // UMA reports the correct group.
   std::string trial_group =
       base::FieldTrialList::FindFullName(kSafeSitesFieldTrialName);
+
+  if (!profile->GetPrefs()->GetBoolean(prefs::kSupervisedUserSafeSites))
+    return SafeSitesState::DISABLED;
 
   std::string arg = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kSupervisedUserSafeSites);
   if (!arg.empty()) {
     if (arg == "enabled")
       return SafeSitesState::ENABLED;
-    else if (arg == "disabled")
+    if (arg == "disabled")
       return SafeSitesState::DISABLED;
-    else if (arg == "blacklist-only")
+    if (arg == "blacklist-only")
       return SafeSitesState::BLACKLIST_ONLY;
-    else if (arg == "online-check-only")
+    if (arg == "online-check-only")
       return SafeSitesState::ONLINE_CHECK_ONLY;
 
     LOG(WARNING) << "Invalid value \"" << arg << "\" specified for flag \""
@@ -46,26 +56,26 @@ SafeSitesState GetState() {
   // If no cmdline arg is specified, evaluate the field trial.
   if (trial_group == "Disabled")
     return SafeSitesState::DISABLED;
-  else if (trial_group == "BlacklistOnly")
+  if (trial_group == "BlacklistOnly")
     return SafeSitesState::BLACKLIST_ONLY;
-  else if (trial_group == "OnlineCheckOnly")
+  if (trial_group == "OnlineCheckOnly")
     return SafeSitesState::ONLINE_CHECK_ONLY;
-  else
-    return SafeSitesState::ENABLED;
+
+  return SafeSitesState::ENABLED;
 }
 
 }  // namespace
 
 namespace supervised_users {
 
-bool IsSafeSitesBlacklistEnabled() {
-  SafeSitesState state = GetState();
+bool IsSafeSitesBlacklistEnabled(Profile* profile) {
+  SafeSitesState state = GetState(profile);
   return state == SafeSitesState::ENABLED ||
          state == SafeSitesState::BLACKLIST_ONLY;
 }
 
-bool IsSafeSitesOnlineCheckEnabled() {
-  SafeSitesState state = GetState();
+bool IsSafeSitesOnlineCheckEnabled(Profile* profile) {
+  SafeSitesState state = GetState(profile);
   return state == SafeSitesState::ENABLED ||
          state == SafeSitesState::ONLINE_CHECK_ONLY;
 }

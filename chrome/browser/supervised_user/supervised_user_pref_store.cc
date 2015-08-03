@@ -49,6 +49,9 @@ SupervisedUserSettingsPrefMappingEntry kSupervisedUserSettingsPrefMapping[] = {
     supervised_users::kRecordHistory, prefs::kRecordHistory,
   },
   {
+    supervised_users::kSafeSitesEnabled, prefs::kSupervisedUserSafeSites,
+  },
+  {
     supervised_users::kSigninAllowed, prefs::kSigninAllowed,
   },
   {

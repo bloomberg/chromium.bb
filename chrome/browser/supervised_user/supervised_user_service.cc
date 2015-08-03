@@ -295,6 +295,7 @@ void SupervisedUserService::RegisterProfilePrefs(
   registry->RegisterIntegerPref(prefs::kDefaultSupervisedUserFilteringBehavior,
                                 SupervisedUserURLFilter::ALLOW);
   registry->RegisterBooleanPref(prefs::kSupervisedUserCreationAllowed, true);
+  registry->RegisterBooleanPref(prefs::kSupervisedUserSafeSites, true);
   for (const char* pref : kCustodianInfoPrefs) {
     registry->RegisterStringPref(pref, std::string());
   }
@@ -808,14 +809,10 @@ void SupervisedUserService::SetActive(bool active) {
     whitelist_service_->Init();
     UpdateManualHosts();
     UpdateManualURLs();
-    if (profile_->IsChild() && delegate_ &&
-        supervised_users::IsSafeSitesBlacklistEnabled()) {
+    if (supervised_users::IsSafeSitesBlacklistEnabled(profile_))
       LoadBlacklist(GetBlacklistPath(), GURL(kBlacklistURL));
-    }
-    if (profile_->IsChild() && delegate_ &&
-        supervised_users::IsSafeSitesOnlineCheckEnabled()) {
+    if (supervised_users::IsSafeSitesOnlineCheckEnabled(profile_))
       url_filter_context_.InitAsyncURLChecker(profile_->GetRequestContext());
-    }
 
 #if !defined(OS_ANDROID)
     // TODO(bauerb): Get rid of the platform-specific #ifdef here.

@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_EXPERIMENTAL_SUPERVISED_USER_FILTERING_SWITCHES_H_
 #define CHROME_BROWSER_SUPERVISED_USER_EXPERIMENTAL_SUPERVISED_USER_FILTERING_SWITCHES_H_
 
+class Profile;
+
 namespace supervised_users {
 
 // These functions are wrappers around switches::kSupervisedUserSafeSites that
 // evaluate a field trial if no command line arguments are specified.
-bool IsSafeSitesBlacklistEnabled();
-bool IsSafeSitesOnlineCheckEnabled();
+bool IsSafeSitesBlacklistEnabled(Profile* profile);
+bool IsSafeSitesOnlineCheckEnabled(Profile* profile);
 
 }  // namespace supervised_users
 
