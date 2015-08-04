@@ -38,17 +38,16 @@
 
 namespace blink {
 
-void SelectRuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector)
+void SelectRuleFeatureSet::collectFeaturesFromSelectorList(const CSSSelectorList& list)
 {
-    for (const CSSSelector* current = &selector; current; current = current->tagHistory()) {
-        if (invalidationSetForSelector(*current))
-            continue;
+    for (const CSSSelector* selector = list.first(); selector; selector = CSSSelectorList::next(*selector)) {
+        for (const CSSSelector* component = selector; component; component = component->tagHistory()) {
+            if (invalidationSetForSelector(*component))
+                continue;
 
-        if (!current->selectorList())
-            continue;
-
-        for (const CSSSelector* selector = current->selectorList()->first(); selector; selector = CSSSelectorList::next(*selector))
-            collectFeaturesFromSelector(*selector);
+            if (component->selectorList())
+                collectFeaturesFromSelectorList(*component->selectorList());
+        }
     }
 }
 
