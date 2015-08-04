@@ -158,7 +158,8 @@ bool DevToolsEmulator::doubleTapToZoomEnabled() const
 void DevToolsEmulator::setHidePinchScrollbarsNearMinScale(bool enabled)
 {
     m_hidePinchScrollbarsNearMinScale = enabled;
-    m_webViewImpl->layerTreeView()->setHidePinchScrollbarsNearMinScale(enabled);
+    if (m_webViewImpl->layerTreeView())
+        m_webViewImpl->layerTreeView()->setHidePinchScrollbarsNearMinScale(enabled);
 }
 
 void DevToolsEmulator::enableDeviceEmulation(const WebDeviceEmulationParams& params)
@@ -222,7 +223,8 @@ void DevToolsEmulator::enableMobileEmulation()
     m_originalDefaultMinimumPageScaleFactor = m_webViewImpl->defaultMinimumPageScaleFactor();
     m_originalDefaultMaximumPageScaleFactor = m_webViewImpl->defaultMaximumPageScaleFactor();
     m_webViewImpl->setDefaultPageScaleLimits(0.25f, 5);
-    m_webViewImpl->layerTreeView()->setHidePinchScrollbarsNearMinScale(false);
+    if (m_webViewImpl->layerTreeView())
+        m_webViewImpl->layerTreeView()->setHidePinchScrollbarsNearMinScale(false);
 }
 
 void DevToolsEmulator::disableMobileEmulation()
@@ -242,8 +244,10 @@ void DevToolsEmulator::disableMobileEmulation()
     m_webViewImpl->setDefaultPageScaleLimits(
         m_originalDefaultMinimumPageScaleFactor,
         m_originalDefaultMaximumPageScaleFactor);
-    m_webViewImpl->layerTreeView()->setHidePinchScrollbarsNearMinScale(
-        m_hidePinchScrollbarsNearMinScale);
+    if (m_webViewImpl->layerTreeView()) {
+        m_webViewImpl->layerTreeView()->setHidePinchScrollbarsNearMinScale(
+            m_hidePinchScrollbarsNearMinScale);
+    }
 }
 
 void DevToolsEmulator::setTouchEventEmulationEnabled(bool enabled)
