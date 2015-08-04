@@ -113,9 +113,7 @@ if (is_win) {
 
       # Apply any dependencies from the invoker to this target, since those
       # dependencies may have created the input manifest files.
-      if (defined(invoker.deps)) {
-        deps = invoker.deps
-      }
+      forward_variables_from(invoker, [ "deps" ])
     }
 
     # Make the .rc file that references the final manifest file. The manifest
@@ -155,9 +153,7 @@ if (is_win) {
 
     # This source set only exists to compile and link the resource file.
     source_set(source_set_name) {
-      if (defined(invoker.visibility)) {
-        visibility = invoker.visibility
-      }
+      forward_variables_from(invoker, [ "visibility" ])
       sources = [
         rcfile,
       ]

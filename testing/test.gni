@@ -24,89 +24,42 @@ template("test") {
       configs = []  # Prevent list overwriting warning.
       configs = invoker.configs
 
-      # See above call.
-      set_sources_assignment_filter([])
-
       testonly = true
 
-      if (defined(invoker.all_dependent_configs)) {
-        all_dependent_configs = invoker.all_dependent_configs
-      }
-      if (defined(invoker.allow_circular_includes_from)) {
-        allow_circular_includes_from = invoker.allow_circular_includes_from
-      }
-      if (defined(invoker.cflags)) {
-        cflags = invoker.cflags
-      }
-      if (defined(invoker.cflags_c)) {
-        cflags_c = invoker.cflags_c
-      }
-      if (defined(invoker.cflags_cc)) {
-        cflags_cc = invoker.cflags_cc
-      }
-      if (defined(invoker.cflags_objc)) {
-        cflags_objc = invoker.cflags_objc
-      }
-      if (defined(invoker.cflags_objcc)) {
-        cflags_objcc = invoker.cflags_objcc
-      }
-      if (defined(invoker.check_includes)) {
-        check_includes = invoker.check_includes
-      }
-      if (defined(invoker.data)) {
-        data = invoker.data
-      }
-      if (defined(invoker.data_deps)) {
-        data_deps = invoker.data_deps
-      }
-      if (defined(invoker.datadeps)) {
-        datadeps = invoker.datadeps
-      }
-      if (defined(invoker.defines)) {
-        defines = invoker.defines
-      }
+      # Don't use "*" to forward all variables since some (like output_name
+      # and isolate_file) apply only to the APK below.
+      forward_variables_from(invoker,
+                             [
+                               "all_dependent_configs",
+                               "allow_circular_includes_from",
+                               "cflags",
+                               "cflags_c",
+                               "cflags_cc",
+                               "check_includes",
+                               "data",
+                               "data_deps",
+                               "datadeps",
+                               "defines",
+                               "forward_dependent_configs_from",
+                               "include_dirs",
+                               "ldflags",
+                               "lib_dirs",
+                               "libs",
+                               "output_extension",
+                               "output_name",
+                               "public",
+                               "public_configs",
+                               "public_deps",
+                               "sources",
+                               "visibility",
+                             ])
+
       deps = []
       if (!defined(invoker.use_launcher) || invoker.use_launcher) {
         deps += [ "//testing/android/native_test:native_test_native_code" ]
       }
       if (defined(invoker.deps)) {
         deps += invoker.deps
-      }
-      if (defined(invoker.forward_dependent_configs_from)) {
-        forward_dependent_configs_from = invoker.forward_dependent_configs_from
-      }
-      if (defined(invoker.include_dirs)) {
-        include_dirs = invoker.include_dirs
-      }
-      if (defined(invoker.ldflags)) {
-        ldflags = invoker.ldflags
-      }
-      if (defined(invoker.lib_dirs)) {
-        lib_dirs = invoker.lib_dirs
-      }
-      if (defined(invoker.libs)) {
-        libs = invoker.libs
-      }
-      if (defined(invoker.output_extension)) {
-        output_extension = invoker.output_extension
-      }
-      if (defined(invoker.output_name)) {
-        output_name = invoker.output_name
-      }
-      if (defined(invoker.public)) {
-        public = invoker.public
-      }
-      if (defined(invoker.public_configs)) {
-        public_configs = invoker.public_configs
-      }
-      if (defined(invoker.public_deps)) {
-        public_deps = invoker.public_deps
-      }
-      if (defined(invoker.sources)) {
-        sources = invoker.sources
-      }
-      if (defined(invoker.visibility)) {
-        visibility = invoker.visibility
       }
     }
 
@@ -154,55 +107,11 @@ template("test") {
     }
   } else {
     executable(target_name) {
-      # See above.
-      configs = []  # Prevent list overwriting warning.
-      configs = invoker.configs
-
-      # See above call.
-      set_sources_assignment_filter([])
+      forward_variables_from(invoker, "*")
 
       testonly = true
 
-      if (defined(invoker.all_dependent_configs)) {
-        all_dependent_configs = invoker.all_dependent_configs
-      }
-      if (defined(invoker.allow_circular_includes_from)) {
-        allow_circular_includes_from = invoker.allow_circular_includes_from
-      }
-      if (defined(invoker.cflags)) {
-        cflags = invoker.cflags
-      }
-      if (defined(invoker.cflags_c)) {
-        cflags_c = invoker.cflags_c
-      }
-      if (defined(invoker.cflags_cc)) {
-        cflags_cc = invoker.cflags_cc
-      }
-      if (defined(invoker.cflags_objc)) {
-        cflags_objc = invoker.cflags_objc
-      }
-      if (defined(invoker.cflags_objcc)) {
-        cflags_objcc = invoker.cflags_objcc
-      }
-      if (defined(invoker.check_includes)) {
-        check_includes = invoker.check_includes
-      }
-      if (defined(invoker.data)) {
-        data = invoker.data
-      }
-      if (defined(invoker.data_deps)) {
-        data_deps = invoker.data_deps
-      }
-      if (defined(invoker.datadeps)) {
-        datadeps = invoker.datadeps
-      }
-      if (defined(invoker.defines)) {
-        defines = invoker.defines
-      }
-
-      if (defined(invoker.deps)) {
-        deps = invoker.deps
-      } else {
+      if (!defined(invoker.deps)) {
         deps = []
       }
       deps += [
@@ -213,43 +122,6 @@ template("test") {
         # Give tests the default manifest on Windows (a no-op elsewhere).
         "//build/win:default_exe_manifest",
       ]
-
-      if (defined(invoker.forward_dependent_configs_from)) {
-        forward_dependent_configs_from = invoker.forward_dependent_configs_from
-      }
-      if (defined(invoker.include_dirs)) {
-        include_dirs = invoker.include_dirs
-      }
-      if (defined(invoker.ldflags)) {
-        ldflags = invoker.ldflags
-      }
-      if (defined(invoker.lib_dirs)) {
-        lib_dirs = invoker.lib_dirs
-      }
-      if (defined(invoker.libs)) {
-        libs = invoker.libs
-      }
-      if (defined(invoker.output_extension)) {
-        output_extension = invoker.output_extension
-      }
-      if (defined(invoker.output_name)) {
-        output_name = invoker.output_name
-      }
-      if (defined(invoker.public)) {
-        public = invoker.public
-      }
-      if (defined(invoker.public_configs)) {
-        public_configs = invoker.public_configs
-      }
-      if (defined(invoker.public_deps)) {
-        public_deps = invoker.public_deps
-      }
-      if (defined(invoker.sources)) {
-        sources = invoker.sources
-      }
-      if (defined(invoker.visibility)) {
-        visibility = invoker.visibility
-      }
     }
   }
 }

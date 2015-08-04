@@ -144,21 +144,18 @@ template("proto_library") {
       protoc_label,
     ]
 
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
+    forward_variables_from(invoker, [ "deps" ])
   }
 
   source_set(target_name) {
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
+    forward_variables_from(invoker,
+                           [
+                             "visibility",
+                             "defines",
+                           ])
 
     sources = get_target_outputs(":$action_name")
 
-    if (defined(invoker.defines)) {
-      defines = invoker.defines
-    }
     if (defined(invoker.extra_configs)) {
       configs += invoker.extra_configs
     }

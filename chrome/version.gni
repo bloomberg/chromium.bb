@@ -127,9 +127,7 @@ template("process_version") {
 
     if (process_only) {
       # When processing only, visibility gets applied to this target.
-      if (defined(invoker.visibility)) {
-        visibility = invoker.visibility
-      }
+      forward_variables_from(invoker, [ "visibility" ])
     } else {
       # When linking the result, only the source set can depend on the action.
       visibility = [ ":$source_set_name" ]
@@ -138,9 +136,7 @@ template("process_version") {
 
   if (!process_only) {
     source_set(source_set_name) {
-      if (defined(invoker.visibility)) {
-        visibility = invoker.visibility
-      }
+      forward_variables_from(invoker, [ "visibility" ])
       sources = get_target_outputs(":$action_name")
       public_deps = [
         ":$action_name",

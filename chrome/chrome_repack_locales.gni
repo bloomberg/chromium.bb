@@ -152,9 +152,7 @@ template("chrome_repack_locales") {
 
   # The group that external targets depend on which collects all deps.
   group(group_target_name) {
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
+    forward_variables_from(invoker, [ "visibility" ])
     deps = locale_targets
   }
 }

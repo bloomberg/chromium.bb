@@ -82,13 +82,12 @@ template("js2gtest") {
 
   source_set(source_set_name) {
     testonly = true
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
+    forward_variables_from(invoker,
+                           [
+                             "defines",
+                             "visibility",
+                           ])
     sources = get_target_outputs(":$action_name")
-    if (defined(invoker.defines)) {
-      defines = invoker.defines
-    }
     deps = [
       ":$action_name",
 

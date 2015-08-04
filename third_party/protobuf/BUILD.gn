@@ -19,7 +19,7 @@ config("protobuf_config") {
   ]
 }
 
-if (component_mode == "shared_library") {
+if (is_component_build) {
   config("protobuf_use_dlls") {
     defines = [ "PROTOBUF_USE_DLLS" ]
   }
@@ -103,7 +103,7 @@ component("protobuf_lite") {
   cflags = protobuf_lite_cflags
 
   # Required for component builds. See http://crbug.com/172800.
-  if (component_mode == "shared_library") {
+  if (is_component_build) {
     public_configs += [ ":protobuf_use_dlls" ]
     defines = [ "LIBPROTOBUF_EXPORTS" ]
   }

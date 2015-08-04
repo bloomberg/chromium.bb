@@ -73,11 +73,10 @@ template("pkg_config") {
       ldflags = pkgresult[4]
     }
 
-    if (defined(invoker.defines)) {
-      defines = invoker.defines
-    }
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
+    forward_variables_from(invoker,
+                           [
+                             "defines",
+                             "visibility",
+                           ])
   }
 }
