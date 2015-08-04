@@ -146,7 +146,13 @@ class BotTestExpectationsFactory(object):
 
 class BotTestExpectations(object):
     # FIXME: Get this from the json instead of hard-coding it.
-    RESULT_TYPES_TO_IGNORE = ['N', 'X', 'Y']
+    RESULT_TYPES_TO_IGNORE = ['N', 'X', 'Y']  # NO_DATA, SKIP, NOTRUN
+
+    # TODO(ojan): Remove this once crbug.com/514378 is fixed.
+    # The JSON can contain results for expectations, not just actual result types.
+    NON_RESULT_TYPES = ['S', 'X']  # SLOW, SKIP
+
+    PASS_RESULT = 'P'
 
     # specifiers arg is used in unittests to avoid the static dependency on builders.
     def __init__(self, results_json, specifiers=None):
@@ -201,7 +207,7 @@ class BotTestExpectations(object):
             expectations = set(map(string_to_exp, exp_string.split(' ')))
 
             # Set of distinct results for this test.
-            result_types = self._flaky_types_in_results(results_dict)
+            result_types = self._all_types_in_results(results_dict)
 
             # Distinct results as non-encoded strings.
             result_strings = map(self.results_json.expectation_for_type, result_types)
@@ -221,7 +227,7 @@ class BotTestExpectations(object):
             unexpected_results_by_path[test_path] = sorted(map(exp_to_string, expectations))
         return unexpected_results_by_path
 
-    def expectation_lines(self, only_ignore_very_flaky=False):
+    def expectation_lines(self, only_ignore_very_flaky):
         lines = []
         for test_path, entry in self.results_json.walk_results():
             results_array = entry[self.results_json.RESULTS_KEY]
@@ -232,24 +238,44 @@ class BotTestExpectations(object):
                 lines.append(line)
         return lines
 
-    def _flaky_types_in_results(self, run_length_encoded_results, only_ignore_very_flaky=False):
-        results_map = {}
-        seen_results = {}
+    def _all_types_in_results(self, run_length_encoded_results):
+        results = set()
 
         for result_item in run_length_encoded_results:
-            _, result_type = self.results_json.occurances_and_type_from_result_item(result_item)
-            if result_type in self.RESULT_TYPES_TO_IGNORE:
+            _, result_types = self.results_json.occurances_and_type_from_result_item(result_item)
+
+            for result_type in result_types:
+                if result_type not in self.RESULT_TYPES_TO_IGNORE:
+                    results.add(result_type)
+
+        return results
+
+    def _flaky_types_in_results(self, run_length_encoded_results, only_ignore_very_flaky):
+        flaky_results = set()
+
+        for result_item in run_length_encoded_results:
+            _, result_types_str = self.results_json.occurances_and_type_from_result_item(result_item)
+
+            result_types = []
+            for result_type in result_types_str:
+                # TODO(ojan): Remove this if-statement once crbug.com/514378 is fixed.
+                if result_type not in self.NON_RESULT_TYPES:
+                    result_types.append(result_type)
+
+            # It didn't flake if it didn't retry.
+            if len(result_types) <= 1:
                 continue
 
-            if only_ignore_very_flaky and result_type not in seen_results:
-                # Only consider a short-lived result if we've seen it more than once.
-                # Otherwise, we include lots of false-positives due to tests that fail
-                # for a couple runs and then start passing.
-                # FIXME: Maybe we should make this more liberal and consider it a flake
-                # even if we only see that failure once.
-                seen_results[result_type] = True
+            # If the test passed after only one retry, it's not very flaky.
+            # It's only very flaky if it failed the first run and the first retry
+            # and then passed in one of the subsequent retries.
+            if only_ignore_very_flaky and result_types[1] == self.PASS_RESULT:
+                # Once we get a pass, we don't retry again. So if the first retry passed,
+                # then there should only be 2 entries because we don't do another retry.
+                # TODO(ojan): Reenable this assert once crbug.com/514378 is fixed.
+                # assert(len(result_types) == 2)
                 continue
 
-            results_map[result_type] = True
+            flaky_results = flaky_results.union(set(result_types))
 
-        return results_map.keys()
+        return flaky_results
