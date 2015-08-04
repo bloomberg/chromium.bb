@@ -708,7 +708,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      * @return The Y coordinate of the close icon.
      */
     public float getCloseIconY() {
-        return (getSearchBarHeight() - getCloseIconDimension()) / 2;
+        return getOffsetY() + ((getSearchBarHeight() - getCloseIconDimension()) / 2);
     }
 
     /**
@@ -716,9 +716,9 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      */
     public float getCloseIconX() {
         if (LocalizationUtils.isLayoutRtl()) {
-            return getSearchBarMarginSide();
+            return getOffsetX() + getSearchBarMarginSide();
         } else {
-            return getWidth() - getSearchBarMarginSide() - getCloseIconDimension();
+            return getOffsetX() + getWidth() - getSearchBarMarginSide() - getCloseIconDimension();
         }
     }
 
