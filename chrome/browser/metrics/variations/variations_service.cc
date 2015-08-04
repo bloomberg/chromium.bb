@@ -253,6 +253,8 @@ VariationsService::~VariationsService() {
 }
 
 bool VariationsService::CreateTrialsFromSeed() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   create_trials_from_seed_called_ = true;
 
   variations::VariationsSeed seed;
@@ -321,7 +323,7 @@ bool VariationsService::CreateTrialsFromSeed() {
 }
 
 void VariationsService::StartRepeatedVariationsSeedFetch() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Initialize the Variations server URL.
   variations_server_url_ =
@@ -342,14 +344,18 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
 }
 
 void VariationsService::AddObserver(Observer* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   observer_list_.AddObserver(observer);
 }
 
 void VariationsService::RemoveObserver(Observer* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   observer_list_.RemoveObserver(observer);
 }
 
 void VariationsService::OnAppEnterForeground() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // On mobile platforms, initialize the fetch scheduler when we receive the
   // first app foreground notification.
   if (!request_scheduler_)
@@ -359,17 +365,21 @@ void VariationsService::OnAppEnterForeground() {
 
 #if defined(OS_WIN)
 void VariationsService::StartGoogleUpdateRegistrySync() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   registry_syncer_.RequestRegistrySync();
 }
 #endif
 
 void VariationsService::SetRestrictMode(const std::string& restrict_mode) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // This should be called before the server URL has been computed.
   DCHECK(variations_server_url_.is_empty());
   restrict_mode_ = restrict_mode;
 }
 
 void VariationsService::SetCreateTrialsFromSeedCalledForTesting(bool called) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   create_trials_from_seed_called_ = called;
 }
 
@@ -450,6 +460,8 @@ scoped_ptr<VariationsService> VariationsService::Create(
 }
 
 void VariationsService::DoActualFetch() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   pending_seed_request_ = net::URLFetcher::Create(0, variations_server_url_,
                                                   net::URLFetcher::GET, this);
   pending_seed_request_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
@@ -479,6 +491,8 @@ void VariationsService::DoActualFetch() {
 void VariationsService::StoreSeed(const std::string& seed_data,
                                   const std::string& seed_signature,
                                   const base::Time& date_fetched) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   scoped_ptr<variations::VariationsSeed> seed(new variations::VariationsSeed);
   if (!seed_store_.StoreSeedData(seed_data, seed_signature, date_fetched,
                                  seed.get())) {
@@ -500,7 +514,7 @@ void VariationsService::StoreSeed(const std::string& seed_data,
 }
 
 void VariationsService::FetchVariationsSeed() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   const web_resource::ResourceRequestAllowedNotifier::State state =
       resource_request_allowed_notifier_->GetResourceRequestsAllowedState();
@@ -515,6 +529,8 @@ void VariationsService::FetchVariationsSeed() {
 
 void VariationsService::NotifyObservers(
     const variations::VariationsSeedSimulator::Result& result) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (result.kill_critical_group_change_count > 0) {
     FOR_EACH_OBSERVER(Observer, observer_list_,
                       OnExperimentChangesDetected(Observer::CRITICAL));
@@ -525,6 +541,7 @@ void VariationsService::NotifyObservers(
 }
 
 void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(pending_seed_request_.get(), source);
 
   const bool is_first_request = !initial_request_completed_;
@@ -594,6 +611,8 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 void VariationsService::OnResourceRequestsAllowed() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // Note that this only attempts to fetch the seed at most once per period
   // (kSeedFetchPeriodHours). This works because
   // |resource_request_allowed_notifier_| only calls this method if an
@@ -612,6 +631,8 @@ void VariationsService::OnResourceRequestsAllowed() {
 void VariationsService::PerformSimulationWithVersion(
     scoped_ptr<variations::VariationsSeed> seed,
     const base::Version& version) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (!version.IsValid())
     return;
 
@@ -644,6 +665,8 @@ void VariationsService::PerformSimulationWithVersion(
 }
 
 void VariationsService::RecordLastFetchTime() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // local_state_ is NULL in tests, so check it first.
   if (local_state_) {
     local_state_->SetInt64(prefs::kVariationsLastFetchTime,
@@ -652,12 +675,14 @@ void VariationsService::RecordLastFetchTime() {
 }
 
 std::string VariationsService::GetInvalidVariationsSeedSignature() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return seed_store_.GetInvalidSignature();
 }
 
 std::string VariationsService::LoadPermanentConsistencyCountry(
     const base::Version& version,
     const std::string& latest_country) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(version.IsValid());
 
   const base::ListValue* list_value =

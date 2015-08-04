@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/observer_list.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/metrics/variations/variations_request_scheduler.h"
 #include "chrome/browser/metrics/variations/variations_seed_store.h"
@@ -276,6 +277,8 @@ class VariationsService
   // Helper that handles synchronizing Variations with the Registry.
   VariationsRegistrySyncer registry_syncer_;
 #endif
+
+  base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<VariationsService> weak_ptr_factory_;
 
