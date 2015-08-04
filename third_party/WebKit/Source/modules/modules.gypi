@@ -678,6 +678,8 @@
       'accessibility/InspectorAccessibilityAgent.h',
       'accessibility/InspectorTypeBuilderHelper.cpp',
       'accessibility/InspectorTypeBuilderHelper.h',
+      'app_banner/AppBannerCallbacks.cpp',
+      'app_banner/AppBannerCallbacks.h',
       'app_banner/AppBannerController.cpp',
       'app_banner/AppBannerController.h',
       'app_banner/AppBannerPromptResult.cpp',

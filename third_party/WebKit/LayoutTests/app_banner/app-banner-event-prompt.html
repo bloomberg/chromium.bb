@@ -92,13 +92,16 @@ function prompt_test(index) {
             assert_equals(e.platforms[0], 'foo', 'First platform');
             assert_equals(e.platforms[1], 'bar', 'Second platform');
 
+            if (test_case.cancel) {
+                e.preventDefault();
+            }
+
             if (test_case.late) {
                 return;
             }
 
             if (test_case.cancel) {
-                // Cancel the event, then call prompt() to restart the display pipeline.
-                e.preventDefault();
+                // Call prompt() to restart the pipeline.
                 verify_prompt_resolve(e, t);
             } else {
                 // A call to prompt() before preventDefault should reject.
@@ -118,7 +121,6 @@ function prompt_test(index) {
         // Test that firing prompt() outside of the handler resolves or rejects correctly.
         if (test_case.late) {
             if (test_case.cancel) {
-                event.preventDefault();
                 verify_prompt_resolve(event, t);
             } else {
                 verify_prompt_reject(event, t);
