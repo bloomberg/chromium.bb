@@ -334,8 +334,11 @@ void QuicStreamFactory::Job::RunAuxilaryJob() {
 
 void QuicStreamFactory::Job::Cancel() {
   callback_.Reset();
-  if (session_)
+  if (session_) {
+    // TODO(rtenneti): Temporary CHECK while investigating crbug.com/473893.
+    DCHECK(session_->connection());
     session_->connection()->SendConnectionClose(QUIC_CONNECTION_CANCELLED);
+  }
 }
 
 void QuicStreamFactory::Job::CancelWaitForDataReadyCallback() {
