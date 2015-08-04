@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/containers/hash_tables.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
@@ -68,34 +69,19 @@ class DependentIterator {
   TaskGraph::Node* current_node_;
 };
 
-class DependencyMismatchComparator {
- public:
-  explicit DependencyMismatchComparator(const TaskGraph* graph)
-      : graph_(graph) {}
+bool DependencyMismatch(const TaskGraph* graph) {
+  // Value storage will be 0-initialized.
+  base::hash_map<const Task*, size_t> dependents;
+  for (const TaskGraph::Edge& edge : graph->edges)
+    dependents[edge.dependent]++;
 
-  bool operator()(const TaskGraph::Node& node) const {
-    return static_cast<size_t>(std::count_if(graph_->edges.begin(),
-                                             graph_->edges.end(),
-                                             DependentComparator(node.task))) !=
-           node.dependencies;
+  for (const TaskGraph::Node& node : graph->nodes) {
+    if (dependents[node.task] != node.dependencies)
+      return true;
   }
 
- private:
-  class DependentComparator {
-   public:
-    explicit DependentComparator(const Task* dependent)
-        : dependent_(dependent) {}
-
-    bool operator()(const TaskGraph::Edge& edge) const {
-      return edge.dependent == dependent_;
-    }
-
-   private:
-    const Task* dependent_;
-  };
-
-  const TaskGraph* graph_;
-};
+  return false;
+}
 
 }  // namespace
 
@@ -171,10 +157,7 @@ void TaskGraphRunner::ScheduleTasks(NamespaceToken token, TaskGraph* graph) {
                graph->edges.size());
 
   DCHECK(token.IsValid());
-  DCHECK(std::find_if(graph->nodes.begin(),
-                      graph->nodes.end(),
-                      DependencyMismatchComparator(graph)) ==
-         graph->nodes.end());
+  DCHECK(!DependencyMismatch(graph));
 
   {
     base::AutoLock lock(lock_);
