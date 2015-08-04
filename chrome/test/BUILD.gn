@@ -573,6 +573,9 @@ if (!is_android) {
       sources -=
           [ "../browser/ui/webui/downloads_ui_supervised_browsertest.js" ]
     }
+    if (!enable_print_preview) {
+      sources -= [ "data/webui/print_preview.js" ]
+    }
     deps = [
       "//chrome/browser/ui",
       "//skia",
@@ -985,7 +988,6 @@ if (!is_android) {
         "../browser/ui/webui/print_preview/print_preview_ui_browsertest.cc",
         "data/webui/print_preview.cc",
         "data/webui/print_preview.h",
-        "data/webui/print_preview.js",
       ]
     }
     if (enable_mdns) {

@@ -3282,7 +3282,6 @@
             '../components/components.gyp:password_manager_content_browser',
             '../components/components.gyp:plugins_common',
             '../components/components.gyp:power',
-            '../components/components.gyp:printing_browser',
             '../components/components.gyp:safe_json',
             '../components/components.gyp:sessions_content',
             '../components/components.gyp:storage_monitor',
@@ -3873,6 +3872,11 @@
                 '<@(chrome_browser_wifi_bootstrapping_win_mac_sources)',
               ]
             }]
+          ]
+        }],
+        [ 'enable_basic_printing==1 or enable_print_preview==1', {
+          'dependencies': [
+            '../components/components.gyp:printing_browser',
           ]
         }],
       ],

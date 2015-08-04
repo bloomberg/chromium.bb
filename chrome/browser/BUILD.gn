@@ -129,7 +129,6 @@ source_set("browser") {
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
     "//components/policy:policy_component",
-    "//components/printing/browser:printing_browser",
     "//components/proxy_config",
     "//components/query_parser",
     "//components/rappor",
@@ -583,7 +582,11 @@ source_set("browser") {
     sources += rebase_path(gypi_values.chrome_browser_printing_basic_sources,
                            ".",
                            "//chrome")
-    deps += [ "//printing" ]
+    deps += [
+      "//printing",
+      "//components/printing/browser:printing_browser",
+    ]
+
     if (is_win) {
       sources += rebase_path(gypi_values.chrome_browser_printing_emf_sources,
                              ".",
