@@ -47,8 +47,8 @@ scoped_refptr<Extension> CreateExtensionWithBookmarksPermission(
 TEST(DeclarativeContentConditionTest, UnknownConditionName) {
   URLMatcher matcher;
   std::string error;
-  scoped_ptr<ContentCondition> result = CreateContentCondition(
-      NULL,
+  scoped_ptr<ContentCondition> condition = CreateContentCondition(
+      nullptr,
       matcher.condition_factory(),
       *base::test::ParseJson(
            "{\n"
@@ -57,68 +57,78 @@ TEST(DeclarativeContentConditionTest, UnknownConditionName) {
            "}"),
       &error);
   EXPECT_THAT(error, HasSubstr("Unknown condition attribute"));
-  EXPECT_FALSE(result);
+  EXPECT_FALSE(condition);
 
   EXPECT_TRUE(matcher.IsEmpty()) << "Errors shouldn't add URL conditions";
 }
 
-TEST(DeclarativeContentConditionTest, WrongPageUrlDatatype) {
+TEST(DeclarativeContentConditionTest,
+     PredicateWithErrorProducesEmptyCondition) {
   URLMatcher matcher;
   std::string error;
-  scoped_ptr<ContentCondition> result = CreateContentCondition(
-      NULL,
+  scoped_ptr<ContentCondition> condition = CreateContentCondition(
+      nullptr,
       matcher.condition_factory(),
       *base::test::ParseJson(
-          "{\n"
-          "  \"pageUrl\": [],\n"
-          "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
-          "}"),
+           "{\n"
+           "  \"css\": \"selector\",\n"
+           "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
+           "}"),
       &error);
   EXPECT_THAT(error, HasSubstr("invalid type"));
-  EXPECT_FALSE(result);
-
-  EXPECT_TRUE(matcher.IsEmpty()) << "Errors shouldn't add URL conditions";
+  EXPECT_FALSE(condition);
 }
 
-TEST(DeclarativeContentConditionTest, WrongCssDatatype) {
-  URLMatcher matcher;
-  std::string error;
-  scoped_ptr<ContentCondition> result = CreateContentCondition(
-      NULL,
-      matcher.condition_factory(),
-      *base::test::ParseJson(
-          "{\n"
-          "  \"css\": \"selector\",\n"
-          "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
-          "}"),
-      &error);
-  EXPECT_THAT(error, HasSubstr("invalid type"));
-  EXPECT_FALSE(result);
-
-  EXPECT_TRUE(matcher.IsEmpty()) << "Errors shouldn't add URL conditions";
-}
-
-TEST(DeclarativeContentConditionTest, ConditionWithUrl) {
-  URLMatcher matcher;
+TEST(DeclarativeContentConditionTest, AllSpecifiedPredicatesCreated) {
   scoped_refptr<Extension> extension =
-      CreateExtensionWithBookmarksPermission(false);
-
+      CreateExtensionWithBookmarksPermission(true);
+  URLMatcher matcher;
   std::string error;
   scoped_ptr<ContentCondition> condition = CreateContentCondition(
       extension.get(),
       matcher.condition_factory(),
       *base::test::ParseJson(
-          "{\n"
-          "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
-          "  \"pageUrl\": {\"hostSuffix\": \"example.com\"},\n"
-          "}"),
+           "{\n"
+           "  \"pageUrl\": {\"hostSuffix\": \"example.com\"},\n"
+           "  \"css\": [\"input\"],\n"
+           "  \"isBookmarked\": true,\n"
+           "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
+           "}"),
       &error);
-  EXPECT_EQ("", error);
   ASSERT_TRUE(condition);
+  EXPECT_TRUE(condition->page_url_predicate);
+  EXPECT_TRUE(condition->css_predicate);
+  EXPECT_TRUE(condition->is_bookmarked_predicate);
+}
+
+TEST(DeclarativeContentConditionTest, WrongPageUrlDatatype) {
+  URLMatcher matcher;
+  std::string error;
+  scoped_ptr<DeclarativeContentPageUrlPredicate> predicate =
+      CreatePageUrlPredicate(*base::test::ParseJson("[]"),
+                             matcher.condition_factory(), &error);
+  EXPECT_THAT(error, HasSubstr("invalid type"));
+  EXPECT_FALSE(predicate);
+
+  EXPECT_TRUE(matcher.IsEmpty()) << "Errors shouldn't add URL conditions";
+}
+
+TEST(DeclarativeContentConditionTest, PageUrlPredicate) {
+  URLMatcher matcher;
+  scoped_refptr<Extension> extension =
+      CreateExtensionWithBookmarksPermission(false);
+
+  std::string error;
+  scoped_ptr<DeclarativeContentPageUrlPredicate> predicate =
+      CreatePageUrlPredicate(
+          *base::test::ParseJson("{\"hostSuffix\": \"example.com\"}"),
+          matcher.condition_factory(),
+          &error);
+  EXPECT_EQ("", error);
+  ASSERT_TRUE(predicate);
 
   URLMatcherConditionSet::Vector all_new_condition_sets;
-  all_new_condition_sets.push_back(
-      condition->page_url_predicate->url_matcher_condition_set());
+  all_new_condition_sets.push_back(predicate->url_matcher_condition_set());
   matcher.AddConditionSets(all_new_condition_sets);
   EXPECT_FALSE(matcher.IsEmpty());
 
@@ -128,128 +138,94 @@ TEST(DeclarativeContentConditionTest, ConditionWithUrl) {
       matcher.MatchURL(GURL("http://www.example.com/foobar"));
   EXPECT_THAT(
       page_url_matches,
-      ElementsAre(
-          condition->page_url_predicate->url_matcher_condition_set()->id()));
+      ElementsAre(predicate->url_matcher_condition_set()->id()));
 
-  EXPECT_TRUE(condition->page_url_predicate->Evaluate(page_url_matches));
+  EXPECT_TRUE(predicate->Evaluate(page_url_matches));
 }
 
-TEST(DeclarativeContentConditionTest, ConditionWithCss) {
-  URLMatcher matcher;
-  scoped_refptr<Extension> extension =
-      CreateExtensionWithBookmarksPermission(false);
-
+TEST(DeclarativeContentConditionTest, WrongCssDatatype) {
   std::string error;
-  scoped_ptr<ContentCondition> condition = CreateContentCondition(
-      extension.get(),
-      matcher.condition_factory(),
-      *base::test::ParseJson(
-          "{\n"
-          "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
-          "  \"css\": [\"input\"],\n"
-          "}"),
+  scoped_ptr<DeclarativeContentCssPredicate> predicate = CreateCssPredicate(
+      *base::test::ParseJson("\"selector\""),
+      &error);
+  EXPECT_THAT(error, HasSubstr("invalid type"));
+  EXPECT_FALSE(predicate);
+}
+
+TEST(DeclarativeContentConditionTest, CssPredicate) {
+  std::string error;
+  scoped_ptr<DeclarativeContentCssPredicate> predicate = CreateCssPredicate(
+      *base::test::ParseJson("[\"input\"]"),
       &error);
   EXPECT_EQ("", error);
-  ASSERT_TRUE(condition);
+  ASSERT_TRUE(predicate);
 
   base::hash_set<std::string> matched_css_selectors;
   matched_css_selectors.insert("input");
 
-  EXPECT_TRUE(condition->css_predicate->Evaluate(matched_css_selectors));
+  EXPECT_TRUE(predicate->Evaluate(matched_css_selectors));
 
   matched_css_selectors.clear();
   matched_css_selectors.insert("body");
-  EXPECT_FALSE(condition->css_predicate->Evaluate(matched_css_selectors));
+  EXPECT_FALSE(predicate->Evaluate(matched_css_selectors));
 }
 
 // Tests that condition with isBookmarked requires "bookmarks" permission.
 TEST(DeclarativeContentConditionTest, IsBookmarkedRequiresBookmarkPermission) {
-  URLMatcher matcher;
   scoped_refptr<Extension> extension =
       CreateExtensionWithBookmarksPermission(false);
-
   std::string error;
-  scoped_ptr<ContentCondition> condition = CreateContentCondition(
-      extension.get(),
-      matcher.condition_factory(),
-      *base::test::ParseJson(
-          "{\n"
-          "  \"isBookmarked\": true,\n"
-          "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
-          "}"),
-      &error);
+  scoped_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
+      CreateIsBookmarkedPredicate(*base::test::ParseJson("true"),
+                                  extension.get(),
+                                  &error);
   EXPECT_THAT(error, HasSubstr("requires 'bookmarks' permission"));
-  ASSERT_FALSE(condition);
+  EXPECT_FALSE(predicate);
 }
 
 // Tests an invalid isBookmarked value type.
 TEST(DeclarativeContentConditionTest, WrongIsBookmarkedDatatype) {
-  URLMatcher matcher;
   scoped_refptr<Extension> extension =
       CreateExtensionWithBookmarksPermission(true);
-
   std::string error;
-  scoped_ptr<ContentCondition> condition = CreateContentCondition(
-      extension.get(),
-      matcher.condition_factory(),
-      *base::test::ParseJson(
-          "{\n"
-          "  \"isBookmarked\": [],\n"
-          "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
-          "}"),
-      &error);
+  scoped_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
+      CreateIsBookmarkedPredicate(*base::test::ParseJson("[]"),
+                                  extension.get(),
+                                  &error);
   EXPECT_THAT(error, HasSubstr("invalid type"));
-  EXPECT_FALSE(condition);
+  EXPECT_FALSE(predicate);
 }
 
 // Tests isBookmark: true.
 TEST(DeclarativeContentConditionTest, IsBookmarkedTrue) {
-  URLMatcher matcher;
   scoped_refptr<Extension> extension =
       CreateExtensionWithBookmarksPermission(true);
-
   std::string error;
-  scoped_ptr<ContentCondition> condition = CreateContentCondition(
-      extension.get(),
-      matcher.condition_factory(),
-      *base::test::ParseJson(
-          "{\n"
-          "  \"isBookmarked\": true,\n"
-          "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
-          "}"),
-      &error);
+  scoped_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
+      CreateIsBookmarkedPredicate(*base::test::ParseJson("true"),
+                                  extension.get(),
+                                  &error);
   EXPECT_EQ("", error);
-  ASSERT_TRUE(condition);
+  ASSERT_TRUE(predicate);
 
-  EXPECT_TRUE(condition->is_bookmarked_predicate->Evaluate(
-      true /* url_is_bookmarked */));
-  EXPECT_FALSE(condition->is_bookmarked_predicate->Evaluate(
-      false /* url_is_bookmarked */));
+  EXPECT_TRUE(predicate->Evaluate(true /* url_is_bookmarked */));
+  EXPECT_FALSE(predicate->Evaluate(false /* url_is_bookmarked */));
 }
 
 // Tests isBookmark: false.
 TEST(DeclarativeContentConditionTest, IsBookmarkedFalse) {
-  URLMatcher matcher;
   scoped_refptr<Extension> extension =
       CreateExtensionWithBookmarksPermission(true);
-
   std::string error;
-  scoped_ptr<ContentCondition> condition = CreateContentCondition(
-      extension.get(),
-      matcher.condition_factory(),
-      *base::test::ParseJson(
-          "{\n"
-          "  \"isBookmarked\": false,\n"
-          "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
-          "}"),
-      &error);
+  scoped_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
+      CreateIsBookmarkedPredicate(*base::test::ParseJson("false"),
+                                  extension.get(),
+                                  &error);
   EXPECT_EQ("", error);
-  ASSERT_TRUE(condition);
+  ASSERT_TRUE(predicate);
 
-  EXPECT_FALSE(condition->is_bookmarked_predicate->Evaluate(
-      true /* url_is_bookmarked */));
-  EXPECT_TRUE(condition->is_bookmarked_predicate->Evaluate(
-      false /* url_is_bookmarked */));
+  EXPECT_FALSE(predicate->Evaluate(true /* url_is_bookmarked */));
+  EXPECT_TRUE(predicate->Evaluate(false /* url_is_bookmarked */));
 }
 
 }  // namespace extensions

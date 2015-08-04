@@ -86,6 +86,20 @@ class DeclarativeContentIsBookmarkedPredicate {
   DISALLOW_COPY_AND_ASSIGN(DeclarativeContentIsBookmarkedPredicate);
 };
 
+scoped_ptr<DeclarativeContentPageUrlPredicate> CreatePageUrlPredicate(
+    const base::Value& value,
+    url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
+    std::string* error);
+
+scoped_ptr<DeclarativeContentCssPredicate> CreateCssPredicate(
+    const base::Value& value,
+    std::string* error);
+
+scoped_ptr<DeclarativeContentIsBookmarkedPredicate> CreateIsBookmarkedPredicate(
+    const base::Value& value,
+    const Extension* extension,
+    std::string* error);
+
 // Representation of a condition in the Declarative Content API. A condition
 // consists of a set of predicates on the page state, all of which must be
 // satisified for the condition to be fulfilled.

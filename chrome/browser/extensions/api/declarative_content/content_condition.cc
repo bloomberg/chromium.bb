@@ -39,6 +39,70 @@ bool HasBookmarkAPIPermission(const Extension* extension) {
 
 namespace keys = declarative_content_constants;
 
+scoped_ptr<DeclarativeContentPageUrlPredicate> CreatePageUrlPredicate(
+    const base::Value& value,
+    url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
+    std::string* error) {
+  scoped_refptr<URLMatcherConditionSet> url_matcher_condition_set;
+  const base::DictionaryValue* dict = nullptr;
+  if (!value.GetAsDictionary(&dict)) {
+    *error = base::StringPrintf(kInvalidTypeOfParameter, keys::kPageUrl);
+    return scoped_ptr<DeclarativeContentPageUrlPredicate>();
+  } else {
+    url_matcher_condition_set =
+        url_matcher::URLMatcherFactory::CreateFromURLFilterDictionary(
+            url_matcher_condition_factory, dict, ++g_next_id, error);
+    if (!url_matcher_condition_set)
+      return scoped_ptr<DeclarativeContentPageUrlPredicate>();
+    return make_scoped_ptr(
+        new DeclarativeContentPageUrlPredicate(url_matcher_condition_set));
+  }
+}
+
+scoped_ptr<DeclarativeContentCssPredicate> CreateCssPredicate(
+    const base::Value& value,
+    std::string* error) {
+  std::vector<std::string> css_rules;
+  const base::ListValue* css_rules_value = nullptr;
+  if (value.GetAsList(&css_rules_value)) {
+    for (size_t i = 0; i < css_rules_value->GetSize(); ++i) {
+      std::string css_rule;
+      if (!css_rules_value->GetString(i, &css_rule)) {
+        *error = base::StringPrintf(kInvalidTypeOfParameter, keys::kCss);
+        return scoped_ptr<DeclarativeContentCssPredicate>();
+      }
+      css_rules.push_back(css_rule);
+    }
+  } else {
+    *error = base::StringPrintf(kInvalidTypeOfParameter, keys::kCss);
+    return scoped_ptr<DeclarativeContentCssPredicate>();
+  }
+
+  return !css_rules.empty() ?
+      make_scoped_ptr(new DeclarativeContentCssPredicate(css_rules)) :
+      scoped_ptr<DeclarativeContentCssPredicate>();
+}
+
+scoped_ptr<DeclarativeContentIsBookmarkedPredicate> CreateIsBookmarkedPredicate(
+    const base::Value& value,
+    const Extension* extension,
+    std::string* error) {
+  bool is_bookmarked = false;
+  if (value.GetAsBoolean(&is_bookmarked)) {
+    if (!HasBookmarkAPIPermission(extension)) {
+      *error = kIsBookmarkedRequiresBookmarkPermission;
+      return scoped_ptr<DeclarativeContentIsBookmarkedPredicate>();
+    } else {
+      return make_scoped_ptr(
+          new DeclarativeContentIsBookmarkedPredicate(extension,
+                                                      is_bookmarked));
+    }
+  } else {
+    *error = base::StringPrintf(kInvalidTypeOfParameter, keys::kIsBookmarked);
+    return scoped_ptr<DeclarativeContentIsBookmarkedPredicate>();
+  }
+}
+
 DeclarativeContentPageUrlPredicate::DeclarativeContentPageUrlPredicate(
     scoped_refptr<url_matcher::URLMatcherConditionSet>
         url_matcher_condition_set)
@@ -130,78 +194,31 @@ scoped_ptr<ContentCondition> CreateContentCondition(
     return scoped_ptr<ContentCondition>();
   }
 
-  scoped_refptr<URLMatcherConditionSet> url_matcher_condition_set;
-  std::vector<std::string> css_rules;
-  // Possible states for matching bookmarked state.
-  enum BookmarkedStateMatch { NOT_BOOKMARKED, BOOKMARKED, DONT_CARE };
-  BookmarkedStateMatch bookmarked_state = DONT_CARE;
-
-  for (base::DictionaryValue::Iterator iter(*condition_dict);
-       !iter.IsAtEnd(); iter.Advance()) {
-    const std::string& condition_attribute_name = iter.key();
-    const base::Value& condition_attribute_value = iter.value();
-    if (condition_attribute_name == keys::kInstanceType) {
-      // Skip this.
-    } else if (condition_attribute_name == keys::kPageUrl) {
-      const base::DictionaryValue* dict = NULL;
-      if (!condition_attribute_value.GetAsDictionary(&dict)) {
-        *error = base::StringPrintf(kInvalidTypeOfParameter,
-                                    condition_attribute_name.c_str());
-      } else {
-        url_matcher_condition_set =
-            url_matcher::URLMatcherFactory::CreateFromURLFilterDictionary(
-                url_matcher_condition_factory, dict, ++g_next_id, error);
-      }
-    } else if (condition_attribute_name == keys::kCss) {
-      const base::ListValue* css_rules_value = NULL;
-      if (condition_attribute_value.GetAsList(&css_rules_value)) {
-        for (size_t i = 0; i < css_rules_value->GetSize(); ++i) {
-          std::string css_rule;
-          if (!css_rules_value->GetString(i, &css_rule)) {
-            *error = base::StringPrintf(kInvalidTypeOfParameter,
-                                        condition_attribute_name.c_str());
-            break;
-          }
-          css_rules.push_back(css_rule);
-        }
-      } else {
-        *error = base::StringPrintf(kInvalidTypeOfParameter,
-                                    condition_attribute_name.c_str());
-      }
-    } else if (condition_attribute_name == keys::kIsBookmarked){
-      bool value;
-      if (condition_attribute_value.GetAsBoolean(&value)) {
-        if (!HasBookmarkAPIPermission(extension.get()))
-          *error = kIsBookmarkedRequiresBookmarkPermission;
-        else
-          bookmarked_state = value ? BOOKMARKED : NOT_BOOKMARKED;
-      } else {
-        *error = base::StringPrintf(kInvalidTypeOfParameter,
-                                    condition_attribute_name.c_str());
-      }
-    } else {
-      *error = base::StringPrintf(kUnknownConditionAttribute,
-                                  condition_attribute_name.c_str());
-    }
-    if (!error->empty())
-      return scoped_ptr<ContentCondition>();
-  }
-
   scoped_ptr<DeclarativeContentPageUrlPredicate> page_url_predicate;
   scoped_ptr<DeclarativeContentCssPredicate> css_predicate;
   scoped_ptr<DeclarativeContentIsBookmarkedPredicate> is_bookmarked_predicate;
 
-  if (url_matcher_condition_set) {
-    page_url_predicate.reset(
-        new DeclarativeContentPageUrlPredicate(url_matcher_condition_set));
-  }
-  if (!css_rules.empty())
-    css_predicate.reset(new DeclarativeContentCssPredicate(css_rules));
-  if (bookmarked_state != DONT_CARE) {
-    is_bookmarked_predicate.reset(
-        new DeclarativeContentIsBookmarkedPredicate(
-            extension,
-            bookmarked_state == BOOKMARKED));
+  for (base::DictionaryValue::Iterator iter(*condition_dict);
+       !iter.IsAtEnd(); iter.Advance()) {
+    const std::string& predicate_name = iter.key();
+    const base::Value& predicate_value = iter.value();
+    if (predicate_name == keys::kInstanceType) {
+      // Skip this.
+    } else if (predicate_name == keys::kPageUrl) {
+      page_url_predicate = CreatePageUrlPredicate(predicate_value,
+                                                  url_matcher_condition_factory,
+                                                  error);
+    } else if (predicate_name == keys::kCss) {
+      css_predicate = CreateCssPredicate(predicate_value, error);
+    } else if (predicate_name == keys::kIsBookmarked){
+      is_bookmarked_predicate =
+          CreateIsBookmarkedPredicate(predicate_value, extension.get(), error);
+    } else {
+      *error = base::StringPrintf(kUnknownConditionAttribute,
+                                  predicate_name.c_str());
+    }
+    if (!error->empty())
+      return scoped_ptr<ContentCondition>();
   }
 
   return make_scoped_ptr(new ContentCondition(page_url_predicate.Pass(),
