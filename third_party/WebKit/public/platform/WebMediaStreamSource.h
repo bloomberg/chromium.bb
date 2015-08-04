@@ -91,6 +91,7 @@ public:
     BLINK_PLATFORM_EXPORT WebString id() const;
     BLINK_PLATFORM_EXPORT Type type() const;
     BLINK_PLATFORM_EXPORT WebString name() const;
+    BLINK_PLATFORM_EXPORT bool remote() const;
 
     BLINK_PLATFORM_EXPORT void setReadyState(ReadyState);
     BLINK_PLATFORM_EXPORT ReadyState readyState() const;

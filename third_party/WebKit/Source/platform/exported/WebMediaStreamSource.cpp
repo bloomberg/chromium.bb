@@ -128,6 +128,12 @@ WebString WebMediaStreamSource::name() const
     return m_private.get()->name();
 }
 
+bool WebMediaStreamSource::remote() const
+{
+    ASSERT(!m_private.isNull());
+    return m_private.get()->remote();
+}
+
 void WebMediaStreamSource::setReadyState(ReadyState state)
 {
     ASSERT(!m_private.isNull());
