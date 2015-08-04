@@ -311,7 +311,7 @@ DEFINE_TRACE(InspectorResourceAgent)
     visitor->trace(m_replayXHRsToBeDeleted);
 
 #if ENABLE(OILPAN)
-    visitor->trace(m_pendingRequest);
+    visitor->trace(m_pendingXHRReplayData);
 #endif
     InspectorBaseAgent::trace(visitor);
 }
