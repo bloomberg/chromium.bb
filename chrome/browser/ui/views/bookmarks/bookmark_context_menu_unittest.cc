@@ -66,7 +66,6 @@ class BookmarkContextMenuTest : public testing::Test {
   }
 
   void SetUp() override {
-    event_source_ = ui::PlatformEventSource::CreateDefault();
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
 
@@ -82,14 +81,12 @@ class BookmarkContextMenuTest : public testing::Test {
     BrowserThread::GetBlockingPool()->FlushForTesting();
     // Flush the message loop to make application verifiers happy.
     message_loop_.RunUntilIdle();
-    event_source_.reset();
   }
 
  protected:
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
-  scoped_ptr<ui::PlatformEventSource> event_source_;
   scoped_ptr<TestingProfile> profile_;
   BookmarkModel* model_;
   TestingPageNavigator navigator_;
