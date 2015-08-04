@@ -236,6 +236,21 @@ public:
         m_layoutObject->setAncestorLineBoxDirty();
     }
 
+    int caretMinOffset() const
+    {
+        return m_layoutObject->caretMinOffset();
+    }
+
+    int caretMaxOffset() const
+    {
+        return m_layoutObject->caretMaxOffset();
+    }
+
+    bool hasFlippedBlocksWritingMode() const
+    {
+        return m_layoutObject->hasFlippedBlocksWritingMode();
+    }
+
 protected:
     LayoutObject* layoutObject() { return m_layoutObject; }
     const LayoutObject* layoutObject() const { return m_layoutObject; }
