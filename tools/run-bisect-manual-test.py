@@ -29,7 +29,7 @@ _BISECT_SCRIPT_PATH = os.path.join(
     _TOOLS_DIR, 'auto_bisect', 'bisect_perf_regression.py')
 
 sys.path.append(os.path.join(_TOOLS_DIR, 'telemetry'))
-from telemetry.core import browser_options
+from telemetry.internal.browser import browser_options
 
 
 def _RunBisectionScript(options):
