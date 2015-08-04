@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/app_launcher_page_ui.h"
 
+#include <string>
+
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/profiles/profile.h"
@@ -39,9 +41,6 @@ AppLauncherPageUI::AppLauncherPageUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   web_ui->OverrideTitle(l10n_util::GetStringUTF16(IDS_APP_LAUNCHER_TAB_TITLE));
 
-  if (AppLauncherLoginHandler::ShouldShow(GetProfile()))
-    web_ui->AddMessageHandler(new AppLauncherLoginHandler());
-
   if (!GetProfile()->IsOffTheRecord()) {
     ExtensionService* service =
         extensions::ExtensionSystem::Get(GetProfile())->extension_service();
@@ -75,6 +74,18 @@ base::RefCountedMemory* AppLauncherPageUI::GetFaviconResourceBytes(
       LoadDataResourceBytesForScale(IDR_BOOKMARK_BAR_APPS_SHORTCUT,
                                     scale_factor);
 }
+
+bool AppLauncherPageUI::OverrideHandleWebUIMessage(
+    const GURL& source_url,
+    const std::string& message,
+    const base::ListValue& args) {
+  if (message == "getApps" &&
+      AppLauncherLoginHandler::ShouldShow(GetProfile())) {
+    web_ui()->AddMessageHandler(new AppLauncherLoginHandler());
+  }
+  return false;
+}
+
 
 Profile* AppLauncherPageUI::GetProfile() const {
   return Profile::FromWebUI(web_ui());
