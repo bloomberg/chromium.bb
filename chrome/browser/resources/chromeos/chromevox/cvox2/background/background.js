@@ -426,11 +426,6 @@ Background.prototype = {
    * @param {Object} evt
    */
   onFocus: function(evt) {
-    // Don't process nodes inside of web content if ChromeVox Next is inactive.
-    if (evt.target.root.role != chrome.automation.RoleType.desktop &&
-        this.mode_ === ChromeVoxMode.CLASSIC)
-      return;
-
     var node = evt.target;
 
     // It doesn't make sense to focus the containing web area if a descendant
