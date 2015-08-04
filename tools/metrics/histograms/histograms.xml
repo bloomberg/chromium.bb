@@ -16668,6 +16668,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.VideoCaptureGpuJpegDecoder.InitDecodeSuccess"
+    enum="BooleanSuccess">
+  <owner>henryhsu@chromium.org</owner>
+  <summary>
+    Indicates whether we were successful in initializing hardware jpeg decoder
+    for attempts to VideoCaptureGpuJpegDecoder::Initialize().
+  </summary>
+</histogram>
+
 <histogram name="Media.VideoCaptureManager" units="ms">
   <owner>mcasas@chromium.org</owner>
   <summary>Measures the time taken for VideoCaptureManager::</summary>

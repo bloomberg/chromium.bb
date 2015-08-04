@@ -91,6 +91,9 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
   // Returns true if the decoding of last frame is not finished yet.
   bool IsDecoding_Locked() const;
 
+  // Records |decoder_status_| to histogram.
+  void RecordInitDecodeUMA_Locked();
+
   scoped_refptr<GpuChannelHost> gpu_channel_host_;
 
   // The underlying JPEG decode accelerator.

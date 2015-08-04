@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -42,16 +43,20 @@ void VideoCaptureGpuJpegDecoder::Initialize() {
   DCHECK(CalledOnValidThread());
 
   base::AutoLock lock(lock_);
-  // TODO(henryhsu): enable on ARM platform after V4L2 JDA is ready.
-#if !defined(OS_CHROMEOS) || !defined(ARCH_CPU_X86_FAMILY)
+  // TODO(henryhsu): enable on ARM platform after V4L2 JpegDecodeAccelerator is
+  // ready.
+  bool is_platform_supported = false;
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   // Non-ChromeOS platforms do not support HW JPEG decode now. Do not establish
   // gpu channel to avoid introducing overhead.
-  decoder_status_ = FAILED;
-  return;
-#else
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+  is_platform_supported = true;
+#endif
+
+  if (!is_platform_supported ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableAcceleratedMjpegDecode)) {
     decoder_status_ = FAILED;
+    RecordInitDecodeUMA_Locked();
     return;
   }
 
@@ -60,7 +65,6 @@ void VideoCaptureGpuJpegDecoder::Initialize() {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&EstablishGpuChannelOnUIThread,
                                      current_task_runner, AsWeakPtr()));
-#endif
 }
 
 VideoCaptureGpuJpegDecoder::STATUS VideoCaptureGpuJpegDecoder::GetStatus()
@@ -217,20 +221,22 @@ void VideoCaptureGpuJpegDecoder::FinishInitialization(
   base::AutoLock lock(lock_);
   if (!gpu_channel_host) {
     LOG(ERROR) << "Failed to establish GPU channel for JPEG decoder";
-    decoder_status_ = FAILED;
-    return;
-  }
-
-  if (gpu_channel_host->gpu_info().jpeg_decode_accelerator_supported) {
+  } else if (gpu_channel_host->gpu_info().jpeg_decode_accelerator_supported) {
     gpu_channel_host_ = gpu_channel_host.Pass();
     decoder_ = gpu_channel_host_->CreateJpegDecoder(this);
   }
   decoder_status_ = decoder_ ? INIT_PASSED : FAILED;
+  RecordInitDecodeUMA_Locked();
 }
 
 bool VideoCaptureGpuJpegDecoder::IsDecoding_Locked() const {
   lock_.AssertAcquired();
   return !decode_done_closure_.is_null();
+}
+
+void VideoCaptureGpuJpegDecoder::RecordInitDecodeUMA_Locked() {
+  UMA_HISTOGRAM_BOOLEAN("Media.VideoCaptureGpuJpegDecoder.InitDecodeSuccess",
+                        decoder_status_ == INIT_PASSED);
 }
 
 }  // namespace content
