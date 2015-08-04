@@ -363,22 +363,6 @@ class SmoothnessPathologicalMobileSites(perf_benchmark.PerfBenchmark):
     return 'smoothness.pathological_mobile_sites'
 
 
-@benchmark.Enabled('android')
-class SmoothnessSyncScrollPathologicalMobileSites(perf_benchmark.PerfBenchmark):
-  """Measures task execution statistics while sync-scrolling pathological sites.
-  """
-  tag = 'sync_scroll'
-  page_set = page_sets.PathologicalMobileSitesPageSet
-  test = smoothness.Smoothness
-
-  def SetExtraBrowserOptions(self, options):
-    silk_flags.CustomizeBrowserOptionsForSyncScrolling(options)
-
-  @classmethod
-  def Name(cls):
-    return 'smoothness.sync_scroll.pathological_mobile_sites'
-
-
 class SmoothnessToughAnimatedImageCases(perf_benchmark.PerfBenchmark):
   test = smoothness.Smoothness
   page_set = page_sets.ToughAnimatedImageCasesPageSet
