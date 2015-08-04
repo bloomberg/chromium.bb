@@ -7,6 +7,7 @@
 #include <string>
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/shader_manager.h"
+#include "third_party/angle/src/common/version.h"
 
 namespace gpu {
 namespace gles2 {
@@ -114,15 +115,18 @@ void ProgramCache::ComputeProgramHash(
     char* result) const {
   const size_t shader0_size = kHashLength;
   const size_t shader1_size = kHashLength;
+  const size_t angle_commit_size = ANGLE_COMMIT_HASH_SIZE;
   const size_t map_size = CalculateMapSize(bind_attrib_location_map);
   const size_t var_size = CalculateVaryingsSize(transform_feedback_varyings);
-  const size_t total_size = shader0_size + shader1_size + map_size + var_size
-      + sizeof(transform_feedback_buffer_mode);
+  const size_t total_size = shader0_size + shader1_size + angle_commit_size
+      + map_size + var_size + sizeof(transform_feedback_buffer_mode);
 
   scoped_ptr<unsigned char[]> buffer(new unsigned char[total_size]);
   memcpy(buffer.get(), hashed_shader_0, shader0_size);
   memcpy(&buffer[shader0_size], hashed_shader_1, shader1_size);
   size_t current_pos = shader0_size + shader1_size;
+  memcpy(&buffer[current_pos], ANGLE_COMMIT_HASH, angle_commit_size);
+  current_pos += angle_commit_size;
   if (map_size != 0) {
     // copy our map
     for (auto it = bind_attrib_location_map->begin();

@@ -152,6 +152,7 @@ source_set("service_sources") {
     "//base/third_party/dynamic_annotations",
     "//crypto",
     "//gpu/config:config_sources",
+    "//third_party/angle:commit_id",
     "//third_party/angle:translator",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/re2",
