@@ -605,32 +605,53 @@ TEST(HttpStreamParser, TruncatedHeaders) {
     MockWrite(SYNCHRONOUS, 0, "GET / HTTP/1.1\r\n\r\n"),
   };
 
-  for (size_t i = 0; i < arraysize(reads); i++) {
-    SCOPED_TRACE(i);
-    SequencedSocketData data(reads[i], 2, writes, arraysize(writes));
-    scoped_ptr<ClientSocketHandle> socket_handle(
-        CreateConnectedSocketHandle(&data));
+  enum {
+    HTTP = 0,
+    HTTPS,
+    NUM_PROTOCOLS,
+  };
 
-    HttpRequestInfo request_info;
-    request_info.url = GURL("http://localhost");
+  for (size_t protocol = 0; protocol < NUM_PROTOCOLS; protocol++) {
+    SCOPED_TRACE(protocol);
 
-    scoped_refptr<GrowableIOBuffer> read_buffer(new GrowableIOBuffer);
-    HttpStreamParser parser(socket_handle.get(), &request_info,
-                            read_buffer.get(), BoundNetLog());
+    for (size_t i = 0; i < arraysize(reads); i++) {
+      SCOPED_TRACE(i);
+      SequencedSocketData data(reads[i], 2, writes, arraysize(writes));
+      scoped_ptr<ClientSocketHandle> socket_handle(
+          CreateConnectedSocketHandle(&data));
 
-    HttpRequestHeaders request_headers;
-    HttpResponseInfo response_info;
-    TestCompletionCallback callback;
-    ASSERT_EQ(OK, parser.SendRequest("GET / HTTP/1.1\r\n", request_headers,
-                                     &response_info, callback.callback()));
+      HttpRequestInfo request_info;
+      request_info.method = "GET";
+      if (protocol == HTTP) {
+        request_info.url = GURL("http://localhost");
+      } else {
+        request_info.url = GURL("https://localhost");
+      }
+      request_info.load_flags = LOAD_NORMAL;
 
-    int rv = parser.ReadResponseHeaders(callback.callback());
-    if (i == arraysize(reads) - 1) {
-      EXPECT_EQ(OK, rv);
-      EXPECT_TRUE(response_info.headers.get());
-    } else {
-      EXPECT_EQ(ERR_RESPONSE_HEADERS_TRUNCATED, rv);
-      EXPECT_FALSE(response_info.headers.get());
+      scoped_refptr<GrowableIOBuffer> read_buffer(new GrowableIOBuffer);
+      HttpStreamParser parser(
+          socket_handle.get(), &request_info, read_buffer.get(), BoundNetLog());
+
+      HttpRequestHeaders request_headers;
+      HttpResponseInfo response_info;
+      TestCompletionCallback callback;
+      ASSERT_EQ(OK, parser.SendRequest("GET / HTTP/1.1\r\n", request_headers,
+                                       &response_info, callback.callback()));
+
+      int rv = parser.ReadResponseHeaders(callback.callback());
+      if (i == arraysize(reads) - 1) {
+        EXPECT_EQ(OK, rv);
+        EXPECT_TRUE(response_info.headers.get());
+      } else {
+        if (protocol == HTTP) {
+          EXPECT_EQ(ERR_CONNECTION_CLOSED, rv);
+          EXPECT_TRUE(response_info.headers.get());
+        } else {
+          EXPECT_EQ(ERR_RESPONSE_HEADERS_TRUNCATED, rv);
+          EXPECT_FALSE(response_info.headers.get());
+        }
+      }
     }
   }
 }
