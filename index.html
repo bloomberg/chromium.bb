@@ -230,6 +230,21 @@ that this issue does not reproduce in Chrome because it requires a specific
 HWND structure, which is only used in blpwtk2_shell.</p>
 
 <h3>
+    <a name="bugfix-dragSelectionExtent">bugfix/dragSelectionExtent</a>
+    (Shezan Baig)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FdragSelectionExtent">view changes</a>]</span>
+</h3>
+<p>Open the following pages in Chrome and follow the instructions.  The
+selection extent jumps around in non-intuitive ways.  This branch changes how
+the selection is extended when dragging with the mouse to be more
+intuitive.</p>
+<ul>
+    <li><a href="repros/dragSelectionExtent1.html">This link</a></li>
+    <li><a href="repros/dragSelectionExtent2.html">This link</a></li>
+    <li><a href="repros/dragSelectionExtent3.html">This link</a></li>
+</ul>
+
+<h3>
     <a name="bugfix-emptycellcaret">bugfix/emptycellcaret</a>
     (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=85385">85385</a>)
     <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2Femptycellcaret">view changes</a>]</span>
