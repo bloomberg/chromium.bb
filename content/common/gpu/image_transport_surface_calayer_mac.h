@@ -96,7 +96,6 @@ class CALayerStorageProvider
   // The CALayer that the current frame is being drawn into.
   base::scoped_nsobject<CAContext> context_;
   base::scoped_nsobject<ImageTransportCAOpenGLLayer> ca_opengl_layer_;
-  base::scoped_nsobject<ImageTransportIOSurface> io_surface_layer_;
 
   // When a CAContext is destroyed in the GPU process, it will become a blank
   // CALayer in the browser process. Put retains on these contexts in this queue

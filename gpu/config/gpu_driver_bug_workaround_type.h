@@ -42,8 +42,6 @@
          disable_multimonitor_multisampling)                 \
   GPU_OP(DISABLE_MULTISAMPLED_RENDER_TO_TEXTURE,             \
          disable_multisampled_render_to_texture)             \
-  GPU_OP(DISABLE_NS_CGL_SURFACE_API,                         \
-         disable_ns_cgl_surface_api)                         \
   GPU_OP(DISABLE_POST_SUB_BUFFERS_FOR_ONSCREEN_SURFACES,     \
          disable_post_sub_buffers_for_onscreen_surfaces)     \
   GPU_OP(DISABLE_PROGRAM_CACHE,                              \

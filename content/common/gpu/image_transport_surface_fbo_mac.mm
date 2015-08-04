@@ -4,12 +4,14 @@
 
 #include "content/common/gpu/image_transport_surface_fbo_mac.h"
 
+#include "base/command_line.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/image_transport_surface_calayer_mac.h"
 #include "content/common/gpu/image_transport_surface_iosurface_mac.h"
 #include "content/common/gpu/image_transport_surface_overlay_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -21,7 +23,12 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurfaceCreateNativeSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
     gfx::PluginWindowHandle handle) {
-  if (ui::RemoteLayerAPISupported())
+  // Overlays should be used unless the remote layer API isn't present (they
+  // depend on it) or it is disabled at the command line.
+  static bool overlays_disabled_at_command_line =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableMacOverlays);
+  if (ui::RemoteLayerAPISupported() && !overlays_disabled_at_command_line)
     return new ImageTransportSurfaceOverlayMac(manager, stub, handle);
   else
     return new ImageTransportSurfaceFBO(manager, stub, handle);

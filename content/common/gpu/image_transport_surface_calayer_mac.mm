@@ -14,7 +14,6 @@
 #include "gpu/config/gpu_info_collector.h"
 #include "ui/accelerated_widget_mac/surface_handle_types.h"
 #include "ui/base/cocoa/animation_utils.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gl/gl_gl_api_implementation.h"
@@ -27,42 +26,8 @@ const size_t kCanDrawFalsesBeforeSwitchFromAsync = 4;
 const base::TimeDelta kMinDeltaToSwitchToAsync =
     base::TimeDelta::FromSecondsD(1. / 15.);
 
-bool CanUseIOSurface() {
-  // Respect command line flags for the API's usage.
-  static bool forced_at_command_line =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceNSCGLSurfaceApi);
-  if (forced_at_command_line)
-    return true;
-  static bool disabled_at_command_line =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableNSCGLSurfaceApi);
-  if (disabled_at_command_line)
-    return false;
-
-  // Ignore blacklist settings.
-  // TODO(ccameron): Remove fields for blacklist settings.
-  return true;
-}
 
 }  // namespace
-
-// Private IOSurface API.
-@interface IOSurface : NSObject
-- (void)flushRect:(CGRect)rect;
-- (void)attachToCGLContext:(CGLContextObj)cglContext;
-- (id)initWithSize:(CGSize)size
-        colorSpace:(CGColorSpaceRef)colorSpace
-            atomic:(BOOL)atomic;
-@property(readonly) CGImageRef image;
-@property(readonly) id layerContents;
-@end
-
-// Private CALayer API.
-@interface CALayer (Private)
-- (void)setContentsChanged;
-- (void)_didCommitLayer:(CATransaction*)transaction;
-@end
 
 @interface ImageTransportCAOpenGLLayer : CAOpenGLLayer {
   content::CALayerStorageProvider* storageProvider_;
@@ -88,22 +53,6 @@ bool CanUseIOSurface() {
                   scaleFactor:(float)scaleFactor;
 - (void)requestDrawNewFrame;
 - (void)drawPendingFrameImmediately;
-- (void)resetStorageProvider;
-@end
-
-@interface ImageTransportIOSurface : CALayer {
-  content::CALayerStorageProvider* storageProvider_;
-  base::ScopedTypeRef<CGLContextObj> cglContext_;
-  base::ScopedCFTypeRef<IOSurfaceRef> ioSurface_;
-  GLuint glTexture_;
-  GLuint glFbo_;
-  gfx::Size pixelSize_;
-}
-
-- (id)initWithStorageProvider:(content::CALayerStorageProvider*)storageProvider
-                    pixelSize:(gfx::Size)pixelSize
-                  scaleFactor:(float)scaleFactor;
-- (BOOL)drawNewFrame:(gfx::Rect)dirtyRect;
 - (void)resetStorageProvider;
 @end
 
@@ -235,162 +184,6 @@ bool CanUseIOSurface() {
               pixelFormat:pixelFormat
              forLayerTime:timeInterval
               displayTime:timeStamp];
-}
-
-@end
-
-@implementation ImageTransportIOSurface
-
-- (id)initWithStorageProvider:
-    (content::CALayerStorageProvider*)storageProvider
-                    pixelSize:(gfx::Size)pixelSize
-                  scaleFactor:(float)scaleFactor {
-  if (self = [super init]) {
-    ScopedCAActionDisabler disabler;
-    pixelSize_ = pixelSize;
-    gfx::Size dipSize = gfx::ConvertSizeToDIP(scaleFactor, pixelSize);
-    [self setContentsScale:scaleFactor];
-    [self setFrame:CGRectMake(0, 0, dipSize.width(), dipSize.height())];
-    storageProvider_ = storageProvider;
-
-    // Create a context in the share group of the storage provider. We will
-    // draw content using this context.
-    CGLError cglError = kCGLNoError;
-    cglError = CGLCreateContext(
-        CGLGetPixelFormat(storageProvider_->LayerShareGroupContext()),
-        storageProvider_->LayerShareGroupContext(),
-        cglContext_.InitializeInto());
-    LOG_IF(ERROR, cglError != kCGLNoError) <<
-        "Failed to create CGL context for IOSurface.";
-
-    // Create the IOSurface to set as the CALayer's contents.
-    uint32_t ioSurfacePixelFormat = 'BGRA';
-    NSDictionary* properties = @{
-        static_cast<NSString*>(kIOSurfaceWidth) : @(pixelSize.width()),
-        static_cast<NSString*>(kIOSurfaceHeight) : @(pixelSize.height()),
-        static_cast<NSString*>(kIOSurfacePixelFormat) : @(ioSurfacePixelFormat),
-        static_cast<NSString*>(kIOSurfaceBytesPerElement) : @(4),
-    };
-    ioSurface_.reset(IOSurfaceCreate(static_cast<CFDictionaryRef>(properties)));
-    if (!ioSurface_) {
-      LOG(ERROR) << "Failed to allocate IOSurface";
-      [self release];
-      return nil;
-    }
-    // Create a framebuffer view of the IOSurface.
-    {
-      gfx::ScopedCGLSetCurrentContext scopedSetCurrentContext(cglContext_);
-      gfx::ScopedSetGLToRealGLApi scopedSetRealGLApi;
-      bool gl_init_failed = false;
-
-      glGenTextures(1, &glTexture_);
-      glBindTexture(GL_TEXTURE_RECTANGLE_ARB, glTexture_);
-      CGLError cglError = CGLTexImageIOSurface2D(
-          cglContext_,
-          GL_TEXTURE_RECTANGLE_ARB,
-          GL_RGBA,
-          pixelSize.width(),
-          pixelSize.height(),
-          GL_BGRA,
-          GL_UNSIGNED_INT_8_8_8_8_REV,
-          ioSurface_,
-          0);
-      glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
-      if (cglError != kCGLNoError) {
-        DLOG(ERROR) << "CGLTexImageIOSurface2D failed with CGL error: "
-                    << cglError;
-        gl_init_failed = true;
-      }
-      glGenFramebuffersEXT(1, &glFbo_);
-      glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, glFbo_);
-      glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
-                                GL_COLOR_ATTACHMENT0_EXT,
-                                GL_TEXTURE_RECTANGLE_ARB,
-                                glTexture_,
-                                0);
-      GLenum fboStatus = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-      glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-      if (fboStatus != GL_FRAMEBUFFER_COMPLETE_EXT) {
-        DLOG(ERROR) << "Framebuffer was incomplete: " << fboStatus;
-        gl_init_failed = true;
-      }
-
-      // If initialization failed, ensure that the partially initialized GL
-      // objects do not leak into the sharegroup.
-      if (gl_init_failed) {
-        if (glTexture_)
-          glDeleteTextures(1, &glTexture_);
-        if (glFbo_)
-          glDeleteFramebuffersEXT(1, &glFbo_);
-        [self release];
-        return nil;
-      }
-    }
-  }
-  return self;
-}
-
-- (void)_didCommitLayer:(CATransaction*)transaction {
-  if (storageProvider_)
-    storageProvider_->LayerUnblockBrowserIfNeeded();
-  [super _didCommitLayer:transaction];
-}
-
-- (BOOL)drawNewFrame:(gfx::Rect)dirtyRect {
-  // Draw the first frame to the layer as covering the full layer. Subsequent
-  // frames may use partial damage.
-  if (![self contents])
-    dirtyRect = gfx::Rect(pixelSize_);
-
-  // Make the context current to the thread, make the surface be the current
-  // drawable for the context, and draw.
-  BOOL framebuffer_was_complete = YES;
-  {
-    gfx::ScopedCGLSetCurrentContext scopedSetCurrentContext(cglContext_);
-    gfx::ScopedSetGLToRealGLApi scopedSetRealGLApi;
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, glFbo_);
-
-    // Another silent failure mechanism for the IOSurface API is to provide
-    // a backbuffer that is not framebuffer complete.
-    GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-    if (status == GL_FRAMEBUFFER_COMPLETE_EXT) {
-      glViewport(0, 0, pixelSize_.width(), pixelSize_.height());
-      storageProvider_->LayerDoDraw(dirtyRect, true);
-      framebuffer_was_complete = YES;
-    } else {
-      framebuffer_was_complete = NO;
-    }
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-    glFlush();
-  }
-  if (!framebuffer_was_complete)
-    return NO;
-
-  if (![self contents]) {
-    // The first time we draw, set the layer contents and the CAContext's layer
-    {
-      ScopedCAActionDisabler disabler;
-      [self setContents:(id)ioSurface_.get()];
-    }
-    [storageProvider_->LayerCAContext() setLayer:self];
-  } else {
-    // For subsequent draws, just indicate that the layer contents has changed.
-    // This has lower power usage than calling -[CALayer setContents:].
-    [self setContentsChanged];
-  }
-
-  return YES;
-}
-
-- (void)resetStorageProvider {
-  {
-    gfx::ScopedCGLSetCurrentContext scopedSetCurrentContext(cglContext_);
-    gfx::ScopedSetGLToRealGLApi scopedSetRealGLApi;
-    glDeleteTextures(1, &glTexture_);
-    glDeleteFramebuffersEXT(1, &glFbo_);
-    glBegin(GL_TRIANGLES);
-    glEnd();
-  }
 }
 
 @end
@@ -652,41 +445,23 @@ void CALayerStorageProvider::SwapBuffers(const gfx::Rect& dirty_rect) {
 
 void CALayerStorageProvider::CreateLayerAndRequestDraw(
     bool should_draw_immediately, const gfx::Rect& dirty_rect) {
-  // Use the IOSurface API unless it is explicitly disabled.
-  if (CanUseIOSurface()) {
-    if (!io_surface_layer_) {
-      io_surface_layer_.reset([[ImageTransportIOSurface alloc]
-          initWithStorageProvider:this
-                        pixelSize:fbo_pixel_size_
-                      scaleFactor:fbo_scale_factor_]);
-    }
-    if (io_surface_layer_ && [io_surface_layer_ drawNewFrame:dirty_rect])
-      return;
+  if (!ca_opengl_layer_) {
+    ca_opengl_layer_.reset([[ImageTransportCAOpenGLLayer alloc]
+        initWithStorageProvider:this
+                      pixelSize:fbo_pixel_size_
+                    scaleFactor:fbo_scale_factor_]);
+  }
 
-    // If the draw fails, destroy everything and try again next frame. The
-    // likely cause for this is video memory stress.
-    LOG(ERROR) << "Failed to allocate or draw IOSurface layer, "
-               << "page will be blank";
-    ResetLayer();
-  } else {
-    if (!ca_opengl_layer_) {
-      ca_opengl_layer_.reset([[ImageTransportCAOpenGLLayer alloc]
-          initWithStorageProvider:this
-                        pixelSize:fbo_pixel_size_
-                      scaleFactor:fbo_scale_factor_]);
-    }
+  // -[CAOpenGLLayer drawInCGLContext] won't get called until we're in the
+  // visible layer hierarchy, so call setLayer: immediately, to make this
+  // happen.
+  [context_ setLayer:ca_opengl_layer_];
 
-    // -[CAOpenGLLayer drawInCGLContext] won't get called until we're in the
-    // visible layer hierarchy, so call setLayer: immediately, to make this
-    // happen.
-    [context_ setLayer:ca_opengl_layer_];
-
-    // Tell CoreAnimation to draw our frame. Note that sometimes, calling
-    // -[CAContext setLayer:] will result in the layer getting an immediate
-    // draw. If that happend, we're done.
-    if (!should_draw_immediately && has_pending_ack_) {
-      [ca_opengl_layer_ requestDrawNewFrame];
-    }
+  // Tell CoreAnimation to draw our frame. Note that sometimes, calling
+  // -[CAContext setLayer:] will result in the layer getting an immediate
+  // draw. If that happend, we're done.
+  if (!should_draw_immediately && has_pending_ack_) {
+    [ca_opengl_layer_ requestDrawNewFrame];
   }
 }
 
@@ -868,12 +643,6 @@ void CALayerStorageProvider::ResetLayer() {
     // now never come, so release the pressure now.
     UnblockBrowserIfNeeded();
     ca_opengl_layer_.reset();
-  }
-  if (io_surface_layer_) {
-    [io_surface_layer_ resetStorageProvider];
-
-    io_surface_layer_.reset();
-    return;
   }
 }
 

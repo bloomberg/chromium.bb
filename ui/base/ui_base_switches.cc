@@ -7,16 +7,13 @@
 namespace switches {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
+// Fall back to using CAOpenGLLayers display content, instead of the IOSurface
+// based overlay display path.
+const char kDisableMacOverlays[] = "disable-mac-overlays";
+
 // Disable use of cross-process CALayers to display content directly from the
 // GPU process on Mac.
 const char kDisableRemoteCoreAnimation[] = "disable-remote-core-animation";
-
-// Disable using the private NSCGLSurface API to draw content.
-const char kDisableNSCGLSurfaceApi[] = "disable-ns-cgl-surface-api";
-
-// Force all content to draw via the private NSCGLSurface API, even when there
-// exist performance, stability, or correctness reasons not to.
-const char kForceNSCGLSurfaceApi[] = "force-ns-cgl-surface-api";
 #endif
 
 // Disables use of DWM composition for top level windows.
