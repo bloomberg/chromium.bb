@@ -65,6 +65,7 @@ class ProfileDownloaderTest : public testing::Test,
   int GetDesiredImageSideLength() const override { return 128; };
   std::string GetCachedPictureURL() const override { return ""; };
   Profile* GetBrowserProfile() override { return profile_.get(); };
+  bool IsPreSignin() const override { return false; }
   void OnProfileDownloadSuccess(ProfileDownloader* downloader) override {
 
   }

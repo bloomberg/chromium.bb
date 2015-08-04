@@ -63,6 +63,10 @@ Profile* CustodianProfileDownloaderService::GetBrowserProfile() {
   return custodian_profile_;
 }
 
+bool CustodianProfileDownloaderService::IsPreSignin() const {
+  return false;
+}
+
 void CustodianProfileDownloaderService::OnProfileDownloadSuccess(
     ProfileDownloader* downloader) {
   download_callback_.Run(downloader->GetProfileFullName());

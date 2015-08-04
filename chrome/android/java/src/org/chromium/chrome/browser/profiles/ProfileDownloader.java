@@ -56,9 +56,9 @@ public class ProfileDownloader {
      * @param imageSidePixels Request image side (in pixels)
      */
     public static void startFetchingAccountInfoFor(
-            Profile profile, String accountId, int imageSidePixels) {
+            Profile profile, String accountId, int imageSidePixels, boolean isPreSignin) {
         ThreadUtils.assertOnUiThread();
-        nativeStartFetchingAccountInfoFor(profile, accountId, imageSidePixels);
+        nativeStartFetchingAccountInfoFor(profile, accountId, imageSidePixels, isPreSignin);
     }
 
     @CalledByNative
@@ -96,7 +96,7 @@ public class ProfileDownloader {
 
     // Native methods.
     private static native void nativeStartFetchingAccountInfoFor(
-            Profile profile, String accountId, int imageSidePixels);
+            Profile profile, String accountId, int imageSidePixels, boolean isPreSignin);
     private static native String nativeGetCachedFullNameForPrimaryAccount(Profile profile);
     private static native String nativeGetCachedGivenNameForPrimaryAccount(Profile profile);
     private static native Bitmap nativeGetCachedAvatarForPrimaryAccount(Profile profile);

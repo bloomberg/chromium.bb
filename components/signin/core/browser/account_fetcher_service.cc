@@ -117,6 +117,11 @@ bool AccountFetcherService::IsAllUserInfoFetched() const {
   return user_info_requests_.empty();
 }
 
+void AccountFetcherService::FetchUserInfoBeforeSignin(
+    const std::string& account_id) {
+  RefreshAccountInfo(account_id, false);
+}
+
 void AccountFetcherService::RefreshAllAccountInfo(bool only_fetch_if_invalid) {
   std::vector<std::string> accounts = token_service_->GetAccounts();
   for (std::vector<std::string>::const_iterator it = accounts.begin();

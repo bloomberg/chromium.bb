@@ -89,6 +89,7 @@ class UserImageManagerImpl
   int GetDesiredImageSideLength() const override;
   Profile* GetBrowserProfile() override;
   std::string GetCachedPictureURL() const override;
+  bool IsPreSignin() const override;
   void OnProfileDownloadSuccess(ProfileDownloader* downloader) override;
   void OnProfileDownloadFailure(
       ProfileDownloader* downloader,

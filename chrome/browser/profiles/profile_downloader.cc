@@ -18,10 +18,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -220,6 +222,11 @@ std::string ProfileDownloader::GetProfilePictureURL() const {
 void ProfileDownloader::StartFetchingImage() {
   VLOG(1) << "Fetching user entry with token: " << auth_token_;
   account_info_ = account_tracker_service_->GetAccountInfo(account_id_);
+
+  if (delegate_->IsPreSignin()) {
+    AccountFetcherServiceFactory::GetForProfile(delegate_->GetBrowserProfile())
+        ->FetchUserInfoBeforeSignin(account_id_);
+  }
 
   if (account_info_.IsValid())
     FetchImageData();

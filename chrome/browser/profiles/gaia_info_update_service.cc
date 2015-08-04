@@ -93,6 +93,10 @@ std::string GAIAInfoUpdateService::GetCachedPictureURL() const {
   return profile_->GetPrefs()->GetString(prefs::kProfileGAIAInfoPictureURL);
 }
 
+bool GAIAInfoUpdateService::IsPreSignin() const {
+  return false;
+}
+
 void GAIAInfoUpdateService::OnProfileDownloadSuccess(
     ProfileDownloader* downloader) {
   // Make sure that |ProfileDownloader| gets deleted after return.

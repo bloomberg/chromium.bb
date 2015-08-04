@@ -94,7 +94,7 @@ public class ProfileDataCache implements Observer {
         for (int i = 0; i < accounts.length; i++) {
             if (mCacheEntries.get(accounts[i].name) == null) {
                 ProfileDownloader.startFetchingAccountInfoFor(
-                        mProfile, accounts[i].name, mImageSizePx);
+                        mProfile, accounts[i].name, mImageSizePx, true);
             }
         }
     }

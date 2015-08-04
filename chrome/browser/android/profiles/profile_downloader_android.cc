@@ -29,11 +29,13 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
   AccountInfoRetriever(Profile* profile,
                        const std::string& account_id,
                        const std::string& email,
-                       const int desired_image_side_pixels)
+                       const int desired_image_side_pixels,
+                       bool is_pre_signin)
       : profile_(profile),
         account_id_(account_id),
         email_(email),
-        desired_image_side_pixels_(desired_image_side_pixels) {}
+        desired_image_side_pixels_(desired_image_side_pixels),
+        is_pre_signin_(is_pre_signin) {}
 
   void Start() {
     profile_image_downloader_.reset(new ProfileDownloader(this));
@@ -61,6 +63,10 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
 
   std::string GetCachedPictureURL() const override {
     return std::string();
+  }
+
+  bool IsPreSignin() const override {
+    return is_pre_signin_;
   }
 
   void OnProfileDownloadSuccess(
@@ -102,6 +108,11 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
 
   // Desired side length of the profile image (in pixels).
   const int desired_image_side_pixels_;
+
+  // True when the profile download is happening before the user has signed in,
+  // such as during first run when we can still get tokens and want to fetch
+  // the profile name and picture to display.
+  bool is_pre_signin_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountInfoRetriever);
 };
@@ -169,7 +180,8 @@ void StartFetchingAccountInfoFor(
     jclass clazz,
     jobject jprofile,
     jstring jemail,
-    jint image_side_pixels) {
+    jint image_side_pixels,
+    jboolean is_pre_signin) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   const std::string email =
       base::android::ConvertJavaStringToUTF8(env, jemail);
@@ -181,7 +193,7 @@ void StartFetchingAccountInfoFor(
   AccountInfoRetriever* retriever =
       new AccountInfoRetriever(
           profile, gaia::CanonicalizeEmail(gaia::SanitizeEmail(email)), email,
-          image_side_pixels);
+          image_side_pixels, is_pre_signin);
   retriever->Start();
 }
 
