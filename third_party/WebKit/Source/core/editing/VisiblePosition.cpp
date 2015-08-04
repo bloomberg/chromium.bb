@@ -659,13 +659,17 @@ void VisiblePosition::init(const PositionAlgorithm<Strategy>& position, EAffinit
 
 UChar32 VisiblePosition::characterAfter() const
 {
-    // We canonicalize to the first of two equivalent candidates, but the second of the two candidates
-    // is the one that will be inside the text node containing the character after this visible position.
+    // We canonicalize to the first of two equivalent candidates, but the second
+    // of the two candidates is the one that will be inside the text node
+    // containing the character after this visible position.
     Position pos = m_deepPosition.downstream();
-    if (!pos.containerNode() || !pos.containerNode()->isTextNode() || !pos.isOffsetInAnchor())
+    if (!pos.isOffsetInAnchor())
+        return 0;
+    Node* containerNode = pos.containerNode();
+    if (!containerNode || !containerNode->isTextNode())
         return 0;
     unsigned offset = static_cast<unsigned>(pos.offsetInContainerNode());
-    Text* textNode = pos.containerText();
+    Text* textNode = toText(containerNode);
     unsigned length = textNode->length();
     if (offset >= length)
         return 0;
