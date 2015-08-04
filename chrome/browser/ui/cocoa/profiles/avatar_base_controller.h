@@ -50,6 +50,8 @@ class ProfileInfoUpdateObserver;
 
 @interface AvatarBaseController (ExposedForTesting)
 - (BaseBubbleController*)menuController;
+
+- (BOOL)isCtrlPressed;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_PROFILES_AVATAR_BASE_CONTROLLER_H_

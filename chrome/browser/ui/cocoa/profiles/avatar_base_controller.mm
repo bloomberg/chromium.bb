@@ -223,9 +223,15 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver,
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
 }
 
+- (BOOL)isCtrlPressed {
+  return [NSEvent modifierFlags] & NSControlKeyMask ? YES : NO;
+}
+
 - (IBAction)buttonClicked:(id)sender {
   BrowserWindow::AvatarBubbleMode mode =
       BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT;
+  if ([self isCtrlPressed])
+    mode = BrowserWindow::AVATAR_BUBBLE_MODE_FAST_USER_SWITCH;
 
   [self showAvatarBubbleAnchoredAt:button_
                           withMode:mode
