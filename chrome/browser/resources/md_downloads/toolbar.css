@@ -45,10 +45,6 @@
     font-size: 14px;
   };
   --paper-input-container-input-color: white;
-  --paper-input-container-label: {
-    font-family: inherit;
-    font-size: 14px;
-  };
   -webkit-margin-end: 8px;
   z-index: 0;
 }
