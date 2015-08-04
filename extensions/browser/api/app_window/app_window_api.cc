@@ -208,8 +208,8 @@ bool AppWindowCreateFunction::RunAsync() {
       return false;
 
     if (options->type == app_window::WINDOW_TYPE_PANEL) {
-#if defined(USE_ASH)
-      // Currently panels for v2 apps are only implemented in Ash.
+#if defined(OS_CHROMEOS)
+      // Panels for v2 apps are only supported on Chrome OS.
       create_params.window_type = AppWindow::WINDOW_TYPE_PANEL;
 #else
       WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_WARNING,

@@ -135,9 +135,13 @@ namespace app.window {
   // State of a window: normal, fullscreen, maximized, minimized.
   enum State { normal, fullscreen, maximized, minimized };
 
-  // 'shell' is the default window type. 'panel' is managed by the OS
-  // (Currently experimental, Ash only).
-  [nodoc] enum WindowType { shell, panel };
+  // Specifies the type of window to create.
+  enum WindowType { 
+    // Default window type.
+    shell,
+    // OS managed window (Chrome OS only).
+    panel 
+  };
 
   [noinline_doc] dictionary CreateWindowOptions {
     // Id to identify the window. This will be used to remember the size
@@ -213,7 +217,7 @@ namespace app.window {
     [deprecated="Use innerBounds or outerBounds."] long? maxHeight;
 
     // Type of window to create.
-    [nodoc] WindowType? type;
+    WindowType? type;
 
     // Creates a special ime window. This window is not focusable and can be
     // stacked above virtual keyboard window. This is restriced to component ime
