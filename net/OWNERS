@@ -2,6 +2,7 @@ agl@chromium.org
 asanka@chromium.org
 cbentzel@chromium.org
 davidben@chromium.org
+ellyjones@chromium.org
 eroman@chromium.org
 gavinp@chromium.org
 jar@chromium.org
@@ -15,6 +16,7 @@ rsleevi@chromium.org
 rtenneti@chromium.org
 rvargas@chromium.org
 ttuttle@chromium.org
+xunjieli@chromium.org
 
 per-file *.isolate=maruel@chromium.org
 per-file *.isolate=tandrii@chromium.org
