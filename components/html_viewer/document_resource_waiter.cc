@@ -75,8 +75,10 @@ void DocumentResourceWaiter::OnFrameRemoved(uint32_t frame_id) {
   NOTREACHED();
 }
 
-void DocumentResourceWaiter::OnFrameNameChanged(uint32_t frame_id,
-                                                const mojo::String& name) {
+void DocumentResourceWaiter::OnFrameClientPropertyChanged(
+    uint32_t frame_id,
+    const mojo::String& name,
+    mojo::Array<uint8_t> new_value) {
   // It is assumed we receive OnConnect() (which unbinds) before anything else.
   NOTREACHED();
 }

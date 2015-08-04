@@ -89,15 +89,14 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
     if (existing_frame) {
       CHECK(!existing_frame->IsLocal());
       existing_frame->set_delegate(delegate);
-      existing_frame->SwapToLocal(view, data->name.To<blink::WebString>());
+      existing_frame->SwapToLocal(view, data->client_properties);
     } else {
       HTMLFrame* parent = frame_tree->root_->FindFrame(data->parent_id);
       CHECK(parent);
       HTMLFrame::CreateParams params(frame_tree, parent, view->id());
       HTMLFrame* frame = new HTMLFrame(params);
       frame->set_delegate(delegate);
-      frame->Init(view, data->name.To<blink::WebString>(),
-                  data->origin.To<blink::WebString>());
+      frame->Init(view, data->client_properties);
     }
   }
 
@@ -168,8 +167,7 @@ HTMLFrame* HTMLFrameTreeManager::BuildFrameTree(
     if (frame_data[i]->frame_id == local_frame_id)
       frame->set_delegate(delegate);
 
-    frame->Init(local_view, frame_data[i]->name.To<blink::WebString>(),
-                frame_data[i]->origin.To<blink::WebString>());
+    frame->Init(local_view, frame_data[i]->client_properties);
   }
   return root;
 }
@@ -204,8 +202,7 @@ void HTMLFrameTreeManager::ProcessOnFrameAdded(
   HTMLFrame::CreateParams params(this, parent, frame_data->frame_id);
   // |parent| takes ownership of |frame|.
   HTMLFrame* frame = new HTMLFrame(params);
-  frame->Init(nullptr, frame_data->name.To<blink::WebString>(),
-              frame_data->origin.To<blink::WebString>());
+  frame->Init(nullptr, frame_data->client_properties);
 }
 
 void HTMLFrameTreeManager::ProcessOnFrameRemoved(HTMLFrame* source,
@@ -233,15 +230,17 @@ void HTMLFrameTreeManager::ProcessOnFrameRemoved(HTMLFrame* source,
   frame->Close();
 }
 
-void HTMLFrameTreeManager::ProcessOnFrameNameChanged(HTMLFrame* source,
-                                                     uint32_t frame_id,
-                                                     const mojo::String& name) {
-  if (source != root_)
+void HTMLFrameTreeManager::ProcessOnFrameClientPropertyChanged(
+    HTMLFrame* source,
+    uint32_t frame_id,
+    const mojo::String& name,
+    mojo::Array<uint8_t> new_data) {
+  if (source != local_root_)
     return;
 
   HTMLFrame* frame = root_->FindFrame(frame_id);
   if (frame)
-    frame->SetRemoteFrameName(name);
+    frame->SetValueFromClientProperty(name, new_data.Pass());
 }
 
 }  // namespace mojo

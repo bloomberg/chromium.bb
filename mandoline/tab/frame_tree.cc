@@ -20,7 +20,8 @@ FrameTree::FrameTree(mojo::View* view,
             view->id(),
             ViewOwnership::DOESNT_OWN_VIEW,
             root_client,
-            user_data.Pass()),
+            user_data.Pass(),
+            Frame::ClientPropertyMap()),
       progress_(0.f) {
   root_.Init(nullptr);
 }
@@ -33,7 +34,7 @@ Frame* FrameTree::CreateAndAddFrame(mojo::View* view,
                                     FrameTreeClient* client,
                                     scoped_ptr<FrameUserData> user_data) {
   return CreateAndAddFrameImpl(view, view->id(), parent, client,
-                               user_data.Pass());
+                               user_data.Pass(), Frame::ClientPropertyMap());
 }
 
 Frame* FrameTree::CreateOrReplaceFrame(Frame* frame,
@@ -54,20 +55,26 @@ Frame* FrameTree::CreateOrReplaceFrame(Frame* frame,
   return CreateAndAddFrame(view, frame, frame_tree_client, user_data.Pass());
 }
 
-void FrameTree::CreateSharedFrame(Frame* parent, uint32_t frame_id) {
+void FrameTree::CreateSharedFrame(
+    Frame* parent,
+    uint32_t frame_id,
+    const Frame::ClientPropertyMap& client_properties) {
   mojo::View* frame_view = root_.view()->GetChildById(frame_id);
   // |frame_view| may be null if the View hasn't been created yet. If this is
   // the case the View will be connected to the Frame in Frame::OnTreeChanged.
-  CreateAndAddFrameImpl(frame_view, frame_id, parent, nullptr, nullptr);
+  CreateAndAddFrameImpl(frame_view, frame_id, parent, nullptr, nullptr,
+                        client_properties);
 }
 
-Frame* FrameTree::CreateAndAddFrameImpl(mojo::View* view,
-                                        uint32_t frame_id,
-                                        Frame* parent,
-                                        FrameTreeClient* client,
-                                        scoped_ptr<FrameUserData> user_data) {
+Frame* FrameTree::CreateAndAddFrameImpl(
+    mojo::View* view,
+    uint32_t frame_id,
+    Frame* parent,
+    FrameTreeClient* client,
+    scoped_ptr<FrameUserData> user_data,
+    const Frame::ClientPropertyMap& client_properties) {
   Frame* frame = new Frame(this, view, frame_id, ViewOwnership::OWNS_VIEW,
-                           client, user_data.Pass());
+                           client, user_data.Pass(), client_properties);
   frame->Init(parent);
   return frame;
 }
@@ -88,8 +95,10 @@ void FrameTree::ProgressChanged() {
     delegate_->ProgressChanged(progress_);
 }
 
-void FrameTree::FrameNameChanged(Frame* frame) {
-  root_.NotifyFrameNameChanged(frame);
+void FrameTree::ClientPropertyChanged(const Frame* source,
+                                      const mojo::String& name,
+                                      const mojo::Array<uint8_t>& value) {
+  root_.NotifyClientPropertyChanged(source, name, value);
 }
 
 }  // namespace mandoline

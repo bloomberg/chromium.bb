@@ -38,11 +38,10 @@ struct FrameData {
   uint32 parent_id;
   uint32 frame_id;
 
-  string? name;
-  // TODO(sky): this is not being propagated correctly. It needs to be updated
-  // along with deciding if we want to keep NavigatorHost.
-  string origin;
-  uint32 sandbox_flags;
+  // A map of the properties supplied by the client. The server does not
+  // intepret these values in anyway, the meaning and usage is left up to
+  // clients.
+  map<string, array<uint8>>? client_properties;
 };
 
 struct MessageEvent {
@@ -63,12 +62,19 @@ interface FrameTreeServer {
   // a load is in progress.
   ProgressChanged(uint32 frame_id, double progress);
 
-  SetFrameName(uint32 frame_id, string? name);
+  // Sets the value of the specified client property, notifying clients if the
+  // value changed. If |value| is null the property is removed.
+  SetClientProperty(uint32 frame_id,
+                    string name,
+                    array<uint8>? value);
 
   // Called when the client creates a new frame. |frame_id| corresponds to
   // the id of the view hosting the frame, and |parent_id| the id of the
-  // parent.
-  OnCreatedFrame(uint32 parent_id, uint32 frame_id);
+  // parent. See FrameData::client_properties for details of
+  // |client_properties|.
+  OnCreatedFrame(uint32 parent_id,
+                 uint32 frame_id,
+                 map<string, array<uint8>> client_properties);
 
   // The specified frame is requesting a navigation.
   RequestNavigate(uint32 frame_id,
@@ -92,7 +98,8 @@ interface FrameTreeClient {
   // originator of the change.
   OnFrameRemoved(uint32 frame_id);
 
-  // Called when the name of a frame changes. This is not called on the
-  // originator of the change.
-  OnFrameNameChanged(uint32 frame_id, string name);
+  // Called when a client property changes.
+  OnFrameClientPropertyChanged(uint32 frame_id,
+                               string name,
+                               array<uint8>? new_value);
 };

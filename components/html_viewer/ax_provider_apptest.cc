@@ -48,8 +48,13 @@ class TestFrameTreeServer : public mandoline::FrameTreeServer {
   void LoadingStarted(uint32_t frame_id) override {}
   void LoadingStopped(uint32_t frame_id) override {}
   void ProgressChanged(uint32_t frame_id, double progress) override {}
-  void SetFrameName(uint32_t frame_id, const mojo::String& name) override {}
-  void OnCreatedFrame(uint32_t parent_id, uint32_t frame_id) override {}
+  void SetClientProperty(uint32_t frame_id,
+                         const mojo::String& name,
+                         mojo::Array<uint8_t> value) override {}
+  void OnCreatedFrame(uint32_t parent_id,
+                      uint32_t frame_id,
+                      mojo::Map<mojo::String, mojo::Array<uint8_t>>
+                          client_properties) override {}
   void RequestNavigate(uint32_t frame_id,
                        mandoline::NavigationTarget target,
                        mojo::URLRequestPtr request) override {}
@@ -96,7 +101,6 @@ TEST_F(AXProviderTest, HelloWorld) {
     array[0] = mandoline::FrameData::New().Pass();
     array[0]->frame_id = embed_view->id();
     array[0]->parent_id = 0u;
-    array[0]->origin = "origin";
 
     mandoline::FrameTreeClientPtr frame_tree_client;
     connection->ConnectToService(&frame_tree_client);

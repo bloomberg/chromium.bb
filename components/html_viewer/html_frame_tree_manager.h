@@ -78,9 +78,10 @@ class HTMLFrameTreeManager {
   void ProcessOnFrameAdded(HTMLFrame* source,
                            mandoline::FrameDataPtr frame_data);
   void ProcessOnFrameRemoved(HTMLFrame* source, uint32_t frame_id);
-  void ProcessOnFrameNameChanged(HTMLFrame* source,
-                                 uint32_t frame_id,
-                                 const mojo::String& name);
+  void ProcessOnFrameClientPropertyChanged(HTMLFrame* source,
+                                           uint32_t frame_id,
+                                           const mojo::String& name,
+                                           mojo::Array<uint8_t> new_data);
 
   static TreeMap* instances_;
 

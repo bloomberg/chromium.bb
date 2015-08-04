@@ -88,6 +88,8 @@ source_set("lib") {
     "html_frame.cc",
     "html_frame.h",
     "html_frame_delegate.h",
+    "html_frame_properties.cc",
+    "html_frame_properties.h",
     "html_frame_tree_manager.cc",
     "html_frame_tree_manager.h",
     "html_viewer.cc",

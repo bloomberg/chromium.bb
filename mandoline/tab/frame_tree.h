@@ -6,6 +6,11 @@
 #define MANDOLINE_TAB_FRAME_TREE_H_
 
 #include "mandoline/tab/frame.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
+
+namespace mojo {
+class String;
+}
 
 namespace mandoline {
 
@@ -48,20 +53,26 @@ class FrameTree {
   // that it is sharing the FrameTreeClient/FrameTreeServer of |parent|. There
   // may or may not be a View identified by |frame_id| yet. See Frame for
   // details.
-  void CreateSharedFrame(Frame* parent, uint32_t frame_id);
+  void CreateSharedFrame(Frame* parent,
+                         uint32_t frame_id,
+                         const Frame::ClientPropertyMap& client_properties);
 
  private:
   friend class Frame;
 
-  Frame* CreateAndAddFrameImpl(mojo::View* view,
-                               uint32_t frame_id,
-                               Frame* parent,
-                               FrameTreeClient* client,
-                               scoped_ptr<FrameUserData> user_data);
+  Frame* CreateAndAddFrameImpl(
+      mojo::View* view,
+      uint32_t frame_id,
+      Frame* parent,
+      FrameTreeClient* client,
+      scoped_ptr<FrameUserData> user_data,
+      const Frame::ClientPropertyMap& client_properties);
 
   void LoadingStateChanged();
   void ProgressChanged();
-  void FrameNameChanged(Frame* frame);
+  void ClientPropertyChanged(const Frame* source,
+                             const mojo::String& name,
+                             const mojo::Array<uint8_t>& value);
 
   mojo::View* view_;
 

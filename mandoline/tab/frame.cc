@@ -30,9 +30,9 @@ FrameDataPtr FrameToFrameData(const Frame* frame) {
   FrameDataPtr frame_data(FrameData::New());
   frame_data->frame_id = frame->id();
   frame_data->parent_id = frame->parent() ? frame->parent()->id() : kNoParentId;
-  frame_data->name = frame->name();
-  // TODO(sky): implement me.
-  frame_data->origin = std::string();
+  frame_data->client_properties =
+      mojo::Map<mojo::String, mojo::Array<uint8_t>>::From(
+          frame->client_properties());
   return frame_data.Pass();
 }
 
@@ -43,7 +43,8 @@ Frame::Frame(FrameTree* tree,
              uint32_t id,
              ViewOwnership view_ownership,
              FrameTreeClient* frame_tree_client,
-             scoped_ptr<FrameUserData> user_data)
+             scoped_ptr<FrameUserData> user_data,
+             const ClientPropertyMap& client_properties)
     : tree_(tree),
       view_(nullptr),
       id_(id),
@@ -53,6 +54,7 @@ Frame::Frame(FrameTree* tree,
       frame_tree_client_(frame_tree_client),
       loading_(false),
       progress_(0.f),
+      client_properties_(client_properties),
       frame_tree_server_binding_(this) {
   if (view)
     SetView(view);
@@ -202,12 +204,21 @@ void Frame::ProgressChangedImpl(double progress) {
   tree_->ProgressChanged();
 }
 
-void Frame::SetFrameNameImpl(const mojo::String& name) {
-  if (name_ == name)
-    return;
-
-  name_ = name;
-  tree_->FrameNameChanged(this);
+void Frame::SetClientPropertyImpl(const mojo::String& name,
+                                  mojo::Array<uint8_t> value) {
+  auto iter = client_properties_.find(name);
+  const bool already_in_map = (iter != client_properties_.end());
+  if (value.is_null()) {
+    if (!already_in_map)
+      return;
+    client_properties_.erase(iter);
+  } else {
+    std::vector<uint8_t> as_vector(value.To<std::vector<uint8_t>>());
+    if (already_in_map && iter->second == as_vector)
+      return;
+    client_properties_[name] = as_vector;
+  }
+  tree_->ClientPropertyChanged(this, name, value);
 }
 
 Frame* Frame::FindTargetFrame(uint32_t frame_id) {
@@ -250,12 +261,15 @@ void Frame::NotifyRemoved(const Frame* source, const Frame* removed_node) {
     child->NotifyRemoved(source, removed_node);
 }
 
-void Frame::NotifyFrameNameChanged(const Frame* source) {
+void Frame::NotifyClientPropertyChanged(const Frame* source,
+                                        const mojo::String& name,
+                                        const mojo::Array<uint8_t>& value) {
   if (this != source && frame_tree_client_)
-    frame_tree_client_->OnFrameNameChanged(source->id(), source->name_);
+    frame_tree_client_->OnFrameClientPropertyChanged(source->id(), name,
+                                                     value.Clone());
 
   for (Frame* child : children_)
-    child->NotifyFrameNameChanged(source);
+    child->NotifyClientPropertyChanged(source, name, value);
 }
 
 void Frame::OnTreeChanged(const TreeChangeParams& params) {
@@ -311,13 +325,18 @@ void Frame::ProgressChanged(uint32_t frame_id, double progress) {
     target_frame->ProgressChangedImpl(progress);
 }
 
-void Frame::SetFrameName(uint32_t frame_id, const mojo::String& name) {
+void Frame::SetClientProperty(uint32_t frame_id,
+                              const mojo::String& name,
+                              mojo::Array<uint8_t> value) {
   Frame* target_frame = FindTargetFrame(frame_id);
   if (target_frame)
-    target_frame->SetFrameNameImpl(name);
+    target_frame->SetClientPropertyImpl(name, value.Pass());
 }
 
-void Frame::OnCreatedFrame(uint32_t parent_id, uint32_t frame_id) {
+void Frame::OnCreatedFrame(
+    uint32_t parent_id,
+    uint32_t frame_id,
+    mojo::Map<mojo::String, mojo::Array<uint8_t>> client_properties) {
   // TODO(sky): I need a way to verify the id. Unfortunately the code here
   // doesn't know the connection id of the embedder, so it's not possible to
   // do it.
@@ -339,7 +358,8 @@ void Frame::OnCreatedFrame(uint32_t parent_id, uint32_t frame_id) {
     return;
   }
 
-  tree_->CreateSharedFrame(parent_frame, frame_id);
+  tree_->CreateSharedFrame(parent_frame, frame_id,
+                           client_properties.To<ClientPropertyMap>());
 }
 
 void Frame::RequestNavigate(uint32_t frame_id,

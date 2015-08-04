@@ -54,13 +54,23 @@ if config.target_os != config.OS_ANDROID:
     },
     {
       'test': 'mojo:html_viewer_apptests',
+      'name': 'mojo:html_viewer_apptests',
       'type': 'gtest_isolated',
       'args': ['--use-test-config']
     },
     {
       'test': 'mojo:html_viewer_apptests',
+      'name': 'mojo:html_viewer_apptests OOPIFS',
       'type': 'gtest_isolated',
       'args': ['--use-test-config', '--oopifs',
+               '--enable-html-viewer-test-interface']
+    },
+    {
+      'test': 'mojo:html_viewer_apptests',
+      'name': 'mojo:html_viewer_apptests OOPIFS new frame',
+      'type': 'gtest_isolated',
+      'args': ['--use-test-config', '--oopifs',
+              'oopif-always-create-new-frame-tree',
                '--enable-html-viewer-test-interface']
     },
     {

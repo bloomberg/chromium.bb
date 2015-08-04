@@ -5,6 +5,7 @@
 #ifndef MANDOLINE_TAB_FRAME_H_
 #define MANDOLINE_TAB_FRAME_H_
 
+#include <map>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -38,12 +39,15 @@ enum class ViewOwnership {
 // FrameTreeClient for the child Frame.
 class Frame : public mojo::ViewObserver, public FrameTreeServer {
  public:
+  using ClientPropertyMap = std::map<std::string, std::vector<uint8_t>>;
+
   Frame(FrameTree* tree,
         mojo::View* view,
         uint32_t id,
         ViewOwnership view_ownership,
         FrameTreeClient* frame_tree_client,
-        scoped_ptr<FrameUserData> user_data);
+        scoped_ptr<FrameUserData> user_data,
+        const ClientPropertyMap& client_properties);
   ~Frame() override;
 
   void Init(Frame* parent);
@@ -68,6 +72,10 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
 
   uint32_t id() const { return id_; }
 
+  const ClientPropertyMap& client_properties() const {
+    return client_properties_;
+  }
+
   // Finds the descendant with the specified id.
   Frame* FindFrame(uint32_t id) {
     return const_cast<Frame*>(const_cast<const Frame*>(this)->FindFrame(id));
@@ -79,8 +87,6 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   FrameUserData* user_data() { return user_data_.get(); }
 
   const std::vector<Frame*>& children() { return children_; }
-
-  const mojo::String& name() const { return name_; }
 
   // Returns true if this Frame or any child Frame is loading.
   bool IsLoading() const;
@@ -109,7 +115,8 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   void LoadingStartedImpl();
   void LoadingStoppedImpl();
   void ProgressChangedImpl(double progress);
-  void SetFrameNameImpl(const mojo::String& name);
+  void SetClientPropertyImpl(const mojo::String& name,
+                             mojo::Array<uint8_t> value);
 
   // Returns the Frame whose id is |frame_id|. Returns nullptr if |frame_id| is
   // not from the same connection as this.
@@ -118,7 +125,9 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   // Notifies the client and all descendants as appropriate.
   void NotifyAdded(const Frame* source, const Frame* added_node);
   void NotifyRemoved(const Frame* source, const Frame* removed_node);
-  void NotifyFrameNameChanged(const Frame* source);
+  void NotifyClientPropertyChanged(const Frame* source,
+                                   const mojo::String& name,
+                                   const mojo::Array<uint8_t>& value);
 
   // mojo::ViewObserver:
   void OnTreeChanged(const TreeChangeParams& params) override;
@@ -130,8 +139,13 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   void LoadingStarted(uint32_t frame_id) override;
   void LoadingStopped(uint32_t frame_id) override;
   void ProgressChanged(uint32_t frame_id, double progress) override;
-  void SetFrameName(uint32_t frame_id, const mojo::String& name) override;
-  void OnCreatedFrame(uint32_t parent_id, uint32_t frame_id) override;
+  void SetClientProperty(uint32_t frame_id,
+                         const mojo::String& name,
+                         mojo::Array<uint8_t> value) override;
+  void OnCreatedFrame(
+      uint32_t parent_id,
+      uint32_t frame_id,
+      mojo::Map<mojo::String, mojo::Array<uint8_t>> client_properties) override;
   void RequestNavigate(uint32_t frame_id,
                        NavigationTarget target,
                        mojo::URLRequestPtr request) override;
@@ -152,7 +166,7 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   bool loading_;
   double progress_;
 
-  mojo::String name_;
+  ClientPropertyMap client_properties_;
 
   mojo::Binding<FrameTreeServer> frame_tree_server_binding_;
 

@@ -5,6 +5,7 @@
 #include "components/html_viewer/html_frame.h"
 
 #include <algorithm>
+#include <limits>
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
@@ -18,6 +19,7 @@
 #include "components/html_viewer/geolocation_client_impl.h"
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/html_frame_delegate.h"
+#include "components/html_viewer/html_frame_properties.h"
 #include "components/html_viewer/html_frame_tree_manager.h"
 #include "components/html_viewer/media_factory.h"
 #include "components/html_viewer/touch_handler.h"
@@ -37,6 +39,7 @@
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
+#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -56,6 +59,7 @@
 #include "third_party/skia/include/core/SkDevice.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size.h"
+#include "url/origin.h"
 
 using mojo::AxProvider;
 using mojo::Rect;
@@ -126,14 +130,22 @@ HTMLFrame::HTMLFrame(const HTMLFrame::CreateParams& params)
     parent_->children_.push_back(this);
 }
 
-void HTMLFrame::Init(mojo::View* local_view,
-                     const blink::WebString& remote_frame_name,
-                     const blink::WebString& remote_origin) {
+void HTMLFrame::Init(
+    mojo::View* local_view,
+    const mojo::Map<mojo::String, mojo::Array<uint8_t>>& properties) {
   if (local_view && local_view->id() == id_)
     SetView(local_view);
 
-  // TODO(sky): need to plumb through scope and other args correctly for frame
-  // creation.
+  // Ignore return value and assume Document scope if scope isn't known.
+  FrameTreeScopeFromClientProperty(
+      GetValueFromClientProperties(kPropertyFrameTreeScope, properties),
+      &scope_);
+
+  blink::WebSandboxFlags sandbox_flags = blink::WebSandboxFlags::None;
+  FrameSandboxFlagsFromClientProperty(
+      GetValueFromClientProperties(kPropertyFrameSandboxFlags, properties),
+      &sandbox_flags);
+
   if (!parent_) {
     CreateRootWebWidget();
     // This is the root of the tree (aka the main frame).
@@ -142,7 +154,7 @@ void HTMLFrame::Init(mojo::View* local_view,
     // . Set as main frame on WebView.
     // . Swap to remote (if not local).
     blink::WebLocalFrame* local_web_frame =
-        blink::WebLocalFrame::create(blink::WebTreeScopeType::Document, this);
+        blink::WebLocalFrame::create(scope_, this);
     // We need to set the main frame before creating children so that state is
     // properly set up in blink.
     web_view()->setMainFrame(local_web_frame);
@@ -154,8 +166,8 @@ void HTMLFrame::Init(mojo::View* local_view,
     web_frame_ = local_web_frame;
     web_view()->setDeviceScaleFactor(global_state()->device_pixel_ratio());
     if (id_ != local_view->id()) {
-      blink::WebRemoteFrame* remote_web_frame = blink::WebRemoteFrame::create(
-          blink::WebTreeScopeType::Document, this);
+      blink::WebRemoteFrame* remote_web_frame =
+          blink::WebRemoteFrame::create(scope_, this);
       local_web_frame->swap(remote_web_frame);
       web_frame_ = remote_web_frame;
     }
@@ -166,13 +178,15 @@ void HTMLFrame::Init(mojo::View* local_view,
         previous_sibling ? previous_sibling->web_frame() : nullptr;
     DCHECK(!parent_->IsLocal());
     web_frame_ = parent_->web_frame()->toWebRemoteFrame()->createLocalChild(
-        blink::WebTreeScopeType::Document, "", blink::WebSandboxFlags::None,
-        this, previous_web_frame);
+        scope_, FrameNameFromClientProperty(GetValueFromClientProperties(
+                    kPropertyFrameName, properties)),
+        sandbox_flags, this, previous_web_frame);
     CreateLocalRootWebWidget(web_frame_->toWebLocalFrame());
   } else if (!parent_->IsLocal()) {
     web_frame_ = parent_->web_frame()->toWebRemoteFrame()->createRemoteChild(
-        blink::WebTreeScopeType::Document, remote_frame_name,
-        blink::WebSandboxFlags::None, this);
+        scope_, FrameNameFromClientProperty(GetValueFromClientProperties(
+                    kPropertyFrameName, properties)),
+        sandbox_flags, this);
   } else {
     // This is hit if we're asked to create a child frame of a local parent.
     // This should never happen (if we create a local child we don't call
@@ -184,9 +198,10 @@ void HTMLFrame::Init(mojo::View* local_view,
   if (!IsLocal()) {
     blink::WebRemoteFrame* remote_web_frame = web_frame_->toWebRemoteFrame();
     if (remote_web_frame) {
-      remote_web_frame->setReplicatedName(remote_frame_name);
-      remote_web_frame->setReplicatedOrigin(
-          blink::WebSecurityOrigin::createFromString(remote_origin));
+      remote_web_frame->setReplicatedOrigin(FrameOriginFromClientProperty(
+          GetValueFromClientProperties(kPropertyFrameOrigin, properties)));
+      remote_web_frame->setReplicatedName(FrameNameFromClientProperty(
+          GetValueFromClientProperties(kPropertyFrameName, properties)));
     }
   }
 }
@@ -267,13 +282,19 @@ void HTMLFrame::Bind(mandoline::FrameTreeServerPtr frame_tree_server,
           this, frame_tree_client_request.Pass()));
 }
 
-void HTMLFrame::SetRemoteFrameName(const mojo::String& name) {
+void HTMLFrame::SetValueFromClientProperty(const std::string& name,
+                                           mojo::Array<uint8_t> new_data) {
   if (IsLocal())
     return;
 
-  blink::WebRemoteFrame* remote_frame = web_frame_->toWebRemoteFrame();
-  if (remote_frame)
-    remote_frame->setReplicatedName(name.To<blink::WebString>());
+  // Only the name and origin dynamically change.
+  if (name == kPropertyFrameOrigin) {
+    web_frame_->toWebRemoteFrame()->setReplicatedOrigin(
+        FrameOriginFromClientProperty(new_data));
+  } else if (name == kPropertyFrameName) {
+    web_frame_->toWebRemoteFrame()->setReplicatedName(
+        FrameNameFromClientProperty(new_data));
+  }
 }
 
 bool HTMLFrame::IsLocal() const {
@@ -378,16 +399,24 @@ void HTMLFrame::FinishSwapToRemote() {
   web_frame_ = remote_frame;
 }
 
-void HTMLFrame::SwapToLocal(mojo::View* view, const blink::WebString& name) {
+void HTMLFrame::SwapToLocal(
+    mojo::View* view,
+    const mojo::Map<mojo::String, mojo::Array<uint8_t>>& properties) {
   CHECK(!IsLocal());
   // It doesn't make sense for the root to swap to local.
   CHECK(parent_);
   SetView(view);
-  // TODO(sky): plumb through proper scope.
+  blink::WebSandboxFlags sandbox_flags = blink::WebSandboxFlags::None;
+  FrameSandboxFlagsFromClientProperty(
+      GetValueFromClientProperties(kPropertyFrameSandboxFlags, properties),
+      &sandbox_flags);
   blink::WebLocalFrame* local_web_frame =
       blink::WebLocalFrame::create(blink::WebTreeScopeType::Document, this);
   local_web_frame->initializeToReplaceRemoteFrame(
-      web_frame_->toWebRemoteFrame(), name, blink::WebSandboxFlags::None);
+      web_frame_->toWebRemoteFrame(),
+      FrameNameFromClientProperty(
+          GetValueFromClientProperties(kPropertyFrameName, properties)),
+      sandbox_flags);
   // The swap() ends up calling to frameDetached() and deleting the old.
   web_frame_->swap(local_web_frame);
   web_frame_ = local_web_frame;
@@ -483,18 +512,18 @@ void HTMLFrame::OnFrameRemoved(uint32_t frame_id) {
   frame_tree_manager_->ProcessOnFrameRemoved(this, frame_id);
 }
 
-void HTMLFrame::OnFrameNameChanged(uint32_t frame_id,
-                                   const mojo::String& name) {
-  frame_tree_manager_->ProcessOnFrameNameChanged(this, frame_id, name);
+void HTMLFrame::OnFrameClientPropertyChanged(uint32_t frame_id,
+                                             const mojo::String& name,
+                                             mojo::Array<uint8_t> new_value) {
+  frame_tree_manager_->ProcessOnFrameClientPropertyChanged(this, frame_id, name,
+                                                           new_value.Pass());
 }
-
 void HTMLFrame::initializeLayerTreeView() {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From("mojo:surfaces_service");
   mojo::SurfacePtr surface;
   GetLocalRootApp()->ConnectToService(request.Pass(), &surface);
 
-  // TODO(jamesr): Should be mojo:gpu_service
   mojo::URLRequestPtr request2(mojo::URLRequest::New());
   request2->url = mojo::String::From("mojo:view_manager");
   mojo::GpuPtr gpu_service;
@@ -536,12 +565,24 @@ blink::WebFrame* HTMLFrame::createChildFrame(
   // Create the view that will house the frame now. We embed once we know the
   // url (see decidePolicyForNavigation()).
   mojo::View* child_view = view_->view_manager()->CreateView();
+  mojo::Map<mojo::String, mojo::Array<uint8_t>> client_properties;
+  client_properties.mark_non_null();
+  AddToClientPropertiesIfValid(kPropertyFrameName,
+                               FrameNameToClientProperty(frame_name).Pass(),
+                               &client_properties);
+  AddToClientPropertiesIfValid(kPropertyFrameTreeScope,
+                               FrameTreeScopeToClientProperty(scope).Pass(),
+                               &client_properties);
+  AddToClientPropertiesIfValid(
+      kPropertyFrameSandboxFlags,
+      FrameSandboxFlagsToClientProperty(sandbox_flags).Pass(),
+      &client_properties);
+
   child_view->SetVisible(true);
   view_->AddChild(child_view);
 
-  // TODO(sky): there needs to be way to communicate properties to the
-  // FrameTreeServer.
-  GetLocalRoot()->server_->OnCreatedFrame(id_, child_view->id());
+  GetLocalRoot()->server_->OnCreatedFrame(id_, child_view->id(),
+                                          client_properties.Pass());
 
   HTMLFrame::CreateParams params(frame_tree_manager_, this, child_view->id());
   HTMLFrame* child_frame = new HTMLFrame(params);
@@ -642,10 +683,16 @@ void HTMLFrame::didChangeLoadProgress(double load_progress) {
 
 void HTMLFrame::didChangeName(blink::WebLocalFrame* frame,
                               const blink::WebString& name) {
-  mojo::String mojo_name;
-  if (!name.isNull())
-    mojo_name = name.utf8();
-  GetLocalRoot()->server_->SetFrameName(id_, mojo_name);
+  GetLocalRoot()->server_->SetClientProperty(id_, kPropertyFrameName,
+                                             FrameNameToClientProperty(name));
+}
+
+void HTMLFrame::didCommitProvisionalLoad(
+    blink::WebLocalFrame* frame,
+    const blink::WebHistoryItem& item,
+    blink::WebHistoryCommitType commit_type) {
+  GetLocalRoot()->server_->SetClientProperty(
+      id_, kPropertyFrameOrigin, FrameOriginToClientProperty(frame));
 }
 
 void HTMLFrame::frameDetached(blink::WebRemoteFrameClient::DetachType type) {
