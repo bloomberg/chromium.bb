@@ -105,11 +105,19 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
       PLOG(ERROR) << "Failed to get plane " << i;
       return false;
     }
+
+    uint32_t formats_size = drm_plane->count_formats;
     plane_ids.insert(drm_plane->plane_id);
     scoped_ptr<HardwareDisplayPlane> plane(
         CreatePlane(drm_plane->plane_id, drm_plane->possible_crtcs));
-    if (plane->Initialize(drm))
+
+    std::vector<uint32_t> supported_formats(formats_size);
+    for (uint32_t j = 0; j < formats_size; j++)
+      supported_formats.push_back(drm_plane->formats[j]);
+
+    if (plane->Initialize(drm, supported_formats)) {
       planes_.push_back(plane.Pass());
+    }
   }
 
   // crbug.com/464085: if driver reports no primary planes for a crtc, create a
@@ -122,8 +130,9 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
         scoped_ptr<HardwareDisplayPlane> dummy_plane(
             CreatePlane(resources->crtcs[i] - 1, (1 << i)));
         dummy_plane->set_is_dummy(true);
-        if (dummy_plane->Initialize(drm))
+        if (dummy_plane->Initialize(drm, std::vector<uint32_t>())) {
           planes_.push_back(dummy_plane.Pass());
+        }
       }
     }
   }
@@ -144,10 +153,12 @@ scoped_ptr<HardwareDisplayPlane> HardwareDisplayPlaneManager::CreatePlane(
 
 HardwareDisplayPlane* HardwareDisplayPlaneManager::FindNextUnusedPlane(
     size_t* index,
-    uint32_t crtc_index) {
+    uint32_t crtc_index,
+    uint32_t format) {
   for (size_t i = *index; i < planes_.size(); ++i) {
     auto plane = planes_[i];
-    if (!plane->in_use() && plane->CanUseForCrtc(crtc_index)) {
+    if (!plane->in_use() && plane->CanUseForCrtc(crtc_index) &&
+        plane->IsSupportedFormat(format)) {
       *index = i + 1;
       return plane;
     }
@@ -183,7 +194,7 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
   size_t plane_idx = 0;
   for (const auto& plane : overlay_list) {
     HardwareDisplayPlane* hw_plane =
-        FindNextUnusedPlane(&plane_idx, crtc_index);
+        FindNextUnusedPlane(&plane_idx, crtc_index, plane.buffer->GetFormat());
     if (!hw_plane) {
       LOG(ERROR) << "Failed to find a free plane for crtc " << crtc_id;
       return false;

@@ -26,6 +26,9 @@ class ScanoutBuffer : public base::RefCountedThreadSafe<ScanoutBuffer> {
   // Size of the buffer.
   virtual gfx::Size GetSize() const = 0;
 
+  // Format of the buffer.
+  virtual uint32_t GetFormat() const = 0;
+
  protected:
   virtual ~ScanoutBuffer() {}
 

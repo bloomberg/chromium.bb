@@ -25,6 +25,7 @@ class GbmBufferBase : public ScanoutBuffer {
   uint32_t GetFramebufferId() const override;
   uint32_t GetHandle() const override;
   gfx::Size GetSize() const override;
+  uint32_t GetFormat() const override;
 
  protected:
   GbmBufferBase(const scoped_refptr<DrmDevice>& drm, gbm_bo* bo, bool scanout);

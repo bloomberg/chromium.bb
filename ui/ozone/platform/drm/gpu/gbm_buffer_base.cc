@@ -49,4 +49,8 @@ gfx::Size GbmBufferBase::GetSize() const {
   return gfx::Size(gbm_bo_get_width(bo_), gbm_bo_get_height(bo_));
 }
 
+uint32_t GbmBufferBase::GetFormat() const {
+  return gbm_bo_get_format(bo_);
+}
+
 }  // namespace ui

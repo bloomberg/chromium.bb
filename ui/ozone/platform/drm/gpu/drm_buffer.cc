@@ -98,6 +98,10 @@ gfx::Size DrmBuffer::GetSize() const {
   return gfx::Size(surface_->width(), surface_->height());
 }
 
+uint32_t DrmBuffer::GetFormat() const {
+  return 0;
+}
+
 DrmBufferGenerator::DrmBufferGenerator() {
 }
 

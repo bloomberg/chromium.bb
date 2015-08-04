@@ -26,7 +26,9 @@ class OZONE_EXPORT HardwareDisplayPlane {
 
   virtual ~HardwareDisplayPlane();
 
-  virtual bool Initialize(DrmDevice* drm);
+  virtual bool Initialize(DrmDevice* drm, const std::vector<uint32_t>& formats);
+
+  virtual bool IsSupportedFormat(uint32_t format) const;
 
   bool CanUseForCrtc(uint32_t crtc_index);
 

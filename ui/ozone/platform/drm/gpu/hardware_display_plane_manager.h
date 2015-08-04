@@ -112,7 +112,9 @@ class OZONE_EXPORT HardwareDisplayPlaneManager {
 
   // Finds the plane located at or after |*index| that is not in use and can
   // be used with |crtc_index|.
-  HardwareDisplayPlane* FindNextUnusedPlane(size_t* index, uint32_t crtc_index);
+  HardwareDisplayPlane* FindNextUnusedPlane(size_t* index,
+                                            uint32_t crtc_index,
+                                            uint32_t format);
 
   // Convert |crtc_id| into an index, returning -1 if the ID couldn't be found.
   int LookupCrtcIndex(uint32_t crtc_id);

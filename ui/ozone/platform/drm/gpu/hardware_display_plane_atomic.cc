@@ -5,7 +5,9 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_atomic.h"
 
 #include <drm.h>
+#include <drm/drm_fourcc.h>
 #include <errno.h>
+#include <gbm.h>
 #include <xf86drm.h>
 
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
@@ -87,7 +89,9 @@ bool HardwareDisplayPlaneAtomic::SetPlaneData(drmModePropertySet* property_set,
   return true;
 }
 
-bool HardwareDisplayPlaneAtomic::Initialize(DrmDevice* drm) {
+bool HardwareDisplayPlaneAtomic::Initialize(
+    DrmDevice* drm,
+    const std::vector<uint32_t>& formats) {
   ScopedDrmObjectPropertyPtr plane_props(drmModeObjectGetProperties(
       drm->get_fd(), plane_id_, DRM_MODE_OBJECT_PLANE));
 
@@ -111,7 +115,37 @@ bool HardwareDisplayPlaneAtomic::Initialize(DrmDevice* drm) {
     LOG(ERROR) << "Unable to get plane properties.";
     return false;
   }
+
+  supported_formats_ = formats;
+  if (is_dummy())
+    supported_formats_.push_back(DRM_FORMAT_XRGB8888);
+
   return true;
+}
+
+bool HardwareDisplayPlaneAtomic::IsSupportedFormat(uint32_t format) const {
+  uint32_t format_type = 0;
+  switch (format) {
+    case GBM_BO_FORMAT_ARGB8888: {
+      // We create a FB of 24 bit color depth.
+      format_type = DRM_FORMAT_XRGB8888;
+      break;
+    }
+    case GBM_BO_FORMAT_XRGB8888: {
+      format_type = DRM_FORMAT_XRGB8888;
+      break;
+    }
+    default:
+      NOTREACHED();
+      return false;
+  }
+
+  for (auto& element : supported_formats_) {
+    if (element == format_type)
+      return true;
+  }
+
+  return false;
 }
 
 }  // namespace ui

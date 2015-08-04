@@ -35,6 +35,7 @@ class MockScanoutBuffer : public ui::ScanoutBuffer {
   uint32_t GetFramebufferId() const override { return 0; }
   uint32_t GetHandle() const override { return 0; }
   gfx::Size GetSize() const override { return size_; }
+  uint32_t GetFormat() const override { return 0; }
 
  private:
   ~MockScanoutBuffer() override {}
