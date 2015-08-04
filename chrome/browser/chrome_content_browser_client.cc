@@ -247,7 +247,7 @@
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #endif
 
-#if defined(USE_PLATFORM_SPELLCHECKER)
+#if defined(USE_BROWSER_SPELLCHECKER)
 #include "chrome/browser/spellchecker/spellcheck_message_filter_platform.h"
 #endif
 
@@ -845,7 +845,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 #if defined(ENABLE_SPELLCHECK)
   host->AddFilter(new SpellCheckMessageFilter(id));
 #endif
-#if defined(USE_PLATFORM_SPELLCHECKER)
+#if defined(USE_BROWSER_SPELLCHECKER)
   host->AddFilter(new SpellCheckMessageFilterPlatform(id));
 #endif
   host->AddFilter(new ChromeNetBenchmarkingMessageFilter(profile, context));

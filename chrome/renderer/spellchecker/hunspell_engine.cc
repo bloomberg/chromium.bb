@@ -31,7 +31,7 @@ namespace {
                 "MaxSuggestLen too long");
 }  // namespace
 
-#if !defined(USE_PLATFORM_SPELLCHECKER)
+#if !defined(USE_BROWSER_SPELLCHECKER)
 SpellingEngine* CreateNativeSpellingEngine() {
   return new HunspellEngine();
 }

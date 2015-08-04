@@ -97,7 +97,7 @@ SpellcheckHunspellDictionary::SpellcheckHunspellDictionary(
     net::URLRequestContextGetter* request_context_getter,
     SpellcheckService* spellcheck_service)
     : language_(language),
-      use_platform_spellchecker_(false),
+      use_browser_spellchecker_(false),
       request_context_getter_(request_context_getter),
       spellcheck_service_(spellcheck_service),
       download_status_(DOWNLOAD_NONE),
@@ -110,10 +110,10 @@ SpellcheckHunspellDictionary::~SpellcheckHunspellDictionary() {
 void SpellcheckHunspellDictionary::Load() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-#if defined(USE_PLATFORM_SPELLCHECKER)
+#if defined(USE_BROWSER_SPELLCHECKER)
   if (spellcheck_platform::SpellCheckerAvailable() &&
       spellcheck_platform::PlatformSupportsLanguage(language_)) {
-    use_platform_spellchecker_ = true;
+    use_browser_spellchecker_ = true;
     spellcheck_platform::SetLanguage(language_);
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(
@@ -121,7 +121,7 @@ void SpellcheckHunspellDictionary::Load() {
             weak_ptr_factory_.GetWeakPtr()));
     return;
   }
-#endif  // USE_PLATFORM_SPELLCHECKER
+#endif  // USE_BROWSER_SPELLCHECKER
 
 // Mac falls back on hunspell if its platform spellchecker isn't available.
 // However, Android does not support hunspell.
@@ -156,7 +156,7 @@ const std::string& SpellcheckHunspellDictionary::GetLanguage() const {
 }
 
 bool SpellcheckHunspellDictionary::IsUsingPlatformChecker() const {
-  return use_platform_spellchecker_;
+  return use_browser_spellchecker_;
 }
 
 void SpellcheckHunspellDictionary::AddObserver(Observer* observer) {

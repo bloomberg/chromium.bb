@@ -40,7 +40,7 @@ TestingSpellCheckProvider::~TestingSpellCheckProvider() {
 }
 
 bool TestingSpellCheckProvider::Send(IPC::Message* message)  {
-#if !defined(USE_PLATFORM_SPELLCHECKER)
+#if !defined(USE_BROWSER_SPELLCHECKER)
   // Call our mock message handlers.
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TestingSpellCheckProvider, *message)
@@ -63,7 +63,7 @@ void TestingSpellCheckProvider::OnCallSpellingService(int route_id,
                            int identifier,
                            const base::string16& text,
                            const std::vector<SpellCheckMarker>& markers) {
-#if defined (USE_PLATFORM_SPELLCHECKER)
+#if defined (USE_BROWSER_SPELLCHECKER)
   NOTREACHED();
 #else
   ++spelling_service_call_count_;

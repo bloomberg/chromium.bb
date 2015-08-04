@@ -352,7 +352,7 @@
             }],
           ],
         }],
-        ['use_platform_spellchecker==0', {
+        ['use_browser_spellchecker==0', {
           'sources!': [
             'renderer/spellchecker/platform_spelling_engine.cc',
             'renderer/spellchecker/platform_spelling_engine.h',

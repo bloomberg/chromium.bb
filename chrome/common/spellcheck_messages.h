@@ -69,7 +69,7 @@ IPC_MESSAGE_CONTROL0(SpellCheckMsg_RequestDocumentMarkers)
 IPC_MESSAGE_CONTROL1(SpellCheckHostMsg_RespondDocumentMarkers,
                      std::vector<uint32> /* document marker identifiers */)
 
-#if !defined(USE_PLATFORM_SPELLCHECKER)
+#if !defined(USE_BROWSER_SPELLCHECKER)
 // Sends text-check results from the Spelling service when the service finishes
 // checking text received by a SpellCheckHostMsg_CallSpellingService message.
 // If the service is not available, the 4th parameter should be false and the
@@ -81,7 +81,7 @@ IPC_MESSAGE_ROUTED4(SpellCheckMsg_RespondSpellingService,
                     std::vector<SpellCheckResult>)
 #endif
 
-#if defined(USE_PLATFORM_SPELLCHECKER)
+#if defined(USE_BROWSER_SPELLCHECKER)
 // This message tells the renderer to advance to the next misspelling. It is
 // sent when the user clicks the "Find Next" button on the spelling panel.
 IPC_MESSAGE_ROUTED0(SpellCheckMsg_AdvanceToNextMisspelling)
@@ -109,7 +109,7 @@ IPC_MESSAGE_ROUTED2(SpellCheckHostMsg_NotifyChecked,
                     base::string16 /* word */,
                     bool /* true if checked word is misspelled */)
 
-#if !defined(USE_PLATFORM_SPELLCHECKER)
+#if !defined(USE_BROWSER_SPELLCHECKER)
 // Asks the Spelling service to check text. When the service finishes checking
 // the input text, it sends a SpellingCheckMsg_RespondSpellingService with
 // text-check results.
@@ -120,7 +120,7 @@ IPC_MESSAGE_CONTROL4(SpellCheckHostMsg_CallSpellingService,
                      std::vector<SpellCheckMarker> /* markers */)
 #endif
 
-#if defined(USE_PLATFORM_SPELLCHECKER)
+#if defined(USE_BROWSER_SPELLCHECKER)
 // Tells the browser to display or not display the SpellingPanel
 IPC_MESSAGE_ROUTED1(SpellCheckHostMsg_ShowSpellingPanel,
                     bool /* if true, then show it, otherwise hide it*/)
@@ -148,4 +148,4 @@ IPC_MESSAGE_CONTROL4(SpellCheckHostMsg_RequestTextCheck,
 IPC_MESSAGE_ROUTED2(SpellCheckHostMsg_ToggleSpellCheck,
                     bool /* enabled */,
                     bool /* checked */)
-#endif  // USE_PLATFORM_SPELLCHECKER
+#endif  // USE_BROWSER_SPELLCHECKER

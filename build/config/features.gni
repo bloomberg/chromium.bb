@@ -127,7 +127,7 @@ use_udev = is_linux
 enable_spellcheck = !is_ios
 
 # Use the operating system's spellchecker rather than hunspell.
-use_platform_spellchecker = is_android || is_mac
+use_browser_spellchecker = is_android || is_mac
 
 enable_pepper_cdms = enable_plugins && (is_linux || is_mac || is_win)
 

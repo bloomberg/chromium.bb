@@ -87,8 +87,8 @@ config("feature_flags") {
   if (enable_spellcheck) {
     defines += [ "ENABLE_SPELLCHECK=1" ]
   }
-  if (use_platform_spellchecker) {
-    defines += [ "USE_PLATFORM_SPELLCHECKER=1" ]
+  if (use_browser_spellchecker) {
+    defines += [ "USE_BROWSER_SPELLCHECKER=1" ]
   }
   if (dont_embed_build_metadata) {
     defines += [ "DONT_EMBED_BUILD_METADATA" ]

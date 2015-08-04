@@ -145,7 +145,7 @@ static_library("renderer") {
       deps += [ "//third_party/hunspell" ]
     }
   }
-  if (!use_platform_spellchecker) {
+  if (!use_browser_spellchecker) {
     sources -= [
       "spellchecker/platform_spelling_engine.cc",
       "spellchecker/platform_spelling_engine.h",

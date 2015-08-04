@@ -28,7 +28,7 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilter {
     return spellcheck_.get();
   }
 
-#if !defined(USE_PLATFORM_SPELLCHECKER)
+#if !defined(USE_BROWSER_SPELLCHECKER)
   void OnTextCheckComplete(int route_id,
                            int identifier,
                            const std::vector<SpellCheckMarker>& markers,
@@ -57,7 +57,7 @@ TEST(SpellCheckMessageFilterTest, TestOverrideThread) {
     SpellCheckHostMsg_RequestDictionary::ID,
     SpellCheckHostMsg_NotifyChecked::ID,
     SpellCheckHostMsg_RespondDocumentMarkers::ID,
-#if !defined(USE_PLATFORM_SPELLCHECKER)
+#if !defined(USE_BROWSER_SPELLCHECKER)
     SpellCheckHostMsg_CallSpellingService::ID,
 #endif
   };
@@ -74,7 +74,7 @@ TEST(SpellCheckMessageFilterTest, TestOverrideThread) {
   }
 }
 
-#if !defined(USE_PLATFORM_SPELLCHECKER)
+#if !defined(USE_BROWSER_SPELLCHECKER)
 TEST(SpellCheckMessageFilterTest, OnTextCheckCompleteTestCustomDictionary) {
   static const std::string kCustomWord = "Helllo";
   static const int kRouteId = 0;
