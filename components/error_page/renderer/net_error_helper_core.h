@@ -72,7 +72,8 @@ class NetErrorHelperCore {
     virtual void LoadErrorPageInMainFrame(const std::string& html,
                                           const GURL& failed_url) = 0;
 
-    // Create extra Javascript bindings in the error page.
+    // Create extra Javascript bindings in the error page. Will only be invoked
+    // after an error page has finished loading.
     virtual void EnablePageHelperFunctions() = 0;
 
     // Updates the currently displayed error page with a new error code.  The

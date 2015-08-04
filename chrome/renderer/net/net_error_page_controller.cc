@@ -5,7 +5,6 @@
 #include "chrome/renderer/net/net_error_page_controller.h"
 
 #include "base/strings/string_piece.h"
-#include "chrome/renderer/net/net_error_helper.h"
 #include "content/public/renderer/render_frame.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
@@ -15,8 +14,12 @@
 gin::WrapperInfo NetErrorPageController::kWrapperInfo = {
     gin::kEmbedderNativeGin};
 
+NetErrorPageController::Delegate::Delegate() {}
+NetErrorPageController::Delegate::~Delegate() {}
+
 // static
-void NetErrorPageController::Install(content::RenderFrame* render_frame) {
+void NetErrorPageController::Install(content::RenderFrame* render_frame,
+                                     base::WeakPtr<Delegate> delegate) {
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context =
@@ -27,7 +30,7 @@ void NetErrorPageController::Install(content::RenderFrame* render_frame) {
   v8::Context::Scope context_scope(context);
 
   gin::Handle<NetErrorPageController> controller = gin::CreateHandle(
-      isolate, new NetErrorPageController(render_frame));
+      isolate, new NetErrorPageController(delegate));
   if (controller.IsEmpty())
     return;
 
@@ -59,35 +62,25 @@ bool NetErrorPageController::TrackCachedCopyButtonClick(bool is_default_label) {
 }
 
 bool NetErrorPageController::TrackClick(const gin::Arguments& args) {
-  if (!render_frame())
-    return false;
-
   if (args.PeekNext().IsEmpty() || !args.PeekNext()->IsInt32())
     return false;
 
-  NetErrorHelper* net_error_helper =
-      content::RenderFrameObserverTracker<NetErrorHelper>::Get(render_frame());
-  DCHECK(net_error_helper);
-  net_error_helper->TrackClick(args.PeekNext()->Int32Value());
+  if (delegate_)
+    delegate_->TrackClick(args.PeekNext()->Int32Value());
   return true;
 }
 
 bool NetErrorPageController::ButtonClick(
     error_page::NetErrorHelperCore::Button button) {
-  if (!render_frame())
-    return false;
-
-  NetErrorHelper* net_error_helper =
-      content::RenderFrameObserverTracker<NetErrorHelper>::Get(render_frame());
-  DCHECK(net_error_helper);
-
-  net_error_helper->ButtonPressed(button);
+  if (delegate_)
+    delegate_->ButtonPressed(button);
 
   return true;
 }
 
-NetErrorPageController::NetErrorPageController(
-    content::RenderFrame* render_frame) : RenderFrameObserver(render_frame) {}
+NetErrorPageController::NetErrorPageController(base::WeakPtr<Delegate> delegate)
+    : delegate_(delegate) {
+}
 
 NetErrorPageController::~NetErrorPageController() {}
 
@@ -108,5 +101,3 @@ gin::ObjectTemplateBuilder NetErrorPageController::GetObjectTemplateBuilder(
       .SetMethod("trackCachedCopyButtonClick",
                  &NetErrorPageController::TrackCachedCopyButtonClick);
 }
-
-void NetErrorPageController::OnDestruct() {}

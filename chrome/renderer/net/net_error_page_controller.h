@@ -6,8 +6,8 @@
 #define CHROME_RENDERER_NET_NET_ERROR_PAGE_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/error_page/renderer/net_error_helper_core.h"
-#include "content/public/renderer/render_frame_observer.h"
 #include "gin/arguments.h"
 #include "gin/wrappable.h"
 
@@ -19,16 +19,36 @@ class RenderFrame;
 // This class makes various helper functions available to the
 // error page loaded by NetErrorHelper.  It is bound to the JavaScript
 // window.errorPageController object.
-class NetErrorPageController
-    : public gin::Wrappable<NetErrorPageController>,
-      public content::RenderFrameObserver {
+class NetErrorPageController : public gin::Wrappable<NetErrorPageController> {
  public:
   static gin::WrapperInfo kWrapperInfo;
 
-  static void Install(content::RenderFrame* render_frame);
+  // Interface used to notify creator of user actions invoked on the error page.
+  class Delegate {
+   public:
+    // Button press notification from error page.
+    virtual void ButtonPressed(
+        error_page::NetErrorHelperCore::Button button) = 0;
+
+    // Called when a link with the given tracking ID is pressed.
+    virtual void TrackClick(int tracking_id) = 0;
+
+   protected:
+    Delegate();
+    virtual ~Delegate();
+
+    DISALLOW_COPY_AND_ASSIGN(Delegate);
+  };
+
+  // Will invoke methods on |delegate| in response to user actions taken on the
+  // error page. May call delegate methods even after the page has been
+  // navigated away from, so it is recommended consumers make sure the weak
+  // pointers are destroyed in response to navigations.
+  static void Install(content::RenderFrame* render_frame,
+                      base::WeakPtr<Delegate> delegate);
 
  private:
-  explicit NetErrorPageController(content::RenderFrame* render_frame);
+  explicit NetErrorPageController(base::WeakPtr<Delegate> delegate);
   ~NetErrorPageController() override;
 
   // Execute a "Show saved copy" button click.
@@ -57,10 +77,7 @@ class NetErrorPageController
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
-  // RenderFrameObserver.  Overridden to avoid being destroyed when RenderFrame
-  // goes away; NetErrorPageController objects are owned by the JS
-  // garbage collector.
-  void OnDestruct() override;
+  base::WeakPtr<Delegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(NetErrorPageController);
 };

@@ -16,7 +16,6 @@
 #include "chrome/common/localized_error.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/renderer_resources.h"
-#include "chrome/renderer/net/net_error_page_controller.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/net_error_info.h"
 #include "content/public/common/content_client.h"
@@ -75,7 +74,8 @@ NetErrorHelperCore::FrameType GetFrameType(const blink::WebFrame* frame) {
 
 NetErrorHelper::NetErrorHelper(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
-      content::RenderFrameObserverTracker<NetErrorHelper>(render_frame) {
+      content::RenderFrameObserverTracker<NetErrorHelper>(render_frame),
+      weak_controller_delegate_factory_(this) {
   RenderThread::Get()->AddObserver(this);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   bool auto_reload_enabled =
@@ -99,6 +99,10 @@ void NetErrorHelper::ButtonPressed(
   core_->ExecuteButtonPress(is_error_page, button);
 }
 
+void NetErrorHelper::TrackClick(int tracking_id) {
+  core_->TrackClick(tracking_id);
+}
+
 void NetErrorHelper::DidStartProvisionalLoad() {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
   core_->OnStartLoad(GetFrameType(frame), GetLoadingPageType(frame));
@@ -106,6 +110,11 @@ void NetErrorHelper::DidStartProvisionalLoad() {
 
 void NetErrorHelper::DidCommitProvisionalLoad(bool is_new_navigation,
                                               bool is_same_page_navigation) {
+  // Invalidate weak pointers from old error page controllers. If loading a new
+  // error page, the controller has not yet been attached, so this won't affect
+  // it.
+  weak_controller_delegate_factory_.InvalidateWeakPtrs();
+
   blink::WebFrame* frame = render_frame()->GetWebFrame();
   core_->OnCommitLoad(GetFrameType(frame), frame->document().url());
 }
@@ -155,10 +164,6 @@ void NetErrorHelper::GetErrorHTML(
 bool NetErrorHelper::ShouldSuppressErrorPage(blink::WebFrame* frame,
                                              const GURL& url) {
   return core_->ShouldSuppressErrorPage(GetFrameType(frame), url);
-}
-
-void NetErrorHelper::TrackClick(int tracking_id) {
-  core_->TrackClick(tracking_id);
 }
 
 void NetErrorHelper::GenerateLocalizedErrorPage(
@@ -218,7 +223,8 @@ void NetErrorHelper::LoadErrorPageInMainFrame(const std::string& html,
 }
 
 void NetErrorHelper::EnablePageHelperFunctions() {
-  NetErrorPageController::Install(render_frame());
+  NetErrorPageController::Install(
+      render_frame(), weak_controller_delegate_factory_.GetWeakPtr());
 }
 
 void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
