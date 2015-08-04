@@ -23,7 +23,6 @@
 #include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/common/pref_names.h"
@@ -753,11 +752,11 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       // in template_url.h.
     }
 
-    UMA_HISTOGRAM_ENUMERATION(
-        "Omnibox.SearchEngineType",
-        TemplateURLPrepopulateData::GetEngineType(
-            *template_url, UIThreadSearchTermsData(profile_)),
-        SEARCH_ENGINE_MAX);
+    SearchEngineType search_engine_type = match.destination_url.is_valid() ?
+        TemplateURLPrepopulateData::GetEngineType(match.destination_url) :
+        SEARCH_ENGINE_OTHER;
+    UMA_HISTOGRAM_ENUMERATION("Omnibox.SearchEngineType", search_engine_type,
+                              SEARCH_ENGINE_MAX);
   }
 
   // Get the current text before we call RevertAll() which will clear it.
