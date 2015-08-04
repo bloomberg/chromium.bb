@@ -311,6 +311,17 @@ void SelectionController::selectClosestWordFromHitTestResult(const HitTestResult
         expandSelectionUsingGranularity(newSelection, WordGranularity);
     }
 
+#if OS(ANDROID)
+    // If node is not editable and doesn't have text except space, tab or
+    // line break, do not select that 'empty' area.
+    if (!innerNode->hasEditableStyle()) {
+        EphemeralRangeTemplate<EditingInComposedTreeStrategy> range = VisibleSelection::InComposedTree::asRange(newSelection);
+        String str = plainText(range, TextIteratorDefaultBehavior);
+        if (str.isEmpty() || str.simplifyWhiteSpace().containsOnlyWhitespace())
+            return;
+    }
+#endif
+
     if (appendTrailingWhitespace == AppendTrailingWhitespace::ShouldAppend && newSelection.isRange())
         newSelection.appendTrailingWhitespace();
 
