@@ -718,7 +718,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::upstream(EditingBoundar
             for (InlineTextBox* box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
                 if (textOffset <= box->start() + box->len()) {
                     if (textOffset > box->start())
-                        return currentPos.deprecatedComputePosition();
+                        return currentPos.computePosition();
                     continue;
                 }
 
@@ -748,7 +748,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::upstream(EditingBoundar
                 }
 
                 if (continuesOnNextLine)
-                    return currentPos.deprecatedComputePosition();
+                    return currentPos.computePosition();
             }
         }
     }
