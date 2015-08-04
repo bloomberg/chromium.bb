@@ -27,6 +27,16 @@ function rootWindow() {
     return currentWindow;
 }
 
+// openPicker opens a picker UI for the following types:
+// - menulist SELECT
+// - INPUT color
+// - INPUT date/datetime-local/month/week
+//
+// |callback| is called if we successfully open the picker UI. However it is
+// called only for the following types:
+// - menulist SELECT on Windows, Linux, and CrOS
+// - INPUT color with DATALIST
+// - INPUT date/datetime-local/month/week
 function openPicker(element, callback, errorCallback) {
     rootWindow().moveTo(window.screenX, window.screenY);
     element.offsetTop; // Force to lay out
