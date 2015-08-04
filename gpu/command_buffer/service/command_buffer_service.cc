@@ -122,14 +122,19 @@ scoped_refptr<Buffer> CommandBufferService::CreateTransferBuffer(size_t size,
   *id = -1;
 
   scoped_ptr<SharedMemory> shared_memory(new SharedMemory());
-  if (!shared_memory->CreateAndMapAnonymous(size))
+  if (!shared_memory->CreateAndMapAnonymous(size)) {
+    if (error_ == error::kNoError)
+      error_ = gpu::error::kOutOfBounds;
     return NULL;
+  }
 
   static int32 next_id = 1;
   *id = next_id++;
 
   if (!RegisterTransferBuffer(
           *id, MakeBackingFromSharedMemory(shared_memory.Pass(), size))) {
+    if (error_ == error::kNoError)
+      error_ = gpu::error::kOutOfBounds;
     *id = -1;
     return NULL;
   }

@@ -36,6 +36,7 @@ CommandBufferProxyImpl::CommandBufferProxyImpl(GpuChannelHost* channel,
       last_put_offset_(-1),
       last_barrier_put_offset_(-1),
       next_signal_id_(0) {
+  DCHECK(channel);
 }
 
 CommandBufferProxyImpl::~CommandBufferProxyImpl() {
@@ -320,20 +321,29 @@ scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
 
   scoped_ptr<base::SharedMemory> shared_memory(
       channel_->factory()->AllocateSharedMemory(size));
-  if (!shared_memory)
+  if (!shared_memory) {
+    if (last_state_.error == gpu::error::kNoError)
+      last_state_.error = gpu::error::kOutOfBounds;
     return NULL;
+  }
 
   DCHECK(!shared_memory->memory());
-  if (!shared_memory->Map(size))
+  if (!shared_memory->Map(size)) {
+    if (last_state_.error == gpu::error::kNoError)
+      last_state_.error = gpu::error::kOutOfBounds;
     return NULL;
+  }
 
   // This handle is owned by the GPU process and must be passed to it or it
   // will leak. In otherwords, do not early out on error between here and the
   // sending of the RegisterTransferBuffer IPC below.
   base::SharedMemoryHandle handle =
       channel_->ShareToGpuProcess(shared_memory->handle());
-  if (!base::SharedMemory::IsHandleValid(handle))
+  if (!base::SharedMemory::IsHandleValid(handle)) {
+    if (last_state_.error == gpu::error::kNoError)
+      last_state_.error = gpu::error::kLostContext;
     return NULL;
+  }
 
   if (!Send(new GpuCommandBufferMsg_RegisterTransferBuffer(route_id_,
                                                            new_id,

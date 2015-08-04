@@ -102,6 +102,7 @@ bool CommandBufferHelper::AllocateRingBuffer() {
       command_buffer_->CreateTransferBuffer(ring_buffer_size_, &id);
   if (id < 0) {
     ClearUsable();
+    DCHECK(error::IsError(command_buffer()->GetLastError()));
     return false;
   }
 

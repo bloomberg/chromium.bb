@@ -224,8 +224,11 @@ scoped_refptr<gpu::Buffer> CommandBufferClientImpl::CreateTransferBuffer(
   void* memory = NULL;
   mojo::ScopedSharedBufferHandle handle;
   mojo::ScopedSharedBufferHandle duped;
-  if (!CreateMapAndDupSharedBuffer(size, &memory, &handle, &duped))
+  if (!CreateMapAndDupSharedBuffer(size, &memory, &handle, &duped)) {
+    if (last_state_.error == gpu::error::kNoError)
+      last_state_.error = gpu::error::kLostContext;
     return NULL;
+  }
 
   *id = ++next_transfer_buffer_id_;
 
