@@ -5588,12 +5588,24 @@ bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GL
 
     switch (type) {
     case GL_BYTE:
+        if (pixels->type() != DOMArrayBufferView::TypeInt8) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "type BYTE but ArrayBufferView not Int8Array");
+            return false;
+        }
+        break;
     case GL_UNSIGNED_BYTE:
         if (pixels->type() != DOMArrayBufferView::TypeUint8) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "type UNSIGNED_BYTE but ArrayBufferView not Uint8Array");
             return false;
         }
         break;
+    case GL_SHORT:
+        if (pixels->type() != DOMArrayBufferView::TypeInt16) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "type SHORT but ArrayBufferView not Int16Array");
+            return false;
+        }
+        break;
+    case GL_UNSIGNED_SHORT:
     case GL_UNSIGNED_SHORT_5_6_5:
     case GL_UNSIGNED_SHORT_4_4_4_4:
     case GL_UNSIGNED_SHORT_5_5_5_1:
@@ -5608,9 +5620,11 @@ bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GL
             return false;
         }
         break;
+    case GL_UNSIGNED_INT:
     case GL_UNSIGNED_INT_2_10_10_10_REV:
     case GL_UNSIGNED_INT_10F_11F_11F_REV:
     case GL_UNSIGNED_INT_5_9_9_9_REV:
+    case GL_UNSIGNED_INT_24_8:
         if (pixels->type() != DOMArrayBufferView::TypeUint32) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "type UNSIGNED_INT but ArrayBufferView not Uint32Array");
             return false;
