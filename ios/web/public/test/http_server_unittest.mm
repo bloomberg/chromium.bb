@@ -8,6 +8,7 @@
 
 #include <string>
 
+#import "base/ios/ios_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -44,6 +45,11 @@ class TestResponseProvider : public web::DataResponseProvider {
 // Tests that a web::test::HttpServer can be started and can send and receive
 // requests and response from |TestResponseProvider|
 TEST(HTTPServer, StartAndInterfaceWithResponseProvider) {
+  // Disabled on iOS 9 as it fails with App Transport Security error.
+  // Tracked by http://crbug.com/516600 issue.
+  if (base::ios::IsRunningOnIOS9OrLater())
+    return;
+
   scoped_ptr<TestResponseProvider> provider(new TestResponseProvider());
   const std::string kHelloWorld = "Hello World";
   provider->response_body_ = kHelloWorld;
