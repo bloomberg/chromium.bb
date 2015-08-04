@@ -481,7 +481,7 @@ int MemEntryImpl::GetAvailableRange(int64 offset, int len, int64* start) {
 
   // Find the first child and record the number of empty bytes.
   int empty = FindNextChild(offset, len, &current_child);
-  if (current_child) {
+  if (current_child && empty < len) {
     *start = offset + empty;
     len -= empty;
 
