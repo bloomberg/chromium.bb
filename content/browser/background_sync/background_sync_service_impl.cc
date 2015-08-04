@@ -51,17 +51,18 @@ SyncRegistrationPtr ToMojoRegistration(const BackgroundSyncRegistration& in) {
 
 // TODO(iclelland): Move these tests somewhere else
 COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_ERROR_NONE,
-                             BACKGROUND_SYNC_STATUS_OK);
+                             BackgroundSyncManager::ERROR_TYPE_OK);
 COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_ERROR_STORAGE,
-                             BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
+                             BackgroundSyncManager::ERROR_TYPE_STORAGE);
 COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_ERROR_NOT_FOUND,
-                             BACKGROUND_SYNC_STATUS_NOT_FOUND);
-COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_ERROR_NO_SERVICE_WORKER,
-                             BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER);
+                             BackgroundSyncManager::ERROR_TYPE_NOT_FOUND);
+COMPILE_ASSERT_MATCHING_ENUM(
+    BACKGROUND_SYNC_ERROR_NO_SERVICE_WORKER,
+    BackgroundSyncManager::ERROR_TYPE_NO_SERVICE_WORKER);
 COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_ERROR_NOT_ALLOWED,
-                             BACKGROUND_SYNC_STATUS_NOT_ALLOWED);
+                             BackgroundSyncManager::ERROR_TYPE_NOT_ALLOWED);
 COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_ERROR_MAX,
-                             BACKGROUND_SYNC_STATUS_NOT_ALLOWED);
+                             BackgroundSyncManager::ERROR_TYPE_NOT_ALLOWED);
 
 COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_NETWORK_STATE_ANY,
                              SyncNetworkState::NETWORK_STATE_ANY);
@@ -196,30 +197,30 @@ void BackgroundSyncServiceImpl::GetPermissionStatus(
 
 void BackgroundSyncServiceImpl::OnRegisterResult(
     const RegisterCallback& callback,
-    BackgroundSyncStatus status,
+    BackgroundSyncManager::ErrorType error,
     const BackgroundSyncRegistration& result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   SyncRegistrationPtr mojoResult = ToMojoRegistration(result);
-  callback.Run(static_cast<content::BackgroundSyncError>(status),
+  callback.Run(static_cast<content::BackgroundSyncError>(error),
                mojoResult.Pass());
 }
 
 void BackgroundSyncServiceImpl::OnUnregisterResult(
     const UnregisterCallback& callback,
-    BackgroundSyncStatus status) {
+    BackgroundSyncManager::ErrorType error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  callback.Run(static_cast<content::BackgroundSyncError>(status));
+  callback.Run(static_cast<content::BackgroundSyncError>(error));
 }
 
 void BackgroundSyncServiceImpl::OnGetRegistrationsResult(
     const GetRegistrationsCallback& callback,
-    BackgroundSyncStatus status,
+    BackgroundSyncManager::ErrorType error,
     const std::vector<BackgroundSyncRegistration>& result_registrations) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   mojo::Array<content::SyncRegistrationPtr> mojo_registrations(0);
   for (const auto& registration : result_registrations)
     mojo_registrations.push_back(ToMojoRegistration(registration));
-  callback.Run(static_cast<content::BackgroundSyncError>(status),
+  callback.Run(static_cast<content::BackgroundSyncError>(error),
                mojo_registrations.Pass());
 }
 

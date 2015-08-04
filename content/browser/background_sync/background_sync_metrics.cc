@@ -38,11 +38,11 @@ void BackgroundSyncMetrics::CountRegister(
     SyncPeriodicity periodicity,
     RegistrationCouldFire registration_could_fire,
     RegistrationIsDuplicate registration_is_duplicate,
-    BackgroundSyncStatus result) {
+    BackgroundSyncManager::ErrorType result) {
   switch (periodicity) {
     case SYNC_ONE_SHOT:
       UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Registration.OneShot", result,
-                                BACKGROUND_SYNC_STATUS_MAX + 1);
+                                BackgroundSyncManager::ERROR_TYPE_MAX + 1);
       UMA_HISTOGRAM_BOOLEAN("BackgroundSync.Registration.OneShot.CouldFire",
                             registration_could_fire == REGISTRATION_COULD_FIRE);
       UMA_HISTOGRAM_BOOLEAN(
@@ -51,7 +51,7 @@ void BackgroundSyncMetrics::CountRegister(
       return;
     case SYNC_PERIODIC:
       UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Registration.Periodic", result,
-                                BACKGROUND_SYNC_STATUS_MAX + 1);
+                                BackgroundSyncManager::ERROR_TYPE_MAX + 1);
       UMA_HISTOGRAM_BOOLEAN(
           "BackgroundSync.Registration.Periodic.IsDuplicate",
           registration_is_duplicate == REGISTRATION_IS_DUPLICATE);
@@ -60,16 +60,18 @@ void BackgroundSyncMetrics::CountRegister(
   NOTREACHED();
 }
 
-void BackgroundSyncMetrics::CountUnregister(SyncPeriodicity periodicity,
-                                            BackgroundSyncStatus result) {
+void BackgroundSyncMetrics::CountUnregister(
+    SyncPeriodicity periodicity,
+    BackgroundSyncManager::ErrorType result) {
   switch (periodicity) {
     case SYNC_ONE_SHOT:
       UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Unregistration.OneShot", result,
-                                BACKGROUND_SYNC_STATUS_MAX + 1);
+                                BackgroundSyncManager::ERROR_TYPE_MAX + 1);
       return;
     case SYNC_PERIODIC:
       UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Unregistration.Periodic",
-                                result, BACKGROUND_SYNC_STATUS_MAX + 1);
+                                result,
+                                BackgroundSyncManager::ERROR_TYPE_MAX + 1);
       return;
   }
   NOTREACHED();

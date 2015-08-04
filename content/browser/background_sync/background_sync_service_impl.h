@@ -58,13 +58,13 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
       const GetPermissionStatusCallback& callback) override;
 
   void OnRegisterResult(const RegisterCallback& callback,
-                        BackgroundSyncStatus status,
+                        BackgroundSyncManager::ErrorType error,
                         const BackgroundSyncRegistration& result);
   void OnUnregisterResult(const UnregisterCallback& callback,
-                          BackgroundSyncStatus status);
+                          BackgroundSyncManager::ErrorType error);
   void OnGetRegistrationsResult(
       const GetRegistrationsCallback& callback,
-      BackgroundSyncStatus status,
+      BackgroundSyncManager::ErrorType error,
       const std::vector<BackgroundSyncRegistration>& result);
 
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
