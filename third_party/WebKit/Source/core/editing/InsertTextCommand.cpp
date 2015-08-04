@@ -195,7 +195,7 @@ void InsertTextCommand::doApply()
         ASSERT(startPosition.containerNode()->isTextNode());
         if (placeholder.isNotNull())
             removePlaceholderAt(placeholder);
-        RefPtrWillBeRawPtr<Text> textNode = startPosition.containerText();
+        RefPtrWillBeRawPtr<Text> textNode = toText(startPosition.containerNode());
         const unsigned offset = startPosition.offsetInContainerNode();
 
         insertTextIntoNode(textNode, offset, m_text);
