@@ -1,0 +1,46 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+span {
+  margin-right: 10px;
+}
+
+#outerDiv {
+  margin-bottom: 10px;
+}
+
+#lockedDiv iron-icon {
+  margin: 0 5px 0 -2px;
+}
+
+#lockedDiv span {
+  color: red;
+  font-weight: 500;
+}
+
+#lockedDiv cr-input {
+  margin-left: 10px;
+  width: 80px;
+}
+
+#unlockSimDialog cr-input {
+  margin-left: 5px;
+}
+
+#unlockSimDialog span {
+  margin-left: 5px;
+}
+
+.pin {
+  min-width: 100px;
+}
+
+.puk {
+  min-width: 200px;
+}
+
+.error {
+  color: red;
+  max-width: 400px;
+}

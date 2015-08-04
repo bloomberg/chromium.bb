@@ -103,6 +103,16 @@ CrOnc.ProxySettings;
  */
 CrOnc.APNProperties;
 
+// TODO(stevenjb): Update chrome_extensions.js to include CellularSimState
+// in chrome.networkingPrivate and use that.
+/** @typedef {{
+ *    requirePin: boolean,
+ *    currentPin: string,
+ *    newPin: (string|undefined)
+ * }}
+ */
+CrOnc.CellularSimState;
+
 /** @enum {string} */
 CrOnc.ActivationState = {
   ACTIVATED: 'Activated',
@@ -316,6 +326,18 @@ CrOnc.getIPConfigForType = function(state, type) {
     result.NameServers = staticIpConfig.NameServers;
   }
   return result;
+};
+
+/**
+ * @param {!CrOnc.NetworkStateProperties} state The ONC network state.
+ * @return {boolean} True if |state| is a Cellular network with a locked SIM.
+ */
+CrOnc.isSimLocked = function(state) {
+  if (state.Type != CrOnc.Type.CELLULAR)
+    return false;
+  var property = CrOnc.getProperty(state, 'Cellular.SIMLockStatus');
+  return property &&
+      (property.LockType == 'sim-pin' || property.LockType == 'sim-puk');
 };
 
 /**

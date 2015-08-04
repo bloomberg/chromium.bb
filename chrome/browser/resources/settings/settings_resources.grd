@@ -325,6 +325,15 @@
         <structure name="IDR_SETTINGS_NETWORK_PROXY_INPUT_JS"
                    file="internet_page/network_proxy_input.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_NETWORK_SIMINFO_CSS"
+                   file="internet_page/network_siminfo.css"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_NETWORK_SIMINFO_HTML"
+                   file="internet_page/network_siminfo.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_NETWORK_SIMINFO_JS"
+                   file="internet_page/network_siminfo.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_NETWORK_SUMMARY_CSS"
                    file="internet_page/network_summary.css"
                    type="chrome_html" />

@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/more-routing/more-routing.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_collapse/cr_collapse.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_expand_button/cr_expand_button.html">
@@ -10,6 +11,7 @@
 <link rel="import" href="network_nameservers.html">
 <link rel="import" href="network_property_list.html">
 <link rel="import" href="network_proxy.html">
+<link rel="import" href="network_siminfo.html">
 
 <dom-module id="cr-settings-internet-detail-page">
   <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
@@ -26,6 +28,15 @@
             <span id="networkState" class="[[getStateClass_(networkState)]]"
                 >[[getStateText_(networkState)]]</span>
           </div>
+        </div>
+
+        <!-- For Cellular, show SIM info first. -->
+        <div id="simInfoDiv" class="layout vertical">
+          <network-siminfo editable
+              hidden$="[[!showCellularSim_(networkState)]]"
+              network-state="[[networkState]]"
+              on-siminfo-change="onNetworkPropertyChange_">
+          </network-siminfo>
         </div>
 
         <!-- Info and properties common to all networks. -->
@@ -64,15 +75,16 @@
               on-click="onViewAccountClicked_">
             View Account
           </cr-button>
-          <cr-button hidden$="[[!canActivate_(networkState)]]"
+          <cr-button hidden$="[[!showActivate_(networkState)]]"
               on-click="onActivateClicked_">
             Activate
           </cr-button>
-          <cr-button hidden$="[[!canConnect_(networkState)]]"
+          <cr-button hidden$="[[!showConnect_(networkState)]]"
+              disabled="[[!enableConnect_(networkState)]]"
               on-click="onConnectClicked_">
             Connect
           </cr-button>
-          <cr-button hidden$="[[!canDisconnect_(networkState)]]"
+          <cr-button hidden$="[[!showDisconnect_(networkState)]]"
               on-click="onDisconnectClicked_">
             Disconnect
           </cr-button>
@@ -102,7 +114,7 @@
                       hidden$="[[!isType_(networkState, NetworkType.CELLULAR)]]"
                       network-state="[[networkState]]"
                       apnlist="[[networkState.Cellular.APNList]]"
-                      on-apn-change="onApnChange_">
+                      on-apn-change="onNetworkPropertyChange_">
                   </network-apnlist>
                   <network-ip-config editable
                       network-state="[[networkState]]"

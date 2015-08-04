@@ -43,4 +43,9 @@ Polymer({
   toggle: function() {
     this.checked = !this.checked;
   },
+
+  /** @override */
+  ready: function() {
+    this.$.events.forward(this.$.checkbox, ['change']);
+  },
 });

@@ -7,6 +7,10 @@
   vertical-align: middle;
 }
 
+:host([disabled]) {
+  pointer-events: none;
+}
+
 paper-button[toggles][active] {
   background-color: lightgrey;
 }

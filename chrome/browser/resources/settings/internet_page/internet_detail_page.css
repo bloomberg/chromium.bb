@@ -30,16 +30,16 @@
   color: green;
 }
 
+#simInfoDiv {
+  margin-left: 10px;
+}
+
 #infoDiv {
   margin-left: 10px;
 }
 
-#infoDiv cr-checkbox {
-  margin-left: 5px;
-}
-
 #infoDiv span {
-  margin: 0 0 8px 5px;
+  margin-bottom: 8px;
 }
 
 #advancedDiv cr-button {

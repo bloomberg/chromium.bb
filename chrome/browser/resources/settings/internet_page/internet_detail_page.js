@@ -254,12 +254,12 @@ Polymer({
    * @private
    */
   getPropertiesCallback_: function(state) {
-    if (!state) {
-      // If state is null, close the page.
-      MoreRouting.navigateTo('internet');
-      return;
-    }
     this.networkState = state;
+    if (!state) {
+      // If state becomes null (i.e. the network is no longer visible), close
+      // the page.
+      MoreRouting.navigateTo('internet');
+    }
   },
 
   /**
@@ -318,22 +318,20 @@ Polymer({
 
   /**
    * @param {?CrOnc.NetworkStateProperties} state The network state properties.
-   * @return {boolean} Whether or not the network can be connected.
+   * @return {boolean} Whether or not to show the 'Connect' button.
    * @private
    */
-  canConnect_: function(state) {
-    if (this.canActivate_(state))
-      return false;
+  showConnect_: function(state) {
     return state && state.Type != CrOnc.Type.ETHERNET &&
            state.ConnectionState == CrOnc.ConnectionState.NOT_CONNECTED;
   },
 
   /**
    * @param {?CrOnc.NetworkStateProperties} state The network state properties.
-   * @return {boolean} Whether or not the network can be activated.
+   * @return {boolean} Whether or not to show the 'Activate' buttonb.
    * @private
    */
-  canActivate_: function(state) {
+  showActivate_: function(state) {
     if (!state || state.Type != CrOnc.Type.CELLULAR)
       return false;
     var activation = state.Cellular.ActivationState;
@@ -347,8 +345,8 @@ Polymer({
    * @private
    */
   showViewAccount_: function(state) {
-    // Only show for activated networks.
-    if (this.canActivate_())
+    // Show either the 'Activate' or the 'View Account' button.
+    if (this.showActivate_())
       return false;
 
     if (!state || state.Type != CrOnc.Type.CELLULAR || !state.Cellular)
@@ -377,11 +375,24 @@ Polymer({
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
-   * @return {boolean} Whether or not the network can be disconnected.
+   * @return {boolean} Whether or not to enable the network connect button.
    * @private
    */
-  canDisconnect_: function(state) {
+  enableConnect_: function(state) {
+    if (!state || !this.showConnect_(state))
+      return false;
+    if (state.Type == CrOnc.Type.CELLULAR && CrOnc.isSimLocked(state))
+      return false;
+    // TODO(stevenjb): For VPN, check connected state of any network.
+    return true;
+  },
+
+  /**
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @return {boolean} Whether or not to show the 'Disconnect' button.
+   * @private
+   */
+  showDisconnect_: function(state) {
     return state && state.Type != CrOnc.Type.ETHERNET &&
            state.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED;
   },
@@ -420,15 +431,21 @@ Polymer({
   },
 
   /**
-   * Event triggered when the apnlist element changes.
-   * @param {!{detail: { field: string, value: CrOnc.APNProperties}}} event
-   *     The network-apnlist change event.
+   * Event triggered for elements associated with network properties.
+   * @param {!{detail: { field: string, value: Object}}} event
    * @private
    */
-  onApnChange_: function(event) {
-    if (event.detail.field != 'APN')
+  onNetworkPropertyChange_: function(event) {
+    var field = event.detail.field;
+    var value = event.detail.value;
+    if (field == 'APN') {
+      this.setNetworkProperties_({Cellular: {APN: value}});
       return;
-    this.setNetworkProperties_({Cellular: {APN: event.detail.value}});
+    }
+    if (field == 'SIMLockStatus') {
+      this.setNetworkProperties_({Cellular: {SIMLockStatus: value}});
+      return;
+    }
   },
 
   /**
@@ -657,7 +674,17 @@ Polymer({
    * @private
    */
   isType_: function(state, type) {
-    return state && (state.Type == type);
+    return state && state.Type == type;
+  },
+
+  /**
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @return {boolean} True if the Cellular SIM section should be shown.
+   * @private
+   */
+  showCellularSim_: function(state) {
+    return state && state.Type == 'Cellular' && state.Cellular &&
+        state.Cellular.Family == 'GSM';
   }
 });
 })();

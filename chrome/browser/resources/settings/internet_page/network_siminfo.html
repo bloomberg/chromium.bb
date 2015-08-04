@@ -1,0 +1,158 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_checkbox/cr_checkbox.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_types.html">
+<link rel="import" href="network_property_list.html">
+
+<dom-module id="network-siminfo">
+  <link rel="import" type="css" href="network_siminfo.css">
+  <template>
+    <div id="outerDiv" class="layout vertical">
+      <div class="layout horizontal center"
+          hidden$="[[state.Cellular.SIMPresent]]">
+        <!-- SIM missing UI -->
+        <iron-icon icon="sim-card-alert"></iron-icon>
+        <span>Missing SIM card</span>
+      </div>
+      <div class="layout vertical"
+          hidden$="[[!state.Cellular.SIMPresent]]">
+        <div id="lockedDiv" class="layout horizontal center"
+            hidden$="[[!isSimLocked_(networkState)]]">
+          <!-- SIM locked -->
+          <iron-icon icon="lock"></iron-icon>
+          <span>SIM card is locked.</span>
+          <cr-button on-click="unlockPin_">Unlock</cr-button>
+        </div>
+        <div class="layout vertical"
+            hidden$="[[isSimLocked_(networkState)]]">
+          <!-- SIM unlocked -->
+          <cr-checkbox
+              checked="[[networkState.Cellular.SIMLockStatus.LockEnabled]]"
+              on-change="onSimLockEnabledChange_">
+            Enable SIM card locking (require PIN to use mobile data)
+          </cr-checkbox>
+          <div class="layout horizontal center"
+               hidden$="[[!networkState.Cellular.SIMLockStatus.LockEnabled]]">
+            <!-- SIM lock enabled -->
+            <cr-button on-click="onChangePin_">Change PIN</cr-button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enter PIN dialog -->
+    <paper-dialog modal id="enterPinDialog" class="layout vertical"
+        on-iron-overlay-opened="onEnterPinDialogOpened_">
+      <div class="layout vertical">
+        <h2>Enter SIM PIN</h2>
+        <div class="layout vertical">
+          <div class="layout horizontal">
+            <cr-input id="enterPin" class="pin" no-label-float
+                label="Enter PIN">
+            </cr-input>
+            <cr-button on-click="sendEnterPin_">Enter</cr-button>
+          </div>
+        </div>
+        <div class="layout horizontal">
+          <span class="error" hidden$="[[!showError_(error)]]"
+              >[[getErrorMsg_(error)]]
+          </span>
+          <span>[[getRetriesLeftMsg_(networkState)]]</span>
+        </div>
+      </div>
+    </paper-dialog>
+
+    <!-- Change PIN dialog -->
+    <paper-dialog modal id="changePinDialog" class="layout vertical"
+        on-iron-overlay-opened="onChangePinDialogOpened_">
+      <div class="layout vertical">
+        <h2>Change SIM PIN</h2>
+        <div class="layout horizontal end">
+          <div class="layout vertical">
+            <cr-input id="changePinOld" class="pin" no-label-float
+                label="Enter old PIN">
+            </cr-input>
+            <cr-input id="changePinNew1" class="pin" no-label-float
+                label="Enter new PIN">
+            </cr-input>
+            <cr-input id="changePinNew2" class="pin" no-label-float
+                label="Re-enter new PIN">
+            </cr-input>
+          </div>
+          <cr-button on-click="sendChangePin_">Change</cr-button>
+        </div>
+        <div class="layout horizontal">
+          <span class="error" hidden$="[[!showError_(error)]]"
+              >[[getErrorMsg_(error)]]
+          </span>
+          <span>[[getRetriesLeftMsg_(networkState)]]</span>
+        </div>
+      </div>
+    </paper-dialog>
+
+    <!-- Unlock PIN dialog -->
+    <paper-dialog modal id="unlockPinDialog" class="layout vertical"
+        on-iron-overlay-opened="onUnlockPinDialogOpened_">
+      <div class="layout vertical">
+        <h2>SIM Card is locked.</h2>
+        <div class="layout horizontal">
+          <cr-input id="unlockPin" class="pin" no-label-float
+              label="Enter PIN">
+          </cr-input>
+          <cr-button on-click="sendUnlockPin_">Unlock</cr-button>
+        </div>
+        <div class="layout horizontal">
+          <span class="error" hidden$="[[!showError_(error)]]"
+              >[[getErrorMsg_(error)]]
+          </span>
+          <span>[[getRetriesLeftMsg_(networkState)]]</span>
+        </div>
+      </div>
+    </paper-dialog>
+
+    <!-- Unlock PUK dialog -->
+    <paper-dialog modal id="unlockPukDialog" class="layout vertical"
+        on-iron-overlay-opened="onUnlockPukDialogOpened_">
+      <div class="layout vertical">
+        <h2>SIM Card is locked.</h2>
+        <span>
+          Enter the 8-digit PIN Unblocking Key provided by your carrier
+        </span>
+        <div class="layout horizontal">
+          <div class="layout vertical">
+            <cr-input id="unlockPuk" class="puk" no-label-float
+                label="Enter PIN Unblocking Key">
+            </cr-input>
+            <div class="layout horizontal end">
+              <div class="layout vertical">
+                <cr-input id="unlockPin1" class="pin" no-label-float
+                    label="Enter PIN">
+                </cr-input>
+                <cr-input id="unlockPin2" class="pin" no-label-float
+                    label="Re-enter PIN">
+                </cr-input>
+              </div>
+              <cr-button on-click="sendUnlockPuk_">Unlock</cr-button>
+            </div>
+          </div>
+          <div class="flex"></div>.
+        </div>
+        <span class="error">
+          Your SIM card will be permanently disabled if you cannot enter
+          the correct PIN Unblocking key.
+        </span>
+        <div class="layout horizontal">
+          <span class="error" hidden$="[[!showError_(error)]]"
+              >[[getErrorMsg_(error)]]
+          </span>
+          <span>[[getRetriesLeftMsg_(networkState)]]</span>
+        </div>
+      </div>
+    </paper-dialog>
+
+  </template>
+  <script src="network_siminfo.js"></script>
+</dom-module>
