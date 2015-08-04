@@ -83,6 +83,7 @@ void HttpServerPropertiesImpl::InitializeAlternativeServiceServers(
   for (AlternativeServiceMap::reverse_iterator input_it =
            alternative_service_map->rbegin();
        input_it != alternative_service_map->rend(); ++input_it) {
+    DCHECK(!input_it->second.empty());
     AlternativeServiceMap::iterator output_it =
         alternative_service_map_.Peek(input_it->first);
     if (output_it == alternative_service_map_.end()) {
@@ -302,6 +303,9 @@ AlternativeServiceVector HttpServerPropertiesImpl::GetAlternativeServices(
       }
       alternative_services_above_threshold.push_back(alternative_service);
       ++it;
+    }
+    if (map_it->second.empty()) {
+      alternative_service_map_.Erase(map_it);
     }
     return alternative_services_above_threshold;
   }
