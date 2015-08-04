@@ -41,14 +41,14 @@ namespace content_settings {
 
 class DeadlockCheckerThread : public base::PlatformThread::Delegate {
  public:
-  explicit DeadlockCheckerThread(PrefProvider* provider)
-      : provider_(provider) {}
+  explicit DeadlockCheckerThread(const ContentSettingsPref* pref)
+      : pref_(pref) {}
 
   void ThreadMain() override {
-    EXPECT_TRUE(provider_->TestAllLocks());
+    EXPECT_TRUE(pref_->TryLockForTesting());
   }
  private:
-  PrefProvider* provider_;
+  const ContentSettingsPref* pref_;
   DISALLOW_COPY_AND_ASSIGN(DeadlockCheckerThread);
 };
 
@@ -62,11 +62,14 @@ class DeadlockCheckerObserver {
       : provider_(provider),
       notification_received_(false) {
     pref_change_registrar_.Init(prefs);
-    pref_change_registrar_.Add(
-        prefs::kContentSettingsPatternPairs,
-        base::Bind(
-            &DeadlockCheckerObserver::OnContentSettingsPatternPairsChanged,
-            base::Unretained(this)));
+    for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
+      pref_change_registrar_.Add(
+          provider_->content_settings_prefs_[i]->pref_name_,
+          base::Bind(
+              &DeadlockCheckerObserver::OnContentSettingsPatternPairsChanged,
+              base::Unretained(this),
+              base::Unretained(provider_->content_settings_prefs_[i])));
+    }
   }
   virtual ~DeadlockCheckerObserver() {}
 
@@ -75,10 +78,10 @@ class DeadlockCheckerObserver {
   }
 
  private:
-  void OnContentSettingsPatternPairsChanged() {
+  void OnContentSettingsPatternPairsChanged(const ContentSettingsPref* pref) {
     // Check whether |provider_| holds its lock. For this, we need a
     // separate thread.
-    DeadlockCheckerThread thread(provider_);
+    DeadlockCheckerThread thread(pref);
     base::PlatformThreadHandle handle;
     ASSERT_TRUE(base::PlatformThread::Create(0, &thread, &handle));
     base::PlatformThread::Join(handle);
@@ -183,7 +186,7 @@ TEST_F(PrefProviderTest, Incognito) {
                               false));
   // But the value should not be overridden in the OTR user prefs accidentally.
   EXPECT_FALSE(otr_user_prefs->IsSetInOverlay(
-      prefs::kContentSettingsPatternPairs));
+      prefs::kContentSettingsImagesPatternPairs));
 
   pref_content_settings_provider.ShutdownOnUIThread();
   pref_content_settings_provider_incognito.ShutdownOnUIThread();
@@ -423,7 +426,7 @@ TEST_F(PrefProviderTest, Deadlock) {
   DeadlockCheckerObserver observer(&prefs, &provider);
   {
     DictionaryPrefUpdate update(&prefs,
-                                prefs::kContentSettingsPatternPairs);
+                                prefs::kContentSettingsImagesPatternPairs);
     base::DictionaryValue* mutable_settings = update.Get();
     mutable_settings->SetWithoutPathExpansion("www.example.com,*",
                                               new base::DictionaryValue());
@@ -466,283 +469,6 @@ TEST_F(PrefProviderTest, LastUsage) {
   EXPECT_EQ(delta.InSeconds(), 10);
 
   pref_content_settings_provider.ShutdownOnUIThread();
-}
-
-
-// TODO(msramek): This tests the correct migration behavior between the old
-// aggregate dictionary preferences for all content settings types and the new
-// dictionary preferences for individual types. Remove this when the migration
-// period is over.
-TEST_F(PrefProviderTest, SyncingOldToNew) {
-  TestingPrefServiceSyncable prefs;
-  PrefProvider::RegisterProfilePrefs(prefs.registry());
-  PrefProvider provider(&prefs, false);
-
-  const std::string pattern = "google.com,*";
-  const std::string resource_id = "abcde12345";
-  base::DictionaryValue* exceptions = new base::DictionaryValue();
-  base::DictionaryValue* plugin_resources = new base::DictionaryValue();
-
-  // Add exceptions for images and app banner which did not need to be migrated.
-  exceptions->SetIntegerWithoutPathExpansion(
-      GetTypeName(CONTENT_SETTINGS_TYPE_IMAGES), CONTENT_SETTING_ALLOW);
-  exceptions->SetIntegerWithoutPathExpansion(
-      GetTypeName(CONTENT_SETTINGS_TYPE_APP_BANNER), CONTENT_SETTING_ALLOW);
-
-  // Add exceptions for new content settings types added after the migration.
-  exceptions->SetIntegerWithoutPathExpansion(
-      GetTypeName(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT),
-      CONTENT_SETTING_ALLOW);
-
-  // Add a regular exception for plugins, then one with a resource identifier.
-  exceptions->SetIntegerWithoutPathExpansion(
-      GetTypeName(CONTENT_SETTINGS_TYPE_PLUGINS), CONTENT_SETTING_ALLOW);
-  plugin_resources->SetIntegerWithoutPathExpansion(
-      resource_id, CONTENT_SETTING_BLOCK);
-  exceptions->SetWithoutPathExpansion(
-      "per_plugin", plugin_resources);
-
-  // Change the old dictionary preference and observe changes
-  // in the new preferences.
-  {
-    DictionaryPrefUpdate update(&prefs, prefs::kContentSettingsPatternPairs);
-    base::DictionaryValue* old_dictionary = update.Get();
-    old_dictionary->SetWithoutPathExpansion(pattern, exceptions);
-  }
-
-  // The images exception was synced.
-  {
-    DictionaryPrefUpdate update(
-        &prefs, prefs::kContentSettingsImagesPatternPairs);
-    const base::DictionaryValue* images_dictionary = update.Get();
-
-    EXPECT_EQ(1u, images_dictionary->size());
-    const base::DictionaryValue* images_exception;
-    EXPECT_TRUE(images_dictionary->GetDictionaryWithoutPathExpansion(
-        pattern, &images_exception));
-
-    // And it has a correct value.
-    int images_exception_value = CONTENT_SETTING_DEFAULT;
-    EXPECT_TRUE(images_exception->GetIntegerWithoutPathExpansion(
-        "setting", &images_exception_value));
-    EXPECT_EQ(CONTENT_SETTING_ALLOW, images_exception_value);
-  }
-
-  // The app banner exception was not synced.
-  {
-    DictionaryPrefUpdate update(
-        &prefs, prefs::kContentSettingsAppBannerPatternPairs);
-    const base::DictionaryValue* app_banner_dictionary = update.Get();
-    EXPECT_TRUE(app_banner_dictionary->empty());
-  }
-
-  // The plugins exception was synced, together with the resource identifiers.
-  {
-    DictionaryPrefUpdate update(
-        &prefs, prefs::kContentSettingsPluginsPatternPairs);
-    const base::DictionaryValue* plugins_dictionary = update.Get();
-    EXPECT_EQ(1u, plugins_dictionary->size());
-
-    const base::DictionaryValue* plugins_exception;
-    EXPECT_TRUE(plugins_dictionary->GetDictionaryWithoutPathExpansion(
-        pattern, &plugins_exception));
-
-    int plugins_exception_value = CONTENT_SETTING_DEFAULT;
-    EXPECT_TRUE(plugins_exception->GetIntegerWithoutPathExpansion(
-        "setting", &plugins_exception_value));
-    EXPECT_EQ(CONTENT_SETTING_ALLOW, plugins_exception_value);
-
-    int resource_exception_value = CONTENT_SETTING_DEFAULT;
-    const base::DictionaryValue* resource_exception;
-    EXPECT_TRUE(plugins_exception->GetDictionaryWithoutPathExpansion(
-        "per_resource", &resource_exception));
-    EXPECT_TRUE(resource_exception->GetIntegerWithoutPathExpansion(
-        resource_id, &resource_exception_value));
-    EXPECT_EQ(CONTENT_SETTING_BLOCK, resource_exception_value);
-  }
-
-  provider.ShutdownOnUIThread();
-}
-
-TEST_F(PrefProviderTest, SyncingNewToOld) {
-  TestingPrefServiceSyncable prefs;
-  PrefProvider::RegisterProfilePrefs(prefs.registry());
-  PrefProvider provider(&prefs, false);
-
-  const std::string pattern = "google.com,*";
-  const std::string resource_id = "abcde12345";
-  base::DictionaryValue block_exception;
-  block_exception.SetIntegerWithoutPathExpansion(
-      "setting", CONTENT_SETTING_BLOCK);
-
-  // Add a mouselock exception.
-  {
-    DictionaryPrefUpdate update(
-        &prefs, prefs::kContentSettingsMouseLockPatternPairs);
-    base::DictionaryValue* mouselock_dictionary = update.Get();
-
-    mouselock_dictionary->SetWithoutPathExpansion(
-        pattern, block_exception.DeepCopy());
-  }
-
-  // Add a microphone exception.
-  {
-    DictionaryPrefUpdate update(
-        &prefs, prefs::kContentSettingsMediaStreamMicPatternPairs);
-    base::DictionaryValue* microphone_dictionary = update.Get();
-
-    microphone_dictionary->SetWithoutPathExpansion(
-        pattern, block_exception.DeepCopy());
-  }
-
-  // Add a plugin exception with resource identifiers.
-  {
-    DictionaryPrefUpdate update(
-        &prefs, prefs::kContentSettingsPluginsPatternPairs);
-    base::DictionaryValue* plugins_dictionary = update.Get();
-
-    base::DictionaryValue* plugin_exception = block_exception.DeepCopy();
-    plugins_dictionary->SetWithoutPathExpansion(
-        pattern, plugin_exception);
-
-    base::DictionaryValue* resource_exception = new base::DictionaryValue();
-    resource_exception->SetIntegerWithoutPathExpansion(
-        resource_id, CONTENT_SETTING_ALLOW);
-
-    plugin_exception->SetWithoutPathExpansion(
-        "per_resource", resource_exception);
-  }
-
-  // Only the notifications and plugin exceptions should appear in the
-  // old dictionary. We should also have a resource identifiers section
-  // for plugins.
-  {
-    DictionaryPrefUpdate update(
-        &prefs, prefs::kContentSettingsPatternPairs);
-    const base::DictionaryValue* old_dictionary = update.Get();
-
-    const base::DictionaryValue* exception;
-    EXPECT_TRUE(old_dictionary->GetDictionaryWithoutPathExpansion(
-        pattern, &exception));
-    EXPECT_EQ(3u, exception->size());
-    EXPECT_FALSE(exception->HasKey(
-        GetTypeName(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)));
-
-    int mouselock_exception_value = CONTENT_SETTING_DEFAULT;
-    exception->GetIntegerWithoutPathExpansion(
-        GetTypeName(CONTENT_SETTINGS_TYPE_MOUSELOCK),
-        &mouselock_exception_value);
-    DCHECK_EQ(CONTENT_SETTING_BLOCK, mouselock_exception_value);
-
-    int plugins_exception_value = CONTENT_SETTING_DEFAULT;
-    exception->GetIntegerWithoutPathExpansion(
-        GetTypeName(CONTENT_SETTINGS_TYPE_PLUGINS),
-        &plugins_exception_value);
-    DCHECK_EQ(CONTENT_SETTING_BLOCK, plugins_exception_value);
-
-    int resource_exception_value = CONTENT_SETTING_DEFAULT;
-    const base::DictionaryValue* resource_values;
-    exception->GetDictionaryWithoutPathExpansion(
-        "per_plugin", &resource_values);
-    resource_values->GetIntegerWithoutPathExpansion(
-        resource_id, &resource_exception_value);
-    DCHECK_EQ(CONTENT_SETTING_ALLOW, resource_exception_value);
-  }
-
-  provider.ShutdownOnUIThread();
-}
-
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-TEST_F(PrefProviderTest, PMIMigrateOnlyAllow) {
-  TestingPrefServiceSyncable prefs;
-  PrefProvider::RegisterProfilePrefs(prefs.registry());
-
-  const std::string pattern_1 = "google.com,*";
-  const std::string pattern_2 = "www.google.com,*";
-  base::DictionaryValue* exception_1 = new base::DictionaryValue();
-  base::DictionaryValue* exception_2 = new base::DictionaryValue();
-
-  // Add both an "allow" and "block" exception for PMI.
-  exception_1->SetIntegerWithoutPathExpansion(
-      GetTypeName(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER),
-      CONTENT_SETTING_ALLOW);
-  exception_2->SetIntegerWithoutPathExpansion(
-      GetTypeName(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER),
-      CONTENT_SETTING_BLOCK);
-
-  // Change the old dictionary preference.
-  {
-    DictionaryPrefUpdate update(&prefs, prefs::kContentSettingsPatternPairs);
-    base::DictionaryValue* old_dictionary = update.Get();
-    old_dictionary->SetWithoutPathExpansion(pattern_1, exception_1);
-    old_dictionary->SetWithoutPathExpansion(pattern_2, exception_2);
-  }
-
-  // Create the PrefProvider. It should migrate the settings.
-  PrefProvider provider(&prefs, false);
-
-  // The "block" exception for PMI was migrated, but "allow" was not.
-  {
-    DictionaryPrefUpdate update(
-        &prefs, prefs::kContentSettingsProtectedMediaIdentifierPatternPairs);
-    const base::DictionaryValue* pmi_dictionary = update.Get();
-    EXPECT_FALSE(pmi_dictionary->HasKey(pattern_1));
-    EXPECT_TRUE(pmi_dictionary->HasKey(pattern_2));
-  }
-
-  provider.ShutdownOnUIThread();
-}
-#endif
-
-TEST_F(PrefProviderTest, PrefsMigrateVerbatim) {
-  TestingPrefServiceSyncable prefs;
-  PrefProvider::RegisterProfilePrefs(prefs.registry());
-
-  const std::string pattern_1 = "google.com,*";
-  const std::string pattern_2 = "www.google.com,*";
-  base::DictionaryValue* exception_1 = new base::DictionaryValue();
-  base::DictionaryValue* exception_2 = new base::DictionaryValue();
-  scoped_ptr<base::DictionaryValue> old_dictionary;
-
-  // Add two exceptions.
-  exception_1->SetIntegerWithoutPathExpansion(
-      GetTypeName(CONTENT_SETTINGS_TYPE_COOKIES),
-      CONTENT_SETTING_ALLOW);
-  exception_2->SetIntegerWithoutPathExpansion(
-      GetTypeName(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS),
-      CONTENT_SETTING_BLOCK);
-
-  // Change the old dictionary preference.
-  {
-    DictionaryPrefUpdate update(&prefs, prefs::kContentSettingsPatternPairs);
-    base::DictionaryValue* dictionary = update.Get();
-    dictionary->SetWithoutPathExpansion(pattern_1, exception_1);
-    dictionary->SetWithoutPathExpansion(pattern_2, exception_2);
-    old_dictionary.reset(dictionary->DeepCopy());
-  }
-
-  // Create the PrefProvider. It should copy the settings from the old
-  // preference to the new ones.
-  PrefProvider provider(&prefs, false);
-
-  // Force copying back from the new preferences to the old one.
-  {
-    DictionaryPrefUpdate update(
-        &prefs, prefs::kContentSettingsCookiesPatternPairs);
-  }
-  {
-    DictionaryPrefUpdate update(
-        &prefs, prefs::kContentSettingsAutomaticDownloadsPatternPairs);
-  }
-
-  // Test if the value after copying there and back is the same.
-  {
-    DictionaryPrefUpdate update(&prefs, prefs::kContentSettingsPatternPairs);
-    base::DictionaryValue* new_dictionary = update.Get();
-    EXPECT_TRUE(old_dictionary->Equals(new_dictionary));
-  }
-
-  provider.ShutdownOnUIThread();
 }
 
 TEST_F(PrefProviderTest, IncognitoInheritsValueMap) {
@@ -856,8 +582,7 @@ TEST_F(PrefProviderTest, ClearAllContentSettingsRules) {
   provider.ClearAllContentSettingsRules(CONTENT_SETTINGS_TYPE_GEOLOCATION);
   provider.ClearAllContentSettingsRules(CONTENT_SETTINGS_TYPE_PLUGINS);
 
-  // Test that the new preferences for images, geolocation and plugins
-  // are empty.
+  // Test that the preferences for images, geolocation and plugins are empty.
   const char* empty_prefs[] = {
       prefs::kContentSettingsImagesPatternPairs,
       prefs::kContentSettingsGeolocationPatternPairs,
@@ -880,20 +605,6 @@ TEST_F(PrefProviderTest, ClearAllContentSettingsRules) {
     DictionaryPrefUpdate update(&prefs, pref);
     const base::DictionaryValue* dictionary = update.Get();
     EXPECT_EQ(1u, dictionary->size());
-  }
-
-  // Test that the old preference only contains cookies and notifications.
-  {
-    DictionaryPrefUpdate update(&prefs, prefs::kContentSettingsPatternPairs);
-    const base::DictionaryValue* dictionary = update.Get();
-    const base::DictionaryValue* exception;
-    EXPECT_TRUE(dictionary->GetDictionaryWithoutPathExpansion(
-        CreatePatternString(pattern, wildcard), &exception));
-    EXPECT_EQ(1u, exception->size());
-    EXPECT_TRUE(exception->HasKey(GetTypeName(CONTENT_SETTINGS_TYPE_COOKIES)));
-
-    // The notification setting was not cleared, but it was also never written
-    // to the old preference, as it is unsyncable.
   }
 
   provider.ShutdownOnUIThread();

@@ -45,7 +45,6 @@ class ContentSettingsPref {
                       PrefChangeRegistrar* registrar,
                       const char* pref_name,
                       bool incognito,
-                      bool* updating_old_preferences_flag,
                       NotifyObserversCallback notify_callback);
   ~ContentSettingsPref();
 
@@ -68,15 +67,17 @@ class ContentSettingsPref {
 
   size_t GetNumExceptions();
 
- private:
-  // Only to access static method CanonicalizeContentSettingsExceptions,
-  // so that we reduce duplicity between the two.
-  // TODO(msramek): Remove this after the migration is over.
-  friend class PrefProvider;
+  // Tries to lock |lock_|. If successful, returns true and releases the lock.
+  bool TryLockForTesting() const;
 
-  // Reads all content settings exceptions from the preference and load them
+ private:
+  // TODO(msramek): Currently only needed in the unittest to get the
+  // corresponding pref name. Remove once pref names are in WebsiteSettingsInfo.
+  friend class DeadlockCheckerObserver;
+
+  // Reads all content settings exceptions from the preference and loads them
   // into the |value_map_|. The |value_map_| is cleared first.
-  void ReadContentSettingsFromPrefAndWriteToOldPref();
+  void ReadContentSettingsFromPref();
 
   // Callback for changes in the pref with the same name.
   void OnPrefChanged();
@@ -99,20 +100,6 @@ class ContentSettingsPref {
   // release it.
   void AssertLockNotHeld() const;
 
-  // Update the old aggregate preference, so that the settings can be synced
-  // to old versions of Chrome.
-  // TODO(msramek): Remove after the migration is over.
-  void UpdateOldPref(
-      const ContentSettingsPattern& primary_pattern,
-      const ContentSettingsPattern& secondary_pattern,
-      const ResourceIdentifier& resource_identifier,
-      const base::Value* value);
-
-  // Remove all exceptions of |content_type_| from the old aggregate dictionary
-  // preference.
-  // TODO(msramek): Remove after the migration is over.
-  void ClearOldPreference();
-
   // The type of content settings stored in this pref.
   ContentSettingsType content_type_;
 
@@ -130,11 +117,6 @@ class ContentSettingsPref {
   // Whether we are currently updating preferences, this is used to ignore
   // notifications from the preferences service that we triggered ourself.
   bool updating_preferences_;
-
-  // Whether we are currently updating the old aggregate dictionary preference.
-  // Owned by the parent |PrefProvider| and shared by all its children
-  // |ContentSettingsPref|s.
-  bool* updating_old_preferences_;
 
   OriginIdentifierValueMap value_map_;
 

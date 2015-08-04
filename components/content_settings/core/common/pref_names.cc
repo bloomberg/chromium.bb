@@ -13,12 +13,6 @@ const char kBlockThirdPartyCookies[] = "profile.block_third_party_cookies";
 // Version of the pattern format used to define content settings.
 const char kContentSettingsVersion[] = "profile.content_settings.pref_version";
 
-// Patterns for mapping origins to origin related settings. Default settings
-// will be applied to origins that don't match any of the patterns. The pattern
-// format used is defined by kContentSettingsVersion.
-const char kContentSettingsPatternPairs[] =
-    "profile.content_settings.pattern_pairs";
-
 // Integer that specifies the index of the tab the user was on when they
 // last visited the content settings window.
 const char kContentSettingsWindowLastTabIndex[] =
@@ -138,12 +132,6 @@ const char kContentSettingsSiteEngagementPatternPairs[] =
     "profile.content_settings.exceptions.site_engagement";
 const char kContentSettingsDurableStoragePatternPairs[] =
     "profile.content_settings.exceptions.durable_storage";
-
-// Whether the patern pairs have been migrated from the deprecated aggregate
-// preference |kContentSettingsPatternPairs| to the separate preferences
-// |kContentSettings<type>PatternPairs|.
-const char kMigratedContentSettingsPatternPairs[] =
-    "profile.migrated_content_settings_exceptions";
 
 // Preferences that are exclusively used to store managed values for default
 // content settings.

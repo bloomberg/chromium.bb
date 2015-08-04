@@ -355,7 +355,7 @@ TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
 
   // Make a copy of the default pref value so we can reset it later.
   scoped_ptr<base::Value> default_value(prefs->FindPreference(
-      prefs::kContentSettingsPatternPairs)->GetValue()->DeepCopy());
+      prefs::kContentSettingsImagesPatternPairs)->GetValue()->DeepCopy());
 
   ContentSettingsPattern pattern =
        ContentSettingsPattern::FromString("[*.]example.com");
@@ -377,16 +377,16 @@ TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
 
   // Make a copy of the pref's new value so we can reset it later.
   scoped_ptr<base::Value> new_value(prefs->FindPreference(
-      prefs::kContentSettingsPatternPairs)->GetValue()->DeepCopy());
+      prefs::kContentSettingsImagesPatternPairs)->GetValue()->DeepCopy());
 
   // Clearing the backing pref should also clear the internal cache.
-  prefs->Set(prefs::kContentSettingsPatternPairs, *default_value);
+  prefs->Set(prefs::kContentSettingsImagesPatternPairs, *default_value);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 
   // Reseting the pref to its previous value should update the cache.
-  prefs->Set(prefs::kContentSettingsPatternPairs, *new_value);
+  prefs->Set(prefs::kContentSettingsImagesPatternPairs, *new_value);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
@@ -673,12 +673,12 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
   // Set utf-8 data.
   {
     DictionaryPrefUpdate update(
-        prefs, prefs::kContentSettingsPatternPairs);
+        prefs, prefs::kContentSettingsPluginsPatternPairs);
     base::DictionaryValue* all_settings_dictionary = update.Get();
     ASSERT_TRUE(NULL != all_settings_dictionary);
 
     base::DictionaryValue* dummy_payload = new base::DictionaryValue;
-    dummy_payload->SetInteger("images", CONTENT_SETTING_ALLOW);
+    dummy_payload->SetInteger("setting", CONTENT_SETTING_ALLOW);
     all_settings_dictionary->SetWithoutPathExpansion("[*.]\xC4\x87ira.com,*",
                                                      dummy_payload);
   }
@@ -686,7 +686,7 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
   profile.GetHostContentSettingsMap();
 
   const base::DictionaryValue* all_settings_dictionary =
-      prefs->GetDictionary(prefs::kContentSettingsImagesPatternPairs);
+      prefs->GetDictionary(prefs::kContentSettingsPluginsPatternPairs);
   const base::DictionaryValue* result = NULL;
   EXPECT_FALSE(all_settings_dictionary->GetDictionaryWithoutPathExpansion(
       "[*.]\xC4\x87ira.com,*", &result));
@@ -700,21 +700,21 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeAndPunycode) {
   TestingProfile profile;
 
   scoped_ptr<base::Value> value(base::JSONReader::DeprecatedRead(
-      "{\"[*.]\\xC4\\x87ira.com,*\":{\"images\":1}}"));
-  profile.GetPrefs()->Set(prefs::kContentSettingsPatternPairs, *value);
+      "{\"[*.]\\xC4\\x87ira.com,*\":{\"setting\":1}}"));
+  profile.GetPrefs()->Set(prefs::kContentSettingsCookiesPatternPairs, *value);
 
   // Set punycode equivalent, with different setting.
   scoped_ptr<base::Value> puny_value(base::JSONReader::DeprecatedRead(
-      "{\"[*.]xn--ira-ppa.com,*\":{\"images\":2}}"));
+      "{\"[*.]xn--ira-ppa.com,*\":{\"setting\":2}}"));
   profile.GetPrefs()->Set(
-      prefs::kContentSettingsPatternPairs, *puny_value);
+      prefs::kContentSettingsCookiesPatternPairs, *puny_value);
 
   // Initialize the content map.
   profile.GetHostContentSettingsMap();
 
   const base::DictionaryValue& content_setting_prefs =
       *profile.GetPrefs()->GetDictionary(
-          prefs::kContentSettingsImagesPatternPairs);
+          prefs::kContentSettingsCookiesPatternPairs);
   std::string prefs_as_json;
   base::JSONWriter::Write(content_setting_prefs, &prefs_as_json);
   EXPECT_STREQ("{\"[*.]xn--ira-ppa.com,*\":{\"setting\":2}}",

@@ -16,6 +16,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/pref_names.h"
+#include "components/content_settings/core/browser/content_settings_pref_provider.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/protocol/preference_specifics.pb.h"
@@ -323,7 +324,7 @@ scoped_ptr<base::Value> PrefModelAssociator::MergePreference(
         MergeListValues(local_value, server_value)).Pass();
   }
 
-  if (name == prefs::kContentSettingsPatternPairs) {
+  if (content_settings::PrefProvider::IsContentSettingsExceptionsPref(name)) {
     return scoped_ptr<base::Value>(
         MergeDictionaryValues(local_value, server_value)).Pass();
   }

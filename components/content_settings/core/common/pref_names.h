@@ -11,7 +11,6 @@ namespace prefs {
 
 extern const char kBlockThirdPartyCookies[];
 extern const char kContentSettingsVersion[];
-extern const char kContentSettingsPatternPairs[];
 extern const char kContentSettingsWindowLastTabIndex[];
 
 extern const char kDefaultCookiesSetting[];
@@ -74,8 +73,6 @@ extern const char kContentSettingsProtectedMediaIdentifierPatternPairs[];
 extern const char kContentSettingsAppBannerPatternPairs[];
 extern const char kContentSettingsSiteEngagementPatternPairs[];
 extern const char kContentSettingsDurableStoragePatternPairs[];
-
-extern const char kMigratedContentSettingsPatternPairs[];
 
 extern const char kManagedDefaultCookiesSetting[];
 extern const char kManagedDefaultImagesSetting[];
