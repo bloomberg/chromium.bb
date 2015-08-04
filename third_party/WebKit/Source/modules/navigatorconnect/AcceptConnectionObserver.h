@@ -53,7 +53,7 @@ private:
     Member<ServicePortCollection> m_collection;
     WebServicePortID m_portID;
     KURL m_targetURL;
-    RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
+    Member<ScriptPromiseResolver> m_resolver;
 
     enum State { Initial, Pending, Done };
     State m_state;

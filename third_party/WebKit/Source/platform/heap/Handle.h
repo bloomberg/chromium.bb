@@ -898,6 +898,59 @@ private:
     Member<T> m_object;
 };
 
+// SelfKeepAlive<Object> is the idiom to use for objects that have to keep
+// themselves temporarily alive and cannot rely on there being some
+// external reference in that interval:
+//
+//  class Opener {
+//  public:
+//     ...
+//     void open()
+//     {
+//         // Retain a self-reference while in an open()ed state:
+//         m_keepAlive = this;
+//         ....
+//     }
+//
+//     void close()
+//     {
+//         // Clear self-reference that ensured we were kept alive while opened.
+//         m_keepAlive.clear();
+//         ....
+//     }
+//
+//  private:
+//     ...
+//     SelfKeepAlive m_keepAlive;
+//  };
+//
+// The responsibility to call clear() in a timely fashion resides with the implementation
+// of the object.
+//
+//
+template<typename Self>
+class SelfKeepAlive {
+public:
+    SelfKeepAlive& operator=(Self* self)
+    {
+        ASSERT(!m_keepAlive || m_keepAlive.get() == self);
+        m_keepAlive = self;
+        return *this;
+    }
+
+    void clear()
+    {
+        m_keepAlive = nullptr;
+    }
+
+    typedef Persistent<Self> (SelfKeepAlive::*UnspecifiedBoolType);
+    operator UnspecifiedBoolType() const { return m_keepAlive ? &SelfKeepAlive::m_keepAlive : 0; }
+
+private:
+    GC_PLUGIN_IGNORE("420515")
+    Persistent<Self> m_keepAlive;
+};
+
 } // namespace blink
 
 namespace WTF {

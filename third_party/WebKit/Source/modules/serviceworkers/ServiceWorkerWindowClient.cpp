@@ -47,7 +47,7 @@ String ServiceWorkerWindowClient::visibilityState() const
 
 ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* scriptState)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     if (!scriptState->executionContext()->isWindowInteractionAllowed()) {
@@ -62,7 +62,7 @@ ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* scriptState)
 
 ScriptPromise ServiceWorkerWindowClient::navigate(ScriptState* scriptState, const String& url)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     ExecutionContext* context = scriptState->executionContext();
 

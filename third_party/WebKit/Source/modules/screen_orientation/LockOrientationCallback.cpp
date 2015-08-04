@@ -12,7 +12,7 @@
 
 namespace blink {
 
-LockOrientationCallback::LockOrientationCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+LockOrientationCallback::LockOrientationCallback(ScriptPromiseResolver* resolver)
     : m_resolver(resolver)
 {
 }

@@ -21,7 +21,7 @@ namespace {
 
 class WebNotificationPermissionCallbackImpl : public WebNotificationPermissionCallback {
 public:
-    WebNotificationPermissionCallbackImpl(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, NotificationPermissionCallback* deprecatedCallback)
+    WebNotificationPermissionCallbackImpl(ScriptPromiseResolver* resolver, NotificationPermissionCallback* deprecatedCallback)
         : m_resolver(resolver)
         , m_deprecatedCallback(deprecatedCallback)
     {
@@ -39,7 +39,7 @@ public:
     }
 
 private:
-    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+    Persistent<ScriptPromiseResolver> m_resolver;
     Persistent<NotificationPermissionCallback> m_deprecatedCallback;
 };
 
@@ -68,7 +68,7 @@ ScriptPromise NotificationPermissionClientImpl::requestPermission(ScriptState* s
     Document* document = toDocument(context);
     WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     webFrame->client()->requestNotificationPermission(WebSecurityOrigin(context->securityOrigin()), new WebNotificationPermissionCallbackImpl(resolver, deprecatedCallback));

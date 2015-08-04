@@ -82,7 +82,7 @@ ScriptPromise USB::getDevices(ScriptState* scriptState, const USBDeviceEnumerati
     if (!client)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     WebUSBDeviceEnumerationOptions webOptions;

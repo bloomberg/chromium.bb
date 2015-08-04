@@ -82,7 +82,7 @@ ScriptPromise AudioContext::suspendContext(ScriptState* scriptState)
     ASSERT(isMainThread());
     AutoLocker locker(this);
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     if (contextState() == Closed) {
@@ -113,7 +113,7 @@ ScriptPromise AudioContext::resumeContext(ScriptState* scriptState)
                 "cannot resume a closed AudioContext"));
     }
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     // Restart the destination node to pull on the audio graph.

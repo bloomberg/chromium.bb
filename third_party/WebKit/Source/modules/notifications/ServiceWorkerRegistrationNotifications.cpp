@@ -80,7 +80,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
             return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "NotificationAction title must not be empty."));
     }
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     // FIXME: Do the appropriate CORS checks on the icon URL.
@@ -111,7 +111,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
 
 ScriptPromise ServiceWorkerRegistrationNotifications::getNotifications(ScriptState* scriptState, ServiceWorkerRegistration& serviceWorkerRegistration, const GetNotificationOptions& options)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     WebNotificationGetCallbacks* callbacks = new CallbackPromiseAdapter<NotificationArray, void>(resolver);

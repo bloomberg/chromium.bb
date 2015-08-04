@@ -48,7 +48,7 @@ ScriptPromise NavigatorVRDevice::getVRDevices(ScriptState* scriptState, Navigato
 
 ScriptPromise NavigatorVRDevice::getVRDevices(ScriptState* scriptState)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     Document* document = m_frame ? m_frame->document() : 0;

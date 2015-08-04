@@ -84,7 +84,7 @@ Vector<String> StorageQuota::supportedTypes() const
 
 ScriptPromise StorageQuota::queryInfo(ScriptState* scriptState, String type)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     SecurityOrigin* securityOrigin = scriptState->executionContext()->securityOrigin();
@@ -103,7 +103,7 @@ ScriptPromise StorageQuota::requestPersistentQuota(ScriptState* scriptState, uns
 {
     StorageQuotaClient* client = StorageQuotaClient::from(scriptState->executionContext());
     if (!client) {
-        RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+        ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
         ScriptPromise promise = resolver->promise();
         resolver->reject(DOMError::create(NotSupportedError));
         return promise;

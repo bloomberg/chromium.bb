@@ -28,7 +28,7 @@ namespace {
 // Examples of behaviours which would go here are rejecting unsupported permissions, accepting
 // permissions which are always granted or always denied according to the spec etc.
 bool handleDefaultBehaviour(
-    ScriptState* scriptState, const ScriptValue& rawPermission, PassRefPtr<ScriptPromiseResolver> resolver, WebPermissionType type, TrackExceptionState& exceptionState)
+    ScriptState* scriptState, const ScriptValue& rawPermission, ScriptPromiseResolver* resolver, WebPermissionType type, TrackExceptionState& exceptionState)
 {
     if (type == WebPermissionTypePushNotifications) {
         PushPermissionDescriptor pushPermission = NativeValueTraits<PushPermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
@@ -91,7 +91,7 @@ ScriptPromise Permissions::query(ScriptState* scriptState, const ScriptValue& ra
     if (exceptionState.hadException())
         return ScriptPromise::reject(scriptState, v8::Exception::TypeError(v8String(scriptState->isolate(), exceptionState.message())));
 
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     String name = permission.name();
@@ -120,7 +120,7 @@ ScriptPromise Permissions::request(ScriptState* scriptState, const ScriptValue& 
     if (exceptionState.hadException())
         return ScriptPromise::reject(scriptState, v8::Exception::TypeError(v8String(scriptState->isolate(), exceptionState.message())));
 
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     String name = permission.name();
@@ -145,7 +145,7 @@ ScriptPromise Permissions::revoke(ScriptState* scriptState, const ScriptValue& r
     if (exceptionState.hadException())
         return ScriptPromise::reject(scriptState, v8::Exception::TypeError(v8String(scriptState->isolate(), exceptionState.message())));
 
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     String name = permission.name();

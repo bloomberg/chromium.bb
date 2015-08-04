@@ -11,7 +11,7 @@
 
 namespace blink {
 
-PushPermissionStatusCallbacks::PushPermissionStatusCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+PushPermissionStatusCallbacks::PushPermissionStatusCallbacks(ScriptPromiseResolver* resolver)
     : m_resolver(resolver)
 {
 }

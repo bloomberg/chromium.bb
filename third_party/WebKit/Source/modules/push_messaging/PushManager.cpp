@@ -55,7 +55,7 @@ ScriptPromise PushManager::subscribe(ScriptState* scriptState, const PushSubscri
     if (!m_registration->active())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Subscription failed - no active Service Worker"));
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     // The document context is the only reasonable context from which to ask the user for permission
@@ -76,7 +76,7 @@ ScriptPromise PushManager::subscribe(ScriptState* scriptState, const PushSubscri
 
 ScriptPromise PushManager::getSubscription(ScriptState* scriptState)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     pushProvider()->getSubscription(m_registration->webRegistration(), new PushSubscriptionCallbacks(resolver, m_registration));
@@ -92,7 +92,7 @@ ScriptPromise PushManager::permissionState(ScriptState* scriptState, const PushS
             return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Document is detached from window."));
     }
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     pushProvider()->getPermissionStatus(m_registration->webRegistration(), toWebPushSubscriptionOptions(options), new PushPermissionStatusCallbacks(resolver));

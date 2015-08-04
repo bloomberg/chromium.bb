@@ -12,7 +12,7 @@
 
 namespace blink {
 
-SetSinkIdCallbacks::SetSinkIdCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, HTMLMediaElement& element, const String& sinkId)
+SetSinkIdCallbacks::SetSinkIdCallbacks(ScriptPromiseResolver* resolver, HTMLMediaElement& element, const String& sinkId)
     : m_resolver(resolver)
     , m_element(element)
     , m_sinkId(sinkId)

@@ -50,7 +50,6 @@ static void throwExceptionIfMediaKeyExceptionOccurred(const String& keySystem, c
 // This class allows MediaKeys to be set asynchronously.
 class SetMediaKeysHandler : public ScriptPromiseResolver {
     WTF_MAKE_NONCOPYABLE(SetMediaKeysHandler);
-
 public:
     static ScriptPromise create(ScriptState*, HTMLMediaElement&, MediaKeys*);
     ~SetMediaKeysHandler() override;
@@ -72,7 +71,7 @@ private:
 
     // Keep media element alive until promise is fulfilled
     RefPtrWillBeMember<HTMLMediaElement> m_element;
-    PersistentWillBeMember<MediaKeys> m_newMediaKeys;
+    Member<MediaKeys> m_newMediaKeys;
     bool m_tookOwnership;
     Timer<SetMediaKeysHandler> m_timer;
 };
@@ -128,7 +127,7 @@ private:
 
 ScriptPromise SetMediaKeysHandler::create(ScriptState* scriptState, HTMLMediaElement& element, MediaKeys* mediaKeys)
 {
-    RefPtrWillBeRawPtr<SetMediaKeysHandler> handler = adoptRefWillBeNoop(new SetMediaKeysHandler(scriptState, element, mediaKeys));
+    SetMediaKeysHandler* handler = new SetMediaKeysHandler(scriptState, element, mediaKeys);
     handler->suspendIfNeeded();
     handler->keepAliveWhilePending();
     return handler->promise();

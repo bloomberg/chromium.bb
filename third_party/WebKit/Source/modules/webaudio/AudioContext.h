@@ -42,7 +42,7 @@ private:
     void stopRendering();
 
     unsigned m_contextId;
-    RefPtrWillBeMember<ScriptPromiseResolver> m_closeResolver;
+    Member<ScriptPromiseResolver> m_closeResolver;
 };
 
 }

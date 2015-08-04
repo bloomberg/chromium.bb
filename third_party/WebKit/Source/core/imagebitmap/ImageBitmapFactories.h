@@ -96,7 +96,7 @@ private:
 
         FileReaderLoader m_loader;
         RawPtrWillBeMember<ImageBitmapFactories> m_factory;
-        RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
+        Member<ScriptPromiseResolver> m_resolver;
         IntRect m_cropRect;
     };
 

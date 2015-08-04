@@ -30,7 +30,7 @@ namespace {
 class CacheMatchCallbacks : public WebServiceWorkerCache::CacheMatchCallbacks {
     WTF_MAKE_NONCOPYABLE(CacheMatchCallbacks);
 public:
-    CacheMatchCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+    explicit CacheMatchCallbacks(ScriptPromiseResolver* resolver)
         : m_resolver(resolver) { }
 
     void onSuccess(WebServiceWorkerResponse* webResponse) override
@@ -51,14 +51,14 @@ public:
     }
 
 private:
-    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+    Persistent<ScriptPromiseResolver> m_resolver;
 };
 
 // FIXME: Consider using CallbackPromiseAdapter.
 class CacheWithResponsesCallbacks : public WebServiceWorkerCache::CacheWithResponsesCallbacks {
     WTF_MAKE_NONCOPYABLE(CacheWithResponsesCallbacks);
 public:
-    CacheWithResponsesCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+    explicit CacheWithResponsesCallbacks(ScriptPromiseResolver* resolver)
         : m_resolver(resolver) { }
 
     void onSuccess(WebVector<WebServiceWorkerResponse>* webResponses) override
@@ -79,14 +79,14 @@ public:
     }
 
 protected:
-    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+    Persistent<ScriptPromiseResolver> m_resolver;
 };
 
 // FIXME: Consider using CallbackPromiseAdapter.
 class CacheDeleteCallback : public WebServiceWorkerCache::CacheBatchCallbacks {
     WTF_MAKE_NONCOPYABLE(CacheDeleteCallback);
 public:
-    CacheDeleteCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+    explicit CacheDeleteCallback(ScriptPromiseResolver* resolver)
         : m_resolver(resolver) { }
 
     void onSuccess() override
@@ -107,14 +107,14 @@ public:
     }
 
 private:
-    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+    Persistent<ScriptPromiseResolver> m_resolver;
 };
 
 // FIXME: Consider using CallbackPromiseAdapter.
 class CacheWithRequestsCallbacks : public WebServiceWorkerCache::CacheWithRequestsCallbacks {
     WTF_MAKE_NONCOPYABLE(CacheWithRequestsCallbacks);
 public:
-    CacheWithRequestsCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+    explicit CacheWithRequestsCallbacks(ScriptPromiseResolver* resolver)
         : m_resolver(resolver) { }
 
     void onSuccess(WebVector<WebServiceWorkerRequest>* webRequests) override
@@ -135,7 +135,7 @@ public:
     }
 
 private:
-    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+    Persistent<ScriptPromiseResolver> m_resolver;
 };
 
 } // namespace
@@ -179,7 +179,7 @@ private:
 
 class Cache::BarrierCallbackForPut final : public GarbageCollectedFinalized<BarrierCallbackForPut> {
 public:
-    BarrierCallbackForPut(int numberOfOperations, Cache* cache, PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+    BarrierCallbackForPut(int numberOfOperations, Cache* cache, ScriptPromiseResolver* resolver)
         : m_numberOfRemainingOperations(numberOfOperations)
         , m_cache(cache)
         , m_resolver(resolver)
@@ -219,7 +219,7 @@ private:
     bool m_completed = false;
     int m_numberOfRemainingOperations;
     Member<Cache> m_cache;
-    RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
+    Member<ScriptPromiseResolver> m_resolver;
     Vector<WebServiceWorkerCache::BatchOperation> m_batchOperations;
 };
 
@@ -385,7 +385,7 @@ ScriptPromise Cache::matchImpl(ScriptState* scriptState, const Request* request,
     WebServiceWorkerRequest webRequest;
     request->populateWebServiceWorkerRequest(webRequest);
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
     m_webCache->dispatchMatch(new CacheMatchCallbacks(resolver), webRequest, toWebQueryParams(options));
     return promise;
@@ -393,7 +393,7 @@ ScriptPromise Cache::matchImpl(ScriptState* scriptState, const Request* request,
 
 ScriptPromise Cache::matchAllImpl(ScriptState* scriptState)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
     m_webCache->dispatchMatchAll(new CacheWithResponsesCallbacks(resolver), WebServiceWorkerRequest(), WebServiceWorkerCache::QueryParams());
     return promise;
@@ -404,7 +404,7 @@ ScriptPromise Cache::matchAllImpl(ScriptState* scriptState, const Request* reque
     WebServiceWorkerRequest webRequest;
     request->populateWebServiceWorkerRequest(webRequest);
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
     m_webCache->dispatchMatchAll(new CacheWithResponsesCallbacks(resolver), webRequest, toWebQueryParams(options));
     return promise;
@@ -439,7 +439,7 @@ ScriptPromise Cache::deleteImpl(ScriptState* scriptState, const Request* request
     request->populateWebServiceWorkerRequest(batchOperations[0].request);
     batchOperations[0].matchParams = toWebQueryParams(options);
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
     m_webCache->dispatchBatch(new CacheDeleteCallback(resolver), batchOperations);
     return promise;
@@ -447,9 +447,9 @@ ScriptPromise Cache::deleteImpl(ScriptState* scriptState, const Request* request
 
 ScriptPromise Cache::putImpl(ScriptState* scriptState, const HeapVector<Member<Request>>& requests, const HeapVector<Member<Response>>& responses)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
-    BarrierCallbackForPut* barrierCallback = new BarrierCallbackForPut(requests.size(), this, resolver.get());
+    BarrierCallbackForPut* barrierCallback = new BarrierCallbackForPut(requests.size(), this, resolver);
 
     for (size_t i = 0; i < requests.size(); ++i) {
         KURL url(KURL(), requests[i]->url());
@@ -496,7 +496,7 @@ ScriptPromise Cache::putImpl(ScriptState* scriptState, const HeapVector<Member<R
 
 ScriptPromise Cache::keysImpl(ScriptState* scriptState)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
     m_webCache->dispatchKeys(new CacheWithRequestsCallbacks(resolver), 0, WebServiceWorkerCache::QueryParams());
     return promise;
@@ -507,7 +507,7 @@ ScriptPromise Cache::keysImpl(ScriptState* scriptState, const Request* request, 
     WebServiceWorkerRequest webRequest;
     request->populateWebServiceWorkerRequest(webRequest);
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
     m_webCache->dispatchKeys(new CacheWithRequestsCallbacks(resolver), 0, toWebQueryParams(options));
     return promise;

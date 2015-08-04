@@ -59,7 +59,7 @@ namespace blink {
 
 class RegistrationCallback : public WebServiceWorkerProvider::WebServiceWorkerRegistrationCallbacks {
 public:
-    explicit RegistrationCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+    explicit RegistrationCallback(ScriptPromiseResolver* resolver)
         : m_resolver(resolver) { }
     ~RegistrationCallback() override { }
 
@@ -80,13 +80,13 @@ public:
     }
 
 private:
-    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+    Persistent<ScriptPromiseResolver> m_resolver;
     WTF_MAKE_NONCOPYABLE(RegistrationCallback);
 };
 
 class GetRegistrationCallback : public WebServiceWorkerProvider::WebServiceWorkerGetRegistrationCallbacks {
 public:
-    explicit GetRegistrationCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+    explicit GetRegistrationCallback(ScriptPromiseResolver* resolver)
         : m_resolver(resolver) { }
     ~GetRegistrationCallback() override { }
 
@@ -112,13 +112,13 @@ public:
     }
 
 private:
-    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+    Persistent<ScriptPromiseResolver> m_resolver;
     WTF_MAKE_NONCOPYABLE(GetRegistrationCallback);
 };
 
 class GetRegistrationsCallback : public WebServiceWorkerProvider::WebServiceWorkerGetRegistrationsCallbacks {
 public:
-    explicit GetRegistrationsCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+    explicit GetRegistrationsCallback(ScriptPromiseResolver* resolver)
         : m_resolver(resolver) { }
     ~GetRegistrationsCallback() override { }
 
@@ -141,7 +141,7 @@ public:
     }
 
 private:
-    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+    Persistent<ScriptPromiseResolver> m_resolver;
     WTF_MAKE_NONCOPYABLE(GetRegistrationsCallback);
 };
 
@@ -190,7 +190,7 @@ DEFINE_TRACE(ServiceWorkerContainer)
 
 ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptState, const String& url, const RegistrationOptions& options)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     if (!m_provider) {
@@ -253,7 +253,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
 
 ScriptPromise ServiceWorkerContainer::getRegistration(ScriptState* scriptState, const String& documentURL)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     if (!m_provider) {
@@ -293,7 +293,7 @@ ScriptPromise ServiceWorkerContainer::getRegistration(ScriptState* scriptState, 
 
 ScriptPromise ServiceWorkerContainer::getRegistrations(ScriptState* scriptState)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     if (!m_provider) {

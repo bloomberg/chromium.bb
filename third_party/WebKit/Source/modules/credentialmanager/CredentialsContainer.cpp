@@ -27,7 +27,7 @@
 
 namespace blink {
 
-static void rejectDueToCredentialManagerError(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, WebCredentialManagerError* reason)
+static void rejectDueToCredentialManagerError(ScriptPromiseResolver* resolver, WebCredentialManagerError* reason)
 {
     switch (reason->errorType) {
     case WebCredentialManagerError::ErrorTypeDisabled:
@@ -43,7 +43,7 @@ static void rejectDueToCredentialManagerError(PassRefPtrWillBeRawPtr<ScriptPromi
 class NotificationCallbacks : public WebCredentialManagerClient::NotificationCallbacks {
     WTF_MAKE_NONCOPYABLE(NotificationCallbacks);
 public:
-    explicit NotificationCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver) : m_resolver(resolver) { }
+    explicit NotificationCallbacks(ScriptPromiseResolver* resolver) : m_resolver(resolver) { }
     ~NotificationCallbacks() override { }
 
     void onSuccess() override
@@ -57,13 +57,13 @@ public:
     }
 
 private:
-    const RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+    const Persistent<ScriptPromiseResolver> m_resolver;
 };
 
 class RequestCallbacks : public WebCredentialManagerClient::RequestCallbacks {
     WTF_MAKE_NONCOPYABLE(RequestCallbacks);
 public:
-    explicit RequestCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver) : m_resolver(resolver) { }
+    explicit RequestCallbacks(ScriptPromiseResolver* resolver) : m_resolver(resolver) { }
     ~RequestCallbacks() override { }
 
     void onSuccess(WebCredential* credential) override
@@ -86,7 +86,7 @@ public:
     }
 
 private:
-    const RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+    const Persistent<ScriptPromiseResolver> m_resolver;
 };
 
 
@@ -99,7 +99,7 @@ CredentialsContainer::CredentialsContainer()
 {
 }
 
-static bool checkBoilerplate(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+static bool checkBoilerplate(ScriptPromiseResolver* resolver)
 {
     CredentialManagerClient* client = CredentialManagerClient::from(resolver->scriptState()->executionContext());
     if (!client) {
@@ -118,7 +118,7 @@ static bool checkBoilerplate(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resol
 
 ScriptPromise CredentialsContainer::get(ScriptState* scriptState, const CredentialRequestOptions& options)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (!checkBoilerplate(resolver))
         return promise;
@@ -138,7 +138,7 @@ ScriptPromise CredentialsContainer::get(ScriptState* scriptState, const Credenti
 
 ScriptPromise CredentialsContainer::store(ScriptState* scriptState, Credential* credential)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (!checkBoilerplate(resolver))
         return promise;
@@ -149,7 +149,7 @@ ScriptPromise CredentialsContainer::store(ScriptState* scriptState, Credential* 
 
 ScriptPromise CredentialsContainer::requireUserMediation(ScriptState* scriptState)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (!checkBoilerplate(resolver))
         return promise;

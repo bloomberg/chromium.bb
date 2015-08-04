@@ -7,8 +7,6 @@
 
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/vr/WebVRClient.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
@@ -18,14 +16,14 @@ class WebVRClient;
 
 class VRGetDevicesCallback final : public WebVRGetDevicesCallback {
 public:
-    VRGetDevicesCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, VRHardwareUnitCollection*);
+    VRGetDevicesCallback(ScriptPromiseResolver*, VRHardwareUnitCollection*);
     ~VRGetDevicesCallback() override;
 
     void onSuccess(WebVector<WebVRDevice>*) override;
     void onError() override;
 
 private:
-    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+    Persistent<ScriptPromiseResolver> m_resolver;
     Persistent<VRHardwareUnitCollection> m_hardwareUnits;
 };
 

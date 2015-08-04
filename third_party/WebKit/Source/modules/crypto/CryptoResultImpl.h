@@ -49,13 +49,13 @@ MODULES_EXPORT ExceptionCode webCryptoErrorToExceptionCode(WebCryptoErrorType);
 //
 //  * At creation time there must be an active ExecutionContext.
 //  * All methods of the CryptoResult implementation must be called from
-//    the origin thread. The exception is that ref(), deref(), and
-//    destruction may happen on another thread.
+//    the origin thread. The exception is that destruction may happen on
+//    another thread.
 //  * One of the completeWith***() functions must be called, or the
 //    m_resolver will be leaked until the ExecutionContext is destroyed.
 class CryptoResultImpl final : public CryptoResult {
 public:
-    static PassRefPtrWillBeRawPtr<CryptoResultImpl> create(ScriptState*);
+    static CryptoResultImpl* create(ScriptState*);
 
     ~CryptoResultImpl();
 
@@ -100,7 +100,7 @@ private:
     void cancel();
     void clearResolver();
 
-    RawPtrWillBeMember<Resolver> m_resolver;
+    Member<Resolver> m_resolver;
 
     // Separately communicate cancellation to WebCryptoResults so as to
     // allow this result object, which will be on the Oilpan heap, to be

@@ -32,7 +32,7 @@
 #include "public/platform/WebCrypto.h"
 
 #include "platform/CryptoResult.h"
-#include "platform/heap/Heap.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -86,7 +86,7 @@ bool WebCryptoResult::cancelled() const
     return m_cancel->cancelled();
 }
 
-WebCryptoResult::WebCryptoResult(const PassRefPtrWillBeRawPtr<CryptoResult>& impl, const PassRefPtr<CryptoResultCancel>& cancel)
+WebCryptoResult::WebCryptoResult(CryptoResult* impl, const PassRefPtr<CryptoResultCancel>& cancel)
     : m_impl(impl)
     , m_cancel(cancel)
 {

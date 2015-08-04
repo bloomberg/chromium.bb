@@ -96,8 +96,14 @@ public:
 
     ScriptPromise promise() { return m_resolver->promise(); }
 
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_resolver);
+        EncryptedMediaRequest::trace(visitor);
+    }
+
 private:
-    RefPtr<ScriptPromiseResolver> m_resolver;
+    Member<ScriptPromiseResolver> m_resolver;
     const String m_keySystem;
     WebVector<WebMediaKeySystemConfiguration> m_supportedConfigurations;
 };

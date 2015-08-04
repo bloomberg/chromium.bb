@@ -68,7 +68,7 @@ bool PresentationRequest::hasPendingActivity() const
 
 ScriptPromise PresentationRequest::start(ScriptState* scriptState)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     WebPresentationClient* client = presentationClient(executionContext());
@@ -83,7 +83,7 @@ ScriptPromise PresentationRequest::start(ScriptState* scriptState)
 
 ScriptPromise PresentationRequest::join(ScriptState* scriptState, const String& id)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     WebPresentationClient* client = presentationClient(executionContext());
@@ -98,7 +98,7 @@ ScriptPromise PresentationRequest::join(ScriptState* scriptState, const String& 
 
 ScriptPromise PresentationRequest::getAvailability(ScriptState* scriptState)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     WebPresentationClient* client = presentationClient(executionContext());

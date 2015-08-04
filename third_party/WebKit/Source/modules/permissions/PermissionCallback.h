@@ -10,8 +10,6 @@
 #include "public/platform/modules/permissions/WebPermissionStatus.h"
 #include "public/platform/modules/permissions/WebPermissionType.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
@@ -24,14 +22,14 @@ class ScriptPromiseResolver;
 class PermissionCallback final
     : public WebCallbacks<WebPermissionStatus*, void> {
 public:
-    PermissionCallback(PassRefPtr<ScriptPromiseResolver>, WebPermissionType);
+    PermissionCallback(ScriptPromiseResolver*, WebPermissionType);
     ~PermissionCallback() override;
 
     void onSuccess(WebPermissionStatus*) override;
     void onError() override;
 
 private:
-    RefPtr<ScriptPromiseResolver> m_resolver;
+    Persistent<ScriptPromiseResolver> m_resolver;
     WebPermissionType m_permissionType;
 
     WTF_MAKE_NONCOPYABLE(PermissionCallback);

@@ -22,14 +22,14 @@ class ScriptPromiseResolver;
 class LockOrientationCallback final : public WebLockOrientationCallback {
     WTF_MAKE_NONCOPYABLE(LockOrientationCallback);
 public:
-    explicit LockOrientationCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver>);
+    explicit LockOrientationCallback(ScriptPromiseResolver*);
     ~LockOrientationCallback() override;
 
     void onSuccess() override;
     void onError(WebLockOrientationError) override;
 
 private:
-    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+    Persistent<ScriptPromiseResolver> m_resolver;
 };
 
 } // namespace blink

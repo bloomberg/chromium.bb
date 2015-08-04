@@ -8,8 +8,6 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCallbacks.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
@@ -25,14 +23,14 @@ struct WebPushSubscription;
 class PushSubscriptionCallbacks final : public WebCallbacks<WebPushSubscription*, WebPushError*> {
     WTF_MAKE_NONCOPYABLE(PushSubscriptionCallbacks);
 public:
-    PushSubscriptionCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, ServiceWorkerRegistration*);
+    PushSubscriptionCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
     ~PushSubscriptionCallbacks() override;
 
     void onSuccess(WebPushSubscription*) override;
     void onError(WebPushError*) override;
 
 private:
-    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+    Persistent<ScriptPromiseResolver> m_resolver;
     Persistent<ServiceWorkerRegistration> m_serviceWorkerRegistration;
 };
 

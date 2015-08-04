@@ -38,23 +38,33 @@
 namespace blink {
 
 WebMIDIPermissionRequest::WebMIDIPermissionRequest(MIDIAccessInitializer* initializer)
-    : m_initializer(initializer)
+    : m_private(initializer)
 {
+}
+
+void WebMIDIPermissionRequest::reset()
+{
+    m_private.reset();
+}
+
+void WebMIDIPermissionRequest::assign(const WebMIDIPermissionRequest& other)
+{
+    m_private = other.m_private;
 }
 
 bool WebMIDIPermissionRequest::equals(const WebMIDIPermissionRequest& n) const
 {
-    return m_initializer == n.m_initializer;
+    return m_private.get() == n.m_private.get();
 }
 
 WebSecurityOrigin WebMIDIPermissionRequest::securityOrigin() const
 {
-    return WebSecurityOrigin(m_initializer->securityOrigin());
+    return WebSecurityOrigin(m_private->securityOrigin());
 }
 
 void WebMIDIPermissionRequest::setIsAllowed(bool allowed)
 {
-    m_initializer->resolveSysexPermission(allowed);
+    m_private->resolveSysexPermission(allowed);
 }
 
 } // namespace blink

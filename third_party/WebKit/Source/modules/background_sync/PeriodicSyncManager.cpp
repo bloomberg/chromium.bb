@@ -57,7 +57,7 @@ ScriptPromise PeriodicSyncManager::registerFunction(ScriptState* scriptState, co
     if (!m_registration->active())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Registration failed - no active Service Worker"));
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     WebSyncRegistration::NetworkState networkState;
@@ -94,7 +94,7 @@ ScriptPromise PeriodicSyncManager::getRegistration(ScriptState* scriptState, con
     if (!m_registration->active())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Operation failed - no active Service Worker"));
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     backgroundSyncProvider()->getRegistration(WebSyncRegistration::PeriodicityPeriodic, syncRegistrationTag, m_registration->webRegistration(), new SyncRegistrationCallbacks(resolver, m_registration));
@@ -107,7 +107,7 @@ ScriptPromise PeriodicSyncManager::getRegistrations(ScriptState* scriptState)
     if (!m_registration->active())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Operation failed - no active Service Worker"));
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     backgroundSyncProvider()->getRegistrations(WebSyncRegistration::PeriodicityPeriodic, m_registration->webRegistration(), new SyncGetRegistrationsCallbacks(resolver, m_registration));
@@ -120,7 +120,7 @@ ScriptPromise PeriodicSyncManager::permissionState(ScriptState* scriptState)
     if (!m_registration->active())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Operation failed - no active Service Worker"));
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     backgroundSyncProvider()->getPermissionStatus(WebSyncRegistration::PeriodicityPeriodic, m_registration->webRegistration(), new SyncGetPermissionStatusCallbacks(resolver, m_registration));

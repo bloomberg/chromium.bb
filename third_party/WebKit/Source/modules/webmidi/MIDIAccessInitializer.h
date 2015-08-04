@@ -40,7 +40,7 @@ public:
 
     static ScriptPromise start(ScriptState* scriptState, const MIDIOptions& options)
     {
-        RefPtrWillBeRawPtr<MIDIAccessInitializer> resolver = adoptRefWillBeNoop(new MIDIAccessInitializer(scriptState, options));
+        MIDIAccessInitializer* resolver = new MIDIAccessInitializer(scriptState, options);
         resolver->keepAliveWhilePending();
         resolver->suspendIfNeeded();
         return resolver->start();

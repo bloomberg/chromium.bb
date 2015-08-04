@@ -38,7 +38,7 @@ ScriptPromise BluetoothGATTRemoteServer::getPrimaryService(ScriptState* scriptSt
     if (exceptionState.hadException())
         return exceptionState.reject(scriptState);
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     webbluetooth->getPrimaryService(m_webGATT->deviceInstanceID, serviceUUID, new CallbackPromiseAdapter<BluetoothGATTService, BluetoothError>(resolver));
 

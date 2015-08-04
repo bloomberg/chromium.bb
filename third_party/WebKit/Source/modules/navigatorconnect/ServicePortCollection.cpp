@@ -26,7 +26,7 @@ namespace {
 
 class ConnectCallbacks : public WebServicePortConnectCallbacks {
 public:
-    ConnectCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, ServicePortCollection* collection, const KURL& targetUrl, const String& portName, const String& serializedPortData)
+    ConnectCallbacks(ScriptPromiseResolver* resolver, ServicePortCollection* collection, const KURL& targetUrl, const String& portName, const String& serializedPortData)
         : m_resolver(resolver), m_collection(collection), m_targetUrl(targetUrl), m_portName(portName), m_serializedPortData(serializedPortData)
     {
         ASSERT(m_resolver);
@@ -60,7 +60,7 @@ public:
     }
 
 private:
-    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+    Persistent<ScriptPromiseResolver> m_resolver;
     Persistent<ServicePortCollection> m_collection;
     KURL m_targetUrl;
     String m_portName;
@@ -103,7 +103,7 @@ ScriptPromise ServicePortCollection::connect(ScriptState* scriptState, const Str
         if (exceptionState.hadException())
             return exceptionState.reject(scriptState);
     }
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     KURL targetUrl = scriptState->executionContext()->completeURL(url);
     m_provider->connect(

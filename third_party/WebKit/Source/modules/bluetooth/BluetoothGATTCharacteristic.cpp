@@ -34,7 +34,7 @@ ScriptPromise BluetoothGATTCharacteristic::readValue(ScriptState* scriptState)
 {
     WebBluetooth* webbluetooth = BluetoothSupplement::from(scriptState);
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     webbluetooth->readValue(m_webCharacteristic->characteristicInstanceID, new CallbackPromiseAdapter<ConvertWebVectorToArrayBuffer, BluetoothError>(resolver));
 
@@ -55,7 +55,7 @@ ScriptPromise BluetoothGATTCharacteristic::writeValue(ScriptState* scriptState, 
     if (valueVector.size() > 512)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidModificationError, "Value can't exceed 512 bytes."));
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
 
     ScriptPromise promise = resolver->promise();
     webbluetooth->writeValue(m_webCharacteristic->characteristicInstanceID, valueVector, new CallbackPromiseAdapter<void, BluetoothError>(resolver));

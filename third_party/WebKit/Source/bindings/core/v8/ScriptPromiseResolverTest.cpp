@@ -80,7 +80,7 @@ TEST_F(ScriptPromiseResolverTest, construct)
 
 TEST_F(ScriptPromiseResolverTest, resolve)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = nullptr;
+    ScriptPromiseResolver* resolver = nullptr;
     ScriptPromise promise;
     {
         ScriptState::Scope scope(scriptState());
@@ -128,7 +128,7 @@ TEST_F(ScriptPromiseResolverTest, resolve)
 
 TEST_F(ScriptPromiseResolverTest, reject)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = nullptr;
+    ScriptPromiseResolver* resolver = nullptr;
     ScriptPromise promise;
     {
         ScriptState::Scope scope(scriptState());
@@ -176,7 +176,7 @@ TEST_F(ScriptPromiseResolverTest, reject)
 
 TEST_F(ScriptPromiseResolverTest, stop)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = nullptr;
+    ScriptPromiseResolver* resolver = nullptr;
     ScriptPromise promise;
     {
         ScriptState::Scope scope(scriptState());
@@ -204,74 +204,110 @@ TEST_F(ScriptPromiseResolverTest, stop)
     EXPECT_EQ(String(), onRejected);
 }
 
-#if !ENABLE(OILPAN)
+class ScriptPromiseResolverKeepAlive : public ScriptPromiseResolver {
+public:
+    static ScriptPromiseResolverKeepAlive* create(ScriptState* scriptState)
+    {
+        ScriptPromiseResolverKeepAlive* resolver = new ScriptPromiseResolverKeepAlive(scriptState);
+        resolver->suspendIfNeeded();
+        return resolver;
+    }
+
+    ~ScriptPromiseResolverKeepAlive() override
+    {
+        s_destructorCalls++;
+    }
+
+    static void reset() { s_destructorCalls = 0; }
+    static bool isAlive() { return !s_destructorCalls; }
+
+    static int s_destructorCalls;
+
+private:
+    explicit ScriptPromiseResolverKeepAlive(ScriptState* scriptState)
+        : ScriptPromiseResolver(scriptState)
+    {
+    }
+};
+
+int ScriptPromiseResolverKeepAlive::s_destructorCalls = 0;
+
 TEST_F(ScriptPromiseResolverTest, keepAliveUntilResolved)
 {
-    RefPtr<ScriptPromiseResolver> resolver;
+    ScriptPromiseResolverKeepAlive::reset();
+    ScriptPromiseResolver* resolver = nullptr;
     {
         ScriptState::Scope scope(scriptState());
-        resolver = ScriptPromiseResolver::create(scriptState());
+        resolver = ScriptPromiseResolverKeepAlive::create(scriptState());
     }
-    EXPECT_EQ(1, resolver->refCount());
     resolver->keepAliveWhilePending();
-    EXPECT_EQ(2, resolver->refCount());
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    ASSERT_TRUE(ScriptPromiseResolverKeepAlive::isAlive());
 
     resolver->resolve("hello");
-    EXPECT_EQ(1, resolver->refCount());
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    EXPECT_FALSE(ScriptPromiseResolverKeepAlive::isAlive());
 }
 
 TEST_F(ScriptPromiseResolverTest, keepAliveUntilRejected)
 {
-    RefPtr<ScriptPromiseResolver> resolver;
+    ScriptPromiseResolverKeepAlive::reset();
+    ScriptPromiseResolver* resolver = nullptr;
     {
         ScriptState::Scope scope(scriptState());
-        resolver = ScriptPromiseResolver::create(scriptState());
+        resolver = ScriptPromiseResolverKeepAlive::create(scriptState());
     }
-    EXPECT_EQ(1, resolver->refCount());
     resolver->keepAliveWhilePending();
-    EXPECT_EQ(2, resolver->refCount());
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    ASSERT_TRUE(ScriptPromiseResolverKeepAlive::isAlive());
 
     resolver->reject("hello");
-    EXPECT_EQ(1, resolver->refCount());
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    EXPECT_FALSE(ScriptPromiseResolverKeepAlive::isAlive());
 }
 
 TEST_F(ScriptPromiseResolverTest, keepAliveUntilStopped)
 {
-    RefPtr<ScriptPromiseResolver> resolver;
+    ScriptPromiseResolverKeepAlive::reset();
+    ScriptPromiseResolver* resolver = nullptr;
     {
         ScriptState::Scope scope(scriptState());
-        resolver = ScriptPromiseResolver::create(scriptState());
+        resolver = ScriptPromiseResolverKeepAlive::create(scriptState());
     }
-    EXPECT_EQ(1, resolver->refCount());
     resolver->keepAliveWhilePending();
-    EXPECT_EQ(2, resolver->refCount());
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    EXPECT_TRUE(ScriptPromiseResolverKeepAlive::isAlive());
 
     executionContext()->stopActiveDOMObjects();
-    EXPECT_EQ(1, resolver->refCount());
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    EXPECT_FALSE(ScriptPromiseResolverKeepAlive::isAlive());
 }
 
 TEST_F(ScriptPromiseResolverTest, suspend)
 {
-    RefPtr<ScriptPromiseResolver> resolver;
+    ScriptPromiseResolverKeepAlive::reset();
+    ScriptPromiseResolver* resolver = nullptr;
     {
         ScriptState::Scope scope(scriptState());
-        resolver = ScriptPromiseResolver::create(scriptState());
+        resolver = ScriptPromiseResolverKeepAlive::create(scriptState());
     }
-    EXPECT_EQ(1, resolver->refCount());
     resolver->keepAliveWhilePending();
-    EXPECT_EQ(2, resolver->refCount());
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    ASSERT_TRUE(ScriptPromiseResolverKeepAlive::isAlive());
+
     executionContext()->suspendActiveDOMObjects();
     resolver->resolve("hello");
-    EXPECT_EQ(3, resolver->refCount());
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    EXPECT_TRUE(ScriptPromiseResolverKeepAlive::isAlive());
 
     executionContext()->stopActiveDOMObjects();
-    EXPECT_EQ(1, resolver->refCount());
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    EXPECT_FALSE(ScriptPromiseResolverKeepAlive::isAlive());
 }
-#endif
 
 TEST_F(ScriptPromiseResolverTest, resolveVoid)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = nullptr;
+    ScriptPromiseResolver* resolver = nullptr;
     ScriptPromise promise;
     {
         ScriptState::Scope scope(scriptState());
@@ -295,7 +331,7 @@ TEST_F(ScriptPromiseResolverTest, resolveVoid)
 
 TEST_F(ScriptPromiseResolverTest, rejectVoid)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = nullptr;
+    ScriptPromiseResolver* resolver = nullptr;
     ScriptPromise promise;
     {
         ScriptState::Scope scope(scriptState());

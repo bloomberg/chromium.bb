@@ -77,7 +77,7 @@ ScriptPromise ServiceWorkerClients::matchAll(ScriptState* scriptState, const Cli
     if (!executionContext)
         return ScriptPromise();
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     WebServiceWorkerClientQueryOptions webOptions;
@@ -95,7 +95,7 @@ ScriptPromise ServiceWorkerClients::claim(ScriptState* scriptState)
     if (!executionContext)
         return ScriptPromise();
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     WebServiceWorkerClientsClaimCallbacks* callbacks = new CallbackPromiseAdapter<void, ServiceWorkerError>(resolver);
@@ -105,7 +105,7 @@ ScriptPromise ServiceWorkerClients::claim(ScriptState* scriptState)
 
 ScriptPromise ServiceWorkerClients::openWindow(ScriptState* scriptState, const String& url)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     ExecutionContext* context = scriptState->executionContext();
 

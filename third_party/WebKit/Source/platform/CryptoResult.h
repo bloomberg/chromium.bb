@@ -46,7 +46,7 @@ public:
 };
 
 // Receives notification of completion of the crypto operation.
-class CryptoResult : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<CryptoResult> {
+class CryptoResult : public GarbageCollectedFinalized<CryptoResult> {
 public:
     virtual ~CryptoResult() { }
 

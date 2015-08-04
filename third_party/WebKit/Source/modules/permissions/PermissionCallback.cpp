@@ -10,7 +10,7 @@
 
 namespace blink {
 
-PermissionCallback::PermissionCallback(PassRefPtr<ScriptPromiseResolver> resolver, WebPermissionType permissionType)
+PermissionCallback::PermissionCallback(ScriptPromiseResolver* resolver, WebPermissionType permissionType)
     : m_resolver(resolver)
     , m_permissionType(permissionType)
 {

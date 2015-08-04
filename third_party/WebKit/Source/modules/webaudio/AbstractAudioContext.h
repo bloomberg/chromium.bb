@@ -245,13 +245,13 @@ protected:
     virtual void didClose() {}
     void uninitialize();
 
-    RefPtrWillBeMember<ScriptPromiseResolver> m_offlineResolver;
+    Member<ScriptPromiseResolver> m_offlineResolver;
 
     // FIXME(dominicc): Move m_resumeResolvers to AudioContext, because only
     // it creates these Promises.
     // Vector of promises created by resume(). It takes time to handle them, so we collect all of
     // the promises here until they can be resolved or rejected.
-    WillBeHeapVector<RefPtrWillBeMember<ScriptPromiseResolver>> m_resumeResolvers;
+    HeapVector<Member<ScriptPromiseResolver>> m_resumeResolvers;
 private:
     void initialize();
 

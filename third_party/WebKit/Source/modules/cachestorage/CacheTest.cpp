@@ -54,7 +54,7 @@ public:
         }
 
         if (m_response) {
-            RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+            ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
             const ScriptPromise promise = resolver->promise();
             resolver->resolve(m_response);
             m_response = nullptr;

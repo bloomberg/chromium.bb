@@ -32,6 +32,7 @@
 #define WebMIDIPermissionRequest_h
 
 #include "../platform/WebCommon.h"
+#include "../platform/WebPrivatePtr.h"
 
 namespace blink {
 
@@ -46,7 +47,15 @@ class WebSecurityOrigin;
 class WebMIDIPermissionRequest {
 public:
     BLINK_EXPORT WebMIDIPermissionRequest(const WebMIDIPermissionRequest& other)
-        : m_initializer(other.m_initializer) { }
+    {
+        assign(other);
+    }
+
+    ~WebMIDIPermissionRequest()
+    {
+        reset();
+    }
+
     BLINK_EXPORT WebSecurityOrigin securityOrigin() const;
     BLINK_EXPORT void setIsAllowed(bool);
 
@@ -55,11 +64,14 @@ public:
 #if BLINK_IMPLEMENTATION
     explicit WebMIDIPermissionRequest(MIDIAccessInitializer*);
 
-    MIDIAccessInitializer* midiAccessInitializer() const { return m_initializer; }
+    MIDIAccessInitializer* midiAccessInitializer() const { return m_private.get(); }
 #endif
 
 private:
-    MIDIAccessInitializer* m_initializer;
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebMIDIPermissionRequest&);
+
+    WebPrivatePtr<MIDIAccessInitializer> m_private;
 };
 
 inline bool operator==(const WebMIDIPermissionRequest& a, const WebMIDIPermissionRequest& b)

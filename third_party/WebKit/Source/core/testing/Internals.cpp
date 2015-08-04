@@ -2256,7 +2256,7 @@ private:
 
 ScriptPromise Internals::createResolvedPromise(ScriptState* scriptState, ScriptValue value)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     resolver->resolve(value);
     return promise;
@@ -2264,7 +2264,7 @@ ScriptPromise Internals::createResolvedPromise(ScriptState* scriptState, ScriptV
 
 ScriptPromise Internals::createRejectedPromise(ScriptState* scriptState, ScriptValue value)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     resolver->reject(value);
     return promise;

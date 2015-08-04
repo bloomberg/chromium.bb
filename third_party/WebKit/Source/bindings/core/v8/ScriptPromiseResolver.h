@@ -26,15 +26,15 @@ namespace blink {
 //    ExecutionContext state. When the ExecutionContext is suspended,
 //    resolve or reject will be delayed. When it is stopped, resolve or reject
 //    will be ignored.
-class CORE_EXPORT ScriptPromiseResolver : public RefCountedWillBeRefCountedGarbageCollected<ScriptPromiseResolver>, public ActiveDOMObject {
+class CORE_EXPORT ScriptPromiseResolver : public GarbageCollectedFinalized<ScriptPromiseResolver>, public ActiveDOMObject {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScriptPromiseResolver);
     WTF_MAKE_NONCOPYABLE(ScriptPromiseResolver);
 public:
-    static PassRefPtrWillBeRawPtr<ScriptPromiseResolver> create(ScriptState* scriptState)
+    static ScriptPromiseResolver* create(ScriptState* scriptState)
     {
-        RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = adoptRefWillBeNoop(new ScriptPromiseResolver(scriptState));
+        ScriptPromiseResolver* resolver = new ScriptPromiseResolver(scriptState);
         resolver->suspendIfNeeded();
-        return resolver.release();
+        return resolver;
     }
 
 #if ENABLE(ASSERT)
@@ -108,10 +108,6 @@ private:
         Rejecting,
         ResolvedOrRejected,
     };
-    enum LifetimeMode {
-        Default,
-        KeepAliveWhilePending,
-    };
 
     template<typename T>
     void resolveOrReject(T value, ResolutionState newState)
@@ -120,16 +116,18 @@ private:
             return;
         ASSERT(newState == Resolving || newState == Rejecting);
         m_state = newState;
-        // Retain this object until it is actually resolved or rejected.
-        // |deref| will be called in |clear|.
-        ref();
 
         ScriptState::Scope scope(m_scriptState.get());
         m_value.set(
             m_scriptState->isolate(),
             toV8(value, m_scriptState->context()->Global(), m_scriptState->isolate()));
-        if (!executionContext()->activeDOMObjectsAreSuspended())
-            resolveOrRejectImmediately();
+
+        if (executionContext()->activeDOMObjectsAreSuspended()) {
+            // Retain this object until it is actually resolved or rejected.
+            keepAliveWhilePending();
+            return;
+        }
+        resolveOrRejectImmediately();
     }
 
     void resolveOrRejectImmediately();
@@ -138,10 +136,14 @@ private:
 
     ResolutionState m_state;
     const RefPtr<ScriptState> m_scriptState;
-    LifetimeMode m_mode;
     Timer<ScriptPromiseResolver> m_timer;
     Resolver m_resolver;
     ScopedPersistent<v8::Value> m_value;
+
+    // To support keepAliveWhilePending(), this object needs to keep itself
+    // alive while in that state.
+    SelfKeepAlive<ScriptPromiseResolver> m_keepAlive;
+
 #if ENABLE(ASSERT)
     // True if promise() is called.
     bool m_isPromiseCalled;

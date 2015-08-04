@@ -75,7 +75,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState, const RequestDe
         return exceptionState.reject(scriptState);
 
     // Subsequent steps are handled in the browser process.
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     webbluetooth->requestDevice(webOptions, new CallbackPromiseAdapter<BluetoothDevice, BluetoothError>(resolver));
     return promise;

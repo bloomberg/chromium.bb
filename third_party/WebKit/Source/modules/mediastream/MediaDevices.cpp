@@ -34,7 +34,7 @@ namespace {
 
 class PromiseSuccessCallback final : public NavigatorUserMediaSuccessCallback {
 public:
-    PromiseSuccessCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+    explicit PromiseSuccessCallback(ScriptPromiseResolver* resolver)
         : m_resolver(resolver)
     {
     }
@@ -55,12 +55,12 @@ public:
     }
 
 private:
-    RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
+    Member<ScriptPromiseResolver> m_resolver;
 };
 
 class PromiseErrorCallback final : public NavigatorUserMediaErrorCallback {
 public:
-    PromiseErrorCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+    explicit PromiseErrorCallback(ScriptPromiseResolver* resolver)
         : m_resolver(resolver)
     {
     }
@@ -81,14 +81,14 @@ public:
     }
 
 private:
-    RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
+    Member<ScriptPromiseResolver> m_resolver;
 };
 
 } // namespace
 
 ScriptPromise MediaDevices::getUserMedia(ScriptState* scriptState, const Dictionary& options, ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
 
     NavigatorUserMediaSuccessCallback* successCallback = new PromiseSuccessCallback(resolver);
     NavigatorUserMediaErrorCallback* errorCallback = new PromiseErrorCallback(resolver);

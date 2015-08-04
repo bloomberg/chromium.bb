@@ -37,7 +37,7 @@
 
 namespace blink {
 
-StorageQuotaCallbacksImpl::StorageQuotaCallbacksImpl(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+StorageQuotaCallbacksImpl::StorageQuotaCallbacksImpl(ScriptPromiseResolver* resolver)
     : m_resolver(resolver)
 {
 }

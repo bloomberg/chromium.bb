@@ -62,7 +62,7 @@ private:
     MediaDevicesRequest(ScriptState*, UserMediaController*);
 
     RawPtrWillBeMember<UserMediaController> m_controller;
-    RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
+    Member<ScriptPromiseResolver> m_resolver;
 };
 
 } // namespace blink

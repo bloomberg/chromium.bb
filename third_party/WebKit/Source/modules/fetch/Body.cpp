@@ -28,8 +28,8 @@ class BodyConsumerBase : public GarbageCollectedFinalized<BodyConsumerBase>, pub
     WTF_MAKE_NONCOPYABLE(BodyConsumerBase);
     USING_GARBAGE_COLLECTED_MIXIN(BodyConsumerBase);
 public:
-    explicit BodyConsumerBase(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver) : m_resolver(resolver) {}
-    PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver() { return m_resolver; }
+    explicit BodyConsumerBase(ScriptPromiseResolver* resolver) : m_resolver(resolver) {}
+    ScriptPromiseResolver* resolver() { return m_resolver; }
     void didFetchDataLoadFailed() override
     {
         ScriptState::Scope scope(resolver()->scriptState());
@@ -43,13 +43,13 @@ public:
     }
 
 private:
-    RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
+    Member<ScriptPromiseResolver> m_resolver;
 };
 
 class BodyBlobConsumer final : public BodyConsumerBase {
     WTF_MAKE_NONCOPYABLE(BodyBlobConsumer);
 public:
-    explicit BodyBlobConsumer(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver) : BodyConsumerBase(resolver) {}
+    explicit BodyBlobConsumer(ScriptPromiseResolver* resolver) : BodyConsumerBase(resolver) {}
 
     void didFetchDataLoadedBlobHandle(PassRefPtr<BlobDataHandle> blobDataHandle) override
     {
@@ -60,7 +60,7 @@ public:
 class BodyArrayBufferConsumer final : public BodyConsumerBase {
     WTF_MAKE_NONCOPYABLE(BodyArrayBufferConsumer);
 public:
-    explicit BodyArrayBufferConsumer(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver) : BodyConsumerBase(resolver) {}
+    explicit BodyArrayBufferConsumer(ScriptPromiseResolver* resolver) : BodyConsumerBase(resolver) {}
 
     void didFetchDataLoadedArrayBuffer(PassRefPtr<DOMArrayBuffer> arrayBuffer) override
     {
@@ -71,7 +71,7 @@ public:
 class BodyTextConsumer final : public BodyConsumerBase {
     WTF_MAKE_NONCOPYABLE(BodyTextConsumer);
 public:
-    explicit BodyTextConsumer(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver) : BodyConsumerBase(resolver) {}
+    explicit BodyTextConsumer(ScriptPromiseResolver* resolver) : BodyConsumerBase(resolver) {}
 
     void didFetchDataLoadedString(const String& string) override
     {
@@ -82,7 +82,7 @@ public:
 class BodyJsonConsumer final : public BodyConsumerBase {
     WTF_MAKE_NONCOPYABLE(BodyJsonConsumer);
 public:
-    explicit BodyJsonConsumer(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver) : BodyConsumerBase(resolver) {}
+    explicit BodyJsonConsumer(ScriptPromiseResolver* resolver) : BodyConsumerBase(resolver) {}
 
     void didFetchDataLoadedString(const String& string) override
     {
@@ -116,7 +116,7 @@ ScriptPromise Body::arrayBuffer(ScriptState* scriptState)
     if (!scriptState->executionContext())
         return ScriptPromise();
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     bodyBuffer()->startLoading(scriptState->executionContext(), FetchDataLoader::createLoaderAsArrayBuffer(), new BodyArrayBufferConsumer(resolver));
     return promise;
@@ -131,7 +131,7 @@ ScriptPromise Body::blob(ScriptState* scriptState)
     if (!scriptState->executionContext())
         return ScriptPromise();
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     bodyBuffer()->startLoading(scriptState->executionContext(), FetchDataLoader::createLoaderAsBlobHandle(mimeType()), new BodyBlobConsumer(resolver));
     return promise;
@@ -147,7 +147,7 @@ ScriptPromise Body::json(ScriptState* scriptState)
     if (!scriptState->executionContext())
         return ScriptPromise();
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     bodyBuffer()->startLoading(scriptState->executionContext(), FetchDataLoader::createLoaderAsString(), new BodyJsonConsumer(resolver));
     return promise;
@@ -162,7 +162,7 @@ ScriptPromise Body::text(ScriptState* scriptState)
     if (!scriptState->executionContext())
         return ScriptPromise();
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     bodyBuffer()->startLoading(scriptState->executionContext(), FetchDataLoader::createLoaderAsString(), new BodyTextConsumer(resolver));
     return promise;

@@ -11,7 +11,6 @@ ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* scriptState)
     : ActiveDOMObject(scriptState->executionContext())
     , m_state(Pending)
     , m_scriptState(scriptState)
-    , m_mode(Default)
     , m_timer(this, &ScriptPromiseResolver::onTimerFired)
     , m_resolver(scriptState)
 #if ENABLE(ASSERT)
@@ -43,13 +42,15 @@ void ScriptPromiseResolver::stop()
 
 void ScriptPromiseResolver::keepAliveWhilePending()
 {
-    if (m_state == ResolvedOrRejected || m_mode == KeepAliveWhilePending)
+    // keepAliveWhilePending() will be called twice if the resolver
+    // is created in a suspended execution context and the resolver
+    // is then resolved/rejected while in that suspended state.
+    if (m_state == ResolvedOrRejected || m_keepAlive)
         return;
 
-    // Keep |this| while the promise is Pending.
-    // deref() will be called in clear().
-    m_mode = KeepAliveWhilePending;
-    ref();
+    // Keep |this| around while the promise is Pending;
+    // see clear() for the dual operation.
+    m_keepAlive = this;
 }
 
 void ScriptPromiseResolver::onTimerFired(Timer<ScriptPromiseResolver>*)
@@ -83,21 +84,10 @@ void ScriptPromiseResolver::clear()
 {
     if (m_state == ResolvedOrRejected)
         return;
-    ResolutionState state = m_state;
     m_state = ResolvedOrRejected;
     m_resolver.clear();
     m_value.clear();
-    if (m_mode == KeepAliveWhilePending) {
-        // |ref| was called in |keepAliveWhilePending|.
-        deref();
-    }
-    // |this| may be deleted here, but it is safe to check |state| because
-    // it doesn't depend on |this|. When |this| is deleted, |state| can't be
-    // |Resolving| nor |Rejecting| and hence |this->deref()| can't be executed.
-    if (state == Resolving || state == Rejecting) {
-        // |ref| was called in |resolveOrReject|.
-        deref();
-    }
+    m_keepAlive.clear();
 }
 
 DEFINE_TRACE(ScriptPromiseResolver)

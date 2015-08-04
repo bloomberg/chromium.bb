@@ -40,7 +40,7 @@ ScriptPromise BluetoothGATTService::getCharacteristic(ScriptState* scriptState,
     if (exceptionState.hadException())
         return exceptionState.reject(scriptState);
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     webbluetooth->getCharacteristic(m_webService->serviceInstanceID, characteristicUUID, new CallbackPromiseAdapter<BluetoothGATTCharacteristic, BluetoothError>(resolver));
 

@@ -52,7 +52,7 @@ PassRefPtr<DOMArrayBuffer> PushSubscription::curve25519dh() const
 
 ScriptPromise PushSubscription::unsubscribe(ScriptState* scriptState)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     WebPushProvider* webPushProvider = Platform::current()->pushProvider();

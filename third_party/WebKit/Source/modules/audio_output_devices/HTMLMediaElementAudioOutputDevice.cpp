@@ -35,7 +35,7 @@ ScriptPromise HTMLMediaElementAudioOutputDevice::setSinkId(ScriptState* scriptSt
     if (!webMediaPlayer)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "No media player available"));
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     webMediaPlayer->setSinkId(sinkId, new SetSinkIdCallbacks(resolver, element, sinkId));
     return resolver->promise();
 }

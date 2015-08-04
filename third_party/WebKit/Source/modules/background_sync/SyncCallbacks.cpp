@@ -15,7 +15,7 @@
 
 namespace blink {
 
-SyncRegistrationCallbacks::SyncRegistrationCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, ServiceWorkerRegistration* serviceWorkerRegistration)
+SyncRegistrationCallbacks::SyncRegistrationCallbacks(ScriptPromiseResolver* resolver, ServiceWorkerRegistration* serviceWorkerRegistration)
     : m_resolver(resolver)
     , m_serviceWorkerRegistration(serviceWorkerRegistration)
 {
@@ -57,7 +57,7 @@ void SyncRegistrationCallbacks::onError(WebSyncError* error)
     m_resolver->reject(SyncError::take(m_resolver.get(), error));
 }
 
-SyncUnregistrationCallbacks::SyncUnregistrationCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, ServiceWorkerRegistration* serviceWorkerRegistration)
+SyncUnregistrationCallbacks::SyncUnregistrationCallbacks(ScriptPromiseResolver* resolver, ServiceWorkerRegistration* serviceWorkerRegistration)
     : m_resolver(resolver)
     , m_serviceWorkerRegistration(serviceWorkerRegistration)
 {
@@ -88,7 +88,7 @@ void SyncUnregistrationCallbacks::onError(WebSyncError* error)
     m_resolver->reject(SyncError::take(m_resolver.get(), error));
 }
 
-SyncGetRegistrationsCallbacks::SyncGetRegistrationsCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, ServiceWorkerRegistration* serviceWorkerRegistration)
+SyncGetRegistrationsCallbacks::SyncGetRegistrationsCallbacks(ScriptPromiseResolver* resolver, ServiceWorkerRegistration* serviceWorkerRegistration)
     : m_resolver(resolver)
     , m_serviceWorkerRegistration(serviceWorkerRegistration)
 {
@@ -146,7 +146,7 @@ void SyncGetRegistrationsCallbacks::onError(WebSyncError* error)
     m_resolver->reject(SyncError::take(m_resolver.get(), error));
 }
 
-SyncGetPermissionStatusCallbacks::SyncGetPermissionStatusCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, ServiceWorkerRegistration* serviceWorkerRegistration)
+SyncGetPermissionStatusCallbacks::SyncGetPermissionStatusCallbacks(ScriptPromiseResolver* resolver, ServiceWorkerRegistration* serviceWorkerRegistration)
     : m_resolver(resolver)
     , m_serviceWorkerRegistration(serviceWorkerRegistration)
 {

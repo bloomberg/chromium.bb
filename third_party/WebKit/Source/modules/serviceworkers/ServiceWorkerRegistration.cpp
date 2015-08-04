@@ -88,7 +88,7 @@ String ServiceWorkerRegistration::scope() const
 
 ScriptPromise ServiceWorkerRegistration::update(ScriptState* scriptState)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     if (!m_provider) {
@@ -102,7 +102,7 @@ ScriptPromise ServiceWorkerRegistration::update(ScriptState* scriptState)
 
 ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* scriptState)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     if (!m_provider) {

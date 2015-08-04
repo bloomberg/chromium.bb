@@ -52,7 +52,7 @@ ScriptPromise ReadableStreamReader::cancel(ScriptState* scriptState, ScriptValue
         return m_stream->cancelInternal(scriptState, reason);
 
     // A method should return a different promise on each call.
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     resolver->resolve(closed(scriptState).v8Value());
     return promise;
@@ -67,7 +67,7 @@ ScriptPromise ReadableStreamReader::read(ScriptState* scriptState)
             return ScriptPromise::cast(scriptState, v8IteratorResultDone(scriptState));
         }
         // A method should return a different promise on each call.
-        RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+        ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
         ScriptPromise promise = resolver->promise();
         resolver->resolve(closed(scriptState).v8Value());
         return promise;

@@ -95,7 +95,7 @@ public:
     BLINK_PLATFORM_EXPORT bool cancelled() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebCryptoResult(const PassRefPtrWillBeRawPtr<CryptoResult>&, const PassRefPtr<CryptoResultCancel>&);
+    BLINK_PLATFORM_EXPORT WebCryptoResult(CryptoResult*, const PassRefPtr<CryptoResultCancel>&);
 #endif
 
 private:

@@ -40,7 +40,7 @@ namespace blink {
 class FetchManager::Loader final : public NoBaseWillBeGarbageCollectedFinalized<FetchManager::Loader>, public ThreadableLoaderClient, public ContextLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FetchManager::Loader);
 public:
-    static PassOwnPtrWillBeRawPtr<Loader> create(ExecutionContext* executionContext, FetchManager* fetchManager, PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, FetchRequestData* request)
+    static PassOwnPtrWillBeRawPtr<Loader> create(ExecutionContext* executionContext, FetchManager* fetchManager, ScriptPromiseResolver* resolver, FetchRequestData* request)
     {
         return adoptPtrWillBeNoop(new Loader(executionContext, fetchManager, resolver, request));
     }
@@ -58,7 +58,7 @@ public:
     void dispose();
 
 private:
-    Loader(ExecutionContext*, FetchManager*, PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, FetchRequestData*);
+    Loader(ExecutionContext*, FetchManager*, ScriptPromiseResolver*, FetchRequestData*);
 
     void performBasicFetch();
     void performNetworkError(const String& message);
@@ -68,7 +68,7 @@ private:
     Document* document() const;
 
     RawPtrWillBeMember<FetchManager> m_fetchManager;
-    RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
+    PersistentWillBeMember<ScriptPromiseResolver> m_resolver;
     PersistentWillBeMember<FetchRequestData> m_request;
     RefPtr<ThreadableLoader> m_loader;
     bool m_failed;
@@ -76,7 +76,7 @@ private:
     int m_responseHttpStatusCode;
 };
 
-FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, FetchRequestData* request)
+FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, ScriptPromiseResolver* resolver, FetchRequestData* request)
     : ContextLifecycleObserver(executionContext)
     , m_fetchManager(fetchManager)
     , m_resolver(resolver)
@@ -428,12 +428,12 @@ FetchManager::~FetchManager()
 
 ScriptPromise FetchManager::fetch(ScriptState* scriptState, FetchRequestData* request)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     request->setContext(WebURLRequest::RequestContextFetch);
 
-    OwnPtrWillBeRawPtr<Loader> ownLoader = Loader::create(m_executionContext, this, resolver.release(), request);
+    OwnPtrWillBeRawPtr<Loader> ownLoader = Loader::create(m_executionContext, this, resolver, request);
     Loader* loader = m_loaders.add(ownLoader.release()).storedValue->get();
     loader->start();
     return promise;

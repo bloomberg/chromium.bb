@@ -55,7 +55,7 @@ ScriptPromise SyncRegistration::unregister(ScriptState* scriptState)
     if (m_id == WebSyncRegistration::UNREGISTERED_SYNC_ID)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Operation failed - not a valid registration object"));
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     WebSyncProvider* webSyncProvider = Platform::current()->backgroundSyncProvider();

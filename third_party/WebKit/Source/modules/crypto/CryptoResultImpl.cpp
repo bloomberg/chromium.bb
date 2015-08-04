@@ -64,12 +64,13 @@ static void rejectWithTypeError(const String& errorDetails, ScriptPromiseResolve
 
 class CryptoResultImpl::Resolver final : public ScriptPromiseResolver {
 public:
-    static PassRefPtrWillBeRawPtr<Resolver> create(ScriptState* scriptState, CryptoResultImpl* result)
+    static Resolver* create(ScriptState* scriptState, CryptoResultImpl* result)
     {
-        RefPtrWillBeRawPtr<Resolver> resolver = adoptRefWillBeNoop(new Resolver(scriptState, result));
+        ASSERT(scriptState->contextIsValid());
+        Resolver* resolver = new Resolver(scriptState, result);
         resolver->suspendIfNeeded();
         resolver->keepAliveWhilePending();
-        return resolver.release();
+        return resolver;
     }
 
     void stop() override
@@ -90,7 +91,7 @@ private:
         : ScriptPromiseResolver(scriptState)
         , m_result(result) { }
 
-    RefPtrWillBeMember<CryptoResultImpl> m_result;
+    Member<CryptoResultImpl> m_result;
 };
 
 CryptoResultImpl::ResultCancel::ResultCancel()
@@ -130,17 +131,12 @@ ExceptionCode webCryptoErrorToExceptionCode(WebCryptoErrorType errorType)
 }
 
 CryptoResultImpl::CryptoResultImpl(ScriptState* scriptState)
-    : m_cancel(ResultCancel::create())
+    : m_resolver(Resolver::create(scriptState, this))
+    , m_cancel(ResultCancel::create())
 {
-    ASSERT(scriptState->contextIsValid());
-    if (scriptState->executionContext()->activeDOMObjectsAreStopped()) {
-        // If active dom objects have been stopped, avoid creating
-        // CryptoResultImpl::Resolver.
-        m_resolver = nullptr;
+    // Sync cancellation state.
+    if (scriptState->executionContext()->activeDOMObjectsAreStopped())
         m_cancel->cancel();
-        return;
-    }
-    m_resolver = Resolver::create(scriptState, this).get();
 }
 
 CryptoResultImpl::~CryptoResultImpl()
@@ -159,9 +155,9 @@ void CryptoResultImpl::clearResolver()
     m_resolver = nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CryptoResultImpl> CryptoResultImpl::create(ScriptState* scriptState)
+CryptoResultImpl* CryptoResultImpl::create(ScriptState* scriptState)
 {
-    return adoptRefWillBeNoop(new CryptoResultImpl(scriptState));
+    return new CryptoResultImpl(scriptState);
 }
 
 void CryptoResultImpl::completeWithError(WebCryptoErrorType errorType, const WebString& errorDetails)
