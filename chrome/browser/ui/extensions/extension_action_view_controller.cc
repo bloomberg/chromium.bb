@@ -162,7 +162,7 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu() {
   if (toolbar_actions_bar_) {
     if (toolbar_actions_bar_->popped_out_action() == this)
       visibility = ExtensionContextMenuModel::TRANSITIVELY_VISIBLE;
-    else if (!toolbar_actions_bar_->IsActionVisible(this))
+    else if (!toolbar_actions_bar_->IsActionVisibleOnMainBar(this))
       visibility = ExtensionContextMenuModel::OVERFLOWED;
     // Else, VISIBLE is correct.
   }
@@ -319,7 +319,7 @@ bool ExtensionActionViewController::TriggerPopupWithUrl(
     toolbar_actions_bar_->SetPopupOwner(this);
 
   if (toolbar_actions_bar_ &&
-      !toolbar_actions_bar_->IsActionVisible(this) &&
+      !toolbar_actions_bar_->IsActionVisibleOnMainBar(this) &&
       extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
     platform_delegate_->CloseOverflowMenu();
     toolbar_actions_bar_->PopOutAction(

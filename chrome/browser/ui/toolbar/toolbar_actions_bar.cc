@@ -455,8 +455,11 @@ void ToolbarActionsBar::OnAnimationEnded() {
   }
 }
 
-bool ToolbarActionsBar::IsActionVisible(
+bool ToolbarActionsBar::IsActionVisibleOnMainBar(
     const ToolbarActionViewController* action) const {
+  if (in_overflow_mode())
+    return main_bar_->IsActionVisibleOnMainBar(action);
+
   size_t index = std::find(toolbar_actions_.begin(),
                            toolbar_actions_.end(),
                            action) - toolbar_actions_.begin();
@@ -465,8 +468,9 @@ bool ToolbarActionsBar::IsActionVisible(
 
 void ToolbarActionsBar::PopOutAction(ToolbarActionViewController* controller,
                                      const base::Closure& closure) {
+  DCHECK(!in_overflow_mode()) << "Only the main bar can pop out actions.";
   DCHECK(!popped_out_action_) << "Only one action can be popped out at a time!";
-  bool needs_redraw = !IsActionVisible(controller);
+  bool needs_redraw = !IsActionVisibleOnMainBar(controller);
   popped_out_action_ = controller;
   if (needs_redraw) {
     // We suppress animation for this draw, because we need the action to get
@@ -485,11 +489,12 @@ void ToolbarActionsBar::PopOutAction(ToolbarActionViewController* controller,
 }
 
 void ToolbarActionsBar::UndoPopOut() {
+  DCHECK(!in_overflow_mode()) << "Only the main bar can pop out actions.";
   DCHECK(popped_out_action_);
   ToolbarActionViewController* controller = popped_out_action_;
   popped_out_action_ = nullptr;
   popped_out_closure_.Reset();
-  if (!IsActionVisible(controller))
+  if (!IsActionVisibleOnMainBar(controller))
     delegate_->Redraw(true);
   ResizeDelegate(gfx::Tween::LINEAR, false);
 }

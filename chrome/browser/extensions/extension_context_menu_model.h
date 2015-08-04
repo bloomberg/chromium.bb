@@ -100,7 +100,7 @@ class ExtensionContextMenuModel
   ~ExtensionContextMenuModel() override;
 
   void InitMenu(const extensions::Extension* extension,
-                ButtonVisibility button_visibility_);
+                ButtonVisibility button_visibility);
 
   // Gets the extension we are displaying the menu for. Returns NULL if the
   // extension has been uninstalled and no longer exists.

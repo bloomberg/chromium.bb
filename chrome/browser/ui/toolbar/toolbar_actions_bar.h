@@ -137,8 +137,9 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   // Notifies the ToolbarActionsBar that the delegate finished animating.
   void OnAnimationEnded();
 
-  // Returns true if the given |action| is visible.
-  bool IsActionVisible(const ToolbarActionViewController* action) const;
+  // Returns true if the given |action| is visible on the main toolbar.
+  bool IsActionVisibleOnMainBar(const ToolbarActionViewController* action)
+      const;
 
   // Pops out a given |action|, ensuring it is visible.
   // |closure| will be called once any animation is complete.
