@@ -320,6 +320,7 @@ if (!is_mac) {
       ":web_ui_test_mojo_bindings",
       "//base/allocator",
       "//base/test:test_support",
+      "//content/browser/background_sync:background_sync_proto",
       "//content/common:mojo_bindings",
       "//content/gpu",
       "//content/public/common",

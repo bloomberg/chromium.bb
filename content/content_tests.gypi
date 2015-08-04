@@ -190,6 +190,7 @@
       'browser/accessibility/dump_accessibility_tree_browsertest.cc',
       'browser/accessibility/site_per_process_accessibility_browsertest.cc',
       'browser/accessibility/snapshot_ax_tree_browsertest.cc',
+      'browser/background_sync/background_sync_browsertest.cc',
       'browser/battery_status/battery_monitor_impl_browsertest.cc',
       'browser/battery_status/battery_monitor_integration_browsertest.cc',
       'browser/bookmarklet_browsertest.cc',
@@ -1380,6 +1381,7 @@
           'target_name': 'content_browsertests',
           'type': '<(gtest_target_type)',
           'dependencies': [
+            'browser/background_sync/background_sync_proto.gyp:background_sync_proto',
             'content.gyp:content_common',
             'content.gyp:content_gpu',
             'content.gyp:content_plugin',

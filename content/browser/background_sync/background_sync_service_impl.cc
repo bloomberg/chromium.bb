@@ -99,7 +99,9 @@ void BackgroundSyncServiceImpl::Create(
 }
 
 BackgroundSyncServiceImpl::~BackgroundSyncServiceImpl() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Should always be destroyed on the IO thread, but can't check that with
+  // DCHECK_CURRENTLY_ON because this class could be destroyed during thread
+  // shutdown, at which point that check doesn't work.
 }
 
 // static
