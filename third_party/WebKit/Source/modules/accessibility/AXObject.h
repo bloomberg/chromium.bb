@@ -48,12 +48,11 @@ class AXObjectCacheImpl;
 class Element;
 class FrameView;
 class IntPoint;
+class NameSource;
 class Node;
 class LayoutObject;
 class ScrollableArea;
 class Widget;
-
-struct NameSource;
 
 typedef unsigned AXID;
 
@@ -376,7 +375,9 @@ public:
     }
 };
 
-struct NameSource {
+class NameSource {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
     String text;
     bool superseded = false;
     bool invalid = false;
@@ -395,6 +396,11 @@ struct NameSource {
         : superseded(superseded)
         , attribute(QualifiedName::null())
     {
+    }
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(nameObjects);
     }
 };
 
@@ -616,7 +622,7 @@ public:
     // was derived from, and a list of objects that were used to derive the name, if any.
     virtual String name(AXNameFrom&, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects);
 
-    typedef Vector<NameSource> NameSources;
+    typedef WillBeHeapVector<NameSource> NameSources;
     // Retrieves the accessible name of the object and a list of all potential sources
     // for the name, indicating which were used.
     virtual String name(NameSources*);
@@ -899,5 +905,6 @@ private:
 } // namespace blink
 
 WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::IgnoredReason);
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::NameSource);
 
 #endif // AXObject_h
