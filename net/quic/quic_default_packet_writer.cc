@@ -16,11 +16,8 @@ namespace net {
 QuicDefaultPacketWriter::QuicDefaultPacketWriter() : weak_factory_(this) {
 }
 
-QuicDefaultPacketWriter::QuicDefaultPacketWriter(DatagramClientSocket* socket)
-    : socket_(socket),
-      write_blocked_(false),
-      weak_factory_(this) {
-}
+QuicDefaultPacketWriter::QuicDefaultPacketWriter(Socket* socket)
+    : socket_(socket), write_blocked_(false), weak_factory_(this) {}
 
 QuicDefaultPacketWriter::~QuicDefaultPacketWriter() {}
 

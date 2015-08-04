@@ -17,12 +17,11 @@ namespace net {
 
 struct WriteResult;
 
-// Chrome specific packet writer which uses a DatagramClientSocket for writing
-// data.
+// Chrome specific packet writer which uses a datagram Socket for writing data.
 class NET_EXPORT_PRIVATE QuicDefaultPacketWriter : public QuicPacketWriter {
  public:
   QuicDefaultPacketWriter();
-  explicit QuicDefaultPacketWriter(DatagramClientSocket* socket);
+  explicit QuicDefaultPacketWriter(Socket* socket);
   ~QuicDefaultPacketWriter() override;
 
   // QuicPacketWriter
@@ -45,7 +44,7 @@ class NET_EXPORT_PRIVATE QuicDefaultPacketWriter : public QuicPacketWriter {
   }
 
  private:
-  DatagramClientSocket* socket_;
+  Socket* socket_;
   QuicConnection* connection_;
 
   // Whether a write is currently in flight.
