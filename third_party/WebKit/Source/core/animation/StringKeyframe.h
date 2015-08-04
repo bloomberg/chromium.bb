@@ -61,6 +61,7 @@ public:
         virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> cloneWithOffset(double offset) const;
         bool isCSSPropertySpecificKeyframe() const override { return true; }
 
+        PassRefPtrWillBeRawPtr<Interpolation> createLegacyStyleInterpolation(CSSPropertyID, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle* baseStyle) const;
         static bool createInterpolationsFromCSSValues(CSSPropertyID, CSSValue* fromCSSValue, CSSValue* toCSSValue, Element*, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>& interpolations);
 
         void populateAnimatableValueCaches(CSSPropertyID, Keyframe::PropertySpecificKeyframe&, Element*, CSSValue& fromCSSValue, CSSValue& toCSSValue) const;

@@ -58,7 +58,8 @@
 
   var cssAnimationsInterpolation = {
     name: 'CSS Animations',
-    supports: function() {return true;},
+    supportsProperty: function() {return true;},
+    supportsValue: function() {return true;},
     setup: function() {},
     nonInterpolationExpectations: function(from, to) {
       return expectFlip(from, to, 0.5);
@@ -82,7 +83,8 @@
 
   var cssTransitionsInterpolation = {
     name: 'CSS Transitions',
-    supports: function() {return true;},
+    supportsProperty: function() {return true;},
+    supportsValue: function() {return true;},
     setup: function(property, from, target) {
       target.style[property] = from;
     },
@@ -100,7 +102,8 @@
 
   var webAnimationsInterpolation = {
     name: 'Web Animations',
-    supports: function(property) {return property.indexOf('-webkit-') != 0;},
+    supportsProperty: function(property) {return property.indexOf('-webkit-') !== 0;},
+    supportsValue: function(value) {return value !== '';},
     setup: function() {},
     nonInterpolationExpectations: function(from, to) {
       return expectFlip(from, to, 0.5);
@@ -170,6 +173,7 @@
     }
     var target = targetContainer.querySelector('.target') || targetContainer;
     target.classList.add('target');
+    target.parentElement.classList.add('parent');
     targetContainer.target = target;
     return targetContainer;
   }
@@ -213,8 +217,12 @@
   }
 
   function assertInterpolation(options, expectations) {
-    console.assert(CSS.supports(options.property, options.from));
-    console.assert(CSS.supports(options.property, options.to));
+    if (options.from) {
+      console.assert(CSS.supports(options.property, options.from));
+    }
+    if (options.to) {
+      console.assert(CSS.supports(options.property, options.to));
+    }
     interpolationTests.push({
       options: options,
       expectations: expectations,
@@ -227,14 +235,14 @@
       var methodContainer = createElement(container);
       interpolationTests.forEach(function(interpolationTest) {
         var property = interpolationTest.options.property;
-        if (!interpolationMethod.supports(property)) {
-          return;
-        }
-        if (interpolationTest.options.method && interpolationTest.options.method != interpolationMethod.name) {
-          return;
-        }
         var from = interpolationTest.options.from;
         var to = interpolationTest.options.to;
+        if ((interpolationTest.options.method && interpolationTest.options.method != interpolationMethod.name)
+          || !interpolationMethod.supportsProperty(property)
+          || !interpolationMethod.supportsValue(from)
+          || !interpolationMethod.supportsValue(to)) {
+          return;
+        }
         var testText = interpolationMethod.name + ': property <' + property + '> from [' + from + '] to [' + to + ']';
         var testContainer = createElement(methodContainer, 'div', testText);
         createElement(testContainer, 'br');

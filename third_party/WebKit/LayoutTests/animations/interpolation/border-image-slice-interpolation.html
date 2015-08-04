@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.parent {
+  border-image-slice: 50%;
+}
 .target {
   width: 50px;
   height: 50px;
@@ -8,6 +11,7 @@
   display: inline-block;
   border: 25px;
   border-image-source: linear-gradient(45deg, red, blue, green);
+  border-image-slice: 20%;
 }
 .expected {
   background-color: green;
@@ -17,6 +21,62 @@
 <body>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'border-image-slice',
+  from: '',
+  to: '10%',
+}, [
+  {at: -0.3, is: '23%'},
+  {at: 0, is: '20%'},
+  {at: 0.3, is: '17%'},
+  {at: 0.5, is: '15%'},
+  {at: 0.6, is: '14%'},
+  {at: 1, is: '10%'},
+  {at: 1.5, is: '5%'},
+]);
+
+assertInterpolation({
+  property: 'border-image-slice',
+  from: 'initial',
+  to: '10%',
+}, [
+  {at: -0.3, is: '127%'},
+  {at: 0, is: '100%'},
+  {at: 0.3, is: '73%'},
+  {at: 0.5, is: '55%'},
+  {at: 0.6, is: '46%'},
+  {at: 1, is: '10%'},
+  {at: 1.5, is: '0%'},
+]);
+
+assertInterpolation({
+  property: 'border-image-slice',
+  from: 'inherit',
+  to: '10%',
+}, [
+  {at: -0.3, is: '62%'},
+  {at: 0, is: '50%'},
+  {at: 0.3, is: '38%'},
+  {at: 0.5, is: '30%'},
+  {at: 0.6, is: '26%'},
+  {at: 1, is: '10%'},
+  {at: 1.5, is: '0%'},
+]);
+
+assertInterpolation({
+  property: 'border-image-slice',
+  from: 'unset',
+  to: '10%',
+}, [
+  {at: -0.3, is: '127%'},
+  {at: 0, is: '100%'},
+  {at: 0.3, is: '73%'},
+  {at: 0.5, is: '55%'},
+  {at: 0.6, is: '46%'},
+  {at: 1, is: '10%'},
+  {at: 1.5, is: '0%'},
+]);
+
 assertInterpolation({
   property: 'border-image-slice',
   from: '0%',

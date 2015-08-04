@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.parent {
+  border-image-source: url(../resources/blue-100.png);
+}
 .target {
   width: 50px;
   height: 50px;
   background-color: black;
   display: inline-block;
   border: 25px;
+  border-image-source: url(../resources/stripes-100.png);
 }
 .expected {
   background-color: green;
@@ -16,59 +20,74 @@
 <body>
 <script src="resources/interpolation-test.js"></script>
 <script>
-// None to image
-var from = 'none';
-var to = 'url(../resources/stripes-100.png)';
+function assertCrossfadeInterpolation(options) {
+  var fromComputed = options.fromComputed || options.from;
+  assertInterpolation({
+    property: 'border-image-source',
+    from: options.from,
+    to: options.to,
+  }, [
+    {at: -0.3, is: fromComputed},
+    {at: 0, is: fromComputed},
+    {at: 0.3, is: '-webkit-cross-fade(' + fromComputed + ', ' + options.to + ', 0.3)'},
+    {at: 0.5, is: '-webkit-cross-fade(' + fromComputed + ', ' + options.to + ', 0.5)'},
+    {at: 0.6, is: '-webkit-cross-fade(' + fromComputed + ', ' + options.to + ', 0.6)'},
+    {at: 1, is: options.to},
+    {at: 1.5, is: options.to},
+  ]);
+}
+
+// neutral
+assertCrossfadeInterpolation({
+  from: '',
+  fromComputed: 'url(../resources/stripes-100.png)',
+  to: 'url(../resources/green-100.png)',
+});
+
+// initial
 assertNoInterpolation({
   property: 'border-image-source',
-  from: from,
-  to: to
+  from: 'initial',
+  to: 'url(../resources/green-100.png)',
+});
+
+// inherit
+assertCrossfadeInterpolation({
+  from: 'inherit',
+  fromComputed: 'url(../resources/blue-100.png)',
+  to: 'url(../resources/green-100.png)',
+});
+
+// unset
+assertNoInterpolation({
+  property: 'border-image-source',
+  from: 'unset',
+  to: 'url(../resources/stripes-100.png)',
+});
+
+// None to image
+assertNoInterpolation({
+  property: 'border-image-source',
+  from: 'none',
+  to: 'url(../resources/stripes-100.png)',
 });
 
 // Image to image
-from = 'url(../resources/green-100.png)';
-to = 'url(../resources/stripes-100.png)';
-assertInterpolation({
-  property: 'border-image-source',
-  from: from,
-  to: to
-}, [
-  {at: -0.3, is: from},
-  {at: 0, is: from},
-  {at: 0.3, is: '-webkit-cross-fade(' + from + ', ' + to + ', 0.3)'},
-  {at: 0.6, is: '-webkit-cross-fade(' + from + ', ' + to + ', 0.6)'},
-  {at: 1, is: to},
-  {at: 1.5, is: to},
-]);
+assertCrossfadeInterpolation({
+  from: 'url(../resources/green-100.png)',
+  to: 'url(../resources/stripes-100.png)',
+});
 
 // Image to gradient
-to = 'linear-gradient(45deg, blue, orange)';
-assertInterpolation({
-  property: 'border-image-source',
-  from: from,
-  to: to
-}, [
-  {at: -0.3, is: from},
-  {at: 0, is: from},
-  {at: 0.3, is: '-webkit-cross-fade(' + from + ', ' + to + ', 0.3)'},
-  {at: 0.6, is: '-webkit-cross-fade(' + from + ', ' + to + ', 0.6)'},
-  {at: 1, is: to},
-  {at: 1.5, is: to},
-]);
+assertCrossfadeInterpolation({
+  from: 'url(../resources/green-100.png)',
+  to: 'linear-gradient(45deg, blue, orange)',
+});
 
 // Gradient to gradient
-from = 'linear-gradient(-45deg, red, yellow)';
-assertInterpolation({
-  property: 'border-image-source',
-  from: from,
-  to: to
-}, [
-  {at: -0.3, is: from},
-  {at: 0, is: from},
-  {at: 0.3, is: '-webkit-cross-fade(' + from + ', ' + to + ', 0.3)'},
-  {at: 0.6, is: '-webkit-cross-fade(' + from + ', ' + to + ', 0.6)'},
-  {at: 1, is: to},
-  {at: 1.5, is: to},
-]);
+assertCrossfadeInterpolation({
+  from: 'linear-gradient(-45deg, red, yellow)',
+  to: 'linear-gradient(45deg, blue, orange)',
+});
 </script>
 </body>
