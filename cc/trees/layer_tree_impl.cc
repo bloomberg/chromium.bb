@@ -58,6 +58,7 @@ LayerTreeImpl::LayerTreeImpl(
       page_scale_factor_(page_scale_factor),
       min_page_scale_factor_(0),
       max_page_scale_factor_(0),
+      hide_pinch_scrollbars_near_min_scale_(false),
       elastic_overscroll_(elastic_overscroll),
       viewport_size_invalid_(false),
       needs_update_draw_properties_(true),
@@ -229,6 +230,9 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
       top_controls_shrink_blink_size_);
   target_tree->set_top_controls_height(top_controls_height_);
   target_tree->PushTopControls(nullptr);
+
+  target_tree->set_hide_pinch_scrollbars_near_min_scale(
+      hide_pinch_scrollbars_near_min_scale_);
 
   // Active tree already shares the page_scale_factor object with pending
   // tree so only the limits need to be provided.
@@ -465,11 +469,10 @@ void LayerTreeImpl::DidUpdatePageScale() {
   }
 
   ForceScrollbarParameterUpdateAfterScaleChange(PageScaleLayer());
-
-  HideInnerViewportScrollbarsIfNearMinimumScale();
+  HideInnerViewportScrollbarsIfNeeded();
 }
 
-void LayerTreeImpl::HideInnerViewportScrollbarsIfNearMinimumScale() {
+void LayerTreeImpl::HideInnerViewportScrollbarsIfNeeded() {
   if (!InnerViewportContainerLayer())
     return;
 
@@ -479,15 +482,14 @@ void LayerTreeImpl::HideInnerViewportScrollbarsIfNearMinimumScale() {
   if (!scrollbars)
     return;
 
+  float minimum_scale_to_show_at = min_page_scale_factor() * 1.05f;
+  bool hide_scrollbars =
+      hide_pinch_scrollbars_near_min_scale_ &&
+      (current_page_scale_factor() < minimum_scale_to_show_at);
+
   for (LayerImpl::ScrollbarSet::iterator it = scrollbars->begin();
-       it != scrollbars->end();
-       ++it) {
-    ScrollbarLayerImplBase* scrollbar = *it;
-    float minimum_scale_to_show_at =
-        min_page_scale_factor() * settings().scrollbar_show_scale_threshold;
-    scrollbar->SetHideLayerAndSubtree(
-        current_page_scale_factor() < minimum_scale_to_show_at);
-  }
+       it != scrollbars->end(); ++it)
+    (*it)->SetHideLayerAndSubtree(hide_scrollbars);
 }
 
 SyncedProperty<ScaleGroup>* LayerTreeImpl::page_scale_factor() {
@@ -543,7 +545,7 @@ void LayerTreeImpl::SetViewportLayersFromIds(
   inner_viewport_scroll_layer_id_ = inner_viewport_scroll_layer_id;
   outer_viewport_scroll_layer_id_ = outer_viewport_scroll_layer_id;
 
-  HideInnerViewportScrollbarsIfNearMinimumScale();
+  HideInnerViewportScrollbarsIfNeeded();
 }
 
 void LayerTreeImpl::ClearViewportLayers() {

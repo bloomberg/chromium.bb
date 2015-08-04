@@ -211,6 +211,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void SetTopControlsHeight(float height, bool shrink);
   void SetTopControlsShownRatio(float ratio);
 
+  void set_hide_pinch_scrollbars_near_min_scale(bool hide) {
+    hide_pinch_scrollbars_near_min_scale_ = hide;
+  }
+
   gfx::Size device_viewport_size() const { return device_viewport_size_; }
 
   void ApplyPageScaleDeltaFromImplSide(float page_scale_delta);
@@ -443,6 +447,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool top_controls_shrink_blink_size_;
   float top_controls_height_;
   float top_controls_shown_ratio_;
+  bool hide_pinch_scrollbars_near_min_scale_;
   float device_scale_factor_;
 
   bool visible_;

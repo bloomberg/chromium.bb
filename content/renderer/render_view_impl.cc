@@ -1186,6 +1186,13 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setDoubleTapToZoomEnabled(true);
   web_view->setMaximumLegibleScale(prefs.default_maximum_page_scale_factor);
 #endif
+
+#if !defined(OS_ANDROID) && !defined(OS_MACOSX)
+  // On platforms where the pinch viewport and the layout viewport can
+  // both show scrollbars, hide pinch scrollbars when we are near minimum
+  // page scale. (See http://crbug.com/446411 and http://crbug.com/515746.)
+  settings->setHidePinchScrollbarsNearMinScale(true);
+#endif
 }
 
 /*static*/

@@ -101,6 +101,7 @@ LayerTreeHost::LayerTreeHost(InitParams* params)
       top_controls_shrink_blink_size_(false),
       top_controls_height_(0.f),
       top_controls_shown_ratio_(0.f),
+      hide_pinch_scrollbars_near_min_scale_(false),
       device_scale_factor_(1.f),
       visible_(true),
       page_scale_factor_(1.f),
@@ -301,6 +302,10 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   // Setting property trees must happen before pushing the page scale.
   sync_tree->SetPropertyTrees(property_trees_);
+
+  sync_tree->set_hide_pinch_scrollbars_near_min_scale(
+      hide_pinch_scrollbars_near_min_scale_);
+
   sync_tree->PushPageScaleFromMainThread(
       page_scale_factor_, min_page_scale_factor_, max_page_scale_factor_);
   sync_tree->elastic_overscroll()->PushFromMainThread(elastic_overscroll_);

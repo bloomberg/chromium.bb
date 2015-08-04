@@ -36,7 +36,6 @@ LayerTreeSettings::LayerTreeSettings()
       scrollbar_fade_delay_ms(0),
       scrollbar_fade_resize_delay_ms(0),
       scrollbar_fade_duration_ms(0),
-      scrollbar_show_scale_threshold(1.0f),
       solid_color_scrollbar_color(SK_ColorWHITE),
       timeout_and_draw_when_animation_checkerboards(true),
       layer_transforms_should_scale_layer_contents(false),

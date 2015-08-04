@@ -25,7 +25,6 @@ class LayerTreeImplTest : public LayerTreeHostCommonTest {
   LayerTreeImplTest() {
     LayerTreeSettings settings;
     settings.layer_transforms_should_scale_layer_contents = true;
-    settings.scrollbar_show_scale_threshold = 1.1f;
     host_impl_.reset(new FakeLayerTreeHostImpl(
         settings, &proxy_, &shared_bitmap_manager_, &task_graph_runner_));
     EXPECT_TRUE(host_impl_->InitializeRenderer(FakeOutputSurface::Create3d()));
@@ -1296,6 +1295,7 @@ TEST_F(LayerTreeImplTest, MakeScrollbarsInvisibleNearMinPageScale) {
   const bool kIsOverlayScrollbar = true;
 
   LayerTreeImpl* active_tree = host_impl().active_tree();
+  active_tree->set_hide_pinch_scrollbars_near_min_scale(true);
 
   scoped_ptr<LayerImpl> scroll_layer = LayerImpl::Create(active_tree, 1);
   scoped_ptr<SolidColorScrollbarLayerImpl> vertical_scrollbar_layer =
@@ -1343,11 +1343,11 @@ TEST_F(LayerTreeImplTest, MakeScrollbarsInvisibleNearMinPageScale) {
   EXPECT_TRUE(vertical_scrollbar_layer->hide_layer_and_subtree());
   EXPECT_TRUE(horizontal_scrollbar_layer->hide_layer_and_subtree());
 
-  active_tree->PushPageScaleFromMainThread(1.05f, 1.0f, 4.0f);
+  active_tree->PushPageScaleFromMainThread(1.04f, 1.0f, 4.0f);
   EXPECT_TRUE(vertical_scrollbar_layer->hide_layer_and_subtree());
   EXPECT_TRUE(horizontal_scrollbar_layer->hide_layer_and_subtree());
 
-  active_tree->PushPageScaleFromMainThread(1.1f, 1.0f, 4.0f);
+  active_tree->PushPageScaleFromMainThread(1.06f, 1.0f, 4.0f);
   EXPECT_FALSE(vertical_scrollbar_layer->hide_layer_and_subtree());
   EXPECT_FALSE(horizontal_scrollbar_layer->hide_layer_and_subtree());
 
