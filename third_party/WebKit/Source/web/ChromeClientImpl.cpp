@@ -243,6 +243,12 @@ void updatePolicyForEvent(const WebInputEvent* inputEvent, NavigationPolicy* pol
 
     NavigationPolicy userPolicy = *policy;
     navigationPolicyFromMouseEvent(buttonNumber, ctrl, shift, alt, meta, &userPolicy);
+
+    // When the input event suggests a download, but the navigation was initiated
+    // by script, we should not override it.
+    if (userPolicy == NavigationPolicyDownload && *policy != NavigationPolicyIgnore)
+        return;
+
     // User and app agree that we want a new window; let the app override the decorations.
     if (userPolicy == NavigationPolicyNewWindow && *policy == NavigationPolicyNewPopup)
         return;
