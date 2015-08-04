@@ -7,6 +7,7 @@
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/sync/sessions/synced_window_delegates_getter.h"
@@ -34,20 +35,38 @@ using syncer::SyncData;
 
 namespace browser_sync {
 
+namespace {
+
 // Maximum number of favicons to sync.
 // TODO(zea): pull this from the server.
-static const int kMaxSyncFavicons = 200;
+const int kMaxSyncFavicons = 200;
 
 // The maximum number of navigations in each direction we care to sync.
-static const int kMaxSyncNavigationCount = 6;
+const int kMaxSyncNavigationCount = 6;
 
 // The URL at which the set of synced tabs is displayed. We treat it differently
 // from all other URL's as accessing it triggers a sync refresh of Sessions.
-static const char kNTPOpenTabSyncURL[] = "chrome://newtab/#open_tabs";
+const char kNTPOpenTabSyncURL[] = "chrome://newtab/#open_tabs";
 
 // Default number of days without activity after which a session is considered
 // stale and becomes a candidate for garbage collection.
-static const size_t kDefaultStaleSessionThresholdDays = 14;  // 2 weeks.
+const size_t kDefaultStaleSessionThresholdDays = 14;  // 2 weeks.
+
+// Comparator function for use with std::sort that will sort tabs by
+// descending timestamp (i.e., most recent first).
+bool TabsRecencyComparator(const sessions::SessionTab* t1,
+                           const sessions::SessionTab* t2) {
+  return t1->timestamp > t2->timestamp;
+}
+
+// Comparator function for use with std::sort that will sort sessions by
+// descending modified_time (i.e., most recent first).
+bool SessionsRecencyComparator(const sync_driver::SyncedSession* s1,
+                           const sync_driver::SyncedSession* s2) {
+  return s1->modified_time > s2->modified_time;
+}
+
+}  // namespace
 
 // |local_device| is owned by ProfileSyncService, its lifetime exceeds
 // lifetime of SessionSyncManager.
@@ -553,7 +572,10 @@ syncer::SyncChange SessionsSyncManager::TombstoneTab(
 
 bool SessionsSyncManager::GetAllForeignSessions(
     std::vector<const sync_driver::SyncedSession*>* sessions) {
-  return session_tracker_.LookupAllForeignSessions(sessions);
+  if (!session_tracker_.LookupAllForeignSessions(sessions))
+    return false;
+  std::sort(sessions->begin(), sessions->end(), SessionsRecencyComparator);
+  return true;
 }
 
 bool SessionsSyncManager::InitFromSyncModel(
@@ -876,6 +898,34 @@ bool SessionsSyncManager::GetForeignSession(
     const std::string& tag,
     std::vector<const sessions::SessionWindow*>* windows) {
   return session_tracker_.LookupSessionWindows(tag, windows);
+}
+
+bool SessionsSyncManager::GetForeignSessionTabs(
+    const std::string& tag,
+    std::vector<const sessions::SessionTab*>* tabs) {
+  std::vector<const sessions::SessionWindow*> windows;
+  if (!session_tracker_.LookupSessionWindows(tag, &windows))
+    return false;
+
+  // Prune those tabs that are not syncable or are NewTabPage, then sort them
+  // from most recent to least recent, independent of which window the tabs were
+  // from.
+  for (size_t j = 0; j < windows.size(); ++j) {
+    const sessions::SessionWindow* window = windows[j];
+    for (size_t t = 0; t < window->tabs.size(); ++t) {
+      sessions::SessionTab* const tab = window->tabs[t];
+      if (tab->navigations.empty())
+        continue;
+      const sessions::SerializedNavigationEntry& current_navigation =
+          tab->navigations.at(tab->normalized_navigation_index());
+      if (search::IsNTPURL(current_navigation.virtual_url(), profile_)) {
+        continue;
+      }
+      tabs->push_back(tab);
+    }
+  }
+  std::sort(tabs->begin(), tabs->end(), TabsRecencyComparator);
+  return true;
 }
 
 bool SessionsSyncManager::GetForeignTab(

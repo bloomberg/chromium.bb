@@ -117,6 +117,9 @@ class SessionsSyncManager : public syncer::SyncableService,
   bool GetForeignTab(const std::string& tag,
                      const SessionID::id_type tab_id,
                      const sessions::SessionTab** tab) override;
+  bool GetForeignSessionTabs(
+      const std::string& tag,
+      std::vector<const sessions::SessionTab*>* tabs) override;
   void DeleteForeignSession(const std::string& tag) override;
   bool GetLocalSession(
       const sync_driver::SyncedSession** local_session) override;
@@ -358,7 +361,7 @@ class SessionsSyncManager : public syncer::SyncableService,
 
   sync_driver::SyncPrefs sync_prefs_;
 
-  const Profile* const profile_;
+  Profile* const profile_;
 
   scoped_ptr<syncer::SyncErrorFactory> error_handler_;
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;

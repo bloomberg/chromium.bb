@@ -50,10 +50,6 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
                                         const std::string& session_string_value,
                                         SessionID::id_type window_num);
 
-  // Helper method to create JSON compatible objects from Session objects.
-  static bool SessionTabToValue(const ::sessions::SessionTab& tab,
-                                base::DictionaryValue* dictionary);
-
   // Returns a pointer to the current session model associator or NULL.
   static sync_driver::OpenTabsUIDelegate* GetOpenTabsUIDelegate(
       content::WebUI* web_ui);
@@ -87,10 +83,6 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   void HandleDeleteForeignSession(const base::ListValue* args);
 
   void HandleSetForeignSessionCollapsed(const base::ListValue* args);
-
-  // Helper method to create JSON compatible objects from Session objects.
-  bool SessionWindowToValue(const ::sessions::SessionWindow& window,
-                            base::DictionaryValue* dictionary);
 
   // The Registrar used to register ForeignSessionHandler for notifications.
   content::NotificationRegistrar registrar_;

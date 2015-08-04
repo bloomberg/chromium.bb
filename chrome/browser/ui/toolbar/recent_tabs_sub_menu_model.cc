@@ -80,13 +80,6 @@ bool SortSessionsByRecency(const sync_driver::SyncedSession* s1,
   return s1->modified_time > s2->modified_time;
 }
 
-// Comparator function for use with std::sort that will sort tabs by
-// descending timestamp (i.e., most recent first).
-bool SortTabsByRecency(const sessions::SessionTab* t1,
-                       const sessions::SessionTab* t2) {
-  return t1->timestamp > t2->timestamp;
-}
-
 // Returns true if the command id identifies a tab menu item.
 bool IsTabModelCommandId(int command_id) {
   return ((command_id >= kFirstLocalTabCommandId &&
@@ -474,36 +467,11 @@ void RecentTabsSubMenuModel::BuildTabsFromOtherDevices() {
     const sync_driver::SyncedSession* session = sessions[i];
     const std::string& session_tag = session->session_tag;
 
-    // Get windows of session.
-    std::vector<const sessions::SessionWindow*> windows;
-    if (!open_tabs->GetForeignSession(session_tag, &windows) ||
-        windows.empty()) {
-      continue;
-    }
-
-    // Collect tabs from all windows of session, pruning those that are not
-    // syncable or are NewTabPage, then sort them from most recent to least
-    // recent, independent of which window the tabs were from.
+    // Collect tabs from all windows of the session, ordered by recency.
     std::vector<const sessions::SessionTab*> tabs_in_session;
-    for (size_t j = 0; j < windows.size(); ++j) {
-      const sessions::SessionWindow* window = windows[j];
-      for (size_t t = 0; t < window->tabs.size(); ++t) {
-        const sessions::SessionTab* tab = window->tabs[t];
-        if (tab->navigations.empty())
-          continue;
-        const sessions::SerializedNavigationEntry& current_navigation =
-            tab->navigations.at(tab->normalized_navigation_index());
-        if (search::IsNTPURL(current_navigation.virtual_url(),
-                             browser_->profile())) {
-          continue;
-        }
-        tabs_in_session.push_back(tab);
-      }
-    }
-    if (tabs_in_session.empty())
+    if (!open_tabs->GetForeignSessionTabs(session_tag, &tabs_in_session) ||
+        tabs_in_session.empty())
       continue;
-    std::sort(tabs_in_session.begin(), tabs_in_session.end(),
-              SortTabsByRecency);
 
     // Add the header for the device session.
     DCHECK(!session->session_name.empty());

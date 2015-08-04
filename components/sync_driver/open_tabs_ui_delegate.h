@@ -25,8 +25,8 @@ class OpenTabsUIDelegate {
       const std::string& pageurl,
       scoped_refptr<base::RefCountedMemory>* favicon_png) const = 0;
 
-  // Builds a list of all foreign sessions. Caller does NOT own SyncedSession
-  // objects.
+  // Builds a list of all foreign sessions, ordered from most recent to least
+  // recent. Caller does NOT own SyncedSession objects.
   // Returns true if foreign sessions were found, false otherwise.
   virtual bool GetAllForeignSessions(
       std::vector<const SyncedSession*>* sessions) = 0;
@@ -42,11 +42,20 @@ class OpenTabsUIDelegate {
   virtual void DeleteForeignSession(const std::string& tag) = 0;
 
   // Loads all windows for foreign session with session tag |tag|. Caller does
-  // NOT own SyncedSession objects.
+  // NOT own SessionWindow objects.
   // Returns true if the foreign session was found, false otherwise.
   virtual bool GetForeignSession(
       const std::string& tag,
       std::vector<const sessions::SessionWindow*>* windows) = 0;
+
+  // Loads all tabs for a foreign session, ignoring window grouping, and
+  // ordering by recency (most recent to least recent). Will automatically
+  // prune those tabs that are not syncable or are the NTP. Caller does NOT own
+  // SessionTab objects.
+  // Returns true if the foreign session was found, false otherwise.
+  virtual bool GetForeignSessionTabs(
+      const std::string& tag,
+      std::vector<const sessions::SessionTab*>* tabs) = 0;
 
   // Sets |*local| to point to the sessions sync representation of the
   // local machine.

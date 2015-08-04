@@ -39,23 +39,91 @@
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/webui/web_ui_util.h"
 
-
+namespace browser_sync {
 
 namespace {
 
 // Maximum number of sessions we're going to display on the NTP
 const size_t kMaxSessionsToShow = 10;
 
-// Comparator function for use with std::sort that will sort sessions by
-// descending modified_time (i.e., most recent first).
-bool SortSessionsByRecency(const sync_driver::SyncedSession* s1,
-                           const sync_driver::SyncedSession* s2) {
-  return s1->modified_time > s2->modified_time;
+// Helper method to create JSON compatible objects from Session objects.
+scoped_ptr<base::DictionaryValue> SessionTabToValue(
+    const ::sessions::SessionTab& tab) {
+  if (tab.navigations.empty())
+    return nullptr;
+
+  int selected_index = std::min(tab.current_navigation_index,
+                                static_cast<int>(tab.navigations.size() - 1));
+  const ::sessions::SerializedNavigationEntry& current_navigation =
+      tab.navigations.at(selected_index);
+  GURL tab_url = current_navigation.virtual_url();
+  if (!tab_url.is_valid() ||
+      tab_url.spec() == chrome::kChromeUINewTabURL) {
+    return nullptr;
+  }
+
+  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
+  NewTabUI::SetUrlTitleAndDirection(dictionary.get(),
+                                    current_navigation.title(), tab_url);
+  dictionary->SetString("type", "tab");
+  dictionary->SetDouble("timestamp",
+                        static_cast<double>(tab.timestamp.ToInternalValue()));
+  // TODO(jeremycho): This should probably be renamed to tabId to avoid
+  // confusion with the ID corresponding to a session.  Investigate all the
+  // places (C++ and JS) where this is being used.  (http://crbug.com/154865).
+  dictionary->SetInteger("sessionId", tab.tab_id.id());
+  return dictionary.Pass();
+}
+
+// Helper for initializing a boilerplate SessionWindow JSON compatible object.
+scoped_ptr<base::DictionaryValue> BuildWindowData(
+    base::Time modification_time,
+    SessionID::id_type window_id) {
+  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
+  // The items which are to be written into |dictionary| are also described in
+  // chrome/browser/resources/ntp4/other_sessions.js in @typedef for WindowData.
+  // Please update it whenever you add or remove any keys here.
+  dictionary->SetString("type", "window");
+  dictionary->SetDouble("timestamp", modification_time.ToInternalValue());
+  const base::TimeDelta last_synced = base::Time::Now() - modification_time;
+  // If clock skew leads to a future time, or we last synced less than a minute
+  // ago, output "Just now".
+  dictionary->SetString(
+      "userVisibleTimestamp",
+      last_synced < base::TimeDelta::FromMinutes(1)
+          ? l10n_util::GetStringUTF16(IDS_SYNC_TIME_JUST_NOW)
+          : ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
+                                   ui::TimeFormat::LENGTH_SHORT, last_synced));
+
+  dictionary->SetInteger("sessionId", window_id);
+  return dictionary.Pass();
+}
+
+// Helper method to create JSON compatible objects from SessionWindow objects.
+scoped_ptr<base::DictionaryValue> SessionWindowToValue(
+    const ::sessions::SessionWindow& window) {
+  if (window.tabs.empty())
+    return nullptr;
+  scoped_ptr<base::ListValue> tab_values(new base::ListValue());
+  // Calculate the last |modification_time| for all entries within a window.
+  base::Time modification_time = window.timestamp;
+  for (const ::sessions::SessionTab* tab : window.tabs) {
+    scoped_ptr<base::DictionaryValue> tab_value(SessionTabToValue(*tab));
+    if (tab_value.get()) {
+      modification_time = std::max(modification_time,
+                                   tab->timestamp);
+      tab_values->Append(tab_value.release());
+    }
+  }
+  if (tab_values->GetSize() == 0)
+    return nullptr;
+  scoped_ptr<base::DictionaryValue> dictionary(
+    BuildWindowData(window.timestamp, window.window_id.id()));
+  dictionary->Set("tabs", tab_values.release());
+  return dictionary.Pass();
 }
 
 }  // namespace
-
-namespace browser_sync {
 
 ForeignSessionHandler::ForeignSessionHandler() {
   load_attempt_time_ = base::TimeTicks::Now();
@@ -120,33 +188,6 @@ void ForeignSessionHandler::OpenForeignSessionWindows(
           web_ui->GetWebContents()->GetNativeView());
   SessionRestore::RestoreForeignSessionWindows(
       Profile::FromWebUI(web_ui), host_desktop_type, iter_begin, iter_end);
-}
-
-// static
-bool ForeignSessionHandler::SessionTabToValue(
-    const ::sessions::SessionTab& tab,
-    base::DictionaryValue* dictionary) {
-  if (tab.navigations.empty())
-    return false;
-
-  int selected_index = std::min(tab.current_navigation_index,
-                                static_cast<int>(tab.navigations.size() - 1));
-  const ::sessions::SerializedNavigationEntry& current_navigation =
-      tab.navigations.at(selected_index);
-  GURL tab_url = current_navigation.virtual_url();
-  if (tab_url == GURL(chrome::kChromeUINewTabURL))
-    return false;
-
-  NewTabUI::SetUrlTitleAndDirection(dictionary, current_navigation.title(),
-                                    tab_url);
-  dictionary->SetString("type", "tab");
-  dictionary->SetDouble("timestamp",
-                        static_cast<double>(tab.timestamp.ToInternalValue()));
-  // TODO(jeremycho): This should probably be renamed to tabId to avoid
-  // confusion with the ID corresponding to a session.  Investigate all the
-  // places (C++ and JS) where this is being used.  (http://crbug.com/154865).
-  dictionary->SetInteger("sessionId", tab.tab_id.id());
-  return true;
 }
 
 // static
@@ -237,9 +278,6 @@ void ForeignSessionHandler::HandleGetForeignSessions(
       load_attempt_time_ = base::TimeTicks();
     }
 
-    // Sort sessions from most recent to least recent.
-    std::sort(sessions.begin(), sessions.end(), SortSessionsByRecency);
-
     // Use a pref to keep track of sessions that were collapsed by the user.
     // To prevent the pref from accumulating stale sessions, clear it each time
     // and only add back sessions that are still current.
@@ -272,14 +310,36 @@ void ForeignSessionHandler::HandleGetForeignSessions(
         current_collapsed_sessions->SetBoolean(session_tag, true);
 
       scoped_ptr<base::ListValue> window_list(new base::ListValue());
-      for (sync_driver::SyncedSession::SyncedWindowMap::const_iterator it =
-               session->windows.begin();
-           it != session->windows.end(); ++it) {
-        ::sessions::SessionWindow* window = it->second;
-        scoped_ptr<base::DictionaryValue> window_data(
-            new base::DictionaryValue());
-        if (SessionWindowToValue(*window, window_data.get()))
+      const std::string group_name =
+          base::FieldTrialList::FindFullName("TabSyncByRecency");
+      if (group_name != "Enabled") {
+        // Order tabs by visual order within window.
+        for (auto map_iter : session->windows) {
+          scoped_ptr<base::DictionaryValue> window_data(
+              SessionWindowToValue(*map_iter.second));
+          if (window_data.get())
+            window_list->Append(window_data.release());
+        }
+      } else {
+        // Order tabs by recency. This involves creating a synthetic singleton
+        // window that contains all the tabs of the session.
+        base::Time modification_time;
+        std::vector<const ::sessions::SessionTab*> tabs;
+        open_tabs->GetForeignSessionTabs(session_tag, &tabs);
+        scoped_ptr<base::ListValue> tab_values(new base::ListValue());
+        for (const ::sessions::SessionTab* tab : tabs) {
+          scoped_ptr<base::DictionaryValue> tab_value(SessionTabToValue(*tab));
+          if (tab_value.get()) {
+            modification_time = std::max(modification_time, tab->timestamp);
+            tab_values->Append(tab_value.release());
+          }
+        }
+        if (tab_values->GetSize() != 0) {
+          scoped_ptr<base::DictionaryValue> window_data(
+              BuildWindowData(modification_time, 1));
+          window_data->Set("tabs", tab_values.release());
           window_list->Append(window_data.release());
+        }
       }
 
       session_data->Set("windows", window_list.release());
@@ -386,44 +446,6 @@ void ForeignSessionHandler::HandleSetForeignSessionCollapsed(
     update.Get()->SetBoolean(session_tag, true);
   else
     update.Get()->Remove(session_tag, NULL);
-}
-
-bool ForeignSessionHandler::SessionWindowToValue(
-    const ::sessions::SessionWindow& window,
-    base::DictionaryValue* dictionary) {
-  if (window.tabs.empty()) {
-    NOTREACHED();
-    return false;
-  }
-  scoped_ptr<base::ListValue> tab_values(new base::ListValue());
-  // Calculate the last |modification_time| for all entries within a window.
-  base::Time modification_time = window.timestamp;
-  for (size_t i = 0; i < window.tabs.size(); ++i) {
-    scoped_ptr<base::DictionaryValue> tab_value(new base::DictionaryValue());
-    if (SessionTabToValue(*window.tabs[i], tab_value.get())) {
-      modification_time = std::max(modification_time,
-                                   window.tabs[i]->timestamp);
-      tab_values->Append(tab_value.release());
-    }
-  }
-  if (tab_values->GetSize() == 0)
-    return false;
-  // The items which are to be written into |dictionary| are also described in
-  // chrome/browser/resources/ntp4/other_sessions.js in @typedef for WindowData.
-  // Please update it whenever you add or remove any keys here.
-  dictionary->SetString("type", "window");
-  dictionary->SetDouble("timestamp", modification_time.ToInternalValue());
-  const base::TimeDelta last_synced = base::Time::Now() - modification_time;
-  // If clock skew leads to a future time, or we last synced less than a minute
-  // ago, output "Just now".
-  dictionary->SetString("userVisibleTimestamp",
-      last_synced < base::TimeDelta::FromMinutes(1) ?
-          l10n_util::GetStringUTF16(IDS_SYNC_TIME_JUST_NOW) :
-          ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
-                                 ui::TimeFormat::LENGTH_SHORT, last_synced));
-  dictionary->SetInteger("sessionId", window.window_id.id());
-  dictionary->Set("tabs", tab_values.release());
-  return true;
 }
 
 }  // namespace browser_sync

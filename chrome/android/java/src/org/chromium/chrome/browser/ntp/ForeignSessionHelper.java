@@ -9,8 +9,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -164,16 +162,7 @@ class ForeignSessionHelper {
     List<ForeignSession> getForeignSessions() {
         List<ForeignSession> result = new ArrayList<ForeignSession>();
         boolean received = nativeGetForeignSessions(mNativeForeignSessionHelper, result);
-        if (received) {
-            // Sort sessions from most recent to least recent.
-            Collections.sort(result, new Comparator<ForeignSession>() {
-                @Override
-                public int compare(ForeignSession lhs, ForeignSession rhs) {
-                    return lhs.modifiedTime < rhs.modifiedTime ? 1 :
-                        (lhs.modifiedTime == rhs.modifiedTime ? 0 : -1);
-                }
-            });
-        } else {
+        if (!received) {
             result = null;
         }
 
