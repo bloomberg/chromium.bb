@@ -321,23 +321,14 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
     }
 
     if (!has_draw_quad) {
-      if (draw_checkerboard_for_missing_tiles()) {
-        CheckerboardDrawQuad* quad =
-            render_pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
-        SkColor color = DebugColors::DefaultCheckerboardColor();
-        quad->SetNew(shared_quad_state, geometry_rect, visible_geometry_rect,
-                     color, ideal_device_scale_);
-      } else {
-        SkColor color = SafeOpaqueBackgroundColor();
-        SolidColorDrawQuad* quad =
-            render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-        quad->SetNew(shared_quad_state,
-                     geometry_rect,
-                     visible_geometry_rect,
-                     color,
-                     false);
-        ValidateQuadResources(quad);
-      }
+      // Checkerboard.
+      // TODO(danakj): Make this a different color when debugging.
+      SkColor color = SafeOpaqueBackgroundColor();
+      SolidColorDrawQuad* quad =
+          render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+      quad->SetNew(shared_quad_state, geometry_rect, visible_geometry_rect,
+                   color, false);
+      ValidateQuadResources(quad);
 
       if (geometry_rect.Intersects(scaled_viewport_for_tile_priority)) {
         append_quads_data->num_missing_tiles++;
