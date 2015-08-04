@@ -49,6 +49,7 @@
         'files': [
           '../test_env.py',
           '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
+          '<(PRODUCT_DIR)/remoting/remoting.webapp/',
           '<(PRODUCT_DIR)/remoting/remoting.webapp.v2/',
           '<(PRODUCT_DIR)/remoting/browser_test_resources/',
           '<(PRODUCT_DIR)/resources.pak',

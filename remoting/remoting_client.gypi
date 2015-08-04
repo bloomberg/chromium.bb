@@ -151,19 +151,47 @@
         },
       ],
     },
+    {
+      # GN version: //remoting/webapp:webapp
+      'target_name': 'remoting_webapp',
+      'type': 'none',
+      'dependencies': [
+        'remoting_client_credits',
+        'remoting_webapp_v1',
+      ],
+      'conditions': [
+        ['disable_nacl==0 and disable_nacl_untrusted==0', {
+          'dependencies': [
+            'remoting_webapp_v2',
+          ],
+        }]
+      ],
+    },  # end of target 'remoting_webapp'
+
+    {
+      # GN version: //remoting/webapp:webapp_v1
+      'target_name': 'remoting_webapp_v1',
+      'type': 'none',
+      'variables': {
+        'webapp_type': 'v1',
+        'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp',
+        'zip_path': '<(PRODUCT_DIR)/remoting-webapp.zip',
+      },
+      'includes': [ 'remoting_webapp.gypi', ],
+    },  # end of target 'remoting_webapp_v1'
   ],  # end of targets
 
   'conditions': [
     ['disable_nacl==0 and disable_nacl_untrusted==0', {
       'targets': [
         {
-          # GN version: //remoting/webapp
-          'target_name': 'remoting_webapp',
+          # GN version: //remoting/webapp:webapp_v1
+          'target_name': 'remoting_webapp_v2',
           'type': 'none',
           'variables': {
             'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp.v2',
             'zip_path': '<(PRODUCT_DIR)/remoting-webapp.v2.zip',
-            'webapp_type': 'desktop',
+            'webapp_type': 'v2_pnacl',
             'extra_files': [
               'webapp/crd/remoting_client_pnacl.nmf.jinja2',
               '<(PRODUCT_DIR)/remoting_client_plugin_newlib.pexe',
