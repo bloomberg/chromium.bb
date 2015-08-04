@@ -1204,9 +1204,10 @@ InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(EAffinit
     if (!layoutObject->isText()) {
         inlineBox = 0;
         if (canHaveChildrenForEditing(anchorNode()) && layoutObject->isLayoutBlockFlow() && hasRenderedNonAnonymousDescendantsWithHeight(layoutObject)) {
-            // Try a visually equivalent position with possibly opposite editability. This helps in case |this| is in
-            // an editable block but surrounded by non-editable positions. It acts to negate the logic at the beginning
-            // of LayoutObject::createVisiblePosition().
+            // Try a visually equivalent position with possibly opposite
+            // editability. This helps in case |this| is in an editable block
+            // but surrounded by non-editable positions. It acts to negate the
+            // logic at the beginning of LayoutObject::createVisiblePosition().
             PositionAlgorithm<Strategy> thisPosition = PositionAlgorithm<Strategy>(*this);
             PositionAlgorithm<Strategy> equivalent = downstreamIgnoringEditingBoundaries(thisPosition);
             if (equivalent == thisPosition) {
@@ -1270,7 +1271,8 @@ InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(EAffinit
                 prevBox = prevBox->prevLeafChild();
             } while (prevBox && prevBox->bidiLevel() > level);
 
-            if (prevBox && prevBox->bidiLevel() == level) // For example, abc FED 123 ^ CBA
+            // For example, abc FED 123 ^ CBA
+            if (prevBox && prevBox->bidiLevel() == level)
                 return InlineBoxPosition(inlineBox, caretOffset);
 
             // For example, abc 123 ^ CBA
@@ -1279,76 +1281,83 @@ InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(EAffinit
                     break;
                 inlineBox = nextBox;
             }
-            caretOffset = inlineBox->caretRightmostOffset();
-        } else {
-            InlineBox* prevBox = inlineBox->prevLeafChild();
-            if (!prevBox || prevBox->bidiLevel() >= level)
-                return InlineBoxPosition(inlineBox, caretOffset);
-
-            level = prevBox->bidiLevel();
-            InlineBox* nextBox = inlineBox;
-            do {
-                nextBox = nextBox->nextLeafChild();
-            } while (nextBox && nextBox->bidiLevel() > level);
-
-            if (nextBox && nextBox->bidiLevel() == level)
-                return InlineBoxPosition(inlineBox, caretOffset);
-
-            while (InlineBox* prevBox = inlineBox->prevLeafChild()) {
-                if (prevBox->bidiLevel() < level)
-                    break;
-                inlineBox = prevBox;
-            }
-            caretOffset = inlineBox->caretLeftmostOffset();
+            return InlineBoxPosition(inlineBox, inlineBox->caretRightmostOffset());
         }
-        return InlineBoxPosition(inlineBox, caretOffset);
+
+        InlineBox* prevBox = inlineBox->prevLeafChild();
+        if (!prevBox || prevBox->bidiLevel() >= level)
+            return InlineBoxPosition(inlineBox, caretOffset);
+
+        level = prevBox->bidiLevel();
+        InlineBox* nextBox = inlineBox;
+        do {
+            nextBox = nextBox->nextLeafChild();
+        } while (nextBox && nextBox->bidiLevel() > level);
+
+        if (nextBox && nextBox->bidiLevel() == level)
+            return InlineBoxPosition(inlineBox, caretOffset);
+
+        while (InlineBox* prevBox = inlineBox->prevLeafChild()) {
+            if (prevBox->bidiLevel() < level)
+                break;
+            inlineBox = prevBox;
+        }
+        return InlineBoxPosition(inlineBox, inlineBox->caretLeftmostOffset());
     }
 
     if (caretOffset == inlineBox->caretLeftmostOffset()) {
         InlineBox* prevBox = inlineBox->prevLeafChildIgnoringLineBreak();
         if (!prevBox || prevBox->bidiLevel() < level) {
-            // Left edge of a secondary run. Set to the right edge of the entire run.
+            // Left edge of a secondary run. Set to the right edge of the entire
+            // run.
             while (InlineBox* nextBox = inlineBox->nextLeafChildIgnoringLineBreak()) {
                 if (nextBox->bidiLevel() < level)
                     break;
                 inlineBox = nextBox;
             }
-            caretOffset = inlineBox->caretRightmostOffset();
-        } else if (prevBox->bidiLevel() > level) {
+            return InlineBoxPosition(inlineBox, inlineBox->caretRightmostOffset());
+        }
+
+        if (prevBox->bidiLevel() > level) {
             // Right edge of a "tertiary" run. Set to the left edge of that run.
             while (InlineBox* tertiaryBox = inlineBox->prevLeafChildIgnoringLineBreak()) {
                 if (tertiaryBox->bidiLevel() <= level)
                     break;
                 inlineBox = tertiaryBox;
             }
-            caretOffset = inlineBox->caretLeftmostOffset();
+            return InlineBoxPosition(inlineBox, inlineBox->caretLeftmostOffset());
         }
-    } else if (layoutObject && layoutObject->style()->unicodeBidi() == Plaintext) {
-        if (inlineBox->bidiLevel() < level)
-            caretOffset = inlineBox->caretLeftmostOffset();
-        else
-            caretOffset = inlineBox->caretRightmostOffset();
-    } else {
-        InlineBox* nextBox = inlineBox->nextLeafChildIgnoringLineBreak();
-        if (!nextBox || nextBox->bidiLevel() < level) {
-            // Right edge of a secondary run. Set to the left edge of the entire run.
-            while (InlineBox* prevBox = inlineBox->prevLeafChildIgnoringLineBreak()) {
-                if (prevBox->bidiLevel() < level)
-                    break;
-                inlineBox = prevBox;
-            }
-            caretOffset = inlineBox->caretLeftmostOffset();
-        } else if (nextBox->bidiLevel() > level) {
-            // Left edge of a "tertiary" run. Set to the right edge of that run.
-            while (InlineBox* tertiaryBox = inlineBox->nextLeafChildIgnoringLineBreak()) {
-                if (tertiaryBox->bidiLevel() <= level)
-                    break;
-                inlineBox = tertiaryBox;
-            }
-            caretOffset = inlineBox->caretRightmostOffset();
-        }
+        return InlineBoxPosition(inlineBox, caretOffset);
     }
-    return InlineBoxPosition(inlineBox, caretOffset);
+
+    if (layoutObject && layoutObject->style()->unicodeBidi() == Plaintext) {
+        if (inlineBox->bidiLevel() < level)
+            return InlineBoxPosition(inlineBox, inlineBox->caretLeftmostOffset());
+        return InlineBoxPosition(inlineBox, inlineBox->caretRightmostOffset());
+    }
+
+    InlineBox* nextBox = inlineBox->nextLeafChildIgnoringLineBreak();
+    if (!nextBox || nextBox->bidiLevel() < level) {
+        // Right edge of a secondary run. Set to the left edge of the entire
+        // run.
+        while (InlineBox* prevBox = inlineBox->prevLeafChildIgnoringLineBreak()) {
+            if (prevBox->bidiLevel() < level)
+                break;
+            inlineBox = prevBox;
+        }
+        return InlineBoxPosition(inlineBox, inlineBox->caretLeftmostOffset());
+    }
+
+    if (nextBox->bidiLevel() <= level)
+        return InlineBoxPosition(inlineBox, caretOffset);
+
+    // Left edge of a "tertiary" run. Set to the right edge of that run.
+    while (InlineBox* tertiaryBox = inlineBox->nextLeafChildIgnoringLineBreak()) {
+        if (tertiaryBox->bidiLevel() <= level)
+            break;
+        inlineBox = tertiaryBox;
+    }
+    return InlineBoxPosition(inlineBox, inlineBox->caretRightmostOffset());
 }
 
 template <typename Strategy>
