@@ -29,7 +29,6 @@ executable("ozone_demo") {
     "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/ozone",
-    "//ui/ozone/gpu",
     "//ui/ozone:ozone_base",
   ]
 }
