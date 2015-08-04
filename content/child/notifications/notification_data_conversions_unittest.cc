@@ -45,7 +45,7 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
 
   PlatformNotificationData platform_data = ToPlatformNotificationData(web_data);
   EXPECT_EQ(base::ASCIIToUTF16(kNotificationTitle), platform_data.title);
-  EXPECT_EQ(PlatformNotificationData::NotificationDirectionLeftToRight,
+  EXPECT_EQ(PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT,
             platform_data.direction);
   EXPECT_EQ(kNotificationLang, platform_data.lang);
   EXPECT_EQ(base::ASCIIToUTF16(kNotificationBody), platform_data.body);
@@ -61,22 +61,6 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
     EXPECT_EQ(developer_data[i], platform_data.data[i]);
 }
 
-TEST(NotificationDataConversionsTest,
-     ToPlatformNotificationDataDirectionality) {
-  blink::WebNotificationData web_data;
-  web_data.direction = blink::WebNotificationData::DirectionLeftToRight;
-
-  PlatformNotificationData platform_data = ToPlatformNotificationData(web_data);
-  EXPECT_EQ(PlatformNotificationData::NotificationDirectionLeftToRight,
-            platform_data.direction);
-
-  web_data.direction = blink::WebNotificationData::DirectionRightToLeft;
-
-  platform_data = ToPlatformNotificationData(web_data);
-  EXPECT_EQ(PlatformNotificationData::NotificationDirectionRightToLeft,
-            platform_data.direction);
-}
-
 TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   std::vector<int> vibration_pattern(
       kNotificationVibrationPattern,
@@ -88,7 +72,7 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   PlatformNotificationData platform_data;
   platform_data.title = base::ASCIIToUTF16(kNotificationTitle);
   platform_data.direction =
-      PlatformNotificationData::NotificationDirectionLeftToRight;
+      PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
   platform_data.lang = kNotificationLang;
   platform_data.body = base::ASCIIToUTF16(kNotificationBody);
   platform_data.tag = kNotificationTag;
@@ -117,21 +101,35 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
     EXPECT_EQ(developer_data[i], web_data.data[i]);
 }
 
-TEST(NotificationDataConversionsTest, ToWebNotificationDataDirectionality) {
-  PlatformNotificationData platform_data;
-  platform_data.direction =
-      PlatformNotificationData::NotificationDirectionLeftToRight;
+TEST(NotificationDataConversionsTest, NotificationDataDirectionality) {
+  std::map<blink::WebNotificationData::Direction,
+           PlatformNotificationData::Direction> mappings;
 
-  blink::WebNotificationData web_data = ToWebNotificationData(platform_data);
-  EXPECT_EQ(blink::WebNotificationData::DirectionLeftToRight,
-            web_data.direction);
+  mappings[blink::WebNotificationData::DirectionLeftToRight] =
+      PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
+  mappings[blink::WebNotificationData::DirectionRightToLeft] =
+      PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT;
+  mappings[blink::WebNotificationData::DirectionAuto] =
+      PlatformNotificationData::DIRECTION_AUTO;
 
-  platform_data.direction =
-      PlatformNotificationData::NotificationDirectionRightToLeft;
+  for (const auto& pair : mappings) {
+    {
+      blink::WebNotificationData web_data;
+      web_data.direction = pair.first;
 
-  web_data = ToWebNotificationData(platform_data);
-  EXPECT_EQ(blink::WebNotificationData::DirectionRightToLeft,
-            web_data.direction);
+      PlatformNotificationData platform_data =
+          ToPlatformNotificationData(web_data);
+      EXPECT_EQ(pair.second, platform_data.direction);
+    }
+    {
+      PlatformNotificationData platform_data;
+      platform_data.direction = pair.second;
+
+      blink::WebNotificationData web_data =
+          ToWebNotificationData(platform_data);
+      EXPECT_EQ(pair.first, web_data.direction);
+    }
+  }
 }
 
 }  // namespace content

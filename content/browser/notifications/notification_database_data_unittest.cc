@@ -34,7 +34,7 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   PlatformNotificationData notification_data;
   notification_data.title = base::ASCIIToUTF16(kNotificationTitle);
   notification_data.direction =
-      PlatformNotificationData::NotificationDirectionRightToLeft;
+      PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT;
   notification_data.lang = kNotificationLang;
   notification_data.body = base::ASCIIToUTF16(kNotificationBody);
   notification_data.tag = kNotificationTag;
@@ -84,6 +84,32 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   ASSERT_EQ(developer_data.size(), copied_notification_data.data.size());
   for (size_t i = 0; i < developer_data.size(); ++i)
     EXPECT_EQ(developer_data[i], copied_notification_data.data[i]);
+}
+
+TEST(NotificationDatabaseDataTest, SerializeAndDeserializeDirections) {
+  PlatformNotificationData::Direction directions[] = {
+    PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT,
+    PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT,
+    PlatformNotificationData::DIRECTION_AUTO
+  };
+
+  for (size_t i = 0; i < arraysize(directions); ++i) {
+    PlatformNotificationData notification_data;
+    notification_data.direction = directions[i];
+
+    NotificationDatabaseData database_data;
+    database_data.notification_data = notification_data;
+
+    std::string serialized_data;
+    ASSERT_TRUE(SerializeNotificationDatabaseData(database_data,
+                                                  &serialized_data));
+
+    NotificationDatabaseData copied_data;
+    ASSERT_TRUE(DeserializeNotificationDatabaseData(serialized_data,
+                                                    &copied_data));
+
+    EXPECT_EQ(directions[i], copied_data.notification_data.direction);
+  }
 }
 
 }  // namespace content

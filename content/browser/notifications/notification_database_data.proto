@@ -26,6 +26,7 @@ message NotificationDatabaseDataProto {
     enum Direction {
       LEFT_TO_RIGHT = 0;
       RIGHT_TO_LEFT = 1;
+      AUTO = 2;
     }
 
     optional string title = 1;

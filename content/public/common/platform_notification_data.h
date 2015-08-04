@@ -25,18 +25,19 @@ struct CONTENT_EXPORT PlatformNotificationData {
   // property of this structure.
   static const size_t kMaximumDeveloperDataSize = 1024 * 1024;
 
-  enum NotificationDirection {
-    NotificationDirectionLeftToRight,
-    NotificationDirectionRightToLeft,
+  enum Direction {
+    DIRECTION_LEFT_TO_RIGHT,
+    DIRECTION_RIGHT_TO_LEFT,
+    DIRECTION_AUTO,
 
-    NotificationDirectionLast = NotificationDirectionRightToLeft
+    DIRECTION_LAST = DIRECTION_AUTO
   };
 
   // Title to be displayed with the Web Notification.
   base::string16 title;
 
   // Hint to determine the directionality of the displayed notification.
-  NotificationDirection direction = NotificationDirectionLeftToRight;
+  Direction direction = DIRECTION_LEFT_TO_RIGHT;
 
   // BCP 47 language tag describing the notification's contents. Optional.
   std::string lang;

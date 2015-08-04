@@ -32,8 +32,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebNotificationPermission,
                           blink::WebNotificationPermissionLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(
-    content::PlatformNotificationData::NotificationDirection,
-    content::PlatformNotificationData::NotificationDirectionLast)
+    content::PlatformNotificationData::Direction,
+    content::PlatformNotificationData::DIRECTION_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(content::PlatformNotificationData)
   IPC_STRUCT_TRAITS_MEMBER(title)

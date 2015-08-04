@@ -262,7 +262,7 @@ void PushMessagingNotificationManager::DidGetNotificationsShownAndNeeded(
           requesting_origin.host(),
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
   notification_data.direction =
-      content::PlatformNotificationData::NotificationDirectionLeftToRight;
+      content::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
   notification_data.body =
       l10n_util::GetStringUTF16(IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_BODY);
   notification_data.tag = kPushMessagingForcedNotificationTag;

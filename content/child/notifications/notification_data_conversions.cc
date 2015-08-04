@@ -16,10 +16,22 @@ PlatformNotificationData ToPlatformNotificationData(
     const WebNotificationData& web_data) {
   PlatformNotificationData platform_data;
   platform_data.title = web_data.title;
-  platform_data.direction =
-      web_data.direction == WebNotificationData::DirectionLeftToRight
-          ? PlatformNotificationData::NotificationDirectionLeftToRight
-          : PlatformNotificationData::NotificationDirectionRightToLeft;
+
+  switch (web_data.direction) {
+    case WebNotificationData::DirectionLeftToRight:
+      platform_data.direction =
+          PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
+      break;
+    case WebNotificationData::DirectionRightToLeft:
+      platform_data.direction =
+          PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT;
+      break;
+    case WebNotificationData::DirectionAuto:
+      platform_data.direction =
+          PlatformNotificationData::DIRECTION_AUTO;
+      break;
+  }
+
   platform_data.lang = base::UTF16ToUTF8(base::StringPiece16(web_data.lang));
   platform_data.body = web_data.body;
   platform_data.tag = base::UTF16ToUTF8(base::StringPiece16(web_data.tag));
@@ -36,11 +48,19 @@ WebNotificationData ToWebNotificationData(
     const PlatformNotificationData& platform_data) {
   WebNotificationData web_data;
   web_data.title = platform_data.title;
-  web_data.direction =
-      platform_data.direction ==
-          PlatformNotificationData::NotificationDirectionLeftToRight
-          ? WebNotificationData::DirectionLeftToRight
-          : WebNotificationData::DirectionRightToLeft;
+
+  switch (platform_data.direction) {
+    case PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT:
+      web_data.direction = WebNotificationData::DirectionLeftToRight;
+      break;
+    case PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT:
+      web_data.direction = WebNotificationData::DirectionRightToLeft;
+      break;
+    case PlatformNotificationData::DIRECTION_AUTO:
+      web_data.direction = WebNotificationData::DirectionAuto;
+      break;
+  }
+
   web_data.lang = blink::WebString::fromUTF8(platform_data.lang);
   web_data.body = platform_data.body;
   web_data.tag = blink::WebString::fromUTF8(platform_data.tag);
