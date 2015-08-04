@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "content/browser/background_sync/background_sync.pb.h"
-#include "content/browser/background_sync/background_sync_manager.h"
+#include "content/browser/background_sync/background_sync_status.h"
 
 namespace content {
 
@@ -42,11 +42,11 @@ class BackgroundSyncMetrics {
   static void CountRegister(SyncPeriodicity periodicity,
                             RegistrationCouldFire could_fire,
                             RegistrationIsDuplicate registration_is_duplicate,
-                            BackgroundSyncManager::ErrorType result);
+                            BackgroundSyncStatus result);
 
   // Records the result of trying to unregister a sync.
   static void CountUnregister(SyncPeriodicity periodicity,
-                              BackgroundSyncManager::ErrorType result);
+                              BackgroundSyncStatus result);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(BackgroundSyncMetrics);
