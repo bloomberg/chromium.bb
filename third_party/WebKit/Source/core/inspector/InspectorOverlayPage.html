@@ -32,20 +32,30 @@
 body {
     margin: 0;
     padding: 0;
+    font-size: 11px;
 }
 
 body.platform-mac {
-    font-size: 11px;
-    font-family: Menlo, Monaco;
+    font-family: 'Helvetica Neue', 'Lucida Grande', sans-serif;
 }
 
 body.platform-windows {
-    font-size: 12px;
-    font-family: Consolas, Lucida Console;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
 }
 
 body.platform-linux {
-    font-size: 11px;
+    font-family: Ubuntu, Arial, sans-serif;
+}
+
+body.platform-mac .monospace {
+    font-family: Menlo, Monaco;
+}
+
+body.platform-windows .monospace {
+    font-family: Consolas, Lucida Console;
+}
+
+body.platform-linux .monospace {
     font-family: dejavu sans mono;
 }
 
@@ -59,6 +69,10 @@ body.platform-linux {
 
 .dimmed {
     background-color: rgba(0, 0, 0, 0.31);
+}
+
+.hidden {
+    display: none !important;
 }
 
 #canvas, #labels-canvas {
@@ -122,13 +136,44 @@ body.platform-linux {
     -webkit-mask-size: 18px 10px;
 }
 
-.px {
-    color: rgb(128, 128, 128);
+#tooltip-container {
+    -webkit-filter: drop-shadow(0 1px 1px hsla(0, 0%, 0%, 0.1)) drop-shadow(0 0px 1px hsla(0, 0%, 0%, 0.2));
 }
 
-#element-title {
+#element-tooltip,
+#element-tooltip-arrow {
     position: absolute;
     z-index: 10;
+    -webkit-user-select: none;
+}
+
+#element-tooltip {
+    background-color: hsl(0, 0%, 97%);
+    font-size: 11px;
+    line-height: 14px;
+    padding: 5px 6px;
+    border-radius: 2px;
+    color: white;
+    display: flex;
+    align-content: stretch;
+    box-sizing: border-box;
+    max-width: calc(100% - 4px);
+    border: 1px solid hsla(0, 0%, 0%, 0.1);
+    z-index: 1;
+    background-clip: padding-box;
+}
+
+#element-tooltip-arrow {
+    border: solid;
+    border-color: hsl(0, 0%, 97%) transparent;
+    border-width: 0 8px 8px 8px;
+    z-index: 2;
+    margin-top: 1px;
+}
+
+#element-tooltip-arrow.tooltip-arrow-top {
+    border-width: 8px 8px 0 8px;
+    margin-top: -1px;
 }
 
 #tag-name {
@@ -137,13 +182,36 @@ body.platform-linux {
 }
 
 #node-id {
-    /* Keep this in sync with view-source.css (.html-attribute-value) */
-    color: rgb(26, 26, 166);
+    color: rgb(153, 69, 0);
 }
 
 #class-name {
-    /* Keep this in sync with view-source.css (.html-attribute-name) */
-    color: rgb(153, 69, 0);
+    color: rgb(26, 26, 166);
+}
+
+#element-description {
+    flex: 1 1;
+    word-wrap: break-word;
+}
+
+#dimensions {
+    border-left: 1px solid hsl(0, 0%, 85%);
+    padding-left: 7px;
+    margin-left: 7px;
+    float: right;
+    flex: 0 0 auto;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    color: hsl(0, 0%, 35%);
+}
+
+#node-width {
+    margin-right: 2px;
+}
+
+#node-height {
+    margin-left: 2px;
 }
 
 .editor-anchor {
@@ -354,7 +422,7 @@ function reset(resetData)
 
     window._controlsVisible = false;
     document.querySelector(".controls-line").style.visibility = "hidden";
-    document.getElementById("element-title").style.visibility = "hidden";
+    document.getElementById("tooltip-container").classList.add("hidden");
     var editor = document.getElementById("editor");
     editor.style.visibility = "hidden";
     editor.textContent = "";
@@ -364,75 +432,59 @@ function reset(resetData)
 
 function _drawElementTitle(elementInfo, bounds)
 {
+    // Reset position before measuring to ensure line-wraps are consistent.
+    var elementTitle = document.getElementById("element-tooltip");
+    elementTitle.style.top = "0";
+    elementTitle.style.left = "0";
+    document.getElementById("tooltip-container").classList.remove("hidden");
+
     document.getElementById("tag-name").textContent = elementInfo.tagName;
     document.getElementById("node-id").textContent = elementInfo.idValue ? "#" + elementInfo.idValue : "";
+    document.getElementById("node-id").classList.toggle("hidden", !elementInfo.idValue);
     var className = elementInfo.className;
     if (className && className.length > 50)
        className = className.substring(0, 50) + "\u2026";
     document.getElementById("class-name").textContent = className || "";
+    document.getElementById("class-name").classList.toggle("hidden", !className);
     document.getElementById("node-width").textContent = elementInfo.nodeWidth;
     document.getElementById("node-height").textContent = elementInfo.nodeHeight;
-    var elementTitle = document.getElementById("element-title");
 
-    var titleWidth = elementTitle.offsetWidth + 6;
-    var titleHeight = elementTitle.offsetHeight + 4;
+    var titleWidth = elementTitle.offsetWidth;
+    var titleHeight = elementTitle.offsetHeight;
+    var arrowRadius = 8;
+    var pageMargin = 2;
 
-    var anchorTop = bounds.minY;
-    var anchorBottom = bounds.maxY;
-    var anchorLeft = bounds.minX;
+    var boxX = Math.max(pageMargin, bounds.minX + (bounds.maxX - bounds.minX) / 2 - titleWidth / 2);
+    boxX = Math.min(boxX, canvasWidth - titleWidth - pageMargin);
 
-    const arrowHeight = 7;
-    var renderArrowUp = false;
-    var renderArrowDown = false;
-
-    var boxX = Math.max(2, anchorLeft);
-    if (boxX + titleWidth > canvasWidth)
-        boxX = canvasWidth - titleWidth - 2;
-
-    var boxY;
-    if (anchorTop > canvasHeight) {
-        boxY = canvasHeight - titleHeight - arrowHeight;
-        renderArrowDown = true;
-    } else if (anchorBottom < 0) {
-        boxY = arrowHeight;
-        renderArrowUp = true;
-    } else if (anchorBottom + titleHeight + arrowHeight < canvasHeight) {
-        boxY = anchorBottom + arrowHeight - 4;
-        renderArrowUp = true;
-    } else if (anchorTop - titleHeight - arrowHeight > 0) {
-        boxY = anchorTop - titleHeight - arrowHeight + 3;
-        renderArrowDown = true;
-    } else
-        boxY = arrowHeight;
-
-    context.save();
-    context.translate(0.5, 0.5);
-    context.beginPath();
-    context.moveTo(boxX, boxY);
-    if (renderArrowUp) {
-        context.lineTo(boxX + 2 * arrowHeight, boxY);
-        context.lineTo(boxX + 3 * arrowHeight, boxY - arrowHeight);
-        context.lineTo(boxX + 4 * arrowHeight, boxY);
+    var boxY = bounds.minY - arrowRadius - titleHeight;
+    var onTop = true;
+    if (boxY < 0) {
+        boxY = bounds.maxY + arrowRadius;
+        onTop = false;
+    } else if (bounds.minY > canvasHeight) {
+        boxY = canvasHeight - arrowRadius - titleHeight;
     }
-    context.lineTo(boxX + titleWidth, boxY);
-    context.lineTo(boxX + titleWidth, boxY + titleHeight);
-    if (renderArrowDown) {
-        context.lineTo(boxX + 4 * arrowHeight, boxY + titleHeight);
-        context.lineTo(boxX + 3 * arrowHeight, boxY + titleHeight + arrowHeight);
-        context.lineTo(boxX + 2 * arrowHeight, boxY + titleHeight);
+
+    elementTitle.style.top = boxY + "px";
+    elementTitle.style.left = boxX + "px";
+
+    var tooltipArrow = document.getElementById("element-tooltip-arrow");
+    // Center arrow if possible. Otherwise, try the bounds of the element.
+    var arrowX = bounds.minX + (bounds.maxX - bounds.minX) / 2 - arrowRadius;
+    var tooltipBorderRadius = 2;
+    if (arrowX < pageMargin + tooltipBorderRadius)
+        arrowX = bounds.maxX - arrowRadius * 2;
+    else if (arrowX + arrowRadius * 2 > canvasWidth - pageMargin - tooltipBorderRadius)
+        arrowX = bounds.minX;
+    // Hide arrow if element is completely off the sides of the page.
+    var arrowHidden = arrowX < pageMargin + tooltipBorderRadius || arrowX + arrowRadius * 2 > canvasWidth - pageMargin - tooltipBorderRadius;
+    tooltipArrow.classList.toggle("hidden", arrowHidden);
+    if (!arrowHidden) {
+        tooltipArrow.classList.toggle("tooltip-arrow-top", onTop);
+        tooltipArrow.style.top = (onTop ? boxY + titleHeight : boxY - arrowRadius) + "px";
+        tooltipArrow.style.left = arrowX + "px";
     }
-    context.lineTo(boxX, boxY + titleHeight);
-    context.closePath();
-    context.fillStyle = "rgb(255, 255, 194)";
-    context.fill();
-    context.strokeStyle = "rgb(128, 128, 128)";
-    context.stroke();
-
-    context.restore();
-
-    elementTitle.style.visibility = "visible";
-    elementTitle.style.top = (boxY + 3) + "px";
-    elementTitle.style.left = (boxX + 3) + "px";
 }
 
 function _drawRulers(bounds, rulerAtRight, rulerAtBottom)
@@ -853,9 +905,12 @@ document.addEventListener("keydown", onDocumentKeyDown);
 </body>
 <canvas id="canvas" class="fill"></canvas>
 <canvas id="labels-canvas" class="fill"></canvas>
-<div id="element-title">
-  <span id="tag-name"></span><span id="node-id"></span><span id="class-name"></span>
-  <span id="node-width"></span><span class="px">px</span><span class="px"> &#xD7; </span><span id="node-height"></span><span class="px">px</span>
+<div id="tooltip-container" class="hidden">
+    <div id="element-tooltip">
+      <div id="element-description" class="monospace"><span id="tag-name"></span><span id="node-id"></span><span id="class-name"></span></div>
+      <div id="dimensions"><span id="node-width"></span>&#xD7;<span id="node-height"></span></div>
+    </div>
+    <div id="element-tooltip-arrow"></div>
 </div>
 <div id="editor" class="fill"></div>
 <div id="log"></div>
