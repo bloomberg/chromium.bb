@@ -222,7 +222,7 @@ static void readColorProfile(jpeg_decompress_struct* info, ColorProfile& colorPr
 
     // Only accept RGB color profiles from input class devices.
     bool ignoreProfile = false;
-    char* profileData = reinterpret_cast<char*>(profile);
+    char* profileData = reinterpret_cast_ptr<char*>(profile);
     if (profileLength < ImageDecoder::iccColorProfileHeaderLength)
         ignoreProfile = true;
     else if (!ImageDecoder::rgbColorProfile(profileData, profileLength))
@@ -320,13 +320,13 @@ public:
         jpeg_create_decompress(&m_info);
 
         ASSERT(!m_info.src);
-        decoder_source_mgr* src = (decoder_source_mgr*)fastZeroedMalloc(sizeof(decoder_source_mgr));
+        decoder_source_mgr* src = static_cast<decoder_source_mgr*>(fastZeroedMalloc(sizeof(decoder_source_mgr)));
         if (!src) {
             m_state = JPEG_ERROR;
             return;
         }
 
-        m_info.src = (jpeg_source_mgr*)src;
+        m_info.src = reinterpret_cast_ptr<jpeg_source_mgr*>(src);
 
         // Set up callback functions.
         src->pub.init_source = init_source;
@@ -351,7 +351,7 @@ public:
 
     void close()
     {
-        decoder_source_mgr* src = (decoder_source_mgr*)m_info.src;
+        decoder_source_mgr* src = reinterpret_cast_ptr<decoder_source_mgr*>(m_info.src);
         if (src)
             fastFree(src);
         m_info.src = 0;
@@ -369,23 +369,22 @@ public:
 
         size_t bytesToSkip = static_cast<size_t>(numBytes);
 
-        decoder_source_mgr* src = (decoder_source_mgr*)m_info.src;
-        if (bytesToSkip < src->pub.bytes_in_buffer) {
+        if (bytesToSkip < m_info.src->bytes_in_buffer) {
             // The next byte needed is in the buffer. Move to it.
-            src->pub.bytes_in_buffer -= bytesToSkip;
-            src->pub.next_input_byte += bytesToSkip;
+            m_info.src->bytes_in_buffer -= bytesToSkip;
+            m_info.src->next_input_byte += bytesToSkip;
         } else {
             // Move beyond the buffer and empty it.
-            m_nextReadPosition = m_nextReadPosition + bytesToSkip - src->pub.bytes_in_buffer;
-            src->pub.bytes_in_buffer = 0;
-            src->pub.next_input_byte = nullptr;
+            m_nextReadPosition = m_nextReadPosition + bytesToSkip - m_info.src->bytes_in_buffer;
+            m_info.src->bytes_in_buffer = 0;
+            m_info.src->next_input_byte = nullptr;
         }
 
         // This is a valid restart position.
-        m_restartPosition = m_nextReadPosition - src->pub.bytes_in_buffer;
+        m_restartPosition = m_nextReadPosition - m_info.src->bytes_in_buffer;
         // We updated |next_input_byte|, so we need to update |m_lastByteSet|
         // so we know not to update |m_restartPosition| again.
-        m_lastSetByte = src->pub.next_input_byte;
+        m_lastSetByte = m_info.src->next_input_byte;
     }
 
     bool fillBuffer()
@@ -412,7 +411,7 @@ public:
 
         m_nextReadPosition += bytes;
         m_info.src->bytes_in_buffer = bytes;
-        const JOCTET* nextByte = reinterpret_cast<const JOCTET*>(segment);
+        const JOCTET* nextByte = reinterpret_cast_ptr<const JOCTET*>(segment);
         m_info.src->next_input_byte = nextByte;
         m_lastSetByte = nextByte;
         return true;
@@ -559,7 +558,7 @@ public:
             // buffer. Remove this allocation for those color spaces.
             {
                 int samplesWidth = (m_info.out_color_space == JCS_YCbCr) ? computeYUVSize(&m_info, 0, ImageDecoder::SizeForMemoryAllocation).width() : m_info.output_width;
-                m_samples = (*m_info.mem->alloc_sarray)(reinterpret_cast<j_common_ptr>(&m_info), JPOOL_IMAGE, samplesWidth * 4, 1);
+                m_samples = (*m_info.mem->alloc_sarray)(reinterpret_cast_ptr<j_common_ptr>(&m_info), JPOOL_IMAGE, samplesWidth * 4, 1);
             }
 
             // Start decompressor.
@@ -586,7 +585,7 @@ public:
             if (m_state == JPEG_DECOMPRESS_PROGRESSIVE) {
                 int status = 0;
                 do {
-                    decoder_error_mgr* err = reinterpret_cast_ptr<decoder_error_mgr *>(m_info.err);
+                    decoder_error_mgr* err = reinterpret_cast_ptr<decoder_error_mgr*>(m_info.err);
                     if (err->num_corrupt_warnings)
                         break;
                     status = jpeg_consume_input(&m_info);
@@ -714,7 +713,7 @@ private:
 void error_exit(j_common_ptr cinfo)
 {
     // Return control to the setjmp point.
-    decoder_error_mgr* err = reinterpret_cast_ptr<decoder_error_mgr *>(cinfo->err);
+    decoder_error_mgr* err = reinterpret_cast_ptr<decoder_error_mgr*>(cinfo->err);
     longjmp(err->setjmp_buffer, -1);
 }
 
@@ -723,7 +722,7 @@ void emit_message(j_common_ptr cinfo, int msg_level)
     if (msg_level >= 0)
         return;
 
-    decoder_error_mgr* err = reinterpret_cast_ptr<decoder_error_mgr *>(cinfo->err);
+    decoder_error_mgr* err = reinterpret_cast_ptr<decoder_error_mgr*>(cinfo->err);
     err->pub.num_warnings++;
 
     // Detect and count corrupt JPEG warning messages.
@@ -741,19 +740,19 @@ void init_source(j_decompress_ptr)
 
 void skip_input_data(j_decompress_ptr jd, long num_bytes)
 {
-    decoder_source_mgr *src = (decoder_source_mgr *)jd->src;
+    decoder_source_mgr* src = reinterpret_cast_ptr<decoder_source_mgr*>(jd->src);
     src->decoder->skipBytes(num_bytes);
 }
 
 boolean fill_input_buffer(j_decompress_ptr jd)
 {
-    decoder_source_mgr* src = (decoder_source_mgr*)jd->src;
+    decoder_source_mgr* src = reinterpret_cast_ptr<decoder_source_mgr*>(jd->src);
     return src->decoder->fillBuffer();
 }
 
 void term_source(j_decompress_ptr jd)
 {
-    decoder_source_mgr *src = (decoder_source_mgr *)jd->src;
+    decoder_source_mgr* src = reinterpret_cast_ptr<decoder_source_mgr*>(jd->src);
     src->decoder->decoder()->complete();
 }
 
@@ -999,7 +998,7 @@ bool JPEGImageDecoder::outputScanlines()
 #if defined(TURBO_JPEG_RGB_SWIZZLE)
     if (turboSwizzled(info->out_color_space)) {
         while (info->output_scanline < info->output_height) {
-            unsigned char* row = reinterpret_cast<unsigned char*>(buffer.getAddr(0, info->output_scanline));
+            unsigned char* row = reinterpret_cast_ptr<unsigned char*>(buffer.getAddr(0, info->output_scanline));
             if (jpeg_read_scanlines(info, &row, 1) != 1)
                 return false;
 #if USE(QCMSLIB)
