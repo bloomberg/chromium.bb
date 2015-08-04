@@ -1711,6 +1711,21 @@
             'android_sdk_version%': '22',
             'android_sdk_build_tools_version%': '22.0.0',
             'host_os%': "<!(uname -s | sed -e 's/Linux/linux/;s/Darwin/mac/')",
+
+            'conditions': [
+              # Figure this out early since it needs symbols from libgcc.a, so it
+              # has to be before that in the set of libraries.
+              # ASan needs to dynamically link to libc++ even in static builds so
+              # that it can interpose operator new.
+              ['component=="shared_library" or asan==1', {
+                  'android_libcpp_library': 'c++_shared',
+                  'android_must_copy_system_libraries': 1,
+              }, {
+                  'android_libcpp_library': 'c++_static',
+                  'android_must_copy_system_libraries': 0,
+              }],
+            ],
+
           },
           # Copy conditionally-set variables out one scope.
           'android_ndk_root%': '<(android_ndk_root)',
@@ -1718,6 +1733,8 @@
           'android_sdk_root%': '<(android_sdk_root)',
           'android_sdk_version%': '<(android_sdk_version)',
           'android_libcpp_root': '<(android_ndk_root)/sources/cxx-stl/llvm-libc++',
+          'android_libcpp_library': '<(android_libcpp_library)',
+          'android_must_copy_system_libraries': '<(android_must_copy_system_libraries)',
           'host_os%': '<(host_os)',
 
           'android_sdk%': '<(android_sdk_root)/platforms/android-<(android_sdk_version)',
@@ -1795,8 +1812,10 @@
         'android_sdk_jar%': '<(android_sdk)/android.jar',
 
         'android_libcpp_root': '<(android_libcpp_root)',
+        'android_libcpp_library': '<(android_libcpp_library)',
         'android_libcpp_include': '<(android_libcpp_root)/libcxx/include',
         'android_libcpp_libs_dir%': '<(android_libcpp_root)/libs/<(android_app_abi)',
+        'android_must_copy_system_libraries': '<(android_must_copy_system_libraries)',
         'host_os%': '<(host_os)',
 
         # Location of the "objcopy" binary, used by both gyp and scripts.
@@ -4741,15 +4760,6 @@
         # identifying various build artifacts corresponding to a particular
         # build of chrome (e.g. where to find archived symbols).
         'chrome_build_id%': '',
-        'conditions': [
-          # Figure this out early since it needs symbols from libgcc.a, so it
-          # has to be before that in the set of libraries.
-          ['component=="shared_library"', {
-              'android_libcpp_library': 'c++_shared',
-          }, {
-              'android_libcpp_library': 'c++_static',
-          }],
-        ],
 
         # Placing this variable here prevents from forking libvpx, used
         # by remoting.  Remoting is off, so it needn't built,

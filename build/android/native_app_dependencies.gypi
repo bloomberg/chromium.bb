@@ -29,7 +29,7 @@
     'include_main_binary%': 1,
   },
   'conditions': [
-      ['component == "shared_library"', {
+      ['android_must_copy_system_libraries == 1', {
         'dependencies': [
           '<(DEPTH)/build/android/setup.gyp:copy_system_libraries',
         ],

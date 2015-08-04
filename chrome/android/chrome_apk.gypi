@@ -25,7 +25,7 @@
     'proguard_flags_paths': ['<(DEPTH)/chrome/android/java/proguard.flags'],
     'additional_input_paths' : ['<@(chrome_android_pak_output_resources)'],
     'conditions': [
-      ['component != "shared_library"', {
+      ['android_must_copy_system_libraries == 0', {
         # Only enable the chromium linker on regular builds, since the
         # component build crashes on Android 4.4. See b/11379966
         'use_chromium_linker': '<(chrome_apk_use_chromium_linker)',

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 {
   'conditions': [
-    ['component == "shared_library"', {
+    ['android_must_copy_system_libraries == 1', {
       'targets': [
         {
           # These libraries from the Android ndk are required to be packaged with

@@ -67,7 +67,7 @@
         '--stamp=<(stamp)',
       ],
     }],
-    ['component == "shared_library"', {
+    ['android_must_copy_system_libraries == 1', {
       # Add a fake output to force the build to always re-run this step. This
       # is required because the real inputs are not known at gyp-time and
       # changing base.so may not trigger changes to dependent libraries.
