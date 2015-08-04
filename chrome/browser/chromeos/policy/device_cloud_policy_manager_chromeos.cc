@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/policy/remote_commands/device_commands_factory_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/chromeos/policy/status_uploader.h"
+#include "chrome/browser/chromeos/policy/system_log_uploader.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"
@@ -189,6 +190,7 @@ bool DeviceCloudPolicyManagerChromeOS::IsSharkRequisition() const {
 
 void DeviceCloudPolicyManagerChromeOS::Shutdown() {
   status_uploader_.reset();
+  syslog_uploader_.reset();
   heartbeat_scheduler_.reset();
   state_keys_update_subscription_.reset();
   CloudPolicyManager::Shutdown();
@@ -253,6 +255,7 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
   // the monitoring settings and only perform monitoring if it is active.
   if (install_attributes->IsEnterpriseDevice()) {
     CreateStatusUploader();
+    syslog_uploader_.reset(new SystemLogUploader(nullptr, task_runner_));
     heartbeat_scheduler_.reset(
         new HeartbeatScheduler(g_browser_process->gcm_driver(),
                                install_attributes->GetDomain(),
@@ -277,6 +280,7 @@ void DeviceCloudPolicyManagerChromeOS::Unregister(
 
 void DeviceCloudPolicyManagerChromeOS::Disconnect() {
   status_uploader_.reset();
+  syslog_uploader_.reset();
   heartbeat_scheduler_.reset();
   core()->Disconnect();
 

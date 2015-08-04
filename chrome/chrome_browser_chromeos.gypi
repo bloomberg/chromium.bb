@@ -875,6 +875,8 @@
         'browser/chromeos/policy/server_backed_state_keys_broker.h',
         'browser/chromeos/policy/status_uploader.cc',
         'browser/chromeos/policy/status_uploader.h',
+        'browser/chromeos/policy/system_log_uploader.cc',
+        'browser/chromeos/policy/system_log_uploader.h',
         'browser/chromeos/policy/ticl_device_settings_provider.cc',
         'browser/chromeos/policy/ticl_device_settings_provider.h',
         'browser/chromeos/policy/upload_job.h',
