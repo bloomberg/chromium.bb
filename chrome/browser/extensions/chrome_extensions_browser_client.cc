@@ -332,12 +332,10 @@ void ChromeExtensionsBrowserClient::ReportError(
   ErrorConsole::Get(context)->ReportError(error.Pass());
 }
 
-void ChromeExtensionsBrowserClient::CleanUpWebView(int embedder_process_id,
-                                                   int view_instance_id) {
-  content::BrowserContext* browser_context =
-      content::RenderProcessHost::FromID(embedder_process_id)
-      ->GetBrowserContext();
-
+void ChromeExtensionsBrowserClient::CleanUpWebView(
+    content::BrowserContext* browser_context,
+    int embedder_process_id,
+    int view_instance_id) {
   // Clean up context menus for the WebView.
   auto menu_manager =
       MenuManager::Get(Profile::FromBrowserContext(browser_context));

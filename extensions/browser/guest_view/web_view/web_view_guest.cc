@@ -231,8 +231,8 @@ void WebViewGuest::CleanUp(content::BrowserContext* browser_context,
   csm->RemoveAllContentScriptsForWebView(embedder_process_id, view_instance_id);
 
   // Allow an extensions browser client to potentially perform more cleanup.
-  ExtensionsBrowserClient::Get()->CleanUpWebView(embedder_process_id,
-                                                 view_instance_id);
+  ExtensionsBrowserClient::Get()->CleanUpWebView(
+      browser_context, embedder_process_id, view_instance_id);
 }
 
 // static
