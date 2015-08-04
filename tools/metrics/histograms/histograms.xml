@@ -2724,6 +2724,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Bluetooth.Web.FunctionCall.Count" enum="WebBluetoothFunction">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Counts the number of times each call to a WebBluetooth function is done.
+  </summary>
+</histogram>
+
 <histogram name="Bookmarks.LaunchDepth">
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -71138,6 +71147,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Unknown (unused)"/>
   <int value="4" label="Online"/>
   <int value="5" label="Policy"/>
+</enum>
+
+<enum name="WebBluetoothFunction" type="int">
+  <int value="0" label="requestDevice()"/>
+  <int value="1" label="connectGATT()"/>
+  <int value="2" label="getPrimaryService()"/>
+  <int value="3" label="getCharacteristic()"/>
+  <int value="4" label="Characteristic.readValue()"/>
+  <int value="5" label="Characteristic.writeValue()"/>
 </enum>
 
 <enum name="WebFontCacheHit" type="int">

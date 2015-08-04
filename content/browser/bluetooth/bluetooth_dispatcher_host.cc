@@ -50,7 +50,8 @@ enum class UMARequestDeviceOutcome {
   DISCOVERY_STOP_FAILED = 4,
   NO_MATCHING_DEVICES_FOUND = 5,
   // NOTE: Add new requestDevice() outcomes immediately above this line. Make
-  // sure to update the enum list in tools/histogram/histograms.xml accordingly.
+  // sure to update the enum list in
+  // tools/metrics/histogram/histograms.xml accordingly.
   COUNT
 };
 
@@ -58,6 +59,24 @@ void RecordRequestDeviceOutcome(UMARequestDeviceOutcome outcome) {
   UMA_HISTOGRAM_ENUMERATION("Bluetooth.RequestDevice.Outcome",
                             static_cast<int>(outcome),
                             static_cast<int>(UMARequestDeviceOutcome::COUNT));
+}
+
+enum class UMAWebBluetoothFunction {
+  REQUEST_DEVICE,
+  CONNECT_GATT,
+  GET_PRIMARY_SERVICE,
+  GET_CHARACTERISTIC,
+  CHARACTERISTIC_READ_VALUE,
+  CHARACTERISTIC_WRITE_VALUE,
+  // NOTE: Add new actions immediately above this line. Make sure to update the
+  // enum list in tools/metrics/histogram/histograms.xml accordingly.
+  COUNT
+};
+
+void RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction function) {
+  UMA_HISTOGRAM_ENUMERATION("Bluetooth.Web.FunctionCall.Count",
+                            static_cast<int>(function),
+                            static_cast<int>(UMAWebBluetoothFunction::COUNT));
 }
 
 // TODO(ortuno): Once we have a chooser for scanning and the right
@@ -249,6 +268,7 @@ void BluetoothDispatcherHost::OnRequestDevice(
     const std::vector<BluetoothScanFilter>& filters,
     const std::vector<BluetoothUUID>& optional_services) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::REQUEST_DEVICE);
 
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id_, frame_routing_id);
@@ -296,6 +316,8 @@ void BluetoothDispatcherHost::OnConnectGATT(
     int request_id,
     const std::string& device_instance_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::CONNECT_GATT);
+
   // TODO(ortuno): Right now it's pointless to check if the domain has access to
   // the device, because any domain can connect to any device. But once
   // permissions are implemented we should check that the domain has access to
@@ -321,6 +343,8 @@ void BluetoothDispatcherHost::OnGetPrimaryService(
     const std::string& device_instance_id,
     const std::string& service_uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::GET_PRIMARY_SERVICE);
+
   // TODO(ortuno): Check if device_instance_id is in "allowed devices"
   // https://crbug.com/493459
   // TODO(ortuno): Check if service_uuid is in "allowed services"
@@ -341,6 +365,7 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
     const std::string& service_instance_id,
     const std::string& characteristic_uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::GET_CHARACTERISTIC);
 
   auto device_iter = service_to_device_.find(service_instance_id);
   // A service_instance_id not in the map implies a hostile renderer
@@ -402,6 +427,8 @@ void BluetoothDispatcherHost::OnReadValue(
     int request_id,
     const std::string& characteristic_instance_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RecordWebBluetoothFunctionCall(
+      UMAWebBluetoothFunction::CHARACTERISTIC_READ_VALUE);
 
   auto characteristic_iter =
       characteristic_to_service_.find(characteristic_instance_id);
@@ -457,6 +484,8 @@ void BluetoothDispatcherHost::OnWriteValue(
     const std::string& characteristic_instance_id,
     const std::vector<uint8_t>& value) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RecordWebBluetoothFunctionCall(
+      UMAWebBluetoothFunction::CHARACTERISTIC_WRITE_VALUE);
 
   // Length check per step 3 of writeValue algorithm:
   // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothgattcharacteristic-writevalue
