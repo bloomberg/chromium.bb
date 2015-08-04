@@ -27,10 +27,6 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
 
-#if defined(USE_AURA)
-#include "ui/aura/env.h"
-#endif
-
 namespace extensions {
 
 using content::BrowserThread;
@@ -112,15 +108,9 @@ void TestExtensionEnvironment::Init() {
   if (!chromeos::DeviceSettingsService::IsInitialized())
     chromeos_env_.reset(new ChromeOSEnv);
 #endif
-#if defined(USE_AURA)
-  aura::Env::CreateInstance(true);
-#endif
 }
 
 TestExtensionEnvironment::~TestExtensionEnvironment() {
-#if defined(USE_AURA)
-  aura::Env::DeleteInstance();
-#endif
 }
 
 TestingProfile* TestExtensionEnvironment::profile() const {

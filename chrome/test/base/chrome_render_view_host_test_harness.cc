@@ -16,11 +16,6 @@
 #include "ash/shell.h"
 #endif
 
-#if defined(USE_AURA)
-#include "ui/aura/env.h"
-#include "ui/aura/window_event_dispatcher.h"
-#endif
-
 using content::RenderViewHostTester;
 using content::RenderViewHostTestHarness;
 
@@ -64,9 +59,6 @@ void ChromeRenderViewHostTestHarness::TearDown() {
   RenderViewHostTestHarness::TearDown();
 #if defined(USE_ASH)
   ash::Shell::DeleteInstance();
-#endif
-#if defined(USE_AURA)
-  aura::Env::DeleteInstance();
 #endif
 }
 

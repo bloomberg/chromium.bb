@@ -9,21 +9,10 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 
-#if defined(USE_AURA)
-#include "ui/aura/env.h"
-#endif
-
 namespace content {
 
 TestWebContentsFactory::TestWebContentsFactory()
-    : rvh_enabler_(new content::RenderViewHostTestEnabler()),
-      tear_down_aura_(false) {
-#if defined(USE_AURA)
-  if (aura::Env::GetInstanceDontCreate() == nullptr) {
-    aura::Env::CreateInstance(true);
-    tear_down_aura_ = true;
-  }
-#endif
+    : rvh_enabler_(new content::RenderViewHostTestEnabler()) {
 }
 
 TestWebContentsFactory::~TestWebContentsFactory() {
@@ -36,10 +25,6 @@ TestWebContentsFactory::~TestWebContentsFactory() {
   rvh_enabler_.reset();
   // Let any posted tasks for RenderProcess/ViewHost deletion run.
   base::RunLoop().RunUntilIdle();
-#if defined(USE_AURA)
-  if (tear_down_aura_)
-    aura::Env::DeleteInstance();
-#endif
 }
 
 WebContents* TestWebContentsFactory::CreateWebContents(
