@@ -7,6 +7,18 @@
 
 #include <list>
 
+#include "build/build_config.h"
+
+// TODO(rtenneti): Temporary while investigating crbug.com/468529.
+//                 Note base::Debug::StackTrace() is not supported in NACL
+//                 builds so conditionally disabled it there.
+#ifndef OS_NACL
+#define TEMP_INSTRUMENTATION_468529
+#endif
+
+#ifdef TEMP_INSTRUMENTATION_468529
+#include "base/debug/stack_trace.h"
+#endif
 #include "base/memory/weak_ptr.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_stream.h"
@@ -74,6 +86,14 @@ class NET_EXPORT_PRIVATE QuicHttpStream
  private:
   friend class test::QuicHttpStreamPeer;
 
+#ifdef TEMP_INSTRUMENTATION_468529
+  // TODO(rtenneti): Temporary while investigating crbug.com/468529
+  enum Liveness {
+    ALIVE = 0xCA11AB13,
+    DEAD = 0xDEADBEEF,
+  };
+#endif
+
   enum State {
     STATE_NONE,
     STATE_SEND_HEADERS,
@@ -104,6 +124,9 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   int ReadAvailableData(IOBuffer* buf, int buf_len);
 
   SpdyMajorVersion GetSpdyVersion();
+
+  // TODO(rtenneti): Temporary while investigating crbug.com/468529
+  void CrashIfInvalid() const;
 
   State next_state_;
 
@@ -157,6 +180,12 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   scoped_refptr<DrainableIOBuffer> request_body_buf_;
 
   BoundNetLog stream_net_log_;
+
+#ifdef TEMP_INSTRUMENTATION_468529
+  // TODO(rtenneti): Temporary while investigating crbug.com/468529
+  Liveness liveness_ = ALIVE;
+  base::debug::StackTrace stack_trace_;
+#endif
 
   base::WeakPtrFactory<QuicHttpStream> weak_factory_;
 
