@@ -20,7 +20,7 @@ class NavigationItem;
 // NavigationItem via the SupportsUserData interface and holds two
 // values:
 // (1) the NavigationItem's corresponding WKBackForwardListItem,
-// (2) whether or not the NavigationItem's HTTP method is POST
+// (2) the NavigationItem's corresponding WKNavigationType
 class WKBackForwardListItemHolder : public base::SupportsUserData::Data {
  public:
   // Returns the WKBackForwardListItemHolder for the NavigationItem |item|.
@@ -30,17 +30,17 @@ class WKBackForwardListItemHolder : public base::SupportsUserData::Data {
 
   // Accessors for |item_|. Use these to get/set the association between a
   // NavigationItem and a WKBackForwardListItem. Note that
-  // |GetBackForwardListItem| may return nil (f.e. when the
+  // |back_forward_list_item| may return nil (f.e. when the
   // parent WKBackForwardList is deallocated).
-  WKBackForwardListItem* back_forward_list_item() { return item_; }
+  WKBackForwardListItem* back_forward_list_item() const { return item_; }
   void set_back_forward_list_item(WKBackForwardListItem* item) {
     item_.reset(item);
   }
 
-  // Accessors for |is_post_|. true if the associated Navigationitem's
-  // HTTP method is POST.
-  bool is_post() { return is_post_; }
-  void set_is_post(bool is_post) { is_post_ = is_post; }
+  // Accessors for |navigation_type_|. Use these to get/set the association
+  // between a NavigationItem and a WKNavigationType.
+  WKNavigationType navigation_type() const { return navigation_type_; }
+  void set_navigation_type(WKNavigationType type) { navigation_type_ = type; }
 
  private:
   WKBackForwardListItemHolder();
@@ -50,8 +50,8 @@ class WKBackForwardListItemHolder : public base::SupportsUserData::Data {
   // WKBackForwardList is deallocated.
   base::WeakNSObject<WKBackForwardListItem> item_;
 
-  // true if the associated Navigationitem's HTTP method is POST.
-  bool is_post_;
+  // The navigation type for the associated NavigationItem.
+  WKNavigationType navigation_type_;
 
   DISALLOW_COPY_AND_ASSIGN(WKBackForwardListItemHolder);
 };

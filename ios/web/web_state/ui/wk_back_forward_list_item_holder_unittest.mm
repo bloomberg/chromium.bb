@@ -63,22 +63,48 @@ TEST_F(WKBackForwardListItemHolderTest, GetBackForwardListItemFromHolder) {
   EXPECT_EQ(input, result);
 }
 
-// Tests that acessors for is_post work as expected.
-TEST_F(WKBackForwardListItemHolderTest, GetIsPostFromHolder) {
+// Tests that acessors for navigation type work as expected.
+TEST_F(WKBackForwardListItemHolderTest, GetNavigationTypeFromHolder) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
   scoped_ptr<web::NavigationItem> item(NavigationItem::Create());
   WKBackForwardListItemHolder* holder =
       WKBackForwardListItemHolder::FromNavigationItem(item.get());
 
-  // Verify that setting 'false' means |is_post| returns 'false'.
-  holder->set_is_post(false);
-  bool result = holder->is_post();
-  EXPECT_EQ(false, result);
+  // Verify that setting 'WKNavigationTypeOther' means
+  // |navigation_type| returns WKNavigationTypeBackForward
+  WKNavigationType type = WKNavigationTypeOther;
+  holder->set_navigation_type(type);
+  EXPECT_EQ(type, holder->navigation_type());
 
-  // Verify that setting 'true' means |is_post| returns 'true'.
-  holder->set_is_post(true);
-  result = holder->is_post();
-  EXPECT_EQ(true, result);
+  // Verify that setting 'WKNavigationTypeBackForward' means
+  // |navigation_type| returns 'WKNavigationTypeBackForward'
+  type = WKNavigationTypeBackForward;
+  holder->set_navigation_type(type);
+  EXPECT_EQ(type, holder->navigation_type());
+
+  // Verify that setting 'WKNavigationTypeFormSubmitted' means
+  // |navigation_type| returns 'WKNavigationTypeFormSubmitted'
+  type = WKNavigationTypeFormSubmitted;
+  holder->set_navigation_type(type);
+  EXPECT_EQ(type, holder->navigation_type());
+
+  // Verify that setting 'WKNavigationTypeFormResubmitted' means
+  // |navigation_type| returns 'WKNavigationTypeFormResubmitted'
+  type = WKNavigationTypeFormResubmitted;
+  holder->set_navigation_type(type);
+  EXPECT_EQ(type, holder->navigation_type());
+
+  // Verify that setting 'WKNavigationTypeReload' means
+  // |navigation_type| returns 'WKNavigationTypeReload'
+  type = WKNavigationTypeReload;
+  holder->set_navigation_type(type);
+  EXPECT_EQ(type, holder->navigation_type());
+
+  // Verify that setting 'WKNavigationTypeLinkActivated' means
+  // |navigation_type| returns 'WKNavigationTypeLinkActivated'
+  type = WKNavigationTypeLinkActivated;
+  holder->set_navigation_type(type);
+  EXPECT_EQ(type, holder->navigation_type());
 }
 
 // Tests that |back_forward_list_item| returns nil if the internal

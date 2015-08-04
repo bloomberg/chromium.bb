@@ -117,6 +117,12 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // Backs the property of the same name.
   base::scoped_nsobject<NSString> _documentMIMEType;
 
+  // The navigation type of the last navigation action of the main frame. This
+  // value is assigned at |decidePolicyForNavigationAction| where the navigation
+  // type is extracted from the request and associated with a committed
+  // navigation item at |didCommitNavigation|.
+  WKNavigationType _lastNavigationTypeForMainFrame;
+
   // Whether the web page is currently performing window.history.pushState or
   // window.history.replaceState
   // Set to YES on window.history.willChangeState message. To NO on
@@ -175,6 +181,13 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 // Discards the pending referrer.
 - (void)discardPendingReferrerString;
+
+// Extracts the current navigation type from WKNavigationAction and sets it as
+// the last navigation type. However, the value should be considered pending
+// because it isn't really the "last" navigation type until it becomes
+// associated with a navigation item at |didCommitNavigation|.
+- (void)updateLastNavigationTypeForMainFrameFromNavigationAction:
+    (WKNavigationAction*)action;
 
 // Returns a new CRWWKWebViewCrashDetector created with the given |webView| or
 // nil if |webView| is nil. Callers are responsible for releasing the object.
@@ -568,7 +581,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 }
 
 - (void)updatePendingReferrerFromNavigationAction:(WKNavigationAction*)action {
-  if (action.targetFrame.isMainFrame)
+  if (action.targetFrame.mainFrame)
     [self setPendingReferrerString:GetRefererFromNavigationAction(action)];
 }
 
@@ -578,6 +591,12 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 - (void)discardPendingReferrerString {
   _pendingReferrerString.reset();
+}
+
+- (void)updateLastNavigationTypeForMainFrameFromNavigationAction:
+    (WKNavigationAction*)action {
+  if (action.targetFrame.mainFrame)
+    _lastNavigationTypeForMainFrame = action.navigationType;
 }
 
 - (CRWWKWebViewCrashDetector*)newCrashDetectorWithWebView:(WKWebView*)webView {
@@ -841,8 +860,8 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
       net::GURLWithNSURL(error.userInfo[NSURLErrorFailingURLErrorKey]);
   if (web::GetWebClient()->IsAppSpecificURL(errorURL))
     return NO;
-  // Don't abort NSURLErrorCancelled errors originating from navigation, as the
-  // WKWebView will automatically retry these loads.
+  // Don't abort NSURLErrorCancelled errors originating from navigation
+  // as the WKWebView will automatically retry these loads.
   WKWebViewErrorSource source = WKWebViewErrorSourceFromError(error);
   return source != NAVIGATION;
 }
@@ -1010,12 +1029,15 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
   // The page will not be changed until this navigation is commited, so the
   // retrieved referrer will be pending until |didCommitNavigation| callback.
+  // Same for the last navigation type.
   [self updatePendingReferrerFromNavigationAction:navigationAction];
+  [self updateLastNavigationTypeForMainFrameFromNavigationAction:
+            navigationAction];
 
-  if (navigationAction.sourceFrame.isMainFrame)
+  if (navigationAction.sourceFrame.mainFrame)
     self.documentMIMEType = nil;
 
-  web::FrameInfo targetFrame(navigationAction.targetFrame.isMainFrame);
+  web::FrameInfo targetFrame(navigationAction.targetFrame.mainFrame);
   BOOL isLinkClick = [self isLinkNavigation:navigationAction.navigationType];
   BOOL allowLoad = [self shouldAllowLoadWithRequest:request
                                         targetFrame:&targetFrame
