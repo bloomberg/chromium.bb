@@ -201,7 +201,7 @@ void WorkerThreadableLoader::MainThreadBridge::cancel()
 {
     m_loaderProxy->postTaskToLoader(
         createCrossThreadTask(&MainThreadBridge::mainThreadCancel, this));
-    ThreadableLoaderClientWrapper* clientWrapper = m_workerClientWrapper.get();
+    RefPtr<ThreadableLoaderClientWrapper> clientWrapper = m_workerClientWrapper;
     if (!clientWrapper->done()) {
         // If the client hasn't reached a termination state, then transition it by sending a cancellation error.
         // Note: no more client callbacks will be done after this method -- the clearClientWrapper() call ensures that.
@@ -209,7 +209,12 @@ void WorkerThreadableLoader::MainThreadBridge::cancel()
         error.setIsCancellation(true);
         clientWrapper->didFail(error);
     }
-    clearClientWrapper();
+    // |this| might be already destructed here because didFail() might
+    // clear a reference to ThreadableLoader, which might destruct
+    // WorkerThreadableLoader and then MainThreadBridge.
+    // Therefore we call clearClient() directly, rather than calling
+    // this->clearClientWrapper().
+    clientWrapper->clearClient();
 }
 
 void WorkerThreadableLoader::MainThreadBridge::clearClientWrapper()
