@@ -1308,13 +1308,22 @@ void WebGLRenderingContextBase::reshape(int width, int height)
     // This is an approximation because at WebGLRenderingContextBase level we don't
     // know if the underlying FBO uses textures or renderbuffers.
     GLint maxSize = std::min(m_maxTextureSize, m_maxRenderbufferSize);
-    // Limit drawing buffer size to 4k to avoid memory exhaustion.
-    const int sizeUpperLimit = 4096;
-    maxSize = std::min(maxSize, sizeUpperLimit);
     GLint maxWidth = std::min(maxSize, m_maxViewportDims[0]);
     GLint maxHeight = std::min(maxSize, m_maxViewportDims[1]);
     width = clamp(width, 1, maxWidth);
     height = clamp(height, 1, maxHeight);
+
+    // Limit drawing buffer area to 4k*4k to avoid memory exhaustion. Width or height may be larger than
+    // 4k as long as it's within the max viewport dimensions and total area remains within the limit.
+    // For example: 5120x2880 should be fine.
+    const int maxArea = 4096 * 4096;
+    int currentArea = width * height;
+    if (currentArea > maxArea) {
+        // If we've exceeded the area limit scale the buffer down, preserving ascpect ratio, until it fits.
+        float scaleFactor = sqrtf(static_cast<float>(maxArea) / static_cast<float>(currentArea));
+        width = std::max(1, static_cast<int>(width * scaleFactor));
+        height = std::max(1, static_cast<int>(height * scaleFactor));
+    }
 
     // We don't have to mark the canvas as dirty, since the newly created image buffer will also start off
     // clear (and this matches what reshape will do).
