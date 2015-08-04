@@ -379,7 +379,14 @@ void SpellCheck::RequestTextChecking(
 #endif
 
 bool SpellCheck::InitializeIfNeeded() {
-  return languages_.empty() ? true : languages_.front()->InitializeIfNeeded();
+  if (languages_.empty())
+    return true;
+
+  bool initialize_if_needed = false;
+  for (SpellcheckLanguage* language : languages_)
+    initialize_if_needed |= language->InitializeIfNeeded();
+
+  return initialize_if_needed;
 }
 
 #if !defined(OS_MACOSX) // OSX doesn't have |pending_request_param_|
@@ -397,7 +404,11 @@ void SpellCheck::PostDelayedSpellCheckTask(SpellcheckRequest* request) {
 void SpellCheck::PerformSpellCheck(SpellcheckRequest* param) {
   DCHECK(param);
 
-  if (languages_.empty() || !languages_.front()->IsEnabled()) {
+  if (languages_.empty() ||
+      std::find_if(languages_.begin(), languages_.end(),
+                   [](SpellcheckLanguage* language) {
+                     return !language->IsEnabled();
+                   }) != languages_.end()) {
     param->completion()->didCancelCheckingText();
   } else {
     WebVector<blink::WebTextCheckingResult> results;

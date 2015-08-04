@@ -52,12 +52,13 @@ class SpellCheck : public content::RenderProcessObserver,
 
   void AddSpellcheckLanguage(base::File file, const std::string& language);
 
-  // If there is no dictionary file, then this requests one from the browser
+  // If there are no dictionary files, then this requests them from the browser
   // and does not block. In this case it returns true.
-  // If there is a dictionary file, but Hunspell has not been loaded, then
-  // this loads Hunspell.
-  // If Hunspell is already loaded, this does nothing. In both the latter cases
-  // it returns false, meaning that it is OK to continue spellchecking.
+  // If there are dictionary files, but their Hunspell has not been loaded, then
+  // this loads their Hunspell.
+  // If each dictionary file's Hunspell is already loaded, this does nothing. In
+  // both the latter cases it returns false, meaning that it is OK to continue
+  // spellchecking.
   bool InitializeIfNeeded();
 
   // SpellCheck a word.
