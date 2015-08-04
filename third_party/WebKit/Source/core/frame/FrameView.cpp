@@ -36,6 +36,7 @@
 #include "core/dom/Fullscreen.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/RenderedPosition.h"
+#include "core/editing/htmlediting.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoadPriorityOptimizer.h"
 #include "core/frame/FrameHost.h"

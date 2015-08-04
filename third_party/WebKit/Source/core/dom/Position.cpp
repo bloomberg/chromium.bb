@@ -1351,19 +1351,6 @@ InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(EAffinit
     return InlineBoxPosition(inlineBox, caretOffset);
 }
 
-TextDirection primaryDirectionOf(const Node& node)
-{
-    TextDirection primaryDirection = LTR;
-    for (const LayoutObject* r = node.layoutObject(); r; r = r->parent()) {
-        if (r->isLayoutBlockFlow()) {
-            primaryDirection = r->style()->direction();
-            break;
-        }
-    }
-
-    return primaryDirection;
-}
-
 template <typename Strategy>
 void PositionAlgorithm<Strategy>::debugPosition(const char* msg) const
 {

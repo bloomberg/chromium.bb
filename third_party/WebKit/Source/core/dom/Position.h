@@ -461,9 +461,6 @@ inline PositionInComposedTree fromPositionInDOMTree<EditingInComposedTreeStrateg
     return toPositionInComposedTree(position);
 }
 
-// TODO(yosin) We should move |primaryDirectionOf()| to "htmlediting.h".
-CORE_EXPORT TextDirection primaryDirectionOf(const Node&);
-
 } // namespace blink
 
 #ifndef NDEBUG

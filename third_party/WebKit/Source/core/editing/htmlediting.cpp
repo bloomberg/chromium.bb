@@ -536,6 +536,19 @@ TextDirection directionOfEnclosingBlock(const Position& position)
     return layoutObject ? layoutObject->style()->direction() : LTR;
 }
 
+TextDirection primaryDirectionOf(const Node& node)
+{
+    TextDirection primaryDirection = LTR;
+    for (const LayoutObject* r = node.layoutObject(); r; r = r->parent()) {
+        if (r->isLayoutBlockFlow()) {
+            primaryDirection = r->style()->direction();
+            break;
+        }
+    }
+
+    return primaryDirection;
+}
+
 // This method is used to create positions in the DOM. It returns the maximum valid offset
 // in a node. It returns 1 for some elements even though they do not have children, which
 // creates technically invalid DOM Positions. Be sure to call parentAnchoredEquivalent
