@@ -856,8 +856,6 @@
       'renderer/api_activity_logger.h',
       'renderer/api_definitions_natives.cc',
       'renderer/api_definitions_natives.h',
-      'renderer/app_runtime_custom_bindings.cc',
-      'renderer/app_runtime_custom_bindings.h',
       'renderer/app_window_custom_bindings.cc',
       'renderer/app_window_custom_bindings.h',
       'renderer/binding_generating_native_handler.cc',

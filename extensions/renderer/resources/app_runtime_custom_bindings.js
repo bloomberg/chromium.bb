@@ -11,10 +11,6 @@ var AppViewGuestInternal =
 var eventBindings = require('event_bindings');
 var fileSystemHelpers = requireNative('file_system_natives');
 var GetIsolatedFileSystem = fileSystemHelpers.GetIsolatedFileSystem;
-var appNatives = requireNative('app_runtime');
-var DeserializeString = appNatives.DeserializeString;
-var SerializeToString = appNatives.SerializeToString;
-var CreateBlob = appNatives.CreateBlob;
 var entryIdManager = require('entryIdManager');
 
 eventBindings.registerArgumentMassager('app.runtime.onEmbedRequested',

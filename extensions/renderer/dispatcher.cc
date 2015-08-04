@@ -46,7 +46,6 @@
 #include "extensions/common/view_type.h"
 #include "extensions/renderer/api_activity_logger.h"
 #include "extensions/renderer/api_definitions_natives.h"
-#include "extensions/renderer/app_runtime_custom_bindings.h"
 #include "extensions/renderer/app_window_custom_bindings.h"
 #include "extensions/renderer/binding_generating_native_handler.h"
 #include "extensions/renderer/blob_native_handler.h"
@@ -669,9 +668,6 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       scoped_ptr<NativeHandler>(new FileSystemNatives(context)));
 
   // Custom bindings.
-  module_system->RegisterNativeHandler(
-      "app_runtime",
-      scoped_ptr<NativeHandler>(new AppRuntimeCustomBindings(context)));
   // |dispatcher| is null in unit tests.
   const ScriptContextSet* script_context_set = dispatcher ?
       &dispatcher->script_context_set() : nullptr;
