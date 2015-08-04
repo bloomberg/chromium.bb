@@ -434,6 +434,16 @@
                   'sources': [
                     '<(shared_generated_dir)/ffmpeg.def',
                   ],
+                  'conditions': [
+                    ['OS=="win" and win_use_allocator_shim==1', {
+                      'dependencies': [
+                        '../../base/allocator/allocator.gyp:allocator',
+                      ],
+                      'sources': [
+                        'chromium/dllmain.cc',
+                      ],
+                    }],
+                  ],
                   'actions': [
                     {
                       'action_name': 'generate_def',
