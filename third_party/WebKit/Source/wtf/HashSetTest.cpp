@@ -82,6 +82,44 @@ TEST(HashSetTest, InitialCapacity)
     generateTestCapacityUpToSize<128>();
 }
 
+template<unsigned size> void testReserveCapacity();
+template<> void testReserveCapacity<0>() {}
+template<unsigned size> void testReserveCapacity()
+{
+    const unsigned expectedInitialCapacity = HashTableCapacityForSize<size>::value;
+    HashSet<int> testSet;
+
+    // Initial capacity is null.
+    EXPECT_EQ(0UL, testSet.capacity());
+
+    testSet.reserveCapacityForSize(size);
+    EXPECT_EQ(expectedInitialCapacity, testSet.capacity());
+
+    // Adding items up to size should never change the capacity.
+    for (size_t i = 0; i < size; ++i) {
+        testSet.add(i + 1); // Avoid adding '0'.
+        EXPECT_EQ(expectedInitialCapacity, testSet.capacity());
+    }
+
+    // Adding items up to less than half the capacity should not change the capacity.
+    unsigned capacityLimit = expectedInitialCapacity / 2 - 1;
+    for (size_t i = size; i < capacityLimit; ++i) {
+        testSet.add(i + 1);
+        EXPECT_EQ(expectedInitialCapacity, testSet.capacity());
+    }
+
+    // Adding one more item increase the capacity.
+    testSet.add(expectedInitialCapacity);
+    EXPECT_GT(testSet.capacity(), expectedInitialCapacity);
+
+    testReserveCapacity<size-1>();
+}
+
+TEST(HashSetTest, ReserveCapacity)
+{
+    testReserveCapacity<128>();
+}
+
 struct Dummy {
     Dummy(bool& deleted) : deleted(deleted) { }
 

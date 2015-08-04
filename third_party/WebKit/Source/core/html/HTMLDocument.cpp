@@ -204,63 +204,31 @@ void HTMLDocument::removeExtraNamedItem(const AtomicString& name)
     removeItemFromMap(m_extraNamedItemCounts, name);
 }
 
-static void addLocalNameToSet(HashSet<StringImpl*>* set, const QualifiedName& qName)
-{
-    set->add(qName.localName().impl());
-}
-
 static HashSet<StringImpl*>* createHtmlCaseInsensitiveAttributesSet()
 {
     // This is the list of attributes in HTML 4.01 with values marked as "[CI]" or case-insensitive
     // Mozilla treats all other values as case-sensitive, thus so do we.
     HashSet<StringImpl*>* attrSet = new HashSet<StringImpl*>;
 
-    addLocalNameToSet(attrSet, accept_charsetAttr);
-    addLocalNameToSet(attrSet, acceptAttr);
-    addLocalNameToSet(attrSet, alignAttr);
-    addLocalNameToSet(attrSet, alinkAttr);
-    addLocalNameToSet(attrSet, axisAttr);
-    addLocalNameToSet(attrSet, bgcolorAttr);
-    addLocalNameToSet(attrSet, charsetAttr);
-    addLocalNameToSet(attrSet, checkedAttr);
-    addLocalNameToSet(attrSet, clearAttr);
-    addLocalNameToSet(attrSet, codetypeAttr);
-    addLocalNameToSet(attrSet, colorAttr);
-    addLocalNameToSet(attrSet, compactAttr);
-    addLocalNameToSet(attrSet, declareAttr);
-    addLocalNameToSet(attrSet, deferAttr);
-    addLocalNameToSet(attrSet, dirAttr);
-    addLocalNameToSet(attrSet, directionAttr);
-    addLocalNameToSet(attrSet, disabledAttr);
-    addLocalNameToSet(attrSet, enctypeAttr);
-    addLocalNameToSet(attrSet, faceAttr);
-    addLocalNameToSet(attrSet, frameAttr);
-    addLocalNameToSet(attrSet, hreflangAttr);
-    addLocalNameToSet(attrSet, http_equivAttr);
-    addLocalNameToSet(attrSet, langAttr);
-    addLocalNameToSet(attrSet, languageAttr);
-    addLocalNameToSet(attrSet, linkAttr);
-    addLocalNameToSet(attrSet, mediaAttr);
-    addLocalNameToSet(attrSet, methodAttr);
-    addLocalNameToSet(attrSet, multipleAttr);
-    addLocalNameToSet(attrSet, nohrefAttr);
-    addLocalNameToSet(attrSet, noresizeAttr);
-    addLocalNameToSet(attrSet, noshadeAttr);
-    addLocalNameToSet(attrSet, nowrapAttr);
-    addLocalNameToSet(attrSet, readonlyAttr);
-    addLocalNameToSet(attrSet, relAttr);
-    addLocalNameToSet(attrSet, revAttr);
-    addLocalNameToSet(attrSet, rulesAttr);
-    addLocalNameToSet(attrSet, scopeAttr);
-    addLocalNameToSet(attrSet, scrollingAttr);
-    addLocalNameToSet(attrSet, selectedAttr);
-    addLocalNameToSet(attrSet, shapeAttr);
-    addLocalNameToSet(attrSet, targetAttr);
-    addLocalNameToSet(attrSet, textAttr);
-    addLocalNameToSet(attrSet, typeAttr);
-    addLocalNameToSet(attrSet, valignAttr);
-    addLocalNameToSet(attrSet, valuetypeAttr);
-    addLocalNameToSet(attrSet, vlinkAttr);
+    const QualifiedName* caseInsesitiveAttributes[] = {
+        &accept_charsetAttr, &acceptAttr, &alignAttr, &alinkAttr, &axisAttr,
+        &bgcolorAttr,
+        &charsetAttr, &checkedAttr, &clearAttr, &codetypeAttr, &colorAttr, &compactAttr,
+        &declareAttr, &deferAttr, &dirAttr, &directionAttr, &disabledAttr,
+        &enctypeAttr,
+        &faceAttr, &frameAttr,
+        &hreflangAttr, &http_equivAttr,
+        &langAttr, &languageAttr, &linkAttr,
+        &mediaAttr, &methodAttr, &multipleAttr,
+        &nohrefAttr, &noresizeAttr, &noshadeAttr, &nowrapAttr,
+        &readonlyAttr, &relAttr, &revAttr, &rulesAttr,
+        &scopeAttr, &scrollingAttr, &selectedAttr, &shapeAttr,
+        &targetAttr, &textAttr, &typeAttr,
+        &valignAttr, &valuetypeAttr, &vlinkAttr };
+
+    attrSet->reserveCapacityForSize(WTF_ARRAY_LENGTH(caseInsesitiveAttributes));
+    for (const QualifiedName* attr : caseInsesitiveAttributes)
+        attrSet->add(attr->localName().impl());
 
     return attrSet;
 }

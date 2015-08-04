@@ -430,6 +430,8 @@ namespace WTF {
         unsigned capacity() const { return m_tableSize; }
         bool isEmpty() const { return !m_keyCount; }
 
+        void reserveCapacityForSize(unsigned size);
+
         AddResult add(ValuePassInType value)
         {
             return add<IdentityTranslatorType>(Extractor::extract(value), value);
@@ -615,6 +617,23 @@ namespace WTF {
         key ^= (key << 2);
         key ^= (key >> 20);
         return key;
+    }
+
+    inline unsigned calculateCapacity(unsigned size)
+    {
+        for (unsigned mask = size; mask; mask >>= 1)
+            size |= mask; // 00110101010 -> 00111111111
+        return (size + 1) * 2; // 00111111111 -> 10000000000
+    }
+
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::reserveCapacityForSize(unsigned newSize)
+    {
+        unsigned newCapacity = calculateCapacity(newSize);
+        if (newCapacity > capacity()) {
+            RELEASE_ASSERT(!static_cast<int>(newCapacity >> 31)); // HashTable capacity should not overflow 32bit int.
+            rehash(newCapacity, 0);
+        }
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
