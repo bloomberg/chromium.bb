@@ -8,6 +8,13 @@
 #include "ui/events/gesture_detection/motion_event.h"
 
 namespace ui {
+namespace {
+
+gfx::Vector2dF SafeNormalize(const gfx::Vector2dF& v) {
+  return v.IsZero() ? v : ScaleVector2d(v, 1.f / v.Length());
+}
+
+}  // namespace
 
 LongPressDragSelector::LongPressDragSelector(
     LongPressDragSelectorClient* client)
@@ -70,21 +77,27 @@ bool LongPressDragSelector::WillHandleTouchEvent(const MotionEvent& event) {
     // If initial motion is up/down, extend the start/end selection bound.
     extend_selection_start = delta.y() < 0;
   } else {
-    // Otherwise extend the selection bound toward which we're moving.
+    // Otherwise extend the selection bound toward which we're moving, or
+    // the closest bound if motion is already away from both bounds.
     // Note that, for mixed RTL text, or for multiline selections triggered
     // by longpress, this may not pick the most suitable drag target
-    gfx::Vector2dF start_delta = selection_start - position;
+    gfx::Vector2dF start_delta = selection_start - longpress_drag_start_anchor_;
+    gfx::Vector2dF end_delta = selection_end - longpress_drag_start_anchor_;
 
     // The vectors must be normalized to make dot product comparison meaningful.
-    if (!start_delta.IsZero())
-      start_delta.Scale(1.f / start_delta.Length());
-    gfx::Vector2dF end_delta = selection_end - position;
-    if (!end_delta.IsZero())
-      end_delta.Scale(1.f / start_delta.Length());
+    gfx::Vector2dF normalized_start_delta = SafeNormalize(start_delta);
+    gfx::Vector2dF normalized_end_delta = SafeNormalize(end_delta);
+    double start_dot_product = gfx::DotProduct(normalized_start_delta, delta);
+    double end_dot_product = gfx::DotProduct(normalized_end_delta, delta);
 
-    // The larger the dot product the more similar the direction.
-    extend_selection_start =
-        gfx::DotProduct(start_delta, delta) > gfx::DotProduct(end_delta, delta);
+    if (start_dot_product >= 0 || end_dot_product >= 0) {
+      // The greater the dot product the more similar the direction.
+      extend_selection_start = start_dot_product > end_dot_product;
+    } else {
+      // If we're already moving away from both endpoints, pick the closest.
+      extend_selection_start =
+          start_delta.LengthSquared() < end_delta.LengthSquared();
+    }
   }
 
   gfx::PointF extent = extend_selection_start ? selection_start : selection_end;

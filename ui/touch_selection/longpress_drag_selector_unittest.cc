@@ -139,7 +139,7 @@ TEST_F(LongPressDragSelectorTest, BasicReverseDrag) {
   EXPECT_FALSE(IsDragging());
 
   // Initiate drag motion.
-  EXPECT_TRUE(selector.WillHandleTouchEvent(event.MovePoint(0, 0, 0)));
+  EXPECT_TRUE(selector.WillHandleTouchEvent(event.MovePoint(0, 5, 0)));
   EXPECT_FALSE(IsDragging());
 
   // As the initial motion is leftward, toward the selection start, the
@@ -328,6 +328,40 @@ TEST_F(LongPressDragSelectorTest, SelectionDeactivated) {
   EXPECT_FALSE(selector.WillHandleTouchEvent(event.MovePoint(0, 0, kSlop * 2)));
   EXPECT_FALSE(IsDragging());
   EXPECT_FALSE(selector.WillHandleTouchEvent(event.ReleasePoint()));
+}
+
+TEST_F(LongPressDragSelectorTest, DragFast) {
+  LongPressDragSelector selector(this);
+  MockMotionEvent event;
+
+  // Start a touch sequence.
+  EXPECT_FALSE(selector.WillHandleTouchEvent(event.PressPoint(0, 0)));
+  EXPECT_FALSE(GetAndResetActiveStateChanged());
+
+  // Activate a longpress-triggered selection.
+  gfx::PointF selection_start(0, 10);
+  gfx::PointF selection_end(10, 10);
+  selector.OnLongPressEvent(event.GetEventTime(), gfx::PointF());
+  EXPECT_TRUE(GetAndResetActiveStateChanged());
+  SetSelection(selection_start, selection_end);
+  selector.OnSelectionActivated();
+  EXPECT_FALSE(IsDragging());
+
+  // Initiate drag motion.
+  EXPECT_TRUE(selector.WillHandleTouchEvent(event.MovePoint(0, 15, 5)));
+  EXPECT_FALSE(IsDragging());
+
+  // As the initial motion exceeds both endpoints, the closer bound should
+  // be used for dragging, in this case the selection end.
+  EXPECT_TRUE(selector.WillHandleTouchEvent(
+      event.MovePoint(0, 15.f + kSlop * 2.f, 5.f + kSlop)));
+  EXPECT_TRUE(IsDragging());
+  EXPECT_EQ(selection_end, DragPosition());
+
+  // Release the touch sequence, ending the drag.
+  EXPECT_FALSE(selector.WillHandleTouchEvent(event.ReleasePoint()));
+  EXPECT_FALSE(IsDragging());
+  EXPECT_TRUE(GetAndResetActiveStateChanged());
 }
 
 }  // namespace ui
