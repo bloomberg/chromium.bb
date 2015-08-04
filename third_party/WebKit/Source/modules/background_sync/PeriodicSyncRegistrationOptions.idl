@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [
-    RuntimeEnabled=BackgroundSync,
+    RuntimeEnabled=BackgroundSyncPeriodic,
 ] dictionary PeriodicSyncRegistrationOptions {
     DOMString tag;
     unsigned long minPeriod = 0;

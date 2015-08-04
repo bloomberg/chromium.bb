@@ -23,6 +23,7 @@ AudioOutputDevices status=experimental
 AudioVideoTracks depends_on=Media, status=experimental
 AuthorShadowDOMForAnyElement
 BackgroundSync status=experimental
+BackgroundSyncPeriodic status=experimental
 BackgroundSyncV2 status=experimental
 // Enable bleeding-edge code to make Blink draw content faster.
 // The changes enabled behind this flag are very likely to break lots of content.

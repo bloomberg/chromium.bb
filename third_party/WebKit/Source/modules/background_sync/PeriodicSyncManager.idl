@@ -5,7 +5,7 @@
 [
     Exposed=(Window,ServiceWorker),
     GarbageCollected,
-    RuntimeEnabled=BackgroundSync,
+    RuntimeEnabled=BackgroundSyncPeriodic,
     TypeChecking=Interface,
 ] interface PeriodicSyncManager {
     [CallWith=ScriptState,ImplementedAs=registerFunction] Promise<PeriodicSyncRegistration> register([RuntimeEnabled=BackgroundSyncV2] optional PeriodicSyncRegistrationOptions options);

@@ -5,7 +5,7 @@
 [
     Constructor(DOMString type, PeriodicSyncEventInit init),
     Exposed=ServiceWorker,
-    RuntimeEnabled=BackgroundSync,
+    RuntimeEnabled=BackgroundSyncPeriodic,
 ] interface PeriodicSyncEvent : ExtendableEvent {
     readonly attribute PeriodicSyncRegistration registration;
 };

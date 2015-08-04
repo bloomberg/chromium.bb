@@ -16,7 +16,7 @@ enum SyncPowerState {
 [
     Exposed=(Window,ServiceWorker),
     GarbageCollected,
-    RuntimeEnabled=BackgroundSync,
+    RuntimeEnabled=BackgroundSyncPeriodic,
 ] interface PeriodicSyncRegistration {
     readonly attribute DOMString tag;
     [RuntimeEnabled=BackgroundSyncV2] readonly attribute unsigned long minPeriod;

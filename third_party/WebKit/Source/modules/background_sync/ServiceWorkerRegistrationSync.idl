@@ -7,5 +7,5 @@
     RuntimeEnabled=BackgroundSync,
 ] partial interface ServiceWorkerRegistration {
     [MeasureAs=BackgroundSync] readonly attribute SyncManager sync;
-    [MeasureAs=BackgroundSync] readonly attribute PeriodicSyncManager periodicSync;
+    [MeasureAs=BackgroundSync, RuntimeEnabled=BackgroundSyncPeriodic] readonly attribute PeriodicSyncManager periodicSync;
 };
