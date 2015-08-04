@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/id_map.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -27,49 +28,39 @@ class AuraWindowRegistry : public aura::WindowObserver {
   }
 
   int RegisterWindow(aura::Window* window) {
-    // First check if an Id is already assigned to the |window|.
-    std::map<aura::Window*, int>::iterator it = window_to_id_map_.find(window);
-    if (it != window_to_id_map_.end()) {
-      return it->second;
+    IDMap<aura::Window>::const_iterator it(&registered_windows_);
+    for (; !it.IsAtEnd(); it.Advance()) {
+      if (it.GetCurrentValue() == window)
+        return it.GetCurrentKey();
     }
 
-    // If the windows doesn't have an Id yet assign it.
-    int id;
-    do {
-      id = next_id_;
-      next_id_ = (next_id_ == INT_MAX) ? 1 : (next_id_ + 1);
-    } while (id_to_window_map_.find(id) != id_to_window_map_.end());
-
-    window_to_id_map_[window] = id;
-    id_to_window_map_[id] = window;
     window->AddObserver(this);
-    return id;
+    return registered_windows_.Add(window);
   }
 
   aura::Window* GetWindowById(int id) {
-    std::map<int, aura::Window*>::iterator it = id_to_window_map_.find(id);
-    return (it != id_to_window_map_.end()) ? it->second : nullptr;
+    return registered_windows_.Lookup(id);
   }
 
  private:
   friend struct DefaultSingletonTraits<AuraWindowRegistry>;
 
-  AuraWindowRegistry()
-      : next_id_(1) {
-  }
+  AuraWindowRegistry() {}
   ~AuraWindowRegistry() override {}
 
   // WindowObserver overrides.
   void OnWindowDestroying(aura::Window* window) override {
-    std::map<aura::Window*, int>::iterator it = window_to_id_map_.find(window);
-    DCHECK(it != window_to_id_map_.end());
-    id_to_window_map_.erase(it->second);
-    window_to_id_map_.erase(it);
+    IDMap<aura::Window>::iterator it(&registered_windows_);
+    for (; !it.IsAtEnd(); it.Advance()) {
+      if (it.GetCurrentValue() == window) {
+        registered_windows_.Remove(it.GetCurrentKey());
+        return;
+      }
+    }
+    NOTREACHED();
   }
 
-  int next_id_;
-  std::map<aura::Window*, int> window_to_id_map_;
-  std::map<int, aura::Window*> id_to_window_map_;
+  IDMap<aura::Window> registered_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraWindowRegistry);
 };
