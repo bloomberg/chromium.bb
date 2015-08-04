@@ -284,6 +284,7 @@ v8.log
 /third_party/boringssl/src
 /third_party/cacheinvalidation/cacheinvalidation_unittests_run.xml
 /third_party/cardboard-java/src
+/third_party/catapult
 /third_party/chromeos_login_manager
 /third_party/chromeos_text_input
 /third_party/chromite
@@ -386,7 +387,6 @@ v8.log
 /third_party/swiftshader/include/
 /third_party/syzygy
 /third_party/syzygy/binaries
-/third_party/trace-viewer
 /third_party/tsan/
 /third_party/ub-uiautomator/lib
 /third_party/usb_ids

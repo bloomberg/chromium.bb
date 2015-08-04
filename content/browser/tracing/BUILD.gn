@@ -30,7 +30,7 @@ action("generate_tracing_grd") {
          ]
 
   deps = [
-    "//third_party/trace-viewer/tracing:generate_about_tracing",
+    "//third_party/catapult/tracing:generate_about_tracing",
   ]
 }
 

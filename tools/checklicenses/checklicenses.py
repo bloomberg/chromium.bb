@@ -187,29 +187,100 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/devscripts': [
         'GPL (v2 or later)',
     ],
-    'third_party/trace-viewer/tracing/third_party/devscripts': [
+    'third_party/catapult/tracing/third_party/devscripts': [
         'GPL (v2 or later)',
     ],
+
+    # https://github.com/shazow/apiclient/issues/8
+    # MIT license.
+    'third_party/catapult/third_party/apiclient': [
+        'UNKNOWN',
+    ],
+    'third_party/catapult/dashboard/third_party/apiclient': [
+        'UNKNOWN',
+    ],
+
+    # https://bugs.launchpad.net/beautifulsoup/+bug/1481316
+    # MIT license.
+    'third_party/catapult/third_party/beautifulsoup': [
+        'UNKNOWN'
+    ],
+    'third_party/catapult/dashboard/third_party/beautifulsoup': [
+        'UNKNOWN'
+    ],
+
+    # https://code.google.com/p/graphy/issues/detail?id=6
+    # Apache (v2.0)
+    'third_party/catapult/third_party/graphy': [
+        'UNKNOWN',
+    ],
+    'third_party/catapult/dashboard/third_party/graphy': [
+        'UNKNOWN',
+    ],
+
+    # https://github.com/GoogleCloudPlatform/appengine-mapreduce/issues/71
+    # Apache (v2.0)
+    'third_party/catapult/third_party/mapreduce': [
+        'UNKNOWN',
+    ],
+    'third_party/catapult/dashboard/third_party/mapreduce': [
+        'UNKNOWN',
+    ],
+
     # https://code.google.com/p/webapp-improved/issues/detail?id=103
     # Apache (v2.0).
-    'third_party/trace-viewer/third_party/webapp2': [
+    'third_party/catapult/third_party/webapp2': [
         'UNKNOWN',
     ],
+    'third_party/catapult/dashboard/third_party/webapp2': [
+        'UNKNOWN',
+    ],
+
     # https://github.com/Pylons/webob/issues/211
     # MIT license.
-    'third_party/trace-viewer/third_party/WebOb': [
+    'third_party/catapult/third_party/WebOb': [
         'UNKNOWN',
     ],
+    'third_party/catapult/dashboard/third_party/WebOb': [
+        'UNKNOWN',
+    ],
+
+    # https://github.com/Pylons/webtest/issues/141
+    # MIT license.
+    'third_party/catapult/third_party/webtest': [
+        'UNKNOWN',
+    ],
+    'third_party/catapult/dashboard/third_party/webtest': [
+        'UNKNOWN',
+    ],
+
     # https://bitbucket.org/ianb/paste/issues/12/add-license-headers-to-source-files
     # MIT license.
-    'third_party/trace-viewer/third_party/Paste': [
+    'third_party/catapult/third_party/Paste': [
         'UNKNOWN',
     ],
+    'third_party/catapult/dashboard/third_party/Paste': [
+        'UNKNOWN',
+    ],
+
+    # https://github.com/google/oauth2client/issues/231
+    # Apache v2.0.
+    'third_party/catapult/third_party/oauth2client': [
+        'UNKNOWN',
+    ],
+    'third_party/catapult/dashboard/third_party/oauth2client': [
+        'UNKNOWN',
+    ],
+
     # https://bitbucket.org/gutworth/six/issues/129/add-license-headers-to-source-files
     # MIT license.
-    'third_party/trace-viewer/third_party/six': [
+    'third_party/catapult/third_party/six': [
         'UNKNOWN',
     ],
+    'third_party/catapult/dashboard/third_party/six': [
+        'UNKNOWN',
+    ],
+
     'third_party/expat/files/lib': [  # http://crbug.com/98121
         'UNKNOWN',
     ],

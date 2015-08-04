@@ -117,9 +117,6 @@ deps = {
   'src/third_party/crashpad/crashpad':
    Var('chromium_git') + '/crashpad/crashpad.git' + '@' + '797adb320680a4a8ad39428075cca287e04b111f',
 
-  'src/third_party/trace-viewer':
-   Var('chromium_git') + '/external/trace-viewer.git' + '@' + 'bdb85cc3f2fe11cdf0ddafebee658ac71bc0a797',
-
   'src/third_party/WebKit':
    Var('chromium_git') + '/chromium/blink.git' + '@' +  Var('webkit_revision'),
 
@@ -271,6 +268,10 @@ deps = {
 
   'src/third_party/dom_distiller_js/dist':
     Var('chromium_git') + '/external/github.com/chromium/dom-distiller-dist.git' + '@' + '81e5b59da2a7a0a518b90b5ded58670322c98128',
+
+  'src/third_party/catapult':
+    Var('chromium_git') + '/external/github.com/catapult-project/catapult.git' + '@' +
+    '2da8924915bd6fb7609c518f5b1f63cb606248eb',
 }
 
 

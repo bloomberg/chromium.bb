@@ -4,7 +4,7 @@
 
 {
   'variables': {
-    'trace_viewer_src_dir': '../../../third_party/trace-viewer/tracing',
+    'trace_viewer_src_dir': '../../../third_party/catapult/tracing',
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing',
   },
   'targets': [

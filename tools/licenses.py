@@ -185,9 +185,9 @@ SPECIAL_CASES = {
         "License": "MIT",
         "License File": "NOT_SHIPPED",
     },
-    os.path.join('third_party', 'trace-viewer'): {
-        "Name": "trace-viewer",
-        "URL": "http://code.google.com/p/trace-viewer",
+    os.path.join('third_party', 'catapult'): {
+        "Name": "catapult",
+        "URL": "https://github.com/catapult-project/catapult",
         "License": "BSD",
         "License File": "NOT_SHIPPED",
     },

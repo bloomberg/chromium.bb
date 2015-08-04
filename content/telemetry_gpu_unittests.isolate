@@ -11,7 +11,7 @@
         'files': [
           # Other dependencies of the tests and their harness.
           '../third_party/typ/',
-          '../third_party/trace-viewer/',
+          '../third_party/catapult/',
           '../testing/scripts/common.py',
           '../testing/scripts/run_telemetry_as_googletest.py',
           # The following represent the actual tests.

@@ -17,7 +17,7 @@
           # For GpuProcess.video
           '../content/test/data/media/bear.ogv',
           '../testing/test_env.py',
-          '../third_party/trace-viewer/',
+          '../third_party/catapult/',
           # For webgl_conformance
           '../third_party/webgl/',
         ],

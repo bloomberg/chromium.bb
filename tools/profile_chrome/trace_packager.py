@@ -16,7 +16,7 @@ from pylib import constants
 
 sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
                              'third_party',
-                             'trace-viewer'))
+                             'catapult'))
 # pylint: disable=F0401
 from tracing.build import trace2html
 
