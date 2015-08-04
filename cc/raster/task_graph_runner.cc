@@ -332,6 +332,18 @@ void TaskGraphRunner::Shutdown() {
   has_ready_to_run_tasks_cv_.Signal();
 }
 
+void TaskGraphRunner::FlushForTesting() {
+  base::AutoLock lock(lock_);
+
+  while (std::find_if(namespaces_.begin(), namespaces_.end(),
+                      [](const TaskNamespaceMap::value_type& entry) {
+                        return !HasFinishedRunningTasksInNamespace(
+                            &entry.second);
+                      }) != namespaces_.end()) {
+    has_namespaces_with_finished_running_tasks_cv_.Wait();
+  }
+}
+
 void TaskGraphRunner::Run() {
   base::AutoLock lock(lock_);
 
