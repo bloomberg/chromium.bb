@@ -61,9 +61,26 @@ public:
     void start(double when, ExceptionState&);
     void stop(double when, ExceptionState&);
 
-    unsigned short playbackState() const { return static_cast<unsigned short>(m_playbackState); }
-    bool isPlayingOrScheduled() const { return m_playbackState == PLAYING_STATE || m_playbackState == SCHEDULED_STATE; }
-    bool hasFinished() const { return m_playbackState == FINISHED_STATE; }
+    PlaybackState playbackState() const
+    {
+        return static_cast<PlaybackState>(acquireLoad(&m_playbackState));
+    }
+
+    void setPlaybackState(PlaybackState newState)
+    {
+        releaseStore(&m_playbackState, newState);
+    }
+
+    bool isPlayingOrScheduled() const
+    {
+        PlaybackState state = playbackState();
+        return state == PLAYING_STATE || state == SCHEDULED_STATE;
+    }
+
+    bool hasFinished() const
+    {
+        return playbackState() == FINISHED_STATE;
+    }
 
     void setHasEndedListener() { m_hasEndedListener = true; }
 
@@ -86,7 +103,9 @@ protected:
 
     void notifyEnded();
 
-    PlaybackState m_playbackState;
+    // This is accessed by both the main thread and audio thread.  Use the setter and getter to
+    // protect the access to this!
+    int m_playbackState;
 
     // m_startTime is the time to start playing based on the context's timeline (0 or a time less than the context's current time means "now").
     double m_startTime; // in seconds

@@ -445,7 +445,7 @@ void AudioBufferSourceHandler::startSource(double when, double grainOffset, doub
 {
     ASSERT(isMainThread());
 
-    if (m_playbackState != UNSCHEDULED_STATE) {
+    if (playbackState() != UNSCHEDULED_STATE) {
         exceptionState.throwDOMException(
             InvalidStateError,
             "cannot call start more than once.");
@@ -500,7 +500,7 @@ void AudioBufferSourceHandler::startSource(double when, double grainOffset, doub
     if (buffer())
         clampGrainParameters(buffer());
 
-    m_playbackState = SCHEDULED_STATE;
+    setPlaybackState(SCHEDULED_STATE);
 }
 
 double AudioBufferSourceHandler::computePlaybackRate()
