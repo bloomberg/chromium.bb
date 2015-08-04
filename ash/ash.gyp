@@ -1298,38 +1298,6 @@
         }],
       ],
     },
-    {
-      # GN version: //ash:ash_shell_unittests
-      'target_name': 'ash_shell_unittests',
-      'type': 'executable',
-      'dependencies': [
-        '../base/base.gyp:test_support_base',
-        '../components/components.gyp:user_manager',
-        '../content/content_shell_and_tests.gyp:test_support_content',
-        '../skia/skia.gyp:skia',
-        '../testing/gtest.gyp:gtest',
-        '../ui/accessibility/accessibility.gyp:ax_gen',
-        'ash_shell_lib',
-        'ash_test_support',
-      ],
-      'sources': [
-        # Note: file list duplicated in GN build.
-        'shell/window_watcher_unittest.cc',
-        'test/ash_unittests.cc',
-      ],
-      'conditions': [
-        ['chromeos==1', {
-          'dependencies': [
-            '../ui/display/display.gyp:display',
-          ],
-        }],
-        ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-          ],
-        }],
-      ],
-    },
   ],
   'conditions': [
     ['test_isolation_mode != "noop"', {

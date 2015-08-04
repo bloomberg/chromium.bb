@@ -1157,7 +1157,6 @@
           'target_name': 'chromium_builder_dbg_drmemory_win',
           'type': 'none',
           'dependencies': [
-            '../ash/ash.gyp:ash_shell_unittests',
             '../ash/ash.gyp:ash_unittests',
             '../base/base.gyp:base_unittests',
             '../cc/blink/cc_blink_tests.gyp:cc_blink_unittests',

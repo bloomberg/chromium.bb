@@ -298,9 +298,6 @@ class ChromeTests:
   def TestAsh(self):
     return self.SimpleTest("ash", "ash_unittests")
 
-  def TestAshShell(self):
-    return self.SimpleTest("ash_shelf", "ash_shell_unittests")
-
   def TestAura(self):
     return self.SimpleTest("aura", "aura_unittests")
 
@@ -658,7 +655,6 @@ class ChromeTests:
     "angle": TestAngle,          "angle_unittests": TestAngle,
     "app_list": TestAppList,     "app_list_unittests": TestAppList,
     "ash": TestAsh,              "ash_unittests": TestAsh,
-    "ash_shell": TestAshShell,   "ash_shell_unittests": TestAshShell,
     "aura": TestAura,            "aura_unittests": TestAura,
     "base": TestBase,            "base_unittests": TestBase,
     "blink_heap": TestBlinkHeap,

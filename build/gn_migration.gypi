@@ -254,7 +254,6 @@
         ['use_ash==1', {
           'dependencies': [
             '../ash/ash.gyp:ash_shell',
-            '../ash/ash.gyp:ash_shell_unittests',
             '../ash/ash.gyp:ash_unittests',
           ],
         }],

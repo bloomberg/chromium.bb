@@ -378,27 +378,5 @@ executable("ash_shell") {
     deps += [ "//device/bluetooth" ]
   }
 }
-
-test("ash_shell_unittests") {
-  sources = [
-    "shell/window_watcher_unittest.cc",
-    "test/ash_unittests.cc",
-  ]
-
-  deps = [
-    ":ash_shell_lib",
-    ":test_support",
-    "//base/test:test_support",
-    "//components/user_manager",
-    "//content/test:test_support",
-    "//skia",
-    "//testing/gtest",
-    "//ui/accessibility",
-  ]
-
-  if (is_chromeos) {
-    deps += [ "//ui/display" ]
-  }
-}
 # When adding support for isolates, please have a look at run-time dependencies
 # in the ash_unittests_run target in ash.gyp.
