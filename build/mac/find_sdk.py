@@ -35,7 +35,9 @@ def main():
   parser.add_option("--print_sdk_path",
                     action="store_true", dest="print_sdk_path", default=False,
                     help="Additionaly print the path the SDK (appears first).")
-  (options, args) = parser.parse_args()
+  options, args = parser.parse_args()
+  if len(args) != 1:
+    parser.error('Please specify a minimum SDK version')
   min_sdk_version = args[0]
 
   job = subprocess.Popen(['xcode-select', '-print-path'],
@@ -88,3 +90,4 @@ if __name__ == '__main__':
   if sys.platform != 'darwin':
     raise Exception("This script only runs on Mac")
   print main()
+  sys.exit(0)
