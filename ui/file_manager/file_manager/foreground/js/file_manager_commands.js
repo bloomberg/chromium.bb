@@ -83,9 +83,8 @@ CommandUtil.getCommandEntries = function(element) {
     // element is a normal List (eg. the file list on the right panel).
     var entries = element.selectedItems;
     // Check if it is Entry or not by checking for toURL().
-    return entries ||
-        entries.some(function(entry) { return !('toURL' in entry); }) ?
-        entries : [];
+    return entries.some(function(entry) { return !('toURL' in entry); }) ?
+        [] : entries;
   } else {
     return [];
   }
