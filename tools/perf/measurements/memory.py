@@ -20,12 +20,12 @@ class Memory(page_test.PageTest):
   def DidStartBrowser(self, browser):
     self._memory_metric = memory.MemoryMetric(browser)
 
+  def WillNavigateToPage(self, page, tab):
+    tab.CollectGarbage()
+
   def DidNavigateToPage(self, page, tab):
     self._memory_metric.Start(page, tab)
     self._power_metric.Start(page, tab)
-
-  def CleanUpAfterPage(self, page, tab):
-    tab.CollectGarbage()
 
   def CustomizeBrowserOptions(self, options):
     memory.MemoryMetric.CustomizeBrowserOptions(options)
