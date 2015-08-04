@@ -18,8 +18,8 @@ class ChildGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   // Overridden from gpu::GpuMemoryBufferManager:
   scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format,
-      gfx::GpuMemoryBuffer::Usage usage) override;
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage) override;
   gfx::GpuMemoryBuffer* GpuMemoryBufferFromClientBuffer(
       ClientBuffer buffer) override;
   void SetDestructionSyncPoint(gfx::GpuMemoryBuffer* buffer,

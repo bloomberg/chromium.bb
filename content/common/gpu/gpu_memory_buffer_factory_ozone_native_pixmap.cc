@@ -12,47 +12,8 @@ namespace content {
 namespace {
 
 const GpuMemoryBufferFactory::Configuration kSupportedConfigurations[] = {
-    {gfx::GpuMemoryBuffer::BGRA_8888, gfx::GpuMemoryBuffer::SCANOUT},
-    {gfx::GpuMemoryBuffer::RGBX_8888, gfx::GpuMemoryBuffer::SCANOUT}};
-
-ui::SurfaceFactoryOzone::BufferFormat GetOzoneFormatFor(
-    gfx::GpuMemoryBuffer::Format format) {
-  switch (format) {
-    case gfx::GpuMemoryBuffer::BGRA_8888:
-      return ui::SurfaceFactoryOzone::BGRA_8888;
-    case gfx::GpuMemoryBuffer::RGBX_8888:
-      return ui::SurfaceFactoryOzone::RGBX_8888;
-    case gfx::GpuMemoryBuffer::ATC:
-    case gfx::GpuMemoryBuffer::ATCIA:
-    case gfx::GpuMemoryBuffer::DXT1:
-    case gfx::GpuMemoryBuffer::DXT5:
-    case gfx::GpuMemoryBuffer::ETC1:
-    case gfx::GpuMemoryBuffer::R_8:
-    case gfx::GpuMemoryBuffer::RGBA_4444:
-    case gfx::GpuMemoryBuffer::RGBA_8888:
-    case gfx::GpuMemoryBuffer::YUV_420:
-      NOTREACHED();
-      return ui::SurfaceFactoryOzone::BGRA_8888;
-  }
-
-  NOTREACHED();
-  return ui::SurfaceFactoryOzone::BGRA_8888;
-}
-
-ui::SurfaceFactoryOzone::BufferUsage GetOzoneUsageFor(
-    gfx::GpuMemoryBuffer::Usage usage) {
-  switch (usage) {
-    case gfx::GpuMemoryBuffer::MAP:
-      return ui::SurfaceFactoryOzone::MAP;
-    case gfx::GpuMemoryBuffer::PERSISTENT_MAP:
-      return ui::SurfaceFactoryOzone::PERSISTENT_MAP;
-    case gfx::GpuMemoryBuffer::SCANOUT:
-      return ui::SurfaceFactoryOzone::SCANOUT;
-  }
-
-  NOTREACHED();
-  return ui::SurfaceFactoryOzone::MAP;
-}
+    {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::SCANOUT},
+    {gfx::BufferFormat::RGBX_8888, gfx::BufferUsage::SCANOUT}};
 
 }  // namespace
 
@@ -64,8 +25,8 @@ GpuMemoryBufferFactoryOzoneNativePixmap::
 
 // static
 bool GpuMemoryBufferFactoryOzoneNativePixmap::
-    IsGpuMemoryBufferConfigurationSupported(gfx::GpuMemoryBuffer::Format format,
-                                            gfx::GpuMemoryBuffer::Usage usage) {
+    IsGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
+                                            gfx::BufferUsage usage) {
   for (auto& configuration : kSupportedConfigurations) {
     if (configuration.format == format && configuration.usage == usage)
       return true;
@@ -79,7 +40,7 @@ void GpuMemoryBufferFactoryOzoneNativePixmap::
         std::vector<Configuration>* configurations) {
   if (!ui::OzonePlatform::GetInstance()
            ->GetSurfaceFactoryOzone()
-           ->CanCreateNativePixmap(ui::SurfaceFactoryOzone::SCANOUT))
+           ->CanCreateNativePixmap(gfx::BufferUsage::SCANOUT))
     return;
 
   configurations->assign(
@@ -91,18 +52,18 @@ gfx::GpuMemoryBufferHandle
 GpuMemoryBufferFactoryOzoneNativePixmap::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
     int client_id,
     gfx::PluginWindowHandle surface_handle) {
   scoped_refptr<ui::NativePixmap> pixmap =
       ui::OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
-          ->CreateNativePixmap(surface_handle, size, GetOzoneFormatFor(format),
-                               GetOzoneUsageFor(usage));
+          ->CreateNativePixmap(surface_handle, size, format, usage);
   if (!pixmap.get()) {
     LOG(ERROR) << "Failed to create pixmap " << size.width() << "x"
-               << size.height() << " format " << format << ", usage " << usage;
+               << size.height() << " format " << static_cast<int>(format)
+               << ", usage " << static_cast<int>(usage);
     return gfx::GpuMemoryBufferHandle();
   }
   base::AutoLock lock(native_pixmaps_lock_);
@@ -134,7 +95,7 @@ scoped_refptr<gfx::GLImage>
 GpuMemoryBufferFactoryOzoneNativePixmap::CreateImageForGpuMemoryBuffer(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
+    gfx::BufferFormat format,
     unsigned internalformat,
     int client_id) {
   DCHECK_EQ(handle.type, gfx::OZONE_NATIVE_PIXMAP);

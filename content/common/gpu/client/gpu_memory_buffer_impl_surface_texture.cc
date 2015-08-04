@@ -12,20 +12,20 @@
 namespace content {
 namespace {
 
-int WindowFormat(gfx::GpuMemoryBuffer::Format format) {
+int WindowFormat(gfx::BufferFormat format) {
   switch (format) {
-    case gfx::GpuMemoryBuffer::RGBA_8888:
+    case gfx::BufferFormat::RGBA_8888:
       return WINDOW_FORMAT_RGBA_8888;
-    case gfx::GpuMemoryBuffer::ATC:
-    case gfx::GpuMemoryBuffer::ATCIA:
-    case gfx::GpuMemoryBuffer::DXT1:
-    case gfx::GpuMemoryBuffer::DXT5:
-    case gfx::GpuMemoryBuffer::ETC1:
-    case gfx::GpuMemoryBuffer::R_8:
-    case gfx::GpuMemoryBuffer::RGBA_4444:
-    case gfx::GpuMemoryBuffer::RGBX_8888:
-    case gfx::GpuMemoryBuffer::BGRA_8888:
-    case gfx::GpuMemoryBuffer::YUV_420:
+    case gfx::BufferFormat::ATC:
+    case gfx::BufferFormat::ATCIA:
+    case gfx::BufferFormat::DXT1:
+    case gfx::BufferFormat::DXT5:
+    case gfx::BufferFormat::ETC1:
+    case gfx::BufferFormat::R_8:
+    case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::YUV_420:
       NOTREACHED();
       return 0;
   }
@@ -39,13 +39,12 @@ int WindowFormat(gfx::GpuMemoryBuffer::Format format) {
 GpuMemoryBufferImplSurfaceTexture::GpuMemoryBufferImplSurfaceTexture(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
-    Format format,
+    gfx::BufferFormat format,
     const DestructionCallback& callback,
     ANativeWindow* native_window)
     : GpuMemoryBufferImpl(id, size, format, callback),
       native_window_(native_window),
-      stride_(0) {
-}
+      stride_(0) {}
 
 GpuMemoryBufferImplSurfaceTexture::~GpuMemoryBufferImplSurfaceTexture() {
   ANativeWindow_release(native_window_);
@@ -56,7 +55,7 @@ scoped_ptr<GpuMemoryBufferImpl>
 GpuMemoryBufferImplSurfaceTexture::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
-    Format format,
+    gfx::BufferFormat format,
     const DestructionCallback& callback) {
   ANativeWindow* native_window = SurfaceTextureManager::GetInstance()->
       AcquireNativeWidgetForSurfaceTexture(handle.id);

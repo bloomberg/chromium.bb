@@ -8,23 +8,16 @@
 
 namespace content {
 
-static ui::SurfaceFactoryOzone::BufferFormat GetOzoneFormat(
-    cc::ResourceFormat overlay_format) {
+static gfx::BufferFormat GetBufferFormat(cc::ResourceFormat overlay_format) {
   switch (overlay_format) {
     // TODO(dshwang): overlay video still uses RGBA_8888.
     case cc::RGBA_8888:
     case cc::BGRA_8888:
-      return ui::SurfaceFactoryOzone::BGRA_8888;
-    case cc::RGBA_4444:
-    case cc::ALPHA_8:
-    case cc::LUMINANCE_8:
-    case cc::RGB_565:
-    case cc::ETC1:
-    case cc::RED_8:
-      break;
+      return gfx::BufferFormat::BGRA_8888;
+    default:
+      NOTREACHED();
+      return gfx::BufferFormat::BGRA_8888;
   }
-  NOTREACHED();
-  return ui::SurfaceFactoryOzone::UNKNOWN;
 }
 
 BrowserCompositorOverlayCandidateValidatorOzone::
@@ -53,7 +46,7 @@ void BrowserCompositorOverlayCandidateValidatorOzone::CheckOverlaySupport(
 
   for (size_t i = 0; i < surfaces->size(); i++) {
     ozone_surface_list.at(i).transform = surfaces->at(i).transform;
-    ozone_surface_list.at(i).format = GetOzoneFormat(surfaces->at(i).format);
+    ozone_surface_list.at(i).format = GetBufferFormat(surfaces->at(i).format);
     ozone_surface_list.at(i).display_rect = surfaces->at(i).display_rect;
     ozone_surface_list.at(i).crop_rect = surfaces->at(i).uv_rect;
     ozone_surface_list.at(i).plane_z_order = surfaces->at(i).plane_z_order;

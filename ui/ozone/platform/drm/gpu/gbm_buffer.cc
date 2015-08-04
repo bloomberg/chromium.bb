@@ -19,11 +19,11 @@ namespace ui {
 
 namespace {
 
-int GetGbmFormatFromBufferFormat(SurfaceFactoryOzone::BufferFormat fmt) {
+int GetGbmFormatFromBufferFormat(gfx::BufferFormat fmt) {
   switch (fmt) {
-    case SurfaceFactoryOzone::BGRA_8888:
+    case gfx::BufferFormat::BGRA_8888:
       return GBM_BO_FORMAT_ARGB8888;
-    case SurfaceFactoryOzone::RGBX_8888:
+    case gfx::BufferFormat::RGBX_8888:
       return GBM_BO_FORMAT_XRGB8888;
     default:
       NOTREACHED();
@@ -47,12 +47,12 @@ GbmBuffer::~GbmBuffer() {
 // static
 scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
     const scoped_refptr<GbmDevice>& gbm,
-    SurfaceFactoryOzone::BufferFormat format,
+    gfx::BufferFormat format,
     const gfx::Size& size,
-    SurfaceFactoryOzone::BufferUsage usage) {
+    gfx::BufferUsage usage) {
   TRACE_EVENT2("drm", "GbmBuffer::CreateBuffer", "device",
                gbm->device_path().value(), "size", size.ToString());
-  bool use_scanout = (usage == ui::SurfaceFactoryOzone::SCANOUT);
+  bool use_scanout = (usage == gfx::BufferUsage::SCANOUT);
   unsigned flags = GBM_BO_USE_RENDERING;
   if (use_scanout)
     flags |= GBM_BO_USE_SCANOUT;

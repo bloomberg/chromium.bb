@@ -205,8 +205,8 @@ void RendererGpuVideoAcceleratorFactories::WaitSyncPoint(uint32 sync_point) {
 scoped_ptr<gfx::GpuMemoryBuffer>
 RendererGpuVideoAcceleratorFactories::AllocateGpuMemoryBuffer(
     const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage) {
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   scoped_ptr<gfx::GpuMemoryBuffer> buffer =
       gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(size, format, usage);

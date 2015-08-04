@@ -15,6 +15,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
+#include "ui/gfx/ipc/gfx_param_traits_macros.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/ozone_export.h"
@@ -30,9 +31,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(ui::DisplayConnectionType,
 IPC_ENUM_TRAITS_MAX_VALUE(ui::HDCPState, ui::HDCP_STATE_LAST)
 
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::OverlayTransform, gfx::OVERLAY_TRANSFORM_LAST)
-
-IPC_ENUM_TRAITS_MAX_VALUE(ui::SurfaceFactoryOzone::BufferFormat,
-                          ui::SurfaceFactoryOzone::BUFFER_FORMAT_LAST)
 
 // clang-format off
 IPC_STRUCT_TRAITS_BEGIN(ui::DisplayMode_Params)

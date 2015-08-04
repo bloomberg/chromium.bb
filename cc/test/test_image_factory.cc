@@ -17,7 +17,7 @@ TestImageFactory::~TestImageFactory() {
 scoped_refptr<gfx::GLImage> TestImageFactory::CreateImageForGpuMemoryBuffer(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
+    gfx::BufferFormat format,
     unsigned internalformat,
     int client_id) {
   DCHECK_EQ(handle.type, gfx::SHARED_MEMORY_BUFFER);

@@ -47,8 +47,8 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
 
   scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format,
-      gfx::GpuMemoryBuffer::Usage usage) override;
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage) override;
 
   unsigned ImageTextureTarget() override;
   MOCK_METHOD0(IsTextureRGSupported, bool());

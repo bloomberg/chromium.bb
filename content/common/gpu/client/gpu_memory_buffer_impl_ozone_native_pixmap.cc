@@ -11,7 +11,7 @@ namespace content {
 GpuMemoryBufferImplOzoneNativePixmap::GpuMemoryBufferImplOzoneNativePixmap(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
-    Format format,
+    gfx::BufferFormat format,
     const DestructionCallback& callback)
     : GpuMemoryBufferImpl(id, size, format, callback) {}
 
@@ -22,8 +22,8 @@ scoped_ptr<GpuMemoryBufferImpl>
 GpuMemoryBufferImplOzoneNativePixmap::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
-    Format format,
-    Usage usage,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
     const DestructionCallback& callback) {
   return make_scoped_ptr<GpuMemoryBufferImpl>(
       new GpuMemoryBufferImplOzoneNativePixmap(handle.id, size, format,

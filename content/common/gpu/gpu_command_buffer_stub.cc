@@ -980,7 +980,7 @@ void GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback(
 void GpuCommandBufferStub::OnCreateImage(int32 id,
                                          gfx::GpuMemoryBufferHandle handle,
                                          gfx::Size size,
-                                         gfx::GpuMemoryBuffer::Format format,
+                                         gfx::BufferFormat format,
                                          uint32 internalformat) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateImage");
 

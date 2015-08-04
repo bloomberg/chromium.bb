@@ -30,7 +30,9 @@ class StubGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   bool Map(void** data) override { return false; }
   void Unmap() override {}
   bool IsMapped() const override { return false; }
-  Format GetFormat() const override { return gfx::GpuMemoryBuffer::RGBX_8888; }
+  gfx::BufferFormat GetFormat() const override {
+    return gfx::BufferFormat::RGBX_8888;
+  }
   void GetStride(int* stride) const override {}
   gfx::GpuMemoryBufferId GetId() const override { return 0; }
   gfx::GpuMemoryBufferHandle GetHandle() const override {
@@ -47,7 +49,7 @@ class StubBrowserGpuMemoryBufferManager : public BrowserGpuMemoryBufferManager {
 
   scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBufferForScanout(
       const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format,
+      gfx::BufferFormat format,
       int32 surface_id) override {
     return make_scoped_ptr<gfx::GpuMemoryBuffer>(new StubGpuMemoryBufferImpl);
   }

@@ -18,7 +18,7 @@ class TestImageFactory : public gpu::ImageFactory {
   scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format,
+      gfx::BufferFormat format,
       unsigned internalformat,
       int client_id) override;
 

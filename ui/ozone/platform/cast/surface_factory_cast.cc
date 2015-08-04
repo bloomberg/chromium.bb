@@ -188,8 +188,8 @@ const int32* SurfaceFactoryCast::GetEGLSurfaceProperties(
 scoped_refptr<NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
     gfx::AcceleratedWidget w,
     gfx::Size size,
-    BufferFormat format,
-    BufferUsage usage) {
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
   class CastPixmap : public NativePixmap {
    public:
     CastPixmap() {}

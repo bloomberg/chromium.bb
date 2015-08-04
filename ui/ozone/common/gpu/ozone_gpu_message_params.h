@@ -9,12 +9,12 @@
 #include <vector>
 
 #include "ui/display/types/display_constants.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/ozone_export.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
-#include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
 
@@ -55,7 +55,7 @@ struct OZONE_EXPORT OverlayCheck_Params {
 
   gfx::Size buffer_size;
   gfx::OverlayTransform transform = gfx::OVERLAY_TRANSFORM_INVALID;
-  SurfaceFactoryOzone::BufferFormat format = SurfaceFactoryOzone::UNKNOWN;
+  gfx::BufferFormat format = gfx::BufferFormat::BGRA_8888;
   gfx::Rect display_rect;
   int plane_z_order = 0;
 };

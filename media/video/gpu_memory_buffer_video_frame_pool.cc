@@ -263,7 +263,7 @@ GpuMemoryBufferVideoFramePool::PoolImpl::GetOrCreateFrameResources(
     const size_t height = VideoFrame::Rows(i, format, size.height());
     const gfx::Size plane_size(width, height);
     plane_resource.gpu_memory_buffer = gpu_factories_->AllocateGpuMemoryBuffer(
-        plane_size, gfx::GpuMemoryBuffer::R_8, gfx::GpuMemoryBuffer::MAP);
+        plane_size, gfx::BufferFormat::R_8, gfx::BufferUsage::MAP);
 
     gles2->GenTextures(1, &plane_resource.texture_id);
     gles2->BindTexture(texture_target_, plane_resource.texture_id);

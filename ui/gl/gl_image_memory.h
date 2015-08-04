@@ -23,11 +23,10 @@ class GL_EXPORT GLImageMemory : public GLImage {
   GLImageMemory(const Size& size, unsigned internalformat);
 
   static bool StrideInBytes(size_t width,
-                            GpuMemoryBuffer::Format format,
+                            BufferFormat format,
                             size_t* stride_in_bytes);
 
-  bool Initialize(const unsigned char* memory,
-                  GpuMemoryBuffer::Format format);
+  bool Initialize(const unsigned char* memory, BufferFormat format);
 
   // Overridden from GLImage:
   void Destroy(bool have_context) override;
@@ -57,7 +56,7 @@ class GL_EXPORT GLImageMemory : public GLImage {
   const Size size_;
   const unsigned internalformat_;
   const unsigned char* memory_;
-  GpuMemoryBuffer::Format format_;
+  BufferFormat format_;
   bool in_use_;
   unsigned target_;
   bool need_do_bind_tex_image_;

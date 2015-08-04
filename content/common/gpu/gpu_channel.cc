@@ -866,7 +866,7 @@ uint64 GpuChannel::GetMemoryUsage() {
 scoped_refptr<gfx::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
+    gfx::BufferFormat format,
     uint32 internalformat) {
   switch (handle.type) {
     case gfx::SHARED_MEMORY_BUFFER: {

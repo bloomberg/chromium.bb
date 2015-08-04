@@ -33,20 +33,20 @@ bool ValidInternalFormat(unsigned internalformat) {
   }
 }
 
-bool ValidFormat(GpuMemoryBuffer::Format format) {
+bool ValidFormat(BufferFormat format) {
   switch (format) {
-    case GpuMemoryBuffer::ATC:
-    case GpuMemoryBuffer::ATCIA:
-    case GpuMemoryBuffer::DXT1:
-    case GpuMemoryBuffer::DXT5:
-    case GpuMemoryBuffer::ETC1:
-    case GpuMemoryBuffer::R_8:
-    case GpuMemoryBuffer::RGBA_4444:
-    case GpuMemoryBuffer::RGBA_8888:
-    case GpuMemoryBuffer::BGRA_8888:
+    case BufferFormat::ATC:
+    case BufferFormat::ATCIA:
+    case BufferFormat::DXT1:
+    case BufferFormat::DXT5:
+    case BufferFormat::ETC1:
+    case BufferFormat::R_8:
+    case BufferFormat::RGBA_4444:
+    case BufferFormat::RGBA_8888:
+    case BufferFormat::BGRA_8888:
       return true;
-    case GpuMemoryBuffer::RGBX_8888:
-    case GpuMemoryBuffer::YUV_420:
+    case BufferFormat::RGBX_8888:
+    case BufferFormat::YUV_420:
       return false;
   }
 
@@ -54,20 +54,20 @@ bool ValidFormat(GpuMemoryBuffer::Format format) {
   return false;
 }
 
-bool IsCompressedFormat(GpuMemoryBuffer::Format format) {
+bool IsCompressedFormat(BufferFormat format) {
   switch (format) {
-    case GpuMemoryBuffer::ATC:
-    case GpuMemoryBuffer::ATCIA:
-    case GpuMemoryBuffer::DXT1:
-    case GpuMemoryBuffer::DXT5:
-    case GpuMemoryBuffer::ETC1:
-    case GpuMemoryBuffer::YUV_420:
+    case BufferFormat::ATC:
+    case BufferFormat::ATCIA:
+    case BufferFormat::DXT1:
+    case BufferFormat::DXT5:
+    case BufferFormat::ETC1:
+    case BufferFormat::YUV_420:
       return true;
-    case GpuMemoryBuffer::R_8:
-    case GpuMemoryBuffer::RGBA_4444:
-    case GpuMemoryBuffer::RGBA_8888:
-    case GpuMemoryBuffer::BGRA_8888:
-    case GpuMemoryBuffer::RGBX_8888:
+    case BufferFormat::R_8:
+    case BufferFormat::RGBA_4444:
+    case BufferFormat::RGBA_8888:
+    case BufferFormat::BGRA_8888:
+    case BufferFormat::RGBX_8888:
       return false;
   }
 
@@ -75,27 +75,27 @@ bool IsCompressedFormat(GpuMemoryBuffer::Format format) {
   return false;
 }
 
-GLenum TextureFormat(GpuMemoryBuffer::Format format) {
+GLenum TextureFormat(BufferFormat format) {
   switch (format) {
-    case GpuMemoryBuffer::ATC:
+    case BufferFormat::ATC:
       return GL_ATC_RGB_AMD;
-    case GpuMemoryBuffer::ATCIA:
+    case BufferFormat::ATCIA:
       return GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD;
-    case GpuMemoryBuffer::DXT1:
+    case BufferFormat::DXT1:
       return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-    case GpuMemoryBuffer::DXT5:
+    case BufferFormat::DXT5:
       return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-    case GpuMemoryBuffer::ETC1:
+    case BufferFormat::ETC1:
       return GL_ETC1_RGB8_OES;
-    case GpuMemoryBuffer::R_8:
+    case BufferFormat::R_8:
       return GL_RED;
-    case GpuMemoryBuffer::RGBA_4444:
-    case GpuMemoryBuffer::RGBA_8888:
+    case BufferFormat::RGBA_4444:
+    case BufferFormat::RGBA_8888:
       return GL_RGBA;
-    case GpuMemoryBuffer::BGRA_8888:
+    case BufferFormat::BGRA_8888:
       return GL_BGRA_EXT;
-    case GpuMemoryBuffer::RGBX_8888:
-    case GpuMemoryBuffer::YUV_420:
+    case BufferFormat::RGBX_8888:
+    case BufferFormat::YUV_420:
       NOTREACHED();
       return 0;
   }
@@ -104,25 +104,25 @@ GLenum TextureFormat(GpuMemoryBuffer::Format format) {
   return 0;
 }
 
-GLenum DataFormat(GpuMemoryBuffer::Format format) {
+GLenum DataFormat(BufferFormat format) {
   return TextureFormat(format);
 }
 
-GLenum DataType(GpuMemoryBuffer::Format format) {
+GLenum DataType(BufferFormat format) {
   switch (format) {
-    case GpuMemoryBuffer::RGBA_4444:
+    case BufferFormat::RGBA_4444:
       return GL_UNSIGNED_SHORT_4_4_4_4;
-    case GpuMemoryBuffer::RGBA_8888:
-    case GpuMemoryBuffer::BGRA_8888:
-    case GpuMemoryBuffer::R_8:
+    case BufferFormat::RGBA_8888:
+    case BufferFormat::BGRA_8888:
+    case BufferFormat::R_8:
       return GL_UNSIGNED_BYTE;
-    case GpuMemoryBuffer::ATC:
-    case GpuMemoryBuffer::ATCIA:
-    case GpuMemoryBuffer::DXT1:
-    case GpuMemoryBuffer::DXT5:
-    case GpuMemoryBuffer::ETC1:
-    case GpuMemoryBuffer::RGBX_8888:
-    case GpuMemoryBuffer::YUV_420:
+    case BufferFormat::ATC:
+    case BufferFormat::ATCIA:
+    case BufferFormat::DXT1:
+    case BufferFormat::DXT5:
+    case BufferFormat::ETC1:
+    case BufferFormat::RGBX_8888:
+    case BufferFormat::YUV_420:
       NOTREACHED();
       return 0;
   }
@@ -131,8 +131,7 @@ GLenum DataType(GpuMemoryBuffer::Format format) {
   return 0;
 }
 
-GLsizei SizeInBytes(const Size& size,
-                    GpuMemoryBuffer::Format format) {
+GLsizei SizeInBytes(const Size& size, BufferFormat format) {
   size_t stride_in_bytes = 0;
   bool valid_stride = GLImageMemory::StrideInBytes(
       size.width(), format, &stride_in_bytes);
@@ -146,7 +145,7 @@ GLImageMemory::GLImageMemory(const Size& size, unsigned internalformat)
     : size_(size),
       internalformat_(internalformat),
       memory_(NULL),
-      format_(GpuMemoryBuffer::RGBA_8888),
+      format_(BufferFormat::RGBA_8888),
       in_use_(false),
       target_(0),
       need_do_bind_tex_image_(false)
@@ -169,41 +168,41 @@ GLImageMemory::~GLImageMemory() {
 
 // static
 bool GLImageMemory::StrideInBytes(size_t width,
-                                  GpuMemoryBuffer::Format format,
+                                  BufferFormat format,
                                   size_t* stride_in_bytes) {
   base::CheckedNumeric<size_t> checked_stride = width;
   switch (format) {
-    case GpuMemoryBuffer::ATCIA:
-    case GpuMemoryBuffer::DXT5:
+    case BufferFormat::ATCIA:
+    case BufferFormat::DXT5:
       *stride_in_bytes = width;
       return true;
-    case GpuMemoryBuffer::ATC:
-    case GpuMemoryBuffer::DXT1:
-    case GpuMemoryBuffer::ETC1:
+    case BufferFormat::ATC:
+    case BufferFormat::DXT1:
+    case BufferFormat::ETC1:
       DCHECK_EQ(width % 2, 0u);
       *stride_in_bytes = width / 2;
       return true;
-    case GpuMemoryBuffer::R_8:
+    case BufferFormat::R_8:
       checked_stride += 3;
       if (!checked_stride.IsValid())
         return false;
       *stride_in_bytes = checked_stride.ValueOrDie() & ~0x3;
       return true;
-    case GpuMemoryBuffer::RGBA_4444:
+    case BufferFormat::RGBA_4444:
       checked_stride *= 2;
       if (!checked_stride.IsValid())
         return false;
       *stride_in_bytes = checked_stride.ValueOrDie();
       return true;
-    case GpuMemoryBuffer::RGBA_8888:
-    case GpuMemoryBuffer::BGRA_8888:
+    case BufferFormat::RGBA_8888:
+    case BufferFormat::BGRA_8888:
       checked_stride *= 4;
       if (!checked_stride.IsValid())
         return false;
       *stride_in_bytes = checked_stride.ValueOrDie();
       return true;
-    case GpuMemoryBuffer::RGBX_8888:
-    case GpuMemoryBuffer::YUV_420:
+    case BufferFormat::RGBX_8888:
+    case BufferFormat::YUV_420:
       NOTREACHED();
       return false;
   }
@@ -213,14 +212,14 @@ bool GLImageMemory::StrideInBytes(size_t width,
 }
 
 bool GLImageMemory::Initialize(const unsigned char* memory,
-                               GpuMemoryBuffer::Format format) {
+                               BufferFormat format) {
   if (!ValidInternalFormat(internalformat_)) {
     LOG(ERROR) << "Invalid internalformat: " << internalformat_;
     return false;
   }
 
   if (!ValidFormat(format)) {
-    LOG(ERROR) << "Invalid format: " << format;
+    LOG(ERROR) << "Invalid format: " << static_cast<int>(format);
     return false;
   }
 

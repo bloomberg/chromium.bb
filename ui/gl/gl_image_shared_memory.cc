@@ -13,7 +13,7 @@ namespace {
 
 // Returns true if the size is valid and false otherwise.
 bool SizeInBytes(const gfx::Size& size,
-                 gfx::GpuMemoryBuffer::Format format,
+                 gfx::BufferFormat format,
                  size_t* size_in_bytes) {
   if (size.IsEmpty())
     return false;
@@ -41,7 +41,7 @@ GLImageSharedMemory::~GLImageSharedMemory() {
 }
 
 bool GLImageSharedMemory::Initialize(const gfx::GpuMemoryBufferHandle& handle,
-                                     gfx::GpuMemoryBuffer::Format format) {
+                                     gfx::BufferFormat format) {
   size_t size_in_bytes;
   if (!SizeInBytes(GetSize(), format, &size_in_bytes))
     return false;

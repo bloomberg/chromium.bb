@@ -248,8 +248,7 @@ void CommandBufferDriver::CreateImage(int32_t id,
     return;
   }
 
-  gfx::GpuMemoryBuffer::Format gpu_format =
-      static_cast<gfx::GpuMemoryBuffer::Format>(format);
+  gfx::BufferFormat gpu_format = static_cast<gfx::BufferFormat>(format);
   if (!gpu::ImageFactory::IsGpuMemoryBufferFormatSupported(
           gpu_format, decoder_->GetCapabilities())) {
     LOG(ERROR) << "Format is not supported.";

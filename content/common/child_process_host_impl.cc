@@ -360,8 +360,8 @@ void ChildProcessHostImpl::OnShutdownRequest() {
 void ChildProcessHostImpl::OnAllocateGpuMemoryBuffer(
     uint32 width,
     uint32 height,
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
     gfx::GpuMemoryBufferHandle* handle) {
   // TODO(reveman): Add support for other types of GpuMemoryBuffers.
 

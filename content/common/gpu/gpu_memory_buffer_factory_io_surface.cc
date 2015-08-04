@@ -23,21 +23,21 @@ void AddIntegerValue(CFMutableDictionaryRef dictionary,
   CFDictionaryAddValue(dictionary, key, number.get());
 }
 
-int32 BytesPerPixel(gfx::GpuMemoryBuffer::Format format) {
+int32 BytesPerPixel(gfx::BufferFormat format) {
   switch (format) {
-    case gfx::GpuMemoryBuffer::R_8:
+    case gfx::BufferFormat::R_8:
       return 1;
-    case gfx::GpuMemoryBuffer::BGRA_8888:
+    case gfx::BufferFormat::BGRA_8888:
       return 4;
-    case gfx::GpuMemoryBuffer::ATC:
-    case gfx::GpuMemoryBuffer::ATCIA:
-    case gfx::GpuMemoryBuffer::DXT1:
-    case gfx::GpuMemoryBuffer::DXT5:
-    case gfx::GpuMemoryBuffer::ETC1:
-    case gfx::GpuMemoryBuffer::RGBA_4444:
-    case gfx::GpuMemoryBuffer::RGBA_8888:
-    case gfx::GpuMemoryBuffer::RGBX_8888:
-    case gfx::GpuMemoryBuffer::YUV_420:
+    case gfx::BufferFormat::ATC:
+    case gfx::BufferFormat::ATCIA:
+    case gfx::BufferFormat::DXT1:
+    case gfx::BufferFormat::DXT5:
+    case gfx::BufferFormat::ETC1:
+    case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::YUV_420:
       NOTREACHED();
       return 0;
   }
@@ -46,21 +46,21 @@ int32 BytesPerPixel(gfx::GpuMemoryBuffer::Format format) {
   return 0;
 }
 
-int32 PixelFormat(gfx::GpuMemoryBuffer::Format format) {
+int32 PixelFormat(gfx::BufferFormat format) {
   switch (format) {
-    case gfx::GpuMemoryBuffer::R_8:
+    case gfx::BufferFormat::R_8:
       return 'L008';
-    case gfx::GpuMemoryBuffer::BGRA_8888:
+    case gfx::BufferFormat::BGRA_8888:
       return 'BGRA';
-    case gfx::GpuMemoryBuffer::ATC:
-    case gfx::GpuMemoryBuffer::ATCIA:
-    case gfx::GpuMemoryBuffer::DXT1:
-    case gfx::GpuMemoryBuffer::DXT5:
-    case gfx::GpuMemoryBuffer::ETC1:
-    case gfx::GpuMemoryBuffer::RGBA_4444:
-    case gfx::GpuMemoryBuffer::RGBA_8888:
-    case gfx::GpuMemoryBuffer::RGBX_8888:
-    case gfx::GpuMemoryBuffer::YUV_420:
+    case gfx::BufferFormat::ATC:
+    case gfx::BufferFormat::ATCIA:
+    case gfx::BufferFormat::DXT1:
+    case gfx::BufferFormat::DXT5:
+    case gfx::BufferFormat::ETC1:
+    case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::YUV_420:
       NOTREACHED();
       return 0;
   }
@@ -70,11 +70,11 @@ int32 PixelFormat(gfx::GpuMemoryBuffer::Format format) {
 }
 
 const GpuMemoryBufferFactory::Configuration kSupportedConfigurations[] = {
-    {gfx::GpuMemoryBuffer::BGRA_8888, gfx::GpuMemoryBuffer::SCANOUT},
-    {gfx::GpuMemoryBuffer::R_8, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
-    {gfx::GpuMemoryBuffer::R_8, gfx::GpuMemoryBuffer::MAP},
-    {gfx::GpuMemoryBuffer::BGRA_8888, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
-    {gfx::GpuMemoryBuffer::BGRA_8888, gfx::GpuMemoryBuffer::MAP}};
+    {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::SCANOUT},
+    {gfx::BufferFormat::R_8, gfx::BufferUsage::PERSISTENT_MAP},
+    {gfx::BufferFormat::R_8, gfx::BufferUsage::MAP},
+    {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::PERSISTENT_MAP},
+    {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::MAP}};
 
 }  // namespace
 
@@ -86,8 +86,8 @@ GpuMemoryBufferFactoryIOSurface::~GpuMemoryBufferFactoryIOSurface() {
 
 // static
 bool GpuMemoryBufferFactoryIOSurface::IsGpuMemoryBufferConfigurationSupported(
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage) {
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
   for (auto& configuration : kSupportedConfigurations) {
     if (configuration.format == format && configuration.usage == usage)
       return true;
@@ -107,8 +107,8 @@ gfx::GpuMemoryBufferHandle
 GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
     int client_id,
     gfx::PluginWindowHandle surface_handle) {
   base::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
@@ -166,7 +166,7 @@ scoped_refptr<gfx::GLImage>
 GpuMemoryBufferFactoryIOSurface::CreateImageForGpuMemoryBuffer(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
+    gfx::BufferFormat format,
     unsigned internalformat,
     int client_id) {
   base::AutoLock lock(io_surfaces_lock_);

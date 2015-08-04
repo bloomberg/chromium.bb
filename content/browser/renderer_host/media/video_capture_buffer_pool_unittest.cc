@@ -64,7 +64,9 @@ class VideoCaptureBufferPoolTest
       mapped_ = false;
     }
     bool IsMapped() const override { return mapped_; }
-    Format GetFormat() const override { return BGRA_8888; }
+    gfx::BufferFormat GetFormat() const override {
+      return gfx::BufferFormat::BGRA_8888;
+    }
     void GetStride(int* stride) const override {
       *stride = size_.width() * 4;
       return;
@@ -91,8 +93,8 @@ class VideoCaptureBufferPoolTest
 
     scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
         const gfx::Size& size,
-        gfx::GpuMemoryBuffer::Format format,
-        gfx::GpuMemoryBuffer::Usage usage) override {
+        gfx::BufferFormat format,
+        gfx::BufferUsage usage) override {
       return make_scoped_ptr(new MockGpuMemoryBuffer(size));
     }
   };

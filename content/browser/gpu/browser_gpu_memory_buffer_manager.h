@@ -27,14 +27,14 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
 
   static BrowserGpuMemoryBufferManager* current();
 
-  static uint32 GetImageTextureTarget(gfx::GpuMemoryBuffer::Format format,
-                                      gfx::GpuMemoryBuffer::Usage usage);
+  static uint32 GetImageTextureTarget(gfx::BufferFormat format,
+                                      gfx::BufferUsage usage);
 
   // Overridden from gpu::GpuMemoryBufferManager:
   scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format,
-      gfx::GpuMemoryBuffer::Usage usage) override;
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage) override;
   gfx::GpuMemoryBuffer* GpuMemoryBufferFromClientBuffer(
       ClientBuffer buffer) override;
   void SetDestructionSyncPoint(gfx::GpuMemoryBuffer* buffer,
@@ -46,13 +46,13 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
   // Virtual for testing.
   virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBufferForScanout(
       const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format,
+      gfx::BufferFormat format,
       int32 surface_id);
 
   void AllocateGpuMemoryBufferForChildProcess(
       const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format,
-      gfx::GpuMemoryBuffer::Usage usage,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage,
       base::ProcessHandle child_process_handle,
       int child_client_id,
       const AllocationCallback& callback);
@@ -67,13 +67,13 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
   struct BufferInfo {
     BufferInfo()
         : type(gfx::EMPTY_BUFFER),
-          format(gfx::GpuMemoryBuffer::RGBA_8888),
-          usage(gfx::GpuMemoryBuffer::MAP),
+          format(gfx::BufferFormat::RGBA_8888),
+          usage(gfx::BufferUsage::MAP),
           gpu_host_id(0) {}
     BufferInfo(const gfx::Size& size,
                gfx::GpuMemoryBufferType type,
-               gfx::GpuMemoryBuffer::Format format,
-               gfx::GpuMemoryBuffer::Usage usage,
+               gfx::BufferFormat format,
+               gfx::BufferUsage usage,
                int gpu_host_id)
         : size(size),
           type(type),
@@ -83,20 +83,19 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
 
     gfx::Size size;
     gfx::GpuMemoryBufferType type;
-    gfx::GpuMemoryBuffer::Format format;
-    gfx::GpuMemoryBuffer::Usage usage;
+    gfx::BufferFormat format;
+    gfx::BufferUsage usage;
     int gpu_host_id;
   };
   struct AllocateGpuMemoryBufferRequest;
 
   scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBufferForSurface(
       const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format,
-      gfx::GpuMemoryBuffer::Usage usage,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage,
       int32 surface_id);
-  bool IsGpuMemoryBufferConfigurationSupported(
-      gfx::GpuMemoryBuffer::Format format,
-      gfx::GpuMemoryBuffer::Usage usage) const;
+  bool IsGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
+                                               gfx::BufferUsage usage) const;
   void AllocateGpuMemoryBufferForSurfaceOnIO(
       AllocateGpuMemoryBufferRequest* request);
   void GpuMemoryBufferAllocatedForSurfaceOnIO(
@@ -104,8 +103,8 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       const gfx::GpuMemoryBufferHandle& handle);
   void AllocateGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id,
                                    const gfx::Size& size,
-                                   gfx::GpuMemoryBuffer::Format format,
-                                   gfx::GpuMemoryBuffer::Usage usage,
+                                   gfx::BufferFormat format,
+                                   gfx::BufferUsage usage,
                                    int client_id,
                                    int surface_id,
                                    bool reused_gpu_process,

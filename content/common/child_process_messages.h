@@ -16,6 +16,7 @@
 #include "content/common/host_discardable_shared_memory_manager.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/ipc/gfx_param_traits.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/mac/io_surface_manager_token.h"
@@ -68,12 +69,6 @@ IPC_STRUCT_TRAITS_BEGIN(gfx::GpuMemoryBufferHandle)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(handle)
 IPC_STRUCT_TRAITS_END()
-
-IPC_ENUM_TRAITS_MAX_VALUE(gfx::GpuMemoryBuffer::Format,
-                          gfx::GpuMemoryBuffer::FORMAT_LAST)
-
-IPC_ENUM_TRAITS_MAX_VALUE(gfx::GpuMemoryBuffer::Usage,
-                          gfx::GpuMemoryBuffer::USAGE_LAST)
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -193,8 +188,8 @@ IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TcmallocStats,
 IPC_SYNC_MESSAGE_CONTROL4_1(ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
                             uint32 /* width */,
                             uint32 /* height */,
-                            gfx::GpuMemoryBuffer::Format,
-                            gfx::GpuMemoryBuffer::Usage,
+                            gfx::BufferFormat,
+                            gfx::BufferUsage,
                             gfx::GpuMemoryBufferHandle)
 
 // Informs the browser that the child deleted a gpu memory buffer.

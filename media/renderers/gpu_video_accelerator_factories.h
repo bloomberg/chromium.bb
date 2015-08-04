@@ -65,8 +65,8 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories
 
   virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format,
-      gfx::GpuMemoryBuffer::Usage usage) = 0;
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage) = 0;
 
   virtual unsigned ImageTextureTarget() = 0;
   virtual bool IsTextureRGSupported() = 0;

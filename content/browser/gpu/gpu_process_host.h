@@ -128,8 +128,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Tells the GPU process to create a new GPU memory buffer.
   void CreateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                              const gfx::Size& size,
-                             gfx::GpuMemoryBuffer::Format format,
-                             gfx::GpuMemoryBuffer::Usage usage,
+                             gfx::BufferFormat format,
+                             gfx::BufferUsage usage,
                              int client_id,
                              int32 surface_id,
                              const CreateGpuMemoryBufferCallback& callback);

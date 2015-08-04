@@ -1149,15 +1149,15 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
           // compositor for each usage.
           // crbug.com/490362
           BrowserGpuMemoryBufferManager::GetImageTextureTarget(
-              gfx::GpuMemoryBuffer::BGRA_8888,
+              gfx::BufferFormat::BGRA_8888,
               // TODO(danakj): When one-copy supports partial update, change
               // this usage to PERSISTENT_MAP for one-copy.
-              gfx::GpuMemoryBuffer::MAP)));
+              gfx::BufferUsage::MAP)));
 
   command_line->AppendSwitchASCII(
       switches::kVideoImageTextureTarget,
       base::UintToString(BrowserGpuMemoryBufferManager::GetImageTextureTarget(
-          gfx::GpuMemoryBuffer::R_8, gfx::GpuMemoryBuffer::MAP)));
+          gfx::BufferFormat::R_8, gfx::BufferUsage::MAP)));
 
   // Appending disable-gpu-feature switches due to software rendering list.
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();

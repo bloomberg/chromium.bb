@@ -164,7 +164,7 @@ class GpuChannel : public IPC::Listener,
   scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format,
+      gfx::BufferFormat format,
       uint32 internalformat);
 
   bool allow_future_sync_points() const { return allow_future_sync_points_; }

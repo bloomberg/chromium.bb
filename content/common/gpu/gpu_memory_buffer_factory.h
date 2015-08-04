@@ -27,8 +27,8 @@ namespace content {
 class CONTENT_EXPORT GpuMemoryBufferFactory {
  public:
   struct Configuration {
-    gfx::GpuMemoryBuffer::Format format;
-    gfx::GpuMemoryBuffer::Usage usage;
+    gfx::BufferFormat format;
+    gfx::BufferUsage usage;
   };
 
   virtual ~GpuMemoryBufferFactory() {}
@@ -50,8 +50,8 @@ class CONTENT_EXPORT GpuMemoryBufferFactory {
   virtual gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format,
-      gfx::GpuMemoryBuffer::Usage usage,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage,
       int client_id,
       gfx::PluginWindowHandle surface_handle) = 0;
 

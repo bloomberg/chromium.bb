@@ -26,7 +26,9 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     NOTREACHED();
     return false;
   }
-  Format GetFormat() const override { return gfx::GpuMemoryBuffer::R_8; }
+  gfx::BufferFormat GetFormat() const override {
+    return gfx::BufferFormat::R_8;
+  }
   void GetStride(int* stride) const override { stride[0] = size_.width(); }
   gfx::GpuMemoryBufferId GetId() const override {
     NOTREACHED();
@@ -58,9 +60,9 @@ bool MockGpuVideoAcceleratorFactories::IsGpuVideoAcceleratorEnabled() {
 scoped_ptr<gfx::GpuMemoryBuffer>
 MockGpuVideoAcceleratorFactories::AllocateGpuMemoryBuffer(
     const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage) {
-  DCHECK_EQ(gfx::GpuMemoryBuffer::R_8, format);
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
+  DCHECK(gfx::BufferFormat::R_8 == format);
   return make_scoped_ptr<gfx::GpuMemoryBuffer>(new GpuMemoryBufferImpl(size));
 }
 

@@ -16,7 +16,7 @@ class GL_EXPORT GLImageSharedMemory : public GLImageMemory {
   GLImageSharedMemory(const gfx::Size& size, unsigned internalformat);
 
   bool Initialize(const gfx::GpuMemoryBufferHandle& handle,
-                  gfx::GpuMemoryBuffer::Format format);
+                  gfx::BufferFormat format);
 
   // Overridden from GLImage:
   void Destroy(bool have_context) override;

@@ -179,9 +179,8 @@ bool InProcessContextFactory::DoesCreateTestContexts() {
   return context_factory_for_test_;
 }
 
-uint32 InProcessContextFactory::GetImageTextureTarget(
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage) {
+uint32 InProcessContextFactory::GetImageTextureTarget(gfx::BufferFormat format,
+                                                      gfx::BufferUsage usage) {
   return GL_TEXTURE_2D;
 }
 

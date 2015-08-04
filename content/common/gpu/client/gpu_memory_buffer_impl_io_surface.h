@@ -18,8 +18,8 @@ class GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
   static scoped_ptr<GpuMemoryBufferImpl> CreateFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
-      Format format,
-      Usage usage,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage,
       const DestructionCallback& callback);
 
   // Overridden from gfx::GpuMemoryBuffer:
@@ -31,7 +31,7 @@ class GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
  private:
   GpuMemoryBufferImplIOSurface(gfx::GpuMemoryBufferId id,
                                const gfx::Size& size,
-                               Format format,
+                               gfx::BufferFormat format,
                                const DestructionCallback& callback,
                                IOSurfaceRef io_surface,
                                uint32_t lock_flags);

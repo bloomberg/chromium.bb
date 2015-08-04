@@ -25,15 +25,14 @@ namespace content {
 
 GpuMemoryBufferImpl::GpuMemoryBufferImpl(gfx::GpuMemoryBufferId id,
                                          const gfx::Size& size,
-                                         Format format,
+                                         gfx::BufferFormat format,
                                          const DestructionCallback& callback)
     : id_(id),
       size_(size),
       format_(format),
       callback_(callback),
       mapped_(false),
-      destruction_sync_point_(0) {
-}
+      destruction_sync_point_(0) {}
 
 GpuMemoryBufferImpl::~GpuMemoryBufferImpl() {
   DCHECK(!mapped_);
@@ -44,8 +43,8 @@ GpuMemoryBufferImpl::~GpuMemoryBufferImpl() {
 scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
-    Format format,
-    Usage usage,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
     const DestructionCallback& callback) {
   switch (handle.type) {
     case gfx::SHARED_MEMORY_BUFFER:
@@ -80,20 +79,20 @@ GpuMemoryBufferImpl* GpuMemoryBufferImpl::FromClientBuffer(
 
 // static
 size_t GpuMemoryBufferImpl::NumberOfPlanesForGpuMemoryBufferFormat(
-    Format format) {
+    gfx::BufferFormat format) {
   switch (format) {
-    case ATC:
-    case ATCIA:
-    case DXT1:
-    case DXT5:
-    case ETC1:
-    case R_8:
-    case RGBA_4444:
-    case RGBA_8888:
-    case RGBX_8888:
-    case BGRA_8888:
+    case gfx::BufferFormat::ATC:
+    case gfx::BufferFormat::ATCIA:
+    case gfx::BufferFormat::DXT1:
+    case gfx::BufferFormat::DXT5:
+    case gfx::BufferFormat::ETC1:
+    case gfx::BufferFormat::R_8:
+    case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::BGRA_8888:
       return 1;
-    case YUV_420:
+    case gfx::BufferFormat::YUV_420:
       return 3;
   }
   NOTREACHED();
@@ -101,20 +100,21 @@ size_t GpuMemoryBufferImpl::NumberOfPlanesForGpuMemoryBufferFormat(
 }
 
 // static
-size_t GpuMemoryBufferImpl::SubsamplingFactor(Format format, int plane) {
+size_t GpuMemoryBufferImpl::SubsamplingFactor(gfx::BufferFormat format,
+                                              int plane) {
   switch (format) {
-    case ATC:
-    case ATCIA:
-    case DXT1:
-    case DXT5:
-    case ETC1:
-    case R_8:
-    case RGBA_4444:
-    case RGBA_8888:
-    case RGBX_8888:
-    case BGRA_8888:
+    case gfx::BufferFormat::ATC:
+    case gfx::BufferFormat::ATCIA:
+    case gfx::BufferFormat::DXT1:
+    case gfx::BufferFormat::DXT5:
+    case gfx::BufferFormat::ETC1:
+    case gfx::BufferFormat::R_8:
+    case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::BGRA_8888:
       return 1;
-    case YUV_420: {
+    case gfx::BufferFormat::YUV_420: {
       static size_t factor[] = {1, 2, 2};
       DCHECK_LT(static_cast<size_t>(plane), arraysize(factor));
       return factor[plane];
@@ -126,43 +126,43 @@ size_t GpuMemoryBufferImpl::SubsamplingFactor(Format format, int plane) {
 
 // static
 bool GpuMemoryBufferImpl::RowSizeInBytes(size_t width,
-                                         Format format,
+                                         gfx::BufferFormat format,
                                          int plane,
                                          size_t* size_in_bytes) {
   base::CheckedNumeric<size_t> checked_size = width;
   switch (format) {
-    case ATCIA:
-    case DXT5:
+    case gfx::BufferFormat::ATCIA:
+    case gfx::BufferFormat::DXT5:
       DCHECK_EQ(plane, 0);
       *size_in_bytes = width;
       return true;
-    case ATC:
-    case DXT1:
-    case ETC1:
+    case gfx::BufferFormat::ATC:
+    case gfx::BufferFormat::DXT1:
+    case gfx::BufferFormat::ETC1:
       DCHECK_EQ(plane, 0);
       DCHECK_EQ(width % 2, 0u);
       *size_in_bytes = width / 2;
       return true;
-    case R_8:
+    case gfx::BufferFormat::R_8:
       checked_size += 3;
       if (!checked_size.IsValid())
         return false;
       *size_in_bytes = checked_size.ValueOrDie() & ~0x3;
       return true;
-    case RGBA_4444:
+    case gfx::BufferFormat::RGBA_4444:
       checked_size *= 2;
       if (!checked_size.IsValid())
         return false;
       *size_in_bytes = checked_size.ValueOrDie();
-    case RGBX_8888:
-    case RGBA_8888:
-    case BGRA_8888:
+    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::BGRA_8888:
       checked_size *= 4;
       if (!checked_size.IsValid())
         return false;
       *size_in_bytes = checked_size.ValueOrDie();
       return true;
-    case YUV_420:
+    case gfx::BufferFormat::YUV_420:
       DCHECK_EQ(width % 2, 0u);
       *size_in_bytes = width / SubsamplingFactor(format, plane);
       return true;
@@ -173,7 +173,7 @@ bool GpuMemoryBufferImpl::RowSizeInBytes(size_t width,
 
 // static
 bool GpuMemoryBufferImpl::BufferSizeInBytes(const gfx::Size& size,
-                                            Format format,
+                                            gfx::BufferFormat format,
                                             size_t* size_in_bytes) {
   base::CheckedNumeric<size_t> checked_size = 0;
   size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format);
@@ -193,7 +193,7 @@ bool GpuMemoryBufferImpl::BufferSizeInBytes(const gfx::Size& size,
   return true;
 }
 
-gfx::GpuMemoryBuffer::Format GpuMemoryBufferImpl::GetFormat() const {
+gfx::BufferFormat GpuMemoryBufferImpl::GetFormat() const {
   return format_;
 }
 

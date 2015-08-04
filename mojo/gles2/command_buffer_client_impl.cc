@@ -287,12 +287,9 @@ int32_t CommandBufferClientImpl::CreateImage(ClientBuffer buffer,
   }
   mojo::ScopedHandle scoped_handle;
   scoped_handle.reset(mojo::Handle(mojo_handle));
-  command_buffer_->CreateImage(new_id,
-                               scoped_handle.Pass(),
-                               handle.type,
-                               size.Pass(),
-                               gpu_memory_buffer->GetFormat(),
-                               internalformat);
+  command_buffer_->CreateImage(
+      new_id, scoped_handle.Pass(), handle.type, size.Pass(),
+      static_cast<int32_t>(gpu_memory_buffer->GetFormat()), internalformat);
   if (requires_sync_point) {
     NOTIMPLEMENTED();
     // TODO(jam): need to support this if we support types other than

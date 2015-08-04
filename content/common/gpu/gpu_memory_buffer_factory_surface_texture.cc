@@ -12,8 +12,7 @@ namespace content {
 namespace {
 
 const GpuMemoryBufferFactory::Configuration kSupportedConfigurations[] = {
-  { gfx::GpuMemoryBuffer::RGBA_8888, gfx::GpuMemoryBuffer::MAP }
-};
+    {gfx::BufferFormat::RGBA_8888, gfx::BufferUsage::MAP}};
 
 }  // namespace
 
@@ -25,8 +24,8 @@ GpuMemoryBufferFactorySurfaceTexture::~GpuMemoryBufferFactorySurfaceTexture() {
 
 // static
 bool GpuMemoryBufferFactorySurfaceTexture::
-    IsGpuMemoryBufferConfigurationSupported(gfx::GpuMemoryBuffer::Format format,
-                                            gfx::GpuMemoryBuffer::Usage usage) {
+    IsGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
+                                            gfx::BufferUsage usage) {
   for (auto& configuration : kSupportedConfigurations) {
     if (configuration.format == format && configuration.usage == usage)
       return true;
@@ -47,8 +46,8 @@ gfx::GpuMemoryBufferHandle
 GpuMemoryBufferFactorySurfaceTexture::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
     int client_id,
     gfx::PluginWindowHandle surface_handle) {
   // Note: this needs to be 0 as the surface texture implemenation will take
@@ -100,7 +99,7 @@ scoped_refptr<gfx::GLImage>
 GpuMemoryBufferFactorySurfaceTexture::CreateImageForGpuMemoryBuffer(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
+    gfx::BufferFormat format,
     unsigned internalformat,
     int client_id) {
   base::AutoLock lock(surface_textures_lock_);

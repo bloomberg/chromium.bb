@@ -8,8 +8,10 @@
 #include <string>
 
 #include "ipc/ipc_message_utils.h"
+#include "ipc/param_traits_macros.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/ipc/gfx_ipc_export.h"
-#include "ui/gfx/ipc/gfx_param_traits.h"
+#include "ui/gfx/ipc/gfx_param_traits_macros.h"
 
 class SkBitmap;
 

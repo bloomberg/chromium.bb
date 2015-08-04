@@ -26,11 +26,10 @@ class GpuMemoryBufferImplTest
   }
   void TearDown() override { factory_.reset(); }
 
-  gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
-      gfx::GpuMemoryBufferId id,
-      const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format,
-      gfx::GpuMemoryBuffer::Usage usage) {
+  gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+                                                   const gfx::Size& size,
+                                                   gfx::BufferFormat format,
+                                                   gfx::BufferUsage usage) {
     ++buffer_count_;
     return factory_->CreateGpuMemoryBuffer(id, size, format, usage, kClientId,
                                            gfx::kNullPluginWindow);
@@ -79,7 +78,7 @@ TEST_P(GpuMemoryBufferImplTest, Map) {
   gfx::Size buffer_size(4, 4);
 
   for (auto configuration : supported_configurations_) {
-    if (configuration.usage != gfx::GpuMemoryBuffer::MAP)
+    if (configuration.usage != gfx::BufferUsage::MAP)
       continue;
 
     scoped_ptr<GpuMemoryBufferImpl> buffer(
@@ -142,7 +141,7 @@ TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
   gfx::Size buffer_size(4, 4);
 
   for (auto configuration : supported_configurations_) {
-    if (configuration.usage != gfx::GpuMemoryBuffer::PERSISTENT_MAP)
+    if (configuration.usage != gfx::BufferUsage::PERSISTENT_MAP)
       continue;
 
     scoped_ptr<GpuMemoryBufferImpl> buffer(

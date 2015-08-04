@@ -210,7 +210,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void CreateImageOnGpuThread(int32 id,
                               const gfx::GpuMemoryBufferHandle& handle,
                               const gfx::Size& size,
-                              gfx::GpuMemoryBuffer::Format format,
+                              gfx::BufferFormat format,
                               uint32 internalformat);
   void DestroyImageOnGpuThread(int32 id);
   void SetGetBufferOnGpuThread(int32 shm_id, base::WaitableEvent* completion);

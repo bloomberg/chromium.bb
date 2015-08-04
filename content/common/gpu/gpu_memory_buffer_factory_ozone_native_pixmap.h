@@ -23,9 +23,8 @@ class GpuMemoryBufferFactoryOzoneNativePixmap : public GpuMemoryBufferFactory,
   GpuMemoryBufferFactoryOzoneNativePixmap();
   ~GpuMemoryBufferFactoryOzoneNativePixmap() override;
 
-  static bool IsGpuMemoryBufferConfigurationSupported(
-      gfx::GpuMemoryBuffer::Format format,
-      gfx::GpuMemoryBuffer::Usage usage);
+  static bool IsGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
+                                                      gfx::BufferUsage usage);
 
   // Overridden from GpuMemoryBufferFactory:
   void GetSupportedGpuMemoryBufferConfigurations(
@@ -33,8 +32,8 @@ class GpuMemoryBufferFactoryOzoneNativePixmap : public GpuMemoryBufferFactory,
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format,
-      gfx::GpuMemoryBuffer::Usage usage,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage,
       int client_id,
       gfx::PluginWindowHandle surface_handle) override;
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
@@ -45,7 +44,7 @@ class GpuMemoryBufferFactoryOzoneNativePixmap : public GpuMemoryBufferFactory,
   scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format,
+      gfx::BufferFormat format,
       unsigned internalformat,
       int client_id) override;
 

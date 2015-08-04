@@ -209,7 +209,7 @@ class GpuCommandBufferStub
   void OnCreateImage(int32 id,
                      gfx::GpuMemoryBufferHandle handle,
                      gfx::Size size,
-                     gfx::GpuMemoryBuffer::Format format,
+                     gfx::BufferFormat format,
                      uint32 internalformat);
   void OnDestroyImage(int32 id);
 

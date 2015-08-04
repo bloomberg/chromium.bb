@@ -24,20 +24,20 @@ bool ValidInternalFormat(unsigned internalformat) {
   }
 }
 
-bool ValidFormat(gfx::GpuMemoryBuffer::Format format) {
+bool ValidFormat(gfx::BufferFormat format) {
   switch (format) {
-    case GpuMemoryBuffer::BGRA_8888:
-    case GpuMemoryBuffer::RGBX_8888:
+    case BufferFormat::BGRA_8888:
+    case BufferFormat::RGBX_8888:
       return true;
-    case GpuMemoryBuffer::ATC:
-    case GpuMemoryBuffer::ATCIA:
-    case GpuMemoryBuffer::DXT1:
-    case GpuMemoryBuffer::DXT5:
-    case GpuMemoryBuffer::ETC1:
-    case GpuMemoryBuffer::R_8:
-    case GpuMemoryBuffer::RGBA_4444:
-    case GpuMemoryBuffer::RGBA_8888:
-    case GpuMemoryBuffer::YUV_420:
+    case BufferFormat::ATC:
+    case BufferFormat::ATCIA:
+    case BufferFormat::DXT1:
+    case BufferFormat::DXT5:
+    case BufferFormat::ETC1:
+    case BufferFormat::R_8:
+    case BufferFormat::RGBA_4444:
+    case BufferFormat::RGBA_8888:
+    case BufferFormat::YUV_420:
       return false;
   }
 
@@ -45,21 +45,21 @@ bool ValidFormat(gfx::GpuMemoryBuffer::Format format) {
   return false;
 }
 
-EGLint FourCC(gfx::GpuMemoryBuffer::Format format) {
+EGLint FourCC(gfx::BufferFormat format) {
   switch (format) {
-    case GpuMemoryBuffer::BGRA_8888:
+    case BufferFormat::BGRA_8888:
       return DRM_FORMAT_ARGB8888;
-    case GpuMemoryBuffer::RGBX_8888:
+    case BufferFormat::RGBX_8888:
       return DRM_FORMAT_XRGB8888;
-    case GpuMemoryBuffer::ATC:
-    case GpuMemoryBuffer::ATCIA:
-    case GpuMemoryBuffer::DXT1:
-    case GpuMemoryBuffer::DXT5:
-    case GpuMemoryBuffer::ETC1:
-    case GpuMemoryBuffer::R_8:
-    case GpuMemoryBuffer::RGBA_4444:
-    case GpuMemoryBuffer::RGBA_8888:
-    case GpuMemoryBuffer::YUV_420:
+    case BufferFormat::ATC:
+    case BufferFormat::ATCIA:
+    case BufferFormat::DXT1:
+    case BufferFormat::DXT5:
+    case BufferFormat::ETC1:
+    case BufferFormat::R_8:
+    case BufferFormat::RGBA_4444:
+    case BufferFormat::RGBA_8888:
+    case BufferFormat::YUV_420:
       NOTREACHED();
       return 0;
   }
@@ -79,7 +79,7 @@ GLImageOzoneNativePixmap::~GLImageOzoneNativePixmap() {
 }
 
 bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
-                                          GpuMemoryBuffer::Format format) {
+                                          BufferFormat format) {
   DCHECK(!pixmap_);
 
   bool result = true;
@@ -94,7 +94,7 @@ bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
     }
 
     if (!ValidFormat(format)) {
-      LOG(ERROR) << "Invalid format: " << format;
+      LOG(ERROR) << "Invalid format: " << static_cast<int>(format);
       return false;
     }
 

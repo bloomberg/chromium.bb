@@ -634,7 +634,7 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
     int32 id,
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
+    gfx::BufferFormat format,
     uint32 internalformat) {
   if (!decoder_)
     return;

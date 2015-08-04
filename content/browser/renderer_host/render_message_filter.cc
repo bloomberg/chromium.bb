@@ -1199,12 +1199,11 @@ void RenderMessageFilter::OnWebAudioMediaCodec(
 }
 #endif
 
-void RenderMessageFilter::OnAllocateGpuMemoryBuffer(
-    uint32 width,
-    uint32 height,
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage,
-    IPC::Message* reply) {
+void RenderMessageFilter::OnAllocateGpuMemoryBuffer(uint32 width,
+                                                    uint32 height,
+                                                    gfx::BufferFormat format,
+                                                    gfx::BufferUsage usage,
+                                                    IPC::Message* reply) {
   DCHECK(BrowserGpuMemoryBufferManager::current());
 
   base::CheckedNumeric<int> size = width;

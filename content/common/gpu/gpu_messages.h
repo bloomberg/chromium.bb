@@ -33,6 +33,7 @@
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gpu_preference.h"
@@ -84,8 +85,8 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(GpuMsg_CreateGpuMemoryBuffer_Params)
   IPC_STRUCT_MEMBER(int32, id)
   IPC_STRUCT_MEMBER(gfx::Size, size)
-  IPC_STRUCT_MEMBER(gfx::GpuMemoryBuffer::Format, format)
-  IPC_STRUCT_MEMBER(gfx::GpuMemoryBuffer::Usage, usage)
+  IPC_STRUCT_MEMBER(gfx::BufferFormat, format)
+  IPC_STRUCT_MEMBER(gfx::BufferUsage, usage)
   IPC_STRUCT_MEMBER(int32, client_id)
   IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, surface_handle)
 IPC_STRUCT_END()
@@ -646,7 +647,7 @@ IPC_MESSAGE_ROUTED5(GpuCommandBufferMsg_CreateImage,
                     int32 /* id */,
                     gfx::GpuMemoryBufferHandle /* gpu_memory_buffer */,
                     gfx::Size /* size */,
-                    gfx::GpuMemoryBuffer::Format /* format */,
+                    gfx::BufferFormat /* format */,
                     uint32 /* internalformat */)
 
 // Destroy a previously created image.

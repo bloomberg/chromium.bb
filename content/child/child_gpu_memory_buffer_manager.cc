@@ -29,10 +29,9 @@ ChildGpuMemoryBufferManager::~ChildGpuMemoryBufferManager() {
 }
 
 scoped_ptr<gfx::GpuMemoryBuffer>
-ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
-    const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage) {
+ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
+                                                     gfx::BufferFormat format,
+                                                     gfx::BufferUsage usage) {
   TRACE_EVENT2("renderer",
                "ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer",
                "width",

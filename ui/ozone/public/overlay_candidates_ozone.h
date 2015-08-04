@@ -26,7 +26,7 @@ class OZONE_BASE_EXPORT OverlayCandidatesOzone {
     // Transformation to apply to layer during composition.
     gfx::OverlayTransform transform = gfx::OVERLAY_TRANSFORM_NONE;
     // Format of the buffer to composite.
-    SurfaceFactoryOzone::BufferFormat format = SurfaceFactoryOzone::UNKNOWN;
+    gfx::BufferFormat format = gfx::BufferFormat::BGRA_8888;
     // Size of the buffer, in pixels.
     gfx::Size buffer_size;
     // Rect on the display to position the overlay to. Input rectangle may

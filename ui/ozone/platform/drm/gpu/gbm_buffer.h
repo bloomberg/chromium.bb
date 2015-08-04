@@ -7,11 +7,11 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/ozone/platform/drm/gpu/gbm_buffer_base.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 #include "ui/ozone/public/native_pixmap.h"
-#include "ui/ozone/public/surface_factory_ozone.h"
 
 struct gbm_bo;
 
@@ -23,9 +23,9 @@ class GbmBuffer : public GbmBufferBase {
  public:
   static scoped_refptr<GbmBuffer> CreateBuffer(
       const scoped_refptr<GbmDevice>& gbm,
-      SurfaceFactoryOzone::BufferFormat format,
+      gfx::BufferFormat format,
       const gfx::Size& size,
-      SurfaceFactoryOzone::BufferUsage usage);
+      gfx::BufferUsage usage);
 
  private:
   GbmBuffer(const scoped_refptr<GbmDevice>& gbm, gbm_bo* bo, bool scanout);

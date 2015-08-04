@@ -26,6 +26,7 @@
       'sources': [
         'gfx_param_traits.cc',
         'gfx_param_traits.h',
+        'gfx_param_traits_macros.h',
       ],
     },
   ],

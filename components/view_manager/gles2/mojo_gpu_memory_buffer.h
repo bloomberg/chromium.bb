@@ -14,14 +14,13 @@ namespace gles2 {
 class MojoGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
   MojoGpuMemoryBufferImpl(const gfx::Size& size,
-                          Format format,
+                          gfx::BufferFormat format,
                           scoped_ptr<base::SharedMemory> shared_memory);
   ~MojoGpuMemoryBufferImpl() override;
 
-
   static scoped_ptr<gfx::GpuMemoryBuffer> Create(const gfx::Size& size,
-                                                 Format format,
-                                                 Usage usage);
+                                                 gfx::BufferFormat format,
+                                                 gfx::BufferUsage usage);
 
   static MojoGpuMemoryBufferImpl* FromClientBuffer(ClientBuffer buffer);
 
@@ -29,7 +28,7 @@ class MojoGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   bool Map(void** data) override;
   void Unmap() override;
   bool IsMapped() const override;
-  Format GetFormat() const override;
+  gfx::BufferFormat GetFormat() const override;
   void GetStride(int* stride) const override;
   gfx::GpuMemoryBufferId GetId() const override;
   gfx::GpuMemoryBufferHandle GetHandle() const override;
@@ -37,7 +36,7 @@ class MojoGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
 
  private:
   const gfx::Size size_;
-  gfx::GpuMemoryBuffer::Format format_;
+  gfx::BufferFormat format_;
   scoped_ptr<base::SharedMemory> shared_memory_;
   bool mapped_;
 

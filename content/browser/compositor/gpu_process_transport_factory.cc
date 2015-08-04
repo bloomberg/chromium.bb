@@ -389,8 +389,8 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
 bool GpuProcessTransportFactory::DoesCreateTestContexts() { return false; }
 
 uint32 GpuProcessTransportFactory::GetImageTextureTarget(
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage) {
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
   return BrowserGpuMemoryBufferManager::GetImageTextureTarget(format, usage);
 }
 

@@ -129,7 +129,7 @@ enum NativeBufferFlag { kDisableNativeBuffers, kEnableNativeBuffers };
 class ChildThreadImplGpuMemoryBufferBrowserTest
     : public ChildThreadImplBrowserTest,
       public testing::WithParamInterface<
-          ::testing::tuple<NativeBufferFlag, gfx::GpuMemoryBuffer::Format>> {
+          ::testing::tuple<NativeBufferFlag, gfx::BufferFormat>> {
  public:
   // Overridden from BrowserTestBase:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -147,12 +147,12 @@ class ChildThreadImplGpuMemoryBufferBrowserTest
 
 IN_PROC_BROWSER_TEST_P(ChildThreadImplGpuMemoryBufferBrowserTest,
                        DISABLED_Map) {
-  gfx::GpuMemoryBuffer::Format format = ::testing::get<1>(GetParam());
+  gfx::BufferFormat format = ::testing::get<1>(GetParam());
   gfx::Size buffer_size(4, 4);
 
   scoped_ptr<gfx::GpuMemoryBuffer> buffer =
       child_gpu_memory_buffer_manager()->AllocateGpuMemoryBuffer(
-          buffer_size, format, gfx::GpuMemoryBuffer::MAP);
+          buffer_size, format, gfx::BufferUsage::MAP);
   ASSERT_TRUE(buffer);
   EXPECT_EQ(format, buffer->GetFormat());
 
@@ -199,11 +199,11 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Combine(::testing::Values(kDisableNativeBuffers,
                                          kEnableNativeBuffers),
                        // These formats are guaranteed to work on all platforms.
-                       ::testing::Values(gfx::GpuMemoryBuffer::R_8,
-                                         gfx::GpuMemoryBuffer::RGBA_4444,
-                                         gfx::GpuMemoryBuffer::RGBA_8888,
-                                         gfx::GpuMemoryBuffer::BGRA_8888,
-                                         gfx::GpuMemoryBuffer::YUV_420)));
+                       ::testing::Values(gfx::BufferFormat::R_8,
+                                         gfx::BufferFormat::RGBA_4444,
+                                         gfx::BufferFormat::RGBA_8888,
+                                         gfx::BufferFormat::BGRA_8888,
+                                         gfx::BufferFormat::YUV_420)));
 
 }  // namespace
 }  // namespace content

@@ -19,8 +19,8 @@ class GPU_EXPORT GpuMemoryBufferManager {
   // Allocates a GpuMemoryBuffer that can be shared with another process.
   virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format,
-      gfx::GpuMemoryBuffer::Usage usage) = 0;
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage) = 0;
 
   // Returns a GpuMemoryBuffer instance given a ClientBuffer. Returns NULL on
   // failure.

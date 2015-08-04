@@ -91,15 +91,14 @@ GetSupportedGpuMemoryBufferConfigurations(gfx::GpuMemoryBufferType type) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableNativeGpuMemoryBuffers)) {
     const GpuMemoryBufferFactory::Configuration kNativeConfigurations[] = {
-        {gfx::GpuMemoryBuffer::R_8, gfx::GpuMemoryBuffer::MAP},
-        {gfx::GpuMemoryBuffer::R_8, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
-        {gfx::GpuMemoryBuffer::RGBA_4444, gfx::GpuMemoryBuffer::MAP},
-        {gfx::GpuMemoryBuffer::RGBA_4444, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
-        {gfx::GpuMemoryBuffer::RGBA_8888, gfx::GpuMemoryBuffer::MAP},
-        {gfx::GpuMemoryBuffer::RGBA_8888, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
-        {gfx::GpuMemoryBuffer::BGRA_8888, gfx::GpuMemoryBuffer::MAP},
-        {gfx::GpuMemoryBuffer::BGRA_8888,
-         gfx::GpuMemoryBuffer::PERSISTENT_MAP}};
+        {gfx::BufferFormat::R_8, gfx::BufferUsage::MAP},
+        {gfx::BufferFormat::R_8, gfx::BufferUsage::PERSISTENT_MAP},
+        {gfx::BufferFormat::RGBA_4444, gfx::BufferUsage::MAP},
+        {gfx::BufferFormat::RGBA_4444, gfx::BufferUsage::PERSISTENT_MAP},
+        {gfx::BufferFormat::RGBA_8888, gfx::BufferUsage::MAP},
+        {gfx::BufferFormat::RGBA_8888, gfx::BufferUsage::PERSISTENT_MAP},
+        {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::MAP},
+        {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::PERSISTENT_MAP}};
     for (auto& configuration : kNativeConfigurations) {
       if (IsGpuMemoryBufferFactoryConfigurationSupported(type, configuration))
         configurations.push_back(configuration);
@@ -108,8 +107,8 @@ GetSupportedGpuMemoryBufferConfigurations(gfx::GpuMemoryBufferType type) {
 
 #if defined(USE_OZONE) || defined(OS_MACOSX)
   const GpuMemoryBufferFactory::Configuration kScanoutConfigurations[] = {
-      {gfx::GpuMemoryBuffer::BGRA_8888, gfx::GpuMemoryBuffer::SCANOUT},
-      {gfx::GpuMemoryBuffer::RGBX_8888, gfx::GpuMemoryBuffer::SCANOUT}};
+      {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::SCANOUT},
+      {gfx::BufferFormat::RGBX_8888, gfx::BufferUsage::SCANOUT}};
   for (auto& configuration : kScanoutConfigurations) {
     if (IsGpuMemoryBufferFactoryConfigurationSupported(type, configuration))
       configurations.push_back(configuration);
@@ -128,8 +127,8 @@ base::StaticAtomicSequenceNumber g_next_gpu_memory_buffer_id;
 
 struct BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferRequest {
   AllocateGpuMemoryBufferRequest(const gfx::Size& size,
-                                 gfx::GpuMemoryBuffer::Format format,
-                                 gfx::GpuMemoryBuffer::Usage usage,
+                                 gfx::BufferFormat format,
+                                 gfx::BufferUsage usage,
                                  int client_id,
                                  int surface_id)
       : event(true, false),
@@ -141,8 +140,8 @@ struct BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferRequest {
   ~AllocateGpuMemoryBufferRequest() {}
   base::WaitableEvent event;
   gfx::Size size;
-  gfx::GpuMemoryBuffer::Format format;
-  gfx::GpuMemoryBuffer::Usage usage;
+  gfx::BufferFormat format;
+  gfx::BufferUsage usage;
   int client_id;
   int surface_id;
   scoped_ptr<gfx::GpuMemoryBuffer> result;
@@ -169,8 +168,8 @@ BrowserGpuMemoryBufferManager* BrowserGpuMemoryBufferManager::current() {
 
 // static
 uint32 BrowserGpuMemoryBufferManager::GetImageTextureTarget(
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage) {
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
   gfx::GpuMemoryBufferType type = GetGpuMemoryBufferFactoryType();
   for (auto& configuration : GetSupportedGpuMemoryBufferConfigurations(type)) {
     if (configuration.format != format || configuration.usage != usage)
@@ -194,27 +193,26 @@ uint32 BrowserGpuMemoryBufferManager::GetImageTextureTarget(
 }
 
 scoped_ptr<gfx::GpuMemoryBuffer>
-BrowserGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
-    const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage) {
+BrowserGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
+                                                       gfx::BufferFormat format,
+                                                       gfx::BufferUsage usage) {
   return AllocateGpuMemoryBufferForSurface(size, format, usage, 0);
 }
 
 scoped_ptr<gfx::GpuMemoryBuffer>
 BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForScanout(
     const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
+    gfx::BufferFormat format,
     int32 surface_id) {
   DCHECK_GT(surface_id, 0);
   return AllocateGpuMemoryBufferForSurface(
-      size, format, gfx::GpuMemoryBuffer::SCANOUT, surface_id);
+      size, format, gfx::BufferUsage::SCANOUT, surface_id);
 }
 
 void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
     const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
     base::ProcessHandle child_process_handle,
     int child_client_id,
     const AllocationCallback& callback) {
@@ -345,8 +343,8 @@ void BrowserGpuMemoryBufferManager::ProcessRemoved(
 scoped_ptr<gfx::GpuMemoryBuffer>
 BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForSurface(
     const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
     int32 surface_id) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -369,8 +367,8 @@ BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForSurface(
 }
 
 bool BrowserGpuMemoryBufferManager::IsGpuMemoryBufferConfigurationSupported(
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage) const {
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) const {
   for (auto& configuration : supported_configurations_) {
     if (configuration.format == format && configuration.usage == usage)
       return true;
@@ -399,9 +397,9 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForSurfaceOnIO(
   }
 
   DCHECK(GpuMemoryBufferImplSharedMemory::IsFormatSupported(request->format))
-      << request->format;
+      << static_cast<int>(request->format);
   DCHECK(GpuMemoryBufferImplSharedMemory::IsUsageSupported(request->usage))
-      << request->usage;
+      << static_cast<int>(request->usage);
 
   BufferMap& buffers = clients_[request->client_id];
   DCHECK(buffers.find(new_id) == buffers.end());
@@ -447,8 +445,8 @@ void BrowserGpuMemoryBufferManager::GpuMemoryBufferAllocatedForSurfaceOnIO(
 void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferOnIO(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
     int client_id,
     int surface_id,
     bool reused_gpu_process,
@@ -539,8 +537,8 @@ void BrowserGpuMemoryBufferManager::GpuMemoryBufferAllocatedOnIO(
       if (gpu_host_id != gpu_host_id_)
         reused_gpu_process = false;
       gfx::Size size = buffer_it->second.size;
-      gfx::GpuMemoryBuffer::Format format = buffer_it->second.format;
-      gfx::GpuMemoryBuffer::Usage usage = buffer_it->second.usage;
+      gfx::BufferFormat format = buffer_it->second.format;
+      gfx::BufferUsage usage = buffer_it->second.usage;
       // Remove the buffer entry and call AllocateGpuMemoryBufferOnIO again.
       buffers.erase(buffer_it);
       AllocateGpuMemoryBufferOnIO(id, size, format, usage, client_id,

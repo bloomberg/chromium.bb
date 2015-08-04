@@ -20,7 +20,7 @@ GLImageRefCountedMemory::~GLImageRefCountedMemory() {
 
 bool GLImageRefCountedMemory::Initialize(
     base::RefCountedMemory* ref_counted_memory,
-    gfx::GpuMemoryBuffer::Format format) {
+    gfx::BufferFormat format) {
   if (!GLImageMemory::Initialize(ref_counted_memory->front(), format))
     return false;
 

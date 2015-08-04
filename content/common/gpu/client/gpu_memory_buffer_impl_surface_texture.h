@@ -17,7 +17,7 @@ class GpuMemoryBufferImplSurfaceTexture : public GpuMemoryBufferImpl {
   static scoped_ptr<GpuMemoryBufferImpl> CreateFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
-      Format format,
+      gfx::BufferFormat format,
       const DestructionCallback& callback);
 
   // Overridden from gfx::GpuMemoryBuffer:
@@ -29,7 +29,7 @@ class GpuMemoryBufferImplSurfaceTexture : public GpuMemoryBufferImpl {
  private:
   GpuMemoryBufferImplSurfaceTexture(gfx::GpuMemoryBufferId id,
                                     const gfx::Size& size,
-                                    Format format,
+                                    gfx::BufferFormat format,
                                     const DestructionCallback& callback,
                                     ANativeWindow* native_window);
   ~GpuMemoryBufferImplSurfaceTexture() override;

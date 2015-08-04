@@ -96,8 +96,8 @@ scoped_refptr<ui::NativePixmap> VaapiDrmPicture::CreateNativePixmap(
 
   // Create a buffer from Ozone.
   return factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, size,
-                                     ui::SurfaceFactoryOzone::BGRA_8888,
-                                     ui::SurfaceFactoryOzone::SCANOUT);
+                                     gfx::BufferFormat::BGRA_8888,
+                                     gfx::BufferUsage::SCANOUT);
 }
 
 bool VaapiDrmPicture::Initialize() {
@@ -129,7 +129,7 @@ bool VaapiDrmPicture::Initialize() {
                                           texture_id());
   scoped_refptr<gfx::GLImageOzoneNativePixmap> image(
       new gfx::GLImageOzoneNativePixmap(size(), GL_BGRA_EXT));
-  if (!image->Initialize(pixmap_.get(), gfx::GpuMemoryBuffer::BGRA_8888)) {
+  if (!image->Initialize(pixmap_.get(), gfx::BufferFormat::BGRA_8888)) {
     LOG(ERROR) << "Failed to create GLImage";
     return false;
   }

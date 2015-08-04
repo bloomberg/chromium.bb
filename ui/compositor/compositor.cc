@@ -143,11 +143,11 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
   // move decisions about GpuMemoryBuffer format to the browser embedder so we
   // know it here, and pass that decision to the compositor for each usage.
   // crbug.com/490362
-  gfx::GpuMemoryBuffer::Format format = gfx::GpuMemoryBuffer::BGRA_8888;
+  gfx::BufferFormat format = gfx::BufferFormat::BGRA_8888;
 
   // Use PERSISTENT_MAP memory buffers to support partial tile raster for
   // software raster into GpuMemoryBuffers.
-  gfx::GpuMemoryBuffer::Usage usage = gfx::GpuMemoryBuffer::PERSISTENT_MAP;
+  gfx::BufferUsage usage = gfx::BufferUsage::PERSISTENT_MAP;
   settings.use_persistent_map_for_gpu_memory_buffers = true;
 
   settings.use_image_texture_target =

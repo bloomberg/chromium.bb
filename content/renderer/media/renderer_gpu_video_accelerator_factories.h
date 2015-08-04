@@ -68,8 +68,8 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
 
   scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format,
-      gfx::GpuMemoryBuffer::Usage usage) override;
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage) override;
 
   bool IsTextureRGSupported() override;
   unsigned ImageTextureTarget() override;

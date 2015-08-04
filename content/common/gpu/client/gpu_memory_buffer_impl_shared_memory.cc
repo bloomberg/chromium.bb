@@ -13,7 +13,7 @@ namespace content {
 GpuMemoryBufferImplSharedMemory::GpuMemoryBufferImplSharedMemory(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
-    Format format,
+    gfx::BufferFormat format,
     const DestructionCallback& callback,
     scoped_ptr<base::SharedMemory> shared_memory)
     : GpuMemoryBufferImpl(id, size, format, callback),
@@ -29,7 +29,7 @@ GpuMemoryBufferImplSharedMemory::~GpuMemoryBufferImplSharedMemory() {
 scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImplSharedMemory::Create(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
-    Format format,
+    gfx::BufferFormat format,
     const DestructionCallback& callback) {
   size_t buffer_size = 0u;
   if (!BufferSizeInBytes(size, format, &buffer_size))
@@ -48,7 +48,7 @@ gfx::GpuMemoryBufferHandle
 GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
-    Format format,
+    gfx::BufferFormat format,
     base::ProcessHandle child_process) {
   size_t buffer_size = 0u;
   if (!BufferSizeInBytes(size, format, &buffer_size))
@@ -70,7 +70,7 @@ scoped_ptr<GpuMemoryBufferImpl>
 GpuMemoryBufferImplSharedMemory::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
-    Format format,
+    gfx::BufferFormat format,
     const DestructionCallback& callback) {
   if (!base::SharedMemory::IsHandleValid(handle.handle))
     return scoped_ptr<GpuMemoryBufferImpl>();
@@ -94,20 +94,21 @@ GpuMemoryBufferImplSharedMemory::CreateFromHandle(
 }
 
 // static
-bool GpuMemoryBufferImplSharedMemory::IsFormatSupported(Format format) {
+bool GpuMemoryBufferImplSharedMemory::IsFormatSupported(
+    gfx::BufferFormat format) {
   switch (format) {
-    case ATC:
-    case ATCIA:
-    case DXT1:
-    case DXT5:
-    case ETC1:
-    case R_8:
-    case RGBA_4444:
-    case RGBA_8888:
-    case BGRA_8888:
-    case YUV_420:
+    case gfx::BufferFormat::ATC:
+    case gfx::BufferFormat::ATCIA:
+    case gfx::BufferFormat::DXT1:
+    case gfx::BufferFormat::DXT5:
+    case gfx::BufferFormat::ETC1:
+    case gfx::BufferFormat::R_8:
+    case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::YUV_420:
       return true;
-    case RGBX_8888:
+    case gfx::BufferFormat::RGBX_8888:
       return false;
   }
 
@@ -116,12 +117,12 @@ bool GpuMemoryBufferImplSharedMemory::IsFormatSupported(Format format) {
 }
 
 // static
-bool GpuMemoryBufferImplSharedMemory::IsUsageSupported(Usage usage) {
+bool GpuMemoryBufferImplSharedMemory::IsUsageSupported(gfx::BufferUsage usage) {
   switch (usage) {
-    case MAP:
-    case PERSISTENT_MAP:
+    case gfx::BufferUsage::MAP:
+    case gfx::BufferUsage::PERSISTENT_MAP:
       return true;
-    case SCANOUT:
+    case gfx::BufferUsage::SCANOUT:
       return false;
   }
   NOTREACHED();
@@ -131,23 +132,23 @@ bool GpuMemoryBufferImplSharedMemory::IsUsageSupported(Usage usage) {
 // static
 bool GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(
     const gfx::Size& size,
-    Format format) {
+    gfx::BufferFormat format) {
   switch (format) {
-    case ATC:
-    case ATCIA:
-    case DXT1:
-    case DXT5:
-    case ETC1:
+    case gfx::BufferFormat::ATC:
+    case gfx::BufferFormat::ATCIA:
+    case gfx::BufferFormat::DXT1:
+    case gfx::BufferFormat::DXT5:
+    case gfx::BufferFormat::ETC1:
       // Compressed images must have a width and height that's evenly divisible
       // by the block size.
       return size.width() % 4 == 0 && size.height() % 4 == 0;
-    case R_8:
-    case RGBA_4444:
-    case RGBA_8888:
-    case BGRA_8888:
-    case RGBX_8888:
+    case gfx::BufferFormat::R_8:
+    case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::RGBX_8888:
       return true;
-    case YUV_420: {
+    case gfx::BufferFormat::YUV_420: {
       size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format);
       for (size_t i = 0; i < num_planes; ++i) {
         size_t factor = SubsamplingFactor(format, i);

@@ -15,8 +15,8 @@ class GpuMemoryBufferImplOzoneNativePixmap : public GpuMemoryBufferImpl {
   static scoped_ptr<GpuMemoryBufferImpl> CreateFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
-      Format format,
-      Usage usage,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage,
       const DestructionCallback& callback);
 
   // Overridden from gfx::GpuMemoryBuffer:
@@ -28,7 +28,7 @@ class GpuMemoryBufferImplOzoneNativePixmap : public GpuMemoryBufferImpl {
  private:
   GpuMemoryBufferImplOzoneNativePixmap(gfx::GpuMemoryBufferId id,
                                        const gfx::Size& size,
-                                       Format format,
+                                       gfx::BufferFormat format,
                                        const DestructionCallback& callback);
   ~GpuMemoryBufferImplOzoneNativePixmap() override;
 

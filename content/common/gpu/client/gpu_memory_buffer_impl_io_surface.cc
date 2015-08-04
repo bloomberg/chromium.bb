@@ -10,13 +10,13 @@
 namespace content {
 namespace {
 
-uint32_t LockFlags(gfx::GpuMemoryBuffer::Usage usage) {
+uint32_t LockFlags(gfx::BufferUsage usage) {
   switch (usage) {
-    case gfx::GpuMemoryBuffer::MAP:
+    case gfx::BufferUsage::MAP:
       return kIOSurfaceLockAvoidSync;
-    case gfx::GpuMemoryBuffer::PERSISTENT_MAP:
+    case gfx::BufferUsage::PERSISTENT_MAP:
       return 0;
-    case gfx::GpuMemoryBuffer::SCANOUT:
+    case gfx::BufferUsage::SCANOUT:
       return 0;
   }
   NOTREACHED();
@@ -28,14 +28,13 @@ uint32_t LockFlags(gfx::GpuMemoryBuffer::Usage usage) {
 GpuMemoryBufferImplIOSurface::GpuMemoryBufferImplIOSurface(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
-    Format format,
+    gfx::BufferFormat format,
     const DestructionCallback& callback,
     IOSurfaceRef io_surface,
     uint32_t lock_flags)
     : GpuMemoryBufferImpl(id, size, format, callback),
       io_surface_(io_surface),
-      lock_flags_(lock_flags) {
-}
+      lock_flags_(lock_flags) {}
 
 GpuMemoryBufferImplIOSurface::~GpuMemoryBufferImplIOSurface() {
 }
@@ -44,8 +43,8 @@ GpuMemoryBufferImplIOSurface::~GpuMemoryBufferImplIOSurface() {
 scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImplIOSurface::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
-    Format format,
-    Usage usage,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
     const DestructionCallback& callback) {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
       IOSurfaceManager::GetInstance()->AcquireIOSurface(handle.id));

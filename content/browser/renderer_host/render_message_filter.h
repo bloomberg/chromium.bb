@@ -294,8 +294,8 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
 
   void OnAllocateGpuMemoryBuffer(uint32 width,
                                  uint32 height,
-                                 gfx::GpuMemoryBuffer::Format format,
-                                 gfx::GpuMemoryBuffer::Usage usage,
+                                 gfx::BufferFormat format,
+                                 gfx::BufferUsage usage,
                                  IPC::Message* reply);
   void GpuMemoryBufferAllocated(IPC::Message* reply,
                                 const gfx::GpuMemoryBufferHandle& handle);

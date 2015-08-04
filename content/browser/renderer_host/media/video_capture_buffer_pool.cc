@@ -181,9 +181,7 @@ bool VideoCaptureBufferPool::GpuMemoryBufferTracker::Init(
     return true;
   gpu_memory_buffer_ =
       BrowserGpuMemoryBufferManager::current()->AllocateGpuMemoryBuffer(
-          dimensions,
-          gfx::GpuMemoryBuffer::BGRA_8888,
-          gfx::GpuMemoryBuffer::MAP);
+          dimensions, gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::MAP);
   DLOG_IF(ERROR, !gpu_memory_buffer_.get()) << "Allocating GpuMemoryBuffer";
   if (!gpu_memory_buffer_.get())
     return false;

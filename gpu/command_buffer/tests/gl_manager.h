@@ -71,7 +71,7 @@ class GLManager : private GpuControl {
 
   static scoped_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format);
+      gfx::BufferFormat format);
 
   void Initialize(const Options& options);
   void InitializeWithCommandLine(const Options& options,

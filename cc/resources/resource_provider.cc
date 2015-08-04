@@ -113,14 +113,14 @@ GrPixelConfig ToGrPixelConfig(ResourceFormat format) {
   return kSkia8888_GrPixelConfig;
 }
 
-gfx::GpuMemoryBuffer::Format ToGpuMemoryBufferFormat(ResourceFormat format) {
+gfx::BufferFormat ToGpuMemoryBufferFormat(ResourceFormat format) {
   switch (format) {
     case RGBA_8888:
-      return gfx::GpuMemoryBuffer::RGBA_8888;
+      return gfx::BufferFormat::RGBA_8888;
     case BGRA_8888:
-      return gfx::GpuMemoryBuffer::BGRA_8888;
+      return gfx::BufferFormat::BGRA_8888;
     case RGBA_4444:
-      return gfx::GpuMemoryBuffer::RGBA_4444;
+      return gfx::BufferFormat::RGBA_4444;
     case ALPHA_8:
     case LUMINANCE_8:
     case RGB_565:
@@ -129,7 +129,7 @@ gfx::GpuMemoryBuffer::Format ToGpuMemoryBufferFormat(ResourceFormat format) {
       break;
   }
   NOTREACHED();
-  return gfx::GpuMemoryBuffer::RGBA_8888;
+  return gfx::BufferFormat::RGBA_8888;
 }
 
 class ScopedSetActiveTexture {
@@ -986,10 +986,10 @@ gfx::GpuMemoryBuffer*
 ResourceProvider::ScopedWriteLockGpuMemoryBuffer::GetGpuMemoryBuffer() {
   if (gpu_memory_buffer_)
     return gpu_memory_buffer_;
-  gfx::GpuMemoryBuffer::Usage usage =
+  gfx::BufferUsage usage =
       resource_provider_->use_persistent_map_for_gpu_memory_buffers()
-          ? gfx::GpuMemoryBuffer::PERSISTENT_MAP
-          : gfx::GpuMemoryBuffer::MAP;
+          ? gfx::BufferUsage::PERSISTENT_MAP
+          : gfx::BufferUsage::MAP;
   scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
       gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
           size_, ToGpuMemoryBufferFormat(format_), usage);
