@@ -17,6 +17,7 @@ import android.text.TextUtils;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -95,6 +96,7 @@ public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
                 endTest(test);
             } else {
                 try {
+                    CommandLine.reset();
                     CommandLineFlags.setUp(
                             BaseInstrumentationTestRunner.this.getTargetContext(),
                             test.getClass().getMethod(test.getName()));
