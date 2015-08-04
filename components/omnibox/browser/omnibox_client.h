@@ -78,6 +78,8 @@ class OmniboxClient {
 
   virtual bookmarks::BookmarkModel* GetBookmarkModel() = 0;
   virtual TemplateURLService* GetTemplateURLService() = 0;
+  virtual const AutocompleteSchemeClassifier& GetSchemeClassifier() const = 0;
+  virtual AutocompleteClassifier* GetAutocompleteClassifier() = 0;
 
   // Returns the icon corresponding to |match| if match is an extension match
   // and an empty icon otherwise.

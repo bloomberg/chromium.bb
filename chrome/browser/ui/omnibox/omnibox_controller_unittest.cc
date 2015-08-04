@@ -4,6 +4,7 @@
 
 #include "base/strings/string_util.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/ui/omnibox/omnibox_controller.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
@@ -16,7 +17,9 @@
 namespace {
 class TestOmniboxClient : public OmniboxClient {
  public:
-  explicit TestOmniboxClient(Profile* profile) : profile_(profile) {}
+  explicit TestOmniboxClient(Profile* profile)
+      : profile_(profile),
+        scheme_classifier_(profile) {}
   ~TestOmniboxClient() override {}
 
   // OmniboxClient:
@@ -43,6 +46,12 @@ class TestOmniboxClient : public OmniboxClient {
   const SessionID& GetSessionID() const override { return session_id_; }
   bookmarks::BookmarkModel* GetBookmarkModel() override { return nullptr; }
   TemplateURLService* GetTemplateURLService() override { return nullptr; }
+  const AutocompleteSchemeClassifier& GetSchemeClassifier() const override {
+    return scheme_classifier_;
+  }
+  AutocompleteClassifier* GetAutocompleteClassifier() override {
+    return nullptr;
+  }
   gfx::Image GetIconIfExtensionMatch(
       const AutocompleteMatch& match) const override {
     return gfx::Image();
@@ -74,6 +83,7 @@ class TestOmniboxClient : public OmniboxClient {
 
  private:
   Profile* profile_;
+  ChromeAutocompleteSchemeClassifier scheme_classifier_;
   SessionID session_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TestOmniboxClient);

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_OMNIBOX_CHROME_OMNIBOX_CLIENT_H_
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
 #include "chrome/common/instant_types.h"
 #include "components/omnibox/browser/omnibox_client.h"
@@ -41,6 +42,8 @@ class ChromeOmniboxClient : public OmniboxClient {
   const SessionID& GetSessionID() const override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   TemplateURLService* GetTemplateURLService() override;
+  const AutocompleteSchemeClassifier& GetSchemeClassifier() const override;
+  AutocompleteClassifier* GetAutocompleteClassifier() override;
   gfx::Image GetIconIfExtensionMatch(
       const AutocompleteMatch& match) const override;
   bool ProcessExtensionKeyword(TemplateURL* template_url,
@@ -81,6 +84,7 @@ class ChromeOmniboxClient : public OmniboxClient {
 
   ChromeOmniboxEditController* controller_;
   Profile* profile_;
+  ChromeAutocompleteSchemeClassifier scheme_classifier_;
   BitmapFetcherService::RequestId request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOmniboxClient);

@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -117,6 +118,7 @@ ChromeOmniboxClient::ChromeOmniboxClient(OmniboxEditController* controller,
                                          Profile* profile)
     : controller_(static_cast<ChromeOmniboxEditController*>(controller)),
       profile_(profile),
+      scheme_classifier_(profile),
       request_id_(BitmapFetcherService::REQUEST_ID_INVALID) {}
 
 ChromeOmniboxClient::~ChromeOmniboxClient() {
@@ -188,6 +190,15 @@ bookmarks::BookmarkModel* ChromeOmniboxClient::GetBookmarkModel() {
 
 TemplateURLService* ChromeOmniboxClient::GetTemplateURLService() {
   return TemplateURLServiceFactory::GetForProfile(profile_);
+}
+
+const AutocompleteSchemeClassifier&
+    ChromeOmniboxClient::GetSchemeClassifier() const {
+  return scheme_classifier_;
+}
+
+AutocompleteClassifier* ChromeOmniboxClient::GetAutocompleteClassifier() {
+  return AutocompleteClassifierFactory::GetForProfile(profile_);
 }
 
 gfx::Image ChromeOmniboxClient::GetIconIfExtensionMatch(
