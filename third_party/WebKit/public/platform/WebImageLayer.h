@@ -39,10 +39,7 @@ public:
     virtual ~WebImageLayer() { }
 
     virtual WebLayer* layer() = 0;
-    // TODO(fmalita): remove after SkImage migration.
-    virtual void setImageBitmap(const SkBitmap&) { }
-    // TODO(fmalita): remove default impl after SkImage migration.
-    virtual void setImage(const SkImage*) { }
+    virtual void setImage(const SkImage*) = 0;
     virtual void setNearestNeighbor(bool) = 0;
 };
 
