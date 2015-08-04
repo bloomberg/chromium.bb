@@ -12,6 +12,7 @@ static_library("debug_stub") {
     "target.cc",
     "thread_common.cc",
     "transport_common.cc",
+    "transport_ipc.cc",
     "util.cc",
   ]
   if (current_os != "win") {

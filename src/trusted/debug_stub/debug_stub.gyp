@@ -17,6 +17,7 @@
       'target.cc',
       'thread_common.cc',
       'transport_common.cc',
+      "transport_ipc.cc",
       'util.cc',
     ],
     'test_sources': [

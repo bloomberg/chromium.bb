@@ -13,6 +13,7 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_sockets.h"
+#include "native_client/src/shared/imc/nacl_imc_c.h"
 
 struct NaClApp;
 
@@ -60,6 +61,9 @@ class SocketBinding {
  private:
   NaClSocketHandle socket_handle_;
 };
+
+// Creates a transport from a socket pair or named pipe.
+ITransport *CreateTransportIPC(NaClHandle fd);
 
 }  // namespace port
 

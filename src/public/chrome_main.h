@@ -125,8 +125,23 @@ struct NaClChromeMainArgs {
    * Server socket that will be used by debug stub to accept connections
    * from NaCl GDB.  This socket descriptor has already had bind() and listen()
    * called on it.  Optional; may be -1.
+   * TODO(leslieb): Deprecated when debug_stub_pipe_fd is fully implemented in
+   * chrome.
    */
   int debug_stub_server_bound_socket_fd;
+
+  /*
+   * Socketpair fd sent from the embedder. This will be used to send information
+   * between a server socket set up in the embedder and the debug stub.
+   *
+   * Since the embedder needs to notify the debug stub of disconnects on the
+   * server socket, each chunk of data is prepended with a 4 byte length. A
+   * length of -1 signifies a disconnect on the embedder side. There is no
+   * extra encoding on data going from debug stub to the embedder.
+   * Optional; may be -1. This will be used over
+   * debug_stub_server_bound_socket_fd if both are set.
+   */
+  int debug_stub_pipe_fd;
 #endif
 
 #if NACL_WINDOWS

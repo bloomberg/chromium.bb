@@ -96,6 +96,7 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
       getenv("NACL_DANGEROUS_SKIP_QUALIFICATION_TEST") != NULL;
   args->initial_nexe_max_code_bytes = 0;  /* No limit */
 #if NACL_LINUX || NACL_OSX
+  args->debug_stub_pipe_fd = NACL_INVALID_HANDLE;
   args->debug_stub_server_bound_socket_fd = NACL_INVALID_SOCKET;
 #endif
 #if NACL_WINDOWS
@@ -350,7 +351,9 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
 
   if (args->enable_debug_stub) {
 #if NACL_LINUX || NACL_OSX
-    if (args->debug_stub_server_bound_socket_fd != NACL_INVALID_SOCKET) {
+    if (args->debug_stub_pipe_fd != NACL_INVALID_HANDLE) {
+      NaClDebugStubSetPipe(args->debug_stub_pipe_fd);
+    } else if (args->debug_stub_server_bound_socket_fd != NACL_INVALID_SOCKET) {
       NaClDebugSetBoundSocket(args->debug_stub_server_bound_socket_fd);
     }
 #endif

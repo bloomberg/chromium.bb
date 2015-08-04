@@ -9,6 +9,7 @@
 
 #include "native_client/src/include/build_config.h"
 #include "native_client/src/include/portability_sockets.h"
+#include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 EXTERN_C_BEGIN
@@ -28,6 +29,14 @@ int NaClDebugBindSocket(void);
  * default TCP port.
  */
 void NaClDebugSetBoundSocket(NaClSocketHandle bound_socket);
+
+/*
+ * NaClDebugStubSetPipe() takes a named pipe on windows or a socket
+ * pair descriptor on posix. This sets up the debug stub to talk over the
+ * pipe with chrome.
+ * TODO(leslieb): Implement for windows.
+ */
+void NaClDebugStubSetPipe(NaClHandle handle);
 
 /*
  * Enables the debug stub.  If this is called, we do not guarantee
