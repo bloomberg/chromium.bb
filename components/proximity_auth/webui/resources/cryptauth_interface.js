@@ -28,9 +28,19 @@ CryptAuthInterface = {
 
   /**
    * Starts the findEligibleUnlockDevices API call.
+   * The onGotEligibleDevices() function will be called upon success.
    */
   findEligibleUnlockDevices: function() {
     chrome.send('findEligibleUnlockDevices');
+  },
+
+  /**
+   * Starts the flow to find reachable devices. Reachable devices are those that
+   * respond to a CryptAuth ping.
+   * The onGotReachableDevices() function will be called upon success.
+   */
+  findReachableDevices: function() {
+    chrome.send('findReachableDevices');
   },
 
   /**
@@ -46,11 +56,25 @@ CryptAuthInterface = {
   /**
    * Called by the browser when a findEligibleUnlockDevices completes
    * successfully.
+   * @param {Array<DeviceInfo>} eligibleDevices
+   * @param {Array<DeviceInfo>} ineligibleDevices
    */
   onGotEligibleDevices: function(eligibleDevices, ineligibleDevices) {
     CryptAuthInterface.observers_.forEach(function(observer) {
       if (observer.onGotEligibleDevices != null)
         observer.onGotEligibleDevices(eligibleDevices, ineligibleDevices);
     });
-  }
+  },
+
+  /**
+   * Called by the browser when the reachable devices flow completes
+   * successfully.
+   * @param {Array<DeviceInfo>} reachableDevices
+   */
+  onGotReachableDevices: function(reachableDevices) {
+    CryptAuthInterface.observers_.forEach(function(observer) {
+      if (observer.onGotReachableDevices != null)
+        observer.onGotReachableDevices(reachableDevices);
+    });
+  },
 };

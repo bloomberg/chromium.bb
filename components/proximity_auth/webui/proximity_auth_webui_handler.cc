@@ -26,6 +26,7 @@
 #include "components/proximity_auth/secure_context.h"
 #include "components/proximity_auth/webui/cryptauth_enroller_factory_impl.h"
 #include "components/proximity_auth/webui/proximity_auth_ui_delegate.h"
+#include "components/proximity_auth/webui/reachable_phone_flow.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -125,6 +126,11 @@ void ProximityAuthWebUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "findEligibleUnlockDevices",
       base::Bind(&ProximityAuthWebUIHandler::FindEligibleUnlockDevices,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "findReachableDevices",
+      base::Bind(&ProximityAuthWebUIHandler::FindReachableDevices,
                  base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
@@ -229,6 +235,20 @@ void ProximityAuthWebUIHandler::FindEligibleUnlockDevices(
       base::Bind(&ProximityAuthWebUIHandler::OnFoundEligibleUnlockDevices,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProximityAuthWebUIHandler::OnCryptAuthClientError,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ProximityAuthWebUIHandler::FindReachableDevices(
+    const base::ListValue* args) {
+  if (reachable_phone_flow_) {
+    PA_LOG(INFO) << "Waiting for existing ReachablePhoneFlow to finish.";
+    return;
+  }
+
+  reachable_phone_flow_.reset(
+      new ReachablePhoneFlow(cryptauth_client_factory_.get()));
+  reachable_phone_flow_->Run(
+      base::Bind(&ProximityAuthWebUIHandler::OnReachablePhonesFound,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -381,6 +401,17 @@ void ProximityAuthWebUIHandler::OnFoundEligibleUnlockDevices(
                << " ineligible devices.";
   web_ui()->CallJavascriptFunction("CryptAuthInterface.onGotEligibleDevices",
                                    eligible_devices, ineligible_devices);
+}
+
+void ProximityAuthWebUIHandler::OnReachablePhonesFound(
+    const std::vector<cryptauth::ExternalDeviceInfo>& reachable_phones) {
+  reachable_phone_flow_.reset();
+  base::ListValue device_list;
+  for (const auto& external_device : reachable_phones) {
+    device_list.Append(ExternalDeviceInfoToDictionary(external_device));
+  }
+  web_ui()->CallJavascriptFunction("CryptAuthInterface.onGotReachableDevices",
+                                   device_list);
 }
 
 void ProximityAuthWebUIHandler::GetLocalState(const base::ListValue* args) {

@@ -9,6 +9,7 @@
 <link href="device-list.html" rel="import">
 <link href="eligible-devices.html" rel="import">
 <link href="local-state.html" rel="import">
+<link href="reachable-devices.html" rel="import">
 
 <dom-module id="content-panel">
   <style>
@@ -33,7 +34,7 @@
 
     local-state,
     eligible-devices,
-    device-list {
+    reachable-devices {
       width: 80%;
     }
   </style>
@@ -60,9 +61,8 @@
       </neon-animatable>
 
       <neon-animatable class="layout vertical center">
-        <device-list
-            label="Reachable Phones" devices="[[onlineDevices_]]" class="flex">
-        </device-list>
+        <reachable-devices id="reachable-devices" class="flex">
+        </reachable-devices>
       </neon-animatable>
     </neon-animated-pages>
   </template>

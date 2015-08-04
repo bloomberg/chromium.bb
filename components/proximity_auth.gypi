@@ -236,6 +236,8 @@
         'proximity_auth/webui/proximity_auth_ui_delegate.h',
         'proximity_auth/webui/proximity_auth_webui_handler.cc',
         'proximity_auth/webui/proximity_auth_webui_handler.h',
+        'proximity_auth/webui/reachable_phone_flow.cc',
+        'proximity_auth/webui/reachable_phone_flow.h',
         'proximity_auth/webui/url_constants.cc',
         'proximity_auth/webui/url_constants.h',
       ],

@@ -22,12 +22,17 @@ namespace base {
 class ListValue;
 }
 
+namespace cryptauth {
+class ExternalDeviceInfo;
+}
+
 namespace proximity_auth {
 
 class Authenticator;
 class BluetoothConnection;
 class Connection;
 class ClientImpl;
+class ReachablePhoneFlow;
 struct RemoteStatusUpdate;
 class SecureContext;
 
@@ -65,6 +70,7 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
   void GetLogMessages(const base::ListValue* args);
   void ClearLogBuffer(const base::ListValue* args);
   void FindEligibleUnlockDevices(const base::ListValue* args);
+  void FindReachableDevices(const base::ListValue* args);
   void GetLocalState(const base::ListValue* args);
   void ForceEnrollment(const base::ListValue* args);
   void ForceDeviceSync(const base::ListValue* args);
@@ -81,6 +87,10 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
   // Called when the findEligibleUnlockDevices request succeeds.
   void OnFoundEligibleUnlockDevices(
       const cryptauth::FindEligibleUnlockDevicesResponse& response);
+
+  // Callback when |reachable_phone_flow_| completes.
+  void OnReachablePhonesFound(
+      const std::vector<cryptauth::ExternalDeviceInfo>& reachable_phones);
 
   // Called when the key agreement of PSK of the remote device completes.
   void OnPSKDerived(const cryptauth::ExternalDeviceInfo& unlock_key,
@@ -137,6 +147,9 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
 
   // We only support one concurrent API call.
   scoped_ptr<CryptAuthClient> cryptauth_client_;
+
+  // The flow for getting a list of reachable phones.
+  scoped_ptr<ReachablePhoneFlow> reachable_phone_flow_;
 
   // True if the WebContents backing the WebUI has been initialized.
   bool web_contents_initialized_;

@@ -26,6 +26,10 @@
            file="../proximity_auth/webui/resources/eligible-devices.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
   <include name="IDR_PROXIMITY_AUTH_ELIGIBLE_DEVICES_JS"
            file="../proximity_auth/webui/resources/eligible-devices.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_REACHABLE_DEVICES_HTML"
+           file="../proximity_auth/webui/resources/reachable-devices.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_REACHABLE_DEVICES_JS"
+           file="../proximity_auth/webui/resources/reachable-devices.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
   <include name="IDR_PROXIMITY_AUTH_CRYPTAUTH_INTERFACE_JS"
            file="../proximity_auth/webui/resources/cryptauth_interface.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
 </grit-part>

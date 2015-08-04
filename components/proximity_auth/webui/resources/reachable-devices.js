@@ -3,25 +3,15 @@
 // found in the LICENSE file.
 
 Polymer({
-  is: 'eligible-devices',
+  is: 'reachable-devices',
 
   properties: {
     /**
-     * List of devices that are eligible to be used as an unlock key.
+     * List of devices that recently responded to a CryptAuth ping.
      * @type {Array<DeviceInfo>}
      * @private
      */
-    eligibleDevices_: {
-      type: Array,
-      value: null,
-    },
-
-    /**
-     * List of devices that are ineligible to be used as an unlock key.
-     * @type {Array<DeviceInfo>}
-     * @private
-     */
-    ineligibleDevices_: {
+    reachableDevices_: {
       type: Array,
       value: null,
     },
@@ -53,20 +43,17 @@ Polymer({
    */
   activate: function() {
     this.requestInProgress_ = true;
-    this.eligibleDevices_ = null;
-    this.ineligibleDevices_ = null;
-    CryptAuthInterface.findEligibleUnlockDevices();
+    this.reachableDevices_ = null;
+    CryptAuthInterface.findReachableDevices();
   },
 
   /**
-   * Called when eligible devices are found.
-   * @param {Array<EligibleDevice>} eligibleDevices
-   * @param {Array<IneligibleDevice>} ineligibleDevices_
+   * Called when reachable devices are found.
+   * @param {Array<EligibleDevice>} reachableDevices
    */
-  onGotEligibleDevices: function(eligibleDevices, ineligibleDevices) {
+  onGotReachableDevices: function(reachableDevices) {
     this.requestInProgress_ = false;
-    this.eligibleDevices_ = eligibleDevices;
-    this.ineligibleDevices_ = ineligibleDevices;
+    this.reachableDevices_ = reachableDevices;
   },
 
   /**
@@ -76,7 +63,6 @@ Polymer({
   onCryptAuthError: function(errorMessage) {
     console.error('CryptAuth request failed: ' + errorMessage);
     this.requestInProgress_ = false;
-    this.eligibleDevices_ = null;
-    this.ineligibleDevices_ = null;
+    this.reachableDevices_ = null;
   },
 });
