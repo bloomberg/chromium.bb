@@ -276,7 +276,7 @@ void RuleBasedHostResolverProc::AddRuleForAddressFamily(
             replacement,
             std::string(),
             0);
-  rules_.push_back(rule);
+  AddRuleInternal(rule);
 }
 
 void RuleBasedHostResolverProc::AddIPLiteralRule(
@@ -294,7 +294,7 @@ void RuleBasedHostResolverProc::AddIPLiteralRule(
   Rule rule(Rule::kResolverTypeIPLiteral, host_pattern,
             ADDRESS_FAMILY_UNSPECIFIED, flags, ip_literal, canonical_name,
             0);
-  rules_.push_back(rule);
+  AddRuleInternal(rule);
 }
 
 void RuleBasedHostResolverProc::AddRuleWithLatency(
@@ -311,7 +311,7 @@ void RuleBasedHostResolverProc::AddRuleWithLatency(
             replacement,
             std::string(),
             latency_ms);
-  rules_.push_back(rule);
+  AddRuleInternal(rule);
 }
 
 void RuleBasedHostResolverProc::AllowDirectLookup(
@@ -325,7 +325,7 @@ void RuleBasedHostResolverProc::AllowDirectLookup(
             std::string(),
             std::string(),
             0);
-  rules_.push_back(rule);
+  AddRuleInternal(rule);
 }
 
 void RuleBasedHostResolverProc::AddSimulatedFailure(
@@ -339,10 +339,11 @@ void RuleBasedHostResolverProc::AddSimulatedFailure(
             std::string(),
             std::string(),
             0);
-  rules_.push_back(rule);
+  AddRuleInternal(rule);
 }
 
 void RuleBasedHostResolverProc::ClearRules() {
+  base::AutoLock lock(rule_lock_);
   rules_.clear();
 }
 
@@ -351,6 +352,7 @@ int RuleBasedHostResolverProc::Resolve(const std::string& host,
                                        HostResolverFlags host_resolver_flags,
                                        AddressList* addrlist,
                                        int* os_error) {
+  base::AutoLock lock(rule_lock_);
   RuleList::iterator r;
   for (r = rules_.begin(); r != rules_.end(); ++r) {
     bool matches_address_family =
@@ -402,6 +404,11 @@ int RuleBasedHostResolverProc::Resolve(const std::string& host,
 }
 
 RuleBasedHostResolverProc::~RuleBasedHostResolverProc() {
+}
+
+void RuleBasedHostResolverProc::AddRuleInternal(const Rule& rule) {
+  base::AutoLock lock(rule_lock_);
+  rules_.push_back(rule);
 }
 
 RuleBasedHostResolverProc* CreateCatchAllHostResolverProc() {
