@@ -391,6 +391,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="appcache.MainPageLoad" enum="BooleanSecure">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    Counts the number of appcached page loads for secure vs insecure origins.
+  </summary>
+</histogram>
+
 <histogram name="appcache.MainResourceResponseRetrieval" enum="BooleanSuccess">
   <owner>michaeln@chromium.org</owner>
   <summary>
@@ -50360,6 +50367,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="websql.Async.OpenTime.Success" units="milliseconds">
   <owner>cmumford@chromium.org</owner>
   <summary>The time required to successfully open a Web SQL database.</summary>
+</histogram>
+
+<histogram name="websql.OpenDatabase" enum="BooleanSecure">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    Counts the number of WebSQL databases opened for secure vs insecure origins.
+  </summary>
 </histogram>
 
 <histogram name="Webstore.ExtensionInstallResult" enum="BooleanSuccess">

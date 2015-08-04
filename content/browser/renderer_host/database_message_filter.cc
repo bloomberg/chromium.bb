@@ -7,12 +7,14 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "content/browser/bad_message.h"
 #include "content/common/database_messages.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/result_codes.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/browser/database/vfs_backend.h"
@@ -300,6 +302,10 @@ void DatabaseMessageFilter::OnDatabaseOpened(
                                     bad_message::DBMF_INVALID_ORIGIN_ON_OPEN);
     return;
   }
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "websql.OpenDatabase",
+      IsOriginSecure(storage::GetOriginFromIdentifier(origin_identifier)));
 
   int64 database_size = 0;
   db_tracker_->DatabaseOpened(origin_identifier, database_name, description,
