@@ -194,7 +194,7 @@ public class DOMUtils {
     }
 
     /**
-     * Click a DOM node by its id.
+     * Click a DOM node by its id, scrolling it into view first.
      * @param activityTestCase The ActivityInstrumentationTestCase2 to instrument.
      * @param viewCore The ContentViewCore in which the node lives.
      * @param nodeId The id of the node.
@@ -202,12 +202,13 @@ public class DOMUtils {
     public static void clickNode(ActivityInstrumentationTestCase2 activityTestCase,
             final ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
+        scrollNodeIntoView(viewCore.getWebContents(), nodeId);
         int[] clickTarget = getClickTargetForNode(viewCore, nodeId);
         TouchCommon.singleClickView(viewCore.getContainerView(), clickTarget[0], clickTarget[1]);
     }
 
     /**
-     * Long-press a DOM node by its id.
+     * Long-press a DOM node by its id, scrolling it into view first.
      * @param activityTestCase The ActivityInstrumentationTestCase2 to instrument.
      * @param viewCore The ContentViewCore in which the node lives.
      * @param nodeId The id of the node.
@@ -215,6 +216,7 @@ public class DOMUtils {
     public static void longPressNode(ActivityInstrumentationTestCase2 activityTestCase,
             final ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
+        scrollNodeIntoView(viewCore.getWebContents(), nodeId);
         String jsCode = "document.getElementById('" + nodeId + "')";
         longPressNodeByJs(activityTestCase, viewCore, jsCode);
     }
