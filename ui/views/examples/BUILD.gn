@@ -66,7 +66,10 @@ component("views_examples_lib") {
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
-  defines = [ "VIEWS_EXAMPLES_IMPLEMENTATION" ]
+  defines = [
+    "GFX_VECTOR_ICONS_UNSAFE",
+    "VIEWS_EXAMPLES_IMPLEMENTATION",
+  ]
 
   deps = [
     "//base",
