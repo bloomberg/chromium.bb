@@ -1345,9 +1345,6 @@ void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Nod
     if (!inActiveDocument() || document().hasPendingForcedStyleRecalc() || styleChangeType() >= SubtreeStyleChange)
         return;
 
-    if (needsStyleRecalc() && childrenAffectedByPositionalRules())
-        return;
-
     // Forward positional selectors include nth-child, nth-of-type, first-of-type and only-of-type.
     // The indirect adjacent selector is the ~ selector.
     // Backward positional selectors include nth-last-child, nth-last-of-type, last-of-type and only-of-type.
