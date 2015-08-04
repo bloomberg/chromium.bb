@@ -107,12 +107,10 @@ RendererGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
-  if (context && context->GetCommandBufferProxy()) {
-    return gpu_channel_host_->CreateVideoDecoder(
-        context->GetCommandBufferProxy()->GetRouteID());
-  }
+  if (context && context->GetCommandBufferProxy())
+    return context->GetCommandBufferProxy()->CreateVideoDecoder();
 
-  return scoped_ptr<media::VideoDecodeAccelerator>();
+  return nullptr;
 }
 
 scoped_ptr<media::VideoEncodeAccelerator>
@@ -121,12 +119,10 @@ RendererGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
-  if (context && context->GetCommandBufferProxy()) {
-    return gpu_channel_host_->CreateVideoEncoder(
-        context->GetCommandBufferProxy()->GetRouteID());
-  }
+  if (context && context->GetCommandBufferProxy())
+    return context->GetCommandBufferProxy()->CreateVideoEncoder();
 
-  return scoped_ptr<media::VideoEncodeAccelerator>();
+  return nullptr;
 }
 
 bool RendererGpuVideoAcceleratorFactories::CreateTextures(

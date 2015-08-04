@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/atomic_sequence_num.h"
-#include "base/containers/hash_tables.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -128,7 +128,7 @@ class GpuChannelHost : public IPC::Sender,
                        bool do_flush);
 
   // Create and connect to a command buffer in the GPU process.
-  CommandBufferProxyImpl* CreateViewCommandBuffer(
+  scoped_ptr<CommandBufferProxyImpl> CreateViewCommandBuffer(
       int32 surface_id,
       CommandBufferProxyImpl* share_group,
       const std::vector<int32>& attribs,
@@ -136,20 +136,12 @@ class GpuChannelHost : public IPC::Sender,
       gfx::GpuPreference gpu_preference);
 
   // Create and connect to a command buffer in the GPU process.
-  CommandBufferProxyImpl* CreateOffscreenCommandBuffer(
+  scoped_ptr<CommandBufferProxyImpl> CreateOffscreenCommandBuffer(
       const gfx::Size& size,
       CommandBufferProxyImpl* share_group,
       const std::vector<int32>& attribs,
       const GURL& active_url,
       gfx::GpuPreference gpu_preference);
-
-  // Creates a video decoder in the GPU process.
-  scoped_ptr<media::VideoDecodeAccelerator> CreateVideoDecoder(
-      int command_buffer_route_id);
-
-  // Creates a video encoder in the GPU process.
-  scoped_ptr<media::VideoEncodeAccelerator> CreateVideoEncoder(
-      int command_buffer_route_id);
 
   // Creates a JPEG decoder in the GPU process.
   scoped_ptr<media::JpegDecodeAccelerator> CreateJpegDecoder(
@@ -249,7 +241,7 @@ class GpuChannelHost : public IPC::Sender,
   // - |next_transfer_buffer_id_|, atomic type
   // - |next_image_id_|, atomic type
   // - |next_route_id_|, atomic type
-  // - |proxies_|, protected by |context_lock_|
+  // - |channel_| and |flush_info_|, protected by |context_lock_|
   GpuChannelHostFactory* const factory_;
 
   const gpu::GPUInfo gpu_info_;
@@ -270,12 +262,9 @@ class GpuChannelHost : public IPC::Sender,
   // Route IDs are allocated in sequence.
   base::AtomicSequenceNumber next_route_id_;
 
-  // Protects channel_ and proxies_.
+  // Protects channel_ and flush_info_.
   mutable base::Lock context_lock_;
   scoped_ptr<IPC::SyncChannel> channel_;
-  // Used to look up a proxy from its routing id.
-  typedef base::hash_map<int, CommandBufferProxyImpl*> ProxyMap;
-  ProxyMap proxies_;
   ProxyFlushInfo flush_info_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelHost);

@@ -94,13 +94,9 @@ bool GpuVideoEncodeAcceleratorHost::Initialize(
   channel_->AddRoute(route_id, weak_this_factory_.GetWeakPtr());
 
   bool succeeded = false;
-  Send(new GpuCommandBufferMsg_CreateVideoEncoder(impl_->GetRouteID(),
-                                                  input_format,
-                                                  input_visible_size,
-                                                  output_profile,
-                                                  initial_bitrate,
-                                                  route_id,
-                                                  &succeeded));
+  Send(new GpuCommandBufferMsg_CreateVideoEncoder(
+      impl_->route_id(), input_format, input_visible_size, output_profile,
+      initial_bitrate, route_id, &succeeded));
   if (!succeeded) {
     DLOG(ERROR) << "Send(GpuCommandBufferMsg_CreateVideoEncoder()) failed";
     channel_->RemoveRoute(route_id);

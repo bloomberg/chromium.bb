@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/shared_memory.h"
-#include "content/common/gpu/client/gpu_channel_host.h"
+#include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "content/common/pepper_file_util.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
@@ -124,18 +124,16 @@ int32_t PepperVideoDecoderHost::OnHostMsgInitialize(
   PPB_Graphics3D_Impl* graphics3d =
       static_cast<PPB_Graphics3D_Impl*>(enter_graphics.object());
 
-  int command_buffer_route_id = graphics3d->GetCommandBufferRouteId();
-  if (!command_buffer_route_id)
+  CommandBufferProxyImpl* command_buffer = graphics3d->GetCommandBufferProxy();
+  if (!command_buffer)
     return PP_ERROR_FAILED;
 
   media::VideoCodecProfile media_profile = PepperToMediaVideoProfile(profile);
 
   if (acceleration != PP_HARDWAREACCELERATION_NONE) {
     // This is not synchronous, but subsequent IPC messages will be buffered, so
-    // it is okay to immediately send IPC messages through the returned channel.
-    GpuChannelHost* channel = graphics3d->channel();
-    DCHECK(channel);
-    decoder_ = channel->CreateVideoDecoder(command_buffer_route_id);
+    // it is okay to immediately send IPC messages.
+    decoder_ = command_buffer->CreateVideoDecoder();
     if (decoder_ && decoder_->Initialize(media_profile, this)) {
       initialized_ = true;
       return PP_OK;

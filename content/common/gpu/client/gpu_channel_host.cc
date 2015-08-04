@@ -157,7 +157,7 @@ void GpuChannelHost::InternalFlush() {
   flush_info_.flush_pending = false;
 }
 
-CommandBufferProxyImpl* GpuChannelHost::CreateViewCommandBuffer(
+scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateViewCommandBuffer(
     int32 surface_id,
     CommandBufferProxyImpl* share_group,
     const std::vector<int32>& attribs,
@@ -170,7 +170,7 @@ CommandBufferProxyImpl* GpuChannelHost::CreateViewCommandBuffer(
 
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id =
-      share_group ? share_group->GetRouteID() : MSG_ROUTING_NONE;
+      share_group ? share_group->route_id() : MSG_ROUTING_NONE;
   init_params.attribs = attribs;
   init_params.active_url = active_url;
   init_params.gpu_preference = gpu_preference;
@@ -195,16 +195,14 @@ CommandBufferProxyImpl* GpuChannelHost::CreateViewCommandBuffer(
     return NULL;
   }
 
-  CommandBufferProxyImpl* command_buffer =
-      new CommandBufferProxyImpl(this, route_id);
+  scoped_ptr<CommandBufferProxyImpl> command_buffer =
+      make_scoped_ptr(new CommandBufferProxyImpl(this, route_id));
   AddRoute(route_id, command_buffer->AsWeakPtr());
 
-  AutoLock lock(context_lock_);
-  proxies_[route_id] = command_buffer;
-  return command_buffer;
+  return command_buffer.Pass();
 }
 
-CommandBufferProxyImpl* GpuChannelHost::CreateOffscreenCommandBuffer(
+scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateOffscreenCommandBuffer(
     const gfx::Size& size,
     CommandBufferProxyImpl* share_group,
     const std::vector<int32>& attribs,
@@ -214,7 +212,7 @@ CommandBufferProxyImpl* GpuChannelHost::CreateOffscreenCommandBuffer(
 
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id =
-      share_group ? share_group->GetRouteID() : MSG_ROUTING_NONE;
+      share_group ? share_group->route_id() : MSG_ROUTING_NONE;
   init_params.attribs = attribs;
   init_params.active_url = active_url;
   init_params.gpu_preference = gpu_preference;
@@ -232,31 +230,11 @@ CommandBufferProxyImpl* GpuChannelHost::CreateOffscreenCommandBuffer(
     return NULL;
   }
 
-  CommandBufferProxyImpl* command_buffer =
-      new CommandBufferProxyImpl(this, route_id);
+  scoped_ptr<CommandBufferProxyImpl> command_buffer =
+      make_scoped_ptr(new CommandBufferProxyImpl(this, route_id));
   AddRoute(route_id, command_buffer->AsWeakPtr());
 
-  AutoLock lock(context_lock_);
-  proxies_[route_id] = command_buffer;
-  return command_buffer;
-}
-
-scoped_ptr<media::VideoDecodeAccelerator> GpuChannelHost::CreateVideoDecoder(
-    int command_buffer_route_id) {
-  TRACE_EVENT0("gpu", "GpuChannelHost::CreateVideoDecoder");
-  AutoLock lock(context_lock_);
-  ProxyMap::iterator it = proxies_.find(command_buffer_route_id);
-  DCHECK(it != proxies_.end());
-  return it->second->CreateVideoDecoder();
-}
-
-scoped_ptr<media::VideoEncodeAccelerator> GpuChannelHost::CreateVideoEncoder(
-    int command_buffer_route_id) {
-  TRACE_EVENT0("gpu", "GpuChannelHost::CreateVideoEncoder");
-  AutoLock lock(context_lock_);
-  ProxyMap::iterator it = proxies_.find(command_buffer_route_id);
-  DCHECK(it != proxies_.end());
-  return it->second->CreateVideoEncoder();
+  return command_buffer.Pass();
 }
 
 scoped_ptr<media::JpegDecodeAccelerator> GpuChannelHost::CreateJpegDecoder(
@@ -285,16 +263,12 @@ void GpuChannelHost::DestroyCommandBuffer(
     CommandBufferProxyImpl* command_buffer) {
   TRACE_EVENT0("gpu", "GpuChannelHost::DestroyCommandBuffer");
 
-  int route_id = command_buffer->GetRouteID();
+  int route_id = command_buffer->route_id();
   Send(new GpuChannelMsg_DestroyCommandBuffer(route_id));
   RemoveRoute(route_id);
 
-  AutoLock lock(context_lock_);
-  proxies_.erase(route_id);
   if (flush_info_.flush_pending && flush_info_.route_id == route_id)
     flush_info_.flush_pending = false;
-
-  delete command_buffer;
 }
 
 void GpuChannelHost::DestroyChannel() {

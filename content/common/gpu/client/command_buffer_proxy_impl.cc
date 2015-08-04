@@ -43,6 +43,10 @@ CommandBufferProxyImpl::~CommandBufferProxyImpl() {
   FOR_EACH_OBSERVER(DeletionObserver,
                     deletion_observers_,
                     OnWillDeleteImpl());
+  if (channel_) {
+    channel_->DestroyCommandBuffer(this);
+    channel_ = nullptr;
+  }
 }
 
 bool CommandBufferProxyImpl::OnMessageReceived(const IPC::Message& message) {
@@ -89,7 +93,10 @@ void CommandBufferProxyImpl::OnDestroyed(gpu::error::ContextLostReason reason,
                                          gpu::error::Error error) {
   CheckLock();
   // Prevent any further messages from being sent.
-  channel_ = NULL;
+  if (channel_) {
+    channel_->DestroyCommandBuffer(this);
+    channel_ = nullptr;
+  }
 
   // When the client sees that the context is lost, they should delete this
   // CommandBufferProxyImpl and create a new one.
@@ -440,10 +447,6 @@ int32_t CommandBufferProxyImpl::CreateGpuMemoryBufferImage(
     return -1;
 
   return CreateImage(buffer->AsClientBuffer(), width, height, internalformat);
-}
-
-int CommandBufferProxyImpl::GetRouteID() const {
-  return route_id_;
 }
 
 uint32 CommandBufferProxyImpl::CreateStreamTexture(uint32 texture_id) {

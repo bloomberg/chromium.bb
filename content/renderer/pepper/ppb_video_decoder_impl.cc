@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "content/common/gpu/client/gpu_channel_host.h"
+#include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
@@ -119,18 +119,16 @@ bool PPB_VideoDecoder_Impl::Init(PP_Resource graphics_context,
   PPB_Graphics3D_Impl* graphics_3d =
       static_cast<PPB_Graphics3D_Impl*>(enter_context.object());
 
-  int command_buffer_route_id = graphics_3d->GetCommandBufferRouteId();
-  if (command_buffer_route_id == 0)
+  CommandBufferProxyImpl* command_buffer = graphics_3d->GetCommandBufferProxy();
+  if (!command_buffer)
     return false;
 
   InitCommon(graphics_context, graphics_3d->gles2_impl());
   FlushCommandBuffer();
 
   // This is not synchronous, but subsequent IPC messages will be buffered, so
-  // it is okay to immediately send IPC messages through the returned channel.
-  GpuChannelHost* channel = graphics_3d->channel();
-  DCHECK(channel);
-  decoder_ = channel->CreateVideoDecoder(command_buffer_route_id);
+  // it is okay to immediately send IPC messages.
+  decoder_ = command_buffer->CreateVideoDecoder();
   return (decoder_ && decoder_->Initialize(PPToMediaProfile(profile), this));
 }
 

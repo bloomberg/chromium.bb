@@ -61,7 +61,7 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
     *sync_point = sync_point_;
   }
 
-  int GetCommandBufferRouteId();
+  CommandBufferProxyImpl* GetCommandBufferProxy();
 
   GpuChannelHost* channel() { return channel_.get(); }
 
@@ -97,7 +97,7 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
   uint32 sync_point_;
   bool has_alpha_;
   scoped_refptr<GpuChannelHost> channel_;
-  CommandBufferProxyImpl* command_buffer_;
+  scoped_ptr<CommandBufferProxyImpl> command_buffer_;
 
   base::WeakPtrFactory<PPB_Graphics3D_Impl> weak_ptr_factory_;
 

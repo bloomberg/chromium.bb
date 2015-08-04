@@ -168,7 +168,7 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
   CommandBufferProxyImpl* share_group_command_buffer = NULL;
 
   if (share_context) {
-    share_group_command_buffer = share_context->command_buffer_.get();
+    share_group_command_buffer = share_context->GetCommandBufferProxy();
   }
 
   ::gpu::gles2::ContextCreationAttribHelper attribs_for_gles2;
@@ -181,19 +181,13 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
 
   // Create a proxy to a command buffer in the GPU process.
   if (onscreen) {
-    command_buffer_.reset(host_->CreateViewCommandBuffer(
-        surface_id_,
-        share_group_command_buffer,
-        attribs,
-        active_url_,
-        gpu_preference_));
+    command_buffer_ =
+        host_->CreateViewCommandBuffer(surface_id_, share_group_command_buffer,
+                                       attribs, active_url_, gpu_preference_);
   } else {
-    command_buffer_.reset(host_->CreateOffscreenCommandBuffer(
-        gfx::Size(1, 1),
-        share_group_command_buffer,
-        attribs,
-        active_url_,
-        gpu_preference_));
+    command_buffer_ = host_->CreateOffscreenCommandBuffer(
+        gfx::Size(1, 1), share_group_command_buffer, attribs, active_url_,
+        gpu_preference_);
   }
 
   if (!command_buffer_) {
@@ -255,14 +249,10 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(bool onscreen) {
   const bool bind_generates_resources = false;
   const bool support_client_side_arrays = false;
 
-  real_gl_.reset(
-      new gpu::gles2::GLES2Implementation(gles2_helper_.get(),
-                                          gles2_share_group.get(),
-                                          transfer_buffer_.get(),
-                                          bind_generates_resources,
-                                          lose_context_when_out_of_memory_,
-                                          support_client_side_arrays,
-                                          command_buffer_.get()));
+  real_gl_.reset(new gpu::gles2::GLES2Implementation(
+      gles2_helper_.get(), gles2_share_group.get(), transfer_buffer_.get(),
+      bind_generates_resources, lose_context_when_out_of_memory_,
+      support_client_side_arrays, command_buffer_.get()));
   setGLInterface(real_gl_.get());
 
   if (!real_gl_->Initialize(
@@ -318,12 +308,7 @@ void WebGraphicsContext3DCommandBufferImpl::Destroy() {
   transfer_buffer_.reset();
   gles2_helper_.reset();
   real_gl_.reset();
-
-  if (command_buffer_) {
-    if (host_.get())
-      host_->DestroyCommandBuffer(command_buffer_.release());
-    command_buffer_.reset();
-  }
+  command_buffer_.reset();
 
   host_ = NULL;
 }

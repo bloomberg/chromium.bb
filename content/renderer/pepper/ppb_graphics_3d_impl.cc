@@ -52,19 +52,9 @@ PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PP_Instance instance)
       commit_pending_(false),
       sync_point_(0),
       has_alpha_(false),
-      command_buffer_(NULL),
       weak_ptr_factory_(this) {}
 
-PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {
-  DestroyGLES2Impl();
-  if (command_buffer_) {
-    DCHECK(channel_.get());
-    channel_->DestroyCommandBuffer(command_buffer_);
-    command_buffer_ = NULL;
-  }
-
-  channel_ = NULL;
-}
+PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {}
 
 // static
 PP_Resource PPB_Graphics3D_Impl::Create(PP_Instance instance,
@@ -167,17 +157,17 @@ void PPB_Graphics3D_Impl::ViewInitiatedPaint() {
     SwapBuffersACK(PP_OK);
 }
 
-int PPB_Graphics3D_Impl::GetCommandBufferRouteId() {
+CommandBufferProxyImpl* PPB_Graphics3D_Impl::GetCommandBufferProxy() {
   DCHECK(command_buffer_);
-  return command_buffer_->GetRouteID();
+  return command_buffer_.get();
 }
 
 gpu::CommandBuffer* PPB_Graphics3D_Impl::GetCommandBuffer() {
-  return command_buffer_;
+  return command_buffer_.get();
 }
 
 gpu::GpuControl* PPB_Graphics3D_Impl::GetGpuControl() {
-  return command_buffer_;
+  return command_buffer_.get();
 }
 
 int32 PPB_Graphics3D_Impl::DoSwapBuffers() {
@@ -296,7 +286,7 @@ bool PPB_Graphics3D_Impl::InitRaw(
   if (share_context) {
     PPB_Graphics3D_Impl* share_graphics =
         static_cast<PPB_Graphics3D_Impl*>(share_context);
-    share_buffer = share_graphics->command_buffer_;
+    share_buffer = share_graphics->GetCommandBufferProxy();
   }
 
   command_buffer_ = channel_->CreateOffscreenCommandBuffer(

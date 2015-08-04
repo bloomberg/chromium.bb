@@ -123,7 +123,7 @@ class CONTENT_EXPORT PepperVideoEncoderHost
   ppapi::MediaStreamBufferManager buffer_manager_;
 
   scoped_refptr<GpuChannelHost> channel_;
-  CommandBufferProxyImpl* command_buffer_;
+  scoped_ptr<CommandBufferProxyImpl> command_buffer_;
 
   scoped_ptr<media::VideoEncodeAccelerator> encoder_;
 

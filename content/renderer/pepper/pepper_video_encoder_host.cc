@@ -190,7 +190,6 @@ PepperVideoEncoderHost::PepperVideoEncoderHost(RendererPpapiHost* host,
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
       buffer_manager_(this),
-      command_buffer_(nullptr),
       initialized_(false),
       encoder_last_error_(PP_ERROR_FAILED),
       frame_count_(0),
@@ -543,11 +542,7 @@ void PepperVideoEncoderHost::Close() {
   DCHECK(RenderThreadImpl::current());
 
   encoder_ = nullptr;
-  if (command_buffer_) {
-    DCHECK(channel_);
-    channel_->DestroyCommandBuffer(command_buffer_);
-    command_buffer_ = nullptr;
-  }
+  command_buffer_ = nullptr;
 }
 
 void PepperVideoEncoderHost::AllocateVideoFrames() {
