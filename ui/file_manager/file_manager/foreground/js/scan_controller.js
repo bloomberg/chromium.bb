@@ -62,13 +62,6 @@ function ScanController(
   this.scanInProgress_ = false;
 
   /**
-   * Timer ID to delay UI refresh after a scan is completed.
-   * @type {number}
-   * @private
-   */
-  this.scanCompletedTimer_ = 0;
-
-  /**
    * Timer ID to delay UI refresh after a scan is updated.
    * @type {number}
    * @private
@@ -118,11 +111,6 @@ ScanController.prototype.onScanStarted_ = function() {
   this.listContainer_.startBatchUpdates();
   this.scanInProgress_ = true;
 
-  if (this.scanCompletedTimer_) {
-    clearTimeout(this.scanCompletedTimer_);
-    this.scanCompletedTimer_ = 0;
-  }
-
   if (this.scanUpdatedTimer_) {
     clearTimeout(this.scanUpdatedTimer_);
     this.scanUpdatedTimer_ = 0;
@@ -152,13 +140,8 @@ ScanController.prototype.onScanCompleted_ = function() {
     this.scanUpdatedTimer_ = 0;
   }
 
-  // To avoid flickering postpone updating the ui by a small amount of time.
-  // There is a high chance, that metadata will be received within 50 ms.
-  this.scanCompletedTimer_ = setTimeout(function() {
-    this.scanInProgress_ = false;
-    this.listContainer_.endBatchUpdates();
-    this.scanCompletedTimer_ = 0;
-  }.bind(this), 50);
+  this.scanInProgress_ = false;
+  this.listContainer_.endBatchUpdates();
 };
 
 /**
@@ -170,7 +153,7 @@ ScanController.prototype.onScanUpdated_ = function() {
     return;
   }
 
-  if (this.scanUpdatedTimer_ || this.scanCompletedTimer_)
+  if (this.scanUpdatedTimer_)
     return;
 
   // Show contents incrementally by finishing batch updated, but only after
@@ -201,10 +184,6 @@ ScanController.prototype.onScanCancelled_ = function() {
 
   this.hideSpinner_();
 
-  if (this.scanCompletedTimer_) {
-    clearTimeout(this.scanCompletedTimer_);
-    this.scanCompletedTimer_ = 0;
-  }
   if (this.scanUpdatedTimer_) {
     clearTimeout(this.scanUpdatedTimer_);
     this.scanUpdatedTimer_ = 0;
