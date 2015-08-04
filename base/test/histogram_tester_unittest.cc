@@ -10,15 +10,19 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace base {
-
 using ::testing::ElementsAre;
 
-static const char kHistogram1[] = "Test1";
-static const char kHistogram2[] = "Test2";
-static const char kHistogram3[] = "Test3";
-static const char kHistogram4[] = "Test4";
-static const char kHistogram5[] = "Test5";
+namespace {
+
+const char kHistogram1[] = "Test1";
+const char kHistogram2[] = "Test2";
+const char kHistogram3[] = "Test3";
+const char kHistogram4[] = "Test4";
+const char kHistogram5[] = "Test5";
+
+}  // namespace
+
+namespace base {
 
 typedef testing::Test HistogramTesterTest;
 
