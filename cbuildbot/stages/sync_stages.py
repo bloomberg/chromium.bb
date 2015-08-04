@@ -1522,14 +1522,15 @@ class PreCQLauncherStage(SyncStage):
         # Change the status to inflight.
         self.UpdateChangeStatuses([change], constants.CL_STATUS_INFLIGHT)
         build_dicts = db.GetBuildStatuses(build_ids)
-        urls = []
+        lines = []
         for b in build_dicts:
           waterfall_url = constants.WATERFALL_TO_DASHBOARD[b['waterfall']]
-          urls.append(tree_status.ConstructDashboardURL(
-              waterfall_url, b['builder_name'], b['build_number']))
+          url = tree_status.ConstructDashboardURL(
+              waterfall_url, b['builder_name'], b['build_number'])
+          lines.append('(%s) : %s' % (b['build_config'], url))
 
         # Send notifications.
-        pool.HandleApplySuccess(change, build_log='\n'.join(urls))
+        pool.HandleApplySuccess(change, build_log=('\n' + '\n'.join(lines)))
 
     for change in to_process:
       # Detect if change is ready to be marked as passed, or ready to submit.
