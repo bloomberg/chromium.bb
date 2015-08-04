@@ -146,4 +146,20 @@ TEST_F(PositionTest, ToPositionInComposedTreeWithEmptyShadowRoot)
     EXPECT_EQ(PositionInComposedTree(host, PositionAnchorType::AfterChildren), toPositionInComposedTree(positionInDOMTree(*shadowRoot, 0)));
 }
 
+TEST_F(PositionTest, upstreamAfterAnchor)
+{
+    const char* bodyContent = "<p id='host'><b id='one'>1</b></p>";
+    const char* shadowContent = "<b id='two'>22</b><content select=#one></content><b id='three'>333</b>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
+    updateLayoutAndStyleForPainting();
+
+    RefPtrWillBeRawPtr<Element> host = document().getElementById("host");
+    RefPtrWillBeRawPtr<Element> one = document().getElementById("one");
+    RefPtrWillBeRawPtr<Element> three = shadowRoot->getElementById("three");
+
+    EXPECT_EQ(Position(one->firstChild(), 1), Position::afterNode(host.get()).upstream());
+    EXPECT_EQ(PositionInComposedTree(three->firstChild(), 3), PositionInComposedTree::afterNode(host.get()).upstream());
+}
+
 } // namespace blink

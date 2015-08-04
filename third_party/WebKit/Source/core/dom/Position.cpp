@@ -650,7 +650,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::upstream(EditingBoundar
     // iterate backward from there, looking for a qualified position
     Node* boundary = enclosingVisualBoundary<Strategy>(startNode);
     // FIXME: PositionIterator should respect Before and After positions.
-    PositionIteratorAlgorithm<Strategy> lastVisible(isAfterAnchor() ? createLegacyEditingPosition(m_anchorNode.get(), caretMaxOffset(m_anchorNode.get())) : PositionAlgorithm<Strategy>(*this));
+    PositionIteratorAlgorithm<Strategy> lastVisible(isAfterAnchor() ? createLegacyEditingPosition(m_anchorNode.get(), Strategy::caretMaxOffset(*m_anchorNode)) : PositionAlgorithm<Strategy>(*this));
     PositionIteratorAlgorithm<Strategy> currentPos = lastVisible;
     bool startEditable = startNode->hasEditableStyle();
     Node* lastNode = startNode;
