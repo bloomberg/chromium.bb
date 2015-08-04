@@ -182,19 +182,9 @@ Node* PositionAlgorithm<Strategy>::containerNode() const
 template <typename Strategy>
 Text* PositionAlgorithm<Strategy>::containerText() const
 {
-    switch (anchorType()) {
-    case PositionAnchorType::OffsetInAnchor:
-        return m_anchorNode && m_anchorNode->isTextNode() ? toText(m_anchorNode) : 0;
-    case PositionAnchorType::BeforeAnchor:
-    case PositionAnchorType::AfterAnchor:
-        return 0;
-    case PositionAnchorType::BeforeChildren:
-    case PositionAnchorType::AfterChildren:
-        ASSERT(!m_anchorNode || !m_anchorNode->isTextNode());
-        return 0;
-    }
-    ASSERT_NOT_REACHED();
-    return 0;
+    if (!isOffsetInAnchor() || !anchorNode() || !anchorNode()->isTextNode())
+        return nullptr;
+    return toText(anchorNode());
 }
 
 template <typename Strategy>
