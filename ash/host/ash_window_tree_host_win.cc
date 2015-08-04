@@ -104,15 +104,14 @@ class AshWindowTreeHostWin : public AshWindowTreeHost,
   }
 
   // ui::internal::InputMethodDelegate:
-  bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override {
-    ui::KeyEvent event_copy(event);
+  ui::EventDispatchDetails DispatchKeyEventPostIME(
+      ui::KeyEvent* event) override {
     input_method_handler()->SetPostIME(true);
     ui::EventDispatchDetails details =
-        event_processor()->OnEventFromSource(&event_copy);
-    if (details.dispatcher_destroyed)
-      return true;
-    input_method_handler()->SetPostIME(false);
-    return event_copy.stopped_propagation();
+        event_processor()->OnEventFromSource(event);
+    if (!details.dispatcher_destroyed)
+      input_method_handler()->SetPostIME(false);
+    return details;
   }
 
   bool fullscreen_;

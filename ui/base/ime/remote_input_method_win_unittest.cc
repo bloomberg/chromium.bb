@@ -138,10 +138,12 @@ class MockInputMethodDelegate : public internal::InputMethodDelegate {
   }
 
  private:
-  bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override {
-    EXPECT_FALSE(event.HasNativeEvent());
-    fabricated_key_events_.push_back(event.key_code());
-    return true;
+  ui::EventDispatchDetails DispatchKeyEventPostIME(
+      ui::KeyEvent* event) override {
+    EXPECT_FALSE(event->HasNativeEvent());
+    fabricated_key_events_.push_back(event->key_code());
+    event->SetHandled();
+    return ui::EventDispatchDetails();
   }
 
   std::vector<ui::KeyboardCode> fabricated_key_events_;
@@ -513,10 +515,12 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_NativeKeyEvent) {
   scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
 
   const MSG wm_keydown = { NULL, WM_KEYDOWN, ui::VKEY_A };
-  ui::KeyEvent native_keydown(wm_keydown);
+  ui::KeyEvent new_keydown(wm_keydown);
+  ui::KeyEvent native_keydown(new_keydown);
 
   // This must not cause a crash.
-  EXPECT_FALSE(input_method->DispatchKeyEvent(native_keydown));
+  input_method->DispatchKeyEvent(&native_keydown);
+  EXPECT_FALSE(native_keydown.handled());
   EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
   EXPECT_TRUE(delegate_.fabricated_key_events().empty());
   delegate_.Reset();
@@ -529,8 +533,9 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_NativeKeyEvent) {
   private_ptr->SetRemoteDelegate(&mock_remote_delegate);
 
   // TextInputClient is not focused yet here.
-
-  EXPECT_FALSE(input_method->DispatchKeyEvent(native_keydown));
+  native_keydown = new_keydown;
+  input_method->DispatchKeyEvent(&native_keydown);
+  EXPECT_FALSE(native_keydown.handled());
   EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
   EXPECT_TRUE(delegate_.fabricated_key_events().empty());
   delegate_.Reset();
@@ -539,8 +544,9 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_NativeKeyEvent) {
   input_method->SetFocusedTextInputClient(&mock_text_input_client);
 
   // TextInputClient is now focused here.
-
-  EXPECT_FALSE(input_method->DispatchKeyEvent(native_keydown));
+  native_keydown = new_keydown;
+  input_method->DispatchKeyEvent(&native_keydown);
+  EXPECT_FALSE(native_keydown.handled());
   EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
   EXPECT_TRUE(delegate_.fabricated_key_events().empty());
   delegate_.Reset();
@@ -555,10 +561,12 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_NativeCharEvent) {
   scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
 
   const MSG wm_char = { NULL, WM_CHAR, 'A', 0 };
-  ui::KeyEvent native_char(wm_char);
+  ui::KeyEvent new_char(wm_char);
+  ui::KeyEvent native_char(new_char);
 
   // This must not cause a crash.
-  EXPECT_FALSE(input_method->DispatchKeyEvent(native_char));
+  input_method->DispatchKeyEvent(&native_char);
+  EXPECT_FALSE(native_char.handled());
   EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
   EXPECT_TRUE(delegate_.fabricated_key_events().empty());
   delegate_.Reset();
@@ -571,8 +579,9 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_NativeCharEvent) {
   private_ptr->SetRemoteDelegate(&mock_remote_delegate);
 
   // TextInputClient is not focused yet here.
-
-  EXPECT_FALSE(input_method->DispatchKeyEvent(native_char));
+  native_char = new_char;
+  input_method->DispatchKeyEvent(&native_char);
+  EXPECT_FALSE(native_char.handled());
   EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
   EXPECT_TRUE(delegate_.fabricated_key_events().empty());
   delegate_.Reset();
@@ -581,8 +590,9 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_NativeCharEvent) {
   input_method->SetFocusedTextInputClient(&mock_text_input_client);
 
   // TextInputClient is now focused here.
-
-  EXPECT_TRUE(input_method->DispatchKeyEvent(native_char));
+  native_char = new_char;
+  input_method->DispatchKeyEvent(&native_char);
+  EXPECT_TRUE(native_char.handled());
   EXPECT_EQ(L"A", mock_text_input_client.inserted_text());
   EXPECT_TRUE(delegate_.fabricated_key_events().empty());
   delegate_.Reset();
@@ -598,11 +608,13 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_FabricatedKeyDown) {
   MockTextInputClient mock_text_input_client;
   scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
 
-  ui::KeyEvent fabricated_keydown(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
-  fabricated_keydown.set_character(L'A');
+  ui::KeyEvent new_keydown(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  new_keydown.set_character(L'A');
+  ui::KeyEvent fabricated_keydown(new_keydown);
 
   // This must not cause a crash.
-  EXPECT_TRUE(input_method->DispatchKeyEvent(fabricated_keydown));
+  input_method->DispatchKeyEvent(&fabricated_keydown);
+  EXPECT_TRUE(fabricated_keydown.handled());
   EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
   ASSERT_EQ(1, delegate_.fabricated_key_events().size());
   EXPECT_EQ(L'A', delegate_.fabricated_key_events()[0]);
@@ -616,8 +628,9 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_FabricatedKeyDown) {
   private_ptr->SetRemoteDelegate(&mock_remote_delegate);
 
   // TextInputClient is not focused yet here.
-
-  EXPECT_TRUE(input_method->DispatchKeyEvent(fabricated_keydown));
+  fabricated_keydown = new_keydown;
+  input_method->DispatchKeyEvent(&fabricated_keydown);
+  EXPECT_TRUE(fabricated_keydown.handled());
   EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
   ASSERT_EQ(1, delegate_.fabricated_key_events().size());
   EXPECT_EQ(L'A', delegate_.fabricated_key_events()[0]);
@@ -626,8 +639,9 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_FabricatedKeyDown) {
 
   input_method->SetFocusedTextInputClient(&mock_text_input_client);
   // TextInputClient is now focused here.
-
-  EXPECT_TRUE(input_method->DispatchKeyEvent(fabricated_keydown));
+  fabricated_keydown = new_keydown;
+  input_method->DispatchKeyEvent(&fabricated_keydown);
+  EXPECT_TRUE(fabricated_keydown.handled());
   EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
   ASSERT_EQ(1, delegate_.fabricated_key_events().size());
   EXPECT_EQ(L'A', delegate_.fabricated_key_events()[0]);
@@ -636,8 +650,9 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_FabricatedKeyDown) {
 
   input_method->SetDelegate(NULL);
   // RemoteInputMethodDelegateWin is no longer set here.
-
-  EXPECT_FALSE(input_method->DispatchKeyEvent(fabricated_keydown));
+  fabricated_keydown = new_keydown;
+  input_method->DispatchKeyEvent(&fabricated_keydown);
+  EXPECT_FALSE(fabricated_keydown.handled());
   EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
 }
 
@@ -649,10 +664,12 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_FabricatedChar) {
   MockTextInputClient mock_text_input_client;
   scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
 
-  ui::KeyEvent fabricated_char(L'A', ui::VKEY_A, ui::EF_NONE);
+  ui::KeyEvent new_char(L'A', ui::VKEY_A, ui::EF_NONE);
+  ui::KeyEvent fabricated_char(new_char);
 
   // This must not cause a crash.
-  EXPECT_TRUE(input_method->DispatchKeyEvent(fabricated_char));
+  input_method->DispatchKeyEvent(&fabricated_char);
+  EXPECT_TRUE(fabricated_char.handled());
   EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
   EXPECT_TRUE(delegate_.fabricated_key_events().empty());
   delegate_.Reset();
@@ -665,8 +682,9 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_FabricatedChar) {
   private_ptr->SetRemoteDelegate(&mock_remote_delegate);
 
   // TextInputClient is not focused yet here.
-
-  EXPECT_TRUE(input_method->DispatchKeyEvent(fabricated_char));
+  fabricated_char = new_char;
+  input_method->DispatchKeyEvent(&fabricated_char);
+  EXPECT_TRUE(fabricated_char.handled());
   EXPECT_TRUE(mock_text_input_client.inserted_text().empty());
   EXPECT_TRUE(delegate_.fabricated_key_events().empty());
   delegate_.Reset();
@@ -675,8 +693,9 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_FabricatedChar) {
   input_method->SetFocusedTextInputClient(&mock_text_input_client);
 
   // TextInputClient is now focused here.
-
-  EXPECT_TRUE(input_method->DispatchKeyEvent(fabricated_char));
+  fabricated_char = new_char;
+  input_method->DispatchKeyEvent(&fabricated_char);
+  EXPECT_TRUE(fabricated_char.handled());
   EXPECT_EQ(L"A", mock_text_input_client.inserted_text());
   EXPECT_TRUE(delegate_.fabricated_key_events().empty());
   delegate_.Reset();

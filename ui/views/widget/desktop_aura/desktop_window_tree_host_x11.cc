@@ -1519,8 +1519,7 @@ void DesktopWindowTreeHostX11::DispatchTouchEvent(ui::TouchEvent* event) {
 }
 
 void DesktopWindowTreeHostX11::DispatchKeyEvent(ui::KeyEvent* event) {
-  GetInputMethod()->DispatchKeyEvent(*event);
-  event->StopPropagation();
+  GetInputMethod()->DispatchKeyEvent(event);
 }
 
 void DesktopWindowTreeHostX11::ConvertEventToDifferentHost(

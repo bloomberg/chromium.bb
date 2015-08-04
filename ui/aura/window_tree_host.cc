@@ -193,11 +193,9 @@ void WindowTreeHost::SetSharedInputMethod(ui::InputMethod* input_method) {
   owned_input_method_ = false;
 }
 
-bool WindowTreeHost::DispatchKeyEventPostIME(const ui::KeyEvent& event) {
-  ui::KeyEvent copied_event(event);
-  ui::EventDispatchDetails details = SendEventToProcessor(&copied_event);
-  DCHECK(!details.dispatcher_destroyed);
-  return copied_event.stopped_propagation();
+ui::EventDispatchDetails WindowTreeHost::DispatchKeyEventPostIME(
+    ui::KeyEvent* event) {
+  return SendEventToProcessor(event);
 }
 
 void WindowTreeHost::Show() {

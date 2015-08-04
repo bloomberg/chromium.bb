@@ -28,25 +28,27 @@ bool InputMethodMandoline::OnUntranslatedIMEMessage(
   return false;
 }
 
-bool InputMethodMandoline::DispatchKeyEvent(const ui::KeyEvent& event) {
-  DCHECK(event.type() == ui::ET_KEY_PRESSED ||
-         event.type() == ui::ET_KEY_RELEASED);
+void InputMethodMandoline::DispatchKeyEvent(ui::KeyEvent* event) {
+  DCHECK(event->type() == ui::ET_KEY_PRESSED ||
+         event->type() == ui::ET_KEY_RELEASED);
 
   // If no text input client, do nothing.
-  if (!GetTextInputClient())
-    return DispatchKeyEventPostIME(event);
+  if (!GetTextInputClient()) {
+    ignore_result(DispatchKeyEventPostIME(event));
+    return;
+  }
 
   // Here is where we change the differ from our base class's logic. Instead of
   // always dispatching a key down event, and then sending a synthesized
   // character event, we instead check to see if this is a character event and
   // send out the key if it is. (We fallback to normal dispatch if it isn't.)
-  if (event.is_char()) {
-    GetTextInputClient()->InsertChar(event.GetCharacter(), event.flags());
-
-    return false;
+  if (event->is_char()) {
+    GetTextInputClient()->InsertChar(event->GetCharacter(), event->flags());
+    event->StopPropagation();
+    return;
   }
 
-  return DispatchKeyEventPostIME(event);
+  ignore_result(DispatchKeyEventPostIME(event));
 }
 
 void InputMethodMandoline::OnCaretBoundsChanged(

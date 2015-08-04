@@ -32,7 +32,7 @@ void InputMethodEventHandler::OnKeyEvent(ui::KeyEvent* event) {
     return;
   if (post_ime_)
     return;
-  input_method_->DispatchKeyEvent(*event);
+  input_method_->DispatchKeyEvent(event);
   event->StopPropagation();
 }
 

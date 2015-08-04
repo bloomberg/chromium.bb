@@ -27,7 +27,7 @@ class UI_BASE_IME_EXPORT InputMethodAuraLinux
   // Overriden from InputMethod.
   bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                 NativeEventResult* result) override;
-  bool DispatchKeyEvent(const ui::KeyEvent& event) override;
+  void DispatchKeyEvent(ui::KeyEvent* event) override;
   void OnTextInputTypeChanged(const TextInputClient* client) override;
   void OnCaretBoundsChanged(const TextInputClient* client) override;
   void CancelComposition(const TextInputClient* client) override;
@@ -53,7 +53,7 @@ class UI_BASE_IME_EXPORT InputMethodAuraLinux
  private:
   bool HasInputMethodResult();
   bool NeedInsertChar() const;
-  bool SendFakeProcessKeyEvent(int flags) const;
+  ui::EventDispatchDetails SendFakeProcessKeyEvent(ui::KeyEvent* event) const;
   void ConfirmCompositionText();
   void UpdateContextFocusState();
   void ResetContext();
@@ -79,12 +79,6 @@ class UI_BASE_IME_EXPORT InputMethodAuraLinux
   // If it's true then all input method result received before the next key
   // event will be discarded.
   bool suppress_next_result_;
-
-  // The pointer to a boolean value which indicates whether this InputMethod
-  // instance is destroyed. This is used in DispatchKeyEvent to detect whether
-  // DispatchKeyEventPostIME will cause destruction of this InputMethod
-  // instance. See crbug.com/513917.
-  bool* destroyed_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodAuraLinux);
 };

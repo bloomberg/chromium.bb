@@ -21,14 +21,13 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
  public:
   InputMethodWin(internal::InputMethodDelegate* delegate,
                  HWND toplevel_window_handle);
-  ~InputMethodWin() override;
 
   // Overridden from InputMethod:
   void OnFocus() override;
   void OnBlur() override;
   bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                 NativeEventResult* result) override;
-  bool DispatchKeyEvent(const ui::KeyEvent& event) override;
+  void DispatchKeyEvent(ui::KeyEvent* event) override;
   void OnTextInputTypeChanged(const TextInputClient* client) override;
   void OnCaretBoundsChanged(const TextInputClient* client) override;
   void CancelComposition(const TextInputClient* client) override;
@@ -93,7 +92,7 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
   // to be ready for receiving keyboard input.
   bool IsWindowFocused(const TextInputClient* client) const;
 
-  bool DispatchFabricatedKeyEvent(const ui::KeyEvent& event);
+  void DispatchFabricatedKeyEvent(ui::KeyEvent* event);
 
   // Asks the client to confirm current composition text.
   void ConfirmCompositionText();
@@ -133,12 +132,6 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
   // Set to true to suppress the next WM_CHAR, when the WM_KEYDOWN gets stopped
   // propagation (e.g. triggered an accelerator).
   bool suppress_next_char_;
-
-  // The pointer to a boolean value which indicates whether this InputMethod
-  // instance is destroyed. This is used in DispatchKeyEvent to detect whether
-  // DispatchKeyEventPostIME will cause destruction of this InputMethod
-  // instance. See crbug.com/513917.
-  bool* destroyed_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodWin);
 };

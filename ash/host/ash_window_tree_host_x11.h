@@ -52,7 +52,8 @@ class ASH_EXPORT AshWindowTreeHostX11 : public AshWindowTreeHost,
   void OnHostInitialized(aura::WindowTreeHost* host) override;
 
   // ui::internal::InputMethodDelegate:
-  bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override;
+  ui::EventDispatchDetails DispatchKeyEventPostIME(
+      ui::KeyEvent* event) override;
 
 #if defined(OS_CHROMEOS)
   // Set the CrOS touchpad "tap paused" property. It is used to temporarily

@@ -153,9 +153,10 @@ class InputMethodDelegateForTesting : public internal::InputMethodDelegate {
   InputMethodDelegateForTesting(){};
   ~InputMethodDelegateForTesting() override{};
 
-  bool DispatchKeyEventPostIME(const ui::KeyEvent& key_event) override {
+  ui::EventDispatchDetails DispatchKeyEventPostIME(
+      ui::KeyEvent* key_event) override {
     std::string action;
-    switch (key_event.type()) {
+    switch (key_event->type()) {
       case ET_KEY_PRESSED:
         action = "keydown:";
         break;
@@ -166,10 +167,10 @@ class InputMethodDelegateForTesting : public internal::InputMethodDelegate {
         break;
     }
     std::stringstream ss;
-    ss << key_event.key_code();
+    ss << key_event->key_code();
     action += std::string(ss.str());
     TestResult::GetInstance()->RecordAction(base::ASCIIToUTF16(action));
-    return false;
+    return ui::EventDispatchDetails();
   }
 
  private:
@@ -290,9 +291,11 @@ TEST_F(InputMethodAuraLinuxTest, BasicSyncModeTest) {
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
 
-  KeyEvent key(ET_KEY_PRESSED, VKEY_A, 0);
-  key.set_character(L'a');
-  input_method_auralinux_->DispatchKeyEvent(key);
+  KeyEvent key_new(ET_KEY_PRESSED, VKEY_A, 0);
+  key_new.set_character(L'a');
+
+  KeyEvent key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("keydown:65");
   test_result_->ExpectAction("keypress:97");
@@ -305,7 +308,8 @@ TEST_F(InputMethodAuraLinuxTest, BasicSyncModeTest) {
 
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
-  input_method_auralinux_->DispatchKeyEvent(key);
+  key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("keydown:65");
   test_result_->ExpectAction("keypress:97");
@@ -320,9 +324,10 @@ TEST_F(InputMethodAuraLinuxTest, BasicAsyncModeTest) {
       new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
-  KeyEvent key(ET_KEY_PRESSED, VKEY_A, 0);
-  key.set_character(L'a');
-  input_method_auralinux_->DispatchKeyEvent(key);
+  KeyEvent key_new(ET_KEY_PRESSED, VKEY_A, 0);
+  key_new.set_character(L'a');
+  KeyEvent key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
   input_method_auralinux_->OnCommit(base::ASCIIToUTF16("a"));
 
   test_result_->ExpectAction("keydown:229");
@@ -336,7 +341,8 @@ TEST_F(InputMethodAuraLinuxTest, BasicAsyncModeTest) {
 
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
-  input_method_auralinux_->DispatchKeyEvent(key);
+  key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("keydown:65");
   test_result_->ExpectAction("keypress:97");
@@ -351,9 +357,10 @@ TEST_F(InputMethodAuraLinuxTest, IBusUSTest) {
       new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
-  KeyEvent key(ET_KEY_PRESSED, VKEY_A, 0);
-  key.set_character(L'a');
-  input_method_auralinux_->DispatchKeyEvent(key);
+  KeyEvent key_new(ET_KEY_PRESSED, VKEY_A, 0);
+  key_new.set_character(L'a');
+  KeyEvent key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   // IBus mutes the key down.
   test_result_->Verify();
@@ -361,7 +368,8 @@ TEST_F(InputMethodAuraLinuxTest, IBusUSTest) {
   // IBus simulates a faked key down and handle it in sync mode.
   context_->SetSyncMode(true);
   context_->AddCommitAction("a");
-  input_method_auralinux_->DispatchKeyEvent(key);
+  key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("keydown:65");
   test_result_->ExpectAction("keypress:97");
@@ -369,8 +377,8 @@ TEST_F(InputMethodAuraLinuxTest, IBusUSTest) {
 
   // IBus does NOT handle the key up.
   context_->SetEatKey(false);
-  input_method_auralinux_->DispatchKeyEvent(
-      KeyEvent(ET_KEY_RELEASED, VKEY_A, 0));
+  KeyEvent key_up(ET_KEY_RELEASED, VKEY_A, 0);
+  input_method_auralinux_->DispatchKeyEvent(&key_up);
 
   test_result_->ExpectAction("keyup:65");
   test_result_->Verify();
@@ -386,7 +394,7 @@ TEST_F(InputMethodAuraLinuxTest, IBusPinyinTest) {
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
   KeyEvent key(ET_KEY_PRESSED, VKEY_A, 0);
   key.set_character(L'a');
-  input_method_auralinux_->DispatchKeyEvent(key);
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   // IBus issues a standalone set_composition action.
   input_method_auralinux_->OnPreeditStart();
@@ -400,8 +408,8 @@ TEST_F(InputMethodAuraLinuxTest, IBusPinyinTest) {
   test_result_->Verify();
 
   // IBus issues a commit text with composition after muting the space key down.
-  input_method_auralinux_->DispatchKeyEvent(
-      KeyEvent(ET_KEY_PRESSED, VKEY_SPACE, 0));
+  KeyEvent key_up(ET_KEY_RELEASED, VKEY_SPACE, 0);
+  input_method_auralinux_->DispatchKeyEvent(&key_up);
 
   input_method_auralinux_->OnPreeditEnd();
   input_method_auralinux_->OnCommit(base::ASCIIToUTF16("A"));
@@ -425,7 +433,7 @@ TEST_F(InputMethodAuraLinuxTest, DeadKeyTest) {
 
   KeyEvent dead_key(ET_KEY_PRESSED, VKEY_OEM_7, 0);
   dead_key.set_character(L'\'');
-  input_method_auralinux_->DispatchKeyEvent(dead_key);
+  input_method_auralinux_->DispatchKeyEvent(&dead_key);
 
   // The single quote key is muted.
   test_result_->ExpectAction("keydown:222");
@@ -434,7 +442,7 @@ TEST_F(InputMethodAuraLinuxTest, DeadKeyTest) {
   context_simple_->AddCommitAction("X");
   KeyEvent key(ET_KEY_PRESSED, VKEY_A, 0);
   key.set_character(L'a');
-  input_method_auralinux_->DispatchKeyEvent(key);
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   // The following A key generates the accent key: á.
   test_result_->ExpectAction("keydown:65");
@@ -456,7 +464,7 @@ TEST_F(InputMethodAuraLinuxTest, MultiCommitsTest) {
 
   KeyEvent key(ET_KEY_PRESSED, VKEY_A, 0);
   key.set_character(L'a');
-  input_method_auralinux_->DispatchKeyEvent(key);
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("keydown:229");
   test_result_->ExpectAction("textinput:abc");
@@ -477,9 +485,10 @@ TEST_F(InputMethodAuraLinuxTest, MixedCompositionAndCommitTest) {
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
 
-  KeyEvent key(ET_KEY_PRESSED, VKEY_A, 0);
-  key.set_character(L'a');
-  input_method_auralinux_->DispatchKeyEvent(key);
+  KeyEvent key_new(ET_KEY_PRESSED, VKEY_A, 0);
+  key_new.set_character(L'a');
+  KeyEvent key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("keydown:229");
   test_result_->ExpectAction("textinput:ac");
@@ -488,7 +497,8 @@ TEST_F(InputMethodAuraLinuxTest, MixedCompositionAndCommitTest) {
   test_result_->Verify();
 
   context_->AddCommitAction("e");
-  input_method_auralinux_->DispatchKeyEvent(key);
+  key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("keydown:229");
   test_result_->ExpectAction("compositionend");
@@ -507,9 +517,10 @@ TEST_F(InputMethodAuraLinuxTest, CompositionEndWithoutCommitTest) {
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
 
-  KeyEvent key(ET_KEY_PRESSED, VKEY_A, 0);
-  key.set_character(L'a');
-  input_method_auralinux_->DispatchKeyEvent(key);
+  KeyEvent key_new(ET_KEY_PRESSED, VKEY_A, 0);
+  key_new.set_character(L'a');
+  KeyEvent key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("keydown:229");
   test_result_->ExpectAction("compositionstart");
@@ -517,7 +528,8 @@ TEST_F(InputMethodAuraLinuxTest, CompositionEndWithoutCommitTest) {
   test_result_->Verify();
 
   context_->AddCompositionEndAction();
-  input_method_auralinux_->DispatchKeyEvent(key);
+  key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("keydown:229");
   test_result_->ExpectAction("compositionend");
@@ -535,9 +547,10 @@ TEST_F(InputMethodAuraLinuxTest, CompositionEndWithEmptyCommitTest) {
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
 
-  KeyEvent key(ET_KEY_PRESSED, VKEY_A, 0);
-  key.set_character(L'a');
-  input_method_auralinux_->DispatchKeyEvent(key);
+  KeyEvent key_new(ET_KEY_PRESSED, VKEY_A, 0);
+  key_new.set_character(L'a');
+  KeyEvent key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("keydown:229");
   test_result_->ExpectAction("compositionstart");
@@ -546,7 +559,8 @@ TEST_F(InputMethodAuraLinuxTest, CompositionEndWithEmptyCommitTest) {
 
   context_->AddCompositionEndAction();
   context_->AddCommitAction("");
-  input_method_auralinux_->DispatchKeyEvent(key);
+  key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("keydown:229");
   test_result_->ExpectAction("compositionend");
@@ -564,9 +578,10 @@ TEST_F(InputMethodAuraLinuxTest, CompositionEndWithCommitTest) {
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
 
-  KeyEvent key(ET_KEY_PRESSED, VKEY_A, 0);
-  key.set_character(L'a');
-  input_method_auralinux_->DispatchKeyEvent(key);
+  KeyEvent key_new(ET_KEY_PRESSED, VKEY_A, 0);
+  key_new.set_character(L'a');
+  KeyEvent key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("keydown:229");
   test_result_->ExpectAction("compositionstart");
@@ -575,7 +590,8 @@ TEST_F(InputMethodAuraLinuxTest, CompositionEndWithCommitTest) {
 
   context_->AddCompositionEndAction();
   context_->AddCommitAction("b");
-  input_method_auralinux_->DispatchKeyEvent(key);
+  key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   // Verifies single char commit under composition mode will call InsertText
   // intead of InsertChar.
@@ -597,9 +613,10 @@ TEST_F(InputMethodAuraLinuxTest, CompositionUpdateWithCommitTest) {
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
 
-  KeyEvent key(ET_KEY_PRESSED, VKEY_A, 0);
-  key.set_character(L'a');
-  input_method_auralinux_->DispatchKeyEvent(key);
+  KeyEvent key_new(ET_KEY_PRESSED, VKEY_A, 0);
+  key_new.set_character(L'a');
+  KeyEvent key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("keydown:229");
   test_result_->ExpectAction("textinput:b");
@@ -612,7 +629,8 @@ TEST_F(InputMethodAuraLinuxTest, CompositionUpdateWithCommitTest) {
   context_->SetEatKey(true);
   context_->AddCommitAction("c");
   context_->AddCompositionUpdateAction("");
-  input_method_auralinux_->DispatchKeyEvent(key);
+  key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("keydown:229");
   test_result_->ExpectAction("compositionend");
@@ -629,9 +647,10 @@ TEST_F(InputMethodAuraLinuxTest, MixedAsyncAndSyncTest) {
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
 
-  KeyEvent key(ET_KEY_PRESSED, VKEY_A, 0);
-  key.set_character(L'a');
-  input_method_auralinux_->DispatchKeyEvent(key);
+  KeyEvent key_new(ET_KEY_PRESSED, VKEY_A, 0);
+  key_new.set_character(L'a');
+  KeyEvent key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
   CompositionText comp;
   comp.text = base::ASCIIToUTF16("a");
   input_method_auralinux_->OnPreeditChanged(comp);
@@ -645,7 +664,8 @@ TEST_F(InputMethodAuraLinuxTest, MixedAsyncAndSyncTest) {
   context_->AddCompositionEndAction();
   context_->AddCommitAction("b");
 
-  input_method_auralinux_->DispatchKeyEvent(key);
+  key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("keydown:229");
   test_result_->ExpectAction("compositionend");
@@ -664,9 +684,10 @@ TEST_F(InputMethodAuraLinuxTest, MixedSyncAndAsyncTest) {
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
 
-  KeyEvent key(ET_KEY_PRESSED, VKEY_A, 0);
-  key.set_character(L'a');
-  input_method_auralinux_->DispatchKeyEvent(key);
+  KeyEvent key_new(ET_KEY_PRESSED, VKEY_A, 0);
+  key_new.set_character(L'a');
+  KeyEvent key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("keydown:229");
   test_result_->ExpectAction("compositionstart");
@@ -675,7 +696,8 @@ TEST_F(InputMethodAuraLinuxTest, MixedSyncAndAsyncTest) {
 
   context_->SetSyncMode(false);
 
-  input_method_auralinux_->DispatchKeyEvent(key);
+  key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
   input_method_auralinux_->OnCommit(base::ASCIIToUTF16("b"));
 
   test_result_->ExpectAction("keydown:229");
@@ -685,7 +707,8 @@ TEST_F(InputMethodAuraLinuxTest, MixedSyncAndAsyncTest) {
 
   context_->SetSyncMode(true);
   context_->AddCommitAction("c");
-  input_method_auralinux_->DispatchKeyEvent(key);
+  key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("keydown:65");
   test_result_->ExpectAction("keypress:99");
@@ -702,9 +725,10 @@ TEST_F(InputMethodAuraLinuxTest, ReleaseKeyTest) {
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
 
-  KeyEvent key(ET_KEY_PRESSED, VKEY_A, 0);
-  key.set_character(L'A');
-  input_method_auralinux_->DispatchKeyEvent(key);
+  KeyEvent key_new(ET_KEY_PRESSED, VKEY_A, 0);
+  key_new.set_character(L'A');
+  KeyEvent key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("keydown:229");
   test_result_->ExpectAction("compositionstart");
@@ -713,7 +737,8 @@ TEST_F(InputMethodAuraLinuxTest, ReleaseKeyTest) {
 
   context_->SetEatKey(false);
   context_->AddCommitAction("b");
-  input_method_auralinux_->DispatchKeyEvent(key);
+  key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("compositionend");
   test_result_->ExpectAction("textinput:b");
@@ -722,7 +747,8 @@ TEST_F(InputMethodAuraLinuxTest, ReleaseKeyTest) {
   test_result_->Verify();
 
   context_->AddCommitAction("c");
-  input_method_auralinux_->DispatchKeyEvent(key);
+  key = key_new;
+  input_method_auralinux_->DispatchKeyEvent(&key);
 
   test_result_->ExpectAction("textinput:c");
   test_result_->ExpectAction("keydown:65");

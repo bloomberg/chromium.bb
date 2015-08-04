@@ -108,8 +108,7 @@ void NativeWidgetViewManager::OnViewInputEvent(mojo::View* view,
 
   if (ui_event->IsKeyEvent()) {
     window_tree_host_->GetInputMethod()->DispatchKeyEvent(
-        *static_cast<ui::KeyEvent*>(ui_event.get()));
-    ui_event->StopPropagation();
+        static_cast<ui::KeyEvent*>(ui_event.get()));
   } else {
     window_tree_host_->SendEventToProcessor(ui_event.get());
   }

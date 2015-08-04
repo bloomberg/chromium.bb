@@ -73,10 +73,10 @@ class TestableInputMethodChromeOS : public InputMethodChromeOS {
   };
 
   // Overridden from InputMethodChromeOS:
-  void ProcessKeyEventPostIME(const ui::KeyEvent& key_event,
+  void ProcessKeyEventPostIME(ui::KeyEvent* key_event,
                               bool handled) override {
     InputMethodChromeOS::ProcessKeyEventPostIME(key_event, handled);
-    process_key_event_post_ime_args_.event = &key_event;
+    process_key_event_post_ime_args_.event = key_event;
     process_key_event_post_ime_args_.handled = handled;
     ++process_key_event_post_ime_call_count_;
   }
@@ -236,9 +236,12 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
   }
 
   // Overridden from ui::internal::InputMethodDelegate:
-  bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override {
-    dispatched_key_event_ = event;
-    return stop_propagation_post_ime_;
+  ui::EventDispatchDetails DispatchKeyEventPostIME(
+      ui::KeyEvent* event) override {
+    dispatched_key_event_ = *event;
+    if (stop_propagation_post_ime_)
+      event->StopPropagation();
+    return ui::EventDispatchDetails();
   }
 
   // Overridden from ui::TextInputClient:
@@ -883,7 +886,7 @@ TEST_F(InputMethodChromeOSKeyEventTest, KeyEventDelayResponseTest) {
   // Do key event.
   input_type_ = TEXT_INPUT_TYPE_TEXT;
   ime_->OnTextInputTypeChanged(this);
-  ime_->DispatchKeyEvent(event);
+  ime_->DispatchKeyEvent(&event);
 
   // Check before state.
   const ui::KeyEvent* key_event =
@@ -921,7 +924,7 @@ TEST_F(InputMethodChromeOSKeyEventTest, MultiKeyEventDelayResponseTest) {
   ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_B, kFlags);
 
   // Do key event.
-  ime_->DispatchKeyEvent(event);
+  ime_->DispatchKeyEvent(&event);
   const ui::KeyEvent* key_event =
       mock_ime_engine_handler_->last_processed_key_event();
   EXPECT_EQ(ui::VKEY_B, key_event->key_code());
@@ -933,7 +936,7 @@ TEST_F(InputMethodChromeOSKeyEventTest, MultiKeyEventDelayResponseTest) {
   // Do key event again.
   ui::KeyEvent event2(ui::ET_KEY_PRESSED, ui::VKEY_C, kFlags);
 
-  ime_->DispatchKeyEvent(event2);
+  ime_->DispatchKeyEvent(&event2);
   const ui::KeyEvent* key_event2 =
       mock_ime_engine_handler_->last_processed_key_event();
   EXPECT_EQ(ui::VKEY_C, key_event2->key_code());
@@ -987,7 +990,7 @@ TEST_F(InputMethodChromeOSKeyEventTest, StopPropagationTest) {
   stop_propagation_post_ime_ = true;
   ui::KeyEvent eventA(ui::ET_KEY_PRESSED, ui::VKEY_A, EF_NONE);
   eventA.set_character(L'A');
-  ime_->DispatchKeyEvent(eventA);
+  ime_->DispatchKeyEvent(&eventA);
   mock_ime_engine_handler_->last_passed_callback().Run(false);
 
   const ui::KeyEvent* key_event =
@@ -997,7 +1000,7 @@ TEST_F(InputMethodChromeOSKeyEventTest, StopPropagationTest) {
 
   // Do key event with event not being stopped propagation.
   stop_propagation_post_ime_ = false;
-  ime_->DispatchKeyEvent(eventA);
+  ime_->DispatchKeyEvent(&eventA);
   mock_ime_engine_handler_->last_passed_callback().Run(false);
 
   key_event = mock_ime_engine_handler_->last_processed_key_event();

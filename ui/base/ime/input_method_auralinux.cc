@@ -17,8 +17,7 @@ InputMethodAuraLinux::InputMethodAuraLinux(
     : text_input_type_(TEXT_INPUT_TYPE_NONE),
       is_sync_mode_(false),
       composition_changed_(false),
-      suppress_next_result_(false),
-      destroyed_ptr_(nullptr) {
+      suppress_next_result_(false) {
   SetDelegate(delegate);
   context_ =
       LinuxInputMethodContextFactory::instance()->CreateInputMethodContext(
@@ -29,8 +28,6 @@ InputMethodAuraLinux::InputMethodAuraLinux(
 }
 
 InputMethodAuraLinux::~InputMethodAuraLinux() {
-  if (destroyed_ptr_)
-    *destroyed_ptr_ = true;
 }
 
 LinuxInputMethodContext* InputMethodAuraLinux::GetContextForTesting(
@@ -46,13 +43,15 @@ bool InputMethodAuraLinux::OnUntranslatedIMEMessage(
   return false;
 }
 
-bool InputMethodAuraLinux::DispatchKeyEvent(const ui::KeyEvent& event) {
-  DCHECK(event.type() == ET_KEY_PRESSED || event.type() == ET_KEY_RELEASED);
+void InputMethodAuraLinux::DispatchKeyEvent(ui::KeyEvent* event) {
+  DCHECK(event->type() == ET_KEY_PRESSED || event->type() == ET_KEY_RELEASED);
   DCHECK(system_toplevel_window_focused());
 
   // If no text input client, do nothing.
-  if (!GetTextInputClient())
-    return DispatchKeyEventPostIME(event);
+  if (!GetTextInputClient()) {
+    ignore_result(DispatchKeyEventPostIME(event));
+    return;
+  }
 
   suppress_next_result_ = false;
   composition_changed_ = false;
@@ -63,29 +62,25 @@ bool InputMethodAuraLinux::DispatchKeyEvent(const ui::KeyEvent& event) {
     base::AutoReset<bool> flipper(&is_sync_mode_, true);
     if (text_input_type_ != TEXT_INPUT_TYPE_NONE &&
         text_input_type_ != TEXT_INPUT_TYPE_PASSWORD) {
-      filtered = context_->DispatchKeyEvent(event);
+      filtered = context_->DispatchKeyEvent(*event);
     } else {
-      filtered = context_simple_->DispatchKeyEvent(event);
+      filtered = context_simple_->DispatchKeyEvent(*event);
     }
   }
 
-  bool destroyed = false;
-  bool handled = false;
-  if (event.type() == ui::ET_KEY_PRESSED && filtered) {
-    {
-      base::AutoReset<bool*> auto_reset(&destroyed_ptr_, &destroyed);
-      if (NeedInsertChar())
-        handled = DispatchKeyEventPostIME(event);
-      else if (HasInputMethodResult())
-        handled = SendFakeProcessKeyEvent(event.flags());
-      if (destroyed)
-        return true;
-    }
+  ui::EventDispatchDetails details;
+  if (event->type() == ui::ET_KEY_PRESSED && filtered) {
+    if (NeedInsertChar())
+      details = DispatchKeyEventPostIME(event);
+    else if (HasInputMethodResult())
+      details = SendFakeProcessKeyEvent(event);
+    if (details.dispatcher_destroyed)
+      return;
     // If the KEYDOWN is stopped propagation (e.g. triggered an accelerator),
     // don't InsertChar/InsertText to the input field.
-    if (handled) {
+    if (event->stopped_propagation() || details.target_destroyed) {
       ResetContext();
-      return true;
+      return;
     }
 
     // Don't send VKEY_PROCESSKEY event if there is no result text or
@@ -95,12 +90,13 @@ bool InputMethodAuraLinux::DispatchKeyEvent(const ui::KeyEvent& event) {
     // keydown/keypress/keyup event without an initial 229 keydown event.
   }
 
+  bool should_stop_propagation = false;
   TextInputClient* client = GetTextInputClient();
   // Processes the result text before composition for sync mode.
   if (!result_text_.empty()) {
     if (filtered && NeedInsertChar()) {
       for (const auto ch : result_text_)
-        client->InsertChar(ch, event.flags());
+        client->InsertChar(ch, event->flags());
     } else {
       // If |filtered| is false, that means the IME wants to commit some text
       // but still release the key to the application. For example, Korean IME
@@ -110,6 +106,7 @@ bool InputMethodAuraLinux::DispatchKeyEvent(const ui::KeyEvent& event) {
       // keydown event once.
       client->InsertText(result_text_);
     }
+    should_stop_propagation = true;
   }
 
   if (composition_changed_ && !IsTextInputTypeNone()) {
@@ -119,6 +116,7 @@ bool InputMethodAuraLinux::DispatchKeyEvent(const ui::KeyEvent& event) {
       client->SetCompositionText(composition_);
     else if (result_text_.empty())
       client->ClearCompositionText();
+    should_stop_propagation = true;
   }
 
   // Makes sure the cached composition is cleared after committing any text or
@@ -127,17 +125,15 @@ bool InputMethodAuraLinux::DispatchKeyEvent(const ui::KeyEvent& event) {
     composition_.Clear();
 
   if (!filtered) {
-    {
-      base::AutoReset<bool*> auto_reset(&destroyed_ptr_, &destroyed);
-      handled = DispatchKeyEventPostIME(event);
-      if (destroyed)
-        return true;
+    details = DispatchKeyEventPostIME(event);
+    if (details.dispatcher_destroyed) {
+      if (should_stop_propagation)
+        event->StopPropagation();
+      return;
     }
-    if (handled) {
+    if (event->stopped_propagation() || details.target_destroyed) {
       ResetContext();
-      return true;
-    }
-    if (event.type() == ui::ET_KEY_PRESSED) {
+    } else if (event->type() == ui::ET_KEY_PRESSED) {
       // If a key event was not filtered by |context_| or |context_simple_|,
       // then it means the key event didn't generate any result text. For some
       // cases, the key event may still generate a valid character, eg. a
@@ -146,13 +142,15 @@ bool InputMethodAuraLinux::DispatchKeyEvent(const ui::KeyEvent& event) {
       // TextInputClient::InsertChar().
       // Note: don't use |client| and use GetTextInputClient() here because
       // DispatchKeyEventPostIME may cause the current text input client change.
-      base::char16 ch = event.GetCharacter();
+      base::char16 ch = event->GetCharacter();
       if (ch && GetTextInputClient())
-        GetTextInputClient()->InsertChar(ch, event.flags());
+        GetTextInputClient()->InsertChar(ch, event->flags());
+      should_stop_propagation = true;
     }
   }
 
-  return true;
+  if (should_stop_propagation)
+    event->StopPropagation();
 }
 
 void InputMethodAuraLinux::UpdateContextFocusState() {
@@ -248,8 +246,12 @@ void InputMethodAuraLinux::OnCommit(const base::string16& text) {
   } else if (!IsTextInputTypeNone()) {
     // If we are not handling key event, do not bother sending text result if
     // the focused text input client does not support text input.
-    SendFakeProcessKeyEvent(0);
-    GetTextInputClient()->InsertText(text);
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_PROCESSKEY, 0);
+    ui::EventDispatchDetails details = SendFakeProcessKeyEvent(&event);
+    if (details.dispatcher_destroyed)
+      return;
+    if (!event.stopped_propagation() && !details.target_destroyed)
+      GetTextInputClient()->InsertText(text);
     composition_.Clear();
   }
 }
@@ -263,8 +265,12 @@ void InputMethodAuraLinux::OnPreeditChanged(
     if (!composition_.text.empty() || !composition_text.text.empty())
       composition_changed_ = true;
   } else {
-    SendFakeProcessKeyEvent(0);
-    GetTextInputClient()->SetCompositionText(composition_text);
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_PROCESSKEY, 0);
+    ui::EventDispatchDetails details = SendFakeProcessKeyEvent(&event);
+    if (details.dispatcher_destroyed)
+      return;
+    if (!event.stopped_propagation() && !details.target_destroyed)
+      GetTextInputClient()->SetCompositionText(composition_text);
   }
 
   composition_ = composition_text;
@@ -282,8 +288,12 @@ void InputMethodAuraLinux::OnPreeditEnd() {
   } else {
     TextInputClient* client = GetTextInputClient();
     if (client && client->HasCompositionText()) {
-      SendFakeProcessKeyEvent(0);
-      client->ClearCompositionText();
+      ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_PROCESSKEY, 0);
+      ui::EventDispatchDetails details = SendFakeProcessKeyEvent(&event);
+      if (details.dispatcher_destroyed)
+        return;
+      if (!event.stopped_propagation() && !details.target_destroyed)
+        client->ClearCompositionText();
     }
     composition_.Clear();
   }
@@ -333,9 +343,13 @@ bool InputMethodAuraLinux::NeedInsertChar() const {
           result_text_.length() == 1);
 }
 
-bool InputMethodAuraLinux::SendFakeProcessKeyEvent(int flags) const {
-  return DispatchKeyEventPostIME(
-      KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_PROCESSKEY, flags));
+ui::EventDispatchDetails InputMethodAuraLinux::SendFakeProcessKeyEvent(
+    ui::KeyEvent* event) const {
+  KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_PROCESSKEY, event->flags());
+  ui::EventDispatchDetails details = DispatchKeyEventPostIME(&key_event);
+  if (key_event.stopped_propagation())
+    event->StopPropagation();
+  return details;
 }
 
 void InputMethodAuraLinux::ConfirmCompositionText() {

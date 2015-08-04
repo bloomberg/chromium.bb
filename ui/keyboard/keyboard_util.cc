@@ -327,7 +327,7 @@ bool SendKeyEvent(const std::string type,
         dom_code,
         modifiers);
     if (input_method) {
-      input_method->DispatchKeyEvent(event);
+      input_method->DispatchKeyEvent(&event);
     } else {
       ui::EventDispatchDetails details =
           host->event_processor()->OnEventFromSource(&event);

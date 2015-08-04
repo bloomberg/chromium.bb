@@ -324,7 +324,7 @@ bool InputMethodEngine::SendKeyEvents(
         ui::EventTimeForNow());
     base::AutoReset<const ui::KeyEvent*> reset_sent_key(&sent_key_event_,
                                                         &ui_event);
-    input_method->DispatchKeyEvent(ui_event);
+    input_method->DispatchKeyEvent(&ui_event);
   }
 
   return true;

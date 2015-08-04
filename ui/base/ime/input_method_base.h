@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/ui_base_ime_export.h"
+#include "ui/events/event_dispatcher.h"
 
 namespace gfx {
 class Rect;
@@ -76,7 +77,8 @@ class UI_BASE_IME_EXPORT InputMethodBase
 
   // Convenience method to call delegate_->DispatchKeyEventPostIME().
   // Returns true if the event was processed
-  bool DispatchKeyEventPostIME(const ui::KeyEvent& event) const;
+  ui::EventDispatchDetails DispatchKeyEventPostIME(
+      ui::KeyEvent* event) const;
 
   // Convenience method to notify all observers of TextInputClient changes.
   void NotifyTextInputStateChanged(const TextInputClient* client);

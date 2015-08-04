@@ -144,7 +144,8 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void SetSharedInputMethod(ui::InputMethod* input_method);
 
   // Overridden from ui::internal::InputMethodDelegate:
-  bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override;
+  ui::EventDispatchDetails DispatchKeyEventPostIME(
+      ui::KeyEvent* event) override;
 
   // Returns the EventSource responsible for dispatching events to the window
   // tree.

@@ -18,7 +18,7 @@ class InputMethodMandoline : public ui::InputMethodBase {
   // Overridden from ui::InputMethod:
   bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                 NativeEventResult* result) override;
-  bool DispatchKeyEvent(const ui::KeyEvent& event) override;
+  void DispatchKeyEvent(ui::KeyEvent* event) override;
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
   void CancelComposition(const ui::TextInputClient* client) override;
   void OnInputLocaleChanged() override;

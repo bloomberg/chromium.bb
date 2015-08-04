@@ -172,7 +172,7 @@ class VIEWS_EXPORT BridgedNativeWidget
   bool window_visible() { return window_visible_; }
 
   // Overridden from ui::internal::InputMethodDelegate:
-  bool DispatchKeyEventPostIME(const ui::KeyEvent& key) override;
+  ui::EventDispatchDetails DispatchKeyEventPostIME(ui::KeyEvent* key) override;
 
  private:
   friend class test::BridgedNativeWidgetTestApi;

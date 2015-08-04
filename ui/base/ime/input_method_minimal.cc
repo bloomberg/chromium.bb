@@ -23,23 +23,24 @@ bool InputMethodMinimal::OnUntranslatedIMEMessage(
   return false;
 }
 
-bool InputMethodMinimal::DispatchKeyEvent(const ui::KeyEvent& event) {
-  DCHECK(event.type() == ET_KEY_PRESSED || event.type() == ET_KEY_RELEASED);
+void InputMethodMinimal::DispatchKeyEvent(ui::KeyEvent* event) {
+  DCHECK(event->type() == ET_KEY_PRESSED || event->type() == ET_KEY_RELEASED);
 
   // If no text input client, do nothing.
-  if (!GetTextInputClient())
-    return DispatchKeyEventPostIME(event);
+  if (!GetTextInputClient()) {
+    ignore_result(DispatchKeyEventPostIME(event));
+    return;
+  }
 
   // Insert the character.
-  const bool handled = DispatchKeyEventPostIME(event);
-  if (event.type() == ET_KEY_PRESSED && GetTextInputClient()) {
-    const uint16 ch = event.GetCharacter();
+  ignore_result(DispatchKeyEventPostIME(event));
+  if (event->type() == ET_KEY_PRESSED && GetTextInputClient()) {
+    const uint16 ch = event->GetCharacter();
     if (ch) {
-      GetTextInputClient()->InsertChar(ch, event.flags());
-      return true;
+      GetTextInputClient()->InsertChar(ch, event->flags());
+      event->StopPropagation();
     }
   }
-  return handled;
 }
 
 void InputMethodMinimal::OnCaretBoundsChanged(const TextInputClient* client) {}

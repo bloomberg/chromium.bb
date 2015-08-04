@@ -174,7 +174,8 @@ class ASH_EXPORT WindowTreeHostManager
   void PostDisplayConfigurationChange() override;
 
   // ui::internal::InputMethodDelegate overrides:
-  bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override;
+  ui::EventDispatchDetails DispatchKeyEventPostIME(
+      ui::KeyEvent* event) override;
 
   InputMethodEventHandler* input_method_event_handler() {
     return input_method_event_handler_.get();

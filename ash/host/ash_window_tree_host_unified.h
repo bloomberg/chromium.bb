@@ -65,7 +65,8 @@ class AshWindowTreeHostUnified : public AshWindowTreeHost,
   void OnWindowDestroying(aura::Window* window) override;
 
   // ui::internal::InputMethodDelegate:
-  bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override;
+  ui::EventDispatchDetails DispatchKeyEventPostIME(
+      ui::KeyEvent* event) override;
 
   std::vector<AshWindowTreeHost*> mirroring_hosts_;
 

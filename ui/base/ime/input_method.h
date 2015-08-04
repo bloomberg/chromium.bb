@@ -91,8 +91,7 @@ class InputMethod {
   // dispatched back to the caller via
   // ui::InputMethodDelegate::DispatchKeyEventPostIME(), once it's processed by
   // the input method. It should only be called by a message dispatcher.
-  // Returns true if the event was processed.
-  virtual bool DispatchKeyEvent(const ui::KeyEvent& event) = 0;
+  virtual void DispatchKeyEvent(ui::KeyEvent* event) = 0;
 
   // Called by the focused client whenever its text input type is changed.
   // Before calling this method, the focused client must confirm or clear

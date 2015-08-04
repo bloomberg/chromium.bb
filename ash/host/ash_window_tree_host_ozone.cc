@@ -49,7 +49,8 @@ class AshWindowTreeHostOzone : public AshWindowTreeHost,
   void DispatchEvent(ui::Event* event) override;
 
   // ui::internal::InputMethodDelegate:
-  bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override;
+  ui::EventDispatchDetails DispatchKeyEventPostIME(
+      ui::KeyEvent* event) override;
 
   // Temporarily disable the tap-to-click feature. Used on CrOS.
   void SetTapToClickPaused(bool state);
@@ -137,16 +138,14 @@ void AshWindowTreeHostOzone::DispatchEvent(ui::Event* event) {
   SendEventToProcessor(event);
 }
 
-bool AshWindowTreeHostOzone::DispatchKeyEventPostIME(
-    const ui::KeyEvent& event) {
-  ui::KeyEvent event_copy(event);
+ui::EventDispatchDetails AshWindowTreeHostOzone::DispatchKeyEventPostIME(
+    ui::KeyEvent* event) {
   input_method_handler()->SetPostIME(true);
   ui::EventDispatchDetails details =
-      event_processor()->OnEventFromSource(&event_copy);
-  if (details.dispatcher_destroyed)
-    return true;
-  input_method_handler()->SetPostIME(false);
-  return event_copy.stopped_propagation();
+      event_processor()->OnEventFromSource(event);
+  if (!details.dispatcher_destroyed)
+    input_method_handler()->SetPostIME(false);
+  return details;
 }
 
 void AshWindowTreeHostOzone::SetTapToClickPaused(bool state) {

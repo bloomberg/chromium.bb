@@ -38,7 +38,7 @@ class UI_BASE_IME_EXPORT MockInputMethod
   void SetFocusedTextInputClient(TextInputClient* client) override;
   void DetachTextInputClient(TextInputClient* client) override;
   TextInputClient* GetTextInputClient() const override;
-  bool DispatchKeyEvent(const ui::KeyEvent& event) override;
+  void DispatchKeyEvent(ui::KeyEvent* event) override;
   void OnTextInputTypeChanged(const TextInputClient* client) override;
   void OnCaretBoundsChanged(const TextInputClient* client) override;
   void CancelComposition(const TextInputClient* client) override;

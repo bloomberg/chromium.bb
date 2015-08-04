@@ -73,7 +73,7 @@ class MockInputMethod : public ui::InputMethodBase {
   // Overridden from InputMethod:
   bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                 NativeEventResult* result) override;
-  bool DispatchKeyEvent(const ui::KeyEvent& key) override;
+  void DispatchKeyEvent(ui::KeyEvent* key) override;
   void OnTextInputTypeChanged(const ui::TextInputClient* client) override;
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override {}
   void CancelComposition(const ui::TextInputClient* client) override;
@@ -141,19 +141,21 @@ bool MockInputMethod::OnUntranslatedIMEMessage(const base::NativeEvent& event,
   return false;
 }
 
-bool MockInputMethod::DispatchKeyEvent(const ui::KeyEvent& key) {
+void MockInputMethod::DispatchKeyEvent(ui::KeyEvent* key) {
   // Checks whether the key event is from EventGenerator on Windows which will
   // generate key event for WM_CHAR.
   // The MockInputMethod will insert char on WM_KEYDOWN so ignore WM_CHAR here.
-  if (key.is_char() && key.HasNativeEvent())
-    return true;
+  if (key->is_char() && key->HasNativeEvent())
+    return;
 
   bool handled = !IsTextInputTypeNone() && HasComposition();
   ClearStates();
   if (handled) {
-    DCHECK(!key.is_char());
-    ui::KeyEvent mock_key(ui::ET_KEY_PRESSED, ui::VKEY_PROCESSKEY, key.flags());
-    DispatchKeyEventPostIME(mock_key);
+    DCHECK(!key->is_char());
+    ui::KeyEvent mock_key(ui::ET_KEY_PRESSED,
+                          ui::VKEY_PROCESSKEY,
+                          key->flags());
+    DispatchKeyEventPostIME(&mock_key);
   } else {
     DispatchKeyEventPostIME(key);
   }
@@ -167,15 +169,14 @@ bool MockInputMethod::DispatchKeyEvent(const ui::KeyEvent& key) {
         client->SetCompositionText(composition_);
       else
         client->ClearCompositionText();
-    } else if (key.type() == ui::ET_KEY_PRESSED) {
-      base::char16 ch = key.GetCharacter();
+    } else if (key->type() == ui::ET_KEY_PRESSED) {
+      base::char16 ch = key->GetCharacter();
       if (ch)
-        client->InsertChar(ch, key.flags());
+        client->InsertChar(ch, key->flags());
     }
   }
 
   ClearComposition();
-  return true;
 }
 
 void MockInputMethod::OnTextInputTypeChanged(
@@ -484,7 +485,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     // TODO(shuchen): making EventGenerator support input method and using
     // EventGenerator here. crbug.com/512315.
     ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags);
-    input_method_->DispatchKeyEvent(event);
+    input_method_->DispatchKeyEvent(&event);
 #endif
   }
 
@@ -508,7 +509,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
       // For unicode characters, assume they come from IME rather than the
       // keyboard. So they are dispatched directly to the input method.
       ui::KeyEvent event(ch, ui::VKEY_UNKNOWN, ui::EF_NONE);
-      input_method_->DispatchKeyEvent(event);
+      input_method_->DispatchKeyEvent(&event);
     }
   }
 

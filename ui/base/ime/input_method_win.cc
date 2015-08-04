@@ -33,14 +33,8 @@ InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
       enabled_(false),
       is_candidate_popup_open_(false),
       composing_window_handle_(NULL),
-      suppress_next_char_(false),
-      destroyed_ptr_(nullptr) {
+      suppress_next_char_(false) {
   SetDelegate(delegate);
-}
-
-InputMethodWin::~InputMethodWin() {
-  if (destroyed_ptr_)
-    *destroyed_ptr_ = true;
 }
 
 void InputMethodWin::OnFocus() {
@@ -104,16 +98,20 @@ bool InputMethodWin::OnUntranslatedIMEMessage(
   return !!handled;
 }
 
-bool InputMethodWin::DispatchKeyEvent(const ui::KeyEvent& event) {
-  if (!event.HasNativeEvent())
-    return DispatchFabricatedKeyEvent(event);
+void InputMethodWin::DispatchKeyEvent(ui::KeyEvent* event) {
+  if (!event->HasNativeEvent()) {
+    DispatchFabricatedKeyEvent(event);
+    return;
+  }
 
-  const base::NativeEvent& native_key_event = event.native_event();
+  const base::NativeEvent& native_key_event = event->native_event();
   if (native_key_event.message == WM_CHAR) {
     BOOL handled;
     OnChar(native_key_event.hwnd, native_key_event.message,
            native_key_event.wParam, native_key_event.lParam, &handled);
-    return !!handled;  // Don't send WM_CHAR for post event processing.
+    if (handled)
+      event->StopPropagation();
+    return;
   }
   // Handles ctrl-shift key to change text direction and layout alignment.
   if (ui::IMM32Manager::IsRTLKeyboardLayoutInstalled() &&
@@ -138,13 +136,9 @@ bool InputMethodWin::DispatchKeyEvent(const ui::KeyEvent& event) {
     }
   }
 
-  bool destroyed = false;
-  base::AutoReset<bool*> auto_reset(&destroyed_ptr_, &destroyed);
-  bool handled = DispatchKeyEventPostIME(event);
-  if (destroyed)
-    return true;
-  suppress_next_char_ = handled;
-  return handled;
+  ui::EventDispatchDetails details = DispatchKeyEventPostIME(event);
+  if (!details.dispatcher_destroyed)
+    suppress_next_char_ = event->stopped_propagation();
 }
 
 void InputMethodWin::OnTextInputTypeChanged(const TextInputClient* client) {
@@ -591,20 +585,20 @@ bool InputMethodWin::IsWindowFocused(const TextInputClient* client) const {
       GetActiveWindow() == toplevel_window_handle_;
 }
 
-bool InputMethodWin::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
-  if (event.is_char()) {
+void InputMethodWin::DispatchFabricatedKeyEvent(ui::KeyEvent* event) {
+  if (event->is_char()) {
     if (suppress_next_char_) {
       suppress_next_char_ = false;
-      return true;
+      return;
     }
     if (GetTextInputClient()) {
       GetTextInputClient()->InsertChar(
-          static_cast<base::char16>(event.key_code()),
+          static_cast<base::char16>(event->key_code()),
           ui::GetModifiersFromKeyState());
-      return true;
+      return;
     }
   }
-  return DispatchKeyEventPostIME(event);
+  ignore_result(DispatchKeyEventPostIME(event));
 }
 
 void InputMethodWin::ConfirmCompositionText() {

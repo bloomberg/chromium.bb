@@ -862,7 +862,8 @@ void WindowTreeHostManager::PostDisplayConfigurationChange() {
   UpdateMouseLocationAfterDisplayChange();
 }
 
-bool WindowTreeHostManager::DispatchKeyEventPostIME(const ui::KeyEvent& event) {
+ui::EventDispatchDetails WindowTreeHostManager::DispatchKeyEventPostIME(
+    ui::KeyEvent* event) {
   // Getting the active root window to dispatch the event. This isn't
   // significant as the event will be sent to the window resolved by
   // aura::client::FocusClient which is FocusController in ash.

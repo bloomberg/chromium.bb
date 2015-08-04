@@ -104,12 +104,12 @@ void InputMethodBase::OnInputMethodChanged() const {
     client->OnInputMethodChanged();
 }
 
-bool InputMethodBase::DispatchKeyEventPostIME(
-    const ui::KeyEvent& event) const {
-  if (!delegate_)
-    return false;
-
-  return delegate_->DispatchKeyEventPostIME(event);
+ui::EventDispatchDetails InputMethodBase::DispatchKeyEventPostIME(
+    ui::KeyEvent* event) const {
+  ui::EventDispatchDetails details;
+  if (delegate_)
+    details = delegate_->DispatchKeyEventPostIME(event);
+  return details;
 }
 
 void InputMethodBase::NotifyTextInputStateChanged(

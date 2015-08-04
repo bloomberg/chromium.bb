@@ -40,8 +40,8 @@ TextInputClient* MockInputMethod::GetTextInputClient() const {
   return text_input_client_;
 }
 
-bool MockInputMethod::DispatchKeyEvent(const ui::KeyEvent& event) {
-  return delegate_->DispatchKeyEventPostIME(event);
+void MockInputMethod::DispatchKeyEvent(ui::KeyEvent* event) {
+  ignore_result(delegate_->DispatchKeyEventPostIME(event));
 }
 
 void MockInputMethod::OnFocus() {

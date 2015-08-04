@@ -39,7 +39,8 @@ class ASH_EXPORT AshRemoteWindowTreeHostWin
   void UpdateRootWindowSize(const gfx::Size& host_size) override;
 
   // ui::internal::InputMethodDelegate:
-  bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override;
+  ui::EventDispatchDetails DispatchKeyEventPostIME(
+      ui::KeyEvent* event) override;
 
   TransformerHelper transformer_helper_;
 

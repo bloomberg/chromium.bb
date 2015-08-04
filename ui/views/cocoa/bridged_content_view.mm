@@ -172,7 +172,7 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
   if (DispatchEventToMenu(hostedView_->GetWidget(), event.key_code()))
     return;
 
-  hostedView_->GetWidget()->GetInputMethod()->DispatchKeyEvent(event);
+  hostedView_->GetWidget()->GetInputMethod()->DispatchKeyEvent(&event);
 }
 
 - (void)handleAction:(int)commandId
@@ -193,7 +193,7 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
 
   // Generate a synthetic event with the keycode toolkit-views expects.
   ui::KeyEvent event(ui::ET_KEY_PRESSED, keyCode, domCode, eventFlags);
-  hostedView_->GetWidget()->GetInputMethod()->DispatchKeyEvent(event);
+  hostedView_->GetWidget()->GetInputMethod()->DispatchKeyEvent(&event);
 }
 
 - (void)undo:(id)sender {
