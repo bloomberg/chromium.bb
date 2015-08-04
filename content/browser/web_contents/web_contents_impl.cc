@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -3882,6 +3883,7 @@ void WebContentsImpl::UpdateState(RenderViewHost* rvh,
 
   NavigationEntryImpl* new_entry = controller_.GetEntryWithUniqueID(
       rvhi->nav_entry_id());
+  CHECK(new_entry);
 
   if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
     // TODO(creis): We can't properly update state for cross-process subframes
@@ -3889,7 +3891,23 @@ void WebContentsImpl::UpdateState(RenderViewHost* rvh,
     // method.
     entry = new_entry;
   } else {
-    DCHECK_EQ(entry, new_entry);
+    base::debug::SetCrashKeyValue("pageid", base::IntToString(page_id));
+    base::debug::SetCrashKeyValue("navuniqueid",
+                                  base::IntToString(rvhi->nav_entry_id()));
+    base::debug::SetCrashKeyValue(
+        "oldindex", base::IntToString(controller_.GetIndexOfEntry(entry)));
+    base::debug::SetCrashKeyValue(
+        "newindex", base::IntToString(controller_.GetIndexOfEntry(new_entry)));
+    base::debug::SetCrashKeyValue(
+        "lastcommittedindex",
+        base::IntToString(controller_.GetLastCommittedEntryIndex()));
+    base::debug::SetCrashKeyValue("oldurl", entry->GetURL().spec());
+    base::debug::SetCrashKeyValue("newurl", new_entry->GetURL().spec());
+    base::debug::SetCrashKeyValue(
+        "updatedvalue", page_state.GetTopLevelUrlStringTemporaryForBug369661());
+    base::debug::SetCrashKeyValue("oldvalue", entry->GetURL().spec());
+    base::debug::SetCrashKeyValue("newvalue", new_entry->GetURL().spec());
+    CHECK_EQ(entry, new_entry);
   }
 
   if (page_state == entry->GetPageState())
@@ -4069,7 +4087,28 @@ void WebContentsImpl::UpdateTitle(RenderFrameHost* render_frame_host,
       static_cast<RenderViewHostImpl*>(render_frame_host->GetRenderViewHost());
   NavigationEntryImpl* new_entry = controller_.GetEntryWithUniqueID(
       rvhi->nav_entry_id());
-  DCHECK_EQ(entry, new_entry);
+
+  base::debug::SetCrashKeyValue("pageid", base::IntToString(page_id));
+  base::debug::SetCrashKeyValue("navuniqueid",
+                                base::IntToString(rvhi->nav_entry_id()));
+  base::debug::SetCrashKeyValue(
+      "oldindex", base::IntToString(controller_.GetIndexOfEntry(entry)));
+  base::debug::SetCrashKeyValue(
+      "newindex", base::IntToString(controller_.GetIndexOfEntry(new_entry)));
+  base::debug::SetCrashKeyValue(
+      "lastcommittedindex",
+      base::IntToString(controller_.GetLastCommittedEntryIndex()));
+  base::debug::SetCrashKeyValue("oldurl",
+                                entry ? entry->GetURL().spec() : "-nullptr-");
+  base::debug::SetCrashKeyValue(
+      "newurl", new_entry ? new_entry->GetURL().spec() : "-nullptr-");
+  base::debug::SetCrashKeyValue("updatedvalue", base::UTF16ToUTF8(title));
+  base::debug::SetCrashKeyValue(
+      "oldvalue", entry ? base::UTF16ToUTF8(entry->GetTitle()) : "-nullptr-");
+  base::debug::SetCrashKeyValue(
+      "newvalue",
+      new_entry ? base::UTF16ToUTF8(new_entry->GetTitle()) : "-nullptr-");
+  CHECK_EQ(entry, new_entry);
 
   // We can handle title updates when we don't have an entry in
   // UpdateTitleForEntry, but only if the update is from the current RVH.
