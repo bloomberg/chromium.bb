@@ -3,7 +3,6 @@ isherman@chromium.org
 
 # For NSS logic.
 per-file nss_*=engedy@chromium.org
-per-file nss_*=isherman@chromium.org
 
 # For security review of IPC message files.
 per-file *_messages*.h=set noparent
