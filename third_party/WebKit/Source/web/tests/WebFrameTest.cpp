@@ -7443,13 +7443,20 @@ TEST_F(WebFrameSwapTest, WindowOpenOnRemoteFrame)
     mainFrame()->firstChild()->swap(remoteFrame);
     remoteFrame->setReplicatedOrigin(WebSecurityOrigin::createFromString("http://127.0.0.1"));
 
-    KURL destination = toKURL("data:text/html:destination");
     ASSERT_TRUE(mainFrame()->isWebLocalFrame());
     ASSERT_TRUE(mainFrame()->firstChild()->isWebRemoteFrame());
     LocalDOMWindow* mainWindow = toWebLocalFrameImpl(mainFrame())->frame()->localDOMWindow();
+
+    KURL destination = toKURL("data:text/html:destination");
     mainWindow->open(destination.string(), "frame1", "", mainWindow, mainWindow);
     ASSERT_FALSE(remoteClient.lastRequest().isNull());
     EXPECT_EQ(remoteClient.lastRequest().url(), WebURL(destination));
+
+    // Pointing a named frame to an empty URL should just return a reference to
+    // the frame's window without navigating it.
+    RefPtrWillBeRawPtr<DOMWindow> result = mainWindow->open("", "frame1", "", mainWindow, mainWindow);
+    EXPECT_EQ(remoteClient.lastRequest().url(), WebURL(destination));
+    EXPECT_EQ(result, toCoreFrame(remoteFrame)->domWindow());
 
     reset();
 }

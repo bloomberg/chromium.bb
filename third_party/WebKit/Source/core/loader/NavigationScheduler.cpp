@@ -321,8 +321,6 @@ void NavigationScheduler::scheduleLocationChange(Document* originDocument, const
 {
     if (!shouldScheduleNavigation(url))
         return;
-    if (url.isEmpty())
-        return;
 
     replacesCurrentItem = replacesCurrentItem || mustReplaceCurrentItem(m_frame);
 
