@@ -195,9 +195,16 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   //     the same browsing session as it was originally submitted (as we may
   //     not have the necessary information to classify the form at that time)
   //     so it bypasses the cache and doesn't log the same quality UMA metrics.
+  // |login_form_signature| may be empty. It is non-empty when the user fills
+  // and submits a login form using a generated password. In this case,
+  // |login_form_signature| should be set to the submitted form's signature.
+  // Note that in this case, |form.FormSignature()| gives the signature for the
+  // registration form on which the password was generated, rather than the
+  // submitted form's signature.
   virtual bool UploadPasswordForm(const FormData& form,
                                   const base::string16& username_field,
-                                  const ServerFieldType& pasword_type);
+                                  const ServerFieldType& pasword_type,
+                                  const std::string& login_form_signature);
 
   // Resets cache.
   virtual void Reset();

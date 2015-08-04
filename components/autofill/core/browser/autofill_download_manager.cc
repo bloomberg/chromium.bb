@@ -113,10 +113,11 @@ bool AutofillDownloadManager::StartQueryRequest(
 bool AutofillDownloadManager::StartUploadRequest(
     const FormStructure& form,
     bool form_was_autofilled,
-    const ServerFieldTypeSet& available_field_types) {
+    const ServerFieldTypeSet& available_field_types,
+    const std::string& login_form_signature) {
   std::string form_xml;
   if (!form.EncodeUploadRequest(available_field_types, form_was_autofilled,
-                                &form_xml))
+                                login_form_signature, &form_xml))
     return false;
 
   if (next_upload_request_ > base::Time::Now()) {

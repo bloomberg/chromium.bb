@@ -76,9 +76,16 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   // there was no actual trip over the wire.
   // |available_field_types| should contain the types for which we have data
   // stored on the local client.
+  // |login_form_signature| may be empty. It is non-empty when the user fills
+  // and submits a login form using a generated password. In this case,
+  // |login_form_signature| should be set to the submitted form's signature.
+  // Note that in this case, |form.FormSignature()| gives the signature for the
+  // registration form on which the password was generated, rather than the
+  // submitted form's signature.
   bool StartUploadRequest(const FormStructure& form,
                           bool form_was_autofilled,
-                          const ServerFieldTypeSet& available_field_types);
+                          const ServerFieldTypeSet& available_field_types,
+                          const std::string& login_form_signature);
 
  private:
   friend class AutofillDownloadTest;

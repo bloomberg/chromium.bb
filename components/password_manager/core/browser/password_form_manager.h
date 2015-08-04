@@ -340,9 +340,16 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Helper function to delegate uploading to the AutofillManager. Returns true
   // on success.
+  // |login_form_signature| may be empty.  It is non-empty when the user fills
+  // and submits a login form using a generated password. In this case,
+  // |login_form_signature| should be set to the submitted form's signature.
+  // Note that in this case, |form.FormSignature()| gives the signature for the
+  // registration form on which the password was generated, rather than the
+  // submitted form's signature.
   bool UploadPasswordForm(const autofill::FormData& form_data,
                           const base::string16& username_field,
-                          const autofill::ServerFieldType& password_type);
+                          const autofill::ServerFieldType& password_type,
+                          const std::string& login_form_signature);
 
   // Create pending credentials from provisionally saved form and forms received
   // from password store.

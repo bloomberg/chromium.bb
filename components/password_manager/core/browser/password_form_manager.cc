@@ -571,8 +571,8 @@ void PasswordFormManager::SaveAsNewLogin(bool reset_preferred_login) {
   // checked to see if they are valid account creation forms.
   if (!pending_credentials_.blacklisted_by_user) {
     if (pending_credentials_.times_used == 0) {
-      UploadPasswordForm(
-          pending_credentials_.form_data, base::string16(), autofill::PASSWORD);
+      UploadPasswordForm(pending_credentials_.form_data, base::string16(),
+                         autofill::PASSWORD, std::string());
     } else {
       SendAutofillVotes(observed_form_, &pending_credentials_);
     }
@@ -748,9 +748,9 @@ void PasswordFormManager::SendAutofillVotes(
     // in cases where we currently save the wrong username isn't great.
     // TODO(gcasto): Determine if generation should be offered in this case.
     if (pending->times_used == 1 && selected_username_.empty()) {
-      if (UploadPasswordForm(pending->form_data,
-                             pending->username_element,
-                             autofill::ACCOUNT_CREATION_PASSWORD)) {
+      if (UploadPasswordForm(pending->form_data, pending->username_element,
+                             autofill::ACCOUNT_CREATION_PASSWORD,
+                             observed_structure.FormSignature())) {
         pending->generation_upload_status =
             autofill::PasswordForm::POSITIVE_SIGNAL_SENT;
       }
@@ -760,9 +760,9 @@ void PasswordFormManager::SendAutofillVotes(
     // A signal was sent that this was an account creation form, but the
     // credential is now being used on the same form again. This cancels out
     // the previous vote.
-    if (UploadPasswordForm(pending->form_data,
-                           base::string16(),
-                           autofill::NOT_ACCOUNT_CREATION_PASSWORD)) {
+    if (UploadPasswordForm(pending->form_data, base::string16(),
+                           autofill::NOT_ACCOUNT_CREATION_PASSWORD,
+                           std::string())) {
       pending->generation_upload_status =
           autofill::PasswordForm::NEGATIVE_SIGNAL_SENT;
     }
@@ -772,7 +772,8 @@ void PasswordFormManager::SendAutofillVotes(
 bool PasswordFormManager::UploadPasswordForm(
     const autofill::FormData& form_data,
     const base::string16& username_field,
-    const autofill::ServerFieldType& password_type) {
+    const autofill::ServerFieldType& password_type,
+    const std::string& login_form_signature) {
   autofill::AutofillManager* autofill_manager =
       client_->GetAutofillManagerForMainFrame();
   if (!autofill_manager)
@@ -781,7 +782,7 @@ bool PasswordFormManager::UploadPasswordForm(
   // Note that this doesn't guarantee that the upload succeeded, only that
   // |form_data| is considered uploadable.
   bool success = autofill_manager->UploadPasswordForm(
-      form_data, username_field, password_type);
+      form_data, username_field, password_type, login_form_signature);
   UMA_HISTOGRAM_BOOLEAN("PasswordGeneration.UploadStarted", success);
   return success;
 }

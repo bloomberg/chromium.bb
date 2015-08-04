@@ -50,6 +50,7 @@ const char kAttributeName[] = "name";
 const char kAttributeSignature[] = "signature";
 const char kAttributeControlType[] = "type";
 const char kAttributeAutocomplete[] = "autocomplete";
+const char kAttributeLoginFormSignature[] = "loginformsignature";
 const char kClientVersion[] = "6.1.1715.1442/en (GGLL)";
 const char kXMLDeclaration[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 const char kXMLElementAutofillQuery[] = "autofillquery";
@@ -454,6 +455,7 @@ void FormStructure::DetermineHeuristicTypes() {
 bool FormStructure::EncodeUploadRequest(
     const ServerFieldTypeSet& available_field_types,
     bool form_was_autofilled,
+    const std::string& login_form_signature,
     std::string* encoded_xml) const {
   DCHECK(ShouldBeCrowdsourced());
 
@@ -483,6 +485,11 @@ bool FormStructure::EncodeUploadRequest(
                                form_was_autofilled ? "true" : "false");
   autofill_request_xml.SetAttr(buzz::QName(kAttributeDataPresent),
                                EncodeFieldTypes(available_field_types).c_str());
+
+  if (!login_form_signature.empty()) {
+    autofill_request_xml.SetAttr(buzz::QName(kAttributeLoginFormSignature),
+                                 login_form_signature);
+  }
 
   if (!EncodeFormRequest(FormStructure::UPLOAD, &autofill_request_xml))
     return false;  // Malformed form, skip it.

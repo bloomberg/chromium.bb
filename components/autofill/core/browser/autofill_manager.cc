@@ -945,14 +945,16 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form) {
   ServerFieldTypeSet non_empty_types;
   personal_data_->GetNonEmptyTypes(&non_empty_types);
 
-  download_manager_->StartUploadRequest(submitted_form, was_autofilled,
-                                        non_empty_types);
+  download_manager_->StartUploadRequest(
+      submitted_form, was_autofilled, non_empty_types,
+      std::string() /* login_form_signature */);
 }
 
 bool AutofillManager::UploadPasswordForm(
     const FormData& form,
     const base::string16& username_field,
-    const ServerFieldType& password_type) {
+    const ServerFieldType& password_type,
+    const std::string& login_form_signature) {
   FormStructure form_structure(form);
 
   if (!ShouldUploadForm(form_structure))
@@ -996,9 +998,9 @@ bool AutofillManager::UploadPasswordForm(
   if (!download_manager_)
     return false;
 
-  return download_manager_->StartUploadRequest(form_structure,
-                                               false /* was_autofilled */,
-                                               available_field_types);
+  return download_manager_->StartUploadRequest(
+      form_structure, false /* was_autofilled */, available_field_types,
+      login_form_signature);
 }
 
 void AutofillManager::Reset() {

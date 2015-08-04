@@ -67,10 +67,11 @@ class MockAutofillManager : public autofill::AutofillManager {
                       autofill::PersonalDataManager* data_manager)
       : AutofillManager(driver, client, data_manager) {}
 
-  MOCK_METHOD3(UploadPasswordForm,
+  MOCK_METHOD4(UploadPasswordForm,
                bool(const autofill::FormData&,
                     const base::string16&,
-                    const autofill::ServerFieldType&));
+                    const autofill::ServerFieldType&,
+                    const std::string&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillManager);
@@ -288,14 +289,23 @@ class PasswordFormManagerTest : public testing::Test {
 
     form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
     form_manager.OnGetPasswordStoreResults(result.Pass());
-
+    std::string expected_login_signature;
+    autofill::FormStructure observed_structure(observed_form_data);
+    autofill::FormStructure pending_structure(saved_match()->form_data);
+    if (observed_structure.FormSignature() !=
+            pending_structure.FormSignature() &&
+        times_used == 0) {
+      expected_login_signature = observed_structure.FormSignature();
+    }
     if (field_type) {
-      EXPECT_CALL(
-          *client_with_store.mock_driver()->mock_autofill_manager(),
-          UploadPasswordForm(_, username_vote, *field_type)).Times(1);
+      EXPECT_CALL(*client_with_store.mock_driver()->mock_autofill_manager(),
+                  UploadPasswordForm(_, username_vote, *field_type,
+                                     expected_login_signature))
+          .Times(1);
     } else {
       EXPECT_CALL(*client_with_store.mock_driver()->mock_autofill_manager(),
-                  UploadPasswordForm(_, _, _)).Times(0);
+                  UploadPasswordForm(_, _, _, _))
+          .Times(0);
     }
     form_manager.ProvisionallySave(
         form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
@@ -437,7 +447,7 @@ TEST_F(PasswordFormManagerTest, PSLMatchedCredentialsMetadataUpdated) {
   PasswordForm actual_saved_form;
 
   EXPECT_CALL(*(client_with_store.mock_driver()->mock_autofill_manager()),
-              UploadPasswordForm(_, _, autofill::ACCOUNT_CREATION_PASSWORD))
+              UploadPasswordForm(_, _, autofill::ACCOUNT_CREATION_PASSWORD, _))
       .Times(1);
   EXPECT_CALL(*mock_store(), AddLogin(_))
       .WillOnce(SaveArg<0>(&actual_saved_form));
@@ -1270,9 +1280,8 @@ TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
   form_to_save.password_value = ASCIIToUTF16("1234");
 
   EXPECT_CALL(*client_with_store.mock_driver()->mock_autofill_manager(),
-              UploadPasswordForm(_,
-                                 base::string16(),
-                                 autofill::PASSWORD)).Times(1);
+              UploadPasswordForm(_, base::string16(), autofill::PASSWORD, _))
+      .Times(1);
   form_manager.ProvisionallySave(
       form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   form_manager.Save();
@@ -1285,7 +1294,8 @@ TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
   SimulateMatchingPhase(&blacklist_form_manager, RESULT_NO_MATCH);
 
   EXPECT_CALL(*client_with_store.mock_driver()->mock_autofill_manager(),
-              UploadPasswordForm(_, _, autofill::PASSWORD)).Times(0);
+              UploadPasswordForm(_, _, autofill::PASSWORD, _))
+      .Times(0);
   blacklist_form_manager.PermanentlyBlacklist();
   Mock::VerifyAndClearExpectations(&blacklist_form_manager);
 }
