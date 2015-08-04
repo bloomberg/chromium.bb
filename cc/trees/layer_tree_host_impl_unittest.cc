@@ -1135,6 +1135,64 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
   }
 }
 
+TEST_F(LayerTreeHostImplTest, ViewportScrollOrder) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.invert_viewport_scroll_order = true;
+  CreateHostImpl(settings,
+                 CreateOutputSurface());
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.25f, 4.f);
+
+  const gfx::Size content_size(1000, 1000);
+  const gfx::Size viewport_size(500, 500);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
+
+  LayerImpl* outer_scroll_layer = host_impl_->OuterViewportScrollLayer();
+  LayerImpl* inner_scroll_layer = host_impl_->InnerViewportScrollLayer();
+
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(500, 500),
+      outer_scroll_layer->MaxScrollOffset());
+
+  host_impl_->ScrollBegin(gfx::Point(250, 250), InputHandler::GESTURE);
+  host_impl_->PinchGestureBegin();
+  host_impl_->PinchGestureUpdate(2.f, gfx::Point(0, 0));
+  host_impl_->PinchGestureEnd();
+  host_impl_->ScrollEnd();
+
+  // Sanity check - we're zoomed in, starting from the origin.
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(0, 0),
+      outer_scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(0, 0),
+      inner_scroll_layer->CurrentScrollOffset());
+
+  // Scroll down - only the inner viewport should scroll.
+  host_impl_->ScrollBegin(gfx::Point(0, 0), InputHandler::GESTURE);
+  host_impl_->ScrollBy(gfx::Point(0, 0), gfx::Vector2dF(100.f, 100.f));
+  host_impl_->ScrollEnd();
+
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(50, 50),
+      inner_scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(0, 0),
+      outer_scroll_layer->CurrentScrollOffset());
+
+  // Scroll down - outer viewport should start scrolling after the inner is at
+  // its maximum.
+  host_impl_->ScrollBegin(gfx::Point(0, 0), InputHandler::GESTURE);
+  host_impl_->ScrollBy(gfx::Point(0, 0), gfx::Vector2dF(1000.f, 1000.f));
+  host_impl_->ScrollEnd();
+
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(250, 250),
+      inner_scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(300, 300),
+      outer_scroll_layer->CurrentScrollOffset());
+}
+
 TEST_F(LayerTreeHostImplTest, ScrollDuringPinchScrollsInnerViewport) {
   LayerTreeSettings settings = DefaultSettings();
   settings.invert_viewport_scroll_order = true;

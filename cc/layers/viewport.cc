@@ -43,9 +43,17 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
 
   gfx::Vector2dF pending_content_delta = content_delta;
 
-  pending_content_delta -=
-      host_impl_->ScrollLayer(OuterScrollLayer(), pending_content_delta,
-                              viewport_point, is_direct_manipulation);
+  bool invert_scroll_order =
+      host_impl_->settings().invert_viewport_scroll_order;
+  LayerImpl* primary_layer =
+      invert_scroll_order ? InnerScrollLayer() : OuterScrollLayer();
+  LayerImpl* secondary_layer =
+      invert_scroll_order ? OuterScrollLayer() : InnerScrollLayer();
+
+  pending_content_delta -= host_impl_->ScrollLayer(primary_layer,
+                                                   pending_content_delta,
+                                                   viewport_point,
+                                                   is_direct_manipulation);
 
   ScrollResult result;
 
@@ -54,9 +62,10 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
   if (gfx::ToRoundedVector2d(pending_content_delta).IsZero()) {
     result.consumed_delta = delta;
   } else {
-    pending_content_delta -=
-        host_impl_->ScrollLayer(InnerScrollLayer(), pending_content_delta,
-                                viewport_point, is_direct_manipulation);
+    pending_content_delta -= host_impl_->ScrollLayer(secondary_layer,
+                                                     pending_content_delta,
+                                                     viewport_point,
+                                                     is_direct_manipulation);
     result.consumed_delta = delta - AdjustOverscroll(pending_content_delta);
   }
 
