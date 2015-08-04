@@ -26,12 +26,14 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/sync_driver/data_type_error_handler.h"
 #include "components/sync_driver/data_type_error_handler_mock.h"
@@ -2576,6 +2578,31 @@ TEST_F(ProfileSyncServiceBookmarkTest, UpdateThenAdd) {
   // Then simulate the add call arriving late.
   change_processor_->BookmarkNodeAdded(model_, model_->bookmark_bar_node(), 0);
   ExpectModelMatch();
+}
+
+// Verify operations on native nodes that shouldn't be propagated to Sync.
+TEST_F(ProfileSyncServiceBookmarkTest, TestUnsupportedNodes) {
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
+  StartSync();
+
+  // Initial number of bookmarks on the sync side.
+  int sync_bookmark_count = GetSyncBookmarkCount();
+
+  // Create a bookmark under managed_node() permanent folder.
+  bookmarks::ManagedBookmarkService* managed_bookmark_service =
+      ManagedBookmarkServiceFactory::GetForProfile(&profile_);
+  const BookmarkNode* folder = managed_bookmark_service->managed_node();
+  const BookmarkNode* node = model_->AddURL(
+      folder, 0, base::ASCIIToUTF16("node"), GURL("http://www.node.com/"));
+
+  // Verify that these changes are ignored by Sync.
+  EXPECT_EQ(sync_bookmark_count, GetSyncBookmarkCount());
+  int64 sync_id = model_associator_->GetSyncIdFromChromeId(node->id());
+  EXPECT_EQ(syncer::kInvalidId, sync_id);
+
+  // Verify that Sync ignores deleting this node.
+  model_->Remove(node);
+  EXPECT_EQ(sync_bookmark_count, GetSyncBookmarkCount());
 }
 
 }  // namespace

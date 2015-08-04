@@ -144,8 +144,6 @@ void BookmarkChangeProcessor::RemoveSyncNodeHierarchy(
       error_handler()->OnSingleDataTypeUnrecoverableError(error);
       return;
     }
-    // Check that |topmost| has been unlinked.
-    DCHECK(topmost->is_root());
     RemoveSyncNodeHierarchy(&trans, &topmost_sync_node, model_associator_);
   }
 
@@ -314,10 +312,8 @@ int64 BookmarkChangeProcessor::CreateSyncNode(const BookmarkNode* parent,
 
   // Actually create the node with the appropriate initial position.
   if (!PlaceSyncNode(CREATE, parent, index, trans, &sync_child, associator)) {
-    syncer::SyncError error(FROM_HERE,
-                            syncer::SyncError::DATATYPE_ERROR,
-                            "Failed ot creat sync node.",
-                            syncer::BOOKMARKS);
+    syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
+                            "Failed to create sync node.", syncer::BOOKMARKS);
     error_handler->OnSingleDataTypeUnrecoverableError(error);
     return syncer::kInvalidId;
   }
@@ -331,14 +327,23 @@ int64 BookmarkChangeProcessor::CreateSyncNode(const BookmarkNode* parent,
   return sync_child.GetId();
 }
 
+void BookmarkChangeProcessor::OnWillRemoveBookmarks(BookmarkModel* model,
+                                                    const BookmarkNode* parent,
+                                                    int old_index,
+                                                    const BookmarkNode* node) {
+  if (CanSyncNode(node))
+    RemoveSyncNodeHierarchy(node);
+}
+
 void BookmarkChangeProcessor::BookmarkNodeRemoved(
     BookmarkModel* model,
     const BookmarkNode* parent,
-    int index,
+    int old_index,
     const BookmarkNode* node,
-    const std::set<GURL>& removed_urls) {
-  if (CanSyncNode(node))
-    RemoveSyncNodeHierarchy(node);
+    const std::set<GURL>& no_longer_bookmarked) {
+  // All the work should have already been done in OnWillRemoveBookmarks.
+  DCHECK_EQ(syncer::kInvalidId,
+            model_associator_->GetSyncIdFromChromeId(node->id()));
 }
 
 void BookmarkChangeProcessor::BookmarkAllUserNodesRemoved(
