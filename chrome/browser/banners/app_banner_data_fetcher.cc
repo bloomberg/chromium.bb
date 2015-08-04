@@ -5,6 +5,7 @@
 #include "chrome/browser/banners/app_banner_data_fetcher.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/banners/app_banner_debug_log.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/manifest/manifest_icon_selector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "components/rappor/rappor_utils.h"
 #include "content/public/browser/browser_context.h"
@@ -284,7 +286,9 @@ void AppBannerDataFetcher::OnDidGetManifest(
   app_title_ = web_app_data_.name.string();
 
   if (IsWebAppInstalled(web_contents->GetBrowserContext(),
-                        manifest.start_url)) {
+                        manifest.start_url) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kBypassAppBannerEngagementChecks)) {
     OutputDeveloperNotShownMessage(web_contents, kBannerAlreadyAdded);
     Cancel();
     return;
