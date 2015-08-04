@@ -42,6 +42,7 @@ const char kAndroidOneIdentifier[] = "sprout";
 const char kQuicFieldTrial[] = "DataReductionProxyUseQuic";
 
 const char kLoFiFieldTrial[] = "DataCompressionProxyLoFi";
+const char kLoFiFlagFieldTrial[] = "DataCompressionProxyLoFiFlag";
 
 const char kConfigServiceFieldTrial[] = "DataReductionProxyConfigService";
 const char kConfigServiceURLParam[] = "url";
@@ -72,6 +73,10 @@ bool IsIncludedInAndroidOnePromoFieldTrial(const char* build_fingerprint) {
 
 std::string GetLoFiFieldTrialName() {
   return kLoFiFieldTrial;
+}
+
+std::string GetLoFiFlagFieldTrialName() {
+  return kLoFiFlagFieldTrial;
 }
 
 bool IsLoFiAlwaysOnViaFlags() {

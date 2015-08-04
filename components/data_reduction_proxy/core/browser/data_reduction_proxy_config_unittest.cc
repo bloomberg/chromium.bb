@@ -1012,34 +1012,65 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
                                   event_creator());
   variations::testing::ClearAllVariationParams();
   std::map<std::string, std::string> variation_params;
+  std::map<std::string, std::string> variation_params_flag;
 
-  int rtt_msec = 120;
-  char rtt[20];
-  base::strings::SafeSPrintf(rtt, "%d", rtt_msec);
-  variation_params["rtt_msec"] = rtt;
+  variation_params["rtt_msec"] = "120";
+  variation_params_flag["rtt_msec"] = "121";
 
   variation_params["kbps"] = "240";
+  variation_params_flag["kbps"] = "241";
 
-  int hysteresis_sec = 360;
-  char hysteresis[20];
-  base::strings::SafeSPrintf(hysteresis, "%d", hysteresis_sec);
-  variation_params["hysteresis_period_seconds"] = hysteresis;
+  variation_params["hysteresis_period_seconds"] = "360";
+  variation_params_flag["hysteresis_period_seconds"] = "361";
 
   variation_params["spurious_field"] = "480";
+  variation_params_flag["spurious_field"] = "481";
 
   ASSERT_TRUE(variations::AssociateVariationParams(
       params::GetLoFiFieldTrialName(), "Enabled", variation_params));
 
+  ASSERT_TRUE(variations::AssociateVariationParams(
+      params::GetLoFiFlagFieldTrialName(), "Enabled", variation_params_flag));
+
   base::FieldTrialList field_trial_list(nullptr);
   base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
                                          "Enabled");
+  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFlagFieldTrialName(),
+                                         "Enabled");
+
+  const struct {
+    bool lofi_flag_group;
+
+  } tests[] = {
+      {
+          false,
+      },
+      {
+          true,
+      },
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    int expected_rtt_msec = 120;
+    int expected_kbps = 240;
+    int expected_hysteresis_sec = 360;
+
+    if (tests[i].lofi_flag_group) {
+      // LoFi flag field trial has higher priority than LoFi field trial.
+      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+          switches::kDataReductionProxyLoFi,
+          switches::kDataReductionProxyLoFiValueSlowConnectionsOnly);
+      expected_rtt_msec = 121;
+      expected_kbps = 241;
+      expected_hysteresis_sec = 361;
+    }
 
   config.PopulateAutoLoFiParams();
 
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(rtt_msec),
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(expected_rtt_msec),
             config.auto_lofi_minimum_rtt_);
-  EXPECT_EQ(240, config.auto_lofi_maximum_kbps_);
-  EXPECT_EQ(base::TimeDelta::FromSeconds(hysteresis_sec),
+  EXPECT_EQ(expected_kbps, config.auto_lofi_maximum_kbps_);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(expected_hysteresis_sec),
             config.auto_lofi_hysteresis_);
 
   std::map<std::string, std::string> network_quality_estimator_params;
@@ -1048,14 +1079,14 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
 
   // RTT is higher than threshold. Network is slow.
   test_network_quality_estimator.SetRTT(
-      base::TimeDelta::FromMilliseconds(rtt_msec + 1));
+      base::TimeDelta::FromMilliseconds(expected_rtt_msec + 1));
   EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
 
   // Network quality improved. RTT is lower than the threshold. However,
   // network should still be marked as slow because of hysteresis.
   test_network_quality_estimator.SetRTT(
-      base::TimeDelta::FromMilliseconds(rtt_msec - 1));
+      base::TimeDelta::FromMilliseconds(expected_rtt_msec - 1));
   EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
 
@@ -1063,13 +1094,14 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
   // Checking network quality afterwards should show that network is no longer
   // slow.
   config.network_quality_last_updated_ =
-      base::TimeTicks::Now() - base::TimeDelta::FromSeconds(hysteresis_sec + 1);
+      base::TimeTicks::Now() -
+      base::TimeDelta::FromSeconds(expected_hysteresis_sec + 1);
   EXPECT_FALSE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
 
   // Changing the RTT has no effect because of hysteresis.
   test_network_quality_estimator.SetRTT(
-      base::TimeDelta::FromMilliseconds(rtt_msec + 1));
+      base::TimeDelta::FromMilliseconds(expected_rtt_msec + 1));
   EXPECT_FALSE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
 
@@ -1077,6 +1109,7 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
   config.connection_type_ = net::NetworkChangeNotifier::CONNECTION_WIFI;
   EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
+  }
 }
 
 TEST_F(DataReductionProxyConfigTest, AutoLoFiParamsSlowConnectionsFlag) {

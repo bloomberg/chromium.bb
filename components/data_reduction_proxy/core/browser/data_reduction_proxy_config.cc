@@ -478,21 +478,25 @@ bool DataReductionProxyConfig::ShouldUseLoFiHeaderForRequests() const {
 }
 
 void DataReductionProxyConfig::PopulateAutoLoFiParams() {
+  std::string field_trial = params::GetLoFiFieldTrialName();
+
   if (params::IsLoFiSlowConnectionsOnlyViaFlags()) {
+    // Default parameters to use.
     auto_lofi_minimum_rtt_ = base::TimeDelta::FromMilliseconds(2000);
     auto_lofi_maximum_kbps_ = 0;
     auto_lofi_hysteresis_ = base::TimeDelta::FromSeconds(60);
-    return;
+    field_trial = params::GetLoFiFlagFieldTrialName();
   }
 
   if (!IsIncludedInLoFiControlFieldTrial() &&
-      !IsIncludedInLoFiEnabledFieldTrial()) {
+      !IsIncludedInLoFiEnabledFieldTrial() &&
+      !params::IsLoFiSlowConnectionsOnlyViaFlags()) {
     return;
   }
 
   uint64_t auto_lofi_minimum_rtt_msec;
-  std::string variation_value = variations::GetVariationParamValue(
-      params::GetLoFiFieldTrialName(), "rtt_msec");
+  std::string variation_value =
+      variations::GetVariationParamValue(field_trial, "rtt_msec");
   if (!variation_value.empty() &&
       base::StringToUint64(variation_value, &auto_lofi_minimum_rtt_msec)) {
     auto_lofi_minimum_rtt_ =
@@ -501,8 +505,7 @@ void DataReductionProxyConfig::PopulateAutoLoFiParams() {
   DCHECK_GE(auto_lofi_minimum_rtt_, base::TimeDelta());
 
   int32_t auto_lofi_maximum_kbps;
-  variation_value = variations::GetVariationParamValue(
-      params::GetLoFiFieldTrialName(), "kbps");
+  variation_value = variations::GetVariationParamValue(field_trial, "kbps");
   if (!variation_value.empty() &&
       base::StringToInt(variation_value, &auto_lofi_maximum_kbps)) {
     auto_lofi_maximum_kbps_ = auto_lofi_maximum_kbps;
@@ -511,7 +514,7 @@ void DataReductionProxyConfig::PopulateAutoLoFiParams() {
 
   uint32_t auto_lofi_hysteresis_period_seconds;
   variation_value = variations::GetVariationParamValue(
-      params::GetLoFiFieldTrialName(), "hysteresis_period_seconds");
+      field_trial, "hysteresis_period_seconds");
   if (!variation_value.empty() &&
       base::StringToUint(variation_value,
                          &auto_lofi_hysteresis_period_seconds)) {

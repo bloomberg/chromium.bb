@@ -70,6 +70,10 @@ bool IsIncludedInQuicFieldTrial();
 // Returns the name of the Lo-Fi field trial.
 std::string GetLoFiFieldTrialName();
 
+// Returns the name of the Lo-Fi field trial that configures LoFi flags when it
+// is force enabled through flags.
+std::string GetLoFiFlagFieldTrialName();
+
 std::string GetQuicFieldTrialName();
 
 // Returns true if this client is part of a field trial that allows Data Saver
