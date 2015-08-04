@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_NAVIGATION_OBSERVER_H_
-#define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_NAVIGATION_OBSERVER_H_
+#ifndef CHROME_BROWSER_UI_OMNIBOX_CHROME_OMNIBOX_NAVIGATION_OBSERVER_H_
+#define CHROME_BROWSER_UI_OMNIBOX_CHROME_OMNIBOX_NAVIGATION_OBSERVER_H_
 
 #include <string>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/omnibox_navigation_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -35,16 +36,15 @@ class URLRequestStatus;
 // (2) Omnibox navigations that complete successfully are added to the
 //     Shortcuts backend.
 //
+// Please see the class comment on the base class for important information
+// about the memory management of this object.
+//
 // TODO(pkasting): Probably NOTIFICATION_OMNIBOX_OPENED_URL should disappear and
 // everyone who listened to it should be triggered from this class instead.
-//
-// The memory management of this object is a bit tricky. The OmniboxEditModel
-// will create us and be responsible for us until we attach as an observer
-// after a pending load starts (it will delete us if this doesn't happen).
-// Once this pending load starts, we're responsible for deleting ourselves.
-class OmniboxNavigationObserver : public content::NotificationObserver,
-                                  public content::WebContentsObserver,
-                                  public net::URLFetcherDelegate {
+class ChromeOmniboxNavigationObserver : public OmniboxNavigationObserver,
+                                        public content::NotificationObserver,
+                                        public content::WebContentsObserver,
+                                        public net::URLFetcherDelegate {
  public:
   enum LoadState {
     LOAD_NOT_SEEN,
@@ -52,15 +52,15 @@ class OmniboxNavigationObserver : public content::NotificationObserver,
     LOAD_COMMITTED,
   };
 
-  OmniboxNavigationObserver(Profile* profile,
-                            const base::string16& text,
-                            const AutocompleteMatch& match,
-                            const AutocompleteMatch& alternate_nav_match);
-  ~OmniboxNavigationObserver() override;
+  ChromeOmniboxNavigationObserver(Profile* profile,
+                                  const base::string16& text,
+                                  const AutocompleteMatch& match,
+                                  const AutocompleteMatch& alternate_nav_match);
+  ~ChromeOmniboxNavigationObserver() override;
 
   LoadState load_state() const { return load_state_; }
 
-  // Called directly by OmniboxEditModel when an extension-related navigation
+  // Called directly by ChromeOmniboxClient when an extension-related navigation
   // occurs.  Such navigations don't trigger an immediate NAV_ENTRY_PENDING and
   // must be handled separately.
   void OnSuccessfulNavigation();
@@ -71,6 +71,9 @@ class OmniboxNavigationObserver : public content::NotificationObserver,
     FETCH_SUCCEEDED,
     FETCH_FAILED,
   };
+
+  // OmniboxNavigationObserver:
+  bool HasSeenPendingLoad() const override;
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -107,7 +110,7 @@ class OmniboxNavigationObserver : public content::NotificationObserver,
 
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(OmniboxNavigationObserver);
+  DISALLOW_COPY_AND_ASSIGN(ChromeOmniboxNavigationObserver);
 };
 
-#endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_NAVIGATION_OBSERVER_H_
+#endif  // CHROME_BROWSER_UI_OMNIBOX_CHROME_OMNIBOX_NAVIGATION_OBSERVER_H_

@@ -51,6 +51,7 @@ source_set("browser") {
     "omnibox_field_trial.h",
     "omnibox_log.cc",
     "omnibox_log.h",
+    "omnibox_navigation_observer.h",
     "omnibox_popup_model_observer.h",
     "omnibox_popup_view.h",
     "omnibox_pref_names.cc",

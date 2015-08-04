@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/omnibox/omnibox_navigation_observer.h"
+#include "chrome/browser/ui/omnibox/chrome_omnibox_navigation_observer.h"
 
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -30,7 +30,7 @@ namespace {
 // HTTP 2xx, 401, and 407 all indicate that the target address exists.
 bool ResponseCodeIndicatesSuccess(int response_code) {
   return ((response_code / 100) == 2) || (response_code == 401) ||
-      (response_code == 407);
+         (response_code == 407);
 }
 
 // Returns true if |final_url| doesn't represent an ISP hijack of
@@ -38,20 +38,19 @@ bool ResponseCodeIndicatesSuccess(int response_code) {
 bool IsValidNavigation(const GURL& original_url, const GURL& final_url) {
   const GURL& redirect_url(IntranetRedirectDetector::RedirectOrigin());
   return !redirect_url.is_valid() ||
-      net::registry_controlled_domains::SameDomainOrHost(
-          original_url, final_url,
-          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES) ||
-      !net::registry_controlled_domains::SameDomainOrHost(
-          final_url, redirect_url,
-          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+         net::registry_controlled_domains::SameDomainOrHost(
+             original_url, final_url,
+             net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES) ||
+         !net::registry_controlled_domains::SameDomainOrHost(
+             final_url, redirect_url,
+             net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
 }
 
 }  // namespace
 
+// ChromeOmniboxNavigationObserver --------------------------------------------
 
-// OmniboxNavigationObserver --------------------------------------------------
-
-OmniboxNavigationObserver::OmniboxNavigationObserver(
+ChromeOmniboxNavigationObserver::ChromeOmniboxNavigationObserver(
     Profile* profile,
     const base::string16& text,
     const AutocompleteMatch& match,
@@ -74,15 +73,18 @@ OmniboxNavigationObserver::OmniboxNavigationObserver(
                  content::NotificationService::AllSources());
 }
 
-OmniboxNavigationObserver::~OmniboxNavigationObserver() {
-}
+ChromeOmniboxNavigationObserver::~ChromeOmniboxNavigationObserver() {}
 
-void OmniboxNavigationObserver::OnSuccessfulNavigation() {
+void ChromeOmniboxNavigationObserver::OnSuccessfulNavigation() {
   if (shortcuts_backend_.get())
     shortcuts_backend_->AddOrUpdateShortcut(text_, match_);
 }
 
-void OmniboxNavigationObserver::Observe(
+bool ChromeOmniboxNavigationObserver::HasSeenPendingLoad() const {
+  return load_state_ != LOAD_NOT_SEEN;
+}
+
+void ChromeOmniboxNavigationObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -121,7 +123,7 @@ void OmniboxNavigationObserver::Observe(
   // DidStartNavigationToPendingEntry() will be called for this load as well.
 }
 
-void OmniboxNavigationObserver::DidStartNavigationToPendingEntry(
+void ChromeOmniboxNavigationObserver::DidStartNavigationToPendingEntry(
     const GURL& url,
     content::NavigationController::ReloadType reload_type) {
   if (load_state_ == LOAD_NOT_SEEN) {
@@ -133,7 +135,7 @@ void OmniboxNavigationObserver::DidStartNavigationToPendingEntry(
   }
 }
 
-void OmniboxNavigationObserver::DidFailProvisionalLoad(
+void ChromeOmniboxNavigationObserver::DidFailProvisionalLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
     int error_code,
@@ -143,7 +145,7 @@ void OmniboxNavigationObserver::DidFailProvisionalLoad(
     delete this;
 }
 
-void OmniboxNavigationObserver::NavigationEntryCommitted(
+void ChromeOmniboxNavigationObserver::NavigationEntryCommitted(
     const content::LoadCommittedDetails& load_details) {
   load_state_ = LOAD_COMMITTED;
   if (ResponseCodeIndicatesSuccess(load_details.http_status_code) &&
@@ -154,27 +156,28 @@ void OmniboxNavigationObserver::NavigationEntryCommitted(
     OnAllLoadingFinished();  // deletes |this|!
 }
 
-void OmniboxNavigationObserver::WebContentsDestroyed() {
+void ChromeOmniboxNavigationObserver::WebContentsDestroyed() {
   delete this;
 }
 
-void OmniboxNavigationObserver::OnURLFetchComplete(
+void ChromeOmniboxNavigationObserver::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK_EQ(fetcher_.get(), source);
   const net::URLRequestStatus& status = source->GetStatus();
   int response_code = source->GetResponseCode();
   fetch_state_ =
       (status.is_success() && ResponseCodeIndicatesSuccess(response_code)) ||
-      ((status.status() == net::URLRequestStatus::CANCELED) &&
-       ((response_code / 100) == 3) &&
-       IsValidNavigation(alternate_nav_match_.destination_url,
-                         source->GetURL())) ?
-          FETCH_SUCCEEDED : FETCH_FAILED;
+              ((status.status() == net::URLRequestStatus::CANCELED) &&
+               ((response_code / 100) == 3) &&
+               IsValidNavigation(alternate_nav_match_.destination_url,
+                                 source->GetURL()))
+          ? FETCH_SUCCEEDED
+          : FETCH_FAILED;
   if (load_state_ == LOAD_COMMITTED)
     OnAllLoadingFinished();  // deletes |this|!
 }
 
-void OmniboxNavigationObserver::OnAllLoadingFinished() {
+void ChromeOmniboxNavigationObserver::OnAllLoadingFinished() {
   if (fetch_state_ == FETCH_SUCCEEDED) {
     AlternateNavInfoBarDelegate::Create(
         web_contents(), text_, alternate_nav_match_, match_.destination_url);

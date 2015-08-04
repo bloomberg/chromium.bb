@@ -24,6 +24,12 @@ class TestOmniboxClient : public OmniboxClient {
       override {
     return make_scoped_ptr(new ChromeAutocompleteProviderClient(profile_));
   }
+  scoped_ptr<OmniboxNavigationObserver> CreateOmniboxNavigationObserver(
+      const base::string16& text,
+      const AutocompleteMatch& match,
+      const AutocompleteMatch& alternate_nav_match) override {
+    return nullptr;
+  }
   bool CurrentPageExists() const override { return true; }
   const GURL& GetURL() const override { return GURL::EmptyGURL(); }
   const base::string16& GetTitle() const override {
@@ -43,7 +49,8 @@ class TestOmniboxClient : public OmniboxClient {
   }
   bool ProcessExtensionKeyword(TemplateURL* template_url,
                                const AutocompleteMatch& match,
-                               WindowOpenDisposition disposition) override {
+                               WindowOpenDisposition disposition,
+                               OmniboxNavigationObserver* observer) override {
     return false;
   }
   void OnInputStateChanged() override {}

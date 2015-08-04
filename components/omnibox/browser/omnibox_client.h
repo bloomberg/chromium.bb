@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
+#include "components/omnibox/browser/omnibox_navigation_observer.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -39,6 +40,13 @@ class OmniboxClient {
   // Returns an AutocompleteProviderClient specific to the embedder context.
   virtual scoped_ptr<AutocompleteProviderClient>
   CreateAutocompleteProviderClient() = 0;
+
+  // Returns an OmniboxNavigationObserver specific to the embedder context. May
+  // return null if the embedder has no need to observe omnibox navigations.
+  virtual scoped_ptr<OmniboxNavigationObserver> CreateOmniboxNavigationObserver(
+      const base::string16& text,
+      const AutocompleteMatch& match,
+      const AutocompleteMatch& alternate_nav_match) = 0;
 
   // Returns whether there is any associated current page.  For example, during
   // startup or shutdown, the omnibox may exist but have no attached page.
@@ -78,10 +86,14 @@ class OmniboxClient {
 
   // Checks whether |template_url| is an extension keyword; if so, asks the
   // ExtensionOmniboxEventRouter to process |match| for it and returns true.
-  // Otherwise returns false.
+  // Otherwise returns false. |observer| is the OmniboxNavigationObserver
+  // that was created by CreateOmniboxNavigationObserver() for |match|; in some
+  // embedding contexts, processing an extension keyword involves invoking
+  // action on this observer.
   virtual bool ProcessExtensionKeyword(TemplateURL* template_url,
                                        const AutocompleteMatch& match,
-                                       WindowOpenDisposition disposition) = 0;
+                                       WindowOpenDisposition disposition,
+                                       OmniboxNavigationObserver* observer) = 0;
 
   // Called to notify clients that the omnibox input state has changed.
   virtual void OnInputStateChanged() = 0;

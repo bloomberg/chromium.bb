@@ -87,6 +87,7 @@
         'omnibox/browser/omnibox_field_trial.h',
         'omnibox/browser/omnibox_log.cc',
         'omnibox/browser/omnibox_log.h',
+        'omnibox/browser/omnibox_navigation_observer.h',
         'omnibox/browser/omnibox_popup_model_observer.h',
         'omnibox/browser/omnibox_popup_view.h',
         'omnibox/browser/omnibox_pref_names.cc',

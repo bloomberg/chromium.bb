@@ -24,7 +24,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "chrome/browser/ui/omnibox/omnibox_navigation_observer.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/common/pref_names.h"
@@ -39,6 +38,7 @@
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_log.h"
+#include "components/omnibox/browser/omnibox_navigation_observer.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/search_engines/template_url.h"
@@ -662,8 +662,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       ClassifyPage(), false, false, true, true, false,
       ChromeAutocompleteSchemeClassifier(profile_));
   scoped_ptr<OmniboxNavigationObserver> observer(
-      new OmniboxNavigationObserver(
-          profile_, input_text, match,
+      client_->CreateOmniboxNavigationObserver(
+          input_text, match,
           autocomplete_controller()->history_url_provider()->SuggestExactInput(
               alternate_input, alternate_nav_url,
               AutocompleteInput::HasHTTPScheme(input_text))));
@@ -736,9 +736,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       // keyword mode.
 
       // Don't increment usage count for extension keywords.
-      if (client_->ProcessExtensionKeyword(template_url, match,
-                                           disposition)) {
-        observer->OnSuccessfulNavigation();
+      if (client_->ProcessExtensionKeyword(template_url, match, disposition,
+                                           observer.get())) {
         if (disposition != NEW_BACKGROUND_TAB)
           view_->RevertAll();
         return;
@@ -789,7 +788,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
         match.destination_url, disposition,
         ui::PageTransitionFromInt(
             match.transition | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
-    if (observer->load_state() != OmniboxNavigationObserver::LOAD_NOT_SEEN)
+    if (observer && observer->HasSeenPendingLoad())
       ignore_result(observer.release());  // The observer will delete itself.
   }
 

@@ -26,6 +26,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
+#include "chrome/browser/ui/omnibox/chrome_omnibox_navigation_observer.h"
 #include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/instant_types.h"
@@ -130,6 +131,15 @@ ChromeOmniboxClient::CreateAutocompleteProviderClient() {
   return make_scoped_ptr(new ChromeAutocompleteProviderClient(profile_));
 }
 
+scoped_ptr<OmniboxNavigationObserver>
+ChromeOmniboxClient::CreateOmniboxNavigationObserver(
+    const base::string16& text,
+    const AutocompleteMatch& match,
+    const AutocompleteMatch& alternate_nav_match) {
+  return make_scoped_ptr(new ChromeOmniboxNavigationObserver(
+      profile_, text, match, alternate_nav_match));
+}
+
 bool ChromeOmniboxClient::CurrentPageExists() const {
   return (controller_->GetWebContents() != NULL);
 }
@@ -196,7 +206,8 @@ gfx::Image ChromeOmniboxClient::GetIconIfExtensionMatch(
 bool ChromeOmniboxClient::ProcessExtensionKeyword(
     TemplateURL* template_url,
     const AutocompleteMatch& match,
-    WindowOpenDisposition disposition) {
+    WindowOpenDisposition disposition,
+    OmniboxNavigationObserver* observer) {
   if (template_url->GetType() != TemplateURL::OMNIBOX_API_EXTENSION)
     return false;
 
@@ -212,6 +223,8 @@ bool ChromeOmniboxClient::ProcessExtensionKeyword(
       base::UTF16ToUTF8(match.fill_into_edit.substr(prefix_length)),
       disposition);
 
+  static_cast<ChromeOmniboxNavigationObserver*>(observer)
+      ->OnSuccessfulNavigation();
   return true;
 }
 
