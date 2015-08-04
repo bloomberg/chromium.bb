@@ -143,13 +143,13 @@ public:
     {
         if (!includeLogicalLeftEdge())
             return 0;
-        return isHorizontal() ? layoutObject().style(isFirstLineStyle())->borderLeftWidth() : layoutObject().style(isFirstLineStyle())->borderTopWidth();
+        return isHorizontal() ? lineLayoutItem().style(isFirstLineStyle())->borderLeftWidth() : lineLayoutItem().style(isFirstLineStyle())->borderTopWidth();
     }
     int borderLogicalRight() const
     {
         if (!includeLogicalRightEdge())
             return 0;
-        return isHorizontal() ? layoutObject().style(isFirstLineStyle())->borderRightWidth() : layoutObject().style(isFirstLineStyle())->borderBottomWidth();
+        return isHorizontal() ? lineLayoutItem().style(isFirstLineStyle())->borderRightWidth() : lineLayoutItem().style(isFirstLineStyle())->borderBottomWidth();
     }
     int paddingLogicalLeft() const
     {
@@ -233,7 +233,7 @@ public:
     LayoutRect logicalLayoutOverflowRect(LayoutUnit lineTop, LayoutUnit lineBottom) const
     {
         LayoutRect result = layoutOverflowRect(lineTop, lineBottom);
-        if (!layoutObject().isHorizontalWritingMode())
+        if (!lineLayoutItem().isHorizontalWritingMode())
             result = result.transposedRect();
         return result;
     }
@@ -259,7 +259,7 @@ public:
     LayoutRect logicalVisualOverflowRect(LayoutUnit lineTop, LayoutUnit lineBottom) const
     {
         LayoutRect result = visualOverflowRect(lineTop, lineBottom);
-        if (!layoutObject().isHorizontalWritingMode())
+        if (!lineLayoutItem().isHorizontalWritingMode())
             result = result.transposedRect();
         return result;
     }

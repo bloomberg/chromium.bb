@@ -23,6 +23,7 @@
 
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/api/SelectionState.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/text/TextDirection.h"
@@ -166,7 +167,9 @@ public:
     InlineBox* nextLeafChildIgnoringLineBreak() const;
     InlineBox* prevLeafChildIgnoringLineBreak() const;
 
+    // TODO(pilgrim) convert all callers to lineLayoutItem, replace m_layoutObject with m_lineLayoutItem, remove layoutObject()
     LayoutObject& layoutObject() const { return m_layoutObject; }
+    LineLayoutItem lineLayoutItem() const { return LineLayoutItem(&m_layoutObject); }
 
     InlineFlowBox* parent() const
     {
@@ -265,12 +268,12 @@ public:
 
     bool visibleToHitTestRequest(const HitTestRequest& request) const { return layoutObject().visibleToHitTestRequest(request); }
 
-    EVerticalAlign verticalAlign() const { return layoutObject().isText() ? ComputedStyle::initialVerticalAlign() : layoutObject().style(m_bitfields.firstLine())->verticalAlign(); }
+    EVerticalAlign verticalAlign() const { return lineLayoutItem().isText() ? ComputedStyle::initialVerticalAlign() : lineLayoutItem().style(m_bitfields.firstLine())->verticalAlign(); }
 
     // Use with caution! The type is not checked!
     LayoutBoxModelObject* boxModelObject() const
     {
-        if (!layoutObject().isText())
+        if (!lineLayoutItem().isText())
             return toLayoutBoxModelObject(&layoutObject());
         return 0;
     }
