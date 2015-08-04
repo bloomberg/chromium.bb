@@ -154,4 +154,11 @@ void AddSameCenterYConstraint(UIView* parentView,
                               UIView* subview1,
                               UIView* subview2);
 
+// Returns true if the main application window's rootViewController is a compact
+// iPad horizontal size class.
+bool IsCompactTablet();
+
+// Returns true if the horizontal |sizeClass| is compact and device is an iPad.
+bool IsCompactTabletSizeClass(UIUserInterfaceSizeClass sizeClass);
+
 #endif  // IOS_CHROME_BROWSER_UI_UIKIT_UI_UTIL_H_

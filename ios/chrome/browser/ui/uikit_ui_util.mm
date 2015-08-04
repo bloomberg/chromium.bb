@@ -484,3 +484,18 @@ void AddSameCenterYConstraint(UIView* parentView,
                                         multiplier:1
                                           constant:0]];
 }
+
+bool IsCompactTablet() {
+  if (base::ios::IsRunningOnIOS8OrLater()) {
+    UIViewController* rootController =
+        [UIApplication sharedApplication].keyWindow.rootViewController;
+    return IsCompactTabletSizeClass(
+        [rootController.traitCollection horizontalSizeClass]);
+  } else {
+    return IsCompactTabletSizeClass(UIUserInterfaceSizeClassRegular);
+  }
+}
+
+bool IsCompactTabletSizeClass(UIUserInterfaceSizeClass sizeClass) {
+  return IsIPadIdiom() && sizeClass == UIUserInterfaceSizeClassCompact;
+}
