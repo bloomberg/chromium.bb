@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/spdy/hpack_input_stream.h"
+#include "net/spdy/hpack/hpack_input_stream.h"
 
 #include <algorithm>
 
@@ -119,9 +119,8 @@ bool HpackInputStream::DecodeNextHuffmanString(const HpackHuffmanTable& table,
   if (encoded_size > buffer_.size())
     return false;
 
-  HpackInputStream bounded_reader(
-      max_string_literal_size_,
-      StringPiece(buffer_.data(), encoded_size));
+  HpackInputStream bounded_reader(max_string_literal_size_,
+                                  StringPiece(buffer_.data(), encoded_size));
   buffer_.remove_prefix(encoded_size);
 
   // HpackHuffmanTable will not decode beyond |max_string_literal_size_|.

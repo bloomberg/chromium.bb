@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/spdy/hpack_header_table.h"
+#include "net/spdy/hpack/hpack_header_table.h"
 
 #include <algorithm>
 #include <set>
@@ -11,8 +11,8 @@
 
 #include "base/basictypes.h"
 #include "base/macros.h"
-#include "net/spdy/hpack_constants.h"
-#include "net/spdy/hpack_entry.h"
+#include "net/spdy/hpack/hpack_constants.h"
+#include "net/spdy/hpack/hpack_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -25,8 +25,7 @@ namespace test {
 
 class HpackHeaderTablePeer {
  public:
-  explicit HpackHeaderTablePeer(HpackHeaderTable* table)
-      : table_(table) {}
+  explicit HpackHeaderTablePeer(HpackHeaderTable* table) : table_(table) {}
 
   const HpackHeaderTable::EntryTable& dynamic_entries() {
     return table_->dynamic_entries_;
@@ -46,21 +45,15 @@ class HpackHeaderTablePeer {
     }
     return result;
   }
-  size_t total_insertions() {
-    return table_->total_insertions_;
-  }
-  size_t dynamic_entries_count() {
-    return table_->dynamic_entries_.size();
-  }
+  size_t total_insertions() { return table_->total_insertions_; }
+  size_t dynamic_entries_count() { return table_->dynamic_entries_.size(); }
   size_t EvictionCountForEntry(StringPiece name, StringPiece value) {
     return table_->EvictionCountForEntry(name, value);
   }
   size_t EvictionCountToReclaim(size_t reclaim_size) {
     return table_->EvictionCountToReclaim(reclaim_size);
   }
-  void Evict(size_t count) {
-    return table_->Evict(count);
-  }
+  void Evict(size_t count) { return table_->Evict(count); }
 
   void AddDynamicEntry(StringPiece name, StringPiece value) {
     table_->dynamic_entries_.push_back(
@@ -203,8 +196,9 @@ TEST_F(HpackHeaderTableTest, EntryIndexing) {
 
   // Static entries are queryable by name & value.
   EXPECT_EQ(first_static_entry, table_.GetByName(first_static_entry->name()));
-  EXPECT_EQ(first_static_entry, table_.GetByNameAndValue(
-        first_static_entry->name(), first_static_entry->value()));
+  EXPECT_EQ(first_static_entry,
+            table_.GetByNameAndValue(first_static_entry->name(),
+                                     first_static_entry->value()));
 
   // Create a mix of entries which duplicate names, and names & values of both
   // dynamic and static entries.
@@ -244,8 +238,8 @@ TEST_F(HpackHeaderTableTest, EntryIndexing) {
   EXPECT_EQ(first_static_entry,
             table_.GetByNameAndValue(first_static_entry->name(),
                                      first_static_entry->value()));
-  EXPECT_EQ(entry2, table_.GetByNameAndValue(first_static_entry->name(),
-                                             "Value Four"));
+  EXPECT_EQ(entry2,
+            table_.GetByNameAndValue(first_static_entry->name(), "Value Four"));
   EXPECT_EQ(NULL, table_.GetByNameAndValue("key-1", "Not Present"));
   EXPECT_EQ(NULL, table_.GetByNameAndValue("not-present", "Value One"));
 
@@ -253,15 +247,15 @@ TEST_F(HpackHeaderTableTest, EntryIndexing) {
   // |entry2| remains queryable.
   peer_.Evict(1);
   EXPECT_EQ(first_static_entry,
-      table_.GetByNameAndValue(first_static_entry->name(),
-                               first_static_entry->value()));
-  EXPECT_EQ(entry2, table_.GetByNameAndValue(first_static_entry->name(),
-                                             "Value Four"));
+            table_.GetByNameAndValue(first_static_entry->name(),
+                                     first_static_entry->value()));
+  EXPECT_EQ(entry2,
+            table_.GetByNameAndValue(first_static_entry->name(), "Value Four"));
 
   // Evict |entry2|. Queries by its name & value are not found.
   peer_.Evict(1);
-  EXPECT_EQ(NULL, table_.GetByNameAndValue(first_static_entry->name(),
-                                           "Value Four"));
+  EXPECT_EQ(NULL,
+            table_.GetByNameAndValue(first_static_entry->name(), "Value Four"));
 }
 
 TEST_F(HpackHeaderTableTest, SetSizes) {
@@ -283,7 +277,7 @@ TEST_F(HpackHeaderTableTest, SetSizes) {
   // Changing SETTINGS_HEADER_TABLE_SIZE doesn't affect table_.max_size(),
   // iff SETTINGS_HEADER_TABLE_SIZE >= |max_size|.
   EXPECT_EQ(kDefaultHeaderTableSizeSetting, table_.settings_size_bound());
-  table_.SetSettingsHeaderTableSize(kDefaultHeaderTableSizeSetting*2);
+  table_.SetSettingsHeaderTableSize(kDefaultHeaderTableSizeSetting * 2);
   EXPECT_EQ(max_size, table_.max_size());
   table_.SetSettingsHeaderTableSize(max_size + 1);
   EXPECT_EQ(max_size, table_.max_size());
@@ -344,12 +338,12 @@ TEST_F(HpackHeaderTableTest, TryAddEntryBasic) {
 // size down to evict an entry one at a time. Make sure the eviction
 // happens as expected.
 TEST_F(HpackHeaderTableTest, SetMaxSize) {
-  HpackEntryVector entries = MakeEntriesOfTotalSize(
-      kDefaultHeaderTableSizeSetting / 2);
+  HpackEntryVector entries =
+      MakeEntriesOfTotalSize(kDefaultHeaderTableSizeSetting / 2);
   AddEntriesExpectNoEviction(entries);
 
-  for (HpackEntryVector::iterator it = entries.begin();
-       it != entries.end(); ++it) {
+  for (HpackEntryVector::iterator it = entries.begin(); it != entries.end();
+       ++it) {
     size_t expected_count = distance(it, entries.end());
     EXPECT_EQ(expected_count, peer_.dynamic_entries().size());
 
@@ -379,8 +373,8 @@ TEST_F(HpackHeaderTableTest, TryAddEntryEviction) {
       MakeEntryOfSize(table_.max_size() - survivor_entry->Size());
 
   // All dynamic entries but the first are to be evicted.
-  EXPECT_EQ(peer_.dynamic_entries().size() - 1, peer_.EvictionSet(
-      long_entry.name(), long_entry.value()).size());
+  EXPECT_EQ(peer_.dynamic_entries().size() - 1,
+            peer_.EvictionSet(long_entry.name(), long_entry.value()).size());
 
   const HpackEntry* new_entry =
       table_.TryAddEntry(long_entry.name(), long_entry.value());
@@ -399,8 +393,8 @@ TEST_F(HpackHeaderTableTest, TryAddTooLargeEntry) {
   const HpackEntry long_entry = MakeEntryOfSize(table_.max_size() + 1);
 
   // All entries are to be evicted.
-  EXPECT_EQ(peer_.dynamic_entries().size(), peer_.EvictionSet(
-      long_entry.name(), long_entry.value()).size());
+  EXPECT_EQ(peer_.dynamic_entries().size(),
+            peer_.EvictionSet(long_entry.name(), long_entry.value()).size());
 
   const HpackEntry* new_entry =
       table_.TryAddEntry(long_entry.name(), long_entry.value());

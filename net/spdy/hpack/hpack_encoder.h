@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
-#include "net/spdy/hpack_header_table.h"
-#include "net/spdy/hpack_output_stream.h"
+#include "net/spdy/hpack/hpack_header_table.h"
+#include "net/spdy/hpack/hpack_output_stream.h"
 #include "net/spdy/spdy_protocol.h"
 
 // An HpackEncoder encodes header sets as outlined in

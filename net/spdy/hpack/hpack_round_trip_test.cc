@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/rand_util.h"
-#include "net/spdy/hpack_constants.h"
-#include "net/spdy/hpack_decoder.h"
-#include "net/spdy/hpack_encoder.h"
+#include "net/spdy/hpack/hpack_constants.h"
+#include "net/spdy/hpack/hpack_decoder.h"
+#include "net/spdy/hpack/hpack_encoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -38,8 +38,8 @@ class HpackRoundTripTest : public ::testing::Test {
     string encoded;
     encoder_.EncodeHeaderSet(header_set, &encoded);
 
-    bool success = decoder_.HandleControlFrameHeadersData(
-        1, encoded.data(), encoded.size());
+    bool success = decoder_.HandleControlFrameHeadersData(1, encoded.data(),
+                                                          encoded.size());
     success &= decoder_.HandleControlFrameHeadersComplete(1, nullptr);
 
     EXPECT_EQ(header_set, decoder_.decoded_block());
@@ -47,8 +47,7 @@ class HpackRoundTripTest : public ::testing::Test {
   }
 
   size_t SampleExponential(size_t mean, size_t sanity_bound) {
-    return std::min<size_t>(-std::log(base::RandDouble()) * mean,
-                            sanity_bound);
+    return std::min<size_t>(-std::log(base::RandDouble()) * mean, sanity_bound);
   }
 
   HpackEncoder encoder_;
@@ -79,7 +78,8 @@ TEST_F(HpackRoundTripTest, ResponseFixtures) {
     headers["content-encoding"] = "gzip";
     headers["date"] = "Mon, 21 Oct 2013 20:13:22 GMT";
     headers["location"] = "https://www.example.com";
-    headers["set-cookie"] = "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU;"
+    headers["set-cookie"] =
+        "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU;"
         " max-age=3600; version=1";
     headers["multivalue"] = string("foo\0bar", 7);
     EXPECT_TRUE(RoundTrip(headers));

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/spdy/hpack_encoder.h"
+#include "net/spdy/hpack/hpack_encoder.h"
 
 #include <map>
 #include <string>
@@ -20,8 +20,7 @@ namespace test {
 
 class HpackHeaderTablePeer {
  public:
-  explicit HpackHeaderTablePeer(HpackHeaderTable* table)
-      : table_(table) {}
+  explicit HpackHeaderTablePeer(HpackHeaderTable* table) : table_(table) {}
 
   HpackHeaderTable::EntryTable* dynamic_entries() {
     return &table_->dynamic_entries_;
@@ -36,24 +35,15 @@ class HpackEncoderPeer {
   typedef HpackEncoder::Representation Representation;
   typedef HpackEncoder::Representations Representations;
 
-  explicit HpackEncoderPeer(HpackEncoder* encoder)
-    : encoder_(encoder) {}
+  explicit HpackEncoderPeer(HpackEncoder* encoder) : encoder_(encoder) {}
 
-  HpackHeaderTable* table() {
-    return &encoder_->header_table_;
-  }
-  HpackHeaderTablePeer table_peer() {
-    return HpackHeaderTablePeer(table());
-  }
+  HpackHeaderTable* table() { return &encoder_->header_table_; }
+  HpackHeaderTablePeer table_peer() { return HpackHeaderTablePeer(table()); }
   void set_allow_huffman_compression(bool allow) {
     encoder_->allow_huffman_compression_ = allow;
   }
-  void EmitString(StringPiece str) {
-    encoder_->EmitString(str);
-  }
-  void TakeString(string* out) {
-    encoder_->output_stream_.TakeString(out);
-  }
+  void EmitString(StringPiece str) { encoder_->EmitString(str); }
+  void TakeString(string* out) { encoder_->output_stream_.TakeString(out); }
   void UpdateCharacterCounts(StringPiece str) {
     encoder_->UpdateCharacterCounts(str);
   }
@@ -262,7 +252,7 @@ TEST_F(HpackEncoderTest, StringsDynamicallySelectHuffmanCoding) {
   peer_.EmitString("feedbeef");
   expected_.AppendPrefix(kStringLiteralHuffmanEncoded);
   expected_.AppendUint32(6);
-  expected_.AppendBytes("\x94\xA5\x92""2\x96_");
+  expected_.AppendBytes("\x94\xA5\x92\x32\x96_");
 
   // Non-compactable. Uses identity coding.
   peer_.EmitString("@@@@@@");
@@ -406,7 +396,9 @@ TEST_F(HpackEncoderTest, UpdateCharacterCounts) {
   size_t total_counts = 0;
   encoder_.SetCharCountsStorage(&counts, &total_counts);
 
-  char kTestString[] = "foo\0\1\xff""boo";
+  char kTestString[] =
+      "foo\0\1\xff"
+      "boo";
   peer_.UpdateCharacterCounts(
       StringPiece(kTestString, arraysize(kTestString) - 1));
 

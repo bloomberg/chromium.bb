@@ -8,8 +8,8 @@
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/spdy/fuzzing/hpack_fuzz_util.h"
-#include "net/spdy/hpack_constants.h"
-#include "net/spdy/hpack_encoder.h"
+#include "net/spdy/hpack/hpack_constants.h"
+#include "net/spdy/hpack/hpack_encoder.h"
 #include "net/spdy/spdy_protocol.h"
 
 namespace {

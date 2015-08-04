@@ -5,7 +5,7 @@
 #ifndef NET_SPDY_HPACK_STATIC_TABLE_H_
 #define NET_SPDY_HPACK_STATIC_TABLE_H_
 
-#include "net/spdy/hpack_header_table.h"
+#include "net/spdy/hpack/hpack_header_table.h"
 
 namespace net {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/spdy/hpack_decoder.h"
+#include "net/spdy/hpack/hpack_decoder.h"
 
 #include <map>
 #include <string>
@@ -10,9 +10,9 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
-#include "net/spdy/hpack_encoder.h"
-#include "net/spdy/hpack_input_stream.h"
-#include "net/spdy/hpack_output_stream.h"
+#include "net/spdy/hpack/hpack_encoder.h"
+#include "net/spdy/hpack/hpack_input_stream.h"
+#include "net/spdy/hpack/hpack_output_stream.h"
 #include "net/spdy/spdy_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,8 +26,7 @@ using std::string;
 
 class HpackDecoderPeer {
  public:
-  explicit HpackDecoderPeer(HpackDecoder* decoder)
-      : decoder_(decoder) {}
+  explicit HpackDecoderPeer(HpackDecoder* decoder) : decoder_(decoder) {}
 
   void HandleHeaderRepresentation(StringPiece name, StringPiece value) {
     decoder_->HandleHeaderRepresentation(name, value);
@@ -35,15 +34,9 @@ class HpackDecoderPeer {
   bool DecodeNextName(HpackInputStream* in, StringPiece* out) {
     return decoder_->DecodeNextName(in, out);
   }
-  HpackHeaderTable* header_table() {
-    return &decoder_->header_table_;
-  }
-  void set_cookie_value(string value) {
-    decoder_->cookie_value_ = value;
-  }
-  string cookie_value() {
-    return decoder_->cookie_value_;
-  }
+  HpackHeaderTable* header_table() { return &decoder_->header_table_; }
+  void set_cookie_value(string value) { decoder_->cookie_value_ = value; }
+  string cookie_value() { return decoder_->cookie_value_; }
   const SpdyHeaderBlock& decoded_block() const {
     return decoder_->decoded_block_;
   }
@@ -71,8 +64,7 @@ const size_t kLiteralBound = 1024;
 class HpackDecoderTest : public ::testing::Test {
  protected:
   HpackDecoderTest()
-      : decoder_(ObtainHpackHuffmanTable()),
-        decoder_peer_(&decoder_) {}
+      : decoder_(ObtainHpackHuffmanTable()), decoder_peer_(&decoder_) {}
 
   bool DecodeHeaderBlock(StringPiece str) {
     return decoder_.HandleControlFrameHeadersData(0, str.data(), str.size()) &&
@@ -90,7 +82,9 @@ class HpackDecoderTest : public ::testing::Test {
     return decoded_block();
   }
 
-  void expectEntry(size_t index, size_t size, const string& name,
+  void expectEntry(size_t index,
+                   size_t size,
+                   const string& name,
                    const string& value) {
     const HpackEntry* entry = decoder_peer_.header_table()->GetByIndex(index);
     EXPECT_EQ(name, entry->name()) << "index " << index;
@@ -105,10 +99,10 @@ class HpackDecoderTest : public ::testing::Test {
 
 TEST_F(HpackDecoderTest, HandleControlFrameHeadersData) {
   // Strings under threshold are concatenated in the buffer.
-  EXPECT_TRUE(decoder_.HandleControlFrameHeadersData(
-      0, "small string one", 16));
-  EXPECT_TRUE(decoder_.HandleControlFrameHeadersData(
-      0, "small string two", 16));
+  EXPECT_TRUE(
+      decoder_.HandleControlFrameHeadersData(0, "small string one", 16));
+  EXPECT_TRUE(
+      decoder_.HandleControlFrameHeadersData(0, "small string two", 16));
   // A string which would push the buffer over the threshold is refused.
   EXPECT_FALSE(decoder_.HandleControlFrameHeadersData(
       0, "fails", kMaxDecodeBufferSize - 32 + 1));
@@ -124,10 +118,9 @@ TEST_F(HpackDecoderTest, HandleControlFrameHeadersComplete) {
   decoder_.HandleControlFrameHeadersData(0, "\x82\x85", 2);
   decoder_.HandleControlFrameHeadersComplete(0, nullptr);
 
-  EXPECT_THAT(decoded_block(), ElementsAre(
-      Pair(":method", "GET"),
-      Pair(":path", "/index.html"),
-      Pair("cookie", "foobar=baz")));
+  EXPECT_THAT(decoded_block(),
+              ElementsAre(Pair(":method", "GET"), Pair(":path", "/index.html"),
+                          Pair("cookie", "foobar=baz")));
   EXPECT_EQ(decoder_peer_.cookie_value(), "");
 }
 
@@ -161,13 +154,13 @@ TEST_F(HpackDecoderTest, HandleHeaderRepresentation) {
   // Finish and emit all headers.
   decoder_.HandleControlFrameHeadersComplete(0, nullptr);
 
-  EXPECT_THAT(decoded_block(), ElementsAre(
-      Pair("cookie", " part 1; part 2 ; part3;  fin!"),
-      Pair("empty", ""),
-      Pair("empty-joined", string("\0foo\0\0", 6)),
-      Pair("joineD", string("value 1\0value 2", 15)),
-      Pair("joined", "not joined"),
-      Pair("passed-through", string("foo\0baz", 7))));
+  EXPECT_THAT(decoded_block(),
+              ElementsAre(Pair("cookie", " part 1; part 2 ; part3;  fin!"),
+                          Pair("empty", ""),
+                          Pair("empty-joined", string("\0foo\0\0", 6)),
+                          Pair("joineD", string("value 1\0value 2", 15)),
+                          Pair("joined", "not joined"),
+                          Pair("passed-through", string("foo\0baz", 7))));
 }
 
 // Decoding an encoded name with a valid string literal should work.
@@ -227,15 +220,21 @@ TEST_F(HpackDecoderTest, IndexedHeaderStatic) {
 
 TEST_F(HpackDecoderTest, IndexedHeaderDynamic) {
   // First header block: add an entry to header table.
-  SpdyHeaderBlock header_set1 =
-      DecodeBlockExpectingSuccess("\x40\x03" "foo" "\x03" "bar");
+  SpdyHeaderBlock header_set1 = DecodeBlockExpectingSuccess(
+      "\x40\x03"
+      "foo"
+      "\x03"
+      "bar");
   SpdyHeaderBlock expected_header_set1;
   expected_header_set1["foo"] = "bar";
   EXPECT_EQ(expected_header_set1, header_set1);
 
   // Second header block: add another entry to header table.
-  SpdyHeaderBlock header_set2 =
-      DecodeBlockExpectingSuccess("\xbe\x40\x04" "spam" "\x04" "eggs");
+  SpdyHeaderBlock header_set2 = DecodeBlockExpectingSuccess(
+      "\xbe\x40\x04"
+      "spam"
+      "\x04"
+      "eggs");
   SpdyHeaderBlock expected_header_set2;
   expected_header_set2["foo"] = "bar";
   expected_header_set2["spam"] = "eggs";
@@ -371,8 +370,8 @@ TEST_F(HpackDecoderTest, BasicE21) {
   expected_header_set[":authority"] = "www.example.com";
 
   string encoded_header_set;
-  EXPECT_TRUE(encoder.EncodeHeaderSet(
-      expected_header_set, &encoded_header_set));
+  EXPECT_TRUE(
+      encoder.EncodeHeaderSet(expected_header_set, &encoded_header_set));
 
   EXPECT_TRUE(DecodeHeaderBlock(encoded_header_set));
   EXPECT_EQ(expected_header_set, decoded_block());
@@ -399,15 +398,15 @@ TEST_F(HpackDecoderTest, SectionD4RequestHuffmanExamples) {
   //                                         |     Decoded:
   //                                         | www.example.com
   //                                         | -> :authority: www.example.com
-  string first = a2b_hex("828684418cf1e3c2e5f23a6ba0ab90f4"
-                         "ff");
+  string first = a2b_hex(
+      "828684418cf1e3c2e5f23a6ba0ab90f4"
+      "ff");
   header_set = DecodeBlockExpectingSuccess(first);
 
-  EXPECT_THAT(header_set, ElementsAre(
-      Pair(":authority", "www.example.com"),
-      Pair(":method", "GET"),
-      Pair(":path", "/"),
-      Pair(":scheme", "http")));
+  EXPECT_THAT(
+      header_set,
+      ElementsAre(Pair(":authority", "www.example.com"), Pair(":method", "GET"),
+                  Pair(":path", "/"), Pair(":scheme", "http")));
 
   expectEntry(62, 57, ":authority", "www.example.com");
   EXPECT_EQ(57u, decoder_peer_.header_table()->size());
@@ -437,12 +436,11 @@ TEST_F(HpackDecoderTest, SectionD4RequestHuffmanExamples) {
   string second = a2b_hex("828684be5886a8eb10649cbf");
   header_set = DecodeBlockExpectingSuccess(second);
 
-  EXPECT_THAT(header_set, ElementsAre(
-      Pair(":authority", "www.example.com"),
-      Pair(":method", "GET"),
-      Pair(":path", "/"),
-      Pair(":scheme", "http"),
-      Pair("cache-control", "no-cache")));
+  EXPECT_THAT(
+      header_set,
+      ElementsAre(Pair(":authority", "www.example.com"), Pair(":method", "GET"),
+                  Pair(":path", "/"), Pair(":scheme", "http"),
+                  Pair("cache-control", "no-cache")));
 
   expectEntry(62, 53, "cache-control", "no-cache");
   expectEntry(63, 57, ":authority", "www.example.com");
@@ -472,16 +470,16 @@ TEST_F(HpackDecoderTest, SectionD4RequestHuffmanExamples) {
   //                                         |     Decoded:
   //                                         | custom-value
   //                                         | -> custom-key: custom-value
-  string third = a2b_hex("828785bf408825a849e95ba97d7f89"
-                         "25a849e95bb8e8b4bf");
+  string third = a2b_hex(
+      "828785bf408825a849e95ba97d7f89"
+      "25a849e95bb8e8b4bf");
   header_set = DecodeBlockExpectingSuccess(third);
 
-  EXPECT_THAT(header_set, ElementsAre(
-      Pair(":authority", "www.example.com"),
-      Pair(":method", "GET"),
-      Pair(":path", "/index.html"),
-      Pair(":scheme", "https"),
-      Pair("custom-key", "custom-value")));
+  EXPECT_THAT(
+      header_set,
+      ElementsAre(Pair(":authority", "www.example.com"), Pair(":method", "GET"),
+                  Pair(":path", "/index.html"), Pair(":scheme", "https"),
+                  Pair("custom-key", "custom-value")));
 
   expectEntry(62, 54, "custom-key", "custom-value");
   expectEntry(63, 53, "cache-control", "no-cache");
@@ -535,17 +533,18 @@ TEST_F(HpackDecoderTest, SectionD6ResponseHuffmanExamples) {
   //                                         | -> location: https://www.e
   //                                         |    xample.com
 
-  string first = a2b_hex("488264025885aec3771a4b6196d07abe"
-                         "941054d444a8200595040b8166e082a6"
-                         "2d1bff6e919d29ad171863c78f0b97c8"
-                         "e9ae82ae43d3");
+  string first = a2b_hex(
+      "488264025885aec3771a4b6196d07abe"
+      "941054d444a8200595040b8166e082a6"
+      "2d1bff6e919d29ad171863c78f0b97c8"
+      "e9ae82ae43d3");
   header_set = DecodeBlockExpectingSuccess(first);
 
-  EXPECT_THAT(header_set, ElementsAre(
-      Pair(":status", "302"),
-      Pair("cache-control", "private"),
-      Pair("date", "Mon, 21 Oct 2013 20:13:21 GMT"),
-      Pair("location", "https://www.example.com")));
+  EXPECT_THAT(
+      header_set,
+      ElementsAre(Pair(":status", "302"), Pair("cache-control", "private"),
+                  Pair("date", "Mon, 21 Oct 2013 20:13:21 GMT"),
+                  Pair("location", "https://www.example.com")));
 
   expectEntry(62, 63, "location", "https://www.example.com");
   expectEntry(63, 65, "date", "Mon, 21 Oct 2013 20:13:21 GMT");
@@ -577,11 +576,11 @@ TEST_F(HpackDecoderTest, SectionD6ResponseHuffmanExamples) {
   string second = a2b_hex("4883640effc1c0bf");
   header_set = DecodeBlockExpectingSuccess(second);
 
-  EXPECT_THAT(header_set, ElementsAre(
-      Pair(":status", "307"),
-      Pair("cache-control", "private"),
-      Pair("date", "Mon, 21 Oct 2013 20:13:21 GMT"),
-      Pair("location", "https://www.example.com")));
+  EXPECT_THAT(
+      header_set,
+      ElementsAre(Pair(":status", "307"), Pair("cache-control", "private"),
+                  Pair("date", "Mon, 21 Oct 2013 20:13:21 GMT"),
+                  Pair("location", "https://www.example.com")));
 
   expectEntry(62, 42, ":status", "307");
   expectEntry(63, 63, "location", "https://www.example.com");
@@ -642,23 +641,26 @@ TEST_F(HpackDecoderTest, SectionD6ResponseHuffmanExamples) {
   //                                         | -> set-cookie: foo=ASDJKHQ
   //                                         |   KBZXOQWEOPIUAXQWEOIU;
   //                                         |   max-age=3600; version=1
-  string third = a2b_hex("88c16196d07abe941054d444a8200595"
-                         "040b8166e084a62d1bffc05a839bd9ab"
-                         "77ad94e7821dd7f2e6c7b335dfdfcd5b"
-                         "3960d5af27087f3672c1ab270fb5291f"
-                         "9587316065c003ed4ee5b1063d5007");
+  string third = a2b_hex(
+      "88c16196d07abe941054d444a8200595"
+      "040b8166e084a62d1bffc05a839bd9ab"
+      "77ad94e7821dd7f2e6c7b335dfdfcd5b"
+      "3960d5af27087f3672c1ab270fb5291f"
+      "9587316065c003ed4ee5b1063d5007");
   header_set = DecodeBlockExpectingSuccess(third);
 
-  EXPECT_THAT(header_set, ElementsAre(
-      Pair(":status", "200"),
-      Pair("cache-control", "private"),
-      Pair("content-encoding", "gzip"),
-      Pair("date", "Mon, 21 Oct 2013 20:13:22 GMT"),
-      Pair("location", "https://www.example.com"),
-      Pair("set-cookie", "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU;"
-           " max-age=3600; version=1")));
+  EXPECT_THAT(
+      header_set,
+      ElementsAre(Pair(":status", "200"), Pair("cache-control", "private"),
+                  Pair("content-encoding", "gzip"),
+                  Pair("date", "Mon, 21 Oct 2013 20:13:22 GMT"),
+                  Pair("location", "https://www.example.com"),
+                  Pair("set-cookie",
+                       "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU;"
+                       " max-age=3600; version=1")));
 
-  expectEntry(62, 98, "set-cookie", "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU;"
+  expectEntry(62, 98, "set-cookie",
+              "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU;"
               " max-age=3600; version=1");
   expectEntry(63, 52, "content-encoding", "gzip");
   expectEntry(64, 65, "date", "Mon, 21 Oct 2013 20:13:22 GMT");

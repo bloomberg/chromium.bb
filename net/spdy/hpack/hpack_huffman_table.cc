@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/spdy/hpack_huffman_table.h"
+#include "net/spdy/hpack/hpack_huffman_table.h"
 
 #include <algorithm>
 #include <cmath>
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
-#include "net/spdy/hpack_input_stream.h"
-#include "net/spdy/hpack_output_stream.h"
+#include "net/spdy/hpack/hpack_input_stream.h"
+#include "net/spdy/hpack/hpack_output_stream.h"
 
 namespace net {
 
@@ -31,21 +31,20 @@ bool SymbolLengthAndIdCompare(const HpackHuffmanSymbol& a,
   }
   return a.length < b.length;
 }
-bool SymbolIdCompare(const HpackHuffmanSymbol& a,
-                     const HpackHuffmanSymbol& b) {
+bool SymbolIdCompare(const HpackHuffmanSymbol& a, const HpackHuffmanSymbol& b) {
   return a.id < b.id;
 }
 
 }  // namespace
 
 HpackHuffmanTable::DecodeEntry::DecodeEntry()
-  : next_table_index(0), length(0), symbol_id(0) {
-}
+    : next_table_index(0), length(0), symbol_id(0) {}
 HpackHuffmanTable::DecodeEntry::DecodeEntry(uint8 next_table_index,
                                             uint8 length,
                                             uint16 symbol_id)
-  : next_table_index(next_table_index), length(length), symbol_id(symbol_id) {
-}
+    : next_table_index(next_table_index),
+      length(length),
+      symbol_id(symbol_id) {}
 size_t HpackHuffmanTable::DecodeTable::size() const {
   return size_t(1) << indexed_length;
 }
@@ -75,14 +74,14 @@ bool HpackHuffmanTable::Initialize(const HpackHuffmanSymbol* input_symbols,
     return false;
   }
   for (size_t i = 1; i != symbols.size(); i++) {
-    unsigned code_shift = 32 - symbols[i-1].length;
-    uint32 code = symbols[i-1].code + (1 << code_shift);
+    unsigned code_shift = 32 - symbols[i - 1].length;
+    uint32 code = symbols[i - 1].code + (1 << code_shift);
 
     if (code != symbols[i].code) {
       failed_symbol_id_ = symbols[i].id;
       return false;
     }
-    if (code < symbols[i-1].code) {
+    if (code < symbols[i - 1].code) {
       // An integer overflow occurred. This implies the input
       // lengths do not represent a valid Huffman code.
       failed_symbol_id_ = symbols[i].id;
@@ -148,10 +147,10 @@ void HpackHuffmanTable::BuildDecodeTables(const std::vector<Symbol>& symbols) {
         // First visit to this placeholder. We need to create a new table.
         CHECK_EQ(entry.next_table_index, 0);
         entry.length = it->length;
-        entry.next_table_index = AddDecodeTable(
-            total_indexed,  // Becomes the new table prefix.
-            std::min<uint8>(kDecodeTableBranchBits,
-                            entry.length - total_indexed));
+        entry.next_table_index =
+            AddDecodeTable(total_indexed,  // Becomes the new table prefix.
+                           std::min<uint8>(kDecodeTableBranchBits,
+                                           entry.length - total_indexed));
         SetEntry(table, index, entry);
       }
       CHECK_NE(entry.next_table_index, table_index);

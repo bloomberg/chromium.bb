@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/spdy/hpack_header_table.h"
+#include "net/spdy/hpack/hpack_header_table.h"
 
 #include <algorithm>
 
 #include "base/logging.h"
-#include "net/spdy/hpack_constants.h"
-#include "net/spdy/hpack_static_table.h"
-#include "net/spdy/hpack_string_util.h"
+#include "net/spdy/hpack/hpack_constants.h"
+#include "net/spdy/hpack/hpack_static_table.h"
+#include "net/spdy/hpack/hpack_string_util.h"
 
 namespace net {
 
 using base::StringPiece;
 
-bool HpackHeaderTable::EntryComparator::operator() (
-    const HpackEntry* lhs, const HpackEntry* rhs) const {
+bool HpackHeaderTable::EntryComparator::operator()(
+    const HpackEntry* lhs,
+    const HpackEntry* rhs) const {
   int result = lhs->name().compare(rhs->name());
   if (result != 0)
     return result < 0;
@@ -79,16 +80,14 @@ const HpackEntry* HpackHeaderTable::GetByNameAndValue(StringPiece name,
   HpackEntry query(name, value);
   {
     OrderedEntrySet::const_iterator it = static_index_.lower_bound(&query);
-    if (it != static_index_.end() &&
-        (*it)->name() == name &&
+    if (it != static_index_.end() && (*it)->name() == name &&
         (*it)->value() == value) {
       return *it;
     }
   }
   {
     OrderedEntrySet::const_iterator it = dynamic_index_.lower_bound(&query);
-    if (it != dynamic_index_.end() &&
-        (*it)->name() == name &&
+    if (it != dynamic_index_.end() && (*it)->name() == name &&
         (*it)->value() == value) {
       return *it;
     }
@@ -175,8 +174,7 @@ const HpackEntry* HpackHeaderTable::TryAddEntry(StringPiece name,
     DCHECK_EQ(0u, size_);
     return NULL;
   }
-  dynamic_entries_.push_front(HpackEntry(name,
-                                         value,
+  dynamic_entries_.push_front(HpackEntry(name, value,
                                          false,  // is_static
                                          total_insertions_));
   CHECK(dynamic_index_.insert(&dynamic_entries_.front()).second);
@@ -190,17 +188,17 @@ const HpackEntry* HpackHeaderTable::TryAddEntry(StringPiece name,
 void HpackHeaderTable::DebugLogTableState() const {
   DVLOG(2) << "Dynamic table:";
   for (EntryTable::const_iterator it = dynamic_entries_.begin();
-      it != dynamic_entries_.end(); ++it) {
+       it != dynamic_entries_.end(); ++it) {
     DVLOG(2) << "  " << it->GetDebugString();
   }
   DVLOG(2) << "Full Static Index:";
   for (OrderedEntrySet::const_iterator it = static_index_.begin();
-      it != static_index_.end(); ++it) {
+       it != static_index_.end(); ++it) {
     DVLOG(2) << "  " << (*it)->GetDebugString();
   }
   DVLOG(2) << "Full Dynamic Index:";
   for (OrderedEntrySet::const_iterator it = dynamic_index_.begin();
-      it != dynamic_index_.end(); ++it) {
+       it != dynamic_index_.end(); ++it) {
     DVLOG(2) << "  " << (*it)->GetDebugString();
   }
 }

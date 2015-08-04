@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/spdy/hpack_string_util.h"
+#include "net/spdy/hpack/hpack_string_util.h"
 
 #include <cstddef>
 #include <cstring>

@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/macros.h"
 #include "net/base/net_export.h"
-#include "net/spdy/hpack_entry.h"
+#include "net/spdy/hpack/hpack_entry.h"
 
 // All section references below are to
 // http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-08
@@ -43,7 +43,7 @@ class NET_EXPORT_PRIVATE HpackHeaderTable {
   // composed with the 'lookup' HpackEntry constructor to allow for efficient
   // lower-bounding of matching entries.
   struct NET_EXPORT_PRIVATE EntryComparator {
-    bool operator() (const HpackEntry* lhs, const HpackEntry* rhs) const;
+    bool operator()(const HpackEntry* lhs, const HpackEntry* rhs) const;
   };
   typedef std::set<HpackEntry*, EntryComparator> OrderedEntrySet;
 

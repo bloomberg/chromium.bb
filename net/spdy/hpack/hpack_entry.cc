@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/spdy/hpack_entry.h"
+#include "net/spdy/hpack/hpack_entry.h"
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "net/spdy/hpack_string_util.h"
+#include "net/spdy/hpack/hpack_string_util.h"
 
 namespace net {
 
@@ -21,20 +21,15 @@ HpackEntry::HpackEntry(StringPiece name,
     : name_(name.data(), name.size()),
       value_(value.data(), value.size()),
       insertion_index_(insertion_index),
-      type_(is_static ? STATIC : DYNAMIC) {
-}
+      type_(is_static ? STATIC : DYNAMIC) {}
 
 HpackEntry::HpackEntry(StringPiece name, StringPiece value)
     : name_(name.data(), name.size()),
       value_(value.data(), value.size()),
       insertion_index_(0),
-      type_(LOOKUP) {
-}
+      type_(LOOKUP) {}
 
-HpackEntry::HpackEntry()
-    : insertion_index_(0),
-      type_(LOOKUP) {
-}
+HpackEntry::HpackEntry() : insertion_index_(0), type_(LOOKUP) {}
 
 HpackEntry::~HpackEntry() {}
 
@@ -47,9 +42,8 @@ size_t HpackEntry::Size() const {
 }
 
 std::string HpackEntry::GetDebugString() const {
-  return "{ name: \"" + name_ +
-      "\", value: \"" + value_ +
-      "\", " + (IsStatic() ? "static" : "dynamic") + " }";
+  return "{ name: \"" + name_ + "\", value: \"" + value_ + "\", " +
+         (IsStatic() ? "static" : "dynamic") + " }";
 }
 
 }  // namespace net

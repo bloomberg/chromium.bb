@@ -5,9 +5,8 @@
 # found in the LICENSE file.
 
 """This script builds a table that has to be manully inserted into
-net/spdy/hpack_constants.cc. It also contains data that potentially
-has to be updated if the http hpack algorithm changes its
-constants."""
+net/spdy/hpack/hpack_constants.cc. It also contains data that potentially has to
+be updated if the http hpack algorithm changes its constants."""
 
 import re
 

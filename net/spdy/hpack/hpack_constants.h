@@ -54,26 +54,26 @@ const uint32 kMaxDecodeBufferSize = 32 * 1024;
 
 // 6.2: Flag for a string literal that is stored unmodified (i.e.,
 // without Huffman encoding).
-const HpackPrefix kStringLiteralIdentityEncoded = { 0x0, 1 };
+const HpackPrefix kStringLiteralIdentityEncoded = {0x0, 1};
 
 // 6.2: Flag for a Huffman-coded string literal.
-const HpackPrefix kStringLiteralHuffmanEncoded = { 0x1, 1 };
+const HpackPrefix kStringLiteralHuffmanEncoded = {0x1, 1};
 
 // 7.1: Opcode for an indexed header field.
-const HpackPrefix kIndexedOpcode = { 0x1, 1 };
+const HpackPrefix kIndexedOpcode = {0x1, 1};
 
 // 7.2.1: Opcode for a literal header field with incremental indexing.
-const HpackPrefix kLiteralIncrementalIndexOpcode = { 0x1, 2 };
+const HpackPrefix kLiteralIncrementalIndexOpcode = {0x1, 2};
 
 // 7.2.2: Opcode for a literal header field without indexing.
-const HpackPrefix kLiteralNoIndexOpcode = { 0x0, 4 };
+const HpackPrefix kLiteralNoIndexOpcode = {0x0, 4};
 
 // 7.2.3: Opcode for a literal header field which is never indexed.
-const HpackPrefix kLiteralNeverIndexOpcode = { 0x1, 4 };
+const HpackPrefix kLiteralNeverIndexOpcode = {0x1, 4};
 
 // 7.3: Opcode for maximum header table size update. Begins a varint-encoded
 // table size with a 5-bit prefix.
-const HpackPrefix kHeaderTableSizeUpdateOpcode = { 0x1, 3 };
+const HpackPrefix kHeaderTableSizeUpdateOpcode = {0x1, 3};
 
 // Returns symbol code table from "Appendix C. Huffman Code".
 NET_EXPORT_PRIVATE std::vector<HpackHuffmanSymbol> HpackHuffmanCode();

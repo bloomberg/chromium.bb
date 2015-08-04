@@ -14,9 +14,8 @@ namespace net {
 // http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-08
 
 // A constant-time StringPiece comparison function.
-bool NET_EXPORT_PRIVATE StringPiecesEqualConstantTime(
-    base::StringPiece str1,
-    base::StringPiece str2);
+bool NET_EXPORT_PRIVATE StringPiecesEqualConstantTime(base::StringPiece str1,
+                                                      base::StringPiece str2);
 
 }  // namespace net
 

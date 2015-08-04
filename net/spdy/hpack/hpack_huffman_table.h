@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
-#include "net/spdy/hpack_constants.h"
+#include "net/spdy/hpack/hpack_constants.h"
 
 namespace net {
 
@@ -103,7 +103,8 @@ class NET_EXPORT_PRIVATE HpackHuffmanTable {
 
   const DecodeEntry& Entry(const DecodeTable& table, uint32 index) const;
 
-  void SetEntry(const DecodeTable& table, uint32 index,
+  void SetEntry(const DecodeTable& table,
+                uint32 index,
                 const DecodeEntry& entry);
 
   std::vector<DecodeTable> decode_tables_;

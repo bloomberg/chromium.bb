@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/spdy/hpack_encoder.h"
+#include "net/spdy/hpack/hpack_encoder.h"
 
 #include <algorithm>
 
 #include "base/logging.h"
-#include "net/spdy/hpack_header_table.h"
-#include "net/spdy/hpack_huffman_table.h"
-#include "net/spdy/hpack_output_stream.h"
+#include "net/spdy/hpack/hpack_header_table.h"
+#include "net/spdy/hpack/hpack_huffman_table.h"
+#include "net/spdy/hpack/hpack_output_stream.h"
 
 namespace net {
 
@@ -101,8 +101,7 @@ void HpackEncoder::EmitIndexedLiteral(const Representation& representation) {
   header_table_.TryAddEntry(representation.first, representation.second);
 }
 
-void HpackEncoder::EmitNonIndexedLiteral(
-    const Representation& representation) {
+void HpackEncoder::EmitNonIndexedLiteral(const Representation& representation) {
   output_stream_.AppendPrefix(kLiteralNoIndexOpcode);
   output_stream_.AppendUint32(0);
   EmitString(representation.first);
@@ -121,8 +120,9 @@ void HpackEncoder::EmitLiteral(const Representation& representation) {
 }
 
 void HpackEncoder::EmitString(StringPiece str) {
-  size_t encoded_size = (!allow_huffman_compression_ ? str.size()
-                         : huffman_table_.EncodedSize(str));
+  size_t encoded_size =
+      (!allow_huffman_compression_ ? str.size()
+                                   : huffman_table_.EncodedSize(str));
   if (encoded_size < str.size()) {
     output_stream_.AppendPrefix(kStringLiteralHuffmanEncoded);
     output_stream_.AppendUint32(encoded_size);
@@ -178,8 +178,7 @@ void HpackEncoder::CookieToCrumbs(const Representation& cookie,
   }
   // Sort crumbs and remove duplicates.
   std::sort(out->begin() + prior_size, out->end());
-  out->erase(std::unique(out->begin() + prior_size, out->end()),
-             out->end());
+  out->erase(std::unique(out->begin() + prior_size, out->end()), out->end());
 }
 
 // static

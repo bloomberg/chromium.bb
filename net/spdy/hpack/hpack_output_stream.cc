@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/spdy/hpack_output_stream.h"
+#include "net/spdy/hpack/hpack_output_stream.h"
 
 #include "base/logging.h"
-
 
 namespace net {
 
 using base::StringPiece;
 using std::string;
 
-HpackOutputStream::HpackOutputStream()
-    : bit_offset_(0) {}
+HpackOutputStream::HpackOutputStream() : bit_offset_(0) {}
 
 HpackOutputStream::~HpackOutputStream() {}
 

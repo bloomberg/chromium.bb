@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/spdy/hpack_static_table.h"
+#include "net/spdy/hpack/hpack_static_table.h"
 
 #include "base/logging.h"
-#include "net/spdy/hpack_constants.h"
-#include "net/spdy/hpack_entry.h"
+#include "net/spdy/hpack/hpack_constants.h"
+#include "net/spdy/hpack/hpack_entry.h"
 
 namespace net {
 

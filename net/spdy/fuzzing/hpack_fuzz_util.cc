@@ -9,7 +9,7 @@
 
 #include "base/rand_util.h"
 #include "base/sys_byteorder.h"
-#include "net/spdy/hpack_constants.h"
+#include "net/spdy/hpack/hpack_constants.h"
 
 namespace net {
 
