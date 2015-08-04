@@ -82,6 +82,7 @@
 // Index of a row, column, or tree item.
 @property(nonatomic, readonly) NSNumber* index;
 @property(nonatomic, readonly) NSString* invalid;
+@property(nonatomic, readonly) NSString* placeholderValue;
 @property(nonatomic, readonly) NSNumber* loaded;
 @property(nonatomic, readonly) NSNumber* loadingProgress;
 @property(nonatomic, readonly) NSNumber* maxValue;
