@@ -157,8 +157,8 @@ bool SVGComputedStyle::diffNeedsLayoutAndPaintInvalidation(const SVGComputedStyl
         || svg_inherited_flags._writingMode != other->svg_inherited_flags._writingMode
         || svg_inherited_flags._glyphOrientationHorizontal != other->svg_inherited_flags._glyphOrientationHorizontal
         || svg_inherited_flags._glyphOrientationVertical != other->svg_inherited_flags._glyphOrientationVertical
+        || svg_inherited_flags.dominantBaseline != other->svg_inherited_flags.dominantBaseline
         || svg_noninherited_flags.f._alignmentBaseline != other->svg_noninherited_flags.f._alignmentBaseline
-        || svg_noninherited_flags.f._dominantBaseline != other->svg_noninherited_flags.f._dominantBaseline
         || svg_noninherited_flags.f._baselineShift != other->svg_noninherited_flags.f._baselineShift)
         return true;
 
