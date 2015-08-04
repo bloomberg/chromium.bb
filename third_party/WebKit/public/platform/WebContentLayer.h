@@ -40,7 +40,7 @@ public:
 
     // Set to true if the backside of this layer's contents should be visible when composited.
     // Defaults to false.
-    virtual void setDoubleSided(bool) = 0;
+    virtual void setDoubleSided(bool) {}
 
     // Allow the compositor to determine the scale at which the layer should
     // be rasterized based on the layer's hierarchy and transform. This defaults
@@ -51,7 +51,7 @@ public:
     // and the actual contents are unavailable. If false, the compositor will draw the layer's background color
     // for these tiles.
     // Defaults to false.
-    virtual void setDrawCheckerboardForMissingTiles(bool) = 0;
+    virtual void setDrawCheckerboardForMissingTiles(bool) {}
 };
 
 } // namespace blink
