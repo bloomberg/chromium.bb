@@ -1636,8 +1636,7 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
   int current_size = static_cast<int>(entries_.size());
 
   // When replacing, don't prune the forward history.
-  if (replace) {
-    DCHECK_GT(current_size, 0);
+  if (replace && current_size > 0) {
     int32 page_id = entry->GetPageID();
 
     // ScopedVectors don't automatically delete the replaced value, so make sure
@@ -1650,6 +1649,9 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
     delegate_->UpdateMaxPageID(page_id);
     return;
   }
+
+  // We shouldn't see replace == true when there's no committed entries.
+  DCHECK(!replace);
 
   if (current_size > 0) {
     // Prune any entries which are in front of the current entry.
