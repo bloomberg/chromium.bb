@@ -101,7 +101,9 @@ bool InsertTextCommand::performTrivialReplace(const String& text, bool selectIns
 bool InsertTextCommand::performOverwrite(const String& text, bool selectInsertedText)
 {
     Position start = endingSelection().start();
-    RefPtrWillBeRawPtr<Text> textNode = start.containerText();
+    if (start.isNull() || !start.isOffsetInAnchor() || !start.containerNode()->isTextNode())
+        return false;
+    RefPtrWillBeRawPtr<Text> textNode = toText(start.containerNode());
     if (!textNode)
         return false;
 
