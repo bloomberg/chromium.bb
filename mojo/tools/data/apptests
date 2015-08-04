@@ -41,7 +41,7 @@ tests = [
   #},
   {
     'test': 'mojo:view_manager_apptests',
-    'args': ['--use-headless-config']
+    'args': ['--use-test-config']
   },
 ]
 

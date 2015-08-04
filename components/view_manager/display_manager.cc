@@ -196,6 +196,8 @@ const mojo::ViewportMetrics& DefaultDisplayManager::GetViewportMetrics() {
 }
 
 void DefaultDisplayManager::Draw() {
+  if (!delegate_->GetRootView()->visible())
+    return;
   gfx::Rect rect(metrics_.size_in_pixels.To<gfx::Size>());
   auto pass = mojo::CreateDefaultPass(1, rect);
   pass->damage_rect = Rect::From(dirty_rect_);
@@ -207,9 +209,9 @@ void DefaultDisplayManager::Draw() {
   frame->resources.resize(0u);
   frame_pending_ = true;
   if (display_) {
-    display_->SubmitFrame(
-        frame.Pass(),
-        base::Bind(&DefaultDisplayManager::DidDraw, base::Unretained(this)));
+    display_->SubmitFrame(frame.Pass(),
+                          base::Bind(&DefaultDisplayManager::DidDraw,
+                                     weak_factory_.GetWeakPtr()));
   }
   dirty_rect_ = gfx::Rect();
 }

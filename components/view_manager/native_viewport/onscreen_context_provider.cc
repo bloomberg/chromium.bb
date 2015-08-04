@@ -74,10 +74,12 @@ void OnscreenContextProvider::CreateAndReturnCommandBuffer() {
                      base::Unretained(this))));
   command_buffers_.insert(command_buffer_driver.get());
 
-  command_buffer_impl_ =
-      new gles2::CommandBufferImpl(GetProxy(&cb), pending_listener_.Pass(),
-                                   state_, command_buffer_driver.Pass());
-  command_buffer_impl_->set_observer(this);
+  if (!command_buffer_impl_) {
+    command_buffer_impl_ =
+        new gles2::CommandBufferImpl(GetProxy(&cb), pending_listener_.Pass(),
+                                     state_, command_buffer_driver.Pass());
+    command_buffer_impl_->set_observer(this);
+  }
   pending_create_callback_.Run(cb.Pass());
   pending_create_callback_.reset();
 }
