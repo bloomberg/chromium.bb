@@ -9,9 +9,7 @@ import android.util.Log;
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 import com.google.protos.ipc.invalidation.Types;
 
-import org.chromium.base.FieldTrialList;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.library_loader.LibraryLoader;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -116,12 +114,6 @@ public enum ModelType {
     }
 
     private boolean isNonInvalidationType() {
-        if ((this == SESSION || this == FAVICON_TRACKING || this == FAVICON_IMAGE)
-                && LibraryLoader.isInitialized()) {
-            return FieldTrialList
-                    .findFullName("AndroidSessionNotifications")
-                    .equals("Disabled");
-        }
         return mNonInvalidationType;
     }
 

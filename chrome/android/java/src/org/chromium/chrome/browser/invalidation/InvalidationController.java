@@ -9,12 +9,16 @@ import android.content.Intent;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.FieldTrialList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.invalidation.InvalidationClientService;
 import org.chromium.sync.AndroidSyncSettings;
+import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.InvalidationIntentProtocol;
 import org.chromium.sync.signin.ChromeSigninController;
+
+import java.util.HashSet;
 
 /**
  * Controller used to send start, stop, and registration-change commands to the invalidation
@@ -28,13 +32,26 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
     private final Context mContext;
 
     /**
+     * Whether session sync invalidations should be disabled.
+     */
+    private final boolean mDisableSessionInvalidations;
+
+    /**
      * Updates the sync invalidation types that the client is registered for based on the preferred
      * sync types.  Starts the client if needed.
      */
     public void ensureStartedAndUpdateRegisteredTypes() {
+        HashSet<ModelType> typesToRegister = new HashSet<ModelType>();
+        typesToRegister.addAll(ProfileSyncService.get(mContext).getPreferredDataTypes());
+        if (mDisableSessionInvalidations) {
+            typesToRegister.remove(ModelType.SESSION);
+            typesToRegister.remove(ModelType.FAVICON_TRACKING);
+            typesToRegister.remove(ModelType.FAVICON_IMAGE);
+        }
+
         Intent registerIntent = InvalidationIntentProtocol.createRegisterIntent(
                 ChromeSigninController.get(mContext).getSignedInUser(),
-                ProfileSyncService.get(mContext).getPreferredDataTypes());
+                typesToRegister);
         registerIntent.setClass(mContext, InvalidationClientService.class);
         mContext.startService(registerIntent);
     }
@@ -64,7 +81,10 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
     public static InvalidationController get(Context context) {
         synchronized (LOCK) {
             if (sInstance == null) {
-                sInstance = new InvalidationController(context);
+                boolean disableSessionInvalidations =
+                        FieldTrialList.findFullName("AndroidSessionNotifications")
+                                .equals("Disabled");
+                sInstance = new InvalidationController(context, disableSessionInvalidations);
             }
             return sInstance;
         }
@@ -74,10 +94,11 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
      * Creates an instance using {@code context} to send intents.
      */
     @VisibleForTesting
-    InvalidationController(Context context) {
+    InvalidationController(Context context, boolean disableSessionInvalidations) {
         Context appContext = context.getApplicationContext();
         if (appContext == null) throw new NullPointerException("Unable to get application context");
         mContext = appContext;
+        mDisableSessionInvalidations = disableSessionInvalidations;
         ApplicationStatus.registerApplicationStateListener(this);
     }
 

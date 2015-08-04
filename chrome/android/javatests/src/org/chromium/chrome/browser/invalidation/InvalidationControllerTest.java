@@ -68,7 +68,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         mContext = new IntentSavingContext(getInstrumentation().getTargetContext());
-        mController = InvalidationController.get(mContext);
+        mController = new InvalidationController(mContext, false);
         // We don't want to use the system content resolver, so we override it.
         MockSyncContentResolverDelegate delegate = new MockSyncContentResolverDelegate();
         // Android master sync can safely always be on.
@@ -151,7 +151,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         final AtomicBoolean listenerCallbackCalled = new AtomicBoolean();
 
         // Create instance.
-        new InvalidationController(mContext) {
+        new InvalidationController(mContext, false) {
             @Override
             public void onApplicationStateChange(int newState) {
                 listenerCallbackCalled.set(true);
@@ -175,8 +175,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         mProfileSyncServiceStub.setPreferredDataTypes(
                 CollectionUtil.newHashSet(ModelType.BOOKMARK, ModelType.SESSION));
 
-        InvalidationController controller = new InvalidationController(mContext);
-        controller.ensureStartedAndUpdateRegisteredTypes();
+        mController.ensureStartedAndUpdateRegisteredTypes();
         assertEquals(1, mContext.getNumStartedIntents());
 
         // Validate destination.
