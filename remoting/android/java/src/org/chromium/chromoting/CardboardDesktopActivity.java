@@ -4,6 +4,7 @@
 
 package org.chromium.chromoting;
 
+import android.graphics.PointF;
 import android.os.Bundle;
 
 import com.google.vrtoolkit.cardboard.CardboardActivity;
@@ -38,10 +39,16 @@ public class CardboardDesktopActivity extends CardboardActivity {
 
     @Override
     public void onCardboardTrigger() {
-        // TODO(shichengfeng): Only switch back to normal desktop activity
-        // when user is looking at specific place, eg. outside the desktop.
-        mSwitchToDesktopActivity = true;
-        finish();
+        if (mRenderer.isLookingAtDesktop()) {
+            PointF coordinates = mRenderer.getMouseCoordinates();
+            JniInterface.sendMouseEvent((int) coordinates.x, (int) coordinates.y,
+                    TouchInputHandler.BUTTON_LEFT, true);
+            JniInterface.sendMouseEvent((int) coordinates.x, (int) coordinates.y,
+                    TouchInputHandler.BUTTON_LEFT, false);
+        } else {
+            mSwitchToDesktopActivity = true;
+            finish();
+        }
     }
 
     @Override
