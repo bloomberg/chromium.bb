@@ -50,6 +50,7 @@ from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.models import test_failures
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.models.test_input import TestInput
+from webkitpy.tool import grammar
 
 _log = logging.getLogger(__name__)
 
@@ -176,7 +177,7 @@ class Manager(object):
             # Simply override the current folder contents with new results.
             import errno
             if e.errno == errno.EEXIST or e.errno == errno.ENOENT:
-                _log.warning("No results.html file found in previous run, skipping it.")
+                self._printer.write_update("No results.html file found in previous run, skipping it.")
             return None
         archived_name = ''.join((self._filesystem.basename(self._results_directory), "_", timestamp))
         archived_path = self._filesystem.join(self._filesystem.dirname(self._results_directory), archived_name)
@@ -269,9 +270,11 @@ class Manager(object):
         try:
             self._start_servers(tests_to_run)
 
+            num_workers = self._port.num_workers(int(self._options.child_processes))
+
             initial_results = self._run_tests(
                 tests_to_run, tests_to_skip, self._options.repeat_each, self._options.iterations,
-                self._port.num_workers(int(self._options.child_processes)))
+                num_workers)
 
             # Don't retry failures when interrupted by user or failures limit exception.
             should_retry_failures = should_retry_failures and not (initial_results.interrupted or initial_results.keyboard_interrupted)
@@ -282,17 +285,23 @@ class Manager(object):
                 enabled_pixel_tests_in_retry = self._force_pixel_tests_if_needed()
 
                 for retry_attempt in xrange(1, self._options.num_retries + 1):
+                    if not tests_to_retry:
+                        break
+
                     _log.info('')
-                    _log.info('Retrying %d unexpected failure(s), attempt %d of %d...' %
-                              (len(tests_to_retry), retry_attempt, self._options.num_retries + 1))
-                    _log.info('')
-                    all_retry_results.append(
-                        self._run_tests(tests_to_retry,
-                                        tests_to_skip=set(),
-                                        repeat_each=1,
-                                        iterations=1,
-                                        num_workers=1,
-                                        retry_attempt=retry_attempt))
+                    _log.info('Retrying %s, attempt %d of %d...' %
+                              (grammar.pluralize('unexpected failure', len(tests_to_retry)),
+                               retry_attempt, self._options.num_retries))
+
+                    retry_results = self._run_tests(tests_to_retry,
+                                                    tests_to_skip=set(),
+                                                    repeat_each=1,
+                                                    iterations=1,
+                                                    num_workers=num_workers,
+                                                    retry_attempt=retry_attempt)
+                    all_retry_results.append(retry_results)
+
+                    tests_to_retry = self._tests_to_retry(retry_results)
 
                 if enabled_pixel_tests_in_retry:
                     self._options.pixel_tests = False

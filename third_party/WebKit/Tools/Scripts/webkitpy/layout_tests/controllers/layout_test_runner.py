@@ -105,7 +105,9 @@ class LayoutTestRunner(object):
         # run all of the locked shards first.
         all_shards = locked_shards + unlocked_shards
         num_workers = min(num_workers, len(all_shards))
-        self._printer.print_workers_and_shards(num_workers, len(all_shards), len(locked_shards))
+
+        if retry_attempt < 1:
+            self._printer.print_workers_and_shards(num_workers, len(all_shards), len(locked_shards))
 
         if self._options.dry_run:
             return run_results

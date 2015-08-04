@@ -233,6 +233,10 @@ def summarize_results(port_obj, expectations, initial_results,
             has_unexpected_pass = False
             result_types_seen = set([result.type])
             for retry_attempt_results in all_retry_results:
+                # If a test passes on one of the retries, it won't be in the subsequent retries.
+                if test_name not in retry_attempt_results.results_by_name:
+                    break
+
                 retry_result_type = retry_attempt_results.results_by_name[test_name].type
                 retry_result_keyword = keywords[retry_result_type]
 
