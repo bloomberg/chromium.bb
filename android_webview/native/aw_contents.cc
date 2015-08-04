@@ -491,11 +491,8 @@ void AwContents::InvokeGeolocationCallback(JNIEnv* env,
                                            jboolean value,
                                            jstring origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (pending_geolocation_prompts_.empty()) {
-    LOG(WARNING) << "Response for this geolocation request has been received."
-                 << " Ignoring subsequent responses";
+  if (pending_geolocation_prompts_.empty())
     return;
-  }
 
   GURL callback_origin(base::android::ConvertJavaStringToUTF16(env, origin));
   if (callback_origin.GetOrigin() ==
@@ -506,9 +503,6 @@ void AwContents::InvokeGeolocationCallback(JNIEnv* env,
       ShowGeolocationPromptHelper(java_ref_,
                                   pending_geolocation_prompts_.front().first);
     }
-  } else {
-    LOG(WARNING) << "Response for this geolocation request has been received."
-                 << " Ignoring subsequent responses";
   }
 }
 

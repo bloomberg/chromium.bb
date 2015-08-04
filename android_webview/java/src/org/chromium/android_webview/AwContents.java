@@ -37,11 +37,11 @@ import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.webkit.GeolocationPermissions;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.widget.OverScroller;
 
+import org.chromium.android_webview.permission.AwGeolocationCallback;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
@@ -2441,25 +2441,13 @@ public class AwContents implements SmartClipProvider,
         mContentsClient.onReceivedHttpAuthRequest(handler, host, realm);
     }
 
-    private class AwGeolocationCallback implements GeolocationPermissions.Callback {
+    public AwGeolocationPermissions getGeolocationPermissions() {
+        return mBrowserContext.getGeolocationPermissions();
+    }
 
-        @Override
-        public void invoke(final String origin, final boolean allow, final boolean retain) {
-            ThreadUtils.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (retain) {
-                        if (allow) {
-                            mBrowserContext.getGeolocationPermissions().allow(origin);
-                        } else {
-                            mBrowserContext.getGeolocationPermissions().deny(origin);
-                        }
-                    }
-                    if (isDestroyed()) return;
-                    nativeInvokeGeolocationCallback(mNativeAwContents, allow, origin);
-                }
-            });
-        }
+    public void invokeGeolocationCallback(boolean value, String requestingFrame) {
+        if (isDestroyed()) return;
+        nativeInvokeGeolocationCallback(mNativeAwContents, value, requestingFrame);
     }
 
     @CalledByNative
@@ -2478,7 +2466,7 @@ public class AwContents implements SmartClipProvider,
             return;
         }
         mContentsClient.onGeolocationPermissionsShowPrompt(
-                origin, new AwGeolocationCallback());
+                origin, new AwGeolocationCallback(origin, this));
     }
 
     @CalledByNative
