@@ -123,8 +123,8 @@ gfx::Rect BubbleFrameView::GetBoundsForClientView() const {
 
 gfx::Rect BubbleFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
-  return const_cast<BubbleFrameView*>(this)->GetUpdatedWindowBounds(
-      gfx::Rect(), client_bounds.size(), false);
+  gfx::Size size(GetSizeForClientSize(client_bounds.size()));
+  return bubble_border_->GetBounds(gfx::Rect(), size);
 }
 
 int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
@@ -352,7 +352,8 @@ gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
   return bubble_border_->GetBounds(anchor_rect, size);
 }
 
-gfx::Rect BubbleFrameView::GetAvailableScreenBounds(const gfx::Rect& rect) {
+gfx::Rect BubbleFrameView::GetAvailableScreenBounds(
+    const gfx::Rect& rect) const {
   // The bubble attempts to fit within the current screen bounds.
   // TODO(scottmg): Native is wrong. http://crbug.com/133312
   return gfx::Screen::GetNativeScreen()->GetDisplayNearestPoint(

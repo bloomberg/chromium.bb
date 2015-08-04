@@ -87,7 +87,7 @@ class TestBubbleFrameView : public BubbleFrameView {
   }
 
   // BubbleFrameView overrides:
-  gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) override {
+  gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) const override {
     return available_bounds_;
   }
 

@@ -86,7 +86,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
  protected:
   // Returns the available screen bounds if the frame were to show in |rect|.
-  virtual gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect);
+  virtual gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) const;
 
   bool IsCloseButtonVisible() const;
   gfx::Rect GetCloseButtonMirroredBounds() const;
