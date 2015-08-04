@@ -12,6 +12,7 @@
 namespace blink {
 
 class ExceptionState;
+class USBAlternateInterface;
 class USBConfiguration;
 
 class USBInterface
@@ -27,6 +28,7 @@ public:
     const WebUSBDeviceInfo::Interface& info() const;
 
     uint8_t interfaceNumber() const;
+    HeapVector<Member<USBAlternateInterface>> alternates() const;
 
     DECLARE_TRACE();
 

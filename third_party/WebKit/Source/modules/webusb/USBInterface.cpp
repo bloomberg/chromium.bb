@@ -6,6 +6,7 @@
 #include "modules/webusb/USBInterface.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "modules/webusb/USBAlternateInterface.h"
 #include "modules/webusb/USBConfiguration.h"
 
 namespace blink {
@@ -36,6 +37,14 @@ USBInterface::USBInterface(const USBConfiguration* configuration, size_t interfa
 const WebUSBDeviceInfo::Interface& USBInterface::info() const
 {
     return m_configuration->info().interfaces[m_interfaceIndex];
+}
+
+HeapVector<Member<USBAlternateInterface>> USBInterface::alternates() const
+{
+    HeapVector<Member<USBAlternateInterface>> alternates;
+    for (size_t i = 0; i < info().alternates.size(); ++i)
+        alternates.append(USBAlternateInterface::create(this, i));
+    return alternates;
 }
 
 uint8_t USBInterface::interfaceNumber() const

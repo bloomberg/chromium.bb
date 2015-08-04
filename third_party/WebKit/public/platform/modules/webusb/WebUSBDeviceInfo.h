@@ -12,6 +12,44 @@
 namespace blink {
 
 struct WebUSBDeviceInfo {
+    struct Endpoint {
+        enum class Type {
+            Bulk,
+            Interrupt,
+            Isochronous
+        };
+
+        Endpoint()
+            : endpointNumber(0)
+            , direction(WebUSBDevice::TransferDirection::In)
+            , type(Type::Bulk)
+            , packetSize(0)
+        {
+        }
+
+        uint8_t endpointNumber;
+        WebUSBDevice::TransferDirection direction;
+        Type type;
+        uint32_t packetSize;
+    };
+
+    struct AlternateInterface {
+        AlternateInterface()
+            : alternateSetting(0)
+            , classCode(0)
+            , subclassCode(0)
+            , protocolCode(0)
+        {
+        }
+
+        uint8_t alternateSetting;
+        uint8_t classCode;
+        uint8_t subclassCode;
+        uint8_t protocolCode;
+        WebString interfaceName;
+        WebVector<Endpoint> endpoints;
+    };
+
     struct Interface {
         Interface()
             : interfaceNumber(0)
@@ -19,7 +57,7 @@ struct WebUSBDeviceInfo {
         }
 
         uint8_t interfaceNumber;
-        // WebVector<AlternateInterface> alternates;
+        WebVector<AlternateInterface> alternates;
     };
 
     struct Configuration {
