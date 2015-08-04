@@ -11,7 +11,9 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_TIME_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_TIME_H_
 
+#if !defined(NACL_IN_TOOLCHAIN_HEADERS)
 #include "native_client/src/include/build_config.h"
+#endif
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 
 #ifdef __cplusplus
@@ -41,13 +43,13 @@ typedef long int  nacl_abi_clock_t;  /* to be deprecated */
  * as a 24 byte trusted array, which is incorrect. This alignment causes
  * the trusted array to be correctly considered 32 bytes in length.
  */
-#if NACL_WINDOWS
+#if defined(NACL_WINDOWS) && NACL_WINDOWS != 0
 __declspec(align(8))
 #endif
 struct nacl_abi_timeval {
   nacl_abi_time_t      nacl_abi_tv_sec;
   nacl_abi_suseconds_t nacl_abi_tv_usec;
-#if NACL_WINDOWS
+#if defined(NACL_WINDOWS) && NACL_WINDOWS != 0
 };
 #else
 } __attribute__((aligned(8)));
