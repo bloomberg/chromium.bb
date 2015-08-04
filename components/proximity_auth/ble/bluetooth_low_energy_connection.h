@@ -23,7 +23,13 @@
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
+namespace base {
+class TaskRunner;
+}
+
 namespace proximity_auth {
+
+class BluetoothThrottler;
 
 // Represents a connection with a remote device over Bluetooth low energy. The
 // connection is a persistent bidirectional channel for sending and receiving
@@ -84,6 +90,7 @@ class BluetoothLowEnergyConnection : public Connection,
       const device::BluetoothUUID remote_service_uuid,
       const device::BluetoothUUID to_peripheral_char_uuid,
       const device::BluetoothUUID from_peripheral_char_uuid,
+      BluetoothThrottler* bluetooth_throttler,
       int max_number_of_write_attempts);
 
   ~BluetoothLowEnergyConnection() override;
@@ -97,8 +104,8 @@ class BluetoothLowEnergyConnection : public Connection,
   void SetSubStatus(SubStatus status);
   SubStatus sub_status() { return sub_status_; }
 
-  // Sets |delay_after_gatt_connection_| for testing.
-  void SetDelayForTesting(base::TimeDelta delay);
+  // Sets |task_runner_| for testing.
+  void SetTaskRunnerForTesting(scoped_refptr<base::TaskRunner> task_runner);
 
   // Virtual for testing.
   virtual BluetoothLowEnergyCharacteristicsFinder* CreateCharacteristicsFinder(
@@ -138,11 +145,14 @@ class BluetoothLowEnergyConnection : public Connection,
     int number_of_failed_attempts;
   };
 
-  // Called when a GATT connection is created or received by the constructor.
+  // Creates the GATT connection with |remote_device|.
+  void CreateGattConnection();
+
+  // Called when a GATT connection is created.
   void OnGattConnectionCreated(
       scoped_ptr<device::BluetoothGattConnection> gatt_connection);
 
-  // Callback called when there is an error creating the connection.
+  // Callback called when there is an error creating the GATT connection.
   void OnCreateGattConnectionError(
       device::BluetoothDevice::ConnectErrorCode error_code);
 
@@ -247,6 +257,12 @@ class BluetoothLowEnergyConnection : public Connection,
 
   // Characteristic used to receive data from the remote device.
   RemoteAttribute from_peripheral_char_;
+
+  // Throttles repeated connection attempts to the same device. This is a
+  // workaround for crbug.com/508919. Not owned, must outlive this instance.
+  BluetoothThrottler* bluetooth_throttler_;
+
+  scoped_refptr<base::TaskRunner> task_runner_;
 
   // The GATT connection with the remote device.
   scoped_ptr<device::BluetoothGattConnection> gatt_connection_;

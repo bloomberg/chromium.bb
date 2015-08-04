@@ -89,8 +89,8 @@ class MockBluetoothLowEnergyConnectionFinder
                                            kToPeripheralCharUUID,
                                            kFromPeripheralCharUUID,
                                            device_whitelist,
-                                           kMaxNumberOfAttempts) {
-  }
+                                           nullptr,
+                                           kMaxNumberOfAttempts) {}
 
   ~MockBluetoothLowEnergyConnectionFinder() override {}
 
@@ -219,14 +219,14 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   // should not crash.
   BluetoothLowEnergyConnectionFinder connection_finder(
       kServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID,
-      device_whitelist_.get(), kMaxNumberOfAttempts);
+      device_whitelist_.get(), nullptr, kMaxNumberOfAttempts);
 }
 
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
        Find_StartsDiscoverySession) {
   BluetoothLowEnergyConnectionFinder connection_finder(
       kServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID,
-      device_whitelist_.get(), kMaxNumberOfAttempts);
+      device_whitelist_.get(), nullptr, kMaxNumberOfAttempts);
 
   EXPECT_CALL(*adapter_, StartDiscoverySessionWithFilterRaw(_, _, _));
   EXPECT_CALL(*adapter_, AddObserver(_));
@@ -237,7 +237,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
        Find_StopsDiscoverySessionBeforeDestroying) {
   BluetoothLowEnergyConnectionFinder connection_finder(
       kServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID,
-      device_whitelist_.get(), kMaxNumberOfAttempts);
+      device_whitelist_.get(), nullptr, kMaxNumberOfAttempts);
 
   device::BluetoothAdapter::DiscoverySessionCallback discovery_callback;
   scoped_ptr<device::MockBluetoothDiscoverySession> discovery_session(

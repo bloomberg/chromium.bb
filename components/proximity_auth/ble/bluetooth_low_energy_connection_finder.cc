@@ -30,20 +30,23 @@ namespace {
 const int kMinDiscoveryRSSI = -90;
 }  // namespace
 
+class BluetoothThrottler;
+
 BluetoothLowEnergyConnectionFinder::BluetoothLowEnergyConnectionFinder(
     const std::string& remote_service_uuid,
     const std::string& to_peripheral_char_uuid,
     const std::string& from_peripheral_char_uuid,
     const BluetoothLowEnergyDeviceWhitelist* device_whitelist,
+    BluetoothThrottler* bluetooth_throttler,
     int max_number_of_tries)
     : remote_service_uuid_(device::BluetoothUUID(remote_service_uuid)),
       to_peripheral_char_uuid_(device::BluetoothUUID(to_peripheral_char_uuid)),
       from_peripheral_char_uuid_(
           device::BluetoothUUID(from_peripheral_char_uuid)),
       device_whitelist_(device_whitelist),
+      bluetooth_throttler_(bluetooth_throttler),
       max_number_of_tries_(max_number_of_tries),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 BluetoothLowEnergyConnectionFinder::~BluetoothLowEnergyConnectionFinder() {
   if (discovery_session_) {
@@ -249,7 +252,7 @@ scoped_ptr<Connection> BluetoothLowEnergyConnectionFinder::CreateConnection(
 
   return make_scoped_ptr(new BluetoothLowEnergyConnection(
       remote_device, adapter_, remote_service_uuid_, to_peripheral_char_uuid_,
-      from_peripheral_char_uuid_, max_number_of_tries_));
+      from_peripheral_char_uuid_, bluetooth_throttler_, max_number_of_tries_));
 }
 
 void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(

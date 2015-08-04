@@ -27,6 +27,7 @@ namespace proximity_auth {
 class BluetoothLowEnergyConnection;
 class BluetoothLowEnergyConnectionFinder;
 class BluetoothLowEnergyDeviceWhitelist;
+class BluetoothThrottler;
 class Connection;
 class ConnectionFinder;
 class ProximityAuthClient;
@@ -132,6 +133,8 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
   scoped_ptr<Connection> connection_;
 
   scoped_ptr<BluetoothLowEnergyDeviceWhitelist> device_whitelist_;
+
+  scoped_ptr<BluetoothThrottler> bluetooth_throttler_;
 
   const base::TimeDelta polling_interval_;
 

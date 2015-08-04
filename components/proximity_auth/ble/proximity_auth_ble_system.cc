@@ -11,10 +11,12 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection_finder.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_device_whitelist.h"
 #include "components/proximity_auth/ble/fake_wire_message.h"
+#include "components/proximity_auth/bluetooth_throttler_impl.h"
 #include "components/proximity_auth/connection.h"
 #include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/cryptauth_client.h"
@@ -92,6 +94,8 @@ ProximityAuthBleSystem::ProximityAuthBleSystem(
       proximity_auth_client_(proximity_auth_client),
       cryptauth_client_factory_(cryptauth_client_factory.Pass()),
       device_whitelist_(new BluetoothLowEnergyDeviceWhitelist(pref_service)),
+      bluetooth_throttler_(new BluetoothThrottlerImpl(
+          make_scoped_ptr(new base::DefaultTickClock()))),
       device_authenticated_(false),
       unlock_requested_(false),
       is_polling_screen_state_(false),
@@ -106,6 +110,8 @@ ProximityAuthBleSystem::ProximityAuthBleSystem(
     ProximityAuthClient* proximity_auth_client)
     : screenlock_bridge_(screenlock_bridge.Pass()),
       proximity_auth_client_(proximity_auth_client),
+      bluetooth_throttler_(new BluetoothThrottlerImpl(
+          make_scoped_ptr(new base::DefaultTickClock()))),
       unlock_requested_(false),
       is_polling_screen_state_(false),
       unlock_keys_requested_(false),
@@ -208,7 +214,7 @@ void ProximityAuthBleSystem::OnScreenDidLock(
 ConnectionFinder* ProximityAuthBleSystem::CreateConnectionFinder() {
   return new BluetoothLowEnergyConnectionFinder(
       kSmartLockServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID,
-      device_whitelist_.get(), kMaxNumberOfTries);
+      device_whitelist_.get(), bluetooth_throttler_.get(), kMaxNumberOfTries);
 }
 
 void ProximityAuthBleSystem::OnScreenDidUnlock(

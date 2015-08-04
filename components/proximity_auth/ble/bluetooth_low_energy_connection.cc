@@ -8,10 +8,12 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_characteristics_finder.h"
 #include "components/proximity_auth/ble/fake_wire_message.h"
+#include "components/proximity_auth/bluetooth_throttler.h"
 #include "components/proximity_auth/connection_finder.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/wire_message.h"
@@ -53,12 +55,15 @@ BluetoothLowEnergyConnection::BluetoothLowEnergyConnection(
     const BluetoothUUID remote_service_uuid,
     const BluetoothUUID to_peripheral_char_uuid,
     const BluetoothUUID from_peripheral_char_uuid,
+    BluetoothThrottler* bluetooth_throttler,
     int max_number_of_write_attempts)
     : Connection(device),
       adapter_(adapter),
       remote_service_({remote_service_uuid, ""}),
       to_peripheral_char_({to_peripheral_char_uuid, ""}),
       from_peripheral_char_({from_peripheral_char_uuid, ""}),
+      bluetooth_throttler_(bluetooth_throttler),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       sub_status_(SubStatus::DISCONNECTED),
       receiving_bytes_(false),
       write_remote_characteristic_pending_(false),
@@ -84,12 +89,36 @@ BluetoothLowEnergyConnection::~BluetoothLowEnergyConnection() {
 void BluetoothLowEnergyConnection::Connect() {
   DCHECK(sub_status() == SubStatus::DISCONNECTED);
 
+  SetSubStatus(SubStatus::WAITING_GATT_CONNECTION);
+  base::TimeDelta throttler_delay = bluetooth_throttler_->GetDelay();
+  PA_LOG(INFO) << "Connecting in  " << throttler_delay;
+
   start_time_ = base::TimeTicks::Now();
+
+  // If necessary, wait to create a new GATT connection.
+  //
+  // Avoid creating a new GATT connection immediately after a given device was
+  // disconnected. This is a workaround for crbug.com/508919.
+  if (!throttler_delay.is_zero()) {
+    task_runner_->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&BluetoothLowEnergyConnection::CreateGattConnection,
+                   weak_ptr_factory_.GetWeakPtr()),
+        throttler_delay);
+    return;
+  }
+
+  CreateGattConnection();
+}
+
+void BluetoothLowEnergyConnection::CreateGattConnection() {
+  DCHECK(sub_status() == SubStatus::WAITING_GATT_CONNECTION);
+
   BluetoothDevice* remote_device = GetRemoteDevice();
   if (remote_device) {
     PA_LOG(INFO) << "Creating GATT connection with "
                  << remote_device->GetAddress();
-    SetSubStatus(SubStatus::WAITING_GATT_CONNECTION);
+
     remote_device->CreateGattConnection(
         base::Bind(&BluetoothLowEnergyConnection::OnGattConnectionCreated,
                    weak_ptr_factory_.GetWeakPtr()),
@@ -131,8 +160,9 @@ void BluetoothLowEnergyConnection::SetSubStatus(SubStatus new_sub_status) {
   }
 }
 
-void BluetoothLowEnergyConnection::SetDelayForTesting(base::TimeDelta delay) {
-  delay_after_gatt_connection_ = delay;
+void BluetoothLowEnergyConnection::SetTaskRunnerForTesting(
+    scoped_refptr<base::TaskRunner> task_runner) {
+  task_runner_ = task_runner;
 }
 
 void BluetoothLowEnergyConnection::SendMessageImpl(
@@ -302,6 +332,9 @@ void BluetoothLowEnergyConnection::OnGattConnectionCreated(
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&BluetoothLowEnergyConnection::OnCharacteristicsFinderError,
                  weak_ptr_factory_.GetWeakPtr())));
+
+  // Informing |bluetooth_trottler_| a new connection was established.
+  bluetooth_throttler_->OnConnection(this);
 }
 
 BluetoothLowEnergyCharacteristicsFinder*
@@ -409,7 +442,7 @@ void BluetoothLowEnergyConnection::SendInviteToConnectSignal() {
     // This is a workaround for crbug.com/498850. Currently, trying to
     // write/read characteristics immediatelly after the GATT connection was
     // established fails with GATT_ERROR_FAILED.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    task_runner_->PostDelayedTask(
         FROM_HERE,
         base::Bind(&BluetoothLowEnergyConnection::WriteRemoteCharacteristic,
                    weak_ptr_factory_.GetWeakPtr(), write_request),

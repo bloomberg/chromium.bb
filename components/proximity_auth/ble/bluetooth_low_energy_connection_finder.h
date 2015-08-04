@@ -25,6 +25,7 @@
 namespace proximity_auth {
 
 class BluetoothLowEnergyDeviceWhitelist;
+class BluetoothThrottler;
 
 // This ConnectionFinder implementation is specialized in finding a Bluetooth
 // Low Energy remote device.
@@ -38,6 +39,7 @@ class BluetoothLowEnergyConnectionFinder
       const std::string& to_peripheral_char_uuid,
       const std::string& from_peripheral_char_uuid,
       const BluetoothLowEnergyDeviceWhitelist* device_whitelist,
+      BluetoothThrottler* bluetooth_throttler,
       int max_number_of_tries);
   ~BluetoothLowEnergyConnectionFinder() override;
 
@@ -111,6 +113,10 @@ class BluetoothLowEnergyConnectionFinder
   // Devices in |device_whitelist_| don't need to have |remote_service_uuid_|
   // cached or advertised. Not owned, must outlive this instance.
   const BluetoothLowEnergyDeviceWhitelist* device_whitelist_;
+
+  // Throttles repeated connection attempts to the same device. This is a
+  // workaround for crbug.com/508919. Not owned, must outlive this instance.
+  BluetoothThrottler* bluetooth_throttler_;
 
   // The Bluetooth adapter over which the Bluetooth connection will be made.
   scoped_refptr<device::BluetoothAdapter> adapter_;
