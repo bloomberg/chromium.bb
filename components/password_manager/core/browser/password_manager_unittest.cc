@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,6 +18,7 @@
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/password_manager/core/common/password_manager_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1190,6 +1192,51 @@ TEST_F(PasswordManagerTest, PasswordGenerationUsernameChanged) {
   // What was "new password" field in the submitted form, becomes the current
   // password field in the form to save.
   EXPECT_EQ(form.new_password_value, form_to_save.password_value);
+}
+
+TEST_F(PasswordManagerTest, ForceSavingPasswords) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnablePasswordForceSaving);
+  PasswordForm form(MakeSimpleForm());
+
+  std::vector<PasswordForm> observed;
+  observed.push_back(form);
+  EXPECT_CALL(*store_, GetLogins(_, _, _))
+      .WillRepeatedly(WithArg<2>(InvokeEmptyConsumer()));
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  scoped_ptr<PasswordFormManager> form_manager_to_save;
+  EXPECT_CALL(client_, IsSavingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(client_,
+              PromptUserToSavePasswordPtr(
+                  _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+  manager()->OnPasswordFormForceSaveRequested(&driver_, form);
+  ASSERT_TRUE(form_manager_to_save);
+  EXPECT_EQ(form.password_value,
+            PasswordFormManager::PasswordToSave(
+                form_manager_to_save->pending_credentials()));
+}
+
+// Forcing Chrome to save an empty passwords should fail without a crash.
+TEST_F(PasswordManagerTest, ForceSavingPasswords_Empty) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnablePasswordForceSaving);
+  PasswordForm empty_password_form;
+
+  std::vector<PasswordForm> observed;
+  observed.push_back(empty_password_form);
+  EXPECT_CALL(*store_, GetLogins(_, _, _))
+      .WillRepeatedly(WithArg<2>(InvokeEmptyConsumer()));
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  EXPECT_CALL(client_, IsSavingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(client_, PromptUserToSavePasswordPtr(_, _)).Times(0);
+  manager()->OnPasswordFormForceSaveRequested(&driver_, empty_password_form);
 }
 
 }  // namespace password_manager

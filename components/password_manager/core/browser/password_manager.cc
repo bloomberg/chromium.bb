@@ -433,7 +433,8 @@ void PasswordManager::OnPasswordFormForceSaveRequested(
   // mark the form as force saved, and recreate the pending login managers,
   // because the password store might have changed.
   ProvisionallySavePassword(password_form);
-  OnLoginSuccessful();
+  if (provisional_save_manager_)
+    OnLoginSuccessful();
 }
 
 void PasswordManager::OnPasswordFormsParsed(
@@ -523,7 +524,7 @@ bool PasswordManager::CanProvisionalManagerSave() {
     logger->LogMessage(Logger::STRING_CAN_PROVISIONAL_MANAGER_SAVE_METHOD);
   }
 
-  if (!provisional_save_manager_.get()) {
+  if (!provisional_save_manager_) {
     if (logger) {
       logger->LogMessage(Logger::STRING_NO_PROVISIONAL_SAVE_MANAGER);
     }
