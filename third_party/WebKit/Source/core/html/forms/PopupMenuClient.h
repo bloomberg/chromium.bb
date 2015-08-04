@@ -44,9 +44,6 @@ public:
     virtual Element& itemElement(unsigned listIndex) const = 0;
     // TODO(tkent): Remove itemFoo() functions. Use itemElement() instead.
     virtual String itemText(unsigned listIndex) const = 0;
-    virtual String itemToolTip(unsigned listIndex) const = 0;
-    virtual String itemAccessibilityText(unsigned listIndex) const = 0;
-    virtual bool itemIsEnabled(unsigned listIndex) const = 0;
     virtual bool itemIsDisplayNone(unsigned listIndex) const = 0;
     virtual LayoutUnit clientPaddingLeft() const = 0;
     virtual LayoutUnit clientPaddingRight() const = 0;
@@ -55,9 +52,6 @@ public:
     virtual void popupDidHide() = 0;
     // A popup is canceled when the popup was hidden without selecting an item.
     virtual void popupDidCancel() = 0;
-    virtual bool itemIsSeparator(unsigned listIndex) const = 0;
-    virtual bool itemIsLabel(unsigned listIndex) const = 0;
-    virtual bool itemIsSelected(unsigned listIndex) const = 0;
     // Provisional selection is a selection made using arrow keys or type ahead.
     virtual void provisionalSelectionChanged(unsigned) = 0;
     virtual IntRect elementRectRelativeToViewport() const = 0;

@@ -83,9 +83,6 @@ private:
     void selectionCleared() override { }
     Element& itemElement(unsigned listIndex) const override;
     String itemText(unsigned listIndex) const override;
-    String itemToolTip(unsigned listIndex) const override;
-    String itemAccessibilityText(unsigned listIndex) const override;
-    bool itemIsEnabled(unsigned listIndex) const override;
     bool itemIsDisplayNone(unsigned listIndex) const override;
     LayoutUnit clientPaddingLeft() const override;
     LayoutUnit clientPaddingRight() const override;
@@ -93,9 +90,6 @@ private:
     int selectedIndex() const override;
     void popupDidHide() override;
     void popupDidCancel() override;
-    bool itemIsSeparator(unsigned listIndex) const override;
-    bool itemIsLabel(unsigned listIndex) const override;
-    bool itemIsSelected(unsigned listIndex) const override;
     void provisionalSelectionChanged(unsigned) override;
     void listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow = true) override;
     bool multiple() const override;

@@ -38,18 +38,12 @@ public:
 
     Element& itemElement(unsigned listIndex) const override { return *m_ownerElement->listItems()[listIndex]; }
     String itemText(unsigned listIndex) const override { return emptyString(); }
-    String itemToolTip(unsigned listIndex) const override { return emptyString(); }
-    String itemAccessibilityText(unsigned listIndex) const override { return emptyString(); }
-    bool itemIsEnabled(unsigned listIndex) const override { return true; }
     LayoutUnit clientPaddingLeft() const override { return 0; }
     LayoutUnit clientPaddingRight() const override { return 0; }
     int listSize() const override { return m_ownerElement->listItems().size(); }
     int selectedIndex() const override { return 0; }
     void popupDidHide() override { }
     void popupDidCancel() override { }
-    bool itemIsSeparator(unsigned listIndex) const override { return false;}
-    bool itemIsLabel(unsigned listIndex) const override { return false; }
-    bool itemIsSelected(unsigned listIndex) const override { return listIndex == 0;}
     bool itemIsDisplayNone(unsigned listIndex) const override { return computedStyleForItem(listIndex)->display() == NONE; }
     void provisionalSelectionChanged(unsigned listIndex) override { }
     bool multiple() const override { return false; }

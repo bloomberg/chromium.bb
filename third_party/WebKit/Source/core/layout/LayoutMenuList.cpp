@@ -458,43 +458,6 @@ String LayoutMenuList::itemText(unsigned listIndex) const
     return itemString;
 }
 
-String LayoutMenuList::itemAccessibilityText(unsigned listIndex) const
-{
-    // Allow the accessible name be changed if necessary.
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement()->listItems();
-    if (listIndex >= listItems.size())
-        return String();
-    return listItems[listIndex]->fastGetAttribute(aria_labelAttr);
-}
-
-String LayoutMenuList::itemToolTip(unsigned listIndex) const
-{
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement()->listItems();
-    if (listIndex >= listItems.size())
-        return String();
-    return listItems[listIndex]->title();
-}
-
-bool LayoutMenuList::itemIsEnabled(unsigned listIndex) const
-{
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement()->listItems();
-    if (listIndex >= listItems.size())
-        return false;
-    HTMLElement* element = listItems[listIndex];
-    if (!isHTMLOptionElement(*element))
-        return false;
-
-    bool groupEnabled = true;
-    if (Element* parentElement = element->parentElement()) {
-        if (isHTMLOptGroupElement(*parentElement))
-            groupEnabled = !parentElement->isDisabledFormControl();
-    }
-    if (!groupEnabled)
-        return false;
-
-    return !element->isDisabledFormControl();
-}
-
 bool LayoutMenuList::itemIsDisplayNone(unsigned listIndex) const
 {
     Element& element = *selectElement()->listItems()[listIndex];
@@ -548,27 +511,6 @@ void LayoutMenuList::popupDidCancel()
 {
     if (m_indexToSelectOnCancel >= 0)
         valueChanged(m_indexToSelectOnCancel);
-}
-
-bool LayoutMenuList::itemIsSeparator(unsigned listIndex) const
-{
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement()->listItems();
-    return listIndex < listItems.size() && isHTMLHRElement(*listItems[listIndex]);
-}
-
-bool LayoutMenuList::itemIsLabel(unsigned listIndex) const
-{
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement()->listItems();
-    return listIndex < listItems.size() && isHTMLOptGroupElement(*listItems[listIndex]);
-}
-
-bool LayoutMenuList::itemIsSelected(unsigned listIndex) const
-{
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement()->listItems();
-    if (listIndex >= listItems.size())
-        return false;
-    HTMLElement* element = listItems[listIndex];
-    return isHTMLOptionElement(*element) && toHTMLOptionElement(*element).selected();
 }
 
 void LayoutMenuList::provisionalSelectionChanged(unsigned listIndex)

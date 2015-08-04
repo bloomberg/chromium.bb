@@ -35,6 +35,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/HTMLOptionElement.h"
 #include "core/html/forms/PopupMenuClient.h"
 #include "core/page/Page.h"
 #include "core/style/ComputedStyle.h"
@@ -198,17 +199,20 @@ void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo& info, PopupMenuClient
         if (popupMenuClient.itemIsDisplayNone(i))
             continue;
 
+        Element& itemElement = popupMenuClient.itemElement(i);
         WebMenuItemInfo& popupItem = items[count++];
         popupItem.label = popupMenuClient.itemText(i);
-        popupItem.toolTip = popupMenuClient.itemToolTip(i);
-        if (popupMenuClient.itemIsSeparator(i))
+        popupItem.toolTip = itemElement.title();
+        popupItem.checked = false;
+        if (isHTMLHRElement(itemElement)) {
             popupItem.type = WebMenuItemInfo::Separator;
-        else if (popupMenuClient.itemIsLabel(i))
+        } else if (isHTMLOptGroupElement(itemElement)) {
             popupItem.type = WebMenuItemInfo::Group;
-        else
+        } else {
             popupItem.type = WebMenuItemInfo::Option;
-        popupItem.enabled = popupMenuClient.itemIsEnabled(i);
-        popupItem.checked = popupMenuClient.itemIsSelected(i);
+            popupItem.checked = toHTMLOptionElement(itemElement).selected();
+        }
+        popupItem.enabled = !itemElement.isDisabledFormControl();
         const ComputedStyle& style = *popupMenuClient.computedStyleForItem(i);
         popupItem.textDirection = toWebTextDirection(style.direction());
         popupItem.hasTextDirectionOverride = isOverride(style.unicodeBidi());
