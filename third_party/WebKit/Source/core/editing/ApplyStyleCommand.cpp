@@ -1217,11 +1217,11 @@ void ApplyStyleCommand::splitTextAtStart(const Position& start, const Position& 
 
     Position newEnd;
     if (end.isOffsetInAnchor() && start.containerNode() == end.containerNode())
-        newEnd = Position(end.containerText(), end.offsetInContainerNode() - start.offsetInContainerNode());
+        newEnd = Position(end.containerNode(), end.offsetInContainerNode() - start.offsetInContainerNode());
     else
         newEnd = end;
 
-    RefPtrWillBeRawPtr<Text> text = start.containerText();
+    RefPtrWillBeRawPtr<Text> text = toText(start.containerNode());
     splitTextNode(text, start.offsetInContainerNode());
     updateStartEnd(firstPositionInNode(text.get()), newEnd);
 }
@@ -1252,7 +1252,7 @@ void ApplyStyleCommand::splitTextElementAtStart(const Position& start, const Pos
     else
         newEnd = end;
 
-    splitTextNodeContainingElement(start.containerText(), start.offsetInContainerNode());
+    splitTextNodeContainingElement(toText(start.containerNode()), start.offsetInContainerNode());
     updateStartEnd(positionBeforeNode(start.containerNode()), newEnd);
 }
 
@@ -1261,7 +1261,7 @@ void ApplyStyleCommand::splitTextElementAtEnd(const Position& start, const Posit
     ASSERT(end.containerNode()->isTextNode());
 
     bool shouldUpdateStart = start.containerNode() == end.containerNode();
-    splitTextNodeContainingElement(end.containerText(), end.offsetInContainerNode());
+    splitTextNodeContainingElement(toText(end.containerNode()), end.offsetInContainerNode());
 
     Node* parentElement = end.containerNode()->parentNode();
     if (!parentElement || !parentElement->previousSibling())
