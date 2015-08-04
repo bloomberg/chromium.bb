@@ -58,6 +58,10 @@ InfoBarViewPlaceholder ChromeBrowserProvider::CreateInfoBarView(
   return nullptr;
 }
 
+ChromeIdentityService* ChromeBrowserProvider::GetChromeIdentityService() {
+  return nullptr;
+}
+
 StringProvider* ChromeBrowserProvider::GetStringProvider() {
   return nullptr;
 }

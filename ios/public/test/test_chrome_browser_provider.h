@@ -22,10 +22,12 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   static TestChromeBrowserProvider* GetTestProvider();
 
   // ChromeBrowserProvider:
+  ChromeIdentityService* GetChromeIdentityService() override;
   StringProvider* GetStringProvider() override;
   const char* GetChromeUIScheme() override;
 
  private:
+  scoped_ptr<ChromeIdentityService> chrome_identity_service_;
   scoped_ptr<FakeStringProvider> string_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(TestChromeBrowserProvider);

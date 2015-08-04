@@ -285,6 +285,8 @@
         'browser/search_engines/ui_thread_search_terms_data.h',
         'browser/signin/account_tracker_service_factory.cc',
         'browser/signin/account_tracker_service_factory.h',
+        'browser/signin/chrome_identity_service_observer_bridge.h',
+        'browser/signin/chrome_identity_service_observer_bridge.mm',
         'browser/signin/constants.h',
         'browser/signin/constants.mm',
         'browser/signin/gaia_auth_fetcher_ios.h',

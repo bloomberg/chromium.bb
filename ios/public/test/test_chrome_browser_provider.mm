@@ -5,6 +5,7 @@
 #include "ios/public/test/test_chrome_browser_provider.h"
 
 #include "base/logging.h"
+#include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "ios/public/test/fake_string_provider.h"
 
 namespace {
@@ -14,8 +15,8 @@ const char kUIScheme[] = "uischeme";
 namespace ios {
 
 TestChromeBrowserProvider::TestChromeBrowserProvider()
-    : string_provider_(new FakeStringProvider) {
-}
+    : chrome_identity_service_(new ios::ChromeIdentityService),
+      string_provider_(new FakeStringProvider) {}
 
 TestChromeBrowserProvider::~TestChromeBrowserProvider() {
 }
@@ -25,6 +26,10 @@ TestChromeBrowserProvider* TestChromeBrowserProvider::GetTestProvider() {
   ChromeBrowserProvider* provider = GetChromeBrowserProvider();
   DCHECK(provider);
   return static_cast<TestChromeBrowserProvider*>(provider);
+}
+
+ChromeIdentityService* TestChromeBrowserProvider::GetChromeIdentityService() {
+  return chrome_identity_service_.get();
 }
 
 StringProvider* TestChromeBrowserProvider::GetStringProvider() {

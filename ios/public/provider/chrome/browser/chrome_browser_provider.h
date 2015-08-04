@@ -46,6 +46,7 @@ namespace ios {
 
 class ChromeBrowserProvider;
 class ChromeBrowserStateManager;
+class ChromeIdentityService;
 class GeolocationUpdaterProvider;
 class StringProvider;
 class UpdatableResourceProvider;
@@ -78,6 +79,8 @@ class ChromeBrowserProvider {
   virtual InfoBarViewPlaceholder CreateInfoBarView(
       CGRect frame,
       InfoBarViewDelegate* delegate);
+  // Returns an instance of a Chrome identity service.
+  virtual ChromeIdentityService* GetChromeIdentityService();
   // Returns an instance of a string provider.
   virtual StringProvider* GetStringProvider();
   virtual GeolocationUpdaterProvider* GetGeolocationUpdaterProvider();
