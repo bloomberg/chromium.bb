@@ -59,9 +59,16 @@
   margin: 0 32px;
 }
 
-#icon {
+.icon {
   height: 32px;
   width: 32px;
+}
+
+#warning {
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/warning.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background: rgb(217, 84, 61);
 }
 
 #name,

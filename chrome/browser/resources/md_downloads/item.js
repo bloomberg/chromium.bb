@@ -80,22 +80,12 @@ cr.define('downloads', function() {
         this.$.progress.value = data.percent;
       }
 
-      var iconUrl = 'chrome://';
-
       if (this.isDangerous_) {
-        var dangerType = data.danger_type;
-
         this.isMalware_ =
-            dangerType == downloads.DangerType.DANGEROUS_CONTENT ||
-            dangerType == downloads.DangerType.DANGEROUS_HOST ||
-            dangerType == downloads.DangerType.DANGEROUS_URL ||
-            dangerType == downloads.DangerType.POTENTIALLY_UNWANTED;
-
-        // TODO(dbeam): this icon sucks: it's a PNG we have to scale and looks
-        // nothing like the mocks. Find a prettier, more vectorized version.
-        var dangerousFile = dangerType == downloads.DangerType.DANGEROUS_FILE;
-        var idr = dangerousFile ? 'IDR_WARNING' : 'IDR_SAFEBROWSING_WARNING';
-        iconUrl += 'theme/' + idr;
+            data.danger_type == downloads.DangerType.DANGEROUS_CONTENT ||
+            data.danger_type == downloads.DangerType.DANGEROUS_HOST ||
+            data.danger_type == downloads.DangerType.DANGEROUS_URL ||
+            data.danger_type == downloads.DangerType.POTENTIALLY_UNWANTED;
       } else {
         /** @const */ var completelyOnDisk =
             data.state == downloads.States.COMPLETE &&
@@ -133,10 +123,9 @@ cr.define('downloads', function() {
           link.textContent = data.by_ext_name;
         }
 
-        iconUrl += 'fileicon/' + encodeURIComponent(data.file_path);
+        var icon = 'chrome://fileicon/' + encodeURIComponent(data.file_path);
+        this.iconLoader_.loadScaledIcon(this.$['file-icon'], icon);
       }
-
-      this.iconLoader_.loadScaledIcon(this.$.icon, iconUrl);
     },
 
     /**
