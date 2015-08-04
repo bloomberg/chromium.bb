@@ -17,7 +17,7 @@ TEST_F(PositionTest, NextNodeIndex)
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";
     const char* shadowContent = "<content select=#two></content><content select=#one></content>";
     setBodyContent(bodyContent);
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
+    setShadowContent(shadowContent);
     Node* host = document().getElementById("host");
     Node* two = document().getElementById("two");
 
