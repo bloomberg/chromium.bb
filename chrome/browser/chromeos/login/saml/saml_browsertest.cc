@@ -58,6 +58,7 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/guest_view/browser/test_guest_view_manager.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
@@ -71,6 +72,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "google_apis/gaia/fake_gaia.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_switches.h"
@@ -735,24 +737,28 @@ class SAMLEnrollmentTest : public SamlTest,
   void StartSamlAndWaitForIdpPageLoad(const std::string& gaia_email) override;
 
   // content::WebContentsObserver:
-  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
 
   void WaitForEnrollmentSuccess();
+  guest_view::TestGuestViewManager* GetGuestViewManager();
+  content::WebContents* GetEnrollmentContents();
 
  private:
   scoped_ptr<policy::LocalPolicyTestServer> test_server_;
   base::ScopedTempDir temp_dir_;
 
   scoped_ptr<base::RunLoop> run_loop_;
-  content::RenderFrameHost* auth_frame_;
+
+  guest_view::TestGuestViewManagerFactory guest_view_manager_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SAMLEnrollmentTest);
 };
 
-SAMLEnrollmentTest::SAMLEnrollmentTest() : auth_frame_(nullptr) {
-  gaia_frame_parent_ = "oauth-enroll-signin-frame";
+SAMLEnrollmentTest::SAMLEnrollmentTest() {
+  guest_view::GuestViewManager::set_factory_for_testing(
+      &guest_view_manager_factory_);
+  gaia_frame_parent_ = "oauth-enroll-auth-view";
 }
 
 SAMLEnrollmentTest::~SAMLEnrollmentTest() {
@@ -780,8 +786,6 @@ void SAMLEnrollmentTest::SetUpCommandLine(base::CommandLine* command_line) {
 }
 
 void SAMLEnrollmentTest::SetUpOnMainThread() {
-  Observe(GetLoginUI()->GetWebContents());
-
   FakeGaia::AccessTokenInfo token_info;
   token_info.token = kTestUserinfoToken;
   token_info.scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
@@ -798,33 +802,22 @@ void SAMLEnrollmentTest::StartSamlAndWaitForIdpPageLoad(
   WaitForSigninScreen();
   run_loop_.reset(new base::RunLoop);
   ExistingUserController::current_controller()->OnStartEnterpriseEnrollment();
+  while (!GetEnrollmentContents()) {
+    GetGuestViewManager()->WaitForNextGuestCreated();
+  }
+  Observe(GetEnrollmentContents());
   run_loop_->Run();
 
-  SetSignFormField("Email", gaia_email);
+  SetSignFormField("identifier", gaia_email);
 
   run_loop_.reset(new base::RunLoop);
-  ExecuteJsInSigninFrame("document.getElementById('signIn').click();");
+  ExecuteJsInSigninFrame("document.getElementById('nextButton').click();");
   run_loop_->Run();
-}
-
-void SAMLEnrollmentTest::RenderFrameCreated(
-    content::RenderFrameHost* render_frame_host) {
-  content::RenderFrameHost* parent = render_frame_host->GetParent();
-  if (!parent || parent->GetFrameName() != gaia_frame_parent_)
-    return;
-
-  // The GAIA extension created the iframe in which the login form will be
-  // shown. Now wait for the login form to finish loading.
-  auth_frame_ = render_frame_host;
-  Observe(content::WebContents::FromRenderFrameHost(auth_frame_));
 }
 
 void SAMLEnrollmentTest::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
-  if (render_frame_host != auth_frame_)
-    return;
-
   const GURL origin = validated_url.GetOrigin();
   if (origin != gaia_https_forwarder_.GetURLForSSLHost(std::string()) &&
       origin != saml_https_forwarder_.GetURLForSSLHost(std::string())) {
@@ -860,9 +853,22 @@ void SAMLEnrollmentTest::WaitForEnrollmentSuccess() {
       &done));
 }
 
-// TODO(dzhioev): fix this test for webview case. http://crbug.com/513955
-IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest,
-                       DISABLED_WithoutCredentialsPassingAPI) {
+guest_view::TestGuestViewManager* SAMLEnrollmentTest::GetGuestViewManager() {
+  using namespace guest_view;
+  return static_cast<TestGuestViewManager*>(
+      TestGuestViewManager::FromBrowserContext(
+          ProfileHelper::GetSigninProfile()));
+}
+
+content::WebContents* SAMLEnrollmentTest::GetEnrollmentContents() {
+  content::RenderFrameHost* frame_host = InlineLoginUI::GetAuthFrame(
+      GetLoginUI()->GetWebContents(), GURL(), gaia_frame_parent_);
+  if (!frame_host)
+    return nullptr;
+  return content::WebContents::FromRenderFrameHost(frame_host);
+}
+
+IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithoutCredentialsPassingAPI) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
@@ -874,8 +880,7 @@ IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest,
   WaitForEnrollmentSuccess();
 }
 
-// TODO(dzhioev): fix the tests for webview case. http://crbug.com/513955
-IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, DISABLED_WithCredentialsPassingAPI) {
+IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithCredentialsPassingAPI) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");
   fake_saml_idp()->SetLoginAuthHTMLTemplate("saml_api_login_auth.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);

@@ -87,6 +87,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
 
   // Sets the frame name of the guest.
   void SetName(const std::string& name);
+  const std::string& name() { return name_; }
 
   // Set the zoom factor.
   void SetZoom(double zoom_factor);

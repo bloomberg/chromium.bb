@@ -25,6 +25,7 @@ class TestGuestViewManager : public GuestViewManager {
   void WaitForLastGuestDeleted();
 
   content::WebContents* WaitForSingleGuestCreated();
+  content::WebContents* WaitForNextGuestCreated();
   void WaitForNumGuestsCreated(size_t count);
 
   void WaitForSingleViewGarbageCollected();
@@ -98,6 +99,7 @@ class TestGuestViewManager : public GuestViewManager {
   std::vector<linked_ptr<content::WebContentsDestroyedWatcher>>
       guest_web_contents_watchers_;
   scoped_refptr<content::MessageLoopRunner> created_message_loop_runner_;
+  scoped_refptr<content::MessageLoopRunner> num_created_message_loop_runner_;
   scoped_refptr<content::MessageLoopRunner> gc_message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestGuestViewManager);

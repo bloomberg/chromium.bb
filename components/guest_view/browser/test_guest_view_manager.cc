@@ -64,6 +64,12 @@ content::WebContents* TestGuestViewManager::WaitForSingleGuestCreated() {
   return GetLastGuestCreated();
 }
 
+content::WebContents* TestGuestViewManager::WaitForNextGuestCreated() {
+  created_message_loop_runner_ = new content::MessageLoopRunner();
+  created_message_loop_runner_->Run();
+  return GetLastGuestCreated();
+}
+
 void TestGuestViewManager::WaitForNumGuestsCreated(size_t count) {
   if (count == num_guests_created_)
     return;
@@ -71,8 +77,8 @@ void TestGuestViewManager::WaitForNumGuestsCreated(size_t count) {
   waiting_for_guests_created_ = true;
   expected_num_guests_created_ = count;
 
-  created_message_loop_runner_ = new content::MessageLoopRunner;
-  created_message_loop_runner_->Run();
+  num_created_message_loop_runner_ = new content::MessageLoopRunner;
+  num_created_message_loop_runner_->Run();
 }
 
 void TestGuestViewManager::WaitForViewGarbageCollected() {
@@ -93,14 +99,17 @@ void TestGuestViewManager::AddGuest(int guest_instance_id,
       linked_ptr<content::WebContentsDestroyedWatcher>(
           new content::WebContentsDestroyedWatcher(guest_web_contents)));
 
+  if (created_message_loop_runner_.get())
+    created_message_loop_runner_->Quit();
+
   ++num_guests_created_;
   if (!waiting_for_guests_created_ &&
       num_guests_created_ != expected_num_guests_created_) {
     return;
   }
 
-  if (created_message_loop_runner_.get())
-    created_message_loop_runner_->Quit();
+  if (num_created_message_loop_runner_.get())
+    num_created_message_loop_runner_->Quit();
 }
 
 void TestGuestViewManager::GetGuestWebContentsList(
