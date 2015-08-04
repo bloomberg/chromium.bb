@@ -263,8 +263,8 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
     data->append(Platform::current()->loadResource("listPicker.css"));
     PagePopupClient::addString("</style></head><body><div id=main>Loading...</div><script>\n"
         "window.dialogArguments = {\n", data);
-    addProperty("selectedIndex", m_client->selectedIndex(), data);
     HTMLSelectElement& ownerElement = m_client->ownerElement();
+    addProperty("selectedIndex", ownerElement.optionToListIndex(ownerElement.selectedIndex()), data);
     const ComputedStyle* ownerStyle = ownerElement.computedStyle();
     ItemIterationContext context(*ownerStyle, data);
     context.serializeBaseStyle();
@@ -398,7 +398,6 @@ void PopupMenuImpl::setValueAndClosePopup(int numValue, const String& stringValu
     bool success;
     int listIndex = stringValue.toInt(&success);
     ASSERT(success);
-    m_client->selectionChanged(listIndex);
     m_client->valueChanged(listIndex);
     if (m_popup)
         m_chromeClient->closePagePopup(m_popup);

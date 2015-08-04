@@ -33,16 +33,11 @@ public:
     ~TestPopupMenuClient() override { }
 
     void valueChanged(unsigned listIndex, bool fireEvents = true) override { }
-    void selectionChanged(unsigned listIndex, bool fireEvents = true) override { }
-    void selectionCleared() override { }
-
     LayoutUnit clientPaddingLeft() const override { return 0; }
     LayoutUnit clientPaddingRight() const override { return 0; }
-    int selectedIndex() const override { return 0; }
     void popupDidHide() override { }
     void popupDidCancel() override { }
     void provisionalSelectionChanged(unsigned listIndex) override { }
-    bool multiple() const override { return false; }
     IntRect elementRectRelativeToViewport() const override { return IntRect(); }
     HTMLSelectElement& ownerElement() const override { return *m_ownerElement; }
 

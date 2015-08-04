@@ -138,8 +138,6 @@ void ExternalPopupMenu::disconnectClient()
 
 void ExternalPopupMenu::didChangeSelection(int index)
 {
-    if (m_popupMenuClient)
-        m_popupMenuClient->selectionChanged(toPopupMenuItemIndex(index, *m_popupMenuClient));
 }
 
 void ExternalPopupMenu::didAcceptIndex(int index)
@@ -168,14 +166,14 @@ void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
     // derefed. This ensures it does not get deleted while we are running this
     // method.
     RefPtrWillBeRawPtr<ExternalPopupMenu> protect(this);
-
+    RefPtrWillBeRawPtr<HTMLSelectElement> ownerElement(m_popupMenuClient->ownerElement());
     m_popupMenuClient->popupDidHide();
 
     if (!indices.size())
         m_popupMenuClient->valueChanged(static_cast<unsigned>(-1), true);
     else {
         for (size_t i = 0; i < indices.size(); ++i)
-            m_popupMenuClient->listBoxSelectItem(toPopupMenuItemIndex(indices[i], *m_popupMenuClient), (i > 0), false, (i == indices.size() - 1));
+            ownerElement->listBoxSelectItem(toPopupMenuItemIndex(indices[i], *m_popupMenuClient), (i > 0), false, (i == indices.size() - 1));
     }
 
     m_webExternalPopupMenu = 0;
@@ -221,12 +219,12 @@ void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo& info, PopupMenuClient
         popupItem.hasTextDirectionOverride = isOverride(style.unicodeBidi());
     }
 
-    const ComputedStyle& menuStyle = popupMenuClient.ownerElement().computedStyle() ? *popupMenuClient.ownerElement().computedStyle() : *popupMenuClient.ownerElement().ensureComputedStyle();
+    const ComputedStyle& menuStyle = ownerElement.computedStyle() ? *ownerElement.computedStyle() : *ownerElement.ensureComputedStyle();
     info.itemHeight = menuStyle.font().fontMetrics().height();
     info.itemFontSize = static_cast<int>(menuStyle.font().fontDescription().computedSize());
-    info.selectedIndex = toExternalPopupMenuItemIndex(popupMenuClient.selectedIndex(), popupMenuClient);
+    info.selectedIndex = toExternalPopupMenuItemIndex(ownerElement.optionToListIndex(ownerElement.selectedIndex()), popupMenuClient);
     info.rightAligned = menuStyle.direction() == RTL;
-    info.allowMultipleSelection = popupMenuClient.multiple();
+    info.allowMultipleSelection = ownerElement.multiple();
     if (count < itemCount)
         items.shrink(count);
     info.items = items;

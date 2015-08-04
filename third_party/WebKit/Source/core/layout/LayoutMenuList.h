@@ -77,16 +77,11 @@ private:
 
     // PopupMenuClient methods
     void valueChanged(unsigned listIndex, bool fireOnChange = true) override;
-    void selectionChanged(unsigned, bool) override { }
-    void selectionCleared() override { }
     LayoutUnit clientPaddingLeft() const override;
     LayoutUnit clientPaddingRight() const override;
-    int selectedIndex() const override;
     void popupDidHide() override;
     void popupDidCancel() override;
     void provisionalSelectionChanged(unsigned) override;
-    void listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow = true) override;
-    bool multiple() const override;
     IntRect elementRectRelativeToViewport() const override;
     HTMLSelectElement& ownerElement() const override;
 

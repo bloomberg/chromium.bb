@@ -251,7 +251,7 @@ void LayoutMenuList::setTextFromOption(int optionIndex)
     String text = emptyString();
     m_optionStyle.clear();
 
-    if (multiple()) {
+    if (selectElement()->multiple()) {
         unsigned selectedCount = 0;
         int firstSelectedIndex = -1;
         for (int i = 0; i < size; ++i) {
@@ -378,16 +378,6 @@ void LayoutMenuList::valueChanged(unsigned listIndex, bool fireOnChange)
     select->optionSelectedByUser(select->listToOptionIndex(listIndex), fireOnChange);
 }
 
-void LayoutMenuList::listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow)
-{
-    selectElement()->listBoxSelectItem(listIndex, allowMultiplySelections, shift, fireOnChangeNow);
-}
-
-bool LayoutMenuList::multiple() const
-{
-    return selectElement()->multiple();
-}
-
 IntRect LayoutMenuList::elementRectRelativeToViewport() const
 {
     // We don't use absoluteBoundingBoxRect() because it can return an IntRect
@@ -448,12 +438,6 @@ LayoutUnit LayoutMenuList::clientPaddingRight() const
     // If the appearance isn't MenulistPart, then the select is styled (non-native), so
     // we want to return the user specified padding.
     return paddingRight() + m_innerBlock->paddingRight();
-}
-
-int LayoutMenuList::selectedIndex() const
-{
-    HTMLSelectElement* select = selectElement();
-    return select->optionToListIndex(select->selectedIndex());
 }
 
 void LayoutMenuList::popupDidHide()
