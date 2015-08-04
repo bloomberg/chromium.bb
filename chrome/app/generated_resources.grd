@@ -8149,6 +8149,24 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_CLEAR_BROWSING_DATA_COUNTERS_DESCRIPTION" desc="Description of the flag that enables the data volume counters in the Clear browsing data dialog.">
         Shows data volume counters in the Clear browsing data dialog.
       </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_CALCULATING" desc="A text that is shown while the data volume is being counted.">
+        Calculating...
+      </message>
+      <message name="IDS_DEL_BROWSING_HISTORY_COUNTER" desc="A counter showing how many items of browsing history the user has.">
+        {COUNT, plural,
+         =1 {1 item}
+         other {# items}}
+      </message>
+      <message name="IDS_DEL_CACHE_COUNTER" desc="A counter showing how many kBs of cached data the user has.">
+        {COUNT, plural,
+         =1 {1 kB}
+         other {# kB}}
+      </message>
+      <message name="IDS_DEL_PASSWORDS_COUNTER" desc="A counter showing how many passwords the user has.">
+        {COUNT, plural,
+         =1 {1 password}
+         other {# passwords}}
+      </message>
 
       <!-- Supervised User Avatar Menu -->
       <message name="IDS_SUPERVISED_USER_INFO" desc="Text which explains that a supervised user is managed by a custodian.">

@@ -32,6 +32,14 @@
   padding: 6px 8px;
 }
 
+.clear-browser-data-counter {
+  color: #999;
+}
+
+input[type=checkbox]:not(:checked) ~ .clear-browser-data-counter {
+  display: none;
+}
+
 #clear-browser-data-info-banner:empty {
   display: none;
 }

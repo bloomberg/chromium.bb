@@ -7,16 +7,20 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data/browsing_data_counter.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/passwords_counter.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/accelerator_utils.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
@@ -28,9 +32,16 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace {
+
 const char kClearBrowsingDataLearnMoreUrl[] =
     "https://support.google.com/chrome/?p=settings_clear_browsing_data";
+
+bool AreCountersEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableClearBrowsingDataCounters);
 }
+
+}  // namespace
 
 namespace options {
 
@@ -53,6 +64,12 @@ void ClearBrowserDataHandler::InitializeHandler() {
       prefs,
       base::Bind(&ClearBrowserDataHandler::OnBrowsingHistoryPrefChanged,
                  base::Unretained(this)));
+
+  if (AreCountersEnabled()) {
+    AddCounter(
+        make_scoped_ptr(new PasswordsCounter()), IDS_DEL_PASSWORDS_COUNTER);
+    // TODO(msramek): Add counters for browsing history and cache.
+  }
 }
 
 void ClearBrowserDataHandler::InitializePage() {
@@ -222,6 +239,34 @@ void ClearBrowserDataHandler::OnBrowsingHistoryPrefChanged() {
   web_ui()->CallJavascriptFunction(
       "ClearBrowserDataOverlay.setAllowDeletingHistory",
       base::FundamentalValue(*allow_deleting_browser_history_));
+}
+
+void ClearBrowserDataHandler::AddCounter(
+    scoped_ptr<BrowsingDataCounter> counter, int text_grd_id) {
+  DCHECK(AreCountersEnabled());
+
+  counter->Init(
+      Profile::FromWebUI(web_ui()),
+      base::Bind(&ClearBrowserDataHandler::UpdateCounterText,
+                 base::Unretained(this),
+                 counter->GetPrefName(),
+                 text_grd_id));
+  counters_.push_back(counter.Pass());
+}
+
+void ClearBrowserDataHandler::UpdateCounterText(const std::string& pref_name,
+                                                int text_grd_id,
+                                                bool finished,
+                                                uint32 count) {
+  DCHECK(AreCountersEnabled());
+  base::string16 text = finished
+      ? l10n_util::GetPluralStringFUTF16(text_grd_id, count)
+      : l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_CALCULATING);
+
+  web_ui()->CallJavascriptFunction(
+      "ClearBrowserDataOverlay.updateCounter",
+      base::StringValue(pref_name),
+      base::StringValue(text));
 }
 
 }  // namespace options
