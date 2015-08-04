@@ -34,9 +34,8 @@ class AnimatedContentSamplerTest : public ::testing::Test {
   ~AnimatedContentSamplerTest() override {}
 
   void SetUp() override {
-    const base::TimeDelta since_epoch =
-        InitialTestTimeTicks() - base::TimeTicks::UnixEpoch();
-    rand_seed_ = abs(static_cast<int>(since_epoch.InMicroseconds()));
+    rand_seed_ = static_cast<int>(
+        (InitialTestTimeTicks() - base::TimeTicks()).InMicroseconds());
     sampler_.reset(new AnimatedContentSampler(GetMinCapturePeriod()));
   }
 
@@ -658,9 +657,8 @@ TEST_P(AnimatedContentSamplerParameterizedTest, FrameTimestampsAreSmooth) {
 // Tests that frame timestamps are "lightly pushed" back towards the original
 // presentation event times, which tells us the AnimatedContentSampler can
 // account for sources of timestamp drift and correct the drift.
-// flaky: http://crbug.com/487491
 TEST_P(AnimatedContentSamplerParameterizedTest,
-       DISABLED_FrameTimestampsConvergeTowardsEventTimes) {
+       FrameTimestampsConvergeTowardsEventTimes) {
   const int max_drift_increment_millis = 3;
 
   // Generate a full minute of events.
