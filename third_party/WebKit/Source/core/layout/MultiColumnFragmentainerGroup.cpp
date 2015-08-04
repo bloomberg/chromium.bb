@@ -117,19 +117,6 @@ bool MultiColumnFragmentainerGroup::recalculateColumnHeight(BalancedColumnHeight
     return true; // Need another pass.
 }
 
-void MultiColumnFragmentainerGroup::expandToEncompassFlowThreadOverflow()
-{
-    ASSERT(isLastGroup());
-    // Get the offset within the flow thread in its block progression direction. Then get the
-    // flow thread's remaining logical height including its overflow and expand our rect
-    // to encompass that remaining height and overflow. The idea is that we will generate
-    // additional columns and pages to hold that overflow, since people do write bad
-    // content like <body style="height:0px"> in multi-column layouts.
-    LayoutMultiColumnFlowThread* flowThread = m_columnSet.multiColumnFlowThread();
-    LayoutRect layoutRect = flowThread->layoutOverflowRect();
-    m_logicalBottomInFlowThread = flowThread->isHorizontalWritingMode() ? layoutRect.maxY() : layoutRect.maxX();
-}
-
 LayoutSize MultiColumnFragmentainerGroup::flowThreadTranslationAtOffset(LayoutUnit offsetInFlowThread) const
 {
     LayoutFlowThread* flowThread = m_columnSet.flowThread();

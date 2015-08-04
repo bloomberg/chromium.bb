@@ -137,10 +137,6 @@ public:
     // set or spanner.
     void endFlow(LayoutUnit offsetInFlowThread);
 
-    // Expand this set's flow thread portion rectangle to contain all trailing flow thread
-    // overflow. Only to be called on the last set.
-    void expandToEncompassFlowThreadContentsIfNeeded();
-
     void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const final;
 
     void attachToFlowThread();

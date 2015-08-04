@@ -56,8 +56,6 @@ public:
     void recordSpaceShortage(LayoutUnit);
     bool recalculateColumnHeight(BalancedColumnHeightCalculation calculationMode);
 
-    void expandToEncompassFlowThreadOverflow();
-
     LayoutSize flowThreadTranslationAtOffset(LayoutUnit offsetInFlowThread) const;
     LayoutUnit columnLogicalTopForOffset(LayoutUnit offsetInFlowThread) const;
     LayoutPoint visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const;

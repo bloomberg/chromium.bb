@@ -221,14 +221,6 @@ void LayoutMultiColumnSet::endFlow(LayoutUnit offsetInFlowThread)
     m_fragmentainerGroups.last().setLogicalBottomInFlowThread(offsetInFlowThread);
 }
 
-void LayoutMultiColumnSet::expandToEncompassFlowThreadContentsIfNeeded()
-{
-    ASSERT(multiColumnFlowThread()->lastMultiColumnSet() == this);
-    // FIXME: this may result in the need for creating additional rows, since there may not be
-    // enough space remaining in the currently last row.
-    m_fragmentainerGroups.last().expandToEncompassFlowThreadOverflow();
-}
-
 void LayoutMultiColumnSet::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
     minLogicalWidth = m_flowThread->minPreferredLogicalWidth();

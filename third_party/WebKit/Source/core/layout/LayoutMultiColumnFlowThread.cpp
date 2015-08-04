@@ -871,8 +871,16 @@ void LayoutMultiColumnFlowThread::layout()
     if (LayoutMultiColumnSet* lastSet = lastMultiColumnSet()) {
         ASSERT(lastSet == m_lastSetWorkedOn);
         if (!lastSet->nextSiblingMultiColumnBox()) {
-            lastSet->endFlow(logicalHeight());
-            lastSet->expandToEncompassFlowThreadContentsIfNeeded();
+            // Include trailing overflow in the last column set. The idea is that we will generate
+            // additional columns and pages to hold that overflow, since people do write bad content
+            // like <body style="height:0px"> in multi-column layouts.
+            // TODO(mstensho): Once we support nested multicol, adding in overflow here may result
+            // in the need for creating additional rows, since there may not be enough space
+            // remaining in the currently last row.
+            LayoutRect layoutRect = layoutOverflowRect();
+            LayoutUnit logicalBottomInFlowThread = isHorizontalWritingMode() ? layoutRect.maxY() : layoutRect.maxX();
+            ASSERT(logicalBottomInFlowThread >= logicalHeight());
+            lastSet->endFlow(logicalBottomInFlowThread);
         }
     }
     m_lastSetWorkedOn = nullptr;
