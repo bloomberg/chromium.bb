@@ -199,7 +199,7 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
         // If start is in the middle of a text node, split.
         if (!startStyle->collapseWhiteSpace() && start.offsetInContainerNode() > 0) {
             int startOffset = start.offsetInContainerNode();
-            Text* startText = start.containerText();
+            Text* startText = toText(start.containerNode());
             splitTextNode(startText, startOffset);
             start = firstPositionInNode(startText);
             if (isStartAndEndOnSameNode) {
@@ -221,14 +221,14 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
         if (endStyle->preserveNewline() && start == end && end.offsetInContainerNode() < end.containerNode()->maxCharacterOffset()) {
             int endOffset = end.offsetInContainerNode();
             if (!isNewLineAtPosition(end.previous()) && isNewLineAtPosition(end))
-                end = Position(end.containerText(), endOffset + 1);
+                end = Position(end.containerNode(), endOffset + 1);
             if (isEndAndEndOfLastParagraphOnSameNode && end.offsetInContainerNode() >= m_endOfLastParagraph.offsetInContainerNode())
                 m_endOfLastParagraph = end;
         }
 
         // If end is in the middle of a text node, split.
         if (!endStyle->collapseWhiteSpace() && end.offsetInContainerNode() && end.offsetInContainerNode() < end.containerNode()->maxCharacterOffset()) {
-            RefPtrWillBeRawPtr<Text> endContainer = end.containerText();
+            RefPtrWillBeRawPtr<Text> endContainer = toText(end.containerNode());
             splitTextNode(endContainer, end.offsetInContainerNode());
             if (isStartAndEndOnSameNode)
                 start = firstPositionInOrBeforeNode(endContainer->previousSibling());
@@ -251,7 +251,7 @@ VisiblePosition ApplyBlockElementCommand::endOfNextParagrahSplittingTextNodesIfN
     if (!style)
         return endOfNextParagraph;
 
-    RefPtrWillBeRawPtr<Text> text = position.containerText();
+    RefPtrWillBeRawPtr<Text> text = toText(position.containerNode());
     if (!style->preserveNewline() || !position.offsetInContainerNode() || !isNewLineAtPosition(firstPositionInNode(text.get())))
         return endOfNextParagraph;
 
