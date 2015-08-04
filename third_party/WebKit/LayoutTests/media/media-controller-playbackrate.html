@@ -6,7 +6,7 @@
         <script>
             var start = function() {
                 findMediaElement();
-                waitForEvent('canplay',canplay);
+                waitForEventOnce('canplay',canplay);
                 video.src = findMediaFile('video', 'content/test');
             };
 
@@ -39,7 +39,11 @@
 
             var play = function() {
                 video.controller.playbackRate = 2;
-                waitForEventOnce('timeupdate', timeupdate);
+                waitForEventOnce("playing", playing);
+            };
+
+            var playing = function() {
+                waitForEventOnce("timeupdate", timeupdate);
             };
 
             var timeupdate = function() {

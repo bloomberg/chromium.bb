@@ -1648,7 +1648,6 @@ void HTMLMediaElement::seek(double time)
 
     // 4 - Set the seeking IDL attribute to true.
     // The flag will be cleared when the engine tells us the time has actually changed.
-    bool previousSeekStillPending = m_seeking;
     m_seeking = true;
 
     // 6 - If the new playback position is later than the end of the media resource, then let it be the end
@@ -1675,30 +1674,15 @@ void HTMLMediaElement::seek(double time)
     // attribute then set the seeking IDL attribute to false and abort these steps.
     RefPtrWillBeRawPtr<TimeRanges> seekableRanges = seekable();
 
-    // Short circuit seeking to the current time by just firing the events if no seek is required.
-    // Don't skip calling the media engine if we are in poster mode because a seek should always
-    // cancel poster display.
-    bool noSeekRequired = !seekableRanges->length() || (time == now && displayMode() != Poster);
-
-    if (noSeekRequired) {
-        if (time == now) {
-            scheduleEvent(EventTypeNames::seeking);
-            if (previousSeekStillPending)
-                return;
-            // FIXME: There must be a stable state before timeupdate+seeked are dispatched and seeking
-            // is reset to false. See http://crbug.com/266631
-            scheduleTimeupdateEvent(false);
-            scheduleEvent(EventTypeNames::seeked);
-        }
+    if (!seekableRanges->length()) {
         m_seeking = false;
         return;
     }
     time = seekableRanges->nearest(time, now);
 
-    if (m_playing) {
-        if (m_lastSeekTime < now)
-            addPlayedRange(m_lastSeekTime, now);
-    }
+    if (m_playing && m_lastSeekTime < now)
+        addPlayedRange(m_lastSeekTime, now);
+
     m_lastSeekTime = time;
     m_sentEndEvent = false;
 

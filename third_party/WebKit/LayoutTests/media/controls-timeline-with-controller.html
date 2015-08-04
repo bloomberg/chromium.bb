@@ -16,6 +16,12 @@
             {
                 testExpected("video.controller.currentTime", 0);
                 testExpected("video.currentTime", 0);
+                // Wait for the seek initiated by the "bringing up to speed"
+                // step to complete.
+                waitForEventOnce('seeked', seeked);
+            });
+
+            var seeked = function() {
                 testExpected("video.seeking", false);
 
                 // click the middle of the timeline
@@ -31,7 +37,7 @@
                 testExpected("video.seeking", true);
 
                 endTest();
-            });
+            }
         </script>
     </body>
 </html>
