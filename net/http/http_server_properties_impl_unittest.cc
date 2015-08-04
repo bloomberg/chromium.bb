@@ -491,6 +491,45 @@ TEST_F(AlternateProtocolServerPropertiesTest, EmptyVector) {
   ASSERT_TRUE(alternative_service_vector.empty());
 }
 
+// Regression test for https://crbug.com/516486 for the canonical host case.
+TEST_F(AlternateProtocolServerPropertiesTest, EmptyVectorForCanonical) {
+  HostPortPair host_port_pair("foo.c.youtube.com", 443);
+  HostPortPair canonical_host_port_pair("bar.c.youtube.com", 443);
+  const AlternativeService alternative_service(NPN_HTTP_2, "", 443);
+  base::Time expiration = base::Time::Now() - base::TimeDelta::FromDays(1);
+  const AlternativeServiceInfo alternative_service_info(alternative_service,
+                                                        1.0, expiration);
+  AlternativeServiceMap alternative_service_map(
+      AlternativeServiceMap::NO_AUTO_EVICT);
+  alternative_service_map.Put(
+      canonical_host_port_pair,
+      AlternativeServiceInfoVector(/*size=*/1, alternative_service_info));
+
+  // Prepare |alternative_service_map_| with a single key that has a single
+  // AlternativeServiceInfo with identical hostname and port.
+  impl_.InitializeAlternativeServiceServers(&alternative_service_map);
+
+  // GetAlternativeServices() should remove such AlternativeServiceInfo from
+  // |alternative_service_map_|, emptying the AlternativeServiceInfoVector
+  // corresponding to |canonical_host_port_pair|, even when looking up
+  // alternative services for |host_port_pair|.
+  AlternativeServiceVector alternative_service_vector =
+      impl_.GetAlternativeServices(host_port_pair);
+  ASSERT_TRUE(alternative_service_vector.empty());
+
+  // GetAlternativeServices() should remove this key from
+  // |alternative_service_map_|, and SetAlternativeServices() should not crash.
+  impl_.SetAlternativeServices(
+      canonical_host_port_pair,
+      AlternativeServiceInfoVector(/*size=*/1, alternative_service_info));
+
+  // There should still be no alternative service assigned to
+  // |canonical_host_port_pair|.
+  alternative_service_vector =
+      impl_.GetAlternativeServices(canonical_host_port_pair);
+  ASSERT_TRUE(alternative_service_vector.empty());
+}
+
 TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternativeServices) {
   HostPortPair test_host_port_pair1("foo1", 80);
   const AlternativeService alternative_service1(NPN_SPDY_3_1, "foo1", 443);

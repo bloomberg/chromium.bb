@@ -343,6 +343,9 @@ AlternativeServiceVector HttpServerPropertiesImpl::GetAlternativeServices(
     alternative_services_above_threshold.push_back(alternative_service);
     ++it;
   }
+  if (map_it->second.empty()) {
+    alternative_service_map_.Erase(map_it);
+  }
   return alternative_services_above_threshold;
 }
 
