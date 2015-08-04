@@ -248,7 +248,6 @@ public:
     template<typename Collection>
     void removeAll(const Collection& other) { WTF::removeAll(*this, other); }
 
-    using HasInlinedTraceMethodMarker = int;
     template<typename VisitorDispatcher>
     void trace(VisitorDispatcher visitor) { m_impl.trace(visitor); }
 

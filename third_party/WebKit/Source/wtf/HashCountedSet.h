@@ -80,7 +80,6 @@ namespace WTF {
         // Clears the whole set.
         void clear() { m_impl.clear(); }
 
-        using HasInlinedTraceMethodMarker = int;
         template<typename VisitorDispatcher>
         void trace(VisitorDispatcher visitor) { m_impl.trace(visitor); }
 

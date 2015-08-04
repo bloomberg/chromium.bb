@@ -463,7 +463,6 @@ namespace WTF {
         template<typename HashTranslator, typename T> ValueType* lookup(T);
         template<typename HashTranslator, typename T> const ValueType* lookup(T) const;
 
-        typedef int HasInlinedTraceMethodMarker;
         template<typename VisitorDispatcher> void trace(VisitorDispatcher);
 
 #if ENABLE(ASSERT)

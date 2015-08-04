@@ -152,7 +152,6 @@ namespace WTF {
 
         static bool isValidKey(KeyPeekInType);
 
-        typedef int HasInlinedTraceMethodMarker;
         template<typename VisitorDispatcher>
         void trace(VisitorDispatcher visitor) { m_impl.trace(visitor); }
 

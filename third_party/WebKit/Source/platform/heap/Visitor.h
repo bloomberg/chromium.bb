@@ -69,29 +69,8 @@ struct TraceMethodDelegate {
     }
 };
 
-// HasInlinedTraceMethod<T>::value is true for T supporting
-// T::trace(InlinedGlobalMarkingVisitor).
-// The template works by checking if T::HasInlinedTraceMethodMarker type is
-// available using SFINAE. The HasInlinedTraceMethodMarker type is defined
-// by DECLARE_TRACE and DEFINE_INLINE_TRACE helper macros, which are used to
-// define trace methods supporting both inlined/uninlined tracing.
-template <typename T>
-struct HasInlinedTraceMethod {
-private:
-    typedef char YesType;
-    struct NoType {
-        char padding[8];
-    };
-
-    template <typename U> static YesType checkMarker(typename U::HasInlinedTraceMethodMarker*);
-    template <typename U> static NoType checkMarker(...);
-public:
-    static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
-};
-
 #define DECLARE_TRACE_IMPL(maybevirtual)                                     \
 public:                                                                      \
-    typedef int HasInlinedTraceMethodMarker;                                 \
     maybevirtual void trace(Visitor*);                                       \
     maybevirtual void trace(InlinedGlobalMarkingVisitor);                    \
                                                                              \
@@ -106,7 +85,6 @@ public:
     ALWAYS_INLINE void T::traceImpl(VisitorDispatcher visitor)
 
 #define DEFINE_INLINE_TRACE_IMPL(maybevirtual)                                           \
-    typedef int HasInlinedTraceMethodMarker;                                             \
     maybevirtual void trace(Visitor* visitor) { traceImpl(visitor); }                    \
     maybevirtual void trace(InlinedGlobalMarkingVisitor visitor) { traceImpl(visitor); } \
     template <typename VisitorDispatcher>                                                \
@@ -114,7 +92,6 @@ public:
 
 #define DECLARE_TRACE_AFTER_DISPATCH()                                                    \
 public:                                                                                   \
-    typedef int HasInlinedTraceAfterDispatchMethodMarker;                                 \
     void traceAfterDispatch(Visitor*);                                                    \
     void traceAfterDispatch(InlinedGlobalMarkingVisitor);                                 \
 private:                                                                                  \
@@ -128,7 +105,6 @@ public:
     ALWAYS_INLINE void T::traceAfterDispatchImpl(VisitorDispatcher visitor)
 
 #define DEFINE_INLINE_TRACE_AFTER_DISPATCH()                                                          \
-    typedef int HasInlinedTraceAfterDispatchMethodMarker;                                             \
     void traceAfterDispatch(Visitor* visitor) { traceAfterDispatchImpl(visitor); }                    \
     void traceAfterDispatch(InlinedGlobalMarkingVisitor visitor) { traceAfterDispatchImpl(visitor); } \
     template <typename VisitorDispatcher>                                                             \

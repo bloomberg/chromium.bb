@@ -108,7 +108,6 @@ namespace WTF {
         ValuePassOutType take(ValuePeekInType);
         ValuePassOutType takeAny();
 
-        typedef int HasInlinedTraceMethodMarker;
         template<typename VisitorDispatcher>
         void trace(VisitorDispatcher visitor) { m_impl.trace(visitor); }
 

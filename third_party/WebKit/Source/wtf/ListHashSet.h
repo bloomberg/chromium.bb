@@ -167,7 +167,6 @@ namespace WTF {
         ValuePassOutType take(ValuePeekInType);
         ValuePassOutType takeFirst();
 
-        typedef int HasInlinedTraceMethodMarker;
         template<typename VisitorDispatcher>
         void trace(VisitorDispatcher);
 
@@ -394,7 +393,6 @@ namespace WTF {
             allocator->deallocate(this);
         }
 
-        typedef int HasInlinedTraceMethodMarker;
         // This is not called in normal tracing, but it is called if we find a
         // pointer to a node on the stack using conservative scanning. Since
         // the original ListHashSet may no longer exist we make sure to mark
