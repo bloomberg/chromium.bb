@@ -7,11 +7,10 @@
       'target_name': 'app_modal',
       'type': 'static_library',
       'dependencies': [
-        '../content/content.gyp:content_browser',
-        '../content/content.gyp:content_common',
+	'../content/content.gyp:content_browser',
+	'../content/content.gyp:content_common',
         '../skia/skia.gyp:skia',
         'components_strings.gyp:components_strings',
-        'url_formatter/url_formatter.gyp:url_formatter',
       ],
       'include_dirs': [
         '..',

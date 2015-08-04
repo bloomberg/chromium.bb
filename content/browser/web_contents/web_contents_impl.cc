@@ -23,7 +23,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/mime_util/mime_util.h"
-#include "components/url_formatter/url_formatter.h"
 #include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bad_message.h"
@@ -103,6 +102,7 @@
 #include "content/public/common/web_preferences.h"
 #include "mojo/common/url_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "net/base/net_util.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
@@ -4289,9 +4289,9 @@ void WebContentsImpl::LoadStateChanged(
   load_state_ = load_state;
   upload_position_ = upload_position;
   upload_size_ = upload_size;
-  load_state_host_ = url_formatter::IDNToUnicode(
-      url.host(),
-      GetContentClient()->browser()->GetAcceptLangs(GetBrowserContext()));
+  load_state_host_ = net::IDNToUnicode(url.host(),
+      GetContentClient()->browser()->GetAcceptLangs(
+          GetBrowserContext()));
   if (load_state_.state == net::LOAD_STATE_READING_RESPONSE)
     SetNotWaitingForResponse();
   if (IsLoading()) {

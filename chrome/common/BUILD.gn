@@ -71,7 +71,6 @@ static_library("common") {
     "//components/omnibox/common",
     "//components/policy:policy_component_common",
     "//components/translate/core/common",
-    "//components/url_formatter",
     "//components/variations",
     "//components/version_info",
     "//content/public/common",

@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/url_formatter",
   "+content/public/browser",
   "+content/public/test",
   "+native_client/src/public",

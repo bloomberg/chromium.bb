@@ -8,7 +8,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
-#include "components/url_formatter/elide_url.h"
+#include "components/secure_display/elide_url.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -54,7 +54,7 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   if (target_domain_differs) {
     title_id = IDS_SAVE_PASSWORD_TITLE;
-    replacements.push_back(url_formatter::FormatUrlForSecurityDisplay(
+    replacements.push_back(secure_display::FormatUrlForSecurityDisplay(
         form_origin_url, std::string()));
   }
 

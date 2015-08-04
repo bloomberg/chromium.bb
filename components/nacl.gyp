@@ -119,7 +119,6 @@
           'dependencies': [
             'nacl_common',
             'nacl_switches',
-            'url_formatter/url_formatter.gyp:url_formatter',
             '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel',
             '../content/content.gyp:content_browser',
           ],

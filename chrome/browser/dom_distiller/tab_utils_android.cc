@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
-#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "jni/DomDistillerTabUtils_jni.h"
@@ -57,10 +56,14 @@ jstring GetFormattedUrlFromOriginalDistillerUrl(JNIEnv* env,
   // and pastes it into another program, that program may think the URL ends at
   // the space.
   return base::android::ConvertUTF16ToJavaString(
-             env, url_formatter::FormatUrl(
-                      url, languages, url_formatter::kFormatUrlOmitAll,
-                      net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr))
-      .Release();
+             env,
+             net::FormatUrl(url,
+                            languages,
+                            net::kFormatUrlOmitAll,
+                            net::UnescapeRule::NORMAL,
+                            NULL,
+                            NULL,
+                            NULL)).Release();
 }
 
 }  // namespace android

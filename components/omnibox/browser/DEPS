@@ -8,7 +8,7 @@ include_rules = [
   "+components/search",
   "+components/search_engines",
   "+components/sessions",
-  "+components/url_formatter",
+  "+components/url_fixer",
   "+components/variations",
   "+grit",
   "+net",

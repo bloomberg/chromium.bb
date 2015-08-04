@@ -55,7 +55,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/metrics/metrics_service.h"
-#include "components/url_formatter/elide_url.h"
+#include "components/secure_display/elide_url.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/page_navigator.h"
@@ -722,7 +722,7 @@ base::string16 BookmarkBarView::CreateToolTipForURLAndTitle(
     std::string languages = profile->GetPrefs()->GetString(
         prefs::kAcceptLanguages);
     base::string16 elided_url(
-        url_formatter::ElideUrl(url, tt_fonts, max_width, languages));
+        secure_display::ElideUrl(url, tt_fonts, max_width, languages));
     elided_url = base::i18n::GetDisplayStringInLTRDirectionality(elided_url);
     result.append(elided_url);
   }

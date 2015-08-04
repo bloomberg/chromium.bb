@@ -101,7 +101,6 @@ static_library("browser") {
     "//components/os_crypt",
     "//components/password_manager/core/common",
     "//components/strings",
-    "//components/url_formatter",
     "//net",
     "//sql",
     "//sync",

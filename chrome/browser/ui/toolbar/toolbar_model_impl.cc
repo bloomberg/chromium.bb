@@ -20,7 +20,6 @@
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
-#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -30,6 +29,7 @@
 #include "content/public/common/ssl_status.h"
 #include "grit/components_scaled_resources.h"
 #include "grit/theme_resources.h"
+#include "net/base/net_util.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -68,9 +68,8 @@ base::string16 ToolbarModelImpl::GetFormattedURL(size_t* prefix_end) const {
   // and pastes it into another program, that program may think the URL ends at
   // the space.
   return AutocompleteInput::FormattedStringWithEquivalentMeaning(
-      url, url_formatter::FormatUrl(
-               url, languages, url_formatter::kFormatUrlOmitAll,
-               net::UnescapeRule::NORMAL, nullptr, prefix_end, nullptr),
+      url, net::FormatUrl(url, languages, net::kFormatUrlOmitAll,
+                          net::UnescapeRule::NORMAL, NULL, prefix_end, NULL),
       ChromeAutocompleteSchemeClassifier(profile));
 }
 

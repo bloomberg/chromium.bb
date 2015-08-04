@@ -26,7 +26,7 @@
         'pref_registry',
         'rappor',
         'search_engines/prepopulated_engines.gyp:prepopulated_engines',
-        'url_formatter/url_formatter.gyp:url_formatter',
+        'url_fixer',
         'webdata_common',
       ],
       'export_dependent_settings': [

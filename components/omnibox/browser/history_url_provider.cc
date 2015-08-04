@@ -32,8 +32,8 @@
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/url_formatter/url_fixer.h"
-#include "components/url_formatter/url_formatter.h"
+#include "components/url_fixer/url_fixer.h"
+#include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 #include "url/third_party/mozilla/url_parse.h"
@@ -494,7 +494,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   if (!fixup_return.first)
     return;
   url::Parsed parts;
-  url_formatter::SegmentURL(fixup_return.second, &parts);
+  url_fixer::SegmentURL(fixup_return.second, &parts);
   AutocompleteInput fixed_up_input(input);
   fixed_up_input.UpdateText(fixup_return.second, base::string16::npos, parts);
 
@@ -590,10 +590,10 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     // Trim off "http://" if the user didn't type it.
     DCHECK(!trim_http ||
            !AutocompleteInput::HasHTTPScheme(input.text()));
-    base::string16 display_string(url_formatter::FormatUrl(
-        destination_url, std::string(),
-        url_formatter::kFormatUrlOmitAll & ~url_formatter::kFormatUrlOmitHTTP,
-        net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
+    base::string16 display_string(
+        net::FormatUrl(destination_url, std::string(),
+                       net::kFormatUrlOmitAll & ~net::kFormatUrlOmitHTTP,
+                       net::UnescapeRule::SPACES, NULL, NULL, NULL));
     const size_t offset = trim_http ? TrimHttpPrefix(&display_string) : 0;
     match.fill_into_edit =
         AutocompleteInput::FormattedStringWithEquivalentMeaning(
@@ -1160,17 +1160,14 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
       history_match.input_location + params.input.text().length();
   std::string languages = (match_type == WHAT_YOU_TYPED) ?
       std::string() : params.languages;
-  const url_formatter::FormatUrlTypes format_types =
-      url_formatter::kFormatUrlOmitAll &
-      ~((params.trim_http && !history_match.match_in_scheme)
-            ? 0
-            : url_formatter::kFormatUrlOmitHTTP);
+  const net::FormatUrlTypes format_types = net::kFormatUrlOmitAll &
+      ~((params.trim_http && !history_match.match_in_scheme) ?
+          0 : net::kFormatUrlOmitHTTP);
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
-          info.url(),
-          url_formatter::FormatUrl(info.url(), languages, format_types,
-                                   net::UnescapeRule::SPACES, nullptr, nullptr,
-                                   &inline_autocomplete_offset),
+          info.url(), net::FormatUrl(info.url(), languages, format_types,
+                                     net::UnescapeRule::SPACES, NULL, NULL,
+                                     &inline_autocomplete_offset),
           client()->GetSchemeClassifier());
   if (!params.prevent_inline_autocomplete &&
       (inline_autocomplete_offset != base::string16::npos)) {
@@ -1185,9 +1182,8 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
        (inline_autocomplete_offset >= match.fill_into_edit.length()));
 
   size_t match_start = history_match.input_location;
-  match.contents = url_formatter::FormatUrl(info.url(), languages, format_types,
-                                            net::UnescapeRule::SPACES, nullptr,
-                                            nullptr, &match_start);
+  match.contents = net::FormatUrl(info.url(), languages,
+      format_types, net::UnescapeRule::SPACES, NULL, NULL, &match_start);
   if ((match_start != base::string16::npos) &&
       (inline_autocomplete_offset != base::string16::npos) &&
       (inline_autocomplete_offset != match_start)) {

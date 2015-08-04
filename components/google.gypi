@@ -15,7 +15,7 @@
         'components_strings.gyp:components_strings',
         'keyed_service_core',
         'pref_registry',
-        'url_formatter/url_formatter.gyp:url_formatter',
+        'url_fixer',
       ],
       'include_dirs': [
         '..',

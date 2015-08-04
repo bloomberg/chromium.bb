@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/url_formatter/elide_url.h"
+#include "components/secure_display/elide_url.h"
 
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/url_formatter/url_formatter.h"
 #include "net/base/escape.h"
+#include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
@@ -108,7 +108,7 @@ void SplitHost(const GURL& url,
 #endif  // !defined(OS_ANDROID)
 }  // namespace
 
-namespace url_formatter {
+namespace secure_display {
 
 #if !defined(OS_ANDROID)
 
@@ -122,9 +122,9 @@ base::string16 ElideUrl(const GURL& url,
                         const std::string& languages) {
   // Get a formatted string and corresponding parsing of the url.
   url::Parsed parsed;
-  const base::string16 url_string = url_formatter::FormatUrl(
-      url, languages, url_formatter::kFormatUrlOmitAll,
-      net::UnescapeRule::SPACES, &parsed, nullptr, nullptr);
+  const base::string16 url_string =
+      net::FormatUrl(url, languages, net::kFormatUrlOmitAll,
+                     net::UnescapeRule::SPACES, &parsed, NULL, NULL);
   if (available_pixel_width <= 0)
     return url_string;
 
@@ -312,7 +312,7 @@ base::string16 ElideHost(const GURL& url,
 base::string16 FormatUrlForSecurityDisplay(const GURL& url,
                                            const std::string& languages) {
   if (!url.is_valid() || url.is_empty() || !url.IsStandard())
-    return url_formatter::FormatUrl(url, languages);
+    return net::FormatUrl(url, languages);
 
   const base::string16 colon(base::ASCIIToUTF16(":"));
   const base::string16 scheme_separator(
@@ -350,4 +350,4 @@ base::string16 FormatUrlForSecurityDisplay(const GURL& url,
 
   return result;
 }
-}  // namespace url_formatter
+}  // namespace secure_display

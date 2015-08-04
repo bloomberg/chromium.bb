@@ -28,7 +28,7 @@
         'query_parser',
         'search',
         'search_engines',
-        'url_formatter/url_formatter.gyp:url_formatter',
+        'url_fixer',
         'variations_http_provider',
       ],
       'export_dependent_settings': [

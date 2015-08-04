@@ -42,7 +42,6 @@
 #include "components/search/search.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/toolbar/toolbar_model.h"
-#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -50,6 +49,7 @@
 #include "content/public/common/url_constants.h"
 #include "jni/AutocompleteController_jni.h"
 #include "net/base/escape.h"
+#include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 using base::android::AttachCurrentThread;
@@ -475,9 +475,8 @@ base::string16 AutocompleteControllerAndroid::FormatURLUsingAcceptLanguages(
   std::string languages(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
 
-  return url_formatter::FormatUrl(
-      url, languages, url_formatter::kFormatUrlOmitAll,
-      net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
+  return net::FormatUrl(url, languages, net::kFormatUrlOmitAll,
+      net::UnescapeRule::SPACES, NULL, NULL, NULL);
 }
 
 ScopedJavaLocalRef<jobject>

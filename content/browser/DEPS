@@ -4,7 +4,6 @@ include_rules = [
   "+components/mime_util",
   "+components/scheduler/common",
   "+components/tracing",
-  "+components/url_formatter",
 
   "+content/app/strings/grit",  # For generated headers
   "+content/public/browser",

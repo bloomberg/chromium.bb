@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/url_formatter",
   "+crypto",
   "+ios/public/provider/web",
   "+ios/net",

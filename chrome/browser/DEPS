@@ -94,7 +94,6 @@ include_rules = [
   "+components/ui",
   "+components/undo",
   "+components/update_client",
-  "+components/url_formatter",
   "+components/url_matcher",
   "+components/user_manager",
   "+components/user_prefs",

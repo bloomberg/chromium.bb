@@ -98,7 +98,7 @@ source_set("browser") {
     "//components/search_engines",
     "//components/sessions",
     "//components/strings",
-    "//components/url_formatter",
+    "//components/url_fixer",
     "//components/variations",
     "//components/variations/net",
     "//net",

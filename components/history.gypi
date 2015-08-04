@@ -29,7 +29,6 @@
         'keyed_service_core',
         'query_parser',
         'signin_core_browser',
-        'url_formatter/url_formatter.gyp:url_formatter',
       ],
       'export_dependent_settings': [
         '../skia/skia.gyp:skia',

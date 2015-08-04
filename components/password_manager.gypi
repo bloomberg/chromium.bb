@@ -22,7 +22,6 @@
         '../third_party/re2/re2.gyp:re2',
         'password_manager_core_common',
         'password_manager_core_browser_proto',
-        'url_formatter/url_formatter.gyp:url_formatter',
       ],
       'include_dirs': [
         '..',
