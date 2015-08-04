@@ -1074,7 +1074,7 @@ void ReplaceSelectionCommand::doApply()
     // since insertAsListItems already does the right thing.
     if (!m_matchStyle && !enclosingList(insertionPos.containerNode())) {
         if (insertionPos.containerNode()->isTextNode() && insertionPos.offsetInContainerNode() && !insertionPos.atLastEditingPositionForNode()) {
-            splitTextNode(insertionPos.containerText(), insertionPos.offsetInContainerNode());
+            splitTextNode(toText(insertionPos.containerNode()), insertionPos.offsetInContainerNode());
             insertionPos = firstPositionInNode(insertionPos.containerNode());
         }
 
