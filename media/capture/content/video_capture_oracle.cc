@@ -335,8 +335,11 @@ void VideoCaptureOracle::SetFrameTimestamp(int frame_number,
 }
 
 bool VideoCaptureOracle::IsFrameInRecentHistory(int frame_number) const {
-  return ((next_frame_number_ - frame_number) < kMaxFrameTimestamps &&
-          frame_number <= next_frame_number_ && frame_number >= 0);
+  // Adding (next_frame_number_ >= 0) helps the compiler deduce that there
+  // is no possibility of overflow here.
+  return (frame_number >= 0 && next_frame_number_ >= 0 &&
+          frame_number <= next_frame_number_ &&
+          (next_frame_number_ - frame_number) < kMaxFrameTimestamps);
 }
 
 void VideoCaptureOracle::CommitCaptureSizeAndReset(
