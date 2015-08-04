@@ -357,13 +357,16 @@ SkColor LocationBarView::GetColor(
           color = SkColorSetRGB(7, 149, 0);
           break;
 
-        case connection_security::SECURITY_WARNING:
         case connection_security::SECURITY_POLICY_WARNING:
           return GetColor(security_level, DEEMPHASIZED_TEXT);
           break;
 
         case connection_security::SECURITY_ERROR:
           color = SkColorSetRGB(162, 0, 0);
+          break;
+
+        case connection_security::SECURITY_WARNING:
+          return GetColor(security_level, TEXT);
           break;
 
         default:

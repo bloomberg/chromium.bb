@@ -49,7 +49,7 @@ connection_security::SecurityLevel GetSecurityLevelForNonSecureFieldTrial() {
     level = connection_security::NONE;
   } else if (choice == switches::kMarkNonSecureAsDubious) {
     status = DUBIOUS;
-    level = connection_security::SECURITY_WARNING;
+    level = connection_security::NONE;
   } else if (choice == switches::kMarkNonSecureAsNonSecure) {
     status = NON_SECURE;
     level = connection_security::SECURITY_ERROR;
@@ -58,7 +58,7 @@ connection_security::SecurityLevel GetSecurityLevelForNonSecureFieldTrial() {
     level = connection_security::NONE;
   } else if (group == switches::kMarkNonSecureAsDubious) {
     status = DUBIOUS;
-    level = connection_security::SECURITY_WARNING;
+    level = connection_security::NONE;
   } else if (group == switches::kMarkNonSecureAsNonSecure) {
     status = NON_SECURE;
     level = connection_security::SECURITY_ERROR;
@@ -156,18 +156,18 @@ SecurityLevel GetSecurityLevelForWebContents(
       if (sha1_status == DEPRECATED_SHA1_BROKEN)
         return SECURITY_ERROR;
       if (sha1_status == DEPRECATED_SHA1_WARNING)
-        return SECURITY_WARNING;
+        return NONE;
 
       MixedContentStatus mixed_content_status = GetMixedContentStatus(ssl);
       // Active mixed content is downgraded to the BROKEN style and
       // handled above.
       DCHECK_NE(RAN_MIXED_CONTENT, mixed_content_status);
       if (mixed_content_status == DISPLAYED_MIXED_CONTENT)
-        return SECURITY_WARNING;
+        return NONE;
 
       if (net::IsCertStatusError(ssl.cert_status)) {
         DCHECK(net::IsCertStatusMinorError(ssl.cert_status));
-        return SECURITY_WARNING;
+        return NONE;
       }
       if (net::SSLConnectionStatusToVersion(ssl.connection_status) ==
           net::SSL_CONNECTION_VERSION_SSL3) {
@@ -196,6 +196,7 @@ void GetSecurityInfoForWebContents(const content::WebContents* web_contents,
 
   SecurityLevel security_level = GetSecurityLevelForWebContents(web_contents);
   switch (security_level) {
+    case SECURITY_WARNING:
     case NONE:
       security_info->security_style = content::SECURITY_STYLE_UNAUTHENTICATED;
       break;
@@ -203,7 +204,6 @@ void GetSecurityInfoForWebContents(const content::WebContents* web_contents,
     case SECURE:
       security_info->security_style = content::SECURITY_STYLE_AUTHENTICATED;
       break;
-    case SECURITY_WARNING:
     case SECURITY_POLICY_WARNING:
       security_info->security_style = content::SECURITY_STYLE_WARNING;
       break;

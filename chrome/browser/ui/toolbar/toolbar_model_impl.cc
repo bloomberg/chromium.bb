@@ -134,7 +134,8 @@ int ToolbarModelImpl::GetIconForSecurityLevel(
     case connection_security::SECURE:
       return IDR_OMNIBOX_HTTPS_VALID;
     case connection_security::SECURITY_WARNING:
-      return IDR_OMNIBOX_HTTPS_WARNING;
+      // Surface Dubious as Neutral.
+      return IDR_LOCATION_BAR_HTTP;
     case connection_security::SECURITY_POLICY_WARNING:
       return IDR_OMNIBOX_HTTPS_POLICY_WARNING;
     case connection_security::SECURITY_ERROR:

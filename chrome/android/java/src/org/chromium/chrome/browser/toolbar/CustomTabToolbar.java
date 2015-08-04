@@ -170,7 +170,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     public boolean shouldEmphasizeHttpsScheme() {
         int securityLevel = getSecurityLevel();
         if (securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
-                || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING
                 || securityLevel == ConnectionSecurityLevel.SECURITY_POLICY_WARNING) {
             return true;
         }
