@@ -90,10 +90,6 @@ remoting.ClientPluginImpl = function(container,
               /** @type {remoting.ClientPluginMessage} */ (event.data));
         }, false);
 
-  if (remoting.settings.CLIENT_PLUGIN_TYPE == 'native') {
-    window.setTimeout(this.showPluginForClickToPlay_.bind(this), 500);
-  }
-
   /** @private */
   this.hostDesktop_ = new remoting.ClientPlugin.HostDesktopImpl(
       this, this.postMessage_.bind(this));
@@ -117,16 +113,8 @@ remoting.ClientPluginImpl = function(container,
 remoting.ClientPluginImpl.createPluginElement_ = function() {
   var plugin =
       /** @type {HTMLEmbedElement} */ (document.createElement('embed'));
-  if (remoting.settings.CLIENT_PLUGIN_TYPE == 'pnacl') {
-    plugin.src = 'remoting_client_pnacl.nmf';
-    plugin.type = 'application/x-pnacl';
-  } else if (remoting.settings.CLIENT_PLUGIN_TYPE == 'nacl') {
-    plugin.src = 'remoting_client_nacl.nmf';
-    plugin.type = 'application/x-nacl';
-  } else {
-    plugin.src = 'about://none';
-    plugin.type = 'application/vnd.chromium.remoting-viewer';
-  }
+  plugin.src = 'remoting_client_pnacl.nmf';
+  plugin.type = 'application/x-pnacl';
   plugin.width = '0';
   plugin.height = '0';
   plugin.tabIndex = 0;  // Required, otherwise focus() doesn't work.
@@ -849,27 +837,6 @@ remoting.ClientPluginImpl.prototype.extensions = function() {
 };
 
 /**
- * If we haven't yet received a "hello" message from the plugin, change its
- * size so that the user can confirm it if click-to-play is enabled, or can
- * see the "this plugin is disabled" message if it is actually disabled.
- * @private
- */
-remoting.ClientPluginImpl.prototype.showPluginForClickToPlay_ = function() {
-  if (!this.helloReceived_) {
-    var width = 200;
-    var height = 200;
-    this.plugin_.style.width = width + 'px';
-    this.plugin_.style.height = height + 'px';
-    // Center the plugin just underneath the "Connnecting..." dialog.
-    var dialog = document.getElementById('client-dialog');
-    var dialogRect = dialog.getBoundingClientRect();
-    this.plugin_.style.top = (dialogRect.bottom + 16) + 'px';
-    this.plugin_.style.left = (window.innerWidth - width) / 2 + 'px';
-    this.plugin_.style.position = 'fixed';
-  }
-};
-
-/**
  * Undo the CSS rules needed to make the plugin clickable for click-to-play.
  * @private
  */
@@ -911,10 +878,6 @@ remoting.DefaultClientPluginFactory.prototype.createPlugin =
 };
 
 remoting.DefaultClientPluginFactory.prototype.preloadPlugin = function() {
-  if (remoting.settings.CLIENT_PLUGIN_TYPE != 'pnacl') {
-    return;
-  }
-
   var plugin = remoting.ClientPluginImpl.createPluginElement_();
   plugin.addEventListener(
       'loadend', function() { document.body.removeChild(plugin); }, false);

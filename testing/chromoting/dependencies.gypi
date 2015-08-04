@@ -7,8 +7,7 @@
 {
   'dependencies': [
     '../../chrome/chrome.gyp:browser_tests',
-    '../../remoting/remoting.gyp:remoting_webapp_v1',
-    '../../remoting/remoting.gyp:remoting_webapp_v2',
+    '../../remoting/remoting.gyp:remoting_webapp',
   ],
   'type': 'none',
   'includes': [
