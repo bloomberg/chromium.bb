@@ -34,6 +34,8 @@
 #include "../platform/WebCommon.h"
 #include "../platform/WebString.h"
 
+#include <string>
+
 namespace blink {
 
 // This class is used to enable runtime features of Blink.
@@ -48,6 +50,11 @@ public:
 
     // Enables a feature by its string identifier from
     // RuntimeEnabledFeatures.in.
+    // Note: We use std::string instead of WebString because this API can
+    // be called before blink::initalize(). We can't create WebString objects
+    // before blink::initialize().
+    BLINK_EXPORT static void enableFeatureFromString(const std::string& name, bool enable);
+    // TODO(bashi): Remove.
     BLINK_EXPORT static void enableFeatureFromString(const WebString& name, bool enable);
 
     BLINK_EXPORT static void enableApplicationCache(bool);

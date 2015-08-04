@@ -32,6 +32,7 @@
 #include "public/web/WebRuntimeFeatures.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
+#include "wtf/Assertions.h"
 
 namespace blink {
 
@@ -45,9 +46,15 @@ void WebRuntimeFeatures::enableWebBluetooth(bool enable)
     RuntimeEnabledFeatures::setWebBluetoothEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableFeatureFromString(const WebString& name, bool enable)
+void WebRuntimeFeatures::enableFeatureFromString(const std::string& name, bool enable)
 {
     RuntimeEnabledFeatures::setFeatureEnabledFromString(name, enable);
+}
+
+// TODO(bashi): Remove.
+void WebRuntimeFeatures::enableFeatureFromString(const WebString& name, bool enable)
+{
+    RuntimeEnabledFeatures::setFeatureEnabledFromString(name.latin1(), enable);
 }
 
 void WebRuntimeFeatures::enableBleedingEdgeFastPaths(bool enable)

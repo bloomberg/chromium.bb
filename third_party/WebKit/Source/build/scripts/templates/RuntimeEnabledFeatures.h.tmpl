@@ -4,6 +4,8 @@
 #ifndef RuntimeEnabledFeatures_h
 #define RuntimeEnabledFeatures_h
 
+#include <string>
+
 #include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
 
@@ -17,7 +19,7 @@ public:
     static void set{{feature_set|capitalize}}FeaturesEnabled(bool);
     {% endfor %}
 
-    static void setFeatureEnabledFromString(const WTF::String& name, bool isEnabled);
+    static void setFeatureEnabledFromString(const std::string& name, bool isEnabled);
 
     {% for feature in features %}
     {% if feature.custom %}
