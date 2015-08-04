@@ -53,7 +53,7 @@ tests:
   - [three italic words, ⠨⠶⠞⠓⠗⠑⠑ ⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙⠎⠨⠄, {typeform: '111111111111111111'}]
   - [one bold word, ⠕⠝⠑ ⠘⠂⠃⠕⠇⠙ ⠺⠕⠗⠙, {typeform: '0000444400000', xfail: true}] # Emphasis broken
   - [two bold words, ⠘⠂⠞⠺⠕ ⠘⠂⠃⠕⠇⠙ ⠺⠕⠗⠙⠎, {typeform: '44444444000000', xfail: true}] # Emphasis broken
-  - [three bold words, ⠘⠶⠞⠓⠗⠑⠑ ⠃⠕⠇⠙ ⠺⠕⠗⠙⠎⠘⠄, {typeform: '4444444444444444', xfail: true}]
+  - [three bold words, ⠘⠶⠞⠓⠗⠑⠑ ⠃⠕⠇⠙ ⠺⠕⠗⠙⠎⠘⠄, {typeform: '4444444444444444'}]
   - [one underlined word, ⠕⠝⠑ ⠸⠂⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙, {typeform: '0000222222222200000', xfail: true}] # Emphasis broken
   - [two underlined words, ⠸⠂⠞⠺⠕ ⠸⠂⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙⠎, {typeform: '22222222222222000000', xfail: true}] # Emphasis broken
   - [three underlined words, ⠸⠶⠞⠓⠗⠑⠑ ⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙⠎⠸⠄, {typeform: '2222222222222222222222'}]

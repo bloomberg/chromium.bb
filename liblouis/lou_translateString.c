@@ -996,12 +996,10 @@ insertBrailleIndicators (int finish)
 	    }
 	  break;
 	case checkNumber:
-	  if (brailleIndicatorDefined
-	      (table->numberSign) &&
-	      checkAttr (currentInput[src], CTC_Digit, 0) &&
-	      (prevTransOpcode == CTO_ExactDots
-	       || !(beforeAttributes & CTC_Digit))
-	      && prevTransOpcode != CTO_MidNum)
+	  if (brailleIndicatorDefined(table->numberSign) &&
+	      checkAttr_safe(currentInput, src, CTC_Digit, 0) &&
+	      (prevTransOpcode == CTO_ExactDots || !(beforeAttributes & CTC_Digit)) &&
+	      prevTransOpcode != CTO_MidNum)
 	    {
 	      ok = 1;
 	      checkWhat = checkNothing;
