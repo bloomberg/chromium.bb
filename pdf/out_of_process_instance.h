@@ -333,10 +333,6 @@ class OutOfProcessInstance : public pp::Instance,
   // The background color of the PDF viewer.
   uint32 background_color_;
 
-  // The blank space above the first page of the document reserved for the
-  // toolbar.
-  int top_toolbar_height_;
-
   DISALLOW_COPY_AND_ASSIGN(OutOfProcessInstance);
 };
 

@@ -32,7 +32,7 @@ var tests = [
     var mockSizer = new MockSizer();
     var mockCallback = new MockViewportChangedCallback();
     var viewport = new Viewport(mockWindow, mockSizer, mockCallback.callback,
-                                function() {}, function() {}, 0, 1, 0);
+                                function() {}, function() {}, 0, 1);
 
     var paramsParser = new OpenPDFParamsParser(function(name) {
       if (name == 'US')

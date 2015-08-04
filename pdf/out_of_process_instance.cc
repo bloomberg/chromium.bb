@@ -278,8 +278,7 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
       received_viewport_message_(false),
       did_call_start_loading_(false),
       stop_scrolling_(false),
-      background_color_(kBackgroundColor),
-      top_toolbar_height_(0) {
+      background_color_(kBackgroundColor) {
   loader_factory_.Initialize(this);
   timer_factory_.Initialize(this);
   form_factory_.Initialize(this);
@@ -356,8 +355,6 @@ bool OutOfProcessInstance::Init(uint32_t argc,
       headers = argv[i];
     else if (strcmp(argn[i], "is-material") == 0)
       is_material = true;
-    else if (strcmp(argn[i], "top-toolbar-height") == 0)
-      base::StringToInt(argv[i], &top_toolbar_height_);
   }
 
   if (is_material)
@@ -595,12 +592,8 @@ void OutOfProcessInstance::DidChangeView(const pp::View& view) {
 
   if (!stop_scrolling_) {
     pp::Point scroll_offset(view.GetScrollOffset());
-    // Because view messages come from the DOM, the coordinates of the viewport
-    // are 0-based (i.e. they do not correspond to the viewport's coordinates in
-    // JS), so we need to subtract the toolbar height to convert them into
-    // viewport coordinates.
     pp::FloatPoint scroll_offset_float(scroll_offset.x(),
-                                       scroll_offset.y() - top_toolbar_height_);
+                                       scroll_offset.y());
     scroll_offset_float = BoundScrollOffsetToDocument(scroll_offset_float);
     engine_->ScrolledToXPosition(scroll_offset_float.x() * device_scale_);
     engine_->ScrolledToYPosition(scroll_offset_float.y() * device_scale_);
@@ -731,15 +724,6 @@ void OutOfProcessInstance::OnPaint(
         pdf_pending[j].Offset(available_area_.point());
         pending->push_back(pdf_pending[j]);
       }
-    }
-
-    // Ensure the region above the first page (if any) is filled;
-    int32_t first_page_ypos = engine_->GetPageScreenRect(0).y();
-    if (rect.y() < first_page_ypos) {
-      pp::Rect region = rect.Intersect(pp::Rect(
-          pp::Point(), pp::Size(plugin_size_.width(), first_page_ypos)));
-      ready->push_back(PaintManager::ReadyRect(region, image_data_, false));
-      FillRect(region, background_color_);
     }
 
     for (size_t j = 0; j < background_parts_.size(); ++j) {
@@ -1153,7 +1137,8 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
 
   pp::PDF::SetContentRestriction(this, content_restrictions);
 
-  uma_.HistogramCustomCounts("PDF.PageCount", page_count, 1, 1000000, 50);
+  uma_.HistogramCustomCounts("PDF.PageCount", page_count,
+                             1, 1000000, 50);
 }
 
 void OutOfProcessInstance::RotateClockwise() {
@@ -1299,10 +1284,10 @@ void OutOfProcessInstance::OnGeometryChanged(double old_zoom,
     available_area_.Offset((available_area_.width() - doc_width) / 2, 0);
     available_area_.set_width(doc_width);
   }
-  int bottom_of_document =
-      GetDocumentPixelHeight() + (top_toolbar_height_ * device_scale_);
-  if (bottom_of_document < available_area_.height())
-    available_area_.set_height(bottom_of_document);
+  int doc_height = GetDocumentPixelHeight();
+  if (doc_height < available_area_.height()) {
+    available_area_.set_height(doc_height);
+  }
 
   CalculateBackgroundParts();
   engine_->PageOffsetUpdated(available_area_.point());
@@ -1428,9 +1413,8 @@ pp::FloatPoint OutOfProcessInstance::BoundScrollOffsetToDocument(
     const pp::FloatPoint& scroll_offset) {
   float max_x = document_size_.width() * zoom_ - plugin_dip_size_.width();
   float x = std::max(std::min(scroll_offset.x(), max_x), 0.0f);
-  float min_y = -top_toolbar_height_;
   float max_y = document_size_.height() * zoom_ - plugin_dip_size_.height();
-  float y = std::max(std::min(scroll_offset.y(), max_y), min_y);
+  float y = std::max(std::min(scroll_offset.y(), max_y), 0.0f);
   return pp::FloatPoint(x, y);
 }
 

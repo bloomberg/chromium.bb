@@ -75,12 +75,6 @@ function shouldIgnoreKeyEvents(activeElement) {
 PDFViewer.MIN_TOOLBAR_OFFSET = 15;
 
 /**
- * The height of the toolbar along the top of the page. The document will be
- * shifted down by this much in the viewport.
- */
-PDFViewer.MATERIAL_TOOLBAR_HEIGHT = 64;
-
-/**
  * Creates a new PDFViewer. There should only be one of these objects per
  * document.
  * @constructor
@@ -110,16 +104,13 @@ function PDFViewer(browserApi) {
   this.errorScreen_ = $('error-screen');
 
   // Create the viewport.
-  var topToolbarHeight =
-      this.isMaterial_ ? PDFViewer.MATERIAL_TOOLBAR_HEIGHT : 0;
   this.viewport_ = new Viewport(window,
                                 this.sizer_,
                                 this.viewportChanged_.bind(this),
                                 this.beforeZoom_.bind(this),
                                 this.afterZoom_.bind(this),
                                 getScrollbarWidth(),
-                                this.browserApi_.getDefaultZoom(),
-                                topToolbarHeight);
+                                this.browserApi_.getDefaultZoom());
 
   // Create the plugin object dynamically so we can set its src. The plugin
   // element is sized to fill the entire window and is set to be fixed
@@ -152,11 +143,8 @@ function PDFViewer(browserApi) {
   }
   this.plugin_.setAttribute('headers', headers);
 
-  if (this.isMaterial_) {
+  if (this.isMaterial_)
     this.plugin_.setAttribute('is-material', '');
-    this.plugin_.setAttribute('top-toolbar-height',
-                              PDFViewer.MATERIAL_TOOLBAR_HEIGHT);
-  }
 
   if (!this.browserApi_.getStreamInfo().embedded)
     this.plugin_.setAttribute('full-frame', '');

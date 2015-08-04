@@ -25,8 +25,6 @@ function getIntersectionHeight(rect1, rect2) {
  * @param {Function} afterZoomCallback is run after a change in zoom
  * @param {number} scrollbarWidth the width of scrollbars on the page
  * @param {number} defaultZoom The default zoom level.
- * @param {number} topToolbarHeight The number of pixels that should initially
- *     be left blank above the document for the toolbar.
  */
 function Viewport(window,
                   sizer,
@@ -34,8 +32,7 @@ function Viewport(window,
                   beforeZoomCallback,
                   afterZoomCallback,
                   scrollbarWidth,
-                  defaultZoom,
-                  topToolbarHeight) {
+                  defaultZoom) {
   this.window_ = window;
   this.sizer_ = sizer;
   this.viewportChangedCallback_ = viewportChangedCallback;
@@ -48,7 +45,6 @@ function Viewport(window,
   this.scrollbarWidth_ = scrollbarWidth;
   this.fittingType_ = Viewport.FittingType.NONE;
   this.defaultZoom_ = defaultZoom;
-  this.topToolbarHeight_ = topToolbarHeight;
 
   window.addEventListener('scroll', this.updateViewport_.bind(this));
   window.addEventListener('resize', this.resize_.bind(this));
@@ -143,8 +139,8 @@ Viewport.prototype = {
     if (this.documentDimensions_) {
       this.sizer_.style.width =
           this.documentDimensions_.width * this.zoom_ + 'px';
-      this.sizer_.style.height = this.documentDimensions_.height * this.zoom_ +
-          this.topToolbarHeight_ + 'px';
+      this.sizer_.style.height =
+          this.documentDimensions_.height * this.zoom_ + 'px';
     }
   },
 
@@ -175,7 +171,7 @@ Viewport.prototype = {
   get position() {
     return {
       x: this.window_.pageXOffset,
-      y: this.window_.pageYOffset - this.topToolbarHeight_
+      y: this.window_.pageYOffset
     };
   },
 
@@ -184,7 +180,7 @@ Viewport.prototype = {
    * @type {Object} position the position to scroll to.
    */
   set position(position) {
-    this.window_.scrollTo(position.x, position.y + this.topToolbarHeight_);
+    this.window_.scrollTo(position.x, position.y);
   },
 
   /**
@@ -233,17 +229,15 @@ Viewport.prototype = {
             'Viewport.mightZoom_.';
     }
     // Record the scroll position (relative to the top-left of the window).
-    var currentScrollPos = {
-      x: this.position.x / this.zoom_,
-      y: this.position.y / this.zoom_
-    };
+    var currentScrollPos = [
+      this.window_.pageXOffset / this.zoom_,
+      this.window_.pageYOffset / this.zoom_
+    ];
     this.zoom_ = newZoom;
     this.contentSizeChanged_();
     // Scroll to the scaled scroll position.
-    this.position = {
-      x: currentScrollPos.x * newZoom,
-      y: currentScrollPos.y * newZoom
-    };
+    this.window_.scrollTo(currentScrollPos[0] * newZoom,
+                          currentScrollPos[1] * newZoom);
   },
 
   /**
@@ -432,12 +426,8 @@ Viewport.prototype = {
         height: this.pageDimensions_[page].height,
       };
       this.setZoomInternal_(this.computeFittingZoom_(dimensions, false));
-      if (scrollToTopOfPage) {
-        this.position = {
-          x: 0,
-          y: this.pageDimensions_[page].y * this.zoom_
-        };
-      }
+      if (scrollToTopOfPage)
+        this.window_.scrollTo(0, this.pageDimensions_[page].y * this.zoom_);
       this.updateViewport_();
     }.bind(this));
   },
@@ -495,16 +485,8 @@ Viewport.prototype = {
       if (page >= this.pageDimensions_.length)
         page = this.pageDimensions_.length - 1;
       var dimensions = this.pageDimensions_[page];
-      var toolbarOffset = 0;
-      // Unless we're in fit to page mode, scroll above the page by
-      // |this.topToolbarHeight_| so that the toolbar isn't covering it
-      // initially.
-      if (this.fittingType_ != Viewport.FittingType.FIT_TO_PAGE)
-        toolbarOffset = this.topToolbarHeight_;
-      this.position = {
-        x: dimensions.x * this.zoom_,
-        y: dimensions.y * this.zoom_ - toolbarOffset
-      };
+      this.window_.scrollTo(dimensions.x * this.zoom_,
+                            dimensions.y * this.zoom_);
       this.updateViewport_();
     }.bind(this));
   },
@@ -522,10 +504,7 @@ Viewport.prototype = {
         this.setZoomInternal_(
             Math.min(this.defaultZoom_,
                      this.computeFittingZoom_(this.documentDimensions_, true)));
-        this.position = {
-          x: 0,
-          y: -this.topToolbarHeight_
-        };
+        this.window_.scrollTo(0, 0);
       }
       this.contentSizeChanged_();
       this.resize_();
