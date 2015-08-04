@@ -11,6 +11,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "content/public/browser/browser_context.h"
@@ -64,6 +65,10 @@ void SavePageCallback(ScopedJavaGlobalRef<jobject>* j_callback_obj,
 }
 
 }  // namespace
+
+static jboolean IsOfflinePagesEnabled(JNIEnv* env, jclass clazz) {
+  return offline_pages::IsOfflinePagesEnabled();
+}
 
 OfflinePageBridge::OfflinePageBridge(JNIEnv* env,
                                      jobject obj,

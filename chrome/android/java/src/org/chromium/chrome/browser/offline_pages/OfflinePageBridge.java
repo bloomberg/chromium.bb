@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.offline_pages;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -20,6 +21,9 @@ import java.util.List;
 public final class OfflinePageBridge {
 
     private long mNativeOfflinePageBridge;
+
+    /** Whether the offline pages feature is enabled. */
+    private static Boolean sIsEnabled;
 
     /**
      * Interface with callbacks to public calls on OfflinePageBrdige.
@@ -54,6 +58,17 @@ public final class OfflinePageBridge {
     @VisibleForTesting
     public OfflinePageBridge(Profile profile) {
         mNativeOfflinePageBridge = nativeInit(profile);
+    }
+
+    /**
+     * Returns true if the offline pages feature is enabled.
+     */
+    public static boolean isEnabled() {
+        ThreadUtils.assertOnUiThread();
+        if (sIsEnabled == null) {
+            sIsEnabled = nativeIsOfflinePagesEnabled();
+        }
+        return sIsEnabled;
     }
 
     /**
@@ -95,6 +110,8 @@ public final class OfflinePageBridge {
             String url, String title, String offlineUrl, long fileSize) {
         offlinePagesList.add(new OfflinePageItem(url, title, offlineUrl, fileSize));
     }
+
+    private static native boolean nativeIsOfflinePagesEnabled();
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeOfflinePageBridge);
