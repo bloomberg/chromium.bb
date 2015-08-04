@@ -27,25 +27,15 @@
 
 class GURL;
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
 namespace ash {
 namespace test {
 class AshTestHelper;
 }
 }
-#endif
-
-#if defined(USE_AURA)
-namespace aura {
-namespace test {
-class AuraTestHelper;
-}
-}
-#endif
-
-#if defined(TOOLKIT_VIEWS)
+#elif defined(TOOLKIT_VIEWS)
 namespace views {
-class ViewsDelegate;
+class ScopedViewsTestHelper;
 }
 #endif
 
@@ -112,6 +102,9 @@ class BrowserWithTestWindowTest : public testing::Test {
     return window_.release();
   }
 
+  // The context to help determine desktop type when creating new Widgets.
+  gfx::NativeWindow GetContext();
+
   // Adds a tab to |browser| with the given URL and commits the load.
   // This is a convenience function. The new tab will be added at index 0.
   void AddTab(Browser* browser, const GURL& url);
@@ -158,12 +151,6 @@ class BrowserWithTestWindowTest : public testing::Test {
                                  BrowserWindow* browser_window);
 
  private:
-#if !defined(OS_CHROMEOS) && defined(TOOLKIT_VIEWS)
-  // Creates the ViewsDelegate to use, may be overriden to create a different
-  // ViewsDelegate.
-  views::ViewsDelegate* CreateViewsDelegate();
-#endif
-
   // We need to create a MessageLoop, otherwise a bunch of things fails.
   content::TestBrowserThreadBundle thread_bundle_;
   base::ShadowingAtExitManager at_exit_manager_;
@@ -185,15 +172,10 @@ class BrowserWithTestWindowTest : public testing::Test {
   // RenderViewHostTester.
   content::RenderViewHostTestEnabler rvh_test_enabler_;
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   scoped_ptr<ash::test::AshTestHelper> ash_test_helper_;
-#endif
-#if defined(USE_AURA)
-  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
-#endif
-
-#if defined(TOOLKIT_VIEWS)
-  scoped_ptr<views::ViewsDelegate> views_delegate_;
+#elif defined(TOOLKIT_VIEWS)
+  scoped_ptr<views::ScopedViewsTestHelper> views_test_helper_;
 #endif
 
 #if defined(OS_WIN)

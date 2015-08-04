@@ -22,6 +22,10 @@ namespace views {
 class ImageView;
 }
 
+namespace test {
+class AppInfoDialogTestApi;
+}
+
 // A small summary panel with the app's name, icon, version, and various links
 // that is displayed at the top of the app info dialog.
 class AppInfoHeaderPanel : public AppInfoPanel,
@@ -32,6 +36,8 @@ class AppInfoHeaderPanel : public AppInfoPanel,
   ~AppInfoHeaderPanel() override;
 
  private:
+  friend class test::AppInfoDialogTestApi;
+
   void CreateControls();
 
   // Overridden from views::LinkListener:

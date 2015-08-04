@@ -21,6 +21,12 @@
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#endif
+
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
 #endif
@@ -64,6 +70,21 @@ scoped_ptr<base::DictionaryValue> MakePackagedAppManifest() {
 
 }  // namespace
 
+// Extra environment state required for ChromeOS.
+class TestExtensionEnvironment::ChromeOSEnv {
+ public:
+  ChromeOSEnv() {}
+
+ private:
+#if defined(OS_CHROMEOS)
+  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
+  chromeos::ScopedTestCrosSettings test_cros_settings_;
+  chromeos::ScopedTestUserManager test_user_manager_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeOSEnv);
+};
+
 // static
 ExtensionService* TestExtensionEnvironment::CreateExtensionServiceForProfile(
     TestingProfile* profile) {
@@ -75,16 +96,22 @@ ExtensionService* TestExtensionEnvironment::CreateExtensionServiceForProfile(
 
 TestExtensionEnvironment::TestExtensionEnvironment()
     : thread_bundle_(new content::TestBrowserThreadBundle),
-      profile_(new TestingProfile),
       extension_service_(nullptr) {
-#if defined(USE_AURA)
-  aura::Env::CreateInstance(true);
-#endif
+  Init();
 }
 
 TestExtensionEnvironment::TestExtensionEnvironment(
     base::MessageLoopForUI* message_loop)
-    : profile_(new TestingProfile), extension_service_(nullptr) {
+    : extension_service_(nullptr) {
+  Init();
+}
+
+void TestExtensionEnvironment::Init() {
+  profile_.reset(new TestingProfile);
+#if defined(OS_CHROMEOS)
+  if (!chromeos::DeviceSettingsService::IsInitialized())
+    chromeos_env_.reset(new ChromeOSEnv);
+#endif
 #if defined(USE_AURA)
   aura::Env::CreateInstance(true);
 #endif
@@ -140,6 +167,7 @@ scoped_refptr<Extension> TestExtensionEnvironment::MakePackagedApp(
     bool install) {
   scoped_refptr<Extension> result = ExtensionBuilder()
                                         .SetManifest(MakePackagedAppManifest())
+                                        .AddFlags(Extension::FROM_WEBSTORE)
                                         .SetID(id)
                                         .Build();
   if (install)

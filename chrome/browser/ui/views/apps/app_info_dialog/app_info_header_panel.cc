@@ -131,11 +131,11 @@ void AppInfoHeaderPanel::OnAppImageLoaded(const gfx::Image& image) {
 
 void AppInfoHeaderPanel::ShowAppInWebStore() {
   DCHECK(CanShowAppInWebStore());
+  Close();
   OpenLink(net::AppendQueryParameter(
       extensions::ManifestURL::GetDetailsURL(app_),
       extension_urls::kWebstoreSourceField,
       extension_urls::kLaunchSourceAppListInfoDialog));
-  Close();
 }
 
 bool AppInfoHeaderPanel::CanShowAppInWebStore() const {
