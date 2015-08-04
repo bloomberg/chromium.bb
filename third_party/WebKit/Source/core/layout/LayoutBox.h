@@ -534,6 +534,7 @@ public:
 
     bool hasDefiniteLogicalWidth() const;
     static bool percentageLogicalHeightIsResolvableFromBlock(const LayoutBlock* containingBlock, bool outOfFlowPositioned);
+    bool percentageLogicalHeightIsResolvable() const;
     bool hasDefiniteLogicalHeight() const;
     LayoutUnit computePercentageLogicalHeight(const Length& height) const;
 

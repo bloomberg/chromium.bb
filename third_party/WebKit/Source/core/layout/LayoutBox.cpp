@@ -4265,11 +4265,6 @@ bool LayoutBox::hasDefiniteLogicalWidth() const
     return logicalWidthIsResolvable(*this);
 }
 
-inline static bool percentageLogicalHeightIsResolvable(const LayoutBox* box)
-{
-    return LayoutBox::percentageLogicalHeightIsResolvableFromBlock(box->containingBlock(), box->isOutOfFlowPositioned());
-}
-
 bool LayoutBox::percentageLogicalHeightIsResolvableFromBlock(const LayoutBlock* containingBlock, bool isOutOfFlowPositioned)
 {
     // In quirks mode, blocks with auto height are skipped, and we keep looking for an enclosing
@@ -4317,6 +4312,11 @@ bool LayoutBox::percentageLogicalHeightIsResolvableFromBlock(const LayoutBlock* 
     return false;
 }
 
+bool LayoutBox::percentageLogicalHeightIsResolvable() const
+{
+    return LayoutBox::percentageLogicalHeightIsResolvableFromBlock(containingBlock(), isOutOfFlowPositioned());
+}
+
 bool LayoutBox::hasDefiniteLogicalHeight() const
 {
     const Length& logicalHeight = style()->logicalHeight();
@@ -4331,7 +4331,7 @@ bool LayoutBox::hasDefiniteLogicalHeight() const
     if (hasOverrideContainingBlockLogicalHeight())
         return overrideContainingBlockContentLogicalHeight() != -1;
 
-    return percentageLogicalHeightIsResolvable(this);
+    return percentageLogicalHeightIsResolvable();
 }
 
 bool LayoutBox::hasUnsplittableScrollingOverflow() const
@@ -4347,8 +4347,8 @@ bool LayoutBox::hasUnsplittableScrollingOverflow() const
     // conditions, but it should work out to be good enough for common cases. Paginating overflow
     // with scrollbars present is not the end of the world and is what we used to do in the old model anyway.
     return !style()->logicalHeight().isIntrinsicOrAuto()
-        || (!style()->logicalMaxHeight().isIntrinsicOrAuto() && !style()->logicalMaxHeight().isMaxSizeNone() && (!style()->logicalMaxHeight().hasPercent() || percentageLogicalHeightIsResolvable(this)))
-        || (!style()->logicalMinHeight().isIntrinsicOrAuto() && style()->logicalMinHeight().isPositive() && (!style()->logicalMinHeight().hasPercent() || percentageLogicalHeightIsResolvable(this)));
+        || (!style()->logicalMaxHeight().isIntrinsicOrAuto() && !style()->logicalMaxHeight().isMaxSizeNone() && (!style()->logicalMaxHeight().hasPercent() || percentageLogicalHeightIsResolvable()))
+        || (!style()->logicalMinHeight().isIntrinsicOrAuto() && style()->logicalMinHeight().isPositive() && (!style()->logicalMinHeight().hasPercent() || percentageLogicalHeightIsResolvable()));
 }
 
 bool LayoutBox::isUnsplittableForPagination() const
