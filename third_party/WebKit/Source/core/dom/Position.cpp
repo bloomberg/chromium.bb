@@ -832,7 +832,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::downstream(EditingBound
         if (layoutObject->isText() && toLayoutText(layoutObject)->firstTextBox()) {
             if (currentNode != startNode) {
                 ASSERT(currentPos.atStartOfNode());
-                return createLegacyEditingPosition(currentNode, layoutObject->caretMinOffset());
+                return PositionAlgorithm<Strategy>(currentNode, layoutObject->caretMinOffset());
             }
 
             unsigned textOffset = currentPos.offsetInLeafNode();
