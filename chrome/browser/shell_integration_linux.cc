@@ -575,14 +575,12 @@ std::vector<base::FilePath> GetDataSearchLocations(base::Environment* env) {
 }
 
 std::string GetProgramClassName() {
-  DCHECK(base::CommandLine::InitializedForCurrentProcess());
-  // Get the res_name component from argv[0].
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  std::string class_name = command_line->GetProgram().BaseName().value();
-  if (!class_name.empty())
-    class_name[0] = base::ToUpperASCII(class_name[0]);
-  return class_name;
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::string desktop_file(GetDesktopName(env.get()));
+  std::size_t last = desktop_file.find(".desktop");
+  if (last != std::string::npos)
+    return desktop_file.substr(0, last);
+  return desktop_file;
 }
 
 std::string GetDesktopName(base::Environment* env) {
