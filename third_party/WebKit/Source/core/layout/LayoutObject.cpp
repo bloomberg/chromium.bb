@@ -1356,18 +1356,17 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
         m_bitfields.setLastBoxDecorationBackgroundObscured(boxDecorationBackgroundObscured);
     }
 
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+    if (invalidationReason == PaintInvalidationNone) {
         // TODO(trchen): Currently we don't keep track of paint offset of layout objects.
         // There are corner cases that the display items need to be invalidated for paint offset
         // mutation, but incurs no pixel difference (i.e. bounds stay the same) so no rect-based
-        // invalidation is issued. See crbug.com/508383
+        // invalidation is issued. See crbug.com/508383 and crbug.com/515977.
         // This is a workaround to force display items to update paint offset.
-        if (styleRef().position() == FixedPosition && oldLocation != newLocation)
-            invalidateDisplayItemClientForNonCompositingDescendants();
-    }
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled() && paintInvalidationState.ancestorHadPaintInvalidationForLocationChange())
+            invalidateDisplayItemClients(paintInvalidationContainer);
 
-    if (invalidationReason == PaintInvalidationNone)
         return invalidationReason;
+    }
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled())
         invalidateDisplayItemClients(paintInvalidationContainer);
@@ -3164,7 +3163,7 @@ void LayoutObject::clearPaintInvalidationState(const PaintInvalidationState& pai
 {
     // paintInvalidationStateIsDirty should be kept in sync with the
     // booleans that are cleared below.
-    ASSERT(paintInvalidationState.forceCheckForPaintInvalidation() || paintInvalidationStateIsDirty());
+    ASSERT(paintInvalidationState.ancestorHadPaintInvalidationForLocationChange() || paintInvalidationStateIsDirty());
     clearShouldDoFullPaintInvalidation();
     setNeededLayoutBecauseOfChildren(false);
     setShouldInvalidateOverflowForPaint(false);

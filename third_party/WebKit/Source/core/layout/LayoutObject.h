@@ -1030,7 +1030,10 @@ public:
 
     bool shouldCheckForPaintInvalidation(const PaintInvalidationState& paintInvalidationState) const
     {
-        return paintInvalidationState.forceCheckForPaintInvalidation() || shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
+        // Should check for paint invalidation if some ancestor changed location, because this object
+        // may also change paint offset or location in paint invalidation container, even if there is
+        // no paint invalidation flag set.
+        return paintInvalidationState.ancestorHadPaintInvalidationForLocationChange() || shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
     }
 
     bool shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() const

@@ -10,7 +10,6 @@
         [18, 278, 100, 100]
       ],
       "paintInvalidationClients": [
-        "LayoutBlockFlow (positioned) DIV id='toMove'",
         "LayoutBlockFlow (positioned) DIV id='toMove'"
       ]
     }

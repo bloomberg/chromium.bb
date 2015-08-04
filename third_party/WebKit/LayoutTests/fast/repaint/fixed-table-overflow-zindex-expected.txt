@@ -21,7 +21,6 @@
         "LayoutTableCell TD class='red'",
         "LayoutTableSection TBODY",
         "LayoutTableCell (anonymous)",
-        "LayoutBlockFlow (positioned) TD id='moveMe' class='fixed'",
         "LayoutBlockFlow (positioned) TD id='moveMe' class='fixed'"
       ]
     }

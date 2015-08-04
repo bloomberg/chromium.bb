@@ -339,7 +339,7 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(PaintInvalidationState& paintI
 
     PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, newPaintInvalidationContainer);
     if (reason == PaintInvalidationLocationChange)
-        childTreeWalkState.setForceCheckForPaintInvalidation();
+        childTreeWalkState.setAncestorHadPaintInvalidationForLocationChange();
     invalidatePaintOfSubtreesIfNeeded(childTreeWalkState);
 }
 

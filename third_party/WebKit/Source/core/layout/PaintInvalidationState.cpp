@@ -16,7 +16,7 @@ namespace blink {
 PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView, Vector<LayoutObject*>& pendingDelayedPaintInvalidations, PaintInvalidationState* ownerPaintInvalidationState)
     : m_clipped(false)
     , m_cachedOffsetsEnabled(true)
-    , m_forceCheckForPaintInvalidation(false)
+    , m_ancestorHadPaintInvalidationForLocationChange(false)
     , m_paintInvalidationContainer(*layoutView.containerForPaintInvalidation())
     , m_pendingDelayedPaintInvalidations(pendingDelayedPaintInvalidations)
 {
@@ -27,8 +27,8 @@ PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView, Vec
             m_cachedOffsetsEnabled = false;
             return;
         }
-        if (ownerPaintInvalidationState && ownerPaintInvalidationState->m_forceCheckForPaintInvalidation)
-            m_forceCheckForPaintInvalidation = true;
+        if (ownerPaintInvalidationState && ownerPaintInvalidationState->m_ancestorHadPaintInvalidationForLocationChange)
+            m_ancestorHadPaintInvalidationForLocationChange = true;
         FloatPoint point = layoutView.localToContainerPoint(FloatPoint(), &m_paintInvalidationContainer, TraverseDocumentBoundaries);
         m_paintOffset = LayoutSize(point.x(), point.y());
     }
@@ -40,7 +40,7 @@ PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView, Vec
 PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, LayoutBoxModelObject& layoutObject, const LayoutBoxModelObject& paintInvalidationContainer)
     : m_clipped(false)
     , m_cachedOffsetsEnabled(true)
-    , m_forceCheckForPaintInvalidation(next.m_forceCheckForPaintInvalidation)
+    , m_ancestorHadPaintInvalidationForLocationChange(next.m_ancestorHadPaintInvalidationForLocationChange)
     , m_paintInvalidationContainer(paintInvalidationContainer)
     , m_pendingDelayedPaintInvalidations(next.pendingDelayedPaintInvalidationTargets())
 {
@@ -54,7 +54,7 @@ PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, Lay
         // When we hit a new paint invalidation container, we don't need to
         // continue forcing a check for paint invalidation because movement
         // from our parents will just move the whole invalidation container.
-        m_forceCheckForPaintInvalidation = false;
+        m_ancestorHadPaintInvalidationForLocationChange = false;
     } else {
         if (m_cachedOffsetsEnabled) {
             if (fixed) {
@@ -96,7 +96,7 @@ PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, Lay
 PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, const LayoutSVGModelObject& layoutObject)
     : m_clipped(next.m_clipped)
     , m_cachedOffsetsEnabled(next.m_cachedOffsetsEnabled)
-    , m_forceCheckForPaintInvalidation(next.m_forceCheckForPaintInvalidation)
+    , m_ancestorHadPaintInvalidationForLocationChange(next.m_ancestorHadPaintInvalidationForLocationChange)
     , m_clipRect(next.m_clipRect)
     , m_paintOffset(next.m_paintOffset)
     , m_paintInvalidationContainer(next.m_paintInvalidationContainer)
