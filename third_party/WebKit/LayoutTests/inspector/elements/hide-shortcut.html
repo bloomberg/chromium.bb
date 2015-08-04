@@ -39,7 +39,7 @@ function test()
 
         function testToggleHideShortcutOn(next)
         {
-            treeOutline._toggleHideShortcut(parentNode, callback);
+            treeOutline.toggleHideElement(parentNode, callback);
 
             function callback()
             {
@@ -64,7 +64,7 @@ function test()
 
         function testToggleHideShortcutOff(next)
         {
-            treeOutline._toggleHideShortcut(parentNode, callback);
+            treeOutline.toggleHideElement(parentNode, callback);
 
             function callback()
             {
@@ -109,7 +109,7 @@ function test()
 
         function testToggleHideShortcutOnInFrame(next)
         {
-            treeOutline._toggleHideShortcut(frameNode, callback);
+            treeOutline.toggleHideElement(frameNode, callback);
 
             function callback()
             {
@@ -128,7 +128,7 @@ function test()
 
     function testPseudoToggle(pseudoNode, next)
     {
-        treeOutline._toggleHideShortcut(pseudoNode, callback);
+        treeOutline.toggleHideElement(pseudoNode, callback);
 
         function callback()
         {
