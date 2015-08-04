@@ -109,7 +109,7 @@ OverlayScrollbars
 PagePopup status=stable
 PathOpsSVGClipping status=stable
 Permissions status=stable
-PermissionsRequestRevoke status=test
+PermissionsRequestRevoke status=experimental
 PointerEvent
 PreciseMemoryInfo
 // This feature is deprecated and replaced by EncryptedMedia.
