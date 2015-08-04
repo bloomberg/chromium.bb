@@ -48,7 +48,7 @@ public:
     void provisionalSelectionChanged(unsigned listIndex) override { }
     bool multiple() const override { return false; }
     IntRect elementRectRelativeToViewport() const override { return IntRect(); }
-    Element& ownerElement() const override { return *m_ownerElement; }
+    HTMLSelectElement& ownerElement() const override { return *m_ownerElement; }
     const ComputedStyle* computedStyleForItem(unsigned listIndex) const override
     {
         Element* element = m_ownerElement->listItems()[listIndex];

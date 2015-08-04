@@ -94,7 +94,7 @@ private:
     void listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow = true) override;
     bool multiple() const override;
     IntRect elementRectRelativeToViewport() const override;
-    Element& ownerElement() const override;
+    HTMLSelectElement& ownerElement() const override;
 
     bool hasLineIfEmpty() const override { return true; }
 

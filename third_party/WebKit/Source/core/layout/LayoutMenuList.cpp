@@ -395,7 +395,7 @@ IntRect LayoutMenuList::elementRectRelativeToViewport() const
     return selectElement()->document().view()->contentsToViewport(roundedIntRect(absoluteBoundingBoxFloatRect()));
 }
 
-Element& LayoutMenuList::ownerElement() const
+HTMLSelectElement& LayoutMenuList::ownerElement() const
 {
     return *selectElement();
 }

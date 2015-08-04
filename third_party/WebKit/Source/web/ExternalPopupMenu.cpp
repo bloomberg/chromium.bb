@@ -36,6 +36,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLOptionElement.h"
+#include "core/html/HTMLSelectElement.h"
 #include "core/html/forms/PopupMenuClient.h"
 #include "core/page/Page.h"
 #include "core/style/ComputedStyle.h"

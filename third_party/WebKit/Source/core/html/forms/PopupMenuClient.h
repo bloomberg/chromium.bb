@@ -30,8 +30,9 @@
 
 namespace blink {
 
-class Element;
 class ComputedStyle;
+class Element;
+class HTMLSelectElement;
 
 // TODO(tkent): Remove this interface.  crbug.com/515013.
 class CORE_EXPORT PopupMenuClient {
@@ -55,7 +56,7 @@ public:
     // Provisional selection is a selection made using arrow keys or type ahead.
     virtual void provisionalSelectionChanged(unsigned) = 0;
     virtual IntRect elementRectRelativeToViewport() const = 0;
-    virtual Element& ownerElement() const = 0;
+    virtual HTMLSelectElement& ownerElement() const = 0;
     // computedStyleForItem() returns nullptr only if the owner Document is not
     // active.  So, It returns a valid object when we open a popup.
     virtual const ComputedStyle* computedStyleForItem(unsigned listIndex) const = 0;
