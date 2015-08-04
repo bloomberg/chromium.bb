@@ -38,42 +38,13 @@
 
 namespace syncer {
 
-using syncable::BASE_SERVER_SPECIFICS;
-using syncable::BASE_VERSION;
 using syncable::CHANGES_VERSION;
-using syncable::CREATE_NEW_UPDATE_ITEM;
-using syncable::CTIME;
 using syncable::Directory;
 using syncable::Entry;
 using syncable::GET_BY_HANDLE;
 using syncable::GET_BY_ID;
 using syncable::ID;
-using syncable::IS_DEL;
-using syncable::IS_DIR;
-using syncable::IS_UNAPPLIED_UPDATE;
-using syncable::IS_UNSYNCED;
 using syncable::Id;
-using syncable::META_HANDLE;
-using syncable::MTIME;
-using syncable::MutableEntry;
-using syncable::NON_UNIQUE_NAME;
-using syncable::PARENT_ID;
-using syncable::SERVER_CTIME;
-using syncable::SERVER_IS_DEL;
-using syncable::SERVER_IS_DIR;
-using syncable::SERVER_MTIME;
-using syncable::SERVER_NON_UNIQUE_NAME;
-using syncable::SERVER_PARENT_ID;
-using syncable::SERVER_SPECIFICS;
-using syncable::SERVER_UNIQUE_POSITION;
-using syncable::SERVER_VERSION;
-using syncable::SPECIFICS;
-using syncable::SYNCER;
-using syncable::UNIQUE_BOOKMARK_TAG;
-using syncable::UNIQUE_CLIENT_TAG;
-using syncable::UNIQUE_POSITION;
-using syncable::UNIQUE_SERVER_TAG;
-using syncable::WriteTransaction;
 
 syncable::Id FindLocalIdToUpdate(
     syncable::BaseTransaction* trans,

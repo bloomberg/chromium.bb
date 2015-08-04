@@ -80,7 +80,6 @@
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
-#include "chrome/browser/sync/glue/extension_backed_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_setting_data_type_controller.h"
 #endif
@@ -116,7 +115,6 @@ using browser_sync::BookmarkDataTypeController;
 using browser_sync::BookmarkModelAssociator;
 using browser_sync::ChromeReportUnrecoverableError;
 #if defined(ENABLE_EXTENSIONS)
-using browser_sync::ExtensionBackedDataTypeController;
 using browser_sync::ExtensionDataTypeController;
 using browser_sync::ExtensionSettingDataTypeController;
 #endif

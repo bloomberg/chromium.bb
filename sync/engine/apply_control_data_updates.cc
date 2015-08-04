@@ -17,15 +17,8 @@
 
 namespace syncer {
 
-using syncable::GET_TYPE_ROOT;
-using syncable::IS_UNAPPLIED_UPDATE;
-using syncable::IS_UNSYNCED;
-using syncable::SERVER_SPECIFICS;
-using syncable::SPECIFICS;
-using syncable::SYNCER;
-
 void ApplyControlDataUpdates(syncable::Directory* dir) {
-  syncable::WriteTransaction trans(FROM_HERE, SYNCER, dir);
+  syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
 
   std::vector<int64> handles;
   dir->GetUnappliedUpdateMetaHandles(

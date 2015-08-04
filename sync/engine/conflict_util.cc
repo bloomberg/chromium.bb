@@ -8,11 +8,6 @@
 
 namespace syncer {
 
-using syncable::BASE_VERSION;
-using syncable::IS_UNAPPLIED_UPDATE;
-using syncable::IS_UNSYNCED;
-using syncable::SERVER_VERSION;
-
 using syncable::MutableEntry;
 
 namespace conflict_util {

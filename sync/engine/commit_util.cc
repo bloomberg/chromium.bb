@@ -32,14 +32,8 @@ using std::vector;
 
 namespace syncer {
 
-using sessions::SyncSession;
 using syncable::Entry;
-using syncable::IS_DEL;
-using syncable::IS_UNAPPLIED_UPDATE;
-using syncable::IS_UNSYNCED;
 using syncable::Id;
-using syncable::SPECIFICS;
-using syncable::UNIQUE_POSITION;
 
 namespace commit_util {
 

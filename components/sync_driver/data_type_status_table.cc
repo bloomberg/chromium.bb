@@ -28,10 +28,7 @@ DataTypeStatusTable::DataTypeStatusTable() {
 DataTypeStatusTable::~DataTypeStatusTable() {
 }
 
-bool DataTypeStatusTable::UpdateFailedDataTypes(const TypeErrorMap& errors) {
-  if (errors.empty())
-    return false;
-
+void DataTypeStatusTable::UpdateFailedDataTypes(const TypeErrorMap& errors) {
   DVLOG(1) << "Setting " << errors.size() << " new failed types.";
 
   for (TypeErrorMap::const_iterator iter = errors.begin(); iter != errors.end();
@@ -59,7 +56,6 @@ bool DataTypeStatusTable::UpdateFailedDataTypes(const TypeErrorMap& errors) {
         break;
     }
   }
-  return true;
 }
 
 void DataTypeStatusTable::Reset() {
@@ -145,14 +141,6 @@ syncer::SyncError DataTypeStatusTable::GetUnrecoverableError() const {
   return (unrecoverable_errors_.empty()
               ? syncer::SyncError()
               : unrecoverable_errors_.begin()->second);
-}
-
-bool DataTypeStatusTable::AnyFailedDataType() const {
-  // Note: persistence errors are not failed types. They just trigger automatic
-  // unapply + getupdates, at which point they are associated like normal.
-  return unrecoverable_errors_.empty() ||
-         !data_type_errors_.empty() ||
-         !crypto_errors_.empty();
 }
 
 }  // namespace sync_driver
