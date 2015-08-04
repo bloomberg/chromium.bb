@@ -231,7 +231,8 @@ dist_yaml_TESTS =				\
 	letterDefTest_harness.yaml		\
 	nl-BE-g1_harness.yaml			\
 	nocross_harness.yaml			\
-	pl-pl-comp8_harness.yaml
+	pl-pl-comp8_harness.yaml		\
+	ta-ta-g1_harness.yaml
 
 TEST_EXTENSIONS = .yaml
 YAML_LOG_COMPILER = ./check_yaml
