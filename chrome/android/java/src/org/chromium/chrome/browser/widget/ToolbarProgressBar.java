@@ -70,7 +70,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
 
                 if (getProgress() == mTargetProgress) {
                     if (mTargetProgress == 1.0f && !mIsStarted) {
-                        postDelayed(mHideRunnable, mHidingDelayMs);
+                        postOnAnimationDelayed(mHideRunnable, mHidingDelayMs);
                     }
                     mProgressAnimator.end();
                     return;
@@ -168,9 +168,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     private void updateVisibleProgress() {
         if (mAnimationLogic == null) {
             super.setProgress(mTargetProgress);
-            if (!mIsStarted) {
-                postDelayed(mHideRunnable, mHidingDelayMs);
-            }
+            if (!mIsStarted) postOnAnimationDelayed(mHideRunnable, mHidingDelayMs);
         } else {
             if (!mProgressAnimator.isStarted()) mProgressAnimator.start();
         }
