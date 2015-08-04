@@ -333,7 +333,6 @@ _arm_internal_release_boards = frozenset([
     'arkham',
     'beaglebone',
     'beaglebone_servo',
-    'cosmos',
     'daisy',
     'daisy_skate',
     'daisy_spring',
@@ -522,7 +521,6 @@ _internal_boards = _all_release_boards
 # Board can appear in 1 or more of the following sets.
 _brillo_boards = frozenset([
     'arkham',
-    'cosmos',
     'gizmo',
     'kayle',
     'lakitu',
@@ -631,7 +629,6 @@ _waterfall_config_map = {
 
         # Experimental Canaries
         'bobcat-release',
-        'cosmos-release',
         'daisy_winter-release',
         'kayle-release',
         'nyan_freon-release',
@@ -2248,15 +2245,6 @@ def GetConfig():
       _release, 'kayle-release',
       _base_configs['kayle'],
       paygen=False,
-      signer_tests=False,
-  )
-
-  site_config.AddConfig(
-      _release, 'cosmos-release',
-      _base_configs['cosmos'],
-
-      paygen_skip_testing=True,
-      important=False,
       signer_tests=False,
   )
 
