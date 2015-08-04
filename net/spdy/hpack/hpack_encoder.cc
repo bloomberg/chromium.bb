@@ -160,19 +160,28 @@ void HpackEncoder::CookieToCrumbs(const Representation& cookie,
   // See Section 8.1.2.5. "Compressing the Cookie Header Field" in the HTTP/2
   // specification at https://tools.ietf.org/html/draft-ietf-httpbis-http2-14.
   // Cookie values are split into individually-encoded HPACK representations.
+  StringPiece cookie_value = cookie.second;
+  // Consume leading and trailing whitespace if present.
+  StringPiece::size_type first = cookie_value.find_first_not_of(" \t");
+  StringPiece::size_type last = cookie_value.find_last_not_of(" \t");
+  if (first == StringPiece::npos) {
+    cookie_value.clear();
+  } else {
+    cookie_value = cookie_value.substr(first, (last - first) + 1);
+  }
   for (size_t pos = 0;;) {
-    size_t end = cookie.second.find(";", pos);
+    size_t end = cookie_value.find(";", pos);
 
     if (end == StringPiece::npos) {
-      out->push_back(std::make_pair(cookie.first, cookie.second.substr(pos)));
+      out->push_back(std::make_pair(cookie.first, cookie_value.substr(pos)));
       break;
     }
     out->push_back(
-        std::make_pair(cookie.first, cookie.second.substr(pos, end - pos)));
+        std::make_pair(cookie.first, cookie_value.substr(pos, end - pos)));
 
     // Consume next space if present.
     pos = end + 1;
-    if (pos != cookie.second.size() && cookie.second[pos] == ' ') {
+    if (pos != cookie_value.size() && cookie_value[pos] == ' ') {
       pos++;
     }
   }
