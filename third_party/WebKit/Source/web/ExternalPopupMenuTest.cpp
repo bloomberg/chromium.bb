@@ -36,24 +36,15 @@ public:
     void selectionChanged(unsigned listIndex, bool fireEvents = true) override { }
     void selectionCleared() override { }
 
-    Element& itemElement(unsigned listIndex) const override { return *m_ownerElement->listItems()[listIndex]; }
-    String itemText(unsigned listIndex) const override { return emptyString(); }
     LayoutUnit clientPaddingLeft() const override { return 0; }
     LayoutUnit clientPaddingRight() const override { return 0; }
-    int listSize() const override { return m_ownerElement->listItems().size(); }
     int selectedIndex() const override { return 0; }
     void popupDidHide() override { }
     void popupDidCancel() override { }
-    bool itemIsDisplayNone(unsigned listIndex) const override { return computedStyleForItem(listIndex)->display() == NONE; }
     void provisionalSelectionChanged(unsigned listIndex) override { }
     bool multiple() const override { return false; }
     IntRect elementRectRelativeToViewport() const override { return IntRect(); }
     HTMLSelectElement& ownerElement() const override { return *m_ownerElement; }
-    const ComputedStyle* computedStyleForItem(unsigned listIndex) const override
-    {
-        Element* element = m_ownerElement->listItems()[listIndex];
-        return element->computedStyle() ? element->computedStyle() : element->ensureComputedStyle();
-    }
 
     void setOwnerElement(PassRefPtrWillBeRawPtr<HTMLSelectElement> element) { m_ownerElement = element; }
 

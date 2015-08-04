@@ -2160,13 +2160,9 @@ bool Internals::selectPopupItemStyleIsRtl(Node* node, int itemIndex)
         return false;
 
     HTMLSelectElement& select = toHTMLSelectElement(*node);
-
-    LayoutObject* layoutObject = select.layoutObject();
-    if (!layoutObject || !layoutObject->isMenuList())
+    if (itemIndex < 0 || static_cast<size_t>(itemIndex) >= select.listItems().size())
         return false;
-
-    LayoutMenuList& menuList = toLayoutMenuList(*layoutObject);
-    const ComputedStyle* itemStyle = menuList.computedStyleForItem(itemIndex);
+    const ComputedStyle* itemStyle = select.itemComputedStyle(*select.listItems()[itemIndex]);
     return itemStyle && itemStyle->direction() == RTL;
 }
 
@@ -2176,13 +2172,9 @@ int Internals::selectPopupItemStyleFontHeight(Node* node, int itemIndex)
         return false;
 
     HTMLSelectElement& select = toHTMLSelectElement(*node);
-
-    LayoutObject* layoutObject = select.layoutObject();
-    if (!layoutObject || !layoutObject->isMenuList())
+    if (itemIndex < 0 || static_cast<size_t>(itemIndex) >= select.listItems().size())
         return false;
-
-    LayoutMenuList& menuList = toLayoutMenuList(*layoutObject);
-    const ComputedStyle* itemStyle = menuList.computedStyleForItem(itemIndex);
+    const ComputedStyle* itemStyle = select.itemComputedStyle(*select.listItems()[itemIndex]);
     return itemStyle ? itemStyle->font().fontMetrics().height() : 0;
 }
 

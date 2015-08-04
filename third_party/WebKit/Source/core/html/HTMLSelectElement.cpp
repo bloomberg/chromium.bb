@@ -54,6 +54,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutListBox.h"
 #include "core/layout/LayoutMenuList.h"
+#include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/AutoscrollController.h"
@@ -1789,4 +1790,31 @@ HTMLOptionElement* HTMLSelectElement::spatialNavigationFocusedOption()
     return isHTMLOptionElement(focused) ? toHTMLOptionElement(focused) : nullptr;
 }
 
-} // namespace
+String HTMLSelectElement::itemText(const Element& element) const
+{
+    String itemString;
+    if (isHTMLOptGroupElement(element))
+        itemString = toHTMLOptGroupElement(element).groupLabelText();
+    else if (isHTMLOptionElement(element))
+        itemString = toHTMLOptionElement(element).textIndentedToRespectGroupLabel();
+
+    if (layoutObject())
+        applyTextTransform(layoutObject()->style(), itemString, ' ');
+    return itemString;
+}
+
+bool HTMLSelectElement::itemIsDisplayNone(Element& element) const
+{
+    if (isHTMLOptionElement(element))
+        return toHTMLOptionElement(element).isDisplayNone();
+    if (const ComputedStyle* style = itemComputedStyle(element))
+        return style->display() == NONE;
+    return false;
+}
+
+const ComputedStyle* HTMLSelectElement::itemComputedStyle(Element& element) const
+{
+    return element.computedStyle() ? element.computedStyle() : element.ensureComputedStyle();
+}
+
+} // namespace blink

@@ -193,16 +193,18 @@ void ExternalPopupMenu::didCancel()
 
 void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo& info, PopupMenuClient& popupMenuClient)
 {
-    int itemCount = popupMenuClient.listSize();
-    int count = 0;
-    Vector<WebMenuItemInfo> items(static_cast<size_t>(itemCount));
-    for (int i = 0; i < itemCount; ++i) {
-        if (popupMenuClient.itemIsDisplayNone(i))
+    HTMLSelectElement& ownerElement = popupMenuClient.ownerElement();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = ownerElement.listItems();
+    size_t itemCount = listItems.size();
+    size_t count = 0;
+    Vector<WebMenuItemInfo> items(itemCount);
+    for (size_t i = 0; i < itemCount; ++i) {
+        if (ownerElement.itemIsDisplayNone(*listItems[i]))
             continue;
 
-        Element& itemElement = popupMenuClient.itemElement(i);
+        Element& itemElement = *listItems[i];
         WebMenuItemInfo& popupItem = items[count++];
-        popupItem.label = popupMenuClient.itemText(i);
+        popupItem.label = ownerElement.itemText(itemElement);
         popupItem.toolTip = itemElement.title();
         popupItem.checked = false;
         if (isHTMLHRElement(itemElement)) {
@@ -214,7 +216,7 @@ void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo& info, PopupMenuClient
             popupItem.checked = toHTMLOptionElement(itemElement).selected();
         }
         popupItem.enabled = !itemElement.isDisabledFormControl();
-        const ComputedStyle& style = *popupMenuClient.computedStyleForItem(i);
+        const ComputedStyle& style = *ownerElement.itemComputedStyle(itemElement);
         popupItem.textDirection = toWebTextDirection(style.direction());
         popupItem.hasTextDirectionOverride = isOverride(style.unicodeBidi());
     }
@@ -236,10 +238,10 @@ int ExternalPopupMenu::toPopupMenuItemIndex(int externalPopupMenuItemIndex, Popu
     if (externalPopupMenuItemIndex < 0)
         return externalPopupMenuItemIndex;
 
-    int itemCount = popupMenuClient.listSize();
     int indexTracker = 0;
-    for (int i = 0; i < itemCount ; ++i) {
-        if (popupMenuClient.itemIsDisplayNone(i))
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = popupMenuClient.ownerElement().listItems();
+    for (int i = 0; i < static_cast<int>(items.size()); ++i) {
+        if (popupMenuClient.ownerElement().itemIsDisplayNone(*items[i]))
             continue;
         if (indexTracker++ == externalPopupMenuItemIndex)
             return i;
@@ -252,10 +254,10 @@ int ExternalPopupMenu::toExternalPopupMenuItemIndex(int popupMenuItemIndex, Popu
     if (popupMenuItemIndex < 0)
         return popupMenuItemIndex;
 
-    int itemCount = popupMenuClient.listSize();
-    int indexTracker = 0;
-    for (int i = 0; i < itemCount; ++i) {
-        if (popupMenuClient.itemIsDisplayNone(i))
+    size_t indexTracker = 0;
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = popupMenuClient.ownerElement().listItems();
+    for (int i = 0; i < static_cast<int>(items.size()); ++i) {
+        if (popupMenuClient.ownerElement().itemIsDisplayNone(*items[i]))
             continue;
         if (popupMenuItemIndex == i)
             return indexTracker;

@@ -224,7 +224,7 @@ public:
     ETextTransform m_textTransform;
     const FontDescription& m_fontDescription;
 
-    int m_listIndex;
+    unsigned m_listIndex;
     bool m_isInGroup;
     SharedBuffer* m_buffer;
 };
@@ -264,12 +264,14 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
     PagePopupClient::addString("</style></head><body><div id=main>Loading...</div><script>\n"
         "window.dialogArguments = {\n", data);
     addProperty("selectedIndex", m_client->selectedIndex(), data);
-    const ComputedStyle* ownerStyle = ownerElement().computedStyle();
+    HTMLSelectElement& ownerElement = m_client->ownerElement();
+    const ComputedStyle* ownerStyle = ownerElement.computedStyle();
     ItemIterationContext context(*ownerStyle, data);
     context.serializeBaseStyle();
     PagePopupClient::addString("children: [\n", data);
-    for (; context.m_listIndex < m_client->listSize(); ++context.m_listIndex) {
-        Element& child = m_client->itemElement(context.m_listIndex);
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = ownerElement.listItems();
+    for (; context.m_listIndex < items.size(); ++context.m_listIndex) {
+        Element& child = *items[context.m_listIndex];
         if (!isHTMLOptGroupElement(child.parentNode()))
             context.finishGroupIfNecessary();
         if (isHTMLOptionElement(child))
@@ -294,7 +296,7 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
 
 void PopupMenuImpl::addElementStyle(ItemIterationContext& context, HTMLElement& element)
 {
-    const ComputedStyle* style = m_client->computedStyleForItem(context.m_listIndex);
+    const ComputedStyle* style = m_client->ownerElement().itemComputedStyle(element);
     ASSERT(style);
     SharedBuffer* data = context.m_buffer;
     // TODO(tkent): We generate unnecessary "style: {\n},\n" even if no
@@ -483,11 +485,13 @@ void PopupMenuImpl::update()
     RefPtr<SharedBuffer> data = SharedBuffer::create();
     PagePopupClient::addString("window.updateData = {\n", data.get());
     PagePopupClient::addString("type: \"update\",\n", data.get());
-    ItemIterationContext context(*ownerElement().computedStyle(), data.get());
+    HTMLSelectElement& ownerElement = m_client->ownerElement();
+    ItemIterationContext context(*ownerElement.computedStyle(), data.get());
     context.serializeBaseStyle();
     PagePopupClient::addString("children: [", data.get());
-    for (; context.m_listIndex < m_client->listSize(); ++context.m_listIndex) {
-        Element& child = m_client->itemElement(context.m_listIndex);
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = ownerElement.listItems();
+    for (; context.m_listIndex < items.size(); ++context.m_listIndex) {
+        Element& child = *items[context.m_listIndex];
         if (!isHTMLOptGroupElement(child.parentNode()))
             context.finishGroupIfNecessary();
         if (isHTMLOptionElement(child))

@@ -42,13 +42,8 @@ public:
     virtual void selectionChanged(unsigned listIndex, bool fireEvents = true) = 0;
     virtual void selectionCleared() = 0;
 
-    virtual Element& itemElement(unsigned listIndex) const = 0;
-    // TODO(tkent): Remove itemFoo() functions. Use itemElement() instead.
-    virtual String itemText(unsigned listIndex) const = 0;
-    virtual bool itemIsDisplayNone(unsigned listIndex) const = 0;
     virtual LayoutUnit clientPaddingLeft() const = 0;
     virtual LayoutUnit clientPaddingRight() const = 0;
-    virtual int listSize() const = 0;
     virtual int selectedIndex() const = 0;
     virtual void popupDidHide() = 0;
     // A popup is canceled when the popup was hidden without selecting an item.
@@ -57,9 +52,6 @@ public:
     virtual void provisionalSelectionChanged(unsigned) = 0;
     virtual IntRect elementRectRelativeToViewport() const = 0;
     virtual HTMLSelectElement& ownerElement() const = 0;
-    // computedStyleForItem() returns nullptr only if the owner Document is not
-    // active.  So, It returns a valid object when we open a popup.
-    virtual const ComputedStyle* computedStyleForItem(unsigned listIndex) const = 0;
 
     virtual void listBoxSelectItem(int /*listIndex*/, bool /*allowMultiplySelections*/, bool /*shift*/, bool /*fireOnChangeNow*/ = true) { ASSERT_NOT_REACHED(); }
     virtual bool multiple() const

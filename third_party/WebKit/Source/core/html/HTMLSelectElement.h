@@ -128,6 +128,13 @@ public:
 
     int listIndexForOption(const HTMLOptionElement&);
 
+    // Helper functions for popup menu implementations.
+    String itemText(const Element&) const;
+    bool itemIsDisplayNone(Element&) const;
+    // itemComputedStyle() returns nullptr only if the owner Document is not
+    // active.  So, It returns a valid object when we open a popup.
+    const ComputedStyle* itemComputedStyle(Element&) const;
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:

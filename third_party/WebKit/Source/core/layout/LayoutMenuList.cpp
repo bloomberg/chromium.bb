@@ -400,12 +400,6 @@ HTMLSelectElement& LayoutMenuList::ownerElement() const
     return *selectElement();
 }
 
-const ComputedStyle* LayoutMenuList::computedStyleForItem(unsigned listIndex) const
-{
-    Element& element = *selectElement()->listItems()[listIndex];
-    return element.computedStyle() ? element.computedStyle() : element.ensureComputedStyle();
-}
-
 void LayoutMenuList::didSetSelectedIndex(int listIndex)
 {
     didUpdateActiveOption(selectElement()->listToOptionIndex(listIndex));
@@ -435,39 +429,6 @@ void LayoutMenuList::didUpdateActiveOption(int optionIndex)
     document().existingAXObjectCache()->handleUpdateActiveMenuOption(this, optionIndex);
 }
 
-Element& LayoutMenuList::itemElement(unsigned listIndex) const
-{
-    return *selectElement()->listItems()[listIndex];
-}
-
-String LayoutMenuList::itemText(unsigned listIndex) const
-{
-    HTMLSelectElement* select = selectElement();
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = select->listItems();
-    if (listIndex >= listItems.size())
-        return String();
-
-    String itemString;
-    Element* element = listItems[listIndex];
-    if (isHTMLOptGroupElement(*element))
-        itemString = toHTMLOptGroupElement(*element).groupLabelText();
-    else if (isHTMLOptionElement(*element))
-        itemString = toHTMLOptionElement(*element).textIndentedToRespectGroupLabel();
-
-    applyTextTransform(style(), itemString, ' ');
-    return itemString;
-}
-
-bool LayoutMenuList::itemIsDisplayNone(unsigned listIndex) const
-{
-    Element& element = *selectElement()->listItems()[listIndex];
-    if (isHTMLOptionElement(element))
-        return toHTMLOptionElement(element).isDisplayNone();
-    if (const ComputedStyle* style = computedStyleForItem(listIndex))
-        return style->display() == NONE;
-    return false;
-}
-
 LayoutUnit LayoutMenuList::clientPaddingLeft() const
 {
     return paddingLeft() + m_innerBlock->paddingLeft();
@@ -487,11 +448,6 @@ LayoutUnit LayoutMenuList::clientPaddingRight() const
     // If the appearance isn't MenulistPart, then the select is styled (non-native), so
     // we want to return the user specified padding.
     return paddingRight() + m_innerBlock->paddingRight();
-}
-
-int LayoutMenuList::listSize() const
-{
-    return selectElement()->listItems().size();
 }
 
 int LayoutMenuList::selectedIndex() const

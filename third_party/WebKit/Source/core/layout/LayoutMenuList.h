@@ -51,8 +51,6 @@ public:
 
     String text() const;
 
-    const ComputedStyle* computedStyleForItem(unsigned listIndex) const override;
-
     const char* name() const override { return "LayoutMenuList"; }
 
 protected:
@@ -81,12 +79,8 @@ private:
     void valueChanged(unsigned listIndex, bool fireOnChange = true) override;
     void selectionChanged(unsigned, bool) override { }
     void selectionCleared() override { }
-    Element& itemElement(unsigned listIndex) const override;
-    String itemText(unsigned listIndex) const override;
-    bool itemIsDisplayNone(unsigned listIndex) const override;
     LayoutUnit clientPaddingLeft() const override;
     LayoutUnit clientPaddingRight() const override;
-    int listSize() const override;
     int selectedIndex() const override;
     void popupDidHide() override;
     void popupDidCancel() override;
