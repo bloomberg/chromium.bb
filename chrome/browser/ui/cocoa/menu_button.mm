@@ -74,23 +74,17 @@
 
 - (void)setAttachedMenu:(NSMenu*)menu {
   attachedMenu_.reset([menu retain]);
-  [[self cell] setEnableClickHold:(menu != nil)];
+  [self configureCell];
 }
 
 - (void)setOpenMenuOnClick:(BOOL)enabled {
   openMenuOnClick_ = enabled;
-  if (enabled) {
-    [[self cell] setClickHoldTimeout:0.0];  // Make menu trigger immediately.
-    [[self cell] setAction:@selector(clickShowMenu:)];
-    [[self cell] setTarget:self];
-  } else {
-    [[self cell] setClickHoldTimeout:0.25];  // Default value.
-  }
+  [self configureCell];
 }
 
 - (void)setOpenMenuOnRightClick:(BOOL)enabled {
   openMenuOnRightClick_ = enabled;
-  [[self cell] setEnableRightClick:enabled];
+  [self configureCell];
 }
 
 - (NSRect)menuRect {
@@ -101,14 +95,43 @@
 
 @implementation MenuButton (Private)
 
-// Reset various settings of the button and its associated |ClickHoldButtonCell|
-// to the standard state which provides reasonable defaults.
+// Synchronize the state of this class with its ClickHoldButtonCell.
 - (void)configureCell {
   ClickHoldButtonCell* cell = [self cell];
   DCHECK([cell isKindOfClass:[ClickHoldButtonCell class]]);
-  [cell setClickHoldAction:@selector(dragShowMenu:)];
-  [cell setClickHoldTarget:self];
-  [cell setEnableClickHold:([self attachedMenu] != nil)];
+
+  if (![self attachedMenu]) {
+    [cell setEnableClickHold:NO];
+    [cell setEnableRightClick:NO];
+    [cell setClickHoldAction:nil];
+    [cell setClickHoldTarget:nil];
+    [cell setAccessibilityShowMenuAction:nil];
+    [cell setAccessibilityShowMenuTarget:nil];
+    return;
+  }
+
+  if (openMenuOnClick_) {
+    [cell setEnableClickHold:NO];
+    [cell setClickHoldTimeout:0.0];  // Make menu trigger immediately.
+    [cell setAction:@selector(clickShowMenu:)];
+    [cell setTarget:self];
+    [cell setClickHoldAction:nil];
+    [cell setClickHoldTarget:nil];
+  } else {
+    [cell setEnableClickHold:YES];
+    [cell setClickHoldTimeout:0.25];  // Default value.
+    [cell setClickHoldAction:@selector(dragShowMenu:)];
+    [cell setClickHoldTarget:self];
+  }
+
+  [cell setEnableRightClick:openMenuOnRightClick_];
+  if (!openMenuOnClick_ || openMenuOnRightClick_) {
+    [cell setAccessibilityShowMenuAction:@selector(clickShowMenu:)];
+    [cell setAccessibilityShowMenuTarget:self];
+  } else {
+    [cell setAccessibilityShowMenuAction:nil];
+    [cell setAccessibilityShowMenuTarget:nil];
+  }
 }
 
 // Actually show the menu (in the correct location). |isDragging| indicates
@@ -167,9 +190,6 @@
 // Called when the button is clicked and released. (Shouldn't happen with
 // timeout of 0, though there may be some strange pointing devices out there.)
 - (void)clickShowMenu:(id)sender {
-  // This should only be called if openMenuOnClick has been set (which hooks
-  // up this target-action).
-  DCHECK(openMenuOnClick_ || openMenuOnRightClick_);
   [self showMenu:NO];
 }
 

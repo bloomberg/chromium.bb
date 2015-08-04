@@ -29,6 +29,8 @@ static const CGFloat kDragDistThreshold = 2.5;
 @synthesize activateOnDrag = activateOnDrag_;
 @synthesize clickHoldTarget = clickHoldTarget_;
 @synthesize clickHoldAction = clickHoldAction_;
+@synthesize accessibilityShowMenuTarget = accessibilityShowMenuTarget_;
+@synthesize accessibilityShowMenuAction = accessibilityShowMenuAction_;
 
 // Overrides:
 
@@ -65,7 +67,8 @@ static const CGFloat kDragDistThreshold = 2.5;
       [self shouldExposeAccessibilityShowMenu]) {
     NSControl* controlView = static_cast<NSControl*>([self controlView]);
     if (controlView)
-      [controlView sendAction:clickHoldAction_ to:clickHoldTarget_];
+      [controlView sendAction:accessibilityShowMenuAction_
+                           to:accessibilityShowMenuTarget_];
     return;
   }
 
@@ -213,7 +216,7 @@ static const CGFloat kDragDistThreshold = 2.5;
 
 - (BOOL)shouldExposeAccessibilityShowMenu {
   return (enableRightClick_ || (enableClickHold_ && clickHoldTimeout_ > 0.0)) &&
-      clickHoldAction_ && clickHoldTarget_;
+      accessibilityShowMenuAction_ && accessibilityShowMenuTarget_;
 }
 
 @end  // @implementation ClickHoldButtonCell (Private)

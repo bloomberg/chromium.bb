@@ -92,11 +92,37 @@ TEST_F(ClickHoldButtonCellTest, AccessibilityShowMenu) {
 
   [cell setEnableClickHold:YES];
 
+  // There is no action set.
   actionNames = [cell accessibilityActionNames];
   EXPECT_FALSE([actionNames containsObject:NSAccessibilityShowMenuAction]);
 
+  // clickHoldAction should be independent from accessibilityShowMenuAction
+  // since different operations, e.g. releasing vs. not releasing a mouse
+  // button, may need to be performed for each occasion.
   [cell setClickHoldAction:@selector(open)];
   [cell setClickHoldTarget:cellTarget];
+
+  actionNames = [cell accessibilityActionNames];
+  EXPECT_FALSE([actionNames containsObject:NSAccessibilityShowMenuAction]);
+  EXPECT_FALSE([cellTarget didOpen]);
+
+  // Even when accessibilityShowMenuAction is set, no action should be available
+  // if neither enableClickHold nor enableRightClickHold are true.
+  [cell setEnableClickHold:NO];
+  [cell setAccessibilityShowMenuAction:@selector(open)];
+  [cell setAccessibilityShowMenuTarget:cellTarget];
+
+  actionNames = [cell accessibilityActionNames];
+  EXPECT_FALSE([actionNames containsObject:NSAccessibilityShowMenuAction]);
+
+  // Now the action should be available.
+  [cell setEnableClickHold:YES];
+
+  actionNames = [cell accessibilityActionNames];
+  EXPECT_TRUE([actionNames containsObject:NSAccessibilityShowMenuAction]);
+
+  [cell setEnableClickHold:NO];
+  [cell setEnableRightClick:YES];
 
   actionNames = [cell accessibilityActionNames];
   EXPECT_TRUE([actionNames containsObject:NSAccessibilityShowMenuAction]);

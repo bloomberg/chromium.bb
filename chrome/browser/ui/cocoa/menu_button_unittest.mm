@@ -247,6 +247,13 @@ TEST_F(MenuButtonTest, OpenOnAccessibilityPerformActionWithSetRightClick) {
   actionNames = [buttonCell accessibilityActionNames];
   EXPECT_TRUE([actionNames containsObject:NSAccessibilityShowMenuAction]);
 
+  [button_ setOpenMenuOnClick:NO];
+
+  // Command should still be available, even when both click + hold and right
+  // click are turned on.
+  actionNames = [buttonCell accessibilityActionNames];
+  EXPECT_TRUE([actionNames containsObject:NSAccessibilityShowMenuAction]);
+
   [buttonCell accessibilityPerformAction:NSAccessibilityShowMenuAction];
   EXPECT_TRUE([delegate didOpen]);
   EXPECT_FALSE([delegate isOpen]);
