@@ -309,10 +309,7 @@ DEFINE_TRACE(InspectorResourceAgent)
     visitor->trace(m_pageAgent);
     visitor->trace(m_replayXHRs);
     visitor->trace(m_replayXHRsToBeDeleted);
-
-#if ENABLE(OILPAN)
     visitor->trace(m_pendingXHRReplayData);
-#endif
     InspectorBaseAgent::trace(visitor);
 }
 
