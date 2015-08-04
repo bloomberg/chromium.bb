@@ -290,7 +290,9 @@
       'websockets/CloseEvent.idl',
       'websockets/WebSocket.idl',
       'webusb/USB.idl',
+      'webusb/USBConfiguration.idl',
       'webusb/USBDevice.idl',
+      'webusb/USBInterface.idl',
     ],
     # 'partial interface' or target (right side of) 'implements'
     'modules_dependency_idl_files': [
@@ -1686,11 +1688,16 @@
       'webusb/NavigatorUSB.h',
       'webusb/USB.cpp',
       'webusb/USB.h',
+      'webusb/USBConfiguration.cpp',
+      'webusb/USBConfiguration.h',
       'webusb/USBController.cpp',
       'webusb/USBController.h',
+      'webusb/USBDevice.cpp',
       'webusb/USBDevice.h',
       'webusb/USBError.cpp',
       'webusb/USBError.h',
+      'webusb/USBInterface.cpp',
+      'webusb/USBInterface.h',
     ],
     # 'partial interface' or target (right side of) 'implements'
     'modules_testing_dependency_idl_files' : [

@@ -5523,7 +5523,13 @@ interface URL
     setter protocol
     setter search
     setter username
+interface USBConfiguration
+    getter configurationName
+    getter configurationValue
+    getter interfaces
+    method constructor
 interface USBDevice
+    getter configurations
     getter deviceClass
     getter deviceProtocol
     getter deviceSubclass
@@ -5539,6 +5545,9 @@ interface USBDevice
     getter usbVersionMinor
     getter usbVersionSubminor
     getter vendorId
+    method constructor
+interface USBInterface
+    getter interfaceNumber
     method constructor
 interface VTTCue
     getter align

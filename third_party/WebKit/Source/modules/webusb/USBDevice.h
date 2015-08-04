@@ -12,6 +12,8 @@
 
 namespace blink {
 
+class USBConfiguration;
+
 class USBDevice
     : public GarbageCollectedFinalized<USBDevice>
     , public ScriptWrappable {
@@ -48,6 +50,7 @@ public:
     String manufacturerName() const { return info().manufacturerName; }
     String productName() const { return info().productName; }
     String serialNumber() const { return info().serialNumber; }
+    HeapVector<Member<USBConfiguration>> configurations() const;
 
     DEFINE_INLINE_TRACE() { }
 

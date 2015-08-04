@@ -6,10 +6,48 @@
 #define WebUSBDeviceInfo_h
 
 #include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
+#include "public/platform/modules/webusb/WebUSBDevice.h"
 
 namespace blink {
 
 struct WebUSBDeviceInfo {
+    struct Interface {
+        Interface()
+            : interfaceNumber(0)
+        {
+        }
+
+        uint8_t interfaceNumber;
+        // WebVector<AlternateInterface> alternates;
+    };
+
+    struct Configuration {
+        Configuration()
+            : configurationValue(0)
+        {
+        }
+
+        uint8_t configurationValue;
+        WebString configurationName;
+        WebVector<Interface> interfaces;
+    };
+
+    WebUSBDeviceInfo()
+        : usbVersionMajor(0)
+        , usbVersionMinor(0)
+        , usbVersionSubminor(0)
+        , deviceClass(0)
+        , deviceSubclass(0)
+        , deviceProtocol(0)
+        , vendorID(0)
+        , productID(0)
+        , deviceVersionMajor(0)
+        , deviceVersionMinor(0)
+        , deviceVersionSubminor(0)
+    {
+    }
+
     WebString guid;
     uint8_t usbVersionMajor;
     uint8_t usbVersionMinor;
@@ -25,6 +63,7 @@ struct WebUSBDeviceInfo {
     WebString manufacturerName;
     WebString productName;
     WebString serialNumber;
+    WebVector<Configuration> configurations;
 };
 
 } // namespace blink

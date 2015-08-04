@@ -23,4 +23,5 @@
     readonly attribute DOMString? manufacturerName;
     readonly attribute DOMString? productName;
     readonly attribute DOMString? serialNumber;
+    readonly attribute sequence<USBConfiguration> configurations;
 };
