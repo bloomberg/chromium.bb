@@ -135,9 +135,11 @@ class DesktopCaptureDeviceAuraTest : public testing::Test {
 };
 
 TEST_F(DesktopCaptureDeviceAuraTest, StartAndStop) {
-  scoped_ptr<media::VideoCaptureDevice> capture_device(
+  scoped_ptr<media::VideoCaptureDevice> capture_device =
       DesktopCaptureDeviceAura::Create(
-          content::DesktopMediaID::RegisterAuraWindow(root_window())));
+          content::DesktopMediaID::RegisterAuraWindow(
+              content::DesktopMediaID::TYPE_SCREEN, root_window()));
+  ASSERT_TRUE(capture_device.get());
 
   scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_)).Times(0);

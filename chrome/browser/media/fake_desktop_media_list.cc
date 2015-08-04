@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/fake_desktop_media_list.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/media/desktop_media_list_observer.h"
 #include "ui/gfx/skia_util.h"
 

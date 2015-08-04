@@ -23,8 +23,10 @@ namespace content {
 class CONTENT_EXPORT DesktopCaptureDeviceAura
     : public media::VideoCaptureDevice {
  public:
-  // Creates a VideoCaptureDevice for the Aura desktop.
-  static media::VideoCaptureDevice* Create(const DesktopMediaID& source);
+  // Creates a VideoCaptureDevice for the Aura desktop.  If |source| does not
+  // reference a registered aura window, returns nullptr instead.
+  static scoped_ptr<media::VideoCaptureDevice> Create(
+      const DesktopMediaID& source);
 
   ~DesktopCaptureDeviceAura() override;
 
@@ -34,7 +36,7 @@ class CONTENT_EXPORT DesktopCaptureDeviceAura
   void StopAndDeAllocate() override;
 
  private:
-  DesktopCaptureDeviceAura(const DesktopMediaID& source);
+  explicit DesktopCaptureDeviceAura(const DesktopMediaID& source);
 
   scoped_ptr<media::ScreenCaptureDeviceCore> core_;
 

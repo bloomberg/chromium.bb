@@ -158,9 +158,9 @@ void DesktopMediaListAsh::EnumerateWindowsForRoot(
        it != container->children().end(); ++it) {
     if (!(*it)->IsVisible() || !(*it)->CanFocus())
       continue;
-    content::DesktopMediaID id =
-        content::DesktopMediaID::RegisterAuraWindow(*it);
-    if (id.id == view_dialog_id_)
+    content::DesktopMediaID id = content::DesktopMediaID::RegisterAuraWindow(
+        content::DesktopMediaID::TYPE_WINDOW, *it);
+    if (id.aura_id == view_dialog_id_)
       continue;
     SourceDescription window_source(id, (*it)->title());
     sources->push_back(window_source);
@@ -178,7 +178,8 @@ void DesktopMediaListAsh::EnumerateSources(
   for (size_t i = 0; i < root_windows.size(); ++i) {
     if (source_types_ & SCREENS) {
       SourceDescription screen_source(
-          content::DesktopMediaID::RegisterAuraWindow(root_windows[i]),
+          content::DesktopMediaID::RegisterAuraWindow(
+              content::DesktopMediaID::TYPE_SCREEN, root_windows[i]),
           root_windows[i]->title());
 
       if (root_windows[i] == ash::Shell::GetPrimaryRootWindow())

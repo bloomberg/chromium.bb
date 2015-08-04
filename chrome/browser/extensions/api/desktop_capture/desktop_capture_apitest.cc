@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/desktop_capture/desktop_capture_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -158,7 +159,8 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, MAYBE_ChooseDesktopMedia) {
       content::DesktopMediaID() },
     // chooseMedia()
     { true, true,
-      content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0) },
+      content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
+                              content::DesktopMediaID::kNullId) },
     // screensOnly()
     { true, false,
       content::DesktopMediaID() },
@@ -203,11 +205,14 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, DISABLED_Delegation) {
 
   TestFlags test_flags[] = {
     { true, true,
-      content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0) },
+      content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
+                              content::DesktopMediaID::kNullId) },
     { true, true,
-      content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0) },
+      content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
+                              content::DesktopMediaID::kNullId) },
     { true, true,
-      content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0), true },
+      content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
+                              content::DesktopMediaID::kNullId), true },
   };
   picker_factory_.SetTestFlags(test_flags, arraysize(test_flags));
 

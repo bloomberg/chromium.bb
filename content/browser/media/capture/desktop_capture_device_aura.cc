@@ -19,7 +19,8 @@ void SetCaptureSource(AuraWindowCaptureMachine* machine,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   aura::Window* window = DesktopMediaID::GetAuraWindowById(source);
-  machine->SetWindow(window);
+  if (window)
+    machine->SetWindow(window);
 }
 
 }  // namespace
@@ -39,9 +40,12 @@ DesktopCaptureDeviceAura::~DesktopCaptureDeviceAura() {
 }
 
 // static
-media::VideoCaptureDevice* DesktopCaptureDeviceAura::Create(
+scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDeviceAura::Create(
     const DesktopMediaID& source) {
-  return new DesktopCaptureDeviceAura(source);
+  if (source.aura_id == DesktopMediaID::kNullId)
+    return nullptr;
+  return scoped_ptr<media::VideoCaptureDevice>(
+      new DesktopCaptureDeviceAura(source));
 }
 
 void DesktopCaptureDeviceAura::AllocateAndStart(

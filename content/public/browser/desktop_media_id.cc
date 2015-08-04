@@ -7,7 +7,9 @@
 #include <vector>
 
 #include "base/memory/singleton.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
@@ -80,21 +82,22 @@ namespace content {
 
 const char kScreenPrefix[] = "screen";
 const char kWindowPrefix[] = "window";
-const char kAuraWindowPrefix[] = "aura_window";
 
 #if defined(USE_AURA)
 
 // static
-DesktopMediaID DesktopMediaID::RegisterAuraWindow(aura::Window* window) {
-  return DesktopMediaID(
-      TYPE_AURA_WINDOW,
-      AuraWindowRegistry::GetInstance()->RegisterWindow(window));
+DesktopMediaID DesktopMediaID::RegisterAuraWindow(DesktopMediaID::Type type,
+                                                  aura::Window* window) {
+  DCHECK(type == TYPE_SCREEN || type == TYPE_WINDOW);
+  DCHECK(window);
+  DesktopMediaID media_id(type, kNullId);
+  media_id.aura_id = AuraWindowRegistry::GetInstance()->RegisterWindow(window);
+  return media_id;
 }
 
 // static
 aura::Window* DesktopMediaID::GetAuraWindowById(const DesktopMediaID& id) {
-  DCHECK_EQ(id.type, TYPE_AURA_WINDOW);
-  return AuraWindowRegistry::GetInstance()->GetWindowById(id.id);
+  return AuraWindowRegistry::GetInstance()->GetWindowById(id.aura_id);
 }
 
 #endif  // defined(USE_AURA)
@@ -104,25 +107,37 @@ DesktopMediaID DesktopMediaID::Parse(const std::string& str) {
   std::vector<std::string> parts;
   base::SplitString(str, ':', &parts);
 
+#if defined(USE_AURA)
+  if (parts.size() != 3)
+    return DesktopMediaID();
+#else
   if (parts.size() != 2)
-    return DesktopMediaID(TYPE_NONE, 0);
+    return DesktopMediaID();
+#endif
 
   Type type = TYPE_NONE;
   if (parts[0] == kScreenPrefix) {
     type = TYPE_SCREEN;
   } else if (parts[0] == kWindowPrefix) {
     type = TYPE_WINDOW;
-  } else if (parts[0] == kAuraWindowPrefix) {
-    type = TYPE_AURA_WINDOW;
   } else {
-    return DesktopMediaID(TYPE_NONE, 0);
+    return DesktopMediaID();
   }
 
   int64 id;
   if (!base::StringToInt64(parts[1], &id))
-    return DesktopMediaID(TYPE_NONE, 0);
+    return DesktopMediaID();
 
-  return DesktopMediaID(type, id);
+  DesktopMediaID media_id(type, id);
+
+#if defined(USE_AURA)
+  int64 aura_id;
+  if (!base::StringToInt64(parts[2], &aura_id))
+    return DesktopMediaID();
+  media_id.aura_id = aura_id;
+#endif  // defined(USE_AURA)
+
+  return media_id;
 }
 
 std::string DesktopMediaID::ToString() {
@@ -137,14 +152,16 @@ std::string DesktopMediaID::ToString() {
     case TYPE_WINDOW:
       prefix = kWindowPrefix;
       break;
-    case TYPE_AURA_WINDOW:
-      prefix = kAuraWindowPrefix;
-      break;
   }
   DCHECK(!prefix.empty());
 
   prefix.append(":");
   prefix.append(base::Int64ToString(id));
+
+#if defined(USE_AURA)
+  prefix.append(":");
+  prefix.append(base::Int64ToString(aura_id));
+#endif  // defined(USE_AURA)
 
   return prefix;
 }

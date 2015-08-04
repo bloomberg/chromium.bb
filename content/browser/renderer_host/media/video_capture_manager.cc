@@ -420,15 +420,12 @@ VideoCaptureManager::DoStartDeviceOnDeviceThread(
     case MEDIA_DESKTOP_VIDEO_CAPTURE: {
 #if defined(ENABLE_SCREEN_CAPTURE)
       DesktopMediaID desktop_id = DesktopMediaID::Parse(id);
+      if (!desktop_id.is_null()) {
 #if defined(USE_AURA)
-      if (desktop_id.type == DesktopMediaID::TYPE_AURA_WINDOW) {
-        video_capture_device.reset(
-            DesktopCaptureDeviceAura::Create(desktop_id));
-      } else
+        video_capture_device = DesktopCaptureDeviceAura::Create(desktop_id);
 #endif
-      if (desktop_id.type != DesktopMediaID::TYPE_NONE &&
-          desktop_id.type != DesktopMediaID::TYPE_AURA_WINDOW) {
-        video_capture_device = DesktopCaptureDevice::Create(desktop_id);
+        if (!video_capture_device)
+          video_capture_device = DesktopCaptureDevice::Create(desktop_id);
       }
 #endif  // defined(ENABLE_SCREEN_CAPTURE)
       break;
@@ -654,11 +651,8 @@ void VideoCaptureManager::MaybePostDesktopCaptureWindowId(
 
   DCHECK_EQ(MEDIA_DESKTOP_VIDEO_CAPTURE, existing_device->stream_type);
   DesktopMediaID id = DesktopMediaID::Parse(existing_device->id);
-  if (id.type == DesktopMediaID::TYPE_NONE ||
-      id.type == DesktopMediaID::TYPE_AURA_WINDOW) {
-    VLOG(2) << "Video capture device type mismatch.";
+  if (id.is_null())
     return;
-  }
 
   auto window_id_it = notification_window_ids_.find(session_id);
   if (window_id_it == notification_window_ids_.end()) {

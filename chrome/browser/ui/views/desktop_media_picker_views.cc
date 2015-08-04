@@ -430,7 +430,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
 #if defined(USE_ASH)
     if (chrome::IsNativeWindowInAsh(widget->GetNativeWindow())) {
       dialog_window_id =
-          DesktopMediaID::RegisterAuraWindow(widget->GetNativeWindow()).id;
+          DesktopMediaID::RegisterAuraWindow(
+              DesktopMediaID::TYPE_WINDOW, widget->GetNativeWindow()).aura_id;
       DCHECK_NE(dialog_window_id, 0);
     }
 #endif

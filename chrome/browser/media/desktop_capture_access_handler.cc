@@ -5,6 +5,7 @@
 #include "chrome/browser/media/desktop_capture_access_handler.h"
 
 #include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/desktop_streams_registry.h"
@@ -237,6 +238,7 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
       content::DesktopMediaID screen_id;
 #if defined(OS_CHROMEOS)
       screen_id = content::DesktopMediaID::RegisterAuraWindow(
+          content::DesktopMediaID::TYPE_SCREEN,
           ash::Shell::GetInstance()->GetPrimaryRootWindow());
 #else   // defined(OS_CHROMEOS)
       screen_id = content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
