@@ -14,6 +14,14 @@
         android:title="@string/search_suggestions_title"
         android:summary="@string/search_suggestions_summary"
         android:defaultValue="true" />
+    <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
+        android:key="safe_browsing_extended_reporting"
+        android:title="@string/safe_browsing_extended_reporting_title"
+        android:summary="@string/safe_browsing_extended_reporting_summary" />
+    <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
+        android:key="safe_browsing"
+        android:title="@string/safe_browsing_title"
+        android:summary="@string/safe_browsing_summary" />
     <Preference
         android:key="contextual_search"
         android:title="@string/contextual_search_title"

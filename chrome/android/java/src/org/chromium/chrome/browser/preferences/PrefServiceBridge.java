@@ -526,6 +526,48 @@ public final class PrefServiceBridge {
     }
 
     /**
+     * @return whether Safe Browsing Extended Reporting is currently enabled.
+     */
+    public boolean isSafeBrowsingExtendedReportingEnabled() {
+        return nativeGetSafeBrowsingExtendedReportingEnabled();
+    }
+
+    /**
+     * @param whether Safe Browsing Extended Reporting should be enabled.
+     */
+    public void setSafeBrowsingExtendedReportingEnabled(boolean enabled) {
+        nativeSetSafeBrowsingExtendedReportingEnabled(enabled);
+    }
+
+    /**
+     * @return whether Safe Browsing Extended Reporting is managed
+     */
+    public boolean isSafeBrowsingExtendedReportingManaged() {
+        return nativeGetSafeBrowsingExtendedReportingManaged();
+    }
+
+    /**
+     * @return whether Safe Browsing is currently enabled.
+     */
+    public boolean isSafeBrowsingEnabled() {
+        return nativeGetSafeBrowsingEnabled();
+    }
+
+    /**
+     * @param whether Safe Browsing should be enabled.
+     */
+    public void setSafeBrowsingEnabled(boolean enabled) {
+        nativeSetSafeBrowsingEnabled(enabled);
+    }
+
+    /**
+     * @return whether Safe Browsing is managed
+     */
+    public boolean isSafeBrowsingManaged() {
+        return nativeGetSafeBrowsingManaged();
+    }
+
+    /**
      * @return whether there is a user set value for kNetworkPredictionEnabled.  This should only be
      * used for preference migration.
      */
@@ -995,6 +1037,12 @@ public final class PrefServiceBridge {
     private native boolean nativeGetSearchSuggestEnabled();
     private native void nativeSetSearchSuggestEnabled(boolean enabled);
     private native boolean nativeGetSearchSuggestManaged();
+    private native boolean nativeGetSafeBrowsingExtendedReportingEnabled();
+    private native void nativeSetSafeBrowsingExtendedReportingEnabled(boolean enabled);
+    private native boolean nativeGetSafeBrowsingExtendedReportingManaged();
+    private native boolean nativeGetSafeBrowsingEnabled();
+    private native void nativeSetSafeBrowsingEnabled(boolean enabled);
+    private native boolean nativeGetSafeBrowsingManaged();
     private native boolean nativeGetNetworkPredictionManaged();
     private native boolean nativeNetworkPredictionEnabledHasUserSetting();
     private native boolean nativeNetworkPredictionOptionsHasUserSetting();

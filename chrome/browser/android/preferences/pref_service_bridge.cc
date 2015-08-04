@@ -287,6 +287,37 @@ static jboolean GetSearchSuggestManaged(JNIEnv* env, jobject obj) {
   return GetPrefService()->IsManagedPreference(prefs::kSearchSuggestEnabled);
 }
 
+static jboolean GetSafeBrowsingExtendedReportingEnabled(JNIEnv* env,
+                                                        jobject obj) {
+  return GetPrefService()->GetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled);
+}
+
+static void SetSafeBrowsingExtendedReportingEnabled(JNIEnv* env,
+                                                    jobject obj,
+                                                    jboolean enabled) {
+  GetPrefService()->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled,
+                               enabled);
+}
+
+static jboolean GetSafeBrowsingExtendedReportingManaged(JNIEnv* env,
+                                                        jobject obj) {
+  return GetPrefService()->IsManagedPreference(
+      prefs::kSafeBrowsingExtendedReportingEnabled);
+}
+
+static jboolean GetSafeBrowsingEnabled(JNIEnv* env, jobject obj) {
+  return GetPrefService()->GetBoolean(prefs::kSafeBrowsingEnabled);
+}
+
+static void SetSafeBrowsingEnabled(JNIEnv* env, jobject obj, jboolean enabled) {
+  GetPrefService()->SetBoolean(prefs::kSafeBrowsingEnabled, enabled);
+}
+
+static jboolean GetSafeBrowsingManaged(JNIEnv* env, jobject obj) {
+  return GetPrefService()->IsManagedPreference(prefs::kSafeBrowsingEnabled);
+}
+
 static jboolean GetProtectedMediaIdentifierEnabled(JNIEnv* env, jobject obj) {
   return GetBooleanForContentSetting(
       CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);

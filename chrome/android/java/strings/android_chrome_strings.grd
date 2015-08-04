@@ -327,6 +327,18 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SEARCH_SUGGESTIONS_SUMMARY" desc="Summary for search and url suggestions.">
         Use a prediction service to show related queries and popular websites as you type in the address bar
       </message>
+      <message name="IDS_SAFE_BROWSING_EXTENDED_REPORTING_TITLE" desc="Title for checkbox that controls whether details of possible security incidents will be sent to Google.">
+      Security incidents
+      </message>
+      <message name="IDS_SAFE_BROWSING_EXTENDED_REPORTING_SUMMARY" desc="Summary for report security incidents.">
+      Automatically report details of possible security incidents to Google
+      </message>
+      <message name="IDS_SAFE_BROWSING_TITLE" desc="Title for safe browsing.">
+      Safe Browsing
+      </message>
+      <message name="IDS_SAFE_BROWSING_SUMMARY" desc="Summary for safe browsing.">
+      Protect you and your device from dangerous sites
+      </message>
       <message name="IDS_NETWORK_PREDICTIONS_TITLE" desc="Title for Prefetch page resources.">
         Prefetch page resources
       </message>
