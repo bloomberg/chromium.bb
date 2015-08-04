@@ -709,7 +709,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::upstream(EditingBoundar
                 // layout tree which can have a different length due to case transformation.
                 // Until we resolve that, disable this so we can run the layout tests!
                 // ASSERT(currentOffset >= layoutObject->caretMaxOffset());
-                return createLegacyEditingPosition(currentNode, layoutObject->caretMaxOffset());
+                return PositionAlgorithm<Strategy>(currentNode, layoutObject->caretMaxOffset());
             }
 
             unsigned textOffset = currentPos.offsetInLeafNode();
