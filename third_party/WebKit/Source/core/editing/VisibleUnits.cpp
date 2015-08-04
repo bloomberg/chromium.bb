@@ -521,7 +521,7 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
         return VisiblePosition(it.atEnd() ? it.startPosition() : pos, DOWNSTREAM);
 
     Node* node = it.startContainer();
-    if ((node->isTextNode() && static_cast<int>(next) <= node->maxCharacterOffset()) || (node->layoutObject() && node->layoutObject()->isBR() && !next)) {
+    if (node->isTextNode() && static_cast<int>(next) <= node->maxCharacterOffset()) {
         // The next variable contains a usable index into a text node
         return VisiblePosition(createLegacyEditingPosition(node, next), DOWNSTREAM);
     }
