@@ -27,9 +27,10 @@ bool g_in_x11_io_error_handler = false;
 const int kWaitForUIThreadSeconds = 10;
 
 int BrowserX11ErrorHandler(Display* d, XErrorEvent* error) {
-  if (!g_in_x11_io_error_handler)
+  if (!g_in_x11_io_error_handler) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&ui::LogErrorEventDescription, d, *error));
+  }
   return 0;
 }
 
@@ -51,12 +52,15 @@ int BrowserX11IOErrorHandler(Display* d) {
     WaitingForUIThreadToHandleIOError();
     return 0;
   }
-  // If there's an IO error it likely means the X server has gone away
-  if (!g_in_x11_io_error_handler) {
-    g_in_x11_io_error_handler = true;
-    LOG(ERROR) << "X IO error received (X server probably went away)";
-    chrome::SessionEnding();
-  }
+
+  // If there's an IO error it likely means the X server has gone away.
+  // If this CHECK fails, then that means SessionEnding() below triggered some
+  // code that tried to talk to the X server, resulting in yet another error.
+  CHECK(!g_in_x11_io_error_handler);
+
+  g_in_x11_io_error_handler = true;
+  LOG(ERROR) << "X IO error received (X server probably went away)";
+  chrome::SessionEnding();
 
   return 0;
 }

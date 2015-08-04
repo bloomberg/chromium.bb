@@ -1381,7 +1381,6 @@ RenderWidgetHostViewAura::AccessibilityGetNativeViewAccessible() {
     return legacy_render_widget_host_HWND_->window_accessible();
 #endif
   return NULL;
-
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewAura::GetCompositingSurface() {
@@ -2397,13 +2396,12 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
 }
 
 void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
-  const gfx::Point screen_point =
-      gfx::Screen::GetScreenFor(GetNativeView())->GetCursorScreenPoint();
   aura::Window* root_window = window_->GetRootWindow();
   if (!root_window)
     return;
 
-  gfx::Point root_window_point = screen_point;
+  gfx::Point root_window_point =
+      gfx::Screen::GetScreenFor(GetNativeView())->GetCursorScreenPoint();
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(root_window);
   if (screen_position_client) {
