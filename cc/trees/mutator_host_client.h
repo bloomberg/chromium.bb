@@ -36,6 +36,11 @@ class MutatorHostClient {
       LayerTreeType tree_type,
       const gfx::ScrollOffset& scroll_offset) = 0;
 
+  virtual void LayerTransformIsPotentiallyAnimatingChanged(
+      int layer_id,
+      LayerTreeType tree_type,
+      bool is_animating) = 0;
+
   virtual void ScrollOffsetAnimationFinished() = 0;
   virtual gfx::ScrollOffset GetScrollOffsetForAnimation(int layer_id) const = 0;
 };

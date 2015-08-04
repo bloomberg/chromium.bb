@@ -3557,6 +3557,18 @@ void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(
     layer->OnScrollOffsetAnimated(scroll_offset);
 }
 
+void LayerTreeHostImpl::TreeLayerTransformIsPotentiallyAnimatingChanged(
+    int layer_id,
+    LayerTreeImpl* tree,
+    bool is_animating) {
+  if (!tree)
+    return;
+
+  LayerAnimationValueObserver* layer = tree->LayerById(layer_id);
+  if (layer)
+    layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
+}
+
 void LayerTreeHostImpl::SetLayerFilterMutated(int layer_id,
                                               LayerTreeType tree_type,
                                               const FilterOperations& filters) {
@@ -3600,6 +3612,19 @@ void LayerTreeHostImpl::SetLayerScrollOffsetMutated(
   } else {
     SetTreeLayerScrollOffsetMutated(layer_id, pending_tree(), scroll_offset);
     SetTreeLayerScrollOffsetMutated(layer_id, recycle_tree(), scroll_offset);
+  }
+}
+
+void LayerTreeHostImpl::LayerTransformIsPotentiallyAnimatingChanged(
+    int layer_id,
+    LayerTreeType tree_type,
+    bool is_animating) {
+  if (tree_type == LayerTreeType::ACTIVE) {
+    TreeLayerTransformIsPotentiallyAnimatingChanged(layer_id, active_tree(),
+                                                    is_animating);
+  } else {
+    TreeLayerTransformIsPotentiallyAnimatingChanged(layer_id, pending_tree(),
+                                                    is_animating);
   }
 }
 

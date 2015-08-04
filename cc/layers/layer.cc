@@ -762,6 +762,14 @@ bool Layer::HasPotentiallyRunningTransformAnimation() const {
   return layer_tree_host_->HasPotentiallyRunningTransformAnimation(this);
 }
 
+bool Layer::HasAnyAnimationTargetingProperty(
+    Animation::TargetProperty property) const {
+  if (layer_animation_controller_)
+    return !!layer_animation_controller_->GetAnimation(property);
+
+  return layer_tree_host_->HasAnyAnimationTargetingProperty(this, property);
+}
+
 bool Layer::ScrollOffsetAnimationWasInterrupted() const {
   DCHECK(layer_tree_host_);
   return layer_animation_controller_
@@ -1491,6 +1499,21 @@ void Layer::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
 void Layer::OnAnimationWaitingForDeletion() {
   // Animations are only deleted during PushProperties.
   SetNeedsPushProperties();
+}
+
+void Layer::OnTransformIsPotentiallyAnimatingChanged(bool is_animating) {
+  if (!layer_tree_host_)
+    return;
+  TransformTree& transform_tree =
+      layer_tree_host_->property_trees()->transform_tree;
+  TransformNode* node = transform_tree.Node(transform_tree_index());
+  if (!node)
+    return;
+
+  if (node->owner_id == id()) {
+    node->data.is_animated = is_animating;
+    transform_tree.set_needs_update(true);
+  }
 }
 
 bool Layer::IsActive() const {

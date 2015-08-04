@@ -197,6 +197,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetTransformOrigin(const gfx::Point3F&);
   gfx::Point3F transform_origin() const { return transform_origin_; }
 
+  bool HasAnyAnimationTargetingProperty(
+      Animation::TargetProperty property) const;
+
   bool ScrollOffsetAnimationWasInterrupted() const;
 
   void SetScrollParent(Layer* parent);
@@ -651,6 +654,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void OnTransformAnimated(const gfx::Transform& transform) override;
   void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) override;
   void OnAnimationWaitingForDeletion() override;
+  void OnTransformIsPotentiallyAnimatingChanged(bool is_animating) override;
   bool IsActive() const override;
 
   // If this layer has a scroll parent, it removes |this| from its list of

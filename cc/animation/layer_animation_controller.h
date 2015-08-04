@@ -211,6 +211,12 @@ class CC_EXPORT LayerAnimationController
 
   void NotifyObserversAnimationWaitingForDeletion();
 
+  void NotifyObserversTransformIsPotentiallyAnimatingChanged(
+      bool notify_active_observers,
+      bool notify_pending_observers);
+
+  void UpdatePotentiallyAnimatingTransform();
+
   bool HasValueObserver();
   bool HasActiveValueObserver();
 
@@ -235,6 +241,9 @@ class CC_EXPORT LayerAnimationController
   bool needs_to_start_animations_;
 
   bool scroll_offset_animation_was_interrupted_;
+
+  bool potentially_animating_transform_for_active_observers_;
+  bool potentially_animating_transform_for_pending_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerAnimationController);
 };

@@ -85,6 +85,7 @@ class FakeLayerAnimationValueObserver : public LayerAnimationValueObserver {
   void OnTransformAnimated(const gfx::Transform& transform) override;
   void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) override;
   void OnAnimationWaitingForDeletion() override;
+  void OnTransformIsPotentiallyAnimatingChanged(bool is_animating) override;
   bool IsActive() const override;
 
   const FilterOperations& filters() const { return filters_; }
@@ -96,12 +97,15 @@ class FakeLayerAnimationValueObserver : public LayerAnimationValueObserver {
     return animation_waiting_for_deletion_;
   }
 
+  bool transform_is_animating() { return transform_is_animating_; }
+
  private:
   FilterOperations filters_;
   float opacity_;
   gfx::Transform transform_;
   gfx::ScrollOffset scroll_offset_;
   bool animation_waiting_for_deletion_;
+  bool transform_is_animating_;
 };
 
 class FakeInactiveLayerAnimationValueObserver

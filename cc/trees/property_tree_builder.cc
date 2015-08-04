@@ -169,11 +169,18 @@ bool AddTransformNodeIfNeeded(
   const bool has_potentially_animated_transform =
       layer->HasPotentiallyRunningTransformAnimation();
 
+  // A transform node is needed even for a finished animation, since differences
+  // in the timing of animation state updates can mean that an animation that's
+  // in the Finished state at tree-building time on the main thread is still in
+  // the Running state right after commit on the compositor thread.
+  const bool has_any_transform_animation =
+      layer->HasAnyAnimationTargetingProperty(Animation::TRANSFORM);
+
   const bool has_surface = !!layer->render_surface();
 
   bool requires_node = is_root || is_scrollable || has_significant_transform ||
-                       has_potentially_animated_transform || has_surface ||
-                       is_fixed || is_page_scale_layer;
+                       has_any_transform_animation || has_surface || is_fixed ||
+                       is_page_scale_layer;
 
   LayerType* transform_parent = GetTransformParent(data_from_ancestor, layer);
   DCHECK_IMPLIES(!is_root, transform_parent);

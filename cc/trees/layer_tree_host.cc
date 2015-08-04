@@ -1136,6 +1136,15 @@ void LayerTreeHost::SetLayerScrollOffsetMutated(
   layer->OnScrollOffsetAnimated(scroll_offset);
 }
 
+void LayerTreeHost::LayerTransformIsPotentiallyAnimatingChanged(
+    int layer_id,
+    LayerTreeType tree_type,
+    bool is_animating) {
+  LayerAnimationValueObserver* layer = LayerById(layer_id);
+  DCHECK(layer);
+  layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
+}
+
 gfx::ScrollOffset LayerTreeHost::GetScrollOffsetForAnimation(
     int layer_id) const {
   LayerAnimationValueProvider* layer = LayerById(layer_id);
@@ -1192,6 +1201,15 @@ bool LayerTreeHost::HasPotentiallyRunningTransformAnimation(
   return animation_host_
              ? animation_host_->HasPotentiallyRunningTransformAnimation(
                    layer->id(), LayerTreeType::ACTIVE)
+             : false;
+}
+
+bool LayerTreeHost::HasAnyAnimationTargetingProperty(
+    const Layer* layer,
+    Animation::TargetProperty property) const {
+  return animation_host_
+             ? animation_host_->HasAnyAnimationTargetingProperty(layer->id(),
+                                                                 property)
              : false;
 }
 

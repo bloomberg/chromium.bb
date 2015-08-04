@@ -6013,6 +6013,7 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   scale.AppendScale(5.f, 4.f, 3.f);
 
   AddAnimatedTransformToLayer(child_raw, 1.0, TransformOperations(), scale);
+  child_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(grand_parent.get());
 
   // Only |child| has a scale-affecting animation.
@@ -6026,6 +6027,7 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
 
   AddAnimatedTransformToLayer(
       grand_parent.get(), 1.0, TransformOperations(), scale);
+  grand_parent->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(grand_parent.get());
 
   // |grand_parent| and |child| have scale-affecting animations.
@@ -6040,6 +6042,7 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
   AddAnimatedTransformToLayer(parent_raw, 1.0, TransformOperations(), scale);
+  parent_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(grand_parent.get());
 
   // |grand_parent|, |parent|, and |child| have scale-affecting animations.

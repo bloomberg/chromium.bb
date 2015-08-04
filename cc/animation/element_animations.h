@@ -83,6 +83,8 @@ class CC_EXPORT ElementAnimations : public AnimationDelegate,
                            const gfx::Transform& transform);
   void SetScrollOffsetMutated(LayerTreeType tree_type,
                               const gfx::ScrollOffset& scroll_offset);
+  void SetTransformIsPotentiallyAnimatingChanged(LayerTreeType tree_type,
+                                                 bool is_animating);
 
   void CreateActiveValueObserver();
   void DestroyActiveValueObserver();

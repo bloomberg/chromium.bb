@@ -26,6 +26,7 @@ class CC_EXPORT LayerAnimationValueObserver {
   virtual void OnScrollOffsetAnimated(
       const gfx::ScrollOffset& scroll_offset) = 0;
   virtual void OnAnimationWaitingForDeletion() = 0;
+  virtual void OnTransformIsPotentiallyAnimatingChanged(bool is_animating) = 0;
   virtual bool IsActive() const = 0;
 };
 

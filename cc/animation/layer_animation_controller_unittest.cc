@@ -2384,6 +2384,124 @@ TEST(LayerAnimationControllerTest, ActivationBetweenAnimateAndUpdateState) {
   EXPECT_EQ(0.75f, dummy_impl.opacity());
 }
 
+TEST(LayerAnimationControllerTest,
+     ObserverNotifiedWhenTransformIsPotentiallyAnimatingChanges) {
+  AnimationEventsVector events;
+  FakeLayerAnimationValueObserver active_dummy_impl;
+  FakeInactiveLayerAnimationValueObserver pending_dummy_impl;
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+  controller_impl->AddValueObserver(&active_dummy_impl);
+  controller_impl->AddValueObserver(&pending_dummy_impl);
+  FakeLayerAnimationValueObserver dummy;
+  scoped_refptr<LayerAnimationController> controller(
+      LayerAnimationController::Create(0));
+  controller->AddValueObserver(&dummy);
+
+  EXPECT_FALSE(dummy.transform_is_animating());
+  EXPECT_FALSE(pending_dummy_impl.transform_is_animating());
+  EXPECT_FALSE(active_dummy_impl.transform_is_animating());
+
+  // Case 1: An animation that's allowed to run until its finish point.
+  AddAnimatedTransformToController(controller.get(), 1.0, 1, 1);
+  EXPECT_TRUE(dummy.transform_is_animating());
+
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  EXPECT_TRUE(pending_dummy_impl.transform_is_animating());
+  EXPECT_FALSE(active_dummy_impl.transform_is_animating());
+
+  controller_impl->ActivateAnimations();
+  EXPECT_TRUE(pending_dummy_impl.transform_is_animating());
+  EXPECT_TRUE(active_dummy_impl.transform_is_animating());
+
+  controller_impl->Animate(kInitialTickTime);
+  controller_impl->UpdateState(true, &events);
+
+  controller->NotifyAnimationStarted(events[0]);
+  events.clear();
+
+  // Finish the animation.
+  controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
+  controller->UpdateState(true, nullptr);
+  EXPECT_FALSE(dummy.transform_is_animating());
+
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+
+  // controller_impl hasn't yet ticked at/past the end of the animation.
+  EXPECT_TRUE(pending_dummy_impl.transform_is_animating());
+  EXPECT_TRUE(active_dummy_impl.transform_is_animating());
+
+  controller_impl->Animate(kInitialTickTime +
+                           TimeDelta::FromMilliseconds(1000));
+  controller_impl->UpdateState(true, &events);
+  EXPECT_FALSE(pending_dummy_impl.transform_is_animating());
+  EXPECT_FALSE(active_dummy_impl.transform_is_animating());
+
+  controller->NotifyAnimationFinished(events[0]);
+  events.clear();
+
+  // Case 2: An animation that's removed before it finishes.
+  int animation_id =
+      AddAnimatedTransformToController(controller.get(), 10.0, 2, 2);
+  EXPECT_TRUE(dummy.transform_is_animating());
+
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  EXPECT_TRUE(pending_dummy_impl.transform_is_animating());
+  EXPECT_FALSE(active_dummy_impl.transform_is_animating());
+
+  controller_impl->ActivateAnimations();
+  EXPECT_TRUE(pending_dummy_impl.transform_is_animating());
+  EXPECT_TRUE(active_dummy_impl.transform_is_animating());
+
+  controller_impl->Animate(kInitialTickTime +
+                           TimeDelta::FromMilliseconds(2000));
+  controller_impl->UpdateState(true, &events);
+
+  controller->NotifyAnimationStarted(events[0]);
+  events.clear();
+
+  controller->RemoveAnimation(animation_id);
+  EXPECT_FALSE(dummy.transform_is_animating());
+
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  EXPECT_FALSE(pending_dummy_impl.transform_is_animating());
+  EXPECT_TRUE(active_dummy_impl.transform_is_animating());
+
+  controller_impl->ActivateAnimations();
+  EXPECT_FALSE(pending_dummy_impl.transform_is_animating());
+  EXPECT_FALSE(active_dummy_impl.transform_is_animating());
+
+  // Case 3: An animation that's aborted before it finishes.
+  animation_id = AddAnimatedTransformToController(controller.get(), 10.0, 3, 3);
+  EXPECT_TRUE(dummy.transform_is_animating());
+
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  EXPECT_TRUE(pending_dummy_impl.transform_is_animating());
+  EXPECT_FALSE(active_dummy_impl.transform_is_animating());
+
+  controller_impl->ActivateAnimations();
+  EXPECT_TRUE(pending_dummy_impl.transform_is_animating());
+  EXPECT_TRUE(active_dummy_impl.transform_is_animating());
+
+  controller_impl->Animate(kInitialTickTime +
+                           TimeDelta::FromMilliseconds(3000));
+  controller_impl->UpdateState(true, &events);
+
+  controller->NotifyAnimationStarted(events[0]);
+  events.clear();
+
+  controller_impl->AbortAnimations(Animation::TRANSFORM);
+  EXPECT_FALSE(pending_dummy_impl.transform_is_animating());
+  EXPECT_FALSE(active_dummy_impl.transform_is_animating());
+
+  controller_impl->Animate(kInitialTickTime +
+                           TimeDelta::FromMilliseconds(4000));
+  controller_impl->UpdateState(true, &events);
+
+  controller->NotifyAnimationAborted(events[0]);
+  EXPECT_FALSE(dummy.transform_is_animating());
+}
+
 TEST(LayerAnimationControllerTest, ClippedOpacityValues) {
   FakeLayerAnimationValueObserver dummy;
   scoped_refptr<LayerAnimationController> controller(

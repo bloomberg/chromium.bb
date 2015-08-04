@@ -638,6 +638,25 @@ gfx::Transform ScreenSpaceTransformFromPropertyTrees(
 }
 
 template <typename LayerType>
+bool ScreenSpaceTransformIsAnimatingFromPropertyTreesInternal(
+    LayerType* layer,
+    const TransformTree& tree) {
+  return tree.Node(layer->transform_tree_index())->data.to_screen_is_animated;
+}
+
+bool ScreenSpaceTransformIsAnimatingFromPropertyTrees(
+    const Layer* layer,
+    const TransformTree& tree) {
+  return ScreenSpaceTransformIsAnimatingFromPropertyTreesInternal(layer, tree);
+}
+
+bool ScreenSpaceTransformIsAnimatingFromPropertyTrees(
+    const LayerImpl* layer,
+    const TransformTree& tree) {
+  return ScreenSpaceTransformIsAnimatingFromPropertyTreesInternal(layer, tree);
+}
+
+template <typename LayerType>
 float DrawOpacityFromPropertyTreesInternal(LayerType layer,
                                            const OpacityTree& tree) {
   if (!layer->render_target())

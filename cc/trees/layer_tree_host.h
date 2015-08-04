@@ -339,6 +339,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       int layer_id,
       LayerTreeType tree_type,
       const gfx::ScrollOffset& scroll_offset) override;
+  void LayerTransformIsPotentiallyAnimatingChanged(int layer_id,
+                                                   LayerTreeType tree_type,
+                                                   bool is_animating) override;
   void ScrollOffsetAnimationFinished() override {}
   gfx::ScrollOffset GetScrollOffsetForAnimation(int layer_id) const override;
 
@@ -349,6 +352,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool HasPotentiallyRunningFilterAnimation(const Layer* layer) const;
   bool HasPotentiallyRunningOpacityAnimation(const Layer* layer) const;
   bool HasPotentiallyRunningTransformAnimation(const Layer* layer) const;
+  bool HasAnyAnimationTargetingProperty(
+      const Layer* layer,
+      Animation::TargetProperty property) const;
   bool AnimationsPreserveAxisAlignment(const Layer* layer) const;
   bool HasAnyAnimation(const Layer* layer) const;
   bool HasActiveAnimation(const Layer* layer) const;

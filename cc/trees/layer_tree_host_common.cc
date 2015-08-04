@@ -2485,6 +2485,10 @@ void VerifyPropertyTreeValuesForLayer(LayerImpl* current_layer,
           current_layer, layers_always_allowed_lcd_text, can_use_lcd_text,
           property_trees) == current_layer->can_use_lcd_text();
   CHECK(can_use_lcd_text_match);
+
+  CHECK_EQ(current_layer->screen_space_transform_is_animating(),
+           ScreenSpaceTransformIsAnimatingFromPropertyTrees(
+               current_layer, property_trees->transform_tree));
 }
 
 void VerifyPropertyTreeValues(

@@ -827,6 +827,29 @@ void LayerImpl::UpdatePropertyTreeTransform() {
   }
 }
 
+void LayerImpl::UpdatePropertyTreeTransformIsAnimated(bool is_animated) {
+  if (transform_tree_index_ != -1) {
+    TransformTree& transform_tree =
+        layer_tree_impl()->property_trees()->transform_tree;
+    TransformNode* node = transform_tree.Node(transform_tree_index_);
+    // A LayerImpl's own current state is insufficient for determining whether
+    // it owns a TransformNode, since this depends on the state of the
+    // corresponding Layer at the time of the last commit. For example, if
+    // |is_animated| is false, this might mean a transform animation just ticked
+    // past its finish point (so the LayerImpl still owns a TransformNode) or it
+    // might mean that a transform animation was removed during commit or
+    // activation (and, in that case, the LayerImpl will no longer own a
+    // TransformNode, unless it has non-animation-related reasons for owning a
+    // node).
+    if (node->owner_id != id())
+      return;
+    if (node->data.is_animated != is_animated) {
+      node->data.is_animated = is_animated;
+      transform_tree.set_needs_update(true);
+    }
+  }
+}
+
 void LayerImpl::UpdatePropertyTreeOpacity() {
   if (opacity_tree_index_ != -1) {
     OpacityTree& opacity_tree =
@@ -851,8 +874,11 @@ void LayerImpl::UpdatePropertyTreeForScrollingAndAnimationIfNeeded() {
   if (HasAnyAnimationTargetingProperty(Animation::OPACITY))
     UpdatePropertyTreeOpacity();
 
-  if (HasAnyAnimationTargetingProperty(Animation::TRANSFORM))
+  if (HasAnyAnimationTargetingProperty(Animation::TRANSFORM)) {
     UpdatePropertyTreeTransform();
+    UpdatePropertyTreeTransformIsAnimated(
+        HasPotentiallyRunningTransformAnimation());
+  }
 }
 
 gfx::ScrollOffset LayerImpl::ScrollOffsetForAnimation() const {
@@ -886,6 +912,10 @@ void LayerImpl::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
 }
 
 void LayerImpl::OnAnimationWaitingForDeletion() {}
+
+void LayerImpl::OnTransformIsPotentiallyAnimatingChanged(bool is_animating) {
+  UpdatePropertyTreeTransformIsAnimated(is_animating);
+}
 
 bool LayerImpl::IsActive() const {
   return layer_tree_impl_->IsActiveTree();

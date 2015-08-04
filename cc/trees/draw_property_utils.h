@@ -93,6 +93,14 @@ gfx::Transform CC_EXPORT
 ScreenSpaceTransformFromPropertyTrees(const LayerImpl* layer,
                                       const TransformTree& tree);
 
+bool CC_EXPORT
+ScreenSpaceTransformIsAnimatingFromPropertyTrees(const Layer* layer,
+                                                 const TransformTree& tree);
+
+bool CC_EXPORT
+ScreenSpaceTransformIsAnimatingFromPropertyTrees(const LayerImpl* layer,
+                                                 const TransformTree& tree);
+
 float CC_EXPORT
 DrawOpacityFromPropertyTrees(const Layer* layer, const OpacityTree& tree);
 

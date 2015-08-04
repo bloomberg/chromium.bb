@@ -113,6 +113,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void OnTransformAnimated(const gfx::Transform& transform) override;
   void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) override;
   void OnAnimationWaitingForDeletion() override;
+  void OnTransformIsPotentiallyAnimatingChanged(bool is_animating) override;
   bool IsActive() const override;
 
   // AnimationDelegate implementation.
@@ -194,6 +195,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool is_clipped() const { return is_clipped_; }
 
   void UpdatePropertyTreeTransform();
+  void UpdatePropertyTreeTransformIsAnimated(bool is_animated);
   void UpdatePropertyTreeOpacity();
   void UpdatePropertyTreeScrollOffset();
 

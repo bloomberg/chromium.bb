@@ -246,6 +246,9 @@ class CC_EXPORT LayerTreeHostImpl
   void SetTreeLayerScrollOffsetMutated(int layer_id,
                                        LayerTreeImpl* tree,
                                        const gfx::ScrollOffset& scroll_offset);
+  void TreeLayerTransformIsPotentiallyAnimatingChanged(int layer_id,
+                                                       LayerTreeImpl* tree,
+                                                       bool is_animating);
 
   // LayerTreeMutatorsClient implementation.
   bool IsLayerInTree(int layer_id, LayerTreeType tree_type) const override;
@@ -263,6 +266,9 @@ class CC_EXPORT LayerTreeHostImpl
       int layer_id,
       LayerTreeType tree_type,
       const gfx::ScrollOffset& scroll_offset) override;
+  void LayerTransformIsPotentiallyAnimatingChanged(int layer_id,
+                                                   LayerTreeType tree_type,
+                                                   bool is_animating) override;
   void ScrollOffsetAnimationFinished() override;
   gfx::ScrollOffset GetScrollOffsetForAnimation(int layer_id) const override;
 
