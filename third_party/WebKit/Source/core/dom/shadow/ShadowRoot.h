@@ -70,6 +70,8 @@ public:
     using TreeScope::document;
     using TreeScope::getElementById;
 
+    // TODO(kochi): crbug.com/507413 In non-Oilpan, host() may return null during queued
+    // event handling (e.g. during execCommand()).
     Element* host() const { return toElement(parentOrShadowHostNode()); }
     ElementShadow* owner() const { return host() ? host()->shadow() : 0; }
 

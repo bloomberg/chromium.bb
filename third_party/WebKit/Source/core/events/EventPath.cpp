@@ -132,7 +132,16 @@ void EventPath::calculatePath()
             if (m_event && shouldStopAtShadowRoot(*m_event, *toShadowRoot(current), *m_node))
                 break;
             current = current->shadowHost();
+#if !ENABLE(OILPAN)
+            // TODO(kochi): crbug.com/507413 This check is necessary when some asynchronous event
+            // is queued while its shadow host is removed and the shadow root gets the event
+            // immediately after it.  When Oilpan is enabled, this situation does not happen.
+            // Except this case, shadow root's host is assumed to be non-null.
+            if (current)
+                nodesInPath.append(current);
+#else
             nodesInPath.append(current);
+#endif
         } else {
             current = current->parentNode();
             if (current)
