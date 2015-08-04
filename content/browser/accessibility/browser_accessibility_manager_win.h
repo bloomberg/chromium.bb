@@ -19,13 +19,13 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
     : public BrowserAccessibilityManager {
  public:
   BrowserAccessibilityManagerWin(
-      const ui::AXTreeUpdate& initial_tree,
+      const SimpleAXTreeUpdate& initial_tree,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
   ~BrowserAccessibilityManagerWin() override;
 
-  static ui::AXTreeUpdate GetEmptyDocument();
+  static SimpleAXTreeUpdate GetEmptyDocument();
 
   // Get the closest containing HWND.
   HWND GetParentHWND();

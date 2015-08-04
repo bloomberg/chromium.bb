@@ -62,7 +62,7 @@ IPC_STRUCT_BEGIN(ExtensionMsg_AccessibilityEventParams)
   IPC_STRUCT_MEMBER(gfx::Vector2d, location_offset)
 
   // The tree update.
-  IPC_STRUCT_MEMBER(ui::AXTreeUpdate, update)
+  IPC_STRUCT_MEMBER(ui::AXTreeUpdate<ui::AXNodeData>, update)
 
   // Type of event.
   IPC_STRUCT_MEMBER(ui::AXEvent, event_type)

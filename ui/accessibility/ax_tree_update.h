@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/strings/string_number_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 
 namespace ui {
@@ -37,7 +38,7 @@ namespace ui {
 //        placeholder must be updated within the same AXTreeUpdate, otherwise
 //        it's a fatal error. This guarantees the tree is always complete
 //        before or after an AXTreeUpdate.
-struct AX_EXPORT AXTreeUpdate {
+template<typename AXNodeData> struct AXTreeUpdate {
   AXTreeUpdate();
   ~AXTreeUpdate();
 
@@ -56,6 +57,39 @@ struct AX_EXPORT AXTreeUpdate {
 
   // TODO(dmazzoni): location changes
 };
+
+template<typename AXNodeData>
+AXTreeUpdate<AXNodeData>::AXTreeUpdate() : node_id_to_clear(0) {
+}
+
+template<typename AXNodeData>
+AXTreeUpdate<AXNodeData>::~AXTreeUpdate() {
+}
+
+template<typename AXNodeData>
+std::string AXTreeUpdate<AXNodeData>::ToString() const {
+  std::string result;
+  if (node_id_to_clear != 0) {
+    result += "AXTreeUpdate: clear node " +
+        base::IntToString(node_id_to_clear) + "\n";
+  }
+
+  // The challenge here is that we want to indent the nodes being updated
+  // so that parent/child relationships are clear, but we don't have access
+  // to the rest of the tree for context, so we have to try to show the
+  // relative indentation of child nodes in this update relative to their
+  // parents.
+  base::hash_map<int32, int> id_to_indentation;
+  for (size_t i = 0; i < nodes.size(); ++i) {
+    int indent = id_to_indentation[nodes[i].id];
+    result += std::string(2 * indent, ' ');
+    result += nodes[i].ToString() + "\n";
+    for (size_t j = 0; j < nodes[i].child_ids.size(); ++j)
+      id_to_indentation[nodes[i].child_ids[j]] = indent + 1;
+  }
+
+  return result;
+}
 
 }  // namespace ui
 

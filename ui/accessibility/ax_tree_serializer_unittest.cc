@@ -12,6 +12,8 @@
 
 namespace ui {
 
+using BasicAXTreeSerializer = AXTreeSerializer<const AXNode*, AXNodeData>;
+
 // The framework for these tests is that each test sets up |treedata0_|
 // and |treedata1_| and then calls GetTreeSerializer, which creates a
 // serializer for a tree that's initially in state |treedata0_|, but then
@@ -26,13 +28,13 @@ class AXTreeSerializerTest : public testing::Test {
  protected:
   void CreateTreeSerializer();
 
-  AXTreeUpdate treedata0_;
-  AXTreeUpdate treedata1_;
+  AXTreeUpdate<AXNodeData> treedata0_;
+  AXTreeUpdate<AXNodeData> treedata1_;
   scoped_ptr<AXSerializableTree> tree0_;
   scoped_ptr<AXSerializableTree> tree1_;
-  scoped_ptr<AXTreeSource<const AXNode*> > tree0_source_;
-  scoped_ptr<AXTreeSource<const AXNode*> > tree1_source_;
-  scoped_ptr<AXTreeSerializer<const AXNode*> > serializer_;
+  scoped_ptr<AXTreeSource<const AXNode*, AXNodeData> > tree0_source_;
+  scoped_ptr<AXTreeSource<const AXNode*, AXNodeData> > tree1_source_;
+  scoped_ptr<BasicAXTreeSerializer > serializer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AXTreeSerializerTest);
@@ -48,8 +50,8 @@ void AXTreeSerializerTest::CreateTreeSerializer() {
   // Serialize tree0 so that AXTreeSerializer thinks that its client
   // is totally in sync.
   tree0_source_.reset(tree0_->CreateTreeSource());
-  serializer_.reset(new AXTreeSerializer<const AXNode*>(tree0_source_.get()));
-  AXTreeUpdate unused_update;
+  serializer_.reset(new BasicAXTreeSerializer(tree0_source_.get()));
+  AXTreeUpdate<AXNodeData> unused_update;
   serializer_->SerializeChanges(tree0_->root(), &unused_update);
 
   // Pretend that tree0_ turned into tree1_. The next call to
@@ -83,7 +85,7 @@ TEST_F(AXTreeSerializerTest, UpdateContainsOnlyChangedNodes) {
   treedata1_.nodes[3].id = 4;
 
   CreateTreeSerializer();
-  AXTreeUpdate update;
+  AXTreeUpdate<AXNodeData> update;
   serializer_->SerializeChanges(tree1_->GetFromId(1), &update);
 
   // The update should only touch nodes 1 and 4 - nodes 2 and 3 are unchanged
@@ -120,7 +122,7 @@ TEST_F(AXTreeSerializerTest, NewRootUpdatesEntireTree) {
   treedata1_.nodes[3].id = 4;
 
   CreateTreeSerializer();
-  AXTreeUpdate update;
+  AXTreeUpdate<AXNodeData> update;
   serializer_->SerializeChanges(tree1_->GetFromId(4), &update);
 
   // The update should delete the subtree rooted at node id=1, and
@@ -166,7 +168,7 @@ TEST_F(AXTreeSerializerTest, ReparentingUpdatesSubtree) {
   treedata1_.nodes[4].id = 5;
 
   CreateTreeSerializer();
-  AXTreeUpdate update;
+  AXTreeUpdate<AXNodeData> update;
   serializer_->SerializeChanges(tree1_->GetFromId(4), &update);
 
   // The update should delete the subtree rooted at node id=2, and
@@ -181,7 +183,8 @@ TEST_F(AXTreeSerializerTest, ReparentingUpdatesSubtree) {
 
 // A variant of AXTreeSource that returns true for IsValid() for one
 // particular id.
-class AXTreeSourceWithInvalidId : public AXTreeSource<const AXNode*> {
+class AXTreeSourceWithInvalidId
+    : public AXTreeSource<const AXNode*, AXNodeData> {
  public:
   AXTreeSourceWithInvalidId(AXTree* tree, int invalid_id)
       : tree_(tree),
@@ -223,7 +226,7 @@ class AXTreeSourceWithInvalidId : public AXTreeSource<const AXNode*> {
 // Test that the serializer skips invalid children.
 TEST(AXTreeSerializerInvalidTest, InvalidChild) {
   // (1 (2 3))
-  AXTreeUpdate treedata;
+  AXTreeUpdate<AXNodeData> treedata;
   treedata.nodes.resize(3);
   treedata.nodes[0].id = 1;
   treedata.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
@@ -235,8 +238,8 @@ TEST(AXTreeSerializerInvalidTest, InvalidChild) {
   AXTree tree(treedata);
   AXTreeSourceWithInvalidId source(&tree, 3);
 
-  AXTreeSerializer<const AXNode*> serializer(&source);
-  AXTreeUpdate update;
+  BasicAXTreeSerializer serializer(&source);
+  AXTreeUpdate<AXNodeData> update;
   serializer.SerializeChanges(tree.root(), &update);
 
   ASSERT_EQ(2U, update.nodes.size());
@@ -265,9 +268,9 @@ TEST_F(AXTreeSerializerTest, MaximumSerializedNodeCount) {
 
   tree0_.reset(new AXSerializableTree(treedata0_));
   tree0_source_.reset(tree0_->CreateTreeSource());
-  serializer_.reset(new AXTreeSerializer<const AXNode*>(tree0_source_.get()));
+  serializer_.reset(new BasicAXTreeSerializer(tree0_source_.get()));
   serializer_->set_max_node_count(4);
-  AXTreeUpdate update;
+  AXTreeUpdate<AXNodeData> update;
   serializer_->SerializeChanges(tree0_->root(), &update);
   // It actually serializes 5 nodes, not 4 - to be consistent.
   // It skips the children of node 5.

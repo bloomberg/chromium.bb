@@ -14,7 +14,8 @@ namespace ui {
 // AXTreeSource abstraction and doesn't need to actually know about
 // AXTree directly. Another AXTreeSource is used to abstract the Blink
 // accessibility tree.
-class AX_EXPORT AXTreeSourceAdapter : public AXTreeSource<const AXNode*> {
+class AX_EXPORT AXTreeSourceAdapter
+    : public AXTreeSource<const AXNode*, AXNodeData> {
  public:
   AXTreeSourceAdapter(AXTree* tree) : tree_(tree) {}
   ~AXTreeSourceAdapter() override {}
@@ -55,14 +56,16 @@ class AX_EXPORT AXTreeSourceAdapter : public AXTreeSource<const AXNode*> {
 AXSerializableTree::AXSerializableTree()
     : AXTree() {}
 
-AXSerializableTree::AXSerializableTree(const AXTreeUpdate& initial_state)
+AXSerializableTree::AXSerializableTree(
+    const AXTreeUpdate<AXNodeData>& initial_state)
     : AXTree(initial_state) {
 }
 
 AXSerializableTree::~AXSerializableTree() {
 }
 
-AXTreeSource<const AXNode*>* AXSerializableTree::CreateTreeSource() {
+AXTreeSource<const AXNode*, AXNodeData>*
+AXSerializableTree::CreateTreeSource() {
   return new AXTreeSourceAdapter(this);
 }
 

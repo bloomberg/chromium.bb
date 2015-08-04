@@ -105,16 +105,17 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   checkbox.state = 0;
   checkbox.location = gfx::Rect(20, 50, 200, 30);
 
-  AXTreeUpdate initial_state;
+  AXTreeUpdate<AXNodeData> initial_state;
   initial_state.nodes.push_back(root);
   initial_state.nodes.push_back(button);
   initial_state.nodes.push_back(checkbox);
   AXSerializableTree src_tree(initial_state);
 
-  scoped_ptr<AXTreeSource<const AXNode*> > tree_source(
+  scoped_ptr<AXTreeSource<const AXNode*, AXNodeData> > tree_source(
       src_tree.CreateTreeSource());
-  AXTreeSerializer<const AXNode*> serializer(tree_source.get());
-  AXTreeUpdate update;
+  AXTreeSerializer<const AXNode*, AXNodeData> serializer(
+      tree_source.get());
+  AXTreeUpdate<AXNodeData> update;
   serializer.SerializeChanges(src_tree.root(), &update);
 
   AXTree dst_tree;
@@ -166,7 +167,7 @@ TEST(AXTreeTest, SerializeAXTreeUpdate) {
   button.role = AX_ROLE_BUTTON;
   button.state = 0;
 
-  AXTreeUpdate update;
+  AXTreeUpdate<AXNodeData> update;
   update.nodes.push_back(list);
   update.nodes.push_back(list_item_2);
   update.nodes.push_back(list_item_3);
@@ -185,13 +186,13 @@ TEST(AXTreeTest, DeleteUnknownSubtreeFails) {
   root.id = 1;
   root.role = AX_ROLE_ROOT_WEB_AREA;
 
-  AXTreeUpdate initial_state;
+  AXTreeUpdate<AXNodeData> initial_state;
   initial_state.nodes.push_back(root);
   AXTree tree(initial_state);
 
   // This should fail because we're asking it to delete
   // a subtree rooted at id=2, which doesn't exist.
-  AXTreeUpdate update;
+  AXTreeUpdate<AXNodeData> update;
   update.node_id_to_clear = 2;
   update.nodes.resize(1);
   update.nodes[0].id = 1;
@@ -201,7 +202,7 @@ TEST(AXTreeTest, DeleteUnknownSubtreeFails) {
 }
 
 TEST(AXTreeTest, LeaveOrphanedDeletedSubtreeFails) {
-  AXTreeUpdate initial_state;
+  AXTreeUpdate<AXNodeData> initial_state;
   initial_state.nodes.resize(3);
   initial_state.nodes[0].id = 1;
   initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
@@ -213,7 +214,7 @@ TEST(AXTreeTest, LeaveOrphanedDeletedSubtreeFails) {
 
   // This should fail because we delete a subtree rooted at id=2
   // but never update it.
-  AXTreeUpdate update;
+  AXTreeUpdate<AXNodeData> update;
   update.node_id_to_clear = 2;
   update.nodes.resize(1);
   update.nodes[0].id = 3;
@@ -222,7 +223,7 @@ TEST(AXTreeTest, LeaveOrphanedDeletedSubtreeFails) {
 }
 
 TEST(AXTreeTest, LeaveOrphanedNewChildFails) {
-  AXTreeUpdate initial_state;
+  AXTreeUpdate<AXNodeData> initial_state;
   initial_state.nodes.resize(1);
   initial_state.nodes[0].id = 1;
   initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
@@ -230,7 +231,7 @@ TEST(AXTreeTest, LeaveOrphanedNewChildFails) {
 
   // This should fail because we add a new child to the root node
   // but never update it.
-  AXTreeUpdate update;
+  AXTreeUpdate<AXNodeData> update;
   update.nodes.resize(1);
   update.nodes[0].id = 1;
   update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
@@ -240,14 +241,14 @@ TEST(AXTreeTest, LeaveOrphanedNewChildFails) {
 }
 
 TEST(AXTreeTest, DuplicateChildIdFails) {
-  AXTreeUpdate initial_state;
+  AXTreeUpdate<AXNodeData> initial_state;
   initial_state.nodes.resize(1);
   initial_state.nodes[0].id = 1;
   initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
   AXTree tree(initial_state);
 
   // This should fail because a child id appears twice.
-  AXTreeUpdate update;
+  AXTreeUpdate<AXNodeData> update;
   update.nodes.resize(2);
   update.nodes[0].id = 1;
   update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
@@ -259,7 +260,7 @@ TEST(AXTreeTest, DuplicateChildIdFails) {
 }
 
 TEST(AXTreeTest, InvalidReparentingFails) {
-  AXTreeUpdate initial_state;
+  AXTreeUpdate<AXNodeData> initial_state;
   initial_state.nodes.resize(3);
   initial_state.nodes[0].id = 1;
   initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
@@ -272,7 +273,7 @@ TEST(AXTreeTest, InvalidReparentingFails) {
 
   // This should fail because node 3 is reparented from node 2 to node 1
   // without deleting node 1's subtree first.
-  AXTreeUpdate update;
+  AXTreeUpdate<AXNodeData> update;
   update.nodes.resize(3);
   update.nodes[0].id = 1;
   update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
@@ -285,14 +286,14 @@ TEST(AXTreeTest, InvalidReparentingFails) {
 }
 
 TEST(AXTreeTest, TwoRootsFails) {
-  AXTreeUpdate initial_state;
+  AXTreeUpdate<AXNodeData> initial_state;
   initial_state.nodes.resize(1);
   initial_state.nodes[0].id = 1;
   initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
   AXTree tree(initial_state);
 
   // This should fail because there are two new roots.
-  AXTreeUpdate update;
+  AXTreeUpdate<AXNodeData> update;
   update.nodes.resize(2);
   update.nodes[0].id = 2;
   update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
@@ -303,7 +304,7 @@ TEST(AXTreeTest, TwoRootsFails) {
 }
 
 TEST(AXTreeTest, TreeDelegateIsCalled) {
-  AXTreeUpdate initial_state;
+  AXTreeUpdate<AXNodeData> initial_state;
   initial_state.nodes.resize(2);
   initial_state.nodes[0].id = 1;
   initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
@@ -311,7 +312,7 @@ TEST(AXTreeTest, TreeDelegateIsCalled) {
   initial_state.nodes[1].id = 2;
 
   AXTree tree(initial_state);
-  AXTreeUpdate update;
+  AXTreeUpdate<AXNodeData> update;
   update.node_id_to_clear = 1;
   update.nodes.resize(2);
   update.nodes[0].id = 3;

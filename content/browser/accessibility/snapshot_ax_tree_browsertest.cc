@@ -24,15 +24,15 @@ class AXTreeSnapshotWaiter {
     loop_runner_->Run();
   }
 
-  const ui::AXTreeUpdate& snapshot() const { return snapshot_; }
+  const SimpleAXTreeUpdate& snapshot() const { return snapshot_; }
 
-  void ReceiveSnapshot(const ui::AXTreeUpdate& snapshot) {
+  void ReceiveSnapshot(const SimpleAXTreeUpdate& snapshot) {
     snapshot_ = snapshot;
     loop_runner_->Quit();
   }
 
  private:
-  ui::AXTreeUpdate snapshot_;
+  SimpleAXTreeUpdate snapshot_;
   scoped_refptr<MessageLoopRunner> loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AXTreeSnapshotWaiter);

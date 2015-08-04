@@ -26,6 +26,9 @@ using views::Textfield;
 using views::View;
 using views::Widget;
 
+using AuraAXTreeSerializer =
+    ui::AXTreeSerializer<views::AXAuraObjWrapper*, ui::AXNodeData>;
+
 // Helper to count the number of nodes in a tree.
 size_t GetSize(AXAuraObjWrapper* tree) {
   size_t count = 1;
@@ -130,8 +133,8 @@ TEST_F(AXTreeSourceAuraTest, Focus) {
 
 TEST_F(AXTreeSourceAuraTest, Serialize) {
   AXTreeSourceAura ax_tree;
-  ui::AXTreeSerializer<AXAuraObjWrapper*> ax_serializer(&ax_tree);
-  ui::AXTreeUpdate out_update;
+  AuraAXTreeSerializer ax_serializer(&ax_tree);
+  ui::AXTreeUpdate<ui::AXNodeData> out_update;
 
   // This is the initial serialization.
   ax_serializer.SerializeChanges(ax_tree.GetRoot(), &out_update);
@@ -150,7 +153,7 @@ TEST_F(AXTreeSourceAuraTest, Serialize) {
       AXAuraObjCache::GetInstance()->GetOrCreate(textfield_);
 
   // Now, re-serialize.
-  ui::AXTreeUpdate out_update2;
+  ui::AXTreeUpdate<ui::AXNodeData> out_update2;
   ax_serializer.SerializeChanges(textfield_wrapper, &out_update2);
 
   size_t node_count = out_update2.nodes.size();

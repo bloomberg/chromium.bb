@@ -1177,7 +1177,7 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   // Execute any pending AX tree snapshot callbacks with an empty response,
   // since we're never going to get a response from this renderer.
   for (const auto& iter : ax_tree_snapshot_callbacks_)
-    iter.second.Run(ui::AXTreeUpdate());
+    iter.second.Run(ui::AXTreeUpdate<ui::AXNodeData>());
   ax_tree_snapshot_callbacks_.clear();
 
   // Note: don't add any more code at this point in the function because
@@ -1528,7 +1528,7 @@ void RenderFrameHostImpl::OnAccessibilityFindInPageResult(
 
 void RenderFrameHostImpl::OnAccessibilitySnapshotResponse(
     int callback_id,
-    const ui::AXTreeUpdate& snapshot) {
+    const ui::AXTreeUpdate<ui::AXNodeData>& snapshot) {
   const auto& it = ax_tree_snapshot_callbacks_.find(callback_id);
   if (it != ax_tree_snapshot_callbacks_.end()) {
     it->second.Run(snapshot);

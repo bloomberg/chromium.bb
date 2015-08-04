@@ -88,7 +88,7 @@ class AX_EXPORT AXTreeDelegate {
 class AX_EXPORT AXTree {
  public:
   AXTree();
-  explicit AXTree(const AXTreeUpdate& initial_state);
+  explicit AXTree(const AXTreeUpdate<AXNodeData>& initial_state);
   virtual ~AXTree();
 
   virtual void SetDelegate(AXTreeDelegate* delegate);
@@ -101,7 +101,7 @@ class AX_EXPORT AXTree {
   // Returns true on success. If it returns false, it's a fatal error
   // and this tree should be destroyed, and the source of the tree update
   // should not be trusted any longer.
-  virtual bool Unserialize(const AXTreeUpdate& update);
+  virtual bool Unserialize(const AXTreeUpdate<AXNodeData>& update);
 
   // Return a multi-line indented string representation, for logging.
   std::string ToString() const;

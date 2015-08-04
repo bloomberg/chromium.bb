@@ -32,7 +32,7 @@ typedef std::map<int32, int> FrameIDMap;
 
 IPC_STRUCT_BEGIN(AccessibilityHostMsg_EventParams)
   // The tree update.
-  IPC_STRUCT_MEMBER(ui::AXTreeUpdate, update)
+  IPC_STRUCT_MEMBER(ui::AXTreeUpdate<ui::AXNodeData>, update)
 
   // Mapping from node id to routing id of its child frame - either the
   // routing id of a RenderFrame or a RenderFrameProxy for an out-of-process
@@ -194,4 +194,4 @@ IPC_MESSAGE_ROUTED1(
 // a standalone snapshot of the accessibility tree.
 IPC_MESSAGE_ROUTED2(AccessibilityHostMsg_SnapshotResponse,
                     int /* callback_id */,
-                    ui::AXTreeUpdate)
+                    ui::AXTreeUpdate<ui::AXNodeData>)

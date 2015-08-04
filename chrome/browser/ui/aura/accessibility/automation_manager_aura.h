@@ -24,6 +24,9 @@ class AXAuraObjWrapper;
 class View;
 }  // namespace views
 
+using AuraAXTreeSerializer =
+    ui::AXTreeSerializer<views::AXAuraObjWrapper*, ui::AXNodeData>;
+
 // Manages a tree of automation nodes.
 class AutomationManagerAura : public extensions::AutomationActionAdapter,
                               public views::WidgetFocusChangeListener {
@@ -79,8 +82,7 @@ class AutomationManagerAura : public extensions::AutomationActionAdapter,
 
   // Serializes incremental updates on the currently active tree
   // |current_tree_|.
-  scoped_ptr<ui::AXTreeSerializer<views::AXAuraObjWrapper*>>
-      current_tree_serializer_;
+  scoped_ptr<AuraAXTreeSerializer> current_tree_serializer_;
 
   bool processing_events_;
 

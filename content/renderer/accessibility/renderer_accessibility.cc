@@ -41,7 +41,7 @@ const size_t kMaxSnapshotNodeCount = 5000;
 // static
 void RendererAccessibility::SnapshotAccessibilityTree(
     RenderFrameImpl* render_frame,
-    ui::AXTreeUpdate* response) {
+    ui::AXTreeUpdate<ui::AXNodeData>* response) {
   DCHECK(render_frame);
   DCHECK(response);
   if (!render_frame->GetWebFrame())
@@ -51,7 +51,7 @@ void RendererAccessibility::SnapshotAccessibilityTree(
   WebScopedAXContext context(document);
   BlinkAXTreeSource tree_source(render_frame);
   tree_source.SetRoot(context.root());
-  ui::AXTreeSerializer<blink::WebAXObject> serializer(&tree_source);
+  BlinkAXTreeSerializer serializer(&tree_source);
   serializer.set_max_node_count(kMaxSnapshotNodeCount);
   serializer.SerializeChanges(context.root(), response);
 }

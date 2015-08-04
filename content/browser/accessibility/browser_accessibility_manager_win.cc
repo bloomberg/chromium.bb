@@ -19,7 +19,7 @@ namespace content {
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-    const ui::AXTreeUpdate& initial_tree,
+    const SimpleAXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
   return new BrowserAccessibilityManagerWin(initial_tree, delegate, factory);
@@ -31,7 +31,7 @@ BrowserAccessibilityManager::ToBrowserAccessibilityManagerWin() {
 }
 
 BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
-    const ui::AXTreeUpdate& initial_tree,
+    const SimpleAXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(delegate, factory),
@@ -50,7 +50,8 @@ BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
 }
 
 // static
-ui::AXTreeUpdate BrowserAccessibilityManagerWin::GetEmptyDocument() {
+SimpleAXTreeUpdate
+    BrowserAccessibilityManagerWin::GetEmptyDocument() {
   ui::AXNodeData empty_document;
   empty_document.id = 0;
   empty_document.role = ui::AX_ROLE_ROOT_WEB_AREA;
@@ -59,7 +60,7 @@ ui::AXTreeUpdate BrowserAccessibilityManagerWin::GetEmptyDocument() {
       (1 << ui::AX_STATE_READ_ONLY) |
       (1 << ui::AX_STATE_BUSY);
 
-  ui::AXTreeUpdate update;
+  SimpleAXTreeUpdate update;
   update.nodes.push_back(empty_document);
   return update;
 }

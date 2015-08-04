@@ -211,8 +211,8 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Request a one-time snapshot of the accessibility tree without changing
   // the accessibility mode.
-  typedef base::Callback<void(const ui::AXTreeUpdate&)>
-      AXTreeSnapshotCallback;
+  using AXTreeSnapshotCallback =
+      base::Callback<void(const ui::AXTreeUpdate<ui::AXNodeData>&)>;
   void RequestAXTreeSnapshot(AXTreeSnapshotCallback callback);
 
   // WebContents ------------------------------------------------------

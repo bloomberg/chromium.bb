@@ -39,7 +39,6 @@
         'ax_tree_serializer.cc',
         'ax_tree_serializer.h',
         'ax_tree_source.h',
-        'ax_tree_update.cc',
         'ax_tree_update.h',
         'ax_view_state.cc',
         'ax_view_state.h',

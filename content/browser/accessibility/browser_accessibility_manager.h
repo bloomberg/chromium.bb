@@ -31,8 +31,10 @@ class BrowserAccessibilityManagerWin;
 class BrowserAccessibilityManagerAuraLinux;
 #endif
 
+using SimpleAXTreeUpdate = ui::AXTreeUpdate<ui::AXNodeData>;
+
 // For testing.
-CONTENT_EXPORT ui::AXTreeUpdate MakeAXTreeUpdate(
+CONTENT_EXPORT SimpleAXTreeUpdate MakeAXTreeUpdate(
     const ui::AXNodeData& node,
     const ui::AXNodeData& node2 = ui::AXNodeData(),
     const ui::AXNodeData& node3 = ui::AXNodeData(),
@@ -118,15 +120,15 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // Creates the platform-specific BrowserAccessibilityManager, but
   // with no parent window pointer. Only useful for unit tests.
   static BrowserAccessibilityManager* Create(
-      const ui::AXTreeUpdate& initial_tree,
+      const SimpleAXTreeUpdate& initial_tree,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
   ~BrowserAccessibilityManager() override;
 
-  void Initialize(const ui::AXTreeUpdate& initial_tree);
+  void Initialize(const SimpleAXTreeUpdate& initial_tree);
 
-  static ui::AXTreeUpdate GetEmptyDocument();
+  static SimpleAXTreeUpdate GetEmptyDocument();
 
   virtual void NotifyAccessibilityEvent(
       ui::AXEvent event_type, BrowserAccessibility* node) { }
@@ -272,7 +274,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   BrowserAccessibilityDelegate* GetDelegateFromRootManager();
 
   // Get a snapshot of the current tree as an AXTreeUpdate.
-  ui::AXTreeUpdate SnapshotAXTreeForTesting();
+  SimpleAXTreeUpdate SnapshotAXTreeForTesting();
 
  protected:
   BrowserAccessibilityManager(
@@ -280,7 +282,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
       BrowserAccessibilityFactory* factory);
 
   BrowserAccessibilityManager(
-      const ui::AXTreeUpdate& initial_tree,
+      const SimpleAXTreeUpdate& initial_tree,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory);
 

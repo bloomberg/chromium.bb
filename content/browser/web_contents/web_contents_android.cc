@@ -108,7 +108,7 @@ void AXTreeSnapshotCallback(const ScopedJavaGlobalRef<jobject>& callback,
                             float scale_factor,
                             float y_offset,
                             float x_scroll,
-                            const ui::AXTreeUpdate& result) {
+                            const ui::AXTreeUpdate<ui::AXNodeData>& result) {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (result.nodes.empty()) {
     Java_WebContentsImpl_onAccessibilitySnapshot(env, nullptr, callback.obj());

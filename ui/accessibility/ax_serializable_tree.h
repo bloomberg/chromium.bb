@@ -13,12 +13,12 @@ namespace ui {
 class AX_EXPORT AXSerializableTree : public AXTree {
  public:
   AXSerializableTree();
-  explicit AXSerializableTree(const AXTreeUpdate& initial_state);
+  explicit AXSerializableTree(const AXTreeUpdate<AXNodeData>& initial_state);
   ~AXSerializableTree() override;
 
   // Create a TreeSource adapter for this tree. The client gets ownership
   // of the return value and should delete it when done.
-  virtual AXTreeSource<const AXNode*>* CreateTreeSource();
+  virtual AXTreeSource<const AXNode*, AXNodeData>* CreateTreeSource();
 };
 
 }  // namespace ui

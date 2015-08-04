@@ -53,12 +53,12 @@ AXTree::AXTree()
   root.id = -1;
   root.role = AX_ROLE_ROOT_WEB_AREA;
 
-  AXTreeUpdate initial_state;
+  AXTreeUpdate<AXNodeData> initial_state;
   initial_state.nodes.push_back(root);
   CHECK(Unserialize(initial_state)) << error();
 }
 
-AXTree::AXTree(const AXTreeUpdate& initial_state)
+AXTree::AXTree(const AXTreeUpdate<AXNodeData>& initial_state)
     : delegate_(NULL), root_(NULL) {
   CHECK(Unserialize(initial_state)) << error();
 }
@@ -77,7 +77,7 @@ AXNode* AXTree::GetFromId(int32 id) const {
   return iter != id_map_.end() ? iter->second : NULL;
 }
 
-bool AXTree::Unserialize(const AXTreeUpdate& update) {
+bool AXTree::Unserialize(const AXTreeUpdate<AXNodeData>& update) {
   AXTreeUpdateState update_state;
   int32 old_root_id = root_ ? root_->id() : 0;
 

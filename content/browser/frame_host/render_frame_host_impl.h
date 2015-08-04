@@ -94,8 +94,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
     : public RenderFrameHost,
       public BrowserAccessibilityDelegate {
  public:
-  typedef base::Callback<void(const ui::AXTreeUpdate&)>
-      AXTreeSnapshotCallback;
+  using AXTreeSnapshotCallback =
+      base::Callback<void(const ui::AXTreeUpdate<ui::AXNodeData>&)>;
 
   // Keeps track of the state of the RenderFrameHostImpl, particularly with
   // respect to swap out.
@@ -557,8 +557,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
   void OnAccessibilityFindInPageResult(
       const AccessibilityHostMsg_FindInPageResultParams& params);
-  void OnAccessibilitySnapshotResponse(int callback_id,
-                                       const ui::AXTreeUpdate& snapshot);
+  void OnAccessibilitySnapshotResponse(
+      int callback_id,
+      const ui::AXTreeUpdate<ui::AXNodeData>& snapshot);
   void OnToggleFullscreen(bool enter_fullscreen);
   void OnDidStartLoading(bool to_different_document);
   void OnDidStopLoading();

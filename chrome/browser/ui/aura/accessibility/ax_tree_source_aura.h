@@ -18,7 +18,8 @@ class AXAuraObjWrapper;
 
 // This class exposes the views hierarchy as an accessibility tree permitting
 // use with other accessibility classes.
-class AXTreeSourceAura : public ui::AXTreeSource<views::AXAuraObjWrapper*> {
+class AXTreeSourceAura
+    : public ui::AXTreeSource<views::AXAuraObjWrapper*, ui::AXNodeData> {
  public:
   AXTreeSourceAura();
   ~AXTreeSourceAura() override;

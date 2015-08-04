@@ -11,7 +11,7 @@
 
 namespace content {
 
-ui::AXTreeUpdate MakeAXTreeUpdate(
+SimpleAXTreeUpdate MakeAXTreeUpdate(
     const ui::AXNodeData& node1,
     const ui::AXNodeData& node2 /* = ui::AXNodeData() */,
     const ui::AXNodeData& node3 /* = ui::AXNodeData() */,
@@ -24,7 +24,7 @@ ui::AXTreeUpdate MakeAXTreeUpdate(
   CR_DEFINE_STATIC_LOCAL(ui::AXNodeData, empty_data, ());
   int32 no_id = empty_data.id;
 
-  ui::AXTreeUpdate update;
+  SimpleAXTreeUpdate update;
   update.nodes.push_back(node1);
   if (node2.id != no_id)
     update.nodes.push_back(node2);
@@ -66,7 +66,7 @@ BrowserAccessibilityFindInPageInfo::BrowserAccessibilityFindInPageInfo()
 // For other platforms, instantiate the base class.
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-    const ui::AXTreeUpdate& initial_tree,
+    const SimpleAXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
   return new BrowserAccessibilityManager(initial_tree, delegate, factory);
@@ -86,7 +86,7 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
 }
 
 BrowserAccessibilityManager::BrowserAccessibilityManager(
-    const ui::AXTreeUpdate& initial_tree,
+    const SimpleAXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : delegate_(delegate),
@@ -104,7 +104,7 @@ BrowserAccessibilityManager::~BrowserAccessibilityManager() {
 }
 
 void BrowserAccessibilityManager::Initialize(
-    const ui::AXTreeUpdate& initial_tree) {
+    const SimpleAXTreeUpdate& initial_tree) {
   if (!tree_->Unserialize(initial_tree)) {
     if (delegate_) {
       LOG(ERROR) << tree_->error();
@@ -119,11 +119,12 @@ void BrowserAccessibilityManager::Initialize(
 }
 
 // static
-ui::AXTreeUpdate BrowserAccessibilityManager::GetEmptyDocument() {
+SimpleAXTreeUpdate
+BrowserAccessibilityManager::GetEmptyDocument() {
   ui::AXNodeData empty_document;
   empty_document.id = 0;
   empty_document.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  ui::AXTreeUpdate update;
+  SimpleAXTreeUpdate update;
   update.nodes.push_back(empty_document);
   return update;
 }
@@ -478,11 +479,13 @@ BrowserAccessibilityDelegate*
   return manager->delegate();
 }
 
-ui::AXTreeUpdate BrowserAccessibilityManager::SnapshotAXTreeForTesting() {
-  scoped_ptr<ui::AXTreeSource<const ui::AXNode*> > tree_source(
+SimpleAXTreeUpdate
+BrowserAccessibilityManager::SnapshotAXTreeForTesting() {
+  scoped_ptr<ui::AXTreeSource<const ui::AXNode*, ui::AXNodeData> > tree_source(
       tree_->CreateTreeSource());
-  ui::AXTreeSerializer<const ui::AXNode*> serializer(tree_source.get());
-  ui::AXTreeUpdate update;
+  ui::AXTreeSerializer<const ui::AXNode*, ui::AXNodeData> serializer(
+      tree_source.get());
+  SimpleAXTreeUpdate update;
   serializer.SerializeChanges(tree_->root(), &update);
   return update;
 }

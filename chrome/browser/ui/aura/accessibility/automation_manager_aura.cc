@@ -115,7 +115,7 @@ AutomationManagerAura::~AutomationManagerAura() {
 
 void AutomationManagerAura::ResetSerializer() {
   current_tree_serializer_.reset(
-      new ui::AXTreeSerializer<views::AXAuraObjWrapper*>(current_tree_.get()));
+      new AuraAXTreeSerializer(current_tree_.get()));
 }
 
 void AutomationManagerAura::SendEvent(BrowserContext* context,

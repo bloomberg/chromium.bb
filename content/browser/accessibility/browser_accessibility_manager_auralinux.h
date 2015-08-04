@@ -18,13 +18,13 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAuraLinux
  public:
   BrowserAccessibilityManagerAuraLinux(
       AtkObject* parent_object,
-      const ui::AXTreeUpdate& initial_tree,
+      const SimpleAXTreeUpdate& initial_tree,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
   ~BrowserAccessibilityManagerAuraLinux() override;
 
-  static ui::AXTreeUpdate GetEmptyDocument();
+  static SimpleAXTreeUpdate GetEmptyDocument();
 
   // Implementation BrowserAccessibilityManager methods
   void NotifyAccessibilityEvent(ui::AXEvent event_type,

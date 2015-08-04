@@ -16,11 +16,11 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
  public:
   BrowserAccessibilityManagerMac(
       NSView* parent_view,
-      const ui::AXTreeUpdate& initial_tree,
+      const SimpleAXTreeUpdate& initial_tree,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
-  static ui::AXTreeUpdate GetEmptyDocument();
+  static SimpleAXTreeUpdate GetEmptyDocument();
 
   BrowserAccessibility* GetFocus(BrowserAccessibility* root) override;
 

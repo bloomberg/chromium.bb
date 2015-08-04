@@ -14,7 +14,7 @@ namespace content {
 class RenderFrameImpl;
 
 class BlinkAXTreeSource
-    : public ui::AXTreeSource<blink::WebAXObject> {
+    : public ui::AXTreeSource<blink::WebAXObject, ui::AXNodeData> {
  public:
   BlinkAXTreeSource(RenderFrameImpl* render_frame);
   ~BlinkAXTreeSource() override;
