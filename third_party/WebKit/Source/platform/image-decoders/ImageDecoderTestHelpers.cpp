@@ -64,7 +64,7 @@ void testByteByByteDecode(DecoderCreator createDecoder, const char* file, size_t
     size_t framesDecoded = 0;
 
     // Pass data to decoder byte by byte.
-    for (size_t length = 1; length <= data->size(); ++length) {
+    for (size_t length = 1; length <= data->size() && !decoder->failed(); ++length) {
         RefPtr<SharedBuffer> tempData = SharedBuffer::create(data->data(), length);
         decoder->setData(tempData.get(), length == data->size());
 
@@ -77,9 +77,6 @@ void testByteByByteDecode(DecoderCreator createDecoder, const char* file, size_t
         ImageFrame* frame = decoder->frameBufferAtIndex(frameCount - 1);
         if (frame && frame->status() == ImageFrame::FrameComplete && framesDecoded < frameCount)
             ++framesDecoded;
-
-        if (decoder->failed())
-            break;
     }
 
     EXPECT_FALSE(decoder->failed());
