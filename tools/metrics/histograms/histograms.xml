@@ -12966,6 +12966,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.ANGLE.D3DCompileMS" units="milliseconds">
+  <owner>jmadill@chromium.org</owner>
+  <summary>
+    The time ANGLE spends calling the D3D shader compiler. Tracks total time we
+    spend compiling shaders on startup and during Chrome's lifetime.
+  </summary>
+</histogram>
+
 <histogram name="GPU.ANGLE.DisplayInitializeMS" units="milliseconds">
   <owner>jmadill@chromium.org</owner>
   <summary>
