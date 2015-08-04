@@ -261,8 +261,6 @@ int amdgpu_cs_submit(amdgpu_context_handle context,
 {
 	uint32_t i;
 	int r;
-	uint64_t bo_size;
-	uint64_t bo_offset;
 
 	if (NULL == context)
 		return -EINVAL;
