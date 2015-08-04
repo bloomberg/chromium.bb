@@ -130,15 +130,9 @@ class PermissionsData {
   // network, etc.)
   bool HasEffectiveAccessToAllHosts() const;
 
-  // Returns the full list of permission messages that should display at install
-  // time, including their submessages, as strings.
-  // TODO(treib): Remove this and move callers over to
-  // GetCoalescedPermissionMessages once we've fully switched to the new system.
-  PermissionMessageStrings GetPermissionMessageStrings() const;
-
   // Returns the full list of permission details for messages that should
   // display at install time, in a nested format ready for display.
-  CoalescedPermissionMessages GetCoalescedPermissionMessages() const;
+  CoalescedPermissionMessages GetPermissionMessages() const;
 
   // Returns true if the extension has requested all-hosts permissions (or
   // something close to it), but has had it withheld.

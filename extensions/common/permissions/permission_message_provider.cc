@@ -10,45 +10,9 @@
 
 namespace extensions {
 
-PermissionMessageString::PermissionMessageString(
-    const CoalescedPermissionMessage& message)
-    : message(message.message()), submessages(message.submessages()) {
-}
-
-PermissionMessageString::PermissionMessageString(const base::string16& message)
-    : message(message) {
-}
-
-PermissionMessageString::PermissionMessageString(
-    const base::string16& message,
-    const std::vector<base::string16>& submessages)
-    : message(message), submessages(submessages) {
-}
-
-PermissionMessageString::PermissionMessageString(const base::string16& message,
-                                                 const base::string16& details)
-    : message(message) {
-  base::SplitString(details, base::char16('\n'), &submessages);
-}
-
-PermissionMessageString::~PermissionMessageString() {
-}
-
 // static
 const PermissionMessageProvider* PermissionMessageProvider::Get() {
   return &(ExtensionsClient::Get()->GetPermissionMessageProvider());
-}
-
-PermissionMessageStrings
-PermissionMessageProvider::GetPermissionMessageStrings(
-    const PermissionSet* permissions,
-    Manifest::Type extension_type) const {
-  CoalescedPermissionMessages messages = GetCoalescedPermissionMessages(
-      GetAllPermissionIDs(permissions, extension_type));
-  PermissionMessageStrings strings;
-  for (const CoalescedPermissionMessage& msg : messages)
-    strings.push_back(PermissionMessageString(msg));
-  return strings;
 }
 
 }  // namespace extensions

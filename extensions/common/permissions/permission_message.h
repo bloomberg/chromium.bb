@@ -151,7 +151,6 @@ class PermissionMessage {
 };
 
 typedef std::vector<PermissionMessage> PermissionMessages;
-typedef std::vector<PermissionMessage::ID> PermissionMessageIDs;
 
 }  // namespace extensions
 

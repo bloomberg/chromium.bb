@@ -32,7 +32,7 @@ ChromePermissionMessageProvider::~ChromePermissionMessageProvider() {
 }
 
 CoalescedPermissionMessages
-ChromePermissionMessageProvider::GetCoalescedPermissionMessages(
+ChromePermissionMessageProvider::GetPermissionMessages(
     const PermissionIDSet& permissions) const {
   std::vector<ChromePermissionMessageRule> rules =
       ChromePermissionMessageRule::GetAllRules();
@@ -50,8 +50,7 @@ ChromePermissionMessageProvider::GetCoalescedPermissionMessages(
       PermissionIDSet used_permissions =
           remaining_permissions.GetAllPermissionsWithIDs(
               rule.all_permissions());
-      messages.push_back(
-          rule.formatter()->GetPermissionMessage(used_permissions));
+      messages.push_back(rule.GetPermissionMessage(used_permissions));
 
       remaining_permissions =
           PermissionIDSet::Difference(remaining_permissions, used_permissions);

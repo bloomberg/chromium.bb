@@ -27,7 +27,7 @@ class DefaultPermissionMessageFormatter
   ~DefaultPermissionMessageFormatter() override {}
 
   CoalescedPermissionMessage GetPermissionMessage(
-      PermissionIDSet permissions) const override {
+      const PermissionIDSet& permissions) const override {
     return CoalescedPermissionMessage(l10n_util::GetStringUTF16(message_id_),
                                       permissions);
   }
@@ -35,7 +35,7 @@ class DefaultPermissionMessageFormatter
  private:
   int message_id_;
 
-  // DISALLOW_COPY_AND_ASSIGN(DefaultPermissionMessageFormatter);
+  DISALLOW_COPY_AND_ASSIGN(DefaultPermissionMessageFormatter);
 };
 
 // A formatter that substitutes the parameter into the message using string
@@ -47,7 +47,7 @@ class SingleParameterFormatter : public ChromePermissionMessageFormatter {
   ~SingleParameterFormatter() override {}
 
   CoalescedPermissionMessage GetPermissionMessage(
-      PermissionIDSet permissions) const override {
+      const PermissionIDSet& permissions) const override {
     DCHECK(permissions.size() > 0);
     std::vector<base::string16> parameters =
         permissions.GetAllPermissionParameters();
@@ -59,6 +59,8 @@ class SingleParameterFormatter : public ChromePermissionMessageFormatter {
 
  private:
   int message_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(SingleParameterFormatter);
 };
 
 // Adds each parameter to a growing list, with the given |root_message_id| as
@@ -70,7 +72,7 @@ class SimpleListFormatter : public ChromePermissionMessageFormatter {
   ~SimpleListFormatter() override {}
 
   CoalescedPermissionMessage GetPermissionMessage(
-      PermissionIDSet permissions) const override {
+      const PermissionIDSet& permissions) const override {
     DCHECK(permissions.size() > 0);
     return CoalescedPermissionMessage(
         l10n_util::GetStringUTF16(root_message_id_), permissions,
@@ -79,6 +81,8 @@ class SimpleListFormatter : public ChromePermissionMessageFormatter {
 
  private:
   int root_message_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleListFormatter);
 };
 
 // Creates a space-separated list of permissions with the given PermissionID.
@@ -95,7 +99,7 @@ class SpaceSeparatedListFormatter : public ChromePermissionMessageFormatter {
   ~SpaceSeparatedListFormatter() override {}
 
   CoalescedPermissionMessage GetPermissionMessage(
-      PermissionIDSet permissions) const override {
+      const PermissionIDSet& permissions) const override {
     DCHECK(permissions.size() > 0);
     std::vector<base::string16> hostnames =
         permissions.GetAllPermissionParameters();
@@ -112,6 +116,8 @@ class SpaceSeparatedListFormatter : public ChromePermissionMessageFormatter {
  private:
   int message_id_for_one_host_;
   int message_id_for_multiple_hosts_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpaceSeparatedListFormatter);
 };
 
 // Creates a comma-separated list of permissions with the given PermissionID.
@@ -133,7 +139,7 @@ class CommaSeparatedListFormatter : public ChromePermissionMessageFormatter {
   ~CommaSeparatedListFormatter() override {}
 
   CoalescedPermissionMessage GetPermissionMessage(
-      PermissionIDSet permissions) const override {
+      const PermissionIDSet& permissions) const override {
     DCHECK(permissions.size() > 0);
     std::vector<base::string16> hostnames =
         permissions.GetAllPermissionParameters();
@@ -168,6 +174,8 @@ class CommaSeparatedListFormatter : public ChromePermissionMessageFormatter {
   int message_id_for_two_hosts_;
   int message_id_for_three_hosts_;
   int message_id_for_many_hosts_;
+
+  DISALLOW_COPY_AND_ASSIGN(CommaSeparatedListFormatter);
 };
 
 }  // namespace
@@ -201,15 +209,16 @@ std::set<APIPermission::ID> ChromePermissionMessageRule::optional_permissions()
     const {
   return optional_permissions_;
 }
-ChromePermissionMessageFormatter* ChromePermissionMessageRule::formatter()
-    const {
-  return formatter_.get();
-}
 
 std::set<APIPermission::ID> ChromePermissionMessageRule::all_permissions()
     const {
   return base::STLSetUnion<std::set<APIPermission::ID>>(required_permissions(),
                                                         optional_permissions());
+}
+
+CoalescedPermissionMessage ChromePermissionMessageRule::GetPermissionMessage(
+    const PermissionIDSet& permissions) const {
+  return formatter_->GetPermissionMessage(permissions);
 }
 
 // static
@@ -609,11 +618,8 @@ ChromePermissionMessageRule::GetAllRules() {
       {IDS_EXTENSION_PROMPT_WARNING_FAVICON, {APIPermission::kFavicon}, {}},
   };
 
-  std::vector<ChromePermissionMessageRule> rules;
-  for (size_t i = 0; i < arraysize(rules_arr); i++) {
-    rules.push_back(rules_arr[i]);
-  }
-  return rules;
+  return std::vector<ChromePermissionMessageRule>(
+      rules_arr, rules_arr + arraysize(rules_arr));
 }
 
 ChromePermissionMessageRule::PermissionIDSetInitializer::

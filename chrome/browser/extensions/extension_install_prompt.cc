@@ -52,8 +52,8 @@
 using extensions::BundleInstaller;
 using extensions::Extension;
 using extensions::Manifest;
-using extensions::PermissionMessageString;
-using extensions::PermissionMessageStrings;
+using extensions::CoalescedPermissionMessage;
+using extensions::CoalescedPermissionMessages;
 using extensions::PermissionSet;
 
 namespace {
@@ -246,7 +246,7 @@ ExtensionInstallPrompt::Prompt::~Prompt() {
 }
 
 void ExtensionInstallPrompt::Prompt::SetPermissions(
-    const PermissionMessageStrings& permissions,
+    const CoalescedPermissionMessages& permissions,
     PermissionsType permissions_type) {
   InstallPromptPermissions& install_permissions =
       GetPermissionsForType(permissions_type);
@@ -255,13 +255,13 @@ void ExtensionInstallPrompt::Prompt::SetPermissions(
   install_permissions.details.clear();
   install_permissions.is_showing_details.clear();
 
-  for (const PermissionMessageString& str : permissions) {
-    install_permissions.permissions.push_back(str.message);
+  for (const CoalescedPermissionMessage& msg : permissions) {
+    install_permissions.permissions.push_back(msg.message());
     // Add a dash to the front of each permission detail.
     base::string16 details;
-    if (!str.submessages.empty()) {
+    if (!msg.submessages().empty()) {
       std::vector<base::string16> detail_lines_with_bullets;
-      for (const auto& detail_line : str.submessages) {
+      for (const auto& detail_line : msg.submessages()) {
         detail_lines_with_bullets.push_back(base::ASCIIToUTF16("- ") +
                                             detail_line);
       }
@@ -884,8 +884,9 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     const extensions::PermissionMessageProvider* message_provider =
         extensions::PermissionMessageProvider::Get();
 
-    prompt_->SetPermissions(message_provider->GetPermissionMessageStrings(
-                                permissions_to_display.get(), type),
+    prompt_->SetPermissions(message_provider->GetPermissionMessages(
+                                message_provider->GetAllPermissionIDs(
+                                    permissions_to_display.get(), type)),
                             REGULAR_PERMISSIONS);
 
     scoped_refptr<const extensions::PermissionSet> withheld =
@@ -893,8 +894,9 @@ void ExtensionInstallPrompt::ShowConfirmation() {
                    : nullptr;
     if (withheld && !withheld->IsEmpty()) {
       prompt_->SetPermissions(
-          message_provider->GetPermissionMessageStrings(withheld.get(), type),
-          PermissionsType::WITHHELD_PERMISSIONS);
+          message_provider->GetPermissionMessages(
+              message_provider->GetAllPermissionIDs(withheld.get(), type)),
+          WITHHELD_PERMISSIONS);
     }
   }
 

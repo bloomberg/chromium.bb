@@ -13,7 +13,7 @@ TestPermissionMessageProvider::~TestPermissionMessageProvider() {
 }
 
 CoalescedPermissionMessages
-TestPermissionMessageProvider::GetCoalescedPermissionMessages(
+TestPermissionMessageProvider::GetPermissionMessages(
     const PermissionIDSet& permissions) const {
   return CoalescedPermissionMessages();
 }

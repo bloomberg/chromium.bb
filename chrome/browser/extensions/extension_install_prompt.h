@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "extensions/common/permissions/permission_message_provider.h"
+#include "extensions/common/permissions/coalesced_permission_message.h"
 #include "extensions/common/url_pattern.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
@@ -102,8 +102,9 @@ class ExtensionInstallPrompt
    public:
     explicit Prompt(PromptType type);
 
-    void SetPermissions(const extensions::PermissionMessageStrings& permissions,
-                        PermissionsType permissions_type);
+    void SetPermissions(
+        const extensions::CoalescedPermissionMessages& permissions,
+        PermissionsType permissions_type);
     void SetIsShowingDetails(DetailsType type,
                              size_t index,
                              bool is_showing_details);

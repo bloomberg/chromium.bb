@@ -229,9 +229,9 @@ void AppInfoPermissionsPanel::CreatePermissionsList() {
 
   // Add regular and host permission messages.
   for (const auto& message : GetActivePermissionMessages()) {
-    permissions_list->AddPermissionBullets(
-        message.message, message.submessages, gfx::ELIDE_MIDDLE,
-        base::Closure());
+    permissions_list->AddPermissionBullets(message.message(),
+                                           message.submessages(),
+                                           gfx::ELIDE_MIDDLE, base::Closure());
   }
 
   // Add USB devices, if the app has any.
@@ -261,9 +261,9 @@ bool AppInfoPermissionsPanel::HasActivePermissionMessages() const {
   return !GetActivePermissionMessages().empty();
 }
 
-extensions::PermissionMessageStrings
+extensions::CoalescedPermissionMessages
 AppInfoPermissionsPanel::GetActivePermissionMessages() const {
-  return app_->permissions_data()->GetPermissionMessageStrings();
+  return app_->permissions_data()->GetPermissionMessages();
 }
 
 int AppInfoPermissionsPanel::GetRetainedFileCount() const {

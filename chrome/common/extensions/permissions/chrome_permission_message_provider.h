@@ -26,7 +26,7 @@ class ChromePermissionMessageProvider : public PermissionMessageProvider {
   ~ChromePermissionMessageProvider() override;
 
   // PermissionMessageProvider implementation.
-  CoalescedPermissionMessages GetCoalescedPermissionMessages(
+  CoalescedPermissionMessages GetPermissionMessages(
       const PermissionIDSet& permissions) const override;
   bool IsPrivilegeIncrease(const PermissionSet* old_permissions,
                            const PermissionSet* new_permissions,

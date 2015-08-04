@@ -194,16 +194,8 @@ bool PermissionsData::HasEffectiveAccessToAllHosts() const {
   return active_permissions()->HasEffectiveAccessToAllHosts();
 }
 
-PermissionMessageStrings PermissionsData::GetPermissionMessageStrings() const {
-  if (ShouldSkipPermissionWarnings(extension_id_))
-    return PermissionMessageStrings();
-  return PermissionMessageProvider::Get()->GetPermissionMessageStrings(
-      active_permissions().get(), manifest_type_);
-}
-
-CoalescedPermissionMessages PermissionsData::GetCoalescedPermissionMessages()
-    const {
-  return PermissionMessageProvider::Get()->GetCoalescedPermissionMessages(
+CoalescedPermissionMessages PermissionsData::GetPermissionMessages() const {
+  return PermissionMessageProvider::Get()->GetPermissionMessages(
       PermissionMessageProvider::Get()->GetAllPermissionIDs(
           active_permissions().get(), manifest_type_));
 }

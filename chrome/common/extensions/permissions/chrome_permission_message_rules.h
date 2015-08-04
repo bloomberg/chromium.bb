@@ -31,10 +31,10 @@ class ChromePermissionMessageFormatter {
   // |permissions| is guaranteed to have the IDs specified by the
   // required/optional permissions for the rule. The set will never be empty.
   virtual CoalescedPermissionMessage GetPermissionMessage(
-      PermissionIDSet permissions) const = 0;
+      const PermissionIDSet& permissions) const = 0;
 
  private:
-  // DISALLOW_COPY_AND_ASSIGN(ChromePermissionMessageFormatter);
+  DISALLOW_COPY_AND_ASSIGN(ChromePermissionMessageFormatter);
 };
 
 // A simple rule to generate a coalesced permission message that stores the
@@ -100,7 +100,9 @@ class ChromePermissionMessageRule {
   std::set<APIPermission::ID> required_permissions() const;
   std::set<APIPermission::ID> optional_permissions() const;
   std::set<APIPermission::ID> all_permissions() const;
-  ChromePermissionMessageFormatter* formatter() const;
+
+  CoalescedPermissionMessage GetPermissionMessage(
+      const PermissionIDSet& permissions) const;
 
  private:
   std::set<APIPermission::ID> required_permissions_;

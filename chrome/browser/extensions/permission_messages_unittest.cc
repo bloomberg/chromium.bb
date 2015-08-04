@@ -112,10 +112,11 @@ class PermissionMessagesUnittest : public testing::Test {
   std::vector<base::string16> GetMessages(
       scoped_refptr<const PermissionSet> permissions) {
     std::vector<base::string16> messages;
-    for (const PermissionMessageString& str :
-         message_provider_->GetPermissionMessageStrings(permissions.get(),
-                                                        app_->GetType())) {
-      messages.push_back(str.message);
+    for (const CoalescedPermissionMessage& msg :
+         message_provider_->GetPermissionMessages(
+             message_provider_->GetAllPermissionIDs(permissions.get(),
+                                                    app_->GetType()))) {
+      messages.push_back(msg.message());
     }
     return messages;
   }

@@ -42,7 +42,7 @@ class ShellPermissionMessageProvider : public PermissionMessageProvider {
   ~ShellPermissionMessageProvider() override {}
 
   // PermissionMessageProvider implementation.
-  CoalescedPermissionMessages GetCoalescedPermissionMessages(
+  CoalescedPermissionMessages GetPermissionMessages(
       const PermissionIDSet& permissions) const override {
     return CoalescedPermissionMessages();
   }

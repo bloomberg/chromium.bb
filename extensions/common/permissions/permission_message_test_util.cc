@@ -17,15 +17,11 @@ namespace extensions {
 
 namespace {
 
-PermissionMessageStrings GetNewMessages(
-    const PermissionsData* permissions_data) {
-  return permissions_data->GetPermissionMessageStrings();
-}
-
-PermissionMessageStrings GetNewMessages(const PermissionSet* permissions,
+CoalescedPermissionMessages GetMessages(const PermissionSet* permissions,
                                         Manifest::Type extension_type) {
-  return PermissionMessageProvider::Get()->GetPermissionMessageStrings(
-      permissions, extension_type);
+  const PermissionMessageProvider* provider = PermissionMessageProvider::Get();
+  return provider->GetPermissionMessages(
+      provider->GetAllPermissionIDs(permissions, extension_type));
 }
 
 std::vector<base::string16> MakeVectorString16(const base::string16& str) {
@@ -77,21 +73,20 @@ base::string16 MessagesVectorToString(
          base::ASCIIToUTF16("\"\n");
 }
 
-base::string16 MessagesToString(const PermissionMessageStrings& messages) {
+base::string16 MessagesToString(const CoalescedPermissionMessages& messages) {
   std::vector<base::string16> messages_vec;
-  for (const PermissionMessageString& msg : messages)
-    messages_vec.push_back(msg.message);
+  for (const CoalescedPermissionMessage& msg : messages)
+    messages_vec.push_back(msg.message());
   return MessagesVectorToString(messages_vec);
 }
 
 bool CheckThatSubmessagesMatch(
-    const PermissionMessageString& expected_message,
+    const base::string16& message,
+    const std::vector<base::string16>& expected_submessages,
     const std::vector<base::string16>& actual_submessages) {
   bool result = true;
 
-  std::vector<base::string16> expected_sorted;
-  for (const base::string16& submessage : expected_message.submessages)
-    expected_sorted.push_back(submessage);
+  std::vector<base::string16> expected_sorted(expected_submessages);
   std::sort(expected_sorted.begin(), expected_sorted.end());
 
   std::vector<base::string16> actual_sorted(actual_submessages);
@@ -100,9 +95,9 @@ bool CheckThatSubmessagesMatch(
     // This is always a failure, even within an EXPECT_FALSE.
     // Message: Expected submessages for "Message" to be { "Foo" }, but got
     // { "Bar", "Baz" }
-    ADD_FAILURE() << "Expected submessages for \"" << expected_message.message
-                  << "\" to be:\n" << MessagesVectorToString(expected_sorted)
-                  << "But got:\n" << MessagesVectorToString(actual_sorted);
+    ADD_FAILURE() << "Expected submessages for \"" << message << "\" to be:\n"
+                  << MessagesVectorToString(expected_sorted) << "But got:\n"
+                  << MessagesVectorToString(actual_sorted);
     result = false;
   }
 
@@ -110,65 +105,70 @@ bool CheckThatSubmessagesMatch(
 }
 
 testing::AssertionResult VerifyHasPermissionMessageImpl(
-    const PermissionMessageString& expected_message,
-    const PermissionMessageStrings& actual_messages) {
+    const base::string16& expected_message,
+    const std::vector<base::string16>& expected_submessages,
+    const CoalescedPermissionMessages& actual_messages) {
   auto message_it =
       std::find_if(actual_messages.begin(), actual_messages.end(),
-                   [&expected_message](const PermissionMessageString& msg) {
-                     return msg.message == expected_message.message;
+                   [&expected_message](const CoalescedPermissionMessage& msg) {
+                     return msg.message() == expected_message;
                    });
   bool found = message_it != actual_messages.end();
   if (!found) {
     // Message: Expected messages to contain "Foo", but got { "Bar", "Baz" }
     return testing::AssertionFailure() << "Expected messages to contain \""
-                                       << expected_message.message
-                                       << "\", but got "
+                                       << expected_message << "\", but got "
                                        << MessagesToString(actual_messages);
   }
 
-  if (!CheckThatSubmessagesMatch(expected_message, message_it->submessages)) {
+  if (!CheckThatSubmessagesMatch(expected_message, expected_submessages,
+                                 message_it->submessages())) {
     return testing::AssertionFailure();
   }
 
   // Message: Expected messages NOT to contain "Foo", but got { "Bar", "Baz" }
   return testing::AssertionSuccess() << "Expected messages NOT to contain \""
-                                     << expected_message.message
-                                     << "\", but got "
+                                     << expected_message << "\", but got "
                                      << MessagesToString(actual_messages);
 }
 
 testing::AssertionResult VerifyPermissionMessagesWithSubmessagesImpl(
-    const PermissionMessageStrings& expected_messages,
-    const PermissionMessageStrings& actual_messages,
+    const std::vector<base::string16>& expected_messages,
+    const std::vector<std::vector<base::string16>>& expected_submessages,
+    const CoalescedPermissionMessages& actual_messages,
     bool check_order) {
+  CHECK_EQ(expected_messages.size(), expected_submessages.size());
   if (expected_messages.size() != actual_messages.size()) {
     // Message: Expected 2 messages { "Bar", "Baz" }, but got 0 {}
     return testing::AssertionFailure()
            << "Expected " << expected_messages.size() << " messages:\n"
-           << MessagesToString(expected_messages) << "But got "
+           << MessagesVectorToString(expected_messages) << "But got "
            << actual_messages.size() << " messages:\n"
            << MessagesToString(actual_messages);
   }
 
   if (check_order) {
-    for (size_t i = 0; i < expected_messages.size(); i++) {
-      if (expected_messages[i].message != actual_messages[i].message) {
+    auto it = actual_messages.begin();
+    for (size_t i = 0; i < expected_messages.size(); i++, ++it) {
+      const CoalescedPermissionMessage& actual_message = *it;
+      if (expected_messages[i] != actual_message.message()) {
         // Message: Expected messages to be { "Foo" }, but got { "Bar", "Baz" }
         return testing::AssertionFailure()
                << "Expected messages to be:\n"
-               << MessagesToString(expected_messages) << "But got:\n"
+               << MessagesVectorToString(expected_messages) << "But got:\n"
                << MessagesToString(actual_messages);
       }
 
       if (!CheckThatSubmessagesMatch(expected_messages[i],
-                                     actual_messages[i].submessages)) {
+                                     expected_submessages[i],
+                                     actual_message.submessages())) {
         return testing::AssertionFailure();
       }
     }
   } else {
     for (size_t i = 0; i < expected_messages.size(); i++) {
-      testing::AssertionResult result =
-          VerifyHasPermissionMessageImpl(expected_messages[i], actual_messages);
+      testing::AssertionResult result = VerifyHasPermissionMessageImpl(
+          expected_messages[i], expected_submessages[i], actual_messages);
       if (!result)
         return result;
     }
@@ -189,8 +189,8 @@ testing::AssertionResult VerifyHasPermissionMessage(
     const PermissionsData* permissions_data,
     const base::string16& expected_message) {
   return VerifyHasPermissionMessageImpl(
-      PermissionMessageString(expected_message),
-      GetNewMessages(permissions_data));
+      expected_message, std::vector<base::string16>(),
+      permissions_data->GetPermissionMessages());
 }
 
 testing::AssertionResult VerifyHasPermissionMessage(
@@ -206,8 +206,8 @@ testing::AssertionResult VerifyHasPermissionMessage(
     Manifest::Type extension_type,
     const base::string16& expected_message) {
   return VerifyHasPermissionMessageImpl(
-      PermissionMessageString(expected_message),
-      GetNewMessages(permissions, extension_type));
+      expected_message, std::vector<base::string16>(),
+      GetMessages(permissions, extension_type));
 }
 
 testing::AssertionResult VerifyNoPermissionMessages(
@@ -235,8 +235,9 @@ testing::AssertionResult VerifyOnePermissionMessage(
     Manifest::Type extension_type,
     const base::string16& expected_message) {
   return VerifyPermissionMessagesWithSubmessagesImpl(
-      PermissionMessageStrings(1, PermissionMessageString(expected_message)),
-      GetNewMessages(permissions, extension_type), true);
+      MakeVectorString16(expected_message),
+      std::vector<std::vector<base::string16>>(1),
+      GetMessages(permissions, extension_type), true);
 }
 
 testing::AssertionResult VerifyOnePermissionMessageWithSubmessages(
@@ -311,13 +312,9 @@ testing::AssertionResult VerifyPermissionMessagesWithSubmessages(
     const std::vector<std::vector<base::string16>>& expected_submessages,
     bool check_order) {
   CHECK_EQ(expected_messages.size(), expected_submessages.size());
-  PermissionMessageStrings expected;
-  for (size_t i = 0; i < expected_messages.size(); i++) {
-    expected.push_back(PermissionMessageString(expected_messages[i],
-                                               expected_submessages[i]));
-  }
   return VerifyPermissionMessagesWithSubmessagesImpl(
-      expected, GetNewMessages(permissions_data), check_order);
+      expected_messages, expected_submessages,
+      permissions_data->GetPermissionMessages(), check_order);
 }
 
 }  // namespace extensions

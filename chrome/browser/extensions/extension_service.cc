@@ -116,8 +116,6 @@ using extensions::ManagementPolicy;
 using extensions::Manifest;
 using extensions::PermissionID;
 using extensions::PermissionIDSet;
-using extensions::PermissionMessage;
-using extensions::PermissionMessageIDs;
 using extensions::PermissionSet;
 using extensions::SharedModuleInfo;
 using extensions::SharedModuleService;

@@ -7,6 +7,7 @@
 
 #include <list>
 #include <string>
+#include <vector>
 
 #include "extensions/common/permissions/api_permission_set.h"
 
@@ -59,8 +60,8 @@ class CoalescedPermissionMessage {
   const std::vector<base::string16> submessages_;
 };
 
-// Use a linked list to store our list of messages, since we will commonly be
-// iterating/removing elements but should never be accessing by index.
+// TODO(treib): Make this an std::vector when we have C++11 library support on
+// all platforms. (In C++03, std::vector's elements must be copy-assignable...)
 typedef std::list<CoalescedPermissionMessage> CoalescedPermissionMessages;
 
 }  // namespace extensions
