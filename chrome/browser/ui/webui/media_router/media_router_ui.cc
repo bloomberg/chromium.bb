@@ -163,6 +163,7 @@ void MediaRouterUI::InitWithDefaultMediaSource(
 
 void MediaRouterUI::InitWithPresentationSessionRequest(
     content::WebContents* initiator,
+    const base::WeakPtr<PresentationServiceDelegateImpl>& delegate,
     scoped_ptr<CreatePresentationSessionRequest> presentation_request) {
   DCHECK(initiator);
   DCHECK(presentation_request);
@@ -170,6 +171,7 @@ void MediaRouterUI::InitWithPresentationSessionRequest(
   DCHECK(!query_result_manager_);
 
   presentation_request_ = presentation_request.Pass();
+  presentation_service_delegate_ = delegate;
   InitCommon(initiator, presentation_request_->GetMediaSource(),
              presentation_request_->frame_url());
 }
@@ -333,7 +335,9 @@ bool MediaRouterUI::DoCreateRoute(const MediaSink::Id& sink_id,
   // answered with the
   // route response.
   // (3) Browser-initiated presentation route request. If successful,
-  // PresentationServiceDelegateImpl will have to be notified.
+  // PresentationServiceDelegateImpl will have to be notified. Note that we
+  // treat subsequent route requests from a Presentation API-initiated dialogs
+  // as browser-initiated.
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(base::Bind(
       &MediaRouterUI::OnRouteResponseReceived, weak_factory_.GetWeakPtr()));

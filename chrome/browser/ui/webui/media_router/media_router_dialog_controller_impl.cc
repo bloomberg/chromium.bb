@@ -262,16 +262,16 @@ void MediaRouterDialogControllerImpl::PopulateDialog(
 
   scoped_ptr<CreatePresentationSessionRequest> presentation_request(
       PassPresentationRequest());
+  // TODO(imcheng): Don't create PresentationServiceDelegateImpl if it doesn't
+  // exist (crbug.com/508695).
+  base::WeakPtr<PresentationServiceDelegateImpl> delegate =
+      PresentationServiceDelegateImpl::GetOrCreateForWebContents(initiator())
+          ->GetWeakPtr();
   if (!presentation_request.get()) {
-    // TODO(imcheng): Don't create PresentationServiceDelegateImpl if it doesn't
-    // exist (crbug.com/508695).
-    base::WeakPtr<PresentationServiceDelegateImpl> delegate =
-        PresentationServiceDelegateImpl::GetOrCreateForWebContents(initiator())
-            ->GetWeakPtr();
     media_router_ui->InitWithDefaultMediaSource(delegate);
   } else {
     media_router_ui->InitWithPresentationSessionRequest(
-        initiator(), presentation_request.Pass());
+        initiator(), delegate, presentation_request.Pass());
   }
 }
 

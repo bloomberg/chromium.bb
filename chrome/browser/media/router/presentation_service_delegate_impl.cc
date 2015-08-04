@@ -567,12 +567,8 @@ void PresentationServiceDelegateImpl::StartSession(
                      weak_factory_.GetWeakPtr(), render_process_id,
                      render_frame_id, success_cb),
           error_cb));
-  // NOTE: Currently this request is ignored if a dialog is already open, e.g.
-  // via browser action. In practice, this should rarely happen, but log
-  // an error message in case it does.
   MediaRouterDialogController* controller =
       MediaRouterDialogController::GetOrCreateForWebContents(web_contents_);
-
   if (!controller->ShowMediaRouterDialogForPresentation(context.Pass())) {
     LOG(ERROR) << "Media router dialog already exists. Ignoring StartSession.";
     error_cb.Run(content::PresentationError(content::PRESENTATION_ERROR_UNKNOWN,

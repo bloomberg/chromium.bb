@@ -71,10 +71,13 @@ class MediaRouterUI
   // Init* methods can only be called once.
   // |initiator|: Reference to the WebContents that initiated the dialog.
   //              Must not be null.
+  // |delegate|: PresentationServiceDelegateImpl of the initiator tab.
+  //             Must not be null.
   // |presentation_request|: The presentation request. This instance will take
   //                         ownership of it. Must not be null.
   void InitWithPresentationSessionRequest(
       content::WebContents* initiator,
+      const base::WeakPtr<PresentationServiceDelegateImpl>& delegate,
       scoped_ptr<CreatePresentationSessionRequest> presentation_request);
 
   // Closes the media router UI.
