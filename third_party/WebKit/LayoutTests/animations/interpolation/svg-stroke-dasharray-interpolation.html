@@ -1,10 +1,17 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.container {
+  display: inline-block;
+}
+.parent {
+  stroke-dasharray: 30 10;
+}
 .target {
   font-size: 16px;
-  stroke-width: 10px;
   stroke: black;
+  stroke-width: 10px;
+  stroke-dasharray: 10 30;
 }
 .expected {
   stroke: green;
@@ -12,12 +19,80 @@
 </style>
 <body>
 <template id="target-template">
-  <svg height="200" width="10">
-    <path d="M5,0 l0,400" class="target">
+  <svg height="400" width="5">
+    <path d="M0,0 l0,400" class="target">
   </svg>
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'stroke-dasharray',
+  from: '',
+  to: '20 20',
+}, [
+  {at: -0.6, is: '4px, 36px'},
+  {at: -0.4, is: '6px, 34px'},
+  {at: -0.2, is: '8px, 32px'},
+  {at: 0, is: '10px, 30px'},
+  {at: 0.2, is: '12px, 28px'},
+  {at: 0.4, is: '14px, 26px'},
+  {at: 0.6, is: '16px, 24px'},
+  {at: 0.8, is: '18px, 22px'},
+  {at: 1, is: '20px, 20px'},
+  {at: 1.2, is: '22px, 18px'},
+]);
+
+assertInterpolation({
+  property: 'stroke-dasharray',
+  from: 'initial',
+  to: '20 20',
+}, [
+  {at: -0.6, is: '0px, 0px'},
+  {at: -0.4, is: '0px, 0px'},
+  {at: -0.2, is: '0px, 0px'},
+  {at: 0, is: 'none'},
+  {at: 0.2, is: '4px, 4px'},
+  {at: 0.4, is: '8px, 8px'},
+  {at: 0.6, is: '12px, 12px'},
+  {at: 0.8, is: '16px, 16px'},
+  {at: 1, is: '20px, 20px'},
+  {at: 1.2, is: '24px, 24px'},
+]);
+
+assertInterpolation({
+  property: 'stroke-dasharray',
+  from: 'inherit',
+  to: '20 20',
+}, [
+  {at: -0.6, is: '36px, 4px'},
+  {at: -0.4, is: '34px, 6px'},
+  {at: -0.2, is: '32px, 8px'},
+  {at: 0, is: '30px, 10px'},
+  {at: 0.2, is: '28px, 12px'},
+  {at: 0.4, is: '26px, 14px'},
+  {at: 0.6, is: '24px, 16px'},
+  {at: 0.8, is: '22px, 18px'},
+  {at: 1, is: '20px, 20px'},
+  {at: 1.2, is: '18px, 22px'},
+]);
+
+assertInterpolation({
+  property: 'stroke-dasharray',
+  from: 'unset',
+  to: '20 20',
+}, [
+  {at: -0.6, is: '36px, 4px'},
+  {at: -0.4, is: '34px, 6px'},
+  {at: -0.2, is: '32px, 8px'},
+  {at: 0, is: '30px, 10px'},
+  {at: 0.2, is: '28px, 12px'},
+  {at: 0.4, is: '26px, 14px'},
+  {at: 0.6, is: '24px, 16px'},
+  {at: 0.8, is: '22px, 18px'},
+  {at: 1, is: '20px, 20px'},
+  {at: 1.2, is: '18px, 22px'},
+]);
+
 // Basic case
 assertInterpolation({
   property: 'stroke-dasharray',

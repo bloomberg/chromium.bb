@@ -1,9 +1,55 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
+<style>
+.parent {
+  shape-outside: circle(80% at 30% 10%);
+}
+.target {
+  shape-outside: circle(60% at 10% 30%);
+}
+</style>
 <body>
 <script src="resources/interpolation-test.js"></script>
 <script>
 /* TODO: add inset test once blend() works for it */
+
+assertInterpolation({
+  property: 'shape-outside',
+  from: '',
+  to: 'circle(40% at 20% 20%)',
+}, [
+  {at: -0.3, is: 'circle(66% at 7% 33%)'},
+  {at: 0, is: 'circle(60% at 10% 30%)'},
+  {at: 0.3, is: 'circle(54% at 13% 27%)'},
+  {at: 0.6, is: 'circle(48% at 16% 24%)'},
+  {at: 1, is: 'circle(40% at 20% 20%)'},
+  {at: 1.5, is: 'circle(30% at 25% 15%)'},
+]);
+
+assertNoInterpolation({
+  property: 'shape-outside',
+  from: 'initial',
+  to: 'circle(40% at 20% 20%)',
+});
+
+assertInterpolation({
+  property: 'shape-outside',
+  from: 'inherit',
+  to: 'circle(40% at 20% 20%)',
+}, [
+  {at: -0.3, is: 'circle(92% at 33% 7%)'},
+  {at: 0, is: 'circle(80% at 30% 10%)'},
+  {at: 0.3, is: 'circle(68% at 27% 13%)'},
+  {at: 0.6, is: 'circle(56% at 24% 16%)'},
+  {at: 1, is: 'circle(40% at 20% 20%)'},
+  {at: 1.5, is: 'circle(20% at 15% 25%)'},
+]);
+
+assertNoInterpolation({
+  property: 'shape-outside',
+  from: 'unset',
+  to: 'circle(40% at 20% 20%)',
+});
 
 assertInterpolation({
   property: 'shape-outside',

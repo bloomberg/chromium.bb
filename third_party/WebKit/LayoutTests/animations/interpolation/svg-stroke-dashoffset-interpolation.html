@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
-svg {
-  stroke-dashoffset: 100px;
+.container {
+  display: inline-block;
+}
+.parent {
+  stroke-dashoffset: 80px;
 }
 .target {
+  font-size: 16px;
   stroke: black;
   stroke-width: 10px;
-  font-size: 16px;
+  stroke-dashoffset: 20px;
 }
 .expected {
   stroke: green;
@@ -15,12 +19,68 @@ svg {
 </style>
 <body>
 <template id="target-template">
-  <svg height="200" width="10">
-    <path d="M5,0 l0,200" stroke-dasharray="15,15" class="target">
+  <svg height="200" width="5">
+    <path d="M0,0 l0,200" stroke-dasharray="10,20" class="target">
   </svg>
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'stroke-dashoffset',
+  from: '',
+  to: '40px',
+}, [
+  {at: -0.25, is: '15px'},
+  {at: 0, is: '20px'},
+  {at: 0.25, is: '25px'},
+  {at: 0.5, is: '30px'},
+  {at: 0.75, is: '35px'},
+  {at: 1, is: '40px'},
+  {at: 1.25, is: '45px'},
+]);
+
+assertInterpolation({
+  property: 'stroke-dashoffset',
+  from: 'initial',
+  to: '40px',
+}, [
+  {at: -0.25, is: '-10px'},
+  {at: 0, is: '0px'},
+  {at: 0.25, is: '10px'},
+  {at: 0.5, is: '20px'},
+  {at: 0.75, is: '30px'},
+  {at: 1, is: '40px'},
+  {at: 1.25, is: '50px'},
+]);
+
+assertInterpolation({
+  property: 'stroke-dashoffset',
+  from: 'inherit',
+  to: '40px',
+}, [
+  {at: -0.25, is: '90px'},
+  {at: 0, is: '80px'},
+  {at: 0.25, is: '70px'},
+  {at: 0.5, is: '60px'},
+  {at: 0.75, is: '50px'},
+  {at: 1, is: '40px'},
+  {at: 1.25, is: '30px'},
+]);
+
+assertInterpolation({
+  property: 'stroke-dashoffset',
+  from: 'unset',
+  to: '40px',
+}, [
+  {at: -0.25, is: '90px'},
+  {at: 0, is: '80px'},
+  {at: 0.25, is: '70px'},
+  {at: 0.5, is: '60px'},
+  {at: 0.75, is: '50px'},
+  {at: 1, is: '40px'},
+  {at: 1.25, is: '30px'},
+]);
+
 assertInterpolation({
   property: 'stroke-dashoffset',
   from: '-10px',
@@ -34,6 +94,7 @@ assertInterpolation({
   {at: 1, is: '10px'},
   {at: 1.25, is: '15px'},
 ]);
+
 assertInterpolation({
   property: 'stroke-dashoffset',
   from: '-20px',
@@ -47,19 +108,7 @@ assertInterpolation({
   {at: 1, is: '30em'},
   {at: 1.25, is: '605px'},
 ]);
-assertInterpolation({
-  property: 'stroke-dashoffset',
-  from: 'inherit',
-  to: '140px'
-}, [
-  {at: -0.25, is: '90px'},
-  {at: 0, is: '100px'},
-  {at: 0.25, is: '110px'},
-  {at: 0.5, is: '120px'},
-  {at: 0.75, is: '130px'},
-  {at: 1, is: '140px'},
-  {at: 1.25, is: '150px'},
-]);
+
 assertInterpolation({
   property: 'stroke-dashoffset',
   from: '-10',

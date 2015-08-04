@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.parent {
+  motion-rotation: 30deg;
+}
 .target {
   width: 80px;
   height: 80px;
   display: inline-block;
   background-color: black;
   margin-right: 5px;
+  motion-rotation: 10deg;
 }
 .expected {
   background-color: green;
@@ -16,6 +20,44 @@
 <body>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'motion-rotation',
+  from: '',
+  to: '20deg',
+}, [
+  {at: -0.3, is: '7deg'},
+  {at: 0, is: '10deg'},
+  {at: 0.3, is: '13deg'},
+  {at: 0.6, is: '16deg'},
+  {at: 1, is: '20deg'},
+  {at: 1.5, is: '25deg'},
+]);
+
+assertNoInterpolation({
+  property: 'motion-rotation',
+  from: 'initial',
+  to: '20deg',
+});
+
+assertInterpolation({
+  property: 'motion-rotation',
+  from: 'inherit',
+  to: '20deg',
+}, [
+  {at: -0.3, is: '33deg'},
+  {at: 0, is: '30deg'},
+  {at: 0.3, is: '27deg'},
+  {at: 0.6, is: '24deg'},
+  {at: 1, is: '20deg'},
+  {at: 1.5, is: '15deg'},
+]);
+
+assertNoInterpolation({
+  property: 'motion-rotation',
+  from: 'unset',
+  to: '20deg',
+});
+
 assertInterpolation({
   property: 'motion-rotation',
   from: '10deg',

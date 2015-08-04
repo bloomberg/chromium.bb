@@ -1,23 +1,80 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.container {
+  margin-bottom: -4px;
+}
+.parent {
+  rx: 30px;
+}
 .target {
-  stroke: black;
-  fill: white;
-  rx: 5px;
+  fill: black;
+  rx: 10px;
 }
 .expected {
-  stroke: green;
+  fill: green;
 }
 </style>
 <body>
 <template id="target-template">
-  <svg width="70" height="70">
-    <rect x="10" y="10" width="50" height="50" rx="10" class="target"/>
+  <svg width="400" height="20">
+    <rect x="0" y="0" width="400" height="20" ry="10" class="target"/>
   </svg>
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'rx',
+  from: '',
+  to: '20px',
+}, [
+  {at: -0.3, is: '7px'},
+  {at: 0, is: '10px'},
+  {at: 0.3, is: '13px'},
+  {at: 0.6, is: '16px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '25px'},
+]);
+
+assertInterpolation({
+  property: 'rx',
+  from: 'initial',
+  to: '20px',
+}, [
+  {at: -0.3, is: '0px'},
+  {at: 0, is: '0px'},
+  {at: 0.3, is: '6px'},
+  {at: 0.6, is: '12px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '30px'},
+]);
+
+assertInterpolation({
+  property: 'rx',
+  from: 'inherit',
+  to: '20px',
+}, [
+  {at: -0.3, is: '33px'},
+  {at: 0, is: '30px'},
+  {at: 0.3, is: '27px'},
+  {at: 0.6, is: '24px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '15px'},
+]);
+
+assertInterpolation({
+  property: 'rx',
+  from: 'unset',
+  to: '20px',
+}, [
+  {at: -0.3, is: '0px'},
+  {at: 0, is: '0px'},
+  {at: 0.3, is: '6px'},
+  {at: 0.6, is: '12px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '30px'},
+]);
+
 assertInterpolation({
   property: 'rx',
   from: '0px',

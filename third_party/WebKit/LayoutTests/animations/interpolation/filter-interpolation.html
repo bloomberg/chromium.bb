@@ -1,32 +1,85 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.parent {
+  -webkit-filter: hue-rotate(30deg);
+}
 .target {
+  display: inline-block;
   width: 50px;
   height: 50px;
-  background-color: lightskyblue;
+  background-color: green;
   color: white;
+  margin-right: 2px;
+  -webkit-filter: hue-rotate(10deg);
 }
-.container {
-  border: solid black 5px;
-  background: white;
-  display: inline-block;
-  -webkit-filter: sepia(0.5);
-}
-.container:nth-child(2n) {
-  border-color: green;
+.expected {
+  margin-right: 20px;
 }
 .test {
   padding-bottom: 10px;
 }
 </style>
 <body>
-<svg style="display:none"><filter id="svgfilter"><feGaussianBlur stdDeviation="5"></feGaussianBlur></filter></svg>
-<template id="target-template">
-<div class="container"><div class="target"></div></div>
-</template>
+<svg style="display:none">
+  <filter id="svgfilter">
+    <feGaussianBlur stdDeviation="5"></feGaussianBlur>
+  </filter>
+</svg>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: '-webkit-filter',
+  from: '',
+  to: 'hue-rotate(20deg)',
+}, [
+  {at: -0.5, is: 'hue-rotate(5deg)'},
+  {at: 0, is: 'hue-rotate(10deg)'},
+  {at: 0.3, is: 'hue-rotate(13deg)'},
+  {at: 0.6, is: 'hue-rotate(16deg)'},
+  {at: 1, is: 'hue-rotate(20deg)'},
+  {at: 1.5, is: 'hue-rotate(25deg)'},
+]);
+
+assertInterpolation({
+  property: '-webkit-filter',
+  from: 'initial',
+  to: 'hue-rotate(20deg)',
+}, [
+  {at: -0.5, is: 'hue-rotate(-10deg)'},
+  {at: 0, is: 'none'},
+  {at: 0.3, is: 'hue-rotate(6deg)'},
+  {at: 0.6, is: 'hue-rotate(12deg)'},
+  {at: 1, is: 'hue-rotate(20deg)'},
+  {at: 1.5, is: 'hue-rotate(30deg)'},
+]);
+
+assertInterpolation({
+  property: '-webkit-filter',
+  from: 'inherit',
+  to: 'hue-rotate(20deg)',
+}, [
+  {at: -0.5, is: 'hue-rotate(35deg)'},
+  {at: 0, is: 'hue-rotate(30deg)'},
+  {at: 0.3, is: 'hue-rotate(27deg)'},
+  {at: 0.6, is: 'hue-rotate(24deg)'},
+  {at: 1, is: 'hue-rotate(20deg)'},
+  {at: 1.5, is: 'hue-rotate(15deg)'},
+]);
+
+assertInterpolation({
+  property: '-webkit-filter',
+  from: 'unset',
+  to: 'hue-rotate(20deg)',
+}, [
+  {at: -0.5, is: 'hue-rotate(-10deg)'},
+  {at: 0, is: 'none'},
+  {at: 0.3, is: 'hue-rotate(6deg)'},
+  {at: 0.6, is: 'hue-rotate(12deg)'},
+  {at: 1, is: 'hue-rotate(20deg)'},
+  {at: 1.5, is: 'hue-rotate(30deg)'},
+]);
+
 // Matching lists:
 assertInterpolation({
   property: '-webkit-filter',
@@ -255,18 +308,6 @@ assertInterpolation({
   {at: -1, is: 'sepia(0)'}, // Negative values are not allowed.
   {at: 0, is: 'none'}, // Equivalent to sepia(0)
   {at: 0.5, is: 'sepia(0.5)'},
-  {at: 1, is: 'sepia(1)'},
-  {at: 1.5, is: 'sepia(1)'} // Should clamp values to 1.
-]);
-
-assertInterpolation({
-  property: '-webkit-filter',
-  from: 'inherit',
-  to: 'sepia(1)'
-}, [
-  {at: -1, is: 'sepia(0)'},
-  {at: 0, is: 'sepia(0.5)'},
-  {at: 0.5, is: 'sepia(0.75)'},
   {at: 1, is: 'sepia(1)'},
   {at: 1.5, is: 'sepia(1)'} // Should clamp values to 1.
 ]);

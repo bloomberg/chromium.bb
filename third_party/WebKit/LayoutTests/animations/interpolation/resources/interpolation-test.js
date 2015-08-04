@@ -79,6 +79,7 @@
       target.style.animationDelay = '-1e10s';
       target.style.animationTimingFunction = createEasing(at);
     },
+    rebaseline: false,
   };
 
   var cssTransitionsInterpolation = {
@@ -98,6 +99,7 @@
       target.style.transitionProperty = property;
       target.style[property] = to;
     },
+    rebaseline: false,
   };
 
   var webAnimationsInterpolation = {
@@ -120,6 +122,7 @@
         iterations: 0.5,
       });
     },
+    rebaseline: false,
   };
 
   function expectFlip(from, to, flipAt) {
@@ -167,6 +170,7 @@
 
   function createTargetContainer(parent) {
     var targetContainer = createElement(parent);
+    targetContainer.classList.add('container');
     var template = document.querySelector('#target-template');
     if (template) {
       targetContainer.appendChild(template.content.cloneNode(true));
@@ -229,9 +233,9 @@
     });
   }
 
-  function createTestTargets(interpolationMethods, interpolationTests, container) {
+  function createTestTargets(interpolationMethods, interpolationTests, container, rebaselineContainer) {
     var targets = [];
-    interpolationMethods.forEach(function(interpolationMethod) {
+    interpolationMethods.forEach(function(interpolationMethod, interpolationMethodIndex) {
       var methodContainer = createElement(container);
       interpolationTests.forEach(function(interpolationTest) {
         var property = interpolationTest.options.property;
@@ -242,6 +246,18 @@
           || !interpolationMethod.supportsValue(from)
           || !interpolationMethod.supportsValue(to)) {
           return;
+        }
+        if (interpolationMethod.rebaseline) {
+          var rebaseline = createElement(rebaselineContainer, 'pre');
+          rebaseline.appendChild(document.createTextNode(`\
+assertInterpolation({
+  property: '${property}',
+  from: '${from}',
+  to: '${to}',
+}, [\n`));
+          var rebaselineExpectation;
+          rebaseline.appendChild(rebaselineExpectation = document.createTextNode(''));
+          rebaseline.appendChild(document.createTextNode(']);\n\n'));
         }
         var testText = interpolationMethod.name + ': property <' + property + '> from [' + from + '] to [' + to + ']';
         var testContainer = createElement(methodContainer, 'div', testText);
@@ -268,6 +284,9 @@
                 normalizeValue(actualValue),
                 normalizeValue(getComputedStyle(expectedTargetContainer.target)[property]));
             }, testText + ' at (' + expectation.at + ') is [' + sanitizeUrls(actualValue) + ']');
+            if (interpolationMethod.rebaseline) {
+              rebaselineExpectation.textContent += `  {at: ${expectation.at}, is: '${actualValue}'},\n`;
+            }
           };
           targets.push(target);
         });
@@ -284,10 +303,11 @@
     if (webAnimationsEnabled) {
       interpolationMethods.push(webAnimationsInterpolation);
     }
+    var rebaselineContainer = createElement(document.body);
     var container = createElement(document.body);
-    var targets = createTestTargets(interpolationMethods, interpolationTests, container);
+    var targets = createTestTargets(interpolationMethods, interpolationTests, container, rebaselineContainer);
     getComputedStyle(document.documentElement).left; // Force a style recalc for transitions.
-    // Separate interpolation and measurement into different phases to avoid (targets.length) style recalcs.
+    // Separate interpolation and measurement into different phases to avoid O(n^2) of the number of targets.
     for (var target of targets) {
       target.interpolate();
     }

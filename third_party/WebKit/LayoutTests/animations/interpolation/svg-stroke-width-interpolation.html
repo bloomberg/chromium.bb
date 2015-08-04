@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.parent {
+  stroke-width: 30px;
+}
 .target {
+  display: inline-block;
   stroke: black;
-  fill: white;
-  stroke-width: 5px;
+  fill: none;
+  stroke-width: 10px;
 }
 .expected {
   stroke: green;
@@ -12,12 +16,64 @@
 </style>
 <body>
 <template id="target-template">
-  <svg width="70" height="70">
-    <rect x="10" y="10" width="50" height="50"/>
+  <svg width="100" height="100">
+    <rect x="0" y="0" width="100" height="100"/>
   </svg>
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'stroke-width',
+  from: '',
+  to: '20px',
+}, [
+  {at: -0.3, is: '7px'},
+  {at: 0, is: '10px'},
+  {at: 0.3, is: '13px'},
+  {at: 0.6, is: '16px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '25px'},
+]);
+
+assertInterpolation({
+  property: 'stroke-width',
+  from: 'initial',
+  to: '20px',
+}, [
+  {at: -0.3, is: '0px'},
+  {at: 0, is: '1px'},
+  {at: 0.3, is: '6.7px'},
+  {at: 0.6, is: '12.4px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '29.5px'},
+]);
+
+assertInterpolation({
+  property: 'stroke-width',
+  from: 'inherit',
+  to: '20px',
+}, [
+  {at: -0.3, is: '33px'},
+  {at: 0, is: '30px'},
+  {at: 0.3, is: '27px'},
+  {at: 0.6, is: '24px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '15px'},
+]);
+
+assertInterpolation({
+  property: 'stroke-width',
+  from: 'unset',
+  to: '20px',
+}, [
+  {at: -0.3, is: '33px'},
+  {at: 0, is: '30px'},
+  {at: 0.3, is: '27px'},
+  {at: 0.6, is: '24px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '15px'},
+]);
+
 assertInterpolation({
   property: 'stroke-width',
   from: '0px',

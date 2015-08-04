@@ -5,9 +5,10 @@
   rotate: 90deg;
 }
 .target {
-  width: 100px;
-  height: 100px;
-  background-color: black;
+  width: 40px;
+  height: 20px;
+  background-color: grey;
+  rotate: 10deg;
 }
 .expected {
   background-color: green;
@@ -15,11 +16,37 @@
 </style>
 <template id="target-template">
 <div class="parent">
-    <div class="target"></div>
+    <div class="target">Text</div>
 </div>
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'rotate',
+  from: '',
+  to: '30deg',
+}, [
+  {at: -1, is: '-10deg'},
+  {at: 0, is: '10deg'},
+  {at: 0.25, is: '15deg'},
+  {at: 0.75, is: '25deg'},
+  {at: 1, is: '30deg'},
+  {at: 2, is: '50deg'},
+]);
+
+assertInterpolation({
+  property: 'rotate',
+  from: 'unset',
+  to: '30deg',
+}, [
+  {at: -1, is: '-30deg'},
+  {at: 0, is: '0deg'},
+  {at: 0.25, is: '7.5deg'},
+  {at: 0.75, is: '22.5deg'},
+  {at: 1, is: '30deg'},
+  {at: 2, is: '60deg'},
+]);
+
 assertInterpolation({
   property: 'rotate',
   from: '100deg',
@@ -96,84 +123,6 @@ assertInterpolation({
   {at: 0.75, is: '138.89deg 0.27 -0.54 -0.8'},
   {at: 1, is: '180deg 0 1 1'},
   {at: 2, is: '90deg 0.71 0 -0.71'},
-]);
-
-assertInterpolation({
-  property: 'rotate',
-  from: 'inherit',
-  to: '0deg',
-}, [
-  {at: -1, is: '180deg'},
-  {at: 0, is: '90deg'},
-  {at: 0.25, is: '67.5deg'},
-  {at: 0.75, is: '22.5deg'},
-  {at: 1, is: '0deg'},
-  {at: 2, is: '-90deg'},
-]);
-
-assertInterpolation({
-  property: 'rotate',
-  from: '0deg',
-  to: 'inherit',
-}, [
-  {at: -1, is: '-90deg'},
-  {at: 0, is: '0deg'},
-  {at: 0.25, is: '22.5deg'},
-  {at: 0.75, is: '67.5deg'},
-  {at: 1, is: '90deg'},
-  {at: 2, is: '180deg'},
-]);
-
-assertInterpolation({
-  property: 'rotate',
-  from: 'initial',
-  to: '90deg',
-}, [
-  {at: -1, is: '-90deg'},
-  {at: 0, is: '0deg'},
-  {at: 0.25, is: '22.5deg'},
-  {at: 0.75, is: '67.5deg'},
-  {at: 1, is: '90deg'},
-  {at: 2, is: '180deg'},
-]);
-
-assertInterpolation({
-  property: 'rotate',
-  from: '90deg',
-  to: 'initial',
-}, [
-  {at: -1, is: '180deg'},
-  {at: 0, is: '90deg'},
-  {at: 0.25, is: '67.5deg'},
-  {at: 0.75, is: '22.5deg'},
-  {at: 1, is: '0deg'},
-  {at: 2, is: '-90deg'},
-]);
-
-assertInterpolation({
-  property: 'rotate',
-  from: 'initial',
-  to: 'inherit',
-}, [
-  {at: -1, is: '-90deg'},
-  {at: 0, is: '0deg'},
-  {at: 0.25, is: '22.5deg'},
-  {at: 0.75, is: '67.5deg'},
-  {at: 1, is: '90deg'},
-  {at: 2, is: '180deg'},
-]);
-
-assertInterpolation({
-  property: 'rotate',
-  from: 'inherit',
-  to: 'initial',
-}, [
-  {at: -1, is: '180deg'},
-  {at: 0, is: '90deg'},
-  {at: 0.25, is: '67.5deg'},
-  {at: 0.75, is: '22.5deg'},
-  {at: 1, is: '0deg'},
-  {at: 2, is: '-90deg'},
 ]);
 
 </script>

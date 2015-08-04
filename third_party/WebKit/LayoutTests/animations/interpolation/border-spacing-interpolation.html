@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.parent {
+  border-spacing: 30px;
+}
 .target {
   width: 50px;
   height: 50px;
@@ -8,6 +11,7 @@
   display: inline-block;
   margin: 18px;
   border-collapse: separate;
+  border-spacing: 10px;
 }
 .target td {
   background-color: white;
@@ -32,6 +36,54 @@
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'border-spacing',
+  from: '',
+  to: '20px',
+}, [
+  {at: -0.3, is: '7px 7px'},
+  {at: 0, is: '10px 10px'},
+  {at: 0.3, is: '13px 13px'},
+  {at: 0.6, is: '16px 16px'},
+  {at: 1, is: '20px 20px'},
+  {at: 1.5, is: '25px 25px'},
+]);
+assertInterpolation({
+  property: 'border-spacing',
+  from: 'initial',
+  to: '20px',
+}, [
+  {at: -0.3, is: '0px 0px'},
+  {at: 0, is: '0px 0px'},
+  {at: 0.3, is: '6px 6px'},
+  {at: 0.6, is: '12px 12px'},
+  {at: 1, is: '20px 20px'},
+  {at: 1.5, is: '30px 30px'},
+]);
+assertInterpolation({
+  property: 'border-spacing',
+  from: 'inherit',
+  to: '20px',
+}, [
+  {at: -0.3, is: '33px 33px'},
+  {at: 0, is: '30px 30px'},
+  {at: 0.3, is: '27px 27px'},
+  {at: 0.6, is: '24px 24px'},
+  {at: 1, is: '20px 20px'},
+  {at: 1.5, is: '15px 15px'},
+]);
+assertInterpolation({
+  property: 'border-spacing',
+  from: 'unset',
+  to: '20px',
+}, [
+  {at: -0.3, is: '33px 33px'},
+  {at: 0, is: '30px 30px'},
+  {at: 0.3, is: '27px 27px'},
+  {at: 0.6, is: '24px 24px'},
+  {at: 1, is: '20px 20px'},
+  {at: 1.5, is: '15px 15px'},
+]);
 assertInterpolation({
   property: 'border-spacing',
   from: '0px',

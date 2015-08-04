@@ -1,12 +1,18 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.container {
+  display: inline-block;
+  margin-right: 1px;
+}
+.parent {
+  fill: blue;
+}
 .target {
-  width: 100px;
-  height: 100px;
-  stroke: black;
-  stroke-width: 20px;
   color: blue;
+  stroke-width: 10px;
+  stroke: black;
+  fill: orange;
 }
 .expected {
   stroke: green;
@@ -14,21 +20,78 @@
 </style>
 <body>
 <template id="target-template">
-<svg>
-<defs>
-<linearGradient id="gradient">
-<stop offset="0"  stop-color="green"/>
-<stop offset="1" stop-color="gold"/>
-</linearGradient>
-</defs>
-<rect x="0" y="0" width="100" height="100">
+  <svg width="40" height="40">
+    <defs>
+      <linearGradient id="gradient">
+        <stop offset="0"  stop-color="green"/>
+        <stop offset="1" stop-color="gold"/>
+      </linearGradient>
+    </defs>
+    <rect x="0" y="0" width="40" height="40" class="target"></rect>
+  </svg>
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
 assertInterpolation({
   property: 'fill',
+  from: '',
+  to: 'green',
+}, [
+  {at: -5, is: 'rgb(255, 255, 0)'},
+  {at: -0.4, is: 'rgb(255, 180, 0)'},
+  {at: 0, is: 'rgb(255, 165, 0)'},
+  {at: 0.2, is: 'rgb(204, 158, 0)'},
+  {at: 0.6, is: 'rgb(102, 143, 0)'},
+  {at: 1, is: 'rgb(0, 128, 0)'},
+  {at: 1.5, is: 'rgb(0, 110, 0)'},
+]);
+
+assertInterpolation({
+  property: 'fill',
+  from: 'initial',
+  to: 'green',
+}, [
+  {at: -5, is: 'rgb(0, 0, 0)'},
+  {at: -0.4, is: 'rgb(0, 0, 0)'},
+  {at: 0, is: 'rgb(0, 0, 0)'},
+  {at: 0.2, is: 'rgb(0, 26, 0)'},
+  {at: 0.6, is: 'rgb(0, 77, 0)'},
+  {at: 1, is: 'rgb(0, 128, 0)'},
+  {at: 1.5, is: 'rgb(0, 192, 0)'},
+]);
+
+assertInterpolation({
+  property: 'fill',
+  from: 'inherit',
+  to: 'green',
+}, [
+  {at: -5, is: 'rgb(0, 0, 255)'},
+  {at: -0.4, is: 'rgb(0, 0, 255)'},
+  {at: 0, is: 'rgb(0, 0, 255)'},
+  {at: 0.2, is: 'rgb(0, 26, 204)'},
+  {at: 0.6, is: 'rgb(0, 77, 102)'},
+  {at: 1, is: 'rgb(0, 128, 0)'},
+  {at: 1.5, is: 'rgb(0, 192, 0)'},
+]);
+
+assertInterpolation({
+  property: 'fill',
+  from: 'unset',
+  to: 'green',
+}, [
+  {at: -5, is: 'rgb(0, 0, 255)'},
+  {at: -0.4, is: 'rgb(0, 0, 255)'},
+  {at: 0, is: 'rgb(0, 0, 255)'},
+  {at: 0.2, is: 'rgb(0, 26, 204)'},
+  {at: 0.6, is: 'rgb(0, 77, 102)'},
+  {at: 1, is: 'rgb(0, 128, 0)'},
+  {at: 1.5, is: 'rgb(0, 192, 0)'},
+]);
+
+assertInterpolation({
+  property: 'fill',
   from: 'orange',
-  to: 'blue'
+  to: 'blue',
 }, [
   {at: -5, is: '#ffff00'},
   {at: -0.4, is: '#ffe700'},
@@ -41,7 +104,7 @@ assertInterpolation({
 assertInterpolation({
   property: 'fill',
   from: 'orange',
-  to: 'currentColor'
+  to: 'currentColor',
 }, [
   {at: 0, is: 'orange'},
   {at: 0.2, is: '#cc8433'},
@@ -51,7 +114,7 @@ assertInterpolation({
 assertInterpolation({
   property: 'fill',
   from: 'currentColor',
-  to: 'orange'
+  to: 'orange',
 }, [
   {at: 0, is: 'blue'},
   {at: 0.2, is: '#3321cc'},
@@ -61,7 +124,7 @@ assertInterpolation({
 assertNoInterpolation({
   property: 'fill',
   from: 'orange',
-  to: 'url(#gradient)'
+  to: 'url(#gradient)',
 });
 </script>
 </body>

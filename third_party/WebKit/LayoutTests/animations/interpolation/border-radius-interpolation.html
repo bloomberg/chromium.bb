@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.parent {
+  border-radius: 30px;
+}
 .target {
   width: 80px;
   height: 80px;
   display: inline-block;
   background-color: black;
   margin-right: 5px;
+  border-radius: 10px;
 }
 .expected {
   background-color: green;
@@ -16,6 +20,54 @@
 <body>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'border-radius',
+  from: '',
+  to: '20px',
+}, [
+  {at: -0.3, is: '7px'},
+  {at: 0, is: '10px'},
+  {at: 0.3, is: '13px'},
+  {at: 0.6, is: '16px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '25px'},
+]);
+assertInterpolation({
+  property: 'border-radius',
+  from: 'initial',
+  to: '20px',
+}, [
+  {at: -0.3, is: '0px'},
+  {at: 0, is: '0px'},
+  {at: 0.3, is: '6px'},
+  {at: 0.6, is: '12px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '30px'},
+]);
+assertInterpolation({
+  property: 'border-radius',
+  from: 'inherit',
+  to: '20px',
+}, [
+  {at: -0.3, is: '33px'},
+  {at: 0, is: '30px'},
+  {at: 0.3, is: '27px'},
+  {at: 0.6, is: '24px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '15px'},
+]);
+assertInterpolation({
+  property: 'border-radius',
+  from: 'unset',
+  to: '20px',
+}, [
+  {at: -0.3, is: '0px'},
+  {at: 0, is: '0px'},
+  {at: 0.3, is: '6px'},
+  {at: 0.6, is: '12px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '30px'},
+]);
 assertInterpolation({
   property: 'border-radius',
   from: '10px',

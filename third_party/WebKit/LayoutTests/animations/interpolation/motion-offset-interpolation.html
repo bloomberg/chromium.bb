@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.parent {
+  motion-offset: 30px;
+}
 .target {
-  width: 80px;
-  height: 80px;
-  display: inline-block;
+  width: 10px;
+  height: 10px;
   background-color: black;
-  margin-right: 5px;
+  motion-path: path("M0 0H 400");
+  motion-offset: 10px;
 }
 .expected {
   background-color: green;
-  margin-right: 15px;
 }
 </style>
 <body>
@@ -18,8 +20,60 @@
 <script>
 assertInterpolation({
   property: 'motion-offset',
+  from: '',
+  to: '20px',
+}, [
+  {at: -0.3, is: '7px'},
+  {at: 0, is: '10px'},
+  {at: 0.3, is: '13px'},
+  {at: 0.6, is: '16px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '25px'},
+]);
+
+assertInterpolation({
+  property: 'motion-offset',
+  from: 'initial',
+  to: '20px',
+}, [
+  {at: -0.3, is: '-6px'},
+  {at: 0, is: '0px'},
+  {at: 0.3, is: '6px'},
+  {at: 0.6, is: '12px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '30px'},
+]);
+
+assertInterpolation({
+  property: 'motion-offset',
+  from: 'inherit',
+  to: '20px',
+}, [
+  {at: -0.3, is: '33px'},
+  {at: 0, is: '30px'},
+  {at: 0.3, is: '27px'},
+  {at: 0.6, is: '24px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '15px'},
+]);
+
+assertInterpolation({
+  property: 'motion-offset',
+  from: 'unset',
+  to: '20px',
+}, [
+  {at: -0.3, is: '-6px'},
+  {at: 0, is: '0px'},
+  {at: 0.3, is: '6px'},
+  {at: 0.6, is: '12px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '30px'},
+]);
+
+assertInterpolation({
+  property: 'motion-offset',
   from: '10px',
-  to: '50px'
+  to: '50px',
 }, [
   {at: -0.3, is: '-2px'},
   {at: 0, is: '10px'},
@@ -28,10 +82,11 @@ assertInterpolation({
   {at: 1, is: '50px'},
   {at: 1.5, is: '70px'},
 ]);
+
 assertInterpolation({
   property: 'motion-offset',
   from: '10px',
-  to: '100%'
+  to: '100%',
 }, [
   // These expectations are expected to fail on the current animation engine
   // with different (but equivalent) calc expressions.

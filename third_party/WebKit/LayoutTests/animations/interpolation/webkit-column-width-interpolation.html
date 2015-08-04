@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.parent {
+  -webkit-column-width: 90px;
+}
 .target {
-  -webkit-column-width: 20px;
   column-width: 20px;
   width: 600px;
   -webkit-column-gap: 20px;
   column-gap: 20px;
+  -webkit-column-width: 10px;
 }
 .expected div {
   opacity: 0.7;
@@ -15,17 +18,59 @@
   height: 20px;
   background-color: green;
 }
-
 .target div ~ div {
   background-color: black;
 }
 </style>
 <body>
 <template id='target-template'>
-  <div></div><div></div>
+  <div class="parent">
+    <div class="target">
+      <div></div><div></div>
+    </div>
+  </div>
 </template>
 <script src='resources/interpolation-test.js'></script>
 <script>
+assertInterpolation({
+  property: '-webkit-column-width',
+  from: '',
+  to: '40px',
+}, [
+  {at: -0.3, is: '1px'},
+  {at: 0, is: '10px'},
+  {at: 0.3, is: '19px'},
+  {at: 0.6, is: '28px'},
+  {at: 1, is: '40px'},
+  {at: 1.5, is: '55px'},
+]);
+
+assertNoInterpolation({
+  property: '-webkit-column-width',
+  from: 'initial',
+  to: '40px',
+});
+
+assertInterpolation({
+  property: '-webkit-column-width',
+  from: 'inherit',
+  to: '40px',
+}, [
+  {at: -0.3, is: '105px'},
+  {at: 0, is: '90px'},
+  {at: 0.3, is: '75px'},
+  {at: 0.6, is: '60px'},
+  {at: 1, is: '40px'},
+  {at: 1.5, is: '15px'},
+]);
+
+assertNoInterpolation({
+  property: '-webkit-column-width',
+  from: 'unset',
+  to: '40px',
+});
+
+
 assertInterpolation({
   property: '-webkit-column-width',
   from: '1px',

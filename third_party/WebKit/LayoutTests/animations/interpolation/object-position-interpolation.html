@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.parent {
+  object-position: 30px 10px;
+}
 .target {
   position: relative;
   width: 100px;
@@ -9,6 +12,7 @@
   display: inline-block;
   margin: 20px 0px 20px 0px;
   object-fit: fill;
+  object-position: 10px 30px;
 }
 .expected {
   background-color: green;
@@ -17,6 +21,53 @@
 <body>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'object-position',
+  from: '',
+  to: '20px 20px',
+}, [
+  {at: -0.3, is: '7px 33px'},
+  {at: 0, is: '10px 30px'},
+  {at: 0.5, is: '15px 25px'},
+  {at: 1, is: '20px 20px'},
+  {at: 1.5, is: '25px 15px'},
+]);
+
+assertInterpolation({
+  property: 'object-position',
+  from: 'initial',
+  to: '20px 20px',
+}, [
+  {at: -0.3, is: 'calc(-6px + 65%) calc(-6px + 65%)'},
+  {at: 0, is: '50% 50%'},
+  {at: 0.5, is: 'calc(10px + 25%) calc(10px + 25%)'},
+  {at: 1, is: '20px 20px'},
+  {at: 1.5, is: 'calc(30px + -25%) calc(30px + -25%)'},
+]);
+
+assertInterpolation({
+  property: 'object-position',
+  from: 'inherit',
+  to: '20px 20px',
+}, [
+  {at: -0.3, is: '33px 7px'},
+  {at: 0, is: '30px 10px'},
+  {at: 0.5, is: '25px 15px'},
+  {at: 1, is: '20px 20px'},
+  {at: 1.5, is: '15px 25px'},
+]);
+
+assertInterpolation({
+  property: 'object-position',
+  from: 'unset',
+  to: '20px 20px',
+}, [
+  {at: -0.3, is: 'calc(-6px + 65%) calc(-6px + 65%)'},
+  {at: 0, is: '50% 50%'},
+  {at: 0.5, is: 'calc(10px + 25%) calc(10px + 25%)'},
+  {at: 1, is: '20px 20px'},
+  {at: 1.5, is: 'calc(30px + -25%) calc(30px + -25%)'},
+]);
 
 assertInterpolation({
   property: 'object-position',

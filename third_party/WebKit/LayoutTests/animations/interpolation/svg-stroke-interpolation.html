@@ -1,30 +1,81 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.container {
+  display: inline-block;
+}
+.parent {
+  stroke: blue;
+}
 .target {
-  width: 100px;
-  height: 100px;
   fill: black;
-  stroke-width: 20px;
+  stroke-width: 8px;
+  stroke: orange;
   color: blue;
 }
 .expected {
-  fill: green;
+  fill: lime;
 }
 </style>
 <body>
 <template id="target-template">
-<svg>
-<defs>
-<linearGradient id="gradient">
-<stop offset="0"  stop-color="green"/>
-<stop offset="1" stop-color="gold"/>
-</linearGradient>
-</defs>
-<rect x="0" y="0" width="100" height="100">
+  <svg width="10" height="100">
+    <defs>
+      <linearGradient id="gradient" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0" stop-color="black"/>
+        <stop offset="1" stop-color="blue"/>
+      </linearGradient>
+    </defs>
+    <rect x="0" y="0" width="10" height="100"></rect>
+  </svg>
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'stroke',
+  from: '',
+  to: 'green',
+}, [
+  {at: -0.4, is: 'rgb(255, 180, 0)'},
+  {at: 0, is: 'rgb(255, 165, 0)'},
+  {at: 0.2, is: 'rgb(204, 158, 0)'},
+  {at: 0.6, is: 'rgb(102, 143, 0)'},
+  {at: 1, is: 'rgb(0, 128, 0)'},
+  {at: 1.5, is: 'rgb(0, 110, 0)'},
+]);
+
+assertNoInterpolation({
+  property: 'stroke',
+  from: 'initial',
+  to: 'green',
+});
+
+assertInterpolation({
+  property: 'stroke',
+  from: 'inherit',
+  to: 'green',
+}, [
+  {at: -0.4, is: 'rgb(0, 0, 255)'},
+  {at: 0, is: 'rgb(0, 0, 255)'},
+  {at: 0.2, is: 'rgb(0, 26, 204)'},
+  {at: 0.6, is: 'rgb(0, 77, 102)'},
+  {at: 1, is: 'rgb(0, 128, 0)'},
+  {at: 1.5, is: 'rgb(0, 192, 0)'},
+]);
+
+assertInterpolation({
+  property: 'stroke',
+  from: 'unset',
+  to: 'green',
+}, [
+  {at: -0.4, is: 'rgb(0, 0, 255)'},
+  {at: 0, is: 'rgb(0, 0, 255)'},
+  {at: 0.2, is: 'rgb(0, 26, 204)'},
+  {at: 0.6, is: 'rgb(0, 77, 102)'},
+  {at: 1, is: 'rgb(0, 128, 0)'},
+  {at: 1.5, is: 'rgb(0, 192, 0)'},
+]);
+
 assertInterpolation({
   property: 'stroke',
   from: 'orange',

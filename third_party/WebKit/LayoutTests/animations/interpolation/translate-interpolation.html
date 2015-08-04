@@ -8,6 +8,7 @@
   width: 100px;
   height: 100px;
   background-color: black;
+  translate: 10px;
 }
 .expected {
   background-color: green;
@@ -20,6 +21,32 @@
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'translate',
+  from: '',
+  to: '20px',
+}, [
+  {at: -1, is: '0px'},
+  {at: 0, is: '10px'},
+  {at: 0.25, is: '12.5px'},
+  {at: 0.75, is: '17.5px'},
+  {at: 1, is: '20px'},
+  {at: 2, is: '30px'},
+]);
+
+assertInterpolation({
+  property: 'translate',
+  from: 'unset',
+  to: '20px',
+}, [
+  {at: -1, is: '-20px'},
+  {at: 0, is: '0px'},
+  {at: 0.25, is: '5px'},
+  {at: 0.75, is: '15px'},
+  {at: 1, is: '20px'},
+  {at: 2, is: '40px'},
+]);
+
 assertInterpolation({
   property: 'translate',
   from: '-100px',

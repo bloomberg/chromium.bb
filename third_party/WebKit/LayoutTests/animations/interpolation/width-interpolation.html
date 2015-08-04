@@ -1,18 +1,14 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
-.container {
+.parent {
   width: 100px;
-  height: 100px;
-  border: black solid 1px;
-  display: inline-block;
-  margin-right: 5px;
-  background-color: white;
+  overflow: visible;
 }
 .target {
-  width: 100px;
-  height: 100px;
   background-color: black;
+  width: 10px;
+  height: 10px;
 }
 .expected {
   background-color: green;
@@ -26,6 +22,44 @@
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'width',
+  from: '',
+  to: '40px',
+}, [
+  {at: -0.3, is: '1px'},
+  {at: 0, is: '10px'},
+  {at: 0.3, is: '19px'},
+  {at: 0.6, is: '28px'},
+  {at: 1, is: '40px'},
+  {at: 1.5, is: '55px'},
+]);
+
+assertNoInterpolation({
+  property: 'width',
+  from: 'initial',
+  to: '40px',
+});
+
+assertInterpolation({
+  property: 'width',
+  from: 'inherit',
+  to: '40px',
+}, [
+  {at: -0.3, is: '118px'},
+  {at: 0, is: '100px'},
+  {at: 0.3, is: '82px'},
+  {at: 0.6, is: '64px'},
+  {at: 1, is: '40px'},
+  {at: 1.5, is: '10px'},
+]);
+
+assertNoInterpolation({
+  property: 'width',
+  from: 'unset',
+  to: '40px',
+});
+
 assertInterpolation({
   property: 'width',
   from: '0px',

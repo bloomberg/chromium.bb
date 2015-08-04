@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.parent {
+  box-shadow: 30px 10px 30px 10px black,
+}
 .target {
   display: inline-block;
   width: 60px;
@@ -10,6 +13,7 @@
   margin-right: 20px;
   margin-bottom: 30px;
   color: green;
+  box-shadow: 10px 30px 10px 30px black,
 }
 .expected {
   margin-right: 40px;
@@ -18,6 +22,59 @@
 <body>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'box-shadow',
+  from: '',
+  to: '20px 20px 20px 20px black',
+}, [
+  {at: -0.3, is: '7px 33px 7px 33px black'},
+  {at: 0, is: '10px 30px 10px 30px black'},
+  {at: 0.3, is: '13px 27px 13px 27px black'},
+  {at: 0.6, is: '16px 24px 16px 24px black'},
+  {at: 1, is: '20px 20px 20px 20px black'},
+  {at: 1.5, is: '25px 15px 25px 15px black'},
+]);
+
+assertInterpolation({
+  property: 'box-shadow',
+  from: 'initial',
+  to: '20px 20px 20px 20px black',
+}, [
+  {at: -0.3, is: '-6px -6px 0px -6px transparent'},
+  {at: 0, is: 'none'},
+  {at: 0.3, is: '6px 6px 6px 6px rgba(0, 0, 0, 0.3)'},
+  {at: 0.6, is: '12px 12px 12px 12px rgba(0, 0, 0, 0.6)'},
+  {at: 1, is: '20px 20px 20px 20px black'},
+  {at: 1.5, is: '30px 30px 30px 30px black'},
+]);
+
+assertInterpolation({
+  property: 'box-shadow',
+  from: 'inherit',
+  to: '20px 20px 20px 20px black',
+}, [
+  {at: -0.3, is: '33px 7px 33px 7px black'},
+  {at: 0, is: '30px 10px 30px 10px black'},
+  {at: 0.3, is: '27px 13px 27px 13px black'},
+  {at: 0.6, is: '24px 16px 24px 16px black'},
+  {at: 1, is: '20px 20px 20px 20px black'},
+  {at: 1.5, is: '15px 25px 15px 25px black'},
+]);
+
+assertInterpolation({
+  property: 'box-shadow',
+  from: 'unset',
+  to: '20px 20px 20px 20px black',
+}, [
+  {at: -0.3, is: '-6px -6px 0px -6px transparent'},
+  {at: 0, is: 'none'},
+  {at: 0.3, is: '6px 6px 6px 6px rgba(0, 0, 0, 0.3)'},
+  {at: 0.6, is: '12px 12px 12px 12px rgba(0, 0, 0, 0.6)'},
+  {at: 1, is: '20px 20px 20px 20px black'},
+  {at: 1.5, is: '30px 30px 30px 30px black'},
+]);
+
+
 // Test basic functionality, and clipping blur at 0
 assertInterpolation({
   property: 'box-shadow',

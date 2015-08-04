@@ -1,31 +1,82 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
-svg {
-  width: 100px;
-  height: 100px;
+.container {
+  display: inline-block;
 }
-svg rect {
-  stroke: black;
-  stroke-width: 20px;
+.parent {
+  stop-opacity: 0.8;
 }
-svg:nth-child(2n) rect {
-  stroke: green;
+.target {
+  stop-opacity: 0.6;
 }
 </style>
 <body>
 <template id="target-template">
-<svg>
-<defs>
-<linearGradient id="gradient" x1="0" x2="0" y1="0" y2="1">
-<stop offset="0" stop-color="blue" class="target"/>
-<stop offset="1" stop-color="blue"/>
-</linearGradient>
-</defs>
-<rect x="0" y="0" width="100" height="100" fill="url(#gradient)">
+  <svg width="10" height="100">
+    <defs>
+      <linearGradient id="gradient" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0" stop-color="black"/>
+        <stop offset="1" stop-color="blue" class="target"/>
+      </linearGradient>
+    </defs>
+    <rect x="0" y="0" width="10" height="100" fill="url(#gradient)"></rect>
+  </svg>
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'stop-opacity',
+  from: '',
+  to: '0.4',
+}, [
+  {at: -0.4, is: '0.68'},
+  {at: 0, is: '0.6'},
+  {at: 0.2, is: '0.56'},
+  {at: 0.6, is: '0.48'},
+  {at: 1, is: '0.4'},
+  {at: 1.5, is: '0.3'},
+]);
+
+assertInterpolation({
+  property: 'stop-opacity',
+  from: 'initial',
+  to: '0.4',
+}, [
+  {at: -0.4, is: '1'},
+  {at: 0, is: '1'},
+  {at: 0.2, is: '0.88'},
+  {at: 0.6, is: '0.64'},
+  {at: 1, is: '0.4'},
+  {at: 1.5, is: '0.1'},
+]);
+
+assertInterpolation({
+  property: 'stop-opacity',
+  from: 'inherit',
+  to: '0.4',
+}, [
+  {at: -0.4, is: '0.96'},
+  {at: 0, is: '0.8'},
+  {at: 0.2, is: '0.72'},
+  {at: 0.6, is: '0.56'},
+  {at: 1, is: '0.4'},
+  {at: 1.5, is: '0.2'},
+]);
+
+assertInterpolation({
+  property: 'stop-opacity',
+  from: 'unset',
+  to: '0.4',
+}, [
+  {at: -0.4, is: '1'},
+  {at: 0, is: '1'},
+  {at: 0.2, is: '0.88'},
+  {at: 0.6, is: '0.64'},
+  {at: 1, is: '0.4'},
+  {at: 1.5, is: '0.1'},
+]);
+
 assertInterpolation({
   property: 'stop-opacity',
   from: '0',

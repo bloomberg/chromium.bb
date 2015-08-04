@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.parent {
+  bottom: 30px;
+}
 .target {
   position: relative;
   width: 100px;
@@ -8,6 +11,7 @@
   background-color: black;
   display: inline-block;
   margin: 20px 5px 20px 0px;
+  bottom: 10px;
 }
 .expected {
   background-color: green;
@@ -16,6 +20,42 @@
 <body>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'bottom',
+  from: '',
+  to: '20px',
+}, [
+  {at: -0.3, is: '7px'},
+  {at: 0, is: '10px'},
+  {at: 0.5, is: '15px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '25px'},
+]);
+
+assertNoInterpolation({
+  property: 'bottom',
+  from: 'initial',
+  to: '20px',
+});
+
+assertInterpolation({
+  property: 'bottom',
+  from: 'inherit',
+  to: '20px',
+}, [
+  {at: -0.3, is: '33px'},
+  {at: 0, is: '30px'},
+  {at: 0.5, is: '25px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '15px'},
+]);
+
+assertNoInterpolation({
+  property: 'bottom',
+  from: 'unset',
+  to: '20px',
+});
+
 assertInterpolation({
   property: 'bottom',
   from: '-10px',

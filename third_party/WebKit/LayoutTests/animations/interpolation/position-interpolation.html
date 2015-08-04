@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
-.container {
+.parent {
   position: relative;
   display: inline-block;
   height: 10px;
@@ -12,13 +12,14 @@
   height: 10px;
   background-color: black;
   left: 10px;
+  position: 10px;
 }
 .expected {
   background-color: green;
 }
 </style>
 <template id="target-template">
-  <div class="container">
+  <div class="parent">
     <div class="target"></div>
   </div>
 </template>
@@ -30,6 +31,7 @@ assertNoInterpolation({
   from: 'absolute',
   to: 'static',
 });
+
 assertInterpolation({
   property: 'position',
   from: '',

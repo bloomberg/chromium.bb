@@ -1,23 +1,80 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.container {
+  display: inline-block;
+}
+.parent {
+  r: 30px;
+}
 .target {
-  stroke: black;
-  fill: white;
-  r: 5px;
+  fill: black;
+  r: 10px;
 }
 .expected {
-  stroke: green;
+  fill: green;
 }
 </style>
 <body>
 <template id="target-template">
   <svg width="70" height="70">
-    <circle cx="35" cy="35" r="20" class="target"/>
+    <circle cx="35" cy="35" r="10" class="target"/>
   </svg>
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'r',
+  from: '',
+  to: '20px',
+}, [
+  {at: -0.3, is: '7px'},
+  {at: 0, is: '10px'},
+  {at: 0.3, is: '13px'},
+  {at: 0.6, is: '16px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '25px'},
+]);
+
+assertInterpolation({
+  property: 'r',
+  from: 'initial',
+  to: '20px',
+}, [
+  {at: -0.3, is: '0px'},
+  {at: 0, is: '0px'},
+  {at: 0.3, is: '6px'},
+  {at: 0.6, is: '12px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '30px'},
+]);
+
+assertInterpolation({
+  property: 'r',
+  from: 'inherit',
+  to: '20px',
+}, [
+  {at: -0.3, is: '33px'},
+  {at: 0, is: '30px'},
+  {at: 0.3, is: '27px'},
+  {at: 0.6, is: '24px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '15px'},
+]);
+
+assertInterpolation({
+  property: 'r',
+  from: 'unset',
+  to: '20px',
+}, [
+  {at: -0.3, is: '0px'},
+  {at: 0, is: '0px'},
+  {at: 0.3, is: '6px'},
+  {at: 0.6, is: '12px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '30px'},
+]);
+
 assertInterpolation({
   property: 'r',
   from: '0px',

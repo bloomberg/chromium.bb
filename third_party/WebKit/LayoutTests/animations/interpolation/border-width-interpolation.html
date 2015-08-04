@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.parent {
+  border-width: 30px;
+}
 .target {
   width: 50px;
   height: 50px;
@@ -8,6 +11,7 @@
   display: inline-block;
   border: 2px solid orange;
   margin: 18px;
+  border-width: 10px;
 }
 .expected {
   background-color: green;
@@ -16,6 +20,58 @@
 <body>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'border-width',
+  from: '',
+  to: '20px',
+}, [
+  {at: -0.3, is: '7px'},
+  {at: 0, is: '10px'},
+  {at: 0.3, is: '13px'},
+  {at: 0.6, is: '16px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '25px'},
+]);
+
+assertInterpolation({
+  property: 'border-width',
+  from: 'initial',
+  to: '20px',
+}, [
+  {at: -0.3, is: '0px'},
+  {at: 0, is: '3px'},
+  {at: 0.3, is: '8px'},
+  {at: 0.6, is: '13px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '29px'},
+]);
+
+assertInterpolation({
+  property: 'border-width',
+  from: 'inherit',
+  to: '20px',
+}, [
+  {at: -0.3, is: '0px'},
+  {at: 0, is: '0px'},
+  {at: 0.3, is: '6px'},
+  {at: 0.6, is: '12px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '30px'},
+]);
+
+assertInterpolation({
+  property: 'border-width',
+  from: 'unset',
+  to: '20px',
+}, [
+  {at: -0.3, is: '0px'},
+  {at: 0, is: '3px'},
+  {at: 0.3, is: '8px'},
+  {at: 0.6, is: '13px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '29px'},
+]);
+
 assertInterpolation({
   property: 'border-width',
   from: '0px',

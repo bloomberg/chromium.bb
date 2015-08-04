@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.parent {
+  background-image: url(../resources/blue-100.png);
+  background-size: 0 0;
+}
 .target {
   width: 100px;
   height: 100px;
   display: inline-block;
   border: 10px solid black;
   background-repeat: no-repeat;
+  background-image: url(../resources/blue-100.png);
 }
 .expected {
   border-color: green;
@@ -16,9 +21,56 @@
 <body>
 <script src="resources/interpolation-test.js"></script>
 <script>
-// Image to image
+// Neutral to image
 var from = 'url(../resources/blue-100.png)';
 var to = 'url(../resources/green-100.png)';
+assertInterpolation({
+  property: 'background-image',
+  from: '',
+  to: to,
+}, [
+  {at: -0.3, is: from},
+  {at: 0, is: from},
+  {at: 0.3, is: '-webkit-cross-fade(' + from + ', ' + to + ', 0.3)'},
+  {at: 0.6, is: '-webkit-cross-fade(' + from + ', ' + to + ', 0.6)'},
+  {at: 1, is: to},
+  {at: 1.5, is: to},
+]);
+
+// initial to image
+to = 'url(../resources/green-100.png)';
+assertNoInterpolation({
+  property: 'background-image',
+  from: 'initial',
+  to: to,
+});
+
+// inherit to image
+from = 'url(../resources/blue-100.png)';
+to = 'url(../resources/green-100.png)';
+assertInterpolation({
+  property: 'background-image',
+  from: 'inherit',
+  to: to,
+}, [
+  {at: -0.3, is: from},
+  {at: 0, is: from},
+  {at: 0.3, is: '-webkit-cross-fade(' + from + ', ' + to + ', 0.3)'},
+  {at: 0.6, is: '-webkit-cross-fade(' + from + ', ' + to + ', 0.6)'},
+  {at: 1, is: to},
+  {at: 1.5, is: to},
+]);
+
+// unset to image
+assertNoInterpolation({
+  property: 'background-image',
+  from: 'unset',
+  to: to,
+});
+
+// Image to image
+from = 'url(../resources/blue-100.png)';
+to = 'url(../resources/green-100.png)';
 assertInterpolation({
   property: 'background-image',
   from: from,

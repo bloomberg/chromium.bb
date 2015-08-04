@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.parent {
+  letter-spacing: 2px;
+}
 .target {
-  display: inline-block;
-  font: 100px sans-serif;
+  font: 10px sans-serif;
+  font-weight: bold;
+  letter-spacing: 30px;
 }
 .expected {
   color: green;
@@ -16,8 +20,60 @@
 <script>
 assertInterpolation({
   property: 'letter-spacing',
+  from: '',
+  to: '20px',
+}, [
+  {at: -0.3, is: '33px'},
+  {at: 0, is: '30px'},
+  {at: 0.3, is: '27px'},
+  {at: 0.6, is: '24px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '15px'},
+]);
+
+assertInterpolation({
+  property: 'letter-spacing',
+  from: 'initial',
+  to: '20px',
+}, [
+  {at: -0.3, is: '-6px'},
+  {at: 0, is: 'normal'},
+  {at: 0.3, is: '6px'},
+  {at: 0.6, is: '12px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '30px'},
+]);
+
+assertInterpolation({
+  property: 'letter-spacing',
+  from: 'inherit',
+  to: '20px',
+}, [
+  {at: -0.3, is: '-3.4px'},
+  {at: 0, is: '2px'},
+  {at: 0.3, is: '7.4px'},
+  {at: 0.6, is: '12.8px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '29px'},
+]);
+
+assertInterpolation({
+  property: 'letter-spacing',
+  from: 'unset',
+  to: '20px',
+}, [
+  {at: -0.3, is: '-3.4px'},
+  {at: 0, is: '2px'},
+  {at: 0.3, is: '7.4px'},
+  {at: 0.6, is: '12.8px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '29px'},
+]);
+
+assertInterpolation({
+  property: 'letter-spacing',
   from: '-10px',
-  to: '10px'
+  to: '10px',
 }, [
   {at: -0.3, is: '-16px'},
   {at: 0, is: '-10px'},
@@ -26,13 +82,14 @@ assertInterpolation({
   {at: 1, is: '10px'},
   {at: 1.5, is: '20px'},
 ]);
+
 assertInterpolation({
   property: 'letter-spacing',
   from: 'normal',
-  to: '10px'
+  to: '10px',
 }, [
   {at: -0.3, is: '-3px'},
-  {at: 0, is: '0px'},
+  {at: 0, is: 'normal'},
   {at: 0.3, is: '3px'},
   {at: 0.6, is: '6px'},
   {at: 1, is: '10px'},

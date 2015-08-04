@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.parent {
+  transform: translate(30px);
+}
 .target {
   color: white;
   width: 100px;
@@ -8,11 +11,15 @@
   background-color: black;
   display: inline-block;
   overflow: hidden;
+  transform: translate(10px);
 }
 .expected {
   background-color: green;
 }
-.target div {
+.parent {
+  transform: 30px;
+}
+.target > div {
   width: 10px;
   height: 10px;
   display: inline-block;
@@ -29,6 +36,57 @@
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'transform',
+  from: '',
+  to: 'translate(20px)',
+}, [
+  {at: -1, is: 'translate(0px)'},
+  {at: 0, is: 'translate(10px)'},
+  {at: 0.25, is: 'translate(12.5px)'},
+  {at: 0.75, is: 'translate(17.5px)'},
+  {at: 1, is: 'translate(20px)'},
+  {at: 2, is: 'translate(30px)'},
+]);
+
+assertInterpolation({
+  property: 'transform',
+  from: 'initial',
+  to: 'translate(20px)',
+}, [
+  {at: -1, is: 'translate(-20px)'},
+  {at: 0, is: 'translate(0px)'},
+  {at: 0.25, is: 'translate(5px)'},
+  {at: 0.75, is: 'translate(15px)'},
+  {at: 1, is: 'translate(20px)'},
+  {at: 2, is: 'translate(40px)'},
+]);
+
+assertInterpolation({
+  property: 'transform',
+  from: 'inherit',
+  to: 'translate(20px)',
+}, [
+  {at: -1, is: 'translate(40px)'},
+  {at: 0, is: 'translate(30px)'},
+  {at: 0.25, is: 'translate(27.5px)'},
+  {at: 0.75, is: 'translate(22.5px)'},
+  {at: 1, is: 'translate(20px)'},
+  {at: 2, is: 'translate(10px)'},
+]);
+
+assertInterpolation({
+  property: 'transform',
+  from: 'unset',
+  to: 'translate(20px)',
+}, [
+  {at: -1, is: 'translate(-20px)'},
+  {at: 0, is: 'translate(0px)'},
+  {at: 0.25, is: 'translate(5px)'},
+  {at: 0.75, is: 'translate(15px)'},
+  {at: 1, is: 'translate(20px)'},
+  {at: 2, is: 'translate(40px)'},
+]);
 
 // Perspective
 assertInterpolation({

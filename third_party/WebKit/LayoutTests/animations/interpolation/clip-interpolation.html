@@ -11,12 +11,16 @@
 .container:nth-child(2n) {
   background: green;
 }
+.parent {
+  clip: rect(100px, 0px, 100px, 0px);
+}
 .target {
   width: 80px;
   height: 80px;
   display: inline-block;
   position: absolute;
   background: white;
+  clip: rect(0px, 100px, 0px, 100px);
 }
 </style>
 <template id="target-template">
@@ -24,6 +28,44 @@
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'clip',
+  from: '',
+  to: 'rect(20px, 20px, 20px, 20px)',
+}, [
+  {at: -1, is: 'rect(-20px 180px -20px 180px)'},
+  {at: 0, is: 'rect(0px 100px 0px 100px)'},
+  {at: 0.25, is: 'rect(5px 80px 5px 80px)'},
+  {at: 0.75, is: 'rect(15px 40px 15px 40px)'},
+  {at: 1, is: 'rect(20px 20px 20px 20px)'},
+  {at: 2, is: 'rect(40px -60px 40px -60px)'},
+]);
+
+assertNoInterpolation({
+  property: 'clip',
+  from: 'initial',
+  to: 'rect(20px, 20px, 20px, 20px)',
+});
+
+assertInterpolation({
+  property: 'clip',
+  from: 'inherit',
+  to: 'rect(20px, 20px, 20px, 20px)',
+}, [
+  {at: -1, is: 'rect(180px -20px 180px -20px)'},
+  {at: 0, is: 'rect(100px 0px 100px 0px)'},
+  {at: 0.25, is: 'rect(80px 5px 80px 5px)'},
+  {at: 0.75, is: 'rect(40px 15px 40px 15px)'},
+  {at: 1, is: 'rect(20px 20px 20px 20px)'},
+  {at: 2, is: 'rect(-60px 40px -60px 40px)'},
+]);
+
+assertNoInterpolation({
+  property: 'clip',
+  from: 'unset',
+  to: 'rect(20px, 20px, 20px, 20px)',
+});
+
 assertInterpolation({
   property: 'clip',
   from: 'rect(0px, 75px, 80px, 10px)',

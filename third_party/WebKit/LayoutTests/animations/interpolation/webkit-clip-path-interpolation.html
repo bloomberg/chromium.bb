@@ -1,23 +1,62 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.parent {
+  -webkit-clip-path: inset(10px);
+  padding: 10px;
+}
 .target {
+  display: inline-block;
   width: 100px;
   height: 100px;
-}
-.actual {
-  background-color: green;
-  display: inline-block;
-}
-
-.expected {
   background-color: black;
-  display: inline-block;
+  -webkit-clip-path: inset(10px);
+}
+.expected {
+  background-color: green;
 }
 </style>
 <body>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: '-webkit-clip-path',
+  from: '',
+  to: 'inset(20px)',
+}, [
+  {at: -0.3, is: 'inset(7px)'},
+  {at: 0, is: 'inset(10px)'},
+  {at: 0.3, is: 'inset(13px)'},
+  {at: 0.6, is: 'inset(16px)'},
+  {at: 1, is: 'inset(20px)'},
+  {at: 1.5, is: 'inset(25px)'},
+]);
+
+assertNoInterpolation({
+  property: '-webkit-clip-path',
+  from: 'initial',
+  to: 'inset(20px)',
+});
+
+assertInterpolation({
+  property: '-webkit-clip-path',
+  from: 'inherit',
+  to: 'inset(20px)',
+}, [
+  {at: -0.3, is: 'inset(7px)'},
+  {at: 0, is: 'inset(10px)'},
+  {at: 0.3, is: 'inset(13px)'},
+  {at: 0.6, is: 'inset(16px)'},
+  {at: 1, is: 'inset(20px)'},
+  {at: 1.5, is: 'inset(25px)'},
+]);
+
+assertNoInterpolation({
+  property: '-webkit-clip-path',
+  from: 'unset',
+  to: 'inset(20px)',
+});
+
 assertInterpolation({
   property: '-webkit-clip-path',
   from: 'circle(10px at 25px 75px)',

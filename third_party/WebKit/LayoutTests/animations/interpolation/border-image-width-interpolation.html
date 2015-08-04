@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.parent {
+  border-image-width: 100px;
+}
 .target {
   width: 80px;
   height: 80px;
@@ -8,6 +11,7 @@
   display: inline-block;
   border: 10px;
   border-image-source: linear-gradient(45deg, red, blue, green);
+  border-image-width: 10px;
 }
 .expected {
   background-color: green;
@@ -17,6 +21,62 @@
 <body>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertInterpolation({
+  property: 'border-image-width',
+  from: '',
+  to: '20px',
+}, [
+  {at: -0.3, is:   '7px'},
+  {at: 0,    is:  '10px'},
+  {at: 0.3,  is:  '13px'},
+  {at: 0.6,  is:  '16px'},
+  {at: 1,    is:  '20px'},
+  {at: 1.5,  is:  '25px'},
+  {at: 5,    is:  '60px'},
+  {at: 10,   is: '110px'},
+]);
+assertInterpolation({
+  property: 'border-image-width',
+  from: 'initial',
+  to: '20px',
+}, [
+  {at: -0.3, is: '1'},
+  {at: 0,    is: '1'},
+  {at: 0.3,  is: '1'},
+  {at: 0.6,  is: '20px'},
+  {at: 1,    is: '20px'},
+  {at: 1.5,  is: '20px'},
+  {at: 5,    is: '20px'},
+  {at: 10,   is: '20px'},
+]);
+assertInterpolation({
+  property: 'border-image-width',
+  from: 'inherit',
+  to: '20px',
+}, [
+  {at: -0.3, is: '124px'},
+  {at: 0,    is: '100px'},
+  {at: 0.3,  is:  '76px'},
+  {at: 0.6,  is:  '52px'},
+  {at: 1,    is:  '20px'},
+  {at: 1.5,  is:   '0px'},
+  {at: 5,    is:   '0px'},
+  {at: 10,   is:   '0px'},
+]);
+assertInterpolation({
+  property: 'border-image-width',
+  from: 'unset',
+  to: '20px',
+}, [
+  {at: -0.3, is: '1'},
+  {at: 0,    is: '1'},
+  {at: 0.3,  is: '1'},
+  {at: 0.6,  is: '20px'},
+  {at: 1,    is: '20px'},
+  {at: 1.5,  is: '20px'},
+  {at: 5,    is: '20px'},
+  {at: 10,   is: '20px'},
+]);
 assertInterpolation({
   property: 'border-image-width',
   from: '0px',

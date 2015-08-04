@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+.parent {
+  baseline-shift: 30px;
+}
 .target {
   stroke: black;
   /*
   CSS transitions and animations for baseline-shift are broken unless a
   numerical underlying value is specified. See crbug.com/304007.
   */
-  baseline-shift: 0;
+  baseline-shift: 0px;
 }
 .expected {
   stroke: green;
@@ -35,6 +38,62 @@ svg {
 <script>
 assertInterpolation({
   property: 'baseline-shift',
+  from: '',
+  to: '20px',
+}, [
+  {at: -0.25, is: '-5px'},
+  {at: 0, is: '0px'},
+  {at: 0.25, is: '5px'},
+  {at: 0.5, is: '10px'},
+  {at: 0.75, is: '15px'},
+  {at: 1, is: '20px'},
+  {at: 1.25, is: '25px'},
+]);
+
+assertInterpolation({
+  property: 'baseline-shift',
+  from: 'initial',
+  to: '20px',
+}, [
+  {at: -0.25, is: '-5px'},
+  {at: 0, is: '0px'},
+  {at: 0.25, is: '5px'},
+  {at: 0.5, is: '10px'},
+  {at: 0.75, is: '15px'},
+  {at: 1, is: '20px'},
+  {at: 1.25, is: '25px'},
+]);
+
+assertInterpolation({
+  property: 'baseline-shift',
+  from: 'inherit',
+  to: '20px',
+}, [
+  {at: -0.25, is: '32.5px'},
+  {at: 0, is: '30px'},
+  {at: 0.25, is: '27.5px'},
+  {at: 0.5, is: '25px'},
+  {at: 0.75, is: '22.5px'},
+  {at: 1, is: '20px'},
+  {at: 1.25, is: '17.5px'},
+]);
+
+assertInterpolation({
+  property: 'baseline-shift',
+  from: 'unset',
+  to: '20px',
+}, [
+  {at: -0.25, is: '-5px'},
+  {at: 0, is: '0px'},
+  {at: 0.25, is: '5px'},
+  {at: 0.5, is: '10px'},
+  {at: 0.75, is: '15px'},
+  {at: 1, is: '20px'},
+  {at: 1.25, is: '25px'},
+]);
+
+assertInterpolation({
+  property: 'baseline-shift',
   from: '-10px',
   to: '10px'
 }, [
@@ -50,7 +109,7 @@ assertInterpolation({
 assertInterpolation({
   property: 'baseline-shift',
   from: 'baseline',
-  to: '100px'
+  to: '100px',
 }, [
   {at: -0.25, is: '-25px'},
   {at: 0, is: '0px'},
@@ -63,7 +122,7 @@ assertInterpolation({
 assertInterpolation({
   property: 'baseline-shift',
   from: '100px',
-  to: 'baseline'
+  to: 'baseline',
 }, [
   {at: -0.25, is: '125px'},
   {at: 0, is: '100px'},
@@ -76,17 +135,17 @@ assertInterpolation({
 assertNoInterpolation({
   property: 'baseline-shift',
   from: 'sub',
-  to: '100px'
+  to: '100px',
 });
 assertNoInterpolation({
   property: 'baseline-shift',
   from: '100px',
-  to: 'super'
+  to: 'super',
 });
 assertInterpolation({
   property: 'baseline-shift',
   from: '50mm',
-  to: 'inherit'
+  to: 'inherit',
 }, [
   {at: -0.25, is: '228.720474243164px'},
   {at: 0, is: '50mm'},
@@ -98,7 +157,7 @@ assertInterpolation({
 assertInterpolation({
   property: 'baseline-shift',
   from: '10px',
-  to: '21em'
+  to: '21em',
 }, [
   {at: -0.25, is: '-40px'},
   {at: 0, is: '10px'},
@@ -110,7 +169,7 @@ assertInterpolation({
 assertInterpolation({
   property: 'baseline-shift',
   from: 'inherit',
-  to: '33em'
+  to: '33em',
 }, [
   {at: -0.25, is: '-45px'},
   {at: 0, is: '30px'},
