@@ -57,18 +57,6 @@
 
 @end
 
-@implementation NSFont (WebCoreTheme)
-
-- (NSString*)webCoreFamilyName
-{
-    if ([[self familyName] hasPrefix:@"."])
-        return [self fontName];
-
-    return [self familyName];
-}
-
-@end
-
 namespace blink {
 
 Theme* platformTheme()
@@ -562,7 +550,7 @@ FontDescription ThemeMac::controlFont(ControlPart part, const FontDescription& f
             result.setGenericFamily(FontDescription::SerifFamily);
 
             NSFont* nsFont = [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:controlSizeForFont(fontDescription)]];
-            result.firstFamily().setFamily([nsFont webCoreFamilyName]);
+            result.firstFamily().setFamily(@"BlinkMacSystemFont");
             result.setComputedSize([nsFont pointSize] * zoomFactor);
             result.setSpecifiedSize([nsFont pointSize] * zoomFactor);
             return result;

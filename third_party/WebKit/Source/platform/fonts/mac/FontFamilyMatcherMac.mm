@@ -36,6 +36,9 @@
 #import <wtf/HashSet.h>
 #import <wtf/text/AtomicStringHash.h>
 
+#include "platform/fonts/FontTraits.h"
+#include "platform/LayoutTestSupport.h"
+
 namespace blink {
 
 const NSFontTraitMask SYNTHESIZED_FONT_TRAITS = (NSBoldFontMask | NSItalicFontMask);
@@ -103,6 +106,24 @@ static BOOL betterChoice(NSFontTraitMask desiredTraits, int desiredWeight,
 // we then do a search based on the family names of the installed fonts.
 NSFont* MatchNSFontFamily(NSString* desiredFamily, NSFontTraitMask desiredTraits, int desiredWeight, float size)
 {
+    if ([desiredFamily isEqualToString:@"BlinkMacSystemFont"]) {
+        // The system font varies with the OS version, as well as the version of
+        // the SDK used to compile the binary. Use a static font for layout
+        // tests. https://code.google.com/p/chromium/issues/detail?id=515989#c3
+        if (LayoutTestSupport::isRunningLayoutTest()) {
+            if (desiredWeight >= blink::FontWeightBold)
+                return [NSFont fontWithName:@"Lucida Grande Bold" size:size];
+            else
+                return [NSFont fontWithName:@"Lucida Grande" size:size];
+        }
+        else {
+            if (desiredWeight >= blink::FontWeightBold)
+                return [NSFont boldSystemFontOfSize:size];
+            else
+                return [NSFont systemFontOfSize:size];
+        }
+    }
+
     NSFontManager *fontManager = [NSFontManager sharedFontManager];
 
     // Do a simple case insensitive search for a matching font family.

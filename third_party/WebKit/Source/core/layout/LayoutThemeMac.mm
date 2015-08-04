@@ -238,7 +238,7 @@ void LayoutThemeMac::systemFont(CSSValueID systemFontID, FontStyle& fontStyle, F
     fontStyle = ([fontManager traitsOfFont:font] & NSItalicFontMask) ? FontStyleItalic : FontStyleNormal;
     fontWeight = toFontWeight([fontManager weightOfFont:font]);
     fontSize = [font pointSize];
-    fontFamily = [font webCoreFamilyName];
+    fontFamily = @"BlinkMacSystemFont";
 }
 
 static RGBA32 convertNSColorToColor(NSColor *color)
@@ -592,7 +592,7 @@ void LayoutThemeMac::setFontFromControlSize(ComputedStyle& style, NSControlSize 
     fontDescription.setGenericFamily(FontDescription::SerifFamily);
 
     NSFont* font = [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:controlSize]];
-    fontDescription.firstFamily().setFamily([font webCoreFamilyName]);
+    fontDescription.firstFamily().setFamily(@"BlinkMacSystemFont");
     fontDescription.setComputedSize([font pointSize] * style.effectiveZoom());
     fontDescription.setSpecifiedSize([font pointSize] * style.effectiveZoom());
 
