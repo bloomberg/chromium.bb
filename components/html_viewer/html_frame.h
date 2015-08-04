@@ -136,7 +136,10 @@ class HTMLFrame : public blink::WebFrameClient,
   void SetView(mojo::View* view);
 
   // Creates the appropriate WebWidget implementation for the Frame.
-  void CreateWebWidget();
+  void CreateRootWebWidget();
+  void CreateLocalRootWebWidget(blink::WebLocalFrame* local_frame);
+
+  void InitializeWebWidget();
 
   void UpdateFocus();
 
@@ -231,6 +234,8 @@ class HTMLFrame : public blink::WebFrameClient,
 
   HTMLFrameTreeManager* frame_tree_manager_;
   HTMLFrame* parent_;
+  // |view_| is non-null for local frames or remote frames that were once
+  // local.
   mojo::View* view_;
   // The id for this frame. If there is a view, this is the same id as the
   // view has.

@@ -126,8 +126,7 @@ HTMLFrameTreeManager::HTMLFrameTreeManager(GlobalState* global_state)
     : global_state_(global_state), root_(nullptr), local_root_(nullptr) {}
 
 HTMLFrameTreeManager::~HTMLFrameTreeManager() {
-  DCHECK(!root_);
-  DCHECK(!local_root_);
+  DCHECK(!root_ || !local_root_);
   RemoveFromInstances();
 }
 

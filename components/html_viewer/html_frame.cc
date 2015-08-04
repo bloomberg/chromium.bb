@@ -135,7 +135,7 @@ void HTMLFrame::Init(mojo::View* local_view,
   // TODO(sky): need to plumb through scope and other args correctly for frame
   // creation.
   if (!parent_) {
-    CreateWebWidget();
+    CreateRootWebWidget();
     // This is the root of the tree (aka the main frame).
     // Expected order for creating webframes is:
     // . Create local webframe (first webframe must always be local).
@@ -145,7 +145,6 @@ void HTMLFrame::Init(mojo::View* local_view,
         blink::WebLocalFrame::create(blink::WebTreeScopeType::Document, this);
     // We need to set the main frame before creating children so that state is
     // properly set up in blink.
-    // TODO(sky): I don't like these casts.
     web_view()->setMainFrame(local_web_frame);
     const gfx::Size size_in_pixels(local_view->bounds().width,
                                    local_view->bounds().height);
@@ -161,7 +160,7 @@ void HTMLFrame::Init(mojo::View* local_view,
       web_frame_ = remote_web_frame;
     }
   } else if (local_view && id_ == local_view->id()) {
-    // Frame represents the local frame.
+    // Frame represents the local frame, and it isn't the root of the tree.
     HTMLFrame* previous_sibling = GetPreviousSibling(this);
     blink::WebFrame* previous_web_frame =
         previous_sibling ? previous_sibling->web_frame() : nullptr;
@@ -169,15 +168,16 @@ void HTMLFrame::Init(mojo::View* local_view,
     web_frame_ = parent_->web_frame()->toWebRemoteFrame()->createLocalChild(
         blink::WebTreeScopeType::Document, "", blink::WebSandboxFlags::None,
         this, previous_web_frame);
-    CreateWebWidget();
+    CreateLocalRootWebWidget(web_frame_->toWebLocalFrame());
   } else if (!parent_->IsLocal()) {
     web_frame_ = parent_->web_frame()->toWebRemoteFrame()->createRemoteChild(
         blink::WebTreeScopeType::Document, remote_frame_name,
         blink::WebSandboxFlags::None, this);
   } else {
-    // This is hit if we're asked to create a new local frame with a local
-    // parent. This should never happen (if we create a local child we don't
-    // call Init()).
+    // This is hit if we're asked to create a child frame of a local parent.
+    // This should never happen (if we create a local child we don't call
+    // Init(), and the frame server should not being creating child frames of
+    // this frame).
     NOTREACHED();
   }
 
@@ -193,8 +193,14 @@ void HTMLFrame::Init(mojo::View* local_view,
 
 void HTMLFrame::Close() {
   if (web_widget_) {
-    // Closing the widget implicitly detaches the frame.
+    // Closing the root widget (WebView) implicitly detaches. For children
+    // (which have a WebFrameWidget) a detach() is required. Use a temporary
+    // as if 'this' is the root the call to web_widget_->close() deletes
+    // 'this'.
+    const bool is_child = parent_ != nullptr;
     web_widget_->close();
+    if (is_child)
+      web_frame_->detach();
   } else {
     web_frame_->detach();
   }
@@ -286,26 +292,34 @@ mojo::ApplicationImpl* HTMLFrame::GetLocalRootApp() {
 }
 
 void HTMLFrame::SetView(mojo::View* view) {
-  // TODO(sky): figure out way to cleanup view.
+  // TODO(sky): figure out way to cleanup view. In particular there may already
+  // be a view. This happens if we go from local->remote->local.
   if (view_)
     view_->RemoveObserver(this);
   view_ = view;
   view_->AddObserver(this);
 }
 
-void HTMLFrame::CreateWebWidget() {
+void HTMLFrame::CreateRootWebWidget() {
   DCHECK(!web_widget_);
-  if (parent_) {
-    // TODO(sky): this isn't quite right. I should only have a WebFrameWidget
-    // for local roots. And the cast to local fram definitely isn't right.
-    web_widget_ =
-        blink::WebFrameWidget::create(this, web_frame_->toWebLocalFrame());
-  } else if (view_ && view_->id() == id_) {
-    web_widget_ = blink::WebView::create(this);
-  } else {
-    web_widget_ = blink::WebView::create(nullptr);
-  }
+  blink::WebViewClient* web_view_client =
+      (view_ && view_->id() == id_) ? this : nullptr;
+  web_widget_ = blink::WebView::create(web_view_client);
 
+  InitializeWebWidget();
+
+  ConfigureSettings(web_view()->settings());
+}
+
+void HTMLFrame::CreateLocalRootWebWidget(blink::WebLocalFrame* local_frame) {
+  DCHECK(!web_widget_);
+  DCHECK(IsLocal());
+  web_widget_ = blink::WebFrameWidget::create(this, local_frame);
+
+  InitializeWebWidget();
+}
+
+void HTMLFrame::InitializeWebWidget() {
   // Creating the widget calls initializeLayerTreeView() to create the
   // |web_layer_tree_view_impl_|. As we haven't yet assigned the |web_widget_|
   // we have to set it here.
@@ -314,9 +328,6 @@ void HTMLFrame::CreateWebWidget() {
     web_layer_tree_view_impl_->set_view(view_);
     UpdateWebViewSizeFromViewSize();
   }
-
-  if (web_view())
-    ConfigureSettings(web_view()->settings());
 }
 
 void HTMLFrame::UpdateFocus() {
@@ -359,7 +370,8 @@ void HTMLFrame::FinishSwapToRemote() {
   blink::WebRemoteFrame* remote_frame =
       blink::WebRemoteFrame::create(scope_, this);
   remote_frame->initializeFromFrame(web_frame_->toWebLocalFrame());
-  // swap() ends up calling us back and we then close the frame.
+  // swap() ends up calling us back and we then close the frame, which deletes
+  // it.
   web_frame_->swap(remote_frame);
   web_layer_.reset(new WebLayerImpl(this));
   remote_frame->setRemoteWebLayer(web_layer_.get());
