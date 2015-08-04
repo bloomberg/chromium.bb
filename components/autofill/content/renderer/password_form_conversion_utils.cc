@@ -58,6 +58,10 @@ const char kLoginAndSignupRegex[] =
     "N+P"  // Sign-up section.
     ".*";  // Anything beyond that.
 
+const char kAutocompleteUsername[] = "username";
+const char kAutocompleteCurrentPassword[] = "current-password";
+const char kAutocompleteNewPassword[] = "new-password";
+
 struct LoginAndSignupLazyInstanceTraits
     : public base::DefaultLazyInstanceTraits<icu::RegexMatcher> {
   static icu::RegexMatcher* New(void* instance) {
@@ -119,10 +123,10 @@ bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
   // each kind as the element we are looking for.
   for (std::vector<WebInputElement>::const_iterator it = passwords.begin();
        it != passwords.end(); it++) {
-    if (HasAutocompleteAttributeValue(*it, "current-password") &&
+    if (HasAutocompleteAttributeValue(*it, kAutocompleteCurrentPassword) &&
         current_password->isNull()) {
       *current_password = *it;
-    } else if (HasAutocompleteAttributeValue(*it, "new-password") &&
+    } else if (HasAutocompleteAttributeValue(*it, kAutocompleteNewPassword) &&
         new_password->isNull()) {
       *new_password = *it;
     }
@@ -289,8 +293,10 @@ void GetPasswordForm(
          (nonscript_modified_values &&
           nonscript_modified_values->find(*input_element) !=
               nonscript_modified_values->end()) ||
-         HasAutocompleteAttributeValue(*input_element, "current-password") ||
-         HasAutocompleteAttributeValue(*input_element, "new-password"))) {
+         HasAutocompleteAttributeValue(*input_element,
+                                       kAutocompleteCurrentPassword) ||
+         HasAutocompleteAttributeValue(*input_element,
+                                       kAutocompleteNewPassword))) {
       passwords.push_back(*input_element);
       // If we have not yet considered any element to be the username so far,
       // provisionally select the input element just before the first password
@@ -310,7 +316,8 @@ void GetPasswordForm(
 
     // Various input types such as text, url, email can be a username field.
     if (input_element->isTextField() && !input_element->isPasswordField()) {
-      if (HasAutocompleteAttributeValue(*input_element, "username")) {
+      if (HasAutocompleteAttributeValue(*input_element,
+                                        kAutocompleteUsername)) {
         if (password_form->username_marked_by_site) {
           // A second or subsequent element marked with autocomplete='username'.
           // This makes us less confident that we have understood the form. We
@@ -425,7 +432,7 @@ void GetPasswordForm(
   if (!new_password.isNull()) {
     password_form->new_password_element = new_password.nameForAutofill();
     password_form->new_password_value = new_password.value();
-    if (HasAutocompleteAttributeValue(new_password, "new-password"))
+    if (HasAutocompleteAttributeValue(new_password, kAutocompleteNewPassword))
       password_form->new_password_marked_by_site = true;
   }
 
