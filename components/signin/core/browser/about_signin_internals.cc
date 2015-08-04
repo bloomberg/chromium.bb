@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
@@ -142,6 +143,32 @@ AboutSigninInternals::AboutSigninInternals(
       cookie_manager_service_(cookie_manager_service) {}
 
 AboutSigninInternals::~AboutSigninInternals() {}
+
+// static
+void AboutSigninInternals::RegisterPrefs(
+    user_prefs::PrefRegistrySyncable* user_prefs) {
+  // SigninManager information for about:signin-internals.
+
+  // TODO(rogerta): leaving untimed fields here for now because legacy
+  // profiles still have these prefs.  In three or four version from M43
+  // we can probably remove them.
+  for (int i = UNTIMED_FIELDS_BEGIN; i < UNTIMED_FIELDS_END; ++i) {
+    const std::string pref_path =
+        SigninStatusFieldToString(static_cast<UntimedSigninStatusField>(i));
+    user_prefs->RegisterStringPref(pref_path.c_str(), std::string());
+  }
+
+  for (int i = TIMED_FIELDS_BEGIN; i < TIMED_FIELDS_END; ++i) {
+    const std::string value =
+        SigninStatusFieldToString(static_cast<TimedSigninStatusField>(i)) +
+        ".value";
+    const std::string time =
+        SigninStatusFieldToString(static_cast<TimedSigninStatusField>(i)) +
+        ".time";
+    user_prefs->RegisterStringPref(value.c_str(), std::string());
+    user_prefs->RegisterStringPref(time.c_str(), std::string());
+  }
+}
 
 void AboutSigninInternals::AddSigninObserver(
     AboutSigninInternals::Observer* observer) {

@@ -12,7 +12,6 @@
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 
@@ -42,7 +41,7 @@ AccountFetcherServiceFactory* AccountFetcherServiceFactory::GetInstance() {
 
 void AccountFetcherServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterInt64Pref(AccountFetcherService::kLastUpdatePref, 0);
+  AccountFetcherService::RegisterPrefs(registry);
 }
 
 KeyedService* AccountFetcherServiceFactory::BuildServiceInstanceFor(

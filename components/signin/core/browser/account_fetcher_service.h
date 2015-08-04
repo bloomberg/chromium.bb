@@ -25,6 +25,10 @@ namespace invalidation {
 class InvalidationService;
 }
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 class AccountFetcherService : public KeyedService,
                               public OAuth2TokenService::Observer,
                               public base::NonThreadSafe {
@@ -35,6 +39,9 @@ class AccountFetcherService : public KeyedService,
 
   AccountFetcherService();
   ~AccountFetcherService() override;
+
+  // Registers the preferences used by AccountFetcherService.
+  static void RegisterPrefs(user_prefs::PrefRegistrySyncable* user_prefs);
 
   void Initialize(SigninClient* signin_client,
                   OAuth2TokenService* token_service,
