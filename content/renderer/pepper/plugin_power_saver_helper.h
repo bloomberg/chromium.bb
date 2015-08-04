@@ -40,11 +40,9 @@ class CONTENT_EXPORT PluginPowerSaverHelper : public RenderFrameObserver {
   //  - Cross-origin:  a.com -> b.com/iframe.html -> b.com/plugin.swf
   //  - Same-origin:   a.com -> b.com/iframe-to-a.html -> a.com/plugin.swf
   //
-  // |page_frame_url| is the URL of the frame containing the plugin, which may
-  // be different from the URL of the top level document.
+  // |content_origin| is the origin of the plugin content.
   //
-  // |poster_image| may be NULL. It is set to the absolute URL of the poster
-  // image if it exists and this method returns true. Otherwise, an empty GURL.
+  // |width| and |height| are zoom and device scale independent logical pixels.
   //
   // |cross_origin_main_content| may be NULL. It is set to true if the
   // plugin content is cross-origin but still the "main attraction" of the page.

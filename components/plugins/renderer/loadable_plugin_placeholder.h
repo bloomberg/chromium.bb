@@ -60,6 +60,8 @@ class LoadablePluginPlaceholder : public PluginPlaceholderBase {
   const std::string& GetIdentifier() const;
   bool LoadingAllowed() const { return allow_loading_; }
 
+  const gfx::Rect& unobscured_rect() { return unobscured_rect_; }
+
   // Replace this placeholder with a different plugin (which could be
   // a placeholder again).
   void ReplacePlugin(blink::WebPlugin* new_plugin);

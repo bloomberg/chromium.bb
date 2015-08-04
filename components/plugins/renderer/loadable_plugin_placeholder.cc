@@ -29,7 +29,6 @@
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
 #include "third_party/WebKit/public/web/WebView.h"
-
 using base::UserMetricsAction;
 using content::PluginInstanceThrottler;
 using content::RenderThread;
@@ -333,18 +332,22 @@ void LoadablePluginPlaceholder::RecheckSizeAndMaybeUnthrottle() {
   // Re-check the size in case the reported size was incorrect.
   plugin()->container()->reportGeometry();
 
+  float zoom_factor = plugin()->container()->pageZoomFactor();
+
   // Adjust padding using clip coordinates to center play button for plugins
   // that have their top or left portions obscured.
   if (is_blocked_for_power_saver_poster_) {
+    int x = roundf(unobscured_rect_.x() / zoom_factor);
+    int y = roundf(unobscured_rect_.y() / zoom_factor);
     std::string script =
-        base::StringPrintf("window.setPosterMargin('%dpx', '%dpx')",
-                           unobscured_rect_.x(), unobscured_rect_.y());
+        base::StringPrintf("window.setPosterMargin('%dpx', '%dpx')", x, y);
     plugin()->web_view()->mainFrame()->executeScript(
         blink::WebScriptSource(base::UTF8ToUTF16(script)));
   }
 
-  if (PluginInstanceThrottler::IsLargeContent(unobscured_rect_.width(),
-                                              unobscured_rect_.height())) {
+  if (PluginInstanceThrottler::IsLargeContent(
+          roundf(unobscured_rect_.width() / zoom_factor),
+          roundf(unobscured_rect_.height() / zoom_factor))) {
     MarkPluginEssential(
         PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_SIZE_CHANGE);
   }

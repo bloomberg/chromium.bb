@@ -123,9 +123,10 @@ bool WebViewPlugin::initialize(WebPluginContainer* container) {
 
     old_title_ = container_->element().getAttribute("title");
 
-    // Propagate device scale to inner webview to load the correct resource
-    // when images have a "srcset" attribute.
+    // Propagate device scale and zoom level to inner webview.
     web_view_->setDeviceScaleFactor(container_->deviceScaleFactor());
+    web_view_->setZoomLevel(
+        blink::WebView::zoomFactorToZoomLevel(container_->pageZoomFactor()));
   }
   return true;
 }

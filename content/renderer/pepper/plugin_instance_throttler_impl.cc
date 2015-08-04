@@ -15,6 +15,7 @@
 #include "ppapi/shared_impl/ppapi_constants.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "ui/gfx/color_utils.h"
 #include "url/gurl.h"
@@ -167,10 +168,12 @@ void PluginInstanceThrottlerImpl::Initialize(
   if (frame) {
     PluginPowerSaverHelper* helper = frame->plugin_power_saver_helper();
     bool cross_origin_main_content = false;
-    if (!helper->ShouldThrottleContent(content_origin, plugin_module_name,
-                                       unobscured_size.width(),
-                                       unobscured_size.height(),
-                                       &cross_origin_main_content)) {
+    float zoom_factor = GetWebPlugin()->container()->pageZoomFactor();
+    if (!helper->ShouldThrottleContent(
+            content_origin, plugin_module_name,
+            roundf(unobscured_size.width() / zoom_factor),
+            roundf(unobscured_size.height() / zoom_factor),
+            &cross_origin_main_content)) {
       DCHECK_NE(THROTTLER_STATE_MARKED_ESSENTIAL, state_);
       state_ = THROTTLER_STATE_MARKED_ESSENTIAL;
       FOR_EACH_OBSERVER(Observer, observer_list_, OnPeripheralStateChange());

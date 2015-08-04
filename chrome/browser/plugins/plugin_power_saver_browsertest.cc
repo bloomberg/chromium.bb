@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/ui/zoom/zoom_controller.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/ppapi_test_utils.h"
@@ -279,4 +280,14 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BackgroundTabPlugins) {
 
   VerifyPluginMarkedEssential(background_contents, "same_origin");
   VerifyPluginIsThrottled(background_contents, "small_cross_origin");
+}
+
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ZoomIndependent) {
+  ui_zoom::ZoomController::FromWebContents(GetActiveWebContents())
+      ->SetZoomLevel(4.0);
+  LoadHTML(
+      "<object id='plugin' data='http://otherorigin.com/fake.swf' "
+      "    type='application/x-ppapi-tests' width='400' height='200'>"
+      "</object>");
+  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
 }

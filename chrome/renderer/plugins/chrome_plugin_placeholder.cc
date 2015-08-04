@@ -123,12 +123,13 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
     values.SetString("baseurl", poster_info.base_url.spec());
 
     if (!poster_info.custom_poster_size.IsEmpty()) {
-      values.SetString(
-          "visibleWidth",
-          base::IntToString(poster_info.custom_poster_size.width()) + "px");
-      values.SetString(
-          "visibleHeight",
-          base::IntToString(poster_info.custom_poster_size.height()) + "px");
+      float zoom_factor =
+          blink::WebView::zoomLevelToZoomFactor(frame->view()->zoomLevel());
+      int width = roundf(poster_info.custom_poster_size.width() / zoom_factor);
+      int height =
+          roundf(poster_info.custom_poster_size.height() / zoom_factor);
+      values.SetString("visibleWidth", base::IntToString(width) + "px");
+      values.SetString("visibleHeight", base::IntToString(height) + "px");
     }
   }
 

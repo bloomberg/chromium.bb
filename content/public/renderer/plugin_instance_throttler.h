@@ -76,6 +76,7 @@ class CONTENT_EXPORT PluginInstanceThrottler {
   static void RecordUnthrottleMethodMetric(PowerSaverUnthrottleMethod method);
 
   // Returns true if content is considered "large", and thus essential.
+  // |width| and |height| are zoom and device scale independent logical pixels.
   static bool IsLargeContent(int width, int height);
 
   virtual ~PluginInstanceThrottler() {}
