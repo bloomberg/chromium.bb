@@ -502,7 +502,7 @@ Position CompositeEditCommand::replaceSelectedTextInNode(const String& text)
     if (start.containerNode() != end.containerNode() || !start.containerNode()->isTextNode() || isTabHTMLSpanElementTextNode(start.containerNode()))
         return Position();
 
-    RefPtrWillBeRawPtr<Text> textNode = start.containerText();
+    RefPtrWillBeRawPtr<Text> textNode = toText(start.containerNode());
     replaceTextInNode(textNode, start.offsetInContainerNode(), end.offsetInContainerNode() - start.offsetInContainerNode(), text);
 
     return Position(textNode.release(), start.offsetInContainerNode() + text.length());
@@ -714,7 +714,7 @@ void CompositeEditCommand::replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNee
     Position pos = visiblePosition.deepEquivalent().downstream();
     if (!pos.containerNode() || !pos.containerNode()->isTextNode())
         return;
-    replaceTextInNodePreservingMarkers(pos.containerText(), pos.offsetInContainerNode(), 1, nonBreakingSpaceString());
+    replaceTextInNodePreservingMarkers(toText(pos.containerNode()), pos.offsetInContainerNode(), 1, nonBreakingSpaceString());
 }
 
 void CompositeEditCommand::rebalanceWhitespace()
