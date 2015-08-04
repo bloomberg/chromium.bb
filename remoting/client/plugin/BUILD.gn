@@ -4,18 +4,12 @@
 
 import("//remoting/remoting_srcs.gni")
 
+# TODO(sergeyu): Port this target to NaCl.
 source_set("plugin") {
   sources =
       rebase_path(remoting_srcs_gypi_values.remoting_client_plugin_sources,
                   ".",
                   "//remoting")
-
-  # TODO(GYP) when a nacl version of this target is made, these files
-  # won't be part of it.
-  sources += [
-    "pepper_entrypoints.cc",
-    "pepper_entrypoints.h",
-  ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 

@@ -76,32 +76,6 @@ content::PepperPluginInfo::GetInterfaceFunc g_pdf_get_interface;
 content::PepperPluginInfo::PPP_InitializeModuleFunc g_pdf_initialize_module;
 content::PepperPluginInfo::PPP_ShutdownModuleFunc g_pdf_shutdown_module;
 
-#if defined(ENABLE_REMOTING)
-
-content::PepperPluginInfo::GetInterfaceFunc g_remoting_get_interface;
-content::PepperPluginInfo::PPP_InitializeModuleFunc
-    g_remoting_initialize_module;
-content::PepperPluginInfo::PPP_ShutdownModuleFunc g_remoting_shutdown_module;
-
-#if defined(GOOGLE_CHROME_BUILD)
-const char kRemotingViewerPluginName[] = "Chrome Remote Desktop Viewer";
-#else
-const char kRemotingViewerPluginName[] = "Chromoting Viewer";
-#endif  // defined(GOOGLE_CHROME_BUILD)
-const char kRemotingViewerPluginDescription[] =
-    "This plugin allows you to securely access other computers that have been "
-    "shared with you. To use this plugin you must first install the "
-    "<a href=\"https://chrome.google.com/remotedesktop\">"
-    "Chrome Remote Desktop</a> webapp.";
-// Use a consistent MIME-type regardless of branding.
-const char kRemotingViewerPluginMimeType[] =
-    "application/vnd.chromium.remoting-viewer";
-const char kRemotingViewerPluginMimeExtension[] = "";
-const char kRemotingViewerPluginMimeDescription[] = "";
-const uint32 kRemotingViewerPluginPermissions = ppapi::PERMISSION_PRIVATE |
-                                                ppapi::PERMISSION_DEV;
-#endif  // defined(ENABLE_REMOTING)
-
 #if !defined(DISABLE_NACL)
 content::PepperPluginInfo::GetInterfaceFunc g_nacl_get_interface;
 content::PepperPluginInfo::PPP_InitializeModuleFunc g_nacl_initialize_module;
@@ -204,28 +178,6 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS) &&
         // !defined(WIDEVINE_CDM_IS_COMPONENT)
-
-  // The Remoting Viewer plugin is built-in.
-#if defined(ENABLE_REMOTING)
-  content::PepperPluginInfo info;
-  info.is_internal = true;
-  info.is_out_of_process = true;
-  info.name = kRemotingViewerPluginName;
-  info.description = kRemotingViewerPluginDescription;
-  info.path = base::FilePath::FromUTF8Unsafe(
-      ChromeContentClient::kRemotingViewerPluginPath);
-  content::WebPluginMimeType remoting_mime_type(
-      kRemotingViewerPluginMimeType,
-      kRemotingViewerPluginMimeExtension,
-      kRemotingViewerPluginMimeDescription);
-  info.mime_types.push_back(remoting_mime_type);
-  info.internal_entry_points.get_interface = g_remoting_get_interface;
-  info.internal_entry_points.initialize_module = g_remoting_initialize_module;
-  info.internal_entry_points.shutdown_module = g_remoting_shutdown_module;
-  info.permissions = kRemotingViewerPluginPermissions;
-
-  plugins->push_back(info);
-#endif
 }
 
 content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path,
@@ -396,19 +348,6 @@ std::string GetUserAgent() {
 #endif
   return content::BuildUserAgentFromProduct(product);
 }
-
-
-#if defined(ENABLE_REMOTING)
-
-void ChromeContentClient::SetRemotingEntryFunctions(
-    content::PepperPluginInfo::GetInterfaceFunc get_interface,
-    content::PepperPluginInfo::PPP_InitializeModuleFunc initialize_module,
-    content::PepperPluginInfo::PPP_ShutdownModuleFunc shutdown_module) {
-  g_remoting_get_interface = get_interface;
-  g_remoting_initialize_module = initialize_module;
-  g_remoting_shutdown_module = shutdown_module;
-}
-#endif
 
 #if !defined(DISABLE_NACL)
 void ChromeContentClient::SetNaClEntryFunctions(

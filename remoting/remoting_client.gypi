@@ -5,31 +5,6 @@
 {
   'targets': [
     {
-      # GN version: //remoting/client/plugin
-      'target_name': 'remoting_client_plugin',
-      'type': 'static_library',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'defines': [
-        'HAVE_STDINT_H',  # Required by on2_integer.h
-      ],
-      'dependencies': [
-        '../net/net.gyp:net',
-        '../ppapi/ppapi.gyp:ppapi_cpp_objects',
-        '../ppapi/ppapi.gyp:ppapi_internal_module',
-        '../third_party/webrtc/modules/modules.gyp:desktop_capture',
-        '../ui/events/events.gyp:dom_keycode_converter',
-        'remoting_base',
-        'remoting_client',
-        'remoting_protocol',
-      ],
-      'sources': [
-        '<@(remoting_client_plugin_sources)',
-        'client/plugin/pepper_entrypoints.cc',
-        'client/plugin/pepper_entrypoints.h',
-      ],
-    },  # end of target 'remoting_client_plugin'
-
-    {
       # GN version: //remoting/client
       'target_name': 'remoting_client',
       'type': 'static_library',

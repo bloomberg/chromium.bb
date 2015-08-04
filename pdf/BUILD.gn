@@ -53,6 +53,7 @@ static_library("pdf") {
     "//components/ui/zoom:ui_zoom",
     "//content/public/common",
     "//net",
+    "//ppapi/cpp:objects",
     "//ppapi/cpp/private:internal_module",
     "//third_party/pdfium",
   ]

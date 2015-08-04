@@ -52,11 +52,6 @@
               '<(DEPTH)/components/nacl/renderer/plugin/plugin.gyp:nacl_trusted_plugin',
             ],
           }],
-          ['remoting==1', {
-            'chromium_child_dependencies': [
-              '../remoting/remoting.gyp:remoting_client_plugin',
-            ],
-          }],
         ],
       }],
       ['enable_basic_printing==1 or enable_print_preview==1', {

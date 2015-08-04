@@ -117,10 +117,6 @@
 #include "components/nacl/renderer/plugin/ppapi_entrypoints.h"
 #endif
 
-#if defined(ENABLE_REMOTING)
-#include "remoting/client/plugin/pepper_entrypoints.h"
-#endif
-
 #if defined(ENABLE_PLUGINS) && (defined(CHROME_MULTIPLE_DLL_CHILD) || \
     !defined(CHROME_MULTIPLE_DLL_BROWSER))
 #include "pdf/pdf.h"
@@ -817,12 +813,6 @@ void ChromeMainDelegate::SandboxInitialized(const std::string& process_type) {
 #endif
 
 #if defined(CHROME_MULTIPLE_DLL_CHILD) || !defined(CHROME_MULTIPLE_DLL_BROWSER)
-#if defined(ENABLE_REMOTING)
-  ChromeContentClient::SetRemotingEntryFunctions(
-      remoting::PPP_GetInterface,
-      remoting::PPP_InitializeModule,
-      remoting::PPP_ShutdownModule);
-#endif
 #if !defined(DISABLE_NACL)
   ChromeContentClient::SetNaClEntryFunctions(
       nacl_plugin::PPP_GetInterface,

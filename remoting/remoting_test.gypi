@@ -188,7 +188,6 @@
         'remoting_base',
         'remoting_breakpad',
         'remoting_client',
-        'remoting_client_plugin',
         'remoting_host',
         'remoting_host_setup_base',
         'remoting_it2me_host_static',
@@ -366,11 +365,6 @@
               '-lwtsapi32.lib',
             ],
           },
-        }],
-        [ 'OS=="android"', {
-          'dependencies!': [
-            'remoting_client_plugin',
-          ],
         }],
         [ 'OS=="android"', {
           'dependencies': [

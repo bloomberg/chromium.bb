@@ -2116,11 +2116,6 @@
             '<(DEPTH)/components/nacl/renderer/plugin/plugin.gyp:nacl_trusted_plugin',
           ],
         }],
-        ['remoting==1', {
-          'dependencies': [
-            '../remoting/remoting.gyp:remoting_client_plugin',
-          ],
-        }],
         ['toolkit_views==1', {
           'dependencies': [
             '../ui/views/views.gyp:views',

@@ -29,13 +29,6 @@ class ChromeContentClient : public content::ContentClient {
   // pointers for built-in plugins. We avoid linking these plugins into
   // chrome_common because then on Windows we would ship them twice because of
   // the split DLL.
-#if defined(ENABLE_REMOTING)
-  static void SetRemotingEntryFunctions(
-      content::PepperPluginInfo::GetInterfaceFunc get_interface,
-      content::PepperPluginInfo::PPP_InitializeModuleFunc initialize_module,
-      content::PepperPluginInfo::PPP_ShutdownModuleFunc shutdown_module);
-#endif
-
 #if !defined(DISABLE_NACL)
   static void SetNaClEntryFunctions(
       content::PepperPluginInfo::GetInterfaceFunc get_interface,

@@ -339,9 +339,6 @@ group("child_dependencies") {
   if (enable_nacl) {
     deps += [ "//components/nacl/renderer/plugin:nacl_trusted_plugin" ]
   }
-  if (enable_remoting) {
-    deps += [ "//remoting/client/plugin" ]
-  }
 }
 
 if (is_win) {

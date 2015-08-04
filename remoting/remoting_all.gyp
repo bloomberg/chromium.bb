@@ -19,7 +19,6 @@
         '../remoting/remoting.gyp:remoting_breakpad',
         '../remoting/remoting.gyp:remoting_browser_test_resources',
         '../remoting/remoting.gyp:remoting_client',
-        '../remoting/remoting.gyp:remoting_client_plugin',
         '../remoting/remoting.gyp:remoting_perftests',
         '../remoting/remoting.gyp:remoting_protocol',
         '../remoting/remoting.gyp:remoting_resources',
