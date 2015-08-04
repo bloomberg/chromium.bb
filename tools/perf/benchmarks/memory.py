@@ -30,8 +30,7 @@ class MemoryTop7Stress(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Enabled('has tabs')
-@benchmark.Disabled('android', # Benchmark uses > 700MB of memory.
-                    'linux') # https://crbug.com/490841
+@benchmark.Disabled('android') # Benchmark uses > 700MB of memory.
 class MemoryIdleMultiTab(perf_benchmark.PerfBenchmark):
   """Use (recorded) real world web sites and measure memory consumption
   with many tabs and idle times. """
