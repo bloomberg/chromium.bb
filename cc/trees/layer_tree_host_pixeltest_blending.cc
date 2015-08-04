@@ -6,6 +6,8 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/test/layer_tree_pixel_resource_test.h"
 #include "cc/test/pixel_comparator.h"
+#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkSurface.h"
 
 #if !defined(OS_ANDROID)
 
@@ -127,21 +129,23 @@ class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
     // Draw the backdrop with horizontal lanes.
     const int kLaneWidth = width;
     const int kLaneHeight = height / kCSSTestColorsCount;
-    SkBitmap backing_store;
-    backing_store.allocN32Pixels(width, height);
-    SkCanvas canvas(backing_store);
-    canvas.clear(SK_ColorTRANSPARENT);
+    skia::RefPtr<SkSurface> backing_store =
+        skia::AdoptRef(SkSurface::NewRasterN32Premul(width, height));
+    SkCanvas* canvas = backing_store->getCanvas();
+    canvas->clear(SK_ColorTRANSPARENT);
     for (int i = 0; i < kCSSTestColorsCount; ++i) {
       SkPaint paint;
       paint.setColor(kCSSTestColors[i]);
-      canvas.drawRect(
+      canvas->drawRect(
           SkRect::MakeXYWH(0, i * kLaneHeight, kLaneWidth, kLaneHeight), paint);
     }
     scoped_refptr<PictureImageLayer> layer =
         PictureImageLayer::Create(layer_settings());
     layer->SetIsDrawable(true);
     layer->SetBounds(gfx::Size(width, height));
-    layer->SetBitmap(backing_store);
+    skia::RefPtr<const SkImage> image =
+        skia::AdoptRef(backing_store->newImageSnapshot());
+    layer->SetImage(image.Pass());
     return layer;
   }
 
@@ -154,18 +158,19 @@ class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
     mask->SetIsMask(true);
     mask->SetBounds(bounds);
 
-    SkBitmap bitmap;
-    bitmap.allocN32Pixels(bounds.width(), bounds.height());
-    SkCanvas canvas(bitmap);
+    skia::RefPtr<SkSurface> surface = skia::AdoptRef(
+        SkSurface::NewRasterN32Premul(bounds.width(), bounds.height()));
+    SkCanvas* canvas = surface->getCanvas();
     SkPaint paint;
     paint.setColor(SK_ColorWHITE);
-    canvas.clear(SK_ColorTRANSPARENT);
-    canvas.drawRect(SkRect::MakeXYWH(kMaskOffset,
-                                     kMaskOffset,
-                                     bounds.width() - kMaskOffset * 2,
-                                     bounds.height() - kMaskOffset * 2),
-                    paint);
-    mask->SetBitmap(bitmap);
+    canvas->clear(SK_ColorTRANSPARENT);
+    canvas->drawRect(SkRect::MakeXYWH(kMaskOffset, kMaskOffset,
+                                      bounds.width() - kMaskOffset * 2,
+                                      bounds.height() - kMaskOffset * 2),
+                     paint);
+    skia::RefPtr<const SkImage> image =
+        skia::AdoptRef(surface->newImageSnapshot());
+    mask->SetImage(image.Pass());
     layer->SetMaskLayer(mask.get());
   }
 

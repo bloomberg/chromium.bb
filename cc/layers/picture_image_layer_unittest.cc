@@ -8,9 +8,10 @@
 #include "cc/test/skia_common.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkSurface.h"
 
 namespace cc {
 namespace {
@@ -20,19 +21,21 @@ TEST(PictureImageLayerTest, PaintContentsToDisplayList) {
       PictureImageLayer::Create(LayerSettings());
   gfx::Rect layer_rect(200, 200);
 
-  SkBitmap image_bitmap;
   unsigned char image_pixels[4 * 200 * 200] = {0};
   SkImageInfo info =
       SkImageInfo::MakeN32Premul(layer_rect.width(), layer_rect.height());
-  image_bitmap.installPixels(info, image_pixels, info.minRowBytes());
-  SkCanvas image_canvas(image_bitmap);
-  image_canvas.clear(SK_ColorRED);
+  skia::RefPtr<SkSurface> image_surface = skia::AdoptRef(
+      SkSurface::NewRasterDirect(info, image_pixels, info.minRowBytes()));
+  SkCanvas* image_canvas = image_surface->getCanvas();
+  image_canvas->clear(SK_ColorRED);
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
-  image_canvas.drawRectCoords(0.f, 0.f, 100.f, 100.f, blue_paint);
-  image_canvas.drawRectCoords(100.f, 100.f, 200.f, 200.f, blue_paint);
+  image_canvas->drawRectCoords(0.f, 0.f, 100.f, 100.f, blue_paint);
+  image_canvas->drawRectCoords(100.f, 100.f, 200.f, 200.f, blue_paint);
 
-  layer->SetBitmap(image_bitmap);
+  skia::RefPtr<const SkImage> image =
+      skia::AdoptRef(image_surface->newImageSnapshot());
+  layer->SetImage(image.Pass());
   layer->SetBounds(gfx::Size(layer_rect.width(), layer_rect.height()));
 
   scoped_refptr<DisplayItemList> display_list =

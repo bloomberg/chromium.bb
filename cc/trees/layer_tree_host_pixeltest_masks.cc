@@ -9,6 +9,8 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/test/layer_tree_pixel_resource_test.h"
 #include "cc/test/pixel_comparator.h"
+#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkSurface.h"
 
 #if !defined(OS_ANDROID)
 
@@ -91,14 +93,16 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
   mask->SetIsMask(true);
   mask->SetBounds(mask_bounds);
 
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(200, 200);
-  SkCanvas canvas(bitmap);
-  canvas.scale(SkIntToScalar(4), SkIntToScalar(4));
+  skia::RefPtr<SkSurface> surface =
+      skia::AdoptRef(SkSurface::NewRasterN32Premul(200, 200));
+  SkCanvas* canvas = surface->getCanvas();
+  canvas->scale(SkIntToScalar(4), SkIntToScalar(4));
   MaskContentLayerClient client(mask_bounds);
-  client.PaintContents(&canvas, gfx::Rect(mask_bounds),
+  client.PaintContents(canvas, gfx::Rect(mask_bounds),
                        ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
-  mask->SetBitmap(bitmap);
+  skia::RefPtr<const SkImage> image =
+      skia::AdoptRef(surface->newImageSnapshot());
+  mask->SetImage(image.Pass());
 
   scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(
       gfx::Rect(25, 25, 50, 50), kCSSGreen, 1, SK_ColorBLACK);

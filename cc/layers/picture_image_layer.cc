@@ -32,46 +32,40 @@ scoped_ptr<LayerImpl> PictureImageLayer::CreateLayerImpl(
 }
 
 bool PictureImageLayer::HasDrawableContent() const {
-  return !bitmap_.isNull() && PictureLayer::HasDrawableContent();
+  return image_ && PictureLayer::HasDrawableContent();
 }
 
-void PictureImageLayer::SetBitmap(const SkBitmap& bitmap) {
-  // SetBitmap() currently gets called whenever there is any
+void PictureImageLayer::SetImage(skia::RefPtr<const SkImage> image) {
+  // SetImage() currently gets called whenever there is any
   // style change that affects the layer even if that change doesn't
   // affect the actual contents of the image (e.g. a CSS animation).
   // With this check in place we avoid unecessary texture uploads.
-  if (bitmap.pixelRef() && bitmap.pixelRef() == bitmap_.pixelRef())
+  if (image_.get() == image.get())
     return;
 
-  bitmap_ = bitmap;
+  image_ = image.Pass();
   UpdateDrawsContent(HasDrawableContent());
   SetNeedsDisplay();
-}
-
-void PictureImageLayer::SetImage(const SkImage* image) {
-  // Transitional bridge.
-  SkBitmap bitmap;
-  if (image->asLegacyBitmap(&bitmap, SkImage::kRO_LegacyBitmapMode))
-    SetBitmap(bitmap);
 }
 
 void PictureImageLayer::PaintContents(
     SkCanvas* canvas,
     const gfx::Rect& clip,
     ContentLayerClient::PaintingControlSetting painting_control) {
-  if (!bitmap_.width() || !bitmap_.height())
-    return;
+  DCHECK(image_);
+  DCHECK_GT(image_->width(), 0);
+  DCHECK_GT(image_->height(), 0);
 
   SkScalar content_to_layer_scale_x =
-      SkFloatToScalar(static_cast<float>(bounds().width()) / bitmap_.width());
+      SkFloatToScalar(static_cast<float>(bounds().width()) / image_->width());
   SkScalar content_to_layer_scale_y =
-      SkFloatToScalar(static_cast<float>(bounds().height()) / bitmap_.height());
+      SkFloatToScalar(static_cast<float>(bounds().height()) / image_->height());
   canvas->scale(content_to_layer_scale_x, content_to_layer_scale_y);
 
   // Because Android WebView resourceless software draw mode rasters directly
   // to the root canvas, this draw must use the kSrcOver_Mode so that
   // transparent images blend correctly.
-  canvas->drawBitmap(bitmap_, 0, 0);
+  canvas->drawImage(image_.get(), 0, 0);
 }
 
 scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(

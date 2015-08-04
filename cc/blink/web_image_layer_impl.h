@@ -20,7 +20,6 @@ class WebImageLayerImpl : public blink::WebImageLayer {
 
   // blink::WebImageLayer implementation.
   virtual blink::WebLayer* layer();
-  virtual void setImageBitmap(const SkBitmap& bitmap);
   virtual void setImage(const SkImage* image);
   virtual void setNearestNeighbor(bool nearest_neighbor);
 
