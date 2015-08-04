@@ -202,7 +202,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (command_line.HasSwitch(switches::kEnableWebVR)) {
     WebRuntimeFeatures::enableWebVR(true);
-    WebRuntimeFeatures::enableFeatureFromString("GeometryInterfaces", true);
+    // TODO(bashi): Remove blink::WebString() cast.
+    WebRuntimeFeatures::enableFeatureFromString(
+        blink::WebString("GeometryInterfaces"), true);
   }
 
   // Enable explicitly enabled features, and then disable explicitly disabled
