@@ -26,6 +26,8 @@
         '../public/provider/chrome/browser/signin/chrome_identity.mm',
         '../public/provider/chrome/browser/signin/chrome_identity_service.h',
         '../public/provider/chrome/browser/signin/chrome_identity_service.mm',
+        '../public/provider/chrome/browser/signin/signin_error_provider.h',
+        '../public/provider/chrome/browser/signin/signin_error_provider.mm',
         '../public/provider/chrome/browser/string_provider.h',
         '../public/provider/chrome/browser/ui/infobar_view_delegate.h',
         '../public/provider/chrome/browser/ui/infobar_view_protocol.h',

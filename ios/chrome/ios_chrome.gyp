@@ -305,6 +305,8 @@
         'browser/signin/signin_manager_factory.cc',
         'browser/signin/signin_manager_factory.h',
         'browser/signin/signin_manager_factory_observer.h',
+        'browser/signin/signin_util.h',
+        'browser/signin/signin_util.mm',
         'browser/snapshots/snapshot_cache.h',
         'browser/snapshots/snapshot_cache.mm',
         'browser/snapshots/snapshot_manager.h',
