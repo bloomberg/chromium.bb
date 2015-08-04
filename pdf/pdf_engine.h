@@ -233,6 +233,9 @@ class PDFEngine {
   virtual pp::Rect GetPageRect(int index) = 0;
   // Gets the rectangle of the page excluding any additional areas.
   virtual pp::Rect GetPageContentsRect(int index) = 0;
+  // Returns a page's rect in screen coordinates, as well as its surrounding
+  // border areas and bottom separator.
+  virtual pp::Rect GetPageScreenRect(int page_index) const = 0;
   // Gets the offset of the vertical scrollbar from the top in document
   // coordinates.
   virtual int GetVerticalScrollbarYPosition() = 0;
