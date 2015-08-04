@@ -34,10 +34,6 @@
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/value_builder.h"
 
-#if defined(USE_AURA)
-#include "ui/aura/env.h"
-#endif
-
 namespace extensions {
 
 namespace {
@@ -95,6 +91,8 @@ class ExtensionToolbarModelTestObserver
   // Int because it could become negative (if something goes wrong).
   int highlight_mode_count_;
   size_t initialized_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionToolbarModelTestObserver);
 };
 
 ExtensionToolbarModelTestObserver::ExtensionToolbarModelTestObserver(
@@ -1076,6 +1074,16 @@ TEST_F(ExtensionToolbarModelUnitTest,
   EXPECT_EQ(extension_c, GetExtensionAtIndex(0u));
   EXPECT_EQ(extension_a, GetExtensionAtIndex(1u));
   EXPECT_EQ(extension_b, GetExtensionAtIndex(2u));
+
+  // Regression test for crbug.com/515963. Check that an extension's visibility
+  // is updated when it is moved out because another extension was removed.
+  toolbar_model()->SetVisibleIconCount(1);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(action_api->GetBrowserActionVisibility(extension_a->id()));
+  service()->DisableExtension(extension_c->id(),
+                              Extension::DISABLE_USER_ACTION);
+  EXPECT_EQ(1u, toolbar_model()->visible_icon_count());
+  EXPECT_TRUE(action_api->GetBrowserActionVisibility(extension_a->id()));
 }
 
 // Test that observers receive no Added notifications until after the

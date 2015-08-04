@@ -395,6 +395,12 @@ void ExtensionToolbarModel::RemoveExtension(const Extension* extension) {
   if (pos == toolbar_items_.end())
     return;
 
+  size_t index = pos - toolbar_items_.begin();
+  // If the removed extension was on the toolbar, a new one will take its place
+  // if there are any in overflow.
+  bool new_extension_shown =
+      !all_icons_visible() && index < visible_icon_count();
+
   // If our visible count is set to the current size, we need to decrement it.
   if (visible_icon_count_ == static_cast<int>(toolbar_items_.size()))
     SetVisibleIconCount(toolbar_items_.size() - 1);
@@ -421,6 +427,11 @@ void ExtensionToolbarModel::RemoveExtension(const Extension* extension) {
   }
 
   UpdatePrefs();
+  if (new_extension_shown) {
+    size_t newly_visible_index = visible_icon_count() - 1;
+    MaybeUpdateVisibilityPref(toolbar_items_[newly_visible_index].get(),
+                              newly_visible_index);
+  }
 }
 
 // Combine the currently enabled extensions that have browser actions (which
