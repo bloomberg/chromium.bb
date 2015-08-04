@@ -6,4 +6,5 @@ include_rules = [
   "+remoting/host",
   "+remoting/protocol",
   "+remoting/signaling",
+  "+ui/gfx"
 ]

@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
 #include "remoting/test/remote_connection_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -61,6 +60,9 @@ class AppRemotingLatencyTestFixture : public testing::Test,
       const webrtc::DesktopRect& expected_rect,
       const RGBValue& expected_avg_color);
 
+  // Turn on/off saving video frames to disk.
+  void SaveFrameDataToDisk(bool save_frame_data_to_disk);
+
   // Inject press & release key event.
   void PressAndReleaseKey(uint32_t usb_keycode);
 
@@ -91,7 +93,6 @@ class AppRemotingLatencyTestFixture : public testing::Test,
   void SetUp() override;
   void TearDown() override;
 
- private:
   // RemoteConnectionObserver interface.
   void HostMessageReceived(const protocol::ExtensionMessage& message) override;
 
@@ -110,10 +111,6 @@ class AppRemotingLatencyTestFixture : public testing::Test,
 
   // Used for setting timeouts and delays.
   scoped_ptr<base::Timer> timer_;
-
-  // Used to ensure RemoteConnectionObserver methods are called on the same
-  // thread.
-  base::ThreadChecker thread_checker_;
 
   // Used to maintain a reference to the TestVideoRenderer instance while it
   // exists.

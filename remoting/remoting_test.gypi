@@ -102,6 +102,8 @@
         'test/test_chromoting_client.h',
         'test/test_video_renderer.cc',
         'test/test_video_renderer.h',
+        'test/video_frame_writer.cc',
+        'test/video_frame_writer.h',
       ],
       'conditions': [
         ['enable_remoting_host == 0', {

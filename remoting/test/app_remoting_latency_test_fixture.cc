@@ -29,8 +29,6 @@ AppRemotingLatencyTestFixture::~AppRemotingLatencyTestFixture() {
 }
 
 void AppRemotingLatencyTestFixture::SetUp() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
   scoped_ptr<TestVideoRenderer> test_video_renderer(new TestVideoRenderer());
   test_video_renderer_ = test_video_renderer->GetWeakPtr();
 
@@ -69,23 +67,23 @@ WaitForImagePatternMatchCallback
 AppRemotingLatencyTestFixture::SetExpectedImagePattern(
     const webrtc::DesktopRect& expected_rect,
     const RGBValue& expected_color) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
   scoped_ptr<base::RunLoop> run_loop(new base::RunLoop());
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&TestVideoRenderer::ExpectAverageColorInRect,
-                            test_video_renderer_, expected_rect, expected_color,
-                            run_loop->QuitClosure()));
+  test_video_renderer_->ExpectAverageColorInRect(expected_rect, expected_color,
+                                                 run_loop->QuitClosure());
 
   return base::Bind(&AppRemotingLatencyTestFixture::WaitForImagePatternMatch,
                     base::Unretained(this), base::Passed(&run_loop));
 }
 
+void AppRemotingLatencyTestFixture::SaveFrameDataToDisk(
+    bool save_frame_data_to_disk) {
+  test_video_renderer_->SaveFrameDataToDisk(save_frame_data_to_disk);
+}
+
 bool AppRemotingLatencyTestFixture::WaitForImagePatternMatch(
     scoped_ptr<base::RunLoop> run_loop,
     const base::TimeDelta& max_wait_time) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(run_loop);
   DCHECK(!timer_->IsRunning());
 
@@ -103,8 +101,6 @@ bool AppRemotingLatencyTestFixture::WaitForImagePatternMatch(
 
 void AppRemotingLatencyTestFixture::HostMessageReceived(
     const protocol::ExtensionMessage& message) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
   if (!host_message_received_callback_.is_null()) {
     host_message_received_callback_.Run(message);
   }

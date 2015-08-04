@@ -64,6 +64,9 @@ class TestVideoRenderer : public VideoRenderer, public protocol::VideoStub {
       const RGBValue& expected_average_color,
       const base::Closure& image_pattern_matched_callback);
 
+  // Turn on/off saving video frames to disk.
+  void SaveFrameDataToDisk(bool save_frame_data_to_disk);
+
  private:
   // The actual implementation resides in Core class.
   class Core;

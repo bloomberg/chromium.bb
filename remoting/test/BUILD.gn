@@ -58,6 +58,8 @@ source_set("test_support") {
     "test_chromoting_client.h",
     "test_video_renderer.cc",
     "test_video_renderer.h",
+    "video_frame_writer.cc",
+    "video_frame_writer.h",
   ]
 
   public_deps = [

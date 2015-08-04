@@ -4,8 +4,6 @@
 
 #include "remoting/test/test_video_renderer.h"
 
-#include <cmath>
-
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
@@ -17,13 +15,16 @@
 #include "remoting/codec/video_decoder_vpx.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/test/rgb_value.h"
+#include "remoting/test/video_frame_writer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace {
+
 // Used to account for frame resizing and lossy encoding error in percentage.
 // The average color usually only varies by 1 on each channel, so 0.01 is large
 // enough to allow variations while not being flaky for false negative cases.
 const double kMaxColorError = 0.01;
+
 }  // namespace
 
 namespace remoting {
@@ -54,6 +55,11 @@ class TestVideoRenderer::Core {
       const webrtc::DesktopRect& expected_rect,
       const RGBValue& expected_avg_color,
       const base::Closure& image_pattern_matched_callback);
+
+  // Turn on/off saving video frames to disk.
+  void save_frame_data_to_disk(bool save_frame_data_to_disk) {
+    save_frame_data_to_disk_ = save_frame_data_to_disk;
+  }
 
  private:
   // Returns average color of pixels fall within |rect| on the current frame.
@@ -92,11 +98,18 @@ class TestVideoRenderer::Core {
   // Used to store the callback when expected pattern is matched.
   base::Closure image_pattern_matched_callback_;
 
+  // Used to identify whether saving frame frame data to disk.
+  bool save_frame_data_to_disk_;
+
+  // Used to dump video frames and generate image patterns.
+  VideoFrameWriter video_frame_writer;
+
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
 TestVideoRenderer::Core::Core()
-    : main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+    : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      save_frame_data_to_disk_(false) {
   thread_checker_.DetachFromThread();
 }
 
@@ -187,6 +200,12 @@ void TestVideoRenderer::Core::ProcessVideoPacket(
 
   main_task_runner_->PostTask(FROM_HERE, done);
 
+  if (save_frame_data_to_disk_) {
+    scoped_ptr<webrtc::DesktopFrame> frame(
+        webrtc::BasicDesktopFrame::CopyOf(*frame_.get()));
+    video_frame_writer.WriteFrameToDefaultPath(*frame.get());
+  }
+
   // Check to see if a image pattern matched reply is passed in, and whether
   // the |expected_rect_| falls within the current frame.
   if (image_pattern_matched_callback_.is_null() ||
@@ -194,13 +213,10 @@ void TestVideoRenderer::Core::ProcessVideoPacket(
       expected_rect_.bottom() > frame_->size().height()) {
     return;
   }
-
-  // Compare the expected image pattern with the corresponding rectangle region
+  // Compare the expected image pattern with the corresponding rectangle
+  // region
   // on the current frame.
   RGBValue accumulating_avg_value = CalculateAverageColorValue(expected_rect_);
-  VLOG(2) << accumulating_avg_value.red << " " << accumulating_avg_value.green
-          << " " << accumulating_avg_value.blue;
-
   if (ExpectedAverageColorIsMatched(accumulating_avg_value)) {
     main_task_runner_->PostTask(
         FROM_HERE, base::ResetAndReturn(&image_pattern_matched_callback_));
@@ -357,6 +373,15 @@ void TestVideoRenderer::ExpectAverageColorInRect(
       base::Bind(&Core::ExpectAverageColorInRect, base::Unretained(core_.get()),
                  expected_rect, expected_avg_color,
                  image_pattern_matched_callback));
+}
+
+void TestVideoRenderer::SaveFrameDataToDisk(bool save_frame_data_to_disk) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  video_decode_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&Core::save_frame_data_to_disk, base::Unretained(core_.get()),
+                 save_frame_data_to_disk));
 }
 
 }  // namespace test
