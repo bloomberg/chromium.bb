@@ -1,0 +1,89 @@
+<html>
+    <style>
+        body {
+            margin: 0;
+        }
+        .container {
+            -webkit-transform-origin: 0px 0px 0px;
+            height: 50px;
+            background-color: blue;
+            overflow: hidden;
+            opacity: 0.5;
+        }
+        .plugin {
+            width: 100%;
+            height: 100%;
+        }
+        .actual_hl_parent {
+            position: fixed;
+            overflow: hidden;
+        }
+        .actual_hl_child {
+            position: absolute;
+            background: red;
+            opacity: 0.5;
+        }
+        .spacer {
+            width: 100%;
+            height: 20px;
+        }
+
+    </style>
+    <body>
+        <p>The two bars below should be the same length and magenta</p>
+
+        <!-- Plugins -->
+        <div class="container" style="-webkit-transform: scale(0.5, 1); width: 3000px">
+            <object class="plugin" type="application/x-bloomberg-jswidget"></object>
+        </div>
+
+        <div class="spacer"></div>
+
+        <div class="container" style="-webkit-transform: scale(2, 1); width: 750px">
+            <object class="plugin" type="application/x-bloomberg-jswidget"></object>
+        </div>
+
+
+        <!-- Highlights -->
+        <div class="actual_hl_parent">
+            <div class="actual_hl_child"></div>
+        </div>
+        <div class="actual_hl_parent">
+            <div class="actual_hl_child"></div>
+        </div>
+
+
+        <script>
+            function genOnUpdateGeometry(hl_parent, hl_child) {
+                return function(e) {
+                    var d = e.detail;
+                    var fR = d.frameRect;
+                    var cR = d.clipRect;
+
+                    hl_parent.style.left = (fR.x + cR.x) + 'px';
+                    hl_parent.style.top = (fR.y + cR.y) + 'px';
+                    hl_parent.style.width = cR.width + 'px';
+                    hl_parent.style.height = cR.height + 'px';
+
+                    hl_child.style.left = -cR.x + 'px';
+                    hl_child.style.top = -cR.y + 'px';
+                    hl_child.style.width = fR.width + 'px';
+                    hl_child.style.height = fR.height + 'px';
+                };
+            }
+
+            function main() {
+                var plugins     = document.getElementsByClassName('plugin');
+                var hl_parents  = document.getElementsByClassName('actual_hl_parent');
+                var hl_children = document.getElementsByClassName('actual_hl_child');
+
+                for (var i=0; i<2; ++i) {
+                    plugins[i].addEventListener('bbOnUpdateGeometry', genOnUpdateGeometry(hl_parents[i], hl_children[i]));
+                }
+            }
+
+            main();
+        </script>
+    </body>
+</html>
+
