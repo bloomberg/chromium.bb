@@ -11,6 +11,7 @@
                     return;
 
                 testRunner.dumpAsText();
+                testRunner.waitUntilDone();
 
                 var popup = document.getElementById("switcher1");
                 popup.focus();
@@ -24,7 +25,7 @@
                 var popup = document.getElementById("switcher3");
                 popup.focus();
 
-                check();
+                requestAnimationFrame(check);
            }
 
            function check() {
@@ -45,7 +46,7 @@
                     result.innerHTML += "<br/>FAILURE: onchange(3) called " + changeCount[3] + " times.";
                 } 
                 if (result.innerHTML == "") result.innerHTML = "SUCCESS";
-
+                testRunner.notifyDone();
             }
 
             function changed(select)

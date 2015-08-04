@@ -10,6 +10,7 @@
                     return;
 
                 testRunner.dumpAsText();
+                testRunner.waitUntilDone();
 
                 var popup = document.getElementById("switcher");
                 popup.focus();
@@ -25,6 +26,7 @@
 
                 var result = document.getElementById("result");
                 result.innerText = onchangeCount == 1 ? "SUCCESS" : "FAILURE: onchange count was " + onchangeCount;
+                testRunner.notifyDone();
             }
         </script>
     </head>

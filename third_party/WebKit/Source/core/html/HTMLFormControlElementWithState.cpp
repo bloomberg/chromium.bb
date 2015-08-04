@@ -25,6 +25,7 @@
 #include "config.h"
 #include "core/html/HTMLFormControlElementWithState.h"
 
+#include "core/events/Event.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFormElement.h"
@@ -93,6 +94,24 @@ void HTMLFormControlElementWithState::finishParsingChildren()
 bool HTMLFormControlElementWithState::isFormControlElementWithState() const
 {
     return true;
+}
+
+void HTMLFormControlElementWithState::enqueueInputEvent()
+{
+    RefPtrWillBeRawPtr<Event> event = Event::createBubble(EventTypeNames::input);
+    event->setTarget(this);
+    document().enqueueAnimationFrameEvent(event.release());
+    // We need to dispatch a change event on blur.
+    setChangedSinceLastFormControlChangeEvent(true);
+}
+
+void HTMLFormControlElementWithState::enqueueChangeEvent()
+{
+    RefPtrWillBeRawPtr<Event> event = Event::createBubble(EventTypeNames::change);
+    event->setTarget(this);
+    document().enqueueAnimationFrameEvent(event.release());
+    // We don't need to dispatch a change event on blur.
+    setChangedSinceLastFormControlChangeEvent(false);
 }
 
 } // namespace blink

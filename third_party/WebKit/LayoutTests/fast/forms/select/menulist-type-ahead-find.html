@@ -1,33 +1,27 @@
-=======
 <html>
 <head>
+<script src="../../../resources/js-test.js"></script>
 <script>
+window.jsTestIsAsync = true;
+
 function recordIt()
 {
-    var res = document.getElementById("res");
-    if (res.innerText != "FAIL")
-        res.innerText = "PASS";
+    testPassed('A change event was dispatched');
+    finishJSTest();
 }
 
 function testIt(ch, expected)
 {
     document.getElementById("sel").focus();
     eventSender.keyDown(ch);
-    if (document.getElementById("sel").selectedIndex != expected)
-        document.getElementById("res").innerText = "FAIL";
-}
-
-function test()
-{
-    if (!window.testRunner)
-        return;
-
-    testRunner.dumpAsText();
-    testIt("c", 2);
+    if (document.getElementById("sel").selectedIndex != expected) {
+        testFailed("Key input didn't change selection.");
+        finishJSTest();
+    }
 }
 </script>
 </head>
-<body onload="test()">
+<body onload="testIt('c', 2);">
 <h1>WebKit Bug <a href="https://bugs.webkit.org/show_bug.cgi?id=74590">74590</a></h1>
 Verify type ahead selection fires onchange event.
 <ol>
@@ -39,6 +33,6 @@ Verify type ahead selection fires onchange event.
     <option>apple</option>
     <option>banana</option>
     <option>cherry</option>
-</select><br />
-<div id="res"></div>
+</select>
+<div id=console></div>
 </html>

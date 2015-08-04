@@ -1,4 +1,3 @@
-=======
 WebKit Bug 74590
 
 Verify type ahead selection fires onchange event.
@@ -6,4 +5,8 @@ Set focus to select element
 Type "c"
 You see "cherry" in select element and "PASS" below select element.
 
-PASS
+PASS A change event was dispatched
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
