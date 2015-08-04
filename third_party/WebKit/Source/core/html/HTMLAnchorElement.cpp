@@ -36,7 +36,9 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/PingLoader.h"
 #include "core/page/ChromeClient.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/NetworkHints.h"
+#include "platform/weborigin/SecurityPolicy.h"
 
 namespace blink {
 
@@ -348,6 +350,12 @@ void HTMLAnchorElement::handleClick(Event* event)
     ResourceRequest request(completedURL);
     request.setUIStartTime(event->uiCreateTime());
     request.setInputPerfMetricReportPolicy(InputToLoadPerfMetricReportPolicy::ReportLink);
+
+    ReferrerPolicy policy;
+    if (RuntimeEnabledFeatures::referrerPolicyAttributeEnabled() && hasAttribute(referrerpolicyAttr) && SecurityPolicy::referrerPolicyFromString(fastGetAttribute(referrerpolicyAttr), &policy) && !hasRel(RelationNoReferrer)) {
+        request.setHTTPReferrer(SecurityPolicy::generateReferrer(policy, completedURL, document().outgoingReferrer()));
+    }
+
     if (hasAttribute(downloadAttr)) {
         request.setRequestContext(WebURLRequest::RequestContextDownload);
         bool isSameOrigin = completedURL.protocolIsData() || document().securityOrigin()->canRequest(completedURL);

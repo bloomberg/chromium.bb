@@ -1509,6 +1509,7 @@ interface HTMLAnchorElement
     getter ping
     getter port
     getter protocol
+    getter referrerpolicy
     getter rel
     getter rev
     getter search
@@ -1533,6 +1534,7 @@ interface HTMLAnchorElement
     setter ping
     setter port
     setter protocol
+    setter referrerpolicy
     setter rel
     setter rev
     setter search

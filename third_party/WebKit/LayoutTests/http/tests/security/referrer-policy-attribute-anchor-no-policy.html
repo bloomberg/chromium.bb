@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+</head>
+<body>
+    <script>
+        var anch = document.createElement("a");
+        anch.href = "http://localhost:8000/security/resources/referrer-attr-anchor-target.html#no-policy";
+        document.body.appendChild(anch);
+        test(function () {
+            assert_equals(anch.referrerpolicy, "");
+        }, "Dynamically created anchor has empty referrerpolicy");
+        anch.click();
+    </script>
+</body>
+</html>

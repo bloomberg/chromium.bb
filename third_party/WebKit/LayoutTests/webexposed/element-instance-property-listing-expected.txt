@@ -247,6 +247,7 @@ html element a
     property ping
     property port
     property protocol
+    property referrerpolicy
     property rel
     property rev
     property search
@@ -1347,6 +1348,7 @@ svg element a
     property ping
     property port
     property protocol
+    property referrerpolicy
     property rel
     property rev
     property search

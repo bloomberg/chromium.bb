@@ -29,6 +29,7 @@ interface HTMLAnchorElement : HTMLElement {
     // FIXME: readonly attribute DOMTokenList relList;
     [Reflect] attribute DOMString hreflang;
     [Reflect] attribute DOMString type;
+    [RuntimeEnabled=ReferrerPolicyAttribute, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerpolicy;
 
     [ImplementedAs=textContent] attribute DOMString text;
 

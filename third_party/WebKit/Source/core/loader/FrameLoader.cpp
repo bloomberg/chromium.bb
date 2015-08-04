@@ -705,9 +705,9 @@ void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSen
 {
     if (!originDocument)
         return;
-    // FIXME: This should be an assertion, but there's some plugin code in the chromium repo
-    // that both determines its own referrer and expects to be associated with an originDocument.
-    if (!request.httpReferrer().isEmpty())
+    // Anchor elements with the 'referrerpolicy' attribute will have
+    // already set the referrer on the request.
+    if (request.didSetHTTPReferrer())
         return;
     if (shouldSendReferrer == NeverSendReferrer)
         return;

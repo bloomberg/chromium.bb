@@ -152,6 +152,7 @@ StaleWhileRevalidateCacheControl
 // be shipped would be enabled. Instead, remove the flag from the shipping
 // interface.
 ExperimentalStream status=experimental
+ReferrerPolicyAttribute status=experimental
 Suborigins status=experimental
 TextBlob
 ThreadedParserDataReceiver

@@ -271,6 +271,7 @@ preload
 pseudo
 radiogroup
 readonly
+referrerpolicy
 rel
 required
 results
