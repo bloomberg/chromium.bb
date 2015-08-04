@@ -154,9 +154,9 @@ void NinjaBuildWriter::WriteNinjaRules() {
   path_escaping.mode = ESCAPE_NINJA_COMMAND;
   std::vector<SourceFile> written_files = g_scheduler->GetWrittenFiles();
   for (const auto& written_file : written_files)
-    out_ << " " <<
-        EscapeString(FilePathToUTF8(build_settings_->GetFullPath(written_file)),
-                     path_escaping, nullptr);
+    out_ << " " << EscapeString(RebasePath(written_file.value(),
+        build_settings_->build_dir(), build_settings_->root_path_utf8()),
+        path_escaping, nullptr);
 
   out_ << ": gn\n"
        << "  generator = 1\n"
