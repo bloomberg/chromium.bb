@@ -11,8 +11,7 @@
   cursor: pointer;
   display: flex;
   flex: none;
-  /* Use bold until we get Roboto medium. crbug.com/368442. */
-  font-weight: bold;
+  font-weight: 500;
   outline: none;
   padding: 8px;
   position: relative;

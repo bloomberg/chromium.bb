@@ -202,6 +202,7 @@ div.splitter {
 #directory-tree .tree-row .label {
   display: block;
   flex: auto;
+  font-weight: 500;
   margin: 0 6px;
   overflow-x: hidden;
   text-overflow: ellipsis;
@@ -499,7 +500,7 @@ html[dir='rtl'] #cloud-import-details {
 
 #cloud-import-details .banner .title {
   font-size: 122%;
-  font-weight: bold;
+  font-weight: 500;
   margin-bottom: 5px;
 }
 
@@ -557,6 +558,7 @@ html[dir='rtl'] #cloud-import-details {
 #cloud-import-details paper-button {
   align-self: flex-end;
   color: white;
+  font-weight: 500;
   margin-top: 20px;
 }
 
@@ -571,6 +573,7 @@ html[dir='rtl'] #cloud-import-details {
 #files-selected-label {
   -webkit-margin-start: 20px;
   display: none;
+  font-weight: 500;
 }
 
 body.check-select #files-selected-label {
@@ -583,6 +586,7 @@ body.check-select #files-selected-label {
 
 #cancel-selection-button > span {
   display: inline-block;
+  font-weight: 500;
   vertical-align: middle;
 }
 
@@ -760,8 +764,7 @@ html[dir='rtl'] #search-box .clear {
 }
 
 .dialog-footer button {
-  /* Use bold until we get Roboto medium. crbug.com/368442. */
-  font-weight: bold;
+  font-weight: 500;
 }
 
 .dialog-footer button:hover {
@@ -909,8 +912,7 @@ body.check-select .breadcrumbs {
   cursor: pointer;
   flex: none;
   font-size: 14px;
-  /* Use bold until we get Roboto medium. crbug.com/368442. */
-  font-weight: bold;
+  font-weight: 500;
   min-width: 0;
   padding: 0 9px;
   text-transform: none;
@@ -1111,7 +1113,7 @@ html[dir='rtl'] .breadcrumbs .separator {
   border-radius: 2px;
   color: rgb(49, 102, 212);
   font-size: 13px;
-  font-weight: bold;
+  font-weight: 500;
   height: 32px;
 }
 
@@ -1186,6 +1188,7 @@ body[type='full-page'] .detail-name .detail-icon {
 .thumbnail-bottom .filename-label {
   -webkit-padding-end: 6px;
   flex: auto;
+  font-weight: 500;
 }
 
 /* Styles specific for the grid view. */
@@ -1545,6 +1548,7 @@ li[renaming=''] .badge {
 /* Text label in a table header. */
 .table-header-label {
   color: rgb(100, 100, 100);
+  font-weight: 500;
   line-height: 40px;
   margin: 0 10px;
 }
@@ -2117,6 +2121,7 @@ list.autocomplete-suggestions > [lead] {
 #progress-center label {
   color: rgb(76, 76, 76);
   display: block;
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
