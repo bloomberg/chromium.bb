@@ -26,6 +26,10 @@ type:*SkAutoTUnref*
 # a statically linked libc++.
 type:std::*
 
+# All mojo::test:: types.
+# They are loaded from libmojo_public_test_support.so
+type:mojo::test::*
+
 #############################################################################
 # Base class's constructor accesses a derived class.
 
