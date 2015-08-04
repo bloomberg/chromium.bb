@@ -47,14 +47,10 @@ GraphicsLayerTreeBuilder::~GraphicsLayerTreeBuilder()
 
 static bool shouldAppendLayer(const DeprecatedPaintLayer& layer)
 {
-    if (!RuntimeEnabledFeatures::overlayFullscreenVideoEnabled())
-        return true;
     Node* node = layer.layoutObject()->node();
     if (node && isHTMLVideoElement(*node)) {
         HTMLVideoElement* element = toHTMLVideoElement(node);
-        // For WebRTC, video frame contains all the data and no hardware surface is used.
-        // We should always append the layer in this case.
-        if (element->isFullscreen() && !HTMLMediaElement::isMediaStreamURL(element->sourceURL().string()))
+        if (element->isFullscreen() && element->usesOverlayFullscreenVideo())
             return false;
     }
     return true;

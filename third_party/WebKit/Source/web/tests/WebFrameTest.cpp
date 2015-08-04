@@ -6558,37 +6558,6 @@ TEST_P(ParameterizedWebFrameTest, FullscreenSubframe)
     EXPECT_EQ(viewportWidth, fullscreenLayoutObject->logicalHeight().toInt());
 }
 
-TEST_F(WebFrameTest, FullscreenMediaStreamVideo)
-{
-    RuntimeEnabledFeatures::setOverlayFullscreenVideoEnabled(true);
-    FakeCompositingWebViewClient client;
-    registerMockedHttpURLLoad("fullscreen_video.html");
-    FrameTestHelpers::WebViewHelper webViewHelper;
-    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "fullscreen_video.html", true, 0, &client, configureAndroid);
-    int viewportWidth = 640;
-    int viewportHeight = 480;
-    client.m_screenInfo.rect.width = viewportWidth;
-    client.m_screenInfo.rect.height = viewportHeight;
-    webViewImpl->resize(WebSize(viewportWidth, viewportHeight));
-    webViewImpl->layout();
-
-    // Fake the video element as MediaStream
-    RefPtrWillBeRawPtr<NullExecutionContext> context = adoptRefWillBeNoop(new NullExecutionContext());
-    MediaStreamRegistry::registry().registerURL(0, toKURL(m_baseURL + "test.webm"), MediaStream::create(context.get()));
-    Document* document = toWebLocalFrameImpl(webViewImpl->mainFrame())->frame()->document();
-    UserGestureIndicator gesture(DefinitelyProcessingUserGesture);
-    Element* videoFullscreen = document->getElementById("video");
-    Fullscreen::from(*document).requestFullscreen(*videoFullscreen, Fullscreen::PrefixedRequest);
-    webViewImpl->didEnterFullScreen();
-    webViewImpl->layout();
-
-    // Verify that the video layer is visible in fullscreen.
-    DeprecatedPaintLayer* paintLayer =  videoFullscreen->layoutObject()->enclosingLayer();
-    GraphicsLayer* graphicsLayer = paintLayer->graphicsLayerBacking();
-    EXPECT_TRUE(graphicsLayer->contentsAreVisible());
-    context->notifyContextDestroyed();
-}
-
 TEST_P(ParameterizedWebFrameTest, FullscreenWithTinyViewport)
 {
     FakeCompositingWebViewClient client;

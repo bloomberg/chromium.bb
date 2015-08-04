@@ -759,9 +759,9 @@ void CompositedDeprecatedPaintLayerMapping::updateMainGraphicsLayerGeometry(cons
     // descendants. So, the visibility flag for m_graphicsLayer should be true if there are any
     // non-compositing visible layers.
     bool contentsVisible = m_owningLayer.hasVisibleContent() || hasVisibleNonCompositingDescendant(&m_owningLayer);
-    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && layoutObject()->isVideo()) {
+    if (layoutObject()->isVideo()) {
         HTMLVideoElement* videoElement = toHTMLVideoElement(layoutObject()->node());
-        if (videoElement->isFullscreen() && !HTMLMediaElement::isMediaStreamURL(videoElement->sourceURL().string()))
+        if (videoElement->isFullscreen() && videoElement->usesOverlayFullscreenVideo())
             contentsVisible = false;
     }
     m_graphicsLayer->setContentsVisible(contentsVisible);

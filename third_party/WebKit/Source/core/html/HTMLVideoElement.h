@@ -59,6 +59,7 @@ public:
     void webkitExitFullscreen();
     bool webkitSupportsFullscreen();
     bool webkitDisplayingFullscreen();
+    bool usesOverlayFullscreenVideo() const override;
 
     // Statistics
     unsigned webkitDecodedFrameCount() const;

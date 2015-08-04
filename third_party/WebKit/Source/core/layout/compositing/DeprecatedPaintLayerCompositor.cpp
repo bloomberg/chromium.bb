@@ -37,6 +37,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "core/html/HTMLVideoElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutVideo.h"
@@ -281,7 +282,7 @@ void DeprecatedPaintLayerCompositor::assertNoUnresolvedDirtyBits()
 
 #endif
 
-void DeprecatedPaintLayerCompositor::applyOverlayFullscreenVideoAdjustment()
+void DeprecatedPaintLayerCompositor::applyOverlayFullscreenVideoAdjustmentIfNeeded()
 {
     m_inOverlayFullscreenVideo = false;
     if (!m_rootContentLayer)
@@ -289,7 +290,7 @@ void DeprecatedPaintLayerCompositor::applyOverlayFullscreenVideoAdjustment()
 
     bool isLocalRoot = m_layoutView.frame()->isLocalRoot();
     LayoutVideo* video = findFullscreenVideoLayoutObject(m_layoutView.document());
-    if (!video || !video->layer()->hasCompositedDeprecatedPaintLayerMapping()) {
+    if (!video || !video->layer()->hasCompositedDeprecatedPaintLayerMapping() || !video->videoElement()->usesOverlayFullscreenVideo()) {
         if (isLocalRoot) {
             GraphicsLayer* backgroundLayer = fixedRootBackgroundLayer();
             if (backgroundLayer && !backgroundLayer->parent())
@@ -414,8 +415,7 @@ void DeprecatedPaintLayerCompositor::updateIfNeeded()
         else
             m_rootContentLayer->setChildren(childList);
 
-        if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled())
-            applyOverlayFullscreenVideoAdjustment();
+        applyOverlayFullscreenVideoAdjustmentIfNeeded();
     }
 
     if (m_needsUpdateFixedBackground) {

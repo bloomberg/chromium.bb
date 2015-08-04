@@ -214,6 +214,7 @@ public:
     bool isFullscreen() const;
     void enterFullscreen();
     void exitFullscreen();
+    virtual bool usesOverlayFullscreenVideo() const { return false; }
 
     bool hasClosedCaptions() const;
     bool closedCaptionsVisible() const;
@@ -548,6 +549,8 @@ private:
     bool m_isFinalizing : 1;
     bool m_initialPlayWithoutUserGestures : 1;
     bool m_autoplayMediaCounted : 1;
+    // Whether this element is in overlay fullscreen mode.
+    bool m_inOverlayFullscreenVideo : 1;
 
     PersistentWillBeMember<AudioTrackList> m_audioTracks;
     PersistentWillBeMember<VideoTrackList> m_videoTracks;

@@ -176,6 +176,11 @@ public:
     // Sets the poster image URL.
     virtual void setPoster(const WebURL& poster) { }
 
+    // Whether the WebMediaPlayer supports overlay fullscreen video mode. When
+    // this is true, the video layer will be removed from the layer tree when
+    // entering fullscreen, and the WebMediaPlayer is responsible for displaying
+    // the video in enterFullscreen().
+    virtual bool supportsOverlayFullscreenVideo() { return false; }
     // Instruct WebMediaPlayer to enter/exit fullscreen.
     virtual void enterFullscreen() { }
 

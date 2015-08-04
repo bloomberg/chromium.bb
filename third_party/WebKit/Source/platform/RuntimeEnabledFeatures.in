@@ -105,7 +105,11 @@ NotificationExperimental status=test
 Notifications status=stable
 OrientationEvent
 // Only enabled on Android, and for certain layout tests on Linux.
+// TODO(watk): Delete this in favor of ForceOverlayFullscreenVideo after
+// removing chromium's dependency on it. http://crbug.com/511376
 OverlayFullscreenVideo
+// For simulating Android's overlay fullscreen video in layout tests on Linux.
+ForceOverlayFullscreenVideo
 OverlayScrollbars
 PagePopup status=stable
 PathOpsSVGClipping status=stable

@@ -246,11 +246,9 @@ LayoutUnit LayoutVideo::offsetHeight() const
 
 CompositingReasons LayoutVideo::additionalCompositingReasons() const
 {
-    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()) {
-        HTMLMediaElement* media = toHTMLMediaElement(node());
-        if (media->isFullscreen())
-            return CompositingReasonVideo;
-    }
+    HTMLMediaElement* element = toHTMLMediaElement(node());
+    if (element->isFullscreen() && element->usesOverlayFullscreenVideo())
+        return CompositingReasonVideo;
 
     if (shouldDisplayVideo() && supportsAcceleratedRendering())
         return CompositingReasonVideo;

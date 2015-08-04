@@ -85,11 +85,9 @@ void FullscreenController::didEnterFullScreen()
     Fullscreen::from(document).didEnterFullScreenForElement(element.get());
     ASSERT(Fullscreen::currentFullScreenElementFrom(document) == element);
 
-    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()) {
-        if (isHTMLVideoElement(element)) {
-            HTMLVideoElement* videoElement = toHTMLVideoElement(element);
-            if (HTMLMediaElement::isMediaStreamURL(videoElement->sourceURL().string()))
-                return;
+    if (isHTMLVideoElement(element)) {
+        HTMLVideoElement* videoElement = toHTMLVideoElement(element);
+        if (videoElement->usesOverlayFullscreenVideo()) {
             if (videoElement->webMediaPlayer()
                 // FIXME: There is no embedder-side handling in layout test mode.
                 && !LayoutTestSupport::isRunningLayoutTest()) {

@@ -65,6 +65,7 @@
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/page/ChromeClient.h"
 #include "platform/ContentType.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeFromURL.h"
@@ -361,6 +362,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_isFinalizing(false)
     , m_initialPlayWithoutUserGestures(false)
     , m_autoplayMediaCounted(false)
+    , m_inOverlayFullscreenVideo(false)
     , m_audioTracks(AudioTrackList::create(*this))
     , m_videoTracks(VideoTrackList::create(*this))
     , m_textTracks(nullptr)
@@ -1049,8 +1051,10 @@ void HTMLMediaElement::startPlayerLoad()
 
     m_webMediaPlayer->load(loadType(), kurl, corsMode());
 
-    if (isFullscreen())
-        m_webMediaPlayer->enterFullscreen();
+    if (isFullscreen()) {
+        // This handles any transition to or from fullscreen overlay mode.
+        document().frame()->chromeClient().enterFullScreenForElement(this);
+    }
 }
 
 void HTMLMediaElement::setPlayerPreload()
@@ -3183,7 +3187,9 @@ void HTMLMediaElement::didBecomeFullscreenElement()
 {
     if (mediaControls())
         mediaControls()->enteredFullscreen();
-    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isHTMLVideoElement())
+    // Cache this in case the player is destroyed before leaving fullscreen.
+    m_inOverlayFullscreenVideo = usesOverlayFullscreenVideo();
+    if (m_inOverlayFullscreenVideo)
         document().layoutView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 }
 
@@ -3191,8 +3197,9 @@ void HTMLMediaElement::willStopBeingFullscreenElement()
 {
     if (mediaControls())
         mediaControls()->exitedFullscreen();
-    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isHTMLVideoElement())
+    if (m_inOverlayFullscreenVideo)
         document().layoutView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
+    m_inOverlayFullscreenVideo = false;
 }
 
 WebLayer* HTMLMediaElement::platformLayer() const

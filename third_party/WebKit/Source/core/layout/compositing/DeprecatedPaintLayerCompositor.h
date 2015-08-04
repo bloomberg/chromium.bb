@@ -210,7 +210,7 @@ private:
     bool requiresVerticalScrollbarLayer() const;
     bool requiresScrollCornerLayer() const;
 
-    void applyOverlayFullscreenVideoAdjustment();
+    void applyOverlayFullscreenVideoAdjustmentIfNeeded();
 
     LayoutView& m_layoutView;
     OwnPtr<GraphicsLayer> m_rootContentLayer;
