@@ -1222,34 +1222,41 @@ TEST_P(HttpNetworkTransactionTest, Ignores1xx) {
 }
 
 TEST_P(HttpNetworkTransactionTest, Incomplete100ThenEOF) {
-  HttpRequestInfo request;
-  request.method = "POST";
-  request.url = GURL("http://www.foo.com/");
-  request.load_flags = 0;
-
-  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
-
-  MockRead data_reads[] = {
-    MockRead(SYNCHRONOUS, "HTTP/1.0 100 Continue\r\n"),
-    MockRead(ASYNC, 0),
+  struct TestCase {
+    const char* response;
+    net::Error expected_error_code;
   };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  const TestCase kTestCases[] = {
+      {"HTTP/1.0 100 Continue\r\n", net::ERR_RESPONSE_HEADERS_TRUNCATED},
+      {"HTTP/1.0 100 Continue\r\n\r\n", net::ERR_EMPTY_RESPONSE},
+  };
 
-  TestCompletionCallback callback;
+  for (const TestCase& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.response);
 
-  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
+    HttpRequestInfo request;
+    request.method = "POST";
+    request.url = GURL("http://www.foo.com/");
+    request.load_flags = 0;
 
-  rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+    scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+    scoped_ptr<HttpTransaction> trans(
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
-  std::string response_data;
-  rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
-  EXPECT_EQ("", response_data);
+    MockRead data_reads[] = {
+        MockRead(SYNCHRONOUS, test_case.response), MockRead(ASYNC, 0),
+    };
+    StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+    session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+    TestCompletionCallback callback;
+
+    int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+    EXPECT_EQ(ERR_IO_PENDING, rv);
+
+    rv = callback.WaitForResult();
+    EXPECT_EQ(test_case.expected_error_code, rv);
+  }
 }
 
 TEST_P(HttpNetworkTransactionTest, EmptyResponse) {
@@ -6126,8 +6133,7 @@ TEST_P(HttpNetworkTransactionTest, DigestPreAuthNonceCount) {
 
     // Sever accepts the authorization.
     MockRead data_reads2[] = {
-      MockRead("HTTP/1.0 200 OK\r\n"),
-      MockRead(SYNCHRONOUS, OK),
+        MockRead("HTTP/1.0 200 OK\r\n\r\n"), MockRead(SYNCHRONOUS, OK),
     };
 
     StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
@@ -8229,8 +8235,8 @@ TEST_P(HttpNetworkTransactionTest, RequestWriteError) {
   EXPECT_EQ(ERR_CONNECTION_RESET, rv);
 }
 
-// Check that a connection closed after the start of the headers finishes ok.
-TEST_P(HttpNetworkTransactionTest, ConnectionClosedAfterStartOfHeaders) {
+// Integration test for when truncated headers are received.
+TEST_P(HttpNetworkTransactionTest, TruncatedHeaders) {
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("http://www.foo.com/");
@@ -8254,18 +8260,7 @@ TEST_P(HttpNetworkTransactionTest, ConnectionClosedAfterStartOfHeaders) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
-
-  const HttpResponseInfo* response = trans->GetResponseInfo();
-  ASSERT_TRUE(response != NULL);
-
-  EXPECT_TRUE(response->headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.0 200 OK", response->headers->GetStatusLine());
-
-  std::string response_data;
-  rv = ReadTransaction(trans.get(), &response_data);
-  EXPECT_EQ(OK, rv);
-  EXPECT_EQ("", response_data);
+  EXPECT_EQ(ERR_RESPONSE_HEADERS_TRUNCATED, rv);
 }
 
 // Make sure that a dropped connection while draining the body for auth

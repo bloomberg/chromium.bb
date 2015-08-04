@@ -53,7 +53,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
                        CanShutDownWithRegisteredServiceWorker) {
   WriteFile(FILE_PATH_LITERAL("service_worker.js"), "");
   WriteFile(FILE_PATH_LITERAL("service_worker.js.mock-http-headers"),
-            "HTTP/1.1 200 OK\nContent-Type: text/javascript");
+            "HTTP/1.0 200 OK\nContent-Type: text/javascript\n");
 
   embedded_test_server()->ServeFilesFromDirectory(service_worker_dir_.path());
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
                        CanCloseIncognitoWindowWithServiceWorkerController) {
   WriteFile(FILE_PATH_LITERAL("service_worker.js"), "");
   WriteFile(FILE_PATH_LITERAL("service_worker.js.mock-http-headers"),
-            "HTTP/1.1 200 OK\nContent-Type: text/javascript");
+            "HTTP/1.0 200 OK\nContent-Type: text/javascript\n");
   WriteFile(FILE_PATH_LITERAL("test.html"), "");
 
   embedded_test_server()->ServeFilesFromDirectory(service_worker_dir_.path());
