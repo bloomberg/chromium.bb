@@ -315,7 +315,8 @@ using PortNumberCache = base::hash_map<
     std::priority_queue<uint32, std::vector<uint32>, std::greater<uint32>>,
     MidiDeviceInfo::Hasher>;
 
-struct MidiInputDeviceState final : base::RefCounted<MidiInputDeviceState> {
+struct MidiInputDeviceState final
+    : base::RefCountedThreadSafe<MidiInputDeviceState> {
   explicit MidiInputDeviceState(const MidiDeviceInfo& device_info)
       : device_info(device_info),
         midi_handle(kInvalidMidiInHandle),
@@ -342,11 +343,12 @@ struct MidiInputDeviceState final : base::RefCounted<MidiInputDeviceState> {
   bool start_time_initialized;
 
  private:
-  friend class base::RefCounted<MidiInputDeviceState>;
+  friend class base::RefCountedThreadSafe<MidiInputDeviceState>;
   ~MidiInputDeviceState() {}
 };
 
-struct MidiOutputDeviceState final : base::RefCounted<MidiOutputDeviceState> {
+struct MidiOutputDeviceState final
+    : base::RefCountedThreadSafe<MidiOutputDeviceState> {
   explicit MidiOutputDeviceState(const MidiDeviceInfo& device_info)
       : device_info(device_info),
         midi_handle(kInvalidMidiOutHandle),
@@ -371,7 +373,7 @@ struct MidiOutputDeviceState final : base::RefCounted<MidiOutputDeviceState> {
   volatile bool closed;
 
  private:
-  friend class base::RefCounted<MidiOutputDeviceState>;
+  friend class base::RefCountedThreadSafe<MidiOutputDeviceState>;
   ~MidiOutputDeviceState() {}
 };
 
