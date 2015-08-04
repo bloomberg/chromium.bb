@@ -33,8 +33,13 @@
 }
 
 #search {
+  -webkit-margin-end: 10px;
   display: flex;
   justify-content: flex-end;
+}
+
+#search paper-input-container {
+  padding: 2px 0;
 }
 
 #search-term {
@@ -45,7 +50,6 @@
     font-size: 14px;
   };
   --paper-input-container-input-color: white;
-  -webkit-margin-end: 8px;
   z-index: 0;
 }
 
@@ -54,7 +58,7 @@
   -webkit-appearance: none;
 }
 
-#search-term paper-icon-button {
+paper-icon-button {
   --iron-icon-height: 16px;
   --iron-icon-width: 16px;
   --paper-icon-button: {
@@ -62,9 +66,12 @@
     padding: 6px;
     width: 16px;
   };
+}
+
+#search-term paper-icon-button {
   position: absolute;
   right: 0;
-  top: -4px;
+  top: -2px;
   z-index: 1;
 }
 
