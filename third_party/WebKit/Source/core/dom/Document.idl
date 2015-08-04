@@ -120,8 +120,7 @@ interface Document : Node {
     [ImplementedAs=domWindow] readonly attribute Window? defaultView;
     readonly attribute Element? activeElement;
     boolean hasFocus();
-    // FIXME: designMode should not have [TreatNullAs=NullString].
-    [TreatNullAs=NullString, CustomElementCallbacks, MeasureAs=DocumentDesignMode] attribute DOMString designMode;
+    [CustomElementCallbacks, MeasureAs=DocumentDesignMode] attribute DOMString designMode;
     [CustomElementCallbacks, RaisesException] boolean execCommand(DOMString commandId, optional boolean showUI = false, optional DOMString value = "");
     [RaisesException] boolean queryCommandEnabled(DOMString commandId);
     [RaisesException] boolean queryCommandIndeterm(DOMString commandId);
