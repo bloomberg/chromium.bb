@@ -1490,7 +1490,7 @@ class GerritFetchOnlyPatch(GitRepoPatch):
 
   def __init__(self, project_url, project, ref, tracking_branch, remote,
                sha1, change_id, gerrit_number, patch_number, owner_email=None,
-               fail_count=None, pass_count=None, total_fail_count=None):
+               fail_count=0, pass_count=0, total_fail_count=0):
     """Initializes a GerritFetchOnlyPatch object."""
     super(GerritFetchOnlyPatch, self).__init__(
         project_url, project, ref, tracking_branch, remote,
