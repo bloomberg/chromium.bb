@@ -433,6 +433,7 @@ class GL_EXPORT GLSurfaceOzoneSurfacelessSurfaceImpl
   void BindFramebuffer();
   bool CreatePixmaps();
 
+  scoped_refptr<GLContext> context_;
   GLuint fbo_;
   GLuint textures_[2];
   scoped_refptr<GLImage> images_[2];
@@ -444,6 +445,7 @@ GLSurfaceOzoneSurfacelessSurfaceImpl::GLSurfaceOzoneSurfacelessSurfaceImpl(
     scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface,
     AcceleratedWidget widget)
     : GLSurfaceOzoneSurfaceless(ozone_surface.Pass(), widget),
+      context_(nullptr),
       fbo_(0),
       current_surface_(0) {
   for (auto& texture : textures_)
@@ -456,6 +458,8 @@ GLSurfaceOzoneSurfacelessSurfaceImpl::GetBackingFrameBufferObject() {
 }
 
 bool GLSurfaceOzoneSurfacelessSurfaceImpl::OnMakeCurrent(GLContext* context) {
+  DCHECK(!context_ || context == context_);
+  context_ = context;
   if (!fbo_) {
     glGenFramebuffersEXT(1, &fbo_);
     if (!fbo_)
@@ -506,8 +510,9 @@ bool GLSurfaceOzoneSurfacelessSurfaceImpl::SwapBuffersAsync(
 }
 
 void GLSurfaceOzoneSurfacelessSurfaceImpl::Destroy() {
-  GLContext* current_context = GLContext::GetCurrent();
-  DCHECK(current_context && current_context->IsCurrent(this));
+  if (!context_)
+    return;
+  ui::ScopedMakeCurrent context(context_.get(), this);
   glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
   if (fbo_) {
     glDeleteTextures(arraysize(textures_), textures_);

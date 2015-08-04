@@ -540,7 +540,6 @@ void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
     glDeleteFramebuffersEXT(1, &thumbnails_fbo_id_);
   }
 
-  gl_surface_->Destroy();
   gl_context_->ReleaseCurrent(gl_surface_.get());
   gl_context_ = NULL;
   gl_surface_ = NULL;
