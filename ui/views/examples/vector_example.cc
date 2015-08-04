@@ -4,10 +4,14 @@
 
 #include "ui/views/examples/vector_example.h"
 
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public2.h"
+#include "ui/views/controls/button/blue_button.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -20,18 +24,32 @@ namespace examples {
 
 namespace {
 
-class VectorIconGallery : public View, public TextfieldController {
+class VectorIconGallery : public View,
+                          public TextfieldController,
+                          public ButtonListener {
  public:
   VectorIconGallery()
       : image_view_(new ImageView()),
         size_input_(new Textfield()),
         color_input_(new Textfield()),
+        file_chooser_(new Textfield()),
+        file_go_button_(new BlueButton(this, base::ASCIIToUTF16("Render"))),
         vector_id_(0),
         size_(32),
         color_(SK_ColorRED) {
     AddChildView(size_input_);
     AddChildView(color_input_);
     AddChildView(image_view_);
+
+    file_chooser_->set_placeholder_text(
+        base::ASCIIToUTF16("Or enter a file to read"));
+    View* file_container = new View();
+    BoxLayout* file_box = new BoxLayout(BoxLayout::kHorizontal, 10, 10, 10);
+    file_container->SetLayoutManager(file_box);
+    file_container->AddChildView(file_chooser_);
+    file_container->AddChildView(file_go_button_);
+    file_box->SetFlexForView(file_chooser_, 1);
+    AddChildView(file_container);
 
     size_input_->set_placeholder_text(base::ASCIIToUTF16("Size in dip"));
     size_input_->set_controller(this);
@@ -80,6 +98,20 @@ class VectorIconGallery : public View, public TextfieldController {
     }
   }
 
+  // ButtonListener
+  void ButtonPressed(Button* sender, const ui::Event& event) override {
+    DCHECK_EQ(file_go_button_, sender);
+    std::string contents;
+#if defined(OS_POSIX)
+    base::FilePath path(base::UTF16ToUTF8(file_chooser_->text()));
+#elif defined(OS_WIN)
+    base::FilePath path(file_chooser_->text());
+#endif
+    base::ReadFileToString(path, &contents);
+    image_view_->SetImage(
+        gfx::CreateVectorIconFromSource(contents, size_, color_));
+  }
+
   void UpdateImage() {
     image_view_->SetImage(gfx::CreateVectorIcon(
         static_cast<gfx::VectorIconId>(vector_id_), size_, color_));
@@ -89,6 +121,8 @@ class VectorIconGallery : public View, public TextfieldController {
   ImageView* image_view_;
   Textfield* size_input_;
   Textfield* color_input_;
+  Textfield* file_chooser_;
+  Button* file_go_button_;
 
   int vector_id_;
   size_t size_;

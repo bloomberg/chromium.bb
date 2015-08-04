@@ -28,6 +28,7 @@
         '../../..',
       ],
       'defines': [
+        'GFX_VECTOR_ICONS_UNSAFE',
         'VIEWS_EXAMPLES_IMPLEMENTATION',
       ],
       'sources': [
