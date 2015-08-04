@@ -11,18 +11,13 @@
 #include "base/format_macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
-#include "base/prefs/pref_service.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_stats.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
@@ -175,8 +170,7 @@ OmniboxEditModel::State::~State() {
 
 OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
                                    OmniboxEditController* controller,
-                                   scoped_ptr<OmniboxClient> client,
-                                   Profile* profile)
+                                   scoped_ptr<OmniboxClient> client)
     : client_(client.Pass()),
       view_(view),
       controller_(controller),
@@ -189,7 +183,6 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
       paste_state_(NONE),
       control_key_state_(UP),
       is_keyword_hint_(false),
-      profile_(profile),
       in_revert_(false),
       allow_exact_keyword_match_(false) {
   omnibox_controller_.reset(new OmniboxController(this, client_.get()));
@@ -786,7 +779,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
 
   BookmarkModel* bookmark_model = client_->GetBookmarkModel();
   if (bookmark_model && bookmark_model->IsBookmarked(match.destination_url))
-    RecordBookmarkLaunch(NULL, BOOKMARK_LAUNCH_LOCATION_OMNIBOX);
+    client_->OnBookmarkLaunched();
 }
 
 bool OmniboxEditModel::AcceptKeyword(EnteredKeywordModeMethod entered_method) {
@@ -1426,11 +1419,11 @@ OmniboxEventProto::PageClassification OmniboxEditModel::ClassifyPage() const {
   if (!gurl.is_valid())
     return OmniboxEventProto::INVALID_SPEC;
   const std::string& url = gurl.spec();
-  if (url == chrome::kChromeUINewTabURL)
+  if (client_->IsNewTabPage(url))
     return OmniboxEventProto::NTP;
   if (url == url::kAboutBlankURL)
     return OmniboxEventProto::BLANK;
-  if (url == profile()->GetPrefs()->GetString(prefs::kHomePage))
+  if (client_->IsHomePage(url))
     return OmniboxEventProto::HOME_PAGE;
   if (controller_->GetToolbarModel()->WouldPerformSearchTermReplacement(true))
     return OmniboxEventProto::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;

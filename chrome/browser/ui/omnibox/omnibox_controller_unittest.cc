@@ -43,6 +43,8 @@ class TestOmniboxClient : public OmniboxClient {
   bool IsSearchResultsPage() const override { return false; }
   bool IsLoading() const override { return false; }
   bool IsPasteAndGoEnabled() const override { return false; }
+  bool IsNewTabPage(const std::string& url) const override { return false; }
+  bool IsHomePage(const std::string& url) const override { return false; }
   const SessionID& GetSessionID() const override { return session_id_; }
   bookmarks::BookmarkModel* GetBookmarkModel() override { return nullptr; }
   TemplateURLService* GetTemplateURLService() override { return nullptr; }
@@ -79,6 +81,7 @@ class TestOmniboxClient : public OmniboxClient {
   void OnInputAccepted(const AutocompleteMatch& match) override {}
   void OnRevert() override {}
   void OnURLOpenedFromOmnibox(OmniboxLog* log) override {}
+  void OnBookmarkLaunched() override {}
   void DiscardNonCommittedNavigations() override {}
 
  private:

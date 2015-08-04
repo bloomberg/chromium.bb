@@ -73,6 +73,12 @@ class OmniboxClient {
   // Returns whether paste-and-go functionality is enabled.
   virtual bool IsPasteAndGoEnabled() const = 0;
 
+  // Returns whether |url| corresponds to the new tab page.
+  virtual bool IsNewTabPage(const std::string& url) const = 0;
+
+  // Returns whether |url| corresponds to the user's home page.
+  virtual bool IsHomePage(const std::string& url) const = 0;
+
   // Returns the session ID of the current page.
   virtual const SessionID& GetSessionID() const = 0;
 
@@ -137,6 +143,9 @@ class OmniboxClient {
   // sent from AutocompleteControllerAndroid, and it's unclear which listeners
   // are also listening from it being sent from there.
   virtual void OnURLOpenedFromOmnibox(OmniboxLog* log) = 0;
+
+  // Called when a bookmark is launched from the omnibox.
+  virtual void OnBookmarkLaunched() = 0;
 
   // Discards the state for all pending and transient navigations.
   virtual void DiscardNonCommittedNavigations() = 0;

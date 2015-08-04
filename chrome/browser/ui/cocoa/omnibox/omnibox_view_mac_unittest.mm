@@ -27,8 +27,7 @@ class MockOmniboxEditModel : public OmniboxEditModel {
       : OmniboxEditModel(
             view,
             controller,
-            make_scoped_ptr(new ChromeOmniboxClient(controller, profile)),
-            profile),
+            make_scoped_ptr(new ChromeOmniboxClient(controller, profile))),
         up_or_down_count_(0) {}
 
   void OnUpOrDownKeyPressed(int count) override { up_or_down_count_ = count; }

@@ -137,7 +137,6 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
                                    LocationBarView* location_bar,
                                    const gfx::FontList& font_list)
     : OmniboxView(
-          profile,
           controller,
           make_scoped_ptr(new ChromeOmniboxClient(controller, profile))),
       profile_(profile),

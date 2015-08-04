@@ -26,7 +26,6 @@ class OmniboxClient;
 class OmniboxEditController;
 class OmniboxPopupModel;
 class OmniboxView;
-class Profile;
 
 namespace gfx {
 class Image;
@@ -77,8 +76,7 @@ class OmniboxEditModel {
 
   OmniboxEditModel(OmniboxView* view,
                    OmniboxEditController* controller,
-                   scoped_ptr<OmniboxClient> client,
-                   Profile* profile);
+                   scoped_ptr<OmniboxClient> client);
   virtual ~OmniboxEditModel();
 
   // TODO(beaudoin): Remove this accessor when the AutocompleteController has
@@ -101,10 +99,6 @@ class OmniboxEditModel {
   OmniboxEditController* controller() const { return controller_; }
 
   OmniboxClient* client() { return client_.get(); }
-
-  // TODO(blundell): Kill this method once all callsites have been converted to
-  // use client() instead.
-  Profile* profile() const { return profile_; }
 
   // Returns the current state.  This assumes we are switching tabs, and changes
   // the internal state appropriately.
@@ -548,8 +542,6 @@ class OmniboxEditModel {
   // user hasn't actually selected a keyword yet.  When this is true, we can use
   // keyword_ to show a "Press <tab> to search" sort of hint.
   bool is_keyword_hint_;
-
-  Profile* profile_;
 
   // This is needed to properly update the SearchModel state when the user
   // presses escape.

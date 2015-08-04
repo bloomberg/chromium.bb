@@ -177,14 +177,14 @@ bool OmniboxView::IsIndicatingQueryRefinement() const {
 void OmniboxView::OnMatchOpened(const AutocompleteMatch& match) {
 }
 
-OmniboxView::OmniboxView(Profile* profile,
-                         OmniboxEditController* controller,
+OmniboxView::OmniboxView(OmniboxEditController* controller,
                          scoped_ptr<OmniboxClient> client)
     : controller_(controller) {
-  // |profile| can be NULL in tests.
-  if (profile)
+  // |client| can be null in tests.
+  if (client) {
     model_.reset(
-        new OmniboxEditModel(this, controller, client.Pass(), profile));
+        new OmniboxEditModel(this, controller, client.Pass()));
+  }
 }
 
 void OmniboxView::TextChanged() {

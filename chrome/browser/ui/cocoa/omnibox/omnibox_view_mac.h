@@ -14,6 +14,7 @@
 
 class CommandUpdater;
 class OmniboxPopupView;
+class Profile;
 
 namespace content {
 class WebContents;

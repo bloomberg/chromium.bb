@@ -25,7 +25,6 @@ class GURL;
 class OmniboxClient;
 class OmniboxEditController;
 class OmniboxViewMacTest;
-class Profile;
 class ToolbarModel;
 
 class OmniboxView {
@@ -234,8 +233,7 @@ class OmniboxView {
   static base::string16 GetClipboardText();
 
  protected:
-  OmniboxView(Profile* profile,
-              OmniboxEditController* controller,
+  OmniboxView(OmniboxEditController* controller,
               scoped_ptr<OmniboxClient> client);
 
   // Internally invoked whenever the text changes in some way.

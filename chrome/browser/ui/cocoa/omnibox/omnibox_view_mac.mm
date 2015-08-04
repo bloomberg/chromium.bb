@@ -143,7 +143,6 @@ OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,
                                CommandUpdater* command_updater,
                                AutocompleteTextField* field)
     : OmniboxView(
-          profile,
           controller,
           make_scoped_ptr(new ChromeOmniboxClient(controller, profile))),
       profile_(profile),

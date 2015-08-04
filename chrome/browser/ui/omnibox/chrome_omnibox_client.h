@@ -39,6 +39,8 @@ class ChromeOmniboxClient : public OmniboxClient {
   bool IsSearchResultsPage() const override;
   bool IsLoading() const override;
   bool IsPasteAndGoEnabled() const override;
+  bool IsNewTabPage(const std::string& url) const override;
+  bool IsHomePage(const std::string& url) const override;
   const SessionID& GetSessionID() const override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   TemplateURLService* GetTemplateURLService() override;
@@ -66,8 +68,9 @@ class ChromeOmniboxClient : public OmniboxClient {
                      bool has_focus) override;
   void OnInputAccepted(const AutocompleteMatch& match) override;
   void OnRevert() override;
-  void DiscardNonCommittedNavigations() override;
   void OnURLOpenedFromOmnibox(OmniboxLog* log) override;
+  void OnBookmarkLaunched() override;
+  void DiscardNonCommittedNavigations() override;
 
  private:
   // Performs prerendering for |match|.
