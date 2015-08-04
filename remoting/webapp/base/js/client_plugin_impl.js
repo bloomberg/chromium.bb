@@ -498,8 +498,21 @@ remoting.ClientPluginImpl.prototype.onIncomingIq = function(iq) {
  * @param {string} localJid Local jid.
  * @param {remoting.CredentialsProvider} credentialsProvider
  */
-remoting.ClientPluginImpl.prototype.connect =
-    function(host, localJid, credentialsProvider) {
+remoting.ClientPluginImpl.prototype.connect = function(host, localJid,
+                                                       credentialsProvider) {
+  remoting.experiments.get().then(this.connectWithExperiments_.bind(
+      this, host, localJid, credentialsProvider));
+};
+
+/**
+ * @param {remoting.Host} host The host to connect to.
+ * @param {string} localJid Local jid.
+ * @param {remoting.CredentialsProvider} credentialsProvider
+ * @param {Array.<string>} experiments List of enabled experiments.
+ * @private
+ */
+remoting.ClientPluginImpl.prototype.connectWithExperiments_ = function(
+    host, localJid, credentialsProvider, experiments) {
   var keyFilter = '';
   if (remoting.platformIsMac()) {
     keyFilter = 'mac';
@@ -511,26 +524,28 @@ remoting.ClientPluginImpl.prototype.connect =
   // previous versions of Chrome, see crbug.com/459103 and crbug.com/463577 .
   var enableVideoDecodeRenderer =
       parseInt((remoting.getChromeVersion() || '0').split('.')[0], 10) >= 43;
-  this.plugin_.postMessage(JSON.stringify(
-      { method: 'delegateLargeCursors', data: {} }));
+  this.plugin_.postMessage(
+      JSON.stringify({method: 'delegateLargeCursors', data: {}}));
   var methods = 'third_party,spake2_pair,spake2_hmac,spake2_plain';
   this.credentials_ = credentialsProvider;
   this.useAsyncPinDialog_();
-  this.plugin_.postMessage(JSON.stringify(
-    { method: 'connect', data: {
-        hostJid: host.jabberId,
-        hostPublicKey: host.publicKey,
-        localJid: localJid,
-        sharedSecret: '',
-        authenticationMethods: methods,
-        authenticationTag: host.hostId,
-        capabilities: this.capabilities_.join(" "),
-        clientPairingId: credentialsProvider.getPairingInfo().clientId,
-        clientPairedSecret: credentialsProvider.getPairingInfo().sharedSecret,
-        keyFilter: keyFilter,
-        enableVideoDecodeRenderer: enableVideoDecodeRenderer
-      }
-    }));
+  this.plugin_.postMessage(JSON.stringify({
+    method: 'connect',
+    data: {
+      hostJid: host.jabberId,
+      hostPublicKey: host.publicKey,
+      localJid: localJid,
+      sharedSecret: '',
+      authenticationMethods: methods,
+      authenticationTag: host.hostId,
+      capabilities: this.capabilities_.join(" "),
+      clientPairingId: credentialsProvider.getPairingInfo().clientId,
+      clientPairedSecret: credentialsProvider.getPairingInfo().sharedSecret,
+      keyFilter: keyFilter,
+      enableVideoDecodeRenderer: enableVideoDecodeRenderer,
+      experiments: experiments.join(" ")
+    }
+  }));
 };
 
 /**

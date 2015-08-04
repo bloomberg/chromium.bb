@@ -165,6 +165,7 @@ remoting_webapp_shared_js_client_files = [
   "base/js/connected_view.js",
   "base/js/connection_info.js",
   "base/js/credentials_provider.js",
+  "base/js/experiments.js",
   "base/js/host_desktop.js",
   "base/js/smart_reconnector.js",
   "base/js/telemetry_event_writer.js",
