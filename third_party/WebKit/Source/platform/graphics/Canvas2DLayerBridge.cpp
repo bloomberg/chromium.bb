@@ -349,6 +349,9 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
     if (!grContext)
         return true; // for testing: skip gl stuff when using a mock graphics context.
 
+    // Need to flush skia's internal queue because texture is about to be accessed directly
+    grContext->flush();
+
     ASSERT(image->getTexture());
 
     // Because of texture sharing with the compositor, we must invalidate
