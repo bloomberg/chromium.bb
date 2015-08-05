@@ -28714,6 +28714,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.TotalAccountsHighRes.WithScheme"
+    units="accounts">
+  <owner>engedy@chromium.org</owner>
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    The number of accounts stored in the password manager (across all sites) for
+    origins with the scheme (e.g., HTTP, HTTPS, FTP) as given in the histogram
+    suffix. For each scheme, the count is recorded once per browser start-up.
+    (In case of multiple profiles, the counts are for the profile that first has
+    a WebContents created.)
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.UIDismissalReason"
     enum="PasswordManagerUIDismissalReason">
   <owner>mkwst@chromium.org</owner>
@@ -74787,6 +74800,15 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="PasswordManager.SavePasswordPromptDisappearedQuickly"/>
   <affected-histogram name="PasswordManager.SavePasswordPromptDisplayed"/>
   <affected-histogram name="PasswordManager.SavePasswordPromptResponse"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PasswordScheme" separator=".">
+  <suffix name="Android" label="The password is for an Android app."/>
+  <suffix name="Ftp" label="The scheme of the origin is FTP."/>
+  <suffix name="Http" label="The scheme of the origin is HTTP."/>
+  <suffix name="Https" label="The scheme of the origin is HTTPS."/>
+  <suffix name="Other" label="The scheme of the origin is something else."/>
+  <affected-histogram name="PasswordManager.TotalAccountsHighRes.WithScheme"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PerformanceMonitor" separator=".">

@@ -156,6 +156,11 @@ void LogTimesUsedStat(const std::string& name, int sample) {
   LogDynamicUMAStat(name, sample, 0, 100, 10);
 }
 
+void LogNumberOfAccountsForScheme(const std::string& scheme, int sample) {
+  LogDynamicUMAStat("PasswordManager.TotalAccountsHiRes.WithScheme." + scheme,
+                    sample, 1, 1000, 100);
+}
+
 // Creates a table named |table_name| using our current schema.
 bool CreateNewTable(sql::Connection* db,
                     const char* table_name,
@@ -540,21 +545,47 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
         num_entries);
   }
 
-  sql::Statement invalid_ssl_cert_statement(db_.GetCachedStatement(
-      SQL_FROM_HERE, "SELECT origin_url, ssl_valid FROM logins;"));
+  sql::Statement logins_with_schemes_statement(db_.GetUniqueStatement(
+      "SELECT signon_realm, origin_url, ssl_valid, blacklisted_by_user "
+      "FROM logins;"));
 
-  if (!invalid_ssl_cert_statement.is_valid())
+  if (!logins_with_schemes_statement.is_valid())
     return;
 
-  while (invalid_ssl_cert_statement.Step()) {
-    GURL url = GURL(invalid_ssl_cert_statement.ColumnString(0));
+  int android_logins = 0;
+  int ftp_logins = 0;
+  int http_logins = 0;
+  int https_logins = 0;
+  int other_logins = 0;
 
-    if (url.SchemeIs(url::kHttpsScheme)) {
+  while (logins_with_schemes_statement.Step()) {
+    std::string signon_realm = logins_with_schemes_statement.ColumnString(0);
+    GURL origin_url = GURL(logins_with_schemes_statement.ColumnString(1));
+    bool ssl_valid = !!logins_with_schemes_statement.ColumnInt(2);
+    bool blacklisted_by_user = !!logins_with_schemes_statement.ColumnInt(3);
+    if (blacklisted_by_user)
+      continue;
+
+    if (IsValidAndroidFacetURI(signon_realm)) {
+      ++android_logins;
+    } else if (origin_url.SchemeIs(url::kHttpsScheme)) {
+      ++https_logins;
       metrics_util::LogUMAHistogramBoolean(
-          "PasswordManager.UserStoredPasswordWithInvalidSSLCert",
-          invalid_ssl_cert_statement.ColumnInt(1) == 0);
+          "PasswordManager.UserStoredPasswordWithInvalidSSLCert", !ssl_valid);
+    } else if (origin_url.SchemeIs(url::kHttpScheme)) {
+      ++http_logins;
+    } else if (origin_url.SchemeIs(url::kFtpScheme)) {
+      ++ftp_logins;
+    } else {
+      ++other_logins;
     }
   }
+
+  LogNumberOfAccountsForScheme("Android", android_logins);
+  LogNumberOfAccountsForScheme("Ftp", ftp_logins);
+  LogNumberOfAccountsForScheme("Http", http_logins);
+  LogNumberOfAccountsForScheme("Https", https_logins);
+  LogNumberOfAccountsForScheme("Other", other_logins);
 }
 
 PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
