@@ -289,6 +289,9 @@ config("feature_flags") {
       "MEMORY_SANITIZER_INITIAL_SIZE",
     ]
   }
+  if (!fieldtrial_testing_like_official_build && !is_chrome_branded) {
+    defines += [ "FIELDTRIAL_TESTING_ENABLED" ]
+  }
 }
 
 # Debug/release ----------------------------------------------------------------

@@ -368,6 +368,11 @@
       # Note: this setting is ignored if buildtype=="Official".
       'tracing_like_official_build%': 0,
 
+      # Set to 1 to make a build that disables activation of field trial tests
+      # specified in testing/variations/fieldtrial_testing_config_*.json.
+      # Note: this setting is ignored if branding=="Chrome".
+      'fieldtrial_testing_like_official_build%': 0,
+
       # Disable image loader component extension by default.
       'image_loader_extension%': 0,
 
@@ -1142,6 +1147,7 @@
     'win_z7%': '<(win_z7)',
     'dcheck_always_on%': '<(dcheck_always_on)',
     'tracing_like_official_build%': '<(tracing_like_official_build)',
+    'fieldtrial_testing_like_official_build%': '<(fieldtrial_testing_like_official_build)',
     'arm_version%': '<(arm_version)',
     'arm_neon%': '<(arm_neon)',
     'arm_neon_optional%': '<(arm_neon_optional)',
@@ -2857,6 +2863,9 @@
       ['tracing_like_official_build!=0', {
         'defines': ['TRACING_IS_OFFICIAL_BUILD=1'],
       }],  # tracing_like_official_build!=0
+      ['fieldtrial_testing_like_official_build==0 and branding!="Chrome"', {
+        'defines': ['FIELDTRIAL_TESTING_ENABLED'],
+      }],  # fieldtrial_testing_like_official_build==0 and branding!="Chrome"
       ['OS=="win"', {
         'defines': ['NO_TCMALLOC'],
         'conditions': [

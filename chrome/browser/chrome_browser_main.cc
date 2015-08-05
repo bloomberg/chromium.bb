@@ -634,12 +634,12 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
                   << " list specified.";
   }
 
-#if !defined(GOOGLE_CHROME_BUILD)
+#if defined(FIELDTRIAL_TESTING_ENABLED)
   if (!command_line->HasSwitch(switches::kDisableFieldTrialTestingConfig) &&
       !command_line->HasSwitch(switches::kForceFieldTrials) &&
       !command_line->HasSwitch(switches::kVariationsServerURL))
     chrome_variations::AssociateDefaultFieldTrialConfig();
-#endif  // !defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(FIELDTRIAL_TESTING_ENABLED)
 
   if (command_line->HasSwitch(switches::kForceVariationIds)) {
     // Create default variation ids which will always be included in the
