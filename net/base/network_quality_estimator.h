@@ -72,6 +72,11 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
                           int64_t cumulative_prefilter_bytes_read,
                           int64_t prefiltered_bytes_read);
 
+  // Returns the weighted median of RTT observations available since
+  // |begin_timestamp|.
+  base::TimeDelta GetMedianRTTSince(
+      const base::TimeTicks& begin_timestamp) const;
+
  protected:
   // NetworkID is used to uniquely identify a network.
   // For the purpose of network quality estimation and caching, a network is
@@ -149,6 +154,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestCaching);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            TestLRUCacheMaximumSize);
+  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestGetMedianRTTSince);
 
   // CachedNetworkQuality stores the quality of a previously seen network.
   class NET_EXPORT_PRIVATE CachedNetworkQuality {
@@ -229,8 +235,16 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
     // Clears the observations stored in this buffer.
     void Clear();
 
-    // Returns the |percentile| value of the observations in this buffer.
-    int32_t GetPercentile(int percentile) const;
+    // Returns true iff the |percentile| value of the observations in this
+    // buffer is available. Sets |result| to the computed |percentile|
+    // value among all observations since |begin_timestamp|. If the value is
+    // unavailable, false is returned and |result| is not modified. Percentile
+    // value is unavailable if all the values in observation buffer are older
+    // than |begin_timestamp|.
+    // |result| must not be null.
+    bool GetPercentile(const base::TimeTicks& begin_timestamp,
+                       int32_t* result,
+                       int percentile) const;
 
    private:
     FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, StoreObservations);
@@ -240,9 +254,12 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
     // Computes the weighted observations and stores them in
     // |weighted_observations| sorted by ascending |WeightedObservation.value|.
-    // Sets |total_weight| to the total weight of all observations. Should be
-    // called only when there is at least one observation in the buffer.
+    // Only the observations with timestamp later than |begin_timestamp| are
+    // considered. Also, sets |total_weight| to the total weight of all
+    // observations. Should be called only when there is at least one
+    // observation in the buffer.
     void ComputeWeightedObservations(
+        const base::TimeTicks& begin_timestamp,
         std::vector<WeightedObservation>& weighted_observations,
         double* total_weight) const;
 
@@ -298,14 +315,19 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   void AddDefaultEstimates();
 
   // Returns an estimate of network quality at the specified |percentile|.
+  // Only the observations later than |begin_timestamp| are taken into account.
   // |percentile| must be between 0 and 100 (both inclusive) with higher
   // percentiles indicating less performant networks. For example, if
   // |percentile| is 90, then the network is expected to be faster than the
   // returned estimate with 0.9 probability. Similarly, network is expected to
   // be slower than the returned estimate with 0.1 probability.
-  NetworkQuality GetEstimateInternal(int percentile) const;
-  base::TimeDelta GetRTTEstimateInternal(int percentile) const;
-  int32_t GetDownlinkThroughputKbpsEstimateInternal(int percentile) const;
+  NetworkQuality GetEstimateInternal(const base::TimeTicks& begin_timestamp,
+                                     int percentile) const;
+  base::TimeDelta GetRTTEstimateInternal(const base::TimeTicks& begin_timestamp,
+                                         int percentile) const;
+  int32_t GetDownlinkThroughputKbpsEstimateInternal(
+      const base::TimeTicks& begin_timestamp,
+      int percentile) const;
 
   // Returns the current network ID checking by calling the platform APIs.
   // Virtualized for testing.

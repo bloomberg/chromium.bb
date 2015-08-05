@@ -106,7 +106,10 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   EXPECT_NE(NetworkQuality::kInvalidThroughput, kbps);
 
   EXPECT_NEAR(network_quality.rtt().InMilliseconds(),
-              estimator.GetEstimateInternal(100).rtt().InMilliseconds(), 1);
+              estimator.GetEstimateInternal(base::TimeTicks(), 100)
+                  .rtt()
+                  .InMilliseconds(),
+              1);
 
   // Check UMA histograms.
   histogram_tester.ExpectTotalCount("NQE.PeakKbps.Unknown", 0);
@@ -236,18 +239,20 @@ TEST(NetworkQualityEstimatorTest, PercentileSameTimestamps) {
     // required because computed percentiles may be slightly different from
     // what is expected due to floating point computation errors and integer
     // rounding off errors.
-    EXPECT_NEAR(estimator.GetEstimateInternal(i).downstream_throughput_kbps(),
-                100 - i, 1);
-    EXPECT_NEAR(estimator.GetEstimateInternal(i).rtt().InMilliseconds(), i, 1);
+    NetworkQuality network_quality =
+        estimator.GetEstimateInternal(base::TimeTicks(), i);
+    EXPECT_NEAR(network_quality.downstream_throughput_kbps(), 100 - i, 1);
+    EXPECT_NEAR(network_quality.rtt().InMilliseconds(), i, 1);
   }
 
   EXPECT_TRUE(estimator.GetEstimate(&network_quality));
   // |network_quality| should be equal to the 50 percentile value.
   EXPECT_EQ(network_quality.downstream_throughput_kbps() > 0,
-            estimator.GetEstimateInternal(50).downstream_throughput_kbps() > 0);
-  EXPECT_EQ(
-      network_quality.rtt() != NetworkQuality::InvalidRTT(),
-      estimator.GetEstimateInternal(50).rtt() != NetworkQuality::InvalidRTT());
+            estimator.GetEstimateInternal(base::TimeTicks(), 50)
+                    .downstream_throughput_kbps() > 0);
+  EXPECT_EQ(network_quality.rtt() != NetworkQuality::InvalidRTT(),
+            estimator.GetEstimateInternal(base::TimeTicks(), 50).rtt() !=
+                NetworkQuality::InvalidRTT());
 }
 
 // Verifies that the percentiles are correctly computed. Observations have
@@ -284,11 +289,18 @@ TEST(NetworkQualityEstimatorTest, PercentileDifferentTimestamps) {
     // required because computed percentiles may be slightly different from
     // what is expected due to floating point computation errors and integer
     // rounding off errors.
-    EXPECT_NEAR(estimator.GetEstimateInternal(i).downstream_throughput_kbps(),
+    NetworkQuality network_quality =
+        estimator.GetEstimateInternal(base::TimeTicks(), i);
+    EXPECT_NEAR(network_quality.downstream_throughput_kbps(),
                 51 + 0.49 * (100 - i), 1);
-    EXPECT_NEAR(estimator.GetEstimateInternal(i).rtt().InMilliseconds(),
-                51 + 0.49 * i, 1);
+    EXPECT_NEAR(network_quality.rtt().InMilliseconds(), 51 + 0.49 * i, 1);
   }
+
+  NetworkQuality network_quality = estimator.GetEstimateInternal(
+      base::TimeTicks::Now() + base::TimeDelta::FromMinutes(10), 50);
+  EXPECT_EQ(NetworkQuality::InvalidRTT(), network_quality.rtt());
+  EXPECT_EQ(NetworkQuality::kInvalidThroughput,
+            network_quality.downstream_throughput_kbps());
 }
 
 // This test notifies NetworkQualityEstimator of received data. Next,
@@ -328,18 +340,20 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
 
   // Verify the percentiles through simple tests.
   for (int i = 0; i <= 100; ++i) {
-    EXPECT_GT(estimator.GetEstimateInternal(i).downstream_throughput_kbps(), 0);
-    EXPECT_LT(estimator.GetEstimateInternal(i).rtt(), base::TimeDelta::Max());
+    NetworkQuality network_quality =
+        estimator.GetEstimateInternal(base::TimeTicks(), i);
+    EXPECT_GT(network_quality.downstream_throughput_kbps(), 0);
+    EXPECT_LT(network_quality.rtt(), base::TimeDelta::Max());
 
     if (i != 0) {
+      NetworkQuality previous_network_quality =
+          estimator.GetEstimateInternal(base::TimeTicks(), i - 1);
       // Throughput percentiles are in decreasing order.
-      EXPECT_LE(
-          estimator.GetEstimateInternal(i).downstream_throughput_kbps(),
-          estimator.GetEstimateInternal(i - 1).downstream_throughput_kbps());
+      EXPECT_LE(network_quality.downstream_throughput_kbps(),
+                previous_network_quality.downstream_throughput_kbps());
 
       // RTT percentiles are in increasing order.
-      EXPECT_GE(estimator.GetEstimateInternal(i).rtt(),
-                estimator.GetEstimateInternal(i - 1).rtt());
+      EXPECT_GE(network_quality.rtt(), previous_network_quality.rtt());
     }
   }
 }
@@ -579,6 +593,30 @@ TEST(NetworkQualityEstimatorTest, TestLRUCacheMaximumSize) {
        it != estimator.cached_network_qualities_.end(); ++it) {
     EXPECT_GE((it->second).last_update_time_, update_time_of_network_100);
   }
+}
+
+TEST(NetworkQualityEstimatorTest, TestGetMedianRTTSince) {
+  std::map<std::string, std::string> variation_params;
+  NetworkQualityEstimator estimator(variation_params);
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks old =
+      base::TimeTicks::Now() - base::TimeDelta::FromMilliseconds(1);
+
+  // First sample has very old timestamp.
+  estimator.kbps_observations_.AddObservation(
+      NetworkQualityEstimator::Observation(1, old));
+  estimator.rtt_msec_observations_.AddObservation(
+      NetworkQualityEstimator::Observation(1, old));
+
+  estimator.kbps_observations_.AddObservation(
+      NetworkQualityEstimator::Observation(100, now));
+  estimator.rtt_msec_observations_.AddObservation(
+      NetworkQualityEstimator::Observation(100, now));
+
+  EXPECT_EQ(
+      NetworkQuality::InvalidRTT(),
+      estimator.GetMedianRTTSince(now + base::TimeDelta::FromSeconds(10)));
+  EXPECT_EQ(100, estimator.GetMedianRTTSince(now).InMilliseconds());
 }
 
 }  // namespace net
