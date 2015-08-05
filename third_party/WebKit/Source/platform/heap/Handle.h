@@ -931,24 +931,40 @@ private:
 template<typename Self>
 class SelfKeepAlive {
 public:
+    SelfKeepAlive()
+    {
+    }
+
+    explicit SelfKeepAlive(Self* self)
+    {
+        assign(self);
+    }
+
     SelfKeepAlive& operator=(Self* self)
     {
-        ASSERT(!m_keepAlive || m_keepAlive.get() == self);
-        m_keepAlive = self;
+        assign(self);
         return *this;
     }
 
     void clear()
     {
-        m_keepAlive = nullptr;
+        m_keepAlive.clear();
     }
 
-    typedef Persistent<Self> (SelfKeepAlive::*UnspecifiedBoolType);
+    typedef OwnPtr<Persistent<Self>> (SelfKeepAlive::*UnspecifiedBoolType);
     operator UnspecifiedBoolType() const { return m_keepAlive ? &SelfKeepAlive::m_keepAlive : 0; }
 
 private:
+    void assign(Self* self)
+    {
+        ASSERT(!m_keepAlive || m_keepAlive->get() == self);
+        if (!m_keepAlive)
+            m_keepAlive = adoptPtr(new Persistent<Self>);
+        *m_keepAlive = self;
+    }
+
     GC_PLUGIN_IGNORE("420515")
-    Persistent<Self> m_keepAlive;
+    OwnPtr<Persistent<Self>> m_keepAlive;
 };
 
 } // namespace blink
