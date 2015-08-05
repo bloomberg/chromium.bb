@@ -149,8 +149,8 @@ private:
 
     void insertErrorMessageBlock();
 
-    void enterText();
-    void exitText();
+    void createLeafTextNodeIfNeeded();
+    bool updateLeafTextNode();
 
     void doWrite(const String&);
     void doEnd();

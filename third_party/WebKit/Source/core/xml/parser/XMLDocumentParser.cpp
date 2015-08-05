@@ -380,25 +380,30 @@ void XMLDocumentParser::handleError(XMLErrors::ErrorType type, const char* forma
         stopParsing();
 }
 
-void XMLDocumentParser::enterText()
+void XMLDocumentParser::createLeafTextNodeIfNeeded()
 {
+    if (m_leafTextNode)
+        return;
+
     ASSERT(m_bufferedText.size() == 0);
-    ASSERT(!m_leafTextNode);
     m_leafTextNode = Text::create(m_currentNode->document(), "");
     m_currentNode->parserAppendChild(m_leafTextNode.get());
 }
 
-void XMLDocumentParser::exitText()
+bool XMLDocumentParser::updateLeafTextNode()
 {
     if (isStopped())
-        return;
+        return false;
 
     if (!m_leafTextNode)
-        return;
+        return true;
 
     m_leafTextNode->appendData(toString(m_bufferedText.data(), m_bufferedText.size()));
     m_bufferedText.clear();
     m_leafTextNode = nullptr;
+
+    // Mutation event handlers executed by appendData() might detach this parser.
+    return !isStopped();
 }
 
 void XMLDocumentParser::detach()
@@ -428,7 +433,9 @@ void XMLDocumentParser::end()
     if (m_sawError) {
         insertErrorMessageBlock();
     } else {
-        exitText();
+        updateLeafTextNode();
+        // Do not bail out if in a stopped state, but notify document that
+        // parsing has finished.
         document()->styleResolverChanged();
     }
 
@@ -992,7 +999,8 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName, const Atom
         return;
     }
 
-    exitText();
+    if (!updateLeafTextNode())
+        return;
 
     AtomicString adjustedURI = uri;
     if (m_parsingFragment && adjustedURI.isNull()) {
@@ -1069,7 +1077,8 @@ void XMLDocumentParser::endElementNs()
     // the end of this method.
     RefPtrWillBeRawPtr<XMLDocumentParser> protect(this);
 
-    exitText();
+    if (!updateLeafTextNode())
+        return;
 
     RefPtrWillBeRawPtr<ContainerNode> n = m_currentNode;
     if (m_currentNode->isElementNode())
@@ -1145,8 +1154,7 @@ void XMLDocumentParser::characters(const xmlChar* chars, int length)
         return;
     }
 
-    if (!m_leafTextNode)
-        enterText();
+    createLeafTextNodeIfNeeded();
     m_bufferedText.append(chars, length);
 }
 
@@ -1176,7 +1184,8 @@ void XMLDocumentParser::processingInstruction(const String& target, const String
         return;
     }
 
-    exitText();
+    if (!updateLeafTextNode())
+        return;
 
     // ### handle exceptions
     TrackExceptionState exceptionState;
@@ -1218,7 +1227,8 @@ void XMLDocumentParser::cdataBlock(const String& text)
         return;
     }
 
-    exitText();
+    if (!updateLeafTextNode())
+        return;
 
     m_currentNode->parserAppendChild(CDATASection::create(m_currentNode->document(), text));
 }
@@ -1233,7 +1243,8 @@ void XMLDocumentParser::comment(const String& text)
         return;
     }
 
-    exitText();
+    if (!updateLeafTextNode())
+        return;
 
     m_currentNode->parserAppendChild(Comment::create(m_currentNode->document(), text));
 }
@@ -1264,7 +1275,7 @@ void XMLDocumentParser::startDocument(const String& version, const String& encod
 
 void XMLDocumentParser::endDocument()
 {
-    exitText();
+    updateLeafTextNode();
 }
 
 void XMLDocumentParser::internalSubset(const String& name, const String& externalID, const String& systemID)
