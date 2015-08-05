@@ -57,7 +57,7 @@ def DownloadChrome(revision, dest_dir, site=Site.CONTINUOUS):
     elif util.IsMac():
       return 'Chromium.app/Contents/MacOS/Chromium'
     elif util.IsLinux():
-      return 'chrome'
+      return 'chrome-wrapper'
   zip_path = os.path.join(dest_dir, 'chrome-%s.zip' % revision)
   if not os.path.exists(zip_path):
     url = site + '/%s/%s/%s.zip' % (_GetDownloadPlatform(), revision,
