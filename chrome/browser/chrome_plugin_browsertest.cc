@@ -253,7 +253,6 @@ IN_PROC_BROWSER_TEST_F(ChromePluginTest, InstalledPlugins) {
     "Chrome PDF Viewer",
     "Shockwave Flash",
     "Native Client",
-    "Chrome Remote Desktop Viewer",
   };
 
   std::vector<content::WebPluginInfo> plugins = GetPlugins();
