@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "content/browser/background_sync/background_sync_status.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -207,7 +208,7 @@ class BackgroundSyncManagerTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
         test_background_sync_manager_(nullptr),
-        callback_error_(BackgroundSyncManager::ERROR_TYPE_OK),
+        callback_status_(BACKGROUND_SYNC_STATUS_OK),
         callback_sw_status_code_(SERVICE_WORKER_OK),
         sync_events_called_(0) {
     sync_options_1_.tag = "foo";
@@ -303,26 +304,25 @@ class BackgroundSyncManagerTest : public testing::Test {
 
   void StatusAndRegistrationCallback(
       bool* was_called,
-      BackgroundSyncManager::ErrorType error,
+      BackgroundSyncStatus status,
       const BackgroundSyncRegistration& registration) {
     *was_called = true;
-    callback_error_ = error;
+    callback_status_ = status;
     callback_registration_ = registration;
   }
 
   void StatusAndRegistrationsCallback(
       bool* was_called,
-      BackgroundSyncManager::ErrorType error,
+      BackgroundSyncStatus status,
       const std::vector<BackgroundSyncRegistration>& registrations) {
     *was_called = true;
-    callback_error_ = error;
+    callback_status_ = status;
     callback_registrations_ = registrations;
   }
 
-  void StatusCallback(bool* was_called,
-                      BackgroundSyncManager::ErrorType error) {
+  void StatusCallback(bool* was_called, BackgroundSyncStatus status) {
     *was_called = true;
-    callback_error_ = error;
+    callback_status_ = status;
   }
 
  protected:
@@ -379,7 +379,7 @@ class BackgroundSyncManagerTest : public testing::Test {
                    base::Unretained(this), &was_called));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
-    return callback_error_ == BackgroundSyncManager::ERROR_TYPE_OK;
+    return callback_status_ == BACKGROUND_SYNC_STATUS_OK;
   }
 
   bool Unregister(const BackgroundSyncRegistration& sync_registration) {
@@ -398,7 +398,7 @@ class BackgroundSyncManagerTest : public testing::Test {
                    base::Unretained(this), &was_called));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
-    return callback_error_ == BackgroundSyncManager::ERROR_TYPE_OK;
+    return callback_status_ == BACKGROUND_SYNC_STATUS_OK;
   }
 
   bool GetRegistration(const BackgroundSyncRegistrationOptions& sync_options) {
@@ -417,12 +417,12 @@ class BackgroundSyncManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
 
-    if (callback_error_ == BackgroundSyncManager::ERROR_TYPE_OK) {
+    if (callback_status_ == BACKGROUND_SYNC_STATUS_OK) {
       EXPECT_STREQ(sync_options.tag.c_str(),
                    callback_registration_.options()->tag.c_str());
     }
 
-    return callback_error_ == BackgroundSyncManager::ERROR_TYPE_OK;
+    return callback_status_ == BACKGROUND_SYNC_STATUS_OK;
   }
 
   bool GetRegistrations(SyncPeriodicity periodicity) {
@@ -440,7 +440,7 @@ class BackgroundSyncManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
 
-    return callback_error_ == BackgroundSyncManager::ERROR_TYPE_OK;
+    return callback_status_ == BACKGROUND_SYNC_STATUS_OK;
   }
 
   void StorageRegistrationCallback(ServiceWorkerStatusCode result) {
@@ -513,7 +513,7 @@ class BackgroundSyncManagerTest : public testing::Test {
   BackgroundSyncRegistrationOptions sync_options_2_;
 
   // Callback values.
-  BackgroundSyncManager::ErrorType callback_error_;
+  BackgroundSyncStatus callback_status_;
   BackgroundSyncRegistration callback_registration_;
   std::vector<BackgroundSyncRegistration> callback_registrations_;
   ServiceWorkerStatusCode callback_sw_status_code_;
@@ -535,15 +535,13 @@ TEST_F(BackgroundSyncManagerTest, RegistractionIntact) {
 TEST_F(BackgroundSyncManagerTest, RegisterWithoutLiveSWRegistration) {
   sw_registration_1_ = nullptr;
   EXPECT_FALSE(Register(sync_options_1_));
-  EXPECT_EQ(BackgroundSyncManager::ERROR_TYPE_NO_SERVICE_WORKER,
-            callback_error_);
+  EXPECT_EQ(BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER, callback_status_);
 }
 
 TEST_F(BackgroundSyncManagerTest, RegisterWithoutActiveSWRegistration) {
   sw_registration_1_->UnsetVersion(sw_registration_1_->active_version());
   EXPECT_FALSE(Register(sync_options_1_));
-  EXPECT_EQ(BackgroundSyncManager::ERROR_TYPE_NO_SERVICE_WORKER,
-            callback_error_);
+  EXPECT_EQ(BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER, callback_status_);
 }
 
 TEST_F(BackgroundSyncManagerTest, RegisterExistingKeepsId) {
@@ -688,7 +686,7 @@ TEST_F(BackgroundSyncManagerTest, UnregisterNonExisting) {
   BackgroundSyncRegistration nonexistant_registration;
   nonexistant_registration.set_id(1);
   EXPECT_FALSE(Unregister(nonexistant_registration));
-  EXPECT_EQ(BackgroundSyncManager::ERROR_TYPE_NOT_FOUND, callback_error_);
+  EXPECT_EQ(BACKGROUND_SYNC_STATUS_NOT_FOUND, callback_status_);
 }
 
 TEST_F(BackgroundSyncManagerTest, UnregisterSecond) {
@@ -813,7 +811,7 @@ TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(register_called);
   EXPECT_EQ(kExpectedInitialId, callback_registration_.id());
-  EXPECT_EQ(BackgroundSyncManager::ERROR_TYPE_OK, callback_error_);
+  EXPECT_EQ(BACKGROUND_SYNC_STATUS_OK, callback_status_);
   // Unregister should be blocked while storing to the backend.
   EXPECT_FALSE(unregister_called);
   EXPECT_FALSE(get_registration_called);
@@ -822,7 +820,7 @@ TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
   base::RunLoop().RunUntilIdle();
   // Unregister should be done and since GetRegistration doesn't require the
   // backend it should be done too.
-  EXPECT_EQ(BackgroundSyncManager::ERROR_TYPE_NOT_FOUND, callback_error_);
+  EXPECT_EQ(BACKGROUND_SYNC_STATUS_NOT_FOUND, callback_status_);
   EXPECT_TRUE(unregister_called);
   EXPECT_TRUE(get_registration_called);
 }
@@ -851,7 +849,7 @@ TEST_F(BackgroundSyncManagerTest,
   test_background_sync_manager_->Continue();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(callback_called);
-  EXPECT_EQ(BackgroundSyncManager::ERROR_TYPE_STORAGE, callback_error_);
+  EXPECT_EQ(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback_status_);
 
   test_background_sync_manager_->set_delay_backend(false);
   EXPECT_FALSE(GetRegistration(sync_options_1_));

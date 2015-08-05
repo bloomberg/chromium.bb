@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_MANAGER_H_
 
 #include <map>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -13,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/background_sync/background_sync.pb.h"
 #include "content/browser/background_sync/background_sync_registration.h"
+#include "content/browser/background_sync/background_sync_status.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_storage.h"
@@ -44,20 +47,12 @@ class ServiceWorkerContextWrapper;
 class CONTENT_EXPORT BackgroundSyncManager
     : NON_EXPORTED_BASE(public ServiceWorkerContextObserver) {
  public:
-  enum ErrorType {
-    ERROR_TYPE_OK = 0,
-    ERROR_TYPE_STORAGE,
-    ERROR_TYPE_NOT_FOUND,
-    ERROR_TYPE_NO_SERVICE_WORKER,
-    ERROR_TYPE_NOT_ALLOWED,
-    ERROR_TYPE_MAX = ERROR_TYPE_NOT_ALLOWED
-  };
-
-  using StatusCallback = base::Callback<void(ErrorType)>;
+  using StatusCallback = base::Callback<void(BackgroundSyncStatus)>;
   using StatusAndRegistrationCallback =
-      base::Callback<void(ErrorType, const BackgroundSyncRegistration&)>;
+      base::Callback<void(BackgroundSyncStatus,
+                          const BackgroundSyncRegistration&)>;
   using StatusAndRegistrationsCallback =
-      base::Callback<void(ErrorType,
+      base::Callback<void(BackgroundSyncStatus,
                           const std::vector<BackgroundSyncRegistration>&)>;
 
   static scoped_ptr<BackgroundSyncManager> Create(
@@ -67,17 +62,18 @@ class CONTENT_EXPORT BackgroundSyncManager
   // Stores the given background sync registration and adds it to the scheduling
   // queue. It will overwrite an existing registration with the same tag and
   // periodicity unless they're identical (save for the id). Calls |callback|
-  // with ErrorTypeOK and the accepted registration on success. The accepted
-  // registration will have a unique id. It may also have altered parameters if
-  // the user or UA chose different parameters than those supplied.
+  // with BACKGROUND_SYNC_STATUS_OK and the accepted registration on success.
+  // The accepted registration will have a unique id. It may also have altered
+  // parameters if the user or UA chose different parameters than those
+  // supplied.
   void Register(int64 sw_registration_id,
                 const BackgroundSyncRegistrationOptions& options,
                 const StatusAndRegistrationCallback& callback);
 
   // Removes the background sync with tag |sync_registration_tag|, periodicity
   // |periodicity|, and id |sync_registration_id|. Calls |callback| with
-  // ErrorTypeNotFound if no match is found. Calls |callback| with ErrorTypeOK
-  // on success.
+  // BACKGROUND_SYNC_STATUS_NOT_FOUND if no match is found. Calls |callback|
+  // with BACKGROUND_SYNC_STATUS_OK on success.
   void Unregister(
       int64 sw_registration_id,
       const std::string& sync_registration_tag,
@@ -87,8 +83,8 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   // Finds the background sync registration associated with
   // |sw_registration_id| with periodicity |periodicity|. Calls
-  // |callback| with ErrorTypeNotFound if it doesn't exist. Calls |callback|
-  // with ErrorTypeOK on success.
+  // |callback| with BACKGROUND_SYNC_STATUS_NOT_FOUND if it doesn't exist. Calls
+  // |callback| with BACKGROUND_SYNC_STATUS_OK on success.
   void GetRegistration(int64 sw_registration_id,
                        const std::string& sync_registration_tag,
                        SyncPeriodicity periodicity,

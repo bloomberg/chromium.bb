@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "content/browser/background_sync/background_sync_manager.h"
+#include "content/browser/background_sync/background_sync_status.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/public/browser/background_sync_context.h"
@@ -58,9 +59,9 @@ void OneShotPendingCallback(
 
 void OneShotPendingDidGetSyncRegistration(
     const base::Callback<void(bool)>& callback,
-    BackgroundSyncManager::ErrorType error_type,
+    BackgroundSyncStatus error_type,
     const BackgroundSyncRegistration& registration) {
-  ASSERT_EQ(BackgroundSyncManager::ERROR_TYPE_OK, error_type);
+  ASSERT_EQ(BACKGROUND_SYNC_STATUS_OK, error_type);
   callback.Run(registration.sync_state() == SYNC_STATE_PENDING);
 }
 

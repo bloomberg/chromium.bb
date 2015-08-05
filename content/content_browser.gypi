@@ -476,6 +476,7 @@
       'browser/background_sync/background_sync_registration_options.h',
       'browser/background_sync/background_sync_service_impl.cc',
       'browser/background_sync/background_sync_service_impl.h',
+      'browser/background_sync/background_sync_status.h',
       'browser/bad_message.cc',
       'browser/bad_message.h',
       'browser/bluetooth/bluetooth_dispatcher_host.cc',

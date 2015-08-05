@@ -86,10 +86,10 @@ void BackgroundSyncManager::Register(
     BackgroundSyncMetrics::CountRegister(
         options.periodicity, registration_could_fire,
         BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE,
-        ERROR_TYPE_STORAGE);
+        BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, ERROR_TYPE_STORAGE, BackgroundSyncRegistration()));
+        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
+                              BackgroundSyncRegistration()));
     return;
   }
 
@@ -108,9 +108,10 @@ void BackgroundSyncManager::Unregister(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (disabled_) {
-    BackgroundSyncMetrics::CountUnregister(periodicity, ERROR_TYPE_STORAGE);
+    BackgroundSyncMetrics::CountUnregister(
+        periodicity, BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, ERROR_TYPE_STORAGE));
+        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR));
     return;
   }
 
@@ -131,8 +132,8 @@ void BackgroundSyncManager::GetRegistration(
 
   if (disabled_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, ERROR_TYPE_STORAGE, BackgroundSyncRegistration()));
+        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
+                              BackgroundSyncRegistration()));
     return;
   }
 
@@ -152,7 +153,7 @@ void BackgroundSyncManager::GetRegistrations(
 
   if (disabled_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, ERROR_TYPE_STORAGE,
+        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
                               std::vector<BackgroundSyncRegistration>()));
     return;
   }
@@ -313,10 +314,10 @@ void BackgroundSyncManager::RegisterImpl(
     BackgroundSyncMetrics::CountRegister(
         options.periodicity, registration_could_fire,
         BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE,
-        ERROR_TYPE_STORAGE);
+        BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, ERROR_TYPE_STORAGE, BackgroundSyncRegistration()));
+        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
+                              BackgroundSyncRegistration()));
     return;
   }
 
@@ -326,16 +327,17 @@ void BackgroundSyncManager::RegisterImpl(
     BackgroundSyncMetrics::CountRegister(
         options.periodicity, registration_could_fire,
         BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE,
-        ERROR_TYPE_NO_SERVICE_WORKER);
+        BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, ERROR_TYPE_NO_SERVICE_WORKER,
-                              BackgroundSyncRegistration()));
+        FROM_HERE,
+        base::Bind(callback, BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER,
+                   BackgroundSyncRegistration()));
     return;
   }
 
   if (!sw_registration->active_version()->HasWindowClients()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, ERROR_TYPE_NOT_ALLOWED,
+        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_NOT_ALLOWED,
                               BackgroundSyncRegistration()));
     return;
   }
@@ -357,10 +359,12 @@ void BackgroundSyncManager::RegisterImpl(
     // Record the duplicated registration
     BackgroundSyncMetrics::CountRegister(
         existing_registration->options()->periodicity, registration_could_fire,
-        BackgroundSyncMetrics::REGISTRATION_IS_DUPLICATE, ERROR_TYPE_OK);
+        BackgroundSyncMetrics::REGISTRATION_IS_DUPLICATE,
+        BACKGROUND_SYNC_STATUS_OK);
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, ERROR_TYPE_OK, *existing_registration));
+        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_OK,
+                              *existing_registration));
     return;
   }
 
@@ -511,11 +515,11 @@ void BackgroundSyncManager::RegisterDidStore(
     BackgroundSyncMetrics::CountRegister(
         new_registration.options()->periodicity, registration_could_fire,
         BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE,
-        ERROR_TYPE_STORAGE);
+        BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
     sw_to_registrations_map_.erase(sw_registration_id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, ERROR_TYPE_STORAGE, BackgroundSyncRegistration()));
+        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
+                              BackgroundSyncRegistration()));
     return;
   }
 
@@ -525,18 +529,21 @@ void BackgroundSyncManager::RegisterDidStore(
     BackgroundSyncMetrics::CountRegister(
         new_registration.options()->periodicity, registration_could_fire,
         BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE,
-        ERROR_TYPE_STORAGE);
-    DisableAndClearManager(
-        base::Bind(callback, ERROR_TYPE_STORAGE, BackgroundSyncRegistration()));
+        BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
+    DisableAndClearManager(base::Bind(callback,
+                                      BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
+                                      BackgroundSyncRegistration()));
     return;
   }
 
   BackgroundSyncMetrics::CountRegister(
       new_registration.options()->periodicity, registration_could_fire,
-      BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE, ERROR_TYPE_OK);
+      BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE,
+      BACKGROUND_SYNC_STATUS_OK);
   FireReadyEvents();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, ERROR_TYPE_OK, new_registration));
+      FROM_HERE,
+      base::Bind(callback, BACKGROUND_SYNC_STATUS_OK, new_registration));
 }
 
 void BackgroundSyncManager::RemoveRegistrationFromMap(
@@ -607,9 +614,10 @@ void BackgroundSyncManager::UnregisterImpl(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (disabled_) {
-    BackgroundSyncMetrics::CountUnregister(periodicity, ERROR_TYPE_STORAGE);
+    BackgroundSyncMetrics::CountUnregister(
+        periodicity, BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, ERROR_TYPE_STORAGE));
+        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR));
     return;
   }
 
@@ -617,9 +625,10 @@ void BackgroundSyncManager::UnregisterImpl(
       LookupRegistration(sw_registration_id, registration_key);
   if (!existing_registration ||
       existing_registration->id() != sync_registration_id) {
-    BackgroundSyncMetrics::CountUnregister(periodicity, ERROR_TYPE_NOT_FOUND);
+    BackgroundSyncMetrics::CountUnregister(periodicity,
+                                           BACKGROUND_SYNC_STATUS_NOT_FOUND);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, ERROR_TYPE_NOT_FOUND));
+        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_NOT_FOUND));
     return;
   }
 
@@ -639,23 +648,27 @@ void BackgroundSyncManager::UnregisterDidStore(int64 sw_registration_id,
 
   if (status == SERVICE_WORKER_ERROR_NOT_FOUND) {
     // ServiceWorker was unregistered.
-    BackgroundSyncMetrics::CountUnregister(periodicity, ERROR_TYPE_STORAGE);
+    BackgroundSyncMetrics::CountUnregister(
+        periodicity, BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
     sw_to_registrations_map_.erase(sw_registration_id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, ERROR_TYPE_STORAGE));
+        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR));
     return;
   }
 
   if (status != SERVICE_WORKER_OK) {
     LOG(ERROR) << "BackgroundSync failed to unregister due to backend failure.";
-    BackgroundSyncMetrics::CountUnregister(periodicity, ERROR_TYPE_STORAGE);
-    DisableAndClearManager(base::Bind(callback, ERROR_TYPE_STORAGE));
+    BackgroundSyncMetrics::CountUnregister(
+        periodicity, BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
+    DisableAndClearManager(
+        base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR));
     return;
   }
 
-  BackgroundSyncMetrics::CountUnregister(periodicity, ERROR_TYPE_OK);
+  BackgroundSyncMetrics::CountUnregister(periodicity,
+                                         BACKGROUND_SYNC_STATUS_OK);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, ERROR_TYPE_OK));
+      FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_OK));
 }
 
 void BackgroundSyncManager::GetRegistrationImpl(
@@ -666,8 +679,8 @@ void BackgroundSyncManager::GetRegistrationImpl(
 
   if (disabled_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, ERROR_TYPE_STORAGE, BackgroundSyncRegistration()));
+        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
+                              BackgroundSyncRegistration()));
     return;
   }
 
@@ -675,13 +688,14 @@ void BackgroundSyncManager::GetRegistrationImpl(
       LookupRegistration(sw_registration_id, registration_key);
   if (!out_registration) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, ERROR_TYPE_NOT_FOUND,
+        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_NOT_FOUND,
                               BackgroundSyncRegistration()));
     return;
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, ERROR_TYPE_OK, *out_registration));
+      FROM_HERE,
+      base::Bind(callback, BACKGROUND_SYNC_STATUS_OK, *out_registration));
 }
 
 void BackgroundSyncManager::GetRegistrationsImpl(
@@ -694,7 +708,8 @@ void BackgroundSyncManager::GetRegistrationsImpl(
 
   if (disabled_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, ERROR_TYPE_STORAGE, out_registrations));
+        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
+                              out_registrations));
     return;
   }
 
@@ -712,7 +727,8 @@ void BackgroundSyncManager::GetRegistrationsImpl(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, ERROR_TYPE_OK, out_registrations));
+      FROM_HERE,
+      base::Bind(callback, BACKGROUND_SYNC_STATUS_OK, out_registrations));
 }
 
 bool BackgroundSyncManager::AreOptionConditionsMet(
@@ -1037,7 +1053,7 @@ BackgroundSyncManager::MakeStatusAndRegistrationCompletion(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   return base::Bind(&BackgroundSyncManager::CompleteOperationCallback<
-                        StatusAndRegistrationCallback, ErrorType,
+                        StatusAndRegistrationCallback, BackgroundSyncStatus,
                         const BackgroundSyncRegistration&>,
                     weak_ptr_factory_.GetWeakPtr(), callback);
 }
@@ -1048,7 +1064,7 @@ BackgroundSyncManager::MakeStatusAndRegistrationsCompletion(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   return base::Bind(&BackgroundSyncManager::CompleteOperationCallback<
-                        StatusAndRegistrationsCallback, ErrorType,
+                        StatusAndRegistrationsCallback, BackgroundSyncStatus,
                         const std::vector<BackgroundSyncRegistration>&>,
                     weak_ptr_factory_.GetWeakPtr(), callback);
 }
@@ -1059,7 +1075,7 @@ BackgroundSyncManager::MakeStatusCompletion(const StatusCallback& callback) {
 
   return base::Bind(
       &BackgroundSyncManager::CompleteOperationCallback<StatusCallback,
-                                                        ErrorType>,
+                                                        BackgroundSyncStatus>,
       weak_ptr_factory_.GetWeakPtr(), callback);
 }
 
