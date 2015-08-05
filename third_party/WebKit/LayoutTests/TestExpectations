@@ -617,8 +617,6 @@ crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentag
 
 crbug.com/442730 inspector/sources/debugger-ui/watch-expressions-preserve-expansion.html [ Pass Failure ]
 
-crbug.com/142215 svg/custom/alignment-baseline-modes.svg [ NeedsRebaseline ]
-
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
