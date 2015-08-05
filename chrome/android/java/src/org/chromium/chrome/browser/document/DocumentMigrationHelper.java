@@ -175,6 +175,45 @@ public class DocumentMigrationHelper {
         }
     }
 
+    private static class MigrationImageCallback implements FaviconImageCallback {
+        private final TabContentManager mTabContentManager;
+        private final int mTabId;
+        private final DecompressThumbnailCallback mThumbnailCallback;
+        private Bitmap mFavicon;
+
+        public MigrationImageCallback(final AtomicInteger completedCount, final Activity activity,
+                final TabContentManager tabContentManager, final MigrationTabModel tabModel,
+                final int tabId, final String url, final String title, final int finalizeMode) {
+            mTabId = tabId;
+            mTabContentManager = tabContentManager;
+
+            // Even if the favicon or thumbnail are null, we still add the AppTask: the framework
+            // handles null favicons and addAppTask() below handles null thumbnails.
+            mThumbnailCallback = new DecompressThumbnailCallback() {
+                @Override
+                public void onFinishGetBitmap(Bitmap bitmap) {
+                    if (!NativePageFactory.isNativePageUrl(url, false)
+                            && !url.startsWith(UrlConstants.CHROME_SCHEME)) {
+                        addAppTask(activity, tabId,
+                                tabModel.getTabStateForDocument(tabId),
+                                url, title, mFavicon, bitmap);
+                    }
+
+                    if (completedCount.incrementAndGet() == tabModel.getCount()) {
+                        mTabContentManager.destroy();
+                        finalizeMigration(activity, finalizeMode);
+                    }
+                }
+            };
+        }
+
+        @Override
+        public void onFaviconAvailable(final Bitmap favicon, String iconUrl) {
+            mFavicon = favicon;
+            mTabContentManager.getThumbnailForId(mTabId, mThumbnailCallback);
+        }
+    }
+
     /**
      * Migrates all tab state to classic mode and creates a tab model file using the current
      * {@link DocumentTabModel} instances.
@@ -407,34 +446,11 @@ public class DocumentMigrationHelper {
             final String url = currentUrl;
             final String title = currentTitle;
 
+            FaviconImageCallback imageCallback = new MigrationImageCallback(completedCount,
+                    activity, contentManager, tabModel, tabId, url, title, finalizeMode);
             faviconHelper.getLargestRawFaviconForUrl(
                     Profile.getLastUsedProfile().getOriginalProfile(),
-                    url, ICON_TYPES, DESIRED_ICON_SIZE_DP,
-                    new FaviconImageCallback() {
-                        @Override
-                        public void onFaviconAvailable(final Bitmap favicon, String iconUrl) {
-                            // Even if either the favicon or the thumbnail comes back null
-                            // add the AppTask with the return values. The framework handles a null
-                            // favicon and addAppTask below handles null thumbnails.
-                            DecompressThumbnailCallback thumbnailCallback =
-                                    new DecompressThumbnailCallback() {
-                                @Override
-                                public void onFinishGetBitmap(Bitmap bitmap) {
-                                    if (!NativePageFactory.isNativePageUrl(url, false)
-                                            && !url.startsWith(UrlConstants.CHROME_SCHEME)) {
-                                        addAppTask(activity, tabId,
-                                                tabModel.getTabStateForDocument(tabId),
-                                                url, title, favicon, bitmap);
-                                    }
-                                    if (completedCount.incrementAndGet() == tabModel.getCount()) {
-                                        contentManager.destroy();
-                                        finalizeMigration(activity, finalizeMode);
-                                    }
-                                }
-                            };
-                            contentManager.getThumbnailForId(tabId, thumbnailCallback);
-                        }
-                    });
+                    url, ICON_TYPES, DESIRED_ICON_SIZE_DP, imageCallback);
         }
     }
 
