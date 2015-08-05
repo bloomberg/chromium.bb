@@ -62,18 +62,21 @@ def run_apptest(config, shell, args, apptest, isolate):
 
 # TODO(msw): Determine proper test retry counts; allow configuration.
 def _run_apptest_with_retry(config, shell, args, apptest, retry_count=2):
-  '''Runs an apptest, retrying on failure; returns the tests and failures.'''
+  '''Runs an apptest, retrying on failure; returns the fixtures and failures.'''
   (tests, failed) = _run_apptest(config, shell, args, apptest)
-  for retry in range(retry_count if failed else 0):
-    print 'Retrying failed tests: retry %s/%s.' % (retry + 1, retry_count)
-    # Retry only the failing fixtures; gtest honors its final filter argument.
-    arguments = args + ['--gtest_filter=%s' % ':'.join(failed)]
-    (_, failed) = _run_apptest(config, shell, arguments, apptest)
+  while failed and retry_count:
+    print 'Retrying failed tests (%d attempts remaining)' % retry_count
+    arguments = args
+    # Retry only the failing fixtures if there is no existing filter specified.
+    if failed != [apptest] and not [a for a in args if '--gtest_filter=' in a]:
+      arguments += ['--gtest_filter=%s' % ':'.join(failed)]
+    failed = _run_apptest(config, shell, arguments, apptest)[1]
+    retry_count -= 1
   return (tests, failed)
 
 
 def _run_apptest(config, shell, args, apptest):
-  '''Runs an apptest; returns the list of tests and the list of failures.'''
+  '''Runs an apptest; returns the list of fixtures and the list of failures.'''
   command = _build_command_line(config, args, apptest)
   logging.getLogger().debug('Command: %s' % ' '.join(command))
   start_time = time.time()
@@ -86,9 +89,7 @@ def _run_apptest(config, shell, args, apptest):
 
   # Find all fixtures begun from gtest's '[ RUN      ] <Suite.Fixture>' output.
   tests = [x for x in output.split('\n') if x.find('[ RUN      ] ') != -1]
-  # The '[ RUN      ] ' string is 23 chars with colored output escape sequences.
-  substring_length = 13 if config.target_os == Config.OS_ANDROID else 23
-  tests = [x.strip(' \t\n\r')[substring_length:] for x in tests]
+  tests = [x.strip(' \t\n\r')[x.find('[ RUN      ] ') + 13:] for x in tests]
 
   # Fail on output with gtest's '[  FAILED  ]' or a lack of '[       OK ]'.
   # The latter check ensures failure on broken command lines, hung output, etc.
