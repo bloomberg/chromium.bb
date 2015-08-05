@@ -4910,6 +4910,10 @@
                   '-D__compiler_offsetof=__builtin_offsetof',
                   '-Dnan=__builtin_nan',
                 ],
+                'cflags!': [
+                  # Clang does not support the following options.
+                  '-finline-limit=64',
+                ],
                 'conditions': [
                   ['target_arch=="arm"', {
                     'cflags': [
@@ -4921,10 +4925,10 @@
                   }],
                   ['target_arch=="ia32"', {
                     'cflags': [
-                      '-target x86-linux-androideabi',
+                      '-target i686-linux-androideabi',
                     ],
                     'ldflags': [
-                      '-target x86-linux-androideabi',
+                      '-target i686-linux-androideabi',
                     ],
                   }],
                   # Place holder for x64 support, not tested.

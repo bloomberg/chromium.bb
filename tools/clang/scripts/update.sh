@@ -680,35 +680,45 @@ if [[ -n "${with_android}" ]]; then
   # Make a standalone Android toolchain.
   ${ANDROID_NDK_DIR}/build/tools/make-standalone-toolchain.sh \
       --platform=android-19 \
-      --install-dir="${LLVM_BUILD_DIR}/android-toolchain" \
+      --install-dir="${LLVM_BUILD_DIR}/android-toolchain-arm" \
       --system=linux-x86_64 \
       --stl=stlport \
       --toolchain=arm-linux-androideabi-4.9
 
-  # Android NDK r9d copies a broken unwind.h into the toolchain, see
-  # http://crbug.com/357890
-  rm -v "${LLVM_BUILD_DIR}"/android-toolchain/include/c++/*/unwind.h
+  # Do the same for x86.
+  ${ANDROID_NDK_DIR}/build/tools/make-standalone-toolchain.sh \
+      --platform=android-19 \
+      --install-dir="${LLVM_BUILD_DIR}/android-toolchain-i686" \
+      --system=linux-x86_64 \
+      --stl=stlport \
+      --toolchain=x86-4.9
 
-  # Build ASan runtime for Android in a separate build tree.
-  mkdir -p ${LLVM_BUILD_DIR}/android
-  pushd ${LLVM_BUILD_DIR}/android
-  rm -fv CMakeCache.txt
-  MACOSX_DEPLOYMENT_TARGET=${deployment_target} cmake -GNinja \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DLLVM_ENABLE_ASSERTIONS=ON \
-      -DLLVM_ENABLE_THREADS=OFF \
-      -DCMAKE_C_COMPILER=${PWD}/../bin/clang \
-      -DCMAKE_CXX_COMPILER=${PWD}/../bin/clang++ \
-      -DLLVM_CONFIG_PATH=${PWD}/../bin/llvm-config \
-      -DCMAKE_C_FLAGS="--target=arm-linux-androideabi --sysroot=${PWD}/../android-toolchain/sysroot -B${PWD}/../android-toolchain" \
-      -DCMAKE_CXX_FLAGS="--target=arm-linux-androideabi --sysroot=${PWD}/../android-toolchain/sysroot -B${PWD}/../android-toolchain" \
-      -DANDROID=1 \
-      "${ABS_COMPILER_RT_DIR}"
-  ninja libclang_rt.asan-arm-android.so
+  for target_arch in "arm" "i686"; do
+    # Android NDK r9d copies a broken unwind.h into the toolchain, see
+    # http://crbug.com/357890
+    rm -v "${LLVM_BUILD_DIR}"/android-toolchain-${target_arch}/include/c++/*/unwind.h
 
-  # And copy it into the main build tree.
-  cp "$(find -name libclang_rt.asan-arm-android.so)" "${ABS_LLVM_CLANG_LIB_DIR}/lib/linux/"
-  popd
+    # Build ASan runtime for Android in a separate build tree.
+    mkdir -p ${LLVM_BUILD_DIR}/android-${target_arch}
+    pushd ${LLVM_BUILD_DIR}/android-${target_arch}
+    rm -fv CMakeCache.txt
+    MACOSX_DEPLOYMENT_TARGET=${deployment_target} cmake -GNinja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DLLVM_ENABLE_ASSERTIONS=ON \
+        -DLLVM_ENABLE_THREADS=OFF \
+        -DCMAKE_C_COMPILER=${PWD}/../bin/clang \
+        -DCMAKE_CXX_COMPILER=${PWD}/../bin/clang++ \
+        -DLLVM_CONFIG_PATH=${PWD}/../bin/llvm-config \
+        -DCMAKE_C_FLAGS="--target=${target_arch}-linux-androideabi --sysroot=${PWD}/../android-toolchain-${target_arch}/sysroot -B${PWD}/../android-toolchain-${target_arch}" \
+        -DCMAKE_CXX_FLAGS="--target=${target_arch}-linux-androideabi --sysroot=${PWD}/../android-toolchain-${target_arch}/sysroot -B${PWD}/../android-toolchain-${target_arch}" \
+        -DANDROID=1 \
+        "${ABS_COMPILER_RT_DIR}"
+    ninja libclang_rt.asan-${target_arch}-android.so
+
+    # And copy it into the main build tree.
+    cp "$(find -name libclang_rt.asan-${target_arch}-android.so)" "${ABS_LLVM_CLANG_LIB_DIR}/lib/linux/"
+    popd
+  done
 fi
 
 if [[ -n "$run_tests" || -n "${LLVM_FORCE_HEAD_REVISION:-''}" ]]; then
