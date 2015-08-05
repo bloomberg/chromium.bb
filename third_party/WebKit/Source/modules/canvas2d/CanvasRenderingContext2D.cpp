@@ -1910,7 +1910,8 @@ PassRefPtrWillBeRawPtr<TextMetrics> CanvasRenderingContext2D::measureText(const 
         direction = determineDirectionality(text);
     else
         direction = toTextDirection(state().direction(), canvas());
-    const TextRun textRun(text, 0, 0, TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, direction, false, true);
+    TextRun textRun(text, 0, 0, TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, direction, false);
+    textRun.setNormalizeSpace(true);
     FloatRect textBounds = font.selectionRectForText(textRun, FloatPoint(), font.fontDescription().computedSize(), 0, -1, true);
 
     // x direction
@@ -1969,7 +1970,8 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     bool isRTL = direction == RTL;
     bool override = computedStyle ? isOverride(computedStyle->unicodeBidi()) : false;
 
-    TextRun textRun(text, 0, 0, TextRun::AllowTrailingExpansion, direction, override, true);
+    TextRun textRun(text, 0, 0, TextRun::AllowTrailingExpansion, direction, override);
+    textRun.setNormalizeSpace(true);
     // Draw the item text at the correct point.
     FloatPoint location(x, y + getFontBaseline(fontMetrics));
     float fontWidth = font.width(textRun);
