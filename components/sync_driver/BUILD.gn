@@ -47,6 +47,8 @@ static_library("sync_driver") {
     "open_tabs_ui_delegate.h",
     "pref_names.cc",
     "pref_names.h",
+    "profile_sync_auth_provider.cc",
+    "profile_sync_auth_provider.h",
     "proxy_data_type_controller.cc",
     "proxy_data_type_controller.h",
     "shared_change_processor.cc",
@@ -71,6 +73,7 @@ static_library("sync_driver") {
   deps = [
     "//base",
     "//components/os_crypt",
+    "//components/signin/core/browser",
     "//sync",
   ]
 }

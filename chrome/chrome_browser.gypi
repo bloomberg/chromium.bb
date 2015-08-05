@@ -2939,8 +2939,6 @@
       'browser/sync/glue/typed_url_model_associator.h',
       'browser/sync/glue/ui_model_worker.cc',
       'browser/sync/glue/ui_model_worker.h',
-      'browser/sync/profile_sync_auth_provider.cc',
-      'browser/sync/profile_sync_auth_provider.h',
       'browser/sync/profile_sync_components_factory.h',
       'browser/sync/profile_sync_components_factory_impl.cc',
       'browser/sync/profile_sync_components_factory_impl.h',

@@ -2,6 +2,7 @@ include_rules = [
   "+components/os_crypt",
   "+components/pref_registry",
   "+components/sessions",
+  "+components/signin/core/browser",
   "+google_apis",
   "+sync",
 ]

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_AUTH_PROVIDER_H_
-#define CHROME_BROWSER_SYNC_PROFILE_SYNC_AUTH_PROVIDER_H_
+#ifndef COMPONENTS_SYNC_DRIVER_PROFILE_SYNC_AUTH_PROVIDER_H_
+#define COMPONENTS_SYNC_DRIVER_PROFILE_SYNC_AUTH_PROVIDER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -66,4 +66,4 @@ class ProfileSyncAuthProvider : public OAuth2TokenService::Consumer,
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncAuthProvider);
 };
 
-#endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_AUTH_PROVIDER_H_
+#endif  // COMPONENTS_SYNC_DRIVER_PROFILE_SYNC_AUTH_PROVIDER_H_

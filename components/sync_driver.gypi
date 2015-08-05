@@ -12,6 +12,7 @@
         '../base/base.gyp:base',
         '../sync/sync.gyp:sync',
         'os_crypt',
+        'signin_core_browser',
       ],
       'include_dirs': [
         '..',
@@ -61,6 +62,8 @@
         'sync_driver/open_tabs_ui_delegate.h',
         'sync_driver/pref_names.cc',
         'sync_driver/pref_names.h',
+        'sync_driver/profile_sync_auth_provider.cc',
+        'sync_driver/profile_sync_auth_provider.h',
         'sync_driver/proxy_data_type_controller.cc',
         'sync_driver/proxy_data_type_controller.h',
         'sync_driver/shared_change_processor.cc',
