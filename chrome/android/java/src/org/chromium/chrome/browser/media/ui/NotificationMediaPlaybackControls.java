@@ -54,6 +54,12 @@ public class NotificationMediaPlaybackControls {
         @Override
         public void onCreate() {
             super.onCreate();
+
+            // This would only happen if we have been recreated by the OS after Chrome has died.
+            // In this case, there can be no media playback happening so we don't have to show
+            // the notification.
+            if (sInstance == null) return;
+
             onServiceStarted(this);
         }
 
