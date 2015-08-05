@@ -224,11 +224,6 @@ void CompositedDeprecatedPaintLayerMapping::createPrimaryGraphicsLayer()
 {
     m_graphicsLayer = createGraphicsLayer(m_owningLayer.compositingReasons());
 
-#if !OS(ANDROID)
-    if (m_isMainFrameLayoutViewLayer)
-        m_graphicsLayer->contentLayer()->setDrawCheckerboardForMissingTiles(true);
-#endif
-
     updateOpacity(layoutObject()->styleRef());
     updateTransform(layoutObject()->styleRef());
     updateFilters(layoutObject()->styleRef());
@@ -1510,19 +1505,12 @@ bool CompositedDeprecatedPaintLayerMapping::updateBackgroundLayer(bool needsBack
             m_backgroundLayer = createGraphicsLayer(CompositingReasonLayerForBackground);
             m_backgroundLayer->setTransformOrigin(FloatPoint3D());
             m_backgroundLayer->setPaintingPhase(GraphicsLayerPaintBackground);
-#if !OS(ANDROID)
-            m_backgroundLayer->contentLayer()->setDrawCheckerboardForMissingTiles(true);
-            m_graphicsLayer->contentLayer()->setDrawCheckerboardForMissingTiles(false);
-#endif
             layerChanged = true;
         }
     } else {
         if (m_backgroundLayer) {
             m_backgroundLayer->removeFromParent();
             m_backgroundLayer = nullptr;
-#if !OS(ANDROID)
-            m_graphicsLayer->contentLayer()->setDrawCheckerboardForMissingTiles(true);
-#endif
             layerChanged = true;
         }
     }

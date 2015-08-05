@@ -46,12 +46,6 @@ public:
     // be rasterized based on the layer's hierarchy and transform. This defaults
     // to false.
     virtual void setAutomaticallyComputeRasterScale(bool) { }
-
-    // Set to draw a system-defined checkerboard if the compositor would otherwise draw a tile in this layer
-    // and the actual contents are unavailable. If false, the compositor will draw the layer's background color
-    // for these tiles.
-    // Defaults to false.
-    virtual void setDrawCheckerboardForMissingTiles(bool) {}
 };
 
 } // namespace blink
