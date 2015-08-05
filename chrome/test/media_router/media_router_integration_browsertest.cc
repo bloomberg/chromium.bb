@@ -114,7 +114,7 @@ base::FilePath MediaRouterIntegrationBrowserTest::GetResourceFile(
   base::FilePath base_dir;
   // ASSERT_TRUE can only be used in void returning functions.
   // Use CHECK instead in non-void returning functions.
-  CHECK(PathService::Get(base::DIR_EXE, &base_dir));
+  CHECK(PathService::Get(base::DIR_MODULE, &base_dir));
   base::FilePath full_path =
       base_dir.Append(kResourcePath).Append(relative_path);
   CHECK(PathExists(full_path));

@@ -119,7 +119,7 @@ void MediaRouterBaseBrowserTest::ParseCommandLine() {
   // Check if there is mr_extension folder under PRODUCT_DIR folder.
   if (extension_crx_.empty() && extension_unpacked_.empty()) {
     base::FilePath base_dir;
-    ASSERT_TRUE(PathService::Get(base::DIR_EXE, &base_dir));
+    ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &base_dir));
     base::FilePath extension_path =
         base_dir.Append(FILE_PATH_LITERAL("mr_extension/"));
     if (PathExists(extension_path)) {
