@@ -861,15 +861,16 @@ class BuildEBuildDictionaryTest(cros_test_lib.MockTempDirTestCase):
     osutils.WriteFile(package_path, content, makedirs=True)
 
   @staticmethod
-  def _FindUprevCandidateMock(files):
+  def _FindUprevCandidateMock(files, allow_blacklisted=False):
     """Mock for the FindUprevCandidateMock function.
 
-    Simplified implementation of FindUprevCandidate: consider all ebuilds worthy
-    of uprev.
+    Simplified implementation of FindUprevCandidate: consider an ebuild worthy
+    of uprev if |allow_blacklisted| is set or the ebuild is not blacklisted.
     """
     for f in files:
       if (f.endswith('.ebuild') and
-          not 'CROS_WORKON_BLACKLIST=1' in osutils.ReadFile(f)):
+          (not 'CROS_WORKON_BLACKLIST=1' in osutils.ReadFile(f) or
+           allow_blacklisted)):
         pkgdir = os.path.dirname(f)
         return _Package(os.path.join(os.path.basename(os.path.dirname(pkgdir)),
                                      os.path.basename(pkgdir)))
@@ -905,14 +906,23 @@ class BuildEBuildDictionaryTest(cros_test_lib.MockTempDirTestCase):
     self._CreatePackage('chromeos-base/package_name')
     portage_util.BuildEBuildDictionary(self.overlays, False,
                                        ['chromeos-base/other_package'])
+    self.assertFalse(self.uprev_candidate_mock.called)
     self._assertFoundPackages([])
 
-  def testBlacklistedPackagesIgnored(self):
-    """Test that blacklisted packages are ignored."""
+  def testBlacklistedPackagesIgnoredByDefault(self):
+    """Test that blacklisted packages are ignored by default."""
     package_name = 'chromeos-base/blacklisted_package'
     self._CreatePackage(package_name, blacklisted=True)
     portage_util.BuildEBuildDictionary(self.overlays, False, [package_name])
     self._assertFoundPackages([])
+
+  def testBlacklistedPackagesAllowed(self):
+    """Test that we can find blacklisted packages with |allow_blacklisted|."""
+    package_name = 'chromeos-base/blacklisted_package'
+    self._CreatePackage(package_name, blacklisted=True)
+    portage_util.BuildEBuildDictionary(self.overlays, False, [package_name],
+                                       allow_blacklisted=True)
+    self._assertFoundPackages([package_name])
 
 
 class ProjectMappingTest(cros_test_lib.TestCase):

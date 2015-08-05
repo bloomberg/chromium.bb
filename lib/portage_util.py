@@ -1085,7 +1085,7 @@ def BestEBuild(ebuilds):
   return winner
 
 
-def _FindUprevCandidates(files):
+def _FindUprevCandidates(files, allow_blacklisted=False):
   """Return the uprev candidate ebuild from a specified list of files.
 
   Usually an uprev candidate is a the stable ebuild in a cros_workon
@@ -1096,6 +1096,7 @@ def _FindUprevCandidates(files):
 
   Args:
     files: List of files in a package directory.
+    allow_blacklisted: If False, discard blacklisted packages.
   """
   stable_ebuilds = []
   unstable_ebuilds = []
@@ -1103,7 +1104,8 @@ def _FindUprevCandidates(files):
     if not path.endswith('.ebuild') or os.path.islink(path):
       continue
     ebuild = EBuild(path)
-    if not ebuild.is_workon or ebuild.is_blacklisted:
+    if not ebuild.is_workon or (ebuild.is_blacklisted and
+                                not allow_blacklisted):
       continue
     if ebuild.is_stable:
       if ebuild.version == WORKON_EBUILD_VERSION:
@@ -1149,7 +1151,7 @@ def _FindUprevCandidates(files):
   return uprev_ebuild
 
 
-def BuildEBuildDictionary(overlays, use_all, packages):
+def BuildEBuildDictionary(overlays, use_all, packages, allow_blacklisted=False):
   """Build a dictionary of the ebuilds in the specified overlays.
 
   Args:
@@ -1160,16 +1162,26 @@ def BuildEBuildDictionary(overlays, use_all, packages):
       of whether they are in our set of packages.
     packages: A set of the packages we want to gather.  If use_all is
       True, this argument is ignored, and should be None.
+    allow_blacklisted: Whether or not to consider blacklisted ebuilds.
   """
   for overlay in overlays:
     for package_dir, _dirs, files in os.walk(overlay):
+      # If we were given a list of packages to uprev, only consider the files
+      # whose potential CP match.
+      # This allows us to uprev specific blacklisted without throwing errors on
+      # every badly formatted blacklisted ebuild.
+      package_name = os.path.basename(package_dir)
+      category = os.path.basename(os.path.dirname(package_dir))
+      if not (use_all or os.path.join(category, package_name) in packages):
+        continue
+
       # Add stable ebuilds to overlays[overlay].
       paths = [os.path.join(package_dir, path) for path in files]
-      ebuild = _FindUprevCandidates(paths)
+      ebuild = _FindUprevCandidates(paths, allow_blacklisted)
 
       # If the --all option isn't used, we only want to update packages that
       # are in packages.
-      if ebuild and (use_all or ebuild.package in packages):
+      if ebuild:
         overlays[overlay].append(ebuild)
 
 

@@ -196,6 +196,9 @@ def GetParser():
                       help='File to list packages that were revved.')
   parser.add_argument('--dryrun', action='store_true',
                       help='Passes dry-run to git push if pushing a change.')
+  parser.add_argument('--force', action='store_true',
+                      help='Force the stabilization of blacklisted packages. '
+                      '(only compatible with -p)')
   parser.add_argument('-o', '--overlays',
                       help='Colon-separated list of overlays to modify.')
   parser.add_argument('-p', '--packages',
@@ -213,13 +216,17 @@ def GetParser():
 def main(argv):
   parser = GetParser()
   options = parser.parse_args(argv)
+  options.Freeze()
 
-  if not options.packages and options.command == 'commit' and not options.all:
-    parser.error('Please specify at least one package (--packages)')
+  if options.command == 'commit':
+    if not options.packages and not options.all:
+      parser.error('Please specify at least one package (--packages)')
+    if options.force and options.all:
+      parser.error('Cannot use --force with --all. You must specify a list of '
+                   'packages you want to force uprev.')
+
   if not os.path.isdir(options.srcroot):
     parser.error('srcroot is not a valid path: %s' % options.srcroot)
-
-  options.Freeze()
 
   portage_util.EBuild.VERBOSE = options.verbose
 
@@ -243,7 +250,8 @@ def main(argv):
   manifest = git.ManifestCheckout.Cached(options.srcroot)
 
   if options.command == 'commit':
-    portage_util.BuildEBuildDictionary(overlays, options.all, package_list)
+    portage_util.BuildEBuildDictionary(overlays, options.all, package_list,
+                                       allow_blacklisted=options.force)
 
   # Contains the array of packages we actually revved.
   revved_packages = []
