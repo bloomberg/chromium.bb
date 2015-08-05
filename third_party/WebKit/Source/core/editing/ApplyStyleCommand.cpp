@@ -1248,7 +1248,7 @@ void ApplyStyleCommand::splitTextElementAtStart(const Position& start, const Pos
 
     Position newEnd;
     if (start.containerNode() == end.containerNode())
-        newEnd = Position(end.containerText(), end.offsetInContainerNode() - start.offsetInContainerNode());
+        newEnd = Position(end.containerNode(), end.offsetInContainerNode() - start.offsetInContainerNode());
     else
         newEnd = end;
 
