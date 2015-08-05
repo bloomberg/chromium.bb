@@ -4,8 +4,6 @@
 
 #include "chrome/browser/renderer_host/safe_browsing_resource_throttle_factory.h"
 
-#include "content/public/browser/resource_context.h"
-
 // Compiling this file only makes sense if SAFE_BROWSING_SERVICE is enabled.
 // If the build is breaking here, it probably means that a gyp or gn file has
 // been modified to build this file with safe_browsing=0 (gn
@@ -20,14 +18,16 @@
 
 using content::ResourceThrottle;
 
-// static
-SafeBrowsingResourceThrottleFactory*
-    SafeBrowsingResourceThrottleFactory::factory_ = NULL;
+namespace {
+
+SafeBrowsingResourceThrottleFactory* g_factory = nullptr;
+
+}  // namespace
 
 // static
 void SafeBrowsingResourceThrottleFactory::RegisterFactory(
     SafeBrowsingResourceThrottleFactory* factory) {
-  factory_ = factory;
+  g_factory = factory;
 }
 
 // static
@@ -36,10 +36,10 @@ ResourceThrottle* SafeBrowsingResourceThrottleFactory::Create(
     content::ResourceContext* resource_context,
     content::ResourceType resource_type,
     SafeBrowsingService* service) {
-  if (factory_)
-    return factory_->CreateResourceThrottle(
+  if (g_factory) {
+    return g_factory->CreateResourceThrottle(
         request, resource_context, resource_type, service);
-
+  }
   return CreateWithoutRegisteredFactory(request, resource_type, service);
 }
 
@@ -57,6 +57,6 @@ SafeBrowsingResourceThrottleFactory::CreateWithoutRegisteredFactory(
   return new SafeBrowsingResourceThrottle(request, resource_type, service,
                                           false /* defer_at_start */);
 #else
-  return NULL;
+  return nullptr;
 #endif
 }

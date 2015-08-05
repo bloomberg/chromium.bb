@@ -56,8 +56,6 @@ class SafeBrowsingResourceThrottleFactory {
       SafeBrowsingService* service) = 0;
 
  private:
-  static SafeBrowsingResourceThrottleFactory* factory_;
-
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingResourceThrottleFactory);
 };
 
