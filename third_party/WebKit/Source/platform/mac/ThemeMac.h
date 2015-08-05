@@ -28,10 +28,6 @@
 
 #include "platform/Theme.h"
 
-@interface NSFont(WebCoreTheme)
-- (NSString*)webCoreFamilyName;
-@end
-
 namespace blink {
 
 class ThemeMac : public Theme {

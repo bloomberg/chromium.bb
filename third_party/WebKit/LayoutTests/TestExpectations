@@ -1624,7 +1624,8 @@ crbug.com/509025 [ Yosemite ] css3/flexbox/repaint-opacity-change.html [ Failure
 crbug.com/509025 [ Yosemite ] css3/flexbox/repaint-rtl-column.html [ Failure ]
 crbug.com/509025 [ Yosemite ] css3/flexbox/repaint.html [ Failure ]
 crbug.com/509025 [ Yosemite ] editing/selection/repaint-rect-for-vertical-writing-mode-with-positioned-root.html [ Failure ]
-crbug.com/509025 [ Yosemite ] fast/css/css2-system-fonts.html [ Failure ]
+# Renable this once similar override from crbug.com/515836 has been rebaselined.
+# crbug.com/509025 [ Yosemite ] fast/css/css2-system-fonts.html [ Failure ]
 crbug.com/509025 [ Yosemite ] fast/css/font-face-data-uri-invalid.html [ Failure ]
 crbug.com/509025 [ Yosemite ] fast/css/fontfaceset-download-error.html [ Failure ]
 crbug.com/509025 [ Yosemite ] fast/dom/adopt-attribute-crash.svg [ Failure ]
@@ -2837,3 +2838,6 @@ crbug.com/513073 [ Win ] http/tests/inspector/network/network-memory-cached-reso
 
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-contexts.html [ Failure ]
+
+crbug.com/515836 [ Mac ] fast/css/css2-system-fonts.html [ NeedsRebaseline ]
+crbug.com/515836 [ Mac Linux Win ] fast/forms/text-control-intrinsic-widths.html [ NeedsRebaseline ]
