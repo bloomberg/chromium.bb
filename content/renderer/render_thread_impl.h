@@ -321,8 +321,8 @@ class CONTENT_EXPORT RenderThreadImpl
   // on the renderer's main thread.
   scoped_refptr<base::SingleThreadTaskRunner> GetMediaThreadTaskRunner();
 
-  // A SequencedTaskRunner instance that runs tasks on the raster worker pool.
-  base::SequencedTaskRunner* GetWorkerSequencedTaskRunner();
+  // A TaskRunner instance that runs tasks on the raster worker pool.
+  base::TaskRunner* GetWorkerTaskRunner();
 
   // Causes the idle handler to skip sending idle notifications
   // on the two next scheduled calls, so idle notifications are

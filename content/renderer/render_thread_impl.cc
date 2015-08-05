@@ -107,6 +107,7 @@
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "content/renderer/net_info_helper.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
+#include "content/renderer/raster_worker_pool.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -421,125 +422,6 @@ void CreateEmbeddedWorkerSetup(
 }
 
 }  // namespace
-
-class RasterWorkerPool : public base::SequencedTaskRunner,
-                         public base::DelegateSimpleThread::Delegate {
- public:
-  RasterWorkerPool()
-      : namespace_token_(task_graph_runner_.GetNamespaceToken()) {}
-
-  void Start(int num_threads,
-             const base::SimpleThread::Options& thread_options) {
-    DCHECK(threads_.empty());
-    while (threads_.size() < static_cast<size_t>(num_threads)) {
-      scoped_ptr<base::DelegateSimpleThread> thread(
-          new base::DelegateSimpleThread(
-              this, base::StringPrintf(
-                        "CompositorTileWorker%u",
-                        static_cast<unsigned>(threads_.size() + 1)).c_str(),
-              thread_options));
-      thread->Start();
-      threads_.push_back(thread.Pass());
-    }
-  }
-
-  void Shutdown() {
-    // Shutdown raster threads.
-    task_graph_runner_.Shutdown();
-    while (!threads_.empty()) {
-      threads_.back()->Join();
-      threads_.pop_back();
-    }
-  }
-
-  // Overridden from base::TaskRunner:
-  bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
-                       base::TimeDelta delay) override {
-    return PostNonNestableDelayedTask(from_here, task, delay);
-  }
-
-  bool RunsTasksOnCurrentThread() const override { return true; }
-
-  // Overridden from base::SequencedTaskRunner:
-  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
-                                  const base::Closure& task,
-                                  base::TimeDelta delay) override {
-    base::AutoLock lock(lock_);
-    DCHECK(!threads_.empty());
-
-    // Remove completed tasks.
-    DCHECK(completed_tasks_.empty());
-    task_graph_runner_.CollectCompletedTasks(namespace_token_,
-                                             &completed_tasks_);
-    DCHECK_LE(completed_tasks_.size(), tasks_.size());
-    DCHECK(std::equal(completed_tasks_.begin(), completed_tasks_.end(),
-                      tasks_.begin()));
-    tasks_.erase(tasks_.begin(), tasks_.begin() + completed_tasks_.size());
-    completed_tasks_.clear();
-
-    tasks_.push_back(make_scoped_refptr(new ClosureTask(task)));
-
-    graph_.Reset();
-    for (const auto& task : tasks_) {
-      cc::TaskGraph::Node node(task.get(), 0, graph_.nodes.size());
-      if (graph_.nodes.size()) {
-        graph_.edges.push_back(
-            cc::TaskGraph::Edge(graph_.nodes.back().task, node.task));
-      }
-      graph_.nodes.push_back(node);
-    }
-
-    task_graph_runner_.ScheduleTasks(namespace_token_, &graph_);
-    return true;
-  }
-
-  // Overridden from base::DelegateSimpleThread::Delegate:
-  void Run() override { task_graph_runner_.Run(); }
-
-  cc::TaskGraphRunner* GetTaskGraphRunner() { return &task_graph_runner_; }
-
- protected:
-  ~RasterWorkerPool() override {}
-
- private:
-  // Simple Task for the TaskGraphRunner that wraps a closure.
-  class ClosureTask : public cc::Task {
-   public:
-    ClosureTask(const base::Closure& closure) : closure_(closure) {}
-
-    // Overridden from cc::Task:
-    void RunOnWorkerThread() override {
-      closure_.Run();
-      closure_.Reset();
-    };
-
-   protected:
-    ~ClosureTask() override {}
-
-   private:
-    base::Closure closure_;
-
-    DISALLOW_COPY_AND_ASSIGN(ClosureTask);
-  };
-
-  // The actual threads where work is done.
-  ScopedVector<base::DelegateSimpleThread> threads_;
-  cc::TaskGraphRunner task_graph_runner_;
-
-  // Namespace where the SequencedTaskRunner tasks run.
-  const cc::NamespaceToken namespace_token_;
-
-  // Lock to exclusively access all the following members that are used to
-  // implement the SequencedTaskRunner interface.
-  base::Lock lock_;
-  // List of tasks currently queued up for execution.
-  ClosureTask::Vector tasks_;
-  // Cached vector to avoid allocation when getting the list of complete tasks.
-  ClosureTask::Vector completed_tasks_;
-  // Graph object used for scheduling tasks.
-  cc::TaskGraph graph_;
-};
 
 // For measuring memory usage after each task. Behind a command line flag.
 class MemoryObserver : public base::MessageLoop::TaskObserver {
@@ -1954,7 +1836,7 @@ RenderThreadImpl::GetMediaThreadTaskRunner() {
   return media_thread_->task_runner();
 }
 
-base::SequencedTaskRunner* RenderThreadImpl::GetWorkerSequencedTaskRunner() {
+base::TaskRunner* RenderThreadImpl::GetWorkerTaskRunner() {
   return raster_worker_pool_.get();
 }
 

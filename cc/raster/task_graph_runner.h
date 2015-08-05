@@ -137,6 +137,9 @@ class CC_EXPORT TaskGraphRunner {
   // Warning: if the TaskGraphRunner remains busy, it may never quit.
   void Shutdown();
 
+  // Wait for all the tasks to finish running on all the namespaces.
+  void FlushForTesting();
+
  private:
   struct PrioritizedTask {
     typedef std::vector<PrioritizedTask> Vector;

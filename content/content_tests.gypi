@@ -674,6 +674,7 @@
       'renderer/media/video_capture_impl_manager_unittest.cc',
       'renderer/media/video_capture_impl_unittest.cc',
       'renderer/media/video_capture_message_filter_unittest.cc',
+      'renderer/raster_worker_pool_unittest.cc',
       'renderer/render_thread_impl_unittest.cc',
       'renderer/render_widget_unittest.cc',
       'renderer/scheduler/resource_dispatch_throttler_unittest.cc',
