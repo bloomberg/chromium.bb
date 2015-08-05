@@ -591,22 +591,22 @@ LayoutUnit LayoutFlexibleBox::mainAxisBorderAndPaddingExtentForChild(LayoutBox& 
     return isHorizontalFlow() ? child.borderAndPaddingWidth() : child.borderAndPaddingHeight();
 }
 
-bool LayoutFlexibleBox::mainAxisLengthIsIndefinite(LayoutBox& child, const Length& flexBasis) const
+bool LayoutFlexibleBox::mainAxisLengthIsDefinite(LayoutBox& child, const Length& flexBasis) const
 {
     if (flexBasis.isAuto())
-        return true;
+        return false;
     if (flexBasis.hasPercent()) {
         return isColumnFlow() ?
-            child.computePercentageLogicalHeight(flexBasis) == -1 :
-            !hasDefiniteLogicalWidth();
+            child.computePercentageLogicalHeight(flexBasis) != -1 :
+            hasDefiniteLogicalWidth();
     }
     // FIXME(cbiesinger): Is this correct?
-    return false;
+    return true;
 }
 
 bool LayoutFlexibleBox::childFlexBaseSizeRequiresLayout(LayoutBox& child) const
 {
-    return mainAxisLengthIsIndefinite(child, flexBasisForChild(child)) && hasOrthogonalFlow(child);
+    return !mainAxisLengthIsDefinite(child, flexBasisForChild(child)) && hasOrthogonalFlow(child);
 }
 
 LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(LayoutBox& child, ChildLayoutType childLayoutType)
@@ -617,7 +617,7 @@ LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(LayoutBox& child,
         UseCounter::count(document(), UseCounter::AspectRatioFlexItem);
 
     Length flexBasis = flexBasisForChild(child);
-    if (mainAxisLengthIsIndefinite(child, flexBasis)) {
+    if (!mainAxisLengthIsDefinite(child, flexBasis)) {
         LayoutUnit mainAxisExtent;
         if (hasOrthogonalFlow(child)) {
             if (childLayoutType == NeverLayout)
@@ -864,7 +864,7 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(LayoutBox& child, Layo
             contentSize = maxExtent;
 
         Length mainSize = isHorizontalFlow() ? child.styleRef().width() : child.styleRef().height();
-        if (!mainAxisLengthIsIndefinite(child, mainSize)) {
+        if (mainAxisLengthIsDefinite(child, mainSize)) {
             LayoutUnit resolvedMainSize = computeMainAxisExtentForChild(child, MainOrPreferredSize, mainSize);
             ASSERT(resolvedMainSize >= 0);
             LayoutUnit specifiedSize = maxExtent != -1 ? std::min(resolvedMainSize, maxExtent) : resolvedMainSize;
