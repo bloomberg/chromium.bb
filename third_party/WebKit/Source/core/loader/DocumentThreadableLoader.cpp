@@ -444,6 +444,7 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
             // therefore fallback-to-network is handled in the browser process
             // when the ServiceWorker does not call respondWith().)
             ASSERT(m_fallbackRequestForServiceWorker);
+            reportResponseReceived(identifier, response);
             loadFallbackRequestForServiceWorker();
             return;
         }
