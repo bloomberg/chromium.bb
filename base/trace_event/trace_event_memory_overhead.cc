@@ -122,13 +122,6 @@ void TraceEventMemoryOverhead::AddSelf() {
   Add("TraceEventMemoryOverhead", estimated_size);
 }
 
-size_t TraceEventMemoryOverhead::GetCount(const char* object_type) const {
-  const auto& it = allocated_objects_.find(object_type);
-  if (it == allocated_objects_.end())
-    return 0u;
-  return it->second.count;
-}
-
 void TraceEventMemoryOverhead::Update(const TraceEventMemoryOverhead& other) {
   for (const auto& it : other.allocated_objects_) {
     AddOrCreateInternal(it.first, it.second.count,

@@ -43,9 +43,6 @@ class BASE_EXPORT TraceEventMemoryOverhead {
   // this TraceEventMemoryOverhead instance itself.
   void AddSelf();
 
-  // Retrieves the count, that is, the count of Add*(|object_type|, ...) calls.
-  size_t GetCount(const char* object_type) const;
-
   // Adds up and merges all the values from |other| to this instance.
   void Update(const TraceEventMemoryOverhead& other);
 

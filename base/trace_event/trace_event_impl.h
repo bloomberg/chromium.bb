@@ -155,6 +155,7 @@ class BASE_EXPORT TraceEvent {
   TimeDelta thread_duration_;
   // id_ can be used to store phase-specific data.
   unsigned long long id_;
+  scoped_ptr<TraceEventMemoryOverhead> cached_memory_overhead_estimate_;
   // context_id_ is used to store context information.
   unsigned long long context_id_;
   TraceValue arg_values_[kTraceMaxNumArgs];

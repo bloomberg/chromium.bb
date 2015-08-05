@@ -294,7 +294,7 @@ void TraceBufferChunk::Reset(uint32 new_seq) {
     chunk_[i].Reset();
   next_free_ = 0;
   seq_ = new_seq;
-  cached_overhead_estimate_.reset();
+  cached_overhead_estimate_when_full_.reset();
 }
 
 TraceEvent* TraceBufferChunk::AddTraceEvent(size_t* event_index) {
@@ -313,39 +313,27 @@ scoped_ptr<TraceBufferChunk> TraceBufferChunk::Clone() const {
 
 void TraceBufferChunk::EstimateTraceMemoryOverhead(
     TraceEventMemoryOverhead* overhead) {
-  if (!cached_overhead_estimate_) {
-    cached_overhead_estimate_.reset(new TraceEventMemoryOverhead);
-
-    // When estimating the size of TraceBufferChunk, exclude the array of trace
-    // events, as they are computed individually below.
-    cached_overhead_estimate_->Add("TraceBufferChunk",
-                                   sizeof(*this) - sizeof(chunk_));
-  }
-
-  const size_t num_cached_estimated_events =
-      cached_overhead_estimate_->GetCount("TraceEvent");
-  DCHECK_LE(num_cached_estimated_events, size());
-
-  if (IsFull() && num_cached_estimated_events == size()) {
-    overhead->Update(*cached_overhead_estimate_);
+  if (cached_overhead_estimate_when_full_) {
+    DCHECK(IsFull());
+    overhead->Update(*cached_overhead_estimate_when_full_);
     return;
   }
 
-  for (size_t i = num_cached_estimated_events; i < size(); ++i)
-    chunk_[i].EstimateTraceMemoryOverhead(cached_overhead_estimate_.get());
-
+  // Cache the memory overhead estimate only if the chunk is full.
+  TraceEventMemoryOverhead* estimate = overhead;
   if (IsFull()) {
-    cached_overhead_estimate_->AddSelf();
-  } else {
-    // The unused TraceEvents in |chunks_| are not cached. They will keep
-    // changing as new TraceEvents are added to this chunk, so they are
-    // computed on the fly.
-    const size_t num_unused_trace_events = capacity() - size();
-    overhead->Add("TraceEvent (unused)",
-                  num_unused_trace_events * sizeof(TraceEvent));
+    cached_overhead_estimate_when_full_.reset(new TraceEventMemoryOverhead);
+    estimate = cached_overhead_estimate_when_full_.get();
   }
 
-  overhead->Update(*cached_overhead_estimate_);
+  estimate->Add("TraceBufferChunk", sizeof(*this));
+  for (size_t i = 0; i < next_free_; ++i)
+    chunk_[i].EstimateTraceMemoryOverhead(estimate);
+
+  if (IsFull()) {
+    estimate->AddSelf();
+    overhead->Update(*estimate);
+  }
 }
 
 TraceResultBuffer::OutputCallback
