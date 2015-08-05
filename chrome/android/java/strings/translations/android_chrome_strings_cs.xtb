@@ -81,6 +81,7 @@
 <translation id="119944043368869598">Vymazat vše</translation>
 <translation id="7665369617277396874">Přidat účet</translation>
 <translation id="6458785801851713928">Synchronizace není pro vaši doménu k dispozici.</translation>
+<translation id="8275818695183729150">Povolit (pro vyhledávání z adresního řádku)</translation>
 <translation id="7788788617745289808">Aby Chrome mohl s těmito webovými stránkami sdílet fotoaparát, musí k němu mít přístup.</translation>
 <translation id="7765158879357617694">Přesunout</translation>
 <translation id="2731700343119398978">Čekejte prosím...</translation>
@@ -372,6 +373,7 @@ Ukončíte jej stisknutím tlačítka Zpět.</translation>
 <translation id="748127970106343339">Potvrdit vymazání identifikačních údajů zařízení</translation>
 <translation id="4351244548802238354">Zavřít dialogové okno</translation>
 <translation id="3089395242580810162">Otevřít na anonymní kartě</translation>
+<translation id="699220179437400583">Automaticky Googlu hlásit podrobnosti možných bezpečnostních incidentů</translation>
 <translation id="5899349522111170522">Vytvořit nový soubor</translation>
 <translation id="3158619413803296679">Vyberte záložku</translation>
 <translation id="6138140242378429169">Optimalizovat stránku pro mobily</translation>
@@ -492,6 +494,7 @@ Statistiky využití obsahují informace, jako jsou předvolby, kliknutí na tla
 <translation id="3988213473815854515">Přístup k poloze je povolen</translation>
 <translation id="1513352483775369820">Záložky a webová historie</translation>
 <translation id="8912362522468806198">Účet Google</translation>
+<translation id="219985413780390209">Chránit mě i mé zařízení před nebezpečnými weby</translation>
 <translation id="6165508094623778733">Další informace</translation>
 <translation id="3003595280608617736">SD karta není k dispozici</translation>
 <translation id="6337234675334993532">Šifrování</translation>

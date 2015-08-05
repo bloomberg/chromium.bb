@@ -81,6 +81,7 @@
 <translation id="119944043368869598">Notīrīt visu</translation>
 <translation id="7665369617277396874">Pievienot kontu</translation>
 <translation id="6458785801851713928">Jūsu domēnam nav pieejama sinhronizācija.</translation>
+<translation id="8275818695183729150">Atļaut (meklēšanas vaicājumiem adreses joslā)</translation>
 <translation id="7788788617745289808">Pārlūkam Chrome ir nepieciešama piekļuve kamerai, lai kopīgotu to ar šo vietni.</translation>
 <translation id="7765158879357617694">Pārvietot</translation>
 <translation id="2731700343119398978">Lūdzu, uzgaidiet...</translation>
@@ -372,6 +373,7 @@ Lai izietu, nospiediet pogu “Atpakaļ”.</translation>
 <translation id="748127970106343339">Ierīces akreditācijas datu dzēšanas apstiprināšana</translation>
 <translation id="4351244548802238354">Aizvērt dialoglodziņu</translation>
 <translation id="3089395242580810162">Atvērt inkognito režīma cilnē</translation>
+<translation id="699220179437400583">Automātiski nosūtīt Google serveriem informāciju par iespējamām drošības problēmām</translation>
 <translation id="5899349522111170522">Izveidot jaunu failu</translation>
 <translation id="3158619413803296679">Grāmatzīmes izvēlēšanās</translation>
 <translation id="6138140242378429169">Padarīt lapu piemērotu mobilajām ierīcēm</translation>
@@ -492,6 +494,7 @@ Lietojuma statistikas datos tiek ietverta tāda informācija kā preferences, kl
 <translation id="3988213473815854515">Atļauta piekļuve atrašanās vietas informācijai</translation>
 <translation id="1513352483775369820">Grāmatzīmes un tīmekļa vēsture</translation>
 <translation id="8912362522468806198">Google konts</translation>
+<translation id="219985413780390209">Aizsargāt jūs un ierīci pret bīstamām vietnēm</translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
 <translation id="3003595280608617736">Nav SD kartes</translation>
 <translation id="6337234675334993532">Šifrēšana</translation>

@@ -204,6 +204,7 @@
 <translation id="7897900149154324287">В будущем, прежде чем отключать накопитель, воспользуйтесь командой &quot;Извлечь&quot; в приложении &quot;Файлы&quot;, чтобы не потерять данные.</translation>
 <translation id="9181716872983600413">Юникод</translation>
 <translation id="2566124945717127842">Функция Powerwash восстановит заводские настройки устройства <ph name="IDS_SHORT_PRODUCT_NAME"/>.</translation>
+<translation id="1994173015038366702">Адрес сайта</translation>
 <translation id="3609785682760573515">Cинхронизация…</translation>
 <translation id="1383861834909034572">Открытие по завершении</translation>
 <translation id="5727728807527375859">Расширения и темы могут причинить вред вашему компьютеру. Продолжить?</translation>
@@ -746,6 +747,7 @@
 <translation id="5759728514498647443">&quot;<ph name="APP_NAME"/>&quot; может читать документы, отправленные на печать через приложение &quot;<ph name="APP_NAME"/>&quot;.</translation>
 <translation id="2401053206567162910">Это приложение пока не поддерживается на данном устройстве, но команда Chrome прилагает все усилия, чтобы это исправить.</translation>
 <translation id="3273410961255278341">Отправка:</translation>
+<translation id="2167276631610992935">JavaScript</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Новая вкладка</translation>
 <translation id="6567688344210276845">Не удалось загрузить значок &quot;<ph name="ICON"/>&quot; для действия страницы.</translation>
@@ -1043,7 +1045,6 @@
 <translation id="9070219033670098627">Сменить пользователя</translation>
 <translation id="1486096554574027028">Поиск паролей</translation>
 <translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> обнаружил, что ваши настройки браузера могли быть изменены без вашего ведома. Восстановить настройки по умолчанию?</translation>
-<translation id="1836938920852968258">Отключить меню &quot;Другие устройства&quot; на странице быстрого доступа.</translation>
 <translation id="3825863595139017598">Монгольская раскладка клавиатуры</translation>
 <translation id="8184538546369750125">Использовать глобальный параметр по умолчанию (разрешать)</translation>
 <translation id="1506687042165942984">Показывает предыдущую сохраненную копию этой страницы.</translation>
@@ -1156,6 +1157,7 @@
 <translation id="5630163645818715367">Оформление Material Design</translation>
 <translation id="2498857833812906273">Отображает оповещение о выходе из Chrome, если запущены размещаемые приложения.</translation>
 <translation id="4699357559218762027">(автозапуск)</translation>
+<translation id="563535393368633106">Спрашивать разрешение на доступ (рекомендуется)</translation>
 <translation id="4037463823853863991">Включает переключатель вкладок для быстрого доступа к сайтам на Android.</translation>
 <translation id="7394102162464064926">Удалить эти страницы из истории просмотров?
 
@@ -1701,7 +1703,6 @@
 <translation id="8602851771975208551">Одна из программ на вашем компьютере установила приложение, которое может влиять на работу Chrome.</translation>
 <translation id="2655386581175833247">Сертификат пользователя:</translation>
 <translation id="5039804452771397117">Разрешить</translation>
-<translation id="5435964418642993308">Нажмите клавишу Enter для возврата, клавишу контекстного меню для просмотра истории</translation>
 <translation id="6815206662964743929">Сменить пользователя</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Включить залипание клавиш</translation>
@@ -1874,6 +1875,7 @@
 <translation id="1346104802985271895">вьетнамская раскладка (TELEX)</translation>
 <translation id="7896906914454843592">Раскладка США (расширенная)</translation>
 <translation id="2242603986093373032">Устройства не найдены</translation>
+<translation id="7423098979219808738">Всегда спрашивать</translation>
 <translation id="5889282057229379085">Максимальное количество промежуточных ЦС: <ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="1549788673239553762"><ph name="APP_NAME"/> запрашивает доступ к тому &quot;<ph name="VOLUME_NAME"/>&quot;. Это может привести к изменению или удалению файлов.</translation>
 <translation id="3180365125572747493">Введите пароль для шифрования этого файла сертификата.</translation>
@@ -2387,7 +2389,6 @@
 <translation id="7193047015510747410">Включить автоматический ввод учетных данных для синхронизации</translation>
 <translation id="7257173066616499747">Сети Wi-Fi</translation>
 <translation id="6199801702437275229">Получение информации о свободном месте…</translation>
-<translation id="2767649238005085901">Нажмите клавишу Enter для перехода вперед, клавишу контекстного меню для просмотра истории</translation>
 <translation id="6124650939968185064">От этих расширений зависят следующие:</translation>
 <translation id="8580634710208701824">Перезагрузить фрейм</translation>
 <translation id="1018656279737460067">Отменено</translation>
@@ -3164,7 +3165,6 @@
 <translation id="725387188884494207">Удалить этот профиль и все связанные с ним данные с этого компьютера? Восстановить их будет невозможно.</translation>
 <translation id="3531250013160506608">Поле для ввода пароля</translation>
 <translation id="2169062631698640254">Выполнить вход</translation>
-<translation id="506228266759207354">Отключить меню страницы быстрого доступа для работы с других устройств.</translation>
 <translation id="2478076885740497414">Установить приложение</translation>
 <translation id="1781502536226964113">Новую вкладку</translation>
 <translation id="765676359832457558">Скрыть дополнительные настройки</translation>
@@ -3782,6 +3782,7 @@
 <translation id="4613271546271159013">Одно из расширений изменило страницу, которая открывается в новой вкладке.</translation>
 <translation id="3378630551672149129">Войдите в аккаунт и нажмите клавишу TAB, чтобы взаимодействовать с подключенными устройствами.</translation>
 <translation id="351152300840026870">Моноширинный шрифт</translation>
+<translation id="2476578072172137802">Настройки сайта</translation>
 <translation id="4301786491084298653">Отключить в домене <ph name="DOMAIN"/></translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="3057592184182562878">Показывать устройства MTP в диспетчере в виде хранилища файлов</translation>
@@ -5441,6 +5442,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="1936717151811561466">Финский</translation>
 <translation id="4681930562518940301">Открыть оригинальное изображение в новой вкладке</translation>
 <translation id="7088418943933034707">Настроить сертификаты…</translation>
+<translation id="6295158916970320988">Все сайты</translation>
 <translation id="497421865427891073">Вперед</translation>
 <translation id="2453576648990281505">Файл уже существует</translation>
 <translation id="6972929256216826630">Разрешить всем сайтам автоматически скачивать несколько файлов</translation>

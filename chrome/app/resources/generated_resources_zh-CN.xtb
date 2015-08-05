@@ -201,6 +201,7 @@
 <translation id="7897900149154324287">日后在拔下您的可移动设备之前，请务必先使用“文件”菜单将其弹出。否则，您的数据可能会丢失。</translation>
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="2566124945717127842">Powerwash会将您的<ph name="IDS_SHORT_PRODUCT_NAME"/>设备重置为初始状态。</translation>
+<translation id="1994173015038366702">网站网址</translation>
 <translation id="3609785682760573515">正在同步…</translation>
 <translation id="1383861834909034572">完成时打开</translation>
 <translation id="5727728807527375859">扩展功能、应用和主题背景可能会损害您的计算机。您确定要继续吗？</translation>
@@ -732,6 +733,7 @@
 <translation id="5759728514498647443">您通过“<ph name="APP_NAME"/>”发送以进行打印的文档可由“<ph name="APP_NAME"/>”读取。</translation>
 <translation id="2401053206567162910">目前此设备不支持该应用，但 Chrome Gnomes 正设法解决这一问题，使该应用能够尽快在此设备上顺利运行。</translation>
 <translation id="3273410961255278341">发送用途：</translation>
+<translation id="2167276631610992935">Javascript</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">打开新的标签页</translation>
 <translation id="6567688344210276845">无法加载网页操作的“<ph name="ICON"/>”图标。</translation>
@@ -1029,7 +1031,6 @@
 <translation id="9070219033670098627">切换用户</translation>
 <translation id="1486096554574027028">搜索密码</translation>
 <translation id="6815353853907306610">“<ph name="IDS_SHORT_PRODUCT_NAME"/>”检测到您的浏览器设置可能在您不知情的情况下发生了更改。要将其重置为原始默认设置吗？</translation>
-<translation id="1836938920852968258">停用新标签页的“其他设备”菜单。</translation>
 <translation id="3825863595139017598">蒙古语键盘</translation>
 <translation id="8184538546369750125">使用全局默认设置（允许）</translation>
 <translation id="1506687042165942984">显示为此页面保存的已知过时副本。</translation>
@@ -1142,6 +1143,7 @@
 <translation id="5630163645818715367">浏览器顶部界面中的 Material Design</translation>
 <translation id="2498857833812906273">退出 Chrome 时，如果有托管的应用正在运行，则显示通知。</translation>
 <translation id="4699357559218762027">（自动启动）</translation>
+<translation id="563535393368633106">访问前先询问（推荐）</translation>
 <translation id="4037463823853863991">启用 Android 的无障碍标签页切换器。</translation>
 <translation id="7394102162464064926">您确定要从历史记录中删除这些网页吗？
 
@@ -1684,7 +1686,6 @@
 <translation id="8602851771975208551">您计算机上的其他程序添加了一个应用，该应用可能会改变 Chrome 的工作方式。</translation>
 <translation id="2655386581175833247">用户证书：</translation>
 <translation id="5039804452771397117">允许</translation>
-<translation id="5435964418642993308">按 Enter 键即可返回，按右键菜单键即可查看历史记录</translation>
 <translation id="6815206662964743929">切换用户</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">启用粘滞键</translation>
@@ -1856,6 +1857,7 @@
 <translation id="1346104802985271895">越南语输入法 (TELEX)</translation>
 <translation id="7896906914454843592">美式扩展键盘</translation>
 <translation id="2242603986093373032">无任何设备</translation>
+<translation id="7423098979219808738">先询问</translation>
 <translation id="5889282057229379085">中级 CA 证书数目的上限为：<ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="1549788673239553762">“<ph name="APP_NAME"/>”想访问 <ph name="VOLUME_NAME"/>。它可能会修改或删除您的文件。</translation>
 <translation id="3180365125572747493">请输入密码，用于加密该证书文件。</translation>
@@ -2358,7 +2360,6 @@
 <translation id="7193047015510747410">自动填充同步凭据</translation>
 <translation id="7257173066616499747">Wi-Fi 网络</translation>
 <translation id="6199801702437275229">等待存储空间信息...</translation>
-<translation id="2767649238005085901">按 Enter 键即可前进，按右键菜单键即可查看历史记录</translation>
 <translation id="6124650939968185064">需先安装此扩展程序，下列扩展程序才能正常使用：</translation>
 <translation id="8580634710208701824">重新加载框架</translation>
 <translation id="1018656279737460067">已取消</translation>
@@ -3138,7 +3139,6 @@
 <translation id="725387188884494207">确定要从此计算机中删除该用户及其所有相关数据吗？删除操作一旦执行便无法撤消！</translation>
 <translation id="3531250013160506608">密码文本框</translation>
 <translation id="2169062631698640254">仍然登录</translation>
-<translation id="506228266759207354">停用用于访问其他设备上的标签的新标签页菜单。</translation>
 <translation id="2478076885740497414">安装应用</translation>
 <translation id="1781502536226964113">打开新标签页</translation>
 <translation id="765676359832457558">隐藏高级设置...</translation>
@@ -3755,6 +3755,7 @@
 <translation id="4613271546271159013">某个扩展程序更改了您打开新标签页时系统显示的页面。</translation>
 <translation id="3378630551672149129">登录后，按 Tab 键即可开始与输入元素互动</translation>
 <translation id="351152300840026870">宽度固定的字体</translation>
+<translation id="2476578072172137802">网站设置</translation>
 <translation id="4301786491084298653">在<ph name="DOMAIN"/>中停用</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="3057592184182562878">在文件管理器中将MTP设备显示为文件存储设备。</translation>
@@ -5407,6 +5408,7 @@
 <translation id="1936717151811561466">芬兰语</translation>
 <translation id="4681930562518940301">在新标签页中打开原始图片(&amp;I)</translation>
 <translation id="7088418943933034707">管理证书...</translation>
+<translation id="6295158916970320988">所有网站</translation>
 <translation id="497421865427891073">前进</translation>
 <translation id="2453576648990281505">文件已存在</translation>
 <translation id="6972929256216826630">允许所有网站自动下载多个文件</translation>

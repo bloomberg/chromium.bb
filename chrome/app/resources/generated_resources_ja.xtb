@@ -205,6 +205,7 @@
 <translation id="7897900149154324287">今後、リムーバブル デバイスを取り外す場合はまずファイル アプリで取り外しアイコンをクリックしてください。アイコンをクリックしないで取り外した場合、データを失うことがあります。</translation>
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="2566124945717127842">お使いの <ph name="IDS_SHORT_PRODUCT_NAME"/> 搭載デバイスを出荷時の状態にリセットするために、Powerwash を実行します。</translation>
+<translation id="1994173015038366702">サイトの URL</translation>
 <translation id="3609785682760573515">同期しています...</translation>
 <translation id="1383861834909034572">ダウンロードが完了したら開きます</translation>
 <translation id="5727728807527375859">拡張機能、アプリ、テーマはパソコンに悪影響を与える可能性があります。処理を続けてもよろしいですか？</translation>
@@ -746,6 +747,7 @@
 <translation id="5759728514498647443">「<ph name="APP_NAME"/>」を使用して印刷に送信したドキュメントは「<ph name="APP_NAME"/>」で読めます。</translation>
 <translation id="2401053206567162910">このアプリは現在このデバイスではサポートされていませんが、今後ご利用いただけるように取り組んでおります。</translation>
 <translation id="3273410961255278341">送信先:</translation>
+<translation id="2167276631610992935">Javascript</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">新しいタブ</translation>
 <translation id="6567688344210276845">ページ操作のアイコン「<ph name="ICON"/>」を読み込むことができませんでした。</translation>
@@ -1043,7 +1045,6 @@
 <translation id="9070219033670098627">ユーザーを切り替え</translation>
 <translation id="1486096554574027028">パスワードを検索</translation>
 <translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> は、ユーザーの知らない間にブラウザの設定が変更された可能性があることを検出しました。設定を元のデフォルトにリセットしますか？</translation>
-<translation id="1836938920852968258">NTP の [その他のデバイス] メニューを無効にする</translation>
 <translation id="3825863595139017598">モンゴル語キーボード</translation>
 <translation id="8184538546369750125">グローバルのデフォルト値（[許可]）を使用</translation>
 <translation id="1506687042165942984">このページの保存されているコピー（古いバージョン）を表示します。</translation>
@@ -1156,6 +1157,7 @@
 <translation id="5630163645818715367">ブラウザのトップ chrome 部分のマテリアル デザイン</translation>
 <translation id="2498857833812906273">Chrome を終了する際、ホスト型アプリが実行中の場合は通知を表示します。</translation>
 <translation id="4699357559218762027">（自動起動済み）</translation>
+<translation id="563535393368633106">アクセスする前に確認する（推奨）</translation>
 <translation id="4037463823853863991">Android のユーザー補助タブ切り替えスイッチを有効にします。</translation>
 <translation id="7394102162464064926">履歴からこれらのページを削除してもよろしいですか？
 
@@ -1702,7 +1704,6 @@
 <translation id="8602851771975208551">パソコン上の別のプログラムにより、Chrome の動作方法を変更する可能性のあるアプリが追加されました。</translation>
 <translation id="2655386581175833247">ユーザー証明書:</translation>
 <translation id="5039804452771397117">許可</translation>
-<translation id="5435964418642993308">Enter キーを押すと前に戻り、コンテキスト メニュー キーを押すと履歴が表示されます</translation>
 <translation id="6815206662964743929">ユーザーを切り替え</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">スティッキー キーを有効にする</translation>
@@ -1876,6 +1877,7 @@
 <translation id="1346104802985271895">ベトナム語の入力方法（TELEX）</translation>
 <translation id="7896906914454843592">US（拡張）キーボード</translation>
 <translation id="2242603986093373032">デバイスがありません</translation>
+<translation id="7423098979219808738">最初に確認する</translation>
 <translation id="5889282057229379085">中間認証局の最大数: <ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="1549788673239553762">「<ph name="APP_NAME"/>」が <ph name="VOLUME_NAME"/> へのアクセスを求めています。ファイルが変更または削除される可能性があります。</translation>
 <translation id="3180365125572747493">この証明書ファイルの暗号化に使用するパスワードを入力してください。</translation>
@@ -2395,7 +2397,6 @@
 <translation id="7193047015510747410">同期の認証情報を自動入力する</translation>
 <translation id="7257173066616499747">Wi-Fi ネットワーク</translation>
 <translation id="6199801702437275229">空き容量情報を待機中...</translation>
-<translation id="2767649238005085901">Enter キーを押すと次に進み、コンテキスト メニュー キーを押すと履歴が表示されます</translation>
 <translation id="6124650939968185064">次の拡張機能は、この拡張機能に依存しています:</translation>
 <translation id="8580634710208701824">フレームの再読み込み</translation>
 <translation id="1018656279737460067">キャンセルされました</translation>
@@ -3177,7 +3178,6 @@
 <translation id="725387188884494207">このユーザーと、このユーザーに関連付けられているすべてのデータをこのパソコンから削除してもよろしいですか？この操作は元に戻せません。</translation>
 <translation id="3531250013160506608">パスワード テキスト ボックス</translation>
 <translation id="2169062631698640254">このままログインする</translation>
-<translation id="506228266759207354">他の端末のタブにアクセスするための新しいタブ ページ メニューを無効にします。</translation>
 <translation id="2478076885740497414">アプリをインストール</translation>
 <translation id="1781502536226964113">新しいタブ ページを開く</translation>
 <translation id="765676359832457558">詳細設定を表示しない...</translation>
@@ -3797,6 +3797,7 @@
 <translation id="4613271546271159013">拡張機能によって、新しいタブを開いたときに表示されるページが変更されました。</translation>
 <translation id="3378630551672149129">ログインしてください（tab キーで入力要素を操作できます）</translation>
 <translation id="351152300840026870">固定幅フォント</translation>
+<translation id="2476578072172137802">サイト設定</translation>
 <translation id="4301786491084298653"><ph name="DOMAIN"/> で無効にする</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="3057592184182562878">ファイル マネージャでファイルの格納場所として MTP デバイスを表示します。</translation>
@@ -5459,6 +5460,7 @@
 <translation id="1936717151811561466">フィンランド語</translation>
 <translation id="4681930562518940301">元の画像を新しいタブで開く(&amp;I)</translation>
 <translation id="7088418943933034707">証明書の管理...</translation>
+<translation id="6295158916970320988">すべてのサイト</translation>
 <translation id="497421865427891073">次に進む</translation>
 <translation id="2453576648990281505">このファイルは既に存在します</translation>
 <translation id="6972929256216826630">複数ファイルの自動ダウンロードをすべてのサイトに許可する</translation>

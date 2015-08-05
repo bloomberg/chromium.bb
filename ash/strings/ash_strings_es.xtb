@@ -34,6 +34,7 @@
 <translation id="6459472438155181876">Ampliando pantalla para <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Móvil</translation>
 <translation id="6596816719288285829">Dirección IP</translation>
+<translation id="8517041960877371778">Es posible que tu <ph name="DEVICE_TYPE"/> no se cargue mientras esté encendido.</translation>
 <translation id="3621712662352432595">Configuración de audio</translation>
 <translation id="1812696562331527143">Tu método de entrada ha cambiado a <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>externo<ph name="END_LINK"/>).
 Para cambiarlo, pulsa Mayús + Alt.</translation>
@@ -103,6 +104,7 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="3963445509666917109">Altavoz (interno)</translation>
 <translation id="1747827819627189109">Teclado en pantalla habilitado</translation>
 <translation id="2208323208084708176">Modo de escritorio unificado</translation>
+<translation id="5759815399269068793">Puedes seguir utilizando tu <ph name="DEVICE_TYPE"/> mientras está conectado a una pantalla externa aunque la tapa esté cerrada.</translation>
 <translation id="2825619548187458965">Estantería</translation>
 <translation id="4430019312045809116">Volumen</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -146,6 +148,7 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="3019353588588144572">Tiempo restante hasta que se cargue la batería por completo: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Lupa</translation>
+<translation id="7957227661277029961">Es posible que tu <ph name="DEVICE_TYPE"/> no se cargue mientras esté encendido. Te recomendamos que utilices el cargador oficial.</translation>
 <translation id="882279321799040148">Haz clic para verla</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> no admite una resolución de <ph name="SPECIFIED_RESOLUTION"/>. Se ha cambiado la resolución a <ph name="FALLBACK_RESOLUTION"/></translation>

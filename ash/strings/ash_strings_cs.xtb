@@ -34,6 +34,7 @@
 <translation id="6459472438155181876">Rozšíření obrazovky na displej <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="6596816719288285829">IP adresa</translation>
+<translation id="8517041960877371778">Je možné, že když bude zařízení <ph name="DEVICE_TYPE"/> zapnuté, nebude se nabíjet.</translation>
 <translation id="3621712662352432595">Nastavení zvuku</translation>
 <translation id="1812696562331527143">Metoda zadávání se změnila na metodu <ph name="INPUT_METHOD_ID"/>* <ph name="BEGIN_LINK"/>třetí strany<ph name="END_LINK"/>. Přepnout ji můžete stisknutím klávesové zkratky Shift + Alt.</translation>
 <translation id="6043994281159824495">Odhlásit se</translation>
@@ -101,6 +102,7 @@
 <translation id="3963445509666917109">Reproduktor (interní)</translation>
 <translation id="1747827819627189109">Softwarová klávesnice je aktivována</translation>
 <translation id="2208323208084708176">Jednotný režim klasické plochy</translation>
+<translation id="5759815399269068793">Když je zařízení <ph name="DEVICE_TYPE"/> připojeno k externímu displeji, můžete ho používat i se zavřeným víkem.</translation>
 <translation id="2825619548187458965">Polička</translation>
 <translation id="4430019312045809116">Hlasitost</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -144,6 +146,7 @@
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="3019353588588144572">Čas zbývající do úplného nabití baterie: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Lupa obrazovky</translation>
+<translation id="7957227661277029961">Je možné, že když bude zařízení <ph name="DEVICE_TYPE"/> zapnuté, nebude se nabíjet. Doporučujeme použít oficiální nabíječku.</translation>
 <translation id="882279321799040148">Kliknutím jej zobrazíte</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> rozlišení <ph name="SPECIFIED_RESOLUTION"/> nepodporuje. Rozlišení bylo změněno zpět na <ph name="FALLBACK_RESOLUTION"/>.</translation>

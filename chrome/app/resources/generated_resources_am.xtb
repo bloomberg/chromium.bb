@@ -204,6 +204,7 @@
 <translation id="7897900149154324287">ለወደፊቱ የሚነቀል መሳሪያዎን ከመንቀልዎ በፊት በፋይሎች መተግበሪያው ውስጥ ማላቀቅዎን እርግጠኛ ይኑ። ያለበለዚያ የተወሰነ ውሂብ ሊጠፋብዎ ይችላል።</translation>
 <translation id="9181716872983600413">ዩኒኮድ</translation>
 <translation id="2566124945717127842">የ<ph name="IDS_SHORT_PRODUCT_NAME"/> መሣሪያዎ ልክ እንደ አዲስ እንዲሆን ዳግም ለማስጀመር Powerwash።</translation>
+<translation id="1994173015038366702">የጣቢያ ዩአርኤል</translation>
 <translation id="3609785682760573515">በማመሳሰል ላይ...</translation>
 <translation id="1383861834909034572">ሲጠናቀቅ መክፈት</translation>
 <translation id="5727728807527375859">ቅጥያዎች፣ መተግበሪያዎች እና ገፅታዎች ኮምፒውተርዎን ሊጎዱ ይችላሉ። እርግጠኛ ነዎት መቀጠል ይፈልጋሉ?</translation>
@@ -753,6 +754,7 @@
 <translation id="5759728514498647443">በ <ph name="APP_NAME"/> በኩል ሊያትሙዋቸው የሚልኩዋቸው ሰነዶች በ <ph name="APP_NAME"/> ላይ ሊነበቡ ይችላሉ።</translation>
 <translation id="2401053206567162910">ይህ መተግበሪያ በአሁኑ ጊዜ በዚህ መሣሪያ ላይ አይደገፍም ግን የChrome ተዓምረኛዎች እሱን ቶሎ ብለው ለመስራት ጠንክረው እየሰሩ ነው።</translation>
 <translation id="3273410961255278341">ላክ ለ፦</translation>
+<translation id="2167276631610992935">JavaScript</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">አዲስ ትር</translation>
 <translation id="6567688344210276845">አዶ «<ph name="ICON"/>» ለገጽ እርምጃ መጫን አልተቻለም።</translation>
@@ -1060,7 +1062,6 @@ nil</translation>
 <translation id="9070219033670098627">ሰው ቀይር</translation>
 <translation id="1486096554574027028">የይለፍ ቃላትን ፈልግ</translation>
 <translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> የእርስዎ አሳሽ ቅንብሮች እርስዎ ሳያውቁ ተቀይረው ሊሆኑ እንደሚችሉ ተስተውሏል። ወደ የመጀመሪያ ነባሪዎቻቸው ዳግም ሊያስጀምሯቸው ይፈልጋሉ?</translation>
-<translation id="1836938920852968258">የኤን ቲ ፒ «ሌሎች መሣሪያዎች» ምናሌን አሰናክል።</translation>
 <translation id="3825863595139017598">የሞንጎሊያ ቁልፍ ሰሌዳ</translation>
 <translation id="8184538546369750125">ሁለንተናዊ ነባሪውን ተጠቀም (ፍቀድ)</translation>
 <translation id="1506687042165942984">የዚህን ገጽ የተቀመጠ (ለምሳሌ ቀኑ ያለፈበት እንደሆነ የታወቀ) ቅጂን አሳይ።</translation>
@@ -1173,6 +1174,7 @@ nil</translation>
 <translation id="5630163645818715367">የቁስ ንድፍ  በአሳሹ ከፍተኛ chrome ውስጥ</translation>
 <translation id="2498857833812906273">የተስተናገዱ መተግበሪያዎች በአሁኑ ጊዜ እያሄዱ ከሆኑ ከChrome ሲወጡ ማሳወቂያ አሳይ።</translation>
 <translation id="4699357559218762027">(በራስ-ጀምሯል)</translation>
+<translation id="563535393368633106">ከመድረስ በፊት ጠይቅ (የሚመከር)</translation>
 <translation id="4037463823853863991">የAndroid ትር ቀያሪ ተደራሽነት አንቃ።</translation>
 <translation id="7394102162464064926">እርግጠኛ ነዎት እነዚህን ገጾች ከታሪክዎ መሰረዝ ይፈልጋሉ?
 
@@ -1720,7 +1722,6 @@ nil</translation>
 <translation id="8602851771975208551">በኮምፒውተርዎ ላይ ያለ ሌላ ፕሮግራም Chrome የሚሰራበት መንገድ ሊቀይር የሚችል አንድ መተግበሪያ አክሏል።</translation>
 <translation id="2655386581175833247">የተጠቃሚ እውቅና ማረጋገጫ፦</translation>
 <translation id="5039804452771397117">ፍቀድ</translation>
-<translation id="5435964418642993308">ለመመለስ enterን፣ ታሪክን ለማየት የአገባበ ምናሌ ቁልፉን ይጫኑ</translation>
 <translation id="6815206662964743929">ተጠቃሚ ቀይር</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">ተጣባቂ ቁልፎችን አንቃ</translation>
@@ -1893,6 +1894,7 @@ nil</translation>
 <translation id="1346104802985271895">የቪዬትናምኛ ግቤት ስልት (TELEX)</translation>
 <translation id="7896906914454843592">የተቀጠለ የአሜሪካ ቁልፍ ሰሌዳ</translation>
 <translation id="2242603986093373032">ምንም መሣሪያዎች የሉም</translation>
+<translation id="7423098979219808738">መጀመሪያ ጠይቅ</translation>
 <translation id="5889282057229379085">ከፍተኛ የመሃከለኛ CAዎች ብዛት፦ <ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="1549788673239553762"><ph name="APP_NAME"/> <ph name="VOLUME_NAME"/>ን ሊደርስበት ይፈልጋል። የእርስዎን ፋይሎች ሊያሻሽል ወይም ሊሰርዝ ይችላል።</translation>
 <translation id="3180365125572747493">ይህን የእውቅና ማረጋገጫ ፋይል ለማመስጠር እባክዎ የይለፍ ቃል ያስገቡ።</translation>
@@ -2412,7 +2414,6 @@ nil</translation>
 <translation id="7193047015510747410">የራስ-ሙላ ማመሳሰያ ምስክርነት</translation>
 <translation id="7257173066616499747">የWi-Fi አውታረ መረቦች</translation>
 <translation id="6199801702437275229">የቦታ መረጃን በመጠበቅ ላይ...</translation>
-<translation id="2767649238005085901">ወደፊት ለመሄድ enterን፣ ታሪክን ለማየት የአውድ ምናሌን ይጫኑ</translation>
 <translation id="6124650939968185064">የሚከተሉት ቅጥያዎች በዚህ ቅጥያ ላይ ይወሰናሉ፦</translation>
 <translation id="8580634710208701824">ፍሬም ዳግም ጫን</translation>
 <translation id="1018656279737460067">ተሰርዟል</translation>
@@ -3201,7 +3202,6 @@ nil</translation>
 <translation id="725387188884494207">እርግጠኛ ነዎት ይህንን ተጠቃሚ እና ሁሉንም ከእሱ ጋር የተያያዘ ውሂብ ከዚህ ኮምፒውተር መሰረዝ ይፈልጋሉ? ይሄ ሊቀለበስ አይችልም!</translation>
 <translation id="3531250013160506608">የይለፍ ቃል ጽሑፍ ሳጥን</translation>
 <translation id="2169062631698640254">ለማንኛውም ግባ</translation>
-<translation id="506228266759207354">በሌሎች መሣሪያዎች ላይ ያሉ ትሮች የሚደረሱበት የአዲስ ትር ምናሌን ያሰናክሉ።</translation>
 <translation id="2478076885740497414">መተግበሪያ ይጫኑ</translation>
 <translation id="1781502536226964113">የአዲስ ትር ገጽ ክፈት</translation>
 <translation id="765676359832457558">የላቁ ቅንብሮችን ደብቅ...</translation>
@@ -3819,6 +3819,7 @@ nil</translation>
 <translation id="4613271546271159013">አዲስ ትር ሲከፍቱ የሚኖረውን ገጽ አንድ ቅጥያ ለውጦታል።</translation>
 <translation id="3378630551672149129">ይግቡ፣ ከግቤት አባሎች ጋር መስተጋብር ለመፍጠር የትር ቁልፉን ይጫኑ</translation>
 <translation id="351152300840026870">ውሱን የቅርጸ ቁምፊ ስፋት</translation>
+<translation id="2476578072172137802">የጣቢያ ቅንብሮች</translation>
 <translation id="4301786491084298653">በ<ph name="DOMAIN"/> ላይ አሰናክል</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="3057592184182562878">የMTP መሣሪያዎችን በፋይል አቀናባሪው ውስጥ እንደ ማከማቻ አድርገው ያሳዩ።</translation>
@@ -5486,6 +5487,7 @@ nil</translation>
 <translation id="1936717151811561466">ፊንላንድኛ</translation>
 <translation id="4681930562518940301">የመጀመሪያውን ምስል በአዲስ ትር ክፈት</translation>
 <translation id="7088418943933034707">የእውቅና ማረጋገጫዎችን ያቀናብሩ...</translation>
+<translation id="6295158916970320988">ሁሉም ጣቢያዎች</translation>
 <translation id="497421865427891073">ወደ ፊት ሂድ</translation>
 <translation id="2453576648990281505">ፋይል አስቀድሞ አለ</translation>
 <translation id="6972929256216826630">ሁሉንም ጣቢያዎች በራስ ሰር በርካታ ፋይሎችን እንዲያወርዱ ፍቀድ።</translation>

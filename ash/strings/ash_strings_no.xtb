@@ -34,6 +34,7 @@
 <translation id="6459472438155181876">Utvider skjermen til <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="6596816719288285829">IP-adresse</translation>
+<translation id="8517041960877371778">Det kan hende at din <ph name="DEVICE_TYPE"/> ikke lader når den er slått på.</translation>
 <translation id="3621712662352432595">Lydinnstillinger</translation>
 <translation id="1812696562331527143">Inndatametoden din er endret til <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>tredjepart<ph name="END_LINK"/>).
 Trykk på Shift + Alt for å bytte.</translation>
@@ -104,6 +105,7 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="3963445509666917109">Mikrofon (intern)</translation>
 <translation id="1747827819627189109">Skjermtastaturet er aktivert</translation>
 <translation id="2208323208084708176">Enhetlig skrivebordsmodus</translation>
+<translation id="5759815399269068793">Du kan fortsette å bruke din <ph name="DEVICE_TYPE"/> mens den er koblet til en ekstern skjerm – selv når lokket er lukket.</translation>
 <translation id="2825619548187458965">Hylle</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -147,6 +149,7 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="3019353588588144572">Tid som gjenstår til batteriet er fulladet – <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Skjermforstørrer</translation>
+<translation id="7957227661277029961">Det kan hende at din <ph name="DEVICE_TYPE"/> ikke lader når den er slått på. Du bør vurdere å bruke den offisielle laderen.</translation>
 <translation id="882279321799040148">Klikk for å se den</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> støtter ikke <ph name="SPECIFIED_RESOLUTION"/>. Oppløsningen ble endret til <ph name="FALLBACK_RESOLUTION"/></translation>

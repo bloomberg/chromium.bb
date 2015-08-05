@@ -34,6 +34,7 @@
 <translation id="6459472438155181876">Képernyő kiterjesztése erre: <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="6596816719288285829">IP-cím</translation>
+<translation id="8517041960877371778">Előfordulhat, hogy a(z) <ph name="DEVICE_TYPE"/> nem töltődik, amíg be van kapcsolva.</translation>
 <translation id="3621712662352432595">Hangbeállítások</translation>
 <translation id="1812696562331527143">A beviteli mód a következőre változott: <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>harmadik fél<ph name="END_LINK"/>).
 A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
@@ -103,6 +104,7 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="3963445509666917109">Hangszóró (belső)</translation>
 <translation id="1747827819627189109">Képernyő-billentyűzet bekapcsolva</translation>
 <translation id="2208323208084708176">Egységes asztali mód</translation>
+<translation id="5759815399269068793">Továbbra is használhatja <ph name="DEVICE_TYPE"/> eszközét, amíg az csatlakoztatva van egy külső kijelzőhöz, még lecsukott állapotban is.</translation>
 <translation id="2825619548187458965">Polc</translation>
 <translation id="4430019312045809116">Hangerő</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -146,6 +148,7 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="3019353588588144572">Akkumulátor teljes feltöltéséig hátralévő idő: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Képernyőnagyító</translation>
+<translation id="7957227661277029961">Előfordulhat, hogy a(z) <ph name="DEVICE_TYPE"/> nem töltődik, amíg be van kapcsolva. Érdemes a hivatalos töltőt használnia.</translation>
 <translation id="882279321799040148">Kattintson a megtekintéshez</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="7561014039265304140">A(z) <ph name="DISPLAY_NAME"/> nem támogatja a következő felbontást: <ph name="SPECIFIED_RESOLUTION"/>. A felbontás megváltozott erre: <ph name="FALLBACK_RESOLUTION"/></translation>

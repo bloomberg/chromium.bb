@@ -205,6 +205,7 @@
 <translation id="7897900149154324287">भविष्य में, अपने निकाले जाने योग्य डिवाइस को अनप्लग करने से पहले उसे फ़ाइलें ऐप्स से निकालना सुनिश्चित करें, अन्यथा, आपका डेटा खो सकता है.</translation>
 <translation id="9181716872983600413">यूनिकोड</translation>
 <translation id="2566124945717127842">अपने <ph name="IDS_SHORT_PRODUCT_NAME"/> डिवाइस को बिल्कुल नए जैसा रीसेट करने के लिए पावरवॉश करें.</translation>
+<translation id="1994173015038366702">साइट URL</translation>
 <translation id="3609785682760573515">समन्वयित हो रहा है...</translation>
 <translation id="1383861834909034572">पूर्ण होने पर खुल रहा है</translation>
 <translation id="5727728807527375859">एक्सटेंशन, ऐप्स , और थीम आपके कंप्यूटर को हानि पहुंचा सकते हैं. क्या आप वाकई जारी रखना चाहते हैं?</translation>
@@ -750,6 +751,7 @@
 <translation id="5759728514498647443">आपके द्वारा <ph name="APP_NAME"/> के माध्‍यम से प्रिंट करने के लिए भेजे जाने वाले दस्‍तावेज़ <ph name="APP_NAME"/> द्वारा पढ़े जा सकते हैं.</translation>
 <translation id="2401053206567162910">यह ऐप्स  वर्तमान में इस डिवाइस पर समर्थित नहीं है लेकिन यह जल्दी ही काम करने लगे इसके लिए Chrome gnome इसके लिए कठोर मेहनत कर रहे हैं.</translation>
 <translation id="3273410961255278341">इसके लिए भेजें:</translation>
+<translation id="2167276631610992935">JavaScript</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">नया टैब</translation>
 <translation id="6567688344210276845">पृष्ठ कार्रवाई के लिए '<ph name="ICON"/>' आइकन लोड नहीं कर सका.</translation>
@@ -1053,7 +1055,6 @@
 <translation id="9070219033670098627">व्यक्ति स्विच करें</translation>
 <translation id="1486096554574027028">पासवर्ड खोजें</translation>
 <translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> को पता चला है कि संभवतः आपके ब्राउज़र की सेटिंग आपकी जानकारी के बिना बदल दी गई हैं. क्या आप उन्हें उनके मूल डिफ़ॉल्ट पर रीसेट करना चाहते हैं?</translation>
-<translation id="1836938920852968258">NTP 'अन्‍य डिवाइस' मेनू अक्षम करें.</translation>
 <translation id="3825863595139017598">मंगोलियाई कीबोर्ड</translation>
 <translation id="8184538546369750125">वैश्विक डिफ़ॉल्ट का उपयोग करें (अनुमति दें)</translation>
 <translation id="1506687042165942984">इस पृष्‍ठ की सहेजी गई (अर्थात जिसे पुराना माना जाता है) कॉपी दिखाएं.</translation>
@@ -1166,6 +1167,7 @@
 <translation id="5630163645818715367">ब्राउज़र के प्रमुख chrome में मटीरियल डिज़ाइन</translation>
 <translation id="2498857833812906273">यदि होस्‍ट किए गए ऐप्‍स वर्तमान में चल रहे हैं तो एक नोटिफिकेशन दिखाएं.</translation>
 <translation id="4699357559218762027">(स्वत:-लॉन्च किया गया)</translation>
+<translation id="563535393368633106">एक्‍सेस करने से पहले पूछें (अनुशंसित)</translation>
 <translation id="4037463823853863991">Android के लिए पहुंच-योग्यता टैब स्विचर सक्षम करें.</translation>
 <translation id="7394102162464064926">क्या आप वाकई इन पृष्ठों को अपने इतिहास से हटाना चाहते हैं? श्श्श! गुप्त मोड <ph name="SHORTCUT_KEY"/> अगली बार उपयोगी हो सकता है.</translation>
 <translation id="1125520545229165057">ड्वोरक (सू)</translation>
@@ -1711,7 +1713,6 @@
 <translation id="8602851771975208551">आपके कंप्यूटर पर किसी अन्य प्रोग्राम ने ऐप्स  जोड़ा है, जो Chrome के काम करने के तरीके को बदल सकता है.</translation>
 <translation id="2655386581175833247">उपयोगकर्ता प्रमाणपत्र:</translation>
 <translation id="5039804452771397117">अनुमति दें</translation>
-<translation id="5435964418642993308">वापस जाने के लिए enter दबाएं, इतिहास देखने के लिए प्रसंग मेनू कुंजी दबाएं</translation>
 <translation id="6815206662964743929">उपयोगकर्ता स्विच करें</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">रोचक कुंजियां सक्षम करें</translation>
@@ -1885,6 +1886,7 @@
 <translation id="1346104802985271895">वियतनामी इनपुट विधि (TELEX)</translation>
 <translation id="7896906914454843592">यूएस विस्‍तारित कीबोर्ड</translation>
 <translation id="2242603986093373032">कोई डिवाइस नहीं</translation>
+<translation id="7423098979219808738">पहले पूछें</translation>
 <translation id="5889282057229379085">मध्यवर्ती CA की अधिकतम संख्या: <ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="1549788673239553762"><ph name="APP_NAME"/> <ph name="VOLUME_NAME"/> को ऐक्‍सेस करना चाहता है. वह आपकी फ़ाइलों में बदलाव कर सकता है या उन्‍हें हटा सकता है.</translation>
 <translation id="3180365125572747493">इस प्रमाणपत्र फ़ाइल को एन्‍क्रिप्‍ट करने के लिए कृपया पासवर्ड डालें.</translation>
@@ -2410,7 +2412,6 @@
 <translation id="7193047015510747410">स्वत:-भरण समन्वयन प्रमाणिकता</translation>
 <translation id="7257173066616499747">वाई-फ़ाई नेटवर्क</translation>
 <translation id="6199801702437275229">स्थान जानकारी की प्रतीक्षा कर रहा है...</translation>
-<translation id="2767649238005085901">आगे जाने के लिए enter दबाएं, इतिहास देखने के लिए प्रसंग मेनू कुंजी दबाएं</translation>
 <translation id="6124650939968185064">निम्न एक्सटेंशन इस एक्सटेंशन पर निर्भर हैं:</translation>
 <translation id="8580634710208701824">फ़्रेम फिर से लोड करें</translation>
 <translation id="1018656279737460067">रद्द</translation>
@@ -3198,7 +3199,6 @@
 <translation id="725387188884494207">क्‍या आप इस कंप्‍यूटर से इस उपयोगकर्ता को और इससे संबंद्ध सभी डेटा को वाकई हटाना चाहते हैं? इसे पूर्ववत नहीं किया जा सकता!</translation>
 <translation id="3531250013160506608">पासवर्ड टेक्स्ट बॉक्स</translation>
 <translation id="2169062631698640254">किसी भी तरह प्रवेश करें</translation>
-<translation id="506228266759207354">अन्‍य डिवाइस पर टैब पर पहुंचने के लिए नया टैब पृष्ठ अक्षम करें.</translation>
 <translation id="2478076885740497414">ऐप्स इंस्टॉल करें</translation>
 <translation id="1781502536226964113">नया टैब पृष्ठ खोलें</translation>
 <translation id="765676359832457558">उन्नत सेटिंग्स छिपाएं...</translation>
@@ -3818,6 +3818,7 @@
 <translation id="4613271546271159013">आपके द्वारा नया टैब खोले जाने पर, दिखाई देने वाले पृष्ठ का एक्सटेंशन बदल दिया गया है.</translation>
 <translation id="3378630551672149129">इनपुट तत्वों के साथ सहभागिता करने के लिए प्रवेश करें, टैब कुंजी को दबाएं</translation>
 <translation id="351152300840026870">निश्चित-चौड़ाई फ़ॉन्ट</translation>
+<translation id="2476578072172137802">साइट की सेटिंग</translation>
 <translation id="4301786491084298653"><ph name="DOMAIN"/> पर अक्षम करें</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="3057592184182562878">फ़ाइल प्रबंधक में फ़ाइल मेमोरी के रूप में MTP डिवाइस दिखाएं.</translation>
@@ -5483,6 +5484,7 @@
 <translation id="1936717151811561466">फ़िनिश</translation>
 <translation id="4681930562518940301">मूल &amp;चित्र को नए टैब में खोलें</translation>
 <translation id="7088418943933034707">प्रमाणपत्र प्रबंधित करें...</translation>
+<translation id="6295158916970320988">सभी साइटें</translation>
 <translation id="497421865427891073">आगे जाएं</translation>
 <translation id="2453576648990281505">फ़ाइल पहले से मौजूद है</translation>
 <translation id="6972929256216826630">सभी साइटों को एकाधिक फ़ाइलें स्वचालित रूप से डाउनलोड करने दें</translation>

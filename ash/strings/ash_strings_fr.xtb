@@ -34,6 +34,7 @@
 <translation id="6459472438155181876">Extension de l'écran pour <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobile</translation>
 <translation id="6596816719288285829">Adresse IP</translation>
+<translation id="8517041960877371778">Il est possible que votre appareil <ph name="DEVICE_TYPE"/> ne se recharge pas lorsqu'il est allumé.</translation>
 <translation id="3621712662352432595">Paramètres audio</translation>
 <translation id="1812696562331527143">Votre mode de saisie a été remplacé par <ph name="INPUT_METHOD_ID"/>* (<ph name="BEGIN_LINK"/>tiers<ph name="END_LINK"/>).
 Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
@@ -103,6 +104,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="3963445509666917109">Haut-parleur (interne)</translation>
 <translation id="1747827819627189109">Clavier à l'écran activé</translation>
 <translation id="2208323208084708176">Mode bureau unifié</translation>
+<translation id="5759815399269068793">Vous pouvez continuer à utiliser votre appareil <ph name="DEVICE_TYPE"/> lorsqu'il est connecté à un écran externe, même s'il est fermé.</translation>
 <translation id="2825619548187458965">Étagère</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -146,6 +148,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="3019353588588144572">Temps restant avant chargement complet de la batterie : <ph name="TIME_REMAINING"/>.</translation>
 <translation id="3473479545200714844">Loupe</translation>
+<translation id="7957227661277029961">Il est possible que votre appareil <ph name="DEVICE_TYPE"/> ne se recharge pas lorsqu'il est allumé. Essayez d'utiliser le chargeur officiel.</translation>
 <translation id="882279321799040148">Cliquer ici pour afficher la capture d'écran</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> n'est pas compatible avec <ph name="SPECIFIED_RESOLUTION"/>. La résolution a été modifiée pour utiliser <ph name="FALLBACK_RESOLUTION"/>.</translation>

@@ -81,6 +81,7 @@
 <translation id="119944043368869598">Összes törlése</translation>
 <translation id="7665369617277396874">Fiók hozzáadása</translation>
 <translation id="6458785801851713928">A szinkronizálási szolgáltatás az Ön domainjén nem érhető el.</translation>
+<translation id="8275818695183729150">Engedélyezés (a címsávban történő kereséseknél)</translation>
 <translation id="7788788617745289808">A Chrome-nak rendelkeznie kell hozzáféréssel a kamerához, hogy megoszthassa ezzel a webhellyel.</translation>
 <translation id="7765158879357617694">Áthelyezés</translation>
 <translation id="2731700343119398978">Kérjük, várjon...</translation>
@@ -372,6 +373,7 @@ A kilépéshez nyomja meg a vissza billentyűt.</translation>
 <translation id="748127970106343339">Eszközhitelesítési adatok törlésének megerősítése</translation>
 <translation id="4351244548802238354">Párbeszédablak bezárása</translation>
 <translation id="3089395242580810162">Megnyitás inkognitólapon</translation>
+<translation id="699220179437400583">Az esetleges biztonsági események automatikus jelentése a Google-nak</translation>
 <translation id="5899349522111170522">Új fájl létrehozása</translation>
 <translation id="3158619413803296679">Válasszon könyvjelzőt</translation>
 <translation id="6138140242378429169">Az oldal mobilbaráttá alakítása</translation>
@@ -492,6 +494,7 @@ A használati statisztika részét alkotják például a beállítások, a gombo
 <translation id="3988213473815854515">Hely engedélyezve</translation>
 <translation id="1513352483775369820">Könyvjelzők és webes előzmények</translation>
 <translation id="8912362522468806198">Google Fiókjába</translation>
+<translation id="219985413780390209">Védje meg magát és eszközét a veszélyes webhelyektől</translation>
 <translation id="6165508094623778733">További információ</translation>
 <translation id="3003595280608617736">Hiányzó SD-kártya</translation>
 <translation id="6337234675334993532">Titkosítás</translation>

@@ -205,6 +205,7 @@
 <translation id="7897900149154324287">Di masa mendatang, pastikan untuk mengeluarkan perangkat yang dapat dilepas di aplikasi File sebelum mencabutnya. Jika tidak, Anda mungkin kehilangan data.</translation>
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="2566124945717127842">Powerwash untuk mengatur ulang perangkat <ph name="IDS_SHORT_PRODUCT_NAME"/> agar jadi seperti baru.</translation>
+<translation id="1994173015038366702">URL situs</translation>
 <translation id="3609785682760573515">Menyinkronkan...</translation>
 <translation id="1383861834909034572">Dibuka setelah selesai</translation>
 <translation id="5727728807527375859">Ekstensi, aplikasi, dan tema dapat membahayakan komputer. Yakin ingin lanjut?</translation>
@@ -744,6 +745,7 @@ Semua pengguna harus keluar untuk melanjutkan.</translation>
 <translation id="5759728514498647443">Dokumen yang Anda kirim untuk dicetak melalui <ph name="APP_NAME"/> dapat dibaca oleh <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Aplikasi saat ini tidak didukung pada perangkat ini, tetapi gnome Chrome bekerja keras agar ini segera bekerja.</translation>
 <translation id="3273410961255278341">Kirim untuk:</translation>
+<translation id="2167276631610992935">Javascript</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Tab baru</translation>
 <translation id="6567688344210276845">Tidak dapat memuat ikon '<ph name="ICON"/>' untuk tindakan laman.</translation>
@@ -1041,7 +1043,6 @@ Semua pengguna harus keluar untuk melanjutkan.</translation>
 <translation id="9070219033670098627">Ganti orang</translation>
 <translation id="1486096554574027028">Telusuri sandi</translation>
 <translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> mendeteksi bahwa setelan browser Anda mungkin telah berubah tanpa Anda ketahui. Ingin menyetelnya kembali ke setelan defaultnya?</translation>
-<translation id="1836938920852968258">Nonaktifkan menu 'Perangkat lain' NTP.</translation>
 <translation id="3825863595139017598">Keyboard Mongolia</translation>
 <translation id="8184538546369750125">Gunakan default global (Izinkan)</translation>
 <translation id="1506687042165942984">Tampilkan salinan tersimpan (yang diketahui telah habis masa berlakunya) dari laman ini.</translation>
@@ -1154,6 +1155,7 @@ Semua pengguna harus keluar untuk melanjutkan.</translation>
 <translation id="5630163645818715367">Desain material dalam chrome teratas browser</translation>
 <translation id="2498857833812906273">Tampilkan pemberitahuan saat keluar dari Chrome jika aplikasi yang dihosting sedang berjalan.</translation>
 <translation id="4699357559218762027">(diluncurkan otomatis)</translation>
+<translation id="563535393368633106">Tanyakan sebelum mengakses (disarankan)</translation>
 <translation id="4037463823853863991">Aktifkan pengalih tab aksesibilitas untuk Android.</translation>
 <translation id="7394102162464064926">Yakin ingin menghapus laman ini dari riwayat Anda?
 
@@ -1700,7 +1702,6 @@ Ssst! <ph name="SHORTCUT_KEY"/> mode penyamaran mungkin berguna suatu saat nanti
 <translation id="8602851771975208551">Program lain di komputer Anda menambahkan aplikasi yang dapat mengubah cara kerja Chrome.</translation>
 <translation id="2655386581175833247">Sertifikat pengguna:</translation>
 <translation id="5039804452771397117">Izinkan</translation>
-<translation id="5435964418642993308">Tekan enter untuk kembali, tombol menu konteks untuk melihat riwayat</translation>
 <translation id="6815206662964743929">Alihkan pengguna</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Aktifkan tombol lengket</translation>
@@ -1873,6 +1874,7 @@ Setelan Anda membuat pengguna yang dilindungi baru, Anda dapat mengelola setelan
 <translation id="1346104802985271895">Metode masukan Bahasa Vietnam (TELEX)</translation>
 <translation id="7896906914454843592">Keyboard Perluasan AS</translation>
 <translation id="2242603986093373032">Tidak ada perangkat</translation>
+<translation id="7423098979219808738">Tanyakan terlebih dahulu</translation>
 <translation id="5889282057229379085">Jumlah maksimum CA perantara: <ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="1549788673239553762"><ph name="APP_NAME"/> ingin mengakses <ph name="VOLUME_NAME"/>. Ini dapat mengubah atau menghapus file Anda.</translation>
 <translation id="3180365125572747493">Harap masukkan sandi untuk mengenkripsi file sertifikat ini.</translation>
@@ -2388,7 +2390,6 @@ Setelan Anda membuat pengguna yang dilindungi baru, Anda dapat mengelola setelan
 <translation id="7193047015510747410">Kredensial sinkronisasi IsiOtomatis</translation>
 <translation id="7257173066616499747">Jaringan Wi-Fi</translation>
 <translation id="6199801702437275229">Menunggu info ruang...</translation>
-<translation id="2767649238005085901">Tekan enter untuk maju, tombol menu konteks untuk melihat riwayat</translation>
 <translation id="6124650939968185064">Ekstensi berikut bergantung pada ekstensi ini:</translation>
 <translation id="8580634710208701824">Muat Ulang Frame</translation>
 <translation id="1018656279737460067">Dibatalkan</translation>
@@ -3165,7 +3166,6 @@ Setelan Anda membuat pengguna yang dilindungi baru, Anda dapat mengelola setelan
 <translation id="725387188884494207">Yakin ingin menghapus pengguna ini dan semua data yang terkait dengan profil tersebut dari komputer ini? Tindakan ini tidak dapat diurungkan!</translation>
 <translation id="3531250013160506608">Kotak teks sandi</translation>
 <translation id="2169062631698640254">Tetap masuk</translation>
-<translation id="506228266759207354">Menonaktifkan menu laman tab baru untuk mengakses tab pada perangkat lain.</translation>
 <translation id="2478076885740497414">Pasang aplikasi</translation>
 <translation id="1781502536226964113">Buka laman Tab Baru</translation>
 <translation id="765676359832457558">Sembunyikan setelan lanjutan...</translation>
@@ -3783,6 +3783,7 @@ Setelan Anda membuat pengguna yang dilindungi baru, Anda dapat mengelola setelan
 <translation id="4613271546271159013">Ekstensi telah mengubah apa yang ditampilkan laman saat Anda membuka tab baru.</translation>
 <translation id="3378630551672149129">Masuk, lalu tekan tombol tab untuk berinteraksi dengan elemen masukan</translation>
 <translation id="351152300840026870">Font dengan lebar tetap</translation>
+<translation id="2476578072172137802">Setelan Situs</translation>
 <translation id="4301786491084298653">Nonaktifkan di <ph name="DOMAIN"/></translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="3057592184182562878">Menampilkan perangkat MTP sebagai penyimpanan file di pengelola file.</translation>
@@ -5444,6 +5445,7 @@ Setelan Anda membuat pengguna yang dilindungi baru, Anda dapat mengelola setelan
 <translation id="1936717151811561466">Suomi</translation>
 <translation id="4681930562518940301">Buka &amp;gambar asli di tab baru</translation>
 <translation id="7088418943933034707">Kelola sertifikat...</translation>
+<translation id="6295158916970320988">Semua situs</translation>
 <translation id="497421865427891073">Maju</translation>
 <translation id="2453576648990281505">File sudah ada</translation>
 <translation id="6972929256216826630">Mengizinkan semua situs mengunduh beberapa file secara otomatis.</translation>

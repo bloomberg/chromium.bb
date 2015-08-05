@@ -34,6 +34,7 @@
 <translation id="6459472438155181876">گسترش صفحه به <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">سلولی</translation>
 <translation id="6596816719288285829">‏آدرس IP</translation>
+<translation id="8517041960877371778">ممکن است وقتی <ph name="DEVICE_TYPE"/> شما خاموش است، شارژ نشود.</translation>
 <translation id="3621712662352432595">تنظیمات صوتی</translation>
 <translation id="1812696562331527143">‏روش ورودی شما به <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>شخص ثالث<ph name="END_LINK"/>) تغییر یافت. Shift + Alt را برای تعویض فشار دهید.</translation>
 <translation id="6043994281159824495">خروج از سیستم هم‌اکنون</translation>
@@ -101,6 +102,7 @@
 <translation id="3963445509666917109">بلندگو (داخلی)</translation>
 <translation id="1747827819627189109">صفحه‌کلید روی صفحه فعال شد</translation>
 <translation id="2208323208084708176">حالت میزکار یکپارچه</translation>
+<translation id="5759815399269068793">هنگامی‌که <ph name="DEVICE_TYPE"/> شما به یک نمایشگر خارجی متصل است، می‌توانید به استفاده از آن ادامه دهید، حتی اگر درب آن بسته باشد.</translation>
 <translation id="2825619548187458965">قفسه</translation>
 <translation id="4430019312045809116">میزان صدا</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -144,6 +146,7 @@
 <translation id="511445211639755999"><ph name="RESOLUTION"/>، <ph name="OVERSCAN"/></translation>
 <translation id="3019353588588144572">زمان باقی مانده تا شارژ کامل باتری، <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">ذره‌بین صفحه</translation>
+<translation id="7957227661277029961">ممکن است وقتی <ph name="DEVICE_TYPE"/> خاموش است، شارژ نشود. از یک شارژ موردتأیید استفاده کنید.</translation>
 <translation id="882279321799040148">برای مشاهده کلیک کنید</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/>،‏ <ph name="SPECIFIED_RESOLUTION"/> را پشتیبانی نمی‌کند. وضوح به <ph name="FALLBACK_RESOLUTION"/> تغییر کرد</translation>

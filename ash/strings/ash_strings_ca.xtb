@@ -34,6 +34,7 @@
 <translation id="6459472438155181876">S'està ampliant la pantalla a <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Cel·lular</translation>
 <translation id="6596816719288285829">Adreça IP</translation>
+<translation id="8517041960877371778">És possible que el dispositiu <ph name="DEVICE_TYPE"/> no es carregui mentre està encès.</translation>
 <translation id="3621712662352432595">Configuració d'àudio</translation>
 <translation id="1812696562331527143">El mètode d'entrada ha canviat a <ph name="INPUT_METHOD_ID"/>* (<ph name="BEGIN_LINK"/>tercers<ph name="END_LINK"/>).
 Premeu Maj+Alt per canviar-lo.</translation>
@@ -103,6 +104,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="3963445509666917109">Altaveu (intern)</translation>
 <translation id="1747827819627189109">Teclat en pantalla activat</translation>
 <translation id="2208323208084708176">Mode d'escriptori unificat</translation>
+<translation id="5759815399269068793">Podeu continuar utilitzant el dispositiu <ph name="DEVICE_TYPE"/> mentre està connectat a una pantalla externa, fins i tot amb la tapa tancada.</translation>
 <translation id="2825619548187458965">Prestatge</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -146,6 +148,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="3019353588588144572">Temps restant fins que la bateria no estigui totalment carregada: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Lupa</translation>
+<translation id="7957227661277029961">És possible que el dispositiu <ph name="DEVICE_TYPE"/> no es carregui mentre està encès. Us recomanem que utilitzeu el carregador oficial.</translation>
 <translation id="882279321799040148">Feu clic per visualitzar-la</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> no admet <ph name="SPECIFIED_RESOLUTION"/>. S'ha canviat la resolució per <ph name="FALLBACK_RESOLUTION"/>.</translation>

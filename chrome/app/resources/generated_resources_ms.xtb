@@ -205,6 +205,7 @@
 <translation id="7897900149154324287">Pada masa hadapan, pastikan anda melentingkan peranti boleh dialih keluar anda dalam apl Fail sebelum mencabutnya. Jika tidak, anda mungkin kehilangan data.</translation>
 <translation id="9181716872983600413">Unikod</translation>
 <translation id="2566124945717127842">Powerwash untuk menetapkan semula peranti <ph name="IDS_SHORT_PRODUCT_NAME"/> anda supaya seperti baharu.</translation>
+<translation id="1994173015038366702">URL tapak</translation>
 <translation id="3609785682760573515">Menyegerakkan...</translation>
 <translation id="1383861834909034572">Pembukaan apabila lengkap</translation>
 <translation id="5727728807527375859">Sambungan, apl dan tema boleh membahayakan komputer anda. Adakah anda pasti anda mahu meneruskan?</translation>
@@ -747,6 +748,7 @@ Semua pengguna mesti melog keluar untuk meneruskan.</translation>
 <translation id="5759728514498647443">Dokumen yang anda hantar untuk dicetak melalui <ph name="APP_NAME"/> boleh dibaca oleh <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Apl ini tidak disokong pada peranti ini pada masa ini, tetapi gnome Chrome sedang bekerja keras untuk merealisasikannya tidak lama lagi.</translation>
 <translation id="3273410961255278341">Hantar untuk:</translation>
+<translation id="2167276631610992935">Javascript</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Tab baharu</translation>
 <translation id="6567688344210276845">Tidak dapat memuatkan ikon '<ph name="ICON"/>' untuk tindakan halaman.</translation>
@@ -1052,7 +1054,6 @@ Semua pengguna mesti melog keluar untuk meneruskan.</translation>
 <translation id="9070219033670098627">Tukar orang</translation>
 <translation id="1486096554574027028">Cari kata laluan</translation>
 <translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> mengesan bahawa tetapan penyemak imbas anda mungkin telah diubah tanpa pengetahuan anda. Adakah anda ingin menetapkannya semula kepada lalai asal?</translation>
-<translation id="1836938920852968258">Lumpuhkan menu 'Peranti lain' NTP.</translation>
 <translation id="3825863595139017598">Papan kekunci bahasa Mongolia</translation>
 <translation id="8184538546369750125">Gunakan lalai global (Benarkan)</translation>
 <translation id="1506687042165942984">Tunjukkan salinan yang disimpan (iaitu diketahui telah lapuk) bagi halaman ini.</translation>
@@ -1165,6 +1166,7 @@ Semua pengguna mesti melog keluar untuk meneruskan.</translation>
 <translation id="5630163645818715367">Reka bentuk bahan di krom atas penyemak imbas</translation>
 <translation id="2498857833812906273">Paparkan pemberitahuan apabila menghentikan Chrome jika apl dihoskan sedang berjalan.</translation>
 <translation id="4699357559218762027">(dilancarkan secara automatik)</translation>
+<translation id="563535393368633106">Tanya sebelum mengakses (disyorkan)</translation>
 <translation id="4037463823853863991">Dayakan penukar tab kebolehcapaian untuk Android.</translation>
 <translation id="7394102162464064926">Anda pasti mahu memadamkan halaman ini daripada sejarah anda?
 
@@ -1710,7 +1712,6 @@ Psst! <ph name="SHORTCUT_KEY"/> mod Inkognito mungkin akan berguna pada masa aka
 <translation id="8602851771975208551">Program lain pada komputer anda menambah apl yang boleh mengubah cara Chrome berfungsi.</translation>
 <translation id="2655386581175833247">Sijil pengguna:</translation>
 <translation id="5039804452771397117">Benarkan</translation>
-<translation id="5435964418642993308">Tekan masuk untuk undur, kekunci menu konteks untuk melihat sejarah</translation>
 <translation id="6815206662964743929">Tukar pengguna</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Dayakan kekunci lekit</translation>
@@ -1883,6 +1884,7 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="1346104802985271895">Kaedah input bahasa Vietnam (TELEX)</translation>
 <translation id="7896906914454843592">Papan kekunci Lanjutan AS</translation>
 <translation id="2242603986093373032">Tiada peranti</translation>
+<translation id="7423098979219808738">Tanya dahulu</translation>
 <translation id="5889282057229379085">Bilangan maksimum CA pengantara: <ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="1549788673239553762"><ph name="APP_NAME"/> ingin mengakses <ph name="VOLUME_NAME"/>. Apl mungkin mengubah suai atau memadamkan fail anda.</translation>
 <translation id="3180365125572747493">Sila masukkan kata laluan untuk menyulitkan fail sijil ini.</translation>
@@ -2407,7 +2409,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="7193047015510747410">Auto isi bukti kelayakan disegerakkan</translation>
 <translation id="7257173066616499747">Rangkaian Wi-Fi</translation>
 <translation id="6199801702437275229">Menunggu maklumat ruang...</translation>
-<translation id="2767649238005085901">Tekan masuk untuk ke hadapan, kekunci menu konteks untuk lihat sejarah</translation>
 <translation id="6124650939968185064">Sambungan berikut bergantung kepada sambungan ini:</translation>
 <translation id="8580634710208701824">Muatkan Semula Bingkai</translation>
 <translation id="1018656279737460067">Dibatalkan</translation>
@@ -3197,7 +3198,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="725387188884494207">Adakah anda pasti mahu memadamkan pengguna ini dan semua data yang berkaitan dengannya dari komputer ini? Tindakan ini tidak boleh dibuat asal!</translation>
 <translation id="3531250013160506608">Kotak teks kata laluan</translation>
 <translation id="2169062631698640254">Log masuk juga</translation>
-<translation id="506228266759207354">Lumpuhkan menu halaman tab baharu untuk mengakses tab pada peranti lain.</translation>
 <translation id="2478076885740497414">Pasang apl</translation>
 <translation id="1781502536226964113">Buka halaman Tab Baharu</translation>
 <translation id="765676359832457558">Sembunyikan tetapan lanjutan...</translation>
@@ -3817,6 +3817,7 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="4613271546271159013">Sambungan telah menukar halaman yang ditunjukkan apabila anda membuka halaman baharu.</translation>
 <translation id="3378630551672149129">Log masuk, tekan kekunci tab untuk berinteraksi dengan unsur input</translation>
 <translation id="351152300840026870">Fon lebar tetap</translation>
+<translation id="2476578072172137802">Tetapan Tapak</translation>
 <translation id="4301786491084298653">Lumpuhkan di <ph name="DOMAIN"/></translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="3057592184182562878">Tunjukkan peranti MTP sebagai storan fail dalam pengurus fail.</translation>
@@ -5481,6 +5482,7 @@ Mengira masa sehingga penuh</translation>
 <translation id="1936717151811561466">Bahasa Finland</translation>
 <translation id="4681930562518940301">Buka &amp;imej asal dalam tab baharu</translation>
 <translation id="7088418943933034707">Uruskan sijil...</translation>
+<translation id="6295158916970320988">Semua tapak</translation>
 <translation id="497421865427891073">Ke hadapan</translation>
 <translation id="2453576648990281505">Fail sudah wujud</translation>
 <translation id="6972929256216826630">Benarkan semua tapak memuat turun berbilang fail secara automatik</translation>

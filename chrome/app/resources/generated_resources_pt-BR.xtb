@@ -205,6 +205,7 @@
 <translation id="7897900149154324287">No futuro, não se esqueça de ejetar o dispositivo removível no aplicativo &quot;Arquivos&quot; antes de desconectá-lo. Caso contrário, você poderá perder dados.</translation>
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="2566124945717127842">Use a função &quot;Powerwash&quot; para redefinir seu dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/> para as condições de fábrica.</translation>
+<translation id="1994173015038366702">URL do site</translation>
 <translation id="3609785682760573515">Sincronizando...</translation>
 <translation id="1383861834909034572">Abrir quando estiver concluído</translation>
 <translation id="5727728807527375859">Extensões, aplicativos e temas podem danificar o seu computador. Tem certeza de que deseja continuar?</translation>
@@ -744,6 +745,7 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="5759728514498647443">Os documentos enviados para impressão pelo <ph name="APP_NAME"/> podem ser lidos pelo <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Atualmente não há suporte para este aplicativo neste dispositivo. O Chrome oferecerá este suporte em breve.</translation>
 <translation id="3273410961255278341">Enviar para:</translation>
+<translation id="2167276631610992935">Javascript</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Nova guia</translation>
 <translation id="6567688344210276845">Não foi possível carregar o ícone &quot;<ph name="ICON"/>&quot; para a ação da página.</translation>
@@ -1041,7 +1043,6 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="9070219033670098627">Alterar pessoa</translation>
 <translation id="1486096554574027028">Pesquisar senhas</translation>
 <translation id="6815353853907306610">O <ph name="IDS_SHORT_PRODUCT_NAME"/> detectou que as configurações do navegador podem ter sido alteradas sem seu conhecimento. Gostaria de redefini-las para os padrões originais?</translation>
-<translation id="1836938920852968258">Desativar menu &quot;Outros dispositivos&quot; do NTP.</translation>
 <translation id="3825863595139017598">Teclado mongol</translation>
 <translation id="8184538546369750125">Usar padrão global (Permitir)</translation>
 <translation id="1506687042165942984">Mostrar uma cópia salva (ou seja, reconhecidamente desatualizada) desta página.</translation>
@@ -1154,6 +1155,7 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="5630163645818715367">Material design no navegador Chrome</translation>
 <translation id="2498857833812906273">Exibir uma notificação ao sair do Chrome enquanto aplicativos hospedados estiverem em execução no momento.</translation>
 <translation id="4699357559218762027">(aberto automaticamente)</translation>
+<translation id="563535393368633106">Perguntar antes de acessar (recomendado)</translation>
 <translation id="4037463823853863991">Ativar alternador da guia de acessibilidade para Android.</translation>
 <translation id="7394102162464064926">Tem certeza de que deseja excluir essas páginas do histórico?
 
@@ -1468,7 +1470,7 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY"/> pode ser útil da
         O servidor pode estar em manutenção ou configurado incorretamente.</translation>
 <translation id="297870353673992530">Servidor DNS:</translation>
 <translation id="6445450263907939268">Se você não deseja essas alterações, é possível restaurar as configurações anteriores.</translation>
-<translation id="8446824986496198687">Define a velocidade das animações experimentais de feedback visual para do Material design.</translation>
+<translation id="8446824986496198687">Define a velocidade das animações experimentais de feedback visual para o Material design.</translation>
 <translation id="8279388322240498158">Teclado curdo sorâni baseado em inglês</translation>
 <translation id="7273774418879988007">Causa streams de saída de áudio para verificar se layouts de canal que não sejam o layout de hardware padrão estão disponíveis. A ativação desse recurso permitirá que o SO faça com que o estéreo cerque a expansão, caso seja suportado. Como pode haver a exposição de bugs de driver de terceiros, use com cautela.</translation>
 <translation id="3130528281680948470">Seu dispositivo será redefinido, e todas as contas de usuário final e dados locais serão removidos. Esta ação não pode ser desfeita.</translation>
@@ -1700,7 +1702,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="8602851771975208551">Outro programa em seu computador adicionou um aplicativo que pode mudar a forma como o Google Chrome funciona.</translation>
 <translation id="2655386581175833247">Certificado do usuário:</translation>
 <translation id="5039804452771397117">Permitir</translation>
-<translation id="5435964418642993308">Pressione Enter para voltar e a tecla do menu de contexto para ver o histórico</translation>
 <translation id="6815206662964743929">Trocar usuário</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Ativar tecla aderente</translation>
@@ -1873,6 +1874,7 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="1346104802985271895">Método de entrada vietnamita (TELEX)</translation>
 <translation id="7896906914454843592">Teclado americano estendido</translation>
 <translation id="2242603986093373032">Nenhum dispositivo</translation>
+<translation id="7423098979219808738">Perguntar primeiro</translation>
 <translation id="5889282057229379085">Número máximo de autoridades de certificação intermediárias: <ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="1549788673239553762"><ph name="APP_NAME"/> deseja acessar <ph name="VOLUME_NAME"/>. Ele pode modificar ou excluir seus arquivos.</translation>
 <translation id="3180365125572747493">Digite uma senha para criptografar este arquivo de certificado.</translation>
@@ -2388,7 +2390,6 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="7193047015510747410">Preenchimento automático de credencial de sincronização</translation>
 <translation id="7257173066616499747">Redes Wi-Fi</translation>
 <translation id="6199801702437275229">Aguardando informações sobre espaço...</translation>
-<translation id="2767649238005085901">Pressione Enter para avançar e a tecla do menu de contexto para ver o histórico</translation>
 <translation id="6124650939968185064">As extensões a seguir dependem desta extensão:</translation>
 <translation id="8580634710208701824">Atualizar frame</translation>
 <translation id="1018656279737460067">Cancelado</translation>
@@ -3166,7 +3167,6 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="725387188884494207">Tem certeza de que deseja excluir este usuário e todos os dados associados a ele neste computador? Esta ação não pode ser revertida.</translation>
 <translation id="3531250013160506608">Caixa de texto de senha</translation>
 <translation id="2169062631698640254">Fazer login assim mesmo</translation>
-<translation id="506228266759207354">Desativa o menu da página Nova guia que possibilita o acesso a guias em outros dispositivos.</translation>
 <translation id="2478076885740497414">Instalar aplicativo</translation>
 <translation id="1781502536226964113">Abrir a página Nova guia</translation>
 <translation id="765676359832457558">Ocultar configurações avançadas...</translation>
@@ -3785,6 +3785,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="4613271546271159013">Uma extensão alterou a página exibida quando uma nova guia é aberta.</translation>
 <translation id="3378630551672149129">Faça login e pressione a tecla &quot;Tab&quot; para interagir com os elementos de entrada</translation>
 <translation id="351152300840026870">Fonte de largura pré-determinada</translation>
+<translation id="2476578072172137802">Configurações do site</translation>
 <translation id="4301786491084298653">Desativar em <ph name="DOMAIN"/></translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="3057592184182562878">Mostra dispositivos MTP como um armazenamento de arquivos no gerenciador de arquivos.</translation>
@@ -5445,6 +5446,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="1936717151811561466">Finlandês</translation>
 <translation id="4681930562518940301">Abrir &amp;imagem original em uma nova guia</translation>
 <translation id="7088418943933034707">Gerenciar certificados...</translation>
+<translation id="6295158916970320988">Todos os sites</translation>
 <translation id="497421865427891073">Avançar</translation>
 <translation id="2453576648990281505">O arquivo já existe</translation>
 <translation id="6972929256216826630">Permitir que todos os sites façam download de vários arquivos automaticamente</translation>

@@ -81,6 +81,7 @@
 <translation id="119944043368869598">Ryd alle</translation>
 <translation id="7665369617277396874">Tilføj konto</translation>
 <translation id="6458785801851713928">Synkronisering er ikke tilgængelig for dit domæne.</translation>
+<translation id="8275818695183729150">Tillad (for søgninger i adresselinjen)</translation>
 <translation id="7788788617745289808">Chrome skal have adgang til kameraet for at kunne dele det med dette website.</translation>
 <translation id="7765158879357617694">Flyt</translation>
 <translation id="2731700343119398978">Vent et øjeblik...</translation>
@@ -372,6 +373,7 @@ Tryk på tilbagetasten for at afslutte.</translation>
 <translation id="748127970106343339">Bekræft sletning af loginoplysningerne for enheden</translation>
 <translation id="4351244548802238354">Luk dialogboksen</translation>
 <translation id="3089395242580810162">Åbn i inkognitofane</translation>
+<translation id="699220179437400583">Rapportér automatisk oplysninger om mulige sikkerhedshændelser til Google.</translation>
 <translation id="5899349522111170522">Opret en ny fil</translation>
 <translation id="3158619413803296679">Vælg et bogmærke</translation>
 <translation id="6138140242378429169">Gør siden mobilvenlig</translation>
@@ -492,6 +494,7 @@ Brugsstatistik indeholder oplysninger, såsom præferencer, antal klik på en kn
 <translation id="3988213473815854515">Placeringen er tilladt</translation>
 <translation id="1513352483775369820">Bogmærker og webhistorik</translation>
 <translation id="8912362522468806198">Google-konto</translation>
+<translation id="219985413780390209">Beskyt dig selv og din enhed mod farlige websites</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="3003595280608617736">Der er intet SD-kort</translation>
 <translation id="6337234675334993532">Kryptering</translation>

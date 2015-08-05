@@ -204,6 +204,7 @@
 <translation id="7897900149154324287">Preden odklopite izmenljive naprave, jih v aplikaciji Datoteke izvrzite, sicer lahko izgubite podatke.</translation>
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="2566124945717127842">Uporabite Powerwash za ponastavitev naprave <ph name="IDS_SHORT_PRODUCT_NAME"/>, da bo kot nova.</translation>
+<translation id="1994173015038366702">URL spletnega mesta</translation>
 <translation id="3609785682760573515">Sinhroniziranje ...</translation>
 <translation id="1383861834909034572">Odpiranje, ko je končano</translation>
 <translation id="5727728807527375859">Razširitve, aplikacije in teme lahko škodujejo računalniku. Ali ste prepričani, da želite nadaljevati?</translation>
@@ -751,6 +752,7 @@
 <translation id="5759728514498647443">Dokumente, ki jih pošljete v tiskanje v aplikaciji <ph name="APP_NAME"/>, lahko prebere aplikacija <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Aplikacija trenutno ni podprta za to napravo, vendar si Chromovi škratje zelo prizadevajo, da bo kmalu na voljo.</translation>
 <translation id="3273410961255278341">Pošlji po:</translation>
+<translation id="2167276631610992935">Javascript</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Nov zavihek</translation>
 <translation id="6567688344210276845">Ikone »<ph name="ICON"/>« za dejanje strani ni bilo mogoče naložiti.</translation>
@@ -1049,7 +1051,6 @@
 <translation id="9070219033670098627">Preklopi osebo</translation>
 <translation id="1486096554574027028">Iskanje gesel</translation>
 <translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> je zaznal, da so bile vaše nastavitve brskalnika morda spremenjene, ne da bi vedeli. Ali jih želite ponastaviti na prvotne privzete vrednosti?</translation>
-<translation id="1836938920852968258">Onemogoči meni »Druge naprave« na strani »Nov zavihek«.</translation>
 <translation id="3825863595139017598">mongolska tipkovnica</translation>
 <translation id="8184538546369750125">Uporabi globalno privzeto (Dovoli)</translation>
 <translation id="1506687042165942984">Prikaži shranjeno (zastarelo) kopijo te strani.</translation>
@@ -1163,6 +1164,7 @@
 <translation id="5630163645818715367">Materialno oblikovanje v zgornji prikazni površini brskalnika</translation>
 <translation id="2498857833812906273">Prikaz obvestila pri zapiranju Chroma, če se izvajajo gostujoče aplikacije.</translation>
 <translation id="4699357559218762027">(samodejno zagnana)</translation>
+<translation id="563535393368633106">Vprašaj pred dostopom (priporočljivo)</translation>
 <translation id="4037463823853863991">Omogoči preklapljanje zavihka za dostopnost za Android.</translation>
 <translation id="7394102162464064926">Ali ste prepričani, da želite te strani izbrisati iz zgodovine?
 
@@ -1709,7 +1711,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="8602851771975208551">Drug program v računalniku je dodal aplikacijo, ki lahko spremeni način delovanja Chroma.</translation>
 <translation id="2655386581175833247">Uporabniško potrdilo:</translation>
 <translation id="5039804452771397117">Dovoli</translation>
-<translation id="5435964418642993308">Če se želite vrniti, pritisnite Enter. Če si želite ogledati zgodovino, pritisnite tipko za priročni meni.</translation>
 <translation id="6815206662964743929">Preklopi med uporabniki</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Omogočanje zaklepanja tipk.</translation>
@@ -1882,6 +1883,7 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="1346104802985271895">Vietnamski način vnosa (TELEX)</translation>
 <translation id="7896906914454843592">Razširjena tipkovnica za angleščino (Združene države)</translation>
 <translation id="2242603986093373032">Ni naprav</translation>
+<translation id="7423098979219808738">Najprej vprašaj</translation>
 <translation id="5889282057229379085">Največje število posrednih overiteljev potrdil: <ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="1549788673239553762">Aplikacija <ph name="APP_NAME"/> želi dostopati do <ph name="VOLUME_NAME"/>. Morda bo spreminjala ali izbrisala vaše datoteke.</translation>
 <translation id="3180365125572747493">Vnesite geslo za šifriranje te datoteke s potrdilom.</translation>
@@ -2403,7 +2405,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="7193047015510747410">Samodejno izpolnjevanje poverilnice za sinhronizacijo</translation>
 <translation id="7257173066616499747">Omrežja Wi-Fi</translation>
 <translation id="6199801702437275229">Čakanje na podatke o prostoru ...</translation>
-<translation id="2767649238005085901">Če želite iti naprej, pritisnite Enter. Če si želite ogledati zgodovino, pritisnite tipko za priročni meni.</translation>
 <translation id="6124650939968185064">Od te razširitve so odvisne naslednje razširitve:</translation>
 <translation id="8580634710208701824">Znova naloži okvir</translation>
 <translation id="1018656279737460067">Preklicano</translation>
@@ -3183,7 +3184,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="725387188884494207">Ali ste prepričani, da želite iz tega računalnika izbrisati tega uporabnika in vse podatke, povezane z njim? Dejanja ni mogoče razveljaviti.</translation>
 <translation id="3531250013160506608">Besedilno polje za geslo</translation>
 <translation id="2169062631698640254">Kljub temu se želim prijaviti</translation>
-<translation id="506228266759207354">Onemogočanje menija na strani »Nov zavihek« za dostop do zavihkov v drugih napravah.</translation>
 <translation id="2478076885740497414">Namestitev aplikacije</translation>
 <translation id="1781502536226964113">Odpri stran »Nov zavihek«</translation>
 <translation id="765676359832457558">Skrij dodatne nastavitve ...</translation>
@@ -3802,6 +3802,7 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="4613271546271159013">Razširitev je spremenila stran, ki se prikaže, ko odprete nov zavihek.</translation>
 <translation id="3378630551672149129">Prijavite se, pritisnite tipko TAB za uporabo elementov za vnos</translation>
 <translation id="351152300840026870">Pisava fiksne širine</translation>
+<translation id="2476578072172137802">Nastavitve mesta</translation>
 <translation id="4301786491084298653">Onemogoči v domeni <ph name="DOMAIN"/></translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="3057592184182562878">V upravitelju datotek prikaži naprave MTP kot prostor za shranjevanje datotek.</translation>
@@ -5465,6 +5466,7 @@ izračun časa do napolnjenosti</translation>
 <translation id="1936717151811561466">finščina</translation>
 <translation id="4681930562518940301">Odpri izvirno &amp;sliko na novem zavihku</translation>
 <translation id="7088418943933034707">Upravljanje potrdil ...</translation>
+<translation id="6295158916970320988">Vsa spletna mesta</translation>
 <translation id="497421865427891073">Pojdi naprej</translation>
 <translation id="2453576648990281505">Datoteka že obstaja</translation>
 <translation id="6972929256216826630">Dovoli vsem spletnim mestom samodejni prenos več datotek</translation>

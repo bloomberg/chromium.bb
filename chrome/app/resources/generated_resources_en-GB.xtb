@@ -205,6 +205,7 @@
 <translation id="7897900149154324287">In the future, make sure that you eject your removable device in the Files app before unplugging it. Otherwise, you might lose data.</translation>
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="2566124945717127842">Powerwash to reset your <ph name="IDS_SHORT_PRODUCT_NAME"/> device to be just like new.</translation>
+<translation id="1994173015038366702">Site URL</translation>
 <translation id="3609785682760573515">Syncing...</translation>
 <translation id="1383861834909034572">Opening when complete</translation>
 <translation id="5727728807527375859">Extensions, apps and themes can harm your computer. Are you sure that you want to continue?</translation>
@@ -751,6 +752,7 @@ All users must sign out to continue.</translation>
 <translation id="5759728514498647443">Documents that you send to print via <ph name="APP_NAME"/> can be read by <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">This app is not currently supported on this device but the Chrome gnomes are hard at work to make it work soon.</translation>
 <translation id="3273410961255278341">Send For:</translation>
+<translation id="2167276631610992935">JavaScript</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">New tab</translation>
 <translation id="6567688344210276845">Could not load icon '<ph name="ICON"/>' for page action.</translation>
@@ -1049,7 +1051,6 @@ All users must sign out to continue.</translation>
 <translation id="9070219033670098627">Switch person</translation>
 <translation id="1486096554574027028">Search passwords</translation>
 <translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> detected that your browser settings may have been changed without your knowledge. Would you like to reset them to their original defaults?</translation>
-<translation id="1836938920852968258">Disable NTP 'Other devices' menu.</translation>
 <translation id="3825863595139017598">Mongolian keyboard</translation>
 <translation id="8184538546369750125">Use global default (Allow)</translation>
 <translation id="1506687042165942984">Show a saved (i.e. known to be out of date) copy of this page.</translation>
@@ -1162,6 +1163,7 @@ All users must sign out to continue.</translation>
 <translation id="5630163645818715367">Material design in the browser's top Chrome</translation>
 <translation id="2498857833812906273">Display a notification when closing Chrome if hosted apps are currently running.</translation>
 <translation id="4699357559218762027">(auto-launched)</translation>
+<translation id="563535393368633106">Ask before accessing (recommended)</translation>
 <translation id="4037463823853863991">Enable the accessibility tab switcher for Android.</translation>
 <translation id="7394102162464064926">Are you sure that you want to delete these pages from your history?
 
@@ -1709,7 +1711,6 @@ Calculating remaining time</translation>
 <translation id="8602851771975208551">Another programme on your computer added an app that may change the way Chrome works.</translation>
 <translation id="2655386581175833247">User certificate:</translation>
 <translation id="5039804452771397117">Allow</translation>
-<translation id="5435964418642993308">Press enter to go back, context menu key to see history</translation>
 <translation id="6815206662964743929">Change user</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Enable sticky keys</translation>
@@ -1883,6 +1884,7 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="1346104802985271895">Vietnamese input method (TELEX)</translation>
 <translation id="7896906914454843592">US Extended keyboard</translation>
 <translation id="2242603986093373032">No devices</translation>
+<translation id="7423098979219808738">Ask first</translation>
 <translation id="5889282057229379085">Maximum number of intermediate CAs: <ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="1549788673239553762"><ph name="APP_NAME"/> wants to access <ph name="VOLUME_NAME"/>. It may modify or delete your files.</translation>
 <translation id="3180365125572747493">Please enter a password to encrypt this certificate file.</translation>
@@ -2399,7 +2401,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="7193047015510747410">Autofill sync credential</translation>
 <translation id="7257173066616499747">Wi-Fi networks</translation>
 <translation id="6199801702437275229">Waiting for space info...</translation>
-<translation id="2767649238005085901">Press enter to go forward, context menu key to see history</translation>
 <translation id="6124650939968185064">The following extensions depend on this extension:</translation>
 <translation id="8580634710208701824">Reload Frame</translation>
 <translation id="1018656279737460067">Cancelled</translation>
@@ -3176,7 +3177,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="725387188884494207">Are you sure that you want to delete this user and all the data associated with it from this computer? This cannot be undone!</translation>
 <translation id="3531250013160506608">Password text box</translation>
 <translation id="2169062631698640254">Sign in anyway</translation>
-<translation id="506228266759207354">Disable the new tab page menu for accessing tabs on other devices.</translation>
 <translation id="2478076885740497414">Install app</translation>
 <translation id="1781502536226964113">Open the New Tab page</translation>
 <translation id="765676359832457558">Hide advanced settings ...</translation>
@@ -3796,6 +3796,7 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="4613271546271159013">An extension has changed what page is shown when you open a new tab.</translation>
 <translation id="3378630551672149129">Sign in, press the tab key to interact with input elements</translation>
 <translation id="351152300840026870">Fixed-width font</translation>
+<translation id="2476578072172137802">Site Settings</translation>
 <translation id="4301786491084298653">Disable on <ph name="DOMAIN"/></translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="3057592184182562878">Show MTP devices as a file storage in the file manager.</translation>
@@ -5462,6 +5463,7 @@ Calculating time until full</translation>
 <translation id="1936717151811561466">Finnish</translation>
 <translation id="4681930562518940301">Open original image in new tab</translation>
 <translation id="7088418943933034707">Manage certificates...</translation>
+<translation id="6295158916970320988">All sites</translation>
 <translation id="497421865427891073">go forward</translation>
 <translation id="2453576648990281505">File already exists</translation>
 <translation id="6972929256216826630">Allow all sites to download multiple files automatically</translation>

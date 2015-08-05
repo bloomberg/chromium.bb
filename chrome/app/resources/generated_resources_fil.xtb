@@ -205,6 +205,7 @@
 <translation id="7897900149154324287">Sa hinaharap, tiyaking i-eject ang iyong naaalis na device sa Files app bago ito i-unplug. Kung hindi, maaari kang mawalan ng data.</translation>
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="2566124945717127842">Mag-powerwash upang i-reset ang iyong <ph name="IDS_SHORT_PRODUCT_NAME"/> device upang maging parang bago.</translation>
+<translation id="1994173015038366702">URL ng site</translation>
 <translation id="3609785682760573515">Nagsi-sync...</translation>
 <translation id="1383861834909034572">Magbubukas kapag nakumpleto</translation>
 <translation id="5727728807527375859">Maaaring mapinsala ng mga extension, apps, at mga tema ang iyong computer. Sigurado ka bang gusto mong magpatuloy?</translation>
@@ -752,6 +753,7 @@ Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="5759728514498647443">Ang mga dokumentong ipinadadala mo upang i-print sa pamamagitan ng <ph name="APP_NAME"/> ay maaaring buksan ng <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Kasalukuyang hindi sinusuportahan ang app na ito sa device na ito ngunit nagsusumikap nang mabuti ang mga gnome ng Chrome upang mapagana ito sa lalong madaling panahon.</translation>
 <translation id="3273410961255278341">Magpadala para sa:</translation>
+<translation id="2167276631610992935">Javascript</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Bagong tab</translation>
 <translation id="6567688344210276845">Maaaring hindi mai-load ang icon '<ph name="ICON"/>' para sa pagkilos sa pahina.</translation>
@@ -1050,7 +1052,6 @@ Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="9070219033670098627">Magpalit ng tao</translation>
 <translation id="1486096554574027028">Maghanap ng mga password</translation>
 <translation id="6815353853907306610">Nakita ng <ph name="IDS_SHORT_PRODUCT_NAME"/> na maaaring nabago ang iyong mga setting ng browser nang hindi mo alam. Gusto mo bang i-reset ang mga ito sa mga orihinal na default ng mga ito?</translation>
-<translation id="1836938920852968258">Huwag paganahin ang menu na 'Iba pang mga device' ng NTP.</translation>
 <translation id="3825863595139017598">Mongolian na keyboard</translation>
 <translation id="8184538546369750125">Gamitin ang pangkalahatang default (Payagan)</translation>
 <translation id="1506687042165942984">Magpakita ng naka-save (ibigsabihin alam na hindi napapanahon) na kopya ng page na ito.</translation>
@@ -1163,6 +1164,7 @@ Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="5630163645818715367">Material design sa chrome sa itaas ng browser</translation>
 <translation id="2498857833812906273">Magpakita ng notification kapag isasara ang Chrome kung may mga naka-host na app na kasalukuyang tumatakbo.</translation>
 <translation id="4699357559218762027">(awtomatikong inilunsad)</translation>
+<translation id="563535393368633106">Magtanong bago mag-access (inirerekomenda)</translation>
 <translation id="4037463823853863991">I-enable ang accessibility na tagalipat ng tab para sa Android.</translation>
 <translation id="7394102162464064926">Sigurado ka bang gusto mong tanggalin ang mga pahinang ito sa iyong kasaysayan?
 
@@ -1711,7 +1713,6 @@ Kinakalkula ang natitirang oras</translation>
 <translation id="8602851771975208551">Ang isa pang program sa iyong computer ay nagdagdag ng app na maaaring magpabago sa paraan ng paggana ng Chrome.</translation>
 <translation id="2655386581175833247">Certificate ng user:</translation>
 <translation id="5039804452771397117">Payagan</translation>
-<translation id="5435964418642993308">Pindutin ang enter upang bumalik, key ng menu ng konteksto upang makita ang kasaysayan</translation>
 <translation id="6815206662964743929">Magpalit ng user</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">I-enable ang mga sticky key</translation>
@@ -1885,6 +1886,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="1346104802985271895">Paraan ng pag-input na Vietnamese (TELEX)</translation>
 <translation id="7896906914454843592">US Extended keyboard</translation>
 <translation id="2242603986093373032">Walang mga device</translation>
+<translation id="7423098979219808738">Magtanong muna</translation>
 <translation id="5889282057229379085">Maximum na bilang ng intermediate CAs: <ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="1549788673239553762">Gusto ng <ph name="APP_NAME"/> na i-access ang <ph name="VOLUME_NAME"/>. Maaari nitong baguhin o i-delete ang iyong mga file.</translation>
 <translation id="3180365125572747493">Mangyaring magpasok ng password upang i-encrypt ang certificate file na ito.</translation>
@@ -2403,7 +2405,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="7193047015510747410">I-autofill ang kredensyal ng pag-sync</translation>
 <translation id="7257173066616499747">Mga Wi-Fi network</translation>
 <translation id="6199801702437275229">Hinihintay ang impormasyon ng espasyo...</translation>
-<translation id="2767649238005085901">Pindutin ang enter upang magpatuloy, key ng menu ng konteksto upang makita ang kasaysayan</translation>
 <translation id="6124650939968185064">Nakadepende ang mga sumusunod na extension sa extension na ito:</translation>
 <translation id="8580634710208701824">I-reload ang Frame</translation>
 <translation id="1018656279737460067">Nakansela</translation>
@@ -3186,7 +3187,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="725387188884494207">Sigurado ka bang gusto mong tanggalin ang user na ito at ang lahat ng data na nauugnay rito mula sa computer na ito? Hindi ito maa-undo!</translation>
 <translation id="3531250013160506608">Kahon ng teksto ng password</translation>
 <translation id="2169062631698640254">Mag-sign in pa rin</translation>
-<translation id="506228266759207354">Huwag paganahin ang menu ng pahina ng bagong tab para sa pag-access sa mga tab sa iba pang mga device.</translation>
 <translation id="2478076885740497414">I-install ang app</translation>
 <translation id="1781502536226964113">Buksan ang page ng Bagong Tab</translation>
 <translation id="765676359832457558">Itago ang mga advanced na setting...</translation>
@@ -3805,6 +3805,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="4613271546271159013">Binago ng isang extension ang ipinapakitang page kapag nagbukas ka ng bagong tab.</translation>
 <translation id="3378630551672149129">Mag-sign in, pindutin ang tab key upang magamit ang mga elemento sa pag-input</translation>
 <translation id="351152300840026870">Fixed-width font</translation>
+<translation id="2476578072172137802">Mga Setting ng Site</translation>
 <translation id="4301786491084298653">I-disable sa <ph name="DOMAIN"/></translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="3057592184182562878">Ipinapakita ang mga MTP device bilang storage ng file sa file manager.</translation>
@@ -5474,6 +5475,7 @@ Kinakalkula ang oras hanggang sa mapuno</translation>
 <translation id="1936717151811561466">Finnish</translation>
 <translation id="4681930562518940301">Buksan ang or&amp;ihinal na larawan sa bagong tab</translation>
 <translation id="7088418943933034707">Pamahalaan ang mga certificate...</translation>
+<translation id="6295158916970320988">Lahat ng site</translation>
 <translation id="497421865427891073">Sumulong</translation>
 <translation id="2453576648990281505">Umiiral na ang file</translation>
 <translation id="6972929256216826630">Payagan ang lahat ng site na awtomatikong mag-download ng maraming file</translation>

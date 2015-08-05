@@ -81,6 +81,7 @@
 <translation id="119944043368869598">Očisti sve</translation>
 <translation id="7665369617277396874">Dodaj račun</translation>
 <translation id="6458785801851713928">Sinkronizacija nije dostupna za vašu domenu.</translation>
+<translation id="8275818695183729150">Dopusti (za pretraživanja u adresnoj traci)</translation>
 <translation id="7788788617745289808">Chrome treba imati pristup kameri da bi je dijelio s ovom web-lokacijom.</translation>
 <translation id="7765158879357617694">Pomakni</translation>
 <translation id="2731700343119398978">Pričekajte...</translation>
@@ -372,6 +373,7 @@ Za izlazak pritisnite gumb Natrag.</translation>
 <translation id="748127970106343339">Potvrđivanje brisanja vjerodajnice uređaja</translation>
 <translation id="4351244548802238354">Zatvori dijaloški okvir</translation>
 <translation id="3089395242580810162">Otvori na kartici Anonimno</translation>
+<translation id="699220179437400583">Automatski prijavi Googleu pojedinosti o mogućim sigurnosnim incidentima</translation>
 <translation id="5899349522111170522">Napravi novu datoteku</translation>
 <translation id="3158619413803296679">Odaberite oznaku</translation>
 <translation id="6138140242378429169">Prilagodite stranicu mobilnim uređajima</translation>
@@ -492,6 +494,7 @@ Samo otvorite Chrome na računalu, otvorite izbornik i odaberite &quot;Prijava n
 <translation id="3988213473815854515">Lokacija je dopuštena</translation>
 <translation id="1513352483775369820">Oznake i Google povijest</translation>
 <translation id="8912362522468806198">Google Račun</translation>
+<translation id="219985413780390209">Zaštitite sebe i svoj uređaj od opasnih web-lokacija</translation>
 <translation id="6165508094623778733">Saznajte više</translation>
 <translation id="3003595280608617736">Nema SD kartice</translation>
 <translation id="6337234675334993532">Enkripcija</translation>

@@ -205,6 +205,7 @@
 <translation id="7897900149154324287">En el futuro, asegúrate de quitar el dispositivo extraíble desde la aplicación Archivos antes de desconectarlo. De lo contario, es posible que pierdas datos.</translation>
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="2566124945717127842">Usa la función Powerwash para restablecer el dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/> y que quede como nuevo.</translation>
+<translation id="1994173015038366702">URL del sitio</translation>
 <translation id="3609785682760573515">Sincronizando…</translation>
 <translation id="1383861834909034572">Abrir cuando haya finalizado</translation>
 <translation id="5727728807527375859">Las extensiones, las aplicaciones y los temas pueden dañar tu computadora. ¿Estás seguro de que deseas continuar?</translation>
@@ -744,6 +745,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME"/> podrá leer los documentos que envíes a imprimir a través de <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Actualmente, este dispositivo no admite esta aplicación, pero los gnomos de Chrome están trabajando arduamente para que la aplicación funcione pronto.</translation>
 <translation id="3273410961255278341">Enviar para:</translation>
+<translation id="2167276631610992935">JavaScript</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Nueva pestaña</translation>
 <translation id="6567688344210276845">No se pudo cargar el ícono '<ph name="ICON"/>' para las acciones de la página.</translation>
@@ -1041,7 +1043,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="9070219033670098627">Cambiar de persona</translation>
 <translation id="1486096554574027028">Buscar contraseñas</translation>
 <translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> detectó que posiblemente la configuración del navegador se haya cambiado sin tu conocimiento. ¿Quieres volver a restablecer la configuración predeterminada original?</translation>
-<translation id="1836938920852968258">Desactivar el menú NTP &quot;Otros dispositivos&quot;</translation>
 <translation id="3825863595139017598">Teclado mongol</translation>
 <translation id="8184538546369750125">Usar configuración global predeterminada (Permitir)</translation>
 <translation id="1506687042165942984">Se muestra una copia guardada (es decir, desactualizada) de la página.</translation>
@@ -1154,6 +1155,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5630163645818715367">Material design en la parte superior del navegador de Chrome</translation>
 <translation id="2498857833812906273">Mostrar una notificación al salir de Chrome si se están ejecutando aplicaciones alojadas</translation>
 <translation id="4699357559218762027">(con inicio automático)</translation>
+<translation id="563535393368633106">Preguntar antes de acceder (recomendado)</translation>
 <translation id="4037463823853863991">Habilita el alternador de pestañas de accesibilidad para Android.</translation>
 <translation id="7394102162464064926">¿Estás seguro de que quieres eliminar estas páginas del historial?
 
@@ -1699,7 +1701,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8602851771975208551">Otro programa en tu computadora agregó una aplicación que puede cambiar el funcionamiento de Chrome.</translation>
 <translation id="2655386581175833247">Certificado de usuario:</translation>
 <translation id="5039804452771397117">Permitir</translation>
-<translation id="5435964418642993308">Pulsa enter para volver, tecla para menú contextual para ver historial</translation>
 <translation id="6815206662964743929">Cambiar de usuario</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Habilitar teclas de acción prolongada</translation>
@@ -1873,6 +1874,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="1346104802985271895">Método de entrada vietnamita (TELEX)</translation>
 <translation id="7896906914454843592">Teclado ampliado de EE. UU.</translation>
 <translation id="2242603986093373032">No hay ningún dispositivo.</translation>
+<translation id="7423098979219808738">Preguntar primero</translation>
 <translation id="5889282057229379085">Cantidad máxima de certificados intermedios: <ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="1549788673239553762"><ph name="APP_NAME"/> quiere acceder a <ph name="VOLUME_NAME"/>. Podrá modificar o eliminar tus archivos.</translation>
 <translation id="3180365125572747493">Ingresa una contraseña para encriptar este archivo de certificado.</translation>
@@ -2388,7 +2390,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="7193047015510747410">Autocompletar credencial de sincronización</translation>
 <translation id="7257173066616499747">Redes Wi-Fi</translation>
 <translation id="6199801702437275229">Esperando información sobre espacio...</translation>
-<translation id="2767649238005085901">Presiona enter para avanzar, tecla para menú contextual para ver historial</translation>
 <translation id="6124650939968185064">Las siguientes extensiones dependen de esta extensión:</translation>
 <translation id="8580634710208701824">Volver a cargar marco</translation>
 <translation id="1018656279737460067">Cancelado</translation>
@@ -3166,7 +3167,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="725387188884494207">¿Confirmas que deseas eliminar este usuario y todos sus datos relacionados de esta computadora? Esta acción no se puede deshacer.</translation>
 <translation id="3531250013160506608">Cuadro de texto para la contraseña</translation>
 <translation id="2169062631698640254">Acceder de todos modos</translation>
-<translation id="506228266759207354">Desactiva el menú de la página Nueva pestaña para acceder a las pestañas en otros dispositivos.</translation>
 <translation id="2478076885740497414">Instalar aplicación</translation>
 <translation id="1781502536226964113">Abrir la página de Nueva pestaña</translation>
 <translation id="765676359832457558">Ocultar configuración avanzada...</translation>
@@ -3784,6 +3784,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="4613271546271159013">Una extensión cambió la página que se muestra al abrir una nueva pestaña.</translation>
 <translation id="3378630551672149129">Accede a tu cuenta y presiona la tecla de tabulación para interactuar con los elementos de entrada</translation>
 <translation id="351152300840026870">Fuente de ancho fijo</translation>
+<translation id="2476578072172137802">Configuración del sitio</translation>
 <translation id="4301786491084298653">Inhabilitar en <ph name="DOMAIN"/></translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="3057592184182562878">Muestra dispositivos MTP como un dispositivo de almacenamiento de archivos en el administrador de archivos.</translation>
@@ -5441,6 +5442,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="1936717151811561466">Finlandés</translation>
 <translation id="4681930562518940301">Abrir imagen original en una pestaña nueva</translation>
 <translation id="7088418943933034707">Administrar certificados...</translation>
+<translation id="6295158916970320988">Todos los sitios</translation>
 <translation id="497421865427891073">Avanzar</translation>
 <translation id="2453576648990281505">Ya existe el archivo.</translation>
 <translation id="6972929256216826630">Permitir que todos los sitios descarguen varios archivos automáticamente</translation>

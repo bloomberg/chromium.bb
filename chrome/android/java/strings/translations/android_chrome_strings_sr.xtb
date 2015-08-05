@@ -81,6 +81,7 @@
 <translation id="119944043368869598">Обриши све</translation>
 <translation id="7665369617277396874">Додајте налог</translation>
 <translation id="6458785801851713928">Синхронизација није доступна за домен.</translation>
+<translation id="8275818695183729150">Дозволите (за претраге у траци за адресу)</translation>
 <translation id="7788788617745289808">Chrome-у је потребан приступ за камеру да би га делио са овим сајтом.</translation>
 <translation id="7765158879357617694">Премести</translation>
 <translation id="2731700343119398978">Сачекајте…</translation>
@@ -372,6 +373,7 @@
 <translation id="748127970106343339">Потврди брисање акредитива уређаја</translation>
 <translation id="4351244548802238354">Затвори дијалог</translation>
 <translation id="3089395242580810162">Отварање на картици без архивирања</translation>
+<translation id="699220179437400583">Аутоматски пријави Google-у детаље о могућим безбедносним инцидентима</translation>
 <translation id="5899349522111170522">Направи нову датотеку</translation>
 <translation id="3158619413803296679">Изабери обележивач</translation>
 <translation id="6138140242378429169">Прилагодите страницу мобилним уређајима</translation>
@@ -492,6 +494,7 @@
 <translation id="3988213473815854515">Локација је дозвољена</translation>
 <translation id="1513352483775369820">Обележивачи и веб-историја</translation>
 <translation id="8912362522468806198">Google налога</translation>
+<translation id="219985413780390209">Заштите себе и уређај од опасних сајтова</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
 <translation id="3003595280608617736">Нема SD картице</translation>
 <translation id="6337234675334993532">Шифровање</translation>

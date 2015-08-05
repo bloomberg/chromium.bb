@@ -205,6 +205,7 @@
 <translation id="7897900149154324287">Gelecekte, kaldırılabilir cihazınızı yerinden sökmeden önce cihazı Dosyalar uygulamasından çıkardığınızdan emin olun. Aksi halde veri kaybedebilirsiniz.</translation>
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="2566124945717127842"><ph name="IDS_SHORT_PRODUCT_NAME"/> cihazınızı yeni alındığı günkü haline sıfırlamak için Powerwash'ı kullanın.</translation>
+<translation id="1994173015038366702">Site URL'si</translation>
 <translation id="3609785682760573515">Senkronize ediliyor...</translation>
 <translation id="1383861834909034572">Tamamlandığında açılacak</translation>
 <translation id="5727728807527375859">Uzantılar, uygulamalar ve temalar bilgisayarınıza zarar verebilir. Devam etmek istediğinizden emin misiniz?</translation>
@@ -755,6 +756,7 @@ Tüm kullanıcılar devam etmek için çıkış yapmalıdır.</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME"/> aracılığıyla yazdırılmaları için gönderdiğiniz dokümanlar <ph name="APP_NAME"/> tarafından okunabilir.</translation>
 <translation id="2401053206567162910">Bu uygulama şu anda bu cihazda desteklenmiyor, ancak Chrome perileri bunun gerçekleşmesi için gece gündüz çalışıyorlar.</translation>
 <translation id="3273410961255278341">Gönder:</translation>
+<translation id="2167276631610992935">Javascript</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Yeni sekme</translation>
 <translation id="6567688344210276845">Sayfa işlemine ilişkin '<ph name="ICON"/>' simgesi yüklenemedi.</translation>
@@ -1053,7 +1055,6 @@ Tüm kullanıcılar devam etmek için çıkış yapmalıdır.</translation>
 <translation id="9070219033670098627">Kişi değiştir</translation>
 <translation id="1486096554574027028">Şifrelerde ara</translation>
 <translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/>, tarayıcı ayarlarınızın bilginiz haricinde değiştirilmiş olabileceğini algıladı. Bunları orijinal varsayılan ayarlarına sıfırlamak ister misiniz?</translation>
-<translation id="1836938920852968258">NTP 'Diğer cihazlar' menüsünü devre dışı bırakın.</translation>
 <translation id="3825863595139017598">Moğolca klavye</translation>
 <translation id="8184538546369750125">Genel varsayılanı kullan (İzin ver)</translation>
 <translation id="1506687042165942984">Bu sayfanın kaydedilmiş (eski olduğu bilinen) bir kopyasını gösterin.</translation>
@@ -1166,6 +1167,7 @@ Tüm kullanıcılar devam etmek için çıkış yapmalıdır.</translation>
 <translation id="5630163645818715367">Tarayıcının üst bölümündeki arayüzde malzeme tasarımı</translation>
 <translation id="2498857833812906273">Barındırılan uygulamalar şu anda çalıştırılıyorsa Chrome'dan çıkarken bir bildirim görüntüleyin.</translation>
 <translation id="4699357559218762027">(otomatik başlatıldı)</translation>
+<translation id="563535393368633106">Erişmeden önce sor (önerilir)</translation>
 <translation id="4037463823853863991">Android için erişilebilirlik sekmesi anahtarını etkinleştirin.</translation>
 <translation id="7394102162464064926">Bu sayfaları geçmişinizden silmek istediğinizden emin misiniz?
 
@@ -1713,7 +1715,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="8602851771975208551">Bilgisayarınızdaki başka bir program, Chrome'un çalışma şeklini değiştirebilecek bir uygulama ekledi.</translation>
 <translation id="2655386581175833247">Kullanıcı sertifikası:</translation>
 <translation id="5039804452771397117">İzin ver</translation>
-<translation id="5435964418642993308">Geri gitmek için Enter tuşuna, geçmişi görmek için bağlam menüsü tuşuna basın</translation>
 <translation id="6815206662964743929">Kullanıcı değiştir</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Yapışkan tuşları etkinleştir</translation>
@@ -1886,6 +1887,7 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="1346104802985271895">Vietnamca giriş yöntemi (TELEX)</translation>
 <translation id="7896906914454843592">ABD Genişletilmiş klavye</translation>
 <translation id="2242603986093373032">Cihaz yok</translation>
+<translation id="7423098979219808738">Önce sor</translation>
 <translation id="5889282057229379085">Ara CA sayısı üst sınırı: <ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="1549788673239553762"><ph name="APP_NAME"/>, <ph name="VOLUME_NAME"/> birimine erişmek istiyor. Uygulama, dosyalarınızı değiştirebilir veya silebilir.</translation>
 <translation id="3180365125572747493">Lütfen bu sertifika dosyasını şifrelemek için bir şifre girin.</translation>
@@ -2399,7 +2401,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="7193047015510747410">Senkronizasyon kimlik bilgilerini otomatik doldur</translation>
 <translation id="7257173066616499747">Kablosuz ağlar</translation>
 <translation id="6199801702437275229">Alan bilgileri bekleniyor...</translation>
-<translation id="2767649238005085901">İleri gitmek için Enter tuşuna, geçmişi görmek için bağlam menüsü tuşuna basın</translation>
 <translation id="6124650939968185064">Aşağıdaki uzantılar bu uzantıya bağımlıdır:</translation>
 <translation id="8580634710208701824">Çerçeveyi Yeniden Yükle</translation>
 <translation id="1018656279737460067">İptal Edildi</translation>
@@ -3180,7 +3181,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="725387188884494207">Bu kullanıcıyı ve onunla ilişkili tüm verileri bu bilgisayardan silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!</translation>
 <translation id="3531250013160506608">Şifre metin kutusu</translation>
 <translation id="2169062631698640254">Yine de oturum aç</translation>
-<translation id="506228266759207354">Başka cihazlardaki sekmelere erişim için yeni sekme sayfası menüsünü devre dışı bırakın.</translation>
 <translation id="2478076885740497414">Uygulamayı yükle</translation>
 <translation id="1781502536226964113">Yeni Sekme sayfasını aç</translation>
 <translation id="765676359832457558">Gelişmiş ayarları gizle...</translation>
@@ -3800,6 +3800,7 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="4613271546271159013">Bir uzantı, yeni sekme açtığınızda hangi sayfanın görüntüleneceğini değiştirdi.</translation>
 <translation id="3378630551672149129">Oturum açın, giriş öğeleriyle etkileşimde bulunmak için sekme tuşuna basın</translation>
 <translation id="351152300840026870">Sabit genişlikte yazı tipi</translation>
+<translation id="2476578072172137802">Site Ayarları</translation>
 <translation id="4301786491084298653"><ph name="DOMAIN"/> alan adında devre dışı bırak</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="3057592184182562878">MTP cihazlarını, dosya yöneticisinde bir dosya depolama alanı olarak gösterin.</translation>
@@ -5464,6 +5465,7 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="1936717151811561466">Fince</translation>
 <translation id="4681930562518940301">Orijinal &amp;resmi yeni sekmede aç</translation>
 <translation id="7088418943933034707">Sertifikaları yönet...</translation>
+<translation id="6295158916970320988">Tüm siteler</translation>
 <translation id="497421865427891073">İlerle</translation>
 <translation id="2453576648990281505">Dosya zaten var</translation>
 <translation id="6972929256216826630">Tüm sitelerin otomatik olarak birden fazla dosya indirmesine izin ver</translation>

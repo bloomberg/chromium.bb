@@ -204,6 +204,7 @@
 <translation id="7897900149154324287">V budúcnosti nezabudnite v aplikácii Súbory vysunúť odnímateľné zariadenie skôr, ako ho odpojíte. Inak by ste mohli prísť o údaje.</translation>
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="2566124945717127842">Funkcia PowerWash obnoví zariadenie <ph name="IDS_SHORT_PRODUCT_NAME"/> tak, aby bolo ako nové.</translation>
+<translation id="1994173015038366702">Webová adresa stránok</translation>
 <translation id="3609785682760573515">Prebieha synchronizácia...</translation>
 <translation id="1383861834909034572">Otvoriť po prebratí</translation>
 <translation id="5727728807527375859">Rozšírenia, aplikácie a motívy môžu poškodiť váš počítač. Naozaj chcete pokračovať?</translation>
@@ -750,6 +751,7 @@ Všetci používatelia sa musia odhlásiť a až potom môžu pokračovať.</tra
 <translation id="5759728514498647443">Dokumenty odoslané na tlač prostredníctvom aplikácie <ph name="APP_NAME"/> môžete čítať pomocou aplikácie <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Táto aplikácia nie je v súčasnosti na tomto zariadení podporovaná, ale škriatkovia prehliadača Chrome usilovne pracujú na tom, aby čoskoro fungovala.</translation>
 <translation id="3273410961255278341">Odoslať na:</translation>
+<translation id="2167276631610992935">JavaScript</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Nová karta</translation>
 <translation id="6567688344210276845">Nepodarilo sa načítať ikonu „<ph name="ICON"/>“ akcie stránky.</translation>
@@ -1047,7 +1049,6 @@ Všetci používatelia sa musia odhlásiť a až potom môžu pokračovať.</tra
 <translation id="9070219033670098627">Prepnúť osobu</translation>
 <translation id="1486096554574027028">Vyhľadávanie hesiel</translation>
 <translation id="6815353853907306610">Prehliadač <ph name="IDS_SHORT_PRODUCT_NAME"/> zistil, že možno došlo k zmene nastavení prehliadača bez vášho vedomia. Chcete ich obnoviť na pôvodné predvolené hodnoty?</translation>
-<translation id="1836938920852968258">Zakázať ponuku „Ďalšie zariadenia“ na stránke Nová karta.</translation>
 <translation id="3825863595139017598">Mongolská klávesnica</translation>
 <translation id="8184538546369750125">Použiť predvolené všeobecné nastavenie (Povoliť)</translation>
 <translation id="1506687042165942984">Zobrazí sa uložená (t. j. neaktuálna) kópia tejto stránky.</translation>
@@ -1160,6 +1161,7 @@ Všetci používatelia sa musia odhlásiť a až potom môžu pokračovať.</tra
 <translation id="5630163645818715367">Vzhľad Material Design v hornom paneli chrome prehliadača</translation>
 <translation id="2498857833812906273">Ak sú pri ukončení prehliadača Chrome spustené hostené aplikácie, zobrazí sa upozornenie.</translation>
 <translation id="4699357559218762027">(automaticky spustené)</translation>
+<translation id="563535393368633106">Spýtať sa pred pristupovaním (odporúčané)</translation>
 <translation id="4037463823853863991">Povoliť prepínač kariet zjednodušeného ovládania v systéme Android.</translation>
 <translation id="7394102162464064926">Naozaj chcete tieto stránky vymazať z histórie?
 
@@ -1707,7 +1709,6 @@ dotyku</translation>
 <translation id="8602851771975208551">Iný program v počítači pridal aplikáciu, ktorá môže zmeniť spôsob fungovania prehliadača Chrome.</translation>
 <translation id="2655386581175833247">Certifikát používateľa:</translation>
 <translation id="5039804452771397117">Povoliť</translation>
-<translation id="5435964418642993308">Ak chcete prejsť späť, stlačte kláves Enter. Ak chcete zobraziť históriu, stlačte kláves kontextovej ponuky.</translation>
 <translation id="6815206662964743929">Prepnúť používateľa</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Povoliť funkciu sticky keys</translation>
@@ -1880,6 +1881,7 @@ Po vytvorení nového kontrolovaného používateľa môžete kedykoľvek spravo
 <translation id="1346104802985271895">Vietnamská metóda vstupu (TELEX)</translation>
 <translation id="7896906914454843592">Americká klávesnica s rozšíreným rozložením klávesov</translation>
 <translation id="2242603986093373032">Žiadne zariadenia</translation>
+<translation id="7423098979219808738">Najprv sa spýtať</translation>
 <translation id="5889282057229379085">Maximálny počet sprostredkujúcich certifikačných autorít: <ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="1549788673239553762"><ph name="APP_NAME"/> vyžaduje prístup k médiu <ph name="VOLUME_NAME"/>. Aplikácia môže upraviť alebo odstrániť vaše súbory.</translation>
 <translation id="3180365125572747493">Zadajte heslo na zašifrovanie tohto certifikačného súboru.</translation>
@@ -2395,7 +2397,6 @@ Po vytvorení nového kontrolovaného používateľa môžete kedykoľvek spravo
 <translation id="7193047015510747410">Automatické dopĺňanie poverení synchronizácie</translation>
 <translation id="7257173066616499747">Siete Wi-Fi</translation>
 <translation id="6199801702437275229">Čaká sa na informácie o voľnom mieste...</translation>
-<translation id="2767649238005085901">Ak chcete prejsť ďalej, stlačte kláves Enter. Ak chcete zobraziť históriu, stlačte kláves kontextovej ponuky.</translation>
 <translation id="6124650939968185064">Od tohto rozšírenia závisia nasledujúce rozšírenia:</translation>
 <translation id="8580634710208701824">Znova načítať rámec</translation>
 <translation id="1018656279737460067">Zrušené</translation>
@@ -3172,7 +3173,6 @@ Po vytvorení nového kontrolovaného používateľa môžete kedykoľvek spravo
 <translation id="725387188884494207">Naozaj chcete z počítača odstrániť tohto používateľa a všetky súvisiace údaje? Táto akcia sa nedá vrátiť späť!</translation>
 <translation id="3531250013160506608">Textové pole hesla</translation>
 <translation id="2169062631698640254">Napriek tomu sa prihlásiť</translation>
-<translation id="506228266759207354">Zakáže ponuku na stránke Nová karta, ktorá umožňuje pristupovať k ostatným zariadeniam.</translation>
 <translation id="2478076885740497414">Inštalovať aplikáciu</translation>
 <translation id="1781502536226964113">Otvoriť stránku Nová karta</translation>
 <translation id="765676359832457558">Skryť rozšírené nastavenia...</translation>
@@ -3790,6 +3790,7 @@ Po vytvorení nového kontrolovaného používateľa môžete kedykoľvek spravo
 <translation id="4613271546271159013">Rozšírenie zmenilo stránku, ktorá sa vám zobrazí po otvorení novej karty.</translation>
 <translation id="3378630551672149129">Prihláste sa a stlačením klávesa Tab začnite interagovať s prvkami vstupu</translation>
 <translation id="351152300840026870">Písmo s pevnou šírkou</translation>
+<translation id="2476578072172137802">Nastavenia webu</translation>
 <translation id="4301786491084298653">Zakázať v doméne <ph name="DOMAIN"/></translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="3057592184182562878">Zobrazí zariadenia MTP v aplikácii Správca súborov ako úložisko.</translation>
@@ -5456,6 +5457,7 @@ Prebieha výpočet času do úplného nabitia</translation>
 <translation id="1936717151811561466">Fínčina</translation>
 <translation id="4681930562518940301">Otvoriť pôvodný &amp;obrázok na novej karte</translation>
 <translation id="7088418943933034707">Spravovať certifikáty...</translation>
+<translation id="6295158916970320988">Všetky stránky</translation>
 <translation id="497421865427891073">Ďalej</translation>
 <translation id="2453576648990281505">Súbor už existuje</translation>
 <translation id="6972929256216826630">Povoliť všetkým stránkam automaticky sťahovať viacero súborov súčasne</translation>

@@ -206,6 +206,7 @@
 <translation id="7897900149154324287">Zorg ervoor dat je je verwijderbare apparaat voortaan in de app Bestanden uitwerpt voordat je deze loskoppelt, anders kun je gegevens verliezen.</translation>
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="2566124945717127842">Voer de Powerwash-functie uit om je <ph name="IDS_SHORT_PRODUCT_NAME"/>-apparaat opnieuw in te stellen.</translation>
+<translation id="1994173015038366702">Site-URL</translation>
 <translation id="3609785682760573515">Synchroniseren...</translation>
 <translation id="1383861834909034572">Openen wanneer voltooid</translation>
 <translation id="5727728807527375859">Extensies, applicaties en thema's kunnen schade toebrengen aan je computer. Weet je zeker dat je wilt doorgaan?</translation>
@@ -758,6 +759,7 @@ Alle gebruikers moet uitloggen om door te gaan.</translation>
 <translation id="5759728514498647443">Documenten die je via <ph name="APP_NAME"/> verzendt om af te drukken, kunnen door <ph name="APP_NAME"/> worden gelezen.</translation>
 <translation id="2401053206567162910">Deze app wordt momenteel niet ondersteund op dit apparaat, maar de Chrome-kabouters werken er hard aan dit binnenkort mogelijk te maken.</translation>
 <translation id="3273410961255278341">Verzenden voor:</translation>
+<translation id="2167276631610992935">JavaScript</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Nieuw tabblad</translation>
 <translation id="6567688344210276845">Kan pictogram '<ph name="ICON"/>' voor pagina-actie niet laden.</translation>
@@ -1056,7 +1058,6 @@ Alle gebruikers moet uitloggen om door te gaan.</translation>
 <translation id="9070219033670098627">Van persoon wisselen</translation>
 <translation id="1486096554574027028">Wachtwoorden zoeken</translation>
 <translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> heeft gedetecteerd dat je browserinstellingen misschien zonder je medeweten zijn gewijzigd. Wil je ze opnieuw instellen op de oorspronkelijke instellingen?</translation>
-<translation id="1836938920852968258">Het menu 'Andere apparaten' uitschakelen op de pagina 'Nieuw tabblad'.</translation>
 <translation id="3825863595139017598">Mongools toetsenbord</translation>
 <translation id="8184538546369750125">Algemene standaardinstelling gebruiken (Toestaan)</translation>
 <translation id="1506687042165942984">Een opgeslagen (verouderde) kopie van deze pagina weergeven.</translation>
@@ -1169,6 +1170,7 @@ Alle gebruikers moet uitloggen om door te gaan.</translation>
 <translation id="5630163645818715367">Material Design in de top chrome van de browser</translation>
 <translation id="2498857833812906273">Een melding weergeven wanneer Chrome wordt gesloten terwijl er gehoste apps worden uitgevoerd.</translation>
 <translation id="4699357559218762027">(automatisch gestart)</translation>
+<translation id="563535393368633106">Vragen vóór toegang (aanbevolen)</translation>
 <translation id="4037463823853863991">De tabbladschakelaar voor toegankelijkheidsservices inschakelen voor Android.</translation>
 <translation id="7394102162464064926">Weet je zeker dat je deze pagina's wilt verwijderen uit je geschiedenis?
 
@@ -1716,7 +1718,6 @@ Resterende tijd berekenen</translation>
 <translation id="8602851771975208551">Een ander programma op je computer heeft een app toegevoegd die de manier waarop Chrome werkt kan wijzigen.</translation>
 <translation id="2655386581175833247">Gebruikerscertificaat:</translation>
 <translation id="5039804452771397117">Toestaan</translation>
-<translation id="5435964418642993308">Druk op Enter om terug te gaan. Druk op de knop van het contextmenu om de geschiedenis te bekijken</translation>
 <translation id="6815206662964743929">Gebruiker wijzigen</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Plaktoetsen inschakelen</translation>
@@ -1890,6 +1891,7 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt toegevoegd, kun je de in
 <translation id="1346104802985271895">Vietnamese invoermethode (TELEX)</translation>
 <translation id="7896906914454843592">Uitgebreid Amerikaans toetsenbord</translation>
 <translation id="2242603986093373032">Geen apparaten</translation>
+<translation id="7423098979219808738">Eerst vragen</translation>
 <translation id="5889282057229379085">Maximum aantal tussenliggende certificeringsinstanties: <ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="1549788673239553762"><ph name="APP_NAME"/> wil toegang tot <ph name="VOLUME_NAME"/>. Hierdoor worden uw bestanden mogelijk aangepast of verwijderd.</translation>
 <translation id="3180365125572747493">Voer een wachtwoord in voor het versleutelen van dit certificaatbestand.</translation>
@@ -2403,7 +2405,6 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt toegevoegd, kun je de in
 <translation id="7193047015510747410">Inloggegevens voor synchronisatie automatisch aanvullen</translation>
 <translation id="7257173066616499747">Wifi-netwerken</translation>
 <translation id="6199801702437275229">Wachten op ruimte-informatie...</translation>
-<translation id="2767649238005085901">Druk op Enter om door te gaan. Druk op de knop van het contextmenu om de geschiedenis te bekijken</translation>
 <translation id="6124650939968185064">De volgende extensies zijn afhankelijk van deze extensie:</translation>
 <translation id="8580634710208701824">Frame opnieuw laden</translation>
 <translation id="1018656279737460067">Geannuleerd</translation>
@@ -3192,7 +3193,6 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt toegevoegd, kun je de in
 <translation id="725387188884494207">Weet je zeker dat je deze gebruiker en alle hieraan gekoppelde gegevens wilt verwijderen van deze computer? Deze actie kan niet ongedaan worden gemaakt.</translation>
 <translation id="3531250013160506608">Tekstvak voor wachtwoord</translation>
 <translation id="2169062631698640254">Toch inloggen</translation>
-<translation id="506228266759207354">Het menu voor toegang tot tabbladen vanaf andere apparaten op de pagina 'Nieuw tabblad' uitschakelen.</translation>
 <translation id="2478076885740497414">App installeren</translation>
 <translation id="1781502536226964113">De pagina 'Nieuw tabblad' openen</translation>
 <translation id="765676359832457558">Geavanceerde instellingen verbergen...</translation>
@@ -3809,6 +3809,7 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt toegevoegd, kun je de in
 <translation id="4613271546271159013">Een extensie heeft de pagina gewijzigd die wordt weergegeven wanneer je een nieuw tabblad opent.</translation>
 <translation id="3378630551672149129">Log in en druk op de Tab-toets voor interactie met invoerelementen</translation>
 <translation id="351152300840026870">Lettertype met vaste breedte</translation>
+<translation id="2476578072172137802">Site instellingen</translation>
 <translation id="4301786491084298653">Uitschakelen op <ph name="DOMAIN"/></translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="3057592184182562878">MTP-apparaten weergeven als bestandsopslag in Bestandsbeheer.</translation>
@@ -5474,6 +5475,7 @@ Tijd berekenen tot vol</translation>
 <translation id="1936717151811561466">Fins</translation>
 <translation id="4681930562518940301">Oorspronkelijke &amp;afbeelding openen op nieuw tabblad</translation>
 <translation id="7088418943933034707">Certificaten beheren...</translation>
+<translation id="6295158916970320988">Alle sites</translation>
 <translation id="497421865427891073">Naar voren gaan</translation>
 <translation id="2453576648990281505">Bestand bestaat al</translation>
 <translation id="6972929256216826630">Alle sites toestaan automatisch meerdere bestanden te downloaden</translation>

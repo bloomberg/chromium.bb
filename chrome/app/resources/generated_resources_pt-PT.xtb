@@ -204,6 +204,7 @@
 <translation id="7897900149154324287">De futuro, não se esqueça de ejetar o dispositivo amovível na aplicação Ficheiros antes de a desligar. Caso contrário, pode perder dados.</translation>
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="2566124945717127842">Efetue um Powerwash para repor o dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/> e deixá-lo como novo.</translation>
+<translation id="1994173015038366702">URL do site</translation>
 <translation id="3609785682760573515">A sincronizar…</translation>
 <translation id="1383861834909034572">Abrir quando concluído</translation>
 <translation id="5727728807527375859">As extensões, as aplicações e os temas podem danificar o computador. Tem a certeza de que pretende continuar?</translation>
@@ -751,6 +752,7 @@ Todos os utilizadores têm de terminar sessão para continuar.</translation>
 <translation id="5759728514498647443">Os documentos enviados para impressão através de <ph name="APP_NAME"/> podem ser lidos por <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Esta aplicação não é atualmente suportada neste dispositivo, mas a equipa do Chrome está a trabalhar arduamente para que funcione brevemente.</translation>
 <translation id="3273410961255278341">Enviar para:</translation>
+<translation id="2167276631610992935">Javascript</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Novo separador</translation>
 <translation id="6567688344210276845">Não foi possível carregar o ícone &quot;<ph name="ICON"/>&quot; para a acção da página.</translation>
@@ -1048,7 +1050,6 @@ Todos os utilizadores têm de terminar sessão para continuar.</translation>
 <translation id="9070219033670098627">Mudar de pessoa</translation>
 <translation id="1486096554574027028">Pesquisar palavras-passe</translation>
 <translation id="6815353853907306610">O <ph name="IDS_SHORT_PRODUCT_NAME"/> detetou que as definições do seu navegador podem ter sido alteradas sem o seu conhecimento. Gostaria de repor as definições originais?</translation>
-<translation id="1836938920852968258">Desativar o menu &quot;Outros aparelhos&quot; do NTP.</translation>
 <translation id="3825863595139017598">Teclado em mongol</translation>
 <translation id="8184538546369750125">Utilizar predefinição global (Permitir)</translation>
 <translation id="1506687042165942984">Mostrar uma cópia guardada desta página (isto é, uma cópia desatualizada).</translation>
@@ -1161,6 +1162,7 @@ Todos os utilizadores têm de terminar sessão para continuar.</translation>
 <translation id="5630163645818715367">Material design no cromado superior do navegador</translation>
 <translation id="2498857833812906273">Apresentar uma notificação ao sair do Chrome se as aplicações alojadas estiverem em execução.</translation>
 <translation id="4699357559218762027">(com iniciação automática)</translation>
+<translation id="563535393368633106">Perguntar antes de aceder (recomendado)</translation>
 <translation id="4037463823853863991">Ativa o comutador de separadores de acessibilidade para Android.</translation>
 <translation id="7394102162464064926">Tem a certeza de que pretende eliminar estas páginas do histórico?
 
@@ -1707,7 +1709,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="8602851771975208551">Outro programa do computador adicionou uma aplicação que pode alterar o funcionamento do Chrome</translation>
 <translation id="2655386581175833247">Certificado de utilizador:</translation>
 <translation id="5039804452771397117">Permitir</translation>
-<translation id="5435964418642993308">Prima Enter para regressar e a tecla de menu de contexto para ver o histórico</translation>
 <translation id="6815206662964743929">Mudar utilizador</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Ativar teclas aderentes</translation>
@@ -1880,6 +1881,7 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="1346104802985271895">Método de introdução vietnamita (TELEX)</translation>
 <translation id="7896906914454843592">Teclado americano alargado</translation>
 <translation id="2242603986093373032">Nenhum dispositivo</translation>
+<translation id="7423098979219808738">Perguntar primeiro</translation>
 <translation id="5889282057229379085">Número máximo de ACs intermédias:<ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="1549788673239553762"><ph name="APP_NAME"/> pretende aceder a <ph name="VOLUME_NAME"/>. Pode modificar ou eliminar os seus ficheiros.</translation>
 <translation id="3180365125572747493">Introduza uma palavra-passe para encriptar este ficheiro de certificado.</translation>
@@ -2395,7 +2397,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="7193047015510747410">Preenchimento automático da credencial de sincronização</translation>
 <translation id="7257173066616499747">Redes Wi-Fi</translation>
 <translation id="6199801702437275229">A aguardar informações de espaço...</translation>
-<translation id="2767649238005085901">Prima Enter para avançar e a tecla do menu de contexto para ver o histórico</translation>
 <translation id="6124650939968185064">As seguintes extensões dependem desta extensão:</translation>
 <translation id="8580634710208701824">Recarregar frame</translation>
 <translation id="1018656279737460067">Cancelado</translation>
@@ -3173,7 +3174,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="725387188884494207">Tem a certeza de que pretende eliminar este utilizador e todos os dados a ele associados deste computador? Esta operação não pode ser anulada!</translation>
 <translation id="3531250013160506608">Caixa de texto da palavra-passe</translation>
 <translation id="2169062631698640254">Continuar com o início de sessão</translation>
-<translation id="506228266759207354">Desativar o menu da página novo separador para aceder a outros aparelhos.</translation>
 <translation id="2478076885740497414">Instalar aplicação</translation>
 <translation id="1781502536226964113">Abrir a página Novo separador</translation>
 <translation id="765676359832457558">Ocultar definições avançadas...</translation>
@@ -3791,6 +3791,7 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="4613271546271159013">Uma extensão alterou a página que é apresentada quando abre um novo separador.</translation>
 <translation id="3378630551672149129">Inicie sessão e prima a tecla de tabulação para interagir com os elementos de introdução</translation>
 <translation id="351152300840026870">Tipo de letra com largura fixa</translation>
+<translation id="2476578072172137802">Definições do site</translation>
 <translation id="4301786491084298653">Desativar em <ph name="DOMAIN"/></translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="3057592184182562878">Mostre os dispositivos MTP como armazenamento de ficheiros no gestor de ficheiros.</translation>
@@ -5450,6 +5451,7 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="1936717151811561466">Finlandês</translation>
 <translation id="4681930562518940301">Abrir &amp;imagem original num novo separador</translation>
 <translation id="7088418943933034707">Gerir certificados...</translation>
+<translation id="6295158916970320988">Todos os sites</translation>
 <translation id="497421865427891073">Avançar</translation>
 <translation id="2453576648990281505">O ficheiro já existe</translation>
 <translation id="6972929256216826630">Permitir que todos os sites transfiram vários ficheiros automaticamente</translation>

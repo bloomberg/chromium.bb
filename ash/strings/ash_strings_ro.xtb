@@ -34,6 +34,7 @@
 <translation id="6459472438155181876">Se extinde ecranul pe <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Celular</translation>
 <translation id="6596816719288285829">Adresă IP</translation>
+<translation id="8517041960877371778">Este posibil ca <ph name="DEVICE_TYPE"/> să nu se încarce cât timp este pornit.</translation>
 <translation id="3621712662352432595">Setări audio</translation>
 <translation id="1812696562331527143">Metoda de introducere s-a schimbat la <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>terță parte<ph name="END_LINK"/>).
         Apăsați pe Shift + Alt pentru a comuta.</translation>
@@ -103,6 +104,7 @@
 <translation id="3963445509666917109">Difuzor (intern)</translation>
 <translation id="1747827819627189109">Tastatură pe ecran activată</translation>
 <translation id="2208323208084708176">Modul Desktop unificat</translation>
+<translation id="5759815399269068793">Poți să folosești în continuare <ph name="DEVICE_TYPE"/> cât timp este conectat la un monitor extern, chiar dacă are capacul închis.</translation>
 <translation id="2825619548187458965">Raft</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -146,6 +148,7 @@
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="3019353588588144572">Timp rămas până la încărcarea completă a bateriei: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Lupă de ecran</translation>
+<translation id="7957227661277029961">Este posibil ca <ph name="DEVICE_TYPE"/> să nu se încarce cât timp este pornit. Îți recomandăm să folosești încărcătorul oficial.</translation>
 <translation id="882279321799040148">Dați clic pentru afișare</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> nu acceptă <ph name="SPECIFIED_RESOLUTION"/>. Rezoluția a fost modificată la <ph name="FALLBACK_RESOLUTION"/></translation>

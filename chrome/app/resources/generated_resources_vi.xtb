@@ -205,6 +205,7 @@
 <translation id="7897900149154324287">Trong tương lai, đảm bảo rằng bạn đã ngắt kết nối thiết bị di động của mình trong ứng dụng Tệp trước khi tháo thiết bị. Nếu không, bạn có thể mất dữ liệu.</translation>
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="2566124945717127842">Powerwash để đặt lại thiết bị <ph name="IDS_SHORT_PRODUCT_NAME"/> của bạn giống như mới.</translation>
+<translation id="1994173015038366702">URL trang web</translation>
 <translation id="3609785682760573515">Đang đồng bộ hóa...</translation>
 <translation id="1383861834909034572">Mở khi hoàn tất</translation>
 <translation id="5727728807527375859">Tiện ích, ứng dụng và chủ đề có thể gây hại cho máy tính của bạn. Bạn có chắc chắn muốn tiếp tục không?</translation>
@@ -754,6 +755,7 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="5759728514498647443">Tài liệu bạn gửi để in qua <ph name="APP_NAME"/> có thể đọc được bằng <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Ứng dụng hiện không được hỗ trợ trên thiết bị này, nhưng các kỹ sư Chrome đang làm việc tích cực để ứng dụng này sớm hoạt động.</translation>
 <translation id="3273410961255278341">Gửi cho:</translation>
+<translation id="2167276631610992935">Javascript</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Tab mới</translation>
 <translation id="6567688344210276845">Không thể tải biểu tượng '<ph name="ICON"/>' cho tác vụ trang.</translation>
@@ -1052,7 +1054,6 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="9070219033670098627">Chuyển đổi người</translation>
 <translation id="1486096554574027028">Tìm kiếm mật khẩu</translation>
 <translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> phát hiện thấy cài đặt trình duyệt của bạn có thể đã bị thay đổi mà bạn không biết. Bạn có muốn đặt lại cài đặt về mặc định ban đầu không?</translation>
-<translation id="1836938920852968258">Tắt menu 'Thiết bị khác' trên NTP.</translation>
 <translation id="3825863595139017598">Bàn phím chữ Mông Cổ</translation>
 <translation id="8184538546369750125">Sử dụng cài đặt mặc định chung (Cho phép)</translation>
 <translation id="1506687042165942984">Hiển thị bản sao đã lưu (nghĩa là đã lỗi thời) của trang này.</translation>
@@ -1165,6 +1166,7 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="5630163645818715367">Thiết kế material design trong chrome hàng đầu của trình duyệt</translation>
 <translation id="2498857833812906273">Hiển thị thông báo khi thoát Chrome nếu các ứng dụng được lưu trữ hiện đang chạy.</translation>
 <translation id="4699357559218762027">(tự động chạy)</translation>
+<translation id="563535393368633106">Hỏi trước khi truy cập (được đề xuất)</translation>
 <translation id="4037463823853863991">Bật trình chuyển đổi tab khả năng truy cập cho Anroid.</translation>
 <translation id="7394102162464064926">Bạn có chắc chắn muốn xóa những trang này khỏi lịch sử của mình không?
 
@@ -1712,7 +1714,6 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="8602851771975208551">Một chương trình khác trên máy tính của bạn đã thêm một ứng dụng có thể thay đổi cách Chrome hoạt động.</translation>
 <translation id="2655386581175833247">Chứng chỉ người dùng:</translation>
 <translation id="5039804452771397117">Cho phép</translation>
-<translation id="5435964418642993308">Nhấn enter để quay trở lại, phím menu ngữ cảnh để xem lịch sử</translation>
 <translation id="6815206662964743929">Chuyển người dùng</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Bật phím cố định</translation>
@@ -1886,6 +1887,7 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="1346104802985271895">Phương pháp nhập tiếng Việt (TELEX)</translation>
 <translation id="7896906914454843592">Bàn phím Hoa Kỳ mở rộng</translation>
 <translation id="2242603986093373032">Không có thiết bị nào</translation>
+<translation id="7423098979219808738">Hỏi trước</translation>
 <translation id="5889282057229379085">Số CA gián tiếp tối đa: <ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="1549788673239553762"><ph name="APP_NAME"/> muốn truy cập <ph name="VOLUME_NAME"/>. Ứng dụng này có thể sửa đổi hoặc xóa các tệp của bạn.</translation>
 <translation id="3180365125572747493">Vui lòng nhập mật khẩu để mã hóa tệp chứng chỉ này.</translation>
@@ -2406,7 +2408,6 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="7193047015510747410">Tự động điền thông tin đăng nhập đồng bộ hóa</translation>
 <translation id="7257173066616499747">Mạng Wi-Fi</translation>
 <translation id="6199801702437275229">Đang chờ thông tin dung lượng...</translation>
-<translation id="2767649238005085901">Nhấn enter để đi tiếp, phím menu ngữ cảnh để xem lịch sử</translation>
 <translation id="6124650939968185064">Các tiện ích sau phụ thuộc vào tiện ích này:</translation>
 <translation id="8580634710208701824">Tải lại Khung</translation>
 <translation id="1018656279737460067">Đã hủy</translation>
@@ -3189,7 +3190,6 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="725387188884494207">Bạn có chắc chắn muốn xóa người dùng này và tất cả dữ liệu được liên kết với người dùng đó khỏi máy tính này không? Thao tác này không thể hoàn tác!</translation>
 <translation id="3531250013160506608">Hộp văn bản nhập mật khẩu</translation>
 <translation id="2169062631698640254">Đăng nhập bằng mọi cách</translation>
-<translation id="506228266759207354">Tắt menu trang tab mới để truy cập vào các tab trên thiết bị khác.</translation>
 <translation id="2478076885740497414">Cài đặt ứng dụng</translation>
 <translation id="1781502536226964113">Mở trang tab mới</translation>
 <translation id="765676359832457558">Ẩn cài đặt nâng cao...</translation>
@@ -3808,6 +3808,7 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="4613271546271159013">Tiện ích đã thay đổi trang nào sẽ được hiển thị khi bạn mở một tab mới.</translation>
 <translation id="3378630551672149129">Đăng nhập, nhấn phím tab để tương tác với các yếu tố đầu vào</translation>
 <translation id="351152300840026870">Phông chữ có chiều rộng cố định</translation>
+<translation id="2476578072172137802">Cài đặt trang web</translation>
 <translation id="4301786491084298653">Tắt trên <ph name="DOMAIN"/></translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="3057592184182562878">Hiển thị các thiết bị MTP ở dạng bộ nhớ tệp trong trình quản lý tệp.</translation>
@@ -5471,6 +5472,7 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="1936717151811561466">Tiếng Phần Lan</translation>
 <translation id="4681930562518940301">Mở &amp;hình ảnh gốc trong tab mới</translation>
 <translation id="7088418943933034707">Quản lý chứng chỉ...</translation>
+<translation id="6295158916970320988">Tất cả các trang web</translation>
 <translation id="497421865427891073">Đi về phía trước</translation>
 <translation id="2453576648990281505">Tệp đã tồn tại</translation>
 <translation id="6972929256216826630">Cho phép mọi trang web tự động tải nhiều tệp xuống</translation>

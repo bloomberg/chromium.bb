@@ -34,6 +34,7 @@
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME"/> க்கு திரை விரிவாக்கப்படுகிறது</translation>
 <translation id="8206859287963243715">செல்லுலர்</translation>
 <translation id="6596816719288285829">IP முகவரி</translation>
+<translation id="8517041960877371778">இயக்கப்பட்டிருக்கும் போது உங்கள் <ph name="DEVICE_TYPE"/> இல் சார்ஜ் ஏறாது.</translation>
 <translation id="3621712662352432595">ஆடியோ அமைப்புகள்</translation>
 <translation id="1812696562331527143">உங்கள் உள்ளீட்டு முறையானது <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>மூன்றாம் தரப்பு<ph name="END_LINK"/>) க்கு மாற்றப்பட்டது.
 மாற்ற Shift + Alt ஐ அழுத்தவும்.</translation>
@@ -103,6 +104,7 @@
 <translation id="3963445509666917109">ஸ்பீக்கர் (உட்புறம்)</translation>
 <translation id="1747827819627189109">ஆன்ஸ்க்ரீன் விசைப்பலகை இயக்கப்பட்டது</translation>
 <translation id="2208323208084708176">ஒன்றிணைந்த டெஸ்க்டாப் பயன்முறை</translation>
+<translation id="5759815399269068793">உங்கள் <ph name="DEVICE_TYPE"/> வெளிப்புறத் திரையுடன் இணைக்கப்பட்டிருக்கும் போது, மூடி மூடப்பட்டிருந்தாலும் அதனை நீங்கள் தொடர்ந்து பயன்படுத்தலாம்.</translation>
 <translation id="2825619548187458965">அடுக்கு</translation>
 <translation id="4430019312045809116">அளவு</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -146,6 +148,7 @@
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="3019353588588144572"><ph name="TIME_REMAINING"/> இல் பேட்டரி முழுவதும் சார்ஜ் ஆகிவிடும்</translation>
 <translation id="3473479545200714844">திரை உருப்பெருக்கி</translation>
+<translation id="7957227661277029961">உங்கள் <ph name="DEVICE_TYPE"/> இயக்கப்பட்டிருக்கும் போது அதில் சார்ஜ் ஏறாது. அதனுடன் வாங்கிய முறையான சார்ஜரைப் பயன்படுத்திப் பார்க்கவும்.</translation>
 <translation id="882279321799040148">காண கிளிக் செய்க</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="7561014039265304140"><ph name="SPECIFIED_RESOLUTION"/> ஐ <ph name="DISPLAY_NAME"/> ஆதரிக்கவில்லை. <ph name="FALLBACK_RESOLUTION"/> க்குத் தெளிவு மாற்றப்பட்டது</translation>

@@ -34,6 +34,7 @@
 <translation id="6459472438155181876">Екранът се разширява на „<ph name="DISPLAY_NAME"/>“</translation>
 <translation id="8206859287963243715">Клетъчно</translation>
 <translation id="6596816719288285829">IP адрес</translation>
+<translation id="8517041960877371778">Възможно е вашият <ph name="DEVICE_TYPE"/> да не се зарежда, докато е включен.</translation>
 <translation id="3621712662352432595">Настройки за звука</translation>
 <translation id="1812696562331527143">Методът ви на въвеждане се промени на <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>трета страна<ph name="END_LINK"/>).
 Натиснете „Shift + Alt“, за да превключите.</translation>
@@ -103,6 +104,7 @@
 <translation id="3963445509666917109">Високоговорител (вътрешен)</translation>
 <translation id="1747827819627189109">Екранната клавиатура е активирана</translation>
 <translation id="2208323208084708176">Режим на обединен работен плот</translation>
+<translation id="5759815399269068793">Можете да продължите да използвате своя <ph name="DEVICE_TYPE"/>, докато е свързан с външен дисплей, дори ако капакът е затворен.</translation>
 <translation id="2825619548187458965">Лавица</translation>
 <translation id="4430019312045809116">Звук</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -146,6 +148,7 @@
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="3019353588588144572">Оставащо време до пълното зареждане на батерията: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Екранна лупа</translation>
+<translation id="7957227661277029961">Възможно е вашият <ph name="DEVICE_TYPE"/> да не се зарежда, докато е включен. Добре е да използвате оригиналното зарядно устройство.</translation>
 <translation id="882279321799040148">Кликнете, за да прегледате</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="7561014039265304140">„<ph name="DISPLAY_NAME"/>“ не поддържа разделителна способност от <ph name="SPECIFIED_RESOLUTION"/>. Тя бе променена на <ph name="FALLBACK_RESOLUTION"/></translation>

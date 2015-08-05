@@ -81,6 +81,7 @@
 <translation id="119944043368869598">Tyhjennä kaikki</translation>
 <translation id="7665369617277396874">Lisää tili</translation>
 <translation id="6458785801851713928">Synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
+<translation id="8275818695183729150">Salli (osoitepalkissa tehtäville hauille)</translation>
 <translation id="7788788617745289808">Chrome tarvitsee kameran käyttöoikeuden voidakseen jakaa sen tämän sivuston kanssa.</translation>
 <translation id="7765158879357617694">Siirrä</translation>
 <translation id="2731700343119398978">Odota...</translation>
@@ -372,6 +373,7 @@ Palaa painamalla edellinen-painiketta.</translation>
 <translation id="748127970106343339">Vahvista laitteen kirjautumistietojen poisto</translation>
 <translation id="4351244548802238354">Sulje ikkuna</translation>
 <translation id="3089395242580810162">Avaa incognito-välilehdessä</translation>
+<translation id="699220179437400583">Ilmoita mahdollisista turvallisuusongelmista Googlelle automaattisesti</translation>
 <translation id="5899349522111170522">Luo uusi tiedosto.</translation>
 <translation id="3158619413803296679">Valitse kirjanmerkki</translation>
 <translation id="6138140242378429169">Tee sivusta mobiililaitteisiin sopiva</translation>
@@ -492,6 +494,7 @@ Käyttötilastot sisältävät tietoja esimerkiksi asetuksista, painetuista pain
 <translation id="3988213473815854515">Sijainnin käyttö on sallittu.</translation>
 <translation id="1513352483775369820">Kirjanmerkit ja verkkohistoria</translation>
 <translation id="8912362522468806198">Google-tilisi avulla</translation>
+<translation id="219985413780390209">Suojaa itseäsi ja laitettasi vaarallisilta sivustoilta</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
 <translation id="3003595280608617736">Ei SD-korttia</translation>
 <translation id="6337234675334993532">Salaus</translation>

@@ -81,6 +81,7 @@
 <translation id="119944043368869598">Cancella tutto</translation>
 <translation id="7665369617277396874">Aggiungi account</translation>
 <translation id="6458785801851713928">Il servizio di sincronizzazione non è disponibile per il tuo dominio.</translation>
+<translation id="8275818695183729150">Consenti (per ricerche nella barra degli indirizzi)</translation>
 <translation id="7788788617745289808">Chrome deve avere accesso alla fotocamera per condividerla con questo sito.</translation>
 <translation id="7765158879357617694">Sposta</translation>
 <translation id="2731700343119398978">Attendi...</translation>
@@ -372,6 +373,7 @@ Per uscire premi il pulsante Indietro.</translation>
 <translation id="748127970106343339">Conferma eliminazione credenziali dispositivo</translation>
 <translation id="4351244548802238354">Chiudi finestra di dialogo</translation>
 <translation id="3089395242580810162">Apri in scheda in incognito</translation>
+<translation id="699220179437400583">Segnala automaticamente a Google dettagli dei possibili incidenti di sicurezza</translation>
 <translation id="5899349522111170522">Crea nuovo file</translation>
 <translation id="3158619413803296679">Scegli un Preferito</translation>
 <translation id="6138140242378429169">Ottimizza la pagina per i dispositivi mobili</translation>
@@ -492,6 +494,7 @@ Le statistiche sull'utilizzo includono informazioni quali preferenze, clic sui p
 <translation id="3988213473815854515">La localizzazione è consentita</translation>
 <translation id="1513352483775369820">Preferiti e cronologia web</translation>
 <translation id="8912362522468806198">Google Account</translation>
+<translation id="219985413780390209">Proteggi te stesso e il tuo dispositivo da siti pericolosi</translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
 <translation id="3003595280608617736">Nessuna scheda SD</translation>
 <translation id="6337234675334993532">Crittografia</translation>

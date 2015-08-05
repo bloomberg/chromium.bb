@@ -34,6 +34,7 @@
 <translation id="6459472438155181876">Proširivanje zaslona na zaslon <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobitel</translation>
 <translation id="6596816719288285829">IP adresa</translation>
+<translation id="8517041960877371778">Uređaj <ph name="DEVICE_TYPE"/> možda se neće puniti dok je uključen.</translation>
 <translation id="3621712662352432595">Postavke zvuka</translation>
 <translation id="1812696562331527143">Vaš je način unosa promijenjen u <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>treća strana<ph name="END_LINK"/>).
 Pritisnite Shift + Alt za promjenu.</translation>
@@ -103,6 +104,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="3963445509666917109">Zvučnik (ugrađeni)</translation>
 <translation id="1747827819627189109">Tipkovnica na zaslonu omogućena je</translation>
 <translation id="2208323208084708176">Način jedinstvene radne površine</translation>
+<translation id="5759815399269068793">Možete nastaviti upotrebljavati uređaj <ph name="DEVICE_TYPE"/> dok je povezan s vanjskim zaslonom, čak i kada je poklopac zatvoren.</translation>
 <translation id="2825619548187458965">Polica</translation>
 <translation id="4430019312045809116">Glasnoća</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -146,6 +148,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="3019353588588144572">Baterija će se napuniti za <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Povećalo</translation>
+<translation id="7957227661277029961">Uređaj <ph name="DEVICE_TYPE"/> možda se neće puniti dok je uključen. Preporučujemo vam upotrebu službenog punjača.</translation>
 <translation id="882279321799040148">Kliknite za prikaz</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> ne podržava razlučivost <ph name="SPECIFIED_RESOLUTION"/>. Razlučivost je promijenjena u <ph name="FALLBACK_RESOLUTION"/></translation>

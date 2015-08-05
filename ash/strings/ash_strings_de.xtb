@@ -34,6 +34,7 @@
 <translation id="6459472438155181876">Bildschirm wird auf <ph name="DISPLAY_NAME"/> erweitert...</translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="6596816719288285829">IP-Adresse</translation>
+<translation id="8517041960877371778">Ihr <ph name="DEVICE_TYPE"/> wird möglicherweise nicht aufgeladen, wenn es eingeschaltet ist.</translation>
 <translation id="3621712662352432595">Audioeinstellungen</translation>
 <translation id="1812696562331527143">Ihre Eingabemethode hat sich in <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>Drittanbieter<ph name="END_LINK"/>) geändert.
 Drücken Sie zum Wechseln Shift+Alt.</translation>
@@ -103,6 +104,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="3963445509666917109">Lautsprecher (intern)</translation>
 <translation id="1747827819627189109">Bildschirmtastatur aktiviert</translation>
 <translation id="2208323208084708176">Unified Desktop-Modus</translation>
+<translation id="5759815399269068793">Sie können Ihr <ph name="DEVICE_TYPE"/>, wenn es mit einem externen Bildschirm verbunden ist, selbst im geschlossenen Zustand weiterverwenden.</translation>
 <translation id="2825619548187458965">Ablage</translation>
 <translation id="4430019312045809116">Lautstärke</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -146,6 +148,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="3019353588588144572">Verbleibende Zeit, bis der Akku vollständig geladen ist: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Lupe</translation>
+<translation id="7957227661277029961">Ihr <ph name="DEVICE_TYPE"/> wird möglicherweise nicht aufgeladen, wenn es eingeschaltet ist. Wir empfehlen Ihnen, dass offizielle Ladegerät zu verwenden.</translation>
 <translation id="882279321799040148">Zum Anzeigen klicken</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> unterstützt <ph name="SPECIFIED_RESOLUTION"/> nicht. Die Auflösung wurde auf <ph name="FALLBACK_RESOLUTION"/> zurückgesetzt.</translation>

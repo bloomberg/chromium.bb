@@ -205,6 +205,7 @@
 <translation id="7897900149154324287">Edaspidi eraldage eemaldatav seade kõigepealt rakenduses Failid ja alles seejärel eemaldage seade ise. Muidu võivad andmed kaduma minna.</translation>
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="2566124945717127842">Pärast Powerwashiga lähtestamist on teie toote <ph name="IDS_SHORT_PRODUCT_NAME"/> seade just nagu uus.</translation>
+<translation id="1994173015038366702">Saidi URL</translation>
 <translation id="3609785682760573515">Sünkroonimine ...</translation>
 <translation id="1383861834909034572">Avaneb pärast lõpetamist</translation>
 <translation id="5727728807527375859">Laiendid, rakendused ja teemad võivad teie arvutit kahjustada. Kas soovite kindlasti jätkata?</translation>
@@ -753,6 +754,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="5759728514498647443">Rakenduse <ph name="APP_NAME"/> kaudu printimiseks saadetud dokumente saab lugeda rakenduse <ph name="APP_NAME"/> järgi.</translation>
 <translation id="2401053206567162910">Seda rakendust praegu selles seadmes ei toetata, aga Chrome'i gnoomid töötavad selle nimel, et see peagi toimima hakkaks.</translation>
 <translation id="3273410961255278341">Saada:</translation>
+<translation id="2167276631610992935">Javascript</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Uus vaheleht</translation>
 <translation id="6567688344210276845">Lehe toimingu jaoks ei õnnestunud laadida ikooni <ph name="ICON"/>.</translation>
@@ -1051,7 +1053,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="9070219033670098627">Vaheta isikut</translation>
 <translation id="1486096554574027028">Otsi paroole</translation>
 <translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> tuvastas, et teie brauseri seadeid võib olla teie teadmata muudetud. Kas soovite need lähtestada algsetele vaikeseadetele?</translation>
-<translation id="1836938920852968258">Keela NTP menüü „Muud seadmed”.</translation>
 <translation id="3825863595139017598">Mongoolia klaviatuur</translation>
 <translation id="8184538546369750125">Kasuta globaalset vaikeseadet (luba)</translation>
 <translation id="1506687042165942984">Lehe salvestatud (s.t teadaolevalt aegunud) koopia kuvamine.</translation>
@@ -1164,6 +1165,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="5630163645818715367">Materiaalne disain brauseri ülemises Chrome'i osas</translation>
 <translation id="2498857833812906273">Märguande kuvamine Chrome'i sulgemisel, kui hostitud rakendused töötavad.</translation>
 <translation id="4699357559218762027">(automaatselt käivitatud)</translation>
+<translation id="563535393368633106">Küsib enne juurdepääsu hankimist (soovitatav)</translation>
 <translation id="4037463823853863991">Androidi vahelehe vahetajale juurdepääsu lubamine.</translation>
 <translation id="7394102162464064926">Kas soovite kindlasti need lehed ajaloost kustutada?
 
@@ -1711,7 +1713,6 @@ Inkognito režiim <ph name="SHORTCUT_KEY"/> võib järgmisel korral kasulikuks o
 <translation id="8602851771975208551">Teine programm teie arvutis lisas rakenduse, mis võib muuta Chrome'i toimimist.</translation>
 <translation id="2655386581175833247">Kasutaja sertifikaat:</translation>
 <translation id="5039804452771397117">Luba</translation>
-<translation id="5435964418642993308">Vajutage tagasiminemiseks sisestusklahvi, ajaloo nägemiseks kontekstimenüü klahvi</translation>
 <translation id="6815206662964743929">Vaheta kasutajat</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Nakkeklahvide lubamine</translation>
@@ -1884,6 +1885,7 @@ Pärast uue jälgitava kasutaja loomist saate igal ajal ja igas seadmes saidil w
 <translation id="1346104802985271895">Vietnami sisestusviis (TELEX)</translation>
 <translation id="7896906914454843592">USA laiendatud klaviatuur</translation>
 <translation id="2242603986093373032">Seadmed puuduvad</translation>
+<translation id="7423098979219808738">Esmalt küsib</translation>
 <translation id="5889282057229379085">Vahe CA-de maksimaalne arv: <ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="1549788673239553762"><ph name="APP_NAME"/> soovib juurdepääsu seadmele <ph name="VOLUME_NAME"/>. See võib teie faile muuta või need kustutada.</translation>
 <translation id="3180365125572747493">Sisestage parool selle sertifikaadifaili krüpteerimiseks.</translation>
@@ -2397,7 +2399,6 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="7193047015510747410">Automaattäite sünkroonimise mandaat</translation>
 <translation id="7257173066616499747">WiFi-võrgud</translation>
 <translation id="6199801702437275229">Talletusruumi teabe ootamine ...</translation>
-<translation id="2767649238005085901">Vajutage edasiminemiseks sisestusklahvi, ajaloo nägemiseks kontekstimenüü klahvi</translation>
 <translation id="6124650939968185064">Sellest laiendusest sõltuvad järgmised laiendused:</translation>
 <translation id="8580634710208701824">Laadi raam uuesti</translation>
 <translation id="1018656279737460067">Tühistatud</translation>
@@ -3174,7 +3175,6 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="725387188884494207">Kas soovite kindlasti arvutist kustutada selle kasutaja ja kõik temaga seotud andmed? Seda toimingut ei saa tagasi võtta.</translation>
 <translation id="3531250013160506608">Parooli tekstiväli</translation>
 <translation id="2169062631698640254">Logi ikkagi sisse</translation>
-<translation id="506228266759207354">Keelab uue vahelehe menüü, mille abil pääseb muudes seadmetes vahelehtedele.</translation>
 <translation id="2478076885740497414">Rakenduse installimine</translation>
 <translation id="1781502536226964113">Ava uus vaheleht</translation>
 <translation id="765676359832457558">Peida täpsemad seaded ...</translation>
@@ -3792,6 +3792,7 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="4613271546271159013">Laiendus muutis lehte, mis kuvatakse uue vahelehe avamisel.</translation>
 <translation id="3378630551672149129">Logige sisse, vajutage sisestuselementide kasutamiseks tabulaatorit</translation>
 <translation id="351152300840026870">Fikseeritud laiusega font</translation>
+<translation id="2476578072172137802">Saidi seaded</translation>
 <translation id="4301786491084298653">Keela domeenil <ph name="DOMAIN"/></translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="3057592184182562878">MTP-seadmed kuvatakse failihalduris failisalvestuskohana.</translation>
@@ -5457,6 +5458,7 @@ Täislaadimiseks kuluva aja arvutamine</translation>
 <translation id="1936717151811561466">soome keel</translation>
 <translation id="4681930562518940301">Ava &amp;algkujutis uuel vahelehel</translation>
 <translation id="7088418943933034707">Halda serte ...</translation>
+<translation id="6295158916970320988">Kõik saidid</translation>
 <translation id="497421865427891073">Edasiminek</translation>
 <translation id="2453576648990281505">Fail on juba olemas</translation>
 <translation id="6972929256216826630">Luba kõikidel saitidel automaatselt mitut faili alla laadida</translation>

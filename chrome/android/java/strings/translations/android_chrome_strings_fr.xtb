@@ -81,6 +81,7 @@
 <translation id="119944043368869598">Tout effacer</translation>
 <translation id="7665369617277396874">Ajouter un compte</translation>
 <translation id="6458785801851713928">La synchronisation n'est pas disponible pour votre domaine.</translation>
+<translation id="8275818695183729150">Autoriser (pour les recherches dans la barre d'adresse)</translation>
 <translation id="7788788617745289808">Chrome doit disposer de l'accès à la caméra pour la partager avec ce site.</translation>
 <translation id="7765158879357617694">Déplacer</translation>
 <translation id="2731700343119398978">Veuillez patienter…</translation>
@@ -373,6 +374,7 @@ Appuyez sur le bouton &quot;Retour&quot; pour quitter ce mode.</translation>
 <translation id="748127970106343339">Confirmer la suppression de l'identifiant de l'appareil</translation>
 <translation id="4351244548802238354">Fermer la boîte de dialogue</translation>
 <translation id="3089395242580810162">Ouvrir dans un onglet de nav. privée</translation>
+<translation id="699220179437400583">Signaler automatiquement les incidents de sécurité potentiels à Google</translation>
 <translation id="5899349522111170522">Créer un fichier</translation>
 <translation id="3158619413803296679">Sélectionner un favori</translation>
 <translation id="6138140242378429169">Ouvrir la page adaptée aux mobiles</translation>
@@ -493,6 +495,7 @@ Les statistiques d'utilisation englobent des informations telles que les préfé
 <translation id="3988213473815854515">Position autorisée</translation>
 <translation id="1513352483775369820">Favoris et historique Web</translation>
 <translation id="8912362522468806198">Compte Google</translation>
+<translation id="219985413780390209">Assurer votre protection et celle de votre appareil contre les sites dangereux</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="3003595280608617736">Aucune carte SD</translation>
 <translation id="6337234675334993532">Chiffrement</translation>

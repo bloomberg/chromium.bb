@@ -102,7 +102,7 @@
 <translation id="7392118418926456391">바이러스 검사 실패</translation>
 <translation id="1156689104822061371">키보드 레이아웃:</translation>
 <translation id="4764776831041365478"><ph name="URL"/>의 웹페이지가 일시적으로 다운되었거나 새 웹 주소로 완전히 이동했을 수 있습니다.</translation>
-<translation id="140495917068443520">잉크 드롭을 정사각형으로 설정합니다.</translation>
+<translation id="140495917068443520">정사각형 잉크 드롭</translation>
 <translation id="5241298539944515331">베트남어 키보드(VIQR)</translation>
 <translation id="6156863943908443225">스크립트 캐시</translation>
 <translation id="6139269067241684224">MTP 작성 지원 사용 중지</translation>
@@ -138,7 +138,7 @@
 <translation id="2597852038534460976">Chrome에서 배경화면에 액세스할 수 없습니다. 네트워크에 연결하세요.</translation>
 <translation id="3648460724479383440">선택된 버튼</translation>
 <translation id="2494837236724268445">구자라트어 키보드(음역)</translation>
-<translation id="3216508313927987948">이렇게 하려면 다음 단계에 따라 <ph name="DEVICE_TYPE"/>에 등록해야 합니다.</translation>
+<translation id="3216508313927987948">이렇게 하려면 다음 단계에 따라 <ph name="DEVICE_TYPE"/>에서 음성을 인식하도록 해야 합니다.</translation>
 <translation id="512903556749061217">첨부됨</translation>
 <translation id="573719557377416048">공존 상태 삭제</translation>
 <translation id="4654488276758583406">아주 작게</translation>
@@ -205,6 +205,7 @@
 <translation id="7897900149154324287">이후에 전원에서 분리하기 전에 파일 앱에서 이동식 기기를 꺼내야 합니다. 그렇지 않으면 데이터가 손실될 수 있습니다.</translation>
 <translation id="9181716872983600413">유니코드</translation>
 <translation id="2566124945717127842">Powerwash는 <ph name="IDS_SHORT_PRODUCT_NAME"/> 기기를 재설정하여 새것처럼 만듭니다.</translation>
+<translation id="1994173015038366702">사이트 URL</translation>
 <translation id="3609785682760573515">동기화 중...</translation>
 <translation id="1383861834909034572">완료되면 열기</translation>
 <translation id="5727728807527375859">확장 프로그램, 애플리케이션, 테마로 인해 컴퓨터가 손상될 수 있습니다. 계속하시겠습니까?</translation>
@@ -753,6 +754,7 @@
 <translation id="5759728514498647443"><ph name="APP_NAME"/>을(를) 통해 인쇄하려고 전송한 문서를 <ph name="APP_NAME"/>에서 읽을 수 있습니다.</translation>
 <translation id="2401053206567162910">이 앱은 현재 해당 기기에서 지원되지 않지만 Chrome Gnome이 지원을 위해 노력을 기울이고 있습니다.</translation>
 <translation id="3273410961255278341">다음에 대해 보내기:</translation>
+<translation id="2167276631610992935">자바스크립트</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">새 탭</translation>
 <translation id="6567688344210276845">페이지 작업의 아이콘('<ph name="ICON"/>')을 로드하지 못했습니다.</translation>
@@ -1051,7 +1053,6 @@
 <translation id="9070219033670098627">사용자 전환</translation>
 <translation id="1486096554574027028">비밀번호 검색</translation>
 <translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/>에서 사용자가 알지 못하는 사이에 브라우저 설정이 변경되었을 수 있음을 감지했습니다. 기본값으로 재설정하시겠습니까?</translation>
-<translation id="1836938920852968258">NTP '기타 기기' 메뉴를 사용 중지합니다.</translation>
 <translation id="3825863595139017598">몽골어 키보드</translation>
 <translation id="8184538546369750125">전체 기본값 사용(허용)</translation>
 <translation id="1506687042165942984">오래된 것으로 알려진 이 페이지의 저장된 사본을 표시합니다.</translation>
@@ -1164,6 +1165,7 @@
 <translation id="5630163645818715367">브라우저 상단 Chrome의 머티리얼 디자인</translation>
 <translation id="2498857833812906273">호스팅된 앱이 실행 중인 경우 Chrome 종료 시 알림을 표시합니다.</translation>
 <translation id="4699357559218762027">(자동 실행)</translation>
+<translation id="563535393368633106">액세스하기 전에 확인(권장)</translation>
 <translation id="4037463823853863991">Android용 접근성 탭 전환을 사용합니다.</translation>
 <translation id="7394102162464064926">이 페이지를 방문 기록에서 삭제하시겠습니까?
 
@@ -1402,7 +1404,7 @@
 <translation id="6978121630131642226">검색엔진</translation>
 <translation id="1097507499312291972">이 사용자가 방문하는 웹사이트를 제어하고 조회하려면 <ph name="BEGIN_SIGN_IN_LINK"/>로그인<ph name="END_SIGN_IN_LINK"/>합니다.</translation>
 <translation id="8965697826696209160">저장 공간이 부족합니다.</translation>
-<translation id="3520155764286810028">잉크 드롭을 원형으로 설정합니다.</translation>
+<translation id="3520155764286810028">원형 잉크 드롭</translation>
 <translation id="329838636886466101">복구</translation>
 <translation id="8212451793255924321">다른 사용자로 전환합니다.</translation>
 <translation id="6839225236531462745">인증서 삭제 오류</translation>
@@ -1481,7 +1483,7 @@
         서버가 유지보수로 인해 다운되었거나 설정이 잘못되었을 수 있습니다.</translation>
 <translation id="297870353673992530">DNS 서버:</translation>
 <translation id="6445450263907939268">변경하지 않으려는 경우 이전 설정을 복원할 수 있습니다.</translation>
-<translation id="8446824986496198687">머티리얼 디자인을 위한 실험적인 시각적 피드백 애니메이션의 속도를 설정합니다.</translation>
+<translation id="8446824986496198687">머티리얼 디자인의 테스트용 시각적 피드백 애니메이션의 속도를 설정합니다.</translation>
 <translation id="8279388322240498158">소라니 쿠르드어 영어 기반 키보드</translation>
 <translation id="7273774418879988007">기본 하드웨어 레이아웃이 아닌 다른 채널 레이아웃의 사용 가능 여부를 확인하기 위한 오디오 출력 스트림을 시작하세요. 이 기능을 사용 설정하면 지원되는 경우 OS에서 스테레오가 서라운드 확장까지 수행하도록 허용합니다. 타사 드라이버 버그가 노출될 수 있으므로 주의하여 사용하세요.</translation>
 <translation id="3130528281680948470">기기가 초기화되고 사용자 계정과 로컬 데이터가 모두 삭제됩니다. 이 작업은 취소할 수 없습니다.</translation>
@@ -1697,7 +1699,7 @@
 <translation id="8856844195561710094">블루투스 기기 검색을 중단하지 못했습니다.</translation>
 <translation id="2246340272688122454">복구 이미지 다운로드 중...</translation>
 <translation id="5305688511332277257">설치된 인증서 없음</translation>
-<translation id="251662399991179012"><ph name="DEVICE_TYPE"/> 등록</translation>
+<translation id="251662399991179012"><ph name="DEVICE_TYPE"/>에 음성 등록 시작하기</translation>
 <translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="8521441079177373948">영어(영국)</translation>
 <translation id="2816269189405906839">중국어 입력 방법(창제)</translation>
@@ -1712,7 +1714,6 @@
 <translation id="8602851771975208551">컴퓨터의 다른 프로그램에서 Chrome 작동에 영향을 줄 수 있는 앱을 추가했습니다.</translation>
 <translation id="2655386581175833247">사용자 인증서:</translation>
 <translation id="5039804452771397117">허용</translation>
-<translation id="5435964418642993308">돌아가려면 Enter 키를 누르고, 기록을 보려면 컨텍스트 메뉴 키를 누릅니다.</translation>
 <translation id="6815206662964743929">사용자 전환</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">고정키 사용</translation>
@@ -1885,6 +1886,7 @@
 <translation id="1346104802985271895">베트남어 입력 방법(TELEX)</translation>
 <translation id="7896906914454843592">영어(미국식) 확장 키보드</translation>
 <translation id="2242603986093373032">기기 없음</translation>
+<translation id="7423098979219808738">우선 확인</translation>
 <translation id="5889282057229379085">중간 인증기관(CA)의 최대 개수: <ph name="NUM_INTERMEDIATE_CA"/>개</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME"/>에서 <ph name="VOLUME_NAME"/>에 액세스하려고 합니다. 내 파일을 수정하거나 삭제할 수 있습니다.</translation>
 <translation id="3180365125572747493">이 인증서 파일을 암호화하려면 비밀번호를 입력하세요.</translation>
@@ -2404,7 +2406,6 @@
 <translation id="7193047015510747410">자동완성 동기화 사용자 인증 정보</translation>
 <translation id="7257173066616499747">Wi-Fi 네트워크</translation>
 <translation id="6199801702437275229">공간 정보를 기다리는 중...</translation>
-<translation id="2767649238005085901">앞으로 이동하려면 Enter 키를 누르고, 기록을 보려면 컨텍스트 메뉴 키를 누릅니다.</translation>
 <translation id="6124650939968185064">이 확장 프로그램에 종속되는 확장 프로그램:</translation>
 <translation id="8580634710208701824">프레임 새로고침</translation>
 <translation id="1018656279737460067">취소됨</translation>
@@ -2903,7 +2904,7 @@
 <translation id="3893977120523121937">모든 플러그인 콘텐츠 실행</translation>
 <translation id="2853916256216444076">$1 동영상</translation>
 <translation id="363903084947548957">다음 입력 방법</translation>
-<translation id="1226375067743171974">머티리얼 디자인을 위한 실험적 터치 피드백 애니메이션입니다.</translation>
+<translation id="1226375067743171974">머티리얼 디자인의 테스트용 터치 피드백 애니메이션입니다.</translation>
 <translation id="2208158072373999562">Zip 아카이브</translation>
 <translation id="2756798847867733934">SIM 카드 사용 안 함</translation>
 <translation id="8054921503121346576">USB 키보드 연결됨</translation>
@@ -3092,7 +3093,7 @@
 <translation id="3391716558283801616">탭 7</translation>
 <translation id="4278390842282768270">허용됨</translation>
 <translation id="8241868517363889229">북마크 조회 및 변경</translation>
-<translation id="8829200696513164231">사용 설정된 경우 시스템 메모리가 부족하면 탭이 메모리에서 삭제됩니다. 삭제된 탭은 여전히 탭 표시줄에 표시되며 클릭하면 새로고침됩니다.</translation>
+<translation id="8829200696513164231">사용 시 시스템 메모리가 부족하면 탭이 메모리에서 삭제됩니다. 삭제된 후에도 탭 표시줄에 계속 표시되며 클릭하면 새로고침됩니다.</translation>
 <translation id="2074527029802029717">탭 고정 해제</translation>
 <translation id="1533897085022183721"><ph name="MINUTES"/> 미만 남았습니다.</translation>
 <translation id="7382160026931194400">저장된 |콘텐츠 설정| 및 #검색 엔진#은 삭제되지 않으며 웹 탐색의 흔적이 남을 수 있습니다.</translation>
@@ -3181,7 +3182,6 @@
 <translation id="725387188884494207">이 사용자를 삭제하고 관련된 모든 데이터를 이 컴퓨터에서 삭제하시겠습니까? 실행 후 취소할 수 없습니다.</translation>
 <translation id="3531250013160506608">비밀번호 입력란</translation>
 <translation id="2169062631698640254">로그인</translation>
-<translation id="506228266759207354">다른 기기의 탭 액세스에 필요한 새 탭 페이지 메뉴를 사용 중지합니다.</translation>
 <translation id="2478076885740497414">앱 설치</translation>
 <translation id="1781502536226964113">새 탭 페이지 열기</translation>
 <translation id="765676359832457558">고급 설정 숨기기</translation>
@@ -3798,6 +3798,7 @@
 <translation id="4613271546271159013">새 탭을 열면 표시되는 페이지가 확장 프로그램에 의해 변경되었습니다.</translation>
 <translation id="3378630551672149129">로그인하고 탭 키를 눌러 입력 요소와 상호작용</translation>
 <translation id="351152300840026870">고정폭 글꼴</translation>
+<translation id="2476578072172137802">사이트 설정</translation>
 <translation id="4301786491084298653"><ph name="DOMAIN"/>에서 사용 중지</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="3057592184182562878">파일 관리자에서 MTP 기기를 파일 저장소로 표시합니다.</translation>
@@ -4035,7 +4036,7 @@
 <translation id="2028531481946156667">포맷을 시작하지 못했습니다.</translation>
 <translation id="6139064580472999710">네임스페이스 샌드박스</translation>
 <translation id="7439964298085099379">고대비 모드를 사용하도록 설정했습니다. 고대비 확장 프로그램과 다크 테마를 설치하시겠습니까?</translation>
-<translation id="7457232995997878302">자동완성 추천 검색어에 대해 접두어보다는 하위 문자열(토큰 접두어)을 기반으로 일치를 확인합니다.</translation>
+<translation id="7457232995997878302">자동완성 추천 검색어에서 접두어만 기반으로 하기 보다는 부분 문자열(토큰 접두어)을 기반으로 합니다.</translation>
 <translation id="6640442327198413730">캐시에 없음</translation>
 <translation id="3788401245189148511">이전에 가능했던 대상:</translation>
 <translation id="8926518602592448999">개발자 모드 확장 프로그램 사용 중지</translation>
@@ -4054,7 +4055,7 @@
 <translation id="1810107444790159527">목록 상자</translation>
 <translation id="3338239663705455570">슬로베니아어 키보드</translation>
 <translation id="4871370605780490696">북마크 추가</translation>
-<translation id="5752162773804266219"><ph name="DEVICE_TYPE"/>이(가) 반응하고 안정적이고 쉽게 음성 검색에 액세스하는 데 도움이 되도록 Google에 내 음성을 등록해야 합니다.</translation>
+<translation id="5752162773804266219"><ph name="DEVICE_TYPE"/>이(가) 내 음성에 반응하고 안정적이고 쉽게 음성 검색에 액세스할 수 있도록 Google에 내 음성을 등록해야 합니다.</translation>
 <translation id="6136253676302684829">이 설정을 제어하는 프로그램:</translation>
 <translation id="1859234291848436338">쓰기 방향</translation>
 <translation id="5038625366300922036">더보기...</translation>
@@ -5464,6 +5465,7 @@
 <translation id="1936717151811561466">핀란드어</translation>
 <translation id="4681930562518940301">새 탭에서 원본 이미지 열기</translation>
 <translation id="7088418943933034707">인증서 관리...</translation>
+<translation id="6295158916970320988">모든 사이트</translation>
 <translation id="497421865427891073">앞으로 이동</translation>
 <translation id="2453576648990281505">이미 존재하는 파일입니다.</translation>
 <translation id="6972929256216826630">모든 사이트에서 여러 파일을 자동으로 다운로드하도록 허용</translation>
@@ -5584,7 +5586,7 @@
 <translation id="17513872634828108">열린 탭</translation>
 <translation id="1374468813861204354">제안사항</translation>
 <translation id="5906065664303289925">하드웨어 주소:</translation>
-<translation id="1772267994638363865">이렇게 하려면 음성 및 오디오 활동을 사용 설정하고 <ph name="DEVICE_TYPE"/>을(를) 다음 단계에 따라 등록해야 합니다.</translation>
+<translation id="1772267994638363865">이렇게 하려면 음성 및 오디오 활동을 사용 설정하고 다음 단계에 따라 <ph name="DEVICE_TYPE"/>에 음성을 등록해야 합니다.</translation>
 <translation id="2498436043474441766">프린터 추가</translation>
 <translation id="1190144681599273207">이 파일을 가져오는 데 약 <ph name="FILE_SIZE"/>의 모바일 데이터가 사용됩니다.</translation>
 <translation id="3537613974805087699">추천검색어 없음</translation>
@@ -5906,7 +5908,7 @@
 <translation id="3813984289128269159">Ok Google</translation>
 <translation id="417475959318757854">앱 런처 중앙 배치</translation>
 <translation id="4543733025292526486">Esc</translation>
-<translation id="4221832029456688531">자동완성 추천 검색어에 대한 하위 문자열 일치</translation>
+<translation id="4221832029456688531">자동완성 추천 검색어에서 하위 문자열 일치 사용</translation>
 <translation id="3077734595579995578">Shift</translation>
 <translation id="2966459079597787514">스웨덴어 키보드</translation>
 <translation id="5218183485292899140">프랑스어(스위스)</translation>
