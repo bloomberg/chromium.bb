@@ -322,7 +322,7 @@ void LayoutTableSection::distributeExtraRowSpanHeightToPercentRows(LayoutTableCe
                 // FIXME: Note that this is wrong if we have a percentage above 100% and may make us grow
                 // above the available space.
 
-                toAdd = std::min(toAdd, extraRowSpanningHeight);
+                toAdd = std::max(std::min(toAdd, extraRowSpanningHeight), 0);
                 accumulatedPositionIncrease += toAdd;
                 extraRowSpanningHeight -= toAdd;
                 percent -= m_grid[row].logicalHeight.percent();
