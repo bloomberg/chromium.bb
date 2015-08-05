@@ -55,6 +55,13 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // value.
   virtual bool GetEstimate(NetworkQuality* median) const;
 
+  // Returns true if RTT is available and sets |rtt| to estimated RTT.
+  bool GetRTTEstimate(base::TimeDelta* rtt) const;
+
+  // Returns true if downlink throughput is available and sets |kbps| to
+  // estimated downlink throughput (in Kilobits per second).
+  bool GetDownlinkThroughputKbpsEstimate(int32_t* kbps) const;
+
   // Notifies NetworkQualityEstimator that a response has been received.
   // |cumulative_prefilter_bytes_read| is the count of the bytes received prior
   // to applying filters (e.g. decompression, SDCH) from request creation time
@@ -296,7 +303,9 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // |percentile| is 90, then the network is expected to be faster than the
   // returned estimate with 0.9 probability. Similarly, network is expected to
   // be slower than the returned estimate with 0.1 probability.
-  NetworkQuality GetEstimate(int percentile) const;
+  NetworkQuality GetEstimateInternal(int percentile) const;
+  base::TimeDelta GetRTTEstimateInternal(int percentile) const;
+  int32_t GetDownlinkThroughputKbpsEstimateInternal(int percentile) const;
 
   // Returns the current network ID checking by calling the platform APIs.
   // Virtualized for testing.

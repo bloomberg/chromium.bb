@@ -444,7 +444,7 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
     // Add the remaining percentile values.
     static const int kPercentiles[] = {0, 10, 90, 100};
     for (size_t i = 0; i < arraysize(kPercentiles); ++i) {
-      network_quality = GetEstimate(kPercentiles[i]);
+      network_quality = GetEstimateInternal(kPercentiles[i]);
 
       rtt_percentile = GetHistogram(
           "RTT.Percentile" + base::IntToString(kPercentiles[i]) + ".",
@@ -481,7 +481,26 @@ bool NetworkQualityEstimator::GetEstimate(NetworkQuality* median) const {
     *median = NetworkQuality();
     return false;
   }
-  *median = GetEstimate(50);
+  *median = GetEstimateInternal(50);
+  return true;
+}
+
+bool NetworkQualityEstimator::GetRTTEstimate(base::TimeDelta* rtt) const {
+  if (rtt_msec_observations_.Size() == 0) {
+    *rtt = NetworkQuality::InvalidRTT();
+    return false;
+  }
+  *rtt = GetRTTEstimateInternal(50);
+  return true;
+}
+
+bool NetworkQualityEstimator::GetDownlinkThroughputKbpsEstimate(
+    int32_t* kbps) const {
+  if (kbps_observations_.Size() == 0) {
+    *kbps = NetworkQuality::kInvalidThroughput;
+    return false;
+  }
+  *kbps = GetDownlinkThroughputKbpsEstimateInternal(50);
   return true;
 }
 
@@ -529,20 +548,41 @@ void NetworkQualityEstimator::ObservationBuffer::Clear() {
   DCHECK(observations_.empty());
 }
 
-NetworkQuality NetworkQualityEstimator::GetEstimate(int percentile) const {
+NetworkQuality NetworkQualityEstimator::GetEstimateInternal(
+    int percentile) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GE(percentile, 0);
   DCHECK_LE(percentile, 100);
   DCHECK_GT(kbps_observations_.Size(), 0U);
   DCHECK_GT(rtt_msec_observations_.Size(), 0U);
 
+  return NetworkQuality(GetRTTEstimateInternal(percentile),
+                        GetDownlinkThroughputKbpsEstimateInternal(percentile));
+}
+
+base::TimeDelta NetworkQualityEstimator::GetRTTEstimateInternal(
+    int percentile) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_GE(percentile, 0);
+  DCHECK_LE(percentile, 100);
+  DCHECK_GT(rtt_msec_observations_.Size(), 0U);
+
   // RTT observations are sorted by duration from shortest to longest, thus
   // a higher percentile RTT will have a longer RTT than a lower percentile.
+  return base::TimeDelta::FromMilliseconds(
+      rtt_msec_observations_.GetPercentile(percentile));
+}
+
+int32_t NetworkQualityEstimator::GetDownlinkThroughputKbpsEstimateInternal(
+    int percentile) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_GE(percentile, 0);
+  DCHECK_LE(percentile, 100);
+  DCHECK_GT(kbps_observations_.Size(), 0U);
+
   // Throughput observations are sorted by kbps from slowest to fastest,
   // thus a higher percentile throughput will be faster than a lower one.
-  return NetworkQuality(base::TimeDelta::FromMilliseconds(
-                            rtt_msec_observations_.GetPercentile(percentile)),
-                        kbps_observations_.GetPercentile(100 - percentile));
+  return kbps_observations_.GetPercentile(100 - percentile);
 }
 
 void NetworkQualityEstimator::ObservationBuffer::ComputeWeightedObservations(
