@@ -5,6 +5,7 @@
 #include "content/browser/appcache/appcache_group.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -72,8 +73,7 @@ AppCacheGroup::~AppCacheGroup() {
 void AppCacheGroup::AddUpdateObserver(UpdateObserver* observer) {
   // If observer being added is a host that has been queued for later update,
   // add observer to a different observer list.
-  AppCacheHost* host = static_cast<AppCacheHost*>(observer);
-  if (queued_updates_.find(host) != queued_updates_.end())
+  if (queued_updates_.find(observer) != queued_updates_.end())
     queued_observers_.AddObserver(observer);
   else
     observers_.AddObserver(observer);
@@ -183,7 +183,8 @@ void AppCacheGroup::CancelUpdate() {
 void AppCacheGroup::QueueUpdate(AppCacheHost* host,
                                 const GURL& new_master_resource) {
   DCHECK(update_job_ && host && !new_master_resource.is_empty());
-  queued_updates_.insert(QueuedUpdates::value_type(host, new_master_resource));
+  queued_updates_.insert(QueuedUpdates::value_type(
+      host, std::make_pair(host, new_master_resource)));
 
   // Need to know when host is destroyed.
   host->AddObserver(host_observer_.get());
@@ -209,7 +210,7 @@ void AppCacheGroup::RunQueuedUpdates() {
 
   for (QueuedUpdates::iterator it = updates_to_run.begin();
        it != updates_to_run.end(); ++it) {
-    AppCacheHost* host = it->first;
+    AppCacheHost* host = it->second.first;
     host->RemoveObserver(host_observer_.get());
     if (FindObserver(host, queued_observers_)) {
       queued_observers_.RemoveObserver(host);
@@ -217,7 +218,7 @@ void AppCacheGroup::RunQueuedUpdates() {
     }
 
     if (!is_obsolete() && !is_being_deleted())
-      StartUpdateWithNewMasterEntry(host, it->second);
+      StartUpdateWithNewMasterEntry(host, it->second.second);
   }
 }
 

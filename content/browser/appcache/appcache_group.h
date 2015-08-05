@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_GROUP_H_
 
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/cancelable_callback.h"
@@ -119,7 +120,8 @@ class CONTENT_EXPORT AppCacheGroup
   ~AppCacheGroup();
 
   typedef std::vector<AppCache*> Caches;
-  typedef std::map<AppCacheHost*, GURL> QueuedUpdates;
+  typedef std::map<UpdateObserver*, std::pair<AppCacheHost*, GURL>>
+      QueuedUpdates;
 
   static const int kUpdateRestartDelayMs = 1000;
 
