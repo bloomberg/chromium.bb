@@ -5672,6 +5672,54 @@ TEST(HeapTest, RecursiveMutex)
     RecursiveLockingTester::test();
 }
 
+class CrossThreadPersistentOnMainThreadTester {
+public:
+    static void test()
+    {
+        MutexLocker locker(mainThreadMutex());
+        OwnPtr<WebThread> workerThread = adoptPtr(Platform::current()->createThread("Test Worker Thread"));
+        workerThread->postTask(FROM_HERE, new Task(threadSafeBind(workerThreadMain)));
+
+        parkMainThread();
+
+        // (Temporarily) detach main thread and wake the worker thread, so that it
+        // can do its detach().
+        ThreadState::detachMainThread();
+        wakeWorkerThread();
+
+        parkMainThread();
+        ThreadState::attachMainThread();
+    }
+
+private:
+
+    static void workerThreadMain()
+    {
+        MutexLocker locker(workerThreadMutex());
+
+        // Start up a worker thread and have it detach after the main thread has.
+        // Do this to verify that CrossThreadPersistent<>s referring to objects
+        // on one of the main thread's heaps does not upset the CTP invalidation
+        // pass that ThreadState::detach() performs.
+        ThreadState::attach();
+
+        CrossThreadPersistent<IntWrapper> persistent(IntWrapper::create(43));
+
+        // Wait for the main thread to detach.
+        wakeMainThread();
+        parkWorkerThread();
+
+        ThreadState::detach();
+        wakeMainThread();
+    }
+};
+
+TEST(HeapTest, CrossThreadPersistentOnMainThread)
+{
+    CrossThreadPersistent<IntWrapper> persistent(IntWrapper::create(42));
+    CrossThreadPersistentOnMainThreadTester::test();
+}
+
 template<typename T>
 class TraceIfNeededTester : public GarbageCollectedFinalized<TraceIfNeededTester<T>> {
 public:

@@ -119,6 +119,10 @@ void CrossThreadPersistentRegion::prepareForThreadStateTermination(ThreadState* 
                 continue;
             BasePage* page = pageFromObject(rawObject);
             ASSERT(page);
+            // The main thread will upon detach just mark its heap pages as orphaned,
+            // but not invalidate its CrossThreadPersistent<>s.
+            if (page->orphaned())
+                continue;
             if (page->heap()->threadState() == threadState)
                 persistent->clear();
         }
