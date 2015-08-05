@@ -124,6 +124,7 @@
       'Timer.cpp',
       'Timer.h',
       'TraceEvent.h',
+      'TraceEventCommon.h',
       'TracedValue.cpp',
       'TracedValue.h',
       'UUID.cpp',
