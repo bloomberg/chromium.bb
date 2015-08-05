@@ -33,12 +33,9 @@ public:
     ~TestPopupMenuClient() override { }
 
     void valueChanged(unsigned listIndex, bool fireEvents = true) override { }
-    LayoutUnit clientPaddingLeft() const override { return 0; }
-    LayoutUnit clientPaddingRight() const override { return 0; }
     void popupDidHide() override { }
     void popupDidCancel() override { }
     void provisionalSelectionChanged(unsigned listIndex) override { }
-    IntRect elementRectRelativeToViewport() const override { return IntRect(); }
     HTMLSelectElement& ownerElement() const override { return *m_ownerElement; }
 
     void setOwnerElement(PassRefPtrWillBeRawPtr<HTMLSelectElement> element) { m_ownerElement = element; }

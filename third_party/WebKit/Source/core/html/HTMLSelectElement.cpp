@@ -1816,4 +1816,27 @@ const ComputedStyle* HTMLSelectElement::itemComputedStyle(Element& element) cons
     return element.computedStyle() ? element.computedStyle() : element.ensureComputedStyle();
 }
 
+IntRect HTMLSelectElement::elementRectRelativeToViewport() const
+{
+    if (!layoutObject())
+        return IntRect();
+    // We don't use absoluteBoundingBoxRect() because it can return an IntRect
+    // larger the actual size by 1px.
+    return document().view()->contentsToViewport(roundedIntRect(layoutObject()->absoluteBoundingBoxFloatRect()));
+}
+
+LayoutUnit HTMLSelectElement::clientPaddingLeft() const
+{
+    if (layoutObject() && layoutObject()->isMenuList())
+        return toLayoutMenuList(layoutObject())->clientPaddingLeft();
+    return 0;
+}
+
+LayoutUnit HTMLSelectElement::clientPaddingRight() const
+{
+    if (layoutObject() && layoutObject()->isMenuList())
+        return toLayoutMenuList(layoutObject())->clientPaddingRight();
+    return 0;
+}
+
 } // namespace blink

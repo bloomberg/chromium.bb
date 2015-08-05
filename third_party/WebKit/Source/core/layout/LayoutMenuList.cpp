@@ -378,13 +378,6 @@ void LayoutMenuList::valueChanged(unsigned listIndex, bool fireOnChange)
     select->optionSelectedByUser(select->listToOptionIndex(listIndex), fireOnChange);
 }
 
-IntRect LayoutMenuList::elementRectRelativeToViewport() const
-{
-    // We don't use absoluteBoundingBoxRect() because it can return an IntRect
-    // larger the actual size by 1px.
-    return selectElement()->document().view()->contentsToViewport(roundedIntRect(absoluteBoundingBoxFloatRect()));
-}
-
 HTMLSelectElement& LayoutMenuList::ownerElement() const
 {
     return *selectElement();

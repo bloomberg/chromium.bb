@@ -53,6 +53,9 @@ public:
 
     const char* name() const override { return "LayoutMenuList"; }
 
+    LayoutUnit clientPaddingLeft() const;
+    LayoutUnit clientPaddingRight() const;
+
 protected:
     void willBeDestroyed() override;
 
@@ -77,12 +80,9 @@ private:
 
     // PopupMenuClient methods
     void valueChanged(unsigned listIndex, bool fireOnChange = true) override;
-    LayoutUnit clientPaddingLeft() const override;
-    LayoutUnit clientPaddingRight() const override;
     void popupDidHide() override;
     void popupDidCancel() override;
     void provisionalSelectionChanged(unsigned) override;
-    IntRect elementRectRelativeToViewport() const override;
     HTMLSelectElement& ownerElement() const override;
 
     bool hasLineIfEmpty() const override { return true; }
@@ -121,9 +121,6 @@ private:
 
     RefPtrWillBePersistent<PopupMenu> m_popup;
     int m_indexToSelectOnCancel;
-
-    // TODO(tkent): Use FRIEND_TEST macro provided by gtest_prod.h
-    friend class LayoutMenuListTest_ElementRectRelativeToViewport_Test;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMenuList, isMenuList());

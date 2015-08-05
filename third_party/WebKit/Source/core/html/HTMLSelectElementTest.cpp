@@ -101,4 +101,14 @@ TEST_F(HTMLSelectElementTest, SaveRestoreSelectMultipleFormControlState)
     EXPECT_TRUE(opt3->selected());
 }
 
+TEST_F(HTMLSelectElementTest, ElementRectRelativeToViewport)
+{
+    document().documentElement()->setInnerHTML("<select style='position:fixed; top:12.3px; height:24px; -webkit-appearance:none;'><option>o1</select>", ASSERT_NO_EXCEPTION);
+    document().view()->updateAllLifecyclePhases();
+    HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+    ASSERT(select);
+    IntRect bounds = select->elementRectRelativeToViewport();
+    EXPECT_EQ(24, bounds.height());
+}
+
 } // namespace blink

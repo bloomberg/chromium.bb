@@ -134,6 +134,11 @@ public:
     // itemComputedStyle() returns nullptr only if the owner Document is not
     // active.  So, It returns a valid object when we open a popup.
     const ComputedStyle* itemComputedStyle(Element&) const;
+    IntRect elementRectRelativeToViewport() const;
+    // Text starting offset in LTR.
+    LayoutUnit clientPaddingLeft() const;
+    // Text starting offset in RTL.
+    LayoutUnit clientPaddingRight() const;
 
     DECLARE_VIRTUAL_TRACE();
 

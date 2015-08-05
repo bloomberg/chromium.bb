@@ -256,14 +256,14 @@ IntSize PopupMenuImpl::contentSize()
 
 void PopupMenuImpl::writeDocument(SharedBuffer* data)
 {
-    IntRect anchorRectInScreen = m_chromeClient->viewportToScreen(m_client->elementRectRelativeToViewport());
+    HTMLSelectElement& ownerElement = m_client->ownerElement();
+    IntRect anchorRectInScreen = m_chromeClient->viewportToScreen(ownerElement.elementRectRelativeToViewport());
 
     PagePopupClient::addString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
     data->append(Platform::current()->loadResource("pickerCommon.css"));
     data->append(Platform::current()->loadResource("listPicker.css"));
     PagePopupClient::addString("</style></head><body><div id=main>Loading...</div><script>\n"
         "window.dialogArguments = {\n", data);
-    HTMLSelectElement& ownerElement = m_client->ownerElement();
     addProperty("selectedIndex", ownerElement.optionToListIndex(ownerElement.selectedIndex()), data);
     const ComputedStyle* ownerStyle = ownerElement.computedStyle();
     ItemIterationContext context(*ownerStyle, data);
@@ -287,7 +287,7 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
     addProperty("anchorRectInScreen", anchorRectInScreen, data);
     bool isRTL = !ownerStyle->isLeftToRightDirection();
     addProperty("isRTL", isRTL, data);
-    addProperty("paddingStart", isRTL ? m_client->clientPaddingRight().toDouble() : m_client->clientPaddingLeft().toDouble(), data);
+    addProperty("paddingStart", isRTL ? ownerElement.clientPaddingRight().toDouble() : ownerElement.clientPaddingLeft().toDouble(), data);
     PagePopupClient::addString("};\n", data);
     data->append(Platform::current()->loadResource("pickerCommon.js"));
     data->append(Platform::current()->loadResource("listPicker.js"));
