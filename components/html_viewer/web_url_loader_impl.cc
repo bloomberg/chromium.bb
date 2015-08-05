@@ -11,6 +11,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/html_viewer/blink_url_request_type_converters.h"
 #include "mojo/common/common_type_converters.h"
+#include "mojo/common/data_pipe_utils.h"
 #include "mojo/common/url_type_converters.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "net/base/net_errors.h"
@@ -90,8 +91,25 @@ void WebURLLoaderImpl::loadSynchronously(
     blink::WebURLResponse& response,
     blink::WebURLError& error,
     blink::WebData& data) {
-  NOTIMPLEMENTED();
-  error.reason = net::ERR_NOT_IMPLEMENTED;
+  mojo::URLRequestPtr url_request = mojo::URLRequest::From(request);
+  url_request->auto_follow_redirects = true;
+  URLResponsePtr url_response;
+  url_loader_->Start(url_request.Pass(),
+                     [&url_response](URLResponsePtr url_response_result) {
+                        url_response = url_response_result.Pass();
+                     });
+  url_loader_.WaitForIncomingResponse();
+  if (url_response->error) {
+    error.domain = WebString::fromUTF8(net::kErrorDomain);
+    error.reason = url_response->error->code;
+    error.unreachableURL = GURL(url_response->url);
+    return;
+  }
+
+  response = ToWebURLResponse(url_response);
+  std::string body;
+  mojo::common::BlockingCopyToString(url_response->body.Pass(), &body);
+  data.assign(body.data(), body.length());
 }
 
 void WebURLLoaderImpl::loadAsynchronously(const blink::WebURLRequest& request,
