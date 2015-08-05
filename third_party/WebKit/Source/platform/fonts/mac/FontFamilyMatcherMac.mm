@@ -36,9 +36,6 @@
 #import <wtf/HashSet.h>
 #import <wtf/text/AtomicStringHash.h>
 
-#include "platform/fonts/FontTraits.h"
-#include "platform/LayoutTestSupport.h"
-
 namespace blink {
 
 const NSFontTraitMask SYNTHESIZED_FONT_TRAITS = (NSBoldFontMask | NSItalicFontMask);
@@ -101,37 +98,11 @@ static BOOL betterChoice(NSFontTraitMask desiredTraits, int desiredWeight,
     return candidateWeightDeltaMagnitude < chosenWeightDeltaMagnitude;
 }
 
-#ifndef NSAppKitVersionNumber10_9
-#define NSAppKitVersionNumber10_9 1265
-#endif
-
 // Family name is somewhat of a misnomer here.  We first attempt to find an exact match
 // comparing the desiredFamily to the PostScript name of the installed fonts.  If that fails
 // we then do a search based on the family names of the installed fonts.
 NSFont* MatchNSFontFamily(NSString* desiredFamily, NSFontTraitMask desiredTraits, int desiredWeight, float size)
 {
-    if ([desiredFamily isEqualToString:@"BlinkMacSystemFont"]) {
-        // On OSX 10.9, the default system font depends on the SDK version. When
-        // compiled against the OSX 10.10 SDK, the font is .LucidaGrandeUI. When
-        // compiled against the OSX 10.6 SDK, the font is Lucida Grande. Layout
-        // tests don't support different expectations based on the SDK version,
-        // so force layout tests to use "Lucida Grande". Once the 10.10 SDK
-        // switch is made, this should be changed to return .LucidaGrandeUI and
-        // the Layout Expectations should be updated. http://crbug.com/515836.
-        if (LayoutTestSupport::isRunningLayoutTest() && floor(NSAppKitVersionNumber) == NSAppKitVersionNumber10_9) {
-            if (desiredWeight >= blink::FontWeightBold)
-                return [NSFont fontWithName:@"Lucida Grande Bold" size:size];
-            else
-                return [NSFont fontWithName:@"Lucida Grande" size:size];
-        }
-        else {
-            if (desiredWeight >= blink::FontWeightBold)
-                return [NSFont boldSystemFontOfSize:size];
-            else
-                return [NSFont systemFontOfSize:size];
-        }
-    }
-
     NSFontManager *fontManager = [NSFontManager sharedFontManager];
 
     // Do a simple case insensitive search for a matching font family.
