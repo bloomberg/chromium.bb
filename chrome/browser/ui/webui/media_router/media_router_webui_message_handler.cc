@@ -230,9 +230,7 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
 
   scoped_ptr<base::ListValue> cast_modes(CastModesToValue(
       media_router_ui->cast_modes(),
-      // TODO(imcheng): Use media_router_ui->source_host() once DEFAULT mode
-      // is upstreamed.
-      std::string()));
+      media_router_ui->GetFrameURLHost()));
   initial_data.Set("castModes", cast_modes.release());
 
   initial_data.SetString("routeProviderExtensionId",

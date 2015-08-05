@@ -6,6 +6,11 @@
   color: rgb(33, 150, 243);
 }
 
+#cast-mode-list {
+  padding-bottom: 8px;
+  padding-top: 8px;
+}
+
 #container-header.cast-mode-list {
   background-color: rgb(0, 150, 136);
 }
@@ -70,6 +75,13 @@ paper-menu {
 #searching-devices-spinner {
   height: 30px;
   width: 30px;
+}
+
+#share-screen-text {
+  -webkit-padding-start: 20px;
+  color: rgb(150, 150, 150);
+  padding-bottom: 8px;
+  padding-top: 8px;
 }
 
 .sink-content {

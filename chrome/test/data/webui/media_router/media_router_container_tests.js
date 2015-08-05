@@ -25,6 +25,12 @@ cr.define('media_router_container', function() {
       var fakeCastModeList = [];
 
       /**
+       * The list of CastModes to show with non-default modes only.
+       * @type {!Array<!media_router.CastMode>}
+       */
+      var fakeCastModeListWithNonDefaultModesOnly = [];
+
+      /**
        * The blocking issue to show.
        * @type {?media_router.Issue}
        */
@@ -113,9 +119,16 @@ cr.define('media_router_container', function() {
 
         // Initialize local variables.
         fakeCastModeList = [
-          new media_router.CastMode(1, 'Cast Mode 1', 'Description 1'),
-          new media_router.CastMode(2, 'Cast Mode 2', 'Description 2'),
-          new media_router.CastMode(3, 'Cast Mode 3', 'Description 3'),
+          new media_router.CastMode(0, 'Cast Mode 0', 'Description 0',
+              'google.com'),
+          new media_router.CastMode(1, 'Cast Mode 1', 'Description 1', null),
+          new media_router.CastMode(2, 'Cast Mode 2', 'Description 2', null),
+        ];
+
+        fakeCastModeListWithNonDefaultModesOnly = [
+          new media_router.CastMode(1, 'Cast Mode 1', 'Description 1', null),
+          new media_router.CastMode(2, 'Cast Mode 2', 'Description 2', null),
+          new media_router.CastMode(3, 'Cast Mode 3', 'Description 3', null),
         ];
 
         fakeRouteList = [
@@ -202,7 +215,7 @@ cr.define('media_router_container', function() {
       // Tests that |container| returns to SINK_LIST view and arrow drop icon
       // toggles after a cast mode is selected.
       test('select cast mode', function(done) {
-        container.castModeList = fakeCastModeList;
+        container.castModeList = fakeCastModeListWithNonDefaultModesOnly;
 
         MockInteractions.tap(container.$['arrow-drop-icon']);
         checkArrowDropIcon(container.CONTAINER_VIEW_.CAST_MODE_LIST);
@@ -247,7 +260,7 @@ cr.define('media_router_container', function() {
       });
 
       // Tests the header text. Choosing a cast mode updates the header text.
-      test('header text', function(done) {
+      test('header text with no default cast modes', function(done) {
         checkElementTextWithId(loadTimeData.getString('selectCastModeHeader'),
             'cast-mode-header-text');
 
@@ -257,6 +270,30 @@ cr.define('media_router_container', function() {
 
         // Set the cast mode list to update the header text when one is
         // selected.
+        container.castModeList = fakeCastModeListWithNonDefaultModesOnly;
+
+        setTimeout(function() {
+          var castModeList =
+              container.$['cast-mode-list'].querySelectorAll('paper-item');
+
+          for (var i = 0; i < fakeCastModeListWithNonDefaultModesOnly.length;
+              i++) {
+            MockInteractions.tap(castModeList[i]);
+            checkElementTextWithId(
+                fakeCastModeListWithNonDefaultModesOnly[i].description,
+                'sink-list-header-text');
+            checkElementText(
+                fakeCastModeListWithNonDefaultModesOnly[i].description,
+                castModeList[i]);
+          }
+
+          done();
+        });
+      });
+
+      // Tests the header text when updated with a cast mode list with a mix of
+      // default and non-default cast modes.
+      test('cast modes with one default mode', function(done) {
         container.castModeList = fakeCastModeList;
 
         setTimeout(function() {
@@ -265,10 +302,19 @@ cr.define('media_router_container', function() {
 
           for (var i = 0; i < fakeCastModeList.length; i++) {
             MockInteractions.tap(castModeList[i]);
-            checkElementTextWithId(fakeCastModeList[i].description,
-                'sink-list-header-text');
-            checkElementText(fakeCastModeList[i].description, castModeList[i]);
+            if (fakeCastModeList[i].type == media_router.CastModeType.DEFAULT) {
+              checkElementTextWithId(fakeCastModeList[i].description,
+                  'sink-list-header-text');
+              checkElementText(fakeCastModeList[i].host,
+                  castModeList[i]);
+            } else {
+              checkElementTextWithId(fakeCastModeList[i].description,
+                  'sink-list-header-text');
+              checkElementText(fakeCastModeList[i].description,
+                  castModeList[i]);
+            }
           }
+
           done();
         });
       });

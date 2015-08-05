@@ -86,6 +86,9 @@
   <structure name="IDR_POLYMER_1_0_IRON_ICON_IRON_ICON_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/iron-icon/iron-icon.html"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_IRON_ICONS_AV_ICONS_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/iron-icons/av-icons.html"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_IRON_ICONS_COMMUNICATION_ICONS_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/iron-icons/communication-icons.html"
              type="chrome_html" />

@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/av-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/hardware-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
@@ -34,13 +35,22 @@
     </issue-banner>
     <paper-menu id="cast-mode-list"
         hidden$="[[computeCastModeHidden_(currentView_)]]">
-      <template is="dom-repeat" id="castModeList" items="[[castModeList]]">
+      <template is="dom-repeat" id="defaultCastModeList"
+          items="[[computeDefaultCastModeList_(castModeList)]]">
         <paper-item class="cast-mode" on-click="onCastModeClick_">
-          <!-- TODO(apacible): Show icon based on cast mode. -->
-          <iron-icon icon="tab"></iron-icon>
-          <div>
-            <span>[[item.description]]</span>
-          </div>
+          <iron-icon icon="[[computeCastModeIcon_(item)]]"></iron-icon>
+          <div><span>[[item.host]]</span></div>
+        </paper-item>
+      </template>
+      <div id="share-screen-text"
+          hidden$="[[computeShareScreenSubheadingHidden_(castModeList)]]">
+        <span>[[shareYourScreenSubheadingText_]]</span>
+      </div>
+      <template is="dom-repeat" id="nonDefaultCastModeList"
+          items="[[computeNonDefaultCastModeList_(castModeList)]]">
+        <paper-item class="cast-mode" on-click="onCastModeClick_">
+          <iron-icon icon="[[computeCastModeIcon_(item)]]"></iron-icon>
+          <div><span>[[item.description]]</span></div>
         </paper-item>
       </template>
     </paper-menu>

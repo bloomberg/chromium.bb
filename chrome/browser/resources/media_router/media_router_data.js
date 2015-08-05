@@ -8,6 +8,16 @@ cr.define('media_router', function() {
   'use strict';
 
   /**
+   * This corresponds to the C++ MediaCastMode.
+   * @enum {number}
+   */
+  var CastModeType = {
+    DEFAULT: 0,
+    TAB_MIRROR: 1,
+    DESKTOP_MIRROR: 2,
+  };
+
+  /**
    * @enum {string}
    */
   var SinkStatus = {
@@ -18,8 +28,7 @@ cr.define('media_router', function() {
 
 
   /**
-   * @param {number} type The type of cast mode. This corresponds to the
-   *   C++ MediaCastMode.
+   * @param {media_router.CastModeType} type The type of cast mode.
    * @param {string} title The title of the cast mode.
    * @param {string} description The description of the cast mode.
    * @param {string} host The hostname of the site to cast.
@@ -155,6 +164,7 @@ cr.define('media_router', function() {
   };
 
   return {
+    CastModeType: CastModeType,
     SinkStatus: SinkStatus,
     CastMode: CastMode,
     Issue: Issue,

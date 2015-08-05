@@ -161,6 +161,15 @@ Polymer({
     },
 
     /**
+     * The subheading text for the non-cast-enabled app cast mode list.
+     * @private {string}
+     */
+    shareYourScreenSubheadingText_: {
+      type: String,
+      value: loadTimeData.getString('shareYourScreenSubheading'),
+    },
+
+    /**
      * The list of available sinks.
      * @type {!Array<!media_router.Sink>}
      */
@@ -248,6 +257,40 @@ Polymer({
   },
 
   /**
+   * @param {!media_router.CastMode} castMode The cast mode to determine an
+   *     icon for.
+   * @return {string} The Polymer <iron-icon> icon to use. The format is
+   *     <iconset>:<icon>, where <iconset> is the set ID and <icon> is the name
+   *     of the icon. <iconset>: may be ommitted if <icon> is from the default
+   *     set.
+   * @private
+   */
+  computeCastModeIcon_: function(castMode) {
+    switch (castMode.type) {
+      case media_router.CastModeType.DEFAULT:
+        return 'av:web';
+      case media_router.CastModeType.TAB_MIRROR:
+        return 'tab';
+      case media_router.CastModeType.DESKTOP_MIRROR:
+        return 'hardware:laptop';
+      default:
+        return '';
+    }
+  },
+
+  /**
+   * @param {!Array<!media_router.CastMode>} castModeList The current list of
+   *      cast modes.
+   * @return {!Array<!media_router.CastMode>} The list of default cast modes.
+   * @private
+   */
+  computeDefaultCastModeList_: function(castModeList) {
+    return castModeList.filter(function(mode) {
+      return mode.type == media_router.CastModeType.DEFAULT;
+    });
+  },
+
+  /**
    * @param {CONTAINER_VIEW_} view The current view.
    * @param {?media_router.Issue} issue The current issue.
    * @return {boolean} Whether or not to hide the header.
@@ -267,6 +310,19 @@ Polymer({
    */
   computeIssueBannerHidden_: function(view, issue) {
     return !issue || view == this.CONTAINER_VIEW_.CAST_MODE_LIST;
+  },
+
+  /**
+   * @param {!Array<!media_router.CastMode>} castModeList The current list of
+   *     cast modes.
+   * @return {!Array<!media_router.CastMode>} The list of non-default cast
+   *     modes.
+   * @private
+   */
+  computeNonDefaultCastModeList_: function(castModeList) {
+    return castModeList.filter(function(mode) {
+      return mode.type != media_router.CastModeType.DEFAULT;
+    });
   },
 
   /**
@@ -298,6 +354,16 @@ Polymer({
   computeRouteInSinkListValue_: function(sinkId, sinkToRouteMap) {
     var route = sinkToRouteMap[sinkId];
     return route ? route.title : '';
+  },
+
+  /**
+   * @param {!Array<!media_router.CastMode>} castModeList The current list of
+   *     cast modes.
+   * @return {boolean} Whether or not to hide the share screen subheading text.
+   * @private
+   */
+  computeShareScreenSubheadingHidden_: function(castModeList) {
+    return this.computeNonDefaultCastModeList_(castModeList).length == 0;
   },
 
   /**
@@ -390,7 +456,15 @@ Polymer({
    * @private
    */
   onCastModeClick_: function(event) {
-    var clickedMode = this.$.castModeList.itemForElement(event.target);
+    // The clicked cast mode can come from one of two lists,
+    // defaultCastModeList and nonDefaultCastModeList.
+    var clickedMode =
+        this.$.defaultCastModeList.itemForElement(event.target) ||
+            this.$.nonDefaultCastModeList.itemForElement(event.target);
+
+    if (!clickedMode)
+      return;
+
     this.headerText = clickedMode.description;
     this.headerTextTooltip = clickedMode.host;
     this.selectedCastModeValue_ = clickedMode.type;

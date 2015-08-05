@@ -30,6 +30,9 @@
   <message name="IDS_MEDIA_ROUTER_SELECT_CAST_MODE_HEADER" desc="Header for select cast mode view.">
    Select source
   </message>
+  <message name="IDS_MEDIA_ROUTER_SHARE_YOUR_SCREEN_SUBHEADING" desc="Text for share your screen subheading, which appears above a list of non-default cast modes.">
+   Share your screen
+  </message>
 
   <!-- Contextual Menu -->
   <message name="IDS_MEDIA_ROUTER_ABOUT" desc="Title of menu item which, on selection, opens a page with product information about Chromecast.">
