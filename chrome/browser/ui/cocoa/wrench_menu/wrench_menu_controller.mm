@@ -57,7 +57,6 @@ using base::UserMetricsAction;
 - (RecentTabsSubMenuModel*)recentTabsMenuModel;
 - (int)maxWidthForMenuModel:(ui::MenuModel*)model
                  modelIndex:(int)modelIndex;
-- (void)containerSuperviewFrameChanged:(NSNotification*)notification;
 @end
 
 namespace WrenchMenuControllerInternal {
@@ -391,11 +390,6 @@ class ZoomLevelObserver {
   NSView* containerSuperview =
       [[buttonViewController_ overflowActionsContainerView] superview];
   [containerSuperview setPostsFrameChangedNotifications:YES];
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(containerSuperviewFrameChanged:)
-             name:NSViewFrameDidChangeNotification
-           object:containerSuperview];
 }
 
 // Fit the localized strings into the Cut/Copy/Paste control, then resize the
@@ -498,24 +492,13 @@ class ZoomLevelObserver {
   return -1;
 }
 
-- (void)containerSuperviewFrameChanged:(NSNotification*)notification {
-  // AppKit menus were probably never designed with a view like the browser
-  // actions container in mind, and, as a result, we come across a few oddities.
-  // One of these is that the container's superview will, on some versions of
-  // OSX, change frame position sometime after the the menu begins tracking
-  // (and thus, after all our ability to adjust it normally). Throw in the
-  // towel, and simply don't let the frame move from where it's supposed to be.
-  // TODO(devlin): Yet another Cocoa hack. It'd be good to find a workaround,
-  // but unlikely unless we replace the Cocoa menu implementation.
-  NSView* containerSuperview =
-      [[buttonViewController_ overflowActionsContainerView] superview];
-  if (NSMinX([containerSuperview frame]) != 0)
-    [containerSuperview setFrameOrigin:NSZeroPoint];
-}
-
 @end  // @implementation WrenchMenuController
 
 ////////////////////////////////////////////////////////////////////////////////
+
+@interface WrenchMenuButtonViewController ()
+- (void)containerSuperviewFrameChanged:(NSNotification*)notification;
+@end
 
 @implementation WrenchMenuButtonViewController
 
@@ -535,12 +518,36 @@ class ZoomLevelObserver {
   if ((self = [super initWithNibName:@"WrenchMenu"
                               bundle:base::mac::FrameworkBundle()])) {
     controller_ = controller;
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(containerSuperviewFrameChanged:)
+               name:NSViewFrameDidChangeNotification
+             object:[overflowActionsContainerView_ superview]];
   }
   return self;
 }
 
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
 - (IBAction)dispatchWrenchMenuCommand:(id)sender {
   [controller_ dispatchWrenchMenuCommand:sender];
+}
+
+- (void)containerSuperviewFrameChanged:(NSNotification*)notification {
+  // AppKit menus were probably never designed with a view like the browser
+  // actions container in mind, and, as a result, we come across a few oddities.
+  // One of these is that the container's superview will, on some versions of
+  // OSX, change frame position sometime after the the menu begins tracking
+  // (and thus, after all our ability to adjust it normally). Throw in the
+  // towel, and simply don't let the frame move from where it's supposed to be.
+  // TODO(devlin): Yet another Cocoa hack. It'd be good to find a workaround,
+  // but unlikely unless we replace the Cocoa menu implementation.
+  NSView* containerSuperview = [overflowActionsContainerView_ superview];
+  if (NSMinX([containerSuperview frame]) != 0)
+    [containerSuperview setFrameOrigin:NSZeroPoint];
 }
 
 @end  // @implementation WrenchMenuButtonViewController
