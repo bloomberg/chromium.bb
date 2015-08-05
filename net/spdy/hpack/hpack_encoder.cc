@@ -155,8 +155,6 @@ void HpackEncoder::UpdateCharacterCounts(base::StringPiece str) {
 // static
 void HpackEncoder::CookieToCrumbs(const Representation& cookie,
                                   Representations* out) {
-  size_t prior_size = out->size();
-
   // See Section 8.1.2.5. "Compressing the Cookie Header Field" in the HTTP/2
   // specification at https://tools.ietf.org/html/draft-ietf-httpbis-http2-14.
   // Cookie values are split into individually-encoded HPACK representations.
@@ -185,9 +183,6 @@ void HpackEncoder::CookieToCrumbs(const Representation& cookie,
       pos++;
     }
   }
-  // Sort crumbs and remove duplicates.
-  std::sort(out->begin() + prior_size, out->end());
-  out->erase(std::unique(out->begin() + prior_size, out->end()), out->end());
 }
 
 // static

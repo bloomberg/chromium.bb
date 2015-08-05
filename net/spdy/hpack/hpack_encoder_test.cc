@@ -241,7 +241,7 @@ TEST_F(HpackEncoderTest, CookieHeaderIsCrumbled) {
   ExpectIndexedLiteral(peer_.table()->GetByName("cookie"), "e=ff");
 
   SpdyHeaderBlock headers;
-  headers["cookie"] = "e=ff; a=bb; c=dd";
+  headers["cookie"] = "a=bb; c=dd; e=ff";
   CompareWithExpectedEncoding(headers);
 }
 
@@ -370,17 +370,17 @@ TEST_F(HpackEncoderTest, CookieToCrumbs) {
 
   // Leading and trailing whitespace is consumed. A space after ';' is consumed.
   // All other spaces remain. ';' at beginning and end of string produce empty
-  // crumbs. Duplicate crumbs are removed.
+  // crumbs.
   // See section 8.1.3.4 "Compressing the Cookie Header Field" in the HTTP/2
   // specification at http://tools.ietf.org/html/draft-ietf-httpbis-http2-11
   peer.CookieToCrumbs(" foo=1;bar=2 ; bar=3;  bing=4; ", &out);
-  EXPECT_THAT(out, ElementsAre("", " bing=4", "bar=2 ", "bar=3", "foo=1"));
+  EXPECT_THAT(out, ElementsAre("foo=1", "bar=2 ", "bar=3", " bing=4", ""));
 
   peer.CookieToCrumbs(";;foo = bar ;; ;baz =bing", &out);
-  EXPECT_THAT(out, ElementsAre("", "baz =bing", "foo = bar "));
+  EXPECT_THAT(out, ElementsAre("", "", "foo = bar ", "", "", "baz =bing"));
 
   peer.CookieToCrumbs("baz=bing; foo=bar; baz=bing", &out);
-  EXPECT_THAT(out, ElementsAre("baz=bing", "foo=bar"));
+  EXPECT_THAT(out, ElementsAre("baz=bing", "foo=bar", "baz=bing"));
 
   peer.CookieToCrumbs("baz=bing", &out);
   EXPECT_THAT(out, ElementsAre("baz=bing"));
@@ -389,13 +389,13 @@ TEST_F(HpackEncoderTest, CookieToCrumbs) {
   EXPECT_THAT(out, ElementsAre(""));
 
   peer.CookieToCrumbs("foo;bar; baz;baz;bing;", &out);
-  EXPECT_THAT(out, ElementsAre("", "bar", "baz", "bing", "foo"));
+  EXPECT_THAT(out, ElementsAre("foo", "bar", "baz", "baz", "bing", ""));
 
   peer.CookieToCrumbs(" \t foo=1;bar=2 ; bar=3;\t  ", &out);
-  EXPECT_THAT(out, ElementsAre("", "bar=2 ", "bar=3", "foo=1"));
+  EXPECT_THAT(out, ElementsAre("foo=1", "bar=2 ", "bar=3", ""));
 
   peer.CookieToCrumbs(" \t foo=1;bar=2 ; bar=3 \t  ", &out);
-  EXPECT_THAT(out, ElementsAre("bar=2 ", "bar=3", "foo=1"));
+  EXPECT_THAT(out, ElementsAre("foo=1", "bar=2 ", "bar=3"));
 }
 
 TEST_F(HpackEncoderTest, UpdateCharacterCounts) {

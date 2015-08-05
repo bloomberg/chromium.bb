@@ -77,7 +77,7 @@ class NET_EXPORT_PRIVATE HpackEncoder {
 
   void UpdateCharacterCounts(base::StringPiece str);
 
-  // Crumbles a cookie header into sorted, de-duplicated crumbs.
+  // Crumbles a cookie header into ";" delimited crumbs.
   static void CookieToCrumbs(const Representation& cookie,
                              Representations* crumbs_out);
 
