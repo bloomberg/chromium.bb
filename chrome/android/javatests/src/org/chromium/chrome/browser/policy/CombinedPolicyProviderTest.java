@@ -47,7 +47,7 @@ public class CombinedPolicyProviderTest extends ChromeActivityTestCaseBase<Chrom
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                provider.registerProvider(new PolicyProvider(getActivity()) {
+                provider.registerProvider(new PolicyProvider() {
                     @Override
                     public void refresh() {
                         terminateIncognitoSession();

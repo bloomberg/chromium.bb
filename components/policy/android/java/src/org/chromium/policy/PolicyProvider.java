@@ -4,7 +4,6 @@
 
 package org.chromium.policy;
 
-import android.content.Context;
 import android.os.Bundle;
 
 import org.chromium.base.VisibleForTesting;
@@ -14,12 +13,9 @@ import org.chromium.base.VisibleForTesting;
  */
 public abstract class PolicyProvider {
     private CombinedPolicyProvider mCombinedPolicyProvider;
-    protected final Context mContext;
     private int mSource = -1;
 
-    protected PolicyProvider(Context context) {
-        mContext = context.getApplicationContext();
-    }
+    protected PolicyProvider() {}
 
     protected void notifySettingsAvailable(Bundle settings) {
         mCombinedPolicyProvider.onSettingsAvailable(mSource, settings);

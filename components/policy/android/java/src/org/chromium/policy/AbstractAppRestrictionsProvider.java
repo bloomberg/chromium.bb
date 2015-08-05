@@ -1,0 +1,150 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.policy;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Parcel;
+import android.preference.PreferenceManager;
+import android.util.Base64;
+
+import org.chromium.base.metrics.RecordHistogram;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Retrieves app restrictions and provides them to the parent class as Bundles. Ensures that
+ * restrictions can be retrieved early in the application's life cycle by caching previously
+ * obtained bundles.
+ *
+ * Needs to be subclassed to specify how to retrieve the restrictions.
+ */
+public abstract class AbstractAppRestrictionsProvider extends PolicyProvider {
+    private static final String PREFERENCE_KEY = "App Restrictions";
+
+    private final Context mContext;
+    private final SharedPreferences mSharedPreferences;
+    private final BroadcastReceiver mAppRestrictionsChangedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            refresh();
+        }
+    };
+
+    /**
+     * @param context The application context.
+     */
+    public AbstractAppRestrictionsProvider(Context context) {
+        mContext = context;
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+    }
+
+    /**
+     * @return The restrictions for the provided package name, an empty bundle if they are not
+     * available.
+     */
+    protected abstract Bundle getApplicationRestrictions(String packageName);
+
+    /**
+     * @return The intent action to listen to to be notified of restriction changes,
+     * {@code null} if it is not supported.
+     */
+    protected abstract String getRestrictionChangeIntentAction();
+
+    /**
+     * Start listening for restrictions changes. Does nothing if this is not supported by the
+     * platform.
+     */
+    @Override
+    public void startListeningForPolicyChanges() {
+        String changeIntentAction = getRestrictionChangeIntentAction();
+        if (changeIntentAction == null) return;
+        mContext.registerReceiver(
+                mAppRestrictionsChangedReceiver, new IntentFilter(changeIntentAction));
+    }
+
+    /**
+     * Retrieve the restrictions. {@link #notifySettingsAvailable(Bundle)} will be called as a
+     * result.
+     */
+    @Override
+    public void refresh() {
+        final Bundle cachedResult = getCachedPolicies();
+        if (cachedResult != null) {
+            notifySettingsAvailable(cachedResult);
+        }
+
+        new AsyncTask<Void, Void, Bundle>() {
+            @Override
+            protected Bundle doInBackground(Void... params) {
+                long startTime = System.currentTimeMillis();
+                Bundle bundle = getApplicationRestrictions(mContext.getPackageName());
+                RecordHistogram.recordTimesHistogram("Enterprise.AppRestrictionLoadTime",
+                        System.currentTimeMillis() - startTime, TimeUnit.MILLISECONDS);
+                return bundle;
+            }
+
+            @Override
+            protected void onPostExecute(Bundle result) {
+                cachePolicies(result);
+                notifySettingsAvailable(result);
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    @Override
+    public void destroy() {
+        stopListening();
+        super.destroy();
+    }
+
+    /**
+     * Stop listening for restrictions changes. Does nothing if this is not supported by the
+     * platform.
+     */
+    public void stopListening() {
+        if (getRestrictionChangeIntentAction() != null) {
+            mContext.unregisterReceiver(mAppRestrictionsChangedReceiver);
+        }
+    }
+
+    private void cachePolicies(Bundle policies) {
+        Parcel p = Parcel.obtain();
+        p.writeBundle(policies);
+        byte bytes[] = p.marshall();
+        String s = Base64.encodeToString(bytes, 0);
+        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        ed.putString(PREFERENCE_KEY, s);
+        ed.apply();
+    }
+
+    private Bundle getCachedPolicies() {
+        String s = mSharedPreferences.getString(PREFERENCE_KEY, null);
+        if (s == null) {
+            return null;
+        }
+        byte bytes[] = Base64.decode(s, 0);
+        Parcel p = Parcel.obtain();
+        // Unmarshalling the parcel is, in theory, unsafe if the Android version or API version has
+        // changed, but the worst that is likely to happen is that the bundle comes back empty, and
+        // this will be corrected once the Android returns the real App Restrictions.
+        p.unmarshall(bytes, 0, bytes.length);
+        p.setDataPosition(0);
+        Bundle result = p.readBundle();
+        try {
+            result = p.readBundle();
+        } catch (IllegalStateException e) {
+            result = null;
+        }
+        RecordHistogram.recordBooleanHistogram(
+                "Enterprise.AppRestrictionsCacheLoad", result != null);
+        return result;
+    }
+}

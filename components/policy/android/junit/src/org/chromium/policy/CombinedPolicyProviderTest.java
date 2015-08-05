@@ -23,7 +23,6 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 /**
@@ -49,9 +48,7 @@ public class CombinedPolicyProviderTest {
      * stubbed and is abstract so can't be directly instantiated to be spied upon.
      */
     class DummyPolicyProvider extends PolicyProvider {
-        public DummyPolicyProvider() {
-            super(Robolectric.application);
-        }
+        public DummyPolicyProvider() {}
 
         @Override
         public void refresh() {

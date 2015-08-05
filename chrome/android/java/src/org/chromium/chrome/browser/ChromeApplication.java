@@ -60,7 +60,6 @@ import org.chromium.chrome.browser.omaha.RequestGenerator;
 import org.chromium.chrome.browser.omaha.UpdateInfoBarHelper;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
-import org.chromium.chrome.browser.policy.providers.AppRestrictionsPolicyProvider;
 import org.chromium.chrome.browser.preferences.AccessibilityPreferences;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -91,6 +90,7 @@ import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.content.browser.DownloadController;
+import org.chromium.policy.AppRestrictionsProvider;
 import org.chromium.policy.CombinedPolicyProvider;
 import org.chromium.policy.CombinedPolicyProvider.PolicyChangeListener;
 import org.chromium.printing.PrintingController;
@@ -707,8 +707,7 @@ public class ChromeApplication extends ContentApplication {
      * @param combinedProvider The {@link CombinedPolicyProvider} to register the providers with.
      */
     protected void registerPolicyProviders(CombinedPolicyProvider combinedProvider) {
-        combinedProvider.registerProvider(
-                new AppRestrictionsPolicyProvider(getApplicationContext()));
+        combinedProvider.registerProvider(new AppRestrictionsProvider(getApplicationContext()));
     }
 
     /**

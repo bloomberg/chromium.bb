@@ -14,10 +14,11 @@ android_library("policy_java") {
   deps = [
     "//base:base_java",
   ]
-  java_files = [
-                 "java/src/org/chromium/policy/AppRestrictionsProvider.java",
-                 "java/src/org/chromium/policy/PolicyProvider.java",
-               ] + _jni_sources
+  java_files = _jni_sources + [
+    "java/src/org/chromium/policy/AbstractAppRestrictionsProvider.java",
+    "java/src/org/chromium/policy/AppRestrictionsProvider.java",
+    "java/src/org/chromium/policy/PolicyProvider.java",
+  ]
 }
 
 # GYP: //components/components.gyp:policy_jni_headers
