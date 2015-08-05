@@ -797,7 +797,6 @@ void LayoutThemeMac::adjustMenuListStyle(ComputedStyle& style, Element* e) const
     setFontFromControlSize(style, controlSize);
 }
 
-static const int autofillPopupHorizontalPadding = 4;
 static const int paddingBeforeSeparator = 4;
 static const int baseBorderRadius = 5;
 static const int styledPopupPaddingLeft = 8;
@@ -805,16 +804,9 @@ static const int styledPopupPaddingTop = 1;
 static const int styledPopupPaddingBottom = 2;
 
 // These functions are called with MenuListPart or MenulistButtonPart appearance
-// by LayoutMenuList, or with TextFieldPart appearance by
-// AutofillPopupMenuClient. We assume only AutofillPopupMenuClient gives
-// TexfieldPart appearance here. We want to change only Autofill padding.  In
-// the future, we have to separate Autofill popup window logic from WebKit to
-// Chromium.
+// by LayoutMenuList.
 int LayoutThemeMac::popupInternalPaddingLeft(const ComputedStyle& style) const
 {
-    if (style.appearance() == TextFieldPart)
-        return autofillPopupHorizontalPadding;
-
     if (style.appearance() == MenulistPart)
         return popupButtonPadding(controlSizeForFont(style))[ThemeMac::LeftMargin] * style.effectiveZoom();
     if (style.appearance() == MenulistButtonPart)
@@ -824,9 +816,6 @@ int LayoutThemeMac::popupInternalPaddingLeft(const ComputedStyle& style) const
 
 int LayoutThemeMac::popupInternalPaddingRight(const ComputedStyle& style) const
 {
-    if (style.appearance() == TextFieldPart)
-        return autofillPopupHorizontalPadding;
-
     if (style.appearance() == MenulistPart)
         return popupButtonPadding(controlSizeForFont(style))[ThemeMac::RightMargin] * style.effectiveZoom();
     if (style.appearance() == MenulistButtonPart) {
