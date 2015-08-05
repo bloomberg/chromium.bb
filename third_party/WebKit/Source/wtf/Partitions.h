@@ -116,6 +116,21 @@ public:
 private:
     static int s_initializationLock;
     static bool s_initialized;
+
+    // We have the following four partitions.
+    //   - Node partition: A partition to allocate Nodes. We prepare a
+    //     dedicated partition for Nodes because Nodes are likely to be
+    //     a source of use-after-frees. Another reason is for performance:
+    //     Since Nodes are guaranteed to be used only by the main
+    //     thread, we can bypass acquiring a lock. Also we can improve memory
+    //     locality by putting Nodes together.
+    //   - Layout object partition: A partition to allocate LayoutObjects.
+    //     we prepare a dedicated partition for the same reason as Nodes.
+    //   - Buffer partition: A partition to allocate objects that have a strong
+    //     risk where the length and/or the contents are exploited from user
+    //     scripts. Vectors, HashTables, ArrayBufferContents and Strings are
+    //     allocated in the buffer partition.
+    //   - Fast malloc partition: A partition to allocate all other objects.
     static PartitionAllocatorGeneric m_fastMallocAllocator;
     static PartitionAllocatorGeneric m_bufferAllocator;
     static SizeSpecificPartitionAllocator<3328> m_nodeAllocator;
