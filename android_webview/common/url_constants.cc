@@ -6,11 +6,6 @@
 
 namespace android_webview {
 
-// The content: scheme is used in Android for interacting with content
-// provides.
-// See http://developer.android.com/reference/android/content/ContentUris.html
-const char kContentScheme[] = "content";
-
 // These are special paths used with the file: scheme to access application
 // assets and resources.
 // See http://developer.android.com/reference/android/webkit/WebSettings.html

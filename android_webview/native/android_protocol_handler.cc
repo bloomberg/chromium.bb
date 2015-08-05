@@ -22,6 +22,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 using android_webview::InputStream;
 using android_webview::InputStreamImpl;
@@ -267,7 +268,7 @@ ContentSchemeRequestInterceptor::ContentSchemeRequestInterceptor() {
 
 bool ContentSchemeRequestInterceptor::ShouldHandleRequest(
     const net::URLRequest* request) const {
-  return request->url().SchemeIs(android_webview::kContentScheme);
+  return request->url().SchemeIs(url::kContentScheme);
 }
 
 }  // namespace

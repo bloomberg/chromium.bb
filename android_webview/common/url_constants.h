@@ -9,7 +9,6 @@
 
 namespace android_webview {
 
-extern const char kContentScheme[];
 // Special Android file paths.
 extern const char kAndroidAssetPath[];
 extern const char kAndroidResourcePath[];

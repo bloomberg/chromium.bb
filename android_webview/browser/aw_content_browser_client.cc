@@ -160,20 +160,6 @@ AwContentBrowserClient::GetWebContentsViewDelegate(
 
 void AwContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
-  // If WebView becomes multi-process capable, this may be insecure.
-  // More benefit can be derived from the ChildProcessSecurotyPolicy by
-  // deferring the GrantScheme calls until we know that a given child process
-  // really does need that priviledge. Check here to ensure we rethink this
-  // when the time comes. See crbug.com/156062.
-  CHECK(content::RenderProcessHost::run_renderer_in_process());
-
-  // Grant content: and file: scheme to the whole process, since we impose
-  // per-view access checks.
-  content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
-      host->GetID(), android_webview::kContentScheme);
-  content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
-      host->GetID(), url::kFileScheme);
-
   host->AddFilter(new AwContentsMessageFilter(host->GetID()));
   host->AddFilter(new cdm::CdmMessageFilterAndroid());
   host->AddFilter(new AwPrintingMessageFilter(host->GetID()));

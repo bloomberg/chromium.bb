@@ -33,6 +33,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 using content::RenderThread;
 
@@ -45,8 +46,7 @@ AwContentRendererClient::~AwContentRendererClient() {
 }
 
 void AwContentRendererClient::RenderThreadStarted() {
-  blink::WebString content_scheme(
-      base::ASCIIToUTF16(android_webview::kContentScheme));
+  blink::WebString content_scheme(base::ASCIIToUTF16(url::kContentScheme));
   blink::WebSecurityPolicy::registerURLSchemeAsLocal(content_scheme);
 
   blink::WebString aw_scheme(

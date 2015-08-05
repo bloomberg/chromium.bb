@@ -152,7 +152,7 @@ bool IoThreadClientThrottle::ShouldBlockRequest() {
     return false;
 
   // Part of implementation of WebSettings.allowContentAccess.
-  if (request_->url().SchemeIs(android_webview::kContentScheme) &&
+  if (request_->url().SchemeIs(url::kContentScheme) &&
       io_client->ShouldBlockContentUrls()) {
     return true;
   }
