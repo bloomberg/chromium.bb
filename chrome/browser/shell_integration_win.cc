@@ -171,7 +171,8 @@ void MigrateChromiumShortcutsCallback() {
     if (kLocations[i].sub_dir)
       path = path.Append(kLocations[i].sub_dir);
 
-    bool check_dual_mode = (kLocations[i].location_id == base::DIR_START_MENU);
+    bool check_dual_mode = kLocations[i].location_id == base::DIR_START_MENU ||
+                           kLocations[i].location_id == base::DIR_TASKBAR_PINS;
     ShellIntegration::MigrateShortcutsInPathInternal(chrome_exe, path,
                                                      check_dual_mode);
   }

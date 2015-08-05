@@ -146,6 +146,8 @@ class ShellUtil {
     }
 
     // Sets whether this is a dual mode shortcut (Win8+).
+    // Documentation on usage of the dual mode property on Win8:
+    // http://go.microsoft.com/fwlink/p/?linkid=243079
     // NOTE: Only the default (no arguments and default browser appid) browser
     // shortcut in the Start menu (Start screen on Win8+) should be made dual
     // mode.
