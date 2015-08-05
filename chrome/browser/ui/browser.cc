@@ -183,6 +183,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/ssl_status.h"
 #include "content/public/common/webplugininfo.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -1287,6 +1288,15 @@ bool Browser::CanDragEnter(content::WebContents* source,
 content::SecurityStyle Browser::GetSecurityStyle(
     WebContents* web_contents,
     content::SecurityStyleExplanations* security_style_explanations) {
+  // Check if the page is HTTP; if so, no explanations are needed.
+  const content::NavigationEntry* entry =
+      web_contents->GetController().GetVisibleEntry();
+  if (entry &&
+      entry->GetSSL().security_style ==
+          content::SECURITY_STYLE_UNAUTHENTICATED) {
+    return content::SECURITY_STYLE_UNAUTHENTICATED;
+  }
+
   connection_security::SecurityInfo security_info;
   connection_security::GetSecurityInfoForWebContents(web_contents,
                                                      &security_info);
@@ -1308,18 +1318,25 @@ content::SecurityStyle Browser::GetSecurityStyle(
             l10n_util::GetStringUTF8(IDS_WARNING_SHA1_DESCRIPTION)));
   }
 
-  if (security_info.mixed_content_status ==
-      connection_security::RAN_MIXED_CONTENT) {
-    security_style_explanations->broken_explanations.push_back(
-        content::SecurityStyleExplanation(
-            l10n_util::GetStringUTF8(IDS_ACTIVE_MIXED_CONTENT),
-            l10n_util::GetStringUTF8(IDS_ACTIVE_MIXED_CONTENT_DESCRIPTION)));
-  } else if (security_info.mixed_content_status ==
-             connection_security::DISPLAYED_MIXED_CONTENT) {
-    security_style_explanations->warning_explanations.push_back(
-        content::SecurityStyleExplanation(
-            l10n_util::GetStringUTF8(IDS_PASSIVE_MIXED_CONTENT),
-            l10n_util::GetStringUTF8(IDS_PASSIVE_MIXED_CONTENT_DESCRIPTION)));
+  switch (security_info.mixed_content_status) {
+    case connection_security::RAN_MIXED_CONTENT:
+      security_style_explanations->broken_explanations.push_back(
+          content::SecurityStyleExplanation(
+              l10n_util::GetStringUTF8(IDS_ACTIVE_MIXED_CONTENT),
+              l10n_util::GetStringUTF8(IDS_ACTIVE_MIXED_CONTENT_DESCRIPTION)));
+      break;
+    case connection_security::DISPLAYED_MIXED_CONTENT:
+      security_style_explanations->warning_explanations.push_back(
+          content::SecurityStyleExplanation(
+              l10n_util::GetStringUTF8(IDS_PASSIVE_MIXED_CONTENT),
+              l10n_util::GetStringUTF8(IDS_PASSIVE_MIXED_CONTENT_DESCRIPTION)));
+      break;
+    case connection_security::NO_MIXED_CONTENT:
+      security_style_explanations->secure_explanations.push_back(
+          content::SecurityStyleExplanation(
+              l10n_util::GetStringUTF8(IDS_NO_MIXED_CONTENT),
+              l10n_util::GetStringUTF8(IDS_NO_MIXED_CONTENT_DESCRIPTION)));
+      break;
   }
 
   if (net::IsCertStatusError(security_info.cert_status)) {
@@ -1335,6 +1352,18 @@ content::SecurityStyle Browser::GetSecurityStyle(
       security_style_explanations->warning_explanations.push_back(explanation);
     else
       security_style_explanations->broken_explanations.push_back(explanation);
+  } else {
+    // If the certificate does not have errors and is not using
+    // deprecated SHA1, then add an explanation that the certificate is
+    // valid.
+    if (security_info.sha1_deprecation_status ==
+        connection_security::NO_DEPRECATED_SHA1) {
+      security_style_explanations->secure_explanations.push_back(
+          content::SecurityStyleExplanation(
+              l10n_util::GetStringUTF8(IDS_VALID_SERVER_CERTIFICATE),
+              l10n_util::GetStringUTF8(
+                  IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION)));
+    }
   }
 
   return security_info.security_style;

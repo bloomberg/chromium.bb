@@ -15850,11 +15850,23 @@ After you create a new supervised user, you can manage their settings at any tim
       <message name="IDS_ACTIVE_MIXED_CONTENT_DESCRIPTION" desc="Description of a security problem where site ran active mixed content.">
         You have recently allowed insecure content (such as scripts or iframes) to run on this site.
       </message>
+      <message name="IDS_NO_MIXED_CONTENT" desc="Summary phrase for a site that does not have any mixed content.">
+        Secure Resources
+      </message>
+      <message name="IDS_NO_MIXED_CONTENT_DESCRIPTION" desc="Description of a site that does not have any mixed content.">
+        All resources on this page are served securely.
+      </message>
       <message name="IDS_CERTIFICATE_CHAIN_ERROR" desc="Summary phrase for a security problem with the site's certificate.">
         Certificate Error
       </message>
       <message name="IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT" desc="Description of a security problem with the site's certificate.">
         There are issues with the site's certificate chain (<ph name="CERT_ERROR_DESCRIPTION">$1<ex>net::ERR_CERT_AUTHORITY_INVALID</ex></ph>).
+      </message>
+      <message name="IDS_VALID_SERVER_CERTIFICATE" desc="Summary phrase for a site that has a valid server certificate.">
+        Valid Certificate
+      </message>
+      <message name="IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION" desc="Description of a site that has a valid server certificate.">
+        The connection to this site is using a valid, trusted server certificate.
       </message>
       <message name="IDS_SAVE_PASSWORD_TITLE" desc="The title of the save password bubble when a password can be saved.">
         Do you want <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> to save your password for <ph name="ORIGIN">$2<ex>example.com</ex></ph>?

@@ -32,6 +32,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/ssl/connection_security.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/cld_data_harness.h"
 #include "chrome/browser/translate/cld_data_harness_factory.h"
@@ -126,6 +127,8 @@ using content::WebContentsObserver;
 using extensions::Extension;
 
 namespace {
+
+enum CertificateStatus { VALID_CERTIFICATE, INVALID_CERTIFICATE };
 
 const char* kBeforeUnloadHTML =
     "<html><head><title>beforeunload</title></head><body>"
@@ -371,8 +374,7 @@ class SecurityStyleTestObserver : public WebContentsObserver {
 
   void ClearLatestSecurityStyleAndExplanations() {
     latest_security_style_ = content::SECURITY_STYLE_UNKNOWN;
-    latest_explanations_.warning_explanations.clear();
-    latest_explanations_.broken_explanations.clear();
+    latest_explanations_ = content::SecurityStyleExplanations();
   }
 
  private:
@@ -402,6 +404,46 @@ void CheckBrokenSecurityStyle(const SecurityStyleTestObserver& observer,
   EXPECT_EQ(l10n_util::GetStringFUTF8(
                 IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT, error_string),
             expired_explanation.broken_explanations[0].description);
+}
+
+// Checks that the given |secure_explanations| contains appropriate
+// explanations for the mixed content status and certificate
+// status. Namely, |secure_explanations| should note if there is no
+// mixed content (all resources on the page are secure), and it should
+// note if the server certificate is valid.
+void CheckSecureExplanations(
+    const std::vector<content::SecurityStyleExplanation>& secure_explanations,
+    connection_security::MixedContentStatus mixed_content_status,
+    CertificateStatus cert_status) {
+  std::set<std::pair<std::string, std::string>> explanations;
+  for (const auto& explanation : secure_explanations) {
+    explanations.insert(std::pair<std::string, std::string>(
+        explanation.summary, explanation.description));
+  }
+
+  if (mixed_content_status == connection_security::NO_MIXED_CONTENT &&
+      cert_status == VALID_CERTIFICATE) {
+    EXPECT_EQ(2u, explanations.size());
+  } else if (mixed_content_status == connection_security::NO_MIXED_CONTENT ||
+             cert_status == VALID_CERTIFICATE) {
+    EXPECT_EQ(1u, explanations.size());
+  } else {
+    EXPECT_EQ(0u, explanations.size());
+  }
+
+  if (mixed_content_status == connection_security::NO_MIXED_CONTENT) {
+    EXPECT_EQ(1u,
+              explanations.count(std::pair<std::string, std::string>(
+                  l10n_util::GetStringUTF8(IDS_NO_MIXED_CONTENT),
+                  l10n_util::GetStringUTF8(IDS_NO_MIXED_CONTENT_DESCRIPTION))));
+  }
+
+  if (cert_status == VALID_CERTIFICATE) {
+    EXPECT_EQ(1u, explanations.count(std::pair<std::string, std::string>(
+                      l10n_util::GetStringUTF8(IDS_VALID_SERVER_CERTIFICATE),
+                      l10n_util::GetStringUTF8(
+                          IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION))));
+  }
 }
 
 }  // namespace
@@ -2941,6 +2983,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
             observer.latest_security_style());
   EXPECT_EQ(0u, observer.latest_explanations().warning_explanations.size());
   EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
+  EXPECT_EQ(0u, observer.latest_explanations().secure_explanations.size());
 
   // Visit an (otherwise valid) HTTPS page that displays mixed content.
   std::string replacement_path;
@@ -2962,6 +3005,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
             mixed_content_explanation.warning_explanations[0].description);
   EXPECT_EQ(0u, mixed_content_explanation.broken_explanations.size());
 
+  CheckSecureExplanations(observer.latest_explanations().secure_explanations,
+                          connection_security::DISPLAYED_MIXED_CONTENT,
+                          VALID_CERTIFICATE);
+
   // Visit a broken HTTPS url.
   GURL expired_url(https_test_server_expired.GetURL(std::string()));
   ui_test_utils::NavigateToURL(browser(), expired_url);
@@ -2971,6 +3018,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
   content::WaitForInterstitialAttach(web_contents);
   EXPECT_TRUE(web_contents->ShowingInterstitialPage());
   CheckBrokenSecurityStyle(observer, net::ERR_CERT_DATE_INVALID);
+  CheckSecureExplanations(observer.latest_explanations().secure_explanations,
+                          connection_security::NO_MIXED_CONTENT,
+                          INVALID_CERTIFICATE);
 
   // Before clicking through, navigate to a different page, and then go
   // back to the interstitial.
@@ -2980,6 +3030,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
             observer.latest_security_style());
   EXPECT_EQ(0u, observer.latest_explanations().warning_explanations.size());
   EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
+  CheckSecureExplanations(observer.latest_explanations().secure_explanations,
+                          connection_security::NO_MIXED_CONTENT,
+                          VALID_CERTIFICATE);
 
   // After going back to the interstitial, an event for a broken lock
   // icon should fire again.
@@ -2987,6 +3040,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
   content::WaitForInterstitialAttach(web_contents);
   EXPECT_TRUE(web_contents->ShowingInterstitialPage());
   CheckBrokenSecurityStyle(observer, net::ERR_CERT_DATE_INVALID);
+  CheckSecureExplanations(observer.latest_explanations().secure_explanations,
+                          connection_security::NO_MIXED_CONTENT,
+                          INVALID_CERTIFICATE);
 
   // Since the next expected style is the same as the previous, clear
   // the observer (to make sure that the event fires twice and we don't
@@ -2998,6 +3054,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
   // for this host will remain in a broken state.
   ProceedThroughInterstitial(web_contents);
   CheckBrokenSecurityStyle(observer, net::ERR_CERT_DATE_INVALID);
+  CheckSecureExplanations(observer.latest_explanations().secure_explanations,
+                          connection_security::NO_MIXED_CONTENT,
+                          INVALID_CERTIFICATE);
 }
 
 // Visit a valid HTTPS page, then a broken HTTPS page, and then go back,
@@ -3030,6 +3089,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserverGoBack) {
             observer.latest_security_style());
   EXPECT_EQ(0u, observer.latest_explanations().warning_explanations.size());
   EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
+  EXPECT_EQ(2u, observer.latest_explanations().secure_explanations.size());
+  CheckSecureExplanations(observer.latest_explanations().secure_explanations,
+                          connection_security::NO_MIXED_CONTENT,
+                          VALID_CERTIFICATE);
 
   // Navigate to a bad HTTPS page on a different host, and then click
   // Back to verify that the previous good security style is seen again.
@@ -3047,6 +3110,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserverGoBack) {
   CheckBrokenSecurityStyle(observer, net::ERR_CERT_COMMON_NAME_INVALID);
   ProceedThroughInterstitial(web_contents);
   CheckBrokenSecurityStyle(observer, net::ERR_CERT_COMMON_NAME_INVALID);
+  CheckSecureExplanations(observer.latest_explanations().secure_explanations,
+                          connection_security::NO_MIXED_CONTENT,
+                          INVALID_CERTIFICATE);
 
   content::WindowedNotificationObserver back_nav_load_observer(
       content::NOTIFICATION_LOAD_STOP,
@@ -3058,4 +3124,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserverGoBack) {
             observer.latest_security_style());
   EXPECT_EQ(0u, observer.latest_explanations().warning_explanations.size());
   EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
+  CheckSecureExplanations(observer.latest_explanations().secure_explanations,
+                          connection_security::NO_MIXED_CONTENT,
+                          VALID_CERTIFICATE);
 }

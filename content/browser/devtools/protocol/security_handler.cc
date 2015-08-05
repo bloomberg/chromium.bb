@@ -99,6 +99,9 @@ void SecurityHandler::SecurityStyleChanged(
   AddExplanations(kSecurityStateWarning,
                   security_style_explanations.warning_explanations,
                   &explanations);
+  AddExplanations(kSecurityStateSecure,
+                  security_style_explanations.secure_explanations,
+                  &explanations);
 
   client_->SecurityStateChanged(SecurityStateChangedParams::Create()
                                     ->set_security_state(security_state)
