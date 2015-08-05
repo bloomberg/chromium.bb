@@ -24,7 +24,7 @@ class MockSessionManagerClient : public SessionManagerClient {
   MOCK_CONST_METHOD1(HasObserver, bool(const Observer*));
   MOCK_CONST_METHOD0(IsScreenLocked, bool(void));
   MOCK_METHOD0(EmitLoginPromptVisible, void(void));
-  MOCK_METHOD2(RestartJob, void(int, const std::string&));
+  MOCK_METHOD1(RestartJob, void(const std::vector<std::string>&));
   MOCK_METHOD1(StartSession, void(const std::string&));
   MOCK_METHOD0(StopSession, void(void));
   MOCK_METHOD0(NotifySupervisedUserCreationStarted, void(void));

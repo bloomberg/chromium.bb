@@ -31,7 +31,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
   bool HasObserver(const Observer* observer) const override;
   bool IsScreenLocked() const override;
   void EmitLoginPromptVisible() override;
-  void RestartJob(int pid, const std::string& command_line) override;
+  void RestartJob(const std::vector<std::string>& argv) override;
   void StartSession(const std::string& user_email) override;
   void StopSession() override;
   void NotifySupervisedUserCreationStarted() override;
