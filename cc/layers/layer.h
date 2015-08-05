@@ -316,11 +316,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     did_scroll_callback_ = callback;
   }
 
-  void SetDrawCheckerboardForMissingTiles(bool checkerboard);
-  bool draw_checkerboard_for_missing_tiles() const {
-    return draw_checkerboard_for_missing_tiles_;
-  }
-
   void SetForceRenderSurface(bool force_render_surface);
   bool force_render_surface() const { return force_render_surface_; }
 
@@ -717,7 +712,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool double_sided_ : 1;
   bool should_flatten_transform_ : 1;
   bool use_parent_backface_visibility_ : 1;
-  bool draw_checkerboard_for_missing_tiles_ : 1;
   bool force_render_surface_ : 1;
   bool transform_is_invertible_ : 1;
   bool has_render_surface_ : 1;

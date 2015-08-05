@@ -55,7 +55,6 @@ void WebContentLayerImpl::setDoubleSided(bool double_sided) {
 }
 
 void WebContentLayerImpl::setDrawCheckerboardForMissingTiles(bool enable) {
-  layer_->layer()->SetDrawCheckerboardForMissingTiles(enable);
 }
 
 void WebContentLayerImpl::PaintContents(

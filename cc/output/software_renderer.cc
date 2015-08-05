@@ -13,7 +13,6 @@
 #include "cc/output/output_surface.h"
 #include "cc/output/render_surface_filters.h"
 #include "cc/output/software_output_device.h"
-#include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/picture_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -303,14 +302,6 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame,
   }
 
   switch (quad->material) {
-    case DrawQuad::CHECKERBOARD:
-      // TODO(enne) For now since checkerboards shouldn't be part of a 3D
-      // context, clipping regions aren't supported so we skip drawing them
-      // if this becomes the case.
-      if (!draw_region) {
-        DrawCheckerboardQuad(frame, CheckerboardDrawQuad::MaterialCast(quad));
-      }
-      break;
     case DrawQuad::DEBUG_BORDER:
       DrawDebugBorderQuad(frame, DebugBorderDrawQuad::MaterialCast(quad));
       break;
@@ -347,16 +338,6 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame,
   if (draw_region) {
     current_canvas_->restore();
   }
-}
-
-void SoftwareRenderer::DrawCheckerboardQuad(const DrawingFrame* frame,
-                                            const CheckerboardDrawQuad* quad) {
-  gfx::RectF visible_quad_vertex_rect = MathUtil::ScaleRectProportional(
-      QuadVertexRect(), quad->rect, quad->visible_rect);
-  current_paint_.setColor(quad->color);
-  current_paint_.setAlpha(quad->shared_quad_state->opacity);
-  current_canvas_->drawRect(gfx::RectFToSkRect(visible_quad_vertex_rect),
-                            current_paint_);
 }
 
 void SoftwareRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,

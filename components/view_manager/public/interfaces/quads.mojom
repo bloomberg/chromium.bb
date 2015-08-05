@@ -109,8 +109,7 @@ struct YUVVideoQuadState {
 };
 
 enum Material {
-  CHECKERBOARD = 1,
-  DEBUG_BORDER,
+  DEBUG_BORDER = 1,
   IO_SURFACE_CONTENT,
   PICTURE_CONTENT,
   RENDER_PASS,

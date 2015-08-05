@@ -117,7 +117,6 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
   }
 
   void TestBasicShaders() {
-    EXPECT_PROGRAM_VALID(renderer()->GetTileCheckerboardProgram());
     EXPECT_PROGRAM_VALID(renderer()->GetDebugBorderProgram());
     EXPECT_PROGRAM_VALID(renderer()->GetSolidColorProgram());
     EXPECT_PROGRAM_VALID(renderer()->GetSolidColorProgramAA());
@@ -1015,7 +1014,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
 
     // The remaining quads also use GL_LINEAR because nearest neighbor
     // filtering is currently only used with tile quads.
-    EXPECT_CALL(*context, drawElements(_, _, _, _)).Times(7);
+    EXPECT_CALL(*context, drawElements(_, _, _, _)).Times(6);
   }
 
   gfx::Rect viewport_rect(100, 100);

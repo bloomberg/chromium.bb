@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/solid_color_draw_quad.h"
@@ -471,33 +470,6 @@ TEST_F(SurfaceLibQuadTest, DebugBorderQuad) {
       mojo_quad->debug_border_quad_state;
   EXPECT_EQ(Color::From(arbitrary_color), mojo_debug_border_state->color);
   EXPECT_EQ(width, mojo_debug_border_state->width);
-}
-
-TEST_F(SurfaceLibQuadTest, CheckerboardQuad) {
-  cc::CheckerboardDrawQuad* checkerboard_quad =
-      pass->CreateAndAppendDrawQuad<cc::CheckerboardDrawQuad>();
-  const SkColor arbitrary_color = SK_ColorGREEN;
-  const float scale = 1.0f;
-  checkerboard_quad->SetAll(sqs,
-                            rect,
-                            opaque_rect,
-                            visible_rect,
-                            needs_blending,
-                            arbitrary_color,
-                            scale);
-
-  QuadPtr mojo_quad = Quad::From<cc::DrawQuad>(*checkerboard_quad);
-  ASSERT_FALSE(mojo_quad.is_null());
-  EXPECT_EQ(MATERIAL_CHECKERBOARD, mojo_quad->material);
-  EXPECT_EQ(Rect::From(rect), mojo_quad->rect);
-  EXPECT_EQ(Rect::From(opaque_rect), mojo_quad->opaque_rect);
-  EXPECT_EQ(Rect::From(visible_rect), mojo_quad->visible_rect);
-  EXPECT_EQ(needs_blending, mojo_quad->needs_blending);
-  ASSERT_TRUE(mojo_quad->checkerboard_quad_state);
-  CheckerboardQuadStatePtr& mojo_checkerboard_state =
-      mojo_quad->checkerboard_quad_state;
-  EXPECT_EQ(Color::From(arbitrary_color), mojo_checkerboard_state->color);
-  EXPECT_EQ(scale, mojo_checkerboard_state->scale);
 }
 
 }  // namespace

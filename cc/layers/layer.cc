@@ -74,7 +74,6 @@ Layer::Layer(const LayerSettings& settings)
       double_sided_(true),
       should_flatten_transform_(true),
       use_parent_backface_visibility_(false),
-      draw_checkerboard_for_missing_tiles_(false),
       force_render_surface_(false),
       transform_is_invertible_(true),
       has_render_surface_(false),
@@ -1003,14 +1002,6 @@ void Layer::SetScrollBlocksOn(ScrollBlocksOn scroll_blocks_on) {
   SetNeedsCommit();
 }
 
-void Layer::SetDrawCheckerboardForMissingTiles(bool checkerboard) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (draw_checkerboard_for_missing_tiles_ == checkerboard)
-    return;
-  draw_checkerboard_for_missing_tiles_ = checkerboard;
-  SetNeedsCommit();
-}
-
 void Layer::SetForceRenderSurface(bool force) {
   DCHECK(IsPropertyChangeAllowed());
   if (force_render_surface_ == force)
@@ -1196,8 +1187,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetClipTreeIndex(clip_tree_index());
   layer->set_offset_to_transform_parent(offset_to_transform_parent_);
   layer->SetDoubleSided(double_sided_);
-  layer->SetDrawCheckerboardForMissingTiles(
-      draw_checkerboard_for_missing_tiles_);
   layer->SetDrawsContent(DrawsContent());
   layer->SetHideLayerAndSubtree(hide_layer_and_subtree_);
   layer->SetHasRenderSurface(has_render_surface_);

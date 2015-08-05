@@ -5,7 +5,6 @@
 #include "cc/test/render_pass_test_common.h"
 
 #include "base/bind.h"
-#include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -90,10 +89,6 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                        1,
                        SkXfermode::kSrcOver_Mode,
                        0);
-
-  CheckerboardDrawQuad* checkerboard_quad =
-      this->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
-  checkerboard_quad->SetNew(shared_state, rect, visible_rect, SK_ColorRED, 1.f);
 
   DebugBorderDrawQuad* debug_border_quad =
       this->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();

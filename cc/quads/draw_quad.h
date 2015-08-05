@@ -35,7 +35,6 @@ class CC_EXPORT DrawQuad {
  public:
   enum Material {
     INVALID,
-    CHECKERBOARD,
     DEBUG_BORDER,
     IO_SURFACE_CONTENT,
     PICTURE_CONTENT,

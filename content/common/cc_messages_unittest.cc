@@ -19,7 +19,6 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
-using cc::CheckerboardDrawQuad;
 using cc::DelegatedFrameData;
 using cc::DebugBorderDrawQuad;
 using cc::DrawQuad;
@@ -79,10 +78,6 @@ class CCMessagesTest : public testing::Test {
     Compare(a->shared_quad_state, b->shared_quad_state);
 
     switch (a->material) {
-      case DrawQuad::CHECKERBOARD:
-        Compare(CheckerboardDrawQuad::MaterialCast(a),
-                CheckerboardDrawQuad::MaterialCast(b));
-        break;
       case DrawQuad::DEBUG_BORDER:
         Compare(DebugBorderDrawQuad::MaterialCast(a),
                 DebugBorderDrawQuad::MaterialCast(b));
@@ -126,11 +121,6 @@ class CCMessagesTest : public testing::Test {
       case DrawQuad::INVALID:
         break;
     }
-  }
-
-  void Compare(const CheckerboardDrawQuad* a, const CheckerboardDrawQuad* b) {
-    EXPECT_EQ(a->color, b->color);
-    EXPECT_EQ(a->scale, b->scale);
   }
 
   void Compare(const DebugBorderDrawQuad* a, const DebugBorderDrawQuad* b) {
@@ -327,15 +317,6 @@ TEST_F(CCMessagesTest, AllQuads) {
       pass_cmp->CreateAndAppendSharedQuadState();
   shared_state1_cmp->CopyFrom(shared_state1_in);
 
-  CheckerboardDrawQuad* checkerboard_in =
-      pass_in->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
-  checkerboard_in->SetAll(shared_state1_in, arbitrary_rect1,
-                          arbitrary_rect2_inside_rect1,
-                          arbitrary_rect1_inside_rect1, arbitrary_bool1,
-                          arbitrary_color, arbitrary_float1);
-  pass_cmp->CopyFromAndAppendDrawQuad(checkerboard_in,
-                                      checkerboard_in->shared_quad_state);
-
   DebugBorderDrawQuad* debugborder_in =
       pass_in->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();
   debugborder_in->SetAll(shared_state1_in,
@@ -465,7 +446,7 @@ TEST_F(CCMessagesTest, AllQuads) {
   ASSERT_EQ(0u, child_pass_in->quad_list.size());
   Compare(pass_cmp.get(), pass_in.get());
   ASSERT_EQ(3u, pass_in->shared_quad_state_list.size());
-  ASSERT_EQ(10u, pass_in->quad_list.size());
+  ASSERT_EQ(9u, pass_in->quad_list.size());
   for (cc::SharedQuadStateList::ConstIterator
            cmp_iterator = pass_cmp->shared_quad_state_list.begin(),
            in_iterator = pass_in->shared_quad_state_list.begin();
@@ -510,7 +491,7 @@ TEST_F(CCMessagesTest, AllQuads) {
       frame_out.render_pass_list.take(frame_out.render_pass_list.begin() + 1);
   Compare(pass_cmp.get(), pass_out.get());
   ASSERT_EQ(3u, pass_out->shared_quad_state_list.size());
-  ASSERT_EQ(10u, pass_out->quad_list.size());
+  ASSERT_EQ(9u, pass_out->quad_list.size());
   for (cc::SharedQuadStateList::ConstIterator
            cmp_iterator = pass_cmp->shared_quad_state_list.begin(),
            out_iterator = pass_out->shared_quad_state_list.begin();
@@ -554,10 +535,10 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
                            SkXfermode::kSrcOver_Mode,
                            0);
 
-  CheckerboardDrawQuad* quad1 =
-      pass_in->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
+  SolidColorDrawQuad* quad1 =
+      pass_in->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   quad1->SetAll(shared_state1_in, gfx::Rect(10, 10), gfx::Rect(10, 10),
-                gfx::Rect(10, 10), false, SK_ColorRED, 1.f);
+                gfx::Rect(10, 10), false, SK_ColorRED, false);
 
   // The second and third SharedQuadStates are not used.
   SharedQuadState* shared_state2_in = pass_in->CreateAndAppendSharedQuadState();
@@ -591,10 +572,10 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
                            SkXfermode::kSrcOver_Mode,
                            0);
 
-  CheckerboardDrawQuad* quad2 =
-      pass_in->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
+  SolidColorDrawQuad* quad2 =
+      pass_in->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   quad2->SetAll(shared_state4_in, gfx::Rect(10, 10), gfx::Rect(10, 10),
-                gfx::Rect(10, 10), false, SK_ColorRED, 1.f);
+                gfx::Rect(10, 10), false, SK_ColorRED, false);
 
   // The fifth is not used again.
   SharedQuadState* shared_state5_in = pass_in->CreateAndAppendSharedQuadState();

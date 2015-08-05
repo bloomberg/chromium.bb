@@ -317,9 +317,6 @@ void ParamTraits<cc::RenderPass>::Write(
         << " opaque_rect: " << quad->opaque_rect.ToString();
 
     switch (quad->material) {
-      case cc::DrawQuad::CHECKERBOARD:
-        WriteParam(m, *cc::CheckerboardDrawQuad::MaterialCast(quad));
-        break;
       case cc::DrawQuad::DEBUG_BORDER:
         WriteParam(m, *cc::DebugBorderDrawQuad::MaterialCast(quad));
         break;
@@ -437,9 +434,6 @@ bool ParamTraits<cc::RenderPass>::Read(const Message* m,
 
     cc::DrawQuad* draw_quad = NULL;
     switch (material) {
-      case cc::DrawQuad::CHECKERBOARD:
-        draw_quad = ReadDrawQuad<cc::CheckerboardDrawQuad>(m, iter, p);
-        break;
       case cc::DrawQuad::DEBUG_BORDER:
         draw_quad = ReadDrawQuad<cc::DebugBorderDrawQuad>(m, iter, p);
         break;
@@ -533,9 +527,6 @@ void ParamTraits<cc::RenderPass>::Log(
     if (quad != p.quad_list.front())
       l->append(", ");
     switch (quad->material) {
-      case cc::DrawQuad::CHECKERBOARD:
-        LogParam(*cc::CheckerboardDrawQuad::MaterialCast(quad), l);
-        break;
       case cc::DrawQuad::DEBUG_BORDER:
         LogParam(*cc::DebugBorderDrawQuad::MaterialCast(quad), l);
         break;

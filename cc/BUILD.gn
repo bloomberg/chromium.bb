@@ -321,8 +321,6 @@ component("cc") {
     "playback/raster_source_helper.h",
     "playback/transform_display_item.cc",
     "playback/transform_display_item.h",
-    "quads/checkerboard_draw_quad.cc",
-    "quads/checkerboard_draw_quad.h",
     "quads/content_draw_quad_base.cc",
     "quads/content_draw_quad_base.h",
     "quads/debug_border_draw_quad.cc",

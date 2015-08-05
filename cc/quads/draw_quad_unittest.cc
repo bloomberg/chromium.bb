@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "cc/base/math_util.h"
 #include "cc/output/filter_operations.h"
-#include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/largest_draw_quad.h"
@@ -360,24 +359,6 @@ void CompareDrawQuad(DrawQuad* quad,
         shared_state, quad_rect, a, b, c, d, e, f, g, h);        \
   }                                                              \
   SETUP_AND_COPY_QUAD_NEW_RP(Type, quad_new, copy_a);
-
-TEST(DrawQuadTest, CopyCheckerboardDrawQuad) {
-  gfx::Rect visible_rect(40, 50, 30, 20);
-  SkColor color = 0xfabb0011;
-  float scale = 2.3f;
-  CREATE_SHARED_STATE();
-
-  CREATE_QUAD_3_NEW(CheckerboardDrawQuad, visible_rect, color, scale);
-  EXPECT_EQ(DrawQuad::CHECKERBOARD, copy_quad->material);
-  EXPECT_EQ(visible_rect, copy_quad->visible_rect);
-  EXPECT_EQ(color, copy_quad->color);
-  EXPECT_EQ(scale, copy_quad->scale);
-
-  CREATE_QUAD_2_ALL(CheckerboardDrawQuad, color, scale);
-  EXPECT_EQ(DrawQuad::CHECKERBOARD, copy_quad->material);
-  EXPECT_EQ(color, copy_quad->color);
-  EXPECT_EQ(scale, copy_quad->scale);
-}
 
 TEST(DrawQuadTest, CopyDebugBorderDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
@@ -741,16 +722,6 @@ class DrawQuadIteratorTest : public testing::Test {
   int num_resources_;
 };
 
-TEST_F(DrawQuadIteratorTest, CheckerboardDrawQuad) {
-  gfx::Rect visible_rect(40, 50, 30, 20);
-  SkColor color = 0xfabb0011;
-  float scale = 3.2f;
-
-  CREATE_SHARED_STATE();
-  CREATE_QUAD_3_NEW(CheckerboardDrawQuad, visible_rect, color, scale);
-  EXPECT_EQ(0, IterateAndCount(quad_new));
-}
-
 TEST_F(DrawQuadIteratorTest, DebugBorderDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
   SkColor color = 0xfabb0011;
@@ -965,9 +936,6 @@ TEST(DrawQuadTest, LargestQuadType) {
 
   for (int i = 0; i <= DrawQuad::MATERIAL_LAST; ++i) {
     switch (static_cast<DrawQuad::Material>(i)) {
-      case DrawQuad::CHECKERBOARD:
-        largest = std::max(largest, sizeof(CheckerboardDrawQuad));
-        break;
       case DrawQuad::DEBUG_BORDER:
         largest = std::max(largest, sizeof(DebugBorderDrawQuad));
         break;
@@ -1012,9 +980,6 @@ TEST(DrawQuadTest, LargestQuadType) {
   LOG(ERROR) << "kLargestDrawQuad " << LargestDrawQuadSize();
   for (int i = 0; i <= DrawQuad::MATERIAL_LAST; ++i) {
     switch (static_cast<DrawQuad::Material>(i)) {
-      case DrawQuad::CHECKERBOARD:
-        LOG(ERROR) << "CheckerboardDrawQuad " << sizeof(CheckerboardDrawQuad);
-        break;
       case DrawQuad::DEBUG_BORDER:
         LOG(ERROR) << "DebugBorderDrawQuad " << sizeof(DebugBorderDrawQuad);
         break;

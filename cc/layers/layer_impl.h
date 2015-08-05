@@ -521,12 +521,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     scroll_blocks_on_ = scroll_blocks_on;
   }
   ScrollBlocksOn scroll_blocks_on() const { return scroll_blocks_on_; }
-  void SetDrawCheckerboardForMissingTiles(bool checkerboard) {
-    draw_checkerboard_for_missing_tiles_ = checkerboard;
-  }
-  bool draw_checkerboard_for_missing_tiles() const {
-    return draw_checkerboard_for_missing_tiles_;
-  }
 
   InputHandler::ScrollStatus TryScroll(
       const gfx::PointF& screen_space_point,
@@ -783,7 +777,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool contents_opaque_ : 1;
   bool is_root_for_isolated_group_ : 1;
   bool use_parent_backface_visibility_ : 1;
-  bool draw_checkerboard_for_missing_tiles_ : 1;
   bool draws_content_ : 1;
   bool hide_layer_and_subtree_ : 1;
 

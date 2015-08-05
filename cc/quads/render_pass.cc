@@ -12,7 +12,6 @@
 #include "cc/base/math_util.h"
 #include "cc/debug/traced_value.h"
 #include "cc/output/copy_output_request.h"
-#include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/io_surface_draw_quad.h"
@@ -226,9 +225,6 @@ DrawQuad* RenderPass::CopyFromAndAppendDrawQuad(
     const DrawQuad* quad,
     const SharedQuadState* shared_quad_state) {
   switch (quad->material) {
-    case DrawQuad::CHECKERBOARD:
-      CopyFromAndAppendTypedDrawQuad<CheckerboardDrawQuad>(quad);
-      break;
     case DrawQuad::DEBUG_BORDER:
       CopyFromAndAppendTypedDrawQuad<DebugBorderDrawQuad>(quad);
       break;
