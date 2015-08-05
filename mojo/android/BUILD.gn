@@ -27,8 +27,8 @@ generate_jni("jni_headers") {
 
 generate_jni("system_java_jni_headers") {
   sources = [
-    "system/src/org/chromium/mojo/system/impl/BaseRunLoop.java",
     "system/src/org/chromium/mojo/system/impl/CoreImpl.java",
+    "system/src/org/chromium/mojo/system/impl/BaseRunLoop.java",
   ]
 
   jni_package = "mojo"
@@ -46,7 +46,7 @@ source_set("libsystem_java") {
     ":system_java_jni_headers",
     "//base",
     "//mojo/environment:chromium",
-    "//mojo/message_pump",
+    "//mojo/common:common",
     "//third_party/mojo/src/mojo/edk/system",
     "//third_party/mojo/src/mojo/public/cpp/environment",
   ]
@@ -125,7 +125,7 @@ shared_library("mojo_java_unittests") {
     ":system_java_jni_headers",
     "//base",
     "//base/test/:test_support",
-    "//mojo/message_pump",
+    "//mojo/common",
     "//third_party/mojo/src/mojo/edk/system",
     "//third_party/mojo/src/mojo/public/cpp/bindings/tests:mojo_public_bindings_test_utils",
     "//third_party/mojo/src/mojo/public/cpp/test_support:test_utils",
