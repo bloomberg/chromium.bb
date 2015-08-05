@@ -482,11 +482,6 @@ crbug.com/389648 fast/text-autosizing/table-inflation-crash.html [ Pass Timeout 
 crbug.com/396775 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
 crbug.com/396775 virtual/prefer_compositing_to_lcd_text/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
 
-crbug.com/506669 fast/repaint/focus-continuations.html [ NeedsRebaseline ]
-crbug.com/506669 fast/repaint/focus-enable-continuations.html [ NeedsRebaseline ]
-crbug.com/506669 fast/repaint/inline-focus.html [ NeedsRebaseline ]
-crbug.com/506669 svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html [ NeedsRebaseline ]
-
 crbug.com/433727 [ XP ] http/tests/cachestorage/window/cache-put.html [ Pass Timeout Failure ]
 crbug.com/433727 [ XP ] http/tests/cachestorage/worker/cache-put.html [ Pass Timeout Failure ]
 crbug.com/433727 [ XP ] http/tests/cachestorage/serviceworker/cache-put.html [ Pass Timeout Failure ]
