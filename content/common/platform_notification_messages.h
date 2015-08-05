@@ -35,6 +35,11 @@ IPC_ENUM_TRAITS_MAX_VALUE(
     content::PlatformNotificationData::Direction,
     content::PlatformNotificationData::DIRECTION_LAST)
 
+IPC_STRUCT_TRAITS_BEGIN(content::PlatformNotificationAction)
+  IPC_STRUCT_TRAITS_MEMBER(action)
+  IPC_STRUCT_TRAITS_MEMBER(title)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(content::PlatformNotificationData)
   IPC_STRUCT_TRAITS_MEMBER(title)
   IPC_STRUCT_TRAITS_MEMBER(direction)
@@ -45,6 +50,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::PlatformNotificationData)
   IPC_STRUCT_TRAITS_MEMBER(vibration_pattern)
   IPC_STRUCT_TRAITS_MEMBER(silent)
   IPC_STRUCT_TRAITS_MEMBER(data)
+  IPC_STRUCT_TRAITS_MEMBER(actions)
 IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the renderer.

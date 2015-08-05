@@ -62,6 +62,13 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
                                    payload.data().end());
   }
 
+  for (const auto& payload_action : payload.actions()) {
+    PlatformNotificationAction action;
+    action.action = payload_action.action();
+    action.title = base::UTF8ToUTF16(payload_action.title());
+    notification_data->actions.push_back(action);
+  }
+
   return true;
 }
 
@@ -104,6 +111,13 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
   if (notification_data.data.size()) {
     payload->set_data(&notification_data.data.front(),
                       notification_data.data.size());
+  }
+
+  for (const PlatformNotificationAction& action : notification_data.actions) {
+    NotificationDatabaseDataProto::NotificationAction* payload_action =
+        payload->add_actions();
+    payload_action->set_action(action.action);
+    payload_action->set_title(base::UTF16ToUTF8(action.title));
   }
 
   NotificationDatabaseDataProto message;

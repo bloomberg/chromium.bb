@@ -18,10 +18,18 @@ message NotificationDatabaseDataProto {
   optional string origin = 2;
   optional int64 service_worker_registration_id = 3;
 
+  // A notification action, corresponds to content::PlatformNotificationAction.
+  //
+  // Next tag: 3
+  message NotificationAction {
+    optional string action = 1;
+    optional string title = 2;
+  }
+
   // Actual data payload of the notification. This message is the protocol
   // buffer meant to serialize the content::PlatformNotificationData structure.
   //
-  // Next tag: 10
+  // Next tag: 11
   message NotificationData {
     enum Direction {
       LEFT_TO_RIGHT = 0;
@@ -38,6 +46,7 @@ message NotificationDatabaseDataProto {
     repeated int32 vibration_pattern = 9 [packed=true];
     optional bool silent = 7;
     optional bytes data = 8;
+    repeated NotificationAction actions = 10;
   }
 
   optional NotificationData notification_data = 4;

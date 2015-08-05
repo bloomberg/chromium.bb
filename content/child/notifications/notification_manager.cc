@@ -16,6 +16,7 @@
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_task_runner.h"
+#include "content/common/notification_constants.h"
 #include "content/public/common/platform_notification_data.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationDelegate.h"
@@ -218,6 +219,10 @@ WebNotificationPermission NotificationManager::checkPermission(
       GURL(origin.toString()), &permission));
 
   return permission;
+}
+
+size_t NotificationManager::maxActions() {
+  return kPlatformNotificationMaxActions;
 }
 
 bool NotificationManager::OnMessageReceived(const IPC::Message& message) {

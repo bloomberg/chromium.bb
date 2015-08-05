@@ -6,6 +6,10 @@
 
 namespace content {
 
+PlatformNotificationAction::PlatformNotificationAction() {}
+
+PlatformNotificationAction::~PlatformNotificationAction() {}
+
 PlatformNotificationData::PlatformNotificationData() {}
 
 PlatformNotificationData::~PlatformNotificationData() {}

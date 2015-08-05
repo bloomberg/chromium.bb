@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/notifications/notification_database_data.pb.h"
 #include "content/browser/notifications/notification_database_data_conversions.h"
+#include "content/common/notification_constants.h"
 #include "content/public/browser/notification_database_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,6 +44,12 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   notification_data.vibration_pattern = vibration_pattern;
   notification_data.silent = true;
   notification_data.data = developer_data;
+  for (size_t i = 0; i < kPlatformNotificationMaxActions; i++) {
+    PlatformNotificationAction notification_action;
+    notification_action.action = base::SizeTToString(i);
+    notification_action.title = base::SizeTToString16(i);
+    notification_data.actions.push_back(notification_action);
+  }
 
   NotificationDatabaseData database_data;
   database_data.notification_id = kNotificationId;
@@ -84,6 +92,15 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   ASSERT_EQ(developer_data.size(), copied_notification_data.data.size());
   for (size_t i = 0; i < developer_data.size(); ++i)
     EXPECT_EQ(developer_data[i], copied_notification_data.data[i]);
+
+  ASSERT_EQ(notification_data.actions.size(),
+            copied_notification_data.actions.size());
+  for (size_t i = 0; i < notification_data.actions.size(); ++i) {
+    EXPECT_EQ(notification_data.actions[i].action,
+              copied_notification_data.actions[i].action);
+    EXPECT_EQ(notification_data.actions[i].title,
+              copied_notification_data.actions[i].title);
+  }
 }
 
 TEST(NotificationDatabaseDataTest, SerializeAndDeserializeDirections) {

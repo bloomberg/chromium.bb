@@ -60,6 +60,7 @@ class NotificationManager : public blink::WebNotificationManager,
       blink::WebNotificationDelegate* delegate);
   virtual blink::WebNotificationPermission checkPermission(
       const blink::WebSecurityOrigin& origin);
+  virtual size_t maxActions();
 
   // Called by the NotificationDispatcher.
   bool OnMessageReceived(const IPC::Message& message);

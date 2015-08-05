@@ -14,6 +14,18 @@
 
 namespace content {
 
+// A notification action (button); corresponds to Blink WebNotificationAction.
+struct CONTENT_EXPORT PlatformNotificationAction {
+  PlatformNotificationAction();
+  ~PlatformNotificationAction();
+
+  // Action name that the author can use to distinguish them.
+  std::string action;
+
+  // Title of the button.
+  base::string16 title;
+};
+
 // Structure representing the information associated with a Web Notification.
 // This struct should include the developer-visible information, kept
 // synchronized with the WebNotificationData structure defined in the Blink API.
@@ -63,6 +75,9 @@ struct CONTENT_EXPORT PlatformNotificationData {
   // Developer-provided data associated with the notification, in the form of
   // a serialized string. Must not exceed |kMaximumDeveloperDataSize| bytes.
   std::vector<char> data;
+
+  // Actions that should be shown as buttons on the notification.
+  std::vector<PlatformNotificationAction> actions;
 };
 
 }  // namespace content

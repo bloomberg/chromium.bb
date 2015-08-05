@@ -7,6 +7,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationAction.h"
 
 using blink::WebNotificationData;
 
@@ -40,6 +42,12 @@ PlatformNotificationData ToPlatformNotificationData(
                                          web_data.vibrate.end());
   platform_data.silent = web_data.silent;
   platform_data.data.assign(web_data.data.begin(), web_data.data.end());
+  platform_data.actions.resize(web_data.actions.size());
+  for (size_t i = 0; i < web_data.actions.size(); ++i) {
+    platform_data.actions[i].action =
+        base::UTF16ToUTF8(base::StringPiece16(web_data.actions[i].action));
+    platform_data.actions[i].title = web_data.actions[i].title;
+  }
 
   return platform_data;
 }
@@ -68,6 +76,14 @@ WebNotificationData ToWebNotificationData(
   web_data.vibrate = platform_data.vibration_pattern;
   web_data.silent = platform_data.silent;
   web_data.data = platform_data.data;
+  blink::WebVector<blink::WebNotificationAction> resized(
+      platform_data.actions.size());
+  web_data.actions.swap(resized);
+  for (size_t i = 0; i < platform_data.actions.size(); ++i) {
+    web_data.actions[i].action =
+        blink::WebString::fromUTF8(platform_data.actions[i].action);
+    web_data.actions[i].title = platform_data.actions[i].title;
+  }
 
   return web_data;
 }

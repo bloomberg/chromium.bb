@@ -60,4 +60,9 @@ blink::WebNotificationPermission WebNotificationManagerImpl::checkPermission(
   return blink::WebNotificationPermission();
 }
 
+size_t WebNotificationManagerImpl::maxActions() {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 }  // namespace html_viewer

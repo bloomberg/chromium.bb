@@ -335,6 +335,12 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
   notification.set_vibration_pattern(notification_data.vibration_pattern);
   notification.set_silent(notification_data.silent);
 
+  std::vector<message_center::ButtonInfo> buttons;
+  for (const auto& action : notification_data.actions)
+    buttons.push_back(message_center::ButtonInfo(action.title));
+
+  notification.set_buttons(buttons);
+
   // Web Notifications do not timeout.
   notification.set_never_timeout(true);
 

@@ -40,6 +40,7 @@ class WebNotificationManagerImpl : public blink::WebNotificationManager {
   virtual void notifyDelegateDestroyed(blink::WebNotificationDelegate*);
   virtual blink::WebNotificationPermission checkPermission(
       const blink::WebSecurityOrigin&);
+  virtual size_t maxActions();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebNotificationManagerImpl);

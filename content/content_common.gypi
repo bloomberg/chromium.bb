@@ -454,6 +454,7 @@
       'common/net/url_fetcher.cc',
       'common/net/url_request_user_data.cc',
       'common/net/url_request_user_data.h',
+      'common/notification_constants.h',
       'common/one_writer_seqlock.cc',
       'common/one_writer_seqlock.h',
       'common/origin_util.cc',

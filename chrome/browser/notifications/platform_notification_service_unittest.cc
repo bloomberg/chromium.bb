@@ -187,6 +187,9 @@ TEST_F(PlatformNotificationServiceTest, DisplayPageNotificationMatches) {
   notification_data.body = base::ASCIIToUTF16("Hello, world!");
   notification_data.vibration_pattern = vibration_pattern;
   notification_data.silent = true;
+  notification_data.actions.resize(2);
+  notification_data.actions[0].title = base::ASCIIToUTF16("Button 1");
+  notification_data.actions[1].title = base::ASCIIToUTF16("Button 2");
 
   MockDesktopNotificationDelegate* delegate
       = new MockDesktopNotificationDelegate();
@@ -210,6 +213,11 @@ TEST_F(PlatformNotificationServiceTest, DisplayPageNotificationMatches) {
       testing::ElementsAreArray(kNotificationVibrationPattern));
 
   EXPECT_TRUE(notification.silent());
+
+  const auto& buttons = notification.buttons();
+  ASSERT_EQ(2u, buttons.size());
+  EXPECT_EQ("Button 1", base::UTF16ToUTF8(buttons[0].title));
+  EXPECT_EQ("Button 2", base::UTF16ToUTF8(buttons[1].title));
 }
 
 TEST_F(PlatformNotificationServiceTest, DisplayNameForOrigin) {
