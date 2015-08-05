@@ -109,6 +109,30 @@
   <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_AUTHORITIES" desc="Label for the authorities tab in certificate manager.">
     Authorities
   </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_AUTHORITIES_YOU_HAVE_AUTHORITIES" desc="Label for authorities subtitle tab in certificate manager.">
+    You have certificates on file that identify these certificate authorities:
+  </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_OTHERS_YOU_HAVE_OTHERS" desc="Label for others subtitle tab in certificate manager.">
+    You have certificates on file that do not fit in any of the other categories:
+  </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_VIEW" desc="Label for view button in certificate manager.">
+    View
+  </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT" desc="Label for import button in certificate manager.">
+    Import
+  </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_AND_BIND" desc="Label for import and bind button in certificate manager.">
+    Import and Bind to Device
+  </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_EXPORT" desc="Label for export button in certificate manager.">
+    Export
+  </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE" desc="Label for delete button in certificate manager.">
+    Delete
+  </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_DONE" desc="Label for done button in certificate manager.">
+    Done
+  </message>
   <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_OTHERS" desc="Label for the others tab in certificate manager.">
     Others
   </message>
@@ -189,9 +213,6 @@
   <message name="IDS_SETTINGS_MANAGE_CERTIFICATES" desc="Text for manage certificates button in Privacy options">
     Manage Certificates
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS" desc="Text for site settings button in Privacy options">
-    Site settings
-  </message>
   <message name="IDS_SETTINGS_CLEAR_DATA" desc="Text for clear browsing data button in Privacy options">
     Clear browsing data
   </message>
@@ -243,7 +264,7 @@
   </message>
 
   <!-- Site Settings Page -->
-  <message name="IDS_SETTINGS_SITE_SETTINGS_PAGE" desc="Name of the settings page which allows users to modify site settings.">
+  <message name="IDS_SETTINGS_SITE_SETTINGS" desc="Name of the settings page which allows users to modify site settings.">
     Site Settings
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_ALL_SITES" desc="Label for the all sites site settings.">

@@ -82,6 +82,42 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source) {
       "themesGalleryUrl", IDS_THEMES_GALLERY_URL);
 }
 
+void AddCertificateManagerStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("certificateManagerPageTitle",
+                                  IDS_SETTINGS_CERTIFICATE_MANAGER);
+  html_source->AddLocalizedString(
+      "certificateManagerYourCertificates",
+      IDS_SETTINGS_CERTIFICATE_MANAGER_YOUR_CERTIFICATES);
+  html_source->AddLocalizedString(
+      "certificateManagerYourCertificatesSubtitle",
+      IDS_SETTINGS_CERTIFICATE_MANAGER_YOU_HAVE_CERTIFICATES);
+  html_source->AddLocalizedString("certificateManagerServers",
+                                  IDS_SETTINGS_CERTIFICATE_MANAGER_SERVERS);
+  html_source->AddLocalizedString("certificateManagerAuthorities",
+                                  IDS_SETTINGS_CERTIFICATE_MANAGER_AUTHORITIES);
+  html_source->AddLocalizedString(
+      "certificateManagerAuthoritiesSubtitle",
+      IDS_SETTINGS_CERTIFICATE_MANAGER_AUTHORITIES_YOU_HAVE_AUTHORITIES);
+  html_source->AddLocalizedString("certificateManagerOthers",
+                                  IDS_SETTINGS_CERTIFICATE_MANAGER_OTHERS);
+  html_source->AddLocalizedString(
+      "certificateManagerOthersSubtitle",
+      IDS_SETTINGS_CERTIFICATE_MANAGER_OTHERS_YOU_HAVE_OTHERS);
+  html_source->AddLocalizedString("certificateManagerView",
+                                  IDS_SETTINGS_CERTIFICATE_MANAGER_VIEW);
+  html_source->AddLocalizedString("certificateManagerImport",
+                                  IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT);
+  html_source->AddLocalizedString(
+      "certificateManagerImportAndBind",
+      IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_AND_BIND);
+  html_source->AddLocalizedString("certificateManagerExport",
+                                  IDS_SETTINGS_CERTIFICATE_MANAGER_EXPORT);
+  html_source->AddLocalizedString("certificateManagerDelete",
+                                  IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE);
+  html_source->AddLocalizedString("certificateManagerDone",
+                                  IDS_SETTINGS_CERTIFICATE_MANAGER_DONE);
+}
+
 void AddCommonStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("addLabel", IDS_ADD);
 }
@@ -193,6 +229,43 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_SEARCH_ENGINES_ADD_BUTTON_LABEL);
 }
 
+void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("siteSettingsPageTitle",
+                                  IDS_SETTINGS_SITE_SETTINGS);
+  html_source->AddLocalizedString("siteSettingsAllSites",
+                                  IDS_SETTINGS_SITE_SETTINGS_ALL_SITES);
+  html_source->AddLocalizedString("siteSettingsCookies",
+                                  IDS_SETTINGS_SITE_SETTINGS_COOKIES);
+  html_source->AddLocalizedString("siteSettingsLocation",
+                                  IDS_SETTINGS_SITE_SETTINGS_LOCATION);
+  html_source->AddLocalizedString("siteSettingsNotifications",
+                                  IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS);
+  html_source->AddLocalizedString("siteSettingsImages",
+                                  IDS_SETTINGS_SITE_SETTINGS_IMAGES);
+  html_source->AddLocalizedString("siteSettingsJavascript",
+                                  IDS_SETTINGS_SITE_SETTINGS_JAVASCRIPT);
+  html_source->AddLocalizedString("siteSettingsPopups",
+                                  IDS_SETTINGS_SITE_SETTINGS_POPUPS);
+  html_source->AddLocalizedString("siteSettingsFullscreen",
+                                  IDS_SETTINGS_SITE_SETTINGS_FULLSCREEN);
+  html_source->AddLocalizedString("siteSettingsCookiesOption",
+                                  IDS_SETTINGS_SITE_SETTINGS_COOKIES_OPTION);
+  html_source->AddLocalizedString("siteSettingsAskFirstOption",
+                                  IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST_OPTION);
+  html_source->AddLocalizedString("siteSettingsLocationOption",
+                                  IDS_SETTINGS_SITE_SETTINGS_LOCATION_OPTION);
+  html_source->AddLocalizedString("siteSettingsAllow",
+                                  IDS_SETTINGS_SITE_SETTINGS_ALLOW);
+  html_source->AddLocalizedString("siteSettingsBlock",
+                                  IDS_SETTINGS_SITE_SETTINGS_BLOCK);
+  html_source->AddLocalizedString("siteSettingsExceptions",
+                                  IDS_SETTINGS_SITE_SETTINGS_EXCEPTIONS);
+  html_source->AddLocalizedString("siteSettingsAddSite",
+                                  IDS_SETTINGS_SITE_SETTINGS_ADD_SITE);
+  html_source->AddLocalizedString("siteSettingsSiteUrl",
+                                  IDS_SETTINGS_SITE_SETTINGS_SITE_URL);
+}
+
 void AddSyncStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("syncPageTitle",
                                   IDS_SETTINGS_SYNC);
@@ -271,6 +344,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
 
   AddA11yStrings(html_source);
   AddAppearanceStrings(html_source);
+  AddCertificateManagerStrings(html_source);
   AddCommonStrings(html_source);
   AddDownloadsStrings(html_source);
   AddDateTimeStrings(html_source);
@@ -280,6 +354,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
   AddPrivacyStrings(html_source);
   AddSearchStrings(html_source);
   AddSearchEnginesStrings(html_source);
+  AddSiteSettingsStrings(html_source);
   AddSyncStrings(html_source);
   AddUsersStrings(html_source);
   html_source->SetJsonPath(kLocalizedStringsFile);
