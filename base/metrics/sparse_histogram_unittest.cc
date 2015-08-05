@@ -62,6 +62,25 @@ TEST_F(SparseHistogramTest, BasicTest) {
   EXPECT_EQ(1, snapshot2->GetCount(101));
 }
 
+TEST_F(SparseHistogramTest, BasicTestAddCount) {
+  scoped_ptr<SparseHistogram> histogram(NewSparseHistogram("Sparse"));
+  scoped_ptr<HistogramSamples> snapshot(histogram->SnapshotSamples());
+  EXPECT_EQ(0, snapshot->TotalCount());
+  EXPECT_EQ(0, snapshot->sum());
+
+  histogram->AddCount(100, 15);
+  scoped_ptr<HistogramSamples> snapshot1(histogram->SnapshotSamples());
+  EXPECT_EQ(15, snapshot1->TotalCount());
+  EXPECT_EQ(15, snapshot1->GetCount(100));
+
+  histogram->AddCount(100, 15);
+  histogram->AddCount(101, 25);
+  scoped_ptr<HistogramSamples> snapshot2(histogram->SnapshotSamples());
+  EXPECT_EQ(55, snapshot2->TotalCount());
+  EXPECT_EQ(30, snapshot2->GetCount(100));
+  EXPECT_EQ(25, snapshot2->GetCount(101));
+}
+
 TEST_F(SparseHistogramTest, MacroBasicTest) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Sparse", 100);
   UMA_HISTOGRAM_SPARSE_SLOWLY("Sparse", 200);

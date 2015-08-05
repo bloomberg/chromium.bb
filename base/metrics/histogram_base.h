@@ -121,6 +121,12 @@ class BASE_EXPORT HistogramBase {
 
   virtual void Add(Sample value) = 0;
 
+  // In Add function the |value| bucket is increased by one, but in some use
+  // cases we need to increase this value by an arbitrary integer. AddCount
+  // function increases the |value| bucket by |count|. |count| should be greater
+  // than or equal to 1.
+  virtual void AddCount(Sample value, int count) = 0;
+
   // 2 convenient functions that call Add(Sample).
   void AddTime(const TimeDelta& time);
   void AddBoolean(bool value);

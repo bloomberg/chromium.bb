@@ -42,6 +42,7 @@ class BASE_EXPORT_PRIVATE SparseHistogram : public HistogramBase {
                                 Sample expected_maximum,
                                 size_t expected_bucket_count) const override;
   void Add(Sample value) override;
+  void AddCount(Sample value, int count) override;
   void AddSamples(const HistogramSamples& samples) override;
   bool AddSamplesFromPickle(base::PickleIterator* iter) override;
   scoped_ptr<HistogramSamples> SnapshotSamples() const override;

@@ -231,6 +231,30 @@ TEST_F(HistogramTest, CustomHistogramWithOnly2Buckets) {
   EXPECT_EQ(HistogramBase::kSampleType_MAX, ranges->range(2));
 }
 
+// Test the AddCount function.
+TEST_F(HistogramTest, AddCountTest) {
+  const size_t kBucketCount = 50;
+  Histogram* histogram = static_cast<Histogram*>(
+      Histogram::FactoryGet("AddCountHistogram", 10, 100, kBucketCount,
+                            HistogramBase::kNoFlags));
+
+  histogram->AddCount(20, 15);
+  histogram->AddCount(30, 14);
+
+  scoped_ptr<SampleVector> samples = histogram->SnapshotSampleVector();
+  EXPECT_EQ(29, samples->TotalCount());
+  EXPECT_EQ(15, samples->GetCount(20));
+  EXPECT_EQ(14, samples->GetCount(30));
+
+  histogram->AddCount(20, 25);
+  histogram->AddCount(30, 24);
+
+  scoped_ptr<SampleVector> samples2 = histogram->SnapshotSampleVector();
+  EXPECT_EQ(78, samples2->TotalCount());
+  EXPECT_EQ(40, samples2->GetCount(20));
+  EXPECT_EQ(38, samples2->GetCount(30));
+}
+
 // Make sure histogram handles out-of-bounds data gracefully.
 TEST_F(HistogramTest, BoundsTest) {
   const size_t kBucketCount = 50;
