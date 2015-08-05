@@ -22,6 +22,8 @@ const int kReferenceSizeDip = 48;
 enum CommandType {
   // A new <path> element. For the first path, this is assumed.
   NEW_PATH,
+  // Sets the color for the current path.
+  PATH_COLOR_ARGB,
   // These correspond to pathing commands.
   MOVE_TO,
   R_MOVE_TO,

@@ -25,8 +25,11 @@ CommandType CommandFromString(const std::string& source) {
   if (source == #command)     \
     return command;
 
+  RETURN_IF_IS(NEW_PATH);
+  RETURN_IF_IS(PATH_COLOR_ARGB);
   RETURN_IF_IS(MOVE_TO);
   RETURN_IF_IS(R_MOVE_TO);
+  RETURN_IF_IS(LINE_TO);
   RETURN_IF_IS(R_LINE_TO);
   RETURN_IF_IS(H_LINE_TO);
   RETURN_IF_IS(R_H_LINE_TO);
@@ -36,6 +39,7 @@ CommandType CommandFromString(const std::string& source) {
   RETURN_IF_IS(R_CUBIC_TO);
   RETURN_IF_IS(CIRCLE);
   RETURN_IF_IS(CLOSE);
+  RETURN_IF_IS(CANVAS_DIMENSIONS);
   RETURN_IF_IS(END);
 #undef RETURN_IF_IS
 
@@ -69,12 +73,26 @@ void PaintPath(Canvas* canvas,
   paths.back().setFillType(SkPath::kEvenOdd_FillType);
   size_t canvas_size = kReferenceSizeDip;
 
+  std::vector<SkPaint> paints;
+  paints.push_back(SkPaint());
+  paints.back().setColor(color);
+
   for (size_t i = 0; path_elements[i].type != END; i++) {
     SkPath& path = paths.back();
     switch (path_elements[i].type) {
       case NEW_PATH: {
         paths.push_back(SkPath());
-        paths.back().setFillType(SkPath::kEvenOdd_FillType);
+        paints.push_back(SkPaint());
+        paints.back().setColor(color);
+        break;
+      }
+
+      case PATH_COLOR_ARGB: {
+        int a = SkScalarFloorToInt(path_elements[++i].arg);
+        int r = SkScalarFloorToInt(path_elements[++i].arg);
+        int g = SkScalarFloorToInt(path_elements[++i].arg);
+        int b = SkScalarFloorToInt(path_elements[++i].arg);
+        paints.back().setColor(SkColorSetARGB(a, r, g, b));
         break;
       }
 
@@ -181,18 +199,18 @@ void PaintPath(Canvas* canvas,
     }
   }
 
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setAntiAlias(true);
-  paint.setColor(color);
-
   if (dip_size != canvas_size) {
     SkScalar scale = SkIntToScalar(dip_size) / SkIntToScalar(canvas_size);
     canvas->sk_canvas()->scale(scale, scale);
   }
 
-  for (const auto& path : paths)
-    canvas->DrawPath(path, paint);
+  DCHECK_EQ(paints.size(), paths.size());
+  for (size_t i = 0; i < paths.size(); ++i) {
+    paints[i].setStyle(SkPaint::kFill_Style);
+    paints[i].setAntiAlias(true);
+    paths[i].setFillType(SkPath::kEvenOdd_FillType);
+    canvas->DrawPath(paths[i], paints[i]);
+  }
 }
 
 class VectorIconSource : public CanvasImageSource {
