@@ -32,6 +32,14 @@ struct AtaRequest {
   IDENTIFY_DEVICE_DATA result;
 };
 
+struct PaddedAtaRequest {
+  DWORD bytes_returned;  // Intentionally above |request| for alignment.
+  AtaRequest request;
+ private:
+  // Prevents some crashes from bad drivers. http://crbug.com/514822
+  BYTE kUnusedBadDriverSpace[256];
+};
+
 }  // namespace
 
 // static
@@ -56,32 +64,42 @@ bool DriveMetricsProvider::HasSeekPenalty(const base::FilePath& path,
 
     DEVICE_SEEK_PENALTY_DESCRIPTOR result;
     DWORD bytes_returned;
+
     BOOL success = DeviceIoControl(
         volume.GetPlatformFile(), IOCTL_STORAGE_QUERY_PROPERTY, &query,
         sizeof(query), &result, sizeof(result), &bytes_returned, NULL);
+
     if (success == FALSE || bytes_returned < sizeof(result))
       return false;
 
     *has_seek_penalty = result.IncursSeekPenalty != FALSE;
   } else {
-    AtaRequest request = {};
-    request.query.AtaFlags = ATA_FLAGS_DATA_IN;
-    request.query.CurrentTaskFile[6] = ID_CMD;
-    request.query.DataBufferOffset = sizeof(request.query);
-    request.query.DataTransferLength = sizeof(request.result);
-    request.query.Length = sizeof(request.query);
-    request.query.TimeOutValue = 10;
+    PaddedAtaRequest padded = {};
 
-    DWORD bytes_returned;
+    AtaRequest* request = &padded.request;
+    request->query.AtaFlags = ATA_FLAGS_DATA_IN;
+    request->query.CurrentTaskFile[6] = ID_CMD;
+    request->query.DataBufferOffset = sizeof(request->query);
+    request->query.DataTransferLength = sizeof(request->result);
+    request->query.Length = sizeof(request->query);
+    request->query.TimeOutValue = 10;
+
+    DWORD* bytes_returned = &padded.bytes_returned;
+
     BOOL success = DeviceIoControl(
-        volume.GetPlatformFile(), IOCTL_ATA_PASS_THROUGH, &request,
-        sizeof(request), &request, sizeof(request), &bytes_returned, NULL);
-    if (success == FALSE || bytes_returned < sizeof(request) ||
-        request.query.CurrentTaskFile[0]) {
+        volume.GetPlatformFile(), IOCTL_ATA_PASS_THROUGH, request,
+        sizeof(*request), request, sizeof(*request), bytes_returned, NULL);
+
+    if (success == FALSE || *bytes_returned < sizeof(*request) ||
+        request->query.CurrentTaskFile[0]) {
       return false;
     }
 
-    *has_seek_penalty = request.result.NominalMediaRotationRate != 1;
+    // Detect device driver writes further than request + bad driver space.
+    // http://crbug.com/514822
+    CHECK_LE(*bytes_returned, sizeof(padded) - sizeof(*bytes_returned));
+
+    *has_seek_penalty = request->result.NominalMediaRotationRate != 1;
   }
 
   return true;
