@@ -44,9 +44,11 @@ void Separator::SetPreferredSize(int size) {
 // Separator, View overrides:
 
 gfx::Size Separator::GetPreferredSize() const {
-  if (orientation_ == HORIZONTAL)
-    return gfx::Size(width(), size_);
-  return gfx::Size(size_, height());
+  gfx::Size size =
+      orientation_ == HORIZONTAL ? gfx::Size(1, size_) : gfx::Size(size_, 1);
+  gfx::Insets insets = GetInsets();
+  size.Enlarge(insets.width(), insets.height());
+  return size;
 }
 
 void Separator::GetAccessibleState(ui::AXViewState* state) {
