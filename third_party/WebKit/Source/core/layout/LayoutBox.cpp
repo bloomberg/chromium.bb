@@ -4265,56 +4265,10 @@ bool LayoutBox::hasDefiniteLogicalWidth() const
     return logicalWidthIsResolvable(*this);
 }
 
-bool LayoutBox::percentageLogicalHeightIsResolvableFromBlock(const LayoutBlock* containingBlock, bool isOutOfFlowPositioned)
-{
-    // In quirks mode, blocks with auto height are skipped, and we keep looking for an enclosing
-    // block that may have a specified height and then use it. In strict mode, this violates the
-    // specification, which states that percentage heights just revert to auto if the containing
-    // block has an auto height. We still skip anonymous containing blocks in both modes, though, and look
-    // only at explicit containers.
-    const LayoutBlock* cb = containingBlock;
-    bool inQuirksMode = cb->document().inQuirksMode();
-    while (!cb->isLayoutView() && !cb->isBody() && !cb->isTableCell() && !cb->isOutOfFlowPositioned() && cb->style()->logicalHeight().isAuto()) {
-        if (!inQuirksMode && !cb->isAnonymousBlock())
-            break;
-        if (cb->hasOverrideContainingBlockLogicalHeight())
-            return cb->overrideContainingBlockContentLogicalHeight() != -1;
-
-        cb = cb->containingBlock();
-    }
-
-    // A positioned element that specified both top/bottom or that specifies height should be treated as though it has a height
-    // explicitly specified that can be used for any percentage computations.
-    // FIXME: We can't just check top/bottom here.
-    // https://bugs.webkit.org/show_bug.cgi?id=46500
-    bool isOutOfFlowPositionedWithSpecifiedHeight = cb->isOutOfFlowPositioned() && (!cb->style()->logicalHeight().isAuto() || (!cb->style()->top().isAuto() && !cb->style()->bottom().isAuto()));
-
-    // Table cells violate what the CSS spec says to do with heights.  Basically we
-    // don't care if the cell specified a height or not.  We just always make ourselves
-    // be a percentage of the cell's current content height.
-    if (cb->isTableCell())
-        return true;
-
-    // Otherwise we only use our percentage height if our containing block had a specified
-    // height.
-    if (cb->style()->logicalHeight().isFixed())
-        return true;
-    if (cb->style()->logicalHeight().hasPercent() && !isOutOfFlowPositionedWithSpecifiedHeight)
-        return percentageLogicalHeightIsResolvableFromBlock(cb->containingBlock(), cb->isOutOfFlowPositioned());
-    if (cb->isLayoutView() || inQuirksMode || isOutOfFlowPositionedWithSpecifiedHeight)
-        return true;
-    if (cb->isDocumentElement() && isOutOfFlowPositioned) {
-        // Match the positioned objects behavior, which is that positioned objects will fill their viewport
-        // always.  Note we could only hit this case by recurring into computePercentageLogicalHeight on a positioned containing block.
-        return true;
-    }
-
-    return false;
-}
-
 bool LayoutBox::percentageLogicalHeightIsResolvable() const
 {
-    return LayoutBox::percentageLogicalHeightIsResolvableFromBlock(containingBlock(), isOutOfFlowPositioned());
+    Length fakeLength(100, Percent);
+    return computePercentageLogicalHeight(fakeLength) != -1;
 }
 
 bool LayoutBox::hasDefiniteLogicalHeight() const
