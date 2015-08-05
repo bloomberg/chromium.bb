@@ -14,8 +14,12 @@ namespace blink {
 
 class ComputedStyle;
 class Document;
+class HitTestRequest;
+class HitTestLocation;
 class LayoutObject;
 class LineLayoutBox;
+
+enum HitTestFilter;
 
 class LineLayoutItem {
 public:
@@ -254,6 +258,16 @@ public:
     bool hasFlippedBlocksWritingMode() const
     {
         return m_layoutObject->hasFlippedBlocksWritingMode();
+    }
+
+    bool visibleToHitTestRequest(const HitTestRequest& request) const
+    {
+        return m_layoutObject->visibleToHitTestRequest(request);
+    }
+
+    bool hitTest(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestFilter filter = HitTestAll)
+    {
+        return m_layoutObject->hitTest(result, locationInContainer, accumulatedOffset, filter);
     }
 
 protected:

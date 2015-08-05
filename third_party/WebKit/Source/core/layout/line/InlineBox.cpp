@@ -228,7 +228,7 @@ bool InlineBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locati
             return false;
     }
 
-    return layoutObject().hitTest(result, locationInContainer, childPoint);
+    return lineLayoutItem().hitTest(result, locationInContainer, childPoint);
 }
 
 const RootInlineBox& InlineBox::root() const
