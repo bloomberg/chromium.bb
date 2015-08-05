@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -23,11 +24,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/sandboxed_zip_analyzer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/download_protection_util.h"
@@ -131,7 +134,12 @@ class DownloadSBClient
         ui_manager_(ui_manager),
         start_time_(base::TimeTicks::Now()),
         total_type_(total_type),
-        dangerous_type_(dangerous_type) {}
+        dangerous_type_(dangerous_type) {
+    Profile* profile = Profile::FromBrowserContext(item.GetBrowserContext());
+    is_extended_reporting_ = profile &&
+                             profile->GetPrefs()->GetBoolean(
+                                 prefs::kSafeBrowsingExtendedReportingEnabled);
+  }
 
   virtual void StartCheck() = 0;
   virtual bool IsDangerous(SBThreatType threat_type) const = 0;
@@ -167,13 +175,13 @@ class DownloadSBClient
     for (size_t i = 0; i < url_chain_.size(); ++i) {
       post_data += url_chain_[i].spec() + "\n";
     }
-    ui_manager_->ReportSafeBrowsingHit(
-        url_chain_.back(),  // malicious_url
-        url_chain_.front(), // page_url
-        referrer_url_,
-        true,  // is_subresource
-        threat_type,
-        post_data);
+    ui_manager_->ReportSafeBrowsingHit(url_chain_.back(),   // malicious_url
+                                       url_chain_.front(),  // page_url
+                                       referrer_url_,
+                                       true,  // is_subresource
+                                       threat_type,
+                                       post_data,
+                                       is_extended_reporting_);
   }
 
   void UpdateDownloadCheckStats(SBStatsType stat_type) {
@@ -192,6 +200,7 @@ class DownloadSBClient
  private:
   const SBStatsType total_type_;
   const SBStatsType dangerous_type_;
+  bool is_extended_reporting_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadSBClient);
 };
@@ -675,8 +684,23 @@ class DownloadProtectionService::CheckClientDownloadRequest
     // before sending it.
     if (!service_)
       return;
+    bool is_extended_reporting = false;
+    if (item_->GetBrowserContext()) {
+      Profile* profile =
+          Profile::FromBrowserContext(item_->GetBrowserContext());
+      is_extended_reporting = profile &&
+                              profile->GetPrefs()->GetBoolean(
+                                  prefs::kSafeBrowsingExtendedReportingEnabled);
+    }
 
     ClientDownloadRequest request;
+    if (is_extended_reporting) {
+      request.mutable_population()->set_user_population(
+          ChromeUserPopulation::EXTENDED_REPORTING);
+    } else {
+      request.mutable_population()->set_user_population(
+          ChromeUserPopulation::SAFE_BROWSING);
+    }
     request.set_url(SanitizeUrl(item_->GetUrlChain().back()));
     request.mutable_digests()->set_sha256(item_->GetHash());
     request.set_length(item_->GetReceivedBytes());

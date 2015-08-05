@@ -43,50 +43,61 @@ TEST_F(SafeBrowsingPingManagerTest, TestSafeBrowsingHitUrl) {
   GURL malicious_url("http://malicious.url.com");
   GURL page_url("http://page.url.com");
   GURL referrer_url("http://referrer.url.com");
-  EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
-            "pver=3.0" + key_param_ +
-            "&evts=malblhit&evtd=http%3A%2F%2Fmalicious.url.com%2F&"
-            "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
-            "url.com%2F&evtb=1",
-            pm.SafeBrowsingHitUrl(
-                malicious_url, page_url, referrer_url,
-                true, SB_THREAT_TYPE_URL_MALWARE).spec());
+  EXPECT_EQ(
+      "https://prefix.com/foo/report?client=unittest&appver=1.0&"
+      "pver=3.0" +
+          key_param_ +
+          "&ext=1&evts=malblhit&evtd=http%3A%2F%2Fmalicious.url.com%2F&"
+          "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
+          "url.com%2F&evtb=1",
+      pm.SafeBrowsingHitUrl(malicious_url, page_url, referrer_url, true,
+                            SB_THREAT_TYPE_URL_MALWARE, true).spec());
 
-  EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
-            "pver=3.0" + key_param_ + "&evts=phishblhit&"
-            "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
-            "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
-            "url.com%2F&evtb=0",
-            pm.SafeBrowsingHitUrl(
-                malicious_url, page_url, referrer_url,
-                false, SB_THREAT_TYPE_URL_PHISHING).spec());
+  EXPECT_EQ(
+      "https://prefix.com/foo/report?client=unittest&appver=1.0&"
+      "pver=3.0" +
+          key_param_ +
+          "&ext=1&evts=phishblhit&"
+          "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
+          "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
+          "url.com%2F&evtb=0",
+      pm.SafeBrowsingHitUrl(malicious_url, page_url, referrer_url, false,
+                            SB_THREAT_TYPE_URL_PHISHING, true).spec());
 
-  EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
-            "pver=3.0" + key_param_ + "&evts=binurlhit&"
-            "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
-            "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
-            "url.com%2F&evtb=0",
-            pm.SafeBrowsingHitUrl(
-                malicious_url, page_url, referrer_url,
-                false, SB_THREAT_TYPE_BINARY_MALWARE_URL).spec());
+  EXPECT_EQ(
+      "https://prefix.com/foo/report?client=unittest&appver=1.0&"
+      "pver=3.0" +
+          key_param_ +
+          "&ext=0&evts=binurlhit&"
+          "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
+          "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
+          "url.com%2F&evtb=0",
+      pm.SafeBrowsingHitUrl(malicious_url, page_url, referrer_url, false,
+                            SB_THREAT_TYPE_BINARY_MALWARE_URL, false).spec());
 
-  EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
-            "pver=3.0" + key_param_ + "&evts=phishcsdhit&"
-            "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
-            "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
-            "url.com%2F&evtb=0",
-            pm.SafeBrowsingHitUrl(
-                malicious_url, page_url, referrer_url,
-                false, SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL).spec());
+  EXPECT_EQ(
+      "https://prefix.com/foo/report?client=unittest&appver=1.0&"
+      "pver=3.0" +
+          key_param_ +
+          "&ext=0&evts=phishcsdhit&"
+          "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
+          "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
+          "url.com%2F&evtb=0",
+      pm.SafeBrowsingHitUrl(malicious_url, page_url, referrer_url, false,
+                            SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
+                            false).spec());
 
-    EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
-            "pver=3.0" + key_param_ + "&evts=malcsdhit&"
-            "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
-            "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
-            "url.com%2F&evtb=1",
-            pm.SafeBrowsingHitUrl(
-                malicious_url, page_url, referrer_url,
-                true, SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL).spec());
+  EXPECT_EQ(
+      "https://prefix.com/foo/report?client=unittest&appver=1.0&"
+      "pver=3.0" +
+          key_param_ +
+          "&ext=0&evts=malcsdhit&"
+          "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
+          "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
+          "url.com%2F&evtb=1",
+      pm.SafeBrowsingHitUrl(malicious_url, page_url, referrer_url, true,
+                            SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL,
+                            false).spec());
 }
 
 TEST_F(SafeBrowsingPingManagerTest, TestMalwareDetailsUrl) {

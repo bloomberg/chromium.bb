@@ -44,6 +44,15 @@ class SafeBrowsingProtocolManagerHelper {
                                 const std::string& version,
                                 const std::string& additional_query);
 
+  // Similar to above function, and appends "&ext=1" at the end of URL if
+  // |is_extended_reporting| is true, otherwise, appends "&ext=0".
+  static std::string ComposeUrl(const std::string& prefix,
+                                const std::string& method,
+                                const std::string& client_name,
+                                const std::string& version,
+                                const std::string& additional_query,
+                                bool is_extended_reporting);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SafeBrowsingProtocolManagerHelper);
 };
