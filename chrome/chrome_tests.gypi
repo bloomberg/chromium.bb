@@ -1540,6 +1540,7 @@
         'renderer',
         'test_support_common',
         '../components/components.gyp:guest_view_test_support',
+        '../components/components_resources.gyp:components_resources',
         '../content/app/resources/content_resources.gyp:content_resources',
         '../crypto/crypto.gyp:crypto_test_support',
         '../google_apis/google_apis.gyp:google_apis_test_support',

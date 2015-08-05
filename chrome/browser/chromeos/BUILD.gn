@@ -177,6 +177,7 @@ source_set("unit_tests") {
     "//components/drive",
     "//components/policy",
     "//components/invalidation/public",
+    "//components/resources",
     "//crypto:platform",
     "//dbus",
     "//skia",

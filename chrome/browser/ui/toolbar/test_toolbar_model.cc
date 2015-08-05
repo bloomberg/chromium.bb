@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/toolbar/test_toolbar_model.h"
 
-#include "grit/theme_resources.h"
+#include "grit/components_scaled_resources.h"
 
 TestToolbarModel::TestToolbarModel()
     : ChromeToolbarModel(),
