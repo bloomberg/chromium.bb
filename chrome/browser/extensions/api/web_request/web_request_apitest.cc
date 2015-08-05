@@ -322,3 +322,68 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, IncognitoSplitModeReload) {
   EXPECT_TRUE(listener2.WaitUntilSatisfied());
   EXPECT_TRUE(listener_incognito2.WaitUntilSatisfied());
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ExtensionRequests) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ExtensionTestMessageListener listener_main1("web_request_status1", true);
+  ExtensionTestMessageListener listener_main2("web_request_status2", true);
+
+  ExtensionTestMessageListener listener_app("app_done", false);
+  ExtensionTestMessageListener listener_extension("extension_done", true);
+
+  // Set up webRequest listener
+  ASSERT_TRUE(LoadExtension(
+          test_data_dir_.AppendASCII("webrequest_extensions/main")));
+  EXPECT_TRUE(listener_main1.WaitUntilSatisfied());
+  EXPECT_TRUE(listener_main2.WaitUntilSatisfied());
+
+  // Perform some network activity in an app and another extension.
+  ASSERT_TRUE(LoadExtension(
+          test_data_dir_.AppendASCII("webrequest_extensions/app")));
+  ASSERT_TRUE(LoadExtension(
+          test_data_dir_.AppendASCII("webrequest_extensions/extension")));
+
+  EXPECT_TRUE(listener_app.WaitUntilSatisfied());
+  EXPECT_TRUE(listener_extension.WaitUntilSatisfied());
+
+  // Load a page, a content script will ping us when it is ready.
+  ExtensionTestMessageListener listener_pageready("contentscript_ready", true);
+  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(
+          "/extensions/test_file.html?match_webrequest_test"));
+
+  // The extension and app-generated requests should not have triggered any
+  // webRequest event filtered by type 'xmlhttprequest'.
+  // (check this here instead of before the navigation, in case the webRequest
+  // event routing is slow for some reason).
+  ExtensionTestMessageListener listener_result(false);
+  listener_main1.Reply("");
+  EXPECT_TRUE(listener_result.WaitUntilSatisfied());
+  EXPECT_EQ("Did not intercept any requests.", listener_result.message());
+
+  // Proceed with the final tests: Let the content script fire a request.
+  EXPECT_TRUE(listener_pageready.WaitUntilSatisfied());
+  listener_pageready.Reply("");
+
+  ExtensionTestMessageListener listener_contentscript("contentscript_done",
+                                                      true);
+  ExtensionTestMessageListener listener_framescript("framescript_done", false);
+  EXPECT_TRUE(listener_contentscript.WaitUntilSatisfied());
+  listener_contentscript.Reply("");
+  EXPECT_TRUE(listener_framescript.WaitUntilSatisfied());
+
+  // Collect the visited URLs. The content script and subframe does not run in
+  // the extension's process, so the requests should be visible to the main
+  // extension.
+  listener_result.Reset();
+  listener_main2.Reply("");
+  EXPECT_TRUE(listener_result.WaitUntilSatisfied());
+  if (content::AreAllSitesIsolatedForTesting()) {
+    // With --site-per-process, the extension frame does run in the extension's
+    // process.
+    EXPECT_EQ("Intercepted requests: ?contentscript",
+              listener_result.message());
+  } else {
+    EXPECT_EQ("Intercepted requests: ?contentscript, ?framescript",
+              listener_result.message());
+  }
+}

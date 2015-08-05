@@ -416,7 +416,7 @@ void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
                                      details.browser_context,
                                      details.extension_id,
                                      details.event_name,
-                                     0 /* embedder_process_id */,
+                                     0 /* embedder_process_id (ignored) */,
                                      0 /* web_view_instance_id */));
 }
 
@@ -445,11 +445,20 @@ struct ExtensionWebRequestEventRouter::EventListener {
     if (sub_event_name != that.sub_event_name)
       return sub_event_name < that.sub_event_name;
 
-    if (embedder_process_id != that.embedder_process_id)
-      return embedder_process_id < that.embedder_process_id;
-
     if (web_view_instance_id != that.web_view_instance_id)
       return web_view_instance_id < that.web_view_instance_id;
+
+    if (web_view_instance_id == 0) {
+      // Do not filter by process ID for non-webviews, because this comparator
+      // is also used to find and remove an event listener when an extension is
+      // unloaded. At this point, the event listener cannot be mapped back to
+      // the original process, so 0 is used instead of the actual process ID.
+      DCHECK(embedder_process_id == 0 || that.embedder_process_id == 0);
+      return false;
+    }
+
+    if (embedder_process_id != that.embedder_process_id)
+      return embedder_process_id < that.embedder_process_id;
 
     return false;
   }
@@ -1238,6 +1247,8 @@ void ExtensionWebRequestEventRouter::OnEventHandled(
     const std::string& sub_event_name,
     uint64 request_id,
     EventResponse* response) {
+  // TODO(robwu): Does this also work with webviews? operator< (used by find)
+  // takes the webview ID into account, which is not set on |listener|.
   EventListener listener;
   listener.extension_id = extension_id;
   listener.sub_event_name = sub_event_name;
@@ -1468,6 +1479,12 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     if (is_web_view_guest &&
         (it->embedder_process_id != web_view_info.embedder_process_id ||
          it->web_view_instance_id != web_view_info.instance_id))
+      continue;
+
+    // Filter requests from other extensions / apps. This does not work for
+    // content scripts, or extension pages in non-extension processes.
+    if (is_request_from_extension &&
+        it->embedder_process_id != render_process_host_id)
       continue;
 
     if (!it->filter.urls.is_empty() && !it->filter.urls.MatchesURL(url))
@@ -2190,9 +2207,7 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(5, &web_view_instance_id));
 
   base::WeakPtr<IOThreadExtensionMessageFilter> ipc_sender = ipc_sender_weak();
-  int embedder_process_id =
-      ipc_sender.get() && web_view_instance_id > 0 ?
-          ipc_sender->render_process_id() : 0;
+  int embedder_process_id = ipc_sender ? ipc_sender->render_process_id() : 0;
 
   const Extension* extension =
       extension_info_map()->extensions().GetByID(extension_id_safe());
