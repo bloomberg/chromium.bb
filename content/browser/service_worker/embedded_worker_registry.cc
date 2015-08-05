@@ -276,7 +276,11 @@ void EmbeddedWorkerRegistry::RemoveWorker(int process_id,
                                           int embedded_worker_id) {
   DCHECK(ContainsKey(worker_map_, embedded_worker_id));
   worker_map_.erase(embedded_worker_id);
-  worker_process_map_.erase(process_id);
+  if (!ContainsKey(worker_process_map_, process_id))
+    return;
+  worker_process_map_[process_id].erase(embedded_worker_id);
+  if (worker_process_map_[process_id].empty())
+    worker_process_map_.erase(process_id);
 }
 
 }  // namespace content
