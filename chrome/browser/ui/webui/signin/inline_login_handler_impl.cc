@@ -681,9 +681,8 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
                                   choose_what_to_sync),
         profile,
         Profile::CREATE_STATUS_CREATED);
+    web_ui()->CallJavascriptFunction("inline.login.closeDialog");
   }
-
-  web_ui()->CallJavascriptFunction("inline.login.closeDialog");
 }
 
 InlineLoginHandlerImpl::FinishCompleteLoginParams::FinishCompleteLoginParams(
