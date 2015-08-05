@@ -90,35 +90,26 @@ bool IsSignupForm(const PasswordForm& form) {
   return !form.new_password_element.empty() && form.password_element.empty();
 }
 
-// Tries to convert the |server_field_type| to a PasswordFormFieldPredictionType
-// stored in |type|. Returns true if the conversion was made.
 bool ServerTypeToPrediction(autofill::ServerFieldType server_field_type,
                             autofill::PasswordFormFieldPredictionType* type) {
   switch (server_field_type) {
     case autofill::USERNAME:
     case autofill::USERNAME_AND_EMAIL_ADDRESS:
       *type = autofill::PREDICTION_USERNAME;
-      return true;
+      break;
 
     case autofill::PASSWORD:
       *type = autofill::PREDICTION_CURRENT_PASSWORD;
-      return true;
+      break;
 
     case autofill::ACCOUNT_CREATION_PASSWORD:
       *type = autofill::PREDICTION_NEW_PASSWORD;
-      return true;
+      break;
 
     default:
       return false;
   }
-}
-
-// Returns true if the |field_type| is known to be possibly
-// misinterpreted as a password by the Password Manager.
-bool IsPredictedTypeNotPasswordPrediction(
-    autofill::ServerFieldType field_type) {
-  return field_type == autofill::CREDIT_CARD_NUMBER ||
-         field_type == autofill::CREDIT_CARD_VERIFICATION_CODE;
+  return true;
 }
 
 bool PreferredRealmIsFromAndroid(
@@ -777,17 +768,8 @@ void PasswordManager::ProcessAutofillPredictions(
              form->begin();
          field != form->end(); ++field) {
       autofill::PasswordFormFieldPredictionType prediction_type;
-      if (ServerTypeToPrediction((*field)->server_type(), &prediction_type)) {
-        predictions[form->ToFormData()][*(*field)] = prediction_type;
-      }
-      // Certain fields are annotated by the browsers as "not passwords" i.e.
-      // they should not be treated as passwords by the Password Manager.
-      if ((*field)->form_control_type == "password" &&
-          IsPredictedTypeNotPasswordPrediction(
-              (*field)->Type().GetStorableType())) {
-        predictions[form->ToFormData()][*(*field)] =
-            autofill::PREDICTION_NOT_PASSWORD;
-      }
+      if (ServerTypeToPrediction((*field)->server_type(), &prediction_type))
+        predictions[form->ToFormData()][prediction_type] = *(*field);
     }
   }
   if (predictions.empty())

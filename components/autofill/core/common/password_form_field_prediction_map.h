@@ -19,12 +19,11 @@ enum PasswordFormFieldPredictionType {
   PREDICTION_USERNAME,
   PREDICTION_CURRENT_PASSWORD,
   PREDICTION_NEW_PASSWORD,
-  PREDICTION_NOT_PASSWORD,
-  PREDICTION_MAX = PREDICTION_NOT_PASSWORD
+  PREDICTION_MAX = PREDICTION_NEW_PASSWORD
 };
 
 using PasswordFormFieldPredictionMap =
-    std::map<FormFieldData, PasswordFormFieldPredictionType>;
+    std::map<PasswordFormFieldPredictionType, FormFieldData>;
 
 }  // namespace autofill
 
