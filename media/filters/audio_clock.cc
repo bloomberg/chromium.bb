@@ -53,7 +53,11 @@ void AudioClock::WroteAudio(int frames_written,
   // buffered.  Doing so avoids accumulation errors on the front timestamp.
   back_timestamp_ += base::TimeDelta::FromMicroseconds(
       frames_written * playback_rate * microseconds_per_frame_);
-  front_timestamp_ = back_timestamp_ - ComputeBufferedMediaDuration();
+  // Don't let front timestamp move earlier in time, as could occur due to delay
+  // frames pushed in the first write, above.
+  front_timestamp_ = std::max(front_timestamp_,
+                              back_timestamp_ - ComputeBufferedMediaDuration());
+  DCHECK_GE(front_timestamp_, start_timestamp_);
   DCHECK_LE(front_timestamp_, back_timestamp_);
 }
 
