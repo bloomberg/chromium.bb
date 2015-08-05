@@ -60,13 +60,6 @@ void AutofillKeyboardAccessoryView::UpdateBoundsAndRedrawPopup() {
 
   for (size_t i = 0; i < count; ++i) {
     const autofill::Suggestion& suggestion = controller_->GetSuggestionAt(i);
-    base::string16 value = suggestion.value;
-    if (!suggestion.label.empty()) {
-      value.append(
-          l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR));
-      value.append(suggestion.label);
-    }
-
     int android_icon_id = 0;
     if (!suggestion.icon.empty()) {
       android_icon_id = ResourceMapper::MapFromChromiumId(
@@ -75,7 +68,8 @@ void AutofillKeyboardAccessoryView::UpdateBoundsAndRedrawPopup() {
 
     Java_AutofillKeyboardAccessoryBridge_addToAutofillSuggestionArray(
         env, data_array.obj(), i,
-        base::android::ConvertUTF16ToJavaString(env, value).obj(),
+        base::android::ConvertUTF16ToJavaString(env, suggestion.value).obj(),
+        base::android::ConvertUTF16ToJavaString(env, suggestion.label).obj(),
         android_icon_id, suggestion.frontend_id);
   }
 

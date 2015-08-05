@@ -98,15 +98,25 @@ public class AutofillKeyboardAccessoryBridge implements AutofillKeyboardAccessor
     /**
      * @param array AutofillSuggestion array that should get a new suggestion added.
      * @param index Index in the array where to place a new suggestion.
-     * @param label First line of the suggestion.
+     * @param label Suggested text. The text that's going to be filled in the focused field, with a
+     *              few exceptions:
+     *              <ul>
+     *                  <li>Credit card numbers are elided, e.g. "Visa ****-1234."</li>
+     *                  <li>The text "CLEAR FORM" will clear the filled in text.</li>
+     *                  <li>Empty text can be used to display only icons, e.g. for credit card scan
+     *                      or editing autofill settings.</li>
+     *              </ul>
+     * @param sublabel Hint for the suggested text. The text that's going to be filled in the
+     *                 unfocused fields of the form. If {@see label} is empty, then this must be
+     *                 empty too.
      * @param iconId The resource ID for the icon associated with the suggestion, or 0 for no icon.
      * @param suggestionId Identifier for the suggestion type.
      */
     @CalledByNative
     private static void addToAutofillSuggestionArray(AutofillSuggestion[] array, int index,
-            String label, int iconId, int suggestionId) {
+            String label, String sublabel, int iconId, int suggestionId) {
         int drawableId = iconId == 0 ? DropdownItem.NO_ICON : ResourceId.mapToDrawableId(iconId);
-        array[index] = new AutofillSuggestion(label, null, drawableId, suggestionId, false);
+        array[index] = new AutofillSuggestion(label, sublabel, drawableId, suggestionId, false);
     }
 
     private native void nativeViewDismissed(long nativeAutofillKeyboardAccessoryView);

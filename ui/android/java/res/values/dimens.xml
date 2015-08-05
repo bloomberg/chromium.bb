@@ -22,4 +22,11 @@
     -->
     <dimen name="config_min_scaling_span">27.0mm</dimen>
     <dimen name="config_min_scaling_touch_major">48.0dp</dimen>
+
+    <dimen name="keyboard_accessory_chip_height">32dp</dimen>
+    <dimen name="keyboard_accessory_fading_edge_length">16dp</dimen>
+    <dimen name="keyboard_accessory_half_padding">4dp</dimen>
+    <dimen name="keyboard_accessory_height">48dp</dimen>
+    <dimen name="keyboard_accessory_padding">8dp</dimen>
+    <dimen name="keyboard_accessory_text_size">14sp</dimen>
 </resources>

@@ -9,6 +9,5 @@
     <color name="color_picker_background_color">#FFFFFF</color>
     <color name="dropdown_divider_color">#E5E5E5</color>
     <color name="dropdown_dark_divider_color">#C0C0C0</color>
-    <color name="keyboard_accessory_suggestion_background_color">#4286F5</color>
 </resources>
 

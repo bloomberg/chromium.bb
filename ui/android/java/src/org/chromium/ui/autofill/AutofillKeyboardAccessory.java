@@ -5,26 +5,29 @@
 package org.chromium.ui.autofill;
 
 import android.annotation.SuppressLint;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
-import android.widget.AdapterView;
-import android.widget.FrameLayout;
-import android.widget.ListAdapter;
-import android.widget.ListView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.ui.R;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 /**
  * The Autofill suggestion view that lists relevant suggestions. It sits above the keyboard and
  * below the content area.
  */
-public class AutofillKeyboardAccessory extends ListView implements AdapterView.OnItemClickListener,
-        WindowAndroid.KeyboardVisibilityListener {
+public class AutofillKeyboardAccessory extends LinearLayout
+        implements WindowAndroid.KeyboardVisibilityListener, View.OnClickListener {
     private final WindowAndroid mWindowAndroid;
     private final AutofillKeyboardAccessoryDelegate mAutofillCallback;
+    private final int mMaximumLabelWidthPx;
+    private final int mMaximumSublabelWidthPx;
 
     /**
      * An interface to handle the touch interaction with an AutofillKeyboardAccessory object.
@@ -56,12 +59,16 @@ public class AutofillKeyboardAccessory extends ListView implements AdapterView.O
         mWindowAndroid = windowAndroid;
         mAutofillCallback = autofillCallback;
 
+        int deviceWidthPx = DeviceDisplayInfo.create(getContext()).getDisplayWidth();
+        mMaximumLabelWidthPx = deviceWidthPx / 2;
+        mMaximumSublabelWidthPx = deviceWidthPx / 4;
+
         mWindowAndroid.addKeyboardVisibilityListener(this);
-        setOnItemClickListener(this);
-        setContentDescription(getContext().getString(
-                R.string.autofill_popup_content_description));
-        setBackgroundColor(getResources().getColor(
-                R.color.keyboard_accessory_suggestion_background_color));
+        setContentDescription(getContext().getString(R.string.autofill_popup_content_description));
+
+        int horizontalPaddingPx = getResources().getDimensionPixelSize(
+                R.dimen.keyboard_accessory_half_padding);
+        setPadding(horizontalPaddingPx, 0, horizontalPaddingPx, 0);
     }
 
     /**
@@ -71,24 +78,37 @@ public class AutofillKeyboardAccessory extends ListView implements AdapterView.O
      */
     @SuppressLint("InlinedApi")
     public void showWithSuggestions(AutofillSuggestion[] suggestions, boolean isRtl) {
-        setAdapter(new SuggestionAdapter(getContext(), suggestions));
-        ApiCompatibilityUtils.setLayoutDirection(
-                this, isRtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
+        removeAllViews();
+        for (AutofillSuggestion suggestion : suggestions) {
+            View touchTarget = LayoutInflater.from(getContext()).inflate(
+                    R.layout.autofill_keyboard_accessory_item, this, false);
+            touchTarget.setOnClickListener(this);
+            TextView label = (TextView) touchTarget.findViewById(
+                    R.id.autofill_keyboard_accessory_item_label);
+            label.setMaxWidth(mMaximumLabelWidthPx);
 
-        int height = ViewGroup.LayoutParams.WRAP_CONTENT;
-        // Limit the visible number of suggestions (others are accessible via scrolling).
-        final int suggestionLimit = 2;
-        ListAdapter listAdapter = getAdapter();
-        if (listAdapter.getCount() > suggestionLimit) {
-            height = 0;
-            for (int i = 0; i < suggestionLimit; i++) {
-                View listItem = listAdapter.getView(i, null, this);
-                height += listItem.getLayoutParams().height;
+            if (suggestion.getIconId() != 0) {
+                ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                        label, suggestion.getIconId(), 0, 0, 0);
             }
+
+            if (!TextUtils.isEmpty(suggestion.getLabel())) {
+                label.setText(suggestion.getLabel());
+
+                if (!TextUtils.isEmpty(suggestion.getSublabel())) {
+                    TextView sublabel = (TextView) touchTarget.findViewById(
+                            R.id.autofill_keyboard_accessory_item_sublabel);
+                    sublabel.setText(suggestion.getSublabel());
+                    sublabel.setVisibility(View.VISIBLE);
+                    sublabel.setMaxWidth(mMaximumSublabelWidthPx);
+                }
+            }
+
+            addView(touchTarget);
         }
 
-        setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                height));
+        ApiCompatibilityUtils.setLayoutDirection(
+                this, isRtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
 
         if (getParent() == null) {
             ViewGroup container = mWindowAndroid.getKeyboardAccessoryView();
@@ -110,15 +130,23 @@ public class AutofillKeyboardAccessory extends ListView implements AdapterView.O
     }
 
     @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        mAutofillCallback.suggestionSelected(position);
-    }
-
-    @Override
     public void keyboardVisibilityChanged(boolean isShowing) {
         if (!isShowing) {
             dismiss();
             mAutofillCallback.dismissed();
         }
+    }
+
+    @Override
+    public void onClick(View v) {
+        int count = getChildCount();
+        for (int i = 0; i < count; i++) {
+            if (getChildAt(i) == v) {
+                mAutofillCallback.suggestionSelected(i);
+                return;
+            }
+        }
+
+        assert false;
     }
 }

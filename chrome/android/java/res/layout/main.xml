@@ -15,10 +15,12 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <FrameLayout
+        <HorizontalScrollView
             android:id="@+id/keyboard_accessory"
+            android:layout_height="@dimen/keyboard_accessory_height"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:background="#FFF"
+            android:scrollbars="none"
             android:visibility="gone" />
     </LinearLayout>
 
