@@ -64,7 +64,6 @@ TextRun constructTextRun(const Font&, const LineLayoutText, unsigned offset, uns
 
 // Explicit direction.
 TextRun constructTextRun(const Font&, const String&, const ComputedStyle&, TextDirection, TextRunFlags = DefaultTextRunFlags);
-TextRun constructTextRun(const Font&, const LayoutText*, const ComputedStyle&, TextDirection);
 TextRun constructTextRun(const Font&, const LayoutText*, unsigned offset, unsigned length, const ComputedStyle&, TextDirection);
 TextRun constructTextRun(const Font&, const LChar*, int length, const ComputedStyle&, TextDirection);
 TextRun constructTextRun(const Font&, const UChar*, int length, const ComputedStyle&, TextDirection);

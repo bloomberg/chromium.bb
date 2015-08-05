@@ -74,15 +74,6 @@ TextRun constructTextRun(const Font& font, const UChar* characters, int length, 
     return constructTextRunInternal(font, characters, length, style, direction);
 }
 
-TextRun constructTextRun(const Font& font, const LayoutText* text, const ComputedStyle& style, TextDirection direction)
-{
-    if (text->hasEmptyText())
-        return constructTextRunInternal(font, static_cast<const LChar*>(nullptr), 0, style, direction);
-    if (text->is8Bit())
-        return constructTextRunInternal(font, text->characters8(), text->textLength(), style, direction);
-    return constructTextRunInternal(font, text->characters16(), text->textLength(), style, direction);
-}
-
 TextRun constructTextRun(const Font& font, const LayoutText* text, unsigned offset, unsigned length, const ComputedStyle& style, TextDirection direction)
 {
     ASSERT(offset + length <= text->textLength());

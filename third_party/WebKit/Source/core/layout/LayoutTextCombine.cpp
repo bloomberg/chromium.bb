@@ -114,7 +114,8 @@ void LayoutTextCombine::updateFont()
     if (!m_isCombined)
         return;
 
-    TextRun run = constructTextRun(originalFont(), this, styleRef(), style()->direction());
+    unsigned offset = 0;
+    TextRun run = constructTextRun(originalFont(), this, offset, textLength(), styleRef(), style()->direction());
     FontDescription description = originalFont().fontDescription();
     float emWidth = description.computedSize();
     if (!(style()->textDecorationsInEffect() & (TextDecorationUnderline | TextDecorationOverline)))
