@@ -32,10 +32,10 @@ namespace precache {
 
 namespace {
 
-// The maximum for the Precache.Fetch.ResponseBytes histogram. We set this to a
-// number we expect to be in the 99th percentile for the histogram, give or
+// The maximum for the Precache.Fetch.ResponseBytes.* histograms. We set this to
+// a number we expect to be in the 99th percentile for the histogram, give or
 // take.
-const int kMaxResponseBytes = 100 * 1024 * 1024;
+const int kMaxResponseBytes = 500 * 1024 * 1024;
 
 GURL GetConfigURL() {
   const base::CommandLine& command_line =
@@ -141,16 +141,15 @@ class PrecacheFetcher::Fetcher : public net::URLFetcherDelegate {
           const base::Callback<void(const URLFetcher&)>& callback,
           bool ignore_response_body);
   ~Fetcher() override {}
-  void OnURLFetchDownloadProgress(const URLFetcher* source,
-                                  int64 current,
-                                  int64 total) override;
   void OnURLFetchComplete(const URLFetcher* source) override;
-  int response_bytes() { return response_bytes_; }
+  int64 response_bytes() { return response_bytes_; }
+  int64 network_response_bytes() { return network_response_bytes_; }
 
  private:
   const base::Callback<void(const URLFetcher&)> callback_;
   scoped_ptr<URLFetcher> url_fetcher_;
-  int response_bytes_;
+  int64 response_bytes_;
+  int64 network_response_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(Fetcher);
 };
@@ -160,7 +159,7 @@ PrecacheFetcher::Fetcher::Fetcher(
     const GURL& url,
     const base::Callback<void(const URLFetcher&)>& callback,
     bool ignore_response_body)
-    : callback_(callback), response_bytes_(0) {
+    : callback_(callback), response_bytes_(0), network_response_bytes_(0) {
   url_fetcher_ = URLFetcher::Create(url, URLFetcher::GET, this);
   url_fetcher_->SetRequestContext(request_context);
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
@@ -172,14 +171,9 @@ PrecacheFetcher::Fetcher::Fetcher(
   url_fetcher_->Start();
 }
 
-void PrecacheFetcher::Fetcher::OnURLFetchDownloadProgress(
-    const URLFetcher* source,
-    int64 current,
-    int64 total) {
-  response_bytes_ = current;
-}
-
 void PrecacheFetcher::Fetcher::OnURLFetchComplete(const URLFetcher* source) {
+  response_bytes_ = source->GetReceivedResponseContentLength();
+  network_response_bytes_ = source->GetTotalReceivedBytes();
   callback_.Run(*source);
 }
 
@@ -193,6 +187,7 @@ PrecacheFetcher::PrecacheFetcher(
       manifest_url_prefix_(manifest_url_prefix),
       precache_delegate_(precache_delegate),
       total_response_bytes_(0),
+      network_response_bytes_(0),
       num_manifest_urls_to_fetch_(0) {
   DCHECK(request_context_.get());  // Request context must be non-NULL.
   DCHECK(precache_delegate_);  // Precache delegate must be non-NULL.
@@ -220,8 +215,11 @@ PrecacheFetcher::~PrecacheFetcher() {
                                  num_manifest_urls_to_fetch_ * 100);
   UMA_HISTOGRAM_PERCENTAGE("Precache.Fetch.PercentCompleted",
                            percent_completed);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Precache.Fetch.ResponseBytes",
-                              total_response_bytes_, 1, kMaxResponseBytes, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Precache.Fetch.ResponseBytes.Total",
+                              total_response_bytes_, 1, kMaxResponseBytes, 100);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Precache.Fetch.ResponseBytes.Network",
+                              network_response_bytes_, 1, kMaxResponseBytes,
+                              100);
 }
 
 void PrecacheFetcher::Start() {
@@ -239,6 +237,7 @@ void PrecacheFetcher::Start() {
 
 void PrecacheFetcher::StartNextFetch() {
   total_response_bytes_ += fetcher_->response_bytes();
+  network_response_bytes_ += fetcher_->network_response_bytes();
 
   if (!resource_urls_to_fetch_.empty()) {
     // Fetch the next resource URL.

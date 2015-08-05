@@ -14,6 +14,8 @@
 #ifndef NET_URL_REQUEST_URL_FETCHER_IMPL_H_
 #define NET_URL_REQUEST_URL_FETCHER_IMPL_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/basictypes.h"
@@ -80,6 +82,9 @@ class NET_EXPORT_PRIVATE URLFetcherImpl : public URLFetcher {
   HttpResponseHeaders* GetResponseHeaders() const override;
   HostPortPair GetSocketAddress() const override;
   bool WasFetchedViaProxy() const override;
+  bool WasCached() const override;
+  int64_t GetReceivedResponseContentLength() const override;
+  int64_t GetTotalReceivedBytes() const override;
   void Start() override;
   const GURL& GetOriginalURL() const override;
   const GURL& GetURL() const override;

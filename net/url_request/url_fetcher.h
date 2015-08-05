@@ -5,6 +5,8 @@
 #ifndef NET_URL_REQUEST_URL_FETCHER_H_
 #define NET_URL_REQUEST_URL_FETCHER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -280,6 +282,18 @@ class NET_EXPORT URLFetcher {
   // be called after the OnURLFetchComplete callback has run and the request
   // has not failed.
   virtual bool WasFetchedViaProxy() const = 0;
+
+  // Returns true if the response body was served from the cache. This includes
+  // responses for which revalidation was required.
+  virtual bool WasCached() const = 0;
+
+  // The number of bytes in the raw response body (before response filters are
+  // applied, to decompress it, for instance).
+  virtual int64_t GetReceivedResponseContentLength() const = 0;
+
+  // The number of bytes received over the network during the processing of this
+  // request.
+  virtual int64_t GetTotalReceivedBytes() const = 0;
 
   // Start the request.  After this is called, you may not change any other
   // settings.

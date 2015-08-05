@@ -5,6 +5,8 @@
 #ifndef NET_URL_REQUEST_URL_FETCHER_CORE_H_
 #define NET_URL_REQUEST_URL_FETCHER_CORE_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
@@ -109,11 +111,14 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   HttpResponseHeaders* GetResponseHeaders() const;
   HostPortPair GetSocketAddress() const;
   bool WasFetchedViaProxy() const;
+  bool WasCached() const;
   const GURL& GetOriginalURL() const;
   const GURL& GetURL() const;
   const URLRequestStatus& GetStatus() const;
   int GetResponseCode() const;
   const ResponseCookies& GetCookies() const;
+  int64_t GetReceivedResponseContentLength() const;
+  int64_t GetTotalReceivedBytes() const;
   // Reports that the received content was malformed (i.e. failed parsing
   // or validation). This makes the throttling logic that does exponential
   // back-off when servers are having problems treat the current request as
@@ -245,6 +250,9 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   HttpRequestHeaders extra_request_headers_;
   scoped_refptr<HttpResponseHeaders> response_headers_;
   bool was_fetched_via_proxy_;
+  bool was_cached_;
+  int64_t received_response_content_length_;
+  int64_t total_received_bytes_;
   HostPortPair socket_address_;
 
   bool upload_content_set_;          // SetUploadData has been called

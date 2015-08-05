@@ -121,9 +121,15 @@ class PrecacheFetcher {
   // Non-owning pointer. Should not be NULL.
   PrecacheDelegate* precache_delegate_;
 
-  // Tally of the total number of bytes received from URL fetches, including
-  // config, manifests, and resources.
+  // Tally of the total number of bytes contained in URL fetches, including
+  // config, manifests, and resources. This the number of bytes as they would be
+  // compressed over the network.
   int total_response_bytes_;
+
+  // Tally of the total number of bytes received over the network from URL
+  // fetches (the same ones as in total_response_bytes_). This includes response
+  // headers and intermediate responses such as 30xs.
+  int network_response_bytes_;
 
   scoped_ptr<Fetcher> fetcher_;
 

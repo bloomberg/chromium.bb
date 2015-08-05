@@ -134,6 +134,12 @@ class TestURLFetcher : public URLFetcher {
   HttpResponseHeaders* GetResponseHeaders() const override;
   HostPortPair GetSocketAddress() const override;
   bool WasFetchedViaProxy() const override;
+  bool WasCached() const override;
+  // Only valid when the response was set via SetResponseString().
+  int64_t GetReceivedResponseContentLength() const override;
+  // Only valid when the response was set via SetResponseString(), or
+  // set_was_cached(true) was called.
+  int64_t GetTotalReceivedBytes() const override;
   void Start() override;
 
   // URL we were created with. Because of how we're using URLFetcher GetURL()
@@ -183,6 +189,7 @@ class TestURLFetcher : public URLFetcher {
   }
   void set_cookies(const ResponseCookies& c) { fake_cookies_ = c; }
   void set_was_fetched_via_proxy(bool flag);
+  void set_was_cached(bool flag);
   void set_response_headers(scoped_refptr<HttpResponseHeaders> headers);
   void set_backoff_delay(base::TimeDelta backoff_delay);
   void SetDelegateForTests(DelegateForTests* delegate_for_tests);
@@ -223,6 +230,8 @@ class TestURLFetcher : public URLFetcher {
   std::string fake_response_string_;
   base::FilePath fake_response_file_path_;
   bool fake_was_fetched_via_proxy_;
+  bool fake_was_cached_;
+  int64 fake_response_bytes_;
   scoped_refptr<HttpResponseHeaders> fake_response_headers_;
   HttpRequestHeaders fake_extra_request_headers_;
   int fake_max_retries_;

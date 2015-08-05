@@ -83,6 +83,9 @@ URLFetcherCore::URLFetcherCore(URLFetcher* fetcher,
       buffer_(new IOBuffer(kBufferSize)),
       url_request_data_key_(NULL),
       was_fetched_via_proxy_(false),
+      was_cached_(false),
+      received_response_content_length_(0),
+      total_received_bytes_(0),
       upload_content_set_(false),
       upload_range_offset_(0),
       upload_range_length_(0),
@@ -316,6 +319,18 @@ bool URLFetcherCore::WasFetchedViaProxy() const {
   return was_fetched_via_proxy_;
 }
 
+bool URLFetcherCore::WasCached() const {
+  return was_cached_;
+}
+
+int64_t URLFetcherCore::GetReceivedResponseContentLength() const {
+  return received_response_content_length_;
+}
+
+int64_t URLFetcherCore::GetTotalReceivedBytes() const {
+  return total_received_bytes_;
+}
+
 const GURL& URLFetcherCore::GetOriginalURL() const {
   return original_url_;
 }
@@ -393,6 +408,8 @@ void URLFetcherCore::OnReceivedRedirect(URLRequest* request,
     url_ = redirect_info.new_url;
     response_code_ = request_->GetResponseCode();
     was_fetched_via_proxy_ = request_->was_fetched_via_proxy();
+    was_cached_ = request_->was_cached();
+    total_received_bytes_ += request_->GetTotalReceivedBytes();
     request->Cancel();
     OnReadCompleted(request, 0);
   }
@@ -406,6 +423,10 @@ void URLFetcherCore::OnResponseStarted(URLRequest* request) {
     response_headers_ = request_->response_headers();
     socket_address_ = request_->GetSocketAddress();
     was_fetched_via_proxy_ = request_->was_fetched_via_proxy();
+    was_cached_ = request_->was_cached();
+    received_response_content_length_ =
+        request_->received_response_content_length();
+    total_received_bytes_ += request_->GetTotalReceivedBytes();
     total_response_bytes_ = request_->GetExpectedContentSize();
   }
 

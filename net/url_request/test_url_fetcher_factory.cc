@@ -37,9 +37,7 @@ ScopedURLFetcherFactory::~ScopedURLFetcherFactory() {
   URLFetcherImpl::set_factory(NULL);
 }
 
-TestURLFetcher::TestURLFetcher(int id,
-                               const GURL& url,
-                               URLFetcherDelegate* d)
+TestURLFetcher::TestURLFetcher(int id, const GURL& url, URLFetcherDelegate* d)
     : owner_(NULL),
       id_(id),
       original_url_(url),
@@ -50,6 +48,8 @@ TestURLFetcher::TestURLFetcher(int id,
       fake_response_code_(-1),
       fake_response_destination_(STRING),
       fake_was_fetched_via_proxy_(false),
+      fake_was_cached_(false),
+      fake_response_bytes_(0),
       fake_max_retries_(0) {
   CHECK(original_url_.is_valid());
 }
@@ -211,6 +211,18 @@ bool TestURLFetcher::WasFetchedViaProxy() const {
   return fake_was_fetched_via_proxy_;
 }
 
+bool TestURLFetcher::WasCached() const {
+  return fake_was_cached_;
+}
+
+int64_t TestURLFetcher::GetReceivedResponseContentLength() const {
+  return fake_response_bytes_;
+}
+
+int64_t TestURLFetcher::GetTotalReceivedBytes() const {
+  return fake_was_cached_ ? 0 : fake_response_bytes_;
+}
+
 void TestURLFetcher::Start() {
   // Overriden to do nothing. It is assumed the caller will notify the delegate.
   if (delegate_for_tests_)
@@ -271,6 +283,10 @@ void TestURLFetcher::set_was_fetched_via_proxy(bool flag) {
   fake_was_fetched_via_proxy_ = flag;
 }
 
+void TestURLFetcher::set_was_cached(bool flag) {
+  fake_was_cached_ = flag;
+}
+
 void TestURLFetcher::set_response_headers(
     scoped_refptr<HttpResponseHeaders> headers) {
   fake_response_headers_ = headers;
@@ -287,6 +303,7 @@ void TestURLFetcher::SetDelegateForTests(DelegateForTests* delegate_for_tests) {
 void TestURLFetcher::SetResponseString(const std::string& response) {
   fake_response_destination_ = STRING;
   fake_response_string_ = response;
+  fake_response_bytes_ = response.size();
 }
 
 void TestURLFetcher::SetResponseFilePath(const base::FilePath& path) {

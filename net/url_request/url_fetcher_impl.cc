@@ -154,6 +154,18 @@ bool URLFetcherImpl::WasFetchedViaProxy() const {
   return core_->WasFetchedViaProxy();
 }
 
+bool URLFetcherImpl::WasCached() const {
+  return core_->WasCached();
+}
+
+int64_t URLFetcherImpl::GetReceivedResponseContentLength() const {
+  return core_->GetReceivedResponseContentLength();
+}
+
+int64_t URLFetcherImpl::GetTotalReceivedBytes() const {
+  return core_->GetTotalReceivedBytes();
+}
+
 void URLFetcherImpl::Start() {
   core_->Start();
 }

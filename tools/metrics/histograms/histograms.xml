@@ -32236,10 +32236,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Precache.Fetch.ResponseBytes" units="bytes">
+  <obsolete>
+    Deprecated July 29 2015.
+  </obsolete>
   <owner>twifkak@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
     The total number of response bytes received from all prefetch requests,
+    including config, manifests, and resources. Logged per prefetch run.
+  </summary>
+</histogram>
+
+<histogram name="Precache.Fetch.ResponseBytes.Network" units="bytes">
+  <owner>twifkak@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The total number of response bytes received over the network from all
+    prefetch requests, including config, manifests, and resources. Logged per
+    prefetch run.
+  </summary>
+</histogram>
+
+<histogram name="Precache.Fetch.ResponseBytes.Total" units="bytes">
+  <owner>twifkak@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The total number of response bytes contained in all prefetch requests,
     including config, manifests, and resources. Logged per prefetch run.
   </summary>
 </histogram>
