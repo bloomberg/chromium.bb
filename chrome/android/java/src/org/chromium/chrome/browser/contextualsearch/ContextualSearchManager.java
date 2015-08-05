@@ -1280,7 +1280,14 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
     @Override
     public void handleSelectionDismissal() {
-        if (mSearchPanelDelegate.isShowing() && !mIsPromotingToTab) {
+        if (mSearchPanelDelegate.isShowing()
+                && !mIsPromotingToTab
+                // If the selection is dismissed when the Panel is not peeking anymore,
+                // which means the Panel is at least partially expanded, then it means
+                // the selection was cleared by an external source (like JavaScript),
+                // so we should not dismiss the UI in here.
+                // See crbug.com/516665
+                && mSearchPanelDelegate.isPeeking()) {
             hideContextualSearch(StateChangeReason.CLEARED_SELECTION);
         }
     }
