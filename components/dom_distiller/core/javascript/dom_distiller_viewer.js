@@ -77,17 +77,23 @@ function useFontFamily(fontFamily) {
 // CSS classes must agree with distilledpage.css.
 function useTheme(theme) {
   var cssClass;
+  var toolbarColor;
   if (theme == "sepia") {
     cssClass = "sepia";
+    toolbarColor = "#BF9A73";
   } else if (theme == "dark") {
     cssClass = "dark";
+    toolbarColor = "#1A1A1A";
   } else {
     cssClass = "light";
+    toolbarColor = "#F5F5F5";
   }
   // Relies on the classname order of the body being Theme class, then Font
   // Family class.
   var fontFamilyClass = document.body.className.split(" ")[1];
   document.body.className = cssClass + " " + fontFamilyClass;
+
+  document.getElementById('theme-color').content = toolbarColor;
 }
 
 var updateLoadingIndicator = function() {
