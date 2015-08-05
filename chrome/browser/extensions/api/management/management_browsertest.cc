@@ -104,8 +104,8 @@ class ExtensionManagementTest : public ExtensionBrowserTest {
   policy::MockConfigurationPolicyProvider policy_provider_;
 };
 
-#if defined(OS_LINUX)
-// Times out sometimes on Linux.  http://crbug.com/89727
+#if defined(OS_LINUX) || defined(OS_WIN)
+// Times out sometimes on Linux and Win XP. http://crbug.com/89727
 #define MAYBE_InstallSameVersion DISABLED_InstallSameVersion
 #else
 #define MAYBE_InstallSameVersion InstallSameVersion
