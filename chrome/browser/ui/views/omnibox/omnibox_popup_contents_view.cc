@@ -8,9 +8,9 @@
 
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
+#include "components/omnibox/browser/omnibox_view.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/clip_transform_recorder.h"
 #include "ui/compositor/paint_recorder.h"

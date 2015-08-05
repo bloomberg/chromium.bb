@@ -5,7 +5,7 @@
 // This file defines helper functions shared by the various implementations
 // of OmniboxView.
 
-#include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "components/omnibox/browser/omnibox_view.h"
 
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"

@@ -8,16 +8,16 @@
 // the view.  Since the model is shared between platforms, we need to define an
 // interface that all view implementations will share.
 
-#ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_VIEW_H_
-#define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_VIEW_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_VIEW_H_
+#define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_VIEW_H_
 
 #include <string>
 
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/omnibox_edit_model.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -261,4 +261,4 @@ class OmniboxView {
   DISALLOW_COPY_AND_ASSIGN(OmniboxView);
 };
 
-#endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_VIEW_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_VIEW_H_

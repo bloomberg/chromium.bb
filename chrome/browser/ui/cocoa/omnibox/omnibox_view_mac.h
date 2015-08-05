@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
-#include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "components/omnibox/browser/omnibox_view.h"
 
 class CommandUpdater;
 class OmniboxPopupView;

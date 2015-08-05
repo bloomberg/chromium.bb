@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_EDIT_MODEL_H_
-#define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_EDIT_MODEL_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EDIT_MODEL_H_
+#define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EDIT_MODEL_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "chrome/browser/ui/omnibox/omnibox_controller.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/autocomplete_controller_delegate.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/omnibox_controller.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
@@ -562,4 +562,4 @@ class OmniboxEditModel {
   DISALLOW_COPY_AND_ASSIGN(OmniboxEditModel);
 };
 
-#endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_EDIT_MODEL_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EDIT_MODEL_H_

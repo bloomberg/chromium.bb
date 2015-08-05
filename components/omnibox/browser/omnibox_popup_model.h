@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_MODEL_H_
-#define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_MODEL_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_POPUP_MODEL_H_
+#define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_POPUP_MODEL_H_
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
-#include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/omnibox_edit_model.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class OmniboxPopupModelObserver;
@@ -159,4 +159,4 @@ class OmniboxPopupModel {
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupModel);
 };
 
-#endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_MODEL_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_POPUP_MODEL_H_
