@@ -206,12 +206,18 @@ bool LinuxPtraceDumper::GetThreadInfoByIndex(size_t index, ThreadInfo* info) {
     return false;
   }
 
+#if !(defined(__ANDROID__) && defined(__ARM_EABI__))
+  // When running an arm build on an arm64 device, attempting to get the
+  // floating point registers fails. On Android, the floating point registers
+  // aren't written to the cpu context anyway, so just don't get them here.
+  // See http://crbug.com/508324
   void* fp_addr;
   info->GetFloatingPointRegisters(&fp_addr, NULL);
   if (sys_ptrace(PTRACE_GETFPREGS, tid, NULL, fp_addr) == -1) {
     return false;
   }
 #endif
+#endif  // PTRACE_GETREGSET
 
 #if defined(__i386)
 #if !defined(bit_FXSAVE)  // e.g. Clang
