@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_CRASH_LINUX_SYNCHRONIZED_MINIDUMP_MANAGER_H_
 #define CHROMECAST_CRASH_LINUX_SYNCHRONIZED_MINIDUMP_MANAGER_H_
 
+#include <time.h>
+
 #include <string>
 
 #include "base/files/file_path.h"
@@ -27,6 +29,15 @@ namespace chromecast {
 // lockfile is released, the in memory representation is written to file.
 class SynchronizedMinidumpManager {
  public:
+  // Max number of dumps allowed in lockfile.
+  static const int kMaxLockfileDumps;
+
+  // Length of a ratelimit period in seconds.
+  static const int kRatelimitPeriodSeconds;
+
+  // Number of dumps allowed per period.
+  static const int kRatelimitPeriodMaxDumps;
+
   virtual ~SynchronizedMinidumpManager();
 
   // Returns whether this object's file locking method is nonblocking or not.
@@ -97,6 +108,13 @@ class SynchronizedMinidumpManager {
 
   // Release the lock file with the associated *fd*.
   void ReleaseLockFile();
+
+  // Returns true if |num_dumps| can be written to the lockfile. We can write
+  // the dumps if the number of dumps in the lockfile after |num_dumps| is added
+  // is less than or equal to |kMaxLockfileDumps| and the number of dumps in the
+  // current ratelimit period after |num_dumps| is added is less than or equal
+  // to |kRatelimitPeriodMaxDumps|.
+  bool CanWriteDumps(int num_dumps);
 
   std::string lockfile_path_;
   int lockfile_fd_;

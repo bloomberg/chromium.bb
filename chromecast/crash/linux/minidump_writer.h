@@ -48,28 +48,14 @@ class MinidumpWriter : public SynchronizedMinidumpManager {
   // otherwise.
   int Write() { return AcquireLockAndDoWork(); }
 
-  int max_dumps() const { return max_dumps_; }
-  int max_recent_dumps() const { return max_recent_dumps_; }
-  const base::TimeDelta& dump_interval() const { return dump_interval_; };
-
  protected:
   // MinidumpManager implementation:
   int DoWork() override;
 
  private:
-  // Returns true if we can write another dump, false otherwise. We can write
-  // another dump if the number of minidumps is strictly less than |max_dumps_|
-  // and the number of minidumps which occurred within the last |dump_interval_|
-  // is strictly less than |max_recent_dumps_|.
-  bool CanWriteDump();
-
   MinidumpGenerator* const minidump_generator_;
   base::FilePath minidump_path_;
   const MinidumpParams params_;
-
-  const int max_dumps_;
-  const base::TimeDelta dump_interval_;
-  const int max_recent_dumps_;
 
   // This callback is Run() to dump a log to |minidump_path_|.txt.gz, taking
   // |minidump_path_| as a parameter. It returns 0 on success, and a negative

@@ -13,6 +13,9 @@ namespace chromecast {
 namespace {
 
 const char kDumpsKey[] = "dumps";
+const char kRatelimitKey[] = "ratelimit";
+const char kRatelimitPeriodStartKey[] = "period_start";
+const char kRatelimitPeriodDumpsKey[] = "period_dumps";
 
 // Gets the list of deserialized DumpInfo given a deserialized |lockfile|.
 base::ListValue* GetDumpList(base::Value* lockfile) {
@@ -58,13 +61,30 @@ bool FetchDumps(const std::string& lockfile_path,
   return true;
 }
 
+bool ClearDumps(const std::string& lockfile_path) {
+  base::FilePath path(lockfile_path);
+  scoped_ptr<base::Value> contents(DeserializeJsonFromFile(path));
+  base::ListValue* dump_list = GetDumpList(contents.get());
+  if (!dump_list) {
+    return false;
+  }
+
+  dump_list->Clear();
+
+  return SerializeJsonToFile(path, *contents);
+}
+
 bool CreateLockFile(const std::string& lockfile_path) {
-  scoped_ptr<base::DictionaryValue> output =
-      make_scoped_ptr(new base::DictionaryValue());
+  scoped_ptr<base::DictionaryValue> output(
+      make_scoped_ptr(new base::DictionaryValue()));
   output->Set(kDumpsKey, make_scoped_ptr(new base::ListValue()));
 
-  base::FilePath path(lockfile_path);
+  base::DictionaryValue* ratelimit_fields = new base::DictionaryValue();
+  output->Set(kRatelimitKey, make_scoped_ptr(ratelimit_fields));
+  ratelimit_fields->SetString(kRatelimitPeriodStartKey, "0");
+  ratelimit_fields->SetInteger(kRatelimitPeriodDumpsKey, 0);
 
+  base::FilePath path(lockfile_path);
   const base::Value* val = output.get();
   return SerializeJsonToFile(path, *val);
 }
@@ -86,6 +106,26 @@ bool AppendLockFile(const std::string& lockfile_path, const DumpInfo& dump) {
   }
 
   dump_list->Append(dump.GetAsValue());
+
+  return SerializeJsonToFile(path, *contents);
+}
+
+bool SetRatelimitPeriodStart(const std::string& lockfile_path, time_t start) {
+  base::FilePath path(lockfile_path);
+
+  scoped_ptr<base::Value> contents(DeserializeJsonFromFile(path));
+
+  base::DictionaryValue* dict;
+  base::DictionaryValue* ratelimit_params;
+  if (!contents || !contents->GetAsDictionary(&dict) ||
+      !dict->GetDictionary(kRatelimitKey, &ratelimit_params)) {
+    return false;
+  }
+
+  char buf[128];
+  snprintf(buf, sizeof(buf), "%lld", static_cast<long long>(start));
+  std::string period_start_str(buf);
+  ratelimit_params->SetString(kRatelimitPeriodStartKey, period_start_str);
 
   return SerializeJsonToFile(path, *contents);
 }

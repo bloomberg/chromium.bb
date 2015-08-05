@@ -126,7 +126,7 @@ TEST_F(MinidumpWriterTest, Write_FailsWhenTooManyDumpsPresent) {
                         base::Bind(&FakeDumpState));
 
   // Write dump logs to the lockfile.
-  size_t too_many_dumps = writer.max_dumps() + 1;
+  size_t too_many_dumps = SynchronizedMinidumpManager::kMaxLockfileDumps + 1;
   for (size_t i = 0; i < too_many_dumps; ++i) {
     scoped_ptr<DumpInfo> info(CreateDumpInfo(
         "{"
@@ -148,16 +148,34 @@ TEST_F(MinidumpWriterTest, Write_FailsWhenTooManyRecentDumpsPresent) {
                         dumplog_file_.value(),
                         MinidumpParams(),
                         base::Bind(&FakeDumpState));
+  // Multiple iters to make sure period resets work correctly
+  for (int iter = 0; iter < 3; ++iter) {
+    time_t now = time(nullptr);
 
-  // Write dump logs to the lockfile.
-  size_t too_many_recent_dumps = writer.max_recent_dumps() + 1;
-  for (size_t i = 0; i < too_many_recent_dumps; ++i) {
-    MinidumpParams params;
-    DumpInfo info("dump", "/dump/path", time(nullptr), params);
-    ASSERT_TRUE(AppendLockFile(info));
+    // Write dump logs to the lockfile.
+    size_t too_many_recent_dumps =
+        SynchronizedMinidumpManager::kRatelimitPeriodMaxDumps;
+    for (size_t i = 0; i < too_many_recent_dumps; ++i) {
+      ASSERT_EQ(0, writer.Write());
+
+      // Clear dumps so we don't reach max dumps in lockfile
+      ASSERT_TRUE(ClearDumps(lockfile_path_.value()));
+    }
+
+    // Should fail with too many dumps
+    ASSERT_EQ(-1, writer.Write());
+
+    int64 period = SynchronizedMinidumpManager::kRatelimitPeriodSeconds;
+
+    // Half period shouldn't trigger reset
+    SetRatelimitPeriodStart(lockfile_path_.value(), now - period / 2);
+    ASSERT_EQ(-1, writer.Write());
+
+    // Set period starting time to trigger a reset
+    SetRatelimitPeriodStart(lockfile_path_.value(), now - period);
   }
 
-  ASSERT_EQ(-1, writer.Write());
+  ASSERT_EQ(0, writer.Write());
 }
 
 TEST_F(MinidumpWriterTest, Write_SucceedsWhenDumpLimitsNotExceeded) {
@@ -166,8 +184,8 @@ TEST_F(MinidumpWriterTest, Write_SucceedsWhenDumpLimitsNotExceeded) {
                         MinidumpParams(),
                         base::Bind(&FakeDumpState));
 
-  ASSERT_GT(writer.max_dumps(), 1);
-  ASSERT_GT(writer.max_recent_dumps(), 0);
+  ASSERT_GT(SynchronizedMinidumpManager::kMaxLockfileDumps, 1);
+  ASSERT_GT(SynchronizedMinidumpManager::kRatelimitPeriodMaxDumps, 0);
 
   // Write an old dump logs to the lockfile.
   scoped_ptr<DumpInfo> info(CreateDumpInfo(

@@ -18,10 +18,6 @@ namespace {
 
 const char kDumpStateSuffix[] = ".txt.gz";
 
-const int kDefaultDumpIntervalHours = 24;
-const int kDefaultMaxDumps = 5;
-const int kDefaultMaxRecentDumps = 5;
-
 // Fork and run dumpstate, saving results to minidump_name + ".txt.gz".
 int DumpState(const std::string& minidump_name) {
   std::vector<std::string> argv;
@@ -50,9 +46,6 @@ MinidumpWriter::MinidumpWriter(MinidumpGenerator* minidump_generator,
     : minidump_generator_(minidump_generator),
       minidump_path_(minidump_filename),
       params_(params),
-      max_dumps_(kDefaultMaxDumps),
-      dump_interval_(base::TimeDelta::FromHours(kDefaultDumpIntervalHours)),
-      max_recent_dumps_(kDefaultMaxRecentDumps),
       dump_state_cb_(dump_state_cb) {
 }
 
@@ -80,12 +73,6 @@ int MinidumpWriter::DoWork() {
     return -1;
   }
 
-  // Query if we are able to write another minidump.
-  if (!CanWriteDump()) {
-    LOG(INFO) << "Skipping writing of dump due to limits";
-    return -1;
-  }
-
   // Generate a minidump at the specified |minidump_path_|.
   if (!minidump_generator_->Generate(minidump_path_.value())) {
     LOG(ERROR) << "Generate minidump failed " << minidump_path_.value();
@@ -102,7 +89,7 @@ int MinidumpWriter::DoWork() {
   // Add this entry to the lockfile.
   const DumpInfo info(minidump_path_.value(),
                       minidump_path_.value() + kDumpStateSuffix,
-                      time(NULL),
+                      time(nullptr),
                       params_);
   if (AddEntryToLockFile(info) < 0) {
     LOG(ERROR) << "lockfile logging failed";
@@ -110,26 +97,6 @@ int MinidumpWriter::DoWork() {
   }
 
   return 0;
-}
-
-bool MinidumpWriter::CanWriteDump() {
-  const auto dumps(GetDumps());
-
-  // If no more dumps can be written, return false.
-  if (static_cast<int>(dumps.size()) >= max_dumps_)
-    return false;
-
-  // If too many dumps have been written recently, return false.
-  time_t cur_time = time(0);
-  int recent_dumps = 0;
-  for (auto dump : dumps) {
-    if (difftime(cur_time, dump->dump_time()) <= dump_interval_.InSecondsF()) {
-      if (++recent_dumps >= max_recent_dumps_)
-        return false;
-    }
-  }
-
-  return true;
 }
 
 }  // namespace crash_manager

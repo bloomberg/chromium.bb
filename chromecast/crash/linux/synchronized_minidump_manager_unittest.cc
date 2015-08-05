@@ -380,4 +380,73 @@ TEST_F(SynchronizedMinidumpManagerTest,
   EXPECT_EQ(2u, dumps.size());
 }
 
+TEST_F(SynchronizedMinidumpManagerTest,
+       AddEntryFailsWhenTooManyRecentDumpsPresent) {
+  // Sample parameters.
+  time_t now = time(0);
+  MinidumpParams params;
+  params.process_name = "process";
+
+  SynchronizedMinidumpManagerSimple manager;
+  manager.SetDumpInfoToWrite(
+      make_scoped_ptr(new DumpInfo("dump1", "log1", now, params)));
+
+  for (int i = 0; i < SynchronizedMinidumpManager::kMaxLockfileDumps; ++i) {
+    // Adding these should succeed
+    ASSERT_EQ(0, manager.DoWorkLocked());
+    ASSERT_EQ(0, manager.add_entry_return_code());
+  }
+
+  ASSERT_EQ(0, manager.DoWorkLocked());
+
+  // This one should fail
+  ASSERT_GT(0, manager.add_entry_return_code());
+}
+
+TEST_F(SynchronizedMinidumpManagerTest,
+       AddEntryFailsWhenRatelimitPeriodExceeded) {
+  // Sample parameters.
+  time_t now = time(0);
+  MinidumpParams params;
+  params.process_name = "process";
+
+  SynchronizedMinidumpManagerSimple manager;
+  manager.SetDumpInfoToWrite(
+      make_scoped_ptr(new DumpInfo("dump1", "log1", now, params)));
+
+  // Multiple iters to make sure period resets work correctly
+  for (int iter = 0; iter < 3; ++iter) {
+    time_t now = time(nullptr);
+
+    // Write dump logs to the lockfile.
+    size_t too_many_recent_dumps =
+        SynchronizedMinidumpManager::kRatelimitPeriodMaxDumps;
+    for (size_t i = 0; i < too_many_recent_dumps; ++i) {
+      // Adding these should succeed
+      ASSERT_EQ(0, manager.DoWorkLocked());
+      ASSERT_EQ(0, manager.add_entry_return_code());
+
+      // Clear dumps so we don't reach max dumps in lockfile
+      ASSERT_TRUE(ClearDumps(lockfile_.value()));
+    }
+
+    ASSERT_EQ(0, manager.DoWorkLocked());
+    // Should fail with too many dumps
+    ASSERT_GT(0, manager.add_entry_return_code());
+
+    int64 period = SynchronizedMinidumpManager::kRatelimitPeriodSeconds;
+
+    // Half period shouldn't trigger reset
+    SetRatelimitPeriodStart(lockfile_.value(), now - period / 2);
+    ASSERT_EQ(0, manager.DoWorkLocked());
+    ASSERT_GT(0, manager.add_entry_return_code());
+
+    // Set period starting time to trigger a reset
+    SetRatelimitPeriodStart(lockfile_.value(), now - period);
+  }
+
+  ASSERT_EQ(0, manager.DoWorkLocked());
+  ASSERT_EQ(0, manager.add_entry_return_code());
+}
+
 }  // namespace chromecast

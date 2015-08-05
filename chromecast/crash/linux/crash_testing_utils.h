@@ -22,6 +22,10 @@ scoped_ptr<DumpInfo> CreateDumpInfo(const std::string& json_string);
 bool FetchDumps(const std::string& lockfile_path,
                 ScopedVector<DumpInfo>* dumps);
 
+// Clear all dumps in the lockfile at |lockfile_path|.
+// Returns true on success, false on error.
+bool ClearDumps(const std::string& lockfile_path);
+
 // Creates an empty lockfile at |lockfile_path|. Returns true on success, false
 // on error.
 bool CreateLockFile(const std::string& lockfile_path);
@@ -29,6 +33,10 @@ bool CreateLockFile(const std::string& lockfile_path);
 // Appends serialization of |dump| onto the lockfile at |lockfile_path|.
 // Returns true on success, false on error.
 bool AppendLockFile(const std::string& lockfile_path, const DumpInfo& dump);
+
+// Set the ratelimit period start in the lockfile at |lockfile_path| to |start|.
+// Returns true on success, false on error.
+bool SetRatelimitPeriodStart(const std::string& lockfile_path, time_t start);
 
 }  // namespace chromecast
 
