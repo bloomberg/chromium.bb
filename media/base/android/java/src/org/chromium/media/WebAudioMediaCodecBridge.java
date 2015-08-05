@@ -181,7 +181,16 @@ class WebAudioMediaCodecBridge {
 
                 if (inputBufIndex >= 0) {
                     ByteBuffer dstBuf = codecInputBuffers[inputBufIndex];
-                    int sampleSize = extractor.readSampleData(dstBuf, 0);
+                    int sampleSize;
+
+                    try {
+                        sampleSize = extractor.readSampleData(dstBuf, 0);
+                    } catch (Exception e) {
+                        Log.w(TAG, "readSampleData failed.");
+                        decodedSuccessfully = false;
+                        break;
+                    }
+
                     long presentationTimeMicroSec = 0;
 
                     if (sampleSize < 0) {
