@@ -53,6 +53,8 @@ class ASH_EXPORT UnifiedMouseWarpController : public MouseWarpController {
   gfx::Rect first_edge_bounds_in_native_;
   gfx::Rect second_edge_bounds_in_native_;
 
+  int64 current_cursor_display_id_;
+
   bool allow_non_native_event_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedMouseWarpController);

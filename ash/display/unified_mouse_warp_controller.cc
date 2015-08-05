@@ -12,6 +12,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/shell.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
@@ -49,8 +50,8 @@ aura::WindowTreeHost* FindMirroringWindowTreeHostFromScreenPoint(
 }  // namespace
 
 UnifiedMouseWarpController::UnifiedMouseWarpController()
-    : allow_non_native_event_(false) {
-}
+    : current_cursor_display_id_(gfx::Display::kInvalidDisplayID),
+      allow_non_native_event_(false) {}
 
 UnifiedMouseWarpController::~UnifiedMouseWarpController() {
 }
@@ -67,6 +68,26 @@ bool UnifiedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
   // The display bounds of the mirroring windows isn't scaled, so
   // transform back to the host coordinates.
   target->GetHost()->GetRootTransform().TransformPoint(&point_in_unified_host);
+
+  if (current_cursor_display_id_ != gfx::Display::kInvalidDisplayID) {
+    aura::client::CursorClient* cursor_client =
+        aura::client::GetCursorClient(target->GetRootWindow());
+    if (cursor_client) {
+      DisplayManager::DisplayList mirroring_display_list =
+          Shell::GetInstance()
+              ->display_manager()
+              ->software_mirroring_display_list();
+      int index = FindDisplayIndexContainingPoint(mirroring_display_list,
+                                                  point_in_unified_host);
+      if (index >= 0) {
+        const gfx::Display& new_display = mirroring_display_list[index];
+        if (current_cursor_display_id_ != new_display.id()) {
+          cursor_client->SetDisplay(new_display);
+          current_cursor_display_id_ = gfx::Display::kInvalidDisplayID;
+        }
+      }
+    }
+  }
 
   // A native event may not exist in unit test. Generate the native point
   // from the screen point instead.
@@ -144,6 +165,10 @@ bool UnifiedMouseWarpController::WarpMouseCursorInNativeCoords(
       Shell::GetInstance()
           ->display_manager()
           ->software_mirroring_display_list();
+  // Wait updating the cursor until the cursor moves to the new display
+  // to avoid showing the wrong sized cursor at the source display.
+  current_cursor_display_id_ =
+      in_first_edge ? display_list[0].id() : display_list[1].id();
   AshWindowTreeHost* target_ash_host =
       GetMirroringAshWindowTreeHostForDisplayId(
           in_first_edge ? display_list[1].id() : display_list[0].id());
