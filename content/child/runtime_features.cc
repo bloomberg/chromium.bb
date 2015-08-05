@@ -202,9 +202,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (command_line.HasSwitch(switches::kEnableWebVR)) {
     WebRuntimeFeatures::enableWebVR(true);
-    // TODO(bashi): Remove blink::WebString() cast.
     WebRuntimeFeatures::enableFeatureFromString(
-        blink::WebString("GeometryInterfaces"), true);
+        std::string("GeometryInterfaces"), true);
   }
 
   // Enable explicitly enabled features, and then disable explicitly disabled
@@ -215,8 +214,7 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
         command_line.GetSwitchValueASCII(switches::kEnableBlinkFeatures), ',',
         &enabled_features);
     for (const std::string& feature : enabled_features) {
-      WebRuntimeFeatures::enableFeatureFromString(
-          blink::WebString::fromLatin1(feature), true);
+      WebRuntimeFeatures::enableFeatureFromString(feature, true);
     }
   }
   if (command_line.HasSwitch(switches::kDisableBlinkFeatures)) {
@@ -225,8 +223,7 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
         command_line.GetSwitchValueASCII(switches::kDisableBlinkFeatures), ',',
         &disabled_features);
     for (const std::string& feature : disabled_features) {
-      WebRuntimeFeatures::enableFeatureFromString(
-          blink::WebString::fromLatin1(feature), false);
+      WebRuntimeFeatures::enableFeatureFromString(feature, false);
     }
   }
 }
