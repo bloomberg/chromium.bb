@@ -51,6 +51,13 @@ double clamp(double min, double max, double value) {
   return std::max(std::min(value, max), min);
 }
 
+std::string ToUpperString(const std::string& str) {
+  std::string ret;
+  for (uint32_t i = 0; i < str.size(); i++)
+    ret.push_back(static_cast<char>(toupper(str[i])));
+  return ret;
+}
+
 // IVF container writer. It is possible to parse H264 bitstream using
 // NAL units but for VP8 we need a container to at least find encoded
 // pictures as well as the picture sizes.
@@ -61,7 +68,10 @@ class IVFWriter {
 
   uint32_t GetFileHeaderSize() const { return 32; }
   uint32_t GetFrameHeaderSize() const { return 12; }
-  uint32_t WriteFileHeader(uint8_t* mem, int32_t width, int32_t height);
+  uint32_t WriteFileHeader(uint8_t* mem,
+                           const std::string& codec,
+                           int32_t width,
+                           int32_t height);
   uint32_t WriteFrameHeader(uint8_t* mem, uint64_t pts, size_t frame_size);
 
  private:
@@ -78,6 +88,7 @@ class IVFWriter {
 };
 
 uint32_t IVFWriter::WriteFileHeader(uint8_t* mem,
+                                    const std::string& codec,
                                     int32_t width,
                                     int32_t height) {
   mem[0] = 'D';
@@ -86,7 +97,7 @@ uint32_t IVFWriter::WriteFileHeader(uint8_t* mem,
   mem[3] = 'F';
   PutLE16(mem + 4, 0);                               // version
   PutLE16(mem + 6, 32);                              // header size
-  PutLE32(mem + 8, fourcc('V', 'P', '8', '0'));      // fourcc
+  PutLE32(mem + 8, fourcc(codec[0], codec[1], codec[2], '0'));  // fourcc
   PutLE16(mem + 12, static_cast<uint16_t>(width));   // width
   PutLE16(mem + 14, static_cast<uint16_t>(height));  // height
   PutLE32(mem + 16, 1000);                           // rate
@@ -552,7 +563,8 @@ void VideoEncoderInstance::PostDataMessage(const void* buffer, uint32_t size) {
           ivf_writer_.GetFrameHeaderSize());
       data_ptr = static_cast<uint8_t*>(array_buffer.Map());
       frame_offset = ivf_writer_.WriteFileHeader(
-          data_ptr, frame_size_.width(), frame_size_.height());
+          data_ptr, ToUpperString(VideoProfileToString(video_profile_)),
+          frame_size_.width(), frame_size_.height());
     } else {
       array_buffer = pp::VarArrayBuffer(
           size + ivf_writer_.GetFrameHeaderSize());

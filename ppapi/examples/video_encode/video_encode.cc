@@ -49,6 +49,13 @@ double clamp(double min, double max, double value) {
   return std::max(std::min(value, max), min);
 }
 
+std::string ToUpperString(const std::string& str) {
+  std::string ret;
+  for (uint32_t i = 0; i < str.size(); i++)
+    ret.push_back(static_cast<char>(toupper(str[i])));
+  return ret;
+}
+
 // IVF container writer. It is possible to parse H264 bitstream using
 // NAL units but for VP8 we need a container to at least find encoded
 // pictures as well as the picture sizes.
@@ -59,7 +66,10 @@ class IVFWriter {
 
   uint32_t GetFileHeaderSize() const { return 32; }
   uint32_t GetFrameHeaderSize() const { return 12; }
-  uint32_t WriteFileHeader(uint8_t* mem, int32_t width, int32_t height);
+  uint32_t WriteFileHeader(uint8_t* mem,
+                           const std::string& codec,
+                           int32_t width,
+                           int32_t height);
   uint32_t WriteFrameHeader(uint8_t* mem, uint64_t pts, size_t frame_size);
 
  private:
@@ -76,6 +86,7 @@ class IVFWriter {
 };
 
 uint32_t IVFWriter::WriteFileHeader(uint8_t* mem,
+                                    const std::string& codec,
                                     int32_t width,
                                     int32_t height) {
   mem[0] = 'D';
@@ -84,7 +95,7 @@ uint32_t IVFWriter::WriteFileHeader(uint8_t* mem,
   mem[3] = 'F';
   PutLE16(mem + 4, 0);                               // version
   PutLE16(mem + 6, 32);                              // header size
-  PutLE32(mem + 8, fourcc('V', 'P', '8', '0'));      // fourcc
+  PutLE32(mem + 8, fourcc(codec[0], codec[1], codec[2], '0'));  // fourcc
   PutLE16(mem + 12, static_cast<uint16_t>(width));   // width
   PutLE16(mem + 14, static_cast<uint16_t>(height));  // height
   PutLE32(mem + 16, 1000);                           // rate
@@ -156,7 +167,6 @@ class VideoEncoderInstance : public pp::Instance {
   void Log(const std::string& message);
 
   void PostDataMessage(const void* buffer, uint32_t size);
-  void PostSignalMessage(const char* name);
 
   typedef std::map<std::string, PP_VideoProfile> VideoProfileFromStringMap;
   VideoProfileFromStringMap profile_from_string_;
@@ -263,12 +273,6 @@ void VideoEncoderInstance::ConfigureTrack() {
                            frame_size_.height(),
                            PP_MEDIASTREAMVIDEOTRACK_ATTRIB_NONE};
 
-  pp::VarDictionary dict;
-  dict.Set(pp::Var("status"), pp::Var("configuring video track"));
-  dict.Set(pp::Var("width"), pp::Var(frame_size_.width()));
-  dict.Set(pp::Var("height"), pp::Var(frame_size_.height()));
-  PostMessage(dict);
-
   video_track_.Configure(
       attrib_list,
       callback_factory_.NewCallback(&VideoEncoderInstance::OnConfiguredTrack));
@@ -307,8 +311,10 @@ void VideoEncoderInstance::OnEncoderProbed(
   }
 
   int32_t idx = 0;
-  for (const PP_VideoProfileDescription& profile : profiles)
+  for (uint32_t i = 0; i < profiles.size(); i++) {
+    const PP_VideoProfileDescription& profile = profiles[i];
     js_profiles.Set(idx++, pp::Var(VideoProfileToString(profile.profile)));
+  }
   PostMessage(dict);
 }
 
@@ -334,7 +340,7 @@ void VideoEncoderInstance::OnInitializedEncoder(int32_t result) {
   }
 
   is_encoding_ = true;
-  PostSignalMessage("started");
+  Log("started");
 
   if (video_encoder_.GetFrameCodedSize(&encoder_size_) != PP_OK) {
     LogError(result, "Cannot get encoder coded frame size");
@@ -532,7 +538,7 @@ void VideoEncoderInstance::HandleMessage(const pp::Var& var_message) {
     ConfigureTrack();
   } else if (command == "stop") {
     StopEncode();
-    PostSignalMessage("stopped");
+    Log("stopped");
   } else {
     LogToConsole(PP_LOGLEVEL_ERROR, pp::Var("Invalid command!"));
   }
@@ -555,7 +561,8 @@ void VideoEncoderInstance::PostDataMessage(const void* buffer, uint32_t size) {
           ivf_writer_.GetFrameHeaderSize());
       data_ptr = static_cast<uint8_t*>(array_buffer.Map());
       frame_offset = ivf_writer_.WriteFileHeader(
-          data_ptr, frame_size_.width(), frame_size_.height());
+          data_ptr, ToUpperString(VideoProfileToString(video_profile_)),
+          frame_size_.width(), frame_size_.height());
     } else {
       array_buffer = pp::VarArrayBuffer(
           size + ivf_writer_.GetFrameHeaderSize());
@@ -578,23 +585,21 @@ void VideoEncoderInstance::PostDataMessage(const void* buffer, uint32_t size) {
   PostMessage(dictionary);
 }
 
-void VideoEncoderInstance::PostSignalMessage(const char* name) {
-  pp::VarDictionary dictionary;
-  dictionary.Set(pp::Var("name"), pp::Var(name));
-
-  PostMessage(dictionary);
-}
-
 void VideoEncoderInstance::LogError(int32_t error, const std::string& message) {
   std::string msg("Error: ");
   msg.append(pp::Var(error).DebugString());
   msg.append(" : ");
   msg.append(message);
-  LogToConsole(PP_LOGLEVEL_ERROR, pp::Var(msg));
+
+  Log(msg);
 }
 
 void VideoEncoderInstance::Log(const std::string& message) {
-  LogToConsole(PP_LOGLEVEL_LOG, pp::Var(message));
+  pp::VarDictionary dictionary;
+  dictionary.Set(pp::Var("name"), pp::Var("log"));
+  dictionary.Set(pp::Var("message"), pp::Var(message));
+
+  PostMessage(dictionary);
 }
 
 pp::Instance* VideoEncoderModule::CreateInstance(PP_Instance instance) {

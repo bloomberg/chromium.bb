@@ -59,12 +59,8 @@
     }
 
     function handleMessage(msg) {
-      if (msg.data.name == 'started') {
-        console.log('recording!');
-      } else if (msg.data.name == 'data') {
+      if (msg.data.name == 'data') {
         appendData(msg.data.data);
-      } else if (msg.data.name == 'stopped') {
-        console.log('done recording! bytes: ' + dataArray.byteLength);
       } else if (msg.data.name == 'supportedProfiles') {
         console.log('profiles: ', msg.data);
         var profileList = $('profileList');
@@ -73,6 +69,8 @@
           item.label = item.value = msg.data.profiles[i];
           profileList.appendChild(item);
         }
+      } else if (msg.data.name == 'log') {
+        console.log(msg.data.message);
       }
     }
 
@@ -85,7 +83,7 @@
       tmp.set(new Uint8Array(dataArray), 0 );
       tmp.set(new Uint8Array(data), dataArray.byteLength);
       dataArray = tmp.buffer;
-      $('length').innerHTML = ' Size: ' + dataArray.byteLength + ' bytes';
+      $('length').textContent = ' Size: ' + dataArray.byteLength + ' bytes';
     }
 
     function initialize() {

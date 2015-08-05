@@ -20,7 +20,12 @@ class TestVideoEncoder : public TestCase {
   virtual bool Init();
   virtual void RunTests(const std::string& filter);
 
-  std::string TestCreate();
+  std::string TestAvailableCodecs();
+  std::string TestIncorrectSizeFails();
+  std::string TestInitializeVP8();
+  std::string TestInitializeVP9();
+
+  std::string TestInitializeCodec(PP_VideoProfile profile);
 
   // Used by the tests that access the C API directly.
   const PPB_VideoEncoder_0_1* video_encoder_interface_;

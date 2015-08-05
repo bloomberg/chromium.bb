@@ -23,6 +23,8 @@
 
 namespace content {
 
+namespace {
+
 // TODO(llandwerlin): Libvpx doesn't seem to have a maximum frame size
 // limitation. We currently limit the size of the frames to encode at
 // 1080p (%64 pixels blocks), this seems like a reasonable limit for
@@ -30,19 +32,56 @@ namespace content {
 const int32_t kMaxWidth = 1920;
 const int32_t kMaxHeight = 1088;
 
-// Default speed for the encoder (same as WebRTC). Increases the CPU
-// usage as the value is more negative (VP8 valid range: -16..16).
-const int32_t kDefaultCpuUsed = -6;
-
-// Default quantizer min/max values.
-const int32_t kDefaultMinQuantizer = 2;
-const int32_t kDefaultMaxQuantizer = 52;
-
 // Bitstream buffer size.
 const uint32_t kBitstreamBufferSize = 2 * 1024 * 1024;
 
 // Number of frames needs at any given time.
 const uint32_t kInputFrameCount = 1;
+
+// Default speed for the encoder. Increases the CPU usage as the value
+// is more negative (VP8 valid range: -16..16, VP9 valid range:
+// -8..8), using the same value as WebRTC.
+const int32_t kVp8DefaultCpuUsed = -6;
+
+// Default quantizer min/max values (same values as WebRTC).
+const int32_t kVp8DefaultMinQuantizer = 2;
+const int32_t kVp8DefaultMaxQuantizer = 52;
+
+// For VP9, the following 3 values are the same values as remoting.
+const int32_t kVp9DefaultCpuUsed = 6;
+
+const int32_t kVp9DefaultMinQuantizer = 20;
+const int32_t kVp9DefaultMaxQuantizer = 30;
+
+// VP9 adaptive quantization strategy (same as remoting (live video
+// conferencing)).
+const int kVp9AqModeCyclicRefresh = 3;
+
+void GetVpxCodecParameters(media::VideoCodecProfile codec,
+                           vpx_codec_iface_t** vpx_codec,
+                           int32_t* min_quantizer,
+                           int32_t* max_quantizer,
+                           int32_t* cpu_used) {
+  switch (codec) {
+    case media::VP8PROFILE_ANY:
+      *vpx_codec = vpx_codec_vp8_cx();
+      *min_quantizer = kVp8DefaultMinQuantizer;
+      *max_quantizer = kVp8DefaultMaxQuantizer;
+      *cpu_used = kVp8DefaultCpuUsed;
+      break;
+    case media::VP9PROFILE_ANY:
+      *vpx_codec = vpx_codec_vp9_cx();
+      *min_quantizer = kVp9DefaultMinQuantizer;
+      *max_quantizer = kVp9DefaultMaxQuantizer;
+      *cpu_used = kVp9DefaultCpuUsed;
+      break;
+    default:
+      *vpx_codec = nullptr;
+      NOTREACHED();
+  }
+}
+
+}  // namespace
 
 class VideoEncoderShim::EncoderImpl {
  public:
@@ -118,14 +157,17 @@ void VideoEncoderShim::EncoderImpl::Initialize(
   gfx::Size coded_size =
       media::VideoFrame::PlaneSize(input_format, 0, input_visible_size);
 
+  vpx_codec_iface_t* vpx_codec;
+  int32_t min_quantizer, max_quantizer, cpu_used;
+  GetVpxCodecParameters(output_profile, &vpx_codec, &min_quantizer,
+                        &max_quantizer, &cpu_used);
+
   // Populate encoder configuration with default values.
-  if (vpx_codec_enc_config_default(vpx_codec_vp8_cx(), &config_, 0) !=
-      VPX_CODEC_OK) {
+  if (vpx_codec_enc_config_default(vpx_codec, &config_, 0) != VPX_CODEC_OK) {
     NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
 
-  config_.g_threads = 1;
   config_.g_w = input_visible_size.width();
   config_.g_h = input_visible_size.height();
 
@@ -135,11 +177,11 @@ void VideoEncoderShim::EncoderImpl::Initialize(
   config_.g_timebase.num = 1;
   config_.g_timebase.den = base::Time::kMicrosecondsPerSecond;
   config_.rc_target_bitrate = initial_bitrate / 1000;
-  config_.rc_min_quantizer = kDefaultMinQuantizer;
-  config_.rc_max_quantizer = kDefaultMaxQuantizer;
+  config_.rc_min_quantizer = min_quantizer;
+  config_.rc_max_quantizer = max_quantizer;
 
   vpx_codec_flags_t flags = 0;
-  if (vpx_codec_enc_init(&encoder_, vpx_codec_vp8_cx(), &config_, flags) !=
+  if (vpx_codec_enc_init(&encoder_, vpx_codec, &config_, flags) !=
       VPX_CODEC_OK) {
     NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
@@ -151,10 +193,18 @@ void VideoEncoderShim::EncoderImpl::Initialize(
     return;
   }
 
-  if (vpx_codec_control(&encoder_, VP8E_SET_CPUUSED, kDefaultCpuUsed) !=
+  if (vpx_codec_control(&encoder_, VP8E_SET_CPUUSED, cpu_used) !=
       VPX_CODEC_OK) {
     NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
+  }
+
+  if (output_profile == media::VP9PROFILE_ANY) {
+    if (vpx_codec_control(&encoder_, VP9E_SET_AQ_MODE,
+                          kVp9AqModeCyclicRefresh) != VPX_CODEC_OK) {
+      NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
+      return;
+    }
   }
 
   renderer_task_runner_->PostTask(
@@ -312,6 +362,16 @@ VideoEncoderShim::GetSupportedProfiles() {
     profiles.push_back(profile);
   }
 
+  ret = vpx_codec_enc_config_default(vpx_codec_vp9_cx(), &config, 0);
+  if (ret == VPX_CODEC_OK) {
+    media::VideoEncodeAccelerator::SupportedProfile profile;
+    profile.profile = media::VP9PROFILE_ANY;
+    profile.max_resolution = gfx::Size(kMaxWidth, kMaxHeight);
+    profile.max_framerate_numerator = config.g_timebase.den;
+    profile.max_framerate_denominator = config.g_timebase.num;
+    profiles.push_back(profile);
+  }
+
   return profiles;
 }
 
@@ -325,6 +385,10 @@ bool VideoEncoderShim::Initialize(
   DCHECK_EQ(client, host_);
 
   if (input_format != media::PIXEL_FORMAT_I420)
+    return false;
+
+  if (output_profile != media::VP8PROFILE_ANY &&
+      output_profile != media::VP9PROFILE_ANY)
     return false;
 
   media_task_runner_->PostTask(
