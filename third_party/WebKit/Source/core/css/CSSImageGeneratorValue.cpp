@@ -50,7 +50,7 @@ void CSSImageGeneratorValue::addClient(LayoutObject* layoutObject, const IntSize
 #else
     if (m_clients.isEmpty()) {
         ASSERT(!m_keepAlive);
-        m_keepAlive = adoptPtr(new Persistent<CSSImageGeneratorValue>(this));
+        m_keepAlive = this;
     }
 #endif
 
@@ -89,7 +89,7 @@ void CSSImageGeneratorValue::removeClient(LayoutObject* layoutObject)
 #else
     if (m_clients.isEmpty()) {
         ASSERT(m_keepAlive);
-        m_keepAlive = nullptr;
+        m_keepAlive.clear();
     }
 #endif
 }
