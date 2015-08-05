@@ -35,7 +35,12 @@ class CanvasTest : public testing::Test {
   FontList font_list_;
 };
 
-TEST_F(CanvasTest, StringWidth) {
+#if defined(OS_ANDROID)
+#define MAYBE_StringWidth DISABLED_StringWidth
+#else
+#define MAYBE_StringWidth StringWidth
+#endif
+TEST_F(CanvasTest, MAYBE_StringWidth) {
   EXPECT_GT(GetStringWidth("Test"), 0);
 }
 
@@ -43,7 +48,12 @@ TEST_F(CanvasTest, StringWidthEmptyString) {
   EXPECT_EQ(0, GetStringWidth(""));
 }
 
-TEST_F(CanvasTest, StringSizeEmptyString) {
+#if defined(OS_ANDROID)
+#define MAYBE_StringSizeEmptyString DISABLED_StringSizeEmptyString
+#else
+#define MAYBE_StringSizeEmptyString StringSizeEmptyString
+#endif
+TEST_F(CanvasTest, MAYBE_StringSizeEmptyString) {
   gfx::Size size = SizeStringInt("", 0, 0);
   EXPECT_EQ(0, size.width());
   EXPECT_GT(size.height(), 0);
