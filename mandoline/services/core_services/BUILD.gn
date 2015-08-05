@@ -47,6 +47,7 @@ source_set("sources") {
     "//mandoline/ui/browser:lib",
     "//mojo/application/public/cpp",
     "//mojo/common:tracing_impl",
+    "//mojo/message_pump",
     "//mojo/services/tracing:lib",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]

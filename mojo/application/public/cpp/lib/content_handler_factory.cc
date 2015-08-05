@@ -17,7 +17,7 @@
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/application/public/cpp/interface_factory_impl.h"
-#include "mojo/common/message_pump_mojo.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {

@@ -21,13 +21,6 @@ component("common_base") {
     "data_pipe_file_utils.cc",
     "data_pipe_utils.cc",
     "data_pipe_utils.h",
-    "handle_watcher.cc",
-    "handle_watcher.h",
-    "message_pump_mojo.cc",
-    "message_pump_mojo.h",
-    "message_pump_mojo_handler.h",
-    "time_helper.cc",
-    "time_helper.h",
     "user_agent.cc",
     "user_agent.h",
     "weak_binding_set.h",
@@ -39,7 +32,11 @@ component("common_base") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//mojo/environment:chromium",
     "//third_party/mojo/src/mojo/public/c/system:for_component",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo/src/mojo/public/cpp/environment",
+    "//third_party/mojo/src/mojo/public/cpp/system",
   ]
 }
 
@@ -78,6 +75,7 @@ test("mojo_common_unittests") {
     "//base:message_loop_tests",
     "//base/test:test_support",
     "//mojo/environment:chromium",
+    "//mojo/message_pump",
     "//testing/gtest",
     "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
     "//third_party/mojo/src/mojo/edk/test:test_support",
@@ -87,9 +85,11 @@ test("mojo_common_unittests") {
   ]
 
   sources = [
+    # The message_pump tests are so small and some what related to this code
+    # that we put them here.
+    "../message_pump/handle_watcher_unittest.cc",
+    "../message_pump/message_pump_mojo_unittest.cc",
     "common_type_converters_unittest.cc",
-    "handle_watcher_unittest.cc",
-    "message_pump_mojo_unittest.cc",
   ]
 }
 

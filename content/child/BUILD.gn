@@ -32,6 +32,7 @@ source_set("child") {
     "//mojo/application/public/interfaces",
     "//mojo/common",
     "//mojo/environment:chromium",
+    "//mojo/message_pump",
     "//skia",
     "//third_party/icu",
     "//ui/base",

@@ -10,6 +10,7 @@
     '../components/webcrypto/webcrypto.gyp:webcrypto',
     '../mojo/mojo_base.gyp:mojo_environment_chromium',
     '../mojo/mojo_base.gyp:mojo_common_lib',
+    '../mojo/mojo_base.gyp:mojo_message_pump_lib',
     '../skia/skia.gyp:skia',
     '../ui/base/ui_base.gyp:ui_base',
     '../ui/events/events.gyp:gestures_blink',

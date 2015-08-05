@@ -20,7 +20,7 @@
 #include "base/run_loop.h"
 #include "components/view_manager/android_loader.h"
 #include "jni/ShellMain_jni.h"
-#include "mojo/common/message_pump_mojo.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/runner/android/android_handler_loader.h"
 #include "mojo/runner/android/background_application_loader.h"
 #include "mojo/runner/android/context_init.h"

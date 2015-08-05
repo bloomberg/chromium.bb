@@ -48,6 +48,7 @@ source_set("sources") {
     "//mojo/application/public/interfaces",
     "//mojo/common",
     "//mojo/environment:chromium",
+    "//mojo/message_pump",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/system",
   ]
@@ -70,9 +71,7 @@ source_set("content_handler") {
     # TODO: this code should not depend on base.
     "//base",
     "//mojo/application/public/interfaces:interfaces_cpp_sources",
-
-    # TODO: this code should not depend on mojo/common.
-    "//mojo/common:common_base",
+    "//mojo/message_pump",
     "//mojo/services/network/public/interfaces",
   ]
 }

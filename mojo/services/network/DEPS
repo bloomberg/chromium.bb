@@ -3,6 +3,7 @@ include_rules = [
   "+components/filesystem/public/interfaces",
   "+mojo/application",
   "+mojo/common",
+  "+mojo/message_pump",
   "+mojo/services",
   "+mojo/util",
   "+net",

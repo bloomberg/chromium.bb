@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_COMMON_HANDLE_WATCHER_H_
-#define MOJO_COMMON_HANDLE_WATCHER_H_
+#ifndef MOJO_MESSAGE_PUMP_HANDLE_WATCHER_H_
+#define MOJO_MESSAGE_PUMP_HANDLE_WATCHER_H_
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
-#include "mojo/common/mojo_common_export.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace base {
@@ -24,7 +23,7 @@ class HandleWatcherTest;
 
 // HandleWatcher is used to asynchronously wait on a handle and notify a Closure
 // when the handle is ready, or the deadline has expired.
-class MOJO_COMMON_EXPORT HandleWatcher {
+class HandleWatcher {
  public:
   HandleWatcher();
 
@@ -61,4 +60,4 @@ class MOJO_COMMON_EXPORT HandleWatcher {
 }  // namespace common
 }  // namespace mojo
 
-#endif  // MOJO_COMMON_HANDLE_WATCHER_H_
+#endif  // MOJO_MESSAGE_PUMP_HANDLE_WATCHER_H_

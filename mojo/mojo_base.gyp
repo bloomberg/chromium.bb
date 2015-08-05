@@ -36,6 +36,28 @@
       'type': 'none',
     },
     {
+      # GN version: //mojo/message_pump
+      'target_name': 'mojo_message_pump_lib',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '<(mojo_system_for_component)',
+      ],
+      'export_dependent_settings': [
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+      ],
+      'sources': [
+        'message_pump/handle_watcher.cc',
+        'message_pump/handle_watcher.h',
+        'message_pump/message_pump_mojo.cc',
+        'message_pump/message_pump_mojo.h',
+        'message_pump/message_pump_mojo_handler.h',
+        'message_pump/time_helper.cc',
+        'message_pump/time_helper.h',
+      ],
+    },
+    {
       # GN version: //mojo/common
       'target_name': 'mojo_common_lib',
       'type': '<(component)',
@@ -56,13 +78,6 @@
         'common/data_pipe_file_utils.cc',
         'common/data_pipe_utils.cc',
         'common/data_pipe_utils.h',
-        'common/handle_watcher.cc',
-        'common/handle_watcher.h',
-        'common/message_pump_mojo.cc',
-        'common/message_pump_mojo.h',
-        'common/message_pump_mojo_handler.h',
-        'common/time_helper.cc',
-        'common/time_helper.h',
       ],
     },
     {
@@ -112,19 +127,20 @@
         '../base/base.gyp:base_message_loop_tests',
         '../testing/gtest.gyp:gtest',
         '../url/url.gyp:url_lib',
-        'mojo_common_lib',
-        'mojo_url_type_converters',
         '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
         '../third_party/mojo/mojo_edk.gyp:mojo_common_test_support',
         '../third_party/mojo/mojo_edk.gyp:mojo_run_all_unittests',
-        'mojo_environment_chromium',
         '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../third_party/mojo/mojo_public.gyp:mojo_public_test_utils',
+        'mojo_common_lib',
+        'mojo_environment_chromium',
+        'mojo_message_pump_lib',
+        'mojo_url_type_converters',
       ],
       'sources': [
         'common/common_type_converters_unittest.cc',
-        'common/handle_watcher_unittest.cc',
-        'common/message_pump_mojo_unittest.cc',
+        'message_pump/handle_watcher_unittest.cc',
+        'message_pump/message_pump_mojo_unittest.cc',
       ],
     },
     {
@@ -136,7 +152,6 @@
         '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'sources': [
-        'environment/environment.cc',
         # TODO(vtl): This is kind of ugly. (See TODO in logging.h.)
         "../third_party/mojo/src/mojo/public/cpp/environment/async_waiter.h",
         "../third_party/mojo/src/mojo/public/cpp/environment/lib/async_waiter.cc",
@@ -145,6 +160,7 @@
         "../third_party/mojo/src/mojo/public/cpp/environment/lib/scoped_task_tracking.cc",
         "../third_party/mojo/src/mojo/public/cpp/environment/logging.h",
         "../third_party/mojo/src/mojo/public/cpp/environment/task_tracker.h",
+        'environment/environment.cc',
       ],
       'include_dirs': [
         '..',
@@ -169,7 +185,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        'mojo_common_lib',
+        'mojo_message_pump_lib',
         '<(mojo_system_for_component)',
       ],
       'sources': [
@@ -240,7 +256,7 @@
       ],
       'dependencies': [
         'mojo_application_bindings',
-        'mojo_common_lib',
+        'mojo_message_pump_lib',
       ],
     },
     {

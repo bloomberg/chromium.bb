@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/common/message_pump_mojo.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 
 #include <algorithm>
 #include <vector>
@@ -12,8 +12,8 @@
 #include "base/logging.h"
 #include "base/threading/thread_local.h"
 #include "base/time/time.h"
-#include "mojo/common/message_pump_mojo_handler.h"
-#include "mojo/common/time_helper.h"
+#include "mojo/message_pump/message_pump_mojo_handler.h"
+#include "mojo/message_pump/time_helper.h"
 
 namespace mojo {
 namespace common {
