@@ -11,6 +11,7 @@
 #include "mojo/runner/child_process.h"
 #include "mojo/runner/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/edk/embedder/test_embedder.h"
 
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
@@ -24,6 +25,9 @@ int main(int argc, char** argv) {
   }
 
   base::TestSuite test_suite(argc, argv);
+
+  mojo::embedder::test::InitWithSimplePlatformSupport();
+
   return base::LaunchUnitTests(
       argc, argv,
       base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));

@@ -29,6 +29,7 @@
 #include "mojo/common/tracing_impl.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
+#include "mojo/runner/about_fetcher.h"
 #include "mojo/runner/in_process_native_runner.h"
 #include "mojo/runner/out_of_process_native_runner.h"
 #include "mojo/runner/switches.h"
@@ -337,6 +338,11 @@ GURL Context::ResolveMojoURL(const GURL& url) {
 bool Context::CreateFetcher(
     const GURL& url,
     const shell::Fetcher::FetchCallback& loader_callback) {
+  if (url.SchemeIs(AboutFetcher::kAboutScheme)) {
+    AboutFetcher::Start(url, loader_callback);
+    return true;
+  }
+
   return false;
 }
 

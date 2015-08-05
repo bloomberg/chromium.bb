@@ -96,6 +96,8 @@ source_set("in_process_native_runner") {
 
 source_set("lib") {
   sources = [
+    "about_fetcher.cc",
+    "about_fetcher.h",
     "child_process.cc",
     "child_process.h",
     "child_process_host.cc",
@@ -415,6 +417,7 @@ mojom("child_process_bindings") {
 
 test("mojo_runner_unittests") {
   sources = [
+    "about_fetcher_unittest.cc",
     "child_process_host_unittest.cc",
     "data_pipe_peek_unittest.cc",
     "in_process_native_runner_unittest.cc",
@@ -433,6 +436,7 @@ test("mojo_runner_unittests") {
     "//base",
     "//base:i18n",
     "//base/test:test_support",
+    "//mojo/application/public/cpp",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/services/test_service:bindings",
