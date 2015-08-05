@@ -99,8 +99,8 @@ class BuildBotPrinterTests(unittest.TestCase):
             port, expected=False, passing=False, flaky=False, fail_on_retry=True)
         printer.print_unexpected_results(summary)
         output = out.getvalue()
-        self.assertIn('Unexpected crashes (2)\n  failures/expected/audio.html [ Crash Leak ]\n  '
-                      'failures/expected/timeout.html [ Crash Failure Leak ]', output)
+        self.assertIn('Unexpected crashes (2)\n  failures/expected/audio.html [ Crash Leak Leak Leak ]\n  '
+                      'failures/expected/timeout.html [ Crash Failure Crash Leak ]', output)
 
     def test_print_results(self):
         port = MockHost().port_factory.get('test')

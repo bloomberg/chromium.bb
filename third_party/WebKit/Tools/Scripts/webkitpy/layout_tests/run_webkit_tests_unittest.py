@@ -542,7 +542,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         details, err, _ = logging_run(['--retry-failures', 'failures/unexpected/text_then_crash.html'], tests_included=True)
         self.assertEqual(details.exit_code, 1)
         self.assertEqual(details.summarized_failing_results['tests']['failures']['unexpected']['text_then_crash.html']['actual'],
-                         'TEXT CRASH')
+                         'TEXT CRASH CRASH CRASH')
 
         # If we get a test that fails two different ways -- but the second one is expected --
         # we should treat it as a flaky result and report the initial unexpected failure type
@@ -550,7 +550,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         details, err, _ = logging_run(['--retry-failures', 'failures/expected/crash_then_text.html'], tests_included=True)
         self.assertEqual(details.exit_code, 0)
         self.assertEqual(details.summarized_failing_results['tests']['failures']['expected']['crash_then_text.html']['actual'],
-                         'CRASH FAIL')
+                         'CRASH TEXT')
 
     def test_pixel_test_directories(self):
         host = MockHost()
@@ -723,7 +723,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         json_string = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
         json = parse_full_results(json_string)
         self.assertEqual(json["tests"]["failures"]["unexpected"]["text-image-checksum.html"],
-            {"expected": "PASS", "actual": "TEXT IMAGE+TEXT", "is_unexpected": True})
+                         {"expected": "PASS", "actual": "TEXT IMAGE+TEXT IMAGE+TEXT IMAGE+TEXT", "is_unexpected": True})
         self.assertFalse(json["pixel_tests_enabled"])
         self.assertEqual(details.enabled_pixel_tests_in_retry, True)
 

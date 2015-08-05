@@ -249,17 +249,22 @@ class SummarizedResultsTest(unittest.TestCase):
         self.assertTrue('time' not in summary['tests']['failures']['expected']['leak.html'])
 
     def test_timeout_then_unexpected_pass(self):
-        tests = ['failures/expected/image.html']
-        expectations = test_expectations.TestExpectations(self.port, tests)
-        initial_results = test_run_results.TestRunResults(expectations, len(tests))
-        initial_results.add(get_result('failures/expected/image.html', test_expectations.TIMEOUT, run_time=1), False, False)
-        retry_results = test_run_results.TestRunResults(expectations, len(tests))
-        retry_results.add(get_result('failures/expected/image.html', test_expectations.LEAK, run_time=0.1), False, False)
-        retry_results.add(get_result('failures/expected/image.html', test_expectations.PASS, run_time=0.1), False, False)
-        retry_results.add(get_result('failures/expected/image.html', test_expectations.PASS, run_time=0.1), False, False)
+        test_name = 'failures/expected/image.html'
+        expectations = test_expectations.TestExpectations(self.port, [test_name])
+        initial_results = test_run_results.TestRunResults(expectations, 1)
+        initial_results.add(get_result(test_name, test_expectations.TIMEOUT, run_time=1), False, False)
+        all_retry_results = [test_run_results.TestRunResults(expectations, 1),
+                             test_run_results.TestRunResults(expectations, 1),
+                             test_run_results.TestRunResults(expectations, 1)]
+        all_retry_results[0].add(get_result(test_name, test_expectations.LEAK, run_time=0.1), False, False)
+        all_retry_results[1].add(get_result(test_name, test_expectations.PASS, run_time=0.1), False, False)
+        all_retry_results[2].add(get_result(test_name, test_expectations.PASS, run_time=0.1), False, False)
         summary = test_run_results.summarize_results(
-            self.port, expectations, initial_results, [retry_results] * 3,
-            enabled_pixel_tests_in_retry=True, only_include_failing=True)
+            self.port, expectations, initial_results, all_retry_results,
+            enabled_pixel_tests_in_retry=True)
+        self.assertTrue(summary['tests']['failures']['expected']['image.html']['is_unexpected'])
+        self.assertEquals(summary['tests']['failures']['expected']['image.html']['expected'], 'IMAGE')
+        self.assertEquals(summary['tests']['failures']['expected']['image.html']['actual'], 'TIMEOUT LEAK PASS PASS')
         self.assertEquals(summary['num_passes'], 1)
         self.assertEquals(summary['num_regressions'], 0)
         self.assertEquals(summary['num_flaky'], 0)
@@ -273,22 +278,43 @@ class SummarizedResultsTest(unittest.TestCase):
 
         self.assertTrue(summary['tests']['passes']['text.html']['is_unexpected'])
         self.assertEquals(summary['tests']['passes']['text.html']['expected'], 'PASS')
-        self.assertEquals(summary['tests']['passes']['text.html']['actual'], 'TIMEOUT PASS')
+        self.assertEquals(summary['tests']['passes']['text.html']['actual'], 'TIMEOUT PASS PASS PASS')
 
         self.assertTrue(summary['tests']['failures']['expected']['timeout.html']['is_unexpected'])
         self.assertEquals(summary['tests']['failures']['expected']['timeout.html']['expected'], 'TIMEOUT')
-        self.assertEquals(summary['tests']['failures']['expected']['timeout.html']['actual'], 'CRASH TIMEOUT')
+        self.assertEquals(summary['tests']['failures']['expected']['timeout.html']['actual'], 'CRASH TIMEOUT TIMEOUT TIMEOUT')
 
         self.assertTrue(summary['tests']['failures']['expected']['leak.html']['is_unexpected'])
         self.assertEquals(summary['tests']['failures']['expected']['leak.html']['expected'], 'LEAK')
-        self.assertEquals(summary['tests']['failures']['expected']['leak.html']['actual'], 'TIMEOUT LEAK')
+        self.assertEquals(summary['tests']['failures']['expected']['leak.html']['actual'], 'TIMEOUT LEAK LEAK LEAK')
 
         self.assertTrue(summary['tests']['failures']['expected']['audio.html']['is_unexpected'])
         self.assertEquals(summary['tests']['failures']['expected']['audio.html']['expected'], 'FAIL')
-        self.assertEquals(summary['tests']['failures']['expected']['audio.html']['actual'], 'CRASH FAIL')
+        self.assertEquals(summary['tests']['failures']['expected']['audio.html']['actual'], 'CRASH AUDIO AUDIO AUDIO')
 
         self.assertEquals(summary['num_flaky'], 5)
         self.assertEquals(summary['num_passes'], 1)  # keyboard.html
+        self.assertEquals(summary['num_regressions'], 0)
+
+    def test_summarized_results_flaky_pass_after_first_retry(self):
+        test_name = 'passes/text.html'
+        expectations = test_expectations.TestExpectations(self.port, [test_name])
+        initial_results = test_run_results.TestRunResults(expectations, 1)
+        initial_results.add(get_result(test_name, test_expectations.CRASH), False, False)
+        all_retry_results = [test_run_results.TestRunResults(expectations, 1),
+                             test_run_results.TestRunResults(expectations, 1),
+                             test_run_results.TestRunResults(expectations, 1)]
+        all_retry_results[0].add(get_result(test_name, test_expectations.TIMEOUT), False, False)
+        all_retry_results[1].add(get_result(test_name, test_expectations.PASS), True, False)
+        all_retry_results[2].add(get_result(test_name, test_expectations.PASS), True, False)
+        summary = test_run_results.summarize_results(
+            self.port, expectations, initial_results, all_retry_results,
+            enabled_pixel_tests_in_retry=True)
+        self.assertTrue(summary['tests']['passes']['text.html']['is_unexpected'])
+        self.assertEquals(summary['tests']['passes']['text.html']['expected'], 'PASS')
+        self.assertEquals(summary['tests']['passes']['text.html']['actual'], 'CRASH TIMEOUT PASS PASS')
+        self.assertEquals(summary['num_flaky'], 1)
+        self.assertEquals(summary['num_passes'], 0)
         self.assertEquals(summary['num_regressions'], 0)
 
     def test_summarized_results_regression(self):
@@ -297,7 +323,7 @@ class SummarizedResultsTest(unittest.TestCase):
 
         self.assertTrue(summary['tests']['failures']['expected']['timeout.html']['is_unexpected'])
         self.assertEquals(summary['tests']['failures']['expected']['timeout.html']['expected'], 'TIMEOUT')
-        self.assertEquals(summary['tests']['failures']['expected']['timeout.html']['actual'], 'CRASH AUDIO LEAK')
+        self.assertEquals(summary['tests']['failures']['expected']['timeout.html']['actual'], 'CRASH AUDIO CRASH LEAK')
 
         self.assertTrue(summary['tests']['passes']['text.html']['is_unexpected'])
         self.assertEquals(summary['tests']['passes']['text.html']['expected'], 'PASS')
@@ -313,7 +339,7 @@ class SummarizedResultsTest(unittest.TestCase):
 
         self.assertTrue(summary['tests']['failures']['expected']['audio.html']['is_unexpected'])
         self.assertEquals(summary['tests']['failures']['expected']['audio.html']['expected'], 'FAIL')
-        self.assertEquals(summary['tests']['failures']['expected']['audio.html']['actual'], 'CRASH LEAK')
+        self.assertEquals(summary['tests']['failures']['expected']['audio.html']['actual'], 'CRASH LEAK LEAK LEAK')
 
         self.assertEquals(summary['num_regressions'], 5)
         self.assertEquals(summary['num_passes'], 1)  # keyboard.html

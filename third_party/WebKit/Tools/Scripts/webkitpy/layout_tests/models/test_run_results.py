@@ -231,35 +231,25 @@ def summarize_results(port_obj, expectations, initial_results,
             # whether this is a regression, unexpected pass, or flaky test.
             is_flaky = False
             has_unexpected_pass = False
-            result_types_seen = set([result.type])
             for retry_attempt_results in all_retry_results:
                 # If a test passes on one of the retries, it won't be in the subsequent retries.
                 if test_name not in retry_attempt_results.results_by_name:
                     break
 
                 retry_result_type = retry_attempt_results.results_by_name[test_name].type
-                retry_result_keyword = keywords[retry_result_type]
-
-                # Skip results that have already been seen.
-                if retry_result_type in result_types_seen:
-                    continue
-
-                result_types_seen.add(retry_result_type)
+                actual.append(keywords[retry_result_type])
                 if test_name in retry_attempt_results.unexpected_results_by_name:
                     if retry_result_type == test_expectations.PASS:
                         # The test failed unexpectedly at first, then passed
                         # unexpectedly on a subsequent run -> unexpected pass.
                         has_unexpected_pass = True
-                    else:
-                        # Record result of unexpected failure.
-                        actual.append(retry_result_keyword)
                 else:
                     # The test failed unexpectedly at first but then ran as
                     # expected on a subsequent run -> flaky.
                     is_flaky = True
-                    # TODO(joelo): This should correspond to the actual results,
-                    # preexisting flakiness information might be outdated.
-                    actual.extend(expected.split(" "))
+
+            if len(set(actual)) == 1:
+                actual = [actual[0]]
 
             if is_flaky:
                 num_flaky += 1
