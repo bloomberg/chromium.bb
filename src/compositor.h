@@ -56,6 +56,7 @@ struct shell_surface;
 struct weston_seat;
 struct weston_output;
 struct input_method;
+struct weston_pointer;
 
 enum weston_keyboard_modifier {
 	MODIFIER_CTRL = (1 << 0),
@@ -106,9 +107,9 @@ struct weston_shell_interface {
 			       struct weston_output *output);
 	void (*set_xwayland)(struct shell_surface *shsurf,
 			       int x, int y, uint32_t flags);
-	int (*move)(struct shell_surface *shsurf, struct weston_seat *ws);
+	int (*move)(struct shell_surface *shsurf, struct weston_pointer *pointer);
 	int (*resize)(struct shell_surface *shsurf,
-		      struct weston_seat *ws, uint32_t edges);
+		      struct weston_pointer *pointer, uint32_t edges);
 	void (*set_title)(struct shell_surface *shsurf,
 	                  const char *title);
 	void (*set_window_geometry)(struct shell_surface *shsurf,

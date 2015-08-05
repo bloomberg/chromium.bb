@@ -3087,17 +3087,17 @@ shell_interface_set_maximized(struct shell_surface *shsurf)
 }
 
 static int
-shell_interface_move(struct shell_surface *shsurf, struct weston_seat *ws)
+shell_interface_move(struct shell_surface *shsurf, struct weston_pointer *pointer)
 {
-	return surface_move(shsurf, weston_seat_get_pointer(ws), true);
+	return surface_move(shsurf, pointer, true);
 }
 
 static int
 shell_interface_resize(struct shell_surface *shsurf,
-		       struct weston_seat *ws,
+		       struct weston_pointer *pointer,
 		       uint32_t edges)
 {
-	return surface_resize(shsurf, weston_seat_get_pointer(ws), edges);
+	return surface_resize(shsurf, pointer, edges);
 }
 
 static const struct weston_pointer_grab_interface popup_grab_interface;

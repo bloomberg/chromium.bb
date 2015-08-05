@@ -1362,7 +1362,7 @@ weston_wm_window_handle_moveresize(struct weston_wm_window *window,
 	detail = client_message->data.data32[2];
 	switch (detail) {
 	case _NET_WM_MOVERESIZE_MOVE:
-		shell_interface->move(window->shsurf, seat);
+		shell_interface->move(window->shsurf, pointer);
 		break;
 	case _NET_WM_MOVERESIZE_SIZE_TOPLEFT:
 	case _NET_WM_MOVERESIZE_SIZE_TOP:
@@ -1372,7 +1372,7 @@ weston_wm_window_handle_moveresize(struct weston_wm_window *window,
 	case _NET_WM_MOVERESIZE_SIZE_BOTTOM:
 	case _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT:
 	case _NET_WM_MOVERESIZE_SIZE_LEFT:
-		shell_interface->resize(window->shsurf, seat, map[detail]);
+		shell_interface->resize(window->shsurf, pointer, map[detail]);
 		break;
 	case _NET_WM_MOVERESIZE_CANCEL:
 		break;
@@ -1758,6 +1758,7 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 	struct weston_shell_interface *shell_interface =
 		&wm->server->compositor->shell_interface;
 	struct weston_seat *seat;
+	struct weston_pointer *pointer;
 	struct weston_wm_window *window;
 	enum theme_location location;
 	enum frame_button_state button_state;
@@ -1775,6 +1776,7 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 		return;
 
 	seat = weston_wm_pick_seat_for_window(window);
+	pointer = weston_seat_get_pointer(seat);
 
 	button_state = button->response_type == XCB_BUTTON_PRESS ?
 		FRAME_BUTTON_PRESSED : FRAME_BUTTON_RELEASED;
@@ -1793,14 +1795,14 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 		weston_wm_window_schedule_repaint(window);
 
 	if (frame_status(window->frame) & FRAME_STATUS_MOVE) {
-		if (seat != NULL)
-			shell_interface->move(window->shsurf, seat);
+		if (pointer)
+			shell_interface->move(window->shsurf, pointer);
 		frame_status_clear(window->frame, FRAME_STATUS_MOVE);
 	}
 
 	if (frame_status(window->frame) & FRAME_STATUS_RESIZE) {
-		if (seat != NULL)
-			shell_interface->resize(window->shsurf, seat, location);
+		if (pointer)
+			shell_interface->resize(window->shsurf, pointer, location);
 		frame_status_clear(window->frame, FRAME_STATUS_RESIZE);
 	}
 
