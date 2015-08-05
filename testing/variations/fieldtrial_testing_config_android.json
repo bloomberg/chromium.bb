@@ -193,5 +193,10 @@
         {
             "group_name": "Enabled"
         }
+    ],
+    "IconNTP": [
+        {
+            "group_name": "Enabled"
+        }
     ]
 }
