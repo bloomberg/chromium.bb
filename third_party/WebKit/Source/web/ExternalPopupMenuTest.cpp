@@ -33,7 +33,6 @@ public:
     ~TestPopupMenuClient() override { }
 
     void valueChanged(unsigned listIndex, bool fireEvents = true) override { }
-    void popupDidHide() override { }
     void popupDidCancel() override { }
     void provisionalSelectionChanged(unsigned listIndex) override { }
     HTMLSelectElement& ownerElement() const override { return *m_ownerElement; }
@@ -186,11 +185,11 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndex)
     ASSERT_TRUE(menuList);
 
     menuList->showPopup();
-    ASSERT_TRUE(menuList->popupIsVisible());
+    ASSERT_TRUE(select->popupIsVisible());
 
     WebExternalPopupMenuClient* client = static_cast<ExternalPopupMenu*>(menuList->popup());
     client->didAcceptIndex(2);
-    EXPECT_FALSE(menuList->popupIsVisible());
+    EXPECT_FALSE(select->popupIsVisible());
     ASSERT_STREQ("2", menuList->text().utf8().data());
     EXPECT_EQ(2, select->selectedIndex());
 }
@@ -205,13 +204,13 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndices)
     ASSERT_TRUE(menuList);
 
     menuList->showPopup();
-    ASSERT_TRUE(menuList->popupIsVisible());
+    ASSERT_TRUE(select->popupIsVisible());
 
     WebExternalPopupMenuClient* client = static_cast<ExternalPopupMenu*>(menuList->popup());
     int indices[] = { 2 };
     WebVector<int> indicesVector(indices, 1);
     client->didAcceptIndices(indicesVector);
-    EXPECT_FALSE(menuList->popupIsVisible());
+    EXPECT_FALSE(select->popupIsVisible());
     EXPECT_STREQ("2", menuList->text().utf8().data());
     EXPECT_EQ(2, select->selectedIndex());
 }
@@ -226,12 +225,12 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndicesClearSelect)
     ASSERT_TRUE(menuList);
 
     menuList->showPopup();
-    ASSERT_TRUE(menuList->popupIsVisible());
+    ASSERT_TRUE(select->popupIsVisible());
 
     WebExternalPopupMenuClient* client = static_cast<ExternalPopupMenu*>(menuList->popup());
     WebVector<int> indices;
     client->didAcceptIndices(indices);
-    EXPECT_FALSE(menuList->popupIsVisible());
+    EXPECT_FALSE(select->popupIsVisible());
     EXPECT_EQ(-1, select->selectedIndex());
 }
 

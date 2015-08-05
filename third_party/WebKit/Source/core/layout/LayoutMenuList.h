@@ -40,7 +40,7 @@ public:
     explicit LayoutMenuList(Element*);
     ~LayoutMenuList() override;
 
-    bool popupIsVisible() const { return m_popupIsVisible; }
+    HTMLSelectElement* selectElement() const;
     void showPopup();
     void hidePopup();
     PopupMenu* popup() const { return m_popup.get(); }
@@ -60,8 +60,6 @@ protected:
     void willBeDestroyed() override;
 
 private:
-    HTMLSelectElement* selectElement() const;
-
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectMenuList || LayoutFlexibleBox::isOfType(type); }
     bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
@@ -80,7 +78,6 @@ private:
 
     // PopupMenuClient methods
     void valueChanged(unsigned listIndex, bool fireOnChange = true) override;
-    void popupDidHide() override;
     void popupDidCancel() override;
     void provisionalSelectionChanged(unsigned) override;
     HTMLSelectElement& ownerElement() const override;
@@ -112,7 +109,6 @@ private:
     bool m_optionsChanged : 1;
     bool m_isEmpty : 1;
     bool m_hasUpdatedActiveOption : 1;
-    bool m_popupIsVisible : 1;
     int m_optionsWidth;
 
     int m_lastActiveIndex;

@@ -2143,15 +2143,7 @@ bool Internals::isSelectPopupVisible(Node* node)
     ASSERT(node);
     if (!isHTMLSelectElement(*node))
         return false;
-
-    HTMLSelectElement& select = toHTMLSelectElement(*node);
-
-    LayoutObject* layoutObject = select.layoutObject();
-    if (!layoutObject || !layoutObject->isMenuList())
-        return false;
-
-    LayoutMenuList* menuList = toLayoutMenuList(layoutObject);
-    return menuList->popupIsVisible();
+    return toHTMLSelectElement(*node).popupIsVisible();
 }
 
 bool Internals::selectPopupItemStyleIsRtl(Node* node, int itemIndex)

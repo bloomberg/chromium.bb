@@ -85,6 +85,7 @@ HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
     , m_shouldRecalcListItems(false)
     , m_suggestedIndex(-1)
     , m_isAutofilledByPreview(false)
+    , m_popupIsVisible(false)
 {
     setHasCustomStyleCallbacks();
 }
@@ -359,12 +360,8 @@ void HTMLSelectElement::parseAttribute(const QualifiedName& name, const AtomicSt
         //
     } else if (name == disabledAttr) {
         HTMLFormControlElementWithState::parseAttribute(name, value);
-        if (layoutObject() && layoutObject()->isMenuList()) {
-            if (LayoutMenuList* menuList = toLayoutMenuList(layoutObject())) {
-                if (menuList->popupIsVisible())
-                    menuList->hidePopup();
-            }
-        }
+        if (popupIsVisible() && layoutObject() && layoutObject()->isMenuList())
+            toLayoutMenuList(layoutObject())->hidePopup();
 
     } else {
         HTMLFormControlElementWithState::parseAttribute(name, value);
@@ -1311,20 +1308,18 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
         InputDevice* sourceDevice = toMouseEvent(event)->fromTouch() ? InputDevice::firesTouchEventsInputDevice() : InputDevice::doesntFireTouchEventsInputDevice();
         focus(true, WebFocusTypeNone, sourceDevice);
         if (layoutObject() && layoutObject()->isMenuList() && !isDisabledFormControl()) {
-            if (LayoutMenuList* menuList = toLayoutMenuList(layoutObject())) {
-                if (menuList->popupIsVisible()) {
-                    menuList->hidePopup();
-                } else {
-                    // Save the selection so it can be compared to the new
-                    // selection when we call onChange during selectOption,
-                    // which gets called from LayoutMenuList::valueChanged,
-                    // which gets called after the user makes a selection from
-                    // the menu.
-                    saveLastSelection();
-                    // TODO(lanwei): Will check if we need to add InputDevice here
-                    // when select menu list gets focus, see https://crbug.com/476530.
-                    menuList->showPopup();
-                }
+            LayoutMenuList* menuList = toLayoutMenuList(layoutObject());
+            if (popupIsVisible()) {
+                menuList->hidePopup();
+            } else {
+                // Save the selection so it can be compared to the new selection
+                // when we call onChange during selectOption, which gets called
+                // from LayoutMenuList::valueChanged, which gets called after
+                // the user makes a selection from the menu.
+                saveLastSelection();
+                // TODO(lanwei): Will check if we need to add InputDevice here
+                // when select menu list gets focus, see https://crbug.com/476530.
+                menuList->showPopup();
             }
         }
         event->setDefaultHandled();
@@ -1332,7 +1327,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
 
     if (event->type() == EventTypeNames::blur) {
         if (LayoutMenuList* menuList = toLayoutMenuList(layoutObject())) {
-            if (menuList->popupIsVisible())
+            if (popupIsVisible())
                 menuList->hidePopup();
         }
     }
@@ -1838,6 +1833,15 @@ LayoutUnit HTMLSelectElement::clientPaddingRight() const
     if (layoutObject() && layoutObject()->isMenuList())
         return toLayoutMenuList(layoutObject())->clientPaddingRight();
     return 0;
+}
+
+void HTMLSelectElement::popupDidHide()
+{
+    m_popupIsVisible = false;
+    if (AXObjectCache* cache = document().existingAXObjectCache()) {
+        if (layoutObject() && layoutObject()->isMenuList())
+            cache->didHideMenuListPopup(toLayoutMenuList(layoutObject()));
+    }
 }
 
 } // namespace blink

@@ -58,7 +58,6 @@ LayoutMenuList::LayoutMenuList(Element* element)
     , m_optionsChanged(true)
     , m_isEmpty(false)
     , m_hasUpdatedActiveOption(false)
-    , m_popupIsVisible(false)
     , m_optionsWidth(0)
     , m_lastActiveIndex(-1)
     , m_indexToSelectOnCancel(-1)
@@ -139,7 +138,7 @@ void LayoutMenuList::adjustInnerStyle()
     }
 }
 
-inline HTMLSelectElement* LayoutMenuList::selectElement() const
+HTMLSelectElement* LayoutMenuList::selectElement() const
 {
     return toHTMLSelectElement(node());
 }
@@ -220,7 +219,7 @@ void LayoutMenuList::updateFromElement()
         m_optionsChanged = false;
     }
 
-    if (m_popupIsVisible)
+    if (selectElement()->popupIsVisible())
         m_popup->updateFromElement();
 
     updateText();
@@ -340,7 +339,7 @@ void LayoutMenuList::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, 
 
 void LayoutMenuList::showPopup()
 {
-    if (m_popupIsVisible)
+    if (selectElement()->popupIsVisible())
         return;
 
     if (document().frameHost()->chromeClient().hasOpenedPopup())
@@ -348,7 +347,7 @@ void LayoutMenuList::showPopup()
 
     if (!m_popup)
         m_popup = document().frameHost()->chromeClient().openPopupMenu(*document().frame(), this);
-    m_popupIsVisible = true;
+    selectElement()->setPopupIsVisible();
 
     FloatQuad quad(localToAbsoluteQuad(FloatQuad(borderBoundingBox())));
     IntSize size = pixelSnappedIntRect(frameRect()).size();
@@ -431,13 +430,6 @@ LayoutUnit LayoutMenuList::clientPaddingRight() const
     // If the appearance isn't MenulistPart, then the select is styled (non-native), so
     // we want to return the user specified padding.
     return paddingRight() + m_innerBlock->paddingRight();
-}
-
-void LayoutMenuList::popupDidHide()
-{
-    m_popupIsVisible = false;
-    if (AXObjectCache* cache = document().existingAXObjectCache())
-        cache->didHideMenuListPopup(this);
 }
 
 void LayoutMenuList::popupDidCancel()

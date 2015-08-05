@@ -139,6 +139,11 @@ public:
     LayoutUnit clientPaddingLeft() const;
     // Text starting offset in RTL.
     LayoutUnit clientPaddingRight() const;
+    void popupDidHide();
+    bool popupIsVisible() const { return m_popupIsVisible; }
+    // TODO(tkent): setPopupIsVisible should be unnecessary. Popup controlling
+    // code should be in HTMLSelectElement.
+    void setPopupIsVisible() { m_popupIsVisible = true; }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -245,6 +250,8 @@ private:
     mutable bool m_shouldRecalcListItems;
     int m_suggestedIndex;
     bool m_isAutofilledByPreview;
+
+    bool m_popupIsVisible;
 };
 
 } // namespace blink

@@ -26,6 +26,7 @@
 #include "config.h"
 #include "modules/accessibility/AXMenuList.h"
 
+#include "core/html/HTMLSelectElement.h"
 #include "core/layout/LayoutMenuList.h"
 #include "modules/accessibility/AXMenuListPopup.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
@@ -56,7 +57,7 @@ bool AXMenuList::press() const
         return false;
 
     LayoutMenuList* menuList = toLayoutMenuList(m_layoutObject);
-    if (menuList->popupIsVisible())
+    if (menuList->selectElement()->popupIsVisible())
         menuList->hidePopup();
     else
         menuList->showPopup();
@@ -104,7 +105,7 @@ bool AXMenuList::isCollapsed() const
     if (!m_layoutObject)
         return true;
 
-    return !toLayoutMenuList(m_layoutObject)->popupIsVisible();
+    return !toLayoutMenuList(m_layoutObject)->selectElement()->popupIsVisible();
 }
 
 AccessibilityExpanded AXMenuList::isExpanded() const

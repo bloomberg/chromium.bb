@@ -119,7 +119,7 @@ void ExternalPopupMenu::dispatchEvent(Timer<ExternalPopupMenu>*)
 void ExternalPopupMenu::hide()
 {
     if (m_popupMenuClient)
-        m_popupMenuClient->popupDidHide();
+        m_popupMenuClient->ownerElement().popupDidHide();
     if (!m_webExternalPopupMenu)
         return;
     m_webExternalPopupMenu->close();
@@ -149,7 +149,7 @@ void ExternalPopupMenu::didAcceptIndex(int index)
     RefPtrWillBeRawPtr<ExternalPopupMenu> guard(this);
 
     if (m_popupMenuClient) {
-        m_popupMenuClient->popupDidHide();
+        m_popupMenuClient->ownerElement().popupDidHide();
         m_popupMenuClient->valueChanged(popupMenuItemIndex);
     }
     m_webExternalPopupMenu = 0;
@@ -167,7 +167,7 @@ void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
     // method.
     RefPtrWillBeRawPtr<ExternalPopupMenu> protect(this);
     RefPtrWillBeRawPtr<HTMLSelectElement> ownerElement(m_popupMenuClient->ownerElement());
-    m_popupMenuClient->popupDidHide();
+    ownerElement->popupDidHide();
 
     if (!indices.size())
         m_popupMenuClient->valueChanged(static_cast<unsigned>(-1), true);
@@ -185,7 +185,7 @@ void ExternalPopupMenu::didCancel()
     RefPtrWillBeRawPtr<ExternalPopupMenu> guard(this);
 
     if (m_popupMenuClient)
-        m_popupMenuClient->popupDidHide();
+        m_popupMenuClient->ownerElement().popupDidHide();
     m_webExternalPopupMenu = 0;
 }
 

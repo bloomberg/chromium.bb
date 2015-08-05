@@ -426,7 +426,7 @@ void PopupMenuImpl::didClosePopup()
     m_popup = nullptr;
     RefPtrWillBeRawPtr<PopupMenuImpl> protector(this);
     if (m_client)
-        m_client->popupDidHide();
+        m_client->ownerElement().popupDidHide();
 }
 
 Element& PopupMenuImpl::ownerElement()
