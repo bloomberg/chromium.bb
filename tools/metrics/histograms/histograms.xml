@@ -36901,7 +36901,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBClientDownload.ArchivedArchiveExtensions"
-    enum="SBClientDownloadCheckDownloadStats">
+    enum="SBClientDownloadExtensions">
   <owner>asanka@chromium.org</owner>
   <summary>
     Records a histogram of archive file types that were found while examining a
