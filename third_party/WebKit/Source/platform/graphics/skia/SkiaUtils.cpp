@@ -375,13 +375,12 @@ void drawPlatformFocusRing(const PrimitiveType& primitive, SkCanvas* canvas, SkC
     paint.setAntiAlias(true);
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setColor(color);
+    paint.setStrokeWidth(GraphicsContext::focusRingWidth(width));
 
 #if OS(MACOSX)
-    paint.setStrokeWidth(width);
     paint.setAlpha(64);
-    float cornerRadius = (width - 1) * 0.5f;
+    const float cornerRadius = (width - 1) * 0.5f;
 #else
-    paint.setStrokeWidth(1);
     const float cornerRadius = 1;
 #endif
 

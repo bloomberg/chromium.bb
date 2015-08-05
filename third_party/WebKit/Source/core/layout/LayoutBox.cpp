@@ -621,7 +621,7 @@ FloatQuad LayoutBox::absoluteContentQuad() const
     return localToAbsoluteQuad(FloatRect(rect));
 }
 
-void LayoutBox::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+void LayoutBox::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
     if (!size().isEmpty())
         rects.append(LayoutRect(additionalOffset, size()));
@@ -4110,23 +4110,22 @@ LayoutRectOutsets LayoutBox::computeVisualEffectOverflowOutsets() const
     }
 
     if (style()->hasOutline()) {
+        int outlineOutset = style()->outlineOutsetExtent();
         if (style()->outlineStyleIsAuto()) {
             // The result focus ring rects are in coordinates of this object's border box.
             Vector<LayoutRect> focusRingRects;
-            addFocusRingRects(focusRingRects, LayoutPoint());
+            addOutlineRects(focusRingRects, LayoutPoint());
             LayoutRect rect = unionRect(focusRingRects);
 
-            int outlineSize = GraphicsContext::focusRingOutsetExtent(style()->outlineOffset(), style()->outlineWidth());
-            top = std::max(top, -rect.y() + outlineSize);
-            right = std::max(right, rect.maxX() - size().width() + outlineSize);
-            bottom = std::max(bottom, rect.maxY() - size().height() + outlineSize);
-            left = std::max(left, -rect.x() + outlineSize);
+            top = std::max(top, -rect.y() + outlineOutset);
+            right = std::max(right, rect.maxX() - size().width() + outlineOutset);
+            bottom = std::max(bottom, rect.maxY() - size().height() + outlineOutset);
+            left = std::max(left, -rect.x() + outlineOutset);
         } else {
-            LayoutUnit outlineSize = style()->outlineSize();
-            top = std::max(top, outlineSize);
-            right = std::max(right, outlineSize);
-            bottom = std::max(bottom, outlineSize);
-            left = std::max(left, outlineSize);
+            top = std::max<LayoutUnit>(top, outlineOutset);
+            right = std::max<LayoutUnit>(right, outlineOutset);
+            bottom = std::max<LayoutUnit>(bottom, outlineOutset);
+            left = std::max<LayoutUnit>(left, outlineOutset);
         }
     }
 

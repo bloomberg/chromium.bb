@@ -86,7 +86,7 @@ public:
 
     LayoutSize offsetForInFlowPositionedInline(const LayoutBox& child) const;
 
-    void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const final;
+    void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const final;
 
     using LayoutBoxModelObject::continuation;
     using LayoutBoxModelObject::setContinuation;

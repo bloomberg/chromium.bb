@@ -1052,15 +1052,15 @@ LayoutRect LayoutInline::clippedOverflowRect(const LayoutBoxModelObject* paintIn
     LayoutRect overflowRect(linesVisualOverflowBoundingBox());
     mapRectToPaintInvalidationBacking(paintInvalidationContainer, overflowRect, paintInvalidationState);
 
-    LayoutUnit outlineSize = style()->outlineSize();
-    if (outlineSize) {
+    LayoutUnit outlineOutset = style()->outlineOutsetExtent();
+    if (outlineOutset) {
         for (LayoutObject* curr = firstChild(); curr; curr = curr->nextSibling()) {
             if (!curr->isText())
-                overflowRect.unite(curr->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineSize));
+                overflowRect.unite(curr->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineOutset));
         }
 
         if (continuation && !continuation->isInline() && continuation->parent())
-            overflowRect.unite(continuation->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineSize));
+            overflowRect.unite(continuation->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineOutset));
     }
 
     return overflowRect;
@@ -1376,9 +1376,9 @@ public:
 
 } // unnamed namespace
 
-void LayoutInline::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+void LayoutInline::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
-    // Add line boxes only if this object is the first object of addFocusRingRects().
+    // Add line boxes only if this object is the first object of addOutlineRects().
     // Otherwise the parent (LayoutBlockFlow or LayoutInline) should have added line box rects
     // covering those of this object.
     if (rects.isEmpty()) {
@@ -1386,13 +1386,13 @@ void LayoutInline::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoin
         generateLineBoxRects(context);
     }
 
-    addFocusRingRectsForNormalChildren(rects, additionalOffset);
+    addOutlineRectsForNormalChildren(rects, additionalOffset);
 
     if (LayoutBoxModelObject* continuation = this->continuation()) {
         if (continuation->isInline())
-            continuation->addFocusRingRects(rects, additionalOffset + (continuation->containingBlock()->location() - containingBlock()->location()));
+            continuation->addOutlineRects(rects, additionalOffset + (continuation->containingBlock()->location() - containingBlock()->location()));
         else
-            continuation->addFocusRingRects(rects, additionalOffset + (toLayoutBox(continuation)->location() - containingBlock()->location()));
+            continuation->addOutlineRects(rects, additionalOffset + (toLayoutBox(continuation)->location() - containingBlock()->location()));
     }
 }
 

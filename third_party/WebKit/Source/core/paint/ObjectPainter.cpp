@@ -19,7 +19,7 @@ namespace blink {
 LayoutRect ObjectPainter::outlineBounds(const LayoutRect& objectBounds, const ComputedStyle& style)
 {
     LayoutRect outlineBounds(objectBounds);
-    outlineBounds.inflate(style.outlineOutset());
+    outlineBounds.inflate(style.outlineOutsetExtent());
     return outlineBounds;
 }
 
@@ -47,7 +47,7 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& o
         if (LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_layoutObject)) {
             // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.
             Vector<LayoutRect> focusRingRects;
-            m_layoutObject.addFocusRingRects(focusRingRects, objectBounds.location());
+            m_layoutObject.addOutlineRects(focusRingRects, objectBounds.location());
             paintFocusRing(paintInfo, styleToUse, focusRingRects);
         }
         return;
@@ -78,9 +78,9 @@ void ObjectPainter::addPDFURLRectIfNeeded(const PaintInfo& paintInfo, const Layo
     if (!url.isValid())
         return;
 
-    Vector<LayoutRect> focusRingRects;
-    m_layoutObject.addFocusRingRects(focusRingRects, paintOffset);
-    IntRect rect = pixelSnappedIntRect(unionRect(focusRingRects));
+    Vector<LayoutRect> outlineRects;
+    m_layoutObject.addOutlineRects(outlineRects, paintOffset);
+    IntRect rect = pixelSnappedIntRect(unionRect(outlineRects));
     if (rect.isEmpty())
         return;
 

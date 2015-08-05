@@ -366,7 +366,7 @@ public:
     String unscopeableAttribute();
     String unscopeableMethod();
 
-    ClientRectList* focusRingRects(Element*);
+    ClientRectList* outlineRects(Element*);
 
     void setCapsLockState(bool enabled);
 

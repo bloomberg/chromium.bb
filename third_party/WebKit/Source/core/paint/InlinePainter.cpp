@@ -31,7 +31,7 @@ void InlinePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOf
 
 LayoutRect InlinePainter::outlinePaintRect(const Vector<LayoutRect>& outlineRects, const LayoutPoint& paintOffset) const
 {
-    int outlineOutset = m_layoutInline.styleRef().outlineOutset();
+    int outlineOutset = m_layoutInline.styleRef().outlineOutsetExtent();
     LayoutRect outlineRect;
     for (const LayoutRect& rect : outlineRects) {
         LayoutRect inflatedRect(rect);
@@ -57,7 +57,7 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
             return;
 
         Vector<LayoutRect> focusRingRects;
-        m_layoutInline.addFocusRingRects(focusRingRects, paintOffset);
+        m_layoutInline.addOutlineRects(focusRingRects, paintOffset);
 
         LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutInline, paintInfo.phase, outlinePaintRect(focusRingRects, LayoutPoint()));
         // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.

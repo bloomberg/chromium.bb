@@ -373,33 +373,33 @@ void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(const DisplayIte
     }
 }
 
-void LayoutBoxModelObject::addFocusRingRectsForNormalChildren(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+void LayoutBoxModelObject::addOutlineRectsForNormalChildren(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
     for (LayoutObject* child = slowFirstChild(); child; child = child->nextSibling()) {
-        // Focus rings of out-of-flow positioned descendants are handled in LayoutBlock::addFocusRingRects().
+        // Outlines of out-of-flow positioned descendants are handled in LayoutBlock::addOutlineRects().
         if (child->isOutOfFlowPositioned())
             continue;
 
-        // Focus ring of an element continuation or anonymous block continuation is added when we iterate the continuation chain.
-        // See LayoutBlock::addFocusRingRects() and LayoutInline::addFocusRingRects().
+        // Outline of an element continuation or anonymous block continuation is added when we iterate the continuation chain.
+        // See LayoutBlock::addOutlineRects() and LayoutInline::addOutlineRects().
         if (child->isElementContinuation()
             || (child->isLayoutBlock() && toLayoutBlock(child)->isAnonymousBlockContinuation()))
             continue;
 
-        addFocusRingRectsForDescendant(*child, rects, additionalOffset);
+        addOutlineRectsForDescendant(*child, rects, additionalOffset);
     }
 }
 
-void LayoutBoxModelObject::addFocusRingRectsForDescendant(const LayoutObject& descendant, Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+void LayoutBoxModelObject::addOutlineRectsForDescendant(const LayoutObject& descendant, Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
     if (descendant.isText() || descendant.isListMarker())
         return;
 
     if (descendant.hasLayer()) {
-        Vector<LayoutRect> layerFocusRingRects;
-        descendant.addFocusRingRects(layerFocusRingRects, LayoutPoint());
-        for (size_t i = 0; i < layerFocusRingRects.size(); ++i) {
-            FloatQuad quadInBox = toLayoutBoxModelObject(descendant).localToContainerQuad(FloatQuad(layerFocusRingRects[i]), this);
+        Vector<LayoutRect> layerOutlineRects;
+        descendant.addOutlineRects(layerOutlineRects, LayoutPoint());
+        for (size_t i = 0; i < layerOutlineRects.size(); ++i) {
+            FloatQuad quadInBox = toLayoutBoxModelObject(descendant).localToContainerQuad(FloatQuad(layerOutlineRects[i]), this);
             LayoutRect rect = LayoutRect(quadInBox.boundingBox());
             if (!rect.isEmpty()) {
                 rect.moveBy(additionalOffset);
@@ -410,11 +410,11 @@ void LayoutBoxModelObject::addFocusRingRectsForDescendant(const LayoutObject& de
     }
 
     if (descendant.isBox()) {
-        descendant.addFocusRingRects(rects, additionalOffset + toLayoutBox(descendant).locationOffset());
+        descendant.addOutlineRects(rects, additionalOffset + toLayoutBox(descendant).locationOffset());
         return;
     }
 
-    descendant.addFocusRingRects(rects, additionalOffset);
+    descendant.addOutlineRects(rects, additionalOffset);
 }
 
 bool LayoutBoxModelObject::calculateHasBoxDecorations() const

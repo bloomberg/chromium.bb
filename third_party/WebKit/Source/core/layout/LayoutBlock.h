@@ -288,7 +288,7 @@ protected:
     void addOverflowFromBlockChildren();
     void addVisualOverflowFromTheme();
 
-    void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override;
+    void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override;
 
     void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const override;
 

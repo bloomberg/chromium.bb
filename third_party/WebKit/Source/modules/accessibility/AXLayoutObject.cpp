@@ -2609,7 +2609,7 @@ LayoutRect AXLayoutObject::computeElementRect() const
     } else if (isWebArea() || obj->isSVGRoot()) {
         result = LayoutRect(obj->absoluteBoundingBoxRect());
     } else {
-        result = LayoutRect(obj->absoluteFocusRingBoundingBoxRect());
+        result = LayoutRect(obj->absoluteOutlineBoundingBoxRect());
     }
 
     Document* document = this->document();

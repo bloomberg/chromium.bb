@@ -74,7 +74,7 @@ private:
 
     // This method should never be called, SVG uses a different nodeAtPoint method
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) final;
-    IntRect absoluteFocusRingBoundingBoxRect() const final;
+    IntRect absoluteOutlineBoundingBoxRect() const final;
 
     void invalidateTreeIfNeeded(PaintInvalidationState&) final;
 

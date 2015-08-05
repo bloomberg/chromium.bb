@@ -4,14 +4,15 @@
 description('When adding focus ring rects, we should avoid adding duplicated rect for continuations');
 onload = function() {
   document.body.offsetTop;
-  // 5 focus ring rects:
+  // 6 focus ring rects:
   // - 0: 'SPAN0' part of the span;
   // - 1: div DIV1
-  // - 2: first line box of div DIV1
-  // - 3: div DIV2
-  // - 4: first line box of div DIV2
+  // - 2: anonymous block containing the inline part of DIV1 before DIV2
+  // - 3: first line box of div DIV1
+  // - 4: div DIV2
+  // - 5: first line box of div DIV2
   if (window.testRunner && window.internals)
-    shouldBe("internals.focusRingRects(document.getElementById('focus'))", "5");
+    shouldBe("internals.outlineRects(document.getElementById('focus')).length", "6");
 };
 </script>
 <div>

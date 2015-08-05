@@ -2556,7 +2556,7 @@ LayoutRect LayoutBlock::localCaretRect(InlineBox* inlineBox, int caretOffset, La
     return caretRect;
 }
 
-void LayoutBlock::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+void LayoutBlock::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
     // For blocks inside inlines, we go ahead and include margins so that we run right up to the
     // inline boxes above and below us (thus getting merged with them to form a single irregular
@@ -2590,18 +2590,18 @@ void LayoutBlock::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint
                 rects.append(rect);
         }
 
-        addFocusRingRectsForNormalChildren(rects, additionalOffset);
+        addOutlineRectsForNormalChildren(rects, additionalOffset);
         if (TrackedLayoutBoxListHashSet* positionedObjects = this->positionedObjects()) {
             for (auto* box : *positionedObjects)
-                addFocusRingRectsForDescendant(*box, rects, additionalOffset);
+                addOutlineRectsForDescendant(*box, rects, additionalOffset);
         }
     }
 
     if (inlineElementContinuation) {
-        Vector<LayoutRect> inlineFocusRingRects;
+        Vector<LayoutRect> inlineOutlineRects;
         // We need to give the LayoutInline a clean vector to let it add focus ring rects of line boxes.
-        inlineElementContinuation->addFocusRingRects(inlineFocusRingRects, additionalOffset + (inlineElementContinuation->containingBlock()->location() - location()));
-        rects.appendVector(inlineFocusRingRects);
+        inlineElementContinuation->addOutlineRects(inlineOutlineRects, additionalOffset + (inlineElementContinuation->containingBlock()->location() - location()));
+        rects.appendVector(inlineOutlineRects);
     }
 }
 

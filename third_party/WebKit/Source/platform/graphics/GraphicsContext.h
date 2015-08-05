@@ -271,8 +271,16 @@ public:
 
     static int focusRingOutsetExtent(int offset, int width)
     {
-        return focusRingOutset(offset) + (focusRingWidth(width) + 1) / 2;
+        // Unlike normal outlines (whole width is outside of the offset), focus rings are drawn with the
+        // center of the path aligned with the offset, so only half of the width is outside of the offset.
+        return focusRingOffset(offset) + (focusRingWidth(width) + 1) / 2;
     }
+
+#if OS(MACOSX)
+    static int focusRingWidth(int width) { return width; }
+#else
+    static int focusRingWidth(int width) { return 1; }
+#endif
 
     // public decl needed for OwnPtr wrapper.
     class RecordingState;
@@ -300,11 +308,9 @@ private:
     static void setPathFromPoints(SkPath*, size_t, const FloatPoint*);
 
 #if OS(MACOSX)
-    static inline int focusRingOutset(int offset) { return offset + 2; }
-    static inline int focusRingWidth(int width) { return width; }
+    static inline int focusRingOffset(int offset) { return offset + 2; }
 #else
-    static inline int focusRingOutset(int offset) { return 0; }
-    static inline int focusRingWidth(int width) { return 1; }
+    static inline int focusRingOffset(int offset) { return 0; }
     static SkPMColor lineColors(int);
     static SkPMColor antiColors1(int);
     static SkPMColor antiColors2(int);

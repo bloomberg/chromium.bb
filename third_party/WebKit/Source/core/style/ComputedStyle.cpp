@@ -1643,13 +1643,13 @@ void ComputedStyle::resetMotionPath()
     rareNonInheritedData.access()->m_transform.access()->m_motion.m_path = nullptr;
 }
 
-int ComputedStyle::outlineOutset() const
+int ComputedStyle::outlineOutsetExtent() const
 {
     if (!hasOutline())
         return 0;
     if (outlineStyleIsAuto())
         return GraphicsContext::focusRingOutsetExtent(outlineOffset(), outlineWidth());
-    return outlineSize();
+    return std::max(0, outlineWidth() + outlineOffset());
 }
 
 bool ComputedStyle::columnRuleEquivalent(const ComputedStyle* otherStyle) const

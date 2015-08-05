@@ -2447,11 +2447,11 @@ String Internals::unscopeableMethod()
     return "unscopeableMethod";
 }
 
-ClientRectList* Internals::focusRingRects(Element* element)
+ClientRectList* Internals::outlineRects(Element* element)
 {
     Vector<LayoutRect> rects;
     if (element && element->layoutObject())
-        element->layoutObject()->addFocusRingRects(rects, LayoutPoint());
+        element->layoutObject()->addOutlineRects(rects, LayoutPoint());
     return ClientRectList::create(rects);
 }
 

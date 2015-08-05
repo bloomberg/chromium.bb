@@ -64,7 +64,7 @@ protected:
 
     void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) final;
     void removeChild(LayoutObject*) final;
-    void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const final;
+    void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const final;
 
     FloatRect strokeBoundingBox() const final { return m_strokeBoundingBox; }
 

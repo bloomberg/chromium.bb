@@ -194,7 +194,7 @@ void LayoutSVGImage::imageChanged(WrappedImagePtr, const IntRect*)
     setShouldDoFullPaintInvalidation();
 }
 
-void LayoutSVGImage::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint&) const
+void LayoutSVGImage::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint&) const
 {
     // this is called from paint() after the localTransform has already been applied
     LayoutRect contentRect = LayoutRect(paintInvalidationRectInLocalCoordinates());

@@ -82,7 +82,7 @@ private:
 
     void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) final;
 
-    void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const final;
+    void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const final;
 
     bool canBeProgramaticallyScrolled() const final { return true; }
 };

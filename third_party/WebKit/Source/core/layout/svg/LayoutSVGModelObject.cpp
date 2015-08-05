@@ -119,9 +119,9 @@ bool LayoutSVGModelObject::nodeAtPoint(HitTestResult&, const HitTestLocation&, c
     return false;
 }
 
-// The SVG addFocusRingRects() method adds rects in local coordinates so the default absoluteFocusRingBoundingBoxRect
+// The SVG addOutlineRects() method adds rects in local coordinates so the default absoluteOutlineBoundingBoxRect
 // returns incorrect values for SVG objects. Overriding this method provides access to the absolute bounds.
-IntRect LayoutSVGModelObject::absoluteFocusRingBoundingBoxRect() const
+IntRect LayoutSVGModelObject::absoluteOutlineBoundingBoxRect() const
 {
     return localToAbsoluteQuad(FloatQuad(paintInvalidationRectInLocalCoordinates())).enclosingBoundingBox();
 }

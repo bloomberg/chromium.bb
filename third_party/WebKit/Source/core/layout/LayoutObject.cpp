@@ -1008,11 +1008,11 @@ IntRect LayoutObject::absoluteBoundingBoxRectIgnoringTransforms() const
     return result;
 }
 
-IntRect LayoutObject::absoluteFocusRingBoundingBoxRect() const
+IntRect LayoutObject::absoluteOutlineBoundingBoxRect() const
 {
     Vector<LayoutRect> rects;
     const LayoutBoxModelObject* container = enclosingLayer()->layoutObject();
-    addFocusRingRects(rects, LayoutPoint(localToContainerPoint(FloatPoint(), container)));
+    addOutlineRects(rects, LayoutPoint(localToContainerPoint(FloatPoint(), container)));
     return container->localToAbsoluteQuad(FloatQuad(unionRect(rects))).enclosingBoundingBox();
 }
 
@@ -1406,8 +1406,9 @@ PaintInvalidationReason LayoutObject::paintInvalidationReason(const LayoutBoxMod
     // The focus ring may change because of position change of descendants. For simplicity,
     // just force full paint invalidation if this object is marked for checking paint invalidation
     // for any reason.
+    // TODO(wangxianzhu): extend this to all outlines.
     if (styleRef().outlineStyleIsAuto())
-        return PaintInvalidationFocusRing;
+        return PaintInvalidationOutline;
 
     // If the bounds are the same then we know that none of the statements below
     // can match, so we can early out since we will not need to do any

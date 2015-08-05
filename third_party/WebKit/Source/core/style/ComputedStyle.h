@@ -529,7 +529,6 @@ public:
     int borderStartWidth() const;
     int borderEndWidth() const;
 
-    int outlineSize() const { return max(0, outlineWidth() + outlineOffset()); }
     int outlineWidth() const
     {
         if (m_background->outline().style() == BNONE)
@@ -539,7 +538,7 @@ public:
     bool hasOutline() const { return outlineWidth() > 0 && outlineStyle() > BHIDDEN; }
     EBorderStyle outlineStyle() const { return m_background->outline().style(); }
     OutlineIsAuto outlineStyleIsAuto() const { return static_cast<OutlineIsAuto>(m_background->outline().isAuto()); }
-    int outlineOutset() const;
+    int outlineOutsetExtent() const;
 
     EOverflow overflowX() const { return static_cast<EOverflow>(noninherited_flags.overflowX); }
     EOverflow overflowY() const { return static_cast<EOverflow>(noninherited_flags.overflowY); }

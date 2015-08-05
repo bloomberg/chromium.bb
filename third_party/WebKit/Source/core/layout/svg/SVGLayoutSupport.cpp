@@ -59,7 +59,7 @@ LayoutRect SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(const Layou
         return LayoutRect();
 
     FloatRect paintInvalidationRect = object.paintInvalidationRectInLocalCoordinates();
-    if (int outlineOutset = object.styleRef().outlineOutset())
+    if (int outlineOutset = object.styleRef().outlineOutsetExtent())
         paintInvalidationRect.inflate(outlineOutset);
 
     if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer)) {

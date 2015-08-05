@@ -18,7 +18,7 @@ onload = function() {
   // - 3: the inner block
   // - 4: root line box of the inner block
   if (window.testRunner && window.internals)
-    shouldBe("internals.focusRingRects(document.getElementById('focus')).length", "5");
+    shouldBe("internals.outlineRects(document.getElementById('focus')).length", "5");
 };
 </script>
 <div id="container">

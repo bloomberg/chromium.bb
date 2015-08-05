@@ -497,6 +497,11 @@ crbug.com/328814 [ Yosemite ] fast/forms/select/popup-menu-appearance.html [ Nee
 crbug.com/396775 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
 crbug.com/396775 virtual/prefer_compositing_to_lcd_text/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
 
+crbug.com/506669 fast/repaint/focus-continuations.html [ NeedsRebaseline ]
+crbug.com/506669 fast/repaint/focus-enable-continuations.html [ NeedsRebaseline ]
+crbug.com/506669 fast/repaint/inline-focus.html [ NeedsRebaseline ]
+crbug.com/506669 svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html [ NeedsRebaseline ]
+
 crbug.com/433727 [ XP ] http/tests/cachestorage/window/cache-put.html [ Pass Timeout Failure ]
 crbug.com/433727 [ XP ] http/tests/cachestorage/worker/cache-put.html [ Pass Timeout Failure ]
 crbug.com/433727 [ XP ] http/tests/cachestorage/serviceworker/cache-put.html [ Pass Timeout Failure ]
@@ -2148,7 +2153,6 @@ crbug.com/509025 [ Yosemite ] svg/custom/linking-base-external-reference.xhtml [
 crbug.com/509025 [ Yosemite ] svg/custom/linking-uri-01-b.svg [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] svg/custom/load-non-wellformed.svg [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] svg/custom/object-sizing-no-width-height.xhtml [ ImageOnlyFailure ]
-crbug.com/509025 [ Yosemite ] svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] svg/custom/text-xy-updates-SVGList.xhtml [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] svg/custom/transformed-outlines.svg [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] svg/dom/SVGLengthList-appendItem.xhtml [ ImageOnlyFailure ]

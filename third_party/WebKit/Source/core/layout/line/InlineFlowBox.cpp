@@ -801,7 +801,7 @@ inline void InlineFlowBox::addOutlineVisualOverflow(LayoutRect& logicalVisualOve
     if (!style.hasOutline())
         return;
 
-    logicalVisualOverflow.inflate(style.outlineSize());
+    logicalVisualOverflow.inflate(style.outlineOutsetExtent());
 }
 
 inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, GlyphOverflowAndFallbackFontsMap& textBoxDataMap, LayoutRect& logicalVisualOverflow)

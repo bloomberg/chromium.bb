@@ -322,11 +322,11 @@ LayoutRect LayoutTableCell::clippedOverflowRectForPaintInvalidation(const Layout
         return LayoutBlockFlow::clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
 
     bool rtl = !styleForCellFlow().isLeftToRightDirection();
-    int outlineSize = style()->outlineSize();
-    int left = std::max(borderHalfLeft(true), outlineSize);
-    int right = std::max(borderHalfRight(true), outlineSize);
-    int top = std::max(borderHalfTop(true), outlineSize);
-    int bottom = std::max(borderHalfBottom(true), outlineSize);
+    int outlineOutset = style()->outlineOutsetExtent();
+    int left = std::max(borderHalfLeft(true), outlineOutset);
+    int right = std::max(borderHalfRight(true), outlineOutset);
+    int top = std::max(borderHalfTop(true), outlineOutset);
+    int bottom = std::max(borderHalfBottom(true), outlineOutset);
     if ((left && !rtl) || (right && rtl)) {
         if (LayoutTableCell* before = table()->cellBefore(this)) {
             top = std::max(top, before->borderHalfTop(true));
