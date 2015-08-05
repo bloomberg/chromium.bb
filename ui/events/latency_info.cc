@@ -138,6 +138,10 @@ LatencyInfo::LatencyInfo()
 LatencyInfo::~LatencyInfo() {
 }
 
+LatencyInfo::LatencyInfo(int64 trace_id, bool terminated)
+    : input_coordinates_size_(0), trace_id_(trace_id), terminated_(terminated) {
+}
+
 bool LatencyInfo::Verify(const std::vector<LatencyInfo>& latency_info,
                          const char* referring_msg) {
   if (latency_info.size() > kMaxLatencyInfoNumber) {

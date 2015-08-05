@@ -124,6 +124,9 @@ class EVENTS_BASE_EXPORT LatencyInfo {
   LatencyInfo();
   ~LatencyInfo();
 
+  // For test only.
+  LatencyInfo(int64 trace_id, bool terminated);
+
   // Returns true if the vector |latency_info| is valid. Returns false
   // if it is not valid and log the |referring_msg|.
   // This function is mainly used to check the latency_info vector that

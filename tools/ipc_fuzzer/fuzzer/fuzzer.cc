@@ -1764,15 +1764,26 @@ template <>
 struct FuzzTraits<ui::LatencyInfo> {
   static bool Fuzz(ui::LatencyInfo* p, Fuzzer* fuzzer) {
     // TODO(inferno): Add param traits for |latency_components|.
-    p->input_coordinates_size = static_cast<uint32>(
+    int64 trace_id = p->trace_id();
+    bool terminated = p->terminated();
+    uint32 input_coordinates_size = static_cast<uint32>(
         RandInRange(ui::LatencyInfo::kMaxInputCoordinates + 1));
+    ui::LatencyInfo::InputCoordinate
+        input_coordinates[ui::LatencyInfo::kMaxInputCoordinates];
     if (!FuzzParamArray(
-        &p->input_coordinates[0], p->input_coordinates_size, fuzzer))
+        input_coordinates, input_coordinates_size, fuzzer))
       return false;
-    if (!FuzzParam(&p->trace_id, fuzzer))
+    if (!FuzzParam(&trace_id, fuzzer))
       return false;
-    if (!FuzzParam(&p->terminated, fuzzer))
+    if (!FuzzParam(&terminated, fuzzer))
       return false;
+
+    ui::LatencyInfo latency(trace_id, terminated);
+    for (size_t i = 0; i < input_coordinates_size; i++) {
+      latency.AddInputCoordinate(input_coordinates[i]);
+    }
+    *p = latency;
+
     return true;
   }
 };
