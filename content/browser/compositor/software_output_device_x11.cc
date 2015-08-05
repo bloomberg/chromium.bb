@@ -38,13 +38,12 @@ SoftwareOutputDeviceX11::~SoftwareOutputDeviceX11() {
 
 void SoftwareOutputDeviceX11::EndPaint(cc::SoftwareFrameData* frame_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(surface_);
   DCHECK(frame_data);
+
+  SoftwareOutputDevice::EndPaint(frame_data);
 
   if (!surface_)
     return;
-
-  SoftwareOutputDevice::EndPaint(frame_data);
 
   gfx::Rect rect = damage_rect_;
   rect.Intersect(gfx::Rect(viewport_pixel_size_));

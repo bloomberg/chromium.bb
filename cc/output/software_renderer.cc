@@ -143,6 +143,8 @@ void SoftwareRenderer::EnsureScissorTestDisabled() {
   // rendering, but the underlying effect we want is to clear any existing
   // clipRect on the current SkCanvas. This is done by setting clipRect to
   // the viewport's dimensions.
+  if (!current_canvas_)
+    return;
   is_scissor_enabled_ = false;
   SkISize size = current_canvas_->getDeviceSize();
   SetClipRect(gfx::Rect(size.width(), size.height()));
@@ -182,6 +184,8 @@ void SoftwareRenderer::SetScissorTestRect(const gfx::Rect& scissor_rect) {
 }
 
 void SoftwareRenderer::SetClipRect(const gfx::Rect& rect) {
+  if (!current_canvas_)
+    return;
   // Skia applies the current matrix to clip rects so we reset it temporary.
   SkMatrix current_matrix = current_canvas_->getTotalMatrix();
   current_canvas_->resetMatrix();
@@ -190,6 +194,8 @@ void SoftwareRenderer::SetClipRect(const gfx::Rect& rect) {
 }
 
 void SoftwareRenderer::ClearCanvas(SkColor color) {
+  if (!current_canvas_)
+    return;
   // SkCanvas::clear doesn't respect the current clipping region
   // so we SkCanvas::drawColor instead if scissoring is active.
   if (is_scissor_enabled_)
@@ -244,6 +250,8 @@ bool SoftwareRenderer::IsSoftwareResource(ResourceId resource_id) const {
 void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame,
                                   const DrawQuad* quad,
                                   const gfx::QuadF* draw_region) {
+  if (!current_canvas_)
+    return;
   if (draw_region) {
     current_canvas_->save();
   }

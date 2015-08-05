@@ -31,9 +31,8 @@ void SoftwareOutputDevice::Resize(const gfx::Size& viewport_pixel_size,
 }
 
 SkCanvas* SoftwareOutputDevice::BeginPaint(const gfx::Rect& damage_rect) {
-  DCHECK(surface_);
   damage_rect_ = damage_rect;
-  return surface_->getCanvas();
+  return surface_ ? surface_->getCanvas() : nullptr;
 }
 
 void SoftwareOutputDevice::EndPaint(SoftwareFrameData* frame_data) {
