@@ -24,6 +24,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "content/test/test_render_frame_host_factory.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/video_capture_types.h"
@@ -573,6 +574,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
     // WebContents, it in turn creates CaptureTestRenderViewHosts.
     render_view_host_factory_.reset(
         new CaptureTestRenderViewHostFactory(&controller_));
+    render_frame_host_factory_.reset(new TestRenderFrameHostFactory());
 
     browser_context_.reset(new TestBrowserContext());
 
@@ -611,6 +613,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     SiteInstanceImpl::set_render_process_host_factory(NULL);
+    render_frame_host_factory_.reset();
     render_view_host_factory_.reset();
     render_process_host_factory_.reset();
 
@@ -684,6 +687,9 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
   // Creates capture-capable RenderViewHosts whose pixel content production is
   // under the control of |controller_|.
   scoped_ptr<CaptureTestRenderViewHostFactory> render_view_host_factory_;
+
+  // Self-registering RenderFrameHostFactory.
+  scoped_ptr<TestRenderFrameHostFactory> render_frame_host_factory_;
 
   // A mocked-out browser and tab.
   scoped_ptr<TestBrowserContext> browser_context_;
