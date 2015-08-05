@@ -141,7 +141,8 @@ interface ViewManagerService {
   // A view may only have one embedding in it at a time. Subsequent calls to
   // Embed() for the same view result in the currently embedded
   // ViewManagerClient being removed. The embedded app is told this by way of
-  // OnViewDeleted().
+  // OnUnembed(), which is followed by OnViewDeleted() (as the connection no
+  // longer has access to the view).
   //
   // The embedder can detect when the embedded app disconnects by way of
   // OnEmbeddedAppDisconnected().
@@ -186,6 +187,10 @@ interface ViewManagerClient {
 
   // Invoked when the application embedded at |view| is disconnected.
   OnEmbeddedAppDisconnected(uint32 view);
+
+  // Sent when another connection is embedded in the View this connection was
+  // previously embedded in. See Embed() for more information.
+  OnUnembed();
 
   // Invoked when a view's bounds have changed.
   OnViewBoundsChanged(uint32 view,

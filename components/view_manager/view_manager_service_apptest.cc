@@ -351,6 +351,7 @@ class ViewManagerClientImpl : public mojo::ViewManagerClient,
   void OnEmbeddedAppDisconnected(Id view_id) override {
     tracker()->OnEmbeddedAppDisconnected(view_id);
   }
+  void OnUnembed() override { tracker()->OnUnembed(); }
   void OnViewBoundsChanged(Id view_id,
                            RectPtr old_bounds,
                            RectPtr new_bounds) override {
@@ -1252,11 +1253,12 @@ TEST_F(ViewManagerServiceAppTest, EmbedWithSameViewId) {
   Id view_1_1 = BuildViewId(connection_id_1(), 1);
   ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(vm1(), view_1_1));
 
-  // Connection2 should have been told the view was deleted.
+  // Connection2 should have been told of the unembed and delete.
   {
-    vm_client2_->WaitForChangeCount(1);
+    vm_client2_->WaitForChangeCount(2);
+    EXPECT_EQ("OnUnembed", ChangesToDescription1(*changes2())[0]);
     EXPECT_EQ("ViewDeleted view=" + IdToString(view_1_1),
-              SingleChangeToDescription(*changes2()));
+              ChangesToDescription1(*changes2())[1]);
   }
 
   // Connection2 has no root. Verify it can't see view 1,1 anymore.
@@ -1274,8 +1276,8 @@ TEST_F(ViewManagerServiceAppTest, EmbedWithSameViewId2) {
 
   ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(vm1(), view_1_1));
 
-  // Connection2 should have been told the view was deleted.
-  vm_client2_->WaitForChangeCount(1);
+  // Connection2 should have been told about the unembed and delete.
+  vm_client2_->WaitForChangeCount(2);
   changes2()->clear();
 
   // Create a view in the third connection and parent it to the root.
@@ -1302,10 +1304,11 @@ TEST_F(ViewManagerServiceAppTest, EmbedWithSameViewId2) {
     EXPECT_EQ("[" + ViewParentToString(view_1_1, kNullParentId) + "]",
               ChangeViewDescription(*connection4->tracker()->changes()));
 
-    // And 3 should get a delete.
-    vm_client3_->WaitForChangeCount(1);
+    // And 3 should get an unembed and delete.
+    vm_client3_->WaitForChangeCount(2);
+    EXPECT_EQ("OnUnembed", ChangesToDescription1(*changes3())[0]);
     EXPECT_EQ("ViewDeleted view=" + IdToString(view_1_1),
-              SingleChangeToDescription(*changes3()));
+              ChangesToDescription1(*changes3())[1]);
   }
 
   // vm3() has no root. Verify it can't see view 1,1 anymore.

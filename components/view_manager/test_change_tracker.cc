@@ -45,6 +45,9 @@ std::string ChangeToDescription1(const Change& change) {
       return base::StringPrintf("OnEmbedForDescendant view=%s",
                                 ViewIdToString(change.view_id).c_str());
 
+    case CHANGE_TYPE_UNEMBED:
+      return "OnUnembed";
+
     case CHANGE_TYPE_NODE_BOUNDS_CHANGED:
       return base::StringPrintf(
           "BoundsChanged view=%s old_bounds=%s new_bounds=%s",
@@ -211,6 +214,12 @@ void TestChangeTracker::OnViewBoundsChanged(Id view_id,
   change.bounds2.y = new_bounds->y;
   change.bounds2.width = new_bounds->width;
   change.bounds2.height = new_bounds->height;
+  AddChange(change);
+}
+
+void TestChangeTracker::OnUnembed() {
+  Change change;
+  change.type = CHANGE_TYPE_UNEMBED;
   AddChange(change);
 }
 

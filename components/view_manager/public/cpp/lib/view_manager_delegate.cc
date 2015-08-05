@@ -6,6 +6,8 @@
 
 namespace mojo {
 
+void ViewManagerDelegate::OnUnembed() {}
+
 void ViewManagerDelegate::OnEmbedForDescendant(
     View* view,
     mojo::URLRequestPtr request,

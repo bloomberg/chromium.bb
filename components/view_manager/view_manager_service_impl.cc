@@ -434,6 +434,7 @@ void ViewManagerServiceImpl::RemoveRoot() {
   if (root_id.connection_id == id_)
     return;
 
+  client()->OnUnembed();
   client()->OnViewDeleted(ViewIdToTransportId(root_id));
   connection_manager_->OnConnectionMessagedClient(id_);
 

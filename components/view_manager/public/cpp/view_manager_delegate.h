@@ -45,6 +45,11 @@ class ViewManagerDelegate {
   // valid.
   virtual void OnEmbed(View* root) = 0;
 
+  // Sent when another app is embedded in the same View as this connection.
+  // Subsequently the root View and this object are destroyed (observers are
+  // notified appropriately).
+  virtual void OnUnembed();
+
   // Only invoked if the connection has been marked as an embed root. This
   // allows the delegate to disallow the embed (return false), or change
   // the ServiceProviders that would be exposed to the new client.

@@ -99,8 +99,8 @@ ViewManagerClientImpl::~ViewManagerClientImpl() {
   }
 
   // Delete the non-owned views last. In the typical case these are roots. The
-  // exception is the window manager, which may know aboutother random views
-  // that it doesn't own.
+  // exception is the window manager and embed roots, which may know about
+  // other random views that it doesn't own.
   // NOTE: we manually delete as we're a friend.
   for (size_t i = 0; i < non_owned.size(); ++i)
     delete non_owned[i];
@@ -296,6 +296,12 @@ void ViewManagerClientImpl::OnEmbeddedAppDisconnected(Id view_id) {
     FOR_EACH_OBSERVER(ViewObserver, *ViewPrivate(view).observers(),
                       OnViewEmbeddedAppDisconnected(view));
   }
+}
+
+void ViewManagerClientImpl::OnUnembed() {
+  delegate_->OnUnembed();
+  // This will send out the various notifications.
+  delete this;
 }
 
 void ViewManagerClientImpl::OnViewBoundsChanged(Id view_id,

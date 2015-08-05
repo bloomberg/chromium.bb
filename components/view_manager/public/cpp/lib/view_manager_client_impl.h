@@ -101,6 +101,7 @@ class ViewManagerClientImpl : public ViewManager,
       mojo::URLRequestPtr request,
       const OnEmbedForDescendantCallback& callback) override;
   void OnEmbeddedAppDisconnected(Id view_id) override;
+  void OnUnembed() override;
   void OnViewBoundsChanged(Id view_id,
                            RectPtr old_bounds,
                            RectPtr new_bounds) override;
