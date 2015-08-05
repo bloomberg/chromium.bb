@@ -742,6 +742,16 @@ static inline bool objectIsRelayoutBoundary(const LayoutObject* object)
     if (object->isTablePart())
         return false;
 
+    // Inside multicol it's generally problematic to allow relayout roots. The multicol container
+    // itself may be scheduled for relayout as well (due to other changes that may have happened
+    // since the previous layout pass), which might affect the column heights, which may affect how
+    // this object breaks across columns). Spanners may also have been added or removed since the
+    // previous layout pass, which is just another way of affecting the column heights (and the
+    // number of rows). Instead of identifying cases where it's safe to allow relayout roots, just
+    // disallow them inside multicol.
+    if (object->isInsideFlowThread())
+        return false;
+
     return true;
 }
 
