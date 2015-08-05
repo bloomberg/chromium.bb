@@ -25,7 +25,7 @@ config("icu_config") {
     "U_ENABLE_DYLOAD=0",
   ]
 
-  if (component_mode != "shared_library") {
+  if (!is_component_build) {
     defines += [ "U_STATIC_IMPLEMENTATION" ]
   }
 
