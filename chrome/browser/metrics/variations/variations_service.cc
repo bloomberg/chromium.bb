@@ -425,7 +425,6 @@ void VariationsService::RegisterPrefs(PrefRegistrySimple* registry) {
   // This preference keeps track of the country code used to filter
   // permanent-consistency studies.
   registry->RegisterListPref(prefs::kVariationsPermanentConsistencyCountry);
-  registry->RegisterStringPref(prefs::kVariationsCountry, std::string());
 }
 
 // static

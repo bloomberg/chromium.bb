@@ -213,6 +213,18 @@ TEST(VariationsSeedStoreTest, StoreSeedData_ParsedSeed) {
   EXPECT_EQ(serialized_seed, SerializeSeed(parsed_seed));
 }
 
+TEST(VariationsSeedStoreTest, StoreSeedData_CountryCode) {
+  TestingPrefServiceSimple prefs;
+  VariationsSeedStore::RegisterPrefs(prefs.registry());
+  TestVariationsSeedStore seed_store(&prefs);
+
+  variations::VariationsSeed seed = CreateTestSeed();
+  seed.set_country_code("test_country");
+  EXPECT_TRUE(seed_store.StoreSeedData(SerializeSeed(seed), std::string(),
+                                       base::Time::Now(), nullptr));
+  EXPECT_EQ("test_country", prefs.GetString(prefs::kVariationsCountry));
+}
+
 TEST(VariationsSeedStoreTest, VerifySeedSignature) {
   // The below seed and signature pair were generated using the server's
   // private key.

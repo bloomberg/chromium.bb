@@ -264,6 +264,7 @@ void VariationsSeedStore::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kVariationsSeedDate,
                               base::Time().ToInternalValue());
   registry->RegisterStringPref(prefs::kVariationsSeedSignature, std::string());
+  registry->RegisterStringPref(prefs::kVariationsCountry, std::string());
 }
 
 void VariationsSeedStore::ClearPrefs() {
