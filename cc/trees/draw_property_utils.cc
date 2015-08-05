@@ -111,8 +111,6 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
       }
 
       if (!success) {
-        DCHECK(transform_node->data.to_screen_is_animated);
-
         // An animated singular transform may become non-singular during the
         // animation, so we still need to compute a visible rect. In this
         // situation, we treat the entire layer as visible.

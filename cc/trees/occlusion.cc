@@ -58,7 +58,10 @@ gfx::Rect Occlusion::GetUnoccludedContentRect(
 
   gfx::Transform inverse_draw_transform(gfx::Transform::kSkipInitialization);
   bool ok = draw_transform_.GetInverse(&inverse_draw_transform);
-  DCHECK(ok);
+  // TODO(ajuma): Skip drawing layers with uninvertible draw transforms, and
+  // change this to a DCHECK. crbug.com/517170
+  if (!ok)
+    return content_rect;
 
   gfx::Rect unoccluded_rect = MathUtil::ProjectEnclosingClippedRect(
       inverse_draw_transform, unoccluded_rect_in_target_surface);

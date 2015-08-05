@@ -25,6 +25,7 @@
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/geometry_test_utils.h"
@@ -2640,6 +2641,113 @@ TEST_F(LayerTreeHostCommonTest,
 
   EXPECT_TRUE(child->visible_layer_rect().IsEmpty());
   EXPECT_TRUE(child->drawable_content_rect().IsEmpty());
+}
+
+TEST_F(LayerTreeHostCommonTest,
+       VisibleContentRectForLayerWithUninvertibleDrawTransform) {
+  LayerImpl* root = root_layer();
+  LayerImpl* child = AddChildToRoot<LayerImpl>();
+  LayerImpl* grand_child = AddChild<LayerImpl>(child);
+  child->SetDrawsContent(true);
+  grand_child->SetDrawsContent(true);
+
+  gfx::Transform identity_matrix;
+
+  gfx::Transform perspective;
+  perspective.ApplyPerspectiveDepth(SkDoubleToMScalar(1e-12));
+
+  gfx::Transform rotation;
+  rotation.RotateAboutYAxis(45.0);
+
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child, perspective, gfx::Point3F(),
+                               gfx::PointF(10.f, 10.f), gfx::Size(100, 100),
+                               false, true, false);
+  SetLayerPropertiesForTesting(grand_child, rotation, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), false, true,
+                               false);
+
+  ExecuteCalculateDrawProperties(root);
+
+  // Though all layers have invertible transforms, matrix multiplication using
+  // floating-point math makes the draw transform uninvertible.
+  EXPECT_FALSE(grand_child->draw_transform().IsInvertible());
+
+  // CalcDrawProps only skips a subtree when a layer's own transform is
+  // uninvertible, not when its draw transform is invertible, since CDP makes
+  // skipping decisions before computing a layer's draw transform. Property
+  // trees make skipping decisions after computing draw transforms, so could be
+  // made to skip layers with an uninvertible draw transform (once CDP is
+  // deleted).
+  EXPECT_EQ(gfx::Rect(grand_child->bounds()),
+            grand_child->visible_layer_rect());
+}
+
+TEST_F(LayerTreeHostCommonTest,
+       OcclusionForLayerWithUninvertibleDrawTransform) {
+  FakeImplProxy proxy;
+  TestSharedBitmapManager shared_bitmap_manager;
+  TestTaskGraphRunner task_graph_runner;
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
+                                  &task_graph_runner);
+  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.active_tree(), 1);
+  scoped_ptr<LayerImpl> child = LayerImpl::Create(host_impl.active_tree(), 2);
+  scoped_ptr<LayerImpl> grand_child =
+      LayerImpl::Create(host_impl.active_tree(), 3);
+  scoped_ptr<LayerImpl> occluding_child =
+      LayerImpl::Create(host_impl.active_tree(), 4);
+  child->SetDrawsContent(true);
+  grand_child->SetDrawsContent(true);
+  occluding_child->SetDrawsContent(true);
+  occluding_child->SetContentsOpaque(true);
+
+  gfx::Transform identity_matrix;
+  gfx::Transform perspective;
+  perspective.ApplyPerspectiveDepth(SkDoubleToMScalar(1e-12));
+
+  gfx::Transform rotation;
+  rotation.RotateAboutYAxis(45.0);
+
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(1000, 1000), true,
+                               false, true);
+  SetLayerPropertiesForTesting(child.get(), perspective, gfx::Point3F(),
+                               gfx::PointF(10.f, 10.f), gfx::Size(300, 300),
+                               false, true, false);
+  SetLayerPropertiesForTesting(grand_child.get(), rotation, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(200, 200), false, true,
+                               false);
+  SetLayerPropertiesForTesting(occluding_child.get(), identity_matrix,
+                               gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(200, 200), false, false, false);
+
+  host_impl.SetViewportSize(root->bounds());
+
+  child->AddChild(grand_child.Pass());
+  root->AddChild(child.Pass());
+  root->AddChild(occluding_child.Pass());
+  host_impl.active_tree()->SetRootLayer(root.Pass());
+  host_impl.InitializeRenderer(FakeOutputSurface::Create3d());
+  bool update_lcd_text = false;
+  host_impl.active_tree()->UpdateDrawProperties(update_lcd_text);
+
+  LayerImpl* grand_child_ptr =
+      host_impl.active_tree()->root_layer()->children()[0]->children()[0];
+
+  // Though all layers have invertible transforms, matrix multiplication using
+  // floating-point math makes the draw transform uninvertible.
+  EXPECT_FALSE(grand_child_ptr->draw_transform().IsInvertible());
+
+  // Since |grand_child| has an uninvertible draw transform, it is treated as
+  // unoccluded (even though |occluding_child| comes later in draw order, and
+  // hence potentially occludes it).
+  gfx::Rect layer_bounds = gfx::Rect(grand_child_ptr->bounds());
+  EXPECT_EQ(
+      layer_bounds,
+      grand_child_ptr->draw_properties()
+          .occlusion_in_content_space.GetUnoccludedContentRect(layer_bounds));
 }
 
 TEST_F(LayerTreeHostCommonTest,
