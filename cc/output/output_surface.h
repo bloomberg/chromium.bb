@@ -18,7 +18,9 @@
 
 namespace base { class SingleThreadTaskRunner; }
 
-namespace ui { struct LatencyInfo; }
+namespace ui {
+class LatencyInfo;
+}
 
 namespace gfx {
 class Rect;

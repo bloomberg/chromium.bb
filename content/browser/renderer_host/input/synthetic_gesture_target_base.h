@@ -9,7 +9,7 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 
 namespace ui {
-struct LatencyInfo;
+class LatencyInfo;
 }
 
 namespace blink {

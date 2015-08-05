@@ -12,7 +12,7 @@
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace ui {
-struct LatencyInfo;
+class LatencyInfo;
 }
 
 namespace cc {

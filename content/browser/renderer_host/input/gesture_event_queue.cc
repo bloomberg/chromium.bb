@@ -335,7 +335,7 @@ void GestureEventQueue::QueueScrollOrPinchAndForwardIfNecessary(
   scroll_event.event.sourceDevice = gesture_event.event.sourceDevice;
   scroll_event.event.timeStampSeconds = gesture_event.event.timeStampSeconds;
   // Keep the oldest LatencyInfo.
-  DCHECK_LE(last_event->latency.trace_id, gesture_event.latency.trace_id);
+  DCHECK_LE(last_event->latency.trace_id(), gesture_event.latency.trace_id());
   scroll_event.latency = last_event->latency;
   pinch_event = scroll_event;
   scroll_event.event.type = WebInputEvent::GestureScrollUpdate;
@@ -355,8 +355,8 @@ void GestureEventQueue::QueueScrollOrPinchAndForwardIfNecessary(
         coalesced_gesture_events_[coalesced_gesture_events_.size() - 2];
     if (IsCompatibleScrollorPinch(gesture_event, second_last_event)) {
       // Keep the oldest LatencyInfo.
-      DCHECK_LE(second_last_event.latency.trace_id,
-                scroll_event.latency.trace_id);
+      DCHECK_LE(second_last_event.latency.trace_id(),
+                scroll_event.latency.trace_id());
       scroll_event.latency = second_last_event.latency;
       pinch_event.latency = second_last_event.latency;
       combined_scroll_pinch.PreconcatTransform(

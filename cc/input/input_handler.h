@@ -19,7 +19,9 @@ class Vector2d;
 class Vector2dF;
 }
 
-namespace ui { struct LatencyInfo; }
+namespace ui {
+class LatencyInfo;
+}
 
 namespace cc {
 

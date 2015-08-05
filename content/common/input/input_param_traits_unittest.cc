@@ -28,8 +28,8 @@ class InputParamTraitsTest : public testing::Test {
       ASSERT_EQ(a_size, b->web_event->size);
       EXPECT_EQ(0, memcmp(a->web_event.get(), b->web_event.get(), a_size));
     }
-    EXPECT_EQ(a->latency_info.latency_components.size(),
-              b->latency_info.latency_components.size());
+    EXPECT_EQ(a->latency_info.latency_components().size(),
+              b->latency_info.latency_components().size());
     EXPECT_EQ(a->is_keyboard_shortcut, b->is_keyboard_shortcut);
   }
 

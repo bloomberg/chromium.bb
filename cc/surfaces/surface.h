@@ -23,7 +23,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace ui {
-struct LatencyInfo;
+class LatencyInfo;
 }
 
 namespace cc {

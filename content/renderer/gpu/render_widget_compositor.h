@@ -22,7 +22,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace ui {
-struct LatencyInfo;
+class LatencyInfo;
 }
 
 namespace cc {

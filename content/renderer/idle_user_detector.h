@@ -13,7 +13,7 @@ class WebInputEvent;
 }
 
 namespace ui {
-struct LatencyInfo;
+class LatencyInfo;
 }
 
 namespace content {

@@ -29,7 +29,7 @@ struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 #endif
 
 namespace ui {
-struct LatencyInfo;
+class LatencyInfo;
 }
 
 namespace gfx {

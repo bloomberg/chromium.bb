@@ -291,6 +291,23 @@
       ],
     },
     {
+      # GN version: //ui/events/ipc:events_ipc
+      'target_name': 'events_ipc',
+      'type': '<(component)',
+      'dependencies': [
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/ipc/ipc.gyp:ipc',
+        'events_base',
+      ],
+      'defines': [
+        'EVENTS_IPC_IMPLEMENTATION',
+      ],
+      'sources': [
+        'ipc/latency_info_param_traits.cc',
+        'ipc/latency_info_param_traits.h',
+      ],
+    },
+    {
       # GN version: //ui/events:test_support
       'target_name': 'events_test_support',
       'type': 'static_library',
@@ -354,6 +371,7 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:run_all_unittests',
         '<(DEPTH)/base/base.gyp:test_support_base',
+        '<(DEPTH)/ipc/ipc.gyp:test_support_ipc',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',
@@ -364,6 +382,7 @@
         'dom_keycode_converter',
         'events',
         'events_base',
+        'events_ipc',
         'events_test_support',
         'gesture_detection',
         'gestures_blink',
@@ -391,6 +410,7 @@
         'gestures/fling_curve_unittest.cc',
         'gestures/gesture_provider_aura_unittest.cc',
         'gestures/motion_event_aura_unittest.cc',
+        'ipc/latency_info_param_traits_unittest.cc',
         'keycodes/dom/keycode_converter_unittest.cc',
         'keycodes/keyboard_code_conversion_unittest.cc',
         'latency_info_unittest.cc',

@@ -18,37 +18,40 @@ using ui::LatencyInfo;
 namespace content {
 namespace {
 
-const uint32 kMaxInputCoordinates = LatencyInfo::kMaxInputCoordinates;
-
 void UpdateLatencyCoordinatesImpl(const blink::WebTouchEvent& touch,
-                                  LatencyInfo* latency) {
-  latency->input_coordinates_size =
-      std::min(kMaxInputCoordinates, touch.touchesLength);
-  for (uint32 i = 0; i < latency->input_coordinates_size; ++i) {
-    latency->input_coordinates[i] = LatencyInfo::InputCoordinate(
-        touch.touches[i].position.x, touch.touches[i].position.y);
+                                  LatencyInfo* latency,
+                                  float device_scale_factor) {
+  for (uint32 i = 0; i < touch.touchesLength; ++i) {
+    LatencyInfo::InputCoordinate coordinate(
+        touch.touches[i].position.x * device_scale_factor,
+        touch.touches[i].position.y * device_scale_factor);
+    if (!latency->AddInputCoordinate(coordinate))
+      break;
   }
 }
 
 void UpdateLatencyCoordinatesImpl(const WebGestureEvent& gesture,
-                                  LatencyInfo* latency) {
-  latency->input_coordinates_size = 1;
-  latency->input_coordinates[0] =
-      LatencyInfo::InputCoordinate(gesture.x, gesture.y);
+                                  LatencyInfo* latency,
+                                  float device_scale_factor) {
+  latency->AddInputCoordinate(
+      LatencyInfo::InputCoordinate(gesture.x * device_scale_factor,
+                                   gesture.y * device_scale_factor));
 }
 
 void UpdateLatencyCoordinatesImpl(const WebMouseEvent& mouse,
-                                  LatencyInfo* latency) {
-  latency->input_coordinates_size = 1;
-  latency->input_coordinates[0] =
-      LatencyInfo::InputCoordinate(mouse.x, mouse.y);
+                                  LatencyInfo* latency,
+                                  float device_scale_factor) {
+  latency->AddInputCoordinate(
+      LatencyInfo::InputCoordinate(mouse.x * device_scale_factor,
+                                   mouse.y * device_scale_factor));
 }
 
 void UpdateLatencyCoordinatesImpl(const WebMouseWheelEvent& wheel,
-                                  LatencyInfo* latency) {
-  latency->input_coordinates_size = 1;
-  latency->input_coordinates[0] =
-      LatencyInfo::InputCoordinate(wheel.x, wheel.y);
+                                  LatencyInfo* latency,
+                                  float device_scale_factor) {
+  latency->AddInputCoordinate(
+      LatencyInfo::InputCoordinate(wheel.x * device_scale_factor,
+                                   wheel.y * device_scale_factor));
 }
 
 void UpdateLatencyCoordinates(const WebInputEvent& event,
@@ -56,22 +59,16 @@ void UpdateLatencyCoordinates(const WebInputEvent& event,
                               LatencyInfo* latency) {
   if (WebInputEvent::isMouseEventType(event.type)) {
     UpdateLatencyCoordinatesImpl(static_cast<const WebMouseEvent&>(event),
-                                 latency);
+                                 latency, device_scale_factor);
   } else if (WebInputEvent::isGestureEventType(event.type)) {
     UpdateLatencyCoordinatesImpl(static_cast<const WebGestureEvent&>(event),
-                                 latency);
+                                 latency, device_scale_factor);
   } else if (WebInputEvent::isTouchEventType(event.type)) {
     UpdateLatencyCoordinatesImpl(static_cast<const WebTouchEvent&>(event),
-                                 latency);
+                                 latency, device_scale_factor);
   } else if (event.type == WebInputEvent::MouseWheel) {
     UpdateLatencyCoordinatesImpl(static_cast<const WebMouseWheelEvent&>(event),
-                                 latency);
-  }
-  if (device_scale_factor == 1)
-    return;
-  for (uint32 i = 0; i < latency->input_coordinates_size; ++i) {
-    latency->input_coordinates[i].x *= device_scale_factor;
-    latency->input_coordinates[i].y *= device_scale_factor;
+                                 latency, device_scale_factor);
   }
 }
 
@@ -260,25 +257,29 @@ void ComputeScrollLatencyHistograms(
 // component ID where necessary.
 void AddLatencyInfoComponentIds(LatencyInfo* latency,
                                 int64 latency_component_id) {
-  LatencyInfo::LatencyMap new_components;
-  auto lc = latency->latency_components.begin();
-  while (lc != latency->latency_components.end()) {
-    ui::LatencyComponentType component_type = lc->first.first;
+  std::vector<std::pair<ui::LatencyComponentType, int64>> new_components_key;
+  std::vector<LatencyInfo::LatencyComponent> new_components_value;
+  for (const auto& lc : latency->latency_components()) {
+    ui::LatencyComponentType component_type = lc.first.first;
     if (component_type == ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT) {
       // Generate a new component entry with the correct component ID
-      auto key = std::make_pair(component_type, latency_component_id);
-      new_components[key] = lc->second;
-
-      // Remove the old entry
-      latency->latency_components.erase(lc++);
-    } else {
-      ++lc;
+      new_components_key.push_back(std::make_pair(component_type,
+                                                  latency_component_id));
+      new_components_value.push_back(lc.second);
     }
   }
 
+  // Remove the entries with invalid component IDs.
+  latency->RemoveLatency(ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT);
+
   // Add newly generated components into the latency info
-  for (lc = new_components.begin(); lc != new_components.end(); ++lc) {
-    latency->latency_components[lc->first] = lc->second;
+  for (size_t i = 0; i < new_components_key.size(); i++) {
+    latency->AddLatencyNumberWithTimestamp(
+        new_components_key[i].first,
+        new_components_key[i].second,
+        new_components_value[i].sequence_number,
+        new_components_value[i].event_time,
+        new_components_value[i].event_count);
   }
 }
 

@@ -341,10 +341,7 @@ source_set("ipc_sources") {
     "//ppapi/shared_impl",
   ]
   if (!is_nacl) {
-    deps += [
-      "//skia",
-      "//ui/events/ipc",
-    ]
+    deps += [ "//skia" ]
   }
 }
 

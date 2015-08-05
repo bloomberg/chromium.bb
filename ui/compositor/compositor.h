@@ -58,10 +58,10 @@ namespace ui {
 
 class Compositor;
 class CompositorVSyncManager;
+class LatencyInfo;
 class Layer;
 class Reflector;
 class Texture;
-struct LatencyInfo;
 
 const int kCompositorLockTimeoutMs = 67;
 

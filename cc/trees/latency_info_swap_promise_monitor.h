@@ -9,7 +9,7 @@
 #define CC_TREES_LATENCY_INFO_SWAP_PROMISE_MONITOR_H_
 
 namespace ui {
-struct LatencyInfo;
+class LatencyInfo;
 }  // namespace ui
 
 namespace cc {

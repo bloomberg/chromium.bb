@@ -1121,7 +1121,7 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   TRACE_EVENT_FLOW_STEP0(
       "input,benchmark",
       "LatencyInfo.Flow",
-      TRACE_ID_DONT_MANGLE(latency_info.trace_id),
+      TRACE_ID_DONT_MANGLE(latency_info.trace_id()),
       "HanldeInputEventMain");
 
   // If we don't have a high res timer, these metrics won't be accurate enough

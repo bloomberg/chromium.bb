@@ -34,7 +34,7 @@ LatencyInfoSwapPromise::~LatencyInfoSwapPromise() {
 }
 
 void LatencyInfoSwapPromise::DidSwap(CompositorFrameMetadata* metadata) {
-  DCHECK(!latency_.terminated);
+  DCHECK(!latency_.terminated());
   metadata->latency_info.push_back(latency_);
 }
 
@@ -47,7 +47,7 @@ void LatencyInfoSwapPromise::DidNotSwap(DidNotSwapReason reason) {
 }
 
 int64 LatencyInfoSwapPromise::TraceId() const {
-  return latency_.trace_id;
+  return latency_.trace_id();
 }
 
 // Trace the original LatencyInfo of a LatencyInfoSwapPromise

@@ -11,7 +11,11 @@
 
 #include "base/basictypes.h"
 #include "base/containers/small_map.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
+#include "ipc/ipc_param_traits.h"
 #include "ui/events/events_base_export.h"
 
 namespace ui {
@@ -85,7 +89,8 @@ enum LatencyComponentType {
     INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT,
 };
 
-struct EVENTS_BASE_EXPORT LatencyInfo {
+class EVENTS_BASE_EXPORT LatencyInfo {
+ public:
   struct LatencyComponent {
     // Nondecreasing number that can be used to determine what events happened
     // in the component at the time this struct was sent on to the next
@@ -117,7 +122,6 @@ struct EVENTS_BASE_EXPORT LatencyInfo {
       kTypicalMaxComponentsPerLatencyInfo> LatencyMap;
 
   LatencyInfo();
-
   ~LatencyInfo();
 
   // Returns true if the vector |latency_info| is valid. Returns false
@@ -158,13 +162,6 @@ struct EVENTS_BASE_EXPORT LatencyInfo {
                                      base::TimeTicks time,
                                      uint32 event_count);
 
-  void AddLatencyNumberWithTimestampImpl(LatencyComponentType component,
-                                         int64 id,
-                                         int64 component_sequence_number,
-                                         base::TimeTicks time,
-                                         uint32 event_count,
-                                         const char* trace_name_str);
-
   // Returns true if the a component with |type| and |id| is found in
   // the latency_components and the component is stored to |output| if
   // |output| is not NULL. Returns false if no such component is found.
@@ -174,22 +171,47 @@ struct EVENTS_BASE_EXPORT LatencyInfo {
 
   void RemoveLatency(LatencyComponentType type);
 
-  void Clear();
+  // Returns true if there is still room for keeping the |input_coordinate|,
+  // false otherwise.
+  bool AddInputCoordinate(const InputCoordinate& input_coordinate);
+
+  uint32 input_coordinates_size() const { return input_coordinates_size_; }
+  const InputCoordinate* input_coordinates() const {
+    return input_coordinates_;
+  }
+  const LatencyMap& latency_components() const { return latency_components_; }
+
+  bool terminated() const { return terminated_; }
+  int64 trace_id() const { return trace_id_; }
+
+ private:
+  void AddLatencyNumberWithTimestampImpl(LatencyComponentType component,
+                                         int64 id,
+                                         int64 component_sequence_number,
+                                         base::TimeTicks time,
+                                         uint32 event_count,
+                                         const char* trace_name_str);
+
+  // Converts latencyinfo into format that can be dumped into trace buffer.
+  scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsTraceableData();
 
   // Shown as part of the name of the trace event for this LatencyInfo.
   // String is empty if no tracing is enabled.
-  std::string trace_name;
+  std::string trace_name_;
 
-  LatencyMap latency_components;
+  LatencyMap latency_components_;
 
   // These coordinates represent window coordinates of the original input event.
-  uint32 input_coordinates_size;
-  InputCoordinate input_coordinates[kMaxInputCoordinates];
+  uint32 input_coordinates_size_;
+  InputCoordinate input_coordinates_[kMaxInputCoordinates];
 
   // The unique id for matching the ASYNC_BEGIN/END trace event.
-  int64 trace_id;
+  int64 trace_id_;
   // Whether a terminal component has been added.
-  bool terminated;
+  bool terminated_;
+
+  FRIEND_TEST_ALL_PREFIXES(LatencyInfoParamTraitsTest, Basic);
+  friend struct IPC::ParamTraits<ui::LatencyInfo>;
 };
 
 }  // namespace ui

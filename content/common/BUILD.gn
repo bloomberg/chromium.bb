@@ -156,7 +156,7 @@ source_set("common") {
     "//ui/accessibility",
     "//ui/base",
     "//ui/base/ime",
-    "//ui/events/ipc",
+    "//ui/events/ipc:events_ipc",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gfx/ipc",

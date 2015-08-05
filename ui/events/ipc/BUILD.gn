@@ -4,18 +4,18 @@
 
 import("//build/config/ui.gni")
 
-component("ipc") {
+component("events_ipc") {
   output_name = "events_ipc"
   sources = [
     "latency_info_param_traits.cc",
     "latency_info_param_traits.h",
   ]
 
-  defines = [ "EVENTS_IMPLEMENTATION" ]
+  defines = [ "EVENTS_IPC_IMPLEMENTATION" ]
 
   deps = [
     "//base",
     "//ipc",
-    "//ui/events",
+    "//ui/events:events_base",
   ]
 }

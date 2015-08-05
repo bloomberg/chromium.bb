@@ -30,7 +30,7 @@ bool AddForwardingScrollUpdateToMainComponent(ui::LatencyInfo* latency_info) {
     return false;
   latency_info->AddLatencyNumber(
       ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT, 0,
-      latency_info->trace_id);
+      latency_info->trace_id());
   return true;
 }
 
@@ -67,8 +67,8 @@ void LatencyInfoSwapPromiseMonitor::OnForwardScrollUpdateToMainThreadOnImpl() {
   if (AddForwardingScrollUpdateToMainComponent(latency_)) {
     int64 new_sequence_number = 0;
     for (ui::LatencyInfo::LatencyMap::const_iterator it =
-             latency_->latency_components.begin();
-         it != latency_->latency_components.end(); ++it) {
+             latency_->latency_components().begin();
+         it != latency_->latency_components().end(); ++it) {
       if (it->first.first == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT) {
         new_sequence_number =
             ((static_cast<int64>(base::PlatformThread::CurrentId()) << 32) ^

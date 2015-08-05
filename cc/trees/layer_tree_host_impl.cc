@@ -1742,11 +1742,9 @@ bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
   CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
   active_tree()->FinishSwapPromises(&metadata);
   for (auto& latency : metadata.latency_info) {
-    TRACE_EVENT_FLOW_STEP0(
-        "input,benchmark",
-        "LatencyInfo.Flow",
-        TRACE_ID_DONT_MANGLE(latency.trace_id),
-        "SwapBuffers");
+    TRACE_EVENT_FLOW_STEP0("input,benchmark", "LatencyInfo.Flow",
+                           TRACE_ID_DONT_MANGLE(latency.trace_id()),
+                           "SwapBuffers");
     // Only add the latency component once for renderer swap, not the browser
     // swap.
     if (!latency.FindLatency(ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT,

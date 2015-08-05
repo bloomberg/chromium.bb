@@ -10,7 +10,7 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace ui {
-struct LatencyInfo;
+class LatencyInfo;
 }
 
 namespace content {
