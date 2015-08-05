@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread_id_name_manager.h"
@@ -180,10 +179,6 @@ void Thread::StopSoon() {
 PlatformThreadId Thread::GetThreadId() const {
   // If the thread is created but not started yet, wait for |id_| being ready.
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
-  // TODO(toyoshim): Remove this after a few days (crbug.com/495097)
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "495097 base::Thread::GetThreadId"));
   id_event_.Wait();
   return id_;
 }
