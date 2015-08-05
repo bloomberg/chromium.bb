@@ -29,9 +29,6 @@ protected:
     PassRefPtrWillBeRawPtr<ShadowRoot> setShadowContent(const char* shadowContent, const char* host = "host");
     void updateLayoutAndStyleForPainting();
 
-    static Position positionInDOMTree(Node& anchor, int offset);
-    static PositionInComposedTree positionInComposedTree(Node& anchor, int offset);
-
 private:
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
 };

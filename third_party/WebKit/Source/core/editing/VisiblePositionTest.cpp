@@ -25,15 +25,15 @@ TEST_F(VisiblePositionTest, ShadowDistributedNodes)
     RefPtrWillBeRawPtr<Element> four = shadowRoot->querySelector("#s4", ASSERT_NO_EXCEPTION);
     RefPtrWillBeRawPtr<Element> five = shadowRoot->querySelector("#s5", ASSERT_NO_EXCEPTION);
 
-    EXPECT_EQ(positionInDOMTree(*one->firstChild(), 0), canonicalPositionOf(positionInDOMTree(*one, 0)));
-    EXPECT_EQ(positionInDOMTree(*one->firstChild(), 0), VisiblePosition(positionInDOMTree(*one, 0)).deepEquivalent());
-    EXPECT_EQ(positionInDOMTree(*one->firstChild(), 2), canonicalPositionOf(positionInDOMTree(*two, 0)));
-    EXPECT_EQ(positionInDOMTree(*one->firstChild(), 2), VisiblePosition(positionInDOMTree(*two, 0)).deepEquivalent());
+    EXPECT_EQ(Position(one->firstChild(), 0), canonicalPositionOf(Position(one, 0)));
+    EXPECT_EQ(Position(one->firstChild(), 0), VisiblePosition(Position(one, 0)).deepEquivalent());
+    EXPECT_EQ(Position(one->firstChild(), 2), canonicalPositionOf(Position(two.get(), 0)));
+    EXPECT_EQ(Position(one->firstChild(), 2), VisiblePosition(Position(two.get(), 0)).deepEquivalent());
 
-    EXPECT_EQ(positionInComposedTree(*five->firstChild(), 2), canonicalPositionOf(positionInComposedTree(*one, 0)));
-    EXPECT_EQ(positionInDOMTree(*five->firstChild(), 2), VisiblePosition(positionInComposedTree(*one, 0)).deepEquivalent());
-    EXPECT_EQ(positionInComposedTree(*four->firstChild(), 2), canonicalPositionOf(positionInComposedTree(*two, 0)));
-    EXPECT_EQ(positionInDOMTree(*four->firstChild(), 2), VisiblePosition(positionInComposedTree(*two, 0)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(five->firstChild(), 2), canonicalPositionOf(PositionInComposedTree(one.get(), 0)));
+    EXPECT_EQ(Position(five->firstChild(), 2), VisiblePosition(PositionInComposedTree(one.get(), 0)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(four->firstChild(), 2), canonicalPositionOf(PositionInComposedTree(two.get(), 0)));
+    EXPECT_EQ(Position(four->firstChild(), 2), VisiblePosition(PositionInComposedTree(two.get(), 0)).deepEquivalent());
 }
 
 } // namespace blink

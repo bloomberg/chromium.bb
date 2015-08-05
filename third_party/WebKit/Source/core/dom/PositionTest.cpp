@@ -110,9 +110,9 @@ TEST_F(PositionTest, ToPositionInComposedTreeWithActiveInsertionPoint)
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
     RefPtrWillBeRawPtr<Element> anchor = shadowRoot->getElementById("a");
 
-    EXPECT_EQ(positionInComposedTree(*anchor, 0), toPositionInComposedTree(positionInDOMTree(*anchor, 0)));
-    EXPECT_EQ(positionInComposedTree(*anchor, 1), toPositionInComposedTree(positionInDOMTree(*anchor, 1)));
-    EXPECT_EQ(PositionInComposedTree(anchor, PositionAnchorType::AfterChildren), toPositionInComposedTree(positionInDOMTree(*anchor, 2)));
+    EXPECT_EQ(PositionInComposedTree(anchor.get(), 0), toPositionInComposedTree(Position(anchor.get(), 0)));
+    EXPECT_EQ(PositionInComposedTree(anchor.get(), 1), toPositionInComposedTree(Position(anchor.get(), 1)));
+    EXPECT_EQ(PositionInComposedTree(anchor, PositionAnchorType::AfterChildren), toPositionInComposedTree(Position(anchor.get(), 2)));
 }
 
 TEST_F(PositionTest, ToPositionInComposedTreeWithInactiveInsertionPoint)
@@ -121,8 +121,8 @@ TEST_F(PositionTest, ToPositionInComposedTreeWithInactiveInsertionPoint)
     setBodyContent(bodyContent);
     RefPtrWillBeRawPtr<Element> anchor = document().getElementById("p");
 
-    EXPECT_EQ(positionInComposedTree(*anchor, 0), toPositionInComposedTree(positionInDOMTree(*anchor, 0)));
-    EXPECT_EQ(PositionInComposedTree(anchor, PositionAnchorType::AfterChildren), toPositionInComposedTree(positionInDOMTree(*anchor, 1)));
+    EXPECT_EQ(PositionInComposedTree(anchor.get(), 0), toPositionInComposedTree(Position(anchor.get(), 0)));
+    EXPECT_EQ(PositionInComposedTree(anchor, PositionAnchorType::AfterChildren), toPositionInComposedTree(Position(anchor.get(), 1)));
 }
 
 TEST_F(PositionTest, ToPositionInComposedTreeWithShadowRoot)
@@ -133,8 +133,8 @@ TEST_F(PositionTest, ToPositionInComposedTreeWithShadowRoot)
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
     RefPtrWillBeRawPtr<Element> host = document().getElementById("host");
 
-    EXPECT_EQ(positionInComposedTree(*host, 0), toPositionInComposedTree(positionInDOMTree(*shadowRoot, 0)));
-    EXPECT_EQ(PositionInComposedTree(host, PositionAnchorType::AfterChildren), toPositionInComposedTree(positionInDOMTree(*shadowRoot, 1)));
+    EXPECT_EQ(PositionInComposedTree(host.get(), 0), toPositionInComposedTree(Position(shadowRoot.get(), 0)));
+    EXPECT_EQ(PositionInComposedTree(host.get(), PositionAnchorType::AfterChildren), toPositionInComposedTree(Position(shadowRoot.get(), 1)));
 }
 
 TEST_F(PositionTest, ToPositionInComposedTreeWithShadowRootContainingSingleContent)
@@ -145,8 +145,8 @@ TEST_F(PositionTest, ToPositionInComposedTreeWithShadowRootContainingSingleConte
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
     RefPtrWillBeRawPtr<Element> host = document().getElementById("host");
 
-    EXPECT_EQ(positionInComposedTree(*host, 0), toPositionInComposedTree(positionInDOMTree(*shadowRoot, 0)));
-    EXPECT_EQ(PositionInComposedTree(host, PositionAnchorType::AfterChildren), toPositionInComposedTree(positionInDOMTree(*shadowRoot, 1)));
+    EXPECT_EQ(PositionInComposedTree(host.get(), 0), toPositionInComposedTree(Position(shadowRoot.get(), 0)));
+    EXPECT_EQ(PositionInComposedTree(host.get(), PositionAnchorType::AfterChildren), toPositionInComposedTree(Position(shadowRoot.get(), 1)));
 }
 
 TEST_F(PositionTest, ToPositionInComposedTreeWithEmptyShadowRoot)
@@ -157,7 +157,7 @@ TEST_F(PositionTest, ToPositionInComposedTreeWithEmptyShadowRoot)
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
     RefPtrWillBeRawPtr<Element> host = document().getElementById("host");
 
-    EXPECT_EQ(PositionInComposedTree(host, PositionAnchorType::AfterChildren), toPositionInComposedTree(positionInDOMTree(*shadowRoot, 0)));
+    EXPECT_EQ(PositionInComposedTree(host, PositionAnchorType::AfterChildren), toPositionInComposedTree(Position(shadowRoot.get(), 0)));
 }
 
 TEST_F(PositionTest, upstreamAfterAnchor)

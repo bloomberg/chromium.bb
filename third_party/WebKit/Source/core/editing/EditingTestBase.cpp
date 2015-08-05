@@ -56,14 +56,4 @@ void EditingTestBase::updateLayoutAndStyleForPainting()
     document().view()->updateAllLifecyclePhases();
 }
 
-Position EditingTestBase::positionInDOMTree(Node& anchor, int offset)
-{
-    return Position(&anchor, offset);
-}
-
-PositionInComposedTree EditingTestBase::positionInComposedTree(Node& anchor, int offset)
-{
-    return PositionInComposedTree(&anchor, offset);
-}
-
 } // namespace blink
