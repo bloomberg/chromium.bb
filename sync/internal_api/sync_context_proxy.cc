@@ -4,7 +4,7 @@
 
 #include "sync/internal_api/public/sync_context_proxy.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 SyncContextProxy::SyncContextProxy() {
 }

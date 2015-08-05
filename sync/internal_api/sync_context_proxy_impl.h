@@ -13,9 +13,12 @@
 #include "sync/internal_api/public/sync_context_proxy.h"
 
 namespace syncer {
+class ModelTypeSyncProxyImpl;
+}
+
+namespace syncer_v2 {
 
 class SyncContext;
-class ModelTypeSyncProxyImpl;
 struct DataTypeState;
 
 // Encapsulates a reference to the sync context and the thread it's running on.
@@ -37,11 +40,11 @@ class SYNC_EXPORT_PRIVATE SyncContextProxyImpl : public SyncContextProxy {
   // unable to distinguish a slow success from failure.
   //
   // Must be called from the thread where the data type lives.
-  void ConnectTypeToSync(
-      syncer::ModelType type,
-      const DataTypeState& data_type_state,
-      const UpdateResponseDataList& pending_updates,
-      const base::WeakPtr<ModelTypeSyncProxyImpl>& sync_proxy_impl) override;
+  void ConnectTypeToSync(syncer::ModelType type,
+                         const DataTypeState& data_type_state,
+                         const UpdateResponseDataList& pending_updates,
+                         const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>&
+                             sync_proxy_impl) override;
 
   // Disables syncing for the given type on the sync thread.
   void Disconnect(syncer::ModelType type) override;

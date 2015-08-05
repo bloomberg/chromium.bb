@@ -113,7 +113,7 @@ class SyncBackendHostImpl
   void DeactivateDataType(syncer::ModelType type) override;
   void EnableEncryptEverything() override;
   syncer::UserShare* GetUserShare() const override;
-  scoped_ptr<syncer::SyncContextProxy> GetSyncContextProxy() override;
+  scoped_ptr<syncer_v2::SyncContextProxy> GetSyncContextProxy() override;
   Status GetDetailedStatus() override;
   syncer::sessions::SyncSessionSnapshot GetLastSessionSnapshot() const override;
   bool HasUnsyncedItems() const override;
@@ -177,7 +177,7 @@ class SyncBackendHostImpl
       const syncer::WeakHandle<syncer::JsBackend> js_backend,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>
           debug_info_listener,
-      syncer::SyncContextProxy* sync_context_proxy,
+      syncer_v2::SyncContextProxy* sync_context_proxy,
       const std::string& cache_guid);
 
   // Forwards a ProtocolEvent to the frontend.  Will not be called unless a
@@ -323,7 +323,7 @@ class SyncBackendHostImpl
   scoped_refptr<SyncBackendHostCore> core_;
 
   // A handle referencing the main interface for non-blocking sync types.
-  scoped_ptr<syncer::SyncContextProxy> sync_context_proxy_;
+  scoped_ptr<syncer_v2::SyncContextProxy> sync_context_proxy_;
 
   bool initialized_;
 

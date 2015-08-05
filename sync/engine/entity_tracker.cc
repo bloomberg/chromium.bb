@@ -87,7 +87,7 @@ void EntityTracker::PrepareCommitProto(sync_pb::SyncEntity* commit_entity,
                                        int64* sequence_number) const {
   // Set ID if we have a server-assigned ID.  Otherwise, it will be up to
   // our caller to assign a client-unique initial ID.
-  if (base_version_ != kUncommittedVersion) {
+  if (base_version_ != syncer_v2::kUncommittedVersion) {
     commit_entity->set_id_string(id_);
   }
 
@@ -201,12 +201,13 @@ void EntityTracker::ReceiveUpdate(int64 version) {
   }
 }
 
-bool EntityTracker::ReceivePendingUpdate(const UpdateResponseData& data) {
+bool EntityTracker::ReceivePendingUpdate(
+    const syncer_v2::UpdateResponseData& data) {
   if (data.response_version < highest_gu_response_version_)
     return false;
 
   highest_gu_response_version_ = data.response_version;
-  pending_update_.reset(new UpdateResponseData(data));
+  pending_update_.reset(new syncer_v2::UpdateResponseData(data));
   ClearPendingCommit();
   return true;
 }
@@ -215,7 +216,7 @@ bool EntityTracker::HasPendingUpdate() const {
   return !!pending_update_;
 }
 
-UpdateResponseData EntityTracker::GetPendingUpdate() const {
+syncer_v2::UpdateResponseData EntityTracker::GetPendingUpdate() const {
   return *pending_update_;
 }
 
@@ -247,7 +248,7 @@ bool EntityTracker::IsInConflict() const {
 }
 
 bool EntityTracker::IsServerKnown() const {
-  return base_version_ != kUncommittedVersion;
+  return base_version_ != syncer_v2::kUncommittedVersion;
 }
 
 void EntityTracker::ClearPendingCommit() {

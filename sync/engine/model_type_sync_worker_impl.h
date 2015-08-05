@@ -54,12 +54,13 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public UpdateHandler,
                                             public ModelTypeSyncWorker,
                                             public base::NonThreadSafe {
  public:
-  ModelTypeSyncWorkerImpl(ModelType type,
-                          const DataTypeState& initial_state,
-                          const UpdateResponseDataList& saved_pending_updates,
-                          scoped_ptr<Cryptographer> cryptographer,
-                          NudgeHandler* nudge_handler,
-                          scoped_ptr<ModelTypeSyncProxy> type_sync_proxy);
+  ModelTypeSyncWorkerImpl(
+      ModelType type,
+      const syncer_v2::DataTypeState& initial_state,
+      const syncer_v2::UpdateResponseDataList& saved_pending_updates,
+      scoped_ptr<Cryptographer> cryptographer,
+      NudgeHandler* nudge_handler,
+      scoped_ptr<ModelTypeSyncProxy> type_sync_proxy);
   ~ModelTypeSyncWorkerImpl() override;
 
   ModelType GetModelType() const;
@@ -80,13 +81,14 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public UpdateHandler,
   void PassiveApplyUpdates(sessions::StatusController* status) override;
 
   // ModelTypeSyncWorker implementation.
-  void EnqueueForCommit(const CommitRequestDataList& request_list) override;
+  void EnqueueForCommit(
+      const syncer_v2::CommitRequestDataList& request_list) override;
 
   // CommitContributor implementation.
   scoped_ptr<CommitContribution> GetContribution(size_t max_entries) override;
 
   // Callback for when our contribution gets a response.
-  void OnCommitResponse(const CommitResponseDataList& response_list);
+  void OnCommitResponse(const syncer_v2::CommitResponseDataList& response_list);
 
   base::WeakPtr<ModelTypeSyncWorkerImpl> AsWeakPtr();
 
@@ -94,7 +96,7 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public UpdateHandler,
   typedef base::ScopedPtrMap<std::string, scoped_ptr<EntityTracker>> EntityMap;
 
   // Stores a single commit request in this object's internal state.
-  void StorePendingCommit(const CommitRequestData& request);
+  void StorePendingCommit(const syncer_v2::CommitRequestData& request);
 
   // Returns true if this type has successfully fetched all available updates
   // from the server at least once.  Our state may or may not be stale, but at
@@ -134,7 +136,7 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public UpdateHandler,
   ModelType type_;
 
   // State that applies to the entire model type.
-  DataTypeState data_type_state_;
+  syncer_v2::DataTypeState data_type_state_;
 
   // Pointer to the ModelTypeSyncProxy associated with this worker.
   // This is NULL when no proxy is connected..

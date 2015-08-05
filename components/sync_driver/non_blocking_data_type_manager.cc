@@ -37,7 +37,7 @@ void NonBlockingDataTypeManager::InitializeType(
 }
 
 void NonBlockingDataTypeManager::ConnectSyncBackend(
-    scoped_ptr<syncer::SyncContextProxy> proxy) {
+    scoped_ptr<syncer_v2::SyncContextProxy> proxy) {
   for (NonBlockingDataTypeControllerMap::const_iterator it =
            non_blocking_data_type_controllers_.begin();
        it != non_blocking_data_type_controllers_.end(); ++it) {

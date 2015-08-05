@@ -17,12 +17,12 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxy {
   virtual ~ModelTypeSyncProxy();
 
   virtual void OnCommitCompleted(
-      const DataTypeState& type_state,
-      const CommitResponseDataList& response_list) = 0;
+      const syncer_v2::DataTypeState& type_state,
+      const syncer_v2::CommitResponseDataList& response_list) = 0;
   virtual void OnUpdateReceived(
-      const DataTypeState& type_state,
-      const UpdateResponseDataList& response_list,
-      const UpdateResponseDataList& pending_updates) = 0;
+      const syncer_v2::DataTypeState& type_state,
+      const syncer_v2::UpdateResponseDataList& response_list,
+      const syncer_v2::UpdateResponseDataList& pending_updates) = 0;
 };
 
 }  // namespace syncer

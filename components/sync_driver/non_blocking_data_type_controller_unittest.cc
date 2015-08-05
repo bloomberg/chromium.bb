@@ -19,8 +19,6 @@
 
 namespace sync_driver {
 
-class ModelTypeSyncWorker;
-
 namespace {
 
 // A useless instance of ModelTypeSyncWorker.
@@ -29,7 +27,7 @@ class NullModelTypeSyncWorker : public syncer::ModelTypeSyncWorker {
   NullModelTypeSyncWorker();
   ~NullModelTypeSyncWorker() override;
 
-  void EnqueueForCommit(const syncer::CommitRequestDataList& list) override;
+  void EnqueueForCommit(const syncer_v2::CommitRequestDataList& list) override;
 };
 
 NullModelTypeSyncWorker::NullModelTypeSyncWorker() {
@@ -39,7 +37,7 @@ NullModelTypeSyncWorker::~NullModelTypeSyncWorker() {
 }
 
 void NullModelTypeSyncWorker::EnqueueForCommit(
-    const syncer::CommitRequestDataList& list) {
+    const syncer_v2::CommitRequestDataList& list) {
   NOTREACHED() << "Not implemented.";
 }
 
@@ -70,7 +68,7 @@ class MockSyncContext {
 };
 
 // A proxy to the MockSyncContext that implements SyncContextProxy.
-class MockSyncContextProxy : public syncer::SyncContextProxy {
+class MockSyncContextProxy : public syncer_v2::SyncContextProxy {
  public:
   MockSyncContextProxy(
       MockSyncContext* sync_context,
@@ -83,8 +81,8 @@ class MockSyncContextProxy : public syncer::SyncContextProxy {
 
   void ConnectTypeToSync(
       syncer::ModelType type,
-      const syncer::DataTypeState& data_type_state,
-      const syncer::UpdateResponseDataList& saved_pending_updates,
+      const syncer_v2::DataTypeState& data_type_state,
+      const syncer_v2::UpdateResponseDataList& saved_pending_updates,
       const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_proxy)
       override {
     // Normally we'd use ThreadTaskRunnerHandle::Get() as the TaskRunner
@@ -106,7 +104,7 @@ class MockSyncContextProxy : public syncer::SyncContextProxy {
                                            type));
   }
 
-  scoped_ptr<SyncContextProxy> Clone() const override {
+  scoped_ptr<syncer_v2::SyncContextProxy> Clone() const override {
     return scoped_ptr<SyncContextProxy>(new MockSyncContextProxy(
         mock_sync_context_, model_task_runner_, sync_task_runner_));
   }

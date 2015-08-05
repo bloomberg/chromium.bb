@@ -48,7 +48,7 @@ SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
   bool commit_conflict = false;
   bool unknown_error = false;
 
-  CommitResponseDataList response_list;
+  syncer_v2::CommitResponseDataList response_list;
 
   for (size_t i = 0; i < sequence_numbers_.size(); ++i) {
     const sync_pb::CommitResponse_EntryResponse& entry_response =
@@ -68,7 +68,7 @@ SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
         commit_conflict = true;
         break;
       case sync_pb::CommitResponse::SUCCESS: {
-        CommitResponseData response_data;
+        syncer_v2::CommitResponseData response_data;
         response_data.id = entry_response.id_string();
         response_data.client_tag_hash =
             entities_.Get(i).client_defined_unique_tag();

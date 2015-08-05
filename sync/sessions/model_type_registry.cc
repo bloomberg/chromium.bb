@@ -28,11 +28,13 @@ class ModelTypeSyncProxyWrapper : public ModelTypeSyncProxy {
       const scoped_refptr<base::SequencedTaskRunner>& processor_task_runner);
   ~ModelTypeSyncProxyWrapper() override;
 
-  void OnCommitCompleted(const DataTypeState& type_state,
-                         const CommitResponseDataList& response_list) override;
-  void OnUpdateReceived(const DataTypeState& type_state,
-                        const UpdateResponseDataList& response_list,
-                        const UpdateResponseDataList& pending_updates) override;
+  void OnCommitCompleted(
+      const syncer_v2::DataTypeState& type_state,
+      const syncer_v2::CommitResponseDataList& response_list) override;
+  void OnUpdateReceived(
+      const syncer_v2::DataTypeState& type_state,
+      const syncer_v2::UpdateResponseDataList& response_list,
+      const syncer_v2::UpdateResponseDataList& pending_updates) override;
 
  private:
   base::WeakPtr<ModelTypeSyncProxyImpl> processor_;
@@ -49,8 +51,8 @@ ModelTypeSyncProxyWrapper::~ModelTypeSyncProxyWrapper() {
 }
 
 void ModelTypeSyncProxyWrapper::OnCommitCompleted(
-    const DataTypeState& type_state,
-    const CommitResponseDataList& response_list) {
+    const syncer_v2::DataTypeState& type_state,
+    const syncer_v2::CommitResponseDataList& response_list) {
   processor_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ModelTypeSyncProxyImpl::OnCommitCompleted,
@@ -60,9 +62,9 @@ void ModelTypeSyncProxyWrapper::OnCommitCompleted(
 }
 
 void ModelTypeSyncProxyWrapper::OnUpdateReceived(
-    const DataTypeState& type_state,
-    const UpdateResponseDataList& response_list,
-    const UpdateResponseDataList& pending_updates) {
+    const syncer_v2::DataTypeState& type_state,
+    const syncer_v2::UpdateResponseDataList& response_list,
+    const syncer_v2::UpdateResponseDataList& pending_updates) {
   processor_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ModelTypeSyncProxyImpl::OnUpdateReceived,
@@ -79,7 +81,7 @@ class ModelTypeSyncWorkerWrapper : public ModelTypeSyncWorker {
       const scoped_refptr<base::SequencedTaskRunner>& sync_thread);
   ~ModelTypeSyncWorkerWrapper() override;
 
-  void EnqueueForCommit(const CommitRequestDataList& list) override;
+  void EnqueueForCommit(const syncer_v2::CommitRequestDataList& list) override;
 
  private:
   base::WeakPtr<ModelTypeSyncWorkerImpl> worker_;
@@ -96,7 +98,7 @@ ModelTypeSyncWorkerWrapper::~ModelTypeSyncWorkerWrapper() {
 }
 
 void ModelTypeSyncWorkerWrapper::EnqueueForCommit(
-    const CommitRequestDataList& list) {
+    const syncer_v2::CommitRequestDataList& list) {
   sync_thread_->PostTask(
       FROM_HERE,
       base::Bind(&ModelTypeSyncWorkerImpl::EnqueueForCommit, worker_, list));
@@ -187,8 +189,8 @@ void ModelTypeRegistry::SetEnabledDirectoryTypes(
 
 void ModelTypeRegistry::ConnectSyncTypeToWorker(
     ModelType type,
-    const DataTypeState& data_type_state,
-    const UpdateResponseDataList& saved_pending_updates,
+    const syncer_v2::DataTypeState& data_type_state,
+    const syncer_v2::UpdateResponseDataList& saved_pending_updates,
     const scoped_refptr<base::SequencedTaskRunner>& type_task_runner,
     const base::WeakPtr<ModelTypeSyncProxyImpl>& proxy_impl) {
   DVLOG(1) << "Enabling an off-thread sync type: " << ModelTypeToString(type);
@@ -297,7 +299,7 @@ void ModelTypeRegistry::RequestEmitDebugInfo() {
   }
 }
 
-base::WeakPtr<SyncContext> ModelTypeRegistry::AsWeakPtr() {
+base::WeakPtr<syncer_v2::SyncContext> ModelTypeRegistry::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 

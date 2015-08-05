@@ -51,7 +51,6 @@ class InternalComponentsFactory;
 class JsBackend;
 class JsEventHandler;
 class ProtocolEvent;
-class SyncContextProxy;
 class SyncEncryptionHandler;
 class SyncScheduler;
 class TypeDebugInfoObserver;
@@ -364,7 +363,7 @@ class SYNC_EXPORT SyncManager {
   virtual UserShare* GetUserShare() = 0;
 
   // Returns an instance of the main interface for non-blocking sync types.
-  virtual syncer::SyncContextProxy* GetSyncContextProxy() = 0;
+  virtual syncer_v2::SyncContextProxy* GetSyncContextProxy() = 0;
 
   // Returns the cache_guid of the currently open database.
   // Requires that the SyncManager be initialized.

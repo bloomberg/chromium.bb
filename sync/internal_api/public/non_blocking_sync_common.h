@@ -12,7 +12,7 @@
 #include "sync/base/sync_export.h"
 #include "sync/protocol/sync.pb.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 static const int64 kUncommittedVersion = -1;
 

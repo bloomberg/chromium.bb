@@ -20,8 +20,8 @@ namespace syncer {
 
 ModelTypeSyncWorkerImpl::ModelTypeSyncWorkerImpl(
     ModelType type,
-    const DataTypeState& initial_state,
-    const UpdateResponseDataList& saved_pending_updates,
+    const syncer_v2::DataTypeState& initial_state,
+    const syncer_v2::UpdateResponseDataList& saved_pending_updates,
     scoped_ptr<Cryptographer> cryptographer,
     NudgeHandler* nudge_handler,
     scoped_ptr<ModelTypeSyncProxy> type_sync_proxy)
@@ -36,10 +36,9 @@ ModelTypeSyncWorkerImpl::ModelTypeSyncWorkerImpl(
     nudge_handler_->NudgeForInitialDownload(type_);
   }
 
-  for (UpdateResponseDataList::const_iterator it =
+  for (syncer_v2::UpdateResponseDataList::const_iterator it =
            saved_pending_updates.begin();
-       it != saved_pending_updates.end();
-       ++it) {
+       it != saved_pending_updates.end(); ++it) {
     scoped_ptr<EntityTracker> entity_tracker = EntityTracker::FromServerUpdate(
         it->id, it->client_tag_hash, it->response_version);
     entity_tracker->ReceivePendingUpdate(*it);
@@ -102,8 +101,8 @@ SyncerError ModelTypeSyncWorkerImpl::ProcessGetUpdatesResponse(
   data_type_state_.type_context = mutated_context;
   data_type_state_.progress_marker = progress_marker;
 
-  UpdateResponseDataList response_datas;
-  UpdateResponseDataList pending_updates;
+  syncer_v2::UpdateResponseDataList response_datas;
+  syncer_v2::UpdateResponseDataList pending_updates;
 
   for (SyncEntityList::const_iterator update_it = applicable_updates.begin();
        update_it != applicable_updates.end();
@@ -138,7 +137,7 @@ SyncerError ModelTypeSyncWorkerImpl::ProcessGetUpdatesResponse(
       }
 
       // Prepare the message for the model thread.
-      UpdateResponseData response_data;
+      syncer_v2::UpdateResponseData response_data;
       response_data.id = update_entity->id_string();
       response_data.client_tag_hash = client_tag_hash;
       response_data.response_version = update_entity->version();
@@ -201,8 +200,9 @@ void ModelTypeSyncWorkerImpl::ApplyUpdates(sessions::StatusController* status) {
 
     data_type_state_.initial_sync_done = true;
 
-    type_sync_proxy_->OnUpdateReceived(
-        data_type_state_, UpdateResponseDataList(), UpdateResponseDataList());
+    type_sync_proxy_->OnUpdateReceived(data_type_state_,
+                                       syncer_v2::UpdateResponseDataList(),
+                                       syncer_v2::UpdateResponseDataList());
   }
 }
 
@@ -214,16 +214,15 @@ void ModelTypeSyncWorkerImpl::PassiveApplyUpdates(
 }
 
 void ModelTypeSyncWorkerImpl::EnqueueForCommit(
-    const CommitRequestDataList& list) {
+    const syncer_v2::CommitRequestDataList& list) {
   DCHECK(CalledOnValidThread());
 
   DCHECK(IsTypeInitialized())
       << "Asked to commit items before type was initialized.  "
       << "ModelType is: " << ModelTypeToString(type_);
 
-  for (CommitRequestDataList::const_iterator it = list.begin();
-       it != list.end();
-       ++it) {
+  for (syncer_v2::CommitRequestDataList::const_iterator it = list.begin();
+       it != list.end(); ++it) {
     StorePendingCommit(*it);
   }
 
@@ -268,7 +267,7 @@ scoped_ptr<CommitContribution> ModelTypeSyncWorkerImpl::GetContribution(
 }
 
 void ModelTypeSyncWorkerImpl::StorePendingCommit(
-    const CommitRequestData& request) {
+    const syncer_v2::CommitRequestData& request) {
   if (!request.deleted) {
     DCHECK_EQ(type_, GetModelTypeFromSpecifics(request.specifics));
   }
@@ -295,11 +294,10 @@ void ModelTypeSyncWorkerImpl::StorePendingCommit(
 }
 
 void ModelTypeSyncWorkerImpl::OnCommitResponse(
-    const CommitResponseDataList& response_list) {
-  for (CommitResponseDataList::const_iterator response_it =
+    const syncer_v2::CommitResponseDataList& response_list) {
+  for (syncer_v2::CommitResponseDataList::const_iterator response_it =
            response_list.begin();
-       response_it != response_list.end();
-       ++response_it) {
+       response_it != response_list.end(); ++response_it) {
     const std::string client_tag_hash = response_it->client_tag_hash;
     EntityMap::const_iterator map_it = entities_.find(client_tag_hash);
 
@@ -353,7 +351,7 @@ void ModelTypeSyncWorkerImpl::HelpInitializeCommitEntity(
 
   // Initial commits need our help to generate a client ID.
   if (!sync_entity->has_id_string()) {
-    DCHECK_EQ(kUncommittedVersion, sync_entity->version());
+    DCHECK_EQ(syncer_v2::kUncommittedVersion, sync_entity->version());
     const int64 id = data_type_state_.next_client_id++;
     sync_entity->set_id_string(
         base::StringPrintf("%s-%" PRId64, ModelTypeToString(type_), id));
@@ -383,7 +381,7 @@ void ModelTypeSyncWorkerImpl::OnCryptographerUpdated() {
   DCHECK(cryptographer_);
 
   bool new_encryption_key = false;
-  UpdateResponseDataList response_datas;
+  syncer_v2::UpdateResponseDataList response_datas;
 
   const std::string& new_key_name = cryptographer_->GetDefaultNigoriKeyName();
 
@@ -398,14 +396,15 @@ void ModelTypeSyncWorkerImpl::OnCryptographerUpdated() {
   for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
     if (it->second->HasPendingUpdate()) {
-      const UpdateResponseData& saved_pending = it->second->GetPendingUpdate();
+      const syncer_v2::UpdateResponseData& saved_pending =
+          it->second->GetPendingUpdate();
 
       // We assume all pending updates are encrypted items for which we
       // don't have the key.
       DCHECK(saved_pending.specifics.has_encrypted());
 
       if (cryptographer_->CanDecrypt(saved_pending.specifics.encrypted())) {
-        UpdateResponseData decrypted_response = saved_pending;
+        syncer_v2::UpdateResponseData decrypted_response = saved_pending;
         if (DecryptSpecifics(cryptographer_.get(),
                              saved_pending.specifics,
                              &decrypted_response.specifics)) {
@@ -424,8 +423,8 @@ void ModelTypeSyncWorkerImpl::OnCryptographerUpdated() {
              << base::StringPrintf(
                     "Delivering encryption key and %zd decrypted updates.",
                     response_datas.size());
-    type_sync_proxy_->OnUpdateReceived(
-        data_type_state_, response_datas, UpdateResponseDataList());
+    type_sync_proxy_->OnUpdateReceived(data_type_state_, response_datas,
+                                       syncer_v2::UpdateResponseDataList());
   }
 }
 

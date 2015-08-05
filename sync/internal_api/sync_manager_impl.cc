@@ -313,11 +313,12 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   // Bind the SyncContext WeakPtr to this thread.  This helps us crash earlier
   // if the pointer is misused in debug mode.
-  base::WeakPtr<SyncContext> weak_core = model_type_registry_->AsWeakPtr();
+  base::WeakPtr<syncer_v2::SyncContext> weak_core =
+      model_type_registry_->AsWeakPtr();
   weak_core.get();
 
-  sync_context_proxy_.reset(
-      new SyncContextProxyImpl(base::ThreadTaskRunnerHandle::Get(), weak_core));
+  sync_context_proxy_.reset(new syncer_v2::SyncContextProxyImpl(
+      base::ThreadTaskRunnerHandle::Get(), weak_core));
 
   // Build a SyncSessionContext and store the worker in it.
   DVLOG(1) << "Sync is bringing up SyncSessionContext.";
@@ -940,7 +941,7 @@ UserShare* SyncManagerImpl::GetUserShare() {
   return &share_;
 }
 
-syncer::SyncContextProxy* SyncManagerImpl::GetSyncContextProxy() {
+syncer_v2::SyncContextProxy* SyncManagerImpl::GetSyncContextProxy() {
   DCHECK(initialized_);
   return sync_context_proxy_.get();
 }

@@ -69,7 +69,7 @@ class NonBlockingDataTypeController {
   //
   // This process may be reversed with ClearSyncContextProxy().
   void InitializeSyncContext(
-      scoped_ptr<syncer::SyncContextProxy> sync_context_proxy);
+      scoped_ptr<syncer_v2::SyncContextProxy> sync_context_proxy);
 
   // Disconnect from the current SyncContextProxy.
   void ClearSyncContext();
@@ -129,7 +129,7 @@ class NonBlockingDataTypeController {
 
   // The SyncContextProxy that connects to the current sync backend.  May be
   // NULL.
-  scoped_ptr<syncer::SyncContextProxy> sync_context_proxy_;
+  scoped_ptr<syncer_v2::SyncContextProxy> sync_context_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(NonBlockingDataTypeController);
 };

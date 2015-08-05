@@ -99,7 +99,7 @@ class FakeSyncManager : public SyncManager {
   void SaveChanges() override;
   void ShutdownOnSyncThread(ShutdownReason reason) override;
   UserShare* GetUserShare() override;
-  syncer::SyncContextProxy* GetSyncContextProxy() override;
+  syncer_v2::SyncContextProxy* GetSyncContextProxy() override;
   const std::string cache_guid() override;
   bool ReceivedExperiment(Experiments* experiments) override;
   bool HasUnsyncedItems() override;
@@ -147,7 +147,7 @@ class FakeSyncManager : public SyncManager {
 
   TestUserShare test_user_share_;
 
-  NullSyncContextProxy null_sync_context_proxy_;
+  syncer_v2::NullSyncContextProxy null_sync_context_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncManager);
 };

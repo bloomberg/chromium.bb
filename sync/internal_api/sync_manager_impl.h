@@ -31,11 +31,14 @@
 
 class GURL;
 
+namespace syncer_v2 {
+class SyncContext;
+}
+
 namespace syncer {
 
 class ModelTypeRegistry;
 class SyncAPIServerConnectionManager;
-class SyncContext;
 class TypeDebugInfoObserver;
 class WriteNode;
 class WriteTransaction;
@@ -94,7 +97,7 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl
   void SaveChanges() override;
   void ShutdownOnSyncThread(ShutdownReason reason) override;
   UserShare* GetUserShare() override;
-  syncer::SyncContextProxy* GetSyncContextProxy() override;
+  syncer_v2::SyncContextProxy* GetSyncContextProxy() override;
   const std::string cache_guid() override;
   bool ReceivedExperiment(Experiments* experiments) override;
   bool HasUnsyncedItems() override;
@@ -287,8 +290,8 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl
   scoped_ptr<ModelTypeRegistry> model_type_registry_;
 
   // The main interface for non-blocking sync types and a thread-safe wrapper.
-  scoped_ptr<SyncContext> sync_context_;
-  scoped_ptr<SyncContextProxy> sync_context_proxy_;
+  scoped_ptr<syncer_v2::SyncContext> sync_context_;
+  scoped_ptr<syncer_v2::SyncContextProxy> sync_context_proxy_;
 
   // A container of various bits of information used by the SyncScheduler to
   // create SyncSessions.  Must outlive the SyncScheduler.

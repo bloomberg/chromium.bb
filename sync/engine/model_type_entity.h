@@ -10,8 +10,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "sync/base/sync_export.h"
-#include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/protocol/sync.pb.h"
+
+namespace syncer_v2 {
+struct CommitRequestData;
+}  // namespace syncer_v2
 
 namespace syncer {
 
@@ -96,7 +99,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeEntity {
 
   // Initializes a message representing this item's uncommitted state
   // to be forwarded to the sync server for committing.
-  void InitializeCommitRequestData(CommitRequestData* request) const;
+  void InitializeCommitRequestData(syncer_v2::CommitRequestData* request) const;
 
   // Notes that the current version of this item has been queued for commit.
   void SetCommitRequestInProgress();

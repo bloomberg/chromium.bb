@@ -25,8 +25,8 @@ class ModelTypeRegistryTest : public ::testing::Test {
 
   ModelTypeRegistry* registry();
 
-  static DataTypeState MakeInitialDataTypeState(ModelType type) {
-    DataTypeState state;
+  static syncer_v2::DataTypeState MakeInitialDataTypeState(ModelType type) {
+    syncer_v2::DataTypeState state;
     state.progress_marker.set_data_type_id(
         GetSpecificsFieldNumberFromModelType(type));
     state.next_client_id = 0;
@@ -152,19 +152,17 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
 
   EXPECT_TRUE(registry()->GetEnabledTypes().Empty());
 
-  registry()->ConnectSyncTypeToWorker(syncer::THEMES,
-                                      MakeInitialDataTypeState(THEMES),
-                                      UpdateResponseDataList(),
-                                      task_runner,
-                                      themes_sync_proxy.AsWeakPtrForUI());
+  registry()->ConnectSyncTypeToWorker(
+      syncer::THEMES, MakeInitialDataTypeState(THEMES),
+      syncer_v2::UpdateResponseDataList(), task_runner,
+      themes_sync_proxy.AsWeakPtrForUI());
   EXPECT_TRUE(registry()->GetEnabledTypes().Equals(
       ModelTypeSet(syncer::THEMES)));
 
-  registry()->ConnectSyncTypeToWorker(syncer::SESSIONS,
-                                      MakeInitialDataTypeState(SESSIONS),
-                                      UpdateResponseDataList(),
-                                      task_runner,
-                                      sessions_sync_proxy.AsWeakPtrForUI());
+  registry()->ConnectSyncTypeToWorker(
+      syncer::SESSIONS, MakeInitialDataTypeState(SESSIONS),
+      syncer_v2::UpdateResponseDataList(), task_runner,
+      sessions_sync_proxy.AsWeakPtrForUI());
   EXPECT_TRUE(registry()->GetEnabledTypes().Equals(
       ModelTypeSet(syncer::THEMES, syncer::SESSIONS)));
 
@@ -192,11 +190,10 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
   EXPECT_TRUE(registry()->GetEnabledTypes().Empty());
 
   // Add the themes non-blocking type.
-  registry()->ConnectSyncTypeToWorker(syncer::THEMES,
-                                      MakeInitialDataTypeState(THEMES),
-                                      UpdateResponseDataList(),
-                                      task_runner,
-                                      themes_sync_proxy.AsWeakPtrForUI());
+  registry()->ConnectSyncTypeToWorker(
+      syncer::THEMES, MakeInitialDataTypeState(THEMES),
+      syncer_v2::UpdateResponseDataList(), task_runner,
+      themes_sync_proxy.AsWeakPtrForUI());
   current_types.Put(syncer::THEMES);
   EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
 
@@ -206,11 +203,10 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
   EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
 
   // Add sessions non-blocking type.
-  registry()->ConnectSyncTypeToWorker(syncer::SESSIONS,
-                                      MakeInitialDataTypeState(SESSIONS),
-                                      UpdateResponseDataList(),
-                                      task_runner,
-                                      sessions_sync_proxy.AsWeakPtrForUI());
+  registry()->ConnectSyncTypeToWorker(
+      syncer::SESSIONS, MakeInitialDataTypeState(SESSIONS),
+      syncer_v2::UpdateResponseDataList(), task_runner,
+      sessions_sync_proxy.AsWeakPtrForUI());
   current_types.Put(syncer::SESSIONS);
   EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
 
@@ -237,16 +233,14 @@ TEST_F(ModelTypeRegistryTest, DeletionOrdering) {
 
   EXPECT_TRUE(registry()->GetEnabledTypes().Empty());
 
-  registry()->ConnectSyncTypeToWorker(syncer::THEMES,
-                                      MakeInitialDataTypeState(THEMES),
-                                      UpdateResponseDataList(),
-                                      task_runner,
-                                      themes_sync_proxy->AsWeakPtrForUI());
-  registry()->ConnectSyncTypeToWorker(syncer::SESSIONS,
-                                      MakeInitialDataTypeState(SESSIONS),
-                                      UpdateResponseDataList(),
-                                      task_runner,
-                                      sessions_sync_proxy->AsWeakPtrForUI());
+  registry()->ConnectSyncTypeToWorker(
+      syncer::THEMES, MakeInitialDataTypeState(THEMES),
+      syncer_v2::UpdateResponseDataList(), task_runner,
+      themes_sync_proxy->AsWeakPtrForUI());
+  registry()->ConnectSyncTypeToWorker(
+      syncer::SESSIONS, MakeInitialDataTypeState(SESSIONS),
+      syncer_v2::UpdateResponseDataList(), task_runner,
+      sessions_sync_proxy->AsWeakPtrForUI());
   EXPECT_TRUE(registry()->GetEnabledTypes().Equals(
       ModelTypeSet(syncer::THEMES, syncer::SESSIONS)));
 

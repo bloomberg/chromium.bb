@@ -66,7 +66,7 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
   bool HasUnsyncedItems() override;
   SyncEncryptionHandler* GetEncryptionHandler() override;
   void RefreshTypes(ModelTypeSet types) override;
-  SyncContextProxy* GetSyncContextProxy() override;
+  syncer_v2::SyncContextProxy* GetSyncContextProxy() override;
   ScopedVector<ProtocolEvent> GetBufferedProtocolEvents() override;
   scoped_ptr<base::ListValue> GetAllNodesForType(
       syncer::ModelType type) override;

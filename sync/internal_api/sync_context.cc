@@ -4,9 +4,7 @@
 
 #include "sync/internal_api/public/sync_context.h"
 
-#include "sync/engine/model_type_sync_worker_impl.h"
-
-namespace syncer {
+namespace syncer_v2 {
 
 SyncContext::SyncContext() {
 }

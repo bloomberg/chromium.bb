@@ -17,8 +17,11 @@ class SequencedTaskRunner;
 
 namespace syncer {
 class ModelTypeSyncProxyImpl;
-class SyncContextProxy;
 }  //namespace syncer
+
+namespace syncer_v2 {
+class SyncContextProxy;
+}  // namespace syncer_v2
 
 namespace sync_driver {
 
@@ -49,7 +52,7 @@ class NonBlockingDataTypeManager {
 
   // Connects the sync backend, as represented by a SyncContextProxy, to the
   // NonBlockingDataTypeController on the UI thread.
-  void ConnectSyncBackend(scoped_ptr<syncer::SyncContextProxy> proxy);
+  void ConnectSyncBackend(scoped_ptr<syncer_v2::SyncContextProxy> proxy);
 
   // Disconnects the sync backend from the UI thread.  Should be called
   // early on during shutdown, but the whole procedure is asynchronous so

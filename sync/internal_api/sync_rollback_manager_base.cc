@@ -213,7 +213,7 @@ void SyncRollbackManagerBase::NotifyInitializationFailure() {
           false, ModelTypeSet()));
 }
 
-syncer::SyncContextProxy* SyncRollbackManagerBase::GetSyncContextProxy() {
+syncer_v2::SyncContextProxy* SyncRollbackManagerBase::GetSyncContextProxy() {
   return NULL;
 }
 

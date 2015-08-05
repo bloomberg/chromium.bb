@@ -195,7 +195,7 @@ UserShare* FakeSyncManager::GetUserShare() {
   return test_user_share_.user_share();
 }
 
-syncer::SyncContextProxy* FakeSyncManager::GetSyncContextProxy() {
+syncer_v2::SyncContextProxy* FakeSyncManager::GetSyncContextProxy() {
   return &null_sync_context_proxy_;
 }
 

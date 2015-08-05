@@ -31,7 +31,7 @@ void NonBlockingDataTypeController::InitializeType(
 }
 
 void NonBlockingDataTypeController::InitializeSyncContext(
-    scoped_ptr<syncer::SyncContextProxy> sync_context_proxy) {
+    scoped_ptr<syncer_v2::SyncContextProxy> sync_context_proxy) {
   DCHECK(!IsSyncBackendConnected());
   sync_context_proxy_ = sync_context_proxy.Pass();
 

@@ -73,11 +73,12 @@ class ModelTypeSyncWorkerImplTest : public ::testing::Test {
 
   // Initialize with some saved pending updates from the model thread.
   void InitializeWithPendingUpdates(
-      const UpdateResponseDataList& initial_pending_updates);
+      const syncer_v2::UpdateResponseDataList& initial_pending_updates);
 
   // Initialize with a custom initial DataTypeState and pending updates.
-  void InitializeWithState(const DataTypeState& state,
-                           const UpdateResponseDataList& pending_updates);
+  void InitializeWithState(
+      const syncer_v2::DataTypeState& state,
+      const syncer_v2::UpdateResponseDataList& pending_updates);
 
   // Introduce a new key that the local cryptographer can't decrypt.
   void NewForeignEncryptionKey();
@@ -137,29 +138,32 @@ class ModelTypeSyncWorkerImplTest : public ::testing::Test {
   // Note that if the model thread is in non-blocking mode, this data will not
   // be updated until the response is actually processed by the model thread.
   size_t GetNumModelThreadUpdateResponses() const;
-  UpdateResponseDataList GetNthModelThreadUpdateResponse(size_t n) const;
-  UpdateResponseDataList GetNthModelThreadPendingUpdates(size_t n) const;
-  DataTypeState GetNthModelThreadUpdateState(size_t n) const;
+  syncer_v2::UpdateResponseDataList GetNthModelThreadUpdateResponse(
+      size_t n) const;
+  syncer_v2::UpdateResponseDataList GetNthModelThreadPendingUpdates(
+      size_t n) const;
+  syncer_v2::DataTypeState GetNthModelThreadUpdateState(size_t n) const;
 
   // Reads the latest update response datas on the model thread.
   // Note that if the model thread is in non-blocking mode, this data will not
   // be updated until the response is actually processed by the model thread.
   bool HasUpdateResponseOnModelThread(const std::string& tag) const;
-  UpdateResponseData GetUpdateResponseOnModelThread(
+  syncer_v2::UpdateResponseData GetUpdateResponseOnModelThread(
       const std::string& tag) const;
 
   // Read the latest commit messages received on the model thread.
   // Note that if the model thread is in non-blocking mode, this data will not
   // be updated until the response is actually processed by the model thread.
   size_t GetNumModelThreadCommitResponses() const;
-  CommitResponseDataList GetNthModelThreadCommitResponse(size_t n) const;
-  DataTypeState GetNthModelThreadCommitState(size_t n) const;
+  syncer_v2::CommitResponseDataList GetNthModelThreadCommitResponse(
+      size_t n) const;
+  syncer_v2::DataTypeState GetNthModelThreadCommitState(size_t n) const;
 
   // Reads the latest commit response datas on the model thread.
   // Note that if the model thread is in non-blocking mode, this data will not
   // be updated until the response is actually processed by the model thread.
   bool HasCommitResponseOnModelThread(const std::string& tag) const;
-  CommitResponseData GetCommitResponseOnModelThread(
+  syncer_v2::CommitResponseData GetCommitResponseOnModelThread(
       const std::string& tag) const;
 
   // Returns the number of commit nudges sent to the mock nudge handler.
@@ -236,21 +240,21 @@ ModelTypeSyncWorkerImplTest::~ModelTypeSyncWorkerImplTest() {
 }
 
 void ModelTypeSyncWorkerImplTest::FirstInitialize() {
-  DataTypeState initial_state;
+  syncer_v2::DataTypeState initial_state;
   initial_state.progress_marker.set_data_type_id(
       GetSpecificsFieldNumberFromModelType(kModelType));
   initial_state.next_client_id = 0;
 
-  InitializeWithState(initial_state, UpdateResponseDataList());
+  InitializeWithState(initial_state, syncer_v2::UpdateResponseDataList());
 }
 
 void ModelTypeSyncWorkerImplTest::NormalInitialize() {
-  InitializeWithPendingUpdates(UpdateResponseDataList());
+  InitializeWithPendingUpdates(syncer_v2::UpdateResponseDataList());
 }
 
 void ModelTypeSyncWorkerImplTest::InitializeWithPendingUpdates(
-    const UpdateResponseDataList& initial_pending_updates) {
-  DataTypeState initial_state;
+    const syncer_v2::UpdateResponseDataList& initial_pending_updates) {
+  syncer_v2::DataTypeState initial_state;
   initial_state.progress_marker.set_data_type_id(
       GetSpecificsFieldNumberFromModelType(kModelType));
   initial_state.progress_marker.set_token("some_saved_progress_token");
@@ -265,8 +269,8 @@ void ModelTypeSyncWorkerImplTest::InitializeWithPendingUpdates(
 }
 
 void ModelTypeSyncWorkerImplTest::InitializeWithState(
-    const DataTypeState& state,
-    const UpdateResponseDataList& initial_pending_updates) {
+    const syncer_v2::DataTypeState& state,
+    const syncer_v2::UpdateResponseDataList& initial_pending_updates) {
   DCHECK(!worker_);
 
   // We don't get to own this object.  The |worker_| keeps a scoped_ptr to it.
@@ -355,17 +359,18 @@ void ModelTypeSyncWorkerImplTest::SetUpdateEncryptionFilter(int n) {
 void ModelTypeSyncWorkerImplTest::CommitRequest(const std::string& name,
                                                 const std::string& value) {
   const std::string tag_hash = GenerateTagHash(name);
-  CommitRequestData data = mock_type_sync_proxy_->CommitRequest(
+  syncer_v2::CommitRequestData data = mock_type_sync_proxy_->CommitRequest(
       tag_hash, GenerateSpecifics(name, value));
-  CommitRequestDataList list;
+  syncer_v2::CommitRequestDataList list;
   list.push_back(data);
   worker_->EnqueueForCommit(list);
 }
 
 void ModelTypeSyncWorkerImplTest::DeleteRequest(const std::string& tag) {
   const std::string tag_hash = GenerateTagHash(tag);
-  CommitRequestData data = mock_type_sync_proxy_->DeleteRequest(tag_hash);
-  CommitRequestDataList list;
+  syncer_v2::CommitRequestData data =
+      mock_type_sync_proxy_->DeleteRequest(tag_hash);
+  syncer_v2::CommitRequestDataList list;
   list.push_back(data);
   worker_->EnqueueForCommit(list);
 }
@@ -509,20 +514,20 @@ size_t ModelTypeSyncWorkerImplTest::GetNumModelThreadUpdateResponses() const {
   return mock_type_sync_proxy_->GetNumUpdateResponses();
 }
 
-UpdateResponseDataList
+syncer_v2::UpdateResponseDataList
 ModelTypeSyncWorkerImplTest::GetNthModelThreadUpdateResponse(size_t n) const {
   DCHECK_LT(n, GetNumModelThreadUpdateResponses());
   return mock_type_sync_proxy_->GetNthUpdateResponse(n);
 }
 
-UpdateResponseDataList
+syncer_v2::UpdateResponseDataList
 ModelTypeSyncWorkerImplTest::GetNthModelThreadPendingUpdates(size_t n) const {
   DCHECK_LT(n, GetNumModelThreadUpdateResponses());
   return mock_type_sync_proxy_->GetNthPendingUpdates(n);
 }
 
-DataTypeState ModelTypeSyncWorkerImplTest::GetNthModelThreadUpdateState(
-    size_t n) const {
+syncer_v2::DataTypeState
+ModelTypeSyncWorkerImplTest::GetNthModelThreadUpdateState(size_t n) const {
   DCHECK_LT(n, GetNumModelThreadUpdateResponses());
   return mock_type_sync_proxy_->GetNthTypeStateReceivedInUpdateResponse(n);
 }
@@ -533,7 +538,8 @@ bool ModelTypeSyncWorkerImplTest::HasUpdateResponseOnModelThread(
   return mock_type_sync_proxy_->HasUpdateResponse(tag_hash);
 }
 
-UpdateResponseData ModelTypeSyncWorkerImplTest::GetUpdateResponseOnModelThread(
+syncer_v2::UpdateResponseData
+ModelTypeSyncWorkerImplTest::GetUpdateResponseOnModelThread(
     const std::string& tag) const {
   const std::string tag_hash = GenerateTagHash(tag);
   return mock_type_sync_proxy_->GetUpdateResponse(tag_hash);
@@ -543,14 +549,14 @@ size_t ModelTypeSyncWorkerImplTest::GetNumModelThreadCommitResponses() const {
   return mock_type_sync_proxy_->GetNumCommitResponses();
 }
 
-CommitResponseDataList
+syncer_v2::CommitResponseDataList
 ModelTypeSyncWorkerImplTest::GetNthModelThreadCommitResponse(size_t n) const {
   DCHECK_LT(n, GetNumModelThreadCommitResponses());
   return mock_type_sync_proxy_->GetNthCommitResponse(n);
 }
 
-DataTypeState ModelTypeSyncWorkerImplTest::GetNthModelThreadCommitState(
-    size_t n) const {
+syncer_v2::DataTypeState
+ModelTypeSyncWorkerImplTest::GetNthModelThreadCommitState(size_t n) const {
   DCHECK_LT(n, GetNumModelThreadCommitResponses());
   return mock_type_sync_proxy_->GetNthTypeStateReceivedInCommitResponse(n);
 }
@@ -561,7 +567,8 @@ bool ModelTypeSyncWorkerImplTest::HasCommitResponseOnModelThread(
   return mock_type_sync_proxy_->HasCommitResponse(tag_hash);
 }
 
-CommitResponseData ModelTypeSyncWorkerImplTest::GetCommitResponseOnModelThread(
+syncer_v2::CommitResponseData
+ModelTypeSyncWorkerImplTest::GetCommitResponseOnModelThread(
     const std::string& tag) const {
   DCHECK(HasCommitResponseOnModelThread(tag));
   const std::string tag_hash = GenerateTagHash(tag);
@@ -673,7 +680,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, SimpleCommit) {
   const sync_pb::SyncEntity& entity = GetLatestCommitEntityOnServer("tag1");
   EXPECT_FALSE(entity.id_string().empty());
   EXPECT_EQ(kTypeParentId, entity.parent_id_string());
-  EXPECT_EQ(kUncommittedVersion, entity.version());
+  EXPECT_EQ(syncer_v2::kUncommittedVersion, entity.version());
   EXPECT_NE(0, entity.mtime());
   EXPECT_NE(0, entity.ctime());
   EXPECT_FALSE(entity.name().empty());
@@ -686,7 +693,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, SimpleCommit) {
   ASSERT_EQ(1U, GetNumModelThreadCommitResponses());
   EXPECT_EQ(1U, GetNthModelThreadCommitResponse(0).size());
   ASSERT_TRUE(HasCommitResponseOnModelThread("tag1"));
-  const CommitResponseData& commit_response =
+  const syncer_v2::CommitResponseData& commit_response =
       GetCommitResponseOnModelThread("tag1");
 
   // The ID changes in a commit response to initial commit.
@@ -708,7 +715,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, SimpleDelete) {
   DoSuccessfulCommit();
 
   ASSERT_TRUE(HasCommitResponseOnModelThread("tag1"));
-  const CommitResponseData& initial_commit_response =
+  const syncer_v2::CommitResponseData& initial_commit_response =
       GetCommitResponseOnModelThread("tag1");
   int64 base_version = initial_commit_response.response_version;
 
@@ -735,7 +742,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, SimpleDelete) {
   ASSERT_EQ(2U, GetNumModelThreadCommitResponses());
   EXPECT_EQ(1U, GetNthModelThreadCommitResponse(1).size());
   ASSERT_TRUE(HasCommitResponseOnModelThread("tag1"));
-  const CommitResponseData& commit_response =
+  const syncer_v2::CommitResponseData& commit_response =
       GetCommitResponseOnModelThread("tag1");
 
   EXPECT_EQ(entity.id_string(), commit_response.id);
@@ -779,7 +786,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, SendInitialSyncDone) {
   EXPECT_EQ(0U, GetNthModelThreadUpdateResponse(0).size());
   EXPECT_EQ(0U, GetNthModelThreadUpdateResponse(1).size());
 
-  const DataTypeState& state = GetNthModelThreadUpdateState(1);
+  const syncer_v2::DataTypeState& state = GetNthModelThreadUpdateState(1);
   EXPECT_FALSE(state.progress_marker.token().empty());
   EXPECT_FALSE(state.type_root_id.empty());
   EXPECT_TRUE(state.initial_sync_done);
@@ -834,11 +841,12 @@ TEST_F(ModelTypeSyncWorkerImplTest, ReceiveUpdates) {
   TriggerUpdateFromServer(10, "tag1", "value1");
 
   ASSERT_EQ(1U, GetNumModelThreadUpdateResponses());
-  UpdateResponseDataList updates_list = GetNthModelThreadUpdateResponse(0);
+  syncer_v2::UpdateResponseDataList updates_list =
+      GetNthModelThreadUpdateResponse(0);
   ASSERT_EQ(1U, updates_list.size());
 
   ASSERT_TRUE(HasUpdateResponseOnModelThread("tag1"));
-  UpdateResponseData update = GetUpdateResponseOnModelThread("tag1");
+  syncer_v2::UpdateResponseData update = GetUpdateResponseOnModelThread("tag1");
 
   EXPECT_FALSE(update.id.empty());
   EXPECT_EQ(tag_hash, update.client_tag_hash);
@@ -930,7 +938,8 @@ TEST_F(ModelTypeSyncWorkerImplTest, ReceiveDecryptableEntities) {
 
   // Test some basic properties regarding the update.
   ASSERT_TRUE(HasUpdateResponseOnModelThread("tag1"));
-  UpdateResponseData update1 = GetUpdateResponseOnModelThread("tag1");
+  syncer_v2::UpdateResponseData update1 =
+      GetUpdateResponseOnModelThread("tag1");
   EXPECT_EQ("tag1", update1.specifics.preference().name());
   EXPECT_EQ("value1", update1.specifics.preference().value());
   EXPECT_TRUE(update1.encryption_key_name.empty());
@@ -943,7 +952,8 @@ TEST_F(ModelTypeSyncWorkerImplTest, ReceiveDecryptableEntities) {
 
   // Test its basic features and the value of encryption_key_name.
   ASSERT_TRUE(HasUpdateResponseOnModelThread("tag2"));
-  UpdateResponseData update2 = GetUpdateResponseOnModelThread("tag2");
+  syncer_v2::UpdateResponseData update2 =
+      GetUpdateResponseOnModelThread("tag2");
   EXPECT_EQ("tag2", update2.specifics.preference().name());
   EXPECT_EQ("value2", update2.specifics.preference().value());
   EXPECT_FALSE(update2.encryption_key_name.empty());
@@ -982,15 +992,17 @@ TEST_F(ModelTypeSyncWorkerImplTest, ReceiveUndecryptableEntries) {
   // updates will be undecryptable.  They'll be transfered to the model thread
   // for safe-keeping as pending updates.
   ASSERT_EQ(1U, GetNumModelThreadUpdateResponses());
-  UpdateResponseDataList updates_list = GetNthModelThreadUpdateResponse(0);
+  syncer_v2::UpdateResponseDataList updates_list =
+      GetNthModelThreadUpdateResponse(0);
   EXPECT_EQ(0U, updates_list.size());
-  UpdateResponseDataList pending_updates = GetNthModelThreadPendingUpdates(0);
+  syncer_v2::UpdateResponseDataList pending_updates =
+      GetNthModelThreadPendingUpdates(0);
   EXPECT_EQ(1U, pending_updates.size());
 
   // The update will be delivered as soon as decryption becomes possible.
   UpdateLocalCryptographer();
   ASSERT_TRUE(HasUpdateResponseOnModelThread("tag1"));
-  UpdateResponseData update = GetUpdateResponseOnModelThread("tag1");
+  syncer_v2::UpdateResponseData update = GetUpdateResponseOnModelThread("tag1");
   EXPECT_EQ("tag1", update.specifics.preference().name());
   EXPECT_EQ("value1", update.specifics.preference().value());
   EXPECT_FALSE(update.encryption_key_name.empty());
@@ -1013,16 +1025,18 @@ TEST_F(ModelTypeSyncWorkerImplTest, EncryptedUpdateOverridesPendingCommit) {
 
   // The encrypted update will be delivered to the model thread.
   ASSERT_EQ(1U, GetNumModelThreadUpdateResponses());
-  UpdateResponseDataList updates_list = GetNthModelThreadUpdateResponse(0);
+  syncer_v2::UpdateResponseDataList updates_list =
+      GetNthModelThreadUpdateResponse(0);
   EXPECT_EQ(0U, updates_list.size());
-  UpdateResponseDataList pending_updates = GetNthModelThreadPendingUpdates(0);
+  syncer_v2::UpdateResponseDataList pending_updates =
+      GetNthModelThreadPendingUpdates(0);
   EXPECT_EQ(1U, pending_updates.size());
 }
 
 // Test decryption of pending updates saved across a restart.
 TEST_F(ModelTypeSyncWorkerImplTest, RestorePendingEntries) {
   // Create a fake pending update.
-  UpdateResponseData update;
+  syncer_v2::UpdateResponseData update;
 
   update.client_tag_hash = GenerateTagHash("tag1");
   update.id = "SomeID";
@@ -1036,7 +1050,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, RestorePendingEntries) {
   EncryptUpdate(GetNthKeyParams(1), &(update.specifics));
 
   // Inject the update during ModelTypeSyncWorker initialization.
-  UpdateResponseDataList saved_pending_updates;
+  syncer_v2::UpdateResponseDataList saved_pending_updates;
   saved_pending_updates.push_back(update);
   InitializeWithPendingUpdates(saved_pending_updates);
 
@@ -1061,7 +1075,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, RestoreApplicableEntries) {
   UpdateLocalCryptographer();
 
   // Create a fake pending update.
-  UpdateResponseData update;
+  syncer_v2::UpdateResponseData update;
   update.client_tag_hash = GenerateTagHash("tag1");
   update.id = "SomeID";
   update.response_version = 100;
@@ -1074,7 +1088,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, RestoreApplicableEntries) {
   EncryptUpdate(GetNthKeyParams(1), &(update.specifics));
 
   // Inject the update during ModelTypeSyncWorker initialization.
-  UpdateResponseDataList saved_pending_updates;
+  syncer_v2::UpdateResponseDataList saved_pending_updates;
   saved_pending_updates.push_back(update);
   InitializeWithPendingUpdates(saved_pending_updates);
 

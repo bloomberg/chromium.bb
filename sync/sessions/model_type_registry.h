@@ -20,6 +20,10 @@
 #include "sync/internal_api/public/sync_context.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 
+namespace syncer_v2 {
+struct DataTypeState;
+}
+
 namespace syncer {
 
 namespace syncable {
@@ -41,7 +45,7 @@ typedef std::map<ModelType, DirectoryTypeDebugInfoEmitter*>
 
 // Keeps track of the sets of active update handlers and commit contributors.
 class SYNC_EXPORT_PRIVATE ModelTypeRegistry
-    : public SyncContext,
+    : public syncer_v2::SyncContext,
       public SyncEncryptionHandler::Observer {
  public:
   // Constructs a ModelTypeRegistry that supports directory types.
@@ -59,8 +63,8 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry
   // Expects that the proxy's ModelType is not currently enabled.
   void ConnectSyncTypeToWorker(
       syncer::ModelType type,
-      const DataTypeState& data_type_state,
-      const syncer::UpdateResponseDataList& saved_pending_updates,
+      const syncer_v2::DataTypeState& data_type_state,
+      const syncer_v2::UpdateResponseDataList& saved_pending_updates,
       const scoped_refptr<base::SequencedTaskRunner>& type_task_runner,
       const base::WeakPtr<ModelTypeSyncProxyImpl>& proxy) override;
 

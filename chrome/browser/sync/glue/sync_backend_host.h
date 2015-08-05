@@ -157,7 +157,7 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   // the non-blocking sync types to communicate with the server.
   //
   // Should be called only when the backend is initialized.
-  virtual scoped_ptr<syncer::SyncContextProxy> GetSyncContextProxy() = 0;
+  virtual scoped_ptr<syncer_v2::SyncContextProxy> GetSyncContextProxy() = 0;
 
   // Called from any thread to obtain current status information in detailed or
   // summarized form.

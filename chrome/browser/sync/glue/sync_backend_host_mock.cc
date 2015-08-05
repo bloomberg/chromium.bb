@@ -75,9 +75,9 @@ syncer::UserShare* SyncBackendHostMock::GetUserShare() const {
   return NULL;
 }
 
-scoped_ptr<syncer::SyncContextProxy>
+scoped_ptr<syncer_v2::SyncContextProxy>
 SyncBackendHostMock::GetSyncContextProxy() {
-  return scoped_ptr<syncer::SyncContextProxy>();
+  return scoped_ptr<syncer_v2::SyncContextProxy>();
 }
 
 SyncBackendHost::Status SyncBackendHostMock::GetDetailedStatus() {

@@ -458,11 +458,11 @@ syncer::UserShare* SyncBackendHostImpl::GetUserShare() const {
   return core_->sync_manager()->GetUserShare();
 }
 
-scoped_ptr<syncer::SyncContextProxy>
+scoped_ptr<syncer_v2::SyncContextProxy>
 SyncBackendHostImpl::GetSyncContextProxy() {
-  return sync_context_proxy_.get() ? scoped_ptr<syncer::SyncContextProxy>(
+  return sync_context_proxy_.get() ? scoped_ptr<syncer_v2::SyncContextProxy>(
                                          sync_context_proxy_->Clone())
-                                   : scoped_ptr<syncer::SyncContextProxy>();
+                                   : scoped_ptr<syncer_v2::SyncContextProxy>();
 }
 
 SyncBackendHostImpl::Status SyncBackendHostImpl::GetDetailedStatus() {
@@ -625,7 +625,7 @@ void SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop(
     const syncer::WeakHandle<syncer::JsBackend> js_backend,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>
         debug_info_listener,
-    syncer::SyncContextProxy* sync_context_proxy,
+    syncer_v2::SyncContextProxy* sync_context_proxy,
     const std::string& cache_guid) {
   DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
 

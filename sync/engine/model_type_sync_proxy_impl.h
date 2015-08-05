@@ -14,9 +14,12 @@
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/protocol/sync.pb.h"
 
+namespace syncer_v2 {
+class SyncContextProxy;
+}  // namespace syncer_v2
+
 namespace syncer {
 
-class SyncContextProxy;
 class ModelTypeEntity;
 class ModelTypeSyncWorker;
 
@@ -46,7 +49,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
   ModelType GetModelType() const;
 
   // Starts the handshake with the sync thread.
-  void Enable(scoped_ptr<SyncContextProxy> context_proxy);
+  void Enable(scoped_ptr<syncer_v2::SyncContextProxy> context_proxy);
 
   // Severs all ties to the sync thread and may delete local sync state.
   // Another call to Enable() can be used to re-establish this connection.
@@ -68,14 +71,16 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
 
   // Informs this object that some of its commit requests have been
   // successfully serviced.
-  void OnCommitCompleted(const DataTypeState& type_state,
-                         const CommitResponseDataList& response_list);
+  void OnCommitCompleted(
+      const syncer_v2::DataTypeState& type_state,
+      const syncer_v2::CommitResponseDataList& response_list);
 
   // Informs this object that there are some incoming updates is should
   // handle.
-  void OnUpdateReceived(const DataTypeState& type_state,
-                        const UpdateResponseDataList& response_list,
-                        const UpdateResponseDataList& pending_updates);
+  void OnUpdateReceived(
+      const syncer_v2::DataTypeState& type_state,
+      const syncer_v2::UpdateResponseDataList& response_list,
+      const syncer_v2::UpdateResponseDataList& pending_updates);
 
   // Returns the list of pending updates.
   //
@@ -83,7 +88,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
   // The current test harness setup doesn't allow us to test the data that the
   // proxy sends to the worker during initialization, so we use this to inspect
   // its state instead.
-  UpdateResponseDataList GetPendingUpdates();
+  syncer_v2::UpdateResponseDataList GetPendingUpdates();
 
   // Returns the long-lived WeakPtr that is intended to be registered with the
   // ProfileSyncService.
@@ -92,7 +97,8 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
  private:
   typedef base::ScopedPtrMap<std::string, scoped_ptr<ModelTypeEntity>>
       EntityMap;
-  typedef base::ScopedPtrMap<std::string, scoped_ptr<UpdateResponseData>>
+  typedef base::ScopedPtrMap<std::string,
+                             scoped_ptr<syncer_v2::UpdateResponseData>>
       UpdateMap;
 
   // Sends all commit requests that are due to be sent to the sync thread.
@@ -108,7 +114,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
   void ClearSyncState();
 
   ModelType type_;
-  DataTypeState data_type_state_;
+  syncer_v2::DataTypeState data_type_state_;
 
   // Whether or not sync is preferred for this type.  This is a cached copy of
   // the canonical copy information on the UI thread.
@@ -123,7 +129,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
   //
   // Beware of NULL pointers: This object is uninitialized when we are not
   // connected to sync.
-  scoped_ptr<SyncContextProxy> sync_context_proxy_;
+  scoped_ptr<syncer_v2::SyncContextProxy> sync_context_proxy_;
 
   // Reference to the ModelTypeSyncWorker.
   //

@@ -10,9 +10,10 @@
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 
 namespace syncer {
-
 class ModelTypeSyncProxyImpl;
-struct DataTypeState;
+}
+
+namespace syncer_v2 {
 
 // Interface for the datatype integration logic from non-sync threads.
 //
@@ -29,7 +30,7 @@ class SYNC_EXPORT_PRIVATE SyncContextProxy {
       syncer::ModelType type,
       const DataTypeState& data_type_state,
       const UpdateResponseDataList& saved_pending_updates,
-      const base::WeakPtr<ModelTypeSyncProxyImpl>& type_sync_proxy) = 0;
+      const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_sync_proxy) = 0;
 
   // Tells the syncer that we're no longer interested in syncing this type.
   //

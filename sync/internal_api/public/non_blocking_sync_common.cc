@@ -4,7 +4,7 @@
 
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 DataTypeState::DataTypeState() : next_client_id(0), initial_sync_done(false) {
 }
