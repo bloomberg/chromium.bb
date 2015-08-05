@@ -618,9 +618,11 @@ TEST_F(ResourceBundleImageTest, DataPackSearchOrder) {
   // Create two .pak files, each containing a single image with the
   // same asset ID but different sizes (note that the images must be
   // different sizes in this test in order to correctly determine
-  // from which data pack the asset was pulled).
+  // from which data pack the asset was pulled). Note also that the value
+  // of |material_size| was chosen to be divisible by 3, since iOS may
+  // use this scale factor.
   const int default_size = 10;
-  const int material_size = 16;
+  const int material_size = 48;
   ASSERT_NE(default_size, material_size);
   base::FilePath default_path = dir_path().AppendASCII("default.pak");
   base::FilePath material_path = dir_path().AppendASCII("material.pak");
@@ -633,14 +635,15 @@ TEST_F(ResourceBundleImageTest, DataPackSearchOrder) {
 
   ScaleFactor scale_factor = SCALE_FACTOR_100P;
   int expected_size = material_size;
+  ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
+
 #if defined(OS_IOS)
   // iOS retina devices do not use 100P scaling. See crbug.com/298406.
-  scale_factor = SCALE_FACTOR_200P;
-  expected_size = material_size / 2;
+  scale_factor = resource_bundle->GetMaxScaleFactor();
+  expected_size = material_size / GetScaleForScaleFactor(scale_factor);
 #endif
 
   // Load the 'material' data pack into ResourceBundle first.
-  ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
   resource_bundle->AddMaterialDesignDataPackFromPath(material_path,
                                                      scale_factor);
   resource_bundle->AddDataPackFromPath(default_path, scale_factor);
