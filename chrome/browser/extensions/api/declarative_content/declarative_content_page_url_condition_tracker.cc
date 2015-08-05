@@ -26,13 +26,6 @@ static url_matcher::URLMatcherConditionSet::ID g_next_id = 0;
 // DeclarativeContentPageUrlPredicate
 //
 
-DeclarativeContentPageUrlPredicate::DeclarativeContentPageUrlPredicate(
-    scoped_refptr<url_matcher::URLMatcherConditionSet>
-        url_matcher_condition_set)
-    : url_matcher_condition_set_(url_matcher_condition_set) {
-  DCHECK(url_matcher_condition_set);
-}
-
 DeclarativeContentPageUrlPredicate::~DeclarativeContentPageUrlPredicate() {
 }
 
@@ -42,9 +35,11 @@ bool DeclarativeContentPageUrlPredicate::Evaluate(
   return ContainsKey(page_url_matches, url_matcher_condition_set_->id());
 }
 
-scoped_ptr<DeclarativeContentPageUrlPredicate> CreatePageUrlPredicate(
-    const base::Value& value,
+// static
+scoped_ptr<DeclarativeContentPageUrlPredicate>
+DeclarativeContentPageUrlPredicate::Create(
     url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
+    const base::Value& value,
     std::string* error) {
   scoped_refptr<url_matcher::URLMatcherConditionSet> url_matcher_condition_set;
   const base::DictionaryValue* dict = nullptr;
@@ -61,6 +56,13 @@ scoped_ptr<DeclarativeContentPageUrlPredicate> CreatePageUrlPredicate(
     return make_scoped_ptr(
         new DeclarativeContentPageUrlPredicate(url_matcher_condition_set));
   }
+}
+
+DeclarativeContentPageUrlPredicate::DeclarativeContentPageUrlPredicate(
+    scoped_refptr<url_matcher::URLMatcherConditionSet>
+        url_matcher_condition_set)
+    : url_matcher_condition_set_(url_matcher_condition_set) {
+  DCHECK(url_matcher_condition_set);
 }
 
 //
@@ -111,6 +113,17 @@ DeclarativeContentPageUrlConditionTracker(
 
 DeclarativeContentPageUrlConditionTracker::
 ~DeclarativeContentPageUrlConditionTracker() {
+}
+
+scoped_ptr<DeclarativeContentPageUrlPredicate>
+DeclarativeContentPageUrlConditionTracker::CreatePredicate(
+    const Extension* extension,
+    const base::Value& value,
+    std::string* error) {
+  return DeclarativeContentPageUrlPredicate::Create(
+      url_matcher_.condition_factory(),
+      value,
+      error);
 }
 
 void DeclarativeContentPageUrlConditionTracker::AddConditionSets(

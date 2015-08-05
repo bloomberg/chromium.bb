@@ -105,9 +105,10 @@ TEST(DeclarativeContentIsBookmarkedPredicateTest,
       CreateExtensionWithBookmarksPermission(false);
   std::string error;
   scoped_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
-      CreateIsBookmarkedPredicate(*base::test::ParseJson("true"),
-                                  extension.get(),
-                                  &error);
+      DeclarativeContentIsBookmarkedPredicate::Create(
+          extension.get(),
+          *base::test::ParseJson("true"),
+          &error);
   EXPECT_THAT(error, HasSubstr("requires 'bookmarks' permission"));
   EXPECT_FALSE(predicate);
 }
@@ -119,9 +120,10 @@ TEST(DeclarativeContentIsBookmarkedPredicateTest,
       CreateExtensionWithBookmarksPermission(true);
   std::string error;
   scoped_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
-      CreateIsBookmarkedPredicate(*base::test::ParseJson("[]"),
-                                  extension.get(),
-                                  &error);
+      DeclarativeContentIsBookmarkedPredicate::Create(
+          extension.get(),
+          *base::test::ParseJson("[]"),
+          &error);
   EXPECT_THAT(error, HasSubstr("invalid type"));
   EXPECT_FALSE(predicate);
 }
@@ -132,9 +134,10 @@ TEST(DeclarativeContentIsBookmarkedPredicateTest, IsBookmarkedPredicateTrue) {
       CreateExtensionWithBookmarksPermission(true);
   std::string error;
   scoped_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
-      CreateIsBookmarkedPredicate(*base::test::ParseJson("true"),
-                                  extension.get(),
-                                  &error);
+      DeclarativeContentIsBookmarkedPredicate::Create(
+          extension.get(),
+          *base::test::ParseJson("true"),
+          &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(predicate);
 
@@ -148,9 +151,10 @@ TEST(DeclarativeContentIsBookmarkedPredicateTest, IsBookmarkedPredicateFalse) {
       CreateExtensionWithBookmarksPermission(true);
   std::string error;
   scoped_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
-      CreateIsBookmarkedPredicate(*base::test::ParseJson("false"),
-                                  extension.get(),
-                                  &error);
+      DeclarativeContentIsBookmarkedPredicate::Create(
+          extension.get(),
+          *base::test::ParseJson("false"),
+          &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(predicate);
 

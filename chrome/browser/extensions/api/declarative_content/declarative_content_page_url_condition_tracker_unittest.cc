@@ -69,8 +69,9 @@ TEST(DeclarativeContentPageUrlPredicateTest, WrongPageUrlDatatype) {
   url_matcher::URLMatcher matcher;
   std::string error;
   scoped_ptr<DeclarativeContentPageUrlPredicate> predicate =
-      CreatePageUrlPredicate(*base::test::ParseJson("[]"),
-                             matcher.condition_factory(), &error);
+      DeclarativeContentPageUrlPredicate::Create(matcher.condition_factory(),
+                             *base::test::ParseJson("[]"),
+                             &error);
   EXPECT_THAT(error, HasSubstr("invalid type"));
   EXPECT_FALSE(predicate);
 
@@ -81,9 +82,9 @@ TEST(DeclarativeContentPageUrlPredicateTest, PageUrlPredicate) {
   url_matcher::URLMatcher matcher;
   std::string error;
   scoped_ptr<DeclarativeContentPageUrlPredicate> predicate =
-      CreatePageUrlPredicate(
-          *base::test::ParseJson("{\"hostSuffix\": \"example.com\"}"),
+      DeclarativeContentPageUrlPredicate::Create(
           matcher.condition_factory(),
+          *base::test::ParseJson("{\"hostSuffix\": \"example.com\"}"),
           &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(predicate);

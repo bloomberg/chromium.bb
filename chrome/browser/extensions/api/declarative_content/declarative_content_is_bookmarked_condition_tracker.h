@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_delegate.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
@@ -32,26 +33,27 @@ namespace extensions {
 // Tests the bookmarked state of the page.
 class DeclarativeContentIsBookmarkedPredicate {
  public:
-  DeclarativeContentIsBookmarkedPredicate(
-      scoped_refptr<const Extension> extension,
-      bool is_bookmarked);
   ~DeclarativeContentIsBookmarkedPredicate();
 
   bool IsIgnored() const;
   // Evaluate for URL bookmarked state.
   bool Evaluate(bool url_is_bookmarked) const;
 
+  static scoped_ptr<DeclarativeContentIsBookmarkedPredicate> Create(
+      const Extension* extension,
+      const base::Value& value,
+      std::string* error);
+
  private:
+  DeclarativeContentIsBookmarkedPredicate(
+      scoped_refptr<const Extension> extension,
+      bool is_bookmarked);
+
   scoped_refptr<const Extension> extension_;
   bool is_bookmarked_;
 
   DISALLOW_COPY_AND_ASSIGN(DeclarativeContentIsBookmarkedPredicate);
 };
-
-scoped_ptr<DeclarativeContentIsBookmarkedPredicate> CreateIsBookmarkedPredicate(
-    const base::Value& value,
-    const Extension* extension,
-    std::string* error);
 
 // Supports tracking of URL matches across tab contents in a browser context,
 // and querying for the matching condition sets.
@@ -62,6 +64,13 @@ class DeclarativeContentIsBookmarkedConditionTracker
       content::BrowserContext* context,
       DeclarativeContentConditionTrackerDelegate* delegate);
   ~DeclarativeContentIsBookmarkedConditionTracker() override;
+
+  // Creates a new DeclarativeContentIsBookmarkedPredicate from |value|. Sets
+  // *|error| and returns null if creation failed for any reason.
+  scoped_ptr<DeclarativeContentIsBookmarkedPredicate> CreatePredicate(
+      const Extension* extension,
+      const base::Value& value,
+      std::string* error);
 
   // Requests that URL matches be tracked for |contents|.
   void TrackForWebContents(content::WebContents* contents);

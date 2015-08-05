@@ -35,14 +35,6 @@ bool HasBookmarkAPIPermission(const Extension* extension) {
 //
 
 DeclarativeContentIsBookmarkedPredicate::
-DeclarativeContentIsBookmarkedPredicate(
-    scoped_refptr<const Extension> extension,
-    bool is_bookmarked)
-    : extension_(extension),
-      is_bookmarked_(is_bookmarked) {
-}
-
-DeclarativeContentIsBookmarkedPredicate::
 ~DeclarativeContentIsBookmarkedPredicate() {
 }
 
@@ -55,9 +47,11 @@ bool DeclarativeContentIsBookmarkedPredicate::Evaluate(
   return url_is_bookmarked == is_bookmarked_;
 }
 
-scoped_ptr<DeclarativeContentIsBookmarkedPredicate> CreateIsBookmarkedPredicate(
-    const base::Value& value,
+// static
+scoped_ptr<DeclarativeContentIsBookmarkedPredicate>
+DeclarativeContentIsBookmarkedPredicate::Create(
     const Extension* extension,
+    const base::Value& value,
     std::string* error) {
   bool is_bookmarked = false;
   if (value.GetAsBoolean(&is_bookmarked)) {
@@ -74,6 +68,14 @@ scoped_ptr<DeclarativeContentIsBookmarkedPredicate> CreateIsBookmarkedPredicate(
                                 declarative_content_constants::kIsBookmarked);
     return scoped_ptr<DeclarativeContentIsBookmarkedPredicate>();
   }
+}
+
+DeclarativeContentIsBookmarkedPredicate::
+DeclarativeContentIsBookmarkedPredicate(
+    scoped_refptr<const Extension> extension,
+    bool is_bookmarked)
+    : extension_(extension),
+      is_bookmarked_(is_bookmarked) {
 }
 
 //
@@ -157,6 +159,15 @@ DeclarativeContentIsBookmarkedConditionTracker(
 
 DeclarativeContentIsBookmarkedConditionTracker::
 ~DeclarativeContentIsBookmarkedConditionTracker() {
+}
+
+scoped_ptr<DeclarativeContentIsBookmarkedPredicate>
+DeclarativeContentIsBookmarkedConditionTracker::CreatePredicate(
+    const Extension* extension,
+    const base::Value& value,
+    std::string* error) {
+  return DeclarativeContentIsBookmarkedPredicate::Create(extension, value,
+                                                         error);
 }
 
 void DeclarativeContentIsBookmarkedConditionTracker::TrackForWebContents(

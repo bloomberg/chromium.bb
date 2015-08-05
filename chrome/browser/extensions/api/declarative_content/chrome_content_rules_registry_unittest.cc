@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
@@ -39,6 +40,29 @@ scoped_refptr<Extension> CreateExtensionWithBookmarksPermission(
           .Build();
 }
 
+// Thunk to strip |extension| before calling Create.
+scoped_ptr<DeclarativeContentCssPredicate> CreateCssPredicate(
+    const Extension* extension,
+    const base::Value& value,
+    std::string* error) {
+  return DeclarativeContentCssPredicate::Create(
+      value,
+      error);
+}
+
+// Thunk to strip |extension| and add the |url_matcher_condition_factory| before
+// calling Create.
+scoped_ptr<DeclarativeContentPageUrlPredicate> CreatePageUrlPredicate(
+    url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
+    const Extension* extension,
+    const base::Value& value,
+    std::string* error) {
+  return DeclarativeContentPageUrlPredicate::Create(
+      url_matcher_condition_factory,
+      value,
+      error);
+}
+
 }  // namespace
 
 using testing::HasSubstr;
@@ -65,7 +89,10 @@ TEST(DeclarativeContentConditionTest, UnknownPredicateName) {
   std::string error;
   scoped_ptr<ContentCondition> condition = CreateContentCondition(
       nullptr,
-      matcher.condition_factory(),
+      base::Bind(&CreateCssPredicate),
+      base::Bind(&DeclarativeContentIsBookmarkedPredicate::Create),
+      base::Bind(&CreatePageUrlPredicate,
+                 base::Unretained(matcher.condition_factory())),
       *base::test::ParseJson(
            "{\n"
            "  \"invalid\": \"foobar\",\n"
@@ -84,7 +111,10 @@ TEST(DeclarativeContentConditionTest,
   std::string error;
   scoped_ptr<ContentCondition> condition = CreateContentCondition(
       nullptr,
-      matcher.condition_factory(),
+      base::Bind(&CreateCssPredicate),
+      base::Bind(&DeclarativeContentIsBookmarkedPredicate::Create),
+      base::Bind(&CreatePageUrlPredicate,
+                 base::Unretained(matcher.condition_factory())),
       *base::test::ParseJson(
            "{\n"
            "  \"css\": \"selector\",\n"
@@ -102,7 +132,10 @@ TEST(DeclarativeContentConditionTest, AllSpecifiedPredicatesCreated) {
   std::string error;
   scoped_ptr<ContentCondition> condition = CreateContentCondition(
       extension.get(),
-      matcher.condition_factory(),
+      base::Bind(&CreateCssPredicate),
+      base::Bind(&DeclarativeContentIsBookmarkedPredicate::Create),
+      base::Bind(&CreatePageUrlPredicate,
+                 base::Unretained(matcher.condition_factory())),
       *base::test::ParseJson(
            "{\n"
            "  \"pageUrl\": {\"hostSuffix\": \"example.com\"},\n"

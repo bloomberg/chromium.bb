@@ -33,12 +33,6 @@ const char kInvalidTypeOfParameter[] = "Attribute '%s' has an invalid type";
 // DeclarativeContentCssPredicate
 //
 
-DeclarativeContentCssPredicate::DeclarativeContentCssPredicate(
-    const std::vector<std::string>& css_selectors)
-    : css_selectors_(css_selectors) {
-  DCHECK(!css_selectors.empty());
-}
-
 DeclarativeContentCssPredicate::~DeclarativeContentCssPredicate() {
 }
 
@@ -53,7 +47,9 @@ bool DeclarativeContentCssPredicate::Evaluate(
   return true;
 }
 
-scoped_ptr<DeclarativeContentCssPredicate> CreateCssPredicate(
+// static
+scoped_ptr<DeclarativeContentCssPredicate>
+DeclarativeContentCssPredicate::Create(
     const base::Value& value,
     std::string* error) {
   std::vector<std::string> css_rules;
@@ -79,6 +75,12 @@ scoped_ptr<DeclarativeContentCssPredicate> CreateCssPredicate(
       scoped_ptr<DeclarativeContentCssPredicate>();
 }
 
+DeclarativeContentCssPredicate::DeclarativeContentCssPredicate(
+    const std::vector<std::string>& css_selectors)
+    : css_selectors_(css_selectors) {
+  DCHECK(!css_selectors.empty());
+}
+
 //
 // PerWebContentsTracker
 //
@@ -95,6 +97,14 @@ PerWebContentsTracker(
 
 DeclarativeContentCssConditionTracker::PerWebContentsTracker::
 ~PerWebContentsTracker() {
+}
+
+scoped_ptr<DeclarativeContentCssPredicate>
+DeclarativeContentCssConditionTracker::CreatePredicate(
+    const Extension* extension,
+    const base::Value& value,
+    std::string* error) {
+  return DeclarativeContentCssPredicate::Create(value, error);
 }
 
 void DeclarativeContentCssConditionTracker::PerWebContentsTracker::

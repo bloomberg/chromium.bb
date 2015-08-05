@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_DECLARATIVE_CONTENT_PAGE_URL_CONDITION_TRACKER_H_
 
 #include <set>
+#include <string>
 
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_delegate.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -26,13 +28,12 @@ class WebContents;
 
 namespace extensions {
 
+class Extension;
+
 // Tests the URL of a page against conditions specified with the
 // URLMatcherConditionSet.
 class DeclarativeContentPageUrlPredicate {
  public:
-  explicit DeclarativeContentPageUrlPredicate(
-      scoped_refptr<url_matcher::URLMatcherConditionSet>
-          url_matcher_condition_set);
   ~DeclarativeContentPageUrlPredicate();
 
   url_matcher::URLMatcherConditionSet* url_matcher_condition_set() const {
@@ -44,25 +45,41 @@ class DeclarativeContentPageUrlPredicate {
       const std::set<url_matcher::URLMatcherConditionSet::ID>&
           page_url_matches) const;
 
+  static scoped_ptr<DeclarativeContentPageUrlPredicate> Create(
+      url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
+      const base::Value& value,
+      std::string* error);
+
  private:
+  explicit DeclarativeContentPageUrlPredicate(
+      scoped_refptr<url_matcher::URLMatcherConditionSet>
+          url_matcher_condition_set);
+
   scoped_refptr<url_matcher::URLMatcherConditionSet> url_matcher_condition_set_;
 
   DISALLOW_COPY_AND_ASSIGN(DeclarativeContentPageUrlPredicate);
 };
 
-scoped_ptr<DeclarativeContentPageUrlPredicate> CreatePageUrlPredicate(
-    const base::Value& value,
-    url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
-    std::string* error);
-
 // Supports tracking of URL matches across tab contents in a browser context,
 // and querying for the matching condition sets.
 class DeclarativeContentPageUrlConditionTracker {
  public:
+  using PredicateFactory =
+      base::Callback<scoped_ptr<DeclarativeContentPageUrlPredicate>(
+          const base::Value& value,
+          std::string* error)>;
+
   DeclarativeContentPageUrlConditionTracker(
       content::BrowserContext* context,
       DeclarativeContentConditionTrackerDelegate* delegate);
   ~DeclarativeContentPageUrlConditionTracker();
+
+  // Creates a new DeclarativeContentPageUrlPredicate from |value|. Sets
+  // *|error| and returns null if creation failed for any reason.
+  scoped_ptr<DeclarativeContentPageUrlPredicate> CreatePredicate(
+      const Extension* extension,
+      const base::Value& value,
+      std::string* error);
 
   // Adds new URLMatcherConditionSet to the URL Matcher. Each condition set
   // must have a unique ID.

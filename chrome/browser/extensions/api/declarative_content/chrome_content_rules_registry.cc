@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -58,8 +59,13 @@ ContentCondition::ContentCondition(
 ContentCondition::~ContentCondition() {}
 
 scoped_ptr<ContentCondition> CreateContentCondition(
-    scoped_refptr<const Extension> extension,
-    url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
+    const Extension* extension,
+    const PredicateFactory<DeclarativeContentCssPredicate>&
+        css_predicate_factory,
+    const PredicateFactory<DeclarativeContentIsBookmarkedPredicate>&
+        is_bookmarked_predicate_factory,
+    const PredicateFactory<DeclarativeContentPageUrlPredicate>&
+        page_url_predicate_factory,
     const base::Value& condition,
     std::string* error) {
   const base::DictionaryValue* condition_dict = NULL;
@@ -91,14 +97,17 @@ scoped_ptr<ContentCondition> CreateContentCondition(
     if (predicate_name == declarative_content_constants::kInstanceType) {
       // Skip this.
     } else if (predicate_name == declarative_content_constants::kPageUrl) {
-      page_url_predicate = CreatePageUrlPredicate(predicate_value,
-                                                  url_matcher_condition_factory,
-                                                  error);
+      page_url_predicate = page_url_predicate_factory.Run(extension,
+                                                          predicate_value,
+                                                          error);
     } else if (predicate_name == declarative_content_constants::kCss) {
-      css_predicate = CreateCssPredicate(predicate_value, error);
+      css_predicate = css_predicate_factory.Run(extension, predicate_value,
+                                                error);
     } else if (predicate_name == declarative_content_constants::kIsBookmarked) {
-      is_bookmarked_predicate =
-          CreateIsBookmarkedPredicate(predicate_value, extension.get(), error);
+      is_bookmarked_predicate = is_bookmarked_predicate_factory.Run(
+          extension,
+          predicate_value,
+          error);
     } else {
       *error = base::StringPrintf(kUnknownConditionAttribute,
                                   predicate_name.c_str());
@@ -277,17 +286,22 @@ ChromeContentRulesRegistry::ContentRule::ContentRule(
 ChromeContentRulesRegistry::ContentRule::~ContentRule() {}
 
 scoped_ptr<const ChromeContentRulesRegistry::ContentRule>
-ChromeContentRulesRegistry::CreateRule(const Extension* extension,
-                                       const api::events::Rule& api_rule,
-                                       std::string* error) {
+ChromeContentRulesRegistry::CreateRule(
+    const Extension* extension,
+    const PredicateFactory<DeclarativeContentCssPredicate>&
+        css_predicate_factory,
+    const PredicateFactory<DeclarativeContentIsBookmarkedPredicate>&
+        is_bookmarked_predicate_factory,
+    const PredicateFactory<DeclarativeContentPageUrlPredicate>&
+        page_url_predicate_factory,
+    const api::events::Rule& api_rule,
+    std::string* error) {
   ScopedVector<const ContentCondition> conditions;
   for (const linked_ptr<base::Value>& value : api_rule.conditions) {
     conditions.push_back(
-        CreateContentCondition(
-            extension,
-            page_url_condition_tracker_.condition_factory(),
-            *value,
-            error));
+        CreateContentCondition(extension, css_predicate_factory,
+                               is_bookmarked_predicate_factory,
+                               page_url_predicate_factory, *value, error));
     if (!error->empty())
       return scoped_ptr<ContentRule>();
   }
@@ -365,12 +379,31 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
   std::string error;
   RulesMap new_rules;
 
+  // These callbacks are only used during the CreateRule call and not stored, so
+  // it's safe to supply an Unretained tracker pointer.
+  const PredicateFactory<DeclarativeContentCssPredicate>
+      css_predicate_factory =
+          base::Bind(&DeclarativeContentCssConditionTracker::CreatePredicate,
+                     base::Unretained(&css_condition_tracker_));
+  const PredicateFactory<DeclarativeContentIsBookmarkedPredicate>
+      is_bookmarked_predicate_factory =
+          base::Bind(
+              &DeclarativeContentIsBookmarkedConditionTracker::CreatePredicate,
+              base::Unretained(&is_bookmarked_condition_tracker_));
+  const PredicateFactory<DeclarativeContentPageUrlPredicate>
+      page_url_predicate_factory =
+          base::Bind(
+              &DeclarativeContentPageUrlConditionTracker::CreatePredicate,
+              base::Unretained(&page_url_condition_tracker_));
+
   for (const linked_ptr<api::events::Rule>& api_rule : api_rules) {
     ExtensionRuleIdPair rule_id(extension, *api_rule->id);
     DCHECK(content_rules_.find(rule_id) == content_rules_.end());
 
-    scoped_ptr<const ContentRule> rule(CreateRule(extension, *api_rule,
-                                                  &error));
+    scoped_ptr<const ContentRule> rule(
+        CreateRule(extension, css_predicate_factory,
+                   is_bookmarked_predicate_factory, page_url_predicate_factory,
+                   *api_rule, &error));
     if (!error.empty()) {
       // Clean up temporary condition sets created during rule creation.
       page_url_condition_tracker_.ClearUnusedConditionSets();

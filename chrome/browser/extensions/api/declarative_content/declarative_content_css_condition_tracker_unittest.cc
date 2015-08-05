@@ -80,18 +80,20 @@ class DeclarativeContentCssConditionTrackerTest
 
 TEST(DeclarativeContentCssPredicateTest, WrongCssDatatype) {
   std::string error;
-  scoped_ptr<DeclarativeContentCssPredicate> predicate = CreateCssPredicate(
-      *base::test::ParseJson("\"selector\""),
-      &error);
+  scoped_ptr<DeclarativeContentCssPredicate> predicate =
+      DeclarativeContentCssPredicate::Create(
+          *base::test::ParseJson("\"selector\""),
+          &error);
   EXPECT_THAT(error, HasSubstr("invalid type"));
   EXPECT_FALSE(predicate);
 }
 
 TEST(DeclarativeContentCssPredicateTest, CssPredicate) {
   std::string error;
-  scoped_ptr<DeclarativeContentCssPredicate> predicate = CreateCssPredicate(
-      *base::test::ParseJson("[\"input\"]"),
-      &error);
+  scoped_ptr<DeclarativeContentCssPredicate> predicate =
+      DeclarativeContentCssPredicate::Create(
+          *base::test::ParseJson("[\"input\"]"),
+          &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(predicate);
 

@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -44,6 +45,8 @@ class URLRequest;
 
 namespace extensions {
 
+class Extension;
+
 // Representation of a condition in the Declarative Content API. A condition
 // consists of a set of predicates on the page state, all of which must be
 // satisified for the condition to be fulfilled.
@@ -64,12 +67,26 @@ struct ContentCondition {
   DISALLOW_COPY_AND_ASSIGN(ContentCondition);
 };
 
+// Defines the interface for a predicate factory. Temporary, until we can
+// introduce an interface to be implemented by the trackers that returns a
+// ContentPredicate.
+template <class T>
+using PredicateFactory =
+    base::Callback<scoped_ptr<T>(const Extension* extension,
+                                 const base::Value& value,
+                                 std::string* error)>;
+
 // Factory function that instantiates a ContentCondition according to the
 // description |condition| passed by the extension API.  |condition| should be
 // an instance of declarativeContent.PageStateMatcher.
 scoped_ptr<ContentCondition> CreateContentCondition(
-    scoped_refptr<const Extension> extension,
-    url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
+    const Extension* extension,
+    const PredicateFactory<DeclarativeContentCssPredicate>&
+        css_predicate_factory,
+    const PredicateFactory<DeclarativeContentIsBookmarkedPredicate>&
+        is_bookmarked_predicate_factory,
+    const PredicateFactory<DeclarativeContentPageUrlPredicate>&
+        page_url_predicate_factory,
     const base::Value& condition,
     std::string* error);
 
@@ -185,9 +202,16 @@ class ChromeContentRulesRegistry
   // and ContentAction.  |extension| may be NULL in tests.  If |error| is empty,
   // the translation was successful and the returned rule is internally
   // consistent.
-  scoped_ptr<const ContentRule> CreateRule(const Extension* extension,
-                                           const api::events::Rule& api_rule,
-                                           std::string* error);
+  scoped_ptr<const ContentRule> CreateRule(
+      const Extension* extension,
+      const PredicateFactory<DeclarativeContentCssPredicate>&
+          css_predicate_factory,
+      const PredicateFactory<DeclarativeContentIsBookmarkedPredicate>&
+          is_bookmarked_predicate_factory,
+      const PredicateFactory<DeclarativeContentPageUrlPredicate>&
+          page_url_predicate_factory,
+      const api::events::Rule& api_rule,
+      std::string* error);
 
   // True if this object is managing the rules for |context|.
   bool ManagingRulesForBrowserContext(content::BrowserContext* context);
