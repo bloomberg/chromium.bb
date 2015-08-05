@@ -716,8 +716,9 @@ void HTMLSelectElement::dispatchInputAndChangeEventForMenuList(bool requiresUser
     if (m_lastOnChangeIndex != selected && (!requiresUserGesture || m_isProcessingUserDrivenChange)) {
         m_lastOnChangeIndex = selected;
         m_isProcessingUserDrivenChange = false;
-        enqueueInputEvent();
-        enqueueChangeEvent();
+        RefPtrWillBeRawPtr<HTMLSelectElement> protector(this);
+        dispatchInputEvent();
+        dispatchFormControlChangeEvent();
     }
 }
 

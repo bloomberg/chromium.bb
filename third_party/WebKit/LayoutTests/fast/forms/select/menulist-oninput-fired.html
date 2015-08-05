@@ -7,7 +7,7 @@
 <body>
 <p>Selecting menu list options should fire oninput event</p>
 
-<select id="bug-test" onInput="testPassed('Input event was dispatched.'); finishJSTest();">
+<select id="bug-test" onInput="debug('PASS')">
   <option>1</option>
   <option>2</option>
   <option>3</option>
@@ -16,14 +16,14 @@
 </select>
 <div id="console"></div>
 <script>
-window.jsTestIsAsync = true;
-document.getElementById("bug-test").focus();
-if (window.eventSender) {
-    debug("Pressing 2 key");
-    eventSender.keyDown('2');
-} else {
-    debug("Test manually by pressing option key. Should get PASS message");
-}
+    document.getElementById("bug-test").focus();
+    if (window.eventSender) {
+
+        debug("Pressing 2 key");
+        eventSender.keyDown('2');
+    } else {
+        debug("Test manually by pressing option key. Should get PASS message");
+    }
 </script>
 </body>
 </html>

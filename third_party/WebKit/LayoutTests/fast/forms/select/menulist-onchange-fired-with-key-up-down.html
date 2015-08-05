@@ -6,14 +6,17 @@
 <script>
 window.jsTestIsAsync = true;
 
+var finishTest = false;
+
 function optionChanged() {
     debug("PASS");
+    if (finishTest)
+        finishJSTest();
 }
 
 function test() {
     document.getElementById("bug-test").focus();
     if (window.eventSender) {
-        debug("There should be 6 PASS lines below.");
         debug("Pressing down arrow key");
         eventSender.keyDown('downArrow');
 
@@ -29,15 +32,17 @@ function test() {
         debug("Pressing end key");
         eventSender.keyDown('end');
 
+        finishTest = true;
+
         debug("Pressing home key");
         eventSender.keyDown('home');
-
-        requestAnimationFrame(finishJSTest);
     } else {
         debug("Test manually by pressing up/down key. Should get PASS message");
         finishJSTest();
     }
 }
+
+successfullyParsed = true;
 </script>
 </head>
 <body onload="test()">

@@ -51,9 +51,6 @@ protected:
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void removedFrom(ContainerNode*) override;
     bool isFormControlElementWithState() const final;
-
-    void enqueueInputEvent();
-    void enqueueChangeEvent();
 };
 
 DEFINE_TYPE_CASTS(HTMLFormControlElementWithState, FormAssociatedElement, control, control->isFormControlElementWithState(), control.isFormControlElementWithState());

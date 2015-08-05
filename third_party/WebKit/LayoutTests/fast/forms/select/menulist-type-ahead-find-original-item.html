@@ -25,11 +25,9 @@ function test()
         return;
 
     testRunner.dumpAsText();
-    testRunner.waitUntilDone();
     testIt("downArrow", 1);
     testIt("downArrow", 2);
     testIt("a", 0);
-    requestAnimationFrame(function() { testRunner.notifyDone(); });
 }
 </script>
 </head>
