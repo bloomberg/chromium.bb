@@ -586,7 +586,8 @@ class CONTENT_EXPORT RenderWidget
   virtual void didUpdateTextOfFocusedElementByNonUserInput();
 
   // Creates a 3D context associated with this view.
-  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateGraphicsContext3D();
+  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateGraphicsContext3D(
+      bool compositor);
 
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost. When MSG_ROUTING_NONE, no messages may be sent.

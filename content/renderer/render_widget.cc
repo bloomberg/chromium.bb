@@ -1005,14 +1005,14 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   scoped_refptr<ContextProviderCommandBuffer> worker_context_provider;
   if (!use_software) {
     context_provider = ContextProviderCommandBuffer::Create(
-        CreateGraphicsContext3D(), RENDER_COMPOSITOR_CONTEXT);
+        CreateGraphicsContext3D(true), RENDER_COMPOSITOR_CONTEXT);
     if (!context_provider.get()) {
       // Cause the compositor to wait and try again.
       return scoped_ptr<cc::OutputSurface>();
     }
 
     worker_context_provider = ContextProviderCommandBuffer::Create(
-        CreateGraphicsContext3D(), RENDER_WORKER_CONTEXT);
+        CreateGraphicsContext3D(false), RENDER_WORKER_CONTEXT);
     if (!worker_context_provider.get()) {
       // Cause the compositor to wait and try again.
       return scoped_ptr<cc::OutputSurface>();
@@ -2320,7 +2320,7 @@ bool RenderWidget::HasTouchEventHandlersAt(const gfx::Point& point) const {
 }
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
-RenderWidget::CreateGraphicsContext3D() {
+RenderWidget::CreateGraphicsContext3D(bool compositor) {
   if (!webwidget_)
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -2375,6 +2375,8 @@ RenderWidget::CreateGraphicsContext3D() {
   limits.mapped_memory_reclaim_limit =
       max_transfer_buffer_usage_mb * kBytesPerMegabyte;
 #endif
+  if (compositor)
+    limits.command_buffer_size = 64 * 1024;
 
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       new WebGraphicsContext3DCommandBufferImpl(surface_id(),
