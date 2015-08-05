@@ -550,8 +550,8 @@ by a child template that "extends" this file.
             android:exported="true"
             tools:ignore="ExportedService" />
         <service android:name="org.chromium.chrome.browser.customtabs.CustomTabsConnectionService"
-             android:exported="{{ 'true' if channel in ['dev', 'canary', 'default'] else 'false' }}"
-             tools:ignore="ExportedService">
+            android:exported="true"
+            tools:ignore="ExportedService">
             <intent-filter>
               <action android:name="android.support.customtabs.action.CustomTabsService" />
             </intent-filter>
