@@ -17,6 +17,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
+import org.chromium.chrome.browser.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -29,6 +30,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**
@@ -56,14 +58,18 @@ public class EnhancedBookmarkUtils {
     }
 
     /**
-     * Static method used for activities to show snackbar that notifies user that the bookmark has
-     * been added successfully. Note this method also starts fetching salient image in background.
+     * If the tab has already been bookmarked, start {@link EnhancedBookmarkEditActivity} for the
+     * bookmark. If not, add the bookmark to bookmarkmodel, and show a snackbar notifying the user.
      */
-    public static void addBookmarkAndShowSnackbar(EnhancedBookmarksModel bookmarkModel, Tab tab,
-            final SnackbarManager snackbarManager, final Activity activity) {
-        // TODO(ianwen): remove activity from argument list.
-        final BookmarkId enhancedId = bookmarkModel.addBookmark(bookmarkModel.getDefaultFolder(),
-                0, tab.getTitle(), tab.getUrl());
+    public static void addOrEditBookmark(long idToAdd, EnhancedBookmarksModel bookmarkModel,
+            Tab tab, final SnackbarManager snackbarManager, final Activity activity) {
+        if (idToAdd != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID) {
+            startEditActivity(activity, new BookmarkId(idToAdd, BookmarkType.NORMAL));
+            return;
+        }
+
+        final BookmarkId enhancedId = bookmarkModel
+                .addBookmark(bookmarkModel.getDefaultFolder(), 0, tab.getTitle(), tab.getUrl());
 
         Pair<EnhancedBookmarksModel, BookmarkId> pair = Pair.create(bookmarkModel, enhancedId);
 
@@ -111,6 +117,9 @@ public class EnhancedBookmarkUtils {
         return true;
     }
 
+    /**
+     * Starts an {@link EnhancedBookmarkEditActivity} for the given {@link BookmarkId}.
+     */
     public static void startEditActivity(Context context, BookmarkId bookmarkId) {
         Intent intent = new Intent(context, EnhancedBookmarkEditActivity.class);
         intent.putExtra(EnhancedBookmarkEditActivity.INTENT_BOOKMARK_ID, bookmarkId.toString());
