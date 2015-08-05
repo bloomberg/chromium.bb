@@ -33,6 +33,7 @@
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableElement.h"
+#include "core/html/HTMLTableRowsCollection.h"
 #include "core/html/HTMLTableSectionElement.h"
 
 namespace blink {
@@ -58,45 +59,22 @@ const QualifiedName& HTMLTableRowElement::subResourceAttributeName() const
 
 int HTMLTableRowElement::rowIndex() const
 {
-    ContainerNode* table = parentNode();
-    if (!table)
+    ContainerNode* maybeTable = parentNode();
+    if (maybeTable && isHTMLTableSectionElement(maybeTable)) {
+        // Skip THEAD, TBODY and TFOOT.
+        maybeTable = maybeTable->parentNode();
+    }
+    if (!(maybeTable && isHTMLTableElement(maybeTable)))
         return -1;
-    table = table->parentNode();
-    if (!isHTMLTableElement(table))
-        return -1;
 
-    // To match Firefox, the row indices work like this:
-    //   Rows from the first <thead> are numbered before all <tbody> rows.
-    //   Rows from the first <tfoot> are numbered after all <tbody> rows.
-    //   Rows from other <thead> and <tfoot> elements don't get row indices at all.
-
-    int rIndex = 0;
-
-    if (HTMLTableSectionElement* head = toHTMLTableElement(table)->tHead()) {
-        for (HTMLTableRowElement* row = Traversal<HTMLTableRowElement>::firstChild(*head); row; row = Traversal<HTMLTableRowElement>::nextSibling(*row)) {
-            if (row == this)
-                return rIndex;
-            ++rIndex;
-        }
+    RefPtrWillBeRawPtr<HTMLTableRowsCollection> rows =
+        toHTMLTableElement(maybeTable)->rows();
+    HTMLTableRowElement* candidate = rows->item(0);
+    for (int i = 0; candidate; i++, candidate = rows->item(i)) {
+        if (this == candidate)
+            return i;
     }
 
-    for (HTMLElement* tbody = Traversal<HTMLElement>::firstChild(*table, HasHTMLTagName(tbodyTag)); tbody; tbody = Traversal<HTMLElement>::nextSibling(*tbody, HasHTMLTagName(tbodyTag))) {
-        for (HTMLTableRowElement* row = Traversal<HTMLTableRowElement>::firstChild(*tbody); row; row = Traversal<HTMLTableRowElement>::nextSibling(*row)) {
-            if (row == this)
-                return rIndex;
-            ++rIndex;
-        }
-    }
-
-    if (HTMLTableSectionElement* foot = toHTMLTableElement(table)->tFoot()) {
-        for (HTMLTableRowElement* row = Traversal<HTMLTableRowElement>::firstChild(*foot); row; row = Traversal<HTMLTableRowElement>::nextSibling(*row)) {
-            if (row == this)
-                return rIndex;
-            ++rIndex;
-        }
-    }
-
-    // We get here for rows that are in <thead> or <tfoot> sections other than the main header and footer.
     return -1;
 }
 

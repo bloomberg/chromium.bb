@@ -3770,6 +3770,7 @@
             'html/HTMLInputElementTest.cpp',
             'html/HTMLLinkElementSizesAttributeTest.cpp',
             'html/HTMLSelectElementTest.cpp',
+            'html/HTMLTableRowElementTest.cpp',
             'html/HTMLTextFormControlElementTest.cpp',
             'html/LinkRelAttributeTest.cpp',
             'html/TimeRangesTest.cpp',

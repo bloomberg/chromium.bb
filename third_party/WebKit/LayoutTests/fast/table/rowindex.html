@@ -8,6 +8,9 @@ body, table { font-family: "Lucida Grande"; font-size: 10px }
 
 <script>
 
+if (window.testRunner)
+    testRunner.dumpAsText();
+
 function labelRows()
 {
     rows = document.getElementsByTagName("tr");
@@ -39,7 +42,7 @@ function labelRows()
     <thead><tr id="table B, header"></tr></thead>
 </table>
 
-<p>C: This table has two footers before two bodies before two heads. The rows inside the extra footers and heads don't get row indices at all.</p>
+<p>C: This table has two footers before two bodies before two heads.</p>
 
 <table border=1>
     <tfoot><tr id="table C, footer A row A"></tr><tr id="table C, footer A row B"></tr></tfoot>
@@ -49,5 +52,32 @@ function labelRows()
     <thead><tr id="table C, header A row A"></tr><tr id="table C, header A row B"></tr></tfoot>
     <thead><tr id="table C, header B row A"></tr><tr id="table C, header B row B"></tr></tfoot>
 </table>
+
+<p>D: This table has a head, foot, body, direct row children, and an extra foot.</p>
+
+<table border=1>
+    <tfoot><tr id="table D, footer row A"></tr><tr id="table D, footer row B"></tr></tfoot>
+    <tbody><tr id="table D, body row A"></tr><tr id="table D, body row B"></tr></tfoot>
+    <tr id="table D, direct row A"></tr>
+    <thead><tr id="table D, header A row A"></tr><tr id="table D, header A row B"></tr></tfoot>
+    <tfoot><tr id="table D, footer B row A"></tr><tr id="table D, footer B row B"></tr></tfoot>
+</table>
+
+<script>
+var tr = document.createElement("tr");
+tr.id = "table D, direct row B";
+document.currentScript.previousElementSibling.appendChild(tr);
+</script>
+
+<p>E: This table only has a direct row child, added dynamically.</p>
+
+<table border=1>
+</table>
+
+<script>
+var tr = document.createElement("tr");
+tr.id = "table E, direct row A";
+document.currentScript.previousElementSibling.appendChild(tr);
+</script>
 
 </body>
