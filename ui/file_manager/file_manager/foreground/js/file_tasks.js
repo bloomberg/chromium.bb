@@ -769,7 +769,7 @@ FileTasks.prototype.showTaskPicker = function(actionDialog, title, message,
 
   var defaultIdx = 0;
   for (var j = 0; j < items.length; j++) {
-    if (items[j].task.taskId === this.defaultTask_.taskId)
+    if (this.defaultTask_ && items[j].task.taskId === this.defaultTask_.taskId)
       defaultIdx = j;
   }
 

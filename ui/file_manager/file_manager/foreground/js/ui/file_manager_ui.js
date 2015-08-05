@@ -247,14 +247,13 @@ function FileManagerUI(providersModel, element, launchParam) {
    */
   this.fileContextMenu.defaultActionMenuItem =
       /** @type {!HTMLMenuItemElement} */
-      (queryRequiredElement(this.fileContextMenu, '#default-action'));
+      (queryRequiredElement(this.fileContextMenu, '#default-action-menu-item'));
 
   /**
-   * @type {!HTMLElement}
-   * @const
+   * @const {!cr.ui.MenuItem}
    */
-  this.fileContextMenu.defaultActionSeparator =
-      queryRequiredElement(this.fileContextMenu, '#default-action-separator');
+  this.fileContextMenu.actionItemsSeparator = /** @type {!cr.ui.MenuItem} */
+      (queryRequiredElement(this.fileContextMenu, '#action-items-separator'));
 
   /**
    * The combo button to specify the task.
