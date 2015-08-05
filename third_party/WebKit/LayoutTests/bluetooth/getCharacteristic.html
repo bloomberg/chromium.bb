@@ -17,7 +17,7 @@ sequential_promise_test(() => {
     .then(service => {
       testRunner.setBluetoothMockDataSet('EmptyAdapter');
       return assert_promise_rejects_with_message(
-        service.getCharacteristic('device_name'), {
+        service.getCharacteristic('gap.device_name'), {
           name: 'NetworkError',
           message: 'Bluetooth Device is no longer in range.'
         }, 'Device went out of range.');
@@ -32,7 +32,7 @@ sequential_promise_test(() => {
     .then(service => {
       testRunner.setBluetoothMockDataSet('MissingServiceGenericAccessAdapter');
       return assert_promise_rejects_with_message(
-        service.getCharacteristic('device_name'), {
+        service.getCharacteristic('gap.device_name'), {
           name: 'InvalidStateError',
           message: 'GATT Service no longer exists.'
         }, 'Service got removed.');

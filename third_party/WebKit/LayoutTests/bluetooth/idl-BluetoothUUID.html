@@ -91,7 +91,7 @@ test(() => {
                 '00001811-0000-1000-8000-00805f9b34fb');
   assert_equals(BluetoothUUID.getCharacteristic('aerobic_heart_rate_lower_limit'),
                 '00002a7e-0000-1000-8000-00805f9b34fb');
-  assert_equals(BluetoothUUID.getDescriptor('characteristic_extended_properties'),
+  assert_equals(BluetoothUUID.getDescriptor('gatt.characteristic_extended_properties'),
                 '00002900-0000-1000-8000-00805f9b34fb');
 }, 'A valid UUID from a name.');
 
@@ -100,13 +100,13 @@ test(() => {
     BluetoothUUID.getService('aerobic_heart_rate_lower_limit');
   });
   assert_throws('SyntaxError', () => {
-    BluetoothUUID.getService('characteristic_extended_properties');
+    BluetoothUUID.getService('gatt.characteristic_extended_properties');
   });
   assert_throws('SyntaxError', () => {
     BluetoothUUID.getCharacteristic('alert_notification');
   });
   assert_throws('SyntaxError', () => {
-    BluetoothUUID.getCharacteristic('characteristic_extended_properties');
+    BluetoothUUID.getCharacteristic('gatt.characteristic_extended_properties');
   });
   assert_throws('SyntaxError', () => {
     BluetoothUUID.getDescriptor('alert_notification');

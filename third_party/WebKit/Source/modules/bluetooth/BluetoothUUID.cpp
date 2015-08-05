@@ -32,6 +32,7 @@ NameToAssignedNumberMap* getAssignedNumberToServiceNameMap()
         // https://developer.bluetooth.org/gatt/services/Pages/ServicesHome.aspx
         NameToAssignedNumberMap* services = new NameToAssignedNumberMap();
         services->add("alert_notification", 0x1811);
+        services->add("automation_io", 0x1815);
         services->add("battery_service", 0x180F);
         services->add("blood_pressure", 0x1810);
         services->add("body_composition", 0x181B);
@@ -55,6 +56,7 @@ NameToAssignedNumberMap* getAssignedNumberToServiceNameMap()
         services->add("location_and_navigation", 0x1819);
         services->add("next_dst_change", 0x1807);
         services->add("phone_alert_status", 0x180E);
+        services->add("pulse_oximeter", 0x1822);
         services->add("reference_time_update", 0x1806);
         services->add("running_speed_and_cadence", 0x1814);
         services->add("scan_parameters", 0x1813);
@@ -76,6 +78,7 @@ NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap()
         characteristics->add("aerobic_heart_rate_upper_limit", 0x2A84);
         characteristics->add("aerobic_threshold", 0x2A7F);
         characteristics->add("age", 0x2A80);
+        characteristics->add("aggregate", 0x2A5A);
         characteristics->add("alert_category_id", 0x2A43);
         characteristics->add("alert_category_id_bit_mask", 0x2A42);
         characteristics->add("alert_level", 0x2A06);
@@ -85,9 +88,10 @@ NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap()
         characteristics->add("anaerobic_heart_rate_lower_limit", 0x2A81);
         characteristics->add("anaerobic_heart_rate_upper_limit", 0x2A82);
         characteristics->add("anaerobic_threshold", 0x2A83);
+        characteristics->add("analog", 0x2A58);
         characteristics->add("apparent_wind_direction", 0x2A73);
         characteristics->add("apparent_wind_speed", 0x2A72);
-        characteristics->add("appearance", 0x2A01);
+        characteristics->add("gap.appearance", 0x2A01);
         characteristics->add("barometric_pressure_trend", 0x2AA3);
         characteristics->add("battery_level", 0x2A19);
         characteristics->add("blood_pressure_feature", 0x2A49);
@@ -100,7 +104,7 @@ NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap()
         characteristics->add("boot_keyboard_input_report", 0x2A22);
         characteristics->add("boot_keyboard_output_report", 0x2A32);
         characteristics->add("boot_mouse_input_report", 0x2A33);
-        characteristics->add("central_address_resolution_support", 0x2AA6);
+        characteristics->add("gap.central_address_resolution_support", 0x2AA6);
         characteristics->add("cgm_feature", 0x2AA8);
         characteristics->add("cgm_measurement", 0x2AA7);
         characteristics->add("cgm_session_run_time", 0x2AAB);
@@ -121,8 +125,9 @@ NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap()
         characteristics->add("day_date_time", 0x2A0A);
         characteristics->add("day_of_week", 0x2A09);
         characteristics->add("descriptor_value_changed", 0x2A7D);
-        characteristics->add("device_name", 0x2A00);
+        characteristics->add("gap.device_name", 0x2A00);
         characteristics->add("dew_point", 0x2A7B);
+        characteristics->add("digital", 0x2A56);
         characteristics->add("dst_offset", 0x2A0D);
         characteristics->add("elevation", 0x2A6C);
         characteristics->add("email_address", 0x2A87);
@@ -173,15 +178,18 @@ NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap()
         characteristics->add("model_number_string", 0x2A24);
         characteristics->add("navigation", 0x2A68);
         characteristics->add("new_alert", 0x2A46);
-        characteristics->add("peripheral_preferred_connection_parameters", 0x2A04);
-        characteristics->add("peripheral_privacy_flag", 0x2A02);
+        characteristics->add("gap.peripheral_preferred_connection_parameters", 0x2A04);
+        characteristics->add("gap.peripheral_privacy_flag", 0x2A02);
+        characteristics->add("plx_continuous_measurement", 0x2A5F);
+        characteristics->add("plx_features", 0x2A60);
+        characteristics->add("plx_spot_check_measurement", 0x2A5E);
         characteristics->add("pnp_id", 0x2A50);
         characteristics->add("pollen_concentration", 0x2A75);
         characteristics->add("position_quality", 0x2A69);
         characteristics->add("pressure", 0x2A6D);
         characteristics->add("protocol_mode", 0x2A4E);
         characteristics->add("rainfall", 0x2A78);
-        characteristics->add("reconnection_address", 0x2A03);
+        characteristics->add("gap.reconnection_address", 0x2A03);
         characteristics->add("record_access_control_point", 0x2A52);
         characteristics->add("reference_time_information", 0x2A14);
         characteristics->add("report", 0x2A4D);
@@ -238,15 +246,16 @@ NameToAssignedNumberMap* getAssignedNumberForDescriptorNameMap()
     AtomicallyInitializedStaticReference(NameToAssignedNumberMap, descriptorsMap, []() {
         // https://developer.bluetooth.org/gatt/descriptors/Pages/DescriptorsHomePage.aspx
         NameToAssignedNumberMap* descriptors = new NameToAssignedNumberMap();
-        descriptors->add("characteristic_extended_properties", 0x2900);
-        descriptors->add("characteristic_user_description", 0x2901);
-        descriptors->add("client_characteristic_configuration", 0x2902);
-        descriptors->add("server_characteristic_configuration", 0x2903);
-        descriptors->add("characteristic_presentation_format", 0x2904);
-        descriptors->add("characteristic_aggregate_format", 0x2905);
+        descriptors->add("gatt.characteristic_extended_properties", 0x2900);
+        descriptors->add("gatt.characteristic_user_description", 0x2901);
+        descriptors->add("gatt.client_characteristic_configuration", 0x2902);
+        descriptors->add("gatt.server_characteristic_configuration", 0x2903);
+        descriptors->add("gatt.characteristic_presentation_format", 0x2904);
+        descriptors->add("gatt.characteristic_aggregate_format", 0x2905);
         descriptors->add("valid_range", 0x2906);
         descriptors->add("external_report_reference", 0x2907);
         descriptors->add("report_reference", 0x2908);
+        descriptors->add("value_trigger_setting", 0x290A);
         descriptors->add("es_configuration", 0x290B);
         descriptors->add("es_measurement", 0x290C);
         descriptors->add("es_trigger_setting", 0x290D);

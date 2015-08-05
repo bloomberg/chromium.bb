@@ -14,7 +14,7 @@ sequential_promise_test(() => {
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
-    .then(service => service.getCharacteristic('device_name'))
+    .then(service => service.getCharacteristic('gap.device_name'))
     .then(characteristic => {
       testRunner.setBluetoothMockDataSet('EmptyAdapter');
       return assert_promise_rejects_with_message(
@@ -30,7 +30,7 @@ sequential_promise_test(() => {
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
-    .then(service => service.getCharacteristic('device_name'))
+    .then(service => service.getCharacteristic('gap.device_name'))
     .then(characteristic => {
       testRunner.setBluetoothMockDataSet('MissingServiceGenericAccessAdapter');
       return assert_promise_rejects_with_message(
@@ -46,7 +46,7 @@ sequential_promise_test(() => {
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
     .then(gattService => gattService.getPrimaryService('generic_access'))
-    .then(service => service.getCharacteristic('device_name'))
+    .then(service => service.getCharacteristic('gap.device_name'))
     .then(characteristic => {
       testRunner.setBluetoothMockDataSet(
         'MissingCharacteristicGenericAccessAdapter');
@@ -146,7 +146,7 @@ sequential_promise_test(() => {
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
-    .then(service => service.getCharacteristic('device_name'))
+    .then(service => service.getCharacteristic('gap.device_name'))
     .then(characteristic => characteristic.readValue())
     .then(value => {
       let decoder = new TextDecoder('utf-8');
