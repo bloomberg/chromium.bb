@@ -1071,6 +1071,15 @@ void PDFiumEngine::Paint(const pp::Rect& rect,
     if (dirty_in_screen.IsEmpty())
       continue;
 
+    // Compute the leftover dirty region. The first page may have blank space
+    // above it, in which case we also need to subtract that space from the
+    // dirty region.
+    if (i == 0) {
+      pp::Rect blank_space_in_screen = dirty_in_screen;
+      blank_space_in_screen.set_y(0);
+      blank_space_in_screen.set_height(dirty_in_screen.y());
+      leftover = leftover.Subtract(blank_space_in_screen);
+    }
     leftover = leftover.Subtract(dirty_in_screen);
 
     if (pages_[index]->available()) {
