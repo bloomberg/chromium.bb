@@ -36,6 +36,8 @@ source_set("variations") {
     "variations_seed_processor.h",
     "variations_seed_simulator.cc",
     "variations_seed_simulator.h",
+    "variations_url_constants.cc",
+    "variations_url_constants.h",
   ]
 
   deps = [

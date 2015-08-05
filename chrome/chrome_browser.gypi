@@ -1863,8 +1863,6 @@
       'browser/metrics/variations/variations_seed_store.h',
       'browser/metrics/variations/variations_service.cc',
       'browser/metrics/variations/variations_service.h',
-      'browser/metrics/variations/variations_url_constants.cc',
-      'browser/metrics/variations/variations_url_constants.h',
     ],
     'chrome_browser_nacl_sources': [
       'browser/nacl_host/nacl_browser_delegate_impl.cc',
