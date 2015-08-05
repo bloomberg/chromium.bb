@@ -229,6 +229,8 @@ void Canvas2DLayerBridge::setRateLimitingEnabled(bool enabled)
 
 void Canvas2DLayerBridge::flush()
 {
+    if (!m_isSurfaceValid)
+        return;
     ASSERT(!m_destructionInProgress);
     if (m_haveRecordedDrawCommands) {
         TRACE_EVENT0("cc", "Canvas2DLayerBridge::flush");
