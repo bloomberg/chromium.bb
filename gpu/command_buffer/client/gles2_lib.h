@@ -12,7 +12,7 @@
 
 namespace gles2 {
 
-typedef void (*GLES2FunctionPointer)(void);
+typedef void(GL_APIENTRY* GLES2FunctionPointer)(void);
 
 struct NameToFunc {
   const char* name;

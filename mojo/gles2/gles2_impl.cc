@@ -76,7 +76,7 @@ void* MojoGLES2GetContextSupport(MojoGLES2Context context) {
 }
 
 #define VISIT_GL_CALL(Function, ReturnType, PARAMETERS, ARGUMENTS) \
-  ReturnType gl##Function PARAMETERS {                             \
+  ReturnType GL_APIENTRY gl##Function PARAMETERS {                 \
     DCHECK(g_gpu_interface.Get().Get());                           \
     return g_gpu_interface.Get().Get()->Function ARGUMENTS;        \
   }

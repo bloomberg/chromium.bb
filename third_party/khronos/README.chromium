@@ -36,6 +36,6 @@ EGL/eglplatform.h
 EGL/eglext.h
  - Added EGL_ARM_implicit_external_sync extension tokens
 KHR/khrplatform.h
- - Modified KHRONOS_APICALL and KHRONOS_APIENTRY
+ - Modified KHRONOS_APICALL
 DEPS
  - Added DEPS file to prevent inclusion of external dependencies.

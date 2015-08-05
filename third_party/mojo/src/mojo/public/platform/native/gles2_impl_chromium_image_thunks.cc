@@ -12,7 +12,7 @@ extern "C" {
 static MojoGLES2ImplChromiumImageThunks g_impl_chromium_image_thunks = {0};
 
 #define VISIT_GL_CALL(Function, ReturnType, PARAMETERS, ARGUMENTS) \
-  ReturnType gl##Function PARAMETERS {                             \
+  ReturnType GL_APIENTRY gl##Function PARAMETERS {             \
     assert(g_impl_chromium_image_thunks.Function);             \
     return g_impl_chromium_image_thunks.Function ARGUMENTS;    \
   }

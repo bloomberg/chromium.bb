@@ -399,6 +399,7 @@ EGLBoolean eglCopyBuffers(EGLDisplay dpy,
 /* Now, define eglGetProcAddress using the generic function ptr. type */
 __eglMustCastToProperFunctionPointerType
 eglGetProcAddress(const char* procname) {
-  return gles2::GetGLFunctionPointer(procname);
+  return reinterpret_cast<__eglMustCastToProperFunctionPointerType>(
+      gles2::GetGLFunctionPointer(procname));
 }
 }  // extern "C"

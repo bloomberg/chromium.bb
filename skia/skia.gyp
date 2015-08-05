@@ -38,6 +38,15 @@
             'skia_library',
             'skia_chrome',
           ],
+          'direct_dependent_settings': {
+            'conditions': [
+              [ 'OS == "win"', {
+                'defines': [
+                  'GR_GL_FUNCTION_TYPE=__stdcall',
+                ],
+              }],
+            ],
+          },
         },
         {
           'target_name': 'skia_chrome',
@@ -70,6 +79,13 @@
             'GR_GL_IGNORE_ES3_MSAA=0',
           ],
           'direct_dependent_settings': {
+            'conditions': [
+              [ 'OS == "win"', {
+                'defines': [
+                  'GR_GL_FUNCTION_TYPE=__stdcall',
+                ],
+              }],
+            ],
             'defines': [
               'SKIA_DLL',
               'GR_GL_IGNORE_ES3_MSAA=0',

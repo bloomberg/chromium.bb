@@ -13,7 +13,7 @@ static MojoGLES2ImplChromiumTextureMailboxThunks
     g_impl_chromium_texture_mailbox_thunks = {0};
 
 #define VISIT_GL_CALL(Function, ReturnType, PARAMETERS, ARGUMENTS)    \
-  ReturnType gl##Function PARAMETERS {                                \
+  ReturnType GL_APIENTRY gl##Function PARAMETERS {                    \
     assert(g_impl_chromium_texture_mailbox_thunks.Function);          \
     return g_impl_chromium_texture_mailbox_thunks.Function ARGUMENTS; \
   }

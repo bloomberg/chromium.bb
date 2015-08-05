@@ -54,6 +54,7 @@
         # size.
         # http://crbug.com/314387
         'SK_DEFAULT_FONT_CACHE_COUNT_LIMIT=256',
+        'GR_GL_FUNCTION_TYPE=__stdcall',
       ],
     }],
     [ 'desktop_linux == 0 and chromeos == 0', {

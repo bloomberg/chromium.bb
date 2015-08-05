@@ -13,7 +13,7 @@ static MojoGLES2ImplChromiumSyncPointThunks g_impl_chromium_sync_point_thunks =
     {0};
 
 #define VISIT_GL_CALL(Function, ReturnType, PARAMETERS, ARGUMENTS) \
-  ReturnType gl##Function PARAMETERS {                             \
+  ReturnType GL_APIENTRY gl##Function PARAMETERS {                 \
     assert(g_impl_chromium_sync_point_thunks.Function);            \
     return g_impl_chromium_sync_point_thunks.Function ARGUMENTS;   \
   }

@@ -12,7 +12,7 @@ extern "C" {
 static MojoGLES2ImplThunks g_impl_thunks = {0};
 
 #define VISIT_GL_CALL(Function, ReturnType, PARAMETERS, ARGUMENTS) \
-  ReturnType gl##Function PARAMETERS {                             \
+  ReturnType GL_APIENTRY gl##Function PARAMETERS {                 \
     assert(g_impl_thunks.Function);                                \
     return g_impl_thunks.Function ARGUMENTS;                       \
   }

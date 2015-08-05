@@ -15,7 +15,7 @@ struct MojoGLES2ImplChromiumPixelTransferBufferObjectThunks {
   size_t size;  // Should be set to sizeof(*this).
 
 #define VISIT_GL_CALL(Function, ReturnType, PARAMETERS, ARGUMENTS) \
-  ReturnType(*Function) PARAMETERS;
+  ReturnType(GL_APIENTRY *Function) PARAMETERS;
 #include "mojo/public/c/gles2/gles2_call_visitor_chromium_pixel_transfer_buffer_object_autogen.h"
 #undef VISIT_GL_CALL
 };

@@ -12,7 +12,7 @@ extern "C" {
 static MojoGLES2ImplChromiumCopyTextureThunks g_impl_chromium_copy_texture_thunks = {0};
 
 #define VISIT_GL_CALL(Function, ReturnType, PARAMETERS, ARGUMENTS) \
-  ReturnType gl##Function PARAMETERS {                             \
+  ReturnType GL_APIENTRY gl##Function PARAMETERS {                    \
     assert(g_impl_chromium_copy_texture_thunks.Function);             \
     return g_impl_chromium_copy_texture_thunks.Function ARGUMENTS;    \
   }

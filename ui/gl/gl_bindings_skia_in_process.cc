@@ -17,618 +17,794 @@ extern "C" {
 // via gl_bindings.h use call-type GL_BINDING_CALL, which on Windows is stdcall.
 // Skia has been built such that its GrGLInterface GL pointers are __cdecl.
 
-GLvoid StubGLActiveTexture(GLenum texture) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLActiveTexture(GLenum texture) {
   glActiveTexture(texture);
 }
 
-GLvoid StubGLAttachShader(GLuint program, GLuint shader) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLAttachShader(GLuint program, GLuint shader) {
   glAttachShader(program, shader);
 }
 
-GLvoid StubGLBeginQuery(GLenum target, GLuint id) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLBeginQuery(GLenum target, GLuint id) {
   glBeginQuery(target, id);
 }
 
-GLvoid StubGLBindAttribLocation(GLuint program, GLuint index,
-                                const char* name) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLBindAttribLocation(GLuint program,
+                                                    GLuint index,
+                                                    const char* name) {
   glBindAttribLocation(program, index, name);
 }
 
-GLvoid StubGLBindBuffer(GLenum target, GLuint buffer) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLBindBuffer(GLenum target, GLuint buffer) {
   glBindBuffer(target, buffer);
 }
 
-GLvoid StubGLBindFragDataLocation(GLuint program, GLuint colorNumber,
-                                  const GLchar * name) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLBindFragDataLocation(GLuint program,
+                                                      GLuint colorNumber,
+                                                      const GLchar* name) {
   glBindFragDataLocation(program, colorNumber, name);
 }
 
-GLvoid StubGLBindFragDataLocationIndexed(GLuint program, GLuint colorNumber,
-                                         GLuint index, const GLchar * name) {
+GLvoid GR_GL_FUNCTION_TYPE
+StubGLBindFragDataLocationIndexed(GLuint program,
+                                  GLuint colorNumber,
+                                  GLuint index,
+                                  const GLchar* name) {
   glBindFragDataLocationIndexed(program, colorNumber, index, name);
 }
 
-GLvoid StubGLBindFramebuffer(GLenum target, GLuint framebuffer) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLBindFramebuffer(GLenum target,
+                                                 GLuint framebuffer) {
   glBindFramebufferEXT(target, framebuffer);
 }
 
-GLvoid StubGLBindRenderbuffer(GLenum target, GLuint renderbuffer) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLBindRenderbuffer(GLenum target,
+                                                  GLuint renderbuffer) {
   glBindRenderbufferEXT(target, renderbuffer);
 }
 
-GLvoid StubGLBindTexture(GLenum target, GLuint texture) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLBindTexture(GLenum target, GLuint texture) {
   glBindTexture(target, texture);
 }
 
-GLvoid StubGLBindVertexArray(GLuint array) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLBindVertexArray(GLuint array) {
   glBindVertexArrayOES(array);
 }
 
-GLvoid StubGLBlendBarrier() {
+GLvoid GR_GL_FUNCTION_TYPE StubGLBlendBarrier() {
   glBlendBarrierKHR();
 }
 
-GLvoid StubGLBlendColor(GLclampf red, GLclampf green, GLclampf blue,
-                        GLclampf alpha) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLBlendColor(GLclampf red,
+                                            GLclampf green,
+                                            GLclampf blue,
+                                            GLclampf alpha) {
   glBlendColor(red, green, blue, alpha);
 }
 
-GLvoid StubGLBlendEquation(GLenum mode) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLBlendEquation(GLenum mode) {
   glBlendEquation(mode);
 }
 
-GLvoid StubGLBlendFunc(GLenum sfactor, GLenum dfactor) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLBlendFunc(GLenum sfactor, GLenum dfactor) {
   glBlendFunc(sfactor, dfactor);
 }
 
-GLvoid StubGLBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
-                             GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
-                             GLbitfield mask, GLenum filter) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLBlitFramebuffer(GLint srcX0,
+                                                 GLint srcY0,
+                                                 GLint srcX1,
+                                                 GLint srcY1,
+                                                 GLint dstX0,
+                                                 GLint dstY0,
+                                                 GLint dstX1,
+                                                 GLint dstY1,
+                                                 GLbitfield mask,
+                                                 GLenum filter) {
   glBlitFramebufferEXT(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1,
                        mask, filter);
 }
 
-GLvoid StubGLBufferData(GLenum target, GLsizeiptr size, const void* data,
-                        GLenum usage) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLBufferData(GLenum target,
+                                            GLsizeiptr size,
+                                            const void* data,
+                                            GLenum usage) {
   glBufferData(target, size, data, usage);
 }
 
-GLvoid StubGLBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size,
-                           const void* data) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLBufferSubData(GLenum target,
+                                               GLintptr offset,
+                                               GLsizeiptr size,
+                                               const void* data) {
   glBufferSubData(target, offset, size, data);
 }
 
-GLenum StubGLCheckFramebufferStatus(GLenum target) {
+GLenum GR_GL_FUNCTION_TYPE StubGLCheckFramebufferStatus(GLenum target) {
   return glCheckFramebufferStatusEXT(target);
 }
 
-GLvoid StubGLClear(GLbitfield mask) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLClear(GLbitfield mask) {
   glClear(mask);
 }
 
-GLvoid StubGLClearColor(GLclampf red, GLclampf green, GLclampf blue,
-                        GLclampf alpha) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLClearColor(GLclampf red,
+                                            GLclampf green,
+                                            GLclampf blue,
+                                            GLclampf alpha) {
   glClearColor(red, green, blue, alpha);
 }
 
-GLvoid StubGLClearStencil(GLint s) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLClearStencil(GLint s) {
   glClearStencil(s);
 }
 
-GLvoid StubGLColorMask(GLboolean red, GLboolean green, GLboolean blue,
-                       GLboolean alpha) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLColorMask(GLboolean red,
+                                           GLboolean green,
+                                           GLboolean blue,
+                                           GLboolean alpha) {
   glColorMask(red, green, blue, alpha);
 }
 
-GLvoid StubGLCompileShader(GLuint shader) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLCompileShader(GLuint shader) {
   glCompileShader(shader);
 }
 
-GLvoid StubGLCompressedTexImage2D(GLenum target, GLint level,
-                                  GLenum internalformat, GLsizei width,
-                                  GLsizei height, GLint border,
-                                  GLsizei imageSize, const void* data) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLCompressedTexImage2D(GLenum target,
+                                                      GLint level,
+                                                      GLenum internalformat,
+                                                      GLsizei width,
+                                                      GLsizei height,
+                                                      GLint border,
+                                                      GLsizei imageSize,
+                                                      const void* data) {
   glCompressedTexImage2D(target, level, internalformat, width, height, border,
                          imageSize, data);
 }
 
-GLvoid StubGLCopyTexSubImage2D(GLenum target, GLint level,
-                               GLint xoffset, GLint yoffset,
-                               GLint x, GLint y,
-                               GLsizei width, GLsizei height) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLCopyTexSubImage2D(GLenum target,
+                                                   GLint level,
+                                                   GLint xoffset,
+                                                   GLint yoffset,
+                                                   GLint x,
+                                                   GLint y,
+                                                   GLsizei width,
+                                                   GLsizei height) {
   glCopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
 }
 
-GLuint StubGLCreateProgram(void) {
+GLuint GR_GL_FUNCTION_TYPE StubGLCreateProgram(void) {
   return glCreateProgram();
 }
 
-GLuint StubGLCreateShader(GLenum type) {
+GLuint GR_GL_FUNCTION_TYPE StubGLCreateShader(GLenum type) {
   return glCreateShader(type);
 }
 
-GLvoid StubGLCullFace(GLenum mode) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLCullFace(GLenum mode) {
   glCullFace(mode);
 }
 
-GLvoid StubGLDeleteBuffers(GLsizei n, const GLuint* buffers) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLDeleteBuffers(GLsizei n,
+                                               const GLuint* buffers) {
   glDeleteBuffersARB(n, buffers);
 }
 
-GLvoid StubGLDeleteFramebuffers(GLsizei n, const GLuint* framebuffers) {
+GLvoid GR_GL_FUNCTION_TYPE
+StubGLDeleteFramebuffers(GLsizei n, const GLuint* framebuffers) {
   glDeleteFramebuffersEXT(n, framebuffers);
 }
 
-GLvoid StubGLDeleteQueries(GLsizei n, const GLuint* ids) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLDeleteQueries(GLsizei n, const GLuint* ids) {
   glDeleteQueries(n, ids);
 }
 
-GLvoid StubGLDeleteProgram(GLuint program) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLDeleteProgram(GLuint program) {
   glDeleteProgram(program);
 }
 
-GLvoid StubGLDeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) {
+GLvoid GR_GL_FUNCTION_TYPE
+StubGLDeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) {
   glDeleteRenderbuffersEXT(n, renderbuffers);
 }
 
-GLvoid StubGLDeleteShader(GLuint shader) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLDeleteShader(GLuint shader) {
   glDeleteShader(shader);
 }
 
-GLvoid StubGLDeleteTextures(GLsizei n, const GLuint* textures) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLDeleteTextures(GLsizei n,
+                                                const GLuint* textures) {
   glDeleteTextures(n, textures);
 }
 
-GLvoid StubGLDeleteVertexArrays(GLsizei n, const GLuint* arrays) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLDeleteVertexArrays(GLsizei n,
+                                                    const GLuint* arrays) {
   glDeleteVertexArraysOES(n, arrays);
 }
 
-GLvoid StubGLDepthMask(GLboolean flag) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLDepthMask(GLboolean flag) {
   glDepthMask(flag);
 }
 
-GLvoid StubGLDisable(GLenum cap) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLDisable(GLenum cap) {
   glDisable(cap);
 }
 
-GLvoid StubGLDisableVertexAttribArray(GLuint index) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLDisableVertexAttribArray(GLuint index) {
   glDisableVertexAttribArray(index);
 }
 
-GLvoid StubGLDiscardFramebuffer(GLenum target, GLsizei numAttachments,
-                                const GLenum *attachments) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLDiscardFramebuffer(GLenum target,
+                                                    GLsizei numAttachments,
+                                                    const GLenum* attachments) {
   glDiscardFramebufferEXT(target, numAttachments, attachments);
 }
 
-GLvoid StubGLDrawArrays(GLenum mode, GLint first, GLsizei count) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLDrawArrays(GLenum mode,
+                                            GLint first,
+                                            GLsizei count) {
   glDrawArrays(mode, first, count);
 }
 
-GLvoid StubGLDrawBuffer(GLenum mode) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLDrawBuffer(GLenum mode) {
   glDrawBuffer(mode);
 }
 
-GLvoid StubGLDrawBuffers(GLsizei n, const GLenum* bufs) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLDrawBuffers(GLsizei n, const GLenum* bufs) {
   glDrawBuffersARB(n, bufs);
 }
 
-GLvoid StubGLDrawElements(GLenum mode, GLsizei count, GLenum type,
-                          const void* indices) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLDrawElements(GLenum mode,
+                                              GLsizei count,
+                                              GLenum type,
+                                              const void* indices) {
   glDrawElements(mode, count, type, indices);
 }
 
-GLvoid StubGLEnable(GLenum cap) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLEnable(GLenum cap) {
   glEnable(cap);
 }
 
-GLvoid StubGLEnableVertexAttribArray(GLuint index) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLEnableVertexAttribArray(GLuint index) {
   glEnableVertexAttribArray(index);
 }
 
-GLvoid StubGLEndQuery(GLenum target) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLEndQuery(GLenum target) {
   glEndQuery(target);
 }
 
-GLvoid StubGLFinish() {
+GLvoid GR_GL_FUNCTION_TYPE StubGLFinish() {
   glFinish();
 }
 
-GLvoid StubGLFlush() {
+GLvoid GR_GL_FUNCTION_TYPE StubGLFlush() {
   glFlush();
 }
 
-GLvoid StubGLFlushMappedBufferRange(GLenum target, GLintptr offset,
-                                    GLsizeiptr length) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLFlushMappedBufferRange(GLenum target,
+                                                        GLintptr offset,
+                                                        GLsizeiptr length) {
   glFlushMappedBufferRange(target, offset, length);
 }
 
-GLvoid StubGLFramebufferRenderbuffer(GLenum target, GLenum attachment,
-                                     GLenum renderbuffertarget,
-                                     GLuint renderbuffer) {
+GLvoid GR_GL_FUNCTION_TYPE
+StubGLFramebufferRenderbuffer(GLenum target,
+                              GLenum attachment,
+                              GLenum renderbuffertarget,
+                              GLuint renderbuffer) {
   glFramebufferRenderbufferEXT(target, attachment, renderbuffertarget,
                                renderbuffer);
 }
 
-GLvoid StubGLFramebufferTexture2D(GLenum target, GLenum attachment,
-                                  GLenum textarget, GLuint texture,
-                                  GLint level) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLFramebufferTexture2D(GLenum target,
+                                                      GLenum attachment,
+                                                      GLenum textarget,
+                                                      GLuint texture,
+                                                      GLint level) {
   glFramebufferTexture2DEXT(target, attachment, textarget, texture, level);
 }
 
-GLvoid StubGLFramebufferTexture2DMultisample(GLenum target, GLenum attachment,
-                                  GLenum textarget, GLuint texture,
-                                  GLint level, GLsizei samples) {
+GLvoid GR_GL_FUNCTION_TYPE
+StubGLFramebufferTexture2DMultisample(GLenum target,
+                                      GLenum attachment,
+                                      GLenum textarget,
+                                      GLuint texture,
+                                      GLint level,
+                                      GLsizei samples) {
   glFramebufferTexture2DMultisampleEXT(target, attachment, textarget, texture,
       level, samples);
 }
 
-GLvoid StubGLFrontFace(GLenum mode) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLFrontFace(GLenum mode) {
   glFrontFace(mode);
 }
 
-GLvoid StubGLGenBuffers(GLsizei n, GLuint* buffers) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGenBuffers(GLsizei n, GLuint* buffers) {
   glGenBuffersARB(n, buffers);
 }
 
-GLvoid StubGLGenFramebuffers(GLsizei n, GLuint* framebuffers) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGenFramebuffers(GLsizei n,
+                                                 GLuint* framebuffers) {
   glGenFramebuffersEXT(n, framebuffers);
 }
 
-GLvoid StubGLGenQueries(GLsizei n, GLuint* ids) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGenQueries(GLsizei n, GLuint* ids) {
   glGenQueries(n, ids);
 }
 
-GLvoid StubGLGenRenderbuffers(GLsizei n, GLuint* renderbuffers) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGenRenderbuffers(GLsizei n,
+                                                  GLuint* renderbuffers) {
   glGenRenderbuffersEXT(n, renderbuffers);
 }
 
-GLvoid StubGLGenTextures(GLsizei n, GLuint* textures) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGenTextures(GLsizei n, GLuint* textures) {
   glGenTextures(n, textures);
 }
 
-GLvoid StubGLGenVertexArrays(GLsizei n, GLuint* arrays) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGenVertexArrays(GLsizei n, GLuint* arrays) {
   glGenVertexArraysOES(n, arrays);
 }
 
-GLvoid StubGLGenerateMipmap(GLenum target){
+GLvoid GR_GL_FUNCTION_TYPE StubGLGenerateMipmap(GLenum target) {
   glGenerateMipmapEXT(target);
 }
 
-GLvoid StubGLGetBufferParameteriv(GLenum target, GLenum pname, GLint* params) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGetBufferParameteriv(GLenum target,
+                                                      GLenum pname,
+                                                      GLint* params) {
   glGetBufferParameteriv(target, pname, params);
 }
 
-GLvoid StubGLGetFramebufferAttachmentParameteriv(GLenum target,
-                                                 GLenum attachment,
-                                                 GLenum pname, GLint* params) {
+GLvoid GR_GL_FUNCTION_TYPE
+StubGLGetFramebufferAttachmentParameteriv(GLenum target,
+                                          GLenum attachment,
+                                          GLenum pname,
+                                          GLint* params) {
   glGetFramebufferAttachmentParameterivEXT(target, attachment, pname, params);
 }
 
-GLenum StubGLGetError() {
+GLenum GR_GL_FUNCTION_TYPE StubGLGetError() {
   return glGetError();
 }
 
-GLvoid StubGLGetIntegerv(GLenum pname, GLint* params) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGetIntegerv(GLenum pname, GLint* params) {
   glGetIntegerv(pname, params);
 }
 
-GLvoid StubGLGetProgramInfoLog(GLuint program, GLsizei bufsize, GLsizei* length,
-                               char* infolog) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGetProgramInfoLog(GLuint program,
+                                                   GLsizei bufsize,
+                                                   GLsizei* length,
+                                                   char* infolog) {
   glGetProgramInfoLog(program, bufsize, length, infolog);
 }
 
-GLvoid StubGLGetProgramiv(GLuint program, GLenum pname, GLint* params) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGetProgramiv(GLuint program,
+                                              GLenum pname,
+                                              GLint* params) {
   glGetProgramiv(program, pname, params);
 }
 
-GLvoid StubGLGetRenderbufferParameteriv(GLenum target,
-                                        GLenum pname, GLint* params) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGetRenderbufferParameteriv(GLenum target,
+                                                            GLenum pname,
+                                                            GLint* params) {
   glGetRenderbufferParameterivEXT(target, pname, params);
 }
 
-GLvoid StubGLGetShaderInfoLog(GLuint shader, GLsizei bufsize, GLsizei* length,
-                              char* infolog) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGetShaderInfoLog(GLuint shader,
+                                                  GLsizei bufsize,
+                                                  GLsizei* length,
+                                                  char* infolog) {
   glGetShaderInfoLog(shader, bufsize, length, infolog);
 }
 
-GLvoid StubGLGetShaderiv(GLuint shader, GLenum pname, GLint* params) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGetShaderiv(GLuint shader,
+                                             GLenum pname,
+                                             GLint* params) {
   glGetShaderiv(shader, pname, params);
 }
 
-GLvoid StubGLGetShaderPrecisionFormat(GLenum shadertype, GLenum precisiontype,
-                                      GLint *range, GLint *precision) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGetShaderPrecisionFormat(GLenum shadertype,
+                                                          GLenum precisiontype,
+                                                          GLint* range,
+                                                          GLint* precision) {
   glGetShaderPrecisionFormat(shadertype, precisiontype, range, precision);
 }
 
-const GLubyte* StubGLGetString(GLenum name) {
+const GLubyte* GR_GL_FUNCTION_TYPE StubGLGetString(GLenum name) {
   return glGetString(name);
 }
 
-const GLubyte* StubGLGetStringi(GLenum name, GLuint index) {
+const GLubyte* GR_GL_FUNCTION_TYPE StubGLGetStringi(GLenum name, GLuint index) {
   return glGetStringi(name, index);
 }
 
-GLvoid StubGLGetQueryiv(GLenum target, GLenum pname, GLint* params) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGetQueryiv(GLenum target,
+                                            GLenum pname,
+                                            GLint* params) {
   glGetQueryiv(target, pname, params);
 }
 
-GLvoid StubGLGetQueryObjecti64v(GLuint id, GLenum pname, GLint64* params) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGetQueryObjecti64v(GLuint id,
+                                                    GLenum pname,
+                                                    GLint64* params) {
   glGetQueryObjecti64v(id, pname, params);
 }
 
-GLvoid StubGLGetQueryObjectiv(GLuint id, GLenum pname, GLint* params) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGetQueryObjectiv(GLuint id,
+                                                  GLenum pname,
+                                                  GLint* params) {
   glGetQueryObjectiv(id, pname, params);
 }
 
-GLvoid StubGLGetQueryObjectui64v(GLuint id, GLenum pname, GLuint64* params) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGetQueryObjectui64v(GLuint id,
+                                                     GLenum pname,
+                                                     GLuint64* params) {
   glGetQueryObjectui64v(id, pname, params);
 }
 
-GLvoid StubGLGetQueryObjectuiv(GLuint id, GLenum pname, GLuint* params) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGetQueryObjectuiv(GLuint id,
+                                                   GLenum pname,
+                                                   GLuint* params) {
   glGetQueryObjectuiv(id, pname, params);
 }
 
-GLvoid StubGLGetTexLevelParameteriv(GLenum target, GLint level,
-                                    GLenum pname, GLint* params) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLGetTexLevelParameteriv(GLenum target,
+                                                        GLint level,
+                                                        GLenum pname,
+                                                        GLint* params) {
   glGetTexLevelParameteriv(target, level, pname, params);
 }
 
-GLint StubGLGetUniformLocation(GLuint program, const char* name) {
+GLint GR_GL_FUNCTION_TYPE StubGLGetUniformLocation(GLuint program,
+                                                   const char* name) {
   return glGetUniformLocation(program, name);
 }
 
-GLvoid StubGLInsertEventMarker(GLsizei length, const char* marker) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLInsertEventMarker(GLsizei length,
+                                                   const char* marker) {
   glInsertEventMarkerEXT(length, marker);
 }
 
-GLvoid StubGLInvalidateFramebuffer(GLenum target, GLsizei numAttachments,
-                                   const GLenum* attachments) {
+GLvoid GR_GL_FUNCTION_TYPE
+StubGLInvalidateFramebuffer(GLenum target,
+                            GLsizei numAttachments,
+                            const GLenum* attachments) {
   glInvalidateFramebuffer(target, numAttachments, attachments);
 }
 
-GLvoid StubGLInvalidateSubFramebuffer(GLenum target,
-                                      GLsizei numAttachments,
-                                      const GLenum* attachments,
-                                      GLint x, GLint y,
-                                      GLsizei width, GLsizei height) {
+GLvoid GR_GL_FUNCTION_TYPE
+StubGLInvalidateSubFramebuffer(GLenum target,
+                               GLsizei numAttachments,
+                               const GLenum* attachments,
+                               GLint x,
+                               GLint y,
+                               GLsizei width,
+                               GLsizei height) {
   glInvalidateSubFramebuffer(target, numAttachments, attachments,
                              x, y, width, height);
 }
 
-GLvoid StubGLLineWidth(GLfloat width) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLLineWidth(GLfloat width) {
   glLineWidth(width);
 }
 
-GLvoid StubGLLinkProgram(GLuint program) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLLinkProgram(GLuint program) {
   glLinkProgram(program);
 }
 
-void* StubGLMapBuffer(GLenum target, GLenum access) {
+void* GR_GL_FUNCTION_TYPE StubGLMapBuffer(GLenum target, GLenum access) {
   return glMapBuffer(target, access);
 }
 
-void* StubGLMapBufferRange(GLenum target, GLintptr offset, GLsizeiptr length,
-                           GLbitfield access) {
+void* GR_GL_FUNCTION_TYPE StubGLMapBufferRange(GLenum target,
+                                               GLintptr offset,
+                                               GLsizeiptr length,
+                                               GLbitfield access) {
   return glMapBufferRange(target, offset, length, access);
 }
 
-GLvoid StubGLPixelStorei(GLenum pname, GLint param) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLPixelStorei(GLenum pname, GLint param) {
   glPixelStorei(pname, param);
 }
 
-GLvoid StubGLPopGroupMarker() {
+GLvoid GR_GL_FUNCTION_TYPE StubGLPopGroupMarker() {
   glPopGroupMarkerEXT();
 }
 
-GLvoid StubGLPushGroupMarker(GLsizei length, const char* marker) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLPushGroupMarker(GLsizei length,
+                                                 const char* marker) {
   glPushGroupMarkerEXT(length, marker);
 }
 
-GLvoid StubGLQueryCounter(GLuint id, GLenum target) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLQueryCounter(GLuint id, GLenum target) {
   glQueryCounter(id, target);
 }
 
-GLvoid StubGLReadBuffer(GLenum src) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLReadBuffer(GLenum src) {
   glReadBuffer(src);
 }
 
-GLvoid StubGLReadPixels(GLint x, GLint y, GLsizei width, GLsizei height,
-                        GLenum format, GLenum type, void* pixels) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLReadPixels(GLint x,
+                                            GLint y,
+                                            GLsizei width,
+                                            GLsizei height,
+                                            GLenum format,
+                                            GLenum type,
+                                            void* pixels) {
   glReadPixels(x, y, width, height, format, type, pixels);
 }
 
-GLvoid StubGLRenderbufferStorage(GLenum target, GLenum internalformat,
-                                 GLsizei width, GLsizei height) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLRenderbufferStorage(GLenum target,
+                                                     GLenum internalformat,
+                                                     GLsizei width,
+                                                     GLsizei height) {
   glRenderbufferStorageEXT(target, internalformat, width, height);
 }
 
-GLvoid StubGLRenderbufferStorageMultisample(GLenum target, GLsizei samples,
-                                            GLenum internalformat,
-                                            GLsizei width, GLsizei height) {
+GLvoid GR_GL_FUNCTION_TYPE
+StubGLRenderbufferStorageMultisample(GLenum target,
+                                     GLsizei samples,
+                                     GLenum internalformat,
+                                     GLsizei width,
+                                     GLsizei height) {
   glRenderbufferStorageMultisampleEXT(target, samples, internalformat, width,
                                       height);
 }
 
-GLvoid StubGLScissor(GLint x, GLint y, GLsizei width, GLsizei height) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLScissor(GLint x,
+                                         GLint y,
+                                         GLsizei width,
+                                         GLsizei height) {
   glScissor(x, y, width, height);
 }
 
-GLvoid StubGLShaderSource(GLuint shader, GLsizei count, const char* const* str,
-                          const GLint* length) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLShaderSource(GLuint shader,
+                                              GLsizei count,
+                                              const char* const* str,
+                                              const GLint* length) {
   glShaderSource(shader, count, str, length);
 }
 
-GLvoid StubGLStencilFunc(GLenum func, GLint ref, GLuint mask) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLStencilFunc(GLenum func,
+                                             GLint ref,
+                                             GLuint mask) {
   glStencilFunc(func, ref, mask);
 }
 
-GLvoid StubGLStencilFuncSeparate(GLenum face, GLenum func, GLint ref,
-                                 GLuint mask) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLStencilFuncSeparate(GLenum face,
+                                                     GLenum func,
+                                                     GLint ref,
+                                                     GLuint mask) {
   glStencilFuncSeparate(face, func, ref, mask);
 }
 
-GLvoid StubGLStencilMask(GLuint mask) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLStencilMask(GLuint mask) {
   glStencilMask(mask);
 }
 
-GLvoid StubGLStencilMaskSeparate(GLenum face, GLuint mask) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLStencilMaskSeparate(GLenum face, GLuint mask) {
   glStencilMaskSeparate(face, mask);
 }
 
-GLvoid StubGLStencilOp(GLenum fail, GLenum zfail, GLenum zpass) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLStencilOp(GLenum fail,
+                                           GLenum zfail,
+                                           GLenum zpass) {
   glStencilOp(fail, zfail, zpass);
 }
 
-GLvoid StubGLStencilOpSeparate(GLenum face, GLenum fail, GLenum zfail,
-                               GLenum zpass) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLStencilOpSeparate(GLenum face,
+                                                   GLenum fail,
+                                                   GLenum zfail,
+                                                   GLenum zpass) {
   glStencilOpSeparate(face, fail, zfail, zpass);
 }
 
-GLvoid StubGLTexImage2D(GLenum target, GLint level, GLint internalformat,
-                        GLsizei width, GLsizei height, GLint border,
-                        GLenum format, GLenum type, const void* pixels) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLTexImage2D(GLenum target,
+                                            GLint level,
+                                            GLint internalformat,
+                                            GLsizei width,
+                                            GLsizei height,
+                                            GLint border,
+                                            GLenum format,
+                                            GLenum type,
+                                            const void* pixels) {
   glTexImage2D(target, level, internalformat, width, height, border, format,
                type, pixels);
 }
 
-GLvoid StubGLTexParameteri(GLenum target, GLenum pname, GLint param) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLTexParameteri(GLenum target,
+                                               GLenum pname,
+                                               GLint param) {
   glTexParameteri(target, pname, param);
 }
 
-GLvoid StubGLTexParameteriv(GLenum target, GLenum pname, const GLint* params) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLTexParameteriv(GLenum target,
+                                                GLenum pname,
+                                                const GLint* params) {
   glTexParameteriv(target, pname, params);
 }
 
-GLvoid StubGLTexStorage2D(GLenum target, GLsizei levels, GLenum internalFormat,
-                          GLsizei width, GLsizei height) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLTexStorage2D(GLenum target,
+                                              GLsizei levels,
+                                              GLenum internalFormat,
+                                              GLsizei width,
+                                              GLsizei height) {
   glTexStorage2DEXT(target, levels, internalFormat, width, height);
 }
 
-GLvoid StubGLTexSubImage2D(GLenum target, GLint level, GLint xoffset,
-                           GLint yoffset, GLsizei width, GLsizei height,
-                           GLenum format, GLenum type, const void* pixels) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLTexSubImage2D(GLenum target,
+                                               GLint level,
+                                               GLint xoffset,
+                                               GLint yoffset,
+                                               GLsizei width,
+                                               GLsizei height,
+                                               GLenum format,
+                                               GLenum type,
+                                               const void* pixels) {
   glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type,
                   pixels);
 }
 
-GLvoid StubGLUniform1f(GLint location, GLfloat v) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLUniform1f(GLint location, GLfloat v) {
   glUniform1f(location, v);
 }
 
-GLvoid StubGLUniform1i(GLint location, GLint v) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLUniform1i(GLint location, GLint v) {
   glUniform1i(location, v);
 }
 
-GLvoid StubGLUniform1fv(GLint location, GLsizei count, const GLfloat* v) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLUniform1fv(GLint location,
+                                            GLsizei count,
+                                            const GLfloat* v) {
   glUniform1fv(location, count, v);
 }
 
-GLvoid StubGLUniform1iv(GLint location, GLsizei count, const GLint* v) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLUniform1iv(GLint location,
+                                            GLsizei count,
+                                            const GLint* v) {
   glUniform1iv(location, count, v);
 }
 
-GLvoid StubGLUniform2f(GLint location, GLfloat v0, GLfloat v1) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLUniform2f(GLint location,
+                                           GLfloat v0,
+                                           GLfloat v1) {
   glUniform2f(location, v0, v1);
 }
 
-GLvoid StubGLUniform2i(GLint location, GLint v0, GLint v1) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLUniform2i(GLint location, GLint v0, GLint v1) {
   glUniform2i(location, v0, v1);
 }
 
-GLvoid StubGLUniform2fv(GLint location, GLsizei count, const GLfloat* v) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLUniform2fv(GLint location,
+                                            GLsizei count,
+                                            const GLfloat* v) {
   glUniform2fv(location, count, v);
 }
 
-GLvoid StubGLUniform2iv(GLint location, GLsizei count, const GLint* v) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLUniform2iv(GLint location,
+                                            GLsizei count,
+                                            const GLint* v) {
   glUniform2iv(location, count, v);
 }
 
-GLvoid StubGLUniform3f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLUniform3f(GLint location,
+                                           GLfloat v0,
+                                           GLfloat v1,
+                                           GLfloat v2) {
   glUniform3f(location, v0, v1, v2);
 }
 
-GLvoid StubGLUniform3i(GLint location, GLint v0, GLint v1, GLint v2) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLUniform3i(GLint location,
+                                           GLint v0,
+                                           GLint v1,
+                                           GLint v2) {
   glUniform3i(location, v0, v1, v2);
 }
 
-GLvoid StubGLUniform3fv(GLint location, GLsizei count, const GLfloat* v) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLUniform3fv(GLint location,
+                                            GLsizei count,
+                                            const GLfloat* v) {
   glUniform3fv(location, count, v);
 }
 
-GLvoid StubGLUniform3iv(GLint location, GLsizei count, const GLint* v) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLUniform3iv(GLint location,
+                                            GLsizei count,
+                                            const GLint* v) {
   glUniform3iv(location, count, v);
 }
 
-GLvoid StubGLUniform4f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2,
-                       GLfloat v3) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLUniform4f(GLint location,
+                                           GLfloat v0,
+                                           GLfloat v1,
+                                           GLfloat v2,
+                                           GLfloat v3) {
   glUniform4f(location, v0, v1, v2, v3);
 }
 
-GLvoid StubGLUniform4i(GLint location, GLint v0, GLint v1, GLint v2,
-                       GLint v3) {
+GLvoid GR_GL_FUNCTION_TYPE
+StubGLUniform4i(GLint location, GLint v0, GLint v1, GLint v2, GLint v3) {
   glUniform4i(location, v0, v1, v2, v3);
 }
 
-GLvoid StubGLUniform4fv(GLint location, GLsizei count, const GLfloat* v) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLUniform4fv(GLint location,
+                                            GLsizei count,
+                                            const GLfloat* v) {
   glUniform4fv(location, count, v);
 }
 
-GLvoid StubGLUniform4iv(GLint location, GLsizei count, const GLint* v) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLUniform4iv(GLint location,
+                                            GLsizei count,
+                                            const GLint* v) {
   glUniform4iv(location, count, v);
 }
 
-GLvoid StubGLUniformMatrix2fv(GLint location, GLsizei count,
-                              GLboolean transpose, const GLfloat* value) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLUniformMatrix2fv(GLint location,
+                                                  GLsizei count,
+                                                  GLboolean transpose,
+                                                  const GLfloat* value) {
   glUniformMatrix2fv(location, count, transpose, value);
 }
 
-GLvoid StubGLUniformMatrix3fv(GLint location, GLsizei count,
-                              GLboolean transpose, const GLfloat* value) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLUniformMatrix3fv(GLint location,
+                                                  GLsizei count,
+                                                  GLboolean transpose,
+                                                  const GLfloat* value) {
   glUniformMatrix3fv(location, count, transpose, value);
 }
 
-GLvoid StubGLUniformMatrix4fv(GLint location, GLsizei count,
-                              GLboolean transpose, const GLfloat* value) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLUniformMatrix4fv(GLint location,
+                                                  GLsizei count,
+                                                  GLboolean transpose,
+                                                  const GLfloat* value) {
   glUniformMatrix4fv(location, count, transpose, value);
 }
 
-GLboolean StubGLUnmapBuffer(GLenum target) {
+GLboolean GR_GL_FUNCTION_TYPE StubGLUnmapBuffer(GLenum target) {
   return glUnmapBuffer(target);
 }
 
-GLvoid StubGLUseProgram(GLuint program) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLUseProgram(GLuint program) {
   glUseProgram(program);
 }
 
-GLvoid StubGLVertexAttrib1f(GLuint indx, const GLfloat value) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLVertexAttrib1f(GLuint indx,
+                                                const GLfloat value) {
   glVertexAttrib1f(indx, value);
 }
 
-GLvoid StubGLVertexAttrib2fv(GLuint indx, const GLfloat* values) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLVertexAttrib2fv(GLuint indx,
+                                                 const GLfloat* values) {
   glVertexAttrib2fv(indx, values);
 }
 
-GLvoid StubGLVertexAttrib3fv(GLuint indx, const GLfloat* values) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLVertexAttrib3fv(GLuint indx,
+                                                 const GLfloat* values) {
   glVertexAttrib3fv(indx, values);
 }
 
-GLvoid StubGLVertexAttrib4fv(GLuint indx, const GLfloat* values) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLVertexAttrib4fv(GLuint indx,
+                                                 const GLfloat* values) {
   glVertexAttrib4fv(indx, values);
 }
 
-GLvoid StubGLVertexAttribPointer(GLuint indx, GLint size, GLenum type,
-                                 GLboolean normalized, GLsizei stride,
-                                 const void* ptr) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLVertexAttribPointer(GLuint indx,
+                                                     GLint size,
+                                                     GLenum type,
+                                                     GLboolean normalized,
+                                                     GLsizei stride,
+                                                     const void* ptr) {
   glVertexAttribPointer(indx, size, type, normalized, stride, ptr);
 }
 
-GLvoid StubGLViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
+GLvoid GR_GL_FUNCTION_TYPE StubGLViewport(GLint x,
+                                          GLint y,
+                                          GLsizei width,
+                                          GLsizei height) {
   glViewport(x, y, width, height);
 }
 
-GLint StubGLGetProgramResourceLocation(GLuint program,
-                                       GLenum programInterface,
-                                       const char* name) {
+GLint GR_GL_FUNCTION_TYPE
+StubGLGetProgramResourceLocation(GLuint program,
+                                 GLenum programInterface,
+                                 const char* name) {
   return glGetProgramResourceLocation(program, programInterface, name);
 }
 

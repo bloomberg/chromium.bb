@@ -13,7 +13,7 @@ static MojoGLES2ImplChromiumMiscellaneousThunks
     g_impl_chromium_miscellaneous_thunks = {0};
 
 #define VISIT_GL_CALL(Function, ReturnType, PARAMETERS, ARGUMENTS)  \
-  ReturnType gl##Function PARAMETERS {                              \
+  ReturnType GL_APIENTRY gl##Function PARAMETERS {                  \
     assert(g_impl_chromium_miscellaneous_thunks.Function);          \
     return g_impl_chromium_miscellaneous_thunks.Function ARGUMENTS; \
   }

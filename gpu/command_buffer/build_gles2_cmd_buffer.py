@@ -4741,7 +4741,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       f.write("\n")
 
   def WriteGLES2CLibImplementation(self, func, f):
-    f.write("%s GLES2%s(%s) {\n" %
+    f.write("%s GL_APIENTRY GLES2%s(%s) {\n" %
                (func.return_type, func.name,
                 func.MakeTypedOriginalArgString("")))
     result_string = "return "
