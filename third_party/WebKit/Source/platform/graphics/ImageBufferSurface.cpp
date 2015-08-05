@@ -62,10 +62,11 @@ void ImageBufferSurface::clear()
     // required, but the canvas is currently filled with the magic transparency
     // color. Can we have another way to manage this?
     if (isValid()) {
-        if (m_opacityMode == Opaque)
-            canvas()->drawARGB(255, 0, 0, 0, SkXfermode::kSrc_Mode);
-        else
-            canvas()->drawARGB(0, 0, 0, 0, SkXfermode::kClear_Mode);
+        if (m_opacityMode == Opaque) {
+            canvas()->clear(SK_ColorBLACK);
+        } else {
+            canvas()->clear(SK_ColorTRANSPARENT);
+        }
         didDraw(FloatRect(FloatPoint(0, 0), size()));
     }
 }
