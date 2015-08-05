@@ -40,6 +40,9 @@ class NetworkServiceImpl : public NetworkService {
   void CreateHttpServer(NetAddressPtr local_address,
                         HttpServerDelegatePtr delegate,
                         const CreateHttpServerCallback& callback) override;
+  void GetMimeTypeFromFile(
+      const mojo::String& file_path,
+      const GetMimeTypeFromFileCallback& callback) override;
 
  private:
   NetworkContext* context_;

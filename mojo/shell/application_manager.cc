@@ -134,8 +134,13 @@ void ApplicationManager::ConnectToApplication(
   }
 
   if (resolved_url.SchemeIsFile()) {
+    // LocalFetcher uses the network service to infer MIME types from URLs.
+    // Skip this for mojo URLs to avoid recursively loading the network service.
+    if (!network_service_ && !requested_gurl.SchemeIs("mojo"))
+      ConnectToService(GURL("mojo:network_service"), &network_service_);
     new LocalFetcher(
-        resolved_url, GetBaseURLAndQuery(resolved_url, nullptr),
+        network_service_.get(), resolved_url,
+        GetBaseURLAndQuery(resolved_url, nullptr),
         base::Bind(callback, NativeApplicationCleanup::DONT_DELETE));
     return;
   }

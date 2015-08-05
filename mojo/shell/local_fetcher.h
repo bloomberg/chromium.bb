@@ -5,20 +5,27 @@
 #ifndef MOJO_SHELL_LOCAL_FETCHER_H_
 #define MOJO_SHELL_LOCAL_FETCHER_H_
 
+#include <string>
+
 #include "base/files/file_path.h"
-#include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "mojo/shell/fetcher.h"
 #include "url/gurl.h"
 
 namespace mojo {
+
+class NetworkService;
+
 namespace shell {
 
 // Implements Fetcher for file:// URLs.
 class LocalFetcher : public Fetcher {
  public:
-  LocalFetcher(const GURL& url,
+  LocalFetcher(NetworkService* network_service,
+               const GURL& url,
                const GURL& url_without_query,
                const FetchCallback& loader_callback);
+
+  void GetMimeTypeFromFileCallback(const mojo::String& mime_type);
 
  private:
   const GURL& GetURL() const override;
@@ -40,11 +47,13 @@ class LocalFetcher : public Fetcher {
 
   GURL url_;
   base::FilePath path_;
+  std::string mime_type_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFetcher);
 };
 
 }  // namespace shell
+
 }  // namespace mojo
 
 #endif  // MOJO_SHELL_LOCAL_FETCHER_H_

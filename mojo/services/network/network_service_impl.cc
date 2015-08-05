@@ -12,6 +12,7 @@
 #include "mojo/services/network/udp_socket_impl.h"
 #include "mojo/services/network/url_loader_impl.h"
 #include "mojo/services/network/web_socket_impl.h"
+#include "net/base/mime_util.h"
 
 namespace mojo {
 
@@ -76,6 +77,15 @@ void NetworkServiceImpl::CreateHttpServer(
     const CreateHttpServerCallback& callback) {
   HttpServerImpl::Create(local_address.Pass(), delegate.Pass(),
                          app_refcount_->Clone(), callback);
+}
+
+void NetworkServiceImpl::GetMimeTypeFromFile(
+    const mojo::String& file_path,
+    const GetMimeTypeFromFileCallback& callback) {
+  std::string mime;
+  net::GetMimeTypeFromFile(
+      base::FilePath::FromUTF8Unsafe(file_path.To<std::string>()), &mime);
+  callback.Run(mime);
 }
 
 }  // namespace mojo

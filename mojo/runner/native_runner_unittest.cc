@@ -4,6 +4,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "mojo/runner/context.h"
+#include "mojo/runner/url_resolver.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/util/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,7 +31,8 @@ class TestNativeRunner : public shell::NativeRunner {
   }
   ~TestNativeRunner() override {
     state_->runner_was_destroyed = true;
-    base::MessageLoop::current()->Quit();
+    if (base::MessageLoop::current()->is_running())
+      base::MessageLoop::current()->Quit();
   }
   void Start(const base::FilePath& app_path,
              bool start_sandboxed,
@@ -79,8 +81,12 @@ class NativeApplicationLoaderTest : public testing::Test,
 
  private:
   // shell::ApplicationManager::Delegate
-  GURL ResolveMappings(const GURL& url) override { return url; }
-  GURL ResolveMojoURL(const GURL& url) override { return url; }
+  GURL ResolveMappings(const GURL& url) override {
+    return context_.url_resolver()->ApplyMappings(url);
+  }
+  GURL ResolveMojoURL(const GURL& url) override {
+    return context_.url_resolver()->ResolveMojoURL(url);
+  }
   bool CreateFetcher(
       const GURL& url,
       const shell::Fetcher::FetchCallback& loader_callback) override {

@@ -14,6 +14,7 @@
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/common/url_type_converters.h"
+#include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/util/filename_util.h"
 #include "url/url_util.h"
 
@@ -28,13 +29,27 @@ void IgnoreResult(bool result) {
 }  // namespace
 
 // A loader for local files.
-LocalFetcher::LocalFetcher(const GURL& url,
+LocalFetcher::LocalFetcher(NetworkService* network_service,
+                           const GURL& url,
                            const GURL& url_without_query,
                            const FetchCallback& loader_callback)
     : Fetcher(loader_callback),
       url_(url),
       path_(util::UrlToFilePath(url_without_query)) {
   TRACE_EVENT1("mojo_shell", "LocalFetcher::LocalFetcher", "url", url.spec());
+  const std::string ext(base::FilePath(path_.Extension()).AsUTF8Unsafe());
+  if (network_service && !base::EqualsCaseInsensitiveASCII(ext, ".mojo")) {
+    network_service->GetMimeTypeFromFile(
+      path_.AsUTF8Unsafe(),
+      base::Bind(&LocalFetcher::GetMimeTypeFromFileCallback,
+                 base::Unretained(this)));
+  } else {
+    loader_callback_.Run(make_scoped_ptr(this));
+  }
+}
+
+void LocalFetcher::GetMimeTypeFromFileCallback(const mojo::String& mime_type) {
+  mime_type_ = mime_type.To<std::string>();
   loader_callback_.Run(make_scoped_ptr(this));
 }
 
@@ -79,16 +94,7 @@ void LocalFetcher::AsPath(
 }
 
 std::string LocalFetcher::MimeType() {
-  // TODO(msw): Expand support; use net::GetMimeTypeFromExtension or similar.
-  std::string extension(base::FilePath(path_.Extension()).AsUTF8Unsafe());
-  if (base::EqualsCaseInsensitiveASCII(extension, ".html") ||
-      base::EqualsCaseInsensitiveASCII(extension, ".htm") ||
-      base::EqualsCaseInsensitiveASCII(extension, ".shtml") ||
-      base::EqualsCaseInsensitiveASCII(extension, ".shtm") ||
-      base::EqualsCaseInsensitiveASCII(extension, ".ehtml")) {
-    return "text/html";
-  }
-  return std::string();
+  return mime_type_;
 }
 
 bool LocalFetcher::HasMojoMagic() {
