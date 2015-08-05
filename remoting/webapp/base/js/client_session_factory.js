@@ -24,7 +24,8 @@ remoting.ClientSessionFactory = function(container, capabilities) {
     remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION,
     remoting.ClientSession.Capability.RATE_LIMIT_RESIZE_REQUESTS,
     remoting.ClientSession.Capability.VIDEO_RECORDER,
-    remoting.ClientSession.Capability.TOUCH_EVENTS
+    remoting.ClientSession.Capability.TOUCH_EVENTS,
+    remoting.ClientSession.Capability.DESKTOP_SHAPE
   ];
 
   // Append the app-specific capabilities.
@@ -123,13 +124,6 @@ function createPlugin(container, capabilities) {
       return;
     }
 
-    if (!plugin.isSupportedVersion()) {
-      console.error('ERROR: bad plugin version');
-      plugin.dispose();
-      deferred.reject(
-          new remoting.Error(remoting.Error.Tag.BAD_PLUGIN_VERSION));
-      return;
-    }
     deferred.resolve(plugin);
   }
   plugin.initialize(onInitialized);

@@ -19,9 +19,6 @@ var remoting = remoting || {};
  */
 remoting.HostDesktop = function() {};
 
-/** @return {boolean} Whether the host supports desktop resizing. */
-remoting.HostDesktop.prototype.isResizable = function() {};
-
 /** @enum {string} */
 remoting.HostDesktop.Events = {
   // Fired when the size of the host desktop changes with the desktop dimensions

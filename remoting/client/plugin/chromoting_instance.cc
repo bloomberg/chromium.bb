@@ -132,26 +132,6 @@ std::string ConnectionErrorToString(protocol::ErrorCode error) {
   return std::string();
 }
 
-bool ParseAuthMethods(
-    const std::string& auth_methods_str,
-    std::vector<protocol::AuthenticationMethod>* auth_methods) {
-  std::vector<std::string> parts;
-  base::SplitString(auth_methods_str, ',', &parts);
-  for (std::vector<std::string>::iterator it = parts.begin();
-       it != parts.end(); ++it) {
-    protocol::AuthenticationMethod authentication_method =
-        protocol::AuthenticationMethod::FromString(*it);
-    if (authentication_method.is_valid())
-      auth_methods->push_back(authentication_method);
-  }
-  if (auth_methods->empty()) {
-    LOG(ERROR) << "No valid authentication methods specified.";
-    return false;
-  }
-
-  return true;
-}
-
 // This flag blocks LOGs to the UI if we're already in the middle of logging
 // to the UI. This prevents a potential infinite loop if we encounter an error
 // while sending the log message to the UI.
@@ -166,15 +146,6 @@ base::LazyInstance<base::Lock>::Leaky
 logging::LogMessageHandlerFunction g_logging_old_handler = nullptr;
 
 }  // namespace
-
-// String sent in the "hello" message to the webapp to describe features.
-const char ChromotingInstance::kApiFeatures[] =
-    "highQualityScaling injectKeyEvent sendClipboardItem remapKey trapKey "
-    "notifyClientResolution pauseVideo pauseAudio asyncPin thirdPartyAuth "
-    "pinlessAuth extensionMessage allowMouseLock videoControl";
-
-const char ChromotingInstance::kRequestedCapabilities[] = "";
-const char ChromotingInstance::kSupportedCapabilities[] = "desktopShape";
 
 ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
     : pp::Instance(pp_instance),
@@ -235,12 +206,6 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
 
   // Send hello message.
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
-  data->SetInteger("apiVersion", kApiVersion);
-  data->SetString("apiFeatures", kApiFeatures);
-  data->SetInteger("apiMinVersion", kApiMinMessagingVersion);
-  data->SetString("requestedCapabilities", kRequestedCapabilities);
-  data->SetString("supportedCapabilities", kSupportedCapabilities);
-
   PostLegacyJsonMessage("hello", data.Pass());
 }
 
@@ -324,8 +289,6 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
     HandleSendClipboardItem(*data);
   } else if (method == "notifyClientResolution") {
     HandleNotifyClientResolution(*data);
-  } else if (method == "pauseVideo") {
-    HandlePauseVideo(*data);
   } else if (method == "videoControl") {
     HandleVideoControl(*data);
   } else if (method == "pauseAudio") {
@@ -593,14 +556,10 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   std::string local_jid;
   std::string host_jid;
   std::string host_public_key;
-  std::string auth_methods_str;
   std::string authentication_tag;
-  std::vector<protocol::AuthenticationMethod> auth_methods;
   if (!data.GetString("hostJid", &host_jid) ||
       !data.GetString("hostPublicKey", &host_public_key) ||
       !data.GetString("localJid", &local_jid) ||
-      !data.GetString("authenticationMethods", &auth_methods_str) ||
-      !ParseAuthMethods(auth_methods_str, &auth_methods) ||
       !data.GetString("authenticationTag", &authentication_tag)) {
     LOG(ERROR) << "Invalid connect() data.";
     return;
@@ -661,17 +620,10 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 #endif
   input_handler_.set_input_stub(normalizing_input_filter_.get());
 
-  // PPB_VideoDecoder is not always enabled because it's broken in some versions
-  // of Chrome. See crbug.com/447403 .
-  bool enable_video_decode_renderer = false;
-  if (data.GetBoolean("enableVideoDecodeRenderer",
-                      &enable_video_decode_renderer) &&
-      enable_video_decode_renderer) {
-    LogToWebapp("Initializing 3D renderer.");
-    video_renderer_.reset(new PepperVideoRenderer3D());
-    if (!video_renderer_->Initialize(this, context_, this))
-      video_renderer_.reset();
-  }
+  // Try initializing 3D video renderer.
+  video_renderer_.reset(new PepperVideoRenderer3D());
+  if (!video_renderer_->Initialize(this, context_, this))
+    video_renderer_.reset();
 
   // If we didn't initialize 3D renderer then use the 2D renderer.
   if (!video_renderer_) {
@@ -718,6 +670,15 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
           base::Bind(&ChromotingInstance::FetchThirdPartyToken,
                      weak_factory_.GetWeakPtr()),
           host_public_key));
+
+  std::vector<protocol::AuthenticationMethod> auth_methods;
+  auth_methods.push_back(protocol::AuthenticationMethod::ThirdParty());
+  auth_methods.push_back(protocol::AuthenticationMethod::Spake2Pair());
+  auth_methods.push_back(protocol::AuthenticationMethod::Spake2(
+      protocol::AuthenticationMethod::HMAC_SHA256));
+  auth_methods.push_back(protocol::AuthenticationMethod::Spake2(
+      protocol::AuthenticationMethod::NONE));
+
   scoped_ptr<protocol::Authenticator> authenticator(
       new protocol::NegotiatingClientAuthenticator(
           client_pairing_id, client_paired_secret, authentication_tag,
@@ -851,14 +812,6 @@ void ChromotingInstance::HandleNotifyClientResolution(
   client_resolution.set_dips_height((height * kDefaultDPI) / y_dpi);
 
   client_->host_stub()->NotifyClientResolution(client_resolution);
-}
-
-void ChromotingInstance::HandlePauseVideo(const base::DictionaryValue& data) {
-  if (!data.HasKey("pause")) {
-    LOG(ERROR) << "Invalid pauseVideo.";
-    return;
-  }
-  HandleVideoControl(data);
 }
 
 void ChromotingInstance::HandleVideoControl(const base::DictionaryValue& data) {

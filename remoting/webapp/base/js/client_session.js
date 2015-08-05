@@ -246,6 +246,9 @@ remoting.ClientSession.Capability = {
   // Indicates that the client supports 'cast'ing the video stream to a
   // cast-enabled device.
   CAST: 'casting',
+
+  // Indicates desktop shape support.
+  DESKTOP_SHAPE: 'desktopShape',
 };
 
 /**

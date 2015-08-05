@@ -53,10 +53,7 @@ remoting.ConnectedView = function(plugin, viewportElement, cursorElement) {
   );
 
   // TODO(wez): Only allow mouse lock if the app has the pointerLock permission.
-  // Enable automatic mouse-lock.
-  if (this.plugin_.hasFeature(remoting.ClientPlugin.Feature.ALLOW_MOUSE_LOCK)) {
-    this.plugin_.allowMouseLock();
-  }
+  this.plugin_.allowMouseLock();
 
   pluginElement.focus();
 };

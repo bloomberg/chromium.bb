@@ -185,7 +185,6 @@ class ChromotingInstance : public ClientUserInterface,
   void HandleTrapKey(const base::DictionaryValue& data);
   void HandleSendClipboardItem(const base::DictionaryValue& data);
   void HandleNotifyClientResolution(const base::DictionaryValue& data);
-  void HandlePauseVideo(const base::DictionaryValue& data);
   void HandleVideoControl(const base::DictionaryValue& data);
   void HandlePauseAudio(const base::DictionaryValue& data);
   void HandleOnPinFetched(const base::DictionaryValue& data);
