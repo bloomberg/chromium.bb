@@ -25,8 +25,6 @@
 #include "config.h"
 #include "platform/fonts/Font.h"
 
-#include "SkPaint.h"
-#include "SkTemplates.h"
 #include "platform/LayoutUnit.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/Character.h"
@@ -45,6 +43,7 @@
 #include "platform/text/TextRunIterator.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPaint.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CharacterNames.h"
@@ -655,12 +654,11 @@ void Font::drawGlyphs(SkCanvas* canvas, const SkPaint& paint, const SimpleFontDa
     ASSERT(glyphBuffer.size() >= from + numGlyphs);
 
     if (!glyphBuffer.hasVerticalOffsets()) {
-        SkAutoSTMalloc<64, SkScalar> storage(numGlyphs);
-        SkScalar* xpos = storage.get();
+        Vector<SkScalar, 64> xpos(numGlyphs);
         for (unsigned i = 0; i < numGlyphs; i++)
             xpos[i] = SkFloatToScalar(point.x() + glyphBuffer.xOffsetAt(from + i));
 
-        paintGlyphsHorizontal(canvas, paint, font, glyphBuffer.glyphs(from), numGlyphs, xpos,
+        paintGlyphsHorizontal(canvas, paint, font, glyphBuffer.glyphs(from), numGlyphs, xpos.data(),
             SkFloatToScalar(point.y()), textRect, deviceScaleFactor);
         return;
     }
@@ -677,15 +675,14 @@ void Font::drawGlyphs(SkCanvas* canvas, const SkPaint& paint, const SimpleFontDa
     const float verticalBaselineXOffset = drawVertically ? SkFloatToScalar(font->fontMetrics().floatAscent() - font->fontMetrics().floatAscent(IdeographicBaseline)) : 0;
 
     ASSERT(glyphBuffer.hasVerticalOffsets());
-    SkAutoSTMalloc<32, SkPoint> storage(numGlyphs);
-    SkPoint* pos = storage.get();
+    Vector<SkPoint, 32> pos(numGlyphs);
     for (unsigned i = 0; i < numGlyphs; i++) {
         pos[i].set(
             SkFloatToScalar(point.x() + verticalBaselineXOffset + glyphBuffer.xOffsetAt(from + i)),
             SkFloatToScalar(point.y() + glyphBuffer.yOffsetAt(from + i)));
     }
 
-    paintGlyphs(canvas, paint, font, glyphBuffer.glyphs(from), numGlyphs, pos, textRect, deviceScaleFactor);
+    paintGlyphs(canvas, paint, font, glyphBuffer.glyphs(from), numGlyphs, pos.data(), textRect, deviceScaleFactor);
     canvas->restoreToCount(canvasStackLevel);
 }
 
