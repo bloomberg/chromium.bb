@@ -277,9 +277,13 @@ var addTile = function(args) {
   if (args.rid) {
     var data = chrome.embeddedSearch.searchBox.getMostVisitedItemData(args.rid);
     data.tid = data.rid;
-    data.thumbnailUrls = [data.thumbnailUrl];
-    data.faviconUrl = 'chrome-search://favicon/size/16@' +
-        window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.tid;
+    if (!data.thumbnailUrls) {
+      data.thumbnailUrls = [data.thumbnailUrl];
+    }
+    if (!data.faviconUrl) {
+      data.faviconUrl = 'chrome-search://favicon/size/16@' +
+          window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.tid;
+    }
     tiles.appendChild(renderTile(data));
     logEvent(LOG_TYPE.NTP_CLIENT_SIDE_SUGGESTION);
   } else if (args.id) {

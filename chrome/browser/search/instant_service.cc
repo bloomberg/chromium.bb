@@ -4,6 +4,9 @@
 
 #include "chrome/browser/search/instant_service.h"
 
+#include "base/metrics/field_trial.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/fallback_icon_service_factory.h"
 #include "chrome/browser/favicon/large_icon_service_factory.h"
@@ -13,6 +16,7 @@
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/search/most_visited_iframe_source.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/search/suggestions/suggestions_source.h"
 #include "chrome/browser/search/thumbnail_source.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -50,10 +54,24 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #endif  // defined(ENABLE_THEMES)
 
+namespace {
+
+const char kLocalNTPSuggestionService[] = "LocalNTPSuggestionsService";
+const char kLocalNTPSuggestionServiceEnabled[] = "Enabled";
+
+bool IsLocalNTPSuggestionServiceEnabled() {
+  return base::StartsWith(
+      base::FieldTrialList::FindFullName(kLocalNTPSuggestionService),
+      kLocalNTPSuggestionServiceEnabled, base::CompareCase::INSENSITIVE_ASCII);
+}
+
+}  // namespace
+
 InstantService::InstantService(Profile* profile)
     : profile_(profile),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile_)),
       omnibox_start_margin_(search::kDisableStartMargin),
+      suggestions_service_(NULL),
       weak_ptr_factory_(this) {
   // The initialization below depends on a typical set of browser threads. Skip
   // it if we are running in a unit test without the full suite.
@@ -131,6 +149,18 @@ InstantService::InstantService(Profile* profile)
   content::URLDataSource::Add(profile_, new MostVisitedIframeSource());
   content::URLDataSource::Add(
       profile_, new suggestions::SuggestionsSource(profile_));
+
+  if (IsLocalNTPSuggestionServiceEnabled()) {
+    suggestions_service_ =
+        suggestions::SuggestionsServiceFactory::GetForProfile(profile_);
+  }
+
+  if (suggestions_service_) {
+    suggestions_service_->FetchSuggestionsData(
+        suggestions::INITIALIZED_ENABLED_HISTORY,
+        base::Bind(&InstantService::OnSuggestionsAvailable,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 InstantService::~InstantService() {
@@ -164,28 +194,42 @@ void InstantService::RemoveObserver(InstantServiceObserver* observer) {
 void InstantService::DeleteMostVisitedItem(const GURL& url) {
   scoped_refptr<history::TopSites> top_sites =
       TopSitesFactory::GetForProfile(profile_);
-  if (!top_sites)
-    return;
+  if (top_sites)
+    top_sites->AddBlacklistedURL(url);
 
-  top_sites->AddBlacklistedURL(url);
+  if (suggestions_service_) {
+    suggestions_service_->BlacklistURL(
+        url, base::Bind(&InstantService::OnSuggestionsAvailable,
+                        weak_ptr_factory_.GetWeakPtr()),
+        base::Closure());
+  }
 }
 
 void InstantService::UndoMostVisitedDeletion(const GURL& url) {
   scoped_refptr<history::TopSites> top_sites =
       TopSitesFactory::GetForProfile(profile_);
-  if (!top_sites)
-    return;
+  if (top_sites)
+    top_sites->RemoveBlacklistedURL(url);
 
-  top_sites->RemoveBlacklistedURL(url);
+  if (suggestions_service_) {
+    suggestions_service_->UndoBlacklistURL(
+        url, base::Bind(&InstantService::OnSuggestionsAvailable,
+                        weak_ptr_factory_.GetWeakPtr()),
+        base::Closure());
+  }
 }
 
 void InstantService::UndoAllMostVisitedDeletions() {
   scoped_refptr<history::TopSites> top_sites =
       TopSitesFactory::GetForProfile(profile_);
-  if (!top_sites)
-    return;
+  if (top_sites)
+    top_sites->ClearBlacklistedURLs();
 
-  top_sites->ClearBlacklistedURLs();
+  if (suggestions_service_) {
+    suggestions_service_->ClearBlacklist(
+        base::Bind(&InstantService::OnSuggestionsAvailable,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void InstantService::UpdateThemeInfo() {
@@ -266,6 +310,27 @@ void InstantService::OnRendererProcessTerminated(int process_id) {
   }
 }
 
+void InstantService::OnSuggestionsAvailable(
+    const suggestions::SuggestionsProfile& profile) {
+  std::vector<InstantMostVisitedItem> new_suggestions_items;
+  for (int i = 0; i < profile.suggestions_size(); ++i) {
+    const suggestions::ChromeSuggestion& suggestion = profile.suggestions(i);
+
+    InstantMostVisitedItem item;
+    item.url = GURL(suggestion.url());
+    item.title = base::UTF8ToUTF16(suggestion.title());
+    if (suggestion.has_thumbnail()) {
+      item.thumbnail = GURL(suggestion.thumbnail());
+    }
+    if (suggestion.has_favicon_url()) {
+      item.favicon = GURL(suggestion.favicon_url());
+    }
+    new_suggestions_items.push_back(item);
+  }
+  suggestions_items_ = new_suggestions_items;
+  NotifyAboutMostVisitedItems();
+}
+
 void InstantService::OnMostVisitedItemsReceived(
     const history::MostVisitedURLList& data) {
   history::MostVisitedURLList reordered_data(data);
@@ -283,8 +348,13 @@ void InstantService::OnMostVisitedItemsReceived(
 }
 
 void InstantService::NotifyAboutMostVisitedItems() {
-  FOR_EACH_OBSERVER(InstantServiceObserver, observers_,
-                    MostVisitedItemsChanged(most_visited_items_));
+  if (suggestions_service_ && !suggestions_items_.empty()) {
+    FOR_EACH_OBSERVER(InstantServiceObserver, observers_,
+                      MostVisitedItemsChanged(suggestions_items_));
+  } else {
+    FOR_EACH_OBSERVER(InstantServiceObserver, observers_,
+                      MostVisitedItemsChanged(most_visited_items_));
+  }
 }
 
 #if defined(ENABLE_THEMES)

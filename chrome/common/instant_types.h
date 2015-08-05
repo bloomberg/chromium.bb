@@ -123,12 +123,21 @@ struct ThemeBackgroundInfo {
 };
 
 struct InstantMostVisitedItem {
+  InstantMostVisitedItem();
+  ~InstantMostVisitedItem();
+
   // The URL of the Most Visited item.
   GURL url;
 
   // The title of the Most Visited page.  May be empty, in which case the |url|
   // is used as the title.
   base::string16 title;
+
+  // The external URL of the thumbnail associated with this page.
+  GURL thumbnail;
+
+  // The external URL of the favicon associated with this page.
+  GURL favicon;
 };
 
 // An InstantMostVisitedItem along with its assigned restricted ID.
