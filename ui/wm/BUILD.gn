@@ -149,9 +149,7 @@ test("wm_unittests") {
     "test/run_all_unittests.cc",
   ]
 
-  data = [
-    "$root_out_dir/ui_test.pak",
-  ]
+  data_deps = [ "//ui/resources:ui_test_pak" ]
 
   deps = [
     ":test_support",
