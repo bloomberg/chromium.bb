@@ -17,8 +17,7 @@ namespace blink {
 
 void SuspendableScriptExecutor::createAndRun(LocalFrame* frame, int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback* callback)
 {
-    RefPtrWillBeRawPtr<SuspendableScriptExecutor> executor = adoptRefWillBeNoop(new SuspendableScriptExecutor(frame, worldID, sources, extensionGroup, userGesture, callback));
-    executor->ref();
+    SuspendableScriptExecutor* executor = new SuspendableScriptExecutor(frame, worldID, sources, extensionGroup, userGesture, callback);
     executor->run();
 }
 
@@ -32,22 +31,17 @@ void SuspendableScriptExecutor::contextDestroyed()
 SuspendableScriptExecutor::SuspendableScriptExecutor(LocalFrame* frame, int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback* callback)
     : SuspendableTimer(frame->document())
     , m_frame(frame)
-    , m_worldID(worldID)
     , m_sources(sources)
+    , m_callback(callback)
+    , m_keepAlive(this)
+    , m_worldID(worldID)
     , m_extensionGroup(extensionGroup)
     , m_userGesture(userGesture)
-    , m_callback(callback)
-#if ENABLE(ASSERT)
-    , m_disposed(false)
-#endif
 {
 }
 
 SuspendableScriptExecutor::~SuspendableScriptExecutor()
 {
-#if ENABLE(ASSERT)
-    ASSERT(m_disposed);
-#endif
 }
 
 void SuspendableScriptExecutor::fired()
@@ -70,9 +64,6 @@ void SuspendableScriptExecutor::run()
 
 void SuspendableScriptExecutor::executeAndDestroySelf()
 {
-    // Ensure that this object is not deleted even if the context is destroyed.
-    RefPtrWillBeRawPtr<SuspendableScriptExecutor> protect(this);
-
     // after calling the destructor of object - object will be unsubscribed from
     // resumed and contextDestroyed LifecycleObserver methods
     OwnPtr<UserGestureIndicator> indicator;
@@ -99,23 +90,16 @@ void SuspendableScriptExecutor::executeAndDestroySelf()
 
 void SuspendableScriptExecutor::dispose()
 {
-#if ENABLE(ASSERT)
-    m_disposed = true;
-#endif
-
-#if ENABLE(OILPAN)
     // Remove object as a ContextLifecycleObserver.
     ActiveDOMObject::clearContext();
-#endif
-    deref();
+    m_keepAlive.clear();
+    stop();
 }
 
 DEFINE_TRACE(SuspendableScriptExecutor)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_frame);
     visitor->trace(m_sources);
-#endif
     SuspendableTimer::trace(visitor);
 }
 

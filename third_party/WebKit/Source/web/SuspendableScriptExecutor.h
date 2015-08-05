@@ -7,7 +7,6 @@
 
 #include "core/frame/SuspendableTimer.h"
 #include "platform/heap/Handle.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -16,7 +15,7 @@ class LocalFrame;
 class ScriptSourceCode;
 class WebScriptExecutionCallback;
 
-class SuspendableScriptExecutor final : public RefCountedWillBeRefCountedGarbageCollected<SuspendableScriptExecutor>, public SuspendableTimer {
+class SuspendableScriptExecutor final : public GarbageCollectedFinalized<SuspendableScriptExecutor>, public SuspendableTimer {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SuspendableScriptExecutor);
 public:
     static void createAndRun(LocalFrame*, int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback*);
@@ -24,9 +23,6 @@ public:
 
     void contextDestroyed() override;
 
-    // Eager finalization is needed to promptly stop this timer object.
-    // (see DOMTimer comment for more.)
-    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -39,14 +35,15 @@ private:
     void dispose();
 
     RefPtrWillBeMember<LocalFrame> m_frame;
-    int m_worldID;
     WillBeHeapVector<ScriptSourceCode> m_sources;
-    int m_extensionGroup;
-    bool m_userGesture;
     WebScriptExecutionCallback* m_callback;
-#if ENABLE(ASSERT)
-    bool m_disposed;
-#endif
+
+    SelfKeepAlive<SuspendableScriptExecutor> m_keepAlive;
+
+    int m_worldID;
+    int m_extensionGroup;
+
+    bool m_userGesture;
 };
 
 } // namespace blink
