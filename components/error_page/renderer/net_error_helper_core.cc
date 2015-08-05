@@ -471,6 +471,7 @@ NetErrorHelperCore::NetErrorHelperCore(Delegate* delegate,
                                        bool is_visible)
     : delegate_(delegate),
       last_probe_status_(chrome_common_net::DNS_PROBE_POSSIBLE),
+      can_show_network_diagnostics_dialog_(false),
       auto_reload_enabled_(auto_reload_enabled),
       auto_reload_visible_only_(auto_reload_visible_only),
       auto_reload_timer_(new base::Timer(false, false)),
@@ -670,10 +671,11 @@ void NetErrorHelperCore::GetErrorHTML(
     bool show_cached_page_button_in_page;
 
     delegate_->GenerateLocalizedErrorPage(
-        error, is_failed_post, scoped_ptr<ErrorPageParams>(),
-        &reload_button_in_page, &show_saved_copy_button_in_page,
-        &show_cached_copy_button_in_page, &show_cached_page_button_in_page,
-        error_html);
+        error, is_failed_post,
+        false /* No diagnostics dialogs allowed for subframes. */,
+        scoped_ptr<ErrorPageParams>(), &reload_button_in_page,
+        &show_saved_copy_button_in_page, &show_cached_copy_button_in_page,
+        &show_cached_page_button_in_page, error_html);
   }
 }
 
@@ -690,6 +692,11 @@ void NetErrorHelperCore::OnNetErrorInfo(
   }
 
   UpdateErrorPage();
+}
+
+void NetErrorHelperCore::OnSetCanShowNetworkDiagnosticsDialog(
+    bool can_show_network_diagnostics_dialog) {
+  can_show_network_diagnostics_dialog_ = can_show_network_diagnostics_dialog;
 }
 
 void NetErrorHelperCore::OnSetNavigationCorrectionInfo(
@@ -731,6 +738,7 @@ void NetErrorHelperCore::GetErrorHtmlForMainFrame(
 
   delegate_->GenerateLocalizedErrorPage(
       error, pending_error_page_info->was_failed_post,
+      can_show_network_diagnostics_dialog_,
       scoped_ptr<ErrorPageParams>(),
       &pending_error_page_info->reload_button_in_page,
       &pending_error_page_info->show_saved_copy_button_in_page,
@@ -758,7 +766,8 @@ void NetErrorHelperCore::UpdateErrorPage() {
   // by a DNS error update.
   delegate_->UpdateErrorPage(
       GetUpdatedError(committed_error_page_info_->error),
-      committed_error_page_info_->was_failed_post);
+      committed_error_page_info_->was_failed_post,
+      can_show_network_diagnostics_dialog_);
 }
 
 void NetErrorHelperCore::OnNavigationCorrectionsFetched(
@@ -794,6 +803,7 @@ void NetErrorHelperCore::OnNavigationCorrectionsFetched(
     delegate_->GenerateLocalizedErrorPage(
         pending_error_page_info_->error,
         pending_error_page_info_->was_failed_post,
+        can_show_network_diagnostics_dialog_,
         params.Pass(),
         &pending_error_page_info_->reload_button_in_page,
         &pending_error_page_info_->show_saved_copy_button_in_page,
@@ -989,6 +999,12 @@ void NetErrorHelperCore::ExecuteButtonPress(bool is_error_page, Button button) {
     case SHOW_CACHED_PAGE_BUTTON:
       chrome_common_net::RecordEvent(
           chrome_common_net::NETWORK_ERROR_PAGE_CACHED_PAGE_BUTTON_CLICKED);
+      return;
+    case DIAGNOSE_ERROR:
+      chrome_common_net::RecordEvent(
+          chrome_common_net::NETWORK_ERROR_DIAGNOSE_BUTTON_CLICKED);
+      delegate_->DiagnoseError(
+          committed_error_page_info_->error.unreachableURL);
       return;
     case BUTTON_MAX:
     case NO_BUTTON:

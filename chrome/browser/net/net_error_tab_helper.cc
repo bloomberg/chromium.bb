@@ -10,13 +10,18 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/dns_probe_service.h"
+#include "chrome/browser/net/net_error_diagnostics_dialog.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "components/error_page/common/net_error_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_view_host.h"
+#include "ipc/ipc_message_macros.h"
 #include "net/base/net_errors.h"
+#include "url/gurl.h"
 
 using chrome_common_net::DnsProbeStatus;
 using chrome_common_net::DnsProbeStatusToString;
@@ -75,6 +80,15 @@ NetErrorTabHelper::~NetErrorTabHelper() {
 // static
 void NetErrorTabHelper::set_state_for_testing(TestingState state) {
   testing_state_ = state;
+}
+
+void NetErrorTabHelper::RenderViewCreated(
+    content::RenderViewHost* render_view_host) {
+  content::RenderFrameHost* render_frame_host =
+      render_view_host->GetMainFrame();
+  render_frame_host->Send(new ChromeViewMsg_SetCanShowNetworkDiagnosticsDialog(
+      render_frame_host->GetRoutingID(),
+      CanShowNetworkDiagnosticsDialog()));
 }
 
 void NetErrorTabHelper::DidStartNavigationToPendingEntry(
@@ -143,6 +157,19 @@ void NetErrorTabHelper::DidFailProvisionalLoad(
     dns_error_active_ = true;
     OnMainFrameDnsError();
   }
+}
+
+bool NetErrorTabHelper::OnMessageReceived(
+    const IPC::Message& message,
+    content::RenderFrameHost* render_frame_host) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(NetErrorTabHelper, message)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RunNetworkDiagnostics,
+                        RunNetworkDiagnostics)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  return handled;
 }
 
 NetErrorTabHelper::NetErrorTabHelper(WebContents* contents)
@@ -230,6 +257,20 @@ void NetErrorTabHelper::SendInfo() {
 
   if (!dns_probe_status_snoop_callback_.is_null())
     dns_probe_status_snoop_callback_.Run(dns_probe_status_);
+}
+
+void NetErrorTabHelper::RunNetworkDiagnostics(const GURL& url) {
+  // Only run diagnostics on HTTP or HTTPS URLs.  Shouldn't receive URLs with
+  // any other schemes, but the renderer is not trusted.
+  if (!url.SchemeIsHTTPOrHTTPS())
+    return;
+  // Sanitize URL prior to running diagnostics on it.
+  RunNetworkDiagnosticsHelper(url.GetOrigin());
+}
+
+void NetErrorTabHelper::RunNetworkDiagnosticsHelper(
+    const GURL& sanitized_url) {
+  ShowNetworkDiagnosticsDialog(web_contents(), sanitized_url);
 }
 
 }  // namespace chrome_browser_net

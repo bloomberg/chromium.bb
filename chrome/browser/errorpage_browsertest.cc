@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -15,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/net/net_error_diagnostics_dialog.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -37,6 +39,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/http/failing_http_transaction_factory.h"
@@ -102,6 +105,17 @@ bool WARN_UNUSED_RESULT IsDisplayingNetError(Browser* browser,
   return IsDisplayingText(browser, net::ErrorToShortString(error_code));
 }
 
+// Returns true if the diagnostics button is displayed.
+bool WARN_UNUSED_RESULT IsDisplayingDiagnosticsButton(Browser* browser) {
+  std::string command = base::StringPrintf(
+      "var diagnose_button = document.getElementById('diagnose-button');"
+      "domAutomationController.send(diagnose_button.style.display != 'none');");
+  bool result = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser->tab_strip_model()->GetActiveWebContents(), command, &result));
+  return result;
+}
+
 // Checks that the local error page is being displayed, without remotely
 // retrieved navigation corrections, and with the specified error code.
 void ExpectDisplayingLocalErrorPage(Browser* browser, net::Error error_code) {
@@ -146,6 +160,10 @@ void ExpectDisplayingNavigationCorrections(Browser* browser,
           "domAutomationController.send(searchText == 'search query');",
       &search_box_populated));
   EXPECT_TRUE(search_box_populated);
+
+  // The diagnostics button isn't displayed when corrections were
+  // retrieved from a remote server.
+  EXPECT_FALSE(IsDisplayingDiagnosticsButton(browser));
 }
 
 std::string GetShowSavedButtonLabel() {
@@ -440,6 +458,17 @@ class ErrorPageTest : public InProcessBrowserTest {
     return URLRequestFailedJob::GetMockHttpUrl(net::ERR_NAME_NOT_RESOLVED);
   }
 
+  // Returns true if the platform has support for a diagnostics tool, which
+  // can be launched from the error page.
+  bool PlatformSupportsDiagnosticsTool() {
+#if defined(OS_CHROMEOS)
+    // ChromeOS uses an extension instead of a diagnostics dialog.
+    return true;
+#else
+    return CanShowNetworkDiagnosticsDialog();
+#endif
+  }
+
  private:
   // Navigates the browser the indicated direction in the history and waits for
   // |num_navigations| to occur and the title to change to |expected_title|.
@@ -511,10 +540,44 @@ void InterceptNetworkTransactions(net::URLRequestContextGetter* getter,
   cache->SetHttpNetworkTransactionFactoryForTesting(factory.Pass());
 }
 
+// Test an error with a file URL, and make sure it doesn't have a
+// button to launch a network diagnostics tool.
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, FileNotFound) {
+  // Create an empty temp directory, to be sure there's no file in it.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  GURL non_existent_file_url =
+      net::FilePathToFileURL(temp_dir.path().AppendASCII("marmoset"));
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+       browser(), non_existent_file_url, 1);
+
+  ExpectDisplayingLocalErrorPage(browser(), net::ERR_FILE_NOT_FOUND);
+  // Should not request Link Doctor corrections for local errors.
+  EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
+  // Only errors on HTTP/HTTPS pages should display a diagnostics button.
+  EXPECT_FALSE(IsDisplayingDiagnosticsButton(browser()));
+}
+
+// Check an network error page for ERR_FAILED. In particular, this should
+// not trigger a link doctor error page, and should have a diagnostics
+// button, if available on the current platform.
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, Failed) {
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+       browser(), URLRequestFailedJob::GetMockHttpUrl(net::ERR_FAILED), 1);
+
+  ExpectDisplayingLocalErrorPage(browser(), net::ERR_FAILED);
+  // Should not request Link Doctor corrections for this error.
+  EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
+
+  EXPECT_EQ(PlatformSupportsDiagnosticsTool(),
+            IsDisplayingDiagnosticsButton(browser()));
+}
+
 // Test that a DNS error occuring in the main frame redirects to an error page.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_Basic) {
-  // The first navigation should fail, and the second one should be the error
-  // page.
+  // The first navigation should fail and load a blank page, while it fetches
+  // the Link Doctor response.  The second navigation is the Link Doctor.
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
@@ -1076,6 +1139,10 @@ IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
 
   // Verify that the expected error page is being displayed.
   ExpectDisplayingLocalErrorPage(browser(), net::ERR_NAME_NOT_RESOLVED);
+
+  // Diagnostics button should be displayed, if avilable on this platform.
+  EXPECT_EQ(PlatformSupportsDiagnosticsTool(),
+            IsDisplayingDiagnosticsButton(browser()));
 }
 
 // Checks that when an error occurs and a corrections fail to load, the stale

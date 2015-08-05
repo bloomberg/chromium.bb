@@ -518,6 +518,7 @@ void LocalizedError::GetStrings(int error_code,
                                 const GURL& failed_url,
                                 bool is_post,
                                 bool stale_copy_in_cache,
+                                bool can_show_network_diagnostics_dialog,
                                 const std::string& locale,
                                 const std::string& accept_languages,
                                 scoped_ptr<error_page::ErrorPageParams> params,
@@ -735,9 +736,15 @@ void LocalizedError::GetStrings(int error_code,
   }
 
 #if defined(OS_CHROMEOS)
-  error_strings->SetString(
-      "diagnose", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DIAGNOSE));
-#endif  // defined(OS_CHROMEOS)
+  // ChromeOS has its own diagnostics extension, which doesn't rely on a
+  // browser-initiated dialog.
+  can_show_network_diagnostics_dialog = true;
+#endif
+  if (can_show_network_diagnostics_dialog && failed_url.is_valid() &&
+      failed_url.SchemeIsHTTPOrHTTPS()) {
+    error_strings->SetString(
+        "diagnose", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DIAGNOSE));
+  }
 
   if (options.suggestions & SUGGEST_CHECK_CONNECTION) {
     base::DictionaryValue* suggest_check_connection = new base::DictionaryValue;

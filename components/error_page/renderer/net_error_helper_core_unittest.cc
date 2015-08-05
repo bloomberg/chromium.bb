@@ -160,6 +160,7 @@ class NetErrorHelperCoreTest : public testing::Test,
                              error_html_update_count_(0),
                              reload_count_(0),
                              show_saved_count_(0),
+                             diagnose_error_count_(0),
                              enable_page_helper_functions_count_(0),
                              default_url_(GURL(kFailedUrl)),
                              error_url_(GURL(content::kUnreachableWebDataURL)),
@@ -204,6 +205,14 @@ class NetErrorHelperCoreTest : public testing::Test,
     return show_saved_url_;
   }
 
+  int diagnose_error_count() const {
+    return diagnose_error_count_;
+  }
+
+  const GURL& diagnose_error_url() const {
+    return diagnose_error_url_;
+  }
+
   const GURL& default_url() const {
     return default_url_;
   }
@@ -221,6 +230,10 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   const std::string& last_error_html() const { return last_error_html_; }
   int error_html_update_count() const { return error_html_update_count_; }
+
+  bool last_can_show_network_diagnostics_dialog() const {
+    return last_can_show_network_diagnostics_dialog_;
+  }
 
   const ErrorPageParams* last_error_page_params() const {
     return last_error_page_params_.get();
@@ -308,12 +321,15 @@ class NetErrorHelperCoreTest : public testing::Test,
   // NetErrorHelperCore::Delegate implementation:
   void GenerateLocalizedErrorPage(const WebURLError& error,
                                   bool is_failed_post,
+                                  bool can_show_network_diagnostics_dialog,
                                   scoped_ptr<ErrorPageParams> params,
                                   bool* reload_button_shown,
                                   bool* show_saved_copy_button_shown,
                                   bool* show_cached_copy_button_shown,
                                   bool* show_cached_page_button_shown,
                                   std::string* html) const override {
+    last_can_show_network_diagnostics_dialog_ =
+        can_show_network_diagnostics_dialog;
     last_error_page_params_.reset(params.release());
     *reload_button_shown = false;
     *show_saved_copy_button_shown = false;
@@ -332,9 +348,12 @@ class NetErrorHelperCoreTest : public testing::Test,
     enable_page_helper_functions_count_++;
   }
 
-  void UpdateErrorPage(const WebURLError& error, bool is_failed_post) override {
+  void UpdateErrorPage(const WebURLError& error, bool is_failed_post,
+                       bool can_show_network_diagnostics_dialog) override {
     update_count_++;
-    last_error_page_params_.reset(NULL);
+    last_can_show_network_diagnostics_dialog_ =
+        can_show_network_diagnostics_dialog;
+    last_error_page_params_.reset(nullptr);
     last_error_html_ = ErrorToString(error, is_failed_post);
   }
 
@@ -370,9 +389,14 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   void ReloadPage() override { reload_count_++; }
 
-  void LoadPageFromCache(const GURL& error_url) override {
+  void LoadPageFromCache(const GURL& page_url) override {
     show_saved_count_++;
-    show_saved_url_ = error_url;
+    show_saved_url_ = page_url;
+  }
+
+  void DiagnoseError(const GURL& page_url) override {
+    diagnose_error_count_++;
+    diagnose_error_url_ = page_url;
   }
 
   void SendTrackingRequest(const GURL& tracking_url,
@@ -414,12 +438,17 @@ class NetErrorHelperCoreTest : public testing::Test,
   // Number of times |last_error_html_| has been changed.
   int error_html_update_count_;
 
-  // Mutable because GenerateLocalizedErrorPage is const.
+  // Values passed in to the last call of GenerateLocalizedErrorPage or
+  // UpdateErrorPage.  Mutable because GenerateLocalizedErrorPage is const.
+  mutable bool last_can_show_network_diagnostics_dialog_;
   mutable scoped_ptr<ErrorPageParams> last_error_page_params_;
 
   int reload_count_;
   int show_saved_count_;
   GURL show_saved_url_;
+  int diagnose_error_count_;
+  GURL diagnose_error_url_;
+
 
   int enable_page_helper_functions_count_;
 
@@ -2458,7 +2487,6 @@ TEST_F(NetErrorHelperCoreHistogramTest, SuccessPageLoadedBeforeTimerFires) {
   histogram_tester_.ExpectTotalCount(kErrorAtStop, 1);
 }
 
-
 TEST_F(NetErrorHelperCoreTest, ExplicitReloadSucceeds) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   EXPECT_EQ(0, reload_count());
@@ -2472,6 +2500,22 @@ TEST_F(NetErrorHelperCoreTest, ExplicitShowSavedSucceeds) {
   core()->ExecuteButtonPress(true, NetErrorHelperCore::SHOW_SAVED_COPY_BUTTON);
   EXPECT_EQ(1, show_saved_count());
   EXPECT_EQ(GURL(kFailedUrl), show_saved_url());
+}
+
+TEST_F(NetErrorHelperCoreTest, CanNotShowNetworkDiagnostics) {
+  core()->OnSetCanShowNetworkDiagnosticsDialog(false);
+  DoErrorLoad(net::ERR_CONNECTION_RESET);
+  EXPECT_FALSE(last_can_show_network_diagnostics_dialog());
+}
+
+TEST_F(NetErrorHelperCoreTest, CanShowNetworkDiagnostics) {
+  core()->OnSetCanShowNetworkDiagnosticsDialog(true);
+  DoErrorLoad(net::ERR_CONNECTION_RESET);
+  EXPECT_TRUE(last_can_show_network_diagnostics_dialog());
+
+  core()->ExecuteButtonPress(true, NetErrorHelperCore::DIAGNOSE_ERROR);
+  EXPECT_EQ(1, diagnose_error_count());
+  EXPECT_EQ(GURL(kFailedUrl), diagnose_error_url());
 }
 
 }  // namespace

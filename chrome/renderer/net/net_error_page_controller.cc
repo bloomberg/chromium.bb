@@ -55,6 +55,10 @@ bool NetErrorPageController::TrackEasterEgg() {
   return ButtonClick(error_page::NetErrorHelperCore::EASTER_EGG);
 }
 
+bool NetErrorPageController::DiagnoseErrorsButtonClick() {
+  return ButtonClick(error_page::NetErrorHelperCore::DIAGNOSE_ERROR);
+}
+
 bool NetErrorPageController::TrackCachedCopyButtonClick(bool is_default_label) {
   return is_default_label ?
       ButtonClick(error_page::NetErrorHelperCore::SHOW_CACHED_PAGE_BUTTON) :
@@ -94,6 +98,8 @@ gin::ObjectTemplateBuilder NetErrorPageController::GetObjectTemplateBuilder(
                  &NetErrorPageController::ReloadButtonClick)
       .SetMethod("detailsButtonClick",
                  &NetErrorPageController::DetailsButtonClick)
+      .SetMethod("diagnoseErrorsButtonClick",
+                 &NetErrorPageController::DiagnoseErrorsButtonClick)
       .SetMethod("trackClick",
                  &NetErrorPageController::TrackClick)
       .SetMethod("trackEasterEgg",

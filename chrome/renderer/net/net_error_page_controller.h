@@ -63,6 +63,9 @@ class NetErrorPageController : public gin::Wrappable<NetErrorPageController> {
   // Track easter egg plays.
   bool TrackEasterEgg();
 
+  // Execute a "Diagnose Errors" button click.
+  bool DiagnoseErrorsButtonClick();
+
   // Track "Show cached copy/page" button clicks.
   bool TrackCachedCopyButtonClick(bool is_default_label);
 

@@ -320,6 +320,11 @@ IPC_MESSAGE_CONTROL0(ChromeViewHostMsg_ShowBrowserAccountManagementUI)
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_NetErrorInfo,
                     int /* DNS probe status */)
 
+// Tells the renderer whether or not there is a local diagnostics service that
+// can be run via ChromeViewHostMsg_RunNetworkDiagnostics messages.
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetCanShowNetworkDiagnosticsDialog,
+                    bool /* can_show_network_diagnostics_dialog */)
+
 // Provides the information needed by the renderer process to contact a
 // navigation correction service.  Handled by the NetErrorHelper.
 IPC_MESSAGE_ROUTED5(ChromeViewMsg_SetNavigationCorrectionInfo,
@@ -328,6 +333,9 @@ IPC_MESSAGE_ROUTED5(ChromeViewMsg_SetNavigationCorrectionInfo,
                     std::string /* origin_country */,
                     std::string /* API key to use */,
                     GURL /* Google Search URL to use */)
+
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_RunNetworkDiagnostics,
+                    GURL /* failed_url */)
 
 //-----------------------------------------------------------------------------
 // Misc messages

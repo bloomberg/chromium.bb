@@ -22,11 +22,17 @@ function toggleHelpBox() {
 }
 
 function diagnoseErrors() {
+<if expr="not chromeos">
+    if (window.errorPageController)
+      errorPageController.diagnoseErrorsButtonClick();
+</if>
+<if expr="chromeos">
   var extensionId = 'idddmepepmjcgiedknnmlbadcokidhoa';
   var diagnoseFrame = document.getElementById('diagnose-frame');
   diagnoseFrame.innerHTML =
       '<iframe src="chrome-extension://' + extensionId +
       '/index.html"></iframe>';
+</if>
 }
 
 // Subframes use a different layout but the same html file.  This is to make it

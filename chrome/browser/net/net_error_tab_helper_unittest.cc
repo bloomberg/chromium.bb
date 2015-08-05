@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/net_error_tab_helper.h"
 
+#include "chrome/common/render_messages.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/error_page/common/net_error_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -17,8 +18,8 @@ using chrome_common_net::DnsProbeStatus;
 
 class TestNetErrorTabHelper : public NetErrorTabHelper {
  public:
-  TestNetErrorTabHelper()
-      : NetErrorTabHelper(NULL),
+  explicit TestNetErrorTabHelper(content::WebContents* web_contents)
+      : NetErrorTabHelper(web_contents),
         mock_probe_running_(false),
         last_status_sent_(chrome_common_net::DNS_PROBE_MAX),
         mock_sent_count_(0) {}
@@ -33,7 +34,13 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
   DnsProbeStatus last_status_sent() const { return last_status_sent_; }
   int mock_sent_count() const { return mock_sent_count_; }
 
+  const GURL& network_diagnostics_url() const {
+    return network_diagnostics_url_;
+  }
+
  private:
+  // NetErrorTabHelper implementation:
+
   void StartDnsProbe() override {
     EXPECT_FALSE(mock_probe_running_);
     mock_probe_running_ = true;
@@ -44,9 +51,14 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
     mock_sent_count_++;
   }
 
+  void RunNetworkDiagnosticsHelper(const GURL& sanitized_url) override {
+    network_diagnostics_url_ = sanitized_url;
+  }
+
   bool mock_probe_running_;
   DnsProbeStatus last_status_sent_;
   int mock_sent_count_;
+  GURL network_diagnostics_url_;
 };
 
 class NetErrorTabHelperTest : public ChromeRenderViewHostTestHarness {
@@ -67,9 +79,15 @@ class NetErrorTabHelperTest : public ChromeRenderViewHostTestHarness {
     subframe_ = content::RenderFrameHostTester::For(main_rfh())
                     ->AppendChild("subframe");
 
-    tab_helper_.reset(new TestNetErrorTabHelper);
+    tab_helper_.reset(new TestNetErrorTabHelper(web_contents()));
     NetErrorTabHelper::set_state_for_testing(
         NetErrorTabHelper::TESTING_FORCE_ENABLED);
+  }
+
+  void TearDown() override {
+    // Have to shut down the helper before the profile.
+    tab_helper_.reset();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   void StartProvisionalLoad(MainFrame main_frame, ErrorPage error_page) {
@@ -108,6 +126,8 @@ class NetErrorTabHelperTest : public ChromeRenderViewHostTestHarness {
   bool probe_running() { return tab_helper_->mock_probe_running(); }
   DnsProbeStatus last_status_sent() { return tab_helper_->last_status_sent(); }
   int sent_count() { return tab_helper_->mock_sent_count(); }
+
+  TestNetErrorTabHelper* tab_helper() { return tab_helper_.get(); }
 
  private:
   content::RenderFrameHost* subframe_;
@@ -388,4 +408,32 @@ TEST_F(NetErrorTabHelperTest, CoalesceFailures) {
   EXPECT_FALSE(probe_running());
   EXPECT_EQ(4, sent_count());
   EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN, last_status_sent());
+}
+
+// Makes sure that URLs are sanitized before running the platform network
+// diagnostics tool.
+TEST_F(NetErrorTabHelperTest, SanitizeDiagnosticsUrl) {
+  content::RenderFrameHost* rfh = web_contents()->GetMainFrame();
+  rfh->OnMessageReceived(ChromeViewHostMsg_RunNetworkDiagnostics(
+      rfh->GetRoutingID(),
+      GURL("http://foo:bar@somewhere:123/hats?for#goats")));
+  EXPECT_EQ(GURL("http://somewhere:123/"),
+            tab_helper()->network_diagnostics_url());
+}
+
+// Makes sure that diagnostics aren't run on URLS with non-HTTP/HTTPS schemes.
+TEST_F(NetErrorTabHelperTest, NoDiagnosticsForNonHttpSchemes) {
+  const char* kUrls[] = {
+    "file:///blah/blah",
+    "chrome://blah/",
+    "about:blank",
+    "file://foo/bar",
+  };
+
+  for (const char* url : kUrls) {
+    content::RenderFrameHost* rfh = web_contents()->GetMainFrame();
+    rfh->OnMessageReceived(ChromeViewHostMsg_RunNetworkDiagnostics(
+        rfh->GetRoutingID(), GURL(url)));
+    EXPECT_EQ(GURL(""), tab_helper()->network_diagnostics_url());
+  }
 }

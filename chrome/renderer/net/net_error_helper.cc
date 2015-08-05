@@ -141,6 +141,8 @@ bool NetErrorHelper::OnMessageReceived(const IPC::Message& message) {
 
   IPC_BEGIN_MESSAGE_MAP(NetErrorHelper, message)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_NetErrorInfo, OnNetErrorInfo)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetCanShowNetworkDiagnosticsDialog,
+                        OnSetCanShowNetworkDiagnosticsDialog);
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetNavigationCorrectionInfo,
                         OnSetNavigationCorrectionInfo);
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -169,6 +171,7 @@ bool NetErrorHelper::ShouldSuppressErrorPage(blink::WebFrame* frame,
 void NetErrorHelper::GenerateLocalizedErrorPage(
     const blink::WebURLError& error,
     bool is_failed_post,
+    bool can_show_network_diagnostics_dialog,
     scoped_ptr<ErrorPageParams> params,
     bool* reload_button_shown,
     bool* show_saved_copy_button_shown,
@@ -187,6 +190,7 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
     LocalizedError::GetStrings(error.reason, error.domain.utf8(),
                                error.unreachableURL, is_failed_post,
                                error.staleCopyInCache,
+                               can_show_network_diagnostics_dialog,
                                RenderThread::Get()->GetLocale(),
                                render_frame()->GetRenderView()->
                                    GetAcceptLanguages(),
@@ -228,13 +232,15 @@ void NetErrorHelper::EnablePageHelperFunctions() {
 }
 
 void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
-                                     bool is_failed_post) {
+                                     bool is_failed_post,
+                                     bool can_show_network_diagnostics_dialog) {
   base::DictionaryValue error_strings;
   LocalizedError::GetStrings(error.reason,
                              error.domain.utf8(),
                              error.unreachableURL,
                              is_failed_post,
                              error.staleCopyInCache,
+                             can_show_network_diagnostics_dialog,
                              RenderThread::Get()->GetLocale(),
                              render_frame()->GetRenderView()->
                                  GetAcceptLanguages(),
@@ -326,12 +332,23 @@ void NetErrorHelper::LoadPageFromCache(const GURL& page_url) {
   web_frame->loadRequest(request);
 }
 
+void NetErrorHelper::DiagnoseError(const GURL& page_url) {
+  render_frame()->Send(new ChromeViewHostMsg_RunNetworkDiagnostics(
+      render_frame()->GetRoutingID(), page_url));
+}
+
 void NetErrorHelper::OnNetErrorInfo(int status_num) {
   DCHECK(status_num >= 0 && status_num < chrome_common_net::DNS_PROBE_MAX);
 
   DVLOG(1) << "Received status " << DnsProbeStatusToString(status_num);
 
   core_->OnNetErrorInfo(static_cast<DnsProbeStatus>(status_num));
+}
+
+void NetErrorHelper::OnSetCanShowNetworkDiagnosticsDialog(
+    bool can_use_local_diagnostics_service) {
+  core_->OnSetCanShowNetworkDiagnosticsDialog(
+      can_use_local_diagnostics_service);
 }
 
 void NetErrorHelper::OnSetNavigationCorrectionInfo(
@@ -341,7 +358,7 @@ void NetErrorHelper::OnSetNavigationCorrectionInfo(
     const std::string& api_key,
     const GURL& search_url) {
   core_->OnSetNavigationCorrectionInfo(navigation_correction_url, language,
-                                      country_code, api_key, search_url);
+                                       country_code, api_key, search_url);
 }
 
 void NetErrorHelper::OnNavigationCorrectionsFetched(

@@ -46,6 +46,8 @@ class NetErrorTabHelper
   }
 
   // content::WebContentsObserver implementation.
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+
   void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) override;
@@ -67,6 +69,10 @@ class NetErrorTabHelper
                               const base::string16& error_description,
                               bool was_ignored_by_handler) override;
 
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
+
+
  protected:
   // |contents| is the WebContents of the tab this NetErrorTabHelper is
   // attached to.
@@ -86,6 +92,13 @@ class NetErrorTabHelper
 
   void InitializePref(content::WebContents* contents);
   bool ProbesAllowed() const;
+
+  // Sanitizes |url| and shows a dialog for it.
+  void RunNetworkDiagnostics(const GURL& url);
+
+  // Shows the diagnostics dialog after its been sanitized, virtual for
+  // testing.
+  virtual void RunNetworkDiagnosticsHelper(const GURL& sanitized_url);
 
   // True if the last provisional load that started was for an error page.
   bool is_error_page_;
