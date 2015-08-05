@@ -7,6 +7,7 @@
 {
   'variables': {
     'boringssl_ssl_sources': [
+      'src/ssl/custom_extensions.c',
       'src/ssl/d1_both.c',
       'src/ssl/d1_clnt.c',
       'src/ssl/d1_lib.c',

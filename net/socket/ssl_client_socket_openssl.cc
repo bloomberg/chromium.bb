@@ -240,7 +240,6 @@ class SSLClientSocketOpenSSL::SSLContext {
     // but that is an OpenSSL issue.
     SSL_CTX_set_next_proto_select_cb(ssl_ctx_.get(), SelectNextProtoCallback,
                                      NULL);
-    ssl_ctx_->tlsext_channel_id_enabled_new = 1;
 
     // Disable the internal session cache. Session caching is handled
     // externally (i.e. by SSLClientSessionCacheOpenSSL).
