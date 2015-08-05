@@ -8,3 +8,4 @@
 per-file policy_templates.json=set noparent
 per-file policy_templates.json=atwilson@chromium.org
 per-file policy_templates.json=bartfab@chromium.org
+per-file policy_templates.json=tnagel@chromium.org
