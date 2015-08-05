@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
+import re
+
 from telemetry.core import util
 from telemetry.page import page as page_module
 from telemetry.page import shared_page_state
@@ -11,6 +14,8 @@ util.AddDirToPythonPath(util.GetChromiumSrcDir(), 'build', 'android')
 from pylib.constants import keyevent # pylint: disable=import-error
 from pylib.device import intent # pylint: disable=import-error
 
+
+DUMP_WAIT_TIME = 3
 
 URL_LIST = [
     'http://google.com',
@@ -29,47 +34,47 @@ URL_LIST = [
 class ForegroundPage(page_module.Page):
   """Take a measurement after loading a regular webpage."""
 
-  def __init__(self, story_set, url):
+  def __init__(self, story_set, name, url):
     super(ForegroundPage, self).__init__(
-        url=url, page_set=story_set, name=url,
+        url=url, page_set=story_set, name=name,
         shared_page_state_class=shared_page_state.SharedMobilePageState)
     self.archive_data_file = story_set.archive_data_file
 
+  def _TakeMemoryMeasurement(self, action_runner, phase):
+    android_platform = action_runner.tab.browser.platform
+    with action_runner.CreateInteraction(phase):
+      action_runner.Wait(DUMP_WAIT_TIME)
+      action_runner.ForceGarbageCollection()
+      android_platform.RelaxMemory()
+      action_runner.Wait(DUMP_WAIT_TIME)
+      if not action_runner.tab.browser.DumpMemory():
+        logging.error('Unable to get a memory dump for %s.', self.name)
+
   def RunPageInteractions(self, action_runner):
     action_runner.tab.WaitForDocumentReadyStateToBeComplete()
-    with action_runner.CreateInteraction('foreground'):
-      # TODO(perezju): This should catch a few memory dumps. When available,
-      # use the dump API to request dumps on demand crbug.com/505826
-      action_runner.Wait(7)
+    self._TakeMemoryMeasurement(action_runner, 'foreground')
 
 
-class BackgroundPage(page_module.Page):
+class BackgroundPage(ForegroundPage):
   """Take a measurement while Chrome is in the background."""
 
-  def __init__(self, story_set, number):
-    super(BackgroundPage, self).__init__(
-        url='about:blank', page_set=story_set,
-        name='chrome_background_%d' % number,
-        shared_page_state_class=shared_page_state.SharedMobilePageState)
-    self.archive_data_file = story_set.archive_data_file
+  def __init__(self, story_set, name):
+    super(BackgroundPage, self).__init__(story_set, name, 'about:blank')
 
   def RunPageInteractions(self, action_runner):
     action_runner.tab.WaitForDocumentReadyStateToBeComplete()
 
-    # launch clock app, pushing Chrome to the background
+    # Launch clock app, pushing Chrome to the background.
     android_platform = action_runner.tab.browser.platform
     android_platform.LaunchAndroidApplication(
         intent.Intent(package='com.google.android.deskclock',
                       activity='com.android.deskclock.DeskClock'),
         app_has_webviews=False)
 
-    # take measurement
-    with action_runner.CreateInteraction('background'):
-      # TODO(perezju): This should catch a few memory dumps. When available,
-      # use the dump API to request dumps on demand crbug.com/505826
-      action_runner.Wait(7)
+    # Take measurement.
+    self._TakeMemoryMeasurement(action_runner, 'background')
 
-    # go back to Chrome
+    # Go back to Chrome.
     android_platform.android_action_runner.InputKeyEvent(keyevent.KEYCODE_BACK)
 
 
@@ -81,6 +86,10 @@ class MemoryHealthStory(story.StorySet):
         archive_data_file='data/memory_health_plan.json',
         cloud_storage_bucket=story.PARTNER_BUCKET)
 
-    for number, url in enumerate(URL_LIST, 1):
-      self.AddStory(ForegroundPage(self, url))
-      self.AddStory(BackgroundPage(self, number))
+    for url in URL_LIST:
+      # We name pages so their foreground/background counterparts are easy
+      # to identify. For example 'http://google.com' becomes
+      # 'http_google_com' and 'after_http_google_com' respectively.
+      name = re.sub('\W+', '_', url)
+      self.AddStory(ForegroundPage(self, name, url))
+      self.AddStory(BackgroundPage(self, 'after_' + name))

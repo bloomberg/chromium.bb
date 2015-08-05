@@ -22,9 +22,16 @@ class MemoryHealthPlan(perf_benchmark.PerfBenchmark):
 
   page_set = page_sets.MemoryHealthStory
 
+  def SetExtraBrowserOptions(self, options):
+    # TODO(perezju): Temporary workaround to disable periodic memory dumps.
+    # See: http://crbug.com/513692
+    options.AppendExtraBrowserArgs('--enable-memory-benchmarking')
+
   def CreateTimelineBasedMeasurementOptions(self):
+    # Enable only memory-infra, to get memory dumps, and blink.console, to get
+    # the timeline markers used for mapping threads to tabs.
     trace_memory = tracing_category_filter.TracingCategoryFilter(
-      filter_string='disabled-by-default-memory-infra')
+      filter_string='-*,blink.console,disabled-by-default-memory-infra')
     return timeline_based_measurement.Options(overhead_level=trace_memory)
 
   @classmethod
