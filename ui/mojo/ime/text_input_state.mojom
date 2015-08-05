@@ -21,6 +21,7 @@ enum TextInputType {
   TIME,
   WEEK,
   TEXT_AREA,
+  LAST = TEXT_AREA,
 };
 
 // Text input flag which is based on blink::WebTextInputFlags.
@@ -29,13 +30,14 @@ enum TextInputFlag {
   AUTO_COMPLETE_ON = 0x001,
   AUTO_COMPLETE_OFF = 0x002,
   AUTO_CORRECT_ON = 0x004,
-  AUTO_CORRECT_OFF = 0x010,
-  SPELL_CHECK_ON = 0x020,
-  SPELL_CHECK_OFF = 0x040,
-  AUTO_CAPITALIZE_NONE = 0x080,
-  AUTO_CAPITALIZE_CHARACTERS = 0x100,
-  AUTO_CAPITALIZE_WORDS = 0x200,
-  AUTO_CAPITALIZE_SENTENCES = 0x400,
+  AUTO_CORRECT_OFF = 0x008,
+  SPELL_CHECK_ON = 0x010,
+  SPELL_CHECK_OFF = 0x020,
+  AUTO_CAPITALIZE_NONE = 0x040,
+  AUTO_CAPITALIZE_CHARACTERS = 0x080,
+  AUTO_CAPITALIZE_WORDS = 0x100,
+  AUTO_CAPITALIZE_SENTENCES = 0x200,
+  ALL = 0x3FF,
 };
 
 // Text input info which is based on blink::WebTextInputInfo.
@@ -65,9 +67,4 @@ struct TextInputState {
 
   // Whether or not inline composition can be performed for the current input.
   bool can_compose_inline;
-
-  // Whether or not the IME should be shown as a result of this update. Even if
-  // true, the IME will only be shown if the type is appropriate (e.g. not
-  // TEXT_INPUT_TYPE_NONE).
-  bool show_ime_if_needed;
 };

@@ -37,6 +37,7 @@ class AccessPolicy {
   virtual bool CanSetViewSurfaceId(const ServerView* view) const = 0;
   virtual bool CanSetViewBounds(const ServerView* view) const = 0;
   virtual bool CanSetViewProperties(const ServerView* view) const = 0;
+  virtual bool CanSetViewTextInputState(const ServerView* view) const = 0;
   virtual bool CanSetFocus(const ServerView* view) const = 0;
 
   // Returns whether the connection should notify on a hierarchy change.

@@ -125,6 +125,9 @@ class View {
 
   void SetSurfaceId(SurfaceIdPtr id);
 
+  void SetTextInputState(TextInputStatePtr state);
+  void SetImeVisibility(bool visible, TextInputStatePtr state);
+
   // Focus.
   void SetFocus();
   bool HasFocus() const;

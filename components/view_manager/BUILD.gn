@@ -90,6 +90,8 @@ source_set("lib") {
     "server_view_drawn_tracker.h",
     "server_view_drawn_tracker_observer.h",
     "server_view_observer.h",
+    "type_converters.cc",
+    "type_converters.h",
     "view_coordinate_conversions.cc",
     "view_coordinate_conversions.h",
     "view_locator.cc",

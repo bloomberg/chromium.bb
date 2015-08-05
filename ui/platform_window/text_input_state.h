@@ -47,15 +47,16 @@ enum TextInputFlag {
 
 // Text input info which is based on blink::WebTextInputInfo.
 struct TextInputState {
-  TextInputState()
-      : type(TEXT_INPUT_TYPE_NONE),
-        flags(TEXT_INPUT_FLAG_NONE),
-        selection_start(0),
-        selection_end(0),
-        composition_start(0),
-        composition_end(0),
-        can_compose_inline(false),
-        show_ime_if_needed(false) {}
+  TextInputState();
+  TextInputState(TextInputType type,
+                 int flags,
+                 const std::string& text,
+                 int selection_start,
+                 int selection_end,
+                 int composition_start,
+                 int composition_end,
+                 bool can_compose_inline);
+  bool operator==(const TextInputState& other) const;
 
   // The type of input field.
   TextInputType type;
@@ -82,11 +83,6 @@ struct TextInputState {
 
   // Whether or not inline composition can be performed for the current input.
   bool can_compose_inline;
-
-  // Whether or not the IME should be shown as a result of this update. Even if
-  // true, the IME will only be shown if the type is appropriate (e.g. not
-  // TEXT_INPUT_TYPE_NONE).
-  bool show_ime_if_needed;
 };
 
 }  // namespace ui

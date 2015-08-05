@@ -51,6 +51,8 @@ class ViewManagerClientImpl : public ViewManager,
   void SetProperty(Id view_id,
                    const std::string& name,
                    const std::vector<uint8_t>& data);
+  void SetViewTextInputState(Id view_id, TextInputStatePtr state);
+  void SetImeVisibility(Id view_id, bool visible, TextInputStatePtr state);
 
   void Embed(const String& url, Id view_id);
   void Embed(mojo::URLRequestPtr request,

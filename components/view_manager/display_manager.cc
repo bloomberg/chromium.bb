@@ -23,6 +23,7 @@
 #include "mojo/converters/transform/transform_type_converters.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/platform_window/platform_ime_controller.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/stub/stub_window.h"
 
@@ -193,6 +194,19 @@ void DefaultDisplayManager::SetViewportSize(const gfx::Size& size) {
 
 const mojo::ViewportMetrics& DefaultDisplayManager::GetViewportMetrics() {
   return metrics_;
+}
+
+void DefaultDisplayManager::UpdateTextInputState(
+    const ui::TextInputState& state) {
+  ui::PlatformImeController* ime = platform_window_->GetPlatformImeController();
+  if (ime)
+    ime->UpdateTextInputState(state);
+}
+
+void DefaultDisplayManager::SetImeVisibility(bool visible) {
+  ui::PlatformImeController* ime = platform_window_->GetPlatformImeController();
+  if (ime)
+    ime->SetImeVisibility(visible);
 }
 
 void DefaultDisplayManager::Draw() {

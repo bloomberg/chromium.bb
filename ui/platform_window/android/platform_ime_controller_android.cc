@@ -40,8 +40,17 @@ void PlatformImeControllerAndroid::UpdateTextInputState(
       state.selection_start,
       state.selection_end,
       state.composition_start,
-      state.composition_end,
-      state.show_ime_if_needed);
+      state.composition_end);
+}
+
+void PlatformImeControllerAndroid::SetImeVisibility(bool visible) {
+  if (java_platform_ime_controller_android_.is_empty())
+    return;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_PlatformImeControllerAndroid_setImeVisibility(
+      env,
+      java_platform_ime_controller_android_.get(env).obj(),
+      visible);
 }
 
 }  // namespace ui

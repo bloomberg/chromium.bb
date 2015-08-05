@@ -25,7 +25,6 @@ class PlatformImeControllerAndroid {
     private int mSelectionEnd = 0;
     private int mCompositionStart = 0;
     private int mCompositionEnd = 0;
-    private boolean mShowImeIfNeeded = false;
 
     private final PlatformWindowAndroid mWindow;
     private final long mNativeHandle;
@@ -67,8 +66,7 @@ class PlatformImeControllerAndroid {
 
     @CalledByNative
     private void updateTextInputState(int textInputType, int textInputFlags, String text,
-            int selectionStart, int selectionEnd, int compositionStart, int compositionEnd,
-            boolean showImeIfNeeded) {
+            int selectionStart, int selectionEnd, int compositionStart, int compositionEnd) {
         mInputType = textInputType;
         mInputFlags = textInputFlags;
         mText = text;
@@ -76,12 +74,22 @@ class PlatformImeControllerAndroid {
         mSelectionEnd = selectionEnd;
         mCompositionStart = compositionStart;
         mCompositionEnd = compositionEnd;
-        mShowImeIfNeeded = showImeIfNeeded;
         // Update keyboard visibility
-        if (textInputType == 0) {
+        if (mInputType == 0) {
             dismissInput();
-        } else if (showImeIfNeeded) {
-            showKeyboard();
+        }
+    }
+
+    @CalledByNative
+    private void setImeVisibility(boolean visible) {
+        // The IME is visible only if |mInputType| isn't 0, so we don't need
+        // change the visibility if |mInputType| is 0.
+        if (mInputType != 0) {
+            if (visible) {
+                showKeyboard();
+            } else {
+                dismissInput();
+            }
         }
     }
 

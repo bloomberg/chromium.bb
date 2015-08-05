@@ -15,6 +15,10 @@ namespace mojo {
 class ViewportMetrics;
 }
 
+namespace ui {
+struct TextInputState;
+}
+
 namespace view_manager {
 
 class ServerView;
@@ -48,6 +52,9 @@ class ServerViewObserver {
 
   virtual void OnWillChangeViewVisibility(ServerView* view) {}
   virtual void OnViewVisibilityChanged(ServerView* view) {}
+
+  virtual void OnViewTextInputStateChanged(ServerView* view,
+                                           const ui::TextInputState& state) {}
 
   virtual void OnViewSharedPropertyChanged(
       ServerView* view,

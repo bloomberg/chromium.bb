@@ -81,6 +81,11 @@ bool WindowManagerAccessPolicy::CanSetViewProperties(
   return view->id().connection_id == connection_id_;
 }
 
+bool WindowManagerAccessPolicy::CanSetViewTextInputState(
+    const ServerView* view) const {
+  return view->id().connection_id == connection_id_;
+}
+
 bool WindowManagerAccessPolicy::CanSetFocus(const ServerView* view) const {
   return true;
 }

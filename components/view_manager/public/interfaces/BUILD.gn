@@ -30,6 +30,7 @@ mojom("interfaces") {
     "//mojo/application/public/interfaces",
     "//mojo/services/network/public/interfaces",
     "//ui/mojo/events:interfaces",
+    "//ui/mojo/ime:interfaces",
     "//ui/mojo/geometry:interfaces",
   ]
 }

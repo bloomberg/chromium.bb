@@ -172,6 +172,19 @@ void ViewManagerClientImpl::SetProperty(
                             ActionCompletedCallback());
 }
 
+void ViewManagerClientImpl::SetViewTextInputState(Id view_id,
+                                                  TextInputStatePtr state) {
+  DCHECK(service_);
+  service_->SetViewTextInputState(view_id, state.Pass());
+}
+
+void ViewManagerClientImpl::SetImeVisibility(Id view_id,
+                                             bool visible,
+                                             TextInputStatePtr state) {
+  DCHECK(service_);
+  service_->SetImeVisibility(view_id, visible, state.Pass());
+}
+
 void ViewManagerClientImpl::Embed(Id view_id, ViewManagerClientPtr client) {
   DCHECK(service_);
   service_->Embed(view_id, client.Pass(), ActionCompletedCallback());

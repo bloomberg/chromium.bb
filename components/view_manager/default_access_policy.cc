@@ -88,6 +88,12 @@ bool DefaultAccessPolicy::CanSetViewProperties(const ServerView* view) const {
   return WasCreatedByThisConnection(view);
 }
 
+bool DefaultAccessPolicy::CanSetViewTextInputState(
+    const ServerView* view) const {
+  return WasCreatedByThisConnection(view) ||
+         delegate_->IsRootForAccessPolicy(view->id());
+}
+
 bool DefaultAccessPolicy::CanSetFocus(const ServerView* view) const {
   return WasCreatedByThisConnection(view) ||
          delegate_->IsRootForAccessPolicy(view->id());

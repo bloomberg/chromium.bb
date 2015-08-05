@@ -16,6 +16,7 @@
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebRemoteFrameClient.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
+#include "third_party/WebKit/public/web/WebTextInputInfo.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
 
 namespace blink {
@@ -168,6 +169,10 @@ class HTMLFrame : public blink::WebFrameClient,
   // The various frameDetached() implementations call into this.
   void FrameDetachedImpl(blink::WebFrame* web_frame);
 
+  // Update text input state from WebView to mojo::View. If the focused element
+  // is editable and |show_ime| is True, the software keyboard will be shown.
+  void UpdateTextInputState(bool show_ime);
+
   // mojo::ViewObserver methods:
   void OnViewBoundsChanged(mojo::View* view,
                            const mojo::Rect& old_bounds,
@@ -187,9 +192,18 @@ class HTMLFrame : public blink::WebFrameClient,
                                     mojo::Array<uint8_t> new_value) override;
 
   // WebViewClient methods:
-  virtual void initializeLayerTreeView() override;
-  virtual blink::WebLayerTreeView* layerTreeView() override;
   virtual blink::WebStorageNamespace* createSessionStorageNamespace();
+  virtual void didCancelCompositionOnSelectionChange();
+  virtual void didChangeContents();
+
+  // WebWidgetClient methods:
+  virtual void initializeLayerTreeView();
+  virtual blink::WebLayerTreeView* layerTreeView();
+  virtual void resetInputMethod();
+  virtual void didHandleGestureEvent(const blink::WebGestureEvent& event,
+                                     bool eventCancelled);
+  virtual void didUpdateTextOfFocusedElementByNonUserInput();
+  virtual void showImeIfNeeded();
 
   // WebFrameClient methods:
   virtual blink::WebMediaPlayer* createMediaPlayer(
@@ -264,6 +278,8 @@ class HTMLFrame : public blink::WebFrameClient,
   scoped_ptr<mojo::Binding<mandoline::FrameTreeClient>>
       frame_tree_client_binding_;
   mandoline::FrameTreeServerPtr server_;
+
+  blink::WebTextInputInfo text_input_info_;
 
   base::WeakPtrFactory<HTMLFrame> weak_factory_;
 

@@ -221,6 +221,12 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
       mojo::URLRequestPtr request,
       const mojo::Callback<void(bool)>& callback) override;
   void SetFocus(uint32_t view_id, const SetFocusCallback& callback) override;
+  void SetViewTextInputState(uint32_t view_id,
+                             mojo::TextInputStatePtr state) override;
+  void SetImeVisibility(uint32_t view_id,
+                        bool visible,
+                        mojo::TextInputStatePtr state) override;
+
 
   // AccessPolicyDelegate:
   bool IsRootForAccessPolicy(const ViewId& id) const override;

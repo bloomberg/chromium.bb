@@ -58,6 +58,9 @@ class ViewManagerRootImpl : public DisplayManagerDelegate,
   // Returns the root ServerView of this viewport.
   ServerView* root_view() { return root_.get(); }
 
+  void UpdateTextInputState(const ui::TextInputState& state);
+  void SetImeVisibility(bool visible);
+
   // ViewManagerRoot:
   void SetViewManagerRootClient(mojo::ViewManagerRootClientPtr client) override;
   void SetViewportSize(mojo::SizePtr size) override;

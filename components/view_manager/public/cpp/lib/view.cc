@@ -361,6 +361,22 @@ void View::SetSurfaceId(SurfaceIdPtr id) {
   }
 }
 
+void View::SetTextInputState(TextInputStatePtr state) {
+  if (manager_) {
+    static_cast<ViewManagerClientImpl*>(manager_)
+        ->SetViewTextInputState(id_, state.Pass());
+  }
+}
+
+void View::SetImeVisibility(bool visible, TextInputStatePtr state) {
+  // SetImeVisibility() shouldn't be used if the view is not editable.
+  DCHECK(state.is_null() || state->type != TEXT_INPUT_TYPE_NONE);
+  if (manager_) {
+    static_cast<ViewManagerClientImpl*>(manager_)
+        ->SetImeVisibility(id_, visible, state.Pass());
+  }
+}
+
 void View::SetFocus() {
   if (manager_)
     static_cast<ViewManagerClientImpl*>(manager_)->SetFocus(id_);

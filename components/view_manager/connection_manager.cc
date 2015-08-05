@@ -8,7 +8,6 @@
 #include "base/stl_util.h"
 #include "components/view_manager/client_connection.h"
 #include "components/view_manager/connection_manager_delegate.h"
-#include "components/view_manager/display_manager.h"
 #include "components/view_manager/focus_controller.h"
 #include "components/view_manager/server_view.h"
 #include "components/view_manager/view_coordinate_conversions.h"
@@ -257,7 +256,6 @@ void ConnectionManager::OnAccelerator(ServerView* root, mojo::EventPtr event) {
   }
 }
 
-
 ViewManagerServiceImpl* ConnectionManager::GetConnection(
     ConnectionSpecificId connection_id) {
   ConnectionMap::iterator i = connection_map_.find(connection_id);
@@ -317,12 +315,10 @@ bool ConnectionManager::DidConnectionMessageClient(
 
 mojo::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForView(
     const ServerView* view) {
-  for (auto& pair : root_connection_map_) {
-    if (view == pair.first->root_view() ||
-        pair.first->root_view()->Contains(view)) {
-      return pair.first->GetViewportMetrics().Clone();
-    }
-  }
+  ViewManagerRootImpl* view_manager_root = GetViewManagerRootByView(view);
+  if (view_manager_root)
+    return view_manager_root->GetViewportMetrics().Clone();
+
   if (!root_connection_map_.empty())
     return root_connection_map_.begin()->first->GetViewportMetrics().Clone();
 
@@ -398,6 +394,15 @@ void ConnectionManager::RemoveAccelerator(ViewManagerRootImpl* root,
                                           mojo::KeyboardCode keyboard_code,
                                           mojo::EventFlags flags) {
   event_dispatcher_.RemoveAccelerator(keyboard_code, flags);
+}
+
+void ConnectionManager::SetImeVisibility(ServerView* view, bool visible) {
+  // Do not need to show or hide IME for unfocused view.
+  if (focus_controller_->GetFocusedView() != view)
+    return;
+
+  ViewManagerRootImpl* view_manager_root = GetViewManagerRootByView(view);
+  view_manager_root->SetImeVisibility(visible);
 }
 
 void ConnectionManager::ProcessViewBoundsChanged(const ServerView* view,
@@ -482,6 +487,17 @@ void ConnectionManager::AddConnection(ClientConnection* connection) {
   connection_map_[connection->service()->id()] = connection;
 }
 
+ViewManagerRootImpl* ConnectionManager::GetViewManagerRootByView(
+    const ServerView* view) const {
+  while (view && view->parent())
+    view = view->parent();
+  for (auto& pair : root_connection_map_) {
+    if (view == pair.first->root_view())
+      return pair.first;
+  }
+  return nullptr;
+}
+
 void ConnectionManager::PrepareToDestroyView(ServerView* view) {
   if (!in_destructor_ && IsViewAttachedToRoot(view) &&
       view->id() != ClonedViewId()) {
@@ -536,13 +552,8 @@ void ConnectionManager::OnScheduleViewPaint(const ServerView* view) {
 }
 
 const ServerView* ConnectionManager::GetRootView(const ServerView* view) const {
-  while (view && view->parent())
-    view = view->parent();
-  for (auto& pair : root_connection_map_) {
-    if (pair.first->root_view() == view)
-      return view;
-  }
-  return nullptr;
+  ViewManagerRootImpl* view_manager_root = GetViewManagerRootByView(view);
+  return view_manager_root ? view_manager_root->root_view() : nullptr;
 }
 
 void ConnectionManager::OnViewDestroyed(ServerView* view) {
@@ -623,6 +634,17 @@ void ConnectionManager::OnViewSharedPropertyChanged(
   }
 }
 
+void ConnectionManager::OnViewTextInputStateChanged(
+    ServerView* view,
+    const ui::TextInputState& state) {
+  // Do not need to update text input for unfocused views.
+  if (focus_controller_->GetFocusedView() != view)
+    return;
+
+  ViewManagerRootImpl* view_manager_root = GetViewManagerRootByView(view);
+  view_manager_root->UpdateTextInputState(state);
+}
+
 void ConnectionManager::CloneAndAnimate(mojo::Id transport_view_id) {
   CloneAndAnimate(ViewIdFromTransportId(transport_view_id));
 }
@@ -680,6 +702,19 @@ void ConnectionManager::OnFocusChanged(ServerView* old_focused_view,
         service != embedded_connection_new) {
       service->ProcessFocusChanged(old_focused_view, new_focused_view);
     }
+  }
+
+  ViewManagerRootImpl* old_view_manager_root =
+      old_focused_view ? GetViewManagerRootByView(old_focused_view) : nullptr;
+
+  ViewManagerRootImpl* new_view_manager_root =
+      new_focused_view ? GetViewManagerRootByView(new_focused_view) : nullptr;
+
+  if (new_view_manager_root) {
+    new_view_manager_root->UpdateTextInputState(
+        new_focused_view->text_input_state());
+  } else if (old_view_manager_root) {
+    old_view_manager_root->UpdateTextInputState(ui::TextInputState());
   }
 }
 

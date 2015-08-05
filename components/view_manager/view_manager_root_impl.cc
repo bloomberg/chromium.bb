@@ -54,6 +54,15 @@ const mojo::ViewportMetrics& ViewManagerRootImpl::GetViewportMetrics() const {
   return display_manager_->GetViewportMetrics();
 }
 
+void ViewManagerRootImpl::UpdateTextInputState(
+    const ui::TextInputState& state) {
+  display_manager_->UpdateTextInputState(state);
+}
+
+void ViewManagerRootImpl::SetImeVisibility(bool visible) {
+  display_manager_->SetImeVisibility(visible);
+}
+
 void ViewManagerRootImpl::SetViewManagerRootClient(
     mojo::ViewManagerRootClientPtr client) {
   client_ = client.Pass();

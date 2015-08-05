@@ -16,6 +16,9 @@ class PlatformImeController {
 
   // Update the text input state.
   virtual void UpdateTextInputState(const TextInputState& state) = 0;
+
+  // Set visibility of input method editor UI (software keyboard, etc).
+  virtual void SetImeVisibility(bool visible) = 0;
 };
 
 }  // namespace ui

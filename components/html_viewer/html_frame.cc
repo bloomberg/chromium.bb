@@ -68,6 +68,53 @@ using mojo::URLResponsePtr;
 using mojo::View;
 using mojo::WeakBindToRequest;
 
+namespace mojo {
+
+#define TEXT_INPUT_TYPE_ASSERT(NAME, Name) \
+  COMPILE_ASSERT(static_cast<int32>(TEXT_INPUT_TYPE_##NAME) == \
+                 static_cast<int32>(blink::WebTextInputType##Name), \
+                 text_input_type_should_match)
+TEXT_INPUT_TYPE_ASSERT(NONE, None);
+TEXT_INPUT_TYPE_ASSERT(TEXT, Text);
+TEXT_INPUT_TYPE_ASSERT(PASSWORD, Password);
+TEXT_INPUT_TYPE_ASSERT(SEARCH, Search);
+TEXT_INPUT_TYPE_ASSERT(EMAIL, Email);
+TEXT_INPUT_TYPE_ASSERT(NUMBER, Number);
+TEXT_INPUT_TYPE_ASSERT(TELEPHONE, Telephone);
+TEXT_INPUT_TYPE_ASSERT(URL, URL);
+TEXT_INPUT_TYPE_ASSERT(DATE, Date);
+TEXT_INPUT_TYPE_ASSERT(DATE_TIME, DateTime);
+TEXT_INPUT_TYPE_ASSERT(DATE_TIME_LOCAL, DateTimeLocal);
+TEXT_INPUT_TYPE_ASSERT(MONTH, Month);
+TEXT_INPUT_TYPE_ASSERT(TIME, Time);
+TEXT_INPUT_TYPE_ASSERT(WEEK, Week);
+TEXT_INPUT_TYPE_ASSERT(TEXT_AREA, TextArea);
+
+#define TEXT_INPUT_FLAG_ASSERT(NAME, Name) \
+  COMPILE_ASSERT(static_cast<int32>(TEXT_INPUT_FLAG_##NAME) == \
+                 static_cast<int32>(blink::WebTextInputFlag##Name), \
+                 text_input_flag_should_match)
+TEXT_INPUT_FLAG_ASSERT(NONE, None);
+TEXT_INPUT_FLAG_ASSERT(AUTO_COMPLETE_ON, AutocompleteOn);
+TEXT_INPUT_FLAG_ASSERT(AUTO_COMPLETE_OFF, AutocompleteOff);
+TEXT_INPUT_FLAG_ASSERT(AUTO_CORRECT_ON, AutocorrectOn);
+TEXT_INPUT_FLAG_ASSERT(AUTO_CORRECT_OFF, AutocorrectOff);
+TEXT_INPUT_FLAG_ASSERT(SPELL_CHECK_ON, SpellcheckOn);
+TEXT_INPUT_FLAG_ASSERT(SPELL_CHECK_OFF, SpellcheckOff);
+TEXT_INPUT_FLAG_ASSERT(AUTO_CAPITALIZE_NONE, AutocapitalizeNone);
+TEXT_INPUT_FLAG_ASSERT(AUTO_CAPITALIZE_CHARACTERS, AutocapitalizeCharacters);
+TEXT_INPUT_FLAG_ASSERT(AUTO_CAPITALIZE_WORDS, AutocapitalizeWords);
+TEXT_INPUT_FLAG_ASSERT(AUTO_CAPITALIZE_SENTENCES, AutocapitalizeSentences);
+
+template <>
+struct TypeConverter<TextInputType, blink::WebTextInputType> {
+  static TextInputType Convert(const blink::WebTextInputType& input) {
+    return static_cast<TextInputType>(input);
+  }
+};
+
+}  // namespace mojo
+
 namespace html_viewer {
 namespace {
 
@@ -518,6 +565,19 @@ void HTMLFrame::OnFrameClientPropertyChanged(uint32_t frame_id,
   frame_tree_manager_->ProcessOnFrameClientPropertyChanged(this, frame_id, name,
                                                            new_value.Pass());
 }
+
+blink::WebStorageNamespace* HTMLFrame::createSessionStorageNamespace() {
+  return new WebStorageNamespaceImpl();
+}
+
+void HTMLFrame::didCancelCompositionOnSelectionChange() {
+  // TODO(penghuang): Update text input state.
+}
+
+void HTMLFrame::didChangeContents() {
+  // TODO(penghuang): Update text input state.
+}
+
 void HTMLFrame::initializeLayerTreeView() {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From("mojo:surfaces_service");
@@ -539,8 +599,40 @@ blink::WebLayerTreeView* HTMLFrame::layerTreeView() {
   return web_layer_tree_view_impl_.get();
 }
 
-blink::WebStorageNamespace* HTMLFrame::createSessionStorageNamespace() {
-  return new WebStorageNamespaceImpl();
+void HTMLFrame::resetInputMethod() {
+  // When this method gets called, WebWidgetClient implementation should
+  // reset the input method by cancelling any ongoing composition.
+  // TODO(penghuang): Reset IME.
+}
+
+void HTMLFrame::didHandleGestureEvent(const blink::WebGestureEvent& event,
+                                      bool eventCancelled) {
+  // Called when a gesture event is handled.
+  if (eventCancelled)
+    return;
+
+  if (event.type == blink::WebInputEvent::GestureTap) {
+    const bool show_ime = true;
+    UpdateTextInputState(show_ime);
+  } else if (event.type == blink::WebInputEvent::GestureLongPress) {
+    // Only show IME if the textfield contains text.
+    const bool show_ime =
+        !web_view()->textInputInfo().value.isEmpty();
+    UpdateTextInputState(show_ime);
+  }
+}
+
+void HTMLFrame::didUpdateTextOfFocusedElementByNonUserInput() {
+  // Called when value of focused textfield gets dirty, e.g. value is
+  // modified by script, not by user input.
+  const bool show_ime = false;
+  UpdateTextInputState(show_ime);
+}
+
+void HTMLFrame::showImeIfNeeded() {
+  // Request the browser to show the IME for current input type.
+  const bool show_ime = true;
+  UpdateTextInputState(show_ime);
 }
 
 blink::WebMediaPlayer* HTMLFrame::createMediaPlayer(
@@ -703,6 +795,27 @@ void HTMLFrame::frameDetached(blink::WebRemoteFrameClient::DetachType type) {
 
   DCHECK(type == blink::WebRemoteFrameClient::DetachType::Remove);
   FrameDetachedImpl(web_frame_);
+}
+
+void HTMLFrame::UpdateTextInputState(bool show_ime) {
+  blink::WebTextInputInfo new_info = web_view()->textInputInfo();
+  // Only show IME if the focused element is editable.
+  show_ime = show_ime && new_info.type != blink::WebTextInputTypeNone;
+  if (show_ime || text_input_info_ != new_info) {
+    text_input_info_ = new_info;
+    mojo::TextInputStatePtr state = mojo::TextInputState::New();
+    state->type = mojo::ConvertTo<mojo::TextInputType>(new_info.type);
+    state->flags = new_info.flags;
+    state->text = mojo::String::From(new_info.value.utf8());
+    state->selection_start = new_info.selectionStart;
+    state->selection_end = new_info.selectionEnd;
+    state->composition_start = new_info.compositionStart;
+    state->composition_end = new_info.compositionEnd;
+    if (show_ime)
+      view_->SetImeVisibility(true, state.Pass());
+    else
+      view_->SetTextInputState(state.Pass());
+  }
 }
 
 void HTMLFrame::postMessageEvent(blink::WebLocalFrame* source_frame,

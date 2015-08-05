@@ -36,6 +36,7 @@ class ApplicationImpl;
 
 namespace ui {
 class PlatformWindow;
+struct TextInputState;
 }
 
 namespace view_manager {
@@ -64,6 +65,9 @@ class DisplayManager {
 
   virtual const mojo::ViewportMetrics& GetViewportMetrics() = 0;
 
+  virtual void UpdateTextInputState(const ui::TextInputState& state) = 0;
+  virtual void SetImeVisibility(bool visible) = 0;
+
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
   static void set_factory_for_testing(DisplayManagerFactory* factory) {
@@ -91,6 +95,8 @@ class DefaultDisplayManager :
   void SchedulePaint(const ServerView* view, const gfx::Rect& bounds) override;
   void SetViewportSize(const gfx::Size& size) override;
   const mojo::ViewportMetrics& GetViewportMetrics() override;
+  void UpdateTextInputState(const ui::TextInputState& state) override;
+  void SetImeVisibility(bool visible) override;
 
  private:
   void WantToDraw();

@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "components/view_manager/animation_runner.h"
-#include "components/view_manager/display_manager.h"
 #include "components/view_manager/event_dispatcher.h"
 #include "components/view_manager/focus_controller_delegate.h"
 #include "components/view_manager/ids.h"
@@ -132,8 +131,6 @@ class ConnectionManager : public ServerViewDelegate,
     return current_change_ && current_change_->is_delete_view();
   }
 
-  ViewManagerRootImpl* view_manager_root() { return view_manager_root_.get(); }
-
   // Invoked when the ViewManagerRootImpl's display is closed.
   void OnDisplayClosed();
 
@@ -172,6 +169,10 @@ class ConnectionManager : public ServerViewDelegate,
   void RemoveAccelerator(ViewManagerRootImpl* root,
                          mojo::KeyboardCode keyboard_code,
                          mojo::EventFlags flags);
+
+  // Set IME's visibility for the specified view. If the view is not the current
+  // focused view, this function will do nothing.
+  void SetImeVisibility(ServerView* view, bool visible);
 
   // These functions trivially delegate to all ViewManagerServiceImpls, which in
   // term notify their clients.
@@ -220,6 +221,8 @@ class ConnectionManager : public ServerViewDelegate,
   // Adds |connection| to internal maps.
   void AddConnection(ClientConnection* connection);
 
+  ViewManagerRootImpl* GetViewManagerRootByView(const ServerView* view) const;
+
   // Overridden from ServerViewDelegate:
   void PrepareToDestroyView(ServerView* view) override;
   void PrepareToChangeViewHierarchy(ServerView* view,
@@ -248,6 +251,8 @@ class ConnectionManager : public ServerViewDelegate,
       ServerView* view,
       const std::string& name,
       const std::vector<uint8_t>* new_data) override;
+  void OnViewTextInputStateChanged(ServerView* view,
+                                   const ui::TextInputState& state) override;
 
   void CloneAndAnimate(mojo::Id transport_view_id);
 
@@ -276,8 +281,6 @@ class ConnectionManager : public ServerViewDelegate,
   ScopedChange* current_change_;
 
   bool in_destructor_;
-
-  scoped_ptr<ViewManagerRootImpl> view_manager_root_;
 
   // TODO(sky): nuke! Just a proof of concept until get real animation api.
   base::RepeatingTimer<ConnectionManager> animation_timer_;

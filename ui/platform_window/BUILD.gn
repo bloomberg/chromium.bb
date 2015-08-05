@@ -9,6 +9,7 @@ source_set("platform_window") {
     "platform_ime_controller.h",
     "platform_window.h",
     "platform_window_delegate.h",
+    "text_input_state.cc",
     "text_input_state.h",
   ]
 

@@ -191,6 +191,17 @@ void ServerView::SetProperty(const std::string& name,
                     OnViewSharedPropertyChanged(this, name, value));
 }
 
+void ServerView::SetTextInputState(const ui::TextInputState& state) {
+  const bool changed = !(text_input_state_ == state);
+  if (changed) {
+    text_input_state_ = state;
+    // keyboard even if the state is not changed. So we have to notify
+    // |observers_|.
+    FOR_EACH_OBSERVER(ServerViewObserver, observers_,
+                      OnViewTextInputStateChanged(this, state));
+  }
+}
+
 bool ServerView::IsDrawn() const {
   const ServerView* root = delegate_->GetRootView(this);
   if (!root || !root->visible())

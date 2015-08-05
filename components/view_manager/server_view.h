@@ -14,6 +14,7 @@
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
+#include "ui/platform_window/text_input_state.h"
 
 namespace view_manager {
 
@@ -80,6 +81,11 @@ class ServerView {
   }
   void SetProperty(const std::string& name, const std::vector<uint8_t>* value);
 
+  void SetTextInputState(const ui::TextInputState& state);
+  const ui::TextInputState& text_input_state() const {
+    return text_input_state_;
+  }
+
   // Returns true if this view is attached to a root and all ancestors are
   // visible.
   bool IsDrawn() const;
@@ -112,6 +118,7 @@ class ServerView {
   float opacity_;
   gfx::Transform transform_;
   bool allows_reembed_;
+  ui::TextInputState text_input_state_;
 
   std::map<std::string, std::vector<uint8_t>> properties_;
 

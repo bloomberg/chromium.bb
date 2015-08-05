@@ -24,6 +24,7 @@ class PlatformImeControllerAndroid : public PlatformImeController {
  private:
   // Overridden from PlatformImeController:
   void UpdateTextInputState(const TextInputState& state) override;
+  void SetImeVisibility(bool visible) override;
 
   JavaObjectWeakGlobalRef java_platform_ime_controller_android_;
 
