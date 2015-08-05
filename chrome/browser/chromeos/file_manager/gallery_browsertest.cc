@@ -210,4 +210,15 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_ExposureImageOnDrive) {
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
+                       RenameImageInThumbnailModeOnDownloads) {
+  set_test_case_name("renameImageInThumbnailModeOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RenameImageInThumbnailModeOnDrive) {
+  set_test_case_name("renameImageInThumbnailModeOnDrive");
+  StartTest();
+}
+
 }  // namespace file_manager

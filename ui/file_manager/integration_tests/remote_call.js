@@ -232,6 +232,23 @@ RemoteCall.prototype.getFilesUnderVolume = function(volumeType, names) {
 };
 
 /**
+ * Waits for a single file.
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @param {string} name File name.
+ * @return {!Promise} Promise to be fulfilled when the file had found.
+ */
+RemoteCall.prototype.waitForAFile = function(volumeType, name) {
+  return repeatUntil(function() {
+    return this.getFilesUnderVolume(volumeType, [name])
+        .then(function(urls) {
+          if (urls.length === 1)
+            return true;
+          return pending('"' + name + '" is not found.');
+        });
+  }.bind(this));
+};
+
+/**
  * Class to manipulate the window in the remote extension.
  *
  * @param {string} extensionId ID of extension to be manipulated.
@@ -469,4 +486,18 @@ RemoteCallGallery.prototype.waitForPressEnterMessage = function(appId) {
         chrome.test.assertEq(
             'Press Enter when done', element.text.trim());
       });
+};
+
+/**
+ * Shorthand for selecting an image in thumbnail mode.
+ * @param {string} appId App id.
+ * @param {string} name File name to be selected.
+ * @return {!Promise<boolean>} A promise which will be resolved with true if the
+ *     thumbnail has clicked. This method does not guarantee whether the
+ *     thumbnail has actually selected or not.
+ */
+RemoteCallGallery.prototype.selectImageInThumbnailMode = function(appId, name) {
+  return this.callRemoteTestUtil('fakeMouseClick', appId,
+      ['.thumbnail-view > ul > li[aria-label="' + name +
+       '"] > .selection.frame']);
 };

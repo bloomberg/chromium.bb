@@ -49,16 +49,9 @@ function renameImage(testVolumeName, volumeType) {
     appId = args.appId;
     return gallery.waitForSlideImage(appId, 800, 600, 'My Desktop Background');
   }).then(function() {
-     return gallery.changeNameAndWait(appId, 'New Image Name');
+    return gallery.changeNameAndWait(appId, 'New Image Name');
   }).then(function() {
-     return repeatUntil(function() {
-      return gallery.getFilesUnderVolume(volumeType, ['New Image Name.png'])
-      .then(function(urls) {
-        if (urls.length == 1)
-          return true;
-        return pending('"New Image Name.png" is not found.');
-      });
-    });
+    return gallery.waitForAFile(volumeType, 'New Image Name.png');
   });
 }
 

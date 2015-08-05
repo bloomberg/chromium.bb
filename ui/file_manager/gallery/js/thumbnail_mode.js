@@ -418,9 +418,15 @@ ThumbnailView.prototype.onSplice_ = function(event) {
  */
 ThumbnailView.prototype.onContent_ = function(event) {
   var galleryItem = event.item;
-  var thumbnail = this.thumbnails_[galleryItem.getEntry().toURL()];
-  if (thumbnail)
+  var oldEntry = event.oldEntry;
+  var thumbnail = this.thumbnails_[oldEntry.toURL()];
+  if (thumbnail) {
+    // Update map.
+    delete this.thumbnails_[oldEntry.toURL()];
+    this.thumbnails_[galleryItem.getEntry().toURL()] = thumbnail;
+
     thumbnail.update();
+  }
 };
 
 /**
@@ -633,7 +639,6 @@ ThumbnailView.Thumbnail = function(galleryItem) {
    */
   this.container_ = assertInstanceof(document.createElement('li'), HTMLElement);
   this.container_.classList.add('thumbnail');
-  this.container_.setAttribute('aria-label', this.galleryItem_.getFileName());
 
   /**
    * @private {!HTMLElement}
@@ -742,6 +747,9 @@ ThumbnailView.Thumbnail.prototype.getBackgroundImage = function() {
  * Updates thumbnail.
  */
 ThumbnailView.Thumbnail.prototype.update = function() {
+  // Update aria-label.
+  this.container_.setAttribute('aria-label', this.galleryItem_.getFileName());
+
   // Calculate and set width.
   var metadata = this.galleryItem_.getMetadataItem();
   if (metadata) {
