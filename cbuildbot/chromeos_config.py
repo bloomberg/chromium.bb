@@ -2380,7 +2380,7 @@ def GetConfig():
   site_config.AddConfig(
       pre_cq, constants.WIFICELL_PRE_CQ,
       internal,
-      boards=['samus'],
+      boards=['winky', 'veyron_speedy', 'veyron_jerry', 'daisy'],
       hw_tests=HWTestList.WiFiCellPoolPreCQ()
   )
 
