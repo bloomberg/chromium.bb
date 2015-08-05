@@ -349,12 +349,17 @@ group("both_gn_and_gyp") {
     }
   }
 
+  if (is_ios || is_win || (is_linux && !is_chromeos)) {
+    deps += [
+      "//base:base_i18n_perftests",
+      "//base:base_perftests",
+    ]
+  }
+
   if (is_win || (is_linux && !is_chromeos)) {
     # TODO(GYP): Figure out which of these should (and can) build
     # for android/chromeos/mac/ios.
     deps += [
-      "//base:base_perftests",
-      "//base:base_i18n_perftests",
       "//base:check_example",
       "//base:build_utf8_validator_tables",
       "//cc:cc_perftests",

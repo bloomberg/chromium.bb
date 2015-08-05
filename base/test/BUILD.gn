@@ -35,6 +35,8 @@ source_set("test_support") {
     "gtest_xml_util.h",
     "histogram_tester.cc",
     "histogram_tester.h",
+    "ios/wait_util.h",
+    "ios/wait_util.mm",
     "launcher/test_launcher.cc",
     "launcher/test_launcher.h",
     "launcher/test_result.cc",

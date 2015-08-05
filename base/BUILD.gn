@@ -246,10 +246,14 @@ component("base") {
     "hash.cc",
     "hash.h",
     "id_map.h",
+    "ios/crb_protocol_observers.h",
+    "ios/crb_protocol_observers.mm",
     "ios/device_util.h",
     "ios/device_util.mm",
     "ios/ios_util.h",
     "ios/ios_util.mm",
+    "ios/ns_error_util.h",
+    "ios/ns_error_util.mm",
     "ios/scoped_critical_action.h",
     "ios/scoped_critical_action.mm",
     "ios/weak_nsobject.h",
@@ -638,6 +642,18 @@ component("base") {
     "win/wrapped_window_proc.h",
   ]
 
+  if (is_ios) {
+    sources += [ "process/memory_stubs.cc" ]
+    sources -= [
+      "message_loop/message_pump_libevent.cc",
+      "message_loop/message_pump_libevent.h",
+    ]
+
+    set_sources_assignment_filter([])
+    sources += [ "files/file_path_watcher_mac.cc" ]
+    set_sources_assignment_filter(sources_assignment_filter)
+  }
+
   sources -= [
     "sys_info_freebsd.cc",
     "sys_info_openbsd.cc",
@@ -1001,7 +1017,7 @@ component("i18n") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
-if (is_win || (is_linux && !is_chromeos)) {
+if (is_ios || is_win || (is_linux && !is_chromeos)) {
   # TODO(GYP): Figure out which of these work and are needed on other platforms.
   test("base_perftests") {
     sources = [
@@ -1060,23 +1076,18 @@ if (is_win || (is_linux && !is_chromeos)) {
 
 component("prefs") {
   sources = [
-    "prefs/base_prefs_export.h",
     "prefs/default_pref_store.cc",
     "prefs/default_pref_store.h",
     "prefs/json_pref_store.cc",
     "prefs/json_pref_store.h",
     "prefs/overlay_user_pref_store.cc",
     "prefs/overlay_user_pref_store.h",
-    "prefs/persistent_pref_store.h",
     "prefs/pref_change_registrar.cc",
     "prefs/pref_change_registrar.h",
-    "prefs/pref_filter.h",
     "prefs/pref_member.cc",
     "prefs/pref_member.h",
-    "prefs/pref_notifier.h",
     "prefs/pref_notifier_impl.cc",
     "prefs/pref_notifier_impl.h",
-    "prefs/pref_observer.h",
     "prefs/pref_registry.cc",
     "prefs/pref_registry.h",
     "prefs/pref_registry_simple.cc",
@@ -1095,8 +1106,17 @@ component("prefs") {
     "prefs/scoped_user_pref_update.h",
     "prefs/value_map_pref_store.cc",
     "prefs/value_map_pref_store.h",
-    "prefs/writeable_pref_store.h",
   ]
+  if (!is_ios) {
+    sources += [
+      "prefs/base_prefs_export.h",
+      "prefs/persistent_pref_store.h",
+      "prefs/pref_filter.h",
+      "prefs/pref_notifier.h",
+      "prefs/pref_observer.h",
+      "prefs/writeable_pref_store.h",
+    ]
+  }
 
   defines = [ "BASE_PREFS_IMPLEMENTATION" ]
 
