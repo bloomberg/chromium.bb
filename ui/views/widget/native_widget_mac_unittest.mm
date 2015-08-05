@@ -147,10 +147,22 @@ class NativeWidgetMacTest : public WidgetTest {
 
 class WidgetChangeObserver : public TestWidgetObserver {
  public:
-  WidgetChangeObserver(Widget* widget)
-      : TestWidgetObserver(widget),
-        gained_visible_count_(0),
-        lost_visible_count_(0) {}
+  WidgetChangeObserver(Widget* widget) : TestWidgetObserver(widget) {}
+
+  void WaitForVisibleCounts(int gained, int lost) {
+    if (gained_visible_count_ >= gained && lost_visible_count_ >= lost)
+      return;
+
+    target_gained_visible_count_ = gained;
+    target_lost_visible_count_ = lost;
+
+    base::RunLoop run_loop;
+    run_loop_ = &run_loop;
+    base::MessageLoop::current()->task_runner()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_timeout());
+    run_loop.Run();
+    run_loop_ = nullptr;
+  }
 
   int gained_visible_count() const { return gained_visible_count_; }
   int lost_visible_count() const { return lost_visible_count_; }
@@ -160,10 +172,16 @@ class WidgetChangeObserver : public TestWidgetObserver {
   void OnWidgetVisibilityChanged(Widget* widget,
                                  bool visible) override {
     ++(visible ? gained_visible_count_ : lost_visible_count_);
+    if (run_loop_ && gained_visible_count_ >= target_gained_visible_count_ &&
+        lost_visible_count_ >= target_lost_visible_count_)
+      run_loop_->Quit();
   }
 
-  int gained_visible_count_;
-  int lost_visible_count_;
+  int gained_visible_count_ = 0;
+  int lost_visible_count_ = 0;
+  int target_gained_visible_count_ = 0;
+  int target_lost_visible_count_ = 0;
+  base::RunLoop* run_loop_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetChangeObserver);
 };
@@ -216,16 +234,16 @@ TEST_F(NativeWidgetMacTest, HideAndShowExternally) {
   [NSApp hide:nil];
   // When the activation policy is NSApplicationActivationPolicyRegular, the
   // calls via NSApp are asynchronous, and the run loop needs to be flushed.
-  // With NSApplicationActivationPolicyProhibited, the following RunUntilIdle
-  // calls are superfluous, but don't hurt.
-  base::RunLoop().RunUntilIdle();
+  // With NSApplicationActivationPolicyProhibited, the following
+  // WaitForVisibleCounts calls are superfluous, but don't hurt.
+  observer.WaitForVisibleCounts(3, 3);
   EXPECT_FALSE(widget->IsVisible());
   EXPECT_FALSE([ns_window isVisible]);
   EXPECT_EQ(3, observer.gained_visible_count());
   EXPECT_EQ(3, observer.lost_visible_count());
 
   [NSApp unhideWithoutActivation];
-  base::RunLoop().RunUntilIdle();
+  observer.WaitForVisibleCounts(4, 3);
   EXPECT_TRUE(widget->IsVisible());
   EXPECT_TRUE([ns_window isVisible]);
   EXPECT_EQ(4, observer.gained_visible_count());
@@ -233,10 +251,10 @@ TEST_F(NativeWidgetMacTest, HideAndShowExternally) {
 
   // Hide again to test unhiding with an activation.
   [NSApp hide:nil];
-  base::RunLoop().RunUntilIdle();
+  observer.WaitForVisibleCounts(4, 4);
   EXPECT_EQ(4, observer.lost_visible_count());
   [NSApp unhide:nil];
-  base::RunLoop().RunUntilIdle();
+  observer.WaitForVisibleCounts(5, 4);
   EXPECT_EQ(5, observer.gained_visible_count());
 
   // Hide again to test makeKeyAndOrderFront:.
