@@ -17,6 +17,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/tracing_delegate.h"
 #include "content/public/common/content_client.h"
+#include "net/base/network_change_notifier.h"
 
 namespace content {
 
@@ -26,6 +27,7 @@ base::LazyInstance<BackgroundTracingManagerImpl>::Leaky g_controller =
     LAZY_INSTANCE_INITIALIZER;
 
 const char kMetaDataConfigKey[] = "config";
+const char kMetaDataNetworkType[] = "network_type";
 const char kMetaDataVersionKey[] = "product_version";
 
 // These values are used for a histogram. Do not reorder.
@@ -45,6 +47,29 @@ enum BackgroundTracingMetrics {
 void RecordBackgroundTracingMetric(BackgroundTracingMetrics metric) {
   UMA_HISTOGRAM_ENUMERATION("Tracing.Background.ScenarioState", metric,
                             NUMBER_OF_BACKGROUND_TRACING_METRICS);
+}
+
+std::string GetNetworkTypeString() {
+  switch (net::NetworkChangeNotifier::GetConnectionType()) {
+    case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
+      return "Ethernet";
+    case net::NetworkChangeNotifier::CONNECTION_WIFI:
+      return "WiFi";
+    case net::NetworkChangeNotifier::CONNECTION_2G:
+      return "2G";
+    case net::NetworkChangeNotifier::CONNECTION_3G:
+      return "3G";
+    case net::NetworkChangeNotifier::CONNECTION_4G:
+      return "4G";
+    case net::NetworkChangeNotifier::CONNECTION_NONE:
+      return "None";
+    case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
+      return "Bluetooth";
+    case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
+    default:
+      break;
+  }
+  return "Unknown";
 }
 
 }  // namespace
@@ -520,6 +545,9 @@ void BackgroundTracingManagerImpl::OnFinalizeComplete() {
 
 scoped_ptr<base::DictionaryValue>
 BackgroundTracingManagerImpl::GenerateMetadataDict() const {
+  // Grab the network type.
+  std::string network_type = GetNetworkTypeString();
+
   // Grab the product version.
   std::string product_version = GetContentClient()->GetProduct();
 
@@ -530,6 +558,7 @@ BackgroundTracingManagerImpl::GenerateMetadataDict() const {
 
   scoped_ptr<base::DictionaryValue> metadata_dict(new base::DictionaryValue());
   metadata_dict->Set(kMetaDataConfigKey, config_dict.Pass());
+  metadata_dict->SetString(kMetaDataNetworkType, network_type);
   metadata_dict->SetString(kMetaDataVersionKey, product_version);
 
   return metadata_dict.Pass();
