@@ -65,6 +65,7 @@ group("both_gn_and_gyp") {
   testonly = true
   deps = [
     "//base:base_unittests",
+    "//sync:sync_unit_tests",
   ]
   if (!is_ios) {
     deps += [
@@ -133,7 +134,6 @@ group("both_gn_and_gyp") {
       "//printing:printing_unittests",
       "//skia:skia_unittests",
       "//sql:sql_unittests",
-      "//sync:sync_unit_tests",
       "//third_party/WebKit/Source/platform:heap_unittests",
       "//third_party/WebKit/Source/platform:platform_unittests",
       "//third_party/WebKit/Source/web:webkit_unit_tests",
