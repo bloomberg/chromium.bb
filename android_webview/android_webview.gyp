@@ -24,8 +24,16 @@
             'arch_suffix':'64'
           }],
         ],
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/android_webview',
       },
       'actions': [
+        {
+          'action_name': 'generate_aw_renderer_resources',
+          'variables': {
+            'grit_grd_file': 'renderer/aw_renderer_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
         {
           'action_name': 'repack_android_webview_pack',
           'variables': {
@@ -36,6 +44,7 @@
               '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_100_percent.pak',
+              '<(grit_out_dir)/aw_renderer_resources.pak',
             ],
             'pak_output': '<(PRODUCT_DIR)/android_webview_assets/webviewchromium.pak',
           },

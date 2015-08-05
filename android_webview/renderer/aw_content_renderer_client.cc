@@ -4,9 +4,12 @@
 
 #include "android_webview/renderer/aw_content_renderer_client.h"
 
+#include <vector>
+
 #include "android_webview/common/aw_resource.h"
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/url_constants.h"
+#include "android_webview/grit/aw_renderer_resources.h"
 #include "android_webview/renderer/aw_content_settings_client.h"
 #include "android_webview/renderer/aw_key_systems.h"
 #include "android_webview/renderer/aw_message_port_client.h"
@@ -14,7 +17,9 @@
 #include "android_webview/renderer/aw_render_frame_ext.h"
 #include "android_webview/renderer/aw_render_view_ext.h"
 #include "android_webview/renderer/print_render_frame_observer.h"
+#include "base/i18n/rtl.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
@@ -32,6 +37,8 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -110,20 +117,32 @@ void AwContentRendererClient::GetNavigationErrorStrings(
     std::string* error_html,
     base::string16* error_description) {
   if (error_html) {
-    GURL error_url(failed_request.url());
+    std::string url =
+        net::EscapeForHTML(GURL(failed_request.url()).possibly_invalid_spec());
     std::string err =
         base::UTF16ToUTF8(base::StringPiece16(error.localizedDescription));
-    std::string contents;
-    if (err.empty()) {
-      contents = AwResource::GetNoDomainPageContent();
-    } else {
-      contents = AwResource::GetLoadErrorPageContent();
-      base::ReplaceSubstringsAfterOffset(&contents, 0, "%e", err);
-    }
 
-    base::ReplaceSubstringsAfterOffset(&contents, 0, "%s",
-        net::EscapeForHTML(error_url.possibly_invalid_spec()));
-    *error_html = contents;
+    std::vector<std::string> replacements;
+    replacements.push_back(
+        l10n_util::GetStringUTF8(IDS_AW_WEBPAGE_NOT_AVAILABLE));
+    if (err.empty()) {
+      replacements.push_back(l10n_util::GetStringFUTF8(
+          IDS_AW_WEBPAGE_TEMPORARILY_DOWN, base::UTF8ToUTF16(url)));
+      replacements.push_back(
+          l10n_util::GetStringUTF8(IDS_AW_WEBPAGE_DOWN_SUGGESTIONS));
+    } else {
+      replacements.push_back(l10n_util::GetStringFUTF8(
+          IDS_AW_WEBPAGE_CAN_NOT_BE_LOADED, base::UTF8ToUTF16(url)));
+      replacements.push_back(err);
+    }
+    if (base::i18n::IsRTL())
+      replacements.push_back("direction: rtl;");
+    else
+      replacements.push_back("");
+    *error_html = base::ReplaceStringPlaceholders(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_AW_LOAD_ERROR_HTML),
+        replacements, nullptr);
   }
   if (error_description) {
     if (error.localizedDescription.isEmpty())

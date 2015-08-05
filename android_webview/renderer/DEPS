@@ -2,6 +2,7 @@ include_rules = [
   "-android_webview",
   "+android_webview/common",
   "+android_webview/renderer",
+  "+android_webview/grit",
 
   "+components/autofill/content/renderer",
   "+components/cdm/renderer",

@@ -171,8 +171,8 @@
   "<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.grd": {
     "includes": [25750],
   },
-  # iOS resources overlap with ash, chromeos and extensions_api, as these are
-  # not used on iOS.
+  # iOS resources overlap with android_webview, ash, chromeos and extensions_api,
+  # as these are not used on iOS.
   "ios/chrome/app/strings/ios_strings_resources.grd": {
     "messages": [26000],
   },
@@ -181,6 +181,11 @@
   },
   "ash/ash_strings.grd": {
     "messages": [26000],
+  },
+  "android_webview/renderer/aw_renderer_resources.grd": {
+    "includes": [26000],
+    "structures": [26050],
+    "messages": [26100],
   },
   "ui/chromeos/resources/ui_chromeos_resources.grd": {
     "structures": [26200],

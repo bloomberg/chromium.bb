@@ -12,25 +12,6 @@
 namespace android_webview {
 namespace AwResource {
 
-// These JNI functions are used by the Renderer but rely on Java data
-// structures that exist in the Browser. By virtue of the WebView running
-// in single process we can just reach over and use them. When WebView is
-// multi-process capable, we'll need to rethink these. See crbug.com/156062.
-
-std::string GetLoadErrorPageContent() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> content =
-      Java_AwResource_getLoadErrorPageContent(env);
-  return base::android::ConvertJavaStringToUTF8(content);
-}
-
-std::string GetNoDomainPageContent() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> content =
-      Java_AwResource_getNoDomainPageContent(env);
-  return base::android::ConvertJavaStringToUTF8(content);
-}
-
 std::vector<std::string> GetConfigKeySystemUuidMapping() {
   JNIEnv* env = base::android::AttachCurrentThread();
   std::vector<std::string> key_system_uuid_mappings;

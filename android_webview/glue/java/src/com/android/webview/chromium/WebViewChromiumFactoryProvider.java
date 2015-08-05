@@ -328,7 +328,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                 mWebViewDelegate.getPackageId(context.getResources(), packageName));
 
         AwResource.setResources(context.getResources());
-        AwResource.setErrorPageResources(android.R.raw.loaderror, android.R.raw.nodomain);
         AwResource.setConfigKeySystemUuidMapping(android.R.array.config_keySystemUuidMapping);
     }
 
