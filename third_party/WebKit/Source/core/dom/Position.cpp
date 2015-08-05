@@ -1014,22 +1014,26 @@ bool PositionAlgorithm<Strategy>::inRenderedText() const
 template <typename Strategy>
 bool PositionAlgorithm<Strategy>::isRenderedCharacter() const
 {
-    if (isNull() || !anchorNode()->isTextNode())
+    if (isNull())
+        return false;
+    ASSERT(isOffsetInAnchor());
+    if (!anchorNode()->isTextNode())
         return false;
 
     LayoutObject* layoutObject = anchorNode()->layoutObject();
     if (!layoutObject)
         return false;
 
+    const int offset = offsetInContainerNode();
     LayoutText* textLayoutObject = toLayoutText(layoutObject);
     for (InlineTextBox* box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
-        if (m_offset < static_cast<int>(box->start()) && !textLayoutObject->containsReversedText()) {
+        if (offset < static_cast<int>(box->start()) && !textLayoutObject->containsReversedText()) {
             // The offset we're looking for is before this node
             // this means the offset must be in content that is
             // not laid out. Return false.
             return false;
         }
-        if (m_offset >= static_cast<int>(box->start()) && m_offset < static_cast<int>(box->start() + box->len()))
+        if (offset >= static_cast<int>(box->start()) && offset < static_cast<int>(box->start() + box->len()))
             return true;
     }
 
