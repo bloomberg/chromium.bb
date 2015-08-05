@@ -404,13 +404,13 @@ void DeleteSelectionCommand::removeNode(PassRefPtrWillBeRawPtr<Node> node, Shoul
 
 static void updatePositionForTextRemoval(Text* node, int offset, int count, Position& position)
 {
-    if (!position.isOffsetInAnchor() || position.containerNode() != node)
+    if (!position.isOffsetInAnchor() || position.computeContainerNode() != node)
         return;
 
     if (position.offsetInContainerNode() > offset + count)
-        position = Position(position.containerNode(), position.offsetInContainerNode() - count);
+        position = Position(position.computeContainerNode(), position.offsetInContainerNode() - count);
     else if (position.offsetInContainerNode() > offset)
-        position = Position(position.containerNode(), offset);
+        position = Position(position.computeContainerNode(), offset);
 }
 
 void DeleteSelectionCommand::deleteTextFromNode(PassRefPtrWillBeRawPtr<Text> node, unsigned offset, unsigned count)
@@ -626,7 +626,7 @@ void DeleteSelectionCommand::mergeParagraphs()
     }
 
     // We need to merge into m_upstreamStart's block, but it's been emptied out and collapsed by deletion.
-    if (!mergeDestination.deepEquivalent().anchorNode() || (!mergeDestination.deepEquivalent().anchorNode()->isDescendantOf(enclosingBlock(m_upstreamStart.containerNode())) && (!mergeDestination.deepEquivalent().anchorNode()->hasChildren() || !m_upstreamStart.containerNode()->hasChildren())) || (m_startsAtEmptyLine && mergeDestination.deepEquivalent() != startOfParagraphToMove.deepEquivalent())) {
+    if (!mergeDestination.deepEquivalent().anchorNode() || (!mergeDestination.deepEquivalent().anchorNode()->isDescendantOf(enclosingBlock(m_upstreamStart.computeContainerNode())) && (!mergeDestination.deepEquivalent().anchorNode()->hasChildren() || !m_upstreamStart.computeContainerNode()->hasChildren())) || (m_startsAtEmptyLine && mergeDestination.deepEquivalent() != startOfParagraphToMove.deepEquivalent())) {
         insertNodeAt(createBreakElement(document()).get(), m_upstreamStart);
         mergeDestination = VisiblePosition(m_upstreamStart);
     }
@@ -759,7 +759,7 @@ void DeleteSelectionCommand::clearTransientState()
 // This method removes div elements with no attributes that have only one child or no children at all.
 void DeleteSelectionCommand::removeRedundantBlocks()
 {
-    Node* node = m_endingPosition.containerNode();
+    Node* node = m_endingPosition.computeContainerNode();
     Element* rootElement = node->rootEditableElement();
 
     while (node != rootElement) {
@@ -788,8 +788,8 @@ void DeleteSelectionCommand::doApply()
     EAffinity affinity = m_selectionToDelete.affinity();
 
     Position downstreamEnd = m_selectionToDelete.end().downstream();
-    bool rootWillStayOpenWithoutPlaceholder = downstreamEnd.containerNode() == downstreamEnd.containerNode()->rootEditableElement()
-        || (downstreamEnd.containerNode()->isTextNode() && downstreamEnd.containerNode()->parentNode() == downstreamEnd.containerNode()->rootEditableElement());
+    bool rootWillStayOpenWithoutPlaceholder = downstreamEnd.computeContainerNode() == downstreamEnd.computeContainerNode()->rootEditableElement()
+        || (downstreamEnd.computeContainerNode()->isTextNode() && downstreamEnd.computeContainerNode()->parentNode() == downstreamEnd.computeContainerNode()->rootEditableElement());
     bool lineBreakAtEndOfSelectionToDelete = lineBreakExistsAtVisiblePosition(m_selectionToDelete.visibleEnd());
     m_needPlaceholder = !rootWillStayOpenWithoutPlaceholder
         && isStartOfParagraph(m_selectionToDelete.visibleStart(), CanCrossEditingBoundary)

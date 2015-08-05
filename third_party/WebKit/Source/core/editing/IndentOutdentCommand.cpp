@@ -103,22 +103,22 @@ void IndentOutdentCommand::indentIntoBlockquote(const Position& start, const Pos
     Element* elementToSplitTo;
     if (enclosingCell)
         elementToSplitTo = enclosingCell;
-    else if (enclosingList(start.containerNode()))
-        elementToSplitTo = enclosingBlock(start.containerNode());
+    else if (enclosingList(start.computeContainerNode()))
+        elementToSplitTo = enclosingBlock(start.computeContainerNode());
     else
         elementToSplitTo = editableRootForPosition(start);
 
     if (!elementToSplitTo)
         return;
 
-    RefPtrWillBeRawPtr<Node> outerBlock = (start.containerNode() == elementToSplitTo) ? start.containerNode() : splitTreeToNode(start.containerNode(), elementToSplitTo).get();
+    RefPtrWillBeRawPtr<Node> outerBlock = (start.computeContainerNode() == elementToSplitTo) ? start.computeContainerNode() : splitTreeToNode(start.computeContainerNode(), elementToSplitTo).get();
 
     VisiblePosition startOfContents(start);
     if (!targetBlockquote) {
         // Create a new blockquote and insert it as a child of the root editable element. We accomplish
         // this by splitting all parents of the current paragraph up to that point.
         targetBlockquote = createBlockElement();
-        if (outerBlock == start.containerNode())
+        if (outerBlock == start.computeContainerNode())
             insertNodeAt(targetBlockquote, start);
         else
             insertNodeBefore(targetBlockquote, outerBlock);

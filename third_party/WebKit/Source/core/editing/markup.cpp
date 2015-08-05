@@ -186,7 +186,7 @@ static HTMLElement* highestAncestorToWrapMarkup(const PositionAlgorithm<Strategy
     Node* firstNode = startPosition.nodeAsRangeFirstNode();
     // For compatibility reason, we use container node of start and end
     // positions rather than first node and last node in selection.
-    Node* commonAncestor = Strategy::commonAncestor(*startPosition.containerNode(), *endPosition.containerNode());
+    Node* commonAncestor = Strategy::commonAncestor(*startPosition.computeContainerNode(), *endPosition.computeContainerNode());
     ASSERT(commonAncestor);
     HTMLElement* specialCommonAncestor = nullptr;
     if (shouldAnnotate == AnnotateForInterchange) {
@@ -250,7 +250,7 @@ String CreateMarkupAlgorithm<Strategy>::createMarkup(const PositionAlgorithm<Str
     bool collapsed = startPosition == endPosition;
     if (collapsed)
         return emptyString();
-    Node* commonAncestor = Strategy::commonAncestor(*startPosition.containerNode(), *endPosition.containerNode());
+    Node* commonAncestor = Strategy::commonAncestor(*startPosition.computeContainerNode(), *endPosition.computeContainerNode());
     if (!commonAncestor)
         return emptyString();
 

@@ -129,16 +129,16 @@ static Position positionAvoidingPrecedingNodes(Position pos)
     // same.  E.g.,
     //   <div>foo^</div>^
     // The two positions above are the same visual position, but we want to stay in the same block.
-    Element* enclosingBlockElement = enclosingBlock(pos.containerNode());
-    for (Position nextPosition = pos; nextPosition.containerNode() != enclosingBlockElement; pos = nextPosition) {
+    Element* enclosingBlockElement = enclosingBlock(pos.computeContainerNode());
+    for (Position nextPosition = pos; nextPosition.computeContainerNode() != enclosingBlockElement; pos = nextPosition) {
         if (lineBreakExistsAtPosition(pos))
             break;
 
-        if (pos.containerNode()->nonShadowBoundaryParentNode())
-            nextPosition = positionInParentAfterNode(*pos.containerNode());
+        if (pos.computeContainerNode()->nonShadowBoundaryParentNode())
+            nextPosition = positionInParentAfterNode(*pos.computeContainerNode());
 
         if (nextPosition == pos
-            || enclosingBlock(nextPosition.containerNode()) != enclosingBlockElement
+            || enclosingBlock(nextPosition.computeContainerNode()) != enclosingBlockElement
             || VisiblePosition(pos).deepEquivalent() != VisiblePosition(nextPosition).deepEquivalent())
             break;
     }
@@ -912,7 +912,7 @@ static bool isInlineHTMLElementWithStyle(const Node* node)
 
 static inline HTMLElement* elementToSplitToAvoidPastingIntoInlineElementsWithStyle(const Position& insertionPos)
 {
-    Element* containingBlock = enclosingBlock(insertionPos.containerNode());
+    Element* containingBlock = enclosingBlock(insertionPos.computeContainerNode());
     return toHTMLElement(highestEnclosingNodeOfType(insertionPos, isInlineHTMLElementWithStyle, CannotCrossEditingBoundary, containingBlock));
 }
 
@@ -1072,17 +1072,17 @@ void ReplaceSelectionCommand::doApply()
     // We can skip this optimization for fragments not wrapped in one of
     // our style spans and for positions inside list items
     // since insertAsListItems already does the right thing.
-    if (!m_matchStyle && !enclosingList(insertionPos.containerNode())) {
-        if (insertionPos.containerNode()->isTextNode() && insertionPos.offsetInContainerNode() && !insertionPos.atLastEditingPositionForNode()) {
-            splitTextNode(toText(insertionPos.containerNode()), insertionPos.offsetInContainerNode());
-            insertionPos = firstPositionInNode(insertionPos.containerNode());
+    if (!m_matchStyle && !enclosingList(insertionPos.computeContainerNode())) {
+        if (insertionPos.computeContainerNode()->isTextNode() && insertionPos.offsetInContainerNode() && !insertionPos.atLastEditingPositionForNode()) {
+            splitTextNode(toText(insertionPos.computeContainerNode()), insertionPos.offsetInContainerNode());
+            insertionPos = firstPositionInNode(insertionPos.computeContainerNode());
         }
 
         if (RefPtrWillBeRawPtr<HTMLElement> elementToSplitTo = elementToSplitToAvoidPastingIntoInlineElementsWithStyle(insertionPos)) {
-            if (insertionPos.containerNode() != elementToSplitTo->parentNode()) {
+            if (insertionPos.computeContainerNode() != elementToSplitTo->parentNode()) {
                 Node* splitStart = insertionPos.computeNodeAfterPosition();
                 if (!splitStart)
-                    splitStart = insertionPos.containerNode();
+                    splitStart = insertionPos.computeContainerNode();
                 RefPtrWillBeRawPtr<Node> nodeToSplitTo = splitTreeToNode(splitStart, elementToSplitTo->parentNode()).get();
                 insertionPos = positionInParentBeforeNode(*nodeToSplitTo);
             }
@@ -1311,7 +1311,7 @@ void ReplaceSelectionCommand::addSpacesForSmartReplace()
     Node* endNode = endUpstream.computeNodeBeforePosition();
     int endOffset = endNode && endNode->isTextNode() ? toText(endNode)->length() : 0;
     if (endUpstream.isOffsetInAnchor()) {
-        endNode = endUpstream.containerNode();
+        endNode = endUpstream.computeContainerNode();
         endOffset = endUpstream.offsetInContainerNode();
     }
 
@@ -1320,7 +1320,7 @@ void ReplaceSelectionCommand::addSpacesForSmartReplace()
         bool collapseWhiteSpace = !endNode->layoutObject() || endNode->layoutObject()->style()->collapseWhiteSpace();
         if (endNode->isTextNode()) {
             insertTextIntoNode(toText(endNode), endOffset, collapseWhiteSpace ? nonBreakingSpaceString() : " ");
-            if (m_endOfInsertedContent.containerNode() == endNode)
+            if (m_endOfInsertedContent.computeContainerNode() == endNode)
                 m_endOfInsertedContent = Position(endNode, m_endOfInsertedContent.offsetInContainerNode() + 1);
         } else {
             RefPtrWillBeRawPtr<Text> node = document().createEditingTextNode(collapseWhiteSpace ? nonBreakingSpaceString() : " ");
@@ -1335,7 +1335,7 @@ void ReplaceSelectionCommand::addSpacesForSmartReplace()
     Node* startNode = startDownstream.computeNodeAfterPosition();
     unsigned startOffset = 0;
     if (startDownstream.isOffsetInAnchor()) {
-        startNode = startDownstream.containerNode();
+        startNode = startDownstream.computeContainerNode();
         startOffset = startDownstream.offsetInContainerNode();
     }
 
@@ -1344,7 +1344,7 @@ void ReplaceSelectionCommand::addSpacesForSmartReplace()
         bool collapseWhiteSpace = !startNode->layoutObject() || startNode->layoutObject()->style()->collapseWhiteSpace();
         if (startNode->isTextNode()) {
             insertTextIntoNode(toText(startNode), startOffset, collapseWhiteSpace ? nonBreakingSpaceString() : " ");
-            if (m_endOfInsertedContent.containerNode() == startNode && m_endOfInsertedContent.offsetInContainerNode())
+            if (m_endOfInsertedContent.computeContainerNode() == startNode && m_endOfInsertedContent.offsetInContainerNode())
                 m_endOfInsertedContent = Position(startNode, m_endOfInsertedContent.offsetInContainerNode() + 1);
         } else {
             RefPtrWillBeRawPtr<Text> node = document().createEditingTextNode(collapseWhiteSpace ? nonBreakingSpaceString() : " ");
@@ -1392,8 +1392,8 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, P
     bool positionIsOffsetInAnchor = position.isOffsetInAnchor();
     bool positionOnlyToBeUpdatedIsOffsetInAnchor = positionOnlyToBeUpdated.isOffsetInAnchor();
     RefPtrWillBeRawPtr<Text> text = nullptr;
-    if (positionIsOffsetInAnchor && position.containerNode() && position.containerNode()->isTextNode())
-        text = toText(position.containerNode());
+    if (positionIsOffsetInAnchor && position.computeContainerNode() && position.computeContainerNode()->isTextNode())
+        text = toText(position.computeContainerNode());
     else {
         Node* before = position.computeNodeBeforePosition();
         if (before && before->isTextNode())
@@ -1412,14 +1412,14 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, P
         insertTextIntoNode(text, 0, previous->data());
 
         if (positionIsOffsetInAnchor)
-            position = Position(position.containerNode(), previous->length() + position.offsetInContainerNode());
+            position = Position(position.computeContainerNode(), previous->length() + position.offsetInContainerNode());
         else
             updatePositionForNodeRemoval(position, *previous);
 
         if (positionOnlyToBeUpdatedIsOffsetInAnchor) {
-            if (positionOnlyToBeUpdated.containerNode() == text)
+            if (positionOnlyToBeUpdated.computeContainerNode() == text)
                 positionOnlyToBeUpdated = Position(text, previous->length() + positionOnlyToBeUpdated.offsetInContainerNode());
-            else if (positionOnlyToBeUpdated.containerNode() == previous)
+            else if (positionOnlyToBeUpdated.computeContainerNode() == previous)
                 positionOnlyToBeUpdated = Position(text, positionOnlyToBeUpdated.offsetInContainerNode());
         } else {
             updatePositionForNodeRemoval(positionOnlyToBeUpdated, *previous);
@@ -1435,7 +1435,7 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, P
         if (!positionIsOffsetInAnchor)
             updatePositionForNodeRemoval(position, *next);
 
-        if (positionOnlyToBeUpdatedIsOffsetInAnchor && positionOnlyToBeUpdated.containerNode() == next)
+        if (positionOnlyToBeUpdatedIsOffsetInAnchor && positionOnlyToBeUpdated.computeContainerNode() == next)
             positionOnlyToBeUpdated = Position(text, originalLength + positionOnlyToBeUpdated.offsetInContainerNode());
         else
             updatePositionForNodeRemoval(positionOnlyToBeUpdated, *next);

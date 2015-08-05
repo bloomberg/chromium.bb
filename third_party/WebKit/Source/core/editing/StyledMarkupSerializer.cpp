@@ -54,10 +54,10 @@ TextOffset toTextOffset(const PositionAlgorithm<Strategy>& position)
     if (position.isNull())
         return TextOffset();
 
-    if (!position.containerNode()->isTextNode())
+    if (!position.computeContainerNode()->isTextNode())
         return TextOffset();
 
-    return TextOffset(toText(position.containerNode()), position.offsetInContainerNode());
+    return TextOffset(toText(position.computeContainerNode()), position.offsetInContainerNode());
 }
 
 template<typename EditingStrategy>
@@ -197,7 +197,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
 
     if (m_highestNodeToBeSerialized && lastClosed) {
         // TODO(hajimehoshi): This is calculated at createMarkupInternal too.
-        Node* commonAncestor = Strategy::commonAncestor(*m_start.containerNode(), *m_end.containerNode());
+        Node* commonAncestor = Strategy::commonAncestor(*m_start.computeContainerNode(), *m_end.computeContainerNode());
         ASSERT(commonAncestor);
         HTMLBodyElement* body = toHTMLBodyElement(enclosingElementWithTag(firstPositionInNode(commonAncestor), bodyTag));
         HTMLBodyElement* fullySelectedRoot = nullptr;

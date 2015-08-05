@@ -341,7 +341,7 @@ void SelectionController::selectClosestMisspellingFromHitTestResult(const HitTes
         const Position markerPosition = pos.deepEquivalent().parentAnchoredEquivalent();
         DocumentMarkerVector markers = innerNode->document().markers().markersInRange(EphemeralRange(markerPosition), DocumentMarker::MisspellingMarkers());
         if (markers.size() == 1) {
-            Node* containerNode = markerPosition.containerNode();
+            Node* containerNode = markerPosition.computeContainerNode();
             const Position start(containerNode, markers[0]->startOffset());
             const Position end(containerNode, markers[0]->endOffset());
             newSelection = VisibleSelection(start, end);

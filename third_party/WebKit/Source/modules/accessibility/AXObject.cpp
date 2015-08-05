@@ -1346,7 +1346,7 @@ int AXObject::lineForPosition(const VisiblePosition& visiblePos) const
         return -1;
 
     // If the position is not in the same editable region as this AX object, return -1.
-    Node* containerNode = visiblePos.deepEquivalent().containerNode();
+    Node* containerNode = visiblePos.deepEquivalent().computeContainerNode();
     if (!containerNode->containsIncludingShadowDOM(node()) && !node()->containsIncludingShadowDOM(containerNode))
         return -1;
 

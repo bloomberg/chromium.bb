@@ -185,14 +185,14 @@ int comparePositions(const Position& a, const Position& b)
     if (!commonScope)
         return 0;
 
-    Node* nodeA = commonScope->ancestorInThisScope(a.containerNode());
+    Node* nodeA = commonScope->ancestorInThisScope(a.computeContainerNode());
     ASSERT(nodeA);
-    bool hasDescendentA = nodeA != a.containerNode();
+    bool hasDescendentA = nodeA != a.computeContainerNode();
     int offsetA = hasDescendentA ? 0 : a.computeOffsetInContainerNode();
 
-    Node* nodeB = commonScope->ancestorInThisScope(b.containerNode());
+    Node* nodeB = commonScope->ancestorInThisScope(b.computeContainerNode());
     ASSERT(nodeB);
-    bool hasDescendentB = nodeB != b.containerNode();
+    bool hasDescendentB = nodeB != b.computeContainerNode();
     int offsetB = hasDescendentB ? 0 : b.computeOffsetInContainerNode();
 
     int bias = 0;
@@ -301,7 +301,7 @@ bool isRichlyEditablePosition(const Position& p, EditableType editableType)
 
 Element* editableRootForPosition(const Position& p, EditableType editableType)
 {
-    Node* node = p.containerNode();
+    Node* node = p.computeContainerNode();
     if (!node)
         return 0;
 
@@ -529,7 +529,7 @@ bool inSameContainingBlockFlowElement(Node* a, Node* b)
 
 TextDirection directionOfEnclosingBlock(const Position& position)
 {
-    Element* enclosingBlockElement = enclosingBlock(position.containerNode());
+    Element* enclosingBlockElement = enclosingBlock(position.computeContainerNode());
     if (!enclosingBlockElement)
         return LTR;
     LayoutObject* layoutObject = enclosingBlockElement->layoutObject();
@@ -624,7 +624,7 @@ static bool isSpecialHTMLElement(const Node& n)
 
 static HTMLElement* firstInSpecialElement(const Position& pos)
 {
-    Element* rootEditableElement = pos.containerNode()->rootEditableElement();
+    Element* rootEditableElement = pos.computeContainerNode()->rootEditableElement();
     for (Node* n = pos.anchorNode(); n && n->rootEditableElement() == rootEditableElement; n = n->parentNode()) {
         if (isSpecialHTMLElement(*n)) {
             HTMLElement* specialElement = toHTMLElement(n);
@@ -641,7 +641,7 @@ static HTMLElement* firstInSpecialElement(const Position& pos)
 
 static HTMLElement* lastInSpecialElement(const Position& pos)
 {
-    Element* rootEditableElement = pos.containerNode()->rootEditableElement();
+    Element* rootEditableElement = pos.computeContainerNode()->rootEditableElement();
     for (Node* n = pos.anchorNode(); n && n->rootEditableElement() == rootEditableElement; n = n->parentNode()) {
         if (isSpecialHTMLElement(*n)) {
             HTMLElement* specialElement = toHTMLElement(n);
@@ -822,7 +822,7 @@ Node* highestEnclosingNodeOfType(const Position& p, bool (*nodeIsOfType)(const N
 {
     Node* highest = nullptr;
     ContainerNode* root = rule == CannotCrossEditingBoundary ? highestEditableRoot(p) : nullptr;
-    for (Node* n = p.containerNode(); n && n != stayWithin; n = n->parentNode()) {
+    for (Node* n = p.computeContainerNode(); n && n != stayWithin; n = n->parentNode()) {
         if (root && !n->hasEditableStyle())
             continue;
         if (nodeIsOfType(n))
@@ -1196,17 +1196,17 @@ void updatePositionForNodeRemoval(Position& position, Node& node)
         return;
     switch (position.anchorType()) {
     case PositionAnchorType::BeforeChildren:
-        if (node.containsIncludingShadowDOM(position.containerNode()))
+        if (node.containsIncludingShadowDOM(position.computeContainerNode()))
             position = positionInParentBeforeNode(node);
         break;
     case PositionAnchorType::AfterChildren:
-        if (node.containsIncludingShadowDOM(position.containerNode()))
+        if (node.containsIncludingShadowDOM(position.computeContainerNode()))
             position = positionInParentAfterNode(node);
         break;
     case PositionAnchorType::OffsetInAnchor:
-        if (position.containerNode() == node.parentNode() && static_cast<unsigned>(position.offsetInContainerNode()) > node.nodeIndex())
-            position = Position(position.containerNode(), position.offsetInContainerNode() - 1);
-        else if (node.containsIncludingShadowDOM(position.containerNode()))
+        if (position.computeContainerNode() == node.parentNode() && static_cast<unsigned>(position.offsetInContainerNode()) > node.nodeIndex())
+            position = Position(position.computeContainerNode(), position.offsetInContainerNode() - 1);
+        else if (node.containsIncludingShadowDOM(position.computeContainerNode()))
             position = positionInParentBeforeNode(node);
         break;
     case PositionAnchorType::AfterAnchor:

@@ -166,8 +166,8 @@ void InsertParagraphSeparatorCommand::doApply()
     }
 
     // FIXME: The parentAnchoredEquivalent conversion needs to be moved into enclosingBlock.
-    RefPtrWillBeRawPtr<Element> startBlock = enclosingBlock(insertionPosition.parentAnchoredEquivalent().containerNode());
-    Node* listChildNode = enclosingListChild(insertionPosition.parentAnchoredEquivalent().containerNode());
+    RefPtrWillBeRawPtr<Element> startBlock = enclosingBlock(insertionPosition.parentAnchoredEquivalent().computeContainerNode());
+    Node* listChildNode = enclosingListChild(insertionPosition.parentAnchoredEquivalent().computeContainerNode());
     RefPtrWillBeRawPtr<HTMLElement> listChild = listChildNode && listChildNode->isHTMLElement() ? toHTMLElement(listChildNode) : 0;
     Position canonicalPos = VisiblePosition(insertionPosition).deepEquivalent();
     if (!startBlock
@@ -356,8 +356,8 @@ void InsertParagraphSeparatorCommand::doApply()
 
     // Split at pos if in the middle of a text node.
     Position positionAfterSplit;
-    if (insertionPosition.isOffsetInAnchor() && insertionPosition.containerNode()->isTextNode()) {
-        RefPtrWillBeRawPtr<Text> textNode = toText(insertionPosition.containerNode());
+    if (insertionPosition.isOffsetInAnchor() && insertionPosition.computeContainerNode()->isTextNode()) {
+        RefPtrWillBeRawPtr<Text> textNode = toText(insertionPosition.computeContainerNode());
         int textOffset = insertionPosition.offsetInContainerNode();
         bool atEnd = static_cast<unsigned>(textOffset) >= textNode->length();
         if (textOffset > 0 && !atEnd) {
@@ -394,10 +394,10 @@ void InsertParagraphSeparatorCommand::doApply()
     // Move the start node and the siblings of the start node.
     if (VisiblePosition(insertionPosition).deepEquivalent() != VisiblePosition(positionBeforeNode(blockToInsert.get())).deepEquivalent()) {
         Node* n;
-        if (insertionPosition.containerNode() == startBlock)
+        if (insertionPosition.computeContainerNode() == startBlock)
             n = insertionPosition.computeNodeAfterPosition();
         else {
-            Node* splitTo = insertionPosition.containerNode();
+            Node* splitTo = insertionPosition.computeContainerNode();
             if (splitTo->isTextNode() && insertionPosition.offsetInContainerNode() >= caretMaxOffset(splitTo))
                 splitTo = NodeTraversal::next(*splitTo, startBlock.get());
             ASSERT(splitTo);
@@ -418,10 +418,10 @@ void InsertParagraphSeparatorCommand::doApply()
         document().updateLayoutIgnorePendingStylesheets();
         if (!positionAfterSplit.isRenderedCharacter()) {
             // Clear out all whitespace and insert one non-breaking space
-            ASSERT(!positionAfterSplit.containerNode()->layoutObject() || positionAfterSplit.containerNode()->layoutObject()->style()->collapseWhiteSpace());
+            ASSERT(!positionAfterSplit.computeContainerNode()->layoutObject() || positionAfterSplit.computeContainerNode()->layoutObject()->style()->collapseWhiteSpace());
             deleteInsignificantTextDownstream(positionAfterSplit);
             if (positionAfterSplit.anchorNode()->isTextNode())
-                insertTextIntoNode(toText(positionAfterSplit.containerNode()), 0, nonBreakingSpaceString());
+                insertTextIntoNode(toText(positionAfterSplit.computeContainerNode()), 0, nonBreakingSpaceString());
         }
     }
 

@@ -472,7 +472,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
 
         selectionToDelete = selection->selection();
 
-        if (granularity == CharacterGranularity && selectionToDelete.end().containerNode() == selectionToDelete.start().containerNode()
+        if (granularity == CharacterGranularity && selectionToDelete.end().computeContainerNode() == selectionToDelete.start().computeContainerNode()
             && selectionToDelete.end().computeOffsetInContainerNode() - selectionToDelete.start().computeOffsetInContainerNode() > 1) {
             // If there are multiple Unicode code points to be deleted, adjust the range to match platform conventions.
             selectionToDelete.setWithoutValidation(selectionToDelete.end(), selectionToDelete.end().previous(BackwardDeletion));
@@ -548,8 +548,8 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
         if (visibleEnd.deepEquivalent() == endOfParagraph(visibleEnd).deepEquivalent())
             downstreamEnd = visibleEnd.next(CannotCrossEditingBoundary).deepEquivalent().downstream();
         // When deleting tables: Select the table first, then perform the deletion
-        if (isRenderedTableElement(downstreamEnd.containerNode()) && downstreamEnd.computeOffsetInContainerNode() <= caretMinOffset(downstreamEnd.containerNode())) {
-            setEndingSelection(VisibleSelection(endingSelection().end(), positionAfterNode(downstreamEnd.containerNode()), DOWNSTREAM, endingSelection().isDirectional()));
+        if (isRenderedTableElement(downstreamEnd.computeContainerNode()) && downstreamEnd.computeOffsetInContainerNode() <= caretMinOffset(downstreamEnd.computeContainerNode())) {
+            setEndingSelection(VisibleSelection(endingSelection().end(), positionAfterNode(downstreamEnd.computeContainerNode()), DOWNSTREAM, endingSelection().isDirectional()));
             typingAddedToOpenCommand(ForwardDeleteKey);
             return;
         }
@@ -566,15 +566,15 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
             // We can't let the VisibleSelection class's validation kick in or it'll adjust for us based on
             // the current state of the document and we'll get the wrong result.
             Position extent = startingSelection().end();
-            if (extent.containerNode() != selectionToDelete.end().containerNode()) {
+            if (extent.computeContainerNode() != selectionToDelete.end().computeContainerNode()) {
                 extent = selectionToDelete.extent();
             } else {
                 int extraCharacters;
-                if (selectionToDelete.start().containerNode() == selectionToDelete.end().containerNode())
+                if (selectionToDelete.start().computeContainerNode() == selectionToDelete.end().computeContainerNode())
                     extraCharacters = selectionToDelete.end().computeOffsetInContainerNode() - selectionToDelete.start().computeOffsetInContainerNode();
                 else
                     extraCharacters = selectionToDelete.end().computeOffsetInContainerNode();
-                extent = Position(extent.containerNode(), extent.computeOffsetInContainerNode() + extraCharacters);
+                extent = Position(extent.computeContainerNode(), extent.computeOffsetInContainerNode() + extraCharacters);
             }
             selectionAfterUndo.setWithoutValidation(startingSelection().start(), extent);
         }

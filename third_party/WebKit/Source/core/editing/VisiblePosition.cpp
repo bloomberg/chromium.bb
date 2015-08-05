@@ -576,7 +576,7 @@ static PositionType canonicalPosition(const PositionType& passedPosition)
     ASSERT(position.document());
     position.document()->updateLayoutIgnorePendingStylesheets();
 
-    Node* node = position.containerNode();
+    Node* node = position.computeContainerNode();
 
     PositionType candidate = position.upstream();
     if (candidate.isCandidate())
@@ -665,7 +665,7 @@ UChar32 VisiblePosition::characterAfter() const
     Position pos = m_deepPosition.downstream();
     if (!pos.isOffsetInAnchor())
         return 0;
-    Node* containerNode = pos.containerNode();
+    Node* containerNode = pos.computeContainerNode();
     if (!containerNode || !containerNode->isTextNode())
         return 0;
     unsigned offset = static_cast<unsigned>(pos.offsetInContainerNode());

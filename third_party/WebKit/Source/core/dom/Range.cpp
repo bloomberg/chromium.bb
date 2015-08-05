@@ -99,7 +99,7 @@ PassRefPtrWillBeRawPtr<Range> Range::create(Document& ownerDocument, Node* start
 
 PassRefPtrWillBeRawPtr<Range> Range::create(Document& ownerDocument, const Position& start, const Position& end)
 {
-    return adoptRefWillBeNoop(new Range(ownerDocument, start.containerNode(), start.computeOffsetInContainerNode(), end.containerNode(), end.computeOffsetInContainerNode()));
+    return adoptRefWillBeNoop(new Range(ownerDocument, start.computeContainerNode(), start.computeOffsetInContainerNode(), end.computeContainerNode(), end.computeOffsetInContainerNode()));
 }
 
 PassRefPtrWillBeRawPtr<Range> Range::createAdjustedToTreeScope(const TreeScope& treeScope, const Position& position)
@@ -221,13 +221,13 @@ void Range::setEnd(PassRefPtrWillBeRawPtr<Node> refNode, int offset, ExceptionSt
 void Range::setStart(const Position& start, ExceptionState& exceptionState)
 {
     Position parentAnchored = start.parentAnchoredEquivalent();
-    setStart(parentAnchored.containerNode(), parentAnchored.offsetInContainerNode(), exceptionState);
+    setStart(parentAnchored.computeContainerNode(), parentAnchored.offsetInContainerNode(), exceptionState);
 }
 
 void Range::setEnd(const Position& end, ExceptionState& exceptionState)
 {
     Position parentAnchored = end.parentAnchoredEquivalent();
-    setEnd(parentAnchored.containerNode(), parentAnchored.offsetInContainerNode(), exceptionState);
+    setEnd(parentAnchored.computeContainerNode(), parentAnchored.offsetInContainerNode(), exceptionState);
 }
 
 void Range::collapse(bool toStart)
@@ -436,7 +436,7 @@ bool Range::intersectsNode(Node* refNode, const Position& start, const Position&
         return false;
     }
 
-    Node* startContainerNode = start.containerNode();
+    Node* startContainerNode = start.computeContainerNode();
     int startOffset = start.computeOffsetInContainerNode();
 
     if (compareBoundaryPoints(parentNode, nodeIndex, startContainerNode, startOffset, exceptionState) < 0 // starts before start
@@ -445,7 +445,7 @@ bool Range::intersectsNode(Node* refNode, const Position& start, const Position&
         return false;
     }
 
-    Node* endContainerNode = end.containerNode();
+    Node* endContainerNode = end.computeContainerNode();
     int endOffset = end.computeOffsetInContainerNode();
 
     if (compareBoundaryPoints(parentNode, nodeIndex, endContainerNode, endOffset, exceptionState) > 0 // starts after end
@@ -1596,8 +1596,8 @@ void Range::expand(const String& unit, ExceptionState& exceptionState)
     } else {
         return;
     }
-    setStart(start.deepEquivalent().containerNode(), start.deepEquivalent().computeOffsetInContainerNode(), exceptionState);
-    setEnd(end.deepEquivalent().containerNode(), end.deepEquivalent().computeOffsetInContainerNode(), exceptionState);
+    setStart(start.deepEquivalent().computeContainerNode(), start.deepEquivalent().computeOffsetInContainerNode(), exceptionState);
+    setEnd(end.deepEquivalent().computeContainerNode(), end.deepEquivalent().computeOffsetInContainerNode(), exceptionState);
 }
 
 ClientRectList* Range::getClientRects() const

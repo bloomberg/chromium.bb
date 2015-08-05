@@ -133,7 +133,7 @@ ContainerNode* FrameSelection::rootEditableElementOrTreeScopeRootNode() const
     if (selectionRoot)
         return selectionRoot;
 
-    Node* node = m_selection.base().containerNode();
+    Node* node = m_selection.base().computeContainerNode();
     return node ? &node->treeScope().rootNode() : 0;
 }
 
@@ -1505,7 +1505,7 @@ void FrameSelection::notifyAccessibilityForSelectionChange()
 {
     if (m_selection.start().isNotNull() && m_selection.end().isNotNull()) {
         if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache())
-            cache->selectionChanged(m_selection.start().containerNode());
+            cache->selectionChanged(m_selection.start().computeContainerNode());
     }
 }
 
@@ -1877,7 +1877,7 @@ void FrameSelection::setSelectionFromNone()
 
 bool FrameSelection::dispatchSelectStart()
 {
-    Node* selectStartTarget = m_selection.extent().containerNode();
+    Node* selectStartTarget = m_selection.extent().computeContainerNode();
     if (!selectStartTarget)
         return true;
 

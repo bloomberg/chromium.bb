@@ -175,7 +175,7 @@ int TextCheckingParagraph::offsetTo(const Position& position, ExceptionState& ex
 {
     ASSERT(m_checkingRange);
     RefPtrWillBeRawPtr<Range> range = offsetAsRange()->cloneRange();
-    range->setEnd(position.containerNode(), position.computeOffsetInContainerNode(), exceptionState);
+    range->setEnd(position.computeContainerNode(), position.computeOffsetInContainerNode(), exceptionState);
     if (exceptionState.hadException())
         return 0;
     return TextIterator::rangeLength(range->startPosition(), range->endPosition());
@@ -463,7 +463,7 @@ String TextCheckingHelper::findFirstBadGrammar(GrammarDetail& outGrammarDetail, 
     // Expand the search range to encompass entire paragraphs, since grammar checking needs that much context.
     // Determine the character offset from the start of the paragraph to the start of the original search range,
     // since we will want to ignore results in this area.
-    TextCheckingParagraph paragraph(Range::create(m_start.containerNode()->document(), m_start, m_end));
+    TextCheckingParagraph paragraph(Range::create(m_start.computeContainerNode()->document(), m_start, m_end));
 
     // Start checking from beginning of paragraph, but skip past results that occur before the start of the original search range.
     int startOffset = 0;
@@ -528,7 +528,7 @@ void TextCheckingHelper::markAllBadGrammar()
 bool TextCheckingHelper::unifiedTextCheckerEnabled() const
 {
     ASSERT(m_start.isNotNull());
-    Document& doc = m_start.containerNode()->document();
+    Document& doc = m_start.computeContainerNode()->document();
     return blink::unifiedTextCheckerEnabled(doc.frame());
 }
 

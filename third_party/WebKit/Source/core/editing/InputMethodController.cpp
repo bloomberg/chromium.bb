@@ -151,8 +151,8 @@ void InputMethodController::cancelCompositionIfSelectionIsInvalid()
     // Check if selection start and selection end are valid.
     Position start = frame().selection().start();
     Position end = frame().selection().end();
-    if (start.containerNode() == m_compositionNode
-        && end.containerNode() == m_compositionNode
+    if (start.computeContainerNode() == m_compositionNode
+        && end.computeContainerNode() == m_compositionNode
         && static_cast<unsigned>(start.computeOffsetInContainerNode()) >= m_compositionStart
         && static_cast<unsigned>(end.computeOffsetInContainerNode()) <= m_compositionEnd)
         return;

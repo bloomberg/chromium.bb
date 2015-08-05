@@ -48,12 +48,12 @@ void MoveSelectionCommand::doApply()
     // Update the position otherwise it may become invalid after the selection is deleted.
     Position selectionEnd = endingSelection().end();
     if (pos.isOffsetInAnchor() && selectionEnd.isOffsetInAnchor()
-        && selectionEnd.containerNode() == pos.containerNode() && selectionEnd.offsetInContainerNode() < pos.offsetInContainerNode()) {
-        pos = Position(pos.containerNode(), pos.offsetInContainerNode() - selectionEnd.offsetInContainerNode());
+        && selectionEnd.computeContainerNode() == pos.computeContainerNode() && selectionEnd.offsetInContainerNode() < pos.offsetInContainerNode()) {
+        pos = Position(pos.computeContainerNode(), pos.offsetInContainerNode() - selectionEnd.offsetInContainerNode());
 
         Position selectionStart = endingSelection().start();
-        if (selectionStart.isOffsetInAnchor() && selectionStart.containerNode() == pos.containerNode())
-            pos = Position(pos.containerNode(), pos.offsetInContainerNode() + selectionStart.offsetInContainerNode());
+        if (selectionStart.isOffsetInAnchor() && selectionStart.computeContainerNode() == pos.computeContainerNode())
+            pos = Position(pos.computeContainerNode(), pos.offsetInContainerNode() + selectionStart.offsetInContainerNode());
     }
 
     deleteSelection(m_smartDelete);

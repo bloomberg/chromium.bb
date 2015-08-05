@@ -762,7 +762,7 @@ static PositionWithAffinityTemplate<Strategy> startOfLine(const PositionWithAffi
 
     if (mode == UseLogicalOrdering) {
         if (ContainerNode* editableRoot = highestEditableRoot(c.position())) {
-            if (!editableRoot->contains(visPos.position().containerNode()))
+            if (!editableRoot->contains(visPos.position().computeContainerNode()))
                 return PositionWithAffinityTemplate<Strategy>(PositionAlgorithm<Strategy>::firstPositionInNode(editableRoot));
         }
     }
@@ -865,7 +865,7 @@ static VisiblePosition endOfLine(const VisiblePosition& c, LineEndpointComputati
             visPos = visPos.previous();
 
         if (ContainerNode* editableRoot = highestEditableRoot(c.deepEquivalent())) {
-            if (!editableRoot->contains(visPos.deepEquivalent().containerNode()))
+            if (!editableRoot->contains(visPos.deepEquivalent().computeContainerNode()))
                 return VisiblePosition(lastPositionInNode(editableRoot));
         }
 
@@ -1327,20 +1327,20 @@ VisiblePosition nextParagraphPosition(const VisiblePosition& p, LayoutUnit x)
 VisiblePosition startOfBlock(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
 {
     Position position = visiblePosition.deepEquivalent();
-    Element* startBlock = position.containerNode() ? enclosingBlock(position.containerNode(), rule) : 0;
+    Element* startBlock = position.computeContainerNode() ? enclosingBlock(position.computeContainerNode(), rule) : 0;
     return startBlock ? VisiblePosition(firstPositionInNode(startBlock)) : VisiblePosition();
 }
 
 VisiblePosition endOfBlock(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
 {
     Position position = visiblePosition.deepEquivalent();
-    Element* endBlock = position.containerNode() ? enclosingBlock(position.containerNode(), rule) : 0;
+    Element* endBlock = position.computeContainerNode() ? enclosingBlock(position.computeContainerNode(), rule) : 0;
     return endBlock ? VisiblePosition(lastPositionInNode(endBlock)) : VisiblePosition();
 }
 
 bool inSameBlock(const VisiblePosition &a, const VisiblePosition &b)
 {
-    return !a.isNull() && enclosingBlock(a.deepEquivalent().containerNode()) == enclosingBlock(b.deepEquivalent().containerNode());
+    return !a.isNull() && enclosingBlock(a.deepEquivalent().computeContainerNode()) == enclosingBlock(b.deepEquivalent().computeContainerNode());
 }
 
 bool isStartOfBlock(const VisiblePosition &pos)

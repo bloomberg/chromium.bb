@@ -1009,7 +1009,7 @@ void EditingStyle::prepareToApplyAt(const Position& position, ShouldPreserveWrit
         m_mutableStyle->removeProperty(CSSPropertyColor);
 
     if (hasTransparentBackgroundColor(m_mutableStyle.get())
-        || cssValueToRGBA(m_mutableStyle->getPropertyCSSValue(CSSPropertyBackgroundColor).get()) == rgbaBackgroundColorInEffect(position.containerNode()))
+        || cssValueToRGBA(m_mutableStyle->getPropertyCSSValue(CSSPropertyBackgroundColor).get()) == rgbaBackgroundColorInEffect(position.computeContainerNode()))
         m_mutableStyle->removeProperty(CSSPropertyBackgroundColor);
 
     if (unicodeBidi && unicodeBidi->isPrimitiveValue()) {
@@ -1323,7 +1323,7 @@ PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::styleAtSelectionStart(const V
     // Move it to the next deep equivalent position to avoid removing the style from this node.
     // e.g. if pos was at Position("hello", 5) in <b>hello<div>world</div></b>, we want Position("world", 0) instead.
     // We only do this for range because caret at Position("hello", 5) in <b>hello</b>world should give you font-weight: bold.
-    Node* positionNode = position.containerNode();
+    Node* positionNode = position.computeContainerNode();
     if (selection.isRange() && positionNode && positionNode->isTextNode() && position.computeOffsetInContainerNode() == positionNode->maxCharacterOffset())
         position = nextVisuallyDistinctCandidate(position);
 

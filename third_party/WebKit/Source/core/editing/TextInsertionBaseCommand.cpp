@@ -60,7 +60,7 @@ String dispatchBeforeTextInsertedEvent(const String& text, const VisibleSelectio
         return text;
 
     String newText = text;
-    if (Node* startNode = selectionForInsertion.start().containerNode()) {
+    if (Node* startNode = selectionForInsertion.start().computeContainerNode()) {
         if (startNode->rootEditableElement()) {
             // Send BeforeTextInsertedEvent. The event handler will update text if necessary.
             RefPtrWillBeRawPtr<BeforeTextInsertedEvent> evt = BeforeTextInsertedEvent::create(text);

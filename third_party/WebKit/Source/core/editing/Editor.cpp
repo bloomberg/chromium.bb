@@ -246,8 +246,8 @@ bool Editor::canDelete() const
 
 bool Editor::canDeleteRange(const EphemeralRange& range) const
 {
-    Node* startContainer = range.startPosition().containerNode();
-    Node* endContainer = range.endPosition().containerNode();
+    Node* startContainer = range.startPosition().computeContainerNode();
+    Node* endContainer = range.endPosition().computeContainerNode();
     if (!startContainer || !endContainer)
         return false;
 

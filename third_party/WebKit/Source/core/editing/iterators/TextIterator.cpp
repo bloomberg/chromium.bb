@@ -149,10 +149,10 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(const PositionAlgorithm<S
     // assume layout tree is up-to-date.
     start.document()->updateLayoutIgnorePendingStylesheets();
     if (start.compareTo(end) > 0) {
-        initialize(end.containerNode(), end.computeOffsetInContainerNode(), start.containerNode(), start.computeOffsetInContainerNode());
+        initialize(end.computeContainerNode(), end.computeOffsetInContainerNode(), start.computeContainerNode(), start.computeOffsetInContainerNode());
         return;
     }
-    initialize(start.containerNode(), start.computeOffsetInContainerNode(), end.containerNode(), end.computeOffsetInContainerNode());
+    initialize(start.computeContainerNode(), start.computeOffsetInContainerNode(), end.computeContainerNode(), end.computeOffsetInContainerNode());
 }
 
 template<typename Strategy>

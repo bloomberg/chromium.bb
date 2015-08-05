@@ -327,14 +327,14 @@ static int indexForPosition(HTMLElement* innerEditor, const Position& passedPosi
     int index = 0;
     Node* startNode = passedPosition.computeNodeBeforePosition();
     if (!startNode)
-        startNode = passedPosition.containerNode();
+        startNode = passedPosition.computeContainerNode();
     ASSERT(startNode);
     ASSERT(innerEditor->contains(startNode));
 
     for (Node* node = startNode; node; node = NodeTraversal::previous(*node, innerEditor)) {
         if (node->isTextNode()) {
             int length = toText(*node).length();
-            if (node == passedPosition.containerNode())
+            if (node == passedPosition.computeContainerNode())
                 index += std::min(length, passedPosition.offsetInContainerNode());
             else
                 index += length;
@@ -414,7 +414,7 @@ int HTMLTextFormControlElement::indexForVisiblePosition(const VisiblePosition& p
     ASSERT(indexPosition.document());
     RefPtrWillBeRawPtr<Range> range = Range::create(*indexPosition.document());
     range->setStart(innerEditorElement(), 0, ASSERT_NO_EXCEPTION);
-    range->setEnd(indexPosition.containerNode(), indexPosition.offsetInContainerNode(), ASSERT_NO_EXCEPTION);
+    range->setEnd(indexPosition.computeContainerNode(), indexPosition.offsetInContainerNode(), ASSERT_NO_EXCEPTION);
     return TextIterator::rangeLength(range->startPosition(), range->endPosition());
 }
 
@@ -731,9 +731,9 @@ String HTMLTextFormControlElement::valueWithHardLineBreaks() const
 HTMLTextFormControlElement* enclosingTextFormControl(const Position& position)
 {
     ASSERT(position.isNull() || position.isOffsetInAnchor()
-        || position.containerNode() || !position.anchorNode()->shadowHost()
+        || position.computeContainerNode() || !position.anchorNode()->shadowHost()
         || (position.anchorNode()->parentNode() && position.anchorNode()->parentNode()->isShadowRoot()));
-    return enclosingTextFormControl(position.containerNode());
+    return enclosingTextFormControl(position.computeContainerNode());
 }
 
 HTMLTextFormControlElement* enclosingTextFormControl(Node* container)

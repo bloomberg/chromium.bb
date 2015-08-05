@@ -92,9 +92,9 @@ static Node* previousRenderedEditable(Node* node)
 template <typename Strategy>
 const TreeScope* PositionAlgorithm<Strategy>::commonAncestorTreeScope(const PositionAlgorithm<Strategy>& a, const PositionAlgorithm<Strategy>& b)
 {
-    if (!a.containerNode() || !b.containerNode())
+    if (!a.computeContainerNode() || !b.computeContainerNode())
         return nullptr;
-    return a.containerNode()->treeScope().commonAncestorTreeScope(b.containerNode()->treeScope());
+    return a.computeContainerNode()->treeScope().commonAncestorTreeScope(b.computeContainerNode()->treeScope());
 }
 
 
@@ -161,7 +161,7 @@ PositionAlgorithm<Strategy>::PositionAlgorithm(const PositionAlgorithm& other)
 // --
 
 template <typename Strategy>
-Node* PositionAlgorithm<Strategy>::containerNode() const
+Node* PositionAlgorithm<Strategy>::computeContainerNode() const
 {
     if (!m_anchorNode)
         return 0;
@@ -226,11 +226,11 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::parentAnchoredEquivalen
     if (!m_anchorNode->offsetInCharacters()
         && (isAfterAnchorOrAfterChildren() || static_cast<unsigned>(m_offset) == m_anchorNode->countChildren())
         && (Strategy::editingIgnoresContent(m_anchorNode.get()) || isRenderedHTMLTableElement(m_anchorNode.get()))
-        && containerNode()) {
+        && computeContainerNode()) {
         return inParentAfterNode(*m_anchorNode);
     }
 
-    return PositionAlgorithm<Strategy>(containerNode(), computeOffsetInContainerNode());
+    return PositionAlgorithm<Strategy>(computeContainerNode(), computeOffsetInContainerNode());
 }
 
 template <typename Strategy>
@@ -239,7 +239,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::toOffsetInAnchor() cons
     if (isNull())
         return PositionAlgorithm<Strategy>();
 
-    return PositionAlgorithm<Strategy>(containerNode(), computeOffsetInContainerNode());
+    return PositionAlgorithm<Strategy>(computeContainerNode(), computeOffsetInContainerNode());
 }
 
 template <typename Strategy>
@@ -331,7 +331,7 @@ Node* PositionAlgorithm<Strategy>::nodeAsRangeLastNode() const
         return nullptr;
     if (Node* pastLastNode = nodeAsRangePastLastNode())
         return Strategy::previous(*pastLastNode);
-    return &Strategy::lastWithinOrSelf(*containerNode());
+    return &Strategy::lastWithinOrSelf(*computeContainerNode());
 }
 
 // An implementation of |Range::pastLastNode()|.
@@ -352,10 +352,10 @@ Node* PositionAlgorithm<Strategy>::nodeAsRangePastLastNode() const
 template <typename Strategy>
 Node* PositionAlgorithm<Strategy>::commonAncestorContainer(const PositionAlgorithm<Strategy>& other) const
 {
-    return Strategy::commonAncestor(*containerNode(), *other.containerNode());
+    return Strategy::commonAncestor(*computeContainerNode(), *other.computeContainerNode());
 }
 
-// FIXME: This method is confusing (does it return anchorNode() or containerNode()?) and should be renamed or removed
+// FIXME: This method is confusing (does it return anchorNode() or computeContainerNode()?) and should be renamed or removed
 template <typename Strategy>
 Element* PositionAlgorithm<Strategy>::element() const
 {
@@ -371,8 +371,8 @@ int comparePositions(const PositionInComposedTree& positionA, const PositionInCo
     ASSERT(positionA.isNotNull());
     ASSERT(positionB.isNotNull());
 
-    Node* containerA = positionA.containerNode();
-    Node* containerB = positionB.containerNode();
+    Node* containerA = positionA.computeContainerNode();
+    Node* containerB = positionB.computeContainerNode();
     int offsetA = positionA.computeOffsetInContainerNode();
     int offsetB = positionB.computeOffsetInContainerNode();
     return comparePositionsInComposedTree(containerA, offsetA, containerB, offsetB);
@@ -537,7 +537,7 @@ Node* PositionAlgorithm<Strategy>::parentEditingBoundary() const
     if (!documentElement)
         return 0;
 
-    Node* boundary = containerNode();
+    Node* boundary = computeContainerNode();
     while (boundary != documentElement && nonShadowBoundaryParentNode<Strategy>(boundary) && m_anchorNode->hasEditableStyle() == Strategy::parent(*boundary)->hasEditableStyle())
         boundary = nonShadowBoundaryParentNode<Strategy>(boundary);
 

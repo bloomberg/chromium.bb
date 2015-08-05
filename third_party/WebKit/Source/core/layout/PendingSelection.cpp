@@ -86,7 +86,7 @@ VisibleSelection PendingSelection::calcVisibleSelectionAlgorithm() const
 
     bool paintBlockCursor = m_shouldShowBlockCursor && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(VisiblePosition(end, affinity));
     VisibleSelection selection;
-    if (enclosingTextFormControl(start.containerNode())) {
+    if (enclosingTextFormControl(start.computeContainerNode())) {
         PositionType endPosition = paintBlockCursor ? Strategy::selectionExtent(m_selection).next() : end;
         selection.setWithoutValidation(start, endPosition);
         return selection;

@@ -421,7 +421,7 @@ void CompositeEditCommand::updatePositionForNodeRemovalPreservingChildren(Positi
     updatePositionForNodeRemoval(position, node);
     if (offset == 0)
         return;
-    position = Position(position.containerNode(), offset);
+    position = Position(position.computeContainerNode(), offset);
 }
 
 HTMLSpanElement* CompositeEditCommand::replaceElementWithSpanPreservingChildrenAndAttributes(PassRefPtrWillBeRawPtr<HTMLElement> node)
@@ -499,10 +499,10 @@ Position CompositeEditCommand::replaceSelectedTextInNode(const String& text)
 {
     Position start = endingSelection().start();
     Position end = endingSelection().end();
-    if (start.containerNode() != end.containerNode() || !start.containerNode()->isTextNode() || isTabHTMLSpanElementTextNode(start.containerNode()))
+    if (start.computeContainerNode() != end.computeContainerNode() || !start.computeContainerNode()->isTextNode() || isTabHTMLSpanElementTextNode(start.computeContainerNode()))
         return Position();
 
-    RefPtrWillBeRawPtr<Text> textNode = toText(start.containerNode());
+    RefPtrWillBeRawPtr<Text> textNode = toText(start.computeContainerNode());
     replaceTextInNode(textNode, start.offsetInContainerNode(), end.offsetInContainerNode() - start.offsetInContainerNode(), text);
 
     return Position(textNode.release(), start.offsetInContainerNode() + text.length());
@@ -552,16 +552,16 @@ Position CompositeEditCommand::positionOutsideTabSpan(const Position& pos)
         return positionInParentAfterNode(*pos.anchorNode());
     }
 
-    HTMLSpanElement* tabSpan = tabSpanElement(pos.containerNode());
+    HTMLSpanElement* tabSpan = tabSpanElement(pos.computeContainerNode());
     ASSERT(tabSpan);
 
-    if (pos.offsetInContainerNode() <= caretMinOffset(pos.containerNode()))
+    if (pos.offsetInContainerNode() <= caretMinOffset(pos.computeContainerNode()))
         return positionInParentBeforeNode(*tabSpan);
 
-    if (pos.offsetInContainerNode() >= caretMaxOffset(pos.containerNode()))
+    if (pos.offsetInContainerNode() >= caretMaxOffset(pos.computeContainerNode()))
         return positionInParentAfterNode(*tabSpan);
 
-    splitTextNodeContainingElement(toText(pos.containerNode()), pos.offsetInContainerNode());
+    splitTextNodeContainingElement(toText(pos.computeContainerNode()), pos.offsetInContainerNode());
     return positionInParentBeforeNode(*tabSpan);
 }
 
@@ -615,7 +615,7 @@ bool CompositeEditCommand::shouldRebalanceLeadingWhitespaceFor(const String& tex
 
 bool CompositeEditCommand::canRebalance(const Position& position) const
 {
-    Node* node = position.containerNode();
+    Node* node = position.computeContainerNode();
     if (!position.isOffsetInAnchor() || !node || !node->isTextNode())
         return false;
 
@@ -633,7 +633,7 @@ bool CompositeEditCommand::canRebalance(const Position& position) const
 // FIXME: Doesn't go into text nodes that contribute adjacent text (siblings, cousins, etc).
 void CompositeEditCommand::rebalanceWhitespaceAt(const Position& position)
 {
-    Node* node = position.containerNode();
+    Node* node = position.computeContainerNode();
     if (!canRebalance(position))
         return;
 
@@ -712,9 +712,9 @@ void CompositeEditCommand::replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNee
     if (!isCollapsibleWhitespace(visiblePosition.characterAfter()))
         return;
     Position pos = visiblePosition.deepEquivalent().downstream();
-    if (!pos.containerNode() || !pos.containerNode()->isTextNode())
+    if (!pos.computeContainerNode() || !pos.computeContainerNode()->isTextNode())
         return;
-    replaceTextInNodePreservingMarkers(toText(pos.containerNode()), pos.offsetInContainerNode(), 1, nonBreakingSpaceString());
+    replaceTextInNodePreservingMarkers(toText(pos.computeContainerNode()), pos.offsetInContainerNode(), 1, nonBreakingSpaceString());
 }
 
 void CompositeEditCommand::rebalanceWhitespace()

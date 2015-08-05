@@ -121,9 +121,9 @@ EphemeralRange PlainTextRange::createRangeFor(const ContainerNode& scope, GetRan
 
         if (foundStart) {
             startRangeFound = true;
-            if (textRunStartPosition.containerNode()->isTextNode()) {
+            if (textRunStartPosition.computeContainerNode()->isTextNode()) {
                 int offset = start() - docTextPosition;
-                resultStart = Position(textRunStartPosition.containerNode(), offset + textRunStartPosition.offsetInContainerNode());
+                resultStart = Position(textRunStartPosition.computeContainerNode(), offset + textRunStartPosition.offsetInContainerNode());
             } else {
                 if (start() == docTextPosition)
                     resultStart = textRunStartPosition;
@@ -133,9 +133,9 @@ EphemeralRange PlainTextRange::createRangeFor(const ContainerNode& scope, GetRan
         }
 
         if (foundEnd) {
-            if (textRunStartPosition.containerNode()->isTextNode()) {
+            if (textRunStartPosition.computeContainerNode()->isTextNode()) {
                 int offset = end() - docTextPosition;
-                resultEnd = Position(textRunStartPosition.containerNode(), offset + textRunStartPosition.offsetInContainerNode());
+                resultEnd = Position(textRunStartPosition.computeContainerNode(), offset + textRunStartPosition.offsetInContainerNode());
             } else {
                 if (end() == docTextPosition)
                     resultEnd = textRunStartPosition;
@@ -168,10 +168,10 @@ PlainTextRange PlainTextRange::create(const ContainerNode& scope, const Ephemera
     // because of text fields and textareas. The DOM for those is not
     // directly in the document DOM, so ensure that the range does not cross a
     // boundary of one of those.
-    Node* startContainer = range.startPosition().containerNode();
+    Node* startContainer = range.startPosition().computeContainerNode();
     if (startContainer != &scope && !startContainer->isDescendantOf(&scope))
         return PlainTextRange();
-    Node* endContainer = range.endPosition().containerNode();
+    Node* endContainer = range.endPosition().computeContainerNode();
     if (endContainer != scope && !endContainer->isDescendantOf(&scope))
         return PlainTextRange();
 

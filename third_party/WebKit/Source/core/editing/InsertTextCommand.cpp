@@ -56,7 +56,7 @@ Position InsertTextCommand::positionInsideTextNode(const Position& p)
 
     // Prepare for text input by looking at the specified position.
     // It may be necessary to insert a text node to receive characters.
-    if (!pos.containerNode()->isTextNode()) {
+    if (!pos.computeContainerNode()->isTextNode()) {
         RefPtrWillBeRawPtr<Text> textNode = document().createEditingTextNode("");
         insertNodeAt(textNode.get(), pos);
         return firstPositionInNode(textNode.get());
@@ -101,9 +101,9 @@ bool InsertTextCommand::performTrivialReplace(const String& text, bool selectIns
 bool InsertTextCommand::performOverwrite(const String& text, bool selectInsertedText)
 {
     Position start = endingSelection().start();
-    if (start.isNull() || !start.isOffsetInAnchor() || !start.containerNode()->isTextNode())
+    if (start.isNull() || !start.isOffsetInAnchor() || !start.computeContainerNode()->isTextNode())
         return false;
-    RefPtrWillBeRawPtr<Text> textNode = toText(start.containerNode());
+    RefPtrWillBeRawPtr<Text> textNode = toText(start.computeContainerNode());
     if (!textNode)
         return false;
 
@@ -172,8 +172,8 @@ void InsertTextCommand::doApply()
 
     // It is possible for the node that contains startPosition to contain only unrendered whitespace,
     // and so deleteInsignificantText could remove it.  Save the position before the node in case that happens.
-    ASSERT(startPosition.containerNode());
-    Position positionBeforeStartNode(positionInParentBeforeNode(*startPosition.containerNode()));
+    ASSERT(startPosition.computeContainerNode());
+    Position positionBeforeStartNode(positionInParentBeforeNode(*startPosition.computeContainerNode()));
     deleteInsignificantText(startPosition, startPosition.downstream());
     if (!startPosition.inDocument())
         startPosition = positionBeforeStartNode;
@@ -193,11 +193,11 @@ void InsertTextCommand::doApply()
         // Make sure the document is set up to receive m_text
         startPosition = positionInsideTextNode(startPosition);
         ASSERT(startPosition.isOffsetInAnchor());
-        ASSERT(startPosition.containerNode());
-        ASSERT(startPosition.containerNode()->isTextNode());
+        ASSERT(startPosition.computeContainerNode());
+        ASSERT(startPosition.computeContainerNode()->isTextNode());
         if (placeholder.isNotNull())
             removePlaceholderAt(placeholder);
-        RefPtrWillBeRawPtr<Text> textNode = toText(startPosition.containerNode());
+        RefPtrWillBeRawPtr<Text> textNode = toText(startPosition.computeContainerNode());
         const unsigned offset = startPosition.offsetInContainerNode();
 
         insertTextIntoNode(textNode, offset, m_text);
@@ -235,7 +235,7 @@ Position InsertTextCommand::insertTab(const Position& pos)
     if (insertPos.isNull())
         return pos;
 
-    Node* node = insertPos.containerNode();
+    Node* node = insertPos.computeContainerNode();
     unsigned offset = node->isTextNode() ? insertPos.offsetInContainerNode() : 0;
 
     // keep tabs coalesced in tab span

@@ -2277,7 +2277,7 @@ bool WebViewImpl::setComposition(
     // node, which doesn't exist any longer.
     const EphemeralRange range = inputMethodController.compositionEphemeralRange();
     if (range.isNotNull()) {
-        Node* node = range.startPosition().containerNode();
+        Node* node = range.startPosition().computeContainerNode();
         if (!node || !node->isContentEditable())
             return false;
     }

@@ -474,15 +474,15 @@ bool DOMSelection::containsNode(const Node* n, bool allowPartial) const
     const Position startPosition = selectedRange.startPosition().toOffsetInAnchor();
     const Position endPosition = selectedRange.endPosition().toOffsetInAnchor();
     TrackExceptionState exceptionState;
-    bool nodeFullySelected = Range::compareBoundaryPoints(parentNode, nodeIndex, startPosition.containerNode(), startPosition.offsetInContainerNode(), exceptionState) >= 0 && !exceptionState.hadException()
-        && Range::compareBoundaryPoints(parentNode, nodeIndex + 1, endPosition.containerNode(), endPosition.offsetInContainerNode(), exceptionState) <= 0 && !exceptionState.hadException();
+    bool nodeFullySelected = Range::compareBoundaryPoints(parentNode, nodeIndex, startPosition.computeContainerNode(), startPosition.offsetInContainerNode(), exceptionState) >= 0 && !exceptionState.hadException()
+        && Range::compareBoundaryPoints(parentNode, nodeIndex + 1, endPosition.computeContainerNode(), endPosition.offsetInContainerNode(), exceptionState) <= 0 && !exceptionState.hadException();
     if (exceptionState.hadException())
         return false;
     if (nodeFullySelected)
         return true;
 
-    bool nodeFullyUnselected = (Range::compareBoundaryPoints(parentNode, nodeIndex, endPosition.containerNode(), endPosition.offsetInContainerNode(), exceptionState) > 0 && !exceptionState.hadException())
-        || (Range::compareBoundaryPoints(parentNode, nodeIndex + 1, startPosition.containerNode(), startPosition.offsetInContainerNode(), exceptionState) < 0 && !exceptionState.hadException());
+    bool nodeFullyUnselected = (Range::compareBoundaryPoints(parentNode, nodeIndex, endPosition.computeContainerNode(), endPosition.offsetInContainerNode(), exceptionState) > 0 && !exceptionState.hadException())
+        || (Range::compareBoundaryPoints(parentNode, nodeIndex + 1, startPosition.computeContainerNode(), startPosition.offsetInContainerNode(), exceptionState) < 0 && !exceptionState.hadException());
     ASSERT(!exceptionState.hadException());
     if (nodeFullyUnselected)
         return false;
@@ -512,7 +512,7 @@ Node* DOMSelection::shadowAdjustedNode(const Position& position) const
     if (position.isNull())
         return 0;
 
-    Node* containerNode = position.containerNode();
+    Node* containerNode = position.computeContainerNode();
     Node* adjustedNode = m_treeScope->ancestorInThisScope(containerNode);
 
     if (!adjustedNode)
@@ -530,7 +530,7 @@ int DOMSelection::shadowAdjustedOffset(const Position& position) const
     if (position.isNull())
         return 0;
 
-    Node* containerNode = position.containerNode();
+    Node* containerNode = position.computeContainerNode();
     Node* adjustedNode = m_treeScope->ancestorInThisScope(containerNode);
 
     if (!adjustedNode)

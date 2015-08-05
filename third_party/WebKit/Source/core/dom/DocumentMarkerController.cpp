@@ -427,10 +427,10 @@ DocumentMarkerVector DocumentMarkerController::markersInRange(const EphemeralRan
 
     DocumentMarkerVector foundMarkers;
 
-    Node* startContainer = range.startPosition().containerNode();
+    Node* startContainer = range.startPosition().computeContainerNode();
     ASSERT(startContainer);
     unsigned startOffset = static_cast<unsigned>(range.startPosition().computeOffsetInContainerNode());
-    Node* endContainer = range.endPosition().containerNode();
+    Node* endContainer = range.endPosition().computeContainerNode();
     ASSERT(endContainer);
     unsigned endOffset = static_cast<unsigned>(range.endPosition().computeOffsetInContainerNode());
 

@@ -222,7 +222,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
     // We go to the end of our first range instead of the start of it, just to be sure
     // we don't get foiled by any word boundary problems at the start. It means we might
     // do a tiny bit more searching.
-    Node* searchEndNodeAfterWrap = spellingSearchEnd.containerNode();
+    Node* searchEndNodeAfterWrap = spellingSearchEnd.computeContainerNode();
     int searchEndOffsetAfterWrap = spellingSearchEnd.offsetInContainerNode();
 
     int misspellingOffset = 0;
@@ -443,7 +443,7 @@ void SpellChecker::markMisspellingsOrBadGrammar(const VisibleSelection& selectio
         return;
 
     // If we're not in an editable node, bail.
-    Node* editableNode = range.startPosition().containerNode();
+    Node* editableNode = range.startPosition().computeContainerNode();
     if (!editableNode || !editableNode->hasEditableStyle())
         return;
 
@@ -731,7 +731,7 @@ void SpellChecker::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSele
     // of marker that contains the word in question, and remove marker on that whole range.
     Document* document = frame().document();
     ASSERT(document);
-    Node* startNode = startOfFirstWord.deepEquivalent().containerNode();
+    Node* startNode = startOfFirstWord.deepEquivalent().computeContainerNode();
     int startOffset = startOfFirstWord.deepEquivalent().computeOffsetInContainerNode();
     int endOffset = endOfLastWord.deepEquivalent().computeOffsetInContainerNode();
     document->markers().removeMarkers(startNode, startOffset, endOffset - startOffset, DocumentMarker::MisspellingMarkers(), DocumentMarkerController::RemovePartiallyOverlappingMarker);
@@ -760,7 +760,7 @@ void SpellChecker::replaceMisspelledRange(const String& text)
     if (markers.size() < 1 || markers[0]->startOffset() >= markers[0]->endOffset())
         return;
     // TODO(yosin) |markerRange| should be |EphemeralRange|.
-    RefPtrWillBeRawPtr<Range> markerRange = Range::create(caretRange.document(), caretRange.startPosition().containerNode(), markers[0]->startOffset(), caretRange.endPosition().containerNode(), markers[0]->endOffset());
+    RefPtrWillBeRawPtr<Range> markerRange = Range::create(caretRange.document(), caretRange.startPosition().computeContainerNode(), markers[0]->startOffset(), caretRange.endPosition().computeContainerNode(), markers[0]->endOffset());
     if (!markerRange)
         return;
     frame().selection().setSelection(VisibleSelection(markerRange.get()), CharacterGranularity);
