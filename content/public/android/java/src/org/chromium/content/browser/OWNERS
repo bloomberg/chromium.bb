@@ -9,6 +9,10 @@ per-file LocationProvider*.java=timvolodine@chromium.org
 # Screen Orientation API related
 per-file ScreenOrientation*.java=mlamouri@chromium.org
 
+# Media Session API related
+per-file MediaSession*.java=avayvod@chromium.org
+per-file MediaSession*.java=mlamouri@chromium.org
+
 # Input handling related
 jdduke@chromium.org
 
