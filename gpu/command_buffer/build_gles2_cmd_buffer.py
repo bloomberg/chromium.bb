@@ -2595,12 +2595,9 @@ _FUNCTION_INFO = {
     'trace_level': 1,
   },
   'Finish': {
-    'type': 'Manual',
     'impl_func': False,
     'client_test': False,
     'decoder_func': 'DoFinish',
-    'cmd_args': 'void* sync_count, GLuint finish_count',
-    'data_transfer_methods': ['shm'],
     'defer_reads': True,
     'trace_level': 1,
   },

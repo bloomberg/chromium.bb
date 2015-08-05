@@ -1475,6 +1475,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // Wrapper for glEnableVertexAttribArray.
   void DoEnableVertexAttribArray(GLuint index);
 
+  // Wrapper for glFinish.
+  void DoFinish();
+
   // Wrapper for glFlush.
   void DoFlush();
 
@@ -4408,28 +4411,10 @@ void GLES2DecoderImpl::RemoveBuffer(GLuint client_id) {
   buffer_manager()->RemoveBuffer(client_id);
 }
 
-// TODO(dyen): Temporary shared memory to sanity check finish calls.
-error::Error GLES2DecoderImpl::HandleFinish(uint32 immediate_data_size,
-                                const void* cmd_data) {
-  const gles2::cmds::Finish& c =
-      *static_cast<const gles2::cmds::Finish*>(cmd_data);
-  int32 sync_shm_id = static_cast<int32>(c.sync_count_shm_id);
-  uint32 sync_shm_offset = static_cast<uint32>(c.sync_count_shm_offset);
-  uint32 finish_count = static_cast<GLuint>(c.finish_count);
-
+void GLES2DecoderImpl::DoFinish() {
   glFinish();
   ProcessPendingReadPixels(true);
   ProcessPendingQueries(true);
-
-  base::subtle::Atomic32* sync_counter =
-      GetSharedMemoryAs<base::subtle::Atomic32*>(sync_shm_id,
-                                                 sync_shm_offset,
-                                                 sizeof(*sync_counter)) ;
-  if (sync_counter) {
-    base::subtle::Release_Store(sync_counter, finish_count);
-  }
-
-  return error::kNoError;
 }
 
 void GLES2DecoderImpl::DoFlush() {

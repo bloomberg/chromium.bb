@@ -112,11 +112,6 @@ GLES2Implementation::GLES2Implementation(
       gpu_control_(gpu_control),
       capabilities_(gpu_control->GetCapabilities()),
       aggressively_free_resources_(false),
-      // TODO(dyen): Temporary shared memory to sanity check finish calls.
-      local_finish_counter_(0),
-      shared_finish_counter_(nullptr),
-      shared_finish_counter_shm_id_(0),
-      shared_finish_counter_shm_offset_(0),
       weak_ptr_factory_(this) {
   DCHECK(helper);
   DCHECK(transfer_buffer);
@@ -246,12 +241,6 @@ GLES2Implementation::~GLES2Implementation() {
   if (async_upload_sync_) {
     mapped_memory_->Free(async_upload_sync_);
     async_upload_sync_ = NULL;
-  }
-
-  // TODO(dyen): Temporary shared memory to sanity check finish calls.
-  if (shared_finish_counter_) {
-    mapped_memory_->Free(shared_finish_counter_);
-    shared_finish_counter_ = nullptr;
   }
 
   // Make sure the commands make it the service.
@@ -1294,26 +1283,8 @@ void GLES2Implementation::ShallowFinishCHROMIUM() {
 void GLES2Implementation::FinishHelper() {
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glFinish()");
   TRACE_EVENT0("gpu", "GLES2::Finish");
-
-  // TODO(dyen): Temporary shared memory to sanity check finish calls.
-  if (nullptr == shared_finish_counter_) {
-    int32_t shared_finish_counter_shm_id;
-    uint32_t shared_finish_counter_shm_offset;
-    void* finish_mem = mapped_memory_->Alloc(sizeof(*shared_finish_counter_),
-                                             &shared_finish_counter_shm_id,
-                                             &shared_finish_counter_shm_offset);
-    if (finish_mem) {
-      local_finish_counter_ = 0;
-      shared_finish_counter_ = static_cast<base::subtle::Atomic32*>(finish_mem);
-      shared_finish_counter_shm_id_ = shared_finish_counter_shm_id;
-      shared_finish_counter_shm_offset_ = shared_finish_counter_shm_offset;
-    }
-  }
-
   // Insert the cmd to call glFinish
-  helper_->Finish(shared_finish_counter_shm_id_,
-                  shared_finish_counter_shm_offset_,
-                  ++local_finish_counter_);
+  helper_->Finish();
   // Finish our command buffer
   // (tell the service to execute up to the Finish cmd and wait for it to
   // execute.)
@@ -1321,13 +1292,6 @@ void GLES2Implementation::FinishHelper() {
 
   if (aggressively_free_resources_)
     FreeEverything();
-
-  // TODO(dyen): Temporary shared memory to sanity check finish calls.
-  if (shared_finish_counter_ && !helper_->IsContextLost()) {
-    const uint32_t finish_count =
-        base::subtle::Acquire_Load(shared_finish_counter_);
-    CHECK(local_finish_counter_ == finish_count);
-  }
 }
 
 void GLES2Implementation::SwapBuffers() {

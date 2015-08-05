@@ -1076,6 +1076,19 @@ error::Error GLES2DecoderImpl::HandleFenceSync(uint32_t immediate_data_size,
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleFinish(uint32_t immediate_data_size,
+                                            const void* cmd_data) {
+  const gles2::cmds::Finish& c =
+      *static_cast<const gles2::cmds::Finish*>(cmd_data);
+  (void)c;
+  error::Error error;
+  error = WillAccessBoundFramebufferForRead();
+  if (error != error::kNoError)
+    return error;
+  DoFinish();
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleFlush(uint32_t immediate_data_size,
                                            const void* cmd_data) {
   const gles2::cmds::Flush& c =
