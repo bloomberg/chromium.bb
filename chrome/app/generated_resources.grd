@@ -6270,12 +6270,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_WEB_BLUETOOTH_DESCRIPTION" desc="Description for the flag to enable Web Bluetooth.">
         Enables Web Bluetooth which could allow websites to connect to and control Bluetooth devices around you. Including keyboards, cameras, microphones, etc.
       </message>
-      <message name="IDS_FLAGS_NTP_OTHER_SESSIONS_MENU_NAME" desc="Name for the flag to disable the 'Other devices' menu on the NTP.">
-        Disable NTP 'Other devices' menu.
-      </message>
-      <message name="IDS_FLAGS_NTP_OTHER_SESSIONS_MENU_DESCRIPTION" desc="Description for the flag to disable the 'Other devices' menu on the NTP.">
-        Disable the new tab page menu for accessing tabs on other devices.
-      </message>
       <message name="IDS_FLAGS_ENABLE_DEVTOOLS_EXPERIMENTS_NAME" desc="Name for the flag to enable experiments in Developer Tools">
         Enable Developer Tools experiments.
       </message>
