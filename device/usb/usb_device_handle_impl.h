@@ -49,6 +49,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                                     int alternate_setting,
                                     const ResultCallback& callback) override;
   void ResetDevice(const ResultCallback& callback) override;
+  void ClearHalt(uint8 endpoint, const ResultCallback& callback) override;
 
   void ControlTransfer(UsbEndpointDirection direction,
                        TransferRequestType request_type,
@@ -119,6 +120,8 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                                             bool success,
                                             const ResultCallback& callback);
   void ResetDeviceOnBlockingThread(const ResultCallback& callback);
+  void ClearHaltOnBlockingThread(uint8 endpoint,
+                                 const ResultCallback& callback);
 
   // Refresh endpoint_map_ after ClaimInterface, ReleaseInterface and
   // SetInterfaceAlternateSetting.
@@ -127,7 +130,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   // Look up the claimed interface by endpoint. Return NULL if the interface
   // of the endpoint is not found.
   scoped_refptr<InterfaceClaimer> GetClaimedInterfaceForEndpoint(
-      unsigned char endpoint);
+      uint8 endpoint);
 
   void ControlTransferInternal(
       UsbEndpointDirection direction,

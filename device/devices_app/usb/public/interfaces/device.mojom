@@ -133,6 +133,9 @@ interface Device {
   // Resets the device.
   Reset() => (bool success);
 
+  // Clear the halt/stall condition for an endpoint.
+  ClearHalt(uint8 endpoint) => (bool success);
+
   // Initiates an inbound control transfer request. |params| determine the
   // details of the request. Transfers to recipients other than DEVICE require a
   // corresponding interface to be claimed.

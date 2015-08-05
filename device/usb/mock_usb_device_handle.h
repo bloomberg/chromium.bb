@@ -61,6 +61,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                void(int interface_number,
                     int alternate_setting,
                     const ResultCallback& callback));
+  MOCK_METHOD2(ClearHalt, void(uint8 endpoint, const ResultCallback& callback));
 
   scoped_refptr<UsbDevice> GetDevice() const override;
 

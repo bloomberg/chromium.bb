@@ -59,6 +59,7 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
                                             int alternate_setting,
                                             const ResultCallback& callback) = 0;
   virtual void ResetDevice(const ResultCallback& callback) = 0;
+  virtual void ClearHalt(uint8 endpoint, const ResultCallback& callback) = 0;
 
   // The transfer functions may be called from any thread. The provided callback
   // will be run on the caller's thread.

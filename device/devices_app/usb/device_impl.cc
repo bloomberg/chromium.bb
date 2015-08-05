@@ -182,6 +182,16 @@ void DeviceImpl::Reset(const ResetCallback& callback) {
   device_handle_->ResetDevice(WrapMojoCallback(callback));
 }
 
+void DeviceImpl::ClearHalt(uint8_t endpoint,
+                           const ClearHaltCallback& callback) {
+  if (!device_handle_) {
+    callback.Run(false);
+    return;
+  }
+
+  device_handle_->ClearHalt(endpoint, WrapMojoCallback(callback));
+}
+
 void DeviceImpl::ControlTransferIn(ControlTransferParamsPtr params,
                                    uint32_t length,
                                    uint32_t timeout,

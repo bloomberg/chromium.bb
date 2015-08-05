@@ -86,6 +86,7 @@ class DeviceImpl : public Device {
       uint8_t alternate_setting,
       const SetInterfaceAlternateSettingCallback& callback) override;
   void Reset(const ResetCallback& callback) override;
+  void ClearHalt(uint8_t endpoint, const ClearHaltCallback& callback) override;
   void ControlTransferIn(ControlTransferParamsPtr params,
                          uint32_t length,
                          uint32_t timeout,

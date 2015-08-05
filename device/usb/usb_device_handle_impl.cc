@@ -586,6 +586,27 @@ void UsbDeviceHandleImpl::ResetDevice(const ResultCallback& callback) {
                             this, callback));
 }
 
+void UsbDeviceHandleImpl::ClearHalt(uint8 endpoint,
+                                    const ResultCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!device_) {
+    callback.Run(false);
+    return;
+  }
+
+  InterfaceClaimer* interface_claimer =
+      GetClaimedInterfaceForEndpoint(endpoint).get();
+  for (Transfer* transfer : transfers_) {
+    if (transfer->claimed_interface() == interface_claimer) {
+      transfer->Cancel();
+    }
+  }
+
+  blocking_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&UsbDeviceHandleImpl::ClearHaltOnBlockingThread,
+                            this, endpoint, callback));
+}
+
 void UsbDeviceHandleImpl::ControlTransfer(UsbEndpointDirection direction,
                                           TransferRequestType request_type,
                                           TransferRecipient recipient,
@@ -773,6 +794,17 @@ void UsbDeviceHandleImpl::ResetDeviceOnBlockingThread(
   task_runner_->PostTask(FROM_HERE, base::Bind(callback, rv == LIBUSB_SUCCESS));
 }
 
+void UsbDeviceHandleImpl::ClearHaltOnBlockingThread(
+    uint8 endpoint,
+    const ResultCallback& callback) {
+  int rv = libusb_clear_halt(handle_, endpoint);
+  if (rv != LIBUSB_SUCCESS) {
+    USB_LOG(EVENT) << "Failed to clear halt: "
+                   << ConvertPlatformUsbErrorToString(rv);
+  }
+  task_runner_->PostTask(FROM_HERE, base::Bind(callback, rv == LIBUSB_SUCCESS));
+}
+
 void UsbDeviceHandleImpl::RefreshEndpointMap() {
   DCHECK(thread_checker_.CalledOnValidThread());
   endpoint_map_.clear();
@@ -796,7 +828,7 @@ void UsbDeviceHandleImpl::RefreshEndpointMap() {
 }
 
 scoped_refptr<UsbDeviceHandleImpl::InterfaceClaimer>
-UsbDeviceHandleImpl::GetClaimedInterfaceForEndpoint(unsigned char endpoint) {
+UsbDeviceHandleImpl::GetClaimedInterfaceForEndpoint(uint8 endpoint) {
   if (ContainsKey(endpoint_map_, endpoint))
     return claimed_interfaces_[endpoint_map_[endpoint]];
   return NULL;
