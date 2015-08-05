@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -523,6 +525,37 @@ TEST_F(MediaStreamAudioProcessorTest, MAYBE_TestWithKeyboardMicChannel) {
   // Set |audio_processor| to NULL to make sure |webrtc_audio_device| outlives
   // |audio_processor|.
   audio_processor = NULL;
+}
+
+using Point = webrtc::Point;
+using PointVector = std::vector<Point>;
+
+void ExpectPointVectorEqual(const PointVector& expected,
+                            const PointVector& actual) {
+  EXPECT_EQ(expected.size(), actual.size());
+  for (size_t i = 0; i < actual.size(); ++i) {
+    EXPECT_EQ(expected[i].x(), actual[i].x());
+    EXPECT_EQ(expected[i].y(), actual[i].y());
+    EXPECT_EQ(expected[i].z(), actual[i].z());
+  }
+}
+
+TEST(MediaStreamAudioProcessorOptionsTest, ParseArrayGeometry) {
+  const PointVector expected_empty;
+  ExpectPointVectorEqual(expected_empty, ParseArrayGeometry(""));
+  ExpectPointVectorEqual(expected_empty, ParseArrayGeometry("0 0 a"));
+  ExpectPointVectorEqual(expected_empty, ParseArrayGeometry("1 2"));
+  ExpectPointVectorEqual(expected_empty, ParseArrayGeometry("1 2 3 4"));
+
+  {
+    PointVector expected(1, Point(-0.02f, 0, 0));
+    expected.push_back(Point(0.02f, 0, 0));
+    ExpectPointVectorEqual(expected, ParseArrayGeometry("-0.02 0 0 0.02 0 0"));
+  }
+  {
+    PointVector expected(1, Point(1, 2, 3));
+    ExpectPointVectorEqual(expected, ParseArrayGeometry("1 2 3"));
+  }
 }
 
 }  // namespace content

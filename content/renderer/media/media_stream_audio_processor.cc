@@ -93,6 +93,31 @@ bool IsBeamformingEnabled(const MediaAudioConstraints& audio_constraints) {
          audio_constraints.GetProperty(MediaAudioConstraints::kGoogBeamforming);
 }
 
+void ConfigureBeamforming(webrtc::Config* config,
+                          const std::string& geometry_str) {
+  std::vector<webrtc::Point> geometry = ParseArrayGeometry(geometry_str);
+#if defined(OS_CHROMEOS)
+  if (geometry.empty()) {
+    const std::string& board = base::SysInfo::GetLsbReleaseBoard();
+    if (board.find("nyan_kitty") != std::string::npos) {
+      geometry.push_back(webrtc::Point(-0.03f, 0.f, 0.f));
+      geometry.push_back(webrtc::Point(0.03f, 0.f, 0.f));
+    } else if (board.find("peach_pi") != std::string::npos) {
+      geometry.push_back(webrtc::Point(-0.025f, 0.f, 0.f));
+      geometry.push_back(webrtc::Point(0.025f, 0.f, 0.f));
+    } else if (board.find("samus") != std::string::npos) {
+      geometry.push_back(webrtc::Point(-0.032f, 0.f, 0.f));
+      geometry.push_back(webrtc::Point(0.032f, 0.f, 0.f));
+    } else if (board.find("swanky") != std::string::npos) {
+      geometry.push_back(webrtc::Point(-0.026f, 0.f, 0.f));
+      geometry.push_back(webrtc::Point(0.026f, 0.f, 0.f));
+    }
+  }
+#endif
+  config->Set<webrtc::Beamforming>(
+      new webrtc::Beamforming(geometry.size() > 1, geometry));
+}
+
 }  // namespace
 
 // Wraps AudioBus to provide access to the array of channel pointers, since this
@@ -484,8 +509,9 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   if (IsDelayAgnosticAecEnabled())
     config.Set<webrtc::DelayAgnostic>(new webrtc::DelayAgnostic(true));
   if (goog_beamforming) {
-    ConfigureBeamforming(&config, audio_constraints.GetPropertyAsString(
-        MediaAudioConstraints::kGoogArrayGeometry));
+    ConfigureBeamforming(&config,
+                         audio_constraints.GetPropertyAsString(
+                             MediaAudioConstraints::kGoogArrayGeometry));
   }
 
   // Create and configure the webrtc::AudioProcessing.
@@ -527,50 +553,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     EnableAutomaticGainControl(audio_processing_.get());
 
   RecordProcessingState(AUDIO_PROCESSING_ENABLED);
-}
-
-void MediaStreamAudioProcessor::ConfigureBeamforming(
-    webrtc::Config* config,
-    const std::string& geometry_str) const {
-  std::vector<webrtc::Point> geometry = ParseArrayGeometry(geometry_str);
-#if defined(OS_CHROMEOS)
-  if (geometry.size() == 0) {
-    const std::string board = base::SysInfo::GetLsbReleaseBoard();
-    if (board.find("nyan_kitty") != std::string::npos) {
-      geometry.push_back(webrtc::Point(-0.03f, 0.f, 0.f));
-      geometry.push_back(webrtc::Point(0.03f, 0.f, 0.f));
-    } else if (board.find("peach_pi") != std::string::npos) {
-      geometry.push_back(webrtc::Point(-0.025f, 0.f, 0.f));
-      geometry.push_back(webrtc::Point(0.025f, 0.f, 0.f));
-    } else if (board.find("samus") != std::string::npos) {
-      geometry.push_back(webrtc::Point(-0.032f, 0.f, 0.f));
-      geometry.push_back(webrtc::Point(0.032f, 0.f, 0.f));
-    } else if (board.find("swanky") != std::string::npos) {
-      geometry.push_back(webrtc::Point(-0.026f, 0.f, 0.f));
-      geometry.push_back(webrtc::Point(0.026f, 0.f, 0.f));
-    }
-  }
-#endif
-  config->Set<webrtc::Beamforming>(new webrtc::Beamforming(geometry.size() > 1,
-                                                           geometry));
-}
-
-std::vector<webrtc::Point> MediaStreamAudioProcessor::ParseArrayGeometry(
-    const std::string& geometry_str) const {
-  std::vector<webrtc::Point> result;
-  std::vector<float> values;
-  std::istringstream str(geometry_str);
-  std::copy(std::istream_iterator<float>(str),
-            std::istream_iterator<float>(),
-            std::back_inserter(values));
-  if (values.size() % 3 == 0) {
-    for (size_t i = 0; i < values.size(); i += 3) {
-      result.push_back(webrtc::Point(values[i + 0],
-                                     values[i + 1],
-                                     values[i + 2]));
-    }
-  }
-  return result;
 }
 
 void MediaStreamAudioProcessor::InitializeCaptureFifo(

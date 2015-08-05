@@ -139,6 +139,14 @@ void EnableAutomaticGainControl(AudioProcessing* audio_processing);
 void GetAecStats(webrtc::EchoCancellation* echo_cancellation,
                  webrtc::AudioProcessorInterface::AudioProcessorStats* stats);
 
+// Parses the microphone array geometry from |geometry_string| formatted as
+// "x1 y1 z1 ... xn yn zn" for an n-microphone array. See
+// switches::kMicrophonePositions for more detail.
+//
+// Returns a zero-sized vector if |geometry_string| isn't a parseable geometry.
+CONTENT_EXPORT std::vector<webrtc::Point> ParseArrayGeometry(
+    const std::string& geometry_string);
+
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_MEDIA_STREAM_AUDIO_PROCESSOR_OPTIONS_H_

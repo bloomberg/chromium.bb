@@ -10,6 +10,8 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
@@ -387,6 +389,38 @@ void GetAecStats(webrtc::EchoCancellation* echo_cancellation,
     stats->echo_delay_median_ms = median;
     stats->echo_delay_std_ms = std;
   }
+}
+
+CONTENT_EXPORT std::vector<webrtc::Point> ParseArrayGeometry(
+    const std::string& geometry_string) {
+  const auto& tokens =
+      base::SplitString(geometry_string, base::kWhitespaceASCII,
+                        base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  std::vector<webrtc::Point> geometry;
+  if (tokens.size() < 3 || tokens.size() % 3 != 0) {
+    LOG(ERROR) << "Malformed geometry string: " << geometry_string;
+    return geometry;
+  }
+
+  std::vector<float> float_tokens;
+  float_tokens.reserve(tokens.size());
+  for (const auto& token : tokens) {
+    double float_token;
+    if (!base::StringToDouble(token, &float_token)) {
+      LOG(ERROR) << "Unable to convert token=" << token
+                 << " to double from geometry string: " << geometry_string;
+      return geometry;
+    }
+    float_tokens.push_back(float_token);
+  }
+
+  geometry.reserve(float_tokens.size() / 3);
+  for (size_t i = 0; i < float_tokens.size(); i += 3) {
+    geometry.push_back(webrtc::Point(float_tokens[i + 0], float_tokens[i + 1],
+                                     float_tokens[i + 2]));
+  }
+
+  return geometry;
 }
 
 }  // namespace content

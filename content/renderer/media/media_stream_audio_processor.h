@@ -126,14 +126,6 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // Helper to initialize the WebRtc AudioProcessing.
   void InitializeAudioProcessingModule(
       const blink::WebMediaConstraints& constraints, int effects);
-  void ConfigureBeamforming(webrtc::Config* config,
-                            const std::string& geometry_str) const;
-
-  // Parses the array geometry from the URL string formatted as
-  // "x1 y1 z1 ... xn yn zn" for an n-microphone array.
-  // Returns a zero-sized vector if |geometry_str| isn't a parseable geometry.
-  std::vector<webrtc::Point> ParseArrayGeometry(
-      const std::string& geometry_str) const;
 
   // Helper to initialize the capture converter.
   void InitializeCaptureFifo(const media::AudioParameters& input_format);
