@@ -36,6 +36,11 @@ public:
     // https://crbug.com/499321
     operator LayoutObject*() const { return m_layoutObject; }
 
+    Node* node() const
+    {
+        return m_layoutObject->node();
+    }
+
     LineLayoutItem parent() const
     {
         return LineLayoutItem(m_layoutObject->parent());

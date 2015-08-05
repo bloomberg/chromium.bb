@@ -38,7 +38,7 @@ void EllipsisBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
 
 IntRect EllipsisBox::selectionRect()
 {
-    const ComputedStyle& style = layoutObject().styleRef(isFirstLineStyle());
+    const ComputedStyle& style = lineLayoutItem().styleRef(isFirstLineStyle());
     const Font& font = style.font();
     return enclosingIntRect(font.selectionRectForText(constructTextRun(font, m_str, style, TextRun::AllowTrailingExpansion), IntPoint(logicalLeft(), logicalTop() + root().selectionTopAdjustedForPrecedingBlock()), root().selectionHeightAdjustedForPrecedingBlock()));
 }
@@ -53,10 +53,10 @@ bool EllipsisBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
     boxOrigin.moveBy(accumulatedOffset);
     LayoutRect boundsRect(boxOrigin, size());
     if (visibleToHitTestRequest(result.hitTestRequest()) && boundsRect.intersects(LayoutRect(HitTestLocation::rectForPoint(locationInContainer.point(), 0, 0, 0, 0)))) {
-        layoutObject().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(adjustedLocation));
+        lineLayoutItem().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(adjustedLocation));
         // FIXME: the call to rawValue() below is temporary and should be removed once the transition
         // to LayoutUnit-based types is complete (crbug.com/321237)
-        if (!result.addNodeToListBasedTestResult(layoutObject().node(), locationInContainer, boundsRect))
+        if (!result.addNodeToListBasedTestResult(lineLayoutItem().node(), locationInContainer, boundsRect))
             return true;
     }
 
