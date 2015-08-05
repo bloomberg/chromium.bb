@@ -14,6 +14,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/extensions_client.h"
+#include "extensions/common/features/feature_util.h"
 #include "extensions/common/switches.h"
 
 namespace extensions {
@@ -24,7 +25,8 @@ class Static {
  public:
   FeatureProvider* GetFeatures(const std::string& name) const {
     FeatureProviderMap::const_iterator it = feature_providers_.find(name);
-    CHECK(it != feature_providers_.end());
+    if (it == feature_providers_.end())
+      CRASH_WITH_MINIDUMP("FeatureProvider \"" + name + "\" not found");
     return it->second.get();
   }
 
@@ -72,8 +74,10 @@ const Feature* GetFeatureFromProviderByName(const std::string& provider_name,
                                             const std::string& feature_name) {
   const Feature* feature =
       FeatureProvider::GetByName(provider_name)->GetFeature(feature_name);
-  CHECK(feature) << "FeatureProvider '" << provider_name
-                 << "' does not contain Feature '" << feature_name << "'";
+  if (!feature) {
+    CRASH_WITH_MINIDUMP("Feature \"" + feature_name + "\" not found in " +
+                        "FeatureProvider \"" + provider_name + "\"");
+  }
   return feature;
 }
 
@@ -81,9 +85,7 @@ const Feature* GetFeatureFromProviderByName(const std::string& provider_name,
 
 // static
 const FeatureProvider* FeatureProvider::GetByName(const std::string& name) {
-  const FeatureProvider* feature_provider = g_static.Get().GetFeatures(name);
-  CHECK(feature_provider) << "FeatureProvider '" << name << "' not found";
-  return feature_provider;
+  return g_static.Get().GetFeatures(name);
 }
 
 // static

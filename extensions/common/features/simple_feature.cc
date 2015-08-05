@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/alias.h"
 #include "base/macros.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
@@ -20,6 +19,7 @@
 #include "components/crx_file/id_util.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/features/feature_provider.h"
+#include "extensions/common/features/feature_util.h"
 #include "extensions/common/switches.h"
 
 using crx_file::id_util::HashedIdInHex;
@@ -75,14 +75,8 @@ void ParseEnum(const std::string& string_value,
                T* enum_value,
                const std::map<std::string, T>& mapping) {
   const auto& iter = mapping.find(string_value);
-  if (iter == mapping.end()) {
-    // For http://crbug.com/365192.
-    char minidump[256];
-    base::debug::Alias(&minidump);
-    base::snprintf(minidump, arraysize(minidump),
-        "e::simple_feature.cc:%d:\"%s\"", __LINE__, string_value.c_str());
-    CHECK(false) << string_value;
-  }
+  if (iter == mapping.end())
+    CRASH_WITH_MINIDUMP("Enum value not found: " + string_value);
   *enum_value = iter->second;
 }
 
