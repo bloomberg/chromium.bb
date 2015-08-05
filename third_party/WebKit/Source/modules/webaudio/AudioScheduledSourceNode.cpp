@@ -41,10 +41,10 @@ const double AudioScheduledSourceHandler::UnknownTime = -1;
 
 AudioScheduledSourceHandler::AudioScheduledSourceHandler(NodeType nodeType, AudioNode& node, float sampleRate)
     : AudioHandler(nodeType, node, sampleRate)
-    , m_playbackState(UNSCHEDULED_STATE)
     , m_startTime(0)
     , m_endTime(UnknownTime)
     , m_hasEndedListener(false)
+    , m_playbackState(UNSCHEDULED_STATE)
 {
 }
 

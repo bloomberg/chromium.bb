@@ -103,10 +103,6 @@ protected:
 
     void notifyEnded();
 
-    // This is accessed by both the main thread and audio thread.  Use the setter and getter to
-    // protect the access to this!
-    int m_playbackState;
-
     // m_startTime is the time to start playing based on the context's timeline (0 or a time less than the context's current time means "now").
     double m_startTime; // in seconds
 
@@ -118,6 +114,10 @@ protected:
     bool m_hasEndedListener;
 
     static const double UnknownTime;
+private:
+    // This is accessed by both the main thread and audio thread.  Use the setter and getter to
+    // protect the access to this!
+    int m_playbackState;
 };
 
 class AudioScheduledSourceNode : public AudioSourceNode {
