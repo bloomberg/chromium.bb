@@ -59,7 +59,8 @@ Polymer({
     if (!this.networkState || !this.networkState.Cellular)
       return;
     var simLockStatus = this.networkState.Cellular.SIMLockStatus;
-    this.pukRequired = simLockStatus && simLockStatus.LockType == 'sim-puk';
+    this.pukRequired =
+        simLockStatus && simLockStatus.LockType == CrOnc.LockType.PUK;
   },
 
   /** Polymer networkState changed method. */
