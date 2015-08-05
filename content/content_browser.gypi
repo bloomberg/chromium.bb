@@ -1067,8 +1067,6 @@
       'browser/mojo/service_registry_android.h',
       'browser/navigator_connect/navigator_connect_context_impl.cc',
       'browser/navigator_connect/navigator_connect_context_impl.h',
-      'browser/navigator_connect/navigator_connect_service_worker_service_factory.cc',
-      'browser/navigator_connect/navigator_connect_service_worker_service_factory.h',
       'browser/navigator_connect/service_port_service_impl.cc',
       'browser/navigator_connect/service_port_service_impl.h',
       'browser/net/browser_online_state_observer.cc',
