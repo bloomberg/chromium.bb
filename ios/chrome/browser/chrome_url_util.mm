@@ -14,7 +14,9 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/net/url_scheme_util.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "net/url_request/url_request.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 bool UrlIsExternalFileReference(const GURL& url) {
   return url.SchemeIs(ios::GetChromeBrowserProvider()->GetChromeUIScheme()) &&
@@ -42,6 +44,17 @@ bool UrlHasChromeScheme(NSURL* url) {
   return net::UrlSchemeIs(
       url, base::SysUTF8ToNSString(
                ios::GetChromeBrowserProvider()->GetChromeUIScheme()));
+}
+
+bool IsHandledProtocol(const std::string& scheme) {
+  DCHECK_EQ(scheme, base::StringToLowerASCII(scheme));
+  if (scheme == url::kAboutScheme)
+    return true;
+  if (scheme == url::kDataScheme)
+    return true;
+  if (scheme == ios::GetChromeBrowserProvider()->GetChromeUIScheme())
+    return true;
+  return net::URLRequest::IsHandledProtocol(scheme);
 }
 
 @implementation ChromeAppConstants {

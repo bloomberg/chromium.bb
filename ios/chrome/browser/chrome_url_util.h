@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#include <string>
+
 class GURL;
 
 // Returns whether |url| is an external file reference.
@@ -21,6 +23,10 @@ NSURL* UrlOfChromeAppIcon(int width, int height);
 // Returns true if the scheme has a chrome scheme.
 bool UrlHasChromeScheme(const GURL& url);
 bool UrlHasChromeScheme(NSURL* url);
+
+// Returns true if |scheme| is handled in Chrome, or by default handlers in
+// net::URLRequest.
+bool IsHandledProtocol(const std::string& scheme);
 
 // Singleton object that generates constants for Chrome iOS applications.
 // Behavior of this object can be overridden by unit tests.
