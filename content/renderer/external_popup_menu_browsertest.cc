@@ -138,8 +138,7 @@ class ExternalPopupMenuRemoveTest : public ExternalPopupMenuTest {
 
 // Tests that nothing bad happen when the page removes the select when it
 // changes. (http://crbug.com/61997)
-// TODO(tkent): Change event becomes asynchronous.  crbug.com/516945
-TEST_F(ExternalPopupMenuRemoveTest, DISABLED_RemoveOnChange) {
+TEST_F(ExternalPopupMenuRemoveTest, RemoveOnChange) {
   // Click the text field once to show the popup.
   EXPECT_TRUE(SimulateElementClick(kSelectID));
 
