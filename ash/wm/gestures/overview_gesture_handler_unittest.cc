@@ -140,34 +140,4 @@ TEST_F(OverviewGestureHandlerTest, SwipeUpDownWithoutReleasing) {
   generator.Dispatch(&fling_start);
 }
 
-// Tests a swipe down from the top of the screen to enter and exit overview.
-TEST_F(OverviewGestureHandlerTest, GestureSwipe) {
-  gfx::Rect bounds(0, 0, 400, 400);
-  aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
-  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
-  ui::test::EventGenerator generator(root_window, root_window);
-  gfx::Point start_points[3];
-  start_points[0] = start_points[1] = start_points[2] = gfx::Point();
-  generator.GestureMultiFingerScroll(3, start_points, 5, 10, 0, 100);
-  EXPECT_TRUE(IsSelecting());
-
-  generator.GestureMultiFingerScroll(3, start_points, 5, 10, 0, 100);
-  EXPECT_FALSE(IsSelecting());
-}
-
-// Tests that a swipe down from the top of a window doesn't enter overview.
-// http://crbug.com/313859
-TEST_F(OverviewGestureHandlerTest, GestureSwipeTopOfWindow) {
-  gfx::Rect bounds(100, 100, 400, 400);
-  aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
-  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
-  ui::test::EventGenerator generator(root_window, window2.get());
-  gfx::Point start_points[3];
-  start_points[0] = start_points[1] = start_points[2] = gfx::Point(105, 105);
-  generator.GestureMultiFingerScroll(3, start_points, 5, 10, 0, 100);
-  EXPECT_FALSE(IsSelecting());
-}
-
 }  // namespace ash

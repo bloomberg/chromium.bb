@@ -18,8 +18,7 @@ class ScrollEvent;
 
 namespace ash {
 
-// This handles a 3-finger swipe down gesture from the top of the screen to
-// enter overview mode.
+// This handles 3-finger touchpad scroll events to enter/exit overview mode.
 class OverviewGestureHandler {
  public:
   OverviewGestureHandler();
@@ -29,14 +28,7 @@ class OverviewGestureHandler {
   // has been handled and should not be processed further, false otherwise.
   bool ProcessScrollEvent(const ui::ScrollEvent& event);
 
-  // Processes a gesture event and may start overview. Returns true if the event
-  // has been handled and should not be processed any farther, false otherwise.
-  bool ProcessGestureEvent(const ui::GestureEvent& event);
-
  private:
-  // True if the current/last gesture began in the top bezel.
-  bool in_top_bezel_gesture_;
-
   // The total distance scrolled with three fingers.
   float scroll_x_;
   float scroll_y_;

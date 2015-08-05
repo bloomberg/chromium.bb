@@ -248,9 +248,6 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case ash::UMA_DRAG_MAXIMIZE_RIGHT:
       base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeRight"));
       break;
-    case ash::UMA_GESTURE_OVERVIEW:
-      base::RecordAction(base::UserMetricsAction("Gesture_Overview"));
-      break;
     case ash::UMA_LAUNCHER_BUTTON_PRESSED_WITH_MOUSE:
       base::RecordAction(
           base::UserMetricsAction("Launcher_ButtonPressed_Mouse"));
