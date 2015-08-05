@@ -110,6 +110,8 @@ bool g_should_download_favicons = false;
 
 bool g_force_auxiliary_bitmap_rendering = false;
 
+std::string g_locale;
+
 const void* kAwContentsUserDataKey = &kAwContentsUserDataKey;
 
 class AwContentsUserData : public base::SupportsUserData::Data {
@@ -154,6 +156,16 @@ AwContents* AwContents::FromID(int render_process_id, int render_view_id) {
       content::WebContents::FromRenderViewHost(rvh);
   if (!web_contents) return NULL;
   return FromWebContents(web_contents);
+}
+
+// static
+void SetLocale(JNIEnv* env, jclass, jstring locale) {
+  g_locale = ConvertJavaStringToUTF8(env, locale);
+}
+
+// static
+std::string AwContents::GetLocale() {
+  return g_locale;
 }
 
 // static

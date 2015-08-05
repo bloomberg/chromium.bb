@@ -19,6 +19,7 @@ class AwBrowserContext;
 class AwMessagePortService;
 class AwQuotaManagerBridge;
 class AwWebPreferencesPopulater;
+class AwLocaleManager;
 
 // Used to create instances of objects under native that are used in browser.
 class JniDependencyFactory {
@@ -31,6 +32,7 @@ class JniDependencyFactory {
       content::WebContents* web_contents) = 0;
   virtual AwWebPreferencesPopulater* CreateWebPreferencesPopulater() = 0;
   virtual AwMessagePortService* CreateAwMessagePortService() = 0;
+  virtual AwLocaleManager* CreateAwLocaleManager() = 0;
 #if defined(VIDEO_HOLE)
   virtual content::ExternalVideoSurfaceContainer*
       CreateExternalVideoSurfaceContainer(content::WebContents* contents) = 0;

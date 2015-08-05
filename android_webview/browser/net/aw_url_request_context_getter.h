@@ -17,6 +17,7 @@
 namespace net {
 class CookieStore;
 class HttpTransactionFactory;
+class HttpUserAgentSettings;
 class NetLog;
 class ProxyConfigService;
 class URLRequestContext;
@@ -70,6 +71,7 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
   scoped_ptr<net::URLRequestJobFactory> job_factory_;
   scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
+  scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings_;
 
   // ProtocolHandlers and interceptors are stored here between
   // SetHandlersAndInterceptors() and the first GetURLRequestContext() call.

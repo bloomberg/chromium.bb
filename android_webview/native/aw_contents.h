@@ -68,6 +68,8 @@ class AwContents : public FindHelper::Listener,
   // render_process_id and render_view_id, or NULL.
   static AwContents* FromID(int render_process_id, int render_view_id);
 
+  static std::string GetLocale();
+
   AwContents(scoped_ptr<content::WebContents> web_contents);
   ~AwContents() override;
 

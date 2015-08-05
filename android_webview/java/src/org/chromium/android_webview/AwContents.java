@@ -43,6 +43,7 @@ import android.widget.OverScroller;
 
 import org.chromium.android_webview.permission.AwGeolocationCallback;
 import org.chromium.android_webview.permission.AwPermissionRequest;
+import org.chromium.base.LocaleUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -293,6 +294,8 @@ public class AwContents implements SmartClipProvider,
     // True when this AwContents has been destroyed.
     // Do not use directly, call isDestroyed() instead.
     private boolean mIsDestroyed = false;
+
+    private static String sCurrentLocale = "";
 
     private static final class DestroyRunnable implements Runnable {
         private final long mNativeAwContents;
@@ -626,7 +629,9 @@ public class AwContents implements SmartClipProvider,
         public void onLowMemory() {}
 
         @Override
-        public void onConfigurationChanged(Configuration configuration) {}
+        public void onConfigurationChanged(Configuration configuration) {
+            setLocale(LocaleUtils.getLocale(configuration.locale));
+        }
     };
 
     //--------------------------------------------------------------------------------------------
@@ -659,6 +664,8 @@ public class AwContents implements SmartClipProvider,
             InternalAccessDelegate internalAccessAdapter, NativeGLDelegate nativeGLDelegate,
             AwContentsClient contentsClient, AwSettings settings,
             DependencyFactory dependencyFactory) {
+        setLocale(LocaleUtils.getDefaultLocale());
+
         mBrowserContext = browserContext;
 
         // setWillNotDraw(false) is required since WebView draws it's own contents using it's
@@ -913,6 +920,13 @@ public class AwContents implements SmartClipProvider,
             sActivityWindowMap.put(activity, activityWindowAndroid);
         }
         return activityWindowAndroid;
+    }
+
+    private static void setLocale(String locale) {
+        if (!sCurrentLocale.equals(locale)) {
+            sCurrentLocale = locale;
+            nativeSetLocale(sCurrentLocale);
+        }
     }
 
     /* Common initialization routine for adopting a native AwContents instance into this
@@ -2903,6 +2917,8 @@ public class AwContents implements SmartClipProvider,
                     mContainerView.getHeight());
             updateHardwareAcceleratedFeaturesToggle();
 
+            setLocale(LocaleUtils.getDefaultLocale());
+
             if (mComponentCallbacks != null) return;
             mComponentCallbacks = new AwComponentCallbacks();
             mContext.registerComponentCallbacks(mComponentCallbacks);
@@ -3056,6 +3072,7 @@ public class AwContents implements SmartClipProvider,
     private static native long nativeGetAwDrawGLFunction();
     private static native int nativeGetNativeInstanceCount();
     private static native void nativeSetShouldDownloadFavicons();
+    private static native void nativeSetLocale(String locale);
 
     private native void nativeSetJavaPeers(long nativeAwContents, AwContents awContents,
             AwWebContentsDelegate webViewWebContentsDelegate,

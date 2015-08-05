@@ -55,6 +55,8 @@
         'aw_form_database.h',
         'aw_http_auth_handler.cc',
         'aw_http_auth_handler.h',
+        'aw_locale_manager_impl.cc',
+        'aw_locale_manager_impl.h',
         'aw_media_url_interceptor.cc',
         'aw_media_url_interceptor.h',
         'aw_message_port_service_impl.cc',

@@ -10,6 +10,7 @@
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/crash_reporter/aw_microdump_crash_reporter.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
+#include "android_webview/native/aw_locale_manager_impl.h"
 #include "android_webview/native/aw_media_url_interceptor.h"
 #include "android_webview/native/aw_message_port_service_impl.h"
 #include "android_webview/native/aw_quota_manager_bridge_impl.h"
@@ -197,6 +198,10 @@ AwWebPreferencesPopulater* AwMainDelegate::CreateWebPreferencesPopulater() {
 
 AwMessagePortService* AwMainDelegate::CreateAwMessagePortService() {
   return new AwMessagePortServiceImpl();
+}
+
+AwLocaleManager* AwMainDelegate::CreateAwLocaleManager() {
+  return new AwLocaleManagerImpl();
 }
 
 #if defined(VIDEO_HOLE)

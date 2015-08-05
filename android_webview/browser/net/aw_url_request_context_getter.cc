@@ -9,6 +9,7 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_request_interceptor.h"
+#include "android_webview/browser/net/aw_http_user_agent_settings.h"
 #include "android_webview/browser/net/aw_network_delegate.h"
 #include "android_webview/browser/net/aw_url_request_job_factory.h"
 #include "android_webview/browser/net/init_native_callback.h"
@@ -180,6 +181,8 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
       cookie_store_(cookie_store),
       net_log_(new net::NetLog()) {
   proxy_config_service_ = config_service.Pass();
+  http_user_agent_settings_.reset(
+      new AwHttpUserAgentSettings());
   // CreateSystemProxyConfigService for Android must be called on main thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -192,7 +195,6 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   DCHECK(!url_request_context_);
 
   net::URLRequestContextBuilder builder;
-  builder.set_user_agent(GetUserAgent());
   scoped_ptr<AwNetworkDelegate> aw_network_delegate(new AwNetworkDelegate());
 
   AwBrowserContext* browser_context = AwBrowserContext::GetDefault();
@@ -213,8 +215,6 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
       net::ProxyService::CreateWithoutProxyResolver(
           proxy_config_service_.release(),
           net_log_.get()));
-  builder.set_accept_language(net::HttpUtil::GenerateAcceptLanguageHeader(
-      AwContentBrowserClient::GetAcceptLangsImpl()));
   builder.set_net_log(net_log_.get());
   builder.SetCookieAndChannelIdStores(cookie_store_, NULL);
   ApplyCmdlineOverridesToURLRequestContextBuilder(&builder);
@@ -245,6 +245,8 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
       job_factory_.Pass(),
       browser_context->GetDataReductionProxyIOData()->CreateInterceptor()));
   url_request_context_->set_job_factory(job_factory_.get());
+  url_request_context_->set_http_user_agent_settings(
+      http_user_agent_settings_.get());
 }
 
 net::URLRequestContext* AwURLRequestContextGetter::GetURLRequestContext() {
