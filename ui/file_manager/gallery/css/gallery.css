@@ -522,6 +522,10 @@ files-toggle-ripple::shadow .ripple.activated {
   overflow: visible;
 }
 
+.gallery .toolbar .edit-main .container {
+  display: flex;
+}
+
 .gallery[editing] .edit-bar-spacer {
   opacity: 1.0;
   pointer-events: auto;
@@ -620,138 +624,69 @@ button[disabled] {
 }
 
 /* Button in edit toolbar. */
-button.edit-toolbar,
-button.edit-toolbar[disabled] {
-  background-color: rgba(0, 0, 0, 0);
-  background-position: center;
-  background-repeat: no-repeat;
-  border: none;
-  box-shadow: none;
-  color: white;
-  cursor: pointer;
-  display: inline-block;
-  flex: none;
-  padding: 0;
-  position: relative;
-  z-index: 10;
-}
 
-button.edit-toolbar {
+.toolbar button.edit-toolbar {
   height: 28px;
   margin: 0 10px;
   min-width: 28px;  /* Reset. */
+  outline: none;
   width: 28px;
 }
 
-button.edit-toolbar[disabled],
+.toolbar button.edit-toolbar[disabled],
 .gallery[tools][locked] > button.edit-toolbar {
+  display: block;
   opacity: 0.5;
   pointer-events: none;
 }
 
-button.edit-toolbar[hidden] {
+.toolbar button.edit-toolbar[hidden] {
   display: none;
 }
 
-button.edit-toolbar:focus {
+.toolbar button.edit-toolbar:focus:not(.using-mouse) {
   background-color: rgba(0, 0, 0, 0.3);
   outline: none;
-  z-index: 11;
-}
-
-/* By default, labels are hidden. */
-button.edit-toolbar span {
-  display: none;
-}
-
-/* Show labels if there is enough space. */
-@media (min-width: 1180px) {
-
-  .edit-main button.edit-toolbar,
-  .edit-main button.edit-toolbar[disabled] {
-    background-position: 5px center;
-    flex: 0 1 auto;
-    min-width: 60px;
-    width: auto;
-  }
-
-  button.edit-toolbar span {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  button.edit-toolbar:not(.crop-aspect-ratio) > .button-content > .label {
-    -webkit-margin-end: 6px;
-  }
-
-}
-
-button.edit-toolbar > .button-content {
-  -webkit-margin-end: 2px;
-  -webkit-margin-start: 2px;
-  align-items: center;
-  display: flex;
-  position: relative;
-  z-index: 1;
-}
-
-button.edit-toolbar > .button-content > .icon {
-  display: block;
-  background-position: center;
-  background-repeat: no-repeat;
-  height: 24px;
-  width: 24px;
-}
-
-button.edit-toolbar > .ripples {
-  height: 100%;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 100%;
-  z-index: 0;
 }
 
 /* Edit main toolbar. */
-.edit-main button.autofix > .button-content > .icon {
+.edit-main button.autofix .icon {
   background-image: -webkit-image-set(
       url(../images/100/auto_fix.png) 1x,
       url(../images/200/auto_fix.png) 2x);
 }
 
-.edit-main button.crop > .button-content > .icon {
+.edit-main button.crop .icon {
   background-image:  -webkit-image-set(
       url(../images/100/crop.png) 1x,
       url(../images/200/crop.png) 2x);
 }
 
-.edit-main button.exposure > .button-content > .icon {
+.edit-main button.exposure .icon {
   background-image: -webkit-image-set(
       url(../images/100/brightness.png) 1x,
       url(../images/200/brightness.png) 2x);
 }
 
-.edit-main button.rotate_right > .button-content > .icon {
+.edit-main button.rotate_right .icon {
   background-image: -webkit-image-set(
       url(../images/100/rotate_right.png) 1x,
       url(../images/200/rotate_right.png) 2x);
 }
 
-.edit-main button.rotate_left > .button-content > .icon {
+.edit-main button.rotate_left .icon {
   background-image: -webkit-image-set(
       url(../images/100/rotate_left.png) 1x,
       url(../images/200/rotate_left.png) 2x);
 }
 
-.edit-main button.undo > .button-content > .icon {
+.edit-main button.undo .icon {
   background-image: -webkit-image-set(
       url(../images/100/undo.png) 1x,
       url(../images/200/undo.png) 2x);
 }
 
-.edit-main button.redo > .button-content > .icon {
+.edit-main button.redo .icon {
   background-image: -webkit-image-set(
       url(../images/100/redo.png) 1x,
       url(../images/200/redo.png) 2x);
@@ -830,7 +765,7 @@ button.edit-toolbar > .ripples {
   width: 70px;
 }
 
-.edit-modal button.done > .button-content {
+.edit-modal button.done .label {
   font-weight: bold;
 }
 
@@ -840,33 +775,32 @@ button.edit-toolbar > .ripples {
   border-radius: 2px;
   height: 18px;
   margin: 0 12px;
+  outline: none;
   position: relative;
+  transition: background 200ms ease;
   width: 36px;
+}
+
+.edit-modal button.crop-aspect-ratio.selected {
+  background: white;
+}
+
+.edit-modal button.crop-aspect-ratio:focus:not(.using-mouse) {
+  outline: 1px solid rgb(77, 144, 254);
+}
+
+.edit-modal button.crop-aspect-ratio .label {
+  font-size: 12px;
+  height: 12px;
+  pointer-events: none;
 }
 
 .edit-modal button.crop-aspect-ratio.selected .label {
   color: rgb(20, 22, 25);
 }
 
-.edit-modal button.crop-aspect-ratio > .button-content {
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  position: relative;
-  z-index: 1;
-}
-
-button.crop-aspect-ratio files-toggle-ripple::shadow .ripple {
-  background-color: white;
-  border-radius: 0;
-}
-
-button.crop-aspect-ratio files-toggle-ripple::shadow .ripple.activated {
-  opacity: 1;
-}
-
-.gallery .edit-modal button * {
-  pointer-events: none;
+.edit-modal button.crop-aspect-ratio paper-ripple {
+  display: none;
 }
 
 /* Range UI */

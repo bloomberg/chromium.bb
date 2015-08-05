@@ -13,3 +13,13 @@
 function PaperRipple() {}
 
 PaperRipple.prototype.simulatedRipple = function() {};
+
+/**
+ * @param {Event=} event
+ */
+PaperRipple.prototype.downAction = function(event) {};
+
+/**
+ * @param {Event=} event
+ */
+PaperRipple.prototype.upAction = function(event) {};

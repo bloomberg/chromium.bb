@@ -150,7 +150,7 @@ ImageEditor.Mode.Crop.prototype.createTools = function(toolbar) {
   for (var name in aspects) {
     var button = toolbar.addButton(
         name,
-        name,
+        ImageEditor.Toolbar.ButtonType.LABEL,
         this.onCropAspectRatioClicked_.bind(this, toolbar, aspects[name]),
         'crop-aspect-ratio');
 
@@ -173,22 +173,17 @@ ImageEditor.Mode.Crop.prototype.createTools = function(toolbar) {
 ImageEditor.Mode.Crop.prototype.onCropAspectRatioClicked_ = function(
     toolbar, aspect, event) {
   var button = event.target;
-  var toggleRipple = button.querySelector('files-toggle-ripple');
 
   if (button.classList.contains('selected')) {
     button.classList.remove('selected');
-    toggleRipple.activated = false;
     this.cropRect_.fixedAspectRatio = null;
   } else {
     var selectedButtons =
         toolbar.getElement().querySelectorAll('button.selected');
     for (var i = 0; i < selectedButtons.length; i++) {
       selectedButtons[i].classList.remove('selected');
-      selectedButtons[i].querySelector('files-toggle-ripple')
-          .activated = false;
     }
     button.classList.add('selected');
-    toggleRipple.activated = true;
     var clipRect = this.viewport_.screenToImageRect(
         this.viewport_.getImageBoundsOnScreenClipped());
     this.cropRect_.fixedAspectRatio = aspect;

@@ -113,7 +113,8 @@ function ImageEditor(
  */
 ImageEditor.prototype.createToolButton_ = function(name, title, handler) {
   var button = this.mainToolbar_.addButton(
-      name, title, handler, name /* opt_className */);
+      title, ImageEditor.Toolbar.ButtonType.ICON, handler,
+      name /* opt_className */);
   return button;
 };
 
@@ -550,13 +551,11 @@ ImageEditor.prototype.enterMode = function(mode) {
 ImageEditor.prototype.setUpMode_ = function(mode) {
   this.currentTool_ = mode.button_;
 
-  if (mode.instant) {
-    var paperRipple = this.currentTool_.querySelector('paper-ripple');
+  var paperRipple = this.currentTool_.querySelector('paper-ripple');
+  if (mode.instant)
     paperRipple.simulatedRipple();
-  } else {
-    var toggleRipple = this.currentTool_.querySelector('files-toggle-ripple');
-    toggleRipple.activated = true;
-  }
+  else
+    paperRipple.downAction();
 
   this.currentMode_ = mode;
   this.currentMode_.setUp();
@@ -602,8 +601,8 @@ ImageEditor.prototype.leaveMode = function(commit) {
   }
 
   if (!this.currentMode_.instant) {
-    var toggleRipple = this.currentTool_.querySelector('files-toggle-ripple');
-    toggleRipple.activated = false;
+    var paperRipple = this.currentTool_.querySelector('paper-ripple');
+    paperRipple.upAction();
   }
 
   this.currentMode_.cleanUpCaches();
@@ -1043,7 +1042,8 @@ ImageEditor.Toolbar = function(
     var doneButtonLayer = document.createElement('div');
     doneButtonLayer.classList.add('done-button');
     this.doneButton_ = ImageEditor.Toolbar.createButton_(
-        'done', 'GALLERY_DONE', this.onDoneClicked_.bind(this), 'done');
+        'GALLERY_DONE', ImageEditor.Toolbar.ButtonType.LABEL,
+        this.onDoneClicked_.bind(this), 'done');
     doneButtonLayer.appendChild(this.doneButton_);
     this.wrapper_.appendChild(doneButtonLayer);
   }
@@ -1107,52 +1107,58 @@ ImageEditor.Toolbar.prototype.add = function(element) {
 };
 
 /**
+ * Button type.
+ * @enum {string}
+ */
+ImageEditor.Toolbar.ButtonType = {
+  ICON: 'icon',
+  LABEL: 'label'
+};
+
+/**
  * Create a button.
  *
- * @param {string} name Button name.
- * @param {string} title Button title.
+ * @param {string} title String ID of button title.
+ * @param {ImageEditor.Toolbar.ButtonType} type Button type.
  * @param {function(Event)} handler onClick handler.
  * @param {string=} opt_class Extra class name.
  * @return {!HTMLElement} The created button.
  * @private
  */
 ImageEditor.Toolbar.createButton_ = function(
-    name, title, handler, opt_class) {
+    title, type, handler, opt_class) {
   var button = /** @type {!HTMLElement} */ (document.createElement('button'));
   if (opt_class)
     button.classList.add(opt_class);
   button.classList.add('edit-toolbar');
 
-  // Create button content.
-  var content = document.createElement('div');
-  content.classList.add('button-content');
-
-  var icon = document.createElement('span');
-  icon.classList.add('icon');
-  content.appendChild(icon);
-
-  var label = document.createElement('span');
-  label.classList.add('label');
-  label.textContent = strf(title);
-  content.appendChild(label);
-
-  button.appendChild(content);
-
-  // Create ripples.
-  var ripples = document.createElement('div');
-  ripples.classList.add('ripples');
+  if (type === ImageEditor.Toolbar.ButtonType.ICON) {
+    var icon = document.createElement('div');
+    icon.classList.add('icon');
+    button.appendChild(icon);
+  } else if (type === ImageEditor.Toolbar.ButtonType.LABEL) {
+    var label = document.createElement('span');
+    label.classList.add('label');
+    label.textContent = strf(title);
+    button.appendChild(label);
+  } else {
+    assertNotReached();
+  }
 
   var paperRipple = document.createElement('paper-ripple');
-  ripples.appendChild(paperRipple);
-
-  var toggleRipple = document.createElement('files-toggle-ripple');
-  ripples.appendChild(toggleRipple);
-
-  button.appendChild(ripples);
+  button.appendChild(paperRipple);
 
   button.label = strf(title);
   button.title = strf(title);
-  button.addEventListener('click', handler, false);
+
+  // Click event is late for setting using-mouse class. i.e. if we set this
+  // class with click event, user can see a blink of :focus:not(.using-mouse)
+  // state.
+  button.addEventListener('mousedown',
+      button.classList.toggle.bind(button.classList, 'using-mouse', true));
+  button.addEventListener('click', handler , false);
+  button.addEventListener('blur',
+      button.classList.toggle.bind(button.classList, 'using-mouse', false));
 
   return button;
 };
@@ -1160,16 +1166,16 @@ ImageEditor.Toolbar.createButton_ = function(
 /**
  * Add a button.
  *
- * @param {string} name Button name.
  * @param {string} title Button title.
+ * @param {ImageEditor.Toolbar.ButtonType} type Button type.
  * @param {function(Event)} handler onClick handler.
  * @param {string=} opt_class Extra class name.
  * @return {!HTMLElement} The added button.
  */
 ImageEditor.Toolbar.prototype.addButton = function(
-    name, title, handler, opt_class) {
+    title, type, handler, opt_class) {
   var button = ImageEditor.Toolbar.createButton_(
-      name, title, handler, opt_class);
+      title, type, handler, opt_class);
   this.add(button);
   return button;
 };
