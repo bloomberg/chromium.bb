@@ -647,9 +647,6 @@ _waterfall_config_map = {
         # Toolchain Builders.
         'internal-toolchain-major',
         'internal-toolchain-minor',
-
-        # Experimental PFQs
-        'x86-generic_freon-chromium-pfq',
     ]),
 
     constants.WATERFALL_RELEASE: frozenset([
@@ -1208,7 +1205,6 @@ def GetConfig():
       internal_chromium_pfq, 'x86-generic_freon-chromium-pfq',
       _base_configs['x86-generic_freon'],
       vm_tests=[],
-      important=False,
   )
 
   _chrome_pfq_important_boards = frozenset([

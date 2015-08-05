@@ -26177,7 +26177,6 @@
             "x86-generic_freon"
         ],
         "description": "Preflight Chromium Uprev & Build (internal)",
-        "important": false,
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "name": "x86-generic_freon-chromium-pfq",
