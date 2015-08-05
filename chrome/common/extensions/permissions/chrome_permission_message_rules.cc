@@ -410,7 +410,7 @@ ChromePermissionMessageRule::GetAllRules() {
       // AutomationManifestPermission:
       {IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS_READ_ONLY,
        {APIPermission::kHostsAllReadOnly},
-       {}},
+       {}},  // TODO(treib): This should probably include kTab?
       // Tabs already allows reading favicons and reading the list of most
       // frequently visited sites.
       {IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ,
@@ -482,7 +482,6 @@ ChromePermissionMessageRule::GetAllRules() {
       {IDS_EXTENSION_PROMPT_WARNING_SYNCFILESYSTEM,
        {APIPermission::kSyncFileSystem},
        {}},
-      {IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ, {APIPermission::kTab}, {}},
       {IDS_EXTENSION_PROMPT_WARNING_TOPSITES, {APIPermission::kTopSites}, {}},
       {IDS_EXTENSION_PROMPT_WARNING_TTS_ENGINE,
        {APIPermission::kTtsEngine},

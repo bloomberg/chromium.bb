@@ -4,6 +4,8 @@
 
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
 
+#include <vector>
+
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
@@ -22,6 +24,29 @@
 #include "url/gurl.h"
 
 namespace extensions {
+
+namespace {
+
+// Copyable wrapper to make CoalescedPermissionMessages comparable.
+class ComparablePermission {
+ public:
+  explicit ComparablePermission(const CoalescedPermissionMessage& msg)
+      : msg_(&msg) {}
+
+  bool operator<(const ComparablePermission& rhs) const {
+    if (msg_->message() < rhs.msg_->message())
+      return true;
+    if (msg_->message() > rhs.msg_->message())
+      return false;
+    return msg_->submessages() < rhs.msg_->submessages();
+  }
+
+ private:
+  const CoalescedPermissionMessage* msg_;
+};
+using ComparablePermissions = std::vector<ComparablePermission>;
+
+}  // namespace
 
 typedef std::set<PermissionMessage> PermissionMsgSet;
 
@@ -75,7 +100,7 @@ bool ChromePermissionMessageProvider::IsPrivilegeIncrease(
   if (IsHostPrivilegeIncrease(old_permissions, new_permissions, extension_type))
     return true;
 
-  if (IsAPIPrivilegeIncrease(old_permissions, new_permissions, extension_type))
+  if (IsAPIPrivilegeIncrease(old_permissions, new_permissions))
     return true;
 
   if (IsManifestPermissionPrivilegeIncrease(old_permissions, new_permissions))
@@ -88,149 +113,111 @@ PermissionIDSet ChromePermissionMessageProvider::GetAllPermissionIDs(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
   PermissionIDSet permission_ids;
-  GetAPIPermissionMessages(permissions, &permission_ids, extension_type);
-  GetManifestPermissionMessages(permissions, &permission_ids);
-  GetHostPermissionMessages(permissions, &permission_ids, extension_type);
+  AddAPIPermissions(permissions, &permission_ids);
+  AddManifestPermissions(permissions, &permission_ids);
+  AddHostPermissions(permissions, &permission_ids, extension_type);
   return permission_ids;
 }
 
-std::set<PermissionMessage>
-ChromePermissionMessageProvider::GetAPIPermissionMessages(
+void ChromePermissionMessageProvider::AddAPIPermissions(
     const PermissionSet* permissions,
-    PermissionIDSet* permission_ids,
-    Manifest::Type extension_type) const {
-  PermissionMsgSet messages;
-  for (APIPermissionSet::const_iterator permission_it =
-           permissions->apis().begin();
-       permission_it != permissions->apis().end(); ++permission_it) {
-    if (permission_ids != NULL)
-      permission_ids->InsertAll(permission_it->GetPermissions());
-    if (permission_it->HasMessages()) {
-      PermissionMessages new_messages = permission_it->GetMessages();
-      messages.insert(new_messages.begin(), new_messages.end());
-    }
-  }
+    PermissionIDSet* permission_ids) const {
+  for (const APIPermission* permission : permissions->apis())
+    permission_ids->InsertAll(permission->GetPermissions());
 
   // A special hack: The warning message for declarativeWebRequest
   // permissions speaks about blocking parts of pages, which is a
   // subset of what the "<all_urls>" access allows. Therefore we
   // display only the "<all_urls>" warning message if both permissions
   // are required.
-  if (permissions->ShouldWarnAllHosts()) {
-    // Platform apps don't show hosts warnings. See crbug.com/255229.
-    if (permission_ids != NULL && extension_type != Manifest::TYPE_PLATFORM_APP)
-      permission_ids->insert(APIPermission::kHostsAll);
-    messages.erase(
-        PermissionMessage(
-            PermissionMessage::kDeclarativeWebRequest, base::string16()));
-  }
-  return messages;
+  // TODO(treib): The same should apply to other permissions that are implied by
+  // "<all_urls>" (aka APIPermission::kHostsAll), such as kTab. This would
+  // happen automatically if we didn't differentiate between API/Manifest/Host
+  // permissions here.
+  if (permissions->ShouldWarnAllHosts())
+    permission_ids->erase(APIPermission::kDeclarativeWebRequest);
 }
 
-std::set<PermissionMessage>
-ChromePermissionMessageProvider::GetManifestPermissionMessages(
+void ChromePermissionMessageProvider::AddManifestPermissions(
     const PermissionSet* permissions,
     PermissionIDSet* permission_ids) const {
-  PermissionMsgSet messages;
-  for (ManifestPermissionSet::const_iterator permission_it =
-           permissions->manifest_permissions().begin();
-      permission_it != permissions->manifest_permissions().end();
-      ++permission_it) {
-    if (permission_ids != NULL)
-      permission_ids->InsertAll(permission_it->GetPermissions());
-    if (permission_it->HasMessages()) {
-      PermissionMessages new_messages = permission_it->GetMessages();
-      messages.insert(new_messages.begin(), new_messages.end());
-    }
-  }
-  return messages;
+  for (const ManifestPermission* p : permissions->manifest_permissions())
+    permission_ids->InsertAll(p->GetPermissions());
 }
 
-std::set<PermissionMessage>
-ChromePermissionMessageProvider::GetHostPermissionMessages(
+void ChromePermissionMessageProvider::AddHostPermissions(
     const PermissionSet* permissions,
     PermissionIDSet* permission_ids,
     Manifest::Type extension_type) const {
-  PermissionMsgSet messages;
   // Since platform apps always use isolated storage, they can't (silently)
   // access user data on other domains, so there's no need to prompt.
   // Note: this must remain consistent with IsHostPrivilegeIncrease.
   // See crbug.com/255229.
   if (extension_type == Manifest::TYPE_PLATFORM_APP)
-    return messages;
+    return;
 
   if (permissions->ShouldWarnAllHosts()) {
-    if (permission_ids != NULL)
-      permission_ids->insert(APIPermission::kHostsAll);
-    messages.insert(PermissionMessage(
-        PermissionMessage::kHostsAll,
-        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS)));
+    permission_ids->insert(APIPermission::kHostsAll);
   } else {
     URLPatternSet regular_hosts;
     ExtensionsClient::Get()->FilterHostPermissions(
-        permissions->effective_hosts(), &regular_hosts, &messages);
-    if (permission_ids != NULL) {
-      ExtensionsClient::Get()->FilterHostPermissions(
-          permissions->effective_hosts(), &regular_hosts, permission_ids);
-    }
+        permissions->effective_hosts(), &regular_hosts, permission_ids);
 
     std::set<std::string> hosts =
         permission_message_util::GetDistinctHosts(regular_hosts, true, true);
     if (!hosts.empty()) {
-      if (permission_ids != NULL) {
-        permission_message_util::AddHostPermissions(
-            permission_ids, hosts, permission_message_util::kReadWrite);
-      }
-      messages.insert(permission_message_util::CreateFromHostList(
-          hosts, permission_message_util::kReadWrite));
+      permission_message_util::AddHostPermissions(
+          permission_ids, hosts, permission_message_util::kReadWrite);
     }
   }
-  return messages;
 }
 
 bool ChromePermissionMessageProvider::IsAPIPrivilegeIncrease(
     const PermissionSet* old_permissions,
-    const PermissionSet* new_permissions,
-    Manifest::Type extension_type) const {
-  if (new_permissions == NULL)
-    return false;
-
-  PermissionMsgSet old_warnings =
-      GetAPIPermissionMessages(old_permissions, NULL, extension_type);
-  PermissionMsgSet new_warnings =
-      GetAPIPermissionMessages(new_permissions, NULL, extension_type);
-  PermissionMsgSet delta_warnings =
-      base::STLSetDifference<PermissionMsgSet>(new_warnings, old_warnings);
+    const PermissionSet* new_permissions) const {
+  PermissionIDSet old_ids;
+  AddAPIPermissions(old_permissions, &old_ids);
+  PermissionIDSet new_ids;
+  AddAPIPermissions(new_permissions, &new_ids);
 
   // A special hack: kFileSystemWriteDirectory implies kFileSystemDirectory.
   // TODO(sammc): Remove this. See http://crbug.com/284849.
-  if (old_warnings.find(PermissionMessage(
-          PermissionMessage::kFileSystemWriteDirectory, base::string16())) !=
-      old_warnings.end()) {
-    delta_warnings.erase(
-        PermissionMessage(PermissionMessage::kFileSystemDirectory,
-                          base::string16()));
-  }
+  if (old_ids.ContainsID(APIPermission::kFileSystemWriteDirectory))
+    old_ids.insert(APIPermission::kFileSystemDirectory);
 
-  // It is a privilege increase if there are additional warnings present.
-  return !delta_warnings.empty();
+  return IsAPIOrManifestPrivilegeIncrease(old_ids, new_ids);
 }
 
 bool ChromePermissionMessageProvider::IsManifestPermissionPrivilegeIncrease(
     const PermissionSet* old_permissions,
     const PermissionSet* new_permissions) const {
-  if (new_permissions == NULL)
+  PermissionIDSet old_ids;
+  AddManifestPermissions(old_permissions, &old_ids);
+  PermissionIDSet new_ids;
+  AddManifestPermissions(new_permissions, &new_ids);
+
+  return IsAPIOrManifestPrivilegeIncrease(old_ids, new_ids);
+}
+
+bool ChromePermissionMessageProvider::IsAPIOrManifestPrivilegeIncrease(
+    const PermissionIDSet& old_ids,
+    const PermissionIDSet& new_ids) const {
+  // If all the IDs were already there, it's not a privilege increase.
+  if (old_ids.Includes(new_ids))
     return false;
 
-  PermissionMsgSet old_warnings =
-      GetManifestPermissionMessages(old_permissions, NULL);
-  PermissionMsgSet new_warnings =
-      GetManifestPermissionMessages(new_permissions, NULL);
-  PermissionMsgSet delta_warnings =
-      base::STLSetDifference<PermissionMsgSet>(new_warnings, old_warnings);
+  // Otherwise, check the actual messages - not all IDs result in a message,
+  // and some messages can suppress others.
+  CoalescedPermissionMessages old_messages = GetPermissionMessages(old_ids);
+  CoalescedPermissionMessages new_messages = GetPermissionMessages(new_ids);
 
-  // It is a privilege increase if there are additional warnings present.
-  return !delta_warnings.empty();
+  ComparablePermissions old_strings(old_messages.begin(), old_messages.end());
+  ComparablePermissions new_strings(new_messages.begin(), new_messages.end());
+
+  std::sort(old_strings.begin(), old_strings.end());
+  std::sort(new_strings.begin(), new_strings.end());
+
+  return !base::STLIncludes(old_strings, new_strings);
 }
 
 bool ChromePermissionMessageProvider::IsHostPrivilegeIncrease(
@@ -238,7 +225,7 @@ bool ChromePermissionMessageProvider::IsHostPrivilegeIncrease(
     const PermissionSet* new_permissions,
     Manifest::Type extension_type) const {
   // Platform apps host permission changes do not count as privilege increases.
-  // Note: this must remain consistent with GetHostPermissionMessages.
+  // Note: this must remain consistent with AddHostPermissions.
   if (extension_type == Manifest::TYPE_PLATFORM_APP)
     return false;
 

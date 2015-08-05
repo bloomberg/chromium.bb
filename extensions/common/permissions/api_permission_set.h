@@ -17,7 +17,6 @@ namespace extensions {
 
 class APIPermissionSet;
 class Extension;
-class PermissionIDSet;
 
 template<>
 struct BaseSetOperatorsTraits<APIPermissionSet> {
@@ -122,8 +121,13 @@ class PermissionIDSet {
               const base::string16& permission_parameter);
   void InsertAll(const PermissionIDSet& permission_set);
 
+  void erase(APIPermission::ID permission_id);
+
   // Returns the parameters for all PermissionIDs in this set.
   std::vector<base::string16> GetAllPermissionParameters() const;
+
+  // Check if the set contains a permission with the given ID.
+  bool ContainsID(APIPermission::ID permission_id) const;
 
   // Check if the set contains permissions with all the given IDs.
   bool ContainsAllIDs(const std::set<APIPermission::ID>& permission_ids) const;
@@ -150,9 +154,6 @@ class PermissionIDSet {
 
  private:
   PermissionIDSet(const std::set<PermissionID>& permissions);
-
-  // Check if the set contains a permission with the given ID.
-  bool ContainsID(APIPermission::ID permission_id) const;
 
   std::set<PermissionID> permissions_;
 };

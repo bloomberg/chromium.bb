@@ -53,6 +53,12 @@ size_t IndexOf(const CoalescedPermissionMessages& warnings,
   return warnings.size();
 }
 
+PermissionIDSet MakePermissionIDSet(APIPermission::ID id) {
+  PermissionIDSet set;
+  set.insert(id);
+  return set;
+}
+
 PermissionIDSet MakePermissionIDSet(APIPermission::ID id1,
                                     APIPermission::ID id2) {
   PermissionIDSet set;
@@ -635,7 +641,8 @@ TEST(PermissionsTest, IsPrivilegeIncrease) {
     { "hosts6", false },  // http://a.com -> http://a.com + http://a.co.uk
     { "permissions1", false },  // tabs -> tabs
     { "permissions2", true },  // tabs -> tabs,bookmarks
-    { "permissions3", true },  // http://a -> http://a,tabs
+    // TODO(treib): This is wrong, kAllHosts implies kTabs. crbug.com/512344
+    { "permissions3", true },  // http://*/* -> http://*/*,tabs
     { "permissions5", true },  // bookmarks -> bookmarks,history
     { "equivalent_warnings", false },  // tabs --> tabs, webNavigation
 #if !defined(OS_CHROMEOS)  // plugins aren't allowed in ChromeOS
@@ -976,8 +983,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
         api_permissions, ManifestPermissionSet(), hosts, URLPatternSet()));
     EXPECT_TRUE(PermissionSetProducesMessage(
         permissions.get(), Manifest::TYPE_EXTENSION,
-        MakePermissionIDSet(APIPermission::kHostsAll,
-                            APIPermission::kDeclarativeWebRequest)));
+        MakePermissionIDSet(APIPermission::kHostsAll)));
   }
   {
     // BrowsingHistory warning suppresses all history read/write warnings.

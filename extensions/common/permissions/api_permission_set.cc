@@ -226,6 +226,10 @@ void PermissionIDSet::InsertAll(const PermissionIDSet& permission_set) {
   }
 }
 
+void PermissionIDSet::erase(APIPermission::ID permission_id) {
+  permissions_.erase(PermissionID(permission_id));
+}
+
 std::vector<base::string16> PermissionIDSet::GetAllPermissionParameters()
     const {
   std::vector<base::string16> params;
@@ -233,6 +237,11 @@ std::vector<base::string16> PermissionIDSet::GetAllPermissionParameters()
     params.push_back(permission.parameter());
   }
   return params;
+}
+
+bool PermissionIDSet::ContainsID(APIPermission::ID permission_id) const {
+  auto it = permissions_.lower_bound(PermissionID(permission_id));
+  return it != permissions_.end() && it->id() == permission_id;
 }
 
 bool PermissionIDSet::ContainsAllIDs(
@@ -295,11 +304,6 @@ bool PermissionIDSet::empty() const {
 
 PermissionIDSet::PermissionIDSet(const std::set<PermissionID>& permissions)
     : permissions_(permissions) {
-}
-
-bool PermissionIDSet::ContainsID(APIPermission::ID permission_id) const {
-  auto it = permissions_.lower_bound(PermissionID(permission_id));
-  return it != permissions_.end() && it->id() == permission_id;
 }
 
 }  // namespace extensions
