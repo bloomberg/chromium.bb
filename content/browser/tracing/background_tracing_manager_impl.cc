@@ -138,12 +138,11 @@ bool BackgroundTracingManagerImpl::IsSupportedConfig(
     return true;
 
   if (config->mode == BackgroundTracingConfig::PREEMPTIVE_TRACING_MODE) {
-    BackgroundTracingPreemptiveConfig* preemptive_config =
-        static_cast<BackgroundTracingPreemptiveConfig*>(config);
-    for (const auto& config : preemptive_config->configs) {
-      if (config.type == BackgroundTracingPreemptiveConfig::
-                             MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED ||
-          config.type ==
+    for (const auto& preemptive_config :
+         static_cast<BackgroundTracingPreemptiveConfig*>(config)->configs) {
+      if (preemptive_config.type == BackgroundTracingPreemptiveConfig::
+                                        MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED ||
+          preemptive_config.type ==
               BackgroundTracingPreemptiveConfig::
                   MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE) {
         continue;
@@ -153,10 +152,9 @@ bool BackgroundTracingManagerImpl::IsSupportedConfig(
   }
 
   if (config->mode == BackgroundTracingConfig::REACTIVE_TRACING_MODE) {
-    BackgroundTracingReactiveConfig* reactive_config =
-        static_cast<BackgroundTracingReactiveConfig*>(config);
-    for (const auto& config : reactive_config->configs) {
-      if (config.type !=
+    for (const auto& reactive_config :
+         static_cast<BackgroundTracingReactiveConfig*>(config)->configs) {
+      if (reactive_config.type !=
           BackgroundTracingReactiveConfig::TRACE_FOR_10S_OR_TRIGGER_OR_FULL)
         return false;
     }
