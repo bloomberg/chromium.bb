@@ -65,13 +65,12 @@ test.util.sync.changeValue = function(contentWindow, query, newValue) {
  * @param {string} newName Name to be newly assigned.
  */
 test.util.sync.changeName = function(contentWindow, newName) {
-  var fullResCanvas = contentWindow.document.querySelector(
-      '.gallery[mode="slide"] .content canvas.fullres');
-
-  var nameBox = contentWindow.document.querySelector('.namebox');
-  nameBox.focus();
+  var nameBox = contentWindow.document.querySelector(
+      '.filename-spacer > paper-input');
+  // For paper-input, we need to focus on input element inside the component.
+  nameBox.inputElement.focus();
   nameBox.value = newName;
-  nameBox.blur();
+  nameBox.inputElement.blur();
 };
 
 // Register the test utils.

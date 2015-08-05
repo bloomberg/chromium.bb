@@ -82,16 +82,13 @@ function Gallery(volumeManager) {
 
   this.filenameSpacer_ = queryRequiredElement(this.topToolbar_,
       '.filename-spacer');
-  this.filenameEdit_ = util.createChild(this.filenameSpacer_,
-                                        'namebox', 'input');
 
-  this.filenameEdit_.setAttribute('type', 'text');
+  this.filenameEdit_ = queryRequiredElement(this.filenameSpacer_,
+      'paper-input');
   this.filenameEdit_.addEventListener('blur',
       this.onFilenameEditBlur_.bind(this));
-
   this.filenameEdit_.addEventListener('focus',
       this.onFilenameFocus_.bind(this));
-
   this.filenameEdit_.addEventListener('keydown',
       this.onFilenameEditKeydown_.bind(this));
 
@@ -741,7 +738,8 @@ Gallery.prototype.updateSelectionAndState_ = function() {
 Gallery.prototype.onFilenameFocus_ = function() {
   ImageUtil.setAttribute(this.filenameSpacer_, 'renaming', true);
   this.filenameEdit_.originalValue = this.filenameEdit_.value;
-  setTimeout(this.filenameEdit_.select.bind(this.filenameEdit_), 0);
+  setTimeout(this.filenameEdit_.inputElement.select.bind(
+      this.filenameEdit_.inputElement), 0);
   this.onUserAction_();
 };
 

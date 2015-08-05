@@ -415,7 +415,7 @@ RemoteCallGallery.prototype.waitForSlideImage =
   return repeatUntil(function() {
     var query = '.gallery[mode="slide"] .content canvas.fullres';
     return Promise.all([
-        this.waitForElement(windowId, '.namebox'),
+        this.waitForElement(windowId, '.filename-spacer > paper-input'),
         this.waitForElement(windowId, query)
     ]).then(function(args) {
       var nameBox = args[0];

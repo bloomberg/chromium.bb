@@ -302,58 +302,19 @@ files-toggle-ripple::shadow .ripple.activated {
 
 /* Filename */
 
-.gallery .filename-spacer {
+.filename-spacer {
   -webkit-margin-start: 16px;
   flex: 1 0 auto;
-  height: 100%;
-  min-width: 140px;
-  overflow: hidden;
-  position: relative;
 }
 
-.gallery .filename-spacer > * {
-  background-color: transparent;
-  overflow: hidden;
-  position: absolute;
-  transition: visibility 0ms linear 180ms, all 180ms linear;
-  width: 260px;
+.filename-spacer paper-input {
+  margin: 8px 0;
+  min-width: 160px;
+  width: -webkit-fit-content;
 }
 
-.gallery .filename-spacer * {
-  color: white;
-}
-
-.gallery .filename-spacer .namebox {
-  background-color: transparent;
-  border: none;
-  box-sizing: border-box;
-  cursor: pointer;
-  display: block;
-  font-size: 120%;
-  height: 22px;
-  outline: none;
-  overflow: hidden;
-  padding: 0 3px;
-  position: absolute;
-  text-overflow: ellipsis;
-  top: 13px;
-  white-space: nowrap;
-  width: 100%;
-}
-
-.gallery .filename-spacer .namebox[disabled] {
-  -webkit-user-select: none;
-  cursor: default;
-}
-
-.gallery .filename-spacer .namebox:not([disabled]):not(:focus):hover {
-  background-color: rgba(48, 48, 48, 1.0);
-}
-
-.gallery .filename-spacer .namebox:focus {
-  background-color: white;
-  color: black;
-  cursor: text;
+.filename-spacer paper-input::shadow paper-input-container {
+  padding: 4px 0;
 }
 
 /* Bubble */

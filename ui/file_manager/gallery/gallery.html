@@ -16,6 +16,7 @@
   <script src="chrome://resources/js/util.js"></script>
 
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+  <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
   <link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_toast.html">
@@ -23,6 +24,14 @@
 
   <script src="js/gallery_scripts.js"></script>
   <style is="custom-style">
+    paper-input {
+      --paper-input-container-color: rgba(255, 255, 255, 0.2);
+      --paper-input-container-focus-color: white;
+      --paper-input-container-input-color: white;
+      --paper-input-container-underline-focus: {
+        height: 1px;
+      }
+    }
     paper-slider {
       --paper-slider-active-color: white;
       --paper-slider-knob-color: white;
@@ -36,7 +45,9 @@
       <div class="thumbnail-view"></div>
     </div>
     <div id="top-toolbar" class="toolbar top tool dimmable">
-      <div class="filename-spacer"></div>
+      <div class="filename-spacer">
+        <paper-input no-label-float spellcheck="false"></paper-input>
+      </div>
       <div class="button-spacer">
         <!-- Use button element for edit button to implement toggle button with
           -- custom ripple effect. -->
