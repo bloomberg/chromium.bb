@@ -174,7 +174,7 @@ int RendererMain(const MainFunctionParams& parameters) {
       run_loop = platform.EnableSandbox();
     } else {
       LOG(ERROR) << "Running without renderer sandbox";
-#ifndef NDEBUG
+#if !defined(NDEBUG) || (defined(CFI_ENFORCEMENT) && !defined(OFFICIAL_BUILD))
       // For convenience, we print the stack traces for crashes.  When sandbox
       // is enabled, the in-process stack dumping is enabled as part of the
       // EnableSandbox() call.
