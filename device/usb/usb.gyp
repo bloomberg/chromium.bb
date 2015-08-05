@@ -40,6 +40,8 @@
         'usb_service.h',
         'usb_service_impl.cc',
         'usb_service_impl.h',
+        'webusb_descriptors.cc',
+        'webusb_descriptors.h',
       ],
       'actions': [
         {

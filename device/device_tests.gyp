@@ -81,6 +81,7 @@
         'usb/usb_device_handle_unittest.cc',
         'usb/usb_ids_unittest.cc',
         'usb/usb_service_unittest.cc',
+        'usb/webusb_descriptors_unittest.cc',
       ],
       'conditions': [
         ['chromeos==1', {
