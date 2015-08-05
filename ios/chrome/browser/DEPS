@@ -17,6 +17,7 @@ include_rules = [
   "+components/history/core/browser",
   "+components/history/ios/browser",
   "+components/infobars/core",
+  "+components/invalidation",
   "+components/keyed_service/core",
   "+components/keyed_service/ios",
   "+components/leveldb_proto",

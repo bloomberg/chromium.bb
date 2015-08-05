@@ -30,6 +30,7 @@ KeyedServiceProvider::~KeyedServiceProvider() {
 
 void KeyedServiceProvider::AssertKeyedFactoriesBuilt() {
   GetManagedBookmarkServiceFactory();
+  GetProfileInvalidationProviderFactory();
   GetSyncServiceFactory();
 }
 

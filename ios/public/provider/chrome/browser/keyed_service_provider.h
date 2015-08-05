@@ -16,6 +16,10 @@ namespace bookmarks {
 class ManagedBookmarkService;
 }
 
+namespace invalidation {
+class ProfileInvalidationProvider;
+}
+
 namespace sync_driver {
 class SyncService;
 }
@@ -55,6 +59,16 @@ class KeyedServiceProvider {
 
   // Returns an instance of sync_driver::SyncService tied to |browser_state|.
   virtual sync_driver::SyncService* GetSyncServiceForBrowserState(
+      ChromeBrowserState* browser_state) = 0;
+
+  // Returns the invalidation::ProfileInvalidationProvider factory for
+  // dependencies.
+  virtual KeyedServiceBaseFactory* GetProfileInvalidationProviderFactory() = 0;
+
+  // Returns an instance of invalidation::ProfileInvalidationProvider tied to
+  // |browser_state|.
+  virtual invalidation::ProfileInvalidationProvider*
+  GetProfileInvalidationProviderForBrowserState(
       ChromeBrowserState* browser_state) = 0;
 
  private:

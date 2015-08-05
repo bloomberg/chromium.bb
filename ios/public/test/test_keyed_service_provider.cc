@@ -88,4 +88,15 @@ TestKeyedServiceProvider::GetSyncServiceForBrowserState(
   return FakeSyncServiceFactory::GetForBrowserState(browser_state);
 }
 
+KeyedServiceBaseFactory*
+TestKeyedServiceProvider::GetProfileInvalidationProviderFactory() {
+  return MissingServiceKeyedServiceFactory::GetInstance();
+}
+
+invalidation::ProfileInvalidationProvider*
+TestKeyedServiceProvider::GetProfileInvalidationProviderForBrowserState(
+    ios::ChromeBrowserState* browser_state) {
+  return nullptr;
+}
+
 }  // namespace ios

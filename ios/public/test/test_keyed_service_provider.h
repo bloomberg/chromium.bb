@@ -22,6 +22,10 @@ class TestKeyedServiceProvider : public KeyedServiceProvider {
   KeyedServiceBaseFactory* GetSyncServiceFactory() override;
   sync_driver::SyncService* GetSyncServiceForBrowserState(
       ChromeBrowserState* browser_state) override;
+  KeyedServiceBaseFactory* GetProfileInvalidationProviderFactory() override;
+  invalidation::ProfileInvalidationProvider*
+  GetProfileInvalidationProviderForBrowserState(
+      ios::ChromeBrowserState* browser_state) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestKeyedServiceProvider);
