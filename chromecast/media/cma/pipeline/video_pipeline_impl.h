@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_MEDIA_CMA_BASE_VIDEO_PIPELINE_IMPL_H_
 #define CHROMECAST_MEDIA_CMA_BASE_VIDEO_PIPELINE_IMPL_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"

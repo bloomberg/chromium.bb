@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_MEDIA_CMA_PIPELINE_MEDIA_PIPELINE_H_
 #define CHROMECAST_MEDIA_CMA_PIPELINE_MEDIA_PIPELINE_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/time/time.h"

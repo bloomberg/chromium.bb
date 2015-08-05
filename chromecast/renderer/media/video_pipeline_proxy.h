@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_RENDERER_MEDIA_VIDEO_PIPELINE_PROXY_H_
 #define CHROMECAST_RENDERER_MEDIA_VIDEO_PIPELINE_PROXY_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

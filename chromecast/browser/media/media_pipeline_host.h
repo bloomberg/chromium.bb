@@ -6,6 +6,7 @@
 #define CHROMECAST_BROWSER_MEDIA_MEDIA_PIPELINE_HOST_H_
 
 #include <map>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
