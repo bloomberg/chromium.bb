@@ -17,6 +17,9 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 
+namespace base {
+class Value;
+}
 
 namespace content {
 class BrowserContext;
@@ -27,6 +30,31 @@ class WebContents;
 }
 
 namespace extensions {
+
+// Tests whether all the specified CSS selectors match on the page.
+class DeclarativeContentCssPredicate {
+ public:
+  explicit DeclarativeContentCssPredicate(
+      const std::vector<std::string>& css_selectors);
+  ~DeclarativeContentCssPredicate();
+
+  const std::vector<std::string>& css_selectors() const {
+    return css_selectors_;
+  }
+
+  // Evaluate for all watched CSS selectors that match on frames with the same
+  // origin as the page's main frame.
+  bool Evaluate(const base::hash_set<std::string>& matched_css_selectors) const;
+
+ private:
+  std::vector<std::string> css_selectors_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeContentCssPredicate);
+};
+
+scoped_ptr<DeclarativeContentCssPredicate> CreateCssPredicate(
+    const base::Value& value,
+    std::string* error);
 
 class DeclarativeContentConditionTrackerDelegate;
 

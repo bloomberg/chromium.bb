@@ -6,9 +6,12 @@
 
 #include <set>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
+#include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_test.h"
+#include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
@@ -16,6 +19,8 @@
 
 namespace extensions {
 
+using testing::ElementsAre;
+using testing::HasSubstr;
 using testing::UnorderedElementsAre;
 using testing::UnorderedElementsAreArray;
 
@@ -59,6 +64,45 @@ class DeclarativeContentPageUrlConditionTrackerTest
  private:
   DISALLOW_COPY_AND_ASSIGN(DeclarativeContentPageUrlConditionTrackerTest);
 };
+
+TEST(DeclarativeContentPageUrlPredicateTest, WrongPageUrlDatatype) {
+  url_matcher::URLMatcher matcher;
+  std::string error;
+  scoped_ptr<DeclarativeContentPageUrlPredicate> predicate =
+      CreatePageUrlPredicate(*base::test::ParseJson("[]"),
+                             matcher.condition_factory(), &error);
+  EXPECT_THAT(error, HasSubstr("invalid type"));
+  EXPECT_FALSE(predicate);
+
+  EXPECT_TRUE(matcher.IsEmpty()) << "Errors shouldn't add URL conditions";
+}
+
+TEST(DeclarativeContentPageUrlPredicateTest, PageUrlPredicate) {
+  url_matcher::URLMatcher matcher;
+  std::string error;
+  scoped_ptr<DeclarativeContentPageUrlPredicate> predicate =
+      CreatePageUrlPredicate(
+          *base::test::ParseJson("{\"hostSuffix\": \"example.com\"}"),
+          matcher.condition_factory(),
+          &error);
+  EXPECT_EQ("", error);
+  ASSERT_TRUE(predicate);
+
+  url_matcher::URLMatcherConditionSet::Vector all_new_condition_sets;
+  all_new_condition_sets.push_back(predicate->url_matcher_condition_set());
+  matcher.AddConditionSets(all_new_condition_sets);
+  EXPECT_FALSE(matcher.IsEmpty());
+
+  EXPECT_THAT(matcher.MatchURL(GURL("http://google.com/")),
+              ElementsAre(/*empty*/));
+  std::set<url_matcher::URLMatcherConditionSet::ID> page_url_matches =
+      matcher.MatchURL(GURL("http://www.example.com/foobar"));
+  EXPECT_THAT(
+      page_url_matches,
+      ElementsAre(predicate->url_matcher_condition_set()->id()));
+
+  EXPECT_TRUE(predicate->Evaluate(page_url_matches));
+}
 
 // Tests that adding and removing condition sets trigger evaluation requests for
 // the matching WebContents.

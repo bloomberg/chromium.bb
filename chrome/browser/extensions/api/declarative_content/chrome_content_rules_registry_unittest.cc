@@ -16,10 +16,32 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
+
+namespace {
+
+scoped_refptr<Extension> CreateExtensionWithBookmarksPermission(
+    bool include_bookmarks) {
+  ListBuilder permissions;
+  permissions.Append("declarativeContent");
+  if (include_bookmarks)
+    permissions.Append("bookmarks");
+  return ExtensionBuilder()
+      .SetManifest(DictionaryBuilder()
+          .Set("name", "Test extension")
+          .Set("version", "1.0")
+          .Set("manifest_version", 2)
+          .Set("permissions", permissions))
+          .Build();
+}
+
+}  // namespace
+
+using testing::HasSubstr;
 
 class DeclarativeChromeContentRulesRegistryTest : public testing::Test {
  public:
@@ -37,6 +59,63 @@ class DeclarativeChromeContentRulesRegistryTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(DeclarativeChromeContentRulesRegistryTest);
 };
+
+TEST(DeclarativeContentConditionTest, UnknownPredicateName) {
+  url_matcher::URLMatcher matcher;
+  std::string error;
+  scoped_ptr<ContentCondition> condition = CreateContentCondition(
+      nullptr,
+      matcher.condition_factory(),
+      *base::test::ParseJson(
+           "{\n"
+           "  \"invalid\": \"foobar\",\n"
+           "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
+           "}"),
+      &error);
+  EXPECT_THAT(error, HasSubstr("Unknown condition attribute"));
+  EXPECT_FALSE(condition);
+
+  EXPECT_TRUE(matcher.IsEmpty()) << "Errors shouldn't add URL conditions";
+}
+
+TEST(DeclarativeContentConditionTest,
+     PredicateWithErrorProducesEmptyCondition) {
+  url_matcher::URLMatcher matcher;
+  std::string error;
+  scoped_ptr<ContentCondition> condition = CreateContentCondition(
+      nullptr,
+      matcher.condition_factory(),
+      *base::test::ParseJson(
+           "{\n"
+           "  \"css\": \"selector\",\n"
+           "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
+           "}"),
+      &error);
+  EXPECT_THAT(error, HasSubstr("invalid type"));
+  EXPECT_FALSE(condition);
+}
+
+TEST(DeclarativeContentConditionTest, AllSpecifiedPredicatesCreated) {
+  scoped_refptr<Extension> extension =
+      CreateExtensionWithBookmarksPermission(true);
+  url_matcher::URLMatcher matcher;
+  std::string error;
+  scoped_ptr<ContentCondition> condition = CreateContentCondition(
+      extension.get(),
+      matcher.condition_factory(),
+      *base::test::ParseJson(
+           "{\n"
+           "  \"pageUrl\": {\"hostSuffix\": \"example.com\"},\n"
+           "  \"css\": [\"input\"],\n"
+           "  \"isBookmarked\": true,\n"
+           "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
+           "}"),
+      &error);
+  ASSERT_TRUE(condition);
+  EXPECT_TRUE(condition->page_url_predicate);
+  EXPECT_TRUE(condition->css_predicate);
+  EXPECT_TRUE(condition->is_bookmarked_predicate);
+}
 
 TEST_F(DeclarativeChromeContentRulesRegistryTest, ActiveRulesDoesntGrow) {
   scoped_refptr<ChromeContentRulesRegistry> registry(

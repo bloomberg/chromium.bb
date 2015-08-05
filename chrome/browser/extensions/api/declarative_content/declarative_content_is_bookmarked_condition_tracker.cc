@@ -6,12 +6,75 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/extensions/api/declarative_content/content_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 namespace extensions {
+
+namespace {
+
+const char kInvalidTypeOfParameter[] = "Attribute '%s' has an invalid type";
+const char kIsBookmarkedRequiresBookmarkPermission[] =
+    "Property 'isBookmarked' requires 'bookmarks' permission";
+
+bool HasBookmarkAPIPermission(const Extension* extension) {
+  return extension->permissions_data()->HasAPIPermission(
+      APIPermission::kBookmark);
+}
+
+}  // namespace
+
+//
+// DeclarativeContentIsBookmarkedPredicate
+//
+
+DeclarativeContentIsBookmarkedPredicate::
+DeclarativeContentIsBookmarkedPredicate(
+    scoped_refptr<const Extension> extension,
+    bool is_bookmarked)
+    : extension_(extension),
+      is_bookmarked_(is_bookmarked) {
+}
+
+DeclarativeContentIsBookmarkedPredicate::
+~DeclarativeContentIsBookmarkedPredicate() {
+}
+
+bool DeclarativeContentIsBookmarkedPredicate::IsIgnored() const {
+  return !HasBookmarkAPIPermission(extension_.get());
+}
+
+bool DeclarativeContentIsBookmarkedPredicate::Evaluate(
+    bool url_is_bookmarked) const {
+  return url_is_bookmarked == is_bookmarked_;
+}
+
+scoped_ptr<DeclarativeContentIsBookmarkedPredicate> CreateIsBookmarkedPredicate(
+    const base::Value& value,
+    const Extension* extension,
+    std::string* error) {
+  bool is_bookmarked = false;
+  if (value.GetAsBoolean(&is_bookmarked)) {
+    if (!HasBookmarkAPIPermission(extension)) {
+      *error = kIsBookmarkedRequiresBookmarkPermission;
+      return scoped_ptr<DeclarativeContentIsBookmarkedPredicate>();
+    } else {
+      return make_scoped_ptr(
+          new DeclarativeContentIsBookmarkedPredicate(extension,
+                                                      is_bookmarked));
+    }
+  } else {
+    *error = base::StringPrintf(kInvalidTypeOfParameter,
+                                declarative_content_constants::kIsBookmarked);
+    return scoped_ptr<DeclarativeContentIsBookmarkedPredicate>();
+  }
+}
 
 //
 // PerWebContentsTracker

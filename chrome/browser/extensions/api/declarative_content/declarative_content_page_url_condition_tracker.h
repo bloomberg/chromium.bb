@@ -13,6 +13,10 @@
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/web_contents_observer.h"
 
+namespace base {
+class Value;
+}
+
 namespace content {
 class BrowserContext;
 struct FrameNavigateParams;
@@ -21,6 +25,35 @@ class WebContents;
 }
 
 namespace extensions {
+
+// Tests the URL of a page against conditions specified with the
+// URLMatcherConditionSet.
+class DeclarativeContentPageUrlPredicate {
+ public:
+  explicit DeclarativeContentPageUrlPredicate(
+      scoped_refptr<url_matcher::URLMatcherConditionSet>
+          url_matcher_condition_set);
+  ~DeclarativeContentPageUrlPredicate();
+
+  url_matcher::URLMatcherConditionSet* url_matcher_condition_set() const {
+    return url_matcher_condition_set_.get();
+  }
+
+  // Evaluate for match IDs for the URL of the top-level page of the renderer.
+  bool Evaluate(
+      const std::set<url_matcher::URLMatcherConditionSet::ID>&
+          page_url_matches) const;
+
+ private:
+  scoped_refptr<url_matcher::URLMatcherConditionSet> url_matcher_condition_set_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeContentPageUrlPredicate);
+};
+
+scoped_ptr<DeclarativeContentPageUrlPredicate> CreatePageUrlPredicate(
+    const base::Value& value,
+    url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
+    std::string* error);
 
 // Supports tracking of URL matches across tab contents in a browser context,
 // and querying for the matching condition sets.

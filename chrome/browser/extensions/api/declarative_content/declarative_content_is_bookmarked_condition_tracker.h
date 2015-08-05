@@ -9,10 +9,16 @@
 
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_delegate.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/common/extension.h"
+
+namespace base {
+class Value;
+}
 
 namespace content {
 class BrowserContext;
@@ -22,6 +28,30 @@ class WebContents;
 }
 
 namespace extensions {
+
+// Tests the bookmarked state of the page.
+class DeclarativeContentIsBookmarkedPredicate {
+ public:
+  DeclarativeContentIsBookmarkedPredicate(
+      scoped_refptr<const Extension> extension,
+      bool is_bookmarked);
+  ~DeclarativeContentIsBookmarkedPredicate();
+
+  bool IsIgnored() const;
+  // Evaluate for URL bookmarked state.
+  bool Evaluate(bool url_is_bookmarked) const;
+
+ private:
+  scoped_refptr<const Extension> extension_;
+  bool is_bookmarked_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeContentIsBookmarkedPredicate);
+};
+
+scoped_ptr<DeclarativeContentIsBookmarkedPredicate> CreateIsBookmarkedPredicate(
+    const base::Value& value,
+    const Extension* extension,
+    std::string* error);
 
 // Supports tracking of URL matches across tab contents in a browser context,
 // and querying for the matching condition sets.

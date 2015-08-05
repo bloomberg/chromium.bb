@@ -7,9 +7,11 @@
 #include <set>
 #include <utility>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/values_test_util.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_test.h"
 #include "chrome/test/base/testing_profile.h"
@@ -19,10 +21,32 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace extensions {
 
+namespace {
+
+scoped_refptr<Extension> CreateExtensionWithBookmarksPermission(
+    bool include_bookmarks) {
+  ListBuilder permissions;
+  permissions.Append("declarativeContent");
+  if (include_bookmarks)
+    permissions.Append("bookmarks");
+  return ExtensionBuilder()
+      .SetManifest(DictionaryBuilder()
+                   .Set("name", "Test extension")
+                   .Set("version", "1.0")
+                   .Set("manifest_version", 2)
+                   .Set("permissions", permissions))
+      .Build();
+}
+
+}  // namespace
+
+using testing::HasSubstr;
 using testing::UnorderedElementsAre;
 using testing::UnorderedElementsAreArray;
 
@@ -73,6 +97,66 @@ class DeclarativeContentIsBookmarkedConditionTrackerTest
   DISALLOW_COPY_AND_ASSIGN(DeclarativeContentIsBookmarkedConditionTrackerTest);
 };
 
+
+// Tests that condition with isBookmarked requires "bookmarks" permission.
+TEST(DeclarativeContentIsBookmarkedPredicateTest,
+     IsBookmarkedPredicateRequiresBookmarkPermissionPermission) {
+  scoped_refptr<Extension> extension =
+      CreateExtensionWithBookmarksPermission(false);
+  std::string error;
+  scoped_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
+      CreateIsBookmarkedPredicate(*base::test::ParseJson("true"),
+                                  extension.get(),
+                                  &error);
+  EXPECT_THAT(error, HasSubstr("requires 'bookmarks' permission"));
+  EXPECT_FALSE(predicate);
+}
+
+// Tests an invalid isBookmarked value type.
+TEST(DeclarativeContentIsBookmarkedPredicateTest,
+     WrongIsBookmarkedPredicateDatatype) {
+  scoped_refptr<Extension> extension =
+      CreateExtensionWithBookmarksPermission(true);
+  std::string error;
+  scoped_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
+      CreateIsBookmarkedPredicate(*base::test::ParseJson("[]"),
+                                  extension.get(),
+                                  &error);
+  EXPECT_THAT(error, HasSubstr("invalid type"));
+  EXPECT_FALSE(predicate);
+}
+
+// Tests isBookmark: true.
+TEST(DeclarativeContentIsBookmarkedPredicateTest, IsBookmarkedPredicateTrue) {
+  scoped_refptr<Extension> extension =
+      CreateExtensionWithBookmarksPermission(true);
+  std::string error;
+  scoped_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
+      CreateIsBookmarkedPredicate(*base::test::ParseJson("true"),
+                                  extension.get(),
+                                  &error);
+  EXPECT_EQ("", error);
+  ASSERT_TRUE(predicate);
+
+  EXPECT_TRUE(predicate->Evaluate(true /* url_is_bookmarked */));
+  EXPECT_FALSE(predicate->Evaluate(false /* url_is_bookmarked */));
+}
+
+// Tests isBookmark: false.
+TEST(DeclarativeContentIsBookmarkedPredicateTest, IsBookmarkedPredicateFalse) {
+  scoped_refptr<Extension> extension =
+      CreateExtensionWithBookmarksPermission(true);
+  std::string error;
+  scoped_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
+      CreateIsBookmarkedPredicate(*base::test::ParseJson("false"),
+                                  extension.get(),
+                                  &error);
+  EXPECT_EQ("", error);
+  ASSERT_TRUE(predicate);
+
+  EXPECT_FALSE(predicate->Evaluate(true /* url_is_bookmarked */));
+  EXPECT_TRUE(predicate->Evaluate(false /* url_is_bookmarked */));
+}
 
 // Tests that starting tracking for a WebContents that has a bookmarked URL
 // results in the proper IsUrlBookmarked state.

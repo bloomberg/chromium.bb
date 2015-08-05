@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_css_condition_tracker.h"
 
+#include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_delegate.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_test.h"
 #include "content/public/browser/navigation_details.h"
@@ -14,6 +15,7 @@
 
 namespace extensions {
 
+using testing::HasSubstr;
 using testing::UnorderedElementsAreArray;
 
 class DeclarativeContentCssConditionTrackerTest
@@ -75,6 +77,33 @@ class DeclarativeContentCssConditionTrackerTest
  private:
   DISALLOW_COPY_AND_ASSIGN(DeclarativeContentCssConditionTrackerTest);
 };
+
+TEST(DeclarativeContentCssPredicateTest, WrongCssDatatype) {
+  std::string error;
+  scoped_ptr<DeclarativeContentCssPredicate> predicate = CreateCssPredicate(
+      *base::test::ParseJson("\"selector\""),
+      &error);
+  EXPECT_THAT(error, HasSubstr("invalid type"));
+  EXPECT_FALSE(predicate);
+}
+
+TEST(DeclarativeContentCssPredicateTest, CssPredicate) {
+  std::string error;
+  scoped_ptr<DeclarativeContentCssPredicate> predicate = CreateCssPredicate(
+      *base::test::ParseJson("[\"input\"]"),
+      &error);
+  EXPECT_EQ("", error);
+  ASSERT_TRUE(predicate);
+
+  base::hash_set<std::string> matched_css_selectors;
+  matched_css_selectors.insert("input");
+
+  EXPECT_TRUE(predicate->Evaluate(matched_css_selectors));
+
+  matched_css_selectors.clear();
+  matched_css_selectors.insert("body");
+  EXPECT_FALSE(predicate->Evaluate(matched_css_selectors));
+}
 
 // Tests the basic flow of operations on the
 // DeclarativeContentCssConditionTracker.

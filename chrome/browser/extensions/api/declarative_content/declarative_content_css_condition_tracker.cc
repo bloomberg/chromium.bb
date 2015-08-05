@@ -7,7 +7,10 @@
 #include <algorithm>
 
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/api/declarative_content/content_constants.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_details.h"
@@ -19,6 +22,62 @@
 #include "ipc/ipc_message_macros.h"
 
 namespace extensions {
+
+namespace {
+
+const char kInvalidTypeOfParameter[] = "Attribute '%s' has an invalid type";
+
+}  // namespace
+
+//
+// DeclarativeContentCssPredicate
+//
+
+DeclarativeContentCssPredicate::DeclarativeContentCssPredicate(
+    const std::vector<std::string>& css_selectors)
+    : css_selectors_(css_selectors) {
+  DCHECK(!css_selectors.empty());
+}
+
+DeclarativeContentCssPredicate::~DeclarativeContentCssPredicate() {
+}
+
+bool DeclarativeContentCssPredicate::Evaluate(
+    const base::hash_set<std::string>& matched_css_selectors) const {
+  // All attributes must be fulfilled for a fulfilled condition.
+  for (const std::string& css_selector : css_selectors_) {
+    if (!ContainsKey(matched_css_selectors, css_selector))
+      return false;
+  }
+
+  return true;
+}
+
+scoped_ptr<DeclarativeContentCssPredicate> CreateCssPredicate(
+    const base::Value& value,
+    std::string* error) {
+  std::vector<std::string> css_rules;
+  const base::ListValue* css_rules_value = nullptr;
+  if (value.GetAsList(&css_rules_value)) {
+    for (size_t i = 0; i < css_rules_value->GetSize(); ++i) {
+      std::string css_rule;
+      if (!css_rules_value->GetString(i, &css_rule)) {
+        *error = base::StringPrintf(kInvalidTypeOfParameter,
+                                    declarative_content_constants::kCss);
+        return scoped_ptr<DeclarativeContentCssPredicate>();
+      }
+      css_rules.push_back(css_rule);
+    }
+  } else {
+    *error = base::StringPrintf(kInvalidTypeOfParameter,
+                                declarative_content_constants::kCss);
+    return scoped_ptr<DeclarativeContentCssPredicate>();
+  }
+
+  return !css_rules.empty() ?
+      make_scoped_ptr(new DeclarativeContentCssPredicate(css_rules)) :
+      scoped_ptr<DeclarativeContentCssPredicate>();
+}
 
 //
 // PerWebContentsTracker

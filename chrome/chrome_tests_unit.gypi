@@ -654,7 +654,6 @@
       'browser/extensions/api/declarative/rules_registry_with_cache_unittest.cc',
       'browser/extensions/api/declarative_content/chrome_content_rules_registry_unittest.cc',
       'browser/extensions/api/declarative_content/content_action_unittest.cc',
-      'browser/extensions/api/declarative_content/content_condition_unittest.cc',
       'browser/extensions/api/declarative_content/declarative_content_condition_tracker_test.cc',
       'browser/extensions/api/declarative_content/declarative_content_condition_tracker_test.h',
       'browser/extensions/api/declarative_content/declarative_content_css_condition_tracker_unittest.cc',

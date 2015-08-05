@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/extensions/api/declarative_content/content_action.h"
-#include "chrome/browser/extensions/api/declarative_content/content_condition.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_delegate.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_css_condition_tracker.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_is_bookmarked_condition_tracker.h"
@@ -44,6 +43,35 @@ class URLRequest;
 }
 
 namespace extensions {
+
+// Representation of a condition in the Declarative Content API. A condition
+// consists of a set of predicates on the page state, all of which must be
+// satisified for the condition to be fulfilled.
+struct ContentCondition {
+ public:
+  ContentCondition(
+      scoped_ptr<DeclarativeContentPageUrlPredicate> page_url_predicate,
+      scoped_ptr<DeclarativeContentCssPredicate> css_predicate,
+      scoped_ptr<DeclarativeContentIsBookmarkedPredicate>
+          is_bookmarked_predicate);
+  ~ContentCondition();
+
+  scoped_ptr<DeclarativeContentPageUrlPredicate> page_url_predicate;
+  scoped_ptr<DeclarativeContentCssPredicate> css_predicate;
+  scoped_ptr<DeclarativeContentIsBookmarkedPredicate> is_bookmarked_predicate;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContentCondition);
+};
+
+// Factory function that instantiates a ContentCondition according to the
+// description |condition| passed by the extension API.  |condition| should be
+// an instance of declarativeContent.PageStateMatcher.
+scoped_ptr<ContentCondition> CreateContentCondition(
+    scoped_refptr<const Extension> extension,
+    url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
+    const base::Value& condition,
+    std::string* error);
 
 // The ChromeContentRulesRegistry is responsible for managing
 // the internal representation of rules for the Declarative Content API.

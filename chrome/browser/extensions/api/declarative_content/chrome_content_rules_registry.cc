@@ -6,9 +6,10 @@
 
 #include <utility>
 
+#include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/declarative_content/content_action.h"
-#include "chrome/browser/extensions/api/declarative_content/content_condition.h"
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +27,90 @@
 using url_matcher::URLMatcherConditionSet;
 
 namespace extensions {
+
+namespace {
+
+// TODO(jyasskin): improve error messaging to give more meaningful messages
+// to the extension developer.
+// Error messages:
+const char kExpectedDictionary[] = "A condition has to be a dictionary.";
+const char kConditionWithoutInstanceType[] = "A condition had no instanceType";
+const char kExpectedOtherConditionType[] = "Expected a condition of type "
+    "declarativeContent.PageStateMatcher";
+const char kUnknownConditionAttribute[] = "Unknown condition attribute '%s'";
+
+}  // namespace
+
+//
+// ContentCondition
+//
+
+ContentCondition::ContentCondition(
+    scoped_ptr<DeclarativeContentPageUrlPredicate> page_url_predicate,
+    scoped_ptr<DeclarativeContentCssPredicate> css_predicate,
+    scoped_ptr<DeclarativeContentIsBookmarkedPredicate>
+        is_bookmarked_predicate)
+    : page_url_predicate(page_url_predicate.Pass()),
+      css_predicate(css_predicate.Pass()),
+      is_bookmarked_predicate(is_bookmarked_predicate.Pass()) {
+}
+
+ContentCondition::~ContentCondition() {}
+
+scoped_ptr<ContentCondition> CreateContentCondition(
+    scoped_refptr<const Extension> extension,
+    url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
+    const base::Value& condition,
+    std::string* error) {
+  const base::DictionaryValue* condition_dict = NULL;
+  if (!condition.GetAsDictionary(&condition_dict)) {
+    *error = kExpectedDictionary;
+    return scoped_ptr<ContentCondition>();
+  }
+
+  // Verify that we are dealing with a Condition whose type we understand.
+  std::string instance_type;
+  if (!condition_dict->GetString(declarative_content_constants::kInstanceType,
+                                 &instance_type)) {
+    *error = kConditionWithoutInstanceType;
+    return scoped_ptr<ContentCondition>();
+  }
+  if (instance_type != declarative_content_constants::kPageStateMatcherType) {
+    *error = kExpectedOtherConditionType;
+    return scoped_ptr<ContentCondition>();
+  }
+
+  scoped_ptr<DeclarativeContentPageUrlPredicate> page_url_predicate;
+  scoped_ptr<DeclarativeContentCssPredicate> css_predicate;
+  scoped_ptr<DeclarativeContentIsBookmarkedPredicate> is_bookmarked_predicate;
+
+  for (base::DictionaryValue::Iterator iter(*condition_dict);
+       !iter.IsAtEnd(); iter.Advance()) {
+    const std::string& predicate_name = iter.key();
+    const base::Value& predicate_value = iter.value();
+    if (predicate_name == declarative_content_constants::kInstanceType) {
+      // Skip this.
+    } else if (predicate_name == declarative_content_constants::kPageUrl) {
+      page_url_predicate = CreatePageUrlPredicate(predicate_value,
+                                                  url_matcher_condition_factory,
+                                                  error);
+    } else if (predicate_name == declarative_content_constants::kCss) {
+      css_predicate = CreateCssPredicate(predicate_value, error);
+    } else if (predicate_name == declarative_content_constants::kIsBookmarked) {
+      is_bookmarked_predicate =
+          CreateIsBookmarkedPredicate(predicate_value, extension.get(), error);
+    } else {
+      *error = base::StringPrintf(kUnknownConditionAttribute,
+                                  predicate_name.c_str());
+    }
+    if (!error->empty())
+      return scoped_ptr<ContentCondition>();
+  }
+
+  return make_scoped_ptr(new ContentCondition(page_url_predicate.Pass(),
+                                              css_predicate.Pass(),
+                                              is_bookmarked_predicate.Pass()));
+}
 
 //
 // EvaluationScope

@@ -211,8 +211,6 @@
       'browser/extensions/api/declarative_content/chrome_content_rules_registry.h',
       'browser/extensions/api/declarative_content/content_action.cc',
       'browser/extensions/api/declarative_content/content_action.h',
-      'browser/extensions/api/declarative_content/content_condition.cc',
-      'browser/extensions/api/declarative_content/content_condition.h',
       'browser/extensions/api/declarative_content/content_constants.cc',
       'browser/extensions/api/declarative_content/content_constants.h',
       'browser/extensions/api/declarative_content/declarative_content_condition_tracker_delegate.cc',
