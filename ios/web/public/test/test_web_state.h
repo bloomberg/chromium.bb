@@ -43,6 +43,8 @@ class TestWebState : public WebState {
   WebInterstitial* GetWebInterstitial() const override;
   void AddObserver(WebStateObserver* observer) override {}
   void RemoveObserver(WebStateObserver* observer) override {}
+  void AddPolicyDecider(WebStatePolicyDecider* decider) override {}
+  void RemovePolicyDecider(WebStatePolicyDecider* decider) override {}
   int DownloadImage(const GURL& url,
                     bool is_favicon,
                     uint32_t max_bitmap_size,

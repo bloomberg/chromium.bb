@@ -45,6 +45,7 @@ class BrowserState;
 class NavigationManager;
 class WebInterstitial;
 class WebStateObserver;
+class WebStatePolicyDecider;
 
 // Core interface for interaction with the web.
 class WebState : public base::SupportsUserData {
@@ -192,6 +193,7 @@ class WebState : public base::SupportsUserData {
 
  protected:
   friend class WebStateObserver;
+  friend class WebStatePolicyDecider;
 
   // Adds and removes observers for page navigation notifications. The order in
   // which notifications are sent to observers is undefined. Clients must be
@@ -199,6 +201,13 @@ class WebState : public base::SupportsUserData {
   // TODO(droger): Move these methods to WebStateImpl once it is in ios/.
   virtual void AddObserver(WebStateObserver* observer) = 0;
   virtual void RemoveObserver(WebStateObserver* observer) = 0;
+
+  // Adds and removes policy deciders for navigation actions. The order in which
+  // deciders are called is undefined, and will stop on the first decider that
+  // refuses a navigation. Clients must be sure to remove the deciders before
+  // they go away.
+  virtual void AddPolicyDecider(WebStatePolicyDecider* decider) = 0;
+  virtual void RemovePolicyDecider(WebStatePolicyDecider* decider) = 0;
 
   WebState() {}
 };

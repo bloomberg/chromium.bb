@@ -12,12 +12,12 @@ namespace web {
 WebStatePolicyDecider::WebStatePolicyDecider(WebState* web_state)
     : web_state_(web_state) {
   DCHECK(web_state_);
-  static_cast<WebStateImpl*>(web_state_)->AddPolicyDecider(this);
+  web_state_->AddPolicyDecider(this);
 }
 
 WebStatePolicyDecider::~WebStatePolicyDecider() {
   if (web_state_) {
-    static_cast<WebStateImpl*>(web_state_)->RemovePolicyDecider(this);
+    web_state_->RemovePolicyDecider(this);
   }
 }
 
