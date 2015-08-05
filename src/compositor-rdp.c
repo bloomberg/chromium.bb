@@ -541,9 +541,20 @@ rdp_restore(struct weston_compositor *ec)
 static void
 rdp_destroy(struct weston_compositor *ec)
 {
-	weston_compositor_shutdown(ec);
+	struct rdp_backend *b = (struct rdp_backend *) ec->backend;
+	int i;
 
-	free(ec);
+	weston_compositor_shutdown(ec);
+	for (i = 0; i < MAX_FREERDP_FDS; i++)
+		if (b->listener_events[i])
+			wl_event_source_remove(b->listener_events[i]);
+
+	freerdp_listener_free(b->listener);
+
+	free(b->server_cert);
+	free(b->server_key);
+	free(b->rdp_key);
+	free(b);
 }
 
 static
