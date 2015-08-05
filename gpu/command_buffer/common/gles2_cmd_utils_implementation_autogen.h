@@ -4143,6 +4143,31 @@ std::string GLES2Util::GetStringQueryTarget(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringReadBuffer(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_NONE, "GL_NONE"},
+      {GL_BACK, "GL_BACK"},
+      {GL_COLOR_ATTACHMENT0, "GL_COLOR_ATTACHMENT0"},
+      {GL_COLOR_ATTACHMENT1, "GL_COLOR_ATTACHMENT1"},
+      {GL_COLOR_ATTACHMENT2, "GL_COLOR_ATTACHMENT2"},
+      {GL_COLOR_ATTACHMENT3, "GL_COLOR_ATTACHMENT3"},
+      {GL_COLOR_ATTACHMENT4, "GL_COLOR_ATTACHMENT4"},
+      {GL_COLOR_ATTACHMENT5, "GL_COLOR_ATTACHMENT5"},
+      {GL_COLOR_ATTACHMENT6, "GL_COLOR_ATTACHMENT6"},
+      {GL_COLOR_ATTACHMENT7, "GL_COLOR_ATTACHMENT7"},
+      {GL_COLOR_ATTACHMENT8, "GL_COLOR_ATTACHMENT8"},
+      {GL_COLOR_ATTACHMENT9, "GL_COLOR_ATTACHMENT9"},
+      {GL_COLOR_ATTACHMENT10, "GL_COLOR_ATTACHMENT10"},
+      {GL_COLOR_ATTACHMENT11, "GL_COLOR_ATTACHMENT11"},
+      {GL_COLOR_ATTACHMENT12, "GL_COLOR_ATTACHMENT12"},
+      {GL_COLOR_ATTACHMENT13, "GL_COLOR_ATTACHMENT13"},
+      {GL_COLOR_ATTACHMENT14, "GL_COLOR_ATTACHMENT14"},
+      {GL_COLOR_ATTACHMENT15, "GL_COLOR_ATTACHMENT15"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringReadPixelFormat(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_ALPHA, "GL_ALPHA"},

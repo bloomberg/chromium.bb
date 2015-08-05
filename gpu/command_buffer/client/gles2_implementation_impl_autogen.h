@@ -1715,7 +1715,7 @@ void GLES2Implementation::PolygonOffset(GLfloat factor, GLfloat units) {
 void GLES2Implementation::ReadBuffer(GLenum src) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glReadBuffer("
-                     << GLES2Util::GetStringEnum(src) << ")");
+                     << GLES2Util::GetStringReadBuffer(src) << ")");
   helper_->ReadBuffer(src);
   CheckGLError();
 }

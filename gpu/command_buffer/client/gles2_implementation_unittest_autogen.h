@@ -1438,9 +1438,9 @@ TEST_F(GLES2ImplementationTest, ReadBuffer) {
     cmds::ReadBuffer cmd;
   };
   Cmds expected;
-  expected.cmd.Init(1);
+  expected.cmd.Init(GL_NONE);
 
-  gl_->ReadBuffer(1);
+  gl_->ReadBuffer(GL_NONE);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

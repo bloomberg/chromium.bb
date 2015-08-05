@@ -2421,7 +2421,7 @@ error::Error GLES2DecoderImpl::HandleReadBuffer(uint32_t immediate_data_size,
       *static_cast<const gles2::cmds::ReadBuffer*>(cmd_data);
   (void)c;
   GLenum src = static_cast<GLenum>(c.src);
-  glReadBuffer(src);
+  DoReadBuffer(src);
   return error::kNoError;
 }
 

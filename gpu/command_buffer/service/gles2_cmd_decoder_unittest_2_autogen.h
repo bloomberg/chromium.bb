@@ -792,10 +792,10 @@ TEST_P(GLES2DecoderTest2, PolygonOffsetValidArgs) {
 }
 
 TEST_P(GLES2DecoderTest2, ReadBufferValidArgs) {
-  EXPECT_CALL(*gl_, ReadBuffer(1));
+  EXPECT_CALL(*gl_, ReadBuffer(GL_NONE));
   SpecializedSetup<cmds::ReadBuffer, 0>(true);
   cmds::ReadBuffer cmd;
-  cmd.Init(1);
+  cmd.Init(GL_NONE);
   decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());

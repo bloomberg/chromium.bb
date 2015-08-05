@@ -100,6 +100,8 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
 
   const Attachment* GetAttachment(GLenum attachment) const;
 
+  const Attachment* GetReadBufferAttachment() const;
+
   bool IsDeleted() const {
     return deleted_;
   }
@@ -159,6 +161,14 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   void OnWillRenderTo() const;
   void OnDidRenderTo() const;
 
+  void set_read_buffer(GLenum read_buffer) {
+    read_buffer_ = read_buffer;
+  }
+
+  GLenum read_buffer() const {
+    return read_buffer_;
+  }
+
  private:
   friend class FramebufferManager;
   friend class base::RefCounted<Framebuffer>;
@@ -209,6 +219,8 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   static bool allow_framebuffer_combo_complete_map_;
 
   scoped_ptr<GLenum[]> draw_buffers_;
+
+  GLenum read_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(Framebuffer);
 };

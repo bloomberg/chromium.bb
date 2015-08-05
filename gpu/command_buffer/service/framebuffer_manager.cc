@@ -320,7 +320,8 @@ Framebuffer::Framebuffer(
       deleted_(false),
       service_id_(service_id),
       has_been_bound_(false),
-      framebuffer_complete_state_count_id_(0) {
+      framebuffer_complete_state_count_id_(0),
+      read_buffer_(GL_COLOR_ATTACHMENT0) {
   manager->StartTracking(this);
   DCHECK_GT(manager->max_draw_buffers_, 0u);
   draw_buffers_.reset(new GLenum[manager->max_draw_buffers_]);
@@ -681,6 +682,12 @@ const Framebuffer::Attachment*
     return it->second.get();
   }
   return NULL;
+}
+
+const Framebuffer::Attachment* Framebuffer::GetReadBufferAttachment() const {
+  if (read_buffer_ == GL_NONE)
+    return nullptr;
+  return GetAttachment(read_buffer_);
 }
 
 void Framebuffer::OnTextureRefDetached(TextureRef* texture) {

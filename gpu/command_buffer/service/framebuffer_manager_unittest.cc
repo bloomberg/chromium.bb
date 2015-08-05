@@ -975,6 +975,28 @@ TEST_F(FramebufferInfoES3Test, DifferentDimensions) {
             framebuffer_->IsPossiblyComplete());
 }
 
+TEST_F(FramebufferInfoES3Test, ReadBuffer) {
+  const GLuint kRenderbufferClientId = 33;
+  const GLuint kRenderbufferServiceId = 333;
+
+  EXPECT_EQ(static_cast<GLenum>(GL_COLOR_ATTACHMENT0),
+            framebuffer_->read_buffer());
+  framebuffer_->set_read_buffer(GL_NONE);
+  EXPECT_EQ(static_cast<GLenum>(GL_NONE), framebuffer_->read_buffer());
+  EXPECT_FALSE(framebuffer_->GetReadBufferAttachment());
+
+  framebuffer_->set_read_buffer(GL_COLOR_ATTACHMENT1);
+  EXPECT_FALSE(framebuffer_->GetReadBufferAttachment());
+
+  renderbuffer_manager_->CreateRenderbuffer(
+      kRenderbufferClientId, kRenderbufferServiceId);
+  Renderbuffer* renderbuffer =
+      renderbuffer_manager_->GetRenderbuffer(kRenderbufferClientId);
+  ASSERT_TRUE(renderbuffer != NULL);
+  framebuffer_->AttachRenderbuffer(GL_COLOR_ATTACHMENT1, renderbuffer);
+  EXPECT_TRUE(framebuffer_->GetReadBufferAttachment());
+}
+
 }  // namespace gles2
 }  // namespace gpu
 
