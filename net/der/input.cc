@@ -23,12 +23,6 @@ bool Input::Equals(const Input& other) const {
   return memcmp(data_, other.data_, len_) == 0;
 }
 
-BitString::BitString(const Input& bytes, uint8_t unused_bits)
-    : bytes_(bytes), unused_bits_(unused_bits) {
-  DCHECK_LT(unused_bits, 8);
-  DCHECK(unused_bits == 0 || bytes.Length() != 0);
-}
-
 ByteReader::ByteReader(const Input& in)
     : data_(in.UnsafeData()), len_(in.Length()) {
 }

@@ -66,31 +66,6 @@ class NET_EXPORT_PRIVATE Input {
   size_t len_;
 };
 
-// The BitString class is a helper for representing a valid parsed BIT STRING.
-//
-// * The bits are ordered within each octet of bytes() from most to least
-//   significant, as in the DER encoding.
-//
-// * There may be at most 7 unused bits.
-class NET_EXPORT BitString {
- public:
-  BitString() : unused_bits_(0) {}
-
-  // |unused_bits| represents the number of bits in the last octet of |bytes|,
-  // starting from the least significant bit, that are unused. It MUST be < 8.
-  // And if bytes is empty, then it MUST be 0.
-  BitString(const Input& bytes, uint8_t unused_bits);
-
-  const Input& bytes() const { return bytes_; }
-  uint8_t unused_bits() const { return unused_bits_; }
-
- private:
-  Input bytes_;
-  uint8_t unused_bits_;
-
-  // Default assignment and copy constructor are OK.
-};
-
 // This class provides ways to read data from an Input in a bounds-checked way.
 // The ByteReader is designed to read through the input sequentially. Once a
 // byte has been read with a ByteReader, the caller can't go back and re-read

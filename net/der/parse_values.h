@@ -30,6 +30,31 @@ NET_EXPORT bool ParseBoolRelaxed(const Input& in, bool* out) WARN_UNUSED_RESULT;
 // uint64_t, is negative, or if there is an error reading the integer.
 NET_EXPORT bool ParseUint64(const Input& in, uint64_t* out) WARN_UNUSED_RESULT;
 
+// The BitString class is a helper for representing a valid parsed BIT STRING.
+//
+// * The bits are ordered within each octet of bytes() from most to least
+//   significant, as in the DER encoding.
+//
+// * There may be at most 7 unused bits.
+class NET_EXPORT BitString {
+ public:
+  BitString() : unused_bits_(0) {}
+
+  // |unused_bits| represents the number of bits in the last octet of |bytes|,
+  // starting from the least significant bit, that are unused. It MUST be < 8.
+  // And if bytes is empty, then it MUST be 0.
+  BitString(const Input& bytes, uint8_t unused_bits);
+
+  const Input& bytes() const { return bytes_; }
+  uint8_t unused_bits() const { return unused_bits_; }
+
+ private:
+  Input bytes_;
+  uint8_t unused_bits_;
+
+  // Default assignment and copy constructor are OK.
+};
+
 // Reads a DER-encoded ASN.1 BIT STRING value from |in| and puts the resulting
 // octet string and number of unused bits into |bit_string|
 //

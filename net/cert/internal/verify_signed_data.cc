@@ -5,6 +5,7 @@
 #include "net/cert/internal/verify_signed_data.h"
 
 #include "base/logging.h"
+#include "net/der/parse_values.h"
 
 // TODO(eroman): There is no intention to implement this for non-OpenSSL. Remove
 // this branch once the migration is complete. This could have been done as a

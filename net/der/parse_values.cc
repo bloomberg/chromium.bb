@@ -164,6 +164,12 @@ bool ParseUint64(const Input& in, uint64_t* out) {
   return true;
 }
 
+BitString::BitString(const Input& bytes, uint8_t unused_bits)
+    : bytes_(bytes), unused_bits_(unused_bits) {
+  DCHECK_LT(unused_bits, 8);
+  DCHECK(unused_bits == 0 || bytes.Length() != 0);
+}
+
 bool ParseBitString(const Input& in, BitString* out) {
   ByteReader reader(in);
 

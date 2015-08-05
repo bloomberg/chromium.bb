@@ -15,6 +15,8 @@ namespace net {
 
 namespace der {
 
+class BitString;
+
 // Parses a DER-encoded ASN.1 structure. DER (distinguished encoding rules)
 // encodes each data value with a tag, length, and value (TLV). The tag
 // indicates the type of the ASN.1 value. Depending on the type of the value,

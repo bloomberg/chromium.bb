@@ -12,6 +12,7 @@
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/pem_tokenizer.h"
 #include "net/der/input.h"
+#include "net/der/parse_values.h"
 #include "net/der/parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
