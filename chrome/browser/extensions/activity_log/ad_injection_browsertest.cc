@@ -408,11 +408,17 @@ void ExecuteScriptAdInjectionBrowserTest::TearDownOnMainThread() {
   ExtensionBrowserTest::TearDownOnMainThread();
 }
 
+// Times out frequently on CrOS: http://crbug.com/517238
+#if defined(OS_CHROMEOS)
+#define MAYBE_ExecuteScriptAdInjection DISABLED_ExecuteScriptAdInjection
+#else
+#define MAYBE_ExecuteScriptAdInjection ExecuteScriptAdInjection
+#endif
 // Test that using chrome.tabs.executeScript doesn't circumvent our detection.
 // Since each type of injection is tested more thoroughly in the test above,
 // this test just needs to make sure that we detect anything from executeScript.
 IN_PROC_BROWSER_TEST_F(ExecuteScriptAdInjectionBrowserTest,
-                       ExecuteScriptAdInjection) {
+                       MAYBE_ExecuteScriptAdInjection) {
   const Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("activity_log")
                                   .AppendASCII("execute_script_ad_injection"));

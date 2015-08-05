@@ -467,8 +467,16 @@ class FlagOffActiveScriptControllerBrowserTest
   }
 };
 
+// Times out frequently on CrOS: http://crbug.com/517238
+#if defined(OS_CHROMEOS)
+#define MAYBE_FlagOffActiveScriptControllerBrowserTest \
+        DISABLED_FlagOffActiveScriptControllerBrowserTest
+#else
+#define MAYBE_FlagOffActiveScriptControllerBrowserTest \
+        FlagOffActiveScriptControllerBrowserTest
+#endif
 IN_PROC_BROWSER_TEST_F(FlagOffActiveScriptControllerBrowserTest,
-                       ScriptsExecuteWhenFlagAbsent) {
+                       MAYBE_FlagOffActiveScriptControllerBrowserTest) {
   const char* const kExtensionNames[] = {
     "content_scripts_all_hosts",
     "inject_scripts_all_hosts",

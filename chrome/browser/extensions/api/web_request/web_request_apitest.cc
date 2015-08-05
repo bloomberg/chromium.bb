@@ -323,7 +323,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, IncognitoSplitModeReload) {
   EXPECT_TRUE(listener_incognito2.WaitUntilSatisfied());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ExtensionRequests) {
+// Times out frequently on CrOS: http://crbug.com/517238
+#if defined(OS_CHROMEOS)
+#define MAYBE_ExtensionRequests DISABLED_ExtensionRequests
+#else
+#define MAYBE_ExtensionRequests ExtensionRequests
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MAYBE_ExtensionRequests) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ExtensionTestMessageListener listener_main1("web_request_status1", true);
   ExtensionTestMessageListener listener_main2("web_request_status2", true);
