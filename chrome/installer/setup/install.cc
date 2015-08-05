@@ -445,7 +445,9 @@ void CreateOrUpdateShortcuts(
       shortcut_operation ==
           ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL) {
     start_menu_properties.set_pin_to_taskbar(!do_not_create_taskbar_shortcut);
-    start_menu_properties.set_pin_to_start(!do_not_create_start_pin);
+    // Disabled for now. TODO(gab): Remove this and the associated code if it
+    // remains disabled long term.
+    start_menu_properties.set_pin_to_start(false);
   }
   ExecuteAndLogShortcutOperation(
       ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR, dist,
