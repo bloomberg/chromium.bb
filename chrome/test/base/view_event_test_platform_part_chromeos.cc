@@ -64,6 +64,8 @@ ViewEventTestPlatformPartChromeOS::~ViewEventTestPlatformPartChromeOS() {
   // Ash Shell can't just live on its own without a browser process, we need to
   // also shut down the message center.
   message_center::MessageCenter::Shutdown();
+
+  aura::Env::DeleteInstance();
 }
 
 }  // namespace

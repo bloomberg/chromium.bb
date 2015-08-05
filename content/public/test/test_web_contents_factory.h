@@ -41,6 +41,9 @@ class TestWebContentsFactory {
   // The vector of web contents that this class created.
   ScopedVector<WebContents> web_contents_;
 
+  // True if the factory initialized aura (and should thus tear it down).
+  bool tear_down_aura_;
+
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsFactory);
 };
 
