@@ -873,6 +873,7 @@
       ],
       'dependencies': [
         '../media/media.gyp:media',
+        '../third_party/libyuv/libyuv.gyp:libyuv',
       ],
       'sources': [
         'common/gpu/media/generic_v4l2_device.cc',

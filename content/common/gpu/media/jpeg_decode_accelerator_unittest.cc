@@ -65,7 +65,7 @@ struct TestImageFile {
   std::string data_str;
 
   media::JpegParseResult parse_result;
-  gfx::Size coded_size;
+  gfx::Size visible_size;
   size_t output_size;
 };
 
@@ -158,14 +158,14 @@ void JpegClient::DestroyJpegDecoder() {
 }
 
 void JpegClient::VideoFrameReady(int32_t bitstream_buffer_id) {
-  if (g_save_to_file) {
-    SaveToFile(bitstream_buffer_id);
-  }
-
   if (!GetSoftwareDecodeResult(bitstream_buffer_id)) {
     SetState(CS_ERROR);
     return;
   }
+  if (g_save_to_file) {
+    SaveToFile(bitstream_buffer_id);
+  }
+
   double difference = GetMeanAbsoluteDifference(bitstream_buffer_id);
   if (difference <= kDecodeSimilarityThreshold) {
     SetState(CS_DECODE_PASS);
@@ -242,9 +242,6 @@ void JpegClient::StartDecode(int32_t bitstream_buffer_id) {
 
   PrepareMemory(bitstream_buffer_id);
 
-  size_t output_size = media::VideoFrame::AllocationSize(
-      media::PIXEL_FORMAT_I420, image_file->coded_size);
-
   base::SharedMemoryHandle dup_handle;
   dup_handle = base::SharedMemory::DuplicateHandle(in_shm_->handle());
   media::BitstreamBuffer bitstream_buffer(bitstream_buffer_id, dup_handle,
@@ -252,11 +249,11 @@ void JpegClient::StartDecode(int32_t bitstream_buffer_id) {
   scoped_refptr<media::VideoFrame> out_frame_ =
       media::VideoFrame::WrapExternalSharedMemory(
           media::PIXEL_FORMAT_I420,
-          image_file->coded_size,
-          gfx::Rect(image_file->coded_size),
-          image_file->coded_size,
+          image_file->visible_size,
+          gfx::Rect(image_file->visible_size),
+          image_file->visible_size,
           static_cast<uint8_t*>(hw_out_shm_->memory()),
-          output_size,
+          image_file->output_size,
           hw_out_shm_->handle(),
           0,
           base::TimeDelta());
@@ -272,12 +269,12 @@ bool JpegClient::GetSoftwareDecodeResult(int32_t bitstream_buffer_id) {
   uint8_t* uplane =
       yplane +
       media::VideoFrame::PlaneSize(format, media::VideoFrame::kYPlane,
-                                   image_file->coded_size).GetArea();
+                                   image_file->visible_size).GetArea();
   uint8_t* vplane =
       uplane +
       media::VideoFrame::PlaneSize(format, media::VideoFrame::kUPlane,
-                                   image_file->coded_size).GetArea();
-  int yplane_stride = image_file->coded_size.width();
+                                   image_file->visible_size).GetArea();
+  int yplane_stride = image_file->visible_size.width();
   int uv_plane_stride = yplane_stride / 2;
 
   if (libyuv::ConvertToI420(
@@ -291,10 +288,10 @@ bool JpegClient::GetSoftwareDecodeResult(int32_t bitstream_buffer_id) {
           uv_plane_stride,
           0,
           0,
-          image_file->coded_size.width(),
-          image_file->coded_size.height(),
-          image_file->coded_size.width(),
-          image_file->coded_size.height(),
+          image_file->visible_size.width(),
+          image_file->visible_size.height(),
+          image_file->visible_size.width(),
+          image_file->visible_size.height(),
           libyuv::kRotate0,
           libyuv::FOURCC_MJPG) != 0) {
     LOG(ERROR) << "Software decode " << image_file->filename << " failed.";
@@ -323,6 +320,8 @@ class JpegDecodeAcceleratorTestEnvironment : public ::testing::Environment {
   scoped_ptr<TestImageFile> image_data_1280x720_black_;
   // Parsed data of |test_640x368_jpeg_file_|.
   scoped_ptr<TestImageFile> image_data_640x368_black_;
+  // Parsed data of |test_640x360_jpeg_file_|.
+  scoped_ptr<TestImageFile> image_data_640x360_black_;
   // Parsed data of "peach_pi-1280x720.jpg".
   scoped_ptr<TestImageFile> image_data_1280x720_default_;
   // Parsed data of failure image.
@@ -338,11 +337,15 @@ class JpegDecodeAcceleratorTestEnvironment : public ::testing::Environment {
   base::FilePath test_1280x720_jpeg_file_;
   // Used for ResolutionChange test case.
   base::FilePath test_640x368_jpeg_file_;
+  // Used for testing some drivers which will align the output resolution to a
+  // multiple of 16. 640x360 will be aligned to 640x368.
+  base::FilePath test_640x360_jpeg_file_;
 };
 
 void JpegDecodeAcceleratorTestEnvironment::SetUp() {
   ASSERT_TRUE(CreateTestJpegImage(1280, 720, &test_1280x720_jpeg_file_));
   ASSERT_TRUE(CreateTestJpegImage(640, 368, &test_640x368_jpeg_file_));
+  ASSERT_TRUE(CreateTestJpegImage(640, 360, &test_640x360_jpeg_file_));
 
   image_data_1280x720_black_.reset(
       new TestImageFile(test_1280x720_jpeg_file_.value()));
@@ -354,6 +357,11 @@ void JpegDecodeAcceleratorTestEnvironment::SetUp() {
   ASSERT_NO_FATAL_FAILURE(ReadTestJpegImage(test_640x368_jpeg_file_,
                                             image_data_640x368_black_.get()));
 
+  image_data_640x360_black_.reset(
+      new TestImageFile(test_640x360_jpeg_file_.value()));
+  ASSERT_NO_FATAL_FAILURE(ReadTestJpegImage(test_640x360_jpeg_file_,
+                                            image_data_640x360_black_.get()));
+
   base::FilePath default_jpeg_file =
       media::GetTestDataFilePath(kDefaultJpegFilename);
   image_data_1280x720_default_.reset(new TestImageFile(kDefaultJpegFilename));
@@ -362,9 +370,9 @@ void JpegDecodeAcceleratorTestEnvironment::SetUp() {
 
   image_data_invalid_.reset(new TestImageFile("failure.jpg"));
   image_data_invalid_->data_str.resize(100, 0);
-  image_data_invalid_->coded_size.SetSize(1280, 720);
+  image_data_invalid_->visible_size.SetSize(1280, 720);
   image_data_invalid_->output_size = media::VideoFrame::AllocationSize(
-      media::PIXEL_FORMAT_I420, image_data_invalid_->coded_size);
+      media::PIXEL_FORMAT_I420, image_data_invalid_->visible_size);
 
   // |user_jpeg_filenames_| may include many files and use ';' as delimiter.
   std::vector<base::FilePath::StringType> filenames;
@@ -380,13 +388,13 @@ void JpegDecodeAcceleratorTestEnvironment::SetUp() {
 void JpegDecodeAcceleratorTestEnvironment::TearDown() {
   base::DeleteFile(test_1280x720_jpeg_file_, false);
   base::DeleteFile(test_640x368_jpeg_file_, false);
+  base::DeleteFile(test_640x360_jpeg_file_, false);
 }
 
 bool JpegDecodeAcceleratorTestEnvironment::CreateTestJpegImage(
     int width,
     int height,
     base::FilePath* filename) {
-  gfx::Size coded_size(width, height);
   const int kBytesPerPixel = 3;
   const int kJpegQuality = 100;
   std::vector<unsigned char> input_buffer(width * height * kBytesPerPixel);
@@ -411,11 +419,11 @@ void JpegDecodeAcceleratorTestEnvironment::ReadTestJpegImage(
       reinterpret_cast<const uint8_t*>(image_data->data_str.data()),
                                        image_data->data_str.size(),
       &image_data->parse_result));
-  image_data->coded_size.SetSize(
-      image_data->parse_result.frame_header.coded_width,
-      image_data->parse_result.frame_header.coded_height);
+  image_data->visible_size.SetSize(
+      image_data->parse_result.frame_header.visible_width,
+      image_data->parse_result.frame_header.visible_height);
   image_data->output_size = media::VideoFrame::AllocationSize(
-      media::PIXEL_FORMAT_I420, image_data->coded_size);
+      media::PIXEL_FORMAT_I420, image_data->visible_size);
 }
 
 class JpegDecodeAcceleratorTest : public ::testing::Test {
@@ -503,6 +511,12 @@ TEST_F(JpegDecodeAcceleratorTest, ResolutionChange) {
   test_image_files_.push_back(g_env->image_data_640x368_black_.get());
   for (size_t i = 0; i < test_image_files_.size(); i++)
     expected_status_.push_back(CS_DECODE_PASS);
+  TestDecode(1);
+}
+
+TEST_F(JpegDecodeAcceleratorTest, CodedSizeAlignment) {
+  test_image_files_.push_back(g_env->image_data_640x360_black_.get());
+  expected_status_.push_back(CS_DECODE_PASS);
   TestDecode(1);
 }
 

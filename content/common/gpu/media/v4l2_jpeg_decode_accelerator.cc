@@ -10,6 +10,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "content/common/gpu/media/v4l2_jpeg_decode_accelerator.h"
 #include "media/filters/jpeg_parser.h"
+#include "third_party/libyuv/include/libyuv.h"
 
 #define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_name)      \
   do {                                                                \
@@ -426,6 +427,12 @@ bool V4L2JpegDecodeAccelerator::CreateOutputBuffers() {
     buffer.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     buffer.memory = V4L2_MEMORY_MMAP;
     IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYBUF, &buffer);
+
+    DCHECK_GE(buffer.length,
+              media::VideoFrame::AllocationSize(
+                  media::PIXEL_FORMAT_I420,
+                  gfx::Size(format.fmt.pix.width, format.fmt.pix.height)));
+
     void* address = device_->Mmap(NULL, buffer.length, PROT_READ | PROT_WRITE,
                                   MAP_SHARED, buffer.m.offset);
     if (address == MAP_FAILED) {
@@ -564,6 +571,47 @@ void V4L2JpegDecodeAccelerator::EnqueueOutput() {
   }
 }
 
+static bool CopyOutputImage(
+    const void* src_addr, const gfx::Size& src_coded_size,
+    const scoped_refptr<media::VideoFrame>& dst_frame) {
+  scoped_refptr<media::VideoFrame> src_frame =
+      media::VideoFrame::WrapExternalData(
+          media::PIXEL_FORMAT_I420,
+          src_coded_size,
+          gfx::Rect(src_coded_size),
+          src_coded_size,
+          static_cast<uint8_t*>(const_cast<void*>(src_addr)),
+          media::VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420,
+                                            src_coded_size),
+          base::TimeDelta());
+
+  uint8_t* src_y = src_frame->data(media::VideoFrame::kYPlane);
+  uint8_t* src_u = src_frame->data(media::VideoFrame::kUPlane);
+  uint8_t* src_v = src_frame->data(media::VideoFrame::kVPlane);
+  size_t src_y_stride = src_frame->stride(media::VideoFrame::kYPlane);
+  size_t src_u_stride = src_frame->stride(media::VideoFrame::kUPlane);
+  size_t src_v_stride = src_frame->stride(media::VideoFrame::kVPlane);
+  uint8_t* dst_y = dst_frame->data(media::VideoFrame::kYPlane);
+  uint8_t* dst_u = dst_frame->data(media::VideoFrame::kUPlane);
+  uint8_t* dst_v = dst_frame->data(media::VideoFrame::kVPlane);
+  size_t dst_y_stride = dst_frame->stride(media::VideoFrame::kYPlane);
+  size_t dst_u_stride = dst_frame->stride(media::VideoFrame::kUPlane);
+  size_t dst_v_stride = dst_frame->stride(media::VideoFrame::kVPlane);
+
+  if (libyuv::I420Copy(src_y, src_y_stride,
+                       src_u, src_u_stride,
+                       src_v, src_v_stride,
+                       dst_y, dst_y_stride,
+                       dst_u, dst_u_stride,
+                       dst_v, dst_v_stride,
+                       dst_frame->coded_size().width(),
+                       dst_frame->coded_size().height())) {
+    LOG(ERROR) << "I420Copy failed";
+    return false;
+  }
+  return true;
+}
+
 void V4L2JpegDecodeAccelerator::Dequeue() {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
 
@@ -629,8 +677,18 @@ void V4L2JpegDecodeAccelerator::Dequeue() {
       DVLOG(1) << "Dequeue output buffer error.";
       PostNotifyError(kInvalidBitstreamBufferId, UNSUPPORTED_JPEG);
     } else {
-      memcpy(job_record->out_frame->data(media::VideoFrame::kYPlane),
-             output_record.address, output_record.length);
+      struct v4l2_format format;
+      memset(&format, 0, sizeof(format));
+      format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+      IOCTL_OR_ERROR_RETURN(VIDIOC_G_FMT, &format);
+
+      if (!CopyOutputImage(
+            output_record.address,
+            gfx::Size(format.fmt.pix.width, format.fmt.pix.height),
+            job_record->out_frame)) {
+        PostNotifyError(job_record->bitstream_buffer.id(), PLATFORM_FAILURE);
+        return;
+      }
 
       DVLOG(3) << "Decoding finished, returning bitstream buffer, id="
                << job_record->bitstream_buffer.id();
