@@ -222,9 +222,6 @@ config("feature_flags") {
   if (enable_image_loader_extension) {
     defines += [ "IMAGE_LOADER_EXTENSION=1" ]
   }
-  if (enable_remoting) {
-    defines += [ "ENABLE_REMOTING=1" ]
-  }
   if (enable_google_now) {
     defines += [ "ENABLE_GOOGLE_NOW=1" ]
   }

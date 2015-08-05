@@ -2101,9 +2101,6 @@
       ['image_loader_extension==1', {
         'grit_defines': ['-D', 'image_loader_extension'],
       }],
-      ['remoting==1', {
-        'grit_defines': ['-D', 'remoting'],
-      }],
       ['use_titlecase_in_grd==1', {
         'grit_defines': ['-D', 'use_titlecase'],
       }],
@@ -2759,9 +2756,6 @@
       }],
       ['profiling==1', {
         'defines': ['ENABLE_PROFILING=1'],
-      }],
-      ['remoting==1', {
-        'defines': ['ENABLE_REMOTING=1'],
       }],
       ['enable_webrtc==1', {
         'defines': ['ENABLE_WEBRTC=1'],
