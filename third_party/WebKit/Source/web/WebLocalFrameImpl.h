@@ -395,14 +395,10 @@ private:
     HashMap<AtomicString, OwnPtr<WebTestInterfaceFactory>> m_testInterfaces;
 
 #if ENABLE(OILPAN)
-    // Oilpan: to provide the guarantee of having the frame live until
-    // close() is called, an instance keep a self-persistent. It is
-    // cleared upon calling close(). This avoids having to assume that
-    // an embedder's WebFrame references are all discovered via thread
-    // state (stack, registers) should an Oilpan GC strike while we're
-    // in the process of detaching.
-    GC_PLUGIN_IGNORE("340522")
-    Persistent<WebLocalFrameImpl> m_selfKeepAlive;
+    // Oilpan: WebLocalFrameImpl must remain alive until close() is called.
+    // Accomplish that by keeping a self-referential Persistent<>. It is
+    // cleared upon close().
+    SelfKeepAlive<WebLocalFrameImpl> m_selfKeepAlive;
 #endif
 };
 
