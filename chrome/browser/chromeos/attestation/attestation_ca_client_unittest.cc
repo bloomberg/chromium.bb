@@ -6,6 +6,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "content/public/test/test_browser_thread.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
@@ -39,10 +40,10 @@ class AttestationCAClientTest : public ::testing::Test {
   }
 
  protected:
-  void SendResponse(net::URLRequestStatus::Status status, int response_code) {
+  void SendResponse(net::Error error, int response_code) {
     net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
     CHECK(fetcher);
-    fetcher->set_status(net::URLRequestStatus(status, 0));
+    fetcher->set_status(net::URLRequestStatus::FromError(error));
     fetcher->set_response_code(response_code);
     fetcher->SetResponseString(fetcher->upload_data() + "_response");
     fetcher->delegate()->OnURLFetchComplete(fetcher);
@@ -64,7 +65,7 @@ TEST_F(AttestationCAClientTest, EnrollRequest) {
       "enroll",
       base::Bind(&AttestationCAClientTest::DataCallback,
                  base::Unretained(this)));
-  SendResponse(net::URLRequestStatus::SUCCESS, net::HTTP_OK);
+  SendResponse(net::OK, net::HTTP_OK);
 
   EXPECT_EQ(1, num_invocations_);
   EXPECT_TRUE(result_);
@@ -77,7 +78,7 @@ TEST_F(AttestationCAClientTest, CertificateRequest) {
       "certificate",
       base::Bind(&AttestationCAClientTest::DataCallback,
                  base::Unretained(this)));
-  SendResponse(net::URLRequestStatus::SUCCESS, net::HTTP_OK);
+  SendResponse(net::OK, net::HTTP_OK);
 
   EXPECT_EQ(1, num_invocations_);
   EXPECT_TRUE(result_);
@@ -90,7 +91,7 @@ TEST_F(AttestationCAClientTest, CertificateRequestNetworkFailure) {
       "certificate",
       base::Bind(&AttestationCAClientTest::DataCallback,
                  base::Unretained(this)));
-  SendResponse(net::URLRequestStatus::FAILED, net::HTTP_OK);
+  SendResponse(net::ERR_FAILED, net::HTTP_OK);
 
   EXPECT_EQ(1, num_invocations_);
   EXPECT_FALSE(result_);
@@ -103,7 +104,7 @@ TEST_F(AttestationCAClientTest, CertificateRequestHttpError) {
       "certificate",
       base::Bind(&AttestationCAClientTest::DataCallback,
                  base::Unretained(this)));
-  SendResponse(net::URLRequestStatus::SUCCESS, net::HTTP_NOT_FOUND);
+  SendResponse(net::OK, net::HTTP_NOT_FOUND);
 
   EXPECT_EQ(1, num_invocations_);
   EXPECT_FALSE(result_);
@@ -117,7 +118,7 @@ TEST_F(AttestationCAClientTest, DeleteOnCallback) {
       base::Bind(&AttestationCAClientTest::DeleteClientDataCallback,
                  base::Unretained(this),
                  client));
-  SendResponse(net::URLRequestStatus::SUCCESS, net::HTTP_OK);
+  SendResponse(net::OK, net::HTTP_OK);
 
   EXPECT_EQ(1, num_invocations_);
   EXPECT_TRUE(result_);

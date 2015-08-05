@@ -5,7 +5,9 @@
 #include "components/proximity_auth/cryptauth/cryptauth_api_call_flow.h"
 
 #include "base/test/test_simple_task_runner.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -66,17 +68,16 @@ class ProximityAuthCryptAuthApiCallFlowTest
     EXPECT_EQ("application/x-protobuf", url_fetcher_->upload_content_type());
   }
 
-  // Responds to the current HTTP request. If the |request_status| is not
-  // success, then the |response_code| and |response_string| arguments will be
-  // ignored.
-  void CompleteCurrentRequest(net::URLRequestStatus::Status request_status,
+  // Responds to the current HTTP request. If the |error| is not |net::OK|, then
+  // the |response_code| and |response_string| arguments will be ignored.
+  void CompleteCurrentRequest(net::Error error,
                               int response_code,
                               const std::string& response_string) {
     ASSERT_TRUE(url_fetcher_);
     net::TestURLFetcher* url_fetcher = url_fetcher_;
     url_fetcher_ = NULL;
-    url_fetcher->set_status(net::URLRequestStatus(request_status, 0));
-    if (request_status == net::URLRequestStatus::SUCCESS) {
+    url_fetcher->set_status(net::URLRequestStatus::FromError(error));
+    if (error == net::OK) {
       url_fetcher->set_response_code(response_code);
       url_fetcher->SetResponseString(response_string);
     }
@@ -106,23 +107,21 @@ class ProximityAuthCryptAuthApiCallFlowTest
 
 TEST_F(ProximityAuthCryptAuthApiCallFlowTest, RequestSuccess) {
   StartApiCallFlow();
-  CompleteCurrentRequest(
-      net::URLRequestStatus::SUCCESS, net::HTTP_OK, kSerializedResponseProto);
+  CompleteCurrentRequest(net::OK, net::HTTP_OK, kSerializedResponseProto);
   EXPECT_EQ(kSerializedResponseProto, *result_);
   EXPECT_FALSE(error_message_);
 }
 
 TEST_F(ProximityAuthCryptAuthApiCallFlowTest, RequestFailure) {
   StartApiCallFlow();
-  CompleteCurrentRequest(net::URLRequestStatus::FAILED, 0, std::string());
+  CompleteCurrentRequest(net::ERR_FAILED, 0, std::string());
   EXPECT_FALSE(result_);
   EXPECT_EQ("Request failed", *error_message_);
 }
 
 TEST_F(ProximityAuthCryptAuthApiCallFlowTest, RequestStatus500) {
   StartApiCallFlow();
-  CompleteCurrentRequest(net::URLRequestStatus::SUCCESS,
-                         net::HTTP_INTERNAL_SERVER_ERROR,
+  CompleteCurrentRequest(net::OK, net::HTTP_INTERNAL_SERVER_ERROR,
                          "CryptAuth Meltdown.");
   EXPECT_FALSE(result_);
   EXPECT_EQ("HTTP status: 500", *error_message_);
@@ -131,8 +130,7 @@ TEST_F(ProximityAuthCryptAuthApiCallFlowTest, RequestStatus500) {
 // The empty string is a valid protocol buffer message serialization.
 TEST_F(ProximityAuthCryptAuthApiCallFlowTest, ResponseWithNoBody) {
   StartApiCallFlow();
-  CompleteCurrentRequest(
-      net::URLRequestStatus::SUCCESS, net::HTTP_OK, std::string());
+  CompleteCurrentRequest(net::OK, net::HTTP_OK, std::string());
   EXPECT_EQ(std::string(), *result_);
   EXPECT_FALSE(error_message_);
 }

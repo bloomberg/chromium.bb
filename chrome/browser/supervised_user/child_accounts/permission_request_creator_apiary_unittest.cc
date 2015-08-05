@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/supervised_user/child_accounts/permission_request_creator_apiary.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -70,25 +71,21 @@ class PermissionRequestCreatorApiaryTest : public testing::Test {
   }
 
   void SendResponse(int url_fetcher_id,
-                    net::URLRequestStatus::Status status,
+                    net::Error error,
                     const std::string& response) {
     net::TestURLFetcher* url_fetcher = GetURLFetcher(url_fetcher_id);
-    url_fetcher->set_status(net::URLRequestStatus(status, 0));
+    url_fetcher->set_status(net::URLRequestStatus::FromError(error));
     url_fetcher->set_response_code(net::HTTP_OK);
     url_fetcher->SetResponseString(response);
     url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
   }
 
   void SendValidResponse(int url_fetcher_id) {
-    SendResponse(url_fetcher_id,
-                 net::URLRequestStatus::SUCCESS,
-                 BuildResponse());
+    SendResponse(url_fetcher_id, net::OK, BuildResponse());
   }
 
   void SendFailedResponse(int url_fetcher_id) {
-    SendResponse(url_fetcher_id,
-                 net::URLRequestStatus::CANCELED,
-                 std::string());
+    SendResponse(url_fetcher_id, net::ERR_ABORTED, std::string());
   }
 
   MOCK_METHOD1(OnRequestCreated, void(bool success));

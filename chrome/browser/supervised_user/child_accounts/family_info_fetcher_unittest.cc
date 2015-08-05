@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/supervised_user/child_accounts/family_info_fetcher.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -142,10 +143,9 @@ class FamilyInfoFetcherTest : public testing::Test,
     return url_fetcher;
   }
 
-  void SendResponse(net::URLRequestStatus::Status status,
-                    const std::string& response) {
+  void SendResponse(net::Error error, const std::string& response) {
     net::TestURLFetcher* url_fetcher = GetURLFetcher();
-    url_fetcher->set_status(net::URLRequestStatus(status, 0));
+    url_fetcher->set_status(net::URLRequestStatus::FromError(error));
     url_fetcher->set_response_code(net::HTTP_OK);
     url_fetcher->SetResponseString(response);
     url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
@@ -153,23 +153,20 @@ class FamilyInfoFetcherTest : public testing::Test,
 
   void SendValidGetFamilyProfileResponse(
       const FamilyInfoFetcher::FamilyProfile& family) {
-    SendResponse(net::URLRequestStatus::SUCCESS,
-                 BuildGetFamilyProfileResponse(family));
+    SendResponse(net::OK, BuildGetFamilyProfileResponse(family));
   }
 
   void SendValidGetFamilyMembersResponse(
       const std::vector<FamilyInfoFetcher::FamilyMember>& members) {
-    SendResponse(net::URLRequestStatus::SUCCESS,
-                 BuildGetFamilyMembersResponse(members));
+    SendResponse(net::OK, BuildGetFamilyMembersResponse(members));
   }
 
   void SendInvalidGetFamilyProfileResponse() {
-    SendResponse(net::URLRequestStatus::SUCCESS,
-                 BuildEmptyGetFamilyProfileResponse());
+    SendResponse(net::OK, BuildEmptyGetFamilyProfileResponse());
   }
 
   void SendFailedResponse() {
-    SendResponse(net::URLRequestStatus::CANCELED, std::string());
+    SendResponse(net::ERR_ABORTED, std::string());
   }
 
   base::MessageLoop message_loop_;

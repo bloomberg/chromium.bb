@@ -53,17 +53,16 @@ MockFetcher::MockFetcher(bool success,
                          net::URLFetcherDelegate* d)
     : TestURLFetcher(0, url, d) {
   set_url(url);
-  net::URLRequestStatus::Status code;
+  net::Error error;
 
   if (success) {
+    error = net::OK;
     set_response_code(net::HTTP_OK);
-    code = net::URLRequestStatus::SUCCESS;
   } else {
-    set_response_code(net::HTTP_FORBIDDEN);
-    code = net::URLRequestStatus::FAILED;
+    error = net::ERR_FAILED;
   }
 
-  set_status(net::URLRequestStatus(code, 0));
+  set_status(net::URLRequestStatus::FromError(error));
   SetResponseString(results);
 }
 

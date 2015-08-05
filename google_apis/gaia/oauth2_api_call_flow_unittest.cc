@@ -15,6 +15,7 @@
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "google_apis/gaia/oauth2_api_call_flow.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -105,9 +106,8 @@ class OAuth2ApiCallFlowTest : public testing::Test {
       const GURL& url, bool fetch_succeeds,
       int response_code, const std::string& body) {
     TestURLFetcher* url_fetcher = new TestURLFetcher(0, url, &flow_);
-    URLRequestStatus::Status status =
-        fetch_succeeds ? URLRequestStatus::SUCCESS : URLRequestStatus::FAILED;
-    url_fetcher->set_status(URLRequestStatus(status, 0));
+    net::Error error = fetch_succeeds ? net::OK : net::ERR_FAILED;
+    url_fetcher->set_status(URLRequestStatus::FromError(error));
 
     if (response_code != 0)
       url_fetcher->set_response_code(response_code);

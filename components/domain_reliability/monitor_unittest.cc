@@ -339,23 +339,6 @@ TEST_F(DomainReliabilityMonitorTest, ClearContexts) {
   EXPECT_EQ(0u, monitor_.contexts_size_for_testing());
 }
 
-// TODO(davidben): When https://crbug.com/490311 is resolved, this test can be
-// removed.
-TEST_F(DomainReliabilityMonitorTest, IgnoreSuccessError) {
-  RequestInfo request = MakeRequestInfo();
-  request.url = GURL("http://example/always_report");
-  request.status = net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
-                                         net::ERR_QUIC_PROTOCOL_ERROR);
-  OnRequestLegComplete(request);
-
-  BeaconVector beacons;
-  context_->GetQueuedBeaconsForTesting(&beacons);
-  EXPECT_EQ(1u, beacons.size());
-  EXPECT_EQ(net::OK, beacons[0].chrome_error);
-
-  EXPECT_TRUE(CheckRequestCounts(kAlwaysReportIndex, 1u, 0u));
-}
-
 TEST_F(DomainReliabilityMonitorTest, WildcardMatchesSelf) {
   DomainReliabilityContext* context = CreateAndAddContext("*.wildcard");
 

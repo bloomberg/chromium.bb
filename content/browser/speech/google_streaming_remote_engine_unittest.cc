@@ -15,6 +15,7 @@
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -499,10 +500,9 @@ void GoogleStreamingRemoteEngineTest::CloseMockDownstream(
   TestURLFetcher* downstream_fetcher = GetDownstreamFetcher();
   ASSERT_TRUE(downstream_fetcher);
 
-  const URLRequestStatus::Status fetcher_status =
-      (error == DOWNSTREAM_ERROR_NETWORK) ? URLRequestStatus::FAILED :
-                                            URLRequestStatus::SUCCESS;
-  downstream_fetcher->set_status(URLRequestStatus(fetcher_status, 0));
+  const net::Error net_error =
+      (error == DOWNSTREAM_ERROR_NETWORK) ? net::ERR_FAILED : net::OK;
+  downstream_fetcher->set_status(URLRequestStatus::FromError(net_error));
   downstream_fetcher->set_response_code(
       (error == DOWNSTREAM_ERROR_HTTP500) ? 500 : 200);
 

@@ -56,12 +56,12 @@ class MockOAuthFetcher : public net::TestURLFetcher {
       set_response_code(net::HTTP_OK);
     }
 
-    net::URLRequestStatus::Status code = net::URLRequestStatus::SUCCESS;
+    net::Error error = net::OK;
     if (GetResponseCode() != net::HTTP_OK) {
-      code = net::URLRequestStatus::FAILED;
+      error = net::ERR_FAILED;
       current_failure_count_++;
     }
-    set_status(net::URLRequestStatus(code, 0));
+    set_status(net::URLRequestStatus::FromError(error));
 
     if (complete_immediately_)
       delegate()->OnURLFetchComplete(this);

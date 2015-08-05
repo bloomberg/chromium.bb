@@ -43,6 +43,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -602,7 +603,7 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientOAuthFailure) {
       GoogleServiceAuthError::FromServiceError("fail"));
 #else
   net::TestURLFetcher* fetcher = url_factory_.GetFetcherByID(0);
-  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED, -1));
+  fetcher->set_status(net::URLRequestStatus::FromError(net::ERR_FAILED));
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 #endif
 

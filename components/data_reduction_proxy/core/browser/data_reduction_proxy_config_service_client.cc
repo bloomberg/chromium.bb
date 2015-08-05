@@ -26,6 +26,7 @@
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -301,7 +302,7 @@ void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
       GetURLFetcherForConfig(config_service_url_, serialized_request);
   if (!fetcher.get()) {
     HandleResponse(std::string(),
-                   net::URLRequestStatus(net::URLRequestStatus::CANCELED, 0),
+                   net::URLRequestStatus::FromError(net::ERR_ABORTED),
                    net::URLFetcher::RESPONSE_CODE_INVALID);
     return;
   }

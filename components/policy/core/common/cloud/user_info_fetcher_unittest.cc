@@ -5,8 +5,10 @@
 #include "base/values.h"
 #include "components/policy/core/common/cloud/user_info_fetcher.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -50,8 +52,7 @@ TEST_F(UserInfoFetcherTest, FailedFetch) {
   // Fake a failed fetch - should result in the failure callback being invoked.
   EXPECT_CALL(delegate, OnGetUserInfoFailure(_));
   net::TestURLFetcher* url_fetcher = url_factory_.GetFetcherByID(0);
-  url_fetcher->set_status(net::URLRequestStatus(
-      net::URLRequestStatus::FAILED, -1));
+  url_fetcher->set_status(net::URLRequestStatus::FromError(net::ERR_FAILED));
   url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
 }
 

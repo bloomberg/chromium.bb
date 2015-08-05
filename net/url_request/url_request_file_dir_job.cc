@@ -162,7 +162,7 @@ void URLRequestFileDirJob::CompleteRead() {
     } else {
       NOTREACHED();
       // TODO: Better error code.
-      NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, 0));
+      NotifyDone(URLRequestStatus::FromError(ERR_FAILED));
     }
   }
 }

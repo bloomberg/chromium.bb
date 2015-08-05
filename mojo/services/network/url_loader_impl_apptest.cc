@@ -11,8 +11,10 @@
 #include "mojo/common/message_pump_mojo.h"
 #include "mojo/services/network/network_context.h"
 #include "mojo/services/network/url_loader_impl.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
@@ -59,7 +61,8 @@ class TestURLRequestJob : public net::URLRequestJob {
   void NotifyReadComplete(int bytes_read) {
     if (bytes_read < 0) {
       status_ = COMPLETED;
-      NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED, 0));
+      NotifyDone(net::URLRequestStatus(
+          net::URLRequestStatus::FromError(net::ERR_FAILED)));
       net::URLRequestJob::NotifyReadComplete(0);
     } else if (bytes_read == 0) {
       status_ = COMPLETED;

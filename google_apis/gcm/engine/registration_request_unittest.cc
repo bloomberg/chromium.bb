@@ -13,6 +13,7 @@
 #include "google_apis/gcm/engine/instance_id_get_token_request_handler.h"
 #include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
 
 namespace gcm {
@@ -320,12 +321,11 @@ TEST_F(GCMRegistrationRequestTest, RequestNotSuccessful) {
   CreateRequest("sender1,sender2");
   request_->Start();
 
-  net::URLRequestStatus request_status(net::URLRequestStatus::FAILED, 1);
   SetResponse(net::HTTP_OK, "token=2501");
 
   net::TestURLFetcher* fetcher = GetFetcher();
   ASSERT_TRUE(fetcher);
-  GetFetcher()->set_status(request_status);
+  GetFetcher()->set_status(net::URLRequestStatus::FromError(net::ERR_FAILED));
 
   CompleteFetch();
 

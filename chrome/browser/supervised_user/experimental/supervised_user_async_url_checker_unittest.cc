@@ -11,6 +11,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/supervised_user/experimental/supervised_user_async_url_checker.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -94,22 +95,20 @@ class SupervisedUserAsyncURLCheckerTest : public testing::Test {
     return url_fetcher;
   }
 
-  void SendResponse(bool safe,
-                    net::URLRequestStatus::Status status,
-                    const std::string& response) {
+  void SendResponse(bool safe, net::Error error, const std::string& response) {
     net::TestURLFetcher* url_fetcher = GetURLFetcher(safe);
-    url_fetcher->set_status(net::URLRequestStatus(status, 0));
+    url_fetcher->set_status(net::URLRequestStatus::FromError(error));
     url_fetcher->set_response_code(net::HTTP_OK);
     url_fetcher->SetResponseString(response);
     url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
   }
 
   void SendValidResponse(bool safe, const GURL& url) {
-    SendResponse(safe, net::URLRequestStatus::SUCCESS, BuildResponse(url));
+    SendResponse(safe, net::OK, BuildResponse(url));
   }
 
   void SendFailedResponse(bool safe) {
-    SendResponse(safe, net::URLRequestStatus::CANCELED, std::string());
+    SendResponse(safe, net::ERR_ABORTED, std::string());
   }
 
   size_t next_url_;

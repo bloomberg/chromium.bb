@@ -33,7 +33,7 @@ class NET_EXPORT URLRequestStatus {
 
   // Creates a URLRequestStatus with specified status and error parameters. New
   // consumers should use URLRequestStatus::FromError instead.
-  URLRequestStatus(Status status, int error) : status_(status), error_(error) {}
+  URLRequestStatus(Status status, int error);
 
   // Creates a URLRequestStatus, initializing the status from |error|. OK maps
   // to SUCCESS, ERR_IO_PENDING maps to IO_PENDING, ERR_ABORTED maps to CANCELED

@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -50,7 +51,7 @@ GotCanceledFetcher::GotCanceledFetcher(
     net::URLFetcherDelegate* d)
     : net::TestURLFetcher(0, url, d) {
   set_url(url);
-  set_status(net::URLRequestStatus(net::URLRequestStatus::CANCELED, 0));
+  set_status(net::URLRequestStatus::FromError(net::ERR_ABORTED));
   set_response_code(net::HTTP_FORBIDDEN);
 }
 
@@ -86,7 +87,7 @@ FailFetcher::FailFetcher(bool success,
                          net::URLFetcherDelegate* d)
     : net::TestURLFetcher(0, url, d) {
   set_url(url);
-  set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED, ECONNRESET));
+  set_status(net::URLRequestStatus::FromError(net::ERR_CONNECTION_RESET));
   set_response_code(net::HTTP_OK);
 }
 
