@@ -480,13 +480,15 @@ bool DrmDevice::SetCursor(uint32_t crtc_id,
                           uint32_t handle,
                           const gfx::Size& size) {
   DCHECK(file_.IsValid());
-  TRACE_EVENT1("drm", "DrmDevice::SetCursor", "handle", handle);
+  TRACE_EVENT2("drm", "DrmDevice::SetCursor", "crtc_id", crtc_id, "handle",
+               handle);
   return !drmModeSetCursor(file_.GetPlatformFile(), crtc_id, handle,
                            size.width(), size.height());
 }
 
 bool DrmDevice::MoveCursor(uint32_t crtc_id, const gfx::Point& point) {
   DCHECK(file_.IsValid());
+  TRACE_EVENT1("drm", "DrmDevice::MoveCursor", "crtc_id", crtc_id);
   return !drmModeMoveCursor(file_.GetPlatformFile(), crtc_id, point.x(),
                             point.y());
 }
