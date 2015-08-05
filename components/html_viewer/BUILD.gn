@@ -156,7 +156,6 @@ source_set("lib") {
     "//mojo/cc",
     "//mojo/common",
     "//mojo/converters/surfaces",
-    "//mojo/message_pump",
     "//mojo/platform_handle",
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",

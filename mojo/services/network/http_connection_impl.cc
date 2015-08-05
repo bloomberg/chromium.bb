@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "mojo/message_pump/handle_watcher.h"
+#include "mojo/common/handle_watcher.h"
 #include "mojo/services/network/http_server_impl.h"
 #include "mojo/services/network/net_adapters.h"
 #include "mojo/services/network/public/cpp/web_socket_read_queue.h"

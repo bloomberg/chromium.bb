@@ -12,7 +12,7 @@
 #include "chrome/browser/media/router/mock_media_router.h"
 #include "chrome/browser/media/router/test_helper.h"
 #include "chrome/test/base/testing_profile.h"
-#include "mojo/message_pump/message_pump_mojo.h"
+#include "mojo/common/message_pump_mojo.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

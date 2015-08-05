@@ -12,7 +12,7 @@
 #include "base/threading/worker_pool.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/message_pump/message_pump_mojo.h"
+#include "mojo/common/message_pump_mojo.h"
 
 namespace mojo {
 

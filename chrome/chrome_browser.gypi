@@ -3298,7 +3298,6 @@
             '../mojo/mojo_base.gyp:mojo_application_base',
             '../mojo/mojo_base.gyp:mojo_common_lib',
             '../mojo/mojo_base.gyp:mojo_environment_chromium',
-            '../mojo/mojo_base.gyp:mojo_message_pump_lib',
             '../net/net.gyp:net_extras',
             '../net/net.gyp:net_with_v8',
             '../storage/storage_browser.gyp:storage',

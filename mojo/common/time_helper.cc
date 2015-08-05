@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/message_pump/time_helper.h"
+#include "mojo/common/time_helper.h"
 
 #include "base/time/tick_clock.h"
 

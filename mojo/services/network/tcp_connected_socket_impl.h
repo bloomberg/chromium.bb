@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
-#include "mojo/message_pump/handle_watcher.h"
+#include "mojo/common/handle_watcher.h"
 #include "mojo/services/network/public/interfaces/tcp_connected_socket.mojom.h"
 #include "net/socket/tcp_socket.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/message_pump/message_pump_mojo.h"
+#include "mojo/common/message_pump_mojo.h"
 
 #include "base/message_loop/message_loop_test.h"
 #include "base/run_loop.h"
-#include "mojo/message_pump/message_pump_mojo_handler.h"
+#include "mojo/common/message_pump_mojo_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 

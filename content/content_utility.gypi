@@ -9,7 +9,6 @@
     '../mojo/mojo_base.gyp:mojo_application_base',
     '../mojo/mojo_base.gyp:mojo_application_bindings',
     '../mojo/mojo_base.gyp:mojo_common_lib',
-    '../mojo/mojo_base.gyp:mojo_message_pump_lib',
     '../mojo/mojo_shell.gyp:mojo_shell_lib',
     '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
     '../url/url.gyp:url_lib',

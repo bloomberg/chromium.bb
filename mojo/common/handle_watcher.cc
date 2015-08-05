@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/message_pump/handle_watcher.h"
+#include "mojo/common/handle_watcher.h"
 
 #include <map>
 
@@ -21,9 +21,9 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
-#include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/message_pump/message_pump_mojo_handler.h"
-#include "mojo/message_pump/time_helper.h"
+#include "mojo/common/message_pump_mojo.h"
+#include "mojo/common/message_pump_mojo_handler.h"
+#include "mojo/common/time_helper.h"
 
 namespace mojo {
 namespace common {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_MESSAGE_PUMP_MESSAGE_PUMP_MOJO_H_
-#define MOJO_MESSAGE_PUMP_MESSAGE_PUMP_MOJO_H_
+#ifndef MOJO_COMMON_MESSAGE_PUMP_MOJO_H_
+#define MOJO_COMMON_MESSAGE_PUMP_MOJO_H_
 
 #include <map>
 
@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
+#include "mojo/common/mojo_common_export.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace mojo {
@@ -21,7 +22,7 @@ namespace common {
 class MessagePumpMojoHandler;
 
 // Mojo implementation of MessagePump.
-class MessagePumpMojo : public base::MessagePump {
+class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
  public:
   class Observer {
    public:
@@ -132,4 +133,4 @@ class MessagePumpMojo : public base::MessagePump {
 }  // namespace common
 }  // namespace mojo
 
-#endif  // MOJO_MESSAGE_PUMP_MESSAGE_PUMP_MOJO_H_
+#endif  // MOJO_COMMON_MESSAGE_PUMP_MOJO_H_

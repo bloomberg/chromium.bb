@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/html_viewer/mock_web_blob_registry_impl.h"
-#include "mojo/message_pump/handle_watcher.h"
+#include "mojo/common/handle_watcher.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "third_party/WebKit/public/platform/WebBlobData.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"

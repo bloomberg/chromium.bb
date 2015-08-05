@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "mojo/application/public/cpp/application_test_base.h"
-#include "mojo/message_pump/message_pump_mojo.h"
+#include "mojo/common/message_pump_mojo.h"
 #include "mojo/services/network/network_context.h"
 #include "mojo/services/network/url_loader_impl.h"
 #include "net/base/net_errors.h"

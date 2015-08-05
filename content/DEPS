@@ -33,7 +33,6 @@ include_rules = [
   "+dbus",
   "+gpu",
   "+mojo/common",
-  "+mojo/message_pump",
   "+net",
   "+ppapi",
   "+printing",

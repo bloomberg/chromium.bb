@@ -12,7 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/message_pump/message_pump_mojo.h"
+#include "mojo/common/message_pump_mojo.h"
 #include "mojo/services/network/network_service_delegate_observer.h"
 #include "mojo/services/network/network_service_impl.h"
 #include "mojo/services/network/url_loader_factory_impl.h"
