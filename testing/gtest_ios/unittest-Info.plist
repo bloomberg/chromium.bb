@@ -2,8 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>UIFileSharingEnabled</key>
-	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDisplayName</key>
@@ -26,6 +24,8 @@
 	<true/>
 	<key>NSMainNibFile</key>
 	<string>${MAIN_NIB_FILE}</string>
+	<key>UIFileSharingEnabled</key>
+	<true/>
 	<key>UILaunchImages</key>
 	<array>
 		<dict>
