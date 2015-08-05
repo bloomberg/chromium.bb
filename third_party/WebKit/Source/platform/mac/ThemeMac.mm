@@ -202,20 +202,16 @@ IntRect ThemeMac::inflateRectForAA(const IntRect& rect) {
 
 // static
 IntRect ThemeMac::inflateRectForFocusRing(const IntRect& rect) {
-    if (ThemeMac::drawWithFrameDrawsFocusRing()) {
-        // Just put a margin of 16 units around the rect. The UI elements that use this don't appropriately
-        // scale their focus rings appropriately (e.g, paint pickers), or switch to non-native widgets when
-        // scaled (e.g, check boxes and radio buttons).
-        const int margin = 16;
-        IntRect result;
-        result.setX(rect.x() - margin);
-        result.setY(rect.y() - margin);
-        result.setWidth(rect.width() + 2 * margin);
-        result.setHeight(rect.height() + 2 * margin);
-        return result;
-    } else {
-        return rect;
-    }
+    // Just put a margin of 16 units around the rect. The UI elements that use this don't appropriately
+    // scale their focus rings appropriately (e.g, paint pickers), or switch to non-native widgets when
+    // scaled (e.g, check boxes and radio buttons).
+    const int margin = 16;
+    IntRect result;
+    result.setX(rect.x() - margin);
+    result.setY(rect.y() - margin);
+    result.setWidth(rect.width() + 2 * margin);
+    result.setHeight(rect.height() + 2 * margin);
+    return result;
 }
 
 // Checkboxes
