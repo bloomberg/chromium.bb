@@ -199,7 +199,7 @@ deps = {
    Var('chromium_git') + '/chromium/deps/libjpeg_turbo.git' + '@' + 'c9c8755c326b42c8d0dc938ec3f0d1d648bd361a',
 
   'src/third_party/flac':
-   Var('chromium_git') + '/chromium/deps/flac.git' + '@' + 'c291ce676d2c855f7b2739f00f5c7f7e813813dc',
+   Var('chromium_git') + '/chromium/deps/flac.git' + '@' + 'e1b6e7983a8c54954f13f40772a40f490f1eefca',
 
   'src/third_party/pyftpdlib/src':
     Var('chromium_git') + '/external/pyftpdlib.git' + '@' + '2be6d65e31c7ee6320d059f581f05ae8d89d7e45',
