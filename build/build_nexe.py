@@ -407,6 +407,11 @@ class Builder(CommandRunner):
   def GetGomaConfig(self, gomadir, arch, toolname):
     """Returns a goma config dictionary if goma is available or {}."""
 
+    # Goma is enabled only if gomadir is given.
+    # We do not use gomacc in GOMA_DIR or PATH anymore.
+    if not gomadir:
+      return {}
+
     # Start goma support from os/arch/toolname that have been tested.
     # Set NO_NACL_GOMA=true to force to avoid using goma.
     default_no_nacl_goma = True if pynacl.platform.IsWindows() else False
@@ -416,44 +421,14 @@ class Builder(CommandRunner):
         or IsEnvFlagTrue('GOMA_DISABLED')):
       return {}
 
-    goma_config = {}
     gomacc_base = 'gomacc.exe' if pynacl.platform.IsWindows() else 'gomacc'
-    # Search order of gomacc:
-    # --gomadir command argument -> GOMA_DIR env. -> PATH env.
-    search_path = []
-    # 1. --gomadir in the command argument.
-    if gomadir:
-      search_path.append(gomadir)
-    # 2. Use GOMA_DIR environment variable if exist.
-    goma_dir_env = os.environ.get('GOMA_DIR')
-    if goma_dir_env:
-      search_path.append(goma_dir_env)
-    # 3. Append PATH env.
-    path_env = os.environ.get('PATH')
-    if path_env:
-      search_path.extend(path_env.split(os.path.pathsep))
-
-    for directory in search_path:
-      gomacc = os.path.join(directory, gomacc_base)
-      if os.path.isfile(gomacc):
-        try:
-          port = int(subprocess.Popen(
-              [gomacc, 'port'],
-              stdout=subprocess.PIPE).communicate()[0].strip())
-          status = urllib2.urlopen(
-              'http://127.0.0.1:%d/healthz' % port).read().strip()
-          if status == 'ok':
-            goma_config['gomacc'] = gomacc
-            break
-        except (OSError, ValueError, urllib2.URLError) as e:
-          # Try another gomacc in the search path.
-          self.Log('Strange gomacc %s found, try another one: %s' % (gomacc, e))
-
-    if goma_config:
-      goma_config['burst'] = IsEnvFlagTrue('NACL_GOMA_BURST')
-      default_processes = 100 if pynacl.platform.IsLinux() else 10
-      goma_config['processes'] = GetIntegerEnv('NACL_GOMA_PROCESSES',
-                                               default=default_processes)
+    goma_config = {
+        'gomacc': os.path.join(gomadir, gomacc_base),
+        'burst': IsEnvFlagTrue('NACL_GOMA_BURST'),
+    }
+    default_processes = 100 if pynacl.platform.IsLinux() else 10
+    goma_config['processes'] = GetIntegerEnv('NACL_GOMA_PROCESSES',
+                                             default=default_processes)
     return goma_config
 
   def NeedsRebuild(self, outd, out, src, rebuilt=False):
