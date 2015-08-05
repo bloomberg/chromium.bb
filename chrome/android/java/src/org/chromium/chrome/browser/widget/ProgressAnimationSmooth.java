@@ -91,12 +91,7 @@ class ProgressAnimationSmooth implements ToolbarProgressBar.AnimationLogic {
         } else {
             float maxAcceleratingDuration = CONSTANT_1 * mVelocity + (float) Math.sqrt(
                     CONSTANT_2 * (targetProgress - mProgress) + CONSTANT_3 * mVelocity * mVelocity);
-            maxAcceleratingDuration = Math.max(maxAcceleratingDuration, 0.0f);
-            if (frameTimeSec <= maxAcceleratingDuration) {
-                return frameTimeSec;
-            } else {
-                return maxAcceleratingDuration;
-            }
+            return Math.max(0, Math.min(frameTimeSec, maxAcceleratingDuration));
         }
     }
 }
