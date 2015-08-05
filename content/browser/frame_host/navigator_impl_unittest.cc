@@ -101,12 +101,10 @@ class NavigatorTestWithBrowserSideNavigation
   // the tracked commit happens to clear up commit messages from previous
   // navigations.
   bool DidRenderFrameHostRequestCommit(TestRenderFrameHost* rfh) {
-    const FrameMsg_CommitNavigation* commit_message =
-        static_cast<const FrameMsg_CommitNavigation*>(
-            rfh->GetProcess()->sink().GetUniqueMessageMatching(
-                FrameMsg_CommitNavigation::ID));
-    return commit_message &&
-           rfh->GetRoutingID() == commit_message->routing_id();
+    const IPC::Message* message =
+        rfh->GetProcess()->sink().GetUniqueMessageMatching(
+            FrameMsg_CommitNavigation::ID);
+    return message && rfh->GetRoutingID() == message->routing_id();
   }
 
   SiteInstance* ConvertToSiteInstance(RenderFrameHostManager* rfhm,
