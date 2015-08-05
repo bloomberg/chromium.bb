@@ -1516,8 +1516,6 @@ crbug.com/321237 [ Win ] fast/text/international/complex-text-leading-space-wrap
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ]
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
 crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ImageOnlyFailure ]
-Bug(tkent) fast/forms/input-placeholder-paint-order.html [ NeedsRebaseline ]
-Bug(tkent) fast/forms/textarea/textarea-placeholder-paint-order.html [ NeedsRebaseline ]
 
 # Uncomment these once tests are rebaselined for crbug.com/509013
 # crbug.com/240827 css3/filters/effect-reference-hw.html [ NeedsManualRebaseline ]
