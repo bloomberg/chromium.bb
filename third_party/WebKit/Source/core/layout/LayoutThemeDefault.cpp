@@ -412,11 +412,6 @@ int LayoutThemeDefault::menuListInternalPadding(const ComputedStyle& style, int 
     return padding;
 }
 
-bool LayoutThemeDefault::shouldShowPlaceholderWhenFocused() const
-{
-    return true;
-}
-
 //
 // Following values are come from default of GTK+
 //

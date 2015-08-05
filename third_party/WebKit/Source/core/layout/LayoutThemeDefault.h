@@ -137,8 +137,6 @@ protected:
     IntRect indeterminateProgressValueRectFor(LayoutProgress*, const IntRect&) const;
 
 private:
-    bool shouldShowPlaceholderWhenFocused() const override;
-
     ThemePainter& painter() override { return m_painter; }
 
     int menuListInternalPadding(const ComputedStyle&, int paddingType) const;

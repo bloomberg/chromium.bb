@@ -1132,11 +1132,6 @@ void LayoutThemeMac::updateActiveState(NSCell* cell, const LayoutObject* o)
         [cell setControlTint:tint];
 }
 
-bool LayoutThemeMac::shouldShowPlaceholderWhenFocused() const
-{
-    return true;
-}
-
 void LayoutThemeMac::adjustMediaSliderThumbSize(ComputedStyle& style) const
 {
     MediaControlsPainter::adjustMediaSliderThumbSize(style);

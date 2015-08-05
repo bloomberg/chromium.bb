@@ -166,7 +166,6 @@ public:
     // Returns the distance of slider tick origin from the slider track center.
     virtual int sliderTickOffsetFromTrackCenter() const = 0;
 
-    virtual bool shouldShowPlaceholderWhenFocused() const { return false; }
     virtual bool shouldHaveSpinButton(HTMLInputElement*) const;
 
     // Functions for <select> elements.
