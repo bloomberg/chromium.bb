@@ -36,6 +36,9 @@ FARPROC GetNtDllExportByName(const char* export_name) {
 }
 
 int DllMatch(const base::string16& module_name) {
+  if (module_name.empty())
+    return -1;
+
   for (int i = 0; blacklist::g_troublesome_dlls[i] != NULL; ++i) {
     if (_wcsicmp(module_name.c_str(), blacklist::g_troublesome_dlls[i]) == 0)
       return i;
@@ -194,25 +197,27 @@ NTSTATUS BlNtMapViewOfSectionImpl(
   if (module) {
     UINT image_flags;
 
-    base::string16 module_name(GetImageInfoFromLoadedModule(
+    base::string16 module_name_from_image(GetImageInfoFromLoadedModule(
         reinterpret_cast<HMODULE>(*base), &image_flags));
-    base::string16 file_name(GetBackingModuleFilePath(*base));
 
-    if (module_name.empty() && (image_flags & sandbox::MODULE_HAS_CODE)) {
-      // If the module has no exports we retrieve the module name from the
-      // full path of the mapped section.
-      module_name = ExtractLoadedModuleName(file_name);
+    int blocked_index = DllMatch(module_name_from_image);
+
+    // If the module name isn't blacklisted, see if the file name is different
+    // and blacklisted.
+    if (blocked_index == -1) {
+      base::string16 file_name(GetBackingModuleFilePath(*base));
+      base::string16 module_name_from_file = ExtractLoadedModuleName(file_name);
+
+      if (module_name_from_image != module_name_from_file)
+        blocked_index = DllMatch(module_name_from_file);
     }
 
-    if (!module_name.empty()) {
-      int blocked_index = DllMatch(module_name);
-      if (blocked_index != -1) {
-        DCHECK_NT(g_nt_unmap_view_of_section_func);
-        g_nt_unmap_view_of_section_func(process, *base);
-        ret = STATUS_UNSUCCESSFUL;
+    if (blocked_index != -1) {
+      DCHECK_NT(g_nt_unmap_view_of_section_func);
+      g_nt_unmap_view_of_section_func(process, *base);
+      ret = STATUS_UNSUCCESSFUL;
 
-        blacklist::BlockedDll(blocked_index);
-      }
+      blacklist::BlockedDll(blocked_index);
     }
   }
 
