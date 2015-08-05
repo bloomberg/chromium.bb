@@ -1,0 +1,30 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("media") {
+  sources = [
+    "cast_message_generator.cc",
+    "cast_message_generator.h",
+    "cast_messages.h",
+    "cma_ipc_common.h",
+    "cma_message_generator.cc",
+    "cma_message_generator.h",
+    "cma_messages.h",
+    "cma_param_traits.cc",
+    "cma_param_traits.h",
+    "cma_param_traits_macros.h",
+    "shared_memory_chunk.cc",
+    "shared_memory_chunk.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/media",
+    "//content/public/common",
+    "//ipc",
+    "//media",
+    "//media:shared_memory_support",
+    "//ui/gfx/ipc",
+  ]
+}

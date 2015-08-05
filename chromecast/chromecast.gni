@@ -5,7 +5,6 @@
 declare_args() {
   # chromecast_branding is used to indicate build version. Set it to
   # "public" for Chromium build.
-  # TODO(slan): Make this variable consistent with the GYP build.
   chromecast_branding = "public"
 
   use_playready = false

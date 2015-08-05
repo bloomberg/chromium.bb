@@ -11,9 +11,25 @@ enable_plugins = true
 enable_pepper_cdms = false
 
 # Flags set from build/common.gypi
+
+# Compile with MSE support for MPEG2 TS. See //media/media_options.gni for more
+# detail.
 enable_mpeg2ts_stream_parser = true
+
+# Instead of maintaining a separate "Chromecast" ffmpeg branding, "ChromeOS" is
+# used, as it sufficiently covers all the required codecs.
 ffmpeg_branding = "ChromeOS"
+
+# Setting this to true generates libeglplatform_shim.so.1 from
+# //ui/ozone/platform/egltest:egl_platform_x11.
+ozone_platform_ozonex = true
+
+# Chromecast must use proprietary codecs. Setting this to true defines the
+# USE_PROPRIETARY_CODECS macro and the proper EME_CODEC macros.
 proprietary_codecs = true
+
+# See //build/config/ui.gni. Notice that use_x11 = is_linux && !use_ozone.
+use_ozone = true
 # TODO(halliwell): look into supporting Cast Ozone with GN.
 # ozone_platform_cast = 1
 # TODO(gyp): Add support for blink_logging_always_on and enable it.

@@ -3,6 +3,11 @@
 # found in the LICENSE file.
 
 import("//chromecast/chromecast.gni")
+import("//build/config/features.gni")
+import("//build/config/ui.gni")
+import("//testing/test.gni")
+import("//tools/grit/repack.gni")
+import("//ui/ozone/ozone.gni")
 
 config("config") {
   defines = []
@@ -25,9 +30,89 @@ group("chromecast_unittests") {
   testonly = true
 
   deps = [
-    "//chromecast/app:cast_shell_unittests",
+    # TODO(slan): Get this target building and comment it in.
+    # "//chromecast/app:cast_shell_unittests",
     "//chromecast/base:cast_base_unittests",
     "//chromecast/crash:cast_crash_unittests",
     "//chromecast/media:cast_media_unittests",
   ]
+}
+
+source_set("cast_shell_common") {
+  deps = [
+    # TODO(slan): add ":cast_locales_pak" (b/22959691)
+    ":cast_shell_pak",
+    "//chromecast/app",
+    "//chromecast/browser",
+    "//chromecast/common",
+    "//chromecast/common/media",
+    "//chromecast/renderer",
+  ]
+}
+
+source_set("cast_shell_media") {
+  deps = [
+    "//chromecast/browser/media",
+    "//chromecast/common/media",
+    "//chromecast/renderer/media",
+  ]
+}
+
+executable("cast_shell") {
+  sources = [
+    "app/cast_main.cc",
+  ]
+
+  deps = [
+    ":cast_shell_common",
+    ":cast_shell_media",
+    "//chromecast/app",
+    "//content/public/app:both",
+  ]
+
+  if (ozone_platform_egltest) {
+    deps += [ "//ui/ozone/platform/egltest:eglplatform_shim_x11" ]
+  }
+}
+
+repack("cast_shell_pak") {
+  sources = [
+    "$root_gen_dir/blink/public/resources/blink_image_resources_100_percent.pak",
+    "$root_gen_dir/blink/public/resources/blink_resources.pak",
+    "$root_gen_dir/chromecast/app/shell_resources.pak",
+    "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
+    "$root_gen_dir/content/app/strings/content_strings_en-US.pak",
+    "$root_gen_dir/content/content_resources.pak",
+    "$root_gen_dir/net/net_resources.pak",
+    "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+    "$root_gen_dir/ui/resources/webui_resources.pak",
+    "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
+    "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
+  ]
+
+  if (chromecast_branding != "public" && use_chromecast_webui) {
+    sources += [
+      # TODO(slan): Update these paths to be accurate for internal builds.
+    ]
+  }
+
+  output = "$root_out_dir/assets/cast_shell.pak"
+
+  deps = [
+    "//chromecast/app:resources",
+    "//content:resources",
+    "//content/app/resources",
+    "//content/app/strings",
+    "//net:net_resources",
+    "//third_party/WebKit/public:resources",
+    "//third_party/WebKit/public:image_resources_grit",
+    "//ui/resources",
+    "//ui/strings",
+  ]
+
+  if (chromecast_branding != "public" && use_chromecast_webui) {
+    deps += [
+      # TODO(slan): Update these paths to be accurate for internal builds.
+    ]
+  }
 }

@@ -1,0 +1,32 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//chromecast/chromecast.gni")
+
+source_set("media") {
+  sources = [
+    "cast_browser_cdm_factory.cc",
+    "cast_browser_cdm_factory.h",
+    "cast_media_client_android.cc",
+    "cast_media_client_android.h",
+    "cma_message_filter_host.cc",
+    "cma_message_filter_host.h",
+    "media_pipeline_host.cc",
+    "media_pipeline_host.h",
+  ]
+
+  if (chromecast_branding == "public" && !is_android) {
+    sources += [ "cast_browser_cdm_factory_simple.cc" ]
+  }
+
+  deps = [
+    "//base",
+    "//chromecast/common/media",
+    "//chromecast/media",
+    "//chromecast/public",
+    "//content/public/browser",
+    "//media",
+    "//ui/gfx/geometry",
+  ]
+}
