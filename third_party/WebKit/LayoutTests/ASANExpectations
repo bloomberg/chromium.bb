@@ -96,6 +96,7 @@ crbug.com/438499 [ Linux ] virtual/threaded/animations/unanimated-style.html [ T
 
 # Flakily timeout on Linux ASAN bots.
 crbug.com/243871 [ Linux ] virtual/threaded/fast/scroll-behavior/ [ Skip ]
+crbug.com/243871 [ Linux ] virtual/threaded_animation_timelines/fast/scroll-behavior/ [ Skip ]
 
 crbug.com/446661 [Linux ] fast/dom/Geolocation/success-clear-watch.html [ Timeout Pass ]
 

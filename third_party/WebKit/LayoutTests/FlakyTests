@@ -26,6 +26,7 @@ Bug(gardener) crbug.com/460633 [ Release XP ] compositing/overflow/do-not-repain
 crbug.com/461238 [ Debug Win7 ] editing/execCommand/delete-non-editable-range-crash.html [ Pass Timeout ]
 Bug(gardener) [ Release XP ] editing/pasteboard/drag-image-in-about-blank-frame.html [ Failure Pass ]
 crbug.com/496171 virtual/threaded/fast/scroll-behavior/main-frame-interrupted-scroll.html [ Failure Pass ]
+crbug.com/496171 virtual/threaded_animation_timelines/fast/scroll-behavior/main-frame-interrupted-scroll.html [ Failure Pass ]
 crbug.com/393094 [ Release Win7 ] editing/selection/move-by-line-006.html [ Failure Pass ]
 crbug.com/393094 [ Debug Win7 ] editing/selection/move-by-line-006.html [ Failure Pass ]
 crbug.com/445100 [ Release SnowLeopard ] fast/block/float/marquee-shrink-to-avoid-floats.html [ Failure Pass ]

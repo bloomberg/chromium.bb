@@ -6,6 +6,8 @@
 #define ProgrammaticScrollAnimator_h
 
 #include "platform/geometry/FloatPoint.h"
+#include "public/platform/WebCompositorAnimationDelegate.h"
+#include "public/platform/WebCompositorAnimationPlayerClient.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -14,11 +16,13 @@
 namespace blink {
 
 class ScrollableArea;
+class WebCompositorAnimationPlayer;
+class WebCompositorAnimationTimeline;
 class WebScrollOffsetAnimationCurve;
 
 // Animator for fixed-destination scrolls, such as those triggered by
 // CSSOM View scroll APIs.
-class ProgrammaticScrollAnimator {
+class ProgrammaticScrollAnimator : private WebCompositorAnimationPlayerClient, WebCompositorAnimationDelegate {
     WTF_MAKE_NONCOPYABLE(ProgrammaticScrollAnimator);
     WTF_MAKE_FAST_ALLOCATED(ProgrammaticScrollAnimator);
 public:
@@ -32,8 +36,14 @@ public:
     void tickAnimation(double monotonicTime);
     bool hasAnimationThatRequiresService() const;
     void updateCompositorAnimations();
-    void layerForCompositedScrollingDidChange();
+    void layerForCompositedScrollingDidChange(WebCompositorAnimationTimeline*);
     void notifyCompositorAnimationFinished(int groupId);
+    // WebCompositorAnimationDelegate implementation.
+    void notifyAnimationStarted(double monotonicTime, int group) override;
+    void notifyAnimationFinished(double monotonicTime, int group) override;
+
+    // WebCompositorAnimationPlayerClient implementation.
+    WebCompositorAnimationPlayer* compositorPlayer() const override;
 
 private:
     explicit ProgrammaticScrollAnimator(ScrollableArea*);
@@ -60,6 +70,10 @@ private:
 
     void resetAnimationState();
     void notifyPositionChanged(const DoublePoint&);
+    void reattachCompositorPlayerIfNeeded(WebCompositorAnimationTimeline*);
+
+    OwnPtr<WebCompositorAnimationPlayer> m_compositorPlayer;
+    int m_compositorAnimationAttachedToLayerId;
 
     ScrollableArea* m_scrollableArea;
     OwnPtr<WebScrollOffsetAnimationCurve> m_animationCurve;
