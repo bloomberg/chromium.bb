@@ -76,6 +76,8 @@
             'mini_installer/mini_string.h',
             'mini_installer/pe_resource.cc',
             'mini_installer/pe_resource.h',
+            'mini_installer/regkey.cc',
+            'mini_installer/regkey.h',
           ],
           'msvs_settings': {
             'VCCLCompilerTool': {
