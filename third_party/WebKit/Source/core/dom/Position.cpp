@@ -180,14 +180,6 @@ Node* PositionAlgorithm<Strategy>::computeContainerNode() const
 }
 
 template <typename Strategy>
-Text* PositionAlgorithm<Strategy>::containerText() const
-{
-    if (!isOffsetInAnchor() || !anchorNode() || !anchorNode()->isTextNode())
-        return nullptr;
-    return toText(anchorNode());
-}
-
-template <typename Strategy>
 int PositionAlgorithm<Strategy>::computeOffsetInContainerNode() const
 {
     if (!m_anchorNode)
