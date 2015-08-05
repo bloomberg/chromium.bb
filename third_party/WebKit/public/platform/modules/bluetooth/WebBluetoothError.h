@@ -34,6 +34,7 @@ enum class WebBluetoothError {
     ConnectUnsupportedDevice,
     UntranslatedConnectErrorCode,
     // NotFoundError:
+    BluetoothAdapterOff,
     NoBluetoothAdapter,
     DiscoverySessionStartFailed,
     DiscoverySessionStopFailed,

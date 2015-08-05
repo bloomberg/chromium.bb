@@ -39,6 +39,7 @@ DOMException* BluetoothError::take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoo
         MAP_ERROR(UntranslatedConnectErrorCode, NetworkError, "Unknown ConnectErrorCode.");
 
         // NotFoundErrors:
+        MAP_ERROR(BluetoothAdapterOff, NotFoundError, "Bluetooth adapter is off.");
         MAP_ERROR(NoBluetoothAdapter, NotFoundError, "Bluetooth adapter not available.");
         MAP_ERROR(DiscoverySessionStartFailed, NotFoundError, "Couldn't start discovery session.");
         MAP_ERROR(DiscoverySessionStopFailed, NotFoundError, "Failed to stop discovery session.");
