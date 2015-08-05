@@ -132,14 +132,23 @@ void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionTy
         // to detach).
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(m_pendingAsyncScripts.contains(scriptLoader));
         m_pendingAsyncScripts.remove(scriptLoader);
-        scriptLoader->detach();
-        m_document->decrementLoadEventDelayCount();
         break;
 
     case IN_ORDER_EXECUTION:
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(!m_scriptsToExecuteInOrder.isEmpty());
+        WillBeHeapDeque<RawPtrWillBeMember<ScriptLoader>>::iterator it = m_scriptsToExecuteInOrder.begin();
+        while (it != m_scriptsToExecuteInOrder.end()) {
+            if (*it == scriptLoader) {
+                m_scriptsToExecuteInOrder.remove(it);
+                break;
+            }
+            ++it;
+        }
+        // Verifies same condition as above, but for in-order script loads.
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(it != m_scriptsToExecuteInOrder.end());
         break;
     }
+    scriptLoader->detach();
+    m_document->decrementLoadEventDelayCount();
 }
 
 void ScriptRunner::movePendingAsyncScript(Document& oldDocument, Document& newDocument, ScriptLoader* scriptLoader)
