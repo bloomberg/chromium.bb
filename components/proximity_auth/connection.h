@@ -86,12 +86,6 @@ class Connection {
   virtual scoped_ptr<WireMessage> DeserializeWireMessage(
       bool* is_incomplete_message);
 
-  // Exposed so it is possible to override DeserializeWireMessage in
-  // BluetoothLowEnergyConnection class, while mantaining the same
-  // functionality.
-  // TODO(sacomoto): remove this when FakeWireMessage is not needed anymore.
-  const std::string& received_bytes() { return received_bytes_; }
-
  private:
   // The remote device corresponding to this connection.
   const RemoteDevice remote_device_;

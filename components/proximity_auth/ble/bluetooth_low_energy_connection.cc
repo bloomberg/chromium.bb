@@ -299,11 +299,6 @@ BluetoothLowEnergyConnection::WriteRequest::WriteRequest(
 BluetoothLowEnergyConnection::WriteRequest::~WriteRequest() {
 }
 
-scoped_ptr<WireMessage> BluetoothLowEnergyConnection::DeserializeWireMessage(
-    bool* is_incomplete_message) {
-  return FakeWireMessage::Deserialize(received_bytes(), is_incomplete_message);
-}
-
 void BluetoothLowEnergyConnection::CompleteConnection() {
   PA_LOG(INFO) << "Connection completed. Time elapsed: "
                << base::TimeTicks::Now() - start_time_;
@@ -480,7 +475,7 @@ void BluetoothLowEnergyConnection::OnRemoteCharacteristicWritten(
   write_remote_characteristic_pending_ = false;
   // TODO(sacomoto): Actually pass the current message to the observer.
   if (run_did_send_message_callback)
-    OnDidSendMessage(FakeWireMessage(""), true);
+    OnDidSendMessage(WireMessage(std::string(), std::string()), true);
 
   // Removes the top of queue (already processed) and process the next request.
   DCHECK(!write_requests_queue_.empty());
@@ -496,7 +491,7 @@ void BluetoothLowEnergyConnection::OnWriteRemoteCharacteristicError(
   write_remote_characteristic_pending_ = false;
   // TODO(sacomoto): Actually pass the current message to the observer.
   if (run_did_send_message_callback)
-    OnDidSendMessage(FakeWireMessage(""), false);
+    OnDidSendMessage(WireMessage(std::string(), std::string()), false);
 
   // Increases the number of failed attempts and retry.
   DCHECK(!write_requests_queue_.empty());

@@ -24,6 +24,7 @@
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/proximity_auth_client.h"
 #include "components/proximity_auth/remote_device.h"
+#include "components/proximity_auth/wire_message.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 
@@ -242,8 +243,8 @@ void ProximityAuthBleSystem::OnFocusedUserChanged(const std::string& user_id) {
 
 void ProximityAuthBleSystem::OnMessageReceived(const Connection& connection,
                                                const WireMessage& message) {
-  // TODO(sacomoto): change this when WireMessage is fully implemented.
-  PA_LOG(INFO) << "Message received: " << message.payload();
+  PA_LOG(INFO) << "Message with " << message.payload().size()
+               << " bytes received.";
 
   // The first message should contain a public key registered in |unlock_keys_|
   // to authenticate the device.
@@ -343,7 +344,7 @@ void ProximityAuthBleSystem::StartPollingScreenState() {
     }
     // Sends message requesting screen state.
     connection_->SendMessage(
-        make_scoped_ptr(new FakeWireMessage(kPollScreenState)));
+        make_scoped_ptr(new WireMessage(kPollScreenState)));
 
     // Schedules the next message in |kPollingIntervalSeconds| s.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

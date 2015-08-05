@@ -145,7 +145,6 @@ void BluetoothLowEnergyConnectionFinder::HandleDeviceUpdated(
     connection_->AddObserver(this);
     connection_->Connect();
 
-    adapter_->RemoveObserver(this);
     StopDiscoverySession();
   }
 }

@@ -116,8 +116,6 @@ class BluetoothLowEnergyConnection : public Connection,
 
   // proximity_auth::Connection:
   void SendMessageImpl(scoped_ptr<WireMessage> message) override;
-  scoped_ptr<WireMessage> DeserializeWireMessage(
-      bool* is_incomplete_message) override;
 
   // device::BluetoothAdapter::Observer:
   void DeviceChanged(device::BluetoothAdapter* adapter,
