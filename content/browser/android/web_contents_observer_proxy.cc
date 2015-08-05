@@ -221,7 +221,8 @@ void WebContentsObserverProxy::DocumentLoadedInFrame(
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj(java_observer_);
   Java_WebContentsObserverProxy_documentLoadedInFrame(
-      env, obj.obj(), render_frame_host->GetRoutingID());
+      env, obj.obj(), render_frame_host->GetRoutingID(),
+      !render_frame_host->GetParent());
 }
 
 void WebContentsObserverProxy::NavigationEntryCommitted(

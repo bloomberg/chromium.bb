@@ -118,7 +118,7 @@ public abstract class WebContentsObserver {
      * Notifies that the document has finished loading for the given frame.
      * @param frameId A positive, non-zero integer identifying the navigating frame.
      */
-    public void documentLoadedInFrame(long frameId) {}
+    public void documentLoadedInFrame(long frameId, boolean isMainFrame) {}
 
     /**
      * Notifies that a navigation entry has been committed.

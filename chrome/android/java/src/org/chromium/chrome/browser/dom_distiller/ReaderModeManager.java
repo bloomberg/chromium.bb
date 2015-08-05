@@ -271,6 +271,13 @@ public class ReaderModeManager extends EmptyTabObserver
             }
 
             @Override
+            public void documentLoadedInFrame(long frameId, boolean isMainFrame) {
+                if (!isMainFrame) return;
+                if (DomDistillerUrlUtils.isDistilledPage(mTab.getUrl())) return;
+                updateStatusBasedOnReaderModeCriteria(false);
+            }
+
+            @Override
             public void didNavigateMainFrame(String url, String baseUrl,
                     boolean isNavigationToDifferentPage, boolean isNavigationInPage,
                     int statusCode) {
@@ -285,7 +292,8 @@ public class ReaderModeManager extends EmptyTabObserver
                                 mReaderModePageUrl))) {
                     mReaderModeStatus = NOT_POSSIBLE;
                     mIsUmaRecorded = false;
-                    updateStatusBasedOnReaderModeCriteria(false);
+                    // Do not call updateStatusBasedOnReaderModeCriteria here.
+                    // For ADABOOST_MODEL, it is unlikely to get valid info at this event.
                 }
                 mReaderModePageUrl = null;
                 sendReaderModeStatusChangedNotification();

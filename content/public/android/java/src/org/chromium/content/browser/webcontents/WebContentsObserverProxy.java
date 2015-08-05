@@ -165,9 +165,9 @@ class WebContentsObserverProxy extends WebContentsObserver {
 
     @Override
     @CalledByNative
-    public void documentLoadedInFrame(long frameId) {
+    public void documentLoadedInFrame(long frameId, boolean isMainFrame) {
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
-            mObserversIterator.next().documentLoadedInFrame(frameId);
+            mObserversIterator.next().documentLoadedInFrame(frameId, isMainFrame);
         }
     }
 
