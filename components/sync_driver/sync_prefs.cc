@@ -77,16 +77,12 @@ void SyncPrefs::RegisterProfilePrefs(
 #endif
 
   registry->RegisterBooleanPref(prefs::kSyncHasAuthError, false);
-
   registry->RegisterStringPref(prefs::kSyncSessionsGUID, std::string());
-
   registry->RegisterIntegerPref(prefs::kSyncRemainingRollbackTries, 0);
-
   registry->RegisterBooleanPref(prefs::kSyncPassphrasePrompted, false);
-
   registry->RegisterIntegerPref(prefs::kSyncMemoryPressureWarningCount, -1);
-
   registry->RegisterBooleanPref(prefs::kSyncShutdownCleanly, false);
+  registry->RegisterDictionaryPref(prefs::kSyncInvalidationVersions);
 }
 
 void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
@@ -107,6 +103,9 @@ void SyncPrefs::ClearPreferences() {
   pref_service_->ClearPref(prefs::kSyncEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncKeystoreEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncPassphrasePrompted);
+  pref_service_->ClearPref(prefs::kSyncMemoryPressureWarningCount);
+  pref_service_->ClearPref(prefs::kSyncShutdownCleanly);
+  pref_service_->ClearPref(prefs::kSyncInvalidationVersions);
 
   // TODO(nick): The current behavior does not clear
   // e.g. prefs::kSyncBookmarks.  Is that really what we want?
@@ -478,6 +477,36 @@ bool SyncPrefs::DidSyncShutdownCleanly() const {
 
 void SyncPrefs::SetCleanShutdown(bool value) {
   pref_service_->SetBoolean(prefs::kSyncShutdownCleanly, value);
+}
+
+void SyncPrefs::GetInvalidationVersions(
+    std::map<syncer::ModelType, int64>* invalidation_versions) const {
+  const base::DictionaryValue* invalidation_dictionary =
+      pref_service_->GetDictionary(prefs::kSyncInvalidationVersions);
+  syncer::ModelTypeSet protocol_types = syncer::ProtocolTypes();
+  for (auto iter = protocol_types.First(); iter.Good(); iter.Inc()) {
+    std::string key = syncer::ModelTypeToString(iter.Get());
+    std::string version_str;
+    if (!invalidation_dictionary->GetString(key, &version_str))
+      continue;
+    int64 version = 0;
+    if (!base::StringToInt64(version_str, &version))
+      continue;
+    (*invalidation_versions)[iter.Get()] = version;
+  }
+}
+
+void SyncPrefs::UpdateInvalidationVersions(
+    const std::map<syncer::ModelType, int64>& invalidation_versions) {
+  scoped_ptr<base::DictionaryValue> invalidation_dictionary(
+      new base::DictionaryValue());
+  for (const auto& map_iter : invalidation_versions) {
+    std::string version_str = base::Int64ToString(map_iter.second);
+    invalidation_dictionary->SetString(
+        syncer::ModelTypeToString(map_iter.first), version_str);
+  }
+  pref_service_->Set(prefs::kSyncInvalidationVersions,
+                     *invalidation_dictionary);
 }
 
 }  // namespace sync_driver

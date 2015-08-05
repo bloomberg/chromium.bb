@@ -72,7 +72,8 @@ DoInitializeOptions::DoInitializeOptions(
     scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
     const base::Closure& report_unrecoverable_error_function,
     scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state,
-    syncer::PassphraseTransitionClearDataOption clear_data_option)
+    syncer::PassphraseTransitionClearDataOption clear_data_option,
+    const std::map<syncer::ModelType, int64>& invalidation_versions)
     : sync_loop(sync_loop),
       registrar(registrar),
       routing_info(routing_info),
@@ -92,7 +93,8 @@ DoInitializeOptions::DoInitializeOptions(
       unrecoverable_error_handler(unrecoverable_error_handler.Pass()),
       report_unrecoverable_error_function(report_unrecoverable_error_function),
       saved_nigori_state(saved_nigori_state.Pass()),
-      clear_data_option(clear_data_option) {}
+      clear_data_option(clear_data_option),
+      invalidation_versions(invalidation_versions) {}
 
 DoInitializeOptions::~DoInitializeOptions() {}
 
@@ -378,26 +380,38 @@ void SyncBackendHostCore::DoOnIncomingInvalidation(
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
 
   syncer::ObjectIdSet ids = invalidation_map.GetObjectIds();
-  for (syncer::ObjectIdSet::const_iterator ids_it = ids.begin();
-       ids_it != ids.end();
-       ++ids_it) {
+  for (const invalidation::ObjectId& object_id : ids) {
     syncer::ModelType type;
-    if (!NotificationTypeToRealModelType(ids_it->name(), &type)) {
+    if (!NotificationTypeToRealModelType(object_id.name(), &type)) {
       DLOG(WARNING) << "Notification has invalid id: "
-                    << syncer::ObjectIdToString(*ids_it);
+                    << syncer::ObjectIdToString(object_id);
     } else {
       syncer::SingleObjectInvalidationSet invalidation_set =
-          invalidation_map.ForObject(*ids_it);
-      for (syncer::SingleObjectInvalidationSet::const_iterator inv_it =
-               invalidation_set.begin();
-           inv_it != invalidation_set.end();
-           ++inv_it) {
+          invalidation_map.ForObject(object_id);
+      for (syncer::Invalidation invalidation : invalidation_set) {
+        auto last_invalidation = last_invalidation_versions_.find(type);
+        if (!invalidation.is_unknown_version() &&
+            last_invalidation != last_invalidation_versions_.end() &&
+            invalidation.version() <= last_invalidation->second) {
+          DVLOG(1) << "Ignoring redundant invalidation for "
+                   << syncer::ModelTypeToString(type) << " with version "
+                   << invalidation.version() << ", last seen version was "
+                   << last_invalidation->second;
+          continue;
+        }
         scoped_ptr<syncer::InvalidationInterface> inv_adapter(
-            new InvalidationAdapter(*inv_it));
+            new InvalidationAdapter(invalidation));
         sync_manager_->OnIncomingInvalidation(type, inv_adapter.Pass());
+        if (!invalidation.is_unknown_version())
+          last_invalidation_versions_[type] = invalidation.version();
       }
     }
   }
+
+  host_.Call(
+      FROM_HERE,
+      &SyncBackendHostImpl::UpdateInvalidationVersions,
+      last_invalidation_versions_);
 }
 
 void SyncBackendHostCore::DoInitialize(
@@ -422,6 +436,9 @@ void SyncBackendHostCore::DoInitialize(
   if (!base::CreateDirectory(sync_data_folder_path_)) {
     DLOG(FATAL) << "Sync Data directory creation failed.";
   }
+
+  // Load the previously persisted set of invalidation versions into memory.
+  last_invalidation_versions_ = options->invalidation_versions;
 
   DCHECK(!registrar_);
   registrar_ = options->registrar;

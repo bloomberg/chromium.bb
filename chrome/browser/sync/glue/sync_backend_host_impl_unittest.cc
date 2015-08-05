@@ -21,6 +21,7 @@
 #include "components/invalidation/impl/invalidator_storage.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidator_state.h"
+#include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/sync_driver/device_info.h"
 #include "components/sync_driver/sync_frontend.h"
 #include "components/sync_driver/sync_prefs.h"
@@ -289,7 +290,7 @@ class SyncBackendHostTest : public testing::Test {
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;
   scoped_ptr<sync_driver::SyncPrefs> sync_prefs_;
-  scoped_ptr<SyncBackendHost> backend_;
+  scoped_ptr<SyncBackendHostImpl> backend_;
   scoped_ptr<FakeSyncManagerFactory> fake_manager_factory_;
   FakeSyncManager* fake_manager_;
   syncer::ModelTypeSet enabled_types_;
@@ -807,6 +808,67 @@ TEST_F(SyncBackendHostTest, ClearServerDataCallsAreForwarded) {
                                        base::Unretained(&callback_counter)));
   fake_manager_->WaitForSyncThread();
   EXPECT_EQ(1, callback_counter.times_called());
+}
+
+// Ensure that redundant invalidations are ignored and that the most recent
+// set of invalidation version is persisted across restarts.
+TEST_F(SyncBackendHostTest, IgnoreOldInvalidations) {
+  // Set up some old persisted invalidations.
+  std::map<syncer::ModelType, int64> invalidation_versions;
+  invalidation_versions[syncer::BOOKMARKS] = 20;
+  sync_prefs_->UpdateInvalidationVersions(invalidation_versions);
+  InitializeBackend(true);
+  EXPECT_EQ(0, fake_manager_->GetInvalidationCount());
+
+  // Receiving an invalidation with an old version should do nothing.
+  syncer::ObjectIdInvalidationMap invalidation_map;
+  std::string notification_type;
+  syncer::RealModelTypeToNotificationType(syncer::BOOKMARKS,
+                                          &notification_type);
+  invalidation_map.Insert(syncer::Invalidation::Init(
+      invalidation::ObjectId(0, notification_type), 10, "payload"));
+  backend_->OnIncomingInvalidation(invalidation_map);
+  fake_manager_->WaitForSyncThread();
+  EXPECT_EQ(0, fake_manager_->GetInvalidationCount());
+
+  // Invalidations with new versions should be acted upon.
+  invalidation_map.Insert(syncer::Invalidation::Init(
+      invalidation::ObjectId(0, notification_type), 30, "payload"));
+  backend_->OnIncomingInvalidation(invalidation_map);
+  fake_manager_->WaitForSyncThread();
+  EXPECT_EQ(1, fake_manager_->GetInvalidationCount());
+
+  // Invalidation for new data types should be acted on.
+  syncer::RealModelTypeToNotificationType(syncer::SESSIONS, &notification_type);
+  invalidation_map.Insert(syncer::Invalidation::Init(
+      invalidation::ObjectId(0, notification_type), 10, "payload"));
+  backend_->OnIncomingInvalidation(invalidation_map);
+  fake_manager_->WaitForSyncThread();
+  EXPECT_EQ(2, fake_manager_->GetInvalidationCount());
+
+  // But redelivering that same invalidation should be ignored.
+  backend_->OnIncomingInvalidation(invalidation_map);
+  fake_manager_->WaitForSyncThread();
+  EXPECT_EQ(2, fake_manager_->GetInvalidationCount());
+
+  // If an invalidation with an unknown version is received, it should be
+  // acted on, but should not affect the persisted versions.
+  invalidation_map.Insert(syncer::Invalidation::InitUnknownVersion(
+      invalidation::ObjectId(0, notification_type)));
+  backend_->OnIncomingInvalidation(invalidation_map);
+  fake_manager_->WaitForSyncThread();
+  EXPECT_EQ(3, fake_manager_->GetInvalidationCount());
+
+  // Verify that the invalidation versions were updated in the prefs.
+  invalidation_versions[syncer::BOOKMARKS] = 30;
+  invalidation_versions[syncer::SESSIONS] = 10;
+  std::map<syncer::ModelType, int64> persisted_invalidation_versions;
+  sync_prefs_->GetInvalidationVersions(&persisted_invalidation_versions);
+  EXPECT_EQ(invalidation_versions.size(),
+            persisted_invalidation_versions.size());
+  for (auto iter : persisted_invalidation_versions) {
+    EXPECT_EQ(invalidation_versions[iter.first], iter.second);
+  }
 }
 
 }  // namespace

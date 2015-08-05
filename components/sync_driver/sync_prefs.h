@@ -153,6 +153,12 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Set whetherthe last shutdown was clean.
   void SetCleanShutdown(bool value);
 
+  // Get/set for the last known sync invalidation versions.
+  void GetInvalidationVersions(
+      std::map<syncer::ModelType, int64>* invalidation_versions) const;
+  void UpdateInvalidationVersions(
+      const std::map<syncer::ModelType, int64>& invalidation_versions);
+
  private:
   void RegisterPrefGroups();
 

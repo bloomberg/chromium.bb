@@ -63,13 +63,8 @@ class FakeSyncManager : public SyncManager {
   // GetAndResetConfigureReason, or since startup if never called.
   ConfigureReason GetAndResetConfigureReason();
 
-  // Posts a method to invalidate the given IDs on the sync thread.
-  void OnIncomingInvalidation(
-      syncer::ModelType type,
-      scoped_ptr<InvalidationInterface> interface) override;
-
-  // Posts a method to update the invalidator state on the sync thread.
-  void SetInvalidatorEnabled(bool invalidator_enabled) override;
+  // Returns the number of invalidations received since startup.
+  int GetInvalidationCount() const;
 
   // Block until the sync thread has finished processing any pending messages.
   void WaitForSyncThread();
@@ -93,6 +88,10 @@ class FakeSyncManager : public SyncManager {
                        const ModelSafeRoutingInfo& new_routing_info,
                        const base::Closure& ready_task,
                        const base::Closure& retry_task) override;
+  void OnIncomingInvalidation(
+      syncer::ModelType type,
+      scoped_ptr<InvalidationInterface> interface) override;
+  void SetInvalidatorEnabled(bool invalidator_enabled) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   SyncStatus GetDetailedStatus() const override;
@@ -148,6 +147,9 @@ class FakeSyncManager : public SyncManager {
   TestUserShare test_user_share_;
 
   syncer_v2::NullSyncContextProxy null_sync_context_proxy_;
+
+  // Number of invalidations received since startup.
+  int num_invalidations_received_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncManager);
 };

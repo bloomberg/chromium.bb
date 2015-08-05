@@ -237,6 +237,25 @@ TEST_F(SyncPrefsTest, DeviceInfo) {
                   .Has(syncer::DEVICE_INFO));
 }
 
+// Verify that invalidation versions are persisted and loaded correctly.
+TEST_F(SyncPrefsTest, InvalidationVersions) {
+  std::map<syncer::ModelType, int64> versions;
+  versions[syncer::BOOKMARKS] = 10;
+  versions[syncer::SESSIONS] = 20;
+  versions[syncer::PREFERENCES] = 30;
+
+  SyncPrefs sync_prefs(&pref_service_);
+  sync_prefs.UpdateInvalidationVersions(versions);
+
+  std::map<syncer::ModelType, int64> versions2;
+  sync_prefs.GetInvalidationVersions(&versions2);
+
+  EXPECT_EQ(versions.size(), versions2.size());
+  for (auto map_iter : versions2) {
+    EXPECT_EQ(versions[map_iter.first], map_iter.second);
+  }
+}
+
 }  // namespace
 
 }  // namespace sync_driver

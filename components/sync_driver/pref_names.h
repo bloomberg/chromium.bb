@@ -69,6 +69,8 @@ extern const char kSyncPassphrasePrompted[];
 extern const char kSyncMemoryPressureWarningCount[];
 extern const char kSyncShutdownCleanly[];
 
+extern const char kSyncInvalidationVersions[];
+
 }  // namespace prefs
 
 }  // namespace sync_driver

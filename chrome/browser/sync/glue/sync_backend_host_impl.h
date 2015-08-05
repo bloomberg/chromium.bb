@@ -138,6 +138,12 @@ class SyncBackendHostImpl
   void ClearServerData(
       const syncer::SyncManager::ClearServerDataCallback& callback) override;
 
+  // InvalidationHandler implementation.
+  void OnInvalidatorStateChange(syncer::InvalidatorState state) override;
+  void OnIncomingInvalidation(
+      const syncer::ObjectIdInvalidationMap& invalidation_map) override;
+  std::string GetOwnerName() const override;
+
  protected:
   // The types and functions below are protected so that test
   // subclasses can use them.
@@ -206,7 +212,14 @@ class SyncBackendHostImpl
       syncer::ModelType type,
       const syncer::StatusCounters& counters);
 
-  sync_driver::SyncFrontend* frontend() { return frontend_; }
+  // Overwrites the kSyncInvalidationVersions preference with the most recent
+  // set of invalidation versions for each type.
+  void UpdateInvalidationVersions(
+      const std::map<syncer::ModelType, int64>& invalidation_versions);
+
+  sync_driver::SyncFrontend* frontend() {
+    return frontend_;
+  }
 
  private:
   friend class SyncBackendHostCore;
@@ -296,12 +309,6 @@ class SyncBackendHostImpl
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
-
-  // InvalidationHandler implementation.
-  void OnInvalidatorStateChange(syncer::InvalidatorState state) override;
-  void OnIncomingInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map) override;
-  std::string GetOwnerName() const override;
 
   void ClearServerDataDoneOnFrontendLoop(
       const syncer::SyncManager::ClearServerDataCallback& frontend_callback);

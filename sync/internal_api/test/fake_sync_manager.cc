@@ -30,7 +30,8 @@ FakeSyncManager::FakeSyncManager(ModelTypeSet initial_sync_ended_types,
     initial_sync_ended_types_(initial_sync_ended_types),
     progress_marker_types_(progress_marker_types),
     configure_fail_types_(configure_fail_types),
-    last_configure_reason_(CONFIGURE_REASON_UNKNOWN) {
+    last_configure_reason_(CONFIGURE_REASON_UNKNOWN),
+    num_invalidations_received_(0) {
   fake_encryption_handler_.reset(new FakeSyncEncryptionHandler());
 }
 
@@ -58,6 +59,10 @@ ConfigureReason FakeSyncManager::GetAndResetConfigureReason() {
   ConfigureReason reason = last_configure_reason_;
   last_configure_reason_ = CONFIGURE_REASON_UNKNOWN;
   return reason;
+}
+
+int FakeSyncManager::GetInvalidationCount() const {
+  return num_invalidations_received_;
 }
 
 void FakeSyncManager::WaitForSyncThread() {
@@ -246,7 +251,7 @@ void FakeSyncManager::RequestEmitDebugInfo() {}
 void FakeSyncManager::OnIncomingInvalidation(
     syncer::ModelType type,
     scoped_ptr<InvalidationInterface> invalidation) {
-  // Do nothing.
+  num_invalidations_received_++;
 }
 
 ModelTypeSet FakeSyncManager::GetLastRefreshRequestTypes() {

@@ -141,6 +141,9 @@ void SyncBackendHostImpl::Initialize(
   if (cl->HasSwitch(switches::kSyncEnableClearDataOnPassphraseEncryption))
     clear_data_option = syncer::PASSPHRASE_TRANSITION_CLEAR_DATA;
 
+  std::map<syncer::ModelType, int64> invalidation_versions;
+  sync_prefs_->GetInvalidationVersions(&invalidation_versions);
+
   scoped_ptr<DoInitializeOptions> init_opts(new DoInitializeOptions(
       registrar_->sync_thread()->message_loop(), registrar_.get(), routing_info,
       workers, extensions_activity_monitor_.GetExtensionsActivity(),
@@ -157,7 +160,7 @@ void SyncBackendHostImpl::Initialize(
           new syncer::InternalComponentsFactoryImpl(factory_switches))
           .Pass(),
       unrecoverable_error_handler.Pass(), report_unrecoverable_error_function,
-      saved_nigori_state.Pass(), clear_data_option));
+      saved_nigori_state.Pass(), clear_data_option, invalidation_versions));
   InitCore(init_opts.Pass());
 }
 
@@ -858,6 +861,11 @@ void SyncBackendHostImpl::HandleDirectoryStatusCountersUpdatedOnFrontendLoop(
   if (!frontend_)
     return;
   frontend_->OnDirectoryTypeStatusCounterUpdated(type, counters);
+}
+
+void SyncBackendHostImpl::UpdateInvalidationVersions(
+    const std::map<syncer::ModelType, int64>& invalidation_versions) {
+  sync_prefs_->UpdateInvalidationVersions(invalidation_versions);
 }
 
 base::MessageLoop* SyncBackendHostImpl::GetSyncLoopForTesting() {
