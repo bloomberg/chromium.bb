@@ -422,10 +422,20 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
   [[backButton_ cell]
       accessibilitySetOverrideValue:description
                        forAttribute:NSAccessibilityDescriptionAttribute];
+  NSString* helpTag = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_TOOLTIP_BACK);
+  [[backButton_ cell]
+      accessibilitySetOverrideValue:helpTag
+                       forAttribute:NSAccessibilityHelpAttribute];
+
   description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_FORWARD);
   [[forwardButton_ cell]
       accessibilitySetOverrideValue:description
                        forAttribute:NSAccessibilityDescriptionAttribute];
+  helpTag = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_TOOLTIP_FORWARD);
+  [[forwardButton_ cell]
+      accessibilitySetOverrideValue:helpTag
+                       forAttribute:NSAccessibilityHelpAttribute];
+
   description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_RELOAD);
   [[reloadButton_ cell]
       accessibilitySetOverrideValue:description
