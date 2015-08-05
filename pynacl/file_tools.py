@@ -212,7 +212,10 @@ def MoveAndMergeDirTree(src_dir, dest_dir):
         Retry(os.rename, source_item, destination_item)
 
     # Remove the directory once all the contents have been moved
-    Retry(os.rmdir, src_dir)
+    if os.path.islink(src_dir):
+      Retry(os.unlink, src_dir)
+    else:
+      Retry(os.rmdir, src_dir)
 
 
 def Retry(op, *args, **kwargs):
