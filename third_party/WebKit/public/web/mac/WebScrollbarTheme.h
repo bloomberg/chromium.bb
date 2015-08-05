@@ -51,9 +51,6 @@ public:
     // |redraw| is true if the update requires a redraw to include the change.
     // |scrollAnimationEnabled| is the current value of NSScrollAnimationEnabled or AppleScrollAnimationEnabled from NSUserDefaults.
     // |buttonPlacement| is the current value of AppleScrollBarVariant
-    BLINK_EXPORT static void updateScrollbars(
-        float initialButtonDelay, float autoscrollButtonDelay,
-        ScrollerStyle preferredScrollerStyle, bool redraw);
     BLINK_EXPORT static void updateScrollbarsWithNSDefaults(
         float initialButtonDelay, float autoscrollButtonDelay,
         ScrollerStyle preferredScrollerStyle, bool redraw,

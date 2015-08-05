@@ -43,39 +43,6 @@ namespace blink {
 static_assert(static_cast<NSScrollerStyle>(ScrollerStyleLegacy) == NSScrollerStyleLegacy, "ScrollerStyleLegacy must match NSScrollerStyleLegacy");
 static_assert(static_cast<NSScrollerStyle>(ScrollerStyleOverlay) == NSScrollerStyleOverlay, "ScrollerStyleOverlay must match NSScrollerStyleOverlay");
 
-void WebScrollbarTheme::updateScrollbars(
-    float initialButtonDelay, float autoscrollButtonDelay,
-    ScrollerStyle preferredScrollerStyle, bool redraw)
-{
-    // This is necessary to do until the main browser thread begins to call updateScrollbarsWithNSDefaults method.
-    static bool animation_initialized = false;
-    static bool animation_enabled = true;
-    if (!animation_initialized) {
-        // Check setting for OS X 10.8+.
-        id value = [[NSUserDefaults standardUserDefaults] objectForKey:@"NSScrollAnimationEnabled"];
-        // Check setting for OS X < 10.8.
-        if (!value)
-            value = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleScrollAnimationEnabled"];
-        if (value)
-            animation_enabled = [value boolValue];
-        animation_initialized = true;
-    }
-    // More temporary logic used until the browser begins to call updateScrollbarsWithNSDefaults method.
-    NSString* scrollbar_variant = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleScrollBarVariant"];
-    ScrollbarButtonsPlacement buttons_placement;
-    if ([scrollbar_variant isEqualToString:@"Single"])
-        buttons_placement = ScrollbarButtonsPlacementSingle;
-    else if ([scrollbar_variant isEqualToString:@"DoubleMin"])
-        buttons_placement = ScrollbarButtonsPlacementDoubleStart;
-    else if ([scrollbar_variant isEqualToString:@"DoubleBoth"])
-        buttons_placement = ScrollbarButtonsPlacementDoubleBoth;
-    else
-        buttons_placement = ScrollbarButtonsPlacementDoubleEnd;
-    updateScrollbarsWithNSDefaults(initialButtonDelay, autoscrollButtonDelay,
-                                  preferredScrollerStyle, redraw, animation_enabled,
-                                  buttons_placement);
-}
-
 void WebScrollbarTheme::updateScrollbarsWithNSDefaults(
     float initialButtonDelay, float autoscrollButtonDelay,
     ScrollerStyle preferredScrollerStyle, bool redraw, bool scrollAnimationEnabled, ScrollbarButtonsPlacement buttonPlacement)
