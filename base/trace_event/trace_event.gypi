@@ -35,6 +35,7 @@
       'trace_event/trace_event_android.cc',
       'trace_event/trace_event_argument.cc',
       'trace_event/trace_event_argument.h',
+      'trace_event/trace_event_common.h',
       'trace_event/trace_event_etw_export_win.cc',
       'trace_event/trace_event_etw_export_win.h',
       'trace_event/trace_event_impl.cc',
