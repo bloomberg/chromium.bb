@@ -61459,6 +61459,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1930720286" label="nacl-debug-mask"/>
   <int value="-1928198763" label="enable-async-dns"/>
   <int value="-1925117279" label="disable-quic-https"/>
+  <int value="-1915854488" label="enable-offline-pages"/>
   <int value="-1911153473" label="enable-easy-signin"/>
   <int value="-1888273969" label="tab-capture-upscale-quality"/>
   <int value="-1887053262"
@@ -61763,6 +61764,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="880510010" label="enable-permissions-bubbles"/>
   <int value="884106779" label="supervised-user-safesites"/>
   <int value="887011602" label="enable-spelling-auto-correct"/>
+  <int value="903267263" label="disable-offline-pages"/>
   <int value="909439558" label="disable-device-discovery"/>
   <int value="916316159" label="disable-new-app-list-mixer"/>
   <int value="929462705" label="disable-link-disambiguation-popup"/>

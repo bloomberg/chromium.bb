@@ -20,6 +20,8 @@ static_library("offline_pages") {
     "offline_page_metadata_store_impl.h",
     "offline_page_model.cc",
     "offline_page_model.h",
+    "offline_page_switches.cc",
+    "offline_page_switches.h",
   ]
 
   deps = [

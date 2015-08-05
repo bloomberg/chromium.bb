@@ -32,6 +32,8 @@
         'offline_pages/offline_page_metadata_store.h',
         'offline_pages/offline_page_metadata_store_impl.cc',
         'offline_pages/offline_page_metadata_store_impl.h',
+        'offline_pages/offline_page_switches.cc',
+        'offline_pages/offline_page_switches.h',
       ],
     },
     {

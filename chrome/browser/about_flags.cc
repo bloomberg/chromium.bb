@@ -31,6 +31,7 @@
 #include "components/enhanced_bookmarks/enhanced_bookmark_switches.h"
 #include "components/metrics/metrics_hashes.h"
 #include "components/nacl/common/nacl_switches.h"
+#include "components/offline_pages/offline_page_switches.h"
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/plugins/common/plugins_switches.h"
 #include "components/proximity_auth/switches.h"
@@ -2098,6 +2099,14 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_PROGRESS_BAR_ANIMATION_DESCRIPTION,
      kOsAndroid,
      MULTI_VALUE_TYPE(kProgressBarAnimationChoices)},
+#endif  // defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+    {"offline-pages",
+     IDS_FLAGS_OFFLINE_PAGES_NAME,
+     IDS_FLAGS_OFFLINE_PAGES_DESCRIPTION,
+     kOsAndroid,
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOfflinePages,
+                               switches::kDisableOfflinePages)},
 #endif  // defined(OS_ANDROID)
 
     // NOTE: Adding new command-line switches requires adding corresponding

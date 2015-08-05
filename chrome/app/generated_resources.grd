@@ -15870,6 +15870,15 @@ After you create a new supervised user, you can manage their settings at any tim
       </message>
     </if>
 
+    <if expr="is_android">
+      <message name="IDS_FLAGS_OFFLINE_PAGES_NAME" desc="Name for the flag to enable offline pages.">
+        Enable offline pages
+      </message>
+      <message name="IDS_FLAGS_OFFLINE_PAGES_DESCRIPTION" desc="Description for the flag to enable offline pages.">
+        Enable storing pages locally for offline use. Requires Enhanced Bookmarks to be enabled.
+      </message>
+    </if>
+
     </messages>
   </release>
 </grit>

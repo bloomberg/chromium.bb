@@ -6,7 +6,9 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "components/offline_pages/offline_page_switches.h"
 
 #if defined(OS_ANDROID)
 
@@ -18,6 +20,15 @@ const char kOfflinePagesFieldTrialEnabledGroupName[] = "Enabled";
 }  // namespace
 
 bool IsOfflinePagesEnabled() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableOfflinePages)) {
+    return true;
+  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableOfflinePages)) {
+    return false;
+  }
+
   std::string group_name =
       base::FieldTrialList::FindFullName(kOfflinePagesFieldTrialName);
   return group_name == kOfflinePagesFieldTrialEnabledGroupName;
