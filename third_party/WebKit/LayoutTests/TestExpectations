@@ -479,19 +479,6 @@ crbug.com/492957 imported/web-platform-tests/webrtc/datachannel-emptystring.html
 
 crbug.com/389648 fast/text-autosizing/table-inflation-crash.html [ Pass Timeout Crash ]
 
-crbug.com/328814 [ Yosemite ] fast/forms/color/color-suggestion-picker-appearance.html [ NeedsRebaseline ]
-crbug.com/328814 [ Yosemite ] fast/forms/color/color-suggestion-picker-one-row-appearance.html [ NeedsRebaseline ]
-crbug.com/328814 [ Yosemite ] fast/forms/color/color-suggestion-picker-two-row-appearance.html [ NeedsRebaseline ]
-crbug.com/328814 [ Yosemite ] fast/forms/color/color-suggestion-picker-with-scrollbar-appearance.html [ NeedsRebaseline ]
-crbug.com/328814 [ Yosemite ] fast/forms/select/popup-menu-appearance-empty.html [ NeedsRebaseline ]
-crbug.com/328814 [ Yosemite ] fast/forms/select/popup-menu-appearance-long.html [ NeedsRebaseline ]
-crbug.com/328814 [ Yosemite ] fast/forms/select/popup-menu-appearance-many.html [ NeedsRebaseline ]
-crbug.com/328814 [ Yosemite ] fast/forms/select/popup-menu-appearance-single-option.html [ NeedsRebaseline ]
-crbug.com/328814 [ Yosemite ] fast/forms/select/popup-menu-appearance-tall.html [ NeedsRebaseline ]
-crbug.com/328814 [ Yosemite ] fast/forms/select/popup-menu-appearance-texttransform.html [ NeedsRebaseline ]
-crbug.com/328814 [ Yosemite ] fast/forms/select/popup-menu-appearance-transform.html [ NeedsRebaseline ]
-crbug.com/328814 [ Yosemite ] fast/forms/select/popup-menu-appearance.html [ NeedsRebaseline ]
-
 crbug.com/396775 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
 crbug.com/396775 virtual/prefer_compositing_to_lcd_text/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
 
