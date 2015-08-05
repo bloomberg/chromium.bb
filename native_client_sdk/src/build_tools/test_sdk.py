@@ -100,8 +100,8 @@ def StepRunSelLdrTests(pepperdir, sanitizer):
     # We only ship 32-bit version of sel_ldr on mac.
     archs = ('x86_32',)
   else:
-    # On linux we can run both 32 and 64-bit
-    archs = ('x86_64', 'x86_32')
+    # On linux we can run both 32 and 64-bit, and arm (via qemu)
+    archs = ('x86_64', 'x86_32', 'arm')
 
   for root, projects in tree.iteritems():
     for project in projects:
@@ -128,6 +128,9 @@ def StepRunSelLdrTests(pepperdir, sanitizer):
 
       for toolchain in ('clang-newlib', 'newlib', 'glibc', 'pnacl'):
         for arch in archs:
+          # TODO(sbc): Remove this once we get elf_loader.nexe added to the SDK
+          if toolchain == 'glibc' and arch == 'arm':
+            continue
           for config in configs:
             RunTest(location, toolchain, config, arch)
 
