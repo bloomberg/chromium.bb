@@ -26,8 +26,6 @@ crbug.com/464039 [ Mac ] fast/block/float/float-mark-descendants-for-layout-cras
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
 
-crbug.com/328814 [ Yosemite ] http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsRebaseline ]
-
 crbug.com/258949 fast/filesystem/workers/file-writer-truncate-extend.html [ Failure Pass ]
 
 crbug.com/307782 [ Win ] http/tests/cache/stopped-revalidation.html [ Pass Timeout ]
