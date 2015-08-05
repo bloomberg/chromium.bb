@@ -68,7 +68,7 @@ bool UsbDeviceFilter::Matches(scoped_refptr<UsbDevice> device) const {
   }
 
   if (interface_class_set_) {
-    const UsbConfigDescriptor* config = device->GetConfiguration();
+    const UsbConfigDescriptor* config = device->GetActiveConfiguration();
     if (!config) {
       return false;
     }

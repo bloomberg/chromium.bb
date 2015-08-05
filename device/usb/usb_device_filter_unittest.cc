@@ -70,7 +70,7 @@ TEST_F(UsbFilterTest, MatchProductIdNegative) {
 TEST_F(UsbFilterTest, MatchInterfaceClass) {
   UsbDeviceFilter filter;
   filter.SetInterfaceClass(0xff);
-  EXPECT_CALL(*android_phone_.get(), GetConfiguration())
+  EXPECT_CALL(*android_phone_.get(), GetActiveConfiguration())
       .WillOnce(Return(&config_));
   ASSERT_TRUE(filter.Matches(android_phone_));
 }
@@ -78,7 +78,7 @@ TEST_F(UsbFilterTest, MatchInterfaceClass) {
 TEST_F(UsbFilterTest, MatchInterfaceClassNegative) {
   UsbDeviceFilter filter;
   filter.SetInterfaceClass(0xe0);
-  EXPECT_CALL(*android_phone_.get(), GetConfiguration())
+  EXPECT_CALL(*android_phone_.get(), GetActiveConfiguration())
       .WillOnce(Return(&config_));
   ASSERT_FALSE(filter.Matches(android_phone_));
 }
@@ -87,7 +87,7 @@ TEST_F(UsbFilterTest, MatchInterfaceSubclass) {
   UsbDeviceFilter filter;
   filter.SetInterfaceClass(0xff);
   filter.SetInterfaceSubclass(0x42);
-  EXPECT_CALL(*android_phone_.get(), GetConfiguration())
+  EXPECT_CALL(*android_phone_.get(), GetActiveConfiguration())
       .WillOnce(Return(&config_));
   ASSERT_TRUE(filter.Matches(android_phone_));
 }
@@ -96,7 +96,7 @@ TEST_F(UsbFilterTest, MatchInterfaceSubclassNegative) {
   UsbDeviceFilter filter;
   filter.SetInterfaceClass(0xff);
   filter.SetInterfaceSubclass(0x01);
-  EXPECT_CALL(*android_phone_.get(), GetConfiguration())
+  EXPECT_CALL(*android_phone_.get(), GetActiveConfiguration())
       .WillOnce(Return(&config_));
   ASSERT_FALSE(filter.Matches(android_phone_));
 }
@@ -106,7 +106,7 @@ TEST_F(UsbFilterTest, MatchInterfaceProtocol) {
   filter.SetInterfaceClass(0xff);
   filter.SetInterfaceSubclass(0x42);
   filter.SetInterfaceProtocol(0x01);
-  EXPECT_CALL(*android_phone_.get(), GetConfiguration())
+  EXPECT_CALL(*android_phone_.get(), GetActiveConfiguration())
       .WillOnce(Return(&config_));
   ASSERT_TRUE(filter.Matches(android_phone_));
 }
@@ -116,7 +116,7 @@ TEST_F(UsbFilterTest, MatchInterfaceProtocolNegative) {
   filter.SetInterfaceClass(0xff);
   filter.SetInterfaceSubclass(0x42);
   filter.SetInterfaceProtocol(0x02);
-  EXPECT_CALL(*android_phone_.get(), GetConfiguration())
+  EXPECT_CALL(*android_phone_.get(), GetActiveConfiguration())
       .WillOnce(Return(&config_));
   ASSERT_FALSE(filter.Matches(android_phone_));
 }

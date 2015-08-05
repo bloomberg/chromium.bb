@@ -146,7 +146,7 @@ void DeviceManagerImpl::OnGetDevices(
     DeviceInfoPtr device_info = DeviceInfo::From(*devices[i]);
     if (UsbDeviceFilter::MatchesAny(devices[i], filters) &&
         delegate_->IsDeviceAllowed(*device_info)) {
-      const UsbConfigDescriptor* config = devices[i]->GetConfiguration();
+      const UsbConfigDescriptor* config = devices[i]->GetActiveConfiguration();
       device_info->configurations = mojo::Array<ConfigurationInfoPtr>::New(0);
       if (config)
         device_info->configurations.push_back(ConfigurationInfo::From(*config));

@@ -42,7 +42,7 @@ class UsbDeviceImpl : public UsbDevice {
 #endif  // OS_CHROMEOS
   void Open(const OpenCallback& callback) override;
   bool Close(scoped_refptr<UsbDeviceHandle> handle) override;
-  const UsbConfigDescriptor* GetConfiguration() override;
+  const UsbConfigDescriptor* GetActiveConfiguration() override;
 
   // These functions are used during enumeration only. The values must not
   // change during the object's lifetime.
@@ -76,11 +76,13 @@ class UsbDeviceImpl : public UsbDevice {
   void set_visited(bool visited) { visited_ = visited; }
   bool was_visited() const { return visited_; }
   void OnDisconnect();
+  void ReadAllConfigurations();
 
   // Called by UsbDeviceHandleImpl.
-  void RefreshConfiguration();
+  void RefreshActiveConfiguration();
 
  private:
+  void GetAllConfigurations();
 #if defined(OS_CHROMEOS)
   void OnOpenRequestComplete(const OpenCallback& callback,
                              dbus::FileDescriptor fd);
@@ -100,8 +102,9 @@ class UsbDeviceImpl : public UsbDevice {
   std::string device_path_;
 
   // The current device configuration descriptor. May be null if the device is
-  // in an unconfigured state.
-  scoped_ptr<UsbConfigDescriptor> configuration_;
+  // in an unconfigured state; if not null, it is a pointer to one of the
+  // items at UsbDevice::configurations_.
+  const UsbConfigDescriptor* active_configuration_;
 
   // Retain the context so that it will not be released before UsbDevice.
   scoped_refptr<UsbContext> context_;

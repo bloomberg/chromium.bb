@@ -359,7 +359,7 @@ TEST_F(USBDeviceImplTest, GetDeviceInfo) {
   DevicePtr device =
       GetMockDeviceProxy(0x1234, 0x5678, "ACME", "Frobinator", "ABCDEF");
 
-  EXPECT_CALL(mock_device(), GetConfiguration());
+  EXPECT_CALL(mock_device(), GetActiveConfiguration());
 
   base::RunLoop loop;
   device->GetDeviceInfo(base::Bind(&ExpectDeviceInfoAndThen,

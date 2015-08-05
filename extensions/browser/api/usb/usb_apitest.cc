@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, SetConfiguration) {
   EXPECT_CALL(*mock_device_handle_.get(), SetConfiguration(1, _))
       .WillOnce(InvokeCallback<1>(true));
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(1);
-  EXPECT_CALL(*mock_device_.get(), GetConfiguration())
+  EXPECT_CALL(*mock_device_.get(), GetActiveConfiguration())
       .WillOnce(Return(nullptr))
       .WillOnce(Return(&config_descriptor));
   ASSERT_TRUE(RunAppTest("api_test/usb/set_configuration"));
@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, SetConfiguration) {
 IN_PROC_BROWSER_TEST_F(UsbApiTest, ListInterfaces) {
   UsbConfigDescriptor config_descriptor;
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(1);
-  EXPECT_CALL(*mock_device_.get(), GetConfiguration())
+  EXPECT_CALL(*mock_device_.get(), GetActiveConfiguration())
       .WillOnce(Return(&config_descriptor));
   ASSERT_TRUE(RunAppTest("api_test/usb/list_interfaces"));
 }

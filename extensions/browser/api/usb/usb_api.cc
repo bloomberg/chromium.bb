@@ -766,7 +766,7 @@ ExtensionFunction::ResponseAction UsbGetConfigurationFunction::Run() {
   }
 
   const UsbConfigDescriptor* config_descriptor =
-      device_handle->GetDevice()->GetConfiguration();
+      device_handle->GetDevice()->GetActiveConfiguration();
   if (config_descriptor) {
     ConfigDescriptor config;
     ConvertConfigDescriptor(*config_descriptor, &config);
@@ -794,7 +794,7 @@ ExtensionFunction::ResponseAction UsbListInterfacesFunction::Run() {
   }
 
   const UsbConfigDescriptor* config_descriptor =
-      device_handle->GetDevice()->GetConfiguration();
+      device_handle->GetDevice()->GetActiveConfiguration();
   if (config_descriptor) {
     ConfigDescriptor config;
     ConvertConfigDescriptor(*config_descriptor, &config);

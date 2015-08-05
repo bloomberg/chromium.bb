@@ -5,15 +5,17 @@
 #ifndef DEVICE_USB_USB_DEVICE_H_
 #define DEVICE_USB_USB_DEVICE_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "device/usb/usb_descriptors.h"
 
 namespace device {
 
 class UsbDeviceHandle;
-struct UsbConfigDescriptor;
 
 // A UsbDevice object represents a detected USB device, providing basic
 // information about it. Methods other than simple property accessors must be
@@ -52,7 +54,12 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
 
   // Gets the UsbConfigDescriptor for the active device configuration or nullptr
   // if the device is unconfigured.
-  virtual const UsbConfigDescriptor* GetConfiguration() = 0;
+  virtual const UsbConfigDescriptor* GetActiveConfiguration() = 0;
+
+  // Gets all of the device's UsbConfigDescriptors.
+  const std::vector<UsbConfigDescriptor>& configurations() {
+    return configurations_;
+  }
 
  protected:
   UsbDevice(uint16 vendor_id,
@@ -68,6 +75,9 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   base::string16 manufacturer_string_;
   base::string16 product_string_;
   base::string16 serial_number_;
+
+  // All of the device's configuration descriptors.
+  std::vector<UsbConfigDescriptor> configurations_;
 
  private:
   friend class base::RefCountedThreadSafe<UsbDevice>;

@@ -25,7 +25,7 @@ class MockUsbDevice : public UsbDevice {
 
   MOCK_METHOD1(Open, void(const OpenCallback&));
   MOCK_METHOD1(Close, bool(scoped_refptr<UsbDeviceHandle>));
-  MOCK_METHOD0(GetConfiguration, const device::UsbConfigDescriptor*());
+  MOCK_METHOD0(GetActiveConfiguration, const device::UsbConfigDescriptor*());
 
  private:
   ~MockUsbDevice() override;

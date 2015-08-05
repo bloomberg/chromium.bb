@@ -151,10 +151,10 @@ TEST_F(USBDeviceManagerImplTest, GetDevices) {
   guids.insert(device1->guid());
   guids.insert(device2->guid());
 
-  // One call to GetConfiguration for each device during enumeration.
-  EXPECT_CALL(*device0.get(), GetConfiguration());
-  EXPECT_CALL(*device1.get(), GetConfiguration());
-  EXPECT_CALL(*device2.get(), GetConfiguration());
+  // One call to GetActiveConfiguration for each device during enumeration.
+  EXPECT_CALL(*device0.get(), GetActiveConfiguration());
+  EXPECT_CALL(*device1.get(), GetActiveConfiguration());
+  EXPECT_CALL(*device2.get(), GetActiveConfiguration());
 
   base::RunLoop loop;
   device_manager->GetDevices(
@@ -180,7 +180,7 @@ TEST_F(USBDeviceManagerImplTest, OpenDevice) {
       .WillByDefault(Invoke(&open_callback, &MockOpenCallback::Open));
 
   // Should be called on the mock as a result of GetDeviceInfo() below.
-  EXPECT_CALL(*mock_device.get(), GetConfiguration());
+  EXPECT_CALL(*mock_device.get(), GetActiveConfiguration());
 
   {
     base::RunLoop loop;

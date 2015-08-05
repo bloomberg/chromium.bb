@@ -415,7 +415,7 @@ class MockUsbDevice : public UsbDevice {
                                             new MockUsbDeviceHandle<T>(this))));
   }
 
-  const UsbConfigDescriptor* GetConfiguration() override {
+  const UsbConfigDescriptor* GetActiveConfiguration() override {
     return T::kConfigured ? &config_desc_ : nullptr;
   }
 

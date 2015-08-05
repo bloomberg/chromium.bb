@@ -73,7 +73,7 @@ class FakeUsbDevice : public device::UsbDevice {
     return false;
   }
 
-  const device::UsbConfigDescriptor* GetConfiguration() override {
+  const device::UsbConfigDescriptor* GetActiveConfiguration() override {
     return config_.get();
   }
 

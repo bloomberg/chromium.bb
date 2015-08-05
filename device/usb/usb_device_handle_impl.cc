@@ -701,7 +701,7 @@ void UsbDeviceHandleImpl::SetConfigurationComplete(
     bool success,
     const ResultCallback& callback) {
   if (success) {
-    device_->RefreshConfiguration();
+    device_->RefreshActiveConfiguration();
     RefreshEndpointMap();
   }
   callback.Run(success);
@@ -776,7 +776,7 @@ void UsbDeviceHandleImpl::ResetDeviceOnBlockingThread(
 void UsbDeviceHandleImpl::RefreshEndpointMap() {
   DCHECK(thread_checker_.CalledOnValidThread());
   endpoint_map_.clear();
-  const UsbConfigDescriptor* config = device_->GetConfiguration();
+  const UsbConfigDescriptor* config = device_->GetActiveConfiguration();
   if (config) {
     for (const auto& map_entry : claimed_interfaces_) {
       int interface_number = map_entry.first;
