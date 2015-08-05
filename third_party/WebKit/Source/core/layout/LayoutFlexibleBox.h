@@ -101,7 +101,6 @@ private:
     LayoutUnit crossAxisIntrinsicExtentForChild(LayoutBox& child) const;
     LayoutUnit childIntrinsicHeight(LayoutBox& child) const;
     LayoutUnit childIntrinsicWidth(LayoutBox& child) const;
-    bool mainAxisExtentIsDefinite() const;
     LayoutUnit mainAxisExtentForChild(LayoutBox& child) const;
     LayoutUnit crossAxisExtent() const;
     LayoutUnit mainAxisExtent() const;
@@ -130,7 +129,7 @@ private:
     ItemPosition alignmentForChild(LayoutBox& child) const;
     LayoutUnit mainAxisBorderAndPaddingExtentForChild(LayoutBox& child) const;
     LayoutUnit computeInnerFlexBaseSizeForChild(LayoutBox& child, ChildLayoutType = LayoutIfNeeded);
-    bool mainAxisLengthIsIndefinite(const Length& flexBasis) const;
+    bool mainAxisLengthIsIndefinite(LayoutBox& child, const Length& flexBasis) const;
     bool childFlexBaseSizeRequiresLayout(LayoutBox& child) const;
     bool needToStretchChildLogicalHeight(LayoutBox& child) const;
     EOverflow mainAxisOverflowForChild(LayoutBox& child) const;

@@ -363,11 +363,6 @@ LayoutUnit LayoutFlexibleBox::childIntrinsicWidth(LayoutBox& child) const
     return child.size().width();
 }
 
-bool LayoutFlexibleBox::mainAxisExtentIsDefinite() const
-{
-    return isColumnFlow() ? hasDefiniteLogicalHeight() : hasDefiniteLogicalWidth();
-}
-
 LayoutUnit LayoutFlexibleBox::crossAxisIntrinsicExtentForChild(LayoutBox& child) const
 {
     return isHorizontalFlow() ? childIntrinsicHeight(child) : childIntrinsicWidth(child);
@@ -596,14 +591,22 @@ LayoutUnit LayoutFlexibleBox::mainAxisBorderAndPaddingExtentForChild(LayoutBox& 
     return isHorizontalFlow() ? child.borderAndPaddingWidth() : child.borderAndPaddingHeight();
 }
 
-bool LayoutFlexibleBox::mainAxisLengthIsIndefinite(const Length& flexBasis) const
+bool LayoutFlexibleBox::mainAxisLengthIsIndefinite(LayoutBox& child, const Length& flexBasis) const
 {
-    return flexBasis.isAuto() || (flexBasis.hasPercent() && !mainAxisExtentIsDefinite());
+    if (flexBasis.isAuto())
+        return true;
+    if (flexBasis.hasPercent()) {
+        return isColumnFlow() ?
+            child.computePercentageLogicalHeight(flexBasis) == -1 :
+            !hasDefiniteLogicalWidth();
+    }
+    // FIXME(cbiesinger): Is this correct?
+    return false;
 }
 
 bool LayoutFlexibleBox::childFlexBaseSizeRequiresLayout(LayoutBox& child) const
 {
-    return mainAxisLengthIsIndefinite(flexBasisForChild(child)) && hasOrthogonalFlow(child);
+    return mainAxisLengthIsIndefinite(child, flexBasisForChild(child)) && hasOrthogonalFlow(child);
 }
 
 LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(LayoutBox& child, ChildLayoutType childLayoutType)
@@ -614,7 +617,7 @@ LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(LayoutBox& child,
         UseCounter::count(document(), UseCounter::AspectRatioFlexItem);
 
     Length flexBasis = flexBasisForChild(child);
-    if (mainAxisLengthIsIndefinite(flexBasis)) {
+    if (mainAxisLengthIsIndefinite(child, flexBasis)) {
         LayoutUnit mainAxisExtent;
         if (hasOrthogonalFlow(child)) {
             if (childLayoutType == NeverLayout)
@@ -861,7 +864,7 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(LayoutBox& child, Layo
             contentSize = maxExtent;
 
         Length mainSize = isHorizontalFlow() ? child.styleRef().width() : child.styleRef().height();
-        if (!mainAxisLengthIsIndefinite(mainSize)) {
+        if (!mainAxisLengthIsIndefinite(child, mainSize)) {
             LayoutUnit resolvedMainSize = computeMainAxisExtentForChild(child, MainOrPreferredSize, mainSize);
             ASSERT(resolvedMainSize >= 0);
             LayoutUnit specifiedSize = maxExtent != -1 ? std::min(resolvedMainSize, maxExtent) : resolvedMainSize;
