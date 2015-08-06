@@ -17,6 +17,18 @@ class FakeStringProvider : public StringProvider {
   ~FakeStringProvider() override;
 
   // StringProvider implementation
+  std::string GetOmniboxCopyUrlString() override;
+  int GetAppleFlagsTableTitleID() override;
+  int GetAppleFlagsNoExperimentsAvailableID() override;
+  base::string16 GetSpoofingInterstitialTitle() override;
+  base::string16 GetSpoofingInterstitialHeadline() override;
+  base::string16 GetSpoofingInterstitialMessage() override;
+  base::string16 GetSpoofingInterstitialDetails() override;
+  base::string16 GetSpoofingInterstitialFailure() override;
+  int GetUnsafePortTitleID() override;
+  int GetUnsafePortHeadlineID() override;
+  int GetUnsafePortMessageID() override;
+  int GetUnsafePortDetailsID() override;
   base::string16 GetDoneString() override;
   base::string16 GetOKString() override;
   base::string16 GetProductName() override;

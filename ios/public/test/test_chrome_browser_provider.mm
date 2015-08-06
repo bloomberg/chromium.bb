@@ -40,4 +40,9 @@ const char* TestChromeBrowserProvider::GetChromeUIScheme() {
   return kUIScheme;
 }
 
+FakeStringProvider*
+TestChromeBrowserProvider::GetStringProviderAsFake() {
+  return string_provider_.get();
+}
+
 }  // namespace ios
