@@ -201,5 +201,13 @@
                 "state": "enabled"
             }
         }
+    ],
+    "SyncHttpContentCompression": [
+        {
+            "group_name": "Enabled"
+        },
+        {
+            "group_name": "Disabled"
+        }
     ]
 }

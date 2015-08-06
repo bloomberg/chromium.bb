@@ -695,6 +695,7 @@ test("sync_unit_tests") {
     "//testing/gtest",
     "//third_party/leveldatabase",
     "//third_party/protobuf:protobuf_lite",
+    "//third_party/zlib",
   ]
 
   if (is_android) {

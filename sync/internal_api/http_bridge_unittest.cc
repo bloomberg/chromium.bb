@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/metrics/field_trial.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/threading/thread.h"
 #include "net/http/http_response_headers.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -13,14 +15,94 @@
 #include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/http_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/zlib/zlib.h"
 
 namespace syncer {
 
 namespace {
+
 // TODO(timsteele): Should use PathService here. See Chromium Issue 3113.
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
+
+// -----------------------------------------------------------------------------
+// The rest of the code in the anon namespace is copied from
+// components/metrics/compression_utils.cc
+// TODO(gangwu): crbug.com/515695. The following codes are copied from
+// components/metrics/compression_utils.cc, we copied them because if we
+// reference them, we will get cycle dependency warning. Once the functions
+// have been moved from //component to //base, we can remove the following
+// functions.
+//------------------------------------------------------------------------------
+// Pass an integer greater than the following get a gzip header instead of a
+// zlib header when calling deflateInit2() and inflateInit2().
+const int kWindowBitsToGetGzipHeader = 16;
+
+// This code is taken almost verbatim from third_party/zlib/uncompr.c. The only
+// difference is inflateInit2() is called which sets the window bits to be > 16.
+// That causes a gzip header to be parsed rather than a zlib header.
+int GzipUncompressHelper(Bytef* dest,
+                         uLongf* dest_length,
+                         const Bytef* source,
+                         uLong source_length) {
+  z_stream stream;
+
+  stream.next_in = bit_cast<Bytef*>(source);
+  stream.avail_in = static_cast<uInt>(source_length);
+  if (static_cast<uLong>(stream.avail_in) != source_length)
+    return Z_BUF_ERROR;
+
+  stream.next_out = dest;
+  stream.avail_out = static_cast<uInt>(*dest_length);
+  if (static_cast<uLong>(stream.avail_out) != *dest_length)
+    return Z_BUF_ERROR;
+
+  stream.zalloc = static_cast<alloc_func>(0);
+  stream.zfree = static_cast<free_func>(0);
+
+  int err = inflateInit2(&stream, MAX_WBITS + kWindowBitsToGetGzipHeader);
+  if (err != Z_OK)
+    return err;
+
+  err = inflate(&stream, Z_FINISH);
+  if (err != Z_STREAM_END) {
+    inflateEnd(&stream);
+    if (err == Z_NEED_DICT || (err == Z_BUF_ERROR && stream.avail_in == 0))
+      return Z_DATA_ERROR;
+    return err;
+  }
+  *dest_length = stream.total_out;
+
+  err = inflateEnd(&stream);
+  return err;
 }
+
+// Returns the uncompressed size from GZIP-compressed |compressed_data|.
+uint32 GetUncompressedSize(const std::string& compressed_data) {
+  // The uncompressed size is stored in the last 4 bytes of |input| in LE.
+  uint32 size;
+  if (compressed_data.length() < sizeof(size))
+    return 0;
+  memcpy(&size, &compressed_data[compressed_data.length() - sizeof(size)],
+         sizeof(size));
+  return base::ByteSwapToLE32(size);
+}
+
+bool GzipUncompress(const std::string& input, std::string* output) {
+  std::string uncompressed_output;
+  uLongf uncompressed_size = static_cast<uLongf>(GetUncompressedSize(input));
+  uncompressed_output.resize(uncompressed_size);
+  if (GzipUncompressHelper(bit_cast<Bytef*>(uncompressed_output.data()),
+                           &uncompressed_size,
+                           bit_cast<const Bytef*>(input.data()),
+                           static_cast<uLongf>(input.length())) == Z_OK) {
+    output->swap(uncompressed_output);
+    return true;
+  }
+  return false;
+}
+
+}  // namespace
 
 const char kUserAgent[] = "user-agent";
 
@@ -146,9 +228,12 @@ class ShuntedHttpBridge : public HttpBridge {
 
     std::string response_content = "success!";
     net::TestURLFetcher fetcher(0, GURL("http://www.google.com"), NULL);
+    scoped_refptr<net::HttpResponseHeaders> response_headers(
+        new net::HttpResponseHeaders(""));
     fetcher.set_response_code(200);
     fetcher.set_cookies(cookies);
     fetcher.SetResponseString(response_content);
+    fetcher.set_response_headers(response_headers);
     OnURLFetchComplete(&fetcher);
   }
   SyncHttpBridgeTest* test_;
@@ -232,6 +317,74 @@ TEST_F(SyncHttpBridgeTest, TestMakeSynchronousPostLiveWithPayload) {
   EXPECT_EQ(payload, std::string(http_bridge->GetResponseContent()));
 }
 
+// Full round-trip test of the HttpBridge with compressed data, check if the
+// data is correctly compressed.
+TEST_F(SyncHttpBridgeTest, CompressedRequestPayloadCheck) {
+  ASSERT_TRUE(test_server_.Start());
+
+  scoped_refptr<HttpBridge> http_bridge(BuildBridge());
+
+  std::string payload = "this should be echoed back";
+  GURL echo = test_server_.GetURL("echo");
+  http_bridge->SetURL(echo.spec().c_str(), echo.IntPort());
+  http_bridge->SetPostPayload("application/x-www-form-urlencoded",
+                              payload.length(), payload.c_str());
+  int os_error = 0;
+  int response_code = 0;
+  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
+  base::FieldTrialList::CreateFieldTrial("SyncHttpContentCompression",
+                                         "Enabled");
+  bool success = http_bridge->MakeSynchronousPost(&os_error, &response_code);
+  EXPECT_TRUE(success);
+  EXPECT_EQ(200, response_code);
+  EXPECT_EQ(0, os_error);
+
+  EXPECT_NE(payload.length() + 1,
+            static_cast<size_t>(http_bridge->GetResponseContentLength()));
+  std::string compressed_payload(http_bridge->GetResponseContent(),
+                                 http_bridge->GetResponseContentLength());
+  std::string uncompressed_payload;
+  GzipUncompress(compressed_payload, &uncompressed_payload);
+  EXPECT_EQ(payload, uncompressed_payload);
+}
+
+// Full round-trip test of the HttpBridge with compression, check if header
+// fields("Content-Encoding" ,"Accept-Encoding" and user agent) are set
+// correctly.
+TEST_F(SyncHttpBridgeTest, CompressedRequestHeaderCheck) {
+  ASSERT_TRUE(test_server_.Start());
+
+  scoped_refptr<HttpBridge> http_bridge(BuildBridge());
+
+  GURL echo_header = test_server_.GetURL("echoall");
+  http_bridge->SetURL(echo_header.spec().c_str(), echo_header.IntPort());
+
+  std::string test_payload = "###TEST PAYLOAD###";
+  http_bridge->SetPostPayload("text/html", test_payload.length() + 1,
+                              test_payload.c_str());
+
+  int os_error = 0;
+  int response_code = 0;
+  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
+  base::FieldTrialList::CreateFieldTrial("SyncHttpContentCompression",
+                                         "Enabled");
+  bool success = http_bridge->MakeSynchronousPost(&os_error, &response_code);
+  EXPECT_TRUE(success);
+  EXPECT_EQ(200, response_code);
+  EXPECT_EQ(0, os_error);
+
+  std::string response(http_bridge->GetResponseContent(),
+                       http_bridge->GetResponseContentLength());
+  EXPECT_NE(std::string::npos, response.find("Content-Encoding: gzip"));
+  EXPECT_NE(std::string::npos,
+            response.find(base::StringPrintf(
+                "%s: %s", net::HttpRequestHeaders::kAcceptEncoding,
+                "gzip, deflate")));
+  EXPECT_NE(std::string::npos,
+            response.find(base::StringPrintf(
+                "%s: %s", net::HttpRequestHeaders::kUserAgent, kUserAgent)));
+}
+
 // Full round-trip test of the HttpBridge.
 TEST_F(SyncHttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
   ASSERT_TRUE(test_server_.Start());
@@ -255,6 +408,10 @@ TEST_F(SyncHttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
   std::string response(http_bridge->GetResponseContent(),
                        http_bridge->GetResponseContentLength());
   EXPECT_EQ(std::string::npos, response.find("Cookie:"));
+  EXPECT_NE(std::string::npos,
+            response.find(base::StringPrintf(
+                "%s: %s", net::HttpRequestHeaders::kAcceptEncoding,
+                "deflate")));
   EXPECT_NE(std::string::npos,
             response.find(base::StringPrintf("%s: %s",
                           net::HttpRequestHeaders::kUserAgent, kUserAgent)));

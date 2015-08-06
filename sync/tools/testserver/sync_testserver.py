@@ -13,8 +13,10 @@ specify an explicit port and xmpp_port if necessary.
 import asyncore
 import BaseHTTPServer
 import errno
+import gzip
 import os
 import select
+import StringIO
 import socket
 import sys
 import urlparse
@@ -196,6 +198,12 @@ class SyncPageHandler(testserver_base.BasePageHandler):
 
     length = int(self.headers.getheader('content-length'))
     raw_request = self.rfile.read(length)
+    if self.headers.getheader('Content-Encoding'):
+      encode = self.headers.getheader('Content-Encoding')
+      if encode == "gzip":
+        raw_request = gzip.GzipFile(
+            fileobj=StringIO.StringIO(raw_request)).read()
+
     http_response = 200
     raw_reply = None
     if not self.server.GetAuthenticated():

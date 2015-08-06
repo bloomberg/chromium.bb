@@ -32,5 +32,13 @@
         {
             "group_name": "Enabled"
         }
+    ],
+    "SyncHttpContentCompression": [
+        {
+            "group_name": "Enabled"
+        },
+        {
+            "group_name": "Disabled"
+        }
     ]
 }

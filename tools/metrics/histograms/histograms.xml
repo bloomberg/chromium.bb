@@ -44831,10 +44831,42 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Sync.RequestContentLength.Compressed" units="bytes">
+  <owner>gangwu@chromium.org</owner>
+  <summary>
+    The request content size for a single HTTP/HTTPS call from sync client to
+    server. The content is compressed by gzip.
+  </summary>
+</histogram>
+
+<histogram name="Sync.RequestContentLength.Original" units="bytes">
+  <owner>gangwu@chromium.org</owner>
+  <summary>
+    The original request content size for a single HTTP/HTTPS call from sync
+    client to server. It is the size before content got compressed.
+  </summary>
+</histogram>
+
 <histogram name="Sync.ResolveSimpleConflict"
     enum="SyncSimpleConflictResolutions">
   <owner>zea@chromium.org</owner>
   <summary>Enumeration of types of simple conflict resolutions.</summary>
+</histogram>
+
+<histogram name="Sync.ResponseContentLength.Compressed" units="bytes">
+  <owner>gangwu@chromium.org</owner>
+  <summary>
+    The response content size for a single HTTP/HTTPS call from sync server to
+    client. The content is compressed by gzip.
+  </summary>
+</histogram>
+
+<histogram name="Sync.ResponseContentLength.Original" units="bytes">
+  <owner>gangwu@chromium.org</owner>
+  <summary>
+    The original response content size for a single HTTP/HTTPS call from sync
+    server and client. It is the size after content got uncompressed.
+  </summary>
 </histogram>
 
 <histogram name="Sync.RestoreBackendInitializeSucess" enum="BooleanSuccess">
