@@ -2,17 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/backend_migrator.h"
+#include "components/sync_driver/backend_migrator.h"
 
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
+#include "components/sync_driver/sync_service.h"
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/read_transaction.h"
 #include "sync/protocol/sync.pb.h"
@@ -28,7 +25,7 @@ MigrationObserver::~MigrationObserver() {}
 
 BackendMigrator::BackendMigrator(const std::string& name,
                                  syncer::UserShare* user_share,
-                                 ProfileSyncService* service,
+                                 sync_driver::SyncService* service,
                                  sync_driver::DataTypeManager* manager,
                                  const base::Closure &migration_done_callback)
     : name_(name), user_share_(user_share), service_(service),

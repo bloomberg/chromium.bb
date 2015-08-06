@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/backend_migrator.h"
+#include "components/sync_driver/backend_migrator.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"

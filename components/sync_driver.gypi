@@ -21,6 +21,8 @@
         # Note: file list duplicated in GN build.
         'sync_driver/backend_data_type_configurer.cc',
         'sync_driver/backend_data_type_configurer.h',
+        'sync_driver/backend_migrator.cc',
+        'sync_driver/backend_migrator.h',
         'sync_driver/change_processor.cc',
         'sync_driver/change_processor.h',
         'sync_driver/data_type_controller.cc',

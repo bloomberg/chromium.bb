@@ -2866,8 +2866,6 @@
     'chrome_browser_sync_sources': [
       'browser/sync/about_sync_util.cc',
       'browser/sync/about_sync_util.h',
-      'browser/sync/backend_migrator.cc',
-      'browser/sync/backend_migrator.h',
       'browser/sync/backend_unrecoverable_error_handler.cc',
       'browser/sync/backend_unrecoverable_error_handler.h',
       'browser/sync/backup_rollback_controller.cc',

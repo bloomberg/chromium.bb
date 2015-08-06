@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_BACKEND_MIGRATOR_H_
-#define CHROME_BROWSER_SYNC_BACKEND_MIGRATOR_H_
+#ifndef COMPONENTS_SYNC_DRIVER_BACKEND_MIGRATOR_H_
+#define COMPONENTS_SYNC_DRIVER_BACKEND_MIGRATOR_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/sync_driver/data_type_manager.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "sync/internal_api/public/base/model_type.h"
-
-class ProfileSyncService;
 
 namespace syncer {
 struct UserShare;
 }  // namespace syncer
+
+namespace sync_driver {
+class SyncService;
+}
 
 namespace browser_sync {
 
@@ -49,7 +49,7 @@ class BackendMigrator {
   // TODO(akalin): Remove the dependency on |user_share|.
   BackendMigrator(const std::string& name,
                   syncer::UserShare* user_share,
-                  ProfileSyncService* service,
+                  sync_driver::SyncService* service,
                   sync_driver::DataTypeManager* manager,
                   const base::Closure &migration_done_callback);
   virtual ~BackendMigrator();
@@ -89,7 +89,7 @@ class BackendMigrator {
 
   const std::string name_;
   syncer::UserShare* user_share_;
-  ProfileSyncService* service_;
+  sync_driver::SyncService* service_;
   sync_driver::DataTypeManager* manager_;
 
   State state_;
@@ -107,4 +107,4 @@ class BackendMigrator {
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_BACKEND_MIGRATOR_H_
+#endif  // COMPONENTS_SYNC_DRIVER_BACKEND_MIGRATOR_H_

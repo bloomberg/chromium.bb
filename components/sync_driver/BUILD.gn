@@ -6,6 +6,8 @@ static_library("sync_driver") {
   sources = [
     "backend_data_type_configurer.cc",
     "backend_data_type_configurer.h",
+    "backend_migrator.cc",
+    "backend_migrator.h",
     "change_processor.cc",
     "change_processor.h",
     "data_type_controller.cc",
