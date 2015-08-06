@@ -33,6 +33,7 @@ ScalingFilterInterpreter::ScalingFilterInterpreter(
       pressure_scale_(prop_reg, "Pressure Calibration Slope", 1.0),
       pressure_translate_(prop_reg, "Pressure Calibration Offset", 0.0),
       pressure_threshold_(prop_reg, "Pressure Minimum Threshold", 0.0),
+      filter_low_pressure_(prop_reg, "Filter Low Pressure", 0),
       force_touch_count_to_match_finger_count_(
           prop_reg,
           "Force Touch Count To Match Finger Count",
@@ -129,7 +130,8 @@ void ScalingFilterInterpreter::ScaleTouchpadHardwareState(
 
   if (surface_area_from_pressure_.val_) {
     // Drop the small fingers, i.e. low pressures.
-    FilterLowPressure(hwstate);
+    if (filter_low_pressure_.val_ || pressure_threshold_.val_ > 0.0)
+      FilterLowPressure(hwstate);
   }
 
   for (short i = 0; i < hwstate->finger_cnt; i++) {
@@ -191,6 +193,9 @@ void ScalingFilterInterpreter::ScaleTouchpadHardwareState(
       else
         hwstate->fingers[i].pressure = 0;
     }
+
+    hwstate->fingers[i].pressure = std::max(1.0f,
+                                            hwstate->fingers[i].pressure);
   }
 
   if (!surface_area_from_pressure_.val_) {
