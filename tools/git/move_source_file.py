@@ -175,7 +175,7 @@ def UpdatePostMove(from_path, to_path, in_blink):
     from_first, from_rest = SplitByFirstComponent(from_rest)
     to_first, to_rest = SplitByFirstComponent(to_rest)
     visiting_directory = os.path.join(visiting_directory, from_first)
-    if not from_rest or not to_rest:
+    if not from_rest or not to_rest or from_rest == to_rest:
         break
 
 
