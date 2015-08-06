@@ -359,13 +359,14 @@ if test "x$RADEON" = xyes; then
 	AC_DEFINE(HAVE_RADEON, 1, [Have radeon support])
 fi
 
+# Detect cunit library
+PKG_CHECK_MODULES([CUNIT], [cunit >= 2.1], [have_cunit=yes], [have_cunit=no])
 AM_CONDITIONAL(HAVE_CUNIT, [test "x$have_cunit" != "xno"])
+
 AM_CONDITIONAL(HAVE_AMDGPU, [test "x$AMDGPU" = xyes])
 if test "x$AMDGPU" = xyes; then
 	AC_DEFINE(HAVE_AMDGPU, 1, [Have amdgpu support])
 
-	# Detect cunit library
-	PKG_CHECK_MODULES([CUNIT], [cunit >= 2.1], [have_cunit=yes], [have_cunit=no])
 
 	# If pkg-config does not find cunit, check it using AC_CHECK_LIB.  We
 	# do this because Debian (Ubuntu) lacks pkg-config file for cunit.
