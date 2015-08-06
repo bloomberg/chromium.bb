@@ -46690,6 +46690,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UMA.ProtoGzippedKBSaved" units="KB">
+  <obsolete>
+    Deprecated as of August 2015. See UMA.ProtoCompressionRatio instead.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <summary>
     Kilobytes saved from gzipping the protobufs before uploading them.
