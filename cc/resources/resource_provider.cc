@@ -1980,6 +1980,7 @@ bool ResourceProvider::OnMemoryDump(
   for (const auto& resource_entry : resources_) {
     const auto& resource = resource_entry.second;
 
+    // TODO(ericrk): Add per-compositor ID in name.
     std::string dump_name = base::StringPrintf("cc/resource_memory/resource_%d",
                                                resource_entry.first);
     base::trace_event::MemoryAllocatorDump* dump =

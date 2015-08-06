@@ -4,11 +4,40 @@
 
 #include "cc/resources/resource_pool.h"
 
+#include <algorithm>
+
+#include "base/format_macros.h"
+#include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/resource_util.h"
 #include "cc/resources/scoped_resource.h"
 
 namespace cc {
+
+void ResourcePool::PoolResource::OnMemoryDump(
+    base::trace_event::ProcessMemoryDump* pmd,
+    bool is_free) const {
+  // TODO(ericrk): Add per-compositor ID in name.
+  std::string parent_node =
+      base::StringPrintf("cc/resource_memory/resource_%d", resource->id());
+  std::string dump_name =
+      base::StringPrintf("cc/tile_memory/resource_%d", resource->id());
+  base::trace_event::MemoryAllocatorDump* dump =
+      pmd->CreateAllocatorDump(dump_name);
+
+  pmd->AddSuballocation(dump->guid(), parent_node);
+
+  uint64_t total_bytes = ResourceUtil::UncheckedSizeInBytesAligned<size_t>(
+      resource->size(), resource->format());
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  total_bytes);
+  dump->AddScalar("free_size",
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  is_free ? total_bytes : 0);
+}
 
 ResourcePool::ResourcePool(ResourceProvider* resource_provider, GLenum target)
     : resource_provider_(resource_provider),
@@ -18,9 +47,14 @@ ResourcePool::ResourcePool(ResourceProvider* resource_provider, GLenum target)
       max_resource_count_(0),
       memory_usage_bytes_(0),
       unused_memory_usage_bytes_(0),
-      resource_count_(0) {}
+      resource_count_(0) {
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, base::ThreadTaskRunnerHandle::Get());
+}
 
 ResourcePool::~ResourcePool() {
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
   while (!busy_resources_.empty()) {
     auto const& front = busy_resources_.front();
     DidFinishUsingResource(front.resource, front.content_id);
@@ -165,6 +199,19 @@ void ResourcePool::DidFinishUsingResource(ScopedResource* resource,
   unused_memory_usage_bytes_ += ResourceUtil::UncheckedSizeInBytes<size_t>(
       resource->size(), resource->format());
   unused_resources_.push_back(PoolResource(resource, content_id));
+}
+
+bool ResourcePool::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                                base::trace_event::ProcessMemoryDump* pmd) {
+  for (const auto& resource : unused_resources_) {
+    resource.OnMemoryDump(pmd, true /* is_free */);
+  }
+  for (const auto& resource : busy_resources_) {
+    resource.OnMemoryDump(pmd, false /* is_free */);
+  }
+  // TODO(ericrk): Dump vended out resources once that data is available.
+  // crbug.com/516541
+  return true;
 }
 
 }  // namespace cc

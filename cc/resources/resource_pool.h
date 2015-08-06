@@ -8,6 +8,7 @@
 #include <deque>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/renderer.h"
 #include "cc/resources/resource.h"
@@ -16,14 +17,14 @@
 namespace cc {
 class ScopedResource;
 
-class CC_EXPORT ResourcePool {
+class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
  public:
   static scoped_ptr<ResourcePool> Create(ResourceProvider* resource_provider,
                                          GLenum target) {
     return make_scoped_ptr(new ResourcePool(resource_provider, target));
   }
 
-  virtual ~ResourcePool();
+  ~ResourcePool() override;
 
   scoped_ptr<ScopedResource> AcquireResource(const gfx::Size& size,
                                              ResourceFormat format);
@@ -51,6 +52,10 @@ class CC_EXPORT ResourcePool {
   }
   size_t busy_resource_count() const { return busy_resources_.size(); }
 
+  // Overridden from base::trace_event::MemoryDumpProvider:
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
+
  protected:
   ResourcePool(ResourceProvider* resource_provider, GLenum target);
 
@@ -72,6 +77,9 @@ class CC_EXPORT ResourcePool {
   struct PoolResource {
     PoolResource(ScopedResource* resource, uint64_t content_id)
         : resource(resource), content_id(content_id) {}
+    void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                      bool is_free) const;
+
     ScopedResource* resource;
     uint64_t content_id;
   };
