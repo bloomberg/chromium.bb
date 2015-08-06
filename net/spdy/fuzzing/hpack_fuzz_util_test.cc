@@ -15,8 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
-
-namespace {
+namespace test {
 
 using base::StringPiece;
 using std::map;
@@ -109,7 +108,8 @@ TEST(HpackFuzzUtilTest, PassValidInputThroughAllStages) {
   expect[":scheme"] = "http";
   expect[":path"] = "/";
   expect[":authority"] = "www.example.com";
-  EXPECT_EQ(expect, context.third_stage->decoded_block());
+  EXPECT_TRUE(
+      CompareSpdyHeaderBlocks(expect, context.third_stage->decoded_block()));
 }
 
 TEST(HpackFuzzUtilTest, ValidFuzzExamplesRegressionTest) {
@@ -147,6 +147,5 @@ TEST(HpackFuzzUtilTest, FlipBitsMutatesBuffer) {
   EXPECT_NE(unmodified, buffer);
 }
 
-}  // namespace
-
+}  // namespace test
 }  // namespace net

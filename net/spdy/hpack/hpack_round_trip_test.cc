@@ -12,9 +12,11 @@
 #include "net/spdy/hpack/hpack_constants.h"
 #include "net/spdy/hpack/hpack_decoder.h"
 #include "net/spdy/hpack/hpack_encoder.h"
+#include "net/spdy/spdy_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
+namespace test {
 
 using std::map;
 using std::string;
@@ -42,7 +44,7 @@ class HpackRoundTripTest : public ::testing::Test {
                                                           encoded.size());
     success &= decoder_.HandleControlFrameHeadersComplete(1, nullptr);
 
-    EXPECT_EQ(header_set, decoder_.decoded_block());
+    EXPECT_TRUE(CompareSpdyHeaderBlocks(header_set, decoder_.decoded_block()));
     return success;
   }
 
@@ -179,4 +181,5 @@ TEST_F(HpackRoundTripTest, RandomizedExamples) {
 
 }  // namespace
 
+}  // namespace test
 }  // namespace net

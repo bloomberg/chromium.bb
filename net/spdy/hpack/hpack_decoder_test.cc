@@ -18,7 +18,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
-
 namespace test {
 
 using base::StringPiece;
@@ -47,8 +46,6 @@ class HpackDecoderPeer {
  private:
   HpackDecoder* decoder_;
 };
-
-}  // namespace test
 
 namespace {
 
@@ -209,13 +206,13 @@ TEST_F(HpackDecoderTest, IndexedHeaderStatic) {
   SpdyHeaderBlock expected_header_set1;
   expected_header_set1[":method"] = "GET";
   expected_header_set1[":path"] = "/index.html";
-  EXPECT_EQ(expected_header_set1, header_set1);
+  EXPECT_TRUE(CompareSpdyHeaderBlocks(expected_header_set1, header_set1));
 
   // Reference static table entry #2.
   SpdyHeaderBlock header_set2 = DecodeBlockExpectingSuccess("\x82");
   SpdyHeaderBlock expected_header_set2;
   expected_header_set2[":method"] = "GET";
-  EXPECT_EQ(expected_header_set2, header_set2);
+  EXPECT_TRUE(CompareSpdyHeaderBlocks(expected_header_set2, header_set2));
 }
 
 TEST_F(HpackDecoderTest, IndexedHeaderDynamic) {
@@ -227,7 +224,7 @@ TEST_F(HpackDecoderTest, IndexedHeaderDynamic) {
       "bar");
   SpdyHeaderBlock expected_header_set1;
   expected_header_set1["foo"] = "bar";
-  EXPECT_EQ(expected_header_set1, header_set1);
+  EXPECT_TRUE(CompareSpdyHeaderBlocks(expected_header_set1, header_set1));
 
   // Second header block: add another entry to header table.
   SpdyHeaderBlock header_set2 = DecodeBlockExpectingSuccess(
@@ -238,13 +235,13 @@ TEST_F(HpackDecoderTest, IndexedHeaderDynamic) {
   SpdyHeaderBlock expected_header_set2;
   expected_header_set2["foo"] = "bar";
   expected_header_set2["spam"] = "eggs";
-  EXPECT_EQ(expected_header_set2, header_set2);
+  EXPECT_TRUE(CompareSpdyHeaderBlocks(expected_header_set2, header_set2));
 
   // Third header block: refer to most recently added entry.
   SpdyHeaderBlock header_set3 = DecodeBlockExpectingSuccess("\xbe");
   SpdyHeaderBlock expected_header_set3;
   expected_header_set3["spam"] = "eggs";
-  EXPECT_EQ(expected_header_set3, header_set3);
+  EXPECT_TRUE(CompareSpdyHeaderBlocks(expected_header_set3, header_set3));
 }
 
 // Test a too-large indexed header.
@@ -320,7 +317,7 @@ TEST_F(HpackDecoderTest, LiteralHeaderNoIndexing) {
   SpdyHeaderBlock expected_header_set;
   expected_header_set[":path"] = "/sample/path";
   expected_header_set[":path2"] = "/sample/path/2";
-  EXPECT_EQ(expected_header_set, header_set);
+  EXPECT_TRUE(CompareSpdyHeaderBlocks(expected_header_set, header_set));
 }
 
 // Decoding two valid encoded literal headers with incremental
@@ -333,7 +330,7 @@ TEST_F(HpackDecoderTest, LiteralHeaderIncrementalIndexing) {
   SpdyHeaderBlock expected_header_set;
   expected_header_set[":path"] = "/sample/path";
   expected_header_set[":path2"] = "/sample/path/2";
-  EXPECT_EQ(expected_header_set, header_set);
+  EXPECT_TRUE(CompareSpdyHeaderBlocks(expected_header_set, header_set));
 }
 
 TEST_F(HpackDecoderTest, LiteralHeaderWithIndexingInvalidNameIndex) {
@@ -374,7 +371,7 @@ TEST_F(HpackDecoderTest, BasicE21) {
       encoder.EncodeHeaderSet(expected_header_set, &encoded_header_set));
 
   EXPECT_TRUE(DecodeHeaderBlock(encoded_header_set));
-  EXPECT_EQ(expected_header_set, decoded_block());
+  EXPECT_TRUE(CompareSpdyHeaderBlocks(expected_header_set, decoded_block()));
 }
 
 TEST_F(HpackDecoderTest, SectionD4RequestHuffmanExamples) {
@@ -668,5 +665,5 @@ TEST_F(HpackDecoderTest, SectionD6ResponseHuffmanExamples) {
 }
 
 }  // namespace
-
+}  // namespace test
 }  // namespace net
