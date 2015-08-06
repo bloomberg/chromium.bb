@@ -3578,18 +3578,6 @@
                     ],
                   },
                 },
-              }, {
-                # win_fastlink==0
-                'msvs_settings': {
-                  'VCLinkerTool': {
-                    # This corresponds to the /PROFILE flag which ensures the PDB
-                    # file contains FIXUP information (growing the PDB file by about
-                    # 5%) but does not otherwise alter the output binary. This
-                    # information is used by the Syzygy optimization tool when
-                    # decomposing the release image.
-                    'Profile': 'true',
-                  },
-                },
               }],
             ],
           }],
