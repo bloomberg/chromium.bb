@@ -252,7 +252,8 @@ void CrNetEnvironment::CloseAllSpdySessionsInternal() {
 
 CrNetEnvironment::CrNetEnvironment(std::string user_agent_product_name)
     : main_context_(new net::URLRequestContext),
-      user_agent_product_name_(user_agent_product_name) {
+      user_agent_product_name_(user_agent_product_name),
+      net_log_(new net::NetLog) {
 
 }
 
@@ -438,7 +439,6 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
       "file", new net::FileProtocolHandler(file_thread_->task_runner()));
   main_context_->set_job_factory(job_factory);
 
-  net_log_.reset(new net::NetLog());
   main_context_->set_net_log(net_log_.get());
 }
 
