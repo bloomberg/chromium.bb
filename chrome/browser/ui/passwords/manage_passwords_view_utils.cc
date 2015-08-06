@@ -39,11 +39,13 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
     const GURL& user_visible_url,
     const GURL& form_origin_url,
     bool is_smartlock_branding_enabled,
+    bool is_update_password_bubble,
     base::string16* title,
     gfx::Range* title_link_range) {
   std::vector<size_t> offsets;
   std::vector<base::string16> replacements;
-  int title_id = IDS_SAVE_PASSWORD;
+  int title_id =
+      is_update_password_bubble ? IDS_UPDATE_PASSWORD : IDS_SAVE_PASSWORD;
 
   // Check whether the registry controlled domains for user-visible URL (i.e.
   // the one seen in the omnibox) and the password form post-submit navigation

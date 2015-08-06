@@ -20,7 +20,8 @@ extern const int kAvatarImageSize;
 // Crops and scales |image_skia| to the desired size for an account avatar.
 gfx::ImageSkia ScaleImageForAccountAvatar(gfx::ImageSkia image_skia);
 
-// Sets the formatted |title| in the Save Password bubble. If the registry
+// Sets the formatted |title| in the Save Password bubble or the Update Password
+// bubble (depending on |is_update_password_bubble|). If the registry
 // controlled domain of |user_visible_url| (i.e. the one seen in the omnibox)
 // differs from the registry controlled domain of |form_origin_url|, sets
 // |IDS_SAVE_PASSWORD_TITLE| as the |title| so that it replaces "this site" in
@@ -33,6 +34,7 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
     const GURL& user_visible_url,
     const GURL& form_origin_url,
     bool is_smartlock_branding_enabled,
+    bool is_update_password_bubble,
     base::string16* title,
     gfx::Range* title_link_range);
 

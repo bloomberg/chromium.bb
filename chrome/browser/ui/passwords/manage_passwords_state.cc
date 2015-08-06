@@ -123,6 +123,15 @@ void ManagePasswordsState::OnPendingPassword(
   SetState(password_manager::ui::PENDING_PASSWORD_STATE);
 }
 
+void ManagePasswordsState::OnUpdatePassword(
+    scoped_ptr<password_manager::PasswordFormManager> form_manager) {
+  ClearData();
+  form_manager_ = form_manager.Pass();
+  current_forms_weak_ = ScopedPtrMapToVector(form_manager_->best_matches());
+  origin_ = form_manager_->pending_credentials().origin;
+  SetState(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
+}
+
 void ManagePasswordsState::OnRequestCredentials(
     ScopedVector<autofill::PasswordForm> local_credentials,
     ScopedVector<autofill::PasswordForm> federated_credentials,

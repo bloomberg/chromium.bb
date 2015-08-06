@@ -62,9 +62,21 @@ PromptObserver::PromptObserver() {
 PromptObserver::~PromptObserver() {
 }
 
+bool PromptObserver::IsShowingUpdatePrompt() const {
+  // TODO(dvadym): Make this method pure virtual as soon as update UI is
+  // implemented for infobar. http://crbug.com/359315
+  return false;
+}
+
 void PromptObserver::Accept() const {
   EXPECT_TRUE(IsShowingPrompt());
   AcceptImpl();
+}
+
+void PromptObserver::AcceptUpdatePrompt(
+    const autofill::PasswordForm& form) const {
+  EXPECT_TRUE(IsShowingUpdatePrompt());
+  AcceptUpdatePromptImpl(form);
 }
 
 class InfoBarObserver : public PromptObserver,
@@ -135,11 +147,21 @@ class BubbleObserver : public PromptObserver {
     return ui_controller_->PasswordPendingUserDecision();
   }
 
+  bool IsShowingUpdatePrompt() const override {
+    return ui_controller_->state() ==
+           password_manager::ui::PENDING_PASSWORD_UPDATE_STATE;
+  }
+
   void AcceptImpl() const override {
     ui_controller_->SavePassword();
     EXPECT_FALSE(IsShowingPrompt());
   }
 
+  void AcceptUpdatePromptImpl(
+      const autofill::PasswordForm& form) const override {
+    ui_controller_->UpdatePassword(form);
+    EXPECT_FALSE(IsShowingUpdatePrompt());
+  }
   ManagePasswordsUIController* const ui_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleObserver);

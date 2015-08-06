@@ -94,6 +94,10 @@ bool PasswordForm::IsPossibleChangePasswordForm() const {
          layout != PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP;
 }
 
+bool PasswordForm::IsPossibleChangePasswordFormWithoutUsername() const {
+  return IsPossibleChangePasswordForm() && username_element.empty();
+}
+
 bool PasswordForm::operator==(const PasswordForm& form) const {
   return scheme == form.scheme &&
       signon_realm == form.signon_realm &&

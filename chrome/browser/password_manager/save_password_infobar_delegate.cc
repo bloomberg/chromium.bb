@@ -91,7 +91,7 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
   title_link_range_ = gfx::Range();
   GetSavePasswordDialogTitleTextAndLinkRange(
       web_contents->GetVisibleURL(), form_to_save_->observed_form().origin,
-      is_smartlock_branding_enabled, &title_, &title_link_range_);
+      is_smartlock_branding_enabled, false, &title_, &title_link_range_);
 }
 
 infobars::InfoBarDelegate::Type

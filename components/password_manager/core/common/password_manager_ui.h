@@ -37,6 +37,10 @@ enum State {
   // The user was auto signed in to the site. The icon and the auto-signin toast
   // should be visible.
   AUTO_SIGNIN_STATE,
+
+  // The user submitted a form that we consider to be a change password form.
+  // Chrome needs to ask the user to confirm password updating.
+  PENDING_PASSWORD_UPDATE_STATE,
 };
 
 // The position of a password item in a list of credentials.

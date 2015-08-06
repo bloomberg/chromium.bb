@@ -103,6 +103,14 @@ void ManagePasswordsUIController::OnPasswordSubmitted(
   UpdateBubbleAndIconVisibility();
 }
 
+void ManagePasswordsUIController::OnUpdatePasswordSubmitted(
+    scoped_ptr<PasswordFormManager> form_manager) {
+  passwords_data_.OnUpdatePassword(form_manager.Pass());
+  timer_.reset(new base::ElapsedTimer);
+  base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
+  UpdateBubbleAndIconVisibility();
+}
+
 bool ManagePasswordsUIController::OnChooseCredentials(
     ScopedVector<autofill::PasswordForm> local_credentials,
     ScopedVector<autofill::PasswordForm> federated_credentials,
@@ -205,6 +213,14 @@ void ManagePasswordsUIController::SavePassword() {
   UpdateBubbleAndIconVisibility();
 }
 
+void ManagePasswordsUIController::UpdatePassword(
+    const autofill::PasswordForm& password_form) {
+  DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE, state());
+  UpdatePasswordInternal(password_form);
+  passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
+  UpdateBubbleAndIconVisibility();
+}
+
 void ManagePasswordsUIController::ChooseCredential(
     const autofill::PasswordForm& form,
     password_manager::CredentialType credential_type) {
@@ -248,8 +264,14 @@ void ManagePasswordsUIController::ChooseCredential(
 void ManagePasswordsUIController::SavePasswordInternal() {
   password_manager::PasswordFormManager* form_manager =
       passwords_data_.form_manager();
-  DCHECK(form_manager);
   form_manager->Save();
+}
+
+void ManagePasswordsUIController::UpdatePasswordInternal(
+    const autofill::PasswordForm& password_form) {
+  password_manager::PasswordFormManager* form_manager =
+      passwords_data_.form_manager();
+  form_manager->Update(password_form);
 }
 
 void ManagePasswordsUIController::NeverSavePassword() {
@@ -321,7 +343,9 @@ void ManagePasswordsUIController::WasHidden() {
 const autofill::PasswordForm& ManagePasswordsUIController::
     PendingPassword() const {
   DCHECK(state() == password_manager::ui::PENDING_PASSWORD_STATE ||
-         state() == password_manager::ui::CONFIRMATION_STATE) << state();
+         state() == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
+         state() == password_manager::ui::CONFIRMATION_STATE)
+      << state();
   password_manager::PasswordFormManager* form_manager =
       passwords_data_.form_manager();
   DCHECK(form_manager);

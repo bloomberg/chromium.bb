@@ -11,6 +11,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
 
+namespace autofill {
+struct PasswordForm;
+}
+
 class NavigationObserver : public content::WebContentsObserver {
  public:
   explicit NavigationObserver(content::WebContents* web_contents);
@@ -55,12 +59,19 @@ class PromptObserver {
  public:
   virtual ~PromptObserver();
 
-  // Checks if the prompt is being currently shown.
+  // Checks if the save prompt is being currently shown.
   virtual bool IsShowingPrompt() const = 0;
+
+  // Checks if the update prompt is being currently shown.
+  virtual bool IsShowingUpdatePrompt() const;
 
   // Expecting that the prompt is shown, saves the password. Checks that the
   // prompt is no longer visible afterwards.
   void Accept() const;
+
+  // Expecting that the prompt is shown, update |form| with the password from
+  // observed form. Checks that the prompt is no longer visible afterwards.
+  void AcceptUpdatePrompt(const autofill::PasswordForm& form) const;
 
   // Chooses the right implementation of PromptObserver and creates an instance
   // of it.
@@ -73,6 +84,14 @@ class PromptObserver {
   // currently shown, but is required to verify that the prompt is eventually
   // closed.
   virtual void AcceptImpl() const = 0;
+
+  // Accepts the password update. The implementation can assume that the prompt
+  // is currently shown, but is required to verify that the prompt is eventually
+  // closed.
+  // TODO(dvadym): Make this method pure virtual as soon as update UI is
+  // implemented for infobar. http://crbug.com/359315
+  virtual void AcceptUpdatePromptImpl(
+      const autofill::PasswordForm& form) const {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PromptObserver);

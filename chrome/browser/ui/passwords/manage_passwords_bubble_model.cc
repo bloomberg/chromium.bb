@@ -96,7 +96,8 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
 
   origin_ = controller->origin();
   state_ = controller->state();
-  if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
+  if (state_ == password_manager::ui::PENDING_PASSWORD_STATE ||
+      state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
     pending_password_ = controller->PendingPassword();
     local_credentials_ = DeepCopyForms(controller->GetCurrentForms());
   } else if (state_ == password_manager::ui::CONFIRMATION_STATE) {
@@ -110,7 +111,8 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     local_credentials_ = DeepCopyForms(controller->GetCurrentForms());
   }
 
-  if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
+  if (state_ == password_manager::ui::PENDING_PASSWORD_STATE ||
+      state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
     UpdatePendingStateTitle();
   } else if (state_ == password_manager::ui::BLACKLIST_STATE) {
     title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_BLACKLISTED_TITLE);
@@ -248,6 +250,14 @@ void ManagePasswordsBubbleModel::OnSaveClicked() {
   state_ = password_manager::ui::MANAGE_STATE;
 }
 
+void ManagePasswordsBubbleModel::OnUpdateClicked(
+    const autofill::PasswordForm& password_form) {
+  ManagePasswordsUIController* manage_passwords_ui_controller =
+      ManagePasswordsUIController::FromWebContents(web_contents());
+  manage_passwords_ui_controller->UpdatePassword(password_form);
+  state_ = password_manager::ui::MANAGE_STATE;
+}
+
 void ManagePasswordsBubbleModel::OnDoneClicked() {
   dismissal_reason_ = metrics_util::CLICKED_DONE;
 }
@@ -324,6 +334,11 @@ bool ManagePasswordsBubbleModel::IsNewUIActive() const {
       switches::kEnableCredentialManagerAPI);
 }
 
+bool ManagePasswordsBubbleModel::ShouldShowMultipleAccountUpdateUI() const {
+  return state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE &&
+         local_credentials_.size() > 1;
+}
+
 // static
 int ManagePasswordsBubbleModel::UsernameFieldWidth() {
   return GetFieldWidth(USERNAME_FIELD);
@@ -342,7 +357,8 @@ void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
   } else {
     GetSavePasswordDialogTitleTextAndLinkRange(
         web_contents()->GetVisibleURL(), origin(),
-        IsSmartLockBrandingEnabled(GetProfile()), &title_,
+        IsSmartLockBrandingEnabled(GetProfile()),
+        state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE, &title_,
         &title_brand_link_range_);
   }
 }

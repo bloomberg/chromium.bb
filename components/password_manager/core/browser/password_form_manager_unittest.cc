@@ -105,7 +105,8 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
  public:
   explicit TestPasswordManagerClient(PasswordStore* password_store)
       : password_store_(password_store),
-        driver_(new NiceMock<MockPasswordManagerDriver>) {
+        driver_(new NiceMock<MockPasswordManagerDriver>),
+        is_update_password_ui_enabled_(false) {
     prefs_.registry()->RegisterBooleanPref(prefs::kPasswordManagerSavingEnabled,
                                            true);
   }
@@ -133,12 +134,20 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
 
   void KillDriver() { driver_.reset(); }
 
+  bool IsUpdatePasswordUIEnabled() const override {
+    return is_update_password_ui_enabled_;
+  }
+  void set_is_update_password_ui_enabled(bool value) {
+    is_update_password_ui_enabled_ = value;
+  }
+
  private:
   autofill::PasswordForm form_to_filter_;
 
   TestingPrefServiceSimple prefs_;
   PasswordStore* password_store_;
   scoped_ptr<MockPasswordManagerDriver> driver_;
+  bool is_update_password_ui_enabled_;
 };
 
 class TestPasswordManager : public PasswordManager {
@@ -1580,6 +1589,63 @@ TEST_F(PasswordFormManagerTest, TestSuggestingPasswordChangeForms) {
   EXPECT_EQ(1u, password_manager.GetLatestBestMatches().size());
   // Check that we suggest, not autofill.
   EXPECT_TRUE(password_manager.GetLatestWaitForUsername());
+}
+
+TEST_F(PasswordFormManagerTest, TestUpdateMethod) {
+  // Add a new password field to the test form. The PasswordFormManager should
+  // save the password from this field, instead of the current password field.
+  observed_form()->new_password_element = ASCIIToUTF16("NewPasswd");
+
+  // Given that |observed_form| was most likely a change password form, it
+  // should not serve as a source for updating meta-information stored with the
+  // old credentials, such as element names, as they are likely going to be
+  // different between change password and login forms. To test this in depth,
+  // forcibly wipe |submit_element|, which should normally trigger updating this
+  // field from |observed_form| in the UpdateLogin() step as a special case. We
+  // will verify in the end that this did not happen.
+  saved_match()->submit_element.clear();
+
+  TestPasswordManagerClient client_with_store(mock_store());
+  client_with_store.set_is_update_password_ui_enabled(true);
+  PasswordFormManager manager(nullptr, &client_with_store,
+                              client_with_store.driver(), *observed_form(),
+                              false);
+  SimulateMatchingPhase(&manager, RESULT_MATCH_FOUND);
+
+  // User submits current and new credentials to the observed form.
+  PasswordForm credentials(*observed_form());
+  credentials.username_element.clear();
+  credentials.password_value = saved_match()->password_value;
+  credentials.new_password_value = ASCIIToUTF16("test2");
+  credentials.preferred = true;
+  manager.ProvisionallySave(
+      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  // Successful login. The PasswordManager would instruct PasswordFormManager
+  // to save, and since this is an update, it should know not to save as a new
+  // login.
+  EXPECT_FALSE(manager.IsNewLogin());
+
+  // By now, the PasswordFormManager should have promoted the new password value
+  // already to be the current password, and should no longer maintain any info
+  // about the new password.
+  EXPECT_EQ(credentials.new_password_value,
+            GetPendingCredentials(&manager)->password_value);
+  EXPECT_TRUE(GetPendingCredentials(&manager)->new_password_element.empty());
+  EXPECT_TRUE(GetPendingCredentials(&manager)->new_password_value.empty());
+
+  // Trigger saving to exercise some special case handling in UpdateLogin().
+  PasswordForm new_credentials;
+  EXPECT_CALL(*mock_store(), UpdateLogin(_))
+      .WillOnce(testing::SaveArg<0>(&new_credentials));
+  manager.Update(*saved_match());
+  Mock::VerifyAndClearExpectations(mock_store());
+
+  // No meta-information should be updated, only the password.
+  EXPECT_EQ(credentials.new_password_value, new_credentials.password_value);
+  EXPECT_EQ(saved_match()->username_element, new_credentials.username_element);
+  EXPECT_EQ(saved_match()->password_element, new_credentials.password_element);
+  EXPECT_EQ(saved_match()->submit_element, new_credentials.submit_element);
 }
 
 TEST_F(PasswordFormManagerTest, WipeStoreCopyIfOutdated_BeforeStoreCallback) {

@@ -41,19 +41,20 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_CONST_METHOD2(IsSyncAccountCredential,
                      bool(const std::string&, const std::string&));
   MOCK_CONST_METHOD0(GetPasswordStore, PasswordStore*());
-  // The code inside EXPECT_CALL for PromptUserToSavePasswordPtr owns the
-  // PasswordFormManager* argument.
-  MOCK_METHOD2(PromptUserToSavePasswordPtr,
+  // The code inside EXPECT_CALL for PromptUserToSaveOrUpdatePasswordPtr owns
+  // the PasswordFormManager* argument.
+  MOCK_METHOD2(PromptUserToSaveOrUpdatePasswordPtr,
                void(PasswordFormManager*, CredentialSourceType type));
   MOCK_METHOD0(AutomaticPasswordSaveIndicator, void());
   MOCK_METHOD0(GetPrefs, PrefService*());
   MOCK_METHOD0(GetDriver, PasswordManagerDriver*());
 
   // Workaround for scoped_ptr<> lacking a copy constructor.
-  bool PromptUserToSavePassword(
+  bool PromptUserToSaveOrUpdatePassword(
       scoped_ptr<PasswordFormManager> manager,
-      password_manager::CredentialSourceType type) override {
-    PromptUserToSavePasswordPtr(manager.release(), type);
+      password_manager::CredentialSourceType type,
+      bool update_password) override {
+    PromptUserToSaveOrUpdatePasswordPtr(manager.release(), type);
     return false;
   }
   void AutomaticPasswordSave(scoped_ptr<PasswordFormManager> manager) override {
@@ -221,7 +222,7 @@ TEST_F(PasswordManagerTest, FormSubmitWithOnlyNewPasswordField) {
 
   scoped_ptr<PasswordFormManager> form_manager_to_save;
   EXPECT_CALL(client_,
-              PromptUserToSavePasswordPtr(
+              PromptUserToSaveOrUpdatePasswordPtr(
                   _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
@@ -265,7 +266,7 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSubmitEmptyStore) {
   // consent by using the generated password. The form should be saved once
   // navigation occurs. The client will be informed that automatic saving has
   // occured.
-  EXPECT_CALL(client_, PromptUserToSavePasswordPtr(_, _)).Times(0);
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
   PasswordForm form_to_save;
   EXPECT_CALL(*store_, AddLogin(_)).WillOnce(SaveArg<0>(&form_to_save));
   EXPECT_CALL(client_, AutomaticPasswordSaveIndicator());
@@ -303,7 +304,7 @@ TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
   // We still expect an add, since we didn't have a good match.
   scoped_ptr<PasswordFormManager> form_manager_to_save;
   EXPECT_CALL(client_,
-              PromptUserToSavePasswordPtr(
+              PromptUserToSaveOrUpdatePasswordPtr(
                   _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
@@ -329,7 +330,7 @@ TEST_F(PasswordManagerTest, FormSeenThenLeftPage) {
 
   // No message from the renderer that a password was submitted. No
   // expected calls.
-  EXPECT_CALL(client_, PromptUserToSavePasswordPtr(_, _)).Times(0);
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
   observed.clear();
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
@@ -351,7 +352,7 @@ TEST_F(PasswordManagerTest, FormSubmit) {
 
   scoped_ptr<PasswordFormManager> form_manager_to_save;
   EXPECT_CALL(client_,
-              PromptUserToSavePasswordPtr(
+              PromptUserToSaveOrUpdatePasswordPtr(
                   _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
@@ -401,7 +402,7 @@ TEST_F(PasswordManagerTest, FormSubmitWithFormOnPreviousPage) {
 
   scoped_ptr<PasswordFormManager> form_manager_to_save;
   EXPECT_CALL(client_,
-              PromptUserToSavePasswordPtr(
+              PromptUserToSaveOrUpdatePasswordPtr(
                   _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
   // Navigation after form submit, no forms appear.
@@ -434,7 +435,7 @@ TEST_F(PasswordManagerTest, FormSubmitInvisibleLogin) {
   // Expect info bar to appear:
   scoped_ptr<PasswordFormManager> form_manager_to_save;
   EXPECT_CALL(client_,
-              PromptUserToSavePasswordPtr(
+              PromptUserToSaveOrUpdatePasswordPtr(
                   _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
@@ -508,7 +509,7 @@ TEST_F(PasswordManagerTest, PasswordFormReappearance) {
   observed.push_back(MakeTwitterFailedLoginForm());
   // A PasswordForm appears, and is visible in the layout:
   // No expected calls to the PasswordStore...
-  EXPECT_CALL(client_, PromptUserToSavePasswordPtr(_, _)).Times(0);
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
   EXPECT_CALL(client_, AutomaticPasswordSaveIndicator()).Times(0);
   EXPECT_CALL(*store_, AddLogin(_)).Times(0);
   EXPECT_CALL(*store_, UpdateLogin(_)).Times(0);
@@ -528,7 +529,7 @@ TEST_F(PasswordManagerTest, SyncCredentialsNotSaved) {
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
   // User should not be prompted and password should not be saved.
-  EXPECT_CALL(client_, PromptUserToSavePasswordPtr(_, _)).Times(0);
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
   EXPECT_CALL(*store_, AddLogin(_)).Times(0);
   // Prefs are needed for failure logging about sync credentials.
   EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(nullptr));
@@ -610,7 +611,7 @@ TEST_F(PasswordManagerTest, SyncCredentialsDroppedWhenObsolete) {
   // Because the user successfully uses an updated sync password, Chrome should
   // remove the obsolete copy of it.
   EXPECT_CALL(*store_, RemoveLogin(form));
-  EXPECT_CALL(client_, PromptUserToSavePasswordPtr(_, _)).Times(0);
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
   observed.clear();
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
@@ -670,7 +671,7 @@ TEST_F(PasswordManagerTest,
   observed.push_back(second_form);
 
   // Verify that no prompt to save the password is shown.
-  EXPECT_CALL(client_, PromptUserToSavePasswordPtr(_, _)).Times(0);
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 }
@@ -699,7 +700,7 @@ TEST_F(PasswordManagerTest, DoNotSaveWithEmptyNewPasswordAndNonemptyPassword) {
 
   scoped_ptr<PasswordFormManager> form_manager_to_save;
   EXPECT_CALL(client_,
-              PromptUserToSavePasswordPtr(
+              PromptUserToSaveOrUpdatePasswordPtr(
                   _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
@@ -734,7 +735,7 @@ TEST_F(PasswordManagerTest, FormSubmitWithOnlyPasswordField) {
 
   scoped_ptr<PasswordFormManager> form_manager_to_save;
   EXPECT_CALL(client_,
-              PromptUserToSavePasswordPtr(
+              PromptUserToSaveOrUpdatePasswordPtr(
                   _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
@@ -786,7 +787,7 @@ TEST_F(PasswordManagerTest, InPageNavigation) {
 
   scoped_ptr<PasswordFormManager> form_manager_to_save;
   EXPECT_CALL(client_,
-              PromptUserToSavePasswordPtr(
+              PromptUserToSaveOrUpdatePasswordPtr(
                   _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
@@ -818,7 +819,7 @@ TEST_F(PasswordManagerTest, InPageNavigationBlacklistedSite) {
   // Prefs are needed for failure logging about blacklisting.
   EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(nullptr));
 
-  EXPECT_CALL(client_, PromptUserToSavePasswordPtr(_, _)).Times(0);
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
 
   manager()->OnInPageNavigation(&driver_, form);
 }
@@ -852,7 +853,7 @@ TEST_F(PasswordManagerTest, SavingSignupForms_NoHTMLMatch) {
 
   scoped_ptr<PasswordFormManager> form_manager_to_save;
   EXPECT_CALL(client_,
-              PromptUserToSavePasswordPtr(
+              PromptUserToSaveOrUpdatePasswordPtr(
                   _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
@@ -907,7 +908,7 @@ TEST_F(PasswordManagerTest, SavingSignupForms_NoActionMatch) {
 
   scoped_ptr<PasswordFormManager> form_manager_to_save;
   EXPECT_CALL(client_,
-              PromptUserToSavePasswordPtr(
+              PromptUserToSaveOrUpdatePasswordPtr(
                   _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
@@ -961,7 +962,7 @@ TEST_F(PasswordManagerTest, FormSubmittedChangedWithAutofillResponse) {
 
   scoped_ptr<PasswordFormManager> form_manager_to_save;
   EXPECT_CALL(client_,
-              PromptUserToSavePasswordPtr(
+              PromptUserToSaveOrUpdatePasswordPtr(
                   _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
@@ -1001,7 +1002,7 @@ TEST_F(PasswordManagerTest, SaveFormFetchedAfterSubmit) {
 
   scoped_ptr<PasswordFormManager> form_manager_to_save;
   EXPECT_CALL(client_,
-              PromptUserToSavePasswordPtr(
+              PromptUserToSaveOrUpdatePasswordPtr(
                   _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
@@ -1037,7 +1038,7 @@ TEST_F(PasswordManagerTest, PasswordGenerationForceSaving) {
   // consent by using the generated password. The form should be saved once
   // navigation occurs. The client will be informed that automatic saving has
   // occured.
-  EXPECT_CALL(client_, PromptUserToSavePasswordPtr(_, _)).Times(0);
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
   PasswordForm form_to_save;
   EXPECT_CALL(*store_, AddLogin(_)).WillOnce(SaveArg<0>(&form_to_save));
   EXPECT_CALL(client_, AutomaticPasswordSaveIndicator());
@@ -1077,7 +1078,7 @@ TEST_F(PasswordManagerTest, PasswordGenerationPasswordEdited) {
   // consent by using the generated password. The form should be saved once
   // navigation occurs. The client will be informed that automatic saving has
   // occurred.
-  EXPECT_CALL(client_, PromptUserToSavePasswordPtr(_, _)).Times(0);
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
   PasswordForm form_to_save;
   EXPECT_CALL(*store_, AddLogin(_)).WillOnce(SaveArg<0>(&form_to_save));
   EXPECT_CALL(client_, AutomaticPasswordSaveIndicator());
@@ -1116,7 +1117,7 @@ TEST_F(PasswordManagerTest,
   OnPasswordFormSubmitted(form);
 
   // No infobar or prompt is shown if submission fails.
-  EXPECT_CALL(client_, PromptUserToSavePasswordPtr(_, _)).Times(0);
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
   EXPECT_CALL(client_, AutomaticPasswordSaveIndicator()).Times(0);
 
   // Simulate submission failing, with the same form being visible after
@@ -1150,7 +1151,7 @@ TEST_F(PasswordManagerTest,
   // Verify that a normal prompt is shown instead of the force saving UI.
   scoped_ptr<PasswordFormManager> form_to_save;
   EXPECT_CALL(client_,
-              PromptUserToSavePasswordPtr(
+              PromptUserToSaveOrUpdatePasswordPtr(
                   _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
   EXPECT_CALL(client_, AutomaticPasswordSaveIndicator()).Times(0);
@@ -1180,7 +1181,7 @@ TEST_F(PasswordManagerTest, PasswordGenerationUsernameChanged) {
   form.username_value = ASCIIToUTF16("new_username");
   OnPasswordFormSubmitted(form);
 
-  EXPECT_CALL(client_, PromptUserToSavePasswordPtr(_, _)).Times(0);
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
   PasswordForm form_to_save;
   EXPECT_CALL(*store_, AddLogin(_)).WillOnce(SaveArg<0>(&form_to_save));
   EXPECT_CALL(client_, AutomaticPasswordSaveIndicator());
@@ -1210,7 +1211,7 @@ TEST_F(PasswordManagerTest, ForceSavingPasswords) {
   EXPECT_CALL(client_, IsSavingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(client_,
-              PromptUserToSavePasswordPtr(
+              PromptUserToSaveOrUpdatePasswordPtr(
                   _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
   manager()->OnPasswordFormForceSaveRequested(&driver_, form);
@@ -1235,7 +1236,7 @@ TEST_F(PasswordManagerTest, ForceSavingPasswords_Empty) {
 
   EXPECT_CALL(client_, IsSavingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(client_, PromptUserToSavePasswordPtr(_, _)).Times(0);
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
   manager()->OnPasswordFormForceSaveRequested(&driver_, empty_password_form);
 }
 

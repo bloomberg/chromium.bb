@@ -207,9 +207,9 @@ void ManagePasswordItemsView::PasswordFormRow::AddCredentialsRow(
     views::GridLayout* layout) {
   ResetControls();
   int column_set_id =
-      host_->model_->state() == password_manager::ui::PENDING_PASSWORD_STATE
-          ? TWO_COLUMN_SET
-          : THREE_COLUMN_SET;
+      host_->model_->state() == password_manager::ui::MANAGE_STATE
+          ? THREE_COLUMN_SET
+          : TWO_COLUMN_SET;
   BuildColumnSetIfNeeded(layout, column_set_id);
   layout->StartRowWithPadding(0, column_set_id, 0,
                               views::kRelatedControlVerticalSpacing);

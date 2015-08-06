@@ -278,6 +278,11 @@ struct PasswordForm {
   // We use only client heuristics, so it could include signup forms.
   bool IsPossibleChangePasswordForm() const;
 
+  // Return true if we consider this form to be a change password form
+  // without username field. We use only client heuristics, so it could
+  // include signup forms.
+  bool IsPossibleChangePasswordFormWithoutUsername() const;
+
   // Equality operators for testing.
   bool operator==(const PasswordForm& form) const;
   bool operator!=(const PasswordForm& form) const;

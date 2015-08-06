@@ -145,6 +145,11 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // TODO: Make this private once we switch to the new UI.
   void Save();
 
+  // Update the password store entry for |credentials_to_update|, using the
+  // password from |pending_credentials_|. It modifies |pending_credentials_|.
+  // |credentials_to_update| should be one of |best_matches_|.
+  void Update(const autofill::PasswordForm& credentials_to_update);
+
   // Call these if/when we know the form submission worked or failed.
   // These routines are used to update internal statistics ("ActionsTaken").
   void SubmitPassed();
@@ -354,6 +359,13 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Create pending credentials from provisionally saved form and forms received
   // from password store.
   void CreatePendingCredentials();
+
+  // If |best_matches| contains only one entry then return this entry. Otherwise
+  // for empty |password| return nullptr and for non-empty |password| returns
+  // the unique entry in |best_matches_| with the same password, if it exists,
+  // and nullptr otherwise.
+  autofill::PasswordForm* FindBestMatchForUpdatePassword(
+      const base::string16& password) const;
 
   // Set of PasswordForms from the DB that best match the form
   // being managed by this. Use a map instead of vector, because we most

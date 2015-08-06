@@ -2280,6 +2280,8 @@
       'browser/ui/views/panels/x11_panel_resizer.h',
       'browser/ui/views/passwords/credentials_item_view.cc',
       'browser/ui/views/passwords/credentials_item_view.h',
+      'browser/ui/views/passwords/credentials_selection_view.cc',
+      'browser/ui/views/passwords/credentials_selection_view.h',
       'browser/ui/views/passwords/manage_credential_item_view.cc',
       'browser/ui/views/passwords/manage_credential_item_view.h',
       'browser/ui/views/passwords/manage_password_items_view.cc',

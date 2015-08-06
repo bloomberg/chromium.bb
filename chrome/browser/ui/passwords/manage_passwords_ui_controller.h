@@ -41,6 +41,13 @@ class ManagePasswordsUIController
   void OnPasswordSubmitted(
       scoped_ptr<password_manager::PasswordFormManager> form_manager);
 
+  // Called when the user submits a change password form, so we can handle
+  // later requests to update stored credentials in the PasswordManager.
+  // This stores the provided object and triggers the UI to prompt the user
+  // about whether they would like to update the password.
+  void OnUpdatePasswordSubmitted(
+      scoped_ptr<password_manager::PasswordFormManager> form_manager);
+
   // Called when the site asks user to choose from credentials. This triggers
   // the UI to prompt the user. |local_credentials| and |federated_credentials|
   // shouldn't both be empty.
@@ -76,9 +83,14 @@ class ManagePasswordsUIController
       const password_manager::PasswordStoreChangeList& changes) override;
 
   // Called from the model when the user chooses to save a password; passes the
-  // action off to the FormManager. The controller MUST be in a pending state,
-  // and WILL be in MANAGE_STATE after this method executes.
+  // action to the |form_manager|. The controller must be in a pending state,
+  // and will be in MANAGE_STATE after this method executes.
   virtual void SavePassword();
+
+  // Called from the model when the user chooses to update a password; passes
+  // the action to the |form_manager|. The controller must be in a pending
+  // state, and will be in MANAGE_STATE after this method executes.
+  virtual void UpdatePassword(const autofill::PasswordForm& password_form);
 
   // Called from the model when the user chooses a credential.
   // The controller MUST be in a pending credentials state.
@@ -151,6 +163,8 @@ class ManagePasswordsUIController
   // The pieces of saving and blacklisting passwords that interact with
   // FormManager, split off into internal functions for testing/mocking.
   virtual void SavePasswordInternal();
+  virtual void UpdatePasswordInternal(
+      const autofill::PasswordForm& password_form);
   virtual void NeverSavePasswordInternal();
 
   // Called when a PasswordForm is autofilled, when a new PasswordForm is

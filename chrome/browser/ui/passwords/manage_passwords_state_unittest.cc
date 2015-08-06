@@ -584,4 +584,24 @@ TEST_F(ManagePasswordsStateTest, BlacklistedToAutofilled) {
   EXPECT_EQ(test_submitted_form().origin, passwords_data().origin());
 }
 
+TEST_F(ManagePasswordsStateTest, PasswordUpdateSubmitted) {
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
+      CreateFormManager());
+  test_form_manager->ProvisionallySave(
+      test_submitted_form(),
+      password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  passwords_data().OnUpdatePassword(test_form_manager.Pass());
+
+  EXPECT_THAT(passwords_data().GetCurrentForms(),
+              ElementsAre(Pointee(test_local_form())));
+  EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE,
+            passwords_data().state());
+  EXPECT_EQ(test_submitted_form().origin, passwords_data().origin());
+  ASSERT_TRUE(passwords_data().form_manager());
+  EXPECT_EQ(test_submitted_form(),
+            passwords_data().form_manager()->pending_credentials());
+  TestAllUpdates();
+}
+
 }  // namespace

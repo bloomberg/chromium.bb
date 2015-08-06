@@ -23,8 +23,9 @@ extern const char kEnableAffiliationBasedMatching[];
 extern const char kEnableAutomaticPasswordSaving[];
 extern const char kEnableDropSyncCredential[];
 extern const char kEnableManagerForSyncSignin[];
-extern const char kEnablePasswordLink[];
+extern const char kEnablePasswordChangeSupport[];
 extern const char kEnablePasswordForceSaving[];
+extern const char kEnablePasswordLink[];
 
 }  // namespace switches
 

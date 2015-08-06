@@ -42,6 +42,9 @@ class ManagePasswordsUIControllerMock
   void SavePassword() override;
   bool saved_password() const { return saved_password_; }
 
+  void UpdatePassword(const autofill::PasswordForm& password_form) override;
+  bool updated_password() const { return updated_password_; }
+
   void NeverSavePassword() override;
   bool never_saved_password() const { return never_saved_password_; }
 
@@ -75,6 +78,7 @@ class ManagePasswordsUIControllerMock
  private:
   bool navigated_to_settings_page_;
   bool saved_password_;
+  bool updated_password_;
   bool never_saved_password_;
   bool unblacklist_site_;
   bool choose_credential_;

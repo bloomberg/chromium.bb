@@ -61,6 +61,7 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   class ManageAccountsView;
   class PendingView;
   class SaveConfirmationView;
+  class UpdatePendingView;
   class WebContentMouseHandler;
 
   ManagePasswordsBubbleView(content::WebContents* web_contents,

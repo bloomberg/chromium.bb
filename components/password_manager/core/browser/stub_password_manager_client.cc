@@ -30,9 +30,10 @@ bool StubPasswordManagerClient::ShouldFilterAutofillResult(
   return false;
 }
 
-bool StubPasswordManagerClient::PromptUserToSavePassword(
+bool StubPasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     scoped_ptr<PasswordFormManager> form_to_save,
-    password_manager::CredentialSourceType type) {
+    password_manager::CredentialSourceType type,
+    bool update_password) {
   return false;
 }
 

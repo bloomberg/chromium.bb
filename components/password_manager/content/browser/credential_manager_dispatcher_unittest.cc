@@ -59,9 +59,10 @@ class MockPasswordManagerClient
   }
   ~MockPasswordManagerClient() override {}
 
-  bool PromptUserToSavePassword(
+  bool PromptUserToSaveOrUpdatePassword(
       scoped_ptr<password_manager::PasswordFormManager> manager,
-      password_manager::CredentialSourceType type) override {
+      password_manager::CredentialSourceType type,
+      bool update_password) override {
     manager_.swap(manager);
     PromptUserToSavePasswordPtr(manager_.get(), type);
     return true;

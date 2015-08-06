@@ -215,9 +215,10 @@ void ChromePasswordManagerClient::AutofillResultsComputed() {
   sync_credential_was_filtered_ = false;
 }
 
-bool ChromePasswordManagerClient::PromptUserToSavePassword(
+bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     scoped_ptr<password_manager::PasswordFormManager> form_to_save,
-    password_manager::CredentialSourceType type) {
+    password_manager::CredentialSourceType type,
+    bool update_password) {
   // Save password infobar and the password bubble prompts in case of
   // "webby" URLs and do not prompt in case of "non-webby" URLS (e.g. file://).
   if (!BrowsingDataHelper::IsWebScheme(
@@ -228,7 +229,12 @@ bool ChromePasswordManagerClient::PromptUserToSavePassword(
   if (IsTheHotNewBubbleUIEnabled()) {
     ManagePasswordsUIController* manage_passwords_ui_controller =
         ManagePasswordsUIController::FromWebContents(web_contents());
-    manage_passwords_ui_controller->OnPasswordSubmitted(form_to_save.Pass());
+    if (update_password && IsUpdatePasswordUIEnabled()) {
+      manage_passwords_ui_controller->OnUpdatePasswordSubmitted(
+          form_to_save.Pass());
+    } else {
+      manage_passwords_ui_controller->OnPasswordSubmitted(form_to_save.Pass());
+    }
   } else {
     std::string uma_histogram_suffix(
         password_manager::metrics_util::GroupIdToString(
@@ -538,6 +544,16 @@ bool ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled() {
 
   // The bubble should be the default case that runs on the bots.
   return group_name != "Infobar";
+}
+
+bool ChromePasswordManagerClient::IsUpdatePasswordUIEnabled() const {
+  if (!ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
+    // Currently Password update UI is implemented only for Bubble UI.
+    return false;
+  }
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(
+      password_manager::switches::kEnablePasswordChangeSupport);
 }
 
 bool ChromePasswordManagerClient::EnabledForSyncSignin() {

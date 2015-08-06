@@ -76,13 +76,14 @@ class PasswordManagerClient {
   // this signal to report statistics. Default implementation is a noop.
   virtual void AutofillResultsComputed();
 
-  // Informs the embedder of a password form that can be saved if the user
-  // allows it. The embedder is not required to prompt the user if it decides
-  // that this form doesn't need to be saved.
-  // Returns true if the prompt was indeed displayed.
-  virtual bool PromptUserToSavePassword(
+  // Informs the embedder of a password form that can be saved or updated in
+  // password store if the user allows it. The embedder is not required to
+  // prompt the user if it decides that this form doesn't need to be saved or
+  // updated. Returns true if the prompt was indeed displayed.
+  virtual bool PromptUserToSaveOrUpdatePassword(
       scoped_ptr<PasswordFormManager> form_to_save,
-      CredentialSourceType type) = 0;
+      CredentialSourceType type,
+      bool update_password) = 0;
 
   // Informs the embedder of a password forms that the user should choose from.
   // Returns true if the prompt is indeed displayed. If the prompt is not
@@ -170,6 +171,9 @@ class PasswordManagerClient {
 
   // Returns the main frame URL.
   virtual const GURL& GetMainFrameURL() const;
+
+  // Returns true if the UI for confirmation of update password is enabled.
+  virtual bool IsUpdatePasswordUIEnabled() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);

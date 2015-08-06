@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/passwords/save_password_refusal_combobox_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
+#include "chrome/browser/ui/views/passwords/credentials_selection_view.h"
 #include "chrome/browser/ui/views/passwords/manage_credential_item_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
@@ -974,6 +975,132 @@ void ManagePasswordsBubbleView::WebContentMouseHandler::OnTouchEvent(
     bubble_->Close();
 }
 
+// ManagePasswordsBubbleView::UpdatePendingView -------------------------------
+
+// A view offering the user the ability to update credentials. Contains a
+// single ManagePasswordItemsView (in case of one credentials) or
+// CredentialsSelectionView otherwise, along with a "Update Passwords" button
+// and a rejection button.
+class ManagePasswordsBubbleView::UpdatePendingView
+    : public views::View,
+      public views::ButtonListener,
+      public views::StyledLabelListener {
+ public:
+  explicit UpdatePendingView(ManagePasswordsBubbleView* parent);
+  ~UpdatePendingView() override;
+
+ private:
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // views::StyledLabelListener:
+  void StyledLabelLinkClicked(const gfx::Range& range,
+                              int event_flags) override;
+
+  ManagePasswordsBubbleView* parent_;
+
+  CredentialsSelectionView* selection_view_;
+
+  views::BlueButton* update_button_;
+
+  views::LabelButton* nope_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(UpdatePendingView);
+};
+
+ManagePasswordsBubbleView::UpdatePendingView::UpdatePendingView(
+    ManagePasswordsBubbleView* parent)
+    : parent_(parent), selection_view_(nullptr) {
+  views::GridLayout* layout = new views::GridLayout(this);
+  layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
+  SetLayoutManager(layout);
+
+  // Create the pending credential item, update button.
+  View* item = nullptr;
+  if (parent->model()->ShouldShowMultipleAccountUpdateUI()) {
+    selection_view_ = new CredentialsSelectionView(
+        parent->model(), parent->model()->local_credentials().get(),
+        parent->model()->pending_password().username_value);
+    item = selection_view_;
+  } else {
+    DCHECK_EQ(1u, parent->model()->local_credentials().size());
+    DCHECK_EQ(parent->model()->local_credentials()[0]->username_value,
+              parent->model()->pending_password().username_value);
+    std::vector<const autofill::PasswordForm*> forms;
+    forms.push_back(&parent->model()->pending_password());
+    item = new ManagePasswordItemsView(parent_->model(), forms);
+  }
+  nope_button_ = new views::LabelButton(
+      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_BUTTON));
+  nope_button_->SetStyle(views::Button::STYLE_BUTTON);
+  nope_button_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::SmallFont));
+
+  update_button_ = new views::BlueButton(
+      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_UPDATE_BUTTON));
+  update_button_->SetFontList(
+      ui::ResourceBundle::GetSharedInstance().GetFontList(
+          ui::ResourceBundle::SmallFont));
+
+  // Title row.
+  views::StyledLabel* title_label =
+      new views::StyledLabel(parent_->model()->title(), this);
+  title_label->SetBaseFontList(
+      ui::ResourceBundle::GetSharedInstance().GetFontList(
+          ui::ResourceBundle::MediumFont));
+  if (!parent_->model()->title_brand_link_range().is_empty()) {
+    title_label->AddStyleRange(
+        parent_->model()->title_brand_link_range(),
+        views::StyledLabel::RangeStyleInfo::CreateForLink());
+  }
+  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
+  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
+  layout->AddView(title_label);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+  // Credential row.
+  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
+  layout->AddView(item);
+
+  // Button row.
+  BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
+  layout->StartRowWithPadding(0, DOUBLE_BUTTON_COLUMN_SET, 0,
+                              views::kRelatedControlVerticalSpacing);
+  layout->AddView(update_button_);
+  layout->AddView(nope_button_);
+
+  // Extra padding for visual awesomeness.
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+  parent_->set_initially_focused_view(update_button_);
+}
+
+ManagePasswordsBubbleView::UpdatePendingView::~UpdatePendingView() {}
+
+void ManagePasswordsBubbleView::UpdatePendingView::ButtonPressed(
+    views::Button* sender,
+    const ui::Event& event) {
+  DCHECK(sender == update_button_ || sender == nope_button_);
+  if (sender == update_button_) {
+    if (selection_view_) {
+      // Multi account case.
+      parent_->model()->OnUpdateClicked(
+          *selection_view_->GetSelectedCredentials());
+    } else {
+      parent_->model()->OnUpdateClicked(
+          *parent_->model()->local_credentials()[0]);
+    }
+  }
+  parent_->Close();
+}
+
+void ManagePasswordsBubbleView::UpdatePendingView::StyledLabelLinkClicked(
+    const gfx::Range& range,
+    int event_flags) {
+  DCHECK_EQ(range, parent_->model()->title_brand_link_range());
+  parent_->model()->OnBrandLinkClicked();
+}
+
 // ManagePasswordsBubbleView --------------------------------------------------
 
 // static
@@ -1080,6 +1207,9 @@ void ManagePasswordsBubbleView::Refresh() {
       AddChildView(new ConfirmNeverView(this));
     else
       AddChildView(new PendingView(this));
+  } else if (model()->state() ==
+             password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
+    AddChildView(new UpdatePendingView(this));
   } else if (model()->state() == password_manager::ui::BLACKLIST_STATE) {
     AddChildView(new BlacklistedView(this));
   } else if (model()->state() == password_manager::ui::CONFIRMATION_STATE) {

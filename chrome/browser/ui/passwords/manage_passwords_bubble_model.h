@@ -63,8 +63,11 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // Called by the view code when the site is unblacklisted.
   void OnUnblacklistClicked();
 
-  // Called by the view code when the save button in clicked by the user.
+  // Called by the view code when the save button is clicked by the user.
   void OnSaveClicked();
+
+  // Called by the view code when the update link is clicked by the user.
+  void OnUpdateClicked(const autofill::PasswordForm& password_form);
 
   // Called by the view code when the "Done" button is clicked by the user.
   void OnDoneClicked();
@@ -131,6 +134,10 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // Returns true iff the new UI should be presented to user for managing and
   // saving the passwords.
   bool IsNewUIActive() const;
+
+  // Returns true iff the multiple account selection prompt for account update
+  // should be presented.
+  bool ShouldShowMultipleAccountUpdateUI() const;
 
 #if defined(UNIT_TEST)
   // Gets and sets the reason the bubble was displayed.

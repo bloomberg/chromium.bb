@@ -45,6 +45,11 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
     model_->OnBubbleShown(ManagePasswordsBubble::AUTOMATIC);
   }
 
+  void PretendUpdatePasswordWaiting() {
+    model_->set_state(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
+    model_->OnBubbleShown(ManagePasswordsBubble::AUTOMATIC);
+  }
+
   void PretendCredentialsWaiting() {
     model_->set_state(password_manager::ui::CREDENTIAL_REQUEST_STATE);
     model_->OnBubbleShown(ManagePasswordsBubble::AUTOMATIC);
@@ -305,4 +310,13 @@ TEST_F(ManagePasswordsBubbleModelTest, PopupAutoSigninAndManagedBubble) {
       kUIDismissalReasonMetric,
       password_manager::metrics_util::AUTO_SIGNIN_TOAST_CLICKED,
       1);
+}
+
+TEST_F(ManagePasswordsBubbleModelTest, ClickUpdate) {
+  PretendUpdatePasswordWaiting();
+  model_->OnUpdateClicked(autofill::PasswordForm());
+  model_->OnBubbleHidden();
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, model_->state());
+  EXPECT_TRUE(controller()->updated_password());
+  EXPECT_FALSE(controller()->never_saved_password());
 }

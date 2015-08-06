@@ -77,8 +77,9 @@ void CredentialManagerDispatcher::OnProvisionalSaveComplete() {
   DCHECK(form_manager_);
   if (client_->IsSavingEnabledForCurrentPage() &&
       !form_manager_->IsBlacklisted()) {
-    client_->PromptUserToSavePassword(
-        form_manager_.Pass(), CredentialSourceType::CREDENTIAL_SOURCE_API);
+    client_->PromptUserToSaveOrUpdatePassword(
+        form_manager_.Pass(), CredentialSourceType::CREDENTIAL_SOURCE_API,
+        false);
   }
 }
 

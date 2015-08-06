@@ -43,6 +43,10 @@ class ManagePasswordsState {
   void OnPendingPassword(
       scoped_ptr<password_manager::PasswordFormManager> form_manager);
 
+  // Move to PENDING_PASSWORD_UPDATE_STATE.
+  void OnUpdatePassword(
+      scoped_ptr<password_manager::PasswordFormManager> form_manager);
+
   // Move to CREDENTIAL_REQUEST_STATE.
   void OnRequestCredentials(
       ScopedVector<autofill::PasswordForm> local_credentials,

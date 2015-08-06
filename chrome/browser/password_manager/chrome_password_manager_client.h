@@ -50,9 +50,10 @@ class ChromePasswordManagerClient
   bool IsSyncAccountCredential(const std::string& username,
                                const std::string& realm) const override;
   void AutofillResultsComputed() override;
-  bool PromptUserToSavePassword(
+  bool PromptUserToSaveOrUpdatePassword(
       scoped_ptr<password_manager::PasswordFormManager> form_to_save,
-      password_manager::CredentialSourceType type) override;
+      password_manager::CredentialSourceType type,
+      bool update_password) override;
   bool PromptUserToChooseCredentials(
       ScopedVector<autofill::PasswordForm> local_forms,
       ScopedVector<autofill::PasswordForm> federated_forms,
@@ -80,6 +81,7 @@ class ChromePasswordManagerClient
   password_manager::PasswordManager* GetPasswordManager() override;
   autofill::AutofillManager* GetAutofillManagerForMainFrame() override;
   const GURL& GetMainFrameURL() const override;
+  bool IsUpdatePasswordUIEnabled() const override;
 
   // Hides any visible generation UI.
   void HidePasswordGenerationPopup();

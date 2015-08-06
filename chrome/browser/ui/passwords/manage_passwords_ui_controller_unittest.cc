@@ -51,6 +51,8 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
   void UpdateBubbleAndIconVisibility() override;
   void UpdateAndroidAccountChooserInfoBarVisibility() override;
   void SavePasswordInternal() override {}
+  void UpdatePasswordInternal(
+      const autofill::PasswordForm& password_form) override {}
   void NeverSavePasswordInternal() override;
 
   base::TimeDelta elapsed_;
@@ -551,4 +553,32 @@ TEST_F(ManagePasswordsUIControllerTest, InactiveOnPSLMatched) {
   controller()->OnPasswordAutofilled(map);
 
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->state());
+}
+
+TEST_F(ManagePasswordsUIControllerTest, UpdatePasswordSubmitted) {
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
+      CreateFormManager());
+  controller()->OnUpdatePasswordSubmitted(test_form_manager.Pass());
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE,
+            controller()->state());
+
+  ManagePasswordsIconMock mock;
+  controller()->UpdateIconAndBubbleState(&mock);
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE, mock.state());
+}
+
+TEST_F(ManagePasswordsUIControllerTest, PasswordUpdated) {
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
+      CreateFormManager());
+  test_form_manager->ProvisionallySave(
+      test_local_form(),
+      password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  controller()->OnUpdatePasswordSubmitted(test_form_manager.Pass());
+
+  ManagePasswordsIconMock mock;
+  controller()->UpdateIconAndBubbleState(&mock);
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE, mock.state());
+  controller()->UpdatePassword(autofill::PasswordForm());
+  controller()->UpdateIconAndBubbleState(&mock);
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, mock.state());
 }

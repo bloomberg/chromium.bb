@@ -54,13 +54,17 @@ const char kEnableDropSyncCredential[] = "enable-drop-sync-credential";
 // behavior.
 const char kEnableManagerForSyncSignin[] = "enable-manager-for-sync-signin";
 
-// Enable the link in the password manager settings page that points to account
-// central.
-const char kEnablePasswordLink[] = "enable-password-link";
+// Enable supporting of updating password in the password manager on a password
+// change form submit.
+const char kEnablePasswordChangeSupport[] = "enable-password-change-support";
 
 // Enable a context menu item in the password field that allows the user
 // to manually enforce saving of their password.
 const char kEnablePasswordForceSaving[] = "enable-password-force-saving";
+
+// Enable the link in the password manager settings page that points to account
+// central.
+const char kEnablePasswordLink[] = "enable-password-link";
 
 }  // namespace switches
 
