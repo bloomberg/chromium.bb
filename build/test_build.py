@@ -221,6 +221,8 @@ def Main(argv):
                     help='Run architecture.')
   parser.add_option('-t', '--tools', dest='tools', action='append', default=[],
                     help='Select which toolchains versions to run.')
+  parser.add_option('-s', '--stamp', dest='stamp',
+                    help='Select path to write a stamp file to on success.')
 
   options, nexe_args = parser.parse_args(argv[1:])
   if not options.name:
@@ -268,6 +270,11 @@ def Main(argv):
 
   if out:
     out.close()
+
+  if fail == 0 and options.stamp is not None:
+    with open(options.stamp, 'w') as fh:
+      fh.write('ok')
+
   return fail
 
 

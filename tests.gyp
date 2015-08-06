@@ -135,7 +135,7 @@
               ],
               # Add a bogus output file, to cause this step to always fire.
               'outputs': [
-                '<(PRODUCT_DIR)/test-output/dont_create_hello_world.out'
+                '<(PRODUCT_DIR)/test-output/hello_world.stamp'
               ],
               'action': [
                 'python',
@@ -148,7 +148,8 @@
                 #               interprets this as escaped quote.
                 # http://code.google.com/p/chromium/issues/detail?id=141463
                 '<(path)/hack',
-                '<(tools)'
+                '<(tools)',
+                '--stamp', '<@(_outputs)',
               ],
             },
           ],
@@ -184,7 +185,7 @@
               ],
               # Add a bogus output file, to cause this step to always fire.
               'outputs': [
-                '<(PRODUCT_DIR)/test-output/dont_create_hello_world_pnacl.out'
+                '<(PRODUCT_DIR)/test-output/hello_world_pnacl.stamp'
               ],
               'action': [
                 'python',
@@ -197,7 +198,8 @@
                 #               interprets this as escaped quote.
                 # http://code.google.com/p/chromium/issues/detail?id=141463
                 '<(path)/hack',
-                '<(tools)'
+                '<(tools)',
+                '--stamp', '<@(_outputs)',
               ],
             },
           ],
