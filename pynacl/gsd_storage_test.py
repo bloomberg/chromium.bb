@@ -17,12 +17,26 @@ class TestGSDStorage(unittest.TestCase):
   def test_PutData(self):
     # Check that command line is as expected.
     # Special handling around the destination file,
-    # as its a temporary name and unknown to us.
+    # as it's a temporary name and unknown to us.
+    step = [0]
     def call(cmd):
-      self.assertEqual(
-          ['mygsutil', 'cp', '-a', 'public-read'], cmd[0:4])
-      self.assertEqual('foo', file_tools.ReadFile(cmd[4][len('file://'):]))
-      self.assertEqual('gs://mybucket/bar', cmd[5])
+      if step[0] == 0:
+        self.assertEqual(
+            ['mygsutil', 'cp', '-a', 'public-read'], cmd[0:4])
+        self.assertEqual('foo', file_tools.ReadFile(cmd[4][len('file://'):]))
+        self.assertEqual('gs://mybucket/bar', cmd[5].split('.')[0])
+      elif step[0] == 1:
+        self.assertEqual(
+            ['mygsutil', 'cp', '-a', 'public-read'], cmd[0:4])
+        self.assertEqual('gs://mybucket/bar', cmd[4].split('.')[0])
+        self.assertEqual('gs://mybucket/bar', cmd[5])
+      elif step[0] == 2:
+        self.assertEqual(
+            ['mygsutil', 'rm'], cmd[0:2])
+        self.assertEqual('gs://mybucket/bar', cmd[2].split('.')[0])
+      else:
+        self.assertTrue(False)
+      step[0] += 1
       return 0
     storage = gsd_storage.GSDStorage(
         write_bucket='mybucket',
@@ -32,14 +46,25 @@ class TestGSDStorage(unittest.TestCase):
     self.assertEquals('https://storage.googleapis.com/mybucket/bar', url)
 
   def test_PutFile(self):
-    # As we control all the paths, check the full command line for PutFile.
     path = 'my/path'
+    step = [0]
     def call(cmd):
-      self.assertEqual(
-          ['mygsutil', 'cp', '-a', 'public-read',
-           'file://' + os.path.abspath(path).replace(os.sep, '/'),
-           'gs://mybucket/bar'],
-          cmd)
+      if step[0] == 0:
+        self.assertEqual(
+            ['mygsutil', 'cp', '-a', 'public-read'], cmd[0:4])
+        self.assertEqual('gs://mybucket/bar', cmd[5].split('.')[0])
+      elif step[0] == 1:
+        self.assertEqual(
+            ['mygsutil', 'cp', '-a', 'public-read'], cmd[0:4])
+        self.assertEqual('gs://mybucket/bar', cmd[4].split('.')[0])
+        self.assertEqual('gs://mybucket/bar', cmd[5])
+      elif step[0] == 2:
+        self.assertEqual(
+            ['mygsutil', 'rm'], cmd[0:2])
+        self.assertEqual('gs://mybucket/bar', cmd[2].split('.')[0])
+      else:
+        self.assertTrue(False)
+      step[0] += 1
       return 0
     storage = gsd_storage.GSDStorage(
         write_bucket='mybucket',
@@ -128,7 +153,7 @@ class TestGSDStorage(unittest.TestCase):
     stored_keys = set()
     def call(cmd):
       self.assertTrue(len(cmd) >= 3)
-      self.assertTrue(cmd[1] in ['cp', 'ls'])
+      self.assertTrue(cmd[1] in ['cp', 'ls', 'rm'])
       if cmd[1] == 'cp':
         # Add the key into stored_keys
         copy_key = cmd[-1]
@@ -140,6 +165,8 @@ class TestGSDStorage(unittest.TestCase):
           return 0
         else:
           return 1
+      elif cmd[1] == 'rm':
+        return 0
 
     write_storage = gsd_storage.GSDStorage(
         gsutil=['mygsutil'],

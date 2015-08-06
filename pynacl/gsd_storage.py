@@ -15,9 +15,11 @@ more or less like a key+value data-store.
 import logging
 import os
 import posixpath
+import random
 import re
 import shutil
 import subprocess
+import string
 import sys
 import tempfile
 
@@ -120,19 +122,38 @@ class GSDStorage(object):
     if self._write_bucket is None:
       raise GSDStorageError('no bucket when storing %s to %s' % (path, key))
     obj = self._write_bucket + '/' + key
-    arguments = ['cp', '-a', 'public-read']
+    cp_cmd = ['cp', '-a', 'public-read']
     if not clobber:
-      arguments.append('-n')
+      cp_cmd.append('-n')
 
+    gs_path = GS_PATTERN % obj
+    gs_tmp_path = gs_path + '.tmp.' + ''.join(
+        random.choice(string.lowercase) for x in range(10))
     # Using file://c:/foo/bar form of path as gsutil does not like drive
     # letters without it.
-    cmd = self._gsutil + arguments + [
-        'file://' + os.path.abspath(path).replace(os.sep, '/'),
-        GS_PATTERN % obj]
+    file_path ='file://' + os.path.abspath(path).replace(os.sep, '/')
+
+    # Store to temporary location.
+    cmd = self._gsutil + cp_cmd + [file_path, gs_tmp_path]
     logging.info('Running: %s' % str(cmd))
     if self._call(cmd) != 0:
       raise GSDStorageError('failed when storing %s to %s (%s)' % (
         path, key, cmd))
+
+    # Copy to final location (so the window of time is short).
+    cmd = self._gsutil + cp_cmd + [gs_tmp_path, gs_path]
+    logging.info('Running: %s' % str(cmd))
+    if self._call(cmd) != 0:
+      raise GSDStorageError('failed when storing %s to %s (%s)' % (
+        path, key, cmd))
+
+    # Cleanup.
+    cmd = self._gsutil + ['rm', gs_tmp_path]
+    logging.info('Running: %s' % str(cmd))
+    if self._call(cmd) != 0:
+      raise GSDStorageError('failed when storing %s to %s (%s)' % (
+        path, key, cmd))
+
     return GS_HTTPS_PATTERN % obj
 
   def PutData(self, data, key, clobber=True):
