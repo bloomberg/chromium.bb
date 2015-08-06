@@ -55,12 +55,16 @@ MessagePumpLibevent::FileDescriptorWatcher::FileDescriptorWatcher()
     : event_(NULL),
       pump_(NULL),
       watcher_(NULL),
-      weak_factory_(this) {
+      was_destroyed_(NULL) {
 }
 
 MessagePumpLibevent::FileDescriptorWatcher::~FileDescriptorWatcher() {
   if (event_) {
     StopWatchingFileDescriptor();
+  }
+  if (was_destroyed_) {
+    DCHECK(!*was_destroyed_);
+    *was_destroyed_ = true;
   }
 }
 
@@ -340,23 +344,31 @@ bool MessagePumpLibevent::Init() {
 }
 
 // static
-void MessagePumpLibevent::OnLibeventNotification(int fd, short flags,
+void MessagePumpLibevent::OnLibeventNotification(int fd,
+                                                 short flags,
                                                  void* context) {
-  WeakPtr<FileDescriptorWatcher> controller =
-      static_cast<FileDescriptorWatcher*>(context)->weak_factory_.GetWeakPtr();
-  DCHECK(controller.get());
+  FileDescriptorWatcher* controller =
+      static_cast<FileDescriptorWatcher*>(context);
+  DCHECK(controller);
   TRACE_EVENT1("toplevel", "MessagePumpLibevent::OnLibeventNotification",
                "fd", fd);
 
   MessagePumpLibevent* pump = controller->pump();
   pump->processed_io_events_ = true;
 
-  if (flags & EV_WRITE) {
+  if ((flags & (EV_READ | EV_WRITE)) == (EV_READ | EV_WRITE)) {
+    // Both callbacks will be called. It is necessary to check that |controller|
+    // is not destroyed.
+    bool controller_was_destroyed = false;
+    controller->was_destroyed_ = &controller_was_destroyed;
     controller->OnFileCanWriteWithoutBlocking(fd, pump);
-  }
-  // Check |controller| in case it's been deleted in
-  // controller->OnFileCanWriteWithoutBlocking().
-  if (controller.get() && flags & EV_READ) {
+    if (!controller_was_destroyed)
+      controller->OnFileCanReadWithoutBlocking(fd, pump);
+    if (!controller_was_destroyed)
+      controller->was_destroyed_ = nullptr;
+  } else if (flags & EV_WRITE) {
+    controller->OnFileCanWriteWithoutBlocking(fd, pump);
+  } else if (flags & EV_READ) {
     controller->OnFileCanReadWithoutBlocking(fd, pump);
   }
 }
