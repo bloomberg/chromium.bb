@@ -30,8 +30,6 @@ class WebContentLayerImpl : public blink::WebContentLayer,
   // WebContentLayer implementation.
   virtual blink::WebLayer* layer();
   virtual void setDoubleSided(bool double_sided);
-  // TODO(danakj): Remove me.
-  virtual void setDrawCheckerboardForMissingTiles(bool checkerboard);
 
  protected:
   virtual ~WebContentLayerImpl();
