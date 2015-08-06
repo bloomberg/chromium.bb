@@ -651,6 +651,8 @@ class GypTemplate(Template):
 def Localize(source, locales, options):
   # Set the list of languages to use.
   languages = map(NormalizeLanguageCode, locales)
+  # Remove duplicates.
+  languages = sorted(set(languages))
   context = { 'languages' : languages }
 
   # Load the localized messages.
