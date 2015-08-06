@@ -1029,46 +1029,4 @@ TEST_F(TaskQueueManagerTest, QuitWhileNested) {
   EXPECT_FALSE(was_nested);
 }
 
-class SequenceNumberCapturingTaskObserver
-    : public base::MessageLoop::TaskObserver {
- public:
-  // MessageLoop::TaskObserver overrides.
-  void WillProcessTask(const base::PendingTask& pending_task) override {}
-  void DidProcessTask(const base::PendingTask& pending_task) override {
-    sequence_numbers_.push_back(pending_task.sequence_num);
-  }
-
-  const std::vector<int>& sequence_numbers() const { return sequence_numbers_; }
-
- private:
-  std::vector<int> sequence_numbers_;
-};
-
-TEST_F(TaskQueueManagerTest, SequenceNumSetWhenTaskIsPosted) {
-  Initialize(1u);
-
-  SequenceNumberCapturingTaskObserver observer;
-  manager_->AddTaskObserver(&observer);
-
-  // Register four tasks that will run in reverse order.
-  std::vector<int> run_order;
-  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order),
-                               base::TimeDelta::FromMilliseconds(30));
-  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order),
-                               base::TimeDelta::FromMilliseconds(20));
-  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order),
-                               base::TimeDelta::FromMilliseconds(10));
-  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 4, &run_order));
-
-  test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(40));
-  ASSERT_THAT(run_order, ElementsAre(4, 3, 2, 1));
-
-  // The sequence numbers are a zero-based monotonically incrememting counter
-  // which should be set when the task is posted rather than when it's enqueued
-  // onto the incomming queue.
-  EXPECT_THAT(observer.sequence_numbers(), ElementsAre(3, 2, 1, 0));
-
-  manager_->RemoveTaskObserver(&observer);
-}
-
 }  // namespace scheduler

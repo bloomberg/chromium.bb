@@ -10,76 +10,67 @@
 namespace scheduler {
 namespace internal {
 
-TaskQueueSets::TaskQueueSets(size_t num_sets)
-    : enqueue_order_to_queue_maps_(num_sets) {}
+TaskQueueSets::TaskQueueSets(size_t num_sets) : age_to_queue_maps_(num_sets) {}
 
 TaskQueueSets::~TaskQueueSets() {}
 
 void TaskQueueSets::RemoveQueue(internal::TaskQueueImpl* queue) {
-  int enqueue_order;
-  bool has_enqueue_order =
-      queue->GetWorkQueueFrontTaskEnqueueOrder(&enqueue_order);
-  if (!has_enqueue_order)
+  int age;
+  bool has_age = queue->GetWorkQueueFrontTaskAge(&age);
+  if (!has_age)
     return;
   size_t set_index = queue->get_task_queue_set_index();
-  DCHECK_LT(set_index, enqueue_order_to_queue_maps_.size());
-  enqueue_order_to_queue_maps_[set_index].erase(enqueue_order);
+  DCHECK_LT(set_index, age_to_queue_maps_.size());
+  age_to_queue_maps_[set_index].erase(age);
 }
 
 void TaskQueueSets::AssignQueueToSet(internal::TaskQueueImpl* queue,
                                      size_t set_index) {
-  DCHECK_LT(set_index, enqueue_order_to_queue_maps_.size());
-  int enqueue_order;
-  bool has_enqueue_order =
-      queue->GetWorkQueueFrontTaskEnqueueOrder(&enqueue_order);
+  DCHECK_LT(set_index, age_to_queue_maps_.size());
+  int age;
+  bool has_age = queue->GetWorkQueueFrontTaskAge(&age);
   size_t old_set = queue->get_task_queue_set_index();
-  DCHECK_LT(old_set, enqueue_order_to_queue_maps_.size());
+  DCHECK_LT(old_set, age_to_queue_maps_.size());
   queue->set_task_queue_set_index(set_index);
-  if (!has_enqueue_order)
+  if (!has_age)
     return;
-  enqueue_order_to_queue_maps_[old_set].erase(enqueue_order);
-  enqueue_order_to_queue_maps_[set_index].insert(
-      std::make_pair(enqueue_order, queue));
+  age_to_queue_maps_[old_set].erase(age);
+  age_to_queue_maps_[set_index].insert(std::make_pair(age, queue));
 }
 
 void TaskQueueSets::OnPushQueue(internal::TaskQueueImpl* queue) {
-  int enqueue_order;
-  bool has_enqueue_order =
-      queue->GetWorkQueueFrontTaskEnqueueOrder(&enqueue_order);
-  DCHECK(has_enqueue_order);
+  int age;
+  bool has_age = queue->GetWorkQueueFrontTaskAge(&age);
+  DCHECK(has_age);
   size_t set_index = queue->get_task_queue_set_index();
-  DCHECK_LT(set_index, enqueue_order_to_queue_maps_.size()) << " set_index = "
-                                                            << set_index;
-  enqueue_order_to_queue_maps_[set_index].insert(
-      std::make_pair(enqueue_order, queue));
+  DCHECK_LT(set_index, age_to_queue_maps_.size()) << " set_index = "
+                                                  << set_index;
+  age_to_queue_maps_[set_index].insert(std::make_pair(age, queue));
 }
 
 void TaskQueueSets::OnPopQueue(internal::TaskQueueImpl* queue) {
   size_t set_index = queue->get_task_queue_set_index();
-  DCHECK_LT(set_index, enqueue_order_to_queue_maps_.size());
-  DCHECK(!enqueue_order_to_queue_maps_[set_index].empty()) << " set_index = "
-                                                           << set_index;
-  DCHECK_EQ(enqueue_order_to_queue_maps_[set_index].begin()->second, queue)
+  DCHECK_LT(set_index, age_to_queue_maps_.size());
+  DCHECK(!age_to_queue_maps_[set_index].empty()) << " set_index = "
+                                                 << set_index;
+  DCHECK_EQ(age_to_queue_maps_[set_index].begin()->second, queue)
       << " set_index = " << set_index;
   // O(1) amortised.
-  enqueue_order_to_queue_maps_[set_index].erase(
-      enqueue_order_to_queue_maps_[set_index].begin());
-  int enqueue_order;
-  bool has_enqueue_order =
-      queue->GetWorkQueueFrontTaskEnqueueOrder(&enqueue_order);
-  if (!has_enqueue_order)
+  age_to_queue_maps_[set_index].erase(age_to_queue_maps_[set_index].begin());
+  int age;
+  bool has_age = queue->GetWorkQueueFrontTaskAge(&age);
+  if (!has_age)
     return;
-  enqueue_order_to_queue_maps_[set_index].insert(
-      std::make_pair(enqueue_order, queue));
+  age_to_queue_maps_[set_index].insert(std::make_pair(age, queue));
 }
 
 bool TaskQueueSets::GetOldestQueueInSet(
     size_t set_index,
     internal::TaskQueueImpl** out_queue) const {
-  DCHECK_LT(set_index, enqueue_order_to_queue_maps_.size());
-  if (enqueue_order_to_queue_maps_[set_index].empty())
+  DCHECK_LT(set_index, age_to_queue_maps_.size());
+  if (age_to_queue_maps_[set_index].empty())
     return false;
-  *out_queue = enqueue_order_to_queue_maps_[set_index].begin()->second;
+  *out_queue = age_to_queue_maps_[set_index].begin()->second;
   return true;
 }
 
