@@ -69,6 +69,7 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_version_info.h"
 #include "ui/gl/gpu_timing.h"
 
 #if defined(OS_MACOSX)

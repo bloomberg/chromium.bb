@@ -17,6 +17,7 @@
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
+#include "ui/gl/gl_version_info.h"
 
 using ::testing::_;
 using ::testing::DoAll;

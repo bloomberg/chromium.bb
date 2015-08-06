@@ -5,19 +5,20 @@
 #include "gpu/command_buffer/service/feature_info.h"
 
 #include <set>
+#include <vector>
 
 #include "base/command_line.h"
-#include "base/macros.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
-#include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/texture_definition.h"
 #include "gpu/config/gpu_switches.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_switches.h"
+#include "ui/gl/gl_version_info.h"
 
 #if !defined(OS_MACOSX)
 #include "ui/gl/gl_fence_egl.h"

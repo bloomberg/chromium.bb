@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_version_info.h"
 
 namespace gpu {
 namespace gles2 {
@@ -506,5 +507,3 @@ void ContextState::RemoveBoundBuffer(Buffer* buffer) {
 
 }  // namespace gles2
 }  // namespace gpu
-
-

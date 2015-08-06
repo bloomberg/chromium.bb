@@ -5,17 +5,19 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GL_CONTEXT_VIRTUAL_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GL_CONTEXT_VIRTUAL_H_
 
-#include "base/compiler_specific.h"
+#include <string>
+#include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "gpu/gpu_export.h"
 #include "ui/gl/gl_context.h"
 
 namespace gfx {
-class Display;
+class GPUPreference;
+class GPUTimingClient;
+class GLShareGroup;
 class GLSurface;
-class GLStateRestorer;
 }
 
 namespace gpu {

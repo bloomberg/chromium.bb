@@ -5,19 +5,21 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_FEATURE_INFO_H_
 #define GPU_COMMAND_BUFFER_SERVICE_FEATURE_INFO_H_
 
-#include <set>
 #include <string>
-#include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/sys_info.h"
+#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/gpu_export.h"
-#include "ui/gl/gl_version_info.h"
 
 namespace base {
 class CommandLine;
+}
+
+namespace gfx {
+struct GLVersionInfo;
 }
 
 namespace gpu {

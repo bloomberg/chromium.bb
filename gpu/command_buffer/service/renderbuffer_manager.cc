@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_version_info.h"
 
 namespace gpu {
 namespace gles2 {

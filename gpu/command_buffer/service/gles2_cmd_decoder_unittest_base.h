@@ -25,6 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gl_mock.h"
+#include "ui/gl/gl_version_info.h"
 
 namespace base {
 class CommandLine;

@@ -8,14 +8,11 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/strings/string_util.h"
-#include "base/sys_info.h"
+#include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
-#include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/path_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
@@ -23,7 +20,8 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
-#include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_version_info.h"
 
 namespace gpu {
 namespace gles2 {
