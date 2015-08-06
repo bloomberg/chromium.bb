@@ -30,6 +30,14 @@
 #include "components/autofill/core/browser/wallet/real_pan_wallet_client.h"
 #include "components/autofill/core/common/form_data.h"
 
+// This define protects some debugging code (see DumpAutofillData). This
+// is here to make it easier to delete this code when the test is complete,
+// and to prevent adding the code on mobile where there is no desktop (the
+// debug dump file is written to the desktop) or command-line flags to enable.
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#define ENABLE_FORM_DEBUG_DUMP
+#endif
+
 class ChromeUIWebViewWebTest;
 class ChromeWKWebViewWebTest;
 
@@ -377,6 +385,11 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void EmitIsFromAddressBookMetric(int unique_id);
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
+#ifdef ENABLE_FORM_DEBUG_DUMP
+  // Dumps the cached forms to a file on disk.
+  void DumpAutofillData(bool imported_cc) const;
+#endif
+
   // Provides driver-level context to the shared code of the component. Must
   // outlive this object.
   AutofillDriver* driver_;
@@ -443,6 +456,13 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // Masked copies of recently unmasked cards, to help avoid double-asking to
   // save the card (in the prompt and in the infobar after submit).
   std::vector<CreditCard> recently_unmasked_cards_;
+
+#ifdef ENABLE_FORM_DEBUG_DUMP
+  // The last few autofilled forms (key/value pairs) submitted, for debugging.
+  // TODO(brettw) this should be removed. See DumpAutofillData.
+  std::vector<std::map<std::string, base::string16>>
+      recently_autofilled_forms_;
+#endif
 
   // Suggestion backend ID to ID mapping. We keep two maps to convert back and
   // forth. These should be used only by BackendIDToInt and IntToBackendID.
