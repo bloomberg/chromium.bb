@@ -97,10 +97,15 @@ void DownloadGroupNotification::OnDownloadAdded(
     content::DownloadItem* download) {
   if (items_.find(download) == items_.end()) {
     items_.insert(download);
+    int inprogress_download_count = 0;
     // If new download is started and there are more than 2 downloads in total,
     // show the group notification.
-    if (items_.size() >= 2)
-      Show();
+    for (auto it = items_.begin(); it != items_.end(); it++) {
+      if (!(*it)->IsDone() && ++inprogress_download_count >= 2) {
+        Show();
+        break;
+      }
+    }
   }
 }
 
