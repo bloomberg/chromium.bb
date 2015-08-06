@@ -73,3 +73,10 @@ We are required to state that
     "The Graphics Interchange Format(c) is the Copyright property of
     CompuServe Incorporated.  GIF(sm) is a Service Mark property of
     CompuServe Incorporated."
+
+--------------------------------------------------------------------------------
+
+jconfig.h is distributed under the MPL 1.1/GPL 2.0/LGPL 2.1 tri-license.
+
+jmorecfg.h contains modifications, which are distributed under the Netscape
+Public License.
