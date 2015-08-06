@@ -2069,10 +2069,10 @@ TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
   EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
             " formsignature=\"14746822798145140279\" autofillused=\"true\""
-            " datapresent=\"1440\">"
-            "<field signature=\"3763331450\"/>"
-            "<field signature=\"3494530716\"/>"
-            "<field signature=\"1029417091\"/></autofillupload>",
+            " datapresent=\"1440\"><field signature=\"3763331450\""
+            " autofilltype=\"3\"/><field signature=\"3494530716\""
+            " autofilltype=\"5\"/><field signature=\"1029417091\""
+            " autofilltype=\"9\"/></autofillupload>",
             encoded_xml);
 }
 
