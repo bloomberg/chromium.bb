@@ -5348,10 +5348,10 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     if (oldActiveElement && !request.active()) {
         // The oldActiveElement layoutObject is null, dropped on :active by setting display: none,
         // for instance. We still need to clear the ActiveChain as the mouse is released.
-        for (Node* node = oldActiveElement; node; node = ComposedTreeTraversal::parent(*node)) {
+        for (RefPtr<Node> node = oldActiveElement; node; node = ComposedTreeTraversal::parent(*node)) {
             ASSERT(!node->isTextNode());
             node->setActive(false);
-            m_userActionElements.setInActiveChain(node, false);
+            m_userActionElements.setInActiveChain(node.get(), false);
         }
         setActiveHoverElement(nullptr);
     } else {
