@@ -305,34 +305,59 @@ function isValidNumber(x) {
     }
 
     Tasks.prototype.defineTask = function (taskName, taskFunc) {
+        // Check if there is a task defined with the same name.  If found, do
+        // not add the task to the roster.
+        if (this.tasks.hasOwnProperty(taskName)) {
+            debug('>> Audit.defineTask:: Duplicate task definition. ("' + taskName + '")');
+            return;
+        }
+
         this.tasks[taskName] = taskFunc;
-        // Add this name to the queue so we can run it later if requested.
+
+        // Push the task name in the order of definition.
         this.queue.push(taskName);
     };
 
+    // If arguments are given, only run the requested tasks.  Check for any
+    // undefined or duplicate task in the requested task arguments.  If there
+    // is no argument, run all the defined tasks.
     Tasks.prototype.runTasks = function () {
-        // runTasks without arguments runs all of the defined tasks.  But if arguments are given,
-        // only run the specified tasks.
+
         if (arguments.length > 0) {
+
+            // Reset task queue and refill it with the with the given arguments,
+            // in argument order.
             this.queue = [];
+
             for (var i = 0; i < arguments.length; i++) {
-                this.queue[i] = arguments[i];
+                if (!this.tasks.hasOwnProperty(arguments[i]))
+                    debug('>> Audit.runTasks:: Ignoring undefined task. ("' + arguments[i] + '")');
+                else if (this.queue.indexOf(arguments[i]) > -1)
+                    debug('>> Audit.runTasks:: Ignoring duplicate task request. ("' + arguments[i] + '")');
+                else
+                    this.queue.push(arguments[i]);
             }
         }
 
-        // done() callback from tasks. Increase the task index and call the
-        // next task.
+        if (this.queue.length === 0) {
+            debug('>> Audit.runTasks:: No task to run.');
+            return;
+        }
+
+        // done() callback from each task.  Increase the task index and call the
+        // next task.  Note that explicit signaling by done() in each task
+        // is needed because some of tests run asynchronously.
         var done = function () {
             if (this.currentTask !== this.queue.length - 1) {
                 ++this.currentTask;
-                // debug('>> TASK: ' + this.queue[this.currentTask]);
+                // debug('>> Audit.runTasks: ' + this.queue[this.currentTask]);
                 this.tasks[this.queue[this.currentTask]](done);
             }
             return;
         }.bind(this);
 
-        // Start task 0.
-        // debug('>> TASK: ' + this.queue[this.currentTask]);
+        // Start the first task.
+        // debug('>> Audit.runTasks: ' + this.queue[this.currentTask]);
         this.tasks[this.queue[this.currentTask]](done);
     };
 
