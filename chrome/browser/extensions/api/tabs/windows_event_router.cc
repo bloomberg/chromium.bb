@@ -138,12 +138,16 @@ void WindowsEventRouter::Observe(
 }
 
 static bool WillDispatchWindowFocusedEvent(
-    BrowserContext* new_active_context,
-    int window_id,
+    WindowController* window_controller,
     BrowserContext* context,
     const Extension* extension,
     base::ListValue* event_args,
     const base::DictionaryValue* listener_filter) {
+  int window_id = window_controller ? window_controller->GetWindowId()
+                                    : extension_misc::kUnknownWindowId;
+  Profile* new_active_context =
+      window_controller ? window_controller->profile() : nullptr;
+
   // When switching between windows in the default and incognito profiles,
   // dispatch WINDOW_ID_NONE to extensions whose profile lost focus that
   // can't see the new focused window across the incognito boundary.
@@ -185,9 +189,12 @@ void WindowsEventRouter::OnActiveWindowChanged(
                                     windows::OnFocusChanged::kEventName,
                                     make_scoped_ptr(new base::ListValue())));
   event->will_dispatch_callback =
-      base::Bind(&WillDispatchWindowFocusedEvent,
-                 static_cast<BrowserContext*>(window_profile),
-                 window_id);
+      base::Bind(&WillDispatchWindowFocusedEvent, window_controller);
+  // Set the window type to 'normal' if we don't have a window
+  // controller, so the event is not filtered.
+  event->filter_info.SetWindowType(window_controller
+                                       ? window_controller->GetWindowTypeText()
+                                       : keys::kWindowTypeValueNormal);
   EventRouter::Get(profile_)->BroadcastEvent(event.Pass());
 }
 
@@ -197,6 +204,7 @@ void WindowsEventRouter::DispatchEvent(events::HistogramValue histogram_value,
                                        scoped_ptr<base::ListValue> args) {
   scoped_ptr<Event> event(new Event(histogram_value, event_name, args.Pass()));
   event->restrict_to_browser_context = window_controller->profile();
+  event->filter_info.SetWindowType(window_controller->GetWindowTypeText());
   EventRouter::Get(profile_)->BroadcastEvent(event.Pass());
 }
 

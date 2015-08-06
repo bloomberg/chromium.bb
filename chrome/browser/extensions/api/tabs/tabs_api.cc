@@ -116,6 +116,29 @@ using api::extension_types::InjectDetails;
 
 namespace {
 
+template <typename T>
+class ApiParameterExtractor {
+ public:
+  explicit ApiParameterExtractor(T* params) : params_(params) {}
+  ~ApiParameterExtractor() {}
+
+  bool populate_tabs() {
+    if (params_->get_info.get() && params_->get_info->populate.get())
+      return *params_->get_info->populate;
+    return false;
+  }
+
+  WindowController::TypeFilter type_filters() {
+    if (params_->get_info.get() && params_->get_info->window_types.get())
+      return WindowController::GetFilterFromWindowTypes(
+          *params_->get_info->window_types.get());
+    return WindowController::GetDefaultWindowFilter();
+  }
+
+ private:
+  T* params_;
+};
+
 bool GetBrowserFromWindowID(ChromeUIThreadExtensionFunction* function,
                             int window_id,
                             Browser** browser) {
@@ -265,18 +288,14 @@ bool WindowsGetFunction::RunSync() {
   scoped_ptr<windows::Get::Params> params(windows::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  bool populate_tabs = false;
-  if (params->get_info.get() && params->get_info->populate.get())
-    populate_tabs = *params->get_info->populate;
-
+  ApiParameterExtractor<windows::Get::Params> extractor(params.get());
   WindowController* controller;
-  if (!windows_util::GetWindowFromWindowID(this,
-                                           params->window_id,
-                                           &controller)) {
+  if (!windows_util::GetWindowFromWindowID(
+          this, params->window_id, extractor.type_filters(), &controller)) {
     return false;
   }
 
-  if (populate_tabs)
+  if (extractor.populate_tabs())
     SetResult(controller->CreateWindowValueWithTabs(extension()));
   else
     SetResult(controller->CreateWindowValue());
@@ -288,17 +307,14 @@ bool WindowsGetCurrentFunction::RunSync() {
       windows::GetCurrent::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  bool populate_tabs = false;
-  if (params->get_info.get() && params->get_info->populate.get())
-    populate_tabs = *params->get_info->populate;
-
+  ApiParameterExtractor<windows::GetCurrent::Params> extractor(params.get());
   WindowController* controller;
-  if (!windows_util::GetWindowFromWindowID(this,
-                                           extension_misc::kCurrentWindowId,
-                                           &controller)) {
+  if (!windows_util::GetWindowFromWindowID(
+          this, extension_misc::kCurrentWindowId, extractor.type_filters(),
+          &controller)) {
     return false;
   }
-  if (populate_tabs)
+  if (extractor.populate_tabs())
     SetResult(controller->CreateWindowValueWithTabs(extension()));
   else
     SetResult(controller->CreateWindowValue());
@@ -310,22 +326,24 @@ bool WindowsGetLastFocusedFunction::RunSync() {
       windows::GetLastFocused::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  bool populate_tabs = false;
-  if (params->get_info.get() && params->get_info->populate.get())
-    populate_tabs = *params->get_info->populate;
-
-  // Note: currently this returns the last active browser. If we decide to
-  // include other window types (e.g. panels), we will need to add logic to
-  // WindowControllerList that mirrors the active behavior of BrowserList.
-  Browser* browser = chrome::FindAnyBrowser(
-      GetProfile(), include_incognito(), chrome::GetActiveDesktop());
-  if (!browser || !browser->window()) {
+  ApiParameterExtractor<windows::GetLastFocused::Params> extractor(
+      params.get());
+  // The WindowControllerList should contain a list of application,
+  // browser and devtools windows.
+  WindowController* controller = nullptr;
+  for (auto iter : WindowControllerList::GetInstance()->windows()) {
+    if (windows_util::CanOperateOnWindow(this, iter,
+                                         extractor.type_filters())) {
+      controller = iter;
+      if (controller->window()->IsActive())
+        break;  // Use focused window.
+    }
+  }
+  if (!controller) {
     error_ = keys::kNoLastFocusedWindowError;
     return false;
   }
-  WindowController* controller =
-      browser->extension_window_controller();
-  if (populate_tabs)
+  if (extractor.populate_tabs())
     SetResult(controller->CreateWindowValueWithTabs(extension()));
   else
     SetResult(controller->CreateWindowValue());
@@ -337,19 +355,17 @@ bool WindowsGetAllFunction::RunSync() {
       windows::GetAll::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  bool populate_tabs = false;
-  if (params->get_info.get() && params->get_info->populate.get())
-    populate_tabs = *params->get_info->populate;
-
+  ApiParameterExtractor<windows::GetAll::Params> extractor(params.get());
   base::ListValue* window_list = new base::ListValue();
   const WindowControllerList::ControllerList& windows =
       WindowControllerList::GetInstance()->windows();
   for (WindowControllerList::ControllerList::const_iterator iter =
            windows.begin();
        iter != windows.end(); ++iter) {
-    if (!windows_util::CanOperateOnWindow(this, *iter))
+    if (!windows_util::CanOperateOnWindow(this, *iter,
+                                          extractor.type_filters()))
       continue;
-    if (populate_tabs)
+    if (extractor.populate_tabs())
       window_list->Append((*iter)->CreateWindowValueWithTabs(extension()));
     else
       window_list->Append((*iter)->CreateWindowValue());
@@ -693,9 +709,11 @@ bool WindowsUpdateFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   WindowController* controller;
-  if (!windows_util::GetWindowFromWindowID(this, params->window_id,
-                                            &controller))
+  if (!windows_util::GetWindowFromWindowID(
+          this, params->window_id, WindowController::GetAllWindowFilter(),
+          &controller)) {
     return false;
+  }
 
   ui::WindowShowState show_state =
       ConvertToWindowShowState(params->update_info.state);
@@ -795,8 +813,9 @@ bool WindowsRemoveFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   WindowController* controller;
-  if (!windows_util::GetWindowFromWindowID(this, params->window_id,
-                                           &controller))
+  if (!windows_util::GetWindowFromWindowID(
+          this, params->window_id, WindowController::GetDefaultWindowFilter(),
+          &controller))
     return false;
 
   WindowController::Reason reason;

@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+#include <vector>
+
 #include "chrome/browser/extensions/api/tabs/windows_util.h"
 
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,11 +19,13 @@
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/extension.h"
 
 namespace windows_util {
 
 bool GetWindowFromWindowID(UIThreadExtensionFunction* function,
                            int window_id,
+                           extensions::WindowController::TypeFilter filter,
                            extensions::WindowController** controller) {
   if (window_id == extension_misc::kCurrentWindowId) {
     extensions::WindowController* extension_window_controller =
@@ -37,8 +43,9 @@ bool GetWindowFromWindowID(UIThreadExtensionFunction* function,
       return false;
     }
   } else {
-    *controller = extensions::WindowControllerList::GetInstance()
-                      ->FindWindowForFunctionById(function, window_id);
+    *controller =
+        extensions::WindowControllerList::GetInstance()
+            ->FindWindowForFunctionByIdWithFilter(function, window_id, filter);
     if (!(*controller)) {
       function->SetError(extensions::ErrorUtils::FormatErrorMessage(
           extensions::tabs_constants::kWindowNotFoundError,
@@ -50,11 +57,10 @@ bool GetWindowFromWindowID(UIThreadExtensionFunction* function,
 }
 
 bool CanOperateOnWindow(const UIThreadExtensionFunction* function,
-                        const extensions::WindowController* controller) {
-  if (function->extension() != NULL &&
-      !controller->IsVisibleToExtension(function->extension())) {
+                        const extensions::WindowController* controller,
+                        extensions::WindowController::TypeFilter filter) {
+  if (!controller->MatchesFilter(filter))
     return false;
-  }
 
   if (function->browser_context() == controller->profile())
     return true;

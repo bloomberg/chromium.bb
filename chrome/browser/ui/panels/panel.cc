@@ -96,7 +96,6 @@ PanelExtensionWindowController::CreateWindowValueWithTabs(
     const extensions::Extension* extension) const {
   base::DictionaryValue* result = CreateWindowValue();
 
-  DCHECK(IsVisibleToExtension(extension));
   base::DictionaryValue* tab_value = CreateTabValue(extension, 0);
   if (tab_value) {
     base::ListValue* tab_list = new base::ListValue();
@@ -115,7 +114,6 @@ base::DictionaryValue* PanelExtensionWindowController::CreateTabValue(
   if (!web_contents)
     return NULL;
 
-  DCHECK(IsVisibleToExtension(extension));
   base::DictionaryValue* tab_value = new base::DictionaryValue();
   tab_value->SetInteger(extensions::tabs_constants::kIdKey,
                         SessionTabHelper::IdForTab(web_contents));

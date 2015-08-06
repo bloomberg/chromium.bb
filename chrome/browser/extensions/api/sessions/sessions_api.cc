@@ -424,7 +424,9 @@ void SessionsRestoreFunction::SetResultRestoredTab(
 
 bool SessionsRestoreFunction::SetResultRestoredWindow(int window_id) {
   WindowController* controller = NULL;
-  if (!windows_util::GetWindowFromWindowID(this, window_id, &controller)) {
+  if (!windows_util::GetWindowFromWindowID(
+          this, window_id, WindowController::GetDefaultWindowFilter(),
+          &controller)) {
     // error_ is set by GetWindowFromWindowId function call.
     return false;
   }

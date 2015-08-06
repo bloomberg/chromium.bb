@@ -9,6 +9,7 @@ include_rules = [
 
 specific_include_rules = {
   ".*test.*": [
+    "+chrome/browser/ui/views/frame",
     "+components/captive_portal",
   ],
 }

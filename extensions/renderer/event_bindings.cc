@@ -97,6 +97,12 @@ EventFilteringInfo ParseFromObject(v8::Local<v8::Object> object,
     v8::Local<v8::Value> service_type_value(object->Get(service_type));
     info.SetServiceType(*v8::String::Utf8Value(service_type_value));
   }
+  v8::Local<v8::String> window_types(
+      v8::String::NewFromUtf8(isolate, "windowType"));
+  if (object->Has(window_types)) {
+    v8::Local<v8::Value> window_types_value(object->Get(window_types));
+    info.SetWindowType(*v8::String::Utf8Value(window_types_value));
+  }
   return info;
 }
 

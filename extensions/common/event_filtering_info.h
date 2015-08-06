@@ -26,11 +26,19 @@ class EventFilteringInfo {
  public:
   EventFilteringInfo();
   ~EventFilteringInfo();
+  void SetWindowType(const std::string& window_type);
   void SetURL(const GURL& url);
   void SetInstanceID(int instance_id);
   void SetServiceType(const std::string& service_type) {
     service_type_ = service_type;
   }
+
+  // Note: window type is a Chrome concept, so arguably doesn't belong
+  // in the extensions module. If the number of Chrome concept grows,
+  // consider a delegation model with a ChromeEventFilteringInfo
+  // class.
+  bool has_window_type() const { return has_window_type_; }
+  const std::string& window_type() const { return window_type_; }
 
   bool has_url() const { return has_url_; }
   const GURL& url() const { return url_; }
@@ -51,6 +59,9 @@ class EventFilteringInfo {
 
   bool has_instance_id_;
   int instance_id_;
+
+  bool has_window_type_;
+  std::string window_type_;
 
   // Allow implicit copy and assignment.
 };

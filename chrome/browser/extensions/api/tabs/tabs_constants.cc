@@ -9,6 +9,7 @@ namespace tabs_constants {
 
 const char kActiveKey[] = "active";
 const char kAllFramesKey[] = "allFrames";
+const char kAllWindowTypesKey[] = "allWindowTypes";
 const char kAlwaysOnTopKey[] = "alwaysOnTop";
 const char kBypassCache[] = "bypassCache";
 const char kCodeKey[] = "code";

@@ -36,15 +36,33 @@ class WindowControllerList {
   // Returns a window matching |id|.
   WindowController* FindWindowById(int id) const;
 
+  // Returns a window matching |id| using |filter|.
+  WindowController* FindWindowByIdWithFilter(
+      int id,
+      WindowController::TypeFilter filter) const;
+
   // Returns a window matching the context the function was invoked in.
   WindowController* FindWindowForFunctionById(
       const UIThreadExtensionFunction* function,
       int id) const;
 
+  // Returns a window matching the context the function was invoked in
+  // using |filter|.
+  WindowController* FindWindowForFunctionByIdWithFilter(
+      const UIThreadExtensionFunction* function,
+      int id,
+      WindowController::TypeFilter filter) const;
+
   // Returns the focused or last added window matching the context the function
   // was invoked in.
   WindowController* CurrentWindowForFunction(
       const UIThreadExtensionFunction* function) const;
+
+  // Returns the focused or last added window matching the context the function
+  // was invoked in using |filter|.
+  WindowController* CurrentWindowForFunctionWithFilter(
+      const UIThreadExtensionFunction* function,
+      WindowController::TypeFilter filter) const;
 
   const ControllerList& windows() const { return windows_; }
 
