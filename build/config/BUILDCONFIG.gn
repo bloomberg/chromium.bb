@@ -604,17 +604,13 @@ if (is_win) {
 # COMPONENT SETUP
 # ==============================================================================
 
-# TODO(brettw): Convert component_mode to being a non-exported variable
-# ("_component_mode" instead) once ICU's BUILD.gn file is updated to use
-# is_component_build instead.
 if (is_component_build) {
-  component_mode = "shared_library"
+  _component_mode = "shared_library"
 } else {
-  component_mode = "source_set"
+  _component_mode = "source_set"
 }
-
 template("component") {
-  target(component_mode, target_name) {
+  target(_component_mode, target_name) {
     forward_variables_from(invoker, "*")
 
     # All shared libraries must have the sanitizer deps to properly link in

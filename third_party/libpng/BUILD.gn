@@ -16,7 +16,7 @@ config("libpng_config") {
   }
 
   if (is_win) {
-    if (component_mode == "shared_library") {
+    if (is_component_build) {
       defines += [
         "PNG_USE_DLL",
         "PNG_NO_MODULEDEF",

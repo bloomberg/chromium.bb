@@ -26,8 +26,7 @@ TEST(FunctionsTarget, CheckUnused) {
   good_input.parsed()->Execute(setup.scope(), &err);
   ASSERT_FALSE(err.has_error()) << err.message();
 
-  // Test a source set (this covers everything but component) with an unused
-  // variable.
+  // Test a source set with an unused variable.
   TestParseInput source_set_input(
       "source_set(\"foo\") {\n"
       "  unused = 5\n"
@@ -36,15 +35,4 @@ TEST(FunctionsTarget, CheckUnused) {
   err = Err();
   source_set_input.parsed()->Execute(setup.scope(), &err);
   ASSERT_TRUE(err.has_error());
-
-  // Test a component, which is a different code path.
-  TestParseInput component_input(
-      "component_mode = \"static_library\"\n"
-      "component(\"bar\") {\n"
-      "  unused = 5\n"
-      "}\n");
-  ASSERT_FALSE(component_input.has_error());
-  err = Err();
-  component_input.parsed()->Execute(setup.scope(), &err);
-  ASSERT_TRUE(err.has_error()) << err.message();
 }
