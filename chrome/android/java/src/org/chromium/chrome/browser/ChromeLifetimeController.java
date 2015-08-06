@@ -5,17 +5,15 @@
 package org.chromium.chrome.browser;
 
 import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
-import android.util.Log;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Log;
 
 import java.lang.ref.WeakReference;
 
@@ -27,7 +25,7 @@ import java.lang.ref.WeakReference;
  */
 class ChromeLifetimeController implements ApplicationLifetime.Observer,
         ApplicationStatus.ActivityStateListener {
-    private static final String TAG = "ChromeLifetimeController";
+    private static final String TAG = "cr.LifetimeController";
 
     // The amount of time to wait for Chrome to destroy all the activities.
     private static final long WATCHDOG_DELAY = 1000;
@@ -95,26 +93,21 @@ class ChromeLifetimeController implements ApplicationLifetime.Observer,
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                if (mRestartChromeOnDestroy) scheduleRestart(mContext);
-
-                Log.w(TAG, "Forcefully killing process...");
-                Process.killProcess(Process.myPid());
-
+                if (mRestartChromeOnDestroy) {
+                    Log.w(TAG, "Launching BrowserRestartActivity to restart Chrome.");
+                    Context context = ApplicationStatus.getApplicationContext();
+                    Intent intent = new Intent();
+                    intent.setClassName(
+                            context.getPackageName(), BrowserRestartActivity.class.getName());
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra(BrowserRestartActivity.EXTRA_PID, Process.myPid());
+                    context.startActivity(intent);
+                } else {
+                    Log.w(TAG, "Killing process directly.");
+                    Process.killProcess(Process.myPid());
+                }
                 mRestartChromeOnDestroy = false;
             }
         });
-    }
-
-    private static void scheduleRestart(Context context) {
-        Intent intent = new Intent();
-        intent.setPackage(context.getPackageName());
-        intent.setAction(Intent.ACTION_MAIN);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent,
-                PendingIntent.FLAG_ONE_SHOT);
-        if (pendingIntent != null) {
-            AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-            am.set(AlarmManager.RTC, System.currentTimeMillis() + 1000, pendingIntent);
-        }
     }
 }

@@ -389,6 +389,15 @@ by a child template that "extends" this file.
             android:hardwareAccelerated="false">
         </activity>
 
+        <!-- This activity is used to restart the main Chrome process.  Should never be exported. -->
+        <activity android:name="org.chromium.chrome.browser.BrowserRestartActivity"
+            android:launchMode="singleInstance"
+            android:exported="false"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:excludeFromRecents="true"
+            android:process=":browser_restart_process">
+        </activity>
+
         <!-- Providers for chrome data. -->
         <provider android:name="org.chromium.chrome.browser.ChromeBrowserProvider"
             android:authorities="{{ manifest_package }}.ChromeBrowserProvider;{{ manifest_package }}.browser;{{ manifest_package }}"
