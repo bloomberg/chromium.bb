@@ -131,6 +131,7 @@
 #include "net/base/port_util.h"
 #include "skia/ext/event_tracer_impl.h"
 #include "skia/ext/skia_memory_dump_provider.h"
+#include "third_party/WebKit/public/platform/WebImageGenerator.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/web/WebCache.h"
@@ -1143,6 +1144,10 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   SkGraphics::SetResourceCacheSingleAllocationByteLimit(
       kImageCacheSingleAllocationByteLimit);
+
+  // Hook up blink's codecs so skia can call them
+  SkGraphics::SetImageGeneratorFromEncodedFactory(
+      blink::WebImageGenerator::create);
 
   if (command_line.HasSwitch(switches::kMemoryMetrics)) {
     memory_observer_.reset(new MemoryObserver());
