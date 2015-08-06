@@ -41,7 +41,8 @@ class CONTENT_EXPORT HostDiscardableSharedMemoryManager
       size_t size) override;
 
   // Overridden from base::trace_event::MemoryDumpProvider:
-  bool OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   // This allocates a discardable memory segment for |process_handle|.
   // A valid shared memory handle is returned on success.

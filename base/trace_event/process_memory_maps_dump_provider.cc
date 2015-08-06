@@ -163,9 +163,13 @@ ProcessMemoryMapsDumpProvider::ProcessMemoryMapsDumpProvider() {
 ProcessMemoryMapsDumpProvider::~ProcessMemoryMapsDumpProvider() {
 }
 
-// Called at trace dump point time. Creates a snapshot the memory maps for the
-// current process.
-bool ProcessMemoryMapsDumpProvider::OnMemoryDump(ProcessMemoryDump* pmd) {
+// Called at trace dump point time. Creates a snapshot of the memory maps for
+// the current process.
+bool ProcessMemoryMapsDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
+                                                 ProcessMemoryDump* pmd) {
+  // TODO(ssid): Use MemoryDumpArgs to create light dumps when requested
+  // (crbug.com/499731).
+
   uint32 res = 0;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)

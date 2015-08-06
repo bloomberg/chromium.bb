@@ -898,7 +898,8 @@ void GpuChannel::HandleUpdateValueState(
   pending_valuebuffer_state_->UpdateState(target, state);
 }
 
-bool GpuChannel::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
+bool GpuChannel::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                              base::trace_event::ProcessMemoryDump* pmd) {
   auto dump_name = GetChannelName();
   std::replace(dump_name.begin(), dump_name.end(), '.', '_');
 

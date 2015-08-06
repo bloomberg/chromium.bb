@@ -12,18 +12,20 @@ namespace base {
 namespace trace_event {
 
 TEST(ProcessMemoryTotalsDumpProviderTest, DumpRSS) {
+  const MemoryDumpArgs high_detail_args = {
+      MemoryDumpArgs::LEVEL_OF_DETAIL_HIGH};
   auto pmtdp = ProcessMemoryTotalsDumpProvider::GetInstance();
   scoped_ptr<ProcessMemoryDump> pmd_before(new ProcessMemoryDump(nullptr));
   scoped_ptr<ProcessMemoryDump> pmd_after(new ProcessMemoryDump(nullptr));
 
   ProcessMemoryTotalsDumpProvider::rss_bytes_for_testing = 1024;
-  pmtdp->OnMemoryDump(pmd_before.get());
+  pmtdp->OnMemoryDump(high_detail_args, pmd_before.get());
 
   // Pretend that the RSS of the process increased of +1M.
   const size_t kAllocSize = 1048576;
   ProcessMemoryTotalsDumpProvider::rss_bytes_for_testing += kAllocSize;
 
-  pmtdp->OnMemoryDump(pmd_after.get());
+  pmtdp->OnMemoryDump(high_detail_args, pmd_after.get());
 
   ProcessMemoryTotalsDumpProvider::rss_bytes_for_testing = 0;
 

@@ -1968,7 +1968,9 @@ class GrContext* ResourceProvider::GrContext(bool worker_context) const {
   return context_provider ? context_provider->GrContext() : NULL;
 }
 
-bool ResourceProvider::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
+bool ResourceProvider::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const uint64 tracing_process_id =

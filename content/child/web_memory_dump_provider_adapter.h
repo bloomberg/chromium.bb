@@ -25,7 +25,8 @@ class WebMemoryDumpProviderAdapter
   ~WebMemoryDumpProviderAdapter() override;
 
   // base::trace_event::MemoryDumpProvider implementation.
-  bool OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   bool is_registered() const { return is_registered_; }
   void set_is_registered(bool is_registered) { is_registered_ = is_registered; }

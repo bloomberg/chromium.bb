@@ -23,6 +23,7 @@ SkiaMemoryDumpProvider::SkiaMemoryDumpProvider() {}
 SkiaMemoryDumpProvider::~SkiaMemoryDumpProvider() {}
 
 bool SkiaMemoryDumpProvider::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* process_memory_dump) {
   auto font_mad =
       process_memory_dump->CreateAllocatorDump("skia/sk_font_cache");

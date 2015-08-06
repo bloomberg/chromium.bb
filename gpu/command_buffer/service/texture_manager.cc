@@ -2042,7 +2042,8 @@ ScopedTextureUploadTimer::~ScopedTextureUploadTimer() {
       base::TimeTicks::Now() - begin_time_;
 }
 
-bool TextureManager::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
+bool TextureManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                                  base::trace_event::ProcessMemoryDump* pmd) {
   for (const auto& resource : textures_) {
     // Only dump memory info for textures actually owned by this TextureManager.
     DumpTextureRef(pmd, resource.second.get());

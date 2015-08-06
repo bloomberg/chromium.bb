@@ -19,7 +19,10 @@ WebMemoryDumpProviderAdapter::~WebMemoryDumpProviderAdapter() {
 }
 
 bool WebMemoryDumpProviderAdapter::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
+  // TODO(ssid): Expose MemoryDumpArgs to Blink and send args to the dump
+  // providers in Blink (crbug.com/499731).
   WebProcessMemoryDumpImpl web_pmd_impl(pmd);
   return web_memory_dump_provider_->onMemoryDump(&web_pmd_impl);
 }

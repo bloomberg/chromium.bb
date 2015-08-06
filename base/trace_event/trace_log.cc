@@ -227,7 +227,8 @@ class TraceLog::ThreadLocalEventBuffer
   void WillDestroyCurrentMessageLoop() override;
 
   // MemoryDumpProvider implementation.
-  bool OnMemoryDump(ProcessMemoryDump* pmd) override;
+  bool OnMemoryDump(const MemoryDumpArgs& args,
+                    ProcessMemoryDump* pmd) override;
 
   void FlushWhileLocked();
 
@@ -355,7 +356,8 @@ void TraceLog::ThreadLocalEventBuffer::WillDestroyCurrentMessageLoop() {
   delete this;
 }
 
-bool TraceLog::ThreadLocalEventBuffer::OnMemoryDump(ProcessMemoryDump* pmd) {
+bool TraceLog::ThreadLocalEventBuffer::OnMemoryDump(const MemoryDumpArgs& args,
+                                                    ProcessMemoryDump* pmd) {
   if (!chunk_)
     return true;
   std::string dump_base_name = StringPrintf(
@@ -466,7 +468,10 @@ void TraceLog::InitializeThreadLocalEventBufferIfSupported() {
   }
 }
 
-bool TraceLog::OnMemoryDump(ProcessMemoryDump* pmd) {
+bool TraceLog::OnMemoryDump(const MemoryDumpArgs& args,
+                            ProcessMemoryDump* pmd) {
+  // TODO(ssid): Use MemoryDumpArgs to create light dumps when requested
+  // (crbug.com/499731).
   TraceEventMemoryOverhead overhead;
   overhead.Add("TraceLog", sizeof(*this));
   {

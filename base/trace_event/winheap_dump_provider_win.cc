@@ -47,7 +47,8 @@ WinHeapDumpProvider* WinHeapDumpProvider::GetInstance() {
                    LeakySingletonTraits<WinHeapDumpProvider>>::get();
 }
 
-bool WinHeapDumpProvider::OnMemoryDump(ProcessMemoryDump* pmd) {
+bool WinHeapDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
+                                       ProcessMemoryDump* pmd) {
   // This method might be flaky for 2 reasons:
   //   - GetProcessHeaps is racy by design. It returns a snapshot of the
   //     available heaps, but there's no guarantee that that snapshot remains

@@ -23,8 +23,10 @@ TEST_F(V8MemoryDumpProviderTest, DumpStatistics) {
 
   scoped_ptr<base::trace_event::ProcessMemoryDump> process_memory_dump(
       new base::trace_event::ProcessMemoryDump(nullptr));
+  base::trace_event::MemoryDumpArgs dump_args = {
+      base::trace_event::MemoryDumpArgs::LEVEL_OF_DETAIL_HIGH};
   instance_->isolate_memory_dump_provider_for_testing()->OnMemoryDump(
-      process_memory_dump.get());
+      dump_args, process_memory_dump.get());
   const base::trace_event::ProcessMemoryDump::AllocatorDumpsMap&
       allocator_dumps = process_memory_dump->allocator_dumps();
 

@@ -327,7 +327,8 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   friend struct DefaultSingletonTraits<TraceLog>;
 
   // MemoryDumpProvider implementation.
-  bool OnMemoryDump(ProcessMemoryDump* pmd) override;
+  bool OnMemoryDump(const MemoryDumpArgs& args,
+                    ProcessMemoryDump* pmd) override;
 
   // Enable/disable each category group based on the current mode_,
   // category_filter_, event_callback_ and event_callback_category_filter_.

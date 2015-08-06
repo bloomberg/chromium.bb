@@ -73,7 +73,8 @@ class CONTENT_EXPORT HostSharedBitmapManager
       const cc::SharedBitmapId&) override;
 
   // base::trace_event::MemoryDumpProvider implementation.
-  bool OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   size_t AllocatedBitmapCount() const;
 

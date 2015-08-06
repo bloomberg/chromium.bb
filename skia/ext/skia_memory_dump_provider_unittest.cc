@@ -11,8 +11,10 @@ namespace skia {
 TEST(SkiaMemoryDumpProviderTest, OnMemoryDump) {
   scoped_ptr<base::trace_event::ProcessMemoryDump> process_memory_dump(
       new base::trace_event::ProcessMemoryDump(nullptr));
+  base::trace_event::MemoryDumpArgs dump_args = {
+      base::trace_event::MemoryDumpArgs::LEVEL_OF_DETAIL_HIGH};
   SkiaMemoryDumpProvider::GetInstance()->OnMemoryDump(
-      process_memory_dump.get());
+      dump_args, process_memory_dump.get());
 
   ASSERT_TRUE(process_memory_dump->GetAllocatorDump("skia/sk_font_cache"));
   ASSERT_TRUE(process_memory_dump->GetAllocatorDump("skia/sk_resource_cache"));

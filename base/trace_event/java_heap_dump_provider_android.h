@@ -17,7 +17,8 @@ class BASE_EXPORT JavaHeapDumpProvider : public MemoryDumpProvider {
   static JavaHeapDumpProvider* GetInstance();
 
   // MemoryDumpProvider implementation.
-  bool OnMemoryDump(ProcessMemoryDump* pmd) override;
+  bool OnMemoryDump(const MemoryDumpArgs& args,
+                    ProcessMemoryDump* pmd) override;
 
  private:
   friend struct DefaultSingletonTraits<JavaHeapDumpProvider>;

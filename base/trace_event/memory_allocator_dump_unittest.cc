@@ -21,7 +21,8 @@ namespace {
 
 class FakeMemoryAllocatorDumpProvider : public MemoryDumpProvider {
  public:
-  bool OnMemoryDump(ProcessMemoryDump* pmd) override {
+  bool OnMemoryDump(const MemoryDumpArgs& args,
+                    ProcessMemoryDump* pmd) override {
     MemoryAllocatorDump* root_heap =
         pmd->CreateAllocatorDump("foobar_allocator");
 
@@ -125,8 +126,9 @@ TEST(MemoryAllocatorDumpTest, GuidGeneration) {
 TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
   FakeMemoryAllocatorDumpProvider fmadp;
   ProcessMemoryDump pmd(make_scoped_refptr(new MemoryDumpSessionState()));
+  MemoryDumpArgs dump_args = {MemoryDumpArgs::LEVEL_OF_DETAIL_HIGH};
 
-  fmadp.OnMemoryDump(&pmd);
+  fmadp.OnMemoryDump(dump_args, &pmd);
 
   ASSERT_EQ(3u, pmd.allocator_dumps().size());
 

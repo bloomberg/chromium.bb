@@ -22,7 +22,8 @@ class BASE_EXPORT ProcessMemoryTotalsDumpProvider : public MemoryDumpProvider {
   static ProcessMemoryTotalsDumpProvider* GetInstance();
 
   // MemoryDumpProvider implementation.
-  bool OnMemoryDump(ProcessMemoryDump* pmd) override;
+  bool OnMemoryDump(const MemoryDumpArgs& args,
+                    ProcessMemoryDump* pmd) override;
 
  private:
   friend struct DefaultSingletonTraits<ProcessMemoryTotalsDumpProvider>;

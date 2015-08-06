@@ -311,8 +311,15 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
   // Invoke the dump provider without holding the |lock_|.
   bool finalize = false;
   bool dump_successful = false;
-  if (!skip_dump)
-    dump_successful = mdp->OnMemoryDump(&pmd_async_state->process_memory_dump);
+
+  // TODO(ssid): Change RequestGlobalDump to use MemoryDumpArgs along with
+  // MemoryDumpType to get request for light / heavy dump, and remove this
+  // constant.
+  if (!skip_dump) {
+    MemoryDumpArgs dump_args = {MemoryDumpArgs::LEVEL_OF_DETAIL_HIGH};
+    dump_successful =
+        mdp->OnMemoryDump(dump_args, &pmd_async_state->process_memory_dump);
+  }
 
   {
     AutoLock lock(lock_);

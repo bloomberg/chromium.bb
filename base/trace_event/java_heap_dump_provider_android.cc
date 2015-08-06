@@ -24,7 +24,8 @@ JavaHeapDumpProvider::~JavaHeapDumpProvider() {
 
 // Called at trace dump point time. Creates a snapshot with the memory counters
 // for the current process.
-bool JavaHeapDumpProvider::OnMemoryDump(ProcessMemoryDump* pmd) {
+bool JavaHeapDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
+                                        ProcessMemoryDump* pmd) {
   // These numbers come from java.lang.Runtime stats.
   long total_heap_size = 0;
   long free_heap_size = 0;

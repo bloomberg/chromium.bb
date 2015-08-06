@@ -28,7 +28,8 @@ MallocDumpProvider::~MallocDumpProvider() {
 
 // Called at trace dump point time. Creates a snapshot the memory counters for
 // the current process.
-bool MallocDumpProvider::OnMemoryDump(ProcessMemoryDump* pmd) {
+bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
+                                      ProcessMemoryDump* pmd) {
   struct mallinfo info = mallinfo();
   DCHECK_GE(info.arena + info.hblkhd, info.uordblks);
 

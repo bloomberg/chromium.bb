@@ -42,7 +42,8 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
                                uint32 sync_point) override;
 
   // Overridden from base::trace_event::MemoryDumpProvider:
-  bool OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   // Virtual for testing.
   virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBufferForScanout(

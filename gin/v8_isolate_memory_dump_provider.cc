@@ -28,7 +28,11 @@ V8IsolateMemoryDumpProvider::~V8IsolateMemoryDumpProvider() {
 // Called at trace dump point time. Creates a snapshot with the memory counters
 // for the current isolate.
 bool V8IsolateMemoryDumpProvider::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* process_memory_dump) {
+  // TODO(ssid): Use MemoryDumpArgs to create light dumps when requested
+  // (crbug.com/499731).
+
   if (isolate_holder_->access_mode() == IsolateHolder::kUseLocker) {
     v8::Locker locked(isolate_holder_->isolate());
     DumpHeapStatistics(process_memory_dump);

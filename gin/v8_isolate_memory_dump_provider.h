@@ -24,6 +24,7 @@ class V8IsolateMemoryDumpProvider
 
   // MemoryDumpProvider implementation.
   bool OnMemoryDump(
+      const base::trace_event::MemoryDumpArgs& args,
       base::trace_event::ProcessMemoryDump* process_memory_dump) override;
 
  private:

@@ -154,6 +154,7 @@ HostDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
 }
 
 bool HostDiscardableSharedMemoryManager::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
   base::AutoLock lock(lock_);
   for (const auto& process_entry : processes_) {

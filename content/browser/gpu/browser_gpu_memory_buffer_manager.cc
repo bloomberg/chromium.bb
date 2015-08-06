@@ -262,6 +262,7 @@ void BrowserGpuMemoryBufferManager::SetDestructionSyncPoint(
 }
 
 bool BrowserGpuMemoryBufferManager::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

@@ -30,7 +30,8 @@ class CONTENT_EXPORT ChildDiscardableSharedMemoryManager
       size_t size) override;
 
   // Overridden from base::trace_event::MemoryDumpProvider:
-  bool OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   // Release memory and associated resources that have been purged.
   void ReleaseFreeMemory();

@@ -53,7 +53,8 @@ ProcessMemoryTotalsDumpProvider::~ProcessMemoryTotalsDumpProvider() {
 
 // Called at trace dump point time. Creates a snapshot the memory counters for
 // the current process.
-bool ProcessMemoryTotalsDumpProvider::OnMemoryDump(ProcessMemoryDump* pmd) {
+bool ProcessMemoryTotalsDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
+                                                   ProcessMemoryDump* pmd) {
   const uint64 rss_bytes = rss_bytes_for_testing
                                ? rss_bytes_for_testing
                                : process_metrics_->GetWorkingSetSize();

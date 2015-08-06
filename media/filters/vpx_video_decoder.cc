@@ -102,7 +102,8 @@ class VpxVideoDecoder::MemoryPool
   // to this pool.
   base::Closure CreateFrameCallback(void* fb_priv_data);
 
-  bool OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
  private:
   friend class base::RefCountedThreadSafe<VpxVideoDecoder::MemoryPool>;
@@ -194,6 +195,7 @@ base::Closure VpxVideoDecoder::MemoryPool::CreateFrameCallback(
 }
 
 bool VpxVideoDecoder::MemoryPool::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
   base::trace_event::MemoryAllocatorDump* memory_dump =
       pmd->CreateAllocatorDump("media/vpx/memory_pool");

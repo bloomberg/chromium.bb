@@ -33,7 +33,8 @@ class BASE_EXPORT WinHeapDumpProvider : public MemoryDumpProvider {
   static WinHeapDumpProvider* GetInstance();
 
   // MemoryDumpProvider implementation.
-  bool OnMemoryDump(ProcessMemoryDump* pmd) override;
+  bool OnMemoryDump(const MemoryDumpArgs& args,
+                    ProcessMemoryDump* pmd) override;
 
  private:
   friend struct DefaultSingletonTraits<WinHeapDumpProvider>;
