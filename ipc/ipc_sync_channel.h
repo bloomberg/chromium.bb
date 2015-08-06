@@ -15,6 +15,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sync_message.h"
+#include "ipc/ipc_sync_message_filter.h"
 
 namespace base {
 class WaitableEvent;
@@ -115,6 +116,11 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
   // Incoming messages belonging to the kRestrictDispatchGroup_None group (the
   // default) will be dispatched in any case.
   void SetRestrictDispatchChannelGroup(int group);
+
+  // Creates a new IPC::SyncMessageFilter and adds it to this SyncChannel.
+  // This should be used instead of directly constructing a new
+  // SyncMessageFilter.
+  scoped_refptr<IPC::SyncMessageFilter> CreateSyncMessageFilter();
 
  protected:
   class ReceivedSyncMsgQueue;

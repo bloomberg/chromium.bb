@@ -28,7 +28,8 @@ namespace ppapi {
 class ManifestMessageFilter : public IPC::SyncMessageFilter {
  public:
   ManifestMessageFilter(base::WaitableEvent* shutdown_event)
-      : SyncMessageFilter(shutdown_event),
+      : SyncMessageFilter(shutdown_event,
+                          false /* is_channel_send_thread_safe */),
         connected_event_(
             true /* manual_reset */, false /* initially_signaled */) {
   }

@@ -60,22 +60,27 @@ class MockDispatcher : public IndexedDBDispatcher {
   DISALLOW_COPY_AND_ASSIGN(MockDispatcher);
 };
 
+class MockSyncMessageFilter : public IPC::SyncMessageFilter {
+ public:
+  MockSyncMessageFilter()
+      : SyncMessageFilter(nullptr, false /* is_channel_send_thread_safe */) {}
+
+ private:
+  ~MockSyncMessageFilter() override {}
+};
+
 }  // namespace
 
 class IndexedDBDispatcherTest : public testing::Test {
  public:
   IndexedDBDispatcherTest()
-      : task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        sync_message_filter_(new IPC::SyncMessageFilter(NULL)),
-        thread_safe_sender_(new ThreadSafeSender(task_runner_.get(),
-                                                 sync_message_filter_.get())) {}
+      : thread_safe_sender_(new ThreadSafeSender(
+            base::ThreadTaskRunnerHandle::Get(), new MockSyncMessageFilter)) {}
 
   void TearDown() override { blink::WebHeap::collectAllGarbageForTesting(); }
 
  protected:
   base::MessageLoop message_loop_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
  private:

@@ -950,7 +950,7 @@ class TestSyncMessageFilter : public SyncMessageFilter {
       base::WaitableEvent* shutdown_event,
       Worker* worker,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : SyncMessageFilter(shutdown_event),
+      : SyncMessageFilter(shutdown_event, false),
         worker_(worker),
         task_runner_(task_runner) {}
 

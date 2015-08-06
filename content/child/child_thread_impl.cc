@@ -366,8 +366,7 @@ void ChildThreadImpl::Init(const Options& options) {
 
   mojo_application_.reset(new MojoApplication(GetIOTaskRunner()));
 
-  sync_message_filter_ =
-      new IPC::SyncMessageFilter(ChildProcess::current()->GetShutDownEvent());
+  sync_message_filter_ = channel_->CreateSyncMessageFilter();
   thread_safe_sender_ = new ThreadSafeSender(
       message_loop_->task_runner(), sync_message_filter_.get());
 
@@ -394,7 +393,6 @@ void ChildThreadImpl::Init(const Options& options) {
   push_dispatcher_ = new PushDispatcher(thread_safe_sender_.get());
 
   channel_->AddFilter(histogram_message_filter_.get());
-  channel_->AddFilter(sync_message_filter_.get());
   channel_->AddFilter(resource_message_filter_.get());
   channel_->AddFilter(quota_message_filter_->GetFilter());
   channel_->AddFilter(notification_dispatcher_->GetFilter());

@@ -21,6 +21,7 @@ class WaitableEvent;
 }
 
 namespace IPC {
+class SyncChannel;
 
 // This MessageFilter allows sending synchronous IPC messages from a thread
 // other than the listener thread associated with the SyncChannel.  It does not
@@ -29,8 +30,6 @@ namespace IPC {
 // be used to send simultaneous synchronous messages from different threads.
 class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
  public:
-  explicit SyncMessageFilter(base::WaitableEvent* shutdown_event);
-
   // MessageSender implementation.
   bool Send(Message* message) override;
 
@@ -41,15 +40,23 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
   bool OnMessageReceived(const Message& message) override;
 
  protected:
+  SyncMessageFilter(base::WaitableEvent* shutdown_event,
+                    bool is_channel_send_thread_safe);
+
   ~SyncMessageFilter() override;
 
  private:
+  friend class SyncChannel;
+
   void SendOnIOThread(Message* message);
   // Signal all the pending sends as done, used in an error condition.
   void SignalAllEvents();
 
   // The channel to which this filter was added.
   Sender* sender_;
+
+  // Indicates if |sender_|'s Send method is thread-safe.
+  bool is_channel_send_thread_safe_;
 
   // The process's main thread.
   scoped_refptr<base::SingleThreadTaskRunner> listener_task_runner_;

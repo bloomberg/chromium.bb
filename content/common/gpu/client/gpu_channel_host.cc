@@ -78,9 +78,7 @@ void GpuChannelHost::Connect(const IPC::ChannelHandle& channel_handle,
       channel_handle, IPC::Channel::MODE_CLIENT, NULL, io_task_runner.get(),
       true, shutdown_event, factory_->GetAttachmentBroker());
 
-  sync_filter_ = new IPC::SyncMessageFilter(shutdown_event);
-
-  channel_->AddFilter(sync_filter_.get());
+  sync_filter_ = channel_->CreateSyncMessageFilter();
 
   channel_filter_ = new MessageFilter();
 

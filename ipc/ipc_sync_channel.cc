@@ -460,6 +460,14 @@ void SyncChannel::SetRestrictDispatchChannelGroup(int group) {
   sync_context()->set_restrict_dispatch_group(group);
 }
 
+scoped_refptr<SyncMessageFilter> SyncChannel::CreateSyncMessageFilter() {
+  scoped_refptr<SyncMessageFilter> filter = new SyncMessageFilter(
+      sync_context()->shutdown_event(),
+      sync_context()->IsChannelSendThreadSafe());
+  AddFilter(filter.get());
+  return filter;
+}
+
 bool SyncChannel::Send(Message* message) {
 #ifdef IPC_MESSAGE_LOG_ENABLED
   std::string name;

@@ -262,8 +262,7 @@ void NaClListener::Listen() {
           switches::kProcessChannelID);
   channel_ = IPC::SyncChannel::Create(this, io_thread_.task_runner().get(),
                                       &shutdown_event_);
-  filter_ = new IPC::SyncMessageFilter(&shutdown_event_);
-  channel_->AddFilter(filter_.get());
+  filter_ = channel_->CreateSyncMessageFilter();
   channel_->AddFilter(new FileTokenMessageFilter());
   channel_->Init(channel_name, IPC::Channel::MODE_CLIENT, true);
   main_loop_ = base::MessageLoop::current();

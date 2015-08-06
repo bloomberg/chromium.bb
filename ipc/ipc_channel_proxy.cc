@@ -341,6 +341,10 @@ void ChannelProxy::Context::Send(Message* message) {
                             base::Passed(scoped_ptr<Message>(message))));
 }
 
+bool ChannelProxy::Context::IsChannelSendThreadSafe() const {
+  return channel_send_thread_safe_;
+}
+
 //-----------------------------------------------------------------------------
 
 // static

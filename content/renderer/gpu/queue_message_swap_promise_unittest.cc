@@ -31,7 +31,7 @@ class TestRenderWidget : public RenderWidget {
 
 class TestSyncMessageFilter : public IPC::SyncMessageFilter {
  public:
-  TestSyncMessageFilter() : IPC::SyncMessageFilter(NULL) {}
+  TestSyncMessageFilter() : IPC::SyncMessageFilter(NULL, false) {}
 
   bool Send(IPC::Message* message) override {
     messages_.push_back(message);

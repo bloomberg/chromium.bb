@@ -187,6 +187,9 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     // Sends |message| from appropriate thread.
     void Send(Message* message);
 
+    // Indicates if the underlying channel's Send is thread-safe.
+    bool IsChannelSendThreadSafe() const;
+
    protected:
     friend class base::RefCountedThreadSafe<Context>;
     ~Context() override;
