@@ -402,6 +402,11 @@ void Target::ProcessCommands() {
     return;
   }
 
+  // Ensure sp register is always masked on ARM. This is used to
+  // defensively ensure the invariant whenever we have all untrusted
+  // threads suspended and start processing commands.
+  MaskAlwaysValidRegisters();
+
   // Now we are ready to process commands.
   // Loop through packets until we process a continue packet or a detach.
   Packet recv, reply;
@@ -1157,5 +1162,23 @@ void Target::UnqueueAnyFaultedThread(uint32_t *thread_id, int8_t *signal) {
   }
   NaClLog(LOG_FATAL, "UnqueueAnyFaultedThread: No threads queued\n");
 }
+
+  // On ARM its important to make sure the sp
+  // register is always masked, this isn't a
+  // problem on x86 since registers are always
+  // masked first in super instructions.
+  // This is not the case for sp in ARM.
+  //
+  // https://developer.chrome.com/native-client/reference/sandbox_internals/
+  // arm-32-bit-sandbox#the-stack-pointer-thread-pointer-and-program-counter
+  void Target::MaskAlwaysValidRegisters() {
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+    for (ThreadMap_t::const_iterator iter = threads_.begin();
+         iter != threads_.end();
+         ++iter) {
+      iter->second->MaskSPRegister();
+    }
+#endif
+  }
 
 }  // namespace gdb_rsp

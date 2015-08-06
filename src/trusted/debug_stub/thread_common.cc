@@ -120,6 +120,15 @@ bool Thread::SetRegisters(uint8_t *src) {
   return true;
 }
 
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  void Thread::MaskSPRegister() {
+    const gdb_rsp::Abi::RegDef *reg = gdb_rsp::Abi::Get()->GetRegisterDef(13);
+    CHECK(reg->bytes_ == 4 && strcmp("sp", reg->name_) == 0);
+    uint32_t *reg_val = (uint32_t *)((char *) &context_ + reg->offset_);
+    *reg_val &= 0x3FFFFFFF;
+  }
+#endif
+
 void Thread::CopyRegistersFromAppThread() {
   NaClAppThreadGetSuspendedRegisters(natp_, &context_);
 }

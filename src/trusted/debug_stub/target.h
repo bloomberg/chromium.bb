@@ -124,6 +124,8 @@ class Target {
   void WaitForDebugEvent();
   void ProcessDebugEvent();
 
+  void MaskAlwaysValidRegisters();
+
  private:
   struct NaClApp *nap_;
   const Abi *abi_;

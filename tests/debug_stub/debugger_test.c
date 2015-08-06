@@ -101,8 +101,11 @@ void set_registers_and_stop(void) {
   regs.r10 = 0xa000000b;
   regs.r11 = 0xb000000c;
   regs.r12 = 0xc000000d;
-  /* stack_ptr's test value must be within the sandbox address space. */
-  regs.stack_ptr = 0x12345678;
+  /*
+   * stack_ptr's test value must be within the sandbox address space.
+   * However we can test that we mask sp before allowing access to it.
+   */
+  regs.stack_ptr = 0xD2345678;
   regs.lr = 0xe000000f;
   regs.cpsr = (1 << 29) | (1 << 27); /* C and Q flags */
 #elif defined(__mips__)

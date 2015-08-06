@@ -435,6 +435,7 @@ class DebugStubTest(unittest.TestCase):
       self.assertEquals(registers['r10'], 0xa000000b)
       self.assertEquals(registers['r11'], 0xb000000c)
       self.assertEquals(registers['r12'], 0xc000000d)
+      # Ensure sp is masked.
       self.assertEquals(registers['r13'], 0x12345678)
       self.assertEquals(registers['r14'], 0xe000000f)
       self.assertEquals(registers['cpsr'] & ARM_USER_CPSR_FLAGS_MASK,
