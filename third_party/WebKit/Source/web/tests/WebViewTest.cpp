@@ -1501,13 +1501,16 @@ TEST_F(WebViewTest, ClientTapHandling)
 TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient)
 {
     WebViewImpl* webView = WebViewImpl::create(nullptr);
-    webView->setMainFrame(WebLocalFrame::create(WebTreeScopeType::Document, nullptr));
+    WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, nullptr);
+    webView->setMainFrame(localFrame);
     WebGestureEvent event;
     event.type = WebInputEvent::GestureTap;
     event.x = 3;
     event.y = 8;
     EXPECT_FALSE(webView->handleInputEvent(event));
     webView->close();
+    // Explicitly close as the frame as no frame client to do so on frameDetached().
+    localFrame->close();
 }
 
 #if OS(ANDROID)

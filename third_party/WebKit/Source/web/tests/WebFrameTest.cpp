@@ -7648,6 +7648,32 @@ TEST_P(ParameterizedWebFrameTest, CrossDomainAccessErrorsUseCallingWindow)
     popupWebViewHelper.reset();
 }
 
+class WebLocalFrameScope final {
+public:
+    WebLocalFrameScope(WebLocalFrame* localFrame)
+        : m_localFrame(localFrame)
+    {
+    }
+
+    operator WebLocalFrame*() const
+    {
+        return m_localFrame;
+    }
+
+    WebLocalFrame* operator->() const
+    {
+        return m_localFrame;
+    }
+
+    ~WebLocalFrameScope()
+    {
+        m_localFrame->close();
+    }
+private:
+    WebLocalFrame* m_localFrame;
+};
+
+
 TEST_P(ParameterizedWebFrameTest, CreateLocalChildWithPreviousSibling)
 {
     FrameTestHelpers::TestWebViewClient viewClient;
@@ -7656,10 +7682,10 @@ TEST_P(ParameterizedWebFrameTest, CreateLocalChildWithPreviousSibling)
     view->setMainFrame(remoteClient.frame());
     WebRemoteFrame* parent = view->mainFrame()->toWebRemoteFrame();
 
-    WebLocalFrame* secondFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, nullptr);
-    WebLocalFrame* fourthFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, secondFrame);
-    WebLocalFrame* thirdFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, secondFrame);
-    WebLocalFrame* firstFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, nullptr);
+    WebLocalFrameScope secondFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, nullptr);
+    WebLocalFrameScope fourthFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, secondFrame);
+    WebLocalFrameScope thirdFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, secondFrame);
+    WebLocalFrameScope firstFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, nullptr);
 
     EXPECT_EQ(firstFrame, parent->firstChild());
     EXPECT_EQ(nullptr, firstFrame->previousSibling());
