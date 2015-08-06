@@ -31,9 +31,15 @@ cr.define('downloads', function() {
         observer: 'onScrollbarWidthChange_',
       },
 
-      isDangerous_: {type: Boolean, value: false},
+      isDangerous_: {
+        type: Boolean,
+        value: false,
+      },
 
-      isIncognito_: {type: Boolean, value: false},
+      isIncognito_: {
+        type: Boolean,
+        value: false,
+      },
 
       /** Only set when |isDangerous| is true. */
       isMalware_: Boolean,
@@ -80,12 +86,15 @@ cr.define('downloads', function() {
         this.$.progress.value = data.percent;
       }
 
+      var disableRemove;
+
       if (this.isDangerous_) {
         this.isMalware_ =
             data.danger_type == downloads.DangerType.DANGEROUS_CONTENT ||
             data.danger_type == downloads.DangerType.DANGEROUS_HOST ||
             data.danger_type == downloads.DangerType.DANGEROUS_URL ||
             data.danger_type == downloads.DangerType.POTENTIALLY_UNWANTED;
+        disableRemove = true;
       } else {
         /** @const */ var completelyOnDisk =
             data.state == downloads.States.COMPLETE &&
@@ -110,7 +119,7 @@ cr.define('downloads', function() {
         /** @const */ var showCancel = isPaused || isInProgress;
         this.$.cancel.hidden = !showCancel;
 
-        this.$.remove.disabled = showCancel ||
+        disableRemove = showCancel ||
             !loadTimeData.getBoolean('allowDeletingHistory');
 
         /** @const */ var controlledByExtension = data.by_ext_id &&
@@ -126,6 +135,8 @@ cr.define('downloads', function() {
         var icon = 'chrome://fileicon/' + encodeURIComponent(data.file_path);
         this.iconLoader_.loadScaledIcon(this.$['file-icon'], icon);
       }
+
+      this.$.remove.disabled = disableRemove;
     },
 
     /**
@@ -219,16 +230,17 @@ cr.define('downloads', function() {
     /** @private */
     onRemoveClick_: function() {
       assert(!this.$.remove.disabled);
-
-      if (this.isDangerous_)
-        this.actionService_.discardDangerous(this.id_);
-      else
-        this.actionService_.remove(this.id_);
+      this.actionService_.remove(this.id_);
     },
 
     /** @private */
-    onRestoreOrSaveClick_: function() {
+    onSaveDangerous_: function() {
       this.actionService_.saveDangerous(this.id_);
+    },
+
+    /** @private */
+    onDiscardDangerous_: function() {
+      this.actionService_.discardDangerous(this.id_);
     },
 
     /** @private */

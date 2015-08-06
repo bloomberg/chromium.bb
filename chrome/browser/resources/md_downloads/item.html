@@ -55,12 +55,22 @@
           </div>
 
           <div id="dangerous" class="controls" hidden$="[[!isDangerous_]]">
-            <cr-button column-type="save" i18n-content="dangerRestore"
-                on-click="onRestoreOrSaveClick_"
-                hidden$="[[!isMalware_]]"></cr-button>
+            <!-- Dangerous file types (e.g. .exe, .jar). -->
             <cr-button column-type="save" i18n-content="dangerSave"
-                on-click="onRestoreOrSaveClick_"
+                on-click="onSaveDangerous_"
                 hidden$="[[isMalware_]]"></cr-button>
+            <cr-button column-type="discard" i18n-content="dangerDiscard"
+                on-click="onDiscardDangerous_"
+                hidden$="[[isMalware_]]"></cr-button>
+
+            <!-- Things that safe browsing has determined to be dangerous. -->
+            <cr-button column-type="save" i18n-content="dangerRestore"
+                on-click="onSaveDangerous_"
+                hidden$="[[!isMalware_]]"></cr-button>
+            <cr-button column-type="discard"
+                i18n-content="controlRemoveFromList"
+                on-click="onDiscardDangerous_"
+                hidden$="[[!isMalware_]]"></cr-button>
           </div>
         </div>
 
