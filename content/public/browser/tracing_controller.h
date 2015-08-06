@@ -39,6 +39,10 @@ class TracingController {
     virtual void AddTraceChunk(const std::string& chunk) {}
     virtual void SetSystemTrace(const std::string& data) {}
     virtual void SetMetadata(const std::string& data) {}
+    // TODO(prabhur) Replace all the Set* functions with a generic function:
+    // TraceDataSink::AppendAdditionalData(const std::string& name,
+    // const std::string& trace_data)
+    virtual void SetPowerTrace(const std::string& data) {}
     virtual void Close() {}
 
    protected:
