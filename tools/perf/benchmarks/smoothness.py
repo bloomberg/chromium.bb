@@ -390,3 +390,14 @@ class SmoothnessToughAdCases(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'smoothness.tough_ad_cases'
+
+
+@benchmark.Disabled('reference')  # http://crbug.com/496684
+class SmoothnessScrollingToughAdCases(perf_benchmark.PerfBenchmark):
+  """Measures rendering statistics while scrolling advertisements."""
+  test = smoothness.Smoothness
+  page_set = page_sets.ScrollingToughAdCasesPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'smoothness.scrolling_tough_ad_cases'
