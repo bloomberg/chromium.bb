@@ -94,6 +94,10 @@ CacheResponse::ResponseType WebResponseTypeToProtoResponseType(
       return CacheResponse::ERROR_TYPE;
     case blink::WebServiceWorkerResponseTypeOpaque:
       return CacheResponse::OPAQUE_TYPE;
+    default:
+      // TODO(horo): Remove this when WebServiceWorkerResponseTypeOpaqueRedirect
+      // will be added in blink's WebServiceWorkerResponseType.h.
+      NOTREACHED();
   }
   NOTREACHED();
   return CacheResponse::OPAQUE_TYPE;
