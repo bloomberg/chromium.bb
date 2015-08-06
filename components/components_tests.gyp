@@ -593,6 +593,7 @@
       'sync_driver/non_blocking_data_type_controller_unittest.cc',
       'sync_driver/non_ui_data_type_controller_unittest.cc',
       'sync_driver/shared_change_processor_unittest.cc',
+      'sync_driver/sync_policy_handler_unittest.cc',
       'sync_driver/sync_prefs_unittest.cc',
       'sync_driver/system_encryptor_unittest.cc',
       'sync_driver/ui_data_type_controller_unittest.cc',

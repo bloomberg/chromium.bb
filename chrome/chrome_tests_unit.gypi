@@ -972,7 +972,6 @@
       'browser/prefs/proxy_policy_unittest.cc',
       'browser/profiles/incognito_mode_policy_handler_unittest.cc',
       'browser/sessions/restore_on_startup_policy_handler_unittest.cc',
-      'browser/sync/sync_policy_handler_unittest.cc',
     ],
     # This is extensions && policy sources.
     'chrome_unit_tests_extensions_policy_sources': [

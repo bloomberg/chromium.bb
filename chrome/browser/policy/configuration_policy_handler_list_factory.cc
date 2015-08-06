@@ -39,7 +39,7 @@
 #include "chrome/browser/policy/javascript_policy_handler.h"
 #include "chrome/browser/policy/network_prediction_policy_handler.h"
 #include "chrome/browser/sessions/restore_on_startup_policy_handler.h"
-#include "chrome/browser/sync/sync_policy_handler.h"
+#include "components/sync_driver/sync_policy_handler.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -610,7 +610,7 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(make_scoped_ptr(new JavascriptPolicyHandler()));
   handlers->AddHandler(make_scoped_ptr(new NetworkPredictionPolicyHandler()));
   handlers->AddHandler(make_scoped_ptr(new RestoreOnStartupPolicyHandler()));
-  handlers->AddHandler(make_scoped_ptr(new browser_sync::SyncPolicyHandler()));
+  handlers->AddHandler(make_scoped_ptr(new sync_driver::SyncPolicyHandler()));
 
   handlers->AddHandler(make_scoped_ptr(new StringMappingListPolicyHandler(
       key::kEnableDeprecatedWebPlatformFeatures,

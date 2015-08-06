@@ -2204,8 +2204,6 @@
       'browser/policy/network_prediction_policy_handler.h',
       'browser/sessions/restore_on_startup_policy_handler.cc',
       'browser/sessions/restore_on_startup_policy_handler.h',
-      'browser/sync/sync_policy_handler.cc',
-      'browser/sync/sync_policy_handler.h',
     ],
     # Policy sources used only on Android and iOS (CrOS not counted).
     'chrome_browser_policy_mobile_sources': [

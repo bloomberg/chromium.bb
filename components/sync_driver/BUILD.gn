@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
+
 static_library("sync_driver") {
   sources = [
     "backend_data_type_configurer.cc",
@@ -78,6 +80,13 @@ static_library("sync_driver") {
     "//components/signin/core/browser",
     "//sync",
   ]
+
+  if (enable_configuration_policy) {
+    sources += [
+      "sync_policy_handler.cc",
+      "sync_policy_handler.h",
+    ]
+  }
 }
 
 static_library("test_support") {

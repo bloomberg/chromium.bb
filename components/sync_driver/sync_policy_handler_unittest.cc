@@ -4,13 +4,13 @@
 
 #include "base/prefs/pref_value_map.h"
 #include "base/values.h"
-#include "chrome/browser/sync/sync_policy_handler.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/sync_driver/pref_names.h"
+#include "components/sync_driver/sync_policy_handler.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 // Test cases for the Sync policy setting.
 class SyncPolicyHandlerTest : public testing::Test {};
@@ -59,4 +59,4 @@ TEST_F(SyncPolicyHandlerTest, Disabled) {
   EXPECT_TRUE(sync_managed);
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

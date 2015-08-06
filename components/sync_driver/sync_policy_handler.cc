@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/sync_policy_handler.h"
+#include "components/sync_driver/sync_policy_handler.h"
 
 #include "base/prefs/pref_value_map.h"
 #include "base/values.h"
@@ -10,7 +10,7 @@
 #include "components/sync_driver/pref_names.h"
 #include "policy/policy_constants.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 SyncPolicyHandler::SyncPolicyHandler()
     : policy::TypeCheckingPolicyHandler(policy::key::kSyncDisabled,
@@ -27,4 +27,4 @@ void SyncPolicyHandler::ApplyPolicySettings(const policy::PolicyMap& policies,
     prefs->SetValue(sync_driver::prefs::kSyncManaged, value->CreateDeepCopy());
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

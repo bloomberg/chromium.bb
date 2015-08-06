@@ -96,6 +96,15 @@
             'sessions_ios',
           ],
         }],
+        ['configuration_policy==1', {
+          'dependencies': [
+            'policy',
+          ],
+          'sources': [
+            'sync_driver/sync_policy_handler.cc',
+            'sync_driver/sync_policy_handler.h',
+          ],
+        }],
       ],
     },
     {
