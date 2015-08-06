@@ -1780,8 +1780,6 @@ content.dll!content::RenderProcessHostImpl::CreateMessageFilters
 content.dll!content::RenderProcessHostImpl::Init
 ...
 content.dll!content::NavigationControllerImpl::LoadEntry
-...
-*!extensions::ExtensionHost::LoadInitialURL
 
 UNINITIALIZED READ
 name=bug_414268
