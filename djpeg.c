@@ -110,6 +110,7 @@ usage (void)
   fprintf(stderr, "  -fast          Fast, low-quality processing\n");
   fprintf(stderr, "  -grayscale     Force grayscale output\n");
   fprintf(stderr, "  -rgb           Force RGB output\n");
+  fprintf(stderr, "  -rgb565        Force RGB565 output\n");
 #ifdef IDCT_SCALING_SUPPORTED
   fprintf(stderr, "  -scale M/N     Scale output image by fraction M/N, eg, 1/8\n");
 #endif
@@ -287,6 +288,10 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "rgb", 2)) {
       /* Force RGB output. */
       cinfo->out_color_space = JCS_RGB;
+
+    } else if (keymatch(arg, "rgb565", 2)) {
+      /* Force RGB565 output. */
+      cinfo->out_color_space = JCS_RGB565;
 
     } else if (keymatch(arg, "map", 3)) {
       /* Quantize to a color map taken from an input file. */

@@ -16,9 +16,14 @@ This consists of the components:
   (reduces memory footprint and can improve performance in some cases);
 * Revisions r1108, r1109, r1333, r1375, r1386, r1389 and r1390 cherry-picked
   from upstream trunk for Arm64 NEON SIMD support;
-* CR Bug 515694: Revisions r1582, r1583, r1586, r1587, r1591, and
+* Revisions r1582, r1583, r1586, r1587, r1591, and
   commit 91eceba0a132a3fc70388a82c75616e67725a93a (code moved to GitHub)
-  cherry-picked from upstream trunk for partial decoding optimization.
+  cherry-picked from upstream trunk for partial decoding optimization;
+  http://crbug.com/515694
+* Revisions r1295, r1385, r1398, and r1402 (r1386 is also required but has
+  already been cherry-picked) cherry-picked from upstream trunk to enable
+  decoding to 565 as a memory optimization;
+  http://crbug.com/516761
 * A build file (libjpeg.gyp), and;
 * Patched header files used by Chromium.
 

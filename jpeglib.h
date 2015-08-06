@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1998, Thomas G. Lane.
  * Modified 2002-2009 by Guido Vollbeding.
  * Modifications:
- * Copyright (C) 2009-2011, 2013, D. R. Commander.
+ * Copyright (C) 2009-2011, 2013-2014, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -243,7 +243,8 @@ typedef enum {
 	JCS_EXT_RGBA,		/* red/green/blue/alpha */
 	JCS_EXT_BGRA,		/* blue/green/red/alpha */
 	JCS_EXT_ABGR,		/* alpha/blue/green/red */
-	JCS_EXT_ARGB		/* alpha/red/green/blue */
+	JCS_EXT_ARGB,		/* alpha/red/green/blue */
+  JCS_RGB565      /* 5-bit red/6-bit green/5-bit blue */
 } J_COLOR_SPACE;
 
 /* DCT/IDCT algorithm options. */

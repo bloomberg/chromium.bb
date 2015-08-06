@@ -3,6 +3,7 @@
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
  * Copyright 2011 D. R. Commander
+ * Copyright (C) 2014 Linaro Limited
  * 
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
@@ -384,6 +385,9 @@ EXTERN(void) jsimd_ycc_extxbgr_convert_neon
 EXTERN(void) jsimd_ycc_extxrgb_convert_neon
         JPP((JDIMENSION out_width,
              JSAMPIMAGE input_buf, JDIMENSION input_row,
+             JSAMPARRAY output_buf, int num_rows));
+EXTERN(void) jsimd_ycc_rgb565_convert_neon
+        JPP((JDIMENSION out_width, JSAMPIMAGE input_buf, JDIMENSION input_row,
              JSAMPARRAY output_buf, int num_rows));
 
 /* SIMD Downsample */
