@@ -50,6 +50,9 @@ public:
     void didSetSelectedIndex(int listIndex);
 
     String text() const;
+    // This updates only text in the content box.  updateFromElement() does it
+    // too, but updateText() is much lighter.
+    void updateText();
 
     const char* name() const override { return "LayoutMenuList"; }
 
@@ -77,9 +80,6 @@ private:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
     // PopupMenuClient methods
-    void valueChanged(unsigned listIndex, bool fireOnChange = true) override;
-    void popupDidCancel() override;
-    void provisionalSelectionChanged(unsigned) override;
     HTMLSelectElement& ownerElement() const override;
 
     bool hasLineIfEmpty() const override { return true; }
@@ -98,7 +98,6 @@ private:
     void setText(const String&);
     void setTextFromOption(int optionIndex);
     void updateOptionsWidth();
-    void updateText();
     void setIndexToSelectOnCancel(int listIndex);
 
     void didUpdateActiveOption(int optionIndex);

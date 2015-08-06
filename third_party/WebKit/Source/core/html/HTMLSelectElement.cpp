@@ -85,6 +85,7 @@ HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
     , m_shouldRecalcListItems(false)
     , m_suggestedIndex(-1)
     , m_isAutofilledByPreview(false)
+    , m_indexToSelectOnCancel(-1)
     , m_popupIsVisible(false)
 {
     setHasCustomStyleCallbacks();
@@ -1842,6 +1843,45 @@ void HTMLSelectElement::popupDidHide()
         if (layoutObject() && layoutObject()->isMenuList())
             cache->didHideMenuListPopup(toLayoutMenuList(layoutObject()));
     }
+}
+
+void HTMLSelectElement::setIndexToSelectOnCancel(int listIndex)
+{
+    m_indexToSelectOnCancel = listIndex;
+    if (layoutObject() && layoutObject()->isMenuList())
+        toLayoutMenuList(layoutObject())->updateText();
+}
+
+int HTMLSelectElement::optionIndexToBeShown() const
+{
+    if (m_indexToSelectOnCancel >= 0)
+        return listToOptionIndex(m_indexToSelectOnCancel);
+    if (suggestedIndex() >= 0)
+        return suggestedIndex();
+    return selectedIndex();
+}
+
+void HTMLSelectElement::valueChanged(unsigned listIndex)
+{
+    // Check to ensure a page navigation has not occurred while the popup was
+    // up.
+    Document& doc = document();
+    if (&doc != doc.frame()->document())
+        return;
+
+    setIndexToSelectOnCancel(-1);
+    optionSelectedByUser(listToOptionIndex(listIndex), true);
+}
+
+void HTMLSelectElement::popupDidCancel()
+{
+    if (m_indexToSelectOnCancel >= 0)
+        valueChanged(m_indexToSelectOnCancel);
+}
+
+void HTMLSelectElement::provisionalSelectionChanged(unsigned listIndex)
+{
+    setIndexToSelectOnCancel(listIndex);
 }
 
 } // namespace blink

@@ -139,11 +139,17 @@ public:
     LayoutUnit clientPaddingLeft() const;
     // Text starting offset in RTL.
     LayoutUnit clientPaddingRight() const;
+    void valueChanged(unsigned listIndex);
+    // A popup is canceled when the popup was hidden without selecting an item.
+    void popupDidCancel();
+    // Provisional selection is a selection made using arrow keys or type ahead.
+    void provisionalSelectionChanged(unsigned);
     void popupDidHide();
     bool popupIsVisible() const { return m_popupIsVisible; }
     // TODO(tkent): setPopupIsVisible should be unnecessary. Popup controlling
     // code should be in HTMLSelectElement.
     void setPopupIsVisible() { m_popupIsVisible = true; }
+    int optionIndexToBeShown() const;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -212,6 +218,7 @@ private:
     void setOptionsChangedOnLayoutObject();
     size_t searchOptionsForValue(const String&, size_t listIndexStart, size_t listIndexEnd) const;
     void updateListBoxSelection(bool deselectOtherOptions, bool scroll = true);
+    void setIndexToSelectOnCancel(int listIndex);
 
     enum SkipDirection {
         SkipBackwards = -1,
@@ -251,6 +258,7 @@ private:
     int m_suggestedIndex;
     bool m_isAutofilledByPreview;
 
+    int m_indexToSelectOnCancel;
     bool m_popupIsVisible;
 };
 

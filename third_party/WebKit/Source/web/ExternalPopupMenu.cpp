@@ -150,7 +150,7 @@ void ExternalPopupMenu::didAcceptIndex(int index)
 
     if (m_popupMenuClient) {
         m_popupMenuClient->ownerElement().popupDidHide();
-        m_popupMenuClient->valueChanged(popupMenuItemIndex);
+        m_popupMenuClient->ownerElement().valueChanged(popupMenuItemIndex);
     }
     m_webExternalPopupMenu = 0;
 }
@@ -169,9 +169,9 @@ void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
     RefPtrWillBeRawPtr<HTMLSelectElement> ownerElement(m_popupMenuClient->ownerElement());
     ownerElement->popupDidHide();
 
-    if (!indices.size())
-        m_popupMenuClient->valueChanged(static_cast<unsigned>(-1), true);
-    else {
+    if (indices.size() == 0) {
+        ownerElement->valueChanged(static_cast<unsigned>(-1));
+    } else {
         for (size_t i = 0; i < indices.size(); ++i)
             ownerElement->listBoxSelectItem(toPopupMenuItemIndex(indices[i], *m_popupMenuClient), (i > 0), false, (i == indices.size() - 1));
     }

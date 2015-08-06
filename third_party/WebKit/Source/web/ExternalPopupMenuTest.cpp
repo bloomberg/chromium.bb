@@ -32,9 +32,6 @@ public:
     TestPopupMenuClient() { }
     ~TestPopupMenuClient() override { }
 
-    void valueChanged(unsigned listIndex, bool fireEvents = true) override { }
-    void popupDidCancel() override { }
-    void provisionalSelectionChanged(unsigned listIndex) override { }
     HTMLSelectElement& ownerElement() const override { return *m_ownerElement; }
 
     void setOwnerElement(PassRefPtrWillBeRawPtr<HTMLSelectElement> element) { m_ownerElement = element; }

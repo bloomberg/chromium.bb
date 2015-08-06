@@ -38,11 +38,6 @@ class HTMLSelectElement;
 class CORE_EXPORT PopupMenuClient {
 public:
     virtual ~PopupMenuClient() { }
-    virtual void valueChanged(unsigned listIndex, bool fireEvents = true) = 0;
-    // A popup is canceled when the popup was hidden without selecting an item.
-    virtual void popupDidCancel() = 0;
-    // Provisional selection is a selection made using arrow keys or type ahead.
-    virtual void provisionalSelectionChanged(unsigned) = 0;
     virtual HTMLSelectElement& ownerElement() const = 0;
 };
 

@@ -225,20 +225,9 @@ void LayoutMenuList::updateFromElement()
     updateText();
 }
 
-void LayoutMenuList::setIndexToSelectOnCancel(int listIndex)
-{
-    m_indexToSelectOnCancel = listIndex;
-    updateText();
-}
-
 void LayoutMenuList::updateText()
 {
-    if (m_indexToSelectOnCancel >= 0)
-        setTextFromOption(selectElement()->listToOptionIndex(m_indexToSelectOnCancel));
-    else if (selectElement()->suggestedIndex() >= 0)
-        setTextFromOption(selectElement()->suggestedIndex());
-    else
-        setTextFromOption(selectElement()->selectedIndex());
+    setTextFromOption(selectElement()->optionIndexToBeShown());
 }
 
 void LayoutMenuList::setTextFromOption(int optionIndex)
@@ -363,20 +352,6 @@ void LayoutMenuList::hidePopup()
         m_popup->hide();
 }
 
-void LayoutMenuList::valueChanged(unsigned listIndex, bool fireOnChange)
-{
-    // Check to ensure a page navigation has not occurred while
-    // the popup was up.
-    Document& doc = toElement(node())->document();
-    if (&doc != doc.frame()->document())
-        return;
-
-    setIndexToSelectOnCancel(-1);
-
-    HTMLSelectElement* select = selectElement();
-    select->optionSelectedByUser(select->listToOptionIndex(listIndex), fireOnChange);
-}
-
 HTMLSelectElement& LayoutMenuList::ownerElement() const
 {
     return *selectElement();
@@ -430,17 +405,6 @@ LayoutUnit LayoutMenuList::clientPaddingRight() const
     // If the appearance isn't MenulistPart, then the select is styled (non-native), so
     // we want to return the user specified padding.
     return paddingRight() + m_innerBlock->paddingRight();
-}
-
-void LayoutMenuList::popupDidCancel()
-{
-    if (m_indexToSelectOnCancel >= 0)
-        valueChanged(m_indexToSelectOnCancel);
-}
-
-void LayoutMenuList::provisionalSelectionChanged(unsigned listIndex)
-{
-    setIndexToSelectOnCancel(listIndex);
 }
 
 } // namespace blink

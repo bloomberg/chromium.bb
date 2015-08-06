@@ -398,7 +398,7 @@ void PopupMenuImpl::setValueAndClosePopup(int numValue, const String& stringValu
     bool success;
     int listIndex = stringValue.toInt(&success);
     ASSERT(success);
-    m_client->valueChanged(listIndex);
+    m_client->ownerElement().valueChanged(listIndex);
     if (m_popup)
         m_chromeClient->closePagePopup(m_popup);
     // We dispatch events on the owner element to match the legacy behavior.
@@ -417,7 +417,7 @@ void PopupMenuImpl::setValue(const String& value)
     bool success;
     int listIndex = value.toInt(&success);
     ASSERT(success);
-    m_client->provisionalSelectionChanged(listIndex);
+    m_client->ownerElement().provisionalSelectionChanged(listIndex);
 }
 
 void PopupMenuImpl::didClosePopup()
@@ -444,7 +444,7 @@ void PopupMenuImpl::closePopup()
     if (m_popup)
         m_chromeClient->closePagePopup(m_popup);
     if (m_client)
-        m_client->popupDidCancel();
+        m_client->ownerElement().popupDidCancel();
 }
 
 void PopupMenuImpl::dispose()
