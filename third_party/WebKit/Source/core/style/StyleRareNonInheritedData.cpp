@@ -123,6 +123,8 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , m_hasInlineTransform(false)
     , m_resize(ComputedStyle::initialResize())
     , m_hasCompositorProxy(false)
+    , m_hasAuthorBackground(false)
+    , m_hasAuthorBorder(false)
 {
     m_maskBoxImage.setMaskDefaults();
 }
@@ -200,6 +202,8 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_hasInlineTransform(o.m_hasInlineTransform)
     , m_resize(o.m_resize)
     , m_hasCompositorProxy(o.m_hasCompositorProxy)
+    , m_hasAuthorBackground(o.m_hasAuthorBackground)
+    , m_hasAuthorBorder(o.m_hasAuthorBorder)
 {
 }
 
@@ -280,7 +284,9 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_requiresAcceleratedCompositingForExternalReasons == o.m_requiresAcceleratedCompositingForExternalReasons
         && m_hasInlineTransform == o.m_hasInlineTransform
         && m_resize == o.m_resize
-        && m_hasCompositorProxy == o.m_hasCompositorProxy;
+        && m_hasCompositorProxy == o.m_hasCompositorProxy
+        && m_hasAuthorBackground == o.m_hasAuthorBackground
+        && m_hasAuthorBorder == o.m_hasAuthorBorder;
 }
 
 bool StyleRareNonInheritedData::contentDataEquivalent(const StyleRareNonInheritedData& o) const

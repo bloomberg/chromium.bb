@@ -45,7 +45,6 @@
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/style/AuthorStyleInfo.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/FileMetadata.h"
 #include "platform/FloatConversion.h"
@@ -76,7 +75,7 @@ LayoutTheme::LayoutTheme()
 {
 }
 
-void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e, const AuthorStyleInfo& authorStyle)
+void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e)
 {
     ASSERT(style.hasAppearance());
 
@@ -90,17 +89,15 @@ void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e, const AuthorStyl
     else if (style.display() == LIST_ITEM || style.display() == TABLE)
         style.setDisplay(BLOCK);
 
-    if (isControlStyled(style, authorStyle)) {
+    if (isControlStyled(style)) {
         if (part == MenulistPart) {
             style.setAppearance(MenulistButtonPart);
             part = MenulistButtonPart;
         } else {
             style.setAppearance(NoControlPart);
+            return;
         }
     }
-
-    if (!style.hasAppearance())
-        return;
 
     if (shouldUseFallbackTheme(style)) {
         adjustStyleUsingFallbackTheme(style);
@@ -368,7 +365,7 @@ bool LayoutTheme::isControlContainer(ControlPart appearance) const
     return appearance != CheckboxPart && appearance != RadioPart;
 }
 
-bool LayoutTheme::isControlStyled(const ComputedStyle& style, const AuthorStyleInfo& authorStyle) const
+bool LayoutTheme::isControlStyled(const ComputedStyle& style) const
 {
     switch (style.appearance()) {
     case PushButtonPart:
@@ -380,13 +377,13 @@ bool LayoutTheme::isControlStyled(const ComputedStyle& style, const AuthorStyleI
     case ContinuousCapacityLevelIndicatorPart:
     case DiscreteCapacityLevelIndicatorPart:
     case RatingLevelIndicatorPart:
-        return authorStyle.specifiesBackground() || authorStyle.specifiesBorder();
+        return style.hasAuthorBackground() || style.hasAuthorBorder();
 
     case MenulistPart:
     case SearchFieldPart:
     case TextAreaPart:
     case TextFieldPart:
-        return authorStyle.specifiesBackground() || authorStyle.specifiesBorder() || style.boxShadow();
+        return style.hasAuthorBackground() || style.hasAuthorBorder() || style.boxShadow();
 
     case SliderHorizontalPart:
     case SliderVerticalPart:

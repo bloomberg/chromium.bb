@@ -147,8 +147,6 @@ bool MatchedPropertiesCache::isCacheable(const Element* element, const ComputedS
 {
     if (style.unique() || (style.styleType() != NOPSEUDO && parentStyle.unique()))
         return false;
-    if (style.hasAppearance())
-        return false;
     if (style.zoom() != ComputedStyle::initialZoom())
         return false;
     if (style.writingMode() != ComputedStyle::initialWritingMode() || style.direction() != ComputedStyle::initialDirection())
