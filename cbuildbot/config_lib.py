@@ -1102,16 +1102,18 @@ class SiteConfig(dict):
     json_string = self.SaveConfigToString()
     osutils.WriteFile(config_file, json_string)
 
-  def HideDefaults(self, cfg):
+  def HideDefaults(self, name, cfg):
     """Hide the defaults from a given config entry.
 
     Args:
+      name: Default build name (usually dictionary key).
       cfg: A config entry.
 
     Returns:
       The same config entry, but without any defaults.
     """
     my_default = self.GetDefault()
+    my_default['name'] = name
 
     template = cfg.get('_template')
     if template:
@@ -1122,7 +1124,7 @@ class SiteConfig(dict):
     for k, v in cfg.iteritems():
       if my_default.get(k) != v:
         if k == 'child_configs':
-          d['child_configs'] = [self.HideDefaults(child) for child in v]
+          d['child_configs'] = [self.HideDefaults(name, child) for child in v]
         else:
           d[k] = v
 
@@ -1164,7 +1166,7 @@ class SiteConfig(dict):
 
     config_dict = {}
     for k, v in self.iteritems():
-      config_dict[k] = self.HideDefaults(v)
+      config_dict[k] = self.HideDefaults(k, v)
 
     config_dict['_default'] = default
     config_dict['_templates'] = self._templates
@@ -1205,7 +1207,7 @@ def LoadConfigFromString(json_string):
 
   defaultBuildConfig = BuildConfig(**defaults)
 
-  builds = {n: _CreateBuildConfig(defaultBuildConfig, v, templates)
+  builds = {n: _CreateBuildConfig(n, defaultBuildConfig, v, templates)
             for n, v in config_dict.iteritems()}
 
   # config is the struct that holds the complete cbuildbot config.
@@ -1258,11 +1260,14 @@ def _CreateHwTestConfig(jsonString):
   return HWTestConfig(**hw_test_config)
 
 
-def _CreateBuildConfig(default, build_dict, templates):
+def _CreateBuildConfig(name, default, build_dict, templates):
   """Create a BuildConfig object from it's parsed JSON dictionary encoding."""
   # These build config values need special handling.
   child_configs = build_dict.pop('child_configs', None)
   template = build_dict.get('_template')
+
+  # Use the name passed in as the default build name.
+  build_dict.setdefault('name', name)
 
   my_default = default
   if template:
@@ -1280,8 +1285,10 @@ def _CreateBuildConfig(default, build_dict, templates):
     ]
 
   if child_configs is not None:
-    result['child_configs'] = [_CreateBuildConfig(default, child, templates)
-                               for child in child_configs]
+    result['child_configs'] = [
+        _CreateBuildConfig(name, default, child, templates)
+        for child in child_configs
+    ]
 
   return result
 

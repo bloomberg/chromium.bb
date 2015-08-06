@@ -404,6 +404,8 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
             }
         ],
         "name": "parent_build"
+    },
+    "default_name_build": {
     }
 }"""
 
@@ -439,6 +441,8 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
             async=True, file_bugs=True, max_retries=None,
             minimum_duts=4, num=2, priority='PostBuild',
             retry=False, suite_min_duts=1))
+    self.assertEqual(config['default_name_build'].name, 'default_name_build')
+
     self.assertTrue(config.params.site_foo)
     self.assertFalse(config.params.site_bar)
 
