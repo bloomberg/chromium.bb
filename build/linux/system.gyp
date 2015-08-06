@@ -535,6 +535,9 @@
             ],
           },
           'link_settings': {
+            'ldflags': [
+              '<!@(<(pkg-config) --libs-only-L --libs-only-other libdrm)',
+            ],
             'libraries': [
               '<!@(<(pkg-config) --libs-only-l libdrm)',
             ],
