@@ -116,6 +116,7 @@ config("compiler") {
       "/Gy",  # Enable function-level linking.
       "/GS",  # Enable buffer security checking.
       "/FS",  # Preserve previous PDB behavior.
+      "/bigobj",  # Some of our files are bigger than the regular limits.
     ]
 
     # Force C/C++ mode for the given GN detected file type. This is necessary
