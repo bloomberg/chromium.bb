@@ -172,7 +172,13 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndIPC) {
 
 // This tests the case when a service process is launched when the browser
 // starts but we try to launch it again while setting up Cloud Print.
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchTwice) {
+// Flaky on Mac ASan. http://crbug.com/517420
+#if defined(OS_MACOSX)
+#define MAYBE_LaunchTwice DISABLED_LaunchTwice
+#else
+#define MAYBE_LaunchTwice LaunchTwice
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_LaunchTwice) {
   // Launch the service process the first time.
   LaunchServiceProcessControl();
 
@@ -235,7 +241,14 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, SameLaunchTask) {
 
 // Tests whether disconnecting from the service IPC causes the service process
 // to die.
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, DieOnDisconnect) {
+// Flaky on Mac ASan. http://crbug.com/517420
+#if defined(OS_MACOSX)
+#define MAYBE_DieOnDisconnect DISABLED_DieOnDisconnect
+#else
+#define MAYBE_DieOnDisconnect DieOnDisconnect
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
+                       MAYBE_DieOnDisconnect) {
   // Launch the service process.
   LaunchServiceProcessControl();
   // Make sure we are connected to the service process.
