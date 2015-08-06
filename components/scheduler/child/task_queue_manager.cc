@@ -104,7 +104,7 @@ void TaskQueueManager::UnregisterAsUpdatableTaskQueue(
 
 void TaskQueueManager::UpdateWorkQueues(
     bool should_trigger_wakeup,
-    const base::PendingTask* previous_task) {
+    const internal::TaskQueueImpl::Task* previous_task) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   internal::LazyNow lazy_now(this);
 
@@ -125,11 +125,6 @@ void TaskQueueManager::UpdateWorkQueues(
     // as the iterator isn't the element being delated.
     if (queue->work_queue().empty())
         queue->UpdateWorkQueue(&lazy_now, should_trigger_wakeup, previous_task);
-    if (!queue->work_queue().empty()) {
-      // Currently we should not be getting tasks with delayed run times in any
-      // of the work queues.
-      DCHECK(queue->work_queue().front().delayed_run_time.is_null());
-    }
   }
 }
 
@@ -159,8 +154,7 @@ void TaskQueueManager::DoWork(bool posted_from_main_thread) {
   // pump-after-wakeup queue.
   UpdateWorkQueues(false, nullptr);
 
-  base::PendingTask previous_task((tracked_objects::Location()),
-                                  (base::Closure()));
+  internal::TaskQueueImpl::Task previous_task;
   for (int i = 0; i < work_batch_size_; i++) {
     internal::TaskQueueImpl* queue;
     if (!SelectQueueToService(&queue))
@@ -192,16 +186,18 @@ bool TaskQueueManager::SelectQueueToService(
   return should_run;
 }
 
-void TaskQueueManager::DidQueueTask(const base::PendingTask& pending_task) {
+void TaskQueueManager::DidQueueTask(
+    const internal::TaskQueueImpl::Task& pending_task) {
   task_annotator_.DidQueueTask("TaskQueueManager::PostTask", pending_task);
 }
 
 bool TaskQueueManager::ProcessTaskFromWorkQueue(
     internal::TaskQueueImpl* queue,
-    base::PendingTask* out_previous_task) {
+    internal::TaskQueueImpl::Task* out_previous_task) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   scoped_refptr<DeletionSentinel> protect(deletion_sentinel_);
-  base::PendingTask pending_task = queue->TakeTaskFromWorkQueue();
+  // TODO(alexclarke): consider std::move() when allowed.
+  internal::TaskQueueImpl::Task pending_task = queue->TakeTaskFromWorkQueue();
 
   if (queue->GetQuiescenceMonitored())
     task_was_run_on_quiescence_monitored_queue_ = true;
