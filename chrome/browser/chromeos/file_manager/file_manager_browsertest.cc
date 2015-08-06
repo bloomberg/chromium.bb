@@ -279,11 +279,11 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_ExecuteDefaultTaskOnDrive ExecuteDefaultTaskOnDrive
 #endif
-INSTANTIATE_TEST_CASE_P(
+WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_ExecuteDefaultTaskOnDrive,
     FileManagerBrowserTest,
-    ::testing::Values(
-        TestParameter(NOT_IN_GUEST_MODE, "executeDefaultTaskOnDrive")));
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
+                                    "executeDefaultTaskOnDrive")));
 
 #if defined(DISABLE_SLOW_FILESAPP_TESTS)
 #define MAYBE_DefaultActionDialog DISABLED_DefaultActionDialog
@@ -340,10 +340,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_TabIndex TabIndex
 #endif
-INSTANTIATE_TEST_CASE_P(MAYBE_TabIndex,
-                        FileManagerBrowserTest,
-                        ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
-                                                        "searchBoxFocus")));
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_TabIndex,
+    FileManagerBrowserTest,
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "searchBoxFocus")));
 
 #if defined(DISABLE_SLOW_FILESAPP_TESTS)
 #define MAYBE_TabindexFocus DISABLED_TabindexFocus
@@ -361,7 +361,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_TabindexFocusDownloads TabindexFocusDownloads
 #endif
-INSTANTIATE_TEST_CASE_P(
+WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_TabindexFocusDownloads,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
