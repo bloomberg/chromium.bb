@@ -163,6 +163,11 @@ template("msvc_toolchain") {
       link_output = libname
       depend_output = libname
 
+      # Since the above commands only updates the .lib file when it changes, ask
+      # Ninja to check if the timestamp actually changed to know if downstream
+      # dependencies should be recompiled.
+      restat = true
+
       # The use of inputs_newline is to work around a fixed per-line buffer
       # size in the linker.
       rspfile_content = "{{libs}} {{solibs}} {{inputs_newline}} {{ldflags}}"
