@@ -7063,6 +7063,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Fast start
         </message>
       </if>
+      <message name="IDS_FLAGS_LOW_PRIORITY_IFRAMES_UI_NAME" desc="Name of the flag to enable the low priority iframes experiment.">
+        Low priority iframes.
+      </message>
+      <message name="IDS_FLAGS_LOW_PRIORITY_IFRAMES_UI_DESCRIPTION" desc="Description of the flag to enable the low priority iframes experiment.">
+        Reduces the load priority of iframe resources.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

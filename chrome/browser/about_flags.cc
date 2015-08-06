@@ -2108,6 +2108,15 @@ const Experiment kExperiments[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOfflinePages,
                                switches::kDisableOfflinePages)},
 #endif  // defined(OS_ANDROID)
+    {"low-priority-iframes",
+     IDS_FLAGS_LOW_PRIORITY_IFRAMES_UI_NAME,
+     IDS_FLAGS_LOW_PRIORITY_IFRAMES_UI_DESCRIPTION,
+     kOsAll,
+     // NOTE: if we want to add additional experiment entries for other
+     // features controlled by kBlinkSettings, we'll need to add logic to
+     // merge the flag values.
+     SINGLE_VALUE_TYPE_AND_VALUE(
+         switches::kBlinkSettings, "lowPriorityIframes=true")},
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
