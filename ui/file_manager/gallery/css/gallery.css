@@ -40,6 +40,15 @@ files-toggle-ripple::shadow .ripple.activated {
   opacity: 0.4;
 }
 
+/**
+ * Default size of slider knob is large for Gallery. Overwrite it to make it
+ * half of the original size.
+ */
+paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
+  height: 50%;
+  width: 50%;
+}
+
 .gallery,
 .gallery .content {
   bottom: 0;
