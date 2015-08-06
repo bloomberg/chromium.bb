@@ -19,7 +19,6 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-static const std::string kTypeParentId = "PrefsRootNodeID";
 static const syncer::ModelType kModelType = syncer::PREFERENCES;
 
 // Special constant value taken from cryptographer.cc.
@@ -243,7 +242,6 @@ void ModelTypeSyncWorkerImplTest::FirstInitialize() {
   syncer_v2::DataTypeState initial_state;
   initial_state.progress_marker.set_data_type_id(
       GetSpecificsFieldNumberFromModelType(kModelType));
-  initial_state.next_client_id = 0;
 
   InitializeWithState(initial_state, syncer_v2::UpdateResponseDataList());
 }
@@ -259,8 +257,6 @@ void ModelTypeSyncWorkerImplTest::InitializeWithPendingUpdates(
       GetSpecificsFieldNumberFromModelType(kModelType));
   initial_state.progress_marker.set_token("some_saved_progress_token");
 
-  initial_state.next_client_id = 10;
-  initial_state.type_root_id = kTypeParentId;
   initial_state.initial_sync_done = true;
 
   InitializeWithState(initial_state, initial_pending_updates);
@@ -679,7 +675,6 @@ TEST_F(ModelTypeSyncWorkerImplTest, SimpleCommit) {
   ASSERT_TRUE(HasCommitEntityOnServer("tag1"));
   const sync_pb::SyncEntity& entity = GetLatestCommitEntityOnServer("tag1");
   EXPECT_FALSE(entity.id_string().empty());
-  EXPECT_EQ(kTypeParentId, entity.parent_id_string());
   EXPECT_EQ(syncer_v2::kUncommittedVersion, entity.version());
   EXPECT_NE(0, entity.mtime());
   EXPECT_NE(0, entity.ctime());
@@ -788,7 +783,6 @@ TEST_F(ModelTypeSyncWorkerImplTest, SendInitialSyncDone) {
 
   const syncer_v2::DataTypeState& state = GetNthModelThreadUpdateState(1);
   EXPECT_FALSE(state.progress_marker.token().empty());
-  EXPECT_FALSE(state.type_root_id.empty());
   EXPECT_TRUE(state.initial_sync_done);
 }
 

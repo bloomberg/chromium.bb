@@ -29,7 +29,6 @@ class ModelTypeRegistryTest : public ::testing::Test {
     syncer_v2::DataTypeState state;
     state.progress_marker.set_data_type_id(
         GetSpecificsFieldNumberFromModelType(type));
-    state.next_client_id = 0;
     return state;
   }
 

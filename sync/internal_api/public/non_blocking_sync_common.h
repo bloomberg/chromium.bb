@@ -31,31 +31,17 @@ struct SYNC_EXPORT_PRIVATE DataTypeState {
   // be data-type specific.  Many data types ignore it.
   sync_pb::DataTypeContext type_context;
 
-  // The ID of the folder node that sits at the top of this type's folder
-  // hierarchy.  We keep this around for legacy reasons.  The protocol expects
-  // that all nodes of a certain type are children of the same type root
-  // entity.  This entity is delivered by the server, and may not be available
-  // until the first download cycle has completed.
-  std::string type_root_id;
-
   // This value is set if this type's data should be encrypted on the server.
   // If this key changes, the client will need to re-commit all of its local
   // data to the server using the new encryption key.
   std::string encryption_key_name;
-
-  // A strictly increasing counter used to generate unique values for the
-  // client-assigned IDs.  The incrementing and ID assignment happens on the
-  // sync thread, but we store the value here so we can pass it back to the
-  // model thread for persistence.  This is probably unnecessary for the
-  // client-tagged data types supported by non-blocking sync, but we will
-  // continue to emulate the directory sync's behavior for now.
-  int64 next_client_id;
 
   // This flag is set to true when the first download cycle is complete.  The
   // ModelTypeSyncProxy should not attempt to commit any items until this
   // flag is set.
   bool initial_sync_done;
 };
+
 struct SYNC_EXPORT_PRIVATE CommitRequestData {
   CommitRequestData();
   ~CommitRequestData();

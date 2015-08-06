@@ -6,7 +6,7 @@
 
 namespace syncer_v2 {
 
-DataTypeState::DataTypeState() : next_client_id(0), initial_sync_done(false) {
+DataTypeState::DataTypeState() : initial_sync_done(false) {
 }
 
 DataTypeState::~DataTypeState() {
