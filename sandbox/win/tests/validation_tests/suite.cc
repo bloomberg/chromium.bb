@@ -167,7 +167,7 @@ TEST(ValidationSuite, TestProcessDenyLockdown) {
 // to the integrity label changing after startup via SetDelayedIntegrityLevel).
 TEST(ValidationSuite, TestProcessDenyLowIntegrity) {
   // This test applies only to Vista and above.
-  if (base::win::Version() < base::win::VERSION_VISTA)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return;
 
   TestRunner runner;
@@ -188,7 +188,7 @@ TEST(ValidationSuite, TestProcessDenyLowIntegrity) {
 // Tests that a locked-down process cannot open a low-integrity process.
 TEST(ValidationSuite, TestProcessDenyBelowLowIntegrity) {
   //  This test applies only to Vista and above.
-  if (base::win::Version() < base::win::VERSION_VISTA)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return;
 
   TestRunner runner;
