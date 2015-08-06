@@ -14,7 +14,7 @@ import pretty_print_xml
 # Desired order for tag and tag attributes.
 # { tag_name: [attribute_name, ...] }
 ATTRIBUTE_ORDER = {
-    'action': ['name'],
+    'action': ['name', 'not_user_triggered'],
     'owner': [],
     'description': [],
     'obsolete': [],

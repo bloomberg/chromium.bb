@@ -562,10 +562,12 @@ def _ExtractText(parent_dom, tag_name):
 
 
 class Action(object):
-  def __init__(self, name, description, owners, obsolete=None):
+  def __init__(self, name, description, owners,
+               not_user_triggered=False, obsolete=None):
     self.name = name
     self.description = description
     self.owners = owners
+    self.not_user_triggered = not_user_triggered
     self.obsolete = obsolete
 
 
@@ -596,6 +598,7 @@ def ParseActionFile(file_content):
   # Get each user action data.
   for action_dom in dom.getElementsByTagName('action'):
     action_name = action_dom.getAttribute('name')
+    not_user_triggered = bool(action_dom.getAttribute('not_user_triggered'))
     actions.add(action_name)
 
     owners = _ExtractText(action_dom, 'owner')
@@ -617,7 +620,7 @@ def ParseActionFile(file_content):
       sys.exit(1)
     obsolete = obsolete_list[0] if obsolete_list else None
     actions_dict[action_name] = Action(action_name, description, owners,
-                                       obsolete)
+                                       not_user_triggered, obsolete)
   return actions, actions_dict, comment_nodes
 
 
@@ -625,14 +628,18 @@ def _CreateActionTag(doc, action_name, action_object):
   """Create a new action tag.
 
   Format of an action tag:
-  <action name="name">
+  <action name="name" not_user_triggered="true">
     <owner>Owner</owner>
     <description>Description.</description>
     <obsolete>Deprecated.</obsolete>
   </action>
 
-  <obsolete> is an optional tag. It's added to user actions that are no longer
-  used any more.
+  not_user_triggered is an optional attribute. If set, it implies that the
+  belonging action is not a user action. A user action is an action that
+  is logged exactly once right after a user has made an action.
+
+  <obsolete> is an optional tag. It's added to actions that are no longer used
+  any more.
 
   If action_name is in actions_dict, the values to be inserted are based on the
   corresponding Action object. If action_name is not in actions_dict, the
@@ -648,6 +655,10 @@ def _CreateActionTag(doc, action_name, action_object):
   """
   action_dom = doc.createElement('action')
   action_dom.setAttribute('name', action_name)
+
+  # Add not_user_triggered attribute.
+  if action_object and action_object.not_user_triggered:
+    action_dom.setAttribute('not_user_triggered', 'true')
 
   # Create owner tag.
   if action_object and action_object.owners:

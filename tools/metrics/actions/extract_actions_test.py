@@ -27,12 +27,14 @@ TWO_OBSOLETE = '<obsolete>Obsolete1.</obsolete><obsolete>Obsolete2.</obsolete>'
 
 COMMENT = '<!--comment-->'
 
+NOT_USER_TRIGGERED = 'not_user_triggered="true"'
+
 # A format string to mock the input action.xml file.
 ACTIONS_XML = """
 {comment}
 <actions>
 
-<action name="action1">
+<action name="action1" {not_user_triggered}>
 {owners}{obsolete}{description}
 </action>
 
@@ -114,10 +116,20 @@ COMMENT_EXPECTED_XML = (
     '</actions>\n'
 )
 
+NOT_USER_TRIGGERED_EXPECTED_XML = (
+    '<actions>\n\n'
+    '<action name="action1" not_user_triggered="true">\n'
+    '  <owner>Please list the metric\'s owners. '
+    'Add more owner tags as needed.</owner>\n'
+    '  <description>Description.</description>\n'
+    '</action>\n\n'
+    '</actions>\n'
+)
 
 class ActionXmlTest(unittest.TestCase):
 
-  def _GetProcessedAction(self, owner, description, obsolete, new_actions=[],
+  def _GetProcessedAction(self, owner, description, obsolete,
+                          not_user_triggered=NO_VALUE, new_actions=[],
                           comment=NO_VALUE):
     """Forms an actions XML string and returns it after processing.
 
@@ -137,7 +149,8 @@ class ActionXmlTest(unittest.TestCase):
     """
     # Form the actions.xml mock content based on the input parameters.
     current_xml = ACTIONS_XML.format(owners=owner, description=description,
-                                     obsolete=obsolete, comment=comment)
+                                     obsolete=obsolete, comment=comment,
+                                     not_user_triggered=not_user_triggered)
     actions, actions_dict, comments = extract_actions.ParseActionFile(
         current_xml)
     for new_action in new_actions:
@@ -163,7 +176,8 @@ class ActionXmlTest(unittest.TestCase):
   def testTwoDescriptions(self):
     current_xml = ACTIONS_XML.format(owners=TWO_OWNERS, obsolete=NO_VALUE,
                                      description=TWO_DESCRIPTIONS,
-                                     comment=NO_VALUE)
+                                     comment=NO_VALUE,
+                                     not_user_triggered=NO_VALUE)
     # Since there are two description tags, the function ParseActionFile will
     # raise SystemExit with exit code 1.
     with self.assertRaises(SystemExit) as cm:
@@ -177,7 +191,9 @@ class ActionXmlTest(unittest.TestCase):
 
   def testTwoObsoletes(self):
     current_xml = ACTIONS_XML.format(owners=TWO_OWNERS, obsolete=TWO_OBSOLETE,
-                                     description=DESCRIPTION, comment=NO_VALUE)
+                                     description=DESCRIPTION, comment=NO_VALUE,
+                                     not_user_triggered=NO_VALUE)
+
     # Since there are two obsolete tags, the function ParseActionFile will
     # raise SystemExit with exit code 1.
     with self.assertRaises(SystemExit) as cm:
@@ -193,6 +209,11 @@ class ActionXmlTest(unittest.TestCase):
     xml_result = self._GetProcessedAction(TWO_OWNERS, DESCRIPTION, NO_VALUE,
                                           comment=COMMENT)
     self.assertEqual(COMMENT_EXPECTED_XML, xml_result)
+
+  def testNotUserTriggered(self):
+    xml_result = self._GetProcessedAction(NO_VALUE, DESCRIPTION, NO_VALUE,
+                                          NOT_USER_TRIGGERED)
+    self.assertEqual(NOT_USER_TRIGGERED_EXPECTED_XML, xml_result)
 
   def testUserMetricsActionSpanningTwoLines(self):
     code = 'base::UserMetricsAction(\n"Foo.Bar"));'

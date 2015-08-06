@@ -6,7 +6,11 @@ found in the LICENSE file.
 
 <!--
 This file is a comprehensive list of Chrome user actions along with the owner
-and description for each user action.
+and description for each user action. A user action should be tied to an actual
+action taken by a user. It should be logged immediatly after a user takes the
+action, and should only be logged once per actual event. If an action is not
+user triggered, specify it using not_user_triggered="true" as an attribute to
+the <action> tag.
 
 Please run extract_actions.py to add new actions and pretty-print this file.
 
@@ -31,7 +35,7 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="AboutFlags_StartupTick">
+<action name="AboutFlags_StartupTick" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -3057,14 +3061,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="Flash.JavaScriptUsed">
+<action name="Flash.JavaScriptUsed" not_user_triggered="true">
   <owner>tommycli@chromium.org</owner>
   <description>
     Count of Flash plugin instances that use JavaScript.
   </description>
 </action>
 
-<action name="Flash.PluginInstanceCreated">
+<action name="Flash.PluginInstanceCreated" not_user_triggered="true">
   <owner>thestig@chromium.org</owner>
   <description>Count of Flash plugin instances.</description>
 </action>
@@ -3354,12 +3358,12 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="FrameLoad">
+<action name="FrameLoad" not_user_triggered="true">
   <owner>thestig@chromium.org</owner>
   <description>Count of successful frame loads to new pages.</description>
 </action>
 
-<action name="FrameLoadWithFlash">
+<action name="FrameLoadWithFlash" not_user_triggered="true">
   <owner>thestig@chromium.org</owner>
   <description>Count of frame loads that also load PPAPI Flash.</description>
 </action>
@@ -8508,12 +8512,12 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="NavEntryCommitted">
+<action name="NavEntryCommitted" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="NavEntryCommitted.SRP">
+<action name="NavEntryCommitted.SRP" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -10528,12 +10532,12 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="PageLoad">
+<action name="PageLoad" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="PageLoadSRP">
+<action name="PageLoadSRP" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -11046,17 +11050,17 @@ should be able to be added at any place in this file.
   <obsolete>Replaced by the histogram SB2.InterstitialAction</obsolete>
 </action>
 
-<action name="SSL.DisplayedInsecureContent">
+<action name="SSL.DisplayedInsecureContent" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="SSL.RanInsecureContent">
+<action name="SSL.RanInsecureContent" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="SSL.RanInsecureContentGoogle">
+<action name="SSL.RanInsecureContentGoogle" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -11436,7 +11440,7 @@ should be able to be added at any place in this file.
   <description>Please enter the description of the metric.</description>
 </action>
 
-<action name="StartupTick">
+<action name="StartupTick" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -11983,12 +11987,12 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="ThirdPartyCookieBlockingDisabled">
+<action name="ThirdPartyCookieBlockingDisabled" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="ThirdPartyCookieBlockingEnabled">
+<action name="ThirdPartyCookieBlockingEnabled" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
