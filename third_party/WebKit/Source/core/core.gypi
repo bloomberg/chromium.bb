@@ -756,6 +756,7 @@
             'layout/shapes/ShapeOutsideInfo.cpp',
             'layout/shapes/ShapeOutsideInfo.h',
             'style/AppliedTextDecoration.cpp',
+            'style/AuthorStyleInfo.h',
             'style/BasicShapes.cpp',
             'style/BorderEdge.cpp',
             'style/BorderEdge.h',

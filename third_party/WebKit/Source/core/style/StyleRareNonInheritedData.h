@@ -204,10 +204,6 @@ public:
     unsigned m_resize : 2; // EResize
     unsigned m_hasCompositorProxy : 1;
 
-    // Style adjustment for appearance is disabled when certain properties are set.
-    unsigned m_hasAuthorBackground : 1; // Whether there is a author-defined background.
-    unsigned m_hasAuthorBorder : 1; // Whether there is a author-defined border.
-
 private:
     StyleRareNonInheritedData();
     StyleRareNonInheritedData(const StyleRareNonInheritedData&);

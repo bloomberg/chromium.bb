@@ -39,7 +39,7 @@ public:
 
     void addVisualOverflow(const LayoutObject&, IntRect& borderBox) override;
 
-    bool isControlStyled(const ComputedStyle&) const override;
+    bool isControlStyled(const ComputedStyle&, const AuthorStyleInfo&) const override;
 
     Color platformActiveSelectionBackgroundColor() const override;
     Color platformInactiveSelectionBackgroundColor() const override;

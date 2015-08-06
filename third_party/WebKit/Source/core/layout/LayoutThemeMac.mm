@@ -29,6 +29,7 @@
 #import "core/layout/LayoutProgress.h"
 #import "core/layout/LayoutView.h"
 #import "core/paint/MediaControlsPainter.h"
+#import "core/style/AuthorStyleInfo.h"
 #import "core/style/ShadowList.h"
 #import "platform/LayoutTestSupport.h"
 #import "platform/PlatformResourceLoader.h"
@@ -437,10 +438,10 @@ Color LayoutThemeMac::systemColor(CSSValueID cssValueId) const
     return color;
 }
 
-bool LayoutThemeMac::isControlStyled(const ComputedStyle& style) const
+bool LayoutThemeMac::isControlStyled(const ComputedStyle& style, const AuthorStyleInfo& authorStyle) const
 {
     if (style.appearance() == TextFieldPart || style.appearance() == TextAreaPart)
-        return style.hasAuthorBorder() || style.boxShadow();
+        return authorStyle.specifiesBorder() || style.boxShadow();
 
     // FIXME: This is horrible, but there is not much else that can be done.
     // Menu lists cannot draw properly when scaled. They can't really draw
@@ -454,7 +455,7 @@ bool LayoutThemeMac::isControlStyled(const ComputedStyle& style) const
     if (style.appearance() == SearchFieldPart && style.effectiveZoom() != 1)
         return true;
 
-    return LayoutTheme::isControlStyled(style);
+    return LayoutTheme::isControlStyled(style, authorStyle);
 }
 
 void LayoutThemeMac::addVisualOverflow(const LayoutObject& object, IntRect& rect)

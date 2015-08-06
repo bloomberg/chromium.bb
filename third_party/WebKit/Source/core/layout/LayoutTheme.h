@@ -33,6 +33,7 @@
 
 namespace blink {
 
+class AuthorStyleInfo;
 class ComputedStyle;
 class Element;
 class FileList;
@@ -61,7 +62,7 @@ public:
     // metrics and defaults given the contents of the style.  This includes sophisticated operations like
     // selection of control size based off the font, the disabling of appearance when certain other properties like
     // "border" are set, or if the appearance is not supported by the theme.
-    void adjustStyle(ComputedStyle&, Element*);
+    void adjustStyle(ComputedStyle&, Element*, const AuthorStyleInfo&);
 
     // The remaining methods should be implemented by the platform-specific portion of the theme, e.g.,
     // LayoutThemeMac.cpp for Mac OS X.
@@ -83,7 +84,7 @@ public:
     bool isControlContainer(ControlPart) const;
 
     // Whether or not the control has been styled enough by the author to disable the native appearance.
-    virtual bool isControlStyled(const ComputedStyle&) const;
+    virtual bool isControlStyled(const ComputedStyle&, const AuthorStyleInfo&) const;
 
     // Some controls may spill out of their containers (e.g., the check on an OSX 10.9 checkbox). Add this
     // "visual overflow" to the object's border box rect.

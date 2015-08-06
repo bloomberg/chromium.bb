@@ -26,6 +26,7 @@
 
 namespace blink {
 
+class AuthorStyleInfo;
 class Element;
 class HTMLElement;
 class ComputedStyle;
@@ -40,7 +41,7 @@ public:
         : m_useQuirksModeStyles(useQuirksModeStyles)
     { }
 
-    void adjustComputedStyle(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle, Element*);
+    void adjustComputedStyle(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle, Element*, const AuthorStyleInfo&);
 
 private:
     void adjustStyleForFirstLetter(ComputedStyle&);
