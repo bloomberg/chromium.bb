@@ -15,7 +15,6 @@
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "chromeos/login/auth/login_performer.h"
-#include "chromeos/login/auth/online_attempt_host.h"
 #include "chromeos/login/auth/user_context.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

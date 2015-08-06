@@ -1337,9 +1337,6 @@ Press any key to continue exploring.
   <message name="IDS_SIGNIN_SCREEN_TITLE_TAB_PROMPT" desc="Title of OOBE/Add User sign-in screen with TAB prompt when ChromeVox is active">
     Sign in, press the tab key to interact with input elements
   </message>
-  <message name="IDS_SIGNIN_SCREEN_PASSWORD_CHANGED" desc="Title of OOBE/Add User sign-in screen when password was changed">
-    You have recently changed the password. Please sign in with the new one.
-  </message>
   <message name="IDS_LOGIN_GAIA_LOADING_MESSAGE" desc="Message on the OOBE gaia loading screen">
     Please wait...
   </message>

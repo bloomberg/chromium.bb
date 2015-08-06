@@ -62,7 +62,6 @@ class ErrorScreen : public NetworkErrorModel, public LoginPerformer::Delegate {
   void OnPasswordChangeDetected() override;
   void WhiteListCheckFailed(const std::string& email) override;
   void PolicyLoadFailed() override;
-  void OnOnlineChecked(const std::string& username, bool success) override;
 
   // Register a callback to be invoked when the user indicates that an attempt
   // to connect to the network should be made.

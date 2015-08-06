@@ -246,10 +246,6 @@ void ErrorScreen::PolicyLoadFailed() {
   LOG(FATAL);
 }
 
-void ErrorScreen::OnOnlineChecked(const std::string& username, bool success) {
-  LOG(FATAL);
-}
-
 ErrorScreen::ConnectRequestCallbackSubscription
 ErrorScreen::RegisterConnectRequestCallback(const base::Closure& callback) {
   return connect_request_callbacks_.Add(callback);

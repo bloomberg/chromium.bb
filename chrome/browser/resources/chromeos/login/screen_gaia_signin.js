@@ -550,15 +550,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @private
      */
     updateAuthExtension: function(data) {
-      var reasonLabel = $('gaia-signin-reason');
-      if (data.passwordChanged) {
-        reasonLabel.textContent =
-            loadTimeData.getString('signinScreenPasswordChanged');
-        reasonLabel.hidden = false;
-      } else {
-        reasonLabel.hidden = true;
-      }
-
       if (this.isNewGaiaFlow) {
         $('login-header-bar').showCreateSupervisedButton =
             data.supervisedUsersEnabled && data.supervisedUsersCanCreate;
@@ -585,8 +576,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.isEnrollingConsumerManagement_ = isEnrollingConsumerManagement;
 
       // Sign-in right panel is hidden if all of its items are hidden.
-      var noRightPanel = $('gaia-signin-reason').hidden &&
-                         $('createAccount').hidden &&
+      var noRightPanel = $('createAccount').hidden &&
                          $('guestSignin').hidden &&
                          $('createSupervisedUserPane').hidden &&
                          $('consumerManagementEnrollment').hidden;

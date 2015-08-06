@@ -170,7 +170,6 @@ void PushFrontIMIfNotExists(const std::string& input_method,
 GaiaContext::GaiaContext()
     : force_reload(false),
       is_local(false),
-      password_changed(false),
       show_users(false),
       use_offline(false),
       has_users(false) {
@@ -229,7 +228,6 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
 
   params.SetBoolean("forceReload", context.force_reload);
   params.SetBoolean("isLocal", context.is_local);
-  params.SetBoolean("passwordChanged", context.password_changed);
   params.SetBoolean("isShowUsers", context.show_users);
   params.SetBoolean("useOffline", context.use_offline);
   params.SetString("gaiaId", context.gaia_id);
@@ -380,8 +378,6 @@ void GaiaScreenHandler::MonitorOfflineIdle(bool is_online) {
 void GaiaScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("signinScreenTitle", IDS_SIGNIN_SCREEN_TITLE_TAB_PROMPT);
-  builder->Add("signinScreenPasswordChanged",
-               IDS_SIGNIN_SCREEN_PASSWORD_CHANGED);
   builder->Add("createAccount", IDS_CREATE_ACCOUNT_HTML);
   builder->Add("guestSignin", IDS_BROWSE_WITHOUT_SIGNING_IN_HTML);
   builder->Add("createSupervisedUser",
@@ -683,10 +679,6 @@ void GaiaScreenHandler::PopulateEmail(const std::string& user_id) {
   populated_email_ = user_id;
 }
 
-void GaiaScreenHandler::PasswordChangedFor(const std::string& user_id) {
-  password_changed_for_.insert(user_id);
-}
-
 void GaiaScreenHandler::StartClearingDnsCache() {
   if (dns_clear_task_running_ || !g_browser_process->io_thread())
     return;
@@ -910,8 +902,6 @@ void GaiaScreenHandler::LoadAuthExtension(bool force,
   GaiaContext context;
   context.force_reload = force;
   context.is_local = offline;
-  context.password_changed = !populated_email_.empty() &&
-                             password_changed_for_.count(populated_email_);
   context.use_offline = offline;
   context.email = populated_email_;
   context.is_enrolling_consumer_management = is_enrolling_consumer_management_;

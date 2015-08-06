@@ -148,7 +148,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void OnPasswordChangeDetected() override;
   void WhiteListCheckFailed(const std::string& email) override;
   void PolicyLoadFailed() override;
-  void OnOnlineChecked(const std::string& username, bool success) override;
 
   // UserSessionManagerDelegate implementation:
   void OnProfilePrepared(Profile* profile, bool browser_launched) override;
@@ -163,9 +162,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // If |details| string is not empty, it specify additional error text
   // provided by authenticator, it is not localized.
   void ShowError(int error_id, const std::string& details);
-
-  // Shows Gaia page because password change was detected.
-  void ShowGaiaPasswordChanged(const std::string& username);
 
   // Handles result of ownership check and starts enterprise or kiosk enrollment
   // if applicable.
@@ -288,14 +284,8 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // The displayed email for the next login attempt set by |SetDisplayEmail|.
   std::string display_email_;
 
-  // Whether offline login attempt failed.
-  bool offline_failed_;
-
   // Whether login attempt is running.
   bool is_login_in_progress_;
-
-  // Whether online login attempt succeeded.
-  std::string online_succeeded_for_;
 
   // True if password has been changed for user who is completing sign in.
   // Set in OnLoginSuccess. Before that use LoginPerformer::password_changed().

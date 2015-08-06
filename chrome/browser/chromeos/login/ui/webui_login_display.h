@@ -41,7 +41,6 @@ class WebUILoginDisplay : public LoginDisplay,
                  int login_attempts,
                  HelpAppLauncher::HelpTopic help_topic_id) override;
   void ShowErrorScreen(LoginDisplay::SigninError error_id) override;
-  void ShowGaiaPasswordChanged(const std::string& username) override;
   void ShowPasswordChangedDialog(bool show_password_error,
                                  const std::string& email) override;
   void ShowSigninUI(const std::string& email) override;

@@ -29,18 +29,14 @@ using base::UserMetricsAction;
 namespace chromeos {
 
 LoginPerformer::LoginPerformer(scoped_refptr<base::TaskRunner> task_runner,
-                               Delegate* delegate,
-                               bool disable_client_login)
+                               Delegate* delegate)
     : delegate_(delegate),
       task_runner_(task_runner),
-      online_attempt_host_(this),
       last_login_failure_(AuthFailure::AuthFailureNone()),
       password_changed_(false),
       password_changed_callback_count_(0),
       auth_mode_(AUTH_MODE_INTERNAL),
-      disable_client_login_(disable_client_login),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 LoginPerformer::~LoginPerformer() {
   DVLOG(1) << "Deleting LoginPerformer";
@@ -104,17 +100,6 @@ void LoginPerformer::OnPasswordChangeDetected() {
   } else {
     NOTREACHED();
   }
-}
-
-void LoginPerformer::OnChecked(const std::string& user_id, bool success) {
-  if (!delegate_) {
-    // Delegate is reset in case of successful offline login.
-    // See ExistingUserConstoller::OnAuthSuccess().
-    // Case when user has changed password and enters old password
-    // does not block user from sign in yet.
-    return;
-  }
-  delegate_->OnOnlineChecked(user_id, success);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -294,11 +279,6 @@ void LoginPerformer::StartAuthentication() {
                                       authenticator_.get(),
                                       base::Unretained(browser_context),
                                       user_context_));
-    if (!disable_client_login_) {
-      // Make unobtrusive online check. It helps to determine password change
-      // state in the case when offline login fails.
-      online_attempt_host_.Check(GetSigninRequestContext(), user_context_);
-    }
   } else {
     NOTREACHED();
   }

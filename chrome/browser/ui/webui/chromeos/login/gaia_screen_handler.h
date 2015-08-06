@@ -35,9 +35,6 @@ struct GaiaContext {
   // Whether local verison of Gaia is used.
   bool is_local;
 
-  // True if password was changed for the current user.
-  bool password_changed;
-
   // True if user pods can be displayed.
   bool show_users;
 
@@ -156,9 +153,6 @@ class GaiaScreenHandler : public BaseScreenHandler {
   // Fill GAIA user name.
   void PopulateEmail(const std::string& user_id);
 
-  // Mark user as having password changed:
-  void PasswordChangedFor(const std::string& user_id);
-
   // Kick off cookie / local storage cleanup.
   void StartClearingCookies(const base::Closure& on_clear_callback);
   void OnCookiesCleared(const base::Closure& on_clear_callback);
@@ -226,9 +220,6 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   // Email to pre-populate with.
   std::string populated_email_;
-
-  // Emails of the users, whose passwords have recently been changed.
-  std::set<std::string> password_changed_for_;
 
   // True if dns cache cleanup is done.
   bool dns_cleared_;

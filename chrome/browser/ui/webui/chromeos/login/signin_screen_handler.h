@@ -86,7 +86,6 @@ class LoginDisplayWebUIHandler {
                          const std::string& help_link_text,
                          HelpAppLauncher::HelpTopic help_topic_id) = 0;
   virtual void ShowErrorScreen(LoginDisplay::SigninError error_id) = 0;
-  virtual void ShowGaiaPasswordChanged(const std::string& username) = 0;
   virtual void ShowSigninUI(const std::string& email) = 0;
   virtual void ShowPasswordChangedDialog(bool show_password_error,
                                          const std::string& email) = 0;
@@ -299,7 +298,6 @@ class SigninScreenHandler
                  const std::string& error_text,
                  const std::string& help_link_text,
                  HelpAppLauncher::HelpTopic help_topic_id) override;
-  void ShowGaiaPasswordChanged(const std::string& username) override;
   void ShowSigninUI(const std::string& email) override;
   void ShowPasswordChangedDialog(bool show_password_error,
                                  const std::string& email) override;

@@ -947,15 +947,6 @@ void SigninScreenHandler::ShowSigninUI(const std::string& email) {
   core_oobe_actor_->ShowSignInUI(email);
 }
 
-void SigninScreenHandler::ShowGaiaPasswordChanged(const std::string& username) {
-  gaia_screen_handler_->PasswordChangedFor(username);
-  gaia_screen_handler_->PopulateEmail(username);
-  core_oobe_actor_->ShowSignInUI(username);
-  CallJS("login.setAuthType", username,
-         static_cast<int>(UserSelectionScreen::ONLINE_SIGN_IN),
-         base::StringValue(""));
-}
-
 void SigninScreenHandler::ShowPasswordChangedDialog(bool show_password_error,
                                                     const std::string& email) {
   core_oobe_actor_->ShowPasswordChangedScreen(show_password_error, email);
