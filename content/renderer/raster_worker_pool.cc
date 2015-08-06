@@ -39,12 +39,12 @@ class RasterWorkerPool::RasterWorkerPoolSequencedTaskRunner
 
     tasks_.push_back(make_scoped_refptr(new ClosureTask(task)));
     graph_.Reset();
-    for (const auto& task : tasks_) {
+    for (const auto& graph_task : tasks_) {
       int dependencies = 0;
       if (!graph_.nodes.empty())
         dependencies = 1;
 
-      cc::TaskGraph::Node node(task.get(), 0, dependencies);
+      cc::TaskGraph::Node node(graph_task.get(), 0, dependencies);
       if (dependencies) {
         graph_.edges.push_back(
             cc::TaskGraph::Edge(graph_.nodes.back().task, node.task));
@@ -130,8 +130,8 @@ bool RasterWorkerPool::PostDelayedTask(
 
   tasks_.push_back(make_scoped_refptr(new ClosureTask(task)));
   graph_.Reset();
-  for (const auto& task : tasks_)
-    graph_.nodes.push_back(cc::TaskGraph::Node(task.get(), 0, 0));
+  for (const auto& graph_task : tasks_)
+    graph_.nodes.push_back(cc::TaskGraph::Node(graph_task.get(), 0, 0));
 
   task_graph_runner_.ScheduleTasks(namespace_token_, &graph_);
   completed_tasks_.clear();
