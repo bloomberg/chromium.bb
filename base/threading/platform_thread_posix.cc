@@ -100,8 +100,7 @@ bool CreateThread(size_t stack_size,
   params->priority = priority;
 
   pthread_t handle;
-  int err =
-      pthread_create(&handle, &attributes, ThreadFunc, params.get());
+  int err = pthread_create(&handle, &attributes, ThreadFunc, params.get());
   bool success = !err;
   if (success) {
     // ThreadParams should be deleted on the created thread after used.

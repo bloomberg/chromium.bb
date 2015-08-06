@@ -86,7 +86,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // init_com_with_mta(false) and then StartWithOptions() with any message loop
   // type other than TYPE_UI.
   void init_com_with_mta(bool use_mta) {
-    DCHECK(!start_event_);
+    DCHECK(!message_loop_);
     com_status_ = use_mta ? MTA : STA;
   }
 #endif
@@ -118,7 +118,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // Blocks until the thread starts running. Called within StartAndWait().
   // Note that calling this causes jank on the calling thread, must be used
   // carefully for production code.
-  bool WaitUntilThreadStarted();
+  bool WaitUntilThreadStarted() const;
 
   // Signals the thread to exit and returns once the thread has exited.  After
   // this method returns, the Thread object is completely reset and may be used
@@ -148,7 +148,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // Returns the message loop for this thread.  Use the MessageLoop's
   // PostTask methods to execute code on the thread.  This only returns
   // non-null after a successful call to Start.  After Stop has been called,
-  // this will return NULL.
+  // this will return nullptr.
   //
   // NOTE: You must not call this MessageLoop's Quit method directly.  Use
   // the Thread's Stop method instead.
@@ -156,7 +156,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   MessageLoop* message_loop() const { return message_loop_; }
 
   // Returns a TaskRunner for this thread. Use the TaskRunner's PostTask
-  // methods to execute code on the thread. Returns NULL if the thread is not
+  // methods to execute code on the thread. Returns nullptr if the thread is not
   // running (e.g. before Start or after Stop have been called). Callers can
   // hold on to this even after the thread is gone; in this situation, attempts
   // to PostTask() will fail.
@@ -216,7 +216,9 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
 #endif
 
   // If true, we're in the middle of stopping, and shouldn't access
-  // |message_loop_|. It may non-NULL and invalid.
+  // |message_loop_|. It may non-nullptr and invalid.
+  // Should be written on the thread that created this thread. Also read data
+  // could be wrong on other threads.
   bool stopping_;
 
   // True while inside of Run().
@@ -242,8 +244,8 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // The name of the thread.  Used for debugging purposes.
   std::string name_;
 
-  // Non-null if the thread has successfully started.
-  scoped_ptr<WaitableEvent> start_event_;
+  // Signaled when the created thread gets ready to use the message loop.
+  mutable WaitableEvent start_event_;
 
   friend void ThreadQuitHelper();
 

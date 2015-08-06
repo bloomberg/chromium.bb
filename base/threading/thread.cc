@@ -66,7 +66,8 @@ Thread::Thread(const std::string& name)
       id_event_(true, false),
       message_loop_(nullptr),
       message_loop_timer_slack_(TIMER_SLACK_NONE),
-      name_(name) {
+      name_(name),
+      start_event_(false, false) {
 }
 
 Thread::~Thread() {
@@ -103,7 +104,7 @@ bool Thread::StartWithOptions(const Options& options) {
   scoped_ptr<MessageLoop> message_loop = MessageLoop::CreateUnbound(
       type, options.message_pump_factory);
   message_loop_ = message_loop.get();
-  start_event_.reset(new WaitableEvent(false, false));
+  start_event_.Reset();
 
   // Hold the thread_lock_ while starting a new thread, so that we can make sure
   // that thread_ is populated before the newly created thread accesses it.
@@ -113,7 +114,6 @@ bool Thread::StartWithOptions(const Options& options) {
                                             options.priority)) {
       DLOG(ERROR) << "failed to create thread";
       message_loop_ = nullptr;
-      start_event_.reset();
       return false;
     }
   }
@@ -134,16 +134,17 @@ bool Thread::StartAndWaitForTesting() {
   return true;
 }
 
-bool Thread::WaitUntilThreadStarted() {
-  if (!start_event_)
+bool Thread::WaitUntilThreadStarted() const {
+  if (!message_loop_)
     return false;
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
-  start_event_->Wait();
+  start_event_.Wait();
   return true;
 }
 
 void Thread::Stop() {
-  if (!start_event_)
+  AutoLock lock(thread_lock_);
+  if (thread_.is_null())
     return;
 
   StopSoon();
@@ -154,12 +155,10 @@ void Thread::Stop() {
   // the thread exits.  Some consumers are abusing the API.  Make them stop.
   //
   PlatformThread::Join(thread_);
+  thread_ = base::PlatformThreadHandle();
 
-  // The thread should NULL message_loop_ on exit.
+  // The thread should nullify message_loop_ on exit.
   DCHECK(!message_loop_);
-
-  // The thread no longer needs to be joined.
-  start_event_.reset();
 
   stopping_ = false;
 }
@@ -247,7 +246,7 @@ void Thread::ThreadMain() {
     running_ = true;
   }
 
-  start_event_->Signal();
+  start_event_.Signal();
 
   Run(message_loop_);
 
@@ -268,7 +267,7 @@ void Thread::ThreadMain() {
 
   // We can't receive messages anymore.
   // (The message loop is destructed at the end of this block)
-  message_loop_ = NULL;
+  message_loop_ = nullptr;
 }
 
 }  // namespace base
