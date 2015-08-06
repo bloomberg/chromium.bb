@@ -39,18 +39,16 @@
 
 namespace blink {
 
-// Disables on Android as the specific fonts cannot be loaded.
-#if !OS(ANDROID)
 static inline String fontPath(String relativePath)
 {
     return Platform::current()->unitTestSupport()->webKitRootDir()
-        + String("/LayoutTests/")
+        + String("/Source/platform/testing/data/")
         + relativePath;
 }
 
 TEST(FontPlatformDataTest, AhemHasNoSpaceInLigaturesOrKerning)
 {
-    Font font = createTestFont("Ahem", fontPath("resources/Ahem.woff"));
+    Font font = createTestFont("Ahem", fontPath("Ahem.woff"));
     const FontPlatformData& platformData = font.primaryFont()->platformData();
     TypesettingFeatures features = Kerning | Ligatures;
 
@@ -59,8 +57,7 @@ TEST(FontPlatformDataTest, AhemHasNoSpaceInLigaturesOrKerning)
 
 TEST(FontPlatformDataTest, AhemSpaceLigatureHasSpaceInLigaturesOrKerning)
 {
-    Font font = createTestFont("AhemSpaceLigature",
-        fontPath("third_party/AhemSpaceLigature/AhemSpaceLigature.woff"));
+    Font font = createTestFont("AhemSpaceLigature", fontPath("AhemSpaceLigature.woff"));
     const FontPlatformData& platformData = font.primaryFont()->platformData();
     TypesettingFeatures features = Kerning | Ligatures;
 
@@ -69,13 +66,11 @@ TEST(FontPlatformDataTest, AhemSpaceLigatureHasSpaceInLigaturesOrKerning)
 
 TEST(FontPlatformDataTest, AhemSpaceLigatureHasNoSpaceWithoutFontFeatures)
 {
-    Font font = createTestFont("AhemSpaceLigature",
-        fontPath("third_party/AhemSpaceLigature/AhemSpaceLigature.woff"));
+    Font font = createTestFont("AhemSpaceLigature", fontPath("AhemSpaceLigature.woff"));
     const FontPlatformData& platformData = font.primaryFont()->platformData();
     TypesettingFeatures features = 0;
 
     EXPECT_FALSE(platformData.hasSpaceInLigaturesOrKerning(features));
 }
-#endif // !OS(ANDROID)
 
 } // namespace blink

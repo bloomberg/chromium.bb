@@ -34,12 +34,12 @@
       'variables': {
         'files' : [
           '<(PRODUCT_DIR)/content_shell.pak',
-        ],
-        'files': [
           'tests/data/',
           # Required by some image decoder tests.
           '../platform/image-decoders/testing/',
           '../../LayoutTests/fast/images/resources/',
+          # Required by some font tests.
+          '../platform/testing/data/',
         ],
       },
     }],
