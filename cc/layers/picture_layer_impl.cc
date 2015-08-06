@@ -321,8 +321,11 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
 
     if (!has_draw_quad) {
       // Checkerboard.
-      // TODO(danakj): Make this a different color when debugging.
       SkColor color = SafeOpaqueBackgroundColor();
+      if (ShowDebugBorders()) {
+        // Fill the whole tile with the missing tile color.
+        color = DebugColors::OOMTileBorderColor();
+      }
       SolidColorDrawQuad* quad =
           render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
       quad->SetNew(shared_quad_state, geometry_rect, visible_geometry_rect,
