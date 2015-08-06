@@ -272,28 +272,34 @@ chrome.syncFileSystem.onFileStatusChanged.addListener(function(detail) {
   WallpaperUtil.enabledSyncThemesCallback(function(syncEnabled) {
     if (!syncEnabled)
       return;
-    if (detail.status == 'synced' &&
-        detail.direction == 'remote_to_local') {
-      if (detail.action == 'added') {
-        Constants.WallpaperLocalStorage.get(
-            Constants.AccessLocalWallpaperInfoKey,
-            function(items) {
-              var localData = items[Constants.AccessLocalWallpaperInfoKey];
-              if (localData && localData.url == detail.fileEntry.name &&
-                  localData.source == Constants.WallpaperSourceEnum.Custom) {
-                WallpaperUtil.setCustomWallpaperFromSyncFS(localData.url,
-                                                           localData.layout);
-              } else if (localData.url !=
-                         detail.fileEntry.name.replace(
-                             Constants.CustomWallpaperThumbnailSuffix, '')) {
-                WallpaperUtil.storeWallpaperFromSyncFSToLocalFS(
-                    detail.fileEntry);
-              }
-           });
-      } else if (detail.action == 'deleted') {
-        var fileName = detail.fileEntry.name.replace(
-            Constants.CustomWallpaperThumbnailSuffix, '');
-        WallpaperUtil.deleteWallpaperFromLocalFS(fileName);
+    if (detail.status == 'synced') {
+      if (detail.direction == 'remote_to_local') {
+        if (detail.action == 'added') {
+          Constants.WallpaperLocalStorage.get(
+              Constants.AccessLocalWallpaperInfoKey,
+              function(items) {
+                var localData = items[Constants.AccessLocalWallpaperInfoKey];
+                if (localData && localData.url == detail.fileEntry.name &&
+                    localData.source == Constants.WallpaperSourceEnum.Custom) {
+                  WallpaperUtil.setCustomWallpaperFromSyncFS(localData.url,
+                                                             localData.layout);
+                } else if (localData.url !=
+                           detail.fileEntry.name.replace(
+                               Constants.CustomWallpaperThumbnailSuffix, '')) {
+                  WallpaperUtil.storeWallpaperFromSyncFSToLocalFS(
+                      detail.fileEntry);
+                }
+             });
+        } else if (detail.action == 'deleted') {
+          var fileName = detail.fileEntry.name.replace(
+              Constants.CustomWallpaperThumbnailSuffix, '');
+          WallpaperUtil.deleteWallpaperFromLocalFS(fileName);
+        }
+      } else {  // detail.direction == 'local_to_remote'
+        if (detail.action == 'deleted') {
+          WallpaperUtil.deleteWallpaperFromSyncFS(detail.fileEntry.name);
+          WallpaperUtil.deleteWallpaperFromLocalFS(detail.fileEntry.name);
+        }
       }
     }
   });
