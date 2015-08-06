@@ -225,7 +225,7 @@ public class FirstRunSignInProcessor {
         setFirstRunFlowSignInAccountName(mActivity, null);
         setFirstRunFlowSignInSetupSync(mActivity, false);
         mActivity.startActivity(FirstRunFlowSequencer.createGenericFirstRunIntent(
-                mActivity, mActivity.getIntent(), true));
+                mActivity, true));
     }
 
     /**

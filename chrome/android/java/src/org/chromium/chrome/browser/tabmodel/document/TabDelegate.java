@@ -142,7 +142,10 @@ public class TabDelegate extends TabCreator {
         Context context = ApplicationStatus.getApplicationContext();
         Activity parentActivity = ActivityDelegate.getActivityForTabId(parentId);
 
-        if (FeatureUtilities.isDocumentMode(context)) {
+        boolean mayLaunchDocumentActivity = isAllowedToLaunchDocumentActivity(context);
+        assert mayLaunchDocumentActivity || (asyncParams.getWebContents() == null);
+
+        if (FeatureUtilities.isDocumentMode(context) && mayLaunchDocumentActivity) {
             AsyncDocumentLauncher.getInstance().enqueueLaunch(mIsIncognito, parentId, asyncParams);
         } else {
             // TODO(dfalcantara): Is it possible to get rid of this conditional?
@@ -168,5 +171,12 @@ public class TabDelegate extends TabCreator {
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             IntentHandler.startActivityForTrustedIntent(intent, context);
         }
+    }
+
+    /**
+     * @return Whether the TabDelegate is allowed to directly launch a DocumentActivity.
+     */
+    protected boolean isAllowedToLaunchDocumentActivity(Context context) {
+        return true;
     }
 }

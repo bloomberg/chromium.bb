@@ -195,11 +195,9 @@ public abstract class FirstRunFlowSequencer  {
      * Checks if the First Run needs to be launched.
      * @return The intent to launch the First Run Experience if necessary, or null.
      * @param activity       The context
-     * @param originalIntent An original intent
      * @param fromChromeIcon Whether Chrome is opened via the Chrome icon
      */
-    public static Intent checkIfFirstRunIsNecessary(Activity activity,
-            Intent originalIntent, boolean fromChromeIcon) {
+    public static Intent checkIfFirstRunIsNecessary(Context context, boolean fromChromeIcon) {
         // If FRE is disabled (e.g. in tests), proceed directly to the intent handling.
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)) {
             return null;
@@ -208,12 +206,12 @@ public abstract class FirstRunFlowSequencer  {
         // If Chrome isn't opened via the Chrome icon, and the user accepted the ToS
         // in the Setup Wizard, skip any First Run Experience screens and proceed directly
         // to the intent handling.
-        if (!fromChromeIcon && ToSAckedReceiver.checkAnyUserHasSeenToS(activity)) return null;
+        if (!fromChromeIcon && ToSAckedReceiver.checkAnyUserHasSeenToS(context)) return null;
 
         // If the user hasn't been through the First Run Activity -- it must be shown.
-        final boolean baseFreComplete = FirstRunStatus.getFirstRunFlowComplete(activity);
+        final boolean baseFreComplete = FirstRunStatus.getFirstRunFlowComplete(context);
         if (!baseFreComplete) {
-            return createGenericFirstRunIntent(activity, originalIntent, fromChromeIcon);
+            return createGenericFirstRunIntent(context, fromChromeIcon);
         }
 
         // Promo pages are removed, so there is nothing else to show in FRE.
@@ -222,14 +220,12 @@ public abstract class FirstRunFlowSequencer  {
 
     /**
      * @return A generic intent to show the First Run Activity.
-     * @param activity       The context
-     * @param originalIntent An original intent
+     * @param context        The context
      * @param fromChromeIcon Whether Chrome is opened via the Chrome icon
     */
-    public static Intent createGenericFirstRunIntent(
-            Activity activity, Intent originalIntent, boolean fromChromeIcon) {
+    public static Intent createGenericFirstRunIntent(Context context, boolean fromChromeIcon) {
         Intent intent = new Intent();
-        intent.setClassName(activity, FirstRunActivity.class.getName());
+        intent.setClassName(context, FirstRunActivity.class.getName());
         intent.putExtra(FirstRunActivity.COMING_FROM_CHROME_ICON, fromChromeIcon);
         intent.putExtra(FirstRunActivity.USE_FRE_FLOW_SEQUENCER, true);
         return intent;

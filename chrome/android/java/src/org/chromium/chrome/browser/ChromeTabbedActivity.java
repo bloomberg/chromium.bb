@@ -822,7 +822,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
                 && TextUtils.equals(getIntent().getAction(), Intent.ACTION_MAIN);
         android.util.Log.i(TAG, "begin FirstRunFlowSequencer.checkIfFirstRunIsNecessary");
         final Intent freIntent = FirstRunFlowSequencer.checkIfFirstRunIsNecessary(
-                this, getIntent(), isIntentActionMain);
+                this, isIntentActionMain);
         android.util.Log.i(TAG, "end FirstRunFlowSequencer.checkIfFirstRunIsNecessary");
         if (freIntent == null) return;
 

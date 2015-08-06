@@ -34,9 +34,6 @@ public abstract class FullScreenActivity extends ChromeActivity
         implements FullScreenActivityTab.TopControlsVisibilityDelegate {
     private FullScreenActivityTab mTab;
 
-    private final TabDelegate mRegularTabCreator = new TabDelegate(false);
-    private final TabDelegate mIncognitoTabCreator = new TabDelegate(true);
-
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -47,7 +44,7 @@ public abstract class FullScreenActivity extends ChromeActivity
     public void preInflationStartup() {
         super.preInflationStartup();
 
-        setTabCreators(mRegularTabCreator, mIncognitoTabCreator);
+        setTabCreators(createTabDelegate(false), createTabDelegate(true));
         setTabModelSelector(new SingleTabModelSelector(this, false, false) {
             @Override
             public Tab openNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
@@ -56,6 +53,11 @@ public abstract class FullScreenActivity extends ChromeActivity
                 return null;
             }
         });
+    }
+
+    /** Creates TabDelegates for opening new Tabs. */
+    protected TabDelegate createTabDelegate(boolean incognito) {
+        return new TabDelegate(incognito);
     }
 
     @Override
