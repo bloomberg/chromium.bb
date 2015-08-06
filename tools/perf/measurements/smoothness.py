@@ -8,16 +8,20 @@ from telemetry.web_perf import timeline_based_measurement
 
 
 class _CustomResultsWrapper(timeline_based_measurement.ResultsWrapperInterface):
+  def __init__(self):
+    super(_CustomResultsWrapper, self).__init__()
+    self._pages_to_tir_labels = {}
 
   def _AssertNewValueHasSameInteractionLabel(self, new_value):
-    for value in self._results.current_page_run.values:
-      if value.name == new_value.name:
-        assert value.tir_label == new_value.tir_label, (
-          'Smoothness measurement do not support multiple interaction record '
-          'labels per page yet. See crbug.com/453109 for more information.')
+    tir_label = self._pages_to_tir_labels.get(new_value.page)
+    if tir_label:
+      assert tir_label == self._tir_label, (
+        'Smoothness measurement do not support multiple interaction record '
+        'labels per page yet. See crbug.com/453109 for more information.')
+    else:
+      self._pages_to_tir_labels[new_value.page] = self._tir_label
 
   def AddValue(self, value):
-    value.tir_label = self._result_prefix
     self._AssertNewValueHasSameInteractionLabel(value)
     self._results.AddValue(value)
 
@@ -25,6 +29,7 @@ class _CustomResultsWrapper(timeline_based_measurement.ResultsWrapperInterface):
 class Smoothness(page_test.PageTest):
   def __init__(self, needs_browser_restart_after_each_page=False):
     super(Smoothness, self).__init__(needs_browser_restart_after_each_page)
+    self._results_wrapper = _CustomResultsWrapper()
     self._tbm = None
 
   @classmethod
@@ -44,7 +49,7 @@ class Smoothness(page_test.PageTest):
         ','.join(custom_categories))
     self._tbm = timeline_based_measurement.TimelineBasedMeasurement(
         timeline_based_measurement.Options(category_filter),
-        _CustomResultsWrapper)
+        self._results_wrapper)
     self._tbm.WillRunStoryForPageTest(
         tracing_controller, page.GetSyntheticDelayCategories())
 
