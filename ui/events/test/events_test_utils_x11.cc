@@ -169,6 +169,28 @@ void ScopedXI2Event::InitKeyEvent(EventType type,
   event_->xkey.same_screen = 1;
 }
 
+void ScopedXI2Event::InitMotionEvent(const gfx::Point& location,
+                                     const gfx::Point& root_location,
+                                     int flags) {
+  XDisplay* display = gfx::GetXDisplay();
+  event_.reset(new XEvent);
+  memset(event_.get(), 0, sizeof(XEvent));
+  event_->type = MotionNotify;
+  event_->xmotion.serial = 0;
+  event_->xmotion.send_event = 0;
+  event_->xmotion.display = display;
+  event_->xmotion.time = 0;
+  event_->xmotion.window = 0;
+  event_->xmotion.root = 0;
+  event_->xkey.subwindow = 0;
+  event_->xmotion.x = location.x();
+  event_->xmotion.y = location.y();
+  event_->xmotion.x_root = root_location.x();
+  event_->xmotion.y_root = root_location.y();
+  event_->xmotion.state = XEventState(flags);
+  event_->xmotion.same_screen = 1;
+}
+
 void ScopedXI2Event::InitGenericKeyEvent(int deviceid,
                                          int sourceid,
                                          EventType type,

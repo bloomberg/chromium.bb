@@ -48,14 +48,14 @@ class ASH_EXPORT UnifiedMouseWarpController : public MouseWarpController {
                                      const gfx::Point& point_in_screen,
                                      bool update_mouse_location_now);
 
-  void allow_non_native_event_for_test() { allow_non_native_event_ = true; }
+  void update_location_for_test() { update_location_for_test_ = true; }
 
   gfx::Rect first_edge_bounds_in_native_;
   gfx::Rect second_edge_bounds_in_native_;
 
   int64 current_cursor_display_id_;
 
-  bool allow_non_native_event_;
+  bool update_location_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedMouseWarpController);
 };

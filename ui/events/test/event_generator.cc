@@ -173,6 +173,34 @@ void EventGenerator::SendMouseExit() {
   Dispatch(&mouseev);
 }
 
+void EventGenerator::MoveMouseToWithNative(const gfx::Point& point_in_host,
+                                           const gfx::Point& point_for_native) {
+#if defined(USE_X11)
+  ui::ScopedXI2Event xevent;
+  xevent.InitMotionEvent(point_in_host, point_for_native, flags_);
+  static_cast<XEvent*>(xevent)->xmotion.time = Now().InMicroseconds();
+  ui::MouseEvent mouseev(xevent);
+#elif defined(USE_OZONE)
+  // Ozone uses the location in native event as a system location.
+  // Create a fake event with the point in host, which will be passed
+  // to the non native event, then update the native event with the native
+  // (root) one.
+  scoped_ptr<ui::MouseEvent> native_event(new ui::MouseEvent(
+      ui::ET_MOUSE_MOVED, point_in_host, point_in_host, Now(), flags_, 0));
+  ui::MouseEvent mouseev(native_event.get());
+  native_event->set_location(point_for_native);
+#else
+  ui::MouseEvent mouseev(ui::ET_MOUSE_MOVED, point_in_host, point_for_native,
+                         Now(), flags_, 0);
+  LOG(FATAL)
+      << "Generating a native motion event is not supported on this platform";
+#endif
+  Dispatch(&mouseev);
+
+  current_location_ = point_in_host;
+  delegate()->ConvertPointFromHost(current_target_, &current_location_);
+}
+
 void EventGenerator::MoveMouseToInHost(const gfx::Point& point_in_host) {
   const ui::EventType event_type = (flags_ & ui::EF_LEFT_MOUSE_BUTTON) ?
       ui::ET_MOUSE_DRAGGED : ui::ET_MOUSE_MOVED;

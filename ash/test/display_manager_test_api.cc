@@ -60,39 +60,20 @@ bool DisplayManagerTestApi::TestIfMouseWarpsAt(
     ui::test::EventGenerator& event_generator,
     const gfx::Point& point_in_screen) {
   aura::Window* context = Shell::GetAllRootWindows()[0];
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  if (display_manager->IsInUnifiedMode()) {
-    static_cast<UnifiedMouseWarpController*>(
-        Shell::GetInstance()
-            ->mouse_cursor_filter()
-            ->mouse_warp_controller_for_test())
-        ->allow_non_native_event_for_test();
-    int orig_index = FindDisplayIndexContainingPoint(
-        display_manager->software_mirroring_display_list(), point_in_screen);
-    if (orig_index < 0)
-      return false;
-    event_generator.MoveMouseTo(point_in_screen);
-
-    int new_index = FindDisplayIndexContainingPoint(
-        display_manager->software_mirroring_display_list(),
-        aura::Env::GetInstance()->last_mouse_location());
-    if (new_index < 0)
-      return false;
-    return orig_index != new_index;
-  } else {
-    static_cast<ExtendedMouseWarpController*>(
-        Shell::GetInstance()
-            ->mouse_cursor_filter()
-            ->mouse_warp_controller_for_test())
-        ->allow_non_native_event_for_test();
-    gfx::Screen* screen = gfx::Screen::GetScreenFor(context);
-    gfx::Display original_display =
-        screen->GetDisplayNearestPoint(point_in_screen);
-    event_generator.MoveMouseTo(point_in_screen);
-    return original_display.id() !=
-           screen->GetDisplayNearestPoint(
-                       aura::Env::GetInstance()->last_mouse_location()).id();
-  }
+  DCHECK(!Shell::GetInstance()->display_manager()->IsInUnifiedMode());
+  static_cast<ExtendedMouseWarpController*>(
+      Shell::GetInstance()
+          ->mouse_cursor_filter()
+          ->mouse_warp_controller_for_test())
+      ->allow_non_native_event_for_test();
+  gfx::Screen* screen = gfx::Screen::GetScreenFor(context);
+  gfx::Display original_display =
+      screen->GetDisplayNearestPoint(point_in_screen);
+  event_generator.MoveMouseTo(point_in_screen);
+  return original_display.id() !=
+         screen->GetDisplayNearestPoint(
+                   aura::Env::GetInstance()->last_mouse_location())
+             .id();
 }
 
 DisplayManagerTestApi::DisplayManagerTestApi()

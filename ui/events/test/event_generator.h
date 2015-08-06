@@ -171,6 +171,11 @@ class EventGenerator {
     MoveMouseToInHost(gfx::Point(x, y));
   }
 
+  // Generates a mouse move event at the point given in the host
+  // coordinates, with a native event with |point_for_natve|.
+  void MoveMouseToWithNative(const gfx::Point& point_in_host,
+                             const gfx::Point& point_for_native);
+
   // Generates events to move mouse to be the given |point| in screen
   // coordinates.
   void MoveMouseTo(const gfx::Point& point_in_screen, int count);

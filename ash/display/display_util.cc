@@ -315,16 +315,19 @@ void MoveCursorTo(AshWindowTreeHost* ash_host,
   host->MoveCursorToHostLocation(point_in_host);
 
   if (update_last_location_now) {
-    gfx::Point new_point_in_screen = point_in_native;
+    gfx::Point new_point_in_screen;
     if (Shell::GetInstance()->display_manager()->IsInUnifiedMode()) {
-      // TODO(oshima): Do not use ConvertPointFromNativeScreen because
-      // the mirroring display has a transform that should not be applied here.
-      gfx::Point origin = host->GetBounds().origin();
-      new_point_in_screen.Offset(-origin.x(), -origin.y());
+      new_point_in_screen = point_in_host;
+      // First convert to the unified host.
+      host->ConvertPointFromHost(&new_point_in_screen);
+      // Then convert to the unified screen.
+      Shell::GetPrimaryRootWindow()->GetHost()->ConvertPointFromHost(
+          &new_point_in_screen);
     } else {
+      new_point_in_screen = point_in_native;
       host->ConvertPointFromNativeScreen(&new_point_in_screen);
+      ::wm::ConvertPointToScreen(host->window(), &new_point_in_screen);
     }
-    ::wm::ConvertPointToScreen(host->window(), &new_point_in_screen);
     aura::Env::GetInstance()->set_last_mouse_location(new_point_in_screen);
   }
 }

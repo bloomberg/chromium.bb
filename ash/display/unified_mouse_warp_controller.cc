@@ -31,6 +31,7 @@ AshWindowTreeHost* GetMirroringAshWindowTreeHostForDisplayId(int64 display_id) {
       ->GetAshWindowTreeHostForDisplayId(display_id);
 }
 
+#if defined(USE_OZONE)
 // Find a WindowTreeHost used for mirroring displays that contains
 // the |point_in_screen|. Returns nullptr if such WTH does not exist.
 aura::WindowTreeHost* FindMirroringWindowTreeHostFromScreenPoint(
@@ -46,12 +47,13 @@ aura::WindowTreeHost* FindMirroringWindowTreeHostFromScreenPoint(
   return GetMirroringAshWindowTreeHostForDisplayId(
              mirroring_display_list[index].id())->AsWindowTreeHost();
 }
+#endif
 
 }  // namespace
 
 UnifiedMouseWarpController::UnifiedMouseWarpController()
     : current_cursor_display_id_(gfx::Display::kInvalidDisplayID),
-      allow_non_native_event_(false) {}
+      update_location_for_test_(false) {}
 
 UnifiedMouseWarpController::~UnifiedMouseWarpController() {
 }
@@ -89,19 +91,9 @@ bool UnifiedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
     }
   }
 
-  // A native event may not exist in unit test. Generate the native point
-  // from the screen point instead.
-  if (!event->HasNativeEvent()) {
-    if (!allow_non_native_event_)
-      return false;
-    gfx::Point point_in_native = point_in_unified_host;
-    aura::WindowTreeHost* host =
-        FindMirroringWindowTreeHostFromScreenPoint(point_in_unified_host);
-    DCHECK(host);
-    host->ConvertPointToNativeScreen(&point_in_native);
-    return WarpMouseCursorInNativeCoords(point_in_native, point_in_unified_host,
-                                         true);
-  }
+  // A native event may not exist in unit test.
+  if (!event->HasNativeEvent())
+    return false;
 
   gfx::Point point_in_native =
       ui::EventSystemLocationFromNative(event->native_event());
@@ -119,7 +111,7 @@ bool UnifiedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
 #endif
 
   return WarpMouseCursorInNativeCoords(point_in_native, point_in_unified_host,
-                                       false);
+                                       update_location_for_test_);
 }
 
 void UnifiedMouseWarpController::SetEnabled(bool enabled) {
