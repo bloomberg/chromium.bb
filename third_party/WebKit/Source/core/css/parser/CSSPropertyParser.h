@@ -255,8 +255,7 @@ private:
     PassRefPtrWillBeRawPtr<CSSValue> parseTouchAction();
     PassRefPtrWillBeRawPtr<CSSValue> parseScrollBlocksOn();
 
-    void addTextDecorationProperty(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>, bool important);
-    bool parseTextDecoration(CSSPropertyID propId, bool important);
+    PassRefPtrWillBeRawPtr<CSSValue> parseTextDecoration();
 
     PassRefPtrWillBeRawPtr<CSSValue> parseTextIndent();
 

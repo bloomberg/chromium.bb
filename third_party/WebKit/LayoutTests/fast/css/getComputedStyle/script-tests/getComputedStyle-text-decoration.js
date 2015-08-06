@@ -51,6 +51,18 @@ e.style.textDecoration = 'blink';
 testComputedStyle("textDecoration", "none solid rgb(0, 0, 0)");
 debug('');
 
+debug("Value 'overline overline' (invalid):");
+e.style.textDecoration = '';
+e.style.textDecoration = 'overline overline';
+testComputedStyle("textDecoration", "none solid rgb(0, 0, 0)");
+debug('');
+
+debug("Value 'underline blank' (invalid):");
+e.style.textDecoration = '';
+e.style.textDecoration = 'underline blank';
+testComputedStyle("textDecoration", "none solid rgb(0, 0, 0)");
+debug('');
+
 debug("Value '':");
 e.style.textDecoration = '';
 testComputedStyle("textDecoration", "none solid rgb(0, 0, 0)");

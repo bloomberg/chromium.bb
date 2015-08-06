@@ -881,7 +881,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitTextDecorationsInEffect:
     case CSSPropertyTextDecorationLine:
         // none | [ underline || overline || line-through || blink ] | inherit
-        return parseTextDecoration(propId, important);
+        parsedValue = parseTextDecoration();
+        break;
 
     case CSSPropertyTextUnderlinePosition:
         // auto | [ under || [ left | right ] ], but we only support auto | under for now
@@ -7165,27 +7166,12 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseScrollBlocksOn()
     return list.release();
 }
 
-void CSSPropertyParser::addTextDecorationProperty(CSSPropertyID propId, PassRefPtrWillBeRawPtr<CSSValue> value, bool important)
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTextDecoration()
 {
-    // The text-decoration-line property takes priority over text-decoration, unless the latter has important priority set.
-    if (propId == CSSPropertyTextDecoration && !important && !inShorthand()) {
-        for (unsigned i = 0; i < m_parsedProperties.size(); ++i) {
-            if (m_parsedProperties[i].id() == CSSPropertyTextDecorationLine)
-                return;
-        }
-    }
-    addProperty(propId, value, important);
-}
-
-bool CSSPropertyParser::parseTextDecoration(CSSPropertyID propId, bool important)
-{
-    ASSERT(propId != CSSPropertyTextDecorationLine || RuntimeEnabledFeatures::css3TextDecorationsEnabled());
-
     CSSParserValue* value = m_valueList->current();
     if (value && value->id == CSSValueNone) {
-        addTextDecorationProperty(propId, cssValuePool().createIdentifierValue(CSSValueNone), important);
         m_valueList->next();
-        return true;
+        return cssValuePool().createIdentifierValue(CSSValueNone);
     }
 
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
@@ -7196,6 +7182,7 @@ bool CSSPropertyParser::parseTextDecoration(CSSPropertyID propId, bool important
         case CSSValueOverline:
         case CSSValueLineThrough:
         case CSSValueBlink:
+            // TODO(timloh): This will incorrectly accept "blink blink"
             list->append(cssValuePool().createIdentifierValue(value->id));
             break;
         default:
@@ -7207,12 +7194,9 @@ bool CSSPropertyParser::parseTextDecoration(CSSPropertyID propId, bool important
     }
 
     // Values are either valid or in shorthand scope.
-    if (list->length() && (isValid || inShorthand())) {
-        addTextDecorationProperty(propId, list.release(), important);
-        return true;
-    }
-
-    return false;
+    if (list->length())
+        return list.release();
+    return nullptr;
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTextEmphasisStyle()
