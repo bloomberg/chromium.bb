@@ -49,6 +49,9 @@ const int kPasswordFillFormDataId = 1234;
 const char kUsernameName[] = "username";
 const char kPasswordName[] = "password";
 const char kEmailName[] = "email";
+const char kCreditCardOwnerName[] = "creditcardowner";
+const char kCreditCardNumberName[] = "creditcardnumber";
+const char kCreditCardVerificationName[] = "cvc";
 
 const char kAliceUsername[] = "alice";
 const char kAlicePassword[] = "password";
@@ -190,6 +193,14 @@ const char kPasswordChangeFormHTML[] =
     "  <INPUT type='password' id='newpassword'/>"
     "  <INPUT type='password' id='confirmpassword'/>"
     "  <INPUT type='submit' value='Login'/>"
+    "</FORM>";
+
+const char kCreditCardFormHTML[] =
+    "<FORM name='ChangeWithUsernameForm' action='http://www.bidule.com'>"
+    "  <INPUT type='text' id='creditcardowner'/>"
+    "  <INPUT type='text' id='creditcardnumber'/>"
+    "  <INPUT type='password' id='cvc'/>"
+    "  <INPUT type='submit' value='Submit'/>"
     "</FORM>";
 
 // Sets the "readonly" attribute of |element| to the value given by |read_only|.
@@ -1666,8 +1677,8 @@ TEST_F(PasswordAutofillAgentTest, FindingFieldsWithAutofillPredictions) {
   // Simulate Autofill predictions: the first field is username, the third
   // one is password.
   std::map<autofill::FormData, PasswordFormFieldPredictionMap> predictions;
-  predictions[form_data][PREDICTION_USERNAME] = form_data.fields[0];
-  predictions[form_data][PREDICTION_NEW_PASSWORD] = form_data.fields[2];
+  predictions[form_data][form_data.fields[0]] = PREDICTION_USERNAME;
+  predictions[form_data][form_data.fields[2]] = PREDICTION_NEW_PASSWORD;
   AutofillMsg_AutofillUsernameAndPasswordDataReceived msg(0, predictions);
   static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
       ->OnMessageReceived(msg);
@@ -1898,6 +1909,43 @@ TEST_F(PasswordAutofillAgentTest,
       ->FormControlElementClicked(password_element_, false);
   EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_ShowPasswordSuggestions::ID));
+}
+
+// Tests that NOT_PASSWORD field predictions are followed so that no password
+// form is submitted.
+TEST_F(PasswordAutofillAgentTest, IgnoreNotPasswordFields) {
+  LoadHTML(kCreditCardFormHTML);
+  blink::WebInputElement credit_card_owner_element =
+      GetInputElementByID(kCreditCardOwnerName);
+  blink::WebInputElement credit_card_number_element =
+      GetInputElementByID(kCreditCardNumberName);
+  blink::WebInputElement credit_card_verification_element =
+      GetInputElementByID(kCreditCardVerificationName);
+  SimulateUserInputChangeForElement(&credit_card_owner_element, "JohnSmith");
+  SimulateUserInputChangeForElement(&credit_card_number_element,
+                                    "1234123412341234");
+  SimulateUserInputChangeForElement(&credit_card_verification_element, "123");
+  // Find FormData for visible form.
+  blink::WebFormElement form_element = credit_card_number_element.form();
+  FormData form_data;
+  ASSERT_TRUE(WebFormElementToFormData(form_element,
+                                       blink::WebFormControlElement(),
+                                       EXTRACT_NONE, &form_data, nullptr));
+  // Simulate Autofill predictions: the third field is not a password.
+  std::map<autofill::FormData, PasswordFormFieldPredictionMap> predictions;
+  predictions[form_data][form_data.fields[2]] = PREDICTION_NOT_PASSWORD;
+  AutofillMsg_AutofillUsernameAndPasswordDataReceived msg(0, predictions);
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->OnMessageReceived(msg);
+
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSendSubmitEvent(form_element);
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSubmitForm(form_element);
+
+  const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_PasswordFormSubmitted::ID);
+  ASSERT_FALSE(message);
 }
 
 }  // namespace autofill

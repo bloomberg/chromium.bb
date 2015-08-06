@@ -191,12 +191,28 @@ bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
   return true;
 }
 
+// Checks the |form_predictions| map to see if there is a key associated with
+// the |prediction_type| value. Assigns the key to |prediction_field| and
+// returns true if it is found.
+bool MapContainsPrediction(
+    const std::map<WebInputElement, PasswordFormFieldPredictionType>&
+        form_predictions,
+    PasswordFormFieldPredictionType prediction_type,
+    WebInputElement* prediction_field) {
+  for (auto it = form_predictions.begin(); it != form_predictions.end(); ++it) {
+    if (it->second == prediction_type) {
+      (*prediction_field) = it->first;
+      return true;
+    }
+  }
+  return false;
+}
+
 void FindPredictedElements(
     const WebFormElement& form,
-    const std::map<autofill::FormData,
-                   autofill::PasswordFormFieldPredictionMap>& form_predictions,
+    const std::map<FormData, PasswordFormFieldPredictionMap>& form_predictions,
     WebVector<WebFormControlElement>* control_elements,
-    std::map<autofill::PasswordFormFieldPredictionType, WebInputElement>*
+    std::map<WebInputElement, PasswordFormFieldPredictionType>*
         predicted_elements) {
   FormData form_data;
   if (!WebFormElementToFormData(form, WebFormControlElement(), EXTRACT_NONE,
@@ -222,20 +238,22 @@ void FindPredictedElements(
   std::vector<blink::WebFormControlElement> autofillable_elements =
       ExtractAutofillableElementsFromSet(*control_elements);
 
-  const autofill::PasswordFormFieldPredictionMap& field_predictions =
+  const PasswordFormFieldPredictionMap& field_predictions =
       predictions_iterator->second;
-  for (autofill::PasswordFormFieldPredictionMap::const_iterator prediction =
+  for (PasswordFormFieldPredictionMap::const_iterator prediction =
            field_predictions.begin();
        prediction != field_predictions.end(); ++prediction) {
-    const autofill::PasswordFormFieldPredictionType& type = prediction->first;
-    const autofill::FormFieldData& target_field = prediction->second;
+    const FormFieldData& target_field = prediction->first;
+    const PasswordFormFieldPredictionType& type = prediction->second;
 
     for (size_t i = 0; i < autofillable_elements.size(); ++i) {
       if (autofillable_elements[i].nameForAutofill() == target_field.name) {
         WebInputElement* input_element =
             toWebInputElement(&autofillable_elements[i]);
+        // TODO(sebsg): Investigate why this guard is necessary, see
+        // https://crbug.com/517490 for more details.
         if (input_element) {
-          (*predicted_elements)[type] = *input_element;
+          (*predicted_elements)[*input_element] = type;
         }
         break;
       }
@@ -252,8 +270,7 @@ void GetPasswordForm(
     PasswordForm* password_form,
     const std::map<const blink::WebInputElement, blink::WebString>*
         nonscript_modified_values,
-    const std::map<autofill::FormData,
-                   autofill::PasswordFormFieldPredictionMap>*
+    const std::map<FormData, PasswordFormFieldPredictionMap>*
         form_predictions) {
   WebInputElement latest_input_element;
   WebInputElement username_element;
@@ -263,6 +280,12 @@ void GetPasswordForm(
 
   WebVector<WebFormControlElement> control_elements;
   form.getFormControlElements(control_elements);
+
+  std::map<WebInputElement, PasswordFormFieldPredictionType> predicted_elements;
+  if (form_predictions) {
+    FindPredictedElements(form, *form_predictions, &control_elements,
+                          &predicted_elements);
+  }
 
   std::string layout_sequence;
   layout_sequence.reserve(control_elements.size());
@@ -282,6 +305,11 @@ void GetPasswordForm(
         layout_sequence.push_back('N');
     }
 
+    bool password_marked_by_autocomplete_attribute =
+        HasAutocompleteAttributeValue(*input_element,
+                                      kAutocompleteCurrentPassword) ||
+        HasAutocompleteAttributeValue(*input_element, kAutocompleteNewPassword);
+
     // If the password field is readonly, the page is likely using a virtual
     // keyboard and bypassing the password field value (see
     // http://crbug.com/475488). There is nothing Chrome can do to fill
@@ -293,11 +321,21 @@ void GetPasswordForm(
          (nonscript_modified_values &&
           nonscript_modified_values->find(*input_element) !=
               nonscript_modified_values->end()) ||
-         HasAutocompleteAttributeValue(*input_element,
-                                       kAutocompleteCurrentPassword) ||
-         HasAutocompleteAttributeValue(*input_element,
-                                       kAutocompleteNewPassword))) {
-      passwords.push_back(*input_element);
+         password_marked_by_autocomplete_attribute)) {
+      // We add the field to the list of password fields if it was not flagged
+      // as a special NOT_PASSWORD prediction by Autofill. The NOT_PASSWORD
+      // mechanism exists because some webpages use the type "password" for
+      // fields which Autofill knows shouldn't be treated as passwords by the
+      // Password Manager. This is ultimately bypassed if the field has
+      // autocomplete attributes.
+      auto possible_password_element_iterator =
+          predicted_elements.find(*input_element);
+      if (password_marked_by_autocomplete_attribute ||
+          possible_password_element_iterator == predicted_elements.end() ||
+          possible_password_element_iterator->second !=
+              PREDICTION_NOT_PASSWORD) {
+        passwords.push_back(*input_element);
+      }
       // If we have not yet considered any element to be the username so far,
       // provisionally select the input element just before the first password
       // element to be the username. This choice will be overruled if we later
@@ -359,25 +397,25 @@ void GetPasswordForm(
   }
   password_form->layout = SequenceToLayout(layout_sequence);
 
-  std::map<autofill::PasswordFormFieldPredictionType, WebInputElement>
-      predicted_elements;
-  if (form_predictions) {
-    FindPredictedElements(form, *form_predictions, &control_elements,
-                          &predicted_elements);
-  }
+  WebInputElement predicted_username_element;
+  bool map_has_username_prediction = MapContainsPrediction(
+      predicted_elements, PREDICTION_USERNAME, &predicted_username_element);
+
   // Let server predictions override the selection of the username field. This
   // allows instant adjusting without changing Chromium code.
-  if (!predicted_elements[autofill::PREDICTION_USERNAME].isNull() &&
-      username_element != predicted_elements[autofill::PREDICTION_USERNAME]) {
+  auto username_element_iterator = predicted_elements.find(username_element);
+  if (map_has_username_prediction &&
+      (username_element_iterator == predicted_elements.end() ||
+       username_element_iterator->second != PREDICTION_USERNAME)) {
     auto it =
         find(other_possible_usernames.begin(), other_possible_usernames.end(),
-             predicted_elements[autofill::PREDICTION_USERNAME].value());
+             predicted_username_element.value());
     if (it != other_possible_usernames.end())
       other_possible_usernames.erase(it);
     if (!username_element.isNull()) {
       other_possible_usernames.push_back(username_element.value());
     }
-    username_element = predicted_elements[autofill::PREDICTION_USERNAME];
+    username_element = predicted_username_element;
     password_form->was_parsed_using_autofill_predictions = true;
   }
 
@@ -485,8 +523,7 @@ scoped_ptr<PasswordForm> CreatePasswordForm(
     const WebFormElement& web_form,
     const std::map<const blink::WebInputElement, blink::WebString>*
         nonscript_modified_values,
-    const std::map<autofill::FormData,
-                   autofill::PasswordFormFieldPredictionMap>*
+    const std::map<FormData, PasswordFormFieldPredictionMap>*
         form_predictions) {
   if (web_form.isNull())
     return scoped_ptr<PasswordForm>();
