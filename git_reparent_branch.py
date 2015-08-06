@@ -36,6 +36,8 @@ def main(args):
   elif opts.lkgr:
     new_parent = 'lkgr'
   else:
+    if not opts.new_parent:
+      parser.error('Must specify new parent somehow')
     new_parent = opts.new_parent
   cur_parent = upstream(branch)
 

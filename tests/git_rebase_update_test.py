@@ -152,6 +152,8 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
     self.assertEqual(self.repo.git('status', '--porcelain').stdout, '?? bob\n')
 
     self.repo.git('checkout', 'origin/master')
+    _, err = self.repo.capture_stdio(self.rp.main, [])
+    self.assertIn('Must specify new parent somehow', err)
     _, err = self.repo.capture_stdio(self.rp.main, ['foobar'])
     self.assertIn('Must be on the branch', err)
 
