@@ -565,8 +565,6 @@ crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ ImageOnlyFailur
 crbug.com/247716 [ Mac ] fast/frames/iframe-scaling-with-scroll.html [ NeedsManualRebaseline ]
 crbug.com/247716 [ Mac XP ] editing/spelling/inline-spelling-markers-hidpi-composited.html [ NeedsManualRebaseline ]
 
-crbug.com/436477 fast/js/mozilla/strict/assign-to-callee-name.html [ NeedsManualRebaseline ]
-
 crbug.com/506525 [ XP ] paint/masks/fieldset-mask.html [ ImageOnlyFailure ]
 
 crbug.com/400841 media/video-canvas-draw.html [ ImageOnlyFailure ]
