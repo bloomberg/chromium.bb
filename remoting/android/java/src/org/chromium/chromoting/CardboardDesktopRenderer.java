@@ -375,14 +375,35 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         return value;
     }
 
+
     /**
-     * Check whether user is looking at desktop or not.
-     * This can be called on any thread.
+     * Return true if user is looking at the desktop.
+     * This method can be called on any thread.
      */
     public boolean isLookingAtDesktop() {
         synchronized (mEyePositionLock) {
             return Math.abs(mEyePositionVector[0]) <= (mHalfDesktopWidth + EDGE_MARGIN)
                 && Math.abs(mEyePositionVector[1]) <= (HALF_DESKTOP_HEIGHT + EDGE_MARGIN);
+        }
+    }
+
+    /*
+     * Return true if user is looking at the space to the left of the dekstop.
+     * This method can be called on any thread.
+     */
+    public boolean isLookingLeftOfDesktop() {
+        synchronized (mEyePositionLock) {
+            return mEyePositionVector[0] >= (mHalfDesktopWidth + EDGE_MARGIN);
+        }
+    }
+
+    /*
+     * Return true if user is looking at the space to the right of the dekstop.
+     * This method can be called on any thread.
+     */
+    public boolean isLookingRightOfDesktop() {
+        synchronized (mEyePositionLock) {
+            return mEyePositionVector[0] <= -(mHalfDesktopWidth + EDGE_MARGIN);
         }
     }
 
