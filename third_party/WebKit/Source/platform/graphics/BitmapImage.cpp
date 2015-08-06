@@ -333,12 +333,48 @@ size_t BitmapImage::frameCount()
     return m_frameCount;
 }
 
+enum DecodedImageType {
+    // These values are histogrammed over time; do not change their ordinal
+    // values.  When deleting an image type, replace it with a dummy value;
+    // when adding an image type, do so at the bottom (and update LastDecodedImageType
+    // so that it equals the last real image type).
+    // Also, this enum should be in sync with the 'DecodedImageType' enum in
+    // src/tools/metrics/histograms/histograms.xml
+    ImageUnknown = 0,
+    ImageJPEG,
+    ImagePNG,
+    ImageGIF,
+    ImageWebP,
+    ImageICO,
+    ImageBMP,
+
+    LastDecodedImageType = ImageBMP
+};
+
+static inline bool hasVisibleImageSize(IntSize size)
+{
+    return (size.width() > 1 || size.height() > 1);
+}
+
 bool BitmapImage::isSizeAvailable()
 {
     if (m_sizeAvailable)
         return true;
 
     m_sizeAvailable = m_source.isSizeAvailable();
+
+    if (m_sizeAvailable && hasVisibleImageSize(size())) {
+        String fileExtention = m_source.filenameExtension();
+        DecodedImageType type =
+            fileExtention == "jpg"  ? ImageJPEG :
+            fileExtention == "png"  ? ImagePNG :
+            fileExtention == "gif"  ? ImageGIF :
+            fileExtention == "webp" ? ImageWebP :
+            fileExtention == "ico"  ? ImageICO :
+            fileExtention == "bmp"  ? ImageBMP :
+            ImageUnknown;
+        Platform::current()->histogramEnumeration("Blink.DecodedImageType", type, LastDecodedImageType + 1);
+    }
 
     return m_sizeAvailable;
 }
