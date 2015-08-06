@@ -20,6 +20,7 @@
 
 #if CLD_VERSION==2
 #include "third_party/cld_2/src/public/compact_lang_det.h"
+#include "third_party/cld_2/src/public/encodings.h"
 #endif
 
 namespace {
@@ -73,7 +74,9 @@ void ApplyLanguageCodeCorrection(std::string* code) {
 // failed.
 // |is_cld_reliable| will be set as true if CLD says the detection is reliable.
 std::string DetermineTextLanguage(const base::string16& text,
-                                  bool* is_cld_reliable) {
+                                  bool* is_cld_reliable,
+                                  std::string& code,
+                                  std::string& html_lang) {
   std::string language = translate::kUnknownLanguageCode;
   int num_bytes_evaluated = 0;
   bool is_reliable = false;
@@ -85,18 +88,33 @@ std::string DetermineTextLanguage(const base::string16& text,
 
 #if CLD_VERSION==1
   int num_languages = 0;
-  cld_language = DetectLanguageOfUnicodeText(
-      NULL, text.c_str(), is_plain_text, &is_reliable, &num_languages, NULL,
-      &num_bytes_evaluated);
+  cld_language = DetectLanguageOfUnicodeText(NULL, text.c_str(), is_plain_text,
+                                             &is_reliable, &num_languages, NULL,
+                                             &num_bytes_evaluated);
   is_valid_language = cld_language != NUM_LANGUAGES &&
-      cld_language != UNKNOWN_LANGUAGE &&
-      cld_language != TG_UNKNOWN_LANGUAGE;
+                      cld_language != UNKNOWN_LANGUAGE &&
+                      cld_language != TG_UNKNOWN_LANGUAGE;
 #elif CLD_VERSION==2
   const std::string utf8_text(base::UTF16ToUTF8(text));
   const int num_utf8_bytes = static_cast<int>(utf8_text.size());
   const char* raw_utf8_bytes = utf8_text.c_str();
-  cld_language = CLD2::DetectLanguageCheckUTF8(
-      raw_utf8_bytes, num_utf8_bytes, is_plain_text, &is_reliable,
+
+  CLD2::Language language3[3];
+  int percent3[3];
+  int flags = 0;   // No flags, see compact_lang_det.h for details.
+  int text_bytes;  // Amount of non-tag/letters-only text (assumed 0).
+  double normalized_score3[3];
+
+  const char* tld_hint = "";
+  int encoding_hint = CLD2::UNKNOWN_ENCODING;
+  CLD2::Language language_hint = CLD2::GetLanguageFromName(html_lang.c_str());
+  CLD2::CLDHints cldhints = {code.c_str(), tld_hint, encoding_hint,
+                             language_hint};
+
+  cld_language = CLD2::ExtDetectLanguageSummaryCheckUTF8(
+      raw_utf8_bytes, num_utf8_bytes, is_plain_text, &cldhints, flags,
+      language3, percent3, normalized_score3,
+      nullptr /* No ResultChunkVector used */, &text_bytes, &is_reliable,
       &num_bytes_evaluated);
 
   if (num_bytes_evaluated < num_utf8_bytes &&
@@ -104,12 +122,17 @@ std::string DetermineTextLanguage(const base::string16& text,
     // Invalid UTF8 encountered, see bug http://crbug.com/444258.
     // Retry using only the valid characters. This time the check for valid
     // UTF8 can be skipped since the precise number of valid bytes is known.
-    cld_language = CLD2::DetectLanguage(raw_utf8_bytes, num_bytes_evaluated,
-                                        is_plain_text, &is_reliable);
+    cld_language = CLD2::ExtDetectLanguageSummary(
+        raw_utf8_bytes, num_utf8_bytes, is_plain_text, &cldhints, flags,
+        language3, percent3, normalized_score3,
+        nullptr /* No ResultChunkVector used */, &text_bytes, &is_reliable);
   }
   is_valid_language = cld_language != CLD2::NUM_LANGUAGES &&
-      cld_language != CLD2::UNKNOWN_LANGUAGE &&
-      cld_language != CLD2::TG_UNKNOWN_LANGUAGE;
+                      cld_language != CLD2::UNKNOWN_LANGUAGE &&
+                      cld_language != CLD2::TG_UNKNOWN_LANGUAGE;
+
+  // Choose top language.
+  cld_language = language3[0];
 #else
 # error "CLD_VERSION must be 1 or 2"
 #endif
@@ -181,15 +204,6 @@ std::string DeterminePageLanguage(const std::string& code,
                                   bool* is_cld_reliable_p) {
   base::TimeTicks begin_time = base::TimeTicks::Now();
   bool is_cld_reliable;
-  std::string cld_language = DetermineTextLanguage(contents, &is_cld_reliable);
-  translate::ReportLanguageDetectionTime(begin_time, base::TimeTicks::Now());
-
-  if (cld_language_p != NULL)
-    *cld_language_p = cld_language;
-  if (is_cld_reliable_p != NULL)
-    *is_cld_reliable_p = is_cld_reliable;
-  translate::ToTranslateLanguageSynonym(&cld_language);
-
   // Check if html lang attribute is valid.
   std::string modified_html_lang;
   if (!html_lang.empty()) {
@@ -206,6 +220,16 @@ std::string DeterminePageLanguage(const std::string& code,
     ApplyLanguageCodeCorrection(&modified_code);
     translate::ReportContentLanguage(code, modified_code);
   }
+
+  std::string cld_language = DetermineTextLanguage(
+      contents, &is_cld_reliable, modified_code, modified_html_lang);
+  translate::ReportLanguageDetectionTime(begin_time, base::TimeTicks::Now());
+
+  if (cld_language_p != NULL)
+    *cld_language_p = cld_language;
+  if (is_cld_reliable_p != NULL)
+    *is_cld_reliable_p = is_cld_reliable;
+  translate::ToTranslateLanguageSynonym(&cld_language);
 
   // Adopt |modified_html_lang| if it is valid. Otherwise, adopt
   // |modified_code|.
