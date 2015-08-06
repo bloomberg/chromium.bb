@@ -188,3 +188,12 @@ bear_320x192_40frames.yuv
 pixel-1280x720.jpg - Single MJEPG encoded frame of 1280x720, captured on Chromebook Pixel. This image does not have Huffman table.
 peach_pi-1280x720.jpg - Single MJPEG encoded frame of 1280x720, captured on Samsung Chromebook 2(13"). This image has Huffman table.
 blank-1x1.jpg - 1x1 small picture to test special cases.
+
+// MP4 files with non-square pixels.
+media/test/data/bear-640x360-non_square_pixel-with_pasp.mp4
+  Size in TKHD is (639.2x360) and size in STSD is (470x360). A PASP box is
+  present with hSpacing=34 and vSpacing=25. Note that 470.0 * 34 / 25 = 639.2.
+
+media/test/data/bear-640x360-non_square_pixel-without_pasp.mp4
+  Size in TKHD is (639.2x360) and size in STSD is (470x360). No PASP box is
+  present.

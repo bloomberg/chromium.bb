@@ -972,6 +972,28 @@ TEST_F(FFmpegDemuxerTest, Rotate_Metadata_270) {
   ASSERT_EQ(VIDEO_ROTATION_270, stream->video_rotation());
 }
 
+TEST_F(FFmpegDemuxerTest, NaturalSizeWithoutPASP) {
+  CreateDemuxer("bear-640x360-non_square_pixel-without_pasp.mp4");
+  InitializeDemuxer();
+
+  DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
+  ASSERT_TRUE(stream);
+
+  const VideoDecoderConfig& video_config = stream->video_decoder_config();
+  EXPECT_EQ(gfx::Size(638, 360), video_config.natural_size());
+}
+
+TEST_F(FFmpegDemuxerTest, NaturalSizeWithPASP) {
+  CreateDemuxer("bear-640x360-non_square_pixel-with_pasp.mp4");
+  InitializeDemuxer();
+
+  DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
+  ASSERT_TRUE(stream);
+
+  const VideoDecoderConfig& video_config = stream->video_decoder_config();
+  EXPECT_EQ(gfx::Size(638, 360), video_config.natural_size());
+}
+
 #endif
 
 }  // namespace media

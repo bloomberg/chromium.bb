@@ -39,6 +39,8 @@ class MP4StreamParserTest : public testing::Test {
  protected:
   scoped_ptr<MP4StreamParser> parser_;
   bool configs_received_;
+  AudioDecoderConfig audio_decoder_config_;
+  VideoDecoderConfig video_decoder_config_;
   DecodeTimestamp lower_bound_;
 
   bool AppendData(const uint8* data, size_t length) {
@@ -71,6 +73,8 @@ class MP4StreamParserTest : public testing::Test {
     DVLOG(1) << "NewConfigF: audio=" << ac.IsValidConfig()
              << ", video=" << vc.IsValidConfig();
     configs_received_ = true;
+    audio_decoder_config_ = ac;
+    video_decoder_config_ = vc;
     return true;
   }
 
@@ -259,6 +263,26 @@ TEST_F(MP4StreamParserTest, CENC) {
   scoped_refptr<DecoderBuffer> buffer =
       ReadTestDataFile("bear-1280x720-v_frag-cenc.mp4");
   EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
+}
+
+TEST_F(MP4StreamParserTest, NaturalSizeWithoutPASP) {
+  InitializeParserAndExpectLiveness(DemuxerStream::LIVENESS_RECORDED);
+
+  scoped_refptr<DecoderBuffer> buffer =
+      ReadTestDataFile("bear-640x360-non_square_pixel-without_pasp.mp4");
+
+  EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
+  EXPECT_EQ(gfx::Size(638, 360), video_decoder_config_.natural_size());
+}
+
+TEST_F(MP4StreamParserTest, NaturalSizeWithPASP) {
+  InitializeParserAndExpectLiveness(DemuxerStream::LIVENESS_RECORDED);
+
+  scoped_refptr<DecoderBuffer> buffer =
+      ReadTestDataFile("bear-640x360-non_square_pixel-with_pasp.mp4");
+
+  EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
+  EXPECT_EQ(gfx::Size(638, 360), video_decoder_config_.natural_size());
 }
 
 }  // namespace mp4
