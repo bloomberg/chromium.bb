@@ -57,7 +57,7 @@ def standard_tests(context, config, exclude, extra_args):
   except buildbot_lib.StepFailed:
     return 1
 
-def eh_tests(context, config, exclude, extra_args, use_sjlj_eh):
+def eh_tests(context, config, exclude, extra_args):
   # TODO: toolchain_tester.py runnable as a library?
   command = ['tools/toolchain_tester/toolchain_tester.py',
              '--exclude=tools/toolchain_tester/' + exclude,
@@ -65,13 +65,7 @@ def eh_tests(context, config, exclude, extra_args, use_sjlj_eh):
              '--config=' + config]
   if 'pnacl' in config:
     command.append('--append_file=tools/toolchain_tester/extra_flags_pnacl.txt')
-    if use_sjlj_eh:
-      command.append('--append=CFLAGS:--pnacl-exceptions=sjlj')
-    else:
-      command.append('--append=CFLAGS:--pnacl-allow-exceptions')
-      command.append('--append=FINALIZE_FLAGS:--no-finalize')
-      command.append('--append=TRANSLATE_FLAGS:--pnacl-allow-exceptions')
-      command.append('--append=TRANSLATE_FLAGS:--allow-llvm-bitcode-input')
+    command.append('--append=CFLAGS:--pnacl-exceptions=sjlj')
   command.extend(extra_args)
   command.extend(list_tests(TEST_PATH_CPP, 'eh', '*.C'))
   print command
@@ -107,20 +101,11 @@ def run_torture(status, compiler, platform, extra_args):
     eh_config = ('_'.join((config_map[compiler] + '++', platform, optmode))
                   if compiler =='clang' else config)
 
-    # Test zero-cost C++ exception handling.
+    # Test C++ exception handling.
     retcode = eh_tests(status.context, eh_config,
-                       'known_eh_failures_' + compiler + '.txt', extra_args,
-                       use_sjlj_eh=False)
+                       'known_eh_failures_' + compiler + '.txt', extra_args)
     if retcode:
-      failures.append(optmode + ' zerocost eh')
-
-    # Test SJLJ C++ exception handling.
-    if compiler == 'pnacl':
-      retcode = eh_tests(status.context, eh_config,
-                         'known_eh_failures_' + compiler + '.txt', extra_args,
-                         use_sjlj_eh=True)
-      if retcode:
-        failures.append(optmode + ' sjlj eh')
+      failures.append(optmode + ' eh')
 
     # Run the normal (non-exception-handling) tests.
     retcode = standard_tests(

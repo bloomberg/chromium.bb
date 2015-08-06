@@ -263,20 +263,12 @@ if env.Bit('bitcode'):
   sjlj_eh_env = base_eh_env.Clone()
   sjlj_eh_env.Append(LINKFLAGS=['--pnacl-exceptions=sjlj'])
   EH_ENVIRONMENTS_TO_TRY.append(('sjlj_libc++', sjlj_eh_env))
-  zerocost_eh_env = base_eh_env.Clone()
-  zerocost_eh_env.Append(LINKFLAGS=['--pnacl-allow-exceptions'])
-  zerocost_eh_env.Append(TRANSLATEFLAGS=['--pnacl-allow-exceptions'])
 else:
-  zerocost_eh_env = base_eh_env
-
-# Zero-cost C++ exception handling is not currently supported in
-# PNaCl's stable ABI.
-if zerocost_eh_env.SetNonStableBitcodeIfAllowed():
   EH_ENVIRONMENTS_TO_TRY.extend(
-      [('noopt_frame', MakeEnv(zerocost_eh_env, False, True)),
-       ('noopt_noframe', MakeEnv(zerocost_eh_env, False, False)),
-       ('opt_frame', MakeEnv(zerocost_eh_env, True, True)),
-       ('opt_noframe', MakeEnv(zerocost_eh_env, True, False))])
+      [('noopt_frame', MakeEnv(base_eh_env, False, True)),
+       ('noopt_noframe', MakeEnv(base_eh_env, False, False)),
+       ('opt_frame', MakeEnv(base_eh_env, True, True)),
+       ('opt_noframe', MakeEnv(base_eh_env, True, False))])
 
 for tag, env_to_try in EH_ENVIRONMENTS_TO_TRY:
   for src in ['stack_frame.cc',
@@ -298,7 +290,6 @@ for tag, env_to_try in EH_ENVIRONMENTS_TO_TRY:
 
     is_broken = False
     if (env.Bit('bitcode') and
-        env.Bit('pnacl_generate_pexe') and
         src in ['stack_frame.cc', 'eh_return.c']):
       # stack_frame.cc and eh_return.c have bias see above
       is_broken = True
@@ -317,14 +308,6 @@ for tag, env_to_try in EH_ENVIRONMENTS_TO_TRY:
     if tag.startswith('sjlj_') and src in non_abi_stable_tests:
       continue
 
-    if '--pnacl-exceptions=sjlj' in env_to_try['LINKFLAGS']:
-      if (src == 'eh_uncaught_exception.cc' and
-          env_to_try['TOOLCHAIN_FEATURE_VERSION'] < 2):
-        is_broken = True
-      if (src == 'eh_throw_tests.cc' and
-          env_to_try['TOOLCHAIN_FEATURE_VERSION'] < 3):
-        is_broken = True
-
     name = src.split('.')[0] + '_' + tag
     nobj = env_to_try.ComponentObject(name + '.o', src)
     nexe = env_to_try.ComponentProgram(name, nobj,
@@ -335,93 +318,6 @@ for tag, env_to_try in EH_ENVIRONMENTS_TO_TRY:
     env_to_try.AddNodeToTestSuite(
         node, ['eh_tests', 'toolchain_tests', 'small_tests'],
         'run_' + name  +'_test', is_broken=is_broken)
-
-
-# Test that Exception Handling works with the calling conventions that
-# match the PPAPI PNaCl IRT shim's calling conventions.
-exc_env = env.Clone()
-# Clear the --target= flags from CFLAGS because zerocost EH is the one nonpexe
-# feature that is really intended to work with portable bitcode. This means
-# that the test code bitcode has a different target triple than the other
-# scons-built code (e.g. libnacl) so the test should be careful in its use of
-# external calls.
-exc_env['BASE_CFLAGS'] = ''
-exc_env['BASE_CXXFLAGS'] = ''
-exc_env['BASE_LINKFLAGS'] = ''
-# Clearing NACL_SDK_LIB means that the crt files, newlib, and libcxx will be
-# le32 instead of biased.
-exc_env['NACL_SDK_LIB'] = ''
-
-if exc_env.Bit('bitcode') and exc_env.SetNonStableBitcodeIfAllowed():
-  # Test what happens when all objects are bitcode w/ bitcode linking.
-  exc_env.Append(LINKFLAGS=['--pnacl-allow-exceptions'])
-  exc_env.Append(TRANSLATEFLAGS=['--pnacl-allow-exceptions'])
-  bobj1 = exc_env.ComponentObject('eh_separate_files1_bc.o',
-                                  'eh_separate_files1.cc')
-  bobj2 = exc_env.ComponentObject('eh_separate_files2_bc.o',
-                                  'eh_separate_files2.cc')
-  nexe = exc_env.ComponentProgram('eh_separate_files_bc',
-                                  [bobj1, bobj2],
-                                  EXTRA_LIBS=['${NONIRT_LIBS}'])
-  node = exc_env.CommandSelLdrTestNacl('eh_separate_files_bc.out',
-                                       nexe,
-                                       exit_status='55')
-  env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
-                         'run_eh_separate_files_bc_test',
-  # https://code.google.com/p/nativeclient/issues/detail?id=4171
-                         is_broken=env.Bit('build_arm'))
-
-  # Test that vararg functions which get double arguments work in
-  # allow-exceptions mode.
-  if exc_env['TOOLCHAIN_FEATURE_VERSION'] >= 10:
-    nexe = exc_env.ComponentProgram('vaarg_allow_exceptions',
-                                    'vaarg_allow_exceptions.cc',
-                                    EXTRA_LIBS=['${NONIRT_LIBS}'])
-    node = exc_env.CommandSelLdrTestNacl('vaarg_allow_exceptions.out', nexe)
-    env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
-                           'run_vaarg_allow_exceptions_test')
-
-  # Also test ahead of time translation, which may be used when debugging.
-  if not env.Bit('pnacl_generate_pexe'):
-    native_env = exc_env.Clone()
-    native_env.PNaClForceNative()
-    testsuite = ['toolchain_tests', 'small_tests', 'nonpexe_tests']
-    nobj1 = native_env.ComponentObject('eh_separate_files1_native.o',
-                                       'eh_separate_files1.cc')
-    nobj2 = native_env.ComponentObject('eh_separate_files2_native.o',
-                                       'eh_separate_files2.cc')
-    nexe = native_env.ComponentProgram('eh_separate_files_native',
-                                       [nobj1, nobj2],
-                                       EXTRA_LIBS=['${NONIRT_LIBS}'])
-    node = native_env.CommandSelLdrTestNacl('eh_separate_files_native.out',
-                                            nexe,
-                                            exit_status='55')
-    env.AddNodeToTestSuite(node,
-                           testsuite,
-                           'run_eh_separate_files_native_test')
-    # Test mixed objects, one native, one bitcode.
-    nexe = native_env.ComponentProgram('eh_separate_files_mixed1',
-                                       [bobj1, nobj2],
-                                       EXTRA_LIBS=['${NONIRT_LIBS}'])
-    node = native_env.CommandSelLdrTestNacl('eh_separate_files_mixed1.out',
-                                            nexe,
-                                            exit_status='55')
-    env.AddNodeToTestSuite(node,
-                           testsuite,
-                           'run_eh_separate_files_mixed1_test')
-    # Test having the bitcode and native objects swapped.
-    nexe = native_env.ComponentProgram('eh_separate_files_mixed2',
-                                       [nobj1, bobj2],
-                                       EXTRA_LIBS=['${NONIRT_LIBS}'])
-    node = native_env.CommandSelLdrTestNacl('eh_separate_files_mixed2.out',
-                                            nexe,
-                                            exit_status='55')
-    env.AddNodeToTestSuite(node,
-                           testsuite,
-                           'run_eh_separate_files_mixed2_test',
-    # https://code.google.com/p/nativeclient/issues/detail?id=4171
-                            is_broken=env.Bit('build_arm'))
-
 
 
 abi_types_nexe = env.ComponentProgram('abi_types',

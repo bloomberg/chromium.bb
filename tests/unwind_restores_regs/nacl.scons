@@ -17,10 +17,7 @@ if not env.Bit('build_x86_64'):
   Return()
 
 if env.Bit('bitcode'):
-  if env.Bit('pnacl_generate_pexe'):
-    Return()
-  env.PNaClForceNative()
-  env.Append(LINKFLAGS=['--pnacl-allow-exceptions'])
+  Return()
 
 nexe = env.ComponentProgram(
     'unwind_restores_regs',
