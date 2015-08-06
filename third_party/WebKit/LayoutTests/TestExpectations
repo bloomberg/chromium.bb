@@ -151,6 +151,7 @@ crbug.com/421283 [ Linux Win ] fast/html/marquee-scrollamount.html [ Pass Failur
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/delay-start-event.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-transform.html [ Pass Failure ]
 crbug.com/248938 [ Linux Win ] virtual/threaded/animations/cascade-important.html [ Pass Timeout ]
+crbug.com/493815 inspector/elements/iframe-load-event.html [ Pass Failure ]
 
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
@@ -170,7 +171,7 @@ crbug.com/248938 [ Win Debug ] virtual/threaded/animations/transition-and-animat
 
 crbug.com/487281 [ Mac ] fast/forms/menulist-narrow-width.html [ ImageOnlyFailure ]
 
-crbug.com/427606 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
+crbug.com/427606 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
 
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
@@ -612,15 +613,15 @@ crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/transform-interpolation.html [ Pass Crash Slow ]
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash Slow ]
 
-crbug.com/440511 fast/text-autosizing/hackernews-comments.html [ Pass Failure NeedsManualRebaseline ]
+crbug.com/440511 fast/text-autosizing/hackernews-comments.html [ NeedsRebaseline ]
 
-crbug.com/454760 fast/text/international/text-combine-image-test.html [ NeedsManualRebaseline ]
+crbug.com/454760 fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
 
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ ImageOnlyFailure ]
 
 # Failures that need further investigation.
-crbug.com/247716 [ Mac ] fast/frames/iframe-scaling-with-scroll.html [ NeedsManualRebaseline ]
-crbug.com/247716 [ Mac XP ] editing/spelling/inline-spelling-markers-hidpi-composited.html [ NeedsManualRebaseline ]
+crbug.com/247716 [ Mac ] fast/frames/iframe-scaling-with-scroll.html [ NeedsRebaseline ]
+crbug.com/247716 [ Mac XP ] editing/spelling/inline-spelling-markers-hidpi-composited.html [ NeedsRebaseline ]
 
 crbug.com/506525 [ XP ] paint/masks/fieldset-mask.html [ ImageOnlyFailure ]
 
@@ -671,7 +672,7 @@ crbug.com/363099 [ Win ] plugins/netscape-destroy-plugin-script-objects.html [ F
 crbug.com/363099 [ Win ] plugins/open-and-close-window-with-plugin.html [ Failure ]
 
 # These are experiencing assertions in harfbuzz.
-# fast/text/international/bidi-neutral-run.html is missing here, since it has a NeedsManualRebaseline expectation up above.
+# fast/text/international/bidi-neutral-run.html is missing here, since it has a NeedsRebaseline expectation up above.
 crbug.com/421854 [ Debug SnowLeopard ] fast/text/zero-width-characters-complex-script.html [ Crash ]
 
 crbug.com/418091 [ SnowLeopard ] fast/text/international/zerowidthjoiner.html [ ImageOnlyFailure ]
@@ -679,10 +680,10 @@ crbug.com/418091 [ SnowLeopard ] fast/text/international/zerowidthjoiner.html [ 
 crbug.com/507351 [ Mac ] fast/text/international/kana-voiced-sound-marks.html [ ImageOnlyFailure ]
 
 # Two part change for layer intersection. Can be rebaselined after https://codereview.chromium.org/595593002/ lands
-crbug.com/116710 compositing/perpendicular-layer-sorting.html [ NeedsManualRebaseline ]
-crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-2.html [ NeedsManualRebaseline ]
-crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-deep.html [ NeedsManualRebaseline ]
-crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ NeedsManualRebaseline ]
+crbug.com/116710 compositing/perpendicular-layer-sorting.html [ NeedsRebaseline ]
+crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-2.html [ NeedsRebaseline ]
+crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-deep.html [ NeedsRebaseline ]
+crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ NeedsRebaseline ]
 
 crbug.com/425345 [ Mac ] fast/text/line-break-after-question-mark.html [ Failure ]
 
@@ -755,15 +756,15 @@ crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure 
 crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
 
 # These need a manual rebaseline after crbug.com/459555
-crbug.com/459555 fast/js/reserved-words-as-property.html [ NeedsManualRebaseline ]
+crbug.com/459555 fast/js/reserved-words-as-property.html [ NeedsRebaseline ]
 
 # These need a manual rebaseline after crbug.com/461107
-crbug.com/461107 [ Linux Mac Android ] virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]
+crbug.com/461107 [ Linux Mac Android ] virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsRebaseline ]
 
 crbug.com/463798 [ Mac ] svg/as-image/svg-invalid-image-1.html [ Failure ]
 
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon-evenodd.html [ ImageOnlyFailure ]
-crbug.com/463358 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Failure NeedsManualRebaseline ]
+crbug.com/463358 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ NeedsRebaseline ]
 crbug.com/463358 [ Mac Debug ] svg/transforms/animated-path-inside-transformed-html.xhtml [ ImageOnlyFailure ]
 
 crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
@@ -810,13 +811,13 @@ crbug.com/474798 fast/repaint/justify-self-change-keeping-geometry.html [ Failur
 # Temporarily disabled after chromium change
 crbug.com/492511 [ Mac ] fast/text/atsui-negative-spacing-features.html [ ImageOnlyFailure ]
 crbug.com/492511 [ Mac ] fast/text/atsui-spacing-features.html [ ImageOnlyFailure ]
-crbug.com/492511 [ Mac ] fast/text/vertical-rl-rtl-linebreak.html [ ImageOnlyFailure NeedsManualRebaseline ]
+crbug.com/492511 [ Mac ] fast/text/vertical-rl-rtl-linebreak.html [ NeedsRebaseline ]
 crbug.com/492511 [ Mac ] fast/text/international/arabic-justify.html [ ImageOnlyFailure ]
 
 # Temporary, until [Unforgeable] attributes have the right accessors 'get' and 'set'.
 crbug.com/491006 http/tests/security/cross-origin-access-over-property-descriptor.html [ Failure ]
 
-crbug.com/321237 [ Mac ] fast/text/international/bidi-neutral-run.html [ Pass Crash NeedsManualRebaseline ]
+crbug.com/321237 [ Mac ] fast/text/international/bidi-neutral-run.html [ Pass Crash NeedsRebaseline ]
 
 # Ref tests that fail due to differences in inline box structure, even though they contain the same text.
 # This happens because inline box layout uses fixed-point measurements, which can cause rounding differences.
@@ -835,10 +836,10 @@ crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ]
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
 
 # Uncomment these once tests are rebaselined for crbug.com/509013
-# crbug.com/240827 css3/filters/effect-reference-hw.html [ NeedsManualRebaseline ]
-# crbug.com/240827 css3/filters/effect-reference-subregion-hw.html [ NeedsManualRebaseline ]
-# crbug.com/240827 css3/filters/effect-reference-zoom.html [ NeedsManualRebaseline ]
-# crbug.com/240827 css3/filters/effect-reference.html [ NeedsManualRebaseline ]
+# crbug.com/240827 css3/filters/effect-reference-hw.html [ NeedsRebaseline ]
+# crbug.com/240827 css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
+# crbug.com/240827 css3/filters/effect-reference-zoom.html [ NeedsRebaseline ]
+# crbug.com/240827 css3/filters/effect-reference.html [ NeedsRebaseline ]
 
 # This new test will need a Chrome-side change before it passes.
 crbug.com/240827 css3/filters/filterRegions.html [ ImageOnlyFailure ]
