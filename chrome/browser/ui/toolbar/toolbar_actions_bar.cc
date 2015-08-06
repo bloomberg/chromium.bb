@@ -379,7 +379,7 @@ void ToolbarActionsBar::CreateActions() {
     // CreateActions() can be called as part of the browser window set up, which
     // we need to let finish before showing the actions.
     scoped_ptr<extensions::ExtensionMessageBubbleController> controller =
-        ExtensionMessageBubbleFactory(browser_->profile()).GetController();
+        ExtensionMessageBubbleFactory(browser_).GetController();
     if (controller) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&ToolbarActionsBar::MaybeShowExtensionBubble,

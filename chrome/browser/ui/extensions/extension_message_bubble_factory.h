@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
-class Profile;
+class Browser;
 
 namespace extensions {
 class ExtensionMessageBubbleController;
@@ -19,7 +19,7 @@ class ExtensionMessageBubbleController;
 // running in developer mode that we want to warn the user about.
 class ExtensionMessageBubbleFactory {
  public:
-  explicit ExtensionMessageBubbleFactory(Profile* profile);
+  explicit ExtensionMessageBubbleFactory(Browser* browser);
   ~ExtensionMessageBubbleFactory();
 
   // Returns the controller for the bubble that should be shown, if any.
@@ -29,7 +29,7 @@ class ExtensionMessageBubbleFactory {
   static void set_enabled_for_tests(bool enabled);
 
  private:
-  Profile* profile_;
+  Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleFactory);
 };

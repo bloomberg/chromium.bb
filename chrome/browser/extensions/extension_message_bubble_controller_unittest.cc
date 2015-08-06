@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/suspicious_extension_bubble_controller.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api_test_utils.h"
@@ -31,12 +32,6 @@
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#endif
 
 namespace {
 
@@ -82,8 +77,8 @@ class TestSuspiciousExtensionBubbleController
     : public SuspiciousExtensionBubbleController,
       public TestDelegate {
  public:
-  explicit TestSuspiciousExtensionBubbleController(Profile* profile)
-      : SuspiciousExtensionBubbleController(profile) {
+  explicit TestSuspiciousExtensionBubbleController(Browser* browser)
+      : SuspiciousExtensionBubbleController(browser) {
   }
 
   void OnBubbleAction() override {
@@ -107,8 +102,8 @@ class TestDevModeBubbleController
     : public DevModeBubbleController,
       public TestDelegate {
  public:
-  explicit TestDevModeBubbleController(Profile* profile)
-      : DevModeBubbleController(profile) {
+  explicit TestDevModeBubbleController(Browser* browser)
+      : DevModeBubbleController(browser) {
   }
 
   void OnBubbleAction() override {
@@ -131,9 +126,9 @@ class TestDevModeBubbleController
 class TestSettingsApiBubbleController : public SettingsApiBubbleController,
                                         public TestDelegate {
  public:
-  TestSettingsApiBubbleController(Profile* profile,
+  TestSettingsApiBubbleController(Browser* browser,
                                   SettingsApiOverrideType type)
-      : SettingsApiBubbleController(profile, type) {}
+      : SettingsApiBubbleController(browser, type) {}
 
   void OnBubbleAction() override {
     ++action_button_callback_count_;
@@ -156,8 +151,8 @@ class TestNtpOverriddenBubbleController
     : public NtpOverriddenBubbleController,
       public TestDelegate {
  public:
-  explicit TestNtpOverriddenBubbleController(Profile* profile)
-      : NtpOverriddenBubbleController(profile) {
+  explicit TestNtpOverriddenBubbleController(Browser* browser)
+      : NtpOverriddenBubbleController(browser) {
   }
 
   void OnBubbleAction() override {
@@ -181,8 +176,8 @@ class TestProxyOverriddenBubbleController
     : public ProxyOverriddenBubbleController,
       public TestDelegate {
  public:
-  explicit TestProxyOverriddenBubbleController(Profile* profile)
-      : ProxyOverriddenBubbleController(profile) {
+  explicit TestProxyOverriddenBubbleController(Browser* browser)
+      : ProxyOverriddenBubbleController(browser) {
   }
 
   void OnBubbleAction() override {
@@ -237,7 +232,7 @@ class FakeExtensionMessageBubble : public ExtensionMessageBubble {
   DISALLOW_COPY_AND_ASSIGN(FakeExtensionMessageBubble);
 };
 
-class ExtensionMessageBubbleTest : public testing::Test {
+class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
  public:
   ExtensionMessageBubbleTest() {}
 
@@ -385,7 +380,6 @@ class ExtensionMessageBubbleTest : public testing::Test {
   void Init() {
     // The two lines of magical incantation required to get the extension
     // service to work inside a unit test and access the extension prefs.
-    profile_.reset(new TestingProfile);
     static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile()))
         ->CreateExtensionService(base::CommandLine::ForCurrentProcess(),
                                  base::FilePath(), false);
@@ -393,18 +387,22 @@ class ExtensionMessageBubbleTest : public testing::Test {
     service_->Init();
   }
 
-  ~ExtensionMessageBubbleTest() override {
-    // Make sure the profile is destroyed before the thread bundle.
-    profile_.reset(NULL);
-  }
+  ~ExtensionMessageBubbleTest() override {}
 
   void SetUp() override {
+    BrowserWithTestWindowTest::SetUp();
     command_line_.reset(new base::CommandLine(base::CommandLine::NO_PROGRAM));
+    ExtensionMessageBubbleController::set_should_ignore_learn_more_for_testing(
+        true);
+  }
+
+  void TearDown() override {
+    ExtensionMessageBubbleController::set_should_ignore_learn_more_for_testing(
+        false);
+    BrowserWithTestWindowTest::TearDown();
   }
 
  protected:
-  Profile* profile() { return profile_.get(); }
-
   scoped_refptr<Extension> CreateExtension(
       Manifest::Location location,
       const std::string& data,
@@ -417,15 +415,7 @@ class ExtensionMessageBubbleTest : public testing::Test {
   ExtensionService* service_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<base::CommandLine> command_line_;
-  scoped_ptr<TestingProfile> profile_;
-
-#if defined OS_CHROMEOS
-  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
-  chromeos::ScopedTestUserManager test_user_manager_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleTest);
 };
@@ -441,7 +431,7 @@ TEST_F(ExtensionMessageBubbleTest, WipeoutControllerTest) {
   ASSERT_TRUE(LoadGenericExtension("3", kId3, Manifest::EXTERNAL_POLICY));
 
   scoped_ptr<TestSuspiciousExtensionBubbleController> controller(
-      new TestSuspiciousExtensionBubbleController(profile()));
+      new TestSuspiciousExtensionBubbleController(browser()));
   FakeExtensionMessageBubble bubble;
   bubble.set_action_on_show(
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_DISMISS_BUTTON);
@@ -463,7 +453,7 @@ TEST_F(ExtensionMessageBubbleTest, WipeoutControllerTest) {
   EXPECT_FALSE(controller->delegate()->HasBubbleInfoBeenAcknowledged(kId1));
   EXPECT_FALSE(controller->delegate()->HasBubbleInfoBeenAcknowledged(kId2));
   controller.reset(new TestSuspiciousExtensionBubbleController(
-      profile()));
+      browser()));
   SuspiciousExtensionBubbleController::ClearProfileListForTesting();
   EXPECT_TRUE(controller->ShouldShow());
   suspicious_extensions = controller->GetExtensionList();
@@ -486,7 +476,7 @@ TEST_F(ExtensionMessageBubbleTest, WipeoutControllerTest) {
   bubble.set_action_on_show(
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_LINK);
   controller.reset(new TestSuspiciousExtensionBubbleController(
-      profile()));
+      browser()));
   SuspiciousExtensionBubbleController::ClearProfileListForTesting();
   EXPECT_TRUE(controller->ShouldShow());
   suspicious_extensions = controller->GetExtensionList();
@@ -514,7 +504,7 @@ TEST_F(ExtensionMessageBubbleTest, DevModeControllerTest) {
   ASSERT_TRUE(LoadGenericExtension("3", kId3, Manifest::EXTERNAL_POLICY));
 
   scoped_ptr<TestDevModeBubbleController> controller(
-      new TestDevModeBubbleController(profile()));
+      new TestDevModeBubbleController(browser()));
 
   // The list will contain one enabled unpacked extension.
   EXPECT_TRUE(controller->ShouldShow());
@@ -544,7 +534,7 @@ TEST_F(ExtensionMessageBubbleTest, DevModeControllerTest) {
   bubble.set_action_on_show(
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_ACTION_BUTTON);
   controller.reset(new TestDevModeBubbleController(
-      profile()));
+      browser()));
   DevModeBubbleController::ClearProfileListForTesting();
   EXPECT_TRUE(controller->ShouldShow());
   dev_mode_extensions = controller->GetExtensionList();
@@ -565,7 +555,7 @@ TEST_F(ExtensionMessageBubbleTest, DevModeControllerTest) {
   bubble.set_action_on_show(
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_LINK);
   controller.reset(new TestDevModeBubbleController(
-      profile()));
+      browser()));
   DevModeBubbleController::ClearProfileListForTesting();
   EXPECT_TRUE(controller->ShouldShow());
   dev_mode_extensions = controller->GetExtensionList();
@@ -583,7 +573,7 @@ TEST_F(ExtensionMessageBubbleTest, DevModeControllerTest) {
   service_->DisableExtension(kId2, Extension::DISABLE_USER_ACTION);
 
   controller.reset(new TestDevModeBubbleController(
-      profile()));
+      browser()));
   DevModeBubbleController::ClearProfileListForTesting();
   EXPECT_FALSE(controller->ShouldShow());
   dev_mode_extensions = controller->GetExtensionList();
@@ -635,7 +625,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
 
     scoped_ptr<TestSettingsApiBubbleController> controller(
         new TestSettingsApiBubbleController(
-            profile(), static_cast<SettingsApiOverrideType>(i)));
+            browser(), static_cast<SettingsApiOverrideType>(i)));
 
     // The list will contain one enabled unpacked extension (ext 2).
     EXPECT_TRUE(controller->ShouldShow());
@@ -673,7 +663,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
     bubble.set_action_on_show(
         FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_LINK);
     controller.reset(new TestSettingsApiBubbleController(
-        profile(), static_cast<SettingsApiOverrideType>(i)));
+        browser(), static_cast<SettingsApiOverrideType>(i)));
     bubble.set_controller(controller.get());
     controller->Show(&bubble);
     EXPECT_EQ(1U, controller->link_click_count());
@@ -694,7 +684,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
     bubble.set_action_on_show(
         FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_ACTION_BUTTON);
     controller.reset(new TestSettingsApiBubbleController(
-        profile(), static_cast<SettingsApiOverrideType>(i)));
+        browser(), static_cast<SettingsApiOverrideType>(i)));
     EXPECT_TRUE(controller->ShouldShow());
     override_extensions = controller->GetExtensionList();
     EXPECT_EQ(1U, override_extensions.size());
@@ -740,7 +730,7 @@ TEST_F(ExtensionMessageBubbleTest, NtpOverriddenControllerTest) {
   ASSERT_TRUE(LoadExtensionOverridingStart("3", kId3, Manifest::UNPACKED));
 
   scoped_ptr<TestNtpOverriddenBubbleController> controller(
-      new TestNtpOverriddenBubbleController(profile()));
+      new TestNtpOverriddenBubbleController(browser()));
 
   // The list will contain one enabled unpacked extension (ext 2).
   EXPECT_TRUE(controller->ShouldShow(kId2));
@@ -778,7 +768,7 @@ TEST_F(ExtensionMessageBubbleTest, NtpOverriddenControllerTest) {
   // Simulate clicking the learn more link to dismiss it.
   bubble.set_action_on_show(
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_LINK);
-  controller.reset(new TestNtpOverriddenBubbleController(profile()));
+  controller.reset(new TestNtpOverriddenBubbleController(browser()));
   EXPECT_TRUE(controller->ShouldShow(kId2));
   bubble.set_controller(controller.get());
   controller->Show(&bubble);
@@ -799,7 +789,7 @@ TEST_F(ExtensionMessageBubbleTest, NtpOverriddenControllerTest) {
   // Do it again, but now opt to disable the extension.
   bubble.set_action_on_show(
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_ACTION_BUTTON);
-  controller.reset(new TestNtpOverriddenBubbleController(profile()));
+  controller.reset(new TestNtpOverriddenBubbleController(browser()));
   EXPECT_TRUE(controller->ShouldShow(kId2));
   override_extensions = controller->GetExtensionList();
   EXPECT_EQ(1U, override_extensions.size());
@@ -868,7 +858,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_ProxyOverriddenControllerTest) {
   SetInstallTime(kId3, old_enough, prefs);
 
   scoped_ptr<TestProxyOverriddenBubbleController> controller(
-      new TestProxyOverriddenBubbleController(profile()));
+      new TestProxyOverriddenBubbleController(browser()));
 
   // The second extension is too new to warn about.
   EXPECT_FALSE(controller->ShouldShow(kId1));
@@ -911,7 +901,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_ProxyOverriddenControllerTest) {
   // Simulate clicking the learn more link to dismiss it.
   bubble.set_action_on_show(
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_LINK);
-  controller.reset(new TestProxyOverriddenBubbleController(profile()));
+  controller.reset(new TestProxyOverriddenBubbleController(browser()));
   EXPECT_TRUE(controller->ShouldShow(kId2));
   bubble.set_controller(controller.get());
   controller->Show(&bubble);
@@ -932,7 +922,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_ProxyOverriddenControllerTest) {
   // Do it again, but now opt to disable the extension.
   bubble.set_action_on_show(
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_ACTION_BUTTON);
-  controller.reset(new TestProxyOverriddenBubbleController(profile()));
+  controller.reset(new TestProxyOverriddenBubbleController(browser()));
   EXPECT_TRUE(controller->ShouldShow(kId2));
   override_extensions = controller->GetExtensionList();
   EXPECT_EQ(1U, override_extensions.size());

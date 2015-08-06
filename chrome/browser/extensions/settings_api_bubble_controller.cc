@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
 #include "chrome/common/url_constants.h"
@@ -34,9 +35,7 @@ const char kSettingsBubbleAcknowledged[] = "ack_settings_bubble";
 class SettingsApiBubbleDelegate
     : public ExtensionMessageBubbleController::Delegate {
  public:
-  explicit SettingsApiBubbleDelegate(ExtensionService* service,
-                                     Profile* profile,
-                                     SettingsApiOverrideType type);
+  SettingsApiBubbleDelegate(Profile* profile, SettingsApiOverrideType type);
   ~SettingsApiBubbleDelegate() override;
 
   // ExtensionMessageBubbleController::Delegate methods.
@@ -60,12 +59,6 @@ class SettingsApiBubbleDelegate
       ExtensionMessageBubbleController::BubbleAction action) override;
 
  private:
-  // Our extension service. Weak, not owned by us.
-  ExtensionService* service_;
-
-  // A weak pointer to the profile we are associated with. Not owned by us.
-  Profile* profile_;
-
   // The type of settings override this bubble will report on. This can be, for
   // example, a bubble to notify the user that the search engine has been
   // changed by an extension (or homepage/startup pages/etc).
@@ -78,11 +71,9 @@ class SettingsApiBubbleDelegate
 };
 
 SettingsApiBubbleDelegate::SettingsApiBubbleDelegate(
-    ExtensionService* service,
     Profile* profile,
     SettingsApiOverrideType type)
     : ExtensionMessageBubbleController::Delegate(profile),
-      service_(service),
       type_(type) {
   set_acknowledged_flag_pref_name(kSettingsBubbleAcknowledged);
 }
@@ -91,9 +82,8 @@ SettingsApiBubbleDelegate::~SettingsApiBubbleDelegate() {}
 
 bool SettingsApiBubbleDelegate::ShouldIncludeExtension(
     const std::string& extension_id) {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   const Extension* extension =
-      registry->GetExtensionById(extension_id, ExtensionRegistry::ENABLED);
+      registry()->GetExtensionById(extension_id, ExtensionRegistry::ENABLED);
   if (!extension)
     return false;  // The extension provided is no longer enabled.
 
@@ -129,7 +119,7 @@ void SettingsApiBubbleDelegate::AcknowledgeExtension(
 
 void SettingsApiBubbleDelegate::PerformAction(const ExtensionIdList& list) {
   for (size_t i = 0; i < list.size(); ++i) {
-    service_->DisableExtension(list[i], Extension::DISABLE_USER_ACTION);
+    service()->DisableExtension(list[i], Extension::DISABLE_USER_ACTION);
   }
 }
 
@@ -152,9 +142,8 @@ base::string16 SettingsApiBubbleDelegate::GetTitle() const {
 base::string16 SettingsApiBubbleDelegate::GetMessageBody(
     bool anchored_to_browser_action,
     int extension_count) const {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   const Extension* extension =
-      registry->GetExtensionById(extension_id_, ExtensionRegistry::ENABLED);
+      registry()->GetExtensionById(extension_id_, ExtensionRegistry::ENABLED);
   const SettingsOverrides* settings =
       extension ? SettingsOverrides::Get(extension) : NULL;
   if (!extension || !settings) {
@@ -283,15 +272,11 @@ void SettingsApiBubbleDelegate::LogAction(
 // SettingsApiBubbleController
 
 SettingsApiBubbleController::SettingsApiBubbleController(
-    Profile* profile,
+    Browser* browser,
     SettingsApiOverrideType type)
     : ExtensionMessageBubbleController(
-          new SettingsApiBubbleDelegate(
-              ExtensionSystem::Get(profile)->extension_service(),
-              profile,
-              type),
-          profile),
-      profile_(profile),
+          new SettingsApiBubbleDelegate(browser->profile(), type),
+          browser),
       type_(type) {}
 
 SettingsApiBubbleController::~SettingsApiBubbleController() {}
@@ -300,13 +285,13 @@ bool SettingsApiBubbleController::ShouldShow() {
   const Extension* extension = nullptr;
   switch (type_) {
     case BUBBLE_TYPE_HOME_PAGE:
-      extension = GetExtensionOverridingHomepage(profile_);
+      extension = GetExtensionOverridingHomepage(profile());
       break;
     case BUBBLE_TYPE_SEARCH_ENGINE:
-      extension = GetExtensionOverridingSearchEngine(profile_);
+      extension = GetExtensionOverridingSearchEngine(profile());
       break;
     case BUBBLE_TYPE_STARTUP_PAGES:
-      extension = GetExtensionOverridingStartupPages(profile_);
+      extension = GetExtensionOverridingStartupPages(profile());
       break;
   }
 
@@ -322,7 +307,7 @@ bool SettingsApiBubbleController::ShouldShow() {
   // If the browser is showing the 'Chrome crashed' infobar, it won't be showing
   // the startup pages, so there's no point in showing the bubble now.
   if (type_ == BUBBLE_TYPE_STARTUP_PAGES)
-    return profile_->GetLastSessionExitType() != Profile::EXIT_CRASHED;
+    return profile()->GetLastSessionExitType() != Profile::EXIT_CRASHED;
 
   return true;
 }

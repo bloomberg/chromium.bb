@@ -19,7 +19,7 @@ class DevModeBubbleController : public ExtensionMessageBubbleController {
   // used during testing.
   static void ClearProfileListForTesting();
 
-  explicit DevModeBubbleController(Profile* profile);
+  explicit DevModeBubbleController(Browser* browser);
   ~DevModeBubbleController() override;
 
   // Whether the controller knows of extensions to list in the bubble. Returns

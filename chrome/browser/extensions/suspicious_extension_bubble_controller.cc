@@ -59,6 +59,7 @@ class SuspiciousExtensionBubbleDelegate
   void LogAction(
       ExtensionMessageBubbleController::BubbleAction action) override;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SuspiciousExtensionBubbleDelegate);
 };
 
@@ -166,22 +167,21 @@ void SuspiciousExtensionBubbleController::ClearProfileListForTesting() {
 }
 
 SuspiciousExtensionBubbleController::SuspiciousExtensionBubbleController(
-    Profile* profile)
+    Browser* browser)
     : ExtensionMessageBubbleController(
-          new SuspiciousExtensionBubbleDelegate(profile),
-          profile),
-      profile_(profile) {}
+          new SuspiciousExtensionBubbleDelegate(browser->profile()),
+          browser) {}
 
 SuspiciousExtensionBubbleController::~SuspiciousExtensionBubbleController() {
 }
 
 bool SuspiciousExtensionBubbleController::ShouldShow() {
-  return !g_shown_for_profiles.Get().count(profile_->GetOriginalProfile()) &&
+  return !g_shown_for_profiles.Get().count(profile()->GetOriginalProfile()) &&
       !GetExtensionList().empty();
 }
 
 void SuspiciousExtensionBubbleController::Show(ExtensionMessageBubble* bubble) {
-  g_shown_for_profiles.Get().insert(profile_->GetOriginalProfile());
+  g_shown_for_profiles.Get().insert(profile()->GetOriginalProfile());
   ExtensionMessageBubbleController::Show(bubble);
 }
 

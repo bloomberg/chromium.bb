@@ -55,15 +55,11 @@ class DevModeBubbleDelegate
       ExtensionMessageBubbleController::BubbleAction action) override;
 
  private:
-  // Our extension service. Weak, not owned by us.
-  ExtensionService* service_;
-
   DISALLOW_COPY_AND_ASSIGN(DevModeBubbleDelegate);
 };
 
 DevModeBubbleDelegate::DevModeBubbleDelegate(Profile* profile)
-    : ExtensionMessageBubbleController::Delegate(profile),
-      service_(ExtensionSystem::Get(profile)->extension_service()) {
+    : ExtensionMessageBubbleController::Delegate(profile) {
 }
 
 DevModeBubbleDelegate::~DevModeBubbleDelegate() {
@@ -71,7 +67,7 @@ DevModeBubbleDelegate::~DevModeBubbleDelegate() {
 
 bool DevModeBubbleDelegate::ShouldIncludeExtension(
     const std::string& extension_id) {
-  const Extension* extension = service_->GetExtensionById(extension_id, false);
+  const Extension* extension = service()->GetExtensionById(extension_id, false);
   if (!extension)
     return false;
   return (extension->location() == Manifest::UNPACKED ||
@@ -85,7 +81,7 @@ void DevModeBubbleDelegate::AcknowledgeExtension(
 
 void DevModeBubbleDelegate::PerformAction(const ExtensionIdList& list) {
   for (size_t i = 0; i < list.size(); ++i)
-    service_->DisableExtension(list[i], Extension::DISABLE_USER_ACTION);
+    service()->DisableExtension(list[i], Extension::DISABLE_USER_ACTION);
 }
 
 base::string16 DevModeBubbleDelegate::GetTitle() const {
@@ -147,21 +143,20 @@ void DevModeBubbleController::ClearProfileListForTesting() {
   g_shown_for_profiles.Get().clear();
 }
 
-DevModeBubbleController::DevModeBubbleController(Profile* profile)
-    : ExtensionMessageBubbleController(new DevModeBubbleDelegate(profile),
-                                       profile),
-      profile_(profile) {}
+DevModeBubbleController::DevModeBubbleController(Browser* browser)
+    : ExtensionMessageBubbleController(
+          new DevModeBubbleDelegate(browser->profile()), browser) {}
 
 DevModeBubbleController::~DevModeBubbleController() {
 }
 
 bool DevModeBubbleController::ShouldShow() {
-  return !g_shown_for_profiles.Get().count(profile_->GetOriginalProfile()) &&
+  return !g_shown_for_profiles.Get().count(profile()->GetOriginalProfile()) &&
       !GetExtensionList().empty();
 }
 
 void DevModeBubbleController::Show(ExtensionMessageBubble* bubble) {
-  g_shown_for_profiles.Get().insert(profile_->GetOriginalProfile());
+  g_shown_for_profiles.Get().insert(profile()->GetOriginalProfile());
   ExtensionMessageBubbleController::Show(bubble);
 }
 

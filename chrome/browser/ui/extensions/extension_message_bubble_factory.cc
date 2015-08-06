@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/settings_api_helpers.h"
 #include "chrome/browser/extensions/suspicious_extension_bubble_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/version_info/version_info.h"
@@ -86,8 +87,8 @@ bool EnableDevModeBubble() {
 
 }  // namespace
 
-ExtensionMessageBubbleFactory::ExtensionMessageBubbleFactory(Profile* profile)
-    : profile_(profile) {
+ExtensionMessageBubbleFactory::ExtensionMessageBubbleFactory(Browser* browser)
+    : browser_(browser) {
 }
 
 ExtensionMessageBubbleFactory::~ExtensionMessageBubbleFactory() {
@@ -95,7 +96,7 @@ ExtensionMessageBubbleFactory::~ExtensionMessageBubbleFactory() {
 
 scoped_ptr<extensions::ExtensionMessageBubbleController>
 ExtensionMessageBubbleFactory::GetController() {
-  Profile* original_profile = profile_->GetOriginalProfile();
+  Profile* original_profile = browser_->profile()->GetOriginalProfile();
   std::set<Profile*>& profiles_evaluated = g_profiles_evaluated.Get();
   bool is_initial_check = profiles_evaluated.count(original_profile) == 0;
   profiles_evaluated.insert(original_profile);
@@ -110,7 +111,7 @@ ExtensionMessageBubbleFactory::GetController() {
   // way, we're not too spammy with the bubbles.
   if (EnableSuspiciousExtensionsBubble()) {
     scoped_ptr<extensions::SuspiciousExtensionBubbleController> controller(
-        new extensions::SuspiciousExtensionBubbleController(profile_));
+        new extensions::SuspiciousExtensionBubbleController(browser_));
     if (controller->ShouldShow())
       return controller.Pass();
   }
@@ -120,7 +121,7 @@ ExtensionMessageBubbleFactory::GetController() {
     if (is_initial_check) {
       scoped_ptr<extensions::SettingsApiBubbleController> controller(
           new extensions::SettingsApiBubbleController(
-              profile_, extensions::BUBBLE_TYPE_STARTUP_PAGES));
+              browser_, extensions::BUBBLE_TYPE_STARTUP_PAGES));
       if (controller->ShouldShow())
         return controller.Pass();
     }
@@ -130,10 +131,10 @@ ExtensionMessageBubbleFactory::GetController() {
     // TODO(devlin): Move the "GetExtensionOverridingProxy" part into the
     // proxy bubble controller.
     const extensions::Extension* extension =
-        extensions::GetExtensionOverridingProxy(profile_);
+        extensions::GetExtensionOverridingProxy(browser_->profile());
     if (extension) {
       scoped_ptr<extensions::ProxyOverriddenBubbleController> controller(
-         new extensions::ProxyOverriddenBubbleController(profile_));
+         new extensions::ProxyOverriddenBubbleController(browser_));
       if (controller->ShouldShow(extension->id()))
         return controller.Pass();
     }
@@ -141,7 +142,7 @@ ExtensionMessageBubbleFactory::GetController() {
 
   if (EnableDevModeBubble()) {
     scoped_ptr<extensions::DevModeBubbleController> controller(
-        new extensions::DevModeBubbleController(profile_));
+        new extensions::DevModeBubbleController(browser_));
     if (controller->ShouldShow())
       return controller.Pass();
   }

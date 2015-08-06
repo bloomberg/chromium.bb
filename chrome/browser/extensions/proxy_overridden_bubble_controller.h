@@ -10,14 +10,14 @@
 #include "base/macros.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 
-class Profile;
+class Browser;
 
 namespace extensions {
 
 class ProxyOverriddenBubbleController
     : public ExtensionMessageBubbleController {
  public:
-  explicit ProxyOverriddenBubbleController(Profile* profile);
+  explicit ProxyOverriddenBubbleController(Browser* browser);
   ~ProxyOverriddenBubbleController() override;
 
   // Whether the controller knows that we should show the bubble for extension
@@ -28,9 +28,6 @@ class ProxyOverriddenBubbleController
   bool CloseOnDeactivate() override;
 
  private:
-  // A weak pointer to the profile we are associated with. Not owned by us.
-  Profile* profile_;
-
   DISALLOW_COPY_AND_ASSIGN(ProxyOverriddenBubbleController);
 };
 

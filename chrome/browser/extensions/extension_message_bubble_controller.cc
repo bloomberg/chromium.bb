@@ -18,6 +18,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -26,13 +27,18 @@ namespace extensions {
 namespace {
 // How many extensions to show in the bubble (max).
 const int kMaxExtensionsToShow = 7;
+
+// Whether or not to ignore the learn more link navigation for testing.
+bool g_should_ignore_learn_more_for_testing = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // ExtensionMessageBubbleController::Delegate
 
 ExtensionMessageBubbleController::Delegate::Delegate(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
+      service_(ExtensionSystem::Get(profile)->extension_service()),
+      registry_(ExtensionRegistry::Get(profile)) {
 }
 
 ExtensionMessageBubbleController::Delegate::~Delegate() {
@@ -71,10 +77,6 @@ void ExtensionMessageBubbleController::Delegate::SetBubbleInfoBeenAcknowledged(
                              value ? new base::FundamentalValue(value) : NULL);
 }
 
-Profile* ExtensionMessageBubbleController::Delegate::profile() const {
-  return profile_;
-}
-
 std::string
 ExtensionMessageBubbleController::Delegate::get_acknowledged_flag_pref_name()
     const {
@@ -91,8 +93,9 @@ ExtensionMessageBubbleController::Delegate::set_acknowledged_flag_pref_name(
 // ExtensionMessageBubbleController
 
 ExtensionMessageBubbleController::ExtensionMessageBubbleController(
-    Delegate* delegate, Profile* profile)
-    : profile_(profile),
+    Delegate* delegate,
+    Browser* browser)
+    : browser_(browser),
       user_action_(ACTION_BOUNDARY),
       delegate_(delegate),
       initialized_(false),
@@ -102,13 +105,17 @@ ExtensionMessageBubbleController::ExtensionMessageBubbleController(
 ExtensionMessageBubbleController::~ExtensionMessageBubbleController() {
 }
 
+Profile* ExtensionMessageBubbleController::profile() {
+  return browser_->profile();
+}
+
 std::vector<base::string16>
 ExtensionMessageBubbleController::GetExtensionList() {
   ExtensionIdList* list = GetOrCreateExtensionList();
   if (list->empty())
     return std::vector<base::string16>();
 
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   std::vector<base::string16> return_value;
   for (ExtensionIdList::const_iterator it = list->begin();
        it != list->end(); ++it) {
@@ -155,7 +162,7 @@ void ExtensionMessageBubbleController::HighlightExtensionsIfNecessary() {
     did_highlight_ = true;
     const ExtensionIdList& extension_ids = GetExtensionIdList();
     DCHECK(!extension_ids.empty());
-    ExtensionToolbarModel::Get(profile_)->HighlightExtensions(
+    ExtensionToolbarModel::Get(profile())->HighlightExtensions(
         extension_ids, ExtensionToolbarModel::HIGHLIGHT_WARNING);
   }
 }
@@ -195,10 +202,8 @@ void ExtensionMessageBubbleController::OnLinkClicked() {
   user_action_ = ACTION_LEARN_MORE;
 
   delegate_->LogAction(ACTION_LEARN_MORE);
-  Browser* browser =
-      chrome::FindBrowserWithProfile(profile_, chrome::GetActiveDesktop());
-  if (browser) {
-    browser->OpenURL(
+  if (!g_should_ignore_learn_more_for_testing) {
+    browser_->OpenURL(
         content::OpenURLParams(delegate_->GetLearnMoreUrl(),
                                content::Referrer(),
                                NEW_FOREGROUND_TAB,
@@ -206,6 +211,12 @@ void ExtensionMessageBubbleController::OnLinkClicked() {
                                false));
   }
   OnClose();
+}
+
+// static
+void ExtensionMessageBubbleController::set_should_ignore_learn_more_for_testing(
+    bool should_ignore) {
+  g_should_ignore_learn_more_for_testing = should_ignore;
 }
 
 void ExtensionMessageBubbleController::AcknowledgeExtensions() {
@@ -218,7 +229,7 @@ void ExtensionMessageBubbleController::AcknowledgeExtensions() {
 ExtensionIdList* ExtensionMessageBubbleController::GetOrCreateExtensionList() {
   if (!initialized_) {
     scoped_ptr<const ExtensionSet> extension_set(
-        ExtensionRegistry::Get(profile_)->GenerateInstalledExtensionsSet());
+        ExtensionRegistry::Get(profile())->GenerateInstalledExtensionsSet());
     for (ExtensionSet::const_iterator it = extension_set->begin();
          it != extension_set->end(); ++it) {
       std::string id = (*it)->id();
@@ -237,7 +248,7 @@ ExtensionIdList* ExtensionMessageBubbleController::GetOrCreateExtensionList() {
 void ExtensionMessageBubbleController::OnClose() {
   AcknowledgeExtensions();
   if (did_highlight_)
-    ExtensionToolbarModel::Get(profile_)->StopHighlighting();
+    ExtensionToolbarModel::Get(profile())->StopHighlighting();
 }
 
 }  // namespace extensions

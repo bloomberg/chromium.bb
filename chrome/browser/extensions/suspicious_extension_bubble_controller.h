@@ -7,11 +7,9 @@
 
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 
-class Profile;
+class Browser;
 
 namespace extensions {
-
-class SuspiciousExtensionBubble;
 
 class SuspiciousExtensionBubbleController
     : public extensions::ExtensionMessageBubbleController {
@@ -20,7 +18,7 @@ class SuspiciousExtensionBubbleController
   // used during testing.
   static void ClearProfileListForTesting();
 
-  explicit SuspiciousExtensionBubbleController(Profile* profile);
+  explicit SuspiciousExtensionBubbleController(Browser* browser);
   ~SuspiciousExtensionBubbleController() override;
 
   // Whether the controller knows of extensions to list in the bubble. Returns
@@ -31,9 +29,6 @@ class SuspiciousExtensionBubbleController
   void Show(ExtensionMessageBubble* bubble) override;
 
  private:
-  // A weak pointer to the profile we are associated with. Not owned by us.
-  Profile* profile_;
-
   DISALLOW_COPY_AND_ASSIGN(SuspiciousExtensionBubbleController);
 };
 

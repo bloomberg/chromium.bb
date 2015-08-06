@@ -25,11 +25,11 @@ namespace extensions {
 namespace {
 
 void ShowSettingsApiBubble(SettingsApiOverrideType type,
-                           Profile* profile,
+                           Browser* browser,
                            views::View* anchor_view,
                            views::BubbleBorder::Arrow arrow) {
   scoped_ptr<SettingsApiBubbleController> settings_api_bubble(
-      new SettingsApiBubbleController(profile, type));
+      new SettingsApiBubbleController(browser, type));
   if (!settings_api_bubble->ShouldShow())
     return;
 
@@ -51,7 +51,7 @@ void MaybeShowExtensionControlledHomeNotification(Browser* browser) {
   views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser)->
       toolbar()->home_button();
   ShowSettingsApiBubble(BUBBLE_TYPE_HOME_PAGE,
-                        browser->profile(),
+                        browser,
                         anchor_view,
                         views::BubbleBorder::TOP_LEFT);
 }
@@ -66,11 +66,11 @@ void MaybeShowExtensionControlledSearchNotification(
 
   if (AutocompleteMatch::IsSearchType(match.type) &&
       match.type != AutocompleteMatchType::SEARCH_OTHER_ENGINE) {
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
     ToolbarView* toolbar =
-        BrowserView::GetBrowserViewForBrowser(
-            chrome::FindBrowserWithWebContents(web_contents))->toolbar();
+        BrowserView::GetBrowserViewForBrowser(browser)->toolbar();
     ShowSettingsApiBubble(BUBBLE_TYPE_SEARCH_ENGINE,
-                          profile,
+                          browser,
                           toolbar->app_menu(),
                           views::BubbleBorder::TOP_RIGHT);
   }
@@ -101,7 +101,7 @@ void MaybeShowExtensionControlledNewTabPage(
     return;  // Not being overridden by an extension.
 
   scoped_ptr<NtpOverriddenBubbleController> ntp_overridden_bubble(
-      new NtpOverriddenBubbleController(browser->profile()));
+      new NtpOverriddenBubbleController(browser));
   if (!ntp_overridden_bubble->ShouldShow(ntp_url.host()))
     return;
 

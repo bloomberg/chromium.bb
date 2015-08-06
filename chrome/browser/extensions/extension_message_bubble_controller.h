@@ -11,12 +11,13 @@
 #include "extensions/common/extension.h"
 
 class Browser;
+class ExtensionService;
 class Profile;
 
 namespace extensions {
 
 class ExtensionPrefs;
-class SuspiciousExtensionBubble;
+class ExtensionRegistry;
 
 class ExtensionMessageBubbleController {
  public:
@@ -78,7 +79,9 @@ class ExtensionMessageBubbleController {
                                                bool value);
 
    protected:
-    Profile* profile() const;
+    Profile* profile() { return profile_; }
+    ExtensionService* service() { return service_; }
+    const ExtensionRegistry* registry() const { return registry_; }
 
     std::string get_acknowledged_flag_pref_name() const;
     void set_acknowledged_flag_pref_name(std::string pref_name);
@@ -87,15 +90,24 @@ class ExtensionMessageBubbleController {
     // A weak pointer to the profile we are associated with. Not owned by us.
     Profile* profile_;
 
+    // The extension service associated with the profile.
+    ExtensionService* service_;
+
+    // The extension registry associated with the profile.
+    ExtensionRegistry* registry_;
+
     // Name for corresponding pref that keeps if the info the bubble contains
     // was acknowledged by user.
     std::string acknowledged_pref_name_;
+
+    DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
-  ExtensionMessageBubbleController(Delegate* delegate, Profile* profile);
+  ExtensionMessageBubbleController(Delegate* delegate, Browser* browser);
   virtual ~ExtensionMessageBubbleController();
 
   Delegate* delegate() const { return delegate_.get(); }
+  Profile* profile();
 
   // Obtains a list of all extensions (by name) the controller knows about.
   std::vector<base::string16> GetExtensionList();
@@ -123,6 +135,9 @@ class ExtensionMessageBubbleController {
   virtual void OnBubbleDismiss();
   virtual void OnLinkClicked();
 
+  static void set_should_ignore_learn_more_for_testing(
+      bool should_ignore_learn_more);
+
  private:
   // Iterate over the known extensions and acknowledge each one.
   void AcknowledgeExtensions();
@@ -133,8 +148,8 @@ class ExtensionMessageBubbleController {
   // Performs cleanup after the bubble closes.
   void OnClose();
 
-  // A weak pointer to the profile we are associated with. Not owned by us.
-  Profile* profile_;
+  // A weak pointer to the Browser we are associated with. Not owned by us.
+  Browser* browser_;
 
   // The list of extensions found.
   ExtensionIdList extension_list_;
