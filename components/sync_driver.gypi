@@ -73,6 +73,8 @@
         'sync_driver/shared_change_processor_ref.cc',
         'sync_driver/shared_change_processor_ref.h',
         'sync_driver/sync_api_component_factory.h',
+        'sync_driver/sync_error_controller.cc',
+        'sync_driver/sync_error_controller.h',
         'sync_driver/sync_frontend.cc',
         'sync_driver/sync_frontend.h',
         'sync_driver/sync_prefs.cc',

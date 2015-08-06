@@ -60,6 +60,8 @@ static_library("sync_driver") {
     "shared_change_processor_ref.cc",
     "shared_change_processor_ref.h",
     "sync_api_component_factory.h",
+    "sync_error_controller.cc",
+    "sync_error_controller.h",
     "sync_frontend.cc",
     "sync_frontend.h",
     "sync_prefs.cc",

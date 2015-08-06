@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_SYNC_ERROR_CONTROLLER_H_
-#define CHROME_BROWSER_SYNC_SYNC_ERROR_CONTROLLER_H_
+#ifndef COMPONENTS_SYNC_DRIVER_SYNC_ERROR_CONTROLLER_H_
+#define COMPONENTS_SYNC_DRIVER_SYNC_ERROR_CONTROLLER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "components/sync_driver/sync_service_observer.h"
 
-class Profile;
-class ProfileSyncService;
+namespace sync_driver {
+class SyncService;
+}
 
 // Keep track of sync errors and expose them to observers in the UI.
 class SyncErrorController : public sync_driver::SyncServiceObserver {
@@ -24,7 +25,7 @@ class SyncErrorController : public sync_driver::SyncServiceObserver {
     virtual void OnErrorChanged() = 0;
   };
 
-  explicit SyncErrorController(ProfileSyncService* service);
+  explicit SyncErrorController(sync_driver::SyncService* service);
   ~SyncErrorController() override;
 
   // True if there exists an error worth elevating to the user.
@@ -37,10 +38,10 @@ class SyncErrorController : public sync_driver::SyncServiceObserver {
   void OnStateChanged() override;
 
  private:
-  ProfileSyncService* service_;
+  sync_driver::SyncService* service_;
   base::ObserverList<Observer, true> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncErrorController);
 };
 
-#endif  // CHROME_BROWSER_SYNC_SYNC_ERROR_CONTROLLER_H_
+#endif  // COMPONENTS_SYNC_DRIVER_SYNC_ERROR_CONTROLLER_H_

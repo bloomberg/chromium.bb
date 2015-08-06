@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/sync_error_controller.h"
+#include "components/sync_driver/sync_error_controller.h"
 
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "components/sync_driver/sync_service.h"
 
-SyncErrorController::SyncErrorController(ProfileSyncService* service)
+SyncErrorController::SyncErrorController(sync_driver::SyncService* service)
     : service_(service) {
   DCHECK(service_);
 }

@@ -2962,8 +2962,6 @@
       'browser/sync/startup_controller.h',
       'browser/sync/supervised_user_signin_manager_wrapper.cc',
       'browser/sync/supervised_user_signin_manager_wrapper.h',
-      'browser/sync/sync_error_controller.cc',
-      'browser/sync/sync_error_controller.h',
       'browser/sync/sync_startup_tracker.cc',
       'browser/sync/sync_startup_tracker.h',
       'browser/sync/sync_stopped_reporter.cc',

@@ -7,9 +7,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/sync_error_controller.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sync_driver/sync_error_controller.h"
 
 class ProfileSyncService;
 
