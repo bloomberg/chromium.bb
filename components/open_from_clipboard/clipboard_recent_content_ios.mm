@@ -2,33 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/open_from_clipboard/clipboard_recent_content_ios.h"
+#import "components/open_from_clipboard/clipboard_recent_content_ios.h"
 
 #import <UIKit/UIKit.h>
 
-#include "base/ios/ios_util.h"
+#import "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/singleton.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/sys_info.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
-ClipboardRecentContent* ClipboardRecentContent::GetInstance() {
-  return ClipboardRecentContentIOS::GetInstance();
-}
-
 // Bridge that forwards pasteboard change notifications to its delegate.
-@interface PasteboardNotificationListenerBridge : NSObject {
-  ClipboardRecentContentIOS* _delegate;
-}
+@interface PasteboardNotificationListenerBridge : NSObject
+
+// Initialize the PasteboardNotificationListenerBridge with |delegate| which
+// must not be null.
+- (instancetype)initWithDelegate:(ClipboardRecentContentIOS*)delegate
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
+
 @end
 
-@implementation PasteboardNotificationListenerBridge
+@implementation PasteboardNotificationListenerBridge {
+  ClipboardRecentContentIOS* _delegate;
+}
 
-- (id)initWithDelegate:(ClipboardRecentContentIOS*)delegate {
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
+}
+
+- (instancetype)initWithDelegate:(ClipboardRecentContentIOS*)delegate {
   DCHECK(delegate);
   self = [super init];
   if (self) {
@@ -84,10 +92,6 @@ const char* kAuthorizedSchemes[] = {
 };
 }  // namespace
 
-ClipboardRecentContentIOS* ClipboardRecentContentIOS::GetInstance() {
-  return Singleton<ClipboardRecentContentIOS>::get();
-}
-
 bool ClipboardRecentContentIOS::GetRecentURLFromClipboard(GURL* url) const {
   DCHECK(url);
   if (GetClipboardContentAge() > kMaximumAgeOfClipboard ||
@@ -127,11 +131,16 @@ void ClipboardRecentContentIOS::PasteboardChanged() {
   }
 }
 
-ClipboardRecentContentIOS::ClipboardRecentContentIOS() {
+ClipboardRecentContentIOS::ClipboardRecentContentIOS(
+    const std::string& application_scheme)
+    : application_scheme_(application_scheme) {
   Init(base::TimeDelta::FromMilliseconds(base::SysInfo::Uptime()));
 }
 
-ClipboardRecentContentIOS::ClipboardRecentContentIOS(base::TimeDelta uptime) {
+ClipboardRecentContentIOS::ClipboardRecentContentIOS(
+    const std::string& application_scheme,
+    base::TimeDelta uptime)
+    : application_scheme_(application_scheme) {
   Init(uptime);
 }
 

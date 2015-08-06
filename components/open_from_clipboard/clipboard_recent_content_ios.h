@@ -12,45 +12,48 @@
 @class NSDate;
 @class PasteboardNotificationListenerBridge;
 
-namespace test {
-class ClipboardRecentContentIOSTestHelper;
-}  // namespace test
-
-template <typename T>
-struct DefaultSingletonTraits;
+class ClipboardRecentContentIOSTest;
 
 // IOS implementation of ClipboardRecentContent
 class ClipboardRecentContentIOS : public ClipboardRecentContent {
  public:
-  static ClipboardRecentContentIOS* GetInstance();
+  // |application_scheme| is the URL scheme that can be used to open the
+  // current application, may be empty if no such scheme exists. Used to
+  // determine whether or not the clipboard contains a relevant URL.
+  explicit ClipboardRecentContentIOS(const std::string& application_scheme);
+  ~ClipboardRecentContentIOS() override;
+
   // Notifies that the content of the pasteboard may have changed.
   void PasteboardChanged();
 
+  // ClipboardRecentContent implementation.
   bool GetRecentURLFromClipboard(GURL* url) const override;
-
   base::TimeDelta GetClipboardContentAge() const override;
-
   void SuppressClipboardContent() override;
 
- protected:
-  // Protected for testing.
-  ClipboardRecentContentIOS();
-  ~ClipboardRecentContentIOS() override;
-  // |uptime| is how long ago the device has started.
-  ClipboardRecentContentIOS(base::TimeDelta uptime);
-
  private:
-  friend struct DefaultSingletonTraits<ClipboardRecentContentIOS>;
-  friend class test::ClipboardRecentContentIOSTestHelper;
+  friend class ClipboardRecentContentIOSTest;
+
+  // Helper constructor for testing. |uptime| is how long ago the device has
+  // started, while |application_scheme| has the same meaning as the public
+  // constructor.
+  ClipboardRecentContentIOS(const std::string& application_scheme,
+                            base::TimeDelta uptime);
+
   // Initializes the object. |uptime| is how long ago the device has started.
   void Init(base::TimeDelta uptime);
+
   // Loads information from the user defaults about the latest pasteboard entry.
   void LoadFromUserDefaults();
+
   // Saves information to the user defaults about the latest pasteboard entry.
   void SaveToUserDefaults();
+
   // Returns the URL contained in the clipboard (if any).
   GURL URLFromPasteboard();
 
+  // Contains the URL scheme opening the app. May be empty.
+  std::string application_scheme_;
   // The pasteboard's change count. Increases everytime the pasteboard changes.
   NSInteger lastPasteboardChangeCount_;
   // Estimation of the date when the pasteboard changed.

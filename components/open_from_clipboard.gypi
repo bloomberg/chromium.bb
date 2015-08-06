@@ -17,6 +17,7 @@
         '..',
       ],
       'sources': [
+        'open_from_clipboard/clipboard_recent_content.cc',
         'open_from_clipboard/clipboard_recent_content.h',
         'open_from_clipboard/clipboard_recent_content_ios.h',
         'open_from_clipboard/clipboard_recent_content_ios.mm',

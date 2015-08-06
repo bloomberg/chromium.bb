@@ -23,6 +23,7 @@ include_rules = [
   "+components/leveldb_proto",
   "+components/metrics",
   "+components/omnibox/browser",
+  "+components/open_from_clipboard",
   "+components/password_manager/core/browser",
   "+components/pref_registry",
   "+components/rlz",
