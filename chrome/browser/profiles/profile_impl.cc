@@ -768,11 +768,11 @@ Profile* ProfileImpl::GetOriginalProfile() {
   return this;
 }
 
-bool ProfileImpl::IsSupervised() {
+bool ProfileImpl::IsSupervised() const {
   return !GetPrefs()->GetString(prefs::kSupervisedUserId).empty();
 }
 
-bool ProfileImpl::IsChild() {
+bool ProfileImpl::IsChild() const {
 #if defined(ENABLE_SUPERVISED_USERS)
   return GetPrefs()->GetString(prefs::kSupervisedUserId) ==
       supervised_users::kChildAccountSUID;
@@ -781,7 +781,7 @@ bool ProfileImpl::IsChild() {
 #endif
 }
 
-bool ProfileImpl::IsLegacySupervised() {
+bool ProfileImpl::IsLegacySupervised() const {
   return IsSupervised() && !IsChild();
 }
 

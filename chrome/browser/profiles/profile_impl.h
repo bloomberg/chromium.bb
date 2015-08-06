@@ -101,9 +101,9 @@ class ProfileImpl : public Profile {
   void DestroyOffTheRecordProfile() override;
   bool HasOffTheRecordProfile() override;
   Profile* GetOriginalProfile() override;
-  bool IsSupervised() override;
-  bool IsChild() override;
-  bool IsLegacySupervised() override;
+  bool IsSupervised() const override;
+  bool IsChild() const override;
+  bool IsLegacySupervised() const override;
   ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy() override;
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;

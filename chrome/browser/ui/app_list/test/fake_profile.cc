@@ -103,15 +103,15 @@ Profile* FakeProfile::GetOriginalProfile() {
   return this;
 }
 
-bool FakeProfile::IsSupervised() {
+bool FakeProfile::IsSupervised() const {
   return false;
 }
 
-bool FakeProfile::IsChild() {
+bool FakeProfile::IsChild() const {
   return false;
 }
 
-bool FakeProfile::IsLegacySupervised() {
+bool FakeProfile::IsLegacySupervised() const {
   return false;
 }
 

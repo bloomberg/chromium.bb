@@ -689,11 +689,11 @@ void TestingProfile::SetSupervisedUserId(const std::string& id) {
     GetPrefs()->ClearPref(prefs::kSupervisedUserId);
 }
 
-bool TestingProfile::IsSupervised() {
+bool TestingProfile::IsSupervised() const {
   return !supervised_user_id_.empty();
 }
 
-bool TestingProfile::IsChild() {
+bool TestingProfile::IsChild() const {
 #if defined(ENABLE_SUPERVISED_USERS)
   return supervised_user_id_ == supervised_users::kChildAccountSUID;
 #else
@@ -701,7 +701,7 @@ bool TestingProfile::IsChild() {
 #endif
 }
 
-bool TestingProfile::IsLegacySupervised() {
+bool TestingProfile::IsLegacySupervised() const {
   return IsSupervised() && !IsChild();
 }
 

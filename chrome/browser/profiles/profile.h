@@ -178,11 +178,11 @@ class Profile : public content::BrowserContext {
 
   // Returns whether the profile is supervised (either a legacy supervised
   // user or a child account; see SupervisedUserService).
-  virtual bool IsSupervised() = 0;
+  virtual bool IsSupervised() const = 0;
   // Returns whether the profile is associated with a child account.
-  virtual bool IsChild() = 0;
+  virtual bool IsChild() const = 0;
   // Returns whether the profile is a legacy supervised user profile.
-  virtual bool IsLegacySupervised() = 0;
+  virtual bool IsLegacySupervised() const = 0;
 
   // Accessor. The instance is created upon first access.
   virtual ExtensionSpecialStoragePolicy*

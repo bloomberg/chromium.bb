@@ -22,7 +22,7 @@ enum class SafeSitesState {
 
 const char kSafeSitesFieldTrialName[] = "SafeSites";
 
-SafeSitesState GetState(Profile* profile) {
+SafeSitesState GetState(const Profile* profile) {
   // SafeSites is only supported for child accounts.
   if (!profile->IsChild())
     return SafeSitesState::DISABLED;
@@ -68,13 +68,13 @@ SafeSitesState GetState(Profile* profile) {
 
 namespace supervised_users {
 
-bool IsSafeSitesBlacklistEnabled(Profile* profile) {
+bool IsSafeSitesBlacklistEnabled(const Profile* profile) {
   SafeSitesState state = GetState(profile);
   return state == SafeSitesState::ENABLED ||
          state == SafeSitesState::BLACKLIST_ONLY;
 }
 
-bool IsSafeSitesOnlineCheckEnabled(Profile* profile) {
+bool IsSafeSitesOnlineCheckEnabled(const Profile* profile) {
   SafeSitesState state = GetState(profile);
   return state == SafeSitesState::ENABLED ||
          state == SafeSitesState::ONLINE_CHECK_ONLY;
