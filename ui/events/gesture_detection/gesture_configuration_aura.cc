@@ -36,6 +36,8 @@ class GestureConfigurationAura : public GestureConfiguration {
     set_span_slop(max_touch_move_in_pixels_for_click() * 2);
     set_swipe_enabled(true);
     set_two_finger_tap_enabled(true);
+    set_fling_touchpad_tap_suppression_enabled(true);
+    set_fling_touchscreen_tap_suppression_enabled(true);
   }
 
   friend struct DefaultSingletonTraits<GestureConfigurationAura>;

@@ -52,6 +52,12 @@ class GestureConfigurationAndroid : public GestureConfiguration {
         ViewConfiguration::GetMinScalingTouchMajorInDips());
     set_show_press_delay_in_ms(ViewConfiguration::GetTapTimeoutInMs());
     set_span_slop(ViewConfiguration::GetTouchSlopInDips() * 2.f);
+    set_fling_touchscreen_tap_suppression_enabled(true);
+    set_fling_touchpad_tap_suppression_enabled(false);
+    set_fling_max_cancel_to_down_time_in_ms(
+        ViewConfiguration::GetTapTimeoutInMs());
+    set_fling_max_tap_gap_time_in_ms(
+        ViewConfiguration::GetLongPressTimeoutInMs());
   }
 
   friend struct DefaultSingletonTraits<GestureConfigurationAndroid>;

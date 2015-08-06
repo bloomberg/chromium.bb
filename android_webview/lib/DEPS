@@ -4,5 +4,6 @@ include_rules = [
   "+content/public",
   "+gin/public",
   "+media/base/media_switches.h",  # For media command line switches.
+  "+ui/events/gesture_detection",
   "+ui/gl",
 ]

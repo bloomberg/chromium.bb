@@ -201,6 +201,7 @@
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../third_party/WebKit/public/blink.gyp:blink',
+        '../ui/events/events.gyp:gesture_detection',
         '../ui/gl/gl.gyp:gl',
         '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
         '../v8/tools/gyp/v8.gyp:v8',

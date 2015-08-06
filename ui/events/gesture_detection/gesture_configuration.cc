@@ -28,6 +28,8 @@ GestureConfiguration::GestureConfiguration()
     : default_radius_(25),
       double_tap_enabled_(false),
       double_tap_timeout_in_ms_(400),
+      fling_touchpad_tap_suppression_enabled_(false),
+      fling_touchscreen_tap_suppression_enabled_(false),
       fling_max_cancel_to_down_time_in_ms_(400),
       fling_max_tap_gap_time_in_ms_(200),
       gesture_begin_end_types_enabled_(false),

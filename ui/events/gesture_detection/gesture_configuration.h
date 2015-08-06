@@ -28,6 +28,18 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   bool double_tap_enabled() const { return double_tap_enabled_; }
   void set_double_tap_enabled(bool enabled) { double_tap_enabled_ = enabled; }
   int double_tap_timeout_in_ms() const { return double_tap_timeout_in_ms_; }
+  bool fling_touchpad_tap_suppression_enabled() const {
+    return fling_touchpad_tap_suppression_enabled_;
+  }
+  void set_fling_touchpad_tap_suppression_enabled(bool enabled) {
+    fling_touchpad_tap_suppression_enabled_ = enabled;
+  }
+  bool fling_touchscreen_tap_suppression_enabled() const {
+    return fling_touchscreen_tap_suppression_enabled_;
+  }
+  void set_fling_touchscreen_tap_suppression_enabled(bool enabled) {
+    fling_touchscreen_tap_suppression_enabled_ = enabled;
+  }
   int fling_max_cancel_to_down_time_in_ms() const {
     return fling_max_cancel_to_down_time_in_ms_;
   }
@@ -195,6 +207,11 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
 
   bool double_tap_enabled_;
   int double_tap_timeout_in_ms_;
+
+  // Whether to suppress touchscreen/touchpad taps that occur during a fling (
+  // in particular, when such taps cancel the active fling).
+  bool fling_touchpad_tap_suppression_enabled_;
+  bool fling_touchscreen_tap_suppression_enabled_;
 
   // Maximum time between a GestureFlingCancel and a mousedown such that the
   // mousedown is considered associated with the cancel event.
