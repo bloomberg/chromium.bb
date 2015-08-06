@@ -98,9 +98,12 @@ def CommandGypBuild(context):
   if runtest_py is None and os.path.exists(alt_runtest_py):
     runtest_py = alt_runtest_py
 
-  # TODO(bradnelson): Figure out why win8/win64 trybots can't upload goma logs.
+  # TODO(bradnelson): Figure out why win64 trybots can't upload goma logs.
   buildername = os.environ.get('BUILDBOT_BUILDERNAME', '')
-  excluded_os = 'win64' in buildername or 'win8' in buildername
+  excluded_os = False
+  for os in ['win64', 'vista', 'win7-64', 'win8-64']:
+    if os in buildername:
+      excluded_os = True
 
   if runtest_py is None or excluded_os:
     # Fallback to direct goma + ninja if not run on bots.
