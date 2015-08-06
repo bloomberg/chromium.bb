@@ -177,11 +177,14 @@ config("compiler") {
     # Stack protection.
     if (is_mac) {
       cflags += [ "-fstack-protector-all" ]
-    } else if (is_linux) {
-      cflags += [
-        "-fstack-protector",
-        "--param=ssp-buffer-size=4",
-      ]
+    } else if (is_posix && !is_chromeos && !is_nacl) {
+      # TODO(phajdan.jr): Use -fstack-protector-strong when our gcc supports it.
+      cflags += [ "--param=ssp-buffer-size=4" ]
+      if (is_android && (current_cpu == "arm64" || current_cpu == "x86")) {
+        cflags += [ "-fno-stack-protector" ]
+      } else {
+        cflags += [ "-fstack-protector" ]
+      }
     }
 
     # Linker warnings.
@@ -528,7 +531,15 @@ config("compiler") {
       "-funwind-tables",
       "-fno-short-enums",
     ]
-    if (!is_clang) {
+    if (is_clang) {
+      rebased_android_toolchain_root =
+          rebase_path(android_toolchain_root, root_build_dir)
+      cflags += [
+        # TODO(hans) Enable integrated-as (crbug.com/124610).
+        "-no-integrated-as",
+        "-B${rebased_android_toolchain_root}/bin",  # Else /usr/bin/as gets picked up.
+      ]
+    } else {
       # Clang doesn't support these flags.
       cflags += [ "-finline-limit=64" ]
     }
@@ -551,8 +562,7 @@ config("compiler") {
       ldflags += [ "-fuse-ld=gold" ]
       if (is_clang) {
         # Let clang find the ld.gold in the NDK.
-        ldflags += [ "--gcc-toolchain=" +
-                     rebase_path(android_toolchain_root, root_build_dir) ]
+        ldflags += [ "--gcc-toolchain=$rebased_android_toolchain_root" ]
       }
     }
 
@@ -578,11 +588,23 @@ config("compiler") {
 
     if (is_clang) {
       if (current_cpu == "arm") {
-        cflags += [ "-target arm-linux-androideabi" ]
-        ldflags += [ "-target arm-linux-androideabi" ]
+        cflags += [
+          "-target",
+          "arm-linux-androideabi",
+        ]
+        ldflags += [
+          "-target",
+          "arm-linux-androideabi",
+        ]
       } else if (current_cpu == "x86") {
-        cflags += [ "-target i686-linux-androideabi" ]
-        ldflags += [ "-target i686-linux-androideabi" ]
+        cflags += [
+          "-target",
+          "i686-linux-androideabi",
+        ]
+        ldflags += [
+          "-target",
+          "i686-linux-androideabi",
+        ]
       }
     }
   }
@@ -853,10 +875,13 @@ if (is_win) {
     default_warning_flags_cc += [
       # See comment for -Wno-c++11-narrowing.
       "-Wno-narrowing",
-
-      # TODO(thakis): Remove, http://crbug.com/263960
-      "-Wno-literal-suffix",
     ]
+    if (!is_clang) {
+      default_warning_flags_cc += [
+        # TODO(thakis): Remove, http://crbug.com/263960
+        "-Wno-literal-suffix",
+      ]
+    }
   }
 
   # Suppress warnings about ABI changes on ARM (Clang doesn't give this
