@@ -848,23 +848,71 @@ class BuildEBuildDictionaryTest(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
     self.overlay = self.tempdir
-    self.package = 'chromeos-base/test_package'
-    self.root = os.path.join(self.overlay, 'chromeos-base', 'test_package')
-    self.package_path = os.path.join(self.root, 'test_package-0.0.1.ebuild')
+    self.uprev_candidate_mock = self.PatchObject(
+        portage_util, '_FindUprevCandidates',
+        side_effect=BuildEBuildDictionaryTest._FindUprevCandidateMock)
+    self.overlays = {self.overlay: []}
+
+  def _CreatePackage(self, name, blacklisted=False):
+    """Helper that creates an ebuild."""
+    package_path = os.path.join(self.overlay, name,
+                                'test_package-0.0.1.ebuild')
+    content = 'CROS_WORKON_BLACKLIST=1' if blacklisted else ''
+    osutils.WriteFile(package_path, content, makedirs=True)
+
+  @staticmethod
+  def _FindUprevCandidateMock(files):
+    """Mock for the FindUprevCandidateMock function.
+
+    Simplified implementation of FindUprevCandidate: consider all ebuilds worthy
+    of uprev.
+    """
+    for f in files:
+      if (f.endswith('.ebuild') and
+          not 'CROS_WORKON_BLACKLIST=1' in osutils.ReadFile(f)):
+        pkgdir = os.path.dirname(f)
+        return _Package(os.path.join(os.path.basename(os.path.dirname(pkgdir)),
+                                     os.path.basename(pkgdir)))
+    return None
+
+  def _assertFoundPackages(self, packages):
+    """Succeeds iff the packages discovered were packages."""
+    self.assertEquals(len(self.overlays), 1)
+    self.assertEquals([p.package for p in self.overlays[self.overlay]],
+                      packages)
 
   def testWantedPackage(self):
-    overlays = {self.overlay: []}
-    package = _Package(self.package)
-    self.PatchObject(portage_util, '_FindUprevCandidates', return_value=package)
-    portage_util.BuildEBuildDictionary(overlays, False, [self.package])
-    self.assertEquals(len(overlays), 1)
-    self.assertEquals(overlays[self.overlay], [package])
+    """Test that we can find a specific package."""
+    package_name = 'chromeos-base/mypackage'
+    self._CreatePackage(package_name)
+    portage_util.BuildEBuildDictionary(self.overlays, False, [package_name])
+    self._assertFoundPackages([package_name])
 
   def testUnwantedPackage(self):
-    overlays = {self.overlay: []}
-    portage_util.BuildEBuildDictionary(overlays, False, [])
-    self.assertEquals(len(overlays), 1)
-    self.assertEquals(overlays[self.overlay], [])
+    """Test that we find only the packages we want."""
+    portage_util.BuildEBuildDictionary(self.overlays, False, [])
+    self._assertFoundPackages([])
+
+  def testAnyPackage(self):
+    """Test that we return all packages available if use_all is set."""
+    package_name = 'chromeos-base/package_name'
+    self._CreatePackage(package_name)
+    portage_util.BuildEBuildDictionary(self.overlays, True, [])
+    self._assertFoundPackages([package_name])
+
+  def testUnknownPackage(self):
+    """Test that _FindUprevCandidates is only called if the CP matches."""
+    self._CreatePackage('chromeos-base/package_name')
+    portage_util.BuildEBuildDictionary(self.overlays, False,
+                                       ['chromeos-base/other_package'])
+    self._assertFoundPackages([])
+
+  def testBlacklistedPackagesIgnored(self):
+    """Test that blacklisted packages are ignored."""
+    package_name = 'chromeos-base/blacklisted_package'
+    self._CreatePackage(package_name, blacklisted=True)
+    portage_util.BuildEBuildDictionary(self.overlays, False, [package_name])
+    self._assertFoundPackages([])
 
 
 class ProjectMappingTest(cros_test_lib.TestCase):
