@@ -37,6 +37,8 @@ class ManifestDownloader : public blink::WebURLLoaderClient {
   void Load(const blink::WebURLRequest& request);
 
  private:
+  void Close();
+
   // WebURLLoaderClient implementation.
   virtual void didReceiveResponse(blink::WebURLLoader* loader,
                                   const blink::WebURLResponse& response);

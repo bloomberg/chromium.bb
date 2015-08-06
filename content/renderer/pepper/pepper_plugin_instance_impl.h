@@ -552,15 +552,15 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
     void ReplayReceivedData(WebURLLoaderClient* document_loader);
 
     // blink::WebURLLoaderClient implementation.
-    virtual void didReceiveData(blink::WebURLLoader* loader,
-                                const char* data,
-                                int data_length,
-                                int encoded_data_length);
-    virtual void didFinishLoading(blink::WebURLLoader* loader,
-                                  double finish_time,
-                                  int64_t total_encoded_data_length);
-    virtual void didFail(blink::WebURLLoader* loader,
-                         const blink::WebURLError& error);
+    void didReceiveData(blink::WebURLLoader* loader,
+                        const char* data,
+                        int data_length,
+                        int encoded_data_length) override;
+    void didFinishLoading(blink::WebURLLoader* loader,
+                          double finish_time,
+                          int64_t total_encoded_data_length) override;
+    void didFail(blink::WebURLLoader* loader,
+                 const blink::WebURLError& error) override;
 
    private:
     std::list<std::string> data_;
