@@ -141,9 +141,9 @@ void LogDynamicUMAStat(const std::string& name,
                        int sample,
                        int min,
                        int max,
-                       int bucket_size) {
+                       int bucket_count) {
   base::HistogramBase* counter = base::Histogram::FactoryGet(
-      name, min, max, bucket_size,
+      name, min, max, bucket_count,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   counter->Add(sample);
 }
