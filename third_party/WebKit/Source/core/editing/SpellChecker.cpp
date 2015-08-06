@@ -759,11 +759,10 @@ void SpellChecker::replaceMisspelledRange(const String& text)
     DocumentMarkerVector markers = frame().document()->markers().markersInRange(caretRange, DocumentMarker::MisspellingMarkers());
     if (markers.size() < 1 || markers[0]->startOffset() >= markers[0]->endOffset())
         return;
-    // TODO(yosin) |markerRange| should be |EphemeralRange|.
-    RefPtrWillBeRawPtr<Range> markerRange = Range::create(caretRange.document(), caretRange.startPosition().computeContainerNode(), markers[0]->startOffset(), caretRange.endPosition().computeContainerNode(), markers[0]->endOffset());
-    if (!markerRange)
+    EphemeralRange markerRange = EphemeralRange(Position(caretRange.startPosition().computeContainerNode(), markers[0]->startOffset()), Position(caretRange.endPosition().computeContainerNode(), markers[0]->endOffset()));
+    if (markerRange.isNull())
         return;
-    frame().selection().setSelection(VisibleSelection(markerRange.get()), CharacterGranularity);
+    frame().selection().setSelection(VisibleSelection(markerRange), CharacterGranularity);
     frame().editor().replaceSelectionWithText(text, false, false);
 }
 
