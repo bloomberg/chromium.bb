@@ -469,14 +469,14 @@ class FlagOffActiveScriptControllerBrowserTest
 
 // Times out frequently on CrOS: http://crbug.com/517238
 #if defined(OS_CHROMEOS)
-#define MAYBE_FlagOffActiveScriptControllerBrowserTest \
-        DISABLED_FlagOffActiveScriptControllerBrowserTest
+#define MAYBE_ScriptsExecuteWhenFlagAbsent \
+        DISABLED_ScriptsExecuteWhenFlagAbsent
 #else
-#define MAYBE_FlagOffActiveScriptControllerBrowserTest \
-        FlagOffActiveScriptControllerBrowserTest
+#define MAYBE_ScriptsExecuteWhenFlagAbsent \
+        ScriptsExecuteWhenFlagAbsent
 #endif
 IN_PROC_BROWSER_TEST_F(FlagOffActiveScriptControllerBrowserTest,
-                       MAYBE_FlagOffActiveScriptControllerBrowserTest) {
+                       MAYBE_ScriptsExecuteWhenFlagAbsent) {
   const char* const kExtensionNames[] = {
     "content_scripts_all_hosts",
     "inject_scripts_all_hosts",
