@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
@@ -25,6 +26,8 @@ import org.chromium.components.bookmarks.BookmarkId;
 public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
     /** The intent extra specifying the ID of the bookmark to be edited. */
     public static final String INTENT_BOOKMARK_ID = "EnhancedBookmarkEditActivity.BookmarkId";
+
+    private static final String TAG = "cr.BookmarkEdit";
 
     private EnhancedBookmarksModel mEnhancedBookmarksModel;
     private BookmarkId mBookmarkId;
@@ -63,6 +66,11 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
 
         @Override
         public void bookmarkModelChanged() {
+            if (!mEnhancedBookmarksModel.doesBookmarkExist(mBookmarkId)) {
+                Log.wtf(TAG, "The bookmark was deleted somehow during bookmarkModelChange!",
+                        new Exception(TAG));
+                finish();
+            }
         }
     };
 
@@ -115,7 +123,10 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item == mDeleteButton) {
-            mEnhancedBookmarksModel.deleteBookmarks(mBookmarkId);
+            // Log added for detecting delete button double clicking.
+            Log.i(TAG, "Delete button pressed by user! isFinishing() == " + isFinishing());
+
+            mEnhancedBookmarksModel.deleteBookmark(mBookmarkId);
             finish();
             return true;
         } else if (item.getItemId() == android.R.id.home) {
