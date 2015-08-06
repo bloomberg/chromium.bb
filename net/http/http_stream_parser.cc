@@ -768,47 +768,39 @@ int HttpStreamParser::HandleReadHeaderResult(int result) {
   if (result == 0)
     result = ERR_CONNECTION_CLOSED;
 
-  if (result < 0 && result != ERR_CONNECTION_CLOSED) {
-    io_state_ = STATE_DONE;
-    return result;
-  }
-  // If we've used the connection before, then we know it is not a HTTP/0.9
-  // response and return ERR_CONNECTION_CLOSED.
-  if (result == ERR_CONNECTION_CLOSED && read_buf_->offset() == 0 &&
-      connection_->is_reused()) {
-    io_state_ = STATE_DONE;
-    return result;
-  }
-
-  // Record our best estimate of the 'response time' as the time when we read
-  // the first bytes of the response headers.
-  if (read_buf_->offset() == 0 && result != ERR_CONNECTION_CLOSED)
-    response_->response_time = base::Time::Now();
-
   if (result == ERR_CONNECTION_CLOSED) {
-    // The connection closed before we detected the end of the headers.
+    // The connection closed without getting any more data.
     if (read_buf_->offset() == 0) {
-      // The connection was closed before any data was sent. Likely an error
-      // rather than empty HTTP/0.9 response.
       io_state_ = STATE_DONE;
-      return ERR_EMPTY_RESPONSE;
-    } else if (request_->url.SchemeIsCryptographic()) {
-      // The connection was closed in the middle of the headers. For HTTPS we
-      // don't parse partial headers. Return a different error code so that we
-      // know that we shouldn't attempt to retry the request.
-      io_state_ = STATE_DONE;
-      return ERR_RESPONSE_HEADERS_TRUNCATED;
+      // If the connection has not been reused, it may have been a 0-length
+      // HTTP/0.9 responses, but it was most likely an error, so just return
+      // ERR_EMPTY_RESPONSE instead. If the connection was reused, just pass
+      // on the original connection close error, as rather than being an
+      // empty HTTP/0.9 response it's much more likely the server closed the
+      // socket before it received the request.
+      if (!connection_->is_reused())
+        return ERR_EMPTY_RESPONSE;
+      return result;
     }
+
     // Parse things as well as we can and let the caller decide what to do.
     int end_offset;
     if (response_header_start_offset_ >= 0) {
       // The response looks to be a truncated set of HTTP headers.
+
+      // Accepting truncated headers over HTTPS is a potential security
+      // vulnerability, so just return an error in that case.
+      if (request_->url.SchemeIsCryptographic()) {
+        io_state_ = STATE_DONE;
+        return ERR_RESPONSE_HEADERS_TRUNCATED;
+      }
+
       io_state_ = STATE_READ_BODY_COMPLETE;
       end_offset = read_buf_->offset();
       RecordHeaderParserEvent(HEADER_ALLOWED_TRUNCATED_HEADERS);
     } else {
       // The response is apparently using HTTP/0.9.  Treat the entire response
-      // the body.
+      // as the body.
       end_offset = 0;
     }
     int rv = ParseResponseHeaders(end_offset);
@@ -816,6 +808,16 @@ int HttpStreamParser::HandleReadHeaderResult(int result) {
       return rv;
     return result;
   }
+
+  if (result < 0) {
+    io_state_ = STATE_DONE;
+    return result;
+  }
+
+  // Record our best estimate of the 'response time' as the time when we read
+  // the first bytes of the response headers.
+  if (read_buf_->offset() == 0)
+    response_->response_time = base::Time::Now();
 
   read_buf_->set_offset(read_buf_->offset() + result);
   DCHECK_LE(read_buf_->offset(), read_buf_->capacity());
