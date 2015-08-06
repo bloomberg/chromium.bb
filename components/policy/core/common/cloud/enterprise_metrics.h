@@ -218,7 +218,7 @@ enum MetricEnrollment {
   kMetricEnrollmentLockReadbackError = 49,
   // Failed to update device attributes.
   kMetricEnrollmentAttributeUpdateFailed = 50,
-  // Lockbox error at re-enrollment: mode does not match install attributes.
+  // Enrollment mode does not match already locked install attributes.
   kMetricEnrollmentLockModeMismatch = 51,
 };
 

@@ -54706,8 +54706,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="50" label="Device attributes update failed">
     Failed to update device attributes.
   </int>
-  <int value="51" label="Lockbox device mode mismatch on re-enrollment">
-    Lockbox error on re-enrollment: mode does not match install attributes.
+  <int value="51" label="Lockbox device mode mismatch">
+    Enrollment mode does not match already locked install attributes.
   </int>
 </enum>
 
