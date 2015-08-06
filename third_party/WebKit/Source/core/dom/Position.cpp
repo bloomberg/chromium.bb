@@ -110,14 +110,8 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::createLegacyEditingPosi
     if (offset == 0)
         return PositionAlgorithm<Strategy>(anchorNode, PositionAnchorType::BeforeAnchor);
 
-    PositionAlgorithm<Strategy> position(anchorNode, PositionAnchorType::AfterAnchor);
-    // TODO(yosin) This is the source of unexpected behavior of legacy
-    // editing position, we need to further analysis why we need to set
-    // offset.
-    ASSERT(offset > 0);
-    position.m_offset = offset;
-    position.m_isLegacyEditingPosition = true;
-    return position;
+    ASSERT(offset == Strategy::lastOffsetForEditing(anchorNode.get()));
+    return PositionAlgorithm<Strategy>(anchorNode, PositionAnchorType::AfterAnchor);
 }
 
 template <typename Strategy>
