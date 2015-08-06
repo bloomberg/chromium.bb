@@ -47,6 +47,44 @@
 
 namespace content {
 
+namespace {
+
+// Helper function to add the FrameTree of the given node's opener to the list
+// of |opener_trees|, if it doesn't exist there already. |visited_index|
+// indicates which FrameTrees in |opener_trees| have already been visited
+// (i.e., those at indices less than |visited_index|). |nodes_with_back_links|
+// collects FrameTreeNodes with openers in FrameTrees that have already been
+// visited (such as those with cycles).  This function is intended to be used
+// with FrameTree::ForEach, so it always returns true to visit all nodes in the
+// tree.
+bool OpenerForFrameTreeNode(
+    size_t visited_index,
+    std::vector<FrameTree*>* opener_trees,
+    base::hash_set<FrameTreeNode*>* nodes_with_back_links,
+    FrameTreeNode* node) {
+  if (!node->opener())
+    return true;
+
+  FrameTree* opener_tree = node->opener()->frame_tree();
+
+  const auto& existing_tree_it =
+      std::find(opener_trees->begin(), opener_trees->end(), opener_tree);
+  if (existing_tree_it == opener_trees->end()) {
+    // This is a new opener tree that we will need to process.
+    opener_trees->push_back(opener_tree);
+  } else {
+    // If this tree is already on our processing list *and* we have visited it,
+    // then this node's opener is a back link.  This means the node will need
+    // special treatment to process its opener.
+    size_t position = std::distance(opener_trees->begin(), existing_tree_it);
+    if (position < visited_index)
+      nodes_with_back_links->insert(node);
+  }
+  return true;
+}
+
+}  // namespace
+
 // A helper class to hold all frame proxies and register as a
 // RenderProcessHostObserver for them.
 class RenderFrameHostManager::RenderFrameProxyHostMap
@@ -2398,22 +2436,55 @@ void RenderFrameHostManager::CreateOpenerProxiesIfNeeded(
   if (!opener)
     return;
 
+  // TODO(alexmos): This should process all openers in the current frame tree,
+  // not just current node's opener.
+
   // Create proxies for the opener chain.
   opener->render_manager()->CreateOpenerProxies(instance);
 }
 
-void RenderFrameHostManager::CreateOpenerProxies(SiteInstance* instance) {
-  // If this tab has an opener, recursively create proxies for the nodes on its
-  // frame tree.
-  // TODO(alexmos): Once we allow frame openers to be updated (which can happen
-  // via window.open(url, "target_frame")), this will need to be resilient to
-  // cycles. It will also need to handle tabs that have multiple openers (e.g.,
-  // main frame and subframe could have different openers, each of which must
-  // be traversed).
-  FrameTreeNode* opener = frame_tree_node_->opener();
-  if (opener)
-    opener->render_manager()->CreateOpenerProxies(instance);
+void RenderFrameHostManager::CollectOpenerFrameTrees(
+    std::vector<FrameTree*>* opener_frame_trees,
+    base::hash_set<FrameTreeNode*>* nodes_with_back_links) {
+  CHECK(opener_frame_trees);
+  opener_frame_trees->push_back(frame_tree_node_->frame_tree());
 
+  size_t visited_index = 0;
+  while (visited_index < opener_frame_trees->size()) {
+    FrameTree* frame_tree = (*opener_frame_trees)[visited_index];
+    visited_index++;
+    frame_tree->ForEach(base::Bind(&OpenerForFrameTreeNode, visited_index,
+                                   opener_frame_trees, nodes_with_back_links));
+  }
+}
+
+void RenderFrameHostManager::CreateOpenerProxies(SiteInstance* instance) {
+  std::vector<FrameTree*> opener_frame_trees;
+  base::hash_set<FrameTreeNode*> nodes_with_back_links;
+
+  CollectOpenerFrameTrees(&opener_frame_trees, &nodes_with_back_links);
+
+  // Create opener proxies for frame trees, processing furthest openers from
+  // this node first and this node last.  In the common case without cycles,
+  // this will ensure that each tree's openers are created before the tree's
+  // nodes need to reference them.
+  for (int i = opener_frame_trees.size() - 1; i >= 0; i--) {
+    opener_frame_trees[i]
+        ->root()
+        ->render_manager()
+        ->CreateOpenerProxiesForFrameTree(instance);
+  }
+
+  // TODO(alexmos): Set openers for nodes in |nodes_with_back_links| in a
+  // second pass. The proxies created at these FrameTreeNodes in
+  // CreateOpenerProxiesForFrameTree won't have their opener routing ID
+  // available when created due to cycles or back links in the opener chain.
+  // They must have their openers updated as a separate step after proxy
+  // creation.
+}
+
+void RenderFrameHostManager::CreateOpenerProxiesForFrameTree(
+    SiteInstance* instance) {
   // If any of the RenderViewHosts (current, pending, or swapped out) for this
   // FrameTree has the same SiteInstance, then we can return early, since
   // proxies for other nodes in the tree should also exist (when in

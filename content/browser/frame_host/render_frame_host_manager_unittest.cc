@@ -422,6 +422,15 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     return manager->pending_frame_host();
   }
 
+  // Exposes RenderFrameHostManager::CollectOpenerFrameTrees for testing.
+  void CollectOpenerFrameTrees(
+      FrameTreeNode* node,
+      std::vector<FrameTree*>* opener_frame_trees,
+      base::hash_set<FrameTreeNode*>* nodes_with_back_links) {
+    node->render_manager()->CollectOpenerFrameTrees(opener_frame_trees,
+                                                    nodes_with_back_links);
+  }
+
  private:
   RenderFrameHostManagerTestWebUIControllerFactory factory_;
 };
@@ -2236,6 +2245,172 @@ TEST_F(RenderFrameHostManagerTest, TwoTabsCrashOneReloadsOneLeaves) {
             iframe->GetRenderFrameProxyHost(contents1->GetSiteInstance()));
   EXPECT_EQ(nullptr,
             iframe->GetRenderFrameProxyHost(contents2->GetSiteInstance()));
+}
+
+// Test that opener proxies are created properly with a cycle on the opener
+// chain.
+TEST_F(RenderFrameHostManagerTest, CreateOpenerProxiesWithCycleOnOpenerChain) {
+  const GURL kUrl1("http://www.google.com/");
+  const GURL kUrl2("http://www.chromium.org/");
+
+  // Navigate to an initial URL.
+  contents()->NavigateAndCommit(kUrl1);
+  TestRenderFrameHost* rfh1 = main_test_rfh();
+  scoped_refptr<SiteInstanceImpl> site_instance1 = rfh1->GetSiteInstance();
+
+  // Create 2 new tabs and construct the opener chain as follows:
+  //
+  //     tab2 <--- tab1 <---- contents()
+  //        |       ^
+  //        +-------+
+  //
+  scoped_ptr<TestWebContents> tab1(
+      TestWebContents::Create(browser_context(), site_instance1.get()));
+  RenderFrameHostManager* tab1_manager = tab1->GetRenderManagerForTesting();
+  scoped_ptr<TestWebContents> tab2(
+      TestWebContents::Create(browser_context(), site_instance1.get()));
+  RenderFrameHostManager* tab2_manager = tab2->GetRenderManagerForTesting();
+
+  contents()->SetOpener(tab1.get());
+  tab1->SetOpener(tab2.get());
+  tab2->SetOpener(tab1.get());
+
+  // Navigate main window to a cross-site URL.  This will call
+  // CreateOpenerProxies() to create proxies for the two opener tabs in the new
+  // SiteInstance.
+  contents()->NavigateAndCommit(kUrl2);
+  TestRenderFrameHost* rfh2 = main_test_rfh();
+  EXPECT_NE(site_instance1, rfh2->GetSiteInstance());
+
+  // Check that each tab now has a proxy in the new SiteInstance.
+  RenderFrameProxyHost* tab1_proxy =
+      tab1_manager->GetRenderFrameProxyHost(rfh2->GetSiteInstance());
+  EXPECT_TRUE(tab1_proxy);
+  RenderFrameProxyHost* tab2_proxy =
+      tab2_manager->GetRenderFrameProxyHost(rfh2->GetSiteInstance());
+  EXPECT_TRUE(tab2_proxy);
+
+  // Verify that the proxies' openers point to each other.
+  int tab1_opener_routing_id =
+      tab1_manager->GetOpenerRoutingID(rfh2->GetSiteInstance());
+  int tab2_opener_routing_id =
+      tab2_manager->GetOpenerRoutingID(rfh2->GetSiteInstance());
+  EXPECT_EQ(tab2_proxy->GetRoutingID(), tab1_opener_routing_id);
+  EXPECT_EQ(tab1_proxy->GetRoutingID(), tab2_opener_routing_id);
+
+  // TODO(alexmos): Because of the cycle, tab2 will require a separate opener
+  // update IPC.  Verify that this IPC is sent once it's implemented.
+}
+
+// Test that opener proxies are created properly when the opener points
+// to itself.
+TEST_F(RenderFrameHostManagerTest, CreateOpenerProxiesWhenOpenerPointsToSelf) {
+  const GURL kUrl1("http://www.google.com/");
+  const GURL kUrl2("http://www.chromium.org/");
+
+  // Navigate to an initial URL.
+  contents()->NavigateAndCommit(kUrl1);
+  TestRenderFrameHost* rfh1 = main_test_rfh();
+  scoped_refptr<SiteInstanceImpl> site_instance1 = rfh1->GetSiteInstance();
+
+  // Create an opener tab, and simulate that its opener points to itself.
+  scoped_ptr<TestWebContents> opener(
+      TestWebContents::Create(browser_context(), site_instance1.get()));
+  RenderFrameHostManager* opener_manager = opener->GetRenderManagerForTesting();
+  contents()->SetOpener(opener.get());
+  opener->SetOpener(opener.get());
+
+  // Navigate main window to a cross-site URL.  This will call
+  // CreateOpenerProxies() to create proxies for the opener tab in the new
+  // SiteInstance.
+  contents()->NavigateAndCommit(kUrl2);
+  TestRenderFrameHost* rfh2 = main_test_rfh();
+  EXPECT_NE(site_instance1, rfh2->GetSiteInstance());
+
+  // Check that the opener now has a proxy in the new SiteInstance.
+  RenderFrameProxyHost* opener_proxy =
+      opener_manager->GetRenderFrameProxyHost(rfh2->GetSiteInstance());
+  EXPECT_TRUE(opener_proxy);
+
+  // Verify that the proxy's opener points to itself.
+  int opener_routing_id =
+      opener_manager->GetOpenerRoutingID(rfh2->GetSiteInstance());
+  EXPECT_EQ(opener_proxy->GetRoutingID(), opener_routing_id);
+
+  // TODO(alexmos): Because of the cycle, setting the opener in opener_proxy
+  // will require a separate opener update IPC.  Verify that this IPC is sent
+  // once it's implemented.
+}
+
+// Build the following frame opener graph and see that it can be properly
+// traversed when creating opener proxies:
+//
+//     +-> root4 <--+   root3 <---- root2    +--- root1
+//     |     /      |     ^         /  \     |    /  \     .
+//     |    42      +-----|------- 22  23 <--+   12  13
+//     |     +------------+            |             | ^
+//     +-------------------------------+             +-+
+//
+// The test starts traversing openers from root1 and expects to discover all
+// four FrameTrees.  Nodes 13 (with cycle to itself) and 42 (with back link to
+// root3) should be put on the list of nodes that will need their frame openers
+// set separately in a second pass, since their opener routing IDs won't be
+// available during the first pass of CreateOpenerProxies.
+TEST_F(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
+  FrameTree* tree1 = contents()->GetFrameTree();
+  FrameTreeNode* root1 = tree1->root();
+  int process_id = root1->current_frame_host()->GetProcess()->GetID();
+  tree1->AddFrame(root1, process_id, 12, blink::WebTreeScopeType::Document,
+                  std::string(), blink::WebSandboxFlags::None);
+  tree1->AddFrame(root1, process_id, 13, blink::WebTreeScopeType::Document,
+                  std::string(), blink::WebSandboxFlags::None);
+
+  scoped_ptr<TestWebContents> tab2(
+      TestWebContents::Create(browser_context(), nullptr));
+  FrameTree* tree2 = tab2->GetFrameTree();
+  FrameTreeNode* root2 = tree2->root();
+  process_id = root2->current_frame_host()->GetProcess()->GetID();
+  tree2->AddFrame(root2, process_id, 22, blink::WebTreeScopeType::Document,
+                  std::string(), blink::WebSandboxFlags::None);
+  tree2->AddFrame(root2, process_id, 23, blink::WebTreeScopeType::Document,
+                  std::string(), blink::WebSandboxFlags::None);
+
+  scoped_ptr<TestWebContents> tab3(
+      TestWebContents::Create(browser_context(), nullptr));
+  FrameTree* tree3 = tab3->GetFrameTree();
+  FrameTreeNode* root3 = tree3->root();
+
+  scoped_ptr<TestWebContents> tab4(
+      TestWebContents::Create(browser_context(), nullptr));
+  FrameTree* tree4 = tab4->GetFrameTree();
+  FrameTreeNode* root4 = tree4->root();
+  process_id = root4->current_frame_host()->GetProcess()->GetID();
+  tree4->AddFrame(root4, process_id, 42, blink::WebTreeScopeType::Document,
+                  std::string(), blink::WebSandboxFlags::None);
+
+  root1->child_at(1)->SetOpener(root1->child_at(1));
+  root1->SetOpener(root2->child_at(1));
+  root2->SetOpener(root3);
+  root2->child_at(0)->SetOpener(root4);
+  root2->child_at(1)->SetOpener(root4);
+  root4->child_at(0)->SetOpener(root3);
+
+  std::vector<FrameTree*> opener_frame_trees;
+  base::hash_set<FrameTreeNode*> nodes_with_back_links;
+
+  CollectOpenerFrameTrees(root1, &opener_frame_trees, &nodes_with_back_links);
+
+  EXPECT_EQ(4U, opener_frame_trees.size());
+  EXPECT_EQ(tree1, opener_frame_trees[0]);
+  EXPECT_EQ(tree2, opener_frame_trees[1]);
+  EXPECT_EQ(tree3, opener_frame_trees[2]);
+  EXPECT_EQ(tree4, opener_frame_trees[3]);
+
+  EXPECT_EQ(2U, nodes_with_back_links.size());
+  EXPECT_TRUE(nodes_with_back_links.find(root1->child_at(1)) !=
+              nodes_with_back_links.end());
+  EXPECT_TRUE(nodes_with_back_links.find(root4->child_at(0)) !=
+              nodes_with_back_links.end());
 }
 
 }  // namespace content

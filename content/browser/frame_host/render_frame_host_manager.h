@@ -618,6 +618,24 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // CreateOpenerProxies on it if it exists and returning otherwise.
   void CreateOpenerProxiesIfNeeded(SiteInstance* instance);
 
+  // Traverse the opener chain and populate |opener_frame_trees| with
+  // all FrameTrees accessible by following frame openers of nodes in the
+  // given node's FrameTree. |opener_frame_trees| is ordered so that openers
+  // of smaller-indexed entries point to larger-indexed entries (i.e., this
+  // node's FrameTree is at index 0, its opener's FrameTree is at index 1,
+  // etc). If the traversal encounters a node with an opener pointing to a
+  // FrameTree that has already been traversed (such as when there's a cycle),
+  // the node is added to |nodes_with_back_links|.
+  void CollectOpenerFrameTrees(
+      std::vector<FrameTree*>* opener_frame_trees,
+      base::hash_set<FrameTreeNode*>* nodes_with_back_links);
+
+  // Create swapped out RenderViews and RenderFrameProxies in the given
+  // SiteInstance for the current node's FrameTree.  Used as a helper function
+  // in CreateOpenerProxies for creating proxies in each FrameTree on the
+  // opener chain.
+  void CreateOpenerProxiesForFrameTree(SiteInstance* instance);
+
   // Creates a RenderFrameHost and corresponding RenderViewHost if necessary.
   scoped_ptr<RenderFrameHostImpl> CreateRenderFrameHost(SiteInstance* instance,
                                                         int view_routing_id,
