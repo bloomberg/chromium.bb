@@ -383,6 +383,27 @@ class AdbWrapper(object):
     self._RunDeviceAdbCmd(['forward', str(local), str(remote)], timeout,
                           retries)
 
+  def ForwardRemove(self, local, timeout=_DEFAULT_TIMEOUT,
+                    retries=_DEFAULT_RETRIES):
+    """Remove a forward socket connection.
+
+    Args:
+      local: The host socket.
+      timeout: (optional) Timeout per try in seconds.
+      retries: (optional) Number of retries to attempt.
+    """
+    self._RunDeviceAdbCmd(['forward', '--remove', str(local)], timeout,
+                          retries)
+
+  def ForwardList(self, timeout=_DEFAULT_TIMEOUT, retries=_DEFAULT_RETRIES):
+    """List all currently forwarded socket connections.
+
+    Args:
+      timeout: (optional) Timeout per try in seconds.
+      retries: (optional) Number of retries to attempt.
+    """
+    return self._RunDeviceAdbCmd(['forward', '--list'], timeout, retries)
+
   def JDWP(self, timeout=_DEFAULT_TIMEOUT, retries=_DEFAULT_RETRIES):
     """List of PIDs of processes hosting a JDWP transport.
 
