@@ -20,6 +20,7 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
@@ -27,7 +28,7 @@ namespace ash {
 
 class CursorWindowDelegate : public aura::WindowDelegate {
  public:
-  CursorWindowDelegate() : is_cursor_compositing_enabled_(false) {}
+  CursorWindowDelegate() {}
   ~CursorWindowDelegate() override {}
 
   // aura::WindowDelegate overrides:
@@ -60,32 +61,16 @@ class CursorWindowDelegate : public aura::WindowDelegate {
   bool HasHitTestMask() const override { return false; }
   void GetHitTestMask(gfx::Path* mask) const override {}
 
-  // Sets cursor compositing mode on/off.
-  void SetCursorCompositingEnabled(bool enabled) {
-    is_cursor_compositing_enabled_ = enabled;
-  }
-
   // Sets the cursor image for the |display|'s scale factor.
-  void SetCursorImage(const gfx::ImageSkia& image,
-                      const gfx::Display& display) {
-    float scale_factor = display.device_scale_factor();
-    const gfx::ImageSkiaRep& image_rep = image.GetRepresentation(scale_factor);
-    if (!is_cursor_compositing_enabled_) {
-      // Note that mirror window's scale factor is always 1.0f, therefore we
-      // need to take 2x's image and paint as if it's 1x image.
-      size_ = image_rep.pixel_size();
-      cursor_image_ = gfx::ImageSkia::CreateFrom1xBitmap(image_rep.sk_bitmap());
-    } else {
-      size_ = image.size();
-      cursor_image_ = gfx::ImageSkia(
-          gfx::ImageSkiaRep(image_rep.sk_bitmap(), scale_factor));
-    }
+  void SetCursorImage(const gfx::Size& size, const gfx::ImageSkia& image) {
+    size_ = size;
+    cursor_image_ = image;
   }
 
-  const gfx::Size size() const { return size_; }
+  const gfx::Size& size() const { return size_; }
+  const gfx::ImageSkia& cursor_image() const { return cursor_image_; }
 
  private:
-  bool is_cursor_compositing_enabled_;
   gfx::ImageSkia cursor_image_;
   gfx::Size size_;
 
@@ -108,8 +93,8 @@ CursorWindowController::~CursorWindowController() {
 void CursorWindowController::SetCursorCompositingEnabled(bool enabled) {
   if (is_cursor_compositing_enabled_ != enabled) {
     is_cursor_compositing_enabled_ = enabled;
-    delegate_->SetCursorCompositingEnabled(enabled);
-    UpdateCursorImage();
+    if (display_.is_valid())
+      UpdateCursorImage();
     UpdateContainer();
   }
 }
@@ -223,19 +208,30 @@ void CursorWindowController::SetBoundsInScreen(const gfx::Rect& bounds) {
 }
 
 void CursorWindowController::UpdateCursorImage() {
+  float cursor_scale;
+  if (!is_cursor_compositing_enabled_) {
+    cursor_scale = display_.device_scale_factor();
+  } else {
+    // Use the original device scale factor instead of the display's, which
+    // might have been adjusted for the UI scale.
+    const float original_scale = Shell::GetInstance()
+                                     ->display_manager()
+                                     ->GetDisplayInfo(display_.id())
+                                     .device_scale_factor();
+    // And use the nearest resource scale factor.
+    cursor_scale =
+        ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactor(original_scale));
+  }
   int resource_id;
   // TODO(hshi): support custom cursor set.
-  if (!ui::GetCursorDataFor(cursor_set_,
-                            cursor_type_,
-                            display_.device_scale_factor(),
-                            &resource_id,
-                            &hot_point_)) {
+  if (!ui::GetCursorDataFor(cursor_set_, cursor_type_, cursor_scale,
+                            &resource_id, &hot_point_)) {
     return;
   }
   const gfx::ImageSkia* image =
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
-  gfx::ImageSkia rotated = *image;
   if (!is_cursor_compositing_enabled_) {
+    gfx::ImageSkia rotated = *image;
     switch (display_.rotation()) {
       case gfx::Display::ROTATE_0:
         break;
@@ -261,11 +257,20 @@ void CursorWindowController::UpdateCursorImage() {
             rotated.height() - hot_point_.x());
         break;
     }
+    // Note that mirror window's scale factor is always 1.0f, therefore we
+    // need to take 2x's image and paint as if it's 1x image.
+    const gfx::ImageSkiaRep& image_rep =
+        rotated.GetRepresentation(cursor_scale);
+    delegate_->SetCursorImage(
+        image_rep.pixel_size(),
+        gfx::ImageSkia::CreateFrom1xBitmap(image_rep.sk_bitmap()));
   } else {
-    hot_point_ = ui::ConvertPointToDIP(Shell::GetPrimaryRootWindow()->layer(),
-                                       hot_point_);
+    const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(cursor_scale);
+    delegate_->SetCursorImage(
+        image->size(),
+        gfx::ImageSkia(gfx::ImageSkiaRep(image_rep.sk_bitmap(), cursor_scale)));
+    hot_point_ = gfx::ConvertPointToDIP(cursor_scale, hot_point_);
   }
-  delegate_->SetCursorImage(rotated, display_);
   if (cursor_window_) {
     cursor_window_->SetBounds(gfx::Rect(delegate_->size()));
     cursor_window_->SchedulePaintInRect(
@@ -282,6 +287,10 @@ void CursorWindowController::UpdateCursorVisibility() {
     cursor_window_->Show();
   else
     cursor_window_->Hide();
+}
+
+const gfx::ImageSkia& CursorWindowController::GetCursorImageForTest() const {
+  return delegate_->cursor_image();
 }
 
 }  // namespace ash

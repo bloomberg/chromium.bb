@@ -4,10 +4,12 @@
 
 #include "ash/display/cursor_window_controller.h"
 
+#include "ash/display/display_util.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/display_manager_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
@@ -36,6 +38,10 @@ class CursorWindowControllerTest : public test::AshTestBase {
 
   aura::Window* GetCursorWindow() const {
     return cursor_window_controller_->cursor_window_.get();
+  }
+
+  const gfx::ImageSkia& GetCursorImage() const {
+    return cursor_window_controller_->GetCursorImageForTest();
   }
 
   int64 GetCursorDisplayId() const {
@@ -104,7 +110,7 @@ TEST_F(CursorWindowControllerTest, MoveToDifferentDisplay) {
   EXPECT_EQ(secondary_display_id, GetCursorDisplayId());
   EXPECT_EQ(ui::kCursorNull, GetCursorType());
   hot_point = GetCursorHotPoint();
-  EXPECT_EQ("7,7", hot_point.ToString());
+  EXPECT_EQ("3,3", hot_point.ToString());
   cursor_bounds = GetCursorWindow()->GetBoundsInScreen();
   EXPECT_EQ(220, cursor_bounds.x() + hot_point.x());
   EXPECT_EQ(50, cursor_bounds.y() + hot_point.y());
@@ -142,6 +148,24 @@ TEST_F(CursorWindowControllerTest, VisibilityTest) {
   SetCursorCompositionEnabled(true);
   ASSERT_TRUE(GetCursorWindow());
   EXPECT_TRUE(GetCursorWindow()->IsVisible());
+}
+
+// Make sure that composition cursor stays big even when
+// the DSF becomes 1x as a result of zooming out.
+TEST_F(CursorWindowControllerTest, DSF) {
+  UpdateDisplay("1000x500*2");
+  int64 primary_id = Shell::GetScreen()->GetPrimaryDisplay().id();
+
+  test::ScopedSetInternalDisplayId set_internal(primary_id);
+  SetCursorCompositionEnabled(true);
+  ASSERT_EQ(2.0f,
+            Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_TRUE(GetCursorImage().HasRepresentation(2.0f));
+
+  ASSERT_TRUE(SetDisplayUIScale(primary_id, 2.0f));
+  ASSERT_EQ(1.0f,
+            Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_TRUE(GetCursorImage().HasRepresentation(2.0f));
 }
 #endif
 

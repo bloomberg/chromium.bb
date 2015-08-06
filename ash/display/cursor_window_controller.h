@@ -65,6 +65,8 @@ class ASH_EXPORT CursorWindowController {
   // Hides/shows cursor window based on current cursor state.
   void UpdateCursorVisibility();
 
+  const gfx::ImageSkia& GetCursorImageForTest() const;
+
   bool is_cursor_compositing_enabled_;
   aura::Window* container_;
 
