@@ -5,10 +5,15 @@
 #include "components/autofill/ios/browser/autofill_field_trial_ios.h"
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "components/autofill/core/common/autofill_switches.h"
 
 namespace autofill {
 
+// The full-form Autofill field trial name.
+const char kFullFormFieldTrialName[] = "FullFormAutofill";
+
+// static
 bool AutofillFieldTrialIOS::IsFullFormAutofillEnabled() {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -17,8 +22,9 @@ bool AutofillFieldTrialIOS::IsFullFormAutofillEnabled() {
   if (command_line->HasSwitch(autofill::switches::kEnableFullFormAutofillIOS))
     return true;
 
-  // TODO(bondd): Control via a FieldTrial.
-  return false;
+  std::string field_trial_state =
+      base::FieldTrialList::FindFullName(kFullFormFieldTrialName);
+  return !field_trial_state.empty() && field_trial_state != "Disabled";
 }
 
 }  // namespace autofill
