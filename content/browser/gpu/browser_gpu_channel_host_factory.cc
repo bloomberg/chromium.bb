@@ -236,7 +236,8 @@ BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
       gpu_client_tracing_id_(ChildProcessHost::kBrowserTracingProcessId),
       shutdown_event_(new base::WaitableEvent(true, false)),
       gpu_memory_buffer_manager_(
-          new BrowserGpuMemoryBufferManager(gpu_client_id_)),
+          new BrowserGpuMemoryBufferManager(gpu_client_id_,
+                                            gpu_client_tracing_id_)),
       gpu_host_id_(0) {}
 
 BrowserGpuChannelHostFactory::~BrowserGpuChannelHostFactory() {

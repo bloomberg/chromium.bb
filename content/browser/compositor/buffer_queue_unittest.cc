@@ -45,7 +45,7 @@ class StubGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
 
 class StubBrowserGpuMemoryBufferManager : public BrowserGpuMemoryBufferManager {
  public:
-  StubBrowserGpuMemoryBufferManager() : BrowserGpuMemoryBufferManager(1) {}
+  StubBrowserGpuMemoryBufferManager() : BrowserGpuMemoryBufferManager(1, 1) {}
 
   scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBufferForScanout(
       const gfx::Size& size,

@@ -52,8 +52,6 @@ class HostSharedBitmap : public cc::SharedBitmap {
   HostSharedBitmapManager* manager_;
 };
 
-const char kMemoryAllocatorName[] = "sharedbitmap";
-
 }  // namespace
 
 base::LazyInstance<HostSharedBitmapManager> g_shared_memory_manager =
@@ -155,16 +153,23 @@ bool HostSharedBitmapManager::OnMemoryDump(
   base::AutoLock lock(lock_);
 
   for (const auto& bitmap : handle_map_) {
-    base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
-        base::StringPrintf("%s/%s", kMemoryAllocatorName,
-                           base::HexEncode(bitmap.first.name,
-                                           sizeof(bitmap.first.name)).c_str()));
+    base::trace_event::MemoryAllocatorDump* dump =
+        pmd->CreateAllocatorDump(base::StringPrintf(
+            "sharedbitmap/%s",
+            base::HexEncode(bitmap.first.name, sizeof(bitmap.first.name))
+                .c_str()));
     if (!dump)
       return false;
 
     dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                     base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                     bitmap.second->buffer_size);
+
+    // Generate a global GUID used to share this allocation with renderer
+    // processes.
+    auto guid = cc::GetSharedBitmapGUIDForTracing(bitmap.first);
+    pmd->CreateSharedGlobalAllocatorDump(guid);
+    pmd->AddOwnershipEdge(dump->guid(), guid);
   }
 
   return true;

@@ -21,6 +21,9 @@ class FakeMemoryTracker : public gpu::gles2::MemoryTracker {
   bool EnsureGPUMemoryAvailable(size_t /* size_needed */) override {
     return true;
   }
+  uint64_t ClientTracingId() const override { return 0; }
+  int ClientId() const override { return 0; }
+
  private:
   ~FakeMemoryTracker() override {}
 };

@@ -89,7 +89,7 @@ class VideoCaptureBufferPoolTest
   class StubBrowserGpuMemoryBufferManager
       : public BrowserGpuMemoryBufferManager {
    public:
-    StubBrowserGpuMemoryBufferManager() : BrowserGpuMemoryBufferManager(1) {}
+    StubBrowserGpuMemoryBufferManager() : BrowserGpuMemoryBufferManager(1, 1) {}
 
     scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
         const gfx::Size& size,

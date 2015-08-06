@@ -1176,6 +1176,9 @@ class SizeOnlyMemoryTracker : public MemoryTracker {
     return info.size - info.initial_size;
   }
 
+  uint64_t ClientTracingId() const override { return 0; }
+  int ClientId() const override { return 0; }
+
  private:
   virtual ~SizeOnlyMemoryTracker() {}
   struct PoolInfo {

@@ -44,6 +44,8 @@ class MemoryTrackerStub : public gpu::gles2::MemoryTracker {
       gpu::gles2::MemoryTracker::Pool pool) override {}
 
   bool EnsureGPUMemoryAvailable(size_t size_needed) override { return true; };
+  uint64_t ClientTracingId() const override { return 0; }
+  int ClientId() const override { return 0; }
 
  private:
   ~MemoryTrackerStub() override {}

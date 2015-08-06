@@ -528,6 +528,7 @@ component("cc") {
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gl",
   ]
 
   defines = [ "CC_IMPLEMENTATION=1" ]

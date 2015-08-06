@@ -11,6 +11,8 @@
 #include "base/bits.h"
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/error_state.h"
@@ -20,6 +22,7 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/trace_util.h"
 
 namespace gpu {
 namespace gles2 {
@@ -283,6 +286,9 @@ TextureManager::~TextureManager() {
   DCHECK_EQ(0, num_unsafe_textures_);
   DCHECK_EQ(0, num_uncleared_mips_);
   DCHECK_EQ(0, num_images_);
+
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
 }
 
 void TextureManager::Destroy(bool have_context) {
@@ -1324,6 +1330,7 @@ TextureManager::TextureManager(MemoryTracker* memory_tracker,
           new MemoryTypeTracker(memory_tracker, MemoryTracker::kManaged)),
       memory_tracker_unmanaged_(
           new MemoryTypeTracker(memory_tracker, MemoryTracker::kUnmanaged)),
+      memory_tracker_(memory_tracker),
       feature_info_(feature_info),
       framebuffer_manager_(NULL),
       max_texture_size_(max_texture_size),
@@ -1373,6 +1380,13 @@ bool TextureManager::Initialize() {
   if (feature_info_->feature_flags().arb_texture_rectangle) {
     default_textures_[kRectangleARB] = CreateDefaultAndBlackTextures(
         GL_TEXTURE_RECTANGLE_ARB, &black_texture_ids_[kRectangleARB]);
+  }
+
+  // When created from InProcessCommandBuffer, we won't have a |memory_tracker_|
+  // so don't register a dump provider.
+  if (memory_tracker_) {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, base::ThreadTaskRunnerHandle::Get());
   }
 
   return true;
@@ -2025,6 +2039,67 @@ ScopedTextureUploadTimer::~ScopedTextureUploadTimer() {
   texture_state_->texture_upload_count++;
   texture_state_->total_texture_upload_time +=
       base::TimeTicks::Now() - begin_time_;
+}
+
+bool TextureManager::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
+  for (const auto& resource : textures_) {
+    // Only dump memory info for textures actually owned by this TextureManager.
+    DumpTextureRef(pmd, resource.second.get());
+  }
+
+  // Also dump TextureManager internal textures, if allocated.
+  for (int i = 0; i < kNumDefaultTextures; i++) {
+    if (default_textures_[i]) {
+      DumpTextureRef(pmd, default_textures_[i].get());
+    }
+  }
+
+  return true;
+}
+
+void TextureManager::DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
+                                    TextureRef* ref) {
+  // TODO(ericrk): Trace image-backed textures. crbug.com/514914
+  if (ref->texture()->HasImages())
+    return;
+
+  uint32_t size = ref->texture()->estimated_size();
+
+  // Ignore unallocated texture IDs.
+  if (size == 0)
+    return;
+
+  std::string dump_name =
+      base::StringPrintf("gl/textures/client_%d/texture_%d",
+                         memory_tracker_->ClientId(), ref->client_id());
+  base::trace_event::MemoryAllocatorDump* dump =
+      pmd->CreateAllocatorDump(dump_name);
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  static_cast<uint64_t>(size));
+
+  // Add the |client_guid| which expresses shared ownership with the client
+  // process.
+  auto client_guid = gfx::GetGLTextureGUIDForTracing(
+      memory_tracker_->ClientTracingId(), ref->client_id());
+  pmd->CreateSharedGlobalAllocatorDump(client_guid);
+  pmd->AddOwnershipEdge(dump->guid(), client_guid);
+
+  // Add a |service_guid| which expresses shared ownership between the various
+  // |client_guid|s.
+  // TODO(ericrk): May need to ensure uniqueness using GLShareGroup and
+  // potentially cross-share-group sharing via EGLImages. crbug.com/512534
+  auto service_guid =
+      gfx::GetGLTextureGUIDForTracing(0, ref->texture()->service_id());
+  pmd->CreateSharedGlobalAllocatorDump(service_guid);
+
+  int importance = 0;  // Default importance.
+  // The link to the memory tracking |client_id| is given a higher importance
+  // than other refs.
+  if (ref == ref->texture()->memory_tracking_ref_)
+    importance = 2;
+
+  pmd->AddOwnershipEdge(client_guid, service_guid, importance);
 }
 
 }  // namespace gles2

@@ -17,6 +17,8 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/resource_id.h"
 #include "cc/output/context_provider.h"
@@ -57,7 +59,8 @@ class SharedBitmapManager;
 
 // This class is not thread-safe and can only be called from the thread it was
 // created on (in practice, the impl thread).
-class CC_EXPORT ResourceProvider {
+class CC_EXPORT ResourceProvider
+    : public base::trace_event::MemoryDumpProvider {
  private:
   struct Resource;
 
@@ -86,7 +89,7 @@ class CC_EXPORT ResourceProvider {
       bool use_rgba_4444_texture_format,
       size_t id_allocation_chunk_size,
       bool use_persistent_map_for_gpu_memory_buffers);
-  virtual ~ResourceProvider();
+  ~ResourceProvider() override;
 
   void DidLoseOutputSurface() { lost_output_surface_ = true; }
 
@@ -437,6 +440,9 @@ class CC_EXPORT ResourceProvider {
   OutputSurface* output_surface() { return output_surface_; }
 
   void ValidateResource(ResourceId id) const;
+
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
 
  protected:
   ResourceProvider(OutputSurface* output_surface,

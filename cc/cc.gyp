@@ -20,6 +20,7 @@
         '<(DEPTH)/ui/events/events.gyp:events_base',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
+        '<(DEPTH)/ui/gl/gl.gyp:gl',
       ],
       'variables': {
         'optimize': 'max',

@@ -22,7 +22,8 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
   typedef base::Callback<void(const gfx::GpuMemoryBufferHandle& handle)>
       AllocationCallback;
 
-  explicit BrowserGpuMemoryBufferManager(int gpu_client_id);
+  BrowserGpuMemoryBufferManager(int gpu_client_id,
+                                uint64_t gpu_client_tracing_id);
   ~BrowserGpuMemoryBufferManager() override;
 
   static BrowserGpuMemoryBufferManager* current();
@@ -120,10 +121,13 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
                                   int client_id,
                                   uint32 sync_point);
 
+  uint64_t ClientIdToTracingProcessId(int client_id) const;
+
   const gfx::GpuMemoryBufferType factory_type_;
   const std::vector<GpuMemoryBufferFactory::Configuration>
       supported_configurations_;
   const int gpu_client_id_;
+  const uint64_t gpu_client_tracing_id_;
 
   // The GPU process host ID. This should only be accessed on the IO thread.
   int gpu_host_id_;

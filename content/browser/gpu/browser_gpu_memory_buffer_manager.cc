@@ -147,11 +147,14 @@ struct BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferRequest {
   scoped_ptr<gfx::GpuMemoryBuffer> result;
 };
 
-BrowserGpuMemoryBufferManager::BrowserGpuMemoryBufferManager(int gpu_client_id)
+BrowserGpuMemoryBufferManager::BrowserGpuMemoryBufferManager(
+    int gpu_client_id,
+    uint64_t gpu_client_tracing_id)
     : factory_type_(GetGpuMemoryBufferFactoryType()),
       supported_configurations_(
           GetSupportedGpuMemoryBufferConfigurations(factory_type_)),
       gpu_client_id_(gpu_client_id),
+      gpu_client_tracing_id_(gpu_client_tracing_id),
       gpu_host_id_(0) {
   DCHECK(!g_gpu_memory_buffer_manager);
   g_gpu_memory_buffer_manager = this;
@@ -292,9 +295,8 @@ bool BrowserGpuMemoryBufferManager::OnMemoryDump(
       // corresponding dump for the same buffer, this will avoid to
       // double-count them in tracing. If, instead, no other process will emit a
       // dump with the same guid, the segment will be accounted to the browser.
-      const uint64 client_tracing_process_id =
-          ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
-              client_id);
+      uint64 client_tracing_process_id = ClientIdToTracingProcessId(client_id);
+
       base::trace_event::MemoryAllocatorDumpGuid shared_buffer_guid =
           gfx::GetGpuMemoryBufferGUIDForTracing(client_tracing_process_id,
                                                 buffer_id);
@@ -587,6 +589,19 @@ void BrowserGpuMemoryBufferManager::DestroyGpuMemoryBufferOnIO(
     host->DestroyGpuMemoryBuffer(id, client_id, sync_point);
 
   buffers.erase(buffer_it);
+}
+
+uint64_t BrowserGpuMemoryBufferManager::ClientIdToTracingProcessId(
+    int client_id) const {
+  if (client_id == gpu_client_id_) {
+    // The gpu_client uses a fixed tracing ID.
+    return gpu_client_tracing_id_;
+  }
+
+  // In normal cases, |client_id| is a child process id, so we can perform
+  // the standard conversion.
+  return ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
+      client_id);
 }
 
 }  // namespace content

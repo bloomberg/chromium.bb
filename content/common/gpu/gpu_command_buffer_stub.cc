@@ -64,10 +64,13 @@ namespace {
 // ContextGroup's memory type managers and the GpuMemoryManager class.
 class GpuCommandBufferMemoryTracker : public gpu::gles2::MemoryTracker {
  public:
-  explicit GpuCommandBufferMemoryTracker(GpuChannel* channel) :
-      tracking_group_(channel->gpu_channel_manager()->gpu_memory_manager()->
-          CreateTrackingGroup(channel->renderer_pid(), this)) {
-  }
+  explicit GpuCommandBufferMemoryTracker(GpuChannel* channel)
+      : tracking_group_(
+            channel->gpu_channel_manager()
+                ->gpu_memory_manager()
+                ->CreateTrackingGroup(channel->renderer_pid(), this)),
+        client_tracing_id_(channel->client_tracing_id()),
+        client_id_(channel->client_id()) {}
 
   void TrackMemoryAllocatedChange(
       size_t old_size,
@@ -81,9 +84,14 @@ class GpuCommandBufferMemoryTracker : public gpu::gles2::MemoryTracker {
     return tracking_group_->EnsureGPUMemoryAvailable(size_needed);
   };
 
+  uint64_t ClientTracingId() const override { return client_tracing_id_; }
+  int ClientId() const override { return client_id_; }
+
  private:
   ~GpuCommandBufferMemoryTracker() override {}
   scoped_ptr<GpuMemoryTrackingGroup> tracking_group_;
+  const uint64_t client_tracing_id_;
+  const int client_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferMemoryTracker);
 };

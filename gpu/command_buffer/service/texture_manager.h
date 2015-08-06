@@ -555,7 +555,7 @@ struct DecoderTextureState {
 //
 // NOTE: To support shared resources an instance of this class will need to be
 // shared by multiple GLES2Decoders.
-class GPU_EXPORT TextureManager {
+class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
  public:
   class GPU_EXPORT DestructionObserver {
    public:
@@ -587,7 +587,7 @@ class GPU_EXPORT TextureManager {
                  GLsizei max_rectangle_texture_size,
                  GLsizei max_3d_texture_size,
                  bool use_default_textures);
-  ~TextureManager();
+  ~TextureManager() override;
 
   void set_framebuffer_manager(FramebufferManager* manager) {
     framebuffer_manager_ = manager;
@@ -867,6 +867,9 @@ class GPU_EXPORT TextureManager {
     ErrorState* error_state, const char* function_name,
     GLenum format, GLenum type, GLenum internal_format, GLint level);
 
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
+
  private:
   friend class Texture;
   friend class TextureRef;
@@ -896,9 +899,14 @@ class GPU_EXPORT TextureManager {
 
   GLenum AdjustTexFormat(GLenum format) const;
 
+  // Helper function called by OnMemoryDump.
+  void DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
+                      TextureRef* ref);
+
   MemoryTypeTracker* GetMemTracker(GLenum texture_pool);
   scoped_ptr<MemoryTypeTracker> memory_tracker_managed_;
   scoped_ptr<MemoryTypeTracker> memory_tracker_unmanaged_;
+  MemoryTracker* memory_tracker_;
 
   scoped_refptr<FeatureInfo> feature_info_;
 

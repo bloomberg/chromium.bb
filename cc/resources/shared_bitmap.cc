@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 
 namespace cc {
 
@@ -64,6 +66,13 @@ SharedBitmapId SharedBitmap::GenerateId() {
   // Needs cryptographically-secure random numbers.
   base::RandBytes(id.name, sizeof(id.name));
   return id;
+}
+
+base::trace_event::MemoryAllocatorDumpGuid GetSharedBitmapGUIDForTracing(
+    const SharedBitmapId& bitmap_id) {
+  auto bitmap_id_hex = base::HexEncode(bitmap_id.name, sizeof(bitmap_id.name));
+  return base::trace_event::MemoryAllocatorDumpGuid(
+      base::StringPrintf("sharedbitmap-x-process/%s", bitmap_id_hex.c_str()));
 }
 
 }  // namespace cc

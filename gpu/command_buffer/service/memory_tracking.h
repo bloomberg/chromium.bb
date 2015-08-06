@@ -30,6 +30,13 @@ class MemoryTracker : public base::RefCounted<MemoryTracker> {
    // Ensure a certain amount of GPU memory is free. Returns true on success.
    virtual bool EnsureGPUMemoryAvailable(size_t size_needed) = 0;
 
+   // Tracing id which identifies the GPU client for whom memory is being
+   // allocated.
+   virtual uint64_t ClientTracingId() const = 0;
+
+   // Raw ID identifying the GPU client for whom memory is being allocated.
+   virtual int ClientId() const = 0;
+
  protected:
   friend class base::RefCounted<MemoryTracker>;
   MemoryTracker() {}

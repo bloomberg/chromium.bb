@@ -121,6 +121,8 @@
         'scoped_make_current.h',
         'sync_control_vsync_provider.cc',
         'sync_control_vsync_provider.h',
+        'trace_util.cc',
+        'trace_util.h',
       ],
       'conditions': [
         ['OS in ("win", "android", "linux")', {
