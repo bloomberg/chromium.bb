@@ -230,14 +230,26 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
              ui::PAGE_TRANSITION_TYPED, true);
 }
 
+// http://crbug.com/517307
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerNoTypeInManifest DISABLED_WebAppBannerNoTypeInManifest
+#else
+#define MAYBE_WebAppBannerNoTypeInManifest WebAppBannerNoTypeInManifest
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerNoTypeInManifest) {
+                       MAYBE_WebAppBannerNoTypeInManifest) {
   RunBannerTest("/banners/manifest_no_type_test_page.html",
                 ui::PAGE_TRANSITION_TYPED, 1, true);
 }
 
+// http://crbug.com/517307
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerNoTypeInManifestCapsExtension DISABLED_WebAppBannerNoTypeInManifestCapsExtension
+#else
+#define MAYBE_WebAppBannerNoTypeInManifestCapsExtension WebAppBannerNoTypeInManifestCapsExtension
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerNoTypeInManifestCapsExtension) {
+                       MAYBE_WebAppBannerNoTypeInManifestCapsExtension) {
   RunBannerTest("/banners/manifest_no_type_caps_test_page.html",
                 ui::PAGE_TRANSITION_TYPED, 1, true);
 }
