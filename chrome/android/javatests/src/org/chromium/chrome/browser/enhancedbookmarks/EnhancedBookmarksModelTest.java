@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.enhancedbookmarks;
 
-import android.test.FlakyTest;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -15,6 +14,8 @@ import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,12 +37,26 @@ public class EnhancedBookmarksModelTest extends NativeLibraryTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         loadNativeLibraryAndInitBrowserProcess();
+
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 Profile profile = Profile.getLastUsedProfile();
                 mBookmarksModel = new EnhancedBookmarksModel(profile);
                 mBookmarksModel.loadEmptyPartnerBookmarkShimForTesting();
+            }
+        });
+
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mBookmarksModel.isBookmarkModelLoaded();
+            }
+        });
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
                 mMobileNode = mBookmarksModel.getMobileFolderId();
                 mDesktopNode = mBookmarksModel.getDesktopFolderId();
                 mOtherNode = mBookmarksModel.getOtherFolderId();
@@ -74,7 +89,7 @@ public class EnhancedBookmarksModelTest extends NativeLibraryTestBase {
         stack.push(mBookmarksModel.addBookmark(folderB, 0, "g", "http://kkimlabs.com"));
 
         List<BookmarkId> bookmarks = mBookmarksModel.getAllBookmarkIDsOrderedByCreationDate();
-        assertEquals(bookmarks.size(), stack.size());
+        assertEquals(stack.size(), bookmarks.size());
         for (BookmarkId returnedBookmark : bookmarks) {
             assertEquals(stack.pop(), returnedBookmark);
         }
@@ -111,14 +126,11 @@ public class EnhancedBookmarksModelTest extends NativeLibraryTestBase {
         verifyBookmark(bookmarkD, "kauri", "http://kauri.org/", false, folderA);
     }
 
-    /* Flaky: crbug.com/515489
-     *
-     * @UiThreadTest
-     * @SmallTest
-     * @Feature({"Bookmark"})
-     */
+
+    @UiThreadTest
+    @SmallTest
+    @Feature({"Bookmark" })
     @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
-    @FlakyTest
     public void testMoveBookmarks() {
         BookmarkId bookmarkA = mBookmarksModel.addBookmark(mDesktopNode, 0, "a", "http://a.com");
         BookmarkId bookmarkB = mBookmarksModel.addBookmark(mOtherNode, 0, "b", "http://b.com");

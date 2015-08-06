@@ -13,6 +13,8 @@ import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,6 +41,19 @@ public class BookmarksBridgeTest extends NativeLibraryTestBase {
                 Profile profile = Profile.getLastUsedProfile();
                 mBookmarksBridge = new BookmarksBridge(profile);
                 mBookmarksBridge.loadEmptyPartnerBookmarkShimForTesting();
+            }
+        });
+
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mBookmarksBridge.isBookmarkModelLoaded();
+            }
+        });
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
                 mMobileNode = mBookmarksBridge.getMobileFolderId();
                 mDesktopNode = mBookmarksBridge.getDesktopFolderId();
                 mOtherNode = mBookmarksBridge.getOtherFolderId();
