@@ -61,6 +61,11 @@ filesystem::FilePtr& GetFSFile(sqlite3_file* vfs_file) {
 int MojoVFSClose(sqlite3_file* file) {
   DVLOG(1) << "MojoVFSClose(*)";
   using filesystem::FilePtr;
+  filesystem::FileError error = filesystem::FILE_ERROR_FAILED;
+  // Must call File::Close explicitly instead of just deleting the file, since
+  // otherwise we wouldn't have an object to wait on.
+  GetFSFile(file)->Close(mojo::Capture(&error));
+  GetFSFile(file).WaitForIncomingResponse();
   GetFSFile(file).~FilePtr();
   return SQLITE_OK;
 }

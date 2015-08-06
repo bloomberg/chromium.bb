@@ -82,7 +82,7 @@ class VFSTest : public mojo::test::ApplicationTestBase,
 };
 
 TEST_F(VFSTest, TestInstalled) {
-  EXPECT_EQ("mojo", vfs()->zName);
+  EXPECT_EQ("mojo", std::string(vfs()->zName));
 }
 
 TEST_F(VFSTest, ExclusiveOpen) {

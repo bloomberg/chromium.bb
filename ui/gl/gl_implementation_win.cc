@@ -90,16 +90,17 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
   switch (implementation) {
     case kGLImplementationOSMesaGL: {
       base::FilePath module_path;
-      if (!PathService::Get(base::DIR_MODULE, &module_path)) {
-        LOG(ERROR) << "PathService::Get failed.";
-        return false;
-      }
-
+      PathService::Get(base::DIR_MODULE, &module_path);
       base::NativeLibrary library = base::LoadNativeLibrary(
           module_path.Append(L"osmesa.dll"), NULL);
       if (!library) {
-        DVLOG(1) << "osmesa.dll not found";
-        return false;
+        PathService::Get(base::DIR_EXE, &module_path);
+        library = base::LoadNativeLibrary(
+            module_path.Append(L"osmesa.dll"), NULL);
+        if (!library) {
+          DVLOG(1) << "osmesa.dll not found";
+          return false;
+        }
       }
 
       GLGetProcAddressProc get_proc_address =
