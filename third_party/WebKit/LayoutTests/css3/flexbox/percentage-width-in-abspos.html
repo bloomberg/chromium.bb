@@ -2,8 +2,8 @@
 <style>
 body {
   position: relative;
-  width: 800px;
-  height: 600px;
+  width: 600px;
+  height: 800px;
 }
 
 #container {
@@ -14,12 +14,12 @@ body {
   left: 0;
   right: 0;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
 }
 
 #top-bar {
   background-color: green;
-  height: 20%;
+  width: 20%;
 }
 
 #content {
@@ -31,10 +31,10 @@ body {
 
 <div id="container">
   <div id="top-bar">
-  Tests that percentage heights get resolved correctly when the flexbox is
+  Tests that percentage widths get resolved correctly when the flexbox is
   </div>
   <div id="content">
-  absolutely positioned without an explicit height. You should see no red.
+  absolutely positioned without an explicit width. You should see no red.
   </div>
 </div>
 
