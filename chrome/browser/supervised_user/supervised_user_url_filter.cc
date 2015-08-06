@@ -113,7 +113,7 @@ bool FilterBuilder::AddPattern(const std::string& pattern, int site_id) {
 }
 
 void FilterBuilder::AddHostnameHash(const std::string& hash, int site_id) {
-  contents_->hash_site_map.insert(std::make_pair(base::StringToUpperASCII(hash),
+  contents_->hash_site_map.insert(std::make_pair(base::ToUpperASCII(hash),
                                                  site_id));
 }
 

@@ -148,6 +148,44 @@ bool IsWprintfFormatPortable(const wchar_t* format) {
   return true;
 }
 
+namespace {
+
+template<typename StringType>
+StringType ToLowerASCIIImpl(BasicStringPiece<StringType> str) {
+  StringType ret;
+  ret.reserve(str.size());
+  for (size_t i = 0; i < str.size(); i++)
+    ret.push_back(ToLowerASCII(str[i]));
+  return ret;
+}
+
+template<typename StringType>
+StringType ToUpperASCIIImpl(BasicStringPiece<StringType> str) {
+  StringType ret;
+  ret.reserve(str.size());
+  for (size_t i = 0; i < str.size(); i++)
+    ret.push_back(ToUpperASCII(str[i]));
+  return ret;
+}
+
+}  // namespace
+
+std::string ToLowerASCII(StringPiece str) {
+  return ToLowerASCIIImpl<std::string>(str);
+}
+
+string16 ToLowerASCII(StringPiece16 str) {
+  return ToLowerASCIIImpl<string16>(str);
+}
+
+std::string ToUpperASCII(StringPiece str) {
+  return ToUpperASCIIImpl<std::string>(str);
+}
+
+string16 ToUpperASCII(StringPiece16 str) {
+  return ToUpperASCIIImpl<string16>(str);
+}
+
 template<class StringType>
 int CompareCaseInsensitiveASCIIT(BasicStringPiece<StringType> a,
                                  BasicStringPiece<StringType> b) {

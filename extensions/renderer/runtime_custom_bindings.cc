@@ -125,8 +125,8 @@ void RuntimeCustomBindings::GetExtensionViews(
   // all views for the current extension.
   int browser_window_id = args[0]->Int32Value();
 
-  std::string view_type_string = *v8::String::Utf8Value(args[1]);
-  base::StringToUpperASCII(&view_type_string);
+  std::string view_type_string =
+      base::ToUpperASCII(*v8::String::Utf8Value(args[1]));
   // |view_type| == VIEW_TYPE_INVALID means getting any type of
   // views.
   ViewType view_type = VIEW_TYPE_INVALID;

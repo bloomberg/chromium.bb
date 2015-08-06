@@ -426,8 +426,8 @@ TEST_F(FileUtilTest, NormalizeFilePathReparsePoints) {
 
 TEST_F(FileUtilTest, DevicePathToDriveLetter) {
   // Get a drive letter.
-  std::wstring real_drive_letter = temp_dir_.path().value().substr(0, 2);
-  StringToUpperASCII(&real_drive_letter);
+  string16 real_drive_letter =
+      ToUpperASCII(temp_dir_.path().value().substr(0, 2));
   if (!isalpha(real_drive_letter[0]) || ':' != real_drive_letter[1]) {
     LOG(ERROR) << "Can't get a drive letter to test with.";
     return;

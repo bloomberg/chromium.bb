@@ -153,10 +153,11 @@ void UpdateWindowsKeyCodeAndKeyIdentifier(blink::WebKeyboardEvent* event,
   if (id) {
     base::strlcpy(event->keyIdentifier, id, sizeof(event->keyIdentifier) - 1);
   } else {
-    base::snprintf(event->keyIdentifier,
-                   sizeof(event->keyIdentifier),
-                   "U+%04X",
-                   base::ToUpperASCII(static_cast<int>(windows_key_code)));
+    base::snprintf(
+        event->keyIdentifier,
+        sizeof(event->keyIdentifier),
+        "U+%04X",
+        base::ToUpperASCII(static_cast<base::char16>(windows_key_code)));
   }
 }
 

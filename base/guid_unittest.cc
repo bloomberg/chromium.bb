@@ -43,8 +43,8 @@ TEST(GUIDTest, GUIDCorrectlyFormatted) {
   for (int it = 0; it < kIterations; ++it) {
     std::string guid = GenerateGUID();
     EXPECT_TRUE(IsValidGUID(guid));
-    EXPECT_TRUE(IsValidGUID(StringToLowerASCII(guid)));
-    EXPECT_TRUE(IsValidGUID(StringToUpperASCII(guid)));
+    EXPECT_TRUE(IsValidGUID(ToLowerASCII(guid)));
+    EXPECT_TRUE(IsValidGUID(ToUpperASCII(guid)));
   }
 }
 

@@ -72,9 +72,9 @@ std::wstring GetLocalizedEulaResource() {
     return L"";
 
   // The resource names are more or less the upcased language names.
-  std::wstring language(GetLanguageSelector().selected_translation());
+  base::string16 language(GetLanguageSelector().selected_translation());
   std::replace(language.begin(), language.end(), L'-', L'_');
-  base::StringToUpperASCII(&language);
+  language = base::ToUpperASCII(language);
 
   std::wstring resource(L"IDR_OEMPG_");
   resource.append(language).append(L".HTML");

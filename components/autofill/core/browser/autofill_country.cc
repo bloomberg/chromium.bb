@@ -937,10 +937,8 @@ CountryNames::~CountryNames() {
 const std::string CountryNames::GetCountryCode(const base::string16& country,
                                                const std::string& locale) {
   // First, check common country names, including 2- and 3-letter country codes.
-  std::string country_utf8 = base::UTF16ToUTF8(
-      base::StringToUpperASCII(country));
-  std::map<std::string, std::string>::const_iterator result =
-      common_names_.find(country_utf8);
+  std::string country_utf8 = base::UTF16ToUTF8(base::ToUpperASCII(country));
+  const auto result = common_names_.find(country_utf8);
   if (result != common_names_.end())
     return result->second;
 

@@ -533,7 +533,7 @@ static bool ParseH264CodecID(const std::string& codec_id,
     return false;
   }
 
-  std::string profile = base::StringToUpperASCII(codec_id.substr(5, 4));
+  std::string profile = base::ToUpperASCII(codec_id.substr(5, 4));
   if (IsValidH264BaselineProfile(profile)) {
     *codec = MimeUtil::H264_BASELINE;
   } else if (profile == "4D40") {
@@ -546,8 +546,7 @@ static bool ParseH264CodecID(const std::string& codec_id,
     return true;
   }
 
-  *is_ambiguous =
-      !IsValidH264Level(base::StringToUpperASCII(codec_id.substr(9)));
+  *is_ambiguous = !IsValidH264Level(base::ToUpperASCII(codec_id.substr(9)));
   return true;
 }
 

@@ -380,7 +380,7 @@ std::string InputMethodUtil::GetLocalizedDisplayName(
   if (disp.find("__MSG_") == 0) {
     const InputMethodNameMap* map = kInputMethodNameMap;
     size_t map_size = arraysize(kInputMethodNameMap);
-    std::string name = base::StringToUpperASCII(disp);
+    std::string name = base::ToUpperASCII(disp);
     const InputMethodNameMap map_key = {name.c_str(), 0};
     const InputMethodNameMap* p =
         std::lower_bound(map, map + map_size, map_key);

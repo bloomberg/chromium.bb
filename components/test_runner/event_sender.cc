@@ -1365,7 +1365,8 @@ void EventSender::KeyDown(const std::string& code_str,
         code -= 'a' - 'A';
       if ((code >= 'A' && code <= 'Z') || (code >= 'a' && code <= 'z')) {
         domString.assign("Key");
-        domString.push_back(base::ToUpperASCII(code));
+        domString.push_back(
+            base::ToUpperASCII(static_cast<base::char16>(code)));
       } else if (code >= '0' && code <= '9') {
         domString.assign("Digit");
         domString.push_back(code);

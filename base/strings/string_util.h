@@ -93,15 +93,29 @@ BASE_EXPORT bool IsWprintfFormatPortable(const wchar_t* format);
 
 // ASCII-specific tolower.  The standard library's tolower is locale sensitive,
 // so we don't want to use it here.
-template <class Char> inline Char ToLowerASCII(Char c) {
+inline char ToLowerASCII(char c) {
+  return (c >= 'A' && c <= 'Z') ? (c + ('a' - 'A')) : c;
+}
+inline char16 ToLowerASCII(char16 c) {
   return (c >= 'A' && c <= 'Z') ? (c + ('a' - 'A')) : c;
 }
 
 // ASCII-specific toupper.  The standard library's toupper is locale sensitive,
 // so we don't want to use it here.
-template <class Char> inline Char ToUpperASCII(Char c) {
+inline char ToUpperASCII(char c) {
   return (c >= 'a' && c <= 'z') ? (c + ('A' - 'a')) : c;
 }
+inline char16 ToUpperASCII(char16 c) {
+  return (c >= 'a' && c <= 'z') ? (c + ('A' - 'a')) : c;
+}
+
+// Converts the given string to it's ASCII-lowercase equivalent.
+BASE_EXPORT std::string ToLowerASCII(StringPiece str);
+BASE_EXPORT string16 ToLowerASCII(StringPiece16 str);
+
+// Converts the given string to it's ASCII-uppercase equivalent.
+BASE_EXPORT std::string ToUpperASCII(StringPiece str);
+BASE_EXPORT string16 ToUpperASCII(StringPiece16 str);
 
 // Functor for case-insensitive ASCII comparisons for STL algorithms like
 // std::search.
@@ -291,29 +305,17 @@ BASE_EXPORT bool IsStringASCII(const std::wstring& str);
 
 // Converts the elements of the given string.  This version uses a pointer to
 // clearly differentiate it from the non-pointer variant.
+// TODO(brettw) remove this. Callers should use base::ToLowerASCII above.
 template <class str> inline void StringToLowerASCII(str* s) {
   for (typename str::iterator i = s->begin(); i != s->end(); ++i)
     *i = ToLowerASCII(*i);
 }
 
+// TODO(brettw) remove this. Callers should use base::ToLowerASCII above.
 template <class str> inline str StringToLowerASCII(const str& s) {
   // for std::string and std::wstring
   str output(s);
   StringToLowerASCII(&output);
-  return output;
-}
-
-// Converts the elements of the given string.  This version uses a pointer to
-// clearly differentiate it from the non-pointer variant.
-template <class str> inline void StringToUpperASCII(str* s) {
-  for (typename str::iterator i = s->begin(); i != s->end(); ++i)
-    *i = ToUpperASCII(*i);
-}
-
-template <class str> inline str StringToUpperASCII(const str& s) {
-  // for std::string and std::wstring
-  str output(s);
-  StringToUpperASCII(&output);
   return output;
 }
 

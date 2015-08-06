@@ -270,10 +270,10 @@ void CorrectLanguageCodeTypo(std::string* code) {
   // Change everything up to a dash to lower-case and everything after to upper.
   size_t dash_index = code->find('-');
   if (dash_index != std::string::npos) {
-    *code = base::StringToLowerASCII(code->substr(0, dash_index)) +
-        base::StringToUpperASCII(code->substr(dash_index));
+    *code = base::ToLowerASCII(code->substr(0, dash_index)) +
+        base::ToUpperASCII(code->substr(dash_index));
   } else {
-    *code = base::StringToLowerASCII(*code);
+    *code = base::ToLowerASCII(*code);
   }
 }
 
