@@ -74,6 +74,7 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
       const scoped_refptr<cc::ContextProvider>& context_provider,
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
       : BrowserCompositorOutputSurface(context_provider,
+                                       nullptr,
                                        vsync_manager,
                                        CreateTestValidatorOzone().Pass()) {}
 

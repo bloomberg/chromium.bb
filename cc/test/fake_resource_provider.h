@@ -14,9 +14,8 @@ class FakeResourceProvider : public ResourceProvider {
   static scoped_ptr<FakeResourceProvider> Create(
       OutputSurface* output_surface,
       SharedBitmapManager* shared_bitmap_manager) {
-    scoped_ptr<FakeResourceProvider> provider(
-        new FakeResourceProvider(output_surface, shared_bitmap_manager, nullptr,
-                                 nullptr, 0, false, 1, false));
+    scoped_ptr<FakeResourceProvider> provider(new FakeResourceProvider(
+        output_surface, shared_bitmap_manager, nullptr, nullptr, 0, false, 1));
     provider->Initialize();
     return provider;
   }
@@ -27,7 +26,7 @@ class FakeResourceProvider : public ResourceProvider {
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
     scoped_ptr<FakeResourceProvider> provider(new FakeResourceProvider(
         output_surface, shared_bitmap_manager, gpu_memory_buffer_manager,
-        nullptr, 0, false, 1, false));
+        nullptr, 0, false, 1));
     provider->Initialize();
     return provider;
   }
@@ -39,16 +38,14 @@ class FakeResourceProvider : public ResourceProvider {
                        BlockingTaskRunner* blocking_main_thread_task_runner,
                        int highp_threshold_min,
                        bool use_rgba_4444_texture_format,
-                       size_t id_allocation_chunk_size,
-                       bool use_persistent_map_for_gpu_memory_buffers)
+                       size_t id_allocation_chunk_size)
       : ResourceProvider(output_surface,
                          shared_bitmap_manager,
                          gpu_memory_buffer_manager,
                          blocking_main_thread_task_runner,
                          highp_threshold_min,
                          use_rgba_4444_texture_format,
-                         id_allocation_chunk_size,
-                         use_persistent_map_for_gpu_memory_buffers) {}
+                         id_allocation_chunk_size) {}
 };
 
 }  // namespace cc

@@ -122,6 +122,10 @@ bool InProcessContextProvider::BindToCurrentThread() {
   return true;
 }
 
+void InProcessContextProvider::DetachFromThread() {
+  context_thread_checker_.DetachFromThread();
+}
+
 cc::ContextProvider::Capabilities
 InProcessContextProvider::ContextCapabilities() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
