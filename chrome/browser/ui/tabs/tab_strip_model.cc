@@ -396,6 +396,10 @@ WebContents* TabStripModel::DiscardWebContentsAt(int index) {
   // Copy over the state from the navigation controller so we preserve the
   // back/forward history and continue to display the correct title/favicon.
   null_contents->GetController().CopyStateFrom(old_contents->GetController());
+
+  // Make sure we persist the last active time property.
+  null_contents->SetLastActiveTime(old_contents->GetLastActiveTime());
+
   // Replace the tab we're discarding with the null version.
   ReplaceWebContentsAt(index, null_contents);
   // Mark the tab so it will reload when we click.

@@ -2205,6 +2205,29 @@ TEST_F(TabStripModelTest, ReloadDiscardedTabContextMenu) {
 
   tabstrip.CloseAllTabs();
 }
+
+// Makes sure that the last active time property is saved even though the tab is
+// discarded.
+TEST_F(TabStripModelTest, DiscardedTabKeepsLastActiveTime) {
+  TabStripDummyDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+
+  tabstrip.AppendWebContents(CreateWebContents(), true);
+  WebContents* test_contents = CreateWebContents();
+  tabstrip.AppendWebContents(test_contents, false);
+
+  // Simulate an old inactive tab about to get discarded.
+  base::TimeTicks new_last_active_time =
+      base::TimeTicks::Now() - base::TimeDelta::FromMinutes(35);
+  test_contents->SetLastActiveTime(new_last_active_time);
+  EXPECT_EQ(new_last_active_time, test_contents->GetLastActiveTime());
+
+  WebContents* null_contents = tabstrip.DiscardWebContentsAt(1);
+  EXPECT_EQ(new_last_active_time, null_contents->GetLastActiveTime());
+
+  tabstrip.CloseAllTabs();
+}
+
 // Makes sure TabStripModel handles the case of deleting a tab while removing
 // another tab.
 TEST_F(TabStripModelTest, DeleteFromDestroy) {
