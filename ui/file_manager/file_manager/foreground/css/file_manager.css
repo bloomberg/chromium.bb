@@ -1430,6 +1430,7 @@ html[dir='rtl'] .badge {
 /* Text box used for renaming in the detail list. */
 .table-row-cell input.rename {
   border-width: 0;
+  min-width: 0;
   padding: 2px 0;
 }
 
