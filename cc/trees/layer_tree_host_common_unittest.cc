@@ -6954,9 +6954,9 @@ TEST_F(LayerTreeHostCommonTest,
 
   // This time, flattening does not make |animated|'s transform invertible. This
   // means the clip cannot be projected into |surface|'s space, so we treat
-  // |surface| and layers that draw into it as fully visible.
-  EXPECT_EQ(gfx::Rect(100, 100), surface->visible_rect_from_property_trees());
-  EXPECT_EQ(gfx::Rect(200, 200),
+  // |surface| and layers that draw into it as having empty visible rect.
+  EXPECT_EQ(gfx::Rect(), surface->visible_rect_from_property_trees());
+  EXPECT_EQ(gfx::Rect(),
             descendant_of_animation->visible_rect_from_property_trees());
 }
 
@@ -7779,6 +7779,94 @@ TEST_F(LayerTreeHostCommonTest, ResetLayerDrawPropertiestest) {
   EXPECT_FALSE(child->layer_or_descendant_is_drawn());
   EXPECT_FALSE(child->visited());
   EXPECT_FALSE(child->sorted_for_recursion());
+}
+
+TEST_F(LayerTreeHostCommonTest, RenderSurfaceClipsSubtree) {
+  // Ensure that a Clip Node is added when a render surface applies clip.
+  LayerImpl* root = root_layer();
+  LayerImpl* significant_transform = AddChildToRoot<LayerImpl>();
+  LayerImpl* layer_clips_subtree = AddChild<LayerImpl>(significant_transform);
+  LayerImpl* render_surface = AddChild<LayerImpl>(layer_clips_subtree);
+  LayerImpl* test_layer = AddChild<LayerImpl>(render_surface);
+
+  const gfx::Transform identity_matrix;
+  // This transform should be a significant one so that a transform node is
+  // formed for it.
+  gfx::Transform transform1;
+  transform1.RotateAboutYAxis(45);
+  transform1.RotateAboutXAxis(30);
+  // This transform should be a 3d transform as we want the render surface
+  // to flatten the transform
+  gfx::Transform transform2;
+  transform2.Translate3d(10, 10, 10);
+
+  layer_clips_subtree->SetMasksToBounds(true);
+  test_layer->SetDrawsContent(true);
+
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+  SetLayerPropertiesForTesting(significant_transform, transform1,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
+                               true, false, false);
+  SetLayerPropertiesForTesting(layer_clips_subtree, identity_matrix,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
+                               true, false, false);
+  SetLayerPropertiesForTesting(render_surface, transform2, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+  SetLayerPropertiesForTesting(test_layer, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               false);
+
+  ExecuteCalculateDrawProperties(root);
+
+  TransformTree transform_tree =
+      root->layer_tree_impl()->property_trees()->transform_tree;
+  TransformNode* transform_node =
+      transform_tree.Node(significant_transform->transform_tree_index());
+  EXPECT_EQ(transform_node->owner_id, significant_transform->id());
+
+  ClipTree clip_tree = root->layer_tree_impl()->property_trees()->clip_tree;
+  ClipNode* clip_node = clip_tree.Node(render_surface->clip_tree_index());
+  EXPECT_TRUE(clip_node->data.inherit_parent_target_space_clip);
+  EXPECT_EQ(test_layer->visible_rect_from_property_trees(), gfx::RectF(30, 21));
+}
+
+TEST_F(LayerTreeHostCommonTest, TransformOfParentClipNodeAncestorOfTarget) {
+  // Ensure that when parent clip node's transform is an ancestor of current
+  // clip node's target, clip is 'projected' from parent space to current
+  // target space and visible rects are calculated correctly.
+  LayerImpl* root = root_layer();
+  LayerImpl* clip_layer = AddChild<LayerImpl>(root);
+  LayerImpl* target_layer = AddChild<LayerImpl>(clip_layer);
+  LayerImpl* test_layer = AddChild<LayerImpl>(target_layer);
+
+  const gfx::Transform identity_matrix;
+  gfx::Transform transform;
+  transform.RotateAboutYAxis(45);
+  clip_layer->SetMasksToBounds(true);
+  target_layer->SetMasksToBounds(true);
+  test_layer->SetDrawsContent(true);
+
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+  SetLayerPropertiesForTesting(clip_layer, transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               false);
+  SetLayerPropertiesForTesting(target_layer, transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+  SetLayerPropertiesForTesting(test_layer, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               false);
+  ExecuteCalculateDrawProperties(root);
+
+  ClipTree clip_tree = root->layer_tree_impl()->property_trees()->clip_tree;
+  ClipNode* clip_node = clip_tree.Node(target_layer->clip_tree_index());
+  EXPECT_EQ(clip_node->data.combined_clip, gfx::RectF(30, 30));
+  EXPECT_EQ(test_layer->visible_rect_from_property_trees(), gfx::RectF(30, 30));
 }
 
 }  // namespace

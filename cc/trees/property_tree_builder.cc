@@ -79,11 +79,7 @@ static bool RequiresClipNode(LayerType* layer,
   if (!render_surface_applies_clip)
     return false;
 
-  bool axis_aligned_with_respect_to_parent =
-      data.transform_tree->Are2DAxisAligned(layer->transform_tree_index(),
-                                            parent_transform_id);
-
-  return !axis_aligned_with_respect_to_parent;
+  return !!layer->parent();
 }
 
 template <typename LayerType>
@@ -122,7 +118,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
     parent_id = 0;
 
   if (!RequiresClipNode(layer, data_from_ancestor, parent->data.transform_id,
-                        data_for_children->ancestor_clips_subtree)) {
+                        ancestor_clips_subtree)) {
     // Unclipped surfaces reset the clip rect.
     data_for_children->clip_tree_parent = parent_id;
   } else {
@@ -138,7 +134,9 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
     node.data.target_id =
         data_for_children->render_target->transform_tree_index();
     node.owner_id = layer->id();
-
+    node.data.inherit_parent_target_space_clip =
+        !data_for_children->ancestor_clips_subtree &&
+        layer->has_render_surface() && ancestor_clips_subtree;
     data_for_children->clip_tree_parent =
         data_for_children->clip_tree->Insert(node, parent_id);
   }

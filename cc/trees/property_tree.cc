@@ -94,8 +94,10 @@ void TransformNodeData::update_post_local_transform(
       transform_origin.z());
 }
 
-ClipNodeData::ClipNodeData() : transform_id(-1), target_id(-1) {
-}
+ClipNodeData::ClipNodeData()
+    : transform_id(-1),
+      target_id(-1),
+      inherit_parent_target_space_clip(false) {}
 
 OpacityNodeData::OpacityNodeData() : opacity(1.f), screen_space_opacity(1.f) {
 }
@@ -146,6 +148,10 @@ bool TransformTree::ComputeTransformWithSourceSublayerScale(
   const TransformNode* source_node = Node(source_id);
   if (!source_node->data.needs_sublayer_scale)
     return success;
+
+  if (source_node->data.sublayer_scale.x() == 0 ||
+      source_node->data.sublayer_scale.y() == 0)
+    return false;
 
   transform->Scale(1.f / source_node->data.sublayer_scale.x(),
                    1.f / source_node->data.sublayer_scale.y());
