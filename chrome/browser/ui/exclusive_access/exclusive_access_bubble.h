@@ -20,6 +20,15 @@ class Rect;
 // Bubble that informs the user when an exclusive access state is in effect and
 // as to how to exit out of the state. Currently there are two exclusive access
 // state, namely fullscreen and mouse lock.
+//
+// Notification display design note: if the #simplified-fullscreen-ui flag is
+// enabled, the bubble has the following behaviour:
+// - Upon taking exclusive access, wait kDebounceNotificationsTimeMs, then for
+//   user input, before displaying the bubble.
+// - The bubble is shown for kIdleTimeMs, then hides.
+// - After a bubble has been shown, notifications are suppressed for
+//   kSnoozeNotificationsTimeMs, to avoid bothering the user. After this time
+//   has elapsed, the next user input re-displays the bubble.
 class ExclusiveAccessBubble : public gfx::AnimationDelegate {
  public:
   explicit ExclusiveAccessBubble(ExclusiveAccessManager* manager,
@@ -31,6 +40,9 @@ class ExclusiveAccessBubble : public gfx::AnimationDelegate {
   static const int kPaddingPx;        // Amount of padding around the link
   static const int kInitialDelayMs;   // Initial time bubble remains onscreen
   static const int kIdleTimeMs;       // Time before mouse idle triggers hide
+  // See notification display design note above.
+  static const int kDebounceNotificationsTimeMs;
+  static const int kSnoozeNotificationsTimeMs;
   static const int kPositionCheckHz;  // How fast to check the mouse position
   static const int kSlideInRegionHeightPx;
   // Height of region triggering
@@ -95,12 +107,19 @@ class ExclusiveAccessBubble : public gfx::AnimationDelegate {
   ExclusiveAccessBubbleType bubble_type_;
 
  private:
-  // Timer to delay before allowing the bubble to hide after it's initially
-  // shown.
-  base::OneShotTimer<ExclusiveAccessBubble> initial_delay_;
+  // When this timer is active, prevent the bubble from hiding. This ensures it
+  // will be displayed for a minimum amount of time (which can be extended by
+  // the user moving the mouse to the top of the screen and holding it there).
+  base::OneShotTimer<ExclusiveAccessBubble> hide_timeout_;
 
   // Timer to see how long the mouse has been idle.
   base::OneShotTimer<ExclusiveAccessBubble> idle_timeout_;
+
+  // When this timer has elapsed, on the next mouse input, we will notify the
+  // user about any currently active exclusive access. This is used to enact
+  // both the initial debounce period, and the snooze period before re-notifying
+  // the user (see notification display design note above).
+  base::OneShotTimer<ExclusiveAccessBubble> suppress_notify_timeout_;
 
   // Timer to poll the current mouse position.  We can't just listen for mouse
   // events without putting a non-empty HWND onscreen (or hooking Windows, which

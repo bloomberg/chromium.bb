@@ -272,7 +272,11 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
       popup_(nullptr),
       animation_(new gfx::SlideAnimation(this)),
       animated_attribute_(ANIMATED_ATTRIBUTE_BOUNDS) {
-  animation_->Reset(1);
+  // With the simplified fullscreen UI flag, initially hide the bubble;
+  // otherwise, initially show it.
+  double initial_value =
+      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ? 0 : 1;
+  animation_->Reset(initial_value);
 
   // Create the contents view.
   ui::Accelerator accelerator(ui::VKEY_UNKNOWN, ui::EF_NONE);
@@ -303,7 +307,8 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
   // that it is sliding off the top of the screen.
   popup_->GetRootView()->SetLayoutManager(nullptr);
   view_->SetBounds(0, 0, size.width(), size.height());
-  popup_->ShowInactive();  // This does not activate the popup.
+  if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled())
+    popup_->ShowInactive();  // This does not activate the popup.
 
   popup_->AddObserver(this);
 
