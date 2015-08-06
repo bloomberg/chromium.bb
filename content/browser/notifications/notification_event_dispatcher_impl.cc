@@ -67,6 +67,7 @@ void NotificationClickEventFinished(
 // registration was available. Must be called on the IO thread.
 void DispatchNotificationClickEventOnRegistration(
     const NotificationDatabaseData& notification_database_data,
+    int action_index,
     const NotificationClickDispatchCompleteCallback& dispatch_complete_callback,
     ServiceWorkerStatusCode service_worker_status,
     const scoped_refptr<ServiceWorkerRegistration>&
@@ -82,7 +83,8 @@ void DispatchNotificationClickEventOnRegistration(
         DispatchNotificationClickEvent(
             dispatch_event_callback,
             notification_database_data.notification_id,
-            notification_database_data.notification_data);
+            notification_database_data.notification_data,
+            action_index);
     return;
   }
 
@@ -124,6 +126,7 @@ void DispatchNotificationClickEventOnRegistration(
 // |service_worker_registration_id|. Must be called on the IO thread.
 void FindServiceWorkerRegistration(
     const GURL& origin,
+    int action_index,
     const NotificationClickDispatchCompleteCallback& dispatch_complete_callback,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     bool success,
@@ -142,7 +145,7 @@ void FindServiceWorkerRegistration(
       notification_database_data.service_worker_registration_id,
       origin,
       base::Bind(&DispatchNotificationClickEventOnRegistration,
-                 notification_database_data,
+                 notification_database_data, action_index,
                  dispatch_complete_callback));
 }
 
@@ -151,6 +154,7 @@ void FindServiceWorkerRegistration(
 void ReadNotificationDatabaseData(
     int64_t persistent_notification_id,
     const GURL& origin,
+    int action_index,
     const NotificationClickDispatchCompleteCallback& dispatch_complete_callback,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     scoped_refptr<PlatformNotificationContextImpl> notification_context) {
@@ -159,7 +163,8 @@ void ReadNotificationDatabaseData(
       persistent_notification_id,
       origin,
       base::Bind(&FindServiceWorkerRegistration,
-                 origin, dispatch_complete_callback, service_worker_context));
+                 origin, action_index, dispatch_complete_callback,
+                 service_worker_context));
 }
 
 }  // namespace
@@ -183,6 +188,7 @@ void NotificationEventDispatcherImpl::DispatchNotificationClickEvent(
     BrowserContext* browser_context,
     int64_t persistent_notification_id,
     const GURL& origin,
+    int action_index,
     const NotificationClickDispatchCompleteCallback&
         dispatch_complete_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -205,6 +211,7 @@ void NotificationEventDispatcherImpl::DispatchNotificationClickEvent(
       base::Bind(&ReadNotificationDatabaseData,
                  persistent_notification_id,
                  origin,
+                 action_index,
                  dispatch_complete_callback,
                  service_worker_context,
                  notification_context));

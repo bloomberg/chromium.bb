@@ -172,7 +172,8 @@ class ServiceWorkerContextClient
   void OnNotificationClickEvent(
       int request_id,
       int64_t persistent_notification_id,
-      const PlatformNotificationData& notification_data);
+      const PlatformNotificationData& notification_data,
+      int action_index);
   void OnPushEvent(int request_id, const std::string& data);
   void OnGeofencingEvent(int request_id,
                          blink::WebGeofencingEventType event_type,

@@ -127,6 +127,7 @@ void LayoutTestNotificationManager::SimulateClick(const std::string& title) {
           notification.browser_context,
           notification.persistent_id,
           notification.origin,
+          -1 /* action_index */,
           base::Bind(&OnEventDispatchComplete));
 }
 

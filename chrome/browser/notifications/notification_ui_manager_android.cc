@@ -69,7 +69,8 @@ bool NotificationUIManagerAndroid::OnNotificationClicked(
   PlatformNotificationServiceImpl::GetInstance()->OnPersistentNotificationClick(
       ProfileManager::GetLastUsedProfile(),
       persistent_notification_id,
-      origin);
+      origin,
+      -1 /* action_index */);
 
   return true;
 }

@@ -220,7 +220,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void DispatchNotificationClickEvent(
       const StatusCallback& callback,
       int64_t persistent_notification_id,
-      const PlatformNotificationData& notification_data);
+      const PlatformNotificationData& notification_data,
+      int action_index);
 
   // Sends push event to the associated embedded worker and asynchronously calls
   // |callback| when it errors out or it gets a response from the worker to

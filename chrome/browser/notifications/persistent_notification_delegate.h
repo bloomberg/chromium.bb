@@ -35,6 +35,7 @@ class PersistentNotificationDelegate : public NotificationDelegate {
   void Display() override;
   void Close(bool by_user) override;
   void Click() override;
+  void ButtonClick(int button_index) override;
   std::string id() const override;
 
  protected:

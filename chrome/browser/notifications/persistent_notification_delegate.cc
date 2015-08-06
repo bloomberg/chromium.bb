@@ -33,7 +33,16 @@ void PersistentNotificationDelegate::Click() {
   PlatformNotificationServiceImpl::GetInstance()->OnPersistentNotificationClick(
       browser_context_,
       persistent_notification_id_,
-      origin_);
+      origin_,
+      -1 /* action_index */);
+}
+
+void PersistentNotificationDelegate::ButtonClick(int button_index) {
+  PlatformNotificationServiceImpl::GetInstance()->OnPersistentNotificationClick(
+      browser_context_,
+      persistent_notification_id_,
+      origin_,
+      button_index);
 }
 
 std::string PersistentNotificationDelegate::id() const {

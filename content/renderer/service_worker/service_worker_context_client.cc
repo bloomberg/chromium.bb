@@ -713,13 +713,15 @@ void ServiceWorkerContextClient::OnFetchEvent(
 void ServiceWorkerContextClient::OnNotificationClickEvent(
     int request_id,
     int64_t persistent_notification_id,
-    const PlatformNotificationData& notification_data) {
+    const PlatformNotificationData& notification_data,
+    int action_index) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::OnNotificationClickEvent");
   proxy_->dispatchNotificationClickEvent(
       request_id,
       persistent_notification_id,
-      ToWebNotificationData(notification_data));
+      ToWebNotificationData(notification_data),
+      action_index);
 }
 
 void ServiceWorkerContextClient::OnPushEvent(int request_id,

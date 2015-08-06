@@ -85,13 +85,15 @@ PlatformNotificationServiceImpl::~PlatformNotificationServiceImpl() {}
 void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
     BrowserContext* browser_context,
     int64_t persistent_notification_id,
-    const GURL& origin) const {
+    const GURL& origin,
+    int action_index) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::NotificationEventDispatcher::GetInstance()
       ->DispatchNotificationClickEvent(
             browser_context,
             persistent_notification_id,
             origin,
+            action_index,
             base::Bind(&OnEventDispatchComplete));
 }
 

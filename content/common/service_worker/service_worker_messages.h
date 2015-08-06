@@ -435,10 +435,11 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_ActivateEvent,
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_FetchEvent,
                      int /* request_id */,
                      content::ServiceWorkerFetchRequest)
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_NotificationClickEvent,
+IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_NotificationClickEvent,
                      int /* request_id */,
                      int64_t /* persistent_notification_id */,
-                     content::PlatformNotificationData /* notification_data */)
+                     content::PlatformNotificationData /* notification_data */,
+                     int /* action_index */)
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_PushEvent,
                      int /* request_id */,
                      std::string /* data */)
