@@ -2117,7 +2117,14 @@ const Experiment kExperiments[] = {
      // merge the flag values.
      SINGLE_VALUE_TYPE_AND_VALUE(
          switches::kBlinkSettings, "lowPriorityIframes=true")},
-
+#if defined(OS_ANDROID)
+    {"enable-ntp-popular-sites",
+     IDS_FLAGS_NTP_POPULAR_SITES_NAME,
+     IDS_FLAGS_NTP_POPULAR_SITES_DESCRIPTION,
+     kOsAndroid,
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableNTPPopularSites,
+                               switches::kDisableNTPPopularSites)},
+#endif  // defined(OS_ANDROID)
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

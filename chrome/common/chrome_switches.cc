@@ -281,6 +281,9 @@ const char kDisableMinimizeOnSecondLauncherItemClick[] =
 // Disables the new bookmark app system.
 const char kDisableNewBookmarkApps[]        = "disable-new-bookmark-apps";
 
+// Disables showing popular sites on the NTP.
+const char kDisableNTPPopularSites[]        = "disable-ntp-popular-sites";
+
 // Disable auto-reload of error pages if offline.
 const char kDisableOfflineAutoReload[]       = "disable-offline-auto-reload";
 
@@ -469,6 +472,9 @@ const char kEnableNetBenchmarking[]         = "enable-net-benchmarking";
 
 // Enables the new bookmark app system.
 const char kEnableNewBookmarkApps[]         = "enable-new-bookmark-apps";
+
+// Enables showing popular sites on the NTP.
+const char kEnableNTPPopularSites[]         = "enable-ntp-popular-sites";
 
 // Enable auto-reload of error pages if offline.
 const char kEnableOfflineAutoReload[]       = "enable-offline-auto-reload";

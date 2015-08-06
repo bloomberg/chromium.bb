@@ -4,20 +4,19 @@
 
 #include "chrome/browser/android/most_visited_sites.h"
 
-#include <string>
-#include <vector>
-
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/android/popular_sites.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/suggestions/suggestions_service.h"
 #include "components/suggestions/suggestions_utils.h"
@@ -35,15 +35,13 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
+#include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
-using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaArrayOfStrings;
-using base::android::CheckException;
-using base::WeakPtr;
 using content::BrowserThread;
 using history::TopSites;
 using suggestions::ChromeSuggestion;
@@ -116,6 +114,19 @@ SyncState GetSyncState(Profile* profile) {
       sync->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES));
 }
 
+bool ShouldShowPopularSites() {
+  // Note: It's important to query the field trial state first, to ensure that
+  // UMA reports the correct group.
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("NTPPopularSites");
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kDisableNTPPopularSites))
+    return false;
+  if (cmd_line->HasSwitch(switches::kEnableNTPPopularSites))
+    return true;
+  return group_name == "Enabled";
+}
+
 }  // namespace
 
 MostVisitedSites::MostVisitedSites(Profile* profile)
@@ -135,6 +146,13 @@ MostVisitedSites::MostVisitedSites(Profile* profile)
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (profile_sync_service)
     profile_sync_service->AddObserver(this);
+
+  if (ShouldShowPopularSites()) {
+    popular_sites_.reset(new PopularSites(
+        profile_->GetRequestContext(),
+        base::Bind(&MostVisitedSites::OnPopularSitesAvailable,
+                   base::Unretained(this))));
+  }
 }
 
 MostVisitedSites::~MostVisitedSites() {
@@ -351,6 +369,7 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
     }
   }
   mv_source_ = TOP_SITES;
+  AddPopularSites(&titles, &urls);
   NotifyMostVisitedURLsObserver(titles, urls);
 }
 
@@ -385,7 +404,33 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
   mv_source_ = SUGGESTIONS_SERVICE;
   // Keep a copy of the suggestions for eventual logging.
   server_suggestions_ = suggestions_profile;
+  AddPopularSites(&titles, &urls);
   NotifyMostVisitedURLsObserver(titles, urls);
+}
+
+void MostVisitedSites::AddPopularSites(std::vector<base::string16>* titles,
+                                       std::vector<std::string>* urls) {
+  if (!popular_sites_)
+    return;
+
+  DCHECK_EQ(titles->size(), urls->size());
+  if (static_cast<int>(titles->size()) >= num_sites_)
+    return;
+
+  for (const PopularSites::Site& popular_site : popular_sites_->sites()) {
+    // Skip popular sites that are already in the suggestions.
+    auto it = std::find_if(urls->begin(), urls->end(),
+        [&popular_site](const std::string& url) {
+          return GURL(url).host() == popular_site.url.host();
+        });
+    if (it != urls->end())
+      continue;
+
+    titles->push_back(popular_site.title);
+    urls->push_back(popular_site.url.spec());
+    if (static_cast<int>(titles->size()) >= num_sites_)
+      break;
+  }
 }
 
 void MostVisitedSites::NotifyMostVisitedURLsObserver(
@@ -399,6 +444,16 @@ void MostVisitedSites::NotifyMostVisitedURLsObserver(
   Java_MostVisitedURLsObserver_onMostVisitedURLsAvailable(
       env, observer_.obj(), ToJavaArrayOfStrings(env, titles).obj(),
       ToJavaArrayOfStrings(env, urls).obj());
+}
+
+void MostVisitedSites::OnPopularSitesAvailable(bool success) {
+  if (!success) {
+    LOG(WARNING) << "Download of popular sites failed";
+    return;
+  }
+
+  if (!observer_.is_null())
+    QueryMostVisitedURLs();
 }
 
 void MostVisitedSites::RecordUMAMetrics() {

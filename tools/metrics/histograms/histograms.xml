@@ -61705,6 +61705,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="203776499" label="enable-virtual-keyboard-overscroll"/>
   <int value="266702296" label="disable-plugin-power-saver"/>
   <int value="270267831" label="enable-scripts-require-action"/>
+  <int value="274103741" label="enable-ntp-popular-sites"/>
   <int value="278756320" label="disable-app-list-app-info"/>
   <int value="324631366" label="enable-drive-search-in-app-launcher"/>
   <int value="330138076" label="enable-clear-browsing-data-counters"/>
@@ -61756,6 +61757,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="779086132" label="enable-data-reduction-proxy-alt"/>
   <int value="782167080" label="enable-new-qp-input-view"/>
   <int value="811374216" label="disable-new-bookmark-apps"/>
+  <int value="820650704" label="disable-ntp-popular-sites"/>
   <int value="821192723" label="show-fps-counter"/>
   <int value="824961931" label="use-simple-cache-backend"/>
   <int value="834326277" label="enable-answers-in-suggest"/>

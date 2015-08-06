@@ -1,9 +1,10 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/supervised_user/experimental/supervised_user_blacklist_downloader.h"
+#include "chrome/browser/net/file_downloader.h"
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -18,11 +19,10 @@ using net::URLFetcher;
 
 const int kNumRetries = 1;
 
-SupervisedUserBlacklistDownloader::SupervisedUserBlacklistDownloader(
-    const GURL& url,
-    const base::FilePath& path,
-    net::URLRequestContextGetter* request_context,
-    const DownloadFinishedCallback& callback)
+FileDownloader::FileDownloader(const GURL& url,
+                               const base::FilePath& path,
+                               net::URLRequestContextGetter* request_context,
+                               const DownloadFinishedCallback& callback)
     : callback_(callback),
       fetcher_(URLFetcher::Create(url, URLFetcher::GET, this)),
       weak_ptr_factory_(this) {
@@ -39,15 +39,17 @@ SupervisedUserBlacklistDownloader::SupervisedUserBlacklistDownloader(
           base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN).get(),
       FROM_HERE,
       base::Bind(&base::PathExists, path),
-      base::Bind(&SupervisedUserBlacklistDownloader::OnFileExistsCheckDone,
+      base::Bind(&FileDownloader::OnFileExistsCheckDone,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-SupervisedUserBlacklistDownloader::~SupervisedUserBlacklistDownloader() {}
+FileDownloader::~FileDownloader() {}
 
-void SupervisedUserBlacklistDownloader::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+void FileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(fetcher_.get(), source);
+  // Delete |fetcher_| when we leave this method. This is necessary so the
+  // download file will be deleted if the download failed.
+  scoped_ptr<net::URLFetcher> fetcher(fetcher_.Pass());
 
   const net::URLRequestStatus& status = source->GetStatus();
   if (!status.is_success()) {
@@ -69,11 +71,9 @@ void SupervisedUserBlacklistDownloader::OnURLFetchComplete(
   callback_.Run(success);
 }
 
-void SupervisedUserBlacklistDownloader::OnFileExistsCheckDone(bool exists) {
-  if (exists) {
-    // TODO(treib): Figure out a strategy for updating the file.
+void FileDownloader::OnFileExistsCheckDone(bool exists) {
+  if (exists)
     callback_.Run(true);
-  } else {
+  else
     fetcher_->Start();
-  }
 }

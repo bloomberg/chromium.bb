@@ -15895,6 +15895,12 @@ After you create a new supervised user, you can manage their settings at any tim
       <message name="IDS_FLAGS_OFFLINE_PAGES_DESCRIPTION" desc="Description for the flag to enable offline pages.">
         Enable storing pages locally for offline use. Requires Enhanced Bookmarks to be enabled.
       </message>
+      <message name="IDS_FLAGS_NTP_POPULAR_SITES_NAME" desc="Name for the flag to enable showing popular sites on the NTP">
+        Show popular sites on the NTP
+      </message>
+      <message name="IDS_FLAGS_NTP_POPULAR_SITES_DESCRIPTION" desc="Description for the flag to enable showing popular sites on the NTP">
+        Pre-populate the NTP with popular sites.
+      </message>
     </if>
 
     </messages>

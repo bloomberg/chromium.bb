@@ -15,12 +15,12 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
+#include "chrome/browser/net/file_downloader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/supervised_user/experimental/supervised_user_blacklist_downloader.h"
 #include "chrome/browser/supervised_user/experimental/supervised_user_filtering_switches.h"
 #include "chrome/browser/supervised_user/legacy/custodian_profile_downloader_service.h"
 #include "chrome/browser/supervised_user/legacy/custodian_profile_downloader_service_factory.h"
@@ -632,7 +632,7 @@ void SupervisedUserService::OnBlacklistFileChecked(const base::FilePath& path,
   }
 
   DCHECK(!blacklist_downloader_);
-  blacklist_downloader_.reset(new SupervisedUserBlacklistDownloader(
+  blacklist_downloader_.reset(new FileDownloader(
       url,
       path,
       profile_->GetRequestContext(),

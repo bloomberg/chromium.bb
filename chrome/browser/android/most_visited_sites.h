@@ -7,8 +7,12 @@
 
 #include <jni.h>
 
+#include <string>
+#include <vector>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +24,9 @@
 namespace suggestions {
 class SuggestionsService;
 }
+
+class GURL;
+class PopularSites;
 
 // Provides the list of most visited sites and their thumbnails to Java.
 class MostVisitedSites : public sync_driver::SyncServiceObserver,
@@ -68,9 +75,14 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
   void OnSuggestionsProfileAvailable(
       const suggestions::SuggestionsProfile& suggestions_profile);
 
+  void AddPopularSites(std::vector<base::string16>* titles,
+                       std::vector<std::string>* urls);
+
   // Notify the Java side observer about the availability of Most Visited Urls.
   void NotifyMostVisitedURLsObserver(const std::vector<base::string16>& titles,
                                      const std::vector<std::string>& urls);
+
+  void OnPopularSitesAvailable(bool success);
 
   // Runs on the UI Thread.
   void OnLocalThumbnailFetched(
@@ -122,6 +134,8 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
   ScopedObserver<history::TopSites, history::TopSitesObserver> scoped_observer_;
 
   MostVisitedSource mv_source_;
+
+  scoped_ptr<PopularSites> popular_sites_;
 
   // For callbacks may be run after destruction.
   base::WeakPtrFactory<MostVisitedSites> weak_ptr_factory_;

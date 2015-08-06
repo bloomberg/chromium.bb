@@ -30,10 +30,10 @@
 #endif
 
 class Browser;
+class FileDownloader;
 class GoogleServiceAuthError;
 class PermissionRequestCreator;
 class Profile;
-class SupervisedUserBlacklistDownloader;
 class SupervisedUserRegistrationUtility;
 class SupervisedUserServiceObserver;
 class SupervisedUserSettingsService;
@@ -344,7 +344,7 @@ class SupervisedUserService : public KeyedService,
   bool did_shutdown_;
 
   URLFilterContext url_filter_context_;
-  scoped_ptr<SupervisedUserBlacklistDownloader> blacklist_downloader_;
+  scoped_ptr<FileDownloader> blacklist_downloader_;
 
   scoped_ptr<SupervisedUserWhitelistService> whitelist_service_;
 
