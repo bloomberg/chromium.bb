@@ -16,6 +16,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner.h"
@@ -47,8 +48,7 @@ void LogFailure(const FilePath& path, TempFileFailure failure_code,
                 const std::string& message) {
   UMA_HISTOGRAM_ENUMERATION("ImportantFile.TempFileFailures", failure_code,
                             TEMP_FILE_FAILURE_MAX);
-  DPLOG(WARNING) << "temp file failure: " << path.value().c_str()
-                 << " : " << message;
+  DPLOG(WARNING) << "temp file failure: " << path.value() << " : " << message;
 }
 
 // Helper function to call WriteFileAtomically() with a scoped_ptr<std::string>.
@@ -72,16 +72,16 @@ bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
     char path[128];
   } file_info;
   file_info.data_size = data.size();
-  base::strlcpy(file_info.path, path.value().c_str(),
-                arraysize(file_info.path));
-  base::debug::Alias(&file_info);
+  strlcpy(file_info.path, path.value().c_str(), arraysize(file_info.path));
+  debug::Alias(&file_info);
 #endif
+
   // Write the data to a temp file then rename to avoid data loss if we crash
   // while writing the file. Ensure that the temp file is on the same volume
   // as target file, so it can be moved in one step, and that the temp file
   // is securely created.
   FilePath tmp_file_path;
-  if (!base::CreateTemporaryFileInDir(path.DirName(), &tmp_file_path)) {
+  if (!CreateTemporaryFileInDir(path.DirName(), &tmp_file_path)) {
     LogFailure(path, FAILED_CREATING, "could not create temporary file");
     return false;
   }
@@ -92,29 +92,28 @@ bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
     return false;
   }
 
-  // If this happens in the wild something really bad is going on.
-  CHECK_LE(data.length(), static_cast<size_t>(kint32max));
-  int bytes_written = tmp_file.Write(0, data.data(),
-                                     static_cast<int>(data.length()));
+  // If this fails in the wild, something really bad is going on.
+  const int data_length = checked_cast<int32_t>(data.length());
+  int bytes_written = tmp_file.Write(0, data.data(), data_length);
   bool flush_success = tmp_file.Flush();
   tmp_file.Close();
 
-  if (bytes_written < static_cast<int>(data.length())) {
+  if (bytes_written < data_length) {
     LogFailure(path, FAILED_WRITING, "error writing, bytes_written=" +
                IntToString(bytes_written));
-    base::DeleteFile(tmp_file_path, false);
+    DeleteFile(tmp_file_path, false);
     return false;
   }
 
   if (!flush_success) {
     LogFailure(path, FAILED_FLUSHING, "error flushing");
-    base::DeleteFile(tmp_file_path, false);
+    DeleteFile(tmp_file_path, false);
     return false;
   }
 
-  if (!base::ReplaceFile(tmp_file_path, path, NULL)) {
+  if (!ReplaceFile(tmp_file_path, path, nullptr)) {
     LogFailure(path, FAILED_RENAMING, "could not rename temporary file");
-    base::DeleteFile(tmp_file_path, false);
+    DeleteFile(tmp_file_path, false);
     return false;
   }
 
@@ -123,11 +122,21 @@ bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
 
 ImportantFileWriter::ImportantFileWriter(
     const FilePath& path,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+    const scoped_refptr<SequencedTaskRunner>& task_runner)
+    : ImportantFileWriter(
+        path,
+        task_runner,
+        TimeDelta::FromMilliseconds(kDefaultCommitIntervalMs)) {
+}
+
+ImportantFileWriter::ImportantFileWriter(
+    const FilePath& path,
+    const scoped_refptr<SequencedTaskRunner>& task_runner,
+    TimeDelta interval)
     : path_(path),
       task_runner_(task_runner),
-      serializer_(NULL),
-      commit_interval_(TimeDelta::FromMilliseconds(kDefaultCommitIntervalMs)),
+      serializer_(nullptr),
+      commit_interval_(interval),
       weak_factory_(this) {
   DCHECK(CalledOnValidThread());
   DCHECK(task_runner_);
@@ -147,7 +156,7 @@ bool ImportantFileWriter::HasPendingWrite() const {
 
 void ImportantFileWriter::WriteNow(scoped_ptr<std::string> data) {
   DCHECK(CalledOnValidThread());
-  if (data->length() > static_cast<size_t>(kint32max)) {
+  if (!IsValueInRangeForNumericType<int32_t>(data->length())) {
     NOTREACHED();
     return;
   }
@@ -185,13 +194,13 @@ void ImportantFileWriter::DoScheduledWrite() {
     WriteNow(data.Pass());
   } else {
     DLOG(WARNING) << "failed to serialize data to be saved in "
-                  << path_.value().c_str();
+                  << path_.value();
   }
-  serializer_ = NULL;
+  serializer_ = nullptr;
 }
 
 void ImportantFileWriter::RegisterOnNextSuccessfulWriteCallback(
-    const base::Closure& on_next_successful_write) {
+    const Closure& on_next_successful_write) {
   DCHECK(on_next_successful_write_.is_null());
   on_next_successful_write_ = on_next_successful_write;
 }
@@ -203,7 +212,7 @@ bool ImportantFileWriter::PostWriteTask(const Callback<bool()>& task) {
   // suppressing all of those is unrealistic hence we avoid most of them by
   // using PostTask() in the typical scenario below.
   if (!on_next_successful_write_.is_null()) {
-    return base::PostTaskAndReplyWithResult(
+    return PostTaskAndReplyWithResult(
         task_runner_.get(),
         FROM_HERE,
         MakeCriticalClosure(task),
@@ -212,7 +221,7 @@ bool ImportantFileWriter::PostWriteTask(const Callback<bool()>& task) {
   }
   return task_runner_->PostTask(
       FROM_HERE,
-      MakeCriticalClosure(base::Bind(IgnoreResult(task))));
+      MakeCriticalClosure(Bind(IgnoreResult(task))));
 }
 
 void ImportantFileWriter::ForwardSuccessfulWrite(bool result) {

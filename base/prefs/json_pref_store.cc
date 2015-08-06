@@ -83,9 +83,9 @@ PersistentPrefStore::PrefReadError HandleReadErrors(
         return bad_existed ? PersistentPrefStore::PREF_READ_ERROR_JSON_REPEAT
                            : PersistentPrefStore::PREF_READ_ERROR_JSON_PARSE;
     }
-  } else if (!value->IsType(base::Value::TYPE_DICTIONARY)) {
-    return PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE;
   }
+  if (!value->IsType(base::Value::TYPE_DICTIONARY))
+    return PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE;
   return PersistentPrefStore::PREF_READ_ERROR_NONE;
 }
 
@@ -143,26 +143,26 @@ scoped_refptr<base::SequencedTaskRunner> JsonPrefStore::GetTaskRunnerForFile(
 }
 
 JsonPrefStore::JsonPrefStore(
-    const base::FilePath& filename,
+    const base::FilePath& pref_filename,
     const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
     scoped_ptr<PrefFilter> pref_filter)
-    : JsonPrefStore(filename,
+    : JsonPrefStore(pref_filename,
                     base::FilePath(),
                     sequenced_task_runner,
                     pref_filter.Pass()) {
 }
 
 JsonPrefStore::JsonPrefStore(
-    const base::FilePath& filename,
-    const base::FilePath& alternate_filename,
+    const base::FilePath& pref_filename,
+    const base::FilePath& pref_alternate_filename,
     const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
     scoped_ptr<PrefFilter> pref_filter)
-    : path_(filename),
-      alternate_path_(alternate_filename),
+    : path_(pref_filename),
+      alternate_path_(pref_alternate_filename),
       sequenced_task_runner_(sequenced_task_runner),
       prefs_(new base::DictionaryValue()),
       read_only_(false),
-      writer_(filename, sequenced_task_runner),
+      writer_(pref_filename, sequenced_task_runner),
       pref_filter_(pref_filter.Pass()),
       initialized_(false),
       filtering_in_progress_(false),
@@ -176,7 +176,7 @@ bool JsonPrefStore::GetValue(const std::string& key,
                              const base::Value** result) const {
   DCHECK(CalledOnValidThread());
 
-  base::Value* tmp = NULL;
+  base::Value* tmp = nullptr;
   if (!prefs_->Get(key, &tmp))
     return false;
 
@@ -222,7 +222,7 @@ void JsonPrefStore::SetValue(const std::string& key,
   DCHECK(CalledOnValidThread());
 
   DCHECK(value);
-  base::Value* old_value = NULL;
+  base::Value* old_value = nullptr;
   prefs_->Get(key, &old_value);
   if (!old_value || !value->Equals(old_value)) {
     prefs_->Set(key, value.Pass());
@@ -236,7 +236,7 @@ void JsonPrefStore::SetValueSilently(const std::string& key,
   DCHECK(CalledOnValidThread());
 
   DCHECK(value);
-  base::Value* old_value = NULL;
+  base::Value* old_value = nullptr;
   prefs_->Get(key, &old_value);
   if (!old_value || !value->Equals(old_value)) {
     prefs_->Set(key, value.Pass());
@@ -247,14 +247,14 @@ void JsonPrefStore::SetValueSilently(const std::string& key,
 void JsonPrefStore::RemoveValue(const std::string& key, uint32 flags) {
   DCHECK(CalledOnValidThread());
 
-  if (prefs_->RemovePath(key, NULL))
+  if (prefs_->RemovePath(key, nullptr))
     ReportValueChanged(key, flags);
 }
 
 void JsonPrefStore::RemoveValueSilently(const std::string& key, uint32 flags) {
   DCHECK(CalledOnValidThread());
 
-  prefs_->RemovePath(key, NULL);
+  prefs_->RemovePath(key, nullptr);
   ScheduleWrite(flags);
 }
 

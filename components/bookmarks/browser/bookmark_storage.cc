@@ -143,10 +143,11 @@ BookmarkStorage::BookmarkStorage(
     const base::FilePath& profile_path,
     base::SequencedTaskRunner* sequenced_task_runner)
     : model_(model),
-      writer_(profile_path.Append(kBookmarksFileName), sequenced_task_runner),
+      writer_(profile_path.Append(kBookmarksFileName),
+              sequenced_task_runner,
+              base::TimeDelta::FromMilliseconds(kSaveDelayMS)),
+      sequenced_task_runner_(sequenced_task_runner),
       weak_factory_(this) {
-  sequenced_task_runner_ = sequenced_task_runner;
-  writer_.set_commit_interval(base::TimeDelta::FromMilliseconds(kSaveDelayMS));
   sequenced_task_runner_->PostTask(FROM_HERE,
                                    base::Bind(&BackupCallback, writer_.path()));
 }

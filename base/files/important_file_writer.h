@@ -62,9 +62,13 @@ class BASE_EXPORT ImportantFileWriter : public NonThreadSafe {
   // |task_runner| is the SequencedTaskRunner instance where on which we will
   // execute file I/O operations.
   // All non-const methods, ctor and dtor must be called on the same thread.
-  ImportantFileWriter(
-      const FilePath& path,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+  ImportantFileWriter(const FilePath& path,
+                      const scoped_refptr<SequencedTaskRunner>& task_runner);
+
+  // Same as above, but with a custom commit interval.
+  ImportantFileWriter(const FilePath& path,
+                      const scoped_refptr<SequencedTaskRunner>& task_runner,
+                      TimeDelta interval);
 
   // You have to ensure that there are no pending writes at the moment
   // of destruction.
@@ -77,7 +81,7 @@ class BASE_EXPORT ImportantFileWriter : public NonThreadSafe {
   bool HasPendingWrite() const;
 
   // Save |data| to target filename. Does not block. If there is a pending write
-  // scheduled by ScheduleWrite, it is cancelled.
+  // scheduled by ScheduleWrite(), it is cancelled.
   void WriteNow(scoped_ptr<std::string> data);
 
   // Schedule a save to target filename. Data will be serialized and saved
@@ -94,14 +98,10 @@ class BASE_EXPORT ImportantFileWriter : public NonThreadSafe {
   // Registers |on_next_successful_write| to be called once, on the next
   // successful write event. Only one callback can be set at once.
   void RegisterOnNextSuccessfulWriteCallback(
-      const base::Closure& on_next_successful_write);
+      const Closure& on_next_successful_write);
 
   TimeDelta commit_interval() const {
     return commit_interval_;
-  }
-
-  void set_commit_interval(const TimeDelta& interval) {
-    commit_interval_ = interval;
   }
 
  private:
@@ -113,13 +113,13 @@ class BASE_EXPORT ImportantFileWriter : public NonThreadSafe {
   void ForwardSuccessfulWrite(bool result);
 
   // Invoked once and then reset on the next successful write event.
-  base::Closure on_next_successful_write_;
+  Closure on_next_successful_write_;
 
   // Path being written to.
   const FilePath path_;
 
   // TaskRunner for the thread on which file I/O can be done.
-  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  const scoped_refptr<SequencedTaskRunner> task_runner_;
 
   // Timer used to schedule commit after ScheduleWrite.
   OneShotTimer<ImportantFileWriter> timer_;
@@ -128,7 +128,7 @@ class BASE_EXPORT ImportantFileWriter : public NonThreadSafe {
   DataSerializer* serializer_;
 
   // Time delta after which scheduled data will be written to disk.
-  TimeDelta commit_interval_;
+  const TimeDelta commit_interval_;
 
   WeakPtrFactory<ImportantFileWriter> weak_factory_;
 

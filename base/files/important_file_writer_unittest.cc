@@ -145,8 +145,9 @@ TEST_F(ImportantFileWriterTest, BasicWithSuccessfulWriteObserver) {
 }
 
 TEST_F(ImportantFileWriterTest, ScheduleWrite) {
-  ImportantFileWriter writer(file_, ThreadTaskRunnerHandle::Get());
-  writer.set_commit_interval(TimeDelta::FromMilliseconds(25));
+  ImportantFileWriter writer(file_,
+                             ThreadTaskRunnerHandle::Get(),
+                             TimeDelta::FromMilliseconds(25));
   EXPECT_FALSE(writer.HasPendingWrite());
   DataSerializer serializer("foo");
   writer.ScheduleWrite(&serializer);
@@ -177,8 +178,9 @@ TEST_F(ImportantFileWriterTest, DoScheduledWrite) {
 }
 
 TEST_F(ImportantFileWriterTest, BatchingWrites) {
-  ImportantFileWriter writer(file_, ThreadTaskRunnerHandle::Get());
-  writer.set_commit_interval(TimeDelta::FromMilliseconds(25));
+  ImportantFileWriter writer(file_,
+                             ThreadTaskRunnerHandle::Get(),
+                             TimeDelta::FromMilliseconds(25));
   DataSerializer foo("foo"), bar("bar"), baz("baz");
   writer.ScheduleWrite(&foo);
   writer.ScheduleWrite(&bar);
