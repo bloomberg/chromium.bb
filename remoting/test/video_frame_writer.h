@@ -13,6 +13,7 @@ class FilePath;
 
 namespace webrtc {
 class DesktopFrame;
+class DesktopRect;
 }
 
 namespace remoting {
@@ -31,12 +32,24 @@ class VideoFrameWriter {
   // Save video frame to path named with the |instance_creation_time|.
   void WriteFrameToDefaultPath(const webrtc::DesktopFrame& frame);
 
+  // Highlight |rect| on the frame by shifting the RGB value of pixels on the
+  // border of |rect|.
+  void HighlightRectInFrame(webrtc::DesktopFrame* frame,
+                            const webrtc::DesktopRect& rect);
+
  private:
   // Returns a FilePath by appending the creation time of this object.
   base::FilePath AppendCreationDateAndTime(const base::FilePath& file_path);
 
   // Returns true if directory already exists or it was created successfully.
   bool CreateDirectoryIfNotExists(const base::FilePath& file_path);
+
+  // Helper function to shift the RGB value of the pixel at location (x, y) by
+  // |shift_amount| on each channel.
+  static void ShiftPixelColor(webrtc::DesktopFrame* frame,
+                              int x,
+                              int y,
+                              int shift_amount);
 
   // Used to create a unique folder to dump video frames.
   const base::Time instance_creation_time_;

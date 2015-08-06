@@ -90,6 +90,28 @@ void VideoFrameWriter::WriteFrameToDefaultPath(
   WriteFrameToPath(frame, dump_frame_file_path);
 }
 
+void VideoFrameWriter::HighlightRectInFrame(webrtc::DesktopFrame* frame,
+                                            const webrtc::DesktopRect& rect) {
+  if (rect.left() < 0 || rect.top() < 0 ||
+      rect.right() >= frame->size().width() ||
+      rect.bottom() >= frame->size().height()) {
+    LOG(ERROR) << "Highlight rect lies outside of the frame.";
+    return;
+  }
+
+  // Draw vertical borders.
+  for (int y = rect.top(); y <= rect.bottom(); ++y) {
+    ShiftPixelColor(frame, rect.left(), y, 128);
+    ShiftPixelColor(frame, rect.right(), y, 128);
+  }
+
+  // Draw horizontal borders.
+  for (int x = rect.left(); x <= rect.right(); ++x) {
+    ShiftPixelColor(frame, x, rect.top(), 128);
+    ShiftPixelColor(frame, x, rect.bottom(), 128);
+  }
+}
+
 base::FilePath VideoFrameWriter::AppendCreationDateAndTime(
     const base::FilePath& file_path) {
   base::Time::Exploded exploded_time;
@@ -113,6 +135,17 @@ bool VideoFrameWriter::CreateDirectoryIfNotExists(
     return false;
   }
   return true;
+}
+
+void VideoFrameWriter::ShiftPixelColor(webrtc::DesktopFrame* frame,
+                                       int x,
+                                       int y,
+                                       int shift_amount) {
+  uint8_t* frame_pos = frame->data() + y * frame->stride() +
+                       x * webrtc::DesktopFrame::kBytesPerPixel;
+  frame_pos[2] = frame_pos[2] + shift_amount;
+  frame_pos[1] = frame_pos[1] + shift_amount;
+  frame_pos[0] = frame_pos[0] + shift_amount;
 }
 
 }  // namespace test

@@ -203,6 +203,7 @@ void TestVideoRenderer::Core::ProcessVideoPacket(
   if (save_frame_data_to_disk_) {
     scoped_ptr<webrtc::DesktopFrame> frame(
         webrtc::BasicDesktopFrame::CopyOf(*frame_.get()));
+    video_frame_writer.HighlightRectInFrame(frame.get(), expected_rect_);
     video_frame_writer.WriteFrameToDefaultPath(*frame.get());
   }
 
