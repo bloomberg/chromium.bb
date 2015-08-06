@@ -194,7 +194,7 @@ ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* f
     if (text != evt->text() || !editableRoot->layoutObjectIsRichlyEditable()) {
         restoreAndRemoveTestRenderingNodesToFragment(holder.get());
 
-        m_fragment = createFragmentFromText(selection.toNormalizedRange().get(), evt->text());
+        m_fragment = createFragmentFromText(selection.toNormalizedEphemeralRange(), evt->text());
         if (!m_fragment->hasChildren())
             return;
 
