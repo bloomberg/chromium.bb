@@ -32,6 +32,7 @@
   border-radius: 2px;  /* TODO(dbeam): why does this differ from Polymer? */
   display: flex;
   flex: none;
+  min-height: 96px;
   width: var(--downloads-item-width);
 }
 
