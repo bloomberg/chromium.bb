@@ -91,10 +91,12 @@ public:
         CORSModeUseCredentials,
     };
 
+    // Reported to UMA. Do not change existing values.
     enum LoadType {
-        LoadTypeURL,
-        LoadTypeMediaSource,
-        LoadTypeMediaStream,
+        LoadTypeURL = 0,
+        LoadTypeMediaSource = 1,
+        LoadTypeMediaStream = 2,
+        LoadTypeMax = LoadTypeMediaStream,
     };
 
     typedef unsigned TrackId;
