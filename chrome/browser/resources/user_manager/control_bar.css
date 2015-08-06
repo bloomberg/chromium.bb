@@ -75,8 +75,8 @@ html[dir=rtl] #login-header-bar #guest-user-button {
 
 #logo {
   content: -webkit-image-set(
-      url(../../../app/theme/%DISTRIBUTION%/product_logo_name_48.png) 1x,
-      url(../../../app/theme/%DISTRIBUTION%/product_logo_name_96.png) 2x);
+      url(../../../app/theme/default_100_percent/%DISTRIBUTION%/product_logo_name_48.png) 1x,
+      url(../../../app/theme/default_200_percent/%DISTRIBUTION%/product_logo_name_48.png) 2x);
   height: 18px;
   position: absolute;
   right: 16px;
