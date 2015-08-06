@@ -559,6 +559,15 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
   position: relative;
 }
 
+.gallery > .toolbar paper-button:focus,
+.gallery > .toolbar button:focus {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.gallery > .toolbar button:focus {
+  outline: none;
+}
+
 .gallery > .toolbar button > .icon {
   background-position: center;
   background-repeat: no-repeat;
@@ -572,10 +581,6 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
   position: absolute;
   top: 0;
   z-index: 1;
-}
-
-.gallery > .toolbar paper-button:focus {
-  background-color: rgba(0, 0, 0, 0.3);
 }
 
 .gallery > .toolbar button.edit > .icon {
@@ -653,9 +658,10 @@ button[disabled] {
   display: none;
 }
 
-.toolbar button.edit-toolbar:focus:not(.using-mouse) {
-  background-color: rgba(0, 0, 0, 0.3);
-  outline: none;
+/* Do not show focus state if it's made by mouse since it makes difficult to see
+ * the toggle animation. */
+.toolbar button.edit-toolbar:focus.using-mouse {
+  background-color: transparent;
 }
 
 /* Edit main toolbar. */
