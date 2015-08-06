@@ -46712,6 +46712,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UMA.SyntheticTrials.Count">
+  <obsolete>
+    Deprecated as of August 2015.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <summary>
     The number of synthetic field trials added to the UMA log when the system

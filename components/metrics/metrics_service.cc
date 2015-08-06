@@ -1101,8 +1101,6 @@ void MetricsService::RecordCurrentEnvironment(MetricsLog* log) {
   GetCurrentSyntheticFieldTrials(&synthetic_trials);
   log->RecordEnvironment(metrics_providers_.get(), synthetic_trials,
                          GetInstallDate(), GetMetricsReportingEnabledDate());
-  UMA_HISTOGRAM_COUNTS_100("UMA.SyntheticTrials.Count",
-                           synthetic_trials.size());
 }
 
 void MetricsService::RecordCurrentHistograms() {
