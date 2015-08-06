@@ -49,8 +49,8 @@ function unexpectedLoad() {
 }
 
 loadScript("resources/success.js?3", false);
-loadScript("resources/slow-nonexisting-script.php?sleep=1", false, unexpectedLoad, failedFirst);
-loadScript("resources/slow-nonexisting-script.php?sleep=2", false, unexpectedLoad, failedSecond);
+loadScript("resources/slow-nonexisting-script.php?timeout=1", false, unexpectedLoad, failedFirst);
+loadScript("resources/slow-nonexisting-script.php?timeout=2", false, unexpectedLoad, failedSecond);
 </script>
 </body>
 </html>
