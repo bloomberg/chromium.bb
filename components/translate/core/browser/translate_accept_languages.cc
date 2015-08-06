@@ -62,8 +62,9 @@ void TranslateAcceptLanguages::InitAcceptLanguages(PrefService* prefs) {
   DCHECK(prefs);
   // Build the languages.
   accept_languages_.clear();
+  std::string accept_languages_pref = prefs->GetString(accept_languages_pref_);
   for (const base::StringPiece& lang : base::SplitStringPiece(
-           prefs->GetString(accept_languages_pref_), ",",
+           accept_languages_pref, ",",
            base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     // Get rid of the locale extension if any (ex: en-US -> en), but for Chinese
     // for which the CLD reports zh-CN and zh-TW.
