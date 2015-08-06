@@ -26,7 +26,8 @@ PaginationController::PaginationController(PaginationModel* model,
     : pagination_model_(model), scroll_axis_(scroll_axis) {
 }
 
-bool PaginationController::OnScroll(const gfx::Vector2d& offset) {
+bool PaginationController::OnScroll(const gfx::Vector2d& offset,
+                                    ScrollEventType type) {
   int offset_magnitude;
   if (scroll_axis_ == SCROLL_AXIS_HORIZONTAL) {
     // If the view scrolls horizontally, both horizontal and vertical scroll
@@ -38,7 +39,10 @@ bool PaginationController::OnScroll(const gfx::Vector2d& offset) {
     offset_magnitude = offset.y();
   }
 
-  if (abs(offset_magnitude) > kMinScrollToSwitchPage) {
+  // Do not scroll on very small touchpad events. Mouse wheel events should
+  // scroll, no matter how small the value change.
+  if (type == SCROLL_MOUSE_WHEEL ||
+      abs(offset_magnitude) > kMinScrollToSwitchPage) {
     if (!pagination_model_->has_transition()) {
       pagination_model_->SelectPageRelative(offset_magnitude > 0 ? -1 : 1,
                                             true);
