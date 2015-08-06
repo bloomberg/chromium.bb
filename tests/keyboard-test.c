@@ -40,7 +40,7 @@ TEST(simple_keyboard_test)
 
 	keyboard = client->input->keyboard;
 
-	while(1) {
+	while (1) {
 		assert(keyboard->key == expect_key);
 		assert(keyboard->state == expect_state);
 		assert(keyboard->focus == expect_focus);

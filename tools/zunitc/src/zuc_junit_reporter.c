@@ -218,7 +218,8 @@ emit_event(xmlNodePtr parent, struct zuc_event *event)
  * @return the formatted time string upon success, NULL otherwise.
  */
 static char *
-as_duration(long ms) {
+as_duration(long ms)
+{
 	char *str = NULL;
 
 	if (asprintf(&str, "%1.3f", ms / 1000.0) < 0) {

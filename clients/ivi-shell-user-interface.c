@@ -1301,7 +1301,7 @@ int main(int argc, char **argv)
 
 	UI_ready(wlCtxCommon.hmiCtrl);
 
-	while(ret != -1)
+	while (ret != -1)
 		ret = wl_display_dispatch(wlCtxCommon.wlDisplay);
 
 	wl_list_for_each(pWlCtxSt, &wlCtxCommon.list_wlContextStruct, link) {

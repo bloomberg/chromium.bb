@@ -42,7 +42,8 @@ char *server_parameters="--use-pixman --width=320 --height=240";
  * @returns true if successfully saved file; false otherwise.
  */
 static bool
-write_surface_as_png(const struct surface* weston_surface, const char *fname) {
+write_surface_as_png(const struct surface* weston_surface, const char *fname)
+{
 	cairo_surface_t *cairo_surface;
 	cairo_status_t status;
 	int bpp = 4; /* Assume ARGB */
@@ -73,7 +74,8 @@ write_surface_as_png(const struct surface* weston_surface, const char *fname) {
  * when no longer used; or, NULL in case of error.
  */
 static struct surface*
-load_surface_from_png(const char *fname) {
+load_surface_from_png(const char *fname)
+{
 	struct surface *reference;
 	cairo_surface_t *reference_cairo_surface;
 	cairo_status_t status;
@@ -138,7 +140,8 @@ load_surface_from_png(const char *fname) {
  *  free'd when done using it.
  */
 static struct surface*
-create_screenshot_surface(struct client *client) {
+create_screenshot_surface(struct client *client)
+{
 	struct surface* screenshot;
 	screenshot = xzalloc(sizeof *screenshot);
 	if (screenshot == NULL)
@@ -163,7 +166,8 @@ create_screenshot_surface(struct client *client) {
  * longer needed.
  */
 static struct surface *
-capture_screenshot_of_output(struct client *client) {
+capture_screenshot_of_output(struct client *client)
+{
 	struct surface *screenshot;
 
 	/* Create a surface to hold the screenshot */

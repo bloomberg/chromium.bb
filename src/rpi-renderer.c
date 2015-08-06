@@ -1487,7 +1487,7 @@ rpi_renderer_attach(struct weston_surface *base, struct weston_buffer *buffer)
 
 		surface->buffer_type = BUFFER_TYPE_EGL;
 
-		if(surface->egl_back == NULL)
+		if (surface->egl_back == NULL)
 			surface->egl_back = zalloc(sizeof *surface->egl_back);
 
 		weston_buffer_reference(&surface->egl_back->buffer_ref, buffer);

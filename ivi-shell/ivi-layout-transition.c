@@ -229,7 +229,7 @@ layout_transition_destroy(struct ivi_layout_transition *transition)
 	struct ivi_layout *layout = get_instance();
 
 	remove_transition(layout, transition);
-	if(transition->destroy_func)
+	if (transition->destroy_func)
 		transition->destroy_func(transition);
 	free(transition);
 }
@@ -663,7 +663,7 @@ transition_move_layer_destroy(struct ivi_layout_transition *transition)
 {
 	struct move_layer_data *data = transition->private_data;
 
-	if(data->destroy_func)
+	if (data->destroy_func)
 		data->destroy_func(transition->user_data);
 
 	free(data);

@@ -704,7 +704,7 @@ commit_surface_list(struct ivi_layout *layout)
 	int32_t configured = 0;
 
 	wl_list_for_each(ivisurf, &layout->surface_list, link) {
-		if(ivisurf->pending.prop.transition_type == IVI_LAYOUT_TRANSITION_VIEW_DEFAULT) {
+		if (ivisurf->pending.prop.transition_type == IVI_LAYOUT_TRANSITION_VIEW_DEFAULT) {
 			dest_x = ivisurf->prop.dest_x;
 			dest_y = ivisurf->prop.dest_y;
 			dest_width = ivisurf->prop.dest_width;
@@ -717,7 +717,7 @@ commit_surface_list(struct ivi_layout *layout)
 							       ivisurf->pending.prop.dest_height,
 							       ivisurf->pending.prop.transition_duration);
 
-			if(ivisurf->pending.prop.visibility) {
+			if (ivisurf->pending.prop.visibility) {
 				ivi_layout_transition_visibility_on(ivisurf, ivisurf->pending.prop.transition_duration);
 			} else {
 				ivi_layout_transition_visibility_off(ivisurf, ivisurf->pending.prop.transition_duration);
@@ -731,7 +731,7 @@ commit_surface_list(struct ivi_layout *layout)
 			ivisurf->prop.transition_type = IVI_LAYOUT_TRANSITION_NONE;
 			ivisurf->pending.prop.transition_type = IVI_LAYOUT_TRANSITION_NONE;
 
-		} else if(ivisurf->pending.prop.transition_type == IVI_LAYOUT_TRANSITION_VIEW_DEST_RECT_ONLY){
+		} else if (ivisurf->pending.prop.transition_type == IVI_LAYOUT_TRANSITION_VIEW_DEST_RECT_ONLY) {
 			dest_x = ivisurf->prop.dest_x;
 			dest_y = ivisurf->prop.dest_y;
 			dest_width = ivisurf->prop.dest_width;
@@ -753,9 +753,9 @@ commit_surface_list(struct ivi_layout *layout)
 			ivisurf->prop.transition_type = IVI_LAYOUT_TRANSITION_NONE;
 			ivisurf->pending.prop.transition_type = IVI_LAYOUT_TRANSITION_NONE;
 
-		} else if(ivisurf->pending.prop.transition_type == IVI_LAYOUT_TRANSITION_VIEW_FADE_ONLY){
+		} else if (ivisurf->pending.prop.transition_type == IVI_LAYOUT_TRANSITION_VIEW_FADE_ONLY) {
 			configured = 0;
-			if(ivisurf->pending.prop.visibility) {
+			if (ivisurf->pending.prop.visibility) {
 				ivi_layout_transition_visibility_on(ivisurf, ivisurf->pending.prop.transition_duration);
 			} else {
 				ivi_layout_transition_visibility_off(ivisurf, ivisurf->pending.prop.transition_duration);
@@ -797,9 +797,9 @@ commit_layer_list(struct ivi_layout *layout)
 	struct ivi_layout_surface *next     = NULL;
 
 	wl_list_for_each(ivilayer, &layout->layer_list, link) {
-		if(ivilayer->pending.prop.transition_type == IVI_LAYOUT_TRANSITION_LAYER_MOVE) {
+		if (ivilayer->pending.prop.transition_type == IVI_LAYOUT_TRANSITION_LAYER_MOVE) {
 			ivi_layout_transition_move_layer(ivilayer, ivilayer->pending.prop.dest_x, ivilayer->pending.prop.dest_y, ivilayer->pending.prop.transition_duration);
-		} else if(ivilayer->pending.prop.transition_type == IVI_LAYOUT_TRANSITION_LAYER_FADE) {
+		} else if (ivilayer->pending.prop.transition_type == IVI_LAYOUT_TRANSITION_LAYER_FADE) {
 			ivi_layout_transition_fade_layer(ivilayer,ivilayer->pending.prop.is_fade_in,
 							 ivilayer->pending.prop.start_alpha,ivilayer->pending.prop.end_alpha,
 							 NULL, NULL,
@@ -845,7 +845,7 @@ commit_layer_list(struct ivi_layout *layout)
 			wl_list_init(&ivilayer->order.surface_list);
 			wl_list_for_each(ivisurf, &ivilayer->pending.surface_list,
 					 pending.link) {
-				if(!wl_list_empty(&ivisurf->order.link)){
+				if (!wl_list_empty(&ivisurf->order.link)) {
 					wl_list_remove(&ivisurf->order.link);
 					wl_list_init(&ivisurf->order.link);
 				}
@@ -940,7 +940,7 @@ commit_screen_list(struct ivi_layout *layout)
 static void
 commit_transition(struct ivi_layout* layout)
 {
-	if(wl_list_empty(&layout->pending_transition_list)){
+	if (wl_list_empty(&layout->pending_transition_list)) {
 		return;
 	}
 
@@ -1507,7 +1507,7 @@ ivi_layout_get_screens(int32_t *pLength, struct ivi_layout_screen ***ppArray)
 
 	length = wl_list_length(&layout->screen_list);
 
-	if (length != 0){
+	if (length != 0) {
 		/* the Array must be free by module which called this function */
 		*ppArray = calloc(length, sizeof(struct ivi_layout_screen *));
 		if (*ppArray == NULL) {
@@ -1541,7 +1541,7 @@ ivi_layout_get_screens_under_layer(struct ivi_layout_layer *ivilayer,
 
 	length = wl_list_length(&ivilayer->screen_list);
 
-	if (length != 0){
+	if (length != 0) {
 		/* the Array must be free by module which called this function */
 		*ppArray = calloc(length, sizeof(struct ivi_layout_screen *));
 		if (*ppArray == NULL) {
@@ -1574,7 +1574,7 @@ ivi_layout_get_layers(int32_t *pLength, struct ivi_layout_layer ***ppArray)
 
 	length = wl_list_length(&layout->layer_list);
 
-	if (length != 0){
+	if (length != 0) {
 		/* the Array must be free by module which called this function */
 		*ppArray = calloc(length, sizeof(struct ivi_layout_layer *));
 		if (*ppArray == NULL) {
@@ -1608,7 +1608,7 @@ ivi_layout_get_layers_on_screen(struct ivi_layout_screen *iviscrn,
 
 	length = wl_list_length(&iviscrn->order.layer_list);
 
-	if (length != 0){
+	if (length != 0) {
 		/* the Array must be free by module which called this function */
 		*ppArray = calloc(length, sizeof(struct ivi_layout_layer *));
 		if (*ppArray == NULL) {
@@ -1642,7 +1642,7 @@ ivi_layout_get_layers_under_surface(struct ivi_layout_surface *ivisurf,
 
 	length = wl_list_length(&ivisurf->layer_list);
 
-	if (length != 0){
+	if (length != 0) {
 		/* the Array must be free by module which called this function */
 		*ppArray = calloc(length, sizeof(struct ivi_layout_layer *));
 		if (*ppArray == NULL) {
@@ -1676,7 +1676,7 @@ ivi_layout_get_surfaces(int32_t *pLength, struct ivi_layout_surface ***ppArray)
 
 	length = wl_list_length(&layout->surface_list);
 
-	if (length != 0){
+	if (length != 0) {
 		/* the Array must be free by module which called this function */
 		*ppArray = calloc(length, sizeof(struct ivi_layout_surface *));
 		if (*ppArray == NULL) {
@@ -2707,7 +2707,7 @@ ivi_layout_get_weston_view(struct ivi_layout_surface *surface)
 {
 	struct weston_view *tmpview = NULL;
 
-	if(surface == NULL)
+	if (surface == NULL)
 		return NULL;
 
 	wl_list_for_each(tmpview, &surface->surface->views, surface_link)

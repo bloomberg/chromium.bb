@@ -138,7 +138,8 @@ struct rdp_peer_context {
 typedef struct rdp_peer_context RdpPeerContext;
 
 static void
-rdp_backend_config_init(struct rdp_backend_config *config) {
+rdp_backend_config_init(struct rdp_backend_config *config)
+{
 	config->width = 640;
 	config->height = 480;
 	config->bind_address = NULL;
@@ -250,7 +251,8 @@ rdp_peer_refresh_nsc(pixman_region32_t *damage, pixman_image_t *image, freerdp_p
 }
 
 static void
-pixman_image_flipped_subrect(const pixman_box32_t *rect, pixman_image_t *img, BYTE *dest) {
+pixman_image_flipped_subrect(const pixman_box32_t *rect, pixman_image_t *img, BYTE *dest)
+{
 	int stride = pixman_image_get_stride(img);
 	int h;
 	int toCopy = (rect->x2 - rect->x1) * 4;
@@ -393,7 +395,8 @@ finish_frame_handler(void *data)
 }
 
 static struct weston_mode *
-rdp_insert_new_mode(struct weston_output *output, int width, int height, int rate) {
+rdp_insert_new_mode(struct weston_output *output, int width, int height, int rate)
+{
 	struct weston_mode *ret;
 	ret = zalloc(sizeof *ret);
 	if (!ret)
@@ -406,7 +409,8 @@ rdp_insert_new_mode(struct weston_output *output, int width, int height, int rat
 }
 
 static struct weston_mode *
-ensure_matching_mode(struct weston_output *output, struct weston_mode *target) {
+ensure_matching_mode(struct weston_output *output, struct weston_mode *target)
+{
 	struct weston_mode *local;
 
 	wl_list_for_each(local, &output->mode_list, link) {
@@ -418,7 +422,8 @@ ensure_matching_mode(struct weston_output *output, struct weston_mode *target) {
 }
 
 static int
-rdp_switch_mode(struct weston_output *output, struct weston_mode *target_mode) {
+rdp_switch_mode(struct weston_output *output, struct weston_mode *target_mode)
+{
 	struct rdp_output *rdpOutput = container_of(output, struct rdp_output, base);
 	struct rdp_peers_item *rdpPeer;
 	rdpSettings *settings;
@@ -558,13 +563,13 @@ rdp_destroy(struct weston_compositor *ec)
 }
 
 static
-int rdp_listener_activity(int fd, uint32_t mask, void *data) {
+int rdp_listener_activity(int fd, uint32_t mask, void *data)
+{
 	freerdp_listener* instance = (freerdp_listener *)data;
 
 	if (!(mask & WL_EVENT_READABLE))
 		return 0;
-	if (!instance->CheckFileDescriptor(instance))
-	{
+	if (!instance->CheckFileDescriptor(instance)) {
 		weston_log("failed to check FreeRDP file descriptor\n");
 		return -1;
 	}
@@ -572,7 +577,8 @@ int rdp_listener_activity(int fd, uint32_t mask, void *data) {
 }
 
 static
-int rdp_implant_listener(struct rdp_backend *b, freerdp_listener* instance) {
+int rdp_implant_listener(struct rdp_backend *b, freerdp_listener* instance)
+{
 	int i, fd;
 	int rcount = 0;
 	void* rfds[MAX_FREERDP_FDS];
@@ -590,7 +596,7 @@ int rdp_implant_listener(struct rdp_backend *b, freerdp_listener* instance) {
 				rdp_listener_activity, instance);
 	}
 
-	for( ; i < MAX_FREERDP_FDS; i++)
+	for ( ; i < MAX_FREERDP_FDS; i++)
 		b->listener_events[i] = 0;
 	return 0;
 }
@@ -626,7 +632,7 @@ rdp_peer_context_free(freerdp_peer* client, RdpPeerContext* context)
 		return;
 
 	wl_list_remove(&context->item.link);
-	for(i = 0; i < MAX_FREERDP_FDS; i++) {
+	for (i = 0; i < MAX_FREERDP_FDS; i++) {
 		if (context->events[i])
 			wl_event_source_remove(context->events[i]);
 	}
@@ -645,7 +651,8 @@ rdp_peer_context_free(freerdp_peer* client, RdpPeerContext* context)
 
 
 static int
-rdp_client_activity(int fd, uint32_t mask, void *data) {
+rdp_client_activity(int fd, uint32_t mask, void *data)
+{
 	freerdp_peer* client = (freerdp_peer *)data;
 
 	if (!client->CheckFileDescriptor(client)) {
@@ -877,7 +884,7 @@ xf_peer_activate(freerdp_peer* client)
 	memset(&xkbRuleNames, 0, sizeof(xkbRuleNames));
 	if (settings->KeyboardType <= 7)
 		xkbRuleNames.model = rdp_keyboard_types[settings->KeyboardType];
-	for(i = 0; rdp_keyboards[i].rdpLayoutCode; i++) {
+	for (i = 0; rdp_keyboards[i].rdpLayoutCode; i++) {
 		if (rdp_keyboards[i].rdpLayoutCode == settings->KeyboardLayout) {
 			xkbRuleNames.layout = rdp_keyboards[i].xkbLayout;
 			xkbRuleNames.variant = rdp_keyboards[i].xkbVariant;
@@ -934,7 +941,8 @@ static BOOL xf_peer_post_connect(freerdp_peer *client)
 }
 
 static FREERDP_CB_RET_TYPE
-xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y) {
+xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
+{
 	wl_fixed_t wl_x, wl_y, axis;
 	RdpPeerContext *peerContext = (RdpPeerContext *)input->context;
 	struct rdp_output *output;
@@ -983,7 +991,8 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y) {
 }
 
 static FREERDP_CB_RET_TYPE
-xf_extendedMouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y) {
+xf_extendedMouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
+{
 	wl_fixed_t wl_x, wl_y;
 	RdpPeerContext *peerContext = (RdpPeerContext *)input->context;
 	struct rdp_output *output;
@@ -1048,7 +1057,7 @@ xf_input_keyboard_event(rdpInput *input, UINT16 flags, UINT16 code)
 			full_code |= KBD_FLAGS_EXTENDED;
 
 		vk_code = GetVirtualKeyCodeFromVirtualScanCode(full_code, 4);
-		if(flags & KBD_FLAGS_EXTENDED)
+		if (flags & KBD_FLAGS_EXTENDED)
 			vk_code |= KBDEXT;
 
 		scan_code = GetKeycodeFromVirtualKeyCode(vk_code, KEYCODE_TYPE_EVDEV);
@@ -1071,7 +1080,8 @@ xf_input_unicode_keyboard_event(rdpInput *input, UINT16 flags, UINT16 code)
 
 
 static FREERDP_CB_RET_TYPE
-xf_suppress_output(rdpContext *context, BYTE allow, RECTANGLE_16 *area) {
+xf_suppress_output(rdpContext *context, BYTE allow, RECTANGLE_16 *area)
+{
 	RdpPeerContext *peerContext = (RdpPeerContext *)context;
 
 	if (allow)
@@ -1146,7 +1156,7 @@ rdp_peer_init(freerdp_peer *client, struct rdp_backend *b)
 	}
 
 	loop = wl_display_get_event_loop(b->compositor->wl_display);
-	for(i = 0; i < rcount; i++) {
+	for (i = 0; i < rcount; i++) {
 		fd = (int)(long)(rfds[i]);
 
 		peerCtx->events[i] = wl_event_loop_add_fd(loop, fd, WL_EVENT_READABLE,
@@ -1216,7 +1226,7 @@ rdp_backend_create(struct weston_compositor *compositor,
 
 	compositor->capabilities |= WESTON_CAP_ARBITRARY_MODES;
 
-	if(!config->env_socket) {
+	if (!config->env_socket) {
 		b->listener = freerdp_listener_new();
 		b->listener->PeerAccepted = rdp_incoming_peer;
 		b->listener->param4 = b;

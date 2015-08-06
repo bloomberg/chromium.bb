@@ -227,7 +227,7 @@ get_atom_name(xcb_connection_t *c, xcb_atom_t atom)
 	cookie = xcb_get_atom_name (c, atom);
 	reply = xcb_get_atom_name_reply (c, cookie, &e);
 
-	if(reply) {
+	if (reply) {
 		snprintf(buffer, sizeof buffer, "%.*s",
 			 xcb_get_atom_name_name_length (reply),
 			 xcb_get_atom_name_name (reply));
@@ -1087,7 +1087,7 @@ weston_wm_window_draw_decoration(void *data)
 
 	if (window->surface) {
 		pixman_region32_fini(&window->surface->pending.opaque);
-		if(window->has_alpha) {
+		if (window->has_alpha) {
 			pixman_region32_init(&window->surface->pending.opaque);
 		} else {
 			/* We leave an extra pixel around the X window area to
@@ -1131,7 +1131,7 @@ weston_wm_window_schedule_repaint(struct weston_wm_window *window)
 		if (window->surface != NULL) {
 			weston_wm_window_get_frame_size(window, &width, &height);
 			pixman_region32_fini(&window->surface->pending.opaque);
-			if(window->has_alpha) {
+			if (window->has_alpha) {
 				pixman_region32_init(&window->surface->pending.opaque);
 			} else {
 				pixman_region32_init_rect(&window->surface->pending.opaque, 0, 0,
@@ -1209,7 +1209,7 @@ weston_wm_window_create(struct weston_wm *wm,
 	geometry_reply = xcb_get_geometry_reply(wm->conn, geometry_cookie, NULL);
 	/* technically we should use XRender and check the visual format's
 	alpha_mask, but checking depth is simpler and works in all known cases */
-	if(geometry_reply != NULL)
+	if (geometry_reply != NULL)
 		window->has_alpha = geometry_reply->depth == 32;
 	free(geometry_reply);
 

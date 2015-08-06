@@ -172,8 +172,8 @@ keyboard_focus_handler(struct window *window,
 	int32_t x, y;
 	struct eventdemo *e = data;
 
-	if(log_focus) {
-		if(device) {
+	if (log_focus) {
+		if (device) {
 			input_get_position(device, &x, &y);
 			printf("focus x: %d, y: %d\n", x, y);
 		} else {
@@ -200,7 +200,7 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 {
 	uint32_t modifiers = input_get_modifiers(input);
 
-	if(!log_key)
+	if (!log_key)
 		return;
 
 	printf("key key: %d, unicode: %d, state: %s, modifiers: 0x%x\n",
@@ -300,7 +300,7 @@ eventdemo_create(struct display *d)
 	struct eventdemo *e;
 
 	e = malloc(sizeof (struct eventdemo));
-	if(e == NULL)
+	if (e == NULL)
 		return NULL;
 
 	e->window = window_create(d);

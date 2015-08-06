@@ -134,28 +134,28 @@ utf8_next_char(struct utf8_state_machine *machine, unsigned char c)
 	case utf8state_reject:
 		machine->s.ch = 0;
 		machine->len = 0;
-		if(c == 0xC0 || c == 0xC1) {
+		if (c == 0xC0 || c == 0xC1) {
 			/* overlong encoding, reject */
 			machine->state = utf8state_reject;
-		} else if((c & 0x80) == 0) {
+		} else if ((c & 0x80) == 0) {
 			/* single byte, accept */
 			machine->s.byte[machine->len++] = c;
 			machine->state = utf8state_accept;
 			machine->unicode = c;
-		} else if((c & 0xC0) == 0x80) {
+		} else if ((c & 0xC0) == 0x80) {
 			/* parser out of sync, ignore byte */
 			machine->state = utf8state_start;
-		} else if((c & 0xE0) == 0xC0) {
+		} else if ((c & 0xE0) == 0xC0) {
 			/* start of two byte sequence */
 			machine->s.byte[machine->len++] = c;
 			machine->state = utf8state_expect1;
 			machine->unicode = c & 0x1f;
-		} else if((c & 0xF0) == 0xE0) {
+		} else if ((c & 0xF0) == 0xE0) {
 			/* start of three byte sequence */
 			machine->s.byte[machine->len++] = c;
 			machine->state = utf8state_expect2;
 			machine->unicode = c & 0x0f;
-		} else if((c & 0xF8) == 0xF0) {
+		} else if ((c & 0xF8) == 0xF0) {
 			/* start of four byte sequence */
 			machine->s.byte[machine->len++] = c;
 			machine->state = utf8state_expect3;
@@ -168,7 +168,7 @@ utf8_next_char(struct utf8_state_machine *machine, unsigned char c)
 	case utf8state_expect3:
 		machine->s.byte[machine->len++] = c;
 		machine->unicode = (machine->unicode << 6) | (c & 0x3f);
-		if((c & 0xC0) == 0x80) {
+		if ((c & 0xC0) == 0x80) {
 			/* all good, continue */
 			machine->state = utf8state_expect2;
 		} else {
@@ -179,7 +179,7 @@ utf8_next_char(struct utf8_state_machine *machine, unsigned char c)
 	case utf8state_expect2:
 		machine->s.byte[machine->len++] = c;
 		machine->unicode = (machine->unicode << 6) | (c & 0x3f);
-		if((c & 0xC0) == 0x80) {
+		if ((c & 0xC0) == 0x80) {
 			/* all good, continue */
 			machine->state = utf8state_expect1;
 		} else {
@@ -190,7 +190,7 @@ utf8_next_char(struct utf8_state_machine *machine, unsigned char c)
 	case utf8state_expect1:
 		machine->s.byte[machine->len++] = c;
 		machine->unicode = (machine->unicode << 6) | (c & 0x3f);
-		if((c & 0xC0) == 0x80) {
+		if ((c & 0xC0) == 0x80) {
 			/* all good, accept */
 			machine->state = utf8state_accept;
 		} else {
@@ -660,7 +660,7 @@ terminal_scroll_window(struct terminal *terminal, int d)
 	// scrolling range is inclusive
 	window_height = terminal->margin_bottom - terminal->margin_top + 1;
 	d = d % (window_height + 1);
-	if(d < 0) {
+	if (d < 0) {
 		d = 0 - d;
 		to_row = terminal->margin_bottom;
 		from_row = terminal->margin_bottom - d;
@@ -701,7 +701,7 @@ terminal_scroll_window(struct terminal *terminal, int d)
 static void
 terminal_scroll(struct terminal *terminal, int d)
 {
-	if(terminal->margin_top == 0 && terminal->margin_bottom == terminal->height - 1)
+	if (terminal->margin_top == 0 && terminal->margin_bottom == terminal->height - 1)
 		terminal_scroll_buffer(terminal, d);
 	else
 		terminal_scroll_window(terminal, d);
@@ -1557,17 +1557,17 @@ handle_escape(struct terminal *terminal)
 		}
 		break;
 	case 'h':    /* SM */
-		for(i = 0; i < 10 && set[i]; i++) {
+		for (i = 0; i < 10 && set[i]; i++) {
 			handle_term_parameter(terminal, args[i], 1);
 		}
 		break;
 	case 'l':    /* RM */
-		for(i = 0; i < 10 && set[i]; i++) {
+		for (i = 0; i < 10 && set[i]; i++) {
 			handle_term_parameter(terminal, args[i], 0);
 		}
 		break;
 	case 'm':    /* SGR */
-		for(i = 0; i < 10; i++) {
+		for (i = 0; i < 10; i++) {
 			if (i <= 7 && set[i] && set[i + 1] &&
 				set[i + 2] && args[i + 1] == 5)
 			{
@@ -1579,9 +1579,9 @@ handle_escape(struct terminal *terminal)
 					break;
 				}
 			}
-			if(set[i]) {
+			if (set[i]) {
 				handle_sgr(terminal, args[i]);
-			} else if(i == 0) {
+			} else if (i == 0) {
 				handle_sgr(terminal, 0);
 				break;
 			} else {
@@ -1602,7 +1602,7 @@ handle_escape(struct terminal *terminal)
 		}
  		break;
 	case 'r':
-		if(!set[0]) {
+		if (!set[0]) {
 			terminal->margin_top = 0;
 			terminal->margin_bottom = terminal->height-1;
 			terminal->row = 0;
@@ -1614,14 +1614,14 @@ handle_escape(struct terminal *terminal)
 			bottom = (set[1] ? args[1] : 1) - 1;
 			bottom = bottom < 0 ? 0 :
 			         (bottom >= terminal->height ? terminal->height - 1 : bottom);
-			if(bottom > top) {
+			if (bottom > top) {
 				terminal->margin_top = top;
 				terminal->margin_bottom = bottom;
 			} else {
 				terminal->margin_top = 0;
 				terminal->margin_bottom = terminal->height-1;
 			}
-			if(terminal->origin_mode)
+			if (terminal->origin_mode)
 				terminal->row = terminal->margin_top;
 			else
 				terminal->row = 0;
@@ -1691,7 +1691,7 @@ handle_non_csi_escape(struct terminal *terminal, char code)
 	switch(code) {
 	case 'M':    /* RI */
 		terminal->row -= 1;
-		if(terminal->row < terminal->margin_top) {
+		if (terminal->row < terminal->margin_top) {
 			terminal->row = terminal->margin_top;
 			terminal_scroll(terminal, -1);
 		}
@@ -1701,7 +1701,7 @@ handle_non_csi_escape(struct terminal *terminal, char code)
 		// fallthrough
 	case 'D':    /* IND */
 		terminal->row += 1;
-		if(terminal->row > terminal->margin_bottom) {
+		if (terminal->row > terminal->margin_bottom) {
 			terminal->row = terminal->margin_bottom;
 			terminal_scroll(terminal, +1);
 		}
@@ -1753,7 +1753,7 @@ handle_special_escape(struct terminal *terminal, char special, char code)
 			/* fill with 'E', no cheap way to do this */
 			memset(terminal->data, 0, terminal->data_pitch * terminal->height);
 			numChars = terminal->width * terminal->height;
-			for(i = 0; i < numChars; i++) {
+			for (i = 0; i < numChars; i++) {
 				terminal->data[i].byte[0] = 'E';
 			}
 			break;
@@ -1841,19 +1841,19 @@ handle_sgr(struct terminal *terminal, int code)
 		terminal->curr_attr.bg = terminal->color_scheme->default_attr.bg;
 		break;
 	default:
-		if(code >= 30 && code <= 37) {
+		if (code >= 30 && code <= 37) {
 			terminal->curr_attr.fg = code - 30;
 			if (terminal->curr_attr.a & ATTRMASK_BOLD)
 				terminal->curr_attr.fg += 8;
-		} else if(code >= 40 && code <= 47) {
+		} else if (code >= 40 && code <= 47) {
 			terminal->curr_attr.bg = code - 40;
 		} else if (code >= 90 && code <= 97) {
 			terminal->curr_attr.fg = code - 90 + 8;
 		} else if (code >= 100 && code <= 107) {
 			terminal->curr_attr.bg = code - 100 + 8;
-		} else if(code >= 256 && code < 512) {
+		} else if (code >= 256 && code < 512) {
 			terminal->curr_attr.fg = code - 256;
-		} else if(code >= 512 && code < 768) {
+		} else if (code >= 512 && code < 768) {
 			terminal->curr_attr.bg = code - 512;
 		} else {
 			fprintf(stderr, "Unknown SGR code: %d\n", code);

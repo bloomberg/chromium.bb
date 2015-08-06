@@ -235,7 +235,7 @@ application_surface_create(struct wl_client *client,
 	layout_surface = ivi_layout_surface_create(weston_surface, id_surface);
 
 	/* check if id_ivi is already used for wl_surface*/
-	if (layout_surface == NULL){
+	if (layout_surface == NULL) {
 		wl_resource_post_error(resource,
 				       IVI_APPLICATION_ERROR_IVI_ID,
 				       "surface_id is already assigned "

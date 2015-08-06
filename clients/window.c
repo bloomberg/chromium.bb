@@ -5296,7 +5296,7 @@ input_destroy(struct input *input)
 		data_offer_destroy(input->selection_offer);
 
 	if (input->data_device) {
-		if(input->display->data_device_manager_version >= 2)
+		if (input->display->data_device_manager_version >= 2)
 			wl_data_device_release(input->data_device);
 		else
 			wl_data_device_destroy(input->data_device);

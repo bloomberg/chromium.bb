@@ -525,7 +525,7 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 	/* we will create/update the devices only with the right (test) seat.
 	 * If we haven't discovered which seat is the test seat, just
 	 * store capabilities and bail out */
-	if(input->seat_name && strcmp(input->seat_name, "test-seat") == 0)
+	if (input->seat_name && strcmp(input->seat_name, "test-seat") == 0)
 		input_update_devices(input);
 
 	fprintf(stderr, "test-client: got seat %p capabilities: %x\n",
