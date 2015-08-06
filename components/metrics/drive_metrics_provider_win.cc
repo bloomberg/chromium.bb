@@ -9,6 +9,7 @@
 #include <winioctl.h>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -37,7 +38,7 @@ struct PaddedAtaRequest {
   AtaRequest request;
  private:
   // Prevents some crashes from bad drivers. http://crbug.com/514822
-  BYTE kUnusedBadDriverSpace[256];
+  BYTE kUnusedBadDriverSpace[256] ALLOW_UNUSED_TYPE;
 };
 
 }  // namespace
