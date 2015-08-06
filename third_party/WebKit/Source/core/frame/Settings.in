@@ -359,3 +359,7 @@ lowPriorityIframes initial=false
 reportWheelOverscroll initial=false
 
 mainResourceOnlyProgress initial=false
+
+# Do we want to try to save screen real estate in the media player by hiding
+# the volume slider / mute button?
+preferHiddenVolumeControls initial=false

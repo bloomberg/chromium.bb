@@ -22,9 +22,13 @@ track.mode = "showing";
 
 video.onloadeddata = function() {
   testRunner.layoutAndPaintAsyncThen(function() {
-    // Add the controls. The cue should move to avoid overlap.
+    // Add the controls. The cue should move to avoid overlap.  Defer this
+    // until the controls resize.
     video.controls = true;
-    testRunner.notifyDone();
+    // Wait for the relayout to happen.
+    window.requestAnimationFrame(function() {
+        testRunner.notifyDone();
+    });
   });
 };
 </script>

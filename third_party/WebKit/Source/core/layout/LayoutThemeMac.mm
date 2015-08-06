@@ -1004,9 +1004,9 @@ void LayoutThemeMac::adjustSliderThumbSize(ComputedStyle& style) const
     if (style.appearance() == SliderThumbHorizontalPart || style.appearance() == SliderThumbVerticalPart) {
         style.setWidth(Length(static_cast<int>(sliderThumbWidth * zoomLevel), Fixed));
         style.setHeight(Length(static_cast<int>(sliderThumbHeight * zoomLevel), Fixed));
+    } else {
+        adjustMediaSliderThumbSize(style);
     }
-
-    adjustMediaSliderThumbSize(style);
 }
 
 NSPopUpButtonCell* LayoutThemeMac::popupButton() const

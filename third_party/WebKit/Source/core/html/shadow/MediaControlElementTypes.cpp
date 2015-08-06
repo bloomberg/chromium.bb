@@ -71,6 +71,8 @@ MediaControlElement::MediaControlElement(MediaControls& mediaControls, MediaCont
     : m_mediaControls(mediaControls)
     , m_displayType(displayType)
     , m_element(element)
+    , m_isWanted(true)
+    , m_doesFit(true)
 {
 }
 
@@ -79,14 +81,29 @@ HTMLMediaElement& MediaControlElement::mediaElement() const
     return mediaControls().mediaElement();
 }
 
-void MediaControlElement::hide()
+void MediaControlElement::updateShownState()
 {
-    m_element->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+    if (m_isWanted && m_doesFit)
+        m_element->removeInlineStyleProperty(CSSPropertyDisplay);
+    else
+        m_element->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
 }
 
-void MediaControlElement::show()
+void MediaControlElement::setDoesFit(bool fits)
 {
-    m_element->removeInlineStyleProperty(CSSPropertyDisplay);
+    m_doesFit = fits;
+    updateShownState();
+}
+
+void MediaControlElement::setIsWanted(bool wanted)
+{
+    m_isWanted = wanted;
+    updateShownState();
+}
+
+bool MediaControlElement::isWanted()
+{
+    return m_isWanted;
 }
 
 void MediaControlElement::setDisplayType(MediaControlElementType displayType)

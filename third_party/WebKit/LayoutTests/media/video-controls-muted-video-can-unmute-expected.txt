@@ -1,0 +1,9 @@
+Test that muted video has an unmute button.
+
+RUN(video.muted = true)
+RUN(video.load())
+EVENT(canplaythrough)
+EXPECTED (video.muted == 'true') OK
+EXPECTED (getComputedStyle(muteButton).display != 'none') OK
+END OF TEST
+

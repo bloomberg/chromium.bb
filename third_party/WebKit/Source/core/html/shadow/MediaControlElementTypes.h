@@ -76,8 +76,14 @@ CORE_EXPORT MediaControlElementType mediaControlElementType(Node*);
 
 class MediaControlElement : public WillBeGarbageCollectedMixin {
 public:
-    void hide();
-    void show();
+    // These hold the state about whether this control should be shown if
+    // space permits.  These will also show / hide as needed.
+    void setIsWanted(bool);
+    bool isWanted();
+
+    // Tell us whether we fit or not.  This will hide / show the control as
+    // needed, also.
+    void setDoesFit(bool);
 
     MediaControlElementType displayType() { return m_displayType; }
 
@@ -92,9 +98,15 @@ protected:
     void setDisplayType(MediaControlElementType);
 
 private:
+    // Hide or show based on our fits / wanted state.  We want to show
+    // if and only if we're wanted and we fit.
+    void updateShownState();
+
     MediaControls& m_mediaControls;
     MediaControlElementType m_displayType;
     RawPtrWillBeMember<HTMLElement> m_element;
+    bool m_isWanted : 1;
+    bool m_doesFit : 1;
 };
 
 // ----------------------------

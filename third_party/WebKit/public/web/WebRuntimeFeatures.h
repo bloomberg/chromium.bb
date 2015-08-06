@@ -164,6 +164,8 @@ public:
     BLINK_EXPORT static void enableUnsafeES3APIs(bool);
 
     BLINK_EXPORT static void enableWebVR(bool);
+
+    BLINK_EXPORT static void enableNewMediaPlaybackUi(bool);
 private:
     WebRuntimeFeatures();
 };

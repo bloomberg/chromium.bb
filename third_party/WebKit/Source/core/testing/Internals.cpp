@@ -1868,6 +1868,12 @@ void Internals::mediaPlayerPlayingRemotelyChanged(HTMLMediaElement* mediaElement
         mediaElement->disconnectedFromRemoteDevice();
 }
 
+void Internals::setAllowHiddenVolumeControls(HTMLMediaElement* mediaElement, bool allow)
+{
+    ASSERT(mediaElement);
+    mediaElement->setAllowHiddenVolumeControls(allow);
+}
+
 void Internals::registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme)
 {
     SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(scheme);

@@ -3089,7 +3089,7 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
     m_remoteRoutesAvailable = false;
     m_playingRemotely = false;
     if (mediaControls())
-        mediaControls()->refreshCastButtonVisibility();
+        mediaControls()->refreshCastButtonVisibilityWithoutUpdate();
 
     if (layoutObject())
         layoutObject()->setShouldDoFullPaintInvalidation();
@@ -3608,6 +3608,12 @@ bool HTMLMediaElement::isBlockedOnMediaController() const
         return true;
 
     return false;
+}
+
+void HTMLMediaElement::setAllowHiddenVolumeControls(bool allow)
+{
+    ensureMediaControls();
+    mediaControls()->setAllowHiddenVolumeControls(allow);
 }
 
 WebMediaPlayer::CORSMode HTMLMediaElement::corsMode() const

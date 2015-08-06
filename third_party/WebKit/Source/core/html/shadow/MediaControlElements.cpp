@@ -65,18 +65,22 @@ static bool isUserInteractionEvent(Event* event)
 }
 
 // Sliders (the volume control and timeline) need to capture some additional events used when dragging the thumb.
-static bool isUserInteractionEventForSlider(Event* event)
+static bool isUserInteractionEventForSlider(Event* event, LayoutObject* layoutObject)
 {
+    // It is unclear if this can be converted to isUserInteractionEvent(), since
+    // mouse* events seem to be eaten during a drag anyway.  crbug.com/516416 .
+    if (isUserInteractionEvent(event))
+        return true;
+
+    // Some events are only captured during a slider drag.
+    LayoutSlider* slider = toLayoutSlider(layoutObject);
+    if (slider && !slider->inDragMode())
+        return false;
+
     const AtomicString& type = event->type();
-    return type == EventTypeNames::mousedown
-        || type == EventTypeNames::mouseup
-        || type == EventTypeNames::click
-        || type == EventTypeNames::dblclick
-        || type == EventTypeNames::mouseover
+    return type == EventTypeNames::mouseover
         || type == EventTypeNames::mouseout
-        || type == EventTypeNames::mousemove
-        || event->isKeyboardEvent()
-        || event->isTouchEvent();
+        || type == EventTypeNames::mousemove;
 }
 
 
@@ -126,7 +130,7 @@ void MediaControlPanelElement::stopTimer()
 void MediaControlPanelElement::transitionTimerFired(Timer<MediaControlPanelElement>*)
 {
     if (!m_opaque)
-        hide();
+        setIsWanted(false);
 
     stopTimer();
 }
@@ -146,7 +150,7 @@ void MediaControlPanelElement::makeOpaque()
     m_opaque = true;
 
     if (m_isDisplayed) {
-        show();
+        setIsWanted(true);
         didBecomeVisible();
     }
 }
@@ -308,10 +312,7 @@ void MediaControlOverlayPlayButtonElement::defaultEventHandler(Event* event)
 
 void MediaControlOverlayPlayButtonElement::updateDisplayType()
 {
-    if (mediaElement().shouldShowControls() && mediaElement().togglePlayStateWillPlay())
-        show();
-    else
-        hide();
+    setIsWanted(mediaElement().shouldShowControls() && mediaElement().togglePlayStateWillPlay());
 }
 
 bool MediaControlOverlayPlayButtonElement::keepEventInNode(Event* event)
@@ -333,7 +334,7 @@ PassRefPtrWillBeRawPtr<MediaControlToggleClosedCaptionsButtonElement> MediaContr
     button->ensureUserAgentShadowRoot();
     button->setType(InputTypeNames::button);
     button->setShadowPseudoId(AtomicString("-webkit-media-controls-toggle-closed-captions-button", AtomicString::ConstructFromLiteral));
-    button->hide();
+    button->setIsWanted(false);
     return button.release();
 }
 
@@ -432,7 +433,7 @@ void MediaControlTimelineElement::setDuration(double duration)
 
 bool MediaControlTimelineElement::keepEventInNode(Event* event)
 {
-    return isUserInteractionEventForSlider(event);
+    return isUserInteractionEventForSlider(event, layoutObject());
 }
 
 // ----------------------------
@@ -495,7 +496,7 @@ void MediaControlVolumeSliderElement::setVolume(double volume)
 
 bool MediaControlVolumeSliderElement::keepEventInNode(Event* event)
 {
-    return isUserInteractionEventForSlider(event);
+    return isUserInteractionEventForSlider(event, layoutObject());
 }
 
 // ----------------------------
@@ -511,7 +512,7 @@ PassRefPtrWillBeRawPtr<MediaControlFullscreenButtonElement> MediaControlFullscre
     button->ensureUserAgentShadowRoot();
     button->setType(InputTypeNames::button);
     button->setShadowPseudoId(AtomicString("-webkit-media-controls-fullscreen-button", AtomicString::ConstructFromLiteral));
-    button->hide();
+    button->setIsWanted(false);
     return button.release();
 }
 

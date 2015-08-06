@@ -49,6 +49,10 @@ public:
     static bool paintMediaOverlayPlayButton(LayoutObject*, const PaintInfo&, const IntRect&);
     static bool paintMediaCastButton(LayoutObject*, const PaintInfo&, const IntRect&);
     static void adjustMediaSliderThumbSize(ComputedStyle&);
+
+private:
+    static void adjustMediaSliderThumbPaintSize(const IntRect&, const ComputedStyle&, IntRect& rectOut);
+    static void paintMediaSliderInternal(LayoutObject*, const PaintInfo&, const IntRect&);
 };
 
 } // namespace blink

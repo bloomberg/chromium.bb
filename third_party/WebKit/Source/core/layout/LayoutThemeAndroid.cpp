@@ -58,7 +58,9 @@ LayoutThemeAndroid::~LayoutThemeAndroid()
 
 String LayoutThemeAndroid::extraMediaControlsStyleSheet()
 {
-    return loadResourceAsASCIIString("mediaControlsAndroid.css");
+    return loadResourceAsASCIIString(
+        RuntimeEnabledFeatures::newMediaPlaybackUiEnabled() ?
+        "mediaControlsAndroidNew.css" : "mediaControlsAndroid.css");
 }
 
 String LayoutThemeAndroid::extraDefaultStyleSheet()

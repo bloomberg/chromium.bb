@@ -266,6 +266,7 @@ public:
 
     void mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement*, bool);
     void mediaPlayerPlayingRemotelyChanged(HTMLMediaElement*, bool);
+    void setAllowHiddenVolumeControls(HTMLMediaElement*, bool);
 
     void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme);
     void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme, const Vector<String>& policyAreas);

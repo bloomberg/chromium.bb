@@ -228,38 +228,56 @@ String LayoutTheme::extraDefaultStyleSheet()
     return runtimeCSS.toString();
 }
 
-static String formatChromiumMediaControlsTime(float time, float duration)
+static String formatChromiumMediaControlsTime(float time, float duration, bool includeSeparator)
 {
     if (!std::isfinite(time))
         time = 0;
     if (!std::isfinite(duration))
         duration = 0;
     int seconds = static_cast<int>(fabsf(time));
-    int hours = seconds / (60 * 60);
-    int minutes = (seconds / 60) % 60;
+    int minutes = seconds / 60;
+
     seconds %= 60;
 
     // duration defines the format of how the time is rendered
     int durationSecs = static_cast<int>(fabsf(duration));
-    int durationHours = durationSecs / (60 * 60);
-    int durationMins = (durationSecs / 60) % 60;
+    int durationMins = durationSecs / 60;
 
-    if (durationHours || hours)
-        return String::format("%s%01d:%02d:%02d", (time < 0 ? "-" : ""), hours, minutes, seconds);
-    if (durationMins > 9)
-        return String::format("%s%02d:%02d", (time < 0 ? "-" : ""), minutes, seconds);
+    if (!RuntimeEnabledFeatures::newMediaPlaybackUiEnabled()) {
+        int hours = seconds / (60 * 60);
+        int durationHours = durationSecs / (60 * 60);
+        durationMins %= 60;
+        minutes %= 60;
+        if (durationHours || hours)
+            return String::format("%s%01d:%02d:%02d", (time < 0 ? "-" : ""), hours, minutes, seconds);
+        if (durationMins > 9)
+            return String::format("%s%02d:%02d", (time < 0 ? "-" : ""), minutes, seconds);
 
-    return String::format("%s%01d:%02d", (time < 0 ? "-" : ""), minutes, seconds);
+        return String::format("%s%01d:%02d", (time < 0 ? "-" : ""), minutes, seconds);
+    }
+
+    // New UI includes a leading "/ " before duration.
+    const char* separator = includeSeparator ? "/ " : "";
+
+    // 0-9 minutes duration is 0:00
+    // 10-99 minutes duration is 00:00
+    // >99 minutes duration is 000:00
+    if (durationMins > 99 || minutes > 99)
+        return String::format("%s%s%03d:%02d", separator, (time < 0 ? "-" : ""), minutes, seconds);
+    if (durationMins > 10)
+        return String::format("%s%s%02d:%02d", separator, (time < 0 ? "-" : ""), minutes, seconds);
+
+    return String::format("%s%s%01d:%02d", separator, (time < 0 ? "-" : ""), minutes, seconds);
 }
 
 String LayoutTheme::formatMediaControlsTime(float time) const
 {
-    return formatChromiumMediaControlsTime(time, time);
+    return formatChromiumMediaControlsTime(time, time, true);
 }
 
 String LayoutTheme::formatMediaControlsCurrentTime(float currentTime, float duration) const
 {
-    return formatChromiumMediaControlsTime(currentTime, duration);
+    return formatChromiumMediaControlsTime(currentTime, duration, false);
 }
 
 Color LayoutTheme::activeSelectionBackgroundColor() const

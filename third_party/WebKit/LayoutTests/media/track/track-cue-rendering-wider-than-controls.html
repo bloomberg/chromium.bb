@@ -2,6 +2,14 @@
 <script src=../media-file.js></script>
 <script src=../video-test.js></script>
 <script src=../media-controls.js></script>
+<style>
+/* Enforce a max width on the controls enclosure, so
+ * that it doesn't fill the entire player width.
+ */
+video::-webkit-media-controls-enclosure {
+    max-width: 800px;
+}
+</style>
 <script>
 var controlsContainer;
 var cueRoot;

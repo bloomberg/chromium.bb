@@ -427,6 +427,8 @@ private:
     bool isBlockedOnMediaController() const;
     bool isAutoplaying() const { return m_autoplaying; }
 
+    void setAllowHiddenVolumeControls(bool);
+
     WebMediaPlayer::CORSMode corsMode() const;
 
     // Returns the "direction of playback" value as specified in the HTML5 spec.

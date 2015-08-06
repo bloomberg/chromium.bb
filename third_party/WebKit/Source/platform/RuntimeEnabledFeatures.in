@@ -100,6 +100,7 @@ MemoryInfoInWorkers status=experimental
 NavigatorConnect status=experimental
 NavigatorContentUtils
 NetworkInformation status=stable
+NewMediaPlaybackUi
 NotificationConstructor status=stable
 NotificationExperimental status=test
 Notifications status=stable

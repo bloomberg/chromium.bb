@@ -215,6 +215,7 @@
     [TypeChecking=Interface] double effectiveMediaVolume(HTMLMediaElement mediaElement);
     [TypeChecking=Interface] void mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement mediaElement, boolean available);
     [TypeChecking=Interface] void mediaPlayerPlayingRemotelyChanged(HTMLMediaElement mediaElement, boolean remote);
+    [TypeChecking=Interface] void setAllowHiddenVolumeControls(HTMLMediaElement mediaElement, boolean allow);
 
     void registerURLSchemeAsBypassingContentSecurityPolicy(DOMString scheme);
     void registerURLSchemeAsBypassingContentSecurityPolicy(DOMString scheme, sequence<DOMString> policyAreas);

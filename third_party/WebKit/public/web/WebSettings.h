@@ -210,6 +210,7 @@ public:
     virtual void setPrimaryPointerType(PointerType) = 0;
     virtual void setAvailableHoverTypes(int) = 0;
     virtual void setPrimaryHoverType(HoverType) = 0;
+    virtual void setPreferHiddenVolumeControls(bool) = 0;
     virtual void setRenderVSyncNotificationEnabled(bool) = 0;
     virtual void setReportScreenSizeInPhysicalPixelsQuirk(bool) = 0;
     virtual void setRootLayerScrolls(bool) = 0;

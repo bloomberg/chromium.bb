@@ -314,6 +314,11 @@ void WebSettingsImpl::setPrimaryHoverType(HoverType type)
     m_settings->setPrimaryHoverType(static_cast<blink::HoverType>(type));
 }
 
+void WebSettingsImpl::setPreferHiddenVolumeControls(bool enabled)
+{
+    m_settings->setPreferHiddenVolumeControls(enabled);
+}
+
 void WebSettingsImpl::setDOMPasteAllowed(bool enabled)
 {
     m_settings->setDOMPasteAllowed(enabled);

@@ -134,6 +134,7 @@ public:
     void setPrimaryPointerType(PointerType) override;
     void setAvailableHoverTypes(int) override;
     void setPrimaryHoverType(HoverType) override;
+    void setPreferHiddenVolumeControls(bool) override;
     void setRenderVSyncNotificationEnabled(bool) override;
     void setReportScreenSizeInPhysicalPixelsQuirk(bool) override;
     void setRootLayerScrolls(bool) override;
