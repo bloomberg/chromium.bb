@@ -268,6 +268,19 @@ void test_super_instruction(void) {
 #endif
 }
 
+void test_arm_breakpoint(void) {
+#if defined(__arm__)
+  __asm__(".p2align 4\n"
+          ".word " NACL_TO_STRING(NACL_INSTR_ARM_ABORT_NOW) "\n"
+          ".p2align 4\n"
+          /* These are the two constant pool markers. */
+          ".word " NACL_TO_STRING(NACL_INSTR_ARM_LITERAL_POOL_HEAD) "\n"
+          ".p2align 4\n"
+          ".word " NACL_TO_STRING(NACL_INSTR_ARM_BREAKPOINT) "\n"
+          ".p2align 4\n");
+#endif
+}
+
 int main(int argc, char **argv) {
   /*
    * This will crash if the entry-point breakpoint has been mishandled such
@@ -309,6 +322,10 @@ int main(int argc, char **argv) {
   }
   if (strcmp(argv[1], "test_super_instruction") == 0) {
     test_super_instruction();
+    return 0;
+  }
+  if (strcmp(argv[1], "test_arm_breakpoint") == 0) {
+    test_arm_breakpoint();
     return 0;
   }
 

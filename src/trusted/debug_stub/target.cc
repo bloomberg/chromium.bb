@@ -27,6 +27,7 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
+#include "native_client/src/trusted/validator_arm/model.h"
 
 #if NACL_WINDOWS
 #define snprintf sprintf_s
@@ -111,11 +112,43 @@ void Target::Destroy() {
 bool Target::AddBreakpoint(uint32_t user_address) {
   const Abi::BPDef *bp = abi_->GetBreakpointDef();
 
-  // Don't allow breakpoints within instructions / pseudo-instructions
+  // Don't allow breakpoints within instructions / pseudo-instructions.
+  // Except on ARM since single step uses breakpoints we need to allow
+  // breakpoints mid super instruction. However we still need to ensure
+  // breakpoints are on instr boundaries and cannot be set in constant pools.
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  // 0x3 is a 4 byte mask to check the address falls on a instr boundary.
+  if ((user_address & ~0x3) != user_address) {
+    NaClLog(LOG_ERROR,
+            "Failed to set breakpoint at 0x%x, not on instr boundary\n",
+            user_address);
+    return false;
+  }
+
+  uint32_t bundle_addr = user_address & ~(NACL_INSTR_BLOCK_SIZE - 1);
+  uint32_t bundle_head;
+
+  uintptr_t sys_bundle_addr =
+      NaClUserToSysAddrRange(nap_, bundle_addr, sizeof(uint32_t));
+  if (sys_bundle_addr == kNaClBadAddress)
+    return false;
+
+  // Get first instr of bundle.
+  if (!IPlatform::GetMemory(sys_bundle_addr, sizeof(uint32_t), &bundle_head))
+    return false;
+
+  if (nacl_arm_dec::IsBreakPointAndConstantPoolHead(bundle_head)) {
+    NaClLog(LOG_ERROR,
+            "Failed to set breakpoint at 0x%x, within constant pool\n",
+            user_address);
+    return false;
+  }
+#else
   if (!IsOnValidInstBoundary(user_address)) {
     NaClLog(LOG_ERROR, "Failed to set breakpoint at 0x%x\n", user_address);
     return false;
   }
+#endif
 
   // If we already have a breakpoint here then don't add it
   if (breakpoint_map_.find(user_address) != breakpoint_map_.end())
@@ -1163,11 +1196,9 @@ void Target::UnqueueAnyFaultedThread(uint32_t *thread_id, int8_t *signal) {
   NaClLog(LOG_FATAL, "UnqueueAnyFaultedThread: No threads queued\n");
 }
 
-  // On ARM its important to make sure the sp
-  // register is always masked, this isn't a
-  // problem on x86 since registers are always
-  // masked first in super instructions.
-  // This is not the case for sp in ARM.
+  // On ARM its important to make sure the sp register is always masked,
+  // this isn't a problem on x86 since registers are always masked first
+  // in super instructions. This is not the case for sp in ARM.
   //
   // https://developer.chrome.com/native-client/reference/sandbox_internals/
   // arm-32-bit-sandbox#the-stack-pointer-thread-pointer-and-program-counter

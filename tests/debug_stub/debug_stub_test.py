@@ -997,7 +997,7 @@ class DebugStubBreakpointTest(unittest.TestCase):
 
   def test_setting_breakpoint_in_super_instruction(self):
     if ARCH != 'x86-32' and ARCH != 'x86-64':
-      # This has only been implemented for x86-32 and x86-64.
+      # ARM breakpoints are handled separately.
       return
     with LaunchDebugStub('test_super_instruction') as connection:
       reply = connection.RspRequest('c')
@@ -1011,6 +1011,23 @@ class DebugStubBreakpointTest(unittest.TestCase):
       # Setting breakpoint here should not be allowed.
       reply = connection.RspRequest('Z0,%x,0' % invalid_addr)
       self.assertEquals(reply, 'E03')
+
+  def test_setting_breakpoint_in_constant_pools(self):
+    if ARCH != 'arm':
+      return
+    with LaunchDebugStub('test_arm_breakpoint') as connection:
+      reply = connection.RspRequest('c')
+      SkipBreakpoint(connection, reply)
+
+      regs = DecodeRegs(connection.RspRequest('g'))
+
+      # First constant pool is next bundle.
+      pc = regs[IP_REG[ARCH]]
+
+      # Check we cannot set breakpoint anywhere inside both bundles.
+      for addr in range(pc, pc + 32):
+        reply = connection.RspRequest('Z0,%x,0' % addr)
+        self.assertEquals(reply, 'E03')
 
 
 class DebugStubThreadSuspensionTest(unittest.TestCase):
