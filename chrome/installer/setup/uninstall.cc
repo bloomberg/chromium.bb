@@ -728,13 +728,12 @@ void UninstallActiveSetupEntries(const InstallerState& installer_state,
 
   // Windows leaves keys behind in HKCU\\Software\\(Wow6432Node\\)?Microsoft\\
   //     Active Setup\\Installed Components\\{guid}
-  // for every user that logged in since system-level Chrome was installed.
-  // This is a problem because Windows compares the value of the Version subkey
-  // in there with the value of the Version subkey in the matching HKLM entries
-  // before running Chrome's Active Setup so if Chrome was to be reinstalled
-  // with a lesser version (e.g. switching back to a more stable channel), the
-  // affected users would not have Chrome's Active Setup called until Chrome
-  // eventually updated passed that user's registered Version.
+  // for every user that logged in since system-level Chrome was installed. This
+  // is a problem because Windows compares the value of the Version subkey in
+  // there with the value of the Version subkey in the matching HKLM entries
+  // before running Chrome's Active Setup so if Chrome was to be
+  // uninstalled/reinstalled by an admin, some users may not go through Active
+  // Setup again as desired.
   //
   // It is however very hard to delete those values as the registry hives for
   // other users are not loaded by default under HKEY_USERS (unless a user is
