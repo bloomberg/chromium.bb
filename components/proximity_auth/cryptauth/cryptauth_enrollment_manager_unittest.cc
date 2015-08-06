@@ -339,10 +339,11 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, ForceEnrollment) {
   enrollment_manager_.Start();
 
   EXPECT_CALL(*sync_scheduler(), ForceSync());
-  enrollment_manager_.ForceEnrollmentNow(cryptauth::INVOCATION_REASON_MANUAL);
+  enrollment_manager_.ForceEnrollmentNow(
+      cryptauth::INVOCATION_REASON_SERVER_INITIATED);
 
   auto completion_callback =
-      FireSchedulerForEnrollment(cryptauth::INVOCATION_REASON_MANUAL);
+      FireSchedulerForEnrollment(cryptauth::INVOCATION_REASON_SERVER_INITIATED);
 
   clock_->SetNow(base::Time::FromDoubleT(kLaterTimeNow));
   EXPECT_CALL(*this, OnEnrollmentFinishedProxy(true));

@@ -4,8 +4,11 @@
 <link href="chrome://resources/polymer/v1_0/iron-icons/hardware-icons.html" rel="import">
 <link href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html" rel="import">
 <link href="chrome://resources/polymer/v1_0/iron-icons/notification-icons.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-button/paper-button.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html" rel="import">
 <link href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html" rel="import">
 <link href="chrome://resources/polymer/v1_0/paper-material/paper-material.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html" rel="import">
 <link href="chrome://resources/polymer/v1_0/polymer/polymer.html" rel="import">
 
 <dom-module id="device-list">
@@ -72,16 +75,71 @@
       line-height: 18px;
       padding: 8px 16px;
     }
+
+    #unlock-key-dialog {
+      width: 500px;
+    }
+
+    #dialog-text {
+      color: #7E7E7E;
+    }
+
+    #dialog-buttons {
+      height: 36px;
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      margin: 8px;
+      padding: 0px;
+      color: #377EF3;
+    }
+
+    #dialog-spinner {
+      width: 20px;
+      height: 20px;
+      padding-right: 14px;
+    }
   </style>
 
   <template>
     <div class="devices-label">[[label]]</div>
 
+    <paper-dialog id="unlock-key-dialog"
+        no-cancel-on-outside-click="true"
+        with-backdrop="true"
+        no-cancel-on-esc-key="true">
+      <div id="dialog-text">
+        <span hidden$="[[deviceForDialog_.unlockKey]]">
+          Make <span>[[deviceForDialog_.friendlyDeviceName]]</span> an unlock
+          key.
+        </span>
+        <span hidden$="[[!deviceForDialog_.unlockKey]]">
+          Remove <span>[[deviceForDialog_.friendlyDeviceName]]</span> as an
+          unlock key.
+        </span>
+      </div>
+      <div id="dialog-buttons">
+        <paper-button dialog-dismiss disabled$="[[toggleUnlockKeyInProgress_]]">
+          Cancel
+        </paper-button>
+        <paper-button id="unlock-key-button" on-click="toggleUnlockKey_"
+            disabled$="[[toggleUnlockKeyInProgress_]]">
+          <span hidden$="[[deviceForDialog_.unlockKey]]">
+            Make Unlock Key
+          </span>
+          <span hidden$="[[!deviceForDialog_.unlockKey]]">
+            Remove Unlock Key
+          </span>
+        </paper-button>
+      </div>
+    </paper-dialog>
+
     <paper-material>
       <template is="dom-repeat" items="[[devices]]">
         <div class="item layout horizontal center">
           <paper-icon-button class="end-icon"
-              icon="[[getIconForUnlockKey_(item)]]">
+              icon="[[getIconForUnlockKey_(item)]]"
+              on-click="showUnlockKeyDialog_">
           </paper-icon-button>
 
           <div class="info">

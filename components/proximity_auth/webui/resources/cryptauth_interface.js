@@ -23,7 +23,9 @@ CryptAuthInterface = {
    * Removes an observer.
    */
   removeObserver: function(observer) {
-    CryptAuthInterface.observers_.remove(observer);
+    var index = CryptAuthInterface.observers_.indexOf(observer);
+    if (observer)
+      CryptAuthInterface.observers_.splice(index, 1);
   },
 
   /**
@@ -41,6 +43,14 @@ CryptAuthInterface = {
    */
   findReachableDevices: function() {
     chrome.send('findReachableDevices');
+  },
+
+  /**
+   * Makes the device with |publicKey| an unlock key if |makeUnlockKey| is true.
+   * Otherwise, the device will be removed as an unlock key.
+   */
+  toggleUnlockKey: function(publicKey, makeUnlockKey) {
+    chrome.send('toggleUnlockKey', [publicKey, makeUnlockKey]);
   },
 
   /**
@@ -66,7 +76,7 @@ CryptAuthInterface = {
     });
   },
 
-  /**
+  /*
    * Called by the browser when the reachable devices flow completes
    * successfully.
    * @param {Array<DeviceInfo>} reachableDevices
@@ -75,6 +85,16 @@ CryptAuthInterface = {
     CryptAuthInterface.observers_.forEach(function(observer) {
       if (observer.onGotReachableDevices != null)
         observer.onGotReachableDevices(reachableDevices);
+    });
+  },
+
+  /**
+   * Called by the browser when an unlock key is toggled.
+   */
+  onUnlockKeyToggled: function() {
+    CryptAuthInterface.observers_.forEach(function(observer) {
+      if (observer.onUnlockKeyToggled != null)
+        observer.onUnlockKeyToggled();
     });
   },
 };

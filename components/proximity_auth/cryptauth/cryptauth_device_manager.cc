@@ -170,10 +170,13 @@ void CryptAuthDeviceManager::OnGetMyDevicesSuccess(
     const cryptauth::GetMyDevicesResponse& response) {
   // Update the unlock keys stored in the user's prefs.
   scoped_ptr<base::ListValue> unlock_keys_pref(new base::ListValue());
+  scoped_ptr<base::ListValue> devices_as_list(new base::ListValue());
   for (const auto& device : response.devices()) {
+    devices_as_list->Append(UnlockKeyToDictionary(device));
     if (device.unlock_key())
       unlock_keys_pref->Append(UnlockKeyToDictionary(device));
   }
+  PA_LOG(INFO) << "Devices Synced:\n" << *devices_as_list;
 
   bool unlock_keys_changed = !unlock_keys_pref->Equals(
       pref_service_->GetList(prefs::kCryptAuthDeviceSyncUnlockKeys));

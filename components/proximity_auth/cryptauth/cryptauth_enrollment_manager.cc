@@ -8,6 +8,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enroller.h"
 #include "components/proximity_auth/cryptauth/pref_names.h"
 #include "components/proximity_auth/cryptauth/secure_message_delegate.h"
@@ -32,6 +33,11 @@ const int kEnrollmentBaseRecoveryPeriodMinutes = 10;
 
 // The bound on the amount to jitter the period between enrollments.
 const double kEnrollmentMaxJitterRatio = 0.2;
+
+// The value of the device_software_package field in the device info uploaded
+// during enrollment. This value must be the same as the app id used for GCM
+// registration.
+const char kDeviceSoftwarePackage[] = "com.google.chrome.cryptauth";
 
 }  // namespace
 
@@ -176,7 +182,9 @@ void CryptAuthEnrollmentManager::OnSyncRequested(
 
   sync_request_ = sync_request.Pass();
 
-  if (gcm_manager_->GetRegistrationId().empty()) {
+  if (gcm_manager_->GetRegistrationId().empty() ||
+      pref_service_->GetInteger(prefs::kCryptAuthEnrollmentReason) ==
+          cryptauth::INVOCATION_REASON_MANUAL) {
     gcm_manager_->RegisterWithGCM();
   } else {
     DoCryptAuthEnrollment();
@@ -207,10 +215,23 @@ void CryptAuthEnrollmentManager::DoCryptAuthEnrollment() {
     invocation_reason = cryptauth::INVOCATION_REASON_FAILURE_RECOVERY;
   }
 
-  PA_LOG(INFO) << "Making enrollment with reason: " << invocation_reason;
+  // Fill in the current GCM registration id before enrolling, and explicitly
+  // make sure that the software package is the same as the GCM app id.
+  cryptauth::GcmDeviceInfo device_info(device_info_);
+  device_info.set_gcm_registration_id(gcm_manager_->GetRegistrationId());
+  device_info.set_device_software_package(kDeviceSoftwarePackage);
+
+  std::string public_key_b64;
+  Base64UrlEncode(user_public_key_, &public_key_b64);
+  PA_LOG(INFO) << "Making enrollment:\n"
+               << "  public_key: " << public_key_b64 << "\n"
+               << "  invocation_reason: " << invocation_reason << "\n"
+               << "  gcm_registration_id: "
+               << device_info.gcm_registration_id();
+
   cryptauth_enroller_ = enroller_factory_->CreateInstance();
   cryptauth_enroller_->Enroll(
-      user_public_key_, user_private_key_, device_info_, invocation_reason,
+      user_public_key_, user_private_key_, device_info, invocation_reason,
       base::Bind(&CryptAuthEnrollmentManager::OnEnrollmentFinished,
                  weak_ptr_factory_.GetWeakPtr()));
 }

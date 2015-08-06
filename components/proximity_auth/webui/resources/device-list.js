@@ -20,6 +20,60 @@ Polymer({
      * @type {Array<DeviceInfo>}
      */
     devices: Array,
+
+    /**
+     * Set with the selected device when the unlock key dialog is opened.
+     */
+    deviceForDialog_: {
+      type: Object,
+      value: null
+    },
+
+    /**
+     * True if currently toggling a device as an unlock key.
+     */
+    toggleUnlockKeyInProgress_: {
+      type: Boolean,
+      value: false,
+    },
+  },
+
+  /**
+   * Shows the toggle unlock key dialog when the toggle button is pressed for an
+   * item.
+   * @param {Event} event
+   */
+  showUnlockKeyDialog_: function(event) {
+    this.deviceForDialog_ = event.model.item;
+    var dialog = this.querySelector('#unlock-key-dialog');
+    dialog.open();
+  },
+
+  /**
+   * Called when the unlock key dialog button is clicked to make the selected
+   * device an unlock key or remove it as an unlock key.
+   * @param {Event} event
+   */
+  toggleUnlockKey_: function(event) {
+    if (!this.deviceForDialog_)
+      return;
+    this.toggleUnlockKeyInProgress_ = true;
+    CryptAuthInterface.addObserver(this);
+
+    var publicKey = this.deviceForDialog_.publicKey;
+    var makeUnlockKey = !this.deviceForDialog_.unlockKey;
+    CryptAuthInterface.toggleUnlockKey(publicKey, makeUnlockKey);
+  },
+
+  /**
+   * Called when the toggling the unlock key completes, so we can close the
+   * dialog.
+   */
+  onUnlockKeyToggled: function() {
+    this.toggleUnlockKeyInProgress_ = false;
+    CryptAuthInterface.removeObserver(this);
+    var dialog = this.querySelector('#unlock-key-dialog');
+    dialog.close();
   },
 
   /**

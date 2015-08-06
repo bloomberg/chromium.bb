@@ -69,6 +69,7 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
   // Message handler callbacks.
   void GetLogMessages(const base::ListValue* args);
   void ClearLogBuffer(const base::ListValue* args);
+  void ToggleUnlockKey(const base::ListValue* args);
   void FindEligibleUnlockDevices(const base::ListValue* args);
   void FindReachableDevices(const base::ListValue* args);
   void GetLocalState(const base::ListValue* args);
@@ -83,6 +84,9 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
 
   // Called when a CryptAuth request fails.
   void OnCryptAuthClientError(const std::string& error_message);
+
+  // Called when the toggleUnlock request succeeds.
+  void OnEasyUnlockToggled(const cryptauth::ToggleEasyUnlockResponse& response);
 
   // Called when the findEligibleUnlockDevices request succeeds.
   void OnFoundEligibleUnlockDevices(
