@@ -217,6 +217,7 @@ def summarize_results(port_obj, expectations, initial_results,
     for test_name, result in initial_results.results_by_name.iteritems():
         expected = expectations.get_expectations_string(test_name)
         actual = [keywords[result.type]]
+        actual_types = [result.type]
 
         if only_include_failing and result.type == test_expectations.SKIP:
             continue
@@ -238,6 +239,7 @@ def summarize_results(port_obj, expectations, initial_results,
 
                 retry_result_type = retry_attempt_results.results_by_name[test_name].type
                 actual.append(keywords[retry_result_type])
+                actual_types.append(retry_result_type)
                 if test_name in retry_attempt_results.unexpected_results_by_name:
                     if retry_result_type == test_expectations.PASS:
                         # The test failed unexpectedly at first, then passed
@@ -250,6 +252,7 @@ def summarize_results(port_obj, expectations, initial_results,
 
             if len(set(actual)) == 1:
                 actual = [actual[0]]
+                actual_types = [actual_types[0]]
 
             if is_flaky:
                 num_flaky += 1
@@ -281,12 +284,12 @@ def summarize_results(port_obj, expectations, initial_results,
         test_dict['actual'] = " ".join(actual)
 
         def is_expected(actual_result):
-            return expectations.matches_an_expected_result(test_name, result.type,
+            return expectations.matches_an_expected_result(test_name, actual_result,
                 port_obj.get_option('pixel_tests') or result.reftest_type,
                 port_obj.get_option('enable_sanitizer'))
 
         # To avoid bloating the output results json too much, only add an entry for whether the failure is unexpected.
-        if not all(is_expected(actual_result) for actual_result in actual):
+        if not any(is_expected(actual_result) for actual_result in actual_types):
             test_dict['is_unexpected'] = True
 
         test_dict.update(_interpret_test_failures(result.failures))
