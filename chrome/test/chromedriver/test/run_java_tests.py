@@ -14,6 +14,7 @@ For ChromeDriver documentation, refer to http://code.google.com/p/chromedriver.
 import optparse
 import os
 import shutil
+import stat
 import sys
 import xml.dom.minidom as minidom
 
@@ -264,6 +265,15 @@ def main():
       '', '--isolate-tests', action='store_true', default=False,
       help='Relaunch the jar test harness after each test')
   options, _ = parser.parse_args()
+
+  if util.IsLinux():
+    wrapper_dir = util.MakeTempDir()
+    wrapper_script = os.path.join(wrapper_dir, 'chrome')
+    with open(wrapper_script, 'w') as f:
+      f.write('#!/bin/sh\nexec "%s" --no-sandbox "$@"' % options.chrome)
+    st = os.stat(wrapper_script)
+    os.chmod(wrapper_script, st.st_mode | stat.S_IEXEC)
+    options.chrome = wrapper_script
 
   options.chromedriver = util.GetAbsolutePathOfUserPath(options.chromedriver)
   if options.chromedriver is None or not os.path.exists(options.chromedriver):
