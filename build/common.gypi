@@ -6002,9 +6002,9 @@
     }],
     ['use_lld==1 and OS=="win"', {
       'make_global_settings': [
-        # Limited to Windows because -flavor link2 is the driver that is
+        # Limited to Windows because lld-link is the driver that is
         # compatible with link.exe.
-        ['LD', '<(make_clang_dir)/bin/lld -flavor link2'],
+        ['LD', '<(make_clang_dir)/bin/lld-link'],
       ],
     }],
     ['OS=="android" and clang==0', {
