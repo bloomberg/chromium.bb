@@ -104,27 +104,8 @@ pre {
 }
 
 
-// Spans the full viewport with a gray bar.
-.span-full {
+#gc-footer {
   background: $gray-light;
-  position: relative;
-  padding: 3em 0;
-
-  &::before, &::after {
-    content: '';
-    height: 100%;
-    width: 100%;
-    top: 0;
-    position: absolute;
-    background: $gray-light;
-    z-index: -1;
-  }
-  &::before {
-    left: -100%;
-  }
-  &::after {
-    left: 100%;
-  }
 }
 
 // Big blue buttonz!

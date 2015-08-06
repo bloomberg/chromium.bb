@@ -13,16 +13,15 @@
   @include box-sizing(border-box);
 }
 
-html, body {
-  overflow-x: hidden; // Allows .span-full to take up entire viewport without overflowing.
-  overflow-y: auto;
+body {
+  overflow: auto;
 }
 
 img {
   max-width: 100%;
 }  
 
-#gc-container {
+.gc-container {
   max-width: $site-max-width;
   @include content-container-layout();
 }
@@ -44,7 +43,7 @@ footer[role="contentinfo"] {
 
 // Phone
 @media only screen and (max-width: $break-small)  { 
-  #gc-container {
+  .gc-container {
     width: auto;
   }
   #gc-pagecontent {
@@ -61,7 +60,7 @@ footer[role="contentinfo"] {
 
 // Tablet
 @media only screen and (min-width: $break-small + 1) and (max-width: $break-large) { 
-  #gc-container {
+  .gc-container {
     width: 95%;
   }
 }

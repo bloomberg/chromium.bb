@@ -37,7 +37,7 @@
   </head>
 
   <body>
-    <div id="gc-container">
+    <div class="gc-container">
     <a href="#gc-pagecontent" class="element-invisible element-focusable">Skip to main content</a>
 
     <header id="topnav" role="banner">
@@ -55,9 +55,10 @@
 {{- This is unindented because it may contain whitespace-sensitive tags. -}}
 {{+content /}}
     </main>
+    </div>
 
-    <footer id="gc-footer" role="contentinfo" class="span-full">
-      <div class="g-section g-tpl-50-50">
+    <footer id="gc-footer" role="contentinfo">
+      <div class="g-section g-tpl-50-50 gc-container">
         <div class="g-unit g-first">
           <nav class="links">
             <a href="https://www.google.com/">Google</a><a href="https://developers.google.com/site-terms">Terms of Service</a><a href="http://www.google.com/intl/en/privacy/">Privacy Policy</a><a href="http://crbug.com/new" data-feedback>Report a content bug</a>
@@ -71,8 +72,6 @@
         </div>
       </div>
     </footer>
-
-  </div>
 
     <script src="{{static}}/js/fatnav.js"></script>
     <script src="{{static}}/js/article.js"></script>
