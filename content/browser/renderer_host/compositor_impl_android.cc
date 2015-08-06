@@ -391,11 +391,12 @@ void CompositorImpl::SetWindowSurface(ANativeWindow* window) {
   GpuSurfaceTracker* tracker = GpuSurfaceTracker::Get();
 
   if (window_) {
+    // Shut down GL context before unregistering surface.
+    SetVisible(false);
     tracker->RemoveSurface(surface_id_);
     ANativeWindow_release(window_);
     window_ = NULL;
     surface_id_ = 0;
-    SetVisible(false);
   }
 
   if (window) {
@@ -413,10 +414,12 @@ void CompositorImpl::SetSurface(jobject surface) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> j_surface(env, surface);
 
-  // First, cleanup any existing surface references.
-  if (surface_id_)
-    UnregisterViewSurface(surface_id_);
+  // First, shut down the GL context.
+  int surface_id = surface_id_;
   SetWindowSurface(NULL);
+  // Then, cleanup any existing surface references.
+  if (surface_id)
+    UnregisterViewSurface(surface_id);
 
   // Now, set the new surface if we have one.
   ANativeWindow* window = NULL;

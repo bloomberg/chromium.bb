@@ -150,6 +150,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
   ANativeWindow* window =
       GpuSurfaceLookup::GetInstance()->AcquireNativeWidget(
           stub->surface_id());
+  CHECK(window) << "Failed to retrieve window handle.";
   scoped_refptr<gfx::GLSurface> surface =
       new gfx::NativeViewGLSurfaceEGL(window);
   bool initialize_success = surface->Initialize();
