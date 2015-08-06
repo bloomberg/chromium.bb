@@ -110,9 +110,10 @@ void ServicePortServiceImpl::PostMessage(
     mps->QueueMessages(port.id);
   }
 
-  navigator_connect_context_->PostMessage(
-      port_id, MessagePortMessage(message.To<base::string16>()),
-      transferred_ports);
+  // Second, pass of the actual to MessagePortService now ServicePort instances
+  // are still backed by MessagePort.
+  mps->PostMessage(port_id, MessagePortMessage(message.To<base::string16>()),
+                   transferred_ports);
 }
 
 void ServicePortServiceImpl::ClosePort(int32_t port_id) {

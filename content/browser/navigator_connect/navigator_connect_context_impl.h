@@ -8,21 +8,23 @@
 #include <map>
 #include "base/callback_forward.h"
 #include "base/memory/scoped_vector.h"
-#include "base/strings/string16.h"
-#include "content/common/service_worker/service_worker_status_code.h"
+#include "content/public/browser/message_port_delegate.h"
 #include "content/public/browser/navigator_connect_context.h"
+
+// Windows headers will redefine SendMessage.
+#ifdef SendMessage
+#undef SendMessage
+#endif
 
 class GURL;
 
 namespace content {
 
-struct MessagePortMessage;
+class MessagePortMessageFilter;
 class NavigatorConnectService;
 class NavigatorConnectServiceFactory;
 struct NavigatorConnectClient;
 class ServicePortServiceImpl;
-class ServiceWorkerContextWrapper;
-class ServiceWorkerRegistration;
 struct TransferredMessagePort;
 
 // Tracks all active navigator.services connections, as well as available
@@ -30,17 +32,17 @@ struct TransferredMessagePort;
 // passes messages on to the correct service.
 // One instance of this class exists per StoragePartition.
 // TODO(mek): Clean up connections, fire of closed events when connections die.
-// TODO(mek): Update service side API to be fully ServicePort based.
+// TODO(mek): Update service side API to be ServicePort based and get rid of
+// MessagePort dependency.
 // TODO(mek): Make ServicePorts that live in a service worker be able to survive
 // the worker being restarted.
-// TODO(mek): Add back ability for service ports to be backed by native code.
-class NavigatorConnectContextImpl : public NavigatorConnectContext {
+class NavigatorConnectContextImpl : public NavigatorConnectContext,
+                                    public MessagePortDelegate {
  public:
   using ConnectCallback =
       base::Callback<void(int message_port_id, bool success)>;
 
-  explicit NavigatorConnectContextImpl(
-      const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context);
+  explicit NavigatorConnectContextImpl();
 
   // Called when a new connection request comes in from a client. Finds the
   // correct service factory and passes the connection request off to there.
@@ -49,14 +51,6 @@ class NavigatorConnectContextImpl : public NavigatorConnectContext {
                const GURL& origin,
                ServicePortServiceImpl* service_port_service,
                const ConnectCallback& callback);
-
-  // Called when a message is sent to a ServicePort. The |sender_port_id| is the
-  // id of the port the message is sent from, this will look up what other port
-  // the port is entangled with and deliver the message to that port.
-  void PostMessage(
-      int sender_port_id,
-      const MessagePortMessage& message,
-      const std::vector<TransferredMessagePort>& sent_message_ports);
 
   // Called by a ServicePortServiceImpl instance when it is about to be
   // destroyed to inform this class that all its connections are no longer
@@ -67,41 +61,24 @@ class NavigatorConnectContextImpl : public NavigatorConnectContext {
   // NavigatorConnectContext implementation.
   void AddFactory(scoped_ptr<NavigatorConnectServiceFactory> factory) override;
 
+  // MessagePortDelegate implementation.
+  void SendMessage(
+      int route_id,
+      const MessagePortMessage& message,
+      const std::vector<TransferredMessagePort>& sent_message_ports) override;
+  void SendMessagesAreQueued(int route_id) override;
+
  private:
   ~NavigatorConnectContextImpl() override;
 
   void AddFactoryOnIOThread(scoped_ptr<NavigatorConnectServiceFactory> factory);
 
-  // Callback called when a ServiceWorkerRegistration has been located (or
-  // has failed to be located) for a connection attempt.
-  void GotServiceWorkerRegistration(
-      const ConnectCallback& callback,
-      int client_port_id,
-      int service_port_id,
-      ServiceWorkerStatusCode status,
-      const scoped_refptr<ServiceWorkerRegistration>& registration);
-
   // Callback called by service factories when a connection succeeded or failed.
-  void OnConnectResult(const ConnectCallback& callback,
-                       int client_port_id,
-                       int service_port_id,
-                       const scoped_refptr<ServiceWorkerRegistration>&
-                           service_worker_registration,
-                       ServiceWorkerStatusCode status,
-                       bool accept_connection,
-                       const base::string16& name,
-                       const base::string16& data);
-
-  // Callback called when a ServiceWorkerRegistration has been located to
-  // deliver a message to.
-  void DeliverMessage(
-      int port_id,
-      const base::string16& message,
-      const std::vector<TransferredMessagePort>& sent_message_ports,
-      ServiceWorkerStatusCode status,
-      const scoped_refptr<ServiceWorkerRegistration>& registration);
-
-  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+  void OnConnectResult(const NavigatorConnectClient& client,
+                       int client_message_port_id,
+                       const ConnectCallback& callback,
+                       MessagePortDelegate* delegate,
+                       bool data_as_values);
 
   // List of factories to try to handle URLs.
   ScopedVector<NavigatorConnectServiceFactory> service_factories_;
@@ -109,7 +86,6 @@ class NavigatorConnectContextImpl : public NavigatorConnectContext {
   // List of currently active ServicePorts.
   struct Port;
   std::map<int, Port> ports_;
-  int next_port_id_;
 };
 
 }  // namespace content
