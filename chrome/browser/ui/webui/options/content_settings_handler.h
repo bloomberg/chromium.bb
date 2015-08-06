@@ -245,6 +245,8 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
 
   void UpdateFlashMediaLinksVisibility(ContentSettingsType type);
 
+  void UpdateMediaDeviceDropdownVisibility(ContentSettingsType type);
+
   void UpdateProtectedContentExceptionsButton();
 
   // Member variables ---------------------------------------------------------

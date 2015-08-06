@@ -259,6 +259,18 @@ cr.define('options', function() {
   };
 
   /**
+   * Sets the visibility of the microphone/camera devices menu.
+   * @param {string} type The content settings type name of this device.
+   * @param {boolean} show Whether to show the menu.
+   */
+  ContentSettings.setDevicesMenuVisibility = function(type, show) {
+    assert(type == 'media-stream-mic' || type == 'media-stream-camera');
+    var deviceSelect = $(type == 'media-stream-mic' ? 'media-select-mic' :
+                                                      'media-select-camera');
+    deviceSelect.hidden = !show;
+  };
+
+  /**
    * Enables/disables the protected content exceptions button.
    * @param {boolean} enable Whether to enable the button.
    */

@@ -701,6 +701,7 @@ void ContentSettingsHandler::UpdateMediaSettingsFromPrefs(
   settings.default_setting_initialized = true;
 
   UpdateFlashMediaLinksVisibility(type);
+  UpdateMediaDeviceDropdownVisibility(type);
 }
 
 void ContentSettingsHandler::UpdateHandlersEnabledRadios() {
@@ -1613,6 +1614,16 @@ void ContentSettingsHandler::UpdateFlashMediaLinksVisibility(
           flash_settings.exceptions)) {
     ShowFlashMediaLink(EXCEPTIONS, type, true);
   }
+}
+
+void ContentSettingsHandler::UpdateMediaDeviceDropdownVisibility(
+    ContentSettingsType type) {
+  MediaSettingsInfo::ForOneType& settings = media_settings_->forType(type);
+
+  web_ui()->CallJavascriptFunction(
+      "ContentSettings.setDevicesMenuVisibility",
+      base::StringValue(ContentSettingsTypeToGroupName(type)),
+      base::FundamentalValue(!settings.policy_disable));
 }
 
 void ContentSettingsHandler::UpdateProtectedContentExceptionsButton() {
