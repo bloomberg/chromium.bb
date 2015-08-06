@@ -26,7 +26,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__),
                              'common'))
 import perf_tests_results_helper  # pylint: disable=F0401
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from devil.utils import reset_usb
 from pylib import constants
 from pylib.cmd_helper import GetCmdOutput
 from pylib.device import adb_wrapper
@@ -36,6 +37,7 @@ from pylib.device import device_errors
 from pylib.device import device_list
 from pylib.device import device_utils
 from pylib.utils import run_tests_helper
+from pylib.utils import timeout_retry
 
 _RE_DEVICE_ID = re.compile('Device ID = (\d+)')
 
@@ -197,40 +199,6 @@ def SendEmail(from_address, to_addresses, cc_addresses, subject, msg):
     logging.exception('Failed to send alert email.')
 
 
-def RestartUsb():
-  if not os.path.isfile('/usr/bin/restart_usb'):
-    logging.error('Could not restart usb. ''/usr/bin/restart_usb not '
-                  'installed on host (see BUG=305769).')
-    return False
-
-  lsusb_proc = bb_utils.SpawnCmd(['lsusb'], stdout=subprocess.PIPE)
-  lsusb_output, _ = lsusb_proc.communicate()
-  if lsusb_proc.returncode:
-    logging.error('Could not get list of USB ports (i.e. lsusb).')
-    return lsusb_proc.returncode
-
-  usb_devices = [re.findall(r'Bus (\d\d\d) Device (\d\d\d)', lsusb_line)[0]
-                 for lsusb_line in lsusb_output.strip().split('\n')]
-
-  all_restarted = True
-  # Walk USB devices from leaves up (i.e reverse sorted) restarting the
-  # connection. If a parent node (e.g. usb hub) is restarted before the
-  # devices connected to it, the (bus, dev) for the hub can change, making the
-  # output we have wrong. This way we restart the devices before the hub.
-  for (bus, dev) in reversed(sorted(usb_devices)):
-    # Can not restart root usb connections
-    if dev != '001':
-      return_code = bb_utils.RunCmd(['/usr/bin/restart_usb', bus, dev])
-      if return_code:
-        logging.error('Error restarting USB device /dev/bus/usb/%s/%s',
-                      bus, dev)
-        all_restarted = False
-      else:
-        logging.info('Restarted USB device /dev/bus/usb/%s/%s', bus, dev)
-
-  return all_restarted
-
-
 def KillAllAdb():
   def GetAllAdb():
     for p in psutil.process_iter():
@@ -266,7 +234,8 @@ def main():
   parser.add_option('--device-status-dashboard', action='store_true',
                     help='Output device status data for dashboard.')
   parser.add_option('--restart-usb', action='store_true',
-                    help='Restart USB ports before running device check.')
+                    help='DEPRECATED. '
+                         'This script now always tries to reset USB.')
   parser.add_option('--json-output',
                     help='Output JSON information into a specified file.')
   parser.add_option('-v', '--verbose', action='count', default=1,
@@ -281,39 +250,35 @@ def main():
   # Remove the last build's "bad devices" before checking device statuses.
   device_blacklist.ResetBlacklist()
 
+  KillAllAdb()
+  reset_usb.reset_all_android_devices()
+
   try:
-    expected_devices = device_list.GetPersistentDeviceList(
-        os.path.join(options.out_dir, device_list.LAST_DEVICES_FILENAME))
+    expected_devices = set(device_list.GetPersistentDeviceList(
+        os.path.join(options.out_dir, device_list.LAST_DEVICES_FILENAME)))
   except IOError:
-    expected_devices = []
+    expected_devices = set()
+
+  def all_devices_found():
+    devices = device_utils.DeviceUtils.HealthyDevices()
+    device_serials = set(d.adb.GetDeviceSerial() for d in devices)
+    return not bool(expected_devices.difference(device_serials))
+
+  timeout_retry.WaitFor(all_devices_found, wait_period=1, max_tries=5)
+
   devices = device_utils.DeviceUtils.HealthyDevices()
-  device_serials = [d.adb.GetDeviceSerial() for d in devices]
-  # Only restart usb if devices are missing.
-  if set(expected_devices) != set(device_serials):
-    logging.warning('expected_devices: %s', expected_devices)
-    logging.warning('devices: %s', device_serials)
-    KillAllAdb()
-    retries = 5
-    usb_restarted = True
-    if options.restart_usb:
-      if not RestartUsb():
-        usb_restarted = False
-        bb_annotations.PrintWarning()
-        logging.error('USB reset stage failed, '
-                      'wait for any device to come back.')
-    while retries:
-      logging.info('retry adb devices...')
-      time.sleep(1)
-      devices = device_utils.DeviceUtils.HealthyDevices()
-      device_serials = [d.adb.GetDeviceSerial() for d in devices]
-      if set(expected_devices) == set(device_serials):
-        # All devices are online, keep going.
-        break
-      if not usb_restarted and devices:
-        # The USB wasn't restarted, but there's at least one device online.
-        # No point in trying to wait for all devices.
-        break
-      retries -= 1
+  device_serials = set(d.adb.GetDeviceSerial() for d in devices)
+
+  missing_devices = expected_devices.difference(device_serials)
+  new_devices = device_serials.difference(expected_devices)
+
+  if missing_devices or new_devices:
+    logging.warning('expected_devices:')
+    for d in sorted(expected_devices):
+      logging.warning('  %s', d)
+    logging.warning('devices:')
+    for d in sorted(device_serials):
+      logging.warning('  %s', d)
 
   types, builds, batteries, errors, devices_ok, json_data = (
       [], [], [], [], [], [])

@@ -170,23 +170,28 @@ class AdbWrapper(object):
     return cls.Devices(timeout=timeout, retries=retries)
 
   @classmethod
-  def Devices(cls, is_ready=True, timeout=_DEFAULT_TIMEOUT,
+  def Devices(cls, is_ready=True, long_list=False, timeout=_DEFAULT_TIMEOUT,
               retries=_DEFAULT_RETRIES):
     """Get the list of active attached devices.
 
     Args:
       is_ready: Whether the devices should be limited to only those that are
         ready for use.
+      long_list: Whether to use the long listing format.
       timeout: (optional) Timeout per try in seconds.
       retries: (optional) Number of retries to attempt.
 
     Yields:
       AdbWrapper instances.
     """
-    output = cls._RunAdbCmd(['devices'], timeout=timeout, retries=retries)
-    lines = (line.split() for line in output.splitlines())
+    cmd = ['devices']
+    if long_list:
+      cmd.append('-l')
+    output = cls._RunAdbCmd(cmd, timeout=timeout, retries=retries)
+    lines = (line.split() for line in output.splitlines()[1:])
     return [AdbWrapper(line[0]) for line in lines
-            if len(line) == 2 and (not is_ready or line[1] == _READY_STATE)]
+            if ((long_list or len(line) == 2)
+                and (not is_ready or line[1] == _READY_STATE))]
 
   def GetDeviceSerial(self):
     """Gets the device serial number associated with this object.
