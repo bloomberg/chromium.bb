@@ -152,7 +152,6 @@ int main(int argc, char* argv[]) {
   base::AtExitManager at_exit;
   base::MessageLoopForIO message_loop;
   testing::InitGoogleTest(&argc, argv);
-  base::TestSuite test_suite(argc, argv);
 
   if (!base::CommandLine::InitializedForCurrentProcess()) {
     if (!base::CommandLine::Init(argc, argv)) {

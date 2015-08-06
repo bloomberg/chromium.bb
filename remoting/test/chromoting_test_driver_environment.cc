@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "remoting/test/access_token_fetcher.h"
-#include "remoting/test/host_info.h"
 #include "remoting/test/host_list_fetcher.h"
 #include "remoting/test/refresh_token_store.h"
 
@@ -229,6 +228,7 @@ bool ChromotingTestDriverEnvironment::RetrieveHostList() {
   base::RunLoop run_loop;
 
   host_list_.clear();
+  host_info_ = HostInfo();
 
   // If a unit test has set |test_host_list_fetcher_| then we should use it
   // below.  Note that we do not want to destroy the test object at the end of
@@ -254,6 +254,27 @@ bool ChromotingTestDriverEnvironment::RetrieveHostList() {
                << "Does the account have hosts set up?";
     return false;
   }
+
+  // If the host or command line parameters are not setup correctly, we want to
+  // let the user fix the issue before continuing.
+  auto host_info_iter = std::find_if(host_list_.begin(), host_list_.end(),
+      [this](const remoting::test::HostInfo& host_info) {
+          return host_info.host_name == host_name_;
+      });
+
+  if (host_info_iter == host_list_.end()) {
+    LOG(ERROR) << "Could not find " << this->host_name_ << " in host list.";
+    DisplayHostList();
+    return false;
+  }
+
+  if (!host_info_iter->IsReadyForConnection()) {
+    LOG(ERROR) << this->host_name_ << " is not ready to connect!";
+    DisplayHostList();
+    return false;
+  }
+
+  host_info_ = *host_info_iter;
 
   return true;
 }

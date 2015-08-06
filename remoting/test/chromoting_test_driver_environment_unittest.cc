@@ -13,7 +13,7 @@
 namespace {
 const char kAuthCodeValue[] = "4/892379827345jkefvkdfbv";
 const char kUserNameValue[] = "remoting_user@gmail.com";
-const char kHostNameValue[] = "remote_host_name";
+const char kHostNameValue[] = "fake_host_name";
 const char kFakeHostNameValue[] = "fake_host_name";
 const char kFakeHostIdValue[] = "fake_host_id";
 const char kFakeHostJidValue[] = "fake_host_jid";
@@ -67,6 +67,7 @@ void ChromotingTestDriverEnvironmentTest::SetUp() {
   fake_host.host_name = kFakeHostNameValue;
   fake_host.offline_reason = kFakeHostOfflineReasonValue;
   fake_host.public_key = kFakeHostPublicKeyValue;
+  fake_host.status = kHostStatusOnline;
   fake_host.token_url_patterns.push_back(kFakeHostFirstTokenUrlValue);
   fake_host.token_url_patterns.push_back(kFakeHostSecondTokenUrlValue);
   fake_host.token_url_patterns.push_back(kFakeHostThirdTokenUrlValue);

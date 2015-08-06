@@ -23,6 +23,7 @@ struct HostInfo {
   HostInfo();
   ~HostInfo();
 
+  // Returns true if |host_info| is valid and initializes HostInfo.
   bool ParseHostInfo(const base::DictionaryValue& host_info);
 
   // Returns true if the chromoting host is ready to accept connections.

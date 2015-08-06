@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "remoting/test/host_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -23,7 +24,6 @@ namespace test {
 class AccessTokenFetcher;
 class RefreshTokenStore;
 class HostListFetcher;
-struct HostInfo;
 
 // Globally accessible to all test fixtures and cases and has its
 // lifetime managed by the GTest framework. It is responsible for managing
@@ -61,8 +61,10 @@ class ChromotingTestDriverEnvironment : public testing::Environment {
   // Accessors for fields used by tests.
   const std::string& access_token() const { return access_token_; }
   const std::string& host_name() const { return host_name_; }
+  const std::string& pin() const { return pin_; }
   const std::string& user_name() const { return user_name_; }
   const std::vector<HostInfo>& host_list() const { return host_list_; }
+  const HostInfo& host_info() const { return host_info_; }
 
  private:
   // testing::Environment interface.
@@ -107,6 +109,9 @@ class ChromotingTestDriverEnvironment : public testing::Environment {
 
   // List of remote hosts for the specified user/test-account.
   std::vector<HostInfo> host_list_;
+
+  // Used to generate connection setup information to connect to |host_name_|.
+  HostInfo host_info_;
 
   // Access token fetcher used by TestDriverEnvironment tests.
   remoting::test::AccessTokenFetcher* test_access_token_fetcher_;

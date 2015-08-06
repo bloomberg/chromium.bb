@@ -126,6 +126,9 @@
       ],
       'sources': [
         'test/chromoting_test_driver.cc',
+        'test/chromoting_test_driver_tests.cc',
+        'test/chromoting_test_fixture.cc',
+        'test/chromoting_test_fixture.h',
       ],
     }, # end of target 'chromoting_test_driver'
     {
