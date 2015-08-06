@@ -651,7 +651,6 @@ group("gn_only") {
       "//third_party/leveldatabase:leveldb_filename_test",
       "//third_party/leveldatabase:leveldb_dbformat_test",
       "//third_party/pdfium/third_party:fx_freetype",
-      "//third_party/libjingle:peerconnnection_server",
       "//third_party/libjpeg_turbo:simd",
       "//third_party/libsrtp:replay_driver",
       "//third_party/libsrtp:roc_driver",

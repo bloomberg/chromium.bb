@@ -294,35 +294,6 @@ static_library("libjingle_p2p_constants") {
   all_dependent_configs = [ ":jingle_all_dependent_configs" ]
 }
 
-# GYP version: third_party/libjingle.gyp:peerconnnection_server
-#TODO(GYP): Switch to executable when WebRTC dependency is resolved.
-source_set("peerconnnection_server") {
-  sources = [
-    "source/talk/examples/peerconnection/server/data_socket.cc",
-    "source/talk/examples/peerconnection/server/data_socket.h",
-    "source/talk/examples/peerconnection/server/main.cc",
-    "source/talk/examples/peerconnection/server/peer_channel.cc",
-    "source/talk/examples/peerconnection/server/peer_channel.h",
-    "source/talk/examples/peerconnection/server/utils.cc",
-    "source/talk/examples/peerconnection/server/utils.h",
-  ]
-  include_dirs = [ "source" ]
-  public_deps = [
-    ":jingle_deps",
-  ]
-  deps = [
-    ":libjingle",
-    ":jingle_deps",
-  ]
-  configs += [ ":jingle_unexported_configs" ]
-  public_configs = [ ":jingle_public_configs" ]
-  all_dependent_configs = [ ":jingle_all_dependent_configs" ]
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4309" ]
-  }
-}
-
 if (enable_webrtc) {
   source_set("libjingle_webrtc") {
     sources = [
