@@ -320,13 +320,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetService) {
       mock_adapter_, device0_.get(), service0_.get());
 }
 
-// Times out frequently on CrOS: http://crbug.com/517238
-#if defined(OS_CHROMEOS)
-#define MAYBE_ServiceEvents DISABLED_ServiceEvents
-#else
-#define MAYBE_ServiceEvents ServiceEvents
-#endif
-IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, MAYBE_ServiceEvents) {
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ServiceEvents) {
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(browser()->profile());
 

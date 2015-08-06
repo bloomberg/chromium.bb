@@ -143,13 +143,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetAdapterState) {
   EXPECT_EQ(kAdapterAddress, state.address);
 }
 
-// Times out frequently on CrOS: http://crbug.com/517238
-#if defined(OS_CHROMEOS)
-#define MAYBE_DeviceEvents DISABLED_DeviceEvents
-#else
-#define MAYBE_DeviceEvents DeviceEvents
-#endif
-IN_PROC_BROWSER_TEST_F(BluetoothApiTest, MAYBE_DeviceEvents) {
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DeviceEvents) {
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(browser()->profile());
 

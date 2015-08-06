@@ -21,7 +21,6 @@ typedef ExtensionApiTest AllUrlsApiTest;
 
 #if (defined(OS_WIN) && !defined(NDEBUG)) || defined(OS_CHROMEOS)
 // http://crbug.com/174341
-// http://crbug.com/517238
 #define MAYBE_WhitelistedExtension DISABLED_WhitelistedExtension
 #else
 #define MAYBE_WhitelistedExtension WhitelistedExtension

@@ -293,14 +293,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesGalleryWatchApiTest,
       kSetupWatchOnInvalidGalleryCmd, kAddGalleryWatchRequestFailed);
 }
 
-// Times out frequently on CrOS: http://crbug.com/517238
-#if defined(OS_CHROMEOS)
-#define MAYBE_GetAllGalleryWatch DISABLED_GetAllGalleryWatch
-#else
-#define MAYBE_GetAllGalleryWatch GetAllGalleryWatch
-#endif
-IN_PROC_BROWSER_TEST_F(MediaGalleriesGalleryWatchApiTest,
-                       MAYBE_GetAllGalleryWatch) {
+IN_PROC_BROWSER_TEST_F(MediaGalleriesGalleryWatchApiTest, GetAllGalleryWatch) {
   // Add gallery watch listener.
   ExecuteCmdAndCheckReply(kAddGalleryChangedListenerCmd,
                           kAddGalleryChangedListenerOK);
