@@ -64,6 +64,7 @@
 #include "public/web/WebSerializedScriptValue.h"
 #include "public/web/WebServiceWorkerContextClient.h"
 #include "web/WebEmbeddedWorkerImpl.h"
+#include "wtf/Assertions.h"
 #include "wtf/Functional.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -134,10 +135,17 @@ void ServiceWorkerGlobalScopeProxy::dispatchMessageEvent(const WebString& messag
 
 void ServiceWorkerGlobalScopeProxy::dispatchNotificationClickEvent(int eventID, int64_t notificationID, const WebNotificationData& data)
 {
+    dispatchNotificationClickEvent(eventID, notificationID, data, -1 /* actionIndex */);
+}
+
+void ServiceWorkerGlobalScopeProxy::dispatchNotificationClickEvent(int eventID, int64_t notificationID, const WebNotificationData& data, int actionIndex)
+{
     ASSERT(m_workerGlobalScope);
     WaitUntilObserver* observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::NotificationClick, eventID);
     NotificationEventInit eventInit;
     eventInit.setNotification(Notification::create(m_workerGlobalScope, notificationID, data));
+    if (0 <= actionIndex && actionIndex < static_cast<int>(data.actions.size()))
+        eventInit.setAction(data.actions[actionIndex].action);
     RefPtrWillBeRawPtr<Event> event(NotificationEvent::create(EventTypeNames::notificationclick, eventInit, observer));
     m_workerGlobalScope->dispatchExtendableEvent(event.release(), observer);
 }

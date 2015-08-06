@@ -7,9 +7,11 @@ test(function() {
     var event = new NotificationEvent('NotificationEvent');
     assert_equals(event.type, 'NotificationEvent');
     assert_will_be_idl_attribute(event, 'notification');
+    assert_will_be_idl_attribute(event, 'action');
     assert_equals(event.cancelable, false);
     assert_equals(event.bubbles, false);
     assert_equals(event.notification, null);
+    assert_equals(event.action, "");
     assert_inherits(event, 'waitUntil');
 
     var eventWithInit = new NotificationEvent('NotificationEvent',

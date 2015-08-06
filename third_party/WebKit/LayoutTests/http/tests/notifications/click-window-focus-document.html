@@ -1,14 +1,14 @@
 <!doctype html>
 <html>
   <head>
-    <title>Notifications: Simulating a click should call the onclick event.</title>
+    <title>Notifications: Should be able to focus window in onclick event.</title>
     <script src="../resources/testharness.js"></script>
     <script src="../resources/testharnessreport.js"></script>
   </head>
   <body>
     <script>
       // Tests that Document-bound notifications are able to focus a window in
-      // their onclick event. When the test is being ran manually, grant
+      // their onclick event. When the test is being run manually, grant
       // Notification permission and click on the notification.
       if (window.testRunner) {
           testRunner.setCanOpenWindows();

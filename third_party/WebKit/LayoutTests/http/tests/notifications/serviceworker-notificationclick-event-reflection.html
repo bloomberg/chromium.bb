@@ -34,9 +34,9 @@
                     scalar: true },
                   12.15
               ],
-              actions: [{ action: "one", title: "Action 1" },
-                        { action: "two", title: "Action 2" },
-                        { action: "three", title: "Action 3" }]
+              actions: [{ action: 'one', title: 'Action 1' },
+                        { action: 'two', title: 'Action 2' },
+                        { action: 'three', title: 'Action 3' }]
           };
 
           testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
@@ -69,11 +69,10 @@
                   assert_equals(event.data.command, 'click', 'The notification was expected to be clicked.');
 
                   Object.keys(options).forEach(function(key) {
-                      if (key == 'actions') {
-                          // TODO(johnme): actions are not yet serialized properly.
-                          return;
-                      }
-                      assert_object_equals(event.data.notification[key], options[key], 'The ' + key + ' field must be the same.');
+                      if (key == 'actions')
+                          assert_object_equals(event.data.notification.actions, options.actions.slice(0, Notification.maxActions));
+                      else
+                          assert_object_equals(event.data.notification[key], options[key], 'The ' + key + ' field must be the same.');
                   });
 
                   test.done();

@@ -33,6 +33,7 @@ public:
     ~NotificationEvent() override;
 
     Notification* notification() const { return m_notification.get(); }
+    String action() const { return m_action; }
 
     const AtomicString& interfaceName() const override;
 
@@ -44,6 +45,7 @@ private:
     NotificationEvent(const AtomicString& type, const NotificationEventInit&, WaitUntilObserver*);
 
     PersistentWillBeMember<Notification> m_notification;
+    String m_action;
 };
 
 } // namespace blink

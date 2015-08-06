@@ -26,20 +26,6 @@ struct WebNotificationData {
     {
     }
 
-    // FIXME: Remove this constructor when Chromium has switched to the new one.
-    WebNotificationData(const WebString& title, Direction direction, const WebString& lang, const WebString& body, const WebString& tag, const WebURL& icon, const WebVector<int>& vibrate, bool silent, const WebVector<char>& data)
-        : title(title)
-        , direction(direction)
-        , lang(lang)
-        , body(body)
-        , tag(tag)
-        , icon(icon)
-        , vibrate(vibrate)
-        , silent(silent)
-        , data(data)
-    {
-    }
-
     WebNotificationData(const WebString& title, Direction direction, const WebString& lang, const WebString& body, const WebString& tag, const WebURL& icon, const WebVector<int>& vibrate, bool silent, const WebVector<char>& data, const WebVector<WebNotificationAction>& actions)
         : title(title)
         , direction(direction)

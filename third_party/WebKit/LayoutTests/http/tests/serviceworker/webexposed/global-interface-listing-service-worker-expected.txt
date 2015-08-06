@@ -703,6 +703,7 @@ interface Notification
     setter onerror
     setter onshow
 interface NotificationEvent
+    getter action
     getter notification
     method constructor
 interface Number
