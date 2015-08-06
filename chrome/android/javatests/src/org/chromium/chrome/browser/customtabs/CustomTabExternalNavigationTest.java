@@ -58,8 +58,7 @@ public class CustomTabExternalNavigationTest extends CustomTabActivityTestBase {
     @Override
     public void startMainActivity() throws InterruptedException {
         super.startMainActivity();
-        startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                getInstrumentation().getTargetContext(), TEST_URL, null));
+        startCustomTabActivityWithIntent(createMinimalCustomTabIntent(TEST_URL));
         Tab tab = getActivity().getActivityTab();
         assertTrue("A custom tab is not present in the activity.", tab instanceof CustomTab);
         CustomTab customTab = (CustomTab) tab;

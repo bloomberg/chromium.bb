@@ -6,10 +6,15 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.app.Activity;
 import android.app.Instrumentation;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.net.Uri;
+import android.support.customtabs.CustomTabsIntent;
 
 import org.chromium.chrome.browser.DeferredStartupHandler;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -62,9 +67,22 @@ public abstract class CustomTabActivityTestBase extends
                     public boolean isSatisfied() {
                         return DeferredStartupHandler.getInstance().isDeferredStartupComplete();
                     }
-                }, 5000, 200));
+                }));
 
         assertNotNull(tab);
         assertNotNull(tab.getView());
+    }
+
+    /**
+     * Creates the simplest intent that is sufficient to let {@link ChromeLauncherActivity} launch
+     * the {@link CustomTabActivity}.
+     */
+    protected Intent createMinimalCustomTabIntent(String url) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setComponent(new ComponentName(getInstrumentation().getTargetContext(),
+                ChromeLauncherActivity.class));
+        IntentUtils.safePutBinderExtra(intent, CustomTabsIntent.EXTRA_SESSION, null);
+        return intent;
     }
 }
