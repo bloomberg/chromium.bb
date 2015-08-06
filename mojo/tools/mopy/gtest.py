@@ -51,7 +51,8 @@ def run_apptest(config, shell, args, apptest, isolate):
   failed = []
   for fixture in fixtures:
     arguments = args + ['--gtest_filter=%s' % fixture]
-    failed.extend(_run_apptest_with_retry(config, shell, arguments, apptest)[1])
+    failures = _run_apptest_with_retry(config, shell, arguments, apptest)[1]
+    failed.extend(failures if failures != [apptest] else [fixture])
     # Abort when 20 fixtures, or a tenth of the apptest fixtures, have failed.
     # base::TestLauncher does this for timeouts and unknown results.
     if len(failed) >= max(20, len(fixtures) / 10):
