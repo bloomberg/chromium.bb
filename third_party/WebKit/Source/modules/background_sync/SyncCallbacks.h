@@ -39,6 +39,25 @@ private:
     Persistent<ServiceWorkerRegistration> m_serviceWorkerRegistration;
 };
 
+// SyncNotifyWhenDoneCallbacks is an implementation of
+// WebSyncNotifyWhenDoneCallbacks that will resolve the underlying promise
+// depending on the result passed to the callback. It takes a
+// ServiceWorkerRegistration in its constructor and will pass it to the
+// SyncProvider.
+class SyncNotifyWhenDoneCallbacks final : public WebSyncNotifyWhenDoneCallbacks {
+    WTF_MAKE_NONCOPYABLE(SyncNotifyWhenDoneCallbacks);
+public:
+    SyncNotifyWhenDoneCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
+    ~SyncNotifyWhenDoneCallbacks() override;
+
+    void onSuccess(bool*) override;
+    void onError(WebSyncError*) override;
+
+private:
+    Persistent<ScriptPromiseResolver> m_resolver;
+    Persistent<ServiceWorkerRegistration> m_serviceWorkerRegistration;
+};
+
 // SyncUnregistrationCallbacks is an implementation of
 // WebSyncUnregistrationCallbacks that will resolve the underlying promise
 // depending on the result passed to the callback. It takes a

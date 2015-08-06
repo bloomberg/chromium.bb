@@ -8,5 +8,6 @@
     RuntimeEnabled=BackgroundSync,
 ] interface SyncRegistration {
     readonly attribute DOMString tag;
+    [CallWith=ScriptState] readonly attribute Promise<boolean> done;
     [CallWith=ScriptState] Promise<boolean> unregister();
 };

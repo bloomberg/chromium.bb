@@ -990,6 +990,7 @@ interface SyncManager
     method permissionState
     method register
 interface SyncRegistration
+    getter done
     getter tag
     method constructor
     method unregister
