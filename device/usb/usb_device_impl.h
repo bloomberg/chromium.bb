@@ -12,6 +12,7 @@
 #include "base/threading/thread_checker.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
+#include "device/usb/webusb_descriptors.h"
 
 struct libusb_device;
 struct libusb_config_descriptor;
@@ -56,6 +57,10 @@ class UsbDeviceImpl : public UsbDevice {
     serial_number_ = value;
   }
   void set_device_path(const std::string& value) { device_path_ = value; }
+  void set_webusb_allowed_origins(scoped_ptr<WebUsbDescriptorSet> descriptors) {
+    webusb_allowed_origins_ = descriptors.Pass();
+  }
+  void set_webusb_landing_page(const GURL& url) { webusb_landing_page_ = url; }
 
   PlatformUsbDevice platform_device() const { return platform_device_; }
 

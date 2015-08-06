@@ -20,6 +20,7 @@
 #include "components/device_event_log/device_event_log.h"
 #include "device/usb/usb_device_handle.h"
 #include "device/usb/usb_error.h"
+#include "device/usb/webusb_descriptors.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
 #if defined(OS_WIN)
@@ -33,9 +34,24 @@
 #include "device/udev_linux/scoped_udev.h"
 #endif  // USE_UDEV
 
+using net::IOBufferWithSize;
+
 namespace device {
 
 namespace {
+
+// Standard USB requests and descriptor types:
+const uint16_t kUsbVersion2_1 = 0x0210;
+const uint8_t kGetDescriptorRequest = 0x06;
+const uint8_t kStringDescriptorType = 0x03;
+const uint8_t kBosDescriptorType = 0x0F;
+
+// WebUSB requests:
+const uint8_t kGetAllowedOriginsRequest = 0x01;
+const uint8_t kGetLandingPageRequest = 0x02;
+const uint8_t kUrlDescriptorType = 0x03;
+
+const int kControlTransferTimeout = 60000;  // 1 minute
 
 #if defined(OS_WIN)
 
@@ -165,9 +181,284 @@ void GetDeviceListOnBlockingThread(
                         base::Bind(callback, platform_devices, device_count));
 }
 
+void OnReadStringDescriptor(
+    const base::Callback<void(const base::string16&)>& callback,
+    UsbTransferStatus status,
+    scoped_refptr<net::IOBuffer> buffer,
+    size_t length) {
+  if (status != USB_TRANSFER_COMPLETED || length < 2) {
+    callback.Run(base::string16());
+  } else {
+    // Take the lesser of the length of data returned by the device and the
+    // length reported in the descriptor.
+    size_t internal_length = reinterpret_cast<uint8*>(buffer->data())[0];
+    length = std::min(length, internal_length);
+    // Cut off the first 2 bytes of the descriptor which are the length and
+    // descriptor type (always STRING).
+    callback.Run(base::string16(
+        reinterpret_cast<base::char16*>(buffer->data() + 2), length / 2 - 1));
+  }
+}
+
+void ReadStringDescriptor(
+    scoped_refptr<UsbDeviceHandle> device_handle,
+    uint8 index,
+    uint16 language_id,
+    const base::Callback<void(const base::string16&)>& callback) {
+  scoped_refptr<IOBufferWithSize> buffer = new IOBufferWithSize(256);
+  device_handle->ControlTransfer(
+      USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD, UsbDeviceHandle::DEVICE,
+      kGetDescriptorRequest, kStringDescriptorType << 8 | index, language_id,
+      buffer, buffer->size(), kControlTransferTimeout,
+      base::Bind(&OnReadStringDescriptor, callback));
+}
+
+void OnReadWebUsbLandingPage(scoped_refptr<UsbDevice> device,
+                             const base::Closure& callback,
+                             UsbTransferStatus status,
+                             scoped_refptr<net::IOBuffer> buffer,
+                             size_t length) {
+  if (status != USB_TRANSFER_COMPLETED || length < 2) {
+    callback.Run();
+    return;
+  }
+
+  uint8_t string_length = buffer->data()[0];
+  if (string_length < 2 || string_length > length ||
+      buffer->data()[1] != kUrlDescriptorType) {
+    callback.Run();
+    return;
+  }
+
+  GURL url(std::string(&buffer->data()[2], string_length - 2));
+  if (url.is_valid()) {
+    UsbDeviceImpl* device_impl = static_cast<UsbDeviceImpl*>(device.get());
+    device_impl->set_webusb_landing_page(url);
+  }
+  callback.Run();
+}
+
+void ReadWebUsbLandingPage(scoped_refptr<UsbDeviceHandle> device_handle,
+                           const base::Closure& callback,
+                           uint8 vendor_code) {
+  scoped_refptr<IOBufferWithSize> buffer = new IOBufferWithSize(256);
+  device_handle->ControlTransfer(
+      USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR, UsbDeviceHandle::DEVICE,
+      vendor_code, 0, kGetLandingPageRequest, buffer, buffer->size(),
+      kControlTransferTimeout,
+      base::Bind(&OnReadWebUsbLandingPage, device_handle->GetDevice(),
+                 callback));
+}
+
+void OnReadWebUsbAllowedOrigins(scoped_refptr<UsbDevice> device,
+                                const base::Closure& callback,
+                                UsbTransferStatus status,
+                                scoped_refptr<net::IOBuffer> buffer,
+                                size_t length) {
+  if (status != USB_TRANSFER_COMPLETED) {
+    USB_LOG(EVENT) << "Failed to read WebUSB allowed origins.";
+    callback.Run();
+    return;
+  }
+
+  scoped_ptr<WebUsbDescriptorSet> descriptors(new WebUsbDescriptorSet());
+  if (descriptors->Parse(
+          std::vector<uint8>(buffer->data(), buffer->data() + length))) {
+    UsbDeviceImpl* device_impl = static_cast<UsbDeviceImpl*>(device.get());
+    device_impl->set_webusb_allowed_origins(descriptors.Pass());
+  }
+  callback.Run();
+}
+
+void OnReadWebUsbAllowedOriginsHeader(
+    scoped_refptr<UsbDeviceHandle> device_handle,
+    const base::Closure& callback,
+    uint8 vendor_code,
+    UsbTransferStatus status,
+    scoped_refptr<net::IOBuffer> buffer,
+    size_t length) {
+  if (status != USB_TRANSFER_COMPLETED || length != 4) {
+    USB_LOG(EVENT) << "Failed to read WebUSB allowed origins header.";
+    callback.Run();
+    return;
+  }
+
+  uint16 new_length = buffer->data()[2] | (buffer->data()[3] << 8);
+  scoped_refptr<IOBufferWithSize> new_buffer = new IOBufferWithSize(new_length);
+  device_handle->ControlTransfer(
+      USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR, UsbDeviceHandle::DEVICE,
+      vendor_code, 0, kGetAllowedOriginsRequest, new_buffer, new_buffer->size(),
+      kControlTransferTimeout,
+      base::Bind(&OnReadWebUsbAllowedOrigins, device_handle->GetDevice(),
+                 callback));
+}
+
+void ReadWebUsbAllowedOrigins(scoped_refptr<UsbDeviceHandle> device_handle,
+                              const base::Closure& callback,
+                              uint8 vendor_code) {
+  scoped_refptr<IOBufferWithSize> buffer = new IOBufferWithSize(4);
+  device_handle->ControlTransfer(
+      USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR, UsbDeviceHandle::DEVICE,
+      vendor_code, 0, kGetAllowedOriginsRequest, buffer, buffer->size(),
+      kControlTransferTimeout,
+      base::Bind(&OnReadWebUsbAllowedOriginsHeader, device_handle, callback,
+                 vendor_code));
+}
+
+void OnReadBosDescriptor(scoped_refptr<UsbDeviceHandle> device_handle,
+                         const base::Closure& callback,
+                         UsbTransferStatus status,
+                         scoped_refptr<net::IOBuffer> buffer,
+                         size_t length) {
+  if (status != USB_TRANSFER_COMPLETED) {
+    USB_LOG(EVENT) << "Failed to read BOS descriptor.";
+    callback.Run();
+    return;
+  }
+
+  WebUsbPlatformCapabilityDescriptor descriptor;
+  if (!descriptor.ParseFromBosDescriptor(
+          std::vector<uint8>(buffer->data(), buffer->data() + length))) {
+    callback.Run();
+    return;
+  }
+
+  base::Closure barrier = base::BarrierClosure(2, callback);
+  ReadWebUsbLandingPage(device_handle, barrier, descriptor.vendor_code);
+  ReadWebUsbAllowedOrigins(device_handle, barrier, descriptor.vendor_code);
+}
+
+void OnReadBosDescriptorHeader(scoped_refptr<UsbDeviceHandle> device_handle,
+                               const base::Closure& callback,
+                               UsbTransferStatus status,
+                               scoped_refptr<net::IOBuffer> buffer,
+                               size_t length) {
+  if (status != USB_TRANSFER_COMPLETED || length != 5) {
+    USB_LOG(EVENT) << "Failed to read BOS descriptor header.";
+    callback.Run();
+    return;
+  }
+
+  uint16 new_length = buffer->data()[2] | (buffer->data()[3] << 8);
+  scoped_refptr<IOBufferWithSize> new_buffer = new IOBufferWithSize(new_length);
+  device_handle->ControlTransfer(
+      USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD, UsbDeviceHandle::DEVICE,
+      kGetDescriptorRequest, kBosDescriptorType << 8, 0, new_buffer,
+      new_buffer->size(), kControlTransferTimeout,
+      base::Bind(&OnReadBosDescriptor, device_handle, callback));
+}
+
+void ReadBosDescriptor(scoped_refptr<UsbDeviceHandle> device_handle,
+                       const base::Closure& callback) {
+  scoped_refptr<IOBufferWithSize> buffer = new IOBufferWithSize(5);
+  device_handle->ControlTransfer(
+      USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD, UsbDeviceHandle::DEVICE,
+      kGetDescriptorRequest, kBosDescriptorType << 8, 0, buffer, buffer->size(),
+      kControlTransferTimeout,
+      base::Bind(&OnReadBosDescriptorHeader, device_handle, callback));
+}
+
+void CloseHandleAndRunContinuation(scoped_refptr<UsbDeviceHandle> device_handle,
+                                   const base::Closure& continuation) {
+  device_handle->Close();
+  continuation.Run();
+}
+
+void SaveStringAndRunContinuation(
+    const base::Callback<void(const base::string16&)>& save_callback,
+    const base::Closure& continuation,
+    const base::string16& value) {
+  if (!value.empty()) {
+    save_callback.Run(value);
+  }
+  continuation.Run();
+}
+
+// This function runs |barrier| once for every string it tries to read.
+void OnReadLanguageIds(scoped_refptr<UsbDeviceHandle> device_handle,
+                       uint8 manufacturer,
+                       uint8 product,
+                       uint8 serial_number,
+                       const base::Closure& barrier,
+                       const base::string16& languages) {
+  // Default to English unless the device provides a language and then just pick
+  // the first one.
+  uint16 language_id = 0x0409;
+  if (!languages.empty()) {
+    language_id = languages[0];
+  }
+
+  scoped_refptr<UsbDeviceImpl> device =
+      static_cast<UsbDeviceImpl*>(device_handle->GetDevice().get());
+
+  if (manufacturer != 0) {
+    ReadStringDescriptor(
+        device_handle, manufacturer, language_id,
+        base::Bind(&SaveStringAndRunContinuation,
+                   base::Bind(&UsbDeviceImpl::set_manufacturer_string, device),
+                   barrier));
+  }
+
+  if (product != 0) {
+    ReadStringDescriptor(
+        device_handle, product, language_id,
+        base::Bind(&SaveStringAndRunContinuation,
+                   base::Bind(&UsbDeviceImpl::set_product_string, device),
+                   barrier));
+  }
+
+  if (serial_number != 0) {
+    ReadStringDescriptor(
+        device_handle, serial_number, language_id,
+        base::Bind(&SaveStringAndRunContinuation,
+                   base::Bind(&UsbDeviceImpl::set_serial_number, device),
+                   barrier));
+  }
+}
+
+void OnDeviceOpenedReadDescriptors(
+    uint8 manufacturer,
+    uint8 product,
+    uint8 serial_number,
+    bool read_bos_descriptors,
+    const base::Closure& success_closure,
+    const base::Closure& failure_closure,
+    scoped_refptr<UsbDeviceHandle> device_handle) {
+  if (device_handle) {
+    int count = 0;
+    if (manufacturer != 0)
+      count++;
+    if (product != 0)
+      count++;
+    if (serial_number != 0)
+      count++;
+    if (read_bos_descriptors)
+      count++;
+    DCHECK_GT(count, 0);
+
+    base::Closure barrier =
+        base::BarrierClosure(count, base::Bind(&CloseHandleAndRunContinuation,
+                                               device_handle, success_closure));
+
+    if (manufacturer != 0 || product != 0 || serial_number != 0) {
+      ReadStringDescriptor(
+          device_handle, 0, 0,
+          base::Bind(&OnReadLanguageIds, device_handle, manufacturer, product,
+                     serial_number, barrier));
+    }
+
+    if (read_bos_descriptors) {
+      ReadBosDescriptor(device_handle, barrier);
+    }
+  } else {
+    failure_closure.Run();
+  }
+}
+
 #if defined(USE_UDEV)
 
 void EnumerateUdevDevice(scoped_refptr<UsbDeviceImpl> device,
+                         bool read_bos_descriptors,
                          scoped_refptr<base::SequencedTaskRunner> task_runner,
                          const base::Closure& success_closure,
                          const base::Closure& failure_closure) {
@@ -217,7 +508,16 @@ void EnumerateUdevDevice(scoped_refptr<UsbDeviceImpl> device,
       value = udev_device_get_devnode(udev_device.get());
       if (value) {
         device->set_device_path(value);
-        task_runner->PostTask(FROM_HERE, success_closure);
+
+        if (read_bos_descriptors) {
+          task_runner->PostTask(
+              FROM_HERE,
+              base::Bind(&UsbDevice::Open, device,
+                         base::Bind(&OnDeviceOpenedReadDescriptors, 0, 0, 0,
+                                    true, success_closure, failure_closure)));
+        } else {
+          task_runner->PostTask(FROM_HERE, success_closure);
+        }
         return;
       }
 
@@ -226,121 +526,6 @@ void EnumerateUdevDevice(scoped_refptr<UsbDeviceImpl> device,
   }
 
   task_runner->PostTask(FROM_HERE, failure_closure);
-}
-
-#else
-
-void OnReadStringDescriptor(
-    const base::Callback<void(const base::string16&)>& callback,
-    UsbTransferStatus status,
-    scoped_refptr<net::IOBuffer> buffer,
-    size_t length) {
-  if (status != USB_TRANSFER_COMPLETED || length < 2) {
-    callback.Run(base::string16());
-  } else {
-    // Take the lesser of the length of data returned by the device and the
-    // length reported in the descriptor.
-    size_t internal_length = reinterpret_cast<uint8*>(buffer->data())[0];
-    length = std::min(length, internal_length);
-    // Cut off the first 2 bytes of the descriptor which are the length and
-    // descriptor type (always STRING).
-    callback.Run(base::string16(
-        reinterpret_cast<base::char16*>(buffer->data() + 2), length / 2 - 1));
-  }
-}
-
-void ReadStringDescriptor(
-    scoped_refptr<UsbDeviceHandle> device_handle,
-    uint8 index,
-    uint16 language_id,
-    const base::Callback<void(const base::string16&)>& callback) {
-  scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(256);
-  device_handle->ControlTransfer(
-      USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD, UsbDeviceHandle::DEVICE,
-      6 /* GET_DESCRIPTOR */, 3 /* STRING */ << 8 | index, language_id, buffer,
-      256, 60, base::Bind(&OnReadStringDescriptor, callback));
-}
-
-void CloseHandleAndRunContinuation(scoped_refptr<UsbDeviceHandle> device_handle,
-                                   const base::Closure& continuation) {
-  device_handle->Close();
-  continuation.Run();
-}
-
-void SaveStringAndRunContinuation(
-    const base::Callback<void(const base::string16&)>& save_callback,
-    const base::Closure& continuation,
-    const base::string16& value) {
-  if (!value.empty()) {
-    save_callback.Run(value);
-  }
-  continuation.Run();
-}
-
-void OnReadLanguageIds(scoped_refptr<UsbDeviceHandle> device_handle,
-                       uint8 manufacturer,
-                       uint8 product,
-                       uint8 serial_number,
-                       const base::Closure& success_closure,
-                       const base::string16& languages) {
-  // Default to English unless the device provides a language and then just pick
-  // the first one.
-  uint16 language_id = 0x0409;
-  if (!languages.empty()) {
-    language_id = languages[0];
-  }
-
-  scoped_refptr<UsbDeviceImpl> device =
-      static_cast<UsbDeviceImpl*>(device_handle->GetDevice().get());
-  base::Closure continuation =
-      base::BarrierClosure(3, base::Bind(&CloseHandleAndRunContinuation,
-                                         device_handle, success_closure));
-
-  if (manufacturer == 0) {
-    continuation.Run();
-  } else {
-    ReadStringDescriptor(
-        device_handle, manufacturer, language_id,
-        base::Bind(&SaveStringAndRunContinuation,
-                   base::Bind(&UsbDeviceImpl::set_manufacturer_string, device),
-                   continuation));
-  }
-
-  if (product == 0) {
-    continuation.Run();
-  } else {
-    ReadStringDescriptor(
-        device_handle, product, language_id,
-        base::Bind(&SaveStringAndRunContinuation,
-                   base::Bind(&UsbDeviceImpl::set_product_string, device),
-                   continuation));
-  }
-
-  if (serial_number == 0) {
-    continuation.Run();
-  } else {
-    ReadStringDescriptor(
-        device_handle, serial_number, language_id,
-        base::Bind(&SaveStringAndRunContinuation,
-                   base::Bind(&UsbDeviceImpl::set_serial_number, device),
-                   continuation));
-  }
-}
-
-void ReadDeviceLanguage(uint8 manufacturer,
-                        uint8 product,
-                        uint8 serial_number,
-                        const base::Closure& success_closure,
-                        const base::Closure& failure_closure,
-                        scoped_refptr<UsbDeviceHandle> device_handle) {
-  if (device_handle) {
-    ReadStringDescriptor(
-        device_handle, 0, 0,
-        base::Bind(&OnReadLanguageIds, device_handle, manufacturer, product,
-                   serial_number, success_closure));
-  } else {
-    failure_closure.Run();
-  }
 }
 
 #endif  // USE_UDEV
@@ -573,20 +758,22 @@ void UsbServiceImpl::EnumerateDevice(PlatformUsbDevice platform_device,
     base::Closure add_device =
         base::Bind(&UsbServiceImpl::AddDevice, weak_factory_.GetWeakPtr(),
                    refresh_complete, device);
+    bool read_bos_descriptors = descriptor.bcdUSB >= kUsbVersion2_1;
 
 #if defined(USE_UDEV)
     blocking_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&EnumerateUdevDevice, device, task_runner_,
-                              add_device, refresh_complete));
+        FROM_HERE,
+        base::Bind(&EnumerateUdevDevice, device, read_bos_descriptors,
+                   task_runner_, add_device, refresh_complete));
 #else
     if (descriptor.iManufacturer == 0 && descriptor.iProduct == 0 &&
-        descriptor.iSerialNumber == 0) {
-      // Don't bother disturbing the device if it has no string descriptors to
-      // offer.
+        descriptor.iSerialNumber == 0 && !read_bos_descriptors) {
+      // Don't bother disturbing the device if it has no descriptors to offer.
       add_device.Run();
     } else {
-      device->Open(base::Bind(&ReadDeviceLanguage, descriptor.iManufacturer,
-                              descriptor.iProduct, descriptor.iSerialNumber,
+      device->Open(base::Bind(&OnDeviceOpenedReadDescriptors,
+                              descriptor.iManufacturer, descriptor.iProduct,
+                              descriptor.iSerialNumber, read_bos_descriptors,
                               add_device, refresh_complete));
     }
 #endif
