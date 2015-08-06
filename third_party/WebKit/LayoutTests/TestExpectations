@@ -1258,17 +1258,6 @@ crbug.com/442512 svg/dom/viewspec-viewtargetparams.html [ Pass ImageOnlyFailure 
 crbug.com/442512 svg/dom/viewspec-zoomandpanparams.html [ Pass ImageOnlyFailure ]
 crbug.com/442512 svg/dom/complex-svgView-specification.html [ Pass ImageOnlyFailure ]
 
-crbug.com/513319 css2.1/20110323/table-caption-optional-002.htm [ NeedsRebaseline ]
-crbug.com/513319 [ SnowLeopard Lion MountainLion Retina Mavericks Linux Win ] fast/css/acid2-pixel.html [ NeedsRebaseline ]
-crbug.com/513319 [ SnowLeopard Lion MountainLion Retina Mavericks Linux Win ] fast/css/acid2.html [ NeedsRebaseline ]
-crbug.com/513319 [ SnowLeopard Lion MountainLion Retina Mavericks Linux Win ] http/tests/misc/acid2-pixel.html [ NeedsRebaseline ]
-crbug.com/513319 [ SnowLeopard Lion MountainLion Retina Mavericks Linux Win ] http/tests/misc/acid2.html [ NeedsRebaseline ]
-crbug.com/513319 fast/table/border-collapsing/003-vertical.html [ NeedsRebaseline ]
-crbug.com/513319 fast/table/border-collapsing/003.html [ NeedsRebaseline ]
-crbug.com/513319 fast/table/table-insert-before-non-anonymous-block.html [ NeedsRebaseline ]
-crbug.com/513319 css2.1/20110323/outline-color-applies-to-014.htm [ NeedsRebaseline ]
-crbug.com/513319 ietestcenter/css3/bordersbackgrounds/border-radius-applies-to-011.htm [ NeedsRebaseline ]
-
 crbug.com/441705 fast/media/media-svg-crash.html [ Pass Failure ]
 
 crbug.com/410949 http/tests/security/local-image-from-remote-whitelisted.html [ Pass Failure ]
