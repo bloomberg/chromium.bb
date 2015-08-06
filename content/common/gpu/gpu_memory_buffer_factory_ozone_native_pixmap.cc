@@ -5,15 +5,28 @@
 #include "content/common/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h"
 
 #include "ui/gl/gl_image_ozone_native_pixmap.h"
+#include "ui/ozone/public/client_native_pixmap_factory.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace content {
 namespace {
 
-const GpuMemoryBufferFactory::Configuration kSupportedConfigurations[] = {
-    {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::SCANOUT},
-    {gfx::BufferFormat::RGBX_8888, gfx::BufferUsage::SCANOUT}};
+void GetSupportedConfigurations(
+    std::vector<GpuMemoryBufferFactory::Configuration>* configurations) {
+  if (!ui::ClientNativePixmapFactory::GetInstance()) {
+    // unittests don't have to set ClientNativePixmapFactory.
+    return;
+  }
+  std::vector<ui::ClientNativePixmapFactory::Configuration>
+      native_pixmap_configurations =
+          ui::ClientNativePixmapFactory::GetInstance()
+              ->GetSupportedConfigurations();
+  for (auto& native_pixmap_configuration : native_pixmap_configurations) {
+    configurations->push_back({native_pixmap_configuration.format,
+                               native_pixmap_configuration.usage});
+  }
+}
 
 }  // namespace
 
@@ -27,7 +40,9 @@ GpuMemoryBufferFactoryOzoneNativePixmap::
 bool GpuMemoryBufferFactoryOzoneNativePixmap::
     IsGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
                                             gfx::BufferUsage usage) {
-  for (auto& configuration : kSupportedConfigurations) {
+  std::vector<Configuration> configurations;
+  GetSupportedConfigurations(&configurations);
+  for (auto& configuration : configurations) {
     if (configuration.format == format && configuration.usage == usage)
       return true;
   }
@@ -38,14 +53,7 @@ bool GpuMemoryBufferFactoryOzoneNativePixmap::
 void GpuMemoryBufferFactoryOzoneNativePixmap::
     GetSupportedGpuMemoryBufferConfigurations(
         std::vector<Configuration>* configurations) {
-  if (!ui::OzonePlatform::GetInstance()
-           ->GetSurfaceFactoryOzone()
-           ->CanCreateNativePixmap(gfx::BufferUsage::SCANOUT))
-    return;
-
-  configurations->assign(
-      kSupportedConfigurations,
-      kSupportedConfigurations + arraysize(kSupportedConfigurations));
+  GetSupportedConfigurations(configurations);
 }
 
 gfx::GpuMemoryBufferHandle

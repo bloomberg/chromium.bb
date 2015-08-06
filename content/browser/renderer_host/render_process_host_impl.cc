@@ -190,6 +190,10 @@
 #include "content/browser/browser_io_surface_manager_mac.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_switches.h"
+#endif
+
 #if defined(ENABLE_BROWSER_CDMS)
 #include "content/browser/media/cdm/browser_cdm_manager.h"
 #endif
@@ -1394,6 +1398,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableDirectWrite,
     switches::kDisableWin32kRendererLockDown,
     switches::kTraceExportEventsToETW,
+#endif
+#if defined(USE_OZONE)
+    switches::kOzonePlatform,
 #endif
 #if defined(OS_CHROMEOS)
     switches::kDisableVaapiAcceleratedVideoEncode,

@@ -32,6 +32,8 @@
         'OZONE_IMPLEMENTATION',
       ],
       'sources': [
+        'client_native_pixmap_factory_cast.cc',
+        'client_native_pixmap_factory_cast.h',
         'gpu_platform_support_cast.cc',
         'gpu_platform_support_cast.h',
         'overlay_manager_cast.cc',

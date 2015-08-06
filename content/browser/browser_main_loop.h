@@ -39,6 +39,12 @@ namespace net {
 class NetworkChangeNotifier;
 }  // namespace net
 
+#if defined(USE_OZONE)
+namespace ui {
+class ClientNativePixmapFactory;
+}  // namespace ui
+#endif
+
 namespace content {
 class BrowserMainParts;
 class BrowserOnlineStateObserver;
@@ -244,6 +250,9 @@ class CONTENT_EXPORT BrowserMainLoop {
   scoped_ptr<DeviceMonitorLinux> device_monitor_linux_;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   scoped_ptr<DeviceMonitorMac> device_monitor_mac_;
+#endif
+#if defined(USE_OZONE)
+  scoped_ptr<ui::ClientNativePixmapFactory> client_native_pixmap_factory_;
 #endif
 
   scoped_ptr<ResourceDispatcherHostImpl> resource_dispatcher_host_;

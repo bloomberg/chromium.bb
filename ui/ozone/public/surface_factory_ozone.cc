@@ -59,8 +59,4 @@ bool SurfaceFactoryOzone::CanShowPrimaryPlaneAsOverlay() {
   return false;
 }
 
-bool SurfaceFactoryOzone::CanCreateNativePixmap(gfx::BufferUsage usage) {
-  return false;
-}
-
 }  // namespace ui

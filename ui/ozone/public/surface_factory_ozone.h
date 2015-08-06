@@ -111,10 +111,6 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   // overlay-only mode.
   virtual bool CanShowPrimaryPlaneAsOverlay();
 
-  // Returns true if the platform is able to create buffers for a specific usage
-  // such as MAP for zero copy or SCANOUT for display controller.
-  virtual bool CanCreateNativePixmap(gfx::BufferUsage usage);
-
  protected:
   SurfaceFactoryOzone();
   virtual ~SurfaceFactoryOzone();

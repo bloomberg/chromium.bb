@@ -39,6 +39,8 @@
         'caca_window.h',
         'caca_window_manager.cc',
         'caca_window_manager.h',
+        'client_native_pixmap_factory_caca.cc',
+        'client_native_pixmap_factory_caca.h',
         'ozone_platform_caca.cc',
         'ozone_platform_caca.h',
         'scoped_caca_types.cc',

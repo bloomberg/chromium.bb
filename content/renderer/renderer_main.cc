@@ -52,6 +52,10 @@
 #include "third_party/libjingle/overrides/init_webrtc.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/client_native_pixmap_factory.h"
+#endif
+
 namespace content {
 namespace {
 // This function provides some ways to test crash and assertion handling
@@ -64,6 +68,11 @@ static void HandleRendererErrorTestParameters(
   if (command_line.HasSwitch(switches::kRendererStartupDialog))
     ChildProcess::WaitForDebugger("Renderer");
 }
+
+#if defined(USE_OZONE)
+base::LazyInstance<scoped_ptr<ui::ClientNativePixmapFactory>> g_pixmap_factory =
+    LAZY_INSTANCE_INITIALIZER;
+#endif
 
 }  // namespace
 
@@ -98,6 +107,11 @@ int RendererMain(const MainFunctionParams& parameters) {
   size_t font_cache_limit =
       base::SysInfo::IsLowEndDevice() ? kMB : 8 * kMB;
   SkGraphics::SetFontCacheLimit(font_cache_limit);
+#endif
+
+#if defined(USE_OZONE)
+  g_pixmap_factory.Get() = ui::ClientNativePixmapFactory::Create();
+  ui::ClientNativePixmapFactory::SetInstance(g_pixmap_factory.Get().get());
 #endif
 
   // This function allows pausing execution using the --renderer-startup-dialog

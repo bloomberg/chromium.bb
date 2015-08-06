@@ -95,6 +95,8 @@ component("ozone") {
     "common/stub_overlay_manager.h",
     "platform_selection.cc",
     "platform_selection.h",
+    "public/client_native_pixmap_factory.cc",
+    "public/client_native_pixmap_factory.h",
     "public/input_controller.cc",
     "public/input_controller.h",
     "public/ozone_gpu_test_helper.cc",
@@ -165,7 +167,9 @@ action("generate_constructor_list") {
     "--output_cc=" + rebase_path(constructor_list_cc_file, root_build_dir),
     "--namespace=ui",
     "--typename=OzonePlatform",
+    "--typename=ClientNativePixmapFactory",
     "--include=\"ui/ozone/public/ozone_platform.h\"",
+    "--include=\"ui/ozone/public/client_native_pixmap_factory.h\"",
   ]
 
   deps = [

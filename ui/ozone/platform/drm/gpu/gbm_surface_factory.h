@@ -40,7 +40,6 @@ class GbmSurfaceFactory : public DrmSurfaceFactory {
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;
   bool CanShowPrimaryPlaneAsOverlay() override;
-  bool CanCreateNativePixmap(gfx::BufferUsage usage) override;
 
  private:
   scoped_refptr<GbmDevice> GetGbmDevice(gfx::AcceleratedWidget widget);

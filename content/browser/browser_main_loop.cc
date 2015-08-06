@@ -108,6 +108,10 @@
 #include "content/browser/theme_helper_mac.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/client_native_pixmap_factory.h"
+#endif
+
 #if defined(OS_WIN)
 #include <windows.h>
 #include <commctrl.h>
@@ -612,6 +616,12 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
       IOSurfaceManager::SetInstance(BrowserIOSurfaceManager::GetInstance());
     }
   }
+#endif
+
+#if defined(USE_OZONE)
+  client_native_pixmap_factory_ = ui::ClientNativePixmapFactory::Create();
+  ui::ClientNativePixmapFactory::SetInstance(
+      client_native_pixmap_factory_.get());
 #endif
 
   if (parsed_command_line_.HasSwitch(switches::kMemoryMetrics)) {

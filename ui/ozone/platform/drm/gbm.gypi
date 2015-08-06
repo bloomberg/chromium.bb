@@ -33,6 +33,8 @@
         'OZONE_IMPLEMENTATION',
       ],
       'sources': [
+        'common/client_native_pixmap_factory_gbm.cc',
+        'common/client_native_pixmap_factory_gbm.h',
         'gpu/gbm_buffer.cc',
         'gpu/gbm_buffer.h',
         'gpu/gbm_buffer_base.cc',

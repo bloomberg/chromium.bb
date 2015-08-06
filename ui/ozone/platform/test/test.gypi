@@ -27,6 +27,8 @@
         '../gfx/gfx.gyp:gfx',
       ],
       'sources': [
+        'client_native_pixmap_factory_test.cc',
+        'client_native_pixmap_factory_test.h',
         'ozone_platform_test.cc',
         'ozone_platform_test.h',
         'test_window.cc',

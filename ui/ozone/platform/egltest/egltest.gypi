@@ -30,6 +30,8 @@
         'eglplatform_shim',
       ],
       'sources': [
+        'client_native_pixmap_factory_egltest.cc',
+        'client_native_pixmap_factory_egltest.h',
         'ozone_platform_egltest.cc',
         'ozone_platform_egltest.h',
       ],

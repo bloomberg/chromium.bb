@@ -16,6 +16,8 @@ pkg_config("libdrm") {
 
 source_set("drm_common") {
   sources = [
+    "common/client_native_pixmap_factory_drm.cc",
+    "common/client_native_pixmap_factory_drm.h",
     "common/drm_util.cc",
     "common/drm_util.h",
     "common/scoped_drm_types.cc",
@@ -161,6 +163,8 @@ if (ozone_platform_gbm) {
 
   source_set("gbm") {
     sources = [
+      "common/client_native_pixmap_factory_gbm.cc",
+      "common/client_native_pixmap_factory_gbm.h",
       "gpu/gbm_buffer.cc",
       "gpu/gbm_buffer.h",
       "gpu/gbm_buffer_base.cc",
