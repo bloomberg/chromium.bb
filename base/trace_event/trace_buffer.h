@@ -44,7 +44,7 @@ class BASE_EXPORT TraceBufferChunk {
 
  private:
   size_t next_free_;
-  scoped_ptr<TraceEventMemoryOverhead> cached_overhead_estimate_when_full_;
+  scoped_ptr<TraceEventMemoryOverhead> cached_overhead_estimate_;
   TraceEvent chunk_[kTraceBufferChunkSize];
   uint32 seq_;
 };

@@ -171,7 +171,6 @@ void TraceEvent::Reset() {
   parameter_copy_storage_ = NULL;
   for (int i = 0; i < kTraceMaxNumArgs; ++i)
     convertable_values_[i] = NULL;
-  cached_memory_overhead_estimate_.reset();
 }
 
 void TraceEvent::UpdateDuration(const TraceTicks& now,
@@ -183,25 +182,18 @@ void TraceEvent::UpdateDuration(const TraceTicks& now,
 
 void TraceEvent::EstimateTraceMemoryOverhead(
     TraceEventMemoryOverhead* overhead) {
-  if (!cached_memory_overhead_estimate_) {
-    cached_memory_overhead_estimate_.reset(new TraceEventMemoryOverhead);
-    cached_memory_overhead_estimate_->Add("TraceEvent", sizeof(*this));
-    // TODO(primiano): parameter_copy_storage_ is refcounted and, in theory,
-    // could be shared by several events and we might overcount. In practice
-    // this is unlikely but it's worth checking.
-    if (parameter_copy_storage_) {
-      cached_memory_overhead_estimate_->AddRefCountedString(
-          *parameter_copy_storage_.get());
-    }
-    for (size_t i = 0; i < kTraceMaxNumArgs; ++i) {
-      if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE) {
-        convertable_values_[i]->EstimateTraceMemoryOverhead(
-            cached_memory_overhead_estimate_.get());
-      }
-    }
-    cached_memory_overhead_estimate_->AddSelf();
+  overhead->Add("TraceEvent", sizeof(*this));
+
+  // TODO(primiano): parameter_copy_storage_ is refcounted and, in theory,
+  // could be shared by several events and we might overcount. In practice
+  // this is unlikely but it's worth checking.
+  if (parameter_copy_storage_)
+    overhead->AddRefCountedString(*parameter_copy_storage_.get());
+
+  for (size_t i = 0; i < kTraceMaxNumArgs; ++i) {
+    if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE)
+      convertable_values_[i]->EstimateTraceMemoryOverhead(overhead);
   }
-  overhead->Update(*cached_memory_overhead_estimate_);
 }
 
 // static
