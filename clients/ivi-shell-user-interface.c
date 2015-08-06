@@ -33,6 +33,7 @@
 #include <sys/mman.h>
 #include <getopt.h>
 #include <wayland-cursor.h>
+#include <wayland-client-protocol.h>
 #include "shared/cairo-util.h"
 #include "shared/config-parser.h"
 #include "shared/helpers.h"

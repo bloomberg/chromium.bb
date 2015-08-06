@@ -31,6 +31,7 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#include <wayland-client-protocol.h>
 #include "weston-test-runner.h"
 #include "weston-test-client-protocol.h"
 
