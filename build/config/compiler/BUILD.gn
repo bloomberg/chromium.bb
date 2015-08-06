@@ -30,6 +30,8 @@ declare_args() {
   # only two architectures that are currently checked in). Turn this off when
   # you are using a custom toolchain and need to control -B in cflags.
   linux_use_bundled_binutils = is_linux && current_cpu == "x64"
+  binutils_path = rebase_path("//third_party/binutils/Linux_x64/Release/bin",
+                              root_build_dir)
 
   # Compile in such a way as to enable profiling of the generated code. For
   # example, don't omit the frame pointer and leave in symbols.
@@ -45,6 +47,14 @@ declare_args() {
   # Use gold for linking on 64-bit Linux only (on 32-bit it runs out of
   # address space, and it doesn't support cross-compiling).
   use_gold = is_linux && current_cpu == "x64"
+
+  # When we are going to use gold we need to find it.
+  if (use_gold) {
+    gold_path = rebase_path("//third_party/binutils/Linux_x64/Release/bin",
+                            root_build_dir)
+  } else {
+    gold_path = ""
+  }
 
   # use_debug_fission: whether to use split DWARF debug info
   # files. This can reduce link time significantly, but is incompatible
@@ -456,8 +466,6 @@ config("compiler") {
     ldflags += [ "-pthread" ]
   }
   if (use_gold) {
-    gold_path = rebase_path("//third_party/binutils/Linux_x64/Release/bin",
-                            root_build_dir)
     ldflags += [
       "-B$gold_path",
 
@@ -491,8 +499,6 @@ config("compiler") {
   }
 
   if (linux_use_bundled_binutils) {
-    binutils_path = rebase_path("//third_party/binutils/Linux_x64/Release/bin",
-                                root_build_dir)
     cflags += [ "-B$binutils_path" ]
   }
 
