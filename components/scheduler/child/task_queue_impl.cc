@@ -17,7 +17,6 @@ TaskQueueImpl::TaskQueueImpl(
     : thread_id_(base::PlatformThread::CurrentId()),
       task_queue_manager_(task_queue_manager),
       pump_policy_(spec.pump_policy),
-      delayed_task_sequence_number_(0),
       name_(spec.name),
       disabled_by_default_tracing_category_(
           disabled_by_default_tracing_category),
@@ -30,12 +29,36 @@ TaskQueueImpl::TaskQueueImpl(
 
 TaskQueueImpl::~TaskQueueImpl() {}
 
+TaskQueueImpl::Task::Task()
+    : PendingTask(tracked_objects::Location(),
+                  base::Closure(),
+                  base::TimeTicks(),
+                  true),
+#ifndef NDEBUG
+      enqueue_order_set_(false),
+#endif
+      enqueue_order_(0) {
+  sequence_num = 0;
+}
+
+TaskQueueImpl::Task::Task(const tracked_objects::Location& posted_from,
+                          const base::Closure& task,
+                          int sequence_number,
+                          bool nestable)
+    : PendingTask(posted_from, task, base::TimeTicks(), nestable),
+#ifndef NDEBUG
+      enqueue_order_set_(false),
+#endif
+      enqueue_order_(0) {
+  sequence_num = sequence_number;
+}
+
 void TaskQueueImpl::WillDeleteTaskQueueManager() {
   base::AutoLock lock(lock_);
   task_queue_manager_ = nullptr;
-  delayed_task_queue_ = base::DelayedTaskQueue();
-  incoming_queue_ = base::TaskQueue();
-  work_queue_ = base::TaskQueue();
+  delayed_task_queue_ = std::priority_queue<Task>();
+  incoming_queue_ = std::queue<Task>();
+  work_queue_ = std::queue<Task>();
 }
 
 bool TaskQueueImpl::RunsTasksOnCurrentThread() const {
@@ -92,14 +115,14 @@ bool TaskQueueImpl::PostDelayedTaskLocked(
     TaskType task_type) {
   lock_.AssertAcquired();
   DCHECK(task_queue_manager_);
-
-  base::PendingTask pending_task(from_here, task, base::TimeTicks(),
-                                 task_type != TaskType::NON_NESTABLE);
+  Task pending_task(from_here, task,
+                    task_queue_manager_->GetNextSequenceNumber(),
+                    task_type != TaskType::NON_NESTABLE);
   task_queue_manager_->DidQueueTask(pending_task);
 
   if (!desired_run_time.is_null()) {
     pending_task.delayed_run_time = std::max(lazy_now->Now(), desired_run_time);
-    pending_task.sequence_num = delayed_task_sequence_number_++;
+    // TODO(alexclarke): consider emplace() when C++11 library features allowed.
     delayed_task_queue_.push(pending_task);
     TraceQueueSize(true);
     // If we changed the topmost task, then it is time to reschedule.
@@ -107,7 +130,8 @@ bool TaskQueueImpl::PostDelayedTaskLocked(
       ScheduleDelayedWorkLocked(lazy_now);
     return true;
   }
-  EnqueueTaskLocked(pending_task);
+  pending_task.set_enqueue_order(pending_task.sequence_num);
+  EnqueueTaskLocked(pending_task, EnqueueOrderPolicy::DONT_SET_ENQUEUE_ORDER);
   return true;
 }
 
@@ -129,7 +153,9 @@ void TaskQueueImpl::MoveReadyDelayedTasksToIncomingQueueLocked(
          delayed_task_queue_.top().delayed_run_time <= lazy_now->Now()) {
     in_flight_kick_delayed_tasks_.erase(
         delayed_task_queue_.top().delayed_run_time);
-    EnqueueTaskLocked(delayed_task_queue_.top());
+    // TODO(alexclarke): consider std::move() when allowed.
+    EnqueueTaskLocked(delayed_task_queue_.top(),
+                      EnqueueOrderPolicy::SET_ENQUEUE_ORDER);
     delayed_task_queue_.pop();
   }
   TraceQueueSize(true);
@@ -181,7 +207,7 @@ TaskQueue::QueueState TaskQueueImpl::GetQueueState() const {
   }
 }
 
-bool TaskQueueImpl::TaskIsOlderThanQueuedTasks(const base::PendingTask* task) {
+bool TaskQueueImpl::TaskIsOlderThanQueuedTasks(const Task* task) {
   lock_.AssertAcquired();
   // A null task is passed when UpdateQueue is called before any task is run.
   // In this case we don't want to pump an after_wakeup queue, so return true
@@ -193,19 +219,12 @@ bool TaskQueueImpl::TaskIsOlderThanQueuedTasks(const base::PendingTask* task) {
   if (incoming_queue_.empty())
     return false;
 
-  base::PendingTask oldest_queued_task = incoming_queue_.front();
-  DCHECK(oldest_queued_task.delayed_run_time.is_null());
-  DCHECK(task->delayed_run_time.is_null());
-
-  // Note: the comparison is correct due to the fact that the PendingTask
-  // operator inverts its comparison operation in order to work well in a heap
-  // based priority queue.
-  return oldest_queued_task < *task;
+  const TaskQueueImpl::Task& oldest_queued_task = incoming_queue_.front();
+  return task->enqueue_order() < oldest_queued_task.enqueue_order();
 }
 
-bool TaskQueueImpl::ShouldAutoPumpQueueLocked(
-    bool should_trigger_wakeup,
-    const base::PendingTask* previous_task) {
+bool TaskQueueImpl::ShouldAutoPumpQueueLocked(bool should_trigger_wakeup,
+                                              const Task* previous_task) {
   lock_.AssertAcquired();
   if (pump_policy_ == PumpPolicy::MANUAL)
     return false;
@@ -228,13 +247,13 @@ bool TaskQueueImpl::NextPendingDelayedTaskRunTime(
 
 void TaskQueueImpl::UpdateWorkQueue(LazyNow* lazy_now,
                                     bool should_trigger_wakeup,
-                                    const base::PendingTask* previous_task) {
+                                    const Task* previous_task) {
   DCHECK(work_queue_.empty());
   base::AutoLock lock(lock_);
   if (!ShouldAutoPumpQueueLocked(should_trigger_wakeup, previous_task))
     return;
   MoveReadyDelayedTasksToIncomingQueueLocked(lazy_now);
-  work_queue_.Swap(&incoming_queue_);
+  std::swap(work_queue_, incoming_queue_);
   // |incoming_queue_| is now empty so TaskQueueManager::UpdateQueues no
   // longer needs to consider this queue for reloading.
   task_queue_manager_->UnregisterAsUpdatableTaskQueue(this);
@@ -245,8 +264,9 @@ void TaskQueueImpl::UpdateWorkQueue(LazyNow* lazy_now,
   }
 }
 
-base::PendingTask TaskQueueImpl::TakeTaskFromWorkQueue() {
-  base::PendingTask pending_task = work_queue_.front();
+TaskQueueImpl::Task TaskQueueImpl::TakeTaskFromWorkQueue() {
+  // TODO(alexclarke): consider std::move() when allowed.
+  Task pending_task = work_queue_.front();
   work_queue_.pop();
   DCHECK(task_queue_manager_);
   task_queue_manager_->selector_.GetTaskQueueSets()->OnPopQueue(this);
@@ -271,7 +291,8 @@ void TaskQueueImpl::TraceQueueSize(bool is_locked) const {
     lock_.Release();
 }
 
-void TaskQueueImpl::EnqueueTaskLocked(const base::PendingTask& pending_task) {
+void TaskQueueImpl::EnqueueTaskLocked(const Task& pending_task,
+                                      EnqueueOrderPolicy enqueue_order_policy) {
   lock_.AssertAcquired();
   if (!task_queue_manager_)
     return;
@@ -279,14 +300,11 @@ void TaskQueueImpl::EnqueueTaskLocked(const base::PendingTask& pending_task) {
     task_queue_manager_->RegisterAsUpdatableTaskQueue(this);
   if (pump_policy_ == PumpPolicy::AUTO && incoming_queue_.empty())
     task_queue_manager_->MaybePostDoWorkOnMainRunner();
+  // TODO(alexclarke): consider std::move() when allowed.
   incoming_queue_.push(pending_task);
-  incoming_queue_.back().sequence_num =
-      task_queue_manager_->GetNextSequenceNumber();
-
-  if (!pending_task.delayed_run_time.is_null()) {
-    // Clear the delayed run time because we've already applied the delay
-    // before getting here.
-    incoming_queue_.back().delayed_run_time = base::TimeTicks();
+  if (enqueue_order_policy == EnqueueOrderPolicy::SET_ENQUEUE_ORDER) {
+    incoming_queue_.back().set_enqueue_order(
+        task_queue_manager_->GetNextSequenceNumber());
   }
   TraceQueueSize(true);
 }
@@ -309,6 +327,7 @@ void TaskQueueImpl::PumpQueueLocked() {
 
   bool was_empty = work_queue_.empty();
   while (!incoming_queue_.empty()) {
+    // TODO(alexclarke): consider std::move() when allowed.
     work_queue_.push(incoming_queue_.front());
     incoming_queue_.pop();
   }
@@ -331,15 +350,15 @@ const char* TaskQueueImpl::GetName() const {
   return name_;
 }
 
-bool TaskQueueImpl::GetWorkQueueFrontTaskAge(int* age) const {
+bool TaskQueueImpl::GetWorkQueueFrontTaskEnqueueOrder(
+    int* enqueue_order) const {
   if (work_queue_.empty())
     return false;
-  *age = work_queue_.front().sequence_num;
+  *enqueue_order = work_queue_.front().enqueue_order();
   return true;
 }
 
-void TaskQueueImpl::PushTaskOntoWorkQueueForTest(
-    const base::PendingTask& task) {
+void TaskQueueImpl::PushTaskOntoWorkQueueForTest(const Task& task) {
   work_queue_.push(task);
 }
 
@@ -433,9 +452,9 @@ void TaskQueueImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 }
 
 // static
-void TaskQueueImpl::QueueAsValueInto(const base::TaskQueue& queue,
+void TaskQueueImpl::QueueAsValueInto(const std::queue<Task>& queue,
                                      base::trace_event::TracedValue* state) {
-  base::TaskQueue queue_copy(queue);
+  std::queue<Task> queue_copy(queue);
   while (!queue_copy.empty()) {
     TaskAsValueInto(queue_copy.front(), state);
     queue_copy.pop();
@@ -443,9 +462,9 @@ void TaskQueueImpl::QueueAsValueInto(const base::TaskQueue& queue,
 }
 
 // static
-void TaskQueueImpl::QueueAsValueInto(const base::DelayedTaskQueue& queue,
+void TaskQueueImpl::QueueAsValueInto(const std::priority_queue<Task>& queue,
                                      base::trace_event::TracedValue* state) {
-  base::DelayedTaskQueue queue_copy(queue);
+  std::priority_queue<Task> queue_copy(queue);
   while (!queue_copy.empty()) {
     TaskAsValueInto(queue_copy.top(), state);
     queue_copy.pop();
@@ -453,10 +472,11 @@ void TaskQueueImpl::QueueAsValueInto(const base::DelayedTaskQueue& queue,
 }
 
 // static
-void TaskQueueImpl::TaskAsValueInto(const base::PendingTask& task,
+void TaskQueueImpl::TaskAsValueInto(const Task& task,
                                     base::trace_event::TracedValue* state) {
   state->BeginDictionary();
   state->SetString("posted_from", task.posted_from.ToString());
+  state->SetInteger("enqueue_order", task.enqueue_order());
   state->SetInteger("sequence_num", task.sequence_num);
   state->SetBoolean("nestable", task.nestable);
   state->SetBoolean("is_high_res", task.is_high_res);

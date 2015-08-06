@@ -15,7 +15,7 @@
 #include "base/pending_task.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "components/scheduler/child/task_queue.h"
+#include "components/scheduler/child/task_queue_impl.h"
 #include "components/scheduler/child/task_queue_selector.h"
 #include "components/scheduler/scheduler_export.h"
 
@@ -103,7 +103,7 @@ class SCHEDULER_EXPORT TaskQueueManager
   void OnTaskQueueEnabled() override;
 
   // Called by the task queue to register a new pending task.
-  void DidQueueTask(const base::PendingTask& pending_task);
+  void DidQueueTask(const internal::TaskQueueImpl::Task& pending_task);
 
   // Post a task to call DoWork() on the main task runner.  Only one pending
   // DoWork is allowed from the main thread, to prevent an explosion of pending
@@ -119,7 +119,7 @@ class SCHEDULER_EXPORT TaskQueueManager
   // run and |should_trigger_wakeup|. Call with an empty |previous_task| if no
   // task was just run.
   void UpdateWorkQueues(bool should_trigger_wakeup,
-                        const base::PendingTask* previous_task);
+                        const internal::TaskQueueImpl::Task* previous_task);
 
   // Chooses the next work queue to service. Returns true if |out_queue|
   // indicates the queue from which the next task should be run, false to
@@ -130,8 +130,9 @@ class SCHEDULER_EXPORT TaskQueueManager
   // contain the task which was executed. Non-nestable task are reposted on the
   // run loop. The queue must not be empty. Returns true if the TaskQueueManager
   // got deleted, and false otherwise.
-  bool ProcessTaskFromWorkQueue(internal::TaskQueueImpl* queue,
-                                base::PendingTask* out_previous_task);
+  bool ProcessTaskFromWorkQueue(
+      internal::TaskQueueImpl* queue,
+      internal::TaskQueueImpl::Task* out_previous_task);
 
   bool RunsTasksOnCurrentThread() const;
   bool PostDelayedTask(const tracked_objects::Location& from_here,

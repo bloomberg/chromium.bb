@@ -33,17 +33,17 @@ class TaskQueueSelectorTest : public testing::Test {
       : test_closure_(base::Bind(&TaskQueueSelectorTest::TestFunction)) {}
   ~TaskQueueSelectorTest() override {}
 
-  std::vector<base::PendingTask> GetTasks(int count) {
-    std::vector<base::PendingTask> tasks;
+  std::vector<TaskQueueImpl::Task> GetTasks(int count) {
+    std::vector<TaskQueueImpl::Task> tasks;
     for (int i = 0; i < count; i++) {
-      base::PendingTask task = base::PendingTask(FROM_HERE, test_closure_);
-      task.sequence_num = i;
+      TaskQueueImpl::Task task(FROM_HERE, test_closure_, 0, true);
+      task.set_enqueue_order(i);
       tasks.push_back(task);
     }
     return tasks;
   }
 
-  void PushTasks(const std::vector<base::PendingTask>& tasks,
+  void PushTasks(const std::vector<TaskQueueImpl::Task>& tasks,
                  const size_t queue_indices[]) {
     std::set<size_t> changed_queue_set;
     for (size_t i = 0; i < tasks.size(); i++) {
@@ -58,7 +58,7 @@ class TaskQueueSelectorTest : public testing::Test {
 
   std::vector<size_t> PopTasks() {
     std::vector<size_t> order;
-    internal::TaskQueueImpl* chosen_queue;
+    TaskQueueImpl* chosen_queue;
     while (selector_.SelectQueueToService(&chosen_queue)) {
       size_t chosen_queue_index =
           queue_to_index_map_.find(chosen_queue)->second;
@@ -74,8 +74,8 @@ class TaskQueueSelectorTest : public testing::Test {
  protected:
   void SetUp() final {
     for (size_t i = 0; i < kTaskQueueCount; i++) {
-      scoped_refptr<internal::TaskQueueImpl> task_queue =
-          make_scoped_refptr(new internal::TaskQueueImpl(
+      scoped_refptr<TaskQueueImpl> task_queue =
+          make_scoped_refptr(new TaskQueueImpl(
               nullptr, TaskQueue::Spec("test queue"), "test", "test"));
       selector_.AddQueue(task_queue.get());
       task_queues_.push_back(task_queue);
@@ -89,19 +89,19 @@ class TaskQueueSelectorTest : public testing::Test {
   const size_t kTaskQueueCount = 5;
   base::Closure test_closure_;
   TaskQueueSelector selector_;
-  std::vector<scoped_refptr<internal::TaskQueueImpl>> task_queues_;
-  std::map<internal::TaskQueueImpl*, size_t> queue_to_index_map_;
+  std::vector<scoped_refptr<TaskQueueImpl>> task_queues_;
+  std::map<TaskQueueImpl*, size_t> queue_to_index_map_;
 };
 
 TEST_F(TaskQueueSelectorTest, TestDefaultPriority) {
-  std::vector<base::PendingTask> tasks = GetTasks(5);
+  std::vector<TaskQueueImpl::Task> tasks = GetTasks(5);
   size_t queue_order[] = {4, 3, 2, 1, 0};
   PushTasks(tasks, queue_order);
   EXPECT_THAT(PopTasks(), testing::ElementsAre(4, 3, 2, 1, 0));
 }
 
 TEST_F(TaskQueueSelectorTest, TestHighPriority) {
-  std::vector<base::PendingTask> tasks = GetTasks(5);
+  std::vector<TaskQueueImpl::Task> tasks = GetTasks(5);
   size_t queue_order[] = {0, 1, 2, 3, 4};
   PushTasks(tasks, queue_order);
   selector_.SetQueuePriority(task_queues_[2].get(), TaskQueue::HIGH_PRIORITY);
@@ -109,7 +109,7 @@ TEST_F(TaskQueueSelectorTest, TestHighPriority) {
 }
 
 TEST_F(TaskQueueSelectorTest, TestBestEffortPriority) {
-  std::vector<base::PendingTask> tasks = GetTasks(5);
+  std::vector<TaskQueueImpl::Task> tasks = GetTasks(5);
   size_t queue_order[] = {0, 1, 2, 3, 4};
   PushTasks(tasks, queue_order);
   selector_.SetQueuePriority(task_queues_[0].get(),
@@ -119,7 +119,7 @@ TEST_F(TaskQueueSelectorTest, TestBestEffortPriority) {
 }
 
 TEST_F(TaskQueueSelectorTest, TestControlPriority) {
-  std::vector<base::PendingTask> tasks = GetTasks(5);
+  std::vector<TaskQueueImpl::Task> tasks = GetTasks(5);
   size_t queue_order[] = {0, 1, 2, 3, 4};
   PushTasks(tasks, queue_order);
   selector_.SetQueuePriority(task_queues_[4].get(),
@@ -152,7 +152,7 @@ TEST_F(TaskQueueSelectorTest, TestDisableEnable) {
   MockObserver mock_observer;
   selector_.SetTaskQueueSelectorObserver(&mock_observer);
 
-  std::vector<base::PendingTask> tasks = GetTasks(5);
+  std::vector<TaskQueueImpl::Task> tasks = GetTasks(5);
   size_t queue_order[] = {0, 1, 2, 3, 4};
   PushTasks(tasks, queue_order);
   selector_.SetQueuePriority(task_queues_[2].get(),
@@ -172,11 +172,11 @@ TEST_F(TaskQueueSelectorTest, TestDisableEnable) {
 }
 
 TEST_F(TaskQueueSelectorTest, TestEmptyQueues) {
-  internal::TaskQueueImpl* chosen_queue = nullptr;
+  TaskQueueImpl* chosen_queue = nullptr;
   EXPECT_FALSE(selector_.SelectQueueToService(&chosen_queue));
 
   // Test only disabled queues.
-  std::vector<base::PendingTask> tasks = GetTasks(1);
+  std::vector<TaskQueueImpl::Task> tasks = GetTasks(1);
   size_t queue_order[] = {0};
   PushTasks(tasks, queue_order);
   selector_.SetQueuePriority(task_queues_[0].get(),
@@ -185,17 +185,17 @@ TEST_F(TaskQueueSelectorTest, TestEmptyQueues) {
   EXPECT_FALSE(selector_.SelectQueueToService(&chosen_queue));
 }
 
-TEST_F(TaskQueueSelectorTest, TestSequenceNumber) {
-  std::vector<base::PendingTask> tasks = GetTasks(5);
-  tasks[0].sequence_num = 10;
-  tasks[3].sequence_num = 9;
+TEST_F(TaskQueueSelectorTest, TestAge) {
+  std::vector<TaskQueueImpl::Task> tasks = GetTasks(5);
+  tasks[0].set_enqueue_order(10);
+  tasks[3].set_enqueue_order(9);
   size_t queue_order[] = {0, 1, 2, 3, 4};
   PushTasks(tasks, queue_order);
   EXPECT_THAT(PopTasks(), testing::ElementsAre(1, 2, 4, 3, 0));
 }
 
 TEST_F(TaskQueueSelectorTest, TestControlStarvesOthers) {
-  std::vector<base::PendingTask> tasks = GetTasks(4);
+  std::vector<TaskQueueImpl::Task> tasks = GetTasks(4);
   size_t queue_order[] = {0, 1, 2, 3};
   PushTasks(tasks, queue_order);
   selector_.SetQueuePriority(task_queues_[3].get(),
@@ -204,7 +204,7 @@ TEST_F(TaskQueueSelectorTest, TestControlStarvesOthers) {
   selector_.SetQueuePriority(task_queues_[1].get(),
                              TaskQueue::BEST_EFFORT_PRIORITY);
   for (int i = 0; i < 100; i++) {
-    internal::TaskQueueImpl* chosen_queue = nullptr;
+    TaskQueueImpl* chosen_queue = nullptr;
     EXPECT_TRUE(selector_.SelectQueueToService(&chosen_queue));
     EXPECT_EQ(task_queues_[3].get(), chosen_queue);
     // Don't remove task from queue to simulate all queues still being full.
@@ -212,7 +212,7 @@ TEST_F(TaskQueueSelectorTest, TestControlStarvesOthers) {
 }
 
 TEST_F(TaskQueueSelectorTest, TestHighPriorityDoesNotStarveNormal) {
-  std::vector<base::PendingTask> tasks = GetTasks(3);
+  std::vector<TaskQueueImpl::Task> tasks = GetTasks(3);
   size_t queue_order[] = {0, 1, 2};
   PushTasks(tasks, queue_order);
   selector_.SetQueuePriority(task_queues_[2].get(), TaskQueue::HIGH_PRIORITY);
@@ -220,7 +220,7 @@ TEST_F(TaskQueueSelectorTest, TestHighPriorityDoesNotStarveNormal) {
                              TaskQueue::BEST_EFFORT_PRIORITY);
   size_t counts[] = {0, 0, 0};
   for (int i = 0; i < 100; i++) {
-    internal::TaskQueueImpl* chosen_queue = nullptr;
+    TaskQueueImpl* chosen_queue = nullptr;
     EXPECT_TRUE(selector_.SelectQueueToService(&chosen_queue));
     size_t chosen_queue_index = queue_to_index_map_.find(chosen_queue)->second;
     counts[chosen_queue_index]++;
@@ -232,13 +232,13 @@ TEST_F(TaskQueueSelectorTest, TestHighPriorityDoesNotStarveNormal) {
 }
 
 TEST_F(TaskQueueSelectorTest, TestBestEffortGetsStarved) {
-  std::vector<base::PendingTask> tasks = GetTasks(2);
+  std::vector<TaskQueueImpl::Task> tasks = GetTasks(2);
   size_t queue_order[] = {0, 1};
   PushTasks(tasks, queue_order);
   selector_.SetQueuePriority(task_queues_[0].get(),
                              TaskQueue::BEST_EFFORT_PRIORITY);
   selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::NORMAL_PRIORITY);
-  internal::TaskQueueImpl* chosen_queue = nullptr;
+  TaskQueueImpl* chosen_queue = nullptr;
   for (int i = 0; i < 100; i++) {
     EXPECT_TRUE(selector_.SelectQueueToService(&chosen_queue));
     EXPECT_EQ(task_queues_[1].get(), chosen_queue);

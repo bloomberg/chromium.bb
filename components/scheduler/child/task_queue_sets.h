@@ -39,10 +39,10 @@ class SCHEDULER_EXPORT TaskQueueSets {
                            internal::TaskQueueImpl** out_queue) const;
 
  private:
-  struct AgeComparitor {
-    // The age numbers are generated in sequence.  These will eventually
-    // overflow and roll-over to negative numbers.  We must take care to
-    // preserve the ordering of the map when this happens.
+  struct EnqueueOrderComparitor {
+    // The enqueueorder numbers are generated in sequence.  These will
+    // eventually overflow and roll-over to negative numbers.  We must take care
+    // to preserve the ordering of the map when this happens.
     // NOTE we assume that tasks don't get starved for extended periods so that
     // the task queue ages in a set have at most one roll-over.
     // NOTE signed integer overflow behavior is undefined in C++ so we can't
@@ -59,8 +59,9 @@ class SCHEDULER_EXPORT TaskQueueSets {
     }
   };
 
-  typedef std::map<int, internal::TaskQueueImpl*, AgeComparitor> AgeToQueueMap;
-  std::vector<AgeToQueueMap> age_to_queue_maps_;
+  typedef std::map<int, internal::TaskQueueImpl*, EnqueueOrderComparitor>
+      EnqueueOrderToQueueMap;
+  std::vector<EnqueueOrderToQueueMap> enqueue_order_to_queue_maps_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueSets);
 };
