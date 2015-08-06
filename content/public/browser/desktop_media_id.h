@@ -44,7 +44,8 @@ struct CONTENT_EXPORT DesktopMediaID {
 
   static DesktopMediaID Parse(const std::string& str);
 
-  DesktopMediaID() = default;
+  // TODO(hans): Maybe move inline again after crbug.com/488634.
+  DesktopMediaID();
 
   DesktopMediaID(Type type, Id id)
       : type(type),
