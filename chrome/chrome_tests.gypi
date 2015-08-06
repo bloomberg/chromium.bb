@@ -403,6 +403,8 @@
       'browser/ssl/captive_portal_blocking_page_browsertest.cc',
       'browser/ssl/certificate_reporting_test_utils.cc',
       'browser/ssl/certificate_reporting_test_utils.h',
+      'browser/ssl/cert_verifier_browser_test.cc',
+      'browser/ssl/cert_verifier_browser_test.h',
       'browser/ssl/chrome_ssl_host_state_delegate_test.cc',
       'browser/ssl/ssl_browser_tests.cc',
       'browser/ssl/ssl_client_certificate_selector_test.cc',

@@ -64,6 +64,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
 #include "net/base/keygen_handler.h"
+#include "net/cert/cert_verifier.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
@@ -155,6 +156,8 @@ using content::BrowserThread;
 using content::ResourceContext;
 
 namespace {
+
+net::CertVerifier* g_cert_verifier_for_testing = nullptr;
 
 #if defined(DEBUG_DEVTOOLS)
 bool IsSupportedDevToolsURL(const GURL& url, base::FilePath* path) {
@@ -748,6 +751,12 @@ void ProfileIOData::InstallProtocolHandlers(
   protocol_handlers->clear();
 }
 
+// static
+void ProfileIOData::SetCertVerifierForTesting(
+    net::CertVerifier* cert_verifier) {
+  g_cert_verifier_for_testing = cert_verifier;
+}
+
 content::ResourceContext* ProfileIOData::GetResourceContext() const {
   return resource_context_.get();
 }
@@ -1099,24 +1108,31 @@ void ProfileIOData::Init(
   use_system_key_slot_ = profile_params_->use_system_key_slot;
   if (use_system_key_slot_)
     EnableNSSSystemKeySlotForResourceContext(resource_context_.get());
-
-  crypto::ScopedPK11Slot public_slot =
-      crypto::GetPublicSlotForChromeOSUser(username_hash_);
-  // The private slot won't be ready by this point. It shouldn't be necessary
-  // for cert trust purposes anyway.
-  scoped_refptr<net::CertVerifyProc> verify_proc(
-      new chromeos::CertVerifyProcChromeOS(public_slot.Pass()));
-  if (policy_cert_verifier_) {
-    DCHECK_EQ(policy_cert_verifier_, cert_verifier_.get());
-    policy_cert_verifier_->InitializeOnIOThread(verify_proc);
-  } else {
-    cert_verifier_.reset(new net::MultiThreadedCertVerifier(verify_proc.get()));
-  }
-  main_request_context_->set_cert_verifier(cert_verifier_.get());
-#else
-  main_request_context_->set_cert_verifier(
-      io_thread_globals->cert_verifier.get());
 #endif
+
+  if (g_cert_verifier_for_testing) {
+    main_request_context_->set_cert_verifier(g_cert_verifier_for_testing);
+  } else {
+#if defined(OS_CHROMEOS)
+    crypto::ScopedPK11Slot public_slot =
+        crypto::GetPublicSlotForChromeOSUser(username_hash_);
+    // The private slot won't be ready by this point. It shouldn't be necessary
+    // for cert trust purposes anyway.
+    scoped_refptr<net::CertVerifyProc> verify_proc(
+        new chromeos::CertVerifyProcChromeOS(public_slot.Pass()));
+    if (policy_cert_verifier_) {
+      DCHECK_EQ(policy_cert_verifier_, cert_verifier_.get());
+      policy_cert_verifier_->InitializeOnIOThread(verify_proc);
+    } else {
+      cert_verifier_.reset(
+          new net::MultiThreadedCertVerifier(verify_proc.get()));
+    }
+    main_request_context_->set_cert_verifier(cert_verifier_.get());
+#else
+    main_request_context_->set_cert_verifier(
+        io_thread_globals->cert_verifier.get());
+#endif
+  }
 
   // Install the New Tab Page Interceptor.
   if (profile_params_->new_tab_page_interceptor.get()) {

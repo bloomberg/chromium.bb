@@ -109,6 +109,9 @@ class ProfileIOData {
       net::URLRequestJobFactoryImpl* job_factory,
       content::ProtocolHandlerMap* protocol_handlers);
 
+  // Sets a global CertVerifier to use when initializing all profiles.
+  static void SetCertVerifierForTesting(net::CertVerifier* cert_verifier);
+
   // Called by Profile.
   content::ResourceContext* GetResourceContext() const;
 
@@ -550,8 +553,8 @@ class ProfileIOData {
 #if defined(OS_CHROMEOS)
   // Set to |cert_verifier_| if it references a PolicyCertVerifier. In that
   // case, the verifier is owned by  |cert_verifier_|. Otherwise, set to NULL.
-  mutable policy::PolicyCertVerifier* policy_cert_verifier_;
   mutable scoped_ptr<net::CertVerifier> cert_verifier_;
+  mutable policy::PolicyCertVerifier* policy_cert_verifier_;
   mutable std::string username_hash_;
   mutable bool use_system_key_slot_;
 #endif

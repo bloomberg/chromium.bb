@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/cert_logger.pb.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
+#include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ssl/certificate_error_report.h"
 #include "chrome/browser/ssl/certificate_reporting_test_utils.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
@@ -61,6 +62,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/cert/mock_cert_verifier.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -2278,6 +2280,26 @@ class SSLBlockingPageIDNTest : public SecurityInterstitialIDNTest {
 
 IN_PROC_BROWSER_TEST_F(SSLBlockingPageIDNTest, SSLBlockingPageDecodesIDN) {
   EXPECT_TRUE(VerifyIDNDecoded());
+}
+
+IN_PROC_BROWSER_TEST_F(CertVerifierBrowserTest, MockCertVerifierSmokeTest) {
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::SSLOptions(
+          net::SpawnedTestServer::SSLOptions::CERT_OK),
+      base::FilePath(kDocRoot));
+  ASSERT_TRUE(https_server.Start());
+
+  mock_cert_verifier()->set_default_result(
+      net::ERR_CERT_NAME_CONSTRAINT_VIOLATION);
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server.GetURL("files/ssl/google.html"));
+
+  CheckSecurityState(browser()->tab_strip_model()->GetActiveWebContents(),
+                     net::CERT_STATUS_NAME_CONSTRAINT_VIOLATION,
+                     content::SECURITY_STYLE_AUTHENTICATION_BROKEN,
+                     AuthState::SHOWING_INTERSTITIAL);
 }
 
 // TODO(jcampan): more tests to do below.
