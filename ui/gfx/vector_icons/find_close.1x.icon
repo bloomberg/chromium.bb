@@ -1,0 +1,9 @@
+// A variant of ic_close with rounded corners and optimized for 1x scale factor
+// devices.
+CANVAS_DIMENSIONS, 16,
+STROKE, 1.85f,
+MOVE_TO, 4, 4,
+R_LINE_TO, 8, 8,
+MOVE_TO, 4, 12,
+R_LINE_TO, 8, -8,
+END

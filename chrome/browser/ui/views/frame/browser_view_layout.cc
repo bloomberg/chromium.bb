@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/scrollbar_size.h"
@@ -224,6 +225,8 @@ gfx::Rect BrowserViewLayout::GetFindBarBoundingBox() const {
     // miniature immersive style tab strip is visible. Do not overlap the
     // find bar and the tab strip.
     find_bar_y = top_container_bounds.bottom();
+  } else if (ui::MaterialDesignController::IsModeMaterial()) {
+    find_bar_y = top_container_bounds.bottom() - 6;
   } else {
     // Position the find bar 1 pixel above the bottom of the top container
     // so that it occludes the border between the content area and the top

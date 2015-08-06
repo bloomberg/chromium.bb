@@ -1,0 +1,8 @@
+// A variant of ic_expand_less with rounded corners and optimized for 1x
+// scale factor devices.
+CANVAS_DIMENSIONS, 16,
+STROKE, 1.765f,
+MOVE_TO, 4, 10,
+R_LINE_TO, 4, -4,
+R_LINE_TO, 4, 4,
+END,

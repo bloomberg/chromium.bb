@@ -25,15 +25,25 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public2.h"
+#include "ui/native_theme/common_theme.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/separator.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/painter.h"
+#include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -69,6 +79,21 @@ const SkColor kBackgroundColorNoMatch = SkColorSetRGB(255, 102, 102);
 // number brings the width on a "regular fonts" system to about 300px.
 const int kDefaultCharWidth = 43;
 
+// The match count label is like a normal label, but can process events (which
+// makes it easier to forward events to the text input --- see
+// FindBarView::TargetForRect).
+class MatchCountLabel : public views::Label {
+ public:
+  MatchCountLabel() {}
+  ~MatchCountLabel() override {}
+
+  // views::Label overrides:
+  bool CanProcessEventsWithinSubtree() const override { return true; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MatchCountLabel);
+};
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -82,36 +107,17 @@ FindBarView::FindBarView(FindBarHost* host)
       find_previous_button_(NULL),
       find_next_button_(NULL),
       close_button_(NULL) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-
   find_text_ = new views::Textfield;
   find_text_->set_id(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
   find_text_->set_default_width_in_chars(kDefaultCharWidth);
   find_text_->set_controller(this);
   find_text_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FIND));
   find_text_->SetTextInputFlags(ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
-  // The find bar textfield has a background image instead of a border.
-  find_text_->SetBorder(views::Border::NullBorder());
   AddChildView(find_text_);
-
-  match_count_text_ = new views::Label();
-  AddChildView(match_count_text_);
-
-  // Create a focus forwarder view which sends focus to find_text_.
-  focus_forwarder_view_ = new FocusForwarderView(find_text_);
-  AddChildView(focus_forwarder_view_);
 
   find_previous_button_ = new views::ImageButton(this);
   find_previous_button_->set_tag(FIND_PREVIOUS_TAG);
   find_previous_button_->SetFocusable(true);
-  find_previous_button_->SetImage(views::CustomButton::STATE_NORMAL,
-      rb.GetImageSkiaNamed(IDR_FINDINPAGE_PREV));
-  find_previous_button_->SetImage(views::CustomButton::STATE_HOVERED,
-      rb.GetImageSkiaNamed(IDR_FINDINPAGE_PREV_H));
-  find_previous_button_->SetImage(views::CustomButton::STATE_PRESSED,
-      rb.GetImageSkiaNamed(IDR_FINDINPAGE_PREV_P));
-  find_previous_button_->SetImage(views::CustomButton::STATE_DISABLED,
-      rb.GetImageSkiaNamed(IDR_FINDINPAGE_PREV_D));
   find_previous_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_PREVIOUS_TOOLTIP));
   find_previous_button_->SetAccessibleName(
@@ -121,14 +127,6 @@ FindBarView::FindBarView(FindBarHost* host)
   find_next_button_ = new views::ImageButton(this);
   find_next_button_->set_tag(FIND_NEXT_TAG);
   find_next_button_->SetFocusable(true);
-  find_next_button_->SetImage(views::CustomButton::STATE_NORMAL,
-      rb.GetImageSkiaNamed(IDR_FINDINPAGE_NEXT));
-  find_next_button_->SetImage(views::CustomButton::STATE_HOVERED,
-      rb.GetImageSkiaNamed(IDR_FINDINPAGE_NEXT_H));
-  find_next_button_->SetImage(views::CustomButton::STATE_PRESSED,
-      rb.GetImageSkiaNamed(IDR_FINDINPAGE_NEXT_P));
-  find_next_button_->SetImage(views::CustomButton::STATE_DISABLED,
-      rb.GetImageSkiaNamed(IDR_FINDINPAGE_NEXT_D));
   find_next_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_NEXT_TOOLTIP));
   find_next_button_->SetAccessibleName(
@@ -138,12 +136,6 @@ FindBarView::FindBarView(FindBarHost* host)
   close_button_ = new views::ImageButton(this);
   close_button_->set_tag(CLOSE_TAG);
   close_button_->SetFocusable(true);
-  close_button_->SetImage(views::CustomButton::STATE_NORMAL,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_1));
-  close_button_->SetImage(views::CustomButton::STATE_HOVERED,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_1_H));
-  close_button_->SetImage(views::CustomButton::STATE_PRESSED,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_1_P));
   close_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP));
   close_button_->SetAccessibleName(
@@ -151,18 +143,12 @@ FindBarView::FindBarView(FindBarHost* host)
   close_button_->SetAnimationDuration(0);
   AddChildView(close_button_);
 
-  SetBackground(rb.GetImageSkiaNamed(IDR_FIND_DLG_LEFT_BACKGROUND),
-                rb.GetImageSkiaNamed(IDR_FIND_DLG_RIGHT_BACKGROUND));
-
-  SetBorderFromIds(
-      IDR_FIND_DIALOG_LEFT, IDR_FIND_DIALOG_MIDDLE, IDR_FIND_DIALOG_RIGHT);
-
-  preferred_height_ = rb.GetImageSkiaNamed(IDR_FIND_DIALOG_MIDDLE)->height();
-
-  static const int kImages[] = IMAGE_GRID(IDR_TEXTFIELD);
-  find_text_border_.reset(views::Painter::CreateImageGridPainter(kImages));
-
   EnableCanvasFlippingForRTLUI(true);
+
+  if (ui::MaterialDesignController::IsModeMaterial())
+    InitViewsForMaterial();
+  else
+    InitViewsForNonMaterial();
 }
 
 FindBarView::~FindBarView() {
@@ -243,6 +229,9 @@ void FindBarView::SetFocusAndSelection(bool select_all) {
 // FindBarView, views::View overrides:
 
 void FindBarView::OnPaint(gfx::Canvas* canvas) {
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return views::View::OnPaint(canvas);
+
   // Paint drop down bar border and background.
   DropdownBarView::OnPaint(canvas);
 
@@ -278,7 +267,23 @@ void FindBarView::OnPaint(gfx::Canvas* canvas) {
                    match_count_text_->background_color());
 }
 
+void FindBarView::OnPaintBackground(gfx::Canvas* canvas) {
+  if (!ui::MaterialDesignController::IsModeMaterial())
+    return views::View::OnPaintBackground(canvas);
+
+  // Draw within the lines.
+  canvas->Save();
+  gfx::Rect bounds = GetLocalBounds();
+  bounds.Inset(border()->GetInsets());
+  canvas->ClipRect(bounds);
+  views::View::OnPaintBackground(canvas);
+  canvas->Restore();
+}
+
 void FindBarView::Layout() {
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return views::View::Layout();
+
   int panel_width = GetPreferredSize().width();
 
   // Stay within view bounds.
@@ -347,6 +352,14 @@ void FindBarView::Layout() {
 }
 
 gfx::Size FindBarView::GetPreferredSize() const {
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    // The entire bar is sized to a specific number of characters set on
+    // |find_text_|.
+    gfx::Size size = views::View::GetPreferredSize();
+    size.set_width(find_text_->GetPreferredSize().width());
+    return size;
+  }
+
   gfx::Size prefsize = find_text_->GetPreferredSize();
   prefsize.set_height(preferred_height_);
 
@@ -440,6 +453,121 @@ void FindBarView::OnAfterPaste() {
   last_searched_text_.clear();
 }
 
+views::View* FindBarView::TargetForRect(View* root, const gfx::Rect& rect) {
+  DCHECK_EQ(match_count_text_, root);
+  return find_text_;
+}
+
+void FindBarView::InitViewsForNonMaterial() {
+  match_count_text_ = new views::Label();
+  AddChildView(match_count_text_);
+
+  // Create a focus forwarder view which sends focus to find_text_.
+  focus_forwarder_view_ = new FocusForwarderView(find_text_);
+  AddChildView(focus_forwarder_view_);
+
+  // The find bar textfield has a background image instead of a border.
+  find_text_->SetBorder(views::Border::NullBorder());
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  find_previous_button_->SetImage(views::CustomButton::STATE_NORMAL,
+                                  rb.GetImageSkiaNamed(IDR_FINDINPAGE_PREV));
+  find_previous_button_->SetImage(views::CustomButton::STATE_HOVERED,
+                                  rb.GetImageSkiaNamed(IDR_FINDINPAGE_PREV_H));
+  find_previous_button_->SetImage(views::CustomButton::STATE_PRESSED,
+                                  rb.GetImageSkiaNamed(IDR_FINDINPAGE_PREV_P));
+  find_previous_button_->SetImage(views::CustomButton::STATE_DISABLED,
+                                  rb.GetImageSkiaNamed(IDR_FINDINPAGE_PREV_D));
+
+  find_next_button_->SetImage(views::CustomButton::STATE_NORMAL,
+                              rb.GetImageSkiaNamed(IDR_FINDINPAGE_NEXT));
+  find_next_button_->SetImage(views::CustomButton::STATE_HOVERED,
+                              rb.GetImageSkiaNamed(IDR_FINDINPAGE_NEXT_H));
+  find_next_button_->SetImage(views::CustomButton::STATE_PRESSED,
+                              rb.GetImageSkiaNamed(IDR_FINDINPAGE_NEXT_P));
+  find_next_button_->SetImage(views::CustomButton::STATE_DISABLED,
+                              rb.GetImageSkiaNamed(IDR_FINDINPAGE_NEXT_D));
+
+  close_button_->SetImage(views::CustomButton::STATE_NORMAL,
+                          rb.GetImageSkiaNamed(IDR_CLOSE_1));
+  close_button_->SetImage(views::CustomButton::STATE_HOVERED,
+                          rb.GetImageSkiaNamed(IDR_CLOSE_1_H));
+  close_button_->SetImage(views::CustomButton::STATE_PRESSED,
+                          rb.GetImageSkiaNamed(IDR_CLOSE_1_P));
+
+  SetBackground(rb.GetImageSkiaNamed(IDR_FIND_DLG_LEFT_BACKGROUND),
+                rb.GetImageSkiaNamed(IDR_FIND_DLG_RIGHT_BACKGROUND));
+  SetBorderFromIds(IDR_FIND_DIALOG_LEFT, IDR_FIND_DIALOG_MIDDLE,
+                   IDR_FIND_DIALOG_RIGHT);
+
+  preferred_height_ = rb.GetImageSkiaNamed(IDR_FIND_DIALOG_MIDDLE)->height();
+
+  static const int kImages[] = IMAGE_GRID(IDR_TEXTFIELD);
+  find_text_border_.reset(views::Painter::CreateImageGridPainter(kImages));
+}
+
+void FindBarView::InitViewsForMaterial() {
+  // The background color is not used since there's no arrow.
+  // TODO(estade): this shadow is not quite the same as in the mocks.
+  SetBorder(make_scoped_ptr(new views::BubbleBorder(
+      views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
+      SK_ColorGREEN)));
+
+  match_count_text_ = new MatchCountLabel();
+  match_count_text_->SetEventTargeter(
+      make_scoped_ptr(new views::ViewTargeter(this)));
+  AddChildViewAt(match_count_text_, 1);
+
+  views::Separator* separator =
+      new views::Separator(views::Separator::VERTICAL);
+  // TODO(estade): refine these constants.
+  separator->SetColor(SkColorSetRGB(0xD5, 0xD5, 0xD5));
+  separator->SetBorder(views::Border::CreateEmptyBorder(4, 10, 4, 10));
+  AddChildViewAt(separator, 2);
+
+  find_text_->SetBorder(views::Border::NullBorder());
+  // Reserve horizontal space. Note that |find_text_| will only be allotted
+  // what space remains after other elements have been laid out, but this
+  // setting is still used when calculating the overall find bar's width.
+  find_text_->set_default_width_in_chars(30);
+
+  struct {
+    views::ImageButton* button;
+    gfx::VectorIconId id;
+  } button_images[] = {
+      {find_previous_button_, gfx::VectorIconId::FIND_PREV},
+      {find_next_button_, gfx::VectorIconId::FIND_NEXT},
+      {close_button_, gfx::VectorIconId::FIND_CLOSE},
+  };
+
+  SkColor grey;
+  ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_ChromeIconGrey,
+                                &grey);
+  SkColor blue;
+  ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_GoogleBlue, &blue);
+  for (size_t i = 0; i < arraysize(button_images); ++i) {
+    views::ImageButton* button = button_images[i].button;
+    button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                              views::ImageButton::ALIGN_MIDDLE);
+
+    gfx::ImageSkia image = gfx::CreateVectorIcon(button_images[i].id, 16, grey);
+    button->SetImage(views::CustomButton::STATE_NORMAL, &image);
+    image = gfx::CreateVectorIcon(button_images[i].id, 16, blue);
+    button->SetImage(views::CustomButton::STATE_PRESSED, &image);
+    // TODO(estade): I don't think the buttons are ever disabled, so this image
+    // is never visible. Consider removing this image or setting the buttons to
+    // disabled at sensible times.
+    image = gfx::CreateVectorIcon(button_images[i].id, 16,
+                                  SkColorSetA(grey, 0xff / 2));
+    button->SetImage(views::CustomButton::STATE_DISABLED, &image);
+  }
+
+  views::BoxLayout* manager =
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+  SetLayoutManager(manager);
+  manager->SetFlexForView(find_text_, 1);
+}
+
 void FindBarView::Find(const base::string16& search_text) {
   FindBarController* controller = find_bar_host()->GetFindBarController();
   DCHECK(controller);
@@ -502,6 +630,9 @@ const char* FindBarView::GetClassName() const {
 }
 
 void FindBarView::OnThemeChanged() {
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return;
+
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (GetThemeProvider()) {
     close_button_->SetBackground(
@@ -509,4 +640,14 @@ void FindBarView::OnThemeChanged() {
         rb.GetImageSkiaNamed(IDR_CLOSE_1),
         rb.GetImageSkiaNamed(IDR_CLOSE_1_MASK));
   }
+}
+
+void FindBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  if (!ui::MaterialDesignController::IsModeMaterial())
+    return;
+
+  SkColor color =
+      theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
+  set_background(views::Background::CreateSolidBackground(color));
+  match_count_text_->SetBackgroundColor(color);
 }

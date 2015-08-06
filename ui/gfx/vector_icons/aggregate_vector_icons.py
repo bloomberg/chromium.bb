@@ -29,9 +29,13 @@ def AggregateVectorIcons(working_directory, output_cc, output_h):
   for line in header_template_contents:
     if not "TEMPLATE_PLACEHOLDER" in line:
       output_header.write(line)
-    else:
-      for icon_path in icon_list:
-        (icon_name, extension) = os.path.splitext(os.path.basename(icon_path))
+      continue
+
+    for icon_path in icon_list:
+      # The icon name should be of the format "foo.icon" or "foo.1x.icon".
+      (icon_name, extension) = os.path.splitext(os.path.basename(icon_path))
+      (icon_name, scale_factor) = os.path.splitext(icon_name)
+      if not scale_factor:
         output_header.write("  {},\n".format(icon_name.upper()))
   output_header.close()
 
@@ -43,14 +47,21 @@ def AggregateVectorIcons(working_directory, output_cc, output_h):
   for line in cc_template_contents:
     if not "TEMPLATE_PLACEHOLDER" in line:
       output_cc.write(line)
-    else:
-      for icon_path in icon_list:
-        (icon_name, extension) = os.path.splitext(os.path.basename(icon_path))
-        icon_file = open(icon_path)
-        vector_commands = "".join(icon_file.readlines())
-        icon_file.close()
-        output_cc.write("ICON_TEMPLATE({}, {})\n".format(icon_name.upper(),
-                                                         vector_commands))
+      continue;
+
+    for icon_path in icon_list:
+      (icon_name, extension) = os.path.splitext(os.path.basename(icon_path))
+      (icon_name, scale_factor) = os.path.splitext(icon_name)
+      assert not scale_factor or scale_factor == ".1x"
+      if (("1X" in line and scale_factor != ".1x") or
+          (not "1X" in line and scale_factor == ".1x")):
+        continue
+
+      icon_file = open(icon_path)
+      vector_commands = "".join(icon_file.readlines())
+      icon_file.close()
+      output_cc.write("ICON_TEMPLATE({}, {})\n".format(icon_name.upper(),
+                                                       vector_commands))
   output_cc.close()
 
 

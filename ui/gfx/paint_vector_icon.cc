@@ -27,6 +27,7 @@ CommandType CommandFromString(const std::string& source) {
 
   RETURN_IF_IS(NEW_PATH);
   RETURN_IF_IS(PATH_COLOR_ARGB);
+  RETURN_IF_IS(STROKE);
   RETURN_IF_IS(MOVE_TO);
   RETURN_IF_IS(R_MOVE_TO);
   RETURN_IF_IS(LINE_TO);
@@ -40,6 +41,7 @@ CommandType CommandFromString(const std::string& source) {
   RETURN_IF_IS(CIRCLE);
   RETURN_IF_IS(CLOSE);
   RETURN_IF_IS(CANVAS_DIMENSIONS);
+  RETURN_IF_IS(CLIP);
   RETURN_IF_IS(END);
 #undef RETURN_IF_IS
 
@@ -77,8 +79,11 @@ void PaintPath(Canvas* canvas,
   paints.push_back(SkPaint());
   paints.back().setColor(color);
 
+  SkRect clip_rect = SkRect::MakeEmpty();
+
   for (size_t i = 0; path_elements[i].type != END; i++) {
     SkPath& path = paths.back();
+    SkPaint& paint = paints.back();
     switch (path_elements[i].type) {
       case NEW_PATH: {
         paths.push_back(SkPath());
@@ -92,7 +97,14 @@ void PaintPath(Canvas* canvas,
         int r = SkScalarFloorToInt(path_elements[++i].arg);
         int g = SkScalarFloorToInt(path_elements[++i].arg);
         int b = SkScalarFloorToInt(path_elements[++i].arg);
-        paints.back().setColor(SkColorSetARGB(a, r, g, b));
+        paint.setColor(SkColorSetARGB(a, r, g, b));
+        break;
+      }
+
+      case STROKE: {
+        paint.setStyle(SkPaint::kStroke_Style);
+        SkScalar width = path_elements[++i].arg;
+        paint.setStrokeWidth(width);
         break;
       }
 
@@ -193,6 +205,15 @@ void PaintPath(Canvas* canvas,
         break;
       }
 
+      case CLIP: {
+        SkScalar x = path_elements[++i].arg;
+        SkScalar y = path_elements[++i].arg;
+        SkScalar w = path_elements[++i].arg;
+        SkScalar h = path_elements[++i].arg;
+        clip_rect = SkRect::MakeXYWH(x, y, w, h);
+        break;
+      }
+
       case END:
         NOTREACHED();
         break;
@@ -204,10 +225,13 @@ void PaintPath(Canvas* canvas,
     canvas->sk_canvas()->scale(scale, scale);
   }
 
+  if (!clip_rect.isEmpty())
+    canvas->sk_canvas()->clipRect(clip_rect);
+
   DCHECK_EQ(paints.size(), paths.size());
   for (size_t i = 0; i < paths.size(); ++i) {
-    paints[i].setStyle(SkPaint::kFill_Style);
     paints[i].setAntiAlias(true);
+    paints[i].setStrokeCap(SkPaint::kRound_Cap);
     paths[i].setFillType(SkPath::kEvenOdd_FillType);
     canvas->DrawPath(paths[i], paints[i]);
   }
@@ -304,7 +328,10 @@ void PaintVectorIcon(Canvas* canvas,
                      size_t dip_size,
                      SkColor color) {
   DCHECK(VectorIconId::VECTOR_ICON_NONE != id);
-  PaintPath(canvas, GetPathForVectorIcon(id), dip_size, color);
+  const PathElement* path = canvas->image_scale() == 1.f
+                                ? GetPathForVectorIconAt1xScale(id)
+                                : GetPathForVectorIcon(id);
+  PaintPath(canvas, path, dip_size, color);
 }
 
 ImageSkia CreateVectorIcon(VectorIconId id, size_t dip_size, SkColor color) {

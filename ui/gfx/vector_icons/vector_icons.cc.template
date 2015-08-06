@@ -31,4 +31,13 @@ TEMPLATE_PLACEHOLDER
   return nullptr;
 }
 
+const PathElement* GetPathForVectorIconAt1xScale(VectorIconId id) {
+  switch (id) {
+TEMPLATE_PLACEHOLDER_1X
+
+    default:
+      return GetPathForVectorIcon(id);
+  }
+}
+
 }  // namespace gfx
