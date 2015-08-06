@@ -239,6 +239,7 @@ BASE_EXPORT extern NSString* const NSWindowDidExitFullScreenNotification;
 BASE_EXPORT extern NSString* const
     NSWindowDidChangeBackingPropertiesNotification;
 BASE_EXPORT extern NSString* const CBAdvertisementDataServiceDataKey;
+BASE_EXPORT extern NSString* const CBAdvertisementDataServiceUUIDsKey;
 BASE_EXPORT extern NSString* const
     NSPreferredScrollerStyleDidChangeNotification;
 #endif  // MAC_OS_X_VERSION_10_7
@@ -246,6 +247,7 @@ BASE_EXPORT extern NSString* const
 #if !defined(MAC_OS_X_VERSION_10_9) || \
     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_9
 BASE_EXPORT extern NSString* const NSWindowDidChangeOcclusionStateNotification;
+BASE_EXPORT extern NSString* const CBAdvertisementDataOverflowServiceUUIDsKey;
 BASE_EXPORT extern NSString* const CBAdvertisementDataIsConnectable;
 #endif  // MAC_OS_X_VERSION_10_9
 

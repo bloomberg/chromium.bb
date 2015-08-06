@@ -11,6 +11,8 @@
 #import <IOBluetooth/IOBluetooth.h>
 #endif  // defined(OS_IOS)
 
+#include <set>
+
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "crypto/sha2.h"
@@ -119,7 +121,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   base::scoped_nsobject<NSDate> last_update_time_;
 
   // The services (identified by UUIDs) that this device provides.
-  UUIDList advertised_uuids_;
+  std::set<BluetoothUUID> advertised_uuids_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyDeviceMac);
 };

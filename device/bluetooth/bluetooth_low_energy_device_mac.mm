@@ -53,18 +53,23 @@ void BluetoothLowEnergyDeviceMac::Update(CBPeripheral* peripheral,
   connectable_ = [connectable boolValue];
   ClearServiceData();
   NSDictionary* service_data =
-      [advertisement_data objectForKey:@"CBAdvertisementDataServiceDataKey"];
+      [advertisement_data objectForKey:CBAdvertisementDataServiceDataKey];
   for (CBUUID* uuid in service_data) {
     NSData* data = [service_data objectForKey:uuid];
     BluetoothUUID service_uuid = BluetoothUUIDWithCBUUID(uuid);
     SetServiceData(service_uuid, static_cast<const char*>([data bytes]),
                    [data length]);
   }
-  advertised_uuids_.clear();
   NSArray* service_uuids =
-      [advertisement_data objectForKey:@"CBAdvertisementDataServiceUUIDsKey"];
+      [advertisement_data objectForKey:CBAdvertisementDataServiceUUIDsKey];
   for (CBUUID* uuid in service_uuids) {
-    advertised_uuids_.push_back(
+    advertised_uuids_.insert(
+        BluetoothUUID(std::string([[uuid UUIDString] UTF8String])));
+  }
+  NSArray* overflow_service_uuids = [advertisement_data
+      objectForKey:CBAdvertisementDataOverflowServiceUUIDsKey];
+  for (CBUUID* uuid in overflow_service_uuids) {
+    advertised_uuids_.insert(
         BluetoothUUID(std::string([[uuid UUIDString] UTF8String])));
   }
 }
@@ -119,7 +124,8 @@ bool BluetoothLowEnergyDeviceMac::IsConnecting() const {
 }
 
 BluetoothDevice::UUIDList BluetoothLowEnergyDeviceMac::GetUUIDs() const {
-  return advertised_uuids_;
+  return BluetoothDevice::UUIDList(advertised_uuids_.begin(),
+                                   advertised_uuids_.end());
 }
 
 int16 BluetoothLowEnergyDeviceMac::GetInquiryRSSI() const {

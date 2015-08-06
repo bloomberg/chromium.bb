@@ -23,6 +23,8 @@ NSString* const NSWindowDidChangeBackingPropertiesNotification =
 
 NSString* const CBAdvertisementDataServiceDataKey = @"kCBAdvDataServiceData";
 
+NSString* const CBAdvertisementDataServiceUUIDsKey = @"kCBAdvDataServiceUUIDs";
+
 NSString* const NSPreferredScrollerStyleDidChangeNotification =
     @"NSPreferredScrollerStyleDidChangeNotification";
 #endif  // MAC_OS_X_VERSION_10_7
@@ -31,6 +33,9 @@ NSString* const NSPreferredScrollerStyleDidChangeNotification =
     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_9
 NSString* const NSWindowDidChangeOcclusionStateNotification =
     @"NSWindowDidChangeOcclusionStateNotification";
+
+NSString* const CBAdvertisementDataOverflowServiceUUIDsKey =
+    @"kCBAdvDataOverflowServiceUUIDs";
 
 NSString* const CBAdvertisementDataIsConnectable = @"kCBAdvDataIsConnectable";
 #endif  // MAC_OS_X_VERSION_10_9
