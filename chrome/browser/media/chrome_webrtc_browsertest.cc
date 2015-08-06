@@ -40,8 +40,8 @@ class WebRtcBrowserTest : public WebRtcTestBase {
   }
 };
 
-// Flaky on ChromeOS (?): http://crbug.com/443542.
-#if defined(OS_CHROMEOS)
+// Flaky on ChromeOS (?), Windows: http://crbug.com/443542.
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_RunsAudioVideoWebRTCCallInTwoTabs \
     DISABLED_RunsAudioVideoWebRTCCallInTwoTabs
 #else
