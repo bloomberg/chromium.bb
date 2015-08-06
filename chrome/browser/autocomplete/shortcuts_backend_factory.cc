@@ -11,9 +11,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "chrome/common/chrome_constants.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/omnibox/browser/shortcuts_backend.h"
+#include "components/omnibox/browser/shortcuts_constants.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
@@ -95,7 +95,7 @@ scoped_refptr<ShortcutsBackend> ShortcutsBackendFactory::CreateShortcutsBackend(
                                            ServiceAccessType::EXPLICIT_ACCESS),
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::DB),
-      profile->GetPath().Append(chrome::kShortcutsDatabaseName), suppress_db));
+      profile->GetPath().Append(kShortcutsDatabaseName), suppress_db));
 #if defined(ENABLE_EXTENSIONS)
   ShortcutsExtensionsManager* extensions_manager =
       new ShortcutsExtensionsManager(profile);

@@ -172,7 +172,6 @@ const base::FilePath::CharType kSafeBrowsingBaseFilename[] =
 const base::FilePath::CharType kSecurePreferencesFilename[] =
     FPL("Secure Preferences");
 const base::FilePath::CharType kServiceStateFileName[] = FPL("Service State");
-const base::FilePath::CharType kShortcutsDatabaseName[] = FPL("Shortcuts");
 const base::FilePath::CharType kSingletonCookieFilename[] =
     FPL("SingletonCookie");
 const base::FilePath::CharType kSingletonLockFilename[] = FPL("SingletonLock");

@@ -74,6 +74,8 @@ source_set("browser") {
     "search_suggestion_parser.h",
     "shortcuts_backend.cc",
     "shortcuts_backend.h",
+    "shortcuts_constants.cc",
+    "shortcuts_constants.h",
     "shortcuts_database.cc",
     "shortcuts_database.h",
     "shortcuts_provider.cc",

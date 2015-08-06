@@ -113,6 +113,8 @@
         'omnibox/browser/search_suggestion_parser.h',
         'omnibox/browser/shortcuts_backend.cc',
         'omnibox/browser/shortcuts_backend.h',
+        'omnibox/browser/shortcuts_constants.cc',
+        'omnibox/browser/shortcuts_constants.h',
         'omnibox/browser/shortcuts_database.cc',
         'omnibox/browser/shortcuts_database.h',
         'omnibox/browser/shortcuts_provider.cc',
