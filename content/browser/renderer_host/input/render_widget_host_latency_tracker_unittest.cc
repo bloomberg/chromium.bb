@@ -91,7 +91,7 @@ TEST(RenderWidgetHostLatencyTrackerTest,
     tracker.OnInputEvent(wheel, &wheel_latency);
     tracker.OnInputEventAck(wheel, &wheel_latency);
     EXPECT_TRUE(wheel_latency.FindLatency(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_MOUSE_COMPONENT, 0, nullptr));
+        ui::INPUT_EVENT_LATENCY_TERMINATED_MOUSE_WHEEL_COMPONENT, 0, nullptr));
     EXPECT_TRUE(wheel_latency.terminated());
   }
 
@@ -104,6 +104,28 @@ TEST(RenderWidgetHostLatencyTrackerTest,
     EXPECT_TRUE(touch_latency.FindLatency(
         ui::INPUT_EVENT_LATENCY_TERMINATED_TOUCH_COMPONENT, 0, nullptr));
     EXPECT_TRUE(touch_latency.terminated());
+  }
+
+  {
+    auto mouse_move = SyntheticWebMouseEventBuilder::Build(
+        blink::WebMouseEvent::MouseMove);
+    ui::LatencyInfo mouse_latency;
+    tracker.OnInputEvent(mouse_move, &mouse_latency);
+    tracker.OnInputEventAck(mouse_move, &mouse_latency);
+    EXPECT_TRUE(mouse_latency.FindLatency(
+        ui::INPUT_EVENT_LATENCY_TERMINATED_MOUSE_COMPONENT, 0, nullptr));
+    EXPECT_TRUE(mouse_latency.terminated());
+  }
+
+  {
+    auto key_event = SyntheticWebKeyboardEventBuilder::Build(
+        blink::WebKeyboardEvent::Char);
+    ui::LatencyInfo key_latency;
+    tracker.OnInputEvent(key_event, &key_latency);
+    tracker.OnInputEventAck(key_event, &key_latency);
+    EXPECT_TRUE(key_latency.FindLatency(
+        ui::INPUT_EVENT_LATENCY_TERMINATED_KEYBOARD_COMPONENT, 0, nullptr));
+    EXPECT_TRUE(key_latency.terminated());
   }
 }
 

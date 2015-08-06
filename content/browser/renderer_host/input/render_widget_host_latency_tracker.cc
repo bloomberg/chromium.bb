@@ -387,15 +387,24 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
     latency->AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0);
     if (!rendering_scheduled) {
       latency->AddLatencyNumber(
-          ui::INPUT_EVENT_LATENCY_TERMINATED_MOUSE_COMPONENT, 0, 0);
+          ui::INPUT_EVENT_LATENCY_TERMINATED_MOUSE_WHEEL_COMPONENT, 0, 0);
     }
     ComputeInputLatencyHistograms(WebInputEvent::MouseWheel,
                                   latency_component_id_, *latency);
     return;
   }
 
-  // TODO(jdduke): Determine if mouse and keyboard events are worth hooking
-  // into LatencyInfo.
+  if (WebInputEvent::isMouseEventType(event.type) && !rendering_scheduled) {
+      latency->AddLatencyNumber(
+          ui::INPUT_EVENT_LATENCY_TERMINATED_MOUSE_COMPONENT, 0, 0);
+    return;
+  }
+
+  if (WebInputEvent::isKeyboardEventType(event.type) && !rendering_scheduled) {
+      latency->AddLatencyNumber(
+          ui::INPUT_EVENT_LATENCY_TERMINATED_KEYBOARD_COMPONENT, 0, 0);
+    return;
+  }
 }
 
 void RenderWidgetHostLatencyTracker::OnSwapCompositorFrame(

@@ -18,8 +18,10 @@ class MockInputAckHandler : public InputAckHandler {
   ~MockInputAckHandler() override;
 
   // InputAckHandler
-  void OnKeyboardEventAck(const NativeWebKeyboardEvent& event,
+  void OnKeyboardEventAck(const NativeWebKeyboardEventWithLatencyInfo& event,
                           InputEventAckState ack_result) override;
+  void OnMouseEventAck(const MouseEventWithLatencyInfo& event,
+                       InputEventAckState ack_result) override;
   void OnWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
                        InputEventAckState ack_result) override;
   void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
@@ -76,6 +78,7 @@ class MockInputAckHandler : public InputAckHandler {
   blink::WebMouseWheelEvent acked_wheel_event_;
   TouchEventWithLatencyInfo acked_touch_event_;
   blink::WebGestureEvent acked_gesture_event_;
+  blink::WebMouseEvent acked_mouse_event_;
 
   scoped_ptr<GestureEventWithLatencyInfo> gesture_followup_event_;
   scoped_ptr<TouchEventWithLatencyInfo> touch_followup_event_;

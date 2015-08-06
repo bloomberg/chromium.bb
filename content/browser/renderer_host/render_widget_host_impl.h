@@ -640,8 +640,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void DidStopFlinging() override;
 
   // InputAckHandler
-  void OnKeyboardEventAck(const NativeWebKeyboardEvent& event,
+  void OnKeyboardEventAck(const NativeWebKeyboardEventWithLatencyInfo& event,
                           InputEventAckState ack_result) override;
+  void OnMouseEventAck(const MouseEventWithLatencyInfo& event,
+                       InputEventAckState ack_result) override;
   void OnWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
                        InputEventAckState ack_result) override;
   void OnTouchEventAck(const TouchEventWithLatencyInfo& event,

@@ -28,11 +28,19 @@ MockInputAckHandler::MockInputAckHandler()
 MockInputAckHandler::~MockInputAckHandler() {}
 
 void MockInputAckHandler::OnKeyboardEventAck(
-    const NativeWebKeyboardEvent& event,
+    const NativeWebKeyboardEventWithLatencyInfo& event,
     InputEventAckState ack_result)  {
   VLOG(1) << __FUNCTION__ << " called!";
-  acked_key_event_ = event;
-  RecordAckCalled(event.type, ack_result);
+  acked_key_event_ = event.event;
+  RecordAckCalled(event.event.type, ack_result);
+}
+
+void MockInputAckHandler::OnMouseEventAck(
+    const MouseEventWithLatencyInfo& event,
+    InputEventAckState ack_result) {
+  VLOG(1) << __FUNCTION__ << " called!";
+  acked_mouse_event_ = event.event;
+  RecordAckCalled(event.event.type, ack_result);
 }
 
 void MockInputAckHandler::OnWheelEventAck(

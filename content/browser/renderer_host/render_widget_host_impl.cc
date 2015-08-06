@@ -1052,9 +1052,9 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
   if (touch_emulator_ && touch_emulator_->HandleKeyboardEvent(key_event))
     return;
 
-  ui::LatencyInfo latency;
-  latency_tracker_.OnInputEvent(key_event, &latency);
-  input_router_->SendKeyboardEvent(key_event, latency, is_shortcut);
+  NativeWebKeyboardEventWithLatencyInfo key_event_with_latency(key_event);
+  latency_tracker_.OnInputEvent(key_event, &key_event_with_latency.latency);
+  input_router_->SendKeyboardEvent(key_event_with_latency, is_shortcut);
 }
 
 void RenderWidgetHostImpl::QueueSyntheticGesture(
@@ -1800,10 +1800,12 @@ void RenderWidgetHostImpl::DidStopFlinging() {
 }
 
 void RenderWidgetHostImpl::OnKeyboardEventAck(
-      const NativeWebKeyboardEvent& event,
+      const NativeWebKeyboardEventWithLatencyInfo& event,
       InputEventAckState ack_result) {
+  latency_tracker_.OnInputEventAck(event.event, &event.latency);
+
 #if defined(OS_MACOSX)
-  if (!is_hidden() && view_ && view_->PostProcessEventForPluginIme(event))
+  if (!is_hidden() && view_ && view_->PostProcessEventForPluginIme(event.event))
     return;
 #endif
 
@@ -1811,13 +1813,19 @@ void RenderWidgetHostImpl::OnKeyboardEventAck(
   // because the user has moved away from us and no longer expect any effect
   // of this key event.
   const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
-  if (delegate_ && !processed && !is_hidden() && !event.skip_in_browser) {
-    delegate_->HandleKeyboardEvent(event);
+  if (delegate_ && !processed && !is_hidden() && !event.event.skip_in_browser) {
+    delegate_->HandleKeyboardEvent(event.event);
 
     // WARNING: This RenderWidgetHostImpl can be deallocated at this point
     // (i.e.  in the case of Ctrl+W, where the call to
     // HandleKeyboardEvent destroys this RenderWidgetHostImpl).
   }
+}
+
+void RenderWidgetHostImpl::OnMouseEventAck(
+    const MouseEventWithLatencyInfo& mouse_event,
+    InputEventAckState ack_result) {
+  latency_tracker_.OnInputEventAck(mouse_event.event, &mouse_event.latency);
 }
 
 void RenderWidgetHostImpl::OnWheelEventAck(

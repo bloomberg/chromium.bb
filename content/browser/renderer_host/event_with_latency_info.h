@@ -8,6 +8,7 @@
 #include "ui/events/latency_info.h"
 
 #include "content/common/input/web_input_event_traits.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 
 namespace blink {
 class WebGestureEvent;
@@ -48,6 +49,8 @@ class EventWithLatencyInfo {
   }
 };
 
+typedef EventWithLatencyInfo<NativeWebKeyboardEvent>
+    NativeWebKeyboardEventWithLatencyInfo;
 typedef EventWithLatencyInfo<blink::WebGestureEvent>
     GestureEventWithLatencyInfo;
 typedef EventWithLatencyInfo<blink::WebMouseWheelEvent>

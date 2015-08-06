@@ -84,8 +84,7 @@ class MockInputRouter : public InputRouter {
       const MouseWheelEventWithLatencyInfo& wheel_event) override {
     sent_wheel_event_ = true;
   }
-  void SendKeyboardEvent(const NativeWebKeyboardEvent& key_event,
-                         const ui::LatencyInfo& latency_info,
+  void SendKeyboardEvent(const NativeWebKeyboardEventWithLatencyInfo& key_event,
                          bool is_shortcut) override {
     sent_keyboard_event_ = true;
   }

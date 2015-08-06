@@ -31,8 +31,12 @@ class NullInputAckHandler : public InputAckHandler {
   ~NullInputAckHandler() override {}
 
   // InputAckHandler
-  void OnKeyboardEventAck(const NativeWebKeyboardEvent& event,
+  void OnKeyboardEventAck(const NativeWebKeyboardEventWithLatencyInfo& event,
                           InputEventAckState ack_result) override {
+    ++ack_count_;
+  }
+  void OnMouseEventAck(const MouseEventWithLatencyInfo& event,
+                       InputEventAckState ack_result) override {
     ++ack_count_;
   }
   void OnWheelEventAck(const MouseWheelEventWithLatencyInfo& event,

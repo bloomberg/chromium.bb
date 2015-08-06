@@ -67,6 +67,12 @@ enum LatencyComponentType {
   // Timestamp when the mouse event is acked from renderer and it does not
   // cause any rendering scheduled.
   INPUT_EVENT_LATENCY_TERMINATED_MOUSE_COMPONENT,
+  // Timestamp when the mouse wheel event is acked from renderer and it does not
+  // cause any rendering scheduled.
+  INPUT_EVENT_LATENCY_TERMINATED_MOUSE_WHEEL_COMPONENT,
+  // Timestamp when the keyboard event is acked from renderer and it does not
+  // cause any rendering scheduled.
+  INPUT_EVENT_LATENCY_TERMINATED_KEYBOARD_COMPONENT,
   // Timestamp when the touch event is acked from renderer and it does not
   // cause any rendering schedueld and does not generate any gesture event.
   INPUT_EVENT_LATENCY_TERMINATED_TOUCH_COMPONENT,

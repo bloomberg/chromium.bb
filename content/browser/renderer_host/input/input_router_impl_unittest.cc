@@ -186,10 +186,8 @@ class InputRouterImplTest : public testing::Test {
     WebKeyboardEvent event = SyntheticWebKeyboardEventBuilder::Build(type);
     NativeWebKeyboardEvent native_event;
     memcpy(&native_event, &event, sizeof(event));
-    input_router_->SendKeyboardEvent(
-        native_event,
-        ui::LatencyInfo(),
-        is_shortcut);
+    NativeWebKeyboardEventWithLatencyInfo key_event(native_event);
+    input_router_->SendKeyboardEvent(key_event, is_shortcut);
   }
 
   void SimulateWheelEvent(float dX, float dY, int modifiers, bool precise) {
@@ -1077,8 +1075,7 @@ TEST_F(InputRouterImplTest, MouseTypesIgnoringAck) {
             ? 0
             : 1;
 
-    // Note: Mouse event acks are never forwarded to the ack handler, so the key
-    // result here is that ignored ack types don't affect the in-flight count.
+    // Note: Only MouseMove ack is forwarded to the ack handler.
     SimulateMouseEvent(type, 0, 0);
     EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
     EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
@@ -1086,7 +1083,8 @@ TEST_F(InputRouterImplTest, MouseTypesIgnoringAck) {
     if (expected_in_flight_event_count) {
       SendInputEventACK(type, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
       EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
-      EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+      uint32 expected_ack_count = type == WebInputEvent::MouseMove ? 1 : 0;
+      EXPECT_EQ(expected_ack_count, ack_handler_->GetAndResetAckCount());
       EXPECT_EQ(0, client_->in_flight_event_count());
     }
   }

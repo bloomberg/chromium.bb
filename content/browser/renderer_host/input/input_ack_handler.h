@@ -19,8 +19,11 @@ class CONTENT_EXPORT InputAckHandler {
   virtual ~InputAckHandler() {}
 
   // Called upon event ack receipt from the renderer.
-  virtual void OnKeyboardEventAck(const NativeWebKeyboardEvent& event,
-                                  InputEventAckState ack_result) = 0;
+  virtual void OnKeyboardEventAck(
+      const NativeWebKeyboardEventWithLatencyInfo& event,
+      InputEventAckState ack_result) = 0;
+  virtual void OnMouseEventAck(const MouseEventWithLatencyInfo& event,
+                               InputEventAckState ack_result) = 0;
   virtual void OnWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
                                InputEventAckState ack_result) = 0;
   virtual void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
