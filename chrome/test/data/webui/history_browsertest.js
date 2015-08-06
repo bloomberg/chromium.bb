@@ -822,7 +822,8 @@ TEST_F('HistoryWebUIRealBackendTest',
 /**
  * Test individual deletion of history entries.
  */
-TEST_F('HistoryWebUIRealBackendTest', 'singleDeletion', function() {
+// Flakes on Win. http://crbug.com/334372#c3
+TEST_F('HistoryWebUIRealBackendTest', 'DISABLED_singleDeletion', function() {
   // Deletes the history entry represented by |entryElement|, and calls callback
   // when the deletion is complete.
   var removeEntry = function(entryElement, callback) {
