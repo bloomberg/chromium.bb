@@ -361,12 +361,12 @@ blink::WebCookieJar* HTMLDocument::cookieJar(blink::WebLocalFrame* frame) {
 
 blink::WebNavigationPolicy HTMLDocument::decidePolicyForNavigation(
     const NavigationPolicyInfo& info) {
-  // TODO(yzshen): Remove this check once the browser is able to navigate an
-  // existing html_viewer instance and about:blank page support is ready.
-  if (devtools_agent_ && devtools_agent_->frame() == info.frame &&
-      devtools_agent_->handling_page_navigate_request()) {
+  // TODO(yzshen): Force the current instance to handle all mainframe
+  // navigations locally, if remote debugging is enabled. Otherwise, we will
+  // lose DevTools agent state established in this HTMLDocument.
+  // This can be removed once crbug.com/517266 is fixed.
+  if (devtools_agent_ && devtools_agent_->frame() == info.frame)
     return info.defaultPolicy;
-  }
 
   std::string frame_name = info.frame ? info.frame->assignedName().utf8() : "";
 
