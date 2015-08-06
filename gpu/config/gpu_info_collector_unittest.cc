@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_split.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -16,9 +17,30 @@ using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::_;
 
+namespace {
+
+// Allows testing of all configurations on all operating systems.
+enum MockedOperatingSystemKind {
+  kMockedAndroid,
+  kMockedLinux,
+  kMockedMacOSX,
+  kMockedWindows
+};
+
+}  // anonymous namespace
+
 namespace gpu {
 
-class GPUInfoCollectorTest : public testing::Test {
+static const MockedOperatingSystemKind kMockedOperatingSystemKinds[] = {
+  kMockedAndroid,
+  kMockedLinux,
+  kMockedMacOSX,
+  kMockedWindows
+};
+
+class GPUInfoCollectorTest
+    : public testing::Test,
+      public ::testing::WithParamInterface<MockedOperatingSystemKind> {
  public:
   GPUInfoCollectorTest() {}
   ~GPUInfoCollectorTest() override {}
@@ -29,86 +51,110 @@ class GPUInfoCollectorTest : public testing::Test {
     gfx::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
     ::gfx::MockGLInterface::SetGLInterface(gl_.get());
-#if defined(OS_WIN)
-    const uint32 vendor_id = 0x10de;
-    const uint32 device_id = 0x0658;
-    const char* driver_vendor = "";  // not implemented
-    const char* driver_version = "";
-    const char* shader_version = "1.40";
-    const char* gl_renderer = "Quadro FX 380/PCI/SSE2";
-    const char* gl_vendor = "NVIDIA Corporation";
-    const char* gl_version = "3.1.0";
-    const char* gl_shading_language_version = "1.40 NVIDIA via Cg compiler";
-    const char* gl_extensions =
-        "GL_OES_packed_depth_stencil GL_EXT_texture_format_BGRA8888 "
-        "GL_EXT_read_format_bgra";
-#elif defined(OS_MACOSX)
-    const uint32 vendor_id = 0x10de;
-    const uint32 device_id = 0x0640;
-    const char* driver_vendor = "";  // not implemented
-    const char* driver_version = "1.6.18";
-    const char* shader_version = "1.20";
-    const char* gl_renderer = "NVIDIA GeForce GT 120 OpenGL Engine";
-    const char* gl_vendor = "NVIDIA Corporation";
-    const char* gl_version = "2.1 NVIDIA-1.6.18";
-    const char* gl_shading_language_version = "1.20 ";
-    const char* gl_extensions =
-        "GL_OES_packed_depth_stencil GL_EXT_texture_format_BGRA8888 "
-        "GL_EXT_read_format_bgra";
-#elif defined(OS_ANDROID)
-    const uint32 vendor_id = 0;  // not implemented
-    const uint32 device_id = 0;  // not implemented
-    const char* driver_vendor = "";  // not implemented
-    const char* driver_version = "14.0";
-    const char* shader_version = "1.00";
-    const char* gl_renderer = "Adreno (TM) 320";
-    const char* gl_vendor = "Qualcomm";
-    const char* gl_version = "OpenGL ES 2.0 V@14.0 AU@04.02 (CL@3206)";
-    const char* gl_shading_language_version = "1.00";
-    const char* gl_extensions =
-        "GL_OES_packed_depth_stencil GL_EXT_texture_format_BGRA8888 "
-        "GL_EXT_read_format_bgra";
-#else  // defined (OS_LINUX)
-    const uint32 vendor_id = 0x10de;
-    const uint32 device_id = 0x0658;
-    const char* driver_vendor = "NVIDIA";
-    const char* driver_version = "195.36.24";
-    const char* shader_version = "1.50";
-    const char* gl_renderer = "Quadro FX 380/PCI/SSE2";
-    const char* gl_vendor = "NVIDIA Corporation";
-    const char* gl_version = "3.2.0 NVIDIA 195.36.24";
-    const char* gl_shading_language_version = "1.50 NVIDIA via Cg compiler";
-    const char* gl_extensions =
-        "GL_OES_packed_depth_stencil GL_EXT_texture_format_BGRA8888 "
-        "GL_EXT_read_format_bgra";
-#endif
-    test_values_.gpu.vendor_id = vendor_id;
-    test_values_.gpu.device_id = device_id;
-    test_values_.driver_vendor = driver_vendor;
-    test_values_.driver_version =driver_version;
-    test_values_.pixel_shader_version = shader_version;
-    test_values_.vertex_shader_version = shader_version;
-    test_values_.gl_renderer = gl_renderer;
-    test_values_.gl_vendor = gl_vendor;
-    test_values_.gl_version = gl_version;
-    test_values_.gl_extensions = gl_extensions;
+    switch (GetParam()) {
+      case kMockedAndroid: {
+        test_values_.gpu.vendor_id = 0;  // not implemented
+        test_values_.gpu.device_id = 0;  // not implemented
+        test_values_.driver_vendor = "";  // not implemented
+        test_values_.driver_version = "14.0";
+        test_values_.pixel_shader_version = "1.00";
+        test_values_.vertex_shader_version = "1.00";
+        test_values_.gl_renderer = "Adreno (TM) 320";
+        test_values_.gl_vendor = "Qualcomm";
+        test_values_.gl_version = "OpenGL ES 2.0 V@14.0 AU@04.02 (CL@3206)";
+        test_values_.gl_extensions =
+            "GL_OES_packed_depth_stencil GL_EXT_texture_format_BGRA8888 "
+            "GL_EXT_read_format_bgra";
+        gl_shading_language_version_ = "1.00";
+        break;
+      }
+      case kMockedLinux: {
+        test_values_.gpu.vendor_id = 0x10de;
+        test_values_.gpu.device_id = 0x0658;
+        test_values_.driver_vendor = "NVIDIA";
+        test_values_.driver_version = "195.36.24";
+        test_values_.pixel_shader_version = "1.50";
+        test_values_.vertex_shader_version = "1.50";
+        test_values_.gl_renderer = "Quadro FX 380/PCI/SSE2";
+        test_values_.gl_vendor = "NVIDIA Corporation";
+        test_values_.gl_version = "3.2.0 NVIDIA 195.36.24";
+        test_values_.gl_extensions =
+            "GL_OES_packed_depth_stencil GL_EXT_texture_format_BGRA8888 "
+            "GL_EXT_read_format_bgra";
+        gl_shading_language_version_ = "1.50 NVIDIA via Cg compiler";
+        break;
+      }
+      case kMockedMacOSX: {
+        test_values_.gpu.vendor_id = 0x10de;
+        test_values_.gpu.device_id = 0x0640;
+        test_values_.driver_vendor = "";  // not implemented
+        test_values_.driver_version = "1.6.18";
+        test_values_.pixel_shader_version = "1.20";
+        test_values_.vertex_shader_version = "1.20";
+        test_values_.gl_renderer = "NVIDIA GeForce GT 120 OpenGL Engine";
+        test_values_.gl_vendor = "NVIDIA Corporation";
+        test_values_.gl_version = "2.1 NVIDIA-1.6.18";
+        test_values_.gl_extensions =
+            "GL_OES_packed_depth_stencil GL_EXT_texture_format_BGRA8888 "
+            "GL_EXT_read_format_bgra";
+        gl_shading_language_version_ = "1.20 ";
+        break;
+      }
+      case kMockedWindows: {
+        test_values_.gpu.vendor_id = 0x10de;
+        test_values_.gpu.device_id = 0x0658;
+        test_values_.driver_vendor = "";  // not implemented
+        test_values_.driver_version = "";
+        test_values_.pixel_shader_version = "1.40";
+        test_values_.vertex_shader_version = "1.40";
+        test_values_.gl_renderer = "Quadro FX 380/PCI/SSE2";
+        test_values_.gl_vendor = "NVIDIA Corporation";
+        test_values_.gl_version = "3.1.0";
+        test_values_.gl_extensions =
+            "GL_OES_packed_depth_stencil GL_EXT_texture_format_BGRA8888 "
+            "GL_EXT_read_format_bgra";
+        gl_shading_language_version_ = "1.40 NVIDIA via Cg compiler";
+        break;
+      }
+      default: {
+        NOTREACHED();
+        break;
+      }
+    }
+
     test_values_.can_lose_context = false;
 
-    EXPECT_CALL(*gl_, GetString(GL_EXTENSIONS))
-        .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>(
-            gl_extensions)));
-    EXPECT_CALL(*gl_, GetString(GL_SHADING_LANGUAGE_VERSION))
-        .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>(
-            gl_shading_language_version)));
     EXPECT_CALL(*gl_, GetString(GL_VERSION))
         .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>(
-            gl_version)));
+            test_values_.gl_version.c_str())));
+
+    // Now that that expectation is set up, we can call this helper function.
+    if (gfx::WillUseGLGetStringForExtensions()) {
+      EXPECT_CALL(*gl_, GetString(GL_EXTENSIONS))
+          .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>(
+              test_values_.gl_extensions.c_str())));
+    } else {
+      split_extensions_.clear();
+      split_extensions_ = base::SplitString(
+          test_values_.gl_extensions, " ",
+          base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+      EXPECT_CALL(*gl_, GetIntegerv(GL_NUM_EXTENSIONS, _))
+          .WillRepeatedly(SetArgPointee<1>(split_extensions_.size()));
+      for (size_t ii = 0; ii < split_extensions_.size(); ++ii) {
+        EXPECT_CALL(*gl_, GetStringi(GL_EXTENSIONS, ii))
+            .WillRepeatedly(Return(reinterpret_cast<const uint8*>(
+                split_extensions_[ii].c_str())));
+      }
+    }
+    EXPECT_CALL(*gl_, GetString(GL_SHADING_LANGUAGE_VERSION))
+        .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>(
+            gl_shading_language_version_)));
     EXPECT_CALL(*gl_, GetString(GL_VENDOR))
         .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>(
-            gl_vendor)));
+            test_values_.gl_vendor.c_str())));
     EXPECT_CALL(*gl_, GetString(GL_RENDERER))
         .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>(
-            gl_renderer)));
+            test_values_.gl_renderer.c_str())));
     EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_SAMPLES, _))
         .WillOnce(SetArgPointee<1>(8))
         .RetiresOnSaturation();
@@ -126,21 +172,55 @@ class GPUInfoCollectorTest : public testing::Test {
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   GPUInfo test_values_;
+  const char* gl_shading_language_version_ = nullptr;
+
+  // Persistent storage is needed for the split extension string.
+  std::vector<std::string> split_extensions_;
 };
+
+INSTANTIATE_TEST_CASE_P(GPUConfig,
+                        GPUInfoCollectorTest,
+                        ::testing::ValuesIn(kMockedOperatingSystemKinds));
 
 // TODO(rlp): Test the vendor and device id collection if deemed necessary as
 //            it involves several complicated mocks for each platform.
 
-TEST_F(GPUInfoCollectorTest, CollectGraphicsInfoGL) {
+// TODO(kbr): This test still has platform-dependent behavior because
+// CollectDriverInfoGL behaves differently per platform. This should
+// be fixed.
+TEST_P(GPUInfoCollectorTest, CollectGraphicsInfoGL) {
   GPUInfo gpu_info;
   CollectGraphicsInfoGL(&gpu_info);
-  EXPECT_EQ(test_values_.driver_vendor,
-            gpu_info.driver_vendor);
-#if !defined(OS_WIN)
-  // Skip Windows because the driver version is obtained from bot registry.
-  EXPECT_EQ(test_values_.driver_version,
-            gpu_info.driver_version);
+#if defined(OS_WIN)
+  if (GetParam() == kMockedWindows) {
+    EXPECT_EQ(test_values_.driver_vendor,
+              gpu_info.driver_vendor);
+    // Skip testing the driver version on Windows because it's
+    // obtained from the bot's registry.
+  }
+#elif defined(OS_MACOSX)
+  if (GetParam() == kMockedMacOSX) {
+    EXPECT_EQ(test_values_.driver_vendor,
+              gpu_info.driver_vendor);
+    EXPECT_EQ(test_values_.driver_version,
+              gpu_info.driver_version);
+  }
+#elif defined(OS_ANDROID)
+  if (GetParam() == kMockedAndroid) {
+    EXPECT_EQ(test_values_.driver_vendor,
+              gpu_info.driver_vendor);
+    EXPECT_EQ(test_values_.driver_version,
+              gpu_info.driver_version);
+  }
+#else  // defined (OS_LINUX)
+  if (GetParam() == kMockedLinux) {
+    EXPECT_EQ(test_values_.driver_vendor,
+              gpu_info.driver_vendor);
+    EXPECT_EQ(test_values_.driver_version,
+              gpu_info.driver_version);
+  }
 #endif
+
   EXPECT_EQ(test_values_.pixel_shader_version,
             gpu_info.pixel_shader_version);
   EXPECT_EQ(test_values_.vertex_shader_version,

@@ -98,7 +98,7 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
 
   gpu_info->gl_renderer = GetGLString(GL_RENDERER);
   gpu_info->gl_vendor = GetGLString(GL_VENDOR);
-  gpu_info->gl_extensions = GetGLString(GL_EXTENSIONS);
+  gpu_info->gl_extensions = gfx::GetGLExtensionsFromCurrentContext();
   gpu_info->gl_version = GetGLString(GL_VERSION);
   std::string glsl_version_string = GetGLString(GL_SHADING_LANGUAGE_VERSION);
   GLint max_samples = 0;

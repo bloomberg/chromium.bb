@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_gl_api_implementation.h"
+#include "ui/gl/gl_version_info.h"
 
 namespace gfx {
 
@@ -186,5 +187,32 @@ DisableNullDrawGLBindings::~DisableNullDrawGLBindings() {
 
 GLWindowSystemBindingInfo::GLWindowSystemBindingInfo()
     : direct_rendering(true) {}
+
+std::string GetGLExtensionsFromCurrentContext() {
+  if (WillUseGLGetStringForExtensions()) {
+    return reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+  }
+
+  std::vector<std::string> exts;
+  GLint num_extensions = 0;
+  glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
+  for (GLint i = 0; i < num_extensions; ++i) {
+    const char* extension = reinterpret_cast<const char*>(
+        glGetStringi(GL_EXTENSIONS, i));
+    DCHECK(extension != NULL);
+    exts.push_back(extension);
+  }
+  return base::JoinString(exts, " ");
+}
+
+bool WillUseGLGetStringForExtensions() {
+  const char* version_str =
+      reinterpret_cast<const char*>(glGetString(GL_VERSION));
+  unsigned major_version, minor_version;
+  bool is_es, is_es3;
+  gfx::GLVersionInfo::ParseVersionString(
+      version_str, &major_version, &minor_version, &is_es, &is_es3);
+  return is_es || major_version < 3;
+}
 
 }  // namespace gfx

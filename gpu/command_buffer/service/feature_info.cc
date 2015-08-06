@@ -262,30 +262,10 @@ bool IsGL_REDSupportedOnFBOs() {
 
 void FeatureInfo::InitializeFeatures() {
   // Figure out what extensions to turn on.
-  StringSet extensions;
-  // We need to figure out how to query the extension string before we
-  // have a GLVersionInfo available.
+  StringSet extensions(gfx::GetGLExtensionsFromCurrentContext());
+
   const char* version_str =
       reinterpret_cast<const char*>(glGetString(GL_VERSION));
-  unsigned major_version, minor_version;
-  bool is_es, is_es3;
-  gfx::GLVersionInfo::ParseVersionString(
-      version_str, &major_version, &minor_version, &is_es, &is_es3);
-  if (!is_es && major_version >= 3) {
-    std::vector<std::string> exts;
-    GLint num_extensions = 0;
-    glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
-    for (GLint i = 0; i < num_extensions; ++i) {
-      const char* extension = reinterpret_cast<const char*>(
-          glGetStringi(GL_EXTENSIONS, i));
-      DCHECK(extension != NULL);
-      exts.push_back(extension);
-    }
-    extensions = exts;
-  } else {
-    extensions = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
-  }
-
   const char* renderer_str =
       reinterpret_cast<const char*>(glGetString(GL_RENDERER));
 
@@ -505,7 +485,7 @@ void FeatureInfo::InitializeFeatures() {
   // Check if we should allow GL_EXT_texture_format_BGRA8888
   if (extensions.Contains("GL_EXT_texture_format_BGRA8888") ||
       enable_immutable_texture_format_bgra_on_es3 ||
-      extensions.Contains("GL_EXT_bgra")) {
+      !gl_version_info_->is_es) {
     enable_texture_format_bgra8888 = true;
   }
 

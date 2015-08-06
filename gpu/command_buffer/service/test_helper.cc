@@ -386,6 +386,9 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         .RetiresOnSaturation();
   }
 
+  EXPECT_CALL(*gl, GetString(GL_VERSION))
+      .WillOnce(Return(reinterpret_cast<const uint8*>(gl_version)))
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl, GetString(GL_RENDERER))
       .WillOnce(Return(reinterpret_cast<const uint8*>(gl_renderer)))
       .RetiresOnSaturation();

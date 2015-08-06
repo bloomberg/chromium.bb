@@ -475,8 +475,7 @@ void RealGLApi::glFinishFn() {
 void RealGLApi::InitializeFilteredExtensions() {
   if (disabled_exts_.size()) {
     filtered_exts_.clear();
-    if (gfx::GetGLImplementation() !=
-        gfx::kGLImplementationDesktopGLCoreProfile) {
+    if (gfx::WillUseGLGetStringForExtensions()) {
       filtered_exts_str_ =
           FilterGLExtensionList(reinterpret_cast<const char*>(
                                     GLApiBase::glGetStringFn(GL_EXTENSIONS)),

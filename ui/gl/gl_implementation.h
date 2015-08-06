@@ -122,6 +122,19 @@ void* GetGLProcAddress(const char* name);
 // EGL, GLX, WGL). Returns true if the information was retrieved successfully.
 GL_EXPORT bool GetGLWindowSystemBindingInfo(GLWindowSystemBindingInfo* info);
 
+// Helper for fetching the OpenGL extensions from the current context.
+// This helper abstracts over differences between the desktop OpenGL
+// core profile, and OpenGL ES and the compatibility profile.  It's
+// intended for users of the bindings, not the implementation of the
+// bindings themselves. This is a relatively expensive call, so
+// callers should cache the result.
+GL_EXPORT std::string GetGLExtensionsFromCurrentContext();
+
+// Helper for the GL bindings implementation to understand whether
+// glGetString(GL_EXTENSIONS) or glGetStringi(GL_EXTENSIONS, i) will
+// be used in the function above.
+GL_EXPORT bool WillUseGLGetStringForExtensions();
+
 }  // namespace gfx
 
 #endif  // UI_GL_GL_IMPLEMENTATION_H_

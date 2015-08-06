@@ -2062,12 +2062,6 @@ TEST_F(TextureFormatTypeValidationTest, ES2Basic) {
   ExpectInvalidEnum(GL_RGB, GL_UNSIGNED_BYTE, GL_RGB8);
 }
 
-TEST_F(TextureFormatTypeValidationTest, ES2WithExtBGRA) {
-  SetupFeatureInfo("GL_EXT_bgra", "OpenGL ES 2.0");
-
-  ExpectValid(GL_BGRA_EXT, GL_UNSIGNED_BYTE, GL_BGRA_EXT);
-}
-
 TEST_F(TextureFormatTypeValidationTest, ES2WithExtTextureFormatBGRA8888) {
   SetupFeatureInfo("GL_EXT_texture_format_BGRA8888", "OpenGL ES 2.0");
 

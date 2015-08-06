@@ -85,22 +85,7 @@ void GLContext::SetUnbindFboOnMakeCurrent() {
 
 std::string GLContext::GetExtensions() {
   DCHECK(IsCurrent(nullptr));
-  if (gfx::GetGLImplementation() !=
-      gfx::kGLImplementationDesktopGLCoreProfile) {
-    const char* ext = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
-    return std::string(ext ? ext : "");
-  }
-
-  std::vector<std::string> exts;
-  GLint num_extensions = 0;
-  glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
-  for (GLint i = 0; i < num_extensions; ++i) {
-    const char* extension = reinterpret_cast<const char*>(
-        glGetStringi(GL_EXTENSIONS, i));
-    DCHECK(extension != nullptr);
-    exts.push_back(extension);
-  }
-  return base::JoinString(exts, " ");
+  return GetGLExtensionsFromCurrentContext();
 }
 
 std::string GLContext::GetGLVersion() {
