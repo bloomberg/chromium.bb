@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -279,8 +280,6 @@ void ChromeSigninClient::OnGetTokenInfoResponse(
           g_browser_process->profile_manager()->GetProfileInfoCache();
       size_t index = info_cache.GetIndexOfProfileWithPath(profile_->GetPath());
       info_cache.SetPasswordChangeDetectionTokenAtIndex(index, handle);
-    } else {
-      NOTREACHED();
     }
   }
   oauth_request_.reset();
@@ -363,17 +362,19 @@ void ChromeSigninClient::MaybeFetchSigninTokenHandle() {
   if (profiles::IsLockAvailable(profile_)) {
     ProfileInfoCache& info_cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
-    size_t index = info_cache.GetIndexOfProfileWithPath(profile_->GetPath());
-    std::string token = info_cache.GetPasswordChangeDetectionTokenAtIndex(
-        index);
-    std::string account = profile_->GetProfileUserName();
-    if (token.empty() && !oauth_request_) {
-      // If we don't have a token for detecting a password change, create one.
-      ProfileOAuth2TokenService* token_service =
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-      OAuth2TokenService::ScopeSet scopes;
-      scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
-      oauth_request_ = token_service->StartRequest(account, scopes, this);
+    ProfileAttributesEntry* entry;
+    // If we don't have a token for detecting a password change, create one.
+    if (info_cache.GetProfileAttributesWithPath(profile_->GetPath(), &entry) &&
+        entry->GetPasswordChangeDetectionToken().empty() && !oauth_request_) {
+      std::string account_id = SigninManagerFactory::GetForProfile(profile_)
+          ->GetAuthenticatedAccountId();
+      if (!account_id.empty()) {
+        ProfileOAuth2TokenService* token_service =
+            ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+        OAuth2TokenService::ScopeSet scopes;
+        scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
+        oauth_request_ = token_service->StartRequest(account_id, scopes, this);
+      }
     }
   }
 #endif
