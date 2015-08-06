@@ -24,6 +24,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -43,10 +44,12 @@
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -60,6 +63,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/favicon_size.h"
+#include "url/origin.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
@@ -85,7 +89,13 @@ using domain_reliability::DomainReliabilityMonitor;
 using domain_reliability::DomainReliabilityService;
 using domain_reliability::DomainReliabilityServiceFactory;
 using testing::_;
+using testing::ByRef;
 using testing::Invoke;
+using testing::Matcher;
+using testing::MakeMatcher;
+using testing::MatcherInterface;
+using testing::MatchResultListener;
+using testing::Return;
 using testing::WithArgs;
 
 namespace {
@@ -228,6 +238,36 @@ class TestStoragePartition : public StoragePartition {
 
   DISALLOW_COPY_AND_ASSIGN(TestStoragePartition);
 };
+
+// Custom matcher to verify is-same-origin relationship to given reference
+// origin.
+// (We cannot use equality-based matching because operator== is not defined for
+// Origin, and we in fact want to rely on IsSameOrigin for matching purposes.)
+class SameOriginMatcher : public MatcherInterface<const url::Origin&> {
+ public:
+  explicit SameOriginMatcher(const url::Origin& reference)
+      : reference_(reference) {}
+
+  virtual bool MatchAndExplain(const url::Origin& origin,
+                               MatchResultListener* listener) const {
+    return reference_.IsSameOriginWith(origin);
+  }
+
+  virtual void DescribeTo(::std::ostream* os) const {
+    *os << "is same origin with " << reference_;
+  }
+
+  virtual void DescribeNegationTo(::std::ostream* os) const {
+    *os << "is not same origin with " << reference_;
+  }
+
+ private:
+  const url::Origin& reference_;
+};
+
+inline Matcher<const url::Origin&> SameOrigin(const url::Origin& reference) {
+  return MakeMatcher(new SameOriginMatcher(reference));
+}
 
 }  // namespace
 
@@ -802,6 +842,32 @@ class ClearDomainReliabilityTester {
 
   TestingProfile* profile_;
   MockDomainReliabilityService* mock_service_;
+};
+
+class RemoveDownloadsTester {
+ public:
+  explicit RemoveDownloadsTester(TestingProfile* testing_profile)
+      : download_manager_(new content::MockDownloadManager()),
+        chrome_download_manager_delegate_(testing_profile) {
+    content::BrowserContext::SetDownloadManagerForTesting(testing_profile,
+                                                          download_manager_);
+    EXPECT_EQ(download_manager_,
+              content::BrowserContext::GetDownloadManager(testing_profile));
+
+    EXPECT_CALL(*download_manager_, GetDelegate())
+        .WillOnce(Return(&chrome_download_manager_delegate_));
+    EXPECT_CALL(*download_manager_, Shutdown());
+  }
+
+  ~RemoveDownloadsTester() { chrome_download_manager_delegate_.Shutdown(); }
+
+  content::MockDownloadManager* download_manager() { return download_manager_; }
+
+ private:
+  content::MockDownloadManager* download_manager_;
+  ChromeDownloadManagerDelegate chrome_download_manager_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemoveDownloadsTester);
 };
 
 // Test Class ----------------------------------------------------------------
@@ -1989,4 +2055,15 @@ TEST_F(BrowsingDataRemoverTest, DISABLED_DomainReliability_NoMonitor) {
       BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_HISTORY |
       BrowsingDataRemover::REMOVE_COOKIES, false);
+}
+
+TEST_F(BrowsingDataRemoverTest, RemoveSameOriginDownloads) {
+  RemoveDownloadsTester tester(GetProfile());
+  const url::Origin expectedOrigin(kOrigin1);
+
+  EXPECT_CALL(*tester.download_manager(),
+              RemoveDownloadsByOriginAndTime(SameOrigin(expectedOrigin), _, _));
+
+  BlockUntilOriginDataRemoved(BrowsingDataRemover::EVERYTHING,
+                              BrowsingDataRemover::REMOVE_DOWNLOADS, kOrigin1);
 }

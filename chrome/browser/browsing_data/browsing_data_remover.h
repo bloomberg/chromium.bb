@@ -22,6 +22,7 @@
 #endif
 #include "storage/common/quota/quota_types.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 class IOThread;
 class Profile;
@@ -271,11 +272,14 @@ class BrowsingDataRemover
 #endif
 
   // Removes the specified items related to browsing for a specific host. If the
-  // provided |origin| is empty, data is removed for all origins. The
+  // provided |remove_url| is empty, data is removed for all origins. The
   // |origin_type_mask| parameter defines the set of origins from which data
   // should be removed (protected, unprotected, or both).
+  // TODO(mkwst): The current implementation relies on unique (empty) origins to
+  // signal removal of all origins. Reconsider this behavior if/when we build
+  // a "forget this site" feature.
   void RemoveImpl(int remove_mask,
-                  const GURL& origin,
+                  const GURL& remove_url,
                   int origin_type_mask);
 
   // Notifies observers and deletes this object.
@@ -438,9 +442,6 @@ class BrowsingDataRemover
 
   // The removal mask for the current removal operation.
   int remove_mask_;
-
-  // The origin for the current removal operation.
-  GURL remove_origin_;
 
   // From which types of origins should we remove data?
   int origin_type_mask_;

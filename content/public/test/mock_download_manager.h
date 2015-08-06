@@ -14,6 +14,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 class DownloadRequestHandle;
 
@@ -88,8 +89,12 @@ class MockDownloadManager : public DownloadManager {
 
   MOCK_METHOD2(MockStartDownload,
                void(DownloadCreateInfo*, ByteStreamReader*));
-  MOCK_METHOD2(RemoveDownloadsBetween, int(base::Time remove_begin,
-                                           base::Time remove_end));
+  MOCK_METHOD3(RemoveDownloadsByOriginAndTime,
+               int(const url::Origin& origin,
+                   base::Time remove_begin,
+                   base::Time remove_end));
+  MOCK_METHOD2(RemoveDownloadsBetween,
+               int(base::Time remove_begin, base::Time remove_end));
   MOCK_METHOD1(RemoveDownloads, int(base::Time remove_begin));
   MOCK_METHOD0(RemoveAllDownloads, int());
   MOCK_METHOD1(DownloadUrlMock, void(DownloadUrlParameters*));

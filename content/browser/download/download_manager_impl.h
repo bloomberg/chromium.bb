@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -66,6 +67,10 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<ByteStreamReader> stream,
       const DownloadUrlParameters::OnStartedCallback& on_started) override;
+
+  int RemoveDownloadsByOriginAndTime(const url::Origin& origin,
+                                     base::Time remove_begin,
+                                     base::Time remove_end) override;
   int RemoveDownloadsBetween(base::Time remove_begin,
                              base::Time remove_end) override;
   int RemoveDownloads(base::Time remove_begin) override;
@@ -108,6 +113,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   typedef std::set<DownloadItem*> DownloadSet;
   typedef base::hash_map<uint32, DownloadItemImpl*> DownloadMap;
   typedef std::vector<DownloadItemImpl*> DownloadItemImplVector;
+  typedef base::Callback<bool(const DownloadItemImpl*)> DownloadRemover;
 
   // For testing.
   friend class DownloadManagerTest;
@@ -141,6 +147,9 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   // Updates the state of the file and then notifies this update to the file's
   // observer.
   void OnFileExistenceChecked(uint32 download_id, bool result);
+
+  // Remove all downloads for which |remover| returns true.
+  int RemoveDownloads(const DownloadRemover& remover);
 
   // Overridden from DownloadItemImplDelegate
   // (Note that |GetBrowserContext| are present in both interfaces.)

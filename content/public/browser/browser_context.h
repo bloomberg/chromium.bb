@@ -120,6 +120,9 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // across the next restart.
   static void SaveSessionState(BrowserContext* browser_context);
 
+  static void SetDownloadManagerForTesting(BrowserContext* browser_context,
+                                           DownloadManager* download_manager);
+
   ~BrowserContext() override;
 
   // Creates a delegate to initialize a HostZoomMap and persist its information.

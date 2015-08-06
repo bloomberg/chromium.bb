@@ -37,6 +37,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 using ::testing::AllOf;
 using ::testing::DoAll;
@@ -483,6 +484,10 @@ class DownloadManagerTest : public testing::Test {
     observer_.reset(new MockDownloadManagerObserver());
     download_manager_->AddObserver(observer_.get());
     download_manager_->SetDelegate(mock_download_manager_delegate_.get());
+    download_urls_.push_back(GURL("http://www.url1.com"));
+    download_urls_.push_back(GURL("http://www.url2.com"));
+    download_urls_.push_back(GURL("http://www.url3.com"));
+    download_urls_.push_back(GURL("http://www.url4.com"));
   }
 
   void TearDown() override {
@@ -502,6 +507,7 @@ class DownloadManagerTest : public testing::Test {
     message_loop_.RunUntilIdle();
     mock_download_manager_delegate_.reset();
     mock_browser_context_.reset();
+    download_urls_.clear();
   }
 
   // Returns download id.
@@ -521,6 +527,8 @@ class DownloadManagerTest : public testing::Test {
     // in the factory.
     scoped_ptr<DownloadRequestHandleInterface> req_handle;
     item.Start(scoped_ptr<DownloadFile>(), req_handle.Pass());
+    DCHECK(id < download_urls_.size());
+    EXPECT_CALL(item, GetURL()).WillRepeatedly(ReturnRef(download_urls_[id]));
 
     return item;
   }
@@ -575,6 +583,8 @@ class DownloadManagerTest : public testing::Test {
   DownloadItem::TargetDisposition target_disposition_;
   DownloadDangerType danger_type_;
   base::FilePath intermediate_path_;
+
+  std::vector<GURL> download_urls_;
 
  private:
   base::MessageLoopForUI message_loop_;
@@ -692,6 +702,25 @@ TEST_F(DownloadManagerTest, RemoveAllDownloads) {
   download_manager_->RemoveAllDownloads();
   // Because we're mocking the download item, the Remove call doesn't
   // result in them being removed from the DownloadManager list.
+}
+
+// Confirm that only downloads with same origin are removed.
+TEST_F(DownloadManagerTest, RemoveSameOriginDownloads) {
+  base::Time now(base::Time::Now());
+  for (uint32 i = 0; i < 2; ++i) {
+    MockDownloadItemImpl& item(AddItemToManager());
+    EXPECT_CALL(item, GetStartTime()).WillRepeatedly(Return(now));
+    EXPECT_CALL(item, GetState())
+        .WillRepeatedly(Return(DownloadItem::COMPLETE));
+  }
+
+  EXPECT_CALL(GetMockDownloadItem(0), Remove());
+  EXPECT_CALL(GetMockDownloadItem(1), Remove()).Times(0);
+
+  url::Origin origin_to_clear(download_urls_[0]);
+  int remove_count = download_manager_->RemoveDownloadsByOriginAndTime(
+      origin_to_clear, base::Time(), base::Time::Max());
+  EXPECT_EQ(remove_count, 1);
 }
 
 }  // namespace content

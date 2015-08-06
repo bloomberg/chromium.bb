@@ -44,6 +44,10 @@
 
 class GURL;
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 
 class BrowserContext;
@@ -109,6 +113,12 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
       scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<ByteStreamReader> stream,
       const DownloadUrlParameters::OnStartedCallback& on_started) = 0;
+
+  // Remove downloads which are same-origin with the given origin and pertain to
+  // the given time constraints. (See |RemoveDownloadsBetween|.)
+  virtual int RemoveDownloadsByOriginAndTime(const url::Origin& origin,
+                                             base::Time remove_begin,
+                                             base::Time remove_end) = 0;
 
   // Remove downloads after remove_begin (inclusive) and before remove_end
   // (exclusive). You may pass in null Time values to do an unbounded delete
