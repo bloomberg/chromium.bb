@@ -368,7 +368,7 @@ OneCopyTileTaskWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
   int chunk_size_in_rows =
       std::max(1, max_bytes_per_copy_operation_ / bytes_per_row);
   // Align chunk size to 4. Required to support compressed texture formats.
-  chunk_size_in_rows = MathUtil::RoundUp(chunk_size_in_rows, 4);
+  chunk_size_in_rows = MathUtil::UncheckedRoundUp(chunk_size_in_rows, 4);
   int y = 0;
   int height = raster_resource->size().height();
   while (y < height) {

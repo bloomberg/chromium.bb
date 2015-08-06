@@ -96,27 +96,62 @@ class CC_EXPORT MathUtil {
     return (d > 0.0) ? std::floor(d + 0.5) : std::ceil(d - 0.5);
   }
 
-  // RoundUp rounds up a given |n| to be a multiple of |mul|.
+  // Returns true if rounded up value does not overflow, false otherwise.
+  template <typename T>
+  static bool VerifyRoundup(T n, T mul) {
+    return mul && (n <= (std::numeric_limits<T>::max() -
+                         (std::numeric_limits<T>::max() % mul)));
+  }
+
+  // Rounds up a given |n| to be a multiple of |mul|, but may overflow.
   // Examples:
   //    - RoundUp(123, 50) returns 150.
   //    - RoundUp(-123, 50) returns -100.
   template <typename T>
-  static T RoundUp(T n, T mul) {
+  static T UncheckedRoundUp(T n, T mul) {
     static_assert(std::numeric_limits<T>::is_integer,
                   "T must be an integer type");
-    return (n > 0) ? ((n + mul - 1) / mul) * mul : (n / mul) * mul;
+    DCHECK(VerifyRoundup(n, mul));
+    return RoundUpInternal(n, mul);
   }
 
-  // RoundDown rounds down a given |n| to be a multiple of |mul|.
+  // Similar to UncheckedRoundUp(), but dies with a CRASH() if rounding up a
+  // given |n| overflows T.
+  template <typename T>
+  static T CheckedRoundUp(T n, T mul) {
+    static_assert(std::numeric_limits<T>::is_integer,
+                  "T must be an integer type");
+    CHECK(VerifyRoundup(n, mul));
+    return RoundUpInternal(n, mul);
+  }
+
+  // Returns true if rounded down value does not underflow, false otherwise.
+  template <typename T>
+  static bool VerifyRoundDown(T n, T mul) {
+    return mul && (n >= (std::numeric_limits<T>::min() -
+                         (std::numeric_limits<T>::min() % mul)));
+  }
+
+  // Rounds down a given |n| to be a multiple of |mul|, but may underflow.
   // Examples:
   //    - RoundDown(123, 50) returns 100.
   //    - RoundDown(-123, 50) returns -150.
   template <typename T>
-  static T RoundDown(T n, T mul) {
+  static T UncheckedRoundDown(T n, T mul) {
     static_assert(std::numeric_limits<T>::is_integer,
                   "T must be an integer type");
-    return (n > 0) ? (n / mul) * mul : (n == 0) ? 0
-                                                : ((n - mul + 1) / mul) * mul;
+    DCHECK(VerifyRoundDown(n, mul));
+    return RoundDownInternal(n, mul);
+  }
+
+  // Similar to UncheckedRoundDown(), but dies with a CRASH() if rounding down a
+  // given |n| underflows T.
+  template <typename T>
+  static T CheckedRoundDown(T n, T mul) {
+    static_assert(std::numeric_limits<T>::is_integer,
+                  "T must be an integer type");
+    CHECK(VerifyRoundDown(n, mul));
+    return RoundDownInternal(n, mul);
   }
 
   template <typename T> static T ClampToRange(T value, T min, T max) {
@@ -270,6 +305,18 @@ class CC_EXPORT MathUtil {
 
   // Returns vector that y axis (0,1,0) transforms to under given transform.
   static gfx::Vector3dF GetYAxis(const gfx::Transform& transform);
+
+ private:
+  template <typename T>
+  static T RoundUpInternal(T n, T mul) {
+    return (n > 0) ? ((n + mul - 1) / mul) * mul : (n / mul) * mul;
+  }
+
+  template <typename T>
+  static T RoundDownInternal(T n, T mul) {
+    return (n > 0) ? (n / mul) * mul : (n == 0) ? 0
+                                                : ((n - mul + 1) / mul) * mul;
+  }
 };
 
 }  // namespace cc

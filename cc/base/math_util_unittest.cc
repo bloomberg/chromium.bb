@@ -227,7 +227,7 @@ TEST(MathUtilTest, RoundUp) {
     for (int attempt = 5 * multiplier; attempt >= -5 * multiplier; --attempt) {
       if ((attempt % multiplier) == 0)
         correct = attempt;
-      EXPECT_EQ(correct, MathUtil::RoundUp(attempt, multiplier))
+      EXPECT_EQ(correct, MathUtil::UncheckedRoundUp(attempt, multiplier))
           << "attempt=" << attempt << " multiplier=" << multiplier;
     }
   }
@@ -239,12 +239,18 @@ TEST(MathUtilTest, RoundUp) {
     for (unsigned attempt = 5 * multiplier; attempt > 0; --attempt) {
       if ((attempt % multiplier) == 0)
         correct = attempt;
-      EXPECT_EQ(correct, MathUtil::RoundUp(attempt, multiplier))
+      EXPECT_EQ(correct, MathUtil::UncheckedRoundUp(attempt, multiplier))
           << "attempt=" << attempt << " multiplier=" << multiplier;
     }
-    EXPECT_EQ(0u, MathUtil::RoundUp(0u, multiplier))
+    EXPECT_EQ(0u, MathUtil::UncheckedRoundUp(0u, multiplier))
         << "attempt=0 multiplier=" << multiplier;
   }
+}
+
+TEST(MathUtilTest, RoundUpOverFlow) {
+  // Rounding up 123 by 50 is 150, which overflows int8_t, but fits in uint8_t.
+  EXPECT_FALSE(MathUtil::VerifyRoundup<int8_t>(123, 50));
+  EXPECT_TRUE(MathUtil::VerifyRoundup<uint8_t>(123, 50));
 }
 
 TEST(MathUtilTest, RoundDown) {
@@ -255,7 +261,7 @@ TEST(MathUtilTest, RoundDown) {
     for (int attempt = -5 * multiplier; attempt <= 5 * multiplier; ++attempt) {
       if ((attempt % multiplier) == 0)
         correct = attempt;
-      EXPECT_EQ(correct, MathUtil::RoundDown(attempt, multiplier))
+      EXPECT_EQ(correct, MathUtil::UncheckedRoundDown(attempt, multiplier))
           << "attempt=" << attempt << " multiplier=" << multiplier;
     }
   }
@@ -267,10 +273,17 @@ TEST(MathUtilTest, RoundDown) {
     for (unsigned attempt = 0; attempt <= 5 * multiplier; ++attempt) {
       if ((attempt % multiplier) == 0)
         correct = attempt;
-      EXPECT_EQ(correct, MathUtil::RoundDown(attempt, multiplier))
+      EXPECT_EQ(correct, MathUtil::UncheckedRoundDown(attempt, multiplier))
           << "attempt=" << attempt << " multiplier=" << multiplier;
     }
   }
+}
+
+TEST(MathUtilTest, RoundDownUnderFlow) {
+  // Rounding down -123 by 50 is -150, which underflows int8_t, but fits in
+  // int16_t.
+  EXPECT_FALSE(MathUtil::VerifyRoundDown<int8_t>(-123, 50));
+  EXPECT_TRUE(MathUtil::VerifyRoundDown<int16_t>(-123, 50));
 }
 
 }  // namespace

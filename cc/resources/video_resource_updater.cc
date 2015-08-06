@@ -311,7 +311,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
           resource_size_pixels.width(), plane_resource.resource_format);
       // Use 4-byte row alignment (OpenGL default) for upload performance.
       // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
-      size_t upload_image_stride = MathUtil::RoundUp<size_t>(bytes_per_row, 4u);
+      size_t upload_image_stride =
+          MathUtil::UncheckedRoundUp<size_t>(bytes_per_row, 4u);
 
       const uint8_t* pixels;
       size_t video_bytes_per_row = ResourceUtil::UncheckedWidthInBytes<size_t>(

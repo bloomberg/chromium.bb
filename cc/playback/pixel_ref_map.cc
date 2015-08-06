@@ -33,14 +33,15 @@ void PixelRefMap::GatherPixelRefsFromPicture(SkPicture* picture) {
   skia::PixelRefUtils::GatherDiscardablePixelRefs(picture, &pixel_refs);
   for (skia::DiscardablePixelRefList::const_iterator it = pixel_refs.begin();
        it != pixel_refs.end(); ++it) {
-    gfx::Point min(MathUtil::RoundDown(static_cast<int>(it->pixel_ref_rect.x()),
-                                       cell_size_.width()),
-                   MathUtil::RoundDown(static_cast<int>(it->pixel_ref_rect.y()),
-                                       cell_size_.height()));
-    gfx::Point max(MathUtil::RoundDown(
+    gfx::Point min(
+        MathUtil::UncheckedRoundDown(static_cast<int>(it->pixel_ref_rect.x()),
+                                     cell_size_.width()),
+        MathUtil::UncheckedRoundDown(static_cast<int>(it->pixel_ref_rect.y()),
+                                     cell_size_.height()));
+    gfx::Point max(MathUtil::UncheckedRoundDown(
                        static_cast<int>(std::ceil(it->pixel_ref_rect.right())),
                        cell_size_.width()),
-                   MathUtil::RoundDown(
+                   MathUtil::UncheckedRoundDown(
                        static_cast<int>(std::ceil(it->pixel_ref_rect.bottom())),
                        cell_size_.height()));
 
@@ -148,12 +149,13 @@ void PixelRefMap::Iterator::PointToFirstPixelRef(const gfx::Rect& rect) {
   gfx::Size cell_size(target_pixel_ref_map_->cell_size_);
   // We have to find a cell_size aligned point that corresponds to
   // query_rect. Point is a multiple of cell_size.
-  min_point_ =
-      gfx::Point(MathUtil::RoundDown(query_rect.x(), cell_size.width()),
-                 MathUtil::RoundDown(query_rect.y(), cell_size.height()));
+  min_point_ = gfx::Point(
+      MathUtil::UncheckedRoundDown(query_rect.x(), cell_size.width()),
+      MathUtil::UncheckedRoundDown(query_rect.y(), cell_size.height()));
   max_point_ = gfx::Point(
-      MathUtil::RoundDown(query_rect.right() - 1, cell_size.width()),
-      MathUtil::RoundDown(query_rect.bottom() - 1, cell_size.height()));
+      MathUtil::UncheckedRoundDown(query_rect.right() - 1, cell_size.width()),
+      MathUtil::UncheckedRoundDown(query_rect.bottom() - 1,
+                                   cell_size.height()));
 
   // Limit the points to known pixel ref boundaries.
   min_point_ = gfx::Point(
