@@ -144,8 +144,14 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
   ProgrammableInstallPrompt::Accept();
 }
 
+// http://crbug.com/517309
+#if defined(OS_WIN)
+#define MAYBE_ShouldBlockInlineInstallFromPopupWindow DISABLED_ShouldBlockInlineInstallFromPopupWindow
+#else
+#define MAYBE_ShouldBlockInlineInstallFromPopupWindow ShouldBlockInlineInstallFromPopupWindow
+#endif
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
-                       ShouldBlockInlineInstallFromPopupWindow) {
+                       MAYBE_ShouldBlockInlineInstallFromPopupWindow) {
   GURL install_url =
       GenerateTestServerUrl(kAppDomain, "install_from_popup.html");
   // Disable popup blocking for the test url.
