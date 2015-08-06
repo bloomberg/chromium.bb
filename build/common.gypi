@@ -4529,6 +4529,15 @@
               }],
             ],
           }],
+          ['(asan_coverage>1 or sanitizer_coverage>1) and target_arch=="arm"', {
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'cflags': [
+                  '-mllvm -sanitizer-coverage-block-threshold=0',  # http://crbug.com/517105
+                ],
+              }],
+            ],
+          }],
           ['asan_field_padding!=0', {
             'target_conditions': [
               ['_toolset=="target"', {
