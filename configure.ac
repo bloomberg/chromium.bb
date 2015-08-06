@@ -359,6 +359,7 @@ if test "x$RADEON" = xyes; then
 	AC_DEFINE(HAVE_RADEON, 1, [Have radeon support])
 fi
 
+AM_CONDITIONAL(HAVE_CUNIT, [test "x$have_cunit" != "xno"])
 AM_CONDITIONAL(HAVE_AMDGPU, [test "x$AMDGPU" = xyes])
 if test "x$AMDGPU" = xyes; then
 	AC_DEFINE(HAVE_AMDGPU, 1, [Have amdgpu support])
@@ -378,7 +379,6 @@ if test "x$AMDGPU" = xyes; then
 		fi
 	fi
 
-	AM_CONDITIONAL(HAVE_CUNIT, [test "x$have_cunit" != "xno"])
 	AC_DEFINE(HAVE_CUNIT, [test "x$have_cunit" != "xno"], [Enable CUNIT Have amdgpu support])
 
 	if test "x$have_cunit" = "xno"; then
