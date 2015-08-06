@@ -383,9 +383,10 @@ udev_seat_destroy(struct udev_seat *seat)
 	struct weston_keyboard *keyboard =
 		weston_seat_get_keyboard(&seat->base);
 
-	udev_seat_remove_devices(seat);
 	if (keyboard)
 		notify_keyboard_focus_out(&seat->base);
+
+	udev_seat_remove_devices(seat);
 	weston_seat_release(&seat->base);
 	wl_list_remove(&seat->output_create_listener.link);
 	free(seat);
