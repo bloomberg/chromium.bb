@@ -2493,7 +2493,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="BackgroundSync.Registration.OneShot"
-    enum="BackgroundSyncResult">
+    enum="BackgroundSyncStatus">
   <owner>iclelland@chromium.org</owner>
   <summary>
     Records the result of attempting to register a one-shot sync.
@@ -2519,7 +2519,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="BackgroundSync.Registration.Periodic"
-    enum="BackgroundSyncResult">
+    enum="BackgroundSyncStatus">
   <owner>iclelland@chromium.org</owner>
   <summary>
     Records the result of attempting to register a periodic sync.
@@ -2536,7 +2536,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="BackgroundSync.Unregistration.OneShot"
-    enum="BackgroundSyncResult">
+    enum="BackgroundSyncStatus">
   <owner>iclelland@chromium.org</owner>
   <summary>
     Records the result of attempting to unregister a one-shot sync.
@@ -2544,7 +2544,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="BackgroundSync.Unregistration.Periodic"
-    enum="BackgroundSyncResult">
+    enum="BackgroundSyncStatus">
   <owner>iclelland@chromium.org</owner>
   <summary>
     Records the result of attempting to unregister a periodic sync.
@@ -51516,11 +51516,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="AUTO_LAUNCH_FOREGROUND_USELESS"/>
 </enum>
 
-<enum name="BackgroundSyncResult" type="int">
+<enum name="BackgroundSyncStatus" type="int">
   <int value="0" label="Action completed successfully"/>
   <int value="1" label="Back-end error"/>
   <int value="2" label="Registration was not found"/>
   <int value="3" label="No active service worker"/>
+  <int value="4" label="Action not allowed"/>
 </enum>
 
 <enum name="BackgroundTracingState" type="int">
