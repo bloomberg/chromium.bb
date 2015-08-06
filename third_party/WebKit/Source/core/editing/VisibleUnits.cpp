@@ -523,7 +523,7 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
     Node* node = it.startContainer();
     if (node->isTextNode() && static_cast<int>(next) <= node->maxCharacterOffset()) {
         // The next variable contains a usable index into a text node
-        return VisiblePosition(createLegacyEditingPosition(node, next), DOWNSTREAM);
+        return VisiblePosition(Position(node, next), DOWNSTREAM);
     }
 
     // Use the character iterator to translate the next value into a DOM position.
