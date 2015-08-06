@@ -43,7 +43,7 @@ namespace {
 const char kTraceCategory[] = TRACE_DISABLED_BY_DEFAULT("memory-infra");
 
 // Throttle mmaps at a rate of once every kHeavyMmapsDumpsRate standard dumps.
-const int kHeavyMmapsDumpsRate = 8;  // 250 ms * 8 = 2000 ms.
+const int kHeavyDumpsRate = 8;  // 250 ms * 8 = 2000 ms.
 const int kDumpIntervalMs = 250;
 const int kTraceEventNumArgs = 1;
 const char* kTraceEventArgNames[] = {"dumps"};
@@ -52,16 +52,17 @@ const unsigned char kTraceEventArgTypes[] = {TRACE_VALUE_TYPE_CONVERTABLE};
 StaticAtomicSequenceNumber g_next_guid;
 uint32 g_periodic_dumps_count = 0;
 MemoryDumpManager* g_instance_for_testing = nullptr;
-MemoryDumpProvider* g_mmaps_dump_provider = nullptr;
 
 void RequestPeriodicGlobalDump() {
-  MemoryDumpType dump_type = g_periodic_dumps_count == 0
-                                 ? MemoryDumpType::PERIODIC_INTERVAL_WITH_MMAPS
-                                 : MemoryDumpType::PERIODIC_INTERVAL;
-  if (++g_periodic_dumps_count == kHeavyMmapsDumpsRate)
+  MemoryDumpArgs::LevelOfDetail dump_level_of_detail =
+      g_periodic_dumps_count == 0 ? MemoryDumpArgs::LEVEL_OF_DETAIL_HIGH
+                                  : MemoryDumpArgs::LEVEL_OF_DETAIL_LOW;
+  if (++g_periodic_dumps_count == kHeavyDumpsRate)
     g_periodic_dumps_count = 0;
 
-  MemoryDumpManager::GetInstance()->RequestGlobalDump(dump_type);
+  MemoryDumpArgs dump_args = {dump_level_of_detail};
+  MemoryDumpManager::GetInstance()->RequestGlobalDump(
+      MemoryDumpType::PERIODIC_INTERVAL, dump_args);
 }
 
 }  // namespace
@@ -118,8 +119,7 @@ void MemoryDumpManager::Initialize() {
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-  g_mmaps_dump_provider = ProcessMemoryMapsDumpProvider::GetInstance();
-  RegisterDumpProvider(g_mmaps_dump_provider);
+  RegisterDumpProvider(ProcessMemoryMapsDumpProvider::GetInstance());
   RegisterDumpProvider(MallocDumpProvider::GetInstance());
   system_allocator_pool_name_ = MallocDumpProvider::kAllocatedObjects;
 #endif
@@ -180,9 +180,9 @@ void MemoryDumpManager::UnregisterDumpProvider(MemoryDumpProvider* mdp) {
   did_unregister_dump_provider_ = true;
 }
 
-void MemoryDumpManager::RequestGlobalDump(
-    MemoryDumpType dump_type,
-    const MemoryDumpCallback& callback) {
+void MemoryDumpManager::RequestGlobalDump(MemoryDumpType dump_type,
+                                          const MemoryDumpArgs& dump_args,
+                                          const MemoryDumpCallback& callback) {
   // Bail out immediately if tracing is not enabled at all.
   if (!UNLIKELY(subtle::NoBarrier_Load(&memory_tracing_enabled_))) {
     if (!callback.is_null())
@@ -204,15 +204,16 @@ void MemoryDumpManager::RequestGlobalDump(
   if (delegate) {
     // The delegate is in charge to coordinate the request among all the
     // processes and call the CreateLocalDumpPoint on the local process.
-    MemoryDumpRequestArgs args = {guid, dump_type};
+    MemoryDumpRequestArgs args = {guid, dump_type, dump_args};
     delegate->RequestGlobalMemoryDump(args, callback);
   } else if (!callback.is_null()) {
     callback.Run(guid, false /* success */);
   }
 }
 
-void MemoryDumpManager::RequestGlobalDump(MemoryDumpType dump_type) {
-  RequestGlobalDump(dump_type, MemoryDumpCallback());
+void MemoryDumpManager::RequestGlobalDump(MemoryDumpType dump_type,
+                                          const MemoryDumpArgs& dump_args) {
+  RequestGlobalDump(dump_type, dump_args, MemoryDumpCallback());
 }
 
 void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
@@ -273,15 +274,6 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
     mdp = mdp_info->dump_provider;
     if (mdp_info->disabled) {
       skip_dump = true;
-    } else if (mdp == g_mmaps_dump_provider &&
-               pmd_async_state->req_args.dump_type !=
-                   MemoryDumpType::PERIODIC_INTERVAL_WITH_MMAPS &&
-               pmd_async_state->req_args.dump_type !=
-                   MemoryDumpType::EXPLICITLY_TRIGGERED) {
-      // Mmaps dumping is very heavyweight and cannot be performed at the same
-      // rate of other dumps. TODO(primiano): this is a hack and should be
-      // cleaned up as part of crbug.com/499731.
-      skip_dump = true;
     } else if (mdp_info->task_runner &&
                !mdp_info->task_runner->BelongsToCurrentThread()) {
       // It's time to hop onto another thread.
@@ -312,13 +304,9 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
   bool finalize = false;
   bool dump_successful = false;
 
-  // TODO(ssid): Change RequestGlobalDump to use MemoryDumpArgs along with
-  // MemoryDumpType to get request for light / heavy dump, and remove this
-  // constant.
   if (!skip_dump) {
-    MemoryDumpArgs dump_args = {MemoryDumpArgs::LEVEL_OF_DETAIL_HIGH};
-    dump_successful =
-        mdp->OnMemoryDump(dump_args, &pmd_async_state->process_memory_dump);
+    dump_successful = mdp->OnMemoryDump(pmd_async_state->req_args.dump_args,
+                                        &pmd_async_state->process_memory_dump);
   }
 
   {
