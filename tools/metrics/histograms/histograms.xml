@@ -46771,6 +46771,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UMA.UploadCreation" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated as of August 2015.  This failure case no longer exists.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <summary>
     For each attempted UMA upload, log whether the upload was successfully

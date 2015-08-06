@@ -33,7 +33,7 @@ class NetMetricsLogUploader : public MetricsLogUploader,
   ~NetMetricsLogUploader() override;
 
   // MetricsLogUploader:
-  bool UploadLog(const std::string& compressed_log_data,
+  void UploadLog(const std::string& compressed_log_data,
                  const std::string& log_hash) override;
 
  private:

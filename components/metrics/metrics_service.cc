@@ -961,13 +961,7 @@ void MetricsService::SendStagedLog() {
   const std::string hash =
       base::HexEncode(log_manager_.staged_log_hash().data(),
                       log_manager_.staged_log_hash().size());
-  bool success = log_uploader_->UploadLog(log_manager_.staged_log(), hash);
-  UMA_HISTOGRAM_BOOLEAN("UMA.UploadCreation", success);
-  if (!success) {
-    // Skip this upload and hope things work out next time.
-    SkipAndDiscardUpload();
-    return;
-  }
+  log_uploader_->UploadLog(log_manager_.staged_log(), hash);
 
   HandleIdleSinceLastTransmission(true);
 }
