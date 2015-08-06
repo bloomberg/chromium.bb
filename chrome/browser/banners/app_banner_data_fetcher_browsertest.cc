@@ -155,8 +155,16 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
                 ui::PAGE_TRANSITION_GENERATED, 0, true);
 }
 
+// http://crbug.com/517307
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerCreatedDirectMultiple \
+  DISABLED_WebAppBannerCreatedDirectMultiple
+#else
+#define MAYBE_WebAppBannerCreatedDirectMultiple \
+  WebAppBannerCreatedDirectMultiple
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerCreatedDirectMultiple) {
+                       MAYBE_WebAppBannerCreatedDirectMultiple) {
   AppBannerSettingsHelper::SetEngagementWeights(0.5, 1);
   RunBannerTest("/banners/manifest_test_page.html",
                 ui::PAGE_TRANSITION_GENERATED, 3, true);
@@ -182,8 +190,14 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
                 3, true);
 }
 
+// http://crbug.com/517307
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerCreatedVarious DISABLED_WebAppBannerCreatedVarious
+#else
+#define MAYBE_WebAppBannerCreatedVarious WebAppBannerCreatedVarious
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerCreatedVarious) {
+                       MAYBE_WebAppBannerCreatedVarious) {
   AppBannerSettingsHelper::SetEngagementWeights(0.5, 0.25);
 
   std::string valid_page("/banners/manifest_test_page.html");
