@@ -40,7 +40,6 @@ class CONTENT_EXPORT PageState {
   bool IsValid() const;
   bool Equals(const PageState& page_state) const;
   const std::string& ToEncodedData() const;
-  std::string GetTopLevelUrlStringTemporaryForBug369661() const;
 
   std::vector<base::FilePath> GetReferencedFiles() const;
   PageState RemovePasswordData() const;

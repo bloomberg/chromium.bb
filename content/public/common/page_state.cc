@@ -5,7 +5,6 @@
 #include "content/public/common/page_state.h"
 
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/page_state_serialization.h"
 
@@ -118,15 +117,6 @@ bool PageState::Equals(const PageState& other) const {
 
 const std::string& PageState::ToEncodedData() const {
   return data_;
-}
-
-std::string PageState::GetTopLevelUrlStringTemporaryForBug369661() const {
-  ExplodedPageState state;
-  CHECK(DecodePageState(data_, &state));
-
-  base::NullableString16& url_string = state.top.url_string;
-  CHECK(!url_string.is_null());
-  return base::UTF16ToUTF8(url_string.string());
 }
 
 std::vector<base::FilePath> PageState::GetReferencedFiles() const {
