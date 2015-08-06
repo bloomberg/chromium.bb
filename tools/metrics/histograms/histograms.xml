@@ -16350,6 +16350,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.LoadType" enum="MediaLoadType">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    Load type of HTML5 media, such as URL, MediaSource and MediaStream.
+  </summary>
+</histogram>
+
 <histogram name="Media.LocalRendererSinkStates" enum="LocalRendererSinkStates">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -16396,6 +16403,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.MSE.Playback" enum="BooleanSuccess">
+  <obsolete>
+    Renamed to Media.LoadType.
+  </obsolete>
   <owner>acolwell@chromium.org</owner>
   <summary>
     Whether Media Source Extensions is specified for playback of Media elements.
@@ -62877,6 +62887,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Supported"/>
   <int value="2" label="Queried with type"/>
   <int value="3" label="Supported with type"/>
+</enum>
+
+<enum name="MediaLoadType" type="int">
+  <int value="0" label="URL"/>
+  <int value="1" label="MediaSource"/>
+  <int value="2" label="MediaStream"/>
 </enum>
 
 <enum name="MediaOutputProtectionStatus" type="int">

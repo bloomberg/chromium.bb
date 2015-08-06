@@ -132,12 +132,9 @@ void ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
   UMA_HISTOGRAM_ENUMERATION("Media.URLScheme", URLScheme(url),
                             kMaxURLScheme + 1);
 
-  // Keep track if this is a MSE or non-MSE playback.
-  // TODO(xhwang): This name is not intuitive. We should have a histogram for
-  // all load types.
-  UMA_HISTOGRAM_BOOLEAN(
-      "Media.MSE.Playback",
-      load_type == blink::WebMediaPlayer::LoadTypeMediaSource);
+  // Report load type, such as URL, MediaSource or MediaStream.
+  UMA_HISTOGRAM_ENUMERATION("Media.LoadType", load_type,
+                            blink::WebMediaPlayer::LoadTypeMax + 1);
 
   // Report the origin from where the media player is created.
   if (GetMediaClient()) {
