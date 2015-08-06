@@ -167,8 +167,9 @@ ProcessMemoryMapsDumpProvider::~ProcessMemoryMapsDumpProvider() {
 // the current process.
 bool ProcessMemoryMapsDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
                                                  ProcessMemoryDump* pmd) {
-  // TODO(ssid): Use MemoryDumpArgs to create light dumps when requested
-  // (crbug.com/499731).
+  // Snapshot of memory maps is not taken for light dump requests.
+  if (args.level_of_detail == MemoryDumpArgs::LEVEL_OF_DETAIL_LOW)
+    return true;
 
   uint32 res = 0;
 
