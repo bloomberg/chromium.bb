@@ -20,11 +20,11 @@ struct OfflinePageItem {
  public:
   OfflinePageItem();
   OfflinePageItem(const GURL& url,
-                  const base::string16& title,
+                  int64 bookmark_id,
                   const base::FilePath& file_path,
                   int64 file_size);
   OfflinePageItem(const GURL& url,
-                  const base::string16& title,
+                  int64 bookmark_id,
                   const base::FilePath& file_path,
                   int64 file_size,
                   const base::Time& creation_time);
@@ -35,8 +35,8 @@ struct OfflinePageItem {
 
   // The URL of the page.
   GURL url;
-  // The title of the page.
-  base::string16 title;
+  // The Bookmark ID related to the offline page.
+  int64 bookmark_id;
   // Version of the offline page item.
   int version;
   // The file path to the archive with a local copy of the page.

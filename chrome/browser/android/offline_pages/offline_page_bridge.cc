@@ -42,7 +42,7 @@ void LoadAllPagesCallback(ScopedJavaGlobalRef<jobject>* j_callback_obj,
     Java_OfflinePageBridge_createOfflinePageAndAddToList(
         env, j_result_ptr->obj(),
         ConvertUTF8ToJavaString(env, offline_page.url.spec()).obj(),
-        ConvertUTF16ToJavaString(env, offline_page.title).obj(),
+        offline_page.bookmark_id,
         ConvertUTF8ToJavaString(env, offline_page.GetOfflineURL().spec()).obj(),
         offline_page.file_size);
   }
@@ -106,7 +106,8 @@ void OfflinePageBridge::LoadAllPages(JNIEnv* env,
 void OfflinePageBridge::SavePage(JNIEnv* env,
                                  jobject obj,
                                  jobject j_callback_obj,
-                                 jobject j_web_contents) {
+                                 jobject j_web_contents,
+                                 jlong bookmark_id) {
   DCHECK(j_callback_obj);
   DCHECK(j_web_contents);
 
@@ -122,7 +123,7 @@ void OfflinePageBridge::SavePage(JNIEnv* env,
       new OfflinePageMHTMLArchiver(web_contents, GetDownloadsPath()));
 
   offline_page_model_->SavePage(
-      url, archiver.Pass(),
+      url, bookmark_id, archiver.Pass(),
       base::Bind(&SavePageCallback, j_callback_obj_ptr.release(), url));
 }
 

@@ -100,7 +100,7 @@ void OfflinePageMHTMLArchiver::GenerateMHTML() {
 }
 
 void OfflinePageMHTMLArchiver::DoGenerateMHTML() {
-  // TODO(fgorski): Figure out if the actual URL or title can be different at
+  // TODO(fgorski): Figure out if the actual URL can be different at
   // the end of MHTML generation. Perhaps we should pull it out after the MHTML
   // is generated.
   GURL url(web_contents_->GetLastCommittedURL());
@@ -108,27 +108,25 @@ void OfflinePageMHTMLArchiver::DoGenerateMHTML() {
   base::FilePath file_path(archive_dir_.Append(GenerateFileName(url, title)));
 
   web_contents_->GenerateMHTML(
-      file_path,
-      base::Bind(&OfflinePageMHTMLArchiver::OnGenerateMHTMLDone,
-                 weak_ptr_factory_.GetWeakPtr(), url, title, file_path));
+      file_path, base::Bind(&OfflinePageMHTMLArchiver::OnGenerateMHTMLDone,
+                            weak_ptr_factory_.GetWeakPtr(), url, file_path));
 }
 
 void OfflinePageMHTMLArchiver::OnGenerateMHTMLDone(
     const GURL& url,
-    const base::string16& title,
     const base::FilePath& file_path,
     int64 file_size) {
   if (file_size < 0) {
     ReportFailure(ArchiverResult::ERROR_ARCHIVE_CREATION_FAILED);
   } else {
-    callback_.Run(this, ArchiverResult::SUCCESSFULLY_CREATED, url, title,
-                  file_path, file_size);
+    callback_.Run(this, ArchiverResult::SUCCESSFULLY_CREATED, url, file_path,
+                  file_size);
   }
 }
 
 void OfflinePageMHTMLArchiver::ReportFailure(ArchiverResult result) {
   DCHECK(result != ArchiverResult::SUCCESSFULLY_CREATED);
-  callback_.Run(this, result, GURL(), base::string16(), base::FilePath(), 0);
+  callback_.Run(this, result, GURL(), base::FilePath(), 0);
 }
 
 }  // namespace offline_pages

@@ -63,14 +63,14 @@ OfflinePageModel::~OfflinePageModel() {
 void OfflinePageModel::Shutdown() {
 }
 
-void OfflinePageModel::SavePage(
-    const GURL& url,
-    scoped_ptr<OfflinePageArchiver> archiver,
-    const SavePageCallback& callback) {
+void OfflinePageModel::SavePage(const GURL& url,
+                                int64 bookmark_id,
+                                scoped_ptr<OfflinePageArchiver> archiver,
+                                const SavePageCallback& callback) {
   DCHECK(archiver.get());
   archiver->CreateArchive(base::Bind(&OfflinePageModel::OnCreateArchiveDone,
                                      weak_ptr_factory_.GetWeakPtr(), url,
-                                     callback));
+                                     bookmark_id, callback));
   pending_archivers_.push_back(archiver.Pass());
 }
 
@@ -91,15 +91,14 @@ OfflinePageMetadataStore* OfflinePageModel::GetStoreForTesting() {
   return store_.get();
 }
 
-void OfflinePageModel::OnCreateArchiveDone(
-    const GURL& requested_url,
-    const SavePageCallback& callback,
-    OfflinePageArchiver* archiver,
-    ArchiverResult archiver_result,
-    const GURL& url,
-    const base::string16& title,
-    const base::FilePath& file_path,
-    int64 file_size) {
+void OfflinePageModel::OnCreateArchiveDone(const GURL& requested_url,
+                                           int64 bookmark_id,
+                                           const SavePageCallback& callback,
+                                           OfflinePageArchiver* archiver,
+                                           ArchiverResult archiver_result,
+                                           const GURL& url,
+                                           const base::FilePath& file_path,
+                                           int64 file_size) {
   if (requested_url != url) {
     DVLOG(1) << "Saved URL does not match requested URL.";
     // TODO(fgorski): We have created an archive for a wrong URL. It should be
@@ -116,7 +115,7 @@ void OfflinePageModel::OnCreateArchiveDone(
     return;
   }
 
-  OfflinePageItem offline_page_item(url, title, file_path, file_size,
+  OfflinePageItem offline_page_item(url, bookmark_id, file_path, file_size,
                                     base::Time::Now());
   store_->AddOfflinePage(
       offline_page_item,

@@ -57,7 +57,6 @@ class OfflinePageArchiver {
   typedef base::Callback<void(OfflinePageArchiver* /* archiver */,
                               ArchiverResult /* result */,
                               const GURL& /* url */,
-                              const base::string16& /* title */,
                               const base::FilePath& /* file_path */,
                               int64 /* file_size */)> CreateArchiveCallback;
 

@@ -16,8 +16,8 @@ message OfflinePageEntry {
   // URL of the offline page.
   required string url = 1;
 
-  // Title of the offline page.
-  required string title = 2;
+  // Bookmark ID of the offline page.
+  required int64 bookmark_id = 2;
 
   // Version of the offline page metadata.
   required int32 version = 3;

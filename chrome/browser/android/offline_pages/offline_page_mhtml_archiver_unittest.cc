@@ -21,7 +21,6 @@ namespace offline_pages {
 namespace {
 
 const char kTestURL[] = "http://example.com/";
-const base::string16 kTestTitle = base::ASCIIToUTF16("Test page title");
 const base::FilePath::CharType kTestFilePath[] = FILE_PATH_LITERAL(
     "/archive_dir/offline_page.mhtml");
 const int64 kTestFileSize = 123456LL;
@@ -36,7 +35,6 @@ class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
 
   TestMHTMLArchiver(
       const GURL& url,
-      const base::string16& title,
       const TestScenario test_scenario,
       const base::FilePath& archive_dir);
   ~TestMHTMLArchiver() override;
@@ -45,7 +43,6 @@ class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
   void GenerateMHTML() override;
 
   const GURL url_;
-  const base::string16 title_;
   const base::FilePath file_path_;
   const TestScenario test_scenario_;
 
@@ -54,12 +51,10 @@ class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
 
 TestMHTMLArchiver::TestMHTMLArchiver(
     const GURL& url,
-    const base::string16& title,
     const TestScenario test_scenario,
     const base::FilePath& archive_dir)
     : OfflinePageMHTMLArchiver(archive_dir),
       url_(url),
-      title_(title),
       file_path_(archive_dir),
       test_scenario_(test_scenario) {
 }
@@ -83,7 +78,6 @@ void TestMHTMLArchiver::GenerateMHTML() {
       base::Bind(&TestMHTMLArchiver::OnGenerateMHTMLDone,
                  base::Unretained(this),
                  url_,
-                 title_,
                  base::FilePath(kTestFilePath),
                  kTestFileSize));
 }
@@ -98,7 +92,6 @@ class OfflinePageMHTMLArchiverTest : public testing::Test {
   // Creates an archiver for testing and specifies a scenario to be used.
   scoped_ptr<TestMHTMLArchiver> CreateArchiver(
       const GURL& url,
-      const base::string16& title,
       TestMHTMLArchiver::TestScenario scenario);
 
   // Test tooling methods.
@@ -124,14 +117,12 @@ class OfflinePageMHTMLArchiverTest : public testing::Test {
   void OnCreateArchiveDone(OfflinePageArchiver* archiver,
                            OfflinePageArchiver::ArchiverResult result,
                            const GURL& url,
-                           const base::string16& title,
                            const base::FilePath& file_path,
                            int64 file_size);
 
   OfflinePageArchiver* last_archiver_;
   OfflinePageArchiver::ArchiverResult last_result_;
   GURL last_url_;
-  base::string16 last_title_;
   base::FilePath last_file_path_;
   int64 last_file_size_;
 
@@ -153,23 +144,20 @@ OfflinePageMHTMLArchiverTest::~OfflinePageMHTMLArchiverTest() {
 
 scoped_ptr<TestMHTMLArchiver> OfflinePageMHTMLArchiverTest::CreateArchiver(
     const GURL& url,
-    const base::string16& title,
     TestMHTMLArchiver::TestScenario scenario) {
-  return scoped_ptr<TestMHTMLArchiver>(new TestMHTMLArchiver(
-      url, title, scenario, GetTestFilePath()));
+  return scoped_ptr<TestMHTMLArchiver>(
+      new TestMHTMLArchiver(url, scenario, GetTestFilePath()));
 }
 
 void OfflinePageMHTMLArchiverTest::OnCreateArchiveDone(
     OfflinePageArchiver* archiver,
     OfflinePageArchiver::ArchiverResult result,
     const GURL& url,
-    const base::string16& title,
     const base::FilePath& file_path,
     int64 file_size) {
   if (run_loop_)
     run_loop_->Quit();
   last_url_ = url;
-  last_title_ = title;
   last_archiver_ = archiver;
   last_result_ = result;
   last_file_path_ = file_path;
@@ -186,7 +174,6 @@ TEST_F(OfflinePageMHTMLArchiverTest, WebContentsMissing) {
   GURL page_url = GURL(kTestURL);
   scoped_ptr<TestMHTMLArchiver> archiver(
       CreateArchiver(page_url,
-                     kTestTitle,
                      TestMHTMLArchiver::TestScenario::WEB_CONTENTS_MISSING));
   archiver->CreateArchive(callback());
 
@@ -201,7 +188,6 @@ TEST_F(OfflinePageMHTMLArchiverTest, NotAbleToGenerateArchive) {
   GURL page_url = GURL(kTestURL);
   scoped_ptr<TestMHTMLArchiver> archiver(
       CreateArchiver(page_url,
-                     kTestTitle,
                      TestMHTMLArchiver::TestScenario::NOT_ABLE_TO_ARCHIVE));
   archiver->CreateArchive(callback());
 
@@ -217,7 +203,6 @@ TEST_F(OfflinePageMHTMLArchiverTest, SuccessfullyCreateOfflineArchive) {
   GURL page_url = GURL(kTestURL);
   scoped_ptr<TestMHTMLArchiver> archiver(
       CreateArchiver(page_url,
-                     kTestTitle,
                      TestMHTMLArchiver::TestScenario::SUCCESS));
   archiver->CreateArchive(callback());
   PumpLoop();

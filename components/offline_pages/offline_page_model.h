@@ -98,6 +98,7 @@ class OfflinePageModel : public KeyedService {
 
   // Attempts to save a page addressed by |url| offline.
   void SavePage(const GURL& url,
+                int64 bookmark_id,
                 scoped_ptr<OfflinePageArchiver> archiver,
                 const SavePageCallback& callback);
 
@@ -115,11 +116,11 @@ class OfflinePageModel : public KeyedService {
 
   // OfflinePageArchiver callback.
   void OnCreateArchiveDone(const GURL& requested_url,
+                           int64 bookmark_id,
                            const SavePageCallback& callback,
                            OfflinePageArchiver* archiver,
                            OfflinePageArchiver::ArchiverResult result,
                            const GURL& url,
-                           const base::string16& title,
                            const base::FilePath& file_path,
                            int64 file_size);
 

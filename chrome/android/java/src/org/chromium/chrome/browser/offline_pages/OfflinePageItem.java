@@ -5,19 +5,21 @@
 package org.chromium.chrome.browser.offline_pages;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.bookmarks.BookmarkType;
 
 /**
  * Simple object representing an offline page.
  */
 public class OfflinePageItem {
     private final String mUrl;
-    private final String mTitle;
+    private final BookmarkId mBookmarId;
     private final String mOfflineUrl;
     private final long mFileSize;
 
-    public OfflinePageItem(String url, String title, String offlineUrl, long fileSize) {
+    public OfflinePageItem(String url, long bookmarkId, String offlineUrl, long fileSize) {
         mUrl = url;
-        mTitle = title;
+        mBookmarId = new BookmarkId(bookmarkId, BookmarkType.NORMAL);
         mOfflineUrl = offlineUrl;
         mFileSize = fileSize;
     }
@@ -28,10 +30,10 @@ public class OfflinePageItem {
         return mUrl;
     }
 
-    /** @return Title of the offline page. */
+    /** @return Bookmark Id related to the offline page. */
     @VisibleForTesting
-    public String getTitle() {
-        return mTitle;
+    public BookmarkId getBookmarkId() {
+        return mBookmarId;
     }
 
     /** @return Path to the offline copy of the page. */

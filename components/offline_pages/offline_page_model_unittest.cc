@@ -27,9 +27,9 @@ namespace offline_pages {
 
 namespace {
 const GURL kTestUrl("http://example.com");
-const base::string16 kTestPageTitle = base::ASCIIToUTF16("Test Page Title");
+const int64 kTestPageBookmarkId1 = 1234LL;
 const GURL kTestUrl2("http://other.page.com");
-const base::string16 kTestPageTitle2 = base::ASCIIToUTF16("Other page title");
+const int64 kTestPageBookmarkId2 = 5678LL;
 const int64 kTestFileSize = 876543LL;
 
 class OfflinePageTestStore : public OfflinePageMetadataStore {
@@ -124,7 +124,6 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
   OfflinePageTestArchiver(
       OfflinePageModelTest* test,
       const GURL& url,
-      const base::string16& title,
       const base::FilePath& archiver_dir,
       ArchiverResult result,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
@@ -142,7 +141,6 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
  private:
   OfflinePageModelTest* test_;  // Outlive OfflinePageTestArchiver.
   GURL url_;
-  base::string16 title_;
   base::FilePath archiver_dir_;
   ArchiverResult result_;
   bool create_archive_called_;
@@ -169,7 +167,6 @@ class OfflinePageModelTest
 
   scoped_ptr<OfflinePageTestArchiver> BuildArchiver(
       const GURL& url,
-      const base::string16& title,
       OfflinePageArchiver::ArchiverResult result);
   scoped_ptr<OfflinePageMetadataStore> BuildStore();
   scoped_ptr<OfflinePageModel> BuildModel();
@@ -223,13 +220,11 @@ class OfflinePageModelTest
 OfflinePageTestArchiver::OfflinePageTestArchiver(
     OfflinePageModelTest* test,
     const GURL& url,
-    const base::string16& title,
     const base::FilePath& archiver_dir,
     ArchiverResult result,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : test_(test),
       url_(url),
-      title_(title),
       archiver_dir_(archiver_dir),
       result_(result),
       create_archive_called_(false),
@@ -254,10 +249,8 @@ void OfflinePageTestArchiver::CompleteCreateArchive() {
   base::FilePath archiver_path;
   ASSERT_TRUE(base::CreateTemporaryFileInDir(archiver_dir_, &archiver_path));
   test_->set_last_archiver_path(archiver_path);
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(callback_, this, result_, url_, title_,
-                            archiver_path,
-                            kTestFileSize));
+  task_runner_->PostTask(FROM_HERE, base::Bind(callback_, this, result_, url_,
+                                               archiver_path, kTestFileSize));
 }
 
 OfflinePageModelTest::OfflinePageModelTest()
@@ -294,10 +287,10 @@ void OfflinePageModelTest::OnDeletePageDone(DeletePageResult result) {
 }
 
 scoped_ptr<OfflinePageTestArchiver> OfflinePageModelTest::BuildArchiver(
-    const GURL& url, const base::string16& title,
+    const GURL& url,
     OfflinePageArchiver::ArchiverResult result) {
   return scoped_ptr<OfflinePageTestArchiver>(new OfflinePageTestArchiver(
-      this, url, title, temp_dir_.path(), result, task_runner()));
+      this, url, temp_dir_.path(), result, task_runner()));
 }
 
 scoped_ptr<OfflinePageMetadataStore> OfflinePageModelTest::BuildStore() {
@@ -328,17 +321,18 @@ OfflinePageTestStore* OfflinePageModelTest::GetStore() {
 }
 
 TEST_F(OfflinePageModelTest, SavePageSuccessful) {
-  scoped_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
-      kTestUrl, kTestPageTitle,
-      OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED).Pass());
-  model()->SavePage(kTestUrl, archiver.Pass(),
-                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
-                               AsWeakPtr()));
+  scoped_ptr<OfflinePageTestArchiver> archiver(
+      BuildArchiver(kTestUrl,
+                    OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED)
+          .Pass());
+  model()->SavePage(
+      kTestUrl, kTestPageBookmarkId1, archiver.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
 
   OfflinePageTestStore* store = GetStore();
   EXPECT_EQ(kTestUrl, store->last_saved_page().url);
-  EXPECT_EQ(kTestPageTitle, store->last_saved_page().title);
+  EXPECT_EQ(kTestPageBookmarkId1, store->last_saved_page().bookmark_id);
   // Save last_archiver_path since it will be referred to later.
   base::FilePath archiver_path = last_archiver_path();
   EXPECT_EQ(archiver_path, store->last_saved_page().file_path);
@@ -353,63 +347,69 @@ TEST_F(OfflinePageModelTest, SavePageSuccessful) {
   EXPECT_EQ(LoadResult::SUCCESS, last_load_result());
   EXPECT_EQ(1UL, last_loaded_pages().size());
   EXPECT_EQ(kTestUrl, last_loaded_pages()[0].url);
-  EXPECT_EQ(kTestPageTitle, last_loaded_pages()[0].title);
+  EXPECT_EQ(kTestPageBookmarkId1, last_loaded_pages()[0].bookmark_id);
   EXPECT_EQ(archiver_path, last_loaded_pages()[0].file_path);
   EXPECT_EQ(kTestFileSize, last_loaded_pages()[0].file_size);
 }
 
 TEST_F(OfflinePageModelTest, SavePageOfflineArchiverCancelled) {
-  scoped_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
-      kTestUrl, kTestPageTitle,
-      OfflinePageArchiver::ArchiverResult::ERROR_CANCELED).Pass());
-  model()->SavePage(kTestUrl, archiver.Pass(),
-                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
-                               AsWeakPtr()));
+  scoped_ptr<OfflinePageTestArchiver> archiver(
+      BuildArchiver(kTestUrl,
+                    OfflinePageArchiver::ArchiverResult::ERROR_CANCELED)
+          .Pass());
+  model()->SavePage(
+      kTestUrl, kTestPageBookmarkId1, archiver.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(SavePageResult::CANCELLED, last_save_result());
 }
 
 TEST_F(OfflinePageModelTest, SavePageOfflineArchiverDeviceFull) {
-  scoped_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
-      kTestUrl, kTestPageTitle,
-      OfflinePageArchiver::ArchiverResult::ERROR_DEVICE_FULL).Pass());
-  model()->SavePage(kTestUrl, archiver.Pass(),
-                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
-                               AsWeakPtr()));
+  scoped_ptr<OfflinePageTestArchiver> archiver(
+      BuildArchiver(kTestUrl,
+                    OfflinePageArchiver::ArchiverResult::ERROR_DEVICE_FULL)
+          .Pass());
+  model()->SavePage(
+      kTestUrl, kTestPageBookmarkId1, archiver.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(SavePageResult::DEVICE_FULL, last_save_result());
 }
 
 TEST_F(OfflinePageModelTest, SavePageOfflineArchiverContentUnavailable) {
-  scoped_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
-      kTestUrl, kTestPageTitle,
-      OfflinePageArchiver::ArchiverResult::ERROR_CONTENT_UNAVAILABLE).Pass());
-  model()->SavePage(kTestUrl, archiver.Pass(),
-                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
-                               AsWeakPtr()));
+  scoped_ptr<OfflinePageTestArchiver> archiver(
+      BuildArchiver(
+          kTestUrl,
+          OfflinePageArchiver::ArchiverResult::ERROR_CONTENT_UNAVAILABLE)
+          .Pass());
+  model()->SavePage(
+      kTestUrl, kTestPageBookmarkId1, archiver.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(SavePageResult::CONTENT_UNAVAILABLE, last_save_result());
 }
 
 TEST_F(OfflinePageModelTest, SavePageOfflineCreationFailed) {
-  scoped_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
-      kTestUrl, kTestPageTitle,
-      OfflinePageArchiver::ArchiverResult::ERROR_ARCHIVE_CREATION_FAILED).
-          Pass());
-  model()->SavePage(kTestUrl, archiver.Pass(),
-                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
-                               AsWeakPtr()));
+  scoped_ptr<OfflinePageTestArchiver> archiver(
+      BuildArchiver(
+          kTestUrl,
+          OfflinePageArchiver::ArchiverResult::ERROR_ARCHIVE_CREATION_FAILED)
+          .Pass());
+  model()->SavePage(
+      kTestUrl, kTestPageBookmarkId1, archiver.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(SavePageResult::ARCHIVE_CREATION_FAILED, last_save_result());
 }
 
 TEST_F(OfflinePageModelTest, SavePageOfflineArchiverReturnedWrongUrl) {
-  scoped_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
-      GURL("http://other.random.url.com"), kTestPageTitle,
-      OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED).Pass());
-  model()->SavePage(kTestUrl, archiver.Pass(),
-                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
-                               AsWeakPtr()));
+  scoped_ptr<OfflinePageTestArchiver> archiver(
+      BuildArchiver(GURL("http://other.random.url.com"),
+                    OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED)
+          .Pass());
+  model()->SavePage(
+      kTestUrl, kTestPageBookmarkId1, archiver.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(SavePageResult::ARCHIVE_CREATION_FAILED, last_save_result());
 }
@@ -417,42 +417,45 @@ TEST_F(OfflinePageModelTest, SavePageOfflineArchiverReturnedWrongUrl) {
 TEST_F(OfflinePageModelTest, SavePageOfflineCreationStoreWriteFailure) {
   GetStore()->set_test_scenario(
       OfflinePageTestStore::TestScenario::WRITE_FAILED);
-  scoped_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
-      kTestUrl, kTestPageTitle,
-      OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED).Pass());
-  model()->SavePage(kTestUrl, archiver.Pass(),
-                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
-                               AsWeakPtr()));
+  scoped_ptr<OfflinePageTestArchiver> archiver(
+      BuildArchiver(kTestUrl,
+                    OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED)
+          .Pass());
+  model()->SavePage(
+      kTestUrl, kTestPageBookmarkId1, archiver.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(SavePageResult::STORE_FAILURE, last_save_result());
 }
 
 TEST_F(OfflinePageModelTest, SavePageOfflineArchiverTwoPages) {
-  scoped_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
-      kTestUrl, kTestPageTitle,
-      OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED).Pass());
+  scoped_ptr<OfflinePageTestArchiver> archiver(
+      BuildArchiver(kTestUrl,
+                    OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED)
+          .Pass());
   // archiver_ptr will be valid until after first PumpLoop() call after
   // CompleteCreateArchive() is called.
   OfflinePageTestArchiver* archiver_ptr = archiver.get();
   archiver_ptr->set_delayed(true);
-  model()->SavePage(kTestUrl, archiver.Pass(),
-                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
-                               AsWeakPtr()));
+  model()->SavePage(
+      kTestUrl, kTestPageBookmarkId1, archiver.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
   EXPECT_TRUE(archiver_ptr->create_archive_called());
 
   // Request to save another page.
-  scoped_ptr<OfflinePageTestArchiver> archiver2(BuildArchiver(
-      kTestUrl2, kTestPageTitle2,
-      OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED).Pass());
-  model()->SavePage(kTestUrl2, archiver2.Pass(),
-                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
-                               AsWeakPtr()));
+  scoped_ptr<OfflinePageTestArchiver> archiver2(
+      BuildArchiver(kTestUrl2,
+                    OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED)
+          .Pass());
+  model()->SavePage(
+      kTestUrl2, kTestPageBookmarkId2, archiver2.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
 
   OfflinePageTestStore* store = GetStore();
 
   EXPECT_EQ(kTestUrl2, store->last_saved_page().url);
-  EXPECT_EQ(kTestPageTitle2, store->last_saved_page().title);
+  EXPECT_EQ(kTestPageBookmarkId2, store->last_saved_page().bookmark_id);
   base::FilePath archiver_path2 = last_archiver_path();
   EXPECT_EQ(archiver_path2, store->last_saved_page().file_path);
   EXPECT_EQ(kTestFileSize, store->last_saved_page().file_size);
@@ -465,7 +468,7 @@ TEST_F(OfflinePageModelTest, SavePageOfflineArchiverTwoPages) {
   PumpLoop();
 
   EXPECT_EQ(kTestUrl, store->last_saved_page().url);
-  EXPECT_EQ(kTestPageTitle, store->last_saved_page().title);
+  EXPECT_EQ(kTestPageBookmarkId1, store->last_saved_page().bookmark_id);
   base::FilePath archiver_path = last_archiver_path();
   EXPECT_EQ(archiver_path, store->last_saved_page().file_path);
   EXPECT_EQ(kTestFileSize, store->last_saved_page().file_size);
@@ -479,11 +482,11 @@ TEST_F(OfflinePageModelTest, SavePageOfflineArchiverTwoPages) {
   EXPECT_EQ(LoadResult::SUCCESS, last_load_result());
   EXPECT_EQ(2UL, last_loaded_pages().size());
   EXPECT_EQ(kTestUrl2, last_loaded_pages()[0].url);
-  EXPECT_EQ(kTestPageTitle2, last_loaded_pages()[0].title);
+  EXPECT_EQ(kTestPageBookmarkId2, last_loaded_pages()[0].bookmark_id);
   EXPECT_EQ(archiver_path2, last_loaded_pages()[0].file_path);
   EXPECT_EQ(kTestFileSize, last_loaded_pages()[0].file_size);
   EXPECT_EQ(kTestUrl, last_loaded_pages()[1].url);
-  EXPECT_EQ(kTestPageTitle, last_loaded_pages()[1].title);
+  EXPECT_EQ(kTestPageBookmarkId1, last_loaded_pages()[1].bookmark_id);
   EXPECT_EQ(archiver_path, last_loaded_pages()[1].file_path);
   EXPECT_EQ(kTestFileSize, last_loaded_pages()[1].file_size);
 }
@@ -510,12 +513,13 @@ TEST_F(OfflinePageModelTest, DeletePageSuccessful) {
   OfflinePageTestStore* store = GetStore();
 
   // Save one page.
-  scoped_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
-      kTestUrl, kTestPageTitle,
-      OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED).Pass());
-  model()->SavePage(kTestUrl, archiver.Pass(),
-                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
-                               AsWeakPtr()));
+  scoped_ptr<OfflinePageTestArchiver> archiver(
+      BuildArchiver(kTestUrl,
+                    OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED)
+          .Pass());
+  model()->SavePage(
+      kTestUrl, kTestPageBookmarkId1, archiver.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
 
   EXPECT_EQ(SavePageResult::SUCCESS, last_save_result());
@@ -524,12 +528,13 @@ TEST_F(OfflinePageModelTest, DeletePageSuccessful) {
   ResetResults();
 
   // Save another page.
-  scoped_ptr<OfflinePageTestArchiver> archiver2(BuildArchiver(
-      kTestUrl2, kTestPageTitle2,
-      OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED).Pass());
-  model()->SavePage(kTestUrl2, archiver2.Pass(),
-                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
-                               AsWeakPtr()));
+  scoped_ptr<OfflinePageTestArchiver> archiver2(
+      BuildArchiver(kTestUrl2,
+                    OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED)
+          .Pass());
+  model()->SavePage(
+      kTestUrl2, kTestPageBookmarkId2, archiver2.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
 
   EXPECT_EQ(SavePageResult::SUCCESS, last_save_result());
@@ -581,12 +586,13 @@ TEST_F(OfflinePageModelTest, DeletePageNotFound) {
 
 TEST_F(OfflinePageModelTest, DeletePageStoreFailureOnRemove) {
   // Save a page.
-  scoped_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
-      kTestUrl, kTestPageTitle,
-      OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED).Pass());
-  model()->SavePage(kTestUrl, archiver.Pass(),
-                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
-                               AsWeakPtr()));
+  scoped_ptr<OfflinePageTestArchiver> archiver(
+      BuildArchiver(kTestUrl,
+                    OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED)
+          .Pass());
+  model()->SavePage(
+      kTestUrl, kTestPageBookmarkId1, archiver.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
 
   ResetResults();

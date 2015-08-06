@@ -29,7 +29,7 @@ void OfflinePageItemToEntry(const OfflinePageItem& item,
                             offline_pages::OfflinePageEntry* item_proto) {
   DCHECK(item_proto);
   item_proto->set_url(item.url.spec());
-  item_proto->set_title(base::UTF16ToUTF8(item.title));
+  item_proto->set_bookmark_id(item.bookmark_id);
   item_proto->set_version(item.version);
   std::string path_string;
 #if defined(OS_POSIX)
@@ -46,12 +46,12 @@ void OfflinePageItemToEntry(const OfflinePageItem& item,
 bool OfflinePageItemFromEntry(const offline_pages::OfflinePageEntry& item_proto,
                               OfflinePageItem* item) {
   DCHECK(item);
-  if (!item_proto.has_url() || !item_proto.has_title() ||
+  if (!item_proto.has_url() || !item_proto.has_bookmark_id() ||
       !item_proto.has_version() || !item_proto.has_file_path()) {
     return false;
   }
   item->url = GURL(item_proto.url());
-  item->title = base::UTF8ToUTF16(item_proto.title());
+  item->bookmark_id = item_proto.bookmark_id();
   item->version = item_proto.version();
 #if defined(OS_POSIX)
   item->file_path = base::FilePath(item_proto.file_path());

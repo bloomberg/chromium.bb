@@ -41,7 +41,8 @@ class OfflinePageBridge {
   void SavePage(JNIEnv* env,
                 jobject obj,
                 jobject j_callback_obj,
-                jobject j_web_contents);
+                jobject j_web_contents,
+                jlong bookmark_id);
 
  private:
   base::FilePath GetDownloadsPath() const;

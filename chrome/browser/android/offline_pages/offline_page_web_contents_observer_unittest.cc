@@ -21,7 +21,6 @@ namespace offline_pages {
 namespace {
 
 const GURL kTestURL("http://example.com/");
-const base::string16 kTestTitle = base::ASCIIToUTF16("Test page title");
 const base::FilePath::CharType kTestFilePath[] = FILE_PATH_LITERAL(
     "/archive_dir/offline_page.mhtml");
 const int64 kTestFileSize = 123456LL;
@@ -31,7 +30,6 @@ class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
   TestMHTMLArchiver(
       content::WebContents* web_contents,
       const GURL& url,
-      const base::string16& title,
       const base::FilePath& archive_dir);
   ~TestMHTMLArchiver() override;
 
@@ -39,19 +37,14 @@ class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
   void DoGenerateMHTML() override;
 
   const GURL url_;
-  const base::string16 title_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMHTMLArchiver);
 };
 
-TestMHTMLArchiver::TestMHTMLArchiver(
-    content::WebContents* web_contents,
-    const GURL& url,
-    const base::string16& title,
-    const base::FilePath& archive_dir)
-    : OfflinePageMHTMLArchiver(web_contents, archive_dir),
-      url_(url),
-      title_(title) {
+TestMHTMLArchiver::TestMHTMLArchiver(content::WebContents* web_contents,
+                                     const GURL& url,
+                                     const base::FilePath& archive_dir)
+    : OfflinePageMHTMLArchiver(web_contents, archive_dir), url_(url) {
 }
 
 TestMHTMLArchiver::~TestMHTMLArchiver() {
@@ -63,7 +56,6 @@ void TestMHTMLArchiver::DoGenerateMHTML() {
       base::Bind(&TestMHTMLArchiver::OnGenerateMHTMLDone,
                  base::Unretained(this),
                  url_,
-                 title_,
                  base::FilePath(kTestFilePath),
                  kTestFileSize));
 }
@@ -80,7 +72,7 @@ class OfflinePageWebContentsObserverTest :
   void TearDown() override;
 
   // Helper to create an archiver and call its CreateArchive.
-  void CreateArchive(const GURL& url, const base::string16& title);
+  void CreateArchive(const GURL& url);
 
   // Test tooling methods.
   void PumpLoop();
@@ -97,7 +89,6 @@ class OfflinePageWebContentsObserverTest :
   void OnCreateArchiveDone(OfflinePageArchiver* archiver,
                            OfflinePageArchiver::ArchiverResult result,
                            const GURL& url,
-                           const base::string16& title,
                            const base::FilePath& file_path,
                            int64 file_size);
 
@@ -129,11 +120,9 @@ void OfflinePageWebContentsObserverTest::TearDown() {
   content::RenderViewHostTestHarness::TearDown();
 }
 
-void OfflinePageWebContentsObserverTest::CreateArchive(
-    const GURL& url,
-    const base::string16& title) {
-  archiver_.reset(new TestMHTMLArchiver(
-      web_contents(), url, title, base::FilePath(kTestFilePath)));
+void OfflinePageWebContentsObserverTest::CreateArchive(const GURL& url) {
+  archiver_.reset(new TestMHTMLArchiver(web_contents(), url,
+                                        base::FilePath(kTestFilePath)));
   archiver_->CreateArchive(
       base::Bind(&OfflinePageWebContentsObserverTest::OnCreateArchiveDone,
                  base::Unretained(this)));
@@ -143,7 +132,6 @@ void OfflinePageWebContentsObserverTest::OnCreateArchiveDone(
     OfflinePageArchiver* archiver,
     OfflinePageArchiver::ArchiverResult result,
     const GURL& url,
-    const base::string16& title,
     const base::FilePath& file_path,
     int64 file_size) {
   last_result_ = result;
@@ -167,7 +155,7 @@ TEST_F(OfflinePageWebContentsObserverTest, LoadMainFrameBeforeCreateArchive) {
   ASSERT_TRUE(web_contents_observer()->is_document_loaded_in_main_frame());
 
   // Create an archive.
-  CreateArchive(kTestURL, kTestTitle);
+  CreateArchive(kTestURL);
 
   PumpLoop();
   EXPECT_EQ(OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED,
@@ -184,7 +172,7 @@ TEST_F(OfflinePageWebContentsObserverTest, LoadMainFrameAfterCreateArchive) {
   ASSERT_FALSE(web_contents_observer()->is_document_loaded_in_main_frame());
 
   // Create an archive. Waiting for document loaded in main frame.
-  CreateArchive(kTestURL, kTestTitle);
+  CreateArchive(kTestURL);
 
   PumpLoop();
   EXPECT_NE(OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED,
@@ -217,7 +205,7 @@ TEST_F(OfflinePageWebContentsObserverTest, ResetOnPageNavigation) {
   ASSERT_FALSE(web_contents_observer()->is_document_loaded_in_main_frame());
 
   // Create an archive. Waiting for document loaded in main frame.
-  CreateArchive(kTestURL, kTestTitle);
+  CreateArchive(kTestURL);
 
   PumpLoop();
   EXPECT_NE(OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED,

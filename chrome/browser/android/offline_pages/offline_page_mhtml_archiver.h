@@ -60,7 +60,6 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
 
   // Callback for Generating MHTML.
   void OnGenerateMHTMLDone(const GURL& url,
-                           const base::string16& title,
                            const base::FilePath& file_path,
                            int64 file_size);
 
@@ -68,7 +67,6 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
   // creation.
   void ReportResult(ArchiverResult result,
                     const GURL& url,
-                    const base::string16& title,
                     const base::FilePath& file_path,
                     int64 file_size);
   void ReportFailure(ArchiverResult result);
