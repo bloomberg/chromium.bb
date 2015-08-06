@@ -472,7 +472,7 @@ source_set("core_generated") {
   cflags = []
   defines = []
 
-  if (is_win && component_mode == "shared_library") {
+  if (is_win && is_component_build) {
     defines += [ "USING_V8_SHARED" ]
   }
 

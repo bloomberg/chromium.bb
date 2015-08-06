@@ -43,7 +43,7 @@ config("config") {
   }
 
   if (is_win) {
-    if (component_mode == "shared_library") {
+    if (is_component_build) {
       defines += [ "USING_V8_SHARED" ]
     }
   } else {  # ! Windows
