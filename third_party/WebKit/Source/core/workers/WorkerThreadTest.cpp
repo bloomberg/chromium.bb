@@ -56,17 +56,25 @@ public:
     MOCK_METHOD0(willDestroyWorkerGlobalScope, void());
 };
 
+void notifyScriptLoadedEventToWorkerThreadForTest(WorkerThread*);
+
 class FakeWorkerGlobalScope : public WorkerGlobalScope {
 public:
     typedef WorkerGlobalScope Base;
 
     FakeWorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, const SecurityOrigin* starterOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
         : WorkerGlobalScope(url, userAgent, thread, monotonicallyIncreasingTime(), starterOrigin, workerClients)
+        , m_thread(thread)
     {
     }
 
     ~FakeWorkerGlobalScope() override
     {
+    }
+
+    void scriptLoaded(size_t, size_t) override
+    {
+        notifyScriptLoadedEventToWorkerThreadForTest(m_thread);
     }
 
     // EventTarget
@@ -78,6 +86,9 @@ public:
     void logExceptionToConsole(const String&, int, const String&, int, int, PassRefPtrWillBeRawPtr<ScriptCallStack>) override
     {
     }
+
+private:
+    WorkerThread* m_thread;
 };
 
 class WorkerThreadForTest : public WorkerThread {
@@ -87,6 +98,7 @@ public:
         WorkerReportingProxy& mockWorkerReportingProxy)
         : WorkerThread(WorkerLoaderProxy::create(mockWorkerLoaderProxyProvider), mockWorkerReportingProxy)
         , m_thread(WebThreadSupportingGC::create("Test thread"))
+        , m_scriptLoadedEvent(adoptPtr(Platform::current()->createWaitableEvent()))
     {
     }
 
@@ -105,9 +117,25 @@ public:
         return adoptRefWillBeNoop(new FakeWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, this, startupData->m_starterOrigin, startupData->m_workerClients.release()));
     }
 
+    void waitUntilScriptLoaded()
+    {
+        m_scriptLoadedEvent->wait();
+    }
+
+    void scriptLoaded()
+    {
+        m_scriptLoadedEvent->signal();
+    }
+
 private:
     OwnPtr<WebThreadSupportingGC> m_thread;
+    OwnPtr<WebWaitableEvent> m_scriptLoadedEvent;
 };
+
+void notifyScriptLoadedEventToWorkerThreadForTest(WorkerThread* thread)
+{
+    static_cast<WorkerThreadForTest*>(thread)->scriptLoaded();
+}
 
 class WakeupTask : public WebThread::Task {
 public:
@@ -169,6 +197,11 @@ public:
 
     void start()
     {
+        startWithSourceCode("//fake source code");
+    }
+
+    void startWithSourceCode(const String& source)
+    {
         OwnPtr<Vector<CSPHeaderAndType>> headers = adoptPtr(new Vector<CSPHeaderAndType>());
         CSPHeaderAndType headerAndType("contentSecurityPolicy", ContentSecurityPolicyHeaderTypeReport);
         headers->append(headerAndType);
@@ -178,7 +211,7 @@ public:
         m_workerThread->start(WorkerThreadStartupData::create(
             KURL(ParsedURLString, "http://fake.url/"),
             "fake user agent",
-            "//fake source code",
+            source,
             nullptr,
             DontPauseWorkerGlobalScopeOnStart,
             headers.release(),
@@ -219,11 +252,34 @@ TEST_F(WorkerThreadTest, StartAndStop)
 
 TEST_F(WorkerThreadTest, StartAndStopImmediately)
 {
-    EXPECT_CALL(*m_mockWorkerReportingProxy, workerGlobalScopeStarted(_)).Times(AtMost(1));
-    EXPECT_CALL(*m_mockWorkerReportingProxy, didEvaluateWorkerScript(true)).Times(AtMost(1));
-    EXPECT_CALL(*m_mockWorkerReportingProxy, workerThreadTerminated()).Times(AtMost(1));
-    EXPECT_CALL(*m_mockWorkerReportingProxy, willDestroyWorkerGlobalScope()).Times(AtMost(1));
+    EXPECT_CALL(*m_mockWorkerReportingProxy, workerGlobalScopeStarted(_))
+        .Times(AtMost(1));
+    EXPECT_CALL(*m_mockWorkerReportingProxy, didEvaluateWorkerScript(true))
+        .Times(AtMost(1));
+    EXPECT_CALL(*m_mockWorkerReportingProxy, workerThreadTerminated())
+        .Times(AtMost(1));
+    EXPECT_CALL(*m_mockWorkerReportingProxy, willDestroyWorkerGlobalScope())
+        .Times(AtMost(1));
     start();
+    m_workerThread->terminateAndWait();
+}
+
+TEST_F(WorkerThreadTest, StartAndStopOnScriptLoaded)
+{
+    // Use a JavaScript source code that makes an infinite loop so that we can
+    // catch some kind of issues as a timeout.
+    const String source("while(true) {}");
+
+    EXPECT_CALL(*m_mockWorkerReportingProxy, workerGlobalScopeStarted(_))
+        .Times(AtMost(1));
+    EXPECT_CALL(*m_mockWorkerReportingProxy, didEvaluateWorkerScript(_))
+        .Times(AtMost(1));
+    EXPECT_CALL(*m_mockWorkerReportingProxy, workerThreadTerminated())
+        .Times(AtMost(1));
+    EXPECT_CALL(*m_mockWorkerReportingProxy, willDestroyWorkerGlobalScope())
+        .Times(AtMost(1));
+    startWithSourceCode(source);
+    m_workerThread->waitUntilScriptLoaded();
     m_workerThread->terminateAndWait();
 }
 

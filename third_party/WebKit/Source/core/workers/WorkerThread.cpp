@@ -237,21 +237,21 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
         }
         m_workerGlobalScope = createWorkerGlobalScope(startupData);
         m_workerGlobalScope->scriptLoaded(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
+
+        // The corresponding call to didStopRunLoop() is in ~WorkerScriptController().
+        didStartRunLoop();
+
+        // Notify proxy that a new WorkerGlobalScope has been created and started.
+        m_workerReportingProxy.workerGlobalScopeStarted(m_workerGlobalScope.get());
+
+        WorkerScriptController* script = m_workerGlobalScope->script();
+        if (!script->isExecutionForbidden())
+            script->initializeContextIfNeeded();
     }
-
-    // The corresponding call to didStopRunLoop() is in ~WorkerScriptController().
-    didStartRunLoop();
-
-    // Notify proxy that a new WorkerGlobalScope has been created and started.
-    m_workerReportingProxy.workerGlobalScopeStarted(m_workerGlobalScope.get());
-
-    WorkerScriptController* script = m_workerGlobalScope->script();
-    if (!script->isExecutionForbidden())
-        script->initializeContextIfNeeded();
     m_workerGlobalScope->workerInspectorController()->workerContextInitialized(startMode == PauseWorkerGlobalScopeOnStart);
 
     OwnPtrWillBeRawPtr<CachedMetadataHandler> handler(workerGlobalScope()->createWorkerScriptCachedMetadataHandler(scriptURL, cachedMetaData.get()));
-    bool success = script->evaluate(ScriptSourceCode(sourceCode, scriptURL), nullptr, handler.get(), v8CacheOptions);
+    bool success = m_workerGlobalScope->script()->evaluate(ScriptSourceCode(sourceCode, scriptURL), nullptr, handler.get(), v8CacheOptions);
     m_workerGlobalScope->didEvaluateWorkerScript();
     m_workerReportingProxy.didEvaluateWorkerScript(success);
 
