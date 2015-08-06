@@ -145,8 +145,11 @@ INSTANTIATE_TEST_CASE_P(SRC_ClearKey, EncryptedMediaTest,
                         Combine(Values(kClearKeyKeySystem), Values(SRC)));
 #endif  // !defined(OS_ANDROID)
 
+#if !defined(OS_WIN)
+// Flaky on Windows. http://crbug.com/517018#c6
 INSTANTIATE_TEST_CASE_P(MSE_ClearKey, EncryptedMediaTest,
                         Combine(Values(kClearKeyKeySystem), Values(MSE)));
+#endif
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
   TestSimplePlayback("bear-a_enc-a.webm", kWebMAudioOnly);
