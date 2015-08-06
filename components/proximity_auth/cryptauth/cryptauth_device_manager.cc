@@ -261,6 +261,12 @@ void CryptAuthDeviceManager::OnSyncRequested(
   int reason_stored_in_prefs =
       pref_service_->GetInteger(prefs::kCryptAuthDeviceSyncReason);
 
+  // If the sync attempt is not forced, it is acceptable for CryptAuth to return
+  // a cached copy of the user's devices, rather taking a database hit for the
+  // freshest data.
+  bool is_sync_speculative =
+      reason_stored_in_prefs != cryptauth::INVOCATION_REASON_UNKNOWN;
+
   if (cryptauth::InvocationReason_IsValid(reason_stored_in_prefs) &&
       reason_stored_in_prefs != cryptauth::INVOCATION_REASON_UNKNOWN) {
     invocation_reason =
@@ -275,6 +281,7 @@ void CryptAuthDeviceManager::OnSyncRequested(
 
   cryptauth::GetMyDevicesRequest request;
   request.set_invocation_reason(invocation_reason);
+  request.set_allow_stale_read(is_sync_speculative);
   cryptauth_client_->GetMyDevices(
       request, base::Bind(&CryptAuthDeviceManager::OnGetMyDevicesSuccess,
                           weak_ptr_factory_.GetWeakPtr()),

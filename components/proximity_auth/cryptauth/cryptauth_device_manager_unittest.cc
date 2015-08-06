@@ -244,6 +244,12 @@ class ProximityAuthCryptAuthDeviceManagerTest
 
     EXPECT_EQ(expected_invocation_reason,
               get_my_devices_request_.invocation_reason());
+
+    // The allow_stale_read flag is set if the sync was not forced.
+    bool allow_stale_read =
+        pref_service_.GetInteger(prefs::kCryptAuthDeviceSyncReason) !=
+        cryptauth::INVOCATION_REASON_UNKNOWN;
+    EXPECT_EQ(allow_stale_read, get_my_devices_request_.allow_stale_read());
   }
 
   // MockCryptAuthClientFactory::Observer:
@@ -440,6 +446,44 @@ TEST_F(ProximityAuthCryptAuthDeviceManagerTest, ForceSyncFailsThenSucceeds) {
       pref_service_.GetDouble(prefs::kCryptAuthDeviceSyncLastSyncTimeSeconds));
   EXPECT_EQ(static_cast<int>(cryptauth::INVOCATION_REASON_UNKNOWN),
             pref_service_.GetInteger(prefs::kCryptAuthDeviceSyncReason));
+  EXPECT_FALSE(pref_service_.GetBoolean(
+      prefs::kCryptAuthDeviceSyncIsRecoveringFromFailure));
+}
+
+TEST_F(ProximityAuthCryptAuthDeviceManagerTest, PeriodicSyncFailsThenSucceeds) {
+  device_manager_.Start();
+  base::Time old_sync_time = device_manager_.GetLastSyncTime();
+
+  // The first periodic sync fails.
+  FireSchedulerForSync(cryptauth::INVOCATION_REASON_PERIODIC);
+  clock_->SetNow(base::Time::FromDoubleT(kLaterTimeNowSeconds));
+  EXPECT_CALL(*this,
+              OnSyncFinishedProxy(
+                  CryptAuthDeviceManager::SyncResult::FAILURE,
+                  CryptAuthDeviceManager::DeviceChangeResult::UNCHANGED));
+  error_callback_.Run("401");
+  EXPECT_EQ(old_sync_time, device_manager_.GetLastSyncTime());
+  EXPECT_TRUE(pref_service_.GetBoolean(
+      prefs::kCryptAuthDeviceSyncIsRecoveringFromFailure));
+
+  // The second recovery sync succeeds.
+  ON_CALL(*sync_scheduler(), GetStrategy())
+      .WillByDefault(Return(SyncScheduler::Strategy::AGGRESSIVE_RECOVERY));
+  FireSchedulerForSync(cryptauth::INVOCATION_REASON_FAILURE_RECOVERY);
+  clock_->SetNow(base::Time::FromDoubleT(kLaterTimeNowSeconds + 30));
+  EXPECT_CALL(*this, OnSyncFinishedProxy(
+                         CryptAuthDeviceManager::SyncResult::SUCCESS,
+                         CryptAuthDeviceManager::DeviceChangeResult::CHANGED));
+  success_callback_.Run(get_my_devices_response_);
+  EXPECT_EQ(clock_->Now(), device_manager_.GetLastSyncTime());
+
+  ExpectUnlockKeysAndPrefAreEqual(std::vector<cryptauth::ExternalDeviceInfo>(
+                                      1, get_my_devices_response_.devices(0)),
+                                  device_manager_.unlock_keys(), pref_service_);
+
+  EXPECT_FLOAT_EQ(
+      clock_->Now().ToDoubleT(),
+      pref_service_.GetDouble(prefs::kCryptAuthDeviceSyncLastSyncTimeSeconds));
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kCryptAuthDeviceSyncIsRecoveringFromFailure));
 }
