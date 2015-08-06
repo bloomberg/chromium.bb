@@ -40,7 +40,8 @@ class RasterBufferImpl : public RasterBuffer {
                 const gfx::Rect& raster_full_rect,
                 const gfx::Rect& raster_dirty_rect,
                 uint64_t new_content_id,
-                float scale) override {
+                float scale,
+                bool include_images) override {
     if (!memory_)
       return;
 
@@ -49,7 +50,7 @@ class RasterBufferImpl : public RasterBuffer {
     TileTaskWorkerPool::PlaybackToMemory(
         memory_, resource_->format(), resource_->size(),
         static_cast<size_t>(stride_), raster_source, raster_full_rect,
-        raster_full_rect, scale);
+        raster_full_rect, scale, include_images);
   }
 
  private:

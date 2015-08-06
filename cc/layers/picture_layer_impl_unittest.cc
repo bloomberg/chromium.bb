@@ -4983,7 +4983,7 @@ TEST_F(TileSizeTest, TileSizes) {
   EXPECT_EQ(result.height(), 500 + 2);
 }
 
-TEST_F(NoLowResPictureLayerImplTest, HighResLowResCollision) {
+TEST_F(NoLowResPictureLayerImplTest, LowResWasHighResCollision) {
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(1300, 1900);
 
@@ -5011,6 +5011,64 @@ TEST_F(NoLowResPictureLayerImplTest, HighResLowResCollision) {
   SetContentsScaleOnBothLayers(zoomed, 1.0f, zoomed, 1.0f, 0.f, false);
   EXPECT_EQ(1u, pending_layer_->num_tilings());
   EXPECT_EQ(zoomed, pending_layer_->tilings()->tiling_at(0)->contents_scale());
+}
+
+TEST_F(PictureLayerImplTest, HighResWasLowResCollision) {
+  gfx::Size tile_size(400, 400);
+  gfx::Size layer_bounds(1300, 1900);
+
+  float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+  // Set up the high and low res tilings before pinch zoom.
+  SetupTrees(pending_pile, active_pile);
+  ResetTilingsAndRasterScales();
+
+  float page_scale = 4.f;
+  float low_res = page_scale * low_res_factor;
+  float extra_low_res = low_res * low_res_factor;
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, page_scale, 1.0f, page_scale,
+                                    1.0f, 0.f, false);
+  EXPECT_EQ(2u, active_layer_->tilings()->num_tilings());
+  EXPECT_EQ(page_scale,
+            active_layer_->tilings()->tiling_at(0)->contents_scale());
+  EXPECT_EQ(low_res, active_layer_->tilings()->tiling_at(1)->contents_scale());
+
+  // Grab a current low res tile.
+  PictureLayerTiling* old_low_res_tiling =
+      active_layer_->tilings()->tiling_at(1);
+  Tile* old_low_res_tile = active_layer_->tilings()->tiling_at(1)->TileAt(0, 0);
+
+  host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
+
+  // Zoom in to exactly the low res factor so that the previous low res
+  // would be equal to the current high res.
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, low_res, 1.0f, low_res, 1.0f,
+                                    0.f, false);
+  // 3 tilings. The old high res, the new high res (old low res) and the new low
+  // res.
+  EXPECT_EQ(3u, active_layer_->num_tilings());
+  PictureLayerTilingSet* tilings = active_layer_->tilings();
+  EXPECT_EQ(page_scale, tilings->tiling_at(0)->contents_scale());
+  EXPECT_EQ(low_res, tilings->tiling_at(1)->contents_scale());
+  EXPECT_EQ(extra_low_res, tilings->tiling_at(2)->contents_scale());
+
+  EXPECT_EQ(NON_IDEAL_RESOLUTION, tilings->tiling_at(0)->resolution());
+  EXPECT_EQ(HIGH_RESOLUTION, tilings->tiling_at(1)->resolution());
+  EXPECT_EQ(LOW_RESOLUTION, tilings->tiling_at(2)->resolution());
+
+  EXPECT_FALSE(tilings->tiling_at(0)->was_ever_low_resolution());
+  EXPECT_TRUE(tilings->tiling_at(1)->was_ever_low_resolution());
+  EXPECT_TRUE(tilings->tiling_at(2)->was_ever_low_resolution());
+
+  // The old low res tile was destroyed and replaced.
+  EXPECT_EQ(old_low_res_tiling, tilings->tiling_at(1));
+  EXPECT_NE(old_low_res_tile, tilings->tiling_at(1)->TileAt(0, 0));
+  EXPECT_TRUE(tilings->tiling_at(1)->TileAt(0, 0));
 }
 
 }  // namespace

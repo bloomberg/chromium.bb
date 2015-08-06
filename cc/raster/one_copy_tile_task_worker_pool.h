@@ -72,7 +72,8 @@ class CC_EXPORT OneCopyTileTaskWorkerPool : public TileTaskWorkerPool,
       const RasterSource* raster_source,
       const gfx::Rect& raster_full_rect,
       const gfx::Rect& raster_dirty_rect,
-      float scale);
+      float scale,
+      bool include_images);
 
   // Issues copy operations until |sequence| has been processed. This will
   // return immediately if |sequence| has already been processed.

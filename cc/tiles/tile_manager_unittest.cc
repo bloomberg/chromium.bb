@@ -4,8 +4,11 @@
 
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
+#include "cc/playback/display_list_raster_source.h"
+#include "cc/playback/display_list_recording_source.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/test/begin_frame_args_test.h"
+#include "cc/test/fake_display_list_recording_source.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
@@ -107,7 +110,7 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
     SetupPendingTree(pending_pile);
   }
 
-  void SetupPendingTree(scoped_refptr<PicturePileImpl> pile) {
+  void SetupPendingTree(scoped_refptr<RasterSource> pile) {
     host_impl_.CreatePendingTree();
     LayerTreeImpl* pending_tree = host_impl_.pending_tree();
 
@@ -1415,11 +1418,11 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterQueueAllUsesCorrectTileBounds) {
   FakePictureLayerTilingClient pending_client;
   pending_client.SetTileSize(gfx::Size(64, 64));
 
-  auto tiling_set = PictureLayerTilingSet::Create(
+  scoped_ptr<PictureLayerTilingSet> tiling_set = PictureLayerTilingSet::Create(
       WhichTree::ACTIVE_TREE, &pending_client, 1.0f, 1.0f, 1000);
   pending_client.set_twin_tiling_set(tiling_set.get());
 
-  auto tiling = tiling_set->AddTiling(1.0f, pile);
+  auto* tiling = tiling_set->AddTiling(1.0f, pile);
 
   tiling->CreateAllTilesForTesting();
   tiling->set_resolution(HIGH_RESOLUTION);
@@ -1475,7 +1478,8 @@ class TileManagerTest : public testing::Test {
                           SharedBitmapManager* manager,
                           TaskGraphRunner* task_graph_runner)
         : FakeLayerTreeHostImpl(proxy, manager, task_graph_runner) {
-      InitializeRenderer(FakeOutputSurface::Create3d());
+      InitializeRenderer(FakeOutputSurface::CreateSoftware(
+          make_scoped_ptr(new SoftwareOutputDevice)));
     }
 
     MOCK_METHOD0(NotifyAllTileTasksCompleted, void());
@@ -1512,6 +1516,87 @@ TEST_F(TileManagerTest, AllWorkFinishedTest) {
     host_impl_.tile_manager()->SetMoreTilesNeedToBeRasterizedForTesting();
     EXPECT_TRUE(host_impl_.tile_manager()->HasScheduledTileTasksForTesting());
     run_loop.Run();
+  }
+}
+
+TEST_F(TileManagerTest, LowResHasNoImage) {
+  gfx::Size size(10, 12);
+  TileResolution resolutions[] = {HIGH_RESOLUTION, LOW_RESOLUTION};
+
+  for (size_t i = 0; i < arraysize(resolutions); ++i) {
+    SCOPED_TRACE(resolutions[i]);
+
+    // Make a RasterSource that will draw a blue bitmap image.
+    SkBitmap blue_bitmap;
+    blue_bitmap.allocN32Pixels(size.width(), size.height(), true);
+    blue_bitmap.eraseColor(SK_ColorBLUE);
+    scoped_ptr<FakeDisplayListRecordingSource> recording_source =
+        FakeDisplayListRecordingSource::CreateFilledRecordingSource(size);
+    recording_source->SetBackgroundColor(SK_ColorTRANSPARENT);
+    recording_source->SetRequiresClear(true);
+    recording_source->SetClearCanvasWithDebugColor(false);
+    SkPaint paint;
+    paint.setColor(SK_ColorGREEN);
+    recording_source->add_draw_rect_with_paint(gfx::Rect(size), paint);
+    recording_source->add_draw_bitmap(blue_bitmap, gfx::Point());
+    recording_source->Rerecord();
+    scoped_refptr<DisplayListRasterSource> raster =
+        DisplayListRasterSource::CreateFromDisplayListRecordingSource(
+            recording_source.get(), false);
+
+    FakePictureLayerTilingClient tiling_client;
+    tiling_client.SetTileSize(size);
+
+    scoped_ptr<PictureLayerImpl> layer =
+        PictureLayerImpl::Create(host_impl_.active_tree(), 1, false, nullptr);
+    PictureLayerTilingSet* tiling_set = layer->picture_layer_tiling_set();
+
+    auto* tiling = tiling_set->AddTiling(1.0f, raster);
+    tiling->CreateAllTilesForTesting();
+    tiling->set_resolution(resolutions[i]);
+    tiling->SetTilePriorityRectsForTesting(
+        gfx::Rect(size),   // Visible rect.
+        gfx::Rect(size),   // Skewport rect.
+        gfx::Rect(size),   // Soon rect.
+        gfx::Rect(size));  // Eventually rect.
+
+    // SMOOTHNESS_TAKES_PRIORITY ensures that we will actually raster
+    // LOW_RESOLUTION tiles, otherwise they are skipped.
+    host_impl_.SetTreePriority(SMOOTHNESS_TAKES_PRIORITY);
+
+    // Call PrepareTiles and wait for it to complete.
+    auto* tile_manager = host_impl_.tile_manager();
+    base::RunLoop run_loop;
+    EXPECT_CALL(host_impl_, NotifyAllTileTasksCompleted())
+        .WillOnce(testing::Invoke([&run_loop]() { run_loop.Quit(); }));
+    tile_manager->PrepareTiles(host_impl_.global_tile_state());
+    run_loop.Run();
+    tile_manager->Flush();
+
+    Tile* tile = tiling->TileAt(0, 0);
+    // The tile in the tiling was rastered.
+    EXPECT_EQ(TileDrawInfo::RESOURCE_MODE, tile->draw_info().mode());
+    EXPECT_TRUE(tile->draw_info().IsReadyToDraw());
+
+    ResourceProvider::ScopedReadLockSoftware lock(
+        host_impl_.resource_provider(), tile->draw_info().resource_id());
+    const SkBitmap* bitmap = lock.sk_bitmap();
+    for (int x = 0; x < size.width(); ++x) {
+      for (int y = 0; y < size.height(); ++y) {
+        SCOPED_TRACE(y);
+        SCOPED_TRACE(x);
+        if (resolutions[i] == LOW_RESOLUTION) {
+          // Since it's low res, the bitmap was not drawn, and the background
+          // (green) is visible instead.
+          ASSERT_EQ(SK_ColorGREEN, bitmap->getColor(x, y));
+        } else {
+          EXPECT_EQ(HIGH_RESOLUTION, resolutions[i]);
+          // Since it's high res, the bitmap (blue) was drawn, and the
+          // background is not visible.
+          ASSERT_EQ(SK_ColorBLUE, bitmap->getColor(x, y));
+        }
+      }
+    }
   }
 }
 

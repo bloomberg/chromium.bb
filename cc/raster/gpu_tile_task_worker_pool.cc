@@ -38,8 +38,11 @@ class RasterBufferImpl : public RasterBuffer {
                 const gfx::Rect& raster_full_rect,
                 const gfx::Rect& raster_dirty_rect,
                 uint64_t new_content_id,
-                float scale) override {
+                float scale,
+                bool include_images) override {
     TRACE_EVENT0("cc", "RasterBufferImpl::Playback");
+    // GPU raster doesn't do low res tiles, so should always include images.
+    DCHECK(include_images);
     ContextProvider* context_provider = rasterizer_->resource_provider()
                                             ->output_surface()
                                             ->worker_context_provider();

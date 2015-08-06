@@ -75,14 +75,15 @@ class RasterBufferImpl : public RasterBuffer {
                 const gfx::Rect& raster_full_rect,
                 const gfx::Rect& raster_dirty_rect,
                 uint64_t new_content_id,
-                float scale) override {
+                float scale,
+                bool include_images) override {
     // If there's a raster_content_id_, we are reusing a resource with that
     // content id.
     bool reusing_raster_resource = raster_content_id_ != 0;
     sequence_ = worker_pool_->PlaybackAndScheduleCopyOnWorkerThread(
         reusing_raster_resource, lock_.Pass(), raster_resource_.get(),
         output_resource_, raster_source, raster_full_rect, raster_dirty_rect,
-        scale);
+        scale, include_images);
     // Store the content id of the resource to return to the pool.
     raster_content_id_ = new_content_id;
   }
@@ -332,7 +333,8 @@ OneCopyTileTaskWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
     const RasterSource* raster_source,
     const gfx::Rect& raster_full_rect,
     const gfx::Rect& raster_dirty_rect,
-    float scale) {
+    float scale,
+    bool include_images) {
   gfx::GpuMemoryBuffer* gpu_memory_buffer =
       raster_resource_write_lock->GetGpuMemoryBuffer();
   if (gpu_memory_buffer) {
@@ -353,7 +355,7 @@ OneCopyTileTaskWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
     TileTaskWorkerPool::PlaybackToMemory(
         data, raster_resource->format(), raster_resource->size(),
         static_cast<size_t>(stride), raster_source, raster_full_rect,
-        playback_rect, scale);
+        playback_rect, scale, include_images);
     gpu_memory_buffer->Unmap();
   }
 

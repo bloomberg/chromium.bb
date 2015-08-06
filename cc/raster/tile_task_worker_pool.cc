@@ -10,6 +10,7 @@
 #include "cc/playback/raster_source.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkDrawFilter.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace cc {
@@ -153,6 +154,29 @@ static bool IsSupportedPlaybackToMemoryFormat(ResourceFormat format) {
   return false;
 }
 
+class SkipImageFilter : public SkDrawFilter {
+ public:
+  bool PaintHasBitmap(const SkPaint& paint) {
+    SkShader* shader = paint.getShader();
+    if (!shader)
+      return false;
+    if (shader->asAGradient(nullptr) == SkShader::kNone_GradientType)
+      return false;
+    if (shader->asABitmap(nullptr, nullptr, nullptr) !=
+        SkShader::kNone_BitmapType)
+      return true;
+    return false;
+  }
+
+  bool filter(SkPaint* paint, Type type) override {
+    if (type == kBitmap_Type)
+      return false;
+    if (PaintHasBitmap(*paint))
+      return false;
+    return true;
+  }
+};
+
 // static
 void TileTaskWorkerPool::PlaybackToMemory(void* memory,
                                           ResourceFormat format,
@@ -161,7 +185,8 @@ void TileTaskWorkerPool::PlaybackToMemory(void* memory,
                                           const RasterSource* raster_source,
                                           const gfx::Rect& canvas_bitmap_rect,
                                           const gfx::Rect& canvas_playback_rect,
-                                          float scale) {
+                                          float scale,
+                                          bool include_images) {
   DCHECK(IsSupportedPlaybackToMemoryFormat(format)) << format;
 
   // Uses kPremul_SkAlphaType since the result is not known to be opaque.
@@ -181,10 +206,15 @@ void TileTaskWorkerPool::PlaybackToMemory(void* memory,
     stride = info.minRowBytes();
   DCHECK_GT(stride, 0u);
 
+  skia::RefPtr<SkDrawFilter> image_filter;
+  if (!include_images)
+    image_filter = skia::AdoptRef(new SkipImageFilter);
+
   if (!needs_copy) {
     skia::RefPtr<SkSurface> surface = skia::AdoptRef(
         SkSurface::NewRasterDirect(info, memory, stride, &surface_props));
     skia::RefPtr<SkCanvas> canvas = skia::SharePtr(surface->getCanvas());
+    canvas->setDrawFilter(image_filter.get());
     raster_source->PlaybackToCanvas(canvas.get(), canvas_bitmap_rect,
                                     canvas_playback_rect, scale);
     return;
@@ -193,6 +223,7 @@ void TileTaskWorkerPool::PlaybackToMemory(void* memory,
   skia::RefPtr<SkSurface> surface =
       skia::AdoptRef(SkSurface::NewRaster(info, &surface_props));
   skia::RefPtr<SkCanvas> canvas = skia::SharePtr(surface->getCanvas());
+  canvas->setDrawFilter(image_filter.get());
   raster_source->PlaybackToCanvas(canvas.get(), canvas_bitmap_rect,
                                   canvas_playback_rect, scale);
 

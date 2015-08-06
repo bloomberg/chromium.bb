@@ -66,7 +66,8 @@ class CC_EXPORT TileTaskWorkerPool {
                                const RasterSource* raster_source,
                                const gfx::Rect& canvas_bitmap_rect,
                                const gfx::Rect& canvas_playback_rect,
-                               float scale);
+                               float scale,
+                               bool include_images);
 
   // Type-checking downcast routine.
   virtual TileTaskRunner* AsTileTaskRunner() = 0;

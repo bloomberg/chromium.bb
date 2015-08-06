@@ -64,6 +64,7 @@ PictureLayerTiling::PictureLayerTiling(
       tree_(tree),
       raster_source_(raster_source),
       resolution_(NON_IDEAL_RESOLUTION),
+      was_ever_low_resolution_(false),
       tiling_data_(gfx::Size(), gfx::Size(), kBorderTexels),
       can_require_tiles_for_activation_(false),
       current_content_to_screen_scale_(0.f),

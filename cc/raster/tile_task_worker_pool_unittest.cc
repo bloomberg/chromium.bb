@@ -71,7 +71,7 @@ class TestRasterTaskImpl : public RasterTask {
   void RunOnWorkerThread() override {
     uint64_t new_content_id = 0;
     raster_buffer_->Playback(picture_pile_.get(), gfx::Rect(1, 1),
-                             gfx::Rect(1, 1), new_content_id, 1.f);
+                             gfx::Rect(1, 1), new_content_id, 1.f, true);
   }
 
   // Overridden from TileTask:

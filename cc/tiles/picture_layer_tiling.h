@@ -111,8 +111,12 @@ class CC_EXPORT PictureLayerTiling {
   bool IsTileRequiredForActivation(const Tile* tile) const;
   bool IsTileRequiredForDraw(const Tile* tile) const;
 
-  void set_resolution(TileResolution resolution) { resolution_ = resolution; }
+  void set_resolution(TileResolution resolution) {
+    resolution_ = resolution;
+    was_ever_low_resolution_ |= resolution == LOW_RESOLUTION;
+  }
   TileResolution resolution() const { return resolution_; }
+  bool was_ever_low_resolution() const { return was_ever_low_resolution_; }
   void set_can_require_tiles_for_activation(bool can_require_tiles) {
     can_require_tiles_for_activation_ = can_require_tiles;
   }
@@ -369,6 +373,7 @@ class CC_EXPORT PictureLayerTiling {
   const WhichTree tree_;
   scoped_refptr<RasterSource> raster_source_;
   TileResolution resolution_;
+  bool was_ever_low_resolution_;
 
   // Internal data.
   TilingData tiling_data_;

@@ -127,9 +127,10 @@ class RasterTaskImpl : public RasterTask {
 
     DCHECK(raster_source);
 
+    bool include_images = tile_resolution_ != LOW_RESOLUTION;
     raster_buffer_->Playback(raster_source_.get(), content_rect_,
                              invalid_content_rect_, new_content_id_,
-                             contents_scale_);
+                             contents_scale_, include_images);
   }
 
   RasterSource::SolidColorAnalysis analysis_;
