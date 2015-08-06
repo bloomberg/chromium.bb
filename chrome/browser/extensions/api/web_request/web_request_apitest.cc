@@ -323,13 +323,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, IncognitoSplitModeReload) {
   EXPECT_TRUE(listener_incognito2.WaitUntilSatisfied());
 }
 
-// Times out frequently on CrOS: http://crbug.com/517238
-#if defined(OS_CHROMEOS)
-#define MAYBE_ExtensionRequests DISABLED_ExtensionRequests
-#else
-#define MAYBE_ExtensionRequests ExtensionRequests
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MAYBE_ExtensionRequests) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ExtensionRequests) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ExtensionTestMessageListener listener_main1("web_request_status1", true);
   ExtensionTestMessageListener listener_main2("web_request_status2", true);
@@ -356,6 +350,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MAYBE_ExtensionRequests) {
   ExtensionTestMessageListener listener_pageready("contentscript_ready", true);
   ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(
           "/extensions/test_file.html?match_webrequest_test"));
+  EXPECT_TRUE(listener_pageready.WaitUntilSatisfied());
 
   // The extension and app-generated requests should not have triggered any
   // webRequest event filtered by type 'xmlhttprequest'.
@@ -366,15 +361,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MAYBE_ExtensionRequests) {
   EXPECT_TRUE(listener_result.WaitUntilSatisfied());
   EXPECT_EQ("Did not intercept any requests.", listener_result.message());
 
-  // Proceed with the final tests: Let the content script fire a request.
-  EXPECT_TRUE(listener_pageready.WaitUntilSatisfied());
-  listener_pageready.Reply("");
-
   ExtensionTestMessageListener listener_contentscript("contentscript_done",
-                                                      true);
+                                                      false);
   ExtensionTestMessageListener listener_framescript("framescript_done", false);
+
+  // Proceed with the final tests: Let the content script fire a request and
+  // then load an iframe which also fires a XHR request.
+  listener_pageready.Reply("");
   EXPECT_TRUE(listener_contentscript.WaitUntilSatisfied());
-  listener_contentscript.Reply("");
   EXPECT_TRUE(listener_framescript.WaitUntilSatisfied());
 
   // Collect the visited URLs. The content script and subframe does not run in
