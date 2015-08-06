@@ -110,7 +110,20 @@ class RenderFrameTestObserver : public RenderFrameObserver {
 // RenderWidget.
 TEST_F(RenderFrameImplTest, MAYBE_SubframeWidget) {
   EXPECT_TRUE(frame_widget());
-  EXPECT_NE(frame_widget(), (content::RenderWidget*)view_);
+  // We can't convert to RenderWidget* directly, because
+  // it and RenderView are two unrelated base classes
+  // of RenderViewImpl. If a class has multiple base classes,
+  // each base class pointer will be distinct, and direct casts
+  // between unrelated base classes are undefined, even if they share
+  // a common derived class. The compiler has no way in general of
+  // determining the displacement between the two classes, so these
+  // types of casts cannot be implemented in a type safe way.
+  // To overcome this, we make two legal static casts:
+  // first, downcast from RenderView* to RenderViewImpl*,
+  // then upcast from RenderViewImpl* to RenderWidget*.
+  EXPECT_NE(frame_widget(),
+            static_cast<content::RenderWidget*>(
+                static_cast<content::RenderViewImpl*>((view_))));
 }
 
 // Verify a subframe RenderWidget properly processes its viewport being
