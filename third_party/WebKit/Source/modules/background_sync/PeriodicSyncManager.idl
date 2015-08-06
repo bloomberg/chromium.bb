@@ -9,8 +9,8 @@
     TypeChecking=Interface,
 ] interface PeriodicSyncManager {
     [CallWith=ScriptState,ImplementedAs=registerFunction] Promise<PeriodicSyncRegistration> register([RuntimeEnabled=BackgroundSyncV2] optional PeriodicSyncRegistrationOptions options);
-    [RuntimeEnabled=BackgroundSyncV2, CallWith=ScriptState] Promise<PeriodicSyncRegistration> getRegistration(DOMString tag);
-    [RuntimeEnabled=BackgroundSyncV2, CallWith=ScriptState] Promise<sequence<PeriodicSyncRegistration>> getRegistrations();
+    [CallWith=ScriptState] Promise<PeriodicSyncRegistration> getRegistration(DOMString tag);
+    [CallWith=ScriptState] Promise<sequence<PeriodicSyncRegistration>> getRegistrations();
     [RuntimeEnabled=BackgroundSyncV2, CallWith=ScriptState] Promise<SyncPermissionState> permissionState();
     [RuntimeEnabled=BackgroundSyncV2] readonly attribute unsigned long minPossiblePeriod;
 };
