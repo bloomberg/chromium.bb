@@ -101,8 +101,8 @@ def CommandGypBuild(context):
   # TODO(bradnelson): Figure out why win64 trybots can't upload goma logs.
   buildername = os.environ.get('BUILDBOT_BUILDERNAME', '')
   excluded_os = False
-  for os in ['win64', 'vista', 'win7-64', 'win8-64']:
-    if os in buildername:
+  for name in ['win64', 'vista', 'win7-64', 'win8-64']:
+    if name in buildername:
       excluded_os = True
 
   if runtest_py is None or excluded_os:
