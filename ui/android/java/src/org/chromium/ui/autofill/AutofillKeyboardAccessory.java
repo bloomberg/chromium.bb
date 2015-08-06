@@ -5,6 +5,8 @@
 package org.chromium.ui.autofill;
 
 import android.annotation.SuppressLint;
+import android.graphics.Typeface;
+import android.os.Build;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -94,6 +96,9 @@ public class AutofillKeyboardAccessory extends LinearLayout
 
             if (!TextUtils.isEmpty(suggestion.getLabel())) {
                 label.setText(suggestion.getLabel());
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                    label.setTypeface(Typeface.DEFAULT_BOLD);
+                }
 
                 if (!TextUtils.isEmpty(suggestion.getSublabel())) {
                     TextView sublabel = (TextView) touchTarget.findViewById(
