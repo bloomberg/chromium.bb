@@ -368,6 +368,7 @@
    Memcheck:Leak
    ...
    fun:_ZN4base9SampleMap10AccumulateEii
+   ...
    fun:_ZN4base15SparseHistogram3AddEi
 }
 {
