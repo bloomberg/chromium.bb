@@ -83,7 +83,6 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   using PictureLayerImpl::CanHaveTilings;
   using PictureLayerImpl::MinimumContentsScale;
   using PictureLayerImpl::SanityCheckTilingState;
-  using PictureLayerImpl::GetRecycledTwinLayer;
   using PictureLayerImpl::UpdateRasterSource;
 
   using PictureLayerImpl::UpdateIdealScales;

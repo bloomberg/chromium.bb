@@ -424,6 +424,7 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
     frame_ = 0;
     draws_in_frame_ = 0;
     last_frame_drawn_ = -1;
+    ready_to_draw_ = false;
     PostSetNeedsCommitToMainThread();
   }
 
@@ -432,19 +433,25 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
     LayerImpl* pinch = root->children()[0];
     LayerImpl* gchild = pinch->children()[0];
     FakePictureLayerImpl* picture = static_cast<FakePictureLayerImpl*>(gchild);
+    ready_to_draw_ = false;
 
     switch (frame_) {
       case 0:
-        // On 1st commit the layer has tilings.
-        EXPECT_GT(picture->tilings()->num_tilings(), 0u);
+        // On 1st commit the pending layer has tilings.
+        ASSERT_EQ(1u, picture->tilings()->num_tilings());
+        EXPECT_EQ(1.f, picture->tilings()->tiling_at(0)->contents_scale());
         break;
       case 1:
-        // On 2nd commit, the layer is transparent, so does not have tilings.
-        EXPECT_EQ(0u, picture->tilings()->num_tilings());
+        // On 2nd commit, the pending layer is transparent, so has a stale
+        // value.
+        ASSERT_EQ(1u, picture->tilings()->num_tilings());
+        EXPECT_EQ(1.f, picture->tilings()->tiling_at(0)->contents_scale());
         break;
       case 2:
-        // On 3rd commit, the layer is visible again, so has tilings.
-        EXPECT_GT(picture->tilings()->num_tilings(), 0u);
+        // On 3rd commit, the pending layer is visible again, so has tilings and
+        // is updated for the pinch.
+        ASSERT_EQ(1u, picture->tilings()->num_tilings());
+        EXPECT_EQ(2.f, picture->tilings()->tiling_at(0)->contents_scale());
     }
   }
 
@@ -474,30 +481,29 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
           // If the pinch gesture caused a commit we could get here with a
           // pending tree.
           EXPECT_FALSE(impl->pending_tree());
-          // The active layer now has only a 2.f scale tiling, which means the
-          // recycled layer's tiling is destroyed.
           EXPECT_EQ(2.f, picture->HighResTiling()->contents_scale());
-          EXPECT_EQ(0u, picture->GetRecycledTwinLayer()
-                            ->picture_layer_tiling_set()
-                            ->num_tilings());
 
-          ++frame_;
-          MainThreadTaskRunner()->PostTask(
-              FROM_HERE,
-              base::Bind(
-                  &LayerTreeHostPictureTestRSLLMembershipWithScale::NextStep,
-                  base::Unretained(this)));
+          // Need to wait for ready to draw here so that the pinch is
+          // entirely complete, otherwise another draw might come in before
+          // the commit occurs.
+          if (ready_to_draw_) {
+            ++frame_;
+            MainThreadTaskRunner()->PostTask(
+                FROM_HERE,
+                base::Bind(
+                    &LayerTreeHostPictureTestRSLLMembershipWithScale::NextStep,
+                    base::Unretained(this)));
+          }
         }
         break;
       case 1:
         EXPECT_EQ(1, draws_in_frame_);
-        // On 2nd commit, the layer is transparent, so does not create
-        // tilings. Since the 1.f tiling was destroyed in the recycle tree, it
-        // has no tilings left. This is propogated to the active tree.
-        EXPECT_EQ(0u, picture->picture_layer_tiling_set()->num_tilings());
-        EXPECT_EQ(0u, picture->GetRecycledTwinLayer()
-                          ->picture_layer_tiling_set()
-                          ->num_tilings());
+        // On 2nd commit, this active layer is transparent, so does not update
+        // tilings.  It has the high res scale=2 from the previous frame, and
+        // also a scale=1 copied from the pending layer's stale value during
+        // activation.
+        EXPECT_EQ(2u, picture->picture_layer_tiling_set()->num_tilings());
+
         ++frame_;
         MainThreadTaskRunner()->PostTask(
             FROM_HERE,
@@ -528,6 +534,10 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
     }
   }
 
+  void NotifyReadyToDrawOnThread(LayerTreeHostImpl* impl) override {
+    ready_to_draw_ = true;
+  }
+
   void AfterTest() override {}
 
   FakeContentLayerClient client_;
@@ -536,12 +546,12 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
   int frame_;
   int draws_in_frame_;
   int last_frame_drawn_;
+  bool ready_to_draw_;
 };
 
 // Multi-thread only because in single thread you can't pinch zoom on the
 // compositor thread.
-// Disabled due to flakiness. See http://crbug.com/460581
-// MULTI_THREAD_TEST_F(LayerTreeHostPictureTestRSLLMembershipWithScale);
+MULTI_THREAD_TEST_F(LayerTreeHostPictureTestRSLLMembershipWithScale);
 
 }  // namespace
 }  // namespace cc
