@@ -197,10 +197,16 @@ static void DecrementUntilZero(int* count) {
         FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
+// Flaky on Mac ASan. http://crbug.com/517420
+#if defined(OS_MACOSX)
+#define MAYBE_MultipleLaunchTasks DISABLED_MultipleLaunchTasks
+#else
+#define MAYBE_MultipleLaunchTasks MultipleLaunchTasks
+#endif
 // Invoke multiple Launch calls in succession and ensure that all the tasks
 // get invoked.
 IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
-                       MultipleLaunchTasks) {
+                       MAYBE_MultipleLaunchTasks) {
   ServiceProcessControl* process = ServiceProcessControl::GetInstance();
   int launch_count = 5;
   for (int i = 0; i < launch_count; i++) {
@@ -248,7 +254,13 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, ForceShutdown) {
   ForceServiceProcessShutdown(version_info::GetVersionNumber(), service_pid);
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, CheckPid) {
+// Flaky on Mac ASan. http://crbug.com/517420
+#if defined(OS_MACOSX)
+#define MAYBE_CheckPid DISABLED_CheckPid
+#else
+#define MAYBE_CheckPid CheckPid
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_CheckPid) {
   base::ProcessId service_pid;
   EXPECT_FALSE(GetServiceProcessData(NULL, &service_pid));
   // Launch the service process.
