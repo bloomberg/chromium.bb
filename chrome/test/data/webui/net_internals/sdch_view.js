@@ -174,11 +174,21 @@ LoadPageWithDecodeErrorTask.prototype = {
   }
 };
 
+// Flaky on Win Debug build - crbug.com/517484
+GEN('#if defined(OS_WIN) && !defined(NDEBUG)');
+GEN('# define MAYBE_netInternalsSdchViewFetchDictionary \\');
+GEN('     DISABLED_netInternalsSdchViewFetchDictionary');
+GEN('#else');
+GEN('# define MAYBE_netInternalsSdchViewFetchDictionary \\');
+GEN('     netInternalsSdchViewFetchDictionary');
+GEN('#endif');
+
 /**
  * Load a page, which results in downloading a SDCH dictionary. Make sure its
  * data is displayed.
  */
-TEST_F('NetInternalsTest', 'netInternalsSdchViewFetchDictionary', function() {
+TEST_F('NetInternalsTest',
+       'MAYBE_netInternalsSdchViewFetchDictionary', function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(
       new NetInternalsTest.GetTestServerURLTask(
@@ -187,11 +197,21 @@ TEST_F('NetInternalsTest', 'netInternalsSdchViewFetchDictionary', function() {
   taskQueue.run();
 });
 
+// Flaky on Win Debug build - crbug.com/517484
+GEN('#if defined(OS_WIN) && !defined(NDEBUG)');
+GEN('# define MAYBE_netInternalsSdchViewBlacklistMeta \\');
+GEN('     DISABLED_netInternalsSdchViewBlacklistMeta');
+GEN('#else');
+GEN('# define MAYBE_netInternalsSdchViewBlacklistMeta \\');
+GEN('     netInternalsSdchViewBlacklistMeta');
+GEN('#endif');
+
 /**
  * Load a page, get the dictionary for it, and get decoding error to see
  * the blacklist in action.
  */
-TEST_F('NetInternalsTest', 'netInternalsSdchViewBlacklistMeta', function() {
+TEST_F('NetInternalsTest',
+       'MAYBE_netInternalsSdchViewBlacklistMeta', function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(
       new NetInternalsTest.GetTestServerURLTask(
@@ -205,10 +225,20 @@ TEST_F('NetInternalsTest', 'netInternalsSdchViewBlacklistMeta', function() {
   taskQueue.run();
 });
 
+// Flaky on Win Debug build - crbug.com/517484
+GEN('#if defined(OS_WIN) && !defined(NDEBUG)');
+GEN('# define MAYBE_netInternalsSdchViewBlacklistNonSdch \\');
+GEN('     DISABLED_netInternalsSdchViewBlacklistNonSdch');
+GEN('#else');
+GEN('# define MAYBE_netInternalsSdchViewBlacklistNonSdch \\');
+GEN('     netInternalsSdchViewBlacklistNonSdch');
+GEN('#endif');
+
 /**
  * Load a page, which is said to be SDCH-encoded, though we don't expect it.
  */
-TEST_F('NetInternalsTest', 'netInternalsSdchViewBlacklistNonSdch', function() {
+TEST_F('NetInternalsTest',
+       'MAYBE_netInternalsSdchViewBlacklistNonSdch', function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(
       new NetInternalsTest.GetTestServerURLTask(

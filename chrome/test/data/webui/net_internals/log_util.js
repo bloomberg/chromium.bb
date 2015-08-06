@@ -258,12 +258,21 @@ TEST_F('NetInternalsTest',
   taskQueue.run(true);
 });
 
+// Flaky on Win Debug build - crbug.com/517484
+GEN('#if defined(OS_WIN) && !defined(NDEBUG)');
+GEN('# define MAYBE_netInternalsLogUtilImportNetLogFileTruncated \\');
+GEN('     DISABLED_netInternalsLogUtilImportNetLogFileTruncated');
+GEN('#else');
+GEN('# define MAYBE_netInternalsLogUtilImportNetLogFileTruncated \\');
+GEN('     netInternalsLogUtilImportNetLogFileTruncated');
+GEN('#endif');
+
 /**
  * Same as above, but it truncates the log to simulate the case of a crash when
  * creating a log.
  */
 TEST_F('NetInternalsTest',
-    'netInternalsLogUtilImportNetLogFileTruncated',
+    'MAYBE_netInternalsLogUtilImportNetLogFileTruncated',
     function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new GetNetLogFileContentsAndLoadLogTask(20));
