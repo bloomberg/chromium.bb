@@ -196,7 +196,10 @@
     ],
     "IconNTP": [
         {
-            "group_name": "Enabled"
+            "group_name": "Enabled",
+            "params": {
+                "state": "enabled"
+            }
         }
     ]
 }
