@@ -139,7 +139,7 @@ FlashDOMHandler::FlashDOMHandler()
       has_plugin_info_(false),
       weak_ptr_factory_(this) {
         // Request Crash data asynchronously.
-  upload_list_ = CrashUploadList::Create(this);
+  upload_list_ = CreateCrashUploadList(this);
   upload_list_->LoadUploadListAsynchronously();
 
   // Watch for changes in GPUInfo.

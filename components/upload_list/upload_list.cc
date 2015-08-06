@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/upload_list.h"
+#include "components/upload_list/upload_list.h"
 
 #include <algorithm>
 #include <iterator>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
+#include "base/thread_task_runner_handle.h"
+#include "base/threading/sequenced_worker_pool.h"
 
 UploadList::UploadInfo::UploadInfo(const std::string& id,
                                    const base::Time& t,
@@ -25,30 +25,33 @@ UploadList::UploadInfo::UploadInfo(const std::string& id, const base::Time& t)
 
 UploadList::UploadInfo::~UploadInfo() {}
 
-UploadList::UploadList(Delegate* delegate,
-                       const base::FilePath& upload_log_path)
+UploadList::UploadList(
+    Delegate* delegate,
+    const base::FilePath& upload_log_path,
+    const scoped_refptr<base::SequencedWorkerPool>& worker_pool)
     : delegate_(delegate),
-      upload_log_path_(upload_log_path) {}
+      upload_log_path_(upload_log_path),
+      worker_pool_(worker_pool) {}
 
 UploadList::~UploadList() {}
 
 void UploadList::LoadUploadListAsynchronously() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostBlockingPoolTask(
+  DCHECK(thread_checker_.CalledOnValidThread());
+  worker_pool_->PostTask(
       FROM_HERE,
       base::Bind(&UploadList::LoadUploadListAndInformDelegateOfCompletion,
-                 this));
+                 this, base::ThreadTaskRunnerHandle::Get()));
 }
 
 void UploadList::ClearDelegate() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   delegate_ = NULL;
 }
 
-void UploadList::LoadUploadListAndInformDelegateOfCompletion() {
+void UploadList::LoadUploadListAndInformDelegateOfCompletion(
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
   LoadUploadList();
-  BrowserThread::PostTask(
-      BrowserThread::UI,
+  task_runner->PostTask(
       FROM_HERE,
       base::Bind(&UploadList::InformDelegateOfCompletion, this));
 }
@@ -96,14 +99,14 @@ void UploadList::ParseLogEntries(
 }
 
 void UploadList::InformDelegateOfCompletion() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (delegate_)
     delegate_->OnUploadListAvailable();
 }
 
 void UploadList::GetUploads(unsigned int max_count,
                             std::vector<UploadInfo>* uploads) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   std::copy(uploads_.begin(),
             uploads_.begin() + std::min<size_t>(uploads_.size(), max_count),
             std::back_inserter(*uploads));

@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/upload_list/upload_list.h"
+
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
-#include "chrome/browser/upload_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Test that UploadList can parse a vector of log entry strings to a vector of
@@ -22,7 +24,7 @@ TEST(UploadListTest, ParseLogEntries) {
   test_entry.append(kTestID, sizeof(kTestID));
 
   scoped_refptr<UploadList> upload_list =
-      new UploadList(NULL, base::FilePath());
+      new UploadList(nullptr, base::FilePath(), nullptr);
 
   // 1 entry.
   std::vector<std::string> log_entries;
@@ -56,7 +58,7 @@ TEST(UploadListTest, ParseLogEntriesWithLocalId) {
   test_entry.append(kTestLocalID, sizeof(kTestLocalID));
 
   scoped_refptr<UploadList> upload_list =
-      new UploadList(NULL, base::FilePath());
+      new UploadList(nullptr, base::FilePath(), nullptr);
 
   // 1 entry.
   std::vector<std::string> log_entries;

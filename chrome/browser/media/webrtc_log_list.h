@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_WEBRTC_LOG_LIST_H_
 #define CHROME_BROWSER_MEDIA_WEBRTC_LOG_LIST_H_
 
-#include "chrome/browser/upload_list.h"
+#include "components/upload_list/upload_list.h"
 
 class Profile;
 

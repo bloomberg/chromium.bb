@@ -36,6 +36,7 @@ include_rules = [
   "+components/translate/core",
   "+components/translate/ios",
   "+components/undo",
+  "+components/upload_list",
   "+components/variations",
   "+components/version_info",
   "+components/web_resource",

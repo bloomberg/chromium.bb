@@ -269,6 +269,7 @@ source_set("browser") {
       "//components/sessions",
       "//components/storage_monitor",
       "//components/translate/content/browser",
+      "//components/upload_list",
       "//components/url_matcher",
       "//components/visitedlink/browser",
       "//components/visitedlink/common",

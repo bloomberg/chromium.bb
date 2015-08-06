@@ -4,12 +4,15 @@
 
 #include "chrome/browser/crash_upload_list_mac.h"
 
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "components/crash/app/crashpad_mac.h"
 
-CrashUploadListMac::CrashUploadListMac(Delegate* delegate,
-                                       const base::FilePath& upload_log_path)
-    : CrashUploadList(delegate, upload_log_path) {
+CrashUploadListMac::CrashUploadListMac(
+    Delegate* delegate,
+    const base::FilePath& upload_log_path,
+    const scoped_refptr<base::SequencedWorkerPool>& worker_pool)
+    : CrashUploadList(delegate, upload_log_path, worker_pool) {
 }
 
 CrashUploadListMac::~CrashUploadListMac() {

@@ -74,6 +74,7 @@
     'ui_zoom.gypi',
     'undo.gypi',
     'update_client.gypi',
+    'upload_list.gypi',
     'url_fixer.gypi',
     'url_matcher.gypi',
     'user_prefs.gypi',

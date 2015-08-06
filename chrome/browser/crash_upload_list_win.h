@@ -5,14 +5,22 @@
 #ifndef CHROME_BROWSER_CRASH_UPLOAD_LIST_WIN_H_
 #define CHROME_BROWSER_CRASH_UPLOAD_LIST_WIN_H_
 
-#include "chrome/browser/crash_upload_list.h"
-#include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "components/upload_list/crash_upload_list.h"
+
+namespace base {
+class FilePath;
+class SequencedWorkerPool;
+}
 
 // A CrashUploadList that retrieves the list of reported crashes
 // from the Windows Event Log.
 class CrashUploadListWin : public CrashUploadList {
  public:
-  CrashUploadListWin(Delegate* delegate, const base::FilePath& upload_log_path);
+  CrashUploadListWin(
+      Delegate* delegate,
+      const base::FilePath& upload_log_path,
+      const scoped_refptr<base::SequencedWorkerPool>& worker_pool);
 
  protected:
   // Loads the list of crashes from the Windows Event Log.

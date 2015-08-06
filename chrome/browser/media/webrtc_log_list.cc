@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 
@@ -22,7 +23,8 @@ UploadList* WebRtcLogList::CreateWebRtcLogList(UploadList::Delegate* delegate,
                                                Profile* profile) {
   base::FilePath log_list_path = GetWebRtcLogListFileForDirectory(
       GetWebRtcLogDirectoryForProfile(profile->GetPath()));
-  return new UploadList(delegate, log_list_path);
+  return new UploadList(
+      delegate, log_list_path, content::BrowserThread::GetBlockingPool());
 }
 
 // static

@@ -522,7 +522,6 @@
       'browser/ui/webui/fileicon_source_unittest.cc',
       'browser/ui/webui/history_ui_unittest.cc',
       'browser/update_client/chrome_update_query_params_delegate_unittest.cc',
-      'browser/upload_list_unittest.cc',
       'browser/web_resource/promo_resource_service_mobile_ntp_unittest.cc',
       'browser/web_resource/promo_resource_service_unittest.cc',
       'common/chrome_content_client_unittest.cc',

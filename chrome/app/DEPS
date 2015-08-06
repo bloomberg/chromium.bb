@@ -19,6 +19,7 @@ include_rules = [
   "+components/nacl/renderer/plugin/ppapi_entrypoints.h",
   "+components/nacl/zygote",
   "+components/startup_metric_utils",
+  "+components/upload_list",
   "+components/version_info",
   "+content/public/app",
   "+content/public/browser/browser_main_runner.h",

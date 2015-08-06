@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UPLOAD_LIST_H_
-#define CHROME_BROWSER_UPLOAD_LIST_H_
+#ifndef COMPONENTS_UPLOAD_LIST_UPLOAD_LIST_H_
+#define COMPONENTS_UPLOAD_LIST_UPLOAD_LIST_H_
 
 #include <string>
 #include <vector>
@@ -11,7 +11,13 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+
+namespace base {
+class SequencedTaskRunner;
+class SequencedWorkerPool;
+}
 
 // Loads and parses an upload list text file of the format
 // time,id[,local_id]
@@ -46,7 +52,9 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
   };
 
   // Creates a new upload list with the given callback delegate.
-  UploadList(Delegate* delegate, const base::FilePath& upload_log_path);
+  UploadList(Delegate* delegate,
+             const base::FilePath& upload_log_path,
+             const scoped_refptr<base::SequencedWorkerPool>& worker_pool);
 
   // Starts loading the upload list. OnUploadListAvailable will be called when
   // loading is complete.
@@ -79,7 +87,8 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
   FRIEND_TEST_ALL_PREFIXES(UploadListTest, ParseLogEntriesWithLocalId);
 
   // Manages the background thread work for LoadUploadListAsynchronously().
-  void LoadUploadListAndInformDelegateOfCompletion();
+  void LoadUploadListAndInformDelegateOfCompletion(
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   // Calls the delegate's callback method, if there is a delegate.
   void InformDelegateOfCompletion();
@@ -91,7 +100,10 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
   Delegate* delegate_;
   const base::FilePath upload_log_path_;
 
+  base::ThreadChecker thread_checker_;
+  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
+
   DISALLOW_COPY_AND_ASSIGN(UploadList);
 };
 
-#endif  // CHROME_BROWSER_UPLOAD_LIST_H_
+#endif  // COMPONENTS_UPLOAD_LIST_UPLOAD_LIST_H_

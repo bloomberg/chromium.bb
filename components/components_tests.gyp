@@ -623,6 +623,9 @@
       'update_client/update_query_params_unittest.cc',
       'update_client/update_response_unittest.cc',
     ],
+    'upload_list_unittest_sources': [
+      'upload_list/upload_list_unittest.cc',
+    ],
     'url_fixer_unittest_sources': [
       'url_fixer/url_fixer_unittest.cc',
     ],
@@ -765,6 +768,7 @@
         '<@(translate_unittest_sources)',
         '<@(undo_unittest_sources)',
         '<@(update_client_unittest_sources)',
+        '<@(upload_list_unittest_sources)',
         '<@(url_fixer_unittest_sources)',
         '<@(url_matcher_unittest_sources)',
         '<@(variations_unittest_sources)',
@@ -881,6 +885,7 @@
         'components.gyp:undo_component',
         'components.gyp:update_client',
         'components.gyp:update_client_test_support',
+        'components.gyp:upload_list',
         'components.gyp:url_fixer',
         'components.gyp:variations',
         'components.gyp:variations_http_provider',

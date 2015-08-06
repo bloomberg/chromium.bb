@@ -32,7 +32,7 @@
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
-#include "chrome/browser/crash_upload_list.h"
+#include "components/upload_list/crash_upload_list.h"
 #include "components/version_info/version_info_values.h"
 #endif
 

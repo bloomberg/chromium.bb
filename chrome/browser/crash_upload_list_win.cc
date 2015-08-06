@@ -7,10 +7,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
 
-CrashUploadListWin::CrashUploadListWin(Delegate* delegate,
-                                       const base::FilePath& upload_log_path)
-    : CrashUploadList(delegate, upload_log_path) {}
+CrashUploadListWin::CrashUploadListWin(
+    Delegate* delegate,
+    const base::FilePath& upload_log_path,
+    const scoped_refptr<base::SequencedWorkerPool>& worker_pool)
+    : CrashUploadList(delegate, upload_log_path, worker_pool) {}
 
 void CrashUploadListWin::LoadUploadList() {
   std::vector<uint8> buffer(1024);
