@@ -16,6 +16,9 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/website_settings_info.h"
+#include "components/content_settings/core/browser/website_settings_registry.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
@@ -88,7 +91,10 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestImageContentSettings) {
   EXPECT_TRUE(result);
 
   browser()->profile()->GetPrefs()->SetInteger(
-      prefs::kDefaultImagesSetting, CONTENT_SETTING_BLOCK);
+      content_settings::WebsiteSettingsRegistry::GetInstance()
+          ->Get(CONTENT_SETTINGS_TYPE_IMAGES)
+          ->default_value_pref_name(),
+      CONTENT_SETTING_BLOCK);
 
   ui_test_utils::NavigateToURL(
       browser(),

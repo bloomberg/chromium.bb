@@ -30,10 +30,6 @@ const char kPatternSeparator[] = ",";
 
 namespace content_settings {
 
-std::string GetTypeName(ContentSettingsType type) {
-  return WebsiteSettingsRegistry::GetInstance()->Get(type)->name();
-}
-
 std::string ContentSettingToString(ContentSetting setting) {
   switch (setting) {
     case CONTENT_SETTING_ALLOW:

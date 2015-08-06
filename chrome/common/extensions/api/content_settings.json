@@ -316,7 +316,7 @@
         "$ref": "ContentSetting",
         "description": "Whether to allow sites to download multiple files automatically. One of <br><var>allow</var>: Allow sites to download multiple files automatically,<br><var>block</var>: Don't allow sites to download multiple files automatically,<br><var>ask</var>: Ask when a site wants to download files automatically after the first file. <br>Default is <var>ask</var>.<br>The primary URL is the URL of the top-level frame. The secondary URL is not used.",
         "value": [
-          "multiple-automatic-downloads",
+          "automatic-downloads",
           {"$ref":"MultipleAutomaticDownloadsContentSetting"}
         ]
       }

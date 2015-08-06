@@ -28,11 +28,6 @@ class RuleIterator;
 
 typedef std::pair<ContentSettingsPattern, ContentSettingsPattern> PatternPair;
 
-// Deprecated, do not call this!
-// Call WebsiteSettingsRegistry::GetInstance()->Get(type)->name() instead.
-// TODO(raymes): Inline this function at it's callsites.
-std::string GetTypeName(ContentSettingsType type);
-
 std::string ContentSettingToString(ContentSetting setting);
 
 ContentSetting ContentSettingFromString(const std::string& name);

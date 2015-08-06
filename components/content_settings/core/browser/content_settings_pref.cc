@@ -50,7 +50,7 @@ ContentSettingsPref::ContentSettingsPref(
     ContentSettingsType content_type,
     PrefService* prefs,
     PrefChangeRegistrar* registrar,
-    const char* pref_name,
+    const std::string& pref_name,
     bool incognito,
     NotifyObserversCallback notify_callback)
     : content_type_(content_type),

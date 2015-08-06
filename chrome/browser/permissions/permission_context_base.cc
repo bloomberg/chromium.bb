@@ -13,8 +13,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/common/pref_names.h"
-#include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/browser/website_settings_registry.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
@@ -99,12 +99,15 @@ void PermissionContextBase::DecidePermission(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   if (!requesting_origin.is_valid() || !embedding_origin.is_valid()) {
-    DVLOG(1)
-        << "Attempt to use " << content_settings::GetTypeName(permission_type_)
-        << " from an invalid URL: " << requesting_origin
-        << "," << embedding_origin
-        << " (" << content_settings::GetTypeName(permission_type_)
-        << " is not supported in popups)";
+    std::string type_name =
+        content_settings::WebsiteSettingsRegistry::GetInstance()
+            ->Get(permission_type_)
+            ->name();
+
+    DVLOG(1) << "Attempt to use " << type_name
+             << " from an invalid URL: " << requesting_origin << ","
+             << embedding_origin << " (" << type_name
+             << " is not supported in popups)";
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                         false /* persist */, CONTENT_SETTING_BLOCK);
     return;

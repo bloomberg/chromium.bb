@@ -9,8 +9,9 @@
 #include "base/metrics/field_trial.h"
 #include "base/test/mock_entropy_provider.h"
 #include "components/content_settings/core/browser/content_settings_default_provider.h"
+#include "components/content_settings/core/browser/website_settings_info.h"
+#include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "components/content_settings/core/common/pref_names.h"
 #include "components/plugins/common/plugins_switches.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -84,9 +85,13 @@ TEST_F(PluginsFieldTrialTest, NoPrefLeftBehind) {
     DefaultProvider::RegisterProfilePrefs(prefs.registry());
     DefaultProvider default_provider(&prefs, false);
   }
+  const std::string& default_plugin_setting_pref_name =
+      WebsiteSettingsRegistry::GetInstance()
+          ->Get(CONTENT_SETTINGS_TYPE_PLUGINS)
+          ->default_value_pref_name();
   EXPECT_EQ(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT,
-            prefs.GetInteger(prefs::kDefaultPluginsSetting));
-  EXPECT_FALSE(prefs.HasPrefPath(prefs::kDefaultPluginsSetting));
+            prefs.GetInteger(default_plugin_setting_pref_name));
+  EXPECT_FALSE(prefs.HasPrefPath(default_plugin_setting_pref_name));
 }
 
 }  // namespace content_settings

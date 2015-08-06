@@ -11,6 +11,10 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// Any content settings pref name should do for these tests.
+const char* kContentSettingsPrefName =
+    "profile.content_settings.exceptions.cookies";
+
 class AbstractPreferenceMergeTest : public testing::Test {
  protected:
   void SetUp() override { pref_service_ = profile_.GetPrefs(); }
@@ -221,9 +225,9 @@ class DictionaryPreferenceMergeTest : public AbstractPreferenceMergeTest {
 };
 
 TEST_F(DictionaryPreferenceMergeTest, LocalEmpty) {
-  SetPrefToEmpty(prefs::kContentSettingsImagesPatternPairs);
+  SetPrefToEmpty(kContentSettingsPrefName);
   const PrefService::Preference* pref =
-      pref_service_->FindPreference(prefs::kContentSettingsImagesPatternPairs);
+      pref_service_->FindPreference(kContentSettingsPrefName);
   scoped_ptr<base::Value> merged_value(
       PrefModelAssociator::MergePreference(pref->name(),
                                            *pref->GetValue(),
@@ -234,57 +238,51 @@ TEST_F(DictionaryPreferenceMergeTest, LocalEmpty) {
 TEST_F(DictionaryPreferenceMergeTest, ServerNull) {
   scoped_ptr<base::Value> null_value = base::Value::CreateNullValue();
   {
-    DictionaryPrefUpdate update(pref_service_,
-                                prefs::kContentSettingsCookiesPatternPairs);
+    DictionaryPrefUpdate update(pref_service_, kContentSettingsPrefName);
     base::DictionaryValue* local_dict_value = update.Get();
     SetContentPattern(local_dict_value, expression3_, 1);
   }
 
   const PrefService::Preference* pref =
-      pref_service_->FindPreference(prefs::kContentSettingsCookiesPatternPairs);
+      pref_service_->FindPreference(kContentSettingsPrefName);
   scoped_ptr<base::Value> merged_value(
       PrefModelAssociator::MergePreference(pref->name(),
                                            *pref->GetValue(),
                                            *null_value));
   const base::DictionaryValue* local_dict_value =
-      pref_service_->GetDictionary(prefs::kContentSettingsCookiesPatternPairs);
+      pref_service_->GetDictionary(kContentSettingsPrefName);
   EXPECT_TRUE(merged_value->Equals(local_dict_value));
 }
 
 TEST_F(DictionaryPreferenceMergeTest, ServerEmpty) {
   scoped_ptr<base::Value> empty_value(new base::DictionaryValue);
   {
-    DictionaryPrefUpdate update(pref_service_,
-                                prefs::kContentSettingsPluginsPatternPairs);
+    DictionaryPrefUpdate update(pref_service_, kContentSettingsPrefName);
     base::DictionaryValue* local_dict_value = update.Get();
     SetContentPattern(local_dict_value, expression3_, 1);
   }
 
   const PrefService::Preference* pref =
-      pref_service_->FindPreference(
-          prefs::kContentSettingsPluginsPatternPairs);
+      pref_service_->FindPreference(kContentSettingsPrefName);
   scoped_ptr<base::Value> merged_value(
       PrefModelAssociator::MergePreference(pref->name(),
                                            *pref->GetValue(),
                                            *empty_value));
   const base::DictionaryValue* local_dict_value =
-      pref_service_->GetDictionary(
-          prefs::kContentSettingsPluginsPatternPairs);
+      pref_service_->GetDictionary(kContentSettingsPrefName);
   EXPECT_TRUE(merged_value->Equals(local_dict_value));
 }
 
 TEST_F(DictionaryPreferenceMergeTest, MergeNoConflicts) {
   {
-    DictionaryPrefUpdate update(pref_service_,
-                                prefs::kContentSettingsJavaScriptPatternPairs);
+    DictionaryPrefUpdate update(pref_service_, kContentSettingsPrefName);
     base::DictionaryValue* local_dict_value = update.Get();
     SetContentPattern(local_dict_value, expression3_, 1);
   }
 
   scoped_ptr<base::Value> merged_value(PrefModelAssociator::MergePreference(
-     prefs::kContentSettingsJavaScriptPatternPairs,
-      *pref_service_->FindPreference(
-          prefs::kContentSettingsJavaScriptPatternPairs)->GetValue(),
+      kContentSettingsPrefName,
+      *pref_service_->FindPreference(kContentSettingsPrefName)->GetValue(),
       server_patterns_));
 
   base::DictionaryValue expected;
@@ -297,8 +295,7 @@ TEST_F(DictionaryPreferenceMergeTest, MergeNoConflicts) {
 
 TEST_F(DictionaryPreferenceMergeTest, MergeConflicts) {
   {
-    DictionaryPrefUpdate update(pref_service_,
-                                prefs::kContentSettingsPopupsPatternPairs);
+    DictionaryPrefUpdate update(pref_service_, kContentSettingsPrefName);
     base::DictionaryValue* local_dict_value = update.Get();
     SetContentPattern(local_dict_value, expression0_, 2);
     SetContentPattern(local_dict_value, expression2_, 1);
@@ -307,9 +304,8 @@ TEST_F(DictionaryPreferenceMergeTest, MergeConflicts) {
   }
 
   scoped_ptr<base::Value> merged_value(PrefModelAssociator::MergePreference(
-      prefs::kContentSettingsPopupsPatternPairs,
-      *pref_service_->FindPreference(
-          prefs::kContentSettingsPopupsPatternPairs)->GetValue(),
+      kContentSettingsPrefName,
+      *pref_service_->FindPreference(kContentSettingsPrefName)->GetValue(),
       server_patterns_));
 
   base::DictionaryValue expected;
@@ -323,8 +319,7 @@ TEST_F(DictionaryPreferenceMergeTest, MergeConflicts) {
 
 TEST_F(DictionaryPreferenceMergeTest, Equal) {
   {
-    DictionaryPrefUpdate update(pref_service_,
-                                prefs::kContentSettingsMouseLockPatternPairs);
+    DictionaryPrefUpdate update(pref_service_, kContentSettingsPrefName);
     base::DictionaryValue* local_dict_value = update.Get();
     SetContentPattern(local_dict_value, expression0_, 1);
     SetContentPattern(local_dict_value, expression1_, 2);
@@ -332,17 +327,15 @@ TEST_F(DictionaryPreferenceMergeTest, Equal) {
   }
 
   scoped_ptr<base::Value> merged_value(PrefModelAssociator::MergePreference(
-      prefs::kContentSettingsMouseLockPatternPairs,
-      *pref_service_->FindPreference(
-          prefs::kContentSettingsMouseLockPatternPairs)->GetValue(),
+      kContentSettingsPrefName,
+      *pref_service_->FindPreference(kContentSettingsPrefName)->GetValue(),
       server_patterns_));
   EXPECT_TRUE(merged_value->Equals(&server_patterns_));
 }
 
 TEST_F(DictionaryPreferenceMergeTest, ConflictButServerWins) {
   {
-    DictionaryPrefUpdate update(pref_service_,
-                                prefs::kContentSettingsFullScreenPatternPairs);
+    DictionaryPrefUpdate update(pref_service_, kContentSettingsPrefName);
     base::DictionaryValue* local_dict_value = update.Get();
     SetContentPattern(local_dict_value, expression0_, 2);
     SetContentPattern(local_dict_value, expression1_, 2);
@@ -350,9 +343,8 @@ TEST_F(DictionaryPreferenceMergeTest, ConflictButServerWins) {
   }
 
   scoped_ptr<base::Value> merged_value(PrefModelAssociator::MergePreference(
-      prefs::kContentSettingsFullScreenPatternPairs,
-      *pref_service_->FindPreference(
-          prefs::kContentSettingsFullScreenPatternPairs)->GetValue(),
+      kContentSettingsPrefName,
+      *pref_service_->FindPreference(kContentSettingsPrefName)->GetValue(),
       server_patterns_));
   EXPECT_TRUE(merged_value->Equals(&server_patterns_));
 }

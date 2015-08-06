@@ -23,6 +23,8 @@
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/browser/website_settings_info.h"
+#include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -36,43 +38,6 @@ const char kObsoleteContentSettingsPatternPairs[] =
     "profile.content_settings.pattern_pairs";
 const char kObsoleteMigratedContentSettingsPatternPairs[] =
     "profile.migrated_content_settings_exceptions";
-
-// A list of exception preferences corresponding to individual content settings
-// types. Must be kept in sync with the enum |ContentSettingsType|.
-const char* kContentSettingsExceptionsPrefs[] = {
-    prefs::kContentSettingsCookiesPatternPairs,
-    prefs::kContentSettingsImagesPatternPairs,
-    prefs::kContentSettingsJavaScriptPatternPairs,
-    prefs::kContentSettingsPluginsPatternPairs,
-    prefs::kContentSettingsPopupsPatternPairs,
-    prefs::kContentSettingsGeolocationPatternPairs,
-    prefs::kContentSettingsNotificationsPatternPairs,
-    prefs::kContentSettingsAutoSelectCertificatePatternPairs,
-    prefs::kContentSettingsFullScreenPatternPairs,
-    prefs::kContentSettingsMouseLockPatternPairs,
-    prefs::kContentSettingsMixedScriptPatternPairs,
-    prefs::kContentSettingsMediaStreamPatternPairs,
-    prefs::kContentSettingsMediaStreamMicPatternPairs,
-    prefs::kContentSettingsMediaStreamCameraPatternPairs,
-    prefs::kContentSettingsProtocolHandlersPatternPairs,
-    prefs::kContentSettingsPpapiBrokerPatternPairs,
-    prefs::kContentSettingsAutomaticDownloadsPatternPairs,
-    prefs::kContentSettingsMidiSysexPatternPairs,
-    prefs::kContentSettingsPushMessagingPatternPairs,
-    prefs::kContentSettingsSSLCertDecisionsPatternPairs,
-#if defined(OS_WIN)
-    prefs::kContentSettingsMetroSwitchToDesktopPatternPairs,
-#elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
-    prefs::kContentSettingsProtectedMediaIdentifierPatternPairs,
-#endif
-    prefs::kContentSettingsAppBannerPatternPairs,
-    prefs::kContentSettingsSiteEngagementPatternPairs,
-    prefs::kContentSettingsDurableStoragePatternPairs,
-};
-static_assert(arraysize(kContentSettingsExceptionsPrefs)
-              == CONTENT_SETTINGS_NUM_TYPES,
-              "kContentSettingsExceptionsPrefs should have "
-              "CONTENT_SETTINGS_NUM_TYPES elements");
 
 }  // namespace
 
@@ -89,9 +54,11 @@ void PrefProvider::RegisterProfilePrefs(
       prefs::kContentSettingsVersion,
       ContentSettingsPattern::kContentSettingsPatternVersion);
 
+  WebsiteSettingsRegistry* website_settings =
+      WebsiteSettingsRegistry::GetInstance();
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     registry->RegisterDictionaryPref(
-        kContentSettingsExceptionsPrefs[i],
+        website_settings->Get(static_cast<ContentSettingsType>(i))->pref_name(),
         PrefRegistrationFlagsForType(ContentSettingsType(i)));
   }
 
@@ -100,18 +67,8 @@ void PrefProvider::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(
       kObsoleteContentSettingsPatternPairs,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      kObsoleteMigratedContentSettingsPatternPairs, false);
-}
-
-// static
-bool PrefProvider::IsContentSettingsExceptionsPref(
-    const std::string& pref_name) {
-  for (const char* pref : kContentSettingsExceptionsPrefs) {
-    if (pref_name == pref)
-      return true;
-  }
-  return false;
+  registry->RegisterBooleanPref(kObsoleteMigratedContentSettingsPatternPairs,
+                                false);
 }
 
 PrefProvider::PrefProvider(PrefService* prefs, bool incognito)
@@ -130,10 +87,14 @@ PrefProvider::PrefProvider(PrefService* prefs, bool incognito)
   }
 
   pref_change_registrar_.Init(prefs_);
+
+  WebsiteSettingsRegistry* website_settings =
+      WebsiteSettingsRegistry::GetInstance();
   for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     content_settings_prefs_.push_back(new ContentSettingsPref(
         ContentSettingsType(i), prefs_, &pref_change_registrar_,
-        kContentSettingsExceptionsPrefs[i], is_incognito_,
+        website_settings->Get(static_cast<ContentSettingsType>(i))->pref_name(),
+        is_incognito_,
         base::Bind(&PrefProvider::Notify, base::Unretained(this))));
   }
 

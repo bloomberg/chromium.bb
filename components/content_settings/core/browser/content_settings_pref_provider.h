@@ -39,10 +39,6 @@ class PrefProvider : public ObservableProvider {
   PrefProvider(PrefService* prefs, bool incognito);
   ~PrefProvider() override;
 
-  // Whether |pref_name| is a name of one of the preferences for content
-  // settings exceptions.
-  static bool IsContentSettingsExceptionsPref(const std::string& pref_name);
-
   // ProviderInterface implementations.
   RuleIterator* GetRuleIterator(ContentSettingsType content_type,
                                 const ResourceIdentifier& resource_identifier,

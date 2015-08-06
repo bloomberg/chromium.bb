@@ -43,7 +43,7 @@ class ContentSettingsPref {
   ContentSettingsPref(ContentSettingsType content_type,
                       PrefService* prefs,
                       PrefChangeRegistrar* registrar,
-                      const char* pref_name,
+                      const std::string& pref_name,
                       bool incognito,
                       NotifyObserversCallback notify_callback);
   ~ContentSettingsPref();
@@ -110,7 +110,7 @@ class ContentSettingsPref {
   PrefChangeRegistrar* registrar_;
 
   // Name of the dictionary preference managed by this class.
-  const char* pref_name_;
+  const std::string& pref_name_;
 
   bool is_incognito_;
 

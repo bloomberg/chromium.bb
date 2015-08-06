@@ -29,6 +29,8 @@
 #include "components/content_settings/core/browser/content_settings_pref.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
+#include "components/content_settings/core/browser/website_settings_info.h"
+#include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -104,7 +106,7 @@ TEST_F(PrefProviderTest, Observer) {
 
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString("[*.]example.com");
-  content_settings::MockObserver mock_observer;
+  MockObserver mock_observer;
   EXPECT_CALL(mock_observer,
               OnContentSettingChanged(pattern,
                                       ContentSettingsPattern::Wildcard(),
@@ -184,9 +186,10 @@ TEST_F(PrefProviderTest, Incognito) {
                               CONTENT_SETTINGS_TYPE_IMAGES,
                               std::string(),
                               false));
+  const WebsiteSettingsInfo* info =
+      WebsiteSettingsRegistry::GetInstance()->Get(CONTENT_SETTINGS_TYPE_IMAGES);
   // But the value should not be overridden in the OTR user prefs accidentally.
-  EXPECT_FALSE(otr_user_prefs->IsSetInOverlay(
-      prefs::kContentSettingsImagesPatternPairs));
+  EXPECT_FALSE(otr_user_prefs->IsSetInOverlay(info->pref_name()));
 
   pref_content_settings_provider.ShutdownOnUIThread();
   pref_content_settings_provider_incognito.ShutdownOnUIThread();
@@ -422,11 +425,12 @@ TEST_F(PrefProviderTest, Deadlock) {
   // is sent, and this used to happen when |PrefProvider| was still holding its
   // lock.
 
+  const WebsiteSettingsInfo* info =
+      WebsiteSettingsRegistry::GetInstance()->Get(CONTENT_SETTINGS_TYPE_IMAGES);
   PrefProvider provider(&prefs, false);
   DeadlockCheckerObserver observer(&prefs, &provider);
   {
-    DictionaryPrefUpdate update(&prefs,
-                                prefs::kContentSettingsImagesPatternPairs);
+    DictionaryPrefUpdate update(&prefs, info->pref_name());
     base::DictionaryValue* mutable_settings = update.Get();
     mutable_settings->SetWithoutPathExpansion("www.example.com,*",
                                               new base::DictionaryValue());
@@ -582,11 +586,12 @@ TEST_F(PrefProviderTest, ClearAllContentSettingsRules) {
   provider.ClearAllContentSettingsRules(CONTENT_SETTINGS_TYPE_GEOLOCATION);
   provider.ClearAllContentSettingsRules(CONTENT_SETTINGS_TYPE_PLUGINS);
 
+  WebsiteSettingsRegistry* registry = WebsiteSettingsRegistry::GetInstance();
   // Test that the preferences for images, geolocation and plugins are empty.
   const char* empty_prefs[] = {
-      prefs::kContentSettingsImagesPatternPairs,
-      prefs::kContentSettingsGeolocationPatternPairs,
-      prefs::kContentSettingsPluginsPatternPairs
+      registry->Get(CONTENT_SETTINGS_TYPE_IMAGES)->pref_name().c_str(),
+      registry->Get(CONTENT_SETTINGS_TYPE_GEOLOCATION)->pref_name().c_str(),
+      registry->Get(CONTENT_SETTINGS_TYPE_PLUGINS)->pref_name().c_str(),
   };
 
   for (const char* pref : empty_prefs) {
@@ -597,8 +602,8 @@ TEST_F(PrefProviderTest, ClearAllContentSettingsRules) {
 
   // Test that the preferences for cookies and notifications are not empty.
   const char* nonempty_prefs[] = {
-      prefs::kContentSettingsCookiesPatternPairs,
-      prefs::kContentSettingsNotificationsPatternPairs
+      registry->Get(CONTENT_SETTINGS_TYPE_COOKIES)->pref_name().c_str(),
+      registry->Get(CONTENT_SETTINGS_TYPE_NOTIFICATIONS)->pref_name().c_str(),
   };
 
   for (const char* pref : nonempty_prefs) {

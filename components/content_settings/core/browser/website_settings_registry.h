@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 
 namespace content_settings {
@@ -27,17 +28,28 @@ class WebsiteSettingsRegistry {
   const WebsiteSettingsInfo* GetByName(const std::string& name) const;
 
  private:
+  friend class WebsiteSettingsRegistryTest;
+  friend struct base::DefaultLazyInstanceTraits<WebsiteSettingsRegistry>;
+
   WebsiteSettingsRegistry();
   ~WebsiteSettingsRegistry();
 
-  // Register a new WebsiteSettingsInfo.
-  void Register(ContentSettingsType type, const std::string& name);
+  // Register a new website setting. This maps an arbitrary base::Value to an
+  // origin.
+  void RegisterWebsiteSetting(ContentSettingsType type,
+                              const std::string& name);
+  // Register a new content setting. This maps an ALLOW/ASK/BLOCK value (see the
+  // ContentSetting enum) to an origin.
+  void RegisterContentSetting(ContentSettingsType type,
+                              const std::string& name,
+                              ContentSetting initial_default_value);
+
+  // Helper used by Register/RegisterPermission.
+  void StoreWebsiteSettingsInfo(WebsiteSettingsInfo* info);
 
   ScopedVector<WebsiteSettingsInfo> website_settings_info_;
 
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettingsRegistry);
-  friend class WebsiteSettingsRegistryTest;
-  friend struct base::DefaultLazyInstanceTraits<WebsiteSettingsRegistry>;
 };
 
 }  // namespace content_settings

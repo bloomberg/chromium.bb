@@ -18,6 +18,8 @@
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/plugins_field_trial.h"
+#include "components/content_settings/core/browser/website_settings_info.h"
+#include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -35,58 +37,25 @@ const char kObsoleteDefaultContentSettings[] =
 const char kObsoleteMigratedDefaultContentSettings[] =
     "profile.migrated_default_content_settings";
 
-struct DefaultContentSettingInfo {
-  // The profile preference associated with this default setting.
-  const char* pref_name;
-
-  // The default value of this default setting.
-  const ContentSetting default_value;
-};
-
-// The corresponding preference and default value for each default content
-// setting. This array must be kept in sync with the enum |ContentSettingsType|.
-const DefaultContentSettingInfo kDefaultSettings[] = {
-  {prefs::kDefaultCookiesSetting, CONTENT_SETTING_ALLOW},
-  {prefs::kDefaultImagesSetting, CONTENT_SETTING_ALLOW},
-  {prefs::kDefaultJavaScriptSetting, CONTENT_SETTING_ALLOW},
-  {prefs::kDefaultPluginsSetting, CONTENT_SETTING_DEFAULT},
-  {prefs::kDefaultPopupsSetting, CONTENT_SETTING_BLOCK},
-  {prefs::kDefaultGeolocationSetting, CONTENT_SETTING_ASK},
-  {prefs::kDefaultNotificationsSetting, CONTENT_SETTING_ASK},
-  {prefs::kDefaultAutoSelectCertificateSetting, CONTENT_SETTING_DEFAULT},
-  {prefs::kDefaultFullScreenSetting, CONTENT_SETTING_ASK},
-  {prefs::kDefaultMouseLockSetting, CONTENT_SETTING_ASK},
-  {prefs::kDefaultMixedScriptSetting, CONTENT_SETTING_DEFAULT},
-  {prefs::kDefaultMediaStreamSetting, CONTENT_SETTING_ASK},
-  {prefs::kDefaultMediaStreamMicSetting, CONTENT_SETTING_ASK},
-  {prefs::kDefaultMediaStreamCameraSetting, CONTENT_SETTING_ASK},
-  {prefs::kDefaultProtocolHandlersSetting, CONTENT_SETTING_DEFAULT},
-  {prefs::kDefaultPpapiBrokerSetting, CONTENT_SETTING_ASK},
-  {prefs::kDefaultAutomaticDownloadsSetting, CONTENT_SETTING_ASK},
-  {prefs::kDefaultMidiSysexSetting, CONTENT_SETTING_ASK},
-  {prefs::kDefaultPushMessagingSetting, CONTENT_SETTING_ASK},
-  {prefs::kDefaultSSLCertDecisionsSetting, CONTENT_SETTING_ALLOW},
-#if defined(OS_WIN)
-  {prefs::kDefaultMetroSwitchToDesktopSetting, CONTENT_SETTING_ASK},
-#elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
-  {prefs::kDefaultProtectedMediaIdentifierSetting, CONTENT_SETTING_ASK},
-#endif
-  {prefs::kDefaultAppBannerSetting, CONTENT_SETTING_DEFAULT},
-  {prefs::kDefaultSiteEngagementSetting, CONTENT_SETTING_DEFAULT},
-  {prefs::kDefaultDurableStorageSetting, CONTENT_SETTING_ASK},
-};
-static_assert(arraysize(kDefaultSettings) == CONTENT_SETTINGS_NUM_TYPES,
-              "kDefaultSettings should have CONTENT_SETTINGS_NUM_TYPES "
-              "elements");
-
 ContentSetting GetDefaultValue(ContentSettingsType type) {
   if (type == CONTENT_SETTINGS_TYPE_PLUGINS)
     return PluginsFieldTrial::GetDefaultPluginsContentSetting();
-  return kDefaultSettings[type].default_value;
+
+  const WebsiteSettingsInfo* info =
+      WebsiteSettingsRegistry::GetInstance()->Get(type);
+  const base::Value* initial_default = info->initial_default_value();
+  if (!initial_default)
+    return CONTENT_SETTING_DEFAULT;
+  int result = 0;
+  bool success = initial_default->GetAsInteger(&result);
+  DCHECK(success);
+  return static_cast<ContentSetting>(result);
 }
 
-const char* GetPrefName(ContentSettingsType type) {
-  return kDefaultSettings[type].pref_name;
+const std::string& GetPrefName(ContentSettingsType type) {
+  return WebsiteSettingsRegistry::GetInstance()
+      ->Get(type)
+      ->default_value_pref_name();
 }
 
 class DefaultRuleIterator : public RuleIterator {

@@ -35,6 +35,8 @@
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/browser/plugins_field_trial.h"
+#include "components/content_settings/core/browser/website_settings_info.h"
+#include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/google/core/browser/google_util.h"
@@ -432,8 +434,10 @@ void ContentSettingsHandler::GetLocalizedValues(
   RegisterStrings(localized_strings, resources, arraysize(resources));
 
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-  const base::Value* default_pref =
-      prefs->GetDefaultPrefValue(prefs::kDefaultPluginsSetting);
+  const base::Value* default_pref = prefs->GetDefaultPrefValue(
+      content_settings::WebsiteSettingsRegistry::GetInstance()
+          ->Get(CONTENT_SETTINGS_TYPE_PLUGINS)
+          ->default_value_pref_name());
 
   int default_value = CONTENT_SETTING_DEFAULT;
   bool success = default_pref->GetAsInteger(&default_value);

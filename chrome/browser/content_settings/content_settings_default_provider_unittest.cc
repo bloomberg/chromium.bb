@@ -12,6 +12,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/content_settings_default_provider.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
+#include "components/content_settings/core/browser/website_settings_info.h"
+#include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -156,9 +158,11 @@ TEST_F(DefaultProviderTest, ObservePref) {
                               CONTENT_SETTINGS_TYPE_COOKIES,
                               std::string(),
                               false));
-
+  const content_settings::WebsiteSettingsInfo* info =
+      content_settings::WebsiteSettingsRegistry::GetInstance()->Get(
+          CONTENT_SETTINGS_TYPE_COOKIES);
   // Clearing the backing pref should also clear the internal cache.
-  prefs->ClearPref(prefs::kDefaultCookiesSetting);
+  prefs->ClearPref(info->default_value_pref_name());
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             GetContentSetting(&provider_,
                               GURL(),
@@ -167,7 +171,7 @@ TEST_F(DefaultProviderTest, ObservePref) {
                               std::string(),
                               false));
   // Reseting the pref to its previous value should update the cache.
-  prefs->SetInteger(prefs::kDefaultCookiesSetting, CONTENT_SETTING_BLOCK);
+  prefs->SetInteger(info->default_value_pref_name(), CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(&provider_,
                               GURL(),
