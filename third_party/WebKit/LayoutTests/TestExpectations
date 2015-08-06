@@ -128,6 +128,21 @@ crbug.com/392640 svg/as-object/sizing/svg-in-object-placeholder-height-fixed.htm
 crbug.com/248938 [ Win ] virtual/threaded/animations/change-keyframes.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
 crbug.com/469683 virtual/threaded/animations/responsive-neutral-keyframes.html [ Pass Failure ]
+crbug.com/510002 [ Win ] http/tests/cachestorage/worker/cache-add.html [ Pass Failure ]
+crbug.com/510002 [ Win ] http/tests/cachestorage/worker/cache-match.html [ Pass Failure ]
+crbug.com/433727 [ Win ] http/tests/cachestorage/worker/cache-put.html [ Pass Timeout Failure ]
+crbug.com/503874 http/tests/inspector/sources/debugger/worker-debugging-script-mapping.html [ Pass Failure ]
+crbug.com/498539 inspector/console/console-log-syntax-error.html [ Pass Timeout ]
+crbug.com/493895 inspector/sources/debugger-breakpoints/dom-breakpoints.html [ Pass Timeout ]
+crbug.com/503875 inspector/sources/debugger-step/debugger-step-into-document-write.html [ Pass Failure ]
+crbug.com/498539 inspector/tracing/timeline-bound-function.html [ Pass Failure ]
+crbug.com/498539 inspector/tracing/timeline-injected-script-eval.html [ Pass Failure ]
+crbug.com/498539 inspector/tracing/timeline-receive-response-event.html [ Pass Failure ]
+crbug.com/498539 inspector/tracing/timeline-time.html [ Pass Failure ]
+crbug.com/498539 inspector/tracing/timeline-timer.html [ Pass Failure ]
+crbug.com/513143 virtual/threaded/fast/scroll-behavior/subframe-interrupted-scroll.html [ Failure Pass ]
+crbug.com/513143 virtual/threaded_animation_timelines/fast/scroll-behavior/subframe-interrupted-scroll.html [ Failure Pass ]
+crbug.com/510337 inspector/sources/debugger/live-edit.html [ Pass Failure Timeout ]
 
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
@@ -186,7 +201,6 @@ crbug.com/510337 inspector/console/console-format.html [ Slow ]
 crbug.com/510337 inspector/elements/edit/edit-dom-actions-shadow.html [ Slow ]
 crbug.com/510337 inspector/elements/edit/edit-dom-actions.html [ Slow Timeout ]
 crbug.com/510337 inspector/elements/styles-1/edit-value-url-with-color.html [ Slow ]
-crbug.com/510337 inspector/sources/debugger/live-edit.html [ Slow ]
 
 crbug.com/490511 imported/web-platform-tests/html/dom/dynamic-markup-insertion/document-write/023.html [ Crash Timeout ]
 crbug.com/490511 imported/web-platform-tests/html/dom/dynamic-markup-insertion/document-write/026.html [ Crash Timeout ]
@@ -2089,3 +2103,7 @@ crbug.com/516522 [ Yosemite ] editing/selection/vertical-rl-rtl-extend-line-forw
 
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-contexts.html [ Failure ]
+
+crbug.com/513319 [ XP ] ietestcenter/css3/bordersbackgrounds/border-radius-applies-to-011.htm [ NeedsRebaseline ]
+crbug.com/513319 [ Yosemite ] fast/css/acid2.html [ NeedsRebaseline ]
+crbug.com/513319 [ Yosemite ] fast/css/acid2-pixel.html [ NeedsRebaseline ]
