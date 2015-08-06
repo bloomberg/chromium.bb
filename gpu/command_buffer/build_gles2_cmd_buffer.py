@@ -4268,65 +4268,61 @@ def GetGLGetTypeConversion(result_type, value_type, value):
       return 'static_cast<GLint>(round(%s))' % value
   return 'static_cast<%s>(%s)' % (result_type, value)
 
-class CWriter(object):
-  """Writes to a file formatting it for Google's style guidelines."""
 
+class CWriter(object):
+  """Context manager that creates a C source file.
+
+  To be used with the `with` statement. Returns a normal `file` type, open only
+  for writing - any existing files with that name will be overwritten. It will
+  automatically write the contents of `_LICENSE` and `_DO_NOT_EDIT_WARNING`
+  at the beginning.
+
+  Example:
+    with CWriter("file.cpp") as myfile:
+      myfile.write("hello")
+      # type(myfile) == file
+  """
   def __init__(self, filename):
     self.filename = filename
-    self.content = []
+    self._file = open(filename, 'w')
+    self._ENTER_MSG = _LICENSE + _DO_NOT_EDIT_WARNING
+    self._EXIT_MSG = ""
 
-  def write(self, string):
-    """Writes a string to a file spliting if it's > 80 characters."""
-    lines = string.splitlines()
-    num_lines = len(lines)
-    for ii in range(0, num_lines):
-      self.content.append(lines[ii])
-      if ii < (num_lines - 1) or string[-1] == '\n':
-        self.content.append('\n')
+  def __enter__(self):
+    self._file.write(self._ENTER_MSG)
+    return self._file
 
-  def close(self):
-    """Close the file."""
-    content = "".join(self.content)
-    write_file = True
-    if os.path.exists(self.filename):
-      old_file = open(self.filename, "rb");
-      old_content = old_file.read()
-      old_file.close();
-      if content == old_content:
-        write_file = False
-    if write_file:
-      f = open(self.filename, "wb")
-      f.write(content)
-      f.close()
+  def __exit__(self, exc_type, exc_value, traceback):
+    self._file.write(self._EXIT_MSG)
+    self._file.close()
 
 
 class CHeaderWriter(CWriter):
-  """Writes a C Header file."""
+  """Context manager that creates a C header file.
 
-  _non_alnum_re = re.compile(r'[^a-zA-Z0-9]')
+  Works the same way as CWriter, except it will also add the #ifdef guard
+  around it. If `file_comment` is set, it will write that before the #ifdef
+  guard.
+  """
+  def __init__(self, filename, file_comment=None):
+    super(CHeaderWriter, self).__init__(filename)
+    guard = self._get_guard()
+    if file_comment is None:
+      file_comment = ""
+    self._ENTER_MSG = self._ENTER_MSG + file_comment \
+                    + "#ifndef %s\n#define %s\n\n" % (guard, guard)
+    self._EXIT_MSG = self._EXIT_MSG + "#endif  // %s\n" % guard
 
-  def __init__(self, filename, file_comment = None):
-    CWriter.__init__(self, filename)
-
-    base = os.path.abspath(filename)
+  def _get_guard(self):
+    non_alnum_re = re.compile(r'[^a-zA-Z0-9]')
+    base = os.path.abspath(self.filename)
     while os.path.basename(base) != 'src':
       new_base = os.path.dirname(base)
       assert new_base != base  # Prevent infinite loop.
       base = new_base
+    hpath = os.path.relpath(self.filename, base)
+    return non_alnum_re.sub('_', hpath).upper() + '_'
 
-    hpath = os.path.relpath(filename, base)
-    self.guard = self._non_alnum_re.sub('_', hpath).upper() + '_'
-
-    self.write(_LICENSE)
-    self.write(_DO_NOT_EDIT_WARNING)
-    if not file_comment == None:
-      self.write(file_comment)
-    self.write("#ifndef %s\n" % self.guard)
-    self.write("#define %s\n\n" % self.guard)
-
-  def close(self):
-    self.write("#endif  // %s\n\n" % self.guard)
-    CWriter.close(self)
 
 class TypeHandler(object):
   """This class emits code for a particular type of function."""
@@ -9922,9 +9918,8 @@ class GLGenerator(object):
 
   def ParseGLH(self, filename):
     """Parses the cmd_buffer_functions.txt file and extracts the functions"""
-    f = open(filename, "r")
-    functions = f.read()
-    f.close()
+    with open(filename, "r") as f:
+      functions = f.read()
     for line in functions.splitlines():
       match = self._function_re.match(line)
       if match:
@@ -9977,165 +9972,147 @@ class GLGenerator(object):
 
   def WriteCommandIds(self, filename):
     """Writes the command buffer format"""
-    f = CHeaderWriter(filename)
-    f.write("#define GLES2_COMMAND_LIST(OP) \\\n")
-    id = 256
-    for func in self.functions:
-      f.write("  %-60s /* %d */ \\\n" %
-                 ("OP(%s)" % func.name, id))
-      id += 1
-    f.write("\n")
+    with CHeaderWriter(filename) as f:
+      f.write("#define GLES2_COMMAND_LIST(OP) \\\n")
+      id = 256
+      for func in self.functions:
+        f.write("  %-60s /* %d */ \\\n" %
+                   ("OP(%s)" % func.name, id))
+        id += 1
+      f.write("\n")
 
-    f.write("enum CommandId {\n")
-    f.write("  kStartPoint = cmd::kLastCommonId,  "
-               "// All GLES2 commands start after this.\n")
-    f.write("#define GLES2_CMD_OP(name) k ## name,\n")
-    f.write("  GLES2_COMMAND_LIST(GLES2_CMD_OP)\n")
-    f.write("#undef GLES2_CMD_OP\n")
-    f.write("  kNumCommands\n")
-    f.write("};\n")
-    f.write("\n")
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+      f.write("enum CommandId {\n")
+      f.write("  kStartPoint = cmd::kLastCommonId,  "
+                 "// All GLES2 commands start after this.\n")
+      f.write("#define GLES2_CMD_OP(name) k ## name,\n")
+      f.write("  GLES2_COMMAND_LIST(GLES2_CMD_OP)\n")
+      f.write("#undef GLES2_CMD_OP\n")
+      f.write("  kNumCommands\n")
+      f.write("};\n")
+      f.write("\n")
+    self.generated_cpp_filenames.append(filename)
 
   def WriteFormat(self, filename):
     """Writes the command buffer format"""
-    f = CHeaderWriter(filename)
-    # Forward declaration of a few enums used in constant argument
-    # to avoid including GL header files.
-    enum_defines = {
-        'GL_SYNC_GPU_COMMANDS_COMPLETE': '0x9117',
-        'GL_SYNC_FLUSH_COMMANDS_BIT': '0x00000001',
-      }
-    f.write('\n')
-    for enum in enum_defines:
-      f.write("#define %s %s\n" % (enum, enum_defines[enum]))
-    f.write('\n')
-    for func in self.functions:
-      if True:
-      #gen_cmd = func.GetInfo('gen_cmd')
-      #if gen_cmd == True or gen_cmd == None:
-        func.WriteStruct(f)
-    f.write("\n")
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    with CHeaderWriter(filename) as f:
+      # Forward declaration of a few enums used in constant argument
+      # to avoid including GL header files.
+      enum_defines = {
+          'GL_SYNC_GPU_COMMANDS_COMPLETE': '0x9117',
+          'GL_SYNC_FLUSH_COMMANDS_BIT': '0x00000001',
+        }
+      f.write('\n')
+      for enum in enum_defines:
+        f.write("#define %s %s\n" % (enum, enum_defines[enum]))
+      f.write('\n')
+      for func in self.functions:
+        if True:
+        #gen_cmd = func.GetInfo('gen_cmd')
+        #if gen_cmd == True or gen_cmd == None:
+          func.WriteStruct(f)
+      f.write("\n")
+    self.generated_cpp_filenames.append(filename)
 
   def WriteDocs(self, filename):
     """Writes the command buffer doc version of the commands"""
-    f = CWriter(filename)
-    for func in self.functions:
-      if True:
-      #gen_cmd = func.GetInfo('gen_cmd')
-      #if gen_cmd == True or gen_cmd == None:
-        func.WriteDocs(f)
-    f.write("\n")
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    with CHeaderWriter(filename) as f:
+      for func in self.functions:
+        if True:
+        #gen_cmd = func.GetInfo('gen_cmd')
+        #if gen_cmd == True or gen_cmd == None:
+          func.WriteDocs(f)
+      f.write("\n")
+    self.generated_cpp_filenames.append(filename)
 
   def WriteFormatTest(self, filename):
     """Writes the command buffer format test."""
-    f = CHeaderWriter(
-      filename,
-      "// This file contains unit tests for gles2 commmands\n"
-      "// It is included by gles2_cmd_format_test.cc\n"
-      "\n")
-
-    for func in self.functions:
-      if True:
-      #gen_cmd = func.GetInfo('gen_cmd')
-      #if gen_cmd == True or gen_cmd == None:
-        func.WriteFormatTest(f)
-
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    comment = ("// This file contains unit tests for gles2 commmands\n"
+               "// It is included by gles2_cmd_format_test.cc\n\n")
+    with CHeaderWriter(filename, comment) as f:
+      for func in self.functions:
+        if True:
+        #gen_cmd = func.GetInfo('gen_cmd')
+        #if gen_cmd == True or gen_cmd == None:
+          func.WriteFormatTest(f)
+    self.generated_cpp_filenames.append(filename)
 
   def WriteCmdHelperHeader(self, filename):
     """Writes the gles2 command helper."""
-    f = CHeaderWriter(filename)
-
-    for func in self.functions:
-      if True:
-      #gen_cmd = func.GetInfo('gen_cmd')
-      #if gen_cmd == True or gen_cmd == None:
-        func.WriteCmdHelper(f)
-
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    with CHeaderWriter(filename) as f:
+      for func in self.functions:
+        if True:
+        #gen_cmd = func.GetInfo('gen_cmd')
+        #if gen_cmd == True or gen_cmd == None:
+          func.WriteCmdHelper(f)
+    self.generated_cpp_filenames.append(filename)
 
   def WriteServiceContextStateHeader(self, filename):
     """Writes the service context state header."""
-    f = CHeaderWriter(
-        filename,
-        "// It is included by context_state.h\n")
-    f.write("struct EnableFlags {\n")
-    f.write("  EnableFlags();\n")
-    for capability in _CAPABILITY_FLAGS:
-      f.write("  bool %s;\n" % capability['name'])
-      f.write("  bool cached_%s;\n" % capability['name'])
-    f.write("};\n\n")
+    comment = "// It is included by context_state.h\n"
+    with CHeaderWriter(filename, comment) as f:
+      f.write("struct EnableFlags {\n")
+      f.write("  EnableFlags();\n")
+      for capability in _CAPABILITY_FLAGS:
+        f.write("  bool %s;\n" % capability['name'])
+        f.write("  bool cached_%s;\n" % capability['name'])
+      f.write("};\n\n")
 
-    for state_name in sorted(_STATES.keys()):
-      state = _STATES[state_name]
-      for item in state['states']:
-        if isinstance(item['default'], list):
-          f.write("%s %s[%d];\n" % (item['type'], item['name'],
-                                       len(item['default'])))
-        else:
-          f.write("%s %s;\n" % (item['type'], item['name']))
-
-        if item.get('cached', False):
+      for state_name in sorted(_STATES.keys()):
+        state = _STATES[state_name]
+        for item in state['states']:
           if isinstance(item['default'], list):
-            f.write("%s cached_%s[%d];\n" % (item['type'], item['name'],
-                                                len(item['default'])))
+            f.write("%s %s[%d];\n" % (item['type'], item['name'],
+                                         len(item['default'])))
           else:
-            f.write("%s cached_%s;\n" % (item['type'], item['name']))
+            f.write("%s %s;\n" % (item['type'], item['name']))
 
-    f.write("\n")
+          if item.get('cached', False):
+            if isinstance(item['default'], list):
+              f.write("%s cached_%s[%d];\n" % (item['type'], item['name'],
+                                                  len(item['default'])))
+            else:
+              f.write("%s cached_%s;\n" % (item['type'], item['name']))
 
-    f.write("""
-        inline void SetDeviceCapabilityState(GLenum cap, bool enable) {
-          switch (cap) {
-        """)
-    for capability in _CAPABILITY_FLAGS:
+      f.write("\n")
+      f.write("""
+          inline void SetDeviceCapabilityState(GLenum cap, bool enable) {
+            switch (cap) {
+          """)
+      for capability in _CAPABILITY_FLAGS:
+        f.write("""\
+              case GL_%s:
+            """ % capability['name'].upper())
+        f.write("""\
+                if (enable_flags.cached_%(name)s == enable &&
+                    !ignore_cached_state)
+                  return;
+                enable_flags.cached_%(name)s = enable;
+                break;
+            """ % capability)
+
       f.write("""\
-            case GL_%s:
-          """ % capability['name'].upper())
-      f.write("""\
-              if (enable_flags.cached_%(name)s == enable &&
-                  !ignore_cached_state)
+              default:
+                NOTREACHED();
                 return;
-              enable_flags.cached_%(name)s = enable;
-              break;
-          """ % capability)
-
-    f.write("""\
-            default:
-              NOTREACHED();
-              return;
+            }
+            if (enable)
+              glEnable(cap);
+            else
+              glDisable(cap);
           }
-          if (enable)
-            glEnable(cap);
-          else
-            glDisable(cap);
-        }
-        """)
-
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+          """)
+    self.generated_cpp_filenames.append(filename)
 
   def WriteClientContextStateHeader(self, filename):
     """Writes the client context state header."""
-    f = CHeaderWriter(
-        filename,
-        "// It is included by client_context_state.h\n")
-    f.write("struct EnableFlags {\n")
-    f.write("  EnableFlags();\n")
-    for capability in _CAPABILITY_FLAGS:
-      f.write("  bool %s;\n" % capability['name'])
-    f.write("};\n\n")
-
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    comment = "// It is included by client_context_state.h\n"
+    with CHeaderWriter(filename, comment) as f:
+      f.write("struct EnableFlags {\n")
+      f.write("  EnableFlags();\n")
+      for capability in _CAPABILITY_FLAGS:
+        f.write("  bool %s;\n" % capability['name'])
+      f.write("};\n\n")
+    self.generated_cpp_filenames.append(filename)
 
   def WriteContextStateGetters(self, f, class_name):
     """Writes the state getters."""
@@ -10198,394 +10175,384 @@ bool %s::GetStateAs%s(
 
   def WriteServiceContextStateImpl(self, filename):
     """Writes the context state service implementation."""
-    f = CHeaderWriter(
-        filename,
-        "// It is included by context_state.cc\n")
-    code = []
-    for capability in _CAPABILITY_FLAGS:
-      code.append("%s(%s)" %
-                  (capability['name'],
-                   ('false', 'true')['default' in capability]))
-      code.append("cached_%s(%s)" %
-                  (capability['name'],
-                   ('false', 'true')['default' in capability]))
-    f.write("ContextState::EnableFlags::EnableFlags()\n    : %s {\n}\n" %
-               ",\n      ".join(code))
-    f.write("\n")
+    comment = "// It is included by context_state.cc\n"
+    with CHeaderWriter(filename, comment) as f:
+      code = []
+      for capability in _CAPABILITY_FLAGS:
+        code.append("%s(%s)" %
+                    (capability['name'],
+                     ('false', 'true')['default' in capability]))
+        code.append("cached_%s(%s)" %
+                    (capability['name'],
+                     ('false', 'true')['default' in capability]))
+      f.write("ContextState::EnableFlags::EnableFlags()\n    : %s {\n}\n" %
+                 ",\n      ".join(code))
+      f.write("\n")
 
-    f.write("void ContextState::Initialize() {\n")
-    for state_name in sorted(_STATES.keys()):
-      state = _STATES[state_name]
-      for item in state['states']:
-        if isinstance(item['default'], list):
-          for ndx, value in enumerate(item['default']):
-            f.write("  %s[%d] = %s;\n" % (item['name'], ndx, value))
-        else:
-          f.write("  %s = %s;\n" % (item['name'], item['default']))
-        if item.get('cached', False):
+      f.write("void ContextState::Initialize() {\n")
+      for state_name in sorted(_STATES.keys()):
+        state = _STATES[state_name]
+        for item in state['states']:
           if isinstance(item['default'], list):
             for ndx, value in enumerate(item['default']):
-              f.write("  cached_%s[%d] = %s;\n" % (item['name'], ndx, value))
+              f.write("  %s[%d] = %s;\n" % (item['name'], ndx, value))
           else:
-            f.write("  cached_%s = %s;\n" % (item['name'], item['default']))
-    f.write("}\n")
+            f.write("  %s = %s;\n" % (item['name'], item['default']))
+          if item.get('cached', False):
+            if isinstance(item['default'], list):
+              for ndx, value in enumerate(item['default']):
+                f.write("  cached_%s[%d] = %s;\n" % (item['name'], ndx, value))
+            else:
+              f.write("  cached_%s = %s;\n" % (item['name'], item['default']))
+      f.write("}\n")
 
-    f.write("""
+      f.write("""
 void ContextState::InitCapabilities(const ContextState* prev_state) const {
 """)
-    def WriteCapabilities(test_prev, es3_caps):
-      for capability in _CAPABILITY_FLAGS:
-        capability_name = capability['name']
-        capability_es3 = 'es3' in capability and capability['es3'] == True
-        if capability_es3 and not es3_caps or not capability_es3 and es3_caps:
-          continue
-        if test_prev:
-          f.write("""  if (prev_state->enable_flags.cached_%s !=
-                              enable_flags.cached_%s) {\n""" %
-                     (capability_name, capability_name))
-        f.write("    EnableDisable(GL_%s, enable_flags.cached_%s);\n" %
-                   (capability_name.upper(), capability_name))
-        if test_prev:
-          f.write("  }")
+      def WriteCapabilities(test_prev, es3_caps):
+        for capability in _CAPABILITY_FLAGS:
+          capability_name = capability['name']
+          capability_es3 = 'es3' in capability and capability['es3'] == True
+          if capability_es3 and not es3_caps or not capability_es3 and es3_caps:
+            continue
+          if test_prev:
+            f.write("""  if (prev_state->enable_flags.cached_%s !=
+                                enable_flags.cached_%s) {\n""" %
+                       (capability_name, capability_name))
+          f.write("    EnableDisable(GL_%s, enable_flags.cached_%s);\n" %
+                     (capability_name.upper(), capability_name))
+          if test_prev:
+            f.write("  }")
 
-    f.write("  if (prev_state) {")
-    WriteCapabilities(True, False)
-    f.write("    if (feature_info_->IsES3Capable()) {\n")
-    WriteCapabilities(True, True)
-    f.write("    }\n")
-    f.write("  } else {")
-    WriteCapabilities(False, False)
-    f.write("    if (feature_info_->IsES3Capable()) {\n")
-    WriteCapabilities(False, True)
-    f.write("    }\n")
-    f.write("  }")
-
-    f.write("""}
+      f.write("  if (prev_state) {")
+      WriteCapabilities(True, False)
+      f.write("    if (feature_info_->IsES3Capable()) {\n")
+      WriteCapabilities(True, True)
+      f.write("    }\n")
+      f.write("  } else {")
+      WriteCapabilities(False, False)
+      f.write("    if (feature_info_->IsES3Capable()) {\n")
+      WriteCapabilities(False, True)
+      f.write("    }\n")
+      f.write("  }")
+      f.write("""}
 
 void ContextState::InitState(const ContextState *prev_state) const {
 """)
 
-    def WriteStates(test_prev):
-      # We need to sort the keys so the expectations match
-      for state_name in sorted(_STATES.keys()):
-        state = _STATES[state_name]
-        if state['type'] == 'FrontBack':
-          num_states = len(state['states'])
-          for ndx, group in enumerate(Grouper(num_states / 2, state['states'])):
+      def WriteStates(test_prev):
+        # We need to sort the keys so the expectations match
+        for state_name in sorted(_STATES.keys()):
+          state = _STATES[state_name]
+          if state['type'] == 'FrontBack':
+            num_states = len(state['states'])
+            for ndx, group in enumerate(Grouper(num_states / 2,
+                                        state['states'])):
+              if test_prev:
+                f.write("  if (")
+              args = []
+              for place, item in enumerate(group):
+                item_name = CachedStateName(item)
+                args.append('%s' % item_name)
+                if test_prev:
+                  if place > 0:
+                    f.write(' ||\n')
+                  f.write("(%s != prev_state->%s)" % (item_name, item_name))
+              if test_prev:
+                f.write(")\n")
+              f.write(
+                  "  gl%s(%s, %s);\n" %
+                  (state['func'], ('GL_FRONT', 'GL_BACK')[ndx],
+                   ", ".join(args)))
+          elif state['type'] == 'NamedParameter':
+            for item in state['states']:
+              item_name = CachedStateName(item)
+
+              if 'extension_flag' in item:
+                f.write("  if (feature_info_->feature_flags().%s) {\n  " %
+                           item['extension_flag'])
+              if test_prev:
+                if isinstance(item['default'], list):
+                  f.write("  if (memcmp(prev_state->%s, %s, "
+                             "sizeof(%s) * %d)) {\n" %
+                             (item_name, item_name, item['type'],
+                              len(item['default'])))
+                else:
+                  f.write("  if (prev_state->%s != %s) {\n  " %
+                             (item_name, item_name))
+              if 'gl_version_flag' in item:
+                item_name = item['gl_version_flag']
+                inverted = ''
+                if item_name[0] == '!':
+                  inverted = '!'
+                  item_name = item_name[1:]
+                f.write("  if (%sfeature_info_->gl_version_info().%s) {\n" %
+                           (inverted, item_name))
+              f.write("  gl%s(%s, %s);\n" %
+                         (state['func'],
+                          (item['enum_set']
+                             if 'enum_set' in item else item['enum']),
+                          item['name']))
+              if 'gl_version_flag' in item:
+                f.write("  }\n")
+              if test_prev:
+                if 'extension_flag' in item:
+                  f.write("  ")
+                f.write("  }")
+              if 'extension_flag' in item:
+                f.write("  }")
+          else:
+            if 'extension_flag' in state:
+              f.write("  if (feature_info_->feature_flags().%s)\n  " %
+                         state['extension_flag'])
             if test_prev:
               f.write("  if (")
             args = []
-            for place, item in enumerate(group):
+            for place, item in enumerate(state['states']):
               item_name = CachedStateName(item)
               args.append('%s' % item_name)
               if test_prev:
                 if place > 0:
                   f.write(' ||\n')
-                f.write("(%s != prev_state->%s)" % (item_name, item_name))
-            if test_prev:
-              f.write(")\n")
-            f.write(
-                "  gl%s(%s, %s);\n" %
-                (state['func'], ('GL_FRONT', 'GL_BACK')[ndx], ", ".join(args)))
-        elif state['type'] == 'NamedParameter':
-          for item in state['states']:
-            item_name = CachedStateName(item)
-
-            if 'extension_flag' in item:
-              f.write("  if (feature_info_->feature_flags().%s) {\n  " %
-                         item['extension_flag'])
-            if test_prev:
-              if isinstance(item['default'], list):
-                f.write("  if (memcmp(prev_state->%s, %s, "
-                           "sizeof(%s) * %d)) {\n" %
-                           (item_name, item_name, item['type'],
-                            len(item['default'])))
-              else:
-                f.write("  if (prev_state->%s != %s) {\n  " %
+                f.write("(%s != prev_state->%s)" %
                            (item_name, item_name))
-            if 'gl_version_flag' in item:
-              item_name = item['gl_version_flag']
-              inverted = ''
-              if item_name[0] == '!':
-                inverted = '!'
-                item_name = item_name[1:]
-              f.write("  if (%sfeature_info_->gl_version_info().%s) {\n" %
-                         (inverted, item_name))
-            f.write("  gl%s(%s, %s);\n" %
-                       (state['func'],
-                        (item['enum_set']
-                           if 'enum_set' in item else item['enum']),
-                        item['name']))
-            if 'gl_version_flag' in item:
-              f.write("  }\n")
             if test_prev:
-              if 'extension_flag' in item:
-                f.write("  ")
-              f.write("  }")
-            if 'extension_flag' in item:
-              f.write("  }")
-        else:
-          if 'extension_flag' in state:
-            f.write("  if (feature_info_->feature_flags().%s)\n  " %
-                       state['extension_flag'])
-          if test_prev:
-            f.write("  if (")
-          args = []
-          for place, item in enumerate(state['states']):
-            item_name = CachedStateName(item)
-            args.append('%s' % item_name)
-            if test_prev:
-              if place > 0:
-                f.write(' ||\n')
-              f.write("(%s != prev_state->%s)" %
-                         (item_name, item_name))
-          if test_prev:
-            f.write("    )\n")
-          f.write("  gl%s(%s);\n" % (state['func'], ", ".join(args)))
+              f.write("    )\n")
+            f.write("  gl%s(%s);\n" % (state['func'], ", ".join(args)))
 
-    f.write("  if (prev_state) {")
-    WriteStates(True)
-    f.write("  } else {")
-    WriteStates(False)
-    f.write("  }")
-    f.write("}\n")
+      f.write("  if (prev_state) {")
+      WriteStates(True)
+      f.write("  } else {")
+      WriteStates(False)
+      f.write("  }")
+      f.write("}\n")
 
-    f.write("""bool ContextState::GetEnabled(GLenum cap) const {
+      f.write("""bool ContextState::GetEnabled(GLenum cap) const {
   switch (cap) {
 """)
-    for capability in _CAPABILITY_FLAGS:
-      f.write("    case GL_%s:\n" % capability['name'].upper())
-      f.write("      return enable_flags.%s;\n" % capability['name'])
-    f.write("""    default:
+      for capability in _CAPABILITY_FLAGS:
+        f.write("    case GL_%s:\n" % capability['name'].upper())
+        f.write("      return enable_flags.%s;\n" % capability['name'])
+      f.write("""    default:
       NOTREACHED();
       return false;
   }
 }
 """)
-
-    self.WriteContextStateGetters(f, "ContextState")
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+      self.WriteContextStateGetters(f, "ContextState")
+    self.generated_cpp_filenames.append(filename)
 
   def WriteClientContextStateImpl(self, filename):
     """Writes the context state client side implementation."""
-    f = CHeaderWriter(
-        filename,
-        "// It is included by client_context_state.cc\n")
-    code = []
-    for capability in _CAPABILITY_FLAGS:
-      code.append("%s(%s)" %
-                  (capability['name'],
-                   ('false', 'true')['default' in capability]))
-    f.write(
-      "ClientContextState::EnableFlags::EnableFlags()\n    : %s {\n}\n" %
-      ",\n      ".join(code))
-    f.write("\n")
+    comment = "// It is included by client_context_state.cc\n"
+    with CHeaderWriter(filename, comment) as f:
+      code = []
+      for capability in _CAPABILITY_FLAGS:
+        code.append("%s(%s)" %
+                    (capability['name'],
+                     ('false', 'true')['default' in capability]))
+      f.write(
+        "ClientContextState::EnableFlags::EnableFlags()\n    : %s {\n}\n" %
+        ",\n      ".join(code))
+      f.write("\n")
 
-    f.write("""
+      f.write("""
 bool ClientContextState::SetCapabilityState(
     GLenum cap, bool enabled, bool* changed) {
   *changed = false;
   switch (cap) {
 """)
-    for capability in _CAPABILITY_FLAGS:
-      f.write("    case GL_%s:\n" % capability['name'].upper())
-      f.write("""      if (enable_flags.%(name)s != enabled) {
+      for capability in _CAPABILITY_FLAGS:
+        f.write("    case GL_%s:\n" % capability['name'].upper())
+        f.write("""      if (enable_flags.%(name)s != enabled) {
          *changed = true;
          enable_flags.%(name)s = enabled;
       }
       return true;
 """ % capability)
-    f.write("""    default:
+      f.write("""    default:
       return false;
   }
 }
 """)
-    f.write("""bool ClientContextState::GetEnabled(
+      f.write("""bool ClientContextState::GetEnabled(
     GLenum cap, bool* enabled) const {
   switch (cap) {
 """)
-    for capability in _CAPABILITY_FLAGS:
-      f.write("    case GL_%s:\n" % capability['name'].upper())
-      f.write("      *enabled = enable_flags.%s;\n" % capability['name'])
-      f.write("      return true;\n")
-    f.write("""    default:
+      for capability in _CAPABILITY_FLAGS:
+        f.write("    case GL_%s:\n" % capability['name'].upper())
+        f.write("      *enabled = enable_flags.%s;\n" % capability['name'])
+        f.write("      return true;\n")
+      f.write("""    default:
       return false;
   }
 }
 """)
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    self.generated_cpp_filenames.append(filename)
 
   def WriteServiceImplementation(self, filename):
     """Writes the service decorder implementation."""
-    f = CHeaderWriter(
-        filename,
-        "// It is included by gles2_cmd_decoder.cc\n")
+    comment = "// It is included by gles2_cmd_decoder.cc\n"
+    with CHeaderWriter(filename, comment) as f:
+      for func in self.functions:
+        if True:
+        #gen_cmd = func.GetInfo('gen_cmd')
+        #if gen_cmd == True or gen_cmd == None:
+          func.WriteServiceImplementation(f)
 
-    for func in self.functions:
-      if True:
-      #gen_cmd = func.GetInfo('gen_cmd')
-      #if gen_cmd == True or gen_cmd == None:
-        func.WriteServiceImplementation(f)
-
-    f.write("""
+      f.write("""
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {
 """)
-    for capability in _CAPABILITY_FLAGS:
-      f.write("    case GL_%s:\n" % capability['name'].upper())
-      if 'state_flag' in capability:
+      for capability in _CAPABILITY_FLAGS:
+        f.write("    case GL_%s:\n" % capability['name'].upper())
+        if 'state_flag' in capability:
 
-        f.write("""\
-            state_.enable_flags.%(name)s = enabled;
-            if (state_.enable_flags.cached_%(name)s != enabled
-                || state_.ignore_cached_state) {
-              %(state_flag)s = true;
-            }
-            return false;
-            """ % capability)
-      else:
-        f.write("""\
-            state_.enable_flags.%(name)s = enabled;
-            if (state_.enable_flags.cached_%(name)s != enabled
-                || state_.ignore_cached_state) {
-              state_.enable_flags.cached_%(name)s = enabled;
-              return true;
-            }
-            return false;
-            """ % capability)
-    f.write("""    default:
+          f.write("""\
+              state_.enable_flags.%(name)s = enabled;
+              if (state_.enable_flags.cached_%(name)s != enabled
+                  || state_.ignore_cached_state) {
+                %(state_flag)s = true;
+              }
+              return false;
+              """ % capability)
+        else:
+          f.write("""\
+              state_.enable_flags.%(name)s = enabled;
+              if (state_.enable_flags.cached_%(name)s != enabled
+                  || state_.ignore_cached_state) {
+                state_.enable_flags.cached_%(name)s = enabled;
+                return true;
+              }
+              return false;
+              """ % capability)
+      f.write("""    default:
       NOTREACHED();
       return false;
   }
 }
 """)
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    self.generated_cpp_filenames.append(filename)
 
-  def WriteServiceUnitTests(self, filename):
+  def WriteServiceUnitTests(self, filename_pattern):
     """Writes the service decorder unit tests."""
     num_tests = len(self.functions)
     FUNCTIONS_PER_FILE = 98  # hard code this so it doesn't change.
     count = 0
     for test_num in range(0, num_tests, FUNCTIONS_PER_FILE):
       count += 1
-      name = filename % count
-      f = CHeaderWriter(
-          name,
-          "// It is included by gles2_cmd_decoder_unittest_%d.cc\n" % count)
-      test_name = 'GLES2DecoderTest%d' % count
-      end = test_num + FUNCTIONS_PER_FILE
-      if end > num_tests:
-        end = num_tests
-      for idx in range(test_num, end):
-        func = self.functions[idx]
+      filename = filename_pattern % count
+      comment = "// It is included by gles2_cmd_decoder_unittest_%d.cc\n" \
+                % count
+      with CHeaderWriter(filename, comment) as f:
+        test_name = 'GLES2DecoderTest%d' % count
+        end = test_num + FUNCTIONS_PER_FILE
+        if end > num_tests:
+          end = num_tests
+        for idx in range(test_num, end):
+          func = self.functions[idx]
 
-        # Do any filtering of the functions here, so that the functions
-        # will not move between the numbered files if filtering properties
-        # are changed.
-        if func.GetInfo('extension_flag'):
-          continue
+          # Do any filtering of the functions here, so that the functions
+          # will not move between the numbered files if filtering properties
+          # are changed.
+          if func.GetInfo('extension_flag'):
+            continue
 
-        if True:
-        #gen_cmd = func.GetInfo('gen_cmd')
-        #if gen_cmd == True or gen_cmd == None:
-          if func.GetInfo('unit_test') == False:
-            f.write("// TODO(gman): %s\n" % func.name)
-          else:
-            func.WriteServiceUnitTest(f, {
-              'test_name': test_name
-            })
-      f.close()
-      self.generated_cpp_filenames.append(f.filename)
-    f = CHeaderWriter(
-        filename % 0,
-        "// It is included by gles2_cmd_decoder_unittest_base.cc\n")
-    f.write(
+          if True:
+          #gen_cmd = func.GetInfo('gen_cmd')
+          #if gen_cmd == True or gen_cmd == None:
+            if func.GetInfo('unit_test') == False:
+              f.write("// TODO(gman): %s\n" % func.name)
+            else:
+              func.WriteServiceUnitTest(f, {
+                'test_name': test_name
+              })
+      self.generated_cpp_filenames.append(filename)
+
+    comment = "// It is included by gles2_cmd_decoder_unittest_base.cc\n"
+    filename = filename_pattern % 0
+    with CHeaderWriter(filename, comment) as f:
+      f.write(
 """void GLES2DecoderTestBase::SetupInitCapabilitiesExpectations(
       bool es3_capable) {""")
-    for capability in _CAPABILITY_FLAGS:
-      capability_es3 = 'es3' in capability and capability['es3'] == True
-      if not capability_es3:
-        f.write("  ExpectEnableDisable(GL_%s, %s);\n" %
-                   (capability['name'].upper(),
-                    ('false', 'true')['default' in capability]))
+      for capability in _CAPABILITY_FLAGS:
+        capability_es3 = 'es3' in capability and capability['es3'] == True
+        if not capability_es3:
+          f.write("  ExpectEnableDisable(GL_%s, %s);\n" %
+                     (capability['name'].upper(),
+                      ('false', 'true')['default' in capability]))
 
-    f.write("  if (es3_capable) {")
-    for capability in _CAPABILITY_FLAGS:
-      capability_es3 = 'es3' in capability and capability['es3'] == True
-      if capability_es3:
-        f.write("    ExpectEnableDisable(GL_%s, %s);\n" %
-                   (capability['name'].upper(),
-                    ('false', 'true')['default' in capability]))
-    f.write("""  }
+      f.write("  if (es3_capable) {")
+      for capability in _CAPABILITY_FLAGS:
+        capability_es3 = 'es3' in capability and capability['es3'] == True
+        if capability_es3:
+          f.write("    ExpectEnableDisable(GL_%s, %s);\n" %
+                     (capability['name'].upper(),
+                      ('false', 'true')['default' in capability]))
+      f.write("""  }
 }
 
 void GLES2DecoderTestBase::SetupInitStateExpectations() {
 """)
+      # We need to sort the keys so the expectations match
+      for state_name in sorted(_STATES.keys()):
+        state = _STATES[state_name]
+        if state['type'] == 'FrontBack':
+          num_states = len(state['states'])
+          for ndx, group in enumerate(Grouper(num_states / 2, state['states'])):
+            args = []
+            for item in group:
+              if 'expected' in item:
+                args.append(item['expected'])
+              else:
+                args.append(item['default'])
+            f.write(
+                "  EXPECT_CALL(*gl_, %s(%s, %s))\n" %
+                (state['func'], ('GL_FRONT', 'GL_BACK')[ndx], ", ".join(args)))
+            f.write("      .Times(1)\n")
+            f.write("      .RetiresOnSaturation();\n")
+        elif state['type'] == 'NamedParameter':
+          for item in state['states']:
+            if 'extension_flag' in item:
+              f.write("  if (group_->feature_info()->feature_flags().%s) {\n" %
+                         item['extension_flag'])
+              f.write("  ")
+            expect_value = item['default']
+            if isinstance(expect_value, list):
+              # TODO: Currently we do not check array values.
+              expect_value = "_"
 
-    # We need to sort the keys so the expectations match
-    for state_name in sorted(_STATES.keys()):
-      state = _STATES[state_name]
-      if state['type'] == 'FrontBack':
-        num_states = len(state['states'])
-        for ndx, group in enumerate(Grouper(num_states / 2, state['states'])):
+            f.write(
+                "  EXPECT_CALL(*gl_, %s(%s, %s))\n" %
+                (state['func'],
+                 (item['enum_set']
+                             if 'enum_set' in item else item['enum']),
+                 expect_value))
+            f.write("      .Times(1)\n")
+            f.write("      .RetiresOnSaturation();\n")
+            if 'extension_flag' in item:
+              f.write("  }\n")
+        else:
+          if 'extension_flag' in state:
+            f.write("  if (group_->feature_info()->feature_flags().%s) {\n" %
+                       state['extension_flag'])
+            f.write("  ")
           args = []
-          for item in group:
+          for item in state['states']:
             if 'expected' in item:
               args.append(item['expected'])
             else:
               args.append(item['default'])
-          f.write(
-              "  EXPECT_CALL(*gl_, %s(%s, %s))\n" %
-              (state['func'], ('GL_FRONT', 'GL_BACK')[ndx], ", ".join(args)))
+          # TODO: Currently we do not check array values.
+          args = ["_" if isinstance(arg, list) else arg for arg in args]
+          f.write("  EXPECT_CALL(*gl_, %s(%s))\n" %
+                     (state['func'], ", ".join(args)))
           f.write("      .Times(1)\n")
           f.write("      .RetiresOnSaturation();\n")
-      elif state['type'] == 'NamedParameter':
-        for item in state['states']:
-          if 'extension_flag' in item:
-            f.write("  if (group_->feature_info()->feature_flags().%s) {\n" %
-                       item['extension_flag'])
-            f.write("  ")
-          expect_value = item['default']
-          if isinstance(expect_value, list):
-            # TODO: Currently we do not check array values.
-            expect_value = "_"
-
-          f.write(
-              "  EXPECT_CALL(*gl_, %s(%s, %s))\n" %
-              (state['func'],
-               (item['enum_set']
-                           if 'enum_set' in item else item['enum']),
-               expect_value))
-          f.write("      .Times(1)\n")
-          f.write("      .RetiresOnSaturation();\n")
-          if 'extension_flag' in item:
+          if 'extension_flag' in state:
             f.write("  }\n")
-      else:
-        if 'extension_flag' in state:
-          f.write("  if (group_->feature_info()->feature_flags().%s) {\n" %
-                     state['extension_flag'])
-          f.write("  ")
-        args = []
-        for item in state['states']:
-          if 'expected' in item:
-            args.append(item['expected'])
-          else:
-            args.append(item['default'])
-        # TODO: Currently we do not check array values.
-        args = ["_" if isinstance(arg, list) else arg for arg in args]
-        f.write("  EXPECT_CALL(*gl_, %s(%s))\n" %
-                   (state['func'], ", ".join(args)))
-        f.write("      .Times(1)\n")
-        f.write("      .RetiresOnSaturation();\n")
-        if 'extension_flag' in state:
-          f.write("  }\n")
-    f.write("""}
-""")
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+      f.write("}\n")
+    self.generated_cpp_filenames.append(filename)
 
   def WriteServiceUnitTestsForExtensions(self, filename):
     """Writes the service decorder unit tests for functions with extension_flag.
@@ -10594,80 +10561,64 @@ void GLES2DecoderTestBase::SetupInitStateExpectations() {
        baseclass to turn on the extension.
     """
     functions = [f for f in self.functions if f.GetInfo('extension_flag')]
-    f = CHeaderWriter(
-      filename,
-      "// It is included by gles2_cmd_decoder_unittest_extensions.cc\n")
-    for func in functions:
-      if True:
-        if func.GetInfo('unit_test') == False:
-          f.write("// TODO(gman): %s\n" % func.name)
-        else:
-          extension = ToCamelCase(
-            ToGLExtensionString(func.GetInfo('extension_flag')))
-          func.WriteServiceUnitTest(f, {
-            'test_name': 'GLES2DecoderTestWith%s' % extension
-          })
-
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    comment = "// It is included by gles2_cmd_decoder_unittest_extensions.cc\n"
+    with CHeaderWriter(filename, comment) as f:
+      for func in functions:
+        if True:
+          if func.GetInfo('unit_test') == False:
+            f.write("// TODO(gman): %s\n" % func.name)
+          else:
+            extension = ToCamelCase(
+              ToGLExtensionString(func.GetInfo('extension_flag')))
+            func.WriteServiceUnitTest(f, {
+              'test_name': 'GLES2DecoderTestWith%s' % extension
+            })
+    self.generated_cpp_filenames.append(filename)
 
   def WriteGLES2Header(self, filename):
     """Writes the GLES2 header."""
-    f = CHeaderWriter(
-        filename,
-        "// This file contains Chromium-specific GLES2 declarations.\n\n")
-
-    for func in self.original_functions:
-      func.WriteGLES2Header(f)
-
-    f.write("\n")
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    comment = "// This file contains Chromium-specific GLES2 declarations.\n\n"
+    with CHeaderWriter(filename, comment) as f:
+      for func in self.original_functions:
+        func.WriteGLES2Header(f)
+      f.write("\n")
+    self.generated_cpp_filenames.append(filename)
 
   def WriteGLES2CLibImplementation(self, filename):
     """Writes the GLES2 c lib implementation."""
-    f = CHeaderWriter(
-        filename,
-        "// These functions emulate GLES2 over command buffers.\n")
-
-    for func in self.original_functions:
-      func.WriteGLES2CLibImplementation(f)
-
-    f.write("""
+    comment = "// These functions emulate GLES2 over command buffers.\n"
+    with CHeaderWriter(filename, comment) as f:
+      for func in self.original_functions:
+        func.WriteGLES2CLibImplementation(f)
+      f.write("""
 namespace gles2 {
 
 extern const NameToFunc g_gles2_function_table[] = {
 """)
-    for func in self.original_functions:
-      f.write(
-          '  { "gl%s", reinterpret_cast<GLES2FunctionPointer>(gl%s), },\n' %
-          (func.name, func.name))
-    f.write("""  { NULL, NULL, },
+      for func in self.original_functions:
+        f.write(
+            '  { "gl%s", reinterpret_cast<GLES2FunctionPointer>(gl%s), },\n' %
+            (func.name, func.name))
+      f.write("""  { NULL, NULL, },
 };
 
 }  // namespace gles2
 """)
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    self.generated_cpp_filenames.append(filename)
 
   def WriteGLES2InterfaceHeader(self, filename):
     """Writes the GLES2 interface header."""
-    f = CHeaderWriter(
-        filename,
-        "// This file is included by gles2_interface.h to declare the\n"
-        "// GL api functions.\n")
-    for func in self.original_functions:
-      func.WriteGLES2InterfaceHeader(f)
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    comment = ("// This file is included by gles2_interface.h to declare the\n"
+               "// GL api functions.\n")
+    with CHeaderWriter(filename, comment) as f:
+      for func in self.original_functions:
+        func.WriteGLES2InterfaceHeader(f)
+    self.generated_cpp_filenames.append(filename)
 
   def WriteMojoGLES2ImplHeader(self, filename):
     """Writes the Mojo GLES2 implementation header."""
-    f = CHeaderWriter(
-        filename,
-        "// This file is included by gles2_interface.h to declare the\n"
-        "// GL api functions.\n")
-
+    comment = ("// This file is included by gles2_interface.h to declare the\n"
+               "// GL api functions.\n")
     code = """
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/mojo/src/mojo/public/c/gles2/gles2.h"
@@ -10681,26 +10632,22 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
   }
   ~MojoGLES2Impl() override {}
     """
-    f.write(code);
-    for func in self.original_functions:
-      func.WriteMojoGLES2ImplHeader(f)
-    code = """
+    with CHeaderWriter(filename, comment) as f:
+      f.write(code);
+      for func in self.original_functions:
+        func.WriteMojoGLES2ImplHeader(f)
+      code = """
  private:
   MojoGLES2Context context_;
 };
 
 }  // namespace mojo
-    """
-    f.write(code);
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+      """
+      f.write(code);
+    self.generated_cpp_filenames.append(filename)
 
   def WriteMojoGLES2Impl(self, filename):
     """Writes the Mojo GLES2 implementation."""
-    f = CWriter(filename)
-    f.write(_LICENSE)
-    f.write(_DO_NOT_EDIT_WARNING)
-
     code = """
 #include "mojo/gpu/mojo_gles2_impl_autogen.h"
 
@@ -10718,183 +10665,169 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
 namespace mojo {
 
     """
-    f.write(code);
-    for func in self.original_functions:
-      func.WriteMojoGLES2Impl(f)
-    code = """
+    with CWriter(filename) as f:
+      f.write(code);
+      for func in self.original_functions:
+        func.WriteMojoGLES2Impl(f)
+      code = """
 
 }  // namespace mojo
     """
-    f.write(code);
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+      f.write(code);
+    self.generated_cpp_filenames.append(filename)
 
   def WriteGLES2InterfaceStub(self, filename):
     """Writes the GLES2 interface stub header."""
-    f = CHeaderWriter(
-        filename,
-        "// This file is included by gles2_interface_stub.h.\n")
-    for func in self.original_functions:
-      func.WriteGLES2InterfaceStub(f)
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    comment = "// This file is included by gles2_interface_stub.h.\n"
+    with CHeaderWriter(filename, comment) as f:
+      for func in self.original_functions:
+        func.WriteGLES2InterfaceStub(f)
+    self.generated_cpp_filenames.append(filename)
 
   def WriteGLES2InterfaceStubImpl(self, filename):
     """Writes the GLES2 interface header."""
-    f = CHeaderWriter(
-        filename,
-        "// This file is included by gles2_interface_stub.cc.\n")
-    for func in self.original_functions:
-      func.WriteGLES2InterfaceStubImpl(f)
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    comment = "// This file is included by gles2_interface_stub.cc.\n"
+    with CHeaderWriter(filename, comment) as f:
+      for func in self.original_functions:
+        func.WriteGLES2InterfaceStubImpl(f)
+    self.generated_cpp_filenames.append(filename)
 
   def WriteGLES2ImplementationHeader(self, filename):
     """Writes the GLES2 Implementation header."""
-    f = CHeaderWriter(
-        filename,
-        "// This file is included by gles2_implementation.h to declare the\n"
-        "// GL api functions.\n")
-    for func in self.original_functions:
-      func.WriteGLES2ImplementationHeader(f)
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    comment = \
+      ("// This file is included by gles2_implementation.h to declare the\n"
+       "// GL api functions.\n")
+    with CHeaderWriter(filename, comment) as f:
+      for func in self.original_functions:
+        func.WriteGLES2ImplementationHeader(f)
+    self.generated_cpp_filenames.append(filename)
 
   def WriteGLES2Implementation(self, filename):
     """Writes the GLES2 Implementation."""
-    f = CHeaderWriter(
-        filename,
-        "// This file is included by gles2_implementation.cc to define the\n"
-        "// GL api functions.\n")
-    for func in self.original_functions:
-      func.WriteGLES2Implementation(f)
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    comment = \
+      ("// This file is included by gles2_implementation.cc to define the\n"
+       "// GL api functions.\n")
+    with CHeaderWriter(filename, comment) as f:
+      for func in self.original_functions:
+        func.WriteGLES2Implementation(f)
+    self.generated_cpp_filenames.append(filename)
 
   def WriteGLES2TraceImplementationHeader(self, filename):
     """Writes the GLES2 Trace Implementation header."""
-    f = CHeaderWriter(
-        filename,
-        "// This file is included by gles2_trace_implementation.h\n")
-    for func in self.original_functions:
-      func.WriteGLES2TraceImplementationHeader(f)
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    comment = "// This file is included by gles2_trace_implementation.h\n"
+    with CHeaderWriter(filename, comment) as f:
+      for func in self.original_functions:
+        func.WriteGLES2TraceImplementationHeader(f)
+    self.generated_cpp_filenames.append(filename)
 
   def WriteGLES2TraceImplementation(self, filename):
     """Writes the GLES2 Trace Implementation."""
-    f = CHeaderWriter(
-        filename,
-        "// This file is included by gles2_trace_implementation.cc\n")
-    for func in self.original_functions:
-      func.WriteGLES2TraceImplementation(f)
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    comment = "// This file is included by gles2_trace_implementation.cc\n"
+    with CHeaderWriter(filename, comment) as f:
+      for func in self.original_functions:
+        func.WriteGLES2TraceImplementation(f)
+    self.generated_cpp_filenames.append(filename)
 
   def WriteGLES2ImplementationUnitTests(self, filename):
     """Writes the GLES2 helper header."""
-    f = CHeaderWriter(
-        filename,
-        "// This file is included by gles2_implementation.h to declare the\n"
-        "// GL api functions.\n")
-    for func in self.original_functions:
-      func.WriteGLES2ImplementationUnitTest(f)
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    comment = \
+      ("// This file is included by gles2_implementation.h to declare the\n"
+       "// GL api functions.\n")
+    with CHeaderWriter(filename, comment) as f:
+      for func in self.original_functions:
+        func.WriteGLES2ImplementationUnitTest(f)
+    self.generated_cpp_filenames.append(filename)
 
   def WriteServiceUtilsHeader(self, filename):
     """Writes the gles2 auto generated utility header."""
-    f = CHeaderWriter(filename)
-    for name in sorted(_NAMED_TYPE_INFO.keys()):
-      named_type = NamedType(_NAMED_TYPE_INFO[name])
-      if named_type.IsConstant():
-        continue
-      f.write("ValueValidator<%s> %s;\n" %
-                 (named_type.GetType(), ToUnderscore(name)))
-    f.write("\n")
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    with CHeaderWriter(filename) as f:
+      for name in sorted(_NAMED_TYPE_INFO.keys()):
+        named_type = NamedType(_NAMED_TYPE_INFO[name])
+        if named_type.IsConstant():
+          continue
+        f.write("ValueValidator<%s> %s;\n" %
+                   (named_type.GetType(), ToUnderscore(name)))
+      f.write("\n")
+    self.generated_cpp_filenames.append(filename)
 
   def WriteServiceUtilsImplementation(self, filename):
     """Writes the gles2 auto generated utility implementation."""
-    f = CHeaderWriter(filename)
-    names = sorted(_NAMED_TYPE_INFO.keys())
-    for name in names:
-      named_type = NamedType(_NAMED_TYPE_INFO[name])
-      if named_type.IsConstant():
-        continue
-      if named_type.GetValidValues():
-        f.write("static const %s valid_%s_table[] = {\n" %
-                   (named_type.GetType(), ToUnderscore(name)))
-        for value in named_type.GetValidValues():
-          f.write("  %s,\n" % value)
-        f.write("};\n")
-        f.write("\n")
-      if named_type.GetValidValuesES3():
-        f.write("static const %s valid_%s_table_es3[] = {\n" %
-                   (named_type.GetType(), ToUnderscore(name)))
-        for value in named_type.GetValidValuesES3():
-          f.write("  %s,\n" % value)
-        f.write("};\n")
-        f.write("\n")
-      if named_type.GetDeprecatedValuesES3():
-        f.write("static const %s deprecated_%s_table_es3[] = {\n" %
-                   (named_type.GetType(), ToUnderscore(name)))
-        for value in named_type.GetDeprecatedValuesES3():
-          f.write("  %s,\n" % value)
-        f.write("};\n")
-        f.write("\n")
-    f.write("Validators::Validators()")
-    pre = '    : '
-    for count, name in enumerate(names):
-      named_type = NamedType(_NAMED_TYPE_INFO[name])
-      if named_type.IsConstant():
-        continue
-      if named_type.GetValidValues():
-        code = """%(pre)s%(name)s(
-          valid_%(name)s_table, arraysize(valid_%(name)s_table))"""
-      else:
-        code = "%(pre)s%(name)s()"
-      f.write(code % {
-        'name': ToUnderscore(name),
-        'pre': pre,
-      })
-      pre = ',\n    '
-    f.write(" {\n");
-    f.write("}\n\n");
+    with CHeaderWriter(filename) as f:
+      names = sorted(_NAMED_TYPE_INFO.keys())
+      for name in names:
+        named_type = NamedType(_NAMED_TYPE_INFO[name])
+        if named_type.IsConstant():
+          continue
+        if named_type.GetValidValues():
+          f.write("static const %s valid_%s_table[] = {\n" %
+                     (named_type.GetType(), ToUnderscore(name)))
+          for value in named_type.GetValidValues():
+            f.write("  %s,\n" % value)
+          f.write("};\n")
+          f.write("\n")
+        if named_type.GetValidValuesES3():
+          f.write("static const %s valid_%s_table_es3[] = {\n" %
+                     (named_type.GetType(), ToUnderscore(name)))
+          for value in named_type.GetValidValuesES3():
+            f.write("  %s,\n" % value)
+          f.write("};\n")
+          f.write("\n")
+        if named_type.GetDeprecatedValuesES3():
+          f.write("static const %s deprecated_%s_table_es3[] = {\n" %
+                     (named_type.GetType(), ToUnderscore(name)))
+          for value in named_type.GetDeprecatedValuesES3():
+            f.write("  %s,\n" % value)
+          f.write("};\n")
+          f.write("\n")
+      f.write("Validators::Validators()")
+      pre = '    : '
+      for count, name in enumerate(names):
+        named_type = NamedType(_NAMED_TYPE_INFO[name])
+        if named_type.IsConstant():
+          continue
+        if named_type.GetValidValues():
+          code = """%(pre)s%(name)s(
+            valid_%(name)s_table, arraysize(valid_%(name)s_table))"""
+        else:
+          code = "%(pre)s%(name)s()"
+        f.write(code % {
+          'name': ToUnderscore(name),
+          'pre': pre,
+        })
+        pre = ',\n    '
+      f.write(" {\n");
+      f.write("}\n\n");
 
-    f.write("void Validators::UpdateValuesES3() {\n")
-    for name in names:
-      named_type = NamedType(_NAMED_TYPE_INFO[name])
-      if named_type.GetDeprecatedValuesES3():
-        code = """  %(name)s.RemoveValues(
+      f.write("void Validators::UpdateValuesES3() {\n")
+      for name in names:
+        named_type = NamedType(_NAMED_TYPE_INFO[name])
+        if named_type.GetDeprecatedValuesES3():
+          code = """  %(name)s.RemoveValues(
       deprecated_%(name)s_table_es3, arraysize(deprecated_%(name)s_table_es3));
 """
-        f.write(code % {
-          'name': ToUnderscore(name),
-        })
-      if named_type.GetValidValuesES3():
-        code = """  %(name)s.AddValues(
+          f.write(code % {
+            'name': ToUnderscore(name),
+          })
+        if named_type.GetValidValuesES3():
+          code = """  %(name)s.AddValues(
       valid_%(name)s_table_es3, arraysize(valid_%(name)s_table_es3));
 """
-        f.write(code % {
-          'name': ToUnderscore(name),
-        })
-    f.write("}\n\n");
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+          f.write(code % {
+            'name': ToUnderscore(name),
+          })
+      f.write("}\n\n");
+    self.generated_cpp_filenames.append(filename)
 
   def WriteCommonUtilsHeader(self, filename):
     """Writes the gles2 common utility header."""
-    f = CHeaderWriter(filename)
-    type_infos = sorted(_NAMED_TYPE_INFO.keys())
-    for type_info in type_infos:
-      if _NAMED_TYPE_INFO[type_info]['type'] == 'GLenum':
-        f.write("static std::string GetString%s(uint32_t value);\n" %
-                   type_info)
-    f.write("\n")
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    with CHeaderWriter(filename) as f:
+      type_infos = sorted(_NAMED_TYPE_INFO.keys())
+      for type_info in type_infos:
+        if _NAMED_TYPE_INFO[type_info]['type'] == 'GLenum':
+          f.write("static std::string GetString%s(uint32_t value);\n" %
+                     type_info)
+      f.write("\n")
+    self.generated_cpp_filenames.append(filename)
 
   def WriteCommonUtilsImpl(self, filename):
     """Writes the gles2 common utility header."""
@@ -10920,12 +10853,12 @@ namespace mojo {
               self.Error("code collision: %s and %s have the same code %s" %
                          (dict[value], name, value))
 
-    f = CHeaderWriter(filename)
-    f.write("static const GLES2Util::EnumToString "
-               "enum_to_string_table[] = {\n")
-    for value in dict:
-      f.write('  { %s, "%s", },\n' % (value, dict[value]))
-    f.write("""};
+    with CHeaderWriter(filename) as f:
+      f.write("static const GLES2Util::EnumToString "
+                 "enum_to_string_table[] = {\n")
+      for value in dict:
+        f.write('  { %s, "%s", },\n' % (value, dict[value]))
+      f.write("""};
 
 const GLES2Util::EnumToString* const GLES2Util::enum_to_string_table_ =
     enum_to_string_table;
@@ -10934,256 +10867,229 @@ const size_t GLES2Util::enum_to_string_table_len_ =
 
 """)
 
-    enums = sorted(_NAMED_TYPE_INFO.keys())
-    for enum in enums:
-      if _NAMED_TYPE_INFO[enum]['type'] == 'GLenum':
-        f.write("std::string GLES2Util::GetString%s(uint32_t value) {\n" %
-                   enum)
-        valid_list = _NAMED_TYPE_INFO[enum]['valid']
-        if 'valid_es3' in _NAMED_TYPE_INFO[enum]:
-          valid_list = valid_list + _NAMED_TYPE_INFO[enum]['valid_es3']
-        assert len(valid_list) == len(set(valid_list))
-        if len(valid_list) > 0:
-          f.write("  static const EnumToString string_table[] = {\n")
-          for value in valid_list:
-            f.write('    { %s, "%s" },\n' % (value, value))
-          f.write("""  };
+      enums = sorted(_NAMED_TYPE_INFO.keys())
+      for enum in enums:
+        if _NAMED_TYPE_INFO[enum]['type'] == 'GLenum':
+          f.write("std::string GLES2Util::GetString%s(uint32_t value) {\n" %
+                     enum)
+          valid_list = _NAMED_TYPE_INFO[enum]['valid']
+          if 'valid_es3' in _NAMED_TYPE_INFO[enum]:
+            valid_list = valid_list + _NAMED_TYPE_INFO[enum]['valid_es3']
+          assert len(valid_list) == len(set(valid_list))
+          if len(valid_list) > 0:
+            f.write("  static const EnumToString string_table[] = {\n")
+            for value in valid_list:
+              f.write('    { %s, "%s" },\n' % (value, value))
+            f.write("""  };
   return GLES2Util::GetQualifiedEnumString(
       string_table, arraysize(string_table), value);
 }
 
 """)
-        else:
-          f.write("""  return GLES2Util::GetQualifiedEnumString(
+          else:
+            f.write("""  return GLES2Util::GetQualifiedEnumString(
       NULL, 0, value);
 }
 
 """)
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    self.generated_cpp_filenames.append(filename)
 
   def WritePepperGLES2Interface(self, filename, dev):
     """Writes the Pepper OpenGLES interface definition."""
-    f = CWriter(filename)
-    f.write(_LICENSE)
-    f.write(_DO_NOT_EDIT_WARNING)
-
-    f.write("label Chrome {\n")
-    f.write("  M39 = 1.0\n")
-    f.write("};\n\n")
-
-    if not dev:
-      # Declare GL types.
-      f.write("[version=1.0]\n")
-      f.write("describe {\n")
-      for gltype in ['GLbitfield', 'GLboolean', 'GLbyte', 'GLclampf',
-                     'GLclampx', 'GLenum', 'GLfixed', 'GLfloat', 'GLint',
-                     'GLintptr', 'GLshort', 'GLsizei', 'GLsizeiptr',
-                     'GLubyte', 'GLuint', 'GLushort']:
-        f.write("  %s;\n" % gltype)
-        f.write("  %s_ptr_t;\n" % gltype)
+    with CWriter(filename) as f:
+      f.write("label Chrome {\n")
+      f.write("  M39 = 1.0\n")
       f.write("};\n\n")
 
-    # C level typedefs.
-    f.write("#inline c\n")
-    f.write("#include \"ppapi/c/pp_resource.h\"\n")
-    if dev:
-      f.write("#include \"ppapi/c/ppb_opengles2.h\"\n\n")
-    else:
-      f.write("\n#ifndef __gl2_h_\n")
-      for (k, v) in _GL_TYPES.iteritems():
-        f.write("typedef %s %s;\n" % (v, k))
-      f.write("#ifdef _WIN64\n")
-      for (k, v) in _GL_TYPES_64.iteritems():
-        f.write("typedef %s %s;\n" % (v, k))
-      f.write("#else\n")
-      for (k, v) in _GL_TYPES_32.iteritems():
-        f.write("typedef %s %s;\n" % (v, k))
-      f.write("#endif  // _WIN64\n")
-      f.write("#endif  // __gl2_h_\n\n")
-    f.write("#endinl\n")
+      if not dev:
+        # Declare GL types.
+        f.write("[version=1.0]\n")
+        f.write("describe {\n")
+        for gltype in ['GLbitfield', 'GLboolean', 'GLbyte', 'GLclampf',
+                       'GLclampx', 'GLenum', 'GLfixed', 'GLfloat', 'GLint',
+                       'GLintptr', 'GLshort', 'GLsizei', 'GLsizeiptr',
+                       'GLubyte', 'GLuint', 'GLushort']:
+          f.write("  %s;\n" % gltype)
+          f.write("  %s_ptr_t;\n" % gltype)
+        f.write("};\n\n")
 
-    for interface in self.pepper_interfaces:
-      if interface.dev != dev:
-        continue
-      # Historically, we provide OpenGLES2 interfaces with struct
-      # namespace. Not to break code which uses the interface as
-      # "struct OpenGLES2", we put it in struct namespace.
-      f.write('\n[macro="%s", force_struct_namespace]\n' %
-                 interface.GetInterfaceName())
-      f.write("interface %s {\n" % interface.GetStructName())
-      for func in self.original_functions:
-        if not func.InPepperInterface(interface):
+      # C level typedefs.
+      f.write("#inline c\n")
+      f.write("#include \"ppapi/c/pp_resource.h\"\n")
+      if dev:
+        f.write("#include \"ppapi/c/ppb_opengles2.h\"\n\n")
+      else:
+        f.write("\n#ifndef __gl2_h_\n")
+        for (k, v) in _GL_TYPES.iteritems():
+          f.write("typedef %s %s;\n" % (v, k))
+        f.write("#ifdef _WIN64\n")
+        for (k, v) in _GL_TYPES_64.iteritems():
+          f.write("typedef %s %s;\n" % (v, k))
+        f.write("#else\n")
+        for (k, v) in _GL_TYPES_32.iteritems():
+          f.write("typedef %s %s;\n" % (v, k))
+        f.write("#endif  // _WIN64\n")
+        f.write("#endif  // __gl2_h_\n\n")
+      f.write("#endinl\n")
+
+      for interface in self.pepper_interfaces:
+        if interface.dev != dev:
           continue
+        # Historically, we provide OpenGLES2 interfaces with struct
+        # namespace. Not to break code which uses the interface as
+        # "struct OpenGLES2", we put it in struct namespace.
+        f.write('\n[macro="%s", force_struct_namespace]\n' %
+                   interface.GetInterfaceName())
+        f.write("interface %s {\n" % interface.GetStructName())
+        for func in self.original_functions:
+          if not func.InPepperInterface(interface):
+            continue
 
-        ret_type = func.MapCTypeToPepperIdlType(func.return_type,
-                                                is_for_return_type=True)
-        func_prefix = "  %s %s(" % (ret_type, func.GetPepperName())
-        f.write(func_prefix)
-        f.write("[in] PP_Resource context")
-        for arg in func.MakeTypedPepperIdlArgStrings():
-          f.write(",\n" + " " * len(func_prefix) + arg)
-        f.write(");\n")
-      f.write("};\n\n")
-
-
-    f.close()
+          ret_type = func.MapCTypeToPepperIdlType(func.return_type,
+                                                  is_for_return_type=True)
+          func_prefix = "  %s %s(" % (ret_type, func.GetPepperName())
+          f.write(func_prefix)
+          f.write("[in] PP_Resource context")
+          for arg in func.MakeTypedPepperIdlArgStrings():
+            f.write(",\n" + " " * len(func_prefix) + arg)
+          f.write(");\n")
+        f.write("};\n\n")
 
   def WritePepperGLES2Implementation(self, filename):
     """Writes the Pepper OpenGLES interface implementation."""
+    with CWriter(filename) as f:
+      f.write("#include \"ppapi/shared_impl/ppb_opengles2_shared.h\"\n\n")
+      f.write("#include \"base/logging.h\"\n")
+      f.write("#include \"gpu/command_buffer/client/gles2_implementation.h\"\n")
+      f.write("#include \"ppapi/shared_impl/ppb_graphics_3d_shared.h\"\n")
+      f.write("#include \"ppapi/thunk/enter.h\"\n\n")
 
-    f = CWriter(filename)
-    f.write(_LICENSE)
-    f.write(_DO_NOT_EDIT_WARNING)
+      f.write("namespace ppapi {\n\n")
+      f.write("namespace {\n\n")
 
-    f.write("#include \"ppapi/shared_impl/ppb_opengles2_shared.h\"\n\n")
-    f.write("#include \"base/logging.h\"\n")
-    f.write("#include \"gpu/command_buffer/client/gles2_implementation.h\"\n")
-    f.write("#include \"ppapi/shared_impl/ppb_graphics_3d_shared.h\"\n")
-    f.write("#include \"ppapi/thunk/enter.h\"\n\n")
+      f.write("typedef thunk::EnterResource<thunk::PPB_Graphics3D_API>"
+                 " Enter3D;\n\n")
 
-    f.write("namespace ppapi {\n\n")
-    f.write("namespace {\n\n")
+      f.write("gpu::gles2::GLES2Implementation* ToGles2Impl(Enter3D*"
+                 " enter) {\n")
+      f.write("  DCHECK(enter);\n")
+      f.write("  DCHECK(enter->succeeded());\n")
+      f.write("  return static_cast<PPB_Graphics3D_Shared*>(enter->object())->"
+                 "gles2_impl();\n");
+      f.write("}\n\n");
 
-    f.write("typedef thunk::EnterResource<thunk::PPB_Graphics3D_API>"
-               " Enter3D;\n\n")
+      for func in self.original_functions:
+        if not func.InAnyPepperExtension():
+          continue
 
-    f.write("gpu::gles2::GLES2Implementation* ToGles2Impl(Enter3D*"
-               " enter) {\n")
-    f.write("  DCHECK(enter);\n")
-    f.write("  DCHECK(enter->succeeded());\n")
-    f.write("  return static_cast<PPB_Graphics3D_Shared*>(enter->object())->"
-               "gles2_impl();\n");
-    f.write("}\n\n");
+        original_arg = func.MakeTypedPepperArgString("")
+        context_arg = "PP_Resource context_id"
+        if len(original_arg):
+          arg = context_arg + ", " + original_arg
+        else:
+          arg = context_arg
+        f.write("%s %s(%s) {\n" %
+                   (func.return_type, func.GetPepperName(), arg))
+        f.write("  Enter3D enter(context_id, true);\n")
+        f.write("  if (enter.succeeded()) {\n")
 
-    for func in self.original_functions:
-      if not func.InAnyPepperExtension():
-        continue
+        return_str = "" if func.return_type == "void" else "return "
+        f.write("    %sToGles2Impl(&enter)->%s(%s);\n" %
+                   (return_str, func.original_name,
+                    func.MakeOriginalArgString("")))
+        f.write("  }")
+        if func.return_type == "void":
+          f.write("\n")
+        else:
+          f.write(" else {\n")
+          f.write("    return %s;\n" % func.GetErrorReturnString())
+          f.write("  }\n")
+        f.write("}\n\n")
 
-      original_arg = func.MakeTypedPepperArgString("")
-      context_arg = "PP_Resource context_id"
-      if len(original_arg):
-        arg = context_arg + ", " + original_arg
-      else:
-        arg = context_arg
-      f.write("%s %s(%s) {\n" %
-                 (func.return_type, func.GetPepperName(), arg))
-      f.write("  Enter3D enter(context_id, true);\n")
-      f.write("  if (enter.succeeded()) {\n")
+      f.write("}  // namespace\n")
 
-      return_str = "" if func.return_type == "void" else "return "
-      f.write("    %sToGles2Impl(&enter)->%s(%s);\n" %
-                 (return_str, func.original_name,
-                  func.MakeOriginalArgString("")))
-      f.write("  }")
-      if func.return_type == "void":
+      for interface in self.pepper_interfaces:
+        f.write("const %s* PPB_OpenGLES2_Shared::Get%sInterface() {\n" %
+                   (interface.GetStructName(), interface.GetName()))
+        f.write("  static const struct %s "
+                   "ppb_opengles2 = {\n" % interface.GetStructName())
+        f.write("    &")
+        f.write(",\n    &".join(
+          f.GetPepperName() for f in self.original_functions
+            if f.InPepperInterface(interface)))
         f.write("\n")
-      else:
-        f.write(" else {\n")
-        f.write("    return %s;\n" % func.GetErrorReturnString())
-        f.write("  }\n")
-      f.write("}\n\n")
 
-    f.write("}  // namespace\n")
+        f.write("  };\n")
+        f.write("  return &ppb_opengles2;\n")
+        f.write("}\n")
 
-    for interface in self.pepper_interfaces:
-      f.write("const %s* PPB_OpenGLES2_Shared::Get%sInterface() {\n" %
-                 (interface.GetStructName(), interface.GetName()))
-      f.write("  static const struct %s "
-                 "ppb_opengles2 = {\n" % interface.GetStructName())
-      f.write("    &")
-      f.write(",\n    &".join(
-        f.GetPepperName() for f in self.original_functions
-          if f.InPepperInterface(interface)))
-      f.write("\n")
-
-      f.write("  };\n")
-      f.write("  return &ppb_opengles2;\n")
-      f.write("}\n")
-
-    f.write("}  // namespace ppapi\n")
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+      f.write("}  // namespace ppapi\n")
+    self.generated_cpp_filenames.append(filename)
 
   def WriteGLES2ToPPAPIBridge(self, filename):
     """Connects GLES2 helper library to PPB_OpenGLES2 interface"""
+    with CWriter(filename) as f:
+      f.write("#ifndef GL_GLEXT_PROTOTYPES\n")
+      f.write("#define GL_GLEXT_PROTOTYPES\n")
+      f.write("#endif\n")
+      f.write("#include <GLES2/gl2.h>\n")
+      f.write("#include <GLES2/gl2ext.h>\n")
+      f.write("#include \"ppapi/lib/gl/gles2/gl2ext_ppapi.h\"\n\n")
 
-    f = CWriter(filename)
-    f.write(_LICENSE)
-    f.write(_DO_NOT_EDIT_WARNING)
+      for func in self.original_functions:
+        if not func.InAnyPepperExtension():
+          continue
 
-    f.write("#ifndef GL_GLEXT_PROTOTYPES\n")
-    f.write("#define GL_GLEXT_PROTOTYPES\n")
-    f.write("#endif\n")
-    f.write("#include <GLES2/gl2.h>\n")
-    f.write("#include <GLES2/gl2ext.h>\n")
-    f.write("#include \"ppapi/lib/gl/gles2/gl2ext_ppapi.h\"\n\n")
+        interface = self.interface_info[func.GetInfo('pepper_interface') or '']
 
-    for func in self.original_functions:
-      if not func.InAnyPepperExtension():
-        continue
-
-      interface = self.interface_info[func.GetInfo('pepper_interface') or '']
-
-      f.write("%s GL_APIENTRY gl%s(%s) {\n" %
-                 (func.return_type, func.GetPepperName(),
-                  func.MakeTypedPepperArgString("")))
-      return_str = "" if func.return_type == "void" else "return "
-      interface_str = "glGet%sInterfacePPAPI()" % interface.GetName()
-      original_arg = func.MakeOriginalArgString("")
-      context_arg = "glGetCurrentContextPPAPI()"
-      if len(original_arg):
-        arg = context_arg + ", " + original_arg
-      else:
-        arg = context_arg
-      if interface.GetName():
-        f.write("  const struct %s* ext = %s;\n" %
-                   (interface.GetStructName(), interface_str))
-        f.write("  if (ext)\n")
-        f.write("    %sext->%s(%s);\n" %
-                   (return_str, func.GetPepperName(), arg))
-        if return_str:
-          f.write("  %s0;\n" % return_str)
-      else:
-        f.write("  %s%s->%s(%s);\n" %
-                   (return_str, interface_str, func.GetPepperName(), arg))
-      f.write("}\n\n")
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+        f.write("%s GL_APIENTRY gl%s(%s) {\n" %
+                   (func.return_type, func.GetPepperName(),
+                    func.MakeTypedPepperArgString("")))
+        return_str = "" if func.return_type == "void" else "return "
+        interface_str = "glGet%sInterfacePPAPI()" % interface.GetName()
+        original_arg = func.MakeOriginalArgString("")
+        context_arg = "glGetCurrentContextPPAPI()"
+        if len(original_arg):
+          arg = context_arg + ", " + original_arg
+        else:
+          arg = context_arg
+        if interface.GetName():
+          f.write("  const struct %s* ext = %s;\n" %
+                     (interface.GetStructName(), interface_str))
+          f.write("  if (ext)\n")
+          f.write("    %sext->%s(%s);\n" %
+                     (return_str, func.GetPepperName(), arg))
+          if return_str:
+            f.write("  %s0;\n" % return_str)
+        else:
+          f.write("  %s%s->%s(%s);\n" %
+                     (return_str, interface_str, func.GetPepperName(), arg))
+        f.write("}\n\n")
+    self.generated_cpp_filenames.append(filename)
 
   def WriteMojoGLCallVisitor(self, filename):
     """Provides the GL implementation for mojo"""
-    f = CWriter(filename)
-    f.write(_LICENSE)
-    f.write(_DO_NOT_EDIT_WARNING)
-
-    for func in self.original_functions:
-      if not func.IsCoreGLFunction():
-        continue
-      f.write("VISIT_GL_CALL(%s, %s, (%s), (%s))\n" %
-                             (func.name, func.return_type,
-                              func.MakeTypedOriginalArgString(""),
-                              func.MakeOriginalArgString("")))
-
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    with CWriter(filename) as f:
+      for func in self.original_functions:
+        if not func.IsCoreGLFunction():
+          continue
+        f.write("VISIT_GL_CALL(%s, %s, (%s), (%s))\n" %
+                               (func.name, func.return_type,
+                                func.MakeTypedOriginalArgString(""),
+                                func.MakeOriginalArgString("")))
+    self.generated_cpp_filenames.append(filename)
 
   def WriteMojoGLCallVisitorForExtension(self, filename, extension):
     """Provides the GL implementation for mojo for a particular extension"""
-    f = CWriter(filename)
-    f.write(_LICENSE)
-    f.write(_DO_NOT_EDIT_WARNING)
-
-    for func in self.original_functions:
-      if func.GetInfo("extension") != extension:
-        continue
-      f.write("VISIT_GL_CALL(%s, %s, (%s), (%s))\n" %
-                             (func.name, func.return_type,
-                              func.MakeTypedOriginalArgString(""),
-                              func.MakeOriginalArgString("")))
-
-    f.close()
-    self.generated_cpp_filenames.append(f.filename)
+    with CWriter(filename) as f:
+      for func in self.original_functions:
+        if func.GetInfo("extension") != extension:
+          continue
+        f.write("VISIT_GL_CALL(%s, %s, (%s), (%s))\n" %
+                               (func.name, func.return_type,
+                                func.MakeTypedOriginalArgString(""),
+                                func.MakeOriginalArgString("")))
+    self.generated_cpp_filenames.append(filename)
 
 def Format(generated_files):
   formatter = "clang-format"
