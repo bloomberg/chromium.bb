@@ -49,6 +49,8 @@ class CryptAuthApiCallFlow : public OAuth2ApiCallFlow {
   GURL CreateApiCallUrl() override;
   std::string CreateApiCallBody() override;
   std::string CreateApiCallBodyContentType() override;
+  net::URLFetcher::RequestType GetRequestTypeForBody(
+      const std::string& body) override;
   void ProcessApiCallSuccess(const net::URLFetcher* source) override;
   void ProcessApiCallFailure(const net::URLFetcher* source) override;
 

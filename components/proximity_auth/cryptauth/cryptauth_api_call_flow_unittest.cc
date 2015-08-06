@@ -37,14 +37,18 @@ class ProximityAuthCryptAuthApiCallFlowTest
   }
 
   void StartApiCallFlow() {
+    StartApiCallFlowWithRequest(kSerializedRequestProto);
+  }
+
+  void StartApiCallFlowWithRequest(const std::string& serialized_request) {
     flow_.Start(GURL(kRequestUrl), url_request_context_getter_.get(),
-                "access_token", kSerializedRequestProto,
+                "access_token", serialized_request,
                 base::Bind(&ProximityAuthCryptAuthApiCallFlowTest::OnResult,
                            base::Unretained(this)),
                 base::Bind(&ProximityAuthCryptAuthApiCallFlowTest::OnError,
                            base::Unretained(this)));
     // URLFetcher object for the API request should be created.
-    CheckCryptAuthHttpRequest();
+    CheckCryptAuthHttpRequest(serialized_request);
   }
 
   void OnResult(const std::string& result) {
@@ -57,10 +61,10 @@ class ProximityAuthCryptAuthApiCallFlowTest
     error_message_.reset(new std::string(error_message));
   }
 
-  void CheckCryptAuthHttpRequest() {
+  void CheckCryptAuthHttpRequest(const std::string& serialized_request) {
     ASSERT_TRUE(url_fetcher_);
     EXPECT_EQ(GURL(kRequestUrl), url_fetcher_->GetOriginalURL());
-    EXPECT_EQ(kSerializedRequestProto, url_fetcher_->upload_data());
+    EXPECT_EQ(serialized_request, url_fetcher_->upload_data());
 
     net::HttpRequestHeaders request_headers;
     url_fetcher_->GetExtraRequestHeaders(&request_headers);
@@ -125,6 +129,14 @@ TEST_F(ProximityAuthCryptAuthApiCallFlowTest, RequestStatus500) {
                          "CryptAuth Meltdown.");
   EXPECT_FALSE(result_);
   EXPECT_EQ("HTTP status: 500", *error_message_);
+}
+
+// The empty string is a valid protocol buffer message serialization.
+TEST_F(ProximityAuthCryptAuthApiCallFlowTest, RequestWithNoBody) {
+  StartApiCallFlowWithRequest(std::string());
+  CompleteCurrentRequest(net::OK, net::HTTP_OK, kSerializedResponseProto);
+  EXPECT_EQ(kSerializedResponseProto, *result_);
+  EXPECT_FALSE(error_message_);
 }
 
 // The empty string is a valid protocol buffer message serialization.

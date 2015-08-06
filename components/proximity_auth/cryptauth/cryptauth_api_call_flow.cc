@@ -49,6 +49,11 @@ std::string CryptAuthApiCallFlow::CreateApiCallBodyContentType() {
   return "application/x-protobuf";
 }
 
+net::URLFetcher::RequestType CryptAuthApiCallFlow::GetRequestTypeForBody(
+    const std::string& body) {
+  return net::URLFetcher::POST;
+}
+
 void CryptAuthApiCallFlow::ProcessApiCallSuccess(
     const net::URLFetcher* source) {
   std::string serialized_response;

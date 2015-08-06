@@ -9,6 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -44,6 +45,11 @@ class OAuth2ApiCallFlow : public net::URLFetcherDelegate {
   virtual GURL CreateApiCallUrl() = 0;
   virtual std::string CreateApiCallBody() = 0;
   virtual std::string CreateApiCallBodyContentType();
+
+  // Returns the request type (e.g. GET, POST) for the |body| that will be sent
+  // with the request.
+  virtual net::URLFetcher::RequestType GetRequestTypeForBody(
+      const std::string& body);
 
   // Sub-classes can expose an appropriate observer interface by implementing
   // these template methods.
