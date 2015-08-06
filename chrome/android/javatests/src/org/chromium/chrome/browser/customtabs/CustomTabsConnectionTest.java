@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.customtabs;
 import android.app.Application;
 import android.content.Context;
 import android.net.Uri;
-import android.os.Bundle;
-import android.os.IBinder;
 import android.support.customtabs.ICustomTabsCallback;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -33,17 +31,6 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
         mCustomTabsConnection.cleanupAll();
     }
 
-    private ICustomTabsCallback newDummyCallback() {
-        return new ICustomTabsCallback.Stub() {
-            @Override
-            public void onNavigationEvent(int navigationEvent, Bundle extras) {}
-            @Override
-            public IBinder asBinder() {
-                return this;
-            }
-        };
-    }
-
     /**
      * Tests that we can create a new session. Registering with a null callback
      * fails, as well as multiple sessions with the same callback.
@@ -51,7 +38,7 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
     @SmallTest
     public void testNewSession() {
         assertEquals(false, mCustomTabsConnection.newSession(null));
-        ICustomTabsCallback cb = newDummyCallback();
+        ICustomTabsCallback cb = CustomTabsTestUtils.newDummyCallback();
         assertEquals(true, mCustomTabsConnection.newSession(cb));
         assertEquals(false, mCustomTabsConnection.newSession(cb));
     }
@@ -74,7 +61,7 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
             ICustomTabsCallback cb, String url, boolean shouldSucceed) {
         mCustomTabsConnection.warmup(0);
         if (cb == null) {
-            cb = newDummyCallback();
+            cb = CustomTabsTestUtils.newDummyCallback();
             mCustomTabsConnection.newSession(cb);
         }
         boolean succeeded = mCustomTabsConnection.mayLaunchUrl(cb, Uri.parse(url), null, null);
@@ -84,12 +71,13 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
 
     /**
      * Tests that
-     * {@link CustomTabsConnection#mayLaunchUrl(long, String, Bundle, List<Bundle>)}
+     * {@link CustomTabsConnection#mayLaunchUrl(
+     * ICustomTabsCallback, Uri, android.os.Bundle, java.util.List)}
      * returns an error when called with an invalid session ID.
      */
     @SmallTest
     public void testNoMayLaunchUrlWithInvalidSessionId() {
-        assertWarmupAndMayLaunchUrl(newDummyCallback(), URL, false);
+        assertWarmupAndMayLaunchUrl(CustomTabsTestUtils.newDummyCallback(), URL, false);
     }
 
     /**
