@@ -12,7 +12,7 @@ function xhr_fail_test(frame, url) {
   return new Promise(function(resolve, reject) {
       frame.contentWindow.xhr(url)
         .then(function(){
-            reject(msg + ' should fail.');
+            reject(url + ' should fail.');
           })
         .catch(function(){
             resolve();
@@ -28,7 +28,7 @@ function xhr_succeed_test(frame, url) {
             resolve();
           })
         .catch(function(){
-            reject(msg + ' should succeed.');
+            reject(url + ' should succeed.');
           });
     });
 }
