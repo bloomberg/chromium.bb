@@ -50,6 +50,10 @@ QuotaService* MockExtensionSystem::quota_service() {
   return nullptr;
 }
 
+AppSorting* MockExtensionSystem::app_sorting() {
+  return nullptr;
+}
+
 const OneShotEvent& MockExtensionSystem::ready() const {
   return ready_;
 }

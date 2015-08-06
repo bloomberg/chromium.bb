@@ -51,28 +51,15 @@ ChromeAppSorting::AppOrdinals::~AppOrdinals() {}
 // ChromeAppSorting
 
 ChromeAppSorting::ChromeAppSorting(content::BrowserContext* browser_context)
-    : extension_scoped_prefs_(NULL),
-      browser_context_(browser_context),
+    : browser_context_(browser_context),
       default_ordinals_created_(false) {
+  ExtensionIdList extensions;
+  ExtensionPrefs::Get(browser_context_)->GetExtensions(&extensions);
+  InitializePageOrdinalMap(extensions);
+  MigrateAppIndex(extensions);
 }
 
 ChromeAppSorting::~ChromeAppSorting() {
-}
-
-void ChromeAppSorting::SetExtensionScopedPrefs(ExtensionScopedPrefs* prefs) {
-  extension_scoped_prefs_ = prefs;
-}
-
-void ChromeAppSorting::CheckExtensionScopedPrefs() const {
-  CHECK(extension_scoped_prefs_);
-}
-
-void ChromeAppSorting::Initialize(
-    const extensions::ExtensionIdList& extension_ids) {
-  CHECK(extension_scoped_prefs_);
-  InitializePageOrdinalMap(extension_ids);
-
-  MigrateAppIndex(extension_ids);
 }
 
 void ChromeAppSorting::CreateOrdinalsIfNecessary(size_t minimum_size) {
@@ -94,6 +81,8 @@ void ChromeAppSorting::MigrateAppIndex(
   if (extension_ids.empty())
     return;
 
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context_);
+
   // Convert all the page index values to page ordinals. If there are any
   // app launch values that need to be migrated, inserted them into a sorted
   // set to be dealt with later.
@@ -104,10 +93,9 @@ void ChromeAppSorting::MigrateAppIndex(
            extension_ids.begin(); ext_id != extension_ids.end(); ++ext_id) {
     int old_page_index = 0;
     syncer::StringOrdinal page = GetPageOrdinal(*ext_id);
-    if (extension_scoped_prefs_->ReadPrefAsInteger(
-            *ext_id,
-            kPrefPageIndexDeprecated,
-            &old_page_index)) {
+    if (prefs->ReadPrefAsInteger(*ext_id,
+                                 kPrefPageIndexDeprecated,
+                                 &old_page_index)) {
       // Some extensions have invalid page index, so we don't
       // attempt to convert them.
       if (old_page_index < 0) {
@@ -121,15 +109,13 @@ void ChromeAppSorting::MigrateAppIndex(
 
       page = PageIntegerAsStringOrdinal(old_page_index);
       SetPageOrdinal(*ext_id, page);
-      extension_scoped_prefs_->UpdateExtensionPref(
-          *ext_id, kPrefPageIndexDeprecated, NULL);
+      prefs->UpdateExtensionPref(*ext_id, kPrefPageIndexDeprecated, NULL);
     }
 
     int old_app_launch_index = 0;
-    if (extension_scoped_prefs_->ReadPrefAsInteger(
-            *ext_id,
-            kPrefAppLaunchIndexDeprecated,
-            &old_app_launch_index)) {
+    if (prefs->ReadPrefAsInteger(*ext_id,
+                                 kPrefAppLaunchIndexDeprecated,
+                                 &old_app_launch_index)) {
       // We can't update the app launch index value yet, because we use
       // GetNextAppLaunchOrdinal to get the new ordinal value and it requires
       // all the ordinals with lower values to have already been migrated.
@@ -138,8 +124,7 @@ void ChromeAppSorting::MigrateAppIndex(
       if (page.IsValid())
         app_launches_to_convert[page][old_app_launch_index] = &*ext_id;
 
-      extension_scoped_prefs_->UpdateExtensionPref(
-          *ext_id, kPrefAppLaunchIndexDeprecated, NULL);
+      prefs->UpdateExtensionPref(*ext_id, kPrefAppLaunchIndexDeprecated, NULL);
     }
   }
 
@@ -297,7 +282,7 @@ syncer::StringOrdinal ChromeAppSorting::GetAppLaunchOrdinal(
   // If the preference read fails then raw_value will still be unset and we
   // will return an invalid StringOrdinal to signal that no app launch ordinal
   // was found.
-  extension_scoped_prefs_->ReadPrefAsString(
+  ExtensionPrefs::Get(browser_context_)->ReadPrefAsString(
       extension_id, kPrefAppLaunchOrdinal, &raw_value);
   return syncer::StringOrdinal(raw_value);
 }
@@ -320,7 +305,7 @@ void ChromeAppSorting::SetAppLaunchOrdinal(
       new base::StringValue(new_app_launch_ordinal.ToInternalValue()) :
       NULL;
 
-  extension_scoped_prefs_->UpdateExtensionPref(
+  ExtensionPrefs::Get(browser_context_)->UpdateExtensionPref(
       extension_id,
       kPrefAppLaunchOrdinal,
       new_value);
@@ -378,7 +363,7 @@ syncer::StringOrdinal ChromeAppSorting::GetPageOrdinal(
   std::string raw_data;
   // If the preference read fails then raw_data will still be unset and we will
   // return an invalid StringOrdinal to signal that no page ordinal was found.
-  extension_scoped_prefs_->ReadPrefAsString(
+  ExtensionPrefs::Get(browser_context_)->ReadPrefAsString(
       extension_id, kPrefPageOrdinal, &raw_data);
   return syncer::StringOrdinal(raw_data);
 }
@@ -399,7 +384,7 @@ void ChromeAppSorting::SetPageOrdinal(
       new base::StringValue(new_page_ordinal.ToInternalValue()) :
       NULL;
 
-  extension_scoped_prefs_->UpdateExtensionPref(
+  ExtensionPrefs::Get(browser_context_)->UpdateExtensionPref(
       extension_id,
       kPrefPageOrdinal,
       new_value);
@@ -411,10 +396,9 @@ void ChromeAppSorting::ClearOrdinals(const std::string& extension_id) {
                        GetPageOrdinal(extension_id),
                        GetAppLaunchOrdinal(extension_id));
 
-  extension_scoped_prefs_->UpdateExtensionPref(
-      extension_id, kPrefPageOrdinal, NULL);
-  extension_scoped_prefs_->UpdateExtensionPref(
-      extension_id, kPrefAppLaunchOrdinal, NULL);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context_);
+  prefs->UpdateExtensionPref(extension_id, kPrefPageOrdinal, NULL);
+  prefs->UpdateExtensionPref(extension_id, kPrefAppLaunchOrdinal, NULL);
 }
 
 int ChromeAppSorting::PageStringOrdinalAsInteger(
@@ -473,9 +457,6 @@ syncer::StringOrdinal ChromeAppSorting::GetMinOrMaxAppLaunchOrdinalsOnPage(
 
 void ChromeAppSorting::InitializePageOrdinalMap(
     const extensions::ExtensionIdList& extension_ids) {
-  // TODO(mgiuca): Added this CHECK to try and diagnose http://crbug.com/476648.
-  // Remove it after the investigation is concluded.
-  CHECK(extension_scoped_prefs_);
   for (extensions::ExtensionIdList::const_iterator ext_it =
            extension_ids.begin(); ext_it != extension_ids.end(); ++ext_it) {
     AddOrdinalMapping(*ext_it,

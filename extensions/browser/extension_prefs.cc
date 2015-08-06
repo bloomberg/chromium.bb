@@ -21,6 +21,7 @@
 #include "extensions/browser/extension_pref_store.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_prefs_observer.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/feature_switch.h"
@@ -338,37 +339,30 @@ template class ExtensionPrefs::ScopedUpdate<base::ListValue,
 
 // static
 ExtensionPrefs* ExtensionPrefs::Create(
+    content::BrowserContext* browser_context,
     PrefService* prefs,
     const base::FilePath& root_dir,
     ExtensionPrefValueMap* extension_pref_value_map,
-    scoped_ptr<AppSorting> app_sorting,
     bool extensions_disabled,
     const std::vector<ExtensionPrefsObserver*>& early_observers) {
-  return ExtensionPrefs::Create(prefs,
-                                root_dir,
-                                extension_pref_value_map,
-                                app_sorting.Pass(),
-                                extensions_disabled,
+  return ExtensionPrefs::Create(browser_context, prefs, root_dir,
+                                extension_pref_value_map, extensions_disabled,
                                 early_observers,
                                 make_scoped_ptr(new TimeProvider()));
 }
 
 // static
 ExtensionPrefs* ExtensionPrefs::Create(
+    content::BrowserContext* browser_context,
     PrefService* pref_service,
     const base::FilePath& root_dir,
     ExtensionPrefValueMap* extension_pref_value_map,
-    scoped_ptr<AppSorting> app_sorting,
     bool extensions_disabled,
     const std::vector<ExtensionPrefsObserver*>& early_observers,
     scoped_ptr<TimeProvider> time_provider) {
-  return new ExtensionPrefs(pref_service,
-                            root_dir,
-                            extension_pref_value_map,
-                            app_sorting.Pass(),
-                            time_provider.Pass(),
-                            extensions_disabled,
-                            early_observers);
+  return new ExtensionPrefs(browser_context, pref_service, root_dir,
+                            extension_pref_value_map, time_provider.Pass(),
+                            extensions_disabled, early_observers);
 }
 
 ExtensionPrefs::~ExtensionPrefs() {
@@ -1202,7 +1196,7 @@ void ExtensionPrefs::OnExtensionInstalled(
 void ExtensionPrefs::OnExtensionUninstalled(const std::string& extension_id,
                                             const Manifest::Location& location,
                                             bool external_uninstall) {
-  app_sorting_->ClearOrdinals(extension_id);
+  app_sorting()->ClearOrdinals(extension_id);
 
   // For external extensions, we save a preference reminding ourself not to try
   // and install the extension anymore (except when |external_uninstall| is
@@ -1780,7 +1774,6 @@ void ExtensionPrefs::InitPrefStore() {
   FixMissingPrefs(extension_ids);
   MigratePermissions(extension_ids);
   MigrateDisableReasons(extension_ids);
-  app_sorting_->Initialize(extension_ids);
 
   InitExtensionControlledPrefs(extension_pref_value_map_);
 
@@ -1867,24 +1860,19 @@ void ExtensionPrefs::SetNeedsSync(const std::string& extension_id,
 }
 
 ExtensionPrefs::ExtensionPrefs(
+    content::BrowserContext* browser_context,
     PrefService* prefs,
     const base::FilePath& root_dir,
     ExtensionPrefValueMap* extension_pref_value_map,
-    scoped_ptr<AppSorting> app_sorting,
     scoped_ptr<TimeProvider> time_provider,
     bool extensions_disabled,
     const std::vector<ExtensionPrefsObserver*>& early_observers)
-    : prefs_(prefs),
+    : browser_context_(browser_context),
+      prefs_(prefs),
       install_directory_(root_dir),
       extension_pref_value_map_(extension_pref_value_map),
-      app_sorting_(app_sorting.Pass()),
       time_provider_(time_provider.Pass()),
       extensions_disabled_(extensions_disabled) {
-  // TODO(mgiuca): Added these checks to try and diagnose
-  // http://crbug.com/476648. Remove them after the investigation is concluded.
-  CHECK(this);
-  app_sorting_->SetExtensionScopedPrefs(this);
-  app_sorting_->CheckExtensionScopedPrefs();
   MakePathsRelative();
 
   // Ensure that any early observers are watching before prefs are initialized.
@@ -1896,6 +1884,10 @@ ExtensionPrefs::ExtensionPrefs(
   }
 
   InitPrefStore();
+}
+
+AppSorting* ExtensionPrefs::app_sorting() const {
+  return ExtensionSystem::Get(browser_context_)->app_sorting();
 }
 
 void ExtensionPrefs::SetNeedsStorageGarbageCollection(bool value) {
@@ -2107,11 +2099,11 @@ void ExtensionPrefs::FinishExtensionInfoPrefs(
   extension_dict->Remove(EventRouter::kRegisteredEvents, NULL);
 
   // FYI, all code below here races on sudden shutdown because |extension_dict|,
-  // |app_sorting_|, |extension_pref_value_map_|, and (potentially) observers
+  // |app_sorting|, |extension_pref_value_map_|, and (potentially) observers
   // are updated non-transactionally. This is probably not fixable without
   // nested transactional updates to pref dictionaries.
   if (needs_sort_ordinal)
-    app_sorting_->EnsureValidOrdinals(extension_id, suggested_page_ordinal);
+    app_sorting()->EnsureValidOrdinals(extension_id, suggested_page_ordinal);
 
   bool is_enabled = false;
   int initial_state;

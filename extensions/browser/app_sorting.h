@@ -21,19 +21,6 @@ class AppSorting {
   AppSorting() {}
   virtual ~AppSorting() {}
 
-  // Sets the object used to look up preferences. Ownership remains with the
-  // caller.
-  virtual void SetExtensionScopedPrefs(ExtensionScopedPrefs* prefs) = 0;
-
-  // CHECKs that SetExtensionScopedPrefs has been called with a non-null object.
-  // TODO(mgiuca): Added this to try and diagnose http://crbug.com/476648.
-  // Remove it after the investigation is concluded.
-  virtual void CheckExtensionScopedPrefs() const = 0;
-
-  // Properly initializes internal values that require |extension_ids|.
-  // SetExtensionScopedPrefs must have been called prior to this.
-  virtual void Initialize(const extensions::ExtensionIdList& extension_ids) = 0;
-
   // Resolves any conflicts the might be created as a result of syncing that
   // results in two icons having the same page and app launch ordinal. After
   // this is called it is guaranteed that there are no collisions of NTP icons.

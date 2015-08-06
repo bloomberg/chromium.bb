@@ -37,7 +37,6 @@ class URLRequestJob;
 namespace extensions {
 
 class ApiActivityMonitor;
-class AppSorting;
 class ComponentExtensionResourceManager;
 class Extension;
 class ExtensionCache;
@@ -160,10 +159,6 @@ class ExtensionsBrowserClient {
   // Permits an external protocol handler to be launched. See
   // ExternalProtocolHandler::PermitLaunchUrl() in Chrome.
   virtual void PermitExternalProtocolHandler() = 0;
-
-  // Creates a new AppSorting instance.
-  virtual scoped_ptr<AppSorting> CreateAppSorting(
-      content::BrowserContext* context) = 0;
 
   // Return true if the system is run in forced app mode.
   virtual bool IsRunningInForcedAppMode() = 0;

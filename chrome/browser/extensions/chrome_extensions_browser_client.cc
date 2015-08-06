@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/api/preference/chrome_direct_setting.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.h"
-#include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/chrome_component_extension_resource_manager.h"
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
@@ -219,11 +218,6 @@ bool ChromeExtensionsBrowserClient::DidVersionUpdate(
 
 void ChromeExtensionsBrowserClient::PermitExternalProtocolHandler() {
   ExternalProtocolHandler::PermitLaunchUrl();
-}
-
-scoped_ptr<AppSorting> ChromeExtensionsBrowserClient::CreateAppSorting(
-    content::BrowserContext* context) {
-  return scoped_ptr<AppSorting>(new ChromeAppSorting(context));
 }
 
 bool ChromeExtensionsBrowserClient::IsRunningInForcedAppMode() {

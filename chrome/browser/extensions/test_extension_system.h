@@ -16,7 +16,6 @@ class TestingValueStore;
 namespace base {
 class CommandLine;
 class FilePath;
-class Time;
 }
 
 namespace content {
@@ -24,11 +23,6 @@ class BrowserContext;
 }
 
 namespace extensions {
-class ExtensionPrefs;
-class InstallVerifier;
-class RuntimeData;
-class SharedUserScriptMaster;
-class StandardManagementPolicyProvider;
 
 // Test ExtensionSystem, for use with TestingProfile.
 class TestExtensionSystem : public ExtensionSystem {
@@ -38,13 +32,6 @@ class TestExtensionSystem : public ExtensionSystem {
 
   // KeyedService implementation.
   void Shutdown() override;
-
-  // Creates an ExtensionPrefs with the testing profile and returns it.
-  // Useful for tests that need to modify prefs before creating the
-  // ExtensionService.
-  scoped_ptr<ExtensionPrefs> CreateExtensionPrefs(
-      const base::CommandLine* command_line,
-      const base::FilePath& install_directory);
 
   // Creates an ExtensionService initialized with the testing profile and
   // returns it, and creates ExtensionPrefs if it hasn't been created yet.
@@ -66,6 +53,7 @@ class TestExtensionSystem : public ExtensionSystem {
   TestingValueStore* value_store() { return value_store_; }
   InfoMap* info_map() override;
   QuotaService* quota_service() override;
+  AppSorting* app_sorting() override;
   const OneShotEvent& ready() const override;
   ContentVerifier* content_verifier() override;
   scoped_ptr<ExtensionSet> GetDependentExtensions(
@@ -77,6 +65,11 @@ class TestExtensionSystem : public ExtensionSystem {
 
   // Factory method for tests to use with SetTestingProfile.
   static scoped_ptr<KeyedService> Build(content::BrowserContext* profile);
+
+  // Used by ExtensionPrefsTest to re-create the AppSorting after it has
+  // re-created the ExtensionPrefs instance (this can never happen in non-test
+  // code).
+  void RecreateAppSorting();
 
  protected:
   Profile* profile_;
@@ -90,6 +83,7 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_ptr<ExtensionService> extension_service_;
   scoped_refptr<InfoMap> info_map_;
   scoped_ptr<QuotaService> quota_service_;
+  scoped_ptr<AppSorting> app_sorting_;
   OneShotEvent ready_;
 };
 

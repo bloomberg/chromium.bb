@@ -23,15 +23,6 @@ NullAppSorting::NullAppSorting() {
 NullAppSorting::~NullAppSorting() {
 }
 
-void NullAppSorting::SetExtensionScopedPrefs(ExtensionScopedPrefs* prefs) {
-}
-
-void NullAppSorting::CheckExtensionScopedPrefs() const {
-}
-
-void NullAppSorting::Initialize(const ExtensionIdList& extension_ids) {
-}
-
 void NullAppSorting::FixNTPOrdinalCollisions() {
 }
 

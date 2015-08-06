@@ -19,6 +19,7 @@ class PrefRegistrySyncable;
 }
 
 namespace extensions {
+class ChromeAppSorting;
 class Extension;
 
 // Base class for extension preference-related unit tests.
@@ -45,6 +46,7 @@ class ExtensionPrefsTest : public testing::Test {
 
  protected:
   ExtensionPrefs* prefs() { return prefs_.prefs(); }
+  ChromeAppSorting* app_sorting() { return prefs_.app_sorting(); }
 
   base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;

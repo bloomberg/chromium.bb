@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "extensions/browser/app_sorting.h"
 #include "extensions/browser/blacklist_state.h"
 #include "extensions/browser/extension_scoped_prefs.h"
 #include "extensions/browser/install_flag.h"
@@ -131,20 +130,20 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // included in |early_observers| if they need to observe events which occur
   // during initialization of the ExtensionPrefs object.
   static ExtensionPrefs* Create(
+      content::BrowserContext* browser_context,
       PrefService* prefs,
       const base::FilePath& root_dir,
       ExtensionPrefValueMap* extension_pref_value_map,
-      scoped_ptr<AppSorting> app_sorting,
       bool extensions_disabled,
       const std::vector<ExtensionPrefsObserver*>& early_observers);
 
   // A version of Create which allows injection of a custom base::Time provider.
   // Use this as needed for testing.
   static ExtensionPrefs* Create(
+      content::BrowserContext* browser_context,
       PrefService* prefs,
       const base::FilePath& root_dir,
       ExtensionPrefValueMap* extension_pref_value_map,
-      scoped_ptr<AppSorting> app_sorting,
       bool extensions_disabled,
       const std::vector<ExtensionPrefsObserver*>& early_observers,
       scoped_ptr<TimeProvider> time_provider);
@@ -501,7 +500,9 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   PrefService* pref_service() const { return prefs_; }
 
   // The underlying AppSorting.
-  AppSorting* app_sorting() const { return app_sorting_.get(); }
+  // TODO(treib,kalman): This should be private, and all callers should go
+  // through the ExtensionSystem instead.
+  AppSorting* app_sorting() const;
 
   // Schedules garbage collection of an extension's on-disk data on the next
   // start of this ExtensionService. Applies only to extensions with isolated
@@ -549,10 +550,10 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   };
 
   // See the Create methods.
-  ExtensionPrefs(PrefService* prefs,
+  ExtensionPrefs(content::BrowserContext* browser_context,
+                 PrefService* prefs,
                  const base::FilePath& root_dir,
                  ExtensionPrefValueMap* extension_pref_value_map,
-                 scoped_ptr<AppSorting> app_sorting,
                  scoped_ptr<TimeProvider> time_provider,
                  bool extensions_disabled,
                  const std::vector<ExtensionPrefsObserver*>& early_observers);
@@ -670,6 +671,8 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
       const syncer::StringOrdinal& suggested_page_ordinal,
       base::DictionaryValue* extension_dict);
 
+  content::BrowserContext* browser_context_;
+
   // The pref service specific to this set of extension prefs. Owned by the
   // BrowserContext.
   PrefService* prefs_;
@@ -679,10 +682,6 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
 
   // Weak pointer, owned by BrowserContext.
   ExtensionPrefValueMap* extension_pref_value_map_;
-
-  // Contains all the logic for handling the order for various extension
-  // properties.
-  scoped_ptr<AppSorting> app_sorting_;
 
   scoped_ptr<TimeProvider> time_provider_;
 

@@ -18,6 +18,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/browser/null_app_sorting.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/common/constants.h"
@@ -100,6 +101,7 @@ void ShellExtensionSystem::InitForRegularProfile(bool extensions_enabled) {
   runtime_data_.reset(
       new RuntimeData(ExtensionRegistry::Get(browser_context_)));
   quota_service_.reset(new QuotaService);
+  app_sorting_.reset(new NullAppSorting);
 }
 
 ExtensionService* ShellExtensionSystem::extension_service() {
@@ -134,6 +136,10 @@ InfoMap* ShellExtensionSystem::info_map() {
 
 QuotaService* ShellExtensionSystem::quota_service() {
   return quota_service_.get();
+}
+
+AppSorting* ShellExtensionSystem::app_sorting() {
+  return app_sorting_.get();
 }
 
 void ShellExtensionSystem::RegisterExtensionWithRequestContexts(

@@ -100,8 +100,11 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "extensions/browser/event_router_factory.h"
+#include "extensions/browser/extension_pref_value_map.h"
+#include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
+#include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extension_system.h"
 #endif
 
@@ -421,17 +424,23 @@ void TestingProfile::Init() {
   extensions_path_ = profile_path_.AppendASCII("Extensions");
 
 #if defined(ENABLE_EXTENSIONS)
-  extensions::ExtensionSystemFactory::GetInstance()->SetTestingFactory(
-      this, extensions::TestExtensionSystem::Build);
-
-  extensions::TestExtensionSystem* test_extension_system =
-      static_cast<extensions::TestExtensionSystem*>(
-          extensions::ExtensionSystem::Get(this));
-  scoped_ptr<extensions::ExtensionPrefs> extension_prefs =
-      test_extension_system->CreateExtensionPrefs(
-          base::CommandLine::ForCurrentProcess(), extensions_path_);
+  // Note that the GetPrefs() creates a TestingPrefService, therefore
+  // the extension controlled pref values set in ExtensionPrefs
+  // are not reflected in the pref service. One would need to
+  // inject a new ExtensionPrefStore(extension_pref_value_map, false).
+  bool extensions_disabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableExtensions);
+  scoped_ptr<extensions::ExtensionPrefs> extension_prefs(
+      extensions::ExtensionPrefs::Create(
+          this, GetPrefs(), extensions_path_,
+          ExtensionPrefValueMapFactory::GetForBrowserContext(this),
+          extensions_disabled,
+          std::vector<extensions::ExtensionPrefsObserver*>()));
   extensions::ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(
       this, extension_prefs.Pass());
+
+  extensions::ExtensionSystemFactory::GetInstance()->SetTestingFactory(
+      this, extensions::TestExtensionSystem::Build);
 
   extensions::EventRouterFactory::GetInstance()->SetTestingFactory(this,
                                                                    nullptr);

@@ -35,6 +35,7 @@ class MockExtensionSystem : public ExtensionSystem {
   StateStore* rules_store() override;
   InfoMap* info_map() override;
   QuotaService* quota_service() override;
+  AppSorting* app_sorting() override;
   const OneShotEvent& ready() const override;
   ContentVerifier* content_verifier() override;
   scoped_ptr<ExtensionSet> GetDependentExtensions(

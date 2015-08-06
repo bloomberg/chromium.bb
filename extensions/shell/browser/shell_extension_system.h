@@ -12,8 +12,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/one_shot_event.h"
 
-class BrowserContextKeyedServiceFactory;
-
 namespace base {
 class FilePath;
 }
@@ -23,11 +21,6 @@ class BrowserContext;
 }
 
 namespace extensions {
-
-class InfoMap;
-class ProcessManager;
-class RendererStartupHelper;
-class SharedUserScriptMaster;
 
 // A simplified version of ExtensionSystem for app_shell. Allows
 // app_shell to skip initialization of services it doesn't need.
@@ -59,6 +52,7 @@ class ShellExtensionSystem : public ExtensionSystem {
   StateStore* rules_store() override;
   InfoMap* info_map() override;
   QuotaService* quota_service() override;
+  AppSorting* app_sorting() override;
   void RegisterExtensionWithRequestContexts(
       const Extension* extension,
       const base::Closure& callback) override;
@@ -80,6 +74,7 @@ class ShellExtensionSystem : public ExtensionSystem {
 
   scoped_ptr<RuntimeData> runtime_data_;
   scoped_ptr<QuotaService> quota_service_;
+  scoped_ptr<AppSorting> app_sorting_;
 
   // Signaled when the extension system has completed its startup tasks.
   OneShotEvent ready_;

@@ -7,14 +7,13 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/blacklist.h"
+#include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/extension_pref_value_map.h"
-#include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -34,7 +33,9 @@ TestExtensionSystem::TestExtensionSystem(Profile* profile)
     : profile_(profile),
       value_store_(NULL),
       info_map_(new InfoMap()),
-      quota_service_(new QuotaService()) {}
+      quota_service_(new QuotaService()),
+      app_sorting_(new ChromeAppSorting(profile_)) {
+}
 
 TestExtensionSystem::~TestExtensionSystem() {
 }
@@ -42,24 +43,6 @@ TestExtensionSystem::~TestExtensionSystem() {
 void TestExtensionSystem::Shutdown() {
   if (extension_service_)
     extension_service_->Shutdown();
-}
-
-scoped_ptr<ExtensionPrefs> TestExtensionSystem::CreateExtensionPrefs(
-    const base::CommandLine* command_line,
-    const base::FilePath& install_directory) {
-  bool extensions_disabled =
-      command_line && command_line->HasSwitch(switches::kDisableExtensions);
-
-  // Note that the GetPrefs() creates a TestingPrefService, therefore
-  // the extension controlled pref values set in ExtensionPrefs
-  // are not reflected in the pref service. One would need to
-  // inject a new ExtensionPrefStore(extension_pref_value_map, false).
-
-  return make_scoped_ptr(ExtensionPrefs::Create(
-      profile_->GetPrefs(), install_directory,
-      ExtensionPrefValueMapFactory::GetForBrowserContext(profile_),
-      ExtensionsBrowserClient::Get()->CreateAppSorting(profile_).Pass(),
-      extensions_disabled, std::vector<ExtensionPrefsObserver*>()));
 }
 
 ExtensionService* TestExtensionSystem::CreateExtensionService(
@@ -122,6 +105,10 @@ QuotaService* TestExtensionSystem::quota_service() {
   return quota_service_.get();
 }
 
+AppSorting* TestExtensionSystem::app_sorting() {
+  return app_sorting_.get();
+}
+
 const OneShotEvent& TestExtensionSystem::ready() const {
   return ready_;
 }
@@ -141,6 +128,10 @@ scoped_ptr<KeyedService> TestExtensionSystem::Build(
     content::BrowserContext* profile) {
   return make_scoped_ptr(
       new TestExtensionSystem(static_cast<Profile*>(profile)));
+}
+
+void TestExtensionSystem::RecreateAppSorting() {
+  app_sorting_.reset(new ChromeAppSorting(profile_));
 }
 
 }  // namespace extensions

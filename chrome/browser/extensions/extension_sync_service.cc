@@ -22,6 +22,7 @@
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
@@ -30,11 +31,13 @@
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
 
+using extensions::AppSorting;
 using extensions::Extension;
 using extensions::ExtensionPrefs;
 using extensions::ExtensionRegistry;
 using extensions::ExtensionSet;
 using extensions::ExtensionSyncData;
+using extensions::ExtensionSystem;
 using extensions::SyncBundle;
 
 namespace {
@@ -108,7 +111,7 @@ ExtensionSyncService* ExtensionSyncService::Get(
 }
 
 void ExtensionSyncService::SyncUninstallExtension(
-    const extensions::Extension& extension) {
+    const Extension& extension) {
   if (!extensions::util::ShouldSync(&extension, profile_))
     return;
 
@@ -181,7 +184,7 @@ syncer::SyncMergeResult ExtensionSyncService::MergeDataAndStartSyncing(
     ExtensionPrefs::Get(profile_)->SetNeedsSync(data.id(), false);
 
   if (type == syncer::APPS)
-    extension_prefs_->app_sorting()->FixNTPOrdinalCollisions();
+    ExtensionSystem::Get(profile_)->app_sorting()->FixNTPOrdinalCollisions();
 
   return syncer::SyncMergeResult(type);
 }
@@ -196,7 +199,7 @@ syncer::SyncDataList ExtensionSyncService::GetAllSyncData(
   if (!bundle->IsSyncing())
     return syncer::SyncDataList();
 
-  std::vector<extensions::ExtensionSyncData> sync_data_list =
+  std::vector<ExtensionSyncData> sync_data_list =
       GetLocalSyncDataList(type, true);
 
   // Add pending data (where the local extension is either not installed yet or
@@ -219,13 +222,13 @@ syncer::SyncError ExtensionSyncService::ProcessSyncChanges(
       ApplySyncData(*extension_sync_data);
   }
 
-  extension_prefs_->app_sorting()->FixNTPOrdinalCollisions();
+  ExtensionSystem::Get(profile_)->app_sorting()->FixNTPOrdinalCollisions();
 
   return syncer::SyncError();
 }
 
 ExtensionSyncData ExtensionSyncService::CreateSyncData(
-    const extensions::Extension& extension) const {
+    const Extension& extension) const {
   bool enabled = extension_service_->IsExtensionEnabled(extension.id());
   int disable_reasons = extension_prefs_->GetDisableReasons(extension.id());
   bool incognito_enabled = extensions::util::IsIncognitoEnabled(extension.id(),
@@ -236,11 +239,12 @@ ExtensionSyncData ExtensionSyncService::CreateSyncData(
   ExtensionSyncData::OptionalBoolean allowed_on_all_url =
       GetAllowedOnAllUrlsOptionalBoolean(extension.id(), profile_);
   if (extension.is_app()) {
+    AppSorting* app_sorting = ExtensionSystem::Get(profile_)->app_sorting();
     return ExtensionSyncData(
         extension, enabled, disable_reasons, incognito_enabled, remote_install,
         allowed_on_all_url,
-        extension_prefs_->app_sorting()->GetAppLaunchOrdinal(extension.id()),
-        extension_prefs_->app_sorting()->GetPageOrdinal(extension.id()),
+        app_sorting->GetAppLaunchOrdinal(extension.id()),
+        app_sorting->GetPageOrdinal(extension.id()),
         extensions::GetLaunchTypePrefValue(extension_prefs_, extension.id()));
   }
   return ExtensionSyncData(
@@ -260,12 +264,11 @@ bool ExtensionSyncService::ApplySyncData(
   if (extension_sync_data.is_app()) {
     if (extension_sync_data.app_launch_ordinal().IsValid() &&
         extension_sync_data.page_ordinal().IsValid()) {
-      extension_prefs_->app_sorting()->SetAppLaunchOrdinal(
+      AppSorting* app_sorting = ExtensionSystem::Get(profile_)->app_sorting();
+      app_sorting->SetAppLaunchOrdinal(
           id,
           extension_sync_data.app_launch_ordinal());
-      extension_prefs_->app_sorting()->SetPageOrdinal(
-          id,
-          extension_sync_data.page_ordinal());
+      app_sorting->SetPageOrdinal(id, extension_sync_data.page_ordinal());
     }
 
     // The corresponding validation of this value during ExtensionSyncData
@@ -290,7 +293,7 @@ bool ExtensionSyncService::ApplySyncData(
 }
 
 void ExtensionSyncService::ApplyBookmarkAppSyncData(
-    const extensions::ExtensionSyncData& extension_sync_data) {
+    const ExtensionSyncData& extension_sync_data) {
   DCHECK(extension_sync_data.is_app());
 
   // Process bookmark app sync if necessary.

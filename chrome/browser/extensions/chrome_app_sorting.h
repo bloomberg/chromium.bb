@@ -27,9 +27,6 @@ class ChromeAppSorting : public AppSorting {
   ~ChromeAppSorting() override;
 
   // AppSorting implementation:
-  void SetExtensionScopedPrefs(ExtensionScopedPrefs* prefs) override;
-  void CheckExtensionScopedPrefs() const override;
-  void Initialize(const extensions::ExtensionIdList& extension_ids) override;
   void FixNTPOrdinalCollisions() override;
   void EnsureValidOrdinals(
       const std::string& extension_id,
@@ -74,6 +71,7 @@ class ChromeAppSorting : public AppSorting {
   // Unit tests.
   friend class ChromeAppSortingDefaultOrdinalsBase;
   friend class ChromeAppSortingGetMinOrMaxAppLaunchOrdinalsOnPage;
+  friend class ChromeAppSortingInitialize;
   friend class ChromeAppSortingInitializeWithNoApps;
   friend class ChromeAppSortingPageOrdinalMapping;
   friend class ChromeAppSortingSetExtensionVisible;
@@ -152,7 +150,6 @@ class ChromeAppSorting : public AppSorting {
   // Returns the number of items in |m| visible on the new tab page.
   size_t CountItemsVisibleOnNtp(const AppLaunchOrdinalMap& m) const;
 
-  ExtensionScopedPrefs* extension_scoped_prefs_;  // Weak, owns this instance.
   content::BrowserContext* browser_context_;
 
   // A map of all the StringOrdinal page ordinals mapping to the collections of

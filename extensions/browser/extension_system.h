@@ -30,6 +30,7 @@ class BrowserContext;
 
 namespace extensions {
 
+class AppSorting;
 class ContentVerifier;
 class Extension;
 class ExtensionSet;
@@ -85,6 +86,9 @@ class ExtensionSystem : public KeyedService {
   // Returns the QuotaService that limits calls to certain extension functions.
   // Lives on the UI thread. Created at startup.
   virtual QuotaService* quota_service() = 0;
+
+  // Returns the AppSorting which provides an ordering for all installed apps.
+  virtual AppSorting* app_sorting() = 0;
 
   // Called by the ExtensionService that lives in this system. Gives the
   // info map a chance to react to the load event before the EXTENSION_LOADED

@@ -9,7 +9,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/generated_api_registration.h"
-#include "extensions/browser/app_sorting.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/mojo/service_registration.h"
@@ -154,11 +153,6 @@ bool ShellExtensionsBrowserClient::DidVersionUpdate(BrowserContext* context) {
 }
 
 void ShellExtensionsBrowserClient::PermitExternalProtocolHandler() {
-}
-
-scoped_ptr<AppSorting> ShellExtensionsBrowserClient::CreateAppSorting(
-    content::BrowserContext* context) {
-  return scoped_ptr<AppSorting>(new NullAppSorting);
 }
 
 bool ShellExtensionsBrowserClient::IsRunningInForcedAppMode() {

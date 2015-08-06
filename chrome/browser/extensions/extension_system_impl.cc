@@ -12,6 +12,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -201,6 +202,9 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
           base::FilePath(t.token()));
     }
   }
+
+  app_sorting_.reset(new ChromeAppSorting(profile_));
+
   extension_service_->Init();
 
   // Make the chrome://extension-icon/ resource available.
@@ -269,6 +273,10 @@ QuotaService* ExtensionSystemImpl::Shared::quota_service() {
   return quota_service_.get();
 }
 
+AppSorting* ExtensionSystemImpl::Shared::app_sorting() {
+  return app_sorting_.get();
+}
+
 ContentVerifier* ExtensionSystemImpl::Shared::content_verifier() {
   return content_verifier_.get();
 }
@@ -335,6 +343,10 @@ const OneShotEvent& ExtensionSystemImpl::ready() const {
 
 QuotaService* ExtensionSystemImpl::quota_service() {
   return shared_->quota_service();
+}
+
+AppSorting* ExtensionSystemImpl::app_sorting() {
+  return shared_->app_sorting();
 }
 
 ContentVerifier* ExtensionSystemImpl::content_verifier() {
