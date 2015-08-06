@@ -2112,7 +2112,3 @@ crbug.com/516522 [ Yosemite ] editing/selection/vertical-rl-rtl-extend-line-forw
 
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-contexts.html [ Failure ]
-
-crbug.com/513319 [ XP ] ietestcenter/css3/bordersbackgrounds/border-radius-applies-to-011.htm [ NeedsRebaseline ]
-crbug.com/513319 [ Yosemite ] fast/css/acid2.html [ NeedsRebaseline ]
-crbug.com/513319 [ Yosemite ] fast/css/acid2-pixel.html [ NeedsRebaseline ]
