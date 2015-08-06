@@ -28,6 +28,16 @@ class SystemLogUploader : public UploadJob::Delegate {
   // from the disk binary file data).
   typedef std::vector<std::pair<std::string, std::string>> SystemLogs;
 
+  // Refresh constants.
+  static const int64 kDefaultUploadDelayMs;
+  static const int64 kErrorUploadDelayMs;
+
+  // Http header constants to upload.
+  static const char* const kNameFieldTemplate;
+  static const char* const kFileTypeHeaderName;
+  static const char* const kFileTypeLogFile;
+  static const char* const kContentTypePlainText;
+
   // A delegate interface used by SystemLogUploader to read the system logs
   // from the disk and create an upload job.
   class Delegate {

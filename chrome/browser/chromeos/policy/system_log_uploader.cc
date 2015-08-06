@@ -17,31 +17,12 @@
 #include "net/http/http_request_headers.h"
 
 namespace {
-// Determines the time between log uploads.
-const int64 kDefaultUploadDelayMs = 12 * 60 * 60 * 1000;  // 12 hours
-
-// Determines the time, measured from the time of last failed upload,
-// after which the log upload is retried.
-const int64 kErrorUploadDelayMs = 120 * 1000;  // 120 seconds
-
 // The maximum number of successive retries.
 const int kMaxNumRetries = 1;
 
 // String constant defining the url we upload system logs to.
 const char* kSystemLogUploadUrl =
     "https://m.google.com/devicemanagement/data/api/upload";
-
-// String constant identifying the header field which stores the file type.
-const char* kFileTypeHeaderName = "File-Type";
-
-// String constant signalling that the data segment contains log files.
-const char* const kFileTypeLogFile = "log_file";
-
-// String constant signalling that the segment contains a plain text.
-const char* const kContentTypePlainText = "text/plain";
-
-// Template string constant for populating the name field.
-const char* const kNameFieldTemplate = "file%d";
 
 // The file names of the system logs to upload.
 // Note: do not add anything to this list without checking for PII in the file.
@@ -122,6 +103,26 @@ scoped_ptr<policy::UploadJob> SystemLogDelegate::CreateUploadJob(
 }  // namespace
 
 namespace policy {
+
+// Determines the time between log uploads.
+const int64 SystemLogUploader::kDefaultUploadDelayMs =
+    12 * 60 * 60 * 1000;  // 12 hours
+
+// Determines the time, measured from the time of last failed upload,
+// after which the log upload is retried.
+const int64 SystemLogUploader::kErrorUploadDelayMs = 120 * 1000;  // 120 seconds
+
+// String constant identifying the header field which stores the file type.
+const char* const SystemLogUploader::kFileTypeHeaderName = "File-Type";
+
+// String constant signalling that the data segment contains log files.
+const char* const SystemLogUploader::kFileTypeLogFile = "log_file";
+
+// String constant signalling that the segment contains a plain text.
+const char* const SystemLogUploader::kContentTypePlainText = "text/plain";
+
+// Template string constant for populating the name field.
+const char* const SystemLogUploader::kNameFieldTemplate = "file%d";
 
 SystemLogUploader::SystemLogUploader(
     scoped_ptr<Delegate> syslog_delegate,
