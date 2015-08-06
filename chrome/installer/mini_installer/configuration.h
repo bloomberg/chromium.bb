@@ -7,8 +7,6 @@
 
 #include <windows.h>
 
-#include "chrome/installer/mini_installer/mini_string.h"
-
 namespace mini_installer {
 
 // A simple container of the mini_installer's configuration, as dictated by the
@@ -75,19 +73,9 @@ class Configuration {
   bool is_system_level_;
   const wchar_t* previous_version_;
 
- protected:
-  typedef StackString<128> ValueString;
-
-  // Virtual for testing.
-  virtual bool ReadClientStateRegistryValue(
-      const HKEY root_key, const wchar_t* app_guid,
-      LONG* retval, ValueString& value);
-
  private:
   Configuration(const Configuration&);
   Configuration& operator=(const Configuration&);
-
-  void SetChromeAppGuid();
 };
 
 }  // namespace mini_installer
