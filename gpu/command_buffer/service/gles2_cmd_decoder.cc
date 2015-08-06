@@ -9037,8 +9037,9 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
                                   int width,
                                   int height) {
   uint32 channels = GLES2Util::GetChannelsForFormat(format);
-  if (feature_info_->feature_flags().angle_depth_texture &&
-      (channels & GLES2Util::kDepth) != 0) {
+  if ((feature_info_->feature_flags().angle_depth_texture ||
+       feature_info_->IsES3Enabled())
+      && (channels & GLES2Util::kDepth) != 0) {
     // It's a depth format and ANGLE doesn't allow texImage2D or texSubImage2D
     // on depth formats.
     GLuint fb = 0;
@@ -10390,7 +10391,8 @@ bool GLES2DecoderImpl::ValidateTexSubImage2D(
     return false;
   }
   if ((GLES2Util::GetChannelsForFormat(format) &
-       (GLES2Util::kDepth | GLES2Util::kStencil)) != 0) {
+       (GLES2Util::kDepth | GLES2Util::kStencil)) != 0
+      && !feature_info_->IsES3Enabled()) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         function_name, "can not supply data for depth or stencil textures");

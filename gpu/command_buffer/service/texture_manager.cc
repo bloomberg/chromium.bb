@@ -1895,7 +1895,8 @@ bool TextureManager::ValidateTexImage(
     return false;
   }
   if ((GLES2Util::GetChannelsForFormat(args.format) &
-       (GLES2Util::kDepth | GLES2Util::kStencil)) != 0 && args.pixels) {
+       (GLES2Util::kDepth | GLES2Util::kStencil)) != 0 && args.pixels
+      && !feature_info_->IsES3Enabled()) {
     ERRORSTATE_SET_GL_ERROR(
         error_state, GL_INVALID_OPERATION,
         function_name, "can not supply data for depth or stencil textures");
