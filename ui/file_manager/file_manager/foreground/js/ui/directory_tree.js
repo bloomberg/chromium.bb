@@ -220,7 +220,7 @@ DirectoryItem.prototype.onExpand_ = function(e) {
  */
 DirectoryItem.prototype.handleClick = function(e) {
   cr.ui.TreeItem.prototype.handleClick.call(this, e);
-  if (!e.target.classList.contains('expand-icon'))
+  if (!e.target.classList.contains('expand-icon') && this.entry)
     this.directoryModel_.activateDirectoryEntry(this.entry);
 };
 
@@ -332,7 +332,8 @@ DirectoryItem.prototype.doDropTargetAction = function() {
  * Change current directory to the entry of this item.
  */
 DirectoryItem.prototype.activate = function() {
-  this.parentTree_.directoryModel.activateDirectoryEntry(this.entry);
+  if (this.entry)
+    this.parentTree_.directoryModel.activateDirectoryEntry(this.entry);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
