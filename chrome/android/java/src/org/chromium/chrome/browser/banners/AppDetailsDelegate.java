@@ -30,8 +30,20 @@ public abstract class AppDetailsDelegate {
      * @param packageName Name of the app's package.
      * @param iconSize    Size of the icon to retrieve.
      */
-    protected abstract void getAppDetailsAsynchronously(
-            Observer observer, String url, String packageName, int iconSize);
+    protected void getAppDetailsAsynchronously(
+            Observer observer, String url, String packageName, int iconSize) { }
+
+    /**
+     * Retrieves information about the given package asynchronously.  When details have been
+     * retrieved, the observer is alerted.
+     * @param observer    Informed when the app details have been received.
+     * @param url         URL of the page requesting a banner.
+     * @param packageName Name of the app's package.
+     * @param referrer    Referrer specified by the page requesting a banner.
+     * @param iconSize    Size of the icon to retrieve.
+     */
+    protected void getAppDetailsAsynchronously(
+            Observer observer, String url, String packageName, String referrer, int iconSize) { }
 
     /**
      * Destroy the delegate, cleaning up any open hooks.
