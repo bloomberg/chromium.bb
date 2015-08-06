@@ -30,7 +30,6 @@
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPoint.h"
-#include "third_party/skia/include/core/SkTemplates.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
@@ -271,9 +270,7 @@ int32_t PepperFlashRendererHost::OnDrawGlyphs(
   // Build up the skia advances.
   size_t glyph_count = params.glyph_indices.size();
   if (glyph_count) {
-    std::vector<SkPoint> storage;
-    storage.resize(glyph_count);
-    SkPoint* sk_positions = &storage[0];
+    std::vector<SkPoint> sk_positions(glyph_count);
     for (uint32_t i = 0; i < glyph_count; i++) {
       sk_positions[i].set(x, y);
       x += SkFloatToScalar(params.glyph_advances[i].x);
@@ -281,7 +278,7 @@ int32_t PepperFlashRendererHost::OnDrawGlyphs(
     }
 
     canvas->drawPosText(
-        &params.glyph_indices[0], glyph_count * 2, sk_positions, paint);
+        &params.glyph_indices[0], glyph_count * 2, &sk_positions[0], paint);
   }
 
   if (needs_unmapping)
