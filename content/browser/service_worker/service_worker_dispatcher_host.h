@@ -190,6 +190,11 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                              ServiceWorkerStatusCode status,
                              const std::string& status_message);
 
+  void SendUpdateError(int thread_id,
+                       int request_id,
+                       ServiceWorkerStatusCode status,
+                       const std::string& status_message);
+
   void SendUnregistrationError(int thread_id,
                                int request_id,
                                ServiceWorkerStatusCode status);
