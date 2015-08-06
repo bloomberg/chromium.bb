@@ -338,8 +338,10 @@ class CustomTabsConnection extends ICustomTabsService.Stub {
         if (callback == null) return false;
         try {
             callback.onNavigationEvent(navigationEvent, null);
-        } catch (RemoteException e) {
-            // This should not happen, as we have registered a death recipient.
+        } catch (Exception e) {
+            // Catching all exceptions is really bad, but we need it here,
+            // because Android exposes us to client bugs by throwing a variety
+            // of exceptions. See crbug.com/517023.
             return false;
         }
         return true;
