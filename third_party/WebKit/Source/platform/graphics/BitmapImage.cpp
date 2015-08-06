@@ -41,18 +41,13 @@
 
 namespace blink {
 
-PassRefPtr<BitmapImage> BitmapImage::create(const SkBitmap& bitmap, ImageObserver* observer)
-{
-    if (bitmap.isNull()) {
-        return BitmapImage::create(observer);
-    }
-
-    return adoptRef(new BitmapImage(bitmap, observer));
-}
-
 PassRefPtr<BitmapImage> BitmapImage::createWithOrientationForTesting(const SkBitmap& bitmap, ImageOrientation orientation)
 {
-    RefPtr<BitmapImage> result = create(bitmap);
+    if (bitmap.isNull()) {
+        return BitmapImage::create();
+    }
+
+    RefPtr<BitmapImage> result = adoptRef(new BitmapImage(bitmap));
     result->m_frames[0].m_orientation = orientation;
     if (orientation.usesWidthAsHeight())
         result->m_sizeRespectingOrientation = IntSize(result->m_size.height(), result->m_size.width());

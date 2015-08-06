@@ -45,7 +45,6 @@
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/Canvas2DImageBufferSurface.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/ImageBuffer.h"
@@ -90,10 +89,9 @@ bool canCreateImageBuffer(const IntSize& size)
 PassRefPtr<Image> createTransparentImage(const IntSize& size)
 {
     ASSERT(canCreateImageBuffer(size));
-    SkBitmap bitmap;
-    bitmap.allocN32Pixels(size.width(), size.height());
-    bitmap.eraseColor(SK_ColorTRANSPARENT);
-    return BitmapImage::create(bitmap);
+    RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(size.width(), size.height()));
+    surface->getCanvas()->clear(SK_ColorTRANSPARENT);
+    return StaticBitmapImage::create(adoptRef(surface->newImageSnapshot()));
 }
 
 } // namespace

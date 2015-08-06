@@ -49,8 +49,6 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
     friend class GradientGeneratedImage;
     friend class GraphicsContext;
 public:
-    static PassRefPtr<BitmapImage> create(const SkBitmap&, ImageObserver* = 0);
-
     static PassRefPtr<BitmapImage> create(ImageObserver* observer = 0)
     {
         return adoptRef(new BitmapImage(observer));

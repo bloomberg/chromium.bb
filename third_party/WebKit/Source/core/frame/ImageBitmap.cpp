@@ -8,7 +8,6 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
-#include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StaticBitmapImage.h"
@@ -26,19 +25,20 @@ static inline IntRect normalizeRect(const IntRect& rect)
         std::max(rect.height(), -rect.height()));
 }
 
-static inline PassRefPtr<Image> cropImage(Image* image, const IntRect& cropRect)
+static inline PassRefPtr<Image> cropImage(PassRefPtr<Image> image, const IntRect& cropRect)
 {
-    IntRect intersectRect = intersection(IntRect(IntPoint(), image->size()), cropRect);
-    if (!intersectRect.width() || !intersectRect.height())
+    ASSERT(image);
+
+    const SkIRect srcRect = intersection(image->rect(), cropRect);
+    if (srcRect.isEmpty())
         return nullptr;
 
-    SkBitmap bitmap;
-    if (!image->deprecatedBitmapForCurrentFrame(&bitmap))
+    RefPtr<SkImage> skImage = image->imageForCurrentFrame();
+    if (!skImage)
         return nullptr;
 
-    SkBitmap cropped;
-    bitmap.extractSubset(&cropped, intersectRect);
-    return BitmapImage::create(cropped);
+    return StaticBitmapImage::create(adoptRef(
+        skImage->newImage(srcRect.width(), srcRect.height(), &srcRect)));
 }
 
 ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect)
@@ -90,7 +90,7 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect)
     IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), canvas->size()));
     m_bitmapRect = IntRect(IntPoint(std::max(0, -cropRect.x()), std::max(0, -cropRect.y())), srcRect.size());
     ASSERT(canvas->isPaintable());
-    m_bitmap = cropImage(canvas->copiedImage(BackBuffer).get(), cropRect);
+    m_bitmap = cropImage(canvas->copiedImage(BackBuffer), cropRect);
 }
 
 ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
@@ -125,7 +125,7 @@ ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect)
         m_bitmapOffset = srcRect.location();
     } else if (bitmap->bitmapImage()) {
         IntRect adjustedCropRect(IntPoint(cropRect.x() -oldBitmapRect.x(), cropRect.y() - oldBitmapRect.y()), cropRect.size());
-        m_bitmap = cropImage(bitmap->bitmapImage().get(), adjustedCropRect);
+        m_bitmap = cropImage(bitmap->bitmapImage(), adjustedCropRect);
     }
 }
 
@@ -133,7 +133,7 @@ ImageBitmap::ImageBitmap(Image* image, const IntRect& cropRect)
     : m_imageElement(nullptr)
     , m_cropRect(cropRect)
 {
-    IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), image->size()));
+    IntRect srcRect = intersection(cropRect, image->rect());
     m_bitmap = cropImage(image, cropRect);
     m_bitmapRect = IntRect(IntPoint(std::max(0, -cropRect.x()), std::max(0, -cropRect.y())),  srcRect.size());
 }
