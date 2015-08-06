@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/strings/string16.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
@@ -29,6 +30,7 @@ class TestWebState : public WebState {
   const std::string& GetContentsMimeType() const override;
   const std::string& GetContentLanguageHeader() const override;
   bool ContentIsHTML() const override;
+  const base::string16& GetTitle() const override;
   bool IsLoading() const override;
   const GURL& GetVisibleURL() const override;
   const GURL& GetLastCommittedURL() const override;
@@ -58,6 +60,7 @@ class TestWebState : public WebState {
 
  private:
   GURL url_;
+  base::string16 title_;
   URLVerificationTrustLevel trust_level_;
   bool content_is_html_;
   std::string mime_type_;

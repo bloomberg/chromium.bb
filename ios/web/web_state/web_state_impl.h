@@ -160,8 +160,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // specific scheme.
   virtual void LoadWebUIHtml(const base::string16& html, const GURL& url);
 
-  const base::string16& GetTitle() const;
-
   // Gets the HTTP response headers associated with the current page.
   // NOTE: For a WKWebView-based WebState, these headers are generated via
   // net::CreateHeadersFromNSHTTPURLResponse(); see comments in
@@ -224,6 +222,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   const std::string& GetContentLanguageHeader() const override;
   const std::string& GetContentsMimeType() const override;
   bool ContentIsHTML() const override;
+  const base::string16& GetTitle() const override;
   bool IsLoading() const override;
   const GURL& GetVisibleURL() const override;
   const GURL& GetLastCommittedURL() const override;
