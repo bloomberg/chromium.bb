@@ -922,7 +922,8 @@ void RenderWidgetHostImpl::ForwardWheelEvent(
 void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
       const blink::WebMouseWheelEvent& wheel_event,
       const ui::LatencyInfo& ui_latency) {
-  TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardWheelEvent");
+  TRACE_EVENT2("input", "RenderWidgetHostImpl::ForwardWheelEvent",
+               "dx", wheel_event.deltaX, "dy", wheel_event.deltaY);
 
   if (IgnoreInputEvents())
     return;

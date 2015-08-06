@@ -136,6 +136,12 @@ void InputRouterImpl::SendWheelEvent(
       coalesced_mouse_wheel_events_.push_back(wheel_event);
     } else {
       coalesced_mouse_wheel_events_.back().CoalesceWith(wheel_event);
+      TRACE_EVENT_INSTANT2("input", "InputRouterImpl::CoalescedWheelEvent",
+                           TRACE_EVENT_SCOPE_THREAD,
+                           "total_dx",
+                           coalesced_mouse_wheel_events_.back().event.deltaX,
+                           "total_dy",
+                           coalesced_mouse_wheel_events_.back().event.deltaY);
     }
     return;
   }
