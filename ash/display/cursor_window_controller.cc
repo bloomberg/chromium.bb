@@ -4,6 +4,7 @@
 
 #include "ash/display/cursor_window_controller.h"
 
+#include "ash/display/display_manager.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
@@ -137,6 +138,13 @@ void CursorWindowController::UpdateContainer() {
 void CursorWindowController::SetDisplay(const gfx::Display& display) {
   if (!is_cursor_compositing_enabled_)
     return;
+
+  // TODO(oshima): Do not updatethe composition cursor when crossing
+  // display in unified desktop mode for now. crbug.com/517222.
+  if (Shell::GetInstance()->display_manager()->IsInUnifiedMode() &&
+      display.id() != DisplayManager::kUnifiedDisplayId) {
+    return;
+  }
 
   display_ = display;
   aura::Window* root_window = Shell::GetInstance()
