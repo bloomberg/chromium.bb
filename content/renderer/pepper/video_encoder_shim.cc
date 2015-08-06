@@ -77,6 +77,9 @@ void GetVpxCodecParameters(media::VideoCodecProfile codec,
       break;
     default:
       *vpx_codec = nullptr;
+      *min_quantizer = 0;
+      *max_quantizer = 0;
+      *cpu_used = 0;
       NOTREACHED();
   }
 }
