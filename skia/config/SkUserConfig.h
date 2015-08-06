@@ -222,6 +222,14 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_IGNORE_GPU_DITHER
 #endif
 
+#ifndef    SK_SUPPORT_LEGACY_SIMPLE_DRAWIMAGERECT
+#   define SK_SUPPORT_LEGACY_SIMPLE_DRAWIMAGERECT
+#endif
+
+#ifndef    SK_SUPPORT_LEGACY_SRCPTR_DRAWIMAGERECT
+#   define SK_SUPPORT_LEGACY_SRCPTR_DRAWIMAGERECT
+#endif
+
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
