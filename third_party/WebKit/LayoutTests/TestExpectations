@@ -92,6 +92,8 @@ crbug.com/453092 [ Linux32 ] editing/inserting/edited-whitespace-1.html [ ImageO
 
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/playing-the-media-resource/pause-remove-from-document-networkState.html [ Timeout ]
+# This only times out on the debug bot.
+crbug.com/474440 [ Mac Debug ] plugins/destroy-reentry.html [ Timeout ]
 
 crbug.com/248938 virtual/threaded/animations/change-keyframes-name.html [ Failure Pass ]
 crbug.com/248938 virtual/threaded/animations/change-one-anim.html [ Failure Pass ]
@@ -121,10 +123,10 @@ crbug.com/446385 [ Win7 Debug ] http/tests/xmlhttprequest/xmlhttprequest-json-re
 crbug.com/441705 fast/media/media-svg-crash.html [ Pass Failure ]
 crbug.com/392640 [ Debug ] svg/as-object/sizing/svg-in-object-placeholder-height-percentage.html [ Pass Failure Timeout ]
 crbug.com/392640 [ Release ] svg/as-object/sizing/svg-in-object-placeholder-height-percentage.html [ Pass Timeout ]
+crbug.com/392640 svg/as-object/sizing/svg-in-object-placeholder-height-fixed.html [ Pass Failure Timeout ]
 crbug.com/248938 virtual/threaded/transitions/interrupt-transform-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/dynamic-stylesheet-loading.html [ Pass Failure Timeout ]
 crbug.com/248938 virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure ]
-crbug.com/392640 svg/as-object/sizing/svg-in-object-placeholder-height-fixed.html [ Pass Failure Timeout ]
 crbug.com/248938 [ Win ] virtual/threaded/animations/change-keyframes.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
 crbug.com/469683 virtual/threaded/animations/responsive-neutral-keyframes.html [ Pass Failure ]
@@ -143,6 +145,12 @@ crbug.com/498539 inspector/tracing/timeline-timer.html [ Pass Failure ]
 crbug.com/513143 virtual/threaded/fast/scroll-behavior/subframe-interrupted-scroll.html [ Failure Pass ]
 crbug.com/513143 virtual/threaded_animation_timelines/fast/scroll-behavior/subframe-interrupted-scroll.html [ Failure Pass ]
 crbug.com/510337 inspector/sources/debugger/live-edit.html [ Pass Failure Timeout ]
+crbug.com/357437 web-animations-api/change-in-animation-frame.html [ Failure Pass ]
+crbug.com/248938 virtual/threaded/animations/display-none-terminates-animation.html  [ Pass Failure ]
+crbug.com/421283 [ Linux Win ] fast/html/marquee-scrollamount.html [ Pass Failure ]
+crbug.com/248938 [ Win Debug ] virtual/threaded/animations/delay-start-event.html [ Pass Failure ]
+crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-transform.html [ Pass Failure ]
+crbug.com/248938 [ Linux Win ] virtual/threaded/animations/cascade-important.html [ Pass Timeout ]
 
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
