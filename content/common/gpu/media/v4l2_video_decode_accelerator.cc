@@ -1791,6 +1791,24 @@ bool V4L2VideoDecodeAccelerator::SetupFormats() {
   else
     input_size = kInputBufferMaxSizeFor1080p;
 
+  struct v4l2_fmtdesc fmtdesc;
+  memset(&fmtdesc, 0, sizeof(fmtdesc));
+  fmtdesc.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+  bool is_format_supported = false;
+  while (device_->Ioctl(VIDIOC_ENUM_FMT, &fmtdesc) == 0) {
+    if (fmtdesc.pixelformat == input_format_fourcc) {
+      is_format_supported = true;
+      break;
+    }
+    ++fmtdesc.index;
+  }
+
+  if (!is_format_supported) {
+    DVLOG(1) << "Input fourcc " << input_format_fourcc
+             << " not supported by device.";
+    return false;
+  }
+
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
@@ -1802,7 +1820,6 @@ bool V4L2VideoDecodeAccelerator::SetupFormats() {
   // We have to set up the format for output, because the driver may not allow
   // changing it once we start streaming; whether it can support our chosen
   // output format or not may depend on the input format.
-  struct v4l2_fmtdesc fmtdesc;
   memset(&fmtdesc, 0, sizeof(fmtdesc));
   fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   while (device_->Ioctl(VIDIOC_ENUM_FMT, &fmtdesc) == 0) {
