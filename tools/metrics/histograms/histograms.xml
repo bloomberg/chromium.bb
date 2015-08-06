@@ -45348,7 +45348,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Tab.Discarding" enum="TabBackgroundLoadStatus">
+<histogram name="Tab.Discarding" enum="TabDiscardingEvents">
   <owner>georgesak@chromium.org</owner>
   <summary>
     Metric to track counts of actions related to tab discarding. Namely, we get
