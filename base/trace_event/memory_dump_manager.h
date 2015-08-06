@@ -60,18 +60,15 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
 
   // Requests a memory dump. The dump might happen or not depending on the
   // filters and categories specified when enabling tracing.
-  // The |dump_args| is used to specify the dump's level of detail.
   // The optional |callback| is executed asynchronously, on an arbitrary thread,
   // to notify about the completion of the global dump (i.e. after all the
   // processes have dumped) and its success (true iff all the dumps were
   // successful).
   void RequestGlobalDump(MemoryDumpType dump_type,
-                         const MemoryDumpArgs& dump_args,
                          const MemoryDumpCallback& callback);
 
   // Same as above (still asynchronous), but without callback.
-  void RequestGlobalDump(MemoryDumpType dump_type,
-                         const MemoryDumpArgs& dump_args);
+  void RequestGlobalDump(MemoryDumpType dump_type);
 
   // TraceLog::EnabledStateObserver implementation.
   void OnTraceLogEnabled() override;

@@ -19,6 +19,8 @@ const char* MemoryDumpTypeToString(
       return "TASK_END";
     case MemoryDumpType::PERIODIC_INTERVAL:
       return "PERIODIC_INTERVAL";
+    case MemoryDumpType::PERIODIC_INTERVAL_WITH_MMAPS:
+      return "PERIODIC_INTERVAL_WITH_MMAPS";
     case MemoryDumpType::EXPLICITLY_TRIGGERED:
       return "EXPLICITLY_TRIGGERED";
   }
