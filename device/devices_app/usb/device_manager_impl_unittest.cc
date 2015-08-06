@@ -179,9 +179,6 @@ TEST_F(USBDeviceManagerImplTest, OpenDevice) {
   ON_CALL(*mock_device.get(), Open(_))
       .WillByDefault(Invoke(&open_callback, &MockOpenCallback::Open));
 
-  // Should be called on the mock as a result of GetDeviceInfo() below.
-  EXPECT_CALL(*mock_device.get(), GetActiveConfiguration());
-
   {
     base::RunLoop loop;
     DevicePtr device;
