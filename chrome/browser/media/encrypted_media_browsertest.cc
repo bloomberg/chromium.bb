@@ -39,8 +39,6 @@ const char kClearKeyCdmPluginMimeType[] = "application/x-ppapi-clearkey-cdm";
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
 const char kPrefixedClearKeyKeySystem[] = "webkit-org.w3.clearkey";
 const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
-const char kExternalClearKeyDecryptOnlyKeySystem[] =
-    "org.chromium.externalclearkey.decryptonly";
 const char kExternalClearKeyFileIOTestKeySystem[] =
     "org.chromium.externalclearkey.fileiotest";
 const char kExternalClearKeyInitializeFailKeySystem[] =
@@ -561,6 +559,9 @@ INSTANTIATE_TEST_CASE_P(SRC_ExternalClearKey,
                                 Values(SRC),
                                 Values(UNPREFIXED)));
 #if !defined(OS_WIN)
+const char kExternalClearKeyDecryptOnlyKeySystem[] =
+    "org.chromium.externalclearkey.decryptonly";
+
 // Tests flaky on Win 7 dbg. http://crbug.com/517018
 INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKey_Prefixed,
                         EncryptedMediaTest,
