@@ -177,7 +177,7 @@ DEFINE_TRACE(FrameView)
 #if ENABLE(OILPAN)
     visitor->trace(m_frame);
     visitor->trace(m_nodeToDraw);
-    visitor->trace(m_maintainScrollPositionAnchor);
+    visitor->trace(m_scrollAnchor);
     visitor->trace(m_scrollableAreas);
     visitor->trace(m_animatingScrollableAreas);
     visitor->trace(m_autoSizeInfo);
@@ -215,7 +215,7 @@ void FrameView::reset()
     m_visuallyNonEmptyPixelCount = 0;
     m_isVisuallyNonEmpty = false;
     m_firstVisuallyNonEmptyLayoutCallbackPending = true;
-    m_maintainScrollPositionAnchor = nullptr;
+    clearScrollAnchor();
     m_viewportConstrainedObjects.clear();
     m_layoutSubtreeRootList.clear();
 }
@@ -1458,9 +1458,8 @@ bool FrameView::processUrlFragmentHelper(const String& name, UrlFragmentBehavior
 
 void FrameView::maintainScrollPositionAtAnchor(Node* anchorNode)
 {
-    m_maintainScrollPositionAnchor = anchorNode;
-    if (!m_maintainScrollPositionAnchor)
-        return;
+    ASSERT(anchorNode);
+    m_scrollAnchor = anchorNode;
 
     // We need to update the layout before scrolling, otherwise we could
     // really mess things up if an anchor scroll comes at a bad moment.
@@ -1473,10 +1472,13 @@ void FrameView::maintainScrollPositionAtAnchor(Node* anchorNode)
         scrollToAnchor();
 }
 
+void FrameView::clearScrollAnchor()
+{
+    m_scrollAnchor = nullptr;
+}
+
 void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollType scrollType, ScrollBehavior scrollBehavior)
 {
-    m_maintainScrollPositionAnchor = nullptr;
-
     DoublePoint newScrollPosition = clampScrollPosition(scrollPoint);
     if (newScrollPosition == scrollPositionDouble())
         return;
@@ -1703,7 +1705,7 @@ void FrameView::handleLoadCompleted()
     // reduce the size of the frame.
     if (m_autoSizeInfo)
         m_autoSizeInfo->autoSizeIfNeeded();
-    maintainScrollPositionAtAnchor(0);
+    clearScrollAnchor();
 }
 
 void FrameView::clearLayoutSubtreeRoot(const LayoutObject& root)
@@ -1852,7 +1854,7 @@ void FrameView::updateBackgroundRecursively(const Color& backgroundColor, bool t
 
 void FrameView::scrollToAnchor()
 {
-    RefPtrWillBeRawPtr<Node> anchorNode = m_maintainScrollPositionAnchor;
+    RefPtrWillBeRawPtr<Node> anchorNode = m_scrollAnchor;
     if (!anchorNode)
         return;
 
@@ -1883,8 +1885,8 @@ void FrameView::scrollToAnchor()
     if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache())
         cache->handleScrolledToAnchor(anchorNode.get());
 
-    // scrollRectToVisible can call into setScrollPosition(), which resets m_maintainScrollPositionAnchor.
-    m_maintainScrollPositionAnchor = anchorNode;
+    // scrollRectToVisible can call into setScrollPosition(), which resets m_scrollAnchor.
+    m_scrollAnchor = anchorNode;
 }
 
 bool FrameView::updateWidgets()
@@ -2143,6 +2145,7 @@ void FrameView::scrollTo(const DoublePoint& newPosition)
     if (!scrollbarsSuppressed())
         m_pendingScrollDelta += scrollDelta;
 
+    clearScrollAnchor();
     updateLayersAndCompositingAfterScrollIfNeeded();
     scrollPositionChanged();
     frame().loader().client()->didChangeScrollOffset();
@@ -2419,7 +2422,6 @@ bool FrameView::wasScrolledByUser() const
 
 void FrameView::setWasScrolledByUser(bool wasScrolledByUser)
 {
-    m_maintainScrollPositionAnchor = nullptr;
     m_wasScrolledByUser = wasScrolledByUser;
 }
 
