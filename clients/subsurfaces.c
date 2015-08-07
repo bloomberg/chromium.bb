@@ -498,8 +498,7 @@ triangle_create(struct window *window, struct egl_state *egl)
 {
 	struct triangle *tri;
 
-	tri = xmalloc(sizeof *tri);
-	memset(tri, 0, sizeof *tri);
+	tri = xzalloc(sizeof *tri);
 
 	tri->egl = egl;
 	tri->widget = window_add_subsurface(window, tri,
@@ -720,8 +719,7 @@ demoapp_create(struct display *display)
 {
 	struct demoapp *app;
 
-	app = xmalloc(sizeof *app);
-	memset(app, 0, sizeof *app);
+	app = xzalloc(sizeof *app);
 
 	app->egl = egl_state_create(display_get_display(display));
 

@@ -687,8 +687,7 @@ text_entry_create(struct editor *editor, const char *text)
 {
 	struct text_entry *entry;
 
-	entry = xmalloc(sizeof *entry);
-	memset(entry, 0, sizeof *entry);
+	entry = xzalloc(sizeof *entry);
 
 	entry->widget = widget_add_widget(editor->widget, entry);
 	entry->window = editor->window;

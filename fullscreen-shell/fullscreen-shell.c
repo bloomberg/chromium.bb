@@ -142,10 +142,9 @@ seat_created(struct wl_listener *l, void *data)
 	struct weston_seat *seat = data;
 	struct pointer_focus_listener *listener;
 
-	listener = malloc(sizeof *listener);
+	listener = zalloc(sizeof *listener);
 	if (!listener)
 		return;
-	memset(listener, 0, sizeof *listener);
 
 	listener->shell = container_of(l, struct fullscreen_shell,
 				       seat_created_listener);
@@ -251,10 +250,9 @@ fs_output_create(struct fullscreen_shell *shell, struct weston_output *output)
 {
 	struct fs_output *fsout;
 
-	fsout = malloc(sizeof *fsout);
+	fsout = zalloc(sizeof *fsout);
 	if (!fsout)
 		return NULL;
-	memset(fsout, 0, sizeof *fsout);
 
 	fsout->shell = shell;
 	wl_list_insert(&shell->output_list, &fsout->link);
@@ -805,11 +803,10 @@ module_init(struct weston_compositor *compositor,
 	struct weston_seat *seat;
 	struct weston_output *output;
 
-	shell = malloc(sizeof *shell);
+	shell = zalloc(sizeof *shell);
 	if (shell == NULL)
 		return -1;
 
-	memset(shell, 0, sizeof *shell);
 	shell->compositor = compositor;
 
 	shell->client_destroyed.notify = client_destroyed;
