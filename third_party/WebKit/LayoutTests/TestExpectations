@@ -91,6 +91,7 @@ crbug.com/493815 inspector/elements/iframe-load-event.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-04.html [ Pass Failure ]
 crbug.com/352405 virtual/threaded/animations/transition-and-animation-1.html [ Pass Timeout ]
+crbug.com/463023 inspector/sources/debugger-breakpoints/debugger-reload-breakpoints-with-source-maps.html [ Failure Pass ]
 
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
@@ -103,9 +104,6 @@ crbug.com/418091 [ SnowLeopard Debug ] inspector/elements/bidi-dom-tree.html [ P
 crbug.com/449242 [ SnowLeopard Debug ] fast/css/word-spacing-characters-complex-text.html [ Pass Crash ]
 crbug.com/419696 [ Mac Debug ] fast/text/font-linux-normalize.html [ Crash Pass ]
 
-# This times out on the ASAN bots, but passes on the other linux bots.
-# No way to specify that other than marking it flaky.
-crbug.com/248938 [ Linux ] virtual/threaded/animations/transition-and-animation-2.html [ Pass Timeout ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/transition-and-animation-2.html [ Timeout ]
 
 crbug.com/487281 [ Mac ] fast/forms/menulist-narrow-width.html [ ImageOnlyFailure ]
@@ -526,8 +524,6 @@ crbug.com/517449 [ Android ] css3/images/optimize-contrast-image.html [ ImageOnl
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
-crbug.com/469190 [ XP ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ ImageOnlyFailure ]
-
 crbug.com/505670 [ Debug ] css3/filters/huge-region.html [ Skip ]
 
 crbug.com/509581 [ Win ] css3/filters/filter-repaint-composited-fallback-crash.html [ ImageOnlyFailure ]
@@ -693,6 +689,9 @@ crbug.com/463798 [ Mac ] svg/as-image/svg-invalid-image-1.html [ Failure ]
 
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon-evenodd.html [ ImageOnlyFailure ]
 crbug.com/463358 [ Mac Debug ] svg/transforms/animated-path-inside-transformed-html.xhtml [ ImageOnlyFailure ]
+
+# Rebaseline didn't fix this. It's flaking between two different failures due to rounding error.
+crbug.com/463358 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Failure ]
 
 crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
 
