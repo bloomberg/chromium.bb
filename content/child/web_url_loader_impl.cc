@@ -549,7 +549,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
   new_request.setUseStreamOnResponse(request_.useStreamOnResponse());
   new_request.setRequestContext(request_.requestContext());
   new_request.setFrameType(request_.frameType());
-  new_request.setSkipServiceWorker(request_.skipServiceWorker());
+  new_request.setSkipServiceWorker(!info.was_fetched_via_service_worker);
   new_request.setShouldResetAppCache(request_.shouldResetAppCache());
   new_request.setFetchRequestMode(request_.fetchRequestMode());
   new_request.setFetchCredentialsMode(request_.fetchCredentialsMode());

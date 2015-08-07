@@ -79,6 +79,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   GURL stripped_url_;
   base::TimeTicks worker_start_time_;
   base::TimeTicks worker_ready_time_;
+  bool skip_service_worker_;
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerControlleeRequestHandler);

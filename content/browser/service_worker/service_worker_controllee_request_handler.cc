@@ -43,8 +43,8 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
       request_context_type_(request_context_type),
       frame_type_(frame_type),
       body_(body),
-      weak_factory_(this) {
-}
+      skip_service_worker_(false),
+      weak_factory_(this) {}
 
 ServiceWorkerControlleeRequestHandler::
     ~ServiceWorkerControlleeRequestHandler() {
@@ -86,7 +86,10 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
 
   // We've come here by restart, we already have original request and it
   // tells we should fallback to network. (Case B-c)
-  if (job_.get() && job_->ShouldFallbackToNetwork()) {
+  // Once the request was fallbacked to the network, skip-service-worker flag
+  // must be set and the request shoud not go to the service worker.
+  if ((job_.get() && job_->ShouldFallbackToNetwork()) || skip_service_worker_) {
+    skip_service_worker_ = true;
     job_ = NULL;
     return NULL;
   }
