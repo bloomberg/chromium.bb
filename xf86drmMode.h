@@ -36,7 +36,7 @@
 #ifndef _XF86DRMMODE_H_
 #define _XF86DRMMODE_H_
 
-#if defined(__cplusplus) || defined(c_plusplus)
+#if defined(__cplusplus)
 extern "C" {
 #endif
 
@@ -508,7 +508,7 @@ extern int drmModeCreatePropertyBlob(int fd, const void *data, size_t size,
 extern int drmModeDestroyPropertyBlob(int fd, uint32_t id);
 
 
-#if defined(__cplusplus) || defined(c_plusplus)
+#if defined(__cplusplus)
 }
 #endif
 

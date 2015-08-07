@@ -39,7 +39,7 @@
 #include <stdint.h>
 #include <drm.h>
 
-#if defined(__cplusplus) || defined(c_plusplus)
+#if defined(__cplusplus)
 extern "C" {
 #endif
 
@@ -759,7 +759,7 @@ extern int drmPrimeFDToHandle(int fd, int prime_fd, uint32_t *handle);
 extern char *drmGetPrimaryDeviceNameFromFd(int fd);
 extern char *drmGetRenderDeviceNameFromFd(int fd);
 
-#if defined(__cplusplus) || defined(c_plusplus)
+#if defined(__cplusplus)
 }
 #endif
 

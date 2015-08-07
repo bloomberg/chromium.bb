@@ -29,7 +29,7 @@
 #ifndef _LIBKMS_H_
 #define _LIBKMS_H_
 
-#if defined(__cplusplus) || defined(c_plusplus)
+#if defined(__cplusplus)
 extern "C" {
 #endif
 
@@ -75,7 +75,7 @@ int kms_bo_map(struct kms_bo *bo, void **out);
 int kms_bo_unmap(struct kms_bo *bo);
 int kms_bo_destroy(struct kms_bo **bo);
 
-#if defined(__cplusplus) || defined(c_plusplus)
+#if defined(__cplusplus)
 };
 #endif
 
