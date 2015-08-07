@@ -11,7 +11,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/ui/browser_otr_state.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
@@ -73,8 +72,9 @@ OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
 
 }  // namespace
 
-OmniboxMetricsProvider::OmniboxMetricsProvider() {
-}
+OmniboxMetricsProvider::OmniboxMetricsProvider(
+    const base::Callback<bool(void)>& is_off_the_record_callback)
+    : is_off_the_record_callback_(is_off_the_record_callback) {}
 
 OmniboxMetricsProvider::~OmniboxMetricsProvider() {
 }
@@ -96,10 +96,9 @@ void OmniboxMetricsProvider::ProvideGeneralMetrics(
 }
 
 void OmniboxMetricsProvider::OnURLOpenedFromOmnibox(OmniboxLog* log) {
-  // We simply don't log events to UMA if there is a single incognito
-  // session visible. In the future, it may be worth revisiting this to
-  // still log events from non-incognito sessions.
-  if (!chrome::IsOffTheRecordSessionActive())
+  // Do not log events to UMA if the embedder reports that the user is in an
+  // off-the-record context.
+  if (!is_off_the_record_callback_.Run())
     RecordOmniboxOpenedURL(*log);
 }
 
