@@ -19,6 +19,7 @@ class MemoryMobile(perf_benchmark.PerfBenchmark):
     return 'memory.mobile_memory'
 
 
+@benchmark.Disabled('yosemite')  # crbug.com/517806
 class MemoryTop7Stress(perf_benchmark.PerfBenchmark):
   """Use (recorded) real world web sites and measure memory consumption."""
   test = memory.Memory
