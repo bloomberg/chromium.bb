@@ -445,9 +445,6 @@ void BrowserActionsContainer::Layout() {
           platform_settings().right_padding +
           platform_settings().item_spacing) /
           ToolbarActionsBar::IconWidth(true);
-  // The maximum length for one row of icons.
-  size_t row_length = in_overflow_mode() ?
-      platform_settings().icons_per_overflow_menu_row : end_index;
 
   // Now draw the icons for the actions in the available space. Once all the
   // variables are in place, the layout works equally well for the main and
@@ -457,14 +454,7 @@ void BrowserActionsContainer::Layout() {
     if (i < start_index || i >= end_index) {
       view->SetVisible(false);
     } else {
-      size_t relative_index = i - start_index;
-      size_t index_in_row = relative_index % row_length;
-      size_t row_index = relative_index / row_length;
-      view->SetBounds(platform_settings().left_padding +
-                          index_in_row * ToolbarActionsBar::IconWidth(true),
-                      row_index * ToolbarActionsBar::IconHeight(),
-                      ToolbarActionsBar::IconWidth(false),
-                      ToolbarActionsBar::IconHeight());
+      view->SetBoundsRect(toolbar_actions_bar_->GetFrameForIndex(i));
       view->SetVisible(true);
     }
   }

@@ -105,6 +105,12 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   // Returns the number of icons that should be displayed.
   size_t GetIconCount() const;
 
+  // Returns the frame (bounds) that the specified index should have, taking
+  // into account if this is the main or overflow bar. If this is the overflow
+  // bar and the index should not be displayed (i.e., it is shown on the main
+  // bar), returns an empty rect.
+  gfx::Rect GetFrameForIndex(size_t index) const;
+
   // Returns the actions in the proper order; this may differ from the
   // underlying order in the case of actions being popped out to show a popup.
   std::vector<ToolbarActionViewController*> GetActions() const;

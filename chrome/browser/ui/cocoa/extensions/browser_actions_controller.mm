@@ -861,36 +861,19 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 }
 
 - (NSRect)frameForIndex:(NSUInteger)index {
-  const ToolbarActionsBar::PlatformSettings& platformSettings =
-      toolbarActionsBar_->platform_settings();
-  int startIndex = isOverflow_ ?
-      [buttons_ count] - toolbarActionsBar_->GetIconCount() : 0;
-  int relativeIndex = index - startIndex;
-
+  gfx::Rect frameRect = toolbarActionsBar_->GetFrameForIndex(index);
   int iconWidth = ToolbarActionsBar::IconWidth(false);
-  int iconHeight = ToolbarActionsBar::IconHeight();
-
-  // If the index is for an action that is before range we show (i.e., is for
-  // a button that's on the main bar, and this is the overflow), the frame is
-  // set outside the bounds of the view.
-  if (relativeIndex < 0)
-    return NSMakeRect(-iconWidth - 1, 0, iconWidth, iconHeight);
-
-  int icons_per_overflow_row = platformSettings.icons_per_overflow_menu_row;
-  NSUInteger rowIndex = isOverflow_ ?
-      relativeIndex / icons_per_overflow_row : 0;
-  NSUInteger indexInRow = isOverflow_ ?
-      relativeIndex % icons_per_overflow_row : relativeIndex;
-
-  CGFloat xOffset = platformSettings.left_padding +
-      (indexInRow * ToolbarActionsBar::IconWidth(true));
-  CGFloat yOffset = NSHeight([containerView_ frame]) -
-       (ToolbarActionsBar::IconHeight() * (rowIndex + 1));
-
-  return NSMakeRect(xOffset,
-                    yOffset,
-                    ToolbarActionsBar::IconWidth(false),
-                    ToolbarActionsBar::IconHeight());
+  // The toolbar actions bar will return an empty rect if the index is for an
+  // action that is before range we show (i.e., is for a button that's on the
+  // main bar, and this is the overflow). Set the frame to be outside the bounds
+  // of the view.
+  NSRect frame = frameRect.IsEmpty() ?
+      NSMakeRect(-iconWidth - 1, 0, iconWidth,
+                 ToolbarActionsBar::IconHeight()) :
+      NSRectFromCGRect(frameRect.ToCGRect());
+  // We need to flip the y coordinate for Cocoa's view system.
+  frame.origin.y = NSHeight([containerView_ frame]) - NSMaxY(frame);
+  return frame;
 }
 
 - (NSPoint)popupPointForView:(NSView*)view
