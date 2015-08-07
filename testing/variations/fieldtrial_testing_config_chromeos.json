@@ -40,5 +40,10 @@
         {
             "group_name": "Disabled"
         }
+    ],
+    "AutofillFieldMetadata": [
+        {
+            "group_name": "Enabled"
+        }
     ]
 }
