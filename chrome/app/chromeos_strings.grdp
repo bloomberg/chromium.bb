@@ -6053,26 +6053,11 @@ All users must sign out to continue.
   <message name="IDS_ENTERPRISE_ENROLLMENT_DEVICE_INFORMATION" desc="The subtitle on the device attribute prompt screen.">
     Device information
   </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_DESCRIPTION" desc="Short description of enterprise enrollment.">
-    Sign in with the username given to you by your organization to enroll your device for enterprise management.
-  </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_RE_ENROLLMENT_TEXT" desc="Paragraph explaining previous association of the device with a domain.">
-    This device has been marked for enterprise management by <ph name="MANAGEMENT_DOMAIN">$1<ex>example.com</ex></ph>.
-  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_RETRY" desc="Label for the retry button on the error step in the enterprise enrollment dialog.">
     Try again
   </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_CANCEL" desc="Label for the cancel button on the enterprise enrollment dialog.">
-    Cancel
-  </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_BACK" desc="Label for the back button on the enterprise enrollment dialog.">
-    Back
-  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_DONE" desc="Label for the done button on the success screen in the enterprise enrollment dialog.">
     Done
-  </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_CONTINUE" desc="Label for the continue button on the device attribute prompt screen in the enterprise enrollment dialog.">
-    Continue
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_SKIP" desc="Label for the skip button on the device attribute prompt screen in the enterprise enrollment dialog.">
     Skip
@@ -6080,20 +6065,11 @@ All users must sign out to continue.
   <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS" desc="Success message to be shown once enterprise enrollment completes.">
     Your device has successfully been enrolled for enterprise management.
   </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTES" desc="Device attribute message to be shown when editing the name and location field for a device.">
-    <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Your account is enabled to provide an Asset ID and Location for this device (optional).<ph name="END_BOLD">&lt;/strong&gt;</ph> <ph name="BEGIN_ITALIC">&lt;i&gt;</ph>You may provide a device identifier and location in the fields below. These details will be displayed for this device on the chrome:policy page in your management console.<ph name="END_ITALIC">&lt;/i&gt;</ph>
-  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ASSET_ID_LABEL" desc="Label for asset id text box on the device naming screen in the enterprise enrollment dialog.">
     Asset Identifier
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_LOCATION_LABEL" desc="Label for location tex box on the device naming screen in the enterprise enrollment dialog.">
     Device Location
-  </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_WORKING" desc="Status message to show while enterprise enrollment is underway.">
-    Enrolling the device. Please wait...
-  </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_LINK" desc="Text on the link to the enterprise enrollment help article.">
-    Learn more about Enterprise Enrollment
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_EXPLANATION" desc="Device attribute message to be shown on attribute update prompt screen.">
     Optional — enter new or update existing information to be associated with this device.

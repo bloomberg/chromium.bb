@@ -9,13 +9,11 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/screens/network_error_model.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
-#include "chrome/browser/extensions/signin/scoped_gaia_auth_extension.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "net/base/net_errors.h"
@@ -133,9 +131,6 @@ class EnrollmentScreenHandler
   NetworkErrorModel* network_error_model_;
 
   scoped_ptr<ErrorScreensHistogramHelper> histogram_helper_;
-
-  // GAIA extension loader.
-  scoped_ptr<ScopedGaiaAuthExtension> auth_extension_;
 
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;

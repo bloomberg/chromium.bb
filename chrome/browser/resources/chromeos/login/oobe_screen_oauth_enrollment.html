@@ -1,87 +1,73 @@
-<div id="oauth-enrollment" class="step hidden" hidden>
+<!-- Copyright 2015 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+
+<div id="oauth-enrollment" class="step no-logo hidden" hidden>
   <div id="oauth-enroll-step-contents">
     <div id="oauth-enroll-step-signin">
-      <div id="oauth-enroll-signin-frame-container">
-        <iframe id="oauth-enroll-signin-frame" name="oauth-enroll-signin-frame" src="about:blank" marginwidth="0"
-            marginheight="0" frameborder="0" scrolling="no"></iframe>
-      </div>
-      <div id="oauth-enroll-signin-divider"></div>
-      <div id="oauth-enroll-signin-right">
-        <div id="oauth-enroll-re-enrollment-text"></div>
-        <div i18n-content="oauthEnrollDescription"></div>
-        <div><a id="oauth-enroll-learn-more-link" class="oauth-enroll-link"
-              href="#" i18n-content="oauthEnrollExplainLink"></a></div>
-      </div>
+      <div id="oauth-enroll-auth-view-container"></div>
     </div>
-    <div id="oauth-enroll-step-working">
-      <div class="oauth-enroll-step-content">
-        <span class="oauth-enroll-step-icon">
-          <span class="spinner"></span>
-        </span>
-        <span class="oauth-enroll-step-message">
-          <span i18n-content="oauthEnrollWorking"></span>
-        </span>
-      </div>
+    <div id="oauth-enroll-step-error" role="alert">
+      <notification-card id="oauth-enroll-error-card" type="fail"
+          i18n-values="button-label:oauthEnrollRetry">
+      </notification-card>
     </div>
-    <div id="oauth-enroll-step-error">
-      <div class="oauth-enroll-step-content">
-        <span class="oauth-enroll-step-icon">
-          <img src="chrome://theme/IDR_ENROLL_FAILURE">
-        </span>
-        <span class="oauth-enroll-step-message">
-          <span id="oauth-enroll-error-message"></span>
-          <p>
-            <a id="oauth-enroll-error-retry" class="oauth-enroll-link" href="#"
-                i18n-content="oauthEnrollRetry"></a>
-          </p>
-        </span>
-      </div>
-    </div>
-    <div id="oauth-enroll-step-success">
-      <div class="oauth-enroll-step-content">
-        <span class="oauth-enroll-step-icon">
-          <img src="chrome://theme/IDR_ENROLL_SUCCESS">
-        </span>
-        <span class="oauth-enroll-step-message">
-          <span i18n-content="oauthEnrollSuccess"></span>
-        </span>
-      </div>
+    <div id="oauth-enroll-step-success" role="alert">
+      <notification-card id="oauth-enroll-success-card" type="success"
+          i18n-values="button-label:oauthEnrollDone"
+          i18n-content="oauthEnrollSuccess">
+      </notification-card>
     </div>
     <div id="oauth-enroll-step-attribute-prompt">
-      <div class="oauth-enroll-step-content">
-        <span class="oauth-enroll-step-message">
-          <span id="oauth-enroll-attribute-prompt-message">
-          </span>
-        </span>
-        <p>
-          <div class="oauth-enroll-textbox">
-            <label>
-              <span i18n-content="oauthEnrollAssetIdLabel"
-                    class="oauth_enroll-attribute-label"></span>
-              <p>
-                <input class="oauth-enroll-attribute-field"
-                       id="oauth-enroll-asset-id" maxlength="200"/>
-              </p>
-            </label>
+      <gaia-card id="oauth-enroll-attribute-prompt-card" class="fit">
+        <div class="header flex vertical layout end-justified">
+          <h1 class="welcome-message" style="text-transform:capitalize"
+              i18n-content="oauthEnrollScreenTitle"></h1>
+          <p class="enterprise-info"
+              i18n-content="oauthEnrollDeviceInformation"></p>
+        </div>
+        <div class="footer flex vertical layout justified">
+          <div class="oauth-enroll-step-message">
+            <span id="oauth-enroll-attribute-prompt-message"
+                  i18n-content="oauthEnrollAttributeExplanation"></span>
+            <a href="#" id="oauth-enroll-learn-more-link"
+               class="oauth-enroll-link"
+               i18n-content="oauthEnrollExplaneAttributeLink"></a>
+            <gaia-input-form id="oauth-enroll-attribute-input"
+                             i18n-values="button-text:oauthEnrollNextBtn">
+              <gaia-input id="oauth-enroll-asset-id" type="text"
+                  i18n-values="label:oauthEnrollAssetIdLabel">
+              </gaia-input>
+              <gaia-input id="oauth-enroll-location" type="text"
+                  i18n-values="label:oauthEnrollLocationLabel">
+              </gaia-input>
+              <gaia-button type="link" id="oauth-enroll-skip-button"
+                  i18n-content="oauthEnrollSkip">
+              </gaia-button>
+            </gaia-input-form>
           </div>
-        </p>
-        <p>
-          <div class="oauth-enroll-textbox">
-            <label>
-              <span i18n-content="oauthEnrollLocationLabel"
-                    class="oauth-enroll-attribute-label"></span>
-              <p>
-                <input class="oauth-enroll-attribute-field"
-                       id="oauth-enroll-location" maxlength="200"/>
-              </p>
-            </label>
-          </div>
-        </p>
-      </div>
+        </div>
+      </gaia-card>
+    </div>
+    <div id="oauth-enroll-step-attribute-prompt-error">
+      <notification-card id="oauth-enroll-attribute-prompt-error-card"
+          type="fail" i18n-values="button-label:oauthEnrollDone">
+      </notification-card>
     </div>
   </div>
   <div id="oauth-saml-notice-container">
     <span id="oauth-saml-notice-message"></span>
   </div>
   <div id="oauth-enrollment-controls" class="step-controls"></div>
+  <gaia-icon-button id="oauth-enroll-back-button" icon="arrow-back" hidden
+      i18n-values="aria-label:backButton">
+  </gaia-icon-button>
+  <gaia-icon-button id="oauth-enroll-cancel-button" icon="close"
+      class="oauth-enroll-button" i18n-values="aria-label:closeButton">
+  </gaia-icon-button>
+  <gaia-icon-button id="oauth-enroll-refresh-button" icon="refresh"
+      class="oauth-enroll-button" i18n-values="aria-label:closeButton">
+  </gaia-icon-button>
 </div>

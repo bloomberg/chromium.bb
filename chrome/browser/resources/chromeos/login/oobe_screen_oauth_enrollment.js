@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,9 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
   /** @const */ var STEP_ATTRIBUTE_PROMPT = 'attribute-prompt';
   /** @const */ var STEP_ERROR = 'error';
   /** @const */ var STEP_SUCCESS = 'success';
+
+  /* TODO(dzhioev): define this step on C++ side.
+  /** @const */ var STEP_ATTRIBUTE_PROMPT_ERROR = 'attribute-prompt-error';
 
   /** @const */ var HELP_TOPIC_ENROLLMENT = 4631259;
 
@@ -20,24 +23,14 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     ],
 
     /**
-     * URL to load in the sign in frame.
+     * Authenticator object that wraps GAIA webview.
      */
-    signInUrl_: null,
-
-    /**
-     * Gaia auth params for sign in frame.
-     */
-    signInParams_: {},
+    authenticator_: null,
 
     /**
      * The current step. This is the last value passed to showStep().
      */
     currentStep_: null,
-
-    /**
-     * The help topic to show when the user clicks the learn more link.
-     */
-    learnMoreHelpTopicID_: null,
 
     /**
      * We block esc, back button and cancel button until gaia is loaded to
@@ -50,38 +43,104 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       if (disabled == this.isCancelDisabled)
         return;
       this.isCancelDisabled_ = disabled;
-
-      $('oauth-enroll-back-button').disabled = disabled;
-      $('oauth-enroll-back-button').
-          classList.toggle('preserve-disabled-state', disabled);
-
-      $('oauth-enroll-cancel-button').disabled = disabled;
-      $('oauth-enroll-cancel-button').
-          classList.toggle('preserve-disabled-state', disabled);
     },
 
     /** @override */
     decorate: function() {
-      window.addEventListener('message',
-                              this.onMessage_.bind(this), false);
-      $('oauth-enroll-error-retry').addEventListener('click',
-                                                     this.doRetry_.bind(this));
-      $('oauth-enroll-learn-more-link').addEventListener(
-          'click', this.launchLearnMoreHelp_.bind(this));
+      var webview = document.createElement('webview');
+      webview.id = webview.name = 'oauth-enroll-auth-view';
+      webview.classList.toggle('oauth-enroll-focus-on-signin', true);
+      $('oauth-enroll-auth-view-container').appendChild(webview);
+      this.authenticator_ = new cr.login.Authenticator(webview);
 
-      this.updateLocalizedContent();
-    },
+      this.authenticator_.addEventListener('ready',
+          (function() {
+            if (this.currentStep_ != STEP_SIGNIN)
+              return;
+            this.isCancelDisabled = false;
+            chrome.send('frameLoadingCompleted', [0]);
+          }).bind(this));
 
-    /**
-     * Updates localized strings.
-     */
-    updateLocalizedContent: function() {
-      $('oauth-enroll-re-enrollment-text').innerHTML =
-          loadTimeData.getStringF(
-              'oauthEnrollReEnrollmentText',
-              '<b id="oauth-enroll-management-domain"></b>');
-      $('oauth-enroll-management-domain').textContent = this.managementDomain_;
-      $('oauth-enroll-re-enrollment-text').hidden = !this.managementDomain_;
+      this.authenticator_.addEventListener('authCompleted',
+          (function(e) {
+            var detail = e.detail;
+            if (!detail.email || !detail.authCode) {
+              this.showError(
+                  loadTimeData.getString('fatalEnrollmentError'),
+                  false);
+              return;
+            }
+            chrome.send('oauthEnrollCompleteLogin', [detail.email,
+                                                     detail.authCode]);
+          }).bind(this));
+
+      this.authenticator_.addEventListener('authFlowChange',
+          (function(e) {
+            var isSAML = this.authenticator_.authFlow ==
+                             cr.login.Authenticator.AuthFlow.SAML;
+            if (isSAML) {
+              $('oauth-saml-notice-message').textContent =
+                  loadTimeData.getStringF('samlNotice',
+                                          this.authenticator_.authDomain);
+            }
+            this.classList.toggle('saml', isSAML);
+            if (Oobe.getInstance().currentScreen == this)
+              Oobe.getInstance().updateScreenSize(this);
+          }).bind(this));
+
+      this.authenticator_.addEventListener('backButton',
+          (function(e) {
+            $('oauth-enroll-back-button').hidden = !e.detail;
+            $('oauth-enroll-auth-view').focus();
+          }).bind(this));
+
+      this.authenticator_.insecureContentBlockedCallback =
+          (function(url) {
+            this.showError(
+                loadTimeData.getStringF('insecureURLEnrollmentError', url),
+                false);
+          }).bind(this);
+
+      this.authenticator_.missingGaiaInfoCallback =
+          (function() {
+            this.showError(
+                loadTimeData.getString('fatalEnrollmentError'),
+                false);
+          }).bind(this);
+
+      $('oauth-enroll-error-card').addEventListener('buttonclick',
+                                                    this.doRetry_.bind(this));
+      function doneCallback() {
+        chrome.send('oauthEnrollClose', ['done']);
+      };
+
+      $('oauth-enroll-attribute-prompt-error-card').addEventListener(
+          'buttonclick', doneCallback);
+      $('oauth-enroll-success-card').addEventListener(
+          'buttonclick', doneCallback);
+
+      $('oauth-enroll-cancel-button').addEventListener('click',
+                                                       this.cancel.bind(this));
+      $('oauth-enroll-refresh-button').addEventListener('click',
+                                                        this.cancel.bind(this));
+
+      $('oauth-enroll-back-button').addEventListener('click',
+          (function(e) {
+            $('oauth-enroll-back-button').hidden = true;
+            $('oauth-enroll-auth-view').back();
+            e.preventDefault();
+          }).bind(this));
+
+      $('oauth-enroll-attribute-prompt-card').addEventListener('submit',
+          this.onAttributesSubmitted.bind(this));
+
+      $('oauth-enroll-learn-more-link').addEventListener('click',
+          function(event) {
+            chrome.send('oauthEnrollOnLearnMore');
+          });
+
+      $('oauth-enroll-skip-button').addEventListener('click',
+          this.onSkipButtonClicked.bind(this));
     },
 
     /**
@@ -110,41 +169,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         buttons.push(button);
       }
 
-      makeButton(
-          'oauth-enroll-cancel-button',
-          ['oauth-enroll-focus-on-error'],
-          loadTimeData.getString('oauthEnrollCancel'),
-          function() {
-            chrome.send('oauthEnrollClose', ['cancel']);
-          });
-
-      makeButton(
-          'oauth-enroll-back-button',
-          ['oauth-enroll-focus-on-error'],
-          loadTimeData.getString('oauthEnrollBack'),
-          function() {
-            this.isCancelDisabled = true;
-            chrome.send('oauthEnrollClose', ['cancel']);
-          }.bind(this));
-
-      makeButton(
-          'oauth-enroll-done-button',
-          ['oauth-enroll-focus-on-success'],
-          loadTimeData.getString('oauthEnrollDone'),
-          function() {
-            chrome.send('oauthEnrollClose', ['done']);
-          });
-
-      makeButton(
-          'oauth-enroll-continue-button',
-          ['oauth-enroll-focus-on-attribute-prompt'],
-          loadTimeData.getString('oauthEnrollContinue'),
-          function() {
-            chrome.send('oauthEnrollAttributes',
-                        [$('oauth-enroll-asset-id').value,
-                         $('oauth-enroll-location').value]);
-          });
-
       return buttons;
     },
 
@@ -154,32 +178,42 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * URL.
      */
     onBeforeShow: function(data) {
-      this.signInParams_ = {};
-      this.signInParams_['gaiaUrl'] = data.gaiaUrl;
-      this.signInParams_['needPassword'] = false;
-      this.signInUrl_ = data.signin_url;
+      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ENROLLMENT;
+      $('inner-container').classList.add('new-gaia-flow');
+      var gaiaParams = {};
+      gaiaParams.gaiaUrl = data.gaiaUrl;
+      gaiaParams.gaiaPath = 'embedded/setup/chromeos';
+      gaiaParams.isNewGaiaFlowChromeOS = true;
+      gaiaParams.needPassword = false;
+      if (data.management_domain) {
+        gaiaParams.enterpriseDomain = data.management_domain;
+        gaiaParams.emailDomain = data.management_domain;
+      }
+      gaiaParams.flow = data.flow;
+      this.authenticator_.load(cr.login.Authenticator.AuthMode.DEFAULT,
+                               gaiaParams);
+
       var modes = ['manual', 'forced', 'recovery'];
       for (var i = 0; i < modes.length; ++i) {
         this.classList.toggle('mode-' + modes[i],
                               data.enrollment_mode == modes[i]);
       }
-      this.managementDomain_ = data.management_domain;
       this.isCancelDisabled = true;
-      this.doReload();
-      this.learnMoreHelpTopicID_ = data.learn_more_help_topic_id;
-      this.updateLocalizedContent();
       this.showStep(STEP_SIGNIN);
     },
 
+    onBeforeHide: function() {
+      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.HIDDEN;
+    },
+
     /**
-     * Shows attribute-prompt step with pre-filled asset ID and location.
+     * Shows attribute-prompt step with pre-filled asset ID and
+     * location.
      */
     showAttributePromptStep: function(annotated_asset_id, annotated_location) {
-      $('oauth-enroll-attribute-prompt-message').innerHTML =
-          loadTimeData.getString('oauthEnrollAttributes');
-
       $('oauth-enroll-asset-id').value = annotated_asset_id;
       $('oauth-enroll-location').value = annotated_location;
+      $('oauth-enroll-back-button').hidden = true;
 
       this.showStep(STEP_ATTRIBUTE_PROMPT);
     },
@@ -195,49 +229,16 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     },
 
     /**
-     * Returns whether |step| is the device attribute update error or not.
-     */
-    isAttributeUpdateError: function(step) {
-      return this.currentStep_ == STEP_ATTRIBUTE_PROMPT && step == STEP_ERROR;
-    },
-
-    /**
-     * Shows cancel or done button.
-     */
-    hideCancelShowDone: function(hide) {
-      $('oauth-enroll-cancel-button').hidden = hide;
-      $('oauth-enroll-cancel-button').disabled = hide;
-
-      $('oauth-enroll-done-button').hidden = !hide;
-      $('oauth-enroll-done-button').disabled = !hide;
-    },
-
-    /**
      * Switches between the different steps in the enrollment flow.
      * @param {string} step the steps to show, one of "signin", "working",
      * "attribute-prompt", "error", "success".
      */
     showStep: function(step) {
-      var focusStep = step;
-
       this.classList.toggle('oauth-enroll-state-' + this.currentStep_, false);
       this.classList.toggle('oauth-enroll-state-' + step, true);
 
-      /**
-       * In case of device attribute update error done button should be shown
-       * instead of cancel button and focus on success,
-       * because enrollment has completed
-       */
-      if (this.isAttributeUpdateError(step)) {
-        focusStep = STEP_SUCCESS;
-        this.hideCancelShowDone(true);
-      } else {
-        if (step == STEP_ERROR)
-          this.hideCancelShowDone(false);
-      }
-
       var focusElements =
-          this.querySelectorAll('.oauth-enroll-focus-on-' + focusStep);
+          this.querySelectorAll('.oauth-enroll-focus-on-' + step);
       for (var i = 0; i < focusElements.length; ++i) {
         if (getComputedStyle(focusElements[i])['display'] != 'none') {
           focusElements[i].focus();
@@ -253,22 +254,19 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * @param {boolean} retry whether the retry link should be shown.
      */
     showError: function(message, retry) {
-      $('oauth-enroll-error-message').textContent = message;
-      $('oauth-enroll-error-retry').hidden = !retry;
+      if (this.currentStep_ == STEP_ATTRIBUTE_PROMPT) {
+        $('oauth-enroll-attribute-prompt-error-card').textContent = message;
+        this.showStep(STEP_ATTRIBUTE_PROMPT_ERROR);
+        return;
+      }
+      $('oauth-enroll-error-card').textContent = message;
+      $('oauth-enroll-error-card').buttonLabel =
+          retry ? loadTimeData.getString('oauthEnrollRetry') : '';
       this.showStep(STEP_ERROR);
     },
 
     doReload: function() {
-      var signInFrame = $('oauth-enroll-signin-frame');
-
-      var sendParamsOnLoad = function() {
-        signInFrame.removeEventListener('load', sendParamsOnLoad);
-        signInFrame.contentWindow.postMessage(this.signInParams_,
-            'chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik');
-      }.bind(this);
-
-      signInFrame.addEventListener('load', sendParamsOnLoad);
-      signInFrame.contentWindow.location.href = this.signInUrl_;
+      this.authenticator_.reload();
     },
 
     /**
@@ -281,72 +279,21 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     },
 
     /**
-     * Checks if a given HTML5 message comes from the URL loaded into the signin
-     * frame.
-     * @param {Object} m HTML5 message.
-     * @type {boolean} whether the message comes from the signin frame.
+     * Skips the device attribute update,
+     * shows the successful enrollment step.
      */
-    isSigninMessage_: function(m) {
-      return this.signInUrl_ != null &&
-          this.signInUrl_.indexOf(m.origin) == 0 &&
-          m.source == $('oauth-enroll-signin-frame').contentWindow;
+    onSkipButtonClicked: function() {
+      this.showStep(STEP_SUCCESS);
     },
 
     /**
-     * Event handler for HTML5 messages.
-     * @param {Object} m HTML5 message.
+     * Uploads the device attributes to server. This goes to C++ side through
+     * |chrome| and launches the device attribute update negotiation.
      */
-    onMessage_: function(m) {
-      if (!this.isSigninMessage_(m))
-        return;
-
-      var msg = m.data;
-
-      if (msg.method == 'completeLogin') {
-        // A user has successfully authenticated via regular GAIA or SAML.
-        chrome.send('oauthEnrollCompleteLogin', [msg.email,
-                                                 '' /* auth_code */]);
-      }
-
-      if (msg.method == 'authPageLoaded' && this.currentStep_ == STEP_SIGNIN) {
-        if (msg.isSAML) {
-          $('oauth-saml-notice-message').textContent = loadTimeData.getStringF(
-              'samlNotice',
-              msg.domain);
-        }
-        this.classList.toggle('saml', msg.isSAML);
-      }
-
-      if (msg.method == 'resetAuthFlow') {
-        this.classList.remove('saml');
-      }
-
-      if (msg.method == 'loginUILoaded' && this.currentStep_ == STEP_SIGNIN) {
-        this.isCancelDisabled = false;
-        chrome.send('frameLoadingCompleted', [0]);
-      }
-
-      if (msg.method == 'insecureContentBlocked') {
-        this.showError(
-            loadTimeData.getStringF('insecureURLEnrollmentError', msg.url),
-            false);
-      }
-
-      if (msg.method == 'missingGaiaInfo') {
-        this.showError(
-            loadTimeData.getString('fatalEnrollmentError'),
-            false);
-      }
-    },
-
-    /**
-     * Opens the learn more help topic.
-     */
-    launchLearnMoreHelp_: function() {
-      if (this.learnMoreHelpTopicID_) {
-        chrome.send('launchHelpApp', [this.learnMoreHelpTopicID_]);
-      }
+    onAttributesSubmitted: function() {
+      chrome.send('oauthEnrollAttributes',
+                  [$('oauth-enroll-asset-id').value,
+                   $('oauth-enroll-location').value]);
     }
   };
 });
-
