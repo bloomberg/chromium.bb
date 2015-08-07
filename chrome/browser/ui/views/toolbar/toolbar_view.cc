@@ -813,6 +813,11 @@ void ToolbarView::LoadImages() {
 
   home_->SetImage(views::Button::STATE_NORMAL,
                   *(tp->GetImageSkiaNamed(IDR_HOME)));
+
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    app_menu_->SetImage(views::Button::STATE_NORMAL,
+                        *(tp->GetImageSkiaNamed(IDR_TOOLS)));
+  }
 }
 
 void ToolbarView::ShowCriticalNotification() {

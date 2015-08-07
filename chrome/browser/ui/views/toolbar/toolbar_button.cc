@@ -161,24 +161,8 @@ void ToolbarButton::GetAccessibleState(ui::AXViewState* state) {
 
 scoped_ptr<views::LabelButtonBorder>
 ToolbarButton::CreateDefaultBorder() const {
-  scoped_ptr<views::LabelButtonBorder> border;
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-#if defined(OS_CHROMEOS)
-    border.reset(new views::LabelButtonBorder());
-    border->set_insets(views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(
-        Button::STYLE_TEXTBUTTON));
-#else
-    scoped_ptr<views::LabelButtonAssetBorder> asset_border(
-        new views::LabelButtonAssetBorder(Button::STYLE_TEXTBUTTON));
-    // The material design spec does not include a visual effect for the
-    // STATE_HOVERED button state so we have to remove the default one added by
-    // LabelButtonAssetBorder.
-    asset_border->SetPainter(false, Button::STATE_HOVERED, nullptr);
-    border = asset_border.Pass();
-#endif
-  } else {
-    border.reset(new views::LabelButtonAssetBorder(Button::STYLE_TEXTBUTTON));
-  }
+  scoped_ptr<views::LabelButtonBorder> border =
+      views::LabelButton::CreateDefaultBorder();
 
   ui::ThemeProvider* provider = GetThemeProvider();
   if (provider && provider->UsingSystemTheme()) {
