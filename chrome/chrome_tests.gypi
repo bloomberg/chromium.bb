@@ -400,6 +400,7 @@
       'browser/sessions/session_restore_browsertest.cc',
       'browser/sessions/session_restore_browsertest_chromeos.cc',
       'browser/sessions/tab_restore_browsertest.cc',
+      'browser/site_details_browsertest.cc',
       'browser/spellchecker/spellcheck_service_browsertest.cc',
       'browser/ssl/captive_portal_blocking_page_browsertest.cc',
       'browser/ssl/certificate_reporting_test_utils.cc',
