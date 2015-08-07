@@ -5,6 +5,8 @@
 #include "chrome/browser/media/android/router/media_router_dialog_controller_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
+#include "chrome/browser/media/router/media_source.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -49,16 +51,30 @@ MediaRouterDialogControllerAndroid::~MediaRouterDialogControllerAndroid() {
 }
 
 void MediaRouterDialogControllerAndroid::CreateMediaRouterDialog() {
-  NOTIMPLEMENTED();
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  scoped_ptr<CreatePresentationSessionRequest> presentation_request(
+      PassPresentationRequest());
+
+  ScopedJavaLocalRef<jstring> jsource_urn =
+      base::android::ConvertUTF8ToJavaString(
+          env, presentation_request->GetMediaSource().id());
+
+  Java_ChromeMediaRouterDialogController_createDialog(
+      env, java_dialog_controller_.obj(), jsource_urn.obj());
 }
 
 void MediaRouterDialogControllerAndroid::CloseMediaRouterDialog() {
-  NOTIMPLEMENTED();
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  Java_ChromeMediaRouterDialogController_closeDialog(
+      env, java_dialog_controller_.obj());
 }
 
 bool MediaRouterDialogControllerAndroid::IsShowingMediaRouterDialog() const {
-  NOTIMPLEMENTED();
-  return false;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_ChromeMediaRouterDialogController_isShowingDialog(
+      env, java_dialog_controller_.obj());
 }
 
 }  // namespace media_router
