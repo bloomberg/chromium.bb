@@ -346,6 +346,12 @@
     "channel": "trunk",
     "extension_types": ["extension"]
   },
+  "enterprise.deviceAttributes": {
+    "channel": "dev",
+    "platforms": ["chromeos"],
+    "extension_types": ["extension", "platform_app"],
+    "location": "policy"
+  },
   "enterprise.platformKeys": {
     "channel": "stable",
     "platforms": ["chromeos"],

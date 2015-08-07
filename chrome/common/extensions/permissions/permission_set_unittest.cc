@@ -747,6 +747,7 @@ TEST(PermissionsTest, PermissionMessages) {
   // These permissions are restricted to extensions force-installed by policy
   // and don't require a prompt, i.e. they're restricted to location 'policy'.
   skip.insert(APIPermission::kEnterprisePlatformKeys);
+  skip.insert(APIPermission::kEnterpriseDeviceAttributes);
 
   // TODO(erikkay) add a string for this permission.
   skip.insert(APIPermission::kBackground);

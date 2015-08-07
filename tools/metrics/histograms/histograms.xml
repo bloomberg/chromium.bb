@@ -57018,6 +57018,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1071" label="FILEMANAGERPRIVATE_CANCELALLFILETRANSFERS"/>
   <int value="1072" label="NETWORKINGPRIVATE_UNLOCKCELLULARSIM"/>
   <int value="1073" label="NETWORKINGPRIVATE_SETCELLULARSIMSTATE"/>
+  <int value="1074" label="ENTERPRISE_DEVICEATTRIBUTES_GETDIRECTORYDEVICEID"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

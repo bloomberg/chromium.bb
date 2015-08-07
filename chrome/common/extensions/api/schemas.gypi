@@ -107,6 +107,7 @@
     # ChromeOS-specific schemas.
     'chromeos_schema_files': [
       'echo_private.json',
+      'enterprise_device_attributes.idl',
       'enterprise_platform_keys.idl',
       'enterprise_platform_keys_internal.idl',
       'enterprise_platform_keys_private.json',

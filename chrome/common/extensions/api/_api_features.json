@@ -334,6 +334,10 @@
     "dependencies": ["permission:echoPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "enterprise.deviceAttributes": {
+    "dependencies": ["permission:enterprise.deviceAttributes"],
+    "contexts": ["blessed_extension"]
+  },
   "enterprise.platformKeys": {
     "dependencies": ["permission:enterprise.platformKeys"],
     "contexts": ["blessed_extension"]

@@ -5,6 +5,8 @@
 {
   'variables': {
     'chrome_browser_extensions_chromeos_sources': [
+      'browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_api.cc',
+      'browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_api.h',
       'browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.cc',
       'browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h',
       'browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.cc',

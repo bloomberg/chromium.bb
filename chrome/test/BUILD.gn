@@ -802,6 +802,7 @@ if (!is_android) {
       ]
     } else {
       sources -= [
+        "../browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_apitest.cc",
         "../browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_apitest_nss.cc",
         "../browser/extensions/api/platform_keys/platform_keys_apitest_nss.cc",
         "../browser/extensions/api/terminal/terminal_private_apitest.cc",

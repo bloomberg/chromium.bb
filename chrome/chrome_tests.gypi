@@ -145,6 +145,7 @@
       'browser/extensions/api/developer_private/developer_private_apitest.cc',
       'browser/extensions/api/dial/dial_apitest.cc',
       'browser/extensions/api/downloads/downloads_api_browsertest.cc',
+      'browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_apitest.cc',
       'browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_apitest_nss.cc',
       'browser/extensions/api/extension_action/browser_action_apitest.cc',
       'browser/extensions/api/extension_action/browser_action_browsertest.cc',
@@ -2267,6 +2268,7 @@
           ],
         }, {  # Non-ChromeOS
           'sources!': [
+            'browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_apitest.cc',
             'browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_apitest_nss.cc',
             'browser/extensions/api/platform_keys/platform_keys_apitest_nss.cc',
             'browser/extensions/api/terminal/terminal_private_apitest.cc',
