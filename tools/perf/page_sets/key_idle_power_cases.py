@@ -48,9 +48,6 @@ class KeyIdlePowerCasesPageSet(story.StorySet):
     foreground_urls_list = [
       # Why: Ensure minimal activity for static, empty pages in the foreground.
       'file://key_idle_power_cases/blank.html',
-      # Why: An infinite rAF loop which does not modify the page should use
-      # minimal power.
-      'file://key_idle_power_cases/no_op_raf.html',
     ]
 
     for url in foreground_urls_list:
