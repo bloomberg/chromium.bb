@@ -393,11 +393,14 @@ ManagePasswordsBubbleView::PendingView::PendingView(
   layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
   SetLayoutManager(layout);
 
-  std::vector<const autofill::PasswordForm*> credentials(
-      1, &parent->model()->pending_password());
   // Create the pending credential item, save button and refusal combobox.
-  ManagePasswordItemsView* item =
-      new ManagePasswordItemsView(parent_->model(), credentials);
+  ManagePasswordItemsView* item = nullptr;
+  if (!parent->model()->pending_password()
+           .IsPossibleChangePasswordFormWithoutUsername()) {
+    std::vector<const autofill::PasswordForm*> credentials(
+        1, &parent->model()->pending_password());
+    item = new ManagePasswordItemsView(parent_->model(), credentials);
+  }
   save_button_ = new views::BlueButton(
       this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
   save_button_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
@@ -426,8 +429,10 @@ ManagePasswordsBubbleView::PendingView::PendingView(
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Credential row.
-  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-  layout->AddView(item);
+  if (item) {
+    layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
+    layout->AddView(item);
+  }
 
   // Button row.
   BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);

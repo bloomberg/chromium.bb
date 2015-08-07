@@ -502,12 +502,11 @@ TEST_F(PasswordFormManagerTest, TestNewLoginFromNewPasswordElement) {
 
   // By this point, the PasswordFormManager should have promoted the new
   // password value to be the current password, and should have wiped the
-  // password element names: they are likely going to be different on a login
+  // password element name: it is likely going to be different on a login
   // form, so it is not worth remembering them.
   EXPECT_EQ(credentials.new_password_value,
             GetPendingCredentials(&manager)->password_value);
   EXPECT_TRUE(GetPendingCredentials(&manager)->password_element.empty());
-  EXPECT_TRUE(GetPendingCredentials(&manager)->new_password_element.empty());
   EXPECT_TRUE(GetPendingCredentials(&manager)->new_password_value.empty());
 }
 

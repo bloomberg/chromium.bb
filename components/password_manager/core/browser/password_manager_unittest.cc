@@ -238,11 +238,9 @@ TEST_F(PasswordManagerTest, FormSubmitWithOnlyNewPasswordField) {
   form_manager_to_save->Save();
 
   // The value of the new password field should have been promoted to, and saved
-  // to the password store as the current password, and no password element name
-  // should have been saved.
+  // to the password store as the current password.
   PasswordForm expected_form(form);
   expected_form.password_value.swap(expected_form.new_password_value);
-  expected_form.new_password_element.clear();
   EXPECT_THAT(saved_form, FormMatches(expected_form));
 }
 

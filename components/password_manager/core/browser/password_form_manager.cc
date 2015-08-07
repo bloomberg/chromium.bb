@@ -914,7 +914,6 @@ void PasswordFormManager::CreatePendingCredentials() {
     // user goes onto a real login form for the first time.
     if (!provisionally_saved_form_->new_password_element.empty()) {
       pending_credentials_.password_element.clear();
-      pending_credentials_.new_password_element.clear();
     }
   }
 
