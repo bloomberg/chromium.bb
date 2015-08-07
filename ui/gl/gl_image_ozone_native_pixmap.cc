@@ -75,7 +75,6 @@ GLImageOzoneNativePixmap::GLImageOzoneNativePixmap(const Size& size,
     : GLImageEGL(size), internalformat_(internalformat) {}
 
 GLImageOzoneNativePixmap::~GLImageOzoneNativePixmap() {
-  DCHECK(!pixmap_);
 }
 
 bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
@@ -128,7 +127,6 @@ unsigned GLImageOzoneNativePixmap::GetInternalFormat() {
 
 void GLImageOzoneNativePixmap::Destroy(bool have_context) {
   GLImageEGL::Destroy(have_context);
-  pixmap_ = nullptr;
 }
 
 bool GLImageOzoneNativePixmap::ScheduleOverlayPlane(AcceleratedWidget widget,
