@@ -48,6 +48,23 @@ if (use_goma) {
 # This value will be inherited in the toolchain below.
 concurrent_links = exec_script("../get_concurrent_links.py", [], "value")
 
+# Copy the VS runtime DLL for the default toolchain the root build directory so
+# things will run.
+if (current_toolchain == default_toolchain) {
+  if (is_debug) {
+    configuration_name = "Debug"
+  } else {
+    configuration_name = "Release"
+  }
+  exec_script("../../vs_toolchain.py",
+              [
+                "copy_dlls",
+                rebase_path(root_build_dir),
+                configuration_name,
+                target_cpu,
+              ])
+}
+
 # Parameters:
 #  current_cpu: current_cpu to pass as a build arg
 #  current_os: current_os to pass as a build arg
@@ -58,19 +75,6 @@ template("msvc_toolchain") {
   }
 
   env = invoker.environment
-
-  if (is_debug) {
-    configuration = "Debug"
-  } else {
-    configuration = "Release"
-  }
-  exec_script("../../vs_toolchain.py",
-              [
-                "copy_dlls",
-                rebase_path(root_build_dir),
-                configuration,
-                invoker.current_cpu,
-              ])
 
   cl = invoker.cl
 
