@@ -14,13 +14,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
 using extensions::Extension;
@@ -86,36 +86,15 @@ class ChromeAppAPITest : public ExtensionBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents(),
         base::Bind(&content::FrameIsChildOfMainFrame));
   }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kAppsCheckoutURL,
-                                    "http://checkout.com:");
-  }
 };
 
-// Flaky http://crbug.com/238674
-#if defined(OS_WIN)
-#define MAYBE_IsInstalled DISABLED_IsInstalled
-#else
-#define MAYBE_IsInstalled IsInstalled
-#endif
-IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, MAYBE_IsInstalled) {
-  static const char kAppHost[] = "app.com";
-  static const char kNonAppHost[] = "nonapp.com";
-
-  host_resolver()->AddRule(kAppHost, "127.0.0.1");
-  host_resolver()->AddRule(kNonAppHost, "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
-
-  GURL test_file_url(test_server()->GetURL("extensions/test_file.html"));
-  GURL::Replacements replace_host;
-
-  replace_host.SetHostStr(kAppHost);
-  GURL app_url(test_file_url.ReplaceComponents(replace_host));
-
-  replace_host.SetHostStr(kNonAppHost);
-  GURL non_app_url(test_file_url.ReplaceComponents(replace_host));
+IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, IsInstalled) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  GURL app_url =
+      embedded_test_server()->GetURL("app.com", "/extensions/test_file.html");
+  GURL non_app_url = embedded_test_server()->GetURL(
+      "nonapp.com", "/extensions/test_file.html");
 
   // Before the app is installed, app.com does not think that it is installed
   ui_test_utils::NavigateToURL(browser(), app_url);
@@ -189,22 +168,12 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, MAYBE_IsInstalled) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, InstallAndRunningState) {
-  static const char kAppHost[] = "app.com";
-  static const char kNonAppHost[] = "nonapp.com";
-
-  host_resolver()->AddRule(kAppHost, "127.0.0.1");
-  host_resolver()->AddRule(kNonAppHost, "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
-
-  GURL test_file_url(test_server()->GetURL(
-      "files/extensions/get_app_details_for_frame.html"));
-  GURL::Replacements replace_host;
-
-  replace_host.SetHostStr(kAppHost);
-  GURL app_url(test_file_url.ReplaceComponents(replace_host));
-
-  replace_host.SetHostStr(kNonAppHost);
-  GURL non_app_url(test_file_url.ReplaceComponents(replace_host));
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  GURL app_url = embedded_test_server()->GetURL(
+      "app.com", "/extensions/get_app_details_for_frame.html");
+  GURL non_app_url = embedded_test_server()->GetURL(
+      "nonapp.com", "/extensions/get_app_details_for_frame.html");
 
   // Before the app is installed, app.com does not think that it is installed
   ui_test_utils::NavigateToURL(browser(), app_url);
@@ -256,22 +225,10 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, InstallAndRunningState) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, InstallAndRunningStateFrame) {
-  static const char kAppHost[] = "app.com";
-  static const char kNonAppHost[] = "nonapp.com";
-
-  host_resolver()->AddRule(kAppHost, "127.0.0.1");
-  host_resolver()->AddRule(kNonAppHost, "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
-
-  GURL test_file_url(test_server()->GetURL(
-      "files/extensions/get_app_details_for_frame_reversed.html"));
-  GURL::Replacements replace_host;
-
-  replace_host.SetHostStr(kAppHost);
-  GURL app_url(test_file_url.ReplaceComponents(replace_host));
-
-  replace_host.SetHostStr(kNonAppHost);
-  GURL non_app_url(test_file_url.ReplaceComponents(replace_host));
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  GURL app_url = embedded_test_server()->GetURL(
+      "app.com", "/extensions/get_app_details_for_frame_reversed.html");
 
   // Check the install and running state of a non-app iframe running
   // within an app.

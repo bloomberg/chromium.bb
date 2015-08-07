@@ -37,7 +37,6 @@ extern const char kAlternativeServiceProbabilityThreshold[];
 extern const char kAlwaysAuthorizePlugins[];
 extern const char kAppId[];
 extern const char kApp[];
-extern const char kAppsCheckoutURL[];
 extern const char kAppsGalleryDownloadURL[];
 extern const char kAppsGalleryURL[];
 extern const char kAppsGalleryUpdateURL[];

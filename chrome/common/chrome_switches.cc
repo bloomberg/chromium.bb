@@ -82,10 +82,6 @@ const char kAppId[]                         = "app-id";
 // mode.
 const char kApp[]                           = "app";
 
-// Overrides the apps checkout URL, which is used to determine when to expose
-// some private APIs.
-const char kAppsCheckoutURL[]               = "apps-checkout-url";
-
 // The URL that the webstore APIs download extensions from.
 // Note: the URL must contain one '%s' for the extension ID.
 const char kAppsGalleryDownloadURL[]        = "apps-gallery-download-url";
