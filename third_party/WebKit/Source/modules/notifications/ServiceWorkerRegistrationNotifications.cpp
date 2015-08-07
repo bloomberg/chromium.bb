@@ -8,17 +8,11 @@
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/SerializedScriptValue.h"
-#include "bindings/core/v8/SerializedScriptValueFactory.h"
-#include "bindings/core/v8/V8ThrowException.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/notifications/GetNotificationOptions.h"
 #include "modules/notifications/Notification.h"
+#include "modules/notifications/NotificationData.h"
 #include "modules/notifications/NotificationOptions.h"
-#include "modules/vibration/NavigatorVibration.h"
-#include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
@@ -60,52 +54,21 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
     if (Notification::checkPermission(executionContext) != WebNotificationPermissionAllowed)
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "No notification permission has been granted for this origin."));
 
-    if (options.hasVibrate() && options.silent())
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Silent notifications must not specify vibration patterns."));
-
-    // FIXME: Unify the code path here with the Notification.create() function.
-    Vector<char> dataAsWireBytes;
-    if (options.hasData()) {
-        RefPtr<SerializedScriptValue> data = SerializedScriptValueFactory::instance().create(options.data().isolate(), options.data(), nullptr, exceptionState);
-        if (exceptionState.hadException())
-            return exceptionState.reject(scriptState);
-
-        data->toWireBytes(dataAsWireBytes);
-    }
-
-    for (const NotificationAction& action : options.actions()) {
-        if (action.action().isEmpty())
-            return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "NotificationAction action must not be empty."));
-        if (action.title().isEmpty())
-            return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "NotificationAction title must not be empty."));
-    }
+    // Validate the developer-provided values to get a WebNotificationData object.
+    WebNotificationData data = createWebNotificationData(executionContext, title, options, exceptionState);
+    if (exceptionState.hadException())
+        return exceptionState.reject(scriptState);
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    // FIXME: Do the appropriate CORS checks on the icon URL.
-
-    KURL iconUrl;
-    if (options.hasIcon() && !options.icon().isEmpty()) {
-        iconUrl = executionContext->completeURL(options.icon());
-        if (!iconUrl.isValid())
-            iconUrl = KURL();
-    }
-
-    WebNotificationData::Direction dir = options.dir() == "rtl" ? WebNotificationData::DirectionRightToLeft : WebNotificationData::DirectionLeftToRight;
-    NavigatorVibration::VibrationPattern vibrate = NavigatorVibration::sanitizeVibrationPattern(options.vibrate());
-    WebVector<WebNotificationAction> webActions;
-    Notification::actionsToWebActions(options.actions(), &webActions);
-    WebNotificationData notification(title, dir, options.lang(), options.body(), options.tag(), iconUrl, vibrate, options.silent(), dataAsWireBytes, webActions);
     WebNotificationShowCallbacks* callbacks = new CallbackPromiseAdapter<void, void>(resolver);
 
     SecurityOrigin* origin = executionContext->securityOrigin();
-    ASSERT(origin);
-
     WebNotificationManager* notificationManager = Platform::current()->notificationManager();
     ASSERT(notificationManager);
 
-    notificationManager->showPersistent(WebSecurityOrigin(origin), notification, serviceWorkerRegistration.webRegistration(), callbacks);
+    notificationManager->showPersistent(WebSecurityOrigin(origin), data, serviceWorkerRegistration.webRegistration(), callbacks);
     return promise;
 }
 

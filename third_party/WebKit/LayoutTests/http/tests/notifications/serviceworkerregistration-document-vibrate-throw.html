@@ -29,7 +29,7 @@
                   assert_unreached('showNotification() is expected to reject.');
               }).catch(function(error) {
                   assert_equals(error.name, 'TypeError');
-                  assert_equals(error.message, 'Silent notifications must not specify vibration patterns.');
+                  assert_equals(error.message, "Failed to execute 'showNotification' on 'ServiceWorkerRegistration': Silent notifications must not specify vibration patterns.");
                   test.done();
               });
 

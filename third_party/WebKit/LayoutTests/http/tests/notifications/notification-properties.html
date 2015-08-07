@@ -66,13 +66,6 @@
             assert_equals(emptyNotification.data, null);
             assert_array_equals(emptyNotification.actions, []);
 
-            var invalidIconNotification = new Notification("My Notification", {
-                icon: "http://test:test/"
-            });
-
-            // Invalid icon URLs should be reset to an empty string.
-            assert_equals(invalidIconNotification.icon, "");
-
             var serializedUrlNotification = new Notification("My Notification", {
                 icon: "http://example.com"
             });
@@ -105,47 +98,6 @@
                 vibrate: [100, 200, "invalid"]
             });
             assert_array_equals(invalidVibrateNotification.vibrate, [100, 200, 0]);
-
-            // Invalid vibrate pattern should be sanitized.
-            // 1. If the vibration pattern is longer than 100 then truncate it.
-            // 2. If the last item in the vibration pattern is a pause then discard it.
-            // 3. If any pattern entry is longer than 10000 then truncate it.
-            var sanitizedVibrateNotification = new Notification("My Notification", {
-                vibrate: Array.apply(null, new Array(101)).map(Number.prototype.valueOf, 20000)
-            });
-            assert_array_equals(sanitizedVibrateNotification.vibrate,
-                    Array.apply(null, new Array(99)).map(Number.prototype.valueOf, 10000));
-
-            // Verifying the exception throwing behavior, when silent set true and vibrate is presented.
-            assert_throws(new TypeError(), function() {
-                var notification = new Notification("My Notification", {
-                    silent: true,
-                    vibrate: 1000
-                });
-            }, 'Set vibrate, when silent is true.');
-
-            // Check exception is thrown when a NotificationAction is missing
-            // action or title, or when action or title is an empty string.
-            assert_throws(new TypeError(), function() {
-                var notification = new Notification("My Notification", {
-                    actions: [{title: "Foo"}]
-                });
-            }, 'NotificationAction without action.');
-            assert_throws(new TypeError(), function() {
-                var notification = new Notification("My Notification", {
-                    actions: [{action: "foo"}]
-                });
-            }, 'NotificationAction without title.');
-            assert_throws(new TypeError(), function() {
-                var notification = new Notification("My Notification", {
-                    actions: [{action: "", title: "Foo"}]
-                });
-            }, 'NotificationAction with empty action.');
-            assert_throws(new TypeError(), function() {
-                var notification = new Notification("My Notification", {
-                    actions: [{action: "foo", title: ""}]
-                });
-            }, 'NotificationAction with empty title.');
 
       }, 'Checks the properties exposed on the Notification object.');
     </script>
