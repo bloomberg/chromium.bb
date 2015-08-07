@@ -84,7 +84,7 @@ bool DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
                                         const base::FilePath& unpack_path) {
   std::string manifest_version;
   manifest.GetStringASCII("version", &manifest_version);
-  base::Version version(manifest_version.c_str());
+  base::Version version(manifest_version);
   if (!version.IsValid())
     return false;
   if (current_version_.CompareTo(version) > 0)
