@@ -4097,6 +4097,15 @@ bool WebGLRenderingContextBase::validateTexFunc(const char* functionName, TexIma
     if (!texture)
         return false;
 
+    if (functionType == TexSubImage2D) {
+        if (!validateTexFuncLevel(functionName, target, level))
+            return false;
+        if (!texture->isValid(target, level)) {
+            synthesizeGLError(GL_INVALID_OPERATION, "texSubImage2D", "no previously defined texture image");
+            return false;
+        }
+    }
+
     if (internalformat == 0)
         internalformat = texture->getInternalFormat(target, level);
     if (!validateTexFuncParameters(functionName, functionType, target, level, internalformat, width, height, border, format, type))
