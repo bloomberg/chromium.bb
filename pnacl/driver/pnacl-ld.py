@@ -45,7 +45,6 @@ EXTRA_ENV = {
                      '${#SONAME ? -Wl,--soname=${SONAME}} ' +
                      '${#OPT_LEVEL ? -O${OPT_LEVEL}} ' +
                      '--allow-llvm-bitcode-input ' +
-                     '${CXX_EH_MODE==zerocost ? --pnacl-allow-zerocost-eh} ' +
                      '${TRANSLATE_FLAGS_USER}',
 
   # Extra pnacl-translate flags specified by the user using -Wt
@@ -108,26 +107,7 @@ EXTRA_ENV = {
       # libsupc++ refers to them.
       '--allow-unresolved=__pnacl_eh_type_table '
       '--allow-unresolved=__pnacl_eh_action_table '
-      '--allow-unresolved=__pnacl_eh_filter_table} '
-    # For exception-handling enabled tests.
-    '${CXX_EH_MODE==zerocost ? '
-      '--allow-unresolved=_Unwind_Backtrace '
-      '--allow-unresolved=_Unwind_DeleteException '
-      '--allow-unresolved=_Unwind_GetCFA '
-      '--allow-unresolved=_Unwind_GetDataRelBase '
-      '--allow-unresolved=_Unwind_GetGR '
-      '--allow-unresolved=_Unwind_GetIP '
-      '--allow-unresolved=_Unwind_GetIPInfo '
-      '--allow-unresolved=_Unwind_GetLanguageSpecificData '
-      '--allow-unresolved=_Unwind_GetRegionStart '
-      '--allow-unresolved=_Unwind_GetTextRelBase '
-      '--allow-unresolved=_Unwind_PNaClSetResult0 '
-      '--allow-unresolved=_Unwind_PNaClSetResult1 '
-      '--allow-unresolved=_Unwind_RaiseException '
-      '--allow-unresolved=_Unwind_Resume '
-      '--allow-unresolved=_Unwind_Resume_or_Rethrow '
-      '--allow-unresolved=_Unwind_SetGR '
-      '--allow-unresolved=_Unwind_SetIP}',
+      '--allow-unresolved=__pnacl_eh_filter_table}',
 
   'BCLD_FLAGS':
     '--oformat ${BCLD_OFORMAT} ' +
@@ -163,10 +143,7 @@ def IsPortable():
 LDPatterns = [
   ( '--pnacl-allow-native', "env.set('ALLOW_NATIVE', '1')"),
   ( '--noirt',              "env.set('USE_IRT', '0')"),
-  ( '--pnacl-exceptions=(none|sjlj|zerocost)', "env.set('CXX_EH_MODE', $0)"),
-  # TODO(mseaborn): Remove "--pnacl-allow-exceptions", which is
-  # superseded by "--pnacl-exceptions".
-  ( '--pnacl-allow-exceptions', "env.set('CXX_EH_MODE', 'zerocost')"),
+  ( '--pnacl-exceptions=(none|sjlj)', "env.set('CXX_EH_MODE', $0)"),
   ( '(--pnacl-allow-nexe-build-id)', "env.set('ALLOW_NEXE_BUILD_ID', '1')"),
   ( '--pnacl-disable-abi-check', "env.set('DISABLE_ABI_CHECK', '1')"),
   # "--pnacl-disable-pass" allows an ABI simplification pass to be
@@ -389,7 +366,6 @@ def main(argv):
     # (see https://code.google.com/p/nativeclient/issues/detail?id=3913#c24)
     abi_simplify = (env.getbool('STATIC') and
                     len(native_objects) == 0 and
-                    env.getone('CXX_EH_MODE') != 'zerocost' and
                     not env.getbool('ALLOW_NEXE_BUILD_ID') and
                     IsPortable())
     still_need_expand_byval = IsPortable() and env.getbool('STATIC')
@@ -407,15 +383,14 @@ def main(argv):
         assert env.getone('CXX_EH_MODE') == 'none'
       opt_args.append(pre_simplify)
     else:
-      if env.getone('CXX_EH_MODE') != 'zerocost':
-        # '-lowerinvoke' prevents use of C++ exception handling, which
-        # is not yet supported in the PNaCl ABI.  '-simplifycfg' removes
-        # landingpad blocks made unreachable by '-lowerinvoke'.
-        #
-        # We run this in order to remove 'resume' instructions,
-        # otherwise these are translated to calls to _Unwind_Resume(),
-        # which will not be available at native link time.
-        opt_args.append(['-lowerinvoke', '-simplifycfg'])
+      # '-lowerinvoke' prevents use of C++ exception handling, which
+      # is not yet supported in the PNaCl ABI.  '-simplifycfg' removes
+      # landingpad blocks made unreachable by '-lowerinvoke'.
+      #
+      # We run this in order to remove 'resume' instructions,
+      # otherwise these are translated to calls to _Unwind_Resume(),
+      # which will not be available at native link time.
+      opt_args.append(['-lowerinvoke', '-simplifycfg'])
       if still_need_expand_varargs:
         opt_args.append(['-expand-varargs'])
 

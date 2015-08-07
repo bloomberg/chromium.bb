@@ -21,10 +21,6 @@ EXTRA_ENV = {
   # Determine if we should build nexes compatible with the IRT
   'USE_IRT' : '1',
 
-  # Allow zero-cost C++ exception handling in the pexe, which is not
-  # supported by PNaCl's stable ABI.
-  'ALLOW_ZEROCOST_CXX_EH' : '0',
-
   # Use the IRT shim by default. This can be disabled with an explicit
   # flag (--noirtshim) or via -nostdlib.
   'USE_IRT_SHIM'  : '1',
@@ -69,7 +65,7 @@ EXTRA_ENV = {
       '    ? --entry=__pnacl_start_linux : --entry=__pnacl_start} '
       '  --undefined=_start}',
 
-  'CRTBEGIN': '${ALLOW_ZEROCOST_CXX_EH ? -l:crtbegin_for_eh.o : -l:crtbegin.o}',
+  'CRTBEGIN': '-l:crtbegin.o',
   'CRTEND': '-l:crtend.o',
 
   'LD_ARGS_nostdlib': '-nostdlib ${ld_inputs}',
@@ -84,8 +80,7 @@ EXTRA_ENV = {
     '--end-group ' +
     '${CRTEND}',
 
-  'DEFAULTLIBS': '${ALLOW_ZEROCOST_CXX_EH ? -l:libgcc_eh.a} ' +
-                 '-l:libgcc.a -l:libcrt_platform.a ',
+  'DEFAULTLIBS': '-l:libgcc.a -l:libcrt_platform.a ',
 
   # BE CAREFUL: anything added here can introduce skew between
   # the pnacl-translate commandline tool and the in-browser translator.
@@ -205,13 +200,6 @@ TranslatorPatterns = [
 
   ( '--noirt',         "env.set('USE_IRT', '0')"),
   ( '--noirtshim',     "env.set('USE_IRT_SHIM', '0')"),
-
-  # Allowing zero-cost C++ exception handling causes a specific set of
-  # native objects to get linked into the nexe.
-  ( '--pnacl-allow-zerocost-eh', "env.set('ALLOW_ZEROCOST_CXX_EH', '1')"),
-  # TODO(mseaborn): Remove "--pnacl-allow-exceptions", replaced by
-  # "--pnacl-allow-zerocost-eh".
-  ( '--pnacl-allow-exceptions', "env.set('ALLOW_ZEROCOST_CXX_EH', '1')"),
 
   ( '--allow-llvm-bitcode-input',
     "env.set('ALLOW_LLVM_BITCODE_INPUT', '1')\n"
