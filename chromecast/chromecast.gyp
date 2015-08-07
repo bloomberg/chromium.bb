@@ -43,13 +43,30 @@
         'public/chromecast_export.h',
         'public/graphics_properties_shlib.h',
         'public/graphics_types.h',
+        'public/media_codec_support.h',
+        'public/media/audio_pipeline_device.h',
+        'public/media/cast_decoder_buffer.h',
+        'public/media/cast_decrypt_config.h',
+        'public/media/cast_key_system.h',
         'public/media/decoder_config.h',
+        'public/media/decrypt_context.h',
+        'public/media/media_clock_device.h',
+        'public/media/media_component_device.h',
+        'public/media/media_pipeline_backend.h',
+        'public/media/media_pipeline_device_params.h',
         'public/media/stream_id.h',
+        'public/media/video_pipeline_device.h',
         'public/osd_plane.h',
         'public/osd_plane_shlib.h',
         'public/osd_surface.h',
+        'public/task_runner.h',
         'public/video_plane.h',
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          'public/',
+        ],
+      },
     },
     {
       'target_name': 'cast_base',
@@ -76,7 +93,9 @@
         'base/process_utils.cc',
         'base/process_utils.h',
         'base/serializers.cc',
-        'base/serializers.h'
+        'base/serializers.h',
+        'base/task_runner_impl.cc',
+        'base/task_runner_impl.h',
       ],
       'conditions': [
         ['OS=="android"', {
@@ -624,6 +643,7 @@
           'target_name': 'cast_shell_media',
           'type': '<(component)',
           'dependencies': [
+            'cast_public_api',
             'media/media.gyp:cast_media',
             '../content/content.gyp:content',
             '../ipc/ipc.gyp:ipc',

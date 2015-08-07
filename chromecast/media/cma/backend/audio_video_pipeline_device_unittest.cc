@@ -19,20 +19,19 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "chromecast/media/base/decrypt_context.h"
-#include "chromecast/media/cma/backend/audio_pipeline_device.h"
-#include "chromecast/media/cma/backend/media_clock_device.h"
-#include "chromecast/media/cma/backend/media_pipeline_device.h"
-#include "chromecast/media/cma/backend/media_pipeline_device_factory.h"
-#include "chromecast/media/cma/backend/media_pipeline_device_params.h"
-#include "chromecast/media/cma/backend/video_pipeline_device.h"
+#include "chromecast/base/task_runner_impl.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
-#include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/media/cma/base/decoder_config_adapter.h"
 #include "chromecast/media/cma/test/frame_segmenter_for_test.h"
 #include "chromecast/media/cma/test/media_component_device_feeder_for_test.h"
 #include "chromecast/public/cast_media_shlib.h"
+#include "chromecast/public/media/audio_pipeline_device.h"
+#include "chromecast/public/media/cast_decoder_buffer.h"
 #include "chromecast/public/media/decoder_config.h"
+#include "chromecast/public/media/media_clock_device.h"
+#include "chromecast/public/media/media_pipeline_backend.h"
+#include "chromecast/public/media/media_pipeline_device_params.h"
+#include "chromecast/public/media/video_pipeline_device.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/buffers.h"
 #include "media/base/decoder_buffer.h"
@@ -110,7 +109,8 @@ class AudioVideoPipelineDeviceTest : public testing::Test {
 
   void OnEos(MediaComponentDeviceFeederForTest* device_feeder);
 
-  scoped_ptr<MediaPipelineDevice> media_pipeline_device_;
+  scoped_ptr<TaskRunnerImpl> task_runner_;
+  scoped_ptr<MediaPipelineBackend> backend_;
   MediaClockDevice* media_clock_device_;
 
   // Devices to feed
@@ -166,8 +166,7 @@ void AudioVideoPipelineDeviceTest::LoadAudioStream(std::string filename) {
   DemuxResult demux_result = FFmpegDemuxForTest(file_path, true /* audio */);
   BufferList frames = demux_result.frames;
 
-  AudioPipelineDevice* audio_pipeline_device =
-      media_pipeline_device_->GetAudioPipelineDevice();
+  AudioPipelineDevice* audio_pipeline_device = backend_->GetAudio();
 
   bool success = audio_pipeline_device->SetConfig(
       DecoderConfigAdapter::ToCastAudioConfig(kPrimary,
@@ -214,8 +213,7 @@ void AudioVideoPipelineDeviceTest::LoadVideoStream(std::string filename,
         kPrimary, demux_result.video_config);
   }
 
-  VideoPipelineDevice* video_pipeline_device =
-      media_pipeline_device_->GetVideoPipelineDevice();
+  VideoPipelineDevice* video_pipeline_device = backend_->GetVideo();
 
   // Set configuration.
   bool success = video_pipeline_device->SetConfig(video_config);
@@ -253,14 +251,16 @@ void AudioVideoPipelineDeviceTest::Start() {
 }
 
 void AudioVideoPipelineDeviceTest::MonitorLoop() {
-  base::TimeDelta media_time = media_clock_device_->GetTime();
+  base::TimeDelta media_time = base::TimeDelta::FromMicroseconds(
+      media_clock_device_->GetTimeMicroseconds());
 
   if (!pause_pattern_.empty() &&
       pause_pattern_[pause_pattern_idx_].delay >= base::TimeDelta() &&
       media_time >= pause_time_ + pause_pattern_[pause_pattern_idx_].delay) {
     // Do Pause
     media_clock_device_->SetRate(0.0);
-    pause_time_ = media_clock_device_->GetTime();
+    pause_time_ = base::TimeDelta::FromMicroseconds(
+        media_clock_device_->GetTimeMicroseconds());
 
     VLOG(2) << "Pausing at " << pause_time_.InMilliseconds() << "ms for " <<
         pause_pattern_[pause_pattern_idx_].length.InMilliseconds() << "ms";
@@ -282,7 +282,8 @@ void AudioVideoPipelineDeviceTest::MonitorLoop() {
 
 void AudioVideoPipelineDeviceTest::OnPauseCompleted() {
   // Make sure the media time didn't move during that time.
-  base::TimeDelta media_time = media_clock_device_->GetTime();
+  base::TimeDelta media_time = base::TimeDelta::FromMicroseconds(
+      media_clock_device_->GetTimeMicroseconds());
 
   // TODO(damienv):
   // Should be:
@@ -322,17 +323,16 @@ void AudioVideoPipelineDeviceTest::OnEos(
 
 void AudioVideoPipelineDeviceTest::Initialize() {
   // Create the media device.
-  MediaPipelineDeviceParams params;
-  scoped_ptr<MediaPipelineDeviceFactory> device_factory =
-      GetMediaPipelineDeviceFactory(params);
-  media_pipeline_device_.reset(new MediaPipelineDevice(device_factory.Pass()));
-  media_clock_device_ = media_pipeline_device_->GetMediaClockDevice();
+  task_runner_.reset(new TaskRunnerImpl());
+  MediaPipelineDeviceParams params(task_runner_.get());
+  backend_.reset(CastMediaShlib::CreateMediaPipelineBackend(params));
+  media_clock_device_ = backend_->GetClock();
 
   // Clock initialization and configuration.
   bool success =
       media_clock_device_->SetState(MediaClockDevice::kStateIdle);
   ASSERT_TRUE(success);
-  success = media_clock_device_->ResetTimeline(base::TimeDelta());
+  success = media_clock_device_->ResetTimeline(0);
   ASSERT_TRUE(success);
   media_clock_device_->SetRate(1.0);
 }

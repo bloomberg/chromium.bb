@@ -9,28 +9,32 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chromecast/media/cma/backend/media_clock_device.h"
-#include "chromecast/media/cma/backend/media_component_device.h"
+#include "base/threading/thread_checker.h"
+
+#include "chromecast/public/media/media_clock_device.h"
+#include "chromecast/public/media/media_component_device.h"
 
 namespace chromecast {
+class TaskRunner;
+
 namespace media {
+struct MediaPipelineDeviceParams;
 
 class MediaComponentDeviceDefault : public MediaComponentDevice {
  public:
-  explicit MediaComponentDeviceDefault(MediaClockDevice* media_clock_device);
+  MediaComponentDeviceDefault(const MediaPipelineDeviceParams& params,
+                              MediaClockDevice* media_clock_device);
   ~MediaComponentDeviceDefault() override;
 
   // MediaComponentDevice implementation.
-  void SetClient(const Client& client) override;
+  void SetClient(Client* client) override;
   State GetState() const override;
   bool SetState(State new_state) override;
-  bool SetStartPts(base::TimeDelta time) override;
-  FrameStatus PushFrame(
-      const scoped_refptr<DecryptContext>& decrypt_context,
-      const scoped_refptr<DecoderBufferBase>& buffer,
-      const FrameStatusCB& completion_cb) override;
-  base::TimeDelta GetRenderingTime() const override;
-  base::TimeDelta GetRenderingDelay() const override;
+  bool SetStartPts(int64_t time_microseconds) override;
+  FrameStatus PushFrame(DecryptContext* decrypt_context,
+                        CastDecoderBuffer* buffer,
+                        FrameStatusCB* completion_cb) override;
+  RenderingDelay GetRenderingDelay() const override;
   bool GetStatistics(Statistics* stats) const override;
 
  private:
@@ -47,8 +51,9 @@ class MediaComponentDeviceDefault : public MediaComponentDevice {
 
   void RenderTask();
 
+  TaskRunner* task_runner_;
   MediaClockDevice* const media_clock_device_;
-  Client client_;
+  scoped_ptr<Client> client_;
 
   State state_;
 
@@ -69,8 +74,10 @@ class MediaComponentDeviceDefault : public MediaComponentDevice {
   bool scheduled_rendering_task_;
 
   // Pending frame.
-  scoped_refptr<DecoderBufferBase> pending_buffer_;
-  FrameStatusCB frame_pushed_cb_;
+  scoped_ptr<CastDecoderBuffer> pending_buffer_;
+  scoped_ptr<FrameStatusCB> frame_pushed_cb_;
+
+  base::ThreadChecker thread_checker_;
 
   base::WeakPtr<MediaComponentDeviceDefault> weak_this_;
   base::WeakPtrFactory<MediaComponentDeviceDefault> weak_factory_;

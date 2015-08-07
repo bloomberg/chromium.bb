@@ -31,8 +31,8 @@ class HostResolver;
 
 namespace chromecast {
 namespace media {
-class MediaPipelineDevice;
-class MediaPipelineDeviceParams;
+class MediaPipelineBackend;
+struct MediaPipelineDeviceParams;
 }
 
 namespace shell {
@@ -62,7 +62,7 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
 #if !defined(OS_ANDROID)
   // Creates a MediaPipelineDevice (CMA backend) for media playback, called
   // once per media player instance.
-  virtual scoped_ptr<media::MediaPipelineDevice> CreateMediaPipelineDevice(
+  virtual scoped_ptr<media::MediaPipelineBackend> CreateMediaPipelineBackend(
       const media::MediaPipelineDeviceParams& params);
 #endif
 

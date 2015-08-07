@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <vector>
 
-#include "chromecast/public/media/stream_id.h"
+#include "stream_id.h"
 
 namespace chromecast {
 namespace media {

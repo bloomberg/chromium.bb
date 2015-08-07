@@ -2,34 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_PIPELINE_DEVICE_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_PIPELINE_DEVICE_H_
+#ifndef CHROMECAST_PUBLIC_MEDIA_AUDIO_PIPELINE_DEVICE_H_
+#define CHROMECAST_PUBLIC_MEDIA_AUDIO_PIPELINE_DEVICE_H_
 
-#include "base/macros.h"
-#include "chromecast/media/cma/backend/media_component_device.h"
+#include "media_component_device.h"
 
 namespace chromecast {
 namespace media {
 class AudioPipelineDeviceClient;
 struct AudioConfig;
 
+// Interface for platform-specific audio pipeline backend.
+// See comments on MediaComponentDevice.
 class AudioPipelineDevice : public MediaComponentDevice {
  public:
-  AudioPipelineDevice();
-  ~AudioPipelineDevice() override;
+  ~AudioPipelineDevice() override {}
 
-  // Provide the audio configuration.
-  // Must be called before switching from |kStateUninitialized| to |kStateIdle|.
+  // Provides the audio configuration.
+  // Will be called before switching from |kStateUninitialized| to |kStateIdle|.
   // Afterwards, this can be invoked any time the configuration changes.
   // Returns true if the configuration is a supported configuration.
   virtual bool SetConfig(const AudioConfig& config) = 0;
 
   // Sets the volume multiplier.
-  // The multiplier must be in the range [0.0, 1.0].
+  // The multiplier is in the range [0.0, 1.0].
   virtual void SetStreamVolumeMultiplier(float multiplier) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AudioPipelineDevice);
 };
 
 }  // namespace media

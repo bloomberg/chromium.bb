@@ -16,14 +16,16 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chromecast/media/base/decrypt_context.h"
-#include "chromecast/media/cma/backend/audio_pipeline_device.h"
-#include "chromecast/media/cma/backend/media_clock_device.h"
-#include "chromecast/media/cma/backend/media_pipeline_device.h"
-#include "chromecast/media/cma/backend/video_pipeline_device.h"
+#include "chromecast/media/cma/base/cast_decoder_buffer_impl.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
-#include "chromecast/media/cma/base/decoder_buffer_base.h"
+#include "chromecast/media/cma/pipeline/frame_status_cb_impl.h"
+#include "chromecast/media/cma/pipeline/media_component_device_client_impl.h"
 #include "chromecast/media/cma/test/frame_segmenter_for_test.h"
+#include "chromecast/public/media/audio_pipeline_device.h"
+#include "chromecast/public/media/cast_decoder_buffer.h"
+#include "chromecast/public/media/decrypt_context.h"
+#include "chromecast/public/media/media_clock_device.h"
+#include "chromecast/public/media/video_pipeline_device.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/buffers.h"
 #include "media/base/decoder_buffer.h"
@@ -50,16 +52,14 @@ void MediaComponentDeviceFeederForTest::Initialize(
     const base::Closure& eos_cb) {
   eos_cb_ = eos_cb;
 
-  MediaComponentDevice::Client client;
-  client.eos_cb =
-      base::Bind(&MediaComponentDeviceFeederForTest::OnEos,
-                 base::Unretained(this));
-  media_component_device_->SetClient(client);
+  media_component_device_->SetClient(
+      new MediaComponentDeviceClientImpl(base::Bind(
+          &MediaComponentDeviceFeederForTest::OnEos, base::Unretained(this))));
 
   bool success =
       media_component_device_->SetState(MediaComponentDevice::kStateIdle);
   ASSERT_TRUE(success);
-  success = media_component_device_->SetStartPts(base::TimeDelta());
+  success = media_component_device_->SetStartPts(0);
   ASSERT_TRUE(success);
   success =
       media_component_device_->SetState(MediaComponentDevice::kStatePaused);
@@ -78,12 +78,12 @@ void MediaComponentDeviceFeederForTest::Feed() {
   DCHECK(!frames_.empty());
   scoped_refptr<DecoderBufferBase> buffer = frames_.front();
 
-  MediaComponentDevice::FrameStatus status =
-      media_component_device_->PushFrame(
-          scoped_refptr<DecryptContext>(),
-          buffer,
+  MediaComponentDevice::FrameStatus status = media_component_device_->PushFrame(
+      nullptr, // decrypt_context
+      new CastDecoderBufferImpl(buffer),
+      new FrameStatusCBImpl(
           base::Bind(&MediaComponentDeviceFeederForTest::OnFramePushed,
-                     base::Unretained(this)));
+                     base::Unretained(this))));
   EXPECT_NE(status, MediaComponentDevice::kFrameFailed);
   frames_.pop_front();
 

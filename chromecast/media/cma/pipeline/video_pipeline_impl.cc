@@ -5,13 +5,15 @@
 #include "chromecast/media/cma/pipeline/video_pipeline_impl.h"
 
 #include "base/bind.h"
-#include "chromecast/media/cma/backend/video_pipeline_device.h"
 #include "chromecast/media/cma/base/buffering_defs.h"
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"
 #include "chromecast/media/cma/base/decoder_config_adapter.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_impl.h"
+#include "chromecast/media/cma/pipeline/video_pipeline_device_client_impl.h"
+#include "chromecast/public/graphics_types.h"
 #include "chromecast/public/media/decoder_config.h"
+#include "chromecast/public/media/video_pipeline_device.h"
 #include "media/base/video_decoder_config.h"
 
 namespace chromecast {
@@ -109,10 +111,8 @@ void VideoPipelineImpl::Initialize(
     CMALOG(kLogControl) << __FUNCTION__ << " "
                         << config.AsHumanReadableString();
   }
-  VideoPipelineDevice::VideoClient client;
-  client.natural_size_changed_cb =
-      base::Bind(&VideoPipelineImpl::OnNaturalSizeChanged, weak_this_);
-  video_device_->SetVideoClient(client);
+  video_device_->SetVideoClient(new VideoPipelineDeviceClientImpl(
+      base::Bind(&VideoPipelineImpl::OnNaturalSizeChanged, weak_this_)));
   if (frame_provider)
     SetCodedFrameProvider(frame_provider.Pass());
 
@@ -159,12 +159,14 @@ void VideoPipelineImpl::OnUpdateConfig(
   }
 }
 
-void VideoPipelineImpl::OnNaturalSizeChanged(const gfx::Size& size) {
+void VideoPipelineImpl::OnNaturalSizeChanged(const Size& size) {
   if (av_pipeline_impl_->GetState() != AvPipelineImpl::kPlaying)
     return;
 
-  if (!video_client_.natural_size_changed_cb.is_null())
-    video_client_.natural_size_changed_cb.Run(size);
+  if (!video_client_.natural_size_changed_cb.is_null()) {
+    video_client_.natural_size_changed_cb.Run(
+        gfx::Size(size.width, size.height));
+  }
 }
 
 void VideoPipelineImpl::UpdateStatistics() {

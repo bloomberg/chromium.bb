@@ -11,9 +11,11 @@ source_set("public") {
     "chromecast_export.h",
     "graphics_properties_shlib.h",
     "graphics_types.h",
+    "media_codec_support_shlib.h",
     "osd_plane.h",
     "osd_plane_shlib.h",
     "osd_surface.h",
+    "task_runner.h",
     "video_plane.h",
   ]
 }

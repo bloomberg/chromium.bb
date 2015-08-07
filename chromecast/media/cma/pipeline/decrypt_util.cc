@@ -9,8 +9,8 @@
 
 #include "base/logging.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
+#include "chromecast/public/media/cast_decrypt_config.h"
 #include "crypto/symmetric_key.h"
-#include "media/base/decrypt_config.h"
 
 namespace chromecast {
 namespace media {
@@ -24,11 +24,11 @@ class DecoderBufferClear : public DecoderBufferBase {
   // DecoderBufferBase implementation.
   StreamId stream_id() const override;
   base::TimeDelta timestamp() const override;
-  void set_timestamp(const base::TimeDelta& timestamp) override;
+  void set_timestamp(base::TimeDelta timestamp) override;
   const uint8* data() const override;
   uint8* writable_data() const override;
   size_t data_size() const override;
-  const ::media::DecryptConfig* decrypt_config() const override;
+  const CastDecryptConfig* decrypt_config() const override;
   bool end_of_stream() const override;
 
  private:
@@ -55,7 +55,7 @@ base::TimeDelta DecoderBufferClear::timestamp() const {
   return buffer_->timestamp();
 }
 
-void DecoderBufferClear::set_timestamp(const base::TimeDelta& timestamp) {
+void DecoderBufferClear::set_timestamp(base::TimeDelta timestamp) {
   buffer_->set_timestamp(timestamp);
 }
 
@@ -71,7 +71,7 @@ size_t DecoderBufferClear::data_size() const {
   return buffer_->data_size();
 }
 
-const ::media::DecryptConfig* DecoderBufferClear::decrypt_config() const {
+const CastDecryptConfig* DecoderBufferClear::decrypt_config() const {
   // Buffer is clear so no decryption info.
   return NULL;
 }
@@ -88,7 +88,7 @@ scoped_refptr<DecoderBufferBase> DecryptDecoderBuffer(
   if (buffer->end_of_stream())
     return buffer;
 
-  const ::media::DecryptConfig* decrypt_config = buffer->decrypt_config();
+  const CastDecryptConfig* decrypt_config = buffer->decrypt_config();
   if (!decrypt_config || decrypt_config->iv().size() == 0)
     return buffer;
 
@@ -117,8 +117,7 @@ scoped_refptr<DecoderBufferBase> DecryptDecoderBuffer(
   uint8 ecount_buf[AES_BLOCK_SIZE];
 
   // Perform the decryption.
-  const std::vector< ::media::SubsampleEntry>& subsamples =
-      decrypt_config->subsamples();
+  const std::vector<SubsampleEntry>& subsamples = decrypt_config->subsamples();
   uint8* data = buffer->writable_data();
   uint32 offset = 0;
   for (size_t k = 0; k < subsamples.size(); k++) {

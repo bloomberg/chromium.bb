@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_BASE_DECRYPT_CONTEXT_H_
-#define CHROMECAST_MEDIA_BASE_DECRYPT_CONTEXT_H_
+#ifndef CHROMECAST_MEDIA_BASE_DECRYPT_CONTEXT_IMPL_H_
+#define CHROMECAST_MEDIA_BASE_DECRYPT_CONTEXT_IMPL_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chromecast/media/base/key_systems_common.h"
+#include "chromecast/public/media/decrypt_context.h"
 
 namespace crypto {
 class SymmetricKey;
@@ -21,26 +22,26 @@ namespace media {
 // Each CDM should implement this and add fields needed to fully describe a
 // decryption context.
 //
-class DecryptContext : public base::RefCountedThreadSafe<DecryptContext> {
+class DecryptContextImpl : public DecryptContext {
  public:
-  explicit DecryptContext(CastKeySystem key_system);
+  explicit DecryptContextImpl(CastKeySystem key_system);
+  ~DecryptContextImpl() override;
 
-  CastKeySystem key_system() const { return key_system_; }
+  // DecryptContext implementation:
+  CastKeySystem GetKeySystem() override;
+  bool Decrypt(CastDecoderBuffer* buffer,
+               std::vector<uint8_t>* output) override;
 
   // Returns the clear key if available, NULL otherwise.
   virtual crypto::SymmetricKey* GetKey() const;
 
- protected:
-  friend class base::RefCountedThreadSafe<DecryptContext>;
-  virtual ~DecryptContext();
-
  private:
   CastKeySystem key_system_;
 
-  DISALLOW_COPY_AND_ASSIGN(DecryptContext);
+  DISALLOW_COPY_AND_ASSIGN(DecryptContextImpl);
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_BASE_DECRYPT_CONTEXT_H_
+#endif  // CHROMECAST_MEDIA_BASE_DECRYPT_CONTEXT_IMPL_H_

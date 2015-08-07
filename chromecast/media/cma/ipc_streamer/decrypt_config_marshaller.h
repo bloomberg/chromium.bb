@@ -13,16 +13,16 @@ class DecryptConfig;
 
 namespace chromecast {
 namespace media {
+class CastDecryptConfig;
 class MediaMessage;
 
 class DecryptConfigMarshaller {
  public:
   // Writes the serialized structure of |config| into |msg|.
-  static void Write(
-      const ::media::DecryptConfig& config, MediaMessage* msg);
+  static void Write(const CastDecryptConfig& config, MediaMessage* msg);
 
   // Returns a DecryptConfig from its serialized structure.
-  static scoped_ptr< ::media::DecryptConfig> Read(MediaMessage* msg);
+  static scoped_ptr<CastDecryptConfig> Read(MediaMessage* msg);
 };
 
 }  // namespace media

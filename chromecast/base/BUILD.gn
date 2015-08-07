@@ -20,6 +20,8 @@ source_set("base") {
     "process_utils.h",
     "serializers.cc",
     "serializers.h",
+    "task_runner_impl.cc",
+    "task_runner_impl.h",
   ]
 
   configs += [ "//chromecast:config" ]

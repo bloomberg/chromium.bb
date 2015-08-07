@@ -5,12 +5,12 @@
 #include "chromecast/media/cma/pipeline/audio_pipeline_impl.h"
 
 #include "base/bind.h"
-#include "chromecast/media/cma/backend/audio_pipeline_device.h"
 #include "chromecast/media/cma/base/buffering_defs.h"
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"
 #include "chromecast/media/cma/base/decoder_config_adapter.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_impl.h"
+#include "chromecast/public/media/audio_pipeline_device.h"
 #include "chromecast/public/media/decoder_config.h"
 #include "media/base/audio_decoder_config.h"
 

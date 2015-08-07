@@ -10,15 +10,16 @@ namespace chromecast {
 namespace media {
 
 VideoPipelineDeviceDefault::VideoPipelineDeviceDefault(
+    const MediaPipelineDeviceParams& params,
     MediaClockDevice* media_clock_device)
-  : pipeline_(new MediaComponentDeviceDefault(media_clock_device)) {
-  DetachFromThread();
+    : pipeline_(new MediaComponentDeviceDefault(params, media_clock_device)) {
+  thread_checker_.DetachFromThread();
 }
 
 VideoPipelineDeviceDefault::~VideoPipelineDeviceDefault() {
 }
 
-void VideoPipelineDeviceDefault::SetClient(const Client& client) {
+void VideoPipelineDeviceDefault::SetClient(Client* client) {
   pipeline_->SetClient(client);
 }
 
@@ -40,30 +41,28 @@ bool VideoPipelineDeviceDefault::SetState(State new_state) {
   return true;
 }
 
-bool VideoPipelineDeviceDefault::SetStartPts(base::TimeDelta time) {
-  return pipeline_->SetStartPts(time);
+bool VideoPipelineDeviceDefault::SetStartPts(int64_t time_microseconds) {
+  return pipeline_->SetStartPts(time_microseconds);
 }
 
 MediaComponentDevice::FrameStatus VideoPipelineDeviceDefault::PushFrame(
-    const scoped_refptr<DecryptContext>& decrypt_context,
-    const scoped_refptr<DecoderBufferBase>& buffer,
-    const FrameStatusCB& completion_cb) {
+    DecryptContext* decrypt_context,
+    CastDecoderBuffer* buffer,
+    FrameStatusCB* completion_cb) {
   return pipeline_->PushFrame(decrypt_context, buffer, completion_cb);
 }
 
-base::TimeDelta VideoPipelineDeviceDefault::GetRenderingTime() const {
-  return pipeline_->GetRenderingTime();
-}
-
-base::TimeDelta VideoPipelineDeviceDefault::GetRenderingDelay() const {
+VideoPipelineDeviceDefault::RenderingDelay
+VideoPipelineDeviceDefault::GetRenderingDelay() const {
   return pipeline_->GetRenderingDelay();
 }
 
-void VideoPipelineDeviceDefault::SetVideoClient(const VideoClient& client) {
+void VideoPipelineDeviceDefault::SetVideoClient(VideoClient* client) {
+  delete client;
 }
 
 bool VideoPipelineDeviceDefault::SetConfig(const VideoConfig& config) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!IsValidConfig(config))
     return false;
   config_ = config;

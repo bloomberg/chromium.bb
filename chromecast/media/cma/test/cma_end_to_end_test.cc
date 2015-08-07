@@ -8,8 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
-#include "chromecast/media/cma/backend/media_pipeline_device.h"
-#include "chromecast/media/cma/backend/media_pipeline_device_factory_default.h"
+#include "chromecast/base/task_runner_impl.h"
+#include "chromecast/media/cma/backend/media_pipeline_backend_default.h"
 #include "chromecast/media/cma/base/buffering_defs.h"
 #include "chromecast/media/cma/filters/cma_renderer.h"
 #include "chromecast/media/cma/pipeline/media_pipeline_impl.h"
@@ -39,8 +39,10 @@ class CmaEndToEndTest : public testing::Test {
         message_loop_.task_runner()));
 
     scoped_ptr<MediaPipelineImpl> media_pipeline(new MediaPipelineImpl());
-    scoped_ptr<MediaPipelineDeviceFactory> factory =
-        make_scoped_ptr(new MediaPipelineDeviceFactoryDefault());
+    task_runner_.reset(new TaskRunnerImpl());
+    MediaPipelineDeviceParams params(task_runner_.get());
+    scoped_ptr<MediaPipelineBackend> backend =
+        make_scoped_ptr(new MediaPipelineBackendDefault(params));
 
     gles2_.reset(new gpu::gles2::GLES2InterfaceStub());
     mock_gpu_factories_ = new ::media::MockGpuVideoAcceleratorFactories();
@@ -48,9 +50,7 @@ class CmaEndToEndTest : public testing::Test {
     EXPECT_CALL(*mock_gpu_factories_.get(), GetGLES2Interface())
         .WillRepeatedly(testing::Return(gles2_.get()));
 
-    media_pipeline->Initialize(
-        kLoadTypeMediaSource,
-        make_scoped_ptr(new MediaPipelineDevice(factory.Pass())));
+    media_pipeline->Initialize(kLoadTypeMediaSource, backend.Pass());
 
     renderer_.reset(new CmaRenderer(media_pipeline.Pass(), null_sink_.get(),
                                     mock_gpu_factories_));
@@ -61,6 +61,7 @@ class CmaEndToEndTest : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
+  scoped_ptr<TaskRunnerImpl> task_runner_;
   scoped_ptr<::media::FakeDemuxerStreamProvider> demuxer_stream_provider_;
   scoped_ptr<CmaRenderer> renderer_;
   scoped_refptr<::media::MockGpuVideoAcceleratorFactories> mock_gpu_factories_;

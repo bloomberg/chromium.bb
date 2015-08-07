@@ -8,7 +8,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chromecast/media/cma/backend/audio_pipeline_device.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
+#include "chromecast/public/media/audio_pipeline_device.h"
 #include "chromecast/public/media/decoder_config.h"
 
 namespace chromecast {
@@ -16,23 +18,23 @@ namespace media {
 
 class MediaClockDevice;
 class MediaComponentDeviceDefault;
+struct MediaPipelineDeviceParams;
 
 class AudioPipelineDeviceDefault : public AudioPipelineDevice {
  public:
-  explicit AudioPipelineDeviceDefault(MediaClockDevice* media_clock_device);
+  AudioPipelineDeviceDefault(const MediaPipelineDeviceParams& params,
+                             MediaClockDevice* media_clock_device);
   ~AudioPipelineDeviceDefault() override;
 
   // AudioPipelineDevice implementation.
-  void SetClient(const Client& client) override;
+  void SetClient(Client* client) override;
   State GetState() const override;
   bool SetState(State new_state) override;
-  bool SetStartPts(base::TimeDelta time) override;
-  FrameStatus PushFrame(
-      const scoped_refptr<DecryptContext>& decrypt_context,
-      const scoped_refptr<DecoderBufferBase>& buffer,
-      const FrameStatusCB& completion_cb) override;
-  base::TimeDelta GetRenderingTime() const override;
-  base::TimeDelta GetRenderingDelay() const override;
+  bool SetStartPts(int64_t time_microseconds) override;
+  FrameStatus PushFrame(DecryptContext* decrypt_context,
+                        CastDecoderBuffer* buffer,
+                        FrameStatusCB* completion_cb) override;
+  RenderingDelay GetRenderingDelay() const override;
   bool SetConfig(const AudioConfig& config) override;
   void SetStreamVolumeMultiplier(float multiplier) override;
   bool GetStatistics(Statistics* stats) const override;
@@ -43,6 +45,7 @@ class AudioPipelineDeviceDefault : public AudioPipelineDevice {
   AudioConfig config_;
   std::vector<uint8_t> config_extra_data_;
 
+  base::ThreadChecker thread_checker_;
   DISALLOW_COPY_AND_ASSIGN(AudioPipelineDeviceDefault);
 };
 

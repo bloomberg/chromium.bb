@@ -6,7 +6,9 @@
 #define CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_CLOCK_DEVICE_DEFAULT_H_
 
 #include "base/macros.h"
-#include "chromecast/media/cma/backend/media_clock_device.h"
+#include "base/threading/thread_checker.h"
+#include "base/time/time.h"
+#include "chromecast/public/media/media_clock_device.h"
 
 namespace chromecast {
 namespace media {
@@ -19,9 +21,9 @@ class MediaClockDeviceDefault : public MediaClockDevice {
   // MediaClockDevice implementation.
   State GetState() const override;
   bool SetState(State new_state) override;
-  bool ResetTimeline(base::TimeDelta time) override;
+  bool ResetTimeline(int64_t time_microseconds) override;
   bool SetRate(float rate) override;
-  base::TimeDelta GetTime() override;
+  int64_t GetTimeMicroseconds() override;
 
  private:
   State state_;
@@ -31,6 +33,8 @@ class MediaClockDeviceDefault : public MediaClockDevice {
   base::TimeTicks stc_;
 
   float rate_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaClockDeviceDefault);
 };

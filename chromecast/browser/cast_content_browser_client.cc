@@ -23,8 +23,8 @@
 #include "chromecast/browser/media/cma_message_filter_host.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/global_descriptors.h"
-#include "chromecast/media/cma/backend/media_pipeline_device.h"
-#include "chromecast/media/cma/backend/media_pipeline_device_factory.h"
+#include "chromecast/public/cast_media_shlib.h"
+#include "chromecast/public/media/media_pipeline_backend.h"
 #include "components/crash/app/breakpad_linux.h"
 #include "components/crash/browser/crash_handler_host_linux.h"
 #include "components/network_hints/browser/network_hints_message_filter.h"
@@ -79,12 +79,11 @@ CastContentBrowserClient::CreateAudioManagerFactory() {
 }
 
 #if !defined(OS_ANDROID)
-scoped_ptr<media::MediaPipelineDevice>
-CastContentBrowserClient::CreateMediaPipelineDevice(
+scoped_ptr<media::MediaPipelineBackend>
+CastContentBrowserClient::CreateMediaPipelineBackend(
     const media::MediaPipelineDeviceParams& params) {
-  scoped_ptr<media::MediaPipelineDeviceFactory> factory =
-      GetMediaPipelineDeviceFactory(params);
-  return make_scoped_ptr(new media::MediaPipelineDevice(factory.Pass()));
+  return make_scoped_ptr(
+      media::CastMediaShlib::CreateMediaPipelineBackend(params));
 }
 #endif
 
@@ -101,9 +100,8 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
   scoped_refptr<media::CmaMessageFilterHost> cma_message_filter(
       new media::CmaMessageFilterHost(
           host->GetID(),
-          base::Bind(
-              &CastContentBrowserClient::CreateMediaPipelineDevice,
-              base::Unretained(this))));
+          base::Bind(&CastContentBrowserClient::CreateMediaPipelineBackend,
+                     base::Unretained(this))));
   host->AddFilter(cma_message_filter.get());
 #endif  // !defined(OS_ANDROID)
 

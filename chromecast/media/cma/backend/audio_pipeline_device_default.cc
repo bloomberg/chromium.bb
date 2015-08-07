@@ -10,15 +10,16 @@ namespace chromecast {
 namespace media {
 
 AudioPipelineDeviceDefault::AudioPipelineDeviceDefault(
+    const MediaPipelineDeviceParams& params,
     MediaClockDevice* media_clock_device)
-    : pipeline_(new MediaComponentDeviceDefault(media_clock_device)) {
-  DetachFromThread();
+    : pipeline_(new MediaComponentDeviceDefault(params, media_clock_device)) {
+  thread_checker_.DetachFromThread();
 }
 
 AudioPipelineDeviceDefault::~AudioPipelineDeviceDefault() {
 }
 
-void AudioPipelineDeviceDefault::SetClient(const Client& client) {
+void AudioPipelineDeviceDefault::SetClient(Client* client) {
   pipeline_->SetClient(client);
 }
 
@@ -40,27 +41,24 @@ bool AudioPipelineDeviceDefault::SetState(State new_state) {
   return true;
 }
 
-bool AudioPipelineDeviceDefault::SetStartPts(base::TimeDelta time) {
-  return pipeline_->SetStartPts(time);
+bool AudioPipelineDeviceDefault::SetStartPts(int64_t time_microseconds) {
+  return pipeline_->SetStartPts(time_microseconds);
 }
 
 MediaComponentDevice::FrameStatus AudioPipelineDeviceDefault::PushFrame(
-    const scoped_refptr<DecryptContext>& decrypt_context,
-    const scoped_refptr<DecoderBufferBase>& buffer,
-    const FrameStatusCB& completion_cb) {
+    DecryptContext* decrypt_context,
+    CastDecoderBuffer* buffer,
+    FrameStatusCB* completion_cb) {
   return pipeline_->PushFrame(decrypt_context, buffer, completion_cb);
 }
 
-base::TimeDelta AudioPipelineDeviceDefault::GetRenderingTime() const {
-  return pipeline_->GetRenderingTime();
-}
-
-base::TimeDelta AudioPipelineDeviceDefault::GetRenderingDelay() const {
+AudioPipelineDeviceDefault::RenderingDelay
+AudioPipelineDeviceDefault::GetRenderingDelay() const {
   return pipeline_->GetRenderingDelay();
 }
 
 bool AudioPipelineDeviceDefault::SetConfig(const AudioConfig& config) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!IsValidConfig(config))
     return false;
   config_ = config;
@@ -73,7 +71,7 @@ bool AudioPipelineDeviceDefault::SetConfig(const AudioConfig& config) {
 }
 
 void AudioPipelineDeviceDefault::SetStreamVolumeMultiplier(float multiplier) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 bool AudioPipelineDeviceDefault::GetStatistics(Statistics* stats) const {

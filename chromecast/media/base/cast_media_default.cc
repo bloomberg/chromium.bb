@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromecast/media/cma/backend/media_pipeline_backend_default.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/graphics_types.h"
+#include "chromecast/public/media_codec_support_shlib.h"
 #include "chromecast/public/video_plane.h"
 
 namespace chromecast {
@@ -40,6 +42,16 @@ void CastMediaShlib::Finalize() {
 
 VideoPlane* CastMediaShlib::GetVideoPlane() {
   return g_video_plane;
+}
+
+MediaPipelineBackend* CastMediaShlib::CreateMediaPipelineBackend(
+    const MediaPipelineDeviceParams& params) {
+  return new MediaPipelineBackendDefault(params);
+}
+
+MediaCodecSupportShlib::CodecSupport MediaCodecSupportShlib::IsSupported(
+    const std::string& codec) {
+  return kDefault;
 }
 
 }  // namespace media

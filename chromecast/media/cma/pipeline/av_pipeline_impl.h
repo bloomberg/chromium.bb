@@ -12,8 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chromecast/media/cma/backend/media_component_device.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_client.h"
+#include "chromecast/public/media/media_component_device.h"
 #include "chromecast/public/media/stream_id.h"
 
 namespace media {

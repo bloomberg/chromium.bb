@@ -2,32 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_BASE_DECRYPT_CONTEXT_CLEARKEY_H_
-#define CHROMECAST_MEDIA_BASE_DECRYPT_CONTEXT_CLEARKEY_H_
+#ifndef CHROMECAST_MEDIA_BASE_DECRYPT_CONTEXT_IMPL_CLEARKEY_H_
+#define CHROMECAST_MEDIA_BASE_DECRYPT_CONTEXT_IMPL_CLEARKEY_H_
 
 #include "base/macros.h"
-#include "chromecast/media/base/decrypt_context.h"
+#include "chromecast/media/base/decrypt_context_impl.h"
 
 namespace chromecast {
 namespace media {
 
-class DecryptContextClearKey : public DecryptContext {
+class DecryptContextImplClearKey : public DecryptContextImpl {
  public:
   // Note: DecryptContextClearKey does not take ownership of |key|.
-  explicit DecryptContextClearKey(crypto::SymmetricKey* key);
+  explicit DecryptContextImplClearKey(crypto::SymmetricKey* key);
+  ~DecryptContextImplClearKey() override;
 
   // DecryptContext implementation.
   crypto::SymmetricKey* GetKey() const override;
 
  private:
-  ~DecryptContextClearKey() override;
-
   crypto::SymmetricKey* const key_;
 
-  DISALLOW_COPY_AND_ASSIGN(DecryptContextClearKey);
+  DISALLOW_COPY_AND_ASSIGN(DecryptContextImplClearKey);
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_BASE_DECRYPT_CONTEXT_CLEARKEY_H_
+#endif  // CHROMECAST_MEDIA_BASE_DECRYPT_CONTEXT_IMPL_CLEARKEY_H_

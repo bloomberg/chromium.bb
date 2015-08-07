@@ -9,17 +9,18 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "chromecast/media/cma/backend/audio_pipeline_device.h"
-#include "chromecast/media/cma/backend/media_clock_device.h"
-#include "chromecast/media/cma/backend/media_pipeline_device.h"
-#include "chromecast/media/cma/backend/video_pipeline_device.h"
-#include "chromecast/media/cma/base/decoder_buffer_base.h"
+#include "chromecast/public/media/audio_pipeline_device.h"
+#include "chromecast/public/media/cast_decoder_buffer.h"
+#include "chromecast/public/media/media_clock_device.h"
+#include "chromecast/public/media/video_pipeline_device.h"
 
 namespace chromecast {
 namespace media {
+class DecoderBufferBase;
 
 typedef std::list<scoped_refptr<DecoderBufferBase> > BufferList;
 

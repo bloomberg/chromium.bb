@@ -5,8 +5,9 @@
 #include "chromecast/media/cma/ipc_streamer/decrypt_config_marshaller.h"
 
 #include "base/logging.h"
+#include "chromecast/media/cma/base/cast_decrypt_config_impl.h"
 #include "chromecast/media/cma/ipc/media_message.h"
-#include "media/base/decrypt_config.h"
+#include "chromecast/public/media/cast_decrypt_config.h"
 
 namespace chromecast {
 namespace media {
@@ -18,8 +19,8 @@ const size_t kMaxSubsampleCount = 1024;
 }
 
 // static
-void DecryptConfigMarshaller::Write(
-    const ::media::DecryptConfig& config, MediaMessage* msg) {
+void DecryptConfigMarshaller::Write(const CastDecryptConfig& config,
+                                    MediaMessage* msg) {
   CHECK_GT(config.key_id().size(), 0u);
   CHECK_GT(config.iv().size(), 0u);
   CHECK_GT(config.subsamples().size(), 0u);
@@ -36,8 +37,7 @@ void DecryptConfigMarshaller::Write(
 }
 
 // static
-scoped_ptr< ::media::DecryptConfig> DecryptConfigMarshaller::Read(
-    MediaMessage* msg) {
+scoped_ptr<CastDecryptConfig> DecryptConfigMarshaller::Read(MediaMessage* msg) {
   size_t key_id_size = 0;
   CHECK(msg->ReadPod(&key_id_size));
   CHECK_GT(key_id_size, 0u);
@@ -56,7 +56,7 @@ scoped_ptr< ::media::DecryptConfig> DecryptConfigMarshaller::Read(
   CHECK(msg->ReadPod(&subsample_count));
   CHECK_GT(subsample_count, 0u);
   CHECK_LT(subsample_count, kMaxSubsampleCount);
-  std::vector< ::media::SubsampleEntry> subsamples(subsample_count);
+  std::vector<SubsampleEntry> subsamples(subsample_count);
   for (size_t k = 0; k < subsample_count; k++) {
     subsamples[k].clear_bytes = 0;
     subsamples[k].cypher_bytes = 0;
@@ -64,11 +64,9 @@ scoped_ptr< ::media::DecryptConfig> DecryptConfigMarshaller::Read(
     CHECK(msg->ReadPod(&subsamples[k].cypher_bytes));
   }
 
-  return scoped_ptr< ::media::DecryptConfig>(
-      new ::media::DecryptConfig(
-          std::string(key_id.get(), key_id_size),
-          std::string(iv.get(), iv_size),
-          subsamples));
+  return scoped_ptr<CastDecryptConfig>(
+      new CastDecryptConfigImpl(std::string(key_id.get(), key_id_size),
+                                std::string(iv.get(), iv_size), subsamples));
 }
 
 }  // namespace media

@@ -22,7 +22,7 @@ class AudioPipelineImpl;
 class BrowserCdmCast;
 class BufferingController;
 class MediaClockDevice;
-class MediaPipelineDevice;
+class MediaPipelineBackend;
 class VideoPipelineImpl;
 
 class MediaPipelineImpl : public MediaPipeline {
@@ -33,7 +33,7 @@ class MediaPipelineImpl : public MediaPipeline {
   // Initialize the media pipeline: the pipeline is configured based on
   // |load_type|.
   void Initialize(LoadType load_type,
-                  scoped_ptr<MediaPipelineDevice> media_pipeline_device);
+                  scoped_ptr<MediaPipelineBackend> media_pipeline_backend);
 
   // MediaPipeline implementation.
   void SetClient(const MediaPipelineClient& client) override;
@@ -76,7 +76,7 @@ class MediaPipelineImpl : public MediaPipeline {
   scoped_ptr<BufferingController> buffering_controller_;
 
   // Interface with the underlying hardware media pipeline.
-  scoped_ptr<MediaPipelineDevice> media_pipeline_device_;
+  scoped_ptr<MediaPipelineBackend> media_pipeline_backend_;
   MediaClockDevice* clock_device_;
 
   bool has_audio_;

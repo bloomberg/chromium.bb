@@ -12,10 +12,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chromecast/media/cma/backend/audio_pipeline_device.h"
-#include "chromecast/media/cma/backend/media_clock_device.h"
-#include "chromecast/media/cma/backend/media_pipeline_device.h"
-#include "chromecast/media/cma/backend/media_pipeline_device_factory_default.h"
+#include "chromecast/base/task_runner_impl.h"
+#include "chromecast/media/cma/backend/media_pipeline_backend_default.h"
 #include "chromecast/media/cma/base/buffering_controller.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/media/cma/pipeline/audio_pipeline_impl.h"
@@ -25,6 +23,8 @@
 #include "chromecast/media/cma/pipeline/video_pipeline_impl.h"
 #include "chromecast/media/cma/test/frame_generator_for_test.h"
 #include "chromecast/media/cma/test/mock_frame_provider.h"
+#include "chromecast/public/media/audio_pipeline_device.h"
+#include "chromecast/public/media/media_clock_device.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/buffers.h"
 #include "media/base/decoder_buffer.h"
@@ -51,20 +51,23 @@ class AudioVideoPipelineImplTest : public testing::Test {
   void OnEos();
 
   base::Closure task_after_eos_cb_;
+  scoped_ptr<base::MessageLoop> message_loop_;
 
  private:
+  scoped_ptr<TaskRunnerImpl> task_runner_;
   scoped_ptr<MediaPipelineImpl> media_pipeline_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioVideoPipelineImplTest);
 };
 
 AudioVideoPipelineImplTest::AudioVideoPipelineImplTest()
-  : media_pipeline_(new MediaPipelineImpl()) {
-  scoped_ptr<MediaPipelineDeviceFactory> factory =
-      make_scoped_ptr(new MediaPipelineDeviceFactoryDefault());
-  scoped_ptr<MediaPipelineDevice> media_pipeline_device =
-      make_scoped_ptr(new MediaPipelineDevice(factory.Pass()));
-  media_pipeline_->Initialize(kLoadTypeURL, media_pipeline_device.Pass());
+    : message_loop_(new base::MessageLoop()),
+      task_runner_(new TaskRunnerImpl()),
+      media_pipeline_(new MediaPipelineImpl()) {
+  MediaPipelineDeviceParams params(task_runner_.get());
+  scoped_ptr<MediaPipelineBackend> backend =
+      make_scoped_ptr(new MediaPipelineBackendDefault(params));
+  media_pipeline_->Initialize(kLoadTypeURL, backend.Pass());
   media_pipeline_->SetPlaybackRate(1.0);
 }
 
@@ -181,14 +184,11 @@ TEST_F(AudioVideoPipelineImplTest, AudioFullCycleInitToStop) {
       &AudioVideoPipelineImplTest::Flush, base::Unretained(this),
       base::Closure(), ::media::PIPELINE_OK);
 
-  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
-  message_loop->PostTask(
-      FROM_HERE,
-      base::Bind(&AudioVideoPipelineImplTest::Initialize,
-                 base::Unretained(this),
-                 base::Closure(),
-                 ::media::PIPELINE_OK, is_audio));
-  message_loop->Run();
+  message_loop_->PostTask(FROM_HERE,
+                          base::Bind(&AudioVideoPipelineImplTest::Initialize,
+                                     base::Unretained(this), base::Closure(),
+                                     ::media::PIPELINE_OK, is_audio));
+  message_loop_->Run();
 };
 
 TEST_F(AudioVideoPipelineImplTest, VideoFullCycleInitToStop) {
@@ -197,14 +197,11 @@ TEST_F(AudioVideoPipelineImplTest, VideoFullCycleInitToStop) {
       &AudioVideoPipelineImplTest::Flush, base::Unretained(this),
       base::Closure(), ::media::PIPELINE_OK);
 
-  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
-  message_loop->PostTask(
-      FROM_HERE,
-      base::Bind(&AudioVideoPipelineImplTest::Initialize,
-                 base::Unretained(this),
-                 base::Closure(),
-                 ::media::PIPELINE_OK, is_audio));
-  message_loop->Run();
+  message_loop_->PostTask(FROM_HERE,
+                          base::Bind(&AudioVideoPipelineImplTest::Initialize,
+                                     base::Unretained(this), base::Closure(),
+                                     ::media::PIPELINE_OK, is_audio));
+  message_loop_->Run();
 };
 
 }  // namespace media

@@ -28,7 +28,7 @@ class PlayerTrackerImpl;
 
 namespace chromecast {
 namespace media {
-class DecryptContext;
+class DecryptContextImpl;
 
 // BrowserCdmCast is an extension of BrowserCdm that provides common
 // functionality across CDM implementations.
@@ -60,7 +60,7 @@ class BrowserCdmCast : public ::media::BrowserCdm {
   // Returns the decryption context needed to decrypt frames encrypted with
   // |key_id|.
   // Returns null if |key_id| is not available.
-  virtual scoped_refptr<DecryptContext> GetDecryptContext(
+  virtual scoped_ptr<DecryptContextImpl> GetDecryptContext(
       const std::string& key_id) const = 0;
 
  protected:

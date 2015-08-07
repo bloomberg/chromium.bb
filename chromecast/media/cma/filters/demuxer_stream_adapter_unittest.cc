@@ -16,6 +16,7 @@
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/media/cma/filters/demuxer_stream_adapter.h"
 #include "chromecast/media/cma/test/demuxer_stream_for_test.h"
+#include "chromecast/public/media/cast_decoder_buffer.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
@@ -112,7 +113,7 @@ void DemuxerStreamAdapterTest::OnNewFrame(
 
   ASSERT_TRUE(buffer.get() != NULL);
   ASSERT_EQ(buffer->timestamp(),
-            frame_received_count_ * base::TimeDelta::FromMilliseconds(40));
+            base::TimeDelta::FromMilliseconds(40 * frame_received_count_));
   frame_received_count_++;
 
   if (frame_received_count_ >= total_frames_) {

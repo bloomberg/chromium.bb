@@ -13,14 +13,14 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromecast/media/cdm/browser_cdm_cast.h"
-#include "chromecast/media/cma/backend/media_clock_device.h"
-#include "chromecast/media/cma/backend/media_pipeline_device.h"
 #include "chromecast/media/cma/base/buffering_controller.h"
 #include "chromecast/media/cma/base/buffering_state.h"
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"
 #include "chromecast/media/cma/pipeline/audio_pipeline_impl.h"
 #include "chromecast/media/cma/pipeline/video_pipeline_impl.h"
+#include "chromecast/public/media/media_clock_device.h"
+#include "chromecast/public/media/media_pipeline_backend.h"
 #include "media/base/buffers.h"
 
 namespace chromecast {
@@ -70,11 +70,11 @@ MediaPipelineImpl::~MediaPipelineImpl() {
 
 void MediaPipelineImpl::Initialize(
     LoadType load_type,
-    scoped_ptr<MediaPipelineDevice> media_pipeline_device) {
+    scoped_ptr<MediaPipelineBackend> media_pipeline_backend) {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
-  media_pipeline_device_.reset(media_pipeline_device.release());
-  clock_device_ = media_pipeline_device_->GetMediaClockDevice();
+  media_pipeline_backend_.reset(media_pipeline_backend.release());
+  clock_device_ = media_pipeline_backend_->GetClock();
 
   if (load_type == kLoadTypeURL || load_type == kLoadTypeMediaSource) {
     base::TimeDelta low_threshold(kLowBufferThresholdURL);
@@ -90,11 +90,11 @@ void MediaPipelineImpl::Initialize(
         base::Bind(&MediaPipelineImpl::OnBufferingNotification, weak_this_)));
   }
 
-  audio_pipeline_.reset(new AudioPipelineImpl(
-      media_pipeline_device_->GetAudioPipelineDevice()));
+  audio_pipeline_.reset(
+      new AudioPipelineImpl(media_pipeline_backend_->GetAudio()));
 
-  video_pipeline_.reset(new VideoPipelineImpl(
-      media_pipeline_device_->GetVideoPipelineDevice()));
+  video_pipeline_.reset(
+      new VideoPipelineImpl(media_pipeline_backend_->GetVideo()));
 }
 
 void MediaPipelineImpl::SetClient(const MediaPipelineClient& client) {
@@ -166,7 +166,7 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
 
   // Reset the start of the timeline.
   DCHECK_EQ(clock_device_->GetState(), MediaClockDevice::kStateIdle);
-  clock_device_->ResetTimeline(time);
+  clock_device_->ResetTimeline(time.InMicroseconds());
 
   // Start the clock. If the playback rate is 0, then the clock is started
   // but does not increase.
@@ -210,6 +210,8 @@ void MediaPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(has_audio_ || has_video_);
   DCHECK(!pending_flush_callbacks_);
+  DCHECK(clock_device_->GetState() == MediaClockDevice::kStateUninitialized ||
+         clock_device_->GetState() == MediaClockDevice::kStateRunning);
 
   // No need to update media time anymore.
   enable_time_update_ = false;
@@ -272,7 +274,7 @@ void MediaPipelineImpl::SetPlaybackRate(double rate) {
   DCHECK(thread_checker_.CalledOnValidThread());
   target_playback_rate_ = rate;
   if (!buffering_controller_ || !buffering_controller_->IsBuffering())
-    media_pipeline_device_->GetMediaClockDevice()->SetRate(rate);
+    media_pipeline_backend_->GetClock()->SetRate(rate);
 }
 
 AudioPipelineImpl* MediaPipelineImpl::GetAudioPipelineImpl() const {
@@ -301,17 +303,16 @@ void MediaPipelineImpl::OnBufferingNotification(bool is_buffering) {
     client_.buffering_state_cb.Run(buffering_state);
   }
 
-  if (media_pipeline_device_->GetMediaClockDevice()->GetState() ==
+  if (media_pipeline_backend_->GetClock()->GetState() ==
       MediaClockDevice::kStateUninitialized) {
     return;
   }
 
   if (is_buffering) {
     // Do not consume data in a rebuffering phase.
-    media_pipeline_device_->GetMediaClockDevice()->SetRate(0.0);
+    media_pipeline_backend_->GetClock()->SetRate(0.0);
   } else {
-    media_pipeline_device_->GetMediaClockDevice()->SetRate(
-        target_playback_rate_);
+    media_pipeline_backend_->GetClock()->SetRate(target_playback_rate_);
   }
 }
 
@@ -327,7 +328,8 @@ void MediaPipelineImpl::UpdateMediaTime() {
   statistics_rolling_counter_ =
       (statistics_rolling_counter_ + 1) % kStatisticsUpdatePeriod;
 
-  base::TimeDelta media_time(clock_device_->GetTime());
+  base::TimeDelta media_time =
+      base::TimeDelta::FromMicroseconds(clock_device_->GetTimeMicroseconds());
   if (media_time == ::media::kNoTimestamp()) {
     pending_time_update_task_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

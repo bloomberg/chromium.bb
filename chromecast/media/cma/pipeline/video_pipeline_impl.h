@@ -14,10 +14,7 @@
 #include "chromecast/media/cma/pipeline/video_pipeline.h"
 #include "chromecast/media/cma/pipeline/video_pipeline_client.h"
 #include "chromecast/public/media/stream_id.h"
-
-namespace gfx {
-class Size;
-}
+#include "chromecast/public/media/video_pipeline_device.h"
 
 namespace media {
 class AudioDecoderConfig;
@@ -25,6 +22,7 @@ class VideoDecoderConfig;
 }
 
 namespace chromecast {
+struct Size;
 namespace media {
 class AvPipelineImpl;
 class BrowserCdmCast;
@@ -61,11 +59,14 @@ class VideoPipelineImpl : public VideoPipeline {
   void SetClient(const VideoPipelineClient& client) override;
 
  private:
+  class DeviceClientImpl;
+  friend class DeviceClientImpl;
+
   void OnFlushDone(const ::media::PipelineStatusCB& status_cb);
   void OnUpdateConfig(StreamId id,
                       const ::media::AudioDecoderConfig& audio_config,
                       const ::media::VideoDecoderConfig& video_config);
-  void OnNaturalSizeChanged(const gfx::Size& size);
+  void OnNaturalSizeChanged(const Size& size);
 
   VideoPipelineDevice* video_device_;
 

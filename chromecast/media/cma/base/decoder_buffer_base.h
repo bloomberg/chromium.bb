@@ -11,12 +11,9 @@
 #include "base/time/time.h"
 #include "chromecast/public/media/stream_id.h"
 
-namespace media {
-class DecryptConfig;
-}
-
 namespace chromecast {
 namespace media {
+class CastDecryptConfig;
 
 // DecoderBufferBase exposes only the properties of an audio/video buffer.
 // The way a DecoderBufferBase is created and organized in memory
@@ -24,7 +21,7 @@ namespace media {
 class DecoderBufferBase
     : public base::RefCountedThreadSafe<DecoderBufferBase> {
  public:
-  DecoderBufferBase();
+  DecoderBufferBase() {}
 
   // Returns the stream id of this decoder buffer belonging to. it's optional
   // and default value is kPrimary.
@@ -34,7 +31,7 @@ class DecoderBufferBase
   virtual base::TimeDelta timestamp() const = 0;
 
   // Sets the PTS of the frame.
-  virtual void set_timestamp(const base::TimeDelta& timestamp) = 0;
+  virtual void set_timestamp(base::TimeDelta timestamp) = 0;
 
   // Gets the frame data.
   virtual const uint8* data() const = 0;
@@ -45,7 +42,7 @@ class DecoderBufferBase
 
   // Returns the decrypt configuration.
   // Returns NULL if the buffer has no decrypt info.
-  virtual const ::media::DecryptConfig* decrypt_config() const = 0;
+  virtual const CastDecryptConfig* decrypt_config() const = 0;
 
   // Indicate if this is a special frame that indicates the end of the stream.
   // If true, functions to access the frame content cannot be called.
@@ -53,7 +50,7 @@ class DecoderBufferBase
 
  protected:
   friend class base::RefCountedThreadSafe<DecoderBufferBase>;
-  virtual ~DecoderBufferBase();
+  virtual ~DecoderBufferBase() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DecoderBufferBase);

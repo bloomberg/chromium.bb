@@ -9,6 +9,11 @@
     'libcast_media_gyp%': '',
     'use_default_libcast_media%': 1,
   },
+  'target_defaults': {
+    'include_dirs': [
+      '../public/', # Public APIs
+    ],
+  },
   'targets': [
     # TODO(gunsch): delete this target once Chromecast M44/earlier is obsolete.
     # See: b/21639416
@@ -27,10 +32,10 @@
         '<(libcast_media_gyp):libcast_media_1.0',
       ],
       'sources': [
-        'base/decrypt_context.cc',
-        'base/decrypt_context.h',
-        'base/decrypt_context_clearkey.cc',
-        'base/decrypt_context_clearkey.h',
+        'base/decrypt_context_impl.cc',
+        'base/decrypt_context_impl.h',
+        'base/decrypt_context_impl_clearkey.cc',
+        'base/decrypt_context_impl_clearkey.h',
         'base/key_systems_common.cc',
         'base/key_systems_common.h',
         'base/media_caps.cc',
@@ -99,13 +104,15 @@
         'cma/base/buffering_frame_provider.h',
         'cma/base/buffering_state.cc',
         'cma/base/buffering_state.h',
+        'cma/base/cast_decoder_buffer_impl.cc',
+        'cma/base/cast_decoder_buffer_impl.h',
+        'cma/base/cast_decrypt_config_impl.cc',
+        'cma/base/cast_decrypt_config_impl.h',
         'cma/base/cma_logging.h',
         'cma/base/coded_frame_provider.cc',
         'cma/base/coded_frame_provider.h',
         'cma/base/decoder_buffer_adapter.cc',
         'cma/base/decoder_buffer_adapter.h',
-        'cma/base/decoder_buffer_base.cc',
-        'cma/base/decoder_buffer_base.h',
         'cma/base/decoder_config_adapter.cc',
         'cma/base/decoder_config_adapter.h',
         'cma/base/media_task_runner.cc',
@@ -115,52 +122,26 @@
       ],
     },
     {
-      'target_name': 'cma_backend',
+      'target_name': 'default_cma_backend',
       'type': '<(component)',
       'dependencies': [
-        'cma_base',
-        'media_base',
+        '../chromecast.gyp:cast_base',
         '../../base/base.gyp:base',
-        '../../media/media.gyp:media',
       ],
       'include_dirs': [
         '../..',
       ],
       'sources': [
-        'cma/backend/audio_pipeline_device.cc',
-        'cma/backend/audio_pipeline_device.h',
         'cma/backend/audio_pipeline_device_default.cc',
         'cma/backend/audio_pipeline_device_default.h',
-        'cma/backend/media_clock_device.cc',
-        'cma/backend/media_clock_device.h',
         'cma/backend/media_clock_device_default.cc',
         'cma/backend/media_clock_device_default.h',
-        'cma/backend/media_component_device.cc',
-        'cma/backend/media_component_device.h',
         'cma/backend/media_component_device_default.cc',
         'cma/backend/media_component_device_default.h',
-        'cma/backend/media_pipeline_device.cc',
-        'cma/backend/media_pipeline_device.h',
-        'cma/backend/media_pipeline_device_factory.h',
-        'cma/backend/media_pipeline_device_factory_default.cc',
-        'cma/backend/media_pipeline_device_factory_default.h',
-        'cma/backend/media_pipeline_device_params.cc',
-        'cma/backend/media_pipeline_device_params.h',
-        'cma/backend/video_pipeline_device.cc',
+        'cma/backend/media_pipeline_backend_default.cc',
+        'cma/backend/media_pipeline_backend_default.h',
         'cma/backend/video_pipeline_device_default.cc',
         'cma/backend/video_pipeline_device_default.h',
-        'cma/backend/video_pipeline_device.h',
-      ],
-      'conditions': [
-        ['chromecast_branding!="public"', {
-          'dependencies': [
-            '../internal/chromecast_internal.gyp:cma_backend_internal',
-          ],
-        }, {
-          'sources': [
-            'cma/backend/media_pipeline_device_factory_simple.cc'
-          ],
-        }],
       ],
     },
     {
@@ -205,7 +186,6 @@
       'target_name': 'cma_pipeline',
       'type': '<(component)',
       'dependencies': [
-        'cma_backend',
         'cma_base',
         'media_base',
         'media_cdm',
@@ -225,7 +205,11 @@
         'cma/pipeline/av_pipeline_impl.h',
         'cma/pipeline/decrypt_util.cc',
         'cma/pipeline/decrypt_util.h',
+        'cma/pipeline/frame_status_cb_impl.cc',
+        'cma/pipeline/frame_status_cb_impl.h',
         'cma/pipeline/load_type.h',
+        'cma/pipeline/media_component_device_client_impl.cc',
+        'cma/pipeline/media_component_device_client_impl.h',
         'cma/pipeline/media_pipeline.h',
         'cma/pipeline/media_pipeline_client.cc',
         'cma/pipeline/media_pipeline_client.h',
@@ -235,6 +219,8 @@
         'cma/pipeline/video_pipeline.h',
         'cma/pipeline/video_pipeline_client.cc',
         'cma/pipeline/video_pipeline_client.h',
+        'cma/pipeline/video_pipeline_device_client_impl.cc',
+        'cma/pipeline/video_pipeline_device_client_impl.h',
         'cma/pipeline/video_pipeline_impl.cc',
         'cma/pipeline/video_pipeline_impl.h',
       ],
@@ -260,12 +246,12 @@
       'target_name': 'cast_media',
       'type': 'none',
       'dependencies': [
-        'cma_backend',
         'cma_base',
         'cma_filters',
         'cma_ipc',
         'cma_ipc_streamer',
         'cma_pipeline',
+        'default_cma_backend',
         'media_cdm',
       ],
     },
@@ -321,7 +307,8 @@
           'target_name': 'libcast_media_1.0',
           'type': 'shared_library',
           'dependencies': [
-            '../../chromecast/chromecast.gyp:cast_public_api'
+            '../../chromecast/chromecast.gyp:cast_public_api',
+            'default_cma_backend'
           ],
           'include_dirs': [
             '../..',

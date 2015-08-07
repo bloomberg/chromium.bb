@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "chromecast/public/media/cast_key_system.h"
 #include "media/base/android/media_client_android.h"
 
 namespace chromecast {
@@ -18,13 +19,6 @@ namespace media {
 #if defined(PLAYREADY_CDM_AVAILABLE)
 extern const char kChromecastPlayreadyKeySystem[];
 #endif  // defined(PLAYREADY_CDM_AVAILABLE)
-
-enum CastKeySystem {
-  KEY_SYSTEM_NONE = 0,
-  KEY_SYSTEM_CLEAR_KEY,
-  KEY_SYSTEM_PLAYREADY,
-  KEY_SYSTEM_WIDEVINE
-};
 
 // Translates a key system string into a CastKeySystem, calling into the
 // platform for known key systems if needed.

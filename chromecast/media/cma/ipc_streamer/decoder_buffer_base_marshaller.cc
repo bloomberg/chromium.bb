@@ -5,10 +5,12 @@
 #include "chromecast/media/cma/ipc_streamer/decoder_buffer_base_marshaller.h"
 
 #include "base/logging.h"
+#include "chromecast/media/cma/base/cast_decrypt_config_impl.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/media/cma/ipc/media_message.h"
 #include "chromecast/media/cma/ipc/media_message_type.h"
 #include "chromecast/media/cma/ipc_streamer/decrypt_config_marshaller.h"
+#include "chromecast/public/media/cast_decrypt_config.h"
 #include "media/base/decrypt_config.h"
 
 namespace chromecast {
@@ -26,11 +28,11 @@ class DecoderBufferFromMsg : public DecoderBufferBase {
   // DecoderBufferBase implementation.
   StreamId stream_id() const override;
   base::TimeDelta timestamp() const override;
-  void set_timestamp(const base::TimeDelta& timestamp) override;
+  void set_timestamp(base::TimeDelta timestamp) override;
   const uint8* data() const override;
   uint8* writable_data() const override;
   size_t data_size() const override;
-  const ::media::DecryptConfig* decrypt_config() const override;
+  const CastDecryptConfig* decrypt_config() const override;
   bool end_of_stream() const override;
 
  private:
@@ -46,7 +48,7 @@ class DecoderBufferFromMsg : public DecoderBufferBase {
   base::TimeDelta pts_;
 
   // CENC parameters.
-  scoped_ptr< ::media::DecryptConfig> decrypt_config_;
+  scoped_ptr<CastDecryptConfig> decrypt_config_;
 
   // Size of the frame.
   size_t data_size_;
@@ -81,7 +83,7 @@ void DecoderBufferFromMsg::Initialize() {
 
   int64 pts_internal = 0;
   CHECK(msg_->ReadPod(&pts_internal));
-  pts_ = base::TimeDelta::FromInternalValue(pts_internal);
+  pts_ = base::TimeDelta::FromMicroseconds(pts_internal);
 
   bool has_decrypt_config = false;
   CHECK(msg_->ReadPod(&has_decrypt_config));
@@ -115,7 +117,7 @@ base::TimeDelta DecoderBufferFromMsg::timestamp() const {
   return pts_;
 }
 
-void DecoderBufferFromMsg::set_timestamp(const base::TimeDelta& timestamp) {
+void DecoderBufferFromMsg::set_timestamp(base::TimeDelta timestamp) {
   pts_ = timestamp;
 }
 
@@ -133,7 +135,7 @@ size_t DecoderBufferFromMsg::data_size() const {
   return data_size_;
 }
 
-const ::media::DecryptConfig* DecoderBufferFromMsg::decrypt_config() const {
+const CastDecryptConfig* DecoderBufferFromMsg::decrypt_config() const {
   return decrypt_config_.get();
 }
 
@@ -152,7 +154,7 @@ void DecoderBufferBaseMarshaller::Write(
     return;
 
   CHECK(msg->WritePod(buffer->stream_id()));
-  CHECK(msg->WritePod(buffer->timestamp().ToInternalValue()));
+  CHECK(msg->WritePod(buffer->timestamp().InMicroseconds()));
 
   bool has_decrypt_config =
       (buffer->decrypt_config() != NULL &&
@@ -164,12 +166,11 @@ void DecoderBufferBaseMarshaller::Write(
     // Map this case to a single fully-encrypted "subsample" for more consistent
     // backend handling.
     if (buffer->decrypt_config()->subsamples().empty()) {
-      std::vector< ::media::SubsampleEntry> encrypted_subsample_list(1);
+      std::vector<SubsampleEntry> encrypted_subsample_list(1);
       encrypted_subsample_list[0].clear_bytes = 0;
       encrypted_subsample_list[0].cypher_bytes = buffer->data_size();
-      ::media::DecryptConfig full_sample_config(
-          buffer->decrypt_config()->key_id(),
-          buffer->decrypt_config()->iv(),
+      CastDecryptConfigImpl full_sample_config(
+          buffer->decrypt_config()->key_id(), buffer->decrypt_config()->iv(),
           encrypted_subsample_list);
       DecryptConfigMarshaller::Write(full_sample_config, msg);
     } else {

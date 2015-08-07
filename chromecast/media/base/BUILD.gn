@@ -19,6 +19,8 @@ source_set("base") {
     "key_systems_common.h",
     "media_caps.cc",
     "media_caps.h",
+    "media_codec_support.cc",
+    "media_codec_support.h",
     "media_message_loop.cc",
     "media_message_loop.h",
     "switching_media_renderer.cc",

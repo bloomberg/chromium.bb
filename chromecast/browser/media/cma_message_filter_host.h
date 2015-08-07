@@ -12,7 +12,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "chromecast/common/media/cma_ipc_common.h"
-#include "chromecast/media/cma/backend/media_pipeline_device.h"
 #include "chromecast/media/cma/pipeline/load_type.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
@@ -38,14 +37,20 @@ class VideoDecoderConfig;
 namespace chromecast {
 namespace media {
 
+class MediaPipelineBackend;
+struct MediaPipelineDeviceParams;
 class MediaPipelineHost;
 
 class CmaMessageFilterHost
     : public content::BrowserMessageFilter {
  public:
+  // Factory method to create a MediaPipelineBackend
+  typedef base::Callback<scoped_ptr<MediaPipelineBackend>(
+      const MediaPipelineDeviceParams&)> CreateDeviceComponentsCB;
+
   CmaMessageFilterHost(
       int render_process_id,
-      const media::CreatePipelineDeviceCB& create_pipeline_device_cb);
+      const CreateDeviceComponentsCB& create_device_components_cb);
 
   // content::BrowserMessageFilter implementation.
   void OnChannelClosing() override;
@@ -114,7 +119,7 @@ class CmaMessageFilterHost
   const int process_id_;
 
   // Factory function for device-specific part of media pipeline creation
-  media::CreatePipelineDeviceCB create_pipeline_device_cb_;
+  CreateDeviceComponentsCB create_device_components_cb_;
 
   // List of media pipeline and message loop media pipelines are running on.
   MediaPipelineMap media_pipelines_;
