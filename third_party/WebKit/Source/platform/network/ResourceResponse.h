@@ -47,6 +47,25 @@ class PLATFORM_EXPORT ResourceResponse {
     WTF_MAKE_FAST_ALLOCATED(ResourceResponse);
 public:
     enum HTTPVersion { Unknown, HTTP_0_9, HTTP_1_0, HTTP_1_1 };
+    enum SecurityStyle {
+        SecurityStyleUnknown,
+        SecurityStyleUnauthenticated,
+        SecurityStyleAuthenticationBroken,
+        SecurityStyleWarning,
+        SecurityStyleAuthenticated
+    };
+
+    struct SecurityDetails {
+        SecurityDetails() : certID(0) {}
+        // All strings are human-readable values.
+        String protocol;
+        String keyExchange;
+        String cipher;
+        // mac is the empty string when the connection cipher suite does not
+        // have a separate MAC value (i.e. if the cipher suite is AEAD).
+        String mac;
+        int certID;
+    };
 
     class ExtraData : public RefCounted<ExtraData> {
     public:
@@ -136,6 +155,12 @@ public:
 
     const CString& getSecurityInfo() const { return m_securityInfo; }
     void setSecurityInfo(const CString& securityInfo) { m_securityInfo = securityInfo; }
+
+    SecurityStyle securityStyle() const { return m_securityStyle; }
+    void setSecurityStyle(SecurityStyle securityStyle) { m_securityStyle = securityStyle; }
+
+    const SecurityDetails* securityDetails() const { return &m_securityDetails; }
+    void setSecurityDetails(const String& protocol, const String& keyExchange, const String& cipher, const String& mac, int certId);
 
     long long appCacheID() const { return m_appCacheID; }
     void setAppCacheID(long long id) { m_appCacheID = id; }
@@ -239,6 +264,16 @@ private:
     // string if not over HTTPS).
     CString m_securityInfo;
 
+    // The security style of the resource.
+    // This only contains a valid value when the DevTools Network domain is
+    // enabled. (Otherwise, it contains a default value of Unknown.)
+    SecurityStyle m_securityStyle;
+
+    // Security details of this request's connection.
+    // If m_securityStyle is Unknown or Unauthenticated, this does not contain
+    // valid data.
+    SecurityDetails m_securityDetails;
+
     // HTTP version used in the response, if known.
     HTTPVersion m_httpVersion;
 
@@ -318,6 +353,8 @@ public:
     time_t m_lastModifiedDate;
     RefPtr<ResourceLoadTiming> m_resourceLoadTiming;
     CString m_securityInfo;
+    ResourceResponse::SecurityStyle m_securityStyle;
+    ResourceResponse::SecurityDetails m_securityDetails;
     ResourceResponse::HTTPVersion m_httpVersion;
     long long m_appCacheID;
     KURL m_appCacheManifestURL;

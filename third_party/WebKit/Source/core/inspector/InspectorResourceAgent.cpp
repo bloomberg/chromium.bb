@@ -240,6 +240,25 @@ static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse
 
     int64_t encodedDataLength = response.resourceLoadInfo() ? response.resourceLoadInfo()->encodedDataLength : -1;
 
+    TypeBuilder::Security::SecurityState::Enum securityState = TypeBuilder::Security::SecurityState::Unknown;
+    switch (response.securityStyle()) {
+    case ResourceResponse::SecurityStyleUnknown:
+        securityState = TypeBuilder::Security::SecurityState::Unknown;
+        break;
+    case ResourceResponse::SecurityStyleUnauthenticated:
+        securityState = TypeBuilder::Security::SecurityState::Http;
+        break;
+    case ResourceResponse::SecurityStyleAuthenticationBroken:
+        securityState = TypeBuilder::Security::SecurityState::Insecure;
+        break;
+    case ResourceResponse::SecurityStyleWarning:
+        securityState = TypeBuilder::Security::SecurityState::Warning;
+        break;
+    case ResourceResponse::SecurityStyleAuthenticated:
+        securityState = TypeBuilder::Security::SecurityState::Secure;
+        break;
+    }
+
     RefPtr<TypeBuilder::Network::Response> responseObject = TypeBuilder::Network::Response::create()
         .setUrl(urlWithoutFragment(response.url()).string())
         .setStatus(status)
@@ -248,7 +267,8 @@ static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse
         .setMimeType(response.mimeType())
         .setConnectionReused(response.connectionReused())
         .setConnectionId(response.connectionID())
-        .setEncodedDataLength(encodedDataLength);
+        .setEncodedDataLength(encodedDataLength)
+        .setSecurityState(securityState);
 
     responseObject->setFromDiskCache(response.wasCached());
     responseObject->setFromServiceWorker(response.wasFetchedViaServiceWorker());
@@ -289,6 +309,22 @@ static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse
         }
     }
     responseObject->setProtocol(protocol);
+
+    if (response.securityStyle() != ResourceResponse::SecurityStyleUnknown
+        && response.securityStyle() != ResourceResponse::SecurityStyleUnauthenticated) {
+
+        const ResourceResponse::SecurityDetails* responseSecurityDetails = response.securityDetails();
+
+        RefPtr<TypeBuilder::Network::SecurityDetails> securityDetails = TypeBuilder::Network::SecurityDetails::create()
+            .setProtocol(responseSecurityDetails->protocol)
+            .setKeyExchange(responseSecurityDetails->keyExchange)
+            .setCipher(responseSecurityDetails->cipher)
+            .setCertificateId(responseSecurityDetails->certID);
+        if (responseSecurityDetails->mac.length() > 0)
+            securityDetails->setMac(responseSecurityDetails->mac);
+
+        responseObject->setSecurityDetails(securityDetails);
+    }
 
     return responseObject;
 }

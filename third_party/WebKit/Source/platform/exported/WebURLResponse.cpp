@@ -305,6 +305,21 @@ void WebURLResponse::setSecurityInfo(const WebCString& securityInfo)
     m_private->m_resourceResponse->setSecurityInfo(securityInfo);
 }
 
+WebURLResponse::SecurityStyle WebURLResponse::securityStyle() const
+{
+    return static_cast<SecurityStyle>(m_private->m_resourceResponse->securityStyle());
+}
+
+void WebURLResponse::setSecurityStyle(SecurityStyle securityStyle)
+{
+    m_private->m_resourceResponse->setSecurityStyle(static_cast<ResourceResponse::SecurityStyle>(securityStyle));
+}
+
+void WebURLResponse::setSecurityDetails(const WebString& protocol, const WebString& keyExchange, const WebString& cipher, const WebString& mac, int certId)
+{
+    m_private->m_resourceResponse->setSecurityDetails(protocol, keyExchange, cipher, mac, certId);
+}
+
 ResourceResponse& WebURLResponse::toMutableResourceResponse()
 {
     ASSERT(m_private);

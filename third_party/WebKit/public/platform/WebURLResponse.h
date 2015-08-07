@@ -49,6 +49,13 @@ class WebURLResponsePrivate;
 class WebURLResponse {
 public:
     enum HTTPVersion { Unknown, HTTP_0_9, HTTP_1_0, HTTP_1_1 };
+    enum SecurityStyle {
+        SecurityStyleUnknown,
+        SecurityStyleUnauthenticated,
+        SecurityStyleAuthenticationBroken,
+        SecurityStyleWarning,
+        SecurityStyleAuthenticated
+    };
 
     class ExtraData {
     public:
@@ -134,6 +141,11 @@ public:
     // security info related to this request.
     BLINK_PLATFORM_EXPORT WebCString securityInfo() const;
     BLINK_PLATFORM_EXPORT void setSecurityInfo(const WebCString&);
+
+    BLINK_PLATFORM_EXPORT SecurityStyle securityStyle() const;
+    BLINK_PLATFORM_EXPORT void setSecurityStyle(SecurityStyle);
+
+    BLINK_PLATFORM_EXPORT void setSecurityDetails(const WebString& protocol, const WebString& keyExchange, const WebString& cipher, const WebString& mac, int certId);
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT ResourceResponse& toMutableResourceResponse();

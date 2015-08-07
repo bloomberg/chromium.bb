@@ -48,6 +48,7 @@ ResourceResponse::ResourceResponse()
     , m_date(0.0)
     , m_expires(0.0)
     , m_lastModified(0.0)
+    , m_securityStyle(SecurityStyleUnknown)
     , m_httpVersion(Unknown)
     , m_appCacheID(0)
     , m_isMultipartPayload(false)
@@ -83,6 +84,7 @@ ResourceResponse::ResourceResponse(const KURL& url, const AtomicString& mimeType
     , m_date(0.0)
     , m_expires(0.0)
     , m_lastModified(0.0)
+    , m_securityStyle(SecurityStyleUnknown)
     , m_httpVersion(Unknown)
     , m_appCacheID(0)
     , m_isMultipartPayload(false)
@@ -114,6 +116,12 @@ PassOwnPtr<ResourceResponse> ResourceResponse::adopt(PassOwnPtr<CrossThreadResou
     response->setLastModifiedDate(data->m_lastModifiedDate);
     response->setResourceLoadTiming(data->m_resourceLoadTiming.release());
     response->m_securityInfo = data->m_securityInfo;
+    response->m_securityStyle = data->m_securityStyle;
+    response->m_securityDetails.protocol = data->m_securityDetails.protocol;
+    response->m_securityDetails.cipher = data->m_securityDetails.cipher;
+    response->m_securityDetails.keyExchange = data->m_securityDetails.keyExchange;
+    response->m_securityDetails.mac = data->m_securityDetails.mac;
+    response->m_securityDetails.certID = data->m_securityDetails.certID;
     response->m_httpVersion = data->m_httpVersion;
     response->m_appCacheID = data->m_appCacheID;
     response->m_appCacheManifestURL = data->m_appCacheManifestURL.copy();
@@ -153,6 +161,12 @@ PassOwnPtr<CrossThreadResourceResponseData> ResourceResponse::copyData() const
     if (m_resourceLoadTiming)
         data->m_resourceLoadTiming = m_resourceLoadTiming->deepCopy();
     data->m_securityInfo = CString(m_securityInfo.data(), m_securityInfo.length());
+    data->m_securityStyle = m_securityStyle;
+    data->m_securityDetails.protocol = m_securityDetails.protocol.isolatedCopy();
+    data->m_securityDetails.cipher = m_securityDetails.cipher.isolatedCopy();
+    data->m_securityDetails.keyExchange = m_securityDetails.keyExchange.isolatedCopy();
+    data->m_securityDetails.mac = m_securityDetails.mac.isolatedCopy();
+    data->m_securityDetails.certID = m_securityDetails.certID;
     data->m_httpVersion = m_httpVersion;
     data->m_appCacheID = m_appCacheID;
     data->m_appCacheManifestURL = m_appCacheManifestURL.copy();
@@ -306,6 +320,15 @@ void ResourceResponse::updateHeaderParsedState(const AtomicString& name)
         m_haveParsedExpiresHeader = false;
     else if (equalIgnoringCase(name, lastModifiedHeader))
         m_haveParsedLastModifiedHeader = false;
+}
+
+void ResourceResponse::setSecurityDetails(const String& protocol, const String& keyExchange, const String& cipher, const String& mac, int certId)
+{
+    m_securityDetails.protocol = protocol;
+    m_securityDetails.keyExchange = keyExchange;
+    m_securityDetails.cipher = cipher;
+    m_securityDetails.mac = mac;
+    m_securityDetails.certID = certId;
 }
 
 void ResourceResponse::setHTTPHeaderField(const AtomicString& name, const AtomicString& value)
