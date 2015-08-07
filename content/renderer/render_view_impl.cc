@@ -1995,7 +1995,8 @@ void RenderViewImpl::focusedNodeChanged(const WebNode& fromNode,
     new_frame->FocusedNodeChanged(toNode);
 
   // TODO(dmazzoni): remove once there's a separate a11y tree per frame.
-  GetMainRenderFrame()->FocusedNodeChangedForAccessibility(toNode);
+  if (main_render_frame_)
+    main_render_frame_->FocusedNodeChangedForAccessibility(toNode);
 }
 
 void RenderViewImpl::didUpdateLayout() {
