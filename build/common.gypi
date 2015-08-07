@@ -5406,6 +5406,7 @@
       'target_defaults': {
         'xcode_settings' : {
           'CLANG_CXX_LANGUAGE_STANDARD': 'c++11',
+          'ENABLE_BITCODE': 'NO',
 
           'conditions': [
             # Older Xcodes do not support -Wno-deprecated-register, so pass an
