@@ -303,7 +303,7 @@ void BitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& 
     }
 
     SkRect skSrcRect = adjustedSrcRect;
-    canvas->drawImageRect(image.get(), &skSrcRect, adjustedDstRect, &paint,
+    canvas->drawImageRect(image.get(), skSrcRect, adjustedDstRect, &paint,
         WebCoreClampingModeToSkiaRectConstraint(clampMode));
     canvas->restoreToCount(initialSaveCount);
 

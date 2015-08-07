@@ -53,7 +53,7 @@ void StaticBitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const Float
     ASSERT(adjustedSrcRect.width() <= m_image->width() && adjustedSrcRect.height() <= m_image->height());
 
     SkRect srcSkRect = adjustedSrcRect;
-    canvas->drawImageRect(m_image.get(), &srcSkRect, dstRect, &paint,
+    canvas->drawImageRect(m_image.get(), srcSkRect, dstRect, &paint,
         WebCoreClampingModeToSkiaRectConstraint(clampMode));
 
     if (ImageObserver* observer = imageObserver())

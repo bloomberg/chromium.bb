@@ -937,9 +937,7 @@ void DrawingBuffer::paintFramebufferToCanvas(int framebuffer, int width, int hei
     if (m_resizingBitmap.readyToDraw()) {
         // We need to draw the resizing bitmap into the canvas's backing store.
         SkCanvas canvas(canvasBitmap);
-        SkRect dst;
-        dst.set(SkIntToScalar(0), SkIntToScalar(0), SkIntToScalar(canvasBitmap.width()), SkIntToScalar(canvasBitmap.height()));
-        canvas.drawBitmapRect(m_resizingBitmap, dst);
+        canvas.drawBitmapRect(m_resizingBitmap, SkRect::MakeIWH(canvasBitmap.width(), canvasBitmap.height()), nullptr);
     }
 }
 
