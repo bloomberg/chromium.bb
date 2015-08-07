@@ -111,8 +111,7 @@ std::string GetOriginHeaderValue(const net::URLRequest* request) {
 // chrome-internal resource requests asynchronously.
 // It hands off URL requests to ChromeURLDataManager, which asynchronously
 // calls back once the data is available.
-class URLRequestChromeJob : public net::URLRequestJob,
-                            public base::SupportsWeakPtr<URLRequestChromeJob> {
+class URLRequestChromeJob : public net::URLRequestJob {
  public:
   // |is_incognito| set when job is generated from an incognito profile.
   URLRequestChromeJob(net::URLRequest* request,
@@ -134,6 +133,9 @@ class URLRequestChromeJob : public net::URLRequestJob,
   // Called by ChromeURLDataManager to notify us that the data blob is ready
   // for us.
   void DataAvailable(base::RefCountedMemory* bytes);
+
+  // Returns a weak pointer to the job.
+  base::WeakPtr<URLRequestChromeJob> AsWeakPtr();
 
   void set_mime_type(const std::string& mime_type) {
     mime_type_ = mime_type;
@@ -267,13 +269,16 @@ void URLRequestChromeJob::Start() {
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&URLRequestChromeJob::CheckStoragePartitionMatches,
-                 render_process_id, request_->url(), AsWeakPtr()));
+                 render_process_id, request_->url(),
+                 weak_factory_.GetWeakPtr()));
   TRACE_EVENT_ASYNC_BEGIN1("browser", "DataManager:Request", this, "URL",
       request_->url().possibly_invalid_spec());
 }
 
 void URLRequestChromeJob::Kill() {
+  weak_factory_.InvalidateWeakPtrs();
   backend_->RemoveRequest(this);
+  URLRequestJob::Kill();
 }
 
 bool URLRequestChromeJob::GetMimeType(std::string* mime_type) const {
@@ -347,6 +352,10 @@ void URLRequestChromeJob::DataAvailable(base::RefCountedMemory* bytes) {
     NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                      net::ERR_FAILED));
   }
+}
+
+base::WeakPtr<URLRequestChromeJob> URLRequestChromeJob::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 bool URLRequestChromeJob::ReadRawData(net::IOBuffer* buf, int buf_size,

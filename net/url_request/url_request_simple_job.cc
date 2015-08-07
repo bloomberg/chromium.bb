@@ -48,6 +48,11 @@ void URLRequestSimpleJob::Start() {
       base::Bind(&URLRequestSimpleJob::StartAsync, weak_factory_.GetWeakPtr()));
 }
 
+void URLRequestSimpleJob::Kill() {
+  weak_factory_.InvalidateWeakPtrs();
+  URLRangeRequestJob::Kill();
+}
+
 bool URLRequestSimpleJob::GetMimeType(std::string* mime_type) const {
   *mime_type = mime_type_;
   return true;

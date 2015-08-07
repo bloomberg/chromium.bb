@@ -11,48 +11,101 @@
 #include "net/http/http_response_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
+#include "net/url_request/url_request_job_factory_impl.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
-namespace {
+class CancelAfterFirstReadURLRequestDelegate : public net::TestDelegate {
+ public:
+  CancelAfterFirstReadURLRequestDelegate() {}
 
-// Create a request for a chrome://resource URL passing the supplied |origin|
-// header and checking that the response header Access-Control-Allow-Origin has
-// value |expected_access_control_allow_origin_value|.
-void RunAccessControlAllowOriginTest(
-    const std::string& origin,
-    const std::string& expected_access_control_allow_origin_value) {
-  TestBrowserThreadBundle thread_bundle;
-  MockResourceContext resource_context;
-  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler> protocol_handler(
-      URLDataManagerBackend::CreateProtocolHandler(&resource_context, false,
-                                                   nullptr, nullptr));
-  net::URLRequestContext url_request_context;
-  scoped_ptr<net::URLRequest> request = url_request_context.CreateRequest(
-      GURL("chrome://resources/polymer/v1_0/polymer/polymer-extracted.js"),
-      net::HIGHEST, nullptr);
-  request->SetExtraRequestHeaderByName("Origin", origin, true);
-  scoped_refptr<net::URLRequestJob> job =
-      protocol_handler->MaybeCreateJob(request.get(), nullptr);
-  ASSERT_TRUE(job);
-  job->Start();
+  ~CancelAfterFirstReadURLRequestDelegate() override {}
+
+  void OnResponseStarted(net::URLRequest* request) override {
+    // net::TestDelegate will start the first read.
+    TestDelegate::OnResponseStarted(request);
+    request->Cancel();
+  }
+
+  void OnReadCompleted(net::URLRequest* request, int bytes_read) override {
+    // Read should have been cancelled.
+    EXPECT_EQ(-1, bytes_read);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CancelAfterFirstReadURLRequestDelegate);
+};
+
+class UrlDataManagerBackendTest : public testing::Test {
+ public:
+  UrlDataManagerBackendTest() {
+    // URLRequestJobFactory takes ownership of the passed in ProtocolHandler.
+    url_request_job_factory_.SetProtocolHandler(
+        "chrome",
+        URLDataManagerBackend::CreateProtocolHandler(
+            &resource_context_, false, nullptr, nullptr));
+    url_request_context_.set_job_factory(&url_request_job_factory_);
+  }
+
+  scoped_ptr<net::URLRequest> CreateRequest(net::URLRequest::Delegate* delegate,
+                                            const char* origin) {
+    scoped_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
+        GURL("chrome://resources/polymer/v1_0/polymer/polymer-extracted.js"),
+        net::HIGHEST, delegate);
+    request->SetExtraRequestHeaderByName("Origin", origin, true);
+    return request.Pass();
+  }
+
+ protected:
+  TestBrowserThreadBundle thread_bundle_;
+  MockResourceContext resource_context_;
+  net::URLRequestJobFactoryImpl url_request_job_factory_;
+  net::URLRequestContext url_request_context_;
+  net::TestDelegate delegate_;
+};
+
+TEST_F(UrlDataManagerBackendTest, AccessControlAllowOriginChromeUrl) {
+  scoped_ptr<net::URLRequest> request(
+      CreateRequest(&delegate_, "chrome://webui"));
+  request->Start();
   base::RunLoop().RunUntilIdle();
-  net::HttpResponseInfo response;
-  job->GetResponseInfo(&response);
-  EXPECT_TRUE(response.headers->HasHeaderValue(
-      "Access-Control-Allow-Origin",
-      expected_access_control_allow_origin_value));
+  EXPECT_TRUE(request->response_headers()->HasHeaderValue(
+      "Access-Control-Allow-Origin", "chrome://webui"));
 }
 
-}  // namespace
-
-TEST(UrlDataManagerBackendTest, AccessControlAllowOriginChromeUrl) {
-  RunAccessControlAllowOriginTest("chrome://webui", "chrome://webui");
+TEST_F(UrlDataManagerBackendTest, AccessControlAllowOriginNonChromeUrl) {
+  scoped_ptr<net::URLRequest> request(
+      CreateRequest(&delegate_, "http://www.example.com"));
+  request->Start();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(request->response_headers()->HasHeaderValue(
+      "Access-Control-Allow-Origin", "null"));
 }
 
-TEST(UrlDataManagerBackendTest, AccessControlAllowOriginNonChromeUrl) {
-  RunAccessControlAllowOriginTest("http://www.example.com", "null");
+// Check that the URLRequest isn't passed headers after cancellation.
+TEST_F(UrlDataManagerBackendTest, CancelBeforeResponseStarts) {
+  scoped_ptr<net::URLRequest> request(
+      CreateRequest(&delegate_, "chrome://webui"));
+  request->Start();
+  request->Cancel();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(net::URLRequestStatus::CANCELED, request->status().status());
+  EXPECT_EQ(1, delegate_.response_started_count());
+}
+
+// Check that the URLRequest isn't passed data after cancellation.
+TEST_F(UrlDataManagerBackendTest, CancelAfterFirstReadStarted) {
+  CancelAfterFirstReadURLRequestDelegate cancel_delegate;
+  scoped_ptr<net::URLRequest> request(
+      CreateRequest(&cancel_delegate, "chrome://webui"));
+  request->Start();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(net::URLRequestStatus::CANCELED, request->status().status());
+  EXPECT_EQ(1, cancel_delegate.response_started_count());
+  EXPECT_EQ("", cancel_delegate.data_received());
 }
 
 }  // namespace content
