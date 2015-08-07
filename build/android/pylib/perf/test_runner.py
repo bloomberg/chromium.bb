@@ -47,7 +47,6 @@ option:
 """
 
 import collections
-import datetime
 import json
 import logging
 import os
@@ -87,6 +86,8 @@ def OutputJsonList(json_input, json_output):
 
     persisted_result = GetPersistedResult(k)
     if persisted_result:
+      data['start_time'] = persisted_result['start_time']
+      data['end_time'] = persisted_result['end_time']
       data['total_time'] = persisted_result['total_time']
     step_values.append(data)
 
@@ -282,7 +283,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
           self._options.min_battery_level)
 
     logging.info('%s : %s', test_name, cmd)
-    start_time = datetime.datetime.now()
+    start_time = time.time()
 
     timeout = self._tests['steps'][test_name].get('timeout', 5400)
     if self._options.no_timeout:
@@ -312,11 +313,11 @@ class TestRunner(base_test_runner.BaseTestRunner):
       self._CleanupOutputDirectory()
       if self._options.single_step:
         logfile.stop()
-    end_time = datetime.datetime.now()
+    end_time = time.time()
     if exit_code is None:
       exit_code = -1
     logging.info('%s : exit_code=%d in %d secs at %s',
-                 test_name, exit_code, (end_time - start_time).seconds,
+                 test_name, exit_code, end_time - start_time,
                  self.device_serial)
 
     if exit_code == 0:
@@ -346,7 +347,9 @@ class TestRunner(base_test_runner.BaseTestRunner):
         'exit_code': exit_code,
         'actual_exit_code': actual_exit_code,
         'result_type': result_type,
-        'total_time': (end_time - start_time).seconds,
+        'start_time': start_time,
+        'end_time': end_time,
+        'total_time': end_time - start_time,
         'device': self.device_serial,
         'cmd': cmd,
     }
