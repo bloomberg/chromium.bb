@@ -948,10 +948,6 @@ public:
 
     void clear()
     {
-#if ENABLE(ASSERT)
-        if (m_keepAlive)
-            ThreadState::decrementSelfKeepAliveAllocations();
-#endif
         m_keepAlive.clear();
     }
 
@@ -962,12 +958,8 @@ private:
     void assign(Self* self)
     {
         ASSERT(!m_keepAlive || m_keepAlive->get() == self);
-        if (!m_keepAlive) {
+        if (!m_keepAlive)
             m_keepAlive = adoptPtr(new Persistent<Self>);
-#if ENABLE(ASSERT)
-            ThreadState::incrementSelfKeepAliveAllocations();
-#endif
-        }
         *m_keepAlive = self;
     }
 

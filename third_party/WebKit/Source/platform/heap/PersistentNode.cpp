@@ -32,25 +32,6 @@ int PersistentRegion::numberOfPersistents()
     return persistentCount;
 }
 
-#if ENABLE(ASSERT)
-void PersistentRegion::dumpLivePersistents()
-{
-    class Object;
-    using GCObject = GarbageCollected<Object>;
-
-    fprintf(stderr, "Live Persistent(heap object, trace method):\n");
-    for (PersistentNodeSlots* slots = m_slots; slots; slots = slots->m_next) {
-        for (int i = 0; i < PersistentNodeSlots::slotCount; ++i) {
-            if (!slots->m_slot[i].isUnused()) {
-                Persistent<GCObject>* persistent = reinterpret_cast<Persistent<GCObject>*>(slots->m_slot[i].self());
-                ASSERT(persistent);
-                fprintf(stderr, "%p => (%p, %p)\n", persistent, persistent->get(), slots->m_slot[i].traceCallback());
-            }
-        }
-    }
-}
-#endif
-
 void PersistentRegion::ensurePersistentNodeSlots(void* self, TraceCallback trace)
 {
     ASSERT(!m_freeListHead);
