@@ -33,6 +33,10 @@ NSString* TestWebClient::GetEarlyPageScript(
   return result ? result : @"";
 }
 
+bool TestWebClient::WebViewsNeedActiveStateManager() const {
+  return true;
+}
+
 void TestWebClient::SetEarlyPageScript(NSString* page_script,
                                        web::WebViewType web_view_type) {
   [early_page_scripts_ setObject:page_script forKey:@(web_view_type)];

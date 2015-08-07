@@ -22,6 +22,7 @@ class TestWebClient : public web::WebClient {
   // WebClient implementation.
   std::string GetUserAgent(bool is_desktop_user_agent) const override;
   NSString* GetEarlyPageScript(web::WebViewType web_view_type) const override;
+  bool WebViewsNeedActiveStateManager() const override;
 
   // Changes the user agent for testing purposes. Passing true
   // for |is_desktop_user_agent| affects the result of GetUserAgent(true) call.
