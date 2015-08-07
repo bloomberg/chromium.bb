@@ -35,12 +35,12 @@ CreatePresentationSessionRequest::~CreatePresentationSessionRequest() {
 }
 
 void CreatePresentationSessionRequest::MaybeInvokeSuccessCallback(
+    const std::string& presentation_id,
     const MediaRoute::Id& route_id) {
   if (!cb_invoked_) {
     // Overwrite presentation ID.
     success_cb_.Run(content::PresentationSessionInfo(
-                        presentation_info_.presentation_url,
-                        GetPresentationIdAndUrl(route_id).first),
+                        presentation_info_.presentation_url, presentation_id),
                     route_id);
     cb_invoked_ = true;
   }

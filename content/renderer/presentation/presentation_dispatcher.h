@@ -31,6 +31,26 @@ class CONTENT_EXPORT PresentationDispatcher
   ~PresentationDispatcher() override;
 
  private:
+  struct SendMessageRequest {
+    SendMessageRequest(presentation::PresentationSessionInfoPtr session_info,
+                       presentation::SessionMessagePtr message);
+    ~SendMessageRequest();
+
+    presentation::PresentationSessionInfoPtr session_info;
+    presentation::SessionMessagePtr message;
+  };
+
+  static SendMessageRequest* CreateSendTextMessageRequest(
+      const blink::WebString& presentationUrl,
+      const blink::WebString& presentationId,
+      const blink::WebString& message);
+  static SendMessageRequest* CreateSendBinaryMessageRequest(
+      const blink::WebString& presentationUrl,
+      const blink::WebString& presentationId,
+      presentation::PresentationMessageType type,
+      const uint8* data,
+      size_t length);
+
   // WebPresentationClient implementation.
   virtual void setController(
       blink::WebPresentationController* controller);
@@ -77,6 +97,9 @@ class CONTENT_EXPORT PresentationDispatcher
       presentation::PresentationSessionInfoPtr session_info,
       presentation::PresentationSessionState new_state) override;
   void OnScreenAvailabilityNotSupported() override;
+  void OnSessionMessagesReceived(
+      presentation::PresentationSessionInfoPtr session_info,
+      mojo::Array<presentation::SessionMessagePtr> messages) override;
 
   void OnSessionCreated(
       blink::WebPresentationSessionClientCallbacks* callback,
@@ -84,16 +107,16 @@ class CONTENT_EXPORT PresentationDispatcher
       presentation::PresentationErrorPtr error);
   void OnDefaultSessionStarted(
       presentation::PresentationSessionInfoPtr session_info);
-  void OnSessionMessagesReceived(
-      mojo::Array<presentation::SessionMessagePtr> messages);
-  void DoSendMessage(const presentation::SessionMessage& session_message);
+
+  // Call to PresentationService to send the message in |request|.
+  // |session_info| and |message| of |reuqest| will be consumed.
+  // |HandleSendMessageRequests| will be invoked after the send is attempted.
+  void DoSendMessage(SendMessageRequest* request);
   void HandleSendMessageRequests(bool success);
 
   void ConnectToPresentationServiceIfNeeded();
 
   void UpdateListeningState();
-
-  void StartListenForMessages();
 
   // Used as a weak reference. Can be null since lifetime is bound to the frame.
   blink::WebPresentationController* controller_;
@@ -102,8 +125,7 @@ class CONTENT_EXPORT PresentationDispatcher
 
   // Message requests are queued here and only one message at a time is sent
   // over mojo channel.
-  using MessageRequestQueue =
-      std::queue<linked_ptr<presentation::SessionMessage>>;
+  using MessageRequestQueue = std::queue<linked_ptr<SendMessageRequest>>;
   MessageRequestQueue message_request_queue_;
 
   enum class ListeningState {
@@ -122,8 +144,6 @@ class CONTENT_EXPORT PresentationDispatcher
   using AvailabilityObserversSet =
       std::set<blink::WebPresentationAvailabilityObserver*>;
   AvailabilityObserversSet availability_observers_;
-
-  bool listening_for_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(PresentationDispatcher);
 };

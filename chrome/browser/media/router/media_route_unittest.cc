@@ -44,19 +44,4 @@ TEST(MediaRouteTest, Equals) {
   EXPECT_FALSE(route1.Equals(route5));
 }
 
-TEST(MediaRouteTest, ParseId) {
-  EXPECT_EQ("1", GetPresentationIdAndUrl(kRouteId1).first);
-  EXPECT_EQ("http://foo.com", GetPresentationIdAndUrl(kRouteId1).second);
-  auto invalid = std::make_pair(std::string(), std::string());
-  EXPECT_EQ(invalid, GetPresentationIdAndUrl("invalid"));
-  EXPECT_EQ(invalid, GetPresentationIdAndUrl(
-                         "urn:x-org.chromium:media:route:2"));
-  EXPECT_EQ(invalid, GetPresentationIdAndUrl(
-                         "urn:x-org.chromium:media:route:2/"));
-  EXPECT_EQ(invalid, GetPresentationIdAndUrl(
-                         "urn:x-org.chromium:media:route:2/cast-sink2/"));
-  EXPECT_EQ(invalid, GetPresentationIdAndUrl(
-                         "urn:x-org.chromium:media:route:2//http://foo.com"));
-}
-
 }  // namespace media_router

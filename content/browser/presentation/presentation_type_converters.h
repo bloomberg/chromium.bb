@@ -35,6 +35,15 @@ struct TypeConverter<presentation::PresentationSessionInfoPtr,
 };
 
 template <>
+struct TypeConverter<content::PresentationSessionInfo,
+                     presentation::PresentationSessionInfoPtr> {
+  static content::PresentationSessionInfo Convert(
+      const presentation::PresentationSessionInfoPtr& input) {
+    return content::PresentationSessionInfo(input->url, input->id);
+  }
+};
+
+template <>
 struct TypeConverter<presentation::PresentationErrorPtr,
                      content::PresentationError> {
   static presentation::PresentationErrorPtr Convert(

@@ -89,8 +89,6 @@ struct RouteMessage {
     TEXT,
     BINARY
   };
-  // The route ID of this message.
-  string route_id;
   // The type of this message.
   Type type;
   // Used when the |type| is TEXT.
@@ -163,9 +161,8 @@ interface MediaRouteProvider {
   ClearIssue(string issue_id);
 
   // Called when the MediaRouter is ready to get the next batch of messages
-  // associated with one of the |route_ids|.
-  ListenForRouteMessages(array<string> route_ids)
-      => (array<RouteMessage> messages);
+  // associated with |route_id|.
+  ListenForRouteMessages(string route_id) => (array<RouteMessage> messages);
 };
 
 // Interface for a service which observes state changes across media

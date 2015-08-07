@@ -29,68 +29,61 @@ int GetNextRequestSessionId() {
   return ++next_request_session_id;
 }
 
-// The return value takes ownership of the contents of |input|.
 presentation::SessionMessagePtr ToMojoSessionMessage(
-    content::PresentationSessionMessage* input) {
+    const content::PresentationSessionMessage& input) {
   presentation::SessionMessagePtr output(presentation::SessionMessage::New());
-  output->presentation_url.Swap(&input->presentation_url);
-  output->presentation_id.Swap(&input->presentation_id);
-  if (input->is_binary()) {
+  if (input.is_binary()) {
     // binary data
     output->type = presentation::PresentationMessageType::
         PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER;
-    output->data.Swap(input->data.get());
+    output->data = mojo::Array<uint8_t>::From(*input.data);
   } else {
     // string message
     output->type =
         presentation::PresentationMessageType::PRESENTATION_MESSAGE_TYPE_TEXT;
-    output->message.Swap(input->message.get());
+    output->message = input.message;
   }
   return output.Pass();
 }
 
-scoped_ptr<content::PresentationSessionMessage> GetPresentationSessionMessage(
+scoped_ptr<PresentationSessionMessage> GetPresentationSessionMessage(
     presentation::SessionMessagePtr input) {
   DCHECK(!input.is_null());
   scoped_ptr<content::PresentationSessionMessage> output;
   switch (input->type) {
-    case presentation::PresentationMessageType::
-        PRESENTATION_MESSAGE_TYPE_TEXT: {
+    case presentation::PRESENTATION_MESSAGE_TYPE_TEXT: {
       DCHECK(!input->message.is_null());
       DCHECK(input->data.is_null());
       // Return null PresentationSessionMessage if size exceeds.
       if (input->message.size() > content::kMaxPresentationSessionMessageSize)
         return output.Pass();
 
-      output = content::PresentationSessionMessage::CreateStringMessage(
-          input->presentation_url, input->presentation_id,
-          make_scoped_ptr(new std::string));
-      input->message.Swap(output->message.get());
+      output.reset(
+          new PresentationSessionMessage(PresentationMessageType::TEXT));
+      input->message.Swap(&output->message);
       return output.Pass();
     }
-    case presentation::PresentationMessageType::
-        PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER: {
+    case presentation::PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER: {
       DCHECK(!input->data.is_null());
       DCHECK(input->message.is_null());
       if (input->data.size() > content::kMaxPresentationSessionMessageSize)
         return output.Pass();
 
-      output = content::PresentationSessionMessage::CreateArrayBufferMessage(
-          input->presentation_url, input->presentation_id,
-          make_scoped_ptr(new std::vector<uint8_t>));
+      output.reset(new PresentationSessionMessage(
+          PresentationMessageType::ARRAY_BUFFER));
+      output->data.reset(new std::vector<uint8_t>);
       input->data.Swap(output->data.get());
       return output.Pass();
     }
-    case presentation::PresentationMessageType::
-        PRESENTATION_MESSAGE_TYPE_BLOB: {
+    case presentation::PRESENTATION_MESSAGE_TYPE_BLOB: {
       DCHECK(!input->data.is_null());
       DCHECK(input->message.is_null());
       if (input->data.size() > content::kMaxPresentationSessionMessageSize)
         return output.Pass();
 
-      output = content::PresentationSessionMessage::CreateBlobMessage(
-          input->presentation_url, input->presentation_id,
-          make_scoped_ptr(new std::vector<uint8_t>));
+      output.reset(
+          new PresentationSessionMessage(PresentationMessageType::BLOB));
+      output->data.reset(new std::vector<uint8_t>);
       input->data.Swap(output->data.get());
       return output.Pass();
     }
@@ -374,8 +367,8 @@ void PresentationServiceImpl::SetDefaultPresentationURL(
   default_presentation_url_ = default_presentation_url;
 }
 
-
 void PresentationServiceImpl::SendSessionMessage(
+    presentation::PresentationSessionInfoPtr session,
     presentation::SessionMessagePtr session_message,
     const SendMessageMojoCallback& callback) {
   DVLOG(2) << "SendSessionMessage";
@@ -389,8 +382,8 @@ void PresentationServiceImpl::SendSessionMessage(
 
   send_message_callback_.reset(new SendMessageMojoCallback(callback));
   delegate_->SendMessage(
-      render_process_id_,
-      render_frame_id_,
+      render_process_id_, render_frame_id_,
+      session.To<PresentationSessionInfo>(),
       GetPresentationSessionMessage(session_message.Pass()),
       base::Bind(&PresentationServiceImpl::OnSendMessageCallback,
                  weak_factory_.GetWeakPtr()));
@@ -443,43 +436,31 @@ bool PresentationServiceImpl::FrameMatches(
 }
 
 void PresentationServiceImpl::ListenForSessionMessages(
-    const SessionMessagesCallback& callback) {
+    presentation::PresentationSessionInfoPtr session) {
   DVLOG(2) << "ListenForSessionMessages";
-  if (!delegate_) {
-    callback.Run(mojo::Array<presentation::SessionMessagePtr>());
+  if (!delegate_)
     return;
-  }
 
-  // Crash early if renderer is misbehaving.
-  CHECK(!on_session_messages_callback_.get());
-
-  on_session_messages_callback_.reset(new SessionMessagesCallback(callback));
+  PresentationSessionInfo session_info(session.To<PresentationSessionInfo>());
   delegate_->ListenForSessionMessages(
-      render_process_id_, render_frame_id_,
+      render_process_id_, render_frame_id_, session_info,
       base::Bind(&PresentationServiceImpl::OnSessionMessages,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(), session_info));
 }
 
 void PresentationServiceImpl::OnSessionMessages(
-    scoped_ptr<ScopedVector<PresentationSessionMessage>> messages) {
-  if (!on_session_messages_callback_.get()) {
-    // The Reset method of this class was invoked.
-    return;
-  }
+    const PresentationSessionInfo& session,
+    const ScopedVector<PresentationSessionMessage>& messages) {
+  DCHECK(client_);
 
-  if (!messages.get() || messages->empty()) {
-    // Error handling. Session is either closed or in error state.
-    on_session_messages_callback_->Run(
-        mojo::Array<presentation::SessionMessagePtr>());
-  } else {
-    mojo::Array<presentation::SessionMessagePtr> mojoMessages(messages->size());
-    for (size_t i = 0; i < messages->size(); ++i) {
-      mojoMessages[i] = ToMojoSessionMessage((*messages)[i]);
-    }
-    on_session_messages_callback_->Run(mojoMessages.Pass());
-  }
+  DVLOG(2) << "OnSessionMessages";
+  mojo::Array<presentation::SessionMessagePtr> mojoMessages(messages.size());
+  for (size_t i = 0; i < messages.size(); ++i)
+    mojoMessages[i] = ToMojoSessionMessage(*messages[i]);
 
-  on_session_messages_callback_.reset();
+  client_->OnSessionMessagesReceived(
+      presentation::PresentationSessionInfo::From(session),
+      mojoMessages.Pass());
 }
 
 void PresentationServiceImpl::DidNavigateAnyFrame(

@@ -40,9 +40,6 @@ class MediaRouterAndroid : public MediaRouter {
       const MediaRoute::Id& route_id,
       scoped_ptr<std::vector<uint8>> data,
       const SendRouteMessageCallback& callback) override;
-  void ListenForRouteMessages(
-      const std::vector<MediaRoute::Id>& route_ids,
-      const PresentationSessionMessageCallback& message_cb) override;
   void ClearIssue(const Issue::Id& issue_id) override;
 
  private:
@@ -57,6 +54,10 @@ class MediaRouterAndroid : public MediaRouter {
   void UnregisterMediaRoutesObserver(MediaRoutesObserver* observer) override;
   void RegisterIssuesObserver(IssuesObserver* observer) override;
   void UnregisterIssuesObserver(IssuesObserver* observer) override;
+  void RegisterPresentationSessionMessagesObserver(
+      PresentationSessionMessagesObserver* observer) override;
+  void UnregisterPresentationSessionMessagesObserver(
+      PresentationSessionMessagesObserver* observer) override;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterAndroid);
 };

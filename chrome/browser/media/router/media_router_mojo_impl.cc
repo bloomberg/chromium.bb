@@ -15,6 +15,7 @@
 #include "chrome/browser/media/router/media_router_type_converters.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
+#include "chrome/browser/media/router/presentation_session_messages_observer.h"
 #include "extensions/browser/process_manager.h"
 
 #define DVLOG_WITH_INSTANCE(level) \
@@ -28,10 +29,12 @@ namespace {
 // Converts the callback result of calling Mojo CreateRoute()/JoinRoute()
 // into a local callback.
 void RouteResponseReceived(
+    const std::string& presentation_id,
     const std::vector<MediaRouteResponseCallback>& callbacks,
     interfaces::MediaRoutePtr media_route,
     const mojo::String& error_text) {
   scoped_ptr<MediaRoute> route;
+  std::string actual_presentation_id;
   std::string error;
   if (media_route.is_null()) {
     // An error occurred.
@@ -39,10 +42,11 @@ void RouteResponseReceived(
     error = !error_text.get().empty() ? error_text.get() : "Unknown error.";
   } else {
     route = media_route.To<scoped_ptr<MediaRoute>>();
+    actual_presentation_id = presentation_id;
   }
 
   for (const MediaRouteResponseCallback& callback : callbacks)
-    callback.Run(route.get(), error);
+    callback.Run(route.get(), actual_presentation_id, error);
 }
 
 // TODO(imcheng): We should handle failure in this case. One way is to invoke
@@ -55,25 +59,22 @@ void EventPageWakeComplete(bool success) {
 scoped_ptr<content::PresentationSessionMessage>
 ConvertToPresentationSessionMessage(interfaces::RouteMessagePtr input) {
   DCHECK(!input.is_null());
-  const auto& id_and_url = GetPresentationIdAndUrl(input->route_id);
-  const std::string& presentation_id = id_and_url.first;
-  const std::string& presentation_url = id_and_url.second;
   scoped_ptr<content::PresentationSessionMessage> output;
   switch (input->type) {
     case interfaces::RouteMessage::Type::TYPE_TEXT: {
       DCHECK(!input->message.is_null());
       DCHECK(input->data.is_null());
-      output = content::PresentationSessionMessage::CreateStringMessage(
-          presentation_url, presentation_id, make_scoped_ptr(new std::string));
-      input->message.Swap(output->message.get());
+      output.reset(new content::PresentationSessionMessage(
+          content::PresentationMessageType::TEXT));
+      input->message.Swap(&output->message);
       return output.Pass();
     }
     case interfaces::RouteMessage::Type::TYPE_BINARY: {
       DCHECK(!input->data.is_null());
       DCHECK(input->message.is_null());
-      output = content::PresentationSessionMessage::CreateArrayBufferMessage(
-          presentation_url, presentation_id,
-          make_scoped_ptr(new std::vector<uint8_t>));
+      output.reset(new content::PresentationSessionMessage(
+          content::PresentationMessageType::ARRAY_BUFFER));
+      output->data.reset(new std::vector<uint8_t>);
       input->data.Swap(output->data.get());
       return output.Pass();
     }
@@ -201,7 +202,7 @@ void MediaRouterMojoImpl::CreateRoute(
   if (!origin.is_valid()) {
     DVLOG_WITH_INSTANCE(1) << "Invalid origin: " << origin;
     for (const MediaRouteResponseCallback& callback : callbacks)
-      callback.Run(nullptr, "Invalid origin");
+      callback.Run(nullptr, "", "Invalid origin");
     return;
   }
   RunOrDefer(base::Bind(
@@ -220,7 +221,7 @@ void MediaRouterMojoImpl::JoinRoute(
   if (!origin.is_valid()) {
     DVLOG_WITH_INSTANCE(1) << "Invalid origin: " << origin;
     for (const MediaRouteResponseCallback& callback : callbacks)
-      callback.Run(nullptr, "Invalid origin");
+      callback.Run(nullptr, "", "Invalid origin");
     return;
   }
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoJoinRoute,
@@ -255,14 +256,6 @@ void MediaRouterMojoImpl::SendRouteBinaryMessage(
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoSendSessionBinaryMessage,
                         base::Unretained(this), route_id,
                         base::Passed(data.Pass()), callback));
-}
-
-void MediaRouterMojoImpl::ListenForRouteMessages(
-    const std::vector<MediaRoute::Id>& route_ids,
-    const PresentationSessionMessageCallback& message_cb) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoListenForRouteMessages,
-                        base::Unretained(this), route_ids, message_cb));
 }
 
 void MediaRouterMojoImpl::ClearIssue(const Issue::Id& issue_id) {
@@ -300,7 +293,7 @@ void MediaRouterMojoImpl::UnregisterMediaSinksObserver(
     MediaSinksObserver* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  const std::string& source_id = observer->source().id();
+  const MediaSource::Id& source_id = observer->source().id();
   auto* observer_list = sinks_observers_.get(source_id);
   if (!observer_list || !observer_list->HasObserver(observer)) {
     return;
@@ -350,6 +343,46 @@ void MediaRouterMojoImpl::UnregisterIssuesObserver(IssuesObserver* observer) {
   issue_manager_.UnregisterObserver(observer);
 }
 
+void MediaRouterMojoImpl::RegisterPresentationSessionMessagesObserver(
+    PresentationSessionMessagesObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(observer);
+  const MediaRoute::Id& route_id = observer->route_id();
+  auto* observer_list = messages_observers_.get(route_id);
+  if (!observer_list) {
+    observer_list = new base::ObserverList<PresentationSessionMessagesObserver>;
+    messages_observers_.add(route_id, make_scoped_ptr(observer_list));
+  } else {
+    DCHECK(!observer_list->HasObserver(observer));
+  }
+
+  bool should_listen = !observer_list->might_have_observers();
+  observer_list->AddObserver(observer);
+  if (should_listen) {
+    RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoListenForRouteMessages,
+                          base::Unretained(this), route_id));
+  }
+}
+
+void MediaRouterMojoImpl::UnregisterPresentationSessionMessagesObserver(
+    PresentationSessionMessagesObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(observer);
+
+  const MediaRoute::Id& route_id = observer->route_id();
+  auto* observer_list = messages_observers_.get(route_id);
+  if (!observer_list || !observer_list->HasObserver(observer))
+    return;
+
+  observer_list->RemoveObserver(observer);
+  if (!observer_list->might_have_observers())
+    messages_observers_.erase(route_id);
+  // TODO(imcheng): Queue a task to stop listening for messages by asking
+  // the extension to invoke the oustanding Mojo callback with empty list. We
+  // don't want the Mojo callback to exist indefinitely on the extension side
+  // and there is currently no way to cancel the callback from this side.
+}
+
 void MediaRouterMojoImpl::DoCreateRoute(
     const MediaSource::Id& source_id,
     const MediaSink::Id& sink_id,
@@ -362,7 +395,7 @@ void MediaRouterMojoImpl::DoCreateRoute(
                          << ", presentation ID: " << presentation_id;
   media_route_provider_->CreateRoute(
       source_id, sink_id, presentation_id, origin, tab_id,
-      base::Bind(&RouteResponseReceived, callbacks));
+      base::Bind(&RouteResponseReceived, presentation_id, callbacks));
 }
 
 void MediaRouterMojoImpl::DoJoinRoute(
@@ -375,7 +408,7 @@ void MediaRouterMojoImpl::DoJoinRoute(
                          << ", presentation ID: " << presentation_id;
   media_route_provider_->JoinRoute(
       source_id, presentation_id, origin, tab_id,
-      base::Bind(&RouteResponseReceived, callbacks));
+      base::Bind(&RouteResponseReceived, presentation_id, callbacks));
 }
 
 void MediaRouterMojoImpl::DoCloseRoute(const MediaRoute::Id& route_id) {
@@ -403,25 +436,52 @@ void MediaRouterMojoImpl::DoSendSessionBinaryMessage(
 }
 
 void MediaRouterMojoImpl::DoListenForRouteMessages(
-    const std::vector<MediaRoute::Id>& route_ids,
-    const PresentationSessionMessageCallback& message_cb) {
+    const MediaRoute::Id& route_id) {
   DVLOG_WITH_INSTANCE(1) << "ListenForRouteMessages";
-  media_route_provider_->ListenForRouteMessages(
-      mojo::Array<mojo::String>::From(route_ids),
-      base::Bind(&MediaRouterMojoImpl::OnRouteMessageReceived,
-                 base::Unretained(this), message_cb));
+  if (!ContainsValue(route_ids_listening_for_messages_, route_id)) {
+    route_ids_listening_for_messages_.insert(route_id);
+    media_route_provider_->ListenForRouteMessages(
+        route_id, base::Bind(&MediaRouterMojoImpl::OnRouteMessagesReceived,
+                             base::Unretained(this), route_id));
+  }
 }
 
-void MediaRouterMojoImpl::OnRouteMessageReceived(
-    const PresentationSessionMessageCallback& message_cb,
+void MediaRouterMojoImpl::OnRouteMessagesReceived(
+    const MediaRoute::Id& route_id,
     mojo::Array<interfaces::RouteMessagePtr> messages) {
-  scoped_ptr<ScopedVector<content::PresentationSessionMessage>>
-      session_messages(new ScopedVector<content::PresentationSessionMessage>());
-  for (size_t i = 0; i < messages.size(); ++i) {
-    session_messages->push_back(
-        ConvertToPresentationSessionMessage(messages[i].Pass()).Pass());
+  DVLOG(1) << "OnRouteMessagesReceived";
+
+  // Check if there are any observers remaining. If not, the messages
+  // can be discarded and we can stop listening for the next batch of messages.
+  auto* observer_list = messages_observers_.get(route_id);
+  if (!observer_list) {
+    route_ids_listening_for_messages_.erase(route_id);
+    return;
   }
-  message_cb.Run(session_messages.Pass());
+
+  // Empty |messages| means we told the extension that we were no longer
+  // listening for messages on that route. But since now we have observers
+  // again, we should keep listening.
+  if (messages.storage().empty()) {
+    DVLOG(2) << "Received empty messages for " << route_id;
+  } else {
+    ScopedVector<content::PresentationSessionMessage> session_messages;
+    session_messages.reserve(messages.size());
+    for (size_t i = 0; i < messages.size(); ++i) {
+      session_messages.push_back(
+          ConvertToPresentationSessionMessage(messages[i].Pass()).Pass());
+    }
+
+    // TODO(imcheng): If there is only 1 observer, we should be able to pass
+    // the messages to avoid additional copies. (crbug.com/517234)
+    FOR_EACH_OBSERVER(PresentationSessionMessagesObserver, *observer_list,
+                      OnMessagesReceived(session_messages));
+  }
+
+  // Listen for more messages.
+  media_route_provider_->ListenForRouteMessages(
+      route_id, base::Bind(&MediaRouterMojoImpl::OnRouteMessagesReceived,
+                           base::Unretained(this), route_id));
 }
 
 void MediaRouterMojoImpl::DoClearIssue(const Issue::Id& issue_id) {

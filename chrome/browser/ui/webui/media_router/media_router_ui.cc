@@ -38,13 +38,15 @@ namespace {
 void HandleRouteResponseForPresentationApi(
     scoped_ptr<CreatePresentationSessionRequest> presentation_request,
     const MediaRoute* route,
+    const std::string& presentation_id,
     const std::string& error) {
   DCHECK(presentation_request);
   if (!route) {
     presentation_request->MaybeInvokeErrorCallback(
         content::PresentationError(content::PRESENTATION_ERROR_UNKNOWN, error));
   } else {
-    presentation_request->MaybeInvokeSuccessCallback(route->media_route_id());
+    presentation_request->MaybeInvokeSuccessCallback(presentation_id,
+                                                     route->media_route_id());
   }
 }
 
@@ -284,6 +286,7 @@ void MediaRouterUI::OnRoutesUpdated(const std::vector<MediaRoute>& routes) {
 }
 
 void MediaRouterUI::OnRouteResponseReceived(const MediaRoute* route,
+                                            const std::string& presentation_id,
                                             const std::string& error) {
   DVLOG(1) << "OnRouteResponseReceived";
   // TODO(imcheng): Display error in UI. (crbug.com/490372)

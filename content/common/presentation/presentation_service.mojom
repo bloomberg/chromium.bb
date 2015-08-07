@@ -33,8 +33,6 @@ enum PresentationMessageType {
 };
 
 struct SessionMessage {
-  string presentation_url;
-  string presentation_id;
   PresentationMessageType type;
   // Used when message type is TEXT.
   string? message;
@@ -90,7 +88,7 @@ interface PresentationService {
   // The false in the result callback notifies the renderer to stop sending
   // the send requests and invalidate all pending requests. This occurs
   // for eg., when frame is deleted or navigated away.
-  SendSessionMessage(SessionMessage message_request) => (bool success);
+  SendSessionMessage(PresentationSessionInfo sessionInfo, SessionMessage message_request) => (bool success);
 
   // Called when closeSession() is called by the frame.
   CloseSession(string presentation_url, string presentation_id);
@@ -98,13 +96,14 @@ interface PresentationService {
   // Starts listening for state changes for sessions created on this frame.
   // When state change occurs, PresentationServiceClient::OnSessionStateChanged
   // will be invoked with the session and its new state.
+  // This is called after a presentation session is created.
   ListenForSessionStateChange();
 
-  // Called when the frame is ready to process the next batch of messages.
-  // When the callback carries null messages, there is an error
-  // at the presentation service side.
-  ListenForSessionMessages()
-      => (array<SessionMessage>? messages);
+  // Starts listening for messages for session with |sessionInfo|.
+  // Messages will be received in
+  // PresentationServiceClient::OnSessionMessagesReceived.
+  // This is called after a presentation session is created.
+  ListenForSessionMessages(PresentationSessionInfo sessionInfo);
 };
 
 interface PresentationServiceClient {
@@ -123,4 +122,7 @@ interface PresentationServiceClient {
   // See PresentationService::ListenForSessionStateChange.
   OnSessionStateChanged(PresentationSessionInfo sessionInfo,
                         PresentationSessionState newState);
+
+  // See PresentationService::ListenForSessionMessages.
+  OnSessionMessagesReceived(PresentationSessionInfo sessionInfo, array<SessionMessage> messages);
 };

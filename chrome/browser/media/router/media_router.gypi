@@ -35,6 +35,8 @@
       'presentation_media_sinks_observer.h',
       'presentation_service_delegate_impl.cc',
       'presentation_service_delegate_impl.h',
+      'presentation_session_messages_observer.cc',
+      'presentation_session_messages_observer.h',
       'presentation_session_state_observer.cc',
       'presentation_session_state_observer.h',
     ],

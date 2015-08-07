@@ -86,7 +86,7 @@ TEST_F(CreatePresentationSessionRequestTest, SuccessCallback) {
                  base::Unretained(this), session_info),
       base::Bind(&CreatePresentationSessionRequestTest::FailOnError,
                  base::Unretained(this)));
-  context.MaybeInvokeSuccessCallback(kRouteId);
+  context.MaybeInvokeSuccessCallback(kPresentationId, kRouteId);
   // No-op since success callback is already invoked.
   context.MaybeInvokeErrorCallback(content::PresentationError(
       content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS, "Error message"));
@@ -108,7 +108,7 @@ TEST_F(CreatePresentationSessionRequestTest, ErrorCallback) {
                  base::Unretained(this), error));
   context.MaybeInvokeErrorCallback(error);
   // No-op since error callback is already invoked.
-  context.MaybeInvokeSuccessCallback(kRouteId);
+  context.MaybeInvokeSuccessCallback(kPresentationId, kRouteId);
   EXPECT_TRUE(cb_invoked_);
 }
 

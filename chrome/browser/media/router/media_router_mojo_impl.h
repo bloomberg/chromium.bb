@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_MOJO_IMPL_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -77,16 +78,7 @@ class MediaRouterMojoImpl : public MediaRouter,
       const MediaRoute::Id& route_id,
       scoped_ptr<std::vector<uint8>> data,
       const SendRouteMessageCallback& callback) override;
-  void ListenForRouteMessages(
-      const std::vector<MediaRoute::Id>& route_ids,
-      const PresentationSessionMessageCallback& message_cb) override;
   void ClearIssue(const Issue::Id& issue_id) override;
-  void RegisterMediaSinksObserver(MediaSinksObserver* observer) override;
-  void UnregisterMediaSinksObserver(MediaSinksObserver* observer) override;
-  void RegisterMediaRoutesObserver(MediaRoutesObserver* observer) override;
-  void UnregisterMediaRoutesObserver(MediaRoutesObserver* observer) override;
-  void RegisterIssuesObserver(IssuesObserver* observer) override;
-  void UnregisterIssuesObserver(IssuesObserver* observer) override;
 
   const std::string& media_route_provider_extension_id() const {
     return media_route_provider_extension_id_;
@@ -100,6 +92,11 @@ class MediaRouterMojoImpl : public MediaRouter,
   friend class MediaRouterFactory;
   friend class MediaRouterMojoTest;
 
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
+                           RegisterAndUnregisterMediaSinksObserver);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
+                           RegisterAndUnregisterMediaRoutesObserver);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest, HandleIssue);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoExtensionTest,
                            DeferredBindingAndSuspension);
 
@@ -125,6 +122,18 @@ class MediaRouterMojoImpl : public MediaRouter,
   // Dispatches the Mojo requests queued in |pending_requests_|.
   void ExecutePendingRequests();
 
+  // MediaRouter implementation.
+  void RegisterMediaSinksObserver(MediaSinksObserver* observer) override;
+  void UnregisterMediaSinksObserver(MediaSinksObserver* observer) override;
+  void RegisterMediaRoutesObserver(MediaRoutesObserver* observer) override;
+  void UnregisterMediaRoutesObserver(MediaRoutesObserver* observer) override;
+  void RegisterIssuesObserver(IssuesObserver* observer) override;
+  void UnregisterIssuesObserver(IssuesObserver* observer) override;
+  void RegisterPresentationSessionMessagesObserver(
+      PresentationSessionMessagesObserver* observer) override;
+  void UnregisterPresentationSessionMessagesObserver(
+      PresentationSessionMessagesObserver* observer) override;
+
   // These calls invoke methods in the component extension via Mojo.
   void DoCreateRoute(const MediaSource::Id& source_id,
                      const MediaSink::Id& sink_id,
@@ -143,9 +152,7 @@ class MediaRouterMojoImpl : public MediaRouter,
   void DoSendSessionBinaryMessage(const MediaRoute::Id& route_id,
                                   scoped_ptr<std::vector<uint8>> data,
                                   const SendRouteMessageCallback& callback);
-  void DoListenForRouteMessages(
-      const std::vector<MediaRoute::Id>& route_ids,
-      const PresentationSessionMessageCallback& message_cb);
+  void DoListenForRouteMessages(const MediaRoute::Id& route_id);
   void DoClearIssue(const Issue::Id& issue_id);
   void DoStartObservingMediaSinks(const MediaSource::Id& source_id);
   void DoStopObservingMediaSinks(const MediaSource::Id& source_id);
@@ -153,10 +160,10 @@ class MediaRouterMojoImpl : public MediaRouter,
   void DoStopObservingMediaRoutes();
 
   // Invoked when the next batch of messages arrives.
+  // |route_id|: ID of route of the messages.
   // |messages|: A list of messages received.
-  // |message_cb|: The callback to invoke to pass on the messages received.
-  void OnRouteMessageReceived(
-      const PresentationSessionMessageCallback& message_cb,
+  void OnRouteMessagesReceived(
+      const MediaRoute::Id& route_id,
       mojo::Array<interfaces::RouteMessagePtr> messages);
 
   // Error handler callback for |binding_| and |media_route_provider_|.
@@ -181,6 +188,17 @@ class MediaRouterMojoImpl : public MediaRouter,
       sinks_observers_;
 
   base::ObserverList<MediaRoutesObserver> routes_observers_;
+
+  using PresentationSessionMessagesObserverList =
+      base::ObserverList<PresentationSessionMessagesObserver>;
+  base::ScopedPtrHashMap<MediaRoute::Id,
+                         scoped_ptr<PresentationSessionMessagesObserverList>>
+      messages_observers_;
+  // IDs of MediaRoutes being listened for messages. Note that this is
+  // different from |message_observers_| because we might be waiting for
+  // |OnRouteMessagesReceived()| to be invoked after all observers for that
+  // route have been removed.
+  std::set<MediaRoute::Id> route_ids_listening_for_messages_;
 
   IssueManager issue_manager_;
 

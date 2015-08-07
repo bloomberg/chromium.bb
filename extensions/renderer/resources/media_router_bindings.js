@@ -63,13 +63,11 @@ define('media_router_bindings', [
   function messageToMojo_(message) {
     if ("string" == typeof message.message) {
       return new mediaRouterMojom.RouteMessage({
-        'route_id': message.routeId,
         'type': mediaRouterMojom.RouteMessage.Type.TEXT,
         'message': message.message,
       });
     } else {
       return new mediaRouterMojom.RouteMessage({
-        'route_id': message.routeId,
         'type': mediaRouterMojom.RouteMessage.Type.BINARY,
         'data': message.message,
       });
@@ -322,7 +320,7 @@ define('media_router_bindings', [
     this.sendRouteBinaryMessage = null;
 
     /**
-     * @type {function(Array.<string>): Promise.<Array.<RouteMessage>>}
+     * @type {function(string): Promise.<Array.<RouteMessage>>}
      */
     this.listenForRouteMessages = null;
 
@@ -504,12 +502,12 @@ define('media_router_bindings', [
 
   /**
    * Listen for next batch of messages from one of the routeIds.
-   * @param {!Array.<string>} routeIds
+   * @param {!string} routeId
    * @return {!Promise.<Array.<RouteMessage>>} Resolved with a list of messages,
    *    an empty list if an error occurred.
    */
-  MediaRouteProvider.prototype.listenForRouteMessages = function(routeIds) {
-    return this.handlers_.listenForRouteMessages(routeIds)
+  MediaRouteProvider.prototype.listenForRouteMessages = function(routeId) {
+    return this.handlers_.listenForRouteMessages([routeId])
         .then(function(messages) {
           return {'messages': messages.map(messageToMojo_)};
         }, function() {

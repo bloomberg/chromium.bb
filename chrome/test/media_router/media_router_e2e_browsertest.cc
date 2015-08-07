@@ -64,6 +64,7 @@ void MediaRouterE2EBrowserTest::TearDownOnMainThread() {
 
 void MediaRouterE2EBrowserTest::OnRouteResponseReceived(
     const MediaRoute* route,
+    const std::string& presentation_id,
     const std::string& error) {
   ASSERT_TRUE(route);
   route_id_ = route->media_route_id();

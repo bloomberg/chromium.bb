@@ -46,9 +46,7 @@ bool ArePresentationSessionsEqual(
 bool ArePresentationSessionMessagesEqual(
     const presentation::SessionMessage* expected,
     const presentation::SessionMessage* actual) {
-  return expected->presentation_url == actual->presentation_url &&
-         expected->presentation_id == actual->presentation_id &&
-         expected->type == actual->type &&
+  return expected->type == actual->type &&
          expected->message == actual->message &&
          expected->data.Equals(actual->data);
 }
@@ -106,26 +104,24 @@ class MockPresentationServiceDelegate : public PresentationServiceDelegate {
                void(int render_process_id,
                     int render_frame_id,
                     const std::string& presentation_id));
-  MOCK_METHOD3(ListenForSessionMessages,
-      void(
-          int render_process_id,
-          int render_frame_id,
-          const PresentationSessionMessageCallback& message_cb));
-  MOCK_METHOD4(SendMessageRawPtr,
-      void(
-          int render_process_id,
-          int render_frame_id,
-          PresentationSessionMessage* message_request,
-          const SendMessageCallback& send_message_cb));
+  MOCK_METHOD4(ListenForSessionMessages,
+               void(int render_process_id,
+                    int render_frame_id,
+                    const content::PresentationSessionInfo& session,
+                    const PresentationSessionMessageCallback& message_cb));
+  MOCK_METHOD5(SendMessageRawPtr,
+               void(int render_process_id,
+                    int render_frame_id,
+                    const content::PresentationSessionInfo& session,
+                    PresentationSessionMessage* message_request,
+                    const SendMessageCallback& send_message_cb));
   void SendMessage(int render_process_id,
                    int render_frame_id,
+                   const content::PresentationSessionInfo& session,
                    scoped_ptr<PresentationSessionMessage> message_request,
                    const SendMessageCallback& send_message_cb) override {
-    SendMessageRawPtr(
-        render_process_id,
-        render_frame_id,
-        message_request.release(),
-        send_message_cb);
+    SendMessageRawPtr(render_process_id, render_frame_id, session,
+                      message_request.release(), send_message_cb);
   }
   MOCK_METHOD3(
       ListenForSessionStateChange,
@@ -138,6 +134,7 @@ class MockPresentationServiceClient :
     public presentation::PresentationServiceClient {
  public:
   MOCK_METHOD1(OnScreenAvailabilityUpdated, void(bool available));
+
   void OnSessionStateChanged(
       presentation::PresentationSessionInfoPtr session_info,
       presentation::PresentationSessionState new_state) override {
@@ -146,9 +143,20 @@ class MockPresentationServiceClient :
   MOCK_METHOD2(OnSessionStateChanged,
                void(const presentation::PresentationSessionInfo& session_info,
                     presentation::PresentationSessionState new_state));
+
   void OnScreenAvailabilityNotSupported() override {
     NOTIMPLEMENTED();
   }
+
+  void OnSessionMessagesReceived(
+      presentation::PresentationSessionInfoPtr session_info,
+      mojo::Array<presentation::SessionMessagePtr> messages) override {
+    messages_received_ = messages.Pass();
+    MessagesReceived();
+  }
+  MOCK_METHOD0(MessagesReceived, void());
+
+  mojo::Array<presentation::SessionMessagePtr> messages_received_;
 };
 
 class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
@@ -270,14 +278,13 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
   }
 
   void ExpectSessionMessages(
-      mojo::Array<presentation::SessionMessagePtr> actual_msgs) {
-    EXPECT_TRUE(actual_msgs.size() == expected_msgs_.size());
+      const mojo::Array<presentation::SessionMessagePtr>& expected_msgs,
+      const mojo::Array<presentation::SessionMessagePtr>& actual_msgs) {
+    EXPECT_EQ(expected_msgs.size(), actual_msgs.size());
     for (size_t i = 0; i < actual_msgs.size(); ++i) {
-      EXPECT_TRUE(ArePresentationSessionMessagesEqual(expected_msgs_[i].get(),
+      EXPECT_TRUE(ArePresentationSessionMessagesEqual(expected_msgs[i].get(),
                                                       actual_msgs[i].get()));
     }
-    if (!run_loop_quit_closure_.is_null())
-      run_loop_quit_closure_.Run();
   }
 
   void ExpectSendMessageMojoCallback(bool success) {
@@ -287,49 +294,53 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
       run_loop_quit_closure_.Run();
   }
 
-  void RunListenForSessionMessages(std::string& text_msg,
-                                   std::vector<uint8_t>& binary_data) {
-
-
-    expected_msgs_ = mojo::Array<presentation::SessionMessagePtr>::New(2);
-    expected_msgs_[0] = presentation::SessionMessage::New();
-    expected_msgs_[0]->presentation_url = kPresentationUrl;
-    expected_msgs_[0]->presentation_id = kPresentationId;
-    expected_msgs_[0]->type =
+  void RunListenForSessionMessages(const std::string& text_msg,
+                                   const std::vector<uint8_t>& binary_data) {
+    mojo::Array<presentation::SessionMessagePtr> expected_msgs(2);
+    expected_msgs[0] = presentation::SessionMessage::New();
+    expected_msgs[0]->type =
         presentation::PresentationMessageType::PRESENTATION_MESSAGE_TYPE_TEXT;
-    expected_msgs_[0]->message = text_msg;
-    expected_msgs_[1] = presentation::SessionMessage::New();
-    expected_msgs_[1]->presentation_url = kPresentationUrl;
-    expected_msgs_[1]->presentation_id = kPresentationId;
-    expected_msgs_[1]->type = presentation::PresentationMessageType::
+    expected_msgs[0]->message = text_msg;
+    expected_msgs[1] = presentation::SessionMessage::New();
+    expected_msgs[1]->type = presentation::PresentationMessageType::
         PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER;
-    expected_msgs_[1]->data = mojo::Array<uint8_t>::From(binary_data);
+    expected_msgs[1]->data = mojo::Array<uint8_t>::From(binary_data);
 
-    service_ptr_->ListenForSessionMessages(
-        base::Bind(&PresentationServiceImplTest::ExpectSessionMessages,
-                   base::Unretained(this)));
+    presentation::PresentationSessionInfoPtr session(
+        presentation::PresentationSessionInfo::New());
+    session->url = kPresentationUrl;
+    session->id = kPresentationId;
 
+    PresentationSessionMessageCallback message_cb;
+    {
     base::RunLoop run_loop;
-    base::Callback<void(scoped_ptr<ScopedVector<PresentationSessionMessage>>)>
-        message_cb;
-    EXPECT_CALL(mock_delegate_, ListenForSessionMessages(_, _, _))
+    EXPECT_CALL(mock_delegate_, ListenForSessionMessages(_, _, _, _))
         .WillOnce(DoAll(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
-                        SaveArg<2>(&message_cb)));
+                        SaveArg<3>(&message_cb)));
+    service_ptr_->ListenForSessionMessages(session.Clone());
     run_loop.Run();
+    }
 
-    scoped_ptr<ScopedVector<PresentationSessionMessage>> messages(
-        new ScopedVector<PresentationSessionMessage>());
-    messages->push_back(
-        content::PresentationSessionMessage::CreateStringMessage(
-            kPresentationUrl, kPresentationId,
-            scoped_ptr<std::string>(new std::string(text_msg))));
-    messages->push_back(
-        content::PresentationSessionMessage::CreateArrayBufferMessage(
-            kPresentationUrl, kPresentationId,
-            scoped_ptr<std::vector<uint8_t>>(
-                new std::vector<uint8_t>(binary_data))));
+    ScopedVector<PresentationSessionMessage> messages;
+    scoped_ptr<content::PresentationSessionMessage> message;
+    message.reset(
+        new content::PresentationSessionMessage(PresentationMessageType::TEXT));
+    message->message = text_msg;
+    messages.push_back(message.Pass());
+    message.reset(new content::PresentationSessionMessage(
+        PresentationMessageType::ARRAY_BUFFER));
+    message->data.reset(new std::vector<uint8_t>(binary_data));
+    messages.push_back(message.Pass());
+
+    std::vector<presentation::SessionMessagePtr> actual_msgs;
+    {
+      base::RunLoop run_loop;
+      EXPECT_CALL(mock_client_, MessagesReceived())
+          .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
     message_cb.Run(messages.Pass());
-    SaveQuitClosureAndRunLoop();
+    run_loop.Run();
+    }
+    ExpectSessionMessages(expected_msgs, mock_client_.messages_received_);
   }
 
   MockPresentationServiceDelegate mock_delegate_;
@@ -343,7 +354,6 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
 
   base::Closure run_loop_quit_closure_;
   int default_session_started_count_;
-  mojo::Array<presentation::SessionMessagePtr> expected_msgs_;
 };
 
 TEST_F(PresentationServiceImplTest, ListenForScreenAvailability) {
@@ -552,34 +562,8 @@ TEST_F(PresentationServiceImplTest, ListenForSessionMessages) {
 
 TEST_F(PresentationServiceImplTest, ListenForSessionMessagesWithEmptyMsg) {
   std::string text_msg("");
-  std::vector<uint8_t> binary_data{};
+  std::vector<uint8_t> binary_data;
   RunListenForSessionMessages(text_msg, binary_data);
-}
-
-TEST_F(PresentationServiceImplTest, ReceiveSessionMessagesAfterReset) {
-  std::string text_msg("123");
-  expected_msgs_ = mojo::Array<presentation::SessionMessagePtr>();
-  service_ptr_->ListenForSessionMessages(
-      base::Bind(&PresentationServiceImplTest::ExpectSessionMessages,
-                 base::Unretained(this)));
-
-  base::RunLoop run_loop;
-  base::Callback<void(scoped_ptr<ScopedVector<PresentationSessionMessage>>)>
-      message_cb;
-  EXPECT_CALL(mock_delegate_, ListenForSessionMessages(_, _, _))
-      .WillOnce(DoAll(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
-                      SaveArg<2>(&message_cb)));
-  run_loop.Run();
-
-  scoped_ptr<ScopedVector<PresentationSessionMessage>> messages(
-      new ScopedVector<PresentationSessionMessage>());
-  messages->push_back(content::PresentationSessionMessage::CreateStringMessage(
-      kPresentationUrl, kPresentationId,
-      scoped_ptr<std::string>(new std::string(text_msg))));
-  ExpectReset();
-  service_impl_->Reset();
-  message_cb.Run(messages.Pass());
-  SaveQuitClosureAndRunLoop();
 }
 
 TEST_F(PresentationServiceImplTest, StartSessionInProgress) {
@@ -653,39 +637,35 @@ TEST_F(PresentationServiceImplTest, DefaultSessionStartReset) {
 TEST_F(PresentationServiceImplTest, SendStringMessage) {
   std::string message("Test presentation session message");
 
+  presentation::PresentationSessionInfoPtr session(
+      presentation::PresentationSessionInfo::New());
+  session->url = kPresentationUrl;
+  session->id = kPresentationId;
   presentation::SessionMessagePtr message_request(
       presentation::SessionMessage::New());
-  message_request->presentation_url = kPresentationUrl;
-  message_request->presentation_id = kPresentationId;
   message_request->type = presentation::PresentationMessageType::
                           PRESENTATION_MESSAGE_TYPE_TEXT;
   message_request->message = message;
   service_ptr_->SendSessionMessage(
-      message_request.Pass(),
-      base::Bind(
-          &PresentationServiceImplTest::ExpectSendMessageMojoCallback,
-          base::Unretained(this)));
+      session.Pass(), message_request.Pass(),
+      base::Bind(&PresentationServiceImplTest::ExpectSendMessageMojoCallback,
+                 base::Unretained(this)));
 
   base::RunLoop run_loop;
   base::Callback<void(bool)> send_message_cb;
   PresentationSessionMessage* test_message = nullptr;
-  EXPECT_CALL(mock_delegate_, SendMessageRawPtr(
-      _, _, _, _))
-      .WillOnce(DoAll(
-          InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
-          SaveArg<2>(&test_message),
-          SaveArg<3>(&send_message_cb)));
+  EXPECT_CALL(mock_delegate_, SendMessageRawPtr(_, _, _, _, _))
+      .WillOnce(DoAll(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
+                      SaveArg<3>(&test_message), SaveArg<4>(&send_message_cb)));
   run_loop.Run();
 
+  // Make sure |test_message| gets deleted.
+  scoped_ptr<PresentationSessionMessage> scoped_test_message(test_message);
   EXPECT_TRUE(test_message);
-  EXPECT_EQ(kPresentationUrl, test_message->presentation_url);
-  EXPECT_EQ(kPresentationId, test_message->presentation_id);
   EXPECT_FALSE(test_message->is_binary());
-  EXPECT_TRUE(test_message->message.get()->size() <=
-              kMaxPresentationSessionMessageSize);
-  EXPECT_EQ(message, *(test_message->message.get()));
-  EXPECT_FALSE(test_message->data);
-  delete test_message;
+  EXPECT_LE(test_message->message.size(), kMaxPresentationSessionMessageSize);
+  EXPECT_EQ(message, test_message->message);
+  ASSERT_FALSE(test_message->data);
   send_message_cb.Run(true);
   SaveQuitClosureAndRunLoop();
 }
@@ -696,41 +676,38 @@ TEST_F(PresentationServiceImplTest, SendArrayBuffer) {
   std::vector<uint8> data;
   data.assign(buffer, buffer + sizeof(buffer));
 
+  presentation::PresentationSessionInfoPtr session(
+      presentation::PresentationSessionInfo::New());
+  session->url = kPresentationUrl;
+  session->id = kPresentationId;
   presentation::SessionMessagePtr message_request(
       presentation::SessionMessage::New());
-  message_request->presentation_url = kPresentationUrl;
-  message_request->presentation_id = kPresentationId;
   message_request->type = presentation::PresentationMessageType::
                           PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER;
   message_request->data = mojo::Array<uint8>::From(data);
   service_ptr_->SendSessionMessage(
-      message_request.Pass(),
-      base::Bind(
-          &PresentationServiceImplTest::ExpectSendMessageMojoCallback,
-          base::Unretained(this)));
+      session.Pass(), message_request.Pass(),
+      base::Bind(&PresentationServiceImplTest::ExpectSendMessageMojoCallback,
+                 base::Unretained(this)));
 
   base::RunLoop run_loop;
   base::Callback<void(bool)> send_message_cb;
   PresentationSessionMessage* test_message = nullptr;
-  EXPECT_CALL(mock_delegate_, SendMessageRawPtr(
-      _, _, _, _))
-      .WillOnce(DoAll(
-          InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
-          SaveArg<2>(&test_message),
-          SaveArg<3>(&send_message_cb)));
+  EXPECT_CALL(mock_delegate_, SendMessageRawPtr(_, _, _, _, _))
+      .WillOnce(DoAll(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
+                      SaveArg<3>(&test_message), SaveArg<4>(&send_message_cb)));
   run_loop.Run();
 
+  // Make sure |test_message| gets deleted.
+  scoped_ptr<PresentationSessionMessage> scoped_test_message(test_message);
   EXPECT_TRUE(test_message);
-  EXPECT_EQ(kPresentationUrl, test_message->presentation_url);
-  EXPECT_EQ(kPresentationId, test_message->presentation_id);
   EXPECT_TRUE(test_message->is_binary());
   EXPECT_EQ(PresentationMessageType::ARRAY_BUFFER, test_message->type);
-  EXPECT_FALSE(test_message->message);
-  EXPECT_EQ(data.size(), test_message->data.get()->size());
-  EXPECT_TRUE(test_message->data.get()->size() <=
-              kMaxPresentationSessionMessageSize);
-  EXPECT_EQ(0, memcmp(buffer, &(*test_message->data.get())[0], sizeof(buffer)));
-  delete test_message;
+  EXPECT_TRUE(test_message->message.empty());
+  ASSERT_TRUE(test_message->data);
+  EXPECT_EQ(data.size(), test_message->data->size());
+  EXPECT_LE(test_message->data->size(), kMaxPresentationSessionMessageSize);
+  EXPECT_EQ(0, memcmp(buffer, &(*test_message->data)[0], sizeof(buffer)));
   send_message_cb.Run(true);
   SaveQuitClosureAndRunLoop();
 }
@@ -744,28 +721,26 @@ TEST_F(PresentationServiceImplTest, SendArrayBufferWithExceedingLimit) {
   std::vector<uint8> data;
   data.assign(buffer, buffer + sizeof(buffer));
 
+  presentation::PresentationSessionInfoPtr session(
+      presentation::PresentationSessionInfo::New());
+  session->url = kPresentationUrl;
+  session->id = kPresentationId;
   presentation::SessionMessagePtr message_request(
       presentation::SessionMessage::New());
-  message_request->presentation_url = kPresentationUrl;
-  message_request->presentation_id = kPresentationId;
   message_request->type = presentation::PresentationMessageType::
                           PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER;
   message_request->data = mojo::Array<uint8>::From(data);
   service_ptr_->SendSessionMessage(
-      message_request.Pass(),
-      base::Bind(
-          &PresentationServiceImplTest::ExpectSendMessageMojoCallback,
-          base::Unretained(this)));
+      session.Pass(), message_request.Pass(),
+      base::Bind(&PresentationServiceImplTest::ExpectSendMessageMojoCallback,
+                 base::Unretained(this)));
 
   base::RunLoop run_loop;
   base::Callback<void(bool)> send_message_cb;
   PresentationSessionMessage* test_message = nullptr;
-  EXPECT_CALL(mock_delegate_, SendMessageRawPtr(
-      _, _, _, _))
-      .WillOnce(DoAll(
-          InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
-          SaveArg<2>(&test_message),
-          SaveArg<3>(&send_message_cb)));
+  EXPECT_CALL(mock_delegate_, SendMessageRawPtr(_, _, _, _, _))
+      .WillOnce(DoAll(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
+                      SaveArg<3>(&test_message), SaveArg<4>(&send_message_cb)));
   run_loop.Run();
 
   EXPECT_FALSE(test_message);
@@ -778,39 +753,38 @@ TEST_F(PresentationServiceImplTest, SendBlobData) {
   std::vector<uint8> data;
   data.assign(buffer, buffer + sizeof(buffer));
 
+  presentation::PresentationSessionInfoPtr session(
+      presentation::PresentationSessionInfo::New());
+  session->url = kPresentationUrl;
+  session->id = kPresentationId;
   presentation::SessionMessagePtr message_request(
       presentation::SessionMessage::New());
-  message_request->presentation_url = kPresentationUrl;
-  message_request->presentation_id = kPresentationId;
   message_request->type =
       presentation::PresentationMessageType::PRESENTATION_MESSAGE_TYPE_BLOB;
   message_request->data = mojo::Array<uint8>::From(data);
   service_ptr_->SendSessionMessage(
-      message_request.Pass(),
+      session.Pass(), message_request.Pass(),
       base::Bind(&PresentationServiceImplTest::ExpectSendMessageMojoCallback,
                  base::Unretained(this)));
 
   base::RunLoop run_loop;
   base::Callback<void(bool)> send_message_cb;
   PresentationSessionMessage* test_message = nullptr;
-  EXPECT_CALL(mock_delegate_, SendMessageRawPtr(_, _, _, _))
-      .WillOnce(DoAll(
-          InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
-          SaveArg<2>(&test_message),
-          SaveArg<3>(&send_message_cb)));
+  EXPECT_CALL(mock_delegate_, SendMessageRawPtr(_, _, _, _, _))
+      .WillOnce(DoAll(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
+                      SaveArg<3>(&test_message), SaveArg<4>(&send_message_cb)));
   run_loop.Run();
 
+  // Make sure |test_message| gets deleted.
+  scoped_ptr<PresentationSessionMessage> scoped_test_message(test_message);
   EXPECT_TRUE(test_message);
-  EXPECT_EQ(kPresentationUrl, test_message->presentation_url);
-  EXPECT_EQ(kPresentationId, test_message->presentation_id);
   EXPECT_TRUE(test_message->is_binary());
   EXPECT_EQ(PresentationMessageType::BLOB, test_message->type);
-  EXPECT_FALSE(test_message->message);
-  EXPECT_EQ(data.size(), test_message->data.get()->size());
-  EXPECT_TRUE(test_message->data.get()->size() <=
-              kMaxPresentationSessionMessageSize);
-  EXPECT_EQ(0, memcmp(buffer, &(*test_message->data.get())[0], sizeof(buffer)));
-  delete test_message;
+  EXPECT_TRUE(test_message->message.empty());
+  ASSERT_TRUE(test_message->data);
+  EXPECT_EQ(data.size(), test_message->data->size());
+  EXPECT_LE(test_message->data->size(), kMaxPresentationSessionMessageSize);
+  EXPECT_EQ(0, memcmp(buffer, &(*test_message->data)[0], sizeof(buffer)));
   send_message_cb.Run(true);
   SaveQuitClosureAndRunLoop();
 }

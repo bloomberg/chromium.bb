@@ -53,7 +53,8 @@ class CreatePresentationSessionRequest {
   // Invokes |success_cb_| or |error_cb_| with the given arguments.
   // These functions can only be invoked once per instance. Further invocations
   // are no-op.
-  void MaybeInvokeSuccessCallback(const MediaRoute::Id& route_id);
+  void MaybeInvokeSuccessCallback(const std::string& presentation_id,
+                                  const MediaRoute::Id& route_id);
   void MaybeInvokeErrorCallback(const content::PresentationError& error);
 
  private:

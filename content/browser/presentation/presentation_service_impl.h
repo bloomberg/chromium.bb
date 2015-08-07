@@ -182,15 +182,15 @@ class CONTENT_EXPORT PresentationServiceImpl
       const mojo::String& presentation_url,
       const mojo::String& presentation_id,
       const NewSessionMojoCallback& callback) override;
-  void SendSessionMessage(
-      presentation::SessionMessagePtr session_message,
-      const SendMessageMojoCallback& callback) override;
+  void SendSessionMessage(presentation::PresentationSessionInfoPtr session_info,
+                          presentation::SessionMessagePtr session_message,
+                          const SendMessageMojoCallback& callback) override;
   void CloseSession(
       const mojo::String& presentation_url,
       const mojo::String& presentation_id) override;
   void ListenForSessionStateChange() override;
   void ListenForSessionMessages(
-      const SessionMessagesCallback& callback) override;
+      presentation::PresentationSessionInfoPtr session) override;
 
   // Creates a binding between this object and |request|.
   void Bind(mojo::InterfaceRequest<presentation::PresentationService> request);
@@ -247,10 +247,9 @@ class CONTENT_EXPORT PresentationServiceImpl
 
   // Passed to embedder's implementation of PresentationServiceDelegate for
   // later invocation when session messages arrive.
-  // For optimization purposes, this method will empty the messages
-  // passed to it.
   void OnSessionMessages(
-      scoped_ptr<ScopedVector<PresentationSessionMessage>> messages);
+      const content::PresentationSessionInfo& session,
+      const ScopedVector<PresentationSessionMessage>& messages);
 
   // Associates a JoinSession |callback| with a unique request ID and
   // stores it in a map.

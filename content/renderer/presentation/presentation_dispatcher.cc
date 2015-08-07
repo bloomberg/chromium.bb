@@ -50,22 +50,6 @@ blink::WebPresentationSessionState GetWebPresentationSessionStateFromMojo(
   return blink::WebPresentationSessionState::Disconnected;
 }
 
-presentation::SessionMessage* GetMojoSessionMessage(
-    const blink::WebString& presentationUrl,
-    const blink::WebString& presentationId,
-    presentation::PresentationMessageType type,
-    const uint8* data,
-    size_t length) {
-  presentation::SessionMessage* session_message =
-      new presentation::SessionMessage();
-  session_message->presentation_url = presentationUrl.utf8();
-  session_message->presentation_id = presentationId.utf8();
-  session_message->type = type;
-  const std::vector<uint8> vector(data, data + length);
-  session_message->data = mojo::Array<uint8>::From(vector);
-  return session_message;
-}
-
 }  // namespace
 
 namespace content {
@@ -75,9 +59,7 @@ PresentationDispatcher::PresentationDispatcher(RenderFrame* render_frame)
       controller_(nullptr),
       binding_(this),
       listening_state_(ListeningState::Inactive),
-      last_known_availability_(false),
-      listening_for_messages_(false) {
-}
+      last_known_availability_(false) {}
 
 PresentationDispatcher::~PresentationDispatcher() {
   // Controller should be destroyed before the dispatcher when frame is
@@ -149,21 +131,11 @@ void PresentationDispatcher::sendString(
     return;
   }
 
-  presentation::SessionMessage* session_message =
-      new presentation::SessionMessage();
-  session_message->presentation_url = presentationUrl.utf8();
-  session_message->presentation_id = presentationId.utf8();
-  session_message->type = presentation::PresentationMessageType::
-                          PRESENTATION_MESSAGE_TYPE_TEXT;
-  session_message->message = message.utf8();
-
-  message_request_queue_.push(make_linked_ptr(session_message));
+  message_request_queue_.push(make_linked_ptr(
+      CreateSendTextMessageRequest(presentationUrl, presentationId, message)));
   // Start processing request if only one in the queue.
-  if (message_request_queue_.size() == 1) {
-    const linked_ptr<presentation::SessionMessage>& request =
-        message_request_queue_.front();
-    DoSendMessage(*request);
-  }
+  if (message_request_queue_.size() == 1)
+    DoSendMessage(message_request_queue_.front().get());
 }
 
 void PresentationDispatcher::sendArrayBuffer(
@@ -178,18 +150,14 @@ void PresentationDispatcher::sendArrayBuffer(
     return;
   }
 
-  presentation::SessionMessage* session_message =
-      GetMojoSessionMessage(presentationUrl, presentationId,
-                            presentation::PresentationMessageType::
-                                PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER,
-                            data, length);
-  message_request_queue_.push(make_linked_ptr(session_message));
+  message_request_queue_.push(make_linked_ptr(
+      CreateSendBinaryMessageRequest(presentationUrl, presentationId,
+                                     presentation::PresentationMessageType::
+                                         PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER,
+                                     data, length)));
   // Start processing request if only one in the queue.
-  if (message_request_queue_.size() == 1) {
-    const linked_ptr<presentation::SessionMessage>& request =
-        message_request_queue_.front();
-    DoSendMessage(*request);
-  }
+  if (message_request_queue_.size() == 1)
+    DoSendMessage(message_request_queue_.front().get());
 }
 
 void PresentationDispatcher::sendBlobData(
@@ -204,49 +172,20 @@ void PresentationDispatcher::sendBlobData(
     return;
   }
 
-  presentation::SessionMessage* session_message = GetMojoSessionMessage(
+  message_request_queue_.push(make_linked_ptr(CreateSendBinaryMessageRequest(
       presentationUrl, presentationId,
       presentation::PresentationMessageType::PRESENTATION_MESSAGE_TYPE_BLOB,
-      data, length);
-  message_request_queue_.push(make_linked_ptr(session_message));
-  if (message_request_queue_.size() == 1) {
-    const linked_ptr<presentation::SessionMessage>& request =
-        message_request_queue_.front();
-    DoSendMessage(*request);
-  }
+      data, length)));
+  // Start processing request if only one in the queue.
+  if (message_request_queue_.size() == 1)
+    DoSendMessage(message_request_queue_.front().get());
 }
 
-void PresentationDispatcher::DoSendMessage(
-    const presentation::SessionMessage& session_message) {
+void PresentationDispatcher::DoSendMessage(SendMessageRequest* request) {
   ConnectToPresentationServiceIfNeeded();
-  presentation::SessionMessagePtr message_request(
-      presentation::SessionMessage::New());
-  message_request->presentation_url = session_message.presentation_url;
-  message_request->presentation_id = session_message.presentation_id;
-  message_request->type = session_message.type;
-  switch (session_message.type) {
-    case presentation::PresentationMessageType::
-        PRESENTATION_MESSAGE_TYPE_TEXT: {
-      message_request->message = session_message.message;
-      break;
-    }
-    case presentation::PresentationMessageType::
-        PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER:
-    case presentation::PresentationMessageType::
-        PRESENTATION_MESSAGE_TYPE_BLOB: {
-      message_request->data =
-          mojo::Array<uint8>::From(session_message.data.storage());
-      break;
-    }
-    default: {
-      NOTREACHED() << "Invalid presentation message type "
-                   << session_message.type;
-      break;
-    }
-  }
 
   presentation_service_->SendSessionMessage(
-      message_request.Pass(),
+      request->session_info.Pass(), request->message.Pass(),
       base::Bind(&PresentationDispatcher::HandleSendMessageRequests,
                  base::Unretained(this)));
 }
@@ -268,9 +207,7 @@ void PresentationDispatcher::HandleSendMessageRequests(bool success) {
 
   message_request_queue_.pop();
   if (!message_request_queue_.empty()) {
-    const linked_ptr<presentation::SessionMessage>& request =
-        message_request_queue_.front();
-    DoSendMessage(*request);
+    DoSendMessage(message_request_queue_.front().get());
   }
 }
 
@@ -327,8 +264,6 @@ void PresentationDispatcher::DidCommitProvisionalLoad(
   // Remove all pending send message requests.
   MessageRequestQueue empty;
   std::swap(message_request_queue_, empty);
-
-  listening_for_messages_ = false;
 }
 
 void PresentationDispatcher::OnScreenAvailabilityUpdated(bool available) {
@@ -378,8 +313,8 @@ void PresentationDispatcher::OnDefaultSessionStarted(
 
   if (!session_info.is_null()) {
     controller_->didStartDefaultSession(
-        new PresentationSessionClient(session_info.Pass()));
-    StartListenForMessages();
+        new PresentationSessionClient(session_info.Clone()));
+    presentation_service_->ListenForSessionMessages(session_info.Pass());
   }
 }
 
@@ -397,18 +332,8 @@ void PresentationDispatcher::OnSessionCreated(
   }
 
   DCHECK(!session_info.is_null());
-  callback->onSuccess(new PresentationSessionClient(session_info.Pass()));
-  StartListenForMessages();
-}
-
-void PresentationDispatcher::StartListenForMessages() {
-  if (listening_for_messages_)
-    return;
-
-  listening_for_messages_ = true;
-  presentation_service_->ListenForSessionMessages(
-      base::Bind(&PresentationDispatcher::OnSessionMessagesReceived,
-                 base::Unretained(this)));
+  callback->onSuccess(new PresentationSessionClient(session_info.Clone()));
+  presentation_service_->ListenForSessionMessages(session_info.Pass());
 }
 
 void PresentationDispatcher::OnSessionStateChanged(
@@ -424,22 +349,16 @@ void PresentationDispatcher::OnSessionStateChanged(
 }
 
 void PresentationDispatcher::OnSessionMessagesReceived(
+    presentation::PresentationSessionInfoPtr session_info,
     mojo::Array<presentation::SessionMessagePtr> messages) {
-  if (!listening_for_messages_)
-    return; // messages may come after the frame navigated.
-
-  // When messages is null, there is an error at presentation service side.
-  if (!controller_ || messages.is_null()) {
-    listening_for_messages_ = false;
+  if (!controller_)
     return;
-  }
 
   for (size_t i = 0; i < messages.size(); ++i) {
     // Note: Passing batches of messages to the Blink layer would be more
     // efficient.
     scoped_ptr<PresentationSessionClient> session_client(
-        new PresentationSessionClient(messages[i]->presentation_url,
-                                      messages[i]->presentation_id));
+        new PresentationSessionClient(session_info->url, session_info->id));
     switch (messages[i]->type) {
       case presentation::PresentationMessageType::
           PRESENTATION_MESSAGE_TYPE_TEXT: {
@@ -463,10 +382,6 @@ void PresentationDispatcher::OnSessionMessagesReceived(
       }
     }
   }
-
-  presentation_service_->ListenForSessionMessages(
-      base::Bind(&PresentationDispatcher::OnSessionMessagesReceived,
-                 base::Unretained(this)));
 }
 
 void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
@@ -501,6 +416,53 @@ void PresentationDispatcher::UpdateListeningState() {
     listening_state_ = ListeningState::Inactive;
     presentation_service_->StopListeningForScreenAvailability();
   }
+}
+
+PresentationDispatcher::SendMessageRequest::SendMessageRequest(
+    presentation::PresentationSessionInfoPtr session_info,
+    presentation::SessionMessagePtr message)
+    : session_info(session_info.Pass()), message(message.Pass()) {}
+
+PresentationDispatcher::SendMessageRequest::~SendMessageRequest() {}
+
+// static
+PresentationDispatcher::SendMessageRequest*
+PresentationDispatcher::CreateSendTextMessageRequest(
+    const blink::WebString& presentationUrl,
+    const blink::WebString& presentationId,
+    const blink::WebString& message) {
+  presentation::PresentationSessionInfoPtr session_info =
+      presentation::PresentationSessionInfo::New();
+  session_info->url = presentationUrl.utf8();
+  session_info->id = presentationId.utf8();
+
+  presentation::SessionMessagePtr session_message =
+      presentation::SessionMessage::New();
+  session_message->type =
+      presentation::PresentationMessageType::PRESENTATION_MESSAGE_TYPE_TEXT;
+  session_message->message = message.utf8();
+  return new SendMessageRequest(session_info.Pass(), session_message.Pass());
+}
+
+// static
+PresentationDispatcher::SendMessageRequest*
+PresentationDispatcher::CreateSendBinaryMessageRequest(
+    const blink::WebString& presentationUrl,
+    const blink::WebString& presentationId,
+    presentation::PresentationMessageType type,
+    const uint8* data,
+    size_t length) {
+  presentation::PresentationSessionInfoPtr session_info =
+      presentation::PresentationSessionInfo::New();
+  session_info->url = presentationUrl.utf8();
+  session_info->id = presentationId.utf8();
+
+  presentation::SessionMessagePtr session_message =
+      presentation::SessionMessage::New();
+  session_message->type = type;
+  std::vector<uint8> tmp_data_vector(data, data + length);
+  session_message->data.Swap(&tmp_data_vector);
+  return new SendMessageRequest(session_info.Pass(), session_message.Pass());
 }
 
 }  // namespace content

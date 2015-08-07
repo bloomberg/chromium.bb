@@ -91,12 +91,13 @@ class PresentationServiceDelegateImpl
   void ListenForSessionMessages(
       int render_process_id,
       int render_frame_id,
-      const PresentationSessionMessageCallback& message_cb) override;
-  void SendMessage(
-      int render_process_id,
-      int render_frame_id,
-      scoped_ptr<content::PresentationSessionMessage> message_request,
-      const SendMessageCallback& send_message_cb) override;
+      const content::PresentationSessionInfo& session,
+      const content::PresentationSessionMessageCallback& message_cb) override;
+  void SendMessage(int render_process_id,
+                   int render_frame_id,
+                   const content::PresentationSessionInfo& session,
+                   scoped_ptr<content::PresentationSessionMessage> message,
+                   const SendMessageCallback& send_message_cb) override;
   void ListenForSessionStateChange(
       int render_process_id,
       int render_frame_id,
@@ -106,7 +107,9 @@ class PresentationServiceDelegateImpl
   // outside of a Presentation API request. This could be due to
   // browser action (e.g., browser initiated media router dialog) or
   // a media route provider (e.g., autojoin).
-  void OnRouteResponse(const MediaRoute* route, const std::string& error);
+  void OnRouteResponse(const MediaRoute* route,
+                       const std::string& presentation_id,
+                       const std::string& error);
 
   // Returns the default MediaSource for this tab if there is one.
   // Returns an empty MediaSource otherwise.
@@ -160,6 +163,7 @@ class PresentationServiceDelegateImpl
                            const PresentationSessionSuccessCallback& success_cb,
                            const PresentationSessionErrorCallback& error_cb,
                            const MediaRoute* route,
+                           const std::string& presentation_id,
                            const std::string& error_text);
 
   void OnStartSessionSucceeded(

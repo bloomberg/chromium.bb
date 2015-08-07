@@ -33,6 +33,7 @@ class MediaRouterE2EBrowserTest : public MediaRouterBaseBrowserTest {
   // Callback from MediaRouter when a response to a media route request is
   // received.
   void OnRouteResponseReceived(const MediaRoute* route,
+                               const std::string& presentation_id,
                                const std::string& error);
 
   // Initializes |observer_| to listen for sinks compatible with |source|,

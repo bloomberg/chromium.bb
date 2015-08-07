@@ -21,6 +21,8 @@ class PresentationScreenAvailabilityListener;
 using SessionStateChangedCallback =
     base::Callback<void(const PresentationSessionInfo&,
                         PresentationSessionState)>;
+using PresentationSessionMessageCallback = base::Callback<void(
+    const ScopedVector<content::PresentationSessionMessage>&)>;
 
 // An interface implemented by embedders to handle presentation API calls
 // forwarded from PresentationServiceImpl.
@@ -47,8 +49,6 @@ class CONTENT_EXPORT PresentationServiceDelegate {
       base::Callback<void(const PresentationSessionInfo&)>;
   using PresentationSessionErrorCallback =
       base::Callback<void(const PresentationError&)>;
-  using PresentationSessionMessageCallback = base::Callback<void(
-      scoped_ptr<ScopedVector<PresentationSessionMessage>>)>;
   using SendMessageCallback = base::Callback<void(bool)>;
 
   virtual ~PresentationServiceDelegate() {}
@@ -144,24 +144,28 @@ class CONTENT_EXPORT PresentationServiceDelegate {
                             int render_frame_id,
                             const std::string& presentation_id) = 0;
 
-  // Gets the next batch of messages from all presentation sessions in the frame
+  // Listen for messages for a presentation session.
   // |render_process_id|, |render_frame_id|: ID for originating frame.
-  // |message_cb|: Invoked with a non-empty list of messages.
+  // |session|: URL and ID of presentation session to listen for messages.
+  // |message_cb|: Invoked with a non-empty list of messages whenever there are
+  // messages.
   virtual void ListenForSessionMessages(
       int render_process_id,
       int render_frame_id,
+      const content::PresentationSessionInfo& session,
       const PresentationSessionMessageCallback& message_cb) = 0;
 
   // Sends a message (string or binary data) to a presentation session.
   // |render_process_id|, |render_frame_id|: ID of originating frame.
-  // |message_request|: Contains Presentation URL, ID and message to be sent
-  // and delegate is responsible for deallocating the message_request.
+  // |session|: The presentation session to send the message to.
+  // |message|: The message to send. The embedder takes ownership of |message|.
+  //            Must not be null.
   // |send_message_cb|: Invoked after handling the send message request.
-  virtual void SendMessage(
-      int render_process_id,
-      int render_frame_id,
-      scoped_ptr<PresentationSessionMessage> message_request,
-      const SendMessageCallback& send_message_cb) = 0;
+  virtual void SendMessage(int render_process_id,
+                           int render_frame_id,
+                           const content::PresentationSessionInfo& session,
+                           scoped_ptr<PresentationSessionMessage> message,
+                           const SendMessageCallback& send_message_cb) = 0;
 
   // Continuously listen for presentation session state changes for a frame.
   // |render_process_id|, |render_frame_id|: ID of frame.
