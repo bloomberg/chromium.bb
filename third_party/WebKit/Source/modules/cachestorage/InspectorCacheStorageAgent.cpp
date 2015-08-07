@@ -70,6 +70,11 @@ bool parseCacheId(ErrorString* errorString, const String& id, String* securityOr
 PassOwnPtr<WebServiceWorkerCacheStorage> assertCacheStorage(ErrorString* errorString, const String& securityOrigin)
 {
     RefPtr<SecurityOrigin> secOrigin = SecurityOrigin::createFromString(securityOrigin);
+
+    // Cache Storage API is restricted to trustworthy origins.
+    if (!secOrigin->isPotentiallyTrustworthy(*errorString))
+        return nullptr;
+
     String identifier = createDatabaseIdentifierFromSecurityOrigin(secOrigin.get());
     OwnPtr<WebServiceWorkerCacheStorage> cache = adoptPtr(Platform::current()->cacheStorage(identifier));
     if (!cache)
@@ -408,6 +413,16 @@ DEFINE_TRACE(InspectorCacheStorageAgent)
 
 void InspectorCacheStorageAgent::requestCacheNames(ErrorString* errorString, const String& securityOrigin, PassRefPtrWillBeRawPtr<RequestCacheNamesCallback> callback)
 {
+    RefPtr<SecurityOrigin> secOrigin = SecurityOrigin::createFromString(securityOrigin);
+
+    // Cache Storage API is restricted to trustworthy origins.
+    String ignoredMessage;
+    if (!secOrigin->isPotentiallyTrustworthy(ignoredMessage)) {
+        // Don't treat this as an error, just don't attempt to open and enumerate the caches.
+        callback->sendSuccess(Array<TypeBuilder::CacheStorage::Cache>::create());
+        return;
+    }
+
     OwnPtr<WebServiceWorkerCacheStorage> cache = assertCacheStorage(errorString, securityOrigin);
     if (!cache) {
         callback->sendFailure(*errorString);

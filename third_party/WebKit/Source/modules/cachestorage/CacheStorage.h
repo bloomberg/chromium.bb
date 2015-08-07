@@ -29,10 +29,10 @@ public:
     ~CacheStorage();
     void dispose();
 
-    ScriptPromise open(ScriptState*, const String& cacheName);
-    ScriptPromise has(ScriptState*, const String& cacheName);
-    ScriptPromise deleteFunction(ScriptState*, const String& cacheName);
-    ScriptPromise keys(ScriptState*);
+    ScriptPromise open(ScriptState*, const String& cacheName, ExceptionState&);
+    ScriptPromise has(ScriptState*, const String& cacheName, ExceptionState&);
+    ScriptPromise deleteFunction(ScriptState*, const String& cacheName, ExceptionState&);
+    ScriptPromise keys(ScriptState*, ExceptionState&);
     ScriptPromise match(ScriptState*, const RequestInfo&, const CacheQueryOptions&, ExceptionState&);
 
     DECLARE_TRACE();

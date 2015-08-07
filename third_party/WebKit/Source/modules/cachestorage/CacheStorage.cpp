@@ -24,6 +24,21 @@ DOMException* createNoImplementationException()
     return DOMException::create(NotSupportedError, "No CacheStorage implementation provided.");
 }
 
+bool commonChecks(ScriptState* scriptState, ExceptionState& exceptionState)
+{
+    ExecutionContext* executionContext = scriptState->executionContext();
+    // FIXME: May be null due to worker termination: http://crbug.com/413518.
+    if (!executionContext)
+        return false;
+
+    String errorMessage;
+    if (!executionContext->isPrivilegedContext(errorMessage)) {
+        exceptionState.throwSecurityError(errorMessage);
+        return false;
+    }
+    return true;
+}
+
 }
 
 // FIXME: Consider using CallbackPromiseAdapter.
@@ -188,8 +203,11 @@ CacheStorage* CacheStorage::create(WeakPtr<GlobalFetch::ScopedFetcher> fetcher, 
     return new CacheStorage(fetcher, adoptPtr(webCacheStorage));
 }
 
-ScriptPromise CacheStorage::open(ScriptState* scriptState, const String& cacheName)
+ScriptPromise CacheStorage::open(ScriptState* scriptState, const String& cacheName, ExceptionState& exceptionState)
 {
+    if (!commonChecks(scriptState, exceptionState))
+        return ScriptPromise();
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
 
@@ -207,8 +225,11 @@ ScriptPromise CacheStorage::open(ScriptState* scriptState, const String& cacheNa
     return promise;
 }
 
-ScriptPromise CacheStorage::has(ScriptState* scriptState, const String& cacheName)
+ScriptPromise CacheStorage::has(ScriptState* scriptState, const String& cacheName, ExceptionState& exceptionState)
 {
+    if (!commonChecks(scriptState, exceptionState))
+        return ScriptPromise();
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
 
@@ -225,8 +246,11 @@ ScriptPromise CacheStorage::has(ScriptState* scriptState, const String& cacheNam
     return promise;
 }
 
-ScriptPromise CacheStorage::deleteFunction(ScriptState* scriptState, const String& cacheName)
+ScriptPromise CacheStorage::deleteFunction(ScriptState* scriptState, const String& cacheName, ExceptionState& exceptionState)
 {
+    if (!commonChecks(scriptState, exceptionState))
+        return ScriptPromise();
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
 
@@ -238,8 +262,11 @@ ScriptPromise CacheStorage::deleteFunction(ScriptState* scriptState, const Strin
     return promise;
 }
 
-ScriptPromise CacheStorage::keys(ScriptState* scriptState)
+ScriptPromise CacheStorage::keys(ScriptState* scriptState, ExceptionState& exceptionState)
 {
+    if (!commonChecks(scriptState, exceptionState))
+        return ScriptPromise();
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
 
@@ -254,6 +281,8 @@ ScriptPromise CacheStorage::keys(ScriptState* scriptState)
 ScriptPromise CacheStorage::match(ScriptState* scriptState, const RequestInfo& request, const CacheQueryOptions& options, ExceptionState& exceptionState)
 {
     ASSERT(!request.isNull());
+    if (!commonChecks(scriptState, exceptionState))
+        return ScriptPromise();
 
     if (request.isRequest())
         return matchImpl(scriptState, request.getAsRequest(), options);
