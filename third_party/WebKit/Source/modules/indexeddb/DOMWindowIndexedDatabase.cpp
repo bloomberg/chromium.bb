@@ -35,7 +35,7 @@ namespace blink {
 
 DOMWindowIndexedDatabase::DOMWindowIndexedDatabase(LocalDOMWindow& window)
     : DOMWindowProperty(window.frame())
-    , m_window(window)
+    , m_window(&window)
 {
 }
 
@@ -43,6 +43,7 @@ DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowIndexedDatabase);
 
 DEFINE_TRACE(DOMWindowIndexedDatabase)
 {
+    visitor->trace(m_window);
     visitor->trace(m_idbFactory);
     WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
     DOMWindowProperty::trace(visitor);
@@ -82,7 +83,7 @@ IDBFactory* DOMWindowIndexedDatabase::indexedDB(DOMWindow& window)
 
 IDBFactory* DOMWindowIndexedDatabase::indexedDB()
 {
-    Document* document = m_window.document();
+    Document* document = m_window->document();
     if (!document)
         return nullptr;
 
@@ -90,7 +91,7 @@ IDBFactory* DOMWindowIndexedDatabase::indexedDB()
     if (!page)
         return nullptr;
 
-    if (!m_window.isCurrentlyDisplayedInFrame())
+    if (!m_window->isCurrentlyDisplayedInFrame())
         return nullptr;
 
     if (!m_idbFactory)

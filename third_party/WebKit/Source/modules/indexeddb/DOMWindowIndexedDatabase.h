@@ -54,7 +54,7 @@ private:
     IDBFactory* indexedDB();
     static const char* supplementName();
 
-    LocalDOMWindow& m_window;
+    RawPtrWillBeMember<LocalDOMWindow> m_window;
     PersistentWillBeMember<IDBFactory> m_idbFactory;
 };
 
