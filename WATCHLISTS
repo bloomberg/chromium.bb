@@ -219,8 +219,10 @@
     },
     'chromeos_net': {
       'filepath': 'chromeos/network/|'\
-                  'chrome/browser/chromeos/cros/|'\
-                  'chrome/browser/chromeos/net/',
+                  'chrome/browser/chromeos/net/|'\
+                  'chrome/browser/extensions/api/networking_private/|'\
+                  'extensions/browser/api/networking_private/|'\
+                  'ui/chromeos/network/',
     },
     'chromeos_power': {
       'filepath': 'ash/system/chromeos/power/|'\
@@ -911,8 +913,7 @@
     'base_win': ['grt+watch@chromium.org', 'wfh+watch@chromium.org'],
     'battery_status': ['timvolodine@chromium.org'],
     'bookmarks': ['noyau+watch@chromium.org', 'tfarina@chromium.org'],
-    'browser_chromeos': ['davemoore+watch@chromium.org',
-                         'stevenjb+watch@chromium.org'],
+    'browser_chromeos': ['davemoore+watch@chromium.org'],
     'browser_components': ['browser-components-watch@chromium.org'],
     'browser_compositor': ['vollick@chromium.org',
                            'piman+watch@chromium.org'],
@@ -932,8 +933,7 @@
     'chrome_views': ['tfarina@chromium.org'],
     'chromecast': ['gunsch+watch@chromium.org', 'lcwu+watch@chromium.org'],
     'chromedriver': ['samuong+watch@chromium.org'],
-    'chromeos' : ['oshima+watch@chromium.org',
-                  'stevenjb+watch@chromium.org'],
+    'chromeos' : ['oshima+watch@chromium.org'],
     'chromeos_attestation' : ['dkrahn+watch@chromium.org'],
     'chromeos_calculator' : ['dharcourt@chromium.org'],
     'chromeos_dbus': ['hashimoto+watch@chromium.org'],
