@@ -336,6 +336,7 @@ class TestPageHandler(testserver_base.BasePageHandler):
       self.GetSSLSessionCacheHandler,
       self.SSLManySmallRecords,
       self.GetChannelID,
+      self.GetClientCert,
       self.ClientCipherListHandler,
       self.CloseSocketHandler,
       self.RangeResetHandler,
@@ -1510,6 +1511,24 @@ class TestPageHandler(testserver_base.BasePageHandler):
     self.end_headers()
     channel_id = bytes(self.server.tlsConnection.channel_id)
     self.wfile.write(hashlib.sha256(channel_id).digest().encode('base64'))
+    return True
+
+  def GetClientCert(self):
+    """Send a reply whether a client certificate was provided."""
+
+    if not self._ShouldHandleRequest('/client-cert'):
+      return False
+
+    self.send_response(200)
+    self.send_header('Content-Type', 'text/plain')
+    self.end_headers()
+
+    cert_chain = self.server.tlsConnection.session.clientCertChain
+    if cert_chain != None:
+      self.wfile.write('got client cert with fingerprint: ' +
+                       cert_chain.getFingerprint())
+    else:
+      self.wfile.write('got no client cert')
     return True
 
   def ClientCipherListHandler(self):
