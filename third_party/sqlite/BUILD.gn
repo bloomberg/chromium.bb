@@ -22,7 +22,6 @@ source_set("sqlite") {
     "SQLITE_SECURE_DELETE",
     "SQLITE_SEPARATE_CACHE_POOLS",
     "THREADSAFE",
-    "_HAS_EXCEPTIONS=0",
   ]
   if (is_chromeos) {
     defines += [

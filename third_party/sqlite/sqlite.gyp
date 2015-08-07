@@ -28,9 +28,6 @@
       # appropriately.  Chromium doesn't configure SQLite for that, and would
       # prefer to control distribution to worker threads.
       'SQLITE_MAX_WORKER_THREADS=0',
-      # TODO(shess): Figure out why this is here.  Nobody references it
-      # directly.
-      '_HAS_EXCEPTIONS=0',
       # NOTE(shess): Some defines can affect the amalgamation.  Those should be
       # added to google_generate_amalgamation.sh, and the amalgamation
       # re-generated.  Usually this involves disabling features which include
