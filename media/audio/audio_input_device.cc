@@ -17,13 +17,7 @@ namespace media {
 // in order to avoid data overwriting. This number can be any positive number,
 // dependent how fast the renderer process can pick up captured data from
 // shared memory.
-// TODO(henrika): figure out a suitable size of this ring buffer.
-// We have seen reports in Chrome where segments of repeated input audio has
-// damaged AEC performance in WebRTC clients. By setting its value to 1, we
-// reduce the number of places in Chrome where such a patteren could possibly
-// be created. The original value of kRequestedSharedMemoryCount was 10.
-// See b/13976602 for details.
-static const int kRequestedSharedMemoryCount = 1;
+static const int kRequestedSharedMemoryCount = 10;
 
 // Takes care of invoking the capture callback on the audio thread.
 // An instance of this class is created for each capture stream in
