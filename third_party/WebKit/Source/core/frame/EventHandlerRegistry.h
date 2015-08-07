@@ -98,7 +98,7 @@ private:
 
     void checkConsistency() const;
 
-    FrameHost& m_frameHost;
+    RawPtrWillBeMember<FrameHost> m_frameHost;
     EventTargetSet m_targets[EventHandlerClassCount];
 };
 
