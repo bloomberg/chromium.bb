@@ -47,7 +47,6 @@ const char kPayload[] = "input_payload";
 const char kResultPayload[] = "output_payload";
 const char kAssetId[] = "fake-asset-id";
 const char kLocation[] = "fake-location";
-const char kGcmID[] = "fake-gcm-id";
 
 const int64_t kAgeOfCommand = 123123123;
 const int64_t kLastCommandId = 123456789;
@@ -143,8 +142,6 @@ class CloudPolicyClientTest : public testing::Test {
     attribute_update_response_.mutable_device_attribute_update_response()->
         set_result(
             em::DeviceAttributeUpdateResponse_ResultType_ATTRIBUTE_UPDATE_SUCCESS);
-
-    gcm_id_update_request_.mutable_gcm_id_update_request()->set_gcm_id(kGcmID);
   }
 
   void SetUp() override {
@@ -266,17 +263,6 @@ class CloudPolicyClientTest : public testing::Test {
                          client_id_, MatchProto(attribute_update_request_)));
   }
 
-  void ExpectGcmIdUpdate() {
-    EXPECT_CALL(service_,
-                CreateJob(DeviceManagementRequestJob::TYPE_GCM_ID_UPDATE,
-                          request_context_))
-        .WillOnce(service_.SucceedJob(gcm_id_update_response_));
-    EXPECT_CALL(service_,
-                StartJob(dm_protocol::kValueRequestGcmIdUpdate, std::string(),
-                         std::string(), kDMToken, client_id_,
-                         MatchProto(gcm_id_update_request_)));
-  }
-
   void CheckPolicyResponse() {
     ASSERT_TRUE(client_->GetPolicyFor(policy_type_, std::string()));
     EXPECT_THAT(*client_->GetPolicyFor(policy_type_, std::string()),
@@ -299,7 +285,6 @@ class CloudPolicyClientTest : public testing::Test {
   em::DeviceManagementRequest remote_command_request_;
   em::DeviceManagementRequest attribute_update_permission_request_;
   em::DeviceManagementRequest attribute_update_request_;
-  em::DeviceManagementRequest gcm_id_update_request_;
 
   // Protobufs used in successful responses.
   em::DeviceManagementResponse registration_response_;
@@ -310,7 +295,6 @@ class CloudPolicyClientTest : public testing::Test {
   em::DeviceManagementResponse remote_command_response_;
   em::DeviceManagementResponse attribute_update_permission_response_;
   em::DeviceManagementResponse attribute_update_response_;
-  em::DeviceManagementResponse gcm_id_update_response_;
 
   base::MessageLoop loop_;
   std::string client_id_;
@@ -866,27 +850,15 @@ TEST_F(CloudPolicyClientTest, RequestDeviceAttributeUpdatePermission) {
 }
 
 TEST_F(CloudPolicyClientTest, RequestDeviceAttributeUpdate) {
-  Register();
-  ExpectAttributeUpdate(kOAuthToken);
-  EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(1);
+    Register();
+    ExpectAttributeUpdate(kOAuthToken);
+    EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(1);
 
-  CloudPolicyClient::StatusCallback callback =
-      base::Bind(&MockStatusCallbackObserver::OnCallbackComplete,
-                 base::Unretained(&callback_observer_));
-  client_->UpdateDeviceAttributes(kOAuthToken, kAssetId, kLocation, callback);
-  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
-}
-
-TEST_F(CloudPolicyClientTest, RequestGcmIdUpdate) {
-  Register();
-  ExpectGcmIdUpdate();
-  EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(1);
-
-  CloudPolicyClient::StatusCallback callback =
-      base::Bind(&MockStatusCallbackObserver::OnCallbackComplete,
-                 base::Unretained(&callback_observer_));
-  client_->UpdateGcmId(kGcmID, callback);
-  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+    CloudPolicyClient::StatusCallback callback = base::Bind(
+        &MockStatusCallbackObserver::OnCallbackComplete,
+        base::Unretained(&callback_observer_));
+    client_->UpdateDeviceAttributes(kOAuthToken, kAssetId, kLocation, callback);
+    EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
 }
 
 }  // namespace policy

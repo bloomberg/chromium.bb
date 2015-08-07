@@ -377,30 +377,6 @@ void CloudPolicyClient::UpdateDeviceAttributes(
   request_jobs_.back()->Start(job_callback);
 }
 
-void CloudPolicyClient::UpdateGcmId(
-    const std::string& gcm_id,
-    const CloudPolicyClient::StatusCallback& callback) {
-  CHECK(is_registered());
-
-  scoped_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
-      DeviceManagementRequestJob::TYPE_GCM_ID_UPDATE, GetRequestContext()));
-
-  request_job->SetDMToken(dm_token_);
-  request_job->SetClientID(client_id_);
-
-  em::GcmIdUpdateRequest* const request =
-      request_job->GetRequest()->mutable_gcm_id_update_request();
-
-  request->set_gcm_id(gcm_id);
-
-  const DeviceManagementRequestJob::Callback job_callback =
-      base::Bind(&CloudPolicyClient::OnGcmIdUpdated, base::Unretained(this),
-                 request_job.get(), callback);
-
-  request_jobs_.push_back(request_job.Pass());
-  request_jobs_.back()->Start(job_callback);
-}
-
 void CloudPolicyClient::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -686,20 +662,6 @@ void CloudPolicyClient::OnRemoteCommandsFetched(
   }
   callback.Run(status, commands);
   // Must call RemoveJob() last, because it frees |callback|.
-  RemoveJob(job);
-}
-
-void CloudPolicyClient::OnGcmIdUpdated(
-    const DeviceManagementRequestJob* job,
-    const StatusCallback& callback,
-    DeviceManagementStatus status,
-    int net_error,
-    const enterprise_management::DeviceManagementResponse& response) {
-  status_ = status;
-  if (status != DM_STATUS_SUCCESS)
-    NotifyClientError();
-
-  callback.Run(status == DM_STATUS_SUCCESS);
   RemoveJob(job);
 }
 

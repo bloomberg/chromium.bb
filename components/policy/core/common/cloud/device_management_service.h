@@ -49,7 +49,6 @@ class POLICY_EXPORT DeviceManagementRequestJob {
     TYPE_REMOTE_COMMANDS,
     TYPE_ATTRIBUTE_UPDATE_PERMISSION,
     TYPE_ATTRIBUTE_UPDATE,
-    TYPE_GCM_ID_UPDATE,
   };
 
   typedef base::Callback<

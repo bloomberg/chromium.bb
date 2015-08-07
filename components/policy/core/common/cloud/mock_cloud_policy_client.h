@@ -34,8 +34,6 @@ class MockCloudPolicyClient : public CloudPolicyClient {
                void(const enterprise_management::DeviceStatusReportRequest*,
                     const enterprise_management::SessionStatusReportRequest*,
                     const StatusCallback&));
-  MOCK_METHOD2(UpdateGcmId, void(const std::string&, const StatusCallback&));
-
   // Sets the DMToken.
   void SetDMToken(const std::string& token);
 

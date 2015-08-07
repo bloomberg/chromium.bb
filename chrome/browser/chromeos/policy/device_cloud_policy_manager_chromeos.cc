@@ -256,10 +256,11 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
   if (install_attributes->IsEnterpriseDevice()) {
     CreateStatusUploader();
     syslog_uploader_.reset(new SystemLogUploader(nullptr, task_runner_));
-    heartbeat_scheduler_.reset(new HeartbeatScheduler(
-        g_browser_process->gcm_driver(), client(),
-        install_attributes->GetDomain(), install_attributes->GetDeviceId(),
-        task_runner_));
+    heartbeat_scheduler_.reset(
+        new HeartbeatScheduler(g_browser_process->gcm_driver(),
+                               install_attributes->GetDomain(),
+                               install_attributes->GetDeviceId(),
+                               task_runner_));
   }
 
   NotifyConnected();
