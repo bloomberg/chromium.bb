@@ -709,7 +709,7 @@ int amdgpu_bo_cpu_unmap(amdgpu_bo_handle buf_handle);
 /**
  * Wait until a buffer is not used by the device.
  *
- * \param   dev           - \c [in] Device handle. See #amdgpu_lib_initialize()
+ * \param   dev           - \c [in] Device handle. See #amdgpu_device_initialize()
  * \param   buf_handle    - \c [in] Buffer handle.
  * \param   timeout_ns    - Timeout in nanoseconds.
  * \param   buffer_busy   - 0 if buffer is idle, all GPU access was completed
