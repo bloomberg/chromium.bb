@@ -245,9 +245,7 @@ static bool ParseOpusExtraData(const uint8* data, int data_size,
 
 OpusAudioDecoder::OpusAudioDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-    : task_runner_(task_runner),
-      opus_decoder_(NULL),
-      start_input_timestamp_(kNoTimestamp()) {}
+    : task_runner_(task_runner), opus_decoder_(nullptr) {}
 
 std::string OpusAudioDecoder::GetDisplayName() const {
   return "OpusAudioDecoder";
@@ -293,7 +291,6 @@ OpusAudioDecoder::~OpusAudioDecoder() {
     return;
 
   opus_multistream_decoder_ctl(opus_decoder_, OPUS_RESET_STATE);
-  ResetTimestampState();
   CloseDecoder();
 }
 
@@ -317,14 +314,6 @@ void OpusAudioDecoder::DecodeBuffer(
     DLOG(ERROR) << "Received a buffer without timestamps!";
     decode_cb.Run(kDecodeError);
     return;
-  }
-
-  // Apply the necessary codec delay.
-  if (start_input_timestamp_ == kNoTimestamp())
-    start_input_timestamp_ = input->timestamp();
-  if (!discard_helper_->initialized() &&
-      input->timestamp() == start_input_timestamp_) {
-    discard_helper_->Reset(config_.codec_delay());
   }
 
   scoped_refptr<AudioBuffer> output_buffer;
@@ -420,22 +409,21 @@ bool OpusAudioDecoder::ConfigureDecoder() {
     return false;
   }
 
-  discard_helper_.reset(
-      new AudioDiscardHelper(config_.samples_per_second(), 0));
-  start_input_timestamp_ = kNoTimestamp();
+  ResetTimestampState();
   return true;
 }
 
 void OpusAudioDecoder::CloseDecoder() {
   if (opus_decoder_) {
     opus_multistream_decoder_destroy(opus_decoder_);
-    opus_decoder_ = NULL;
+    opus_decoder_ = nullptr;
   }
 }
 
 void OpusAudioDecoder::ResetTimestampState() {
-  discard_helper_->Reset(
-      discard_helper_->TimeDeltaToFrames(config_.seek_preroll()));
+  discard_helper_.reset(
+      new AudioDiscardHelper(config_.samples_per_second(), 0));
+  discard_helper_->Reset(config_.codec_delay());
 }
 
 bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
@@ -479,7 +467,7 @@ bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
 
   // Handles discards and timestamping.  Discard the buffer if more data needed.
   if (!discard_helper_->ProcessBuffers(input, *output_buffer))
-    *output_buffer = NULL;
+    *output_buffer = nullptr;
 
   return true;
 }

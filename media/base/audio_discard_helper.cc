@@ -104,11 +104,8 @@ bool AudioDiscardHelper::ProcessBuffers(
 
     // If everything would be discarded, indicate a new buffer is required.
     if (frames_to_discard == decoded_frames) {
-      // For simplicity disallow cases where a buffer with discard padding is
-      // present.  Doing so allows us to avoid complexity around tracking
-      // discards across buffers.
-      DCHECK(current_discard_padding.first == base::TimeDelta());
-      DCHECK(current_discard_padding.second == base::TimeDelta());
+      // For simplicity, we just drop any discard padding if |discard_frames_|
+      // consumes the entire buffer.
       return false;
     }
 

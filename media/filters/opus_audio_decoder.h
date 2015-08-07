@@ -56,11 +56,6 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   AudioDecoderConfig config_;
   OutputCB output_cb_;
   OpusMSDecoder* opus_decoder_;
-
-  // When the input timestamp is |start_input_timestamp_| the decoder needs to
-  // drop |config_.codec_delay()| frames.
-  base::TimeDelta start_input_timestamp_;
-
   scoped_ptr<AudioDiscardHelper> discard_helper_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(OpusAudioDecoder);

@@ -105,6 +105,18 @@ const int kOpusEndTrimmingWebMFileDurationMs = 2741;
 const int kVP9WebMFileDurationMs = 2736;
 const int kVP8AWebMFileDurationMs = 2734;
 
+#if !defined(MOJO_RENDERER)
+// Hash for a full playthrough of "opus-trimming-test.(webm|ogg)".
+static const char kOpusEndTrimmingHash_1[] =
+    "-4.56,-5.65,-6.51,-6.29,-4.36,-3.59,";
+// The above hash, plus an additional playthrough starting from T=1s.
+static const char kOpusEndTrimmingHash_2[] =
+    "-11.89,-11.09,-8.25,-7.11,-7.84,-9.97,";
+// The above hash, plus an additional playthrough starting from T=6.36s.
+static const char kOpusEndTrimmingHash_3[] =
+    "-13.28,-14.35,-13.67,-11.68,-10.18,-10.46,";
+#endif
+
 #if defined(USE_PROPRIETARY_CODECS)
 #if !defined(DISABLE_EME_TESTS)
 const int k640IsoFileDurationMs = 2737;
@@ -487,6 +499,10 @@ class MockMediaSource {
     AppendData(seek_append_size);
   }
 
+  void Seek(base::TimeDelta seek_time) {
+    chunk_demuxer_->StartWaitingForSeek(seek_time);
+  }
+
   void AppendData(int size) {
     DCHECK(chunk_demuxer_);
     DCHECK_LT(current_position_, file_data_->data_size());
@@ -677,6 +693,12 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
     StartPipelineWithMediaSource(source);
   }
 
+  void StartHashedClocklessPipelineWithMediaSource(MockMediaSource* source) {
+    hashing_enabled_ = true;
+    clockless_playback_ = true;
+    StartPipelineWithMediaSource(source);
+  }
+
   void StartPipelineWithEncryptedMedia(
       MockMediaSource* source,
       FakeEncryptedMedia* encrypted_media) {
@@ -782,6 +804,86 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed) {
   EXPECT_HASH_EQ("-3.59,-2.06,-0.43,2.15,0.77,-0.95,", GetAudioHash());
   EXPECT_TRUE(demuxer_->GetTimelineOffset().is_null());
 }
+
+TEST_F(PipelineIntegrationTest, BasicPlaybackOpusOggTrimmingHashed) {
+  ASSERT_EQ(PIPELINE_OK,
+            Start("opus-trimming-test.webm", kHashed | kClockless));
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_HASH_EQ(kOpusEndTrimmingHash_1, GetAudioHash());
+
+  // Seek within the pre-skip section, this should not cause a beep.
+  ASSERT_TRUE(Seek(base::TimeDelta::FromSeconds(1)));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_HASH_EQ(kOpusEndTrimmingHash_2, GetAudioHash());
+
+  // Seek somewhere outside of the pre-skip / end-trim section, demxuer should
+  // correctly preroll enough to accurately decode this segment.
+  ASSERT_TRUE(Seek(base::TimeDelta::FromMilliseconds(6360)));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_HASH_EQ(kOpusEndTrimmingHash_3, GetAudioHash());
+}
+
+TEST_F(PipelineIntegrationTest, BasicPlaybackOpusWebmTrimmingHashed) {
+  ASSERT_EQ(PIPELINE_OK,
+            Start("opus-trimming-test.webm", kHashed | kClockless));
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_HASH_EQ(kOpusEndTrimmingHash_1, GetAudioHash());
+
+  // Seek within the pre-skip section, this should not cause a beep.
+  ASSERT_TRUE(Seek(base::TimeDelta::FromSeconds(1)));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_HASH_EQ(kOpusEndTrimmingHash_2, GetAudioHash());
+
+  // Seek somewhere outside of the pre-skip / end-trim section, demxuer should
+  // correctly preroll enough to accurately decode this segment.
+  ASSERT_TRUE(Seek(base::TimeDelta::FromMilliseconds(6360)));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_HASH_EQ(kOpusEndTrimmingHash_3, GetAudioHash());
+}
+
+TEST_F(PipelineIntegrationTest,
+       BasicPlaybackOpusWebmTrimmingHashed_MediaSource) {
+  MockMediaSource source("opus-trimming-test.webm", kOpusAudioOnlyWebM,
+                         kAppendWholeFile);
+  StartHashedClocklessPipelineWithMediaSource(&source);
+  source.EndOfStream();
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_HASH_EQ(kOpusEndTrimmingHash_1, GetAudioHash());
+
+  // Seek within the pre-skip section, this should not cause a beep.
+  base::TimeDelta seek_time = base::TimeDelta::FromSeconds(1);
+  source.Seek(seek_time);
+  ASSERT_TRUE(Seek(seek_time));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_HASH_EQ(kOpusEndTrimmingHash_2, GetAudioHash());
+
+  // Seek somewhere outside of the pre-skip / end-trim section, demuxer should
+  // correctly preroll enough to accurately decode this segment.
+  seek_time = base::TimeDelta::FromMilliseconds(6360);
+  source.Seek(seek_time);
+  ASSERT_TRUE(Seek(seek_time));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_HASH_EQ(kOpusEndTrimmingHash_3, GetAudioHash());
+}
+
+// TODO(dalecurtis): Add an opus test file which FFmpeg and ChunkDemuxer will
+// both seek the same in and shows the difference of preroll.
+// http://crbug.com/509894
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackLive) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240-live.webm", kHashed));

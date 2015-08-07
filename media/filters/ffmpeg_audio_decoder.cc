@@ -136,10 +136,8 @@ FFmpegAudioDecoder::FFmpegAudioDecoder(
 FFmpegAudioDecoder::~FFmpegAudioDecoder() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (state_ != kUninitialized) {
+  if (state_ != kUninitialized)
     ReleaseFFmpegResources();
-    ResetTimestampState();
-  }
 }
 
 std::string FFmpegAudioDecoder::GetDisplayName() const {
@@ -371,8 +369,6 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
 
   // Success!
   av_frame_.reset(av_frame_alloc());
-  discard_helper_.reset(new AudioDiscardHelper(config_.samples_per_second(),
-                                               config_.codec_delay()));
   av_sample_format_ = codec_context_->sample_fmt;
 
   if (codec_context_->channels !=
@@ -391,6 +387,8 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
 }
 
 void FFmpegAudioDecoder::ResetTimestampState() {
+  discard_helper_.reset(new AudioDiscardHelper(config_.samples_per_second(),
+                                               config_.codec_delay()));
   discard_helper_->Reset(config_.codec_delay());
 }
 

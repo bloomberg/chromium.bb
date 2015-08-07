@@ -594,6 +594,81 @@ TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOggDiscard_Sync) {
   }
 }
 
+// Similar to the test above, but using an opus clip with a large amount of
+// pre-skip, which ffmpeg encodes as negative timestamps.
+TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOpusDiscard_Sync) {
+  CreateDemuxer("opus-trimming-video-test.webm");
+  InitializeDemuxer();
+
+  // Attempt a read from the video stream and run the message loop until done.
+  DemuxerStream* video = demuxer_->GetStream(DemuxerStream::VIDEO);
+  DemuxerStream* audio = demuxer_->GetStream(DemuxerStream::AUDIO);
+  EXPECT_EQ(audio->audio_decoder_config().codec_delay(), 65535);
+
+  // Packet size to timestamp (in microseconds) mapping for the first N packets
+  // which should be fully discarded.
+  static const int kTestExpectations[][2] = {
+      {635, 0},      {594, 120000},  {597, 240000}, {591, 360000},
+      {582, 480000}, {583, 600000},  {592, 720000}, {567, 840000},
+      {579, 960000}, {572, 1080000}, {583, 1200000}};
+
+  // Run the test twice with a seek in between.
+  for (int i = 0; i < 2; ++i) {
+    for (size_t j = 0; j < arraysize(kTestExpectations); ++j) {
+      audio->Read(NewReadCB(FROM_HERE, kTestExpectations[j][0],
+                            kTestExpectations[j][1], true));
+      message_loop_.Run();
+    }
+
+    // Though the internal start time may be below zero, the exposed media time
+    // must always be greater than zero.
+    EXPECT_EQ(base::TimeDelta(), demuxer_->GetStartTime());
+
+    video->Read(NewReadCB(FROM_HERE, 16009, 0, true));
+    message_loop_.Run();
+
+    video->Read(NewReadCB(FROM_HERE, 2715, 1000, false));
+    message_loop_.Run();
+
+    video->Read(NewReadCB(FROM_HERE, 427, 33000, false));
+    message_loop_.Run();
+
+    // Seek back to the beginning and repeat the test.
+    WaitableMessageLoopEvent event;
+    demuxer_->Seek(base::TimeDelta(), event.GetPipelineStatusCB());
+    event.RunAndWaitForStatus(PIPELINE_OK);
+  }
+}
+
+// Similar to the test above, but using sfx-opus.ogg, which has a much smaller
+// amount of discard padding and no |start_time| set on the AVStream.
+TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOpusSfxDiscard_Sync) {
+  CreateDemuxer("sfx-opus.ogg");
+  InitializeDemuxer();
+
+  // Attempt a read from the video stream and run the message loop until done.
+  DemuxerStream* audio = demuxer_->GetStream(DemuxerStream::AUDIO);
+  EXPECT_EQ(audio->audio_decoder_config().codec_delay(), 312);
+
+   // Run the test twice with a seek in between.
+  for (int i = 0; i < 2; ++i) {
+    audio->Read(NewReadCB(FROM_HERE, 314, 0, true));
+    message_loop_.Run();
+
+    audio->Read(NewReadCB(FROM_HERE, 244, 20000, true));
+    message_loop_.Run();
+
+    // Though the internal start time may be below zero, the exposed media time
+    // must always be greater than zero.
+    EXPECT_EQ(base::TimeDelta(), demuxer_->GetStartTime());
+
+    // Seek back to the beginning and repeat the test.
+    WaitableMessageLoopEvent event;
+    demuxer_->Seek(base::TimeDelta(), event.GetPipelineStatusCB());
+    event.RunAndWaitForStatus(PIPELINE_OK);
+  }
+}
+
 TEST_F(FFmpegDemuxerTest, Read_EndOfStream) {
   // Verify that end of stream buffers are created.
   CreateDemuxer("bear-320x240.webm");

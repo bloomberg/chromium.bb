@@ -77,12 +77,17 @@ class FFmpegDemuxerStream : public DemuxerStream {
 
   base::TimeDelta duration() const { return duration_; }
 
-  // Enables fixes for ogg files with negative timestamps.  For AUDIO streams,
-  // all packets with negative timestamps will be marked for post-decode
-  // discard.  For all other stream types, if FFmpegDemuxer::start_time() is
-  // negative, it will not be used to shift timestamps during EnqueuePacket().
-  void enable_negative_timestamp_fixups_for_ogg() {
-    fixup_negative_ogg_timestamps_ = true;
+  // Enables fixes for files with negative timestamps.  Normally all timestamps
+  // are rebased against FFmpegDemuxer::start_time() whenever that value is
+  // negative.  When this fix is enabled, only AUDIO stream packets will be
+  // rebased to time zero, all other stream types will use the muxed timestamp.
+  //
+  // Further, when no codec delay is present, all AUDIO packets which originally
+  // had negative timestamps will be marked for post-decode discard.  When codec
+  // delay is present, it is assumed the decoder will handle discard and does
+  // not need the AUDIO packets to be marked for discard; just rebased to zero.
+  void enable_negative_timestamp_fixups() {
+    fixup_negative_timestamps_ = true;
   }
 
   // DemuxerStream implementation.
@@ -155,7 +160,7 @@ class FFmpegDemuxerStream : public DemuxerStream {
 #endif
 
   std::string encryption_key_id_;
-  bool fixup_negative_ogg_timestamps_;
+  bool fixup_negative_timestamps_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegDemuxerStream);
 };

@@ -148,9 +148,9 @@ PipelineStatus PipelineIntegrationTestBase::Start(const std::string& filename,
 }
 
 PipelineStatus PipelineIntegrationTestBase::Start(const std::string& filename,
-                                                  kTestType test_type) {
-  hashing_enabled_ = test_type == kHashed;
-  clockless_playback_ = test_type == kClockless;
+                                                  uint8_t test_type) {
+  hashing_enabled_ = test_type & kHashed;
+  clockless_playback_ = test_type & kClockless;
   return Start(filename);
 }
 
@@ -268,12 +268,15 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
   audio_decoders.push_back(
       new OpusAudioDecoder(message_loop_.task_runner()));
 
-  AudioParameters out_params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                             CHANNEL_LAYOUT_STEREO,
-                             44100,
-                             16,
-                             512);
-  hardware_config_.UpdateOutputConfig(out_params);
+  // Don't allow the audio renderer to resample buffers if hashing is enabled.
+  if (!hashing_enabled_) {
+    AudioParameters out_params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                               CHANNEL_LAYOUT_STEREO,
+                               44100,
+                               16,
+                               512);
+    hardware_config_.UpdateOutputConfig(out_params);
+  }
 
   scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
       message_loop_.task_runner(),
@@ -281,8 +284,12 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
           ? static_cast<AudioRendererSink*>(clockless_audio_sink_.get())
           : audio_sink_.get(),
       audio_decoders.Pass(), hardware_config_, new MediaLog()));
-  if (hashing_enabled_)
-    audio_sink_->StartAudioHashForTesting();
+  if (hashing_enabled_) {
+    if (clockless_playback_)
+      clockless_audio_sink_->StartAudioHashForTesting();
+    else
+      audio_sink_->StartAudioHashForTesting();
+  }
 
   scoped_ptr<RendererImpl> renderer_impl(
       new RendererImpl(message_loop_.task_runner(),
@@ -319,6 +326,9 @@ std::string PipelineIntegrationTestBase::GetVideoHash() {
 
 std::string PipelineIntegrationTestBase::GetAudioHash() {
   DCHECK(hashing_enabled_);
+
+  if (clockless_playback_)
+    return clockless_audio_sink_->GetAudioHashForTesting();
   return audio_sink_->GetAudioHashForTesting();
 }
 

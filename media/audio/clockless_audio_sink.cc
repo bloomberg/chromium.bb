@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/simple_thread.h"
+#include "media/base/audio_hash.h"
 
 namespace media {
 
@@ -15,11 +16,15 @@ namespace media {
 // thread, running as fast as it can read the data.
 class ClocklessAudioSinkThread : public base::DelegateSimpleThread::Delegate {
  public:
-  explicit ClocklessAudioSinkThread(const AudioParameters& params,
-                                    AudioRendererSink::RenderCallback* callback)
+  ClocklessAudioSinkThread(const AudioParameters& params,
+                           AudioRendererSink::RenderCallback* callback,
+                           bool hashing)
       : callback_(callback),
         audio_bus_(AudioBus::Create(params)),
-        stop_event_(new base::WaitableEvent(false, false)) {}
+        stop_event_(new base::WaitableEvent(false, false)) {
+    if (hashing)
+      audio_hash_.reset(new AudioHash());
+  }
 
   void Start() {
     stop_event_->Reset();
@@ -34,13 +39,21 @@ class ClocklessAudioSinkThread : public base::DelegateSimpleThread::Delegate {
     return playback_time_;
   }
 
+  std::string GetAudioHash() {
+    DCHECK(audio_hash_);
+    return audio_hash_->ToString();
+  }
+
  private:
    // Call Render() repeatedly, keeping track of the rendering time.
   void Run() override {
      base::TimeTicks start;
      while (!stop_event_->IsSignaled()) {
-       int frames_received = callback_->Render(audio_bus_.get(), 0);
-       if (frames_received <= 0) {
+       const int frames_received = callback_->Render(audio_bus_.get(), 0);
+       DCHECK_GE(frames_received, 0);
+       if (audio_hash_)
+         audio_hash_->Update(audio_bus_.get(), frames_received);
+       if (!frames_received) {
          // No data received, so let other threads run to provide data.
          base::PlatformThread::YieldCurrentThread();
        } else if (start.is_null()) {
@@ -58,18 +71,18 @@ class ClocklessAudioSinkThread : public base::DelegateSimpleThread::Delegate {
   scoped_ptr<base::WaitableEvent> stop_event_;
   scoped_ptr<base::DelegateSimpleThread> thread_;
   base::TimeDelta playback_time_;
+  scoped_ptr<AudioHash> audio_hash_;
 };
 
 ClocklessAudioSink::ClocklessAudioSink()
-    : initialized_(false),
-      playing_(false) {}
+    : initialized_(false), playing_(false), hashing_(false) {}
 
 ClocklessAudioSink::~ClocklessAudioSink() {}
 
 void ClocklessAudioSink::Initialize(const AudioParameters& params,
                                     RenderCallback* callback) {
   DCHECK(!initialized_);
-  thread_.reset(new ClocklessAudioSinkThread(params, callback));
+  thread_.reset(new ClocklessAudioSinkThread(params, callback, hashing_));
   initialized_ = true;
 }
 
@@ -110,6 +123,15 @@ bool ClocklessAudioSink::SetVolume(double volume) {
 
 OutputDevice* ClocklessAudioSink::GetOutputDevice() {
   return nullptr;
+}
+
+void ClocklessAudioSink::StartAudioHashForTesting() {
+  DCHECK(!initialized_);
+  hashing_ = true;
+}
+
+std::string ClocklessAudioSink::GetAudioHashForTesting() {
+  return thread_ && hashing_ ? thread_->GetAudioHash() : std::string();
 }
 
 }  // namespace media

@@ -94,7 +94,7 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(FFmpegDemuxer* demuxer,
       last_packet_timestamp_(kNoTimestamp()),
       last_packet_duration_(kNoTimestamp()),
       video_rotation_(VIDEO_ROTATION_0),
-      fixup_negative_ogg_timestamps_(false) {
+      fixup_negative_timestamps_(false) {
   DCHECK(demuxer_);
 
   bool is_encrypted = false;
@@ -294,10 +294,10 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   if (stream_timestamp != kNoTimestamp()) {
     const bool is_audio = type() == AUDIO;
 
-    // If this is an OGG file with negative timestamps don't rebase any other
-    // stream types against the negative starting time.
+    // If this file has negative timestamps don't rebase any other stream types
+    // against the negative starting time.
     base::TimeDelta start_time = demuxer_->start_time();
-    if (fixup_negative_ogg_timestamps_ && !is_audio &&
+    if (fixup_negative_timestamps_ && !is_audio &&
         start_time < base::TimeDelta()) {
       start_time = base::TimeDelta();
     }
@@ -310,19 +310,35 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
 
     buffer->set_timestamp(stream_timestamp - start_time);
 
-    // If enabled, mark audio packets with negative timestamps for post-decode
-    // discard.
-    if (fixup_negative_ogg_timestamps_ && is_audio &&
+    // If enabled, and no codec delay is present, mark audio packets with
+    // negative timestamps for post-decode discard.
+    if (fixup_negative_timestamps_ && is_audio &&
         stream_timestamp < base::TimeDelta() &&
         buffer->duration() != kNoTimestamp()) {
-      if (stream_timestamp + buffer->duration() < base::TimeDelta()) {
-        // Discard the entire packet if it's entirely before zero.
-        buffer->set_discard_padding(
-            std::make_pair(kInfiniteDuration(), base::TimeDelta()));
+      if (!stream_->codec->delay) {
+        DCHECK_EQ(buffer->discard_padding().first, base::TimeDelta());
+
+        if (stream_timestamp + buffer->duration() < base::TimeDelta()) {
+          DCHECK_EQ(buffer->discard_padding().second, base::TimeDelta());
+
+          // Discard the entire packet if it's entirely before zero.
+          buffer->set_discard_padding(
+              std::make_pair(kInfiniteDuration(), base::TimeDelta()));
+        } else {
+          // Only discard part of the frame if it overlaps zero.
+          buffer->set_discard_padding(std::make_pair(
+              -stream_timestamp, buffer->discard_padding().second));
+        }
       } else {
-        // Only discard part of the frame if it overlaps zero.
-        buffer->set_discard_padding(
-            std::make_pair(-stream_timestamp, base::TimeDelta()));
+        // Verify that codec delay would cover discard and that we don't need to
+        // mark the packet for post decode discard.  Since timestamps may be in
+        // milliseconds and codec delay in nanosecond precision, round up to the
+        // nearest millisecond.  See enable_negative_timestamp_fixups().
+        DCHECK_LE(-std::ceil(FramesToTimeDelta(
+                                 audio_decoder_config().codec_delay(),
+                                 audio_decoder_config().samples_per_second())
+                                 .InMillisecondsF()),
+                  stream_timestamp.InMillisecondsF());
       }
     }
   } else {
@@ -344,7 +360,7 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
     // Fixing chained ogg is non-trivial, so for now just reuse the last good
     // timestamp.  The decoder will rewrite the timestamps to be sample accurate
     // later.  See http://crbug.com/396864.
-    if (fixup_negative_ogg_timestamps_ &&
+    if (fixup_negative_timestamps_ &&
         (buffer->timestamp() == kNoTimestamp() ||
          buffer->timestamp() < last_packet_timestamp_)) {
       buffer->set_timestamp(last_packet_timestamp_ +
@@ -628,9 +644,19 @@ void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
   // Additionally, to workaround limitations in how we expose seekable ranges to
   // Blink (http://crbug.com/137275), we also want to clamp seeks before the
   // start time to the start time.
-  const base::TimeDelta seek_time =
-      start_time_ < base::TimeDelta() ? time + start_time_
-                                      : time < start_time_ ? start_time_ : time;
+  base::TimeDelta seek_time = start_time_ < base::TimeDelta()
+                                  ? time + start_time_
+                                  : time < start_time_ ? start_time_ : time;
+
+  // When seeking in an opus stream we need to ensure we deliver enough data to
+  // satisfy the seek preroll; otherwise the audio at the actual seek time will
+  // not be entirely accurate.
+  FFmpegDemuxerStream* audio_stream = GetFFmpegStream(DemuxerStream::AUDIO);
+  if (audio_stream) {
+    const AudioDecoderConfig& config = audio_stream->audio_decoder_config();
+    if (config.codec() == kCodecOpus)
+      seek_time = std::max(start_time_, seek_time - config.seek_preroll());
+  }
 
   // Choose the seeking stream based on whether it contains the seek time, if no
   // match can be found prefer the preferred stream.
@@ -960,17 +986,28 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     max_duration = kInfiniteDuration();
   }
 
-  // Ogg has some peculiarities around negative timestamps, so use this flag to
-  // setup the FFmpegDemuxerStreams appropriately.
+  // FFmpeg represents audio data marked as before the beginning of stream as
+  // having negative timestamps.  This data must be discarded after it has been
+  // decoded, not before since it is used to warmup the decoder.  There are
+  // currently two known cases for this: vorbis in ogg and opus in ogg and webm.
+  //
+  // For API clarity, it was decided that the rest of the media pipeline should
+  // not be exposed to negative timestamps.  Which means we need to rebase these
+  // negative timestamps and mark them for discard post decoding.
   //
   // Post-decode frame dropping for packets with negative timestamps is outlined
   // in section A.2 in the Ogg Vorbis spec:
   // http://xiph.org/vorbis/doc/Vorbis_I_spec.html
-  if (strcmp(format_context->iformat->name, "ogg") == 0 && audio_stream &&
-      audio_stream->codec->codec_id == AV_CODEC_ID_VORBIS) {
+  //
+  // FFmpeg's use of negative timestamps for opus pre-skip is nonstandard, but
+  // for more information on pre-skip see section 4.2 of the Ogg Opus spec:
+  // https://tools.ietf.org/html/draft-ietf-codec-oggopus-08#section-4.2
+  if (audio_stream && (audio_stream->codec->codec_id == AV_CODEC_ID_OPUS ||
+                       (strcmp(format_context->iformat->name, "ogg") == 0 &&
+                        audio_stream->codec->codec_id == AV_CODEC_ID_VORBIS))) {
     for (size_t i = 0; i < streams_.size(); ++i) {
       if (streams_[i])
-        streams_[i]->enable_negative_timestamp_fixups_for_ogg();
+        streams_[i]->enable_negative_timestamp_fixups();
     }
 
     // Fixup the seeking information to avoid selecting the audio stream simply
@@ -1202,19 +1239,6 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
       av_new_packet(new_packet.get(), 0);
       av_packet_copy_props(new_packet.get(), packet.get());
       packet.swap(new_packet);
-    }
-
-    // Special case for opus in ogg.  FFmpeg is pre-trimming the codec delay
-    // from the packet timestamp.  Chrome expects to handle this itself inside
-    // the decoder, so shift timestamps by the delay in this case.
-    // TODO(dalecurtis): Try to get fixed upstream.  See http://crbug.com/328207
-    if (strcmp(glue_->format_context()->iformat->name, "ogg") == 0) {
-      const AVCodecContext* codec_context =
-          glue_->format_context()->streams[packet->stream_index]->codec;
-      if (codec_context->codec_id == AV_CODEC_ID_OPUS &&
-          codec_context->delay > 0) {
-        packet->pts += codec_context->delay;
-      }
     }
 
     FFmpegDemuxerStream* demuxer_stream = streams_[packet->stream_index];
