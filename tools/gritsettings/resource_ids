@@ -182,9 +182,10 @@
   "ash/ash_strings.grd": {
     "messages": [26000],
   },
-  "android_webview/renderer/aw_renderer_resources.grd": {
+  "android_webview/ui/aw_resources.grd": {
     "includes": [26000],
-    "structures": [26050],
+  },
+  "android_webview/ui/aw_strings.grd": {
     "messages": [26100],
   },
   "ui/chromeos/resources/ui_chromeos_resources.grd": {

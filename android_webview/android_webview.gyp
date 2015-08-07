@@ -28,9 +28,9 @@
       },
       'actions': [
         {
-          'action_name': 'generate_aw_renderer_resources',
+          'action_name': 'generate_aw_resources',
           'variables': {
-            'grit_grd_file': 'renderer/aw_renderer_resources.grd',
+            'grit_grd_file': 'ui/aw_resources.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
@@ -44,27 +44,34 @@
               '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_100_percent.pak',
-              '<(grit_out_dir)/aw_renderer_resources.pak',
+              '<(grit_out_dir)/aw_resources.pak',
             ],
             'pak_output': '<(PRODUCT_DIR)/android_webview_assets/webviewchromium.pak',
           },
          'includes': [ '../build/repack_action.gypi' ],
         },
         {
-          'action_name': 'android_webview_locales_rename_paks',
+          'action_name': 'generate_aw_strings',
           'variables': {
-            'rename_locales': 'tools/webview_locales_rename_paks.py',
+            'grit_grd_file': 'ui/aw_strings.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
+          'action_name': 'android_webview_repack_locales',
+          'variables': {
+            'repack_locales': 'tools/webview_repack_locales.py',
           },
           'inputs': [
-            '<(rename_locales)',
-            '<!@pymod_do_main(webview_locales_rename_paks -i -p <(PRODUCT_DIR) -s <(SHARED_INTERMEDIATE_DIR) <(locales))'
+            '<(repack_locales)',
+            '<!@pymod_do_main(webview_repack_locales -i -p <(PRODUCT_DIR) -s <(SHARED_INTERMEDIATE_DIR) <(locales))'
           ],
           'outputs': [
-            '<!@pymod_do_main(webview_locales_rename_paks -o -p <(PRODUCT_DIR) -s <(SHARED_INTERMEDIATE_DIR) <(locales))'
+            '<!@pymod_do_main(webview_repack_locales -o -p <(PRODUCT_DIR) -s <(SHARED_INTERMEDIATE_DIR) <(locales))'
           ],
           'action': [
             'python',
-            '<(rename_locales)',
+            '<(repack_locales)',
             '-p', '<(PRODUCT_DIR)',
             '-s', '<(SHARED_INTERMEDIATE_DIR)',
             '<@(locales)',

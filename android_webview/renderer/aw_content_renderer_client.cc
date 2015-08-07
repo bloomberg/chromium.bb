@@ -9,7 +9,8 @@
 #include "android_webview/common/aw_resource.h"
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/url_constants.h"
-#include "android_webview/grit/aw_renderer_resources.h"
+#include "android_webview/grit/aw_resources.h"
+#include "android_webview/grit/aw_strings.h"
 #include "android_webview/renderer/aw_content_settings_client.h"
 #include "android_webview/renderer/aw_key_systems.h"
 #include "android_webview/renderer/aw_message_port_client.h"
@@ -128,8 +129,8 @@ void AwContentRendererClient::GetNavigationErrorStrings(
     if (err.empty()) {
       replacements.push_back(l10n_util::GetStringFUTF8(
           IDS_AW_WEBPAGE_TEMPORARILY_DOWN, base::UTF8ToUTF16(url)));
-      replacements.push_back(
-          l10n_util::GetStringUTF8(IDS_AW_WEBPAGE_DOWN_SUGGESTIONS));
+      replacements.push_back(l10n_util::GetStringUTF8(
+          IDS_AW_WEBPAGE_TEMPORARILY_DOWN_SUGGESTIONS));
     } else {
       replacements.push_back(l10n_util::GetStringFUTF8(
           IDS_AW_WEBPAGE_CAN_NOT_BE_LOADED, base::UTF8ToUTF16(url)));
