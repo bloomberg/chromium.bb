@@ -152,9 +152,11 @@ class VariationsService
 
   // Stores the seed to prefs. Set as virtual and protected so that it can be
   // overridden by tests.
-  virtual void StoreSeed(const std::string& seed_data,
+  virtual bool StoreSeed(const std::string& seed_data,
                          const std::string& seed_signature,
-                         const base::Time& date_fetched);
+                         const std::string& country_code,
+                         const base::Time& date_fetched,
+                         bool is_delta_compressed);
 
   // Creates the VariationsService with the given |local_state| prefs service
   // and |state_manager|. This instance will take ownership of |notifier|.
@@ -172,6 +174,7 @@ class VariationsService
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, SeedDateUpdatedOn304Status);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest,
                            LoadPermanentConsistencyCountry);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CountryHeader);
 
   // Set of different possible values to report for the
   // Variations.LoadPermanentConsistencyCountryResult histogram. This enum must
@@ -257,6 +260,11 @@ class VariationsService
 
   // Tracks whether the initial request to the variations server had completed.
   bool initial_request_completed_;
+
+  // Indicates that the next request to the variations service shouldn't specify
+  // that it supports delta compression. Set to true when a delta compressed
+  // response encountered an error.
+  bool disable_deltas_for_next_request_;
 
   // Helper class used to tell this service if it's allowed to make network
   // resource requests.

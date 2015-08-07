@@ -48292,6 +48292,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Variations.StoreSeed.DeltaSize" units="KiB">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    On successful save of a delta-compressed variations seed, records the size
+    of the delta in KiB.
+  </summary>
+</histogram>
+
+<histogram name="Variations.StoreSeed.DeltaSize.ReductionPercent" units="%">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    On successful save of a delta-compressed variations seed, records the size
+    of the delta as a percentage of the decoded seed size.
+  </summary>
+</histogram>
+
+<histogram name="Variations.StoreSeed.Size" units="KiB">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    On successful save of a non-delta-compressed variations seed, records the
+    size of the received seed in KiB.
+  </summary>
+</histogram>
+
 <histogram name="Variations.StoreSeedSignature" enum="VariationSeedSignature">
   <owner>asvitkine@chromium.org</owner>
   <summary>
@@ -71006,6 +71030,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Failed - Parse Error"/>
   <int value="3" label="Failed - Signature Mismatch"/>
   <int value="4" label="Failed - Gzip Compress Error"/>
+  <int value="5" label="Delta Count"/>
+  <int value="6" label="Failed - Delta: Read Seed"/>
+  <int value="7" label="Failed - Delta: Apply"/>
+  <int value="8" label="Failed - Delta: Store Seed"/>
 </enum>
 
 <enum name="VaryType" type="int">

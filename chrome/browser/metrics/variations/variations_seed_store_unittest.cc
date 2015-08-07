@@ -23,7 +23,8 @@ class TestVariationsSeedStore : public VariationsSeedStore {
   ~TestVariationsSeedStore() override {}
 
   bool StoreSeedForTesting(const std::string& seed_data) {
-    return StoreSeedData(seed_data, std::string(), base::Time::Now(), NULL);
+    return StoreSeedData(seed_data, std::string(), std::string(),
+                         base::Time::Now(), false, nullptr);
   }
 
   VariationsSeedStore::VerifySignatureResult VerifySeedSignature(
@@ -209,7 +210,8 @@ TEST(VariationsSeedStoreTest, StoreSeedData_ParsedSeed) {
 
   variations::VariationsSeed parsed_seed;
   EXPECT_TRUE(seed_store.StoreSeedData(serialized_seed, std::string(),
-                                       base::Time::Now(), &parsed_seed));
+                                       std::string(), base::Time::Now(), false,
+                                       &parsed_seed));
   EXPECT_EQ(serialized_seed, SerializeSeed(parsed_seed));
 }
 
@@ -218,11 +220,36 @@ TEST(VariationsSeedStoreTest, StoreSeedData_CountryCode) {
   VariationsSeedStore::RegisterPrefs(prefs.registry());
   TestVariationsSeedStore seed_store(&prefs);
 
+  // Test with a seed country code and no header value.
   variations::VariationsSeed seed = CreateTestSeed();
   seed.set_country_code("test_country");
   EXPECT_TRUE(seed_store.StoreSeedData(SerializeSeed(seed), std::string(),
-                                       base::Time::Now(), nullptr));
+                                       std::string(), base::Time::Now(), false,
+                                       nullptr));
   EXPECT_EQ("test_country", prefs.GetString(prefs::kVariationsCountry));
+
+  // Test with a header value and no seed country.
+  prefs.ClearPref(prefs::kVariationsCountry);
+  seed.clear_country_code();
+  EXPECT_TRUE(seed_store.StoreSeedData(SerializeSeed(seed), std::string(),
+                                       "test_country2", base::Time::Now(),
+                                       false,  nullptr));
+  EXPECT_EQ("test_country2", prefs.GetString(prefs::kVariationsCountry));
+
+  // Test with a seed country code and header value.
+  prefs.ClearPref(prefs::kVariationsCountry);
+  seed.set_country_code("test_country3");
+  EXPECT_TRUE(seed_store.StoreSeedData(SerializeSeed(seed), std::string(),
+                                       "test_country4", base::Time::Now(),
+                                       false, nullptr));
+  EXPECT_EQ("test_country4", prefs.GetString(prefs::kVariationsCountry));
+
+  // Test with no country code specified - which should preserve the old value.
+  seed.clear_country_code();
+  EXPECT_TRUE(seed_store.StoreSeedData(SerializeSeed(seed), std::string(),
+                                       std::string(), base::Time::Now(), false,
+                                       nullptr));
+  EXPECT_EQ("test_country4", prefs.GetString(prefs::kVariationsCountry));
 }
 
 TEST(VariationsSeedStoreTest, VerifySeedSignature) {
@@ -278,6 +305,45 @@ TEST(VariationsSeedStoreTest, VerifySeedSignature) {
   seed_data[0] = 'x';
   EXPECT_EQ(VariationsSeedStore::VARIATIONS_SEED_SIGNATURE_INVALID_SEED,
             seed_store.VerifySeedSignature(seed_data, base64_seed_signature));
+}
+
+TEST(VariationsSeedStoreTest, ApplyDeltaPatch) {
+  // Sample seeds and the server produced delta between them to verify that the
+  // client code is able to decode the deltas produced by the server.
+  const std::string base64_before_seed_data =
+      "CigxN2E4ZGJiOTI4ODI0ZGU3ZDU2MGUyODRlODY1ZDllYzg2NzU1MTE0ElgKDFVNQVN0YWJp"
+      "bGl0eRjEyomgBTgBQgtTZXBhcmF0ZUxvZ0oLCgdEZWZhdWx0EABKDwoLU2VwYXJhdGVMb2cQ"
+      "ZFIVEgszNC4wLjE4MDEuMCAAIAEgAiADEkQKIFVNQS1Vbmlmb3JtaXR5LVRyaWFsLTEwMC1Q"
+      "ZXJjZW50GIDjhcAFOAFCCGdyb3VwXzAxSgwKCGdyb3VwXzAxEAFgARJPCh9VTUEtVW5pZm9y"
+      "bWl0eS1UcmlhbC01MC1QZXJjZW50GIDjhcAFOAFCB2RlZmF1bHRKDAoIZ3JvdXBfMDEQAUoL"
+      "CgdkZWZhdWx0EAFgAQ==";
+  const std::string base64_after_seed_data =
+      "CigyNGQzYTM3ZTAxYmViOWYwNWYzMjM4YjUzNWY3MDg1ZmZlZWI4NzQwElgKDFVNQVN0YWJp"
+      "bGl0eRjEyomgBTgBQgtTZXBhcmF0ZUxvZ0oLCgdEZWZhdWx0EABKDwoLU2VwYXJhdGVMb2cQ"
+      "ZFIVEgszNC4wLjE4MDEuMCAAIAEgAiADEpIBCh9VTUEtVW5pZm9ybWl0eS1UcmlhbC0yMC1Q"
+      "ZXJjZW50GIDjhcAFOAFCB2RlZmF1bHRKEQoIZ3JvdXBfMDEQARijtskBShEKCGdyb3VwXzAy"
+      "EAEYpLbJAUoRCghncm91cF8wMxABGKW2yQFKEQoIZ3JvdXBfMDQQARimtskBShAKB2RlZmF1"
+      "bHQQARiitskBYAESWAofVU1BLVVuaWZvcm1pdHktVHJpYWwtNTAtUGVyY2VudBiA44XABTgB"
+      "QgdkZWZhdWx0Sg8KC25vbl9kZWZhdWx0EAFKCwoHZGVmYXVsdBABUgQoACgBYAE=";
+  const std::string base64_delta_data =
+      "KgooMjRkM2EzN2UwMWJlYjlmMDVmMzIzOGI1MzVmNzA4NWZmZWViODc0MAAqW+4BkgEKH1VN"
+      "QS1Vbmlmb3JtaXR5LVRyaWFsLTIwLVBlcmNlbnQYgOOFwAU4AUIHZGVmYXVsdEoRCghncm91"
+      "cF8wMRABGKO2yQFKEQoIZ3JvdXBfMDIQARiktskBShEKCGdyb3VwXzAzEAEYpbbJAUoRCghn"
+      "cm91cF8wNBABGKa2yQFKEAoHZGVmYXVsdBABGKK2yQFgARJYCh9VTUEtVW5pZm9ybWl0eS1U"
+      "cmlhbC01MC1QZXJjZW50GIDjhcAFOAFCB2RlZmF1bHRKDwoLbm9uX2RlZmF1bHQQAUoLCgdk"
+      "ZWZhdWx0EAFSBCgAKAFgAQ==";
+
+  std::string before_seed_data;
+  std::string after_seed_data;
+  std::string delta_data;
+  EXPECT_TRUE(base::Base64Decode(base64_before_seed_data, &before_seed_data));
+  EXPECT_TRUE(base::Base64Decode(base64_after_seed_data, &after_seed_data));
+  EXPECT_TRUE(base::Base64Decode(base64_delta_data, &delta_data));
+
+  std::string output;
+  EXPECT_TRUE(VariationsSeedStore::ApplyDeltaPatch(before_seed_data, delta_data,
+                                                   &output));
+  EXPECT_EQ(after_seed_data, output);
 }
 
 }  // namespace chrome_variations

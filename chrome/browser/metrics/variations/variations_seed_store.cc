@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_math.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/sha1.h"
@@ -14,6 +15,7 @@
 #include "components/metrics/compression_utils.h"
 #include "components/variations/proto/variations_seed.pb.h"
 #include "crypto/signature_verifier.h"
+#include "third_party/protobuf/src/google/protobuf/io/coded_stream.h"
 
 namespace chrome_variations {
 
@@ -82,10 +84,17 @@ enum VariationsSeedStoreResult {
   VARIATIONS_SEED_STORE_FAILED_PARSE,
   VARIATIONS_SEED_STORE_FAILED_SIGNATURE,
   VARIATIONS_SEED_STORE_FAILED_GZIP,
+  // DELTA_COUNT is not so much a result of the seed store, but rather counting
+  // the number of delta-compressed seeds the SeedStore() function saw. Kept in
+  // the same histogram for convenience of comparing against the other values.
+  VARIATIONS_SEED_STORE_DELTA_COUNT,
+  VARIATIONS_SEED_STORE_FAILED_DELTA_READ_SEED,
+  VARIATIONS_SEED_STORE_FAILED_DELTA_APPLY,
+  VARIATIONS_SEED_STORE_FAILED_DELTA_STORE,
   VARIATIONS_SEED_STORE_RESULT_ENUM_SIZE,
 };
 
-void RecordVariationsSeedStoreHistogram(VariationsSeedStoreResult result) {
+void RecordSeedStoreHistogram(VariationsSeedStoreResult result) {
   UMA_HISTOGRAM_ENUMERATION("Variations.SeedStoreResult", result,
                             VARIATIONS_SEED_STORE_RESULT_ENUM_SIZE);
 }
@@ -131,7 +140,7 @@ VariationsSeedDateChangeState GetSeedDateChangeState(
 }  // namespace
 
 VariationsSeedStore::VariationsSeedStore(PrefService* local_state)
-    : local_state_(local_state) {
+    : local_state_(local_state), seed_has_country_code_(false) {
 }
 
 VariationsSeedStore::~VariationsSeedStore() {
@@ -174,24 +183,78 @@ bool VariationsSeedStore::LoadSeed(variations::VariationsSeed* seed) {
     local_state_->SetString(prefs::kVariationsCountry, seed->country_code());
   }
   variations_serial_number_ = seed->serial_number();
+  seed_has_country_code_ = seed->has_country_code();
   RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_NOT_EMPTY);
   return true;
 }
 
 bool VariationsSeedStore::StoreSeedData(
+    const std::string& data,
+    const std::string& base64_seed_signature,
+    const std::string& country_code,
+    const base::Time& date_fetched,
+    bool is_delta_compressed,
+    variations::VariationsSeed* parsed_seed) {
+  if (!is_delta_compressed) {
+    const bool result =
+        StoreSeedDataNoDelta(data, base64_seed_signature, country_code,
+                             date_fetched, parsed_seed);
+    if (result) {
+      UMA_HISTOGRAM_COUNTS_1000("Variations.StoreSeed.Size",
+                                data.length() / 1024);
+    }
+    return result;
+  }
+
+  // If the data is delta compressed, first decode it.
+  DCHECK(invalid_base64_signature_.empty());
+  RecordSeedStoreHistogram(VARIATIONS_SEED_STORE_DELTA_COUNT);
+
+  std::string existing_seed_data;
+  std::string updated_seed_data;
+  if (!ReadSeedData(&existing_seed_data)) {
+    RecordSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_DELTA_READ_SEED);
+    return false;
+  }
+  if (!ApplyDeltaPatch(existing_seed_data, data, &updated_seed_data)) {
+    RecordSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_DELTA_APPLY);
+    return false;
+  }
+
+  const bool result =
+      StoreSeedDataNoDelta(updated_seed_data, base64_seed_signature,
+                           country_code, date_fetched, parsed_seed);
+  if (result) {
+    // Note: |updated_seed_data.length()| is guaranteed to be non-zero, else
+    // result would be false.
+    int size_reduction = updated_seed_data.length() - data.length();
+    UMA_HISTOGRAM_PERCENTAGE("Variations.StoreSeed.DeltaSize.ReductionPercent",
+                             100 * size_reduction / updated_seed_data.length());
+    UMA_HISTOGRAM_COUNTS_1000("Variations.StoreSeed.DeltaSize",
+                              data.length() / 1024);
+  } else {
+    RecordSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_DELTA_STORE);
+  }
+  return result;
+}
+
+// TODO(asvitkine): Move this method down to match declaration order in a
+// follow-up CL.
+bool VariationsSeedStore::StoreSeedDataNoDelta(
     const std::string& seed_data,
     const std::string& base64_seed_signature,
+    const std::string& country_code,
     const base::Time& date_fetched,
     variations::VariationsSeed* parsed_seed) {
   if (seed_data.empty()) {
-    RecordVariationsSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_EMPTY);
+    RecordSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_EMPTY);
     return false;
   }
 
   // Only store the seed data if it parses correctly.
   variations::VariationsSeed seed;
   if (!seed.ParseFromString(seed_data)) {
-    RecordVariationsSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_PARSE);
+    RecordSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_PARSE);
     return false;
   }
 
@@ -201,8 +264,7 @@ bool VariationsSeedStore::StoreSeedData(
     UMA_HISTOGRAM_ENUMERATION("Variations.StoreSeedSignature", result,
                               VARIATIONS_SEED_SIGNATURE_ENUM_SIZE);
     if (result != VARIATIONS_SEED_SIGNATURE_VALID) {
-      RecordVariationsSeedStoreHistogram(
-          VARIATIONS_SEED_STORE_FAILED_SIGNATURE);
+      RecordSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_SIGNATURE);
       return false;
     }
   }
@@ -210,7 +272,7 @@ bool VariationsSeedStore::StoreSeedData(
   // Compress the seed before base64-encoding and storing.
   std::string compressed_seed_data;
   if (!metrics::GzipCompress(seed_data, &compressed_seed_data)) {
-    RecordVariationsSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_GZIP);
+    RecordSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_GZIP);
     return false;
   }
 
@@ -222,7 +284,11 @@ bool VariationsSeedStore::StoreSeedData(
   local_state_->ClearPref(prefs::kVariationsSeed);
 
   // Update the saved country code only if one was returned from the server.
-  if (seed.has_country_code())
+  // Prefer the country code that was transmitted in the header over the one in
+  // the seed (which is deprecated).
+  if (!country_code.empty())
+    local_state_->SetString(prefs::kVariationsCountry, country_code);
+  else if (seed.has_country_code())
     local_state_->SetString(prefs::kVariationsCountry, seed.country_code());
 
   local_state_->SetString(prefs::kVariationsCompressedSeed, base64_seed_data);
@@ -233,7 +299,7 @@ bool VariationsSeedStore::StoreSeedData(
   if (parsed_seed)
     seed.Swap(parsed_seed);
 
-  RecordVariationsSeedStoreHistogram(VARIATIONS_SEED_STORE_SUCCESS);
+  RecordSeedStoreHistogram(VARIATIONS_SEED_STORE_SUCCESS);
   return true;
 }
 
@@ -255,6 +321,11 @@ void VariationsSeedStore::UpdateSeedDateAndLogDayChange(
 
   local_state_->SetInt64(prefs::kVariationsSeedDate,
                          server_date_fetched.ToInternalValue());
+}
+
+
+std::string VariationsSeedStore::GetInvalidSignature() const {
+  return invalid_base64_signature_;
 }
 
 // static
@@ -335,8 +406,51 @@ VariationsSeedStore::VerifySeedSignature(
   return VARIATIONS_SEED_SIGNATURE_INVALID_SEED;
 }
 
-std::string VariationsSeedStore::GetInvalidSignature() const {
-  return invalid_base64_signature_;
+// static
+bool VariationsSeedStore::ApplyDeltaPatch(const std::string& existing_data,
+                                          const std::string& patch,
+                                          std::string* output) {
+  output->clear();
+
+  google::protobuf::io::CodedInputStream in(
+      reinterpret_cast<const uint8*>(patch.data()), patch.length());
+  // Temporary string declared outside the loop so it can be re-used between
+  // different iterations (rather than allocating new ones).
+  std::string temp;
+
+  const uint32 existing_data_size = static_cast<uint32>(existing_data.size());
+  while (in.CurrentPosition() != static_cast<int>(patch.length())) {
+    uint32 value;
+    if (!in.ReadVarint32(&value))
+      return false;
+
+    if (value != 0) {
+      // A non-zero value indicates the number of bytes to copy from the patch
+      // stream to the output.
+
+      // No need to guard against bad data (i.e. very large |value|) because the
+      // call below will fail if |value| is greater than the size of the patch.
+      if (!in.ReadString(&temp, value))
+        return false;
+      output->append(temp);
+    } else {
+      // Otherwise, when it's zero, it indicates that it's followed by a pair of
+      // numbers - |offset| and |length| that specify a range of data to copy
+      // from |existing_data|.
+      uint32 offset;
+      uint32 length;
+      if (!in.ReadVarint32(&offset) || !in.ReadVarint32(&length))
+        return false;
+
+      // Check for |offset + length| being out of range and for overflow.
+      base::CheckedNumeric<uint32> end_offset(offset);
+      end_offset += length;
+      if (!end_offset.IsValid() || end_offset.ValueOrDie() > existing_data_size)
+        return false;
+      output->append(existing_data, offset, length);
+    }
+  }
+  return true;
 }
 
 }  // namespace chrome_variations

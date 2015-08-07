@@ -59,8 +59,8 @@ class TestVariationsService : public VariationsService {
   }
 
   bool fetch_attempted() const { return fetch_attempted_; }
-
   bool seed_stored() const { return seed_stored_; }
+  const std::string& stored_country() const { return stored_country_; }
 
   void DoActualFetch() override {
     if (intercepts_fetch_) {
@@ -72,16 +72,21 @@ class TestVariationsService : public VariationsService {
   }
 
  protected:
-  void StoreSeed(const std::string& seed_data,
+  bool StoreSeed(const std::string& seed_data,
                  const std::string& seed_signature,
-                 const base::Time& date_fetched) override {
+                 const std::string& country_code,
+                 const base::Time& date_fetched,
+                 bool is_delta_compressed) override {
     seed_stored_ = true;
+    stored_country_ = country_code;
+    return true;
   }
 
  private:
   bool intercepts_fetch_;
   bool fetch_attempted_;
   bool seed_stored_;
+  std::string stored_country_;
 
   DISALLOW_COPY_AND_ASSIGN(TestVariationsService);
 };
@@ -148,12 +153,15 @@ std::string SerializeSeed(const variations::VariationsSeed& seed) {
 
 // Simulates a variations service response by setting a date header and the
 // specified HTTP |response_code| on |fetcher|.
-void SimulateServerResponse(int response_code, net::TestURLFetcher* fetcher) {
-  ASSERT_TRUE(fetcher);
+scoped_refptr<net::HttpResponseHeaders> SimulateServerResponse(
+    int response_code,
+    net::TestURLFetcher* fetcher) {
+  EXPECT_TRUE(fetcher);
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders("date:Wed, 13 Feb 2013 00:25:24 GMT\0\0"));
   fetcher->set_response_headers(headers);
   fetcher->set_response_code(response_code);
+  return headers;
 }
 
 // Helper class that abstracts away platform-specific details relating to the
@@ -368,24 +376,29 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
   }
 }
 
-TEST_F(VariationsServiceTest, SeedDateUpdatedOn304Status) {
+TEST_F(VariationsServiceTest, CountryHeader) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
 
-  net::TestURLFetcherFactory factory;
-  VariationsService service(
-      new web_resource::TestRequestAllowedNotifier(&prefs), &prefs, NULL);
+  TestVariationsService service(
+      new web_resource::TestRequestAllowedNotifier(&prefs), &prefs);
   service.variations_server_url_ =
       VariationsService::GetVariationsServerURL(&prefs, std::string());
+  service.set_intercepts_fetch(false);
+
+  net::TestURLFetcherFactory factory;
   service.DoActualFetch();
-  EXPECT_TRUE(
-      prefs.FindPreference(prefs::kVariationsSeedDate)->IsDefaultValue());
 
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  SimulateServerResponse(net::HTTP_NOT_MODIFIED, fetcher);
+  scoped_refptr<net::HttpResponseHeaders> headers =
+      SimulateServerResponse(net::HTTP_OK, fetcher);
+  headers->AddHeader("X-Country: test");
+  fetcher->SetResponseString(SerializeSeed(CreateTestSeed()));
+
+  EXPECT_FALSE(service.seed_stored());
   service.OnURLFetchComplete(fetcher);
-  EXPECT_FALSE(
-      prefs.FindPreference(prefs::kVariationsSeedDate)->IsDefaultValue());
+  EXPECT_TRUE(service.seed_stored());
+  EXPECT_EQ("test", service.stored_country());
 }
 
 TEST_F(VariationsServiceTest, Observer) {

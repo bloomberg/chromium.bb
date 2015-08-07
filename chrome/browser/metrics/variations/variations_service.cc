@@ -220,6 +220,15 @@ base::Time GetReferenceDateForExpiryChecks(PrefService* local_state) {
   return reference_date;
 }
 
+// Returns the header value for |name| from |headers| or an empty string if not
+// set.
+std::string GetHeaderValue(const net::HttpResponseHeaders* headers,
+                           const base::StringPiece& name) {
+  std::string value;
+  headers->EnumerateHeader(NULL, name, &value);
+  return value;
+}
+
 // Overrides the string resource sepecified by |hash| with |string| in the
 // resource bundle. Used as a callback passed to the variations seed processor.
 void OverrideUIString(uint32_t hash, const base::string16& string) {
@@ -243,6 +252,7 @@ VariationsService::VariationsService(
       seed_store_(local_state),
       create_trials_from_seed_called_(false),
       initial_request_completed_(false),
+      disable_deltas_for_next_request_(false),
       resource_request_allowed_notifier_(notifier),
       request_count_(0),
       weak_ptr_factory_(this) {
@@ -460,6 +470,7 @@ scoped_ptr<VariationsService> VariationsService::Create(
 
 void VariationsService::DoActualFetch() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!pending_seed_request_);
 
   pending_seed_request_ = net::URLFetcher::Create(0, variations_server_url_,
                                                   net::URLFetcher::GET, this);
@@ -468,9 +479,21 @@ void VariationsService::DoActualFetch() {
   pending_seed_request_->SetRequestContext(
       g_browser_process->system_request_context());
   pending_seed_request_->SetMaxRetriesOn5xx(kMaxRetrySeedFetch);
-  if (!seed_store_.variations_serial_number().empty()) {
+  if (!seed_store_.variations_serial_number().empty() &&
+      !disable_deltas_for_next_request_) {
+    // If the current seed includes a country code, deltas are not supported (as
+    // the serial number doesn't take into account the country code). The server
+    // will update us with a seed that doesn't include a country code which will
+    // enable deltas to work.
+    // TODO(asvitkine): Remove the check in M50+ when the percentage of clients
+    // that have an old seed with a country code becomes miniscule.
+    if (!seed_store_.seed_has_country_code()) {
+      // Tell the server that delta-compressed seeds are supported.
+      pending_seed_request_->AddExtraRequestHeader("A-IM:x-bm");
+    }
+    // Get the seed only if its serial number doesn't match what we have.
     pending_seed_request_->AddExtraRequestHeader(
-        "If-Match:" + seed_store_.variations_serial_number());
+        "If-None-Match:" + seed_store_.variations_serial_number());
   }
   pending_seed_request_->Start();
 
@@ -485,24 +508,28 @@ void VariationsService::DoActualFetch() {
   UMA_HISTOGRAM_COUNTS_100("Variations.RequestCount", request_count_);
   ++request_count_;
   last_request_started_time_ = now;
+  disable_deltas_for_next_request_ = false;
 }
 
-void VariationsService::StoreSeed(const std::string& seed_data,
+bool VariationsService::StoreSeed(const std::string& seed_data,
                                   const std::string& seed_signature,
-                                  const base::Time& date_fetched) {
+                                  const std::string& country_code,
+                                  const base::Time& date_fetched,
+                                  bool is_delta_compressed) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   scoped_ptr<variations::VariationsSeed> seed(new variations::VariationsSeed);
-  if (!seed_store_.StoreSeedData(seed_data, seed_signature, date_fetched,
+  if (!seed_store_.StoreSeedData(seed_data, seed_signature, country_code,
+                                 date_fetched, is_delta_compressed,
                                  seed.get())) {
-    return;
+    return false;
   }
   RecordLastFetchTime();
 
   // Perform seed simulation only if |state_manager_| is not-NULL. The state
   // manager may be NULL for some unit tests.
   if (!state_manager_)
-    return;
+    return true;
 
   base::PostTaskAndReplyWithResult(
       content::BrowserThread::GetBlockingPool(),
@@ -510,6 +537,7 @@ void VariationsService::StoreSeed(const std::string& seed_data,
       base::Bind(&GetVersionForSimulation),
       base::Bind(&VariationsService::PerformSimulationWithVersion,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&seed)));
+  return true;
 }
 
 void VariationsService::FetchVariationsSeed() {
@@ -602,11 +630,16 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
   bool success = request->GetResponseAsString(&seed_data);
   DCHECK(success);
 
-  std::string seed_signature;
-  request->GetResponseHeaders()->EnumerateHeader(NULL,
-                                                 "X-Seed-Signature",
-                                                 &seed_signature);
-  StoreSeed(seed_data, seed_signature, response_date);
+  net::HttpResponseHeaders* headers = request->GetResponseHeaders();
+  const std::string signature = GetHeaderValue(headers, "X-Seed-Signature");
+  const std::string country_code = GetHeaderValue(headers, "X-Country");
+  const bool is_delta_compressed = (GetHeaderValue(headers, "IM") == "x-bm");
+  const bool store_success = StoreSeed(seed_data, signature, country_code,
+                                       response_date, is_delta_compressed);
+  if (!store_success && is_delta_compressed) {
+    disable_deltas_for_next_request_ = true;
+    request_scheduler_->ScheduleFetchShortly();
+  }
 }
 
 void VariationsService::OnResourceRequestsAllowed() {
