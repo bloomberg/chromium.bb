@@ -63,6 +63,8 @@ class NetworkConnectImpl : public NetworkConnect {
 
   // NetworkConnect
   void ConnectToNetwork(const std::string& service_path) override;
+  bool MaybeShowConfigureUI(const std::string& service_path,
+                            const std::string& connect_error) override;
   void SetTechnologyEnabled(const chromeos::NetworkTypePattern& technology,
                             bool enabled_state) override;
   void ActivateCellular(const std::string& service_path) override;
@@ -83,6 +85,8 @@ class NetworkConnectImpl : public NetworkConnect {
   void OnConnectFailed(const std::string& service_path,
                        const std::string& error_name,
                        scoped_ptr<base::DictionaryValue> error_data);
+  bool MaybeShowConfigureUIImpl(const std::string& service_path,
+                                const std::string& connect_error);
   bool GetNetworkProfilePath(bool shared, std::string* profile_path);
   void OnConnectSucceeded(const std::string& service_path);
   void CallConnectToNetwork(const std::string& service_path,
@@ -198,37 +202,46 @@ bool NetworkConnectImpl::GetNetworkProfilePath(bool shared,
   return true;
 }
 
-// This handles connect failures that are a direct result of a user initiated
-// connect request and result in a new UI being shown. Note: notifications are
-// handled by NetworkStateNotifier.
 void NetworkConnectImpl::OnConnectFailed(
     const std::string& service_path,
     const std::string& error_name,
     scoped_ptr<base::DictionaryValue> error_data) {
-  NET_LOG_ERROR("Connect Failed: " + error_name, service_path);
+  MaybeShowConfigureUIImpl(service_path, error_name);
+}
 
-  if (error_name == NetworkConnectionHandler::kErrorBadPassphrase ||
-      error_name == NetworkConnectionHandler::kErrorPassphraseRequired ||
-      error_name == NetworkConnectionHandler::kErrorConfigurationRequired ||
-      error_name == NetworkConnectionHandler::kErrorAuthenticationRequired) {
+// This handles connect failures that are a direct result of a user initiated
+// connect request and result in a new UI being shown. Note: notifications are
+// handled by NetworkStateNotifier.
+bool NetworkConnectImpl::MaybeShowConfigureUIImpl(
+    const std::string& service_path,
+    const std::string& connect_error) {
+  NET_LOG_ERROR("Connect Failed: " + connect_error, service_path);
+
+  if (connect_error == NetworkConnectionHandler::kErrorBadPassphrase ||
+      connect_error == NetworkConnectionHandler::kErrorPassphraseRequired ||
+      connect_error == NetworkConnectionHandler::kErrorConfigurationRequired ||
+      connect_error == NetworkConnectionHandler::kErrorAuthenticationRequired) {
     HandleUnconfiguredNetwork(service_path);
-    return;
+    return true;
   }
 
-  if (error_name == NetworkConnectionHandler::kErrorCertificateRequired) {
+  if (connect_error == NetworkConnectionHandler::kErrorCertificateRequired) {
     if (!delegate_->ShowEnrollNetwork(service_path))
       HandleUnconfiguredNetwork(service_path);
-    return;
+    return true;
   }
 
   // Only show a configure dialog if there was a ConnectFailed error. The dialog
   // allows the user to request a new connect attempt or cancel. Note: a
   // notification may also be displayed by NetworkStateNotifier in this case.
-  if (error_name == NetworkConnectionHandler::kErrorConnectFailed)
+  if (connect_error == NetworkConnectionHandler::kErrorConnectFailed) {
     HandleUnconfiguredNetwork(service_path);
+    return true;
+  }
 
   // Notifications for other connect failures are handled by
   // NetworkStateNotifier, so no need to do anything else here.
+  return false;
 }
 
 void NetworkConnectImpl::OnConnectSucceeded(const std::string& service_path) {
@@ -375,6 +388,12 @@ void NetworkConnectImpl::ConnectToNetwork(const std::string& service_path) {
   }
   const bool check_error_state = true;
   CallConnectToNetwork(service_path, check_error_state);
+}
+
+bool NetworkConnectImpl::MaybeShowConfigureUI(
+    const std::string& service_path,
+    const std::string& connect_error) {
+  return MaybeShowConfigureUIImpl(service_path, connect_error);
 }
 
 void NetworkConnectImpl::SetTechnologyEnabled(

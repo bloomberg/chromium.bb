@@ -166,8 +166,8 @@ NetworkingPrivateChromeOS::NetworkingPrivateChromeOS(
     content::BrowserContext* browser_context,
     scoped_ptr<VerifyDelegate> verify_delegate)
     : NetworkingPrivateDelegate(verify_delegate.Pass()),
-      browser_context_(browser_context) {
-}
+      browser_context_(browser_context),
+      weak_ptr_factory_(this) {}
 
 NetworkingPrivateChromeOS::~NetworkingPrivateChromeOS() {
 }
@@ -310,8 +310,26 @@ void NetworkingPrivateChromeOS::StartConnect(
   const bool check_error_state = false;
   NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
       service_path, success_callback,
-      base::Bind(&NetworkHandlerFailureCallback, failure_callback),
+      base::Bind(&NetworkingPrivateChromeOS::ConnectFailureCallback,
+                 weak_ptr_factory_.GetWeakPtr(), guid, success_callback,
+                 failure_callback),
       check_error_state);
+}
+
+void NetworkingPrivateChromeOS::ConnectFailureCallback(
+    const std::string& guid,
+    const VoidCallback& success_callback,
+    const FailureCallback& failure_callback,
+    const std::string& error_name,
+    scoped_ptr<base::DictionaryValue> error_data) {
+  // TODO(stevenjb): Temporary workaround to show the configuration UI.
+  // Eventually the caller (e.g. Settings) should handle any failures and
+  // show its own configuration UI. crbug.com/380937.
+  if (ui_delegate()->HandleConnectFailed(guid, error_name)) {
+    success_callback.Run();
+    return;
+  }
+  failure_callback.Run(error_name);
 }
 
 void NetworkingPrivateChromeOS::StartDisconnect(

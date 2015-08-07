@@ -90,6 +90,11 @@ class NetworkingPrivateDelegate : public KeyedService {
     // with |guid|.
     virtual void ShowAccountDetails(const std::string& guid) const = 0;
 
+    // Possibly handle a connection failure, e.g. by showing the configuration
+    // UI. Returns true if the error was handled, i.e. the UI was shown.
+    virtual bool HandleConnectFailed(const std::string& guid,
+                                     const std::string error) const = 0;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(UIDelegate);
   };

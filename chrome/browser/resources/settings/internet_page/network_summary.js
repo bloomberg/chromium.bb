@@ -208,6 +208,13 @@ Polymer({
         chrome.networkingPrivate.getState(
             id,
             function(state) {
+              if (chrome.runtime.lastError) {
+                if (chrome.runtime.lastError != 'Error.NetworkUnavailable') {
+                  console.error('Unexpected networkingPrivate.getState error:',
+                                chrome.runtime.lastError);
+                }
+                return;
+              }
               // Async call, ensure id still exists.
               if (!this.networkIds_[id])
                 return;
@@ -228,7 +235,13 @@ Polymer({
    * @private
    */
   connectToNetwork_: function(state) {
-    chrome.networkingPrivate.startConnect(state.GUID);
+    chrome.networkingPrivate.startConnect(state.GUID, function() {
+      if (chrome.runtime.lastError &&
+          chrome.runtime.lastError != 'connecting') {
+        console.error('Unexpected networkingPrivate.startConnect error:',
+                      chrome.runtime.lastError);
+      }
+    });
   },
 
   /**

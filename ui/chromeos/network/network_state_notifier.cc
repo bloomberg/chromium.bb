@@ -11,10 +11,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
-#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/shill_property_util.h"
+#include "components/device_event_log/device_event_log.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -68,11 +68,14 @@ int GetErrorNotificationIconId(const std::string& network_type) {
   return IDR_AURA_UBER_TRAY_NETWORK_FAILED;
 }
 
-void ShowErrorNotification(const std::string& notification_id,
+void ShowErrorNotification(const std::string& service_path,
+                           const std::string& notification_id,
                            const std::string& network_type,
                            const base::string16& title,
                            const base::string16& message,
                            const base::Closure& callback) {
+  NET_LOG(ERROR) << "ShowErrorNotification: " << service_path << ": "
+                 << base::UTF16ToUTF8(title);
   const gfx::Image& icon =
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           GetErrorNotificationIconId(network_type));
@@ -219,7 +222,7 @@ void NetworkStateNotifier::UpdateCellularOutOfCredits(
     base::string16 error_msg = l10n_util::GetStringFUTF16(
         IDS_NETWORK_OUT_OF_CREDITS_BODY, base::UTF8ToUTF16(cellular->name()));
     ShowErrorNotification(
-        kNetworkOutOfCreditsNotificationId, cellular->type(),
+        cellular->path(), kNetworkOutOfCreditsNotificationId, cellular->type(),
         l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_CREDITS_TITLE), error_msg,
         base::Bind(&NetworkStateNotifier::ShowNetworkSettingsForPath,
                    weak_ptr_factory_.GetWeakPtr(), cellular->path()));
@@ -282,8 +285,8 @@ void NetworkStateNotifier::ShowMobileActivationError(
       NetworkHandler::Get()->network_state_handler()->GetNetworkState(
           service_path);
   if (!cellular || cellular->type() != shill::kTypeCellular) {
-    NET_LOG_ERROR("ShowMobileActivationError without Cellular network",
-                  service_path);
+    NET_LOG(ERROR) << "ShowMobileActivationError without Cellular network: "
+                   << service_path;
     return;
   }
   message_center::MessageCenter::Get()->AddNotification(
@@ -337,6 +340,9 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
     const std::string& service_path,
     const base::DictionaryValue& shill_properties) {
   base::string16 error = GetConnectErrorString(error_name);
+  NET_LOG(DEBUG) << "Notify: " << service_path
+                 << ": Connect error: " << error_name << ": "
+                 << base::UTF16ToUTF8(error);
   if (error.empty()) {
     std::string shill_error;
     shill_properties.GetStringWithoutPathExpansion(shill::kErrorProperty,
@@ -344,12 +350,13 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
     if (!chromeos::NetworkState::ErrorIsValid(shill_error)) {
       shill_properties.GetStringWithoutPathExpansion(
           shill::kPreviousErrorProperty, &shill_error);
-      NET_LOG_DEBUG("Notify Service.PreviousError: " + shill_error,
-                    service_path);
+      NET_LOG(DEBUG) << "Notify: " << service_path
+                     << ": Service.PreviousError: " << shill_error;
       if (!chromeos::NetworkState::ErrorIsValid(shill_error))
         shill_error.clear();
     } else {
-      NET_LOG_DEBUG("Notify Service.Error: " + shill_error, service_path);
+      NET_LOG(DEBUG) << "Notify: " << service_path
+                     << ": Service.Error: " << shill_error;
     }
 
     const NetworkState* network =
@@ -360,23 +367,32 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
       // TODO(stevenjb): This shouldn't ever be necessary, but is kept here as
       // a failsafe since more information is better than less when debugging
       // and we have encountered some strange edge cases before.
-      NET_LOG_DEBUG("Notify Network.last_error: " + network->last_error(),
-                    service_path);
+      NET_LOG(DEBUG) << "Notify: " << service_path
+                     << ": Network.last_error: " << network->last_error();
       if (shill_error.empty())
         shill_error = network->last_error();
     }
 
     if (ShillErrorIsIgnored(shill_error)) {
-      NET_LOG_DEBUG("Notify Ignoring error: " + error_name, service_path);
+      NET_LOG(DEBUG) << "Notify: " << service_path
+                     << ": Ignoring error: " << error_name;
       return;
     }
 
     error = network_connect_->GetShillErrorString(shill_error, service_path);
-    if (error.empty())
+    if (error.empty()) {
+      if (error_name == NetworkConnectionHandler::kErrorConnectFailed &&
+          network && !network->connectable()) {
+        // Connect failure on non connectable network with no additional
+        // information. We expect the UI to show configuration UI so do not
+        // show an additional (and unhelpful) notification.
+        return;
+      }
       error = l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
+    }
   }
-  NET_LOG_ERROR("Notify connect error: " + base::UTF16ToUTF8(error),
-                service_path);
+  NET_LOG(ERROR) << "Notify: " << service_path
+                 << ": Connect error: " + base::UTF16ToUTF8(error);
 
   std::string network_name =
       chromeos::shill_property_util::GetNameFromProperties(service_path,
@@ -406,7 +422,7 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
                                                  &network_type);
 
   ShowErrorNotification(
-      kNetworkConnectNotificationId, network_type,
+      service_path, kNetworkConnectNotificationId, network_type,
       l10n_util::GetStringUTF16(IDS_NETWORK_CONNECTION_ERROR_TITLE), error_msg,
       base::Bind(&NetworkStateNotifier::ShowNetworkSettingsForPath,
                  weak_ptr_factory_.GetWeakPtr(), service_path));
@@ -417,7 +433,7 @@ void NetworkStateNotifier::ShowVpnDisconnectedNotification(
   base::string16 error_msg = l10n_util::GetStringFUTF16(
       IDS_NETWORK_VPN_CONNECTION_LOST_BODY, base::UTF8ToUTF16(vpn->name()));
   ShowErrorNotification(
-      kNetworkConnectNotificationId, shill::kTypeVPN,
+      vpn->path(), kNetworkConnectNotificationId, shill::kTypeVPN,
       l10n_util::GetStringUTF16(IDS_NETWORK_VPN_CONNECTION_LOST_TITLE),
       error_msg, base::Bind(&NetworkStateNotifier::ShowNetworkSettingsForPath,
                             weak_ptr_factory_.GetWeakPtr(), vpn->path()));

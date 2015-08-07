@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_CHROMEOS_H_
 #define EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_CHROMEOS_H_
 
+#include "base/memory/weak_ptr.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate.h"
 
 namespace context {
@@ -88,7 +89,14 @@ class NetworkingPrivateChromeOS : public NetworkingPrivateDelegate {
   bool RequestScan() override;
 
  private:
+  void ConnectFailureCallback(const std::string& guid,
+                              const VoidCallback& success_callback,
+                              const FailureCallback& failure_callback,
+                              const std::string& error_name,
+                              scoped_ptr<base::DictionaryValue> error_data);
+
   content::BrowserContext* browser_context_;
+  base::WeakPtrFactory<NetworkingPrivateChromeOS> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateChromeOS);
 };

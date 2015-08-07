@@ -63,6 +63,11 @@ class UI_CHROMEOS_EXPORT NetworkConnect {
   // Requests a network connection and handles any errors and notifications.
   virtual void ConnectToNetwork(const std::string& service_path) = 0;
 
+  // Maybe show the configuration UI after a connect failure based on the
+  // network state and error name. Returns true if the UI is shown.
+  virtual bool MaybeShowConfigureUI(const std::string& service_path,
+                                    const std::string& connect_error) = 0;
+
   // Enables or disables a network technology. If |technology| refers to
   // cellular and the device cannot be enabled due to a SIM lock, this function
   // will launch the SIM unlock dialog.

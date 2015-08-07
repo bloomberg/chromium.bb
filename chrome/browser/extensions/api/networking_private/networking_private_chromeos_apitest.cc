@@ -120,6 +120,10 @@ class UIDelegateStub : public NetworkingPrivateDelegate::UIDelegate {
   void ShowAccountDetails(const std::string& guid) const override {
     ++s_show_account_details_called_;
   }
+  bool HandleConnectFailed(const std::string& guid,
+                           const std::string error) const override {
+    return false;
+  }
 };
 
 // static
