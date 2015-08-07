@@ -158,7 +158,12 @@ public:
 
     // This frame set its opener to null, disowning it.
     // See http://html.spec.whatwg.org/#dom-opener.
+    // TODO(alexmos): Remove this once didChangeOpener is implemented in content.
     virtual void didDisownOpener(WebLocalFrame*) { }
+
+    // This frame has set its opener to another frame, or disowned the opener
+    // if opener is null. See http://html.spec.whatwg.org/#dom-opener.
+    virtual void didChangeOpener(WebFrame*) { }
 
     // Specifies the reason for the detachment.
     enum class DetachType { Remove, Swap };

@@ -278,7 +278,10 @@ Frame* FrameLoaderClientImpl::opener() const
 
 void FrameLoaderClientImpl::setOpener(Frame* opener)
 {
-    m_webFrame->setOpener(WebFrame::fromFrame(opener));
+    WebFrame* openerFrame = WebFrame::fromFrame(opener);
+    if (m_webFrame->client() && m_webFrame->opener() != openerFrame)
+        m_webFrame->client()->didChangeOpener(openerFrame);
+    m_webFrame->setOpener(openerFrame);
 }
 
 Frame* FrameLoaderClientImpl::parent() const
