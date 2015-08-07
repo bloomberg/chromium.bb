@@ -102,6 +102,17 @@ TEST_F(PositionTest, NodeAsRangeLastNodeShadow)
     EXPECT_EQ(t1, PositionInComposedTree::afterNode(host).nodeAsRangeLastNode());
 }
 
+TEST_F(PositionTest, rendersInDifferentPositionAfterAnchor)
+{
+    const char* bodyContent = "<p id='sample'>00</p>";
+    setBodyContent(bodyContent);
+    updateLayoutAndStyleForPainting();
+    RefPtrWillBeRawPtr<Element> sample = document().getElementById("sample");
+
+    EXPECT_FALSE(Position::afterNode(sample.get()).rendersInDifferentPosition(Position(sample.get(), 1)));
+    EXPECT_FALSE(Position::lastPositionInNode(sample.get()).rendersInDifferentPosition(Position(sample.get(), 1)));
+}
+
 TEST_F(PositionTest, ToPositionInComposedTreeWithActiveInsertionPoint)
 {
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";
