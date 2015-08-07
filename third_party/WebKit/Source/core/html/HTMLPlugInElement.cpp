@@ -64,7 +64,6 @@ HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc
     : HTMLFrameOwnerElement(tagName, doc)
     , m_isDelayingLoadEvent(false)
     , m_NPObject(0)
-    , m_isCapturingMouseEvents(false)
     // m_needsWidgetUpdate(!createdByParser) allows HTMLObjectElement to delay
     // widget updates until after all children are parsed. For HTMLEmbedElement
     // this delay is unnecessary, but it is simpler to make both classes share
@@ -248,12 +247,6 @@ void HTMLPlugInElement::detach(const AttachContext& context)
     resetInstance();
     // Clear the widget; will trigger disposal of it with Oilpan.
     setWidget(nullptr);
-
-    if (m_isCapturingMouseEvents) {
-        if (LocalFrame* frame = document().frame())
-            frame->eventHandler().setCapturingMouseEventsNode(nullptr);
-        m_isCapturingMouseEvents = false;
-    }
 
     if (m_NPObject) {
         _NPN_ReleaseObject(m_NPObject);
