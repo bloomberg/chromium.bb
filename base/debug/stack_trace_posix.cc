@@ -281,6 +281,16 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
   }
   PrintToStderr("\n");
 
+#if defined(CFI_ENFORCEMENT)
+  if (signal == SIGILL && info->si_code == ILL_ILLOPN) {
+    PrintToStderr(
+        "CFI: Most likely a control flow integrity violation; for more "
+        "information see:\n");
+    PrintToStderr(
+        "https://www.chromium.org/developers/testing/control-flow-integrity\n");
+  }
+#endif
+
   debug::StackTrace().Print();
 
 #if defined(OS_LINUX)
@@ -395,6 +405,9 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
   write(STDERR_FILENO, buf, std::min(len, sizeof(buf) - 1));
 #endif  // ARCH_CPU_32_BITS
 #endif  // defined(OS_MACOSX)
+
+  PrintToStderr("[end of stack trace]\n");
+
   _exit(1);
 }
 
