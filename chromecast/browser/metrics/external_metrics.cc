@@ -12,7 +12,6 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
-#include "base/timer/elapsed_timer.h"
 #include "chromecast/base/metrics/cast_histograms.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/metrics/cast_stability_metrics_provider.h"
@@ -131,9 +130,7 @@ int ExternalMetrics::CollectEvents() {
 }
 
 void ExternalMetrics::CollectEventsAndReschedule() {
-  base::ElapsedTimer timer;
   CollectEvents();
-  UMA_HISTOGRAM_TIMES("UMA.CollectExternalEventsTime", timer.Elapsed());
   ScheduleCollector();
 }
 

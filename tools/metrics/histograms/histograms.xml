@@ -46660,6 +46660,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UMA.CollectExternalEventsTime" units="milliseconds">
+  <obsolete>
+    Deprecated as of August 2015. The histogram showed no unexpected slowness,
+    and a profiler is a better tool for identifying any future issues.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <summary>
     The time to run the external metrics collection task (Chrome OS).
