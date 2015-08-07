@@ -239,7 +239,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
       ToBrowserAccessibilityManagerAuraLinux();
 #endif
 
-  // Return the object that has focus, if it's a descandant of the
+  // Return the object that has focus, if it's a descendant of the
   // given root (inclusive). Does not make a new reference.
   virtual BrowserAccessibility* GetFocus(BrowserAccessibility* root);
 

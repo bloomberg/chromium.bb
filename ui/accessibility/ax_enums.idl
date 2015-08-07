@@ -268,7 +268,12 @@
     scroll_y_min,
     scroll_y_max,
 
-    // Editable text attributes.
+    // Attributes for retrieving the endpoints of a selection.
+    anchor_object_id,
+    anchor_offset,
+    focus_object_id,
+    focus_offset,
+    // Deprecated.
     text_sel_start,
     text_sel_end,
 

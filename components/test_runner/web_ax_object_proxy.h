@@ -69,10 +69,24 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   int MaxValue();
   std::string ValueDescription();
   int ChildrenCount();
+
+  // The following selection functions return global information about the
+  // current selection and can be called on any object in the tree.
+  v8::Local<v8::Value> SelectionAnchorObject();
+  int SelectionAnchorOffset();
+  v8::Local<v8::Value> SelectionFocusObject();
+  int SelectionFocusOffset();
+
+  // The following selection functions return text offsets calculated starting
+  // at this object. They only report on a selection that is placed on the
+  // current object or on any of its descendants.
+  // For example, they can be used to retrieve the selection in an input or
+  // a textarea.
   int SelectionStart();
   int SelectionEnd();
   int SelectionStartLineNumber();
   int SelectionEndLineNumber();
+
   bool IsEnabled();
   bool IsRequired();
   bool IsRichlyEditable();

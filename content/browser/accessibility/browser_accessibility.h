@@ -67,7 +67,7 @@ class CONTENT_EXPORT BrowserAccessibility {
   virtual void OnLocationChanged() {}
 
   // Return true if this object is equal to or a descendant of |ancestor|.
-  bool IsDescendantOf(BrowserAccessibility* ancestor);
+  bool IsDescendantOf(const BrowserAccessibility* ancestor) const;
 
   // Returns true if this is a leaf node on this platform, meaning any
   // children should not be exposed to this platform's native accessibility

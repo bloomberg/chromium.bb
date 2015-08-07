@@ -503,6 +503,19 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
           UTF16ToUTF8(base::StringPiece16(doctype.name())));
     }
 
+    WebAXObject anchor_object, focus_object;
+    int anchor_offset, focus_offset;
+    src.selection(anchor_object, anchor_offset, focus_object, focus_offset);
+    if (!anchor_object.isNull() && !focus_object.isNull() &&
+        anchor_offset >= 0 && focus_offset >= 0) {
+      int32 anchor_id = anchor_object.axID();
+      int32 focus_id = focus_object.axID();
+      dst->AddIntAttribute(ui::AX_ATTR_ANCHOR_OBJECT_ID, anchor_id);
+      dst->AddIntAttribute(ui::AX_ATTR_ANCHOR_OFFSET, anchor_offset);
+      dst->AddIntAttribute(ui::AX_ATTR_FOCUS_OBJECT_ID, focus_id);
+      dst->AddIntAttribute(ui::AX_ATTR_FOCUS_OFFSET, focus_offset);
+    }
+
     // Get the tree ID for this frame and possibly the parent frame.
     WebLocalFrame* web_frame = document.frame();
     if (web_frame) {

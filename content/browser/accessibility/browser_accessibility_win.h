@@ -766,6 +766,26 @@ BrowserAccessibilityWin
   void IntAttributeToIA2(ui::AXIntAttribute attribute,
                          const char* ia2_attr);
 
+  // Functions that help in retrieving hyperlinks. Return -1 in case of failure.
+  // (Hyperlink is an IA2 misnomer. It refers to objects embedded within other
+  // objects, such as a numbered list within a contenteditable div.)
+  int32 GetHyperlinkIndexFromChild(const BrowserAccessibilityWin& child) const;
+  int32 GetHypertextOffsetFromHyperlinkIndex(int32 hyperlink_index) const;
+  int32 GetHypertextOffsetFromChild(const BrowserAccessibilityWin& child) const;
+  int32 GetHypertextOffsetFromDescendant(
+      const BrowserAccessibilityWin& descendant) const;
+
+  // The following functions retrieve the endpoints of the current selection.
+  // First they checks for a local selection found on the current control, e.g.
+  // when querying the selection on a textarea.
+  // If not found they retrieve the global selection found on the current frame.
+  int GetSelectionAnchor() const;
+  int GetSelectionFocus() const;
+  // Retrieves the selection offsets in the way required by the IA2 APIs.
+  // (Selection_start is always <= selection_end and
+  // selection_end is one past the last character of the selection.)
+  void GetSelectionOffsets(int* selection_start, int* selection_end) const;
+
   // Append the accessible name from this node and its children.
   base::string16 GetNameRecursive() const;
 
@@ -836,9 +856,11 @@ BrowserAccessibilityWin
 
     // Maps the |hypertext_| embedded character offset to an index in
     // |hyperlinks_|.
+    // TODO(nektar): Replace map with vector of offsets.
     std::map<int32, int32> hyperlink_offset_to_index;
 
     // The id of a BrowserAccessibilityWin for each hyperlink.
+    // TODO(nektar): Replace object IDs with child indices.
     std::vector<int32> hyperlinks;
   };
 

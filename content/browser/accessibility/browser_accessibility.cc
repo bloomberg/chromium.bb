@@ -79,7 +79,7 @@ bool BrowserAccessibility::IsNative() const {
 }
 
 bool BrowserAccessibility::IsDescendantOf(
-    BrowserAccessibility* ancestor) {
+    const BrowserAccessibility* ancestor) const {
   if (this == ancestor) {
     return true;
   } else if (GetParent()) {
@@ -621,8 +621,8 @@ bool BrowserAccessibility::IsEditableText() const {
   }
 
   // Note: WebAXStateReadonly being false means it's either a text control,
-  // or contenteditable. We also check for editable text roles to cover
-  // another element that has role=textbox set on it.
+  // or contenteditable. We also check for the text field role to cover
+  // elements that have role=textbox set on it.
   return (!HasState(ui::AX_STATE_READ_ONLY) ||
           GetRole() == ui::AX_ROLE_TEXT_FIELD);
 }

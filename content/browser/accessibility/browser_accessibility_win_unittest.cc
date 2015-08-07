@@ -812,10 +812,9 @@ TEST_F(BrowserAccessibilityTest, TestIA2Attributes) {
 
 /**
  * Ensures that ui::AX_ATTR_TEXT_SEL_START/END attributes are correctly used to
- * determine caret position and text selection in various types of editable
- * elements.
+ * determine caret position and text selection in simple form fields.
  */
-TEST_F(BrowserAccessibilityTest, TestCaretAndTextSelection) {
+TEST_F(BrowserAccessibilityTest, TestCaretAndSelectionInSimpleFields) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
@@ -875,10 +874,10 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndTextSelection) {
   HRESULT hr = combo_box_accessible->get_caretOffset(&caret_offset);;
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1L, caret_offset);
-  // caret_offset should be -1 when the object is not focused.
+  // The caret should be at the start of the selection.
   hr = text_field_accessible->get_caretOffset(&caret_offset);;
-  EXPECT_EQ(S_FALSE, hr);
-  EXPECT_EQ(-1L, caret_offset);
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1L, caret_offset);
 
   // Move the focus to the text field.
   combo_box.state &= ~(1 << ui::AX_STATE_FOCUSED);
@@ -887,7 +886,7 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndTextSelection) {
   ASSERT_EQ(text_field_accessible,
       manager->GetFocus(root_accessible)->ToBrowserAccessibilityWin());
 
-  // The caret should be at the start of the selection.
+  // The caret should not have moved.
   hr = text_field_accessible->get_caretOffset(&caret_offset);;
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1L, caret_offset);
@@ -912,6 +911,253 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndTextSelection) {
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1L, selection_start);
   EXPECT_EQ(2L, selection_end);
+
+  manager.reset();
+  ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
+}
+
+TEST_F(BrowserAccessibilityTest, DISABLED_TestCaretInContentEditables) {
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.state = (1 << ui::AX_STATE_READ_ONLY) | (1 << ui::AX_STATE_FOCUSABLE);
+
+  ui::AXNodeData div_editable;
+  div_editable.id = 2;
+  div_editable.role = ui::AX_ROLE_DIV;
+  div_editable.state = (1 << ui::AX_STATE_FOCUSABLE);
+
+  ui::AXNodeData text;
+  text.id = 3;
+  text.role = ui::AX_ROLE_STATIC_TEXT;
+  text.SetName("Click ");
+
+  ui::AXNodeData link;
+  link.id = 4;
+  link.role = ui::AX_ROLE_LINK;
+  link.state = (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_LINKED);
+  link.SetName("here");
+
+  ui::AXNodeData link_text;
+  link_text.id = 5;
+  link_text.role = ui::AX_ROLE_STATIC_TEXT;
+  link_text.state = (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_LINKED);
+  link_text.SetName("here");
+
+  // Place the caret between 'h' and 'e'.
+  root.AddIntAttribute(ui::AX_ATTR_ANCHOR_OBJECT_ID, 4);
+  root.AddIntAttribute(ui::AX_ATTR_ANCHOR_OFFSET, 1);
+  root.AddIntAttribute(ui::AX_ATTR_FOCUS_OBJECT_ID, 4);
+  root.AddIntAttribute(ui::AX_ATTR_FOCUS_OFFSET, 1);
+
+  root.child_ids.push_back(2);
+  div_editable.child_ids.push_back(3);
+  div_editable.child_ids.push_back(4);
+  link.child_ids.push_back(5);
+
+  CountedBrowserAccessibility::reset();
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, div_editable, link, link_text, text),
+          nullptr, new CountedBrowserAccessibilityFactory()));
+  ASSERT_EQ(5, CountedBrowserAccessibility::num_instances());
+
+  ASSERT_NE(nullptr, manager->GetRoot());
+  BrowserAccessibilityWin* root_accessible =
+      manager->GetRoot()->ToBrowserAccessibilityWin();
+      ASSERT_NE(nullptr, root_accessible);
+  ASSERT_EQ(1, root_accessible->PlatformChildCount());
+
+  BrowserAccessibilityWin* div_editable_accessible =
+      root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, div_editable_accessible);
+  ASSERT_EQ(2, div_editable_accessible->PlatformChildCount());
+
+  // -2 is never a valid offset.
+  LONG caret_offset = -2;
+
+  // The caret should be on the embedded object character.
+  HRESULT hr = div_editable_accessible->get_caretOffset(&caret_offset);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(6L, caret_offset);
+
+  // Move the focus to the content editable.
+  div_editable.state |= 1 << ui::AX_STATE_FOCUSED;
+  manager->SetFocus(div_editable_accessible, false /* notify */);
+  ASSERT_EQ(div_editable_accessible,
+      manager->GetFocus(root_accessible)->ToBrowserAccessibilityWin());
+
+  BrowserAccessibilityWin* text_accessible =
+      div_editable_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, text_accessible);
+  BrowserAccessibilityWin* link_accessible =
+      div_editable_accessible->PlatformGetChild(1)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, link_accessible);
+  ASSERT_EQ(1, link_accessible->PlatformChildCount());
+
+  BrowserAccessibilityWin* link_text_accessible =
+      link_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, link_text_accessible);
+
+  // The caret should not have moved.
+  hr = div_editable_accessible->get_caretOffset(&caret_offset);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(6L, caret_offset);
+
+  hr = link_accessible->get_caretOffset(&caret_offset);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1L, caret_offset);
+  hr = link_text_accessible->get_caretOffset(&caret_offset);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1L, caret_offset);
+
+  manager.reset();
+  ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
+}
+
+TEST_F(BrowserAccessibilityTest, DISABLED_TestSelectionInContentEditables) {
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.state = (1 << ui::AX_STATE_READ_ONLY) | (1 << ui::AX_STATE_FOCUSABLE);
+
+  ui::AXNodeData div_editable;
+  div_editable.id = 2;
+  div_editable.role = ui::AX_ROLE_DIV;
+  div_editable.state = (1 << ui::AX_STATE_FOCUSABLE);
+
+  ui::AXNodeData text;
+  text.id = 3;
+  text.role = ui::AX_ROLE_STATIC_TEXT;
+  text.SetName("Click ");
+
+  ui::AXNodeData link;
+  link.id = 4;
+  link.role = ui::AX_ROLE_LINK;
+  link.state = (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_LINKED);
+  link.SetName("here");
+
+  ui::AXNodeData link_text;
+  link_text.id = 5;
+  link_text.role = ui::AX_ROLE_STATIC_TEXT;
+  link_text.state = (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_LINKED);
+  link_text.SetName("here");
+
+  // Select the part of the text "lick here".
+  root.AddIntAttribute(ui::AX_ATTR_ANCHOR_OBJECT_ID, 3);
+  root.AddIntAttribute(ui::AX_ATTR_ANCHOR_OFFSET, 1);
+  root.AddIntAttribute(ui::AX_ATTR_FOCUS_OBJECT_ID, 5);
+  root.AddIntAttribute(ui::AX_ATTR_FOCUS_OFFSET, 4);
+
+  root.child_ids.push_back(2);
+  div_editable.child_ids.push_back(3);
+  div_editable.child_ids.push_back(4);
+  link.child_ids.push_back(5);
+
+  CountedBrowserAccessibility::reset();
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, div_editable, link, link_text, text),
+          nullptr, new CountedBrowserAccessibilityFactory()));
+  ASSERT_EQ(5, CountedBrowserAccessibility::num_instances());
+
+  ASSERT_NE(nullptr, manager->GetRoot());
+  BrowserAccessibilityWin* root_accessible =
+      manager->GetRoot()->ToBrowserAccessibilityWin();
+      ASSERT_NE(nullptr, root_accessible);
+  ASSERT_EQ(1, root_accessible->PlatformChildCount());
+
+  BrowserAccessibilityWin* div_editable_accessible =
+      root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, div_editable_accessible);
+  ASSERT_EQ(2, div_editable_accessible->PlatformChildCount());
+
+  // -2 is never a valid offset.
+  LONG caret_offset = -2;
+  LONG n_selections = -2;
+  LONG selection_start = -2;
+  LONG selection_end = -2;
+
+  BrowserAccessibilityWin* text_accessible =
+      div_editable_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, text_accessible);
+  BrowserAccessibilityWin* link_accessible =
+      div_editable_accessible->PlatformGetChild(1)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, link_accessible);
+  ASSERT_EQ(1, link_accessible->PlatformChildCount());
+
+  BrowserAccessibilityWin* link_text_accessible =
+      link_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, link_text_accessible);
+
+  // get_nSelections should work on all objects.
+  HRESULT hr = div_editable_accessible->get_nSelections(&n_selections);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1L, n_selections);
+  hr = text_accessible->get_nSelections(&n_selections);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1L, n_selections);
+  hr = link_accessible->get_nSelections(&n_selections);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1L, n_selections);
+  hr = link_text_accessible->get_nSelections(&n_selections);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1L, n_selections);
+
+  // get_selection should be unaffected by focus placement.
+  hr = div_editable_accessible->get_selection(
+      0L /* selection_index */, &selection_start, &selection_end);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1L, selection_start);
+  // selection_end should be after embedded object character.
+  EXPECT_EQ(7L, selection_end);
+
+  hr = text_accessible->get_selection(
+      0L /* selection_index */, &selection_start, &selection_end);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1L, selection_start);
+  // No embedded character on this object, only the first part of the text.
+  EXPECT_EQ(6L, selection_end);
+  hr = link_accessible->get_selection(
+      0L /* selection_index */, &selection_start, &selection_end);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(0L, selection_start);
+  EXPECT_EQ(4L, selection_end);
+  hr = link_text_accessible->get_selection(
+      0L /* selection_index */, &selection_start, &selection_end);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(0L, selection_start);
+  EXPECT_EQ(4L, selection_end);
+
+  // The caret should be at the anchor (the start) of the selection.
+  hr = div_editable_accessible->get_caretOffset(&caret_offset);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1L, caret_offset);
+
+  // Move the focus to the content editable.
+  div_editable.state |= 1 << ui::AX_STATE_FOCUSED;
+  manager->SetFocus(div_editable_accessible, false /* notify */);
+  ASSERT_EQ(div_editable_accessible,
+      manager->GetFocus(root_accessible)->ToBrowserAccessibilityWin());
+
+  // The caret should not have moved.
+  hr = div_editable_accessible->get_caretOffset(&caret_offset);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1L, caret_offset);
+
+  // The HRESULT should be S_FALSE if the caret is not in the given object.
+  hr = link_accessible->get_caretOffset(&caret_offset);;
+  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(-1L, caret_offset);
+  hr = link_text_accessible->get_caretOffset(&caret_offset);;
+  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(-1L, caret_offset);
+
+  hr = div_editable_accessible->get_selection(
+      0L /* selection_index */, &selection_start, &selection_end);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1L, selection_start);
+  EXPECT_EQ(7L, selection_end);
 
   manager.reset();
   ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());

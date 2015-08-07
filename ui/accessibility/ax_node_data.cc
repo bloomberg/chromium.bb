@@ -330,6 +330,18 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_HIERARCHICAL_LEVEL:
         result += " level=" + value;
         break;
+      case AX_ATTR_ANCHOR_OBJECT_ID:
+        result += " anchor_object_id=" + value;
+        break;
+      case AX_ATTR_ANCHOR_OFFSET:
+        result += " anchor_offset=" + value;
+        break;
+      case AX_ATTR_FOCUS_OBJECT_ID:
+        result += " focus_object_id=" + value;
+        break;
+      case AX_ATTR_FOCUS_OFFSET:
+        result += " focus_offset=" + value;
+        break;
       case AX_ATTR_TEXT_SEL_START:
         result += " sel_start=" + value;
         break;

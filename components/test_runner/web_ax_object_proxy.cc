@@ -492,6 +492,14 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetProperty("maxValue", &WebAXObjectProxy::MaxValue)
       .SetProperty("valueDescription", &WebAXObjectProxy::ValueDescription)
       .SetProperty("childrenCount", &WebAXObjectProxy::ChildrenCount)
+      .SetProperty("selectionAnchorObject",
+                   &WebAXObjectProxy::SelectionAnchorObject)
+      .SetProperty("selectionAnchorOffset",
+                   &WebAXObjectProxy::SelectionAnchorOffset)
+      .SetProperty("selectionFocusObject",
+                   &WebAXObjectProxy::SelectionFocusObject)
+      .SetProperty("selectionFocusOffset",
+                   &WebAXObjectProxy::SelectionFocusOffset)
       .SetProperty("selectionStart", &WebAXObjectProxy::SelectionStart)
       .SetProperty("selectionEnd", &WebAXObjectProxy::SelectionEnd)
       .SetProperty("selectionStartLineNumber",
@@ -731,6 +739,66 @@ int WebAXObjectProxy::ChildrenCount() {
   if (!IsRoot())
     count = accessibility_object_.childCount();
   return count;
+}
+
+v8::Local<v8::Value> WebAXObjectProxy::SelectionAnchorObject() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+
+  blink::WebAXObject anchorObject;
+  int anchorOffset = -1;
+  blink::WebAXObject focusObject;
+  int focusOffset = -1;
+  accessibility_object_.selection(anchorObject, anchorOffset,
+                                  focusObject, focusOffset);
+  if (anchorObject.isNull())
+    return v8::Null(blink::mainThreadIsolate());
+
+  return factory_->GetOrCreate(anchorObject);
+}
+
+int WebAXObjectProxy::SelectionAnchorOffset() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+
+  blink::WebAXObject anchorObject;
+  int anchorOffset = -1;
+  blink::WebAXObject focusObject;
+  int focusOffset = -1;
+  accessibility_object_.selection(anchorObject, anchorOffset,
+                                  focusObject, focusOffset);
+  if (anchorOffset < 0)
+    return -1;
+
+  return anchorOffset;
+}
+
+v8::Local<v8::Value> WebAXObjectProxy::SelectionFocusObject() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+
+  blink::WebAXObject anchorObject;
+  int anchorOffset = -1;
+  blink::WebAXObject focusObject;
+  int focusOffset = -1;
+  accessibility_object_.selection(anchorObject, anchorOffset,
+                                  focusObject, focusOffset);
+  if (focusObject.isNull())
+    return v8::Null(blink::mainThreadIsolate());
+
+  return factory_->GetOrCreate(focusObject);
+}
+
+int WebAXObjectProxy::SelectionFocusOffset() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+
+  blink::WebAXObject anchorObject;
+  int anchorOffset = -1;
+  blink::WebAXObject focusObject;
+  int focusOffset = -1;
+  accessibility_object_.selection(anchorObject, anchorOffset,
+                                  focusObject, focusOffset);
+  if (focusOffset < 0)
+    return -1;
+
+  return focusOffset;
 }
 
 int WebAXObjectProxy::SelectionStart() {

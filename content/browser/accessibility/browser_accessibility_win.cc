@@ -7,6 +7,8 @@
 #include <UIAutomationClient.h>
 #include <UIAutomationCoreApi.h>
 
+#include <algorithm>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -2004,19 +2006,11 @@ STDMETHODIMP BrowserAccessibilityWin::get_caretOffset(LONG* offset) {
   if (!offset)
     return E_INVALIDARG;
 
-  // IA2 spec says that caret offset should be -1 if the object is not focused.
-  if (manager()->GetFocus(this) != this) {
-    *offset = -1;
+  int selection_start, selection_end;
+  GetSelectionOffsets(&selection_start, &selection_end);
+  *offset = selection_start;
+  if (selection_start < 0)
     return S_FALSE;
-  }
-
-  *offset = 0;
-  if (IsEditableText()) {
-    int sel_start = 0;
-    if (GetIntAttribute(ui::AX_ATTR_TEXT_SEL_START,
-                        &sel_start))
-      *offset = sel_start;
-  }
 
   return S_OK;
 }
@@ -2066,15 +2060,11 @@ STDMETHODIMP BrowserAccessibilityWin::get_nSelections(LONG* n_selections) {
     return E_INVALIDARG;
 
   *n_selections = 0;
-  if (IsEditableText()) {
-    int sel_start = 0;
-    int sel_end = 0;
-    if (GetIntAttribute(ui::AX_ATTR_TEXT_SEL_START,
-                        &sel_start) &&
-        GetIntAttribute(ui::AX_ATTR_TEXT_SEL_END, &sel_end) &&
-        sel_start != sel_end)
-      *n_selections = 1;
-  }
+  int selection_start, selection_end;
+  GetSelectionOffsets(&selection_start, &selection_end);
+  if (selection_start >= 0 && selection_end >= 0 &&
+      selection_start != selection_end)
+    *n_selections = 1;
 
   return S_OK;
 }
@@ -2094,15 +2084,11 @@ STDMETHODIMP BrowserAccessibilityWin::get_selection(LONG selection_index,
 
   *start_offset = 0;
   *end_offset = 0;
-  if (IsEditableText()) {
-    int sel_start = 0;
-    int sel_end = 0;
-    if (GetIntAttribute(
-            ui::AX_ATTR_TEXT_SEL_START, &sel_start) &&
-        GetIntAttribute(ui::AX_ATTR_TEXT_SEL_END, &sel_end)) {
-      *start_offset = sel_start;
-      *end_offset = sel_end;
-    }
+  int selection_start, selection_end;
+  GetSelectionOffsets(&selection_start, &selection_end);
+  if (selection_start >= 0 && selection_end >= 0) {
+    *start_offset = selection_start;
+    *end_offset = selection_end;
   }
 
   return S_OK;
@@ -3651,6 +3637,122 @@ void BrowserAccessibilityWin::IntAttributeToIA2(
         base::ASCIIToUTF16(ia2_attr) + L":" +
         base::IntToString16(value));
   }
+}
+
+int32 BrowserAccessibilityWin::GetHyperlinkIndexFromChild(
+    const BrowserAccessibilityWin& child) const {
+  auto iterator = std::find(
+      hyperlinks().begin(), hyperlinks().end(), child.GetId());
+  if (iterator == hyperlinks().end())
+    return -1;
+
+  return static_cast<int32>(iterator - hyperlinks().begin());
+}
+
+int32 BrowserAccessibilityWin::GetHypertextOffsetFromHyperlinkIndex(
+    int32 hyperlink_index) const {
+  auto& offsets_map = hyperlink_offset_to_index();
+  for (auto& offset_index : offsets_map) {
+    if (offset_index.second == hyperlink_index)
+      return offset_index.first;
+  }
+
+  return -1;
+}
+
+int32 BrowserAccessibilityWin::GetHypertextOffsetFromChild(
+    const BrowserAccessibilityWin& child) const {
+  int32 hyperlink_index = GetHyperlinkIndexFromChild(child);
+  if (hyperlink_index < 0)
+    return -1;
+
+  return GetHypertextOffsetFromHyperlinkIndex(hyperlink_index);
+}
+
+int32 BrowserAccessibilityWin::GetHypertextOffsetFromDescendant(
+    const BrowserAccessibilityWin& descendant) const {
+  auto parent_object = descendant.GetParent()->ToBrowserAccessibilityWin();
+  auto current_object = const_cast<BrowserAccessibilityWin*>(&descendant);
+  while (parent_object && parent_object != this) {
+    current_object = parent_object;
+    parent_object = current_object->GetParent()->ToBrowserAccessibilityWin();
+  }
+  if (!parent_object)
+    return -1;
+
+  return parent_object->GetHypertextOffsetFromChild(*current_object);
+}
+
+int BrowserAccessibilityWin::GetSelectionAnchor() const {
+  BrowserAccessibility* root = manager()->GetRoot();
+  int32 anchor_id;
+  if (!root || !root->GetIntAttribute(ui::AX_ATTR_ANCHOR_OBJECT_ID, &anchor_id))
+    return -1;
+
+  BrowserAccessibilityWin* anchor_object = manager()->GetFromID(
+      anchor_id)->ToBrowserAccessibilityWin();
+  if (!anchor_object)
+    return -1;
+
+  if (anchor_object->IsDescendantOf(this))
+    return GetHypertextOffsetFromDescendant(*anchor_object);
+
+  if (IsDescendantOf(anchor_object)) {
+    int anchor_offset;
+    if (!root->GetIntAttribute(ui::AX_ATTR_ANCHOR_OFFSET, &anchor_offset))
+      return -1;
+
+    return anchor_offset;
+  }
+
+  return -1;
+}
+
+int BrowserAccessibilityWin::GetSelectionFocus() const {
+  BrowserAccessibility* root = manager()->GetRoot();
+  int32 focus_id;
+  if (!root || !root->GetIntAttribute(ui::AX_ATTR_FOCUS_OBJECT_ID, &focus_id))
+    return -1;
+
+  BrowserAccessibilityWin* focus_object = manager()->GetFromID(
+      focus_id)->ToBrowserAccessibilityWin();
+  if (!focus_object)
+    return -1;
+
+  if (focus_object->IsDescendantOf(this))
+    return GetHypertextOffsetFromDescendant(*focus_object);
+
+  if (IsDescendantOf(focus_object)) {
+    int focus_offset;
+    if (!root->GetIntAttribute(ui::AX_ATTR_FOCUS_OFFSET, &focus_offset))
+      return -1;
+
+    return focus_offset;
+  }
+
+  return -1;
+}
+
+void BrowserAccessibilityWin::GetSelectionOffsets(
+    int* selection_start, int* selection_end) const {
+  DCHECK(selection_start && selection_end);
+
+  if (GetIntAttribute(ui::AX_ATTR_TEXT_SEL_START, selection_start) &&
+      GetIntAttribute(ui::AX_ATTR_TEXT_SEL_END, selection_end)) {
+    return;
+  }
+
+  *selection_start = GetSelectionAnchor();
+  *selection_end = GetSelectionFocus();
+  if (*selection_start < 0 || *selection_end < 0)
+    return;
+
+  if (*selection_end < *selection_start)
+    std::swap(*selection_start, *selection_end);
+
+  // IA2 Spec says that the end of the selection should be after the last
+  // embedded object character that is part of the selection.
+  ++(*selection_end);
 }
 
 base::string16 BrowserAccessibilityWin::GetNameRecursive() const {
