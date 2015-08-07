@@ -35,7 +35,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/gpu_memory_buffer.h"
 
 class GrContext;
 
@@ -47,6 +46,7 @@ class GLES2Interface;
 }
 
 namespace gfx {
+class GpuMemoryBuffer;
 class Rect;
 class Vector2d;
 }
@@ -87,7 +87,8 @@ class CC_EXPORT ResourceProvider
       BlockingTaskRunner* blocking_main_thread_task_runner,
       int highp_threshold_min,
       bool use_rgba_4444_texture_format,
-      size_t id_allocation_chunk_size);
+      size_t id_allocation_chunk_size,
+      bool use_persistent_map_for_gpu_memory_buffers);
   ~ResourceProvider() override;
 
   void DidLoseOutputSurface() { lost_output_surface_ = true; }
@@ -102,8 +103,8 @@ class CC_EXPORT ResourceProvider
   }
   ResourceFormat yuv_resource_format() const { return yuv_resource_format_; }
   bool use_sync_query() const { return use_sync_query_; }
-  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager() {
-    return gpu_memory_buffer_manager_;
+  bool use_persistent_map_for_gpu_memory_buffers() const {
+    return use_persistent_map_for_gpu_memory_buffers_;
   }
   size_t num_resources() const { return resources_.size(); }
 
@@ -425,7 +426,14 @@ class CC_EXPORT ResourceProvider
   // Indicates if we can currently lock this resource for write.
   bool CanLockForWrite(ResourceId id);
 
+  // Copy |rect| pixels from source to destination.
+  void CopyResource(ResourceId source_id,
+                    ResourceId dest_id,
+                    const gfx::Rect& rect);
+
   void WaitSyncPointIfNeeded(ResourceId id);
+
+  void WaitReadLockIfNeeded(ResourceId id);
 
   static GLint GetActiveTextureUnit(gpu::gles2::GLES2Interface* gl);
 
@@ -444,7 +452,8 @@ class CC_EXPORT ResourceProvider
                    BlockingTaskRunner* blocking_main_thread_task_runner,
                    int highp_threshold_min,
                    bool use_rgba_4444_texture_format,
-                   size_t id_allocation_chunk_size);
+                   size_t id_allocation_chunk_size,
+                   bool use_persistent_map_for_gpu_memory_buffers);
   void Initialize();
 
  private:
@@ -599,6 +608,9 @@ class CC_EXPORT ResourceProvider
   scoped_ptr<IdAllocator> buffer_id_allocator_;
 
   bool use_sync_query_;
+  bool use_persistent_map_for_gpu_memory_buffers_;
+  // Fence used for CopyResource if CHROMIUM_sync_query is not supported.
+  scoped_refptr<SynchronousFence> synchronous_fence_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceProvider);
 };

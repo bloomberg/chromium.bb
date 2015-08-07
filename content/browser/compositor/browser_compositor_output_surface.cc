@@ -17,16 +17,14 @@ namespace content {
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     const scoped_refptr<cc::ContextProvider>& context_provider,
-    const scoped_refptr<cc::ContextProvider>& worker_context_provider,
     const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
     scoped_ptr<BrowserCompositorOverlayCandidateValidator>
         overlay_candidate_validator)
-    : OutputSurface(context_provider, worker_context_provider),
+    : OutputSurface(context_provider),
       vsync_manager_(vsync_manager),
       reflector_(nullptr),
-      use_begin_frame_scheduling_(
-          base::CommandLine::ForCurrentProcess()
-              ->HasSwitch(cc::switches::kEnableBeginFrameScheduling)) {
+      use_begin_frame_scheduling_(base::CommandLine::ForCurrentProcess()->
+          HasSwitch(cc::switches::kEnableBeginFrameScheduling)) {
   overlay_candidate_validator_ = overlay_candidate_validator.Pass();
   Initialize();
 }

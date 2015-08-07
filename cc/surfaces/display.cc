@@ -101,10 +101,13 @@ void Display::InitializeRenderer() {
   if (resource_provider_)
     return;
 
+  // Display does not use GpuMemoryBuffers, so persistent map is not relevant.
+  bool use_persistent_map_for_gpu_memory_buffers = false;
   scoped_ptr<ResourceProvider> resource_provider = ResourceProvider::Create(
       output_surface_.get(), bitmap_manager_, gpu_memory_buffer_manager_,
       nullptr, settings_.highp_threshold_min, settings_.use_rgba_4444_textures,
-      settings_.texture_id_allocation_chunk_size);
+      settings_.texture_id_allocation_chunk_size,
+      use_persistent_map_for_gpu_memory_buffers);
   if (!resource_provider)
     return;
 

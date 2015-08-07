@@ -494,7 +494,7 @@ void TileManager::AssignGpuMemoryToTiles(
   // or deleted. If this operation becomes expensive too, only do this after
   // some resource(s) was returned. Note that in that case, one also need to
   // invalidate when releasing some resource from the pool.
-  resource_pool_->CheckBusyResources();
+  resource_pool_->CheckBusyResources(false);
 
   // Now give memory out to the tiles until we're out, and build
   // the needs-to-be-rasterized queue.
