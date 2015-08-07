@@ -24,9 +24,6 @@ class CHROMEOS_EXPORT TestAttemptState : public AuthAttemptState {
   // Act as though an online login attempt completed already.
   void PresetOnlineLoginStatus(const AuthFailure& outcome);
 
-  // The next attempt will not allow HOSTED accounts to log in.
-  void DisableHosted();
-
   // Act as though an cryptohome login attempt completed already.
   void PresetCryptohomeStatus(bool cryptohome_outcome,
                               cryptohome::MountError cryptohome_code);
@@ -35,7 +32,6 @@ class CHROMEOS_EXPORT TestAttemptState : public AuthAttemptState {
   bool online_complete() override;
   const AuthFailure& online_outcome() override;
   bool is_first_time_user() override;
-  GaiaAuthFetcher::HostedAccountsSetting hosted_policy() override;
   bool cryptohome_complete() override;
   bool cryptohome_outcome() override;
   cryptohome::MountError cryptohome_code() override;

@@ -24,10 +24,6 @@ void TestAttemptState::PresetOnlineLoginStatus(const AuthFailure& outcome) {
   online_outcome_ = outcome;
 }
 
-void TestAttemptState::DisableHosted() {
-  hosted_policy_ = GaiaAuthFetcher::HostedAccountsNotAllowed;
-}
-
 void TestAttemptState::PresetCryptohomeStatus(
     bool cryptohome_outcome,
     cryptohome::MountError cryptohome_code) {
@@ -46,10 +42,6 @@ const AuthFailure& TestAttemptState::online_outcome() {
 
 bool TestAttemptState::is_first_time_user() {
   return is_first_time_user_;
-}
-
-GaiaAuthFetcher::HostedAccountsSetting TestAttemptState::hosted_policy() {
-  return hosted_policy_;
 }
 
 bool TestAttemptState::cryptohome_complete() {

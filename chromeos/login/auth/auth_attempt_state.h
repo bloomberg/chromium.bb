@@ -12,7 +12,6 @@
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
-#include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -47,9 +46,6 @@ class CHROMEOS_EXPORT AuthAttemptState
   // requests (Mount/GetUsernameHash) are completed.
   void UsernameHashRequested();
 
-  // The next attempt will not allow HOSTED accounts to log in.
-  void DisableHosted();
-
   // Copy |cryptohome_code| and |cryptohome_outcome| into this object,
   // so we can have a copy we're sure to own, and can make available
   // on the UI thread.  Must be called from the UI thread.
@@ -63,7 +59,6 @@ class CHROMEOS_EXPORT AuthAttemptState
   virtual bool online_complete();
   virtual const AuthFailure& online_outcome();
   virtual bool is_first_time_user();
-  virtual GaiaAuthFetcher::HostedAccountsSetting hosted_policy();
 
   virtual bool cryptohome_complete();
   virtual bool cryptohome_outcome();
@@ -87,9 +82,6 @@ class CHROMEOS_EXPORT AuthAttemptState
   bool online_complete_;
   AuthFailure online_outcome_;
 
-  // Whether or not we're accepting HOSTED accounts during the current
-  // online auth attempt.
-  GaiaAuthFetcher::HostedAccountsSetting hosted_policy_;
   bool is_first_time_user_;
 
   // Status of our cryptohome op attempt. Can only have one in flight at a time.

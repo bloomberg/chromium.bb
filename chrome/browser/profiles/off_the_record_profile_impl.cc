@@ -143,14 +143,6 @@ void OffTheRecordProfileImpl::Init() {
          IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
              IncognitoModePrefs::DISABLED);
 
-  // TODO(oshima): Remove the need to eagerly initialize the request context
-  // getter. chromeos::OnlineAttempt is illegally trying to access this
-  // Profile member from a thread other than the UI thread, so we need to
-  // prevent a race.
-#if defined(OS_CHROMEOS)
-  GetRequestContext();
-#endif  // defined(OS_CHROMEOS)
-
   TrackZoomLevelsFromParent();
 
 #if defined(ENABLE_PLUGINS)

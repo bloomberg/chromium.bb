@@ -17,7 +17,6 @@ AuthAttemptState::AuthAttemptState(const UserContext& user_context,
       online_complete_(online_complete),
       online_outcome_(online_complete ? AuthFailure::UNLOCK_FAILED
                                       : AuthFailure::NONE),
-      hosted_policy_(GaiaAuthFetcher::HostedAccountsAllowed),
       is_first_time_user_(user_is_new),
       cryptohome_complete_(false),
       cryptohome_outcome_(false),
@@ -32,13 +31,6 @@ AuthAttemptState::~AuthAttemptState() {
 void AuthAttemptState::RecordOnlineLoginStatus(const AuthFailure& outcome) {
   online_complete_ = true;
   online_outcome_ = outcome;
-  // We're either going to not try again, or try again with HOSTED
-  // accounts not allowed, so just set this here.
-  DisableHosted();
-}
-
-void AuthAttemptState::DisableHosted() {
-  hosted_policy_ = GaiaAuthFetcher::HostedAccountsNotAllowed;
 }
 
 void AuthAttemptState::RecordCryptohomeStatus(
@@ -80,10 +72,6 @@ const AuthFailure& AuthAttemptState::online_outcome() {
 
 bool AuthAttemptState::is_first_time_user() {
   return is_first_time_user_;
-}
-
-GaiaAuthFetcher::HostedAccountsSetting AuthAttemptState::hosted_policy() {
-  return hosted_policy_;
 }
 
 bool AuthAttemptState::cryptohome_complete() {
