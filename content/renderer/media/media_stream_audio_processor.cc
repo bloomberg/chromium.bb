@@ -211,10 +211,12 @@ class MediaStreamAudioFifo {
     }
 
     if (fifo_) {
+      CHECK_LT(fifo_->frames(), destination_->bus()->frames());
       next_audio_delay_ = audio_delay +
           fifo_->frames() * base::TimeDelta::FromSeconds(1) / sample_rate_;
       fifo_->Push(source_to_push);
     } else {
+      CHECK(!data_available_);
       source_to_push->CopyTo(destination_->bus());
       next_audio_delay_ = audio_delay;
       data_available_ = true;
