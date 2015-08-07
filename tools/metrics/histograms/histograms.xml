@@ -12947,6 +12947,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.ANGLE.Buffer11CPUMemoryMB" units="MB">
+  <owner>cwallez@chromium.org</owner>
+  <summary>
+     The sum of the size of the CPU-side memory allocations of Buffer11's copies
+    (vs. GPU memory allocations). These allocations are used when modifying the
+    buffer data on the CPU or when transfering to GPU memory via DMA.
+  </summary>
+</histogram>
+
 <histogram name="GPU.ANGLE.D3D11CreateDeviceError" enum="D3DHresult">
   <owner>jmadill@chromium.org</owner>
   <summary>
