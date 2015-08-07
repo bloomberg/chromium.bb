@@ -92,8 +92,7 @@ public class DeferredStartupHandler {
                     BookmarkThumbnailWidgetProviderBase.refreshAllWidgets(application);
 
                     // Initialize whether or not precaching is enabled.
-                    PrecacheLauncher.updatePrecachingEnabled(
-                            PrivacyPreferencesManager.getInstance(application), application);
+                    PrecacheLauncher.updatePrecachingEnabled(application);
 
                     return null;
                 } finally {

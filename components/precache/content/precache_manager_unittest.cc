@@ -121,6 +121,15 @@ class TestPrecacheCompletionCallback {
   bool was_on_done_called_;
 };
 
+class PrecacheManagerUnderTest : public PrecacheManager {
+ public:
+  PrecacheManagerUnderTest(content::BrowserContext* browser_context,
+                           const sync_driver::SyncService* const sync_service)
+      : PrecacheManager(browser_context, sync_service) {}
+  bool ShouldRun() const override { return true; }
+  bool WouldRun() const override { return true; }
+};
+
 class PrecacheManagerTest : public testing::Test {
  public:
   PrecacheManagerTest()
@@ -147,7 +156,7 @@ class PrecacheManagerTest : public testing::Test {
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   content::TestBrowserContext browser_context_;
-  PrecacheManager precache_manager_;
+  PrecacheManagerUnderTest precache_manager_;
   TestURLFetcherCallback url_callback_;
   net::FakeURLFetcherFactory factory_;
   TestPrecacheCompletionCallback precache_callback_;

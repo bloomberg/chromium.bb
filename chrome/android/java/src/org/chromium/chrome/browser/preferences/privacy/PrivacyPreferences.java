@@ -195,14 +195,12 @@ public class PrivacyPreferences extends PreferenceFragment
         } else if (PREF_NETWORK_PREDICTIONS.equals(key)) {
             PrefServiceBridge.getInstance().setNetworkPredictionOptions(
                     NetworkPredictionOptions.stringToEnum((String) newValue));
-            PrecacheLauncher.updatePrecachingEnabled(
-                    PrivacyPreferencesManager.getInstance(getActivity()), getActivity());
+            PrecacheLauncher.updatePrecachingEnabled(getActivity());
         } else if (PREF_NETWORK_PREDICTIONS_NO_CELLULAR.equals(key)) {
             PrefServiceBridge.getInstance().setNetworkPredictionOptions((boolean) newValue
                     ? NetworkPredictionOptions.NETWORK_PREDICTION_ALWAYS
                     : NetworkPredictionOptions.NETWORK_PREDICTION_NEVER);
-            PrecacheLauncher.updatePrecachingEnabled(
-                    PrivacyPreferencesManager.getInstance(getActivity()), getActivity());
+            PrecacheLauncher.updatePrecachingEnabled(getActivity());
         } else if (PREF_NAVIGATION_ERROR.equals(key)) {
             PrefServiceBridge.getInstance().setResolveNavigationErrorEnabled((boolean) newValue);
         } else if (PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR.equals(key)) {

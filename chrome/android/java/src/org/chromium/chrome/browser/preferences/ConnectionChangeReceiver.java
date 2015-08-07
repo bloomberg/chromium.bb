@@ -11,7 +11,6 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 
 import org.chromium.chrome.browser.precache.PrecacheLauncher;
-import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 
 /**
  * When there is a change in the network connection,this will update the sharedpref value whether
@@ -37,9 +36,7 @@ public class ConnectionChangeReceiver extends BroadcastReceiver {
         // Only handle the action if we're currently registered. If we're not registered as a
         // listener, then we might be paused and native may not be loaded which would crash.
         if (mIsRegistered) {
-            PrecacheLauncher.updatePrecachingEnabled(
-                    PrivacyPreferencesManager.getInstance(context),
-                    context.getApplicationContext());
+            PrecacheLauncher.updatePrecachingEnabled(context.getApplicationContext());
         }
     }
 }

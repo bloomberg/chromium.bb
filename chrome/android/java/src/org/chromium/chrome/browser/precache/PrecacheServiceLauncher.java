@@ -16,6 +16,7 @@ import android.os.PowerManager.WakeLock;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.precache.DeviceState;
@@ -27,7 +28,7 @@ import org.chromium.components.precache.DeviceState;
  * |WAIT_UNTIL_NEXT_PRECACHE_MS| have passed since the last time precaching was done.
  */
 public class PrecacheServiceLauncher extends BroadcastReceiver {
-    private static final String TAG = "PrecacheServiceLauncher";
+    private static final String TAG = "cr.Precache";
 
     @VisibleForTesting
     static final String PREF_IS_PRECACHING_ENABLED = "precache.is_precaching_enabled";
@@ -61,6 +62,7 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
      * @param enabled Whether or not precaching is enabled.
      */
     public static void setIsPrecachingEnabled(Context context, boolean enabled) {
+        Log.v(TAG, "setIsPrecachingEnabled(%s)", enabled);
         Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
         editor.putBoolean(PREF_IS_PRECACHING_ENABLED, enabled);
         editor.apply();
@@ -73,11 +75,15 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
         }
     }
 
+    @VisibleForTesting
+    static boolean isPrecachingEnabled(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean(PREF_IS_PRECACHING_ENABLED, false);
+    }
 
     @Override
     public void onReceive(Context context, Intent intent) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean isPrecachingEnabled = prefs.getBoolean(PREF_IS_PRECACHING_ENABLED, false);
         long lastPrecacheTimeMs = prefs.getLong(PREF_PRECACHE_LAST_TIME, 0L);
         if (lastPrecacheTimeMs > getElapsedRealtimeOnSystem()) {
             // System.elapsedRealtime() counts milliseconds since boot, so if the device has been
@@ -86,7 +92,7 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
         }
 
         // Do nothing if precaching is disabled.
-        if (!isPrecachingEnabled) return;
+        if (!isPrecachingEnabled(context)) return;
 
         boolean isPowerConnected = mDeviceState.isPowerConnected(context);
         boolean isWifiAvailable = mDeviceState.isWifiAvailable(context);

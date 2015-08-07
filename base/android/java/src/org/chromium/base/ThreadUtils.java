@@ -83,6 +83,7 @@ public class ThreadUtils {
      * @param c The Callable to run
      * @return The result of the callable
      */
+    @VisibleForTesting
     public static <T> T runOnUiThreadBlockingNoException(Callable<T> c) {
         try {
             return runOnUiThreadBlocking(c);

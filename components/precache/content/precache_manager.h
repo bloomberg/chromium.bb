@@ -60,12 +60,14 @@ class PrecacheManager : public KeyedService,
                   const sync_driver::SyncService* const sync_service);
   ~PrecacheManager() override;
 
-  // Returns true if precaching is enabled as part of a field trial or by the
-  // command line flag. This method can be called on any thread.
-  static bool IsPrecachingEnabled();
+  // Returns true if precaching is allowed for the browser context based on user
+  // settings, and enabled as part of a field trial or by commandline flag.
+  // Virtual for testing.
+  virtual bool ShouldRun() const;
 
-  // Returns true if precaching is allowed for the browser context.
-  bool IsPrecachingAllowed();
+  // Returns true if precaching is allowed for the browser context based on user
+  // settings. Virtual for testing.
+  virtual bool WouldRun() const;
 
   // Starts precaching resources that the user is predicted to fetch in the
   // future. If precaching is already currently in progress, then this method
@@ -100,6 +102,15 @@ class PrecacheManager : public KeyedService,
 
   // From history::HistoryService::TopHosts.
   void OnHostsReceived(const history::TopHostsList& host_counts);
+
+  // Returns true if precaching is enabled as part of a field trial or by the
+  // command line flag. This has a different meaning from the
+  // "is_precaching_enabled" pref set in PrecacheServiceLauncher. This method
+  // can be called on any thread.
+  static bool IsPrecachingEnabled();
+
+  // Returns true if precaching is allowed for the browser context.
+  bool IsPrecachingAllowed() const;
 
   // The browser context that owns this PrecacheManager.
   content::BrowserContext* const browser_context_;

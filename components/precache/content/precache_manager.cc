@@ -59,6 +59,18 @@ PrecacheManager::PrecacheManager(
 
 PrecacheManager::~PrecacheManager() {}
 
+bool PrecacheManager::ShouldRun() const {
+  // Verify IsPrecachingAllowed() before calling IsPrecachingEnabled(). This is
+  // because field trials are only assigned when requested. This allows us to
+  // create Control and Experiment groups that are limited to users for whom
+  // IsPrecachingAllowed() is true, thus accentuating the impact of precaching.
+  return IsPrecachingAllowed() && IsPrecachingEnabled();
+}
+
+bool PrecacheManager::WouldRun() const {
+  return IsPrecachingAllowed();
+}
+
 // static
 bool PrecacheManager::IsPrecachingEnabled() {
   return base::FieldTrialList::FindFullName(kPrecacheFieldTrialName) ==
@@ -67,7 +79,8 @@ bool PrecacheManager::IsPrecachingEnabled() {
              switches::kEnablePrecache);
 }
 
-bool PrecacheManager::IsPrecachingAllowed() {
+bool PrecacheManager::IsPrecachingAllowed() const {
+  // SyncService delegates to SyncPrefs, which must be called on the UI thread.
   return sync_service_ &&
          sync_service_->GetActiveDataTypes().Has(syncer::SESSIONS) &&
          !sync_service_->GetEncryptedDataTypes().Has(syncer::SESSIONS);
@@ -85,19 +98,23 @@ void PrecacheManager::StartPrecaching(
   }
   is_precaching_ = true;
 
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&PrecacheDatabase::DeleteExpiredPrecacheHistory,
-                 precache_database_, base::Time::Now()));
-
   precache_completion_callback_ = precache_completion_callback;
 
-  // Request NumTopHosts() top hosts. Note that PrecacheFetcher is further bound
-  // by the value of PrecacheConfigurationSettings.top_sites_count, as retrieved
-  // from the server.
-  history_service.TopHosts(
-      NumTopHosts(),
-      base::Bind(&PrecacheManager::OnHostsReceived, AsWeakPtr()));
+  if (ShouldRun()) {
+    BrowserThread::PostTask(
+        BrowserThread::DB, FROM_HERE,
+        base::Bind(&PrecacheDatabase::DeleteExpiredPrecacheHistory,
+                   precache_database_, base::Time::Now()));
+
+    // Request NumTopHosts() top hosts. Note that PrecacheFetcher is further
+    // bound by the value of PrecacheConfigurationSettings.top_sites_count, as
+    // retrieved from the server.
+    history_service.TopHosts(
+        NumTopHosts(),
+        base::Bind(&PrecacheManager::OnHostsReceived, AsWeakPtr()));
+  } else {
+    OnDone();
+  }
 }
 
 void PrecacheManager::CancelPrecaching() {

@@ -65,10 +65,8 @@ void PrecacheLauncher::Start(JNIEnv* env, jobject obj) {
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::IMPLICIT_ACCESS);
 
-  if (precache_manager == nullptr || hs == nullptr ||
-      !precache_manager->IsPrecachingAllowed()) {
-    Java_PrecacheLauncher_onPrecacheCompletedCallback(
-        env, weak_java_precache_launcher_.get(env).obj());
+  if (precache_manager == nullptr || hs == nullptr) {
+    OnPrecacheCompleted();
     return;
   }
 
@@ -95,8 +93,11 @@ static jlong Init(JNIEnv* env, jobject obj) {
   return reinterpret_cast<intptr_t>(new PrecacheLauncher(env, obj));
 }
 
-static jboolean IsPrecachingEnabled(JNIEnv* env, jclass clazz) {
-  return PrecacheManager::IsPrecachingEnabled();
+// Must be run on the UI thread.
+static jboolean ShouldRun(JNIEnv* env, jobject obj) {
+  Profile* profile = GetProfile();
+  PrecacheManager* precache_manager = GetPrecacheManager(profile);
+  return precache_manager && precache_manager->ShouldRun();
 }
 
 bool RegisterPrecacheLauncher(JNIEnv* env) {

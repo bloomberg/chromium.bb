@@ -111,16 +111,14 @@ void RecordPrecacheStatsOnUIThread(const GURL& url,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Profile* profile = reinterpret_cast<Profile*>(profile_id);
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile)) {
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
     return;
-  }
 
   precache::PrecacheManager* precache_manager =
       precache::PrecacheManagerFactory::GetForBrowserContext(profile);
-  if (!precache_manager || !precache_manager->IsPrecachingAllowed()) {
-    // |precache_manager| could be NULL if the profile is off the record.
+  // |precache_manager| could be NULL if the profile is off the record.
+  if (!precache_manager || !precache_manager->WouldRun())
     return;
-  }
 
   precache_manager->RecordStatsForFetch(url, fetch_time, size, was_cached);
 }
@@ -502,7 +500,8 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
     // or missing, as is the case with chunked encoding.
     int64 received_content_length = request->received_response_content_length();
 
-    // Record precache metrics when a fetch is completed successfully.
+    // Record precache metrics when a fetch is completed successfully, if
+    // precaching is allowed.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&RecordPrecacheStatsOnUIThread, request->url(),
