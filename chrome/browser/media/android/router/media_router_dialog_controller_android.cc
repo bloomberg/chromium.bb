@@ -4,9 +4,11 @@
 
 #include "chrome/browser/media/android/router/media_router_dialog_controller_android.h"
 
+#include "base/android/jni_android.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "jni/ChromeMediaRouterDialogController_jni.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(
     media_router::MediaRouterDialogControllerAndroid);
@@ -28,6 +30,19 @@ MediaRouterDialogControllerAndroid::GetOrCreateForWebContents(
 MediaRouterDialogControllerAndroid::MediaRouterDialogControllerAndroid(
     WebContents* web_contents)
     : MediaRouterDialogController(web_contents) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  java_dialog_controller_.Reset(Java_ChromeMediaRouterDialogController_create(
+      env,
+      reinterpret_cast<jlong>(this),
+      base::android::GetApplicationContext()));
+}
+
+// static
+bool MediaRouterDialogControllerAndroid::Register(JNIEnv* env) {
+  bool ret = RegisterNativesImpl(env);
+  // No native calls to register yet.
+  // DCHECK(g_ChromeMediaRouterDialogController_clazz);
+  return ret;
 }
 
 MediaRouterDialogControllerAndroid::~MediaRouterDialogControllerAndroid() {
