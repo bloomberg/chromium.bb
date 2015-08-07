@@ -944,6 +944,9 @@ bool InitializeAccessibilityTreeSearch(
   case ui::AX_ROLE_BANNER:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_BANNER));
+  case ui::AX_ROLE_CHECK_BOX:
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_CHECK_BOX));
   case ui::AX_ROLE_COMPLEMENTARY:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_COMPLEMENTARY));

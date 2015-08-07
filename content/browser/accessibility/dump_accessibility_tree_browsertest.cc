@@ -818,15 +818,13 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputDateTime) {
   RunHtmlTest(FILE_PATH_LITERAL("input-datetime.html"));
 }
 
+// Fails on OS X 10.9 and higher <https://crbug.com/430622>.
+#if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityInputDateTimeLocal) {
-#if defined(OS_MACOSX)
-  // Fails on OS X 10.9 <https://crbug.com/430622>.
-  if (base::mac::IsOSMavericks())
-    return;
-#endif
   RunHtmlTest(FILE_PATH_LITERAL("input-datetime-local.html"));
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputEmail) {
   RunHtmlTest(FILE_PATH_LITERAL("input-email.html"));

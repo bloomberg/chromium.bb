@@ -347,6 +347,9 @@ below:
       <message name="IDS_AX_ROLE_COMPLEMENTARY" desc="accessibility role description for complementary">
         complementary
       </message>
+      <message name="IDS_AX_ROLE_CHECK_BOX" desc="accessibility role description for a check box">
+        checkbox
+      </message>
       <message name="IDS_AX_ROLE_DESCRIPTION_DETAIL" desc="accessibility role description for a definition">
         definition
       </message>
