@@ -928,10 +928,10 @@ HistoryFocusRow.prototype = {
       return element;
 
     // All elements default to another element with the same type.
-    var equivalent = this.getColumn_(element.getAttribute('column-type'));
+    var equivalent = this.getColumn_(element.getAttribute('focus-type'));
 
     if (!equivalent) {
-      switch (element.getAttribute('column-type')) {
+      switch (element.getAttribute('focus-type')) {
         case 'star':
           equivalent = this.getColumn_('title') || this.getColumn_('domain');
           break;
@@ -955,7 +955,7 @@ HistoryFocusRow.prototype = {
    * @private
    */
   getColumn_: function(type) {
-    return this.querySelector('[column-type=' + type + ']');
+    return this.querySelector('[focus-type=' + type + ']');
   },
 
   /**
@@ -967,7 +967,7 @@ HistoryFocusRow.prototype = {
     var element = this.querySelector(query);
     if (element) {
       this.addFocusableElement(element);
-      element.setAttribute('column-type', type);
+      element.setAttribute('focus-type', type);
     }
   },
 };
@@ -1238,7 +1238,7 @@ HistoryView.prototype.onBeforeUnstarred = function(visit) {
 
   // Focus the title or domain when the bookmarked star is removed because the
   // star will no longer be focusable.
-  row.querySelector('[column-type=title], [column-type=domain]').focus();
+  row.querySelector('[focus-type=title], [focus-type=domain]').focus();
 };
 
 /** @param {Visit} visit The visit that was just unstarred. */

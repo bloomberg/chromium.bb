@@ -128,7 +128,7 @@ cr.define('downloads', function() {
         if (controlledByExtension) {
           var link = this.$['controlled-by'].querySelector('a');
           link.href = 'chrome://extensions#' + data.by_ext_id;
-          link.setAttribute('column-type', 'controlled-by');
+          link.setAttribute('focus-type', 'controlled-by');
           link.textContent = data.by_ext_name;
         }
 

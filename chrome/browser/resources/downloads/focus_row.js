@@ -51,8 +51,8 @@ cr.define('downloads', function() {
         return assert(element);
 
       // All elements default to another element with the same type.
-      var columnType = element.getAttribute('column-type');
-      var equivalent = this.querySelector('[column-type=' + columnType + ']');
+      var columnType = element.getAttribute('focus-type');
+      var equivalent = this.querySelector('[focus-type=' + columnType + ']');
 
       if (this.focusableElements.indexOf(equivalent) < 0) {
         equivalent = null;
@@ -60,7 +60,7 @@ cr.define('downloads', function() {
             ['show', 'retry', 'pause', 'resume', 'remove', 'cancel'];
         if (equivalentTypes.indexOf(columnType) != -1) {
           var allTypes = equivalentTypes.map(function(type) {
-            return '[column-type=' + type + ']:not([hidden])';
+            return '[focus-type=' + type + ']:not([hidden])';
           }).join(', ');
           equivalent = this.querySelector(allTypes);
         }
@@ -72,7 +72,7 @@ cr.define('downloads', function() {
 
     /** @private */
     addFocusableElements_: function() {
-      var possiblyFocusableElements = this.querySelectorAll('[column-type]');
+      var possiblyFocusableElements = this.querySelectorAll('[focus-type]');
       for (var i = 0; i < possiblyFocusableElements.length; ++i) {
         var possiblyFocusableElement = possiblyFocusableElements[i];
         if (FocusRow.shouldFocus(possiblyFocusableElement))

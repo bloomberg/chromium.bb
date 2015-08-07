@@ -33,8 +33,8 @@ ExtensionFocusRow.prototype = {
       return element;
 
     // All elements default to another element with the same type.
-    var columnType = element.getAttribute('column-type');
-    var equivalent = this.querySelector('[column-type=' + columnType + ']');
+    var columnType = element.getAttribute('focus-type');
+    var equivalent = this.querySelector('[focus-type=' + columnType + ']');
 
     if (!equivalent || !this.canAddElement_(equivalent)) {
       var actionLinks = ['options', 'website', 'launch', 'localReload'];
@@ -70,7 +70,7 @@ ExtensionFocusRow.prototype = {
   updateFocusableElements: function() {
     this.focusableElements.length = 0;
 
-    var focusableCandidates = this.querySelectorAll('[column-type]');
+    var focusableCandidates = this.querySelectorAll('[focus-type]');
     for (var i = 0; i < focusableCandidates.length; ++i) {
       var element = focusableCandidates[i];
       if (this.canAddElement_(element))
@@ -87,7 +87,7 @@ ExtensionFocusRow.prototype = {
   getFirstFocusableByType_: function(types) {
     for (var i = 0; i < this.focusableElements.length; ++i) {
       var element = this.focusableElements[i];
-      if (types.indexOf(element.getAttribute('column-type')) > -1)
+      if (types.indexOf(element.getAttribute('focus-type')) > -1)
         return element;
     }
     return null;
@@ -96,7 +96,7 @@ ExtensionFocusRow.prototype = {
   /**
    * Setup a typical column in the ExtensionFocusRow. A column can be any
    * element and should have an action when clicked/toggled. This function
-   * adds a listener and a handler for an event. Also adds the "column-type"
+   * adds a listener and a handler for an event. Also adds the "focus-type"
    * attribute to make the element focusable in |updateFocusableElements|.
    * @param {string} query A query to select the element to set up.
    * @param {string} columnType A tag used to identify the column when
@@ -109,7 +109,7 @@ ExtensionFocusRow.prototype = {
   setupColumn: function(query, columnType, eventType, handler) {
     var element = this.querySelector(query);
     element.addEventListener(eventType, handler);
-    element.setAttribute('column-type', columnType);
+    element.setAttribute('focus-type', columnType);
   },
 
   /**
@@ -140,7 +140,7 @@ ExtensionFocusRow.prototype = {
    * @private
    */
   isDeveloperOption_: function(element) {
-    return /^dev-/.test(element.getAttribute('column-type'));
+    return /^dev-/.test(element.getAttribute('focus-type'));
   },
 };
 
@@ -489,7 +489,7 @@ cr.define('extensions', function() {
       for (var i = 0; i < focusRow.focusableElements.length; ++i) {
         var element = focusRow.focusableElements[i];
         var priority =
-            columnTypePriority.indexOf(element.getAttribute('column-type'));
+            columnTypePriority.indexOf(element.getAttribute('focus-type'));
         if (priority > -1 && priority < elementPriority) {
           elementToFocus = element;
           elementPriority = priority;
@@ -591,7 +591,7 @@ cr.define('extensions', function() {
       }.bind(this));
 
       // The 'View in Web Store/View Web Site' link.
-      row.querySelector('.site-link').setAttribute('column-type', 'website');
+      row.querySelector('.site-link').setAttribute('focus-type', 'website');
 
       // The 'Permissions' link.
       row.setupColumn('.permissions-link', 'details', 'click', function(e) {
@@ -658,7 +658,7 @@ cr.define('extensions', function() {
       var trashTemplate = $('template-collection').querySelector('.trash');
       var trash = trashTemplate.cloneNode(true);
       trash.title = loadTimeData.getString('extensionUninstall');
-      trash.setAttribute('column-type', 'trash');
+      trash.setAttribute('focus-type', 'trash');
       trash.addEventListener('click', function(e) {
         trash.classList.add('open');
         trash.classList.toggle('mouse-clicked', e.detail > 0);
@@ -895,7 +895,7 @@ cr.define('extensions', function() {
         indicator.setAttribute('text' + controlledByStr, text);
         indicator.image.setAttribute('aria-label', text);
         controlNode.appendChild(indicator);
-        indicator.querySelector('div').setAttribute('column-type',
+        indicator.querySelector('div').setAttribute('focus-type',
                                                     'enterprise');
       } else if (!needsIndicator && indicator) {
         controlNode.removeChild(indicator);
@@ -1017,7 +1017,7 @@ cr.define('extensions', function() {
 
         var allLinks = item.querySelectorAll('a');
         for (var i = 0; i < allLinks.length; ++i) {
-          allLinks[i].setAttribute('column-type', 'dev-activeViews' + i);
+          allLinks[i].setAttribute('focus-type', 'dev-activeViews' + i);
         }
       });
 
