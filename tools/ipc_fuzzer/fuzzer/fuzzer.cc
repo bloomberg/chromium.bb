@@ -672,7 +672,7 @@ struct FuzzTraits<cc::CompositorFrame> {
     if (!FuzzParam(&p->metadata, fuzzer))
       return false;
 
-    switch (RandInRange(4)) {
+    switch (RandInRange(3)) {
       case 0: {
         p->delegated_frame_data.reset(new cc::DelegatedFrameData());
         if (!FuzzParam(p->delegated_frame_data.get(), fuzzer))
@@ -682,12 +682,6 @@ struct FuzzTraits<cc::CompositorFrame> {
       case 1: {
         p->gl_frame_data.reset(new cc::GLFrameData());
         if (!FuzzParam(p->gl_frame_data.get(), fuzzer))
-          return false;
-        return true;
-      }
-      case 2: {
-        p->software_frame_data.reset(new cc::SoftwareFrameData());
-        if (!FuzzParam(p->software_frame_data.get(), fuzzer))
           return false;
         return true;
       }
@@ -781,21 +775,6 @@ struct FuzzTraits<cc::RenderPassList> {
         return false;
       p->push_back(render_pass.Pass());
     }
-    return true;
-  }
-};
-
-template <>
-struct FuzzTraits<cc::SoftwareFrameData> {
-  static bool Fuzz(cc::SoftwareFrameData* p, Fuzzer* fuzzer) {
-    if (!FuzzParam(&p->id, fuzzer))
-      return false;
-    if (!FuzzParam(&p->size, fuzzer))
-      return false;
-    if (!FuzzParam(&p->damage_rect, fuzzer))
-      return false;
-    if (!FuzzParam(&p->bitmap_id, fuzzer))
-      return false;
     return true;
   }
 };
