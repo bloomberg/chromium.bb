@@ -329,10 +329,7 @@ cr.define('extensions', function() {
      */
     updateDevControlsVisibility_: function(animated) {
       var showDevControls = $('toggle-dev-on').checked;
-      var extensionSettings = $('extension-settings');
-      var didChange =
-          showDevControls != extensionSettings.classList.contains('dev-mode');
-      extensionSettings.classList.toggle('dev-mode', showDevControls);
+      $('extension-settings').classList.toggle('dev-mode', showDevControls);
 
       var devControls = $('dev-controls');
       devControls.classList.toggle('animated', animated);
@@ -348,8 +345,7 @@ cr.define('extensions', function() {
         devControls.style.height = !showDevControls ? '' :
             buttons.offsetHeight + 'px';
 
-        if (didChange)
-          document.dispatchEvent(new Event('devControlsVisibilityUpdated'));
+        document.dispatchEvent(new Event('devControlsVisibilityUpdated'));
       }.bind(this));
     },
 

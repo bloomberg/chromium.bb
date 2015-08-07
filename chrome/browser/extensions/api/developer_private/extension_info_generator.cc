@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_frame_host.h"
 #include "extensions/browser/extension_error.h"
@@ -404,12 +403,9 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   info->incognito_access.is_active =
       util::IsIncognitoEnabled(extension.id(), browser_context_);
 
-  // Install warnings, but only if unpacked, the error console isn't enabled
-  // (otherwise it shows these), and we're in developer mode (normal users don't
-  // need to see these).
+  // Install warnings (only if unpacked and no error console).
   if (!error_console_enabled &&
-      Manifest::IsUnpackedLocation(extension.location()) &&
-      profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode)) {
+      Manifest::IsUnpackedLocation(extension.location())) {
     const std::vector<InstallWarning>& install_warnings =
         extension.install_warnings();
     for (const InstallWarning& warning : install_warnings)

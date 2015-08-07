@@ -9,7 +9,6 @@
 
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
@@ -121,9 +120,6 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
   void ExtensionWarningsChanged(
       const ExtensionIdSet& affected_extensions) override;
 
-  // Handles a profile preferance change.
-  void OnProfilePrefChanged();
-
   // Broadcasts an event to all listeners.
   void BroadcastItemStateChanged(api::developer_private::EventType event_type,
                                  const std::string& id);
@@ -163,8 +159,6 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
   // update. In particular, we want to avoid entering a loop, which could happen
   // when, e.g., the Apps Developer Tool throws an error.
   std::set<std::string> extension_ids_;
-
-  PrefChangeRegistrar pref_change_registrar_;
 
   base::WeakPtrFactory<DeveloperPrivateEventRouter> weak_factory_;
 
