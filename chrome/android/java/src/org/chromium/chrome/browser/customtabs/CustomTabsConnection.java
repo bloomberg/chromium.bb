@@ -53,11 +53,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Implementation of the ICustomTabsConnectionService interface.
+ *
+ * Note: This class is meant to be package private, and is public to be
+ * accessible from {@link ChromeApplication}.
  */
-class CustomTabsConnection extends ICustomTabsService.Stub {
+public class CustomTabsConnection extends ICustomTabsService.Stub {
     private static final String TAG = "cr.ChromeConnection";
 
     // Values for the "CustomTabs.PredictionStatus" UMA histogram. Append-only.
@@ -66,8 +70,8 @@ class CustomTabsConnection extends ICustomTabsService.Stub {
     private static final int BAD_PREDICTION = 2;
     private static final int PREDICTION_STATUS_COUNT = 3;
 
-    private static final Object sConstructionLock = new Object();
-    private static CustomTabsConnection sInstance;
+    private static AtomicReference<CustomTabsConnection> sInstance =
+            new AtomicReference<CustomTabsConnection>();
 
     private static final class PrerenderedUrlParams {
         public final IBinder mSession;
@@ -121,7 +125,7 @@ class CustomTabsConnection extends ICustomTabsService.Stub {
         }
     }
 
-    private final Application mApplication;
+    protected final Application mApplication;
     private final AtomicBoolean mWarmupHasBeenCalled = new AtomicBoolean();
     private ExternalPrerenderHandler mExternalPrerenderHandler;
     private PrerenderedUrlParams mPrerender;
@@ -170,7 +174,12 @@ class CustomTabsConnection extends ICustomTabsService.Stub {
     // mis-behaving application can create a large number of sessions.
     private SparseArray<PredictionStats> mUidToPredictionsStats = new SparseArray<>();
 
-    private CustomTabsConnection(Application application) {
+    /**
+     * <strong>DO NOT CALL</strong>
+     * Public to be instanciable from {@link ChromeApplication}. This is however
+     * intended to be private.
+     */
+    public CustomTabsConnection(Application application) {
         super();
         mApplication = application;
     }
@@ -178,11 +187,13 @@ class CustomTabsConnection extends ICustomTabsService.Stub {
     /**
      * @return The unique instance of ChromeCustomTabsConnection.
      */
+    @SuppressFBWarnings("BC_UNCONFIRMED_CAST")
     public static CustomTabsConnection getInstance(Application application) {
-        synchronized (sConstructionLock) {
-            if (sInstance == null) sInstance = new CustomTabsConnection(application);
+        if (sInstance.get() == null) {
+            ChromeApplication chromeApplication = (ChromeApplication) application;
+            sInstance.compareAndSet(null, chromeApplication.createCustomTabsConnection());
         }
-        return sInstance;
+        return sInstance.get();
     }
 
     @Override
@@ -282,6 +293,11 @@ class CustomTabsConnection extends ICustomTabsService.Stub {
             }
         });
         return true;
+    }
+
+    @Override
+    public Bundle extraCommand(String commandName, Bundle args) {
+        return null;
     }
 
     /**

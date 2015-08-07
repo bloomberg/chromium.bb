@@ -40,6 +40,8 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
             @Override
             public void onNavigationEvent(int navigationEvent, Bundle extras) {}
             @Override
+            public void extraCallback(String callbackName, Bundle args) {}
+            @Override
             public IBinder asBinder() {
                 return this;
             }
