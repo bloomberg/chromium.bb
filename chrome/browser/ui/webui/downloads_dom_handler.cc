@@ -216,8 +216,10 @@ base::DictionaryValue* CreateDownloadItemValue(
       file_value->SetString("progress_status_text",
                             download_model.GetTabProgressStatusText());
 
-      file_value->SetInteger("percent",
-          static_cast<int>(download_item->PercentComplete()));
+      if (download_item->CanResume()) {
+        file_value->SetInteger("percent",
+            static_cast<int>(download_item->PercentComplete()));
+      }
       file_value->SetInteger("received",
           static_cast<int>(download_item->GetReceivedBytes()));
       file_value->SetString("last_reason_text",
