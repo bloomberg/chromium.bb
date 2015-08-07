@@ -49,9 +49,9 @@ bool SyncRollbackManagerBase::InitInternal(
     const base::FilePath& database_location,
     InternalComponentsFactory* internal_components_factory,
     InternalComponentsFactory::StorageOption storage,
-    scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
+    const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
     const base::Closure& report_unrecoverable_error_function) {
-  unrecoverable_error_handler_ = unrecoverable_error_handler.Pass();
+  unrecoverable_error_handler_ = unrecoverable_error_handler;
   report_unrecoverable_error_function_ = report_unrecoverable_error_function;
 
   if (!InitBackupDB(database_location, internal_components_factory, storage)) {
@@ -245,7 +245,7 @@ bool SyncRollbackManagerBase::InitBackupDB(
   share_.directory.reset(
       new syncable::Directory(
           backing_store.release(),
-          unrecoverable_error_handler_.get(),
+          unrecoverable_error_handler_,
           report_unrecoverable_error_function_,
           NULL,
           NULL));

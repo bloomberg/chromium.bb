@@ -335,7 +335,6 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl
 
   ProtocolEventBuffer protocol_event_buffer_;
 
-  scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler_;
   base::Closure report_unrecoverable_error_function_;
 
   // Sync's encryption handler. It tracks the set of encrypted types, manages

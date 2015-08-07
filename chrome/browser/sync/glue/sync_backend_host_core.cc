@@ -69,7 +69,8 @@ DoInitializeOptions::DoInitializeOptions(
     const std::string& restored_key_for_bootstrapping,
     const std::string& restored_keystore_key_for_bootstrapping,
     scoped_ptr<syncer::InternalComponentsFactory> internal_components_factory,
-    scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
+    const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
+        unrecoverable_error_handler,
     const base::Closure& report_unrecoverable_error_function,
     scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state,
     syncer::PassphraseTransitionClearDataOption clear_data_option,
@@ -90,7 +91,7 @@ DoInitializeOptions::DoInitializeOptions(
       restored_keystore_key_for_bootstrapping(
           restored_keystore_key_for_bootstrapping),
       internal_components_factory(internal_components_factory.Pass()),
-      unrecoverable_error_handler(unrecoverable_error_handler.Pass()),
+      unrecoverable_error_handler(unrecoverable_error_handler),
       report_unrecoverable_error_function(report_unrecoverable_error_function),
       saved_nigori_state(saved_nigori_state.Pass()),
       clear_data_option(clear_data_option),
@@ -463,8 +464,7 @@ void SyncBackendHostCore::DoInitialize(
   args.internal_components_factory =
       options->internal_components_factory.Pass();
   args.encryptor = &encryptor_;
-  args.unrecoverable_error_handler =
-      options->unrecoverable_error_handler.Pass();
+  args.unrecoverable_error_handler = options->unrecoverable_error_handler;
   args.report_unrecoverable_error_function =
       options->report_unrecoverable_error_function;
   args.cancelation_signal = &stop_syncing_signal_;

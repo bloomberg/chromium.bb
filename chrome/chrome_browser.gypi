@@ -2862,8 +2862,6 @@
     'chrome_browser_sync_sources': [
       'browser/sync/about_sync_util.cc',
       'browser/sync/about_sync_util.h',
-      'browser/sync/backend_unrecoverable_error_handler.cc',
-      'browser/sync/backend_unrecoverable_error_handler.h',
       'browser/sync/backup_rollback_controller.cc',
       'browser/sync/backup_rollback_controller.h',
       'browser/sync/glue/autofill_data_type_controller.cc',

@@ -115,7 +115,8 @@ class SyncBackendHostNoReturn : public SyncBackendHostMock {
       const syncer::SyncCredentials& credentials,
       bool delete_sync_data_folder,
       scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
-      scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
+      const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
+          unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
       syncer::NetworkResources* network_resources,
       scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state)
@@ -136,7 +137,8 @@ class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
       const syncer::SyncCredentials& credentials,
       bool delete_sync_data_folder,
       scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
-      scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
+      const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
+          unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
       syncer::NetworkResources* network_resources,
       scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state)
@@ -146,7 +148,7 @@ class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
                                     event_handler, service_url, credentials,
                                     delete_sync_data_folder,
                                     sync_manager_factory.Pass(),
-                                    unrecoverable_error_handler.Pass(),
+                                    unrecoverable_error_handler,
                                     report_unrecoverable_error_function,
                                     network_resources,
                                     saved_nigori_state.Pass());

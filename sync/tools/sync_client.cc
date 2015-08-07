@@ -435,7 +435,7 @@ int SyncClientMain(int argc, char* argv[]) {
   args.internal_components_factory.reset(
       new InternalComponentsFactoryImpl(factory_switches));
   args.encryptor = &null_encryptor;
-  args.unrecoverable_error_handler.reset(new LoggingUnrecoverableErrorHandler);
+  args.unrecoverable_error_handler = WeakHandle<UnrecoverableErrorHandler>();
   args.report_unrecoverable_error_function =
       base::Bind(LogUnrecoverableErrorContext);
   args.cancelation_signal = &scm_cancelation_signal;

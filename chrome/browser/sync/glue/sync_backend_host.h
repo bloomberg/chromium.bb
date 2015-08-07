@@ -20,7 +20,6 @@
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
-#include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 
 class GURL;
@@ -32,6 +31,7 @@ class MessageLoop;
 namespace syncer {
 class NetworkResources;
 class SyncManagerFactory;
+class UnrecoverableErrorHandler;
 }
 
 namespace sync_driver {
@@ -57,8 +57,6 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   // Optionally deletes the "Sync Data" folder during init in order to make
   // sure we're starting fresh.
   //
-  // Note: |unrecoverable_error_handler| may be invoked from any thread.
-  //
   // |saved_nigori_state| is optional nigori state to restore from a previous
   // backend instance. May be null.
   virtual void Initialize(
@@ -69,7 +67,8 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
       const syncer::SyncCredentials& credentials,
       bool delete_sync_data_folder,
       scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
-      scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
+      const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
+          unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
       syncer::NetworkResources* network_resources,
       scoped_ptr<syncer::SyncEncryptionHandler::NigoriState>

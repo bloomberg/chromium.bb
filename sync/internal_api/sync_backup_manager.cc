@@ -24,7 +24,7 @@ void SyncBackupManager::Init(InitArgs* args) {
           args->database_location,
           args->internal_components_factory.get(),
           InternalComponentsFactory::STORAGE_ON_DISK_DEFERRED,
-          args->unrecoverable_error_handler.Pass(),
+          args->unrecoverable_error_handler,
           args->report_unrecoverable_error_function)) {
     GetUserShare()->directory->CollectMetaHandleCounts(
         &status_.num_entries_by_type, &status_.num_to_delete_entries_by_type);

@@ -242,7 +242,6 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   database_path_ = args->database_location.Append(
       syncable::Directory::kSyncDatabaseFilename);
-  unrecoverable_error_handler_ = args->unrecoverable_error_handler.Pass();
   report_unrecoverable_error_function_ =
       args->report_unrecoverable_error_function;
 
@@ -267,7 +266,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
   share_.directory.reset(
       new syncable::Directory(
           backing_store.release(),
-          unrecoverable_error_handler_.get(),
+          args->unrecoverable_error_handler,
           report_unrecoverable_error_function_,
           sync_encryption_handler_.get(),
           sync_encryption_handler_->GetCryptographerUnsafe()));

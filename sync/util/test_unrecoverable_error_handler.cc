@@ -8,7 +8,8 @@
 
 namespace syncer {
 
-TestUnrecoverableErrorHandler::TestUnrecoverableErrorHandler() {}
+TestUnrecoverableErrorHandler::TestUnrecoverableErrorHandler()
+    : weak_ptr_factory_(this) {}
 
 TestUnrecoverableErrorHandler::~TestUnrecoverableErrorHandler() {}
 
@@ -17,6 +18,11 @@ void TestUnrecoverableErrorHandler::OnUnrecoverableError(
     const std::string& message) {
   ADD_FAILURE_AT(from_here.file_name(), from_here.line_number())
       << from_here.function_name() << ": " << message;
+}
+
+base::WeakPtr<TestUnrecoverableErrorHandler>
+TestUnrecoverableErrorHandler::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace syncer

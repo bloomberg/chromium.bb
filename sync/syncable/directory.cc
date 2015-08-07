@@ -103,11 +103,12 @@ Directory::Kernel::~Kernel() {
                                        metahandles_map.end());
 }
 
-Directory::Directory(DirectoryBackingStore* store,
-                     UnrecoverableErrorHandler* unrecoverable_error_handler,
-                     const base::Closure& report_unrecoverable_error_function,
-                     NigoriHandler* nigori_handler,
-                     Cryptographer* cryptographer)
+Directory::Directory(
+    DirectoryBackingStore* store,
+    const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
+    const base::Closure& report_unrecoverable_error_function,
+    NigoriHandler* nigori_handler,
+    Cryptographer* cryptographer)
     : kernel_(NULL),
       store_(store),
       unrecoverable_error_handler_(unrecoverable_error_handler),
@@ -116,8 +117,7 @@ Directory::Directory(DirectoryBackingStore* store,
       nigori_handler_(nigori_handler),
       cryptographer_(cryptographer),
       invariant_check_level_(VERIFY_CHANGES),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 Directory::~Directory() {
   Close();
@@ -231,8 +231,9 @@ void Directory::OnUnrecoverableError(const BaseTransaction* trans,
                                      const std::string & message) {
   DCHECK(trans != NULL);
   unrecoverable_error_set_ = true;
-  unrecoverable_error_handler_->OnUnrecoverableError(location,
-                                                     message);
+  unrecoverable_error_handler_.Call(
+      FROM_HERE, &UnrecoverableErrorHandler::OnUnrecoverableError, location,
+      message);
 }
 
 EntryKernel* Directory::GetEntryById(const Id& id) {

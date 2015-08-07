@@ -525,17 +525,12 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
   if (backend_mode_ == SYNC && delete_stale_data)
     ClearStaleErrors();
 
-  scoped_ptr<syncer::UnrecoverableErrorHandler>
-      backend_unrecoverable_error_handler(
-          new browser_sync::BackendUnrecoverableErrorHandler(
-              MakeWeakHandle(weak_factory_.GetWeakPtr())));
-
   backend_->Initialize(this, sync_thread_.Pass(), GetJsEventHandler(),
                        sync_service_url_, credentials, delete_stale_data,
                        scoped_ptr<syncer::SyncManagerFactory>(
                            new syncer::SyncManagerFactory(GetManagerType()))
                            .Pass(),
-                       backend_unrecoverable_error_handler.Pass(),
+                       MakeWeakHandle(weak_factory_.GetWeakPtr()),
                        base::Bind(browser_sync::ChromeReportUnrecoverableError),
                        network_resources_.get(), saved_nigori_state_.Pass());
 }

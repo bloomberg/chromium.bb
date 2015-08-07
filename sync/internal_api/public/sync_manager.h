@@ -30,7 +30,6 @@
 #include "sync/internal_api/public/shutdown_reason.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
-#include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/protocol/sync_protocol_error.h"
 
@@ -54,6 +53,7 @@ class ProtocolEvent;
 class SyncEncryptionHandler;
 class SyncScheduler;
 class TypeDebugInfoObserver;
+class UnrecoverableErrorHandler;
 struct Experiments;
 struct UserShare;
 
@@ -260,7 +260,7 @@ class SYNC_EXPORT SyncManager {
     // Must outlive SyncManager.
     Encryptor* encryptor;
 
-    scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler;
+    WeakHandle<UnrecoverableErrorHandler> unrecoverable_error_handler;
     base::Closure report_unrecoverable_error_function;
 
     // Carries shutdown requests across threads and will be used to cut short

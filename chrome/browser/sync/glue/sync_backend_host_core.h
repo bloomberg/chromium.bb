@@ -39,7 +39,8 @@ struct DoInitializeOptions {
       const std::string& restored_key_for_bootstrapping,
       const std::string& restored_keystore_key_for_bootstrapping,
       scoped_ptr<syncer::InternalComponentsFactory> internal_components_factory,
-      scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
+      const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
+          unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
       scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state,
       syncer::PassphraseTransitionClearDataOption clear_data_option,
@@ -63,7 +64,8 @@ struct DoInitializeOptions {
   std::string restored_key_for_bootstrapping;
   std::string restored_keystore_key_for_bootstrapping;
   scoped_ptr<syncer::InternalComponentsFactory> internal_components_factory;
-  scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler;
+  const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>
+      unrecoverable_error_handler;
   base::Closure report_unrecoverable_error_function;
   scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state;
   const syncer::PassphraseTransitionClearDataOption clear_data_option;

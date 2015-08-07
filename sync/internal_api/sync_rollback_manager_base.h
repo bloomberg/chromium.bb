@@ -100,7 +100,7 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
       const base::FilePath& database_location,
       InternalComponentsFactory* internal_components_factory,
       InternalComponentsFactory::StorageOption storage,
-      scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
+      const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function);
 
   void RegisterDirectoryTypeDebugInfoObserver(
@@ -129,7 +129,7 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
   UserShare share_;
   base::ObserverList<SyncManager::Observer> observers_;
 
-  scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler_;
+  WeakHandle<UnrecoverableErrorHandler> unrecoverable_error_handler_;
   base::Closure report_unrecoverable_error_function_;
 
   scoped_ptr<SyncEncryptionHandler> dummy_handler_;

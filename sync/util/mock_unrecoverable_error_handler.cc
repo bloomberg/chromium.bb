@@ -7,7 +7,8 @@
 namespace syncer {
 
 MockUnrecoverableErrorHandler::MockUnrecoverableErrorHandler()
-    : invocation_count_(0) {
+    : invocation_count_(0),
+      weak_ptr_factory_(this) {
 }
 
 MockUnrecoverableErrorHandler::~MockUnrecoverableErrorHandler() {
@@ -21,6 +22,11 @@ void MockUnrecoverableErrorHandler::OnUnrecoverableError(
 
 int MockUnrecoverableErrorHandler::invocation_count() const {
   return invocation_count_;
+}
+
+base::WeakPtr<MockUnrecoverableErrorHandler>
+MockUnrecoverableErrorHandler::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace syncer

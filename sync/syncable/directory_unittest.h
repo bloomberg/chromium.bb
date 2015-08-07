@@ -88,7 +88,7 @@ class SyncableDirectoryTest : public testing::Test {
   scoped_ptr<Directory>& dir();
   DirectoryChangeDelegate* directory_change_delegate();
   Encryptor* encryptor();
-  UnrecoverableErrorHandler* unrecoverable_error_handler();
+  TestUnrecoverableErrorHandler* unrecoverable_error_handler();
 
  private:
   void ValidateEntry(BaseTransaction* trans,

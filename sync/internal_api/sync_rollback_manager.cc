@@ -27,7 +27,7 @@ void SyncRollbackManager::Init(InitArgs* args) {
           args->database_location,
           args->internal_components_factory.get(),
           InternalComponentsFactory::STORAGE_ON_DISK,
-          args->unrecoverable_error_handler.Pass(),
+          args->unrecoverable_error_handler,
           args->report_unrecoverable_error_function)) {
     change_delegate_ = args->change_delegate;
 

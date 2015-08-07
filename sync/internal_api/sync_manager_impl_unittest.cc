@@ -832,8 +832,7 @@ class SyncManagerTest : public testing::Test,
   };
 
   SyncManagerTest()
-      : sync_manager_("Test sync manager"),
-        mock_unrecoverable_error_handler_(NULL) {
+      : sync_manager_("Test sync manager") {
     switches_.encryption_method =
         InternalComponentsFactory::ENCRYPTION_KEYSTORE;
   }
@@ -883,8 +882,8 @@ class SyncManagerTest : public testing::Test,
     args.invalidator_client_id = "fake_invalidator_client_id";
     args.internal_components_factory.reset(GetFactory());
     args.encryptor = &encryptor_;
-    mock_unrecoverable_error_handler_ = new MockUnrecoverableErrorHandler();
-    args.unrecoverable_error_handler.reset(mock_unrecoverable_error_handler_);
+    args.unrecoverable_error_handler =
+        MakeWeakHandle(mock_unrecoverable_error_handler_.GetWeakPtr());
     args.cancelation_signal = &cancelation_signal_;
     sync_manager_.Init(&args);
 
@@ -1079,9 +1078,7 @@ class SyncManagerTest : public testing::Test,
   }
 
   bool HasUnrecoverableError() {
-    if (mock_unrecoverable_error_handler_)
-      return mock_unrecoverable_error_handler_->invocation_count() > 0;
-    return false;
+    return mock_unrecoverable_error_handler_.invocation_count() > 0;
   }
 
  private:
@@ -1103,9 +1100,7 @@ class SyncManagerTest : public testing::Test,
   StrictMock<SyncEncryptionHandlerObserverMock> encryption_observer_;
   InternalComponentsFactory::Switches switches_;
   InternalComponentsFactory::StorageOption storage_used_;
-
-  // Not owned (ownership is passed to the SyncManager).
-  MockUnrecoverableErrorHandler* mock_unrecoverable_error_handler_;
+  MockUnrecoverableErrorHandler mock_unrecoverable_error_handler_;
 };
 
 TEST_F(SyncManagerTest, GetAllNodesForTypeTest) {

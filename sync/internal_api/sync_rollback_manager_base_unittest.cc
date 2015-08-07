@@ -26,7 +26,7 @@ class SyncTestRollbackManager : public SyncRollbackManagerBase {
         args->database_location,
         args->internal_components_factory.get(),
         InternalComponentsFactory::STORAGE_IN_MEMORY,
-        args->unrecoverable_error_handler.Pass(),
+        args->unrecoverable_error_handler,
         args->report_unrecoverable_error_function);
   }
 };

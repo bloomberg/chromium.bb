@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 
 namespace syncer {
@@ -24,8 +25,12 @@ class MockUnrecoverableErrorHandler : public UnrecoverableErrorHandler {
   // Returns the number of times this handler has been invoked.
   int invocation_count() const;
 
+  base::WeakPtr<MockUnrecoverableErrorHandler> GetWeakPtr();
+
  private:
   int invocation_count_;
+
+  base::WeakPtrFactory<MockUnrecoverableErrorHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockUnrecoverableErrorHandler);
 };

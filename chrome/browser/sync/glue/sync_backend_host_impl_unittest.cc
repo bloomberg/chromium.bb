@@ -218,7 +218,7 @@ class SyncBackendHostTest : public testing::Test {
         credentials_,
         true,
         fake_manager_factory_.Pass(),
-        make_scoped_ptr(new syncer::TestUnrecoverableErrorHandler),
+        MakeWeakHandle(test_unrecoverable_error_handler_.GetWeakPtr()),
         base::Closure(),
         network_resources_.get(),
         saved_nigori_state_.Pass());
@@ -289,6 +289,7 @@ class SyncBackendHostTest : public testing::Test {
   syncer::SyncCredentials credentials_;
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;
+  syncer::TestUnrecoverableErrorHandler test_unrecoverable_error_handler_;
   scoped_ptr<sync_driver::SyncPrefs> sync_prefs_;
   scoped_ptr<SyncBackendHostImpl> backend_;
   scoped_ptr<FakeSyncManagerFactory> fake_manager_factory_;
