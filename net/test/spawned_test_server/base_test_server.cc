@@ -19,6 +19,7 @@
 #include "net/base/port_util.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/test_root_certs.h"
+#include "net/cert/x509_certificate.h"
 #include "net/dns/host_resolver.h"
 #include "net/log/net_log.h"
 #include "url/gurl.h"
@@ -93,6 +94,21 @@ base::StringValue* GetTLSIntoleranceType(
       NOTREACHED();
       return new base::StringValue("");
   }
+}
+
+bool GetLocalCertificatesDir(const base::FilePath& certificates_dir,
+                             base::FilePath* local_certificates_dir) {
+  if (certificates_dir.IsAbsolute()) {
+    *local_certificates_dir = certificates_dir;
+    return true;
+  }
+
+  base::FilePath src_dir;
+  if (!PathService::Get(base::DIR_SOURCE_ROOT, &src_dir))
+    return false;
+
+  *local_certificates_dir = src_dir.Append(certificates_dir);
+  return true;
 }
 
 }  // namespace
@@ -323,16 +339,36 @@ bool BaseTestServer::LoadTestRootCert() const {
     return false;
 
   // Should always use absolute path to load the root certificate.
-  base::FilePath root_certificate_path = certificates_dir_;
-  if (!certificates_dir_.IsAbsolute()) {
-    base::FilePath src_dir;
-    if (!PathService::Get(base::DIR_SOURCE_ROOT, &src_dir))
-      return false;
-    root_certificate_path = src_dir.Append(certificates_dir_);
-  }
+  base::FilePath root_certificate_path;
+  if (!GetLocalCertificatesDir(certificates_dir_, &root_certificate_path))
+    return false;
 
   return root_certs->AddFromFile(
       root_certificate_path.AppendASCII("root_ca_cert.pem"));
+}
+
+scoped_refptr<X509Certificate> BaseTestServer::GetCertificate() const {
+  base::FilePath certificate_path;
+  if (!GetLocalCertificatesDir(certificates_dir_, &certificate_path))
+    return nullptr;
+
+  base::FilePath certificate_file(ssl_options_.GetCertificateFile());
+  if (certificate_file.value().empty())
+    return nullptr;
+
+  certificate_path = certificate_path.Append(certificate_file);
+
+  std::string cert_data;
+  if (!base::ReadFileToString(certificate_path, &cert_data))
+    return nullptr;
+
+  CertificateList certs_in_file =
+      X509Certificate::CreateCertificateListFromBytes(
+          cert_data.data(), cert_data.size(),
+          X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
+  if (certs_in_file.empty())
+    return nullptr;
+  return certs_in_file[0];
 }
 
 void BaseTestServer::Init(const std::string& host) {
