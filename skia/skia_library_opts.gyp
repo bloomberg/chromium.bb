@@ -10,6 +10,7 @@
       'include_dirs': [
         '../third_party/skia/include/core',
         '../third_party/skia/include/effects',
+        '../third_party/skia/include/private',
         '../third_party/skia/include/utils',
         '../third_party/skia/src/core',
         '../third_party/skia/src/opts',
