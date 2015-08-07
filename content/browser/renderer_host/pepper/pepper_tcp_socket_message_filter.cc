@@ -77,7 +77,9 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       ssl_context_helper_(host->ssl_context_helper()),
       pending_accept_(false),
       pending_read_on_unthrottle_(false),
-      pending_read_net_result_(0) {
+      pending_read_net_result_(0),
+      is_potentially_secure_plugin_context_(
+          host->IsPotentiallySecurePluginContext(instance)) {
   DCHECK(host);
   ++g_num_instances;
   host_->AddInstanceObserver(instance_, this);
@@ -110,7 +112,9 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       ssl_context_helper_(host->ssl_context_helper()),
       pending_accept_(false),
       pending_read_on_unthrottle_(false),
-      pending_read_net_result_(0) {
+      pending_read_net_result_(0),
+      is_potentially_secure_plugin_context_(
+          host->IsPotentiallySecurePluginContext(instance)) {
   DCHECK(host);
   DCHECK_NE(version, ppapi::TCP_SOCKET_VERSION_1_0);
 
@@ -1054,7 +1058,7 @@ void PepperTCPSocketMessageFilter::SendConnectReply(
     const PP_NetAddress_Private& local_addr,
     const PP_NetAddress_Private& remote_addr) {
   UMA_HISTOGRAM_BOOLEAN("Pepper.PluginContextSecurity.TCPConnect",
-                        host_->IsPotentiallySecurePluginContext(instance_));
+                        is_potentially_secure_plugin_context_);
 
   ppapi::host::ReplyMessageContext reply_context(context);
   reply_context.params.set_result(pp_result);

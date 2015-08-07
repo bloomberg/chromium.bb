@@ -258,6 +258,8 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   ppapi::host::ReplyMessageContext pending_read_reply_message_context_;
   int pending_read_net_result_;
 
+  const bool is_potentially_secure_plugin_context_;
+
   DISALLOW_COPY_AND_ASSIGN(PepperTCPSocketMessageFilter);
 };
 
