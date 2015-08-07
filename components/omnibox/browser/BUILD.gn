@@ -51,6 +51,8 @@ source_set("browser") {
     "omnibox_edit_controller.h",
     "omnibox_edit_model.cc",
     "omnibox_edit_model.h",
+    "omnibox_event_global_tracker.cc",
+    "omnibox_event_global_tracker.h",
     "omnibox_field_trial.cc",
     "omnibox_field_trial.h",
     "omnibox_log.cc",

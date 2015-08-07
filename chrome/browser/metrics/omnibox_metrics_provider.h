@@ -8,15 +8,13 @@
 #include "base/basictypes.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "components/omnibox/browser/omnibox_event_global_tracker.h"
 
 struct OmniboxLog;
 
 // OmniboxMetricsProvider is responsible for filling out the |omnibox_event|
 // section of the UMA proto.
-class OmniboxMetricsProvider : public metrics::MetricsProvider,
-                               public content::NotificationObserver {
+class OmniboxMetricsProvider : public metrics::MetricsProvider {
  public:
   OmniboxMetricsProvider();
   ~OmniboxMetricsProvider() override;
@@ -28,17 +26,15 @@ class OmniboxMetricsProvider : public metrics::MetricsProvider,
       metrics::ChromeUserMetricsExtension* uma_proto) override;
 
  private:
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // Called when a URL is opened from the Omnibox.
+  void OnURLOpenedFromOmnibox(OmniboxLog* log);
 
   // Records the input text, available choices, and selected entry when the
   // user uses the Omnibox to open a URL.
   void RecordOmniboxOpenedURL(const OmniboxLog& log);
 
-  // Registar for receiving Omnibox event notifications.
-  content::NotificationRegistrar registrar_;
+  // Subscription for receiving Omnibox event callbacks.
+  scoped_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription> subscription_;
 
   // Saved cache of generated Omnibox event protos, to be copied into the UMA
   // proto when ProvideGeneralMetrics() is called.

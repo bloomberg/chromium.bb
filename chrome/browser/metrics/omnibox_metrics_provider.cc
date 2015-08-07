@@ -6,11 +6,11 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
@@ -19,7 +19,6 @@
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/omnibox_log.h"
-#include "content/public/browser/notification_service.h"
 
 using metrics::OmniboxEventProto;
 
@@ -81,12 +80,13 @@ OmniboxMetricsProvider::~OmniboxMetricsProvider() {
 }
 
 void OmniboxMetricsProvider::OnRecordingEnabled() {
-  registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                 content::NotificationService::AllSources());
+  subscription_ = OmniboxEventGlobalTracker::GetInstance()->RegisterCallback(
+      base::Bind(&OmniboxMetricsProvider::OnURLOpenedFromOmnibox,
+                 base::Unretained(this)));
 }
 
 void OmniboxMetricsProvider::OnRecordingDisabled() {
-  registrar_.RemoveAll();
+  subscription_.reset();
 }
 
 void OmniboxMetricsProvider::ProvideGeneralMetrics(
@@ -95,17 +95,12 @@ void OmniboxMetricsProvider::ProvideGeneralMetrics(
       omnibox_events_cache.mutable_omnibox_event());
 }
 
-void OmniboxMetricsProvider::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_OMNIBOX_OPENED_URL, type);
-
+void OmniboxMetricsProvider::OnURLOpenedFromOmnibox(OmniboxLog* log) {
   // We simply don't log events to UMA if there is a single incognito
   // session visible. In the future, it may be worth revisiting this to
   // still log events from non-incognito sessions.
   if (!chrome::IsOffTheRecordSessionActive())
-    RecordOmniboxOpenedURL(*content::Details<OmniboxLog>(details).ptr());
+    RecordOmniboxOpenedURL(*log);
 }
 
 void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {

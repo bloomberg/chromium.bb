@@ -25,6 +25,7 @@
 #include "components/omnibox/browser/keyword_provider.h"
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
+#include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/omnibox_navigation_observer.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
@@ -708,6 +709,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   }
   autocomplete_controller()->AddProvidersInfo(&log.providers_info);
   client_->OnURLOpenedFromOmnibox(&log);
+  OmniboxEventGlobalTracker::GetInstance()->OnURLOpened(&log);
   LOCAL_HISTOGRAM_BOOLEAN("Omnibox.EventCount", true);
   DCHECK(!last_omnibox_focus_.is_null())
       << "An omnibox focus should have occurred before opening a match.";

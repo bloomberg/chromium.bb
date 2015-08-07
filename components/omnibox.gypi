@@ -92,6 +92,8 @@
         'omnibox/browser/omnibox_edit_model.h',
         'omnibox/browser/omnibox_field_trial.cc',
         'omnibox/browser/omnibox_field_trial.h',
+        'omnibox/browser/omnibox_event_global_tracker.cc',
+        'omnibox/browser/omnibox_event_global_tracker.h',
         'omnibox/browser/omnibox_log.cc',
         'omnibox/browser/omnibox_log.h',
         'omnibox/browser/omnibox_navigation_observer.h',

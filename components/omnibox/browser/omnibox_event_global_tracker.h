@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_OMNIBOX_OMNIBOX_EVENT_GLOBAL_TRACKER_H_
-#define IOS_CHROME_BROWSER_OMNIBOX_OMNIBOX_EVENT_GLOBAL_TRACKER_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EVENT_GLOBAL_TRACKER_H_
+#define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EVENT_GLOBAL_TRACKER_H_
 
 #include "base/callback_list.h"
 #include "base/macros.h"
@@ -14,11 +14,12 @@ struct DefaultSingletonTraits;
 
 struct OmniboxLog;
 
-// Omnibox code tracks events on a per-BrowserState basis, but there are
-// several clients who need to observe these events for all BrowserStates.
-// This class serves as an intermediary to bridge the gap: omnibox code calls
-// the OmniboxEventGlobalTracker singleton on an event of interest, and it
-// then forwards the event to its registered observers.
+// Omnibox code tracks events on a per-user-context basis, but there are
+// several clients who need to observe these events for all user contexts
+// (e.g., all Profiles in the //chrome embedder).  This class serves as an
+// intermediary to bridge the gap: omnibox code calls the
+// OmniboxEventGlobalTracker singleton on an event of interest, and it then
+// forwards the event to its registered observers.
 class OmniboxEventGlobalTracker {
  public:
   typedef base::Callback<void(OmniboxLog*)> OnURLOpenedCallback;
@@ -28,7 +29,7 @@ class OmniboxEventGlobalTracker {
 
   // Registers |cb| to be invoked when user open an URL from the omnibox.
   scoped_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
-  RegisterCallback(const OnURLOpenedCallback& cb);
+      RegisterCallback(const OnURLOpenedCallback& cb);
 
   // Called to notify all registered callbacks that an URL was opened from
   // the omnibox.
@@ -45,4 +46,4 @@ class OmniboxEventGlobalTracker {
   DISALLOW_COPY_AND_ASSIGN(OmniboxEventGlobalTracker);
 };
 
-#endif  // IOS_CHROME_BROWSER_OMNIBOX_OMNIBOX_EVENT_GLOBAL_TRACKER_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EVENT_GLOBAL_TRACKER_H_

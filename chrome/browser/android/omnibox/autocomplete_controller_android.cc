@@ -36,6 +36,7 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
+#include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/search_provider.h"
@@ -237,6 +238,7 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
       autocomplete_controller_->result());
   autocomplete_controller_->AddProvidersInfo(&log.providers_info);
 
+  OmniboxEventGlobalTracker::GetInstance()->OnURLOpened(&log);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
       content::Source<Profile>(profile_),
