@@ -307,6 +307,12 @@ class BootstrapStage(PatchChangesStage):
                               reference=site_config_reference_repo)
       git.RunGit(site_config_dir, ['checkout', filter_branch])
 
+      site_config_pool = branch_pool.FilterGitRemoteUrl(self.config_repo)
+      if site_config_pool:
+        site_patch_series = validation_pool.PatchSeries.WorkOnSingleRepo(
+            site_config_dir, filter_branch)
+        self._ApplyPatchSeries(site_patch_series, site_config_pool)
+
     # Re-exec into new instance of cbuildbot, with proper command line args.
     cbuildbot_path = constants.PATH_TO_CBUILDBOT
     if not os.path.exists(os.path.join(self.tempdir, cbuildbot_path)):

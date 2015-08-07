@@ -746,6 +746,12 @@ class GitRepoPatch(PatchQuery):
                                        tracking_branch=tracking_branch,
                                        change_id=change_id,
                                        sha1=sha1, gerrit_number=None)
+
+    # git_remote_url is the url of the remote git repo that this patch
+    # belongs to. Differs from project_url as that may point to a local
+    # repo or a gerrit review repo.
+    self.git_remote_url = '%s/%s' % (
+        site_config.params.GIT_REMOTES.get(remote), project)
     self.project_url = project_url
     self.commit_message = None
     self._subject_line = None
