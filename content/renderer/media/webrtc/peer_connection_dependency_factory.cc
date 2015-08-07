@@ -147,11 +147,6 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
       relay_config.transport_type = turn_configurations[i].transport_type;
       relay_config.secure = turn_configurations[i].secure;
       config.relays.push_back(relay_config);
-
-      // Use turn servers as stun servers.
-      config.stun_servers.insert(rtc::SocketAddress(
-          turn_configurations[i].server.hostname(),
-          turn_configurations[i].server.port()));
     }
     config.enable_multiple_routes = enable_multiple_routes_;
 
