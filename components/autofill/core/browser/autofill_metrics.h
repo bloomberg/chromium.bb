@@ -568,6 +568,11 @@ class AutofillMetrics {
   // were allowed.
   static void LogPasswordFormQueryVolume(PasswordFormQueryVolumeMetric metric);
 
+  // Log how many autofilled fields in a given form were edited before
+  // submission.
+  static void LogNumberOfEditedAutofilledFieldsAtSubmission(
+      size_t num_edited_autofilled_fields);
+
   // Utility to autofill form events in the relevant histograms depending on
   // the presence of server and/or local data.
   class FormEventLogger {

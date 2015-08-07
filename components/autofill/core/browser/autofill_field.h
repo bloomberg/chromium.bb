@@ -37,6 +37,7 @@ class AutofillField : public FormFieldData {
   HtmlFieldMode html_mode() const { return html_mode_; }
   const ServerFieldTypeSet& possible_types() const { return possible_types_; }
   PhonePart phone_part() const { return phone_part_; }
+  bool previously_autofilled() const { return previously_autofilled_; }
 
   // Setters for the detected type and section for this field.
   void set_section(const std::string& section) { section_ = section; }
@@ -46,6 +47,9 @@ class AutofillField : public FormFieldData {
     possible_types_ = possible_types;
   }
   void SetHtmlType(HtmlFieldType type, HtmlFieldMode mode);
+  void set_previously_autofilled(bool previously_autofilled) {
+    previously_autofilled_ = previously_autofilled;
+  }
 
   // This function automatically chooses between server and heuristic autofill
   // type, depending on the data available.
@@ -129,6 +133,9 @@ class AutofillField : public FormFieldData {
   // Used to hold the position of the first digit to be copied as a substring
   // from credit card number.
   size_t credit_card_number_offset_;
+
+  // Whether the field was autofilled then later edited.
+  bool previously_autofilled_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillField);
 };

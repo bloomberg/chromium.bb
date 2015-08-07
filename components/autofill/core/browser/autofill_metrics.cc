@@ -611,10 +611,19 @@ void AutofillMetrics::LogSuggestionAcceptedIndex(int index) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Autofill.SuggestionAcceptedIndex", index);
 }
 
+// static
 void AutofillMetrics::LogPasswordFormQueryVolume(
     PasswordFormQueryVolumeMetric metric) {
   UMA_HISTOGRAM_ENUMERATION("Autofill.PasswordFormQueryVolume", metric,
                             NUM_PASSWORD_FORM_QUERY_VOLUME_METRIC);
+}
+
+// static
+void AutofillMetrics::LogNumberOfEditedAutofilledFieldsAtSubmission(
+    size_t num_edited_autofilled_fields) {
+  UMA_HISTOGRAM_COUNTS_1000(
+      "Autofill.NumberOfEditedAutofilledFieldsAtSubmission",
+      num_edited_autofilled_fields);
 }
 
 AutofillMetrics::FormEventLogger::FormEventLogger(bool is_for_credit_card)

@@ -435,6 +435,7 @@ void AutofillManager::OnTextFieldDidChange(const FormData& form,
 
   if (autofill_field->is_autofilled) {
     autofill_field->is_autofilled = false;
+    autofill_field->set_previously_autofilled(true);
     AutofillMetrics::LogUserHappinessMetric(
         AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD);
 
@@ -1413,6 +1414,8 @@ bool AutofillManager::UpdateCachedForm(const FormData& live_form,
       if (cached_field != cached_fields.end()) {
         field->set_server_type(cached_field->second->server_type());
         field->is_autofilled = cached_field->second->is_autofilled;
+        field->set_previously_autofilled(
+            cached_field->second->previously_autofilled());
       }
     }
 

@@ -2217,6 +2217,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Autofill.NumberOfEditedAutofilledFieldsAtSubmission"
+    units="fields">
+  <owner>mathp@chromium.org</owner>
+  <summary>
+    The number of autofilled fields that were subsequently edited prior to the
+    form being submitted.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.PasswordFormQueryVolume"
     enum="PasswordFormQueryVolume">
   <owner>dvadym@chromium.org</owner>

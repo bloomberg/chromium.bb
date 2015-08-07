@@ -404,7 +404,8 @@ AutofillField::AutofillField()
       html_type_(HTML_TYPE_UNKNOWN),
       html_mode_(HTML_MODE_NONE),
       phone_part_(IGNORED),
-      credit_card_number_offset_(0) {
+      credit_card_number_offset_(0),
+      previously_autofilled_(false) {
 }
 
 AutofillField::AutofillField(const FormFieldData& field,
@@ -416,7 +417,8 @@ AutofillField::AutofillField(const FormFieldData& field,
       html_type_(HTML_TYPE_UNKNOWN),
       html_mode_(HTML_MODE_NONE),
       phone_part_(IGNORED),
-      credit_card_number_offset_(0) {
+      credit_card_number_offset_(0),
+      previously_autofilled_(false) {
 }
 
 AutofillField::~AutofillField() {}
