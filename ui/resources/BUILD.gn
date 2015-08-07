@@ -107,6 +107,7 @@ repack("repack_ui_test_pak") {
   output = "$root_out_dir/ui_test.pak"
 
   deps = [
+    "//third_party/WebKit/public:resources_grit",
     "//ui/resources",
     "//ui/strings",
   ]
@@ -124,8 +125,10 @@ repack("repack_ui_test_pak") {
 
   if (toolkit_views) {
     deps += [ "//ui/views/resources" ]
-    sources +=
-        [ "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak" ]
+    sources += [
+      "$root_gen_dir/blink/public/resources/blink_resources.pak",
+      "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak",
+    ]
   }
 }
 

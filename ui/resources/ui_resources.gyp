@@ -67,6 +67,7 @@
               }],
               ['toolkit_views==1', {
                 'pak_inputs': [
+                  '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/ui/views/resources/views_resources_100_percent.pak',
                 ],
               }],
