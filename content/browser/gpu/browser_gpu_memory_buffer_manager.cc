@@ -20,6 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "ui/gl/gl_switches.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/gpu/gpu_memory_buffer_factory_io_surface.h"
@@ -88,8 +89,23 @@ gfx::GpuMemoryBufferType GetGpuMemoryBufferFactoryType() {
 std::vector<GpuMemoryBufferFactory::Configuration>
 GetSupportedGpuMemoryBufferConfigurations(gfx::GpuMemoryBufferType type) {
   std::vector<GpuMemoryBufferFactory::Configuration> configurations;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNativeGpuMemoryBuffers)) {
+#if defined(OS_MACOSX)
+  bool enable_native_gpu_memory_buffers =
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableNativeGpuMemoryBuffers);
+#else
+  bool enable_native_gpu_memory_buffers =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNativeGpuMemoryBuffers);
+#endif
+
+  // Disable native buffers when using Mesa.
+  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kUseGL) == gfx::kGLImplementationOSMesaName) {
+    enable_native_gpu_memory_buffers = false;
+  }
+
+  if (enable_native_gpu_memory_buffers) {
     const GpuMemoryBufferFactory::Configuration kNativeConfigurations[] = {
         {gfx::BufferFormat::R_8, gfx::BufferUsage::MAP},
         {gfx::BufferFormat::R_8, gfx::BufferUsage::PERSISTENT_MAP},

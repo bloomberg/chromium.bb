@@ -191,6 +191,10 @@ const char kDisableMediaSource[]            = "disable-media-source";
 // Disables usage of the namespace sandbox.
 const char kDisableNamespaceSandbox[]       = "disable-namespace-sandbox";
 
+// Disables native GPU memory buffer support.
+const char kDisableNativeGpuMemoryBuffers[] =
+    "disable-native-gpu-memory-buffers";
+
 // Disables the Web Notification and the Push APIs.
 const char kDisableNotifications[]          = "disable-notifications";
 
