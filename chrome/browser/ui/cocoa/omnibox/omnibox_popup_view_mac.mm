@@ -244,13 +244,21 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   [matrix_ setFrame:matrix_frame];
   [[[matrix_ tableColumns] objectAtIndex:0] setWidth:tableWidth];
 
-  NSRect current_poup_frame = [popup_ frame];
+  // Don't play animation games on first display.
   target_popup_frame_ = popup_frame;
+  if (![popup_ parentWindow]) {
+    DCHECK(![popup_ isVisible]);
+    [popup_ setFrame:popup_frame display:NO];
+    [[field_ window] addChildWindow:popup_ ordered:NSWindowAbove];
+    return;
+  }
+  DCHECK([popup_ isVisible]);
 
   // Animate the frame change if the only change is that the height got smaller.
   // Otherwise, resize immediately.
-  bool animate = (NSHeight(popup_frame) < NSHeight(current_poup_frame) &&
-                  NSWidth(popup_frame) == NSWidth(current_poup_frame));
+  NSRect current_popup_frame = [popup_ frame];
+  bool animate = (NSHeight(popup_frame) < NSHeight(current_popup_frame) &&
+                  NSWidth(popup_frame) == NSWidth(current_popup_frame));
 
   base::scoped_nsobject<NSDictionary> savedAnimations;
   if (!animate) {
@@ -277,9 +285,6 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
     // previously running animations.
     [popup_ setAnimations:savedAnimations];
   }
-
-  if (![popup_ isVisible])
-    [[field_ window] addChildWindow:popup_ ordered:NSWindowAbove];
 }
 
 NSImage* OmniboxPopupViewMac::ImageForMatch(
