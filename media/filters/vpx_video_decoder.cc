@@ -294,10 +294,12 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
   if (config.codec() != kCodecVP8 && config.codec() != kCodecVP9)
     return false;
 
-  // In VP8 videos, only those with alpha are handled by VpxVideoDecoder. All
-  // other VP8 videos go to FFmpegVideoDecoder.
+#if !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
+  // When FFmpegVideoDecoder is available it handles VP8 that doesn't have
+  // alpha, and VpxVideoDecoder will handle VP8 with alpha.
   if (config.codec() == kCodecVP8 && config.format() != PIXEL_FORMAT_YV12A)
     return false;
+#endif
 
   CloseDecoder();
 
