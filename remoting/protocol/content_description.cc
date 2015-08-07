@@ -30,6 +30,7 @@ const char kControlTag[] = "control";
 const char kEventTag[] = "event";
 const char kVideoTag[] = "video";
 const char kAudioTag[] = "audio";
+const char kVp9ExperimentTag[] = "vp9-experiment";
 const char kDeprecatedResolutionTag[] = "initial-resolution";
 
 const char kTransportAttr[] = "transport";
@@ -172,6 +173,11 @@ XmlElement* ContentDescription::ToXml() const {
     root->AddElement(new XmlElement(*authenticator_message_));
   }
 
+  if (config()->vp9_experiment_enabled()) {
+    root->AddElement(
+        new XmlElement(QName(kChromotingXmlNamespace, kVp9ExperimentTag)));
+  }
+
   return root;
 }
 
@@ -223,6 +229,11 @@ scoped_ptr<ContentDescription> ContentDescription::ParseXml(
       !ParseChannelConfigs(element, kAudioTag, true, true,
                            config->mutable_audio_configs())) {
     return nullptr;
+  }
+
+  // Check if VP9 experiment is enabled.
+  if (element->FirstNamed(QName(kChromotingXmlNamespace, kVp9ExperimentTag))) {
+    config->set_vp9_experiment_enabled(true);
   }
 
   scoped_ptr<XmlElement> authenticator_message;

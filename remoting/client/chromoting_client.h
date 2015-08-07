@@ -52,9 +52,9 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
 
   ~ChromotingClient() override;
 
+  void set_protocol_config(scoped_ptr<protocol::CandidateSessionConfig> config);
+
   // Used to set fake/mock objects for tests which use the ChromotingClient.
-  void SetProtocolConfigForTests(
-      scoped_ptr<protocol::CandidateSessionConfig> config);
   void SetConnectionToHostForTests(
       scoped_ptr<protocol::ConnectionToHost> connection_to_host);
 

@@ -1438,7 +1438,7 @@ void HostProcess::StartHost() {
   if (!desktop_environment_factory_->SupportsAudioCapture())
     protocol_config->DisableAudioChannel();
   if (enable_vp9_)
-    protocol_config->EnableVideoCodec(protocol::ChannelConfig::CODEC_VP9);
+    protocol_config->set_vp9_experiment_enabled(true);
   session_manager->set_protocol_config(protocol_config.Pass());
 
   host_.reset(new ChromotingHost(

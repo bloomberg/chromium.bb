@@ -593,6 +593,12 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
     }
   }
 
+  // Read and parse list of experiments.
+  std::string experiments;
+  std::vector<std::string> experiments_list;
+  if (data.GetString("experiments", &experiments))
+    base::SplitString(experiments, ' ', &experiments_list);
+
   VLOG(0) << "Connecting to " << host_jid
           << ". Local jid: " << local_jid << ".";
 
@@ -683,6 +689,14 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
       new protocol::NegotiatingClientAuthenticator(
           client_pairing_id, client_paired_secret, authentication_tag,
           fetch_secret_callback, token_fetcher.Pass(), auth_methods));
+
+  scoped_ptr<protocol::CandidateSessionConfig> config =
+      protocol::CandidateSessionConfig::CreateDefault();
+  if (std::find(experiments_list.begin(), experiments_list.end(), "vp9") !=
+      experiments_list.end()) {
+    config->set_vp9_experiment_enabled(true);
+  }
+  client_->set_protocol_config(config.Pass());
 
   // Kick off the connection.
   client_->Start(signal_strategy_.get(), authenticator.Pass(),

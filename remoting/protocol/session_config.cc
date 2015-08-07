@@ -71,13 +71,23 @@ scoped_ptr<SessionConfig> SessionConfig::SelectCommon(
   if (!client_config->standard_ice())
     return nullptr;
 
+  // If neither host nor the client have VP9 experiment enabled then remove it
+  // from the list of host video configs.
+  std::list<ChannelConfig> host_video_configs = host_config->video_configs();
+  if (!client_config->vp9_experiment_enabled() &&
+      !host_config->vp9_experiment_enabled()) {
+    host_video_configs.remove_if([](const ChannelConfig& config) {
+      return config.codec == ChannelConfig::CODEC_VP9;
+    });
+  }
+
   if (!SelectCommonChannelConfig(host_config->control_configs(),
                                  client_config->control_configs(),
                                  &result->control_config_) ||
       !SelectCommonChannelConfig(host_config->event_configs(),
                                  client_config->event_configs(),
                                  &result->event_config_) ||
-      !SelectCommonChannelConfig(host_config->video_configs(),
+      !SelectCommonChannelConfig(host_video_configs,
                                  client_config->video_configs(),
                                  &result->video_config_) ||
       !SelectCommonChannelConfig(host_config->audio_configs(),
@@ -127,15 +137,12 @@ scoped_ptr<SessionConfig> SessionConfig::ForTest() {
   return result.Pass();
 }
 
-SessionConfig::SessionConfig() {
-}
+SessionConfig::SessionConfig() {}
 
-CandidateSessionConfig::CandidateSessionConfig() { }
-
+CandidateSessionConfig::CandidateSessionConfig() {}
 CandidateSessionConfig::CandidateSessionConfig(
     const CandidateSessionConfig& config) = default;
-
-CandidateSessionConfig::~CandidateSessionConfig() { }
+CandidateSessionConfig::~CandidateSessionConfig() {}
 
 bool CandidateSessionConfig::IsSupported(const SessionConfig& config) const {
   return config.standard_ice() &&
@@ -186,6 +193,10 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
   result->mutable_video_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                     kDefaultStreamVersion,
+                    ChannelConfig::CODEC_VP9));
+  result->mutable_video_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
+                    kDefaultStreamVersion,
                     ChannelConfig::CODEC_VP8));
 
   // Audio channel.
@@ -201,13 +212,6 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
 void CandidateSessionConfig::DisableAudioChannel() {
   mutable_audio_configs()->clear();
   mutable_audio_configs()->push_back(ChannelConfig());
-}
-
-void CandidateSessionConfig::EnableVideoCodec(ChannelConfig::Codec codec) {
-  mutable_video_configs()->push_front(
-      ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
-                    kDefaultStreamVersion,
-                    codec));
 }
 
 }  // namespace protocol

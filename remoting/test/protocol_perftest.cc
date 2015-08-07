@@ -321,10 +321,9 @@ class ProtocolPerfTest
             auth_methods));
     client_.reset(
         new ChromotingClient(client_context_.get(), this, this, nullptr));
-    client_->SetProtocolConfigForTests(protocol_config_->Clone());
-    client_->Start(
-        client_signaling_.get(), client_authenticator.Pass(),
-        client_transport_factory.Pass(), kHostJid, std::string());
+    client_->set_protocol_config(protocol_config_->Clone());
+    client_->Start(client_signaling_.get(), client_authenticator.Pass(),
+                   client_transport_factory.Pass(), kHostJid, std::string());
   }
 
   void FetchPin(

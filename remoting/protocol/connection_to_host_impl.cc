@@ -32,8 +32,7 @@ ConnectionToHostImpl::ConnectionToHostImpl()
       audio_stub_(nullptr),
       signal_strategy_(nullptr),
       state_(INITIALIZING),
-      error_(OK) {
-}
+      error_(OK) {}
 
 ConnectionToHostImpl::~ConnectionToHostImpl() {
   CloseChannels();
@@ -77,13 +76,10 @@ void ConnectionToHostImpl::Connect(
 
   // Initialize default |candidate_config_| if set_candidate_config() wasn't
   // called.
-  if (!candidate_config_) {
+  if (!candidate_config_)
     candidate_config_ = CandidateSessionConfig::CreateDefault();
-    if (!audio_stub_) {
-      candidate_config_->DisableAudioChannel();
-    }
-    candidate_config_->EnableVideoCodec(ChannelConfig::CODEC_VP9);
-  }
+  if (!audio_stub_)
+    candidate_config_->DisableAudioChannel();
 
   signal_strategy_ = signal_strategy;
   event_callback_ = event_callback;
@@ -97,8 +93,8 @@ void ConnectionToHostImpl::Connect(
   signal_strategy_->Connect();
 
   session_manager_.reset(new JingleSessionManager(transport_factory.Pass()));
-  session_manager_->Init(signal_strategy_, this);
   session_manager_->set_protocol_config(candidate_config_->Clone());
+  session_manager_->Init(signal_strategy_, this);
 
   SetState(CONNECTING, OK);
 }
