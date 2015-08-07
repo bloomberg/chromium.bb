@@ -109,8 +109,6 @@
 #include "chrome/browser/ui/webui/copresence_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
-#include "components/proximity_auth/webui/proximity_auth_ui.h"
-#include "components/proximity_auth/webui/url_constants.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -135,6 +133,8 @@
 #include "chrome/browser/ui/webui/chromeos/sim_unlock_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_trace_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_ui.h"
+#include "components/proximity_auth/webui/proximity_auth_ui.h"
+#include "components/proximity_auth/webui/url_constants.h"
 #endif
 
 #if !defined(OS_CHROMEOS)
@@ -216,9 +216,7 @@ template<>
 WebUIController* NewWebUI<chromeos::OobeUI>(WebUI* web_ui, const GURL& url) {
   return new chromeos::OobeUI(web_ui, url);
 }
-#endif
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
 // Special case for chrome://proximity_auth.
 template <>
 WebUIController* NewWebUI<proximity_auth::ProximityAuthUI>(WebUI* web_ui,
@@ -457,6 +455,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::OobeUI>;
   if (url.host() == chrome::kChromeUIPowerHost)
     return &NewWebUI<chromeos::PowerUI>;
+  if (url.host() == proximity_auth::kChromeUIProximityAuthHost)
+    return &NewWebUI<proximity_auth::ProximityAuthUI>;
   if (url.host() == chrome::kChromeUIProxySettingsHost)
     return &NewWebUI<chromeos::ProxySettingsUI>;
   if (url.host() == chrome::kChromeUISalsaHost)
@@ -480,8 +480,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<InlineLoginUI>;
   if (url.SchemeIs(content::kChromeDevToolsScheme))
     return &NewWebUI<DevToolsUI>;
-  if (url.host() == proximity_auth::kChromeUIProximityAuthHost)
-    return &NewWebUI<proximity_auth::ProximityAuthUI>;
   if (url.host() == chrome::kChromeUIWebRTCDeviceProviderHost)
     return &NewWebUI<WebRTCDeviceProvider::WebUI>;
 

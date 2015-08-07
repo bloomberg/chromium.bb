@@ -2873,6 +2873,7 @@
           'sources': [ '<@(chrome_browser_ui_chromeos_sources)' ],
           'dependencies': [
             'browser_chromeos',
+            '../components/components.gyp:proximity_auth_webui',
             '../device/nfc/nfc.gyp:device_nfc',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
@@ -3199,7 +3200,6 @@
         ['OS!="android" and OS!="ios"', {
           'dependencies': [
             '../components/components.gyp:feedback_proto',
-            '../components/components.gyp:proximity_auth_webui',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../third_party/libusb/libusb.gyp:libusb',
           ],
