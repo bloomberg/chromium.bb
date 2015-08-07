@@ -178,6 +178,14 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // enabled.
   virtual uint32_t GetSurfaceIdNamespace();
 
+  // When there are multiple RenderWidgetHostViews for a single page, input
+  // events need to be targeted to the correct one for handling. The following
+  // methods are invoked on the RenderWidgetHostView that should be able to
+  // properly handle the event (i.e. it has focus for keyboard events, or has
+  // been identified by hit testing mouse, touch or gesture events).
+  virtual uint32_t SurfaceIdNamespaceAtPoint(const gfx::Point& point,
+                                             gfx::Point* transformed_point);
+
   //----------------------------------------------------------------------------
   // The following static methods are implemented by each platform.
 

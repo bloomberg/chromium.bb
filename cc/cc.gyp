@@ -607,6 +607,8 @@
         'surfaces/surface_factory.cc',
         'surfaces/surface_factory.h',
         'surfaces/surface_factory_client.h',
+        'surfaces/surface_hittest.cc',
+        'surfaces/surface_hittest.h',
         'surfaces/surface_id.h',
         'surfaces/surface_id_allocator.cc',
         'surfaces/surface_id_allocator.h',

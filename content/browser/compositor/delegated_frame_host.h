@@ -153,6 +153,8 @@ class CONTENT_EXPORT DelegatedFrameHost
   void EndFrameSubscription();
   bool HasFrameSubscriber() const { return frame_subscriber_; }
   uint32_t GetSurfaceIdNamespace();
+  cc::SurfaceId SurfaceIdAtPoint(const gfx::Point& point,
+                                 gfx::Point* transformed_point);
 
   // Exposed for tests.
   cc::DelegatedFrameProvider* FrameProviderForTesting() const {

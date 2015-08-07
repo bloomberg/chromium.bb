@@ -2133,6 +2133,13 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
     event->SetHandled();
 }
 
+uint32_t RenderWidgetHostViewAura::SurfaceIdNamespaceAtPoint(
+    const gfx::Point& point,
+    gfx::Point* transformed_point) {
+  return cc::SurfaceIdAllocator::NamespaceForId(
+      delegated_frame_host_->SurfaceIdAtPoint(point, transformed_point));
+}
+
 void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
   TRACE_EVENT0("input", "RenderWidgetHostViewAura::OnScrollEvent");
   if (touch_editing_client_ && touch_editing_client_->HandleInputEvent(event))

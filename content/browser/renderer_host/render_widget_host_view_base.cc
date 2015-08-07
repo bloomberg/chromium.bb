@@ -701,4 +701,11 @@ uint32_t RenderWidgetHostViewBase::GetSurfaceIdNamespace() {
   return 0;
 }
 
+uint32_t RenderWidgetHostViewBase::SurfaceIdNamespaceAtPoint(
+    const gfx::Point& point,
+    gfx::Point* transformed_point) {
+  NOTREACHED();
+  return 0;
+}
+
 }  // namespace content

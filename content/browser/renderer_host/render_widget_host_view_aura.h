@@ -227,6 +227,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void DidStopFlinging() override;
   void OnDidNavigateMainFrameToNewPage() override;
   uint32_t GetSurfaceIdNamespace() override;
+  uint32_t SurfaceIdNamespaceAtPoint(const gfx::Point& point,
+                                     gfx::Point* transformed_point) override;
 
 #if defined(OS_WIN)
   void SetParentNativeViewAccessible(

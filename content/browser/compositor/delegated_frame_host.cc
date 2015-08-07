@@ -14,8 +14,10 @@
 #include "cc/resources/texture_mailbox.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
+#include "cc/surfaces/surface_hittest.h"
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/compositor/resize_lock.h"
+#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
@@ -201,6 +203,13 @@ uint32_t DelegatedFrameHost::GetSurfaceIdNamespace() {
     return 0;
 
   return id_allocator_->id_namespace();
+}
+
+cc::SurfaceId DelegatedFrameHost::SurfaceIdAtPoint(
+    const gfx::Point& point,
+    gfx::Point* transformed_point) {
+  cc::SurfaceHittest hittest(GetSurfaceManager());
+  return hittest.Hittest(surface_id_, point, transformed_point);
 }
 
 bool DelegatedFrameHost::ShouldSkipFrame(gfx::Size size_in_dip) const {

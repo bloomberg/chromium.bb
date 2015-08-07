@@ -844,6 +844,7 @@ test("cc_unittests") {
     "surfaces/surface_aggregator_test_helpers.cc",
     "surfaces/surface_aggregator_test_helpers.h",
     "surfaces/surface_aggregator_unittest.cc",
+    "surfaces/surface_hittest_unittest.cc",
     "surfaces/surface_unittest.cc",
     "surfaces/surfaces_pixeltest.cc",
 

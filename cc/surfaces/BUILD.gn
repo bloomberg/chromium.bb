@@ -31,6 +31,8 @@ component("surfaces") {
     "surface_factory.cc",
     "surface_factory.h",
     "surface_factory_client.h",
+    "surface_hittest.cc",
+    "surface_hittest.h",
     "surface_id_allocator.cc",
     "surface_id_allocator.h",
     "surface_manager.cc",

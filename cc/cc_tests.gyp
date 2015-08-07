@@ -148,6 +148,7 @@
       'surfaces/surface_aggregator_unittest.cc',
       'surfaces/surface_display_output_surface_unittest.cc',
       'surfaces/surface_factory_unittest.cc',
+      'surfaces/surface_hittest_unittest.cc',
       'surfaces/surface_unittest.cc',
       'surfaces/surfaces_pixeltest.cc',
     ],
