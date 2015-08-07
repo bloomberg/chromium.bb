@@ -98,14 +98,6 @@
 #define DRM_MAJOR 226		/* Linux */
 #endif
 
-/*
- * This definition needs to be changed on some systems if dev_t is a structure.
- * If there is a header file we can get it from, there would be best.
- */
-#ifndef makedev
-#define makedev(x,y)    ((dev_t)(((x) << 8) | (y)))
-#endif
-
 #define DRM_MSG_VERBOSITY 3
 
 #define memclear(s) memset(&s, 0, sizeof(s))
