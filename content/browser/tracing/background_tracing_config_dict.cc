@@ -80,9 +80,9 @@ BackgroundTracingPreemptiveConfig_FromDict(const base::DictionaryValue* dict) {
   if (!dict->GetList(kConfigsKey, &configs_list))
     return nullptr;
 
-  for (auto it = configs_list->begin(); it != configs_list->end(); ++it) {
+  for (const auto& it : *configs_list) {
     const base::DictionaryValue* config_dict = nullptr;
-    if (!(*it)->GetAsDictionary(&config_dict))
+    if (!it->GetAsDictionary(&config_dict))
       return nullptr;
 
     std::string type;
@@ -136,9 +136,9 @@ BackgroundTracingReactiveConfig_FromDict(const base::DictionaryValue* dict) {
   if (!dict->GetList(kConfigsKey, &configs_list))
     return nullptr;
 
-  for (auto it = configs_list->begin(); it != configs_list->end(); ++it) {
+  for (const auto& it : *configs_list) {
     const base::DictionaryValue* config_dict = nullptr;
-    if (!(*it)->GetAsDictionary(&config_dict))
+    if (!it->GetAsDictionary(&config_dict))
       return nullptr;
 
     BackgroundTracingReactiveConfig::TracingRule rule;
@@ -180,26 +180,23 @@ bool BackgroundTracingPreemptiveConfig_IntoDict(
 
   scoped_ptr<base::ListValue> configs_list(new base::ListValue());
 
-  for (size_t i = 0; i < config->configs.size(); ++i) {
+  for (const auto& it : config->configs) {
     scoped_ptr<base::DictionaryValue> config_dict(new base::DictionaryValue());
 
-    if (config->configs[i].type == BackgroundTracingPreemptiveConfig::
-                                       MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED) {
+    if (it.type == BackgroundTracingPreemptiveConfig::
+                       MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED) {
       config_dict->SetString(kConfigRuleKey, kPreemptiveConfigRuleMonitorNamed);
-      config_dict->SetString(
-          kConfigRuleTriggerNameKey,
-          config->configs[i].named_trigger_info.trigger_name.c_str());
-    } else if (config->configs[i].type ==
+      config_dict->SetString(kConfigRuleTriggerNameKey,
+                             it.named_trigger_info.trigger_name.c_str());
+    } else if (it.type ==
                BackgroundTracingPreemptiveConfig::
                    MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE) {
       config_dict->SetString(kConfigRuleKey,
                              kPreemptiveConfigRuleMonitorHistogram);
-      config_dict->SetString(
-          kConfigRuleHistogramNameKey,
-          config->configs[i].histogram_trigger_info.histogram_name.c_str());
-      config_dict->SetInteger(
-          kConfigRuleHistogramValueKey,
-          config->configs[i].histogram_trigger_info.histogram_value);
+      config_dict->SetString(kConfigRuleHistogramNameKey,
+                             it.histogram_trigger_info.histogram_name.c_str());
+      config_dict->SetInteger(kConfigRuleHistogramValueKey,
+                              it.histogram_trigger_info.histogram_value);
     } else {
       continue;
     }
@@ -217,14 +214,13 @@ bool BackgroundTracingReactiveConfig_IntoDict(
     base::DictionaryValue* dict) {
   scoped_ptr<base::ListValue> configs_list(new base::ListValue());
 
-  for (size_t i = 0; i < config->configs.size(); ++i) {
+  for (const auto& it : config->configs) {
     scoped_ptr<base::DictionaryValue> config_dict(new base::DictionaryValue());
 
-    config_dict->SetString(
-        kConfigCategoryKey,
-        CategoryPresetToString(config->configs[i].category_preset));
+    config_dict->SetString(kConfigCategoryKey,
+                           CategoryPresetToString(it.category_preset));
 
-    switch (config->configs[i].type) {
+    switch (it.type) {
       case BackgroundTracingReactiveConfig::TRACE_FOR_10S_OR_TRIGGER_OR_FULL:
         config_dict->SetString(
             kConfigRuleKey,
@@ -235,9 +231,7 @@ bool BackgroundTracingReactiveConfig_IntoDict(
         continue;
     }
 
-    config_dict->SetString(kConfigRuleTriggerNameKey,
-                           config->configs[i].trigger_name.c_str());
-
+    config_dict->SetString(kConfigRuleTriggerNameKey, it.trigger_name.c_str());
     configs_list->Append(config_dict.Pass());
   }
 
