@@ -9533,6 +9533,176 @@
         ],
         "vm_tests": []
     },
+    "lakitu_mobbuild-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "lakitu_mobbuild"
+        ],
+        "chrome_sdk": false,
+        "disk_layout": "base",
+        "important": false,
+        "manifest": "official.xml",
+        "sync_chrome": false,
+        "upload_gce_images": true,
+        "vm_tests": []
+    },
+    "lakitu_mobbuild-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "lakitu_mobbuild"
+        ],
+        "chrome_sdk": false,
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "disk_layout": "base",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "public",
+        "sync_chrome": false,
+        "upload_gce_images": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "lakitu_mobbuild-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "lakitu_mobbuild"
+        ],
+        "disk_layout": "base",
+        "image_test": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "sync_chrome": false,
+        "upload_gce_images": true,
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "lakitu_mobbuild-full": {
+        "_template": "full",
+        "boards": [
+            "lakitu_mobbuild"
+        ],
+        "chrome_sdk": false,
+        "disk_layout": "base",
+        "image_test": false,
+        "prebuilts": "public",
+        "sync_chrome": false,
+        "upload_gce_images": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "lakitu_mobbuild-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "lakitu_mobbuild"
+        ],
+        "disk_layout": "base",
+        "image_test": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "sync_chrome": false,
+        "upload_gce_images": true,
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "lakitu_mobbuild-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "lakitu_mobbuild"
+        ],
+        "chrome_sdk": false,
+        "description": "Commit Queue (internal)",
+        "disk_layout": "base",
+        "image_test": false,
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "sync_chrome": false,
+        "upload_gce_images": true,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "lakitu_mobbuild-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "lakitu_mobbuild"
+        ]
+    },
+    "lakitu_mobbuild-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "lakitu_mobbuild"
+        ],
+        "disk_layout": "base",
+        "image_test": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "sync_chrome": false,
+        "upload_gce_images": true,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "lakitu_mobbuild-release": {
+        "_template": "release",
+        "afdo_use": false,
+        "boards": [
+            "lakitu_mobbuild"
+        ],
+        "chrome_sdk": false,
+        "dev_installer_prebuilts": false,
+        "disk_layout": "base",
+        "hw_tests": [],
+        "hwqual": false,
+        "image_test": false,
+        "sync_chrome": false,
+        "upload_gce_images": true,
+        "vm_tests": []
+    },
+    "lakitu_mobbuild-tot-chrome-pfq-informational": {
+        "_template": "chrome-pfq-informational",
+        "boards": [
+            "lakitu_mobbuild"
+        ],
+        "disk_layout": "base",
+        "manifest": "official.xml",
+        "sync_chrome": false,
+        "upload_gce_images": true,
+        "vm_tests": []
+    },
+    "lakitu_mobbuild-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "lakitu_mobbuild"
+        ],
+        "disk_layout": "base",
+        "sync_chrome": false,
+        "upload_gce_images": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "leon-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [

@@ -406,6 +406,7 @@ _x86_internal_release_boards = frozenset([
     'kip',
     'kunimitsu',
     'lakitu',
+    'lakitu_mobbuild',
     'leon',
     'link',
     'lulu',
@@ -524,6 +525,7 @@ _brillo_boards = frozenset([
     'gizmo',
     'kayle',
     'lakitu',
+    'lakitu_mobbuild',
     'panther_embedded',
     'purin',
     'storm',
@@ -556,11 +558,13 @@ _toolchains_from_source = frozenset([
 
 _noimagetest_boards = frozenset([
     'lakitu',
+    'lakitu_mobbuild',
 ])
 
 _nohwqual_boards = frozenset([
     'kayle',
     'lakitu',
+    'lakitu_mobbuild',
 ])
 
 _norootfs_verification_boards = frozenset([
@@ -568,6 +572,7 @@ _norootfs_verification_boards = frozenset([
 
 _base_layout_boards = frozenset([
     'lakitu',
+    'lakitu_mobbuild',
 ])
 
 _no_unittest_boards = frozenset((
@@ -575,6 +580,7 @@ _no_unittest_boards = frozenset((
 
 _upload_gce_images_boards = frozenset([
     'lakitu',
+    'lakitu_mobbuild',
 ])
 
 _no_vmtest_boards = _arm_boards | _mips_boards | _brillo_boards
