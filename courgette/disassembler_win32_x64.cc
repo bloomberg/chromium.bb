@@ -264,6 +264,8 @@ bool DisassemblerWin32X64::ParseRelocs(std::vector<RVA> *relocs) {
       int offset = entry & 0xFFF;
 
       RVA rva = page_rva + offset;
+      // TODO(sebmarchand): Skip the relocs that live outside of the image. See
+      //   the version of this function in disassembler_win32_x86.cc.
       if (type == 10) {         // IMAGE_REL_BASED_DIR64
         relocs->push_back(rva);
       } else if (type == 0) {  // IMAGE_REL_BASED_ABSOLUTE

@@ -263,6 +263,14 @@ bool DisassemblerWin32X86::ParseRelocs(std::vector<RVA> *relocs) {
       int offset = entry & 0xFFF;
 
       RVA rva = page_rva + offset;
+      // Skip the relocs that live outside of the image. It might be the case
+      // if a reloc is relative to a register, e.g.:
+      //     mov    ecx,dword ptr [eax+044D5888h]
+      uint32 target_address = Read32LittleEndian(RVAToPointer(rva));
+      if (target_address < image_base_ ||
+          target_address > (image_base_ + size_of_image_)) {
+        continue;
+      }
       if (type == 3) {         // IMAGE_REL_BASED_HIGHLOW
         relocs->push_back(rva);
       } else if (type == 0) {  // IMAGE_REL_BASED_ABSOLUTE
