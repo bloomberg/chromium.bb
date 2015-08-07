@@ -1625,8 +1625,9 @@ void FrameView::updateCompositedSelectionIfNeeded()
     ASSERT(page);
 
     CompositedSelection selection;
-    LocalFrame* frame = toLocalFrame(page->focusController().focusedOrMainFrame());
-    if (!frame || !computeCompositedSelection(*frame, selection)) {
+    Frame* focusedFrame = page->focusController().focusedOrMainFrame();
+    LocalFrame* localFrame = focusedFrame->isLocalFrame() ? toLocalFrame(focusedFrame) : nullptr;
+    if (!localFrame || !computeCompositedSelection(*localFrame, selection)) {
         page->chromeClient().clearCompositedSelection();
         return;
     }
