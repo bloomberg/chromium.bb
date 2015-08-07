@@ -109,7 +109,7 @@ class UsbDeviceImpl : public UsbDevice {
   // The current device configuration descriptor. May be null if the device is
   // in an unconfigured state; if not null, it is a pointer to one of the
   // items at UsbDevice::configurations_.
-  const UsbConfigDescriptor* active_configuration_;
+  const UsbConfigDescriptor* active_configuration_ = nullptr;
 
   // Retain the context so that it will not be released before UsbDevice.
   scoped_refptr<UsbContext> context_;

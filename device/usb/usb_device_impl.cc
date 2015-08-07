@@ -260,6 +260,7 @@ void UsbDeviceImpl::ReadAllConfigurations() {
 }
 
 void UsbDeviceImpl::RefreshActiveConfiguration() {
+  active_configuration_ = nullptr;
   libusb_config_descriptor* platform_config;
   int rv =
       libusb_get_active_config_descriptor(platform_device_, &platform_config);
@@ -269,7 +270,6 @@ void UsbDeviceImpl::RefreshActiveConfiguration() {
     return;
   }
 
-  active_configuration_ = nullptr;
   for (const auto& config : configurations_) {
     if (config.configuration_value == platform_config->bConfigurationValue) {
       active_configuration_ = &config;
