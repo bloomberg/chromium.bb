@@ -51,10 +51,11 @@ void CanDownloadOnUIThread(
     scoped_ptr<DownloadResourceThrottle::DownloadRequestInfo> info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_ANDROID)
+  int process_id = info->render_process_id;
+  int render_view_id = info->render_view_id;
   content::DownloadControllerAndroid::Get()->AcquireFileAccessPermission(
-      info->render_process_id, info->render_view_id,
-      base::Bind(&OnAcquireFileAccessPermissionDone,
-                 base::Passed(info.Pass())));
+      process_id, render_view_id, base::Bind(&OnAcquireFileAccessPermissionDone,
+                                             base::Passed(info.Pass())));
 #else
   CanDownload(info.Pass());
 #endif
