@@ -77,6 +77,15 @@ scoped_ptr<base::Value> NetLogQuicPacketRetransmittedCallback(
   return dict.Pass();
 }
 
+scoped_ptr<base::Value> NetLogQuicDuplicatePacketCallback(
+    QuicPacketSequenceNumber sequence_number,
+    NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetString("packet_sequence_number",
+                  base::Uint64ToString(sequence_number));
+  return dict.Pass();
+}
+
 scoped_ptr<base::Value> NetLogQuicPacketHeaderCallback(
     const QuicPacketHeader* header,
     NetLogCaptureMode /* capture_mode */) {
@@ -487,6 +496,9 @@ void QuicConnectionLogger::OnUndecryptablePacket() {
 
 void QuicConnectionLogger::OnDuplicatePacket(
     QuicPacketSequenceNumber sequence_number) {
+  net_log_.AddEvent(
+      NetLog::TYPE_QUIC_SESSION_DUPLICATE_PACKET_RECEIVED,
+      base::Bind(&NetLogQuicDuplicatePacketCallback, sequence_number));
   ++num_duplicate_packets_;
 }
 

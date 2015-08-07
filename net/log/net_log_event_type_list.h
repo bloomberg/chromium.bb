@@ -1465,6 +1465,13 @@ EVENT_TYPE(QUIC_SESSION_PACKET_SENT)
 //   }
 EVENT_TYPE(QUIC_SESSION_PACKET_RETRANSMITTED)
 
+// Session received a QUIC packet with a sequence number that had previously
+// been received.
+//   {
+//     "packet_sequence_number": <The packet's full 64-bit sequence number>
+//   }
+EVENT_TYPE(QUIC_SESSION_DUPLICATE_PACKET_RECEIVED)
+
 // Session received a QUIC packet header for a valid packet.
 //   {
 //     "connection_id": <The 64-bit CONNECTION_ID for this connection, as a
