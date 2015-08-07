@@ -583,9 +583,8 @@ void HttpProtocolHandlerCore::Destruct(const HttpProtocolHandlerCore* x) {
 
 void HttpProtocolHandlerCore::SetLoadFlags() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  int load_flags = LOAD_NORMAL;
 
-  int load_flags = LOAD_VERIFY_EV_CERT;
-  // TODO(droger) Support MAIN_FRAME and SUB_FRAME flags.
   if (![request_ HTTPShouldHandleCookies])
     load_flags |= LOAD_DO_NOT_SEND_COOKIES | LOAD_DO_NOT_SAVE_COOKIES;
 
@@ -625,8 +624,8 @@ void HttpProtocolHandlerCore::SetLoadFlags() {
       case NSURLRequestReloadRevalidatingCacheData:
         load_flags |= LOAD_VALIDATE_CACHE;
         break;
-      default:
-        // For the NSURLRequestUseProtocolCachePolicy case.
+      case NSURLRequestUseProtocolCachePolicy:
+        // Do nothing, normal load.
         break;
     }
   }
