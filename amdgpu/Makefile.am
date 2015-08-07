@@ -52,3 +52,6 @@ libdrm_amdgpuinclude_HEADERS = \
 
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm_amdgpu.pc
+
+TESTS = amdgpu-symbol-check
+EXTRA_DIST = $(TESTS)
