@@ -43,10 +43,6 @@
       ],
       'defines': [
         'LIBGTK2UI_IMPLEMENTATION',
-        # g_settings_list_schemas is deprecated, but this function is not
-        # available on earlier version that we still need to support.
-        # See build/linux/system.gyp:gio for details.
-        'GLIB_DISABLE_DEPRECATION_WARNINGS'
       ],
       # Several of our source files are named _gtk2.cc. This isn't to
       # differentiate them from their source files (ninja and make are sane

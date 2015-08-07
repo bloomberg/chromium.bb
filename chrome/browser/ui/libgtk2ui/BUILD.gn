@@ -61,14 +61,7 @@ component("libgtk2ui") {
       "gconf_listener.h",
     ]
   }
-  defines = [
-    "LIBGTK2UI_IMPLEMENTATION",
-
-    # g_settings_list_schemas is deprecated, but this function is not
-    # available on earlier version that we still need to support.
-    # See build/config/linux/BUILD.gn:gio_config for details.
-    "GLIB_DISABLE_DEPRECATION_WARNINGS",
-  ]
+  defines = [ "LIBGTK2UI_IMPLEMENTATION" ]
 
   configs += [
     "//build/config/linux:gconf",
