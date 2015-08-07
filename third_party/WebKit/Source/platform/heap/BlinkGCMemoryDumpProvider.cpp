@@ -24,6 +24,12 @@ BlinkGCMemoryDumpProvider::~BlinkGCMemoryDumpProvider()
 {
 }
 
+bool BlinkGCMemoryDumpProvider::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, blink::WebProcessMemoryDump* memoryDump)
+{
+    // TODO(ssid): Use levelOfDetail to create light dumps when requested (crbug.com/499731).
+    return onMemoryDump(memoryDump);
+}
+
 bool BlinkGCMemoryDumpProvider::onMemoryDump(blink::WebProcessMemoryDump* memoryDump)
 {
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::TakeSnapshot, Heap::ForcedGC);

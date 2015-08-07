@@ -16,6 +16,7 @@ public:
     ~PartitionAllocMemoryDumpProvider() override;
 
     // WebMemoryDumpProvider implementation.
+    bool onMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*) override;
     bool onMemoryDump(WebProcessMemoryDump*) override;
 
 private:

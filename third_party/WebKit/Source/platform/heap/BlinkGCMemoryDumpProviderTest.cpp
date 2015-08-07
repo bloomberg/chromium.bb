@@ -17,7 +17,7 @@ TEST(BlinkGCDumpProviderTest, MemoryDump)
 {
     WebProcessMemoryDump* dump  = Platform::current()->createProcessMemoryDump();
     ASSERT(dump);
-    BlinkGCMemoryDumpProvider::instance()->onMemoryDump(dump);
+    BlinkGCMemoryDumpProvider::instance()->onMemoryDump(WebMemoryDumpLevelOfDetail::High, dump);
     ASSERT(dump->getMemoryAllocatorDump(String::format("blink_gc/thread_%lu", static_cast<unsigned long>(WTF::currentThread()))));
     ASSERT(dump->getMemoryAllocatorDump(String::format("blink_gc/thread_%lu/allocated_objects", static_cast<unsigned long>(WTF::currentThread()))));
 }
