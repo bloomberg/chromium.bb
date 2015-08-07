@@ -9,6 +9,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Process;
 import android.support.customtabs.ICustomTabsCallback;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -25,6 +26,7 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
         super.setUp();
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
         mCustomTabsConnection = CustomTabsConnection.getInstance((Application) context);
+        mCustomTabsConnection.resetThrottling(Process.myUid());
     }
 
     @Override
@@ -120,7 +122,9 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
     @SmallTest
     public void testMultipleMayLaunchUrl() {
         ICustomTabsCallback cb = assertWarmupAndMayLaunchUrl(null, URL, true);
+        mCustomTabsConnection.resetThrottling(Process.myUid());
         assertWarmupAndMayLaunchUrl(cb, URL, true);
+        mCustomTabsConnection.resetThrottling(Process.myUid());
         assertWarmupAndMayLaunchUrl(cb, URL2, true);
     }
 

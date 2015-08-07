@@ -25,6 +25,7 @@ import android.os.SystemClock;
 import android.support.customtabs.ICustomTabsCallback;
 import android.support.customtabs.ICustomTabsService;
 import android.text.TextUtils;
+import android.util.SparseArray;
 import android.view.WindowManager;
 
 import org.chromium.base.FieldTrialList;
@@ -85,6 +86,41 @@ class CustomTabsConnection extends ICustomTabsService.Stub {
         }
     }
 
+    private static final class PredictionStats {
+        private static final long MIN_DELAY = 100;
+        private static final long MAX_DELAY = 10000;
+        private long mLastRequestTimestamp = -1;
+        private long mDelayMs = MIN_DELAY;
+
+        /**
+         * Updates the prediction stats and return whether prediction is allowed.
+         *
+         * The policy is:
+         * 1. If the client does not wait more than mDelayMs, decline the request.
+         * 2. If the client waits for more than mDelayMs but less than 2*mDelayMs,
+         *    accept the request and double mDelayMs.
+         * 3. If the client waits for more than 2*mDelayMs, accept the request
+         *    and reset mDelayMs.
+         *
+         * And: 100ms <= mDelayMs <= 10s.
+         *
+         * This way, if an application sends a burst of requests, it is quickly
+         * seriously throttled. If it stops being this way, back to normal.
+         */
+        public boolean updateStatsAndReturnIfAllowed() {
+            long now = SystemClock.elapsedRealtime();
+            long deltaMs = now - mLastRequestTimestamp;
+            if (deltaMs < mDelayMs) return false;
+            mLastRequestTimestamp = now;
+            if (deltaMs < 2 * mDelayMs) {
+                mDelayMs = Math.min(MAX_DELAY, mDelayMs * 2);
+            } else {
+                mDelayMs = MIN_DELAY;
+            }
+            return true;
+        }
+    }
+
     private final Application mApplication;
     private final AtomicBoolean mWarmupHasBeenCalled = new AtomicBoolean();
     private ExternalPrerenderHandler mExternalPrerenderHandler;
@@ -130,6 +166,9 @@ class CustomTabsConnection extends ICustomTabsService.Stub {
 
     private final Object mLock = new Object();
     private final Map<IBinder, SessionParams> mSessionParams = new HashMap<>();
+    // Prediction tracking is done by UID and not by session, since a
+    // mis-behaving application can create a large number of sessions.
+    private SparseArray<PredictionStats> mUidToPredictionsStats = new SparseArray<>();
 
     private CustomTabsConnection(Application application) {
         super();
@@ -169,6 +208,9 @@ class CustomTabsConnection extends ICustomTabsService.Stub {
                 return false;
             }
             mSessionParams.put(session, sessionParams);
+            if (mUidToPredictionsStats.get(uid) == null) {
+                mUidToPredictionsStats.put(uid, new PredictionStats());
+            }
         }
         return true;
     }
@@ -223,6 +265,7 @@ class CustomTabsConnection extends ICustomTabsService.Stub {
             SessionParams sessionParams = mSessionParams.get(session);
             if (sessionParams == null || sessionParams.mUid != uid) return false;
             sessionParams.setPredictionMetrics(urlString, SystemClock.elapsedRealtime());
+            if (!mUidToPredictionsStats.get(uid).updateStatsAndReturnIfAllowed()) return false;
         }
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
@@ -260,6 +303,11 @@ class CustomTabsConnection extends ICustomTabsService.Stub {
                 elapsedTimeMs = SystemClock.elapsedRealtime()
                         - sessionParams.getLastMayLaunchUrlTimestamp();
                 sessionParams.setPredictionMetrics(null, 0);
+                if (outcome == GOOD_PREDICTION) {
+                    // If the prediction was correct, back to the smallest
+                    // throttling level.
+                    mUidToPredictionsStats.put(sessionParams.mUid, new PredictionStats());
+                }
             }
         }
         RecordHistogram.recordEnumeratedHistogram(
@@ -517,5 +565,12 @@ class CustomTabsConnection extends ICustomTabsService.Stub {
             // Nothing, this is just a best effort estimate.
         }
         return screenSize;
+    }
+
+    @VisibleForTesting
+    void resetThrottling(int uid) {
+        synchronized (mLock) {
+            mUidToPredictionsStats.put(uid, new PredictionStats());
+        }
     }
 }
