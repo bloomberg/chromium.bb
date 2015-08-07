@@ -332,6 +332,7 @@ test("components_unittests") {
     # These are the deps required by the code in this target.
     "//base",
     "//base/test:test_support",
+    "//components/policy:policy_component",
     "//content/test:test_support",
     "//net",
     "//ui/base",
