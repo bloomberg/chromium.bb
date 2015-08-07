@@ -154,10 +154,15 @@ void ProximityAuthWebUIHandler::RegisterMessages() {
       base::Bind(&ProximityAuthWebUIHandler::ToggleConnection,
                  base::Unretained(this)));
 
-  LogBuffer::GetInstance()->AddObserver(this);
   InitGCMManager();
   InitEnrollmentManager();
   InitDeviceManager();
+
+  // Note: We add the observer for the logs after initializing the managers
+  // because when this function is called, the WebUI's underlying WebContents
+  // has not been initialized, so calling any JavaScript function will crash
+  // Chrome.
+  LogBuffer::GetInstance()->AddObserver(this);
 }
 
 void ProximityAuthWebUIHandler::OnLogMessageAdded(
