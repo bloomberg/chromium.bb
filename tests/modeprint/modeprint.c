@@ -61,6 +61,7 @@ static const char* getConnectionText(drmModeConnection conn)
 		return "connected";
 	case DRM_MODE_DISCONNECTED:
 		return "disconnected";
+	case DRM_MODE_UNKNOWNCONNECTION:
 	default:
 		return "unknown";
 	}
@@ -124,9 +125,6 @@ static int printProperty(int fd, drmModeResPtr res, drmModePropertyPtr props, ui
 		}
 
 	} else {
-		if (!strncmp(props->name, "DPMS", 4))
-			;
-
 		for (j = 0; j < props->count_enums; j++) {
 			printf("\t\t%lld = %s\n", props->enums[j].value, props->enums[j].name);
 			if (props->enums[j].value == value)
