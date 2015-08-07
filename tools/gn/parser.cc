@@ -374,6 +374,11 @@ scoped_ptr<ParseNode> Parser::Not(Token token) {
   scoped_ptr<ParseNode> expr = ParseExpression(PRECEDENCE_PREFIX + 1);
   if (has_error())
     return scoped_ptr<ParseNode>();
+  if (!expr) {
+    if (!has_error())
+      *err_ = Err(token, "Expected right-hand side for '!'.");
+    return scoped_ptr<ParseNode>();
+  }
   scoped_ptr<UnaryOpNode> unary_op(new UnaryOpNode);
   unary_op->set_op(token);
   unary_op->set_operand(expr.Pass());
@@ -393,7 +398,7 @@ scoped_ptr<ParseNode> Parser::BinaryOperator(scoped_ptr<ParseNode> left,
       ParseExpression(expressions_[token.type()].precedence + 1);
   if (!right) {
     if (!has_error()) {
-      *err_ = Err(token, "Expected right hand side for '" +
+      *err_ = Err(token, "Expected right-hand side for '" +
                              token.value().as_string() + "'");
     }
     return scoped_ptr<ParseNode>();
@@ -451,6 +456,11 @@ scoped_ptr<ParseNode> Parser::Assignment(scoped_ptr<ParseNode> left,
     return scoped_ptr<ParseNode>();
   }
   scoped_ptr<ParseNode> value = ParseExpression(PRECEDENCE_ASSIGNMENT);
+  if (!value) {
+    if (!has_error())
+      *err_ = Err(token, "Expected right-hand side for assignment.");
+    return scoped_ptr<ParseNode>();
+  }
   scoped_ptr<BinaryOpNode> assign(new BinaryOpNode);
   assign->set_op(token);
   assign->set_left(left.Pass());

@@ -181,6 +181,9 @@ TEST(Parser, UnaryOp) {
   DoExpressionPrintTest("!foo",
       "UNARY(!)\n"
       " IDENTIFIER(foo)\n");
+
+  // No contents for binary operator.
+  DoExpressionErrorTest("a = !", 1, 5);
 }
 
 TEST(Parser, List) {
@@ -215,6 +218,8 @@ TEST(Parser, Assignment) {
                     " BINARY(=)\n"
                     "  IDENTIFIER(a)\n"
                     "  LITERAL(2)\n");
+
+  DoExpressionErrorTest("a = ", 1, 3);
 }
 
 TEST(Parser, Accessor) {
