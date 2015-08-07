@@ -17,6 +17,10 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace web {
+class WebUIIOS;
+}
+
 namespace ios {
 
 // This class is a Chrome-specific extension of the BrowserState interface.
@@ -27,6 +31,9 @@ class ChromeBrowserState : public web::BrowserState {
   // Returns the ChromeBrowserState corresponding to the given BrowserState.
   static ChromeBrowserState* FromBrowserState(BrowserState* browser_state);
 
+  // Returns the ChromeBrowserState corresponding to the given WebUIIOS.
+  static ChromeBrowserState* FromWebUIIOS(web::WebUIIOS* web_ui);
+
   // Returns sequenced task runner where browser state dependent I/O
   // operations should be performed.
   virtual scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() = 0;
@@ -34,6 +41,12 @@ class ChromeBrowserState : public web::BrowserState {
   // Returns the original "recording" ChromeBrowserState. This method returns
   // |this| if the ChromeBrowserState is not incognito.
   virtual ChromeBrowserState* GetOriginalChromeBrowserState() = 0;
+
+  // Returns true if the ChromeBrowserState is off-the-record or if the
+  // associated off-the-record browser state has been created.
+  // Calling this method does not create the off-the-record browser state if it
+  // does not already exist.
+  virtual bool HasOffTheRecordChromeBrowserState() const = 0;
 
   // Returns the incognito version of this ChromeBrowserState. The returned
   // ChromeBrowserState instance is owned by this ChromeBrowserState instance.
