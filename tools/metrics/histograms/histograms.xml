@@ -13318,6 +13318,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="History.DatabaseAdvancedMetricsTime" units="milliseconds">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Time spent on advanced History DB metrics calculation (weekly and monthly
+    URL, host, and category counts). Advanced metrics are logged on
+    initialization of the History DB on 0.3% of starts.
+  </summary>
+</histogram>
+
+<histogram name="History.DatabaseBasicMetricsTime" units="milliseconds">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Time spent on basic History DB metrics calculation (file size and table
+    counts). Basic metrics are logged on initialization of the History DB on 1%
+    of starts.
+  </summary>
+</histogram>
+
+<histogram name="History.DatabaseFileMB" units="MB">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Size of History DB file. Duplicate of Profile.HistorySize and
+    Sqlite.SizeKB.History. Logged on initialization of the History DB on 1% of
+    starts.
+  </summary>
+</histogram>
+
 <histogram name="History.DeleteFTSIndexDatabases">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -13404,6 +13431,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>rkaplow@chromium.org</owner>
   <summary>
     The amount of time that elapsed during HistoryService::Init.
+  </summary>
+</histogram>
+
+<histogram name="History.MonthlyHostCount">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Unique hostnames in History database urls table with last-visit times in the
+    last 30 days. Metrics are logged on initialization of the History DB on 0.3%
+    of starts.
+  </summary>
+</histogram>
+
+<histogram name="History.MonthlyURLCount">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Unique URLs in History database urls table with last-visit times in the last
+    30 days. Metrics are logged on initialization of the History DB on 0.3% of
+    starts.
+  </summary>
+</histogram>
+
+<histogram name="History.MonthlyVisitCount">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Number of rows in History visits table with visit times in the last 30 days.
+    Metrics are logged on initialization of the History DB on 1% of starts.
   </summary>
 </histogram>
 
@@ -13520,6 +13573,48 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     history::TopSitesBackend::UpdateTopSitesOnDBThread to execute. Excludes the
     case where local TopSitesDatabase db_ is unavailable, i.e. where the update
     doesn't really happen.
+  </summary>
+</histogram>
+
+<histogram name="History.URLTableCount">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Number of rows in urls table in History DB. Metrics are logged on
+    initialization of the History DB on 1% of starts.
+  </summary>
+</histogram>
+
+<histogram name="History.VisitTableCount">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Number of rows in visits table in History DB. Metrics are logged on
+    initialization of the History DB on 1% of starts.
+  </summary>
+</histogram>
+
+<histogram name="History.WeeklyHostCount">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Unique hostnames in History database urls table with last-visit times in the
+    last 7 days. Metrics are logged on initialization of the History DB on 0.3%
+    of starts.
+  </summary>
+</histogram>
+
+<histogram name="History.WeeklyURLCount">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Unique URLs in History database urls table with last-visit times in the last
+    7 days. Metrics are logged on initialization of the History DB on 0.3% of
+    starts.
+  </summary>
+</histogram>
+
+<histogram name="History.WeeklyVisitCount">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Number of rows in History visits table with visit times in the last 7 days.
+    Metrics are logged on initialization of the History DB on 1% of starts.
   </summary>
 </histogram>
 
@@ -42726,6 +42821,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Error codes returned by sqlite for the history db.</summary>
+</histogram>
+
+<histogram name="Sqlite.Migration.History" units="milliseconds">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Time used to migrate History database schema to a new version.
+  </summary>
 </histogram>
 
 <histogram name="Sqlite.OpenFailure" enum="SqliteErrorCode">
