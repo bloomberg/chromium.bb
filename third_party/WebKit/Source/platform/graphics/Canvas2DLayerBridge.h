@@ -78,7 +78,6 @@ public:
     void flushGpu();
 
     void limitPendingFrames();
-    void freeTransientResources();
     bool isHidden() { return m_isHidden; }
 
     void beginDestruction();

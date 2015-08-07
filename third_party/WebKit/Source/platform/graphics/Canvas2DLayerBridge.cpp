@@ -156,10 +156,10 @@ void Canvas2DLayerBridge::beginDestruction()
 {
     ASSERT(!m_destructionInProgress);
     setRateLimitingEnabled(false);
-    setIsHidden(true);
     m_recorder.clear();
     m_imageBuffer = nullptr;
     m_destructionInProgress = true;
+    setIsHidden(true);
     GraphicsLayer::unregisterContentsLayer(m_layer->layer());
     m_surface.clear();
     m_layer->clearTexture();
@@ -181,15 +181,13 @@ void Canvas2DLayerBridge::setFilterQuality(SkFilterQuality filterQuality)
 
 void Canvas2DLayerBridge::setIsHidden(bool hidden)
 {
-    ASSERT(!m_destructionInProgress);
     bool newHiddenValue = hidden || m_destructionInProgress;
     if (m_isHidden == newHiddenValue)
         return;
 
     m_isHidden = newHiddenValue;
-    if (isHidden()) {
-        freeTransientResources();
-    }
+    if (isHidden() && !m_destructionInProgress && m_isSurfaceValid)
+        flush();
 }
 
 bool Canvas2DLayerBridge::writePixels(const SkImageInfo& origInfo, const void* pixels, size_t rowBytes, int x, int y)
@@ -204,14 +202,6 @@ bool Canvas2DLayerBridge::writePixels(const SkImageInfo& origInfo, const void* p
     ASSERT(!m_haveRecordedDrawCommands);
     // call write pixels on the surface, not the recording canvas
     return m_surface->getCanvas()->writePixels(origInfo, pixels, rowBytes, x, y);
-}
-
-void Canvas2DLayerBridge::freeTransientResources()
-{
-    ASSERT(!m_destructionInProgress);
-    if (!m_isSurfaceValid)
-        return;
-    flush();
 }
 
 void Canvas2DLayerBridge::skipQueuedDrawCommands()
@@ -240,6 +230,8 @@ void Canvas2DLayerBridge::flush()
     if (!m_isSurfaceValid)
         return;
     ASSERT(!m_destructionInProgress);
+    if (!m_isSurfaceValid)
+        return;
     if (m_haveRecordedDrawCommands) {
         TRACE_EVENT0("cc", "Canvas2DLayerBridge::flush");
         RefPtr<SkPicture> picture = adoptRef(m_recorder->endRecording());

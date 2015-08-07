@@ -155,7 +155,7 @@ protected:
             EXPECT_EQ(genID, surface->generationID());
             bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
             EXPECT_EQ(genID, surface->generationID());
-            bridge->freeTransientResources();
+            bridge->flush();
             EXPECT_EQ(genID, surface->generationID());
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
         }
