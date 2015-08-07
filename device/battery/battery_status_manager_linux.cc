@@ -274,6 +274,7 @@ class BatteryStatusManagerLinux : public BatteryStatusManager {
  private:
   // BatteryStatusManager:
   bool StartListeningBatteryChange() override {
+    if (!StartNotifierThreadIfNecessary())
       return false;
 
     notifier_thread_->message_loop()->PostTask(
