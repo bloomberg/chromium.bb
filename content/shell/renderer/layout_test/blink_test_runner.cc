@@ -459,8 +459,10 @@ void BlinkTestRunner::SetDatabaseQuota(int quota) {
   Send(new LayoutTestHostMsg_SetDatabaseQuota(routing_id(), quota));
 }
 
-void BlinkTestRunner::SimulateWebNotificationClick(const std::string& title) {
-  Send(new LayoutTestHostMsg_SimulateWebNotificationClick(routing_id(), title));
+void BlinkTestRunner::SimulateWebNotificationClick(const std::string& title,
+                                                   int action_index) {
+  Send(new LayoutTestHostMsg_SimulateWebNotificationClick(routing_id(), title,
+                                                          action_index));
 }
 
 void BlinkTestRunner::SetDeviceScaleFactor(float factor) {

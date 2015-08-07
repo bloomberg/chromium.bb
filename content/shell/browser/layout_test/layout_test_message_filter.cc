@@ -112,11 +112,11 @@ void LayoutTestMessageFilter::OnSetDatabaseQuota(int quota) {
 }
 
 void LayoutTestMessageFilter::OnSimulateWebNotificationClick(
-    const std::string& title) {
+    const std::string& title, int action_index) {
   LayoutTestNotificationManager* manager =
       LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
   if (manager)
-    manager->SimulateClick(title);
+    manager->SimulateClick(title, action_index);
 }
 
 void LayoutTestMessageFilter::OnAcceptAllCookies(bool accept) {

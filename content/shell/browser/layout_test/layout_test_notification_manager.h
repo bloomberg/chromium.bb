@@ -27,9 +27,10 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
   LayoutTestNotificationManager();
   ~LayoutTestNotificationManager() override;
 
-  // Simulates a click on the notification titled |title|. Must be called on the
-  // UI thread.
-  void SimulateClick(const std::string& title);
+  // Simulates a click on the notification titled |title|. |action_index|
+  // indicates which action was clicked, or -1 if the main notification body was
+  // clicked. Must be called on the UI thread.
+  void SimulateClick(const std::string& title, int action_index);
 
   // PlatformNotificationService implementation.
   blink::WebNotificationPermission CheckPermissionOnUIThread(

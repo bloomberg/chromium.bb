@@ -178,7 +178,7 @@ void WebTestDelegateImpl::SetDatabaseQuota(int quota) {
 }
 
 void WebTestDelegateImpl::SimulateWebNotificationClick(
-    const std::string& title) {
+    const std::string& title, int action_index) {
   NOTIMPLEMENTED();
 }
 

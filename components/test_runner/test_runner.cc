@@ -273,7 +273,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                        v8::Local<v8::Function> callback);
   void SetPOSIXLocale(const std::string& locale);
   void SetMIDIAccessorResult(bool result);
-  void SimulateWebNotificationClick(const std::string& title);
+  void SimulateWebNotificationClick(gin::Arguments* args);
   void AddMockSpeechRecognitionResult(const std::string& transcript,
                                       double confidence);
   void SetMockSpeechRecognitionError(const std::string& error,
@@ -1343,10 +1343,16 @@ void TestRunnerBindings::SetMIDIAccessorResult(bool result) {
     runner_->SetMIDIAccessorResult(result);
 }
 
-void TestRunnerBindings::SimulateWebNotificationClick(
-    const std::string& title) {
-  if (runner_)
-    runner_->SimulateWebNotificationClick(title);
+void TestRunnerBindings::SimulateWebNotificationClick(gin::Arguments* args) {
+  if (!runner_)
+    return;
+  std::string title;
+  int action_index = -1;
+  if (args->GetNext(&title) &&
+      (args->PeekNext().IsEmpty() || args->GetNext(&action_index)))
+    runner_->SimulateWebNotificationClick(title, action_index);
+  else
+    args->ThrowError();
 }
 
 void TestRunnerBindings::AddMockSpeechRecognitionResult(
@@ -2854,8 +2860,9 @@ void TestRunner::SetMIDIAccessorResult(bool result) {
   midi_accessor_result_ = result;
 }
 
-void TestRunner::SimulateWebNotificationClick(const std::string& title) {
-  delegate_->SimulateWebNotificationClick(title);
+void TestRunner::SimulateWebNotificationClick(const std::string& title,
+                                              int action_index) {
+  delegate_->SimulateWebNotificationClick(title, action_index);
 }
 
 void TestRunner::AddMockSpeechRecognitionResult(const std::string& transcript,

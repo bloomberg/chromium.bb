@@ -560,7 +560,7 @@ class TestRunner : public WebTestRunner,
   void SetMIDIAccessorResult(bool result);
 
   // Simulates a click on a Web Notification.
-  void SimulateWebNotificationClick(const std::string& title);
+  void SimulateWebNotificationClick(const std::string& title, int action_index);
 
   // Speech recognition related functions.
   void AddMockSpeechRecognitionResult(const std::string& transcript,
