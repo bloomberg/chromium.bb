@@ -27,7 +27,7 @@ import auth
 
 
 BUILDBUCKET_URL = 'https://cr-buildbucket.appspot.com'
-PUT_BUILD_URL = urlparse.urljoin(
+BUILDBUCKET_API_URL = urlparse.urljoin(
   BUILDBUCKET_URL,
   '_ah/api/buildbucket/v1/builds',
 )
@@ -41,6 +41,12 @@ def main(argv):
     action='store_true',
   )
   subparsers = parser.add_subparsers(dest='command')
+  get_parser = subparsers.add_parser('get')
+  get_parser.add_argument(
+    '--id',
+    help='The ID of the build to get the status of.',
+    required=True,
+  )
   put_parser = subparsers.add_parser('put')
   put_parser.add_argument(
     '-b',
@@ -68,26 +74,41 @@ def main(argv):
     help='A file to load a JSON dict of properties from.',
   )
   args = parser.parse_args()
-  # TODO(smut): When more commands are implemented, refactor this.
-  assert args.command == 'put'
 
-  changes = []
-  if args.changes:
-    try:
-      with open(args.changes) as fp:
-        changes.extend(json.load(fp))
-    except (TypeError, ValueError):
-      sys.stderr.write('%s contained invalid JSON list.\n' % args.changes)
-      raise
+  body = None
 
-  properties = {}
-  if args.properties:
-    try:
-      with open(args.properties) as fp:
-        properties.update(json.load(fp))
-    except (TypeError, ValueError):
-      sys.stderr.write('%s contained invalid JSON dict.\n' % args.properties)
-      raise
+  if args.command == 'get':
+    method = 'GET'
+    url = '%s/%s' % (BUILDBUCKET_API_URL, args.id)
+  elif args.command == 'put':
+    changes = []
+    if args.changes:
+      try:
+        with open(args.changes) as fp:
+          changes.extend(json.load(fp))
+      except (TypeError, ValueError):
+        sys.stderr.write('%s contained invalid JSON list.\n' % args.changes)
+        raise
+
+    properties = {}
+    if args.properties:
+      try:
+        with open(args.properties) as fp:
+          properties.update(json.load(fp))
+      except (TypeError, ValueError):
+        sys.stderr.write('%s contained invalid JSON dict.\n' % args.properties)
+        raise
+
+    body = json.dumps({
+      'bucket': args.bucket,
+      'parameters_json': json.dumps({
+        'builder_name': args.builder_name,
+        'changes': changes,
+        'properties': properties,
+      }),
+    })
+    method = 'PUT'
+    url = BUILDBUCKET_API_URL
 
   authenticator = auth.get_authenticator_for_host(
     BUILDBUCKET_URL,
@@ -96,16 +117,9 @@ def main(argv):
   http = authenticator.authorize(httplib2.Http())
   http.force_exception_to_status_code = True
   response, content = http.request(
-    PUT_BUILD_URL,
-    'PUT',
-    body=json.dumps({
-      'bucket': args.bucket,
-      'parameters_json': json.dumps({
-        'builder_name': args.builder_name,
-        'changes': changes,
-        'properties': properties,
-      }),
-    }),
+    url,
+    method,
+    body=body,
     headers={'Content-Type': 'application/json'},
   )
 
