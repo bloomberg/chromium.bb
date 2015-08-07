@@ -45,6 +45,11 @@ longjmp:
  *
  * This also assumes that the minimal ARM hardware has d8-d15 registers,
  * which is checked: src/trusted/platform_qualify/arch/arm/nacl_qualify_fpu.c
+ *
+ * The assembly is correctly bundle-aligned and organized with whitespace
+ * between each bundle, so the bundle_lock directives are not strictly
+ * necessary, but they prevent clang's auto-sandboxer from redundantly
+ * sandboxing the code.
  */
 
     .text
@@ -53,15 +58,20 @@ longjmp:
 
 /* int setjmp(jmp_buf env) */
 setjmp:
+    .bundle_lock
     bic     r0, r0, #NACL_DATA_FLOW_MASK
     stmia   r0!, {r4, r5, r6, r7, r8, r10, r11, r12, sp, lr}
+    .bundle_unlock
+    .bundle_lock
     bic     r0, r0, #NACL_DATA_FLOW_MASK
     vstmia  r0!, {d8-d15}
+    .bundle_unlock
 
     mov     r0, #0
+    .bundle_lock
     bic     lr, lr, #NACL_CONTROL_FLOW_MASK
     bx      lr
-
+    .bundle_unlock
 
     .text
     .align NACL_BLOCK_SHIFT
@@ -69,19 +79,25 @@ setjmp:
 
 /* void longjmp(jmp_buf env, int val) */
 longjmp:
+    .bundle_lock
     bic     r0, r0, #NACL_DATA_FLOW_MASK
     ldmia   r0!, {r4, r5, r6, r7, r8, r10, r11, r12, sp, lr}
     bic     sp, sp, #NACL_DATA_FLOW_MASK
+    .bundle_unlock
     nop
 
+    .bundle_lock
     bic     r0, r0, #NACL_DATA_FLOW_MASK
     vldmia  r0!, {d8-d15}
+    .bundle_unlock
     /* Return the result argument if nonzero or 1 otherwise */
     /* Note: move updates condition codes */
     movs    r0, r1
     moveq   r0, #1
 
+    .bundle_lock
     bic     lr, lr, #NACL_CONTROL_FLOW_MASK
     bx      lr
+    .bundle_unlock
 
 #endif
