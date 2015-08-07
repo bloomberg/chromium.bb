@@ -14,9 +14,8 @@
 namespace blink {
 
 // WebPassOwnPtr<T> is used to pass a T pointer with ownership from chromium
-// side to blink side.
-// WebPassOwnPtr<T> is destructible on chromium side only when it contains
-// nullptr.
+// side to blink side. T's definition must be shared among all users
+// (especially between chromium and blink).
 // TODO(yhirano): Migrate to scoped_ptr or std::unique_ptr once the repository
 // merge is done or C++11 std library is allowed.
 template <typename T>
@@ -32,12 +31,14 @@ public:
         m_ptr = o.m_ptr;
         o.m_ptr = nullptr;
     }
+    WebPassOwnPtr(const WebPassOwnPtr& o)
+    {
+        m_ptr = o.m_ptr;
+        o.m_ptr = nullptr;
+    }
     ~WebPassOwnPtr()
     {
-#if INSIDE_BLINK
-        release();
-#endif
-        BLINK_ASSERT(!m_ptr);
+        delete m_ptr;
     }
     WebPassOwnPtr& operator =(const WebPassOwnPtr&) = delete;
 
