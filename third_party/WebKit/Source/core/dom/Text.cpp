@@ -33,6 +33,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/ScopedEventQueue.h"
+#include "core/html/HTMLTableCellElement.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTextCombine.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
@@ -244,8 +245,11 @@ static inline bool hasGeneratedAnonymousTableCells(const LayoutObject& parent)
     LayoutObject* child = parent.slowFirstChild();
     if (!child || !child->isAnonymous())
         return false;
-    if (child->isTableCell())
-        return true;
+    if (child->isTableCell()) {
+        LayoutObject* firstChild = child->slowFirstChild();
+        // Ignore the anonymous table cell if it is wrapping a table cell element (e.g. because of <td style="display:block;">).
+        return !firstChild || !firstChild->node() || !isHTMLTableCellElement(firstChild->node());
+    }
     if (child->isTableSection() || child->isTableRow())
         return hasGeneratedAnonymousTableCells(*child);
     return false;
