@@ -1470,7 +1470,7 @@ void Directory::PutPredecessor(EntryKernel* e, EntryKernel* predecessor) {
   // without valid positions.  See TODO above.
   // Using a release CHECK here because the following UniquePosition::Between
   // call crashes anyway when the position string is empty (see crbug/332371).
-  CHECK(successor->ref(UNIQUE_POSITION).IsValid());
+  CHECK(successor->ref(UNIQUE_POSITION).IsValid()) << *successor;
 
   // Finally, the normal case: inserting between two elements.
   UniquePosition pos = UniquePosition::Between(

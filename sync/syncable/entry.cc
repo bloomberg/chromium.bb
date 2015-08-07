@@ -6,13 +6,8 @@
 
 #include <iomanip>
 
-#include "base/json/string_escape.h"
-#include "base/strings/string_util.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/syncable_base_transaction.h"
-#include "sync/syncable/syncable_columns.h"
-
-using std::string;
 
 namespace syncer {
 namespace syncable {
@@ -22,7 +17,7 @@ Entry::Entry(BaseTransaction* trans, GetById, const Id& id)
   kernel_ = trans->directory()->GetEntryById(id);
 }
 
-Entry::Entry(BaseTransaction* trans, GetByClientTag, const string& tag)
+Entry::Entry(BaseTransaction* trans, GetByClientTag, const std::string& tag)
     : basetrans_(trans) {
   kernel_ = trans->directory()->GetEntryByClientTag(tag);
 }
@@ -38,7 +33,7 @@ Entry::Entry(BaseTransaction* trans, GetByHandle, int64 metahandle)
   kernel_ = trans->directory()->GetEntryByHandle(metahandle);
 }
 
-Entry::Entry(BaseTransaction* trans, GetByServerTag, const string& tag)
+Entry::Entry(BaseTransaction* trans, GetByServerTag, const std::string& tag)
     : basetrans_(trans) {
   kernel_ = trans->directory()->GetEntryByServerTag(tag);
 }
@@ -135,52 +130,7 @@ bool Entry::ShouldMaintainHierarchy() const {
 }
 
 std::ostream& operator<<(std::ostream& os, const Entry& entry) {
-  int i;
-  EntryKernel* const kernel = entry.kernel_;
-  for (i = BEGIN_FIELDS; i < INT64_FIELDS_END; ++i) {
-    os << g_metas_columns[i].name << ": "
-       << kernel->ref(static_cast<Int64Field>(i)) << ", ";
-  }
-  for ( ; i < TIME_FIELDS_END; ++i) {
-    os << g_metas_columns[i].name << ": "
-       << GetTimeDebugString(kernel->ref(static_cast<TimeField>(i))) << ", ";
-  }
-  for ( ; i < ID_FIELDS_END; ++i) {
-    os << g_metas_columns[i].name << ": "
-       << kernel->ref(static_cast<IdField>(i)) << ", ";
-  }
-  os << "Flags: ";
-  for ( ; i < BIT_FIELDS_END; ++i) {
-    if (kernel->ref(static_cast<BitField>(i)))
-      os << g_metas_columns[i].name << ", ";
-  }
-  for ( ; i < STRING_FIELDS_END; ++i) {
-    const std::string& field = kernel->ref(static_cast<StringField>(i));
-    os << g_metas_columns[i].name << ": " << field << ", ";
-  }
-  for ( ; i < PROTO_FIELDS_END; ++i) {
-    std::string escaped_str = base::EscapeBytesAsInvalidJSONString(
-        kernel->ref(static_cast<ProtoField>(i)).SerializeAsString(),
-        false);
-    os << g_metas_columns[i].name << ": " << escaped_str << ", ";
-  }
-  for ( ; i < UNIQUE_POSITION_FIELDS_END; ++i) {
-    os << g_metas_columns[i].name << ": "
-       << kernel->ref(static_cast<UniquePositionField>(i)).ToDebugString()
-       << ", ";
-  }
-  for ( ; i < ATTACHMENT_METADATA_FIELDS_END; ++i) {
-    std::string escaped_str = base::EscapeBytesAsInvalidJSONString(
-        kernel->ref(static_cast<AttachmentMetadataField>(i))
-            .SerializeAsString(),
-        false);
-    os << g_metas_columns[i].name << ": " << escaped_str << ", ";
-  }
-  os << "TempFlags: ";
-  for ( ; i < BIT_TEMPS_END; ++i) {
-    if (kernel->ref(static_cast<BitTemp>(i)))
-      os << "#" << i - BIT_TEMPS_BEGIN << ", ";
-  }
+  os << *(entry.kernel_);
   return os;
 }
 
