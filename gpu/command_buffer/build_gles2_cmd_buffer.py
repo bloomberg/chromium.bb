@@ -4329,9 +4329,6 @@ class TypeHandler(object):
 
   _remove_expected_call_re = re.compile(r'  EXPECT_CALL.*?;\n', re.S)
 
-  def __init__(self):
-    pass
-
   def InitFunction(self, func):
     """Add or adjust anything type specific for this function."""
     if func.GetInfo('needs_size') and not func.name.endswith('Bucket'):
@@ -4494,18 +4491,9 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     """Writes a format test for an immediate version of a command."""
     pass
 
-  def WriteBucketFormatTest(self, func, f):
-    """Writes a format test for a bucket version of a command."""
-    pass
-
   def WriteGetDataSizeCode(self, func, f):
     """Writes the code to set data_size used in validation"""
     pass
-
-  def WriteImmediateCmdSizeTest(self, func, f):
-    """Writes a size test for an immediate version of a command."""
-    f.write("  // TODO(gman): Compute correct size.\n")
-    f.write("  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);\n")
 
   def __WriteIdMapping(self, func, f):
     """Writes client side / service side ID mapping."""
@@ -4748,10 +4736,6 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteBucketServiceUnitTest(self, func, f, *extras):
     """Writes the service unit test for a bucket command."""
-    f.write("// TODO(gman): %s\n" % func.name)
-
-  def WriteBucketValidationCode(self, func, f):
-    """Writes the validation code for a bucket version of a command."""
     f.write("// TODO(gman): %s\n" % func.name)
 
   def WriteGLES2ImplementationDeclaration(self, func, f):
@@ -5028,9 +5012,6 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
 class StateSetHandler(TypeHandler):
   """Handler for commands that simply set state."""
 
-  def __init__(self):
-    TypeHandler.__init__(self)
-
   def WriteHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
     state_name = func.GetInfo('state')
@@ -5139,9 +5120,6 @@ TEST_P(%(test_name)s, %(name)sNaNValue%(ndx)d) {
 class StateSetRGBAlphaHandler(TypeHandler):
   """Handler for commands that simply set state that have rgb/alpha."""
 
-  def __init__(self):
-    TypeHandler.__init__(self)
-
   def WriteHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
     state_name = func.GetInfo('state')
@@ -5166,9 +5144,6 @@ class StateSetRGBAlphaHandler(TypeHandler):
 
 class StateSetFrontBackSeparateHandler(TypeHandler):
   """Handler for commands that simply set state that have front/back."""
-
-  def __init__(self):
-    TypeHandler.__init__(self)
 
   def WriteHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
@@ -5206,9 +5181,6 @@ class StateSetFrontBackSeparateHandler(TypeHandler):
 class StateSetFrontBackHandler(TypeHandler):
   """Handler for commands that simply set state that set both front/back."""
 
-  def __init__(self):
-    TypeHandler.__init__(self)
-
   def WriteHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
     state_name = func.GetInfo('state')
@@ -5234,9 +5206,6 @@ class StateSetFrontBackHandler(TypeHandler):
 
 class StateSetNamedParameter(TypeHandler):
   """Handler for commands that set a state chosen with an enum parameter."""
-
-  def __init__(self):
-    TypeHandler.__init__(self)
 
   def WriteHandlerImplementation(self, func, f):
     """Overridden from TypeHandler."""
@@ -5264,9 +5233,6 @@ class StateSetNamedParameter(TypeHandler):
 
 class CustomHandler(TypeHandler):
   """Handler for commands that are auto-generated but require minor tweaks."""
-
-  def __init__(self):
-    TypeHandler.__init__(self)
 
   def WriteServiceImplementation(self, func, f):
     """Overrriden from TypeHandler."""
@@ -5314,49 +5280,6 @@ class CustomHandler(TypeHandler):
     f.write("    return NextImmediateCmdAddressTotalSize<ValueType>("
                "cmd, total_size);\n")
     f.write("  }\n")
-    f.write("\n")
-
-
-class TodoHandler(CustomHandler):
-  """Handle for commands that are not yet implemented."""
-
-  def NeedsDataTransferFunction(self, func):
-    """Overriden from TypeHandler."""
-    return False
-
-  def WriteImmediateFormatTest(self, func, f):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteGLES2ImplementationUnitTest(self, func, f):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteGLES2Implementation(self, func, f):
-    """Overrriden from TypeHandler."""
-    f.write("%s GLES2Implementation::%s(%s) {\n" %
-               (func.return_type, func.original_name,
-                func.MakeTypedOriginalArgString("")))
-    f.write("  // TODO: for now this is a no-op\n")
-    f.write(
-        "  SetGLError("
-        "GL_INVALID_OPERATION, \"gl%s\", \"not implemented\");\n" %
-        func.name)
-    if func.return_type != "void":
-      f.write("  return 0;\n")
-    f.write("}\n")
-    f.write("\n")
-
-  def WriteServiceImplementation(self, func, f):
-    """Overrriden from TypeHandler."""
-    self.WriteServiceHandlerFunctionHeader(func, f)
-    f.write("  // TODO: for now this is a no-op\n")
-    f.write(
-        "  LOCAL_SET_GL_ERROR("
-        "GL_INVALID_OPERATION, \"gl%s\", \"not implemented\");\n" %
-        func.name)
-    f.write("  return error::kNoError;\n")
-    f.write("}\n")
     f.write("\n")
 
 
@@ -5423,17 +5346,9 @@ class HandWrittenHandler(CustomHandler):
     """Overrriden from TypeHandler."""
     f.write("// TODO(gman): Write test for %s\n" % func.name)
 
-  def WriteBucketFormatTest(self, func, f):
-    """Overrriden from TypeHandler."""
-    f.write("// TODO(gman): Write test for %s\n" % func.name)
-
-
 
 class ManualHandler(CustomHandler):
   """Handler for commands who's handlers must be written by hand."""
-
-  def __init__(self):
-    CustomHandler.__init__(self)
 
   def InitFunction(self, func):
     """Overrriden from TypeHandler."""
@@ -5489,8 +5404,6 @@ class ManualHandler(CustomHandler):
 class DataHandler(TypeHandler):
   """Handler for glBufferData, glBufferSubData, glTexImage*D, glTexSubImage*D,
      glCompressedTexImage*D, glCompressedTexImageSub*D."""
-  def __init__(self):
-    TypeHandler.__init__(self)
 
   def InitFunction(self, func):
     """Overrriden from TypeHandler."""
@@ -5532,10 +5445,6 @@ class DataHandler(TypeHandler):
   def WriteImmediateCmdGetTotalSize(self, func, f):
     """Overrriden from TypeHandler."""
     pass
-
-  def WriteImmediateCmdSizeTest(self, func, f):
-    """Overrriden from TypeHandler."""
-    f.write("  EXPECT_EQ(sizeof(cmd), total_size);\n")
 
   def WriteImmediateCmdInit(self, func, f):
     """Overrriden from TypeHandler."""
@@ -5583,9 +5492,6 @@ class DataHandler(TypeHandler):
 
 class BindHandler(TypeHandler):
   """Handler for glBind___ type functions."""
-
-  def __init__(self):
-    TypeHandler.__init__(self)
 
   def WriteServiceUnitTest(self, func, f, *extras):
     """Overrriden from TypeHandler."""
@@ -5783,9 +5689,6 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
 
 class GENnHandler(TypeHandler):
   """Handler for glGen___ type functions."""
-
-  def __init__(self):
-    TypeHandler.__init__(self)
 
   def InitFunction(self, func):
     """Overrriden from TypeHandler."""
@@ -6096,9 +5999,6 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
 class CreateHandler(TypeHandler):
   """Handler for glCreate___ type functions."""
 
-  def __init__(self):
-    TypeHandler.__init__(self)
-
   def InitFunction(self, func):
     """Overrriden from TypeHandler."""
     func.AddCmdArg(Argument("client_id", 'uint32_t'))
@@ -6235,9 +6135,6 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 class DeleteHandler(TypeHandler):
   """Handler for glDelete___ single resource type functions."""
 
-  def __init__(self):
-    TypeHandler.__init__(self)
-
   def WriteServiceImplementation(self, func, f):
     """Overrriden from TypeHandler."""
     if func.IsUnsafe():
@@ -6285,9 +6182,6 @@ class DeleteHandler(TypeHandler):
 
 class DELnHandler(TypeHandler):
   """Handler for glDelete___ type functions."""
-
-  def __init__(self):
-    TypeHandler.__init__(self)
 
   def WriteGetDataSizeCode(self, func, f):
     """Overrriden from TypeHandler."""
@@ -6569,9 +6463,6 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
 class GETnHandler(TypeHandler):
   """Handler for GETn for glGetBooleanv, glGetFloatv, ... type functions."""
 
-  def __init__(self):
-    TypeHandler.__init__(self)
-
   def NeedsDataTransferFunction(self, func):
     """Overriden from TypeHandler."""
     return False
@@ -6817,9 +6708,6 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 class ArrayArgTypeHandler(TypeHandler):
   """Base class for type handlers that handle args that are arrays"""
 
-  def __init__(self):
-    TypeHandler.__init__(self)
-
   def GetArrayType(self, func):
     """Returns the type of the element in the element array being PUT to."""
     for arg in func.GetOriginalArgs():
@@ -6840,9 +6728,6 @@ class ArrayArgTypeHandler(TypeHandler):
 
 class PUTHandler(ArrayArgTypeHandler):
   """Handler for glTexParameter_v, glVertexAttrib_v functions."""
-
-  def __init__(self):
-    ArrayArgTypeHandler.__init__(self)
 
   def WriteServiceUnitTest(self, func, f, *extras):
     """Writes the service unit test for a command."""
@@ -7169,9 +7054,6 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
 
 class PUTnHandler(ArrayArgTypeHandler):
   """Handler for PUTn 'glUniform__v' type functions."""
-
-  def __init__(self):
-    ArrayArgTypeHandler.__init__(self)
 
   def WriteServiceUnitTest(self, func, f, *extras):
     """Overridden from TypeHandler."""
@@ -7517,9 +7399,6 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
 class PUTSTRHandler(ArrayArgTypeHandler):
   """Handler for functions that pass a string array."""
 
-  def __init__(self):
-    ArrayArgTypeHandler.__init__(self)
-
   def __GetDataArg(self, func):
     """Return the argument that points to the 2D char arrays"""
     for arg in func.GetOriginalArgs():
@@ -7843,8 +7722,6 @@ TEST_P(%(test_name)s, %(name)sInvalidStringEnding) {
 
 class PUTXnHandler(ArrayArgTypeHandler):
   """Handler for glUniform?f functions."""
-  def __init__(self):
-    ArrayArgTypeHandler.__init__(self)
 
   def WriteHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
@@ -7919,9 +7796,6 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
 class GLcharHandler(CustomHandler):
   """Handler for functions that pass a single string ."""
-
-  def __init__(self):
-    CustomHandler.__init__(self)
 
   def WriteImmediateCmdComputeSize(self, func, f):
     """Overrriden from TypeHandler."""
@@ -8038,9 +7912,6 @@ TEST_F(GLES2FormatTest, %(func_name)s) {
 class GLcharNHandler(CustomHandler):
   """Handler for functions that pass a single string with an optional len."""
 
-  def __init__(self):
-    CustomHandler.__init__(self)
-
   def InitFunction(self, func):
     """Overrriden from TypeHandler."""
     func.cmd_args = []
@@ -8049,10 +7920,6 @@ class GLcharNHandler(CustomHandler):
   def NeedsDataTransferFunction(self, func):
     """Overriden from TypeHandler."""
     return False
-
-  def AddBucketFunction(self, generator, func):
-    """Overrriden from TypeHandler."""
-    pass
 
   def WriteServiceImplementation(self, func, f):
     """Overrriden from TypeHandler."""
@@ -8080,9 +7947,6 @@ class GLcharNHandler(CustomHandler):
 
 class IsHandler(TypeHandler):
   """Handler for glIs____ type and glGetError functions."""
-
-  def __init__(self):
-    TypeHandler.__init__(self)
 
   def InitFunction(self, func):
     """Overrriden from TypeHandler."""
@@ -8259,9 +8123,6 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
 class STRnHandler(TypeHandler):
   """Handler for GetProgramInfoLog, GetShaderInfoLog, GetShaderSource, and
   GetTranslatedShaderSourceANGLE."""
-
-  def __init__(self):
-    TypeHandler.__init__(self)
 
   def InitFunction(self, func):
     """Overrriden from TypeHandler."""
@@ -8581,11 +8442,6 @@ class Argument(object):
           "  GPU_CLIENT_VALIDATE_DESTINATION_%sINITALIZATION(%s, %s);\n" %
           ("OPTIONAL_" if self.optional else "", self.type[:-1], self.name))
 
-
-  def WriteGetAddress(self, f):
-    """Writes the code to get the address this argument refers to."""
-    pass
-
   def GetImmediateVersion(self):
     """Gets the immediate version of this argument."""
     return self
@@ -8642,9 +8498,6 @@ class DataSizeArgument(Argument):
 
 class SizeArgument(Argument):
   """class for GLsizei and GLsizeiptr."""
-
-  def __init__(self, name, type):
-    Argument.__init__(self, name, type)
 
   def GetNumInvalidValues(self, func):
     """overridden from Argument."""
@@ -8705,7 +8558,6 @@ class EnumBaseArgument(Argument):
   def __init__(self, name, gl_type, type, gl_error):
     Argument.__init__(self, name, gl_type)
 
-    self.local_type = type
     self.gl_error = gl_error
     name = type[len(gl_type):]
     self.type_name = name
@@ -8755,7 +8607,6 @@ class EnumBaseArgument(Argument):
       return valid_arg
     valid = self.named_type.GetValidValues()
     if valid:
-      num_valid = len(valid)
       return valid[0]
 
     index = func.GetOriginalArgs().index(self)
@@ -8773,7 +8624,6 @@ class EnumBaseArgument(Argument):
 
     valid = self.named_type.GetValidValues()
     if valid:
-      num_valid = len(valid)
       return valid[0]
 
     try:
@@ -8859,9 +8709,6 @@ class ImmediatePointerArgument(Argument):
   An immediate argument is one where the data follows the command.
   """
 
-  def __init__(self, name, type):
-    Argument.__init__(self, name, type)
-
   def IsPointer(self):
     return True
 
@@ -8904,9 +8751,6 @@ class ImmediatePointerArgument(Argument):
 
 class PointerArgument(Argument):
   """A class that represents a pointer argument to a function."""
-
-  def __init__(self, name, type):
-    Argument.__init__(self, name, type)
 
   def IsPointer(self):
     """Overridden from Argument."""
@@ -8959,15 +8803,6 @@ class PointerArgument(Argument):
         "      c.%s_shm_id, c.%s_shm_offset, data_size);\n" %
         (self.name, self.name))
 
-  def WriteGetAddress(self, f):
-    """Overridden from Argument."""
-    f.write(
-        "  %s %s = GetSharedMemoryAs<%s>(\n" %
-        (self.type, self.name, self.type))
-    f.write(
-        "      %s_shm_id, %s_shm_offset, %s_size);\n" %
-        (self.name, self.name, self.name))
-
   def WriteValidationCode(self, f, func):
     """Overridden from Argument."""
     if self.optional:
@@ -8995,9 +8830,6 @@ class PointerArgument(Argument):
 
 class BucketPointerArgument(PointerArgument):
   """A class that represents an bucket argument to a function."""
-
-  def __init__(self, name, type):
-    Argument.__init__(self, name, type)
 
   def AddCmdArgs(self, args):
     """Overridden from Argument."""
@@ -9194,7 +9026,6 @@ class Function(object):
     'StateSetFrontBackSeparate': StateSetFrontBackSeparateHandler(),
     'StateSetNamedParameter': StateSetNamedParameter(),
     'STRn': STRnHandler(),
-    'Todo': TodoHandler(),
   }
 
   def __init__(self, name, info):
@@ -9399,17 +9230,6 @@ class Function(object):
         ["%s%s" % (prefix, arg.name) for arg in args])
     return self._MaybePrependComma(arg_string, add_comma)
 
-  def MakeTypedHelperArgString(self, prefix, add_comma = False):
-    """Gets a list of typed GL arguments after removing unneeded arguments."""
-    args = self.GetOriginalArgs()
-    arg_string = ", ".join(
-        ["%s %s%s" % (
-          arg.type,
-          prefix,
-          arg.name,
-        ) for arg in args if not arg.IsConstant()])
-    return self._MaybePrependComma(arg_string, add_comma)
-
   def MakeHelperArgString(self, prefix, add_comma = False, separator = ", "):
     """Gets a list of GL arguments after removing unneeded arguments."""
     args = self.GetOriginalArgs()
@@ -9492,10 +9312,6 @@ class Function(object):
     """Makes a string of the arguments for the LOG macros"""
     args = self.GetOriginalArgs()
     return ' << ", " << '.join([arg.GetLogArg() for arg in args])
-
-  def WriteCommandDescription(self, f):
-    """Writes a description of the command."""
-    f.write("//! Command that corresponds to gl%s.\n" % self.original_name)
 
   def WriteHandlerValidation(self, f):
     """Writes validation code for the function."""
@@ -9662,12 +9478,6 @@ class PepperInterface(object):
       dev = "_DEV"
     return "PPB_OPENGLES2%s%s_INTERFACE" % (upperint, dev)
 
-  def GetInterfaceString(self):
-    dev = ""
-    if self.dev:
-      dev = "(Dev)"
-    return "PPB_OpenGLES2%s%s" % (self.name, dev)
-
   def GetStructName(self):
     dev = ""
     if self.dev:
@@ -9707,11 +9517,6 @@ class ImmediateFunction(Function):
 
   def IsImmediate(self):
     return True
-
-  def WriteCommandDescription(self, f):
-    """Overridden from Function"""
-    f.write("//! Immediate version of command that corresponds to gl%s.\n" %
-        self.original_name)
 
   def WriteServiceImplementation(self, f):
     """Overridden from Function"""
@@ -9787,11 +9592,6 @@ class BucketFunction(Function):
     self.args_for_cmds = new_args_for_cmds
 
     Function.InitFunction(self)
-
-  def WriteCommandDescription(self, f):
-    """Overridden from Function"""
-    f.write("//! Bucket version of command that corresponds to gl%s.\n" %
-        self.original_name)
 
   def WriteServiceImplementation(self, f):
     """Overridden from Function"""
@@ -9899,22 +9699,6 @@ class GLGenerator(object):
     """Prints an error."""
     print "Error: %s" % msg
     self.errors += 1
-
-  def WriteLicense(self, f):
-    """Writes the license."""
-    f.write(_LICENSE)
-
-  def WriteNamespaceOpen(self, f):
-    """Writes the code for the namespace."""
-    f.write("namespace gpu {\n")
-    f.write("namespace gles2 {\n")
-    f.write("\n")
-
-  def WriteNamespaceClose(self, f):
-    """Writes the code to close the namespace."""
-    f.write("}  // namespace gles2\n")
-    f.write("}  // namespace gpu\n")
-    f.write("\n")
 
   def ParseGLH(self, filename):
     """Parses the cmd_buffer_functions.txt file and extracts the functions"""
