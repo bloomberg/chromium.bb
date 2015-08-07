@@ -19,12 +19,12 @@ e = document.getElementById('test');
 // Test "important" strictness
 e.style.borderBottomStyle = "";
 e.style.setProperty("border-bottom-style", "solid", "!important");
-shouldBe("e.style.getPropertyValue('border-bottom-style')", "null");
+shouldBeEqualToString("e.style.getPropertyValue('border-bottom-style')", "");
 shouldBe("e.style.getPropertyPriority('border-bottom-style')", "''");
 
 e.style.borderBottomStyle = "";
 e.style.setProperty("border-bottom-style", "solid", "very important");
-shouldBe("e.style.getPropertyValue('border-bottom-style')", "null");
+shouldBeEqualToString("e.style.getPropertyValue('border-bottom-style')", "");
 shouldBe("e.style.getPropertyPriority('border-bottom-style')", "''");
 
 e.style.borderBottomStyle = "";
@@ -34,12 +34,12 @@ shouldBe("e.style.getPropertyPriority('border-bottom-style')", "'important'");
 
 e.style.borderBottomStyle = "";
 e.style.setProperty("border-bottom-style", "solid", "random");
-shouldBe("e.style.getPropertyValue('border-bottom-style')", "null");
+shouldBeEqualToString("e.style.getPropertyValue('border-bottom-style')", "");
 shouldBe("e.style.getPropertyPriority('border-bottom-style')", "''");
 
 e.style.borderBottomStyle = "";
 e.style.setProperty("border-bottom-style", "solid", "undefined");
-shouldBe("e.style.getPropertyValue('border-bottom-style')", "null");
+shouldBeEqualToString("e.style.getPropertyValue('border-bottom-style')", "");
 shouldBe("e.style.getPropertyPriority('border-bottom-style')", "''");
 
 e.style.borderBottomStyle = "";

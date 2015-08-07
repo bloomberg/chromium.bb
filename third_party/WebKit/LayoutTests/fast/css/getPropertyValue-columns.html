@@ -40,9 +40,9 @@
       shouldBeEqualToString('webkitColumnsValue("columns6")', '10px 2');
       shouldBeEqualToString('webkitColumnsValue("columns7")', 'auto auto');
       debug("NOTE: 'foo' is an illegal CSS value for '-webkit-columns'.");
-      shouldBe('webkitColumnsValue("columns8")', "null");
-      debug("NOTE: If only few longhand properties are specified, getPropertyValue for shorthand property returns null.")
-      shouldBe('webkitColumnsValue("columns9")', "null");
+      shouldBeEqualToString('webkitColumnsValue("columns8")', "");
+      debug("NOTE: If only few longhand properties are specified, getPropertyValue for shorthand property returns empty string.")
+      shouldBeEqualToString('webkitColumnsValue("columns9")', "");
     </script>
   </body>
 </html>

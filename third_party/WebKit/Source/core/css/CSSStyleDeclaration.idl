@@ -24,20 +24,17 @@
     DependentLifetime,
     WillBeGarbageCollected
 ] interface CSSStyleDeclaration {
-    // TODO(philipj): cssText should not be nullable.
-    [RaisesException=Setter] attribute DOMString? cssText;
+    [RaisesException=Setter] attribute DOMString cssText;
     readonly attribute unsigned long length;
     getter DOMString item(unsigned long index);
-    // TODO(philipj): All DOMString? return types in this interface should be
-    // just DOMString (not nullable).
-    DOMString? getPropertyValue(DOMString property);
-    DOMString? getPropertyPriority(DOMString property);
+    DOMString getPropertyValue(DOMString property);
+    DOMString getPropertyPriority(DOMString property);
     // TODO(philipj): The value and priority arguments should have
     // [TreatNullAs=EmptyString] and should not be nullable.
     [RaisesException] void setProperty(DOMString property, DOMString? value, optional DOMString? priority = null);
     // void setPropertyValue(DOMString property, [TreatNullAs=EmptyString] DOMString value);
     // void setPropertyPriority(DOMString property, [TreatNullAs=EmptyString] DOMString priority);
-    [RaisesException] DOMString? removeProperty(DOMString property);
+    [RaisesException] DOMString removeProperty(DOMString property);
     readonly attribute CSSRule? parentRule;
     // [TreatNullAs=EmptyString] attribute DOMString cssFloat;
 

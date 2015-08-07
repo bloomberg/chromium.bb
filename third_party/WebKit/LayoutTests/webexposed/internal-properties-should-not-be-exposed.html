@@ -13,8 +13,8 @@ for (var property in internalProperties) {
     debug("Testing " + property);
     element = document.createElement("foo");
     document.body.appendChild(element);
-    shouldBeNull("window.getComputedStyle(element).getPropertyValue(property)")
-    shouldBeUndefined("element.style[property]")
+    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue(property)", "");
+    shouldBeUndefined("element.style[property]");
 
     debug("Value after setting " + property + " to " + internalProperties[property]);
     element.style.setProperty(property, internalProperties[property]);

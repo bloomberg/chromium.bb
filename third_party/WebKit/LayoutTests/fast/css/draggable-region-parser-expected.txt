@@ -21,15 +21,15 @@ PASS parseDraggableRegion('NO-DRAG') is 'no-drag'
 
 Some expected failures.
 
-PASS parseDraggableRegion('') is null
-PASS parseDraggableRegion(' ') is null
-PASS parseDraggableRegion('x') is null
-PASS parseDraggableRegion('x-') is null
-PASS parseDraggableRegion('x()') is null
-PASS parseDraggableRegion('x(a)') is null
-PASS parseDraggableRegion('none x') is null
-PASS parseDraggableRegion('none x()') is null
-PASS parseDraggableRegion('none x(a)') is null
+PASS parseDraggableRegion('') is ""
+PASS parseDraggableRegion(' ') is ""
+PASS parseDraggableRegion('x') is ""
+PASS parseDraggableRegion('x-') is ""
+PASS parseDraggableRegion('x()') is ""
+PASS parseDraggableRegion('x(a)') is ""
+PASS parseDraggableRegion('none x') is ""
+PASS parseDraggableRegion('none x()') is ""
+PASS parseDraggableRegion('none x(a)') is ""
 
 PASS successfullyParsed is true
 

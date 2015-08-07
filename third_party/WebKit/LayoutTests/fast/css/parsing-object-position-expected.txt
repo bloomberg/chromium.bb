@@ -37,21 +37,21 @@ PASS test("object-position: 1vh 1vw;") is "1vh 1vw"
 PASS test("object-position: left 20px center;") is "left 20px top 50%"
 PASS test("object-position: center bottom 25%;") is "left 50% bottom 25%"
 PASS test("object-position: bottom 20px right 12px;") is "right 12px bottom 20px"
-PASS test("object-position: 100px 100px 100px;") is null
-PASS test("object-position: 100px 100px 200px 200px;") is null
-PASS test("object-position: top left center;") is null
-PASS test("object-position: top top;") is null
-PASS test("object-position: top bottom;") is null
-PASS test("object-position: 33px left;") is null
-PASS test("object-position: top 33px;") is null
-PASS test("object-position: inherit inherit;") is null
-PASS test("object-position: initial initial;") is null
-PASS test("object-position: -webkit-fill-available;") is null
-PASS test("object-position: min-content;") is null
-PASS test("object-position: intrinsic;") is null
-PASS test("object-position: auto;") is null
-PASS test("object-position: none;") is null
-PASS test("object-position: fill;") is null
+PASS test("object-position: 100px 100px 100px;") is ""
+PASS test("object-position: 100px 100px 200px 200px;") is ""
+PASS test("object-position: top left center;") is ""
+PASS test("object-position: top top;") is ""
+PASS test("object-position: top bottom;") is ""
+PASS test("object-position: 33px left;") is ""
+PASS test("object-position: top 33px;") is ""
+PASS test("object-position: inherit inherit;") is ""
+PASS test("object-position: initial initial;") is ""
+PASS test("object-position: -webkit-fill-available;") is ""
+PASS test("object-position: min-content;") is ""
+PASS test("object-position: intrinsic;") is ""
+PASS test("object-position: auto;") is ""
+PASS test("object-position: none;") is ""
+PASS test("object-position: fill;") is ""
 PASS successfullyParsed is true
 
 TEST COMPLETE

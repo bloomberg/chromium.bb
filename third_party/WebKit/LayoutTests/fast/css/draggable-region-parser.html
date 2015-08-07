@@ -49,15 +49,15 @@ debug('');
 debug('Some expected failures.');
 debug('');
 
-shouldBe("parseDraggableRegion('')", "null");
-shouldBe("parseDraggableRegion(' ')", "null");
-shouldBe("parseDraggableRegion('x')", "null");
-shouldBe("parseDraggableRegion('x-')", "null");
-shouldBe("parseDraggableRegion('x()')", "null");
-shouldBe("parseDraggableRegion('x(a)')", "null");
-shouldBe("parseDraggableRegion('none x')", "null");
-shouldBe("parseDraggableRegion('none x()')", "null");
-shouldBe("parseDraggableRegion('none x(a)')", "null");
+shouldBeEqualToString("parseDraggableRegion('')", "");
+shouldBeEqualToString("parseDraggableRegion(' ')", "");
+shouldBeEqualToString("parseDraggableRegion('x')", "");
+shouldBeEqualToString("parseDraggableRegion('x-')", "");
+shouldBeEqualToString("parseDraggableRegion('x()')", "");
+shouldBeEqualToString("parseDraggableRegion('x(a)')", "");
+shouldBeEqualToString("parseDraggableRegion('none x')", "");
+shouldBeEqualToString("parseDraggableRegion('none x()')", "");
+shouldBeEqualToString("parseDraggableRegion('none x(a)')", "");
 
 debug('');
 

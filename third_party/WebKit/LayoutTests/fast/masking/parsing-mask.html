@@ -36,7 +36,7 @@ function testInner(property, value, expected) {
 }
 
 function negativeTest(property, value) {
-    testInner(property, value, null);
+    testInner(property, value, "");
     // FIXME: Computed style not yet implemented.
     // testComputed(property, value, 'none');
 }
