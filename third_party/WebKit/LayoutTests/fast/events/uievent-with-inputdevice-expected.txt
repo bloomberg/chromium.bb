@@ -23,6 +23,10 @@ PASS focusevent is non-null.
 PASS focusevent.sourceDevice is null
 PASS focusevent.sourceDevice is non-null.
 PASS focusevent.sourceDevice.firesTouchEvents is false
+PASS compositionevent is non-null.
+PASS compositionevent.sourceDevice is null
+PASS compositionevent.sourceDevice is non-null.
+PASS compositionevent.sourceDevice.firesTouchEvents is false
 PASS successfullyParsed is true
 
 TEST COMPLETE

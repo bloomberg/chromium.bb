@@ -48,4 +48,13 @@
     shouldBeNonNull("focusevent.sourceDevice");
     shouldBeFalse("focusevent.sourceDevice.firesTouchEvents");
 
+    // Creating CompositionEvent.
+    var compositionevent = new CompositionEvent("compositionstart");
+    shouldBeNonNull("compositionevent");
+    shouldBeNull("compositionevent.sourceDevice");
+    
+    compositionevent = new CompositionEvent("compositionstart", { sourceDevice: new InputDevice({ firesTouchEvents: false }) });
+    shouldBeNonNull("compositionevent.sourceDevice");
+    shouldBeFalse("compositionevent.sourceDevice.firesTouchEvents");
+
 </script>
