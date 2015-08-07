@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <script>
     if (window.internals)
-        runPixelTests = internals.runtimeFlags.overlayFullscreenVideoEnabled;
+        runPixelTests = internals.runtimeFlags.overlayFullscreenVideoEnabled || internals.runtimeFlags.forceOverlayFullscreenVideoEnabled;
 </script>
 <script src="full-screen-test.js"></script>
 <script>

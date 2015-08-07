@@ -135,6 +135,8 @@ public:
 
     BLINK_EXPORT static void enableOverlayFullscreenVideo(bool);
 
+    BLINK_EXPORT static void forceOverlayFullscreenVideo(bool);
+
     BLINK_EXPORT static void enableSharedWorker(bool);
 
     BLINK_EXPORT static void enablePreciseMemoryInfo(bool);

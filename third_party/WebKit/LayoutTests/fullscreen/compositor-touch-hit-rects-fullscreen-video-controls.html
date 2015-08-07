@@ -24,7 +24,7 @@ window.onload = function () {
     logRects('handler');
 
     waitForEvent(document, 'webkitfullscreenchange', function() {
-        if (window.internals.runtimeFlags.overlayFullscreenVideoEnabled)
+        if (window.internals.runtimeFlags.overlayFullscreenVideoEnabled || window.internals.runtimeFlags.forceOverlayFullscreenVideoEnabled)
             consoleWrite("Should report another rect which is not on the document");
         else
             consoleWrite("Should keep rect on document");

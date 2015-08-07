@@ -259,6 +259,11 @@ void WebRuntimeFeatures::enableOverlayFullscreenVideo(bool enable)
     RuntimeEnabledFeatures::setOverlayFullscreenVideoEnabled(enable);
 }
 
+void WebRuntimeFeatures::forceOverlayFullscreenVideo(bool enable)
+{
+    RuntimeEnabledFeatures::setForceOverlayFullscreenVideoEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableSharedWorker(bool enable)
 {
     RuntimeEnabledFeatures::setSharedWorkerEnabled(enable);

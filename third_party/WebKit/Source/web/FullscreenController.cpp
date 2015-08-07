@@ -106,14 +106,16 @@ void FullscreenController::didExitFullScreen()
 
     if (Document* document = m_fullScreenFrame->document()) {
         if (Fullscreen* fullscreen = Fullscreen::fromIfExists(*document)) {
-            if (fullscreen->webkitCurrentFullScreenElement()) {
+            Element* element = fullscreen->webkitCurrentFullScreenElement();
+            if (element) {
                 // When the client exits from full screen we have to call fullyExitFullscreen to notify
                 // the document. While doing that, suppress notifications back to the client.
                 m_isCancelingFullScreen = true;
                 Fullscreen::fullyExitFullscreen(*document);
                 m_isCancelingFullScreen = false;
 
-                if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && m_webViewImpl->layerTreeView())
+                // If the video used overlay fullscreen mode, the background was made transparent. Restore the transparency.
+                if (isHTMLVideoElement(element) && m_webViewImpl->layerTreeView())
                     m_webViewImpl->layerTreeView()->setHasTransparentBackground(m_webViewImpl->isTransparent());
 
                 if (m_exitFullscreenPageScaleFactor) {
