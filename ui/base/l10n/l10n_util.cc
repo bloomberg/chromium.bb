@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/i18n/file_util_icu.h"
+#include "base/i18n/message_formatter.h"
 #include "base/i18n/rtl.h"
 #include "base/i18n/string_compare.h"
 #include "base/lazy_instance.h"
@@ -27,7 +28,6 @@
 #include "third_party/icu/source/common/unicode/rbbi.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "ui/base/l10n/l10n_util_collator.h"
-#include "ui/base/l10n/l10n_util_plurals.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
@@ -825,23 +825,18 @@ base::string16 GetStringFUTF16Int(int message_id, int64 a) {
 }
 
 base::string16 GetPluralStringFUTF16(int message_id, int number) {
-  base::string16 pattern = GetStringUTF16(message_id);
-  UErrorCode err = U_ZERO_ERROR;
-  icu::MessageFormat format(
-      icu::UnicodeString(FALSE, pattern.data(), pattern.length()), err);
-  icu::UnicodeString result_unistring;
-  FormatNumberInPlural(format, number, &result_unistring, &err);
-  int capacity = result_unistring.length() + 1;
-  DCHECK_GT(capacity, 1);
-  base::string16 result;
-  result_unistring.extract(
-      static_cast<UChar*>(base::WriteInto(&result, capacity)), capacity, err);
-  DCHECK(U_SUCCESS(err));
-  return result;
+  return base::i18n::MessageFormatter::FormatWithNumberedArgs(
+      GetStringUTF16(message_id), number);
 }
 
 std::string GetPluralStringFUTF8(int message_id, int number) {
   return base::UTF16ToUTF8(GetPluralStringFUTF16(message_id, number));
+}
+
+base::string16 GetSingleOrMultipleStringUTF16(int message_id,
+                                               bool is_multiple) {
+  return base::i18n::MessageFormatter::FormatWithNumberedArgs(
+      GetStringUTF16(message_id), is_multiple ? "multiple" : "single");
 }
 
 void SortStrings16(const std::string& locale,

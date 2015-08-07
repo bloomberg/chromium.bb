@@ -288,6 +288,8 @@
       ],
       'export_dependent_settings': [
         'base',
+        '../third_party/icu/icu.gyp:icuuc',
+        '../third_party/icu/icu.gyp:icui18n',
       ],
       'includes': [
         '../build/android/increase_size_for_speed.gypi',
@@ -483,6 +485,7 @@
         'i18n/char_iterator_unittest.cc',
         'i18n/file_util_icu_unittest.cc',
         'i18n/icu_string_conversions_unittest.cc',
+        'i18n/message_formatter_unittest.cc',
         'i18n/number_formatting_unittest.cc',
         'i18n/rtl_unittest.cc',
         'i18n/streaming_utf8_validator_unittest.cc',

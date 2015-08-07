@@ -987,6 +987,8 @@ component("i18n") {
     "i18n/icu_string_conversions.h",
     "i18n/icu_util.cc",
     "i18n/icu_util.h",
+    "i18n/message_formatter.cc",
+    "i18n/message_formatter.h",
     "i18n/number_formatting.cc",
     "i18n/number_formatting.h",
     "i18n/rtl.cc",
@@ -1006,10 +1008,12 @@ component("i18n") {
   ]
   defines = [ "BASE_I18N_IMPLEMENTATION" ]
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  public_deps = [
+    "//third_party/icu",
+  ]
   deps = [
     ":base",
     "//base/third_party/dynamic_annotations",
-    "//third_party/icu",
   ]
 
   if (!is_debug) {
@@ -1261,6 +1265,7 @@ test("base_unittests") {
     "i18n/char_iterator_unittest.cc",
     "i18n/file_util_icu_unittest.cc",
     "i18n/icu_string_conversions_unittest.cc",
+    "i18n/message_formatter_unittest.cc",
     "i18n/number_formatting_unittest.cc",
     "i18n/rtl_unittest.cc",
     "i18n/streaming_utf8_validator_unittest.cc",

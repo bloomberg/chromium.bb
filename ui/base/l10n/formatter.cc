@@ -7,10 +7,10 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/i18n/unicode/msgfmt.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/l10n_util_plurals.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace ui {
@@ -139,6 +139,33 @@ static const Pluralities IDS_DURATION_HOUR_2ND = {
   " other{# hours}"
 };
 
+namespace {
+
+scoped_ptr<icu::PluralRules> BuildPluralRules() {
+  UErrorCode err = U_ZERO_ERROR;
+  scoped_ptr<icu::PluralRules> rules(
+      icu::PluralRules::forLocale(icu::Locale::getDefault(), err));
+  if (U_FAILURE(err)) {
+    err = U_ZERO_ERROR;
+    icu::UnicodeString fallback_rules("one: n is 1", -1, US_INV);
+    rules.reset(icu::PluralRules::createRules(fallback_rules, err));
+    DCHECK(U_SUCCESS(err));
+  }
+  return rules.Pass();
+}
+
+void FormatNumberInPlural(const icu::MessageFormat& format, int number,
+                          icu::UnicodeString* result, UErrorCode* err) {
+  if (U_FAILURE(*err)) return;
+  icu::Formattable formattable(number);
+  icu::FieldPosition ignore(icu::FieldPosition::DONT_CARE);
+  format.format(&formattable, 1, *result, ignore, *err);
+  DCHECK(U_SUCCESS(*err));
+  return;
+}
+
+}  // namespace
+
 Formatter::Formatter(const Pluralities& sec_pluralities,
                      const Pluralities& min_pluralities,
                      const Pluralities& hour_pluralities,
@@ -177,8 +204,8 @@ void Formatter::Format(Unit unit,
   DCHECK(simple_format_[unit]);
   DCHECK(formatted_string->isEmpty() == TRUE);
   UErrorCode error = U_ZERO_ERROR;
-  l10n_util::FormatNumberInPlural(*simple_format_[unit],
-                                  value, formatted_string, &error);
+  FormatNumberInPlural(*simple_format_[unit],
+                        value, formatted_string, &error);
   DCHECK(U_SUCCESS(error)) << "Error in icu::PluralFormat::format().";
   return;
 }
@@ -193,11 +220,11 @@ void Formatter::Format(TwoUnits units,
       << "Detailed() not implemented for your (format, length) combination!";
   DCHECK(formatted_string->isEmpty() == TRUE);
   UErrorCode error = U_ZERO_ERROR;
-  l10n_util::FormatNumberInPlural(*detailed_format_[units][0], value_1,
-                                  formatted_string, &error);
+  FormatNumberInPlural(*detailed_format_[units][0], value_1,
+                       formatted_string, &error);
   DCHECK(U_SUCCESS(error));
-  l10n_util::FormatNumberInPlural(*detailed_format_[units][1], value_2,
-                                  formatted_string, &error);
+  FormatNumberInPlural(*detailed_format_[units][1], value_2,
+                        formatted_string, &error);
   DCHECK(U_SUCCESS(error));
   return;
 }
@@ -230,7 +257,7 @@ scoped_ptr<icu::MessageFormat> Formatter::InitFormat(
       return format.Pass();
   }
 
-  scoped_ptr<icu::PluralRules> rules(l10n_util::BuildPluralRules());
+  scoped_ptr<icu::PluralRules> rules(BuildPluralRules());
   return CreateFallbackFormat(*rules, pluralities);
 }
 

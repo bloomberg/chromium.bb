@@ -1018,6 +1018,8 @@
           'i18n/icu_string_conversions.h',
           'i18n/icu_util.cc',
           'i18n/icu_util.h',
+          'i18n/message_formatter.cc',
+          'i18n/message_formatter.h',
           'i18n/number_formatting.cc',
           'i18n/number_formatting.h',
           'i18n/rtl.cc',

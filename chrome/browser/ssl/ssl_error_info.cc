@@ -4,8 +4,7 @@
 
 #include "chrome/browser/ssl/ssl_error_info.h"
 
-#include "base/i18n/time_formatting.h"
-#include "base/strings/string_number_conversions.h"
+#include "base/i18n/message_formatter.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -63,18 +62,16 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
         // the expiration value (https://crbug.com/476758).
         int expiration_value =
             (base::Time::Now() - cert->valid_expiry()).InDays() + 1;
-        details = l10n_util::GetStringFUTF16(
-            IDS_CERT_ERROR_EXPIRED_DETAILS, UTF8ToUTF16(request_url.host()),
-            base::IntToString16(expiration_value),
-            base::TimeFormatFriendlyDate(base::Time::Now()));
+        details = base::i18n::MessageFormatter::FormatWithNumberedArgs(
+            l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXPIRED_DETAILS),
+            request_url.host(), expiration_value, base::Time::Now());
         short_description =
             l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXPIRED_DESCRIPTION);
       } else if (base::Time::Now() < cert->valid_start()) {
-        details = l10n_util::GetStringFUTF16(
-            IDS_CERT_ERROR_NOT_YET_VALID_DETAILS,
-            UTF8ToUTF16(request_url.host()),
-            base::IntToString16(
-                (cert->valid_start() - base::Time::Now()).InDays()));
+        details = base::i18n::MessageFormatter::FormatWithNumberedArgs(
+            l10n_util::GetStringUTF16(IDS_CERT_ERROR_NOT_YET_VALID_DETAILS),
+            request_url.host(),
+            (cert->valid_start() - base::Time::Now()).InDays());
         short_description =
             l10n_util::GetStringUTF16(IDS_CERT_ERROR_NOT_YET_VALID_DESCRIPTION);
       } else {

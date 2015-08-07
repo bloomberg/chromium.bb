@@ -365,23 +365,21 @@
       <message name="IDS_DEVICE_NAME_WITH_UNKNOWN_PRODUCT_UNKNOWN_VENDOR_SERIAL" desc="String describing a device by its serial number when only numeric vendor and product IDs are available.">
         Unknown product <ph name="PRODUCT_ID">$1<ex>1234</ex></ph> from vendor <ph name="VENDOR_ID">$2<ex>abcd</ex></ph> (serial number <ph name="SERIAL_NUMBER">$3<ex>00001</ex></ph>)
       </message>
-      <message name="IDS_DEVICE_PERMISSIONS_PROMPT_MULTIPLE" desc="Instructions asking the user to select one or more devices for use with an app.">
-        The application "<ph name="APP_NAME">$1<ex>Chrome Dev Editor</ex></ph>" is requesting access to one or more of your devices.
+      <message name="IDS_DEVICE_PERMISSIONS_PROMPT" desc="Instructions asking the user to select one or more devices for use with an app. [ICU Syntax]">
+      {0, select,
+        single {The application "<ph name="APP_NAME">{1}<ex>Chrome Dev Editor</ex></ph>" is requesting access to one of your devices.}
+        multiple {The application "<ph name="APP_NAME">{1}<ex>Chrome Dev Editor</ex></ph>" is requesting access to one or more of your devices.}
+        other {UNUSED}}
       </message>
-      <message name="IDS_DEVICE_PERMISSIONS_PROMPT_SINGLE" desc="Instructions asking the user to select one device for use with an app.">
-        The application "<ph name="APP_NAME">$1<ex>Chrome Dev Editor</ex></ph>" is requesting access to one of your devices.
+      <message name="IDS_HID_DEVICE_PERMISSIONS_PROMPT_TITLE" desc="Title of the HID device selection dialog when the app will accept one or more selected devices. [ICU Syntax]">
+      {1, select,
+       single {Select a HID device} multiple {Select HID devices}
+       other {UNUSED}}
       </message>
-      <message name="IDS_HID_DEVICE_PERMISSIONS_PROMPT_TITLE_MULTIPLE" desc="Title of the HID device selection dialog when the app will accept one or more selected devices.">
-        Select HID devices
-      </message>
-      <message name="IDS_HID_DEVICE_PERMISSIONS_PROMPT_TITLE_SINGLE" desc="Title of the HID device selection dialog when the app wants only one device selected.">
-        Select a HID device
-      </message>
-      <message name="IDS_USB_DEVICE_PERMISSIONS_PROMPT_TITLE_MULTIPLE" desc="Title of the USB device selection dialog when the app will accept one or more selected devices.">
-        Select USB devices
-      </message>
-      <message name="IDS_USB_DEVICE_PERMISSIONS_PROMPT_TITLE_SINGLE" desc="Title of the USB device selection dialog when the app wants only one device selected.">
-        Select a USB device
+      <message name="IDS_USB_DEVICE_PERMISSIONS_PROMPT_TITLE" desc="Title of the USB device selection dialog when the app will accept one or more selected devices. [ICU Syntax]">
+      {1, select,
+       single {Select a USB device} multiple {Select USB devices}
+       other {UNUSED}}
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_NETWORKING_CONFIG" desc="Permission string for Networking Config API.">
         Configure network connections

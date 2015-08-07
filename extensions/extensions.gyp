@@ -123,6 +123,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_i18n',
         '../base/base.gyp:base_prefs',
         '../components/components.gyp:browsing_data',
         '../components/components.gyp:device_event_log_component',

@@ -169,6 +169,13 @@ base::string16 GetStringFUTF16Int(int message_id, int64 a);
 UI_BASE_EXPORT base::string16 GetPluralStringFUTF16(int message_id, int number);
 UI_BASE_EXPORT std::string GetPluralStringFUTF8(int message_id, int number);
 
+// Get a string when you only care about 'single vs multiple' distinction.
+// The message pointed to by |message_id| should be in ICU syntax
+// (see the references above for Plural) with 'single', 'multiple', and
+// 'other' (fallback) instead of 'male', 'female', and 'other' (fallback).
+UI_BASE_EXPORT base::string16 GetSingleOrMultipleStringUTF16(int message_id,
+                                                              bool is_multiple);
+
 // In place sorting of base::string16 strings using collation rules for
 // |locale|.
 UI_BASE_EXPORT void SortStrings16(const std::string& locale,
