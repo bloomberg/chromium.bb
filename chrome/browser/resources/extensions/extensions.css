@@ -180,6 +180,7 @@ html[dir='rtl'] .extension-list-item {
 
 .extension-title {
   -webkit-padding-end: 20px;
+  -webkit-user-select: text;
   color: rgb(48, 57, 66);
   display: inline;
   font-size: 14px;
