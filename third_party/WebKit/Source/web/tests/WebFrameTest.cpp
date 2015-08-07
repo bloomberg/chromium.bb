@@ -7111,7 +7111,7 @@ TEST_F(WebFrameSwapTest, SwapParentShouldDetachChildren)
 
     // Create child frames in the target frame before testing the swap.
     FrameTestHelpers::TestWebRemoteFrameClient remoteFrameClient;
-    remoteFrame->createRemoteChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &remoteFrameClient);
+    WebRemoteFrame* childRemoteFrame = remoteFrame->createRemoteChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &remoteFrameClient);
 
     FrameTestHelpers::TestWebFrameClient client;
     WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
@@ -7130,6 +7130,7 @@ TEST_F(WebFrameSwapTest, SwapParentShouldDetachChildren)
     // TestWebFrameClient.
     reset();
     remoteFrame->close();
+    childRemoteFrame->close();
 }
 
 TEST_F(WebFrameSwapTest, SwapPreservesGlobalContext)
