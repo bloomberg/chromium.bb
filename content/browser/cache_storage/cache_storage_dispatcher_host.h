@@ -113,6 +113,20 @@ class CONTENT_EXPORT CacheStorageDispatcherHost : public BrowserMessageFilter {
       CacheStorageError error,
       scoped_ptr<ServiceWorkerResponse> response,
       scoped_ptr<storage::BlobDataHandle> blob_data_handle);
+  void OnCacheMatchAllCallbackAdapter(
+      int thread_id,
+      int request_id,
+      const scoped_refptr<CacheStorageCache>& cache,
+      CacheStorageError error,
+      scoped_ptr<ServiceWorkerResponse> response,
+      scoped_ptr<storage::BlobDataHandle> blob_data_handle);
+  void OnCacheMatchAllCallback(
+      int thread_id,
+      int request_id,
+      const scoped_refptr<CacheStorageCache>& cache,
+      CacheStorageError error,
+      scoped_ptr<std::vector<ServiceWorkerResponse>> responses,
+      scoped_ptr<CacheStorageCache::BlobDataHandles> blob_data_handles);
   void OnCacheMatchAll(int thread_id,
                        int request_id,
                        int cache_id,
@@ -136,9 +150,8 @@ class CONTENT_EXPORT CacheStorageDispatcherHost : public BrowserMessageFilter {
 
   // Stores blob handles while waiting for acknowledgement of receipt from the
   // renderer.
-  void StoreBlobDataHandle(
-      scoped_ptr<storage::BlobDataHandle> blob_data_handle);
-  void DropBlobDataHandle(std::string uuid);
+  void StoreBlobDataHandle(const storage::BlobDataHandle& blob_data_handle);
+  void DropBlobDataHandle(const std::string& uuid);
 
   IDToCacheMap id_to_cache_map_;
   CacheID next_cache_id_ = 0;

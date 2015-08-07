@@ -203,9 +203,29 @@ void CacheStorageDispatcherHost::OnCacheMatchAll(
     int cache_id,
     const ServiceWorkerFetchRequest& request,
     const CacheStorageCacheQueryParams& match_params) {
-  // TODO(gavinp,jkarlin): Implement this method.
-  Send(new CacheStorageMsg_CacheMatchAllError(
-      thread_id, request_id, blink::WebServiceWorkerCacheErrorNotImplemented));
+  IDToCacheMap::iterator it = id_to_cache_map_.find(cache_id);
+  if (it == id_to_cache_map_.end()) {
+    Send(new CacheStorageMsg_CacheMatchError(
+        thread_id, request_id, blink::WebServiceWorkerCacheErrorNotFound));
+    return;
+  }
+
+  scoped_refptr<CacheStorageCache> cache = it->second;
+  if (request.url.is_empty()) {
+    cache->MatchAll(
+        base::Bind(&CacheStorageDispatcherHost::OnCacheMatchAllCallback, this,
+                   thread_id, request_id, cache));
+    return;
+  }
+
+  scoped_ptr<ServiceWorkerFetchRequest> scoped_request(
+      new ServiceWorkerFetchRequest(request.url, request.method,
+                                    request.headers, request.referrer,
+                                    request.is_reload));
+  cache->Match(
+      scoped_request.Pass(),
+      base::Bind(&CacheStorageDispatcherHost::OnCacheMatchAllCallbackAdapter,
+                 this, thread_id, request_id, cache));
 }
 
 void CacheStorageDispatcherHost::OnCacheKeys(
@@ -330,7 +350,7 @@ void CacheStorageDispatcherHost::OnCacheStorageMatchCallback(
   }
 
   if (blob_data_handle)
-    StoreBlobDataHandle(blob_data_handle.Pass());
+    StoreBlobDataHandle(*blob_data_handle);
 
   Send(new CacheStorageMsg_CacheStorageMatchSuccess(thread_id, request_id,
                                                     *response));
@@ -350,9 +370,50 @@ void CacheStorageDispatcherHost::OnCacheMatchCallback(
   }
 
   if (blob_data_handle)
-    StoreBlobDataHandle(blob_data_handle.Pass());
+    StoreBlobDataHandle(*blob_data_handle);
 
   Send(new CacheStorageMsg_CacheMatchSuccess(thread_id, request_id, *response));
+}
+
+void CacheStorageDispatcherHost::OnCacheMatchAllCallbackAdapter(
+    int thread_id,
+    int request_id,
+    const scoped_refptr<CacheStorageCache>& cache,
+    CacheStorageError error,
+    scoped_ptr<ServiceWorkerResponse> response,
+    scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
+  scoped_ptr<CacheStorageCache::Responses> responses(
+      new CacheStorageCache::Responses);
+  scoped_ptr<CacheStorageCache::BlobDataHandles> blob_data_handles(
+      new CacheStorageCache::BlobDataHandles);
+  if (error == CACHE_STORAGE_OK) {
+    DCHECK(response);
+    responses->push_back(*response);
+    if (blob_data_handle)
+      blob_data_handles->push_back(*blob_data_handle);
+  }
+  OnCacheMatchAllCallback(thread_id, request_id, cache, error, responses.Pass(),
+                          blob_data_handles.Pass());
+}
+
+void CacheStorageDispatcherHost::OnCacheMatchAllCallback(
+    int thread_id,
+    int request_id,
+    const scoped_refptr<CacheStorageCache>& cache,
+    CacheStorageError error,
+    scoped_ptr<CacheStorageCache::Responses> responses,
+    scoped_ptr<CacheStorageCache::BlobDataHandles> blob_data_handles) {
+  if (error != CACHE_STORAGE_OK && error != CACHE_STORAGE_ERROR_NOT_FOUND) {
+    Send(new CacheStorageMsg_CacheMatchAllError(
+        thread_id, request_id, ToWebServiceWorkerCacheError(error)));
+    return;
+  }
+
+  for (const storage::BlobDataHandle& handle : *blob_data_handles)
+    StoreBlobDataHandle(handle);
+
+  Send(new CacheStorageMsg_CacheMatchAllSuccess(thread_id, request_id,
+                                                *responses));
 }
 
 void CacheStorageDispatcherHost::OnCacheKeysCallback(
@@ -406,15 +467,14 @@ void CacheStorageDispatcherHost::DropCacheReference(CacheID cache_id) {
 }
 
 void CacheStorageDispatcherHost::StoreBlobDataHandle(
-    scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
-  DCHECK(blob_data_handle);
+    const storage::BlobDataHandle& blob_data_handle) {
   std::pair<UUIDToBlobDataHandleList::iterator, bool> rv =
       blob_handle_store_.insert(std::make_pair(
-          blob_data_handle->uuid(), std::list<storage::BlobDataHandle>()));
-  rv.first->second.push_front(storage::BlobDataHandle(*blob_data_handle));
+          blob_data_handle.uuid(), std::list<storage::BlobDataHandle>()));
+  rv.first->second.push_front(storage::BlobDataHandle(blob_data_handle));
 }
 
-void CacheStorageDispatcherHost::DropBlobDataHandle(std::string uuid) {
+void CacheStorageDispatcherHost::DropBlobDataHandle(const std::string& uuid) {
   UUIDToBlobDataHandleList::iterator it = blob_handle_store_.find(uuid);
   if (it == blob_handle_store_.end())
     return;
