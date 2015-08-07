@@ -10,6 +10,7 @@
 
 #include "base/base_export.h"
 #include "base/callback.h"
+#include "base/trace_event/memory_dump_provider.h"
 
 namespace base {
 namespace trace_event {
@@ -20,8 +21,6 @@ enum class MemoryDumpType {
   TASK_BEGIN,         // Dumping memory at the beginning of a message-loop task.
   TASK_END,           // Dumping memory at the ending of a message-loop task.
   PERIODIC_INTERVAL,  // Dumping memory at periodic intervals.
-  PERIODIC_INTERVAL_WITH_MMAPS,  // As above but w/ heavyweight mmaps dumps.
-                                 // Temporary workaround for crbug.com/499731.
   EXPLICITLY_TRIGGERED,  // Non maskable dump request.
   LAST = EXPLICITLY_TRIGGERED // For IPC macros.
 };
@@ -38,6 +37,8 @@ struct BASE_EXPORT MemoryDumpRequestArgs {
   uint64 dump_guid;
 
   MemoryDumpType dump_type;
+
+  MemoryDumpArgs dump_args;
 };
 
 }  // namespace trace_event

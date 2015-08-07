@@ -17,7 +17,11 @@ class ProcessMemoryDump;
 // should generate on dump request. This is to control the size of dumps
 // generated.
 struct MemoryDumpArgs {
-  enum class LevelOfDetail { LOW, HIGH };
+  enum class LevelOfDetail {
+    LOW,
+    HIGH,
+    LAST = HIGH  // For IPC Macros.
+  };
 
   LevelOfDetail level_of_detail;
 };
