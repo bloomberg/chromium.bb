@@ -248,7 +248,6 @@ class RemoteTryJob(object):
   def GetTrybotWaterfallLink(self):
     """Get link to the waterfall for the user."""
     # The builders on the trybot waterfall are named after the templates.
-    site_config = config_lib.GetConfig()
     builders = set(site_config[bot]['_template'] for bot in self.bots)
 
     # Note that this will only show the jobs submitted by the user in the last
