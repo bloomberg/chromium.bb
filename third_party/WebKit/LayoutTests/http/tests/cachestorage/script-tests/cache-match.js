@@ -145,8 +145,8 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.matchAll(entries.a.request.url)
       .then(function(result) {
-          assert_array_objects_equals(result, [entries.a.response],
-                                      'Cache.matchAll should match by URL.');
+          assert_array_equivalent(result, [entries.a.response],
+                                  'Cache.matchAll should match by URL.');
         });
   }, 'Cache.matchAll with URL');
 
@@ -161,9 +161,8 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.matchAll(entries.a.request)
       .then(function(result) {
-          assert_array_objects_equals(
-            result, [entries.a.response],
-            'Cache.matchAll should match by Request.');
+          assert_array_equivalent(result, [entries.a.response],
+                                  'Cache.matchAll should match by Request.');
         });
   }, 'Cache.matchAll with Request');
 
@@ -178,9 +177,8 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.matchAll(new Request(entries.a.request.url))
       .then(function(result) {
-          assert_array_objects_equals(
-            result, [entries.a.response],
-            'Cache.matchAll should match by Request.');
+          assert_array_equivalent(result, [entries.a.response],
+                                  'Cache.matchAll should match by Request.');
         });
   }, 'Cache.matchAll with new Request');
 

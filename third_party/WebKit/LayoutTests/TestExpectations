@@ -134,8 +134,7 @@ crbug.com/248938 [ Win ] virtual/threaded/animations/change-keyframes.html [ Pas
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
 crbug.com/469683 virtual/threaded/animations/responsive-neutral-keyframes.html [ Pass Failure ]
 crbug.com/510002 [ Win ] http/tests/cachestorage/worker/cache-add.html [ Pass Failure ]
-# Temporary commented out for crbug.com/428363
-# crbug.com/510002 [ Win ] http/tests/cachestorage/worker/cache-match.html [ Pass Failure ]
+crbug.com/510002 [ Win ] http/tests/cachestorage/worker/cache-match.html [ Pass Failure ]
 crbug.com/433727 [ Win ] http/tests/cachestorage/worker/cache-put.html [ Pass Timeout Failure ]
 crbug.com/503874 http/tests/inspector/sources/debugger/worker-debugging-script-mapping.html [ Pass Failure ]
 crbug.com/498539 inspector/console/console-log-syntax-error.html [ Pass Timeout ]
@@ -544,11 +543,6 @@ crbug.com/492957 imported/web-platform-tests/webrtc/datachannel-emptystring.html
 
 crbug.com/396775 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
 crbug.com/396775 virtual/prefer_compositing_to_lcd_text/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
-
-# Temporary disabled
-crbug.com/428363 http/tests/cachestorage/window/cache-match.html [ Skip ]
-crbug.com/428363 http/tests/cachestorage/worker/cache-match.html [ Skip ]
-crbug.com/428363 http/tests/cachestorage/serviceworker/cache-match.html [ Skip ]
 
 crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip ]
 
