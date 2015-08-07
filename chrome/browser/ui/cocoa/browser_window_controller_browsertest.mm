@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -38,6 +39,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/infobars/core/simple_alert_infobar_delegate.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 #import "testing/gtest_mac.h"
@@ -349,6 +351,21 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
       checker.CheckViewExposed(view);
   }
 
+  // Check if the window is front most or if one of its child windows (such
+  // as a status bubble) is front most.
+  bool IsFrontWindow(NSWindow* window) {
+    NSWindow* frontmostWindow = [[NSApp orderedWindows] objectAtIndex:0];
+    return [frontmostWindow isEqual:window] ||
+           [[frontmostWindow parentWindow] isEqual:window];
+  }
+
+  void WaitForFullScreenTransition() {
+    content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+        content::NotificationService::AllSources());
+    observer.Wait();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserWindowControllerTest);
 };
@@ -635,4 +652,30 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, TrafficLightZOrder) {
   [controller() enterImmersiveFullscreen];
   [controller() exitImmersiveFullscreen];
   VerifyWindowControlsZOrder();
+}
+
+// If this test fails, it is usually a sign that the bots have some sort of
+// problem (such as a modal dialog up). This tests is a very useful canary, so
+// please do not mark it as flaky without first verifying that there are no bot
+// problems.
+// http://crbug.com/53586
+IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, TestFullScreenActivate) {
+  [controller() showWindow:nil];
+
+  EXPECT_FALSE([controller() isInAnyFullscreenMode]);
+
+  [controller() activate];
+  EXPECT_TRUE(IsFrontWindow([controller() window]));
+
+  [controller() enterBrowserFullscreenWithToolbar:YES];
+  WaitForFullScreenTransition();
+  [controller() activate];
+
+  // No fullscreen window on 10.7+.
+  if (base::mac::IsOSSnowLeopard())
+    EXPECT_TRUE(IsFrontWindow([controller() createFullscreenWindow]));
+
+  // We have to cleanup after ourselves by unfullscreening.
+  [controller() exitAnyFullscreen];
+  WaitForFullScreenTransition();
 }

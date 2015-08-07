@@ -729,14 +729,6 @@ class BrowserWindowFullScreenControllerTest : public CocoaProfileTest {
   BrowserWindowController* controller_;
 };
 
-// Check if the window is front most or if one of its child windows (such
-// as a status bubble) is front most.
-static bool IsFrontWindow(NSWindow* window) {
-  NSWindow* frontmostWindow = [[NSApp orderedWindows] objectAtIndex:0];
-  return [frontmostWindow isEqual:window] ||
-         [[frontmostWindow parentWindow] isEqual:window];
-}
-
 void WaitForFullScreenTransition() {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_FULLSCREEN_CHANGED,
@@ -756,32 +748,6 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
   [controller_ exitAnyFullscreen];
   WaitForFullScreenTransition();
   EXPECT_FALSE([controller_ isInAnyFullscreenMode]);
-}
-
-// If this test fails, it is usually a sign that the bots have some sort of
-// problem (such as a modal dialog up).  This tests is a very useful canary, so
-// please do not mark it as flaky without first verifying that there are no bot
-// problems.
-// http://crbug.com/53586
-TEST_F(BrowserWindowFullScreenControllerTest, TestActivate) {
-  [controller_ showWindow:nil];
-
-  EXPECT_FALSE([controller_ isInAnyFullscreenMode]);
-
-  [controller_ activate];
-  EXPECT_TRUE(IsFrontWindow([controller_ window]));
-
-  [controller_ enterBrowserFullscreenWithToolbar:YES];
-  WaitForFullScreenTransition();
-  [controller_ activate];
-
-  // No fullscreen window on 10.7+.
-  if (base::mac::IsOSSnowLeopard())
-    EXPECT_TRUE(IsFrontWindow([controller_ createFullscreenWindow]));
-
-  // We have to cleanup after ourselves by unfullscreening.
-  [controller_ exitAnyFullscreen];
-  WaitForFullScreenTransition();
 }
 
 @implementation BrowserWindowControllerFakeFullscreen

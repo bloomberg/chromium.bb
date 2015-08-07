@@ -127,8 +127,7 @@ const CGFloat kPatternVerticalOffsetNoTabStrip = 3;
   // Per http://crbug.com/73779 and http://crbug.com/75223, we need this to
   // properly activate windows if Chrome is not the active application.
   [[controller window] makeKeyAndOrderFront:controller];
-  ProcessSerialNumber psn;
-  GetCurrentProcess(&psn);
+  ProcessSerialNumber psn = { 0, kCurrentProcess };
   SetFrontProcessWithOptions(&psn, kSetFrontProcessFrontWindowOnly);
 }
 
