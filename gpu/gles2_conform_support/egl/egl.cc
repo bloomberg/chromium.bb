@@ -218,7 +218,32 @@ EGLSurface eglCreateWindowSurface(EGLDisplay dpy,
 EGLSurface eglCreatePbufferSurface(EGLDisplay dpy,
                                    EGLConfig config,
                                    const EGLint* attrib_list) {
-  return EGL_NO_SURFACE;
+  EGLint error_code = ValidateDisplayConfig(dpy, config);
+  if (error_code != EGL_SUCCESS)
+    return EglError(error_code, EGL_NO_SURFACE);
+
+  egl::Display* display = static_cast<egl::Display*>(dpy);
+  int width = 1;
+  int height = 1;
+  if (attrib_list) {
+    for (const int32_t* attr = attrib_list; attr[0] != EGL_NONE; attr += 2) {
+      switch (attr[0]) {
+        case EGL_WIDTH:
+          width = attr[1];
+          break;
+        case EGL_HEIGHT:
+          height = attr[1];
+          break;
+      }
+    }
+  }
+  display->SetCreateOffscreen(width, height);
+
+  EGLSurface surface = display->CreateWindowSurface(config, 0, attrib_list);
+  if (surface == EGL_NO_SURFACE)
+    return EglError(EGL_BAD_ALLOC, EGL_NO_SURFACE);
+
+  return EglSuccess(surface);
 }
 
 EGLSurface eglCreatePixmapSurface(EGLDisplay dpy,
