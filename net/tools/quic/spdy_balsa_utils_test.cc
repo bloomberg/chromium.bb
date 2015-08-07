@@ -4,7 +4,10 @@
 
 #include "net/tools/quic/spdy_balsa_utils.h"
 
+#include "net/spdy/spdy_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::test::CompareSpdyHeaderBlocks;
 
 namespace net {
 namespace tools {
@@ -24,7 +27,7 @@ TEST(SpdyBalsaUtilsTest, RequestHeadersToSpdyHeaders) {
   expected_headers[":scheme"] = "https";
   expected_headers[":method"] = "GET";
 
-  EXPECT_EQ(expected_headers, spdy_headers);
+  EXPECT_TRUE(CompareSpdyHeaderBlocks(expected_headers, spdy_headers));
 }
 
 TEST(SpdyBalsaUtilsTest, ResponseHeadersToSpdyHeaders) {
@@ -37,7 +40,7 @@ TEST(SpdyBalsaUtilsTest, ResponseHeadersToSpdyHeaders) {
   SpdyHeaderBlock expected_headers;
   expected_headers[":status"] = "200";
 
-  EXPECT_EQ(expected_headers, spdy_headers);
+  EXPECT_TRUE(CompareSpdyHeaderBlocks(expected_headers, spdy_headers));
 }
 
 TEST(SpdyBalsaUtilsTest, SpdyHeadersToRequestHeaders) {

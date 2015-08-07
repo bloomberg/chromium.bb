@@ -11,6 +11,7 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
 #include "net/spdy/spdy_protocol.h"
+#include "net/spdy/spdy_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
@@ -197,7 +198,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
               framer_.ParseHeaderBlockInBuffer(saved_header_data_.data(),
                                                saved_header_data_.length(),
                                                &headers));
-    EXPECT_EQ(headers_, headers);
+    EXPECT_TRUE(CompareSpdyHeaderBlocks(headers_, headers));
     saved_header_data_.clear();
   }
 
