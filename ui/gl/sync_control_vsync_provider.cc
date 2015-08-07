@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 
 #if defined(OS_LINUX)
 // These constants define a reasonable range for a calculated refresh interval.
@@ -35,6 +36,7 @@ SyncControlVSyncProvider::~SyncControlVSyncProvider() {}
 
 void SyncControlVSyncProvider::GetVSyncParameters(
     const UpdateVSyncCallback& callback) {
+  TRACE_EVENT0("gpu", "SyncControlVSyncProvider::GetVSyncParameters");
 #if defined(OS_LINUX)
   base::TimeTicks timebase;
 
