@@ -132,6 +132,21 @@ TEST_F(SurfaceDisplayOutputSurfaceTest, NoDamageDoesNotTriggerSwapBuffers) {
   EXPECT_EQ(1u, output_surface_->num_sent_frames());
 }
 
+TEST_F(SurfaceDisplayOutputSurfaceTest, SuspendedDoesNotTriggerSwapBuffers) {
+  SwapBuffersWithDamage(display_rect_);
+  EXPECT_EQ(1u, output_surface_->num_sent_frames());
+  output_surface_->set_suspended_for_recycle(true);
+  task_runner_->RunUntilIdle();
+  EXPECT_EQ(1u, output_surface_->num_sent_frames());
+  SwapBuffersWithDamage(display_rect_);
+  task_runner_->RunUntilIdle();
+  EXPECT_EQ(1u, output_surface_->num_sent_frames());
+  output_surface_->set_suspended_for_recycle(false);
+  SwapBuffersWithDamage(display_rect_);
+  task_runner_->RunUntilIdle();
+  EXPECT_EQ(2u, output_surface_->num_sent_frames());
+}
+
 TEST_F(SurfaceDisplayOutputSurfaceTest,
        LockingResourcesDoesNotIndirectlyCauseDamage) {
   surface_display_output_surface_.ForceReclaimResources();

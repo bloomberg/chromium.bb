@@ -22,6 +22,7 @@ FakeOutputSurface::FakeOutputSurface(
       client_(NULL),
       num_sent_frames_(0),
       has_external_stencil_test_(false),
+      suspended_for_recycle_(false),
       framebuffer_(0) {
   if (delegated_rendering) {
     capabilities_.delegated_rendering = true;
@@ -36,6 +37,7 @@ FakeOutputSurface::FakeOutputSurface(
       client_(NULL),
       num_sent_frames_(0),
       has_external_stencil_test_(false),
+      suspended_for_recycle_(false),
       framebuffer_(0) {
   if (delegated_rendering) {
     capabilities_.delegated_rendering = true;
@@ -50,6 +52,7 @@ FakeOutputSurface::FakeOutputSurface(
       client_(NULL),
       num_sent_frames_(0),
       has_external_stencil_test_(false),
+      suspended_for_recycle_(false),
       framebuffer_(0) {
   if (delegated_rendering) {
     capabilities_.delegated_rendering = true;
@@ -65,6 +68,7 @@ FakeOutputSurface::FakeOutputSurface(
       client_(NULL),
       num_sent_frames_(0),
       has_external_stencil_test_(false),
+      suspended_for_recycle_(false),
       framebuffer_(0) {
   if (delegated_rendering) {
     capabilities_.delegated_rendering = true;
@@ -137,6 +141,10 @@ void FakeOutputSurface::ReturnResource(unsigned id, CompositorFrameAck* ack) {
 
 bool FakeOutputSurface::HasExternalStencilTest() const {
   return has_external_stencil_test_;
+}
+
+bool FakeOutputSurface::SurfaceIsSuspendForRecycle() const {
+  return suspended_for_recycle_;
 }
 
 void FakeOutputSurface::SetMemoryPolicyToSetAtBind(

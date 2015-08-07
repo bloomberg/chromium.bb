@@ -117,8 +117,14 @@ class FakeOutputSurface : public OutputSurface {
 
   bool HasExternalStencilTest() const override;
 
+  bool SurfaceIsSuspendForRecycle() const override;
+
   void set_has_external_stencil_test(bool has_test) {
     has_external_stencil_test_ = has_test;
+  }
+
+  void set_suspended_for_recycle(bool suspended) {
+    suspended_for_recycle_ = suspended;
   }
 
   void SetMemoryPolicyToSetAtBind(
@@ -149,6 +155,7 @@ class FakeOutputSurface : public OutputSurface {
   CompositorFrame last_sent_frame_;
   size_t num_sent_frames_;
   bool has_external_stencil_test_;
+  bool suspended_for_recycle_;
   unsigned framebuffer_;
   TransferableResourceArray resources_held_by_parent_;
   scoped_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind_;
