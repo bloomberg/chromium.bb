@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
+
 from telemetry.value import scalar
 
 from metrics import Metric
@@ -21,15 +23,25 @@ class CpuMetric(Metric):
     self._browser = browser
 
   def Start(self, page, tab):
+    if not self._browser.supports_cpu_metrics:
+      logging.warning('CPU metrics not supported.')
+      return
+
     self._start_cpu = self._browser.cpu_stats
 
   def Stop(self, page, tab):
+    if not self._browser.supports_cpu_metrics:
+      return
+
     assert self._start_cpu, 'Must call Start() first'
     self._stop_cpu = self._browser.cpu_stats
 
   # Optional argument trace_name is not in base class Metric.
   # pylint: disable=W0221
   def AddResults(self, tab, results, trace_name='cpu_utilization'):
+    if not self._browser.supports_cpu_metrics:
+      return
+
     assert self._stop_cpu, 'Must call Stop() first'
     cpu_stats = _SubtractCpuStats(self._stop_cpu, self._start_cpu)
 

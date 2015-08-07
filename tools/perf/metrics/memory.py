@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
 import sys
 
 from telemetry.value import histogram
@@ -86,6 +87,10 @@ class MemoryMetric(Metric):
 
     Here, this consists of recording the start value of all the histograms.
     """
+    if not self._browser.supports_memory_metrics:
+      logging.warning('Memory metrics not supported.')
+      return
+
     for h in _HISTOGRAMS:
       histogram_data = histogram_util.GetHistogram(
           h['type'], h['name'], tab)
@@ -100,6 +105,9 @@ class MemoryMetric(Metric):
     The results are the differences between the current histogram values
     and the values when Start() was called.
     """
+    if not self._browser.supports_memory_metrics:
+      return
+
     assert self._histogram_start, 'Must call Start() first'
     for h in _HISTOGRAMS:
       # Histogram data may not be available
@@ -114,6 +122,9 @@ class MemoryMetric(Metric):
   # pylint: disable=W0221
   def AddResults(self, tab, results, trace_name=None):
     """Add results for this page to the results object."""
+    if not self._browser.supports_memory_metrics:
+      return
+
     assert self._histogram_delta, 'Must call Stop() first'
     for h in _HISTOGRAMS:
       # Histogram data may not be available

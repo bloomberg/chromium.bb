@@ -94,6 +94,18 @@ class FakeBrowser(object):
         return 'http://fakeserver:99999/%s' % url_path
     return FakeHttpServer()
 
+  @property
+  def supports_cpu_metrics(self):
+    return True
+
+  @property
+  def supports_memory_metrics(self):
+    return True
+
+  @property
+  def supports_power_metrics(self):
+    return True
+
 
 class FakePlatform(object):
   def GetOSName(self):

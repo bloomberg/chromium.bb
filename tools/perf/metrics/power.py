@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
 import time
 
 from telemetry.util import process_statistic_timeline_data
@@ -78,6 +79,10 @@ class PowerMetric(Metric):
     if not self._platform.CanMonitorPower():
       return
 
+    if not self._browser.supports_power_metrics:
+      logging.warning('Power metrics not supported.')
+      return
+
     self._results = None
     self._StopInternal()
 
@@ -87,7 +92,8 @@ class PowerMetric(Metric):
     self._running = True
 
   def Stop(self, _, tab):
-    if not self._platform.CanMonitorPower():
+    if (not self._platform.CanMonitorPower() or
+        not self._browser.supports_power_metrics):
       return
 
     self._StopInternal()
