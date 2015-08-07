@@ -2306,7 +2306,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>TBD.</summary>
 </histogram>
 
-<histogram name="Autofill.ScanCreditCard.Completed" units="BooleanCompleted">
+<histogram name="Autofill.ScanCreditCard.Completed" enum="BooleanCompleted">
   <owner>rouslan@chromium.org</owner>
   <summary>Whether a credit card scan was completed or cancelled.</summary>
 </histogram>
