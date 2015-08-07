@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 
 android_library("sync_java") {
@@ -13,6 +14,7 @@ android_library("sync_java") {
     "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/android_tools:android_gcm_java",
   ]
+  srcjar_deps = [ ":java_enums" ]
   DEPRECATED_java_in_dir = "java/src"
 }
 
@@ -28,4 +30,21 @@ android_library("sync_javatests") {
     "//third_party/jsr-305:jsr_305_javalib",
   ]
   DEPRECATED_java_in_dir = "javatests/src"
+}
+
+# GYP: //sync/sync_android.gypi:model_type_java
+java_cpp_enum("java_enums") {
+  sources = [
+    "//sync/internal_api/public/base/model_type.h",
+  ]
+  outputs = [
+    "org/chromium/sync/ModelType.java",
+  ]
+}
+
+generate_jni("jni_headers") {
+  sources = [
+    "java/src/org/chromium/sync/ModelTypeHelper.java",
+  ]
+  jni_package = "syncer"
 }

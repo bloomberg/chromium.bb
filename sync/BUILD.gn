@@ -425,6 +425,16 @@ source_set("sync_core") {
     "//sync/protocol",
   ]
 
+  if (is_android) {
+    deps += [ "//sync/android:jni_headers" ]
+    sources += [
+      "android/model_type_helper.cc",
+      "android/model_type_helper.h",
+      "android/sync_jni_registrar.cc",
+      "android/sync_jni_registrar.h",
+    ]
+  }
+
   if (is_chromeos) {
     # Required by get_session_name.cc on Chrome OS.
     deps += [ "//chromeos" ]

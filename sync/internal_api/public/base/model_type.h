@@ -34,6 +34,8 @@ namespace syncer {
 // TODO(akalin): Move the non-exported functions in this file to a
 // private header.
 
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.sync
 enum ModelType {
   // Object type unknown.  Objects may transition through
   // the unknown state during their initial creation, before

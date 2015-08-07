@@ -474,6 +474,17 @@
             ]
           },
         }],
+        ['OS=="android"', {
+          'dependencies': [
+            'sync_jni_headers',
+          ],
+          'sources': [
+            'android/model_type_helper.cc',
+            'android/model_type_helper.h',
+            'android/sync_jni_registrar.cc',
+            'android/sync_jni_registrar.h',
+          ],
+        }],
       ],
     },
     {

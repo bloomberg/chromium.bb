@@ -137,6 +137,7 @@
 #include "components/signin/core/browser/android/component_jni_registrar.h"
 #include "components/variations/android/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
+#include "sync/android/sync_jni_registrar.h"
 
 #if defined(ENABLE_PRINTING) && !defined(ENABLE_PRINT_PREVIEW)
 #include "printing/printing_context_android.h"
@@ -288,6 +289,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"SSLClientCertificateRequest", RegisterSSLClientCertificateRequestAndroid},
     {"StartupMetricUtils", RegisterStartupMetricUtils},
     {"StaticTabSceneLayer", chrome::android::RegisterStaticTabSceneLayer},
+    {"Sync", syncer::RegisterSyncJni},
     {"TabAndroid", TabAndroid::RegisterTabAndroid},
     {"TabContentManager", chrome::android::RegisterTabContentManager},
     {"TabListSceneLayer", RegisterTabListSceneLayer},
