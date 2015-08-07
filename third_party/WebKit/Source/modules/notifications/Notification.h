@@ -32,6 +32,7 @@
 #define Notification_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
@@ -135,7 +136,8 @@ private:
 private:
     WebNotificationData m_data;
 
-    RefPtr<SerializedScriptValue> m_serializedData;
+    // ScriptValue representations of the developer-associated data. Initialized lazily on first access.
+    ScriptValue m_developerData;
 
     // Notifications can either be bound to the page, which means they're identified by
     // their delegate, or persistent, which means they're identified by a persistent Id

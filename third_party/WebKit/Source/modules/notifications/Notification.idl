@@ -70,7 +70,7 @@ enum NotificationPermission {
 
     [RuntimeEnabled=NotificationExperimental] readonly attribute sequence<unsigned long>? vibrate;
     readonly attribute boolean silent;
-    [CallWith=ScriptState] readonly attribute any data;
+    [CallWith=ScriptState, SameObject] readonly attribute any data;
 
     // TODO(johnme): The spec requires a FrozenArray, but sequence seems to behave like one already?! https://crbug.com/515920
     [RuntimeEnabled=NotificationExperimental] readonly attribute sequence<NotificationAction> actions;

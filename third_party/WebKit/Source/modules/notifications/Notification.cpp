@@ -255,17 +255,19 @@ bool Notification::silent() const
 
 ScriptValue Notification::data(ScriptState* scriptState)
 {
-    // TODO(peter): The specification requires this to be [SameObject] - match this.
+    if (m_developerData.isEmpty()) {
+        RefPtr<SerializedScriptValue> serializedValue;
 
-    if (!m_serializedData) {
-        const WebVector<char> serializedData = m_data.data;
+        const WebVector<char>& serializedData = m_data.data;
         if (serializedData.size())
-            m_serializedData = SerializedScriptValueFactory::instance().createFromWireBytes(serializedData.data(), serializedData.size());
+            serializedValue = SerializedScriptValueFactory::instance().createFromWireBytes(serializedData.data(), serializedData.size());
         else
-            m_serializedData = SerializedScriptValueFactory::instance().create();
+            serializedValue = SerializedScriptValueFactory::instance().create();
+
+        m_developerData = ScriptValue(scriptState, serializedValue->deserialize(scriptState->isolate()));
     }
 
-    return ScriptValue(scriptState, m_serializedData->deserialize(scriptState->isolate()));
+    return m_developerData;
 }
 
 HeapVector<NotificationAction> Notification::actions() const

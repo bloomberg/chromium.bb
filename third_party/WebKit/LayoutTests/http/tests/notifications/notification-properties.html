@@ -66,6 +66,24 @@
             assert_equals(emptyNotification.data, null);
             assert_array_equals(emptyNotification.actions, []);
 
+            var equalNotification = new Notification("My Notification", {
+                vibrate: [50, 10, 50, 10, 50],
+                data: { hello: "World!" },
+                actions: [
+                  { action: "foo", title: "Foo" },
+                  { action: "bar", title: "Bar" }
+                ]
+            });
+
+            // Test equality of the object attributes.
+            assert_true(equalNotification.data === equalNotification.data, '`data` object equality');
+
+            // TODO(peter): This should pass before shipping Notification.vibrate.
+            //assert_true(equalNotification.vibrate === equalNotification.vibrate, '`vibrate` object equality');
+
+            // TODO(johnme): This should pass before shipping Notification.actions.
+            //assert_true(equalNotification.actions === equalNotification.actions, '`actions` object equality');
+
             var serializedUrlNotification = new Notification("My Notification", {
                 icon: "http://example.com"
             });
