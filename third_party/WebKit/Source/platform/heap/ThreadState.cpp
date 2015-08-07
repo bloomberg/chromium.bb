@@ -76,9 +76,6 @@ uintptr_t ThreadState::s_mainThreadStackStart = 0;
 uintptr_t ThreadState::s_mainThreadUnderestimatedStackSize = 0;
 uint8_t ThreadState::s_mainThreadStateStorage[sizeof(ThreadState)];
 SafePointBarrier* ThreadState::s_safePointBarrier = nullptr;
-#if ENABLE(ASSERT)
-int ThreadState::s_selfKeepAliveAllocationsOnMainThread = 0;
-#endif
 
 RecursiveMutex& ThreadState::threadAttachMutex()
 {
@@ -169,9 +166,6 @@ void ThreadState::attachMainThread()
     MutexLocker locker(threadAttachMutex());
     ThreadState* state = new(s_mainThreadStateStorage) ThreadState();
     attachedThreads().add(state);
-#if ENABLE(ASSERT)
-    s_selfKeepAliveAllocationsOnMainThread = 0;
-#endif
 }
 
 void ThreadState::detachMainThread()
@@ -195,8 +189,6 @@ void ThreadState::detachMainThread()
         attachedThreads().remove(state);
         state->~ThreadState();
     }
-    // Catch out any self-referential leaks created by the main thread.
-    ASSERT(s_selfKeepAliveAllocationsOnMainThread == 0);
     shutdownHeapIfNecessary();
 }
 
@@ -265,10 +257,7 @@ void ThreadState::cleanup()
         }
         // We should not have any persistents left when getting to this point,
         // if we have it is probably a bug so adding a debug ASSERT to catch this.
-        // (debug tip: use persistentRegion()->dumpLivePersistents() to get a list of
-        // the remaining live Persistent<>s. In gdb, performing "info symbol" on the
-        // trace callback addresses printed should tell you what Persistent<T>s are leaking.)
-        ASSERT(!currentCount && "Persistent<>s leak on thread heap shutdown");
+        ASSERT(!currentCount);
         // All of pre-finalizers should be consumed.
         ASSERT(m_orderedPreFinalizers.isEmpty());
         RELEASE_ASSERT(gcState() == NoGCScheduled);
@@ -1550,25 +1539,6 @@ void ThreadState::reportMarkSweepStats(const char* statsName, const ClassAgeCoun
         json->endArray();
     }
     TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("blink_gc"), statsName, this, json.release());
-}
-#endif
-
-#if ENABLE(ASSERT)
-void ThreadState::incrementSelfKeepAliveAllocations()
-{
-    if (!ThreadState::current()->isMainThread())
-        return;
-
-    s_selfKeepAliveAllocationsOnMainThread++;
-}
-
-void ThreadState::decrementSelfKeepAliveAllocations()
-{
-    if (!ThreadState::current()->isMainThread())
-        return;
-
-    ASSERT(s_selfKeepAliveAllocationsOnMainThread > 0);
-    s_selfKeepAliveAllocationsOnMainThread--;
 }
 #endif
 

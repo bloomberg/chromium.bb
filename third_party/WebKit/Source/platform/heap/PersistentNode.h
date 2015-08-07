@@ -82,11 +82,6 @@ public:
         return m_self;
     }
 
-    TraceCallback traceCallback() const
-    {
-        return m_trace;
-    }
-
 private:
     // If this PersistentNode is in use:
     //   - m_self points to the corresponding Persistent handle.
@@ -148,10 +143,6 @@ public:
     }
     void tracePersistentNodes(Visitor*);
     int numberOfPersistents();
-
-#ifndef NDEBUG
-    void dumpLivePersistents();
-#endif
 
 private:
     friend CrossThreadPersistentRegion;
