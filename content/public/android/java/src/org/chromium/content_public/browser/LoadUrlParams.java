@@ -39,6 +39,7 @@ public class LoadUrlParams {
     boolean mCanLoadLocalResources;
     boolean mIsRendererInitiated;
     long mIntentReceivedTimestamp;
+    boolean mHasUserGesture;
 
     /**
      * Creates an instance with default page transition type.
@@ -405,6 +406,22 @@ public class LoadUrlParams {
      */
     public long getIntentReceivedTimestamp() {
         return mIntentReceivedTimestamp;
+    }
+
+    /**
+     * Set whether the load is initiated by a user gesture.
+     *
+     * @param hasUserGesture True if load is initiated by user gesture, or false otherwise.
+     */
+    public void setHasUserGesture(boolean hasUserGesture) {
+        mHasUserGesture = hasUserGesture;
+    }
+
+    /**
+     * @return Whether or not this load was initiated with a user gesture.
+     */
+    public boolean getHasUserGesture() {
+        return mHasUserGesture;
     }
 
     public boolean isBaseUrlDataScheme() {

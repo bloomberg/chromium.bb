@@ -177,6 +177,17 @@ class NavigationController {
     // navigated. This is currently only used in tests.
     std::string frame_name;
 
+#if defined(OS_ANDROID)
+    // On Android, for a load triggered by an intent, the time Chrome received
+    // the original intent that prompted the load (in milliseconds active time
+    // since boot).
+    int64 intent_received_timestamp;
+
+    // When Chrome launches the intent chooser, user can select Chrome itself to
+    // open the intent. In this case, we should carry over the user gesture.
+    bool has_user_gesture;
+#endif
+
     // Indicates that during this navigation, the session history should be
     // cleared such that the resulting page is the first and only entry of the
     // session history.
@@ -184,13 +195,6 @@ class NavigationController {
     // The clearing is done asynchronously, and completes when this navigation
     // commits.
     bool should_clear_history_list;
-
-#if defined(OS_ANDROID)
-    // On Android, for a load triggered by an intent, the time Chrome received
-    // the original intent that prompted the load (in milliseconds active time
-    // since boot).
-    int64 intent_received_timestamp;
-#endif
 
     explicit LoadURLParams(const GURL& url);
     ~LoadURLParams();

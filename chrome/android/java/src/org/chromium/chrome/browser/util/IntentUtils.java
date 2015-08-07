@@ -173,6 +173,19 @@ public class IntentUtils {
     }
 
     /**
+     * Just like {@link Intent#getByteArrayExtra(String)} but doesn't throw exceptions.
+     */
+    public static byte[] safeGetByteArrayExtra(Intent intent, String name) {
+        try {
+            return intent.getByteArrayExtra(name);
+        } catch (Throwable t) {
+            // Catches un-parceling exceptions.
+            Log.e(TAG, "getByteArrayExtra failed on intent " + intent);
+            return null;
+        }
+    }
+
+    /**
      * @return a Binder from an Intent, or null.
      *
      * Creates a temporary copy of the extra Bundle, which is required as

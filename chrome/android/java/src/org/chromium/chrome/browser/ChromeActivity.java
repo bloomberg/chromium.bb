@@ -896,7 +896,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             @Override
             public void processUrlViewIntent(String url, String referer, String headers,
                     TabOpenType tabOpenType, String externalAppId, int tabIdToBringToFront,
-                    Intent intent) {
+                    boolean hasUserGesture, Intent intent) {
             }
         };
     }

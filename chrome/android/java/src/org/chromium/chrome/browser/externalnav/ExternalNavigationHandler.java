@@ -360,6 +360,11 @@ public class ExternalNavigationHandler {
                         return OverrideUrlLoadingResult.NO_OVERRIDE;
                     }
                 }
+                // The intent can be used to launch Chrome itself, record the user
+                // gesture here so that it can be used later.
+                if (params.hasUserGesture()) {
+                    IntentWithGesturesHandler.getInstance().onNewIntentWithGesture(intent);
+                }
                 if (mDelegate.startActivityIfNeeded(intent)) {
                     return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
                 } else {

@@ -73,6 +73,9 @@ BeginNavigationParams::BeginNavigationParams(std::string method,
 
 StartNavigationParams::StartNavigationParams()
     : is_post(false),
+#if defined(OS_ANDROID)
+      has_user_gesture(false),
+#endif
       transferred_request_child_id(-1),
       transferred_request_request_id(-1) {
 }
@@ -81,11 +84,17 @@ StartNavigationParams::StartNavigationParams(
     bool is_post,
     const std::string& extra_headers,
     const std::vector<unsigned char>& browser_initiated_post_data,
+#if defined(OS_ANDROID)
+    bool has_user_gesture,
+#endif
     int transferred_request_child_id,
     int transferred_request_request_id)
     : is_post(is_post),
       extra_headers(extra_headers),
       browser_initiated_post_data(browser_initiated_post_data),
+#if defined(OS_ANDROID)
+      has_user_gesture(has_user_gesture),
+#endif
       transferred_request_child_id(transferred_request_child_id),
       transferred_request_request_id(transferred_request_request_id) {
 }

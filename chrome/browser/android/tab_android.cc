@@ -531,7 +531,8 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(JNIEnv* env,
                                               jstring j_referrer_url,
                                               jint referrer_policy,
                                               jboolean is_renderer_initiated,
-                                              jlong intent_received_timestamp) {
+                                              jlong intent_received_timestamp,
+                                              jboolean has_user_gesture) {
   if (!web_contents())
     return PAGE_LOAD_FAILED;
 
@@ -614,6 +615,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(JNIEnv* env,
     }
     load_params.is_renderer_initiated = is_renderer_initiated;
     load_params.intent_received_timestamp = intent_received_timestamp;
+    load_params.has_user_gesture = has_user_gesture;
     web_contents()->GetController().LoadURLWithParams(load_params);
   }
   return DEFAULT_PAGE_LOAD;

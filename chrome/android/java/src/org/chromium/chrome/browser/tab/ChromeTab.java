@@ -1204,6 +1204,7 @@ public class ChromeTab extends Tab {
                     .setOpenInNewTab(shouldCloseTab)
                     .setIsBackgroundTabNavigation(isHidden() && !isInitialTabLaunchInBackground)
                     .setIsMainFrame(navigationParams.isMainFrame)
+                    .setHasUserGesture(navigationParams.hasUserGesture)
                     .setShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(shouldCloseTab
                             && navigationParams.isMainFrame)
                     .build();

@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebappAuthenticator;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.metrics.LaunchHistogram;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
@@ -254,7 +255,7 @@ public class ChromeLauncherActivity extends Activity
     @Override
     public void processUrlViewIntent(String url, String referer, String headers,
             IntentHandler.TabOpenType tabOpenType, String externalAppId,
-            int tabIdToBringToFront, Intent intent) {
+            int tabIdToBringToFront, boolean hasUserGesture, Intent intent) {
         assert false;
     }
 
@@ -300,6 +301,9 @@ public class ChromeLauncherActivity extends Activity
 
         maybePrefetchDnsInBackground();
 
+        boolean hasUserGesture =
+                IntentWithGesturesHandler.getInstance().getUserGestureAndClear(getIntent());
+
         // Increment the Tab ID counter at this point since this Activity may not appear in
         // getAppTasks() when DocumentTabModelSelector is initialized.  This can potentially happen
         // when Chrome is launched via the GSA/e200 search box and they relinquish their task.
@@ -316,7 +320,7 @@ public class ChromeLauncherActivity extends Activity
         }
 
         // Sometimes an Intent requests that the current Document get clobbered.
-        if (clobberCurrentDocument(url)) return;
+        if (clobberCurrentDocument(url, hasUserGesture)) return;
 
         // Try to retarget existing Documents before creating a new one.
         boolean incognito = IntentUtils.safeGetBooleanExtra(getIntent(),
@@ -386,9 +390,10 @@ public class ChromeLauncherActivity extends Activity
     /**
      * If necessary, attempts to clobber the current DocumentActivity's tab with the given URL.
      * @param url URL to display.
+     * @param hasUserGesture Whether the intent is launched from a previous user gesture.
      * @return Whether or not the clobber was successful.
      */
-    private boolean clobberCurrentDocument(String url) {
+    private boolean clobberCurrentDocument(String url, boolean hasUserGesture) {
         boolean shouldOpenNewTab = IntentUtils.safeGetBooleanExtra(
                 getIntent(), Browser.EXTRA_CREATE_NEW_TAB, false);
         String applicationId =
@@ -400,8 +405,11 @@ public class ChromeLauncherActivity extends Activity
         if (tabId == Tab.INVALID_TAB_ID) return false;
 
         // Try to clobber the page.
+        LoadUrlParams params = new LoadUrlParams(
+                url, PageTransition.LINK | PageTransition.FROM_API);
+        params.setHasUserGesture(hasUserGesture);
         AsyncTabCreationParams data =
-                new AsyncTabCreationParams(new LoadUrlParams(url), new Intent(getIntent()));
+                new AsyncTabCreationParams(params, new Intent(getIntent()));
         AsyncTabCreationParamsManager.add(tabId, data);
         if (!relaunchTask(tabId)) {
             // Were not able to clobber, will fall through to handle in a new document.

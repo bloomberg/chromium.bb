@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.resources.StaticResourcePreloads;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelBase;
@@ -283,6 +284,7 @@ public class CompositorView
         } else if (visibility == View.VISIBLE) {
             mWindowAndroid.onVisibilityChanged(true);
         }
+        IntentWithGesturesHandler.getInstance().clear();
     }
 
     @CalledByNative

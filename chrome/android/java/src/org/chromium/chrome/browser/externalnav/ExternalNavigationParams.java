@@ -43,6 +43,9 @@ public class ExternalNavigationParams {
     /** Whether this navigation happens in main frame. */
     private final boolean mIsMainFrame;
 
+    /** Whether this navigation is launched by user gesture. */
+    private final boolean mHasUserGesture;
+
     /**
      * Whether the current tab should be closed when an URL load was overridden and an
      * intent launched.
@@ -51,8 +54,8 @@ public class ExternalNavigationParams {
 
     private ExternalNavigationParams(String url, boolean isIncognito, String referrerUrl,
             int pageTransition, boolean isRedirect, boolean appMustBeInForeground,
-            TabRedirectHandler redirectHandler, Tab tab,
-            boolean openInNewTab, boolean isBackgroundTabNavigation, boolean isMainFrame,
+            TabRedirectHandler redirectHandler, Tab tab, boolean openInNewTab,
+            boolean isBackgroundTabNavigation, boolean isMainFrame, boolean hasUserGesture,
             boolean shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent) {
         mUrl = url;
         mIsIncognito = isIncognito;
@@ -65,6 +68,7 @@ public class ExternalNavigationParams {
         mOpenInNewTab = openInNewTab;
         mIsBackgroundTabNavigation = isBackgroundTabNavigation;
         mIsMainFrame = isMainFrame;
+        mHasUserGesture = hasUserGesture;
         mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent =
                 shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent;
     }
@@ -127,6 +131,11 @@ public class ExternalNavigationParams {
         return mIsMainFrame;
     }
 
+    /** @return Whether this navigation is launched by user gesture. */
+    public boolean hasUserGesture() {
+        return mHasUserGesture;
+    }
+
     /**
      * @return Whether the current tab should be closed when an URL load was overridden and an
      *         intent launched.
@@ -168,6 +177,9 @@ public class ExternalNavigationParams {
 
         /** Whether this navigation happens in main frame. */
         private boolean mIsMainFrame;
+
+        /** Whether this navigation is launched by user gesture. */
+        private boolean mHasUserGesture;
 
         /**
          * Whether the current tab should be closed when an URL load was overridden and an
@@ -225,6 +237,12 @@ public class ExternalNavigationParams {
             return this;
         }
 
+        /** Sets whether this navigation happens in main frame. */
+        public Builder setHasUserGesture(boolean v) {
+            mHasUserGesture = v;
+            return this;
+        }
+
         /** Sets whether the current tab should be closed when an URL load was overridden and an
          * intent launched.
          */
@@ -237,8 +255,8 @@ public class ExternalNavigationParams {
         public ExternalNavigationParams build() {
             return new ExternalNavigationParams(mUrl, mIsIncognito, mReferrerUrl, mPageTransition,
                     mIsRedirect, mApplicationMustBeInForeground, mRedirectHandler,
-                    mTab, mOpenInNewTab, mIsBackgroundTabNavigation,
-                    mIsMainFrame, mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent);
+                    mTab, mOpenInNewTab, mIsBackgroundTabNavigation, mIsMainFrame,
+                    mHasUserGesture, mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent);
         }
     }
 }

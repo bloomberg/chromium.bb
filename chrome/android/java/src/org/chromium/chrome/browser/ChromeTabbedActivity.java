@@ -619,7 +619,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
         @Override
         public void processUrlViewIntent(String url, String referer, String headers,
                 TabOpenType tabOpenType, String externalAppId, int tabIdToBringToFront,
-                Intent intent) {
+                boolean hasUserGesture, Intent intent) {
             TabModel tabModel = getCurrentTabModel();
             switch (tabOpenType) {
                 case REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB:
@@ -673,6 +673,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
                         int transitionType = PageTransition.LINK | PageTransition.FROM_API;
                         LoadUrlParams loadUrlParams = new LoadUrlParams(url, transitionType);
                         loadUrlParams.setIntentReceivedTimestamp(mIntentHandlingTimeMs);
+                        loadUrlParams.setHasUserGesture(hasUserGesture);
                         currentTab.loadUrl(loadUrlParams);
                         RecordUserAction.record("MobileTabClobbered");
                     } else {

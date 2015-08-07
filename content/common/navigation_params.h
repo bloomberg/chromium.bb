@@ -142,6 +142,9 @@ struct CONTENT_EXPORT StartNavigationParams {
       bool is_post,
       const std::string& extra_headers,
       const std::vector<unsigned char>& browser_initiated_post_data,
+#if defined(OS_ANDROID)
+      bool has_user_gesture,
+#endif
       int transferred_request_child_id,
       int transferred_request_request_id);
   ~StartNavigationParams();
@@ -155,6 +158,10 @@ struct CONTENT_EXPORT StartNavigationParams {
   // If is_post is true, holds the post_data information from browser. Empty
   // otherwise.
   std::vector<unsigned char> browser_initiated_post_data;
+
+#if defined(OS_ANDROID)
+  bool has_user_gesture;
+#endif
 
   // The following two members identify a previous request that has been
   // created before this navigation is being transferred to a new render view.

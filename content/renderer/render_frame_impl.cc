@@ -4464,6 +4464,9 @@ void RenderFrameImpl::NavigateInternal(
   WebHistoryItem item_for_history_navigation;
   WebURLRequest request = CreateURLRequestForNavigation(
       common_params, stream_params.Pass(), frame_->isViewSourceModeEnabled());
+#if defined(OS_ANDROID)
+  request.setHasUserGesture(start_params.has_user_gesture);
+#endif
 
   // PlzNavigate: Make sure that Blink's loader will not try to use browser side
   // navigation for this request (since it already went to the browser).

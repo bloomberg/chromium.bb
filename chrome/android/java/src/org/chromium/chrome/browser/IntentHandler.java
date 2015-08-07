@@ -26,6 +26,7 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.Tab;
@@ -217,7 +218,7 @@ public class IntentHandler {
          */
         void processUrlViewIntent(String url, String referer, String headers,
                 TabOpenType tabOpenType, String externalAppId, int tabIdToBringToFront,
-                Intent intent);
+                boolean hasUserGesture, Intent intent);
 
         void processWebSearchIntent(String query);
     }
@@ -289,7 +290,8 @@ public class IntentHandler {
     public boolean onNewIntent(Context context, Intent intent) {
         assert intentHasValidUrl(intent);
         String url = getUrlFromIntent(intent);
-
+        boolean hasUserGesture =
+                IntentWithGesturesHandler.getInstance().getUserGestureAndClear(intent);
         TabOpenType tabOpenType = getTabOpenType(intent);
         int tabIdToBringToFront = IntentUtils.safeGetIntExtra(
                 intent, TabOpenType.BRING_TAB_TO_FRONT.name(), Tab.INVALID_TAB_ID);
@@ -304,7 +306,7 @@ public class IntentHandler {
         // TODO(joth): Presumably this should check the action too.
         mDelegate.processUrlViewIntent(url, referrerUrl, extraHeaders, tabOpenType,
                 IntentUtils.safeGetStringExtra(intent, Browser.EXTRA_APPLICATION_ID),
-                tabIdToBringToFront, intent);
+                tabIdToBringToFront, hasUserGesture, intent);
         recordExternalIntentSourceUMA(intent);
         return true;
     }
@@ -512,7 +514,6 @@ public class IntentHandler {
             // and check it with isIntentChromeInternal.
             intent.putExtra(TRUSTED_APPLICATION_CODE_EXTRA,
                     getAuthenticationToken(context.getApplicationContext()));
-
             // It is crucial that we never leak the authentication token to other packages, because
             // then the other package could be used to impersonate us/do things as us. Therefore,
             // scope the real Intent to our package.

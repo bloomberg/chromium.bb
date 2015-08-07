@@ -118,6 +118,9 @@ NavigationEntryImpl::NavigationEntryImpl(SiteInstanceImpl* instance,
       should_clear_history_list_(false),
       can_load_local_resources_(false),
       frame_tree_node_id_(-1) {
+#if defined(OS_ANDROID)
+  has_user_gesture_ = false;
+#endif
 }
 
 NavigationEntryImpl::~NavigationEntryImpl() {
@@ -466,6 +469,9 @@ StartNavigationParams NavigationEntryImpl::ConstructStartNavigationParams()
 
   return StartNavigationParams(GetHasPostData(), extra_headers(),
                                browser_initiated_post_data,
+#if defined(OS_ANDROID)
+                               has_user_gesture(),
+#endif
                                transferred_global_request_id().child_id,
                                transferred_global_request_id().request_id);
 }
