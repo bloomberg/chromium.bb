@@ -61,6 +61,7 @@ class AppBannerInfoBarDelegateDesktop : public ConfirmInfoBarDelegate {
   content::Manifest web_manifest_;
   extensions::BookmarkAppHelper* bookmark_app_helper_;
   int event_request_id_;
+  bool has_user_interaction_;
 
   Type GetInfoBarType() const override;
   int GetIconID() const override;

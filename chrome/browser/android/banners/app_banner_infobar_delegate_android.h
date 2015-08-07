@@ -81,6 +81,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
 
   base::android::ScopedJavaGlobalRef<jobject> native_app_data_;
   std::string native_app_package_;
+  bool has_user_interaction_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBarDelegateAndroid);
 };  // AppBannerInfoBarDelegateAndroid

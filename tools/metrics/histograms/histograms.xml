@@ -338,6 +338,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="AppBanners.UserResponse" enum="AppBannersUserResponse">
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    App banners promote an application related to the current website, and are
+    requested specifically through the current page's HTML.  This stat
+    specifically tracks a user's response to a displayed banner.
+  </summary>
+</histogram>
+
 <histogram name="appcache.CheckResponseResult"
     enum="AppCacheCheckResponseResult">
   <owner>michaeln@chromium.org</owner>
@@ -50931,6 +50940,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="23"
       label="(Native app) User waited for the app to finish installing"/>
   <int value="24" label="(Web app) User installed a web app"/>
+</enum>
+
+<enum name="AppBannersUserResponse" type="int">
+  <int value="1" label="Native app banner was accepted by the user"/>
+  <int value="2" label="Web app banner was accepted by the user"/>
+  <int value="3" label="Native app banner was dismissed by the user"/>
+  <int value="4" label="Web app banner was dismissed by the user"/>
+  <int value="5" label="Native app banner was ignored by the user"/>
+  <int value="6" label="Web app banner was ignored by the user"/>
 </enum>
 
 <enum name="AppCacheCheckResponseResult" type="int">

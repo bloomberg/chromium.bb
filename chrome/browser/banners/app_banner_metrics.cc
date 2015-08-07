@@ -4,35 +4,32 @@
 
 #include "chrome/browser/banners/app_banner_metrics.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 
 namespace banners {
 
 void TrackDismissEvent(int event) {
-  std::vector<int> codes;
-  for (int i = DISMISS_EVENT_MIN + 1; i < DISMISS_EVENT_MAX; ++i) {
-    codes.push_back(i);
-  }
-  DCHECK(std::find(codes.begin(), codes.end(), event) != codes.end());
-  UMA_HISTOGRAM_CUSTOM_ENUMERATION("AppBanners.DismissEvent", event, codes);
+  DCHECK_LT(DISMISS_EVENT_MIN, event);
+  DCHECK_LT(event, DISMISS_EVENT_MAX);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("AppBanners.DismissEvent", event);
 }
 
 void TrackDisplayEvent(int event) {
-  std::vector<int> codes;
-  for (int i = DISPLAY_EVENT_MIN + 1; i < DISPLAY_EVENT_MAX; ++i) {
-    codes.push_back(i);
-  }
-  DCHECK(std::find(codes.begin(), codes.end(), event) != codes.end());
-  UMA_HISTOGRAM_CUSTOM_ENUMERATION("AppBanners.DisplayEvent", event, codes);
+  DCHECK_LT(DISPLAY_EVENT_MIN, event);
+  DCHECK_LT(event, DISPLAY_EVENT_MAX);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("AppBanners.DisplayEvent", event);
 }
 
 void TrackInstallEvent(int event) {
-  std::vector<int> codes;
-  for (int i = INSTALL_EVENT_MIN + 1; i < INSTALL_EVENT_MAX; ++i) {
-    codes.push_back(i);
-  }
-  DCHECK(std::find(codes.begin(), codes.end(), event) != codes.end());
-  UMA_HISTOGRAM_CUSTOM_ENUMERATION("AppBanners.InstallEvent", event, codes);
+  DCHECK_LT(INSTALL_EVENT_MIN, event);
+  DCHECK_LT(event, INSTALL_EVENT_MAX);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("AppBanners.InstallEvent", event);
+}
+
+void TrackUserResponse(int event) {
+  DCHECK_LT(USER_RESPONSE_MIN, event);
+  DCHECK_LT(event, USER_RESPONSE_MAX);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("AppBanners.UserResponse", event);
 }
 
 }  // namespace banners

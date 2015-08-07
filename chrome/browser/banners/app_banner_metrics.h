@@ -46,9 +46,21 @@ enum DismissEvent {
   DISMISS_EVENT_MAX = 48,
 };
 
+enum UserResponse {
+  USER_RESPONSE_MIN = 0,
+  USER_RESPONSE_NATIVE_APP_ACCEPTED = 1,
+  USER_RESPONSE_WEB_APP_ACCEPTED = 2,
+  USER_RESPONSE_NATIVE_APP_DISMISSED = 3,
+  USER_RESPONSE_WEB_APP_DISMISSED = 4,
+  USER_RESPONSE_NATIVE_APP_IGNORED = 5,
+  USER_RESPONSE_WEB_APP_IGNORED = 6,
+  USER_RESPONSE_MAX = 7,
+};
+
 void TrackDismissEvent(int event);
 void TrackDisplayEvent(int event);
 void TrackInstallEvent(int event);
+void TrackUserResponse(int event);
 
 };  // namespace banners
 

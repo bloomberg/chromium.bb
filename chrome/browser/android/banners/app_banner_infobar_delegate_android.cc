@@ -43,7 +43,8 @@ AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
     : app_title_(app_title),
       app_icon_(app_icon),
       event_request_id_(event_request_id),
-      web_app_data_(web_app_data) {
+      web_app_data_(web_app_data),
+      has_user_interaction_(false) {
   DCHECK(!web_app_data.IsEmpty());
   CreateJavaDelegate();
 }
@@ -58,12 +59,20 @@ AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
       app_icon_(app_icon),
       event_request_id_(event_request_id),
       native_app_data_(native_app_data),
-      native_app_package_(native_app_package) {
+      native_app_package_(native_app_package),
+      has_user_interaction_(false) {
   DCHECK(!native_app_data_.is_null());
   CreateJavaDelegate();
 }
 
 AppBannerInfoBarDelegateAndroid::~AppBannerInfoBarDelegateAndroid() {
+  if (!has_user_interaction_) {
+    if (!native_app_data_.is_null())
+      TrackUserResponse(USER_RESPONSE_NATIVE_APP_IGNORED);
+    else if (!web_app_data_.IsEmpty())
+      TrackUserResponse(USER_RESPONSE_WEB_APP_IGNORED);
+  }
+
   TrackDismissEvent(DISMISS_EVENT_DISMISSED);
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_AppBannerInfoBarDelegateAndroid_destroy(env,
@@ -150,6 +159,8 @@ gfx::Image AppBannerInfoBarDelegateAndroid::GetIcon() const {
 }
 
 void AppBannerInfoBarDelegateAndroid::InfoBarDismissed() {
+  has_user_interaction_ = true;
+
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
   if (!web_contents)
@@ -161,9 +172,11 @@ void AppBannerInfoBarDelegateAndroid::InfoBarDismissed() {
           event_request_id_));
 
   if (!native_app_data_.is_null()) {
+    TrackUserResponse(USER_RESPONSE_NATIVE_APP_DISMISSED);
     AppBannerSettingsHelper::RecordBannerDismissEvent(
         web_contents, native_app_package_, AppBannerSettingsHelper::NATIVE);
   } else if (!web_app_data_.IsEmpty()) {
+    TrackUserResponse(USER_RESPONSE_WEB_APP_DISMISSED);
     AppBannerSettingsHelper::RecordBannerDismissEvent(
         web_contents, web_app_data_.start_url.spec(),
         AppBannerSettingsHelper::WEB);
@@ -179,6 +192,8 @@ int AppBannerInfoBarDelegateAndroid::GetButtons() const {
 }
 
 bool AppBannerInfoBarDelegateAndroid::Accept() {
+  has_user_interaction_ = true;
+
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
   if (!web_contents) {
@@ -187,6 +202,7 @@ bool AppBannerInfoBarDelegateAndroid::Accept() {
   }
 
   if (!native_app_data_.is_null()) {
+    TrackUserResponse(USER_RESPONSE_NATIVE_APP_ACCEPTED);
     JNIEnv* env = base::android::AttachCurrentThread();
 
     TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
@@ -209,6 +225,8 @@ bool AppBannerInfoBarDelegateAndroid::Accept() {
     SendBannerAccepted(web_contents, "play");
     return was_opened;
   } else if (!web_app_data_.IsEmpty()) {
+    TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
+
     AppBannerSettingsHelper::RecordBannerInstallEvent(
         web_contents, web_app_data_.start_url.spec(),
         AppBannerSettingsHelper::WEB);

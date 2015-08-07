@@ -28,10 +28,13 @@ AppBannerInfoBarDelegateDesktop::AppBannerInfoBarDelegateDesktop(
       fetcher_(fetcher),
       web_manifest_(web_manifest),
       bookmark_app_helper_(bookmark_app_helper),
-      event_request_id_(event_request_id) {
+      event_request_id_(event_request_id),
+      has_user_interaction_(false) {
 }
 
 AppBannerInfoBarDelegateDesktop::~AppBannerInfoBarDelegateDesktop() {
+  if (!has_user_interaction_)
+    TrackUserResponse(USER_RESPONSE_WEB_APP_IGNORED);
 }
 
 // static
@@ -71,6 +74,9 @@ base::string16 AppBannerInfoBarDelegateDesktop::GetButtonLabel(
 }
 
 bool AppBannerInfoBarDelegateDesktop::Accept() {
+  TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
+  has_user_interaction_ = true;
+
   bookmark_app_helper_->CreateFromAppBanner(
       base::Bind(&AppBannerDataFetcherDesktop::FinishCreateBookmarkApp,
                  fetcher_),
@@ -79,6 +85,9 @@ bool AppBannerInfoBarDelegateDesktop::Accept() {
 }
 
 void AppBannerInfoBarDelegateDesktop::InfoBarDismissed() {
+  TrackUserResponse(USER_RESPONSE_WEB_APP_DISMISSED);
+  has_user_interaction_ = true;
+
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
   if (web_contents) {
