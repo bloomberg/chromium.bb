@@ -50,6 +50,7 @@
 #include "chrome/browser/android/metrics/uma_utils.h"
 #include "chrome/browser/android/metrics/variations_session.h"
 #include "chrome/browser/android/most_visited_sites.h"
+#include "chrome/browser/android/net/network_quality_provider.h"
 #include "chrome/browser/android/new_tab_page_prefs.h"
 #include "chrome/browser/android/offline_pages/offline_page_bridge.h"
 #include "chrome/browser/android/omnibox/answers_image_bridge.h"
@@ -253,6 +254,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"MostVisitedSites", MostVisitedSites::Register},
     {"NativeInfoBar", RegisterNativeInfoBar},
     {"NavigationPopup", NavigationPopup::RegisterNavigationPopup},
+    {"NetworkQualityProvider", RegisterNetworkQualityProvider},
     {"NewTabPagePrefs", NewTabPagePrefs::RegisterNewTabPagePrefs},
     {"NotificationUIManager",
      NotificationUIManagerAndroid::RegisterNotificationUIManager},
