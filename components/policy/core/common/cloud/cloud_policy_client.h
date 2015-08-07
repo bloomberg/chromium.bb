@@ -172,6 +172,12 @@ class POLICY_EXPORT CloudPolicyClient {
                               const std::string& location,
                               const StatusCallback& callback);
 
+  // Sends a GCM id update request to the DM server. The server will
+  // associate the DM token in authorization header with |gcm_id|, and
+  // |callback| will be called when the operation completes.
+  virtual void UpdateGcmId(const std::string& gcm_id,
+                           const StatusCallback& callback);
+
   // Adds an observer to be called back upon policy and state changes.
   void AddObserver(Observer* observer);
 
@@ -319,6 +325,14 @@ class POLICY_EXPORT CloudPolicyClient {
 
   // Callback for device attribute update requests.
   void OnDeviceAttributeUpdated(
+      const DeviceManagementRequestJob* job,
+      const StatusCallback& callback,
+      DeviceManagementStatus status,
+      int net_error,
+      const enterprise_management::DeviceManagementResponse& response);
+
+  // Callback for gcm id update requests.
+  void OnGcmIdUpdated(
       const DeviceManagementRequestJob* job,
       const StatusCallback& callback,
       DeviceManagementStatus status,

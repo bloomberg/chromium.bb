@@ -123,6 +123,8 @@ const char* JobTypeToRequestType(DeviceManagementRequestJob::JobType type) {
       return dm_protocol::kValueRequestDeviceAttributeUpdatePermission;
     case DeviceManagementRequestJob::TYPE_ATTRIBUTE_UPDATE:
       return dm_protocol::kValueRequestDeviceAttributeUpdate;
+    case DeviceManagementRequestJob::TYPE_GCM_ID_UPDATE:
+      return dm_protocol::kValueRequestGcmIdUpdate;
   }
   NOTREACHED() << "Invalid job type " << type;
   return "";
