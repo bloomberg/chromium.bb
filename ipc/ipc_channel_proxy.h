@@ -289,8 +289,14 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   }
 #endif
 
+ protected:
+  bool did_init() const { return did_init_; }
+
  private:
   friend class IpcSecurityTestUtil;
+
+  // Always called once immediately after Init.
+  virtual void OnChannelInit();
 
   // By maintaining this indirection (ref-counted) to our internal state, we
   // can safely be destroyed while the background thread continues to do stuff

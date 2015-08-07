@@ -48,6 +48,10 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
  private:
   friend class SyncChannel;
 
+  void set_is_channel_send_thread_safe(bool is_channel_send_thread_safe) {
+    is_channel_send_thread_safe_ = is_channel_send_thread_safe;
+  }
+
   void SendOnIOThread(Message* message);
   // Signal all the pending sends as done, used in an error condition.
   void SignalAllEvents();

@@ -5,8 +5,9 @@
 #ifndef IPC_IPC_SYNC_CHANNEL_H_
 #define IPC_IPC_SYNC_CHANNEL_H_
 
-#include <string>
 #include <deque>
+#include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -233,9 +234,15 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
   // Starts the dispatch watcher.
   void StartWatching();
 
+  // ChannelProxy overrides:
+  void OnChannelInit() override;
+
   // Used to signal events between the IPC and listener threads.
   base::WaitableEventWatcher dispatch_watcher_;
   base::WaitableEventWatcher::EventCallback dispatch_watcher_callback_;
+
+  // Tracks SyncMessageFilters created before complete channel initialization.
+  std::vector<scoped_refptr<SyncMessageFilter>> pre_init_sync_message_filters_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncChannel);
 };

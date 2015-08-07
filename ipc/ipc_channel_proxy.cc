@@ -430,6 +430,7 @@ void ChannelProxy::Init(scoped_ptr<ChannelFactory> factory,
       FROM_HERE, base::Bind(&Context::OnChannelOpened, context_.get()));
 
   did_init_ = true;
+  OnChannelInit();
 }
 
 void ChannelProxy::Close() {
@@ -512,6 +513,9 @@ base::ScopedFD ChannelProxy::TakeClientFileDescriptor() {
 
 void ChannelProxy::SetAttachmentBrokerEndpoint(bool is_endpoint) {
   context()->set_attachment_broker_endpoint(is_endpoint);
+}
+
+void ChannelProxy::OnChannelInit() {
 }
 
 //-----------------------------------------------------------------------------
