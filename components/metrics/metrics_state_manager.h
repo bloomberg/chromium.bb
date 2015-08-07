@@ -117,6 +117,10 @@ class MetricsStateManager {
   // generate the entropy source value if it has not been called before.
   int GetLowEntropySource();
 
+  // Generates the low entropy source value for this client if it is not
+  // already set.
+  void UpdateLowEntropySource();
+
   // Updates |entropy_source_returned_| with |type| iff the current value is
   // ENTROPY_SOURCE_NONE and logs the new value in a histogram.
   void UpdateEntropySourceReturnedValue(EntropySourceType type);

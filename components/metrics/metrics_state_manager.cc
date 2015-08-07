@@ -248,11 +248,16 @@ scoped_ptr<ClientInfo> MetricsStateManager::LoadClientInfoAndMaybeMigrate() {
 }
 
 int MetricsStateManager::GetLowEntropySource() {
+  UpdateLowEntropySource();
+  return low_entropy_source_;
+}
+
+void MetricsStateManager::UpdateLowEntropySource() {
   // Note that the default value for the low entropy source and the default pref
   // value are both kLowEntropySourceNotSet, which is used to identify if the
   // value has been set or not.
   if (low_entropy_source_ != kLowEntropySourceNotSet)
-    return low_entropy_source_;
+    return;
 
   const base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
   // Only try to load the value from prefs if the user did not request a
@@ -264,18 +269,14 @@ int MetricsStateManager::GetLowEntropySource() {
     // it below.
     if (value >= 0 && value < kMaxLowEntropySize) {
       low_entropy_source_ = value;
-      UMA_HISTOGRAM_BOOLEAN("UMA.GeneratedLowEntropySource", false);
-      return low_entropy_source_;
+      return;
     }
   }
 
-  UMA_HISTOGRAM_BOOLEAN("UMA.GeneratedLowEntropySource", true);
   low_entropy_source_ = GenerateLowEntropySource();
   local_state_->SetInteger(prefs::kMetricsLowEntropySource,
                            low_entropy_source_);
   CachingPermutedEntropyProvider::ClearCache(local_state_);
-
-  return low_entropy_source_;
 }
 
 void MetricsStateManager::UpdateEntropySourceReturnedValue(

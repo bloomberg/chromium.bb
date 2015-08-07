@@ -46725,7 +46725,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="UMA.GeneratedLowEntropySource" enum="BooleanSuccess">
+<histogram name="UMA.GeneratedLowEntropySource" enum="Boolean">
+  <obsolete>
+    Deprecated as of August 2015. No longer tracked.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <summary>
     For each attempt to generate the low entropy source, log whether or not the
