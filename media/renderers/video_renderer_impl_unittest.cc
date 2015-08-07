@@ -166,17 +166,17 @@ class VideoRendererImplTest
   //   A clip that is four frames long: "0 10 20 30"
   //   A clip that has a decode error: "60 70 error"
   void QueueFrames(const std::string& str) {
-    std::vector<std::string> tokens;
-    base::SplitString(str, ' ', &tokens);
-    for (size_t i = 0; i < tokens.size(); ++i) {
-      if (tokens[i] == "abort") {
+    for (const std::string& token :
+         base::SplitString(str, " ", base::TRIM_WHITESPACE,
+                           base::SPLIT_WANT_ALL)) {
+      if (token == "abort") {
         scoped_refptr<VideoFrame> null_frame;
         decode_results_.push_back(
             std::make_pair(VideoDecoder::kAborted, null_frame));
         continue;
       }
 
-      if (tokens[i] == "error") {
+      if (token == "error") {
         scoped_refptr<VideoFrame> null_frame;
         decode_results_.push_back(
             std::make_pair(VideoDecoder::kDecodeError, null_frame));
@@ -184,7 +184,7 @@ class VideoRendererImplTest
       }
 
       int timestamp_in_ms = 0;
-      if (base::StringToInt(tokens[i], &timestamp_in_ms)) {
+      if (base::StringToInt(token, &timestamp_in_ms)) {
         gfx::Size natural_size = TestVideoConfig::NormalCodedSize();
         scoped_refptr<VideoFrame> frame = VideoFrame::CreateFrame(
             PIXEL_FORMAT_YV12, natural_size, gfx::Rect(natural_size),
@@ -193,7 +193,7 @@ class VideoRendererImplTest
         continue;
       }
 
-      CHECK(false) << "Unrecognized decoder buffer token: " << tokens[i];
+      CHECK(false) << "Unrecognized decoder buffer token: " << token;
     }
   }
 

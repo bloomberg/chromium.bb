@@ -25,7 +25,9 @@ bool ProcessVersionString(const std::string& version_string,
                           char splitter,
                           std::vector<std::string>* version) {
   DCHECK(version);
-  base::SplitString(version_string, splitter, version);
+  *version = base::SplitString(
+      version_string, std::string(1, splitter),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (version->size() == 0)
     return false;
   // If the splitter is '-', we assume it's a date with format "mm-dd-yyyy";
@@ -1028,8 +1030,8 @@ bool GpuControlList::GpuControlListEntry::GLVersionInfoMismatch(
   if (gl_version_info_.get() == NULL && gl_type_ == kGLTypeNone)
     return false;
 
-  std::vector<std::string> segments;
-  base::SplitString(gl_version, ' ', &segments);
+  std::vector<std::string> segments = base::SplitString(
+      gl_version, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   std::string number;
   GLType gl_type = kGLTypeNone;
   if (segments.size() > 2 &&

@@ -145,8 +145,8 @@ void StringToAnnexB(const std::string& str, std::vector<uint8>* buffer,
     size_t start = buffer->size();
 
     std::vector<std::string> subsample_nalus = base::SplitString(
-      subsample_specs[i], ",", base::KEEP_WHITESPACE,
-      base::SPLIT_WANT_NONEMPTY);
+        subsample_specs[i], ",", base::KEEP_WHITESPACE,
+        base::SPLIT_WANT_NONEMPTY);
     EXPECT_GT(subsample_nalus.size(), 0u);
     for (size_t j = 0; j < subsample_nalus.size(); ++j) {
       WriteStartCodeAndNALUType(buffer, subsample_nalus[j]);

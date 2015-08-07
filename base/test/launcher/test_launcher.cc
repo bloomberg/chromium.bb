@@ -561,8 +561,9 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
                  << ": " << print_test_stdio;
   }
   if (print_snippet) {
-    std::vector<std::string> snippet_lines;
-    SplitStringDontTrim(result.output_snippet, '\n', &snippet_lines);
+    std::vector<std::string> snippet_lines = SplitString(
+        result.output_snippet, "\n", base::KEEP_WHITESPACE,
+        base::SPLIT_WANT_ALL);
     if (snippet_lines.size() > kOutputSnippetLinesLimit) {
       size_t truncated_size = snippet_lines.size() - kOutputSnippetLinesLimit;
       snippet_lines.erase(
@@ -791,8 +792,8 @@ bool TestLauncher::Init() {
       return false;
     }
 
-    std::vector<std::string> filter_lines;
-    SplitString(filter, '\n', &filter_lines);
+    std::vector<std::string> filter_lines = SplitString(
+        filter, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     for (size_t i = 0; i < filter_lines.size(); i++) {
       if (filter_lines[i].empty())
         continue;
@@ -808,13 +809,18 @@ bool TestLauncher::Init() {
     std::string filter = command_line->GetSwitchValueASCII(kGTestFilterFlag);
     size_t dash_pos = filter.find('-');
     if (dash_pos == std::string::npos) {
-      SplitString(filter, ':', &positive_test_filter_);
+      positive_test_filter_ = SplitString(
+          filter, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     } else {
       // Everything up to the dash.
-      SplitString(filter.substr(0, dash_pos), ':', &positive_test_filter_);
+      positive_test_filter_ = SplitString(
+          filter.substr(0, dash_pos), ":", base::TRIM_WHITESPACE,
+          base::SPLIT_WANT_ALL);
 
       // Everything after the dash.
-      SplitString(filter.substr(dash_pos + 1), ':', &negative_test_filter_);
+      negative_test_filter_ = SplitString(
+          filter.substr(dash_pos + 1), ":", base::TRIM_WHITESPACE,
+          base::SPLIT_WANT_ALL);
     }
   }
 

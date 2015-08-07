@@ -21,9 +21,8 @@ const char kGooglemailDomain[] = "googlemail.com";
 
 std::string CanonicalizeEmailImpl(const std::string& email_address,
                                   bool change_googlemail_to_gmail) {
-  std::vector<std::string> parts;
-  char at = '@';
-  base::SplitString(email_address, at, &parts);
+  std::vector<std::string> parts = base::SplitString(
+      email_address, "@", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (parts.size() != 2U) {
     NOTREACHED() << "expecting exactly one @, but got "
                  << (parts.empty() ? 0 : parts.size() - 1)

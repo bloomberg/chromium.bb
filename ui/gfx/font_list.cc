@@ -34,15 +34,17 @@ bool FontList::ParseDescription(const std::string& description,
   DCHECK(style_out);
   DCHECK(size_pixels_out);
 
-  base::SplitString(description, ',', families_out);
+  *families_out = base::SplitString(
+      description, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (families_out->empty())
     return false;
   for (auto& family : *families_out)
     base::TrimWhitespaceASCII(family, base::TRIM_ALL, &family);
 
   // The last item is "[STYLE1] [STYLE2] [...] SIZE".
-  std::vector<std::string> styles;
-  base::SplitStringAlongWhitespace(families_out->back(), &styles);
+  std::vector<std::string> styles = base::SplitString(
+      families_out->back(), base::kWhitespaceASCII,
+      base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   families_out->pop_back();
   if (styles.empty())
     return false;

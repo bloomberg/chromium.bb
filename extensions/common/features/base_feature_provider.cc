@@ -52,8 +52,8 @@ BaseFeatureProvider::BaseFeatureProvider(const base::DictionaryValue& root,
     if (iter.value().GetType() == base::Value::TYPE_DICTIONARY) {
       linked_ptr<SimpleFeature> feature((*factory_)());
 
-      std::vector<std::string> split;
-      base::SplitString(iter.key(), '.', &split);
+      std::vector<std::string> split = base::SplitString(
+          iter.key(), ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
       // Push parent features on the stack, starting with the current feature.
       // If one of the features has "noparent" set, stop pushing features on
@@ -171,8 +171,8 @@ Feature* BaseFeatureProvider::GetParent(Feature* feature) const {
   if (feature->no_parent())
     return nullptr;
 
-  std::vector<std::string> split;
-  base::SplitString(feature->name(), '.', &split);
+  std::vector<std::string> split = base::SplitString(
+      feature->name(), ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (split.size() < 2)
     return nullptr;
   split.pop_back();

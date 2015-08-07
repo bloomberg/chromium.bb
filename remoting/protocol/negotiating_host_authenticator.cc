@@ -99,12 +99,12 @@ void NegotiatingHostAuthenticator::ProcessMessage(
 
     // Find the first mutually-supported method in the client's list of
     // supported-methods.
-    std::vector<std::string> supported_methods_strs;
-    base::SplitString(supported_methods_attr, kSupportedMethodsSeparator,
-                      &supported_methods_strs);
-    for (std::vector<std::string>::iterator it = supported_methods_strs.begin();
-         it != supported_methods_strs.end(); ++it) {
-      AuthenticationMethod list_value = AuthenticationMethod::FromString(*it);
+    for (const std::string& method_str :
+         base::SplitString(supported_methods_attr,
+                           std::string(1, kSupportedMethodsSeparator),
+                           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+      AuthenticationMethod list_value =
+          AuthenticationMethod::FromString(method_str);
       if (list_value.is_valid() &&
           std::find(methods_.begin(),
                     methods_.end(), list_value) != methods_.end()) {

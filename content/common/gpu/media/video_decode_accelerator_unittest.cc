@@ -180,23 +180,23 @@ void ReadGoldenThumbnailMD5s(const TestVideoFile* video_file,
   filepath = filepath.AddExtension(FILE_PATH_LITERAL(".md5"));
   std::string all_md5s;
   base::ReadFileToString(filepath, &all_md5s);
-  base::SplitString(all_md5s, '\n', md5_strings);
+  *md5_strings = base::SplitString(
+      all_md5s, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   // Check these are legitimate MD5s.
-  for (std::vector<std::string>::iterator md5_string = md5_strings->begin();
-      md5_string != md5_strings->end(); ++md5_string) {
+  for (const std::string& md5_string : *md5_strings) {
       // Ignore the empty string added by SplitString
-      if (!md5_string->length())
+      if (!md5_string.length())
         continue;
       // Ignore comments
-      if (md5_string->at(0) == '#')
+      if (md5_string.at(0) == '#')
         continue;
 
-      CHECK_EQ(static_cast<int>(md5_string->length()),
-               kMD5StringLength) << *md5_string;
-      bool hex_only = std::count_if(md5_string->begin(),
-                                    md5_string->end(), isxdigit) ==
+      CHECK_EQ(static_cast<int>(md5_string.length()),
+               kMD5StringLength) << md5_string;
+      bool hex_only = std::count_if(md5_string.begin(),
+                                    md5_string.end(), isxdigit) ==
                                     kMD5StringLength;
-      CHECK(hex_only) << *md5_string;
+      CHECK(hex_only) << md5_string;
   }
   CHECK_GE(md5_strings->size(), 1U) << "  MD5 checksum file ("
                                     << filepath.MaybeAsASCII()
@@ -1061,12 +1061,14 @@ void VideoDecodeAcceleratorTest::TearDown() {
 void VideoDecodeAcceleratorTest::ParseAndReadTestVideoData(
     base::FilePath::StringType data,
     std::vector<TestVideoFile*>* test_video_files) {
-  std::vector<base::FilePath::StringType> entries;
-  base::SplitString(data, ';', &entries);
+  std::vector<base::FilePath::StringType> entries = base::SplitString(
+      data, base::FilePath::StringType(1, ';'),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   CHECK_GE(entries.size(), 1U) << data;
   for (size_t index = 0; index < entries.size(); ++index) {
-    std::vector<base::FilePath::StringType> fields;
-    base::SplitString(entries[index], ':', &fields);
+    std::vector<base::FilePath::StringType> fields = base::SplitString(
+        entries[index], base::FilePath::StringType(1, ':'),
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     CHECK_GE(fields.size(), 1U) << entries[index];
     CHECK_LE(fields.size(), 8U) << entries[index];
     TestVideoFile* video_file = new TestVideoFile(fields[0]);

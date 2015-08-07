@@ -120,7 +120,7 @@ TEST(MimeUtilTest, ParseCodecString) {
     { "",                           0, { }                    },
     { "\"\"",                       0, { }                    },
     { "\"   \"",                    0, { }                    },
-    { ",",                          2, { "", "" }             },
+    { ",",                          0, { }                    },
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {

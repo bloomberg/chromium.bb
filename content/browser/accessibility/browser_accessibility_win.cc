@@ -969,8 +969,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_appName(BSTR* app_name) {
 
   // GetProduct() returns a string like "Chrome/aa.bb.cc.dd", split out
   // the part before the "/".
-  std::vector<std::string> product_components;
-  base::SplitString(GetContentClient()->GetProduct(), '/', &product_components);
+  std::vector<std::string> product_components = base::SplitString(
+      GetContentClient()->GetProduct(), "/",
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   DCHECK_EQ(2U, product_components.size());
   if (product_components.size() != 2)
     return E_FAIL;
@@ -988,8 +989,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_appVersion(BSTR* app_version) {
 
   // GetProduct() returns a string like "Chrome/aa.bb.cc.dd", split out
   // the part after the "/".
-  std::vector<std::string> product_components;
-  base::SplitString(GetContentClient()->GetProduct(), '/', &product_components);
+  std::vector<std::string> product_components = base::SplitString(
+      GetContentClient()->GetProduct(), "/",
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   DCHECK_EQ(2U, product_components.size());
   if (product_components.size() != 2)
     return E_FAIL;

@@ -323,12 +323,10 @@ MSVC_ENABLE_OPTIMIZE();
 // specified on the command-line. Ownership is passed to the caller.
 base::win::MemoryPressureMonitor* CreateWinMemoryPressureMonitor(
     const base::CommandLine& parsed_command_line) {
-  std::vector<std::string> thresholds;
-  base::SplitString(
+  std::vector<std::string> thresholds = base::SplitString(
       parsed_command_line.GetSwitchValueASCII(
           switches::kMemoryPressureThresholdsMb),
-      ',',
-      &thresholds);
+      ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   int moderate_threshold_mb = 0;
   int critical_threshold_mb = 0;

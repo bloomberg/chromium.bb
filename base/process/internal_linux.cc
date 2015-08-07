@@ -97,8 +97,9 @@ bool ParseProcStats(const std::string& stats_data,
                         close_parens_idx - (open_parens_idx + 1)));
 
   // Split the rest.
-  std::vector<std::string> other_stats;
-  SplitString(stats_data.substr(close_parens_idx + 2), ' ', &other_stats);
+  std::vector<std::string> other_stats = SplitString(
+      stats_data.substr(close_parens_idx + 2), " ",
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   for (size_t i = 0; i < other_stats.size(); ++i)
     proc_stats->push_back(other_stats[i]);
   return true;

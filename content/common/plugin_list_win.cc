@@ -237,12 +237,15 @@ bool HaveSharedMimeType(const WebPluginInfo& plugin1,
 // Compares Windows style version strings (i.e. 1,2,3,4).  Returns true if b's
 // version is newer than a's, or false if it's equal or older.
 bool IsNewerVersion(const base::string16& a, const base::string16& b) {
-  std::vector<base::string16> a_ver, b_ver;
-  base::SplitString(a, ',', &a_ver);
-  base::SplitString(b, ',', &b_ver);
+  std::vector<base::string16> a_ver = base::SplitString(
+      a, base::string16(1, ','), base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<base::string16> b_ver = base::SplitString(
+      b, base::string16(1, ','), base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (a_ver.size() == 1 && b_ver.size() == 1) {
-    base::SplitString(a, '.', &a_ver);
-    base::SplitString(b, '.', &b_ver);
+    a_ver = base::SplitString(
+        a, base::string16(1, '.'), base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    b_ver = base::SplitString(
+        b, base::string16(1, '.'), base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   }
   if (a_ver.size() != b_ver.size())
     return false;
@@ -442,8 +445,9 @@ bool PluginList::ShouldLoadPluginUsingPluginList(
   // We only work with newer versions of the Java plugin which use NPAPI only
   // and don't depend on XPCOM.
   if (filename == kJavaPlugin1 || filename == kJavaPlugin2) {
-    std::vector<base::FilePath::StringType> ver;
-    base::SplitString(info.version, '.', &ver);
+    std::vector<base::FilePath::StringType> ver = base::SplitString(
+        info.version, base::FilePath::StringType(1, '.'),
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     int major, minor, update;
     if (ver.size() == 4 &&
         base::StringToInt(ver[0], &major) &&
