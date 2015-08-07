@@ -310,7 +310,13 @@ int ChildProcessMain() {
       if (sandbox_warm)
         sandbox_warm();
 
+      // TODO(erg,jln): Allowing access to all of /dev/shm/ makes it easy to
+      // spy on other shared memory using processes. This is a temporary hack
+      // so that we have some sandbox until we have proper shared memory
+      // support integrated into mojo.
       std::vector<BrokerFilePermission> permissions;
+      permissions.push_back(
+          BrokerFilePermission::ReadWriteCreateUnlinkRecursive("/dev/shm/"));
       sandbox.reset(new mandoline::LinuxSandbox(permissions));
       sandbox->Warmup();
       sandbox->EngageNamespaceSandbox();

@@ -60,6 +60,10 @@ source_set("sources") {
     ]
   }
 
+  if (is_linux && !is_android) {
+    deps += [ "//components/font_service:lib" ]
+  }
+
   if (use_aura) {
     deps += [
       "//components/view_manager/public/cpp",

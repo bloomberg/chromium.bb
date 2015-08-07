@@ -383,6 +383,8 @@ void ApplicationManager::HandleFetchCallback(
   bool start_sandboxed = false;
   if (app_url == GURL("mojo://core_services/") && qualifier == "Sandboxed Core")
     start_sandboxed = true;
+  else if (app_url == GURL("mojo://html_viewer/"))
+    start_sandboxed = true;
 
   fetcher->AsPath(blocking_pool_,
                   base::Bind(&ApplicationManager::RunNativeApplication,

@@ -1,0 +1,36 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/mojo_application.gni")
+
+source_set("lib") {
+  sources = [
+    "font_service_app.cc",
+    "font_service_app.h",
+  ]
+
+  deps = [
+    "//components/font_service/public/interfaces",
+    "//mojo/application/public/cpp",
+    "//mojo/platform_handle",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+  ]
+
+  public_deps = [
+    "//skia",
+  ]
+}
+
+mojo_native_application("font_service") {
+  sources = [
+    "main.cc",
+  ]
+
+  deps = [
+    ":lib",
+    "//base",
+    "//mojo/application/public/cpp",
+    "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
+  ]
+}
