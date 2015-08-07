@@ -258,7 +258,11 @@ public class WebappActivity extends FullScreenActivity {
     }
 
     private void updateTaskDescription() {
-        String title = mWebappInfo.shortName() == null
+        // TODO(lalitm): this is actually a temporary fix for the bigger issue of short
+        // name not being set to the meta tag title of the website if the short name
+        // is not present in the manifest. Some discussion is required for this before
+        // a CL which correctly fixes the issue is submitted.
+        String title = TextUtils.isEmpty(mWebappInfo.shortName())
                 ? getActivityTab().getTitle() : mWebappInfo.shortName();
         Bitmap icon = mWebappInfo.icon() == null
                 ? getActivityTab().getFavicon() : mWebappInfo.icon();
