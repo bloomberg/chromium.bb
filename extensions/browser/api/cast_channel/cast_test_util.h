@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/message_loop/message_loop.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/api/cast_channel/cast_transport.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
@@ -108,10 +109,11 @@ MATCHER_P(EqualsProto, message, "") {
   return expected_serialized == actual_serialized;
 }
 
-ACTION_TEMPLATE(RunCompletionCallback,
+ACTION_TEMPLATE(PostCompletionCallbackTask,
                 HAS_1_TEMPLATE_PARAMS(int, cb_idx),
                 AND_1_VALUE_PARAMS(rv)) {
-  testing::get<cb_idx>(args).Run(rv);
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(testing::get<cb_idx>(args), rv));
 }
 
 }  // namespace cast_channel

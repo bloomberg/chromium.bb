@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/cast_channel/keep_alive_delegate.h"
 
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/timer/mock_timer.h"
 #include "extensions/browser/api/cast_channel/cast_test_util.h"
@@ -64,6 +66,13 @@ class KeepAliveDelegateTest : public testing::Test {
                                   make_scoped_ptr(liveness_timer_));
   }
 
+  // Runs all pending tasks in the message loop.
+  void RunPendingTasks() {
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
+
+  base::MessageLoop message_loop_;
   MockCastSocket socket_;
   scoped_ptr<KeepAliveDelegate> keep_alive_;
   scoped_refptr<Logger> logger_;
@@ -83,7 +92,8 @@ TEST_F(KeepAliveDelegateTest, TestPing) {
   EXPECT_CALL(*socket_.mock_transport(),
               SendMessage(EqualsProto(KeepAliveDelegate::CreateKeepAliveMessage(
                               KeepAliveDelegate::kHeartbeatPingType)),
-                          _)).WillOnce(RunCompletionCallback<1>(net::OK));
+                          _))
+      .WillOnce(PostCompletionCallbackTask<1>(net::OK));
   EXPECT_CALL(*inner_delegate_, Start());
   EXPECT_CALL(*ping_timer_, ResetTriggered()).Times(2);
   EXPECT_CALL(*liveness_timer_, ResetTriggered()).Times(2);
@@ -93,6 +103,7 @@ TEST_F(KeepAliveDelegateTest, TestPing) {
   ping_timer_->Fire();
   keep_alive_->OnMessage(KeepAliveDelegate::CreateKeepAliveMessage(
       KeepAliveDelegate::kHeartbeatPongType));
+  RunPendingTasks();
 }
 
 TEST_F(KeepAliveDelegateTest, TestPingFailed) {
@@ -100,7 +111,7 @@ TEST_F(KeepAliveDelegateTest, TestPingFailed) {
               SendMessage(EqualsProto(KeepAliveDelegate::CreateKeepAliveMessage(
                               KeepAliveDelegate::kHeartbeatPingType)),
                           _))
-      .WillOnce(RunCompletionCallback<1>(net::ERR_CONNECTION_RESET));
+      .WillOnce(PostCompletionCallbackTask<1>(net::ERR_CONNECTION_RESET));
   EXPECT_CALL(*inner_delegate_, Start());
   EXPECT_CALL(*inner_delegate_, OnError(CHANNEL_ERROR_SOCKET_ERROR));
   EXPECT_CALL(*ping_timer_, ResetTriggered()).Times(1);
@@ -110,6 +121,7 @@ TEST_F(KeepAliveDelegateTest, TestPingFailed) {
 
   keep_alive_->Start();
   ping_timer_->Fire();
+  RunPendingTasks();
   EXPECT_EQ(proto::PING_WRITE_ERROR,
             logger_->GetLastErrors(socket_.id()).event_type);
   EXPECT_EQ(net::ERR_CONNECTION_RESET,
@@ -120,7 +132,8 @@ TEST_F(KeepAliveDelegateTest, TestPingAndLivenessTimeout) {
   EXPECT_CALL(*socket_.mock_transport(),
               SendMessage(EqualsProto(KeepAliveDelegate::CreateKeepAliveMessage(
                               KeepAliveDelegate::kHeartbeatPingType)),
-                          _)).WillOnce(RunCompletionCallback<1>(net::OK));
+                          _))
+      .WillOnce(PostCompletionCallbackTask<1>(net::OK));
   EXPECT_CALL(*inner_delegate_, OnError(CHANNEL_ERROR_PING_TIMEOUT));
   EXPECT_CALL(*inner_delegate_, Start());
   EXPECT_CALL(*ping_timer_, ResetTriggered()).Times(1);
@@ -131,6 +144,7 @@ TEST_F(KeepAliveDelegateTest, TestPingAndLivenessTimeout) {
   keep_alive_->Start();
   ping_timer_->Fire();
   liveness_timer_->Fire();
+  RunPendingTasks();
 }
 
 TEST_F(KeepAliveDelegateTest, TestResetTimersAndPassthroughAllOtherTraffic) {
@@ -144,6 +158,7 @@ TEST_F(KeepAliveDelegateTest, TestResetTimersAndPassthroughAllOtherTraffic) {
 
   keep_alive_->Start();
   keep_alive_->OnMessage(other_message);
+  RunPendingTasks();
 }
 
 }  // namespace

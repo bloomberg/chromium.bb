@@ -43,21 +43,6 @@
 #define VLOG_WITH_CONNECTION(level) VLOG(level) << "[" << \
     ip_endpoint_.ToString() << ", auth=" << channel_auth_ << "] "
 
-namespace {
-
-const int kMaxSelfSignedCertLifetimeInDays = 4;
-
-std::string FormatTimeForLogging(base::Time time) {
-  base::Time::Exploded exploded_time;
-  time.UTCExplode(&exploded_time);
-  return base::StringPrintf(
-      "%04d-%02d-%02d %02d:%02d:%02d.%03d UTC", exploded_time.year,
-      exploded_time.month, exploded_time.day_of_month, exploded_time.hour,
-      exploded_time.minute, exploded_time.second, exploded_time.millisecond);
-}
-
-}  // namespace
-
 namespace extensions {
 static base::LazyInstance<BrowserContextKeyedAPIFactory<
     ApiResourceManager<api::cast_channel::CastSocket>>> g_factory =
@@ -73,6 +58,26 @@ ApiResourceManager<api::cast_channel::CastSocket>::GetFactoryInstance() {
 
 namespace api {
 namespace cast_channel {
+namespace {
+
+const int kMaxSelfSignedCertLifetimeInDays = 4;
+
+std::string FormatTimeForLogging(base::Time time) {
+  base::Time::Exploded exploded_time;
+  time.UTCExplode(&exploded_time);
+  return base::StringPrintf(
+      "%04d-%02d-%02d %02d:%02d:%02d.%03d UTC", exploded_time.year,
+      exploded_time.month, exploded_time.day_of_month, exploded_time.hour,
+      exploded_time.minute, exploded_time.second, exploded_time.millisecond);
+}
+
+bool IsTerminalState(proto::ConnectionState state) {
+  return state == proto::CONN_STATE_FINISHED ||
+         state == proto::CONN_STATE_ERROR || state == proto::CONN_STATE_TIMEOUT;
+}
+
+}  // namespace
+
 CastSocket::CastSocket(const std::string& owner_extension_id)
     : ApiResource(owner_extension_id) {
 }
@@ -101,7 +106,7 @@ CastSocketImpl::CastSocketImpl(const std::string& owner_extension_id,
       connect_timeout_timer_(new base::OneShotTimer<CastSocketImpl>),
       is_canceled_(false),
       device_capabilities_(device_capabilities),
-      connect_state_(proto::CONN_STATE_NONE),
+      connect_state_(proto::CONN_STATE_START_CONNECT),
       error_state_(CHANNEL_ERROR_NONE),
       ready_state_(READY_STATE_NONE),
       auth_delegate_(nullptr) {
@@ -251,6 +256,7 @@ void CastSocketImpl::Connect(scoped_ptr<CastTransport::Delegate> delegate,
                              base::Callback<void(ChannelError)> callback) {
   DCHECK(CalledOnValidThread());
   VLOG_WITH_CONNECTION(1) << "Connect readyState = " << ready_state_;
+  DCHECK_EQ(proto::CONN_STATE_START_CONNECT, connect_state_);
 
   delegate_ = delegate.Pass();
 
@@ -319,9 +325,7 @@ void CastSocketImpl::DoConnectLoop(int result) {
   int rv = result;
   do {
     proto::ConnectionState state = connect_state_;
-    // Default to CONN_STATE_NONE, which breaks the processing loop if any
-    // handler fails to transition to another state to continue processing.
-    connect_state_ = proto::CONN_STATE_NONE;
+    connect_state_ = proto::CONN_STATE_UNKNOWN;
     switch (state) {
       case proto::CONN_STATE_TCP_CONNECT:
         rv = DoTcpConnect();
@@ -344,24 +348,26 @@ void CastSocketImpl::DoConnectLoop(int result) {
         break;
       case proto::CONN_STATE_AUTH_CHALLENGE_REPLY_COMPLETE:
         rv = DoAuthChallengeReplyComplete(rv);
+        DCHECK(IsTerminalState(connect_state_));
         break;
       default:
-        NOTREACHED() << "BUG in connect flow. Unknown state: " << state;
-        break;
+        NOTREACHED() << "Unknown state in connect flow: " << state;
+        SetConnectState(proto::CONN_STATE_FINISHED);
+        SetErrorState(CHANNEL_ERROR_UNKNOWN);
+        DoConnectCallback();
+        return;
     }
-  } while (rv != net::ERR_IO_PENDING &&
-           connect_state_ != proto::CONN_STATE_NONE);
-  // Get out of the loop either when: // a. A network operation is pending, OR
-  // b. The Do* method called did not change state
+  } while (rv != net::ERR_IO_PENDING && !IsTerminalState(connect_state_));
+  // Exit the state machine if an asynchronous network operation is pending
+  // or if the state machine is in the terminal "finished" state.
 
-  // No state change occurred above. This means state has transitioned to NONE.
-  if (connect_state_ == proto::CONN_STATE_NONE) {
+  if (IsTerminalState(connect_state_)) {
+    DCHECK_NE(rv, net::ERR_IO_PENDING);
     logger_->LogSocketConnectState(channel_id_, connect_state_);
-  }
-
-  if (rv != net::ERR_IO_PENDING) {
     GetTimer()->Stop();
     DoConnectCallback();
+  } else {
+    DCHECK_EQ(rv, net::ERR_IO_PENDING);
   }
 }
 
@@ -384,8 +390,10 @@ int CastSocketImpl::DoTcpConnectComplete(int connect_result) {
   if (connect_result == net::OK) {
     SetConnectState(proto::CONN_STATE_SSL_CONNECT);
   } else if (connect_result == net::ERR_CONNECTION_TIMED_OUT) {
+    SetConnectState(proto::CONN_STATE_FINISHED);
     SetErrorState(CHANNEL_ERROR_CONNECT_TIMEOUT);
   } else {
+    SetConnectState(proto::CONN_STATE_FINISHED);
     SetErrorState(CHANNEL_ERROR_CONNECT_ERROR);
   }
   return connect_result;
@@ -426,11 +434,14 @@ int CastSocketImpl::DoSslConnectComplete(int result) {
       // Additionally verify the connection with a handshake.
       SetConnectState(proto::CONN_STATE_AUTH_CHALLENGE_SEND);
     } else {
+      SetConnectState(proto::CONN_STATE_FINISHED);
       transport_->Start();
     }
   } else if (result == net::ERR_CONNECTION_TIMED_OUT) {
+    SetConnectState(proto::CONN_STATE_FINISHED);
     SetErrorState(CHANNEL_ERROR_CONNECT_TIMEOUT);
   } else {
+    SetConnectState(proto::CONN_STATE_FINISHED);
     SetErrorState(CHANNEL_ERROR_AUTHENTICATION_ERROR);
   }
   return result;
@@ -456,9 +467,10 @@ int CastSocketImpl::DoAuthChallengeSend() {
 int CastSocketImpl::DoAuthChallengeSendComplete(int result) {
   VLOG_WITH_CONNECTION(1) << "DoAuthChallengeSendComplete: " << result;
   if (result < 0) {
+    SetConnectState(proto::CONN_STATE_ERROR);
+    SetErrorState(CHANNEL_ERROR_SOCKET_ERROR);
     logger_->LogSocketEventWithRv(channel_id_,
                                   proto::SEND_AUTH_CHALLENGE_FAILED, result);
-    SetErrorState(CHANNEL_ERROR_SOCKET_ERROR);
     return result;
   }
   transport_->Start();
@@ -505,30 +517,44 @@ void CastSocketImpl::AuthTransportDelegate::Start() {
 
 int CastSocketImpl::DoAuthChallengeReplyComplete(int result) {
   VLOG_WITH_CONNECTION(1) << "DoAuthChallengeReplyComplete: " << result;
+
   if (auth_delegate_->error_state() != CHANNEL_ERROR_NONE) {
     SetErrorState(auth_delegate_->error_state());
+    SetConnectState(proto::CONN_STATE_ERROR);
     return net::ERR_CONNECTION_FAILED;
   }
   auth_delegate_ = nullptr;
+
   if (result < 0) {
+    SetConnectState(proto::CONN_STATE_ERROR);
     return result;
   }
+
   if (!VerifyChallengeReply()) {
     SetErrorState(CHANNEL_ERROR_AUTHENTICATION_ERROR);
+    SetConnectState(proto::CONN_STATE_ERROR);
     return net::ERR_CONNECTION_FAILED;
   }
   VLOG_WITH_CONNECTION(1) << "Auth challenge verification succeeded";
+
+  SetConnectState(proto::CONN_STATE_FINISHED);
   return net::OK;
 }
 
 void CastSocketImpl::DoConnectCallback() {
   VLOG(1) << "DoConnectCallback (error_state = " << error_state_ << ")";
+  if (connect_callback_.is_null()) {
+    DLOG(FATAL) << "Connection callback invoked multiple times.";
+    return;
+  }
+
   if (error_state_ == CHANNEL_ERROR_NONE) {
     SetReadyState(READY_STATE_OPEN);
     transport_->SetReadDelegate(delegate_.Pass());
   } else {
     CloseInternal();
   }
+
   base::ResetAndReturn(&connect_callback_).Run(error_state_);
 }
 
