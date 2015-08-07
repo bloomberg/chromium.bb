@@ -50,8 +50,8 @@ SkCanvas* SoftwareOutputDeviceOzone::BeginPaint(const gfx::Rect& damage_rect) {
   return SoftwareOutputDevice::BeginPaint(damage_rect);
 }
 
-void SoftwareOutputDeviceOzone::EndPaint(cc::SoftwareFrameData* frame_data) {
-  SoftwareOutputDevice::EndPaint(frame_data);
+void SoftwareOutputDeviceOzone::EndPaint() {
+  SoftwareOutputDevice::EndPaint();
 
   surface_ozone_->PresentCanvas(damage_rect_);
 }

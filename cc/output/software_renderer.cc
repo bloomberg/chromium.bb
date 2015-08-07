@@ -113,20 +113,14 @@ void SoftwareRenderer::FinishDrawingFrame(DrawingFrame* frame) {
   current_canvas_ = NULL;
   root_canvas_ = NULL;
 
-  current_frame_data_.reset(new SoftwareFrameData);
-  output_device_->EndPaint(current_frame_data_.get());
+  output_device_->EndPaint();
 }
 
 void SoftwareRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
   TRACE_EVENT0("cc,benchmark", "SoftwareRenderer::SwapBuffers");
   CompositorFrame compositor_frame;
   compositor_frame.metadata = metadata;
-  compositor_frame.software_frame_data = current_frame_data_.Pass();
   output_surface_->SwapBuffers(&compositor_frame);
-}
-
-void SoftwareRenderer::ReceiveSwapBuffersAck(const CompositorFrameAck& ack) {
-  output_device_->ReclaimSoftwareFrame(ack.last_software_frame_id);
 }
 
 bool SoftwareRenderer::FlippedFramebuffer(const DrawingFrame* frame) const {

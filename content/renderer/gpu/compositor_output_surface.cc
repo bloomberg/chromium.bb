@@ -96,8 +96,7 @@ bool CompositorOutputSurface::BindToClient(
 
 void CompositorOutputSurface::ShortcutSwapAck(
     uint32 output_surface_id,
-    scoped_ptr<cc::GLFrameData> gl_frame_data,
-    scoped_ptr<cc::SoftwareFrameData> software_frame_data) {
+    scoped_ptr<cc::GLFrameData> gl_frame_data) {
   if (!layout_test_previous_frame_ack_) {
     layout_test_previous_frame_ack_.reset(new cc::CompositorFrameAck);
     layout_test_previous_frame_ack_->gl_frame_data.reset(new cc::GLFrameData);
@@ -106,8 +105,6 @@ void CompositorOutputSurface::ShortcutSwapAck(
   OnSwapAck(output_surface_id, *layout_test_previous_frame_ack_);
 
   layout_test_previous_frame_ack_->gl_frame_data = gl_frame_data.Pass();
-  layout_test_previous_frame_ack_->last_software_frame_id =
-      software_frame_data ? software_frame_data->id : 0;
 }
 
 void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
@@ -124,12 +121,9 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
     // block needs to be removed.
     DCHECK(!frame->delegated_frame_data);
 
-    base::Closure closure =
-        base::Bind(&CompositorOutputSurface::ShortcutSwapAck,
-                   weak_ptrs_.GetWeakPtr(),
-                   output_surface_id_,
-                   base::Passed(&frame->gl_frame_data),
-                   base::Passed(&frame->software_frame_data));
+    base::Closure closure = base::Bind(
+        &CompositorOutputSurface::ShortcutSwapAck, weak_ptrs_.GetWeakPtr(),
+        output_surface_id_, base::Passed(&frame->gl_frame_data));
 
     if (context_provider()) {
       gpu::gles2::GLES2Interface* context = context_provider()->ContextGL();

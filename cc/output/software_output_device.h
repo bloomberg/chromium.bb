@@ -23,8 +23,6 @@ class VSyncProvider;
 
 namespace cc {
 
-class SoftwareFrameData;
-
 // This is a "tear-off" class providing software drawing support to
 // OutputSurface, such as to a platform-provided window framebuffer.
 class CC_EXPORT SoftwareOutputDevice {
@@ -46,19 +44,13 @@ class CC_EXPORT SoftwareOutputDevice {
   // Called on FinishDrawingFrame. The compositor will no longer mutate the the
   // SkCanvas instance returned by |BeginPaint| and should discard any reference
   // that it holds to it.
-  virtual void EndPaint(SoftwareFrameData* frame_data);
+  virtual void EndPaint();
 
   // Discard the backing buffer in the surface provided by this instance.
   virtual void DiscardBackbuffer() {}
 
   // Ensures that there is a backing buffer available on this instance.
   virtual void EnsureBackbuffer() {}
-
-  // TODO(skaslev) Remove this after UberCompositor lands.
-  // Called in response to receiving a SwapBuffersAck. At this point, software
-  // frame identified by id can be reused or discarded as it is no longer being
-  // displayed.
-  virtual void ReclaimSoftwareFrame(unsigned id);
 
   // VSyncProvider used to update the timer used to schedule draws with the
   // hardware vsync. Return NULL if a provider doesn't exist.

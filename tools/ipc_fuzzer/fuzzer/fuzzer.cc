@@ -703,8 +703,6 @@ struct FuzzTraits<cc::CompositorFrameAck> {
   static bool Fuzz(cc::CompositorFrameAck* p, Fuzzer* fuzzer) {
     if (!FuzzParam(&p->resources, fuzzer))
       return false;
-    if (!FuzzParam(&p->last_software_frame_id, fuzzer))
-      return false;
 
     if (!p->gl_frame_data)
       p->gl_frame_data.reset(new cc::GLFrameData);

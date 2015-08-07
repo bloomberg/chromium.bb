@@ -32,7 +32,6 @@ using cc::RenderPassDrawQuad;
 using cc::ResourceId;
 using cc::ResourceProvider;
 using cc::SharedQuadState;
-using cc::SoftwareFrameData;
 using cc::SolidColorDrawQuad;
 using cc::SurfaceDrawQuad;
 using cc::TextureDrawQuad;
@@ -674,71 +673,6 @@ TEST_F(CCMessagesTest, Resources) {
   ASSERT_EQ(2u, frame_out.resource_list.size());
   Compare(arbitrary_resource1, frame_out.resource_list[0]);
   Compare(arbitrary_resource2, frame_out.resource_list[1]);
-}
-
-TEST_F(CCMessagesTest, SoftwareFrameData) {
-  cc::SoftwareFrameData frame_in;
-  frame_in.id = 3;
-  frame_in.size = gfx::Size(40, 20);
-  frame_in.damage_rect = gfx::Rect(5, 18, 31, 44);
-  frame_in.bitmap_id = cc::SharedBitmap::GenerateId();
-
-  // Write the frame.
-  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
-  IPC::ParamTraits<cc::SoftwareFrameData>::Write(&msg, frame_in);
-
-  // Read the frame.
-  cc::SoftwareFrameData frame_out;
-  base::PickleIterator iter(msg);
-  EXPECT_TRUE(
-      IPC::ParamTraits<SoftwareFrameData>::Read(&msg, &iter, &frame_out));
-  EXPECT_EQ(frame_in.id, frame_out.id);
-  EXPECT_EQ(frame_in.size.ToString(), frame_out.size.ToString());
-  EXPECT_EQ(frame_in.damage_rect.ToString(), frame_out.damage_rect.ToString());
-  EXPECT_EQ(frame_in.bitmap_id, frame_out.bitmap_id);
-}
-
-TEST_F(CCMessagesTest, SoftwareFrameDataMaxInt) {
-  SoftwareFrameData frame_in;
-  frame_in.id = 3;
-  frame_in.size = gfx::Size(40, 20);
-  frame_in.damage_rect = gfx::Rect(5, 18, 31, 44);
-  frame_in.bitmap_id = cc::SharedBitmap::GenerateId();
-
-  // Write the SoftwareFrameData by hand, make sure it works.
-  {
-    IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
-    IPC::WriteParam(&msg, frame_in.id);
-    IPC::WriteParam(&msg, frame_in.size);
-    IPC::WriteParam(&msg, frame_in.damage_rect);
-    IPC::WriteParam(&msg, frame_in.bitmap_id);
-    SoftwareFrameData frame_out;
-    base::PickleIterator iter(msg);
-    EXPECT_TRUE(
-        IPC::ParamTraits<SoftwareFrameData>::Read(&msg, &iter, &frame_out));
-  }
-
-  // The size of the frame may overflow when multiplied together.
-  int max = std::numeric_limits<int>::max();
-  frame_in.size = gfx::Size(max, max);
-
-  // If size_t is larger than int, then int*int*4 can always fit in size_t.
-  bool expect_read = sizeof(size_t) >= sizeof(int) * 2;
-
-  // Write the SoftwareFrameData with the MaxInt size, if it causes overflow it
-  // should fail.
-  {
-    IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
-    IPC::WriteParam(&msg, frame_in.id);
-    IPC::WriteParam(&msg, frame_in.size);
-    IPC::WriteParam(&msg, frame_in.damage_rect);
-    IPC::WriteParam(&msg, frame_in.bitmap_id);
-    SoftwareFrameData frame_out;
-    base::PickleIterator iter(msg);
-    EXPECT_EQ(
-        expect_read,
-        IPC::ParamTraits<SoftwareFrameData>::Read(&msg, &iter, &frame_out));
-  }
 }
 
 }  // namespace

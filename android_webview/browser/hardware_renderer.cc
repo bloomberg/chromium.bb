@@ -84,7 +84,6 @@ void HardwareRenderer::CommitFrame() {
   scoped_ptr<cc::CompositorFrame> frame = child_frame_->frame.Pass();
   DCHECK(frame.get());
   DCHECK(!frame->gl_frame_data);
-  DCHECK(!frame->software_frame_data);
 
   // On Android we put our browser layers in physical pixels and set our
   // browser CC device_scale_factor to 1, so suppress the transform between

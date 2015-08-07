@@ -36,11 +36,10 @@ SoftwareOutputDeviceX11::~SoftwareOutputDeviceX11() {
   XFreeGC(display_, gc_);
 }
 
-void SoftwareOutputDeviceX11::EndPaint(cc::SoftwareFrameData* frame_data) {
+void SoftwareOutputDeviceX11::EndPaint() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(frame_data);
 
-  SoftwareOutputDevice::EndPaint(frame_data);
+  SoftwareOutputDevice::EndPaint();
 
   if (!surface_)
     return;

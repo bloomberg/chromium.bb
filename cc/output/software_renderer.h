@@ -37,7 +37,6 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   const RendererCapabilitiesImpl& Capabilities() const override;
   void Finish() override;
   void SwapBuffers(const CompositorFrameMetadata& metadata) override;
-  void ReceiveSwapBuffersAck(const CompositorFrameAck& ack) override;
   void DiscardBackbuffer() override;
   void EnsureBackbuffer() override;
 
@@ -105,7 +104,6 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   scoped_ptr<ResourceProvider::ScopedWriteLockSoftware>
       current_framebuffer_lock_;
   skia::RefPtr<SkCanvas> current_framebuffer_canvas_;
-  scoped_ptr<SoftwareFrameData> current_frame_data_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareRenderer);
 };

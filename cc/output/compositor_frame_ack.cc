@@ -6,8 +6,7 @@
 
 namespace cc {
 
-CompositorFrameAck::CompositorFrameAck()
-    : last_software_frame_id(0) {}
+CompositorFrameAck::CompositorFrameAck() {}
 
 CompositorFrameAck::~CompositorFrameAck() {}
 

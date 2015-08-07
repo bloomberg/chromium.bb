@@ -26,7 +26,6 @@ namespace cc {
 class CompositorFrame;
 class CompositorFrameAck;
 class GLFrameData;
-class SoftwareFrameData;
 }
 
 namespace content {
@@ -60,8 +59,7 @@ class CompositorOutputSurface
 
  protected:
   void ShortcutSwapAck(uint32 output_surface_id,
-                       scoped_ptr<cc::GLFrameData> gl_frame_data,
-                       scoped_ptr<cc::SoftwareFrameData> software_frame_data);
+                       scoped_ptr<cc::GLFrameData> gl_frame_data);
   virtual void OnSwapAck(uint32 output_surface_id,
                          const cc::CompositorFrameAck& ack);
   virtual void OnReclaimResources(uint32 output_surface_id,

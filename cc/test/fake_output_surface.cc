@@ -75,8 +75,7 @@ FakeOutputSurface::FakeOutputSurface(
 FakeOutputSurface::~FakeOutputSurface() {}
 
 void FakeOutputSurface::SwapBuffers(CompositorFrame* frame) {
-  if (frame->software_frame_data || frame->delegated_frame_data ||
-      !context_provider()) {
+  if (frame->delegated_frame_data || !context_provider()) {
     frame->AssignTo(&last_sent_frame_);
 
     if (last_sent_frame_.delegated_frame_data) {

@@ -328,8 +328,6 @@
         'output/renderer_settings.h',
         'output/shader.cc',
         'output/shader.h',
-        'output/software_frame_data.cc',
-        'output/software_frame_data.h',
         'output/software_output_device.cc',
         'output/software_output_device.h',
         'output/software_renderer.cc',

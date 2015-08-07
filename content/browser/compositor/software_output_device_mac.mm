@@ -18,8 +18,8 @@ SoftwareOutputDeviceMac::SoftwareOutputDeviceMac(ui::Compositor* compositor)
 SoftwareOutputDeviceMac::~SoftwareOutputDeviceMac() {
 }
 
-void SoftwareOutputDeviceMac::EndPaint(cc::SoftwareFrameData* frame_data) {
-  SoftwareOutputDevice::EndPaint(frame_data);
+void SoftwareOutputDeviceMac::EndPaint() {
+  SoftwareOutputDevice::EndPaint();
   ui::AcceleratedWidgetMacGotSoftwareFrame(
       compositor_->widget(), scale_factor_, surface_->getCanvas());
 }

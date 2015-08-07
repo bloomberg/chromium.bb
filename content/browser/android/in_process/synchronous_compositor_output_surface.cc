@@ -51,7 +51,7 @@ class SynchronousCompositorOutputSurface::SoftwareDevice
         << "Mutliple calls to BeginPaint per frame";
     return surface_->current_sw_canvas_;
   }
-  void EndPaint(cc::SoftwareFrameData* frame_data) override {}
+  void EndPaint() override {}
 
  private:
   SynchronousCompositorOutputSurface* surface_;

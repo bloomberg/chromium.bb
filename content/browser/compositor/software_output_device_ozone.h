@@ -28,7 +28,7 @@ class CONTENT_EXPORT SoftwareOutputDeviceOzone
   void Resize(const gfx::Size& viewport_pixel_size,
                       float scale_factor) override;
   SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override;
-  void EndPaint(cc::SoftwareFrameData* frame_data) override;
+  void EndPaint() override;
 
  private:
   ui::Compositor* compositor_;

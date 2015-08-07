@@ -1158,22 +1158,12 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
   TRACE_EVENT0("content", "RenderWidgetHostViewAura::OnSwapCompositorFrame");
 
   last_scroll_offset_ = frame->metadata.root_scroll_offset;
-  if (frame->delegated_frame_data) {
-    delegated_frame_host_->SwapDelegatedFrame(
-        output_surface_id,
-        frame->delegated_frame_data.Pass(),
-        frame->metadata.device_scale_factor,
-        frame->metadata.latency_info,
-        &frame->metadata.satisfies_sequences);
+  if (!frame->delegated_frame_data)
     return;
-  }
-
-  if (frame->software_frame_data) {
-    DLOG(ERROR) << "Unable to use software frame in aura";
-    bad_message::ReceivedBadMessage(host_->GetProcess(),
-                                    bad_message::RWHVA_SHARED_MEMORY);
-    return;
-  }
+  delegated_frame_host_->SwapDelegatedFrame(
+      output_surface_id, frame->delegated_frame_data.Pass(),
+      frame->metadata.device_scale_factor, frame->metadata.latency_info,
+      &frame->metadata.satisfies_sequences);
 }
 
 void RenderWidgetHostViewAura::DidStopFlinging() {

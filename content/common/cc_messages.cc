@@ -569,7 +569,6 @@ namespace {
     NO_FRAME,
     DELEGATED_FRAME,
     GL_FRAME,
-    SOFTWARE_FRAME,
   };
 }
 
@@ -578,16 +577,11 @@ void ParamTraits<cc::CompositorFrame>::Write(Message* m,
   WriteParam(m, p.metadata);
   if (p.delegated_frame_data) {
     DCHECK(!p.gl_frame_data);
-    DCHECK(!p.software_frame_data);
     WriteParam(m, static_cast<int>(DELEGATED_FRAME));
     WriteParam(m, *p.delegated_frame_data);
   } else if (p.gl_frame_data) {
-    DCHECK(!p.software_frame_data);
     WriteParam(m, static_cast<int>(GL_FRAME));
     WriteParam(m, *p.gl_frame_data);
-  } else if (p.software_frame_data) {
-    WriteParam(m, static_cast<int>(SOFTWARE_FRAME));
-    WriteParam(m, *p.software_frame_data);
   } else {
     WriteParam(m, static_cast<int>(NO_FRAME));
   }
@@ -614,11 +608,6 @@ bool ParamTraits<cc::CompositorFrame>::Read(const Message* m,
       if (!ReadParam(m, iter, p->gl_frame_data.get()))
         return false;
       break;
-    case SOFTWARE_FRAME:
-      p->software_frame_data.reset(new cc::SoftwareFrameData());
-      if (!ReadParam(m, iter, p->software_frame_data.get()))
-        return false;
-      break;
     case NO_FRAME:
       break;
     default:
@@ -636,15 +625,12 @@ void ParamTraits<cc::CompositorFrame>::Log(const param_type& p,
     LogParam(*p.delegated_frame_data, l);
   else if (p.gl_frame_data)
     LogParam(*p.gl_frame_data, l);
-  else if (p.software_frame_data)
-    LogParam(*p.software_frame_data, l);
   l->append(")");
 }
 
 void ParamTraits<cc::CompositorFrameAck>::Write(Message* m,
                                                 const param_type& p) {
   WriteParam(m, p.resources);
-  WriteParam(m, p.last_software_frame_id);
   if (p.gl_frame_data) {
     WriteParam(m, static_cast<int>(GL_FRAME));
     WriteParam(m, *p.gl_frame_data);
@@ -657,9 +643,6 @@ bool ParamTraits<cc::CompositorFrameAck>::Read(const Message* m,
                                                base::PickleIterator* iter,
                                                param_type* p) {
   if (!ReadParam(m, iter, &p->resources))
-    return false;
-
-  if (!ReadParam(m, iter, &p->last_software_frame_id))
     return false;
 
   int compositor_frame_type;
@@ -684,8 +667,6 @@ void ParamTraits<cc::CompositorFrameAck>::Log(const param_type& p,
                                               std::string* l) {
   l->append("CompositorFrameAck(");
   LogParam(p.resources, l);
-  l->append(", ");
-  LogParam(p.last_software_frame_id, l);
   l->append(", ");
   if (p.gl_frame_data)
     LogParam(*p.gl_frame_data, l);
@@ -772,45 +753,6 @@ void ParamTraits<cc::DelegatedFrameData>::Log(const param_type& p,
     LogParam(*p.render_pass_list[i], l);
   }
   l->append("])");
-}
-
-void ParamTraits<cc::SoftwareFrameData>::Write(Message* m,
-                                               const param_type& p) {
-  DCHECK(cc::SharedBitmap::VerifySizeInBytes(p.size));
-
-  m->Reserve(sizeof(cc::SoftwareFrameData));
-  WriteParam(m, p.id);
-  WriteParam(m, p.size);
-  WriteParam(m, p.damage_rect);
-  WriteParam(m, p.bitmap_id);
-}
-
-bool ParamTraits<cc::SoftwareFrameData>::Read(const Message* m,
-                                              base::PickleIterator* iter,
-                                              param_type* p) {
-  if (!ReadParam(m, iter, &p->id))
-    return false;
-  if (!ReadParam(m, iter, &p->size) ||
-      !cc::SharedBitmap::VerifySizeInBytes(p->size))
-    return false;
-  if (!ReadParam(m, iter, &p->damage_rect))
-    return false;
-  if (!ReadParam(m, iter, &p->bitmap_id))
-    return false;
-  return true;
-}
-
-void ParamTraits<cc::SoftwareFrameData>::Log(const param_type& p,
-                                             std::string* l) {
-  l->append("SoftwareFrameData(");
-  LogParam(p.id, l);
-  l->append(", ");
-  LogParam(p.size, l);
-  l->append(", ");
-  LogParam(p.damage_rect, l);
-  l->append(", ");
-  LogParam(p.bitmap_id, l);
-  l->append(")");
 }
 
 void ParamTraits<cc::DrawQuad::Resources>::Write(Message* m,

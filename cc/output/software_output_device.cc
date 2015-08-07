@@ -5,7 +5,6 @@
 #include "cc/output/software_output_device.h"
 
 #include "base/logging.h"
-#include "cc/output/software_frame_data.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/vsync_provider.h"
 
@@ -35,16 +34,7 @@ SkCanvas* SoftwareOutputDevice::BeginPaint(const gfx::Rect& damage_rect) {
   return surface_ ? surface_->getCanvas() : nullptr;
 }
 
-void SoftwareOutputDevice::EndPaint(SoftwareFrameData* frame_data) {
-  DCHECK(frame_data);
-  frame_data->id = 0;
-  frame_data->size = viewport_pixel_size_;
-  frame_data->damage_rect = damage_rect_;
-}
-
-void SoftwareOutputDevice::ReclaimSoftwareFrame(unsigned id) {
-  NOTIMPLEMENTED();
-}
+void SoftwareOutputDevice::EndPaint() {}
 
 gfx::VSyncProvider* SoftwareOutputDevice::GetVSyncProvider() {
   return vsync_provider_.get();

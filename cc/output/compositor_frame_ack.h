@@ -19,7 +19,6 @@ class CC_EXPORT CompositorFrameAck {
 
   ReturnedResourceArray resources;
   scoped_ptr<GLFrameData> gl_frame_data;
-  unsigned last_software_frame_id;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameAck);

@@ -31,10 +31,19 @@ class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
   void ReturnResources(const ReturnedResourceArray& resources) override {}
 };
 
+class TestSoftwareOutputDevice : public SoftwareOutputDevice {
+ public:
+  TestSoftwareOutputDevice() {}
+
+  gfx::Rect damage_rect() const { return damage_rect_; }
+  gfx::Size viewport_pixel_size() const { return viewport_pixel_size_; }
+};
+
 class DisplayTest : public testing::Test {
  public:
   DisplayTest()
       : factory_(&manager_, &empty_client_),
+        software_output_device_(nullptr),
         task_runner_(new base::NullTaskRunner) {}
 
  protected:
@@ -43,8 +52,10 @@ class DisplayTest : public testing::Test {
       output_surface_ = FakeOutputSurface::Create3d(
           TestContextProvider::Create(context.Pass()));
     } else {
-      output_surface_ = FakeOutputSurface::CreateSoftware(
-          make_scoped_ptr(new SoftwareOutputDevice));
+      scoped_ptr<TestSoftwareOutputDevice> output_device(
+          new TestSoftwareOutputDevice);
+      software_output_device_ = output_device.get();
+      output_surface_ = FakeOutputSurface::CreateSoftware(output_device.Pass());
     }
     shared_bitmap_manager_.reset(new TestSharedBitmapManager);
     output_surface_ptr_ = output_surface_.get();
@@ -64,6 +75,7 @@ class DisplayTest : public testing::Test {
   SurfaceManager manager_;
   EmptySurfaceFactoryClient empty_client_;
   SurfaceFactory factory_;
+  TestSoftwareOutputDevice* software_output_device_;
   scoped_ptr<FakeOutputSurface> output_surface_;
   FakeOutputSurface* output_surface_ptr_;
   FakeBeginFrameSource fake_begin_frame_source_;
@@ -173,12 +185,9 @@ TEST_F(DisplayTest, DisplayDamaged) {
   display.DrawAndSwap();
   EXPECT_TRUE(scheduler.swapped);
   EXPECT_EQ(1u, output_surface_ptr_->num_sent_frames());
-  SoftwareFrameData* software_data =
-      output_surface_ptr_->last_sent_frame().software_frame_data.get();
-  ASSERT_NE(nullptr, software_data);
-  EXPECT_EQ(gfx::Size(100, 100).ToString(), software_data->size.ToString());
-  EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
-            software_data->damage_rect.ToString());
+  EXPECT_EQ(gfx::Size(100, 100),
+            software_output_device_->viewport_pixel_size());
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100), software_output_device_->damage_rect());
 
   {
     // Only damaged portion should be swapped.
@@ -198,12 +207,9 @@ TEST_F(DisplayTest, DisplayDamaged) {
     display.DrawAndSwap();
     EXPECT_TRUE(scheduler.swapped);
     EXPECT_EQ(2u, output_surface_ptr_->num_sent_frames());
-    software_data =
-        output_surface_ptr_->last_sent_frame().software_frame_data.get();
-    ASSERT_NE(nullptr, software_data);
-    EXPECT_EQ(gfx::Size(100, 100).ToString(), software_data->size.ToString());
-    EXPECT_EQ(gfx::Rect(10, 10, 1, 1).ToString(),
-              software_data->damage_rect.ToString());
+    EXPECT_EQ(gfx::Size(100, 100),
+              software_output_device_->viewport_pixel_size());
+    EXPECT_EQ(gfx::Rect(10, 10, 1, 1), software_output_device_->damage_rect());
   }
 
   {

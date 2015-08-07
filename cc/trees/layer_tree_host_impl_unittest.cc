@@ -6035,9 +6035,9 @@ class CountingSoftwareDevice : public SoftwareOutputDevice {
     ++frames_began_;
     return SoftwareOutputDevice::BeginPaint(damage_rect);
   }
-  void EndPaint(SoftwareFrameData* frame_data) override {
+  void EndPaint() override {
+    SoftwareOutputDevice::EndPaint();
     ++frames_ended_;
-    SoftwareOutputDevice::EndPaint(frame_data);
   }
 
   int frames_began_, frames_ended_;
