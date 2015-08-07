@@ -56,9 +56,10 @@ public:
 #endif
 
     class PropertyReference {
+        STACK_ALLOCATED();
     public:
         PropertyReference(const StylePropertySet& propertySet, unsigned index)
-            : m_propertySet(propertySet)
+            : m_propertySet(&propertySet)
             , m_index(index)
         {
         }
@@ -82,7 +83,7 @@ public:
     private:
         const CSSValue* propertyValue() const;
 
-        const StylePropertySet& m_propertySet;
+        RawPtrWillBeMember<const StylePropertySet> m_propertySet;
         unsigned m_index;
     };
 
@@ -250,16 +251,16 @@ inline MutableStylePropertySet* toMutableStylePropertySet(const Member<StyleProp
 
 inline const StylePropertyMetadata& StylePropertySet::PropertyReference::propertyMetadata() const
 {
-    if (m_propertySet.isMutable())
-        return toMutableStylePropertySet(m_propertySet).m_propertyVector.at(m_index).metadata();
-    return toImmutableStylePropertySet(m_propertySet).metadataArray()[m_index];
+    if (m_propertySet->isMutable())
+        return toMutableStylePropertySet(*m_propertySet).m_propertyVector.at(m_index).metadata();
+    return toImmutableStylePropertySet(*m_propertySet).metadataArray()[m_index];
 }
 
 inline const CSSValue* StylePropertySet::PropertyReference::propertyValue() const
 {
-    if (m_propertySet.isMutable())
-        return toMutableStylePropertySet(m_propertySet).m_propertyVector.at(m_index).value();
-    return toImmutableStylePropertySet(m_propertySet).valueArray()[m_index];
+    if (m_propertySet->isMutable())
+        return toMutableStylePropertySet(*m_propertySet).m_propertyVector.at(m_index).value();
+    return toImmutableStylePropertySet(*m_propertySet).valueArray()[m_index];
 }
 
 inline unsigned StylePropertySet::propertyCount() const
