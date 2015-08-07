@@ -362,6 +362,12 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // from password store.
   void CreatePendingCredentials();
 
+  // If |pending_credentials_.username_value| is not empty, iterates over all
+  // forms from |best_matches_| and deletes from the password store all which
+  // are not PSL-matched, have an empty username, and a password equal to
+  // |pending_credentials_.password_value|.
+  void DeleteEmptyUsernameCredentials();
+
   // If |best_matches| contains only one entry then return this entry. Otherwise
   // for empty |password| return nullptr and for non-empty |password| returns
   // the unique entry in |best_matches_| with the same password, if it exists,

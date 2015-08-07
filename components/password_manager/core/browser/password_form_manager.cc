@@ -289,9 +289,10 @@ void PasswordFormManager::Save() {
     LogPasswordGenerationSubmissionEvent(PASSWORD_USED);
   }
 
-  if (IsNewLogin())
+  if (IsNewLogin()) {
     SaveAsNewLogin(true);
-  else
+    DeleteEmptyUsernameCredentials();
+  } else
     UpdateLogin();
 }
 
@@ -994,6 +995,22 @@ int PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {
   }
 
   return score;
+}
+
+void PasswordFormManager::DeleteEmptyUsernameCredentials() {
+  if (best_matches_.empty() || pending_credentials_.username_value.empty())
+    return;
+  PasswordStore* password_store = client_->GetPasswordStore();
+  if (!password_store) {
+    NOTREACHED();
+    return;
+  }
+  for (auto iter = best_matches_.begin(); iter != best_matches_.end(); ++iter) {
+    PasswordForm* form = iter->second;
+    if (!form->IsPublicSuffixMatch() && form->username_value.empty() &&
+        form->password_value == pending_credentials_.password_value)
+      password_store->RemoveLogin(*form);
+  }
 }
 
 PasswordForm* PasswordFormManager::FindBestMatchForUpdatePassword(

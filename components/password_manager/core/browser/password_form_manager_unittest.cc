@@ -54,6 +54,10 @@ ACTION_P4(InvokeConsumer, form1, form2, form3, form4) {
   arg0->OnGetPasswordStoreResults(result.Pass());
 }
 
+MATCHER_P(CheckUsername, username_value, "Username incorrect") {
+  return arg.username_value == username_value;
+}
+
 void RunAllPendingTasks() {
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1748,6 +1752,177 @@ TEST_F(PasswordFormManagerTest, WipeStoreCopyIfOutdated_Outdated) {
   form_manager.WipeStoreCopyIfOutdated();
   histogram_tester.ExpectUniqueSample("PasswordManager.StoreReadyWhenWiping", 1,
                                       1);
+}
+
+TEST_F(PasswordFormManagerTest, RemoveNoUsernameAccounts) {
+  TestPasswordManagerClient client_with_store(mock_store());
+  TestPasswordManager password_manager(&client_with_store);
+  PasswordFormManager form_manager(&password_manager, &client_with_store,
+                                   client_with_store.driver(), *observed_form(),
+                                   false);
+
+  PasswordForm saved_form = *saved_match();
+  saved_form.username_value.clear();
+  ScopedVector<PasswordForm> result;
+  result.push_back(new PasswordForm(saved_form));
+  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
+  form_manager.OnGetPasswordStoreResults(result.Pass());
+
+  PasswordForm submitted_form(*observed_form());
+  submitted_form.preferred = true;
+  submitted_form.username_value = saved_match()->username_value;
+  submitted_form.password_value = saved_match()->password_value;
+
+  saved_form.preferred = false;
+  EXPECT_CALL(*mock_store(),
+              AddLogin(CheckUsername(saved_match()->username_value)));
+  EXPECT_CALL(*mock_store(), RemoveLogin(saved_form));
+
+  form_manager.ProvisionallySave(
+      submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.Save();
+}
+
+TEST_F(PasswordFormManagerTest, NotRemovePSLNoUsernameAccounts) {
+  TestPasswordManagerClient client_with_store(mock_store());
+  TestPasswordManager password_manager(&client_with_store);
+  PasswordFormManager form_manager(&password_manager, &client_with_store,
+                                   client_with_store.driver(), *observed_form(),
+                                   false);
+
+  PasswordForm saved_form = *saved_match();
+  saved_form.username_value.clear();
+  saved_form.original_signon_realm = "www.example.org";
+  ScopedVector<PasswordForm> result;
+  result.push_back(new PasswordForm(saved_form));
+  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
+  form_manager.OnGetPasswordStoreResults(result.Pass());
+
+  PasswordForm submitted_form(*observed_form());
+  submitted_form.preferred = true;
+  submitted_form.username_value = saved_match()->username_value;
+  submitted_form.password_value = saved_match()->password_value;
+
+  EXPECT_CALL(*mock_store(),
+              AddLogin(CheckUsername(saved_match()->username_value)));
+  EXPECT_CALL(*mock_store(), RemoveLogin(_)).Times(0);
+
+  form_manager.ProvisionallySave(
+      submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.Save();
+}
+
+TEST_F(PasswordFormManagerTest, NotRemoveCredentialsWithUsername) {
+  TestPasswordManagerClient client_with_store(mock_store());
+  TestPasswordManager password_manager(&client_with_store);
+  PasswordFormManager form_manager(&password_manager, &client_with_store,
+                                   client_with_store.driver(), *observed_form(),
+                                   false);
+
+  PasswordForm saved_form = *saved_match();
+  ASSERT_FALSE(saved_form.username_value.empty());
+  ScopedVector<PasswordForm> result;
+  result.push_back(new PasswordForm(saved_form));
+  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
+  form_manager.OnGetPasswordStoreResults(result.Pass());
+
+  PasswordForm submitted_form(*observed_form());
+  submitted_form.preferred = true;
+  base::string16 username = saved_form.username_value + ASCIIToUTF16("1");
+  submitted_form.username_value = username;
+  submitted_form.password_value = saved_match()->password_value;
+
+  EXPECT_CALL(*mock_store(), AddLogin(CheckUsername(username)));
+  EXPECT_CALL(*mock_store(), RemoveLogin(_)).Times(0);
+
+  form_manager.ProvisionallySave(
+      submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.Save();
+}
+
+TEST_F(PasswordFormManagerTest, NotRemoveCredentialsWithDiferrentPassword) {
+  TestPasswordManagerClient client_with_store(mock_store());
+  TestPasswordManager password_manager(&client_with_store);
+  PasswordFormManager form_manager(&password_manager, &client_with_store,
+                                   client_with_store.driver(), *observed_form(),
+                                   false);
+
+  PasswordForm saved_form = *saved_match();
+  saved_form.username_value.clear();
+  ScopedVector<PasswordForm> result;
+  result.push_back(new PasswordForm(saved_form));
+  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
+  form_manager.OnGetPasswordStoreResults(result.Pass());
+
+  PasswordForm submitted_form(*observed_form());
+  submitted_form.preferred = true;
+  submitted_form.username_value = saved_match()->username_value;
+  submitted_form.password_value = saved_form.password_value + ASCIIToUTF16("1");
+
+  EXPECT_CALL(*mock_store(),
+              AddLogin(CheckUsername(saved_match()->username_value)));
+  EXPECT_CALL(*mock_store(), RemoveLogin(_)).Times(0);
+
+  form_manager.ProvisionallySave(
+      submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.Save();
+}
+
+TEST_F(PasswordFormManagerTest, SaveNoUsernameEvenIfWithUsernamePresent) {
+  TestPasswordManagerClient client_with_store(mock_store());
+  TestPasswordManager password_manager(&client_with_store);
+  PasswordFormManager form_manager(&password_manager, &client_with_store,
+                                   client_with_store.driver(), *observed_form(),
+                                   false);
+
+  PasswordForm* saved_form = saved_match();
+  ASSERT_FALSE(saved_match()->username_value.empty());
+  ScopedVector<PasswordForm> result;
+  result.push_back(new PasswordForm(*saved_form));
+  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
+  form_manager.OnGetPasswordStoreResults(result.Pass());
+
+  PasswordForm submitted_form(*observed_form());
+  submitted_form.preferred = true;
+  submitted_form.username_value.clear();
+
+  EXPECT_CALL(*mock_store(), AddLogin(CheckUsername(base::string16())));
+  EXPECT_CALL(*mock_store(), RemoveLogin(_)).Times(0);
+
+  form_manager.ProvisionallySave(
+      submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.Save();
+}
+
+TEST_F(PasswordFormManagerTest, NotRemoveOnUpdate) {
+  TestPasswordManagerClient client_with_store(mock_store());
+  TestPasswordManager password_manager(&client_with_store);
+  PasswordFormManager form_manager(&password_manager, &client_with_store,
+                                   client_with_store.driver(), *observed_form(),
+                                   false);
+
+  ScopedVector<PasswordForm> result;
+  PasswordForm saved_form = *saved_match();
+  ASSERT_FALSE(saved_form.username_value.empty());
+  result.push_back(new PasswordForm(saved_form));
+  saved_form.username_value.clear();
+  saved_form.preferred = false;
+  result.push_back(new PasswordForm(saved_form));
+  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
+  form_manager.OnGetPasswordStoreResults(result.Pass());
+
+  PasswordForm submitted_form(*observed_form());
+  submitted_form.preferred = true;
+  submitted_form.username_value = saved_match()->username_value;
+  submitted_form.password_value = saved_form.password_value + ASCIIToUTF16("1");
+
+  EXPECT_CALL(*mock_store(),
+              UpdateLogin(CheckUsername(saved_match()->username_value)));
+  EXPECT_CALL(*mock_store(), RemoveLogin(_)).Times(0);
+
+  form_manager.ProvisionallySave(
+      submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.Save();
 }
 
 }  // namespace password_manager
