@@ -2,7 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/path_service.h"
+#include "base/strings/stringprintf.h"
+#include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/common/chrome_paths.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 
 namespace extensions {
 
@@ -19,6 +27,58 @@ IN_PROC_BROWSER_TEST_F(DeveloperPrivateApiTest, Basics) {
 
   ASSERT_TRUE(RunPlatformAppTestWithFlags(
       "developer/test", kFlagLoadAsComponent));
+}
+
+// Tests opening the developer tools for an app window.
+IN_PROC_BROWSER_TEST_F(DeveloperPrivateApiTest, InspectAppWindowView) {
+  base::FilePath dir;
+  PathService::Get(chrome::DIR_TEST_DATA, &dir);
+  dir = dir.AppendASCII("extensions")
+            .AppendASCII("platform_apps")
+            .AppendASCII("minimal");
+
+  // Load and launch a platform app.
+  const Extension* app = LoadAndLaunchApp(dir);
+
+  // Get the info about the app, including the inspectable views.
+  scoped_refptr<UIThreadExtensionFunction> function(
+      new api::DeveloperPrivateGetExtensionInfoFunction());
+  scoped_ptr<base::Value> result(
+      extension_function_test_utils::RunFunctionAndReturnSingleResult(
+          function.get(), base::StringPrintf("[\"%s\"]", app->id().c_str()),
+          browser()));
+  ASSERT_TRUE(result);
+  scoped_ptr<api::developer_private::ExtensionInfo> info =
+      api::developer_private::ExtensionInfo::FromValue(*result);
+  ASSERT_TRUE(info);
+
+  // There should be two inspectable views - the background page and the app
+  // window.  Find the app window.
+  ASSERT_EQ(2u, info->views.size());
+  api::developer_private::ExtensionView* window_view = nullptr;
+  for (const auto& view : info->views) {
+    if (view->type == api::developer_private::VIEW_TYPE_APP_WINDOW) {
+      window_view = view.get();
+      break;
+    }
+  }
+  ASSERT_TRUE(window_view);
+
+  // Inspect the app window.
+  function = new api::DeveloperPrivateOpenDevToolsFunction();
+  extension_function_test_utils::RunFunction(
+      function.get(),
+      base::StringPrintf("[{\"renderViewId\": %d, \"renderProcessId\": %d}]",
+                         window_view->render_view_id,
+                         window_view->render_process_id),
+      browser(), extension_function_test_utils::NONE);
+
+  // Verify that dev tools opened.
+  std::list<AppWindow*> app_windows =
+      AppWindowRegistry::Get(profile())->GetAppWindowsForApp(app->id());
+  ASSERT_EQ(1u, app_windows.size());
+  EXPECT_TRUE(DevToolsWindow::GetInstanceForInspectedWebContents(
+      (*app_windows.begin())->web_contents()));
 }
 
 }  // namespace extensions

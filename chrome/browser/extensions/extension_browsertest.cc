@@ -30,6 +30,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -290,6 +291,22 @@ const Extension* ExtensionBrowserTest::LoadExtensionAsComponent(
     const base::FilePath& path) {
   return LoadExtensionAsComponentWithManifest(path,
                                               extensions::kManifestFilename);
+}
+
+const Extension* ExtensionBrowserTest::LoadAndLaunchApp(
+    const base::FilePath& path) {
+  const Extension* app = LoadExtension(path);
+  CHECK(app);
+  content::WindowedNotificationObserver app_loaded_observer(
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::NotificationService::AllSources());
+  AppLaunchParams params(profile(), app, extensions::LAUNCH_CONTAINER_NONE,
+                         NEW_WINDOW, extensions::SOURCE_TEST);
+  params.command_line = *base::CommandLine::ForCurrentProcess();
+  OpenApplication(params);
+  app_loaded_observer.Wait();
+
+  return app;
 }
 
 base::FilePath ExtensionBrowserTest::PackExtension(

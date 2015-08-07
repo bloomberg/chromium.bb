@@ -111,6 +111,9 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   const extensions::Extension* LoadExtensionAsComponent(
       const base::FilePath& path);
 
+  // Loads and launches the app from |path|, and returns it.
+  const extensions::Extension* LoadAndLaunchApp(const base::FilePath& path);
+
   // Pack the extension in |dir_path| into a crx file and return its path.
   // Return an empty FilePath if there were errors.
   base::FilePath PackExtension(const base::FilePath& dir_path);
