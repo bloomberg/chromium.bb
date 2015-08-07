@@ -69,8 +69,10 @@ static bool preferHiddenVolumeControls(const Document& document)
 
 class MediaControls::BatchedControlUpdate {
     WTF_MAKE_NONCOPYABLE(BatchedControlUpdate);
+    STACK_ALLOCATED();
 public:
-    BatchedControlUpdate(MediaControls* controls) : m_controls(controls)
+    explicit BatchedControlUpdate(MediaControls* controls)
+        : m_controls(controls)
     {
         ASSERT(isMainThread());
         ASSERT(s_batchDepth >= 0);
@@ -85,7 +87,7 @@ public:
     }
 
 private:
-    MediaControls* m_controls;
+    RawPtrWillBeMember<MediaControls> m_controls;
     static int s_batchDepth;
 };
 

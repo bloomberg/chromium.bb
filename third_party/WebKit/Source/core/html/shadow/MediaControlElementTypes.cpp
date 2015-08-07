@@ -68,7 +68,7 @@ MediaControlElementType mediaControlElementType(Node* node)
 }
 
 MediaControlElement::MediaControlElement(MediaControls& mediaControls, MediaControlElementType displayType, HTMLElement* element)
-    : m_mediaControls(mediaControls)
+    : m_mediaControls(&mediaControls)
     , m_displayType(displayType)
     , m_element(element)
     , m_isWanted(true)
@@ -118,6 +118,7 @@ void MediaControlElement::setDisplayType(MediaControlElementType displayType)
 
 DEFINE_TRACE(MediaControlElement)
 {
+    visitor->trace(m_mediaControls);
     visitor->trace(m_element);
 }
 

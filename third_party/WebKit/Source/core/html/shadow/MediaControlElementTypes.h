@@ -92,7 +92,11 @@ public:
 protected:
     MediaControlElement(MediaControls&, MediaControlElementType, HTMLElement*);
 
-    MediaControls& mediaControls() const { return m_mediaControls; }
+    MediaControls& mediaControls() const
+    {
+        ASSERT(m_mediaControls);
+        return *m_mediaControls;
+    }
     HTMLMediaElement& mediaElement() const;
 
     void setDisplayType(MediaControlElementType);
@@ -102,7 +106,7 @@ private:
     // if and only if we're wanted and we fit.
     void updateShownState();
 
-    MediaControls& m_mediaControls;
+    RawPtrWillBeMember<MediaControls> m_mediaControls;
     MediaControlElementType m_displayType;
     RawPtrWillBeMember<HTMLElement> m_element;
     bool m_isWanted : 1;
