@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/utils/SkNoSaveLayerCanvas.h"
 #include "third_party/skia/src/core/SkRasterClip.h"
 
@@ -297,6 +298,19 @@ class GatherPixelRefDevice : public SkBitmapDevice {
 
     GatherPixelRefDevice::drawRect(draw, bounds, paint);
   }
+  void drawTextBlob(const SkDraw& draw,
+                    const SkTextBlob* blob,
+                    SkScalar x, SkScalar y,
+                    const SkPaint& paint,
+                    SkDrawFilter*) override {
+    SkBitmap bitmap;
+    if (!GetBitmapFromPaint(paint, &bitmap))
+      return;
+
+    const SkRect bounds = blob->bounds().makeOffset(x, y);
+    GatherPixelRefDevice::drawRect(draw, bounds, paint);
+  }
+
   void drawVertices(const SkDraw& draw,
                     SkCanvas::VertexMode,
                     int vertex_count,
