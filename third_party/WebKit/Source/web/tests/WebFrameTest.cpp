@@ -7599,6 +7599,7 @@ TEST_P(ParameterizedWebFrameTest, DetachRemoteFrame)
     WebRemoteFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createRemoteChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &childFrameClient);
     childFrame->detach();
     view->close();
+    childFrame->close();
 }
 
 class TestConsoleMessageWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
