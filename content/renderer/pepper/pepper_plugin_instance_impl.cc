@@ -1957,8 +1957,6 @@ bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
 void PepperPluginInstanceImpl::UpdateLayer(bool device_changed) {
   if (!container_)
     return;
-  if (throttler_ && throttler_->IsHiddenForPlaceholder())
-    return;
 
   gpu::Mailbox mailbox;
   uint32 sync_point = 0;
@@ -1970,6 +1968,13 @@ void PepperPluginInstanceImpl::UpdateLayer(bool device_changed) {
   bool want_2d_layer = !!bound_graphics_2d_platform_;
   bool want_texture_layer = want_3d_layer || want_2d_layer;
   bool want_compositor_layer = !!bound_compositor_;
+
+  if (throttler_ && throttler_->IsHiddenForPlaceholder()) {
+    want_3d_layer = false;
+    want_2d_layer = false;
+    want_texture_layer = false;
+    want_compositor_layer = false;
+  }
 
   if (!device_changed && (want_texture_layer == !!texture_layer_.get()) &&
       (want_3d_layer == layer_is_hardware_) &&
@@ -2055,11 +2060,7 @@ void PepperPluginInstanceImpl::OnThrottleStateChange() {
 }
 
 void PepperPluginInstanceImpl::OnHiddenForPlaceholder(bool hidden) {
-  if (hidden) {
-    container_->setWebLayer(nullptr);
-  } else {
-    UpdateLayer(true /* device_changed */);
-  }
+  UpdateLayer(false /* device_changed */);
 }
 
 void PepperPluginInstanceImpl::AddPluginObject(PluginObject* plugin_object) {
