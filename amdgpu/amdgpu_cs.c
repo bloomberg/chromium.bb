@@ -290,7 +290,7 @@ int amdgpu_cs_submit(amdgpu_context_handle context,
  *
  * \return  absolute timeout in nanoseconds
 */
-uint64_t amdgpu_cs_calculate_timeout(uint64_t timeout)
+drm_private uint64_t amdgpu_cs_calculate_timeout(uint64_t timeout)
 {
 	int r;
 

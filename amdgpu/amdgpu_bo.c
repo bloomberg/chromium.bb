@@ -53,7 +53,7 @@ static void amdgpu_close_kms_handle(amdgpu_device_handle dev,
 	drmIoctl(dev->fd, DRM_IOCTL_GEM_CLOSE, &args);
 }
 
-void amdgpu_bo_free_internal(amdgpu_bo_handle bo)
+drm_private void amdgpu_bo_free_internal(amdgpu_bo_handle bo)
 {
 	/* Remove the buffer from the hash tables. */
 	pthread_mutex_lock(&bo->dev->bo_table_mutex);

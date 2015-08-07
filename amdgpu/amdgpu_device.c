@@ -47,7 +47,7 @@
 #define PTR_TO_UINT(x) ((unsigned)((intptr_t)(x)))
 #define UINT_TO_PTR(x) ((void *)((intptr_t)(x)))
 
-pthread_mutex_t fd_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t fd_mutex = PTHREAD_MUTEX_INITIALIZER;
 static struct util_hash_table *fd_tab;
 
 static unsigned handle_hash(void *key)
@@ -125,6 +125,41 @@ static int amdgpu_get_auth(int fd, int *auth)
 			*auth = client.auth;
 	}
 	return r;
+}
+
+static void amdgpu_device_free_internal(amdgpu_device_handle dev)
+{
+	amdgpu_vamgr_reference(&dev->vamgr, NULL);
+	util_hash_table_destroy(dev->bo_flink_names);
+	util_hash_table_destroy(dev->bo_handles);
+	pthread_mutex_destroy(&dev->bo_table_mutex);
+	util_hash_table_remove(fd_tab, UINT_TO_PTR(dev->fd));
+	close(dev->fd);
+	if ((dev->flink_fd >= 0) && (dev->fd != dev->flink_fd))
+		close(dev->flink_fd);
+	free(dev);
+}
+
+/**
+ * Assignment between two amdgpu_device pointers with reference counting.
+ *
+ * Usage:
+ *    struct amdgpu_device *dst = ... , *src = ...;
+ *
+ *    dst = src;
+ *    // No reference counting. Only use this when you need to move
+ *    // a reference from one pointer to another.
+ *
+ *    amdgpu_device_reference(&dst, src);
+ *    // Reference counters are updated. dst is decremented and src is
+ *    // incremented. dst is freed if its reference counter is 0.
+ */
+static void amdgpu_device_reference(struct amdgpu_device **dst,
+			     struct amdgpu_device *src)
+{
+	if (update_references(&(*dst)->refcount, &src->refcount))
+		amdgpu_device_free_internal(*dst);
+	*dst = src;
 }
 
 int amdgpu_device_initialize(int fd,
@@ -232,29 +267,8 @@ cleanup:
 	return r;
 }
 
-void amdgpu_device_free_internal(amdgpu_device_handle dev)
-{
-	amdgpu_vamgr_reference(&dev->vamgr, NULL);
-	util_hash_table_destroy(dev->bo_flink_names);
-	util_hash_table_destroy(dev->bo_handles);
-	pthread_mutex_destroy(&dev->bo_table_mutex);
-	util_hash_table_remove(fd_tab, UINT_TO_PTR(dev->fd));
-	close(dev->fd);
-	if ((dev->flink_fd >= 0) && (dev->fd != dev->flink_fd))
-		close(dev->flink_fd);
-	free(dev);
-}
-
 int amdgpu_device_deinitialize(amdgpu_device_handle dev)
 {
 	amdgpu_device_reference(&dev, NULL);
 	return 0;
-}
-
-void amdgpu_device_reference(struct amdgpu_device **dst,
-			     struct amdgpu_device *src)
-{
-	if (update_references(&(*dst)->refcount, &src->refcount))
-		amdgpu_device_free_internal(*dst);
-	*dst = src;
 }

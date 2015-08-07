@@ -140,7 +140,7 @@ int amdgpu_query_firmware_version(amdgpu_device_handle dev, unsigned fw_type,
 	return 0;
 }
 
-int amdgpu_query_gpu_info_init(amdgpu_device_handle dev)
+drm_private int amdgpu_query_gpu_info_init(amdgpu_device_handle dev)
 {
 	int r, i;
 

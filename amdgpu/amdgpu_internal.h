@@ -119,9 +119,7 @@ struct amdgpu_context {
  * Functions.
  */
 
-void amdgpu_device_free_internal(amdgpu_device_handle dev);
-
-void amdgpu_bo_free_internal(amdgpu_bo_handle bo);
+drm_private void amdgpu_bo_free_internal(amdgpu_bo_handle bo);
 
 drm_private struct amdgpu_bo_va_mgr*
 amdgpu_vamgr_get_global(struct amdgpu_device *dev);
@@ -137,9 +135,9 @@ amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr, uint64_t size,
 drm_private void
 amdgpu_vamgr_free_va(struct amdgpu_bo_va_mgr *mgr, uint64_t va, uint64_t size);
 
-int amdgpu_query_gpu_info_init(amdgpu_device_handle dev);
+drm_private int amdgpu_query_gpu_info_init(amdgpu_device_handle dev);
 
-uint64_t amdgpu_cs_calculate_timeout(uint64_t timeout);
+drm_private uint64_t amdgpu_cs_calculate_timeout(uint64_t timeout);
 
 /**
  * Inline functions.
@@ -189,20 +187,4 @@ static inline void amdgpu_bo_reference(struct amdgpu_bo **dst,
 	*dst = src;
 }
 
-/**
- * Assignment between two amdgpu_device pointers with reference counting.
- *
- * Usage:
- *    struct amdgpu_device *dst = ... , *src = ...;
- *
- *    dst = src;
- *    // No reference counting. Only use this when you need to move
- *    // a reference from one pointer to another.
- *
- *    amdgpu_device_reference(&dst, src);
- *    // Reference counters are updated. dst is decremented and src is
- *    // incremented. dst is freed if its reference counter is 0.
- */
-void amdgpu_device_reference(struct amdgpu_device **dst,
-			     struct amdgpu_device *src);
 #endif
