@@ -1047,36 +1047,36 @@ PASS "use strict";({ with: 42 }.with === 42) is true
 PASS (function(){"use strict";({ with: 42 }.with === 42)}); true is true
 PASS "use strict";({ get with(){}, set with(_){}, parsedOkay: 42 }.parsedOkay === 42) is true
 PASS (function(){"use strict";({ get with(){}, set with(_){}, parsedOkay: 42 }.parsedOkay === 42)}); true is true
-PASS var class; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){var class; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS var class = 42; class === 42 threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){var class = 42; class === 42}); true threw exception SyntaxError: Unexpected reserved word.
-PASS function g(class){  }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){function g(class){  }; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS /class/.test(function g(class){  }) threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){/class/.test(function g(class){  })}); true threw exception SyntaxError: Unexpected reserved word.
-PASS try{}catch(class){}; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){try{}catch(class){}; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS function class(){  }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){function class(){  }; true}); true threw exception SyntaxError: Unexpected reserved word.
+PASS var class; true threw exception SyntaxError: Block-scoped declarations (let, const, function, class) not yet supported outside strict mode.
+PASS (function(){var class; true}); true threw exception SyntaxError: Block-scoped declarations (let, const, function, class) not yet supported outside strict mode.
+PASS var class = 42; class === 42 threw exception SyntaxError: Block-scoped declarations (let, const, function, class) not yet supported outside strict mode.
+PASS (function(){var class = 42; class === 42}); true threw exception SyntaxError: Block-scoped declarations (let, const, function, class) not yet supported outside strict mode.
+PASS function g(class){  }; true threw exception SyntaxError: Block-scoped declarations (let, const, function, class) not yet supported outside strict mode.
+PASS (function(){function g(class){  }; true}); true threw exception SyntaxError: Block-scoped declarations (let, const, function, class) not yet supported outside strict mode.
+PASS /class/.test(function g(class){  }) threw exception SyntaxError: Block-scoped declarations (let, const, function, class) not yet supported outside strict mode.
+PASS (function(){/class/.test(function g(class){  })}); true threw exception SyntaxError: Block-scoped declarations (let, const, function, class) not yet supported outside strict mode.
+PASS try{}catch(class){}; true threw exception SyntaxError: Unexpected token class.
+PASS (function(){try{}catch(class){}; true}); true threw exception SyntaxError: Unexpected token class.
+PASS function class(){  }; true threw exception SyntaxError: Unexpected token class.
+PASS (function(){function class(){  }; true}); true threw exception SyntaxError: Unexpected token class.
 PASS ({ "class": 42 }.class === 42) is true
 PASS (function(){({ "class": 42 }.class === 42)}); true is true
 PASS ({ class: 42 }.class === 42) is true
 PASS (function(){({ class: 42 }.class === 42)}); true is true
 PASS ({ get class(){}, set class(_){}, parsedOkay: 42 }.parsedOkay === 42) is true
 PASS (function(){({ get class(){}, set class(_){}, parsedOkay: 42 }.parsedOkay === 42)}); true is true
-PASS "use strict";var class; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";var class; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";var class = 42; class === 42 threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";var class = 42; class === 42}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";function g(class){ "use strict"; }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";function g(class){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";/class/.test(function g(class){ "use strict"; }) threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";/class/.test(function g(class){ "use strict"; })}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";try{}catch(class){}; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";try{}catch(class){}; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";function class(){ "use strict"; }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";function class(){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected reserved word.
+PASS "use strict";var class; true threw exception SyntaxError: Unexpected token ;.
+PASS (function(){"use strict";var class; true}); true threw exception SyntaxError: Unexpected token ;.
+PASS "use strict";var class = 42; class === 42 threw exception SyntaxError: Unexpected token =.
+PASS (function(){"use strict";var class = 42; class === 42}); true threw exception SyntaxError: Unexpected token =.
+PASS "use strict";function g(class){ "use strict"; }; true threw exception SyntaxError: Unexpected token ).
+PASS (function(){"use strict";function g(class){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected token ).
+PASS "use strict";/class/.test(function g(class){ "use strict"; }) threw exception SyntaxError: Unexpected token ).
+PASS (function(){"use strict";/class/.test(function g(class){ "use strict"; })}); true threw exception SyntaxError: Unexpected token ).
+PASS "use strict";try{}catch(class){}; true threw exception SyntaxError: Unexpected token class.
+PASS (function(){"use strict";try{}catch(class){}; true}); true threw exception SyntaxError: Unexpected token class.
+PASS "use strict";function class(){ "use strict"; }; true threw exception SyntaxError: Unexpected token class.
+PASS (function(){"use strict";function class(){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected token class.
 PASS "use strict";({ "class": 42 }.class === 42) is true
 PASS (function(){"use strict";({ "class": 42 }.class === 42)}); true is true
 PASS "use strict";({ class: 42 }.class === 42) is true
@@ -1155,144 +1155,144 @@ PASS "use strict";({ enum: 42 }.enum === 42) is true
 PASS (function(){"use strict";({ enum: 42 }.enum === 42)}); true is true
 PASS "use strict";({ get enum(){}, set enum(_){}, parsedOkay: 42 }.parsedOkay === 42) is true
 PASS (function(){"use strict";({ get enum(){}, set enum(_){}, parsedOkay: 42 }.parsedOkay === 42)}); true is true
-PASS var export; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){var export; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS var export = 42; export === 42 threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){var export = 42; export === 42}); true threw exception SyntaxError: Unexpected reserved word.
-PASS function g(export){  }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){function g(export){  }; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS /export/.test(function g(export){  }) threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){/export/.test(function g(export){  })}); true threw exception SyntaxError: Unexpected reserved word.
-PASS try{}catch(export){}; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){try{}catch(export){}; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS function export(){  }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){function export(){  }; true}); true threw exception SyntaxError: Unexpected reserved word.
+PASS var export; true threw exception SyntaxError: Unexpected token export.
+PASS (function(){var export; true}); true threw exception SyntaxError: Unexpected token export.
+PASS var export = 42; export === 42 threw exception SyntaxError: Unexpected token export.
+PASS (function(){var export = 42; export === 42}); true threw exception SyntaxError: Unexpected token export.
+PASS function g(export){  }; true threw exception SyntaxError: Unexpected token export.
+PASS (function(){function g(export){  }; true}); true threw exception SyntaxError: Unexpected token export.
+PASS /export/.test(function g(export){  }) threw exception SyntaxError: Unexpected token export.
+PASS (function(){/export/.test(function g(export){  })}); true threw exception SyntaxError: Unexpected token export.
+PASS try{}catch(export){}; true threw exception SyntaxError: Unexpected token export.
+PASS (function(){try{}catch(export){}; true}); true threw exception SyntaxError: Unexpected token export.
+PASS function export(){  }; true threw exception SyntaxError: Unexpected token export.
+PASS (function(){function export(){  }; true}); true threw exception SyntaxError: Unexpected token export.
 PASS ({ "export": 42 }.export === 42) is true
 PASS (function(){({ "export": 42 }.export === 42)}); true is true
 PASS ({ export: 42 }.export === 42) is true
 PASS (function(){({ export: 42 }.export === 42)}); true is true
 PASS ({ get export(){}, set export(_){}, parsedOkay: 42 }.parsedOkay === 42) is true
 PASS (function(){({ get export(){}, set export(_){}, parsedOkay: 42 }.parsedOkay === 42)}); true is true
-PASS "use strict";var export; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";var export; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";var export = 42; export === 42 threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";var export = 42; export === 42}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";function g(export){ "use strict"; }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";function g(export){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";/export/.test(function g(export){ "use strict"; }) threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";/export/.test(function g(export){ "use strict"; })}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";try{}catch(export){}; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";try{}catch(export){}; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";function export(){ "use strict"; }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";function export(){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected reserved word.
+PASS "use strict";var export; true threw exception SyntaxError: Unexpected token export.
+PASS (function(){"use strict";var export; true}); true threw exception SyntaxError: Unexpected token export.
+PASS "use strict";var export = 42; export === 42 threw exception SyntaxError: Unexpected token export.
+PASS (function(){"use strict";var export = 42; export === 42}); true threw exception SyntaxError: Unexpected token export.
+PASS "use strict";function g(export){ "use strict"; }; true threw exception SyntaxError: Unexpected token export.
+PASS (function(){"use strict";function g(export){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected token export.
+PASS "use strict";/export/.test(function g(export){ "use strict"; }) threw exception SyntaxError: Unexpected token export.
+PASS (function(){"use strict";/export/.test(function g(export){ "use strict"; })}); true threw exception SyntaxError: Unexpected token export.
+PASS "use strict";try{}catch(export){}; true threw exception SyntaxError: Unexpected token export.
+PASS (function(){"use strict";try{}catch(export){}; true}); true threw exception SyntaxError: Unexpected token export.
+PASS "use strict";function export(){ "use strict"; }; true threw exception SyntaxError: Unexpected token export.
+PASS (function(){"use strict";function export(){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected token export.
 PASS "use strict";({ "export": 42 }.export === 42) is true
 PASS (function(){"use strict";({ "export": 42 }.export === 42)}); true is true
 PASS "use strict";({ export: 42 }.export === 42) is true
 PASS (function(){"use strict";({ export: 42 }.export === 42)}); true is true
 PASS "use strict";({ get export(){}, set export(_){}, parsedOkay: 42 }.parsedOkay === 42) is true
 PASS (function(){"use strict";({ get export(){}, set export(_){}, parsedOkay: 42 }.parsedOkay === 42)}); true is true
-PASS var extends; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){var extends; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS var extends = 42; extends === 42 threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){var extends = 42; extends === 42}); true threw exception SyntaxError: Unexpected reserved word.
-PASS function g(extends){  }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){function g(extends){  }; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS /extends/.test(function g(extends){  }) threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){/extends/.test(function g(extends){  })}); true threw exception SyntaxError: Unexpected reserved word.
-PASS try{}catch(extends){}; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){try{}catch(extends){}; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS function extends(){  }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){function extends(){  }; true}); true threw exception SyntaxError: Unexpected reserved word.
+PASS var extends; true threw exception SyntaxError: Unexpected token extends.
+PASS (function(){var extends; true}); true threw exception SyntaxError: Unexpected token extends.
+PASS var extends = 42; extends === 42 threw exception SyntaxError: Unexpected token extends.
+PASS (function(){var extends = 42; extends === 42}); true threw exception SyntaxError: Unexpected token extends.
+PASS function g(extends){  }; true threw exception SyntaxError: Unexpected token extends.
+PASS (function(){function g(extends){  }; true}); true threw exception SyntaxError: Unexpected token extends.
+PASS /extends/.test(function g(extends){  }) threw exception SyntaxError: Unexpected token extends.
+PASS (function(){/extends/.test(function g(extends){  })}); true threw exception SyntaxError: Unexpected token extends.
+PASS try{}catch(extends){}; true threw exception SyntaxError: Unexpected token extends.
+PASS (function(){try{}catch(extends){}; true}); true threw exception SyntaxError: Unexpected token extends.
+PASS function extends(){  }; true threw exception SyntaxError: Unexpected token extends.
+PASS (function(){function extends(){  }; true}); true threw exception SyntaxError: Unexpected token extends.
 PASS ({ "extends": 42 }.extends === 42) is true
 PASS (function(){({ "extends": 42 }.extends === 42)}); true is true
 PASS ({ extends: 42 }.extends === 42) is true
 PASS (function(){({ extends: 42 }.extends === 42)}); true is true
 PASS ({ get extends(){}, set extends(_){}, parsedOkay: 42 }.parsedOkay === 42) is true
 PASS (function(){({ get extends(){}, set extends(_){}, parsedOkay: 42 }.parsedOkay === 42)}); true is true
-PASS "use strict";var extends; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";var extends; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";var extends = 42; extends === 42 threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";var extends = 42; extends === 42}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";function g(extends){ "use strict"; }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";function g(extends){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";/extends/.test(function g(extends){ "use strict"; }) threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";/extends/.test(function g(extends){ "use strict"; })}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";try{}catch(extends){}; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";try{}catch(extends){}; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";function extends(){ "use strict"; }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";function extends(){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected reserved word.
+PASS "use strict";var extends; true threw exception SyntaxError: Unexpected token extends.
+PASS (function(){"use strict";var extends; true}); true threw exception SyntaxError: Unexpected token extends.
+PASS "use strict";var extends = 42; extends === 42 threw exception SyntaxError: Unexpected token extends.
+PASS (function(){"use strict";var extends = 42; extends === 42}); true threw exception SyntaxError: Unexpected token extends.
+PASS "use strict";function g(extends){ "use strict"; }; true threw exception SyntaxError: Unexpected token extends.
+PASS (function(){"use strict";function g(extends){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected token extends.
+PASS "use strict";/extends/.test(function g(extends){ "use strict"; }) threw exception SyntaxError: Unexpected token extends.
+PASS (function(){"use strict";/extends/.test(function g(extends){ "use strict"; })}); true threw exception SyntaxError: Unexpected token extends.
+PASS "use strict";try{}catch(extends){}; true threw exception SyntaxError: Unexpected token extends.
+PASS (function(){"use strict";try{}catch(extends){}; true}); true threw exception SyntaxError: Unexpected token extends.
+PASS "use strict";function extends(){ "use strict"; }; true threw exception SyntaxError: Unexpected token extends.
+PASS (function(){"use strict";function extends(){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected token extends.
 PASS "use strict";({ "extends": 42 }.extends === 42) is true
 PASS (function(){"use strict";({ "extends": 42 }.extends === 42)}); true is true
 PASS "use strict";({ extends: 42 }.extends === 42) is true
 PASS (function(){"use strict";({ extends: 42 }.extends === 42)}); true is true
 PASS "use strict";({ get extends(){}, set extends(_){}, parsedOkay: 42 }.parsedOkay === 42) is true
 PASS (function(){"use strict";({ get extends(){}, set extends(_){}, parsedOkay: 42 }.parsedOkay === 42)}); true is true
-PASS var import; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){var import; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS var import = 42; import === 42 threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){var import = 42; import === 42}); true threw exception SyntaxError: Unexpected reserved word.
-PASS function g(import){  }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){function g(import){  }; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS /import/.test(function g(import){  }) threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){/import/.test(function g(import){  })}); true threw exception SyntaxError: Unexpected reserved word.
-PASS try{}catch(import){}; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){try{}catch(import){}; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS function import(){  }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){function import(){  }; true}); true threw exception SyntaxError: Unexpected reserved word.
+PASS var import; true threw exception SyntaxError: Unexpected token import.
+PASS (function(){var import; true}); true threw exception SyntaxError: Unexpected token import.
+PASS var import = 42; import === 42 threw exception SyntaxError: Unexpected token import.
+PASS (function(){var import = 42; import === 42}); true threw exception SyntaxError: Unexpected token import.
+PASS function g(import){  }; true threw exception SyntaxError: Unexpected token import.
+PASS (function(){function g(import){  }; true}); true threw exception SyntaxError: Unexpected token import.
+PASS /import/.test(function g(import){  }) threw exception SyntaxError: Unexpected token import.
+PASS (function(){/import/.test(function g(import){  })}); true threw exception SyntaxError: Unexpected token import.
+PASS try{}catch(import){}; true threw exception SyntaxError: Unexpected token import.
+PASS (function(){try{}catch(import){}; true}); true threw exception SyntaxError: Unexpected token import.
+PASS function import(){  }; true threw exception SyntaxError: Unexpected token import.
+PASS (function(){function import(){  }; true}); true threw exception SyntaxError: Unexpected token import.
 PASS ({ "import": 42 }.import === 42) is true
 PASS (function(){({ "import": 42 }.import === 42)}); true is true
 PASS ({ import: 42 }.import === 42) is true
 PASS (function(){({ import: 42 }.import === 42)}); true is true
 PASS ({ get import(){}, set import(_){}, parsedOkay: 42 }.parsedOkay === 42) is true
 PASS (function(){({ get import(){}, set import(_){}, parsedOkay: 42 }.parsedOkay === 42)}); true is true
-PASS "use strict";var import; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";var import; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";var import = 42; import === 42 threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";var import = 42; import === 42}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";function g(import){ "use strict"; }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";function g(import){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";/import/.test(function g(import){ "use strict"; }) threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";/import/.test(function g(import){ "use strict"; })}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";try{}catch(import){}; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";try{}catch(import){}; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";function import(){ "use strict"; }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";function import(){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected reserved word.
+PASS "use strict";var import; true threw exception SyntaxError: Unexpected token import.
+PASS (function(){"use strict";var import; true}); true threw exception SyntaxError: Unexpected token import.
+PASS "use strict";var import = 42; import === 42 threw exception SyntaxError: Unexpected token import.
+PASS (function(){"use strict";var import = 42; import === 42}); true threw exception SyntaxError: Unexpected token import.
+PASS "use strict";function g(import){ "use strict"; }; true threw exception SyntaxError: Unexpected token import.
+PASS (function(){"use strict";function g(import){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected token import.
+PASS "use strict";/import/.test(function g(import){ "use strict"; }) threw exception SyntaxError: Unexpected token import.
+PASS (function(){"use strict";/import/.test(function g(import){ "use strict"; })}); true threw exception SyntaxError: Unexpected token import.
+PASS "use strict";try{}catch(import){}; true threw exception SyntaxError: Unexpected token import.
+PASS (function(){"use strict";try{}catch(import){}; true}); true threw exception SyntaxError: Unexpected token import.
+PASS "use strict";function import(){ "use strict"; }; true threw exception SyntaxError: Unexpected token import.
+PASS (function(){"use strict";function import(){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected token import.
 PASS "use strict";({ "import": 42 }.import === 42) is true
 PASS (function(){"use strict";({ "import": 42 }.import === 42)}); true is true
 PASS "use strict";({ import: 42 }.import === 42) is true
 PASS (function(){"use strict";({ import: 42 }.import === 42)}); true is true
 PASS "use strict";({ get import(){}, set import(_){}, parsedOkay: 42 }.parsedOkay === 42) is true
 PASS (function(){"use strict";({ get import(){}, set import(_){}, parsedOkay: 42 }.parsedOkay === 42)}); true is true
-PASS var super; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){var super; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS var super = 42; super === 42 threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){var super = 42; super === 42}); true threw exception SyntaxError: Unexpected reserved word.
-PASS function g(super){  }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){function g(super){  }; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS /super/.test(function g(super){  }) threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){/super/.test(function g(super){  })}); true threw exception SyntaxError: Unexpected reserved word.
-PASS try{}catch(super){}; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){try{}catch(super){}; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS function super(){  }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){function super(){  }; true}); true threw exception SyntaxError: Unexpected reserved word.
+PASS var super; true threw exception SyntaxError: Unexpected token super.
+PASS (function(){var super; true}); true threw exception SyntaxError: Unexpected token super.
+PASS var super = 42; super === 42 threw exception SyntaxError: Unexpected token super.
+PASS (function(){var super = 42; super === 42}); true threw exception SyntaxError: Unexpected token super.
+PASS function g(super){  }; true threw exception SyntaxError: Unexpected token super.
+PASS (function(){function g(super){  }; true}); true threw exception SyntaxError: Unexpected token super.
+PASS /super/.test(function g(super){  }) threw exception SyntaxError: Unexpected token super.
+PASS (function(){/super/.test(function g(super){  })}); true threw exception SyntaxError: Unexpected token super.
+PASS try{}catch(super){}; true threw exception SyntaxError: Unexpected token super.
+PASS (function(){try{}catch(super){}; true}); true threw exception SyntaxError: Unexpected token super.
+PASS function super(){  }; true threw exception SyntaxError: Unexpected token super.
+PASS (function(){function super(){  }; true}); true threw exception SyntaxError: Unexpected token super.
 PASS ({ "super": 42 }.super === 42) is true
 PASS (function(){({ "super": 42 }.super === 42)}); true is true
 PASS ({ super: 42 }.super === 42) is true
 PASS (function(){({ super: 42 }.super === 42)}); true is true
 PASS ({ get super(){}, set super(_){}, parsedOkay: 42 }.parsedOkay === 42) is true
 PASS (function(){({ get super(){}, set super(_){}, parsedOkay: 42 }.parsedOkay === 42)}); true is true
-PASS "use strict";var super; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";var super; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";var super = 42; super === 42 threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";var super = 42; super === 42}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";function g(super){ "use strict"; }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";function g(super){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";/super/.test(function g(super){ "use strict"; }) threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";/super/.test(function g(super){ "use strict"; })}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";try{}catch(super){}; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";try{}catch(super){}; true}); true threw exception SyntaxError: Unexpected reserved word.
-PASS "use strict";function super(){ "use strict"; }; true threw exception SyntaxError: Unexpected reserved word.
-PASS (function(){"use strict";function super(){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected reserved word.
+PASS "use strict";var super; true threw exception SyntaxError: Unexpected token super.
+PASS (function(){"use strict";var super; true}); true threw exception SyntaxError: Unexpected token super.
+PASS "use strict";var super = 42; super === 42 threw exception SyntaxError: Unexpected token super.
+PASS (function(){"use strict";var super = 42; super === 42}); true threw exception SyntaxError: Unexpected token super.
+PASS "use strict";function g(super){ "use strict"; }; true threw exception SyntaxError: Unexpected token super.
+PASS (function(){"use strict";function g(super){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected token super.
+PASS "use strict";/super/.test(function g(super){ "use strict"; }) threw exception SyntaxError: Unexpected token super.
+PASS (function(){"use strict";/super/.test(function g(super){ "use strict"; })}); true threw exception SyntaxError: Unexpected token super.
+PASS "use strict";try{}catch(super){}; true threw exception SyntaxError: Unexpected token super.
+PASS (function(){"use strict";try{}catch(super){}; true}); true threw exception SyntaxError: Unexpected token super.
+PASS "use strict";function super(){ "use strict"; }; true threw exception SyntaxError: Unexpected token super.
+PASS (function(){"use strict";function super(){ "use strict"; }; true}); true threw exception SyntaxError: Unexpected token super.
 PASS "use strict";({ "super": 42 }.super === 42) is true
 PASS (function(){"use strict";({ "super": 42 }.super === 42)}); true is true
 PASS "use strict";({ super: 42 }.super === 42) is true

@@ -98,7 +98,7 @@ layer at (309,0) size 491x600
       LayoutBlockFlow (anonymous) at (269,0) size 182x584
         LayoutBlockFlow {HR} at (0,0) size 2x584 [border: (1px inset #EEEEEE)]
         LayoutBlockFlow {P} at (34,0) size 148x584
-          LayoutBlockFlow (floating) {SPAN} at (0,335.36) size 29x248.64 [border: (1px solid #FF0000)]
+          LayoutBlockFlow (floating) {SPAN} at (0,335.34) size 29x248.66 [border: (1px solid #FF0000)]
             LayoutText {#text} at (1,1) size 26x103
               text run at (1,1) width 103: "float:right:"
             LayoutInline {SPAN} at (0,0) size 26x25

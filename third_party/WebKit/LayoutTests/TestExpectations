@@ -172,8 +172,6 @@ crbug.com/248938 [ Win Debug ] virtual/threaded/animations/transition-and-animat
 
 crbug.com/487281 [ Mac ] fast/forms/menulist-narrow-width.html [ ImageOnlyFailure ]
 
-crbug.com/427606 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
-
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
 # In root-layer-scrolls, the scrollbars make the scroll offsets difficult to compute.
@@ -619,15 +617,7 @@ crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/transform-interpolation.html [ Pass Crash Slow ]
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash Slow ]
 
-crbug.com/440511 fast/text-autosizing/hackernews-comments.html [ NeedsRebaseline ]
-
-crbug.com/454760 fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
-
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ ImageOnlyFailure ]
-
-# Failures that need further investigation.
-crbug.com/247716 [ Mac ] fast/frames/iframe-scaling-with-scroll.html [ NeedsRebaseline ]
-crbug.com/247716 [ Mac XP ] editing/spelling/inline-spelling-markers-hidpi-composited.html [ NeedsRebaseline ]
 
 crbug.com/506525 [ XP ] paint/masks/fieldset-mask.html [ ImageOnlyFailure ]
 
@@ -684,12 +674,6 @@ crbug.com/421854 [ Debug SnowLeopard ] fast/text/zero-width-characters-complex-s
 crbug.com/418091 [ SnowLeopard ] fast/text/international/zerowidthjoiner.html [ ImageOnlyFailure ]
 
 crbug.com/507351 [ Mac ] fast/text/international/kana-voiced-sound-marks.html [ ImageOnlyFailure ]
-
-# Two part change for layer intersection. Can be rebaselined after https://codereview.chromium.org/595593002/ lands
-crbug.com/116710 compositing/perpendicular-layer-sorting.html [ NeedsRebaseline ]
-crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-2.html [ NeedsRebaseline ]
-crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-deep.html [ NeedsRebaseline ]
-crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ NeedsRebaseline ]
 
 crbug.com/425345 [ Mac ] fast/text/line-break-after-question-mark.html [ Failure ]
 
@@ -761,16 +745,9 @@ crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure 
 # Significant Slimming Paint failure.
 crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
 
-# These need a manual rebaseline after crbug.com/459555
-crbug.com/459555 fast/js/reserved-words-as-property.html [ NeedsRebaseline ]
-
-# These need a manual rebaseline after crbug.com/461107
-crbug.com/461107 [ Linux Mac Android ] virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsRebaseline ]
-
 crbug.com/463798 [ Mac ] svg/as-image/svg-invalid-image-1.html [ Failure ]
 
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon-evenodd.html [ ImageOnlyFailure ]
-crbug.com/463358 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ NeedsRebaseline ]
 crbug.com/463358 [ Mac Debug ] svg/transforms/animated-path-inside-transformed-html.xhtml [ ImageOnlyFailure ]
 
 crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
@@ -817,13 +794,10 @@ crbug.com/474798 fast/repaint/justify-self-change-keeping-geometry.html [ Failur
 # Temporarily disabled after chromium change
 crbug.com/492511 [ Mac ] fast/text/atsui-negative-spacing-features.html [ ImageOnlyFailure ]
 crbug.com/492511 [ Mac ] fast/text/atsui-spacing-features.html [ ImageOnlyFailure ]
-crbug.com/492511 [ Mac ] fast/text/vertical-rl-rtl-linebreak.html [ NeedsRebaseline ]
 crbug.com/492511 [ Mac ] fast/text/international/arabic-justify.html [ ImageOnlyFailure ]
 
 # Temporary, until [Unforgeable] attributes have the right accessors 'get' and 'set'.
 crbug.com/491006 http/tests/security/cross-origin-access-over-property-descriptor.html [ Failure ]
-
-crbug.com/321237 [ Mac ] fast/text/international/bidi-neutral-run.html [ Pass Crash NeedsRebaseline ]
 
 # Ref tests that fail due to differences in inline box structure, even though they contain the same text.
 # This happens because inline box layout uses fixed-point measurements, which can cause rounding differences.

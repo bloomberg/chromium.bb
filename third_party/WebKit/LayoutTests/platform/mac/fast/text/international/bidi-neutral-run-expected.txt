@@ -134,13 +134,13 @@ layer at (0,0) size 785x6378 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow {P} at (0,1045) size 769x21
           LayoutText {#text} at (0,1) size 66x18
             text run at (0,1) width 30 RTL: "(^\x{62C}\x{62F}"
-            text run at (29,1) width 18: "\x{661}\x{662}"
-            text run at (46,1) width 20 RTL: "\x{5D0}\x{5D1}"
+            text run at (29,1) width 17: "\x{661}\x{662}"
+            text run at (45,1) width 21 RTL: "\x{5D0}\x{5D1}"
         LayoutBlockFlow {P} at (0,1082) size 769x21
           LayoutText {#text} at (0,1) size 61x18
             text run at (0,1) width 30 RTL: "(^\x{62C}\x{62F}"
-            text run at (29,1) width 18: "\x{661}\x{662}"
-            text run at (46,1) width 15 RTL: "\x{627}\x{628}"
+            text run at (29,1) width 17: "\x{661}\x{662}"
+            text run at (45,1) width 16 RTL: "\x{627}\x{628}"
         LayoutBlockFlow {P} at (0,1119) size 769x21
           LayoutText {#text} at (0,1) size 37x18
             text run at (0,1) width 8: "\x{202A}?"
@@ -209,8 +209,8 @@ layer at (0,0) size 785x6378 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (11,1) width 17: "34"
             text run at (27,1) width 14 RTL: "(^"
             text run at (40,1) width 18: "\x{661}\x{662}"
-            text run at (57,1) width 16 RTL: "\x{627}\x{628}"
-            text run at (72,1) width 8: "z"
+            text run at (57,1) width 15 RTL: "\x{627}\x{628}"
+            text run at (71,1) width 9: "z"
         LayoutBlockFlow {P} at (0,1518) size 769x19
           LayoutText {#text} at (0,1) size 55x18
             text run at (0,1) width 8: "\x{202A}?"
@@ -240,7 +240,7 @@ layer at (0,0) size 785x6378 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,1) size 64x18
             text run at (0,1) width 12 RTL: "\x{5E9}"
             text run at (11,1) width 18: "\x{663}\x{664}"
-            text run at (28,1) width 29 RTL: "\x{627}\x{628}(^"
+            text run at (28,1) width 28 RTL: "\x{627}\x{628}(^"
             text run at (56,1) width 8: "z"
         LayoutBlockFlow {P} at (0,1699) size 769x21
           LayoutText {#text} at (0,1) size 80x18
@@ -262,16 +262,16 @@ layer at (0,0) size 785x6378 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (11,1) width 18: "\x{663}\x{664}"
             text run at (28,1) width 14 RTL: "(^"
             text run at (41,1) width 17: "12"
-            text run at (57,1) width 16 RTL: "\x{627}\x{628}"
-            text run at (72,1) width 8: "z"
+            text run at (57,1) width 15 RTL: "\x{627}\x{628}"
+            text run at (71,1) width 9: "z"
         LayoutBlockFlow {P} at (0,1810) size 769x21
           LayoutText {#text} at (0,1) size 81x18
             text run at (0,1) width 16: "ab"
             text run at (15,1) width 12 RTL: "\x{5E9}"
             text run at (26,1) width 18: "\x{663}\x{664}"
             text run at (43,1) width 14 RTL: "(^"
-            text run at (56,1) width 18: "\x{661}\x{662}"
-            text run at (73,1) width 8: "z"
+            text run at (56,1) width 17: "\x{661}\x{662}"
+            text run at (72,1) width 9: "z"
         LayoutBlockFlow {P} at (0,1847) size 769x21
           LayoutText {#text} at (0,1) size 85x18
             text run at (0,1) width 12 RTL: "\x{5E9}"
@@ -628,13 +628,13 @@ layer at (0,0) size 785x6378 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow {P} at (0,1045) size 769x21
           LayoutText {#text} at (0,1) size 66x18
             text run at (0,1) width 30 RTL: "(^\x{62C}\x{62F}"
-            text run at (29,1) width 18: "\x{661}\x{662}"
-            text run at (46,1) width 20 RTL: "\x{5D0}\x{5D1}"
+            text run at (29,1) width 17: "\x{661}\x{662}"
+            text run at (45,1) width 21 RTL: "\x{5D0}\x{5D1}"
         LayoutBlockFlow {P} at (0,1082) size 769x21
           LayoutText {#text} at (0,1) size 61x18
             text run at (0,1) width 30 RTL: "(^\x{62C}\x{62F}"
-            text run at (29,1) width 18: "\x{661}\x{662}"
-            text run at (46,1) width 15 RTL: "\x{627}\x{628}"
+            text run at (29,1) width 17: "\x{661}\x{662}"
+            text run at (45,1) width 16 RTL: "\x{627}\x{628}"
         LayoutBlockFlow {P} at (0,1119) size 769x21
           LayoutText {#text} at (0,1) size 37x18
             text run at (0,1) width 30 RTL: "\x{202C}(^\x{62C}\x{62F}"
@@ -772,16 +772,16 @@ layer at (0,0) size 785x6378 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (7,1) width 12 RTL: "\x{5E9}"
             text run at (18,1) width 18: "\x{663}\x{664}"
             text run at (35,1) width 14 RTL: "(^"
-            text run at (48,1) width 18: "\x{661}\x{662}"
-            text run at (65,1) width 20 RTL: "\x{5D0}\x{5D1}"
+            text run at (48,1) width 17: "\x{661}\x{662}"
+            text run at (64,1) width 21 RTL: "\x{5D0}\x{5D1}"
         LayoutBlockFlow {P} at (0,1884) size 769x21
           LayoutText {#text} at (0,1) size 80x18
             text run at (0,1) width 8: "z"
             text run at (7,1) width 12 RTL: "\x{5E9}"
             text run at (18,1) width 18: "\x{663}\x{664}"
             text run at (35,1) width 14 RTL: "(^"
-            text run at (48,1) width 18: "\x{661}\x{662}"
-            text run at (65,1) width 15 RTL: "\x{627}\x{628}"
+            text run at (48,1) width 17: "\x{661}\x{662}"
+            text run at (64,1) width 16 RTL: "\x{627}\x{628}"
         LayoutBlockFlow {P} at (0,1921) size 769x21
           LayoutText {#text} at (0,1) size 56x18
             text run at (0,1) width 8: "z"
