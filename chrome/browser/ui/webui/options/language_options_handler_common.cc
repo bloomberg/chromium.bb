@@ -143,9 +143,6 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
       TranslateService::GetTargetLanguage(prefs);
   localized_strings->SetString("defaultTargetLanguage",
                                default_target_language);
-  localized_strings->SetBoolean(
-      "enableMultilingualSpellChecker",
-      chrome::spellcheck_common::IsMultilingualSpellcheckEnabled());
 
   std::vector<std::string> languages;
   translate::TranslateDownloadManager::GetSupportedLanguages(&languages);
