@@ -34,6 +34,9 @@ class HistoryClientFakeBookmarks : public HistoryClient {
   void Shutdown() override;
   bool CanAddURL(const GURL& url) override;
   void NotifyProfileError(sql::InitStatus init_status) override;
+  void PostAfterStartupTask(
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      const base::Closure& task) override;
   scoped_ptr<HistoryBackendClient> CreateBackendClient() override;
 
  private:

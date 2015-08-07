@@ -24,6 +24,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -336,7 +337,7 @@ base::CancelableTaskTracker::TaskId HistoryService::ScheduleDBTask(
   // Use base::ThreadTaskRunnerHandler::Get() to get a message loop proxy to
   // the current message loop so that we can forward the call to the method
   // HistoryDBTask::DoneRunOnMainThread() in the correct thread.
-  thread_->task_runner()->PostTask(
+  after_startup_task_runner_->PostTask(
       FROM_HERE, base::Bind(&HistoryBackend::ProcessDBTask,
                             history_backend_.get(), base::Passed(&task),
                             base::ThreadTaskRunnerHandle::Get(), is_canceled));
@@ -344,7 +345,7 @@ base::CancelableTaskTracker::TaskId HistoryService::ScheduleDBTask(
 }
 
 void HistoryService::FlushForTest(const base::Closure& flushed) {
-  thread_->task_runner()->PostTaskAndReply(
+  after_startup_task_runner_->PostTaskAndReply(
       FROM_HERE, base::Bind(&base::DoNothing), flushed);
 }
 
@@ -362,7 +363,7 @@ void HistoryService::TopHosts(int num_hosts,
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   PostTaskAndReplyWithResult(
-      thread_->task_runner().get(), FROM_HERE,
+      after_startup_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::TopHosts, history_backend_.get(), num_hosts),
       callback);
 }
@@ -514,7 +515,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFavicons(
   std::vector<favicon_base::FaviconRawBitmapResult>* results =
       new std::vector<favicon_base::FaviconRawBitmapResult>();
   return tracker->PostTaskAndReply(
-      thread_->task_runner().get(), FROM_HERE,
+      after_startup_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::GetFavicons, history_backend_.get(),
                  icon_urls, icon_types, desired_sizes, results),
       base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
@@ -531,7 +532,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFaviconsForURL(
   std::vector<favicon_base::FaviconRawBitmapResult>* results =
       new std::vector<favicon_base::FaviconRawBitmapResult>();
   return tracker->PostTaskAndReply(
-      thread_->task_runner().get(), FROM_HERE,
+      after_startup_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::GetFaviconsForURL, history_backend_.get(),
                  page_url, icon_types, desired_sizes, results),
       base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
@@ -548,7 +549,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetLargestFaviconForURL(
   favicon_base::FaviconRawBitmapResult* result =
       new favicon_base::FaviconRawBitmapResult();
   return tracker->PostTaskAndReply(
-      thread_->task_runner().get(), FROM_HERE,
+      after_startup_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::GetLargestFaviconForURL,
                  history_backend_.get(), page_url, icon_types,
                  minimum_size_in_pixels, result),
@@ -565,7 +566,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFaviconForID(
   std::vector<favicon_base::FaviconRawBitmapResult>* results =
       new std::vector<favicon_base::FaviconRawBitmapResult>();
   return tracker->PostTaskAndReply(
-      thread_->task_runner().get(), FROM_HERE,
+      after_startup_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::GetFaviconForID, history_backend_.get(),
                  favicon_id, desired_size, results),
       base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
@@ -584,7 +585,7 @@ HistoryService::UpdateFaviconMappingsAndFetch(
   std::vector<favicon_base::FaviconRawBitmapResult>* results =
       new std::vector<favicon_base::FaviconRawBitmapResult>();
   return tracker->PostTaskAndReply(
-      thread_->task_runner().get(), FROM_HERE,
+      after_startup_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::UpdateFaviconMappingsAndFetch,
                  history_backend_.get(), page_url, icon_urls, icon_types,
                  desired_sizes, results),
@@ -648,7 +649,7 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryURL(
   DCHECK(thread_checker_.CalledOnValidThread());
   QueryURLResult* query_url_result = new QueryURLResult();
   return tracker->PostTaskAndReply(
-      thread_->task_runner().get(), FROM_HERE,
+      after_startup_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::QueryURL, history_backend_.get(), url,
                  want_visits, base::Unretained(query_url_result)),
       base::Bind(&RunWithQueryURLResult, callback,
@@ -664,7 +665,7 @@ void HistoryService::CreateDownload(
     const HistoryService::DownloadCreateCallback& callback) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  PostTaskAndReplyWithResult(thread_->task_runner().get(), FROM_HERE,
+  PostTaskAndReplyWithResult(after_startup_task_runner_.get(), FROM_HERE,
                              base::Bind(&HistoryBackend::CreateDownload,
                                         history_backend_.get(), create_info),
                              callback);
@@ -674,7 +675,7 @@ void HistoryService::GetNextDownloadId(const DownloadIdCallback& callback) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   PostTaskAndReplyWithResult(
-      thread_->task_runner().get(), FROM_HERE,
+      after_startup_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::GetNextDownloadId, history_backend_.get()),
       callback);
 }
@@ -690,7 +691,7 @@ void HistoryService::QueryDownloads(const DownloadQueryCallback& callback) {
   // base::Passed(&scoped_rows) nullifies |scoped_rows|, and compilers do not
   // guarantee that the first Bind's arguments are evaluated before the second
   // Bind's arguments.
-  thread_->task_runner()->PostTaskAndReply(
+  after_startup_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&HistoryBackend::QueryDownloads, history_backend_.get(), rows),
       base::Bind(callback, base::Passed(&scoped_rows)));
@@ -721,7 +722,7 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryHistory(
   DCHECK(thread_checker_.CalledOnValidThread());
   QueryResults* query_results = new QueryResults();
   return tracker->PostTaskAndReply(
-      thread_->task_runner().get(), FROM_HERE,
+      after_startup_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::QueryHistory, history_backend_.get(),
                  text_query, options, base::Unretained(query_results)),
       base::Bind(callback, base::Owned(query_results)));
@@ -735,7 +736,7 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryRedirectsFrom(
   DCHECK(thread_checker_.CalledOnValidThread());
   RedirectList* result = new RedirectList();
   return tracker->PostTaskAndReply(
-      thread_->task_runner().get(), FROM_HERE,
+      after_startup_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::QueryRedirectsFrom, history_backend_.get(),
                  from_url, base::Unretained(result)),
       base::Bind(callback, base::Owned(result)));
@@ -749,7 +750,7 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryRedirectsTo(
   DCHECK(thread_checker_.CalledOnValidThread());
   RedirectList* result = new RedirectList();
   return tracker->PostTaskAndReply(
-      thread_->task_runner().get(), FROM_HERE,
+      after_startup_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::QueryRedirectsTo, history_backend_.get(),
                  to_url, base::Unretained(result)),
       base::Bind(callback, base::Owned(result)));
@@ -763,7 +764,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetVisibleVisitCountToHost(
   DCHECK(thread_checker_.CalledOnValidThread());
   VisibleVisitCountToHostResult* result = new VisibleVisitCountToHostResult();
   return tracker->PostTaskAndReply(
-      thread_->task_runner().get(), FROM_HERE,
+      after_startup_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::GetVisibleVisitCountToHost,
                  history_backend_.get(), url, base::Unretained(result)),
       base::Bind(&RunWithVisibleVisitCountToHostResult, callback,
@@ -779,7 +780,7 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryMostVisitedURLs(
   DCHECK(thread_checker_.CalledOnValidThread());
   MostVisitedURLList* result = new MostVisitedURLList();
   return tracker->PostTaskAndReply(
-      thread_->task_runner().get(), FROM_HERE,
+      after_startup_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::QueryMostVisitedURLs, history_backend_.get(),
                  result_count, days_back, base::Unretained(result)),
       base::Bind(callback, base::Owned(result)));
@@ -795,7 +796,7 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryFilteredURLs(
   DCHECK(thread_checker_.CalledOnValidThread());
   FilteredURLList* result = new FilteredURLList();
   return tracker->PostTaskAndReply(
-      thread_->task_runner().get(), FROM_HERE,
+      after_startup_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::QueryFilteredURLs, history_backend_.get(),
                  result_count, filter, extended_info, base::Unretained(result)),
       base::Bind(callback, base::Owned(result)));
@@ -875,6 +876,22 @@ bool HistoryService::Init(
     return false;
   }
 
+  DCHECK(!after_startup_task_runner_);
+  after_startup_task_runner_ =
+      new base::DeferredSequencedTaskRunner(thread_->task_runner().get());
+
+  base::FieldTrial* trial = base::FieldTrialList::Find("LightSpeed");
+  if (history_client_ && trial &&
+      base::StartsWith(trial->group_name(), "HistoryServiceDelayed",
+                       base::CompareCase::SENSITIVE)) {
+    history_client_->PostAfterStartupTask(
+        base::ThreadTaskRunnerHandle::Get(),
+        base::Bind(&HistoryService::OnStartupComplete,
+                   weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    OnStartupComplete();
+  }
+
   // Create the history backend.
   scoped_refptr<HistoryBackend> backend(new HistoryBackend(
       new BackendDelegate(weak_ptr_factory_.GetWeakPtr(),
@@ -909,7 +926,7 @@ void HistoryService::ScheduleTask(SchedulePriority priority,
   CHECK(thread_);
   CHECK(thread_->message_loop());
   // TODO(brettw): Do prioritization.
-  thread_->task_runner()->PostTask(FROM_HERE, task);
+  after_startup_task_runner_->PostTask(FROM_HERE, task);
 }
 
 base::WeakPtr<HistoryService> HistoryService::AsWeakPtr() {
@@ -973,6 +990,11 @@ void HistoryService::NotifyProfileError(sql::InitStatus init_status) {
     history_client_->NotifyProfileError(init_status);
 }
 
+void HistoryService::OnStartupComplete() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  after_startup_task_runner_->Start();
+}
+
 void HistoryService::DeleteURL(const GURL& url) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -999,7 +1021,7 @@ void HistoryService::ExpireHistoryBetween(
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   tracker->PostTaskAndReply(
-      thread_->task_runner().get(), FROM_HERE,
+      after_startup_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::ExpireHistoryBetween, history_backend_,
                  restrict_urls, begin_time, end_time),
       callback);
@@ -1012,7 +1034,7 @@ void HistoryService::ExpireHistory(
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   tracker->PostTaskAndReply(
-      thread_->task_runner().get(), FROM_HERE,
+      after_startup_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::ExpireHistory, history_backend_, expire_list),
       callback);
 }

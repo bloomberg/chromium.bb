@@ -14,6 +14,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_service.h"
+#include "content/public/browser/browser_thread.h"
 
 ChromeHistoryClient::ChromeHistoryClient(
     bookmarks::BookmarkModel* bookmark_model)
@@ -67,6 +68,12 @@ void ChromeHistoryClient::NotifyProfileError(sql::InitStatus init_status) {
       PROFILE_ERROR_HISTORY,
       (init_status == sql::INIT_FAILURE) ?
       IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR);
+}
+
+void ChromeHistoryClient::PostAfterStartupTask(
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    const base::Closure& task) {
+  content::BrowserThread::PostAfterStartupTask(FROM_HERE, task_runner, task);
 }
 
 scoped_ptr<history::HistoryBackendClient>

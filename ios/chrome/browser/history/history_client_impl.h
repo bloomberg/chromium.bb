@@ -34,6 +34,9 @@ class HistoryClientImpl : public history::HistoryClient,
   void Shutdown() override;
   bool CanAddURL(const GURL& url) override;
   void NotifyProfileError(sql::InitStatus init_status) override;
+  void PostAfterStartupTask(
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      const base::Closure& task) override;
   scoped_ptr<history::HistoryBackendClient> CreateBackendClient() override;
 
   // bookmarks::BaseBookmarkModelObserver implementation.

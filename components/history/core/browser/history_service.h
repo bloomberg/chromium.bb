@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_list.h"
+#include "base/deferred_sequenced_task_runner.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -776,6 +777,9 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // Called by our BackendDelegate when there is a problem reading the database.
   void NotifyProfileError(sql::InitStatus init_status);
 
+  // Kicks off the |after_startup_task_runner_|.
+  void OnStartupComplete();
+
   // Call to schedule a given task for running on the history thread with the
   // specified priority. The task will have ownership taken.
   void ScheduleTask(SchedulePriority priority, const base::Closure& task);
@@ -801,6 +805,10 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // This pointer will be null once Cleanup() has been called, meaning no
   // more calls should be made to the history thread.
   scoped_refptr<HistoryBackend> history_backend_;
+
+  // A DeferredSequencedTaskRunner that queues up all tasks that should be
+  // performed after startup.
+  scoped_refptr<base::DeferredSequencedTaskRunner> after_startup_task_runner_;
 
   // A cache of the user-typed URLs kept in memory that is used by the
   // autocomplete system. This will be null until the database has been created

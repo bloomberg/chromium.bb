@@ -6,6 +6,8 @@
 
 #include <map>
 
+#include "base/location.h"
+#include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "components/history/core/browser/history_backend_client.h"
 #include "url/gurl.h"
@@ -172,6 +174,12 @@ bool HistoryClientFakeBookmarks::CanAddURL(const GURL& url) {
 
 void HistoryClientFakeBookmarks::NotifyProfileError(
     sql::InitStatus init_status) {
+}
+
+void HistoryClientFakeBookmarks::PostAfterStartupTask(
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    const base::Closure& task) {
+  task_runner->PostTask(FROM_HERE, task);
 }
 
 scoped_ptr<HistoryBackendClient>
