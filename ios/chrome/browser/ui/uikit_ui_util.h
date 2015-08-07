@@ -142,6 +142,12 @@ void ApplyVisualConstraintsWithMetrics(NSArray* constraints,
 // |subview| must be a subview of |parentView|.
 void AddSameCenterXConstraint(UIView* parentView, UIView* subview);
 
+// Adds a constraint that |subview1| and |subview2| are center aligned
+// horizontally on |parentView|.
+// |subview1| and |subview2| must be subview of |parentView|.
+void AddSameCenterXConstraint(UIView *parentView, UIView *subview1,
+                              UIView *subview2);
+
 // Adds a constraint that |subview| is center aligned vertically in
 // |parentView|.
 // |subview| must be a subview of |parentView|.
@@ -153,6 +159,13 @@ void AddSameCenterYConstraint(UIView* parentView, UIView* subview);
 void AddSameCenterYConstraint(UIView* parentView,
                               UIView* subview1,
                               UIView* subview2);
+// Whether the UI is configured for right to left layout.
+// The implementation will use the local in order to get the UI layout direction
+// for version of iOS under 9.
+// TODO(jbbegue): Use base::i18n::IsRTL() instead when it will support RTL
+// pseudo language. Remove that method once base::i18n::IsRTL() is fixed.
+// crbug/514625.
+BOOL IsRTLUILayout();
 
 // Returns true if the main application window's rootViewController is a compact
 // iPad horizontal size class.

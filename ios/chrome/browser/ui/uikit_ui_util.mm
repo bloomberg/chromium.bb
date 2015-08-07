@@ -457,6 +457,21 @@ void AddSameCenterXConstraint(UIView* parentView, UIView* subview) {
                                           constant:0]];
 }
 
+void AddSameCenterXConstraint(UIView *parentView, UIView *subview1,
+                              UIView *subview2) {
+  DCHECK_EQ(parentView, [subview1 superview]);
+  DCHECK_EQ(parentView, [subview2 superview]);
+  DCHECK_NE(subview1, subview2);
+  [parentView addConstraint:[NSLayoutConstraint
+                                constraintWithItem:subview1
+                                         attribute:NSLayoutAttributeCenterX
+                                         relatedBy:NSLayoutRelationEqual
+                                            toItem:subview2
+                                         attribute:NSLayoutAttributeCenterX
+                                        multiplier:1
+                                          constant:0]];
+}
+
 void AddSameCenterYConstraint(UIView* parentView, UIView* subview) {
   DCHECK_EQ(parentView, [subview superview]);
   [parentView addConstraint:[NSLayoutConstraint
@@ -498,4 +513,23 @@ bool IsCompactTablet() {
 
 bool IsCompactTabletSizeClass(UIUserInterfaceSizeClass sizeClass) {
   return IsIPadIdiom() && sizeClass == UIUserInterfaceSizeClassCompact;
+}
+
+BOOL IsRTLUILayout() {
+  if (base::ios::IsRunningOnIOS9OrLater()) {
+#if __IPHONE_9_0
+    // Calling this method is better than using the locale on iOS9 since it will
+    // work with the right to left pseudolanguage.
+    return [UIView userInterfaceLayoutDirectionForSemanticContentAttribute:
+                       UISemanticContentAttributeUnspecified] ==
+           UIUserInterfaceLayoutDirectionRightToLeft;
+#endif
+  }
+  // Using NSLocale instead of base::i18n::IsRTL() in order to take into account
+  // right to left pseudolanguage correctly (which base::i18n::IsRTL() doesn't).
+  return
+      [NSLocale
+          characterDirectionForLanguage:
+              [[NSLocale currentLocale] objectForKey:NSLocaleLanguageCode]] ==
+      NSLocaleLanguageDirectionRightToLeft;
 }
