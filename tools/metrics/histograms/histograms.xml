@@ -38553,6 +38553,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.SendStopWorker.Status"
+    enum="ServiceWorkerStatusCode">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The result of trying to send the IPC message to a renderer process telling
+    it to stop an embedded worker. Recorded in EmbeddedWorkerInstance::Stop.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.StartNewWorker.Status"
     enum="ServiceWorkerStatusCode">
   <owner>falken@chromium.org</owner>
@@ -38641,6 +38650,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Records successes and failures of purging a stale resource in
     ServiceWorkerStorage.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.TerminateThread.Time" units="milliseconds">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The time taken in the renderer process between the main thread asking the
+    worker thread to terminate and getting ACK that it terminated.
   </summary>
 </histogram>
 

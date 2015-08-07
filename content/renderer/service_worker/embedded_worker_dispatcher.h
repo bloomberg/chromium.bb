@@ -5,9 +5,12 @@
 #ifndef CONTENT_RENDERER_SERVICE_WORKER_EMBEDDED_WORKER_DISPATCHER_H_
 #define CONTENT_RENDERER_SERVICE_WORKER_EMBEDDED_WORKER_DISPATCHER_H_
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "base/id_map.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "ipc/ipc_listener.h"
 
 struct EmbeddedWorkerMsg_StartWorker_Params;
@@ -33,6 +36,7 @@ class EmbeddedWorkerDispatcher : public IPC::Listener {
   void OnStopWorker(int embedded_worker_id);
 
   IDMap<WorkerWrapper, IDMapOwnPointer> workers_;
+  std::map<int /* embedded_worker_id */, base::TimeTicks> stop_worker_times_;
   base::WeakPtrFactory<EmbeddedWorkerDispatcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerDispatcher);

@@ -5,6 +5,7 @@
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_process.h"
@@ -59,6 +60,13 @@ bool EmbeddedWorkerDispatcher::OnMessageReceived(
 
 void EmbeddedWorkerDispatcher::WorkerContextDestroyed(
     int embedded_worker_id) {
+  if (ContainsKey(stop_worker_times_, embedded_worker_id)) {
+    base::TimeTicks stop_time = stop_worker_times_[embedded_worker_id];
+    UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.TerminateThread.Time",
+                               base::TimeTicks::Now() - stop_time);
+    stop_worker_times_.erase(embedded_worker_id);
+  }
+
   RenderThreadImpl::current()->thread_safe_sender()->Send(
       new EmbeddedWorkerHostMsg_WorkerStopped(embedded_worker_id));
   workers_.Remove(embedded_worker_id);
@@ -105,6 +113,7 @@ void EmbeddedWorkerDispatcher::OnStopWorker(int embedded_worker_id) {
   // This should eventually call WorkerContextDestroyed. (We may need to post
   // a delayed task to forcibly abort the worker context if we find it
   // necessary)
+  stop_worker_times_[embedded_worker_id] = base::TimeTicks::Now();
   wrapper->worker()->terminateWorkerContext();
 }
 

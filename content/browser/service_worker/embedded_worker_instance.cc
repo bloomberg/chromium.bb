@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/embedded_worker_instance.h"
 
 #include <algorithm>
+#include <string>
 #include <utility>
 
 #include "base/bind_helpers.h"
@@ -197,6 +198,8 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::Stop() {
   // the status to STOPPING.
   status_ = STOPPING;
   FOR_EACH_OBSERVER(Listener, listener_list_, OnStopping());
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.SendStopWorker.Status", status,
+                            SERVICE_WORKER_ERROR_MAX_VALUE);
   return status;
 }
 
