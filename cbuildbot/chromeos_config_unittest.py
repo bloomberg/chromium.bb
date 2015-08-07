@@ -46,7 +46,7 @@ class ConfigDumpTest(GenerateChromeosConfigTestBase):
     self.assertTrue(
         new_dump == old_dump, 'config_dump.json does not match the '
         'configs defined in chromeos_config.py. Run '
-        'bin/cbuildbot_view_config > cbuildbot/config_dump.json')
+        'bin/cbuildbot_view_config --update_config')
 
   def testSaveLoadReload(self):
     """Make sure that loading and reloading the config is a no-op."""
