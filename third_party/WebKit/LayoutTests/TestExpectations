@@ -140,7 +140,8 @@ crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOn
 
 crbug.com/475984 [ Mac Debug ] css2.1/t100801-c544-valgn-03-d-agi.html [ Failure ]
 
-crbug.com/518005 [ Lion SnowLeopard Debug ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Failure ]
+# Rebaseline didn't fix this. It's flaking between two different failures due to rounding error.
+crbug.com/518005 crbug.com/463358 [ Lion SnowLeopard Debug ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Failure ]
 
 crbug.com/510337 cssom/cssvalue-comparison.html [ Slow ]
 crbug.com/510337 inspector/console/console-format.html [ Slow ]
@@ -689,9 +690,6 @@ crbug.com/463798 [ Mac ] svg/as-image/svg-invalid-image-1.html [ Failure ]
 
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon-evenodd.html [ ImageOnlyFailure ]
 crbug.com/463358 [ Mac Debug ] svg/transforms/animated-path-inside-transformed-html.xhtml [ ImageOnlyFailure ]
-
-# Rebaseline didn't fix this. It's flaking between two different failures due to rounding error.
-crbug.com/463358 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Failure ]
 
 crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
 
