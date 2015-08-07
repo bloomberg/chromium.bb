@@ -647,6 +647,9 @@ Gallery.prototype.onKeyDown_ = function(event) {
   if (this.shareDialog_.isShowing())
     return;
 
+  // Show UIs when user types any key.
+  this.inactivityWatcher_.kick();
+
   // Handle mode specific shortcut keys.
   if (this.currentMode_.onKeyDown(event)) {
     event.preventDefault();

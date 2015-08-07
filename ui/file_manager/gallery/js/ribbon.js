@@ -354,8 +354,10 @@ Ribbon.prototype.onSelection_ = function() {
 
   var newSelected =
       this.renderCache_[this.dataModel_.item(selectedIndex).getEntry().toURL()];
-  if (newSelected)
+  if (newSelected) {
     newSelected.setAttribute('selected', true);
+    newSelected.focus();
+  }
 };
 
 /**
@@ -410,6 +412,7 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
   var thumbnail = assertInstanceof(this.ownerDocument.createElement('div'),
       HTMLDivElement);
   thumbnail.className = 'ribbon-image';
+  thumbnail.tabIndex = 1;
   thumbnail.addEventListener('click', function() {
     var index = this.dataModel_.indexOf(item);
     this.selectionModel_.unselectAll();
@@ -436,6 +439,9 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
  * @private
  */
 Ribbon.prototype.setThumbnailImage_ = function(thumbnail, item) {
+  thumbnail.setAttribute('aria-label', item.getFileName());
+  thumbnail.setAttribute('title', item.getFileName());
+
   if (!item.getThumbnailMetadataItem())
     return;
 
