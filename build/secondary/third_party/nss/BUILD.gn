@@ -913,7 +913,6 @@ if (is_linux) {
     if (include_nss_libpkix) {
       sources += [
         "nss/lib/certhigh/certvfypkix.c",
-        "nss/lib/certhigh/certvfypkixprint.c",
         "nss/lib/libpkix/include/pkix.h",
         "nss/lib/libpkix/include/pkix_certsel.h",
         "nss/lib/libpkix/include/pkix_certstore.h",

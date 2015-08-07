@@ -105,6 +105,81 @@ template("test") {
         ":$apk_name",
       ]
     }
+  } else if (is_ios) {
+    if (is_ios) {
+      import("//build/config/ios/rules.gni")
+    }
+
+    target__sources_name = "${target_name}__sources"
+    if (defined(invoker.sources)) {
+      source_set(target__sources_name) {
+        sources = invoker.sources
+        testonly = true
+
+        configs = []  # Prevent list overwriting warning.
+        configs += invoker.configs
+
+        forward_variables_from(invoker,
+                               [
+                                 "data",
+                                 "deps",
+                                 "data_deps",
+                                 "datadeps",
+                                 "defines",
+                                 "includes",
+                               ])
+      }
+    }
+
+    ios_app(target_name) {
+      # TODO(GYP): Make this configurable and only provide a default
+      # that can be overridden.
+      info_plist = "//testing/gtest_ios/unittest-Info.plist"
+      app_name = target_name
+      entitlements_path = "//testing/gtest_ios"
+      code_signing_identity = ""
+      testonly = true
+
+      # See above call.
+      set_sources_assignment_filter([])
+
+      forward_variables_from(invoker,
+                             [
+                               "all_dependent_configs",
+                               "allow_circular_includes_from",
+                               "cflags",
+                               "cflags_c",
+                               "cflags_cc",
+                               "cflags_objc",
+                               "cflags_objcc",
+                               "check_includes",
+                               "forward_dependent_configs_from",
+                               "include_dirs",
+                               "ldflags",
+                               "libs",
+                               "output_extension",
+                               "output_name",
+                               "public",
+                               "public_configs",
+                               "public_deps",
+                               "visibility",
+                             ])
+
+      if (defined(invoker.deps)) {
+        deps = invoker.deps
+      } else {
+        deps = []
+      }
+      deps += [
+        # All shared libraries must have the sanitizer deps to properly link in
+        # asan mode (this target will be empty in other cases).
+        "//build/config/sanitizers:deps",
+      ]
+
+      if (defined(invoker.sources)) {
+        deps += [ ":${target__sources_name}" ]
+      }
+    }
   } else {
     executable(target_name) {
       forward_variables_from(invoker, "*")

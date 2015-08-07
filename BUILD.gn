@@ -65,9 +65,11 @@ group("both_gn_and_gyp") {
   testonly = true
   deps = [
     "//base:base_unittests",
-    "//sync:sync_unit_tests",
   ]
+
   if (!is_ios) {
+    # TODO(GYP): Figure out which of these should actually build on iOS,
+    # and whether there should be other targets that are iOS-only and missing.
     deps += [
       "//cc:cc_unittests",
       "//chrome",
@@ -134,6 +136,7 @@ group("both_gn_and_gyp") {
       "//printing:printing_unittests",
       "//skia:skia_unittests",
       "//sql:sql_unittests",
+      "//sync:sync_unit_tests",
       "//third_party/WebKit/Source/platform:heap_unittests",
       "//third_party/WebKit/Source/platform:platform_unittests",
       "//third_party/WebKit/Source/web:webkit_unit_tests",
@@ -599,10 +602,10 @@ group("both_gn_and_gyp") {
 group("gn_only") {
   testonly = true
 
+  deps = []
+
   if (!is_ios) {
-    deps = [
-      "//mandoline:all",
-    ]
+    deps += [ "//mandoline:all" ]
   }
 
   if (!is_android && !is_ios) {

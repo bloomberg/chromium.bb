@@ -9,6 +9,8 @@ config("sdk") {
   common_flags = [
     "-isysroot",
     sysroot,
+
+    "-stdlib=libc++",
   ]
 
   if (use_ios_simulator) {

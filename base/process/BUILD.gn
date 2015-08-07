@@ -96,7 +96,10 @@ source_set("process") {
   }
 
   if (is_ios) {
-    sources += [ "process_metrics.cc" ]
+    sources += [
+      "memory_stubs.cc",
+      "process_metrics.cc",
+    ]
   }
 
   configs += [ "//base:base_implementation" ]

@@ -96,11 +96,22 @@ static_library("gtest") {
     "src/gtest.cc",
   ]
 
-  if (is_mac) {
+  if (is_mac || is_ios) {
+    if (is_ios) {
+      set_sources_assignment_filter([])
+    }
     sources += [
       "../gtest_mac.h",
       "../gtest_mac.mm",
       "../platform_test_mac.mm",
+    ]
+    set_sources_assignment_filter(sources_assignment_filter)
+  }
+
+  if (is_ios) {
+    sources += [
+      "../coverage_util_ios.cc",
+      "../coverage_util_ios.h",
     ]
   }
 

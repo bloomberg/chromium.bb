@@ -60,7 +60,7 @@ declare_args() {
   # TODO(GYP) The GYP build has || chromecast==1 for this:
   proprietary_codecs = is_android || is_chrome_branded
 
-  # TODO(gyp) true
+  # TODO(GYP) This should be enabled on ios as well.
   enable_configuration_policy = !is_ios
 
   # Enables support for background apps.

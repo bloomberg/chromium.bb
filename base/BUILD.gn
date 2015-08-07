@@ -11,6 +11,11 @@ if (is_android) {
 
 config("base_implementation") {
   defines = [ "BASE_IMPLEMENTATION" ]
+
+  if (is_ios) {
+    # base uses routines deprecated in iOS 8
+    cflags = [ "-Wno-deprecated-declarations" ]
+  }
 }
 
 if (is_win) {
@@ -643,7 +648,6 @@ component("base") {
   ]
 
   if (is_ios) {
-    sources += [ "process/memory_stubs.cc" ]
     sources -= [
       "message_loop/message_pump_libevent.cc",
       "message_loop/message_pump_libevent.h",
@@ -1339,7 +1343,6 @@ test("base_unittests") {
     "process/process_metrics_unittest_ios.cc",
     "process/process_unittest.cc",
     "process/process_util_unittest.cc",
-    "process/process_util_unittest_ios.cc",
     "profiler/stack_sampling_profiler_unittest.cc",
     "profiler/tracked_time_unittest.cc",
     "rand_util_unittest.cc",
@@ -1466,6 +1469,8 @@ test("base_unittests") {
 
   if (is_ios) {
     sources -= [
+      "memory/discardable_shared_memory_unittest.cc",
+      "memory/shared_memory_unittest.cc",
       "process/memory_unittest.cc",
       "process/process_unittest.cc",
       "process/process_util_unittest.cc",
@@ -1479,7 +1484,7 @@ test("base_unittests") {
       "mac/foundation_util_unittest.mm",
       "mac/objc_property_releaser_unittest.mm",
       "mac/scoped_nsobject_unittest.mm",
-      "sys_string_conversions_mac_unittest.mm",
+      "strings/sys_string_conversions_mac_unittest.mm",
     ]
     set_sources_assignment_filter(sources_assignment_filter)
 
@@ -1500,7 +1505,7 @@ test("base_unittests") {
     sources -= [ "message_loop/message_pump_glib_unittest.cc" ]
   }
 
-  if (is_posix || is_ios) {
+  if (is_posix && !is_ios) {
     sources += [ "message_loop/message_pump_libevent_unittest.cc" ]
     deps += [ "//third_party/libevent" ]
   }

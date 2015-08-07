@@ -7,6 +7,7 @@
 # Linux.
 
 import("../goma.gni")
+import("//build/config/ios/ios_sdk.gni")
 
 assert(host_os == "mac")
 
@@ -81,7 +82,7 @@ template("mac_toolchain") {
 
     tool("objc") {
       depfile = "{{output}}.d"
-      command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_objc}} -c {{source}} -o {{output}}"
+      command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} {{cflags_objc}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "OBJC {{output}}"
       outputs = [
@@ -91,7 +92,7 @@ template("mac_toolchain") {
 
     tool("objcxx") {
       depfile = "{{output}}.d"
-      command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_objcc}} -c {{source}} -o {{output}}"
+      command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} {{cflags_objcc}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "OBJCXX {{output}}"
       outputs = [
@@ -196,6 +197,21 @@ template("mac_toolchain") {
 mac_toolchain("clang_arm") {
   toolchain_cpu = "arm"
   toolchain_os = "mac"
+  prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
+                       root_build_dir)
+  cc = "${goma_prefix}$prefix/clang"
+  cxx = "${goma_prefix}$prefix/clang++"
+  ld = cxx
+  is_clang = true
+}
+
+mac_toolchain("ios_clang_arm") {
+  # TODO(GYP): Do we need ios_clang_armv7 and ios_clang_arm64 ?
+  toolchain_cpu = "arm"
+  toolchain_os = "mac"
+
+  # TODO(GYP): We need to support being able to use the version of clang
+  # shipped w/ XCode instead of the one pulled from upstream.
   prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
                        root_build_dir)
   cc = "${goma_prefix}$prefix/clang"

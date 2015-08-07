@@ -284,9 +284,12 @@ config("compiler") {
         "i386",
       ]
     } else if (current_cpu == "arm") {
+      # TODO(GYP): we may need to distinguish between "arm64", "armv7",
+      # and "armv7s" for iOS, and hence need multiple current_cpu values
+      # rather than just "arm".
       common_mac_flags += [
         "-arch",
-        "armv7",
+        "arm64",
       ]
     }
 

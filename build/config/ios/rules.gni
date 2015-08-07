@@ -1,0 +1,169 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+ios_app_script = "//build/config/ios/ios_app.py"
+
+template("code_sign_ios") {
+  assert(defined(invoker.entitlements_path),
+         "The path to the entitlements .xcent file")
+  assert(defined(invoker.identity), "The code signing identity")
+  assert(defined(invoker.application_path), "The application to code sign")
+  assert(defined(invoker.deps))
+
+  action(target_name) {
+    sources = [
+      invoker.entitlements_path,
+    ]
+
+    _application_path = invoker.application_path
+
+    script = ios_app_script
+
+    outputs = [
+      "$_application_path/_CodeSignature/CodeResources",
+    ]
+
+    args = [
+      "codesign",
+      "-p",
+      rebase_path(invoker.application_path, root_build_dir),
+      "-i",
+      invoker.identity,
+      "-e",
+      rebase_path(invoker.entitlements_path, root_build_dir),
+    ]
+
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "public_deps",
+                             "testonly",
+                           ])
+  }
+}
+
+# TODO(GYP), TODO(dpranke): Should this be part of ios_app?
+template("resource_copy_ios") {
+  assert(defined(invoker.resources),
+         "The source list of resources to copy over")
+  assert(defined(invoker.bundle_directory),
+         "The directory within the bundle to place the sources in")
+  assert(defined(invoker.app_name), "The name of the application")
+
+  _bundle_directory = invoker.bundle_directory
+  _app_name = invoker.app_name
+  _resources = invoker.resources
+
+  copy(target_name) {
+    set_sources_assignment_filter([])
+    sources = _resources
+    outputs = [
+      "$root_build_dir/$_app_name.app/$_bundle_directory/{{source_file_part}}",
+    ]
+  }
+}
+
+template("ios_app") {
+  assert(defined(invoker.deps),
+         "Dependencies must be specified for $target_name")
+  assert(defined(invoker.info_plist),
+         "The application plist file must be specified for $target_name")
+  assert(defined(invoker.entitlements_path),
+         "The entitlements path must be specified for $target_name")
+  assert(defined(invoker.code_signing_identity),
+         "The code_signing_identity must be specified for $target_name")
+
+  # We just create a variable so we can use the same in interpolation
+  if (defined(invoker.app_name)) {
+    _app_name = invoker.app_name
+  } else {
+    _app_name = target_name
+  }
+
+  forward_variables_from(invoker, [ "testonly" ])
+
+  plist_gen_target_name = target_name + "_plist"
+  bin_gen_target_name = target_name + "_bin"
+  group_target_name = target_name
+
+  # Generate the executable
+  executable(bin_gen_target_name) {
+    visibility = [ ":$group_target_name" ]
+
+    output_name = "${_app_name}.app/${_app_name}"
+
+    if (defined(invoker.libs)) {
+      libs = invoker.libs
+    } else {
+      libs = []
+    }
+    libs += [
+      "UIKit.framework",
+      "QuartzCore.framework",
+      "OpenGLES.framework",
+    ]
+
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    } else {
+      deps = []
+    }
+    deps += [ ":$plist_gen_target_name" ]
+  }
+
+  # Process the Info.plist
+  action(plist_gen_target_name) {
+    visibility = [
+      ":$group_target_name",
+      ":$bin_gen_target_name",
+    ]
+
+    script = ios_app_script
+
+    sources = [
+      invoker.info_plist,
+    ]
+    outputs = [
+      "$root_build_dir/${_app_name}.app/Info.plist",
+    ]
+
+    args = [
+      "plist",
+      "-i",
+      rebase_path(invoker.info_plist, root_build_dir),
+      "-o",
+      rebase_path("$root_build_dir/${_app_name}.app"),
+    ]
+  }
+
+  # Perform Code Signing
+  entitlements_path = invoker.entitlements_path
+  if (invoker.code_signing_identity != "") {
+    code_sign_gen_target_name = target_name + "_codesign"
+    code_sign_ios(code_sign_gen_target_name) {
+      visibility = [ ":$target_name" ]
+
+      identity = invoker.code_signing_identity
+      application_path = "$root_build_dir/$app_name.app"
+      deps = [
+        ":$plist_gen_target_name",
+        ":$bin_gen_target_name",
+      ]
+    }
+  } else {
+    # This avoids a potential unused variable warning in the caller.
+    entitlements_path = entitlements_path
+  }
+
+  # Top level group
+  group(target_name) {
+    deps = [
+      ":$plist_gen_target_name",
+      ":$bin_gen_target_name",
+    ]
+    if (invoker.code_signing_identity != "") {
+      deps += [ ":$code_sign_gen_target_name" ]
+    }
+  }
+}
