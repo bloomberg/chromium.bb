@@ -68,6 +68,8 @@
         'sync_driver/profile_sync_auth_provider.h',
         'sync_driver/proxy_data_type_controller.cc',
         'sync_driver/proxy_data_type_controller.h',
+        'sync_driver/protocol_event_observer.cc',
+        'sync_driver/protocol_event_observer.h',
         'sync_driver/shared_change_processor.cc',
         'sync_driver/shared_change_processor.h',
         'sync_driver/shared_change_processor_ref.cc',

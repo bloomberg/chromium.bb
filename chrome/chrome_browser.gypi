@@ -2942,8 +2942,6 @@
       'browser/sync/profile_sync_service_android.h',
       'browser/sync/profile_sync_service_factory.cc',
       'browser/sync/profile_sync_service_factory.h',
-      'browser/sync/protocol_event_observer.cc',
-      'browser/sync/protocol_event_observer.h',
       'browser/sync/sessions/notification_service_sessions_router.cc',
       'browser/sync/sessions/notification_service_sessions_router.h',
       'browser/sync/sessions/session_data_type_controller.cc',

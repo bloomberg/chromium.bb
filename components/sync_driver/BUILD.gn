@@ -53,6 +53,8 @@ static_library("sync_driver") {
     "pref_names.h",
     "profile_sync_auth_provider.cc",
     "profile_sync_auth_provider.h",
+    "protocol_event_observer.cc",
+    "protocol_event_observer.h",
     "proxy_data_type_controller.cc",
     "proxy_data_type_controller.h",
     "shared_change_processor.cc",
