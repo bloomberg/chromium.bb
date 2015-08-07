@@ -8,6 +8,8 @@ COPYRIGHT NOTICE, DISCLAIMER, and LICENSE:
 If you modify libpng you may insert additional notices immediately following
 this sentence.
 
+pngusr.h is distributed under the MPL 1.1/GPL 2.0/LGPL 2.1 tri-license.
+
 This code is released under the libpng license.
 
 libpng versions 1.2.6, August 15, 2004, through 1.2.45, July 7, 2011, are
