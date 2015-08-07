@@ -175,7 +175,7 @@ LoadPageWithDecodeErrorTask.prototype = {
 };
 
 // Flaky on Win Debug build - crbug.com/517484
-GEN('#if defined(OS_WIN) && !defined(NDEBUG)');
+GEN('#if defined(OS_WIN)');
 GEN('# define MAYBE_netInternalsSdchViewFetchDictionary \\');
 GEN('     DISABLED_netInternalsSdchViewFetchDictionary');
 GEN('#else');
@@ -198,7 +198,7 @@ TEST_F('NetInternalsTest',
 });
 
 // Flaky on Win Debug build - crbug.com/517484
-GEN('#if defined(OS_WIN) && !defined(NDEBUG)');
+GEN('#if defined(OS_WIN)');
 GEN('# define MAYBE_netInternalsSdchViewBlacklistMeta \\');
 GEN('     DISABLED_netInternalsSdchViewBlacklistMeta');
 GEN('#else');
@@ -226,7 +226,7 @@ TEST_F('NetInternalsTest',
 });
 
 // Flaky on Win Debug build - crbug.com/517484
-GEN('#if defined(OS_WIN) && !defined(NDEBUG)');
+GEN('#if defined(OS_WIN)');
 GEN('# define MAYBE_netInternalsSdchViewBlacklistNonSdch \\');
 GEN('     DISABLED_netInternalsSdchViewBlacklistNonSdch');
 GEN('#else');

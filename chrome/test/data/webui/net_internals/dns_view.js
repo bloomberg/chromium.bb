@@ -260,7 +260,7 @@ TEST_F('NetInternalsTest', 'netInternalsDnsViewAddTwoTwice', function() {
 });
 
 // Flaky on Win Debug build - crbug.com/517484
-GEN('#if defined(OS_WIN) && !defined(NDEBUG)');
+GEN('#if defined(OS_WIN)');
 GEN('# define MAYBE_netInternalsDnsViewIncognitoClears \\');
 GEN('     DISABLED_netInternalsDnsViewIncognitoClears');
 GEN('#else');

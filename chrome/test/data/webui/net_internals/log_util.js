@@ -259,7 +259,7 @@ TEST_F('NetInternalsTest',
 });
 
 // Flaky on Win Debug build - crbug.com/517484
-GEN('#if defined(OS_WIN) && !defined(NDEBUG)');
+GEN('#if defined(OS_WIN)');
 GEN('# define MAYBE_netInternalsLogUtilImportNetLogFileTruncated \\');
 GEN('     DISABLED_netInternalsLogUtilImportNetLogFileTruncated');
 GEN('#else');

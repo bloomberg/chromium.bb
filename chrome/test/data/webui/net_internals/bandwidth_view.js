@@ -240,7 +240,7 @@ DataReductionProxyTask.prototype = {
 };
 
 // Flaky on Win Debug build - crbug.com/517484
-GEN('#if defined(OS_WIN) && !defined(NDEBUG)');
+GEN('#if defined(OS_WIN)');
 GEN('# define MAYBE_netInternalsSessionBandwidthSucceed \\');
 GEN('     DISABLED_netInternalsSessionBandwidthSucceed');
 GEN('#else');
