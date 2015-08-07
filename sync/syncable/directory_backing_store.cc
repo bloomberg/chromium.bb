@@ -105,9 +105,7 @@ void UnpackProtoFields(sql::Statement* statement,
                    static_cast<TField>(*index));
     } else {
       // Regular case - deserialize and copy the value to the field.
-      TValue value;
-      value.ParseFromArray(blob, length);
-      kernel->put(static_cast<TField>(*index), value);
+      kernel->load(static_cast<TField>(*index), blob, length);
       prev_blob = blob;
       prev_length = length;
       prev_index = *index;

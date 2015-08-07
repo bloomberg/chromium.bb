@@ -22,10 +22,12 @@ class TestValue {
 
   static void ResetCounters() {
     g_copy_count = 0;
+    g_parse_count = 0;
     g_delete_count = 0;
   }
 
   static int copy_count() { return g_copy_count; }
+  static int parse_count() { return g_parse_count; }
   static int delete_count() { return g_delete_count; }
 
   int value() const { return value_; }
@@ -33,7 +35,7 @@ class TestValue {
   bool is_default() const { return is_default_; }
 
   // TestValue uses the default traits struct with ProtoValuePtr<TestValue>.
-  // The following 3 functions are expected by the traits struct to exist
+  // The following 4 functions are expected by the traits struct to exist
   // in this class.
   void CopyFrom(const TestValue& from) {
     // Expected to always copy from an initialized instance
@@ -44,8 +46,20 @@ class TestValue {
     ASSERT_TRUE(from.is_initialized());
     ASSERT_FALSE(from.is_default());
     value_ = from.value();
-    is_initialized_ = false;
+    is_initialized_ = true;
     g_copy_count++;
+  }
+
+  void ParseFromArray(const void* blob, int length) {
+    // Similarly to CopyFrom this is expected to be called on
+    // an uninitialized instance.
+    ASSERT_FALSE(is_initialized());
+    ASSERT_FALSE(is_default());
+    // The blob is an address of an integer
+    ASSERT_EQ(static_cast<int>(sizeof(int)), length);
+    value_ = *static_cast<const int*>(blob);
+    is_initialized_ = true;
+    g_parse_count++;
   }
 
   int ByteSize() const { return is_initialized() ? sizeof(int) : 0; }
@@ -58,6 +72,7 @@ class TestValue {
 
  private:
   static int g_copy_count;
+  static int g_parse_count;
   static int g_delete_count;
 
   int value_;
@@ -69,6 +84,7 @@ class TestValue {
 
 // Static initializers.
 int TestValue::g_copy_count = 0;
+int TestValue::g_parse_count = 0;
 int TestValue::g_delete_count = 0;
 
 }  // namespace
@@ -169,6 +185,23 @@ TEST_F(ProtoValuePtrTest, SharingTest) {
 
   // No extra deletions expected upon leaving the scope.
   EXPECT_EQ(2, TestValue::delete_count());
+}
+
+TEST_F(ProtoValuePtrTest, ParsingTest) {
+  int v1 = 21;
+
+  {
+    TestPtr ptr1;
+
+    ptr1.load(&v1, sizeof(int));
+
+    EXPECT_EQ(1, TestValue::parse_count());
+    EXPECT_EQ(0, TestValue::copy_count());
+
+    EXPECT_EQ(v1, ptr1->value());
+  }
+
+  EXPECT_EQ(1, TestValue::delete_count());
 }
 
 }  // namespace syncable

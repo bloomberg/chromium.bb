@@ -19,6 +19,10 @@ template <typename T>
 struct DefaultProtoValuePtrTraits {
   // Deep copy the value from |src| to |dest|.
   static void CopyValue(T* dest, const T& src) { dest->CopyFrom(src); }
+  // Parse the value from BLOB.
+  static void ParseFromBlob(T* dest, const void* blob, int length) {
+    dest->ParseFromArray(blob, length);
+  }
   // True if the |value| is a non-default value.
   static bool HasValue(const T& value) { return value.ByteSize() > 0; }
   // Default value for the type.
@@ -47,9 +51,16 @@ class ProtoValuePtr {
    public:
     Wrapper(const T& value) { Traits::CopyValue(&value_, value); }
     const T& value() const { return value_; }
+    // Create wrapper by deserializing a BLOB.
+    static Wrapper* ParseFromBlob(const void* blob, int length) {
+      Wrapper* wrapper = new Wrapper;
+      Traits::ParseFromBlob(&wrapper->value_, blob, length);
+      return wrapper;
+    }
 
    private:
     friend class base::RefCountedThreadSafe<Wrapper>;
+    Wrapper() {}
     ~Wrapper() {}
 
     T value_;
@@ -72,6 +83,7 @@ class ProtoValuePtr {
   friend struct EntryKernel;
   FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, BasicTest);
   FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, SharingTest);
+  FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, ParsingTest);
 
   void set_value(const T& new_value) {
     if (Traits::HasValue(new_value)) {
@@ -80,6 +92,10 @@ class ProtoValuePtr {
       // Don't store default value.
       wrapper_ = nullptr;
     }
+  }
+
+  void load(const void* blob, int length) {
+    wrapper_ = Wrapper::ParseFromBlob(blob, length);
   }
 
   scoped_refptr<Wrapper> wrapper_;

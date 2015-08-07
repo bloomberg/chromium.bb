@@ -336,6 +336,18 @@ struct SYNC_EXPORT_PRIVATE EntryKernel {
     return unique_position_fields[field - UNIQUE_POSITION_FIELDS_BEGIN];
   }
 
+  // Deserialization methods for ::google::protobuf::MessageLite derived types.
+  inline void load(ProtoField field, const void* blob, int length) {
+    specifics_fields[field - PROTO_FIELDS_BEGIN].load(blob, length);
+  }
+
+  inline void load(AttachmentMetadataField field,
+                   const void* blob,
+                   int length) {
+    attachment_metadata_fields[field - ATTACHMENT_METADATA_FIELDS_BEGIN].load(
+        blob, length);
+  }
+
   // Sharing data methods for ::google::protobuf::MessageLite derived types.
   inline void copy(ProtoField src, ProtoField dest) {
     DCHECK_NE(src, dest);
