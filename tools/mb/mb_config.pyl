@@ -9,8 +9,8 @@
   # is not necessarily so (i.e., we might have mac, win, and linux
   # bots all using the 'gn_release_bot' config).
   'configs': {
-    'android_gn_release_bot': ['android', 'gn', 'release_bot'],
     'android_gn_debug_bot': ['android', 'gn', 'debug_bot'],
+    'android_gn_release_bot': ['android', 'gn', 'release_bot'],
     'android_gn_release_trybot': ['android', 'gn', 'release_trybot'],
     'android_gyp_debug_bot': ['android', 'gyp', 'debug_bot'],
     'android_gyp_release_trybot': ['android', 'gyp', 'release_trybot'],
@@ -18,21 +18,20 @@
     'chromeos_gn_release_bot': ['chromeos', 'gn', 'release_bot'],
     'chromeos_gn_release_trybot': ['chromeos', 'gn', 'release_trybot'],
     'dev_gn_debug': ['gn', 'debug', 'shared', 'full_symbols'],
-    'dev_gyp_debug': ['gyp', 'debug', 'shared', 'full_symbols'],
     'dev_gn_release': ['gn', 'release', 'shared'],
+    'dev_gyp_debug': ['gyp', 'debug', 'shared', 'full_symbols'],
     'dev_gyp_release': ['gyp', 'release', 'shared'],
+    'gn_debug_bot': ['gn', 'debug_bot'],
+    'gn_debug_bot_x86': ['gn', 'debug_bot', 'x86'],
+    'gn_debug_static_bot': ['gn', 'debug_static_bot'],
     'gn_linux_upload': ['gn_linux_upload'],
     'gn_release_bot': ['gn', 'release_bot'],
     'gn_release_bot_x86': ['gn', 'release_bot', 'x86'],
     'gn_release_trybot': ['gn', 'release_trybot'],
     'gn_release_trybot_x86': ['gn', 'release_trybot', 'x86'],
-    'gn_debug_bot': ['gn', 'debug_bot'],
-    'gn_debug_bot_x86': ['gn', 'debug_bot', 'x86'],
-    'gn_debug_static_bot': ['gn', 'debug_static_bot'],
     'gyp_release_bot': ['gyp', 'release_bot'],
     # clang/win doesn't work with goma yet, so this can't use debug_bot:
-    'win_clang_debug_bot':
-        ['gn', 'clang', 'debug', 'shared', 'minimal_symbols'],
+    'win_clang_debug_bot': ['gn', 'clang', 'debug', 'shared', 'minimal_symbols'],
   },
 
   # This is a list of configs that do not actually exist on any bot
@@ -150,24 +149,26 @@
     },
   },
 
-
   # This is a map of buildbot master names -> buildbot builder names ->
   # config names (where each config name is a key in the 'configs' dict,
   # above). mb uses this dict to look up which config to use for a given bot.
-  # TODO(dpranke): add in remaining bots on the waterfalls.
+  # The builders should be sorted by the order they appear in the /builders
+  # page on the buildbots, *not* alphabetically.
+  #
+  # TODO(crbug.com/481692): Add in remaining bots on the waterfalls.
   'masters': {
     'chromium.chromiumos': {
       'Linux ChromiumOS GN': 'chromeos_gn_release_bot',
       'Linux ChromiumOS GN (dbg)': 'chromeos_gn_debug_bot',
     },
     'chromium.linux': {
-      'Android GN': 'android_gn_release_bot',
-      'Android GN (dbg)': 'android_gn_debug_bot',
       'Linux Builder': 'gyp_release_bot',
+      'Linux Tests': 'gyp_release_bot',
       'Linux GN': 'gn_release_bot',
       'Linux GN Clobber': 'gn_release_bot',
       'Linux GN (dbg)': 'gn_debug_bot',
-      'Linux Tests': 'gyp_release_bot',
+      'Android GN': 'android_gn_release_bot',
+      'Android GN (dbg)': 'android_gn_debug_bot',
     },
     'chromium.mac': {
       'Mac GN': 'gn_release_bot',
