@@ -27,13 +27,18 @@ class TestPermissionBubbleViewDelegate : public PermissionBubbleView::Delegate {
   DISALLOW_COPY_AND_ASSIGN(TestPermissionBubbleViewDelegate);
 };
 
-// Use this class to test on a default window.
-class PermissionBubbleBrowserTest : public virtual InProcessBrowserTest {
+// Use this class to test on a default window or an app window. Inheriting from
+// ExtensionBrowserTest allows us to easily load and launch apps, and doesn't
+// really add any extra work.
+class PermissionBubbleBrowserTest : public ExtensionBrowserTest {
  public:
   PermissionBubbleBrowserTest();
   ~PermissionBubbleBrowserTest() override;
 
   void SetUpOnMainThread() override;
+
+  // Opens an app window, and returns the associated browser.
+  Browser* OpenExtensionAppWindow();
 
   std::vector<PermissionBubbleRequest*> requests() { return requests_.get(); }
   std::vector<bool> accept_states() { return accept_states_; }
@@ -43,27 +48,8 @@ class PermissionBubbleBrowserTest : public virtual InProcessBrowserTest {
   TestPermissionBubbleViewDelegate test_delegate_;
   ScopedVector<PermissionBubbleRequest> requests_;
   std::vector<bool> accept_states_;
-};
 
-// Use this class to test on an app window.
-class PermissionBubbleAppBrowserTest : public PermissionBubbleBrowserTest,
-                                       public ExtensionBrowserTest {
- public:
-  PermissionBubbleAppBrowserTest();
-  ~PermissionBubbleAppBrowserTest() override;
-
-  void SetUpOnMainThread() override;
-
-  // Override from ExtensionBrowserTest to avoid "inheritance via dominance".
-  void SetUp() override;
-  void SetUpCommandLine(base::CommandLine* command_line) override;
-
-  Browser* app_browser() { return app_browser_; }
-
- private:
-  Browser* app_browser_;
-
-  Browser* OpenExtensionAppWindow(const extensions::Extension* extension);
+  DISALLOW_COPY_AND_ASSIGN(PermissionBubbleBrowserTest);
 };
 
 // Use this class to test on a kiosk window.
@@ -73,6 +59,8 @@ class PermissionBubbleKioskBrowserTest : public PermissionBubbleBrowserTest {
   ~PermissionBubbleKioskBrowserTest() override;
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
+
+  DISALLOW_COPY_AND_ASSIGN(PermissionBubbleKioskBrowserTest);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_BROWSER_TEST_UTIL_H_

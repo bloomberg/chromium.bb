@@ -21,15 +21,14 @@ TestPermissionBubbleViewDelegate::TestPermissionBubbleViewDelegate()
     : PermissionBubbleView::Delegate() {
 }
 
-PermissionBubbleBrowserTest::PermissionBubbleBrowserTest()
-    : InProcessBrowserTest() {
+PermissionBubbleBrowserTest::PermissionBubbleBrowserTest() {
 }
 
 PermissionBubbleBrowserTest::~PermissionBubbleBrowserTest() {
 }
 
 void PermissionBubbleBrowserTest::SetUpOnMainThread() {
-  InProcessBrowserTest::SetUpOnMainThread();
+  ExtensionBrowserTest::SetUpOnMainThread();
 
   // Add a single permission request.
   MockPermissionBubbleRequest* request = new MockPermissionBubbleRequest(
@@ -38,57 +37,26 @@ void PermissionBubbleBrowserTest::SetUpOnMainThread() {
   requests_.push_back(request);
 }
 
-PermissionBubbleAppBrowserTest::PermissionBubbleAppBrowserTest()
-    : InProcessBrowserTest(),
-      PermissionBubbleBrowserTest(),
-      ExtensionBrowserTest(),
-      app_browser_(nullptr) {
-}
-
-PermissionBubbleAppBrowserTest::~PermissionBubbleAppBrowserTest() {
-}
-
-void PermissionBubbleAppBrowserTest::SetUpOnMainThread() {
-  PermissionBubbleBrowserTest::SetUpOnMainThread();
-  ExtensionBrowserTest::SetUpOnMainThread();
-
+Browser* PermissionBubbleBrowserTest::OpenExtensionAppWindow() {
   auto extension =
       LoadExtension(test_data_dir_.AppendASCII("app_with_panel_container/"));
-  ASSERT_TRUE(extension);
-
-  app_browser_ = OpenExtensionAppWindow(extension);
-  ASSERT_TRUE(app_browser());
-  ASSERT_TRUE(app_browser()->is_app());
-}
-
-void PermissionBubbleAppBrowserTest::SetUp() {
-  ExtensionBrowserTest::SetUp();
-}
-
-void PermissionBubbleAppBrowserTest::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  ExtensionBrowserTest::SetUpCommandLine(command_line);
-}
-
-Browser* PermissionBubbleAppBrowserTest::OpenExtensionAppWindow(
-    const extensions::Extension* extension) {
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  command_line.AppendSwitchASCII(switches::kAppId, extension->id());
+  CHECK(extension);
 
   AppLaunchParams params(browser()->profile(), extension,
                          extensions::LAUNCH_CONTAINER_PANEL, NEW_WINDOW,
-                         extensions::SOURCE_COMMAND_LINE);
-  params.command_line = command_line;
-  params.current_directory = base::FilePath();
+                         extensions::SOURCE_TEST);
 
   content::WebContents* app_window = OpenApplication(params);
-  assert(app_window);
+  CHECK(app_window);
 
-  return chrome::FindBrowserWithWebContents(app_window);
+  Browser* app_browser = chrome::FindBrowserWithWebContents(app_window);
+  CHECK(app_browser);
+  CHECK(app_browser->is_app());
+
+  return app_browser;
 }
 
-PermissionBubbleKioskBrowserTest::PermissionBubbleKioskBrowserTest()
-    : PermissionBubbleBrowserTest() {
+PermissionBubbleKioskBrowserTest::PermissionBubbleKioskBrowserTest() {
 }
 
 PermissionBubbleKioskBrowserTest::~PermissionBubbleKioskBrowserTest() {

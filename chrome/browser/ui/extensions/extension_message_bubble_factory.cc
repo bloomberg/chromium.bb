@@ -29,8 +29,10 @@ namespace {
 base::LazyInstance<std::set<Profile*> > g_profiles_evaluated =
     LAZY_INSTANCE_INITIALIZER;
 
-// This is used to turn on all bubbles for testing.
-bool g_enabled_for_tests = false;
+// This is used to turn on override whether bubbles are enabled or disabled for
+// testing.
+ExtensionMessageBubbleFactory::OverrideForTesting g_override_for_testing =
+    ExtensionMessageBubbleFactory::NO_OVERRIDE;
 
 const char kEnableDevModeWarningExperimentName[] =
     "ExtensionDeveloperModeWarning";
@@ -52,14 +54,17 @@ bool IsExperimentEnabled(const char* experiment_name) {
 }
 
 bool EnableSuspiciousExtensionsBubble() {
-  return g_enabled_for_tests || extensions::InstallVerifier::ShouldEnforce();
+  return g_override_for_testing ==
+             ExtensionMessageBubbleFactory::OVERRIDE_ENABLED ||
+         extensions::InstallVerifier::ShouldEnforce();
 }
 
 bool EnableSettingsApiBubble() {
 #if defined(OS_WIN)
   return true;
 #else
-  return g_enabled_for_tests;
+  return g_override_for_testing ==
+         ExtensionMessageBubbleFactory::OVERRIDE_ENABLED;
 #endif
 }
 
@@ -67,7 +72,8 @@ bool EnableProxyOverrideBubble() {
 #if defined(OS_WIN)
   return true;
 #else
-  return g_enabled_for_tests ||
+  return g_override_for_testing ==
+             ExtensionMessageBubbleFactory::OVERRIDE_ENABLED ||
          IsExperimentEnabled(kEnableProxyWarningExperimentName);
 #endif
 }
@@ -81,7 +87,8 @@ bool EnableDevModeBubble() {
     return true;
 #endif
 
-  return g_enabled_for_tests ||
+  return g_override_for_testing ==
+             ExtensionMessageBubbleFactory::OVERRIDE_ENABLED ||
          IsExperimentEnabled(kEnableDevModeWarningExperimentName);
 }
 
@@ -100,6 +107,9 @@ ExtensionMessageBubbleFactory::GetController() {
   std::set<Profile*>& profiles_evaluated = g_profiles_evaluated.Get();
   bool is_initial_check = profiles_evaluated.count(original_profile) == 0;
   profiles_evaluated.insert(original_profile);
+
+  if (g_override_for_testing == OVERRIDE_DISABLED)
+    return scoped_ptr<extensions::ExtensionMessageBubbleController>();
 
   // The list of suspicious extensions takes priority over the dev mode bubble
   // and the settings API bubble, since that needs to be shown as soon as we
@@ -151,6 +161,7 @@ ExtensionMessageBubbleFactory::GetController() {
 }
 
 // static
-void ExtensionMessageBubbleFactory::set_enabled_for_tests(bool enabled) {
-  g_enabled_for_tests = enabled;
+void ExtensionMessageBubbleFactory::set_override_for_tests(
+    OverrideForTesting override) {
+  g_override_for_testing = override;
 }

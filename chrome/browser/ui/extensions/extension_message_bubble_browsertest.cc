@@ -25,7 +25,8 @@ void ExtensionMessageBubbleBrowserTest::SetUpCommandLine(
       new extensions::FeatureSwitch::ScopedOverride(
           extensions::FeatureSwitch::force_dev_mode_highlighting(),
           true));
-  ExtensionMessageBubbleFactory::set_enabled_for_tests(true);
+  ExtensionMessageBubbleFactory::set_override_for_tests(
+      ExtensionMessageBubbleFactory::OVERRIDE_ENABLED);
 }
 
 void ExtensionMessageBubbleBrowserTest::TestBubbleAnchoredToExtensionAction() {

@@ -3446,6 +3446,11 @@ class PrerenderBrowserTestWithExtensions : public PrerenderBrowserTest,
     ExtensionApiTest::TearDownInProcessBrowserTestFixture();
   }
 
+  void TearDownOnMainThread() override {
+    PrerenderBrowserTest::TearDownOnMainThread();
+    ExtensionApiTest::TearDownOnMainThread();
+  }
+
   void SetUpOnMainThread() override {
     PrerenderBrowserTest::SetUpOnMainThread();
   }

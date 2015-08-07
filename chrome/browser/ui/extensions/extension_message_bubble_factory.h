@@ -19,14 +19,21 @@ class ExtensionMessageBubbleController;
 // running in developer mode that we want to warn the user about.
 class ExtensionMessageBubbleFactory {
  public:
+  // An enum to allow us to override the default behavior for testing.
+  enum OverrideForTesting {
+    NO_OVERRIDE,
+    OVERRIDE_ENABLED,
+    OVERRIDE_DISABLED,
+  };
+
   explicit ExtensionMessageBubbleFactory(Browser* browser);
   ~ExtensionMessageBubbleFactory();
 
   // Returns the controller for the bubble that should be shown, if any.
   scoped_ptr<extensions::ExtensionMessageBubbleController> GetController();
 
-  // Enables the bubbles across all platforms for testing.
-  static void set_enabled_for_tests(bool enabled);
+  // Overrides the default behavior for testing.
+  static void set_override_for_tests(OverrideForTesting override);
 
  private:
   Browser* browser_;

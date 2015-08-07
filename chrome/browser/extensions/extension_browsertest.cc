@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/extensions/extension_message_bubble_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -122,6 +123,10 @@ void ExtensionBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   test_data_dir_ = test_data_dir_.AppendASCII("extensions");
   observer_.reset(new ExtensionTestNotificationObserver(browser()));
 
+  // We don't want any warning bubbles for, e.g., unpacked extensions.
+  ExtensionMessageBubbleFactory::set_override_for_tests(
+      ExtensionMessageBubbleFactory::OVERRIDE_DISABLED);
+
 #if defined(OS_CHROMEOS)
   if (set_chromeos_user_) {
     // This makes sure that we create the Default profile first, with no
@@ -141,6 +146,12 @@ void ExtensionBrowserTest::SetUpOnMainThread() {
     extension_service()->updater()->SetExtensionCacheForTesting(
         test_extension_cache_.get());
   }
+}
+
+void ExtensionBrowserTest::TearDownOnMainThread() {
+  ExtensionMessageBubbleFactory::set_override_for_tests(
+      ExtensionMessageBubbleFactory::NO_OVERRIDE);
+  InProcessBrowserTest::TearDownOnMainThread();
 }
 
 const Extension* ExtensionBrowserTest::LoadExtension(

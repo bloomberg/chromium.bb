@@ -50,8 +50,9 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest, FullscreenHasLocationBar) {
   bubble.Hide();
 }
 
-IN_PROC_BROWSER_TEST_F(PermissionBubbleAppBrowserTest, AppHasNoLocationBar) {
-  PermissionBubbleCocoa bubble(app_browser());
+IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest, AppHasNoLocationBar) {
+  Browser* app_browser = OpenExtensionAppWindow();
+  PermissionBubbleCocoa bubble(app_browser);
   bubble.SetDelegate(test_delegate());
   bubble.Show(requests(), accept_states());
   EXPECT_FALSE(bubble.HasLocationBar());
