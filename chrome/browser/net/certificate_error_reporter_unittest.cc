@@ -23,7 +23,7 @@ namespace {
 const char kDummyHttpReportUri[] = "http://example.test";
 const char kDummyHttpsReportUri[] = "https://example.test";
 const char kDummyReport[] = "a dummy report";
-const uint32 kServerPublicKeyVersion = 1;
+const uint32 kServerPublicKeyTestVersion = 16;
 
 // A mock CertificateReportSender that keeps track of the last report
 // sent.
@@ -58,41 +58,36 @@ class CertificateErrorReporterTest : public ::testing::Test {
 
   ~CertificateErrorReporterTest() override {}
 
-  const uint8_t* server_public_key() { return server_public_key_; }
-  const uint8_t* server_private_key() { return server_private_key_; }
-
- private:
+ protected:
   uint8_t server_public_key_[32];
   uint8_t server_private_key_[32];
 };
 
-// Test that CertificateErrorReporter::SendReport sends a plaintext
-// report for pinning violation reports.
+// Test that CertificateErrorReporter::SendPinningViolationReport sends
+// a plaintext report for pinning violation reports.
 TEST_F(CertificateErrorReporterTest, PinningViolationSendReport) {
   GURL url(kDummyHttpReportUri);
   MockCertificateReportSender* mock_report_sender =
       new MockCertificateReportSender();
-  CertificateErrorReporter reporter(url, server_public_key(),
-                                    kServerPublicKeyVersion,
+  CertificateErrorReporter reporter(url, server_public_key_,
+                                    kServerPublicKeyTestVersion,
                                     make_scoped_ptr(mock_report_sender));
-  reporter.SendReport(CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION,
-                      kDummyReport);
+  reporter.SendPinningViolationReport(kDummyReport);
   EXPECT_EQ(mock_report_sender->latest_report_uri(), url);
   EXPECT_EQ(mock_report_sender->latest_report(), kDummyReport);
 }
 
-// Test that CertificateErrorReporter::SendReport sends an encrypted or
-// plaintext extended reporting report as appropriate.
+// Test that CertificateErrorReporter::SendExtendedReportingReport sends
+// an encrypted or plaintext extended reporting report as appropriate.
 TEST_F(CertificateErrorReporterTest, ExtendedReportingSendReport) {
   // Data should not be encrypted when sent to an HTTPS URL.
   MockCertificateReportSender* mock_report_sender =
       new MockCertificateReportSender();
   GURL https_url(kDummyHttpsReportUri);
-  CertificateErrorReporter https_reporter(https_url, server_public_key(),
-                                          kServerPublicKeyVersion,
+  CertificateErrorReporter https_reporter(https_url, server_public_key_,
+                                          kServerPublicKeyTestVersion,
                                           make_scoped_ptr(mock_report_sender));
-  https_reporter.SendReport(
-      CertificateErrorReporter::REPORT_TYPE_EXTENDED_REPORTING, kDummyReport);
+  https_reporter.SendExtendedReportingReport(kDummyReport);
   EXPECT_EQ(mock_report_sender->latest_report_uri(), https_url);
   EXPECT_EQ(mock_report_sender->latest_report(), kDummyReport);
 
@@ -102,10 +97,9 @@ TEST_F(CertificateErrorReporterTest, ExtendedReportingSendReport) {
         new MockCertificateReportSender();
     GURL http_url(kDummyHttpReportUri);
     CertificateErrorReporter http_reporter(
-        http_url, server_public_key(), kServerPublicKeyVersion,
+        http_url, server_public_key_, kServerPublicKeyTestVersion,
         make_scoped_ptr(http_mock_report_sender));
-    http_reporter.SendReport(
-        CertificateErrorReporter::REPORT_TYPE_EXTENDED_REPORTING, kDummyReport);
+    http_reporter.SendExtendedReportingReport(kDummyReport);
 
     EXPECT_EQ(http_mock_report_sender->latest_report_uri(), http_url);
 
@@ -114,13 +108,13 @@ TEST_F(CertificateErrorReporterTest, ExtendedReportingSendReport) {
     chrome_browser_net::EncryptedCertLoggerRequest encrypted_request;
     ASSERT_TRUE(encrypted_request.ParseFromString(
         http_mock_report_sender->latest_report()));
-    EXPECT_EQ(kServerPublicKeyVersion,
+    EXPECT_EQ(kServerPublicKeyTestVersion,
               encrypted_request.server_public_key_version());
     EXPECT_EQ(chrome_browser_net::EncryptedCertLoggerRequest::
                   AEAD_ECDH_AES_128_CTR_HMAC_SHA256,
               encrypted_request.algorithm());
     ASSERT_TRUE(CertificateErrorReporter::DecryptCertificateErrorReport(
-        server_private_key(), encrypted_request, &uploaded_report));
+        server_private_key_, encrypted_request, &uploaded_report));
 #else
     ADD_FAILURE() << "Only supported in OpenSSL ports";
 #endif
@@ -288,7 +282,7 @@ TEST_F(CertificateErrorReporterTest, DecryptExampleReport) {
                   sizeof(kSerializedEncryptedReport))));
   ASSERT_TRUE(
       chrome_browser_net::CertificateErrorReporter::
-          DecryptCertificateErrorReport(server_private_key(), encrypted_request,
+          DecryptCertificateErrorReport(server_private_key_, encrypted_request,
                                         &decrypted_serialized_report));
 }
 #endif

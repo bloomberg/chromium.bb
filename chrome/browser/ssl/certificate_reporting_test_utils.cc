@@ -36,78 +36,6 @@ void SetMockReporter(SafeBrowsingService* safe_browsing_service,
       reporter.Pass());
 }
 
-}  // namespace
-
-namespace CertificateReportingTestUtils {
-
-// This class is used to test invalid certificate chain reporting when
-// the user opts in to do so on the interstitial. It keeps track of the
-// most recent hostname for which a report would have been sent over the
-// network.
-class MockReporter : public chrome_browser_net::CertificateErrorReporter {
- public:
-  MockReporter(
-      net::URLRequestContext* request_context,
-      const GURL& upload_url,
-      net::CertificateReportSender::CookiesPreference cookies_preference);
-
-  // CertificateErrorReporter implementation
-  void SendReport(CertificateErrorReporter::ReportType type,
-                  const std::string& serialized_report) override;
-
-  // Returns the hostname in the report for the last call to
-  // |SendReport|.
-  const std::string& latest_hostname_reported() {
-    return latest_hostname_reported_;
-  }
-
- private:
-  std::string latest_hostname_reported_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockReporter);
-};
-
-MockReporter::MockReporter(
-    net::URLRequestContext* request_context,
-    const GURL& upload_url,
-    net::CertificateReportSender::CookiesPreference cookies_preference)
-    : CertificateErrorReporter(request_context,
-                               upload_url,
-                               cookies_preference) {}
-
-void MockReporter::SendReport(CertificateErrorReporter::ReportType type,
-                              const std::string& serialized_report) {
-  CertificateErrorReport report;
-  ASSERT_TRUE(report.InitializeFromString(serialized_report));
-  EXPECT_EQ(CertificateErrorReporter::REPORT_TYPE_EXTENDED_REPORTING, type);
-  latest_hostname_reported_ = report.hostname();
-}
-
-void CertificateReportingTest::SetUpMockReporter() {
-  // Set up the mock reporter to track the hostnames that reports get
-  // sent for. The request_context argument is null here
-  // because the MockReporter doesn't actually use a
-  // request_context. (In order to pass a real request_context, the
-  // reporter would have to be constructed on the IO thread.)
-  reporter_ =
-      new MockReporter(nullptr, GURL("http://example.test"),
-                       net::CertificateReportSender::DO_NOT_SEND_COOKIES);
-
-  scoped_refptr<SafeBrowsingService> safe_browsing_service =
-      g_browser_process->safe_browsing_service();
-  ASSERT_TRUE(safe_browsing_service);
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          SetMockReporter, safe_browsing_service,
-          base::Passed(scoped_ptr<CertificateErrorReporter>(reporter_))));
-}
-
-const std::string& CertificateReportingTest::GetLatestHostnameReported() const {
-  return reporter_->latest_hostname_reported();
-}
-
 // This is a test implementation of the interface that blocking pages
 // use to send certificate reports. It checks that the blocking page
 // calls or does not call the report method when a report should or
@@ -124,7 +52,7 @@ class MockSSLCertReporter : public SSLCertReporter {
 
   ~MockSSLCertReporter() override { EXPECT_EQ(expect_report_, reported_); }
 
-  // SSLCertReporter implementation
+  // SSLCertReporter implementation.
   void ReportInvalidCertificateChain(
       const std::string& serialized_report) override {
     reported_ = true;
@@ -142,6 +70,78 @@ class MockSSLCertReporter : public SSLCertReporter {
   bool expect_report_;
   base::Closure report_sent_callback_;
 };
+
+}  // namespace
+
+namespace certificate_reporting_test_utils {
+
+// This class is used to test invalid certificate chain reporting when
+// the user opts in to do so on the interstitial. It keeps track of the
+// most recent hostname for which an extended reporting report would
+// have been sent over the network.
+class CertificateReportingTest::MockReporter
+    : public chrome_browser_net::CertificateErrorReporter {
+ public:
+  MockReporter(
+      net::URLRequestContext* request_context,
+      const GURL& upload_url,
+      net::CertificateReportSender::CookiesPreference cookies_preference);
+
+  // CertificateErrorReporter implementation.
+  void SendExtendedReportingReport(
+      const std::string& serialized_report) override;
+
+  // Returns the hostname in the report for the last call to
+  // |SendReport|.
+  const std::string& latest_hostname_reported() {
+    return latest_hostname_reported_;
+  }
+
+ private:
+  std::string latest_hostname_reported_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockReporter);
+};
+
+CertificateReportingTest::MockReporter::MockReporter(
+    net::URLRequestContext* request_context,
+    const GURL& upload_url,
+    net::CertificateReportSender::CookiesPreference cookies_preference)
+    : CertificateErrorReporter(request_context,
+                               upload_url,
+                               cookies_preference) {}
+
+void CertificateReportingTest::MockReporter::SendExtendedReportingReport(
+    const std::string& serialized_report) {
+  CertificateErrorReport report;
+  ASSERT_TRUE(report.InitializeFromString(serialized_report));
+  latest_hostname_reported_ = report.hostname();
+}
+
+void CertificateReportingTest::SetUpMockReporter() {
+  // Set up the mock reporter to track the hostnames that reports get
+  // sent for. The request_context argument is null here
+  // because the MockReporter doesn't actually use a
+  // request_context. (In order to pass a real request_context, the
+  // reporter would have to be constructed on the IO thread.)
+  reporter_ = new CertificateReportingTest::MockReporter(
+      nullptr, GURL("http://example.test"),
+      net::CertificateReportSender::DO_NOT_SEND_COOKIES);
+
+  scoped_refptr<SafeBrowsingService> safe_browsing_service =
+      g_browser_process->safe_browsing_service();
+  ASSERT_TRUE(safe_browsing_service);
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          SetMockReporter, safe_browsing_service,
+          base::Passed(scoped_ptr<CertificateErrorReporter>(reporter_))));
+}
+
+const std::string& CertificateReportingTest::GetLatestHostnameReported() const {
+  return reporter_->latest_hostname_reported();
+}
 
 void SetCertReportingOptIn(Browser* browser, OptIn opt_in) {
   browser->profile()->GetPrefs()->SetBoolean(
@@ -180,9 +180,9 @@ ExpectReport GetReportExpectedFromFinch() {
       return CERT_REPORT_NOT_EXPECTED;
 
     if (sendingThreshold == 1.0)
-      return CertificateReportingTestUtils::CERT_REPORT_EXPECTED;
+      return certificate_reporting_test_utils::CERT_REPORT_EXPECTED;
   }
-  return CertificateReportingTestUtils::CERT_REPORT_NOT_EXPECTED;
+  return certificate_reporting_test_utils::CERT_REPORT_NOT_EXPECTED;
 }
 
-}  // namespace CertificateReportingTestUtils
+}  // namespace certificate_reporting_test_utils

@@ -52,8 +52,5 @@ void ChromeFraudulentCertificateReporter::SendReport(
     return;
   }
 
-  certificate_reporter_->SendReport(
-      chrome_browser_net::CertificateErrorReporter::
-          REPORT_TYPE_PINNING_VIOLATION,
-      serialized_report);
+  certificate_reporter_->SendPinningViolationReport(serialized_report);
 }

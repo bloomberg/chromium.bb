@@ -21,7 +21,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
-
 namespace {
 
 const char kDummyReport[] = "foo.test";
@@ -31,20 +30,11 @@ void MarkURLRequestDestroyed(bool* url_request_destroyed) {
   *url_request_destroyed = true;
 }
 
-void SetUrlRequestMocksEnabled(bool enable) {
-  URLRequestFilter::GetInstance()->ClearHandlers();
-  if (!enable)
-    return;
-
-  URLRequestFailedJob::AddUrlHandler();
-  URLRequestMockDataJob::AddUrlHandler();
-}
-
-// Check that data uploaded in the request matches the test report
-// data. The sent reports will be erased from |expect_reports|.
-void CheckUploadData(URLRequest* request,
+// Checks that data uploaded in the request matches the test report
+// data. Erases the sent reports from |expect_reports|.
+void CheckUploadData(const URLRequest& request,
                      std::set<std::string>* expect_reports) {
-  const UploadDataStream* upload = request->get_upload();
+  const UploadDataStream* upload = request.get_upload();
   ASSERT_TRUE(upload);
   ASSERT_TRUE(upload->GetElementReaders());
   ASSERT_EQ(1u, upload->GetElementReaders()->size());
@@ -69,20 +59,16 @@ class TestCertificateReportSenderNetworkDelegate : public NetworkDelegateImpl {
         num_requests_(0),
         expect_cookies_(false) {}
 
-  ~TestCertificateReportSenderNetworkDelegate() override {}
-
   void ExpectReport(const std::string& report) {
     expect_reports_.insert(report);
   }
 
-  void set_all_url_requests_destroyed_callback(
-      const base::Closure& all_url_requests_destroyed_callback) {
-    all_url_requests_destroyed_callback_ = all_url_requests_destroyed_callback;
+  void set_all_url_requests_destroyed_callback(const base::Closure& callback) {
+    all_url_requests_destroyed_callback_ = callback;
   }
 
-  void set_url_request_destroyed_callback(
-      const base::Closure& url_request_destroyed_callback) {
-    url_request_destroyed_callback_ = url_request_destroyed_callback;
+  void set_url_request_destroyed_callback(const base::Closure& callback) {
+    url_request_destroyed_callback_ = callback;
   }
 
   void set_expect_url(const GURL& expect_url) { expect_url_ = expect_url; }
@@ -94,7 +80,7 @@ class TestCertificateReportSenderNetworkDelegate : public NetworkDelegateImpl {
     expect_cookies_ = expect_cookies;
   }
 
-  // NetworkDelegateImpl implementation
+  // NetworkDelegateImpl implementation.
   int OnBeforeURLRequest(URLRequest* request,
                          const CompletionCallback& callback,
                          GURL* new_url) override {
@@ -110,7 +96,10 @@ class TestCertificateReportSenderNetworkDelegate : public NetworkDelegateImpl {
       EXPECT_TRUE(request->load_flags() & LOAD_DO_NOT_SAVE_COOKIES);
     }
 
-    CheckUploadData(request, &expect_reports_);
+    CheckUploadData(*request, &expect_reports_);
+
+    // Unconditionally return OK, since the sender ignores the results
+    // anyway.
     return OK;
   }
 
@@ -134,16 +123,16 @@ class TestCertificateReportSenderNetworkDelegate : public NetworkDelegateImpl {
 class CertificateReportSenderTest : public ::testing::Test {
  public:
   CertificateReportSenderTest() : context_(true) {
-    SetUrlRequestMocksEnabled(true);
     context_.set_network_delegate(&network_delegate_);
     context_.Init();
   }
 
-  ~CertificateReportSenderTest() override { SetUrlRequestMocksEnabled(false); }
-
-  TestCertificateReportSenderNetworkDelegate* network_delegate() {
-    return &network_delegate_;
+  void SetUp() override {
+    URLRequestFailedJob::AddUrlHandler();
+    URLRequestMockDataJob::AddUrlHandler();
   }
+
+  void TearDown() override { URLRequestFilter::GetInstance()->ClearHandlers(); }
 
   TestURLRequestContext* context() { return &context_; }
 
@@ -171,8 +160,9 @@ class CertificateReportSenderTest : public ::testing::Test {
     EXPECT_EQ(request_sequence_number + 1, network_delegate_.num_requests());
   }
 
- private:
   TestCertificateReportSenderNetworkDelegate network_delegate_;
+
+ private:
   TestURLRequestContext context_;
 };
 
@@ -195,47 +185,47 @@ TEST_F(CertificateReportSenderTest, SendMultipleReportsSequentially) {
 
 TEST_F(CertificateReportSenderTest, SendMultipleReportsSimultaneously) {
   base::RunLoop run_loop;
-  network_delegate()->set_all_url_requests_destroyed_callback(
+  network_delegate_.set_all_url_requests_destroyed_callback(
       run_loop.QuitClosure());
 
   GURL url = URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
-  network_delegate()->set_expect_url(url);
-  network_delegate()->ExpectReport(kDummyReport);
-  network_delegate()->ExpectReport(kSecondDummyReport);
+  network_delegate_.set_expect_url(url);
+  network_delegate_.ExpectReport(kDummyReport);
+  network_delegate_.ExpectReport(kSecondDummyReport);
 
   CertificateReportSender reporter(
       context(), CertificateReportSender::DO_NOT_SEND_COOKIES);
 
-  EXPECT_EQ(0u, network_delegate()->num_requests());
+  EXPECT_EQ(0u, network_delegate_.num_requests());
 
   reporter.Send(url, kDummyReport);
   reporter.Send(url, kSecondDummyReport);
 
   run_loop.Run();
 
-  EXPECT_EQ(2u, network_delegate()->num_requests());
+  EXPECT_EQ(2u, network_delegate_.num_requests());
 }
 
 // Test that pending URLRequests get cleaned up when the report sender
 // is deleted.
 TEST_F(CertificateReportSenderTest, PendingRequestGetsDeleted) {
   bool url_request_destroyed = false;
-  network_delegate()->set_url_request_destroyed_callback(base::Bind(
+  network_delegate_.set_url_request_destroyed_callback(base::Bind(
       &MarkURLRequestDestroyed, base::Unretained(&url_request_destroyed)));
 
   GURL url = URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
       URLRequestFailedJob::START, ERR_IO_PENDING);
-  network_delegate()->set_expect_url(url);
-  network_delegate()->ExpectReport(kDummyReport);
+  network_delegate_.set_expect_url(url);
+  network_delegate_.ExpectReport(kDummyReport);
 
-  EXPECT_EQ(0u, network_delegate()->num_requests());
+  EXPECT_EQ(0u, network_delegate_.num_requests());
 
   scoped_ptr<CertificateReportSender> reporter(new CertificateReportSender(
       context(), CertificateReportSender::DO_NOT_SEND_COOKIES));
   reporter->Send(url, kDummyReport);
   reporter.reset();
 
-  EXPECT_EQ(1u, network_delegate()->num_requests());
+  EXPECT_EQ(1u, network_delegate_.num_requests());
   EXPECT_TRUE(url_request_destroyed);
 }
 
@@ -256,7 +246,7 @@ TEST_F(CertificateReportSenderTest, SendCookiesPreference) {
   CertificateReportSender reporter(context(),
                                    CertificateReportSender::SEND_COOKIES);
 
-  network_delegate()->set_expect_cookies(true);
+  network_delegate_.set_expect_cookies(true);
   SendReport(&reporter, kDummyReport, url, 0);
 }
 
@@ -265,10 +255,9 @@ TEST_F(CertificateReportSenderTest, DoNotSendCookiesPreference) {
   CertificateReportSender reporter(
       context(), CertificateReportSender::DO_NOT_SEND_COOKIES);
 
-  network_delegate()->set_expect_cookies(false);
+  network_delegate_.set_expect_cookies(false);
   SendReport(&reporter, kDummyReport, url, 0);
 }
 
 }  // namespace
-
 }  // namespace net

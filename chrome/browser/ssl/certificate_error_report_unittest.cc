@@ -16,9 +16,11 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::SSLInfo;
+using testing::UnorderedElementsAre;
 
 namespace {
 
@@ -28,7 +30,6 @@ const char kTestCertFilename[] = "test_mail_google_com.pem";
 
 const net::CertStatus kCertStatus =
     net::CERT_STATUS_COMMON_NAME_INVALID | net::CERT_STATUS_REVOKED;
-const size_t kNumCertErrors = 2;
 
 const CertLoggerRequest::CertError kFirstReportedCertError =
     CertLoggerRequest::ERR_CERT_COMMON_NAME_INVALID;
@@ -69,11 +70,10 @@ std::string GetPEMEncodedChain() {
 // a CertLoggerRequest protobuf (which is the format that the receiving
 // server expects it in) with the right data in it.
 TEST(CertificateErrorReportTest, SerializedReportAsProtobuf) {
-  SSLInfo ssl_info = GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN);
-
   std::string serialized_report;
-  CertificateErrorReport report(kDummyHostname, ssl_info);
-  report.Serialize(&serialized_report);
+  CertificateErrorReport report(kDummyHostname,
+                                GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN));
+  ASSERT_TRUE(report.Serialize(&serialized_report));
 
   CertLoggerRequest deserialized_report;
   ASSERT_TRUE(deserialized_report.ParseFromString(serialized_report));
@@ -83,36 +83,25 @@ TEST(CertificateErrorReportTest, SerializedReportAsProtobuf) {
   EXPECT_EQ(1, deserialized_report.pin().size());
   EXPECT_EQ(kDummyFailureLog, deserialized_report.pin().Get(0));
 
-  std::set<CertLoggerRequest::CertError> reported_errors;
-  reported_errors.insert(static_cast<CertLoggerRequest::CertError>(
-      deserialized_report.cert_error().Get(0)));
-  reported_errors.insert(static_cast<CertLoggerRequest::CertError>(
-      deserialized_report.cert_error().Get(1)));
-  EXPECT_EQ(kNumCertErrors, reported_errors.size());
-  EXPECT_EQ(1u, reported_errors.count(kFirstReportedCertError));
-  EXPECT_EQ(1u, reported_errors.count(kSecondReportedCertError));
+  EXPECT_THAT(
+      deserialized_report.cert_error(),
+      UnorderedElementsAre(kFirstReportedCertError, kSecondReportedCertError));
 }
 
 TEST(CertificateErrorReportTest,
      SerializedReportAsProtobufWithInterstitialInfo) {
+  std::string serialized_report;
   // Use EXCLUDE_UNVERIFIED_CERT_CHAIN here to exercise the code path
   // where SSLInfo does not contain the unverified cert chain. (The test
   // above exercises the path where it does.)
-  SSLInfo ssl_info = GetTestSSLInfo(EXCLUDE_UNVERIFIED_CERT_CHAIN);
+  CertificateErrorReport report(kDummyHostname,
+                                GetTestSSLInfo(EXCLUDE_UNVERIFIED_CERT_CHAIN));
 
-  std::string serialized_report;
-  CertificateErrorReport report(kDummyHostname, ssl_info);
+  report.SetInterstitialInfo(CertificateErrorReport::INTERSTITIAL_CLOCK,
+                             CertificateErrorReport::USER_PROCEEDED,
+                             CertificateErrorReport::INTERSTITIAL_OVERRIDABLE);
 
-  const CertificateErrorReport::InterstitialReason interstitial_reason =
-      CertificateErrorReport::INTERSTITIAL_CLOCK;
-  const CertificateErrorReport::ProceedDecision proceeded =
-      CertificateErrorReport::USER_PROCEEDED;
-  const CertificateErrorReport::Overridable overridable =
-      CertificateErrorReport::INTERSTITIAL_OVERRIDABLE;
-
-  report.SetInterstitialInfo(interstitial_reason, proceeded, overridable);
-
-  report.Serialize(&serialized_report);
+  ASSERT_TRUE(report.Serialize(&serialized_report));
 
   CertLoggerRequest deserialized_report;
   ASSERT_TRUE(deserialized_report.ParseFromString(serialized_report));
@@ -127,24 +116,18 @@ TEST(CertificateErrorReportTest,
   EXPECT_EQ(true, deserialized_report.interstitial_info().user_proceeded());
   EXPECT_EQ(true, deserialized_report.interstitial_info().overridable());
 
-  std::set<CertLoggerRequest::CertError> reported_errors;
-  reported_errors.insert(static_cast<CertLoggerRequest::CertError>(
-      deserialized_report.cert_error().Get(0)));
-  reported_errors.insert(static_cast<CertLoggerRequest::CertError>(
-      deserialized_report.cert_error().Get(1)));
-  EXPECT_EQ(kNumCertErrors, reported_errors.size());
-  EXPECT_EQ(1u, reported_errors.count(kFirstReportedCertError));
-  EXPECT_EQ(1u, reported_errors.count(kSecondReportedCertError));
+  EXPECT_THAT(
+      deserialized_report.cert_error(),
+      UnorderedElementsAre(kFirstReportedCertError, kSecondReportedCertError));
 }
 
 // Test that a serialized report can be parsed.
 TEST(CertificateErrorReportTest, ParseSerializedReport) {
-  SSLInfo ssl_info = GetTestSSLInfo(EXCLUDE_UNVERIFIED_CERT_CHAIN);
-
   std::string serialized_report;
-  CertificateErrorReport report(kDummyHostname, ssl_info);
+  CertificateErrorReport report(kDummyHostname,
+                                GetTestSSLInfo(EXCLUDE_UNVERIFIED_CERT_CHAIN));
   EXPECT_EQ(kDummyHostname, report.hostname());
-  report.Serialize(&serialized_report);
+  ASSERT_TRUE(report.Serialize(&serialized_report));
 
   CertificateErrorReport parsed;
   ASSERT_TRUE(parsed.InitializeFromString(serialized_report));

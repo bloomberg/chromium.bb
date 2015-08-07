@@ -18,36 +18,27 @@ namespace {
 
 void AddCertStatusToReportErrors(net::CertStatus cert_status,
                                  CertLoggerRequest* report) {
-  if (cert_status & net::CERT_STATUS_REVOKED)
-    report->add_cert_error(CertLoggerRequest::ERR_CERT_REVOKED);
-  if (cert_status & net::CERT_STATUS_INVALID)
-    report->add_cert_error(CertLoggerRequest::ERR_CERT_INVALID);
-  if (cert_status & net::CERT_STATUS_PINNED_KEY_MISSING)
-    report->add_cert_error(
-        CertLoggerRequest::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN);
-  if (cert_status & net::CERT_STATUS_AUTHORITY_INVALID)
-    report->add_cert_error(CertLoggerRequest::ERR_CERT_AUTHORITY_INVALID);
-  if (cert_status & net::CERT_STATUS_COMMON_NAME_INVALID)
-    report->add_cert_error(CertLoggerRequest::ERR_CERT_COMMON_NAME_INVALID);
-  if (cert_status & net::CERT_STATUS_NON_UNIQUE_NAME)
-    report->add_cert_error(CertLoggerRequest::ERR_CERT_NON_UNIQUE_NAME);
-  if (cert_status & net::CERT_STATUS_NAME_CONSTRAINT_VIOLATION)
-    report->add_cert_error(
-        CertLoggerRequest::ERR_CERT_NAME_CONSTRAINT_VIOLATION);
-  if (cert_status & net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM)
-    report->add_cert_error(
-        CertLoggerRequest::ERR_CERT_WEAK_SIGNATURE_ALGORITHM);
-  if (cert_status & net::CERT_STATUS_WEAK_KEY)
-    report->add_cert_error(CertLoggerRequest::ERR_CERT_WEAK_KEY);
-  if (cert_status & net::CERT_STATUS_DATE_INVALID)
-    report->add_cert_error(CertLoggerRequest::ERR_CERT_DATE_INVALID);
-  if (cert_status & net::CERT_STATUS_VALIDITY_TOO_LONG)
-    report->add_cert_error(CertLoggerRequest::ERR_CERT_VALIDITY_TOO_LONG);
-  if (cert_status & net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION)
-    report->add_cert_error(
-        CertLoggerRequest::ERR_CERT_UNABLE_TO_CHECK_REVOCATION);
-  if (cert_status & net::CERT_STATUS_NO_REVOCATION_MECHANISM)
-    report->add_cert_error(CertLoggerRequest::ERR_CERT_NO_REVOCATION_MECHANISM);
+#define COPY_CERT_STATUS(error) RENAME_CERT_STATUS(error, CERT_##error)
+#define RENAME_CERT_STATUS(status_error, logger_error) \
+  if (cert_status & net::CERT_STATUS_##status_error)   \
+    report->add_cert_error(CertLoggerRequest::ERR_##logger_error);
+
+  COPY_CERT_STATUS(REVOKED)
+  COPY_CERT_STATUS(INVALID)
+  RENAME_CERT_STATUS(PINNED_KEY_MISSING, SSL_PINNED_KEY_NOT_IN_CERT_CHAIN)
+  COPY_CERT_STATUS(AUTHORITY_INVALID)
+  COPY_CERT_STATUS(COMMON_NAME_INVALID)
+  COPY_CERT_STATUS(NON_UNIQUE_NAME)
+  COPY_CERT_STATUS(NAME_CONSTRAINT_VIOLATION)
+  COPY_CERT_STATUS(WEAK_SIGNATURE_ALGORITHM)
+  COPY_CERT_STATUS(WEAK_KEY)
+  COPY_CERT_STATUS(DATE_INVALID)
+  COPY_CERT_STATUS(VALIDITY_TOO_LONG)
+  COPY_CERT_STATUS(UNABLE_TO_CHECK_REVOCATION)
+  COPY_CERT_STATUS(NO_REVOCATION_MECHANISM)
+
+#undef RENAME_CERT_STATUS
+#undef COPY_CERT_STATUS
 }
 
 bool CertificateChainToString(scoped_refptr<net::X509Certificate> cert,
@@ -56,7 +47,7 @@ bool CertificateChainToString(scoped_refptr<net::X509Certificate> cert,
   if (!cert->GetPEMEncodedChain(&pem_encoded_chain))
     return false;
 
-  *result = base::JoinString(pem_encoded_chain, base::StringPiece());
+  *result = base::JoinString(pem_encoded_chain, "");
   return true;
 }
 

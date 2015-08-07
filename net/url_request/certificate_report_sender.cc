@@ -21,6 +21,7 @@ CertificateReportSender::CertificateReportSender(
       cookies_preference_(cookies_preference) {}
 
 CertificateReportSender::~CertificateReportSender() {
+  // Cancel all of the uncompleted requests.
   STLDeleteElements(&inflight_requests_);
 }
 
@@ -43,7 +44,11 @@ void CertificateReportSender::Send(const GURL& report_uri,
 void CertificateReportSender::OnResponseStarted(URLRequest* request) {
   // TODO(estark): call a callback so that the caller can print a
   // warning on failure.
-  RequestComplete(request);
+  DVLOG(1) << "Failed to send certificate report for " << request->url().host();
+
+  CHECK_GT(inflight_requests_.erase(request), 0u);
+  // Clean up the request, which cancels it.
+  delete request;
 }
 
 void CertificateReportSender::OnReadCompleted(URLRequest* request,
@@ -64,13 +69,6 @@ scoped_ptr<URLRequest> CertificateReportSender::CreateURLRequest(
   }
   request->SetLoadFlags(load_flags);
   return request.Pass();
-}
-
-void CertificateReportSender::RequestComplete(URLRequest* request) {
-  std::set<URLRequest*>::iterator i = inflight_requests_.find(request);
-  CHECK(i != inflight_requests_.end());
-  scoped_ptr<URLRequest> url_request(*i);
-  inflight_requests_.erase(i);
 }
 
 }  // namespace net

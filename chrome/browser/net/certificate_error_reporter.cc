@@ -20,7 +20,8 @@
 
 namespace {
 
-// Constants used for crypto
+// Constants used for crypto. The corresponding private key is used by
+// the SafeBrowsing client-side detection server to decrypt reports.
 static const uint8 kServerPublicKey[] = {
     0x51, 0xcc, 0x52, 0x67, 0x42, 0x47, 0x3b, 0x10, 0xe8, 0x63, 0x18,
     0x3c, 0x61, 0xa7, 0x96, 0x76, 0x86, 0x91, 0x40, 0x71, 0x39, 0x5f,
@@ -31,6 +32,30 @@ static const uint32 kServerPublicKeyVersion = 1;
 
 static const char kHkdfLabel[] = "certificate report";
 
+std::string GetHkdfSubkeySecret(size_t subkey_length,
+                                const uint8* private_key,
+                                const uint8* public_key) {
+  uint8 shared_secret[crypto::curve25519::kBytes];
+  crypto::curve25519::ScalarMult(private_key, public_key, shared_secret);
+
+  // By mistake, the HKDF label here ends up with an extra null byte on
+  // the end, due to using sizeof(kHkdfLabel) in the StringPiece
+  // constructor instead of strlen(kHkdfLabel). Ideally this code should
+  // be just passing kHkdfLabel directly into the HKDF constructor.
+  //
+  // TODO(estark): fix this in coordination with the server-side code --
+  // perhaps by rolling the public key version forward and using the
+  // version to decide whether to use the extra-null-byte version of the
+  // label. https://crbug.com/517746
+  crypto::HKDF hkdf(base::StringPiece(reinterpret_cast<char*>(shared_secret),
+                                      sizeof(shared_secret)),
+                    "" /* salt */,
+                    base::StringPiece(kHkdfLabel, sizeof(kHkdfLabel)),
+                    0 /* key bytes */, 0 /* iv bytes */, subkey_length);
+
+  return hkdf.subkey_secret().as_string();
+}
+
 bool EncryptSerializedReport(
     const uint8* server_public_key,
     uint32 server_public_key_version,
@@ -39,25 +64,18 @@ bool EncryptSerializedReport(
   // Generate an ephemeral key pair to generate a shared secret.
   uint8 public_key[crypto::curve25519::kBytes];
   uint8 private_key[crypto::curve25519::kScalarBytes];
-  uint8 shared_secret[crypto::curve25519::kBytes];
 
   crypto::RandBytes(private_key, sizeof(private_key));
   crypto::curve25519::ScalarBaseMult(private_key, public_key);
-  crypto::curve25519::ScalarMult(private_key, server_public_key, shared_secret);
 
   crypto::Aead aead(crypto::Aead::AES_128_CTR_HMAC_SHA256);
-  crypto::HKDF hkdf(std::string(reinterpret_cast<char*>(shared_secret),
-                                sizeof(shared_secret)),
-                    std::string(),
-                    base::StringPiece(kHkdfLabel, sizeof(kHkdfLabel)), 0, 0,
-                    aead.KeyLength());
-
-  const std::string key(hkdf.subkey_secret().data(),
-                        hkdf.subkey_secret().size());
+  const std::string key =
+      GetHkdfSubkeySecret(aead.KeyLength(), private_key,
+                          reinterpret_cast<const uint8*>(server_public_key));
   aead.Init(&key);
 
   // Use an all-zero nonce because the key is random per-message.
-  std::string nonce(aead.NonceLength(), 0);
+  std::string nonce(aead.NonceLength(), '\0');
 
   std::string ciphertext;
   if (!aead.Seal(report, nonce, std::string(), &ciphertext)) {
@@ -67,8 +85,8 @@ bool EncryptSerializedReport(
 
   encrypted_report->set_encrypted_report(ciphertext);
   encrypted_report->set_server_public_key_version(server_public_key_version);
-  encrypted_report->set_client_public_key(
-      std::string(reinterpret_cast<char*>(public_key), sizeof(public_key)));
+  encrypted_report->set_client_public_key(reinterpret_cast<char*>(public_key),
+                                          sizeof(public_key));
   encrypted_report->set_algorithm(
       chrome_browser_net::EncryptedCertLoggerRequest::
           AEAD_ECDH_AES_128_CTR_HMAC_SHA256);
@@ -93,7 +111,7 @@ CertificateErrorReporter::CertificateErrorReporter(
 
 CertificateErrorReporter::CertificateErrorReporter(
     const GURL& upload_url,
-    const uint8 server_public_key[32],
+    const uint8 server_public_key[/* 32 */],
     const uint32 server_public_key_version,
     scoped_ptr<net::CertificateReportSender> certificate_report_sender)
     : certificate_report_sender_(certificate_report_sender.Pass()),
@@ -107,36 +125,29 @@ CertificateErrorReporter::CertificateErrorReporter(
 CertificateErrorReporter::~CertificateErrorReporter() {
 }
 
-void CertificateErrorReporter::SendReport(
-    ReportType type,
+void CertificateErrorReporter::SendExtendedReportingReport(
     const std::string& serialized_report) {
-  switch (type) {
-    case REPORT_TYPE_PINNING_VIOLATION:
-      certificate_report_sender_->Send(upload_url_, serialized_report);
-      break;
-    case REPORT_TYPE_EXTENDED_REPORTING:
-      if (upload_url_.SchemeIsCryptographic()) {
-        certificate_report_sender_->Send(upload_url_, serialized_report);
-      } else {
-        DCHECK(IsHttpUploadUrlSupported());
+  if (upload_url_.SchemeIsCryptographic()) {
+    certificate_report_sender_->Send(upload_url_, serialized_report);
+  } else {
+    DCHECK(IsHttpUploadUrlSupported());
 #if defined(USE_OPENSSL)
-        EncryptedCertLoggerRequest encrypted_report;
-        if (!EncryptSerializedReport(server_public_key_,
-                                     server_public_key_version_,
-                                     serialized_report, &encrypted_report)) {
-          LOG(ERROR) << "Failed to encrypt serialized report.";
-          return;
-        }
-        std::string serialized_encrypted_report;
-        encrypted_report.SerializeToString(&serialized_encrypted_report);
-        certificate_report_sender_->Send(upload_url_,
-                                         serialized_encrypted_report);
+    EncryptedCertLoggerRequest encrypted_report;
+    if (!EncryptSerializedReport(server_public_key_, server_public_key_version_,
+                                 serialized_report, &encrypted_report)) {
+      LOG(ERROR) << "Failed to encrypt serialized report.";
+      return;
+    }
+    std::string serialized_encrypted_report;
+    encrypted_report.SerializeToString(&serialized_encrypted_report);
+    certificate_report_sender_->Send(upload_url_, serialized_encrypted_report);
 #endif
-      }
-      break;
-    default:
-      NOTREACHED();
   }
+}
+
+void CertificateErrorReporter::SendPinningViolationReport(
+    const std::string& serialized_report) {
+  certificate_report_sender_->Send(upload_url_, serialized_report);
 }
 
 bool CertificateErrorReporter::IsHttpUploadUrlSupported() {
@@ -153,21 +164,11 @@ bool CertificateErrorReporter::DecryptCertificateErrorReport(
     const uint8 server_private_key[32],
     const EncryptedCertLoggerRequest& encrypted_report,
     std::string* decrypted_serialized_report) {
-  uint8 shared_secret[crypto::curve25519::kBytes];
-  crypto::curve25519::ScalarMult(
-      server_private_key, reinterpret_cast<const uint8*>(
-                              encrypted_report.client_public_key().data()),
-      shared_secret);
-
   crypto::Aead aead(crypto::Aead::AES_128_CTR_HMAC_SHA256);
-  crypto::HKDF hkdf(std::string(reinterpret_cast<char*>(shared_secret),
-                                sizeof(shared_secret)),
-                    std::string(),
-                    base::StringPiece(kHkdfLabel, sizeof(kHkdfLabel)), 0, 0,
-                    aead.KeyLength());
-
-  const std::string key(hkdf.subkey_secret().data(),
-                        hkdf.subkey_secret().size());
+  const std::string key =
+      GetHkdfSubkeySecret(aead.KeyLength(), server_private_key,
+                          reinterpret_cast<const uint8*>(
+                              encrypted_report.client_public_key().data()));
   aead.Init(&key);
 
   // Use an all-zero nonce because the key is random per-message.

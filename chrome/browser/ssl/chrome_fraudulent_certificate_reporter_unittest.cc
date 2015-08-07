@@ -152,11 +152,10 @@ class MockReporter : public CertificateErrorReporter {
                     request_context,
                     net::CertificateReportSender::DO_NOT_SEND_COOKIES))) {}
 
-  void SendReport(ReportType type,
-                  const std::string& serialized_report) override {
-    EXPECT_EQ(type, REPORT_TYPE_PINNING_VIOLATION);
+  void SendPinningViolationReport(
+      const std::string& serialized_report) override {
     EXPECT_FALSE(serialized_report.empty());
-    CertificateErrorReporter::SendReport(type, serialized_report);
+    CertificateErrorReporter::SendPinningViolationReport(serialized_report);
   }
 };
 

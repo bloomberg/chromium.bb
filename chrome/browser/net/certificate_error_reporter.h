@@ -26,16 +26,6 @@ class EncryptedCertLoggerRequest;
 // certificate chains to a report collection server.
 class CertificateErrorReporter {
  public:
-  // These represent the types of reports that can be sent.
-  enum ReportType {
-    // A report of a certificate chain that failed a certificate pinning
-    // check.
-    REPORT_TYPE_PINNING_VIOLATION,
-    // A report for an invalid certificate chain that is being sent for
-    // a user who has opted-in to the extended reporting program.
-    REPORT_TYPE_EXTENDED_REPORTING
-  };
-
   // Creates a certificate error reporter that will send certificate
   // error reports to |upload_url|, using |request_context| as the
   // context for the reports. |cookies_preference| controls whether
@@ -46,10 +36,11 @@ class CertificateErrorReporter {
       net::CertificateReportSender::CookiesPreference cookies_preference);
 
   // Allows tests to use a server public key with known private key and
-  // a mock CertificateReportSender.
+  // a mock CertificateReportSender. |server_public_key| must outlive
+  // the CertificateErrorReporter.
   CertificateErrorReporter(
       const GURL& upload_url,
-      const uint8 server_public_key[32],
+      const uint8 server_public_key[/* 32 */],
       const uint32 server_public_key_version,
       scoped_ptr<net::CertificateReportSender> certificate_report_sender);
 
@@ -69,11 +60,15 @@ class CertificateErrorReporter {
   // an HTTP endpoint to send encrypted extended reporting reports. On
   // unsupported platforms, callers must send extended reporting reports
   // over SSL.
-  virtual void SendReport(ReportType type,
-                          const std::string& serialized_report);
+  virtual void SendExtendedReportingReport(
+      const std::string& serialized_report);
 
-  // Callers can use this method to determine if sending reports over
-  // HTTP is supported.
+  // As |SendExtendedReportingReport|, but does not encrypt reports,
+  // since the pinning violation server is not capable of handling
+  // encrypted reports.
+  virtual void SendPinningViolationReport(const std::string& serialized_report);
+
+  // Whether sending reports over HTTP is supported.
   static bool IsHttpUploadUrlSupported();
 
 #if defined(USE_OPENSSL)

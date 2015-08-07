@@ -34,17 +34,17 @@ class NET_EXPORT CertificateReportSender
 
   // Constructs a CertificateReportSender that sends reports with the
   // given |request_context| and includes or excludes cookies based on
-  // |cookies_preference|. Ownership of |request_context| is not
-  // transferred, so it must outlive the CertificateReportSender.
+  // |cookies_preference|. |request_context| must outlive the
+  // CertificateReportSender.
   CertificateReportSender(URLRequestContext* request_context,
                           CookiesPreference cookies_preference);
 
   ~CertificateReportSender() override;
 
-  // TransportSecurityState::ReportSender
+  // TransportSecurityState::ReportSender implementation.
   void Send(const GURL& report_uri, const std::string& report) override;
 
-  // net::URLRequest::Delegate
+  // net::URLRequest::Delegate implementation.
   void OnResponseStarted(URLRequest* request) override;
   void OnReadCompleted(URLRequest* request, int bytes_read) override;
 
@@ -57,9 +57,6 @@ class NET_EXPORT CertificateReportSender
   virtual scoped_ptr<URLRequest> CreateURLRequest(
       net::URLRequestContext* context,
       const GURL& report_uri);
-
-  // Performs post-report cleanup.
-  void RequestComplete(net::URLRequest* request);
 
   net::URLRequestContext* const request_context_;
 

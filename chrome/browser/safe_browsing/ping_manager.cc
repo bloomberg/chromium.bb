@@ -138,9 +138,7 @@ void SafeBrowsingPingManager::ReportMalwareDetails(
 void SafeBrowsingPingManager::ReportInvalidCertificateChain(
     const std::string& serialized_report) {
   DCHECK(certificate_error_reporter_);
-  certificate_error_reporter_->SendReport(
-      CertificateErrorReporter::REPORT_TYPE_EXTENDED_REPORTING,
-      serialized_report);
+  certificate_error_reporter_->SendExtendedReportingReport(serialized_report);
 }
 
 void SafeBrowsingPingManager::SetCertificateErrorReporterForTesting(

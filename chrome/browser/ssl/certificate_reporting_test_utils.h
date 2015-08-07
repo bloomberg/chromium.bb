@@ -18,13 +18,9 @@ namespace net {
 class URLRequestContext;
 }
 
-namespace CertificateReportingTestUtils {
-
-class MockReporter;
+namespace certificate_reporting_test_utils {
 
 enum OptIn { EXTENDED_REPORTING_OPT_IN, EXTENDED_REPORTING_DO_NOT_OPT_IN };
-
-enum Proceed { SSL_INTERSTITIAL_PROCEED, SSL_INTERSTITIAL_DO_NOT_PROCEED };
 
 enum ExpectReport { CERT_REPORT_EXPECTED, CERT_REPORT_NOT_EXPECTED };
 
@@ -37,10 +33,12 @@ class CertificateReportingTest : public InProcessBrowserTest {
   void SetUpMockReporter();
 
  protected:
-  // Get the latest hostname for which a certificate report was sent.
+  // Get the latest hostname for which a certificate report was
+  // sent. SetUpMockReporter() must have been called before this.
   const std::string& GetLatestHostnameReported() const;
 
  private:
+  class MockReporter;
   MockReporter* reporter_;
 };
 
@@ -59,6 +57,6 @@ scoped_ptr<SSLCertReporter> SetUpMockSSLCertReporter(
 // if the user opts in.
 ExpectReport GetReportExpectedFromFinch();
 
-}  // namespace CertificateReportingTestUtils
+}  // namespace certificate_reporting_test_utils
 
 #endif  // CHROME_BROWSER_SSL_CERTIFICATE_REPORTING_TEST_UTILS_H_
