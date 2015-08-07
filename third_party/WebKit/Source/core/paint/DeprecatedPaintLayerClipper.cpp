@@ -50,131 +50,26 @@
 
 namespace blink {
 
-static void adjustClipRectsForChildren(const LayoutObject& layoutObject, ClipRects& clipRects)
-{
-    EPosition position = layoutObject.style()->position();
-    // A fixed object is essentially the root of its containing block hierarchy, so when
-    // we encounter such an object, we reset our clip rects to the fixedClipRect.
-    if (position == FixedPosition) {
-        clipRects.setPosClipRect(clipRects.fixedClipRect());
-        clipRects.setOverflowClipRect(clipRects.fixedClipRect());
-        clipRects.setFixed(true);
-    } else if (position == RelativePosition) {
-        clipRects.setPosClipRect(clipRects.overflowClipRect());
-    } else if (position == AbsolutePosition) {
-        clipRects.setOverflowClipRect(clipRects.posClipRect());
-    }
-}
-
-static void applyClipRects(const ClipRectsContext& context, LayoutObject& layoutObject, LayoutPoint offset, ClipRects& clipRects)
-{
-    ASSERT(layoutObject.hasOverflowClip() || layoutObject.hasClip());
-
-    LayoutView* view = layoutObject.view();
-    ASSERT(view);
-    if (clipRects.fixed() && context.rootLayer->layoutObject() == view)
-        offset -= toIntSize(view->frameView()->scrollPosition());
-
-    if (layoutObject.hasOverflowClip()) {
-        ClipRect newOverflowClip = toLayoutBox(layoutObject).overflowClipRect(offset, context.scrollbarRelevancy);
-        newOverflowClip.setHasRadius(layoutObject.style()->hasBorderRadius());
-        clipRects.setOverflowClipRect(intersection(newOverflowClip, clipRects.overflowClipRect()));
-        if (layoutObject.isPositioned())
-            clipRects.setPosClipRect(intersection(newOverflowClip, clipRects.posClipRect()));
-        if (layoutObject.isLayoutView())
-            clipRects.setFixedClipRect(intersection(newOverflowClip, clipRects.fixedClipRect()));
-    }
-
-    if (layoutObject.hasClip()) {
-        LayoutRect newClip = toLayoutBox(layoutObject).clipRect(offset);
-        clipRects.setPosClipRect(intersection(newClip, clipRects.posClipRect()));
-        clipRects.setOverflowClipRect(intersection(newClip, clipRects.overflowClipRect()));
-        clipRects.setFixedClipRect(intersection(newClip, clipRects.fixedClipRect()));
-    }
-}
-
 DeprecatedPaintLayerClipper::DeprecatedPaintLayerClipper(LayoutBoxModelObject& layoutObject)
     : m_layoutObject(layoutObject)
 {
 }
 
-ClipRects* DeprecatedPaintLayerClipper::clipRectsIfCached(const ClipRectsContext& context) const
-{
-    ASSERT(context.usesCache());
-    if (!m_cache)
-        return 0;
-    ClipRectsCache::Entry& entry = m_cache->get(context.cacheSlot);
-    // FIXME: We used to ASSERT that we always got a consistent root layer.
-    // We should add a test that has an inconsistent root. See
-    // http://crbug.com/366118 for an example.
-    if (context.rootLayer != entry.root)
-        return 0;
-    ASSERT(entry.scrollbarRelevancy == context.scrollbarRelevancy);
-
-#ifdef CHECK_CACHED_CLIP_RECTS
-    // This code is useful to check cached clip rects, but is too expensive to leave enabled in debug builds by default.
-    ClipRectsContext tempContext(context);
-    tempContext.cacheSlot = UncachedClipRects;
-    RefPtr<ClipRects> clipRects = ClipRects::create();
-    calculateClipRects(tempContext, *clipRects);
-    ASSERT(clipRects == *entry.clipRects);
-#endif
-
-    return entry.clipRects.get();
-}
-
-ClipRects* DeprecatedPaintLayerClipper::storeClipRectsInCache(const ClipRectsContext& context, ClipRects* parentClipRects, const ClipRects& clipRects) const
-{
-    ClipRectsCache::Entry& entry = cache().get(context.cacheSlot);
-    entry.root = context.rootLayer;
-#if ENABLE(ASSERT)
-    entry.scrollbarRelevancy = context.scrollbarRelevancy;
-#endif
-
-    if (parentClipRects) {
-        // If our clip rects match the clip rects of our parent, we share storage.
-        if (clipRects == *parentClipRects) {
-            entry.clipRects = parentClipRects;
-            return parentClipRects;
-        }
-    }
-
-    entry.clipRects = ClipRects::create(clipRects);
-    return entry.clipRects.get();
-}
-
-ClipRects* DeprecatedPaintLayerClipper::getClipRects(const ClipRectsContext& context) const
-{
-    if (ClipRects* result = clipRectsIfCached(context))
-        return result;
-
-    // Note that it's important that we call getClipRects on our parent
-    // before we call calculateClipRects so that calculateClipRects will hit
-    // the cache.
-    ClipRects* parentClipRects = 0;
-    if (context.rootLayer != m_layoutObject.layer() && m_layoutObject.layer()->parent())
-        parentClipRects = m_layoutObject.layer()->parent()->clipper().getClipRects(context);
-
-    RefPtr<ClipRects> clipRects = ClipRects::create();
-    calculateClipRects(context, *clipRects);
-    return storeClipRectsInCache(context, parentClipRects, *clipRects);
-}
-
 void DeprecatedPaintLayerClipper::clearClipRectsIncludingDescendants()
 {
-    m_cache = nullptr;
-
-    for (DeprecatedPaintLayer* layer = m_layoutObject.layer()->firstChild(); layer; layer = layer->nextSibling())
+    for (DeprecatedPaintLayer* layer = m_layoutObject.layer()->firstChild(); layer; layer = layer->nextSibling()) {
+        for (int i = 0; i < NumberOfClipRectsCacheSlots; i++)
+            layer->clipper().m_clips[i] = nullptr;
         layer->clipper().clearClipRectsIncludingDescendants();
+    }
 }
 
 void DeprecatedPaintLayerClipper::clearClipRectsIncludingDescendants(ClipRectsCacheSlot cacheSlot)
 {
-    if (m_cache)
-        m_cache->clear(cacheSlot);
-
-    for (DeprecatedPaintLayer* layer = m_layoutObject.layer()->firstChild(); layer; layer = layer->nextSibling())
+    for (DeprecatedPaintLayer* layer = m_layoutObject.layer()->firstChild(); layer; layer = layer->nextSibling()) {
+        layer->clipper().m_clips[cacheSlot] = nullptr;
         layer->clipper().clearClipRectsIncludingDescendants(cacheSlot);
+    }
 }
 
 LayoutRect DeprecatedPaintLayerClipper::childrenClipRect() const
@@ -274,7 +169,222 @@ void DeprecatedPaintLayerClipper::calculateRects(const ClipRectsContext& context
     }
 }
 
-void DeprecatedPaintLayerClipper::calculateClipRects(const ClipRectsContext& context, ClipRects& clipRects) const
+static void precalculate(const ClipRectsContext& context)
+{
+    bool isComputingPaintingRect = context.isComputingPaintingRect();
+    ClipRectComputationState rects;
+    const DeprecatedPaintLayer* rootLayer = context.rootLayer;
+    if (isComputingPaintingRect) {
+        // Starting arbitrarily in the tree when calculating painting clipRects will
+        // not allow you to fill in all layers cache because some intermediate layer
+        // may need clips with respect to an ancestor further up. For efficiency we
+        // start at the top in order to fill in the cache for all layers.
+        rootLayer = context.rootLayer->layoutObject()->view()->layer();
+        rects.stackingContextClipRects.setRootLayer(rootLayer);
+    }
+    rects.currentClipRects.setRootLayer(rootLayer);
+
+    rootLayer->clipper().calculateClipRects(context, rects);
+}
+
+
+// Calculates clipRect for each element in the section of the tree starting with context.rootLayer
+// For painting, context.rootLayer is ignored and the entire tree is calculated.
+// TODO(chadarmstrong): When using the cache context shouldn't be able to specify the rootLayer. This affects
+// what is stored in the 5 caches, and should therefore be enforced internally. Currently
+// different callers have different ideas of what the rootLayer should be for a particular
+// cacheSlot, which can fill the cache with bad data. If this can be made consistent it should
+// be possible to eliminate rootLayer.
+ClipRect DeprecatedPaintLayerClipper::backgroundClipRect(const ClipRectsContext& context) const
+{
+    ASSERT(m_layoutObject.layer()->parent());
+    ASSERT(m_layoutObject.view());
+
+    // Ideally backgroundClipRect would not be called with itself as the rootLayer.
+    // This behavior can be seen in the following test
+    // LayoutTests/compositing/squashing/abspos-under-abspos-overflow-scroll.html
+    if (m_layoutObject.layer() == context.rootLayer)
+        return LayoutRect(LayoutRect::infiniteIntRect());
+
+    // TODO(chadarmstrong): If possible, all queries should use one of the clipRectsCacheSlots.
+    // Without caching this operation involves walking all the way to rootLayer.
+    if (!context.usesCache())
+        return uncachedBackgroundClipRect(context);
+
+    // TODO(chadarmstrong): precalculation for painting should be moved to updateAllLifecyclePhasesInternal
+    // and precalculation could be done for all hit testing. This would let us avoid clearing the cache
+    if (!m_clips[context.cacheSlot()])
+        precalculate(context);
+
+    // TODO(chadarmstrong): eliminate this if possible.
+    // It is necessary only because of a seemingly atypical use of rootLayer that
+    // can be seen in LayoutTests/fullscreen/full-screen-line-boxes-crash.html and
+    // fast/block/multicol-paint-invalidation-assert.html.
+    if (!m_clips[context.cacheSlot()])
+        return uncachedBackgroundClipRect(context);
+    // As soon as crbug.com/517173 is resolved this assert should be enabled in place of the check
+    // ASSERT(m_clips[context.cacheSlot()]->rootLayer() == context.rootLayer);
+    if (m_clips[context.cacheSlot()]->rootLayer() != context.rootLayer)
+        return uncachedBackgroundClipRect(context);
+
+
+    return *m_clips[context.cacheSlot()];
+}
+
+static bool shouldStopClipRectCalculation(LayoutBoxModelObject& layoutObject, const ClipRectsContext& context)
+{
+    // The entire tree is calculated for both painting and absolutClipRects
+    if (context.cacheSlot() == PaintingClipRectsIgnoringOverflowClip || context.cacheSlot() == PaintingClipRects || context.cacheSlot() == AbsoluteClipRects)
+        return false;
+    DeprecatedPaintLayer* layer = layoutObject.layer();
+    return layer->transform() || layer == layer->enclosingPaginationLayer();
+}
+
+// Updates clipRects so that descendants can calculate
+// clipping relative to different root layers.
+static void resetPaintRects(LayoutBoxModelObject& layoutObject, ClipRectComputationState& rects, ClipRectsCacheSlot slot)
+{
+    const DeprecatedPaintLayer* layer = layoutObject.layer();
+    if (layer->isPaintInvalidationContainer() || layer->transform()) {
+        // If this element is hardware accelerated, we let the compositor handle the
+        // clipping (in case we want to paint bigger than a scrollable area for smooth
+        // scrolling) so we reset the clip rects.
+        // If the element has a transform, the clip rect could become a quad so we
+        // reset the layer and let the paint code apply the CTM during paint to
+        // transform the clip during paint.
+        rects.currentClipRects.reset(LayoutRect(LayoutRect::infiniteIntRect()));
+        rects.currentClipRects.setRootLayer(layoutObject.layer());
+        rects.currentClipRects.setFixed(false);
+    }
+    if (layer->stackingNode()->isStackingContext()) {
+        rects.stackingContextClipRects = rects.currentClipRects;
+    }
+}
+
+void DeprecatedPaintLayerClipper::addClipsFromThisObject(const ClipRectsContext& context, ClipRects& clipRects) const
+{
+    LayoutView* view = m_layoutObject.view();
+    ASSERT(view);
+    // This offset cannot use convertToLayerCoords, because sometimes our rootLayer may be across
+    // some transformed layer boundary, for example, in the DeprecatedPaintLayerCompositor overlapMap, where
+    // clipRects are needed in view space.
+    LayoutPoint offset = roundedLayoutPoint(m_layoutObject.localToContainerPoint(FloatPoint(), context.rootLayer->layoutObject()));
+    if (clipRects.fixed() && context.rootLayer->layoutObject() == view)
+        offset -= toIntSize(view->frameView()->scrollPosition());
+
+    // The condition for hasClip here seems wrong. See https://crbug.com/504577
+    // (overflowClips can be applied even when shouldRespectOverflowClip returns false)
+    if (m_layoutObject.hasOverflowClip() && (shouldRespectOverflowClip(context) || m_layoutObject.hasClip())) {
+        ClipRect newOverflowClip = toLayoutBox(m_layoutObject).overflowClipRect(offset, context.scrollbarRelevancy);
+        newOverflowClip.setHasRadius(m_layoutObject.style()->hasBorderRadius());
+        clipRects.setOverflowClipRect(intersection(newOverflowClip, clipRects.overflowClipRect()));
+        if (m_layoutObject.isPositioned())
+            clipRects.setPosClipRect(intersection(newOverflowClip, clipRects.posClipRect()));
+        if (m_layoutObject.isLayoutView())
+            clipRects.setFixedClipRect(intersection(newOverflowClip, clipRects.fixedClipRect()));
+    }
+
+    if (m_layoutObject.hasClip())
+        clipRects.setFixedClipRect(intersection(toLayoutBox(m_layoutObject).clipRect(offset), clipRects.fixedClipRect()));
+}
+
+void DeprecatedPaintLayerClipper::calculateClipRects(const ClipRectsContext& context, ClipRectComputationState& rects) const
+{
+    bool isComputingPaintingRect = context.isComputingPaintingRect();
+
+    // backgroundClipRect does not include clips from yourself
+    ClipRectsContext current = context;
+    current.rootLayer = rects.currentClipRects.rootLayer();
+    addClipsFromThisObject(current, rects.currentClipRects);
+    if (isComputingPaintingRect) {
+        current.rootLayer = rects.stackingContextClipRects.rootLayer();
+        addClipsFromThisObject(current, rects.stackingContextClipRects);
+    }
+
+    for (DeprecatedPaintLayer* child = m_layoutObject.layer()->firstChild(); child; child = child->nextSibling()) {
+        child->clipper().setClipRect(context, rects);
+    }
+}
+
+// This function propagate the appropriate clip down to descendants. It is required
+// as CSS overflow clips are inherited based on the containing blocks chain:
+// ['overflow'] "affects the clipping of all of the element's content
+// except any descendant elements (and their respective content and descendants)
+// whose containing block is the viewport or an ancestor of the element."
+void DeprecatedPaintLayerClipper::updateClipRectBasedOnPosition(ClipRects* clipRects) const
+{
+    switch (m_layoutObject.style()->position()) {
+    case FixedPosition:
+        // Clip is applied to all descendants but overflow does not propogate to fixed
+        // position elements.
+        clipRects->setPosClipRect(ClipRect(LayoutRect(LayoutRect::infiniteIntRect())));
+        clipRects->setOverflowClipRect(ClipRect(LayoutRect(LayoutRect::infiniteIntRect())));
+        clipRects->setFixed(true);
+        break;
+    case AbsolutePosition:
+        // Overflow clips from staticly positioned elements can be escaped by absolute and fixed
+        // position elements.
+        clipRects->setOverflowClipRect(clipRects->posClipRect());
+        break;
+    case RelativePosition:
+        // Overflow clips that apply to a relative position element are not escaped by absolute
+        // position elements further down the tree.  (Because the relative position element is a
+        // containing block.
+        clipRects->setPosClipRect(clipRects->overflowClipRect());
+        break;
+    case StaticPosition:
+    case StickyPosition:
+        // TODO(flakr): Position sticky should inherit the clip like relative position does (crbug.com/231752).
+        break;
+    }
+}
+
+void DeprecatedPaintLayerClipper::setClipRect(const ClipRectsContext& context, const ClipRectComputationState& parentRects) const
+{
+    bool isComputingPaintingRect = context.isComputingPaintingRect();
+    ClipRectComputationState rects;
+    rects.currentClipRects = parentRects.currentClipRects;
+    if (isComputingPaintingRect)
+        rects.stackingContextClipRects = parentRects.stackingContextClipRects;
+    updateClipRectBasedOnPosition(&rects.currentClipRects);
+    if (isComputingPaintingRect)
+        updateClipRectBasedOnPosition(&rects.stackingContextClipRects);
+    ClipRects* clipRects;
+    if (isComputingPaintingRect && (m_layoutObject.isPositioned() || m_layoutObject.layer()->transform()))
+        clipRects = &rects.stackingContextClipRects;
+    else
+        clipRects = &rects.currentClipRects;
+
+    m_clips[context.cacheSlot()] = ClipRect::create(intersection(clipRects->overflowClipRect(), clipRects->fixedClipRect()));
+    m_clips[context.cacheSlot()]->setRootLayer(clipRects->rootLayer());
+    // Note: infinite clipRects should not be scrolled here, otherwise they will accidentally no longer be considered infinite.
+    if (clipRects->fixed() && clipRects->rootLayer()->layoutObject() == m_layoutObject.view() && *m_clips[context.cacheSlot()] != LayoutRect(LayoutRect::infiniteIntRect()))
+        m_clips[context.cacheSlot()]->move(toIntSize(m_layoutObject.view()->frameView()->scrollPosition()));
+
+    if (shouldStopClipRectCalculation(m_layoutObject, context))
+        return;
+    if (isComputingPaintingRect)
+        resetPaintRects(m_layoutObject, rects, context.cacheSlot());
+
+    calculateClipRects(context, rects);
+}
+
+ClipRect DeprecatedPaintLayerClipper::uncachedBackgroundClipRect(const ClipRectsContext& context) const
+{
+    ClipRects clipRects;
+    m_layoutObject.layer()->parent()->clipper().uncachedCalculateClipRects(context, clipRects);
+
+    updateClipRectBasedOnPosition(&clipRects);
+    ClipRect result(intersection(clipRects.overflowClipRect(), clipRects.fixedClipRect()));
+
+    // Note: infinite clipRects should not be scrolled here, otherwise they will accidentally no longer be considered infinite.
+    if (clipRects.fixed() && context.rootLayer->layoutObject() == m_layoutObject.view() && result != LayoutRect(LayoutRect::infiniteIntRect()))
+        result.move(toIntSize(m_layoutObject.view()->frameView()->scrollPosition()));
+
+    return result;
+}
+
+void DeprecatedPaintLayerClipper::uncachedCalculateClipRects(const ClipRectsContext& context, ClipRects& clipRects) const
 {
     bool rootLayerScrolls = m_layoutObject.document().settings() && m_layoutObject.document().settings()->rootLayerScrolls();
     if (!m_layoutObject.layer()->parent() && !rootLayerScrolls) {
@@ -291,65 +401,18 @@ void DeprecatedPaintLayerClipper::calculateClipRects(const ClipRectsContext& con
 
     // Ensure that our parent's clip has been calculated so that we can examine the values.
     if (parentLayer) {
-        // FIXME: Why don't we just call getClipRects here?
-        if (context.usesCache() && parentLayer->clipper().cachedClipRects(context)) {
-            clipRects = *parentLayer->clipper().cachedClipRects(context);
-        } else {
-            parentLayer->clipper().calculateClipRects(context, clipRects);
-        }
+        parentLayer->clipper().uncachedCalculateClipRects(context, clipRects);
     } else {
         clipRects.reset(LayoutRect(LayoutRect::infiniteIntRect()));
     }
 
-    adjustClipRectsForChildren(m_layoutObject, clipRects);
-
-    if ((m_layoutObject.hasOverflowClip() && shouldRespectOverflowClip(context)) || m_layoutObject.hasClip()) {
-        // This offset cannot use convertToLayerCoords, because sometimes our rootLayer may be across
-        // some transformed layer boundary, for example, in the DeprecatedPaintLayerCompositor overlapMap, where
-        // clipRects are needed in view space.
-        applyClipRects(context, m_layoutObject, roundedLayoutPoint(m_layoutObject.localToContainerPoint(FloatPoint(), context.rootLayer->layoutObject())), clipRects);
-    }
+    updateClipRectBasedOnPosition(&clipRects);
+    addClipsFromThisObject(context, clipRects);
 }
 
-static ClipRect backgroundClipRectForPosition(const ClipRects& parentRects, EPosition position)
-{
-    if (position == FixedPosition)
-        return parentRects.fixedClipRect();
-
-    if (position == AbsolutePosition)
-        return parentRects.posClipRect();
-
-    return parentRects.overflowClipRect();
-}
-
-ClipRect DeprecatedPaintLayerClipper::backgroundClipRect(const ClipRectsContext& context) const
-{
-    ASSERT(m_layoutObject.layer()->parent());
-    ASSERT(m_layoutObject.view());
-
-    RefPtr<ClipRects> parentClipRects = ClipRects::create();
-    if (m_layoutObject.layer() == context.rootLayer)
-        parentClipRects->reset(LayoutRect(LayoutRect::infiniteIntRect()));
-    else
-        m_layoutObject.layer()->parent()->clipper().getOrCalculateClipRects(context, *parentClipRects);
-
-    ClipRect result = backgroundClipRectForPosition(*parentClipRects, m_layoutObject.style()->position());
-
-    // Note: infinite clipRects should not be scrolled here, otherwise they will accidentally no longer be considered infinite.
-    if (parentClipRects->fixed() && context.rootLayer->layoutObject() == m_layoutObject.view() && result != LayoutRect(LayoutRect::infiniteIntRect()))
-        result.move(toIntSize(m_layoutObject.view()->frameView()->scrollPosition()));
-
-    return result;
-}
-
-void DeprecatedPaintLayerClipper::getOrCalculateClipRects(const ClipRectsContext& context, ClipRects& clipRects) const
-{
-    if (context.usesCache())
-        clipRects = *getClipRects(context);
-    else
-        calculateClipRects(context, clipRects);
-}
-
+// TODO(chadarmstrong): Clipping roots should be consistent for a given clipRectsCacheSlot
+// As things are, different callers clash over the same slot because they use
+// different root layers.
 DeprecatedPaintLayer* DeprecatedPaintLayerClipper::clippingRootForPainting() const
 {
     const DeprecatedPaintLayer* current = m_layoutObject.layer();

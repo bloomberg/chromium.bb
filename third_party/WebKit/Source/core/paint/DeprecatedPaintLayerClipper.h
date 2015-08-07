@@ -45,12 +45,31 @@
 #ifndef DeprecatedPaintLayerClipper_h
 #define DeprecatedPaintLayerClipper_h
 
+#include "core/layout/ClipRects.h"
 #include "core/layout/ClipRectsCache.h"
 #include "core/layout/LayoutBox.h"
 
 namespace blink {
 
 class DeprecatedPaintLayer;
+
+// This is the state information passed down
+// on the stack for calculating clip rects.
+struct ClipRectComputationState {
+    ClipRectComputationState()
+    {
+        currentClipRects.reset(LayoutRect(LayoutRect::infiniteIntRect()));
+        stackingContextClipRects.reset(LayoutRect(LayoutRect::infiniteIntRect()));
+    }
+    // Depending on the value of context.isComputingPaintingRect() can have different meanings
+    // In painting, this ClipRects is used for statically positioned elements,
+    // outside painting, it is the only ClipRects, and is used for all elements.
+    ClipRects currentClipRects;
+    // During painting this ClipRects is used for positioned elements. It can have
+    // a rootLayer further up the tree than currentClipRects because its root must be
+    // beyond the enclosing stacking context. See resetPaintRects.
+    ClipRects stackingContextClipRects;
+};
 
 enum ShouldRespectOverflowClip {
     IgnoreOverflowClip,
@@ -62,7 +81,7 @@ public:
     ClipRectsContext(const DeprecatedPaintLayer* root, ClipRectsCacheSlot slot, OverlayScrollbarSizeRelevancy relevancy = IgnoreOverlayScrollbarSize, const LayoutSize& accumulation = LayoutSize())
         : rootLayer(root)
         , scrollbarRelevancy(relevancy)
-        , cacheSlot(slot)
+        , m_cacheSlot(slot)
         , subPixelAccumulation(accumulation)
         , respectOverflowClip(slot == PaintingClipRectsIgnoringOverflowClip ? IgnoreOverflowClip : RespectOverflowClip)
         , respectOverflowClipForViewport(slot == RootRelativeClipRectsIgnoringViewportClip ? IgnoreOverflowClip : RespectOverflowClip)
@@ -71,25 +90,35 @@ public:
 
     void setIgnoreOverflowClip()
     {
-        ASSERT(!usesCache() || cacheSlot == PaintingClipRects);
+        ASSERT(!usesCache() || m_cacheSlot == PaintingClipRects);
         ASSERT(respectOverflowClip == RespectOverflowClip);
         if (usesCache())
-            cacheSlot = PaintingClipRectsIgnoringOverflowClip;
+            m_cacheSlot = PaintingClipRectsIgnoringOverflowClip;
         respectOverflowClip = IgnoreOverflowClip;
     }
 
     bool usesCache() const
     {
-        return cacheSlot != UncachedClipRects;
+        return m_cacheSlot != UncachedClipRects;
     }
 
-    const DeprecatedPaintLayer* const rootLayer;
+    ClipRectsCacheSlot cacheSlot() const
+    {
+        return m_cacheSlot;
+    }
+
+    bool isComputingPaintingRect() const
+    {
+        return m_cacheSlot == PaintingClipRectsIgnoringOverflowClip || m_cacheSlot == PaintingClipRects;
+    }
+
+    const DeprecatedPaintLayer* rootLayer;
     const OverlayScrollbarSizeRelevancy scrollbarRelevancy;
 
 private:
     friend class DeprecatedPaintLayerClipper;
 
-    ClipRectsCacheSlot cacheSlot;
+    ClipRectsCacheSlot m_cacheSlot;
     LayoutSize subPixelAccumulation;
     ShouldRespectOverflowClip respectOverflowClip;
     ShouldRespectOverflowClip respectOverflowClipForViewport;
@@ -116,36 +145,23 @@ public:
     // Pass offsetFromRoot if known.
     void calculateRects(const ClipRectsContext&, const LayoutRect& paintDirtyRect, LayoutRect& layerBounds,
         ClipRect& backgroundRect, ClipRect& foregroundRect, ClipRect& outlineRect, const LayoutPoint* offsetFromRoot = 0) const;
-
-private:
-    void calculateClipRects(const ClipRectsContext&, ClipRects&) const;
-
-    ClipRects* clipRectsIfCached(const ClipRectsContext&) const;
-    ClipRects* storeClipRectsInCache(const ClipRectsContext&, ClipRects* parentClipRects, const ClipRects&) const;
-
-    // cachedClipRects looks buggy: It doesn't check whether context.rootLayer and entry.root match.
-    // FIXME: Move callers to clipRectsIfCached, which does the proper checks.
-    ClipRects* cachedClipRects(const ClipRectsContext& context) const
-    {
-        return m_cache ? m_cache->get(context.cacheSlot).clipRects.get() : 0;
-    }
-
-    void getOrCalculateClipRects(const ClipRectsContext&, ClipRects&) const;
+    void calculateClipRects(const ClipRectsContext&, ClipRectComputationState&) const;
 
     DeprecatedPaintLayer* clippingRootForPainting() const;
 
-    ClipRectsCache& cache() const
-    {
-        if (!m_cache)
-            m_cache = adoptPtr(new ClipRectsCache);
-        return *m_cache;
-    }
+private:
+    void setClipRect(const ClipRectsContext&, const ClipRectComputationState&) const;
+    void addClipsFromThisObject(const ClipRectsContext&, ClipRects&) const;
+    void updateClipRectBasedOnPosition(ClipRects*) const;
+
+    ClipRect uncachedBackgroundClipRect(const ClipRectsContext&) const;
+    void uncachedCalculateClipRects(const ClipRectsContext&, ClipRects&) const;
 
     bool shouldRespectOverflowClip(const ClipRectsContext&) const;
 
     // FIXME: Could this be a LayoutBox?
     LayoutBoxModelObject& m_layoutObject;
-    mutable OwnPtr<ClipRectsCache> m_cache;
+    mutable OwnPtr<ClipRect> m_clips[NumberOfClipRectsCacheSlots];
 };
 
 } // namespace blink
