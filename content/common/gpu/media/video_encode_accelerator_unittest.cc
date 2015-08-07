@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_byteorder.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -27,6 +26,7 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/base/test_data_util.h"
 #include "media/filters/h264_parser.h"
+#include "media/filters/ivf_parser.h"
 #include "media/video/fake_video_encode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -113,26 +113,6 @@ bool g_fake_encoder = false;
 // Environment to store test stream data for all test cases.
 class VideoEncodeAcceleratorTestEnvironment;
 VideoEncodeAcceleratorTestEnvironment* g_env;
-
-struct IvfFileHeader {
-  char signature[4];     // signature: 'DKIF'
-  uint16_t version;      // version (should be 0)
-  uint16_t header_size;  // size of header in bytes
-  uint32_t fourcc;       // codec FourCC (e.g., 'VP80')
-  uint16_t width;        // width in pixels
-  uint16_t height;       // height in pixels
-  uint32_t framerate;    // frame rate per seconds
-  uint32_t timescale;    // time scale. For example, if framerate is 30 and
-                         // timescale is 2, the unit of IvfFrameHeader.timestamp
-                         // is 2/30 seconds.
-  uint32_t num_frames;   // number of frames in file
-  uint32_t unused;       // unused
-} __attribute__((packed));
-
-struct IvfFrameHeader {
-  uint32_t frame_size;  // Size of frame in bytes (not including the header)
-  uint64_t timestamp;   // 64-bit presentation timestamp
-} __attribute__((packed));
 
 // The number of frames to be encoded. This variable is set by the switch
 // "--num_frames_to_encode". Ignored if 0.
@@ -1285,23 +1265,21 @@ void VEAClient::VerifyStreamProperties() {
 }
 
 void VEAClient::WriteIvfFileHeader() {
-  IvfFileHeader header;
+  media::IvfFileHeader header = {};
 
-  memset(&header, 0, sizeof(header));
-  header.signature[0] = 'D';
-  header.signature[1] = 'K';
-  header.signature[2] = 'I';
-  header.signature[3] = 'F';
+  memcpy(header.signature, media::kIvfHeaderSignature,
+         sizeof(header.signature));
   header.version = 0;
-  header.header_size = base::ByteSwapToLE16(sizeof(header));
-  header.fourcc = base::ByteSwapToLE32(0x30385056);  // VP80
-  header.width = base::ByteSwapToLE16(
-      base::checked_cast<uint16_t>(test_stream_->visible_size.width()));
-  header.height = base::ByteSwapToLE16(
-      base::checked_cast<uint16_t>(test_stream_->visible_size.height()));
-  header.framerate = base::ByteSwapToLE32(requested_framerate_);
-  header.timescale = base::ByteSwapToLE32(1);
-  header.num_frames = base::ByteSwapToLE32(num_frames_to_encode_);
+  header.header_size = sizeof(header);
+  header.fourcc = 0x30385056;  // VP80
+  header.width =
+      base::checked_cast<uint16_t>(test_stream_->visible_size.width());
+  header.height =
+      base::checked_cast<uint16_t>(test_stream_->visible_size.height());
+  header.timebase_denum = requested_framerate_;
+  header.timebase_num = 1;
+  header.num_frames = num_frames_to_encode_;
+  header.ByteSwap();
 
   EXPECT_TRUE(base::AppendToFile(
       base::FilePath::FromUTF8Unsafe(test_stream_->out_filename),
@@ -1309,11 +1287,11 @@ void VEAClient::WriteIvfFileHeader() {
 }
 
 void VEAClient::WriteIvfFrameHeader(int frame_index, size_t frame_size) {
-  IvfFrameHeader header;
+  media::IvfFrameHeader header = {};
 
-  memset(&header, 0, sizeof(header));
-  header.frame_size = base::ByteSwapToLE32(frame_size);
-  header.timestamp = base::ByteSwapToLE64(frame_index);
+  header.frame_size = frame_size;
+  header.timestamp = frame_index;
+  header.ByteSwap();
   EXPECT_TRUE(base::AppendToFile(
       base::FilePath::FromUTF8Unsafe(test_stream_->out_filename),
       reinterpret_cast<char*>(&header), sizeof(header)));
