@@ -18,7 +18,10 @@ group("service") {
 }
 
 source_set("service_sources") {
-  visibility = [ "//gpu/*" ]
+  visibility = [
+    "//gpu/*",
+    "//mojo/gles2:gles2",
+  ]
 
   sources = [
     "async_pixel_transfer_delegate.cc",

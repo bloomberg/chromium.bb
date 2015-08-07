@@ -40,6 +40,7 @@ source_set("gles2") {
     "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/service:service_sources",
     "//gpu/command_buffer/common",
     "//mojo/environment:chromium",
     "//third_party/mojo/src/mojo/public/c/gles2:headers",
