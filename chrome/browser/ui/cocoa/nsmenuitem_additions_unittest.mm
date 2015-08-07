@@ -330,6 +330,7 @@ TEST(NSMenuItemAdditionsTest, TestMOnDifferentLayouts) {
         ref, kTISPropertyInputSourceID);
     if ([layoutId isEqualToString:@"com.apple.keylayout.Belgian"] ||
         [layoutId isEqualToString:@"com.apple.keylayout.Italian"] ||
+        [layoutId isEqualToString:@"com.apple.keylayout.ABC-AZERTY"] ||
         [layoutId hasPrefix:@"com.apple.keylayout.French"]) {
       keyCode = 0x29;
     } else if ([layoutId isEqualToString:@"com.apple.keylayout.Turkish"]) {
