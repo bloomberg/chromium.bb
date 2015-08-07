@@ -29,6 +29,7 @@ class V8IsolateMemoryDumpProvider
 
  private:
   void DumpHeapStatistics(
+      const base::trace_event::MemoryDumpArgs& args,
       base::trace_event::ProcessMemoryDump* process_memory_dump);
 
   IsolateHolder* isolate_holder_;  // Not owned.
