@@ -111,4 +111,17 @@ TEST_F(HTMLSelectElementTest, ElementRectRelativeToViewport)
     EXPECT_EQ(24, bounds.height());
 }
 
+TEST_F(HTMLSelectElementTest, PopupIsVisible)
+{
+    document().documentElement()->setInnerHTML("<select><option>o1</option></select>", ASSERT_NO_EXCEPTION);
+    document().view()->updateAllLifecyclePhases();
+    HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+    ASSERT(select);
+    EXPECT_FALSE(select->popupIsVisible());
+    select->showPopup();
+    EXPECT_TRUE(select->popupIsVisible());
+    document().detach();
+    EXPECT_FALSE(select->popupIsVisible());
+}
+
 } // namespace blink

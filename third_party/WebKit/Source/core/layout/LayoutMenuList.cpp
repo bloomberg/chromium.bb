@@ -30,10 +30,6 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/NodeComputedStyle.h"
-#include "core/frame/FrameHost.h"
-#include "core/frame/FrameView.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
@@ -41,7 +37,6 @@
 #include "core/layout/LayoutScrollbar.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
-#include "core/page/ChromeClient.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/text/PlatformLocale.h"
@@ -60,22 +55,12 @@ LayoutMenuList::LayoutMenuList(Element* element)
     , m_hasUpdatedActiveOption(false)
     , m_optionsWidth(0)
     , m_lastActiveIndex(-1)
-    , m_indexToSelectOnCancel(-1)
 {
     ASSERT(isHTMLSelectElement(element));
 }
 
 LayoutMenuList::~LayoutMenuList()
 {
-    ASSERT(!m_popup);
-}
-
-void LayoutMenuList::willBeDestroyed()
-{
-    if (m_popup)
-        m_popup->disconnectClient();
-    m_popup = nullptr;
-    LayoutFlexibleBox::willBeDestroyed();
 }
 
 // FIXME: Instead of this hack we should add a ShadowRoot to <select> with no insertion point
@@ -219,9 +204,6 @@ void LayoutMenuList::updateFromElement()
         m_optionsChanged = false;
     }
 
-    if (selectElement()->popupIsVisible())
-        m_popup->updateFromElement();
-
     updateText();
 }
 
@@ -324,32 +306,6 @@ void LayoutMenuList::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, 
     maxLogicalWidth = std::max(m_optionsWidth, LayoutTheme::theme().minimumMenuListSize(styleRef())) + m_innerBlock->paddingLeft() + m_innerBlock->paddingRight();
     if (!style()->width().hasPercent())
         minLogicalWidth = maxLogicalWidth;
-}
-
-void LayoutMenuList::showPopup()
-{
-    if (selectElement()->popupIsVisible())
-        return;
-
-    if (document().frameHost()->chromeClient().hasOpenedPopup())
-        return;
-
-    if (!m_popup)
-        m_popup = document().frameHost()->chromeClient().openPopupMenu(*document().frame(), *selectElement());
-    selectElement()->setPopupIsVisible();
-
-    FloatQuad quad(localToAbsoluteQuad(FloatQuad(borderBoundingBox())));
-    IntSize size = pixelSnappedIntRect(frameRect()).size();
-    HTMLSelectElement* select = selectElement();
-    m_popup->show(quad, size, select->optionToListIndex(select->selectedIndex()));
-    if (AXObjectCache* cache = document().existingAXObjectCache())
-        cache->didShowMenuListPopup(this);
-}
-
-void LayoutMenuList::hidePopup()
-{
-    if (m_popup)
-        m_popup->hide();
 }
 
 void LayoutMenuList::didSetSelectedIndex(int listIndex)

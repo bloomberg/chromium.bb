@@ -56,11 +56,11 @@ bool AXMenuList::press() const
     if (!m_layoutObject)
         return false;
 
-    LayoutMenuList* menuList = toLayoutMenuList(m_layoutObject);
-    if (menuList->selectElement()->popupIsVisible())
-        menuList->hidePopup();
+    HTMLSelectElement* select = toLayoutMenuList(m_layoutObject)->selectElement();
+    if (select->popupIsVisible())
+        select->hidePopup();
     else
-        menuList->showPopup();
+        select->showPopup();
     return true;
 }
 

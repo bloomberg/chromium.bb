@@ -40,12 +40,14 @@ class ExceptionState;
 class HTMLOptionElement;
 class HTMLOptionElementOrHTMLOptGroupElement;
 class HTMLElementOrLong;
+class PopupMenu;
 
 class CORE_EXPORT HTMLSelectElement final : public HTMLFormControlElementWithState, public TypeAheadDataSource {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLSelectElement> create(Document&);
     static PassRefPtrWillBeRawPtr<HTMLSelectElement> create(Document&, HTMLFormElement*);
+    ~HTMLSelectElement() override;
 
     int selectedIndex() const;
     void setSelectedIndex(int);
@@ -146,10 +148,10 @@ public:
     void provisionalSelectionChanged(unsigned);
     void popupDidHide();
     bool popupIsVisible() const { return m_popupIsVisible; }
-    // TODO(tkent): setPopupIsVisible should be unnecessary. Popup controlling
-    // code should be in HTMLSelectElement.
-    void setPopupIsVisible() { m_popupIsVisible = true; }
     int optionIndexToBeShown() const;
+    void showPopup();
+    void hidePopup();
+    PopupMenu* popup() const { return m_popup.get(); }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -180,6 +182,8 @@ private:
     bool isPresentationAttribute(const QualifiedName&) const override;
 
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    void didRecalcStyle(StyleRecalcChange) override;
+    void detach(const AttachContext& = AttachContext()) override;
     bool appendFormData(FormDataList&, bool) override;
     void didAddUserAgentShadowRoot(ShadowRoot&) override;
 
@@ -258,6 +262,7 @@ private:
     int m_suggestedIndex;
     bool m_isAutofilledByPreview;
 
+    RefPtrWillBeMember<PopupMenu> m_popup;
     int m_indexToSelectOnCancel;
     bool m_popupIsVisible;
 };

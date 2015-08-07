@@ -143,7 +143,7 @@ protected:
     void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType, InputDevice* sourceDevice) override;
     void willCallDefaultEventHandler(const Event&) final;
 
-    void didRecalcStyle(StyleRecalcChange) final;
+    void didRecalcStyle(StyleRecalcChange) override;
 
     // This must be called any time the result of willValidate() has changed.
     void setNeedsWillValidateCheck();

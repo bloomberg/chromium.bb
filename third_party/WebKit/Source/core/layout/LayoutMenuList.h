@@ -26,7 +26,6 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/LayoutFlexibleBox.h"
-#include "platform/PopupMenu.h"
 #include "platform/geometry/LayoutRect.h"
 
 namespace blink {
@@ -40,26 +39,14 @@ public:
     ~LayoutMenuList() override;
 
     HTMLSelectElement* selectElement() const;
-    void showPopup();
-    void hidePopup();
-    PopupMenu* popup() const { return m_popup.get(); }
-
     void setOptionsChanged(bool changed) { m_optionsChanged = changed; }
-
     void didSetSelectedIndex(int listIndex);
-
     String text() const;
-    // This updates only text in the content box.  updateFromElement() does it
-    // too, but updateText() is much lighter.
-    void updateText();
 
     const char* name() const override { return "LayoutMenuList"; }
 
     LayoutUnit clientPaddingLeft() const;
     LayoutUnit clientPaddingRight() const;
-
-protected:
-    void willBeDestroyed() override;
 
 private:
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectMenuList || LayoutFlexibleBox::isOfType(type); }
@@ -94,6 +81,7 @@ private:
     void setText(const String&);
     void setTextFromOption(int optionIndex);
     void updateOptionsWidth();
+    void updateText();
     void setIndexToSelectOnCancel(int listIndex);
 
     void didUpdateActiveOption(int optionIndex);
@@ -109,9 +97,6 @@ private:
     int m_lastActiveIndex;
 
     RefPtr<ComputedStyle> m_optionStyle;
-
-    RefPtrWillBePersistent<PopupMenu> m_popup;
-    int m_indexToSelectOnCancel;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMenuList, isMenuList());

@@ -152,7 +152,7 @@ TEST_F(ExternalPopupMenuTest, PopupAccountsForVisualViewportOffset)
     IntPoint scrollDelta(20, 30);
     visualViewport.move(scrollDelta);
 
-    menuList->showPopup();
+    select->showPopup();
 
     EXPECT_EQ(rectInDocument.x() - scrollDelta.x(), client().shownBounds().x);
     EXPECT_EQ(rectInDocument.y() - scrollDelta.y(), client().shownBounds().y);
@@ -167,10 +167,10 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndex)
     LayoutMenuList* menuList = toLayoutMenuList(select->layoutObject());
     ASSERT_TRUE(menuList);
 
-    menuList->showPopup();
+    select->showPopup();
     ASSERT_TRUE(select->popupIsVisible());
 
-    WebExternalPopupMenuClient* client = static_cast<ExternalPopupMenu*>(menuList->popup());
+    WebExternalPopupMenuClient* client = static_cast<ExternalPopupMenu*>(select->popup());
     client->didAcceptIndex(2);
     EXPECT_FALSE(select->popupIsVisible());
     ASSERT_STREQ("2", menuList->text().utf8().data());
@@ -186,10 +186,10 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndices)
     LayoutMenuList* menuList = toLayoutMenuList(select->layoutObject());
     ASSERT_TRUE(menuList);
 
-    menuList->showPopup();
+    select->showPopup();
     ASSERT_TRUE(select->popupIsVisible());
 
-    WebExternalPopupMenuClient* client = static_cast<ExternalPopupMenu*>(menuList->popup());
+    WebExternalPopupMenuClient* client = static_cast<ExternalPopupMenu*>(select->popup());
     int indices[] = { 2 };
     WebVector<int> indicesVector(indices, 1);
     client->didAcceptIndices(indicesVector);
@@ -207,10 +207,10 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndicesClearSelect)
     LayoutMenuList* menuList = toLayoutMenuList(select->layoutObject());
     ASSERT_TRUE(menuList);
 
-    menuList->showPopup();
+    select->showPopup();
     ASSERT_TRUE(select->popupIsVisible());
 
-    WebExternalPopupMenuClient* client = static_cast<ExternalPopupMenu*>(menuList->popup());
+    WebExternalPopupMenuClient* client = static_cast<ExternalPopupMenu*>(select->popup());
     WebVector<int> indices;
     client->didAcceptIndices(indices);
     EXPECT_FALSE(select->popupIsVisible());
