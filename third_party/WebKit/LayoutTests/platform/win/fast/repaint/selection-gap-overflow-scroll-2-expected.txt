@@ -1,9 +1,25 @@
-Test for https://bugs.webkit.org/show_bug.cgi?id=34946 REGRESSION: Selection painting issue in bug review textbox.
-
-Lorem
-ipsum
-(repaint rects
-  (rect 26 117 40 19)
-  (rect 26 136 35 20)
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [68, 119, 52, 17],
+        [26, 136, 39, 18],
+        [26, 119, 43, 17]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='overflow'",
+        "LayoutText #text",
+        "InlineTextBox 'Lorem'",
+        "LayoutBR BR",
+        "InlineTextBox '\n'",
+        "LayoutText #text",
+        "InlineTextBox 'ipsum'"
+      ]
+    }
+  ]
+}
 

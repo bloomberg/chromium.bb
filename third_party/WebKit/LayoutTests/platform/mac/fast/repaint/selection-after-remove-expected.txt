@@ -1,15 +1,60 @@
-This tests to see if selection gaps are invalidated properly when content inside the selection is removed. Only 'hello world' should have a selecton tint behind it.
-
-hello world
-(repaint rects
-  (rect 70 147 41 18)
-  (rect 39 75 35 18)
-  (rect 39 75 150 90)
-  (rect 38 74 152 92)
-  (rect 38 94 152 72)
-  (rect 38 93 152 1)
-  (rect 38 75 152 90)
-  (rect 74 75 37 18)
-  (rect 39 75 35 18)
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [112, 165, 42, 18],
+        [74, 75, 39, 18],
+        [39, 75, 119, 108],
+        [39, 75, 36, 18],
+        [38, 94, 152, 90],
+        [38, 93, 152, 91],
+        [38, 75, 152, 108],
+        [8, 75, 784, 108],
+        [8, 75, 784, 108]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow HTML",
+        "InlineTextBox 'world hello'",
+        "InlineTextBox ' '",
+        "InlineTextBox 'world hello world'",
+        "InlineTextBox ' '",
+        "InlineTextBox 'hello world hello'",
+        "InlineTextBox ' '",
+        "InlineTextBox 'world hello world'",
+        "InlineTextBox ' '",
+        "InlineTextBox 'hello world hello'",
+        "InlineTextBox ' '",
+        "InlineTextBox 'world hello'",
+        "LayoutText #text",
+        "LayoutInline SPAN id='removeme'",
+        "InlineTextBox 'hello '",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "InlineTextBox ' world'",
+        "InlineTextBox '\n'",
+        "RootInlineBox",
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow BODY",
+        "LayoutBlockFlow DIV id='test'",
+        "LayoutBlockFlow DIV id='test'",
+        "LayoutBlockFlow DIV id='test'",
+        "LayoutText #text",
+        "InlineTextBox 'hello '",
+        "LayoutText #text",
+        "InlineTextBox 'world'",
+        "LayoutText #text",
+        "InlineTextBox 'world'",
+        "LayoutBR BR",
+        "InlineTextBox '\n'"
+      ]
+    }
+  ]
+}
 

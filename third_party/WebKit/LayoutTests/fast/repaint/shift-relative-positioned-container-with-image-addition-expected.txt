@@ -1,16 +1,42 @@
-issue 353933: Pages missing invalidations
-The test checks that creating a new renderer correctly invalidate the existing shifted content. The image should be correctly invalidated below.
-
-
-
-(repaint rects
-  (rect 8 734 769 94)
-  (rect 0 742 785 94)
-  (rect 8 92 732 94)
-  (rect 8 92 769 642)
-  (rect 8 186 769 642)
-  (rect 8 92 769 642)
-  (rect 8 186 769 642)
-  (rect 10 94 728 90)
-)
+{
+  "bounds": [785, 829],
+  "children": [
+    {
+      "bounds": [785, 829],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [723, 88, 15, 90],
+        [58, 230, 489, 537],
+        [58, 136, 489, 537],
+        [18, 96, 712, 74],
+        [10, 88, 728, 90],
+        [10, 88, 728, 90],
+        [10, 88, 728, 90],
+        [8, 180, 769, 641],
+        [8, 180, 769, 641],
+        [8, 86, 769, 641],
+        [8, 86, 769, 641],
+        [8, 86, 732, 94],
+        [0, 735, 785, 94],
+        [0, 0, 785, 829],
+        [0, 0, 785, 735]
+      ],
+      "paintInvalidationClients": [
+        "LayoutIFrame IFRAME id='iframe'",
+        "LayoutView #document",
+        "LayoutBlockFlow HTML",
+        "LayoutIFrame IFRAME id='iframe'",
+        "LayoutView #document",
+        "LayoutView #document",
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow BODY",
+        "LayoutBlockFlow (relative positioned) DIV class='relative'",
+        "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
+        "LayoutImage IMG",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
 

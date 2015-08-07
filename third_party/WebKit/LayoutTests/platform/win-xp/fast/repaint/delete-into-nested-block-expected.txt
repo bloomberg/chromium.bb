@@ -1,0 +1,57 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [8, 167, 784, 20],
+        [8, 167, 30, 19],
+        [8, 147, 784, 40],
+        [8, 147, 784, 20],
+        [8, 147, 23, 19],
+        [8, 127, 784, 40],
+        [8, 127, 784, 20],
+        [8, 127, 30, 19],
+        [8, 127, 22, 19],
+        [7, 126, 786, 102],
+        [7, 126, 3, 21]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow HTML",
+        "InlineTextBox 'one'",
+        "LayoutText #text",
+        "RootInlineBox",
+        "InlineTextBox 'two'",
+        "LayoutText #text",
+        "RootInlineBox",
+        "LayoutBlockFlow DIV",
+        "InlineTextBox 'three'",
+        "LayoutText #text",
+        "RootInlineBox",
+        "InlineTextBox '\n'",
+        "LayoutBR BR",
+        "RootInlineBox",
+        "LayoutBlockFlow DIV",
+        "LayoutBlockFlow DIV id='two'",
+        "InlineTextBox '\n'",
+        "RootInlineBox",
+        "InlineTextBox '\n'",
+        "LayoutBR BR",
+        "InlineTextBox 'three'",
+        "RootInlineBox",
+        "InlineTextBox 'three'",
+        "LayoutText #text",
+        "LayoutInline SPAN",
+        "RootInlineBox",
+        "LayoutBlockFlow DIV",
+        "LayoutBlockFlow DIV id='one'",
+        "LayoutText #text",
+        "InlineTextBox 'three'",
+        "LayoutBlockFlow DIV id='one'"
+      ]
+    }
+  ]
+}
+

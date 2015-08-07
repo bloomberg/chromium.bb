@@ -11,11 +11,13 @@
           "drawsContent": true,
           "children": [
             {
+              "bounds": [400, 400],
               "children": [
                 {
                   "bounds": [385, 385],
                   "children": [
                     {
+                      "position": [615, 0],
                       "children": [
                         {
                           "position": [-615, 0],
@@ -24,6 +26,7 @@
                             {
                               "bounds": [1000, 1000],
                               "drawsContent": true,
+                              "backgroundColor": "#FF0000",
                               "children": [
                                 {
                                   "position": [665, 50],
@@ -75,6 +78,7 @@ Frame: '<!--framePath //<!--frame0-->-->'
     {
       "bounds": [1000, 1000],
       "drawsContent": true,
+      "backgroundColor": "#FF0000",
       "children": [
         {
           "position": [665, 50],
