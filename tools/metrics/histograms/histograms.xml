@@ -50158,6 +50158,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.AverageRoundTripTimeInMilliseconds" units="ms">
+  <owner>holmer@chromium.org</owner>
+  <summary>
+    The average round-trip time of a WebRTC call in milliseconds. Recorded when
+    a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.BitrateReceivedInKbps" units="kbps">
   <owner>asapersson@chromium.org</owner>
   <summary>
