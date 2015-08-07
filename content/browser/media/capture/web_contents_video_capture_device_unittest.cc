@@ -543,8 +543,17 @@ class StubClientObserver {
   DISALLOW_COPY_AND_ASSIGN(StubClientObserver);
 };
 
+// crbug.com/159234
+#if defined(OS_ANDROID)
+#define MAYBE_WebContentsVideoCaptureDeviceTest \
+  DISABLED_WebContentsVideoCaptureDeviceTest
+#else
+#define MAYBE_WebContentsVideoCaptureDeviceTest \
+  WebContentsVideoCaptureDeviceTest
+#endif  // defined(OS_ANDROID)
+
 // Test harness that sets up a minimal environment with necessary stubs.
-class WebContentsVideoCaptureDeviceTest : public testing::Test {
+class MAYBE_WebContentsVideoCaptureDeviceTest : public testing::Test {
  public:
   // This is public because C++ method pointer scoping rules are silly and make
   // this hard to use with Bind().
@@ -701,7 +710,8 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
   TestBrowserThreadBundle thread_bundle_;
 };
 
-TEST_F(WebContentsVideoCaptureDeviceTest, InvalidInitialWebContentsError) {
+TEST_F(MAYBE_WebContentsVideoCaptureDeviceTest,
+       InvalidInitialWebContentsError) {
   // Before the installs itself on the UI thread up to start capturing, we'll
   // delete the web contents. This should trigger an error which can happen in
   // practice; we should be able to recover gracefully.
@@ -717,7 +727,7 @@ TEST_F(WebContentsVideoCaptureDeviceTest, InvalidInitialWebContentsError) {
   device()->StopAndDeAllocate();
 }
 
-TEST_F(WebContentsVideoCaptureDeviceTest, WebContentsDestroyed) {
+TEST_F(MAYBE_WebContentsVideoCaptureDeviceTest, WebContentsDestroyed) {
   const float device_scale_factor = GetDeviceScaleFactor();
   const gfx::Size capture_preferred_size(
       static_cast<int>(kTestWidth / device_scale_factor),
@@ -746,13 +756,13 @@ TEST_F(WebContentsVideoCaptureDeviceTest, WebContentsDestroyed) {
   // Post a task to close the tab. We should see an error reported to the
   // consumer.
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&WebContentsVideoCaptureDeviceTest::ResetWebContents,
+      base::Bind(&MAYBE_WebContentsVideoCaptureDeviceTest::ResetWebContents,
                  base::Unretained(this)));
   ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForError());
   device()->StopAndDeAllocate();
 }
 
-TEST_F(WebContentsVideoCaptureDeviceTest,
+TEST_F(MAYBE_WebContentsVideoCaptureDeviceTest,
        StopDeviceBeforeCaptureMachineCreation) {
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestWidth, kTestHeight);
@@ -772,7 +782,7 @@ TEST_F(WebContentsVideoCaptureDeviceTest,
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(WebContentsVideoCaptureDeviceTest, StopWithRendererWorkToDo) {
+TEST_F(MAYBE_WebContentsVideoCaptureDeviceTest, StopWithRendererWorkToDo) {
   // Set up the test to use RGB copies and an normal
   source()->SetCanCopyToVideoFrame(false);
   source()->SetUseFrameSubscriber(false);
@@ -795,7 +805,7 @@ TEST_F(WebContentsVideoCaptureDeviceTest, StopWithRendererWorkToDo) {
   ASSERT_FALSE(client_observer()->HasError());
 }
 
-TEST_F(WebContentsVideoCaptureDeviceTest, DeviceRestart) {
+TEST_F(MAYBE_WebContentsVideoCaptureDeviceTest, DeviceRestart) {
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestWidth, kTestHeight);
   capture_params.requested_format.frame_rate = kTestFramesPerSecond;
@@ -834,7 +844,7 @@ TEST_F(WebContentsVideoCaptureDeviceTest, DeviceRestart) {
 // the picture emitted from the source and expect to see each delivered to the
 // consumer. The test will alternate between the three capture paths, simulating
 // falling in and out of accelerated compositing.
-TEST_F(WebContentsVideoCaptureDeviceTest, GoesThroughAllTheMotions) {
+TEST_F(MAYBE_WebContentsVideoCaptureDeviceTest, GoesThroughAllTheMotions) {
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestWidth, kTestHeight);
   capture_params.requested_format.frame_rate = kTestFramesPerSecond;
@@ -885,7 +895,7 @@ TEST_F(WebContentsVideoCaptureDeviceTest, GoesThroughAllTheMotions) {
   device()->StopAndDeAllocate();
 }
 
-TEST_F(WebContentsVideoCaptureDeviceTest, BadFramesGoodFrames) {
+TEST_F(MAYBE_WebContentsVideoCaptureDeviceTest, BadFramesGoodFrames) {
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestWidth, kTestHeight);
   capture_params.requested_format.frame_rate = kTestFramesPerSecond;
@@ -917,7 +927,8 @@ TEST_F(WebContentsVideoCaptureDeviceTest, BadFramesGoodFrames) {
 // Tests that, when configured with the FIXED_ASPECT_RATIO resolution change
 // policy, the source size changes result in video frames of possibly varying
 // resolutions, but all with the same aspect ratio.
-TEST_F(WebContentsVideoCaptureDeviceTest, VariableResolution_FixedAspectRatio) {
+TEST_F(MAYBE_WebContentsVideoCaptureDeviceTest,
+       VariableResolution_FixedAspectRatio) {
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestWidth, kTestHeight);
   capture_params.requested_format.frame_rate = kTestFramesPerSecond;
@@ -974,7 +985,8 @@ TEST_F(WebContentsVideoCaptureDeviceTest, VariableResolution_FixedAspectRatio) {
 // Tests that, when configured with the ANY_WITHIN_LIMIT resolution change
 // policy, the source size changes result in video frames of possibly varying
 // resolutions.
-TEST_F(WebContentsVideoCaptureDeviceTest, VariableResolution_AnyWithinLimits) {
+TEST_F(MAYBE_WebContentsVideoCaptureDeviceTest,
+       VariableResolution_AnyWithinLimits) {
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestWidth, kTestHeight);
   capture_params.requested_format.frame_rate = kTestFramesPerSecond;
@@ -1033,7 +1045,7 @@ TEST_F(WebContentsVideoCaptureDeviceTest, VariableResolution_AnyWithinLimits) {
   device()->StopAndDeAllocate();
 }
 
-TEST_F(WebContentsVideoCaptureDeviceTest,
+TEST_F(MAYBE_WebContentsVideoCaptureDeviceTest,
        ComputesStandardResolutionsForPreferredSize) {
   // Helper function to run the same testing procedure for multiple combinations
   // of |policy|, |standard_size| and |oddball_size|.

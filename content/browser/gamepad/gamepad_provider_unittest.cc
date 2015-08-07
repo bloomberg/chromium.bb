@@ -64,7 +64,13 @@ class GamepadProviderTest : public testing::Test, public GamepadTestHelper {
 };
 
 // Crashes. http://crbug.com/106163
-TEST_F(GamepadProviderTest, PollingAccess) {
+// crbug.com/147549
+#if defined(OS_ANDROID)
+#define MAYBE_PollingAccess DISABLED_PollingAccess
+#else
+#define MAYBE_PollingAccess PollingAccess
+#endif
+TEST_F(GamepadProviderTest, MAYBE_PollingAccess) {
   WebGamepads test_data;
   test_data.length = 1;
   test_data.items[0].connected = true;
