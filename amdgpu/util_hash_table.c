@@ -69,8 +69,9 @@ util_hash_table_item(struct util_hash_iter iter)
 	return (struct util_hash_table_item *)util_hash_iter_data(iter);
 }
 
-struct util_hash_table *util_hash_table_create(unsigned (*hash)(void *key),
-				int (*compare)(void *key1, void *key2))
+drm_private struct util_hash_table *
+util_hash_table_create(unsigned (*hash)(void *key),
+		       int (*compare)(void *key1, void *key2))
 {
 	struct util_hash_table *ht;
 
@@ -126,7 +127,8 @@ util_hash_table_find_item(struct util_hash_table *ht,
 	return NULL;
 }
 
-void util_hash_table_set(struct util_hash_table *ht, void *key, void *value)
+drm_private void
+util_hash_table_set(struct util_hash_table *ht, void *key, void *value)
 {
 	unsigned key_hash;
 	struct util_hash_table_item *item;
@@ -159,7 +161,7 @@ void util_hash_table_set(struct util_hash_table *ht, void *key, void *value)
 	}
 }
 
-void *util_hash_table_get(struct util_hash_table *ht, void *key)
+drm_private void *util_hash_table_get(struct util_hash_table *ht, void *key)
 {
 	unsigned key_hash;
 	struct util_hash_table_item *item;
@@ -177,7 +179,7 @@ void *util_hash_table_get(struct util_hash_table *ht, void *key)
 	return item->value;
 }
 
-void util_hash_table_remove(struct util_hash_table *ht, void *key)
+drm_private void util_hash_table_remove(struct util_hash_table *ht, void *key)
 {
 	unsigned key_hash;
 	struct util_hash_iter iter;
@@ -200,7 +202,7 @@ void util_hash_table_remove(struct util_hash_table *ht, void *key)
 	util_hash_erase(ht->head, iter);
 }
 
-void util_hash_table_clear(struct util_hash_table *ht)
+drm_private void util_hash_table_clear(struct util_hash_table *ht)
 {
 	struct util_hash_iter iter;
 	struct util_hash_table_item *item;
@@ -217,7 +219,7 @@ void util_hash_table_clear(struct util_hash_table *ht)
 	}
 }
 
-void util_hash_table_foreach(struct util_hash_table *ht,
+drm_private void util_hash_table_foreach(struct util_hash_table *ht,
 			void (*callback)(void *key, void *value, void *data),
 			void *data)
 {
@@ -236,7 +238,7 @@ void util_hash_table_foreach(struct util_hash_table *ht,
 	}
 }
 
-void util_hash_table_destroy(struct util_hash_table *ht)
+drm_private void util_hash_table_destroy(struct util_hash_table *ht)
 {
 	struct util_hash_iter iter;
 	struct util_hash_table_item *item;

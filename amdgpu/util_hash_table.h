@@ -34,6 +34,12 @@
 #ifndef U_HASH_TABLE_H_
 #define U_HASH_TABLE_H_
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include "libdrm_macros.h"
+
 /**
  * Generic purpose hash table.
  */
@@ -45,21 +51,23 @@ struct util_hash_table;
  * @param hash hash function
  * @param compare should return 0 for two equal keys.
  */
-struct util_hash_table *util_hash_table_create(unsigned (*hash)(void *key),
-				int (*compare)(void *key1, void *key2));
+drm_private struct util_hash_table *
+util_hash_table_create(unsigned (*hash)(void *key),
+		       int (*compare)(void *key1, void *key2));
 
-void util_hash_table_set(struct util_hash_table *ht, void *key, void *value);
+drm_private void
+util_hash_table_set(struct util_hash_table *ht, void *key, void *value);
 
-void *util_hash_table_get(struct util_hash_table *ht, void *key);
+drm_private void *util_hash_table_get(struct util_hash_table *ht, void *key);
 
-void util_hash_table_remove(struct util_hash_table *ht, void *key);
+drm_private void util_hash_table_remove(struct util_hash_table *ht, void *key);
 
-void util_hash_table_clear(struct util_hash_table *ht);
+drm_private void util_hash_table_clear(struct util_hash_table *ht);
 
-void util_hash_table_foreach(struct util_hash_table *ht,
+drm_private void util_hash_table_foreach(struct util_hash_table *ht,
 			void (*callback)(void *key, void *value, void *data),
 			void *data);
 
-void util_hash_table_destroy(struct util_hash_table *ht);
+drm_private void util_hash_table_destroy(struct util_hash_table *ht);
 
 #endif /* U_HASH_TABLE_H_ */
