@@ -741,7 +741,7 @@ void ResourceFetcher::preloadStarted(Resource* resource)
     resource->increasePreloadCount();
 
     if (!m_preloads)
-        m_preloads = adoptPtr(new ListHashSet<Resource*>);
+        m_preloads = adoptPtrWillBeNoop(new WillBeHeapListHashSet<RawPtrWillBeMember<Resource>>);
     m_preloads->add(resource);
 
 #if PRELOAD_DEBUG
@@ -752,7 +752,7 @@ void ResourceFetcher::preloadStarted(Resource* resource)
 bool ResourceFetcher::isPreloaded(const KURL& url) const
 {
     if (m_preloads) {
-        for (Resource* resource : *m_preloads) {
+        for (auto resource : *m_preloads) {
             if (resource->url() == url)
                 return true;
         }
@@ -769,11 +769,11 @@ void ResourceFetcher::clearPreloads()
     if (!m_preloads)
         return;
 
-    for (Resource* resource : *m_preloads) {
+    for (auto resource : *m_preloads) {
         resource->decreasePreloadCount();
         bool deleted = resource->deleteIfPossible();
         if (!deleted && resource->preloadResult() == Resource::PreloadNotReferenced)
-            memoryCache()->remove(resource);
+            memoryCache()->remove(resource.get());
     }
     m_preloads.clear();
 }
@@ -980,7 +980,7 @@ void ResourceFetcher::printPreloadStats()
     unsigned stylesheetMisses = 0;
     unsigned images = 0;
     unsigned imageMisses = 0;
-    for (Resource* resource : *m_preloads) {
+    for (auto resource : *m_preloads) {
         if (resource->preloadResult() == Resource::PreloadNotReferenced)
             printf("!! UNREFERENCED PRELOAD %s\n", resource->url().string().latin1().data());
         else if (resource->preloadResult() == Resource::PreloadReferencedWhileComplete)
@@ -1003,7 +1003,7 @@ void ResourceFetcher::printPreloadStats()
         }
 
         if (resource->errorOccurred())
-            memoryCache()->remove(resource);
+            memoryCache()->remove(resource.get());
 
         resource->decreasePreloadCount();
     }
@@ -1070,6 +1070,10 @@ DEFINE_TRACE(ResourceFetcher)
     visitor->trace(m_archiveResourceCollection);
     visitor->trace(m_loaders);
     visitor->trace(m_nonBlockingLoaders);
+#if ENABLE(OILPAN)
+    visitor->trace(m_preloads);
+    visitor->trace(m_resourceTimingInfoMap);
+#endif
 }
 
 }

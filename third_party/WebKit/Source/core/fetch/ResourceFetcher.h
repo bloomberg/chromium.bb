@@ -178,13 +178,20 @@ private:
     HashSet<String> m_validatedURLs;
     mutable DocumentResourceMap m_documentResources;
 
-    OwnPtr<ListHashSet<Resource*>> m_preloads;
+    // We intentionally use a Member instead of a ResourcePtr.
+    // Using a ResourcePtrs can lead to a wrong behavior because
+    // the underlying Resource of the ResourcePtr is updated when the Resource
+    // is revalidated. What we really want to hold here is not the ResourcePtr
+    // but the underlying Resource.
+    OwnPtrWillBeMember<WillBeHeapListHashSet<RawPtrWillBeMember<Resource>>> m_preloads;
     OwnPtrWillBeMember<ArchiveResourceCollection> m_archiveResourceCollection;
 
     Timer<ResourceFetcher> m_garbageCollectDocumentResourcesTimer;
     Timer<ResourceFetcher> m_resourceTimingReportTimer;
 
-    typedef HashMap<Resource*, OwnPtr<ResourceTimingInfo>> ResourceTimingInfoMap;
+    // We intentionally use a Member instead of a ResourcePtr.
+    // See the comment on m_preloads.
+    typedef WillBeHeapHashMap<RawPtrWillBeMember<Resource>, OwnPtr<ResourceTimingInfo>> ResourceTimingInfoMap;
     ResourceTimingInfoMap m_resourceTimingInfoMap;
 
     Vector<OwnPtr<ResourceTimingInfo>> m_scheduledResourceTimingReports;
