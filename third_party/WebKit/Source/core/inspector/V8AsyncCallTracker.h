@@ -45,7 +45,7 @@ private:
     void willHandleV8AsyncTask(ScriptState*, const String& eventName, int id);
 
     class V8ContextAsyncOperations;
-    WillBeHeapHashMap<ScriptState*, OwnPtrWillBeMember<V8ContextAsyncOperations> > m_contextAsyncOperationMap;
+    WillBeHeapHashMap<RefPtr<ScriptState>, OwnPtrWillBeMember<V8ContextAsyncOperations>> m_contextAsyncOperationMap;
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
 };
 
