@@ -111,6 +111,11 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   bool GetQuiescenceMonitored() const { return should_monitor_quiescence_; }
   bool GetShouldNotifyObservers() const { return should_notify_observers_; }
 
+  // Delayed task posted to the underlying run loop, which locks |lock_| and
+  // calls MoveReadyDelayedTasksToIncomingQueueLocked to process dealyed tasks
+  // that need to be run now.
+  void MoveReadyDelayedTasksToIncomingQueue(LazyNow* lazy_now);
+
   // Test support functions.  These should not be used in production code.
   void PushTaskOntoWorkQueueForTest(const Task& task);
   void PopTaskFromWorkQueueForTest();
@@ -144,31 +149,24 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
                              base::TimeTicks desired_run_time,
                              TaskType task_type);
 
-  // Delayed task posted to the underlying run loop, which locks |lock_| and
-  // calls MoveReadyDelayedTasksToIncomingQueueLocked to process dealyed tasks
-  // that need to be run now.
-  void MoveReadyDelayedTasksToIncomingQueue();
-
   // Enqueues any delayed tasks which should be run now on the incoming_queue_
   // and calls ScheduleDelayedWorkLocked to ensure future tasks are scheduled.
   // Must be called with |lock_| locked.
   void MoveReadyDelayedTasksToIncomingQueueLocked(LazyNow* lazy_now);
-
-  // Posts MoveReadyDelayedTasksToIncomingQueue if there isn't already a task
-  // posted on the underlying runloop for the next task's scheduled run time.
-  void ScheduleDelayedWorkLocked(LazyNow* lazy_now);
 
   void PumpQueueLocked();
   bool TaskIsOlderThanQueuedTasks(const Task* task);
   bool ShouldAutoPumpQueueLocked(bool should_trigger_wakeup,
                                  const Task* previous_task);
 
-  enum class EnqueueOrderPolicy { SET_ENQUEUE_ORDER, DONT_SET_ENQUEUE_ORDER };
+  // Push the task onto the |incoming_queue_| and for auto pumped queues it
+  // calls MaybePostDoWorkOnMainRunner if the incomming queue was empty.
+  void EnqueueTaskLocked(const Task& pending_task);
 
-  // Push the task onto the |incoming_queue_| and maybe allocate an
-  // enqueue_order for it based on |enqueue_order_policy|.
-  void EnqueueTaskLocked(const Task& pending_task,
-                         EnqueueOrderPolicy enqueue_order_policy);
+  // Push the task onto the |incoming_queue_| and allocates an
+  // enqueue_order for it based on |enqueue_order_policy|.  Does not call
+  // MaybePostDoWorkOnMainRunner!
+  void EnqueueDelayedTaskLocked(const Task& pending_task);
 
   void TraceQueueSize(bool is_locked) const;
   static void QueueAsValueInto(const std::queue<Task>& queue,

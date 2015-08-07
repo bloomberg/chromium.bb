@@ -36,8 +36,9 @@ void TaskQueueSelector::SetQueuePriority(internal::TaskQueueImpl* queue,
       static_cast<TaskQueue::QueuePriority>(queue->get_task_queue_set_index());
   task_queue_sets_.AssignQueueToSet(queue, priority);
   if (task_queue_selector_observer_ &&
-      old_priority == TaskQueue::DISABLED_PRIORITY)
-    task_queue_selector_observer_->OnTaskQueueEnabled();
+      old_priority == TaskQueue::DISABLED_PRIORITY) {
+    task_queue_selector_observer_->OnTaskQueueEnabled(queue);
+  }
 }
 
 bool TaskQueueSelector::IsQueueEnabled(
@@ -110,6 +111,16 @@ void TaskQueueSelector::AsValueInto(
 
 void TaskQueueSelector::SetTaskQueueSelectorObserver(Observer* observer) {
   task_queue_selector_observer_ = observer;
+}
+
+bool TaskQueueSelector::EnabledWorkQueuesEmpty() const {
+  for (TaskQueue::QueuePriority priority = TaskQueue::HIGH_PRIORITY;
+       priority < TaskQueue::DISABLED_PRIORITY;
+       priority = NextPriority(priority)) {
+    if (!task_queue_sets_.IsSetEmpty(priority))
+      return false;
+  }
+  return true;
 }
 
 }  // namespace internal

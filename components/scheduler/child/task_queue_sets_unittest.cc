@@ -212,5 +212,28 @@ TEST_F(TaskQueueSetsTest, AssignQueueToSet_Complex) {
   EXPECT_EQ(queue3, selected_queue);
 }
 
+TEST_F(TaskQueueSetsTest, IsSetEmpty_NoWork) {
+  size_t set = 0;
+  EXPECT_TRUE(task_queue_sets_->IsSetEmpty(set));
+
+  internal::TaskQueueImpl* queue = NewTaskQueue();
+  task_queue_sets_->AssignQueueToSet(queue, set);
+  EXPECT_TRUE(task_queue_sets_->IsSetEmpty(set));
+}
+
+TEST_F(TaskQueueSetsTest, IsSetEmpty_Work) {
+  size_t set = 0;
+  EXPECT_TRUE(task_queue_sets_->IsSetEmpty(set));
+
+  internal::TaskQueueImpl* queue = NewTaskQueue();
+  queue->PushTaskOntoWorkQueueForTest(FakeTaskWithEnqueueOrder(1));
+  task_queue_sets_->AssignQueueToSet(queue, set);
+  EXPECT_FALSE(task_queue_sets_->IsSetEmpty(set));
+
+  queue->PopTaskFromWorkQueueForTest();
+  task_queue_sets_->OnPopQueue(queue);
+  EXPECT_TRUE(task_queue_sets_->IsSetEmpty(set));
+}
+
 }  // namespace internal
 }  // namespace scheduler

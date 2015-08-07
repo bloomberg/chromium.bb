@@ -52,8 +52,8 @@ class SCHEDULER_EXPORT TaskQueueSelector {
    public:
     virtual ~Observer() {}
 
-    // Called when a task queue transitions from disabled to enabled.
-    virtual void OnTaskQueueEnabled() = 0;
+    // Called when |queue| transitions from disabled to enabled.
+    virtual void OnTaskQueueEnabled(internal::TaskQueueImpl* queue) = 0;
   };
 
   // Called once to set the Observer. This function is called
@@ -61,6 +61,10 @@ class SCHEDULER_EXPORT TaskQueueSelector {
   void SetTaskQueueSelectorObserver(Observer* observer);
 
   TaskQueueSets* GetTaskQueueSets() { return &task_queue_sets_; }
+
+  // Returns true if all the enabled work queues are empty. Returns false
+  // otherwise.
+  bool EnabledWorkQueuesEmpty() const;
 
  private:
   // Returns the priority which is next after |priority|.

@@ -83,5 +83,11 @@ bool TaskQueueSets::GetOldestQueueInSet(
   return true;
 }
 
+bool TaskQueueSets::IsSetEmpty(size_t set_index) const {
+  DCHECK_LT(set_index, enqueue_order_to_queue_maps_.size())
+      << " set_index = " << set_index;
+  return enqueue_order_to_queue_maps_[set_index].empty();
+}
+
 }  // namespace internal
 }  // namespace scheduler

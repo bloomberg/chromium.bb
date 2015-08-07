@@ -13,6 +13,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::_;
+
 namespace scheduler {
 namespace internal {
 
@@ -21,7 +23,7 @@ class MockObserver : public TaskQueueSelector::Observer {
   MockObserver() {}
   virtual ~MockObserver() {}
 
-  MOCK_METHOD0(OnTaskQueueEnabled, void());
+  MOCK_METHOD1(OnTaskQueueEnabled, void(internal::TaskQueueImpl*));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockObserver);
@@ -135,7 +137,7 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithSetQueuePriority) {
                              TaskQueue::DISABLED_PRIORITY);
   MockObserver mock_observer;
   selector_.SetTaskQueueSelectorObserver(&mock_observer);
-  EXPECT_CALL(mock_observer, OnTaskQueueEnabled()).Times(1);
+  EXPECT_CALL(mock_observer, OnTaskQueueEnabled(_)).Times(1);
   selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::NORMAL_PRIORITY);
 }
 
@@ -144,7 +146,7 @@ TEST_F(TaskQueueSelectorTest,
   selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::NORMAL_PRIORITY);
   MockObserver mock_observer;
   selector_.SetTaskQueueSelectorObserver(&mock_observer);
-  EXPECT_CALL(mock_observer, OnTaskQueueEnabled()).Times(0);
+  EXPECT_CALL(mock_observer, OnTaskQueueEnabled(_)).Times(0);
   selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::NORMAL_PRIORITY);
 }
 
@@ -163,7 +165,7 @@ TEST_F(TaskQueueSelectorTest, TestDisableEnable) {
   EXPECT_FALSE(selector_.IsQueueEnabled(task_queues_[4].get()));
   EXPECT_THAT(PopTasks(), testing::ElementsAre(0, 1, 3));
 
-  EXPECT_CALL(mock_observer, OnTaskQueueEnabled()).Times(2);
+  EXPECT_CALL(mock_observer, OnTaskQueueEnabled(_)).Times(2);
   selector_.SetQueuePriority(task_queues_[2].get(),
                              TaskQueue::BEST_EFFORT_PRIORITY);
   EXPECT_THAT(PopTasks(), testing::ElementsAre(2));
@@ -265,6 +267,17 @@ TEST_F(TaskQueueSelectorTest, TestBestEffortGetsStarved) {
 
 TEST_F(TaskQueueSelectorTest, DisabledPriorityIsPenultimate) {
   EXPECT_EQ(TaskQueue::QUEUE_PRIORITY_COUNT, TaskQueue::DISABLED_PRIORITY + 1);
+}
+
+TEST_F(TaskQueueSelectorTest, EnabledWorkQueuesEmpty) {
+  EXPECT_TRUE(selector_.EnabledWorkQueuesEmpty());
+  std::vector<TaskQueueImpl::Task> tasks = GetTasks(2);
+  size_t queue_order[] = {0, 1};
+  PushTasks(tasks, queue_order);
+
+  EXPECT_FALSE(selector_.EnabledWorkQueuesEmpty());
+  PopTasks();
+  EXPECT_TRUE(selector_.EnabledWorkQueuesEmpty());
 }
 
 }  // namespace internal

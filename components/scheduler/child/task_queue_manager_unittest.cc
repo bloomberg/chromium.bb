@@ -213,6 +213,23 @@ TEST_F(TaskQueueManagerTest, DelayedTaskPosting) {
   EXPECT_THAT(run_order, ElementsAre(1));
 }
 
+bool MessageLoopTaskCounter(size_t* count) {
+  *count = *count + 1;
+  return true;
+}
+
+TEST_F(TaskQueueManagerTest, DelayedTaskExecutedInOneMessageLoopTask) {
+  Initialize(1u);
+
+  base::TimeDelta delay(base::TimeDelta::FromMilliseconds(10));
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), delay);
+
+  size_t task_count = 0;
+  test_task_runner_->RunTasksWhile(
+      base::Bind(&MessageLoopTaskCounter, &task_count));
+  EXPECT_EQ(1u, task_count);
+}
+
 TEST_F(TaskQueueManagerTest, DelayedTaskPosting_MultipleTasks_DecendingOrder) {
   Initialize(1u);
 
@@ -353,7 +370,22 @@ TEST_F(TaskQueueManagerTest, ManualPumpingToggle) {
   EXPECT_THAT(run_order, ElementsAre(1));
 }
 
-TEST_F(TaskQueueManagerTest, DenyRunning) {
+TEST_F(TaskQueueManagerTest, DenyRunning_BeforePosting) {
+  Initialize(1u);
+
+  std::vector<int> run_order;
+  runners_[0]->SetQueuePriority(TaskQueue::DISABLED_PRIORITY);
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+
+  test_task_runner_->RunUntilIdle();
+  EXPECT_TRUE(run_order.empty());
+
+  runners_[0]->SetQueuePriority(TaskQueue::NORMAL_PRIORITY);
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(1));
+}
+
+TEST_F(TaskQueueManagerTest, DenyRunning_AfterPosting) {
   Initialize(1u);
 
   std::vector<int> run_order;
@@ -363,6 +395,23 @@ TEST_F(TaskQueueManagerTest, DenyRunning) {
   test_task_runner_->RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
 
+  runners_[0]->SetQueuePriority(TaskQueue::NORMAL_PRIORITY);
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(1));
+}
+
+TEST_F(TaskQueueManagerTest, DenyRunning_ManuallyPumpedTransitionsToAuto) {
+  Initialize(1u);
+
+  std::vector<int> run_order;
+  runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::MANUAL);
+  runners_[0]->SetQueuePriority(TaskQueue::DISABLED_PRIORITY);
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+
+  test_task_runner_->RunUntilIdle();
+  EXPECT_TRUE(run_order.empty());
+
+  runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::AUTO);
   runners_[0]->SetQueuePriority(TaskQueue::NORMAL_PRIORITY);
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1));

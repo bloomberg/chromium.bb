@@ -100,7 +100,7 @@ class SCHEDULER_EXPORT TaskQueueManager
   };
 
   // TaskQueueSelector::Observer implementation:
-  void OnTaskQueueEnabled() override;
+  void OnTaskQueueEnabled(internal::TaskQueueImpl* queue) override;
 
   // Called by the task queue to register a new pending task.
   void DidQueueTask(const internal::TaskQueueImpl::Task& pending_task);
@@ -111,7 +111,7 @@ class SCHEDULER_EXPORT TaskQueueManager
   void MaybePostDoWorkOnMainRunner();
 
   // Use the selector to choose a pending task and run it.
-  void DoWork(bool posted_from_main_thread);
+  void DoWork(bool decrement_pending_dowork_count);
 
   // Delayed Tasks with run_times <= Now() are enqueued onto the work queue.
   // Reloads any empty work queues which have automatic pumping enabled and
@@ -158,6 +158,25 @@ class SCHEDULER_EXPORT TaskQueueManager
   // from the thread the TaskQueueManager was created on.
   void UnregisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue);
 
+  // Schedule a call to DelayedDoWork at |delayed_run_time| which will call
+  // TaskQueueImpl::MoveReadyDelayedTasksToIncomingQueue for |queue|.
+  // Can be called from any thread.
+  void ScheduleDelayedWork(internal::TaskQueueImpl* queue,
+                           base::TimeTicks delayed_run_time,
+                           internal::LazyNow* lazy_now);
+
+  // Function calling ScheduleDelayedWork that's suitable for use in base::Bind.
+  void ScheduleDelayedWorkTask(scoped_refptr<internal::TaskQueueImpl> queue,
+                               base::TimeTicks delayed_run_time);
+
+  // Calls WakeupReadyDelayedQueues followed by DoWork so that ready delayed
+  // tasks are enqueued and run. Must be called from the main thread.
+  void DelayedDoWork();
+
+  // Call TaskQueueImpl::MoveReadyDelayedTasksToIncomingQueue for each
+  // registered queue for which the delay has elapsed.
+  void WakeupReadyDelayedQueues(internal::LazyNow* lazy_now);
+
   std::set<scoped_refptr<internal::TaskQueueImpl>> queues_;
 
   // This lock guards only |newly_updatable_|.  It's not expected to be heavily
@@ -169,6 +188,11 @@ class SCHEDULER_EXPORT TaskQueueManager
   // only be accessed from the main thread.
   std::set<internal::TaskQueueImpl*> updatable_queue_set_;
 
+  typedef std::multimap<base::TimeTicks, internal::TaskQueueImpl*>
+      DelayedWakeupMultimap;
+
+  DelayedWakeupMultimap delayed_wakeup_map_;
+
   base::AtomicSequenceNumber task_sequence_num_;
   base::debug::TaskAnnotator task_annotator_;
 
@@ -178,6 +202,7 @@ class SCHEDULER_EXPORT TaskQueueManager
 
   base::Closure do_work_from_main_thread_closure_;
   base::Closure do_work_from_other_thread_closure_;
+  base::Closure delayed_queue_wakeup_closure_;
 
   bool task_was_run_on_quiescence_monitored_queue_;
 

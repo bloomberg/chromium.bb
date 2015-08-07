@@ -26,7 +26,7 @@ class SCHEDULER_EXPORT TaskQueueSets {
   void RemoveQueue(internal::TaskQueueImpl* queue);
 
   // O(log num queues)
-  void AssignQueueToSet(internal::TaskQueueImpl* queue, size_t set);
+  void AssignQueueToSet(internal::TaskQueueImpl* queue, size_t set_index);
 
   // O(log num queues)
   void OnPushQueue(internal::TaskQueueImpl* queue);
@@ -35,8 +35,11 @@ class SCHEDULER_EXPORT TaskQueueSets {
   void OnPopQueue(internal::TaskQueueImpl* queue);
 
   // O(1)
-  bool GetOldestQueueInSet(size_t set,
+  bool GetOldestQueueInSet(size_t set_index,
                            internal::TaskQueueImpl** out_queue) const;
+
+  // O(1)
+  bool IsSetEmpty(size_t set_index) const;
 
  private:
   struct EnqueueOrderComparitor {

@@ -125,24 +125,22 @@ bool TaskQueueImpl::PostDelayedTaskLocked(
     // TODO(alexclarke): consider emplace() when C++11 library features allowed.
     delayed_task_queue_.push(pending_task);
     TraceQueueSize(true);
-    // If we changed the topmost task, then it is time to reschedule.
-    if (delayed_task_queue_.top().task.Equals(pending_task.task))
-      ScheduleDelayedWorkLocked(lazy_now);
+    // Schedule a later call to MoveReadyDelayedTasksToIncomingQueue.
+    task_queue_manager_->ScheduleDelayedWork(this, desired_run_time, lazy_now);
     return true;
   }
   pending_task.set_enqueue_order(pending_task.sequence_num);
-  EnqueueTaskLocked(pending_task, EnqueueOrderPolicy::DONT_SET_ENQUEUE_ORDER);
+  EnqueueTaskLocked(pending_task);
   return true;
 }
 
-void TaskQueueImpl::MoveReadyDelayedTasksToIncomingQueue() {
+void TaskQueueImpl::MoveReadyDelayedTasksToIncomingQueue(LazyNow* lazy_now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   base::AutoLock lock(lock_);
   if (!task_queue_manager_)
     return;
 
-  LazyNow lazy_now(task_queue_manager_);
-  MoveReadyDelayedTasksToIncomingQueueLocked(&lazy_now);
+  MoveReadyDelayedTasksToIncomingQueueLocked(lazy_now);
 }
 
 void TaskQueueImpl::MoveReadyDelayedTasksToIncomingQueueLocked(
@@ -154,34 +152,10 @@ void TaskQueueImpl::MoveReadyDelayedTasksToIncomingQueueLocked(
     in_flight_kick_delayed_tasks_.erase(
         delayed_task_queue_.top().delayed_run_time);
     // TODO(alexclarke): consider std::move() when allowed.
-    EnqueueTaskLocked(delayed_task_queue_.top(),
-                      EnqueueOrderPolicy::SET_ENQUEUE_ORDER);
+    EnqueueDelayedTaskLocked(delayed_task_queue_.top());
     delayed_task_queue_.pop();
   }
   TraceQueueSize(true);
-  ScheduleDelayedWorkLocked(lazy_now);
-}
-
-void TaskQueueImpl::ScheduleDelayedWorkLocked(LazyNow* lazy_now) {
-  lock_.AssertAcquired();
-  // Any remaining tasks are in the future, so queue a task to kick them.
-  if (!delayed_task_queue_.empty()) {
-    base::TimeTicks next_run_time = delayed_task_queue_.top().delayed_run_time;
-    DCHECK_GE(next_run_time, lazy_now->Now());
-    // Make sure we don't have more than one
-    // MoveReadyDelayedTasksToIncomingQueue posted for a particular scheduled
-    // run time (note it's fine to have multiple ones in flight for distinct
-    // run times).
-    if (in_flight_kick_delayed_tasks_.find(next_run_time) ==
-        in_flight_kick_delayed_tasks_.end()) {
-      in_flight_kick_delayed_tasks_.insert(next_run_time);
-      base::TimeDelta delay = next_run_time - lazy_now->Now();
-      task_queue_manager_->PostDelayedTask(
-          FROM_HERE,
-          Bind(&TaskQueueImpl::MoveReadyDelayedTasksToIncomingQueue, this),
-          delay);
-    }
-  }
 }
 
 bool TaskQueueImpl::IsQueueEnabled() const {
@@ -291,21 +265,30 @@ void TaskQueueImpl::TraceQueueSize(bool is_locked) const {
     lock_.Release();
 }
 
-void TaskQueueImpl::EnqueueTaskLocked(const Task& pending_task,
-                                      EnqueueOrderPolicy enqueue_order_policy) {
+void TaskQueueImpl::EnqueueTaskLocked(const Task& pending_task) {
   lock_.AssertAcquired();
   if (!task_queue_manager_)
     return;
   if (incoming_queue_.empty())
     task_queue_manager_->RegisterAsUpdatableTaskQueue(this);
-  if (pump_policy_ == PumpPolicy::AUTO && incoming_queue_.empty())
+  if (pump_policy_ == PumpPolicy::AUTO && incoming_queue_.empty()) {
     task_queue_manager_->MaybePostDoWorkOnMainRunner();
+  }
   // TODO(alexclarke): consider std::move() when allowed.
   incoming_queue_.push(pending_task);
-  if (enqueue_order_policy == EnqueueOrderPolicy::SET_ENQUEUE_ORDER) {
-    incoming_queue_.back().set_enqueue_order(
-        task_queue_manager_->GetNextSequenceNumber());
-  }
+  TraceQueueSize(true);
+}
+
+void TaskQueueImpl::EnqueueDelayedTaskLocked(const Task& pending_task) {
+  lock_.AssertAcquired();
+  if (!task_queue_manager_)
+    return;
+  if (incoming_queue_.empty())
+    task_queue_manager_->RegisterAsUpdatableTaskQueue(this);
+  // TODO(alexclarke): consider std::move() when allowed.
+  incoming_queue_.push(pending_task);
+  incoming_queue_.back().set_enqueue_order(
+      task_queue_manager_->GetNextSequenceNumber());
   TraceQueueSize(true);
 }
 
