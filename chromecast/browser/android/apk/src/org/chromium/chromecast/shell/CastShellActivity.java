@@ -43,7 +43,7 @@ public class CastShellActivity extends Activity {
     private CastWindowManager mCastWindowManager;
     private AudioManager mAudioManager;
     private BroadcastReceiver mBroadcastReceiver;
-    private boolean mHadFocusWhenPaused = true;
+    private boolean mReceivedUserLeave = false;
 
     // Native window instance.
     // TODO(byungchul, gunsch): CastShellActivity, CastWindowAndroid, and native CastWindowAndroid
@@ -64,9 +64,10 @@ public class CastShellActivity extends Activity {
      * When starting CastShellActivity from the TV in sleep mode, an extra onPause/onStop will be
      * fired.
      * Details: http://stackoverflow.com/questions/25369909/
+     * We use onUserLeaveHint to determine if the onPause/onStop called because of user intent.
      */
     protected boolean isStopping() {
-        return mHadFocusWhenPaused;
+        return mReceivedUserLeave;
     }
 
     @Override
@@ -214,8 +215,7 @@ public class CastShellActivity extends Activity {
 
     @Override
     protected void onPause() {
-        if (DEBUG) Log.d(TAG, "onPause, window focus = %d", hasWindowFocus());
-        mHadFocusWhenPaused = hasWindowFocus();
+        if (DEBUG) Log.d(TAG, "onPause");
 
         // Release the audio focus. Note that releasing audio focus does not stop audio playback,
         // it just notifies the framework that this activity has stopped playing audio.
@@ -227,6 +227,12 @@ public class CastShellActivity extends Activity {
         if (view != null) view.onHide();
 
         super.onPause();
+    }
+
+    @Override
+    protected void onUserLeaveHint() {
+        if (DEBUG) Log.d(TAG, "onUserLeaveHint");
+        mReceivedUserLeave = true;
     }
 
     protected void finishGracefully() {
