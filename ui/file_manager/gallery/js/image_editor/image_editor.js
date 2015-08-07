@@ -706,34 +706,6 @@ ImageEditor.prototype.onDoubleTap_ = function(x, y) {
 };
 
 /**
- * Hide the tools that overlap the given rectangular frame.
- *
- * @param {ImageRect=} opt_frame Hide the tool that overlaps this rect.
- * @param {ImageRect=} opt_transparent But do not hide the tool that is
- *     completely inside this rect.
- */
-ImageEditor.prototype.hideOverlappingTools = function(
-    opt_frame, opt_transparent) {
-  var frame = opt_frame || null;
-  var transparent = opt_transparent || null;
-
-  var tools = this.rootContainer_.ownerDocument.querySelectorAll('.dimmable');
-  var changed = false;
-  for (var i = 0; i != tools.length; i++) {
-    var tool = tools[i];
-    var toolRect = tool.getBoundingClientRect();
-    var overlapping =
-        (!!frame && frame.intersects(toolRect)) &&
-        !(!!transparent && transparent.contains(toolRect));
-    if (overlapping && !tool.hasAttribute('dimmed') ||
-        !overlapping && tool.hasAttribute('dimmed')) {
-      ImageUtil.setAttribute(tool, 'dimmed', overlapping);
-      changed = true;
-    }
-  }
-};
-
-/**
  * A helper object for panning the ImageBuffer.
  *
  * @param {!HTMLElement} rootContainer The top-level container.

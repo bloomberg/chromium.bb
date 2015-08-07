@@ -852,8 +852,10 @@ paper-slider::shadow paper-progress::shadow #progressContainer {
 .gallery .crop-overlay {
   -webkit-box-orient: vertical;
   display: -webkit-box;
+  height: 100%;
   pointer-events: none;
   position: absolute;
+  width: 100%;
 }
 
 .gallery .crop-overlay .shadow {

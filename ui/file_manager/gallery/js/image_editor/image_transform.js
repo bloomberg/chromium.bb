@@ -213,28 +213,13 @@ ImageEditor.Mode.Crop.prototype.reset = function() {
  * Updates the position of DOM elements.
  */
 ImageEditor.Mode.Crop.prototype.positionDOM = function() {
-  var screenClipped = this.viewport_.getImageBoundsOnScreenClipped();
-
   var screenCrop = this.viewport_.imageToScreenRect(this.cropRect_.getRect());
-  var delta = ImageEditor.Mode.Crop.MOUSE_GRAB_RADIUS;
-  this.editor_.hideOverlappingTools(
-      screenCrop.inflate(delta, delta),
-      screenCrop.inflate(-delta, -delta));
 
-  this.domOverlay_.style.left = screenClipped.left + 'px';
-  this.domOverlay_.style.top = screenClipped.top + 'px';
-  this.domOverlay_.style.width = screenClipped.width + 'px';
-  this.domOverlay_.style.height = screenClipped.height + 'px';
-
-  this.shadowLeft_.style.width = screenCrop.left - screenClipped.left + 'px';
-
-  this.shadowTop_.style.height = screenCrop.top - screenClipped.top + 'px';
-
-  this.shadowRight_.style.width = screenClipped.left + screenClipped.width -
-      (screenCrop.left + screenCrop.width) + 'px';
-
-  this.shadowBottom_.style.height = screenClipped.top + screenClipped.height -
-      (screenCrop.top + screenCrop.height) + 'px';
+  this.shadowLeft_.style.width = screenCrop.left + 'px';
+  this.shadowTop_.style.height = screenCrop.top + 'px';
+  this.shadowRight_.style.width = window.innerWidth - screenCrop.right + 'px';
+  this.shadowBottom_.style.height =
+      window.innerHeight - screenCrop.bottom + 'px';
 };
 
 /**
@@ -244,7 +229,6 @@ ImageEditor.Mode.Crop.prototype.cleanUpUI = function() {
   ImageEditor.Mode.prototype.cleanUpUI.apply(this, arguments);
   this.domOverlay_.parentNode.removeChild(this.domOverlay_);
   this.domOverlay_ = null;
-  this.editor_.hideOverlappingTools();
   this.getViewport().removeEventListener(
       'resize', this.onViewportResizedBound_);
   this.onViewportResizedBound_ = null;
@@ -563,15 +547,29 @@ DraggableRect.prototype.getCursorStyle = function(x, y, mouseDown) {
  */
 DraggableRect.prototype.getDragHandler = function(
     initialScreenX, initialScreenY, touch) {
-  // Check if the initial coordinate in the clip rect.
+  // Check if the initial coordinate is in the image rect.
+  var boundsOnScreen = this.viewport_.getImageBoundsOnScreenClipped();
+  var handlerRadius = touch ? ImageEditor.Mode.Crop.TOUCH_GRAB_RADIUS :
+      ImageEditor.Mode.Crop.MOUSE_GRAB_RADIUS;
+  var draggableAreas = [
+      boundsOnScreen,
+      new Circle(boundsOnScreen.left, boundsOnScreen.top, handlerRadius),
+      new Circle(boundsOnScreen.right, boundsOnScreen.top, handlerRadius),
+      new Circle(boundsOnScreen.left, boundsOnScreen.bottom, handlerRadius),
+      new Circle(boundsOnScreen.right, boundsOnScreen.bottom, handlerRadius)
+  ];
+
+  if (!draggableAreas.some(
+      (area) => area.inside(initialScreenX, initialScreenY))) {
+    return null;
+  }
+
+  // Convert coordinates.
   var initialX = this.viewport_.screenToImageX(initialScreenX);
   var initialY = this.viewport_.screenToImageY(initialScreenY);
   var initialWidth = this.bounds_.right - this.bounds_.left;
   var initialHeight = this.bounds_.bottom - this.bounds_.top;
-  var clipRect = this.viewport_.screenToImageRect(
-      this.viewport_.getImageBoundsOnScreenClipped());
-  if (!clipRect.inside(initialX, initialY))
-    return null;
+  var clipRect = this.viewport_.screenToImageRect(boundsOnScreen);
 
   // Obtain the drag mode.
   this.dragMode_ = this.getDragMode(initialX, initialY, touch);
