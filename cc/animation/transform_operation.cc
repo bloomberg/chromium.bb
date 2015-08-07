@@ -41,7 +41,7 @@ static bool ShareSameAxis(const TransformOperation* from,
   if (IsOperationIdentity(from) && IsOperationIdentity(to))
     return false;
 
-  if (!from && !IsOperationIdentity(to)) {
+  if (IsOperationIdentity(from) && !IsOperationIdentity(to)) {
     *axis_x = to->rotate.axis.x;
     *axis_y = to->rotate.axis.y;
     *axis_z = to->rotate.axis.z;
@@ -49,7 +49,7 @@ static bool ShareSameAxis(const TransformOperation* from,
     return true;
   }
 
-  if (!IsOperationIdentity(from) && !to) {
+  if (!IsOperationIdentity(from) && IsOperationIdentity(to)) {
     *axis_x = from->rotate.axis.x;
     *axis_y = from->rotate.axis.y;
     *axis_z = from->rotate.axis.z;
