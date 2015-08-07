@@ -3,29 +3,73 @@
 // found in the LICENSE file.
 
 function NavigateInCurrentTabCallback() {
-  this.navigateInCurrentTabCalled = false;
-  this.callback = function() {
-    this.navigateInCurrentTabCalled = true;
+  this.navigateCalled = false;
+  this.url = undefined;
+  this.callback = function(url) {
+    this.navigateCalled = true;
+    this.url = url;
   }.bind(this);
   this.reset = function() {
-    this.navigateInCurrentTabCalled = false;
+    this.navigateCalled = false;
+    this.url = undefined;
   };
 }
 
 function NavigateInNewTabCallback() {
-  this.navigateInNewTabCalled = false;
-  this.callback = function() {
-    this.navigateInNewTabCalled = true;
+  this.navigateCalled = false;
+  this.url = undefined;
+  this.callback = function(url) {
+    this.navigateCalled = true;
+    this.url = url;
   }.bind(this);
   this.reset = function() {
-    this.navigateInNewTabCalled = false;
+    this.navigateCalled = false;
+    this.url = undefined;
   };
+}
+
+/**
+ * Given a |navigator|, navigate to |url| in the current tab or new tab,
+ * depending on the value of |openInNewTab|. Use |viewportChangedCallback|
+ * and |navigateCallback| to check the callbacks, and that the navigation
+ * to |expectedResultUrl| happened.
+ */
+function doNavigationUrlTest(
+    navigator,
+    url,
+    openInNewTab,
+    expectedResultUrl,
+    viewportChangedCallback,
+    navigateCallback) {
+  viewportChangedCallback.reset();
+  navigateCallback.reset();
+  navigator.navigate(url, openInNewTab);
+  chrome.test.assertFalse(viewportChangedCallback.wasCalled);
+  chrome.test.assertTrue(navigateCallback.navigateCalled);
+  chrome.test.assertEq(expectedResultUrl, navigateCallback.url);
+}
+
+/**
+ * Helper function to run doNavigationUrlTest() for the current tab and a new
+ * tab.
+ */
+function doNavigationUrlTestInCurrentTabAndNewTab(
+    navigator,
+    url,
+    expectedResultUrl,
+    viewportChangedCallback,
+    navigateInCurrentTabCallback,
+    navigateInNewTabCallback) {
+  doNavigationUrlTest(navigator, url, false, expectedResultUrl,
+      viewportChangedCallback, navigateInCurrentTabCallback);
+  doNavigationUrlTest(navigator, url, true, expectedResultUrl,
+      viewportChangedCallback, navigateInNewTabCallback);
 }
 
 var tests = [
   /**
    * Test navigation within the page, opening a url in the same tab and
-   * opening a url in the new tab.
+   * opening a url in a new tab.
    */
   function testNavigate() {
     var mockWindow = new MockWindow(100, 100);
@@ -70,7 +114,7 @@ var tests = [
     // viewport should not update and viewport position should remain same.
     navigator.navigate(url + "#US", true);
     chrome.test.assertFalse(mockCallback.wasCalled);
-    chrome.test.assertTrue(navigateInNewTabCallback.navigateInNewTabCalled);
+    chrome.test.assertTrue(navigateInNewTabCallback.navigateCalled);
     chrome.test.assertEq(0, viewport.position.x);
     chrome.test.assertEq(0, viewport.position.y);
 
@@ -88,10 +132,151 @@ var tests = [
     // in the same tab.
     navigator.navigate(url + "#ABC", false);
     chrome.test.assertFalse(mockCallback.wasCalled);
-    chrome.test.assertTrue(
-        navigateInCurrentTabCallback.navigateInCurrentTabCalled);
+    chrome.test.assertTrue(navigateInCurrentTabCallback.navigateCalled);
     chrome.test.assertEq(0, viewport.position.x);
     chrome.test.assertEq(300, viewport.position.y);
+
+    chrome.test.succeed();
+  },
+  /**
+   * Test opening a url in the same tab and opening a url in a new tab for
+   * a http:// url as the current location. The destination url may not have
+   * a valid scheme, so the navigator must determine the url by following
+   * similar heuristics as Adobe Acrobat Reader.
+   */
+  function testNavigateForLinksWithoutScheme() {
+    var mockWindow = new MockWindow(100, 100);
+    var mockSizer = new MockSizer();
+    var mockCallback = new MockViewportChangedCallback();
+    var viewport = new Viewport(mockWindow, mockSizer, mockCallback.callback,
+                                function() {}, function() {}, 0, 1, 0);
+
+    var paramsParser = new OpenPDFParamsParser(function(name) {
+      paramsParser.onNamedDestinationReceived(-1);
+    });
+    var url = "http://www.example.com/subdir/xyz.pdf";
+
+    var navigateInCurrentTabCallback = new NavigateInCurrentTabCallback();
+    var navigateInNewTabCallback = new NavigateInNewTabCallback();
+    var navigator = new Navigator(url, viewport, paramsParser,
+        navigateInCurrentTabCallback.callback,
+        navigateInNewTabCallback.callback);
+
+    // Sanity check.
+    doNavigationUrlTestInCurrentTabAndNewTab(
+        navigator,
+        'https://www.foo.com/bar.pdf',
+        'https://www.foo.com/bar.pdf',
+        mockCallback,
+        navigateInCurrentTabCallback,
+        navigateInNewTabCallback);
+
+    // Open relative links.
+    doNavigationUrlTestInCurrentTabAndNewTab(
+        navigator,
+        'foo/bar.pdf',
+        'http://www.example.com/subdir/foo/bar.pdf',
+        mockCallback,
+        navigateInCurrentTabCallback,
+        navigateInNewTabCallback);
+    doNavigationUrlTestInCurrentTabAndNewTab(
+        navigator,
+        'foo.com/bar.pdf',
+        'http://www.example.com/subdir/foo.com/bar.pdf',
+        mockCallback,
+        navigateInCurrentTabCallback,
+        navigateInNewTabCallback);
+    // The expected result is not normalized here.
+    doNavigationUrlTestInCurrentTabAndNewTab(
+        navigator,
+        '../www.foo.com/bar.pdf',
+        'http://www.example.com/subdir/../www.foo.com/bar.pdf',
+        mockCallback,
+        navigateInCurrentTabCallback,
+        navigateInNewTabCallback);
+
+    // Open an absolute link.
+    doNavigationUrlTestInCurrentTabAndNewTab(
+        navigator,
+        '/foodotcom/bar.pdf',
+        'http://www.example.com/foodotcom/bar.pdf',
+        mockCallback,
+        navigateInCurrentTabCallback,
+        navigateInNewTabCallback);
+
+    // Open a http url without a scheme.
+    doNavigationUrlTestInCurrentTabAndNewTab(
+        navigator,
+        'www.foo.com/bar.pdf',
+        'http://www.foo.com/bar.pdf',
+        mockCallback,
+        navigateInCurrentTabCallback,
+        navigateInNewTabCallback);
+
+    // Test three dots.
+    doNavigationUrlTestInCurrentTabAndNewTab(
+        navigator,
+        '.../bar.pdf',
+        'http://www.example.com/subdir/.../bar.pdf',
+        mockCallback,
+        navigateInCurrentTabCallback,
+        navigateInNewTabCallback);
+
+    // Test forward slashes.
+    doNavigationUrlTestInCurrentTabAndNewTab(
+        navigator,
+        '..\\bar.pdf',
+        'http://www.example.com/subdir/..\\bar.pdf',
+        mockCallback,
+        navigateInCurrentTabCallback,
+        navigateInNewTabCallback);
+    doNavigationUrlTestInCurrentTabAndNewTab(
+        navigator,
+        '.\\bar.pdf',
+        'http://www.example.com/subdir/.\\bar.pdf',
+        mockCallback,
+        navigateInCurrentTabCallback,
+        navigateInNewTabCallback);
+    doNavigationUrlTestInCurrentTabAndNewTab(
+        navigator,
+        '\\bar.pdf',
+        'http://www.example.com/subdir/\\bar.pdf',
+        mockCallback,
+        navigateInCurrentTabCallback,
+        navigateInNewTabCallback);
+
+    chrome.test.succeed();
+  },
+  /**
+   * Test opening a url in the same tab and opening a url in a new tab with a
+   * file:/// url as the current location.
+   */
+  function testNavigateFromLocalFile() {
+    var mockWindow = new MockWindow(100, 100);
+    var mockSizer = new MockSizer();
+    var mockCallback = new MockViewportChangedCallback();
+    var viewport = new Viewport(mockWindow, mockSizer, mockCallback.callback,
+                                function() {}, function() {}, 0, 1, 0);
+
+    var paramsParser = new OpenPDFParamsParser(function(name) {
+      paramsParser.onNamedDestinationReceived(-1);
+    });
+    var url = "file:///some/path/to/myfile.pdf";
+
+    var navigateInCurrentTabCallback = new NavigateInCurrentTabCallback();
+    var navigateInNewTabCallback = new NavigateInNewTabCallback();
+    var navigator = new Navigator(url, viewport, paramsParser,
+        navigateInCurrentTabCallback.callback,
+        navigateInNewTabCallback.callback);
+
+    // Open an absolute link.
+    doNavigationUrlTestInCurrentTabAndNewTab(
+        navigator,
+        '/foodotcom/bar.pdf',
+        'file:///foodotcom/bar.pdf',
+        mockCallback,
+        navigateInCurrentTabCallback,
+        navigateInNewTabCallback);
 
     chrome.test.succeed();
   }

@@ -27,7 +27,7 @@ function Navigator(originalUrl,
 }
 
 Navigator.prototype = {
-   /**
+  /**
    * @private
    * Function to navigate to the given URL. This might involve navigating
    * within the PDF page or opening a new url (in the same tab or a new tab).
@@ -38,6 +38,7 @@ Navigator.prototype = {
   navigate: function(url, newTab) {
     if (url.length == 0)
       return;
+
     // If |urlFragment| starts with '#', then it's for the same URL with a
     // different URL fragment.
     if (url.charAt(0) == '#') {
@@ -50,26 +51,12 @@ Navigator.prototype = {
         url = this.originalUrl_ + url;
     }
 
-    // If there's no scheme, add http.
+    // If there's no scheme, then take a guess at the scheme.
     if (url.indexOf('://') == -1 && url.indexOf('mailto:') == -1)
-      url = 'http://' + url;
+      url = this.guessUrlWithoutScheme_(url);
 
-    // Make sure inputURL starts with a valid scheme.
-    if (url.indexOf('http://') != 0 &&
-        url.indexOf('https://') != 0 &&
-        url.indexOf('ftp://') != 0 &&
-        url.indexOf('file://') != 0 &&
-        url.indexOf('mailto:') != 0) {
+    if (!this.isValidUrl_(url))
       return;
-    }
-    // Make sure inputURL is not only a scheme.
-    if (url == 'http://' ||
-        url == 'https://' ||
-        url == 'ftp://' ||
-        url == 'file://' ||
-        url == 'mailto:') {
-      return;
-    }
 
     if (newTab) {
       this.navigateInNewTabCallback_(url);
@@ -79,7 +66,7 @@ Navigator.prototype = {
     }
   },
 
-   /**
+  /**
    * @private
    * Called when the viewport position is received.
    * @param {Object} viewportPosition Dictionary containing the viewport
@@ -91,5 +78,90 @@ Navigator.prototype = {
       this.viewport_.goToPage(pageNumber);
     else
       this.navigateInCurrentTabCallback_(viewportPosition['url']);
+  },
+
+  /**
+   * @private
+   * Checks if the URL starts with a scheme and s not just a scheme.
+   * @param {string} The input URL
+   * @return {boolean} Whether the url is valid.
+   */
+  isValidUrl_: function(url) {
+    // Make sure |url| starts with a valid scheme.
+    if (url.indexOf('http://') != 0 &&
+        url.indexOf('https://') != 0 &&
+        url.indexOf('ftp://') != 0 &&
+        url.indexOf('file://') != 0 &&
+        url.indexOf('mailto:') != 0) {
+      return false;
+    }
+
+    // Make sure |url| is not only a scheme.
+    if (url == 'http://' ||
+        url == 'https://' ||
+        url == 'ftp://' ||
+        url == 'file://' ||
+        url == 'mailto:') {
+      return false;
+    }
+
+    return true;
+  },
+
+  /**
+   * @private
+   * Attempt to figure out what a URL is when there is no scheme.
+   * @param {string} The input URL
+   * @return {string} The URL with a scheme or the original URL if it is not
+   *     possible to determine the scheme.
+   */
+  guessUrlWithoutScheme_: function(url) {
+    // If the original URL is mailto:, that does not make sense to start with,
+    // and neither does adding |url| to it.
+    // If the original URL is not a valid URL, this cannot make a valid URL.
+    // In both cases, just bail out.
+    if (this.originalUrl_.startsWith('mailto:') ||
+        !this.isValidUrl_(this.originalUrl_)) {
+      return url;
+    }
+
+    // Check for absolute paths.
+    if (url.startsWith('/')) {
+      var schemeEndIndex = this.originalUrl_.indexOf('://');
+      var firstSlash = this.originalUrl_.indexOf('/', schemeEndIndex + 3);
+      // e.g. http://www.foo.com/bar -> http://www.foo.com
+      var domain = firstSlash != -1 ?
+          this.originalUrl_.substr(0, firstSlash) : this.originalUrl_;
+      return domain + url;
+    }
+
+    // Check for obvious relative paths.
+    var isRelative = false;
+    if (url.startsWith('.') || url.startsWith('\\'))
+      isRelative = true;
+
+    // In Adobe Acrobat Reader XI, it looks as though links with less than
+    // 2 dot separators in the domain are considered relative links, and
+    // those with 2 of more are considered http URLs. e.g.
+    //
+    // www.foo.com/bar -> http
+    // foo.com/bar -> relative link
+    if (!isRelative) {
+      var domainSeparatorIndex = url.indexOf('/');
+      var domainName = domainSeparatorIndex == -1 ?
+          url : url.substr(0, domainSeparatorIndex);
+      var domainDotCount = (domainName.match(/\./g) || []).length;
+      if (domainDotCount < 2)
+        isRelative = true;
+    }
+
+    if (isRelative) {
+      var slashIndex = this.originalUrl_.lastIndexOf('/');
+      var path = slashIndex != -1 ?
+          this.originalUrl_.substr(0, slashIndex) : this.originalUrl_;
+      return path + '/' + url;
+    }
+
+    return 'http://' + url;
   }
 };
