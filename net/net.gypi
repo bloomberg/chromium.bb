@@ -81,6 +81,8 @@
       'cert/internal/extended_key_usage.h',
       'cert/internal/signature_algorithm.cc',
       'cert/internal/signature_algorithm.h',
+      'cert/internal/signature_policy.cc',
+      'cert/internal/signature_policy.h',
       'cert/internal/verify_name_match.cc',
       'cert/internal/verify_name_match.h',
       'cert/internal/verify_signed_data.cc',

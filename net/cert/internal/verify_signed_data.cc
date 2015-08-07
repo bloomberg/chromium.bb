@@ -19,7 +19,8 @@ namespace net {
 bool VerifySignedData(const SignatureAlgorithm& signature_algorithm,
                       const der::Input& signed_data,
                       const der::BitString& signature_value,
-                      const der::Input& public_key) {
+                      const der::Input& public_key,
+                      const SignaturePolicy* policy) {
   NOTIMPLEMENTED();
   return false;
 }
@@ -39,6 +40,7 @@ bool VerifySignedData(const SignatureAlgorithm& signature_algorithm,
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"
 #include "net/cert/internal/signature_algorithm.h"
+#include "net/cert/internal/signature_policy.h"
 #include "net/der/input.h"
 #include "net/der/parser.h"
 
@@ -161,8 +163,18 @@ WARN_UNUSED_RESULT bool ImportPkeyFromSpki(const der::Input& spki,
 //
 // Following RFC 3279 in this case.
 WARN_UNUSED_RESULT bool ParseRsaKeyFromSpki(const der::Input& public_key_spki,
-                                            crypto::ScopedEVP_PKEY* pkey) {
-  return ImportPkeyFromSpki(public_key_spki, EVP_PKEY_RSA, pkey);
+                                            crypto::ScopedEVP_PKEY* pkey,
+                                            const SignaturePolicy* policy) {
+  if (!ImportPkeyFromSpki(public_key_spki, EVP_PKEY_RSA, pkey))
+    return false;
+
+  // Extract the modulus length from the key.
+  crypto::ScopedRSA rsa(EVP_PKEY_get1_RSA(pkey->get()));
+  if (!rsa)
+    return false;
+  unsigned int modulus_length_bits = BN_num_bits(rsa->n);
+
+  return policy->IsAcceptableModulusLengthForRsa(modulus_length_bits);
 }
 
 // Does signature verification using either RSA or ECDSA.
@@ -206,21 +218,6 @@ WARN_UNUSED_RESULT bool DoVerify(const SignatureAlgorithm& algorithm,
   return 1 == EVP_DigestVerifyFinal(ctx.get(),
                                     signature_value_bytes.UnsafeData(),
                                     signature_value_bytes.Length());
-}
-
-// Returns true if the given curve is allowed for ECDSA. The input is a
-// BoringSSL NID.
-//
-// TODO(eroman): Extract policy decisions such as allowed curves, hashes, RSA
-// modulus size, to somewhere more central.
-WARN_UNUSED_RESULT bool IsAllowedCurveName(int curve_nid) {
-  switch (curve_nid) {
-    case NID_X9_62_prime256v1:
-    case NID_secp384r1:
-    case NID_secp521r1:
-      return true;
-  }
-  return false;
 }
 
 // Parses an EC public key from SPKI to an EVP_PKEY.
@@ -268,18 +265,18 @@ WARN_UNUSED_RESULT bool IsAllowedCurveName(int curve_nid) {
 //     ... -- Extensible
 //     }
 WARN_UNUSED_RESULT bool ParseEcKeyFromSpki(const der::Input& public_key_spki,
-                                           crypto::ScopedEVP_PKEY* pkey) {
+                                           crypto::ScopedEVP_PKEY* pkey,
+                                           const SignaturePolicy* policy) {
   if (!ImportPkeyFromSpki(public_key_spki, EVP_PKEY_EC, pkey))
     return false;
 
-  // Enforce policy on allowed curves in case ImportPkeyFromSpki() were to
-  // recognize and allow use of a weak curve.
+  // Extract the curve name.
   crypto::ScopedEC_KEY ec(EVP_PKEY_get1_EC_KEY(pkey->get()));
   if (!ec.get())
     return false;  // Unexpected.
-
   int curve_nid = EC_GROUP_get_curve_name(EC_KEY_get0_group(ec.get()));
-  return IsAllowedCurveName(curve_nid);
+
+  return policy->IsAcceptableCurveForEcdsa(curve_nid);
 }
 
 }  // namespace
@@ -287,18 +284,22 @@ WARN_UNUSED_RESULT bool ParseEcKeyFromSpki(const der::Input& public_key_spki,
 bool VerifySignedData(const SignatureAlgorithm& signature_algorithm,
                       const der::Input& signed_data,
                       const der::BitString& signature_value,
-                      const der::Input& public_key_spki) {
+                      const der::Input& public_key_spki,
+                      const SignaturePolicy* policy) {
+  if (!policy->IsAcceptableSignatureAlgorithm(signature_algorithm))
+    return false;
+
   crypto::ScopedEVP_PKEY public_key;
 
   // Parse the SPKI to an EVP_PKEY appropriate for the signature algorithm.
   switch (signature_algorithm.algorithm()) {
     case SignatureAlgorithmId::RsaPkcs1:
     case SignatureAlgorithmId::RsaPss:
-      if (!ParseRsaKeyFromSpki(public_key_spki, &public_key))
+      if (!ParseRsaKeyFromSpki(public_key_spki, &public_key, policy))
         return false;
       break;
     case SignatureAlgorithmId::Ecdsa:
-      if (!ParseEcKeyFromSpki(public_key_spki, &public_key))
+      if (!ParseEcKeyFromSpki(public_key_spki, &public_key, policy))
         return false;
       break;
   }

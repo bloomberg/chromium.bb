@@ -16,6 +16,7 @@ class Input;
 }  // namespace der
 
 class SignatureAlgorithm;
+class SignaturePolicy;
 
 // Verifies that |signature_value| is a valid signature of |signed_data| using
 // the algorithm |signature_algorithm| and the public key |public_key|.
@@ -24,12 +25,18 @@ class SignatureAlgorithm;
 //   |signed_data| - The blob of data to verify
 //   |signature_value| - The BIT STRING for the signature's value
 //   |public_key| - A DER-encoded SubjectPublicKeyInfo.
+//   |policy| - Instance of the policy to use. This will be queried to
+//       determine if:
+//          * The parsed RSA key is an adequate size.
+//          * The parsed EC key is for an allowed curve.
+//          * The signature algorithm and its parameters are acceptable.
 //
 // Returns true if verification was successful.
 NET_EXPORT bool VerifySignedData(const SignatureAlgorithm& signature_algorithm,
                                  const der::Input& signed_data,
                                  const der::BitString& signature_value,
-                                 const der::Input& public_key)
+                                 const der::Input& public_key,
+                                 const SignaturePolicy* policy)
     WARN_UNUSED_RESULT;
 
 }  // namespace net

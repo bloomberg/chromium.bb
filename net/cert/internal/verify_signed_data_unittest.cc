@@ -10,11 +10,16 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "net/cert/internal/signature_algorithm.h"
+#include "net/cert/internal/signature_policy.h"
 #include "net/cert/pem_tokenizer.h"
 #include "net/der/input.h"
 #include "net/der/parse_values.h"
 #include "net/der/parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(USE_OPENSSL)
+#include <openssl/obj.h>
+#endif
 
 namespace net {
 
@@ -104,14 +109,17 @@ enum VerifyResult {
   FAILURE,
 };
 
-// Reads test data from |file_name| and runs VerifySignedData() over its inputs.
+// Reads test data from |file_name| and runs VerifySignedData() over its
+// inputs, using |policy|.
 //
 // If expected_result was SUCCESS then the test will only succeed if
 // VerifySignedData() returns true.
 //
 // If expected_result was FAILURE then the test will only succeed if
 // VerifySignedData() returns false.
-void RunTestCase(VerifyResult expected_result, const char* file_name) {
+void RunTestCaseUsingPolicy(VerifyResult expected_result,
+                            const char* file_name,
+                            const SignaturePolicy* policy) {
 #if !defined(USE_OPENSSL)
   LOG(INFO) << "Skipping test, only implemented for BoringSSL";
   return;
@@ -142,10 +150,19 @@ void RunTestCase(VerifyResult expected_result, const char* file_name) {
 
   bool expected_result_bool = expected_result == SUCCESS;
 
-  EXPECT_EQ(expected_result_bool,
-            VerifySignedData(
-                *signature_algorithm, InputFromString(&signed_data),
-                signature_value_bit_string, InputFromString(&public_key)));
+  EXPECT_EQ(
+      expected_result_bool,
+      VerifySignedData(*signature_algorithm, InputFromString(&signed_data),
+                       signature_value_bit_string, InputFromString(&public_key),
+                       policy));
+}
+
+// RunTestCase() is the same as RunTestCaseUsingPolicy(), only it uses a
+// default policy. This policy will accept a basic profile of signature
+// algorithms (including ANY sized RSA key >= 1024).
+void RunTestCase(VerifyResult expected_result, const char* file_name) {
+  SimpleSignaturePolicy policy(1024);
+  return RunTestCaseUsingPolicy(expected_result, file_name, &policy);
 }
 
 // Read the descriptions in the test files themselves for details on what is
@@ -157,6 +174,10 @@ TEST(VerifySignedDataTest, RsaPkcs1Sha1) {
 
 TEST(VerifySignedDataTest, RsaPkcs1Sha256) {
   RunTestCase(SUCCESS, "rsa-pkcs1-sha256.pem");
+}
+
+TEST(VerifySignedDataTest, Rsa2048Pkcs1Sha512) {
+  RunTestCase(SUCCESS, "rsa2048-pkcs1-sha512.pem");
 }
 
 TEST(VerifySignedDataTest, RsaPkcs1Sha256KeyEncodedBer) {
@@ -280,6 +301,88 @@ TEST(VerifySignedDataTest, RsaPkcs1Sha256SpkiNonNullParams) {
 
 TEST(VerifySignedDataTest, EcdsaPrime256v1Sha512UnusedBitsSignature) {
   RunTestCase(FAILURE, "ecdsa-prime256v1-sha512-unused-bits-signature.pem");
+}
+
+// This policy rejects specifically secp384r1 curves.
+class RejectSecp384r1Policy : public SignaturePolicy {
+ public:
+  bool IsAcceptableCurveForEcdsa(int curve_nid) const override {
+#if defined(USE_OPENSSL)
+    if (curve_nid == NID_secp384r1)
+      return false;
+#endif
+    return true;
+  }
+};
+
+TEST(VerifySignedDataTest, PolicyIsAcceptableCurveForEcdsa) {
+  // Using the regular policy both secp384r1 and secp256r1 should be accepted.
+  RunTestCase(SUCCESS, "ecdsa-secp384r1-sha256.pem");
+  RunTestCase(SUCCESS, "ecdsa-prime256v1-sha512.pem");
+
+  // However when using a policy that specifically rejects secp384r1, only
+  // prime256v1 should be accepted.
+  RejectSecp384r1Policy policy;
+  RunTestCaseUsingPolicy(FAILURE, "ecdsa-secp384r1-sha256.pem", &policy);
+  RunTestCaseUsingPolicy(SUCCESS, "ecdsa-prime256v1-sha512.pem", &policy);
+}
+
+TEST(VerifySignedDataTest, PolicyIsAcceptableModulusLengthForRsa) {
+  // Using the regular policy both 1024-bit and 2048-bit RSA keys should be
+  // accepted.
+  SimpleSignaturePolicy policy_1024(1024);
+  RunTestCaseUsingPolicy(SUCCESS, "rsa-pkcs1-sha256.pem", &policy_1024);
+  RunTestCaseUsingPolicy(SUCCESS, "rsa2048-pkcs1-sha512.pem", &policy_1024);
+
+  // However when using a policy that rejects any keys less than 2048-bits, only
+  // one of the tests will pass.
+  SimpleSignaturePolicy policy_2048(2048);
+  RunTestCaseUsingPolicy(FAILURE, "rsa-pkcs1-sha256.pem", &policy_2048);
+  RunTestCaseUsingPolicy(SUCCESS, "rsa2048-pkcs1-sha512.pem", &policy_2048);
+}
+
+// This policy rejects the use of SHA-512.
+class RejectSha512 : public SignaturePolicy {
+ public:
+  RejectSha512() : SignaturePolicy() {}
+
+  bool IsAcceptableSignatureAlgorithm(
+      const SignatureAlgorithm& algorithm) const override {
+    if (algorithm.algorithm() == SignatureAlgorithmId::RsaPss &&
+        algorithm.ParamsForRsaPss()->mgf1_hash() == DigestAlgorithm::Sha512) {
+      return false;
+    }
+
+    return algorithm.digest() != DigestAlgorithm::Sha512;
+  }
+
+  bool IsAcceptableModulusLengthForRsa(
+      size_t modulus_length_bits) const override {
+    return true;
+  }
+};
+
+TEST(VerifySignedDataTest, PolicyIsAcceptableDigestAlgorithm) {
+  // Using the regular policy use of either SHA256 or SHA512 should work
+  // (whether as the main digest, or the MGF1 for RSASSA-PSS)
+  RunTestCase(SUCCESS, "rsa2048-pkcs1-sha512.pem");
+  RunTestCase(SUCCESS, "ecdsa-prime256v1-sha512.pem");
+  RunTestCase(SUCCESS, "ecdsa-secp384r1-sha256.pem");
+  RunTestCase(SUCCESS, "rsa-pkcs1-sha256.pem");
+  RunTestCase(SUCCESS, "rsa-pss-sha256-salt10.pem");
+  // This one uses both SHA256 and SHA512
+  RunTestCase(SUCCESS, "rsa-pss-sha256-mgf1-sha512-salt33.pem");
+
+  // The tests using SHA512 should fail when using a policy that rejects SHA512.
+  // Everything else should pass.
+  RejectSha512 policy;
+  RunTestCaseUsingPolicy(FAILURE, "rsa2048-pkcs1-sha512.pem", &policy);
+  RunTestCaseUsingPolicy(FAILURE, "ecdsa-prime256v1-sha512.pem", &policy);
+  RunTestCaseUsingPolicy(SUCCESS, "ecdsa-secp384r1-sha256.pem", &policy);
+  RunTestCaseUsingPolicy(SUCCESS, "rsa-pkcs1-sha256.pem", &policy);
+  RunTestCaseUsingPolicy(SUCCESS, "rsa-pss-sha256-salt10.pem", &policy);
+  RunTestCaseUsingPolicy(FAILURE, "rsa-pss-sha256-mgf1-sha512-salt33.pem",
+                         &policy);
 }
 
 }  // namespace
