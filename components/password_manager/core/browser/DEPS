@@ -3,8 +3,9 @@ include_rules = [
   "+components/keyed_service/core",
   "+components/pref_registry",
   "+components/sync_driver",
-  "+components/webdata/common",
+  "+components/url_formatter",
   "+components/variations",
+  "+components/webdata/common",
   "+google_apis",
   "+grit",
 ]

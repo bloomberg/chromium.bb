@@ -23,6 +23,7 @@ source_set("browser") {
     "//base",
     "//base:base_static",
     "//components/mime_util",
+    "//components/url_formatter",
     "//content:resources",
     "//content/browser/background_sync:background_sync_proto",
     "//content/browser/cache_storage:cache_storage_proto",

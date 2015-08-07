@@ -37,6 +37,7 @@
 #include "components/nacl/common/nacl_messages.h"
 #include "components/nacl/common/nacl_process_type.h"
 #include "components/nacl/common/nacl_switches.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/child_process_data.h"
@@ -50,7 +51,6 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
 #include "native_client/src/shared/imc/nacl_imc_c.h"
-#include "net/base/net_util.h"
 #include "net/socket/socket_descriptor.h"
 #include "ppapi/host/host_factory.h"
 #include "ppapi/host/ppapi_host.h"
@@ -310,7 +310,7 @@ NaClProcessHost::NaClProcessHost(
   // We aren't on the UI thread so getting the pref locale for language
   // formatting isn't possible, so IDN will be lost, but this is probably OK
   // for this use case.
-  process_->SetName(net::FormatUrl(manifest_url_, std::string()));
+  process_->SetName(url_formatter::FormatUrl(manifest_url_, std::string()));
 
   enable_debug_stub_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableNaClDebug);

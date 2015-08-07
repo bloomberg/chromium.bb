@@ -9,7 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "net/base/net_util.h"
+#include "components/url_formatter/url_formatter.h"
 
 ContentSettingsUsagesState::CommittedDetails::CommittedDetails()
     : current_url_valid(false) {
@@ -106,7 +106,7 @@ void ContentSettingsUsagesState::GetDetailedInfo(
 std::string ContentSettingsUsagesState::GURLToFormattedHost(
     const GURL& url) const {
   base::string16 display_host;
-  net::AppendFormattedHost(url, pref_service_->GetString(accept_language_pref_),
-                           &display_host);
+  url_formatter::AppendFormattedHost(
+      url, pref_service_->GetString(accept_language_pref_), &display_host);
   return base::UTF16ToUTF8(display_host);
 }

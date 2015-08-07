@@ -26,6 +26,7 @@ include_rules = [
   "+components/crash",
   "+components/devtools_discovery",
   "+components/devtools_http_handler",
+  "+components/url_formatter",
 
   # For enabling media related features.
   "+media/base/media_switches.h",

@@ -21,7 +21,7 @@ static_library("utility") {
     "//components/safe_json:safe_json_parser_message_filter",
     "//components/search_engines",
     "//components/strings",
-    "//components/url_fixer",
+    "//components/url_formatter",
     "//content/public/common",
     "//content/public/utility",
     "//media",

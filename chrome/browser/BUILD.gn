@@ -147,7 +147,7 @@ source_set("browser") {
     "//components/ui/zoom:ui_zoom",
     "//components/undo",
     "//components/update_client",
-    "//components/url_fixer",
+    "//components/url_formatter",
     "//components/user_prefs",
     "//components/variations",
     "//components/variations/net",

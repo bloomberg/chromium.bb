@@ -12,6 +12,7 @@ static_library("renderer") {
     "//base",
     "//components/error_page/common",
     "//components/strings",
+    "//components/url_formatter",
     "//content/public/common",
     "//net",
     "//third_party/WebKit/public:blink",

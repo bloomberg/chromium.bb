@@ -16,6 +16,7 @@
         'content_settings_core_common',
         'plugins_common',
         'pref_registry',
+        'url_formatter/url_formatter.gyp:url_formatter',
       ],
       'variables': { 'enable_wexit_time_destructors': 1, },
       'include_dirs': [

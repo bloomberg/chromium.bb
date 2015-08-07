@@ -36,7 +36,7 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/toolbar/toolbar_model.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "ui/gfx/image/image.h"
 #include "url/url_util.h"
 
@@ -299,7 +299,8 @@ bool OmniboxEditModel::UpdatePermanentText() {
 }
 
 GURL OmniboxEditModel::PermanentURL() {
-  return url_fixer::FixupURL(base::UTF16ToUTF8(permanent_text_), std::string());
+  return url_formatter::FixupURL(base::UTF16ToUTF8(permanent_text_),
+                                 std::string());
 }
 
 void OmniboxEditModel::SetUserText(const base::string16& text) {

@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/secure_display/elide_url.h"
+#include "components/url_formatter/elide_url.h"
 
 #include "base/ios/ios_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/font_list.h"
-#include "ui/gfx/text_elider.h"
-#include "ui/gfx/text_utils.h"
 #include "url/gurl.h"
 
-using base::UTF8ToUTF16;
-using gfx::GetStringWidthF;
-using gfx::kEllipsis;
+#if !defined(OS_ANDROID)
+#include "ui/gfx/font_list.h"  // nogncheck
+#include "ui/gfx/text_elider.h"  // nogncheck
+#include "ui/gfx/text_utils.h"  // nogncheck
+#endif
 
 namespace {
 
@@ -31,16 +30,16 @@ void RunUrlTest(Testcase* testcases, size_t num_testcases) {
     // Should we test with non-empty language list?
     // That's kinda redundant with net_util_unittests.
     const float available_width =
-        GetStringWidthF(UTF8ToUTF16(testcases[i].output), font_list);
-    EXPECT_EQ(UTF8ToUTF16(testcases[i].output),
-              secure_display::ElideUrl(url, font_list, available_width,
-                                       std::string()));
+        gfx::GetStringWidthF(base::UTF8ToUTF16(testcases[i].output), font_list);
+    EXPECT_EQ(base::UTF8ToUTF16(testcases[i].output),
+              url_formatter::ElideUrl(url, font_list, available_width,
+                                      std::string()));
   }
 }
 
 // Test eliding of commonplace URLs.
 TEST(TextEliderTest, TestGeneralEliding) {
-  const std::string kEllipsisStr(kEllipsis);
+  const std::string kEllipsisStr(gfx::kEllipsis);
   Testcase testcases[] = {
       {"http://www.google.com/intl/en/ads/", "www.google.com/intl/en/ads/"},
       {"http://www.google.com/intl/en/ads/", "www.google.com/intl/en/ads/"},
@@ -68,29 +67,30 @@ TEST(TextEliderTest, TestGeneralEliding) {
 // there is a hack in place that simply treats them as one string in this
 // case.
 TEST(TextEliderTest, TestTrailingEllipsisSlashEllipsisHack) {
-  const std::string kEllipsisStr(kEllipsis);
+  const std::string kEllipsisStr(gfx::kEllipsis);
 
   // Very little space, would cause double ellipsis.
   gfx::FontList font_list;
   GURL url("http://battersbox.com/directory/foo/peter_paul_and_mary.html");
-  float available_width = GetStringWidthF(
-      UTF8ToUTF16("battersbox.com/" + kEllipsisStr + "/" + kEllipsisStr),
+  float available_width = gfx::GetStringWidthF(
+      base::UTF8ToUTF16("battersbox.com/" + kEllipsisStr + "/" + kEllipsisStr),
       font_list);
 
   // Create the expected string, after elision. Depending on font size, the
   // directory might become /dir... or /di... or/d... - it never should be
   // shorter than that. (If it is, the font considers d... to be longer
   // than .../... -  that should never happen).
-  ASSERT_GT(GetStringWidthF(UTF8ToUTF16(kEllipsisStr + "/" + kEllipsisStr),
-                            font_list),
-            GetStringWidthF(UTF8ToUTF16("d" + kEllipsisStr), font_list));
+  ASSERT_GT(
+      gfx::GetStringWidthF(base::UTF8ToUTF16(kEllipsisStr + "/" + kEllipsisStr),
+                           font_list),
+      gfx::GetStringWidthF(base::UTF8ToUTF16("d" + kEllipsisStr), font_list));
   GURL long_url("http://battersbox.com/directorynameisreallylongtoforcetrunc");
-  base::string16 expected = secure_display::ElideUrl(
+  base::string16 expected = url_formatter::ElideUrl(
       long_url, font_list, available_width, std::string());
   // Ensure that the expected result still contains part of the directory name.
   ASSERT_GT(expected.length(), std::string("battersbox.com/d").length());
-  EXPECT_EQ(expected, secure_display::ElideUrl(url, font_list, available_width,
-                                               std::string()));
+  EXPECT_EQ(expected, url_formatter::ElideUrl(url, font_list, available_width,
+                                              std::string()));
 
   // More space available - elide directories, partially elide filename.
   Testcase testcases[] = {
@@ -102,7 +102,7 @@ TEST(TextEliderTest, TestTrailingEllipsisSlashEllipsisHack) {
 
 // Test eliding of empty strings, URLs with ports, passwords, queries, etc.
 TEST(TextEliderTest, TestMoreEliding) {
-  const std::string kEllipsisStr(kEllipsis);
+  const std::string kEllipsisStr(gfx::kEllipsis);
   Testcase testcases[] = {
       {"http://www.google.com/foo?bar", "www.google.com/foo?bar"},
       {"http://xyz.google.com/foo?bar", "xyz.google.com/foo?" + kEllipsisStr},
@@ -142,7 +142,7 @@ TEST(TextEliderTest, TestMoreEliding) {
 
 // Test eliding of file: URLs.
 TEST(TextEliderTest, TestFileURLEliding) {
-  const std::string kEllipsisStr(kEllipsis);
+  const std::string kEllipsisStr(gfx::kEllipsis);
   Testcase testcases[] = {
     {"file:///C:/path1/path2/path3/filename",
      "file:///C:/path1/path2/path3/filename"},
@@ -178,7 +178,7 @@ TEST(TextEliderTest, TestHostEliding) {
     return;
   }
 #endif
-  const std::string kEllipsisStr(kEllipsis);
+  const std::string kEllipsisStr(gfx::kEllipsis);
   Testcase testcases[] = {
     {"http://google.com", "google.com"},
     {"http://subdomain.google.com", kEllipsisStr + ".google.com"},
@@ -199,23 +199,23 @@ TEST(TextEliderTest, TestHostEliding) {
   };
 
   for (size_t i = 0; i < arraysize(testcases); ++i) {
-    const float available_width =
-        GetStringWidthF(UTF8ToUTF16(testcases[i].output), gfx::FontList());
-    EXPECT_EQ(UTF8ToUTF16(testcases[i].output),
-              secure_display::ElideHost(GURL(testcases[i].input),
-                                        gfx::FontList(), available_width));
+    const float available_width = gfx::GetStringWidthF(
+        base::UTF8ToUTF16(testcases[i].output), gfx::FontList());
+    EXPECT_EQ(base::UTF8ToUTF16(testcases[i].output),
+              url_formatter::ElideHost(GURL(testcases[i].input),
+                                       gfx::FontList(), available_width));
   }
 
   // Trying to elide to a really short length will still keep the full TLD+1
   EXPECT_EQ(
       base::ASCIIToUTF16("google.com"),
-      secure_display::ElideHost(GURL("http://google.com"), gfx::FontList(), 2));
+      url_formatter::ElideHost(GURL("http://google.com"), gfx::FontList(), 2));
   EXPECT_EQ(base::UTF8ToUTF16(kEllipsisStr + ".google.com"),
-            secure_display::ElideHost(GURL("http://subdomain.google.com"),
-                                      gfx::FontList(), 2));
+            url_formatter::ElideHost(GURL("http://subdomain.google.com"),
+                                     gfx::FontList(), 2));
   EXPECT_EQ(
       base::ASCIIToUTF16("foo.bar"),
-      secure_display::ElideHost(GURL("http://foo.bar"), gfx::FontList(), 2));
+      url_formatter::ElideHost(GURL("http://foo.bar"), gfx::FontList(), 2));
 }
 
 #endif  // !defined(OS_ANDROID)
@@ -304,19 +304,19 @@ TEST(TextEliderTest, FormatUrlForSecurityDisplay) {
 
   const char languages[] = "zh-TW,en-US,en,am,ar-EG,ar";
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    base::string16 formatted = secure_display::FormatUrlForSecurityDisplay(
+    base::string16 formatted = url_formatter::FormatUrlForSecurityDisplay(
         GURL(tests[i].input), std::string());
     EXPECT_EQ(base::WideToUTF16(tests[i].output), formatted)
         << tests[i].description;
     base::string16 formatted_with_languages =
-        secure_display::FormatUrlForSecurityDisplay(GURL(tests[i].input),
-                                                    languages);
+        url_formatter::FormatUrlForSecurityDisplay(GURL(tests[i].input),
+                                                   languages);
     EXPECT_EQ(base::WideToUTF16(tests[i].output), formatted_with_languages)
         << tests[i].description;
   }
 
   base::string16 formatted =
-      secure_display::FormatUrlForSecurityDisplay(GURL(), std::string());
+      url_formatter::FormatUrlForSecurityDisplay(GURL(), std::string());
   EXPECT_EQ(base::string16(), formatted)
       << "Explicitly test the 0-argument GURL constructor";
 }

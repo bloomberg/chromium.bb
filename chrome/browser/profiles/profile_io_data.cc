@@ -58,7 +58,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/sync_driver/pref_names.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
@@ -511,7 +511,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::URLBlacklist::SegmentURLCallback callback =
       static_cast<policy::URLBlacklist::SegmentURLCallback>(
-          url_fixer::SegmentURL);
+          url_formatter::SegmentURL);
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       pool->GetSequencedTaskRunner(pool->GetSequenceToken());

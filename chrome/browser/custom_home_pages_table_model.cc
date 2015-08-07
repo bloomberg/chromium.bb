@@ -19,8 +19,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -305,7 +305,7 @@ void CustomHomePagesTableModel::OnGotTitle(const GURL& entry_url,
 base::string16 CustomHomePagesTableModel::FormattedURL(int row) const {
   std::string languages =
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
-  base::string16 url = net::FormatUrl(entries_[row].url, languages);
+  base::string16 url = url_formatter::FormatUrl(entries_[row].url, languages);
   url = base::i18n::GetDisplayStringInLTRDirectionality(url);
   return url;
 }

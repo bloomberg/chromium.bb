@@ -23,7 +23,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
@@ -575,7 +575,7 @@ void CoreOptionsHandler::HandleSetPref(const base::ListValue* args,
         NOTREACHED();
         return;
       }
-      GURL fixed = url_fixer::FixupURL(original, std::string());
+      GURL fixed = url_formatter::FixupURL(original, std::string());
       temp_value.reset(new base::StringValue(fixed.spec()));
       value = temp_value.get();
       break;

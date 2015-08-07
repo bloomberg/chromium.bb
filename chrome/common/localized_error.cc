@@ -18,9 +18,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/net_error_info.h"
+#include "components/url_formatter/url_formatter.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -555,9 +555,9 @@ void LocalizedError::GetStrings(int error_code,
     options.suggestions = SUGGEST_NONE;
   }
 
-  base::string16 failed_url_string(net::FormatUrl(
-      failed_url, accept_languages, net::kFormatUrlOmitNothing,
-      net::UnescapeRule::NORMAL, NULL, NULL, NULL));
+  base::string16 failed_url_string(url_formatter::FormatUrl(
+      failed_url, accept_languages, url_formatter::kFormatUrlOmitNothing,
+      net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr));
   // URLs are always LTR.
   if (base::i18n::IsRTL())
     base::i18n::WrapStringWithLTRFormatting(&failed_url_string);
@@ -594,8 +594,8 @@ void LocalizedError::GetStrings(int error_code,
         l10n_util::GetStringUTF16(options.summary_resource_id));
   }
   summary->SetString("failedUrl", failed_url_string);
-  summary->SetString("hostName", net::IDNToUnicode(failed_url.host(),
-                                                   accept_languages));
+  summary->SetString("hostName", url_formatter::IDNToUnicode(failed_url.host(),
+                                                             accept_languages));
   summary->SetString("productName",
                      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 

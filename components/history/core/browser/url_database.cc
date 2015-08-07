@@ -12,7 +12,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/keyword_search_term.h"
-#include "net/base/net_util.h"
+#include "components/url_formatter/url_formatter.h"
 #include "sql/statement.h"
 #include "url/gurl.h"
 
@@ -372,7 +372,8 @@ bool URLDatabase::GetTextMatches(const base::string16& query,
       // |query_words| won't be shown to user - therefore we can use empty
       // |languages| to reduce dependency (no need to call PrefService).
       base::string16 ascii = base::ASCIIToUTF16(gurl.host());
-      base::string16 utf = net::IDNToUnicode(gurl.host(), std::string());
+      base::string16 utf =
+          url_formatter::IDNToUnicode(gurl.host(), std::string());
       if (ascii != utf)
         query_parser_.ExtractQueryWords(utf, &query_words);
     }

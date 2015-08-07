@@ -203,6 +203,7 @@ static_library("content_shell_lib") {
     "//components/devtools_http_handler",
     "//components/plugins/renderer",
     "//components/test_runner:test_runner",
+    "//components/url_formatter",
     "//components/web_cache/renderer",
     "//content:resources",
     "//content/app/resources",

@@ -13,10 +13,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
+#include "components/url_formatter/url_formatter.h"
 #include "grit/components_strings.h"
 #include "grit/theme_resources.h"
 #include "jni/FullscreenInfoBarDelegate_jni.h"
-#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -69,7 +69,8 @@ base::string16 FullscreenInfoBarDelegate::GetMessageText() const {
   std::string language =
       profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
   return l10n_util::GetStringFUTF16(
-      IDS_FULLSCREEN_INFOBAR_TEXT, net::FormatUrl(GURL(origin_), language));
+      IDS_FULLSCREEN_INFOBAR_TEXT,
+      url_formatter::FormatUrl(GURL(origin_), language));
 }
 
 base::string16 FullscreenInfoBarDelegate::GetButtonLabel(

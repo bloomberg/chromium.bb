@@ -20,7 +20,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -440,7 +440,8 @@ void BookmarkEditorView::Reset() {
 GURL BookmarkEditorView::GetInputURL() const {
   if (details_.GetNodeType() == BookmarkNode::FOLDER)
     return GURL();
-  return url_fixer::FixupURL(base::UTF16ToUTF8(url_tf_->text()), std::string());
+  return url_formatter::FixupURL(base::UTF16ToUTF8(url_tf_->text()),
+                                 std::string());
 }
 
 void BookmarkEditorView::UserInputChanged() {

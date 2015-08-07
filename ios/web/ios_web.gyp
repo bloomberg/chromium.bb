@@ -51,6 +51,7 @@
         'js_resources',
         'user_agent',
         '../../base/base.gyp:base',
+        '../../components/url_formatter/url_formatter.gyp:url_formatter',
         '../../content/content.gyp:content_browser',
         '../../ios/net/ios_net.gyp:ios_net',
         '../../ios/third_party/blink/blink_html_tokenizer.gyp:blink_html_tokenizer',

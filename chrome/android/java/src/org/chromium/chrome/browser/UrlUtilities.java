@@ -126,7 +126,7 @@ public class UrlUtilities {
     }
 
     /**
-     * Refer to url_fixer::FixupURL.
+     * Refer to url_formatter::FixupURL.
      *
      * Given a URL-like string, returns a real URL or null. For example:
      *  - "google.com" -> "http://google.com/"

@@ -28,8 +28,8 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/url_formatter/url_formatter.h"
 #include "net/base/escape.h"
-#include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_util.h"
@@ -221,20 +221,21 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   DCHECK(match.destination_url.is_valid());
 
   // Format the URL autocomplete presentation.
-  const net::FormatUrlTypes format_types = net::kFormatUrlOmitAll &
-      ~(!history_match.match_in_scheme ? 0 : net::kFormatUrlOmitHTTP);
+  const url_formatter::FormatUrlTypes format_types =
+      url_formatter::kFormatUrlOmitAll &
+      ~(!history_match.match_in_scheme ? 0 : url_formatter::kFormatUrlOmitHTTP);
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
-          info.url(),
-          net::FormatUrl(info.url(), languages_, format_types,
-                         net::UnescapeRule::SPACES, NULL, NULL, NULL),
+          info.url(), url_formatter::FormatUrl(
+                          info.url(), languages_, format_types,
+                          net::UnescapeRule::SPACES, nullptr, nullptr, nullptr),
           client()->GetSchemeClassifier());
   std::vector<size_t> offsets =
       OffsetsFromTermMatches(history_match.url_matches);
   base::OffsetAdjuster::Adjustments adjustments;
-  match.contents = net::FormatUrlWithAdjustments(
-      info.url(), languages_, format_types, net::UnescapeRule::SPACES, NULL,
-      NULL, &adjustments);
+  match.contents = url_formatter::FormatUrlWithAdjustments(
+      info.url(), languages_, format_types, net::UnescapeRule::SPACES, nullptr,
+      nullptr, &adjustments);
   base::OffsetAdjuster::AdjustOffsets(adjustments, &offsets);
   TermMatches new_matches =
       ReplaceOffsetsInTermMatches(history_match.url_matches, offsets);

@@ -25,9 +25,9 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/search/search.h"
+#include "components/url_formatter/url_formatter.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/net_util.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -325,10 +325,10 @@ base::string16 FormatBookmarkURLForDisplay(const GURL& url,
   // and trailing slash, and unescape most characters.  However, it's
   // important not to drop any username/password, or unescape anything that
   // changes the URL's meaning.
-  return net::FormatUrl(
-      url, languages,
-      net::kFormatUrlOmitAll & ~net::kFormatUrlOmitUsernamePassword,
-      net::UnescapeRule::SPACES, NULL, NULL, NULL);
+  return url_formatter::FormatUrl(
+      url, languages, url_formatter::kFormatUrlOmitAll &
+                          ~url_formatter::kFormatUrlOmitUsernamePassword,
+      net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
 }
 
 bool IsAppsShortcutEnabled(Profile* profile,

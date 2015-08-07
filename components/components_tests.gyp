@@ -465,7 +465,6 @@
       'proximity_auth/bluetooth_throttler_impl_unittest.cc',
       'proximity_auth/client_impl_unittest.cc',
       'proximity_auth/connection_unittest.cc',
-      'proximity_auth/device_to_device_operations_unittest.cc',
       'proximity_auth/cryptauth/base64url_unittest.cc',
       'proximity_auth/cryptauth/cryptauth_access_token_fetcher_impl_unittest.cc',
       'proximity_auth/cryptauth/cryptauth_api_call_flow_unittest.cc',
@@ -476,6 +475,7 @@
       'proximity_auth/cryptauth/cryptauth_gcm_manager_impl_unittest.cc',
       'proximity_auth/cryptauth/fake_secure_message_delegate_unittest.cc',
       'proximity_auth/cryptauth/sync_scheduler_impl_unittest.cc',
+      'proximity_auth/device_to_device_operations_unittest.cc',
       'proximity_auth/device_to_device_operations_unittest.cc',
       'proximity_auth/device_to_device_secure_context_unittest.cc',
       'proximity_auth/logging/logging_unittest.cc',
@@ -547,9 +547,6 @@
     'search_provider_logos_unittest_sources': [
       'search_provider_logos/logo_cache_unittest.cc',
       'search_provider_logos/logo_tracker_unittest.cc',
-    ],
-    'secure_display_unittest_sources': [
-      'secure_display/elide_url_unittest.cc',
     ],
     'sessions_unittest_sources': [
       'sessions/content/content_serialized_navigation_builder_unittest.cc',
@@ -628,8 +625,10 @@
     'upload_list_unittest_sources': [
       'upload_list/upload_list_unittest.cc',
     ],
-    'url_fixer_unittest_sources': [
-      'url_fixer/url_fixer_unittest.cc',
+    'url_formatter_unittest_sources': [
+      'url_formatter/elide_url_unittest.cc',
+      'url_formatter/url_fixer_unittest.cc',
+      'url_formatter/url_formatter_unittest.cc',
     ],
     'url_matcher_unittest_sources': [
       'url_matcher/regex_set_matcher_unittest.cc',
@@ -762,7 +761,6 @@
         '<@(search_unittest_sources)',
         '<@(search_engines_unittest_sources)',
         '<@(search_provider_logos_unittest_sources)',
-        '<@(secure_display_unittest_sources)',
         '<@(sessions_unittest_sources)',
         '<@(signin_unittest_sources)',
         '<@(suggestions_unittest_sources)',
@@ -771,7 +769,7 @@
         '<@(undo_unittest_sources)',
         '<@(update_client_unittest_sources)',
         '<@(upload_list_unittest_sources)',
-        '<@(url_fixer_unittest_sources)',
+        '<@(url_formatter_unittest_sources)',
         '<@(url_matcher_unittest_sources)',
         '<@(variations_unittest_sources)',
         '<@(wallpaper_unittest_sources)',
@@ -875,7 +873,6 @@
         'components.gyp:search_engines',
         'components.gyp:search_engines_test_support',
         'components.gyp:search_provider_logos',
-        'components.gyp:secure_display',
         'components.gyp:sessions_test_support',
         'components.gyp:signin_core_browser',
         'components.gyp:signin_core_browser_test_support',
@@ -889,7 +886,6 @@
         'components.gyp:update_client',
         'components.gyp:update_client_test_support',
         'components.gyp:upload_list',
-        'components.gyp:url_fixer',
         'components.gyp:variations',
         'components.gyp:variations_http_provider',
         'components.gyp:wallpaper',
@@ -899,6 +895,7 @@
         'components_strings.gyp:components_strings',
         'components_tests_pak',
         'mime_util/mime_util.gyp:mime_util',
+        'url_formatter/url_formatter.gyp:url_formatter',
       ],
       'conditions': [
         ['enable_rlz_support==1', {

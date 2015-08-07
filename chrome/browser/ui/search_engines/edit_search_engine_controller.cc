@@ -10,7 +10,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/user_metrics.h"
 #include "url/gurl.h"
 
@@ -142,7 +142,7 @@ std::string EditSearchEngineController::GetFixedUpURL(
       TemplateURLRef::SearchTermsArgs(base::ASCIIToUTF16("x")),
       TemplateURLServiceFactory::GetForProfile(profile_)->search_terms_data()));
   url::Parsed parts;
-  std::string scheme(url_fixer::SegmentURL(expanded_url, &parts));
+  std::string scheme(url_formatter::SegmentURL(expanded_url, &parts));
   if (!parts.scheme.is_valid())
     url.insert(0, scheme + "://");
 

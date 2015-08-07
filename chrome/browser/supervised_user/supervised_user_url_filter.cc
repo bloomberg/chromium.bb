@@ -19,7 +19,7 @@
 #include "chrome/browser/supervised_user/experimental/supervised_user_blacklist.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -95,7 +95,7 @@ bool FilterBuilder::AddPattern(const std::string& pattern, int site_id) {
   std::string query;
   bool match_subdomains = true;
   URLBlacklist::SegmentURLCallback callback =
-      static_cast<URLBlacklist::SegmentURLCallback>(url_fixer::SegmentURL);
+      static_cast<URLBlacklist::SegmentURLCallback>(url_formatter::SegmentURL);
   if (!URLBlacklist::FilterToComponents(
           callback, pattern,
           &scheme, &host, &match_subdomains, &port, &path, &query)) {

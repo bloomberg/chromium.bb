@@ -18,10 +18,10 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/security_interstitials/core/metrics_helper.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
@@ -124,7 +124,8 @@ base::string16 SecurityInterstitialPage::GetFormattedHostName() const {
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   if (profile)
     languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-  base::string16 host = net::IDNToUnicode(request_url_.host(), languages);
+  base::string16 host =
+      url_formatter::IDNToUnicode(request_url_.host(), languages);
   if (base::i18n::IsRTL())
     base::i18n::WrapStringWithLTRFormatting(&host);
   return host;

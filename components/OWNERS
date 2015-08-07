@@ -299,7 +299,7 @@ per-file user_manager.gypi=dpolukhin@chromium.org
 per-file user_manager.gypi=dzhioev@chromium.org
 per-file user_manager.gypi=nkostylev@chromium.org
 
-per-file url_fixer.gypi=pkasting@chromium.org
+per-file url_formatter.gypi=pkasting@chromium.org
 
 per-file user_prefs.gypi=battre@chromium.org
 per-file user_prefs.gypi=bauerb@chromium.org

@@ -28,6 +28,7 @@ source_set("renderer") {
     "//base/allocator",
     "//cc",
     "//cc/blink",
+    "//components/url_formatter",
     "//components/scheduler:scheduler",
     "//content:resources",
     "//content/common:mojo_bindings",

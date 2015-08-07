@@ -5,6 +5,7 @@
 {
   'dependencies': [
     '../base/base.gyp:base_static',
+    '../components/url_formatter/url_formatter.gyp:url_formatter',
     '../crypto/crypto.gyp:crypto',
     '../device/battery/battery.gyp:device_battery',
     '../device/battery/battery.gyp:device_battery_mojo_bindings',

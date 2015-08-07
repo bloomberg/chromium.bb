@@ -28,6 +28,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/url_formatter/url_formatter.h"
 #import "ios/net/nsurlrequest_util.h"
 #include "ios/public/provider/web/web_ui_ios.h"
 #import "ios/web/history_state_util.h"
@@ -79,7 +80,6 @@
 #import "ios/web/web_state/web_state_impl.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #import "ui/base/ios/cru_context_menu_holder.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -3573,7 +3573,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       DCHECK(web::GetWebClient());
       const std::string& acceptLangs = web::GetWebClient()->GetAcceptLangs(
           self.webStateImpl->GetBrowserState());
-      base::string16 urlText = net::FormatUrl(GURL(href), acceptLangs);
+      base::string16 urlText =
+          url_formatter::FormatUrl(GURL(href), acceptLangs);
       title = base::SysUTF16ToNSString(urlText);
     }
   }

@@ -90,7 +90,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/ui/zoom/zoom_event_manager.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
@@ -1207,7 +1207,7 @@ GURL ProfileImpl::GetHomePage() {
 
     base::FilePath browser_directory;
     PathService::Get(base::DIR_CURRENT, &browser_directory);
-    GURL home_page(url_fixer::FixupRelativeFile(
+    GURL home_page(url_formatter::FixupRelativeFile(
         browser_directory,
         command_line.GetSwitchValuePath(switches::kHomePage)));
     if (home_page.is_valid())
@@ -1216,8 +1216,8 @@ GURL ProfileImpl::GetHomePage() {
 
   if (GetPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage))
     return GURL(chrome::kChromeUINewTabURL);
-  GURL home_page(url_fixer::FixupURL(GetPrefs()->GetString(prefs::kHomePage),
-                                     std::string()));
+  GURL home_page(url_formatter::FixupURL(
+      GetPrefs()->GetString(prefs::kHomePage), std::string()));
   if (!home_page.is_valid())
     return GURL(chrome::kChromeUINewTabURL);
   return home_page;

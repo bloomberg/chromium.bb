@@ -56,7 +56,7 @@
 #include "components/infobars/core/infobar_container.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/navigation_interception/navigation_params.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_thread.h"
@@ -571,7 +571,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(JNIEnv* env,
   }
 
   GURL fixed_url(
-      url_fixer::FixupURL(gurl.possibly_invalid_spec(), std::string()));
+      url_formatter::FixupURL(gurl.possibly_invalid_spec(), std::string()));
   if (!fixed_url.is_valid())
     return PAGE_LOAD_FAILED;
 

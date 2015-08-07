@@ -53,7 +53,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #import "ui/base/cocoa/menu_controller.h"
@@ -905,8 +905,8 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
     NOTIMPLEMENTED();
 
   // Get the first URL and fix it up.
-  GURL url(url_fixer::FixupURL(base::SysNSStringToUTF8([urls objectAtIndex:0]),
-                               std::string()));
+  GURL url(url_formatter::FixupURL(
+      base::SysNSStringToUTF8([urls objectAtIndex:0]), std::string()));
 
   if (url.SchemeIs(url::kJavaScriptScheme)) {
     browser_->window()->GetLocationBar()->GetOmniboxView()->SetUserText(

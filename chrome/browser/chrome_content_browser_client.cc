@@ -108,7 +108,7 @@
 #include "components/rappor/rappor_utils.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/translate/core/common/translate_switches.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_child_process_host.h"

@@ -31,7 +31,7 @@
         'search',
         'search_engines',
         'toolbar',
-        'url_fixer',
+        'url_formatter/url_formatter.gyp:url_formatter',
         'variations_http_provider',
       ],
       'export_dependent_settings': [

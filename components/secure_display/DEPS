@@ -1,7 +1,0 @@
-include_rules = [
-  "+base/",
-  "+base/strings",
-  "+net/base",
-  "+ui/gfx",
-  "+url/",
-]

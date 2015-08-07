@@ -17,8 +17,8 @@
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/url_formatter/url_formatter.h"
 #include "grit/components_scaled_resources.h"
-#include "net/base/net_util.h"
 
 namespace {
 
@@ -42,9 +42,9 @@ bool WordMatchesURLContent(
   size_t prefix_length =
       url.scheme().length() + strlen(url::kStandardSchemeSeparator);
   DCHECK_GE(url.spec().length(), prefix_length);
-  const base::string16& formatted_url = net::FormatUrl(
-      url, languages, net::kFormatUrlOmitNothing, net::UnescapeRule::NORMAL,
-      NULL, NULL, &prefix_length);
+  const base::string16& formatted_url = url_formatter::FormatUrl(
+      url, languages, url_formatter::kFormatUrlOmitNothing,
+      net::UnescapeRule::NORMAL, nullptr, nullptr, &prefix_length);
   if (prefix_length == base::string16::npos)
     return false;
   const base::string16& formatted_url_without_scheme =

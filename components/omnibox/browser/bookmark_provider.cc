@@ -18,7 +18,7 @@
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/history_provider.h"
 #include "components/omnibox/browser/url_prefix.h"
-#include "net/base/net_util.h"
+#include "components/url_formatter/url_formatter.h"
 #include "url/url_constants.h"
 
 using bookmarks::BookmarkMatch;
@@ -188,9 +188,10 @@ AutocompleteMatch BookmarkProvider::BookmarkMatchToACMatch(
   // |offsets|, compute how everything is transformed, then remove it from the
   // end.
   offsets.push_back(inline_autocomplete_offset);
-  match.contents = net::FormatUrlWithOffsets(url, languages_,
-      net::kFormatUrlOmitAll & ~(trim_http ? 0 : net::kFormatUrlOmitHTTP),
-      net::UnescapeRule::SPACES, NULL, NULL, &offsets);
+  match.contents = url_formatter::FormatUrlWithOffsets(
+      url, languages_, url_formatter::kFormatUrlOmitAll &
+                           ~(trim_http ? 0 : url_formatter::kFormatUrlOmitHTTP),
+      net::UnescapeRule::SPACES, nullptr, nullptr, &offsets);
   inline_autocomplete_offset = offsets.back();
   offsets.pop_back();
   BookmarkMatch::MatchPositions new_url_match_positions =

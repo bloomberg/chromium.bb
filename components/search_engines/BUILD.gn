@@ -57,7 +57,7 @@ static_library("search_engines") {
     "//components/pref_registry",
     "//components/rappor",
     "//components/strings",
-    "//components/url_fixer",
+    "//components/url_formatter",
     "//components/webdata/common",
     "//google_apis",
     "//net",

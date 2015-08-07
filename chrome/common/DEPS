@@ -19,6 +19,7 @@ include_rules = [
   "+components/policy/core/common",
   "+components/signin/core/common",
   "+components/translate/core/common",
+  "+components/url_formatter",
   "+components/version_info",
   "+extensions/common",
   "+gin/public",  # For profiling.cc

@@ -9,7 +9,7 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
@@ -215,7 +215,7 @@ bool PrefsUtil::SetPref(const std::string& pref_name,
         return false;
 
       if (IsPrefTypeURL(pref_name)) {
-        GURL fixed = url_fixer::FixupURL(original, std::string());
+        GURL fixed = url_formatter::FixupURL(original, std::string());
         temp_value.reset(new base::StringValue(fixed.spec()));
         value = temp_value.get();
       }

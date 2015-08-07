@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "components/bookmarks/browser/bookmark_expanded_state_tracker.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
 
 using bookmarks::BookmarkExpandedStateTracker;
@@ -104,7 +104,7 @@ using bookmarks::BookmarkNode;
 // If possible, return a valid GURL from the URL text field.
 - (GURL)GURLFromUrlField {
   NSString* url = [self displayURL];
-  return url_fixer::FixupURL([url UTF8String], std::string());
+  return url_formatter::FixupURL([url UTF8String], std::string());
 }
 
 // Enable the OK button if there is a valid URL.

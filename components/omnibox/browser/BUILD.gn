@@ -112,7 +112,7 @@ source_set("browser") {
     "//components/sessions",
     "//components/strings",
     "//components/toolbar",
-    "//components/url_fixer",
+    "//components/url_formatter",
     "//components/variations",
     "//components/variations/net",
     "//net",

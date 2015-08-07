@@ -7,8 +7,9 @@
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_context_uma_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/url_formatter/url_formatter.h"
 #include "grit/theme_resources.h"
-#include "net/base/net_util.h"
+#include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/vector_icons_public2.h"
 
@@ -109,10 +110,11 @@ base::string16 PermissionBubbleRequestImpl::GetMessageText() const {
   }
   return l10n_util::GetStringFUTF16(
       message_id,
-      net::FormatUrl(request_origin_, display_languages_,
-                     net::kFormatUrlOmitUsernamePassword |
-                     net::kFormatUrlOmitTrailingSlashOnBareHostname,
-                     net::UnescapeRule::SPACES, NULL, NULL, NULL));
+      url_formatter::FormatUrl(
+          request_origin_, display_languages_,
+          url_formatter::kFormatUrlOmitUsernamePassword |
+              url_formatter::kFormatUrlOmitTrailingSlashOnBareHostname,
+          net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
 }
 
 base::string16 PermissionBubbleRequestImpl::GetMessageTextFragment() const {

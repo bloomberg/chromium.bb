@@ -7,11 +7,11 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/web_contents.h"
 #include "content/shell/browser/blink_test_controller.h"
 #include "content/shell/browser/shell_javascript_dialog.h"
 #include "content/shell/common/shell_switches.h"
-#include "net/base/net_util.h"
 
 namespace content {
 
@@ -46,9 +46,9 @@ void ShellJavaScriptDialogManager::RunJavaScriptDialog(
     return;
   }
 
-  base::string16 new_message_text = net::FormatUrl(origin_url, accept_lang) +
-                              base::ASCIIToUTF16("\n\n") +
-                              message_text;
+  base::string16 new_message_text =
+      url_formatter::FormatUrl(origin_url, accept_lang) +
+      base::ASCIIToUTF16("\n\n") + message_text;
   gfx::NativeWindow parent_window = web_contents->GetTopLevelNativeWindow();
 
   dialog_.reset(new ShellJavaScriptDialog(this,

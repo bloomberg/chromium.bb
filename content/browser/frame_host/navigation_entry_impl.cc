@@ -9,10 +9,10 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/common/navigation_params.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
-#include "net/base/net_util.h"
 #include "ui/gfx/text_elider.h"
 
 // Use this to get a new unique ID for a NavigationEntry during construction.
@@ -225,9 +225,9 @@ const base::string16& NavigationEntryImpl::GetTitleForDisplay(
   // Use the virtual URL first if any, and fall back on using the real URL.
   base::string16 title;
   if (!virtual_url_.is_empty()) {
-    title = net::FormatUrl(virtual_url_, languages);
+    title = url_formatter::FormatUrl(virtual_url_, languages);
   } else if (!GetURL().is_empty()) {
-    title = net::FormatUrl(GetURL(), languages);
+    title = url_formatter::FormatUrl(GetURL(), languages);
   }
 
   // For file:// URLs use the filename as the title, not the full path.

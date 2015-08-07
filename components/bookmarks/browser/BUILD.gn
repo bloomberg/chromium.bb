@@ -50,6 +50,7 @@ source_set("browser") {
     "//components/query_parser",
     "//components/startup_metric_utils",
     "//components/strings",
+    "//components/url_formatter",
     "//net",
     "//third_party/icu",
     "//ui/base",

@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/window_restore_utils.h"
@@ -54,7 +54,7 @@ void URLListToPref(const base::ListValue* url_list, SessionStartupPref* pref) {
   for (size_t i = 0; i < url_list->GetSize(); ++i) {
     std::string url_text;
     if (url_list->GetString(i, &url_text)) {
-      GURL fixed_url = url_fixer::FixupURL(url_text, std::string());
+      GURL fixed_url = url_formatter::FixupURL(url_text, std::string());
       pref->urls.push_back(fixed_url);
     }
   }

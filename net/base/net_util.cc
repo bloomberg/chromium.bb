@@ -432,14 +432,6 @@ std::string GetHostOrSpecFromURL(const GURL& url) {
   return url.has_host() ? TrimEndingDot(url.host()) : url.spec();
 }
 
-bool CanStripTrailingSlash(const GURL& url) {
-  // Omit the path only for standard, non-file URLs with nothing but "/" after
-  // the hostname.
-  return url.IsStandard() && !url.SchemeIsFile() &&
-      !url.SchemeIsFileSystem() && !url.has_query() && !url.has_ref()
-      && url.path() == "/";
-}
-
 GURL SimplifyUrlForRequest(const GURL& url) {
   DCHECK(url.is_valid());
   GURL::Replacements replacements;

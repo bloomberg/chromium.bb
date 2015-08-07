@@ -25,9 +25,9 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_item.h"
-#include "net/base/net_util.h"
 #include "third_party/re2/re2/re2.h"
 #include "url/gurl.h"
 
@@ -77,7 +77,7 @@ static bool MatchesQuery(
   base::string16 url_formatted = url_raw;
   if (item.GetBrowserContext()) {
     Profile* profile = Profile::FromBrowserContext(item.GetBrowserContext());
-    url_formatted = net::FormatUrl(
+    url_formatted = url_formatter::FormatUrl(
         item.GetOriginalUrl(),
         profile->GetPrefs()->GetString(prefs::kAcceptLanguages));
   }

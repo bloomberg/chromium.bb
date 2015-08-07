@@ -12,7 +12,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/utility/importer/bookmark_html_reader.h"
 #include "components/favicon_base/favicon_usage_data.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "content/public/common/url_constants.h"
 
 namespace {
@@ -51,7 +51,7 @@ bool CanImportURL(const GURL& url) {
         url.host() == chrome::kChromeUIAboutHost)
       return true;
 
-    GURL fixed_url(url_fixer::FixupURL(url.spec(), std::string()));
+    GURL fixed_url(url_formatter::FixupURL(url.spec(), std::string()));
     for (size_t i = 0; i < chrome::kNumberOfChromeHostURLs; ++i) {
       if (fixed_url.DomainIs(chrome::kChromeHostURLs[i]))
         return true;

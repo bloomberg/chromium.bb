@@ -4,8 +4,8 @@
 //
 // This file defines utility functions for eliding URLs.
 
-#ifndef COMPONENTS_SECURE_DISPLAY_ELIDE_URL_H_
-#define COMPONENTS_SECURE_DISPLAY_ELIDE_URL_H_
+#ifndef COMPONENTS_URL_FORMATTER_ELIDE_URL_H_
+#define COMPONENTS_URL_FORMATTER_ELIDE_URL_H_
 
 #include <string>
 
@@ -17,7 +17,7 @@ namespace gfx {
 class FontList;
 }
 
-namespace secure_display {
+namespace url_formatter {
 
 // ElideUrl and Elide host require
 // gfx::GetStringWidthF which is not implemented in Android
@@ -57,8 +57,8 @@ base::string16 ElideHost(const GURL& host_url,
 // otherwise-simplified URLs from each other).
 //
 // Internationalized domain names (IDN) may be presented in Unicode if
-// |languages| accepts the Unicode representation (see |net::FormatUrl| for more
-// details on the algorithm).
+// |languages| accepts the Unicode representation (see
+// |url_formatter::FormatUrl| for more details on the algorithm).
 //
 // - Omits the path for standard schemes, excepting file and filesystem.
 // - Omits the port if it is the default for the scheme.
@@ -67,6 +67,6 @@ base::string16 ElideHost(const GURL& host_url,
 base::string16 FormatUrlForSecurityDisplay(const GURL& origin,
                                            const std::string& languages);
 
-}  // namespace secure_display
+}  // namespace url_formatter
 
-#endif  // COMPONENTS_SECURE_DISPLAY_ELIDE_URL_H_
+#endif  // COMPONENTS_URL_FORMATTER_ELIDE_URL_H_

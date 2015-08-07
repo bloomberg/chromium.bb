@@ -10,9 +10,9 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
+#include "components/url_formatter/url_formatter.h"
 #include "grit/components_strings.h"
 #include "grit/theme_resources.h"
-#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // static
@@ -77,7 +77,8 @@ void ProtectedMediaIdentifierInfoBarDelegate::InfoBarDismissed() {
 base::string16 ProtectedMediaIdentifierInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
       IDS_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_QUESTION,
-      net::FormatUrl(requesting_frame_.GetOrigin(), display_languages_));
+      url_formatter::FormatUrl(requesting_frame_.GetOrigin(),
+                               display_languages_));
 }
 
 base::string16 ProtectedMediaIdentifierInfoBarDelegate::GetButtonLabel(

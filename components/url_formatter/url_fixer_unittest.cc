@@ -11,7 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/url_fixer/url_fixer.h"
+#include "components/url_formatter/url_fixer.h"
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -201,7 +201,7 @@ TEST(URLFixerTest, SegmentURL) {
 
   for (size_t i = 0; i < arraysize(segment_cases); ++i) {
     SegmentCase value = segment_cases[i];
-    result = url_fixer::SegmentURL(value.input, &parts);
+    result = url_formatter::SegmentURL(value.input, &parts);
     EXPECT_EQ(value.result, result);
     EXPECT_EQ(value.scheme, parts.scheme);
     EXPECT_EQ(value.username, parts.username);
@@ -315,7 +315,7 @@ TEST(URLFixerTest, FixupURL) {
   for (size_t i = 0; i < arraysize(fixup_cases); ++i) {
     FixupCase value = fixup_cases[i];
     EXPECT_EQ(value.output,
-              url_fixer::FixupURL(value.input, "").possibly_invalid_spec())
+              url_formatter::FixupURL(value.input, "").possibly_invalid_spec())
         << "input: " << value.input;
   }
 
@@ -359,8 +359,8 @@ TEST(URLFixerTest, FixupURL) {
   };
   for (size_t i = 0; i < arraysize(tld_cases); ++i) {
     FixupCase value = tld_cases[i];
-    EXPECT_EQ(value.output,
-              url_fixer::FixupURL(value.input, "com").possibly_invalid_spec());
+    EXPECT_EQ(value.output, url_formatter::FixupURL(value.input, "com")
+                                .possibly_invalid_spec());
   }
 }
 
@@ -381,7 +381,7 @@ TEST(URLFixerTest, FixupFile) {
   GURL golden(net::FilePathToFileURL(original));
 
   // c:\foo\bar.txt -> file:///c:/foo/bar.txt (basic)
-  GURL fixedup(url_fixer::FixupURL(original.AsUTF8Unsafe(), std::string()));
+  GURL fixedup(url_formatter::FixupURL(original.AsUTF8Unsafe(), std::string()));
   EXPECT_EQ(golden, fixedup);
 
   // TODO(port): Make some equivalent tests for posix.
@@ -390,7 +390,7 @@ TEST(URLFixerTest, FixupFile) {
   std::string cur(base::WideToUTF8(original.value()));
   EXPECT_EQ(':', cur[1]);
   cur[1] = '|';
-  EXPECT_EQ(golden, url_fixer::FixupURL(cur, std::string()));
+  EXPECT_EQ(golden, url_formatter::FixupURL(cur, std::string()));
 
   FixupCase cases[] = {
     {"c:\\Non-existent%20file.txt", "file:///C:/Non-existent%2520file.txt"},
@@ -426,7 +426,7 @@ TEST(URLFixerTest, FixupFile) {
 #else
 #define HOME "/home/"
 #endif
-  url_fixer::home_directory_override = "/foo";
+  url_formatter::home_directory_override = "/foo";
   FixupCase cases[] = {
     // File URLs go through GURL, which tries to escape intelligently.
     {"/A%20non-existent file.txt", "file:///A%2520non-existent%20file.txt"},
@@ -445,7 +445,8 @@ TEST(URLFixerTest, FixupFile) {
 
   for (size_t i = 0; i < arraysize(cases); i++) {
     EXPECT_EQ(cases[i].output,
-              url_fixer::FixupURL(cases[i].input, "").possibly_invalid_spec());
+              url_formatter::FixupURL(cases[i].input, std::string())
+                  .possibly_invalid_spec());
   }
 
   EXPECT_TRUE(base::DeleteFile(original, false));
@@ -466,14 +467,14 @@ TEST(URLFixerTest, FixupRelativeFile) {
     FixupCase value = fixup_cases[i];
     base::FilePath input = base::FilePath::FromUTF8Unsafe(value.input);
     EXPECT_EQ(value.output,
-              url_fixer::FixupRelativeFile(temp_dir_.path(),
+              url_formatter::FixupRelativeFile(temp_dir_.path(),
                   input).possibly_invalid_spec());
   }
 
   // make sure the existing file got fixed-up to a file URL, and that there
   // are no backslashes
   EXPECT_TRUE(IsMatchingFileURL(
-      url_fixer::FixupRelativeFile(temp_dir_.path(),
+      url_formatter::FixupRelativeFile(temp_dir_.path(),
           file_part).possibly_invalid_spec(), full_path));
   EXPECT_TRUE(base::DeleteFile(full_path, false));
 
@@ -481,7 +482,7 @@ TEST(URLFixerTest, FixupRelativeFile) {
   // fixed up to a file URL
   base::FilePath nonexistent_file(
       FILE_PATH_LITERAL("url_fixer_upper_nonexistent_file.txt"));
-  std::string fixedup(url_fixer::FixupRelativeFile(
+  std::string fixedup(url_formatter::FixupRelativeFile(
       temp_dir_.path(), nonexistent_file).possibly_invalid_spec());
   EXPECT_NE(std::string("file:///"), fixedup.substr(0, 8));
   EXPECT_FALSE(IsMatchingFileURL(fixedup, nonexistent_file));
@@ -501,7 +502,7 @@ TEST(URLFixerTest, FixupRelativeFile) {
   // test file in the subdir
   base::FilePath relative_file = sub_dir.Append(sub_file);
   EXPECT_TRUE(IsMatchingFileURL(
-      url_fixer::FixupRelativeFile(temp_dir_.path(),
+      url_formatter::FixupRelativeFile(temp_dir_.path(),
           relative_file).possibly_invalid_spec(), full_path));
 
   // test file in the subdir with different slashes and escaping.
@@ -510,7 +511,7 @@ TEST(URLFixerTest, FixupRelativeFile) {
   base::ReplaceSubstringsAfterOffset(&relative_file_str, 0,
       FILE_PATH_LITERAL(" "), FILE_PATH_LITERAL("%20"));
   EXPECT_TRUE(IsMatchingFileURL(
-      url_fixer::FixupRelativeFile(temp_dir_.path(),
+      url_formatter::FixupRelativeFile(temp_dir_.path(),
           base::FilePath(relative_file_str)).possibly_invalid_spec(),
               full_path));
 
@@ -519,7 +520,7 @@ TEST(URLFixerTest, FixupRelativeFile) {
   relative_file_str = sub_dir.value() + FILE_PATH_LITERAL("/../") +
       sub_dir.value() + FILE_PATH_LITERAL("///./") + sub_file.value();
   EXPECT_TRUE(IsMatchingFileURL(
-      url_fixer::FixupRelativeFile(temp_dir_.path(),
+      url_formatter::FixupRelativeFile(temp_dir_.path(),
           base::FilePath(relative_file_str)).possibly_invalid_spec(),
               full_path));
 
@@ -531,6 +532,6 @@ TEST(URLFixerTest, FixupRelativeFile) {
   // file path (on account of system-specific craziness).
   base::FilePath empty_path;
   base::FilePath http_url_path(FILE_PATH_LITERAL("http://../"));
-  EXPECT_TRUE(
-      url_fixer::FixupRelativeFile(empty_path, http_url_path).SchemeIs("http"));
+  EXPECT_TRUE(url_formatter::FixupRelativeFile(empty_path, http_url_path)
+                  .SchemeIs("http"));
 }

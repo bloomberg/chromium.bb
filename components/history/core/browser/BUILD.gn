@@ -93,6 +93,7 @@ static_library("browser") {
     "//components/keyed_service/core",
     "//components/query_parser",
     "//components/signin/core/browser",
+    "//components/url_formatter",
     "//google_apis",
     "//net",
     "//sql",
