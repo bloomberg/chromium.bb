@@ -4188,7 +4188,6 @@ std::string GLES2Util::GetStringReadPixelType(uint32_t value) {
       {GL_UNSIGNED_INT, "GL_UNSIGNED_INT"},
       {GL_INT, "GL_INT"},
       {GL_FLOAT, "GL_FLOAT"},
-      {GL_UNSIGNED_INT_2_10_10_10_REV, "GL_UNSIGNED_INT_2_10_10_10_REV"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);

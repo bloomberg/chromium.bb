@@ -547,7 +547,7 @@ static const GLenum valid_read_pixel_type_table[] = {
 };
 
 static const GLenum valid_read_pixel_type_table_es3[] = {
-    GL_UNSIGNED_INT, GL_INT, GL_FLOAT, GL_UNSIGNED_INT_2_10_10_10_REV,
+    GL_UNSIGNED_INT, GL_INT, GL_FLOAT,
 };
 
 static const GLenum deprecated_read_pixel_type_table_es3[] = {

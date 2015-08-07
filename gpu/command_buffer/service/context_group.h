@@ -179,6 +179,14 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   // Loses all the context associated with this group.
   void LoseContexts(error::ContextLostReason reason);
 
+  // EXT_draw_buffer related states for backbuffer.
+  GLenum draw_buffer() const {
+    return draw_buffer_;
+  }
+  void set_draw_buffer(GLenum buf) {
+    draw_buffer_ = buf;
+  }
+
   bool GetBufferServiceId(GLuint client_id, GLuint* service_id) const;
 
   void AddSamplerId(GLuint client_id, GLuint service_id) {
@@ -300,6 +308,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   base::hash_map<GLuint, GLuint> samplers_id_map_;
   base::hash_map<GLuint, GLuint> transformfeedbacks_id_map_;
   base::hash_map<GLuint, GLsync> syncs_id_map_;
+
+  GLenum draw_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextGroup);
 };

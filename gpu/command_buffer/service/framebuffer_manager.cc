@@ -440,10 +440,8 @@ bool Framebuffer::HasStencilAttachment() const {
          attachments_.find(GL_STENCIL_ATTACHMENT) != attachments_.end();
 }
 
-GLenum Framebuffer::GetReadBufferInternalFormat() const {
-  if (read_buffer_ == GL_NONE)
-    return 0;
-  AttachmentMap::const_iterator it = attachments_.find(read_buffer_);
+GLenum Framebuffer::GetColorAttachmentFormat() const {
+  AttachmentMap::const_iterator it = attachments_.find(GL_COLOR_ATTACHMENT0);
   if (it == attachments_.end()) {
     return 0;
   }
@@ -451,10 +449,8 @@ GLenum Framebuffer::GetReadBufferInternalFormat() const {
   return attachment->internal_format();
 }
 
-GLenum Framebuffer::GetReadBufferTextureType() const {
-  if (read_buffer_ == GL_NONE)
-    return 0;
-  AttachmentMap::const_iterator it = attachments_.find(read_buffer_);
+GLenum Framebuffer::GetColorAttachmentTextureType() const {
+  AttachmentMap::const_iterator it = attachments_.find(GL_COLOR_ATTACHMENT0);
   if (it == attachments_.end()) {
     return 0;
   }
@@ -586,23 +582,6 @@ bool Framebuffer::HasAlphaMRT() const {
     }
   }
   return false;
-}
-
-bool Framebuffer::HasSameInternalFormatsMRT() const {
-  GLenum internal_format = 0;
-  for (uint32 i = 0; i < manager_->max_draw_buffers_; ++i) {
-    if (draw_buffers_[i] != GL_NONE) {
-      const Attachment* attachment = GetAttachment(draw_buffers_[i]);
-      if (!attachment)
-        continue;
-      if (!internal_format) {
-        internal_format = attachment->internal_format();
-      } else if (internal_format != attachment->internal_format()) {
-        return false;
-      }
-    }
-  }
-  return true;
 }
 
 void Framebuffer::UnbindRenderbuffer(

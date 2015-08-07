@@ -731,8 +731,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   // These check the state of the currently bound framebuffer or the
   // backbuffer if no framebuffer is bound.
-  // Check with all attached and enabled color attachments.
-  bool BoundFramebufferHasColorAttachmentWithAlpha();
+  // If all_draw_buffers is false, only check with COLOR_ATTACHMENT0, otherwise
+  // check with all attached and enabled color attachments.
+  bool BoundFramebufferHasColorAttachmentWithAlpha(bool all_draw_buffers);
   bool BoundFramebufferHasDepthAttachment();
   bool BoundFramebufferHasStencilAttachment();
 
@@ -899,11 +900,11 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // or regular back buffer).
   gfx::Size GetBoundReadFrameBufferSize();
 
-  // Get the format/type of the currently bound frame buffer (either FBO or
-  // regular back buffer).
-  // If the color image is a renderbuffer, returns 0 for type.
+  // Get the format of the currently bound frame buffer (either FBO or regular
+  // back buffer)
   GLenum GetBoundReadFrameBufferTextureType();
   GLenum GetBoundReadFrameBufferInternalFormat();
+  GLenum GetBoundDrawFrameBufferInternalFormat();
 
   // Wrapper for CompressedTexImage2D commands.
   error::Error DoCompressedTexImage2D(
@@ -1871,17 +1872,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
     return error::kNoError;
   }
 
-  bool BackBufferHasAlpha() const {
-    if (back_buffer_draw_buffer_ == GL_NONE)
-      return false;
-    if (offscreen_target_frame_buffer_.get()) {
-      return (offscreen_target_color_format_ == GL_RGBA ||
-              offscreen_target_color_format_ == GL_RGBA8);
-    }
-    return (back_buffer_color_format_ == GL_RGBA ||
-            back_buffer_color_format_ == GL_RGBA8);
-  }
-
   // Set remaining commands to process to 0 to force DoCommands to return
   // and allow context preemption and GPU watchdog checks in GpuScheduler().
   void ExitCommandProcessingEarly() { commands_to_process_ = 0; }
@@ -1979,13 +1969,10 @@ class GLES2DecoderImpl : public GLES2Decoder,
   GLenum back_buffer_color_format_;
   bool back_buffer_has_depth_;
   bool back_buffer_has_stencil_;
-
-  // Tracks read buffer and draw buffer for backbuffer, whether it's onscreen
-  // or offscreen.
+  // This tracks read buffer for both offscreen/onscreen backbuffer cases.
   // TODO(zmo): when ES3 APIs are exposed to Nacl, make sure read_buffer_
   // setting is set correctly when SwapBuffers().
   GLenum back_buffer_read_buffer_;
-  GLenum back_buffer_draw_buffer_;
 
   bool surfaceless_;
 
@@ -2551,7 +2538,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       back_buffer_has_depth_(false),
       back_buffer_has_stencil_(false),
       back_buffer_read_buffer_(GL_BACK),
-      back_buffer_draw_buffer_(GL_BACK),
       surfaceless_(false),
       backbuffer_needs_clear_bits_(0),
       current_decoder_error_(error::kNoError),
@@ -3658,7 +3644,7 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
       state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
       bool reset_draw_buffer = false;
       if ((backbuffer_needs_clear_bits_ & GL_COLOR_BUFFER_BIT) != 0 &&
-          back_buffer_draw_buffer_ == GL_NONE) {
+          group_->draw_buffer() == GL_NONE) {
         reset_draw_buffer = true;
         GLenum buf = GL_BACK;
         if (GetBackbufferServiceId() != 0)  // emulated backbuffer
@@ -3787,11 +3773,9 @@ gfx::Size GLES2DecoderImpl::GetBoundReadFrameBufferSize() {
 GLenum GLES2DecoderImpl::GetBoundReadFrameBufferTextureType() {
   Framebuffer* framebuffer =
     GetFramebufferInfoForTarget(GL_READ_FRAMEBUFFER_EXT);
-  if (framebuffer) {
-    return framebuffer->GetReadBufferTextureType();
-  } else {  // Back buffer.
-    if (back_buffer_read_buffer_ == GL_NONE)
-      return 0;
+  if (framebuffer != NULL) {
+    return framebuffer->GetColorAttachmentTextureType();
+  } else {
     return GL_UNSIGNED_BYTE;
   }
 }
@@ -3799,14 +3783,23 @@ GLenum GLES2DecoderImpl::GetBoundReadFrameBufferTextureType() {
 GLenum GLES2DecoderImpl::GetBoundReadFrameBufferInternalFormat() {
   Framebuffer* framebuffer =
       GetFramebufferInfoForTarget(GL_READ_FRAMEBUFFER_EXT);
-  if (framebuffer) {
-    return framebuffer->GetReadBufferInternalFormat();
-  } else {  // Back buffer.
-    if (back_buffer_read_buffer_ == GL_NONE)
-      return 0;
-    if (offscreen_target_frame_buffer_.get()) {
-      return offscreen_target_color_format_;
-    }
+  if (framebuffer != NULL) {
+    return framebuffer->GetColorAttachmentFormat();
+  } else if (offscreen_target_frame_buffer_.get()) {
+    return offscreen_target_color_format_;
+  } else {
+    return back_buffer_color_format_;
+  }
+}
+
+GLenum GLES2DecoderImpl::GetBoundDrawFrameBufferInternalFormat() {
+  Framebuffer* framebuffer =
+      GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+  if (framebuffer != NULL) {
+    return framebuffer->GetColorAttachmentFormat();
+  } else if (offscreen_target_frame_buffer_.get()) {
+    return offscreen_target_color_format_;
+  } else {
     return back_buffer_color_format_;
   }
 }
@@ -4215,7 +4208,8 @@ bool GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
   // Clear the target frame buffer.
   {
     ScopedFrameBufferBinder binder(this, offscreen_target_frame_buffer_->id());
-    glClearColor(0, 0, 0, BackBufferHasAlpha() ? 0 : 1.f);
+    glClearColor(0, 0, 0, (GLES2Util::GetChannelsForFormat(
+        offscreen_target_color_format_) & 0x0008) != 0 ? 0 : 1.f);
     state_.SetDeviceColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glClearStencil(0);
     state_.SetDeviceStencilMaskSeparate(GL_FRONT, kDefaultStencilMask);
@@ -4481,12 +4475,15 @@ void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint client_id) {
   glBindBuffer(target, service_id);
 }
 
-bool GLES2DecoderImpl::BoundFramebufferHasColorAttachmentWithAlpha() {
+bool GLES2DecoderImpl::BoundFramebufferHasColorAttachmentWithAlpha(
+    bool all_draw_buffers) {
   Framebuffer* framebuffer =
       GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
-  if (framebuffer)
-    return framebuffer->HasAlphaMRT();
-  return BackBufferHasAlpha();
+  if (!all_draw_buffers || !framebuffer) {
+    return (GLES2Util::GetChannelsForFormat(
+        GetBoundDrawFrameBufferInternalFormat()) & 0x0008) != 0;
+  }
+  return framebuffer->HasAlphaMRT();
 }
 
 bool GLES2DecoderImpl::BoundFramebufferHasDepthAttachment() {
@@ -4516,7 +4513,7 @@ bool GLES2DecoderImpl::BoundFramebufferHasStencilAttachment() {
 
 void GLES2DecoderImpl::ApplyDirtyState() {
   if (framebuffer_state_.clear_state_dirty) {
-    bool have_alpha = BoundFramebufferHasColorAttachmentWithAlpha();
+    bool have_alpha = BoundFramebufferHasColorAttachmentWithAlpha(true);
     state_.SetDeviceColorMask(state_.color_mask_red,
                               state_.color_mask_green,
                               state_.color_mask_blue,
@@ -5089,23 +5086,21 @@ bool GLES2DecoderImpl::GetHelper(
       *num_written = 1;
       if (params) {
         GLint v = 0;
-        Framebuffer* framebuffer =
-            GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
-        if (framebuffer) {
-          if (framebuffer->HasAlphaMRT() &&
-              framebuffer->HasSameInternalFormatsMRT()) {
-            if (feature_info_->gl_version_info().is_desktop_core_profile) {
-              glGetFramebufferAttachmentParameterivEXT(
-                  GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                  GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE, &v);
-            } else {
-              glGetIntegerv(GL_ALPHA_BITS, &v);
-            }
+        if (feature_info_->gl_version_info().is_desktop_core_profile) {
+          Framebuffer* framebuffer =
+              GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+          if (framebuffer) {
+            glGetFramebufferAttachmentParameterivEXT(
+                GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE, &v);
+          } else {
+            v = (back_buffer_color_format_ == GL_RGBA ? 8 : 0);
           }
         } else {
-          v = (BackBufferHasAlpha() ? 8 : 0);
+          glGetIntegerv(GL_ALPHA_BITS, &v);
         }
-        params[0] = v;
+        params[0] =
+            BoundFramebufferHasColorAttachmentWithAlpha(false) ? v : 0;
       }
       return true;
     case GL_DEPTH_BITS:
@@ -5382,7 +5377,7 @@ bool GLES2DecoderImpl::GetHelper(
             params[0] = framebuffer->GetDrawBuffer(pname);
           } else {  // backbuffer
             if (pname == GL_DRAW_BUFFER0_ARB)
-              params[0] = back_buffer_draw_buffer_;
+              params[0] = group_->draw_buffer();
             else
               params[0] = GL_NONE;
           }
@@ -5737,10 +5732,11 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
   }
   GLbitfield clear_bits = 0;
   if (framebuffer->HasUnclearedColorAttachments()) {
-    // We should always use alpha == 0 here, because 1) some draw buffers may
-    // have alpha and some may not; 2) we won't have the same situation as the
-    // back buffer where alpha channel exists but is not requested.
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClearColor(
+        0.0f, 0.0f, 0.0f,
+        (GLES2Util::GetChannelsForFormat(
+             framebuffer->GetColorAttachmentFormat()) & 0x0008) != 0 ? 0.0f :
+                                                                       1.0f);
     state_.SetDeviceColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     clear_bits |= GL_COLOR_BUFFER_BIT;
     if (feature_info_->feature_flags().ext_draw_buffers)
@@ -8456,90 +8452,21 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glReadPixels", type, "type");
     return error::kNoError;
   }
-
-  GLenum src_internal_format = GetBoundReadFrameBufferInternalFormat();
-  if (src_internal_format == 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glReadPixels",
-        "no valid read buffer source");
-    return error::kNoError;
-  }
-  std::vector<GLenum> accepted_formats;
-  std::vector<GLenum> accepted_types;
-  switch (src_internal_format) {
-    case GL_RGB10_A2UI:
-      accepted_formats.push_back(GL_RGBA);
-      accepted_types.push_back(GL_UNSIGNED_INT_2_10_10_10_REV);
-    case GL_R8UI:
-    case GL_R16UI:
-    case GL_R32UI:
-    case GL_RG8UI:
-    case GL_RG16UI:
-    case GL_RG32UI:
-    // All the RGB_INTEGER formats are not renderable.
-    case GL_RGBA8UI:
-    case GL_RGBA16UI:
-    case GL_RGBA32UI:
-      accepted_formats.push_back(GL_RGBA_INTEGER);
-      accepted_types.push_back(GL_UNSIGNED_INT);
-      break;
-    case GL_R8I:
-    case GL_R16I:
-    case GL_R32I:
-    case GL_RG8I:
-    case GL_RG16I:
-    case GL_RG32I:
-    case GL_RGBA8I:
-    case GL_RGBA16I:
-    case GL_RGBA32I:
-      accepted_formats.push_back(GL_RGBA_INTEGER);
-      accepted_types.push_back(GL_INT);
-      break;
-    default:
-      accepted_formats.push_back(GL_RGBA);
-      {
-        GLenum src_type = GetBoundReadFrameBufferTextureType();
-        switch (src_type) {
-          case GL_HALF_FLOAT:
-          case GL_HALF_FLOAT_OES:
-          case GL_FLOAT:
-          case GL_UNSIGNED_INT_10F_11F_11F_REV:
-            accepted_types.push_back(GL_FLOAT);
-            break;
-          default:
-            accepted_types.push_back(GL_UNSIGNED_BYTE);
-            break;
-        }
-      }
-      break;
-  }
-  if (!IsWebGLContext()) {
-    accepted_formats.push_back(GL_BGRA_EXT);
-    accepted_types.push_back(GL_UNSIGNED_BYTE);
-  }
-  DCHECK_EQ(accepted_formats.size(), accepted_types.size());
-  bool format_type_acceptable = false;
-  for (size_t ii = 0; ii < accepted_formats.size(); ++ii) {
-    if (format == accepted_formats[ii] && type == accepted_types[ii]) {
-      format_type_acceptable = true;
-      break;
-    }
-  }
-  if (!format_type_acceptable) {
+  if ((format != GL_RGBA && format != GL_BGRA_EXT && format != GL_RGB &&
+      format != GL_ALPHA) || type != GL_UNSIGNED_BYTE) {
     // format and type are acceptable enums but not guaranteed to be supported
     // for this framebuffer.  Have to ask gl if they are valid.
     GLint preferred_format = 0;
     DoGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &preferred_format);
     GLint preferred_type = 0;
     DoGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &preferred_type);
-    if (format == static_cast<GLenum>(preferred_format) &&
-        type == static_cast<GLenum>(preferred_type)) {
-      format_type_acceptable = true;
+    if (format != static_cast<GLenum>(preferred_format) ||
+        type != static_cast<GLenum>(preferred_type)) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_OPERATION, "glReadPixels", "format and type incompatible "
+          "with the current read framebuffer");
+      return error::kNoError;
     }
-  }
-  if (!format_type_acceptable) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadPixels",
-        "format and type incompatible with the current read framebuffer");
-    return error::kNoError;
   }
   if (width == 0 || height == 0) {
     return error::kNoError;
@@ -8553,6 +8480,10 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
   if (!SafeAddInt32(x, width, &max_x) || !SafeAddInt32(y, height, &max_y)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "glReadPixels", "dimensions out of range");
+    return error::kNoError;
+  }
+
+  if (!CheckBoundReadFramebufferColorAttachment("glReadPixels")) {
     return error::kNoError;
   }
 
@@ -13466,7 +13397,7 @@ void GLES2DecoderImpl::DoDrawBuffersEXT(
       mapped_buf = GL_COLOR_ATTACHMENT0;
     }
     glDrawBuffersARB(count, &mapped_buf);
-    back_buffer_draw_buffer_ = bufs[0];
+    group_->set_draw_buffer(bufs[0]);
   }
 }
 
