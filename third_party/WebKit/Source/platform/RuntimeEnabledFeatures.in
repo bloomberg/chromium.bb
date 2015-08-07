@@ -149,7 +149,7 @@ ShadowRootDelegatesFocus status=experimental
 SharedArrayBuffer
 SharedWorker status=stable
 SlimmingPaint status=stable
-SlimmingPaintCompositorLayerization depends_on=SlimmingPaint
+SlimmingPaintV2 depends_on=SlimmingPaint
 SlimmingPaintUnderInvalidationChecking depends_on=SlimmingPaint
 SlimmingPaintStrictCullRectClipping depends_on=SlimmingPaint
 StaleWhileRevalidateCacheControl

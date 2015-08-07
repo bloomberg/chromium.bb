@@ -47,7 +47,7 @@ bool CompositingReasonFinder::isMainFrame() const
 
 CompositingReasons CompositingReasonFinder::directReasons(const DeprecatedPaintLayer* layer) const
 {
-    if (RuntimeEnabledFeatures::slimmingPaintCompositorLayerizationEnabled())
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return CompositingReasonNone;
 
     ASSERT(potentialCompositingReasonsFromStyle(layer->layoutObject()) == layer->potentialCompositingReasonsFromStyle());
@@ -76,7 +76,7 @@ bool CompositingReasonFinder::requiresCompositingForScrollableFrame() const
 
 CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle(LayoutObject* layoutObject) const
 {
-    if (RuntimeEnabledFeatures::slimmingPaintCompositorLayerizationEnabled())
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return CompositingReasonNone;
 
     CompositingReasons reasons = CompositingReasonNone;

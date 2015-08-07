@@ -20,7 +20,7 @@ LayerFixedPositionRecorder::LayerFixedPositionRecorder(GraphicsContext& graphics
     , m_isFixedPosition(layoutObject.style()->position() == FixedPosition)
     , m_isFixedPositionContainer(layoutObject.canContainFixedPositionObjects())
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintCompositorLayerizationEnabled())
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return;
 
     if (m_graphicsContext.displayItemList()->displayItemConstructionIsDisabled())
@@ -38,7 +38,7 @@ LayerFixedPositionRecorder::LayerFixedPositionRecorder(GraphicsContext& graphics
 
 LayerFixedPositionRecorder::~LayerFixedPositionRecorder()
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintCompositorLayerizationEnabled())
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return;
 
     if (m_graphicsContext.displayItemList()->displayItemConstructionIsDisabled())
