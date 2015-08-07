@@ -12,8 +12,7 @@ namespace base {
 namespace trace_event {
 
 TEST(ProcessMemoryTotalsDumpProviderTest, DumpRSS) {
-  const MemoryDumpArgs high_detail_args = {
-      MemoryDumpArgs::LEVEL_OF_DETAIL_HIGH};
+  const MemoryDumpArgs high_detail_args = {MemoryDumpArgs::LevelOfDetail::HIGH};
   auto pmtdp = ProcessMemoryTotalsDumpProvider::GetInstance();
   scoped_ptr<ProcessMemoryDump> pmd_before(new ProcessMemoryDump(nullptr));
   scoped_ptr<ProcessMemoryDump> pmd_after(new ProcessMemoryDump(nullptr));

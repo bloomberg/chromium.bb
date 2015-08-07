@@ -110,7 +110,7 @@ TEST(ProcessMemoryMapsDumpProviderTest, ParseProcSmaps) {
   const uint32 kProtR = ProcessMemoryMaps::VMRegion::kProtectionFlagsRead;
   const uint32 kProtW = ProcessMemoryMaps::VMRegion::kProtectionFlagsWrite;
   const uint32 kProtX = ProcessMemoryMaps::VMRegion::kProtectionFlagsExec;
-  const MemoryDumpArgs dump_args = {MemoryDumpArgs::LEVEL_OF_DETAIL_HIGH};
+  const MemoryDumpArgs dump_args = {MemoryDumpArgs::LevelOfDetail::HIGH};
 
   auto pmmdp = ProcessMemoryMapsDumpProvider::GetInstance();
 

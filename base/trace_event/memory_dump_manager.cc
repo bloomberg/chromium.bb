@@ -316,7 +316,7 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
   // MemoryDumpType to get request for light / heavy dump, and remove this
   // constant.
   if (!skip_dump) {
-    MemoryDumpArgs dump_args = {MemoryDumpArgs::LEVEL_OF_DETAIL_HIGH};
+    MemoryDumpArgs dump_args = {MemoryDumpArgs::LevelOfDetail::HIGH};
     dump_successful =
         mdp->OnMemoryDump(dump_args, &pmd_async_state->process_memory_dump);
   }
