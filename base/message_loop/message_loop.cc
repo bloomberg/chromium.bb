@@ -565,7 +565,7 @@ void MessageLoop::StartHistogrammer() {
         "MsgLoop:" + thread_name_,
         kLeastNonZeroMessageId, kMaxMessageId,
         kNumberOfDistinctMessagesDisplayed,
-        message_histogram_->kHexRangePrintingFlag,
+        HistogramBase::kHexRangePrintingFlag,
         event_descriptions_);
   }
 #endif
