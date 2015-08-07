@@ -68,6 +68,23 @@ class WebClient {
   // browser would return true for "chrome://about" URL.
   virtual bool IsAppSpecificURL(const GURL& url) const;
 
+  // Returns true if web views can be created using an alloc, init call.
+  // Web view creation using an alloc, init call is disabled by default.
+  // If this is disallowed all web view creation must happen through the
+  // web view creation utils methods that vend a web view.
+  // This is called once (only in debug builds) before the first web view is
+  // created and not called repeatedly.
+  virtual bool AllowWebViewAllocInit() const;
+
+  // Returns true if all web views that are created need to be associated with
+  // a BrowserState.
+  // This method is only called if the |AllowWebViewAllocInit| returns false.
+  // If this method returns true, web views can only be created
+  // with the BrowserState whose ActiveStateManager is active.
+  // This is called once (only in debug builds) when the first web view is
+  // created and not called repeatedly.
+  virtual bool WebViewsNeedActiveStateManager() const;
+
   // Returns text to be displayed for an unsupported plugin.
   virtual base::string16 GetPluginNotSupportedText() const;
 

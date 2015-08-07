@@ -12,6 +12,7 @@
 #import "ios/web/alloc_with_zone_interceptor.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/web_state/js/page_script_util.h"
+#import "ios/web/web_state/web_view_internal_creation_util.h"
 
 #if !defined(NDEBUG)
 
@@ -26,7 +27,7 @@ BOOL gAllowWKProcessPoolCreation = NO;
 
 + (void)load {
   id (^allocator)(Class klass, NSZone* zone) = ^id(Class klass, NSZone* zone) {
-    if (gAllowWKProcessPoolCreation) {
+    if (gAllowWKProcessPoolCreation || web::IsWebViewAllocInitAllowed()) {
       return NSAllocateObject(klass, 0, zone);
     }
     // You have hit this because you are trying to create a WKProcessPool
