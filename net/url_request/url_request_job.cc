@@ -378,7 +378,9 @@ void URLRequestJob::NotifyHeadersComplete() {
   if (has_handled_response_)
     return;
 
-  DCHECK(!request_->status().is_io_pending());
+  // This should not be called on error, and the job type should have cleared
+  // IO_PENDING state before calling this method.
+  DCHECK(request_->status().is_success());
 
   // Initialize to the current time, and let the subclass optionally override
   // the time stamps if it has that information.  The default request_time is
@@ -761,8 +763,15 @@ const URLRequestStatus URLRequestJob::GetStatus() {
 }
 
 void URLRequestJob::SetStatus(const URLRequestStatus &status) {
-  if (request_)
+  if (request_) {
+    // An error status should never be replaced by a non-error status by a
+    // URLRequestJob.  URLRequest has some retry paths, but it resets the status
+    // itself, if needed.
+    DCHECK(request_->status().is_io_pending() ||
+           request_->status().is_success() ||
+           (!status.is_success() && !status.is_io_pending()));
     request_->set_status(status);
+  }
 }
 
 void URLRequestJob::SetProxyServer(const HostPortPair& proxy_server) {
