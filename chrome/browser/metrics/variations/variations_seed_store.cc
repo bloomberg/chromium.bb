@@ -238,8 +238,108 @@ bool VariationsSeedStore::StoreSeedData(
   return result;
 }
 
-// TODO(asvitkine): Move this method down to match declaration order in a
-// follow-up CL.
+void VariationsSeedStore::UpdateSeedDateAndLogDayChange(
+    const base::Time& server_date_fetched) {
+  VariationsSeedDateChangeState date_change = SEED_DATE_NO_OLD_DATE;
+
+  if (local_state_->HasPrefPath(prefs::kVariationsSeedDate)) {
+    const int64 stored_date_value =
+        local_state_->GetInt64(prefs::kVariationsSeedDate);
+    const base::Time stored_date =
+        base::Time::FromInternalValue(stored_date_value);
+
+    date_change = GetSeedDateChangeState(server_date_fetched, stored_date);
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Variations.SeedDateChange", date_change,
+                            SEED_DATE_ENUM_SIZE);
+
+  local_state_->SetInt64(prefs::kVariationsSeedDate,
+                         server_date_fetched.ToInternalValue());
+}
+
+std::string VariationsSeedStore::GetInvalidSignature() const {
+  return invalid_base64_signature_;
+}
+
+// static
+void VariationsSeedStore::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kVariationsCompressedSeed, std::string());
+  registry->RegisterStringPref(prefs::kVariationsSeed, std::string());
+  registry->RegisterInt64Pref(prefs::kVariationsSeedDate,
+                              base::Time().ToInternalValue());
+  registry->RegisterStringPref(prefs::kVariationsSeedSignature, std::string());
+  registry->RegisterStringPref(prefs::kVariationsCountry, std::string());
+}
+
+VariationsSeedStore::VerifySignatureResult
+VariationsSeedStore::VerifySeedSignature(
+    const std::string& seed_bytes,
+    const std::string& base64_seed_signature) {
+  if (!SignatureVerificationEnabled())
+    return VARIATIONS_SEED_SIGNATURE_ENUM_SIZE;
+
+  if (base64_seed_signature.empty())
+    return VARIATIONS_SEED_SIGNATURE_MISSING;
+
+  std::string signature;
+  if (!base::Base64Decode(base64_seed_signature, &signature))
+    return VARIATIONS_SEED_SIGNATURE_DECODE_FAILED;
+
+  crypto::SignatureVerifier verifier;
+  if (!verifier.VerifyInit(
+          kECDSAWithSHA256AlgorithmID, sizeof(kECDSAWithSHA256AlgorithmID),
+          reinterpret_cast<const uint8*>(signature.data()), signature.size(),
+          kPublicKey, arraysize(kPublicKey))) {
+    return VARIATIONS_SEED_SIGNATURE_INVALID_SIGNATURE;
+  }
+
+  verifier.VerifyUpdate(reinterpret_cast<const uint8*>(seed_bytes.data()),
+                        seed_bytes.size());
+  if (verifier.VerifyFinal())
+    return VARIATIONS_SEED_SIGNATURE_VALID;
+  return VARIATIONS_SEED_SIGNATURE_INVALID_SEED;
+}
+
+void VariationsSeedStore::ClearPrefs() {
+  local_state_->ClearPref(prefs::kVariationsCompressedSeed);
+  local_state_->ClearPref(prefs::kVariationsSeed);
+  local_state_->ClearPref(prefs::kVariationsSeedDate);
+  local_state_->ClearPref(prefs::kVariationsSeedSignature);
+}
+
+bool VariationsSeedStore::ReadSeedData(std::string* seed_data) {
+  std::string base64_seed_data =
+      local_state_->GetString(prefs::kVariationsCompressedSeed);
+  const bool is_compressed = !base64_seed_data.empty();
+  // If there's no compressed seed, fall back to the uncompressed one.
+  if (!is_compressed)
+    base64_seed_data = local_state_->GetString(prefs::kVariationsSeed);
+
+  if (base64_seed_data.empty()) {
+    RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_EMPTY);
+    return false;
+  }
+
+  // If the decode process fails, assume the pref value is corrupt and clear it.
+  std::string decoded_data;
+  if (!base::Base64Decode(base64_seed_data, &decoded_data)) {
+    ClearPrefs();
+    RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_CORRUPT_BASE64);
+    return false;
+  }
+
+  if (!is_compressed) {
+    seed_data->swap(decoded_data);
+  } else if (!metrics::GzipUncompress(decoded_data, seed_data)) {
+    ClearPrefs();
+    RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_CORRUPT_GZIP);
+    return false;
+  }
+
+  return true;
+}
+
 bool VariationsSeedStore::StoreSeedDataNoDelta(
     const std::string& seed_data,
     const std::string& base64_seed_signature,
@@ -301,109 +401,6 @@ bool VariationsSeedStore::StoreSeedDataNoDelta(
 
   RecordSeedStoreHistogram(VARIATIONS_SEED_STORE_SUCCESS);
   return true;
-}
-
-void VariationsSeedStore::UpdateSeedDateAndLogDayChange(
-    const base::Time& server_date_fetched) {
-  VariationsSeedDateChangeState date_change = SEED_DATE_NO_OLD_DATE;
-
-  if (local_state_->HasPrefPath(prefs::kVariationsSeedDate)) {
-    const int64 stored_date_value =
-        local_state_->GetInt64(prefs::kVariationsSeedDate);
-    const base::Time stored_date =
-        base::Time::FromInternalValue(stored_date_value);
-
-    date_change = GetSeedDateChangeState(server_date_fetched, stored_date);
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("Variations.SeedDateChange", date_change,
-                            SEED_DATE_ENUM_SIZE);
-
-  local_state_->SetInt64(prefs::kVariationsSeedDate,
-                         server_date_fetched.ToInternalValue());
-}
-
-
-std::string VariationsSeedStore::GetInvalidSignature() const {
-  return invalid_base64_signature_;
-}
-
-// static
-void VariationsSeedStore::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(prefs::kVariationsCompressedSeed, std::string());
-  registry->RegisterStringPref(prefs::kVariationsSeed, std::string());
-  registry->RegisterInt64Pref(prefs::kVariationsSeedDate,
-                              base::Time().ToInternalValue());
-  registry->RegisterStringPref(prefs::kVariationsSeedSignature, std::string());
-  registry->RegisterStringPref(prefs::kVariationsCountry, std::string());
-}
-
-void VariationsSeedStore::ClearPrefs() {
-  local_state_->ClearPref(prefs::kVariationsCompressedSeed);
-  local_state_->ClearPref(prefs::kVariationsSeed);
-  local_state_->ClearPref(prefs::kVariationsSeedDate);
-  local_state_->ClearPref(prefs::kVariationsSeedSignature);
-}
-
-bool VariationsSeedStore::ReadSeedData(std::string* seed_data) {
-  std::string base64_seed_data =
-      local_state_->GetString(prefs::kVariationsCompressedSeed);
-  const bool is_compressed = !base64_seed_data.empty();
-  // If there's no compressed seed, fall back to the uncompressed one.
-  if (!is_compressed)
-    base64_seed_data = local_state_->GetString(prefs::kVariationsSeed);
-
-  if (base64_seed_data.empty()) {
-    RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_EMPTY);
-    return false;
-  }
-
-  // If the decode process fails, assume the pref value is corrupt and clear it.
-  std::string decoded_data;
-  if (!base::Base64Decode(base64_seed_data, &decoded_data)) {
-    ClearPrefs();
-    RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_CORRUPT_BASE64);
-    return false;
-  }
-
-  if (!is_compressed) {
-    seed_data->swap(decoded_data);
-  } else if (!metrics::GzipUncompress(decoded_data, seed_data)) {
-    ClearPrefs();
-    RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_CORRUPT_GZIP);
-    return false;
-  }
-
-  return true;
-}
-
-VariationsSeedStore::VerifySignatureResult
-VariationsSeedStore::VerifySeedSignature(
-    const std::string& seed_bytes,
-    const std::string& base64_seed_signature) {
-  if (!SignatureVerificationEnabled())
-    return VARIATIONS_SEED_SIGNATURE_ENUM_SIZE;
-
-  if (base64_seed_signature.empty())
-    return VARIATIONS_SEED_SIGNATURE_MISSING;
-
-  std::string signature;
-  if (!base::Base64Decode(base64_seed_signature, &signature))
-    return VARIATIONS_SEED_SIGNATURE_DECODE_FAILED;
-
-  crypto::SignatureVerifier verifier;
-  if (!verifier.VerifyInit(
-          kECDSAWithSHA256AlgorithmID, sizeof(kECDSAWithSHA256AlgorithmID),
-          reinterpret_cast<const uint8*>(signature.data()), signature.size(),
-          kPublicKey, arraysize(kPublicKey))) {
-    return VARIATIONS_SEED_SIGNATURE_INVALID_SIGNATURE;
-  }
-
-  verifier.VerifyUpdate(reinterpret_cast<const uint8*>(seed_bytes.data()),
-                        seed_bytes.size());
-  if (verifier.VerifyFinal())
-    return VARIATIONS_SEED_SIGNATURE_VALID;
-  return VARIATIONS_SEED_SIGNATURE_INVALID_SEED;
 }
 
 // static
