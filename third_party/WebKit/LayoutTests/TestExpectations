@@ -95,7 +95,7 @@ crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/med
 # This only times out on the debug bot.
 crbug.com/474440 [ Mac Debug ] plugins/destroy-reentry.html [ Timeout ]
 
-crbug.com/248938 virtual/threaded/animations/change-keyframes-name.html [ Failure Pass ]
+crbug.com/248938 virtual/threaded/animations/change-keyframes-name.html [ Failure Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/change-one-anim.html [ Failure Pass ]
 crbug.com/248938 virtual/threaded/animations/combo-transform-translate+scale.html [ Failure Pass ]
 crbug.com/326139 crbug.com/390125 media/video-frame-accurate-seek.html [ ImageOnlyFailure Pass ]
@@ -155,6 +155,7 @@ crbug.com/248938 [ Linux Win ] virtual/threaded/animations/cascade-important.htm
 crbug.com/493815 inspector/elements/iframe-load-event.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-04.html [ Pass Failure ]
+crbug.com/352405 virtual/threaded/animations/transition-and-animation-1.html [ Pass Timeout ]
 
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
