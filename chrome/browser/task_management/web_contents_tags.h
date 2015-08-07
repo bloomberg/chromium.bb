@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_TASK_MANAGEMENT_WEB_CONTENTS_TAGS_H_
 
 #include "base/macros.h"
+#include "extensions/common/view_type.h"
 
 class BackgroundContents;
 class Panel;
@@ -75,6 +76,16 @@ class WebContentsTags {
   // resulting tag does not have to be cleaned up by the caller, as it is owned
   // by |web_contents|.
   static void CreateForGuestContents(content::WebContents* web_contents);
+
+  // Tag a WebContents that belongs to |extension| so that it shows up in the
+  // task manager. Calling this function creates a ExtensionTag, and attaches
+  // it to |web_contents|. If an instance is already attached, this does
+  // nothing. The resulting tag does not have to be cleaned up by the caller,
+  // as it is owned by |web_contents|.
+  // |web_contents| must be of a non-tab, non-guest view, non-panel, or
+  // non-background contents Extension.
+  static void CreateForExtension(content::WebContents* web_contents,
+                                 extensions::ViewType view_type);
 
   // Clears the task-manager tag, created by any of the above functions, from
   // the given |web_contents| if any.

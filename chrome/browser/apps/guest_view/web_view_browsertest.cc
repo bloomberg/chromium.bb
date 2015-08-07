@@ -2680,8 +2680,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TaskManagementPreExistingWebViews) {
   task_manager.StartObserving();
 
   // The pre-existing tab and guest tasks are provided.
-  // TODO(afakhry): This will have to change once we start tracking extensions.
-  EXPECT_EQ(2U, task_manager.tasks().size());
+  // 4 tasks expected in the following order:
+  // Tab: about:blank,
+  // Background Page: <webview> task manager test,
+  // App: <webview> task manager test,
+  // Webview: WebViewed test content.
+  EXPECT_EQ(4U, task_manager.tasks().size());
 
   const task_management::Task* task = task_manager.tasks().back();
   EXPECT_EQ(task_management::Task::GUEST, task->GetType());
@@ -2712,8 +2716,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TaskManagementPostExistingWebViews) {
   content::WebContents* guest_contents =
       LoadGuest("/extensions/platform_apps/web_view/task_manager/guest.html",
                 "web_view/task_manager");
-  // TODO(afakhry): This will have to change once we start tracking extensions.
-  EXPECT_EQ(2U, task_manager.tasks().size());
+  // 4 tasks expected in the following order:
+  // Tab: about:blank,
+  // Background Page: <webview> task manager test,
+  // App: <webview> task manager test,
+  // Webview: WebViewed test content.
+  EXPECT_EQ(4U, task_manager.tasks().size());
 
   const task_management::Task* task = task_manager.tasks().back();
   EXPECT_EQ(task_management::Task::GUEST, task->GetType());

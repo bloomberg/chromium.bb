@@ -30,6 +30,7 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/task_management/web_contents_tags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -335,6 +336,38 @@ void ChromeExtensionsBrowserClient::CleanUpWebView(
       MenuManager::Get(Profile::FromBrowserContext(browser_context));
   menu_manager->RemoveAllContextItems(
       MenuItem::ExtensionKey("", embedder_process_id, view_instance_id));
+}
+
+void ChromeExtensionsBrowserClient::AttachExtensionTaskManagerTag(
+    content::WebContents* web_contents,
+    ViewType view_type) {
+  switch (view_type) {
+    case VIEW_TYPE_APP_WINDOW:
+    case VIEW_TYPE_EXTENSION_BACKGROUND_PAGE:
+    case VIEW_TYPE_EXTENSION_DIALOG:
+    case VIEW_TYPE_EXTENSION_POPUP:
+    case VIEW_TYPE_LAUNCHER_PAGE:
+    case VIEW_TYPE_VIRTUAL_KEYBOARD:
+      // These are the only types that are tracked by the ExtensionTag.
+      task_management::WebContentsTags::CreateForExtension(web_contents,
+                                                           view_type);
+      return;
+
+    case VIEW_TYPE_BACKGROUND_CONTENTS:
+    case VIEW_TYPE_PANEL:
+    case VIEW_TYPE_TAB_CONTENTS:
+      // Those types are tracked by other tags:
+      // BACKGROUND_CONTENTS --> task_management::BackgroundContentsTag.
+      // PANEL --> task_management::PanelTag.
+      // TAB_CONTENTS --> task_management::TabContentsTag.
+      // These tags are created and attached to the web_contents in other
+      // locations, and they must be ignored here.
+      return;
+
+    case VIEW_TYPE_INVALID:
+      NOTREACHED();
+      return;
+  }
 }
 
 }  // namespace extensions

@@ -59,11 +59,13 @@ class RendererTask : public Task {
       content::WebContents* web_contents);
 
   // Prefixes the given renderer |title| with the appropriate string based on
-  // whether it's an app, an extension, or incognito.
+  // whether it's an app, an extension, incognito or a background page or
+  // contents.
   static const base::string16 PrefixRendererTitle(const base::string16& title,
                                                   bool is_app,
                                                   bool is_extension,
-                                                  bool is_incognito);
+                                                  bool is_incognito,
+                                                  bool is_background);
 
   content::WebContents* web_contents() const { return web_contents_; }
 

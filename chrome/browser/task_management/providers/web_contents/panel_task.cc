@@ -53,13 +53,14 @@ base::string16 PanelTask::GetCurrentPanelTitle(Panel* panel) const {
   const extensions::Extension* extension =
       registry->enabled_extensions().GetByID(panel->extension_id());
 
-  const bool is_app = extension ? extension->is_app() : false;
+  const bool is_app = extension && extension->is_app();
   const bool is_incognito = panel->profile()->IsOffTheRecord();
 
   return PrefixRendererTitle(title,
                              is_app,
                              true,  // is_extension.
-                             is_incognito);
+                             is_incognito,
+                             false);  // is_background.
 }
 
 }  // namespace task_management

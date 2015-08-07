@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_prefs_observer.h"
+#include "extensions/common/view_type.h"
 
 class ExtensionFunctionRegistry;
 class PrefService;
@@ -225,6 +226,12 @@ class ExtensionsBrowserClient {
   virtual void CleanUpWebView(content::BrowserContext* browser_context,
                               int embedder_process_id,
                               int view_instance_id) {}
+
+  // Attaches the task manager extension tag to |web_contents|, if needed based
+  // on |view_type|, so that its corresponding task shows up in the task
+  // manager.
+  virtual void AttachExtensionTaskManagerTag(content::WebContents* web_contents,
+                                             ViewType view_type) {}
 
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();

@@ -69,7 +69,8 @@ base::string16 TabContentsTask::GetCurrentTitle() const {
   return PrefixRendererTitle(tab_title.empty() ? url_spec : tab_title,
                              is_app,
                              is_extension,
-                             is_incognito);
+                             is_incognito,
+                             false);  // is_background.
 }
 
 }  // namespace task_management

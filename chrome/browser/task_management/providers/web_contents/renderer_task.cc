@@ -181,13 +181,16 @@ const base::string16 RendererTask::PrefixRendererTitle(
     const base::string16& title,
     bool is_app,
     bool is_extension,
-    bool is_incognito) {
+    bool is_incognito,
+    bool is_background) {
   int message_id = IDS_TASK_MANAGER_TAB_PREFIX;
 
   if (is_incognito && !is_app && !is_extension) {
     message_id = IDS_TASK_MANAGER_TAB_INCOGNITO_PREFIX;
   } else if (is_app) {
-    if (is_incognito)
+    if (is_background)
+      message_id = IDS_TASK_MANAGER_BACKGROUND_PREFIX;
+    else if (is_incognito)
       message_id = IDS_TASK_MANAGER_APP_INCOGNITO_PREFIX;
     else
       message_id = IDS_TASK_MANAGER_APP_PREFIX;
