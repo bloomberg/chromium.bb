@@ -305,7 +305,8 @@ void RenderWidgetCompositor::Initialize() {
   settings.use_one_copy = compositor_deps_->IsOneCopyEnabled();
   settings.enable_elastic_overscroll =
       compositor_deps_->IsElasticOverscrollEnabled();
-  settings.use_image_texture_target = compositor_deps_->GetImageTextureTarget();
+  settings.use_image_texture_targets =
+      compositor_deps_->GetImageTextureTargets();
   settings.gather_pixel_refs = compositor_deps_->IsGatherPixelRefsEnabled();
 
   if (cmd->HasSwitch(cc::switches::kTopControlsShowThreshold)) {

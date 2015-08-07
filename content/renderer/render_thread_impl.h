@@ -195,7 +195,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool IsZeroCopyEnabled() override;
   bool IsOneCopyEnabled() override;
   bool IsElasticOverscrollEnabled() override;
-  uint32 GetImageTextureTarget() override;
+  std::vector<unsigned> GetImageTextureTargets() override;
   scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorMainThreadTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner>
@@ -615,7 +615,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool is_zero_copy_enabled_;
   bool is_one_copy_enabled_;
   bool is_elastic_overscroll_enabled_;
-  unsigned use_image_texture_target_;
+  std::vector<unsigned> use_image_texture_targets_;
   bool is_gather_pixel_refs_enabled_;
 
   class PendingRenderFrameConnect

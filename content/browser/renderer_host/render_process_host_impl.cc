@@ -404,6 +404,16 @@ class SessionStorageHolder : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(SessionStorageHolder);
 };
 
+std::string UintVectorToString(const std::vector<unsigned>& vector) {
+  std::string str;
+  for (auto it : vector) {
+    if (!str.empty())
+      str += ",";
+    str += base::UintToString(it);
+  }
+  return str;
+}
+
 }  // namespace
 
 RendererMainThreadFactoryFunction g_renderer_main_thread_factory = NULL;
@@ -1142,21 +1152,19 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   if (IsForceGpuRasterizationEnabled())
     command_line->AppendSwitch(switches::kForceGpuRasterization);
 
-  command_line->AppendSwitchASCII(
-      switches::kContentImageTextureTarget,
-      base::UintToString(
-          // TODO(reveman): We currently assume that the compositor will use
-          // BGRA_8888 if it's able to, and RGBA_8888 otherwise. Since we don't
-          // know what it will use we hardcode BGRA_8888 here for now. We should
-          // instead move decisions about GpuMemoryBuffer format to the browser
-          // embedder so we know it here, and pass that decision to the
-          // compositor for each usage.
-          // crbug.com/490362
-          BrowserGpuMemoryBufferManager::GetImageTextureTarget(
-              gfx::BufferFormat::BGRA_8888,
-              // TODO(danakj): When one-copy supports partial update, change
-              // this usage to PERSISTENT_MAP for one-copy.
-              gfx::BufferUsage::MAP)));
+  std::vector<unsigned> image_targets(
+      static_cast<size_t>(gfx::BufferFormat::LAST) + 1, GL_TEXTURE_2D);
+  for (size_t format = 0;
+       format < static_cast<size_t>(gfx::BufferFormat::LAST) + 1; format++) {
+    image_targets[format] =
+        BrowserGpuMemoryBufferManager::GetImageTextureTarget(
+            static_cast<gfx::BufferFormat>(format),
+            // TODO(danakj): When one-copy supports partial update, change
+            // this usage to PERSISTENT_MAP for one-copy.
+            gfx::BufferUsage::MAP);
+  }
+  command_line->AppendSwitchASCII(switches::kContentImageTextureTarget,
+                                  UintVectorToString(image_targets));
 
   command_line->AppendSwitchASCII(
       switches::kVideoImageTextureTarget,

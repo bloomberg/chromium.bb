@@ -2114,16 +2114,9 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
   }
 
   DCHECK(GetRendererCapabilities().using_image);
-  unsigned image_target = settings_.use_image_texture_target;
-  DCHECK_IMPLIES(image_target == GL_TEXTURE_RECTANGLE_ARB,
-                 context_provider->ContextCapabilities().gpu.texture_rectangle);
-  DCHECK_IMPLIES(
-      image_target == GL_TEXTURE_EXTERNAL_OES,
-      context_provider->ContextCapabilities().gpu.egl_image_external);
 
   if (settings_.use_zero_copy) {
-    *resource_pool =
-        ResourcePool::Create(resource_provider_.get(), image_target);
+    *resource_pool = ResourcePool::Create(resource_provider_.get());
 
     *tile_task_worker_pool = ZeroCopyTileTaskWorkerPool::Create(
         GetTaskRunner(), task_graph_runner, resource_provider_.get());
@@ -2137,8 +2130,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
     DCHECK(!is_synchronous_single_threaded_);
 
     // We need to create a staging resource pool when using copy rasterizer.
-    *staging_resource_pool =
-        ResourcePool::Create(resource_provider_.get(), image_target);
+    *staging_resource_pool = ResourcePool::Create(resource_provider_.get());
     *resource_pool =
         ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
 
@@ -2227,7 +2219,8 @@ bool LayerTreeHostImpl::InitializeRenderer(
       settings_.renderer_settings.highp_threshold_min,
       settings_.renderer_settings.use_rgba_4444_textures,
       settings_.renderer_settings.texture_id_allocation_chunk_size,
-      settings_.use_persistent_map_for_gpu_memory_buffers);
+      settings_.use_persistent_map_for_gpu_memory_buffers,
+      settings_.use_image_texture_targets);
 
   CreateAndSetRenderer();
 

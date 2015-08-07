@@ -20,6 +20,7 @@
 #include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "ui/gfx/buffer_types.h"
 
 namespace cc {
 
@@ -107,7 +108,9 @@ void Display::InitializeRenderer() {
       output_surface_.get(), bitmap_manager_, gpu_memory_buffer_manager_,
       nullptr, settings_.highp_threshold_min, settings_.use_rgba_4444_textures,
       settings_.texture_id_allocation_chunk_size,
-      use_persistent_map_for_gpu_memory_buffers);
+      use_persistent_map_for_gpu_memory_buffers,
+      std::vector<unsigned>(static_cast<size_t>(gfx::BufferFormat::LAST) + 1,
+                            GL_TEXTURE_2D));
   if (!resource_provider)
     return;
 

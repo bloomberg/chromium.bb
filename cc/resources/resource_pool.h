@@ -19,6 +19,10 @@ class ScopedResource;
 
 class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
  public:
+  static scoped_ptr<ResourcePool> Create(ResourceProvider* resource_provider) {
+    return make_scoped_ptr(new ResourcePool(resource_provider));
+  }
+
   static scoped_ptr<ResourcePool> Create(ResourceProvider* resource_provider,
                                          GLenum target) {
     return make_scoped_ptr(new ResourcePool(resource_provider, target));
@@ -57,6 +61,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
  protected:
+  explicit ResourcePool(ResourceProvider* resource_provider);
   ResourcePool(ResourceProvider* resource_provider, GLenum target);
 
   bool ResourceUsageTooHigh();

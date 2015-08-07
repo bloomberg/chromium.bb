@@ -397,12 +397,13 @@ scoped_ptr<ResourceProvider> ResourceProvider::Create(
     int highp_threshold_min,
     bool use_rgba_4444_texture_format,
     size_t id_allocation_chunk_size,
-    bool use_persistent_map_for_gpu_memory_buffers) {
+    bool use_persistent_map_for_gpu_memory_buffers,
+    const std::vector<unsigned>& use_image_texture_targets) {
   scoped_ptr<ResourceProvider> resource_provider(new ResourceProvider(
       output_surface, shared_bitmap_manager, gpu_memory_buffer_manager,
       blocking_main_thread_task_runner, highp_threshold_min,
       use_rgba_4444_texture_format, id_allocation_chunk_size,
-      use_persistent_map_for_gpu_memory_buffers));
+      use_persistent_map_for_gpu_memory_buffers, use_image_texture_targets));
   resource_provider->Initialize();
   return resource_provider;
 }
@@ -1091,7 +1092,8 @@ ResourceProvider::ResourceProvider(
     int highp_threshold_min,
     bool use_rgba_4444_texture_format,
     size_t id_allocation_chunk_size,
-    bool use_persistent_map_for_gpu_memory_buffers)
+    bool use_persistent_map_for_gpu_memory_buffers,
+    const std::vector<unsigned>& use_image_texture_targets)
     : output_surface_(output_surface),
       shared_bitmap_manager_(shared_bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
@@ -1113,7 +1115,8 @@ ResourceProvider::ResourceProvider(
       id_allocation_chunk_size_(id_allocation_chunk_size),
       use_sync_query_(false),
       use_persistent_map_for_gpu_memory_buffers_(
-          use_persistent_map_for_gpu_memory_buffers) {
+          use_persistent_map_for_gpu_memory_buffers),
+      use_image_texture_targets_(use_image_texture_targets) {
   DCHECK(output_surface_->HasClient());
   DCHECK(id_allocation_chunk_size_);
 }
@@ -1948,6 +1951,13 @@ GLint ResourceProvider::GetActiveTextureUnit(GLES2Interface* gl) {
   GLint active_unit = 0;
   gl->GetIntegerv(GL_ACTIVE_TEXTURE, &active_unit);
   return active_unit;
+}
+
+GLenum ResourceProvider::GetImageTextureTarget(ResourceFormat format) {
+  gfx::BufferFormat buffer_format = ToGpuMemoryBufferFormat(format);
+  DCHECK_GT(use_image_texture_targets_.size(),
+            static_cast<size_t>(buffer_format));
+  return use_image_texture_targets_[static_cast<size_t>(buffer_format)];
 }
 
 void ResourceProvider::ValidateResource(ResourceId id) const {

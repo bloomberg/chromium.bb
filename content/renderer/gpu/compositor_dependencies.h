@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_GPU_COMPOSITOR_DEPENDENCIES_H_
 #define CONTENT_RENDERER_GPU_COMPOSITOR_DEPENDENCIES_H_
 
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -39,7 +41,7 @@ class CompositorDependencies {
   virtual bool IsZeroCopyEnabled() = 0;
   virtual bool IsOneCopyEnabled() = 0;
   virtual bool IsElasticOverscrollEnabled() = 0;
-  virtual uint32 GetImageTextureTarget() = 0;
+  virtual std::vector<unsigned> GetImageTextureTargets() = 0;
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorMainThreadTaskRunner() = 0;
   // Returns null if the compositor is in single-threaded mode (ie. there is no

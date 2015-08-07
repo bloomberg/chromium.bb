@@ -137,21 +137,18 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
   settings.use_zero_copy = IsUIZeroCopyEnabled();
   settings.use_one_copy = IsUIOneCopyEnabled();
 
-  // TODO(reveman): We currently assume that the compositor will use BGRA_8888
-  // if it's able to, and RGBA_8888 otherwise. Since we don't know what it will
-  // use we hardcode BGRA_8888 here for now. We should instead
-  // move decisions about GpuMemoryBuffer format to the browser embedder so we
-  // know it here, and pass that decision to the compositor for each usage.
-  // crbug.com/490362
-  gfx::BufferFormat format = gfx::BufferFormat::BGRA_8888;
-
   // Use PERSISTENT_MAP memory buffers to support partial tile raster for
   // software raster into GpuMemoryBuffers.
   gfx::BufferUsage usage = gfx::BufferUsage::PERSISTENT_MAP;
   settings.use_persistent_map_for_gpu_memory_buffers = true;
 
-  settings.use_image_texture_target =
-      context_factory_->GetImageTextureTarget(format, usage);
+  for (size_t format = 0;
+      format < static_cast<size_t>(gfx::BufferFormat::LAST) + 1; format++) {
+    DCHECK_GT(settings.use_image_texture_targets.size(), format);
+    settings.use_image_texture_targets[format] =
+        context_factory_->GetImageTextureTarget(
+            static_cast<gfx::BufferFormat>(format), usage);
+  }
 
   // Note: gathering of pixel refs is only needed when using multiple
   // raster threads.

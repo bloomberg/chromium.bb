@@ -27,7 +27,7 @@ class FakeCompositorDependencies : public CompositorDependencies {
   bool IsZeroCopyEnabled() override;
   bool IsOneCopyEnabled() override;
   bool IsElasticOverscrollEnabled() override;
-  uint32 GetImageTextureTarget() override;
+  std::vector<unsigned> GetImageTextureTargets() override;
   scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorMainThreadTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner>

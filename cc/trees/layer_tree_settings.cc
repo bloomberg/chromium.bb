@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "ui/gfx/buffer_types.h"
 
 namespace cc {
 
@@ -61,7 +62,9 @@ LayerTreeSettings::LayerTreeSettings()
       use_zero_copy(false),
       use_persistent_map_for_gpu_memory_buffers(false),
       enable_elastic_overscroll(false),
-      use_image_texture_target(GL_TEXTURE_2D),
+      use_image_texture_targets(
+          static_cast<size_t>(gfx::BufferFormat::LAST) + 1,
+          GL_TEXTURE_2D),
       ignore_root_layer_flings(false),
       scheduled_raster_task_limit(32),
       use_occlusion_for_tile_prioritization(false),

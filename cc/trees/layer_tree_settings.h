@@ -5,6 +5,8 @@
 #ifndef CC_TREES_LAYER_TREE_SETTINGS_H_
 #define CC_TREES_LAYER_TREE_SETTINGS_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/layer_tree_debug_state.h"
@@ -75,7 +77,8 @@ class CC_EXPORT LayerTreeSettings {
   bool use_zero_copy;
   bool use_persistent_map_for_gpu_memory_buffers;
   bool enable_elastic_overscroll;
-  unsigned use_image_texture_target;
+  // An array of image texture targets for each GpuMemoryBuffer format.
+  std::vector<unsigned> use_image_texture_targets;
   bool ignore_root_layer_flings;
   size_t scheduled_raster_task_limit;
   bool use_occlusion_for_tile_prioritization;

@@ -38,6 +38,18 @@ void ResourcePool::PoolResource::OnMemoryDump(
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                   is_free ? total_bytes : 0);
 }
+ResourcePool::ResourcePool(ResourceProvider* resource_provider)
+    : resource_provider_(resource_provider),
+      target_(0),
+      max_memory_usage_bytes_(0),
+      max_unused_memory_usage_bytes_(0),
+      max_resource_count_(0),
+      memory_usage_bytes_(0),
+      unused_memory_usage_bytes_(0),
+      resource_count_(0) {
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, base::ThreadTaskRunnerHandle::Get());
+}
 
 ResourcePool::ResourcePool(ResourceProvider* resource_provider, GLenum target)
     : resource_provider_(resource_provider),
@@ -48,6 +60,7 @@ ResourcePool::ResourcePool(ResourceProvider* resource_provider, GLenum target)
       memory_usage_bytes_(0),
       unused_memory_usage_bytes_(0),
       resource_count_(0) {
+  DCHECK_NE(0u, target);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, base::ThreadTaskRunnerHandle::Get());
 }
@@ -89,7 +102,9 @@ scoped_ptr<ScopedResource> ResourcePool::AcquireResource(
 
   scoped_ptr<ScopedResource> resource =
       ScopedResource::Create(resource_provider_);
-  resource->AllocateManaged(size, target_, format);
+  GLenum target =
+      target_ ? target_ : resource_provider_->GetImageTextureTarget(format);
+  resource->AllocateManaged(size, target, format);
 
   DCHECK(ResourceUtil::VerifySizeInBytes<size_t>(resource->size(),
                                                  resource->format()));

@@ -15,6 +15,7 @@
 #include "mojo/cc/output_surface_mojo.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
+#include "ui/gfx/buffer_types.h"
 
 namespace html_viewer {
 
@@ -36,7 +37,8 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
   // blink::RuntimeEnabledFeature::slimmingPaintEnabled()
   settings.use_display_lists = true;
 
-  settings.use_image_texture_target = GL_TEXTURE_2D;
+  settings.use_image_texture_targets = std::vector<unsigned>(
+      static_cast<size_t>(gfx::BufferFormat::LAST) + 1, GL_TEXTURE_2D);
   settings.use_one_copy = true;
   // TODO(jam): use multiple compositor raster threads and set gather_pixel_refs
   // accordingly (see content).

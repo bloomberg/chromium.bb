@@ -163,8 +163,14 @@ class RenderThreadImplBrowserTest : public testing::Test {
     base::CommandLine::StringVector old_argv = cmd->argv();
 
     cmd->AppendSwitchASCII(switches::kNumRasterThreads, "1");
-    cmd->AppendSwitchASCII(switches::kContentImageTextureTarget,
-                           base::UintToString(GL_TEXTURE_2D));
+    std::string image_targets;
+    for (size_t format = 0;
+         format < static_cast<size_t>(gfx::BufferFormat::LAST) + 1; format++) {
+      if (!image_targets.empty())
+        image_targets += ",";
+      image_targets += base::UintToString(GL_TEXTURE_2D);
+    }
+    cmd->AppendSwitchASCII(switches::kContentImageTextureTarget, image_targets);
 
     scoped_ptr<scheduler::RendererScheduler> renderer_scheduler =
         scheduler::RendererScheduler::Create();
