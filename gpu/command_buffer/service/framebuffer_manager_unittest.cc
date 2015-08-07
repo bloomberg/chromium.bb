@@ -181,7 +181,8 @@ TEST_F(FramebufferInfoTest, Basic) {
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT),
             framebuffer_->IsPossiblyComplete());
   EXPECT_TRUE(framebuffer_->IsCleared());
-  EXPECT_EQ(static_cast<GLenum>(0), framebuffer_->GetColorAttachmentFormat());
+  EXPECT_EQ(static_cast<GLenum>(0),
+            framebuffer_->GetReadBufferInternalFormat());
   EXPECT_FALSE(manager_.IsComplete(framebuffer_));
 }
 
@@ -229,7 +230,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
   EXPECT_EQ(static_cast<GLenum>(GL_RGBA4),
-            framebuffer_->GetColorAttachmentFormat());
+            framebuffer_->GetReadBufferInternalFormat());
   EXPECT_FALSE(framebuffer_->HasDepthAttachment());
   EXPECT_FALSE(framebuffer_->HasStencilAttachment());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
@@ -246,7 +247,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   renderbuffer_manager_->SetInfo(
       renderbuffer1, kSamples1, kFormat1, kWidth1, kHeight1);
   EXPECT_EQ(static_cast<GLenum>(kFormat1),
-            framebuffer_->GetColorAttachmentFormat());
+            framebuffer_->GetReadBufferInternalFormat());
   EXPECT_FALSE(framebuffer_->HasDepthAttachment());
   EXPECT_FALSE(framebuffer_->HasStencilAttachment());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
@@ -263,7 +264,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_TRUE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
   EXPECT_EQ(static_cast<GLenum>(kFormat1),
-            framebuffer_->GetColorAttachmentFormat());
+            framebuffer_->GetReadBufferInternalFormat());
   EXPECT_TRUE(framebuffer_->HasDepthAttachment());
   EXPECT_FALSE(framebuffer_->HasStencilAttachment());
   // The attachment has a size of 0,0 so depending on the order of the map
@@ -305,7 +306,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   framebuffer_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, renderbuffer3);
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
   EXPECT_EQ(static_cast<GLenum>(kFormat1),
-            framebuffer_->GetColorAttachmentFormat());
+            framebuffer_->GetReadBufferInternalFormat());
   EXPECT_TRUE(framebuffer_->HasDepthAttachment());
   EXPECT_TRUE(framebuffer_->HasStencilAttachment());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
@@ -316,7 +317,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   renderbuffer_manager_->SetInfo(
       renderbuffer1, kSamples1, kFormat1, kWidth1, kHeight1);
   EXPECT_EQ(static_cast<GLenum>(kFormat1),
-            framebuffer_->GetColorAttachmentFormat());
+            framebuffer_->GetReadBufferInternalFormat());
   EXPECT_TRUE(framebuffer_->HasDepthAttachment());
   EXPECT_TRUE(framebuffer_->HasStencilAttachment());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
@@ -382,7 +383,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   framebuffer_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, NULL);
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
   EXPECT_EQ(static_cast<GLenum>(kFormat1),
-            framebuffer_->GetColorAttachmentFormat());
+            framebuffer_->GetReadBufferInternalFormat());
   EXPECT_TRUE(framebuffer_->HasDepthAttachment());
   EXPECT_FALSE(framebuffer_->HasStencilAttachment());
 
@@ -448,7 +449,8 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
             framebuffer_->IsPossiblyComplete());
   EXPECT_TRUE(framebuffer_->IsCleared());
-  EXPECT_EQ(static_cast<GLenum>(0), framebuffer_->GetColorAttachmentFormat());
+  EXPECT_EQ(static_cast<GLenum>(0),
+            framebuffer_->GetReadBufferInternalFormat());
 
   // Try format that doesn't work with COLOR_ATTACHMENT0
   texture_manager_->SetTarget(texture1.get(), GL_TEXTURE_2D);
@@ -472,7 +474,7 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
             framebuffer_->IsPossiblyComplete());
   EXPECT_TRUE(framebuffer_->IsCleared());
   EXPECT_EQ(static_cast<GLenum>(kFormat1),
-            framebuffer_->GetColorAttachmentFormat());
+            framebuffer_->GetReadBufferInternalFormat());
 
   const Framebuffer::Attachment* attachment =
       framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0);
@@ -496,7 +498,7 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   framebuffer_->AttachTexture(
       GL_COLOR_ATTACHMENT0, texture2.get(), kTarget2, kLevel2, kSamples2);
   EXPECT_EQ(static_cast<GLenum>(kFormat2),
-            framebuffer_->GetColorAttachmentFormat());
+            framebuffer_->GetReadBufferInternalFormat());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             framebuffer_->IsPossiblyComplete());
   EXPECT_TRUE(framebuffer_->IsCleared());
@@ -521,7 +523,7 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   EXPECT_EQ(kFormat3, attachment->internal_format());
   EXPECT_FALSE(attachment->cleared());
   EXPECT_EQ(static_cast<GLenum>(kFormat3),
-            framebuffer_->GetColorAttachmentFormat());
+            framebuffer_->GetReadBufferInternalFormat());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             framebuffer_->IsPossiblyComplete());
   EXPECT_FALSE(framebuffer_->IsCleared());
@@ -536,7 +538,8 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   // Check removing it.
   framebuffer_->AttachTexture(GL_COLOR_ATTACHMENT0, NULL, 0, 0, 0);
   EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) == NULL);
-  EXPECT_EQ(static_cast<GLenum>(0), framebuffer_->GetColorAttachmentFormat());
+  EXPECT_EQ(static_cast<GLenum>(0),
+            framebuffer_->GetReadBufferInternalFormat());
 
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT),
             framebuffer_->IsPossiblyComplete());
@@ -674,7 +677,8 @@ TEST_F(FramebufferInfoFloatTest, AttachFloatTexture) {
 
   framebuffer_->AttachTexture(
       GL_COLOR_ATTACHMENT0, texture.get(), kTarget, kLevel, kSamples);
-  EXPECT_EQ(static_cast<GLenum>(0), framebuffer_->GetColorAttachmentFormat());
+  EXPECT_EQ(static_cast<GLenum>(0),
+            framebuffer_->GetReadBufferInternalFormat());
 
   texture_manager_->SetTarget(texture.get(), GL_TEXTURE_2D);
   texture_manager_->SetLevelInfo(texture.get(), GL_TEXTURE_2D, kLevel,

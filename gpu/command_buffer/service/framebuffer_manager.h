@@ -116,10 +116,11 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
 
   bool HasDepthAttachment() const;
   bool HasStencilAttachment() const;
-  GLenum GetColorAttachmentFormat() const;
+  GLenum GetDrawBufferInternalFormat() const;
+  GLenum GetReadBufferInternalFormat() const;
   // If the color attachment is a texture, returns its type; otherwise,
   // returns 0.
-  GLenum GetColorAttachmentTextureType() const;
+  GLenum GetReadBufferTextureType() const;
 
   // Verify all the rules in OpenGL ES 2.0.25 4.4.5 are followed.
   // Returns GL_FRAMEBUFFER_COMPLETE if there are no reasons we know we can't
@@ -150,6 +151,10 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
 
   // Return true if any draw buffers has an alpha channel.
   bool HasAlphaMRT() const;
+
+  // Return false if any two active color attachments have different internal
+  // formats.
+  bool HasSameInternalFormatsMRT() const;
 
   static void ClearFramebufferCompleteComboMap();
 
