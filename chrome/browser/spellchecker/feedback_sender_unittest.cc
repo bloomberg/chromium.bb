@@ -621,4 +621,22 @@ TEST_F(FeedbackSenderTest, NoFeedbackCollectionWhenStopped) {
   EXPECT_FALSE(IsUploadingData());
 }
 
+// The feedback context is trimmed to 2 words on the left and 2 words on the
+// right side of the misspelling.
+TEST_F(FeedbackSenderTest, TrimFeedback) {
+  std::vector<SpellCheckResult> results(
+      1, SpellCheckResult(SpellCheckResult::SPELLING, 13, 3,
+                          base::UTF8ToUTF16("the")));
+  feedback_->OnSpellcheckResults(
+      kRendererProcessId,
+      base::UTF8ToUTF16("Far and away teh best prize that life has to offer is "
+                        "the chance to work hard at work worth doing."),
+      std::vector<SpellCheckMarker>(), &results);
+  feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
+                                      std::vector<uint32>());
+  EXPECT_TRUE(
+      UploadDataContains(",\"originalText\":\"and away teh best prize\","));
+  EXPECT_TRUE(UploadDataContains(",\"misspelledStart\":9,"));
+}
+
 }  // namespace spellcheck

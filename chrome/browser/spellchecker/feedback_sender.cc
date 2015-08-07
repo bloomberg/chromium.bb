@@ -80,7 +80,7 @@ Misspelling BuildFeedback(const SpellCheckResult& result,
                           const base::string16& text) {
   size_t start = result.location;
   base::string16 context = TrimWords(&start,
-                               result.length,
+                               start + result.length,
                                text,
                                chrome::spellcheck_common::kContextWordCount);
   return Misspelling(context,
