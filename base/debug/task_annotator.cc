@@ -20,9 +20,10 @@ TaskAnnotator::~TaskAnnotator() {
 
 void TaskAnnotator::DidQueueTask(const char* queue_function,
                                  const PendingTask& pending_task) {
-  TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
                           queue_function,
-                          TRACE_ID_MANGLE(GetTaskTraceID(pending_task)));
+                          TRACE_ID_MANGLE(GetTaskTraceID(pending_task)),
+                          TRACE_EVENT_FLAG_FLOW_OUT);
 }
 
 void TaskAnnotator::RunTask(const char* queue_function,
@@ -32,11 +33,12 @@ void TaskAnnotator::RunTask(const char* queue_function,
   tracked_objects::Duration queue_duration =
       stopwatch.StartTime() - pending_task.EffectiveTimePosted();
 
-  TRACE_EVENT_FLOW_END1(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
-                        queue_function,
-                        TRACE_ID_MANGLE(GetTaskTraceID(pending_task)),
-                        "queue_duration",
-                        queue_duration.InMilliseconds());
+  TRACE_EVENT_WITH_FLOW1(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+                          queue_function,
+                          TRACE_ID_MANGLE(GetTaskTraceID(pending_task)),
+                          TRACE_EVENT_FLAG_FLOW_IN,
+                          "queue_duration",
+                          queue_duration.InMilliseconds());
 
   // Before running the task, store the program counter where it was posted
   // and deliberately alias it to ensure it is on the stack if the task
