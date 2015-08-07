@@ -10,6 +10,7 @@
 #include "ash/test/cursor_manager_test_api.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -42,8 +43,14 @@ class AshNativeCursorManagerTest : public test::AshTestBase {
         resources_pack_path.Append(FILE_PATH_LITERAL("resources.pak"));
     ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         resources_pack_path, ui::SCALE_FACTOR_NONE);
+    aura::Env::CreateInstance(true);
 
     test::AshTestBase::SetUp();
+  }
+
+  void TearDown() override {
+    test::AshTestBase::TearDown();
+    aura::Env::DeleteInstance();
   }
 };
 

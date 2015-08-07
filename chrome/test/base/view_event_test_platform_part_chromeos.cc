@@ -45,6 +45,8 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
   chromeos::DBusThreadManager::Initialize();
   chromeos::CrasAudioHandler::InitializeForTesting();
   chromeos::NetworkHandler::Initialize();
+
+  aura::Env::CreateInstance(true);
   ash::test::TestShellDelegate* shell_delegate =
       new ash::test::TestShellDelegate();
   ash::ShellInitParams init_params;
@@ -58,14 +60,14 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
 
 ViewEventTestPlatformPartChromeOS::~ViewEventTestPlatformPartChromeOS() {
   ash::Shell::DeleteInstance();
+  aura::Env::DeleteInstance();
+
   chromeos::NetworkHandler::Shutdown();
   chromeos::CrasAudioHandler::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
   // Ash Shell can't just live on its own without a browser process, we need to
   // also shut down the message center.
   message_center::MessageCenter::Shutdown();
-
-  aura::Env::DeleteInstance();
 }
 
 }  // namespace

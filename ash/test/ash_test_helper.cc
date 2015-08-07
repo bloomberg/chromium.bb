@@ -128,7 +128,6 @@ void AshTestHelper::TearDown() {
   }
 #endif
 
-  aura::Env::DeleteInstance();
   ui::TerminateContextFactoryForTests();
 
   // Need to reset the initial login status.
@@ -144,7 +143,6 @@ void AshTestHelper::TearDown() {
 
 void AshTestHelper::RunAllPendingInMessageLoop() {
   DCHECK(base::MessageLoopForUI::current() == message_loop_);
-  aura::Env::CreateInstance(true);
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
 }

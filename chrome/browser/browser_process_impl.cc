@@ -111,10 +111,6 @@
 #include "components/gcm_driver/gcm_client_factory.h"
 #endif
 
-#if defined(USE_AURA)
-#include "ui/aura/env.h"
-#endif
-
 #if defined(ENABLE_BACKGROUND)
 #include "chrome/browser/background/background_mode_manager.h"
 #endif
@@ -314,12 +310,6 @@ void BrowserProcessImpl::StartTearDown() {
 
   // Stop the watchdog thread before stopping other threads.
   watchdog_thread_.reset();
-
-#if defined(USE_AURA)
-  // Delete aura after the metrics service has been deleted as it accesses
-  // monitor information.
-  aura::Env::DeleteInstance();
-#endif
 
   platform_part()->StartTearDown();
 

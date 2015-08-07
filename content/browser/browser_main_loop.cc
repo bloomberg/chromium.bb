@@ -923,6 +923,10 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     parts_->PostMainMessageLoopRun();
   }
 
+#if defined(USE_AURA)
+  aura::Env::DeleteInstance();
+#endif
+
   trace_memory_controller_.reset();
   system_stats_monitor_.reset();
 

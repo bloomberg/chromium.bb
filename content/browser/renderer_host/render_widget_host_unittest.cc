@@ -39,7 +39,6 @@
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
-#include "ui/aura/env.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/events/event.h"
 #endif
@@ -423,7 +422,6 @@ class RenderWidgetHostTest : public testing::Test {
     }
 #endif
 #if defined(USE_AURA)
-    aura::Env::CreateInstance(true);
     screen_.reset(aura::TestScreen::Create(gfx::Size()));
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
 #endif
@@ -445,7 +443,6 @@ class RenderWidgetHostTest : public testing::Test {
     browser_context_.reset();
 
 #if defined(USE_AURA)
-    aura::Env::DeleteInstance();
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, nullptr);
     screen_.reset();
 #endif

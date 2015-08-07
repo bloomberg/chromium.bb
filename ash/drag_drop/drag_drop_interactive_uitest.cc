@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -134,8 +135,14 @@ class DragDropTest : public test::AshTestBase {
         resources_pack_path.Append(FILE_PATH_LITERAL("resources.pak"));
     ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         resources_pack_path, ui::SCALE_FACTOR_NONE);
+    aura::Env::CreateInstance(true);
 
     test::AshTestBase::SetUp();
+  }
+
+  void TearDown() override {
+    test::AshTestBase::TearDown();
+    aura::Env::DeleteInstance();
   }
 };
 

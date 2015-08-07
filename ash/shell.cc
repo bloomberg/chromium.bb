@@ -647,6 +647,7 @@ Shell::Shell(ShellDelegate* delegate)
       simulate_modal_window_open_for_testing_(false),
       is_touch_hud_projection_enabled_(false) {
   DCHECK(delegate_.get());
+  DCHECK(aura::Env::GetInstanceDontCreate());
   gpu_support_.reset(delegate_->CreateGPUSupport());
   display_manager_.reset(new DisplayManager);
   window_tree_host_manager_.reset(new WindowTreeHostManager);
@@ -881,7 +882,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   // Shelf, and WallPaper could be created by the factory.
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 
-  aura::Env::CreateInstance(true);
   aura::Env::GetInstance()->set_context_factory(init_params.context_factory);
 
   // The WindowModalityController needs to be at the front of the input event

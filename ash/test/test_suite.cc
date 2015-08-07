@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/gfx_paths.h"
@@ -58,9 +59,11 @@ void AuraShellTestSuite::Initialize() {
       "en-US", NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
+  aura::Env::CreateInstance(true);
 }
 
 void AuraShellTestSuite::Shutdown() {
+  aura::Env::DeleteInstance();
   ui::ResourceBundle::CleanupSharedInstance();
 #if defined(OS_WIN)
   com_initializer_.reset();

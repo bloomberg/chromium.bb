@@ -825,7 +825,7 @@ void WebContentsViewAura::CreateView(
   // if the bookmark bar is not shown and you create a new tab). The right
   // value is set shortly after this, so its safe to ignore.
 
-  aura::Env::CreateInstance(true);
+  DCHECK(aura::Env::GetInstanceDontCreate());
   window_.reset(new aura::Window(this));
   window_->set_owned_by_parent(false);
   window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);

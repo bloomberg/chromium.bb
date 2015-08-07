@@ -7,15 +7,32 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/test/test_suite.h"
+#include "third_party/WebKit/public/web/WebKit.h"
+
+#if defined(USE_AURA)
+#include "ui/aura/env.h"
+#endif
+
+#if defined(USE_X11)
+#include <X11/Xlib.h>
+#endif
+
 #if !defined(OS_IOS)
 #include "content/test/test_blink_web_unit_test_support.h"
 #endif
-#include "third_party/WebKit/public/web/WebKit.h"
 
 namespace content {
 
 UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
     : test_suite_(test_suite) {
+#if defined(USE_X11)
+  XInitThreads();
+#endif
+#if defined(USE_AURA)
+  DCHECK(!aura::Env::GetInstanceDontCreate());
+  const bool create_event_source = true;
+  aura::Env::CreateInstance(create_event_source);
+#endif
   DCHECK(test_suite);
 #if !defined(OS_IOS)
   blink_test_support_.reset(new TestBlinkWebUnitTestSupport);
@@ -25,6 +42,9 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
 UnitTestTestSuite::~UnitTestTestSuite() {
 #if !defined(OS_IOS)
   blink_test_support_.reset();
+#endif
+#if defined(USE_AURA)
+  aura::Env::DeleteInstance();
 #endif
 }
 

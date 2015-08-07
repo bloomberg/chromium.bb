@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "chromeos/network/network_handler.h"
+#include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/base/ui_base_paths.h"
@@ -69,6 +70,7 @@ class AcceleratorInteractiveUITest : public AshTestBase, public ShellObserver {
         resources_pack_path.Append(FILE_PATH_LITERAL("resources.pak"));
     ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         resources_pack_path, ui::SCALE_FACTOR_NONE);
+    aura::Env::CreateInstance(true);
 
     AshTestBase::SetUp();
 
@@ -83,6 +85,7 @@ class AcceleratorInteractiveUITest : public AshTestBase, public ShellObserver {
     Shell::GetInstance()->RemoveShellObserver(this);
 
     AshTestBase::TearDown();
+    aura::Env::DeleteInstance();
   }
 
   // Sends a key press event and waits synchronously until it's completely
