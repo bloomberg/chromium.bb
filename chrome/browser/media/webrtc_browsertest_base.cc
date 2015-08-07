@@ -78,6 +78,41 @@ bool JavascriptErrorDetectingLogHandler(int severity,
   return false;
 }
 
+// PermissionRequestObserver ---------------------------------------------------
+
+// Used to observe the creation of permission prompt without responding.
+class PermissionRequestObserver : public PermissionBubbleManager::Observer {
+ public:
+  explicit PermissionRequestObserver(content::WebContents* web_contents)
+      : bubble_manager_(PermissionBubbleManager::FromWebContents(web_contents)),
+        request_shown_(false),
+        message_loop_runner_(new content::MessageLoopRunner) {
+    bubble_manager_->AddObserver(this);
+  }
+  ~PermissionRequestObserver() override {
+    // Safe to remove twice if it happens.
+    bubble_manager_->RemoveObserver(this);
+  }
+
+  void Wait() { message_loop_runner_->Run(); }
+
+  bool request_shown() { return request_shown_; }
+
+ private:
+  // PermissionBubbleManager::Observer
+  void OnBubbleAdded() override {
+    request_shown_ = true;
+    bubble_manager_->RemoveObserver(this);
+    message_loop_runner_->Quit();
+  }
+
+  PermissionBubbleManager* bubble_manager_;
+  bool request_shown_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(PermissionRequestObserver);
+};
+
 }  // namespace
 
 WebRtcTestBase::WebRtcTestBase(): detect_errors_in_javascript_(false) {
@@ -109,7 +144,9 @@ bool WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndAccept(
   std::string result;
   PermissionBubbleManager::FromWebContents(tab_contents)
       ->set_auto_response_for_test(PermissionBubbleManager::ACCEPT_ALL);
+  PermissionRequestObserver permissionRequestObserver(tab_contents);
   GetUserMedia(tab_contents, constraints);
+  EXPECT_TRUE(permissionRequestObserver.request_shown());
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
   return kOkGotStream == result;
@@ -126,7 +163,9 @@ void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndDeny(
   std::string result;
   PermissionBubbleManager::FromWebContents(tab_contents)
       ->set_auto_response_for_test(PermissionBubbleManager::DENY_ALL);
+  PermissionRequestObserver permissionRequestObserver(tab_contents);
   GetUserMedia(tab_contents, constraints);
+  EXPECT_TRUE(permissionRequestObserver.request_shown());
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
   EXPECT_EQ(kFailedWithPermissionDeniedError, result);
@@ -137,11 +176,55 @@ void WebRtcTestBase::GetUserMediaAndDismiss(
   std::string result;
   PermissionBubbleManager::FromWebContents(tab_contents)
       ->set_auto_response_for_test(PermissionBubbleManager::DISMISS);
+  PermissionRequestObserver permissionRequestObserver(tab_contents);
   GetUserMedia(tab_contents, kAudioVideoCallConstraints);
+  EXPECT_TRUE(permissionRequestObserver.request_shown());
   // A dismiss should be treated like a deny.
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
   EXPECT_EQ(kFailedWithPermissionDismissedError, result);
+}
+
+void WebRtcTestBase::GetUserMediaAndExpectAutoAcceptWithoutPrompt(
+    content::WebContents* tab_contents) const {
+  std::string result;
+  // We issue a GetUserMedia() request. We expect that the origin already has a
+  // sticky "accept" permission (e.g. because the caller previously called
+  // GetUserMediaAndAccept()), and therefore the GetUserMedia() request
+  // automatically succeeds without a prompt.
+  // If the caller made a mistake, a prompt may show up instead. For this case,
+  // we set an auto-response to avoid leaving the prompt hanging. The choice of
+  // DENY_ALL makes sure that the response to the prompt doesn't accidentally
+  // result in a newly granted media stream permission.
+  PermissionBubbleManager::FromWebContents(tab_contents)
+      ->set_auto_response_for_test(PermissionBubbleManager::DENY_ALL);
+  PermissionRequestObserver permissionRequestObserver(tab_contents);
+  GetUserMedia(tab_contents, kAudioVideoCallConstraints);
+  EXPECT_FALSE(permissionRequestObserver.request_shown());
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
+  EXPECT_EQ(kOkGotStream, result);
+}
+
+void WebRtcTestBase::GetUserMediaAndExpectAutoDenyWithoutPrompt(
+    content::WebContents* tab_contents) const {
+  std::string result;
+  // We issue a GetUserMedia() request. We expect that the origin already has a
+  // sticky "deny" permission (e.g. because the caller previously called
+  // GetUserMediaAndDeny()), and therefore the GetUserMedia() request
+  // automatically succeeds without a prompt.
+  // If the caller made a mistake, a prompt may show up instead. For this case,
+  // we set an auto-response to avoid leaving the prompt hanging. The choice of
+  // ACCEPT_ALL makes sure that the response to the prompt doesn't accidentally
+  // result in a newly granted media stream permission.
+  PermissionBubbleManager::FromWebContents(tab_contents)
+      ->set_auto_response_for_test(PermissionBubbleManager::ACCEPT_ALL);
+  PermissionRequestObserver permissionRequestObserver(tab_contents);
+  GetUserMedia(tab_contents, kAudioVideoCallConstraints);
+  EXPECT_FALSE(permissionRequestObserver.request_shown());
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
+  EXPECT_EQ(kFailedWithPermissionDeniedError, result);
 }
 
 void WebRtcTestBase::GetUserMedia(content::WebContents* tab_contents,
@@ -168,8 +251,15 @@ WebRtcTestBase::OpenPageAndGetUserMediaInNewTabWithConstraints(
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* new_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(GetUserMediaWithSpecificConstraintsAndAccept(
-      new_tab, constraints));
+  // Accept if necessary, but don't expect a prompt (because auto-accept is also
+  // okay).
+  PermissionBubbleManager::FromWebContents(new_tab)
+      ->set_auto_response_for_test(PermissionBubbleManager::ACCEPT_ALL);
+  GetUserMedia(new_tab, constraints);
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      new_tab->GetMainFrame(), "obtainGetUserMediaResult();", &result));
+  EXPECT_EQ(kOkGotStream, result);
   return new_tab;
 }
 
