@@ -5,8 +5,6 @@
 #ifndef MEDIA_CAST_CONGESTION_CONTROL_CONGESTION_CONTROL_H_
 #define MEDIA_CAST_CONGESTION_CONTROL_CONGESTION_CONTROL_H_
 
-#include <deque>
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/tick_clock.h"
@@ -25,10 +23,11 @@ class CongestionControl {
   // Called with an updated target playout delay value.
   virtual void UpdateTargetPlayoutDelay(base::TimeDelta delay) = 0;
 
-  // Called when an encoded frame is sent to the transport.
+  // Called when an encoded frame is enqueued for transport.
   virtual void SendFrameToTransport(uint32 frame_id,
-                                    size_t frame_size,
+                                    size_t frame_size_in_bits,
                                     base::TimeTicks when) = 0;
+
   // Called when we receive an ACK for a frame.
   virtual void AckFrame(uint32 frame_id, base::TimeTicks when) = 0;
 

@@ -15,6 +15,8 @@
 
 #include "media/cast/sender/congestion_control.h"
 
+#include <deque>
+
 #include "base/logging.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
@@ -37,7 +39,7 @@ class AdaptiveCongestionControl : public CongestionControl {
 
   // Called when an encoded frame is sent to the transport.
   void SendFrameToTransport(uint32 frame_id,
-                            size_t frame_size,
+                            size_t frame_size_in_bits,
                             base::TimeTicks when) final;
 
   // Called when we receive an ACK for a frame.
@@ -50,17 +52,17 @@ class AdaptiveCongestionControl : public CongestionControl {
  private:
   struct FrameStats {
     FrameStats();
-    // Time this frame was sent to the transport.
-    base::TimeTicks sent_time;
+    // Time this frame was first enqueued for transport.
+    base::TimeTicks enqueue_time;
     // Time this frame was acked.
     base::TimeTicks ack_time;
     // Size of encoded frame in bits.
-    size_t frame_size;
+    size_t frame_size_in_bits;
   };
 
   // Calculate how much "dead air" (idle time) there is between two frames.
   static base::TimeDelta DeadTime(const FrameStats& a, const FrameStats& b);
-  // Get the FrameStats for a given |frame_id|.
+  // Get the FrameStats for a given |frame_id|.  Never returns nullptr.
   // Note: Older FrameStats will be removed automatically.
   FrameStats* GetFrameStats(uint32 frame_id);
   // Discard old FrameStats.
@@ -69,13 +71,11 @@ class AdaptiveCongestionControl : public CongestionControl {
   // sending in the past.
   double CalculateSafeBitrate();
 
-  // For a given frame, calculate when it might be acked.
-  // (Or return the time it was acked, if it was.)
-  base::TimeTicks EstimatedAckTime(uint32 frame_id, double bitrate);
-  // Calculate when we start sending the data for a given frame.
-  // This is done by calculating when we were done sending the previous
-  // frame, but obviously can't be less than |sent_time| (if known).
-  base::TimeTicks EstimatedSendingTime(uint32 frame_id, double bitrate);
+  // Estimate when the transport will start sending the data for a given frame.
+  // |estimated_bitrate| is the current estimated transmit bitrate in bits per
+  // second.
+  base::TimeTicks EstimatedSendingTime(uint32 frame_id,
+                                       double estimated_bitrate);
 
   base::TickClock* const clock_;  // Not owned by this class.
   const uint32 max_bitrate_configured_;
@@ -84,7 +84,7 @@ class AdaptiveCongestionControl : public CongestionControl {
   std::deque<FrameStats> frame_stats_;
   uint32 last_frame_stats_;
   uint32 last_acked_frame_;
-  uint32 last_encoded_frame_;
+  uint32 last_enqueued_frame_;
   base::TimeDelta rtt_;
   size_t history_size_;
   size_t acked_bits_in_history_;
@@ -104,7 +104,7 @@ class FixedCongestionControl : public CongestionControl {
 
   // Called when an encoded frame is sent to the transport.
   void SendFrameToTransport(uint32 frame_id,
-                            size_t frame_size,
+                            size_t frame_size_in_bits,
                             base::TimeTicks when) final {}
 
   // Called when we receive an ACK for a frame.
@@ -147,7 +147,7 @@ static const double kTargetEmptyBufferFraction = 0.9;
 // congestion control adapt slower.
 static const size_t kHistorySize = 100;
 
-AdaptiveCongestionControl::FrameStats::FrameStats() : frame_size(0) {
+AdaptiveCongestionControl::FrameStats::FrameStats() : frame_size_in_bits(0) {
 }
 
 AdaptiveCongestionControl::AdaptiveCongestionControl(
@@ -161,14 +161,14 @@ AdaptiveCongestionControl::AdaptiveCongestionControl(
       max_frame_rate_(max_frame_rate),
       last_frame_stats_(static_cast<uint32>(-1)),
       last_acked_frame_(static_cast<uint32>(-1)),
-      last_encoded_frame_(static_cast<uint32>(-1)),
+      last_enqueued_frame_(static_cast<uint32>(-1)),
       history_size_(kHistorySize),
       acked_bits_in_history_(0) {
   DCHECK_GE(max_bitrate_configured, min_bitrate_configured) << "Invalid config";
   frame_stats_.resize(2);
   base::TimeTicks now = clock->NowTicks();
   frame_stats_[0].ack_time = now;
-  frame_stats_[0].sent_time = now;
+  frame_stats_[0].enqueue_time = now;
   frame_stats_[1].ack_time = now;
   DCHECK(!frame_stats_[0].ack_time.is_null());
 }
@@ -194,8 +194,8 @@ void AdaptiveCongestionControl::UpdateTargetPlayoutDelay(
 // Calculate how much "dead air" there is between two frames.
 base::TimeDelta AdaptiveCongestionControl::DeadTime(const FrameStats& a,
                                                     const FrameStats& b) {
-  if (b.sent_time > a.ack_time) {
-    return b.sent_time - a.ack_time;
+  if (b.enqueue_time > a.ack_time) {
+    return b.enqueue_time - a.ack_time;
   } else {
     return base::TimeDelta();
   }
@@ -204,7 +204,7 @@ base::TimeDelta AdaptiveCongestionControl::DeadTime(const FrameStats& a,
 double AdaptiveCongestionControl::CalculateSafeBitrate() {
   double transmit_time =
       (GetFrameStats(last_acked_frame_)->ack_time -
-       frame_stats_.front().sent_time - dead_time_in_history_).InSecondsF();
+       frame_stats_.front().enqueue_time - dead_time_in_history_).InSecondsF();
 
   if (acked_bits_in_history_ == 0 || transmit_time <= 0.0) {
     return min_bitrate_configured_;
@@ -223,9 +223,9 @@ AdaptiveCongestionControl::GetFrameStats(uint32 frame_id) {
   }
   PruneFrameStats();
   offset += frame_stats_.size() - 1;
-  if (offset < 0 || offset >= static_cast<int32>(frame_stats_.size())) {
-    return NULL;
-  }
+  // TODO(miu): Change the following to DCHECK once crash fix is confirmed.
+  // http://crbug.com/517145
+  CHECK(offset >= 0 && offset < static_cast<int32>(frame_stats_.size()));
   return &frame_stats_[offset];
 }
 
@@ -233,7 +233,7 @@ void AdaptiveCongestionControl::PruneFrameStats() {
  while (frame_stats_.size() > history_size_) {
     DCHECK_GT(frame_stats_.size(), 1UL);
     DCHECK(!frame_stats_[0].ack_time.is_null());
-    acked_bits_in_history_ -= frame_stats_[0].frame_size;
+    acked_bits_in_history_ -= frame_stats_[0].frame_size_in_bits;
     dead_time_in_history_ -= DeadTime(frame_stats_[0], frame_stats_[1]);
     DCHECK_GE(acked_bits_in_history_, 0UL);
     VLOG(2) << "DT: " << dead_time_in_history_.InSecondsF();
@@ -248,68 +248,105 @@ void AdaptiveCongestionControl::AckFrame(uint32 frame_id,
   while (IsNewerFrameId(frame_id, last_acked_frame_)) {
     FrameStats* last_frame_stats = frame_stats;
     frame_stats = GetFrameStats(last_acked_frame_ + 1);
-    DCHECK(frame_stats);
-    if (frame_stats->sent_time.is_null()) {
+    if (frame_stats->enqueue_time.is_null()) {
       // Can't ack a frame that hasn't been sent yet.
       return;
     }
     last_acked_frame_++;
-    if (when < frame_stats->sent_time)
-      when = frame_stats->sent_time;
+    if (when < frame_stats->enqueue_time)
+      when = frame_stats->enqueue_time;
 
     frame_stats->ack_time = when;
-    acked_bits_in_history_ += frame_stats->frame_size;
+    acked_bits_in_history_ += frame_stats->frame_size_in_bits;
     dead_time_in_history_ += DeadTime(*last_frame_stats, *frame_stats);
   }
 }
 
 void AdaptiveCongestionControl::SendFrameToTransport(uint32 frame_id,
-                                                     size_t frame_size,
+                                                     size_t frame_size_in_bits,
                                                      base::TimeTicks when) {
-  last_encoded_frame_ = frame_id;
+  last_enqueued_frame_ = frame_id;
   FrameStats* frame_stats = GetFrameStats(frame_id);
-  DCHECK(frame_stats);
-  frame_stats->frame_size = frame_size;
-  frame_stats->sent_time = when;
-}
-
-base::TimeTicks AdaptiveCongestionControl::EstimatedAckTime(uint32 frame_id,
-                                                            double bitrate) {
-  FrameStats* frame_stats = GetFrameStats(frame_id);
-  DCHECK(frame_stats);
-  if (frame_stats->ack_time.is_null()) {
-    DCHECK(frame_stats->frame_size) << "frame_id: " << frame_id;
-    base::TimeTicks ret = EstimatedSendingTime(frame_id, bitrate);
-    ret += base::TimeDelta::FromSecondsD(frame_stats->frame_size / bitrate);
-    ret += rtt_;
-    base::TimeTicks now = clock_->NowTicks();
-    if (ret < now) {
-      // This is a little counter-intuitive, but it seems to work.
-      // Basically, when we estimate that the ACK should have already happened,
-      // we figure out how long ago it should have happened and guess that the
-      // ACK will happen half of that time in the future. This will cause some
-      // over-estimation when acks are late, which is actually what we want.
-      return now + (now - ret) / 2;
-    } else {
-      return ret;
-    }
-  } else {
-    return frame_stats->ack_time;
-  }
+  frame_stats->enqueue_time = when;
+  frame_stats->frame_size_in_bits = frame_size_in_bits;
 }
 
 base::TimeTicks AdaptiveCongestionControl::EstimatedSendingTime(
     uint32 frame_id,
-    double bitrate) {
-  FrameStats* frame_stats = GetFrameStats(frame_id);
-  DCHECK(frame_stats);
-  base::TimeTicks ret = EstimatedAckTime(frame_id - 1, bitrate) - rtt_;
-  if (frame_stats->sent_time.is_null()) {
-    // Not sent yet, but we can't start sending it in the past.
-    return std::max(ret, clock_->NowTicks());
-  } else {
-    return std::max(ret, frame_stats->sent_time);
+    double estimated_bitrate) {
+  const base::TimeTicks now = clock_->NowTicks();
+
+  // Starting with the time of the latest acknowledgement, extrapolate forward
+  // to determine an estimated sending time for |frame_id|.
+  //
+  // |estimated_sending_time| will contain the estimated sending time for each
+  // frame after the last ACK'ed frame.  It is possible for multiple frames to
+  // be in-flight; and therefore it is common for the |estimated_sending_time|
+  // for those frames to be before |now|.
+  base::TimeTicks estimated_sending_time;
+  for (uint32 f = last_acked_frame_; IsNewerFrameId(frame_id, f); ++f) {
+    FrameStats* const stats = GetFrameStats(f);
+
+    // |estimated_ack_time| is the local time when the sender receives the ACK,
+    // and not the time when the ACK left the receiver.
+    base::TimeTicks estimated_ack_time = stats->ack_time;
+
+    // If |estimated_ack_time| is not null, then we already have the actual ACK
+    // time, so we'll just use it.  Otherwise, we need to estimate when the ACK
+    // will arrive.
+    if (estimated_ack_time.is_null()) {
+      // Model: The |estimated_sending_time| is the time at which the first byte
+      // of the encoded frame is transmitted.  Then, assume the transmission of
+      // the remaining bytes is paced such that the last byte has just left the
+      // sender at |frame_transmit_time| later.  This last byte then takes
+      // ~RTT/2 amount of time to travel to the receiver.  Finally, the ACK from
+      // the receiver is sent and this takes another ~RTT/2 amount of time to
+      // reach the sender.
+      const base::TimeDelta frame_transmit_time =
+          base::TimeDelta::FromSecondsD(stats->frame_size_in_bits /
+                                            estimated_bitrate);
+      estimated_ack_time =
+          std::max(estimated_sending_time, stats->enqueue_time) +
+              frame_transmit_time + rtt_;
+
+      if (estimated_ack_time < now) {
+        // The current frame has not yet been ACK'ed and the yet the computed
+        // |estimated_ack_time| is before |now|.  This contradiction must be
+        // resolved.
+        //
+        // The solution below is a little counter-intuitive, but it seems to
+        // work.  Basically, when we estimate that the ACK should have already
+        // happened, we figure out how long ago it should have happened and
+        // guess that the ACK will happen half of that time in the future.  This
+        // will cause some over-estimation when acks are late, which is actually
+        // the desired behavior.
+        estimated_ack_time = now + (now - estimated_ack_time) / 2;
+      }
+    }
+
+    // Since we [in the common case] do not wait for an ACK before we start
+    // sending the next frame, estimate the next frame's sending time as the
+    // time just after the last byte of the current frame left the sender (see
+    // Model comment above).
+    estimated_sending_time =
+        std::max(estimated_sending_time, estimated_ack_time - rtt_);
   }
+
+  FrameStats* const frame_stats = GetFrameStats(frame_id);
+  if (frame_stats->enqueue_time.is_null()) {
+    // The frame has not yet been enqueued for transport.  Since it cannot be
+    // enqueued in the past, ensure the result is lower-bounded by |now|.
+    estimated_sending_time = std::max(estimated_sending_time, now);
+  } else {
+    // |frame_stats->enqueue_time| is the time the frame was enqueued for
+    // transport.  The frame may not actually start being sent until a
+    // point-in-time after that, because the transport is waiting for prior
+    // frames to be acknowledged.
+    estimated_sending_time =
+        std::max(estimated_sending_time, frame_stats->enqueue_time);
+  }
+
+  return estimated_sending_time;
 }
 
 uint32 AdaptiveCongestionControl::GetBitrate(base::TimeTicks playout_time,
@@ -318,7 +355,7 @@ uint32 AdaptiveCongestionControl::GetBitrate(base::TimeTicks playout_time,
   // Estimate when we might start sending the next frame.
   base::TimeDelta time_to_catch_up =
       playout_time -
-      EstimatedSendingTime(last_encoded_frame_ + 1, safe_bitrate);
+      EstimatedSendingTime(last_enqueued_frame_ + 1, safe_bitrate);
 
   double empty_buffer_fraction =
       time_to_catch_up.InSecondsF() / playout_delay.InSecondsF();
