@@ -776,12 +776,20 @@ def DefaultSiteParameters():
   # Helper variables for defining site parameters.
   gob_host = '%s.googlesource.com'
 
+  external_remote = 'cros'
+  internal_remote = 'cros-internal'
+  chromium_remote = 'chromium'
+  chrome_remote = 'chrome'
+
+  internal_change_prefix = '*'
+  external_change_prefix = ''
+
   # Gerrit instance site parameters.
   default_site_params.update(GOB_HOST=gob_host)
   default_site_params.update(
-      GerritInstanceParameters('EXTERNAL', 'chromium', defaults=True))
+      GerritInstanceParameters('EXTERNAL', 'chromium'))
   default_site_params.update(
-      GerritInstanceParameters('INTERNAL', 'chrome-internal', defaults=True))
+      GerritInstanceParameters('INTERNAL', 'chrome-internal'))
   default_site_params.update(
       GerritInstanceParameters('AOSP', 'android', defaults=True))
 
@@ -794,8 +802,8 @@ def DefaultSiteParameters():
       MANIFEST_INT_URL=None,
 
       # CrOS remotes specified in the manifests.
-      EXTERNAL_REMOTE=None,
-      INTERNAL_REMOTE=None,
+      EXTERNAL_REMOTE=external_remote,
+      INTERNAL_REMOTE=internal_remote,
       GOB_REMOTES=None,
       KAYLE_INTERNAL_REMOTE=None,
       CHROMIUM_REMOTE=None,
@@ -804,17 +812,31 @@ def DefaultSiteParameters():
 
       # Only remotes listed in CROS_REMOTES are considered branchable.
       # CROS_REMOTES and BRANCHABLE_PROJECTS must be kept in sync.
-      GERRIT_HOSTS=None,
-      CROS_REMOTES=None,
-      GIT_REMOTES=None,
+      GERRIT_HOSTS={
+          external_remote: default_site_params['EXTERNAL_GERRIT_HOST'],
+          internal_remote: default_site_params['INTERNAL_GERRIT_HOST']
+      },
+      CROS_REMOTES={
+          external_remote: default_site_params['EXTERNAL_GOB_URL'],
+          internal_remote: default_site_params['INTERNAL_GOB_URL']
+      },
+      GIT_REMOTES={
+          chromium_remote: default_site_params['EXTERNAL_GOB_URL'],
+          chrome_remote: default_site_params['INTERNAL_GOB_URL'],
+          external_remote: default_site_params['EXTERNAL_GOB_URL'],
+          internal_remote: default_site_params['INTERNAL_GOB_URL'],
+      },
 
       # Prefix to distinguish internal and external changes. This is used
       # when a user specifies a patch with "-g", when generating a key for
       # a patch to use in our PatchCache, and when displaying a custom
       # string for the patch.
-      INTERNAL_CHANGE_PREFIX='*',
-      EXTERNAL_CHANGE_PREFIX='',
-      CHANGE_PREFIX=None,
+      INTERNAL_CHANGE_PREFIX=internal_change_prefix,
+      EXTERNAL_CHANGE_PREFIX=external_change_prefix,
+      CHANGE_PREFIX={
+          external_remote: internal_change_prefix,
+          internal_remote: external_change_prefix
+      },
 
       # List of remotes that are okay to include in the external manifest.
       EXTERNAL_REMOTES=None,
@@ -826,7 +848,10 @@ def DefaultSiteParameters():
       # that may be mentioned in a manifest. If a remote is missing from this
       # dictionary, all projects on that remote are considered to not be
       # branchable.
-      BRANCHABLE_PROJECTS=None,
+      BRANCHABLE_PROJECTS={
+          external_remote: r'chromiumos/(.+)',
+          internal_remote: r'chromeos/(.+)'
+      },
 
       # Additional parameters used to filter manifests, create modified
       # manifests, and to branch manifests.
@@ -841,7 +866,7 @@ def DefaultSiteParameters():
       INTERNAL_MANIFEST_VERSIONS_PATH=None,
 
       # URL of the repo project.
-      REPO_URL=None
+      REPO_URL='https://chromium.googlesource.com/external/repo'
   )
 
   return default_site_params
@@ -856,6 +881,20 @@ class SiteParameters(dict):
       return self[name]
 
     return super(SiteParameters, self).__getattribute__(name)
+
+  @classmethod
+  def HideDefaults(cls, site_params):
+    """Hide default valued site parameters.
+
+    Args:
+      site_params: A dictionary of site parameters.
+
+    Returns:
+      A dictionary of site parameters containing only non-default
+      valued entries.
+    """
+    defaults = DefaultSiteParameters()
+    return {k: v for k, v in site_params.iteritems() if defaults.get(k) != v}
 
 
 class SiteConfig(dict):
@@ -1170,7 +1209,7 @@ class SiteConfig(dict):
 
     config_dict['_default'] = default
     config_dict['_templates'] = self._templates
-    config_dict['_site_params'] = site_params
+    config_dict['_site_params'] = SiteParameters.HideDefaults(site_params)
 
     return json.dumps(config_dict, cls=self._JSONEncoder,
                       sort_keys=True, indent=4, separators=(',', ': '))
@@ -1203,7 +1242,9 @@ def LoadConfigFromString(json_string):
   defaults.update(config_dict.pop(DEFAULT_BUILD_CONFIG))
 
   templates = config_dict.pop('_templates', None)
-  site_params = config_dict.pop('_site_params', None)
+
+  site_params = DefaultSiteParameters()
+  site_params.update(config_dict.pop('_site_params', {}))
 
   defaultBuildConfig = BuildConfig(**defaults)
 

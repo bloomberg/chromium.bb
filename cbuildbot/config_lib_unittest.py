@@ -351,9 +351,11 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
     self.assertEqual(config, loaded)
 
     self.assertEqual(loaded.keys(), [])
-    self.assertEqual(loaded._site_params.keys(), [])
     self.assertEqual(loaded._templates.keys(), [])
     self.assertEqual(loaded.GetDefault(), config_lib.DefaultSettings())
+    self.assertEqual(loaded.params,
+                     config_lib.SiteParameters(
+                         config_lib.DefaultSiteParameters()))
 
     self.assertNotEqual(loaded.SaveConfigToString(), '')
 
