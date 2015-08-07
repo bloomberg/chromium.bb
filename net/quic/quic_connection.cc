@@ -365,8 +365,7 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   }
   max_undecryptable_packets_ = config.max_undecryptable_packets();
 
-  if (FLAGS_quic_send_fec_packet_only_on_fec_alarm &&
-      config.HasClientSentConnectionOption(kFSPA, perspective_)) {
+  if (config.HasClientSentConnectionOption(kFSPA, perspective_)) {
     packet_generator_.set_fec_send_policy(FecSendPolicy::FEC_ALARM_TRIGGER);
   }
 

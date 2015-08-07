@@ -134,7 +134,13 @@ class TestSession : public QuicSpdySession {
   }
 
   TestStream* CreateIncomingDynamicStream(QuicStreamId id) override {
-    return new TestStream(id, this);
+    // Enforce the limit on the number of open streams.
+    if (GetNumOpenStreams() + 1 > get_max_open_streams()) {
+      connection()->SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS);
+      return nullptr;
+    } else {
+      return new TestStream(id, this);
+    }
   }
 
   bool IsClosedStream(QuicStreamId id) {
@@ -312,11 +318,41 @@ TEST_P(QuicSessionTestServer, IsClosedStreamPeerCreated) {
   CheckClosedStreams();
 }
 
-TEST_P(QuicSessionTestServer, StreamIdTooLarge) {
+TEST_P(QuicSessionTestServer, MaximumImplicitlyOpenedStreams) {
   QuicStreamId stream_id = kClientDataStreamId1;
   session_.GetIncomingDynamicStream(stream_id);
-  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_INVALID_STREAM_ID));
-  session_.GetIncomingDynamicStream(stream_id + kMaxStreamIdDelta + 2);
+  EXPECT_CALL(*connection_, SendConnectionClose(_)).Times(0);
+  EXPECT_NE(nullptr,
+            session_.GetIncomingDynamicStream(
+                stream_id + 2 * (session_.get_max_open_streams() - 1)));
+}
+
+TEST_P(QuicSessionTestServer, TooManyImplicitlyOpenedStreams) {
+  QuicStreamId stream_id1 = kClientDataStreamId1;
+  // A stream ID which is too large to create.
+  const QuicStreamId kMaxStreamIdDelta = 200;
+  QuicStreamId stream_id2 =
+      FLAGS_exact_stream_id_delta
+          ? stream_id1 + 2 * session_.get_max_open_streams()
+          : stream_id1 + kMaxStreamIdDelta + 2;
+  EXPECT_NE(nullptr, session_.GetIncomingDynamicStream(stream_id1));
+  EXPECT_CALL(*connection_, SendConnectionClose(FLAGS_exact_stream_id_delta
+                                                    ? QUIC_TOO_MANY_OPEN_STREAMS
+                                                    : QUIC_INVALID_STREAM_ID));
+  EXPECT_EQ(nullptr, session_.GetIncomingDynamicStream(stream_id2));
+}
+
+TEST_P(QuicSessionTestServer, ManyImplicitlyOpenedStreams) {
+  // When max_open_streams_ is 200, should be able to create 200 streams
+  // out-of-order, that is, creating the one with the largest stream ID first.
+  QuicSessionPeer::SetMaxOpenStreams(&session_, 200);
+  QuicStreamId stream_id = kClientDataStreamId1;
+  // Create one stream.
+  session_.GetIncomingDynamicStream(stream_id);
+  EXPECT_CALL(*connection_, SendConnectionClose(_))
+      .Times(FLAGS_exact_stream_id_delta ? 0 : 1);
+  // Create the largest stream ID of a threatened total of 200 streams.
+  session_.GetIncomingDynamicStream(stream_id + 2 * (200 - 1));
 }
 
 TEST_P(QuicSessionTestServer, DebugDFatalIfMarkingClosedStreamWriteBlocked) {
@@ -597,7 +633,9 @@ TEST_P(QuicSessionTestServer, MultipleRstStreamsCauseSingleConnectionClose) {
 
   // Process first invalid stream reset, resulting in the connection being
   // closed.
-  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_INVALID_STREAM_ID))
+  EXPECT_CALL(*connection_, SendConnectionClose(FLAGS_exact_stream_id_delta
+                                                    ? QUIC_TOO_MANY_OPEN_STREAMS
+                                                    : QUIC_INVALID_STREAM_ID))
       .Times(1);
   const QuicStreamId kLargeInvalidStreamId = 99999999;
   QuicRstStreamFrame rst1(kLargeInvalidStreamId, QUIC_STREAM_NO_ERROR, 0);

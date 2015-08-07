@@ -537,7 +537,7 @@ int QuicHttpStream::ReadAvailableData(IOBuffer* buf, int buf_len) {
   int rv = stream_->Read(buf, buf_len);
   if (stream_->IsDoneReading()) {
     stream_->SetDelegate(nullptr);
-    stream_->DoneReading();
+    stream_->OnFinRead();
     stream_ = nullptr;
   }
   return rv;

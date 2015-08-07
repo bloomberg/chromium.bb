@@ -105,9 +105,10 @@ bool QuicStreamSequencer::MaybeCloseStream() {
     DVLOG(1) << "Passing up termination, as we've processed "
              << num_bytes_consumed_ << " of " << close_offset_
              << " bytes.";
+    // This will cause the stream to consume the fin.
     // Technically it's an error if num_bytes_consumed isn't exactly
     // equal, but error handling seems silly at this point.
-    stream_->OnFinRead();
+    stream_->OnDataAvailable();
     buffered_frames_.clear();
     num_bytes_buffered_ = 0;
     return true;

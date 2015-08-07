@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -199,6 +200,10 @@ TEST_F(PacingSenderTest, InitialBurst) {
   InitPacingRate(10, QuicBandwidth::FromBytesAndTimeDelta(
                          kMaxPacketSize, QuicTime::Delta::FromMilliseconds(1)));
 
+  if (FLAGS_quic_limit_pacing_burst) {
+    EXPECT_CALL(*mock_sender_, GetCongestionWindow())
+        .WillOnce(Return(10 * kDefaultTCPMSS));
+  }
   // Update the RTT and verify that the first 10 packets aren't paced.
   UpdateRtt();
 
@@ -235,6 +240,10 @@ TEST_F(PacingSenderTest, InitialBurstNoRttMeasurement) {
   InitPacingRate(10, QuicBandwidth::FromBytesAndTimeDelta(
                          kMaxPacketSize, QuicTime::Delta::FromMilliseconds(1)));
 
+  if (FLAGS_quic_limit_pacing_burst) {
+    EXPECT_CALL(*mock_sender_, GetCongestionWindow())
+        .WillOnce(Return(10 * kDefaultTCPMSS));
+  }
   // Send 10 packets, and verify that they are not paced.
   for (int i = 0 ; i < kInitialBurstPackets; ++i) {
     CheckPacketIsSentImmediately();
@@ -272,6 +281,10 @@ TEST_F(PacingSenderTest, FastSending) {
                  QuicBandwidth::FromBytesAndTimeDelta(
                      2 * kMaxPacketSize, QuicTime::Delta::FromMilliseconds(1)));
 
+  if (FLAGS_quic_limit_pacing_burst) {
+    EXPECT_CALL(*mock_sender_, GetCongestionWindow())
+        .WillOnce(Return(10 * kDefaultTCPMSS));
+  }
   // Update the RTT and verify that the first 10 packets aren't paced.
   UpdateRtt();
 

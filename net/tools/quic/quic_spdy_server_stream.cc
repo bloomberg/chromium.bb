@@ -55,15 +55,15 @@ void QuicSpdyServerStream::OnDataAvailable() {
     }
     MarkConsumed(iov.iov_len);
   }
-  if (sequencer()->IsClosed()) {
-    OnFinRead();
-  } else {
+  if (!sequencer()->IsClosed()) {
     sequencer()->SetUnblocked();
+    return;
   }
-}
 
-void QuicSpdyServerStream::OnFinRead() {
-  ReliableQuicStream::OnFinRead();
+  // If the sequencer is closed, then the all the body, including the fin,
+  // has been consumed.
+  OnFinRead();
+
   if (write_side_closed() || fin_buffered()) {
     return;
   }

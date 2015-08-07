@@ -46,9 +46,6 @@ bool FLAGS_enable_quic_stateless_reject_support = true;
 // If true, flow controller may grow the receive window size if necessary.
 bool FLAGS_quic_auto_tune_receive_window = true;
 
-// Enables sending of FEC packet only when FEC alarm goes off.
-bool FLAGS_quic_send_fec_packet_only_on_fec_alarm = true;
-
 // Enables server-side path MTU discovery in QUIC.
 bool FLAGS_quic_do_path_mtu_discovery = true;
 
@@ -76,3 +73,17 @@ bool FLAGS_quic_limit_max_cwnd = true;
 
 // If true, don't serialize invalid HTTP headers when converting HTTP to SPDY.
 bool FLAGS_spdy_strip_invalid_headers = true;
+
+// If true, instead of enforcing a fixed limit of 200 between the last
+// client-created stream ID and the next one, calculate the difference based on
+// get_max_open_streams().
+bool FLAGS_exact_stream_id_delta = true;
+
+// Limits the pacing burst out of quiescence to the current congestion window in
+// packets.
+bool FLAGS_quic_limit_pacing_burst = true;
+
+// If true, require handshake confirmation for QUIC connections, functionally
+// disabling 0-rtt handshakes.
+// TODO(rtenneti): Enable this flag after fixing tests.
+bool FLAGS_quic_require_handshake_confirmation = false;

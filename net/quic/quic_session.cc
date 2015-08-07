@@ -611,20 +611,42 @@ ReliableQuicStream* QuicSession::GetIncomingDynamicStream(
   if (IsClosedStream(stream_id)) {
     return nullptr;
   }
-
   implicitly_created_streams_.erase(stream_id);
   if (stream_id > largest_peer_created_stream_id_) {
-    if (stream_id - largest_peer_created_stream_id_ > kMaxStreamIdDelta) {
-      // We may already have sent a connection close due to multiple reset
-      // streams in the same packet.
-      if (connection()->connected()) {
-        LOG(ERROR) << "Trying to get stream: " << stream_id
-                   << ", largest peer created stream: "
-                   << largest_peer_created_stream_id_
-                   << ", max delta: " << kMaxStreamIdDelta;
-        connection()->SendConnectionClose(QUIC_INVALID_STREAM_ID);
+    if (FLAGS_exact_stream_id_delta) {
+      // Check if the number of streams that will be created (including
+      // implicitly open streams) would cause the number of open streams to
+      // exceed the limit.  Note that the peer can create only
+      // alternately-numbered streams.
+      if ((stream_id - largest_peer_created_stream_id_) / 2 +
+              GetNumOpenStreams() >
+          get_max_open_streams()) {
+        DVLOG(1) << "Failed to create a new incoming stream with id:"
+                 << stream_id << ".  Already " << GetNumOpenStreams()
+                 << " streams open, would exceed max " << get_max_open_streams()
+                 << ".";
+        // We may already have sent a connection close due to multiple reset
+        // streams in the same packet.
+        if (connection()->connected()) {
+          connection()->SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS);
+        }
+        return nullptr;
       }
-      return nullptr;
+    } else {
+      // Limit on the delta between stream IDs.
+      const QuicStreamId kMaxStreamIdDelta = 200;
+      if (stream_id - largest_peer_created_stream_id_ > kMaxStreamIdDelta) {
+        // We may already have sent a connection close due to multiple reset
+        // streams in the same packet.
+        if (connection()->connected()) {
+          LOG(ERROR) << "Trying to get stream: " << stream_id
+                     << ", largest peer created stream: "
+                     << largest_peer_created_stream_id_
+                     << ", max delta: " << kMaxStreamIdDelta;
+          connection()->SendConnectionClose(QUIC_INVALID_STREAM_ID);
+        }
+        return nullptr;
+      }
     }
     for (QuicStreamId id = largest_peer_created_stream_id_ + 2;
          id < stream_id;

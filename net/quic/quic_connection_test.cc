@@ -677,15 +677,16 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
     connection_.SetLossAlgorithm(loss_algorithm_);
     framer_.set_received_entropy_calculator(&entropy_calculator_);
     generator_->set_fec_send_policy(GetParam().fec_send_policy);
-    EXPECT_CALL(
-        *send_algorithm_, TimeUntilSend(_, _, _)).WillRepeatedly(Return(
-            QuicTime::Delta::Zero()));
+    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
+        .WillRepeatedly(Return(QuicTime::Delta::Zero()));
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
         .Times(AnyNumber());
-    EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
-        Return(QuicTime::Delta::Zero()));
-    EXPECT_CALL(*send_algorithm_, GetCongestionWindow()).WillRepeatedly(
-        Return(kMaxPacketSize));
+    EXPECT_CALL(*send_algorithm_, RetransmissionDelay())
+        .WillRepeatedly(Return(QuicTime::Delta::Zero()));
+    EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+        .WillRepeatedly(Return(kDefaultTCPMSS));
+    EXPECT_CALL(*send_algorithm_, PacingRate())
+        .WillRepeatedly(Return(QuicBandwidth::Zero()));
     ON_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
         .WillByDefault(Return(true));
     EXPECT_CALL(*send_algorithm_, HasReliableBandwidthEstimate())
@@ -3315,6 +3316,7 @@ TEST_P(QuicConnectionTest, MtuDiscoveryEnabled) {
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
   ProcessAckPacket(&probe_ack);
   EXPECT_EQ(kMtuDiscoveryTargetPacketSizeHigh, connection_.max_packet_length());
+  EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
 
   // Send more packets, and ensure that none of them sets the alarm.
   for (QuicPacketCount i = 0; i < 4 * kPacketsBetweenMtuProbesBase; i++) {
@@ -4647,8 +4649,6 @@ TEST_P(QuicConnectionTest, FecSendPolicyReceivedConnectionOption) {
   if (GetParam().fec_send_policy == FEC_ALARM_TRIGGER) {
     return;
   }
-  ValueRestore<bool> old_flag(&FLAGS_quic_send_fec_packet_only_on_fec_alarm,
-                              true);
   connection_.set_perspective(Perspective::IS_SERVER);
 
   // Test ReceivedConnectionOptions.

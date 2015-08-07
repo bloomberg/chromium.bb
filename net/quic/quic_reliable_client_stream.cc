@@ -77,15 +77,6 @@ QuicPriority QuicReliableClientStream::EffectivePriority() const {
   return QuicWriteBlockedList::kHighestPriority;
 }
 
-void QuicReliableClientStream::OnFinRead() {
-  // Do not close the stream here to give the caller a chance to
-  // invoke DoneReading.
-}
-
-void QuicReliableClientStream::DoneReading() {
-  QuicDataStream::OnFinRead();
-}
-
 int QuicReliableClientStream::WriteStreamData(
     base::StringPiece data,
     bool fin,
@@ -107,7 +98,7 @@ void QuicReliableClientStream::SetDelegate(
   DCHECK(!(delegate_ && delegate));
   delegate_ = delegate;
   if (delegate == nullptr && sequencer()->IsClosed()) {
-    DoneReading();
+    OnFinRead();
   }
 }
 

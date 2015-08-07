@@ -1117,6 +1117,10 @@ TEST_F(QuicSentPacketManagerTest, NewRetransmissionTimeout) {
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   EXPECT_CALL(*send_algorithm_, PacingRate())
       .WillRepeatedly(Return(QuicBandwidth::Zero()));
+  if (FLAGS_quic_limit_pacing_burst) {
+    EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+        .WillOnce(Return(10 * kDefaultTCPMSS));
+  }
   manager_.SetFromConfig(client_config);
   EXPECT_TRUE(QuicSentPacketManagerPeer::GetUseNewRto(&manager_));
 
@@ -1590,6 +1594,10 @@ TEST_F(QuicSentPacketManagerTest, NegotiateReceiveWindowFromOptions) {
               SetMaxCongestionWindow(kMinSocketReceiveBuffer * 0.95));
   EXPECT_CALL(*send_algorithm_, PacingRate())
       .WillRepeatedly(Return(QuicBandwidth::Zero()));
+  if (FLAGS_quic_limit_pacing_burst) {
+    EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+        .WillOnce(Return(10 * kDefaultTCPMSS));
+  }
   EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   EXPECT_CALL(*network_change_visitor_, OnRttChange());
   manager_.SetFromConfig(client_config);
@@ -1631,6 +1639,10 @@ TEST_F(QuicSentPacketManagerTest,
               SetMaxCongestionWindow(kMinSocketReceiveBuffer * 0.6));
   EXPECT_CALL(*send_algorithm_, PacingRate())
       .WillRepeatedly(Return(QuicBandwidth::Zero()));
+  if (FLAGS_quic_limit_pacing_burst) {
+    EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+        .WillOnce(Return(10 * kDefaultTCPMSS));
+  }
   EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   EXPECT_CALL(*network_change_visitor_, OnRttChange());
   manager_.SetFromConfig(client_config);
@@ -1644,12 +1656,12 @@ TEST_F(QuicSentPacketManagerTest,
         .WillOnce(Return(QuicTime::Delta::Zero()));
     EXPECT_EQ(QuicTime::Delta::Zero(),
               manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
-    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, BytesInFlight(), i,
-                                               1024, HAS_RETRANSMITTABLE_DATA))
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, BytesInFlight(), i, 1024,
+                                               HAS_RETRANSMITTABLE_DATA))
         .WillOnce(Return(true));
     SerializedPacket packet(CreatePacket(i, true));
-    manager_.OnPacketSent(&packet, 0, clock_.Now(), 1024,
-                          NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    manager_.OnPacketSent(&packet, 0, clock_.Now(), 1024, NOT_RETRANSMISSION,
+                          HAS_RETRANSMITTABLE_DATA);
   }
   EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
       .WillOnce(Return(QuicTime::Delta::Infinite()));

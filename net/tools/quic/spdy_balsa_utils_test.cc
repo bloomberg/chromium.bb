@@ -20,9 +20,9 @@ TEST(SpdyBalsaUtilsTest, RequestHeadersToSpdyHeaders) {
 
   SpdyHeaderBlock expected_headers;
   expected_headers[":authority"] = "www.google.com";
-  expected_headers[":method"] = "GET";
   expected_headers[":path"] = "/foo";
   expected_headers[":scheme"] = "https";
+  expected_headers[":method"] = "GET";
 
   EXPECT_EQ(expected_headers, spdy_headers);
 }
@@ -44,9 +44,9 @@ TEST(SpdyBalsaUtilsTest, SpdyHeadersToRequestHeaders) {
   // Test :authority header.
   SpdyHeaderBlock spdy_headers;
   spdy_headers[":authority"] = "www.google.com";
-  spdy_headers[":method"] = "GET";
   spdy_headers[":path"] = "/foo";
   spdy_headers[":scheme"] = "https";
+  spdy_headers[":method"] = "GET";
 
   BalsaHeaders request_headers;
   SpdyBalsaUtils::SpdyHeadersToRequestHeaders(spdy_headers, &request_headers,

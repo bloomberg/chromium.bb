@@ -73,9 +73,9 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // close, and should immediately close the stream.
   virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer);
 
-  // Called by the sequencer after ProcessRawData has accepted the final
-  // incoming data.
-  virtual void OnFinRead();
+  // Called by the stream subclass after it has consumed the final incoming
+  // data.
+  void OnFinRead();
 
   // Called when new data is available from the sequencer.  Subclasses must
   // actively retrieve the data using the sequencer's Readv() or

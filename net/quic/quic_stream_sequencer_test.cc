@@ -238,7 +238,7 @@ TEST_F(QuicStreamSequencerTest, EmptyFrame) {
 }
 
 TEST_F(QuicStreamSequencerTest, EmptyFinFrame) {
-  EXPECT_CALL(stream_, OnFinRead());
+  EXPECT_CALL(stream_, OnDataAvailable());
   OnFinFrame(0, "");
   EXPECT_EQ(0u, NumBufferedFrames());
   EXPECT_EQ(0u, sequencer_->num_bytes_consumed());

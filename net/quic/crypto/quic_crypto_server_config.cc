@@ -1014,6 +1014,14 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     helper.ValidationComplete(QUIC_NO_ERROR, "");
     return;
   }
+  // If we hit this block, the server nonce was empty.  If we're requiring
+  // handshake confirmation for DoS reasons and there's no server nonce present,
+  // reject the CHLO.
+  if (FLAGS_quic_require_handshake_confirmation) {
+    info->reject_reasons.push_back(SERVER_NONCE_REQUIRED_FAILURE);
+    helper.ValidationComplete(QUIC_NO_ERROR, "");
+    return;
+  }
 
   // We want to contact strike register only if there are no errors because it
   // is a RPC call and is expensive.

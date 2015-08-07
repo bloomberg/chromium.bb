@@ -144,8 +144,7 @@ ReliableQuicStream::~ReliableQuicStream() {
 }
 
 void ReliableQuicStream::SetFromConfig() {
-  if (FLAGS_quic_send_fec_packet_only_on_fec_alarm &&
-      session_->config()->HasClientSentConnectionOption(kFSTR, perspective_)) {
+  if (session_->config()->HasClientSentConnectionOption(kFSTR, perspective_)) {
     fec_policy_ = FEC_PROTECT_ALWAYS;
   }
 }

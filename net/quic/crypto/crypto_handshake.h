@@ -52,6 +52,8 @@ enum HandshakeFailureReason {
   SERVER_NONCE_NOT_UNIQUE_FAILURE = 10,
   // Server nonce's timestamp is not in the strike register's valid time range.
   SERVER_NONCE_INVALID_TIME_FAILURE = 11,
+  // The server requires handshake confirmation.
+  SERVER_NONCE_REQUIRED_FAILURE = 20,
 
   // Failure reasons for an invalid server config in CHLO.
   //
@@ -75,7 +77,7 @@ enum HandshakeFailureReason {
   // The source-address token has expired.
   SOURCE_ADDRESS_TOKEN_EXPIRED_FAILURE = 19,
 
-  MAX_FAILURE_REASON,
+  MAX_FAILURE_REASON = 21,
 };
 
 // These errors will be packed into an uint32 and we don't want to set the most

@@ -118,9 +118,6 @@ const bool kIncludeVersion = true;
 // Index of the first byte in a QUIC packet which is used in hash calculation.
 const size_t kStartOfHashData = 0;
 
-// Limit on the delta between stream IDs.
-const QuicStreamId kMaxStreamIdDelta = 200;
-
 // Reserved ID for the crypto stream.
 const QuicStreamId kCryptoStreamId = 1;
 

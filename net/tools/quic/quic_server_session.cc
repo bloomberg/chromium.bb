@@ -195,12 +195,14 @@ bool QuicServerSession::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
     connection()->SendConnectionClose(QUIC_INVALID_STREAM_ID);
     return false;
   }
-  if (GetNumOpenStreams() >= get_max_open_streams()) {
-    DVLOG(1) << "Failed to create a new incoming stream with id:" << id
-             << " Already " << GetNumOpenStreams() << " streams open (max "
-             << get_max_open_streams() << ").";
-    connection()->SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS);
-    return false;
+  if (!FLAGS_exact_stream_id_delta) {
+    if (GetNumOpenStreams() >= get_max_open_streams()) {
+      DVLOG(1) << "Failed to create a new incoming stream with id:" << id
+               << " Already " << GetNumOpenStreams() << " streams open (max "
+               << get_max_open_streams() << ").";
+      connection()->SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS);
+      return false;
+    }
   }
   return true;
 }

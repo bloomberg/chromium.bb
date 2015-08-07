@@ -70,7 +70,8 @@ class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
   scoped_ptr<SendAlgorithmInterface> sender_;  // Underlying sender.
   // The estimated system alarm granularity.
   const QuicTime::Delta alarm_granularity_;
-  // Configured size of the burst coming out of quiescence.
+  // Configured maximum size of the burst coming out of quiescence.  The burst
+  // is never larger than the current CWND in packets.
   const uint32 initial_packet_burst_;
   // Number of unpaced packets to be sent before packets are delayed.
   uint32 burst_tokens_;

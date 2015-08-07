@@ -32,10 +32,9 @@ class QuicSpdyServerStream : public QuicDataStream {
   // QuicDataStream
   void OnStreamHeadersComplete(bool fin, size_t frame_len) override;
 
-  // ReliableQuicStream implementation called by the session when there's
-  // data for us.
+  // ReliableQuicStream implementation called by the sequencer when there is
+  // data (or a FIN) to be read.
   void OnDataAvailable() override;
-  void OnFinRead() override;
 
  protected:
   // Sends a basic 200 response using SendHeaders for the headers and WriteData

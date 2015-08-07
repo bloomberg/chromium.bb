@@ -19,7 +19,6 @@ NET_EXPORT_PRIVATE extern int64 FLAGS_quic_time_wait_list_seconds;
 NET_EXPORT_PRIVATE extern int64 FLAGS_quic_time_wait_list_max_connections;
 NET_EXPORT_PRIVATE extern bool FLAGS_enable_quic_stateless_reject_support;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_auto_tune_receive_window;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_send_fec_packet_only_on_fec_alarm;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_do_path_mtu_discovery;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_process_frames_inline;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_dont_write_when_flow_unblocked;
@@ -28,5 +27,8 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_conservative_receive_buffer;
 NET_EXPORT_PRIVATE extern bool FLAGS_increase_time_wait_list;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_limit_max_cwnd;
 NET_EXPORT_PRIVATE extern bool FLAGS_spdy_strip_invalid_headers;
+NET_EXPORT_PRIVATE extern bool FLAGS_exact_stream_id_delta;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_limit_pacing_burst;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_require_handshake_confirmation;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

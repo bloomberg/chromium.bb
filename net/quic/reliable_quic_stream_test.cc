@@ -6,7 +6,6 @@
 
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_connection.h"
-#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/spdy_utils.h"
@@ -699,8 +698,6 @@ TEST_F(ReliableQuicStreamTest, SetDrainingOutgoingIncoming) {
 }
 
 TEST_F(ReliableQuicStreamTest, FecSendPolicyReceivedConnectionOption) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_send_fec_packet_only_on_fec_alarm,
-                              true);
   Initialize(kShouldProcessData);
 
   // Test ReceivedConnectionOptions.
