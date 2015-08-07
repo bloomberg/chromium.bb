@@ -142,6 +142,8 @@ crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOn
 
 crbug.com/475984 [ Mac Debug ] css2.1/t100801-c544-valgn-03-d-agi.html [ Failure ]
 
+crbug.com/518005 [ Lion SnowLeopard Debug ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Failure ]
+
 crbug.com/510337 cssom/cssvalue-comparison.html [ Slow ]
 crbug.com/510337 inspector/console/console-format.html [ Slow ]
 crbug.com/510337 inspector/elements/edit/edit-dom-actions-shadow.html [ Slow ]
