@@ -107,16 +107,21 @@ remoting_webapp_unittests_js_files = [
   "base/js/xmpp_login_handler_unittest.js",
   "base/js/xmpp_stream_parser_unittest.js",
   "crd/js/apps_v2_migration_unittest.js",
+  "crd/js/combined_host_list_api_unittest.js",
   "crd/js/gcd_client_unittest.js",
   "crd/js/gcd_client_with_mock_xhr_unittest.js",
   "crd/js/host_controller_unittest.js",
   "crd/js/host_daemon_facade_unittest.js",
   "crd/js/host_table_entry_unittest.js",
+  "crd/js/legacy_host_list_api_unittest.js",
   "crd/js/menu_button_unittest.js",
   "crd/js/mock_xhr_unittest.js",
 ]
 remoting_webapp_unittests_js_mock_files = [
+  "crd/js/mock_client_plugin.js",
   "crd/js/mock_host_daemon_facade.js",
+  "crd/js/mock_host_list_api.js",
+  "crd/js/mock_identity.js",
   "crd/js/mock_signal_strategy.js",
   "js_proto/chrome_mocks.js",
   "unittests/sinon_helpers.js",
@@ -188,6 +193,7 @@ remoting_webapp_shared_js_core_files = [
   "base/js/typecheck.js",
   "base/js/window_message_dispatcher.js",
   "base/js/xhr.js",
+  "base/js/xhr_event_writer.js",
 ]
 
 # Host JavaScript files.
@@ -288,6 +294,7 @@ remoting_webapp_js_host_display_files = [
   # JSCompiler.  If an implementation of an interface occurs in a
   # file processed before the interface itself, the @override tag
   # doesn't always work correctly.
+  "crd/js/combined_host_list_api.js",
   "crd/js/gcd_host_list_api.js",
   "crd/js/legacy_host_list_api.js",
 ]
@@ -663,3 +670,7 @@ app_remoting_webapp_localizable_files =
       remoting_webapp_template_message_window,
       remoting_webapp_template_wcs_sandbox,
     ] + ar_main_template_files + ar_all_js_files
+
+webapp_js_files = remoting_webapp_unittest_html_all_js_files +
+                  remoting_webapp_wcs_sandbox_html_js_files +
+                  remoting_webapp_background_html_js_files

@@ -73,6 +73,7 @@ remoting_unit_test_out_dir = "$root_out_dir/remoting/unittests"
 group("unit_tests") {
   data_deps = [
     ":blanketjs",
+    ":build_unittest",
     ":js_files",
     ":qunit",
     ":sinonjs",
@@ -82,10 +83,7 @@ group("unit_tests") {
 copy("js_files") {
   # This list corresponds to webapp_js_files in remoting_webapp_unittests
   # target in GYP.
-  sources = remoting_webapp_unittest_html_all_js_files +
-            remoting_webapp_wcs_sandbox_html_js_files +
-            remoting_webapp_background_html_js_files +
-            remoting_webapp_unittests_all_files
+  sources = webapp_js_files + remoting_webapp_unittests_all_files
   outputs = [
     "$remoting_unit_test_out_dir/{{source_file_part}}",
   ]
@@ -120,4 +118,18 @@ copy("qunit") {
   outputs = [
     "$remoting_unit_test_out_dir/qunit/{{source_file_part}}",
   ]
+}
+
+action("build_unittest") {
+  script = "build-html.py"
+  outputs = [
+    "$remoting_unit_test_out_dir/unittests.html",
+  ]
+  args = rebase_path(outputs, root_build_dir) + [
+           rebase_path(remoting_webapp_unittests_template_main, root_build_dir),
+           "--exclude-js",
+         ] + rebase_path(remoting_webapp_unittests_exclude_js_files,
+                         root_build_dir) + [ "--js" ] +
+         rebase_path(remoting_webapp_unittests_all_js_files, root_build_dir) +
+         [ "--instrument-js" ] + rebase_path(webapp_js_files, root_build_dir)
 }

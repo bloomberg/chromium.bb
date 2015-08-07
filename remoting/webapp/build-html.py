@@ -143,6 +143,7 @@ def main():
 
   out_file = args.output_file
   js_files = set(args.js) - set(args.exclude_js)
+  instrumented_js_files = set(args.instrument_js) - set(args.exclude_js)
 
   # Create the output directory if it does not exist.
   out_directory = os.path.dirname(out_file)
@@ -151,7 +152,7 @@ def main():
 
   # Generate the main HTML file from the templates.
   with open(out_file, 'w') as output:
-    gen = GenerateWebappHtml(args.templates, js_files, args.instrument_js,
+    gen = GenerateWebappHtml(args.templates, js_files, instrumented_js_files,
                              args.template_dir)
     gen.processTemplate(output, args.input_template, 0)
 
