@@ -153,6 +153,8 @@ crbug.com/248938 [ Win Debug ] virtual/threaded/animations/delay-start-event.htm
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-transform.html [ Pass Failure ]
 crbug.com/248938 [ Linux Win ] virtual/threaded/animations/cascade-important.html [ Pass Timeout ]
 crbug.com/493815 inspector/elements/iframe-load-event.html [ Pass Failure ]
+crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
+crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-04.html [ Pass Failure ]
 
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
