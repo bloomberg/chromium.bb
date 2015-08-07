@@ -67,6 +67,13 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
 AccessibilityNotificationWaiter::~AccessibilityNotificationWaiter() {
 }
 
+void AccessibilityNotificationWaiter::ListenToAdditionalFrame(
+    RenderFrameHostImpl* frame_host) {
+  frame_host->SetAccessibilityCallbackForTesting(
+      base::Bind(&AccessibilityNotificationWaiter::OnAccessibilityEvent,
+                 weak_factory_.GetWeakPtr()));
+}
+
 void AccessibilityNotificationWaiter::WaitForNotification() {
   loop_runner_->Run();
 

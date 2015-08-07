@@ -9,7 +9,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/common/accessibility_messages.h"
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
+#include "content/renderer/accessibility/renderer_accessibility.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -38,6 +40,7 @@ using blink::WebDocument;
 using blink::WebDocumentType;
 using blink::WebElement;
 using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebPlugin;
 using blink::WebPluginContainer;
@@ -97,7 +100,7 @@ std::string GetEquivalentAriaRoleString(const ui::AXRole role) {
 
 void AddIntListAttributeFromWebObjects(ui::AXIntListAttribute attr,
                                        WebVector<WebAXObject> objects,
-                                       ui::AXNodeData* dst) {
+                                       AXContentNodeData* dst) {
   std::vector<int32> ids;
   for(size_t i = 0; i < objects.size(); i++)
     ids.push_back(objects[i].axID());
@@ -109,8 +112,6 @@ void AddIntListAttributeFromWebObjects(ui::AXIntListAttribute attr,
 
 BlinkAXTreeSource::BlinkAXTreeSource(RenderFrameImpl* render_frame)
     : render_frame_(render_frame),
-      node_to_frame_routing_id_map_(NULL),
-      node_to_browser_plugin_instance_id_map_(NULL),
       accessibility_focus_id_(-1) {
 }
 
@@ -129,14 +130,6 @@ bool BlinkAXTreeSource::IsInTree(blink::WebAXObject node) const {
     node = GetParent(node);
   }
   return false;
-}
-
-void BlinkAXTreeSource::CollectChildFrameIdMapping(
-    std::map<int32, int>* node_to_frame_routing_id_map,
-    std::map<int32, int>* node_to_browser_plugin_instance_id_map) {
-  node_to_frame_routing_id_map_ = node_to_frame_routing_id_map;
-  node_to_browser_plugin_instance_id_map_ =
-      node_to_browser_plugin_instance_id_map;
 }
 
 blink::WebAXObject BlinkAXTreeSource::GetRoot() const {
@@ -219,7 +212,7 @@ blink::WebAXObject BlinkAXTreeSource::GetNull() const {
 }
 
 void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
-                                      ui::AXNodeData* dst) const {
+                                      AXContentNodeData* dst) const {
   dst->role = AXRoleFromBlink(src.role());
   dst->state = AXStateFromBlink(src);
   dst->location = src.boundingBoxRect();
@@ -428,27 +421,24 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     }
 
     // Browser plugin (used in a <webview>).
-    if (node_to_browser_plugin_instance_id_map_) {
-      BrowserPlugin* browser_plugin = BrowserPlugin::GetFromNode(element);
-      if (browser_plugin) {
-        (*node_to_browser_plugin_instance_id_map_)[dst->id] =
-            browser_plugin->browser_plugin_instance_id();
-        dst->AddBoolAttribute(ui::AX_ATTR_IS_AX_TREE_HOST, true);
-      }
+    BrowserPlugin* browser_plugin = BrowserPlugin::GetFromNode(element);
+    if (browser_plugin) {
+      dst->AddContentIntAttribute(
+          AX_CONTENT_ATTR_CHILD_BROWSER_PLUGIN_INSTANCE_ID,
+          browser_plugin->browser_plugin_instance_id());
     }
 
     // Out-of-process iframe.
-    if (is_iframe && node_to_frame_routing_id_map_) {
+    if (is_iframe) {
       WebFrame* frame = WebFrame::fromFrameOwnerElement(element);
 
       if (frame && frame->isWebRemoteFrame()) {
         RenderFrameProxy* render_frame_proxy =
             RenderFrameProxy::FromWebFrame(frame);
-
         DCHECK(render_frame_proxy);
-        (*node_to_frame_routing_id_map_)[dst->id] =
-            render_frame_proxy->routing_id();
-        dst->AddBoolAttribute(ui::AX_ATTR_IS_AX_TREE_HOST, true);
+        dst->AddContentIntAttribute(
+            AX_CONTENT_ATTR_CHILD_ROUTING_ID,
+            render_frame_proxy->routing_id());
       }
     }
   }
@@ -513,6 +503,25 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
           UTF16ToUTF8(base::StringPiece16(doctype.name())));
     }
 
+    // Get the tree ID for this frame and possibly the parent frame.
+    WebLocalFrame* web_frame = document.frame();
+    if (web_frame) {
+      RenderFrame* render_frame = RenderFrame::FromWebFrame(web_frame);
+      dst->AddContentIntAttribute(
+          AX_CONTENT_ATTR_ROUTING_ID,
+          render_frame->GetRoutingID());
+
+      // Get the tree ID for the parent frame, if it's remote.
+      // (If it's local, it's already part of this same tree.)
+      blink::WebFrame* parent_web_frame = web_frame->parent();
+      if (parent_web_frame && parent_web_frame->isWebRemoteFrame()) {
+        RenderFrameProxy* parent_render_frame_proxy =
+            RenderFrameProxy::FromWebFrame(parent_web_frame);
+        dst->AddContentIntAttribute(
+            AX_CONTENT_ATTR_PARENT_ROUTING_ID,
+            parent_render_frame_proxy->routing_id());
+      }
+    }
   }
 
   if (dst->role == ui::AX_ROLE_TABLE) {

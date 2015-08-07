@@ -33,6 +33,8 @@ class AccessibilityNotificationWaiter {
        ui::AXEvent event);
   ~AccessibilityNotificationWaiter();
 
+  void ListenToAdditionalFrame(RenderFrameHostImpl* frame_host);
+
   // Blocks until the specific accessibility notification registered in
   // AccessibilityNotificationWaiter is received. Ignores notifications for
   // "about:blank".

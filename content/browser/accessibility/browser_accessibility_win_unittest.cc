@@ -231,16 +231,16 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   text_accessible.Release();
 
   // Notify the BrowserAccessibilityManager that the text child has changed.
-  ui::AXNodeData text2;
+  AXContentNodeData text2;
   text2.id = 2;
   text2.role = ui::AX_ROLE_STATIC_TEXT;
   text2.SetName("new text");
   text2.SetName("old text");
-  AccessibilityHostMsg_EventParams param;
+  AXEventNotificationDetails param;
   param.event_type = ui::AX_EVENT_CHILDREN_CHANGED;
   param.update.nodes.push_back(text2);
   param.id = text2.id;
-  std::vector<AccessibilityHostMsg_EventParams> events;
+  std::vector<AXEventNotificationDetails> events;
   events.push_back(param);
   manager->OnAccessibilityEvents(events);
 
@@ -308,11 +308,11 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChangeNoLeaks) {
   // Notify the BrowserAccessibilityManager that the div node and its children
   // were removed and ensure that only one BrowserAccessibility instance exists.
   root.child_ids.clear();
-  AccessibilityHostMsg_EventParams param;
+  AXEventNotificationDetails param;
   param.event_type = ui::AX_EVENT_CHILDREN_CHANGED;
   param.update.nodes.push_back(root);
   param.id = root.id;
-  std::vector<AccessibilityHostMsg_EventParams> events;
+  std::vector<AXEventNotificationDetails> events;
   events.push_back(param);
   manager->OnAccessibilityEvents(events);
   ASSERT_EQ(1, CountedBrowserAccessibility::num_instances());
@@ -693,9 +693,9 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   tree1_2.role = ui::AX_ROLE_TEXT_FIELD;
 
   // Process a load complete.
-  std::vector<AccessibilityHostMsg_EventParams> params;
-  params.push_back(AccessibilityHostMsg_EventParams());
-  AccessibilityHostMsg_EventParams* msg = &params[0];
+  std::vector<AXEventNotificationDetails> params;
+  params.push_back(AXEventNotificationDetails());
+  AXEventNotificationDetails* msg = &params[0];
   msg->event_type = ui::AX_EVENT_LOAD_COMPLETE;
   msg->update.nodes.push_back(tree1_1);
   msg->update.nodes.push_back(tree1_2);

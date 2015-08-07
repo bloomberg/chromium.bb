@@ -9,7 +9,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/accessibility/ax_tree_id_registry.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_action_adapter.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
@@ -201,41 +200,13 @@ class AutomationWebContentsObserver
         details.begin();
     for (; iter != details.end(); ++iter) {
       const content::AXEventNotificationDetails& event = *iter;
-      int tree_id = AXTreeIDRegistry::GetInstance()->GetOrCreateAXTreeID(
-          event.process_id, event.routing_id);
       ExtensionMsg_AccessibilityEventParams params;
-      params.tree_id = tree_id;
+      params.tree_id = event.ax_tree_id;
       params.id = event.id;
       params.event_type = event.event_type;
-      params.update.node_id_to_clear = event.node_id_to_clear;
-      params.update.nodes = event.nodes;
+      params.update = event.update;
       params.location_offset =
           web_contents()->GetContainerBounds().OffsetFromOrigin();
-
-      for (size_t i = 0; i < params.update.nodes.size(); ++i) {
-        ui::AXNodeData& node = params.update.nodes[i];
-        if (node.HasBoolAttribute(ui::AX_ATTR_IS_AX_TREE_HOST)) {
-          const auto& iter = event.node_to_browser_plugin_instance_id_map.find(
-              node.id);
-          if (iter != event.node_to_browser_plugin_instance_id_map.end()) {
-            int instance_id = iter->second;
-            content::BrowserPluginGuestManager* guest_manager =
-                browser_context_->GetGuestManager();
-            content::WebContents* guest_web_contents =
-                guest_manager->GetGuestByInstanceID(event.process_id,
-                                                    instance_id);
-            if (guest_web_contents) {
-              content::RenderFrameHost* guest_rfh =
-                  guest_web_contents->GetMainFrame();
-              int guest_tree_id =
-                  AXTreeIDRegistry::GetInstance()->GetOrCreateAXTreeID(
-                      guest_rfh->GetProcess()->GetID(),
-                      guest_rfh->GetRoutingID());
-              node.AddIntAttribute(ui::AX_ATTR_CHILD_TREE_ID, guest_tree_id);
-            }
-          }
-        }
-      }
 
       AutomationEventRouter* router = AutomationEventRouter::GetInstance();
       router->DispatchAccessibilityEvent(params);
@@ -244,10 +215,7 @@ class AutomationWebContentsObserver
 
   void RenderFrameDeleted(
       content::RenderFrameHost* render_frame_host) override {
-    int tree_id = AXTreeIDRegistry::GetInstance()->GetOrCreateAXTreeID(
-        render_frame_host->GetProcess()->GetID(),
-        render_frame_host->GetRoutingID());
-    AXTreeIDRegistry::GetInstance()->RemoveAXTreeID(tree_id);
+    int tree_id = render_frame_host->GetAXTreeID();
     AutomationEventRouter::GetInstance()->DispatchTreeDestroyedEvent(
         tree_id,
         browser_context_);
@@ -304,8 +272,7 @@ AutomationInternalEnableTabFunction::Run() {
   AutomationWebContentsObserver::CreateForWebContents(contents);
   contents->EnableTreeOnlyAccessibilityMode();
 
-  int ax_tree_id = AXTreeIDRegistry::GetInstance()->GetOrCreateAXTreeID(
-      rfh->GetProcess()->GetID(), rfh->GetRoutingID());
+  int ax_tree_id = rfh->GetAXTreeID();
 
   // This gets removed when the extension process dies.
   AutomationEventRouter::GetInstance()->RegisterListenerForOneTree(
@@ -324,10 +291,8 @@ ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {
   scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  AXTreeIDRegistry::FrameID frame_id =
-      AXTreeIDRegistry::GetInstance()->GetFrameID(params->tree_id);
   content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(frame_id.first, frame_id.second);
+      content::RenderFrameHost::FromAXTreeID(params->tree_id);
   if (!rfh)
     return RespondNow(Error("unable to load tab"));
 
@@ -358,10 +323,8 @@ AutomationInternalPerformActionFunction::Run() {
                             " platform does not support desktop automation"));
 #endif  // defined(USE_AURA)
   }
-  AXTreeIDRegistry::FrameID frame_id =
-      AXTreeIDRegistry::GetInstance()->GetFrameID(params->args.tree_id);
   content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(frame_id.first, frame_id.second);
+      content::RenderFrameHost::FromAXTreeID(params->args.tree_id);
   if (!rfh)
     return RespondNow(Error("Ignoring action on destroyed node"));
 
@@ -450,10 +413,8 @@ AutomationInternalQuerySelectorFunction::Run() {
     return RespondNow(
         Error("domQuerySelector queries may not be used on the desktop."));
   }
-  AXTreeIDRegistry::FrameID frame_id =
-      AXTreeIDRegistry::GetInstance()->GetFrameID(params->args.tree_id);
   content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(frame_id.first, frame_id.second);
+      content::RenderFrameHost::FromAXTreeID(params->args.tree_id);
   if (!rfh)
     return RespondNow(Error("domQuerySelector query sent on destroyed tree."));
 

@@ -9,11 +9,13 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/accessibility_messages.h"
+#include "content/common/ax_content_node_data.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/accessibility/blink_ax_tree_source.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "ui/accessibility/ax_tree_serializer.h"
+
+struct AccessibilityHostMsg_EventParams;
 
 namespace blink {
 class WebDocument;
@@ -50,7 +52,7 @@ class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
   // enabling accessibility if it wasn't already enabled.
   static void SnapshotAccessibilityTree(
       RenderFrameImpl* render_frame,
-      ui::AXTreeUpdate<ui::AXNodeData>* response);
+      ui::AXTreeUpdate<AXContentNodeData>* response);
 
   explicit RendererAccessibility(RenderFrameImpl* render_frame);
   ~RendererAccessibility() override;
@@ -121,7 +123,7 @@ class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
 
   // The serializer that sends accessibility messages to the browser process.
   using BlinkAXTreeSerializer =
-      ui::AXTreeSerializer<blink::WebAXObject, ui::AXNodeData>;
+      ui::AXTreeSerializer<blink::WebAXObject, AXContentNodeData>;
   BlinkAXTreeSerializer serializer_;
 
   // Current location of every object, so we can detect when it moves.

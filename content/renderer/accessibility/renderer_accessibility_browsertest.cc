@@ -4,6 +4,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "content/common/accessibility_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_message_enums.h"

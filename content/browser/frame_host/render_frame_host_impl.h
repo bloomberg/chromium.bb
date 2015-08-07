@@ -17,6 +17,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/accessibility_mode_enums.h"
+#include "content/common/ax_content_node_data.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/frame_replication_state.h"
@@ -123,11 +124,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   static const int kMaxAccessibilityResets = 5;
 
   static RenderFrameHostImpl* FromID(int process_id, int routing_id);
+  static RenderFrameHostImpl* FromAXTreeID(
+      AXTreeIDRegistry::AXTreeID ax_tree_id);
 
   ~RenderFrameHostImpl() override;
 
   // RenderFrameHost
   int GetRoutingID() override;
+  AXTreeIDRegistry::AXTreeID GetAXTreeID() override;
   SiteInstanceImpl* GetSiteInstance() override;
   RenderProcessHost* GetProcess() override;
   RenderFrameHost* GetParent() override;
@@ -188,11 +192,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void AccessibilityFatalError() override;
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
-  BrowserAccessibilityManager* AccessibilityGetChildFrame(
-      int accessibility_node_id) override;
-  void AccessibilityGetAllChildFrames(
-      std::vector<BrowserAccessibilityManager*>* child_frames) override;
-  BrowserAccessibility* AccessibilityGetParentFrame() override;
 
   // Creates a RenderFrame in the renderer process.  Only called for
   // cross-process subframe navigations in --site-per-process.
@@ -559,7 +558,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const AccessibilityHostMsg_FindInPageResultParams& params);
   void OnAccessibilitySnapshotResponse(
       int callback_id,
-      const ui::AXTreeUpdate<ui::AXNodeData>& snapshot);
+      const ui::AXTreeUpdate<AXContentNodeData>& snapshot);
   void OnToggleFullscreen(bool enter_fullscreen);
   void OnDidStartLoading(bool to_different_document);
   void OnDidStopLoading();
@@ -582,18 +581,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // it will be used to kill processes that commit unauthorized URLs.
   bool CanCommitURL(const GURL& url);
 
-  // Update the the singleton FrameAccessibility instance with a map
-  // from accessibility node id to the frame routing id of a cross-process
-  // iframe.
-  void UpdateCrossProcessIframeAccessibility(
-      const std::map<int32, int>& node_to_frame_routing_id_map);
-
-  // Update the the singleton FrameAccessibility instance with a map
-  // from accessibility node id to the browser plugin instance id of a
-  // guest WebContents.
-  void UpdateGuestFrameAccessibility(
-      const std::map<int32, int>& node_to_browser_plugin_instance_id_map);
-
   // Asserts that the given RenderFrameHostImpl is part of the same browser
   // context (and crashes if not), then returns whether the given frame is
   // part of the same site instance.
@@ -608,6 +595,19 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Returns true if the ExecuteJavaScript() API can be used on this host.
   bool CanExecuteJavaScript();
+
+  // Map a routing ID from a frame in the same frame tree to a globally
+  // unique AXTreeID.
+  AXTreeIDRegistry::AXTreeID RoutingIDToAXTreeID(int routing_id);
+
+  // Map a browser plugin instance ID to the AXTreeID of the plugin's
+  // main frame.
+  AXTreeIDRegistry::AXTreeID BrowserPluginInstanceIDToAXTreeID(int routing_id);
+
+  // Convert the content-layer-specific AXContentNodeData to a general-purpose
+  // AXNodeData structure.
+  void AXContentNodeDataToAXNodeData(const AXContentNodeData& src,
+                                     ui::AXNodeData* dst);
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each

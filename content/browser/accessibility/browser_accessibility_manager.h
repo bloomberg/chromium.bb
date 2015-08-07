@@ -10,14 +10,15 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
+#include "content/browser/accessibility/ax_tree_id_registry.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/ax_event_notification_details.h"
 #include "third_party/WebKit/public/web/WebAXEnums.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/gfx/native_widget_types.h"
 
-struct AccessibilityHostMsg_EventParams;
 struct AccessibilityHostMsg_LocationChangeParams;
 
 namespace content {
@@ -78,11 +79,6 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual void AccessibilityFatalError() = 0;
   virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() = 0;
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() = 0;
-  virtual BrowserAccessibilityManager* AccessibilityGetChildFrame(
-      int accessibility_node_id) = 0;
-  virtual void AccessibilityGetAllChildFrames(
-      std::vector<BrowserAccessibilityManager*>* child_frames) = 0;
-  virtual BrowserAccessibility* AccessibilityGetParentFrame() = 0;
 };
 
 class CONTENT_EXPORT BrowserAccessibilityFactory {
@@ -124,6 +120,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
+  static BrowserAccessibilityManager* FromID(
+      AXTreeIDRegistry::AXTreeID ax_tree_id);
+
   ~BrowserAccessibilityManager() override;
 
   void Initialize(const SimpleAXTreeUpdate& initial_tree);
@@ -142,6 +141,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // Return a pointer to the object corresponding to the given id,
   // does not make a new reference.
   BrowserAccessibility* GetFromID(int32 id);
+
+  // If this tree has a parent tree, return the parent node in that tree.
+  BrowserAccessibility* GetParentNodeFromParentTree();
 
   // Called to notify the accessibility manager that its associated native
   // view got focused.
@@ -203,7 +205,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
 
   // Called when the renderer process has notified us of about tree changes.
   void OnAccessibilityEvents(
-      const std::vector<AccessibilityHostMsg_EventParams>& params);
+      const std::vector<AXEventNotificationDetails>& details);
 
   // Called when the renderer process updates the location of accessibility
   // objects.
@@ -332,6 +334,14 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   OnScreenKeyboardState osk_state_;
 
   BrowserAccessibilityFindInPageInfo find_in_page_info_;
+
+  // The global ID of this accessibility tree.
+  AXTreeIDRegistry::AXTreeID ax_tree_id_;
+
+  // If this tree has a parent tree, this is the cached ID of the parent
+  // node within that parent tree. It's computed as needed and cached for
+  // speed so that it can be accessed quickly if it hasn't changed.
+  int parent_node_id_from_parent_tree_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManager);
 };

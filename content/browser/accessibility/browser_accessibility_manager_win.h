@@ -76,6 +76,10 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // browser process) to accessibility ids within this page.
   base::hash_map<long, int32> unique_id_to_ax_id_map_;
 
+  // A mapping from the Windows-specific unique IDs (unique within the
+  // browser process) to the AXTreeID that contains this unique ID.
+  base::hash_map<long, AXTreeIDRegistry::AXTreeID> unique_id_to_ax_tree_id_map_;
+
   // Set to true if we need to fire a focus event on the root as soon as
   // possible.
   bool focus_event_on_root_needed_;

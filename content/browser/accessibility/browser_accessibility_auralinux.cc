@@ -763,6 +763,11 @@ void BrowserAccessibilityAuraLinux::OnDataChanged() {
   if (!atk_object_) {
     interface_mask_ = GetInterfaceMaskFromObject(this);
     atk_object_ = ATK_OBJECT(browser_accessibility_new(this));
+    if (this->GetParent()) {
+      atk_object_set_parent(
+          atk_object_,
+          this->GetParent()->ToBrowserAccessibilityAuraLinux()->GetAtkObject());
+    }
   }
 }
 

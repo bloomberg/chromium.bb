@@ -282,11 +282,6 @@ class CONTENT_EXPORT BrowserAccessibility {
   // including this object if it's static text.
   int GetStaticTextLenRecursive() const;
 
-  // Similar to GetParent(), but includes nodes that are the host of a
-  // subtree rather than skipping over them - because they contain important
-  // bounds offsets.
-  BrowserAccessibility* GetParentForBoundsCalculation() const;
-
   // If a bounding rectangle is empty, compute it based on the union of its
   // children, since most accessibility APIs don't like elements with no
   // bounds, but "virtual" elements in the accessibility tree that don't

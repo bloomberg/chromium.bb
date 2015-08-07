@@ -298,6 +298,7 @@ void BrowserAccessibilityManagerWin::OnNodeCreated(ui::AXTree* tree,
     return;
   LONG unique_id_win = obj->ToBrowserAccessibilityWin()->unique_id_win();
   unique_id_to_ax_id_map_[unique_id_win] = obj->GetId();
+  unique_id_to_ax_tree_id_map_[unique_id_win] = ax_tree_id_;
 }
 
 void BrowserAccessibilityManagerWin::OnNodeWillBeDeleted(ui::AXTree* tree,
@@ -309,6 +310,8 @@ void BrowserAccessibilityManagerWin::OnNodeWillBeDeleted(ui::AXTree* tree,
   if (!obj->IsNative())
     return;
   unique_id_to_ax_id_map_.erase(
+      obj->ToBrowserAccessibilityWin()->unique_id_win());
+  unique_id_to_ax_tree_id_map_.erase(
       obj->ToBrowserAccessibilityWin()->unique_id_win());
   if (obj == tracked_scroll_object_) {
     tracked_scroll_object_->Release();
@@ -375,30 +378,31 @@ void BrowserAccessibilityManagerWin::TrackScrollingObject(
 
 BrowserAccessibilityWin* BrowserAccessibilityManagerWin::GetFromUniqueIdWin(
     LONG unique_id_win) {
-  base::hash_map<LONG, int32>::iterator iter =
-      unique_id_to_ax_id_map_.find(unique_id_win);
-  if (iter != unique_id_to_ax_id_map_.end()) {
-    BrowserAccessibility* result = GetFromID(iter->second);
-    if (result && result->IsNative())
-      return result->ToBrowserAccessibilityWin();
+  auto tree_iter = unique_id_to_ax_tree_id_map_.find(unique_id_win);
+  if (tree_iter == unique_id_to_ax_tree_id_map_.end())
+    return nullptr;
+
+  int tree_id = tree_iter->second;
+  if (tree_id != ax_tree_id_) {
+    BrowserAccessibilityManagerWin* manager =
+        BrowserAccessibilityManager::FromID(tree_id)
+            ->ToBrowserAccessibilityManagerWin();
+    if (!manager)
+      return nullptr;
+    if (manager != this)
+      return manager->GetFromUniqueIdWin(unique_id_win);
+    return nullptr;
   }
 
-  // Also search all child frames, such as out-of-process iframes or
-  // guest browser plugins.
-  if (delegate()) {
-    std::vector<BrowserAccessibilityManager*> child_frames;
-    delegate()->AccessibilityGetAllChildFrames(&child_frames);
-    for (size_t i = 0; i < child_frames.size(); ++i) {
-      BrowserAccessibilityManagerWin* child_manager =
-          child_frames[i]->ToBrowserAccessibilityManagerWin();
-      BrowserAccessibilityWin* result =
-          child_manager->GetFromUniqueIdWin(unique_id_win);
-      if (result)
-        return result;
-    }
-  }
+  auto iter = unique_id_to_ax_id_map_.find(unique_id_win);
+  if (iter == unique_id_to_ax_id_map_.end())
+    return nullptr;
 
-  return NULL;
+  BrowserAccessibility* result = GetFromID(iter->second);
+  if (result && result->IsNative())
+    return result->ToBrowserAccessibilityWin();
+
+  return nullptr;
 }
 
 }  // namespace content

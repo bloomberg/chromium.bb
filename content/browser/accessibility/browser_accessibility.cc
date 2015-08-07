@@ -61,9 +61,11 @@ bool BrowserAccessibility::PlatformIsLeaf() const {
 }
 
 uint32 BrowserAccessibility::PlatformChildCount() const {
-  if (GetBoolAttribute(ui::AX_ATTR_IS_AX_TREE_HOST)) {
-    // Check if the child frame currently exists.
-    if (manager_->delegate()->AccessibilityGetChildFrame(GetId()))
+  if (HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID)) {
+    BrowserAccessibilityManager* child_manager =
+        BrowserAccessibilityManager::FromID(
+            GetIntAttribute(ui::AX_ATTR_CHILD_TREE_ID));
+    if (child_manager)
       return 1;
 
     return 0;
@@ -92,9 +94,10 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
   DCHECK(child_index < PlatformChildCount());
   BrowserAccessibility* result = nullptr;
 
-  if (GetBoolAttribute(ui::AX_ATTR_IS_AX_TREE_HOST)) {
+  if (HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID)) {
     BrowserAccessibilityManager* child_manager =
-        manager_->delegate()->AccessibilityGetChildFrame(GetId());
+        BrowserAccessibilityManager::FromID(
+            GetIntAttribute(ui::AX_ATTR_CHILD_TREE_ID));
     if (child_manager)
       result = child_manager->GetRoot();
   } else {
@@ -153,15 +156,7 @@ BrowserAccessibility* BrowserAccessibility::GetParent() const {
   if (parent)
     return manager_->GetFromAXNode(parent);
 
-  if (!manager_->delegate())
-    return NULL;
-
-  BrowserAccessibility* host_node =
-      manager_->delegate()->AccessibilityGetParentFrame();
-  if (!host_node)
-    return NULL;
-
-  return host_node;
+  return manager_->GetParentNodeFromParentTree();
 }
 
 int32 BrowserAccessibility::GetIndexInParent() const {
@@ -693,20 +688,6 @@ int BrowserAccessibility::GetStaticTextLenRecursive() const {
   return len;
 }
 
-BrowserAccessibility* BrowserAccessibility::GetParentForBoundsCalculation()
-    const {
-  if (!node_ || !manager_)
-    return NULL;
-  ui::AXNode* parent = node_->parent();
-  if (parent)
-    return manager_->GetFromAXNode(parent);
-
-  if (!manager_->delegate())
-    return NULL;
-
-  return manager_->delegate()->AccessibilityGetParentFrame();
-}
-
 void BrowserAccessibility::FixEmptyBounds(gfx::Rect* bounds) const
 {
   if (bounds->width() > 0 && bounds->height() > 0)
@@ -738,7 +719,7 @@ gfx::Rect BrowserAccessibility::ElementBoundsToLocalBounds(gfx::Rect bounds)
   // Walk up the parent chain. Every time we encounter a Web Area, offset
   // based on the scroll bars and then offset based on the origin of that
   // nested web area.
-  BrowserAccessibility* parent = GetParentForBoundsCalculation();
+  BrowserAccessibility* parent = GetParent();
   bool need_to_offset_web_area =
       (GetRole() == ui::AX_ROLE_WEB_AREA ||
        GetRole() == ui::AX_ROLE_ROOT_WEB_AREA);
@@ -767,7 +748,7 @@ gfx::Rect BrowserAccessibility::ElementBoundsToLocalBounds(gfx::Rect bounds)
       }
       need_to_offset_web_area = true;
     }
-    parent = parent->GetParentForBoundsCalculation();
+    parent = parent->GetParent();
   }
 
   return bounds;

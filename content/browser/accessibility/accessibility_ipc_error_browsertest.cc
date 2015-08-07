@@ -4,7 +4,7 @@
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/accessibility_messages.h"
+#include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -153,8 +153,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
 
   // Construct a bad accessibility message that BrowserAccessibilityManager
   // will reject.
-  std::vector<AccessibilityHostMsg_EventParams> bad_accessibility_event_list;
-  bad_accessibility_event_list.push_back(AccessibilityHostMsg_EventParams());
+  std::vector<AXEventNotificationDetails> bad_accessibility_event_list;
+  bad_accessibility_event_list.push_back(AXEventNotificationDetails());
   bad_accessibility_event_list[0].update.node_id_to_clear = -2;
 
   // We should be able to reset accessibility |max_iterations-1| times

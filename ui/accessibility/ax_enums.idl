@@ -305,6 +305,9 @@
     // Identifies a child tree which this node hosts.
     child_tree_id,
 
+    // Identifies the parent tree that hosts this tree's root node.
+    parent_tree_id,
+
     // Position or Number of items in current set of listitems or treeitems
     set_size,
     pos_in_set,
@@ -368,12 +371,7 @@
     update_location_only,
 
     // Set on a canvas element if it has fallback content.
-    canvas_has_fallback,
-
-    // Set if this node is the host of an external AXTree, for
-    // example a web view that's a child of a native view, or a
-    // web iframe that's the child of another web frame.
-    is_ax_tree_host
+    canvas_has_fallback
   };
 
   [cpp_enum_prefix_override="ax_attr"] enum AXIntListAttribute {

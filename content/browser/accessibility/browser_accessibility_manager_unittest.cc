@@ -9,7 +9,7 @@
 #if defined(OS_WIN)
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #endif
-#include "content/common/accessibility_messages.h"
+#include "content/public/browser/ax_event_notification_details.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -92,15 +92,6 @@ class TestBrowserAccessibilityDelegate
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override {
     return nullptr;
   }
-  BrowserAccessibilityManager* AccessibilityGetChildFrame(
-      int accessibility_node_id) override {
-    return nullptr;
-  }
-  BrowserAccessibility* AccessibilityGetParentFrame() override {
-    return nullptr;
-  }
-  void AccessibilityGetAllChildFrames(
-      std::vector<BrowserAccessibilityManager*>* child_frames) override {}
 
   bool got_fatal_error() const { return got_fatal_error_; }
   void reset_got_fatal_error() { got_fatal_error_ = false; }
@@ -275,9 +266,9 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   EXPECT_EQ(2, child3_accessible->GetIndexInParent());
 
   // Process a notification containing the changed subtree.
-  std::vector<AccessibilityHostMsg_EventParams> params;
-  params.push_back(AccessibilityHostMsg_EventParams());
-  AccessibilityHostMsg_EventParams* msg = &params[0];
+  std::vector<AXEventNotificationDetails> params;
+  params.push_back(AXEventNotificationDetails());
+  AXEventNotificationDetails* msg = &params[0];
   msg->event_type = ui::AX_EVENT_CHILDREN_CHANGED;
   msg->update.nodes.push_back(tree2_root);
   msg->update.nodes.push_back(tree2_child0);
@@ -451,9 +442,9 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
 
   // Process a notification containing the changed subtree rooted at
   // the container.
-  std::vector<AccessibilityHostMsg_EventParams> params;
-  params.push_back(AccessibilityHostMsg_EventParams());
-  AccessibilityHostMsg_EventParams* msg = &params[0];
+  std::vector<AXEventNotificationDetails> params;
+  params.push_back(AXEventNotificationDetails());
+  AXEventNotificationDetails* msg = &params[0];
   msg->event_type = ui::AX_EVENT_CHILDREN_CHANGED;
   msg->update.nodes.push_back(tree2_container);
   msg->update.nodes.push_back(tree2_child0);
@@ -557,9 +548,9 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
   ASSERT_EQ(4, CountedBrowserAccessibility::global_obj_count_);
 
   // Process a notification containing the changed subtree.
-  std::vector<AccessibilityHostMsg_EventParams> params;
-  params.push_back(AccessibilityHostMsg_EventParams());
-  AccessibilityHostMsg_EventParams* msg = &params[0];
+  std::vector<AXEventNotificationDetails> params;
+  params.push_back(AXEventNotificationDetails());
+  AXEventNotificationDetails* msg = &params[0];
   msg->event_type = ui::AX_EVENT_CHILDREN_CHANGED;
   msg->update.nodes.push_back(tree2_1);
   msg->update.nodes.push_back(tree2_4);
@@ -1013,8 +1004,8 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash) {
   ASSERT_EQ(1, manager->GetFocus(manager->GetRoot())->GetId());
 
   // Send the focus event for node 2.
-  std::vector<AccessibilityHostMsg_EventParams> events;
-  events.push_back(AccessibilityHostMsg_EventParams());
+  std::vector<AXEventNotificationDetails> events;
+  events.push_back(AXEventNotificationDetails());
   events[0].update = MakeAXTreeUpdate(node2);
   events[0].id = 2;
   events[0].event_type = ui::AX_EVENT_FOCUS;
@@ -1029,8 +1020,8 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash) {
   root2.role = ui::AX_ROLE_ROOT_WEB_AREA;
   root2.state = 0;
 
-  std::vector<AccessibilityHostMsg_EventParams> events2;
-  events2.push_back(AccessibilityHostMsg_EventParams());
+  std::vector<AXEventNotificationDetails> events2;
+  events2.push_back(AXEventNotificationDetails());
   events2[0].update = MakeAXTreeUpdate(root2);
   events2[0].id = -1;
   events2[0].event_type = ui::AX_EVENT_NONE;
@@ -1074,8 +1065,8 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash2) {
   ASSERT_EQ(1, manager->GetFocus(manager->GetRoot())->GetId());
 
   // Send the focus event for node 2.
-  std::vector<AccessibilityHostMsg_EventParams> events;
-  events.push_back(AccessibilityHostMsg_EventParams());
+  std::vector<AXEventNotificationDetails> events;
+  events.push_back(AXEventNotificationDetails());
   events[0].update = MakeAXTreeUpdate(node2);
   events[0].id = 2;
   events[0].event_type = ui::AX_EVENT_FOCUS;
@@ -1091,8 +1082,8 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash2) {
   root2.state = 0;
 
   // Make an update the explicitly clears the previous root.
-  std::vector<AccessibilityHostMsg_EventParams> events2;
-  events2.push_back(AccessibilityHostMsg_EventParams());
+  std::vector<AXEventNotificationDetails> events2;
+  events2.push_back(AXEventNotificationDetails());
   events2[0].update = MakeAXTreeUpdate(root2);
   events2[0].update.node_id_to_clear = 1;
   events2[0].id = -1;

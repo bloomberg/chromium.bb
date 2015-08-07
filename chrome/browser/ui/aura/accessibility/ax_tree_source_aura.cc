@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "chrome/browser/accessibility/ax_tree_id_registry.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -110,10 +109,7 @@ void AXTreeSourceAura::SerializeNode(AXAuraObjWrapper* node,
         static_cast<views::WebView*>(view)->GetWebContents();
     content::RenderFrameHost* rfh = contents->GetMainFrame();
     if (rfh) {
-      int process_id = rfh->GetProcess()->GetID();
-      int routing_id = rfh->GetRoutingID();
-      int ax_tree_id = AXTreeIDRegistry::GetInstance()->GetOrCreateAXTreeID(
-          process_id, routing_id);
+      int ax_tree_id = rfh->GetAXTreeID();
       out_data->AddIntAttribute(ui::AX_ATTR_CHILD_TREE_ID, ax_tree_id);
     }
   }

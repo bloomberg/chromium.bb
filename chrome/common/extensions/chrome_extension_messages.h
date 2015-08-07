@@ -54,6 +54,25 @@ IPC_MESSAGE_ROUTED4(ExtensionMsg_InlineWebstoreInstallResponse,
                     std::string /* error */,
                     extensions::webstore_install::Result /* result */)
 
+IPC_STRUCT_TRAITS_BEGIN(ui::AXNodeData)
+  IPC_STRUCT_TRAITS_MEMBER(id)
+  IPC_STRUCT_TRAITS_MEMBER(role)
+  IPC_STRUCT_TRAITS_MEMBER(state)
+  IPC_STRUCT_TRAITS_MEMBER(location)
+  IPC_STRUCT_TRAITS_MEMBER(string_attributes)
+  IPC_STRUCT_TRAITS_MEMBER(int_attributes)
+  IPC_STRUCT_TRAITS_MEMBER(float_attributes)
+  IPC_STRUCT_TRAITS_MEMBER(bool_attributes)
+  IPC_STRUCT_TRAITS_MEMBER(intlist_attributes)
+  IPC_STRUCT_TRAITS_MEMBER(html_attributes)
+  IPC_STRUCT_TRAITS_MEMBER(child_ids)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ui::AXTreeUpdate<ui::AXNodeData>)
+  IPC_STRUCT_TRAITS_MEMBER(node_id_to_clear)
+  IPC_STRUCT_TRAITS_MEMBER(nodes)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_BEGIN(ExtensionMsg_AccessibilityEventParams)
   // ID of the accessibility tree that this event applies to.
   IPC_STRUCT_MEMBER(int, tree_id)

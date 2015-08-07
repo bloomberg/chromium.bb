@@ -180,6 +180,8 @@
       'common/appcache_interfaces.cc',
       'common/appcache_interfaces.h',
       'common/appcache_messages.h',
+      'common/ax_content_node_data.cc',
+      'common/ax_content_node_data.h',
       'common/bluetooth/bluetooth_device.cc',
       'common/bluetooth/bluetooth_device.h',
       'common/bluetooth/bluetooth_messages.h',

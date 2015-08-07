@@ -980,8 +980,6 @@
     ],
     # Everything but Android and iOS.
     'chrome_browser_non_mobile_sources': [
-      'browser/accessibility/ax_tree_id_registry.cc',
-      'browser/accessibility/ax_tree_id_registry.h',
       'browser/accessibility/invert_bubble_prefs.cc',
       'browser/accessibility/invert_bubble_prefs.h',
       'browser/auto_launch_trial.cc',

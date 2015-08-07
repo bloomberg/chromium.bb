@@ -38,6 +38,18 @@ class SitePerProcessAccessibilityBrowserTest
   SitePerProcessAccessibilityBrowserTest() {}
 };
 
+bool AccessibilityTreeContainsDocTitle(
+    BrowserAccessibility* node,
+    const std::string& title) {
+  if (node->GetStringAttribute(ui::AX_ATTR_DOC_TITLE) == title)
+    return true;
+  for (unsigned i = 0; i < node->PlatformChildCount(); i++) {
+    if (AccessibilityTreeContainsDocTitle(node->PlatformGetChild(i), title))
+      return true;
+  }
+  return false;
+}
+
 // Utility function to determine if an accessibility tree has finished loading
 // or if the tree represents a page that hasn't finished loading yet.
 bool AccessibilityTreeIsLoaded(BrowserAccessibilityManager* manager) {
@@ -96,25 +108,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAccessibilityBrowserTest,
       main_frame->browser_accessibility_manager();
   VLOG(1) << "Main frame accessibility tree:\n"
           << main_frame_manager->SnapshotAXTreeForTesting().ToString();
-  EXPECT_TRUE(AccessibilityTreeIsLoaded(main_frame_manager));
 
-  // Next, wait for the accessibility tree from the cross-process iframe
-  // to load. Since accessibility was enabled at the time this frame was
-  // created, we need to check to see if it's already loaded first, and
-  // only create an AccessibilityNotificationWaiter if it's not.
   RenderFrameHostImpl* child_frame = static_cast<RenderFrameHostImpl*>(
       child->current_frame_host());
-  BrowserAccessibilityManager* child_frame_manager =
-      child_frame->browser_accessibility_manager();
-  if (!AccessibilityTreeIsLoaded(child_frame_manager)) {
-    VLOG(1) << "Child frame accessibility tree is not loaded, waiting...";
-    AccessibilityNotificationWaiter child_frame_accessibility_waiter(
-        child_frame, ui::AX_EVENT_LOAD_COMPLETE);
-    child_frame_accessibility_waiter.WaitForNotification();
+  while (!AccessibilityTreeContainsDocTitle(main_frame_manager->GetRoot(),
+                                            "Title Of Awesomeness")) {
+    AccessibilityNotificationWaiter accessibility_waiter(main_frame,
+                                                         ui::AX_EVENT_NONE);
+    accessibility_waiter.ListenToAdditionalFrame(child_frame);
+    accessibility_waiter.WaitForNotification();
   }
-  EXPECT_TRUE(AccessibilityTreeIsLoaded(child_frame_manager));
-  VLOG(1) << "Child frame accessibility tree:\n"
-          << child_frame_manager->SnapshotAXTreeForTesting().ToString();
 
   // Assert that we can walk from the main frame down into the child frame
   // directly, getting correct roles and data along the way.

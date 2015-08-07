@@ -8,8 +8,7 @@
 #include <vector>
 
 #include "content/common/content_export.h"
-#include "ui/accessibility/ax_enums.h"
-#include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_update.h"
 
 namespace content {
 
@@ -17,24 +16,13 @@ namespace content {
 // |WebContentsObserver::AccessibilityEventReceived| method.
 struct CONTENT_EXPORT AXEventNotificationDetails {
  public:
-  AXEventNotificationDetails(
-      int node_id_to_clear,
-      const std::vector<ui::AXNodeData>& nodes,
-      ui::AXEvent event_type,
-      int id,
-      std::map<int32, int> node_to_browser_plugin_instance_id_map,
-      int process_id,
-      int routing_id);
-
+  AXEventNotificationDetails();
   ~AXEventNotificationDetails();
 
-  int node_id_to_clear;
-  std::vector<ui::AXNodeData> nodes;
+  ui::AXTreeUpdate<ui::AXNodeData> update;
   ui::AXEvent event_type;
   int id;
-  std::map<int32, int> node_to_browser_plugin_instance_id_map;
-  int process_id;
-  int routing_id;
+  int ax_tree_id;
 };
 
 }  // namespace content

@@ -10,7 +10,6 @@
 
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "chrome/browser/accessibility/ax_tree_id_registry.h"
 #include "chrome/common/extensions/api/automation_internal.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/notification_service.h"
