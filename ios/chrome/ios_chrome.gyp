@@ -387,6 +387,8 @@
         'browser/ui/keyboard/hardware_keyboard_watcher.mm',
         'browser/ui/native_content_controller.h',
         'browser/ui/native_content_controller.mm',
+        'browser/ui/omnibox/web_omnibox_edit_controller.cc',
+        'browser/ui/omnibox/web_omnibox_edit_controller.h',
         'browser/ui/orientation_limiting_navigation_controller.h',
         'browser/ui/orientation_limiting_navigation_controller.mm',
         'browser/ui/reversed_animation.h',
