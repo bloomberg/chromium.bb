@@ -17,7 +17,6 @@
 #include "content/browser/gpu/shader_disk_cache.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/navigator_connect/navigator_connect_context_impl.h"
-#include "content/browser/navigator_connect/navigator_connect_service_worker_service_factory.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_context.h"
@@ -520,9 +519,7 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
           context->CreateZoomLevelDelegate(partition_path)));
 
   scoped_refptr<NavigatorConnectContextImpl> navigator_connect_context =
-      new NavigatorConnectContextImpl();
-  navigator_connect_context->AddFactory(make_scoped_ptr(
-      new NavigatorConnectServiceWorkerServiceFactory(service_worker_context)));
+      new NavigatorConnectContextImpl(service_worker_context);
 
   scoped_refptr<PlatformNotificationContextImpl> platform_notification_context =
       new PlatformNotificationContextImpl(path, context,
