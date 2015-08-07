@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.firstrun.ProfileDataCache;
+import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionCallback;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
@@ -88,6 +89,8 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         updateForeignSessions();
         mForeignSessionHelper.triggerSessionSync();
         registerForSignInAndSyncNotifications();
+
+        InvalidationController.get(mContext).onRecentTabsPageOpened();
     }
 
     /**
@@ -117,6 +120,8 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
             mProfileDataCache.destroy();
             mProfileDataCache = null;
         }
+
+        InvalidationController.get(mContext).onRecentTabsPageClosed();
     }
 
     private static ForeignSessionHelper buildForeignSessionHelper(Profile profile) {
