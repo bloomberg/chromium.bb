@@ -77,5 +77,6 @@ addEventListener('notificationclick', function(event) {
         event.waitUntil(clients.openWindow('https://example.com/'));
 
     messagePort.postMessage({ command: 'click',
-                              notification: notificationCopy });
+                              notification: notificationCopy,
+                              action: event.action });
 });

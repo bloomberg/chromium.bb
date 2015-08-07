@@ -61,8 +61,6 @@ public:
 
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray& channels) = 0;
 
-    // TODO(johnme): Remove this once callers have migrated to the method below.
-    virtual void dispatchNotificationClickEvent(int eventID, int64_t notificationID, const WebNotificationData&) = 0;
     virtual void dispatchNotificationClickEvent(int eventID, int64_t notificationID, const WebNotificationData&, int actionIndex) = 0;
 
     virtual void dispatchPushEvent(int eventID, const WebString& data) = 0;
