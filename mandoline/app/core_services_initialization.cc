@@ -16,6 +16,10 @@ void InitCoreServicesForContext(mojo::runner::Context* context) {
       GURL("mojo:clipboard"), GURL("mojo:core_services"), "Sandboxed Core");
   manager->RegisterApplicationPackageAlias(GURL("mojo:filesystem"),
                                            GURL("mojo:core_services"), "Files");
+#if defined(OS_LINUX) && !defined(OS_ANDROID)
+  manager->RegisterApplicationPackageAlias(GURL("mojo:font_service"),
+                                           GURL("mojo:core_services"), "Files");
+#endif
 #if !defined(OS_ANDROID)
   // On Android, these are Java apps which are loaded in the shell process.
   manager->RegisterApplicationPackageAlias(GURL("mojo:view_manager"),

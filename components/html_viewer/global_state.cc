@@ -22,6 +22,10 @@
 #include "ui/mojo/init/ui_init.h"
 #include "v8/include/v8.h"
 
+#if defined(OS_LINUX) && !defined(OS_ANDROID)
+#include "components/font_service/public/cpp/font_loader.h"
+#endif
+
 namespace html_viewer {
 
 namespace {
@@ -92,6 +96,10 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
     app_->Terminate();
     return;
   }
+
+#if defined(OS_LINUX) && !defined(OS_ANDROID)
+  SkFontConfigInterface::SetGlobal(new font_service::FontLoader(app_));
+#endif
 
   ui_init_.reset(
       new ui::mojo::UIInit(screen_size_in_pixels, device_pixel_ratio));
