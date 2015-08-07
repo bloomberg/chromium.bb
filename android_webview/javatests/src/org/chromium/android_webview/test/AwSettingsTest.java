@@ -1454,15 +1454,16 @@ public class AwSettingsTest extends AwTestBase {
 
         @Override
         protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
-            DeviceDisplayInfo deviceInfo = DeviceDisplayInfo.create(mContext);
-            int displayWidth = (int) (deviceInfo.getDisplayWidth() / deviceInfo.getDIPScale());
-
             loadDataSync(getData());
-            int width = Integer.parseInt(getTitleOnUiThread());
+            final int reportedClientWidth = Integer.parseInt(getTitleOnUiThread());
             if (value) {
-                assertEquals(displayWidth, width);
+                final DeviceDisplayInfo deviceInfo = DeviceDisplayInfo.create(mContext);
+                // The clientWidth is subject to pixel snapping.
+                final int displayWidth = (int) Math.ceil(
+                        deviceInfo.getDisplayWidth() / deviceInfo.getDIPScale());
+                assertEquals(displayWidth, reportedClientWidth);
             } else {
-                assertEquals(3000, width);
+                assertEquals(3000, reportedClientWidth);
             }
         }
 
