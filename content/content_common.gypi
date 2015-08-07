@@ -534,6 +534,8 @@
       'common/service_worker/service_worker_types.h',
       'common/service_worker/service_worker_type_converters.cc',
       'common/service_worker/service_worker_type_converters.h',
+      'common/service_worker/service_worker_utils.cc',
+      'common/service_worker/service_worker_utils.h',
       'common/set_process_title.cc',
       'common/set_process_title.h',
       'common/set_process_title_linux.cc',

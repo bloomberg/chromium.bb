@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "content/browser/message_port_service.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_utils.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/message_port_delegate.h"
 #include "content/public/common/navigator_connect_client.h"

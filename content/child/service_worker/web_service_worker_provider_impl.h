@@ -39,6 +39,9 @@ class WebServiceWorkerProviderImpl
   virtual void getRegistrations(WebServiceWorkerGetRegistrationsCallbacks*);
   virtual void getRegistrationForReady(
       WebServiceWorkerGetRegistrationForReadyCallbacks*);
+  virtual bool validateScopeAndScriptURL(const blink::WebURL& pattern,
+                                         const blink::WebURL& script_url,
+                                         blink::WebString* error_message);
 
   int provider_id() const;
 

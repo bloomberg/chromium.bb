@@ -1403,8 +1403,6 @@
       'browser/service_worker/service_worker_unregister_job.h',
       'browser/service_worker/service_worker_url_request_job.cc',
       'browser/service_worker/service_worker_url_request_job.h',
-      'browser/service_worker/service_worker_utils.cc',
-      'browser/service_worker/service_worker_utils.h',
       'browser/service_worker/service_worker_version.cc',
       'browser/service_worker/service_worker_version.h',
       'browser/service_worker/service_worker_write_to_cache_job.cc',

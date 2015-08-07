@@ -9,6 +9,7 @@
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/service_worker/web_service_worker_impl.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerProviderClient.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
@@ -74,6 +75,18 @@ void WebServiceWorkerProviderImpl::getRegistrations(
 void WebServiceWorkerProviderImpl::getRegistrationForReady(
     WebServiceWorkerGetRegistrationForReadyCallbacks* callbacks) {
   GetDispatcher()->GetRegistrationForReady(context_->provider_id(), callbacks);
+}
+
+bool WebServiceWorkerProviderImpl::validateScopeAndScriptURL(
+    const blink::WebURL& scope,
+    const blink::WebURL& script_url,
+    blink::WebString* error_message) {
+  std::string error;
+  bool has_error = ServiceWorkerUtils::ContainsDisallowedCharacter(
+      scope, script_url, &error);
+  if (has_error)
+    *error_message = blink::WebString::fromUTF8(error);
+  return !has_error;
 }
 
 int WebServiceWorkerProviderImpl::provider_id() const {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_UTILS_H_
-#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_UTILS_H_
+#ifndef CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_UTILS_H_
+#define CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_UTILS_H_
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
@@ -57,4 +57,4 @@ class CONTENT_EXPORT LongestScopeMatcher {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_UTILS_H_
+#endif  // CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_UTILS_H_
