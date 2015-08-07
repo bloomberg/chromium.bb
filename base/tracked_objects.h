@@ -200,7 +200,7 @@ class BASE_EXPORT BirthOnThread {
  public:
   BirthOnThread(const Location& location, const ThreadData& current);
 
-  const Location location() const { return location_; }
+  const Location& location() const { return location_; }
   const ThreadData* birth_thread() const { return birth_thread_; }
 
  private:
