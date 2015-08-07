@@ -391,6 +391,26 @@ TEST_F(URLRequestHttpJobTest, SetTransactionPriority) {
   EXPECT_EQ(HIGHEST, network_layer_.last_transaction()->priority());
 }
 
+// Make sure that URLRequestHttpJob passes on its priority updates to
+// newly-created transactions after the first one.
+TEST_F(URLRequestHttpJobTest, SetSubsequentTransactionPriority) {
+  scoped_refptr<TestURLRequestHttpJob> job(
+      new TestURLRequestHttpJob(req_.get()));
+  job->Start();
+
+  job->SetPriority(LOW);
+  ASSERT_TRUE(network_layer_.last_transaction());
+  EXPECT_EQ(LOW, network_layer_.last_transaction()->priority());
+
+  job->Kill();
+  network_layer_.ClearLastTransaction();
+
+  // Creates a second transaction.
+  job->Start();
+  ASSERT_TRUE(network_layer_.last_transaction());
+  EXPECT_EQ(LOW, network_layer_.last_transaction()->priority());
+}
+
 // Confirm we do advertise SDCH encoding in the case of a GET.
 TEST_F(URLRequestHttpJobTest, SdchAdvertisementGet) {
   EnableSdch();

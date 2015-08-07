@@ -27,7 +27,6 @@ class NET_EXPORT URLRequestSimpleJob : public URLRangeRequestJob {
   URLRequestSimpleJob(URLRequest* request, NetworkDelegate* network_delegate);
 
   void Start() override;
-  void Kill() override;
   bool ReadRawData(IOBuffer* buf, int buf_size, int* bytes_read) override;
   bool GetMimeType(std::string* mime_type) const override;
   bool GetCharset(std::string* charset) override;

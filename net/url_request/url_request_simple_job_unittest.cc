@@ -65,30 +65,27 @@ class MockSimpleJob : public URLRequestSimpleJob {
   DISALLOW_COPY_AND_ASSIGN(MockSimpleJob);
 };
 
-class CancelAfterFirstReadURLRequestDelegate : public TestDelegate {
+class CancelURLRequestDelegate : public URLRequest::Delegate {
  public:
-  CancelAfterFirstReadURLRequestDelegate() : run_loop_(new base::RunLoop) {}
-
-  ~CancelAfterFirstReadURLRequestDelegate() override {}
+  CancelURLRequestDelegate()
+      : buf_(new IOBuffer(kBufferSize)), run_loop_(new base::RunLoop) {}
 
   void OnResponseStarted(URLRequest* request) override {
-    // net::TestDelegate will start the first read.
-    TestDelegate::OnResponseStarted(request);
+    int bytes_read = 0;
+    EXPECT_FALSE(request->Read(buf_.get(), kBufferSize, &bytes_read));
+    EXPECT_TRUE(request->status().is_io_pending());
     request->Cancel();
     run_loop_->Quit();
   }
 
-  void OnReadCompleted(URLRequest* request, int bytes_read) override {
-    // Read should have been cancelled.
-    EXPECT_EQ(-1, bytes_read);
-  }
+  void OnReadCompleted(URLRequest* request, int bytes_read) override {}
 
   void WaitUntilHeadersReceived() const { run_loop_->Run(); }
 
  private:
+  static const int kBufferSize = 4096;
+  scoped_refptr<IOBuffer> buf_;
   scoped_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(CancelAfterFirstReadURLRequestDelegate);
 };
 
 class SimpleJobProtocolHandler :
@@ -211,23 +208,13 @@ TEST_F(URLRequestSimpleJobTest, EmptyDataRequest) {
   EXPECT_EQ("", delegate_.data_received());
 }
 
-TEST_F(URLRequestSimpleJobTest, CancelBeforeResponseStarts) {
-  request_ =
-      context_.CreateRequest(GURL("data:cancel"), DEFAULT_PRIORITY, &delegate_);
-  request_->Start();
-  request_->Cancel();
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(URLRequestStatus::CANCELED, request_->status().status());
-  EXPECT_EQ(1, delegate_.response_started_count());
-}
-
-TEST_F(URLRequestSimpleJobTest, CancelAfterFirstReadStarted) {
-  CancelAfterFirstReadURLRequestDelegate cancel_delegate;
+TEST_F(URLRequestSimpleJobTest, CancelAfterFirstRead) {
+  scoped_ptr<CancelURLRequestDelegate> cancel_delegate(
+      new CancelURLRequestDelegate());
   request_ = context_.CreateRequest(GURL("data:cancel"), DEFAULT_PRIORITY,
-                                    &cancel_delegate);
+                                    cancel_delegate.get());
   request_->Start();
-  cancel_delegate.WaitUntilHeadersReceived();
+  cancel_delegate->WaitUntilHeadersReceived();
 
   // Feed a dummy task to the SequencedTaskRunner to make sure that the
   // callbacks which are invoked in ReadRawData have completed safely.
@@ -235,12 +222,6 @@ TEST_F(URLRequestSimpleJobTest, CancelAfterFirstReadStarted) {
   EXPECT_TRUE(task_runner_->PostTaskAndReply(
       FROM_HERE, base::Bind(&base::DoNothing), run_loop.QuitClosure()));
   run_loop.Run();
-
-  EXPECT_EQ(URLRequestStatus::CANCELED, request_->status().status());
-  EXPECT_EQ(1, cancel_delegate.response_started_count());
-  EXPECT_EQ("", cancel_delegate.data_received());
-  // Destroy the request so it doesn't outlive its delegate.
-  request_.reset();
 }
 
 }  // namespace net
