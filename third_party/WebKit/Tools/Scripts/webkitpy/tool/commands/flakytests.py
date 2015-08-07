@@ -68,16 +68,37 @@ class FlakyTests(AbstractDeclarativeCommand):
         # This is sorta silly, but allows for unit testing:
         self.expectations_factory = BotTestExpectationsFactory
 
+    def _filter_build_type_specifiers(self, specifiers):
+        filtered = []
+        for specifier in specifiers:
+            if specifier.lower() not in TestExpectations.BUILD_TYPES:
+                filtered.append(specifier)
+        return filtered
+
     def _collect_expectation_lines(self, builder_names, factory):
         all_lines = []
+
+        models = []
         for builder_name in builder_names:
             model = TestExpectationsModel()
+            models.append(model)
+
             expectations = factory.expectations_for_builder(builder_name)
             for line in expectations.expectation_lines(only_ignore_very_flaky=True):
+                # TODO(ojan): Find a way to merge specifiers instead of removing build types.
+                # We can't just union because some specifiers will change the meaning of others.
+                # For example, it's not clear how to merge [ Mac Release ] with [ Linux Debug ].
+                # But, in theory we should be able to merge [ Mac Release ] and [ Mac Debug ].
+                line.specifiers = self._filter_build_type_specifiers(line.specifiers)
                 model.add_expectation_line(line)
-            # FIXME: We need an official API to get all the test names or all test lines.
-            all_lines.extend(model._test_to_expectation_line.values())
-        return all_lines
+
+        final_model = None
+        for model in models:
+            if final_model:
+                final_model.merge_model(model)
+            else:
+                final_model = model
+        return final_model._test_to_expectation_line.values()
 
     def _commit_and_upload(self, tool, options):
         files = tool.scm().changed_files()
