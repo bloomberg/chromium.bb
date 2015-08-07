@@ -172,16 +172,44 @@ bool WASAPIAudioOutputStream::Open() {
     if (FAILED(hr))
       return false;
 
-    // We know from experience that the best possible callback sequence is
-    // achieved when the packet size (given by the native device period)
-    // is an even divisor of the endpoint buffer size.
-    // Examples: 48kHz => 960 % 480, 44.1kHz => 896 % 448 or 882 % 441.
-    if (endpoint_buffer_size_frames_ % packet_size_frames_ != 0) {
-      LOG(ERROR)
-          << "Bailing out due to non-perfect timing.  Buffer size of "
-          << packet_size_frames_ << " is not an even divisor of "
-          << endpoint_buffer_size_frames_;
+    REFERENCE_TIME device_period = 0;
+    if (FAILED(CoreAudioUtil::GetDevicePeriod(
+            audio_client.get(), AUDCLNT_SHAREMODE_SHARED, &device_period))) {
       return false;
+    }
+
+    const int preferred_frames_per_buffer = static_cast<int>(
+        format_.Format.nSamplesPerSec *
+            CoreAudioUtil::RefererenceTimeToTimeDelta(device_period)
+                .InSecondsF() +
+        0.5);
+
+    // Packet size should always be an even divisor of the device period for
+    // best performance; things will still work otherwise, but may glitch for a
+    // couple of reasons.
+    //
+    // The first reason is if/when repeated RenderAudioFromSource() hit the
+    // shared memory boundary between the renderer and the browser.  The next
+    // audio buffer is always requested after the current request is consumed.
+    // With back-to-back calls the round-trip may not be fast enough and thus
+    // audio will glitch as we fail to deliver audio in a timely manner.
+    //
+    // The second reason is event wakeup efficiency.  We may have too few or too
+    // many frames to fill the output buffer requested by WASAPI.  If too few,
+    // we'll refuse the render event and wait until more output space is
+    // available.  If we have too many frames, we'll only partially fill and
+    // wait for the next render event.  In either case certain remainders may
+    // leave us unable to fulfill the request in a timely manner, thus glitches.
+    //
+    // Log a warning in these cases so we can help users in the field.
+    // Examples: 48kHz => 960 % 480, 44.1kHz => 896 % 448 or 882 % 441.
+    if (preferred_frames_per_buffer % packet_size_frames_) {
+      LOG(WARNING)
+          << "Using WASAPI output with a non-optimal buffer size, glitches from"
+          << " back to back shared memory reads and partial fills of WASAPI"
+          << " output buffers may occur.  Buffer size of "
+          << packet_size_frames_ << " is not an even divisor of "
+          << preferred_frames_per_buffer;
     }
   } else {
     // TODO(henrika): break out to CoreAudioUtil::ExclusiveModeInitialize()
@@ -439,86 +467,69 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
   }
 
   // Check if there is enough available space to fit the packet size
-  // specified by the client.
+  // specified by the client, wait until a future callback.
   if (num_available_frames < packet_size_frames_)
     return true;
 
-  DLOG_IF(ERROR, num_available_frames % packet_size_frames_ != 0)
-      << "Non-perfect timing detected (num_available_frames="
-      << num_available_frames << ", packet_size_frames="
-      << packet_size_frames_ << ")";
-
-  // Derive the number of packets we need to get from the client to
-  // fill up the available area in the endpoint buffer.
-  // |num_packets| will always be one for exclusive-mode streams and
-  // will be one in most cases for shared mode streams as well.
-  // However, we have found that two packets can sometimes be
-  // required.
-  size_t num_packets = (num_available_frames / packet_size_frames_);
-
-  for (size_t n = 0; n < num_packets; ++n) {
-    // Grab all available space in the rendering endpoint buffer
-    // into which the client can write a data packet.
-    hr = audio_render_client_->GetBuffer(packet_size_frames_,
-                                         &audio_data);
-    if (FAILED(hr)) {
-      DLOG(ERROR) << "Failed to use rendering audio buffer: "
-                 << std::hex << hr;
-      return false;
-    }
-
-    // Derive the audio delay which corresponds to the delay between
-    // a render event and the time when the first audio sample in a
-    // packet is played out through the speaker. This delay value
-    // can typically be utilized by an acoustic echo-control (AEC)
-    // unit at the render side.
-    UINT64 position = 0;
-    uint32 audio_delay_bytes = 0;
-    hr = audio_clock_->GetPosition(&position, NULL);
-    if (SUCCEEDED(hr)) {
-      // Stream position of the sample that is currently playing
-      // through the speaker.
-      double pos_sample_playing_frames = format_.Format.nSamplesPerSec *
-          (static_cast<double>(position) / device_frequency);
-
-      // Stream position of the last sample written to the endpoint
-      // buffer. Note that, the packet we are about to receive in
-      // the upcoming callback is also included.
-      size_t pos_last_sample_written_frames =
-          num_written_frames_ + packet_size_frames_;
-
-      // Derive the actual delay value which will be fed to the
-      // render client using the OnMoreData() callback.
-      audio_delay_bytes = (pos_last_sample_written_frames -
-          pos_sample_playing_frames) *  format_.Format.nBlockAlign;
-    }
-
-    // Read a data packet from the registered client source and
-    // deliver a delay estimate in the same callback to the client.
-
-    int frames_filled = source_->OnMoreData(
-        audio_bus_.get(), audio_delay_bytes);
-    uint32 num_filled_bytes = frames_filled * format_.Format.nBlockAlign;
-    DCHECK_LE(num_filled_bytes, packet_size_bytes_);
-
-    // Note: If this ever changes to output raw float the data must be
-    // clipped and sanitized since it may come from an untrusted
-    // source such as NaCl.
-    const int bytes_per_sample = format_.Format.wBitsPerSample >> 3;
-    audio_bus_->Scale(volume_);
-    audio_bus_->ToInterleaved(
-        frames_filled, bytes_per_sample, audio_data);
-
-
-    // Release the buffer space acquired in the GetBuffer() call.
-    // Render silence if we were not able to fill up the buffer totally.
-    DWORD flags = (num_filled_bytes < packet_size_bytes_) ?
-        AUDCLNT_BUFFERFLAGS_SILENT : 0;
-    audio_render_client_->ReleaseBuffer(packet_size_frames_, flags);
-
-    num_written_frames_ += packet_size_frames_;
+  // Grab all available space in the rendering endpoint buffer
+  // into which the client can write a data packet.
+  hr = audio_render_client_->GetBuffer(packet_size_frames_,
+                                       &audio_data);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to use rendering audio buffer: "
+               << std::hex << hr;
+    return false;
   }
 
+  // Derive the audio delay which corresponds to the delay between
+  // a render event and the time when the first audio sample in a
+  // packet is played out through the speaker. This delay value
+  // can typically be utilized by an acoustic echo-control (AEC)
+  // unit at the render side.
+  UINT64 position = 0;
+  uint32 audio_delay_bytes = 0;
+  hr = audio_clock_->GetPosition(&position, NULL);
+  if (SUCCEEDED(hr)) {
+    // Stream position of the sample that is currently playing
+    // through the speaker.
+    double pos_sample_playing_frames = format_.Format.nSamplesPerSec *
+        (static_cast<double>(position) / device_frequency);
+
+    // Stream position of the last sample written to the endpoint
+    // buffer. Note that, the packet we are about to receive in
+    // the upcoming callback is also included.
+    size_t pos_last_sample_written_frames =
+        num_written_frames_ + packet_size_frames_;
+
+    // Derive the actual delay value which will be fed to the
+    // render client using the OnMoreData() callback.
+    audio_delay_bytes = (pos_last_sample_written_frames -
+        pos_sample_playing_frames) *  format_.Format.nBlockAlign;
+  }
+
+  // Read a data packet from the registered client source and
+  // deliver a delay estimate in the same callback to the client.
+
+  int frames_filled = source_->OnMoreData(
+      audio_bus_.get(), audio_delay_bytes);
+  uint32 num_filled_bytes = frames_filled * format_.Format.nBlockAlign;
+  DCHECK_LE(num_filled_bytes, packet_size_bytes_);
+
+  // Note: If this ever changes to output raw float the data must be
+  // clipped and sanitized since it may come from an untrusted
+  // source such as NaCl.
+  const int bytes_per_sample = format_.Format.wBitsPerSample >> 3;
+  audio_bus_->Scale(volume_);
+  audio_bus_->ToInterleaved(
+      frames_filled, bytes_per_sample, audio_data);
+
+  // Release the buffer space acquired in the GetBuffer() call.
+  // Render silence if we were not able to fill up the buffer totally.
+  DWORD flags = (num_filled_bytes < packet_size_bytes_) ?
+      AUDCLNT_BUFFERFLAGS_SILENT : 0;
+  audio_render_client_->ReleaseBuffer(packet_size_frames_, flags);
+
+  num_written_frames_ += packet_size_frames_;
   return true;
 }
 
