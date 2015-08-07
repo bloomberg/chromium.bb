@@ -44,7 +44,13 @@
 #ifndef UTIL_HASH_H
 #define UTIL_HASH_H
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <stdbool.h>
+
+#include "libdrm_macros.h"
 
 struct util_hash;
 struct util_node;
@@ -55,8 +61,8 @@ struct util_hash_iter {
 };
 
 
-struct util_hash *util_hash_create(void);
-void util_hash_delete(struct util_hash *hash);
+drm_private struct util_hash *util_hash_create(void);
+drm_private void util_hash_delete(struct util_hash *hash);
 
 
 /**
@@ -65,8 +71,8 @@ void util_hash_delete(struct util_hash *hash);
  * in the collision list.
  * Function returns iterator pointing to the inserted item in the hash.
  */
-struct util_hash_iter util_hash_insert(struct util_hash *hash, unsigned key,
-				       void *data);
+drm_private struct util_hash_iter
+util_hash_insert(struct util_hash *hash, unsigned key, void *data);
 
 /**
  * Removes the item pointed to by the current iterator from the hash.
@@ -75,25 +81,27 @@ struct util_hash_iter util_hash_insert(struct util_hash *hash, unsigned key,
  * Function returns iterator pointing to the item after the removed one in
  * the hash.
  */
-struct util_hash_iter util_hash_erase(struct util_hash *hash,
-				      struct util_hash_iter iter);
+drm_private struct util_hash_iter
+util_hash_erase(struct util_hash *hash, struct util_hash_iter iter);
 
-void *util_hash_take(struct util_hash *hash, unsigned key);
+drm_private void *util_hash_take(struct util_hash *hash, unsigned key);
 
 
-struct util_hash_iter util_hash_first_node(struct util_hash *hash);
+drm_private struct util_hash_iter util_hash_first_node(struct util_hash *hash);
 
 /**
  * Return an iterator pointing to the first entry in the collision list.
  */
-struct util_hash_iter util_hash_find(struct util_hash *hash, unsigned key);
+drm_private struct util_hash_iter
+util_hash_find(struct util_hash *hash, unsigned key);
 
 
-int util_hash_iter_is_null(struct util_hash_iter iter);
-unsigned util_hash_iter_key(struct util_hash_iter iter);
-void *util_hash_iter_data(struct util_hash_iter iter);
+drm_private int util_hash_iter_is_null(struct util_hash_iter iter);
+drm_private unsigned util_hash_iter_key(struct util_hash_iter iter);
+drm_private void *util_hash_iter_data(struct util_hash_iter iter);
 
 
-struct util_hash_iter util_hash_iter_next(struct util_hash_iter iter);
+drm_private struct util_hash_iter
+util_hash_iter_next(struct util_hash_iter iter);
 
 #endif

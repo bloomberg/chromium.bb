@@ -214,8 +214,8 @@ static struct util_node **util_hash_find_node(struct util_hash *hash, unsigned a
    return node;
 }
 
-struct util_hash_iter util_hash_insert(struct util_hash *hash,
-                                       unsigned key, void *data)
+drm_private struct util_hash_iter
+util_hash_insert(struct util_hash *hash, unsigned key, void *data)
 {
    util_data_might_grow(hash->data.d);
 
@@ -234,7 +234,7 @@ struct util_hash_iter util_hash_insert(struct util_hash *hash,
    }
 }
 
-struct util_hash * util_hash_create(void)
+drm_private struct util_hash *util_hash_create(void)
 {
    struct util_hash *hash = malloc(sizeof(struct util_hash));
    if (!hash)
@@ -257,7 +257,7 @@ struct util_hash * util_hash_create(void)
    return hash;
 }
 
-void util_hash_delete(struct util_hash *hash)
+drm_private void util_hash_delete(struct util_hash *hash)
 {
    struct util_node *e_for_x = (struct util_node *)(hash->data.d);
    struct util_node **bucket = (struct util_node **)(hash->data.d->buckets);
@@ -275,22 +275,22 @@ void util_hash_delete(struct util_hash *hash)
    free(hash);
 }
 
-struct util_hash_iter util_hash_find(struct util_hash *hash,
-                                     unsigned key)
+drm_private struct util_hash_iter
+util_hash_find(struct util_hash *hash, unsigned key)
 {
    struct util_node **nextNode = util_hash_find_node(hash, key);
    struct util_hash_iter iter = {hash, *nextNode};
    return iter;
 }
 
-unsigned util_hash_iter_key(struct util_hash_iter iter)
+drm_private unsigned util_hash_iter_key(struct util_hash_iter iter)
 {
    if (!iter.node || iter.hash->data.e == iter.node)
       return 0;
    return iter.node->key;
 }
 
-void * util_hash_iter_data(struct util_hash_iter iter)
+drm_private void *util_hash_iter_data(struct util_hash_iter iter)
 {
    if (!iter.node || iter.hash->data.e == iter.node)
       return 0;
@@ -327,21 +327,21 @@ static struct util_node *util_hash_data_next(struct util_node *node)
    return a.e;
 }
 
-struct util_hash_iter util_hash_iter_next(struct util_hash_iter iter)
+drm_private struct util_hash_iter
+util_hash_iter_next(struct util_hash_iter iter)
 {
    struct util_hash_iter next = {iter.hash, util_hash_data_next(iter.node)};
    return next;
 }
 
-int util_hash_iter_is_null(struct util_hash_iter iter)
+drm_private int util_hash_iter_is_null(struct util_hash_iter iter)
 {
    if (!iter.node || iter.node == iter.hash->data.e)
       return 1;
    return 0;
 }
 
-void * util_hash_take(struct util_hash *hash,
-                      unsigned akey)
+drm_private void *util_hash_take(struct util_hash *hash, unsigned akey)
 {
    struct util_node **node = util_hash_find_node(hash, akey);
    if (*node != hash->data.e) {
@@ -356,13 +356,14 @@ void * util_hash_take(struct util_hash *hash,
    return 0;
 }
 
-struct util_hash_iter util_hash_first_node(struct util_hash *hash)
+drm_private struct util_hash_iter util_hash_first_node(struct util_hash *hash)
 {
    struct util_hash_iter iter = {hash, util_data_first_node(hash->data.d)};
    return iter;
 }
 
-struct util_hash_iter util_hash_erase(struct util_hash *hash, struct util_hash_iter iter)
+drm_private struct util_hash_iter
+util_hash_erase(struct util_hash *hash, struct util_hash_iter iter)
 {
    struct util_hash_iter ret = iter;
    struct util_node *node = iter.node;
