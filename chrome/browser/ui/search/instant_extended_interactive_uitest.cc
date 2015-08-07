@@ -430,7 +430,15 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   ASSERT_THAT(active_tab->GetURL().spec(), HasSubstr("q=puppies"));
 }
 
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxMarginSetForSearchURLs) {
+#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+// Flaky crashes at shutdown on Linux Asan; http://crbug.com/517886.
+#define MAYBE_OmniboxMarginSetForSearchURLs \
+  DISABLED_OmniboxMarginSetForSearchURLs
+#else
+#define MAYBE_OmniboxMarginSetForSearchURLs OmniboxMarginSetForSearchURLs
+#endif
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       MAYBE_OmniboxMarginSetForSearchURLs) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmnibox();
 
