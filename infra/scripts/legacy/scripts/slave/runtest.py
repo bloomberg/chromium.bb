@@ -11,22 +11,14 @@ build directory, e.g. chrome-release/build/.
 For a list of command-line options, call this script with '--help'.
 """
 
-import ast
 import copy
-import datetime
-import exceptions
-import gzip
-import hashlib
-import json
 import logging
 import optparse
 import os
 import platform
 import re
-import stat
 import subprocess
 import sys
-import tempfile
 
 from common import chromium_utils
 from common import gtest_utils

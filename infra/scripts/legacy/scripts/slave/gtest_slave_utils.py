@@ -4,13 +4,9 @@
 # found in the LICENSE file.
 
 import logging
-import optparse
 import os
-import re
-import sys
 
 from common import gtest_utils
-from xml.dom import minidom
 from slave.gtest.json_results_generator import JSONResultsGenerator
 from slave.gtest.test_result import canonical_name
 from slave.gtest.test_result import TestResult
@@ -40,38 +36,6 @@ def GetResultsMap(observer):
       # crashed or timed out. See crbug.com/249965.
       failed = (test_try != gtest_utils.TEST_SUCCESS_LABEL)
       test_results_map[key].append(TestResult(test, failed=failed))
-
-  return test_results_map
-
-
-def GetResultsMapFromXML(results_xml):
-  """Parse the given results XML file and returns a map of TestResults."""
-
-  results_xml_file = None
-  try:
-    results_xml_file = open(results_xml)
-  except IOError:
-    logging.error('Cannot open file %s', results_xml)
-    return dict()
-  node = minidom.parse(results_xml_file).documentElement
-  results_xml_file.close()
-
-  test_results_map = dict()
-  testcases = node.getElementsByTagName('testcase')
-
-  for testcase in testcases:
-    name = testcase.getAttribute('name')
-    classname = testcase.getAttribute('classname')
-    test_name = '%s.%s' % (classname, name)
-
-    failures = testcase.getElementsByTagName('failure')
-    not_run = testcase.getAttribute('status') == 'notrun'
-    elapsed = float(testcase.getAttribute('time'))
-    result = TestResult(test_name,
-                        failed=bool(failures),
-                        not_run=not_run,
-                        elapsed_time=elapsed)
-    test_results_map[canonical_name(test_name)] = [result]
 
   return test_results_map
 
@@ -137,72 +101,3 @@ def UploadJSONResults(generator):
   if generator:
     generator.upload_json_files([FULL_RESULTS_FILENAME,
                                  TIMES_MS_FILENAME])
-
-# For command-line testing.
-def main():
-  # Builder base URL where we have the archived test results.
-  # (Note: to be deprecated)
-  BUILDER_BASE_URL = 'http://build.chromium.org/buildbot/gtest_results/'
-
-  option_parser = optparse.OptionParser()
-  option_parser.add_option('', '--test-type', default='',
-                           help='Test type that generated the results XML,'
-                                ' e.g. unit-tests.')
-  option_parser.add_option('', '--results-directory', default='./',
-                           help='Output results directory source dir.')
-  option_parser.add_option('', '--input-results-xml', default='',
-                           help='Test results xml file (input for us).'
-                                ' default is TEST_TYPE.xml')
-  option_parser.add_option('', '--builder-base-url', default='',
-                           help=('A URL where we have the archived test '
-                                 'results. (default=%sTEST_TYPE_results/)'
-                                 % BUILDER_BASE_URL))
-  option_parser.add_option('', '--builder-name',
-                           default='DUMMY_BUILDER_NAME',
-                           help='The name of the builder shown on the '
-                                'waterfall running this script e.g. WebKit.')
-  option_parser.add_option('', '--build-name',
-                           default='DUMMY_BUILD_NAME',
-                           help='The name of the builder used in its path, '
-                                'e.g. webkit-rel.')
-  option_parser.add_option('', '--build-number', default='',
-                           help='The build number of the builder running'
-                                'this script.')
-  option_parser.add_option('', '--test-results-server',
-                           default='',
-                           help='The test results server to upload the '
-                                'results.')
-  option_parser.add_option('--master-name', default='',
-                           help='The name of the buildbot master. '
-                                'Both test-results-server and master-name '
-                                'need to be specified to upload the results '
-                                'to the server.')
-  option_parser.add_option('--webkit-revision', default='0',
-                           help='The WebKit revision being tested. If not '
-                                'given, defaults to 0.')
-  option_parser.add_option('--chrome-revision', default='0',
-                           help='The Chromium revision being tested. If not '
-                                'given, defaults to 0.')
-
-  options = option_parser.parse_args()[0]
-
-  if not options.test_type:
-    logging.error('--test-type needs to be specified.')
-    sys.exit(1)
-
-  if not options.input_results_xml:
-    logging.error('--input-results-xml needs to be specified.')
-    sys.exit(1)
-
-  if options.test_results_server and not options.master_name:
-    logging.warn('--test-results-server is given but '
-                 '--master-name is not specified; the results won\'t be '
-                 'uploaded to the server.')
-
-  results_map = GetResultsMapFromXML(options.input_results_xml)
-  generator = GenerateJSONResults(results_map, options)
-  UploadJSONResults(generator)
-
-
-if '__main__' == __name__:
-  main()
