@@ -2848,7 +2848,6 @@
             'html/forms/NumberInputType.h',
             'html/forms/PasswordInputType.cpp',
             'html/forms/PasswordInputType.h',
-            'html/forms/PopupMenuClient.h',
             'html/forms/RadioButtonGroupScope.cpp',
             'html/forms/RadioButtonGroupScope.h',
             'html/forms/RadioInputType.cpp',

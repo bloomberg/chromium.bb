@@ -10,7 +10,6 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLSelectElement.h"
-#include "core/html/forms/PopupMenuClient.h"
 #include "core/layout/LayoutMenuList.h"
 #include "core/page/Page.h"
 #include "core/testing/DummyPageHolder.h"
@@ -27,19 +26,6 @@
 
 namespace blink {
 
-class TestPopupMenuClient : public PopupMenuClient {
-public:
-    TestPopupMenuClient() { }
-    ~TestPopupMenuClient() override { }
-
-    HTMLSelectElement& ownerElement() const override { return *m_ownerElement; }
-
-    void setOwnerElement(PassRefPtrWillBeRawPtr<HTMLSelectElement> element) { m_ownerElement = element; }
-
-private:
-    RefPtrWillBePersistent<HTMLSelectElement> m_ownerElement;
-};
-
 class ExternalPopupMenuDisplayNoneItemsTest : public testing::Test {
 public:
     ExternalPopupMenuDisplayNoneItemsTest() { }
@@ -52,18 +38,18 @@ protected:
         // Set the 4th an 5th items to have "display: none" property
         element->setInnerHTML("<option><option><option><option style='display:none;'><option style='display:none;'><option><option>", ASSERT_NO_EXCEPTION);
         m_dummyPageHolder->document().body()->appendChild(element.get(), ASSERT_NO_EXCEPTION);
-        m_popupMenuClient.setOwnerElement(element.release());
+        m_ownerElement = element.release();
         m_dummyPageHolder->document().updateLayoutIgnorePendingStylesheets();
     }
 
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
-    TestPopupMenuClient m_popupMenuClient;
+    RefPtrWillBePersistent<HTMLSelectElement> m_ownerElement;
 };
 
 TEST_F(ExternalPopupMenuDisplayNoneItemsTest, PopupMenuInfoSizeTest)
 {
     WebPopupMenuInfo info;
-    ExternalPopupMenu::getPopupMenuInfo(info, m_popupMenuClient);
+    ExternalPopupMenu::getPopupMenuInfo(info, *m_ownerElement);
     EXPECT_EQ(5U, info.items.size());
 }
 
@@ -71,12 +57,12 @@ TEST_F(ExternalPopupMenuDisplayNoneItemsTest, IndexMappingTest)
 {
     // 6th indexed item in popupmenu would be the 4th item in ExternalPopupMenu,
     // and vice-versa.
-    EXPECT_EQ(4, ExternalPopupMenu::toExternalPopupMenuItemIndex(6, m_popupMenuClient));
-    EXPECT_EQ(6, ExternalPopupMenu::toPopupMenuItemIndex(4, m_popupMenuClient));
+    EXPECT_EQ(4, ExternalPopupMenu::toExternalPopupMenuItemIndex(6, *m_ownerElement));
+    EXPECT_EQ(6, ExternalPopupMenu::toPopupMenuItemIndex(4, *m_ownerElement));
 
     // Invalid index, methods should return -1.
-    EXPECT_EQ(-1, ExternalPopupMenu::toExternalPopupMenuItemIndex(8, m_popupMenuClient));
-    EXPECT_EQ(-1, ExternalPopupMenu::toPopupMenuItemIndex(8, m_popupMenuClient));
+    EXPECT_EQ(-1, ExternalPopupMenu::toExternalPopupMenuItemIndex(8, *m_ownerElement));
+    EXPECT_EQ(-1, ExternalPopupMenu::toPopupMenuItemIndex(8, *m_ownerElement));
 }
 
 class ExternalPopupMenuWebFrameClient : public FrameTestHelpers::TestWebFrameClient {

@@ -37,7 +37,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
-#include "core/html/forms/PopupMenuClient.h"
 #include "core/page/Page.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/geometry/FloatQuad.h"
@@ -53,8 +52,8 @@
 
 namespace blink {
 
-ExternalPopupMenu::ExternalPopupMenu(LocalFrame& frame, PopupMenuClient* popupMenuClient, WebViewImpl& webView)
-    : m_popupMenuClient(popupMenuClient)
+ExternalPopupMenu::ExternalPopupMenu(LocalFrame& frame, HTMLSelectElement& ownerElement, WebViewImpl& webView)
+    : m_ownerElement(ownerElement)
     , m_localFrame(frame)
     , m_webView(webView)
     , m_dispatchEventTimer(this, &ExternalPopupMenu::dispatchEvent)
@@ -68,6 +67,7 @@ ExternalPopupMenu::~ExternalPopupMenu()
 
 DEFINE_TRACE(ExternalPopupMenu)
 {
+    visitor->trace(m_ownerElement);
     visitor->trace(m_localFrame);
     PopupMenu::trace(visitor);
 }
@@ -83,7 +83,7 @@ void ExternalPopupMenu::show(const FloatQuad& controlPosition, const IntSize&, i
     }
 
     WebPopupMenuInfo info;
-    getPopupMenuInfo(info, *m_popupMenuClient);
+    getPopupMenuInfo(info, *m_ownerElement);
     if (info.items.isEmpty())
         return;
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(m_localFrame.get());
@@ -118,8 +118,8 @@ void ExternalPopupMenu::dispatchEvent(Timer<ExternalPopupMenu>*)
 
 void ExternalPopupMenu::hide()
 {
-    if (m_popupMenuClient)
-        m_popupMenuClient->ownerElement().popupDidHide();
+    if (m_ownerElement)
+        m_ownerElement->popupDidHide();
     if (!m_webExternalPopupMenu)
         return;
     m_webExternalPopupMenu->close();
@@ -133,7 +133,7 @@ void ExternalPopupMenu::updateFromElement()
 void ExternalPopupMenu::disconnectClient()
 {
     hide();
-    m_popupMenuClient = 0;
+    m_ownerElement = nullptr;
 }
 
 void ExternalPopupMenu::didChangeSelection(int index)
@@ -142,38 +142,38 @@ void ExternalPopupMenu::didChangeSelection(int index)
 
 void ExternalPopupMenu::didAcceptIndex(int index)
 {
-    // Calling methods on the PopupMenuClient might lead to this object being
+    // Calling methods on the HTMLSelectElement might lead to this object being
     // derefed. This ensures it does not get deleted while we are running this
     // method.
-    int popupMenuItemIndex = toPopupMenuItemIndex(index, *m_popupMenuClient);
+    int popupMenuItemIndex = toPopupMenuItemIndex(index, *m_ownerElement);
     RefPtrWillBeRawPtr<ExternalPopupMenu> guard(this);
 
-    if (m_popupMenuClient) {
-        m_popupMenuClient->ownerElement().popupDidHide();
-        m_popupMenuClient->ownerElement().valueChanged(popupMenuItemIndex);
+    if (m_ownerElement) {
+        m_ownerElement->popupDidHide();
+        m_ownerElement->valueChanged(popupMenuItemIndex);
     }
     m_webExternalPopupMenu = 0;
 }
 
 void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
 {
-    if (!m_popupMenuClient) {
+    if (!m_ownerElement) {
         m_webExternalPopupMenu = 0;
         return;
     }
 
-    // Calling methods on the PopupMenuClient might lead to this object being
+    // Calling methods on the HTMLSelectElement might lead to this object being
     // derefed. This ensures it does not get deleted while we are running this
     // method.
     RefPtrWillBeRawPtr<ExternalPopupMenu> protect(this);
-    RefPtrWillBeRawPtr<HTMLSelectElement> ownerElement(m_popupMenuClient->ownerElement());
+    RefPtrWillBeRawPtr<HTMLSelectElement> ownerElement(m_ownerElement.get());
     ownerElement->popupDidHide();
 
     if (indices.size() == 0) {
         ownerElement->valueChanged(static_cast<unsigned>(-1));
     } else {
         for (size_t i = 0; i < indices.size(); ++i)
-            ownerElement->listBoxSelectItem(toPopupMenuItemIndex(indices[i], *m_popupMenuClient), (i > 0), false, (i == indices.size() - 1));
+            ownerElement->listBoxSelectItem(toPopupMenuItemIndex(indices[i], *ownerElement), (i > 0), false, (i == indices.size() - 1));
     }
 
     m_webExternalPopupMenu = 0;
@@ -184,14 +184,13 @@ void ExternalPopupMenu::didCancel()
     // See comment in didAcceptIndex on why we need this.
     RefPtrWillBeRawPtr<ExternalPopupMenu> guard(this);
 
-    if (m_popupMenuClient)
-        m_popupMenuClient->ownerElement().popupDidHide();
+    if (m_ownerElement)
+        m_ownerElement->popupDidHide();
     m_webExternalPopupMenu = 0;
 }
 
-void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo& info, PopupMenuClient& popupMenuClient)
+void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo& info, HTMLSelectElement& ownerElement)
 {
-    HTMLSelectElement& ownerElement = popupMenuClient.ownerElement();
     const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = ownerElement.listItems();
     size_t itemCount = listItems.size();
     size_t count = 0;
@@ -222,7 +221,7 @@ void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo& info, PopupMenuClient
     const ComputedStyle& menuStyle = ownerElement.computedStyle() ? *ownerElement.computedStyle() : *ownerElement.ensureComputedStyle();
     info.itemHeight = menuStyle.font().fontMetrics().height();
     info.itemFontSize = static_cast<int>(menuStyle.font().fontDescription().computedSize());
-    info.selectedIndex = toExternalPopupMenuItemIndex(ownerElement.optionToListIndex(ownerElement.selectedIndex()), popupMenuClient);
+    info.selectedIndex = toExternalPopupMenuItemIndex(ownerElement.optionToListIndex(ownerElement.selectedIndex()), ownerElement);
     info.rightAligned = menuStyle.direction() == RTL;
     info.allowMultipleSelection = ownerElement.multiple();
     if (count < itemCount)
@@ -231,15 +230,15 @@ void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo& info, PopupMenuClient
 
 }
 
-int ExternalPopupMenu::toPopupMenuItemIndex(int externalPopupMenuItemIndex, PopupMenuClient& popupMenuClient)
+int ExternalPopupMenu::toPopupMenuItemIndex(int externalPopupMenuItemIndex, HTMLSelectElement& ownerElement)
 {
     if (externalPopupMenuItemIndex < 0)
         return externalPopupMenuItemIndex;
 
     int indexTracker = 0;
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = popupMenuClient.ownerElement().listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = ownerElement.listItems();
     for (int i = 0; i < static_cast<int>(items.size()); ++i) {
-        if (popupMenuClient.ownerElement().itemIsDisplayNone(*items[i]))
+        if (ownerElement.itemIsDisplayNone(*items[i]))
             continue;
         if (indexTracker++ == externalPopupMenuItemIndex)
             return i;
@@ -247,15 +246,15 @@ int ExternalPopupMenu::toPopupMenuItemIndex(int externalPopupMenuItemIndex, Popu
     return -1;
 }
 
-int ExternalPopupMenu::toExternalPopupMenuItemIndex(int popupMenuItemIndex, PopupMenuClient& popupMenuClient)
+int ExternalPopupMenu::toExternalPopupMenuItemIndex(int popupMenuItemIndex, HTMLSelectElement& ownerElement)
 {
     if (popupMenuItemIndex < 0)
         return popupMenuItemIndex;
 
     size_t indexTracker = 0;
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = popupMenuClient.ownerElement().listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = ownerElement.listItems();
     for (int i = 0; i < static_cast<int>(items.size()); ++i) {
-        if (popupMenuClient.ownerElement().itemIsDisplayNone(*items[i]))
+        if (ownerElement.itemIsDisplayNone(*items[i]))
             continue;
         if (popupMenuItemIndex == i)
             return indexTracker;

@@ -25,7 +25,6 @@
 #define LayoutMenuList_h
 
 #include "core/CoreExport.h"
-#include "core/html/forms/PopupMenuClient.h"
 #include "core/layout/LayoutFlexibleBox.h"
 #include "platform/PopupMenu.h"
 #include "platform/geometry/LayoutRect.h"
@@ -35,7 +34,7 @@ namespace blink {
 class HTMLSelectElement;
 class LayoutText;
 
-class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox, private PopupMenuClient {
+class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
 public:
     explicit LayoutMenuList(Element*);
     ~LayoutMenuList() override;
@@ -78,9 +77,6 @@ private:
     void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
 
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
-
-    // PopupMenuClient methods
-    HTMLSelectElement& ownerElement() const override;
 
     bool hasLineIfEmpty() const override { return true; }
 

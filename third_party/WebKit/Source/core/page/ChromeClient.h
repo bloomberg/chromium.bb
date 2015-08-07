@@ -25,7 +25,6 @@
 #include "core/CoreExport.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/frame/ConsoleTypes.h"
-#include "core/html/forms/PopupMenuClient.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/NavigationPolicy.h"
@@ -57,11 +56,11 @@ class GraphicsLayerFactory;
 class HitTestResult;
 class HTMLFormControlElement;
 class HTMLInputElement;
+class HTMLSelectElement;
 class IntRect;
 class LocalFrame;
 class Node;
 class Page;
-class PopupMenuClient;
 class PopupOpeningObserver;
 class WebCompositorAnimationTimeline;
 
@@ -199,7 +198,7 @@ public:
 
     // Checks if there is an opened popup, called by LayoutMenuList::showPopup().
     virtual bool hasOpenedPopup() const = 0;
-    virtual PassRefPtrWillBeRawPtr<PopupMenu> openPopupMenu(LocalFrame&, PopupMenuClient*) = 0;
+    virtual PassRefPtrWillBeRawPtr<PopupMenu> openPopupMenu(LocalFrame&, HTMLSelectElement&) = 0;
     virtual DOMWindow* pagePopupWindowForTesting() const = 0;
 
     virtual void postAccessibilityNotification(AXObject*, AXObjectCache::AXNotification) { }

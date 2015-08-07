@@ -231,14 +231,14 @@ public:
 
 // ----------------------------------------------------------------
 
-PassRefPtrWillBeRawPtr<PopupMenuImpl> PopupMenuImpl::create(ChromeClientImpl* chromeClient, PopupMenuClient* client)
+PassRefPtrWillBeRawPtr<PopupMenuImpl> PopupMenuImpl::create(ChromeClientImpl* chromeClient, HTMLSelectElement& ownerElement)
 {
-    return adoptRefWillBeNoop(new PopupMenuImpl(chromeClient, client));
+    return adoptRefWillBeNoop(new PopupMenuImpl(chromeClient, ownerElement));
 }
 
-PopupMenuImpl::PopupMenuImpl(ChromeClientImpl* chromeClient, PopupMenuClient* client)
+PopupMenuImpl::PopupMenuImpl(ChromeClientImpl* chromeClient, HTMLSelectElement& ownerElement)
     : m_chromeClient(chromeClient)
-    , m_client(client)
+    , m_ownerElement(ownerElement)
     , m_popup(nullptr)
     , m_needsUpdate(false)
 {
@@ -249,6 +249,12 @@ PopupMenuImpl::~PopupMenuImpl()
     ASSERT(!m_popup);
 }
 
+DEFINE_TRACE(PopupMenuImpl)
+{
+    visitor->trace(m_ownerElement);
+    PopupMenu::trace(visitor);
+}
+
 IntSize PopupMenuImpl::contentSize()
 {
     return IntSize();
@@ -256,7 +262,7 @@ IntSize PopupMenuImpl::contentSize()
 
 void PopupMenuImpl::writeDocument(SharedBuffer* data)
 {
-    HTMLSelectElement& ownerElement = m_client->ownerElement();
+    HTMLSelectElement& ownerElement = *m_ownerElement;
     IntRect anchorRectInScreen = m_chromeClient->viewportToScreen(ownerElement.elementRectRelativeToViewport());
 
     PagePopupClient::addString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
@@ -296,7 +302,7 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
 
 void PopupMenuImpl::addElementStyle(ItemIterationContext& context, HTMLElement& element)
 {
-    const ComputedStyle* style = m_client->ownerElement().itemComputedStyle(element);
+    const ComputedStyle* style = m_ownerElement->itemComputedStyle(element);
     ASSERT(style);
     SharedBuffer* data = context.m_buffer;
     // TODO(tkent): We generate unnecessary "style: {\n},\n" even if no
@@ -393,17 +399,17 @@ void PopupMenuImpl::selectFontsFromOwnerDocument(Document& document)
 void PopupMenuImpl::setValueAndClosePopup(int numValue, const String& stringValue)
 {
     ASSERT(m_popup);
-    ASSERT(m_client);
+    ASSERT(m_ownerElement);
     RefPtrWillBeRawPtr<PopupMenuImpl> protector(this);
     bool success;
     int listIndex = stringValue.toInt(&success);
     ASSERT(success);
-    m_client->ownerElement().valueChanged(listIndex);
+    m_ownerElement->valueChanged(listIndex);
     if (m_popup)
         m_chromeClient->closePagePopup(m_popup);
     // We dispatch events on the owner element to match the legacy behavior.
     // Other browsers dispatch click events before and after showing the popup.
-    if (m_client) {
+    if (m_ownerElement) {
         PlatformMouseEvent event;
         RefPtrWillBeRawPtr<Element> owner = &ownerElement();
         owner->dispatchMouseEvent(event, EventTypeNames::mouseup);
@@ -413,11 +419,11 @@ void PopupMenuImpl::setValueAndClosePopup(int numValue, const String& stringValu
 
 void PopupMenuImpl::setValue(const String& value)
 {
-    ASSERT(m_client);
+    ASSERT(m_ownerElement);
     bool success;
     int listIndex = value.toInt(&success);
     ASSERT(success);
-    m_client->ownerElement().provisionalSelectionChanged(listIndex);
+    m_ownerElement->provisionalSelectionChanged(listIndex);
 }
 
 void PopupMenuImpl::didClosePopup()
@@ -425,13 +431,13 @@ void PopupMenuImpl::didClosePopup()
     // Clearing m_popup first to prevent from trying to close the popup again.
     m_popup = nullptr;
     RefPtrWillBeRawPtr<PopupMenuImpl> protector(this);
-    if (m_client)
-        m_client->ownerElement().popupDidHide();
+    if (m_ownerElement)
+        m_ownerElement->popupDidHide();
 }
 
 Element& PopupMenuImpl::ownerElement()
 {
-    return m_client->ownerElement();
+    return *m_ownerElement;
 }
 
 Locale& PopupMenuImpl::locale()
@@ -443,8 +449,8 @@ void PopupMenuImpl::closePopup()
 {
     if (m_popup)
         m_chromeClient->closePagePopup(m_popup);
-    if (m_client)
-        m_client->ownerElement().popupDidCancel();
+    if (m_ownerElement)
+        m_ownerElement->popupDidCancel();
 }
 
 void PopupMenuImpl::dispose()
@@ -475,20 +481,17 @@ void PopupMenuImpl::updateFromElement()
 
 void PopupMenuImpl::update()
 {
-    if (!m_popup || !m_client)
+    if (!m_popup || !m_ownerElement)
         return;
     ownerElement().document().updateLayoutTreeIfNeeded();
-    if (!m_client)
-        return;
     m_needsUpdate = false;
     RefPtr<SharedBuffer> data = SharedBuffer::create();
     PagePopupClient::addString("window.updateData = {\n", data.get());
     PagePopupClient::addString("type: \"update\",\n", data.get());
-    HTMLSelectElement& ownerElement = m_client->ownerElement();
-    ItemIterationContext context(*ownerElement.computedStyle(), data.get());
+    ItemIterationContext context(*m_ownerElement->computedStyle(), data.get());
     context.serializeBaseStyle();
     PagePopupClient::addString("children: [", data.get());
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = ownerElement.listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = m_ownerElement->listItems();
     for (; context.m_listIndex < items.size(); ++context.m_listIndex) {
         Element& child = *items[context.m_listIndex];
         if (!isHTMLOptGroupElement(child.parentNode()))
@@ -509,7 +512,7 @@ void PopupMenuImpl::update()
 
 void PopupMenuImpl::disconnectClient()
 {
-    m_client = nullptr;
+    m_ownerElement = nullptr;
     // Cannot be done during finalization, so instead done when the
     // layout object is destroyed and disconnected.
     dispose();

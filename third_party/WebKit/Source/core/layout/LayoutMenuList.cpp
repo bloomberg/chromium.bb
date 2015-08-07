@@ -335,7 +335,7 @@ void LayoutMenuList::showPopup()
         return;
 
     if (!m_popup)
-        m_popup = document().frameHost()->chromeClient().openPopupMenu(*document().frame(), this);
+        m_popup = document().frameHost()->chromeClient().openPopupMenu(*document().frame(), *selectElement());
     selectElement()->setPopupIsVisible();
 
     FloatQuad quad(localToAbsoluteQuad(FloatQuad(borderBoundingBox())));
@@ -350,11 +350,6 @@ void LayoutMenuList::hidePopup()
 {
     if (m_popup)
         m_popup->hide();
-}
-
-HTMLSelectElement& LayoutMenuList::ownerElement() const
-{
-    return *selectElement();
 }
 
 void LayoutMenuList::didSetSelectedIndex(int listIndex)

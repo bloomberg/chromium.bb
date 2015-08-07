@@ -40,9 +40,9 @@
 namespace blink {
 
 class FloatQuad;
+class HTMLSelectElement;
 class IntSize;
 class LocalFrame;
-class PopupMenuClient;
 class WebExternalPopupMenu;
 class WebMouseEvent;
 class WebViewImpl;
@@ -52,16 +52,16 @@ struct WebPopupMenuInfo;
 // to the WebCore popup menu.
 class ExternalPopupMenu final : public PopupMenu, public WebExternalPopupMenuClient {
 public:
-    ExternalPopupMenu(LocalFrame&, PopupMenuClient*, WebViewImpl&);
+    ExternalPopupMenu(LocalFrame&, HTMLSelectElement&, WebViewImpl&);
     ~ExternalPopupMenu() override;
 
     // Fills |info| with the popup menu information contained in the
     // PopupMenuClient associated with this ExternalPopupMenu.
     // FIXME: public only for test access. Need to revert once gtest
     // helpers from chromium are available for blink.
-    static void getPopupMenuInfo(WebPopupMenuInfo&, PopupMenuClient&);
-    static int toPopupMenuItemIndex(int index, PopupMenuClient&);
-    static int toExternalPopupMenuItemIndex(int index, PopupMenuClient&);
+    static void getPopupMenuInfo(WebPopupMenuInfo&, HTMLSelectElement&);
+    static int toPopupMenuItemIndex(int index, HTMLSelectElement&);
+    static int toExternalPopupMenuItemIndex(int index, HTMLSelectElement&);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -80,7 +80,7 @@ private:
 
     void dispatchEvent(Timer<ExternalPopupMenu>*);
 
-    PopupMenuClient* m_popupMenuClient;
+    RawPtrWillBeMember<HTMLSelectElement> m_ownerElement;
     RefPtrWillBeMember<LocalFrame> m_localFrame;
     WebViewImpl& m_webView;
     OwnPtr<WebMouseEvent> m_syntheticEvent;
