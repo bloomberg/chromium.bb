@@ -19,17 +19,16 @@
 
 namespace net {
 
-// used to ensure we delete the addrinfo structure
-// alloc'd by getaddrinfo
+// Used to ensure we delete the addrinfo structure alloc'd by getaddrinfo().
 class AddrinfoGuard {
- protected:
-  struct addrinfo* addrinfo_ptr_;
-
  public:
   explicit AddrinfoGuard(struct addrinfo* addrinfo_ptr)
       : addrinfo_ptr_(addrinfo_ptr) {}
 
   ~AddrinfoGuard() { freeaddrinfo(addrinfo_ptr_); }
+
+ private:
+  struct addrinfo* addrinfo_ptr_;
 };
 
 // Summary:
