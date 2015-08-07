@@ -15,31 +15,57 @@
 // Link pdh.lib (import library for pdh.dll) whenever this file is linked in.
 #pragma comment(lib, "pdh.lib")
 
-PrivateWorkingSetSnapshot::PrivateWorkingSetSnapshot() {
+PrivateWorkingSetSnapshot::PrivateWorkingSetSnapshot() {}
+
+PrivateWorkingSetSnapshot::~PrivateWorkingSetSnapshot() {}
+
+void PrivateWorkingSetSnapshot::Initialize() {
+  DCHECK(!initialized_);
+
+  // Set this to true whether initialization succeeds or not. That is, only try
+  // once.
+  initialized_ = true;
+
   // The Pdh APIs are supported on Windows XP and above, but the "Working Set -
   // Private" counter that PrivateWorkingSetSnapshot depends on is not defined
   // until Windows Vista and is not reliable until Windows 7. Early-out to avoid
   // wasted effort. All queries will return zero and will have to use the
   // fallback calculations.
-  if (base::win::GetVersion() <= base::win::VERSION_VISTA)
+  if (base::win::GetVersion() <= base::win::VERSION_VISTA) {
+    process_names_.clear();
     return;
+  }
+
+  // Pdh.dll has a format-string bug that causes crashes on Windows 8 and 8.1.
+  // This was patched (around October 2014) but the broken versions are still on
+  // a few machines. CreateFileVersionInfoForModule touches the disk so it
+  // be used on the main thread. If this call gets moved off of the main thread
+  // then pdh.dll version checking can be found in the history of
+  // https://codereview.chromium.org/1269223005
 
   // Create a Pdh query
   PDH_HQUERY query_handle;
   if (PdhOpenQuery(NULL, NULL, &query_handle) != ERROR_SUCCESS) {
+    process_names_.clear();
     return;
   }
 
   query_handle_.Set(query_handle);
-}
 
-PrivateWorkingSetSnapshot::~PrivateWorkingSetSnapshot() {
+  for (const auto& process_name : process_names_) {
+    AddToMonitorList(process_name);
+  }
+  process_names_.clear();
 }
 
 void PrivateWorkingSetSnapshot::AddToMonitorList(
     const std::string& process_name) {
-  if (!query_handle_.IsValid())
+  if (!query_handle_.IsValid()) {
+    // Save the name for later.
+    if (!initialized_)
+      process_names_.push_back(process_name);
     return;
+  }
 
   // Create the magic strings that will return a list of process IDs and a list
   // of private working sets. The 'process_name' variable should be something
@@ -69,6 +95,10 @@ void PrivateWorkingSetSnapshot::AddToMonitorList(
 }
 
 void PrivateWorkingSetSnapshot::Sample() {
+  // Make sure this is called once.
+  if (!initialized_)
+    Initialize();
+
   if (counter_pairs_.empty())
     return;
 

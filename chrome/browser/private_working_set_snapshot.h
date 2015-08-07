@@ -65,6 +65,10 @@ class PrivateWorkingSetSnapshot {
   size_t GetPrivateWorkingSet(base::ProcessId process_id) const;
 
  private:
+  // Initialize the PDH |query_handle_| and process any pending AddToMonitorList
+  // calls.
+  void Initialize();
+
   // This holds a pair of Pdh counters to queries for the process ID and private
   // working set for a particular process name being monitored. The results from
   // the two queries can be matched up so that we can associate a private
@@ -93,8 +97,14 @@ class PrivateWorkingSetSnapshot {
     }
   };
 
+  // True if Initialize() has been called, whether it succeeded or not.
+  bool initialized_ = false;
+
   // The handle to the query object.
   win::ScopedPDH query_handle_;
+
+  // A vector of process names to monitor when initialization occurs.
+  std::vector<std::string> process_names_;
 
   // A PdhCounterPair for each successful AddToMonitorList call.
   std::vector<PdhCounterPair> counter_pairs_;
