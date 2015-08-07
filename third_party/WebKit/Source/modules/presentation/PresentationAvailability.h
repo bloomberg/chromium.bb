@@ -29,9 +29,9 @@ class PresentationAvailability final
     DEFINE_WRAPPERTYPEINFO();
 public:
     // For CallbackPromiseAdapter.
-    using WebType = bool;
+    using WebType = OwnPtr<bool>;
 
-    static PresentationAvailability* take(ScriptPromiseResolver*, bool);
+    static PresentationAvailability* take(ScriptPromiseResolver*, PassOwnPtr<bool>);
     ~PresentationAvailability() override;
 
     // EventTarget implementation.

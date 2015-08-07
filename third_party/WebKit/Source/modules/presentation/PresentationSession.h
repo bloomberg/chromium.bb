@@ -11,6 +11,7 @@
 #include "core/frame/DOMWindowProperty.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/presentation/WebPresentationSessionClient.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WTF {
@@ -31,7 +32,7 @@ class PresentationSession final
     DEFINE_WRAPPERTYPEINFO();
 public:
     // For CallbackPromiseAdapter.
-    using WebType = WebPresentationSessionClient;
+    using WebType = OwnPtr<WebPresentationSessionClient>;
 
     static PresentationSession* take(ScriptPromiseResolver*, PassOwnPtr<WebPresentationSessionClient>);
     static PresentationSession* take(PresentationController*, PassOwnPtr<WebPresentationSessionClient>);

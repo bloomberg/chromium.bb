@@ -31,38 +31,100 @@
 #ifndef WebCallbacks_h
 #define WebCallbacks_h
 
+#include "public/platform/WebPassOwnPtr.h"
+
 namespace blink {
 
 template<typename S, typename T>
 class WebCallbacks {
 public:
-    virtual ~WebCallbacks() { }
-    virtual void onSuccess(S) { }
-    virtual void onError(T) { }
+    virtual ~WebCallbacks() {}
+    virtual void onSuccess(S) {}
+    virtual void onError(T) {}
 };
 
 template<typename T>
 class WebCallbacks<void, T> {
 public:
-    virtual ~WebCallbacks() { }
-    virtual void onSuccess() { }
-    virtual void onError(T) { }
+    virtual ~WebCallbacks() {}
+    virtual void onSuccess() {}
+    virtual void onError(T) {}
 };
 
 template<typename S>
 class WebCallbacks<S, void> {
 public:
-    virtual ~WebCallbacks() { }
-    virtual void onSuccess(S) { }
-    virtual void onError() { }
+    virtual ~WebCallbacks() {}
+    virtual void onSuccess(S) {}
+    virtual void onError() {}
 };
 
 template<>
 class WebCallbacks<void, void> {
 public:
-    virtual ~WebCallbacks() { }
-    virtual void onSuccess() { }
-    virtual void onError() { }
+    virtual ~WebCallbacks() {}
+    virtual void onSuccess() {}
+    virtual void onError() {}
+};
+
+// WebPassOwnPtr<T> adapter: defined for migration purpose and should
+// be deleted in the future.
+
+template <typename S, typename T>
+class WebCallbacks<WebPassOwnPtr<S>, WebPassOwnPtr<T>> {
+public:
+    virtual ~WebCallbacks() {}
+    virtual void onSuccess(WebPassOwnPtr<S>) {}
+    void onSuccess(const S& r) { onSuccess(adoptWebPtr(new S(r))); }
+    virtual void onError(WebPassOwnPtr<T>) {}
+    void onError(const T& e) { onError(adoptWebPtr(new T(e))); }
+
+    void onSuccess(S* r) { onSuccess(adoptWebPtr(r)); }
+    void onError(T* e) { onError(adoptWebPtr(e)); }
+};
+
+template <typename S>
+class WebCallbacks<WebPassOwnPtr<S>, void> {
+public:
+    virtual ~WebCallbacks() {}
+    virtual void onSuccess(WebPassOwnPtr<S>) {}
+    virtual void onSuccess(const S& r) { onSuccess(adoptWebPtr(new S(r))); }
+    virtual void onError() {}
+
+    void onSuccess(S* r) { onSuccess(adoptWebPtr(r)); }
+};
+
+template <typename T>
+class WebCallbacks<void, WebPassOwnPtr<T>> {
+public:
+    virtual ~WebCallbacks() {}
+    virtual void onSuccess() {}
+    virtual void onError(WebPassOwnPtr<T>) {}
+    void onError(const T& e) { onError(adoptWebPtr(new T(e))); }
+
+    void onError(T* e) { onError(adoptWebPtr(e)); }
+};
+
+template <typename T>
+class WebCallbacks<bool*, WebPassOwnPtr<T>> {
+public:
+    virtual ~WebCallbacks() {}
+    void onSuccess(bool b) { onSuccess(&b); }
+    virtual void onError(WebPassOwnPtr<T>) {}
+    void onError(const T& e) { onError(adoptWebPtr(new T(e))); }
+
+    virtual void onSuccess(bool* b) {}
+    void onError(T* e) { onError(adoptWebPtr(e)); }
+};
+
+template <>
+class WebCallbacks<bool*, void> {
+public:
+    virtual ~WebCallbacks<bool*, void>() {}
+    void onSuccess(bool b) { onSuccess(&b); }
+    virtual void onError() {}
+
+    virtual void onSuccess(bool *b) {}
 };
 
 } // namespace blink

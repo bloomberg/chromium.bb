@@ -12,12 +12,12 @@
 
 namespace blink {
 
-DOMException* CacheStorageError::take(ScriptPromiseResolver*, PassOwnPtr<WebType> webError)
+DOMException* CacheStorageError::take(ScriptPromiseResolver*, PassOwnPtr<WebServiceWorkerCacheError> webError)
 {
     return CacheStorageError::createException(*webError);
 }
 
-DOMException* CacheStorageError::createException(WebType webError)
+DOMException* CacheStorageError::createException(WebServiceWorkerCacheError webError)
 {
     switch (webError) {
     case WebServiceWorkerCacheErrorNotImplemented:

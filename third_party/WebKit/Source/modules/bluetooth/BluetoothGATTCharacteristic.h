@@ -9,6 +9,7 @@
 #include "core/dom/DOMArrayPiece.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/bluetooth/WebBluetoothGATTCharacteristic.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -34,7 +35,7 @@ public:
     explicit BluetoothGATTCharacteristic(PassOwnPtr<WebBluetoothGATTCharacteristic>);
 
     // Interface required by CallbackPromiseAdapter.
-    typedef WebBluetoothGATTCharacteristic WebType;
+    using WebType = OwnPtr<WebBluetoothGATTCharacteristic>;
     static BluetoothGATTCharacteristic* take(ScriptPromiseResolver* , PassOwnPtr<WebBluetoothGATTCharacteristic>);
 
     // Interface required by garbage collection.

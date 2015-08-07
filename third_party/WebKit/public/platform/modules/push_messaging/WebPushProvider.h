@@ -17,7 +17,7 @@ struct WebPushSubscriptionOptions;
 
 using WebPushSubscriptionCallbacks = WebCallbacks<WebPushSubscription*, WebPushError*>;
 using WebPushPermissionStatusCallbacks = WebCallbacks<WebPushPermissionStatus*, WebPushError*>;
-using WebPushUnsubscribeCallbacks = WebCallbacks<bool*, WebPushError*>;
+using WebPushUnsubscribeCallbacks = WebCallbacks<bool*, WebPassOwnPtr<WebPushError>>;
 
 class WebPushProvider {
 public:

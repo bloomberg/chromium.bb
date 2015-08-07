@@ -6,6 +6,7 @@
 #define WebGeofencingProvider_h
 
 #include "public/platform/WebCallbacks.h"
+#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebVector.h"
 
 namespace blink {
@@ -16,8 +17,8 @@ struct WebGeofencingRegistration;
 class WebServiceWorkerRegistration;
 class WebString;
 
-typedef WebCallbacks<void, WebGeofencingError*> WebGeofencingCallbacks;
-typedef WebCallbacks<WebVector<WebGeofencingRegistration>*, WebGeofencingError*> WebGeofencingRegionsCallbacks;
+using WebGeofencingCallbacks = WebCallbacks<void, WebPassOwnPtr<WebGeofencingError>>;
+using WebGeofencingRegionsCallbacks = WebCallbacks<WebPassOwnPtr<WebVector<WebGeofencingRegistration>>, WebPassOwnPtr<WebGeofencingError>>;
 
 class WebGeofencingProvider {
 public:

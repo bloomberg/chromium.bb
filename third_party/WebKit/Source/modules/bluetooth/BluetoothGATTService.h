@@ -9,6 +9,7 @@
 #include "bindings/modules/v8/UnionTypesModules.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/bluetooth/WebBluetoothGATTService.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -34,7 +35,7 @@ public:
     explicit BluetoothGATTService(PassOwnPtr<WebBluetoothGATTService>);
 
     // Interface required by CallbackPromiseAdapter:
-    typedef WebBluetoothGATTService WebType;
+    using WebType = OwnPtr<WebBluetoothGATTService>;
     static BluetoothGATTService* take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothGATTService>);
 
     // Interface required by garbage collection.

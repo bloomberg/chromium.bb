@@ -18,6 +18,7 @@
 #include "public/platform/WebCircularGeofencingRegion.h"
 #include "public/platform/WebGeofencingProvider.h"
 #include "public/platform/WebGeofencingRegistration.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -27,8 +28,8 @@ namespace {
 // For CallbackPromiseAdapter to convert a WebVector of regions to a HeapVector.
 class RegionArray {
 public:
-    typedef WebVector<WebGeofencingRegistration> WebType;
-    static HeapVector<Member<GeofencingRegion>> take(ScriptPromiseResolver* resolver, PassOwnPtr<WebType> webRegions)
+    using WebType = OwnPtr<WebVector<WebGeofencingRegistration>>;
+    static HeapVector<Member<GeofencingRegion>> take(ScriptPromiseResolver* resolver, PassOwnPtr<WebVector<WebGeofencingRegistration>> webRegions)
     {
         HeapVector<Member<GeofencingRegion>> regions;
         for (size_t i = 0; i < webRegions->size(); ++i)

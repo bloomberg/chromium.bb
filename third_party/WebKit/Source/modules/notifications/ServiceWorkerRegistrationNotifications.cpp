@@ -17,6 +17,7 @@
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/notifications/WebNotificationManager.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -26,9 +27,9 @@ namespace {
 // getNotifications() promise with a HeapVector owning Notifications.
 class NotificationArray {
 public:
-    using WebType = WebVector<WebPersistentNotificationInfo>;
+    using WebType = OwnPtr<WebVector<WebPersistentNotificationInfo>>;
 
-    static HeapVector<Member<Notification>> take(ScriptPromiseResolver* resolver, PassOwnPtr<WebType> notificationInfos)
+    static HeapVector<Member<Notification>> take(ScriptPromiseResolver* resolver, PassOwnPtr<WebVector<WebPersistentNotificationInfo>> notificationInfos)
     {
         HeapVector<Member<Notification>> notifications;
         for (const WebPersistentNotificationInfo& notificationInfo : *notificationInfos)

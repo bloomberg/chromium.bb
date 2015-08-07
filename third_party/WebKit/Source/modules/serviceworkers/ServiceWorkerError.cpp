@@ -44,7 +44,7 @@ static DOMException* createException(ExceptionCode code, const String& defaultMe
 }
 
 // static
-DOMException* ServiceWorkerError::take(ScriptPromiseResolver*, PassOwnPtr<WebType> webError)
+DOMException* ServiceWorkerError::take(ScriptPromiseResolver*, PassOwnPtr<WebServiceWorkerError> webError)
 {
     switch (webError->errorType) {
     case WebServiceWorkerError::ErrorTypeAbort:

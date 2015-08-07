@@ -6,20 +6,20 @@
 #define WebServiceWorkerRegistration_h
 
 #include "public/platform/WebCallbacks.h"
+#include "public/platform/WebServiceWorkerError.h"
 #include "public/platform/WebURL.h"
 
 namespace blink {
 
 class WebServiceWorkerProvider;
 class WebServiceWorkerRegistrationProxy;
-struct WebServiceWorkerError;
 
 class WebServiceWorkerRegistration {
 public:
     virtual ~WebServiceWorkerRegistration() { }
 
-    using WebServiceWorkerUpdateCallbacks = WebCallbacks<void, WebServiceWorkerError*>;
-    using WebServiceWorkerUnregistrationCallbacks = WebCallbacks<bool*, WebServiceWorkerError*>;
+    using WebServiceWorkerUpdateCallbacks = WebCallbacks<void, WebPassOwnPtr<WebServiceWorkerError>>;
+    using WebServiceWorkerUnregistrationCallbacks = WebCallbacks<bool*, WebPassOwnPtr<WebServiceWorkerError>>;
 
     virtual void setProxy(WebServiceWorkerRegistrationProxy*) { }
     virtual WebServiceWorkerRegistrationProxy* proxy() { return nullptr; }

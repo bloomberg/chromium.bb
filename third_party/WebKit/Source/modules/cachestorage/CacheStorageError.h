@@ -7,6 +7,7 @@
 
 #include "public/platform/WebServiceWorkerCacheError.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -19,10 +20,10 @@ class CacheStorageError {
 public:
     // For CallbackPromiseAdapter. Ownership of a given error is not
     // transferred.
-    using WebType = WebServiceWorkerCacheError;
-    static DOMException* take(ScriptPromiseResolver*, PassOwnPtr<WebType> webError);
+    using WebType = OwnPtr<WebServiceWorkerCacheError>;
+    static DOMException* take(ScriptPromiseResolver*, PassOwnPtr<WebServiceWorkerCacheError> webError);
 
-    static DOMException* createException(WebType webError);
+    static DOMException* createException(WebServiceWorkerCacheError webError);
 };
 
 } // namespace blink

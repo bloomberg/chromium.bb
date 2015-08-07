@@ -31,9 +31,9 @@ WebPresentationClient* presentationClient(ExecutionContext* executionContext)
 } // anonymous namespace
 
 // static
-PresentationAvailability* PresentationAvailability::take(ScriptPromiseResolver* resolver, bool value)
+PresentationAvailability* PresentationAvailability::take(ScriptPromiseResolver* resolver, PassOwnPtr<bool> value)
 {
-    PresentationAvailability* presentationAvailability = new PresentationAvailability(resolver->executionContext(), value);
+    PresentationAvailability* presentationAvailability = new PresentationAvailability(resolver->executionContext(), *value);
     presentationAvailability->suspendIfNeeded();
     presentationAvailability->updateListening();
     return presentationAvailability;

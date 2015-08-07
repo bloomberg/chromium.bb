@@ -13,6 +13,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebServiceWorkerCache.h"
 #include "public/platform/WebServiceWorkerCacheError.h"
 #include "public/platform/WebServiceWorkerCacheStorage.h"
@@ -346,9 +347,10 @@ public:
         m_callback->sendSuccess();
     }
 
-    void onError(WebServiceWorkerCacheError* error)
+    void onError(WebPassOwnPtr<WebServiceWorkerCacheError> e)
     {
-        m_callback->sendFailure(String::format("Error requesting cache names: %s", serviceWorkerCacheErrorString(error).data()));
+        OwnPtr<WebServiceWorkerCacheError> error = e.release();
+        m_callback->sendFailure(String::format("Error requesting cache names: %s", serviceWorkerCacheErrorString(error.get()).data()));
     }
 
 private:

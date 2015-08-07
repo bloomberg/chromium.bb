@@ -10,7 +10,7 @@
 
 namespace blink {
 
-DOMException* PushError::take(ScriptPromiseResolver*, PassOwnPtr<WebType> webError)
+DOMException* PushError::take(ScriptPromiseResolver*, PassOwnPtr<WebPushError> webError)
 {
     switch (webError->errorType) {
     case WebPushError::ErrorTypeAbort:

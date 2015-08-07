@@ -16,6 +16,7 @@
 #include "modules/serviceworkers/ServiceWorkerWindowClient.h"
 #include "public/platform/WebServiceWorkerClientQueryOptions.h"
 #include "public/platform/WebServiceWorkerClientsInfo.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -26,8 +27,8 @@ namespace {
 
 class ClientArray {
 public:
-    typedef WebServiceWorkerClientsInfo WebType;
-    static HeapVector<Member<ServiceWorkerClient>> take(ScriptPromiseResolver*, PassOwnPtr<WebType> webClients)
+    using WebType = OwnPtr<WebServiceWorkerClientsInfo>;
+    static HeapVector<Member<ServiceWorkerClient>> take(ScriptPromiseResolver*, PassOwnPtr<WebServiceWorkerClientsInfo> webClients)
     {
         HeapVector<Member<ServiceWorkerClient>> clients;
         for (size_t i = 0; i < webClients->clients.size(); ++i) {

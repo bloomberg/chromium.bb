@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Heap.h"
 #include "public/platform/modules/bluetooth/WebBluetoothDevice.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -33,7 +34,7 @@ public:
     ScriptPromise connectGATT(ScriptState*);
 
     // Interface required by CallbackPromiseAdapter:
-    typedef WebBluetoothDevice WebType;
+    using WebType = OwnPtr<WebBluetoothDevice>;
     static BluetoothDevice* take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothDevice>);
 
     // Interface required by Garbage Collection:

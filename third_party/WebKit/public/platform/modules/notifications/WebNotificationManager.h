@@ -6,6 +6,7 @@
 #define WebNotificationManager_h
 
 #include "public/platform/WebCallbacks.h"
+#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
@@ -24,7 +25,7 @@ struct WebPersistentNotificationInfo {
     WebNotificationData data;
 };
 
-using WebNotificationGetCallbacks = WebCallbacks<WebVector<WebPersistentNotificationInfo>*, void>;
+using WebNotificationGetCallbacks = WebCallbacks<WebPassOwnPtr<WebVector<WebPersistentNotificationInfo>>, void>;
 using WebNotificationShowCallbacks = WebCallbacks<void, void>;
 
 // Provides the services to show platform notifications to the user.

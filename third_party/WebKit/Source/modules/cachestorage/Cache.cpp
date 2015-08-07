@@ -20,6 +20,7 @@
 #include "modules/fetch/GlobalFetch.h"
 #include "modules/fetch/Request.h"
 #include "modules/fetch/Response.h"
+#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebServiceWorkerCache.h"
 
 namespace blink {
@@ -95,10 +96,9 @@ public:
         m_resolver.clear();
     }
 
-    // Ownership of |rawReason| must be passed.
-    void onError(WebServiceWorkerCacheError* rawReason) override
+    void onError(WebPassOwnPtr<WebServiceWorkerCacheError> rawReason) override
     {
-        OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
+        OwnPtr<WebServiceWorkerCacheError> reason = rawReason.release();
         if (*reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve(false);
         else

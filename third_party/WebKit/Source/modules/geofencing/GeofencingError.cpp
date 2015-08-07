@@ -10,12 +10,12 @@
 
 namespace blink {
 
-DOMException* GeofencingError::take(ScriptPromiseResolver*, PassOwnPtr<WebType> webError)
+DOMException* GeofencingError::take(ScriptPromiseResolver*, PassOwnPtr<WebGeofencingError> webError)
 {
     switch (webError->errorType) {
-    case WebType::ErrorTypeAbort:
+    case WebGeofencingError::ErrorTypeAbort:
         return DOMException::create(AbortError, webError->message);
-    case WebType::ErrorTypeUnknown:
+    case WebGeofencingError::ErrorTypeUnknown:
         return DOMException::create(UnknownError, webError->message);
     }
     ASSERT_NOT_REACHED();

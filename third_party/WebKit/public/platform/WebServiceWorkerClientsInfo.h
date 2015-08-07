@@ -7,6 +7,7 @@
 
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebPageVisibilityState.h"
+#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebServiceWorkerClientType.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
@@ -39,8 +40,8 @@ struct WebServiceWorkerClientsInfo {
 };
 
 // Two WebCallbacks, one for one client, one for a WebVector of clients.
-typedef WebCallbacks<WebServiceWorkerClientInfo*, WebServiceWorkerError*> WebServiceWorkerClientCallbacks;
-typedef WebCallbacks<WebServiceWorkerClientsInfo*, WebServiceWorkerError*> WebServiceWorkerClientsCallbacks;
+using WebServiceWorkerClientCallbacks = WebCallbacks<WebPassOwnPtr<WebServiceWorkerClientInfo>, WebPassOwnPtr<WebServiceWorkerError>>;
+using WebServiceWorkerClientsCallbacks = WebCallbacks<WebPassOwnPtr<WebServiceWorkerClientsInfo>, WebPassOwnPtr<WebServiceWorkerError>>;
 
 } // namespace blink
 

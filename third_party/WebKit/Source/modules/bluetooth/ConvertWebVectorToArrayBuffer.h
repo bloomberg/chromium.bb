@@ -8,6 +8,7 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebVector.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -20,7 +21,7 @@ class ConvertWebVectorToArrayBuffer {
     WTF_MAKE_NONCOPYABLE(ConvertWebVectorToArrayBuffer);
 public:
     // Interface required by CallbackPromiseAdapter:
-    typedef WebVector<uint8_t> WebType;
+    using WebType = OwnPtr<WebVector<uint8_t>>;
     static PassRefPtr<DOMArrayBuffer> take(ScriptPromiseResolver*, PassOwnPtr<WebVector<uint8_t>>);
 
 private:
