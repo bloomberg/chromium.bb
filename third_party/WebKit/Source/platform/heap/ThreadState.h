@@ -652,6 +652,11 @@ public:
     void allocationPointAdjusted(int heapIndex);
     void promptlyFreed(size_t gcInfoIndex);
 
+#if ENABLE(ASSERT)
+    static void incrementSelfKeepAliveAllocations();
+    static void decrementSelfKeepAliveAllocations();
+#endif
+
 private:
     enum SnapshotType {
         HeapSnapshot,
@@ -728,6 +733,9 @@ private:
     static uintptr_t s_mainThreadStackStart;
     static uintptr_t s_mainThreadUnderestimatedStackSize;
     static SafePointBarrier* s_safePointBarrier;
+#if ENABLE(ASSERT)
+    static int s_selfKeepAliveAllocationsOnMainThread;
+#endif
 
     // We can't create a static member of type ThreadState here
     // because it will introduce global constructor and destructor.
