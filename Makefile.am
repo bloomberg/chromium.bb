@@ -27,6 +27,7 @@ AM_DISTCHECK_CONFIGURE_FLAGS = \
 	--enable-libkms \
 	--enable-intel \
 	--enable-radeon \
+	--enable-amdgpu \
 	--enable-nouveau \
 	--enable-vmwgfx \
 	--enable-omap-experimental-api \
