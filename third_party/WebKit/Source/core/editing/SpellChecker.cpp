@@ -346,6 +346,8 @@ void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection &movingS
 
 void SpellChecker::markMisspellingsAfterLineBreak(const VisibleSelection& wordSelection)
 {
+    TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterLineBreak");
+
     if (unifiedTextCheckerEnabled()) {
         TextCheckingTypeMask textCheckingOptions = 0;
 
@@ -370,6 +372,8 @@ void SpellChecker::markMisspellingsAfterLineBreak(const VisibleSelection& wordSe
 
 void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping)
 {
+    TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterTypingToWord");
+
     if (unifiedTextCheckerEnabled()) {
         TextCheckingTypeMask textCheckingOptions = 0;
 
@@ -437,6 +441,8 @@ void SpellChecker::markMisspellingsOrBadGrammar(const VisibleSelection& selectio
     // grammar checking can only be on if spell checking is also on.
     if (!isContinuousSpellCheckingEnabled())
         return;
+
+    TRACE_EVENT0("blink", "SpellChecker::markMisspellingsOrBadGrammar");
 
     const EphemeralRange range = selection.toNormalizedEphemeralRange();
     if (range.isNull())
@@ -510,6 +516,7 @@ void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask
 
 void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(Node* node)
 {
+    TRACE_EVENT0("blink", "SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar");
     if (!node)
         return;
     RefPtrWillBeRawPtr<Range> rangeToCheck = Range::create(*frame().document(), firstPositionInNode(node), lastPositionInNode(node));
@@ -568,6 +575,7 @@ void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask
 
 void SpellChecker::markAndReplaceFor(PassRefPtrWillBeRawPtr<SpellCheckRequest> request, const Vector<TextCheckingResult>& results)
 {
+    TRACE_EVENT0("blink", "SpellChecker::markAndReplaceFor");
     ASSERT(request);
 
     TextCheckingTypeMask textCheckingOptions = request->data().mask();
@@ -671,6 +679,8 @@ void SpellChecker::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSele
     if (textChecker().shouldEraseMarkersAfterChangeSelection(TextCheckingTypeSpelling))
         return;
 
+    TRACE_EVENT0("blink", "SpellChecker::updateMarkersForWordsAffectedByEditing");
+
     // We want to remove the markers from a word if an editing command will change the word. This can happen in one of
     // several scenarios:
     // 1. Insert in the middle of a word.
@@ -739,6 +749,8 @@ void SpellChecker::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSele
 
 void SpellChecker::didEndEditingOnTextField(Element* e)
 {
+    TRACE_EVENT0("blink", "SpellChecker::didEndEditingOnTextField");
+
     // Remove markers when deactivating a selection in an <input type="text"/>.
     // Prevent new ones from appearing too.
     m_spellCheckRequester->cancelCheck();
@@ -768,6 +780,8 @@ void SpellChecker::replaceMisspelledRange(const String& text)
 
 void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions options)
 {
+    TRACE_EVENT0("blink", "SpellChecker::respondToChangedSelection");
+
     bool closeTyping = options & FrameSelection::CloseTyping;
     bool isContinuousSpellCheckingEnabled = this->isContinuousSpellCheckingEnabled();
     bool isContinuousGrammarCheckingEnabled = isContinuousSpellCheckingEnabled && isGrammarCheckingEnabled();
@@ -850,6 +864,8 @@ void SpellChecker::spellCheckAfterBlur()
 
 void SpellChecker::spellCheckOldSelection(const VisibleSelection& oldSelection, const VisibleSelection& newAdjacentWords)
 {
+    TRACE_EVENT0("blink", "SpellChecker::spellCheckOldSelection");
+
     VisiblePosition oldStart(oldSelection.visibleStart());
     VisibleSelection oldAdjacentWords = VisibleSelection(startOfWord(oldStart, LeftWordIfOnBoundary), endOfWord(oldStart, RightWordIfOnBoundary));
     if (!VisibleSelection::InDOMTree::equalSelections(oldAdjacentWords, newAdjacentWords)) {
