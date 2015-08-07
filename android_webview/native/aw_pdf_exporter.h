@@ -10,7 +10,6 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "skia/ext/refptr.h"
 
 namespace content {
@@ -37,13 +36,13 @@ class AwPdfExporter {
                    jobject cancel_signal);
 
  private:
-  void CreatePdfSettings(JNIEnv* env, jobject obj);
+  void InitPdfSettings(JNIEnv* env,
+                       jobject obj,
+                       printing::PrintSettings& settings);
   void DidExportPdf(int fd, bool success);
 
   JavaObjectWeakGlobalRef java_ref_;
   content::WebContents* web_contents_;
-
-  scoped_ptr<printing::PrintSettings> print_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(AwPdfExporter);
 };

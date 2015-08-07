@@ -37,10 +37,11 @@ void AwPdfExporter::ExportToPdf(JNIEnv* env,
                                 int fd,
                                 jobject cancel_signal) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  CreatePdfSettings(env, obj);
+  printing::PrintSettings print_settings;
+  InitPdfSettings(env, obj, print_settings);
   AwPrintManager* print_manager =
       AwPrintManager::CreateForWebContents(
-          web_contents_, *print_settings_, base::FileDescriptor(fd, false),
+          web_contents_, print_settings, base::FileDescriptor(fd, false),
           base::Bind(&AwPdfExporter::DidExportPdf, base::Unretained(this)));
 
   if (!print_manager->PrintNow())
@@ -54,8 +55,9 @@ int MilsToDots(int val, int dpi) {
 }
 }  // anonymous namespace
 
-void AwPdfExporter::CreatePdfSettings(JNIEnv* env, jobject obj) {
-  print_settings_.reset(new printing::PrintSettings);
+void AwPdfExporter::InitPdfSettings(JNIEnv* env,
+                                    jobject obj,
+                                    printing::PrintSettings& settings) {
   int dpi = Java_AwPdfExporter_getDpi(env, obj);
   int width = Java_AwPdfExporter_getPageWidth(env, obj);
   int height = Java_AwPdfExporter_getPageHeight(env, obj);
@@ -68,12 +70,12 @@ void AwPdfExporter::CreatePdfSettings(JNIEnv* env, jobject obj) {
   // Assume full page is printable for now.
   printable_area_device_units.SetRect(0, 0, width_in_dots, height_in_dots);
 
-  print_settings_->set_dpi(dpi);
+  settings.set_dpi(dpi);
   // TODO(sgurun) verify that the value for newly added parameter for
   // (i.e. landscape_needs_flip) is correct.
-  print_settings_->SetPrinterPrintableArea(physical_size_device_units,
-                                           printable_area_device_units,
-                                           true);
+  settings.SetPrinterPrintableArea(physical_size_device_units,
+                                   printable_area_device_units,
+                                   true);
 
   printing::PageMargins margins;
   margins.left =
@@ -84,8 +86,8 @@ void AwPdfExporter::CreatePdfSettings(JNIEnv* env, jobject obj) {
       MilsToDots(Java_AwPdfExporter_getTopMargin(env, obj), dpi);
   margins.bottom =
       MilsToDots(Java_AwPdfExporter_getBottomMargin(env, obj), dpi);
-  print_settings_->SetCustomMargins(margins);
-  print_settings_->set_should_print_backgrounds(true);
+  settings.SetCustomMargins(margins);
+  settings.set_should_print_backgrounds(true);
 }
 
 void AwPdfExporter::DidExportPdf(int fd, bool success) {
