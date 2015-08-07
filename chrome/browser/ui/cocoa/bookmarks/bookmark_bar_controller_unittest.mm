@@ -1578,21 +1578,23 @@ TEST_F(BookmarkBarControllerTest, LastBookmarkResizeBehavior) {
   bookmarks::test::AddNodesFromModelString(model, root, model_string);
   [bar_ frameDidChange];
 
-  // The default font changed between OSX Mavericks and OSX Yosemite, so this
-  // test requires different widths to trigger the appropriate results.
+  // The default font changed between OSX Mavericks, OSX Yosemite, and
+  // OSX El Capitan, so this test requires different widths to trigger the
+  // appropriate results. The Mavericks and El Capitan font widths are close
+  // enough to use the same sizes.
   CGFloat viewWidthsYosemite[] = { 121.0, 122.0, 148.0, 149.0, 150.0, 151.0,
                                    152.0, 200.0, 152.0, 151.0, 150.0, 149.0,
                                    148.0, 122.0, 121.0 };
-  CGFloat viewWidthsMavericks[] = { 123.0, 124.0, 151.0, 152.0, 153.0, 154.0,
-                                    155.0, 200.0, 155.0, 154.0, 153.0, 152.0,
-                                    151.0, 124.0, 123.0 };
+  CGFloat viewWidthsRest[] = { 123.0, 124.0, 151.0, 152.0, 153.0, 154.0,
+                               155.0, 200.0, 155.0, 154.0, 153.0, 152.0,
+                               151.0, 124.0, 123.0 };
+  CGFloat* viewWidths = base::mac::IsOSYosemite() ? viewWidthsYosemite :
+                                                    viewWidthsRest;
+
   BOOL offTheSideButtonIsHiddenResults[] = { NO, NO, NO, NO, YES, YES, YES, YES,
                                              YES, YES, YES, NO, NO, NO, NO};
   int displayedButtonCountResults[] = { 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 2, 2,
                                         2, 1 };
-  CGFloat* viewWidths = base::mac::IsOSYosemiteOrLater() ? viewWidthsYosemite
-                                                         : viewWidthsMavericks;
-
   for (unsigned int i = 0; i < arraysize(viewWidthsYosemite); ++i) {
     NSRect frame = [[bar_ view] frame];
     frame.size.width = viewWidths[i] + bookmarks::kBookmarkRightMargin;
