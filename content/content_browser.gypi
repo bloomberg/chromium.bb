@@ -381,6 +381,8 @@
       'browser/android/edge_effect_l.h',
       'browser/android/in_process/context_provider_in_process.cc',
       'browser/android/in_process/context_provider_in_process.h',
+      'browser/android/in_process/synchronous_compositor_context_provider.cc',
+      'browser/android/in_process/synchronous_compositor_context_provider.h',
       'browser/android/in_process/synchronous_compositor_external_begin_frame_source.cc',
       'browser/android/in_process/synchronous_compositor_external_begin_frame_source.h',
       'browser/android/in_process/synchronous_compositor_factory_impl.cc',

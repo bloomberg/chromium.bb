@@ -9,11 +9,11 @@
 #include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/android/in_process/context_provider_in_process.h"
+#include "content/browser/android/in_process/synchronous_compositor_context_provider.h"
 #include "content/browser/android/in_process/synchronous_compositor_external_begin_frame_source.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/gpu/in_process_gpu_thread.h"
@@ -222,7 +222,8 @@ SynchronousCompositorFactoryImpl::CreateContextProviderForCompositor(
     mem_limits.mapped_memory_reclaim_limit = mapped_memory_reclaim_limit;
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context =
         CreateContext3D(surface_id, GetDefaultAttribs(), mem_limits);
-    return ContextProviderCommandBuffer::Create(context.Pass(), type);
+    return make_scoped_refptr(
+        new SynchronousCompositorContextProvider(context.Pass(), type));
   }
 
   gpu::GLInProcessContextSharedMemoryLimits mem_limits;

@@ -105,9 +105,6 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
   context3d_->traceBeginCHROMIUM("gpu_toplevel", unique_context_name.c_str());
 
   lost_context_callback_proxy_.reset(new LostContextCallbackProxy(this));
-  context3d_->GetCommandBufferProxy()->SetMemoryAllocationChangedCallback(
-      base::Bind(&ContextProviderCommandBuffer::OnMemoryAllocationChanged,
-                 base::Unretained(this)));
   return true;
 }
 
@@ -241,6 +238,13 @@ void ContextProviderCommandBuffer::SetMemoryPolicyChangedCallback(
   DCHECK(memory_policy_changed_callback_.is_null() ||
          memory_policy_changed_callback.is_null());
   memory_policy_changed_callback_ = memory_policy_changed_callback;
+
+  if (!memory_policy_changed_callback_.is_null()) {
+    DCHECK(context3d_->GetCommandBufferProxy());
+    context3d_->GetCommandBufferProxy()->SetMemoryAllocationChangedCallback(
+        base::Bind(&ContextProviderCommandBuffer::OnMemoryAllocationChanged,
+                   base::Unretained(this)));
+  }
 }
 
 }  // namespace content
