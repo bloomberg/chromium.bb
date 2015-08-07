@@ -18,8 +18,9 @@
 (define enable-logging "ENABLE_LOGGING")
 (define component-build-workaround "COMPONENT_BUILD_WORKAROUND")
 (define permitted-dir "PERMITTED_DIR")
-(define lion-or-later "LION_OR_LATER")
 (define homedir-as-literal "USER_HOMEDIR_AS_LITERAL")
+(define lion-or-later "LION_OR_LATER")
+(define elcap-or-later "ELCAP_OR_LATER")
 
 ; Consumes a subpath and appends it to the user's homedir path.
 (define (user-homedir-path subpath) (string-append (param homedir-as-literal) subpath))

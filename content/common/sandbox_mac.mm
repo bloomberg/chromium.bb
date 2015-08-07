@@ -528,6 +528,9 @@ bool Sandbox::EnableSandbox(int sandbox_type,
   bool lion_or_later = base::mac::IsOSLionOrLater();
   if (!compiler.InsertBooleanParam("LION_OR_LATER", lion_or_later))
     return false;
+  bool elcap_or_later = base::mac::IsOSElCapitanOrLater();
+  if (!compiler.InsertBooleanParam("ELCAP_OR_LATER", elcap_or_later))
+    return false;
 
 #if defined(COMPONENT_BUILD)
   // dlopen() fails without file-read-metadata access if the executable image

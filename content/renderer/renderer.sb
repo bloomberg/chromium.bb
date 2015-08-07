@@ -36,3 +36,12 @@
 (allow file-read-metadata
   (regex #"^/(private/)?etc$")
 )
+
+; http://crbug.com/508935
+(if (param-true? elcap-or-later)
+  (allow file-read*
+    (literal "/usr/lib/libcsfde.dylib")
+    (literal "/usr/lib/libcurl.4.dylib")
+    (literal "/usr/lib/libCoreStorage.dylib")
+    (literal "/usr/lib/libutil.dylib")
+))
