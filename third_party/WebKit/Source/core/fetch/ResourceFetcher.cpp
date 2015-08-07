@@ -163,11 +163,16 @@ ResourceFetcher::ResourceFetcher(FetchContext* context)
     , m_imagesEnabled(true)
     , m_allowStaleResources(false)
 {
+#if ENABLE(OILPAN)
+    ThreadState::current()->registerPreFinalizer(this);
+#endif
 }
 
 ResourceFetcher::~ResourceFetcher()
 {
+#if !ENABLE(OILPAN)
     clearPreloads();
+#endif
 }
 
 Resource* ResourceFetcher::cachedResource(const KURL& resourceURL) const
