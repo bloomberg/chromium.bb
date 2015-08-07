@@ -14,11 +14,7 @@ class HeapObject;
 class PartObject {
     DISALLOW_ALLOCATION();
 private:
-    PartObject();
-
     RawPtr<HeapObject> m_obj;
-    HeapObject* m_rawObj;
-    HeapObject& m_refObj;
 };
 
 class HeapObject : public GarbageCollected<HeapObject> {

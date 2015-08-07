@@ -124,14 +124,8 @@ class PtrEdge : public Edge {
 
 class RawPtr : public PtrEdge {
  public:
-  RawPtr(Edge* ptr, bool is_ptr_class, bool is_ref_type)
-      : PtrEdge(ptr)
-      , is_ptr_class_(is_ptr_class)
-      , is_ref_type_(is_ref_type)
-  {
-      assert(!(is_ptr_class_ && is_ref_type_));
-  }
-
+  explicit RawPtr(Edge* ptr, bool is_ptr_class)
+      : PtrEdge(ptr), is_ptr_class_(is_ptr_class) { }
   bool IsRawPtr() { return true; }
   bool IsRawPtrClass() { return is_ptr_class_; }
   LivenessKind Kind() { return kWeak; }
@@ -140,11 +134,8 @@ class RawPtr : public PtrEdge {
     return TracingStatus::Unneeded();
   }
   void Accept(EdgeVisitor* visitor) { visitor->VisitRawPtr(this); }
-
-  bool HasReferenceType() { return is_ref_type_; }
  private:
   bool is_ptr_class_;
-  bool is_ref_type_;
 };
 
 class RefPtr : public PtrEdge {
