@@ -107,10 +107,13 @@ repack("repack_ui_test_pak") {
   output = "$root_out_dir/ui_test.pak"
 
   deps = [
-    "//third_party/WebKit/public:resources_grit",
     "//ui/resources",
     "//ui/strings",
   ]
+
+  if (!is_ios) {
+    deps += [ "//third_party/WebKit/public:resources_grit" ]
+  }
 
   if (!is_mac) {
     deps += [ ":copy_ui_resources_100_percent" ]
