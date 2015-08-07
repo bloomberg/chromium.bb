@@ -262,7 +262,7 @@ void NetErrorTabHelper::SendInfo() {
 void NetErrorTabHelper::RunNetworkDiagnostics(const GURL& url) {
   // Only run diagnostics on HTTP or HTTPS URLs.  Shouldn't receive URLs with
   // any other schemes, but the renderer is not trusted.
-  if (!url.SchemeIsHTTPOrHTTPS())
+  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS())
     return;
   // Sanitize URL prior to running diagnostics on it.
   RunNetworkDiagnosticsHelper(url.GetOrigin());

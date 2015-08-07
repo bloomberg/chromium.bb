@@ -421,9 +421,12 @@ TEST_F(NetErrorTabHelperTest, SanitizeDiagnosticsUrl) {
             tab_helper()->network_diagnostics_url());
 }
 
-// Makes sure that diagnostics aren't run on URLS with non-HTTP/HTTPS schemes.
+// Makes sure that diagnostics aren't run on invalid URLs or URLs with
+// non-HTTP/HTTPS schemes.
 TEST_F(NetErrorTabHelperTest, NoDiagnosticsForNonHttpSchemes) {
   const char* kUrls[] = {
+    "",
+    "http",
     "file:///blah/blah",
     "chrome://blah/",
     "about:blank",
