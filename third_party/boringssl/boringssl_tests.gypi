@@ -473,6 +473,7 @@
     'boringssl_test_support_sources': [
       'src/crypto/test/file_test.cc',
       'src/crypto/test/malloc.cc',
+      'src/crypto/test/test_util.cc',
     ],
     'boringssl_test_targets': [
       'boringssl_aead_test',
