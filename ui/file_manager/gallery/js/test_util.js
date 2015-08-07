@@ -65,12 +65,10 @@ test.util.sync.changeValue = function(contentWindow, query, newValue) {
  * @param {string} newName Name to be newly assigned.
  */
 test.util.sync.changeName = function(contentWindow, newName) {
-  var nameBox = contentWindow.document.querySelector(
-      '.filename-spacer > paper-input');
-  // For paper-input, we need to focus on input element inside the component.
-  nameBox.inputElement.focus();
+  var nameBox = contentWindow.document.querySelector('.filename-spacer input');
+  nameBox.focus();
   nameBox.value = newName;
-  nameBox.inputElement.blur();
+  nameBox.blur();
 };
 
 // Register the test utils.

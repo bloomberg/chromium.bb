@@ -46,7 +46,10 @@
     </div>
     <div id="top-toolbar" class="toolbar top tool dimmable">
       <div class="filename-spacer">
-        <paper-input no-label-float spellcheck="false"></paper-input>
+        <!-- Change this to use paper-input after ChromeVox supports shadow DOM. -->
+        <paper-input-container id="rename-input" no-label-float>
+          <input spellcheck="false"></input>
+        </paper-input-container>
       </div>
       <div class="button-spacer">
         <!-- Use button element for edit button to implement toggle button with

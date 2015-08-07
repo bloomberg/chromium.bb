@@ -84,18 +84,17 @@ function Gallery(volumeManager) {
       '.filename-spacer');
 
   /**
-   * @private {PaperInput}
+   * @private {HTMLInputElement}
    * @const
    */
-  this.filenameEdit_ = /** @type {PaperInput} */
-      (queryRequiredElement(this.filenameSpacer_, 'paper-input'));
+  this.filenameEdit_ = /** @type {HTMLInputElement} */
+      (queryRequiredElement(this.filenameSpacer_, 'input'));
 
   this.filenameCanvas_ = document.createElement('canvas');
   this.filenameCanvasContext_ = this.filenameCanvas_.getContext('2d');
 
   // Set font style of canvas context to same font style with rename field.
-  var filenameEditComputedStyle = window.getComputedStyle(
-      this.filenameEdit_.inputElement);
+  var filenameEditComputedStyle = window.getComputedStyle(this.filenameEdit_);
   this.filenameCanvasContext_.font = filenameEditComputedStyle.font;
 
   this.filenameEdit_.addEventListener('blur',
@@ -761,8 +760,7 @@ Gallery.prototype.updateSelectionAndState_ = function() {
 Gallery.prototype.onFilenameFocus_ = function() {
   ImageUtil.setAttribute(this.filenameSpacer_, 'renaming', true);
   this.filenameEdit_.originalValue = this.filenameEdit_.value;
-  setTimeout(this.filenameEdit_.inputElement.select.bind(
-      this.filenameEdit_.inputElement), 0);
+  setTimeout(this.filenameEdit_.select.bind(this.filenameEdit_), 0);
   this.onUserAction_();
 };
 

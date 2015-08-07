@@ -316,14 +316,15 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
   flex: 1 0 auto;
 }
 
-.filename-spacer paper-input {
+#rename-input {
   margin: 8px 0;
   min-width: 160px;
+  padding: 4px 0;
   width: -webkit-fit-content;
 }
 
-.filename-spacer paper-input::shadow paper-input-container {
-  padding: 4px 0;
+#rename-input > input {
+  color: white;
 }
 
 /* Bubble */
