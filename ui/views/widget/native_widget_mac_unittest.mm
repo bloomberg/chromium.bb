@@ -785,6 +785,34 @@ TEST_F(NativeWidgetMacTest, NativeWindowChildModalShowHide) {
   }
 }
 
+// Test calls to Widget::ReparentNativeView() that result in a no-op on Mac.
+// Tests with both native and non-native parents.
+TEST_F(NativeWidgetMacTest, NoopReparentNativeView) {
+  NSWindow* parent = MakeNativeParent();
+  Widget* dialog = views::DialogDelegate::CreateDialogWidget(
+      new DialogDelegateView, nullptr, [parent contentView]);
+  BridgedNativeWidget* bridge =
+      NativeWidgetMac::GetBridgeForNativeWindow(dialog->GetNativeWindow());
+
+  EXPECT_EQ(bridge->parent()->GetNSWindow(), parent);
+  Widget::ReparentNativeView(dialog->GetNativeView(), [parent contentView]);
+  EXPECT_EQ(bridge->parent()->GetNSWindow(), parent);
+
+  [parent close];
+
+  Widget* parent_widget = CreateNativeDesktopWidget();
+  parent = parent_widget->GetNativeWindow();
+  dialog = views::DialogDelegate::CreateDialogWidget(
+      new DialogDelegateView, nullptr, [parent contentView]);
+  bridge = NativeWidgetMac::GetBridgeForNativeWindow(dialog->GetNativeWindow());
+
+  EXPECT_EQ(bridge->parent()->GetNSWindow(), parent);
+  Widget::ReparentNativeView(dialog->GetNativeView(), [parent contentView]);
+  EXPECT_EQ(bridge->parent()->GetNSWindow(), parent);
+
+  parent_widget->CloseNow();
+}
+
 // Tests Cocoa properties that should be given to particular widget types.
 TEST_F(NativeWidgetMacTest, NativeProperties) {
   // Create a regular widget (TYPE_WINDOW).

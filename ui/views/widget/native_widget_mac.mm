@@ -658,6 +658,12 @@ void NativeWidgetPrivate::GetAllOwnedWidgets(gfx::NativeView native_view,
 // static
 void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
                                              gfx::NativeView new_parent) {
+  BridgedNativeWidget* bridge =
+      NativeWidgetMac::GetBridgeForNativeWindow([native_view window]);
+  if (bridge && bridge->parent() &&
+      bridge->parent()->GetNSWindow() == [new_parent window])
+    return;  // Nothing to do.
+
   // Not supported. See http://crbug.com/514920.
   NOTREACHED();
 }
