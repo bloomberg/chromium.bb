@@ -26,9 +26,9 @@ async_test(function(t) {
             encodeURIComponent(host_info['HTTP_ORIGIN'] + path));
         })
       .then(function(frame) {
-          assert_not_equals(
-            frame.contentDocument.body.textContent,
-            '',
+          assert_equals(
+            frame.contentDocument.body.textContent.substr(0, 7),
+            'report(',
             'Basic type response could be loaded in the iframe.');
           frame.remove();
           return service_worker_unregister_and_done(t, scope);
@@ -43,27 +43,21 @@ async_test(function(t) {
           return wait_for_state(t, reg.installing, 'activated');
         })
       .then(function() {
-          var frame = document.createElement('iframe');
-          frame.src =
+          return with_iframe(
             scope + '?mode=cors&url=' +
             encodeURIComponent(host_info['HTTP_REMOTE_ORIGIN'] + path +
-                               '?ACAOrigin=' + host_info['HTTP_ORIGIN']);
-          document.body.appendChild(frame);
-          // We can't catch the network error on iframe. So we use the timer.
-          return new Promise(function(resolve) {
-              setTimeout(function() { resolve(frame); }, 1000);
-            });
+                               '?ACAOrigin=' + host_info['HTTP_ORIGIN']));
         })
       .then(function(frame) {
           assert_equals(
-            frame.contentDocument.body.textContent,
-            '',
-            'CORS type response could not be loaded in the iframe.');
+            frame.contentDocument.body.textContent.substr(0, 7),
+            'report(',
+            'CORS type response could be loaded in the iframe.');
           frame.remove();
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
-  }, 'CORS type response could not be loaded in the iframe.');
+  }, 'CORS type response could be loaded in the iframe.');
 
 async_test(function(t) {
     var scope = 'resources/fetch-frame-resource/frame-opaque';
@@ -108,9 +102,9 @@ async_test(function(t) {
             });
         })
       .then(function(win) {
-          assert_not_equals(
-            win.document.body.textContent,
-            '',
+          assert_equals(
+            win.document.body.textContent.substr(0, 7),
+            'report(',
             'Basic type response could be loaded in the new window.');
           win.close();
           return service_worker_unregister_and_done(t, scope);
@@ -125,25 +119,24 @@ async_test(function(t) {
           return wait_for_state(t, reg.installing, 'activated');
         })
       .then(function() {
-          var win = window.open(
-            scope + '?mode=cors&url=' +
-            encodeURIComponent(host_info['HTTP_REMOTE_ORIGIN'] + path +
-                               '?ACAOrigin=' + host_info['HTTP_ORIGIN']));
-          // We can't catch the network error on window. So we use the timer.
           return new Promise(function(resolve) {
-              setTimeout(function() { resolve(win); }, 1000);
+              var win = window.open(
+                scope + '?mode=cors&url=' +
+                encodeURIComponent(host_info['HTTP_REMOTE_ORIGIN'] + path +
+                                   '?ACAOrigin=' + host_info['HTTP_ORIGIN']));
+              win.onload = function() { resolve(win); };
             });
         })
       .then(function(win) {
           assert_equals(
-            win.document.body.textContent,
-            '',
-            'CORS type response could not be loaded in the new window.');
+            win.document.body.textContent.substr(0, 7),
+            'report(',
+            'CORS type response could be loaded in the new window.');
           win.close();
           return service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
-  }, 'CORS type response could not be loaded in the new window.');
+  }, 'CORS type response could be loaded in the new window.');
 
 async_test(function(t) {
     var scope = 'resources/fetch-frame-resource/window-opaque';

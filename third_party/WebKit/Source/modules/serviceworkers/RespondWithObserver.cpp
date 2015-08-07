@@ -46,10 +46,13 @@ const String getMessageForResponseError(WebServiceWorkerResponseError error, con
         errorMessage = errorMessage + "an \"opaque\" response was used for a request whose type is not no-cors";
         break;
     case WebServiceWorkerResponseErrorResponseTypeNotBasicOrDefault:
-        errorMessage = errorMessage + "the response for a client request must have type \"basic\" or \"default\".";
+        ASSERT_NOT_REACHED();
         break;
     case WebServiceWorkerResponseErrorBodyUsed:
         errorMessage = errorMessage + "a Response whose \"bodyUsed\" is \"true\" cannot be used to respond to a request.";
+        break;
+    case WebServiceWorkerResponseErrorResponseTypeOpaqueForClientRequest:
+        errorMessage = errorMessage + "an \"opaque\" response was used for a client request.";
         break;
     case WebServiceWorkerResponseErrorUnknown:
     default:
@@ -57,6 +60,11 @@ const String getMessageForResponseError(WebServiceWorkerResponseError error, con
         break;
     }
     return errorMessage;
+}
+
+bool isClientRequest(WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext)
+{
+    return frameType != WebURLRequest::FrameTypeNone || requestContext == WebURLRequest::RequestContextSharedWorker || requestContext == WebURLRequest::RequestContextWorker;
 }
 
 class NoopLoaderClient final : public GarbageCollectedFinalized<NoopLoaderClient>, public FetchDataLoader::Client {
@@ -116,9 +124,9 @@ private:
     ResolveType m_resolveType;
 };
 
-RespondWithObserver* RespondWithObserver::create(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType)
+RespondWithObserver* RespondWithObserver::create(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext)
 {
-    return new RespondWithObserver(context, eventID, requestURL, requestMode, frameType);
+    return new RespondWithObserver(context, eventID, requestURL, requestMode, frameType, requestContext);
 }
 
 void RespondWithObserver::contextDestroyed()
@@ -186,13 +194,21 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
         responseWasRejected(WebServiceWorkerResponseErrorResponseTypeError);
         return;
     }
-    if (m_requestMode != WebURLRequest::FetchRequestModeNoCORS && responseType == FetchResponseData::OpaqueType) {
-        responseWasRejected(WebServiceWorkerResponseErrorResponseTypeOpaque);
-        return;
-    }
-    if (m_frameType != WebURLRequest::FrameTypeNone && responseType != FetchResponseData::BasicType && responseType != FetchResponseData::DefaultType) {
-        responseWasRejected(WebServiceWorkerResponseErrorResponseTypeNotBasicOrDefault);
-        return;
+    if (responseType == FetchResponseData::OpaqueType) {
+        if (m_requestMode != WebURLRequest::FetchRequestModeNoCORS) {
+            responseWasRejected(WebServiceWorkerResponseErrorResponseTypeOpaque);
+            return;
+        }
+
+        // The request mode of client requests should be "same-origin" but it is
+        // not explicitly stated in the spec yet. So we need to check here.
+        // FIXME: Set the request mode of client requests to "same-origin" and
+        // remove this check when the spec will be updated.
+        // Spec issue: https://github.com/whatwg/fetch/issues/101
+        if (isClientRequest(m_frameType, m_requestContext)) {
+            responseWasRejected(WebServiceWorkerResponseErrorResponseTypeOpaqueForClientRequest);
+            return;
+        }
     }
     if (response->bodyUsed()) {
         responseWasRejected(WebServiceWorkerResponseErrorBodyUsed);
@@ -217,12 +233,13 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
     m_state = Done;
 }
 
-RespondWithObserver::RespondWithObserver(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType)
+RespondWithObserver::RespondWithObserver(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext)
     : ContextLifecycleObserver(context)
     , m_eventID(eventID)
     , m_requestURL(requestURL)
     , m_requestMode(requestMode)
     , m_frameType(frameType)
+    , m_requestContext(requestContext)
     , m_state(Initial)
 {
 }

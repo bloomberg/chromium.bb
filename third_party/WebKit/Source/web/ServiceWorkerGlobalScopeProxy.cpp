@@ -96,7 +96,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchActivateEvent(int eventID)
 void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest)
 {
     ASSERT(m_workerGlobalScope);
-    RespondWithObserver* observer = RespondWithObserver::create(m_workerGlobalScope, eventID, webRequest.url(), webRequest.mode(), webRequest.frameType());
+    RespondWithObserver* observer = RespondWithObserver::create(m_workerGlobalScope, eventID, webRequest.url(), webRequest.mode(), webRequest.frameType(), webRequest.requestContext());
     bool defaultPrevented = false;
     Request* request = Request::create(m_workerGlobalScope, webRequest);
     request->headers()->setGuard(Headers::ImmutableGuard);
