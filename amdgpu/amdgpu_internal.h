@@ -31,6 +31,8 @@
 
 #include <assert.h>
 #include <pthread.h>
+
+#include "libdrm_macros.h"
 #include "xf86atomic.h"
 #include "amdgpu.h"
 #include "util_double_list.h"
@@ -121,15 +123,19 @@ void amdgpu_device_free_internal(amdgpu_device_handle dev);
 
 void amdgpu_bo_free_internal(amdgpu_bo_handle bo);
 
-struct amdgpu_bo_va_mgr* amdgpu_vamgr_get_global(struct amdgpu_device *dev);
+drm_private struct amdgpu_bo_va_mgr*
+amdgpu_vamgr_get_global(struct amdgpu_device *dev);
 
-void amdgpu_vamgr_reference(struct amdgpu_bo_va_mgr **dst, struct amdgpu_bo_va_mgr *src);
+drm_private void
+amdgpu_vamgr_reference(struct amdgpu_bo_va_mgr **dst,
+		       struct amdgpu_bo_va_mgr *src);
 
-uint64_t amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr, uint64_t size,
-				uint64_t alignment, uint64_t base_required);
+drm_private uint64_t
+amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr, uint64_t size,
+		     uint64_t alignment, uint64_t base_required);
 
-void amdgpu_vamgr_free_va(struct amdgpu_bo_va_mgr *mgr, uint64_t va, 
-				uint64_t size);
+drm_private void
+amdgpu_vamgr_free_va(struct amdgpu_bo_va_mgr *mgr, uint64_t va, uint64_t size);
 
 int amdgpu_query_gpu_info_init(amdgpu_device_handle dev);
 

@@ -66,7 +66,8 @@ static void amdgpu_vamgr_deinit(struct amdgpu_bo_va_mgr *mgr)
 	pthread_mutex_destroy(&mgr->bo_va_mutex);
 }
 
-struct amdgpu_bo_va_mgr * amdgpu_vamgr_get_global(struct amdgpu_device *dev)
+drm_private struct amdgpu_bo_va_mgr *
+amdgpu_vamgr_get_global(struct amdgpu_device *dev)
 {
 	int ref;
 	ref = atomic_inc_return(&vamgr.refcount);
@@ -76,16 +77,18 @@ struct amdgpu_bo_va_mgr * amdgpu_vamgr_get_global(struct amdgpu_device *dev)
 	return &vamgr;
 }
 
-void amdgpu_vamgr_reference(struct amdgpu_bo_va_mgr **dst,
-				struct amdgpu_bo_va_mgr *src)
+drm_private void
+amdgpu_vamgr_reference(struct amdgpu_bo_va_mgr **dst,
+		       struct amdgpu_bo_va_mgr *src)
 {
 	if (update_references(&(*dst)->refcount, NULL))
 		amdgpu_vamgr_deinit(*dst);
 	*dst = src;
 }
 
-uint64_t amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr, uint64_t size,
-				uint64_t alignment, uint64_t base_required)
+drm_private uint64_t
+amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr, uint64_t size,
+		     uint64_t alignment, uint64_t base_required)
 {
 	struct amdgpu_bo_va_hole *hole, *n;
 	uint64_t offset = 0, waste = 0;
@@ -170,8 +173,8 @@ uint64_t amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr, uint64_t size,
 	return offset;
 }
 
-void amdgpu_vamgr_free_va(struct amdgpu_bo_va_mgr *mgr,
-				uint64_t va, uint64_t size)
+drm_private void
+amdgpu_vamgr_free_va(struct amdgpu_bo_va_mgr *mgr, uint64_t va, uint64_t size)
 {
 	struct amdgpu_bo_va_hole *hole;
 
