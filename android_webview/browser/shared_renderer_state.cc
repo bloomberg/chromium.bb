@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event_argument.h"
 
 namespace android_webview {
@@ -102,7 +103,7 @@ SharedRendererState::~SharedRendererState() {
   DCHECK(!hardware_renderer_.get());
 }
 
-void SharedRendererState::ClientRequestDrawGL() {
+void SharedRendererState::ClientRequestDrawGL(bool for_idle) {
   if (ui_loop_->BelongsToCurrentThread()) {
     if (!g_request_draw_gl_tracker.Get().ShouldRequestOnUiThread(this))
       return;
@@ -115,7 +116,12 @@ void SharedRendererState::ClientRequestDrawGL() {
       base::AutoLock lock(lock_);
       callback = request_draw_gl_closure_;
     }
-    ui_loop_->PostTask(FROM_HERE, callback);
+    // 17ms is slightly longer than a frame, hoping that it will come
+    // after the next frame so that the idle work is taken care off by
+    // the next frame instead.
+    ui_loop_->PostDelayedTask(
+        FROM_HERE, callback,
+        for_idle ? base::TimeDelta::FromMilliseconds(17) : base::TimeDelta());
   }
 }
 
@@ -278,10 +284,10 @@ void SharedRendererState::DrawGL(AwDrawGLInfo* draw_info) {
     hardware_renderer_->CommitFrame();
   }
 
+  DeferredGpuCommandService::GetInstance()->PerformIdleWork(false);
   hardware_renderer_->DrawGL(state_restore.stencil_enabled(),
                              state_restore.framebuffer_binding_ext(),
                              draw_info);
-  DeferredGpuCommandService::GetInstance()->PerformIdleWork(false);
 }
 
 void SharedRendererState::ReleaseHardwareDrawIfNeededOnUI() {

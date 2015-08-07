@@ -37,7 +37,7 @@ class SharedRendererState {
   ~SharedRendererState();
 
   // This function can be called from any thread.
-  void ClientRequestDrawGL();
+  void ClientRequestDrawGL(bool for_idle);
 
   // UI thread methods.
   void SetScrollOffsetOnUI(gfx::Vector2d scroll_offset);

@@ -42,7 +42,7 @@ ScopedAllowGL::~ScopedAllowGL() {
   if (service) {
     service->RunTasks();
     if (service->IdleQueueSize()) {
-      service->RequestProcessGL();
+      service->RequestProcessGL(true);
     }
   }
 }
@@ -71,14 +71,14 @@ DeferredGpuCommandService::~DeferredGpuCommandService() {
 
 // This method can be called on any thread.
 // static
-void DeferredGpuCommandService::RequestProcessGL() {
+void DeferredGpuCommandService::RequestProcessGL(bool for_idle) {
   SharedRendererState* renderer_state =
       GLViewRendererManager::GetInstance()->GetMostRecentlyDrawn();
   if (!renderer_state) {
     LOG(ERROR) << "No hardware renderer. Deadlock likely";
     return;
   }
-  renderer_state->ClientRequestDrawGL();
+  renderer_state->ClientRequestDrawGL(for_idle);
 }
 
 // Called from different threads!
@@ -90,7 +90,7 @@ void DeferredGpuCommandService::ScheduleTask(const base::Closure& task) {
   if (ScopedAllowGL::IsAllowed()) {
     RunTasks();
   } else {
-    RequestProcessGL();
+    RequestProcessGL(false);
   }
 }
 
@@ -105,7 +105,7 @@ void DeferredGpuCommandService::ScheduleIdleWork(
     base::AutoLock lock(tasks_lock_);
     idle_tasks_.push(std::make_pair(base::Time::Now(), callback));
   }
-  RequestProcessGL();
+  RequestProcessGL(true);
 }
 
 void DeferredGpuCommandService::PerformIdleWork(bool is_idle) {
