@@ -38,6 +38,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 struct drm_clip_rect;
 
 typedef struct _drm_intel_bufmgr drm_intel_bufmgr;
@@ -307,5 +311,9 @@ int drm_intel_get_eu_total(int fd, unsigned int *eu_total);
 #define intel_bufmgr_fake_evict_all drm_intel_bufmgr_fake_evict_all
 
 /** @{ */
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif /* INTEL_BUFMGR_H */
