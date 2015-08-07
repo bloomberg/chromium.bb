@@ -10,5 +10,6 @@ PASS A form control has no label 1.
 PASS A form control has no label 2. 
 PASS A label's form attribute should return its form owner. 
 PASS Check that the labels property of a form control with no label returns a zero-length NodeList. 
+PASS A label's htmlFor attribute must reflect the for content attribute 
 Harness: the test ran to completion.
 

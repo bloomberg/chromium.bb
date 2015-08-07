@@ -73,6 +73,9 @@ crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-plaintext-
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-all-001.html [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-all-002.html [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-all-003.html [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-transitions-2/transitioncancel-001.html [ Failure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-new-002.xht [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-new-008.xht [ ImageOnlyFailure ]
 crbug.com/505795 [ Mac Win ] fast/text/emphasis-ellipsis-complextext.html [ ImageOnlyFailure ]
 crbug.com/509025 crbug.com/410145 [ Win ] fast/text/international/vertical-text-glyph-test.html [ ImageOnlyFailure ]
 crbug.com/418091 [ SnowLeopard Debug ] fast/text/aat-morx.html [ Failure ]
@@ -260,7 +263,6 @@ crbug.com/490511 imported/web-platform-tests/html/semantics/scripting-1/the-temp
 crbug.com/490511 imported/web-platform-tests/html/semantics/scripting-1/the-template-element/template-element/template-descendant-head.html [ Failure Timeout ]
 
 crbug.com/505364 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/non-element-nodes-001.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/events/event-dispatch/test-001.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/events/event-dispatch/test-003.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/events/event-retargeting/test-004.html [ Failure ]
@@ -301,10 +303,16 @@ crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-ele
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars.html [ Failure Timeout ]
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-naming.html [ Failure ]
 
-# New W3C failures (dpranke@ to triage)
-crbug.com/330083 imported/web-platform-tests/custom-elements/instantiating-custom-elements/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
+crbug.com/505364 imported/web-platform-tests/custom-elements/instantiating-custom-elements/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
 
-crbug.com/330083 imported/web-platform-tests/webrtc/simplecall.html [ Failure ]
+crbug.com/517840 imported/web-platform-tests/webrtc/simplecall.html [ Failure ]
+
+crbug.com/517836 imported/web-platform-tests/screen-orientation/lockOrientation-bad-argument.html [ Failure ]
+crbug.com/517836 imported/web-platform-tests/screen-orientation/orientation-reading.html [ Failure ]
+crbug.com/517836 imported/web-platform-tests/screen-orientation/orientationchange-event-subframe.html [ Failure Timeout ]
+crbug.com/517836 imported/web-platform-tests/screen-orientation/orientationchange-event.html [ Failure Timeout ]
+
+# New W3C failures (dpranke@ to triage)
 
 # Linux Aura doesn't support NPAPI plugins (yet?)
 crbug.com/318978 [ Linux ] compositing/plugins/invalidate_rect.html [ Skip ]
