@@ -558,6 +558,8 @@ crbug.com/451577 [ Win ] http/tests/inspector/network/network-datareceived.html 
 
 crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip ]
 
+crbug.com/517898 [ SnowLeopard Debug ] fast/text/international/bidi-neutral-run.html [ Crash ]
+
 # crbug.com/396823 [ Mac ] fast/multicol/multicol-with-child-renderLayer-for-input.html [ ImageOnlyFailure ]
 
 crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ ImageOnlyFailure ]
