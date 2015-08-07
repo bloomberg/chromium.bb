@@ -4,14 +4,29 @@
 
 #include "chrome/browser/media/android/router/media_router_android.h"
 
+#include "base/android/jni_android.h"
 #include "base/logging.h"
+#include "jni/ChromeMediaRouter_jni.h"
 
 namespace media_router {
 
 MediaRouterAndroid::MediaRouterAndroid(content::BrowserContext*) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  java_media_router_.Reset(Java_ChromeMediaRouter_create(
+      env,
+      reinterpret_cast<jlong>(this),
+      base::android::GetApplicationContext()));
 }
 
 MediaRouterAndroid::~MediaRouterAndroid() {
+}
+
+// static
+bool MediaRouterAndroid::Register(JNIEnv* env) {
+  bool ret = RegisterNativesImpl(env);
+  // No native calls to register just yet.
+  // DCHECK(g_ChromeMediaRouter_clazz);
+  return ret;
 }
 
 void MediaRouterAndroid::CreateRoute(

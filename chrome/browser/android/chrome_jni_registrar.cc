@@ -82,6 +82,7 @@
 #include "chrome/browser/lifetime/application_lifetime_android.h"
 #include "chrome/browser/media/android/remote/record_cast_action.h"
 #include "chrome/browser/media/android/remote/remote_media_player_bridge.h"
+#include "chrome/browser/media/android/router/media_router_android.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_android.h"
 #include "chrome/browser/notifications/notification_ui_manager_android.h"
 #include "chrome/browser/password_manager/credential_android.h"
@@ -193,7 +194,10 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      ChromeBrowserProvider::RegisterChromeBrowserProvider},
     {"ChromeHttpAuthHandler",
      ChromeHttpAuthHandler::RegisterChromeHttpAuthHandler},
-    {"ChromeWebContentsDelegateAndroid",
+#if defined(ENABLE_MEDIA_ROUTER)
+    {"ChromeMediaRouter", media_router::MediaRouterAndroid::Register},
+#endif
+     {"ChromeWebContentsDelegateAndroid",
      RegisterChromeWebContentsDelegateAndroid},
     {"CompositorView", RegisterCompositorView},
     {"ConfirmInfoBarDelegate", RegisterConfirmInfoBarDelegate},

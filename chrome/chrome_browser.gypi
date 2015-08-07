@@ -1735,6 +1735,7 @@
       'android/java/src/org/chromium/chrome/browser/JavascriptAppModalDialog.java',
       'android/java/src/org/chromium/chrome/browser/media/remote/RecordCastAction.java',
       'android/java/src/org/chromium/chrome/browser/media/remote/RemoteMediaPlayerBridge.java',
+      'android/java/src/org/chromium/chrome/browser/media/router/ChromeMediaRouter.java',
       'android/java/src/org/chromium/chrome/browser/metrics/UmaSessionStats.java',
       'android/java/src/org/chromium/chrome/browser/metrics/UmaUtils.java',
       'android/java/src/org/chromium/chrome/browser/metrics/VariationsSession.java',
