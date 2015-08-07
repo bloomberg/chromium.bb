@@ -68,6 +68,10 @@ const char kRawPtrToGCManagedClassNote[] =
 const char kRefPtrToGCManagedClassNote[] =
     "[blink-gc] RefPtr field %0 to a GC managed class declared here:";
 
+const char kReferencePtrToGCManagedClassNote[] =
+    "[blink-gc] Reference pointer field %0 to a GC managed class"
+    " declared here:";
+
 const char kOwnPtrToGCManagedClassNote[] =
     "[blink-gc] OwnPtr field %0 to a GC managed class declared here:";
 
@@ -853,6 +857,8 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
     kRawPtrToGCManaged,
     kRawPtrToGCManagedWarning,
     kRefPtrToGCManaged,
+    kReferencePtrToGCManaged,
+    kReferencePtrToGCManagedWarning,
     kOwnPtrToGCManaged,
     kMemberToGCUnmanaged,
     kMemberInUnmanaged,
@@ -944,8 +950,13 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
         return;
       }
       if (options_.warn_raw_ptr && Parent()->IsRawPtr()) {
-        invalid_fields_.push_back(std::make_pair(
-            current_, kRawPtrToGCManagedWarning));
+        if (static_cast<RawPtr*>(Parent())->HasReferenceType()) {
+          invalid_fields_.push_back(std::make_pair(
+              current_, kReferencePtrToGCManagedWarning));
+        } else {
+          invalid_fields_.push_back(std::make_pair(
+              current_, kRawPtrToGCManagedWarning));
+        }
       }
       return;
     }
@@ -962,10 +973,32 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
       invalid_fields_.push_back(std::make_pair(current_, kOwnPtrToGCManaged));
   }
 
+  static bool IsWarning(Error error) {
+    if (error == kRawPtrToGCManagedWarning)
+      return true;
+    if (error == kReferencePtrToGCManagedWarning)
+      return true;
+    return false;
+  }
+
+  static bool IsRawPtrError(Error error) {
+    return error == kRawPtrToGCManaged ||
+        error == kRawPtrToGCManagedWarning;
+  }
+
+  static bool IsReferencePtrError(Error error) {
+    return error == kReferencePtrToGCManaged ||
+        error == kReferencePtrToGCManagedWarning;
+  }
+
  private:
   Error InvalidSmartPtr(Edge* ptr) {
-    if (ptr->IsRawPtr())
-      return kRawPtrToGCManaged;
+    if (ptr->IsRawPtr()) {
+      if (static_cast<RawPtr*>(ptr)->HasReferenceType())
+        return kReferencePtrToGCManaged;
+      else
+        return kRawPtrToGCManaged;
+    }
     if (ptr->IsRefPtr())
       return kRefPtrToGCManaged;
     if (ptr->IsOwnPtr())
@@ -1077,6 +1110,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         DiagnosticsEngine::Note, kRawPtrToGCManagedClassNote);
     diag_ref_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
         DiagnosticsEngine::Note, kRefPtrToGCManagedClassNote);
+    diag_reference_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
+        DiagnosticsEngine::Note, kReferencePtrToGCManagedClassNote);
     diag_own_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
         DiagnosticsEngine::Note, kOwnPtrToGCManagedClassNote);
     diag_member_to_gc_unmanaged_class_note_ = diagnostic_.getCustomDiagID(
@@ -1627,7 +1662,9 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         json_->Write("loc", loc);
         json_->Write("ptr",
                      !Parent() ? "val" :
-                     Parent()->IsRawPtr() ? "raw" :
+                     Parent()->IsRawPtr() ?
+                         (static_cast<RawPtr*>(Parent())->HasReferenceType() ?
+                             "reference" : "raw") :
                      Parent()->IsRefPtr() ? "ref" :
                      Parent()->IsOwnPtr() ? "own" :
                      (Parent()->IsMember() ||
@@ -1838,7 +1875,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     for (CheckFieldsVisitor::Errors::iterator it = errors->begin();
          only_warnings && it != errors->end();
          ++it) {
-      if (it->second != CheckFieldsVisitor::kRawPtrToGCManagedWarning)
+      if (!CheckFieldsVisitor::IsWarning(it->second))
         only_warnings = false;
     }
     diagnostic_.Report(full_loc, only_warnings ?
@@ -1849,9 +1886,10 @@ class BlinkGCPluginConsumer : public ASTConsumer {
          it != errors->end();
          ++it) {
       unsigned error;
-      if (it->second == CheckFieldsVisitor::kRawPtrToGCManaged ||
-          it->second == CheckFieldsVisitor::kRawPtrToGCManagedWarning) {
+      if (CheckFieldsVisitor::IsRawPtrError(it->second)) {
         error = diag_raw_ptr_to_gc_managed_class_note_;
+      } else if (CheckFieldsVisitor::IsReferencePtrError(it->second)) {
+        error = diag_reference_ptr_to_gc_managed_class_note_;
       } else if (it->second == CheckFieldsVisitor::kRefPtrToGCManaged) {
         error = diag_ref_ptr_to_gc_managed_class_note_;
       } else if (it->second == CheckFieldsVisitor::kOwnPtrToGCManaged) {
@@ -2136,6 +2174,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   unsigned diag_field_requires_tracing_note_;
   unsigned diag_raw_ptr_to_gc_managed_class_note_;
   unsigned diag_ref_ptr_to_gc_managed_class_note_;
+  unsigned diag_reference_ptr_to_gc_managed_class_note_;
   unsigned diag_own_ptr_to_gc_managed_class_note_;
   unsigned diag_member_to_gc_unmanaged_class_note_;
   unsigned diag_stack_allocated_field_note_;
