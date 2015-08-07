@@ -1027,6 +1027,7 @@ public:
     static void increaseAllocatedSpace(size_t delta) { atomicAdd(&s_allocatedSpace, static_cast<long>(delta)); }
     static void decreaseAllocatedSpace(size_t delta) { atomicSubtract(&s_allocatedSpace, static_cast<long>(delta)); }
     static size_t allocatedSpace() { return acquireLoad(&s_allocatedSpace); }
+    static size_t objectSizeAtLastGC() { return acquireLoad(&s_objectSizeAtLastGC); }
     static void increasePersistentCount(size_t delta) { atomicAdd(&s_persistentCount, static_cast<long>(delta)); }
     static void decreasePersistentCount(size_t delta) { atomicSubtract(&s_persistentCount, static_cast<long>(delta)); }
     static size_t persistentCount() { return acquireLoad(&s_persistentCount); }
@@ -1039,12 +1040,7 @@ public:
 
     static double estimatedMarkingTime();
     static void reportMemoryUsageHistogram();
-
-#if ENABLE(GC_PROFILING)
     static void reportMemoryUsageForTracing();
-#else
-    static void reportMemoryUsageForTracing() { }
-#endif
 
 private:
     // A RegionTree is a simple binary search tree of PageMemoryRegions sorted
@@ -1083,6 +1079,7 @@ private:
     static RegionTree* s_regionTree;
     static size_t s_allocatedSpace;
     static size_t s_allocatedObjectSize;
+    static size_t s_objectSizeAtLastGC;
     static size_t s_markedObjectSize;
     static size_t s_persistentCount;
     static size_t s_persistentCountAtLastGC;

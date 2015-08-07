@@ -577,9 +577,13 @@ size_t ThreadState::estimatedLiveObjectSize()
     // partitionAlloc(t):  The size of allocated memory in PartitionAlloc at t.
     size_t currentHeapSize = currentObjectSize();
     size_t heapSizeRetainedByCollectedPersistents = Heap::heapSizePerPersistent() * Heap::collectedPersistentCount();
+    size_t estimatedSize = 0;
     if (currentHeapSize > heapSizeRetainedByCollectedPersistents)
-        return currentHeapSize - heapSizeRetainedByCollectedPersistents;
-    return 0;
+        estimatedSize = currentHeapSize - heapSizeRetainedByCollectedPersistents;
+    TRACE_COUNTER1("blink_gc", "ThreadState::currentHeapSizeKB", std::min(currentHeapSize / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "ThreadState::estimatedLiveObjectSizeKB", std::min(estimatedSize / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "ThreadState::heapGrowingRate", static_cast<int>(100.0 * currentHeapSize / estimatedSize));
+    return estimatedSize;
 }
 
 size_t ThreadState::currentObjectSize()
@@ -1135,6 +1139,7 @@ void ThreadState::postSweep()
         // Heap::markedObjectSize() may be underestimated here if any other
         // thread has not yet finished lazy sweeping.
         if (Heap::persistentCountAtLastGC() > 0) {
+            TRACE_EVENT1("blink_gc", "ThreadState::postSweep", "collection rate", 1.0 * Heap::markedObjectSize() / Heap::objectSizeAtLastGC());
             Heap::setHeapSizePerPersistent((Heap::markedObjectSize() + Heap::partitionAllocSizeAtLastGC()) / Heap::persistentCountAtLastGC());
         }
     }

@@ -1919,6 +1919,7 @@ void Heap::init()
     s_orphanedPagePool = new OrphanedPagePool();
     s_allocatedSpace = 0;
     s_allocatedObjectSize = 0;
+    s_objectSizeAtLastGC = 0;
     s_markedObjectSize = 0;
     s_persistentCount = 0;
     s_persistentCountAtLastGC = 0;
@@ -2384,17 +2385,21 @@ void Heap::reportMemoryUsageHistogram()
     }
 }
 
-#if ENABLE(GC_PROFILING)
 void Heap::reportMemoryUsageForTracing()
 {
     // These values are divided by 1024 to avoid overflow in practical cases (TRACE_COUNTER values are 32-bit ints).
     // They are capped to INT_MAX just in case.
-    TRACE_COUNTER1("blink_gc", "Heap::liveObjectSizeAtLastSweepKB", std::min(Heap::liveObjectSizeAtLastSweep() / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "Heap::allocatedObjectSizeKB", std::min(Heap::allocatedObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "Heap::markedObjectSizeKB", std::min(Heap::markedObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "Heap::allocatedSpaceKB", std::min(Heap::allocatedSpace() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "Heap::objectSizeAtLastGCKB", std::min(Heap::objectSizeAtLastGC() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "Heap::persistentCount", std::min(Heap::persistentCount(), static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "Heap::persistentCountAtLastGC", std::min(Heap::persistentCountAtLastGC(), static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "Heap::collectedPersistentCount", std::min(Heap::collectedPersistentCount(), static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "Heap::heapSizePerPersistent", std::min(Heap::heapSizePerPersistent(), static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "Heap::partitionAllocSizeAtLastGCKB", std::min(Heap::partitionAllocSizeAtLastGC() / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "Partitions::totalSizeOfCommittedPagesKB", std::min(WTF::Partitions::totalSizeOfCommittedPages() / 1024, static_cast<size_t>(INT_MAX)));
 }
-#endif
 
 size_t Heap::objectPayloadSizeForTesting()
 {
@@ -2506,6 +2511,9 @@ void Heap::resetHeapCounters()
 {
     ASSERT(ThreadState::current()->isInGC());
 
+    Heap::reportMemoryUsageForTracing();
+
+    s_objectSizeAtLastGC = s_allocatedObjectSize + s_markedObjectSize;
     s_allocatedObjectSize = 0;
     s_markedObjectSize = 0;
     s_partitionAllocSizeAtLastGC = WTF::Partitions::totalSizeOfCommittedPages();
@@ -2524,6 +2532,7 @@ OrphanedPagePool* Heap::s_orphanedPagePool;
 Heap::RegionTree* Heap::s_regionTree = nullptr;
 size_t Heap::s_allocatedSpace = 0;
 size_t Heap::s_allocatedObjectSize = 0;
+size_t Heap::s_objectSizeAtLastGC = 0;
 size_t Heap::s_markedObjectSize = 0;
 size_t Heap::s_persistentCount = 0;
 size_t Heap::s_persistentCountAtLastGC = 0;
