@@ -515,8 +515,6 @@
       'browser/ui/sync/profile_signin_confirmation_helper_browsertest.cc',
       'browser/ui/tab_modal_confirm_dialog_browsertest.cc',
       'browser/ui/tab_modal_confirm_dialog_browsertest.h',
-      'browser/ui/test/scoped_fake_nswindow_main_status.h',
-      'browser/ui/test/scoped_fake_nswindow_main_status.mm',
       'browser/ui/toolbar/browser_actions_bar_browsertest.cc',
       'browser/ui/toolbar/browser_actions_bar_browsertest.h',
       'browser/ui/toolbar/component_toolbar_actions_browsertest.cc',

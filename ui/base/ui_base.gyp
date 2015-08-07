@@ -684,6 +684,8 @@
             'ime/dummy_text_input_client.h',
             'test/nswindow_fullscreen_notification_waiter.h',
             'test/nswindow_fullscreen_notification_waiter.mm',
+            'test/scoped_fake_nswindow_focus.h',
+            'test/scoped_fake_nswindow_focus.mm',
             'test/scoped_fake_nswindow_fullscreen.h',
             'test/scoped_fake_nswindow_fullscreen.mm',
             'test/windowed_nsnotification_observer.h',

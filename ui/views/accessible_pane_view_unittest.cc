@@ -10,6 +10,10 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_MACOSX)
+#include "ui/base/test/scoped_fake_nswindow_focus.h"
+#endif
+
 namespace views {
 
 // TODO(alicet): bring pane rotation into views and add tests.
@@ -98,13 +102,20 @@ TEST_F(AccessiblePaneViewTest, SimpleSetPaneFocus) {
   widget.reset();
 }
 
-// This test will not work properly in Windows because it uses ::GetNextWindow
-// on deactivate which is rather unpredictable where the focus will land.
 TEST_F(AccessiblePaneViewTest, SetPaneFocusAndRestore) {
+#if defined(OS_MACOSX)
+  // On Aura platforms, this test creates Ash windows and only interacts with
+  // the Ash window manager. On Mac, it creates native windows, but since unit
+  // tests cannot gain key status, fake it out here.
+  ui::test::ScopedFakeNSWindowFocus fake_focus;
+#endif
+
   View* test_view_main = new View();
   scoped_ptr<Widget> widget_main(new Widget());
   Widget::InitParams params_main = CreateParams(Widget::InitParams::TYPE_POPUP);
   params_main.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  // By default, TYPE_POPUP is not activatable.
+  params_main.activatable = Widget::InitParams::ACTIVATABLE_YES;
   params_main.bounds = gfx::Rect(0, 0, 20, 20);
   widget_main->Init(params_main);
   View* root_main = widget_main->GetRootView();
@@ -118,6 +129,7 @@ TEST_F(AccessiblePaneViewTest, SetPaneFocusAndRestore) {
   scoped_ptr<Widget> widget_bar(new Widget());
   Widget::InitParams params_bar = CreateParams(Widget::InitParams::TYPE_POPUP);
   params_bar.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params_bar.activatable = Widget::InitParams::ACTIVATABLE_YES;
   params_bar.bounds = gfx::Rect(50, 50, 650, 650);
   widget_bar->Init(params_bar);
   View* root_bar = widget_bar->GetRootView();
@@ -133,9 +145,16 @@ TEST_F(AccessiblePaneViewTest, SetPaneFocusAndRestore) {
   EXPECT_EQ(test_view_bar->child_button(),
             test_view_bar->GetWidget()->GetFocusManager()->GetFocusedView());
 
+  // Deactivate() is only reliable on Ash. On Windows it uses ::GetNextWindow()
+  // to simply activate another window, and which one is not predictable. On
+  // Mac, Deactivate() is not implemented. Note that TestBarView calls
+  // set_allow_deactivate_on_esc(true), which is only otherwise used in Ash.
+#if !defined(OS_MACOSX) || defined(USE_ASH)
+  // Esc should deactivate the widget.
   test_view_bar->AcceleratorPressed(test_view_bar->escape_key());
   EXPECT_TRUE(widget_main->IsActive());
   EXPECT_FALSE(widget_bar->IsActive());
+#endif
 
   widget_bar->CloseNow();
   widget_bar.reset();

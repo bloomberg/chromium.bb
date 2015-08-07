@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
-#import "chrome/browser/ui/test/scoped_fake_nswindow_main_status.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -28,6 +27,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #import "testing/gtest_mac.h"
 #import "ui/base/test/nswindow_fullscreen_notification_waiter.h"
+#import "ui/base/test/scoped_fake_nswindow_focus.h"
 #import "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
@@ -699,7 +699,8 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, FrameColor) {
   EXPECT_NEAR(expected_components[1], color_components[1], 0.01);
   EXPECT_NEAR(expected_components[2], color_components[2], 0.01);
 
-  ScopedFakeNSWindowMainStatus fake_main(ns_window);
+  ui::test::ScopedFakeNSWindowFocus fake_focus;
+  [ns_window makeMainWindow];
 
   bitmap = ScreenshotNSWindow(ns_window);
   // The window is now active so it should be red (#FF0000).

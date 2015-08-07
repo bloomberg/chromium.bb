@@ -19,13 +19,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_window.h"
-#import "chrome/browser/ui/test/scoped_fake_nswindow_main_status.h"
 #include "chrome/common/chrome_switches.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"
+#import "ui/base/test/scoped_fake_nswindow_focus.h"
 
 namespace {
 
@@ -77,7 +77,7 @@ class AppShimMenuControllerBrowserTest
   void CheckHasAppMenus(const extensions::Extension* app) const {
     const int kExtraTopLevelItems = 4;
     NSArray* item_array = [[NSApp mainMenu] itemArray];
-    EXPECT_EQ(initial_menu_item_count_ + kExtraTopLevelItems,
+    ASSERT_EQ(initial_menu_item_count_ + kExtraTopLevelItems,
               [item_array count]);
     for (NSUInteger i = 0; i < initial_menu_item_count_; ++i)
       EXPECT_TRUE([[item_array objectAtIndex:i] isHidden]);
@@ -186,11 +186,8 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
   extensions::AppWindow* app_1_app_window = FirstWindowForApp(app_1_);
 
   {
-    ScopedFakeNSWindowMainStatus app_1_is_main(
-        app_1_app_window->GetNativeWindow());
-    [[NSNotificationCenter defaultCenter]
-        postNotificationName:NSWindowDidBecomeMainNotification
-                      object:app_1_app_window->GetNativeWindow()];
+    ui::test::ScopedFakeNSWindowFocus fake_focus;
+    [app_1_app_window->GetNativeWindow() makeMainWindow];
     CheckHasAppMenus(app_1_);
 
     // Closing a background window without focusing it should not change menus.
@@ -200,10 +197,9 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
         postNotificationName:NSWindowWillCloseNotification
                       object:chrome_window->GetNativeWindow()];
     CheckHasAppMenus(app_1_);
+
+    // |fake_focus| going out of scope sends NSWindowWillResignMainNotification.
   }
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:NSWindowDidResignMainNotification
-                    object:app_1_app_window->GetNativeWindow()];
   app_1_app_window->GetBaseWindow()->Close();
   CheckNoAppMenus();
 }
@@ -250,10 +246,9 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
   FirstWindowForApp(app_2_)->GetBaseWindow()->Close();
   chrome::BrowserIterator()->window()->Close();
   NSWindow* app_1_window = FirstWindowForApp(app_1_)->GetNativeWindow();
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:NSWindowDidBecomeMainNotification
-                    object:app_1_window];
-  ScopedFakeNSWindowMainStatus app_1_is_main(app_1_window);
+
+  ui::test::ScopedFakeNSWindowFocus fake_focus;
+  [app_1_window makeMainWindow];
 
   CheckHasAppMenus(app_1_);
   ExtensionService::UninstallExtensionHelper(
