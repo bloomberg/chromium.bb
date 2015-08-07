@@ -488,7 +488,7 @@ SkBitmap CreateLowQualityResizedBitmap(const SkBitmap& source_bitmap,
   SkRect scaled_bounds = RectToSkRect(gfx::Rect(scaled_size));
   // Note(oshima): The following scaling code doesn't work with
   // a mask image.
-  canvas.drawBitmapRect(source_bitmap, scaled_bounds);
+  canvas.drawBitmapRect(source_bitmap, scaled_bounds, NULL);
   return scaled_bitmap;
 }
 

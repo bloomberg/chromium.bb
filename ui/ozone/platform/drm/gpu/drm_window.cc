@@ -42,7 +42,7 @@ void UpdateCursorImage(DrmBuffer* cursor, const SkBitmap& image) {
   clip.set(0, 0, canvas->getDeviceSize().width(),
            canvas->getDeviceSize().height());
   canvas->clipRect(clip, SkRegion::kReplace_Op);
-  canvas->drawBitmapRect(image, damage);
+  canvas->drawBitmapRect(image, damage, NULL);
 }
 
 }  // namespace

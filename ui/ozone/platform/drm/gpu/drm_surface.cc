@@ -89,7 +89,7 @@ void DrmSurface::SchedulePageFlip() {
       RectToSkRect(UnionRects(pending_image_damage_, last_damage_));
 
   // Copy damage region.
-  canvas->drawImageRect(pending_image_.get(), &real_damage, real_damage, NULL);
+  canvas->drawImageRect(pending_image_.get(), real_damage, real_damage, NULL);
   last_damage_ = pending_image_damage_;
 
   pending_image_ = nullptr;
