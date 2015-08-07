@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/common/handle_watcher.h"
+#include "mojo/message_pump/handle_watcher.h"
 
 #include <string>
 
@@ -13,8 +13,8 @@
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread.h"
-#include "mojo/common/message_pump_mojo.h"
-#include "mojo/common/time_helper.h"
+#include "mojo/message_pump/message_pump_mojo.h"
+#include "mojo/message_pump/time_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 #include "third_party/mojo/src/mojo/public/cpp/test_support/test_utils.h"

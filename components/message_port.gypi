@@ -9,7 +9,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        '../mojo/mojo_base.gyp:mojo_common_lib',
+        '../mojo/mojo_base.gyp:mojo_message_pump_lib',
         '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/mojo/mojo_public.gyp:mojo_system_cpp_headers',
       ],

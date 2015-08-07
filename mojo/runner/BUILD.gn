@@ -33,6 +33,7 @@ source_set("mojo_runner_lib") {
     "//build/config/sanitizers:deps",
     "//mojo/common",
     "//mojo/environment:chromium",
+    "//mojo/message_pump",
   ]
 
   if (!is_android) {
@@ -127,11 +128,12 @@ source_set("lib") {
     "//components/devtools_service/public/interfaces",
     "//mojo/application/public/cpp",
     "//mojo/common:tracing_impl",
+    "//mojo/message_pump",
+    "//mojo/services/network/public/interfaces",
+    "//mojo/services/tracing:bindings",
+    "//mojo/shell",
     "//mojo/util:filename_util",
     "//third_party/mojo/src/mojo/edk/system",
-    "//mojo/services/network/public/interfaces",
-    "//mojo/shell",
-    "//mojo/services/tracing:bindings",
     "//ui/gl",
     "//url",
   ]
@@ -439,6 +441,7 @@ test("mojo_runner_unittests") {
     "//mojo/application/public/cpp",
     "//mojo/common",
     "//mojo/environment:chromium",
+    "//mojo/message_pump",
     "//mojo/services/test_service:bindings",
     "//mojo/shell",
     "//mojo/util:filename_util",

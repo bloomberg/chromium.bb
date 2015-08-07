@@ -5,7 +5,7 @@
 #include "mojo/environment/default_async_waiter_impl.h"
 
 #include "base/bind.h"
-#include "mojo/common/handle_watcher.h"
+#include "mojo/message_pump/handle_watcher.h"
 
 namespace mojo {
 namespace internal {
