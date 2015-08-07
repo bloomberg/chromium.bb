@@ -339,11 +339,10 @@ cvox.ExtensionBridge.sendBackgroundToContentScript = function(message) {
       function(tabs) {
         if (tabs && tabs.length > 0) {
           chrome.tabs.sendMessage(tabs[0].id, message);
-        } else {
-          cvox.ExtensionBridge.portCache_.forEach(function(port) {
-            port.postMessage(message);
-          });
         }
+        cvox.ExtensionBridge.portCache_.forEach(function(port) {
+          port.postMessage(message);
+        });
       });
 };
 

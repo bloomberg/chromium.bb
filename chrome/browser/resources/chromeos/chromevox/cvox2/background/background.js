@@ -89,6 +89,25 @@ Background = function() {
   };
 
   chrome.automation.getDesktop(this.onGotDesktop);
+
+  // Handle messages directed to the Next background page.
+  cvox.ExtensionBridge.addMessageListener(function(msg, port) {
+    var target = msg['target'];
+    var action = msg['action'];
+
+    switch (target) {
+      case 'next':
+        if (action == 'getIsClassicEnabled') {
+          var url = msg['url'];
+          var isClassicEnabled = this.shouldEnableClassicForUrl_(url);
+          cvox.ExtensionBridge.send({
+            target: 'next',
+            isClassicEnabled: isClassicEnabled
+          });
+        }
+        break;
+    }
+  }.bind(this));
 };
 
 Background.prototype = {
@@ -573,6 +592,17 @@ Background.prototype = {
     }
     output.withSpeech(range, null, Output.EventType.NAVIGATE);
     output.go();
+  },
+
+  /**
+   * Returns true if the url should have Classic running.
+   * @return {boolean}
+   * @private
+   */
+  shouldEnableClassicForUrl_: function(url) {
+    return this.mode_ != ChromeVoxMode.FORCE_NEXT &&
+        !this.isWhitelistedForCompat_(url) &&
+        !this.isWhitelistedForNext_(url);
   },
 
   /**
