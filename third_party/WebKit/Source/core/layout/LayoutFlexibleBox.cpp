@@ -600,7 +600,6 @@ bool LayoutFlexibleBox::mainAxisLengthIsDefinite(LayoutBox& child, const Length&
             child.computePercentageLogicalHeight(flexBasis) != -1 :
             hasDefiniteLogicalWidth();
     }
-    // FIXME(cbiesinger): Is this correct?
     return true;
 }
 
