@@ -1605,6 +1605,7 @@ _NAMED_TYPE_INFO = {
       'GL_UNSIGNED_INT',
       'GL_INT',
       'GL_FLOAT',
+      'GL_UNSIGNED_INT_2_10_10_10_REV',
     ],
     'deprecated_es3': [
       'GL_UNSIGNED_SHORT_5_6_5',

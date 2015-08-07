@@ -381,13 +381,14 @@ void GLES2DecoderTest::CheckReadPixelsOutOfRange(GLint in_read_x,
                                                  bool init) {
   const GLsizei kWidth = 5;
   const GLsizei kHeight = 3;
-  const GLint kBytesPerPixel = 3;
+  const GLint kBytesPerPixel = 4;
   const GLint kPackAlignment = 4;
-  const GLenum kFormat = GL_RGB;
-  static const int8 kSrcPixels[kWidth * kHeight * kBytesPerPixel] = {
-      12, 13, 14, 18, 19, 18, 19, 12, 13, 14, 18, 19, 18, 19, 13,
-      29, 28, 23, 22, 21, 22, 21, 29, 28, 23, 22, 21, 22, 21, 28,
-      31, 34, 39, 37, 32, 37, 32, 31, 34, 39, 37, 32, 37, 32, 34,
+  const GLenum kFormat = GL_RGBA;
+  static const uint8 kSrcPixels[kWidth * kHeight * kBytesPerPixel] = {
+      12, 13, 14, 255, 18, 19, 18, 255, 19, 12, 13, 255, 14, 18, 19, 255,
+      18, 19, 13, 255, 29, 28, 23, 255, 22, 21, 22, 255, 21, 29, 28, 255,
+      23, 22, 21, 255, 22, 21, 28, 255, 31, 34, 39, 255, 37, 32, 37, 255,
+      32, 31, 34, 255, 39, 37, 32, 255, 37, 32, 34, 255
   };
 
   ClearSharedMemory();
@@ -499,10 +500,13 @@ void GLES2DecoderTest::CheckReadPixelsOutOfRange(GLint in_read_x,
 
     // check padding
     if (yy != in_read_height - 1) {
-      GLint num_padding_bytes =
-          (kPackAlignment - 1) - (unpadded_row_size % kPackAlignment);
-      EXPECT_EQ(0,
-                memcmp(pack.get(), row + unpadded_row_size, num_padding_bytes));
+      GLint temp = unpadded_row_size + kPackAlignment - 1;
+      GLint padded_row_size = (temp / kPackAlignment ) * kPackAlignment;
+      GLint num_padding_bytes = padded_row_size - unpadded_row_size;
+      if (num_padding_bytes) {
+        EXPECT_EQ(0, memcmp(pack.get(),
+                            row + unpadded_row_size, num_padding_bytes));
+      }
     }
   }
 }
@@ -510,12 +514,13 @@ void GLES2DecoderTest::CheckReadPixelsOutOfRange(GLint in_read_x,
 TEST_P(GLES2DecoderTest, ReadPixels) {
   const GLsizei kWidth = 5;
   const GLsizei kHeight = 3;
-  const GLint kBytesPerPixel = 3;
+  const GLint kBytesPerPixel = 4;
   const GLint kPackAlignment = 4;
-  static const int8 kSrcPixels[kWidth * kHeight * kBytesPerPixel] = {
-      12, 13, 14, 18, 19, 18, 19, 12, 13, 14, 18, 19, 18, 19, 13,
-      29, 28, 23, 22, 21, 22, 21, 29, 28, 23, 22, 21, 22, 21, 28,
-      31, 34, 39, 37, 32, 37, 32, 31, 34, 39, 37, 32, 37, 32, 34,
+  static const uint8 kSrcPixels[kWidth * kHeight * kBytesPerPixel] = {
+      12, 13, 14, 255, 18, 19, 18, 255, 19, 12, 13, 255, 14, 18, 19, 255,
+      18, 19, 13, 255, 29, 28, 23, 255, 22, 21, 22, 255, 21, 29, 28, 255,
+      23, 22, 21, 255, 22, 21, 28, 255, 31, 34, 39, 255, 37, 32, 37, 255,
+      32, 31, 34, 255, 39, 37, 32, 255, 37, 32, 34, 255
   };
 
   surface_->SetSize(gfx::Size(INT_MAX, INT_MAX));
@@ -534,14 +539,14 @@ TEST_P(GLES2DecoderTest, ReadPixels) {
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_,
-              ReadPixels(0, 0, kWidth, kHeight, GL_RGB, GL_UNSIGNED_BYTE, _))
+              ReadPixels(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE, _))
       .WillOnce(Invoke(&emu, &ReadPixelsEmulator::ReadPixels));
   ReadPixels cmd;
   cmd.Init(0,
            0,
            kWidth,
            kHeight,
-           GL_RGB,
+           GL_RGBA,
            GL_UNSIGNED_BYTE,
            pixels_shm_id,
            pixels_shm_offset,
@@ -767,7 +772,7 @@ TEST_P(GLES2DecoderManualInitTest, ReadPixelsAsyncError) {
       .RetiresOnSaturation();
 
   EXPECT_CALL(*gl_,
-              ReadPixels(0, 0, kWidth, kHeight, GL_RGB, GL_UNSIGNED_BYTE, _))
+              ReadPixels(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE, _))
       .Times(1);
   EXPECT_CALL(*gl_, GenBuffersARB(1, _)).Times(1);
   EXPECT_CALL(*gl_, DeleteBuffersARB(1, _)).Times(1);
@@ -781,7 +786,7 @@ TEST_P(GLES2DecoderManualInitTest, ReadPixelsAsyncError) {
            0,
            kWidth,
            kHeight,
-           GL_RGB,
+           GL_RGBA,
            GL_UNSIGNED_BYTE,
            pixels_shm_id,
            pixels_shm_offset,
@@ -938,9 +943,6 @@ TEST_P(GLES2DecoderManualInitTest, ActualAlphaMatchesRequestedAlpha) {
       .RetiresOnSaturation();
   typedef GetIntegerv::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
-  EXPECT_CALL(*gl_, GetIntegerv(GL_ALPHA_BITS, _))
-      .WillOnce(SetArgumentPointee<1>(8))
-      .RetiresOnSaturation();
   result->size = 0;
   GetIntegerv cmd2;
   cmd2.Init(GL_ALPHA_BITS, shared_memory_id_, shared_memory_offset_);
@@ -963,9 +965,6 @@ TEST_P(GLES2DecoderManualInitTest, ActualAlphaDoesNotMatchRequestedAlpha) {
       .RetiresOnSaturation();
   typedef GetIntegerv::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
-  EXPECT_CALL(*gl_, GetIntegerv(GL_ALPHA_BITS, _))
-      .WillOnce(SetArgumentPointee<1>(8))
-      .RetiresOnSaturation();
   result->size = 0;
   GetIntegerv cmd2;
   cmd2.Init(GL_ALPHA_BITS, shared_memory_id_, shared_memory_offset_);

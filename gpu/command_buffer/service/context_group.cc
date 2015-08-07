@@ -53,8 +53,7 @@ ContextGroup::ContextGroup(
       max_color_attachments_(1u),
       max_draw_buffers_(1u),
       program_cache_(NULL),
-      feature_info_(feature_info),
-      draw_buffer_(GL_BACK) {
+      feature_info_(feature_info) {
   {
     if (!mailbox_manager_.get())
       mailbox_manager_ = new MailboxManagerImpl;
@@ -148,7 +147,6 @@ bool ContextGroup::Initialize(
     GetIntegerv(GL_MAX_DRAW_BUFFERS_ARB, &max_draw_buffers_);
     if (max_draw_buffers_ < 1)
       max_draw_buffers_ = 1;
-    draw_buffer_ = GL_BACK;
   }
 
   buffer_manager_.reset(
