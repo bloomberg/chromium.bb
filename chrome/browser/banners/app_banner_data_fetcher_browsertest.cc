@@ -357,7 +357,15 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
                 ui::PAGE_TRANSITION_TYPED, 1, true);
 }
 
-IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, WebAppBannerInIFrame) {
+// http://crbug.com/517307
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerInIFrame DISABLED_WebAppBannerInIFrame
+#else
+#define MAYBE_WebAppBannerInIFrame WebAppBannerInIFrame
+#endif
+
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       MAYBE_WebAppBannerInIFrame) {
   RunBannerTest("/banners/iframe_test_page.html", ui::PAGE_TRANSITION_TYPED, 1,
                 false);
 }
