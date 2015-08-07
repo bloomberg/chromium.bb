@@ -88,7 +88,11 @@ class IndexedDBDispatcherTest : public testing::Test {
 };
 
 TEST_F(IndexedDBDispatcherTest, ValueSizeTest) {
-  const std::vector<char> data(kMaxIDBValueSizeInBytes + 1);
+  // For testing use a much smaller maximum size to prevent allocating >100 MB
+  // of memory, which crashes on memory-constrained systems.
+  const size_t kMaxValueSizeForTesting = 10 * 1024 * 1024;  // 10 MB
+
+  const std::vector<char> data(kMaxValueSizeForTesting + 1);
   const WebData value(&data.front(), data.size());
   const WebVector<WebBlobInfo> web_blob_info;
   const int32 ipc_dummy_id = -1;
@@ -97,6 +101,7 @@ TEST_F(IndexedDBDispatcherTest, ValueSizeTest) {
 
   MockCallbacks callbacks;
   IndexedDBDispatcher dispatcher(thread_safe_sender_.get());
+  dispatcher.max_put_value_size_ = kMaxValueSizeForTesting;
   IndexedDBKey key(0, blink::WebIDBKeyTypeNumber);
   dispatcher.RequestIDBDatabasePut(ipc_dummy_id,
                                    transaction_id,
@@ -113,9 +118,12 @@ TEST_F(IndexedDBDispatcherTest, ValueSizeTest) {
 }
 
 TEST_F(IndexedDBDispatcherTest, KeyAndValueSizeTest) {
+  // For testing use a much smaller maximum size to prevent allocating >100 MB
+  // of memory, which crashes on memory-constrained systems.
+  const size_t kMaxValueSizeForTesting = 10 * 1024 * 1024;  // 10 MB
   const size_t kKeySize = 1024 * 1024;
 
-  const std::vector<char> data(kMaxIDBValueSizeInBytes - kKeySize);
+  const std::vector<char> data(kMaxValueSizeForTesting - kKeySize);
   const WebData value(&data.front(), data.size());
   const WebVector<WebBlobInfo> web_blob_info;
   const IndexedDBKey key(
@@ -127,6 +135,7 @@ TEST_F(IndexedDBDispatcherTest, KeyAndValueSizeTest) {
 
   MockCallbacks callbacks;
   IndexedDBDispatcher dispatcher(thread_safe_sender_.get());
+  dispatcher.max_put_value_size_ = kMaxValueSizeForTesting;
   dispatcher.RequestIDBDatabasePut(ipc_dummy_id,
                                    transaction_id,
                                    object_store_id,

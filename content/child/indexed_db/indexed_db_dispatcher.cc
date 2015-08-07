@@ -51,7 +51,8 @@ const size_t kMaxIDBValueSizeInBytes =
     IPC::Channel::kMaximumMessageSize - kMaxIDBMessageOverhead;
 
 IndexedDBDispatcher::IndexedDBDispatcher(ThreadSafeSender* thread_safe_sender)
-    : thread_safe_sender_(thread_safe_sender) {
+    : thread_safe_sender_(thread_safe_sender),
+      max_put_value_size_(kMaxIDBValueSizeInBytes) {
   g_idb_dispatcher_tls.Pointer()->Set(this);
 }
 
@@ -358,14 +359,14 @@ void IndexedDBDispatcher::RequestIDBDatabasePut(
     WebIDBCallbacks* callbacks,
     const WebVector<long long>& index_ids,
     const WebVector<WebVector<WebIDBKey> >& index_keys) {
-  if (value.size() + key.size_estimate() > kMaxIDBValueSizeInBytes) {
+  if (value.size() + key.size_estimate() > max_put_value_size_) {
     callbacks->onError(WebIDBDatabaseError(
         blink::WebIDBDatabaseExceptionUnknownError,
         WebString::fromUTF8(base::StringPrintf(
             "The serialized value is too large"
             " (size=%" PRIuS " bytes, max=%" PRIuS " bytes).",
             value.size(),
-            kMaxIDBValueSizeInBytes).c_str())));
+            max_put_value_size_).c_str())));
     return;
   }
 
