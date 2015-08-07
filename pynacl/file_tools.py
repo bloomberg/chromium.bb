@@ -196,6 +196,8 @@ def MoveAndMergeDirTree(src_dir, dest_dir):
     for dir_item in os.listdir(src_dir):
       source_item = os.path.join(src_dir, dir_item)
       destination_item = os.path.join(dest_dir, dir_item)
+      if os.path.islink(destination_item):
+        Retry(os.unlink, destination_item)
       if os.path.exists(destination_item):
         if os.path.isdir(destination_item) and os.path.isdir(source_item):
           # Merge the sub-directories together if they are both directories.
