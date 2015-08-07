@@ -92,8 +92,8 @@ class SandboxPolicy : public sandbox::bpf_dsl::Policy {
 
 LinuxSandbox::LinuxSandbox(const std::vector<BrokerFilePermission>& permissions)
     : broker_(new sandbox::syscall_broker::BrokerProcess(EPERM, permissions)) {
-  CHECK(broker_->Init(
-      base::Bind<bool (*)()>(&sandbox::Credentials::DropAllCapabilities)));
+  broker_->Init(
+      base::Bind<bool (*)()>(&sandbox::Credentials::DropAllCapabilities));
   policy_.reset(new SandboxPolicy(broker_.get()));
 }
 

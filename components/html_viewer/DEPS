@@ -5,7 +5,6 @@ include_rules = [
   "+cc",
   "+components/clipboard",
   "+components/devtools_service/public",
-  "+components/font_service/public",
   "+components/gpu",
   "+components/message_port",
   "+components/mime_util",

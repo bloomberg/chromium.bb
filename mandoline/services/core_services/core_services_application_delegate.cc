@@ -28,10 +28,6 @@
 #include "mojo/services/network/network_service_delegate.h"
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_ANDROID)
-#include "components/font_service/font_service_app.h"
-#endif
-
 namespace core_services {
 
 // A helper class for hosting a mojo::ApplicationImpl on its own thread.
@@ -134,10 +130,6 @@ void CoreServicesApplicationDelegate::StartApplication(
     delegate.reset(new clipboard::ClipboardApplicationDelegate);
   } else if (url == "mojo://filesystem/") {
     delegate.reset(new filesystem::FileSystemApp);
-#if defined(OS_LINUX) && !defined(OS_ANDROID)
-  } else if (url == "mojo://font_service/") {
-    delegate.reset(new font_service::FontServiceApp);
-#endif
   } else if (url == "mojo://surfaces_service/") {
     delegate.reset(new surfaces::SurfacesServiceApplication);
   } else if (url == "mojo://tracing/") {

@@ -185,10 +185,6 @@ source_set("lib") {
     sources += [ "html_viewer_version.rc" ]
   }
 
-  if (is_linux && !is_android) {
-    deps += [ "//components/font_service/public/cpp" ]
-  }
-
   data_deps = [
     "//components/clipboard",
     "//components/view_manager",
@@ -320,8 +316,4 @@ mojo_native_application("apptests") {
     ":html_viewer",
     "//components/view_manager",
   ]
-
-  if (is_linux && !is_android) {
-    data_deps += [ "//components/font_service" ]
-  }
 }

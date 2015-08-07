@@ -1,8 +1,0 @@
-include_rules = [
-  "+mojo/application",
-  "+mojo/common",
-  "+mojo/platform_handle",
-  "+skia",
-  "+third_party/mojo/src/mojo/public",
-  "+third_party/skia/include",
-]

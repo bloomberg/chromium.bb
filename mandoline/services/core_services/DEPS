@@ -1,7 +1,6 @@
 include_rules = [
   "+components/clipboard",
   "+components/filesystem",
-  "+components/font_service",
   "+components/resource_provider",
   "+components/view_manager",
   "+mojo/application",
