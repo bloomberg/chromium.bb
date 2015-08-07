@@ -33,7 +33,7 @@ class SpellCheckMessageFilter : public content::BrowserMessageFilter {
   void OnSpellCheckerRequestDictionary();
   void OnNotifyChecked(const base::string16& word, bool misspelled);
   void OnRespondDocumentMarkers(const std::vector<uint32>& markers);
-#if !defined(OS_MACOSX)
+#if !defined(USE_BROWSER_SPELLCHECKER)
   void OnCallSpellingService(int route_id,
                              int identifier,
                              const base::string16& text,

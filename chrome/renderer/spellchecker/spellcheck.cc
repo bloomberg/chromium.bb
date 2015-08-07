@@ -198,7 +198,7 @@ void SpellCheck::OnInit(
 
   custom_dictionary_.Init(custom_words);
   auto_spell_correct_turned_on_ = auto_spell_correct;
-#if !defined(OS_MACOSX)
+#if !defined(USE_BROWSER_SPELLCHECKER)
   PostDelayedSpellCheckTask(pending_request_param_.release());
 #endif
 }
@@ -261,8 +261,8 @@ bool SpellCheck::SpellCheckWord(
 bool SpellCheck::SpellCheckParagraph(
     const base::string16& text,
     WebVector<WebTextCheckingResult>* results) {
-#if !defined(OS_MACOSX)
-  // Mac has its own spell checker, so this method will not be used.
+#if !defined(USE_BROWSER_SPELLCHECKER)
+  // Mac and Android have their own spell checkers,so this method won't be used
   DCHECK(results);
   std::vector<WebTextCheckingResult> textcheck_results;
   size_t length = text.length();
@@ -301,7 +301,7 @@ bool SpellCheck::SpellCheckParagraph(
   return false;
 #else
   // This function is only invoked for spell checker functionality that runs
-  // on the render thread. OSX builds don't have that.
+  // on the render thread. OSX and Android builds don't have that.
   NOTREACHED();
   return true;
 #endif
@@ -360,7 +360,8 @@ base::string16 SpellCheck::GetAutoCorrectionWord(const base::string16& word,
   return autocorrect_word;
 }
 
-#if !defined(OS_MACOSX)  // OSX uses its own spell checker
+// OSX and Android use their own spell checkers
+#if !defined(USE_BROWSER_SPELLCHECKER)
 void SpellCheck::RequestTextChecking(
     const base::string16& text,
     blink::WebTextCheckingCompletion* completion) {
@@ -389,7 +390,8 @@ bool SpellCheck::InitializeIfNeeded() {
   return initialize_if_needed;
 }
 
-#if !defined(OS_MACOSX) // OSX doesn't have |pending_request_param_|
+// OSX and Android don't have |pending_request_param_|
+#if !defined(USE_BROWSER_SPELLCHECKER)
 void SpellCheck::PostDelayedSpellCheckTask(SpellcheckRequest* request) {
   if (!request)
     return;
@@ -400,7 +402,8 @@ void SpellCheck::PostDelayedSpellCheckTask(SpellcheckRequest* request) {
 }
 #endif
 
-#if !defined(OS_MACOSX)  // Mac uses its platform engine instead.
+// Mac and Android use their platform engines instead.
+#if !defined(USE_BROWSER_SPELLCHECKER)
 void SpellCheck::PerformSpellCheck(SpellcheckRequest* param) {
   DCHECK(param);
 

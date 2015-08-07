@@ -95,7 +95,7 @@ class SpellCheck : public content::RenderProcessObserver,
 
   // Requests to spellcheck the specified text in the background. This function
   // posts a background task and calls SpellCheckParagraph() in the task.
-#if !defined (OS_MACOSX)
+#if !defined (USE_BROWSER_SPELLCHECKER)
   void RequestTextChecking(const base::string16& text,
                            blink::WebTextCheckingCompletion* completion);
 #endif
@@ -132,7 +132,7 @@ class SpellCheck : public content::RenderProcessObserver,
   void OnEnableSpellCheck(bool enable);
   void OnRequestDocumentMarkers();
 
-#if !defined (OS_MACOSX)
+#if !defined (USE_BROWSER_SPELLCHECKER)
   // Posts delayed spellcheck task and clear it if any.
   // Takes ownership of |request|.
   void PostDelayedSpellCheckTask(SpellcheckRequest* request);
