@@ -264,6 +264,7 @@ source_set("browser") {
       "//components/keyed_service/content",
       "//components/navigation_interception",
       "//components/password_manager/content/browser",
+      "//components/password_manager/sync/browser",
       "//components/plugins/common",
       "//components/safe_json",
       "//components/sessions",

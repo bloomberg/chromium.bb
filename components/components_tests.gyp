@@ -397,6 +397,7 @@
       'password_manager/core/browser/psl_matching_helper_unittest.cc',
       'password_manager/core/browser/statistics_table_unittest.cc',
       'password_manager/core/common/credential_manager_types_unittest.cc',
+      'password_manager/sync/browser/sync_store_result_filter_unittest.cc',
     ],
     'policy_unittest_sources': [
       'policy/core/browser/android/android_combined_policy_provider_unittest.cc',
@@ -863,6 +864,7 @@
         'components.gyp:packed_ct_ev_whitelist',
         'components.gyp:password_manager_core_browser',
         'components.gyp:password_manager_core_browser_test_support',
+        'components.gyp:password_manager_sync_browser',
         'components.gyp:precache_core',
         'components.gyp:pref_registry_test_support',
         'components.gyp:proxy_config',

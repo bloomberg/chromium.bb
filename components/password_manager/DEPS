@@ -13,6 +13,7 @@ include_rules = [
   "+third_party/sqlite/sqlite3.h",
   "+ui",
   # PasswordManager is a layered component; subdirectories must explicitly
-  # introduce the ability to use the content layer as appropriate.
+  # introduce the ability to use non-core layers as appropriate.
   "-components/password_manager/content",
+  "-components/password_manager/sync",
 ]

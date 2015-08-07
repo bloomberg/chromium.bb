@@ -3270,6 +3270,7 @@
             '../components/components.gyp:navigation_interception',
             '../components/components.gyp:packed_ct_ev_whitelist',
             '../components/components.gyp:password_manager_content_browser',
+            '../components/components.gyp:password_manager_sync_browser',
             '../components/components.gyp:plugins_common',
             '../components/components.gyp:power',
             '../components/components.gyp:safe_json',

@@ -23,6 +23,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/store_result_filter.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/browser/test_password_store.h"
@@ -101,6 +102,11 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
   NiceMock<MockAutofillManager> mock_autofill_manager_;
 };
 
+class MockStoreResultFilter : public StoreResultFilter {
+ public:
+  MOCK_METHOD1(ShouldIgnore, bool(const autofill::PasswordForm& form));
+};
+
 class TestPasswordManagerClient : public StubPasswordManagerClient {
  public:
   explicit TestPasswordManagerClient(PasswordStore* password_store)
@@ -111,18 +117,15 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
                                            true);
   }
 
-  bool ShouldFilterAutofillResult(const autofill::PasswordForm& form) override {
-    if (form == form_to_filter_)
-      return true;
-    return false;
+  scoped_ptr<StoreResultFilter> CreateStoreResultFilter() const override {
+    scoped_ptr<NiceMock<MockStoreResultFilter>> stub_filter(
+        new NiceMock<MockStoreResultFilter>);
+    ON_CALL(*stub_filter, ShouldIgnore(_)).WillByDefault(Return(false));
+    return stub_filter.Pass();
   }
 
   PrefService* GetPrefs() override { return &prefs_; }
   PasswordStore* GetPasswordStore() const override { return password_store_; }
-
-  void SetFormToFilter(const autofill::PasswordForm& form) {
-    form_to_filter_ = form;
-  }
 
   MockPasswordManagerDriver* mock_driver() { return driver_.get(); }
 
@@ -142,8 +145,6 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   }
 
  private:
-  autofill::PasswordForm form_to_filter_;
-
   TestingPrefServiceSimple prefs_;
   PasswordStore* password_store_;
   scoped_ptr<MockPasswordManagerDriver> driver_;
@@ -256,8 +257,10 @@ class PasswordFormManagerTest : public testing::Test {
     p->SanitizePossibleUsernames(form);
   }
 
-  bool IgnoredResult(PasswordFormManager* p, PasswordForm* form) {
-    return p->ShouldIgnoreResult(*form);
+  bool IgnoredResult(PasswordFormManager* p,
+                     PasswordForm* form,
+                     StoreResultFilter* filter) {
+    return p->ShouldIgnoreResult(*form, filter);
   }
 
   // Save saved_match() for observed_form() where |observed_form_data|,
@@ -608,17 +611,19 @@ TEST_F(PasswordFormManagerTest, TestIgnoreResult) {
   // Make sure we don't match a PasswordForm if it was originally saved on
   // an SSL-valid page and we are now on a page with invalid certificate.
   saved_match()->ssl_valid = true;
-  EXPECT_TRUE(IgnoredResult(&manager, saved_match()));
+  scoped_ptr<MockStoreResultFilter> filter(new MockStoreResultFilter);
+  EXPECT_TRUE(IgnoredResult(&manager, saved_match(), filter.get()));
 
   saved_match()->ssl_valid = false;
   // Different paths for action / origin are okay.
   saved_match()->action = GURL("http://www.google.com/b/Login");
   saved_match()->origin = GURL("http://www.google.com/foo");
-  EXPECT_FALSE(IgnoredResult(&manager, saved_match()));
+  EXPECT_FALSE(IgnoredResult(&manager, saved_match(), filter.get()));
 
   // Results should be ignored if the client requests it.
-  client()->SetFormToFilter(*saved_match());
-  EXPECT_TRUE(IgnoredResult(&manager, saved_match()));
+  PasswordForm filtered_form(*saved_match());
+  EXPECT_CALL(*filter, ShouldIgnore(filtered_form)).WillOnce(Return(true));
+  EXPECT_TRUE(IgnoredResult(&manager, saved_match(), filter.get()));
 }
 
 TEST_F(PasswordFormManagerTest, TestEmptyAction) {

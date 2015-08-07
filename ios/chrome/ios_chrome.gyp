@@ -68,6 +68,7 @@
         '../../components/components.gyp:omnibox_browser',
         '../../components/components.gyp:open_from_clipboard',
         '../../components/components.gyp:password_manager_core_browser',
+        '../../components/components.gyp:password_manager_sync_browser',
         '../../components/components.gyp:pref_registry',
         '../../components/components.gyp:search',
         '../../components/components.gyp:search_engines',

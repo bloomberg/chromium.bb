@@ -22,6 +22,7 @@ namespace password_manager {
 
 class PasswordManager;
 class PasswordManagerClient;
+class StoreResultFilter;
 
 // Per-password-form-{on-page, dialog} class responsible for interactions
 // between a given form, the per-tab PasswordManager, and the PasswordStore.
@@ -287,7 +288,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Helper for OnGetPasswordStoreResults to determine whether or not
   // the given result form is worth scoring.
-  bool ShouldIgnoreResult(const autofill::PasswordForm& form) const;
+  bool ShouldIgnoreResult(const autofill::PasswordForm& form,
+                          StoreResultFilter* filter) const;
 
   // Helper for Save in the case that best_matches.size() == 0, meaning
   // we have no prior record of this form/username/password and the user

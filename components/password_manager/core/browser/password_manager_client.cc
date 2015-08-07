@@ -18,9 +18,6 @@ bool PasswordManagerClient::IsSavingEnabledForCurrentPage() const {
   return true;
 }
 
-void PasswordManagerClient::AutofillResultsComputed() {
-}
-
 void PasswordManagerClient::ForceSavePassword() {
 }
 

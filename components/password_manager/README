@@ -1,9 +1,8 @@
-PasswordManager is in the process of becoming a layered component
-(https://sites.google.com/a/chromium.org/dev/developers/design-documents/layered-components-design)
-to enable it to be shared cleanly on iOS. 
+Password manager component is layered, see https://sites.google.com/a/chromium.org/dev/developers/design-documents/layered-components-design for what it means.
 
-When this process is complete, this component will have the following structure:
+Ideal structure of the component:
+- core/: Essentials, not depending on any other layers.
+All other layers may depend on core:
+- content/: Content-specific embedding.
+- sync/: Sync-specific embedding.
 
-- core/: shared code that does not depend on src/content/ or src/ios/
-- content/: Driver for the shared code based on the content layer.
-- ios/: Driver for the shared code based on src/ios.

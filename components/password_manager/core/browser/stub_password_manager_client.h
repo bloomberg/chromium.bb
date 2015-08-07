@@ -21,7 +21,6 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   std::string GetSyncUsername() const override;
   bool IsSyncAccountCredential(const std::string& username,
                                const std::string& realm) const override;
-  bool ShouldFilterAutofillResult(const autofill::PasswordForm& form) override;
   bool PromptUserToSaveOrUpdatePassword(
       scoped_ptr<PasswordFormManager> form_to_save,
       password_manager::CredentialSourceType type,
@@ -38,6 +37,8 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       scoped_ptr<PasswordFormManager> saved_manager) override;
   PrefService* GetPrefs() override;
   PasswordStore* GetPasswordStore() const override;
+  const GURL& GetLastCommittedEntryURL() const override;
+  scoped_ptr<StoreResultFilter> CreateStoreResultFilter() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubPasswordManagerClient);

@@ -22,6 +22,7 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/store_result_filter.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 using autofill::FormStructure;
@@ -378,8 +379,10 @@ void PasswordFormManager::OnRequestDone(
   std::vector<int> credential_scores;
   credential_scores.reserve(logins_result.size());
   int best_score = 0;
+  scoped_ptr<StoreResultFilter> result_filter =
+      client_->CreateStoreResultFilter();
   for (const PasswordForm* login : logins_result) {
-    if (ShouldIgnoreResult(*login)) {
+    if (ShouldIgnoreResult(*login, result_filter.get())) {
       credential_scores.push_back(-1);
       continue;
     }
@@ -461,8 +464,6 @@ void PasswordFormManager::OnRequestDone(
     const base::string16& username = protege->username_value;
     best_matches_.insert(username, protege.Pass());
   }
-
-  client_->AutofillResultsComputed();
 
   UMA_HISTOGRAM_COUNTS("PasswordManager.NumPasswordsNotShown",
                        logins_result_size - best_matches_.size());
@@ -548,12 +549,13 @@ void PasswordFormManager::OnGetPasswordStoreResults(
   drivers_.clear();
 }
 
-bool PasswordFormManager::ShouldIgnoreResult(const PasswordForm& form) const {
+bool PasswordFormManager::ShouldIgnoreResult(const PasswordForm& form,
+                                             StoreResultFilter* filter) const {
   // Don't match an invalid SSL form with one saved under secure circumstances.
   if (form.ssl_valid && !observed_form_.ssl_valid)
     return true;
 
-  if (client_->ShouldFilterAutofillResult(form))
+  if (filter->ShouldIgnore(form))
     return true;
 
   return false;

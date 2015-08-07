@@ -103,6 +103,7 @@
         'password_manager/core/browser/psl_matching_helper.h',
         'password_manager/core/browser/statistics_table.cc',
         'password_manager/core/browser/statistics_table.h',
+        'password_manager/core/browser/store_result_filter.h',
         'password_manager/core/browser/test_affiliation_fetcher_factory.h',
         'password_manager/core/browser/webdata/logins_table.cc',
         'password_manager/core/browser/webdata/logins_table.h',
@@ -189,6 +190,26 @@
         'password_manager/core/common/password_manager_switches.cc',
         'password_manager/core/common/password_manager_switches.h',
         'password_manager/core/common/password_manager_ui.h',
+      ],
+    },
+    {
+      # GN version: //components/password_manager/sync/browser
+      'target_name': 'password_manager_sync_browser',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../google_apis/google_apis.gyp:google_apis',
+        '../net/net.gyp:net',
+        'autofill_core_common',
+        'password_manager_core_browser',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        # Note: sources list duplicated in GN build.
+        'password_manager/sync/browser/sync_store_result_filter.cc',
+        'password_manager/sync/browser/sync_store_result_filter.h',
       ],
     },
   ],

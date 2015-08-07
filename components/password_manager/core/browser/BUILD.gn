@@ -85,6 +85,7 @@ static_library("browser") {
     "psl_matching_helper.h",
     "statistics_table.cc",
     "statistics_table.h",
+    "store_result_filter.h",
     "test_affiliation_fetcher_factory.h",
     "webdata/logins_table.cc",
     "webdata/logins_table.h",
