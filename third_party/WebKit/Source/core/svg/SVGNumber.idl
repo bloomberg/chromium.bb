@@ -22,7 +22,6 @@
 
 // http://www.w3.org/TR/SVG2/types.html#InterfaceSVGNumber
 
-// TODO(philipj): SVGNumber should have constructors. crbug.com/366541
 [
     ImplementedAs=SVGNumberTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
