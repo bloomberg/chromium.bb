@@ -394,9 +394,8 @@ void CommandLine::PrependWrapper(const CommandLine::StringType& wrapper) {
     return;
   // The wrapper may have embedded arguments (like "gdb --args"). In this case,
   // we don't pretend to do anything fancy, we just split on spaces.
-  StringVector wrapper_argv = SplitString(
-      wrapper, FilePath::StringType(1, ' '), base::TRIM_WHITESPACE,
-      base::SPLIT_WANT_ALL);
+  StringVector wrapper_argv;
+  SplitString(wrapper, FILE_PATH_LITERAL(' '), &wrapper_argv);
   // Prepend the wrapper and update the switches/arguments |begin_args_|.
   argv_.insert(argv_.begin(), wrapper_argv.begin(), wrapper_argv.end());
   begin_args_ += wrapper_argv.size();

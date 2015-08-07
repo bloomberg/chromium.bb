@@ -146,8 +146,8 @@ class TrackRunIteratorTest : public testing::Test {
     // ON - SampleDependsOnOthers & IsNonSyncSample
     // NS - SampleDependsOnNoOthers & IsSyncSample
     // NN - SampleDependsOnNoOthers & IsNonSyncSample
-    std::vector<std::string> flags_data = base::SplitString(
-        sample_info, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::vector<std::string> flags_data;
+    base::SplitString(sample_info, ' ', &flags_data);
 
     if (flags_data.size() == 1u) {
       // Simulates the first_sample_flags_present set scenario,

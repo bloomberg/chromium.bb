@@ -34,11 +34,11 @@ std::string IntSetToString(const std::set<int>& list) {
 
 void StringToIntSet(const std::string& str, std::set<int>* list) {
   DCHECK(list);
-  for (const base::StringPiece& piece :
-       base::SplitStringPiece(str, ",", base::TRIM_WHITESPACE,
-                              base::SPLIT_WANT_ALL)) {
+  std::vector<std::string> pieces;
+  base::SplitString(str, ',', &pieces);
+  for (size_t i = 0; i < pieces.size(); ++i) {
     int number = 0;
-    bool succeed = base::StringToInt(piece, &number);
+    bool succeed = base::StringToInt(pieces[i], &number);
     DCHECK(succeed);
     list->insert(number);
   }

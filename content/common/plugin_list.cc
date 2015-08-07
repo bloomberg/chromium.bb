@@ -130,13 +130,11 @@ bool PluginList::ParseMimeTypes(
     const std::string& file_extensions_str,
     const base::string16& mime_type_descriptions_str,
     std::vector<WebPluginMimeType>* parsed_mime_types) {
-  std::vector<std::string> mime_types = base::SplitString(
-      mime_types_str, "|", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  std::vector<std::string> file_extensions = base::SplitString(
-      file_extensions_str, "|", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  std::vector<base::string16> descriptions = base::SplitString(
-      mime_type_descriptions_str, base::string16(1, '|'), base::TRIM_WHITESPACE,
-      base::SPLIT_WANT_ALL);
+  std::vector<std::string> mime_types, file_extensions;
+  std::vector<base::string16> descriptions;
+  base::SplitString(mime_types_str, '|', &mime_types);
+  base::SplitString(file_extensions_str, '|', &file_extensions);
+  base::SplitString(mime_type_descriptions_str, '|', &descriptions);
 
   parsed_mime_types->clear();
 
@@ -146,10 +144,8 @@ bool PluginList::ParseMimeTypes(
   for (size_t i = 0; i < mime_types.size(); ++i) {
     WebPluginMimeType mime_type;
     mime_type.mime_type = base::StringToLowerASCII(mime_types[i]);
-    if (file_extensions.size() > i) {
-      mime_type.file_extensions = base::SplitString(
-          file_extensions[i], ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    }
+    if (file_extensions.size() > i)
+      base::SplitString(file_extensions[i], ',', &mime_type.file_extensions);
 
     if (descriptions.size() > i) {
       mime_type.description = descriptions[i];

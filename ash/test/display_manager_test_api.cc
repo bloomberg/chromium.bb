@@ -34,8 +34,8 @@ std::vector<DisplayInfo> CreateDisplayInfoListFromString(
     const std::string specs,
     DisplayManager* display_manager) {
   std::vector<DisplayInfo> display_info_list;
-  std::vector<std::string> parts = base::SplitString(
-      specs, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::string> parts;
+  base::SplitString(specs, ',', &parts);
   size_t index = 0;
 
   DisplayManager::DisplayList list =

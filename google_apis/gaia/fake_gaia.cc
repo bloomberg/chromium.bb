@@ -71,13 +71,17 @@ typedef std::map<std::string, std::string> CookieMap;
 // Parses cookie name-value map our of |request|.
 CookieMap GetRequestCookies(const HttpRequest& request) {
   CookieMap result;
-  auto iter = request.headers.find("Cookie");
+  std::map<std::string, std::string>::const_iterator iter =
+           request.headers.find("Cookie");
   if (iter != request.headers.end()) {
-    for (const std::string& cookie_line :
-         base::SplitString(iter->second, " ", base::TRIM_WHITESPACE,
-                           base::SPLIT_WANT_ALL)) {
-      std::vector<std::string> name_value = base::SplitString(
-          cookie_line, "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::vector<std::string> cookie_nv_pairs;
+    base::SplitString(iter->second, ' ', &cookie_nv_pairs);
+    for(std::vector<std::string>::const_iterator cookie_line =
+            cookie_nv_pairs.begin();
+        cookie_line != cookie_nv_pairs.end();
+        ++cookie_line) {
+      std::vector<std::string> name_value;
+      base::SplitString(*cookie_line, '=', &name_value);
       if (name_value.size() != 2)
         continue;
 
@@ -437,8 +441,8 @@ const FakeGaia::AccessTokenInfo* FakeGaia::FindAccessTokenInfo(
   if (auth_token.empty() || client_id.empty())
     return NULL;
 
-  std::vector<std::string> scope_list = base::SplitString(
-      scope_string, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::string> scope_list;
+  base::SplitString(scope_string, ' ', &scope_list);
   ScopeSet scopes(scope_list.begin(), scope_list.end());
 
   for (AccessTokenInfoMap::const_iterator entry(

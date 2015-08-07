@@ -83,11 +83,11 @@ class StringSet {
 void StringToWorkarounds(
     const std::string& types, FeatureInfo::Workarounds* workarounds) {
   DCHECK(workarounds);
-  for (const base::StringPiece& piece :
-       base::SplitStringPiece(
-           types, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+  std::vector<std::string> pieces;
+  base::SplitString(types, ',', &pieces);
+  for (size_t i = 0; i < pieces.size(); ++i) {
     int number = 0;
-    bool succeed = base::StringToInt(piece, &number);
+    bool succeed = base::StringToInt(pieces[i], &number);
     DCHECK(succeed);
     switch (number) {
 #define GPU_OP(type, name)    \

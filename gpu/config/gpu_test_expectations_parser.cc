@@ -187,8 +187,8 @@ bool GPUTestExpectationsParser::LoadTestExpectations(const std::string& data) {
   entries_.clear();
   error_messages_.clear();
 
-  std::vector<std::string> lines = base::SplitString(
-      data, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::string> lines;
+  base::SplitString(data, '\n', &lines);
   bool rt = true;
   for (size_t i = 0; i < lines.size(); ++i) {
     if (!ParseLine(lines[i], i + 1))
@@ -234,9 +234,8 @@ GPUTestExpectationsParser::GetErrorMessages() const {
 bool GPUTestExpectationsParser::ParseConfig(
     const std::string& config_data, GPUTestConfig* config) {
   DCHECK(config);
-  std::vector<std::string> tokens = base::SplitString(
-      config_data, base::kWhitespaceASCII, base::KEEP_WHITESPACE,
-      base::SPLIT_WANT_NONEMPTY);
+  std::vector<std::string> tokens;
+  base::SplitStringAlongWhitespace(config_data, &tokens);
 
   for (size_t i = 0; i < tokens.size(); ++i) {
     Token token = ParseToken(tokens[i]);
@@ -285,9 +284,8 @@ bool GPUTestExpectationsParser::ParseConfig(
 
 bool GPUTestExpectationsParser::ParseLine(
     const std::string& line_data, size_t line_number) {
-  std::vector<std::string> tokens = base::SplitString(
-      line_data, base::kWhitespaceASCII, base::KEEP_WHITESPACE,
-      base::SPLIT_WANT_NONEMPTY);
+  std::vector<std::string> tokens;
+  base::SplitStringAlongWhitespace(line_data, &tokens);
   int32 stage = kLineParserBegin;
   GPUTestExpectationEntry entry;
   entry.line_number = line_number;

@@ -375,9 +375,8 @@ void JpegDecodeAcceleratorTestEnvironment::SetUp() {
       media::PIXEL_FORMAT_I420, image_data_invalid_->visible_size);
 
   // |user_jpeg_filenames_| may include many files and use ';' as delimiter.
-  std::vector<base::FilePath::StringType> filenames = base::SplitString(
-      user_jpeg_filenames_, base::FilePath::StringType(1, ';'),
-      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<base::FilePath::StringType> filenames;
+  base::SplitString(user_jpeg_filenames_, ';', &filenames);
   for (const auto& filename : filenames) {
     base::FilePath input_file = media::GetTestDataFilePath(filename);
     TestImageFile* image_data = new TestImageFile(filename);

@@ -51,8 +51,10 @@ bool ParseNetworkGuid(const std::string& guid,
                       std::string* device_path,
                       std::string* access_point_path,
                       std::string* ssid) {
-  std::vector<std::string> guid_parts =
-      base::SplitString(guid, "|", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::string> guid_parts;
+
+  base::SplitString(guid, '|', &guid_parts);
+
   if (guid_parts.size() != 3) {
     return false;
   }

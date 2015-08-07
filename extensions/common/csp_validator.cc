@@ -240,8 +240,8 @@ std::string SanitizeContentSecurityPolicy(
     int options,
     std::vector<InstallWarning>* warnings) {
   // See http://www.w3.org/TR/CSP/#parse-a-csp-policy for parsing algorithm.
-  std::vector<std::string> directives = base::SplitString(
-      policy, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::string> directives;
+  base::SplitString(policy, ';', &directives);
 
   DirectiveStatus default_src_status(kDefaultSrc);
   DirectiveStatus script_src_status(kScriptSrc);
@@ -307,9 +307,13 @@ std::string SanitizeContentSecurityPolicy(
 bool ContentSecurityPolicyIsSandboxed(
     const std::string& policy, Manifest::Type type) {
   // See http://www.w3.org/TR/CSP/#parse-a-csp-policy for parsing algorithm.
+  std::vector<std::string> directives;
+  base::SplitString(policy, ';', &directives);
+
   bool seen_sandbox = false;
-  for (const std::string& input : base::SplitString(
-           policy, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+
+  for (size_t i = 0; i < directives.size(); ++i) {
+    std::string& input = directives[i];
     base::StringTokenizer tokenizer(input, " \t\r\n");
     if (!tokenizer.GetNext())
       continue;

@@ -766,8 +766,8 @@ MatchUSBID::MatchUSBID(const std::string& arg) : MatchCriteria(arg) {
       LOG(ERROR) << "Invalid USB ID: " << args_[i];
       continue;
     }
-    std::vector<std::string> tokens = base::SplitString(
-        args_[i], ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::vector<std::string> tokens;
+    base::SplitString(args_[i], ':', &tokens);
     vid_patterns_.push_back(base::StringToLowerASCII(tokens[0]));
     pid_patterns_.push_back(base::StringToLowerASCII(tokens[1]));
   }

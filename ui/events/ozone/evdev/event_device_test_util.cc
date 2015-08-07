@@ -43,13 +43,13 @@ std::string SerializeBitfield(unsigned long* bitmap, int max) {
 bool ParseBitfield(const std::string& bitfield,
                    size_t max_bits,
                    std::vector<unsigned long>* out) {
-  std::vector<std::string> groups = base::SplitString(
-      bitfield, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::string> groups;
+  base::SplitString(bitfield, ' ', &groups);
 
   out->resize(EVDEV_BITS_TO_LONGS(max_bits));
 
   // Convert big endian 64-bit groups to little endian EVDEV_LONG_BIT groups.
-  for (size_t i = 0; i < groups.size(); ++i) {
+  for (unsigned int i = 0; i < groups.size(); ++i) {
     int off = groups.size() - 1 - i;
 
     uint64_t val;

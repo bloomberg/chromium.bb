@@ -87,9 +87,8 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
     }
 
     for (const auto& action : actions_) {
-      std::vector<base::string16> parts = base::SplitString(
-          action, base::string16(1, ':'), base::TRIM_WHITESPACE,
-          base::SPLIT_WANT_ALL);
+      std::vector<base::string16> parts;
+      base::SplitString(action, L':', &parts);
       base::char16 id = parts[0][0];
       base::string16 param;
       if (parts.size() > 1)

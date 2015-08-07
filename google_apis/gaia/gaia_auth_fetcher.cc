@@ -508,8 +508,8 @@ bool GaiaAuthFetcher::ParseClientLoginToOAuth2Response(
 // static
 bool GaiaAuthFetcher::ParseClientLoginToOAuth2Cookie(const std::string& cookie,
                                                      std::string* auth_code) {
-  std::vector<std::string> parts = base::SplitString(
-      cookie, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::string> parts;
+  base::SplitString(cookie, ';', &parts);
   // Per documentation, the cookie should have Secure and HttpOnly.
   if (!CookiePartsContains(parts, kClientLoginToOAuth2CookiePartSecure) ||
       !CookiePartsContains(parts, kClientLoginToOAuth2CookiePartHttpOnly)) {

@@ -126,9 +126,10 @@ std::vector<std::string> GetSideloadFontFiles() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kRegisterFontFiles)) {
-    files = base::SplitString(
+    base::SplitString(
         command_line.GetSwitchValueASCII(switches::kRegisterFontFiles),
-        ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+        ';',
+        &files);
   }
   return files;
 }

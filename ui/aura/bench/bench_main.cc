@@ -170,8 +170,8 @@ class WebGLBench : public BenchCompositorObserver {
     int width = 0;
     int height = 0;
     if (!webgl_size.empty()) {
-      std::vector<std::string> split_size = base::SplitString(
-          webgl_size, "x", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      std::vector<std::string> split_size;
+      base::SplitString(webgl_size, 'x', &split_size);
       if (split_size.size() == 2) {
         width = atoi(split_size[0].c_str());
         height = atoi(split_size[1].c_str());

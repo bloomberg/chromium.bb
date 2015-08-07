@@ -180,8 +180,8 @@ namespace internal {
 void ParseFontLinkEntry(const std::string& entry,
                         std::string* filename,
                         std::string* font_name) {
-  std::vector<std::string> parts = base::SplitString(
-      entry, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::string> parts;
+  base::SplitString(entry, ',', &parts);
   filename->clear();
   font_name->clear();
   if (parts.size() > 0)
@@ -199,8 +199,7 @@ void ParseFontFamilyString(const std::string& family,
   // followed optionally by the font family name and a pair of integer scaling
   // factors.
   // TODO(asvitkine): Should we support these scaling factors?
-  *font_names = base::SplitString(
-      family, "&", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  base::SplitString(family, '&', font_names);
   if (!font_names->empty()) {
     const size_t index = font_names->back().find('(');
     if (index != std::string::npos) {

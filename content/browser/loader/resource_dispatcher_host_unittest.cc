@@ -478,8 +478,8 @@ class URLRequestBigJob : public net::URLRequestSimpleJob {
 
   // big-job:substring,N
   static bool ParseURL(const GURL& url, std::string* text, int* count) {
-    std::vector<std::string> parts = base::SplitString(
-        url.path(), ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::vector<std::string> parts;
+    base::SplitString(url.path(), ',', &parts);
 
     if (parts.size() != 2)
       return false;
@@ -514,8 +514,8 @@ class URLRequestLoadInfoJob : public net::URLRequestJob {
 
   // big-job:substring,N
   static bool ParseURL(const GURL& url, std::string* text, int* count) {
-    std::vector<std::string> parts = base::SplitString(
-        url.path(), ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::vector<std::string> parts;
+    base::SplitString(url.path(), ',', &parts);
 
     if (parts.size() != 2)
       return false;

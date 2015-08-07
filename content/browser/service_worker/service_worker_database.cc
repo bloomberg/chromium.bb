@@ -1214,9 +1214,8 @@ ServiceWorkerDatabase::UpgradeDatabaseSchemaFromV1ToV2() {
     if (!RemovePrefix(itr->key().ToString(), kRegKeyPrefix, &key))
       break;
 
-    std::vector<std::string> parts =
-        base::SplitString(key, std::string(1, kKeySeparator),
-                          base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::vector<std::string> parts;
+    base::SplitStringDontTrim(key, kKeySeparator, &parts);
     if (parts.size() != 2) {
       status = STATUS_ERROR_CORRUPTED;
       HandleReadResult(FROM_HERE, status);

@@ -252,8 +252,8 @@ class SourceBufferStreamTest : public testing::Test {
   }
 
   void CheckExpectedBuffers(const std::string& expected) {
-    std::vector<std::string> timestamps = base::SplitString(
-        expected, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::vector<std::string> timestamps;
+    base::SplitString(expected, ' ', &timestamps);
     std::stringstream ss;
     const SourceBufferStream::Type type = stream_->GetType();
     base::TimeDelta active_splice_timestamp = kNoTimestamp();
@@ -484,8 +484,8 @@ class SourceBufferStreamTest : public testing::Test {
   // id to use for that and subsequent preroll appends is incremented by one.
   // The config id for non-splice frame appends will not be affected.
   BufferQueue StringToBufferQueue(const std::string& buffers_to_append) {
-    std::vector<std::string> timestamps = base::SplitString(
-        buffers_to_append, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::vector<std::string> timestamps;
+    base::SplitString(buffers_to_append, ' ', &timestamps);
 
     CHECK_GT(timestamps.size(), 0u);
 
@@ -549,8 +549,8 @@ class SourceBufferStreamTest : public testing::Test {
         timestamps[i] = timestamps[i].substr(0, duration_pos);
       }
 
-      std::vector<std::string> buffer_timestamps = base::SplitString(
-          timestamps[i], "|", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      std::vector<std::string> buffer_timestamps;
+      base::SplitString(timestamps[i], '|', &buffer_timestamps);
 
       if (buffer_timestamps.size() == 1)
         buffer_timestamps.push_back(buffer_timestamps[0]);

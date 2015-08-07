@@ -133,16 +133,17 @@ bool ParseContentRangeHeader(const std::string& value,
   if (!RemovePrefix(value, "bytes ", &remaining))
     return false;
 
-  std::vector<base::StringPiece> parts = base::SplitStringPiece(
-      remaining, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::string> parts;
+  base::SplitString(remaining, '/', &parts);
   if (parts.size() != 2U)
     return false;
 
+  const std::string range = parts[0];
   if (!base::StringToInt64(parts[1], length))
     return false;
 
-  parts = base::SplitStringPiece(parts[0], "-", base::TRIM_WHITESPACE,
-                                 base::SPLIT_WANT_ALL);
+  parts.clear();
+  base::SplitString(range, '-', &parts);
   if (parts.size() != 2U)
     return false;
 

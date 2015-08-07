@@ -163,8 +163,8 @@ std::string FilterGLExtensionList(
   if (extensions == NULL)
     return "";
 
-  std::vector<std::string> extension_vec = base::SplitString(
-      extensions, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::string> extension_vec;
+  base::SplitString(extensions, ' ', &extension_vec);
 
   auto is_disabled = [&disabled_extensions](const std::string& ext) {
     return std::find(disabled_extensions.begin(), disabled_extensions.end(),

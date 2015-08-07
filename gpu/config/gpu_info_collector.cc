@@ -68,8 +68,8 @@ std::string GetVersionFromString(const std::string& version_string) {
       sub_string = version_string.substr(begin, end - begin);
     else
       sub_string = version_string.substr(begin);
-    std::vector<std::string> pieces = base::SplitString(
-        sub_string, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::vector<std::string> pieces;
+    base::SplitString(sub_string, '.', &pieces);
     if (pieces.size() >= 2)
       return pieces[0] + "." + pieces[1];
   }

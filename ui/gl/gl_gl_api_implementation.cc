@@ -480,8 +480,7 @@ void RealGLApi::InitializeFilteredExtensions() {
           FilterGLExtensionList(reinterpret_cast<const char*>(
                                     GLApiBase::glGetStringFn(GL_EXTENSIONS)),
                                 disabled_exts_);
-      filtered_exts_ = base::SplitString(
-          filtered_exts_str_, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      base::SplitString(filtered_exts_str_, ' ', &filtered_exts_);
     } else {
       GLint num_extensions = 0;
       GLApiBase::glGetIntegervFn(GL_NUM_EXTENSIONS, &num_extensions);

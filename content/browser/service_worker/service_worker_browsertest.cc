@@ -1154,9 +1154,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, SyncEventInterface) {
 
   // Console output is a pipe-delimited string, as:
   // <event prototype>|<typeof waitUntil>
-  std::vector<base::string16> event_properties =
-      base::SplitString(console_output, base::string16(1, '|'),
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<base::string16> event_properties;
+  base::SplitString(console_output, '|', &event_properties);
 
   const base::string16::size_type num_properties = 2;
   const base::string16 event_type = base::ASCIIToUTF16("SyncEvent");

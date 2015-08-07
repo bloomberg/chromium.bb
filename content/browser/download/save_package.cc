@@ -1217,8 +1217,8 @@ base::FilePath SavePackage::GetSuggestedNameForSaveAs(
   if (title_ == net::FormatUrl(page_url_, accept_langs)) {
     std::string url_path;
     if (!page_url_.SchemeIs(url::kDataScheme)) {
-      std::vector<std::string> url_parts = base::SplitString(
-          page_url_.path(), "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      std::vector<std::string> url_parts;
+      base::SplitString(page_url_.path(), '/', &url_parts);
       if (!url_parts.empty()) {
         for (int i = static_cast<int>(url_parts.size()) - 1; i >= 0; --i) {
           url_path = url_parts[i];

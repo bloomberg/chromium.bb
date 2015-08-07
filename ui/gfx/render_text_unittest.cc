@@ -2313,9 +2313,8 @@ TEST_F(RenderTextTest, Multiline_HorizontalAlignment) {
       EXPECT_EQ(0, render_text.GetAlignmentOffset(0).x());
       EXPECT_EQ(0, render_text.GetAlignmentOffset(1).x());
     } else {
-      std::vector<base::string16> lines = base::SplitString(
-          base::WideToUTF16(kTestStrings[i].text),
-          base::string16(1, '\n'), base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      std::vector<base::string16> lines;
+      base::SplitString(base::WideToUTF16(kTestStrings[i].text), '\n', &lines);
       ASSERT_EQ(2u, lines.size());
       int difference = (lines[0].length() - lines[1].length()) * kGlyphSize;
       EXPECT_EQ(render_text.GetAlignmentOffset(0).x() + difference,

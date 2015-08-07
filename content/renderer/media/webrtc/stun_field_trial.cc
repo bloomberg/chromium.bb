@@ -133,8 +133,8 @@ bool ParseStunProbeParameters(const std::string& params,
                               int* interval_ms,
                               int* shared_socket_mode,
                               std::vector<rtc::SocketAddress>* servers) {
-  std::vector<std::string> stun_params = base::SplitString(
-      params, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::string> stun_params;
+  base::SplitString(params, '/', &stun_params);
 
   if (stun_params.size() < 4) {
     DLOG(ERROR) << "Not enough parameters specified in StartStunProbeTrial";
