@@ -291,7 +291,14 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
   EXPECT_TRUE(chrome::BrowserIterator().done());
 }
 
-IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest, PRE_TestSessionRestore) {
+// Test is flaky on Mac. http://crbug.com/517687
+#if defined(OS_MACOSX)
+#define MAYBE_PRE_TestSessionRestore DISABLED_PRE_TestSessionRestore
+#else
+#define MAYBE_PRE_TestSessionRestore DISABLED_PRE_TestSessionRestore
+#endif
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
+                       MAYBE_PRE_TestSessionRestore) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/beforeunload.html")));
@@ -327,7 +334,14 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest, PRE_TestSessionRestore) {
 
 // Test that the tab closed after the aborted shutdown attempt is not re-opened
 // when restoring the session.
-IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest, TestSessionRestore) {
+// Test is flaky on Mac. http://crbug.com/517687
+#if defined(OS_MACOSX)
+#define MAYBE_TestSessionRestore DISABLED_TestSessionRestore
+#else
+#define MAYBE_TestSessionRestore DISABLED_TestSessionRestore
+#endif
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
+                       MAYBE_TestSessionRestore) {
   // The testing framework launches Chrome with about:blank as args.
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(GURL(chrome::kChromeUIVersionURL),
@@ -386,7 +400,8 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest, TestMultipleWindows) {
 // treated the same as the user accepting the close, but do not close the tab
 // early.
 // Test is flaky on windows, disabled. See http://crbug.com/276366
-#if defined(OS_WIN)
+// Test is flaky on Mac. See http://crbug.com/517687.
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_TestHangInBeforeUnloadMultipleTabs \
     DISABLED_TestHangInBeforeUnloadMultipleTabs
 #else
