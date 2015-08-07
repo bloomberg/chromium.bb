@@ -4077,6 +4077,7 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	wl_list_init(&output->animation_list);
 	wl_list_init(&output->resource_list);
 	wl_list_init(&output->feedback_list);
+	wl_list_init(&output->link);
 
 	loop = wl_display_get_event_loop(c->wl_display);
 	output->repaint_timer = wl_event_loop_add_timer(loop,
