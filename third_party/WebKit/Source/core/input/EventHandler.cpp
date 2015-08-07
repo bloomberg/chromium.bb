@@ -3489,6 +3489,40 @@ static const AtomicString& pointerEventNameForTouchPointState(PlatformTouchPoint
     }
 }
 
+PointerIdManager::PointerType pointerTypeForWebPointPointerType(WebPointerProperties::PointerType type)
+{
+    // TODO(e_hakkinen): Simplify this by changing PointerIdManager to use
+    // WebPointerProperties::PointerType instead of defining its own enum.
+    switch (type) {
+    case WebPointerProperties::PointerTypeUnknown:
+        return PointerIdManager::PointerTypeUnknown;
+    case WebPointerProperties::PointerTypeTouch:
+        return PointerIdManager::PointerTypeTouch;
+    case WebPointerProperties::PointerTypePen:
+        return PointerIdManager::PointerTypePen;
+    case WebPointerProperties::PointerTypeMouse:
+        return PointerIdManager::PointerTypeMouse;
+    }
+    ASSERT_NOT_REACHED();
+    return PointerIdManager::PointerTypeUnknown;
+}
+
+static const char* pointerTypeNameForWebPointPointerType(WebPointerProperties::PointerType type)
+{
+    switch (type) {
+    case WebPointerProperties::PointerTypeUnknown:
+        return "";
+    case WebPointerProperties::PointerTypeTouch:
+        return "touch";
+    case WebPointerProperties::PointerTypePen:
+        return "pen";
+    case WebPointerProperties::PointerTypeMouse:
+        return "mouse";
+    }
+    ASSERT_NOT_REACHED();
+    return "";
+}
+
 HitTestResult EventHandler::hitTestResultInFrame(LocalFrame* frame, const LayoutPoint& point, HitTestRequest::HitTestRequestType hitType)
 {
     HitTestResult result(HitTestRequest(hitType), point);
@@ -3507,8 +3541,6 @@ HitTestResult EventHandler::hitTestResultInFrame(LocalFrame* frame, const Layout
 void EventHandler::dispatchPointerEventsForTouchEvent(const PlatformTouchEvent& event,
     WillBeHeapVector<TouchInfo>& touchInfos)
 {
-    const String& PointerTypeStrForTouch("touch");
-
     // Iterate through the touch points, sending PointerEvents to the targets as required.
     for (unsigned i = 0; i < touchInfos.size(); ++i) {
         TouchInfo& touchInfo = touchInfos[i];
@@ -3521,9 +3553,11 @@ void EventHandler::dispatchPointerEventsForTouchEvent(const PlatformTouchEvent& 
 
         bool pointerReleasedOrCancelled = pointState == PlatformTouchPoint::TouchReleased
             || pointState == PlatformTouchPoint::TouchCancelled;
+        const PointerIdManager::PointerType pointerType = pointerTypeForWebPointPointerType(point.pointerProperties().pointerType);
+        const String& pointerTypeStr = pointerTypeNameForWebPointPointerType(point.pointerProperties().pointerType);
 
         if (pointState == PlatformTouchPoint::TouchPressed)
-            m_pointerIdManager.add(PointerIdManager::PointerTypeTouch, pointerId);
+            m_pointerIdManager.add(pointerType, pointerId);
 
         const AtomicString& eventName = pointerEventNameForTouchPointState(pointState);
 
@@ -3536,8 +3570,8 @@ void EventHandler::dispatchPointerEventsForTouchEvent(const PlatformTouchEvent& 
         pointerEventInit.setPressure(point.force());
         pointerEventInit.setTiltX(point.pointerProperties().tiltX);
         pointerEventInit.setTiltY(point.pointerProperties().tiltY);
-        pointerEventInit.setPointerType(PointerTypeStrForTouch);
-        pointerEventInit.setIsPrimary(m_pointerIdManager.isPrimary(PointerIdManager::PointerTypeTouch, pointerId));
+        pointerEventInit.setPointerType(pointerTypeStr);
+        pointerEventInit.setIsPrimary(m_pointerIdManager.isPrimary(pointerType, pointerId));
         pointerEventInit.setScreenX(point.screenPos().x());
         pointerEventInit.setScreenY(point.screenPos().y());
         pointerEventInit.setClientX(touchInfo.adjustedPagePoint.x());
@@ -3559,7 +3593,7 @@ void EventHandler::dispatchPointerEventsForTouchEvent(const PlatformTouchEvent& 
 
         // Remove the released/cancelled id at the end to correctly determine primary id above.
         if (pointerReleasedOrCancelled)
-            m_pointerIdManager.remove(PointerIdManager::PointerTypeTouch, pointerId);
+            m_pointerIdManager.remove(pointerType, pointerId);
     }
 }
 

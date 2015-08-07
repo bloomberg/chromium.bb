@@ -10,10 +10,10 @@ async_test(function() {
     return;
   }
   var POINTER_PROPERTIES = [
-    { width: 1.125, height: 1.25, pressure: .1875, tiltX: 0, tiltY: 0, isPrimary: true },
-    { width: 2.125, height: 2.25, pressure: .2500, tiltX: 25, tiltY: 26, isPrimary: false },
-    { width: 3.125, height: 3.25, pressure: .3125, tiltX: 0, tiltY: 0, isPrimary: false },
-    { width: 4.125, height: 4.25, pressure: .4375, tiltX: 0, tiltY: 0, isPrimary: false }
+    { width: 1.125, height: 1.25, pressure: .1875, tiltX: 0, tiltY: 0, pointerType: "mouse", isPrimary: true },
+    { width: 2.125, height: 2.25, pressure: .2500, tiltX: 25, tiltY: 26, pointerType: "pen", isPrimary: true },
+    { width: 3.125, height: 3.25, pressure: .3125, tiltX: 0, tiltY: 0, pointerType: "touch", isPrimary: true },
+    { width: 4.125, height: 4.25, pressure: .4375, tiltX: 0, tiltY: 0, pointerType: "touch", isPrimary: false }
   ];
   var receivedPointerEvents = [];
   var target0 = document.getElementById("target0");
@@ -36,7 +36,7 @@ async_test(function() {
 
     for ( var i = 0 ; i < POINTER_PROPERTIES.length ; ++i ) {
       var pp = POINTER_PROPERTIES[i];
-      eventSender.addTouchPoint(x + i, y + i, pp["width"], pp["height"], pp["pressure"], pp["tiltX"], pp["tiltY"], "pen");
+      eventSender.addTouchPoint(x + i, y + i, pp["width"], pp["height"], pp["pressure"], pp["tiltX"], pp["tiltY"], pp["pointerType"]);
     }
     eventSender.touchStart();
 
