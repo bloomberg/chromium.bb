@@ -4,6 +4,8 @@
 
 static_library("browser") {
   sources = [
+    "password_model_worker.cc",
+    "password_model_worker.h",
     "sync_store_result_filter.cc",
     "sync_store_result_filter.h",
   ]

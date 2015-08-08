@@ -201,6 +201,7 @@
         '../base/base.gyp:base',
         '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
+        '../sync/sync.gyp:sync',
         'autofill_core_common',
         'password_manager_core_browser',
       ],
@@ -209,6 +210,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'password_manager/sync/browser/password_model_worker.cc',
+        'password_manager/sync/browser/password_model_worker.h',
         'password_manager/sync/browser/sync_store_result_filter.cc',
         'password_manager/sync/browser/sync_store_result_filter.h',
       ],

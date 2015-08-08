@@ -1,16 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_PASSWORD_MODEL_WORKER_H_
-#define CHROME_BROWSER_SYNC_GLUE_PASSWORD_MODEL_WORKER_H_
-
-#include "sync/internal_api/public/engine/model_safe_worker.h"
+#ifndef COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_MODEL_WORKER_H_
+#define COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_MODEL_WORKER_H_
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
 
 namespace base {
 class WaitableEvent;
@@ -43,10 +42,9 @@ class PasswordModelWorker : public syncer::ModelSafeWorker {
  private:
   ~PasswordModelWorker() override;
 
-  void CallDoWorkAndSignalTask(
-    const syncer::WorkCallback& work,
-    base::WaitableEvent* done,
-    syncer::SyncerError* error);
+  void CallDoWorkAndSignalTask(const syncer::WorkCallback& work,
+                               base::WaitableEvent* done,
+                               syncer::SyncerError* error);
 
   // Called on password thread to add PasswordModelWorker as destruction
   // observer.
@@ -61,4 +59,4 @@ class PasswordModelWorker : public syncer::ModelSafeWorker {
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_PASSWORD_MODEL_WORKER_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_MODEL_WORKER_H_

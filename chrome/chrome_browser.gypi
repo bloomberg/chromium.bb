@@ -2905,8 +2905,6 @@
       'browser/sync/glue/non_frontend_data_type_controller.h',
       'browser/sync/glue/password_data_type_controller.cc',
       'browser/sync/glue/password_data_type_controller.h',
-      'browser/sync/glue/password_model_worker.cc',
-      'browser/sync/glue/password_model_worker.h',
       'browser/sync/glue/search_engine_data_type_controller.cc',
       'browser/sync/glue/search_engine_data_type_controller.h',
       'browser/sync/glue/sync_backend_host.cc',

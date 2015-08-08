@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/password_model_worker.h"
+#include "components/password_manager/sync/browser/password_model_worker.h"
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
@@ -22,9 +22,8 @@ PasswordModelWorker::PasswordModelWorker(
 
 void PasswordModelWorker::RegisterForLoopDestruction() {
   base::AutoLock lock(password_store_lock_);
-  password_store_->ScheduleTask(
-      base::Bind(&PasswordModelWorker::RegisterForPasswordLoopDestruction,
-                 this));
+  password_store_->ScheduleTask(base::Bind(
+      &PasswordModelWorker::RegisterForPasswordLoopDestruction, this));
 }
 
 syncer::SyncerError PasswordModelWorker::DoWorkAndWaitUntilDoneImpl(
@@ -38,8 +37,8 @@ syncer::SyncerError PasswordModelWorker::DoWorkAndWaitUntilDoneImpl(
       return syncer::CANNOT_DO_WORK;
 
     scheduled = password_store_->ScheduleTask(
-        base::Bind(&PasswordModelWorker::CallDoWorkAndSignalTask,
-                   this, work, work_done_or_stopped(), &error));
+        base::Bind(&PasswordModelWorker::CallDoWorkAndSignalTask, this, work,
+                   work_done_or_stopped(), &error));
   }
 
   if (scheduled)
@@ -58,7 +57,7 @@ PasswordModelWorker::~PasswordModelWorker() {}
 void PasswordModelWorker::CallDoWorkAndSignalTask(
     const syncer::WorkCallback& work,
     WaitableEvent* done,
-    syncer::SyncerError *error) {
+    syncer::SyncerError* error) {
   *error = work.Run();
   done->Signal();
 }
