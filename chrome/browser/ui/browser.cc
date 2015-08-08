@@ -134,6 +134,7 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_utils.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "chrome/browser/ui/unload_controller.h"
 #include "chrome/browser/ui/validation_message_bubble.h"
@@ -2105,6 +2106,7 @@ void Browser::OnExtensionUnloaded(
 
   // Close any tabs from the unloaded extension, unless it's terminated,
   // in which case let the sad tabs remain.
+  // Also, if tab is muted and the cause is the unloaded extension, unmute it.
   if (reason != extensions::UnloadedExtensionInfo::REASON_TERMINATE) {
     // Iterate backwards as we may remove items while iterating.
     for (int i = tab_strip_model_->count() - 1; i >= 0; --i) {
@@ -2121,6 +2123,8 @@ void Browser::OnExtensionUnloaded(
           (extensions::TabHelper::FromWebContents(web_contents)
                ->extension_app() == extension)) {
         tab_strip_model_->CloseWebContentsAt(i, TabStripModel::CLOSE_NONE);
+      } else {
+        chrome::UnmuteIfCause(web_contents, extension->id());
       }
     }
   }

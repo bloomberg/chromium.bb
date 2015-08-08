@@ -113,6 +113,9 @@ bool CanToggleAudioMute(content::WebContents* contents);
 // Indicates whether all audio output from |contents| is muted.
 bool IsTabAudioMuted(content::WebContents* contents);
 
+// Unmute a tab if last muted cause matches |cause|.
+void UnmuteIfCause(content::WebContents* contents, const std::string& cause);
+
 // Sets whether all audio output from |contents| is muted.
 // Cause is extensionid, kMutedToggleCause constant, or empty string
 TabMutedResult SetTabAudioMuted(content::WebContents* contents,

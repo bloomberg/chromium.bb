@@ -267,7 +267,7 @@ bool CanToggleAudioMute(content::WebContents* contents) {
 }
 
 const std::string& GetTabAudioMutedCause(content::WebContents* contents) {
-  LastMuteMetadata::CreateForWebContents(contents);  // Create if not exists.
+  LastMuteMetadata::CreateForWebContents(contents);  // Ensure metadata exists
   if (GetTabMediaStateForContents(contents) == TAB_MEDIA_STATE_CAPTURING) {
     // For tab capture, libcontent forces muting off.
     LastMuteMetadata::FromWebContents(contents)->cause =
@@ -287,12 +287,18 @@ TabMutedResult SetTabAudioMuted(content::WebContents* contents,
   if (!chrome::CanToggleAudioMute(contents))
     return TAB_MUTED_RESULT_FAIL_TABCAPTURE;
 
-  LastMuteMetadata::CreateForWebContents(contents);  // Create if not exists.
-
-  contents->SetAudioMuted(mute);
+  LastMuteMetadata::CreateForWebContents(contents);
   LastMuteMetadata::FromWebContents(contents)->cause = cause;
 
+  contents->SetAudioMuted(mute);
+
   return TAB_MUTED_RESULT_SUCCESS;
+}
+
+void UnmuteIfCause(content::WebContents* contents, const std::string& cause) {
+  LastMuteMetadata::CreateForWebContents(contents);  // Ensure metadata exists
+  if (LastMuteMetadata::FromWebContents(contents)->cause == cause)
+    SetTabAudioMuted(contents, false, cause);
 }
 
 bool IsTabAudioMuted(content::WebContents* contents) {
