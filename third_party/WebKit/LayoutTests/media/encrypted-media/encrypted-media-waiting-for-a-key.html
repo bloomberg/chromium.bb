@@ -20,6 +20,8 @@
             promise_test(function(test)
             {
                 var video = document.getElementById('testVideo');
+                var initData;
+                var initDataType;
                 var mediaKeySession;
 
                 test.timeout = function()
@@ -53,26 +55,30 @@
                     debugMessage = 'wait_for_encrypted_event()';
                     return wait_for_encrypted_event(video);
                 }).then(function(e) {
-                    // Received the 'encrypted' event(s), so create a session.
-                    mediaKeySession = video.mediaKeys.createSession();
-                    debugMessage = 'generateRequest()';
-                    return mediaKeySession.generateRequest(e.initDataType, e.initData);
-                }).then(function() {
+                    // Received the 'encrypted' event(s), so keep a copy of
+                    // the initdata for use when creating the session later.
+                    initData = e.initData;
+                    initDataType = e.initDataType;
+
                     // Wait until the video indicates that it needs a key to
-                    // continue. generateRequest() will cause a 'message' event
-                    // to occur specifying the keyId that is needed, but we
-                    // ignore it since we already know what keyId is needed and
-                    // this avoids a race condition between it and the
-                    // 'waitingforkey' event.
+                    // continue.
                     debugMessage = 'wait_for_waitingforkey_event()';
                     return wait_for_waitingforkey_event(video);
                 }).then(function() {
                     // Make sure the video is NOT paused and not progressing
-                    // before the session is updated. This requires the video
+                    // before a key is provided. This requires the video
                     // to NOT have a clear lead.
                     assert_false(video.paused);
                     assert_equals(video.currentTime, 0);
 
+                    // Create a session.
+                    mediaKeySession = video.mediaKeys.createSession();
+                    debugMessage = 'generateRequest()';
+                    return mediaKeySession.generateRequest(initDataType, initData);
+                }).then(function() {
+                    // generateRequest() will cause a 'message' event to
+                    // occur specifying the keyId that is needed, but we
+                    // ignore it since we already know what keyId is needed.
                     // Add the key needed to decrypt.
                     var jwkSet = stringToUint8Array(createJWKSet(createJWK(keyId, rawKey)));
                     debugMessage = 'update()';
