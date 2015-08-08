@@ -85,6 +85,7 @@ void TestShutdown()
     EXPECT_TRUE(genericAllocator.shutdown());
 }
 
+#if !CPU(64BIT) || OS(POSIX)
 bool SetAddressSpaceLimit()
 {
 #if !CPU(64BIT)
@@ -124,6 +125,7 @@ bool ClearAddressSpaceLimit()
     return false;
 #endif
 }
+#endif
 
 PartitionPage* GetFullPage(size_t size)
 {
