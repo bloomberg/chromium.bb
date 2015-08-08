@@ -40,8 +40,10 @@ float GetForcedDeviceScaleFactorImpl() {
     std::string value =
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kForceDeviceScaleFactor);
-    if (!base::StringToDouble(value, &scale_in_double))
+    if (!base::StringToDouble(value, &scale_in_double)) {
       LOG(ERROR) << "Failed to parse the default device scale factor:" << value;
+      scale_in_double = 1.0;
+    }
   }
   return static_cast<float>(scale_in_double);
 }
