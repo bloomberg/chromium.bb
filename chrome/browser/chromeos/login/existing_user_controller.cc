@@ -700,18 +700,7 @@ void ExistingUserController::OnPasswordChangeDetected() {
 void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
   PerformLoginFinishedActions(true /* start public session timer */);
 
-  if (StartupUtils::IsWebviewSigninEnabled()) {
-    login_display_->ShowWhitelistCheckFailedError();
-  } else {
-    if (g_browser_process->platform_part()
-            ->browser_policy_connector_chromeos()
-            ->IsEnterpriseManaged()) {
-      ShowError(IDS_ENTERPRISE_LOGIN_ERROR_WHITELIST, email);
-    } else {
-      ShowError(IDS_LOGIN_ERROR_WHITELIST, email);
-    }
-    login_display_->ShowSigninUI(email);
-  }
+  login_display_->ShowWhitelistCheckFailedError();
 
   if (auth_status_consumer_) {
     auth_status_consumer_->OnAuthFailure(
@@ -762,18 +751,8 @@ void ExistingUserController::LoginAsGuest() {
   bool allow_guest;
   cros_settings_->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
   if (!allow_guest) {
-    // Disallowed. The UI should normally not show the guest pod but if for some
-    // reason this has been made available to the user here is the time to tell
-    // this nicely.
-    if (g_browser_process->platform_part()
-            ->browser_policy_connector_chromeos()
-            ->IsEnterpriseManaged()) {
-      login_display_->ShowError(IDS_ENTERPRISE_LOGIN_ERROR_WHITELIST, 1,
-                                HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
-    } else {
-      login_display_->ShowError(IDS_LOGIN_ERROR_WHITELIST, 1,
-                                HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
-    }
+    // Disallowed. The UI should normally not show the guest session button.
+    LOG(ERROR) << "Guest login attempt when guest mode is disallowed.";
     PerformLoginFinishedActions(true /* start public session timer */);
     display_email_.clear();
     return;
