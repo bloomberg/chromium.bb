@@ -72,14 +72,16 @@ FcFileScanFontConfig (FcFontSet		*set,
     FT_Face	face;
     FcPattern	*font;
     FcBool	ret = FcTrue;
-    int		id;
     int		num_faces = 0;
+    int		num_instances = 0;
+    int		face_num = 0;
+    int		instance_num = 0;
+    int		id;
     const FcChar8 *sysroot = FcConfigGetSysRoot (config);
 
     if (FT_Init_FreeType (&ftLibrary))
 	return FcFalse;
 
-    id = 0;
     do
     {
 	font = 0;
@@ -92,9 +94,11 @@ FcFileScanFontConfig (FcFontSet		*set,
 	    fflush (stdout);
 	}
 
+	id = ((instance_num << 16) + face_num);
 	if (FT_New_Face (ftLibrary, (char *) file, id, &face))
 	    return FcFalse;
 	num_faces = face->num_faces;
+	num_instances = face->style_flags >> 16;
 	font = FcFreeTypeQueryFace (face, file, id, blanks);
 	FT_Done_Face (face);
 
@@ -152,8 +156,15 @@ FcFileScanFontConfig (FcFontSet		*set,
 	}
 	else
 	    ret = FcFalse;
-	id++;
-    } while (font && ret && id < num_faces);
+
+	if (instance_num < num_instances)
+	    instance_num++;
+	else
+	{
+	    face_num++;
+	    instance_num = 0;
+	}
+    } while (font && ret && face_num < num_faces);
 
     FT_Done_FreeType (ftLibrary);
 
