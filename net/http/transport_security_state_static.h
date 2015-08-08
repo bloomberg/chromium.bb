@@ -538,6 +538,9 @@ static const char* const kNoRejectedPublicKeys[] = {
   NULL,
 };
 
+// kNoReportURI is a placeholder for when a pinset does not have a report URI.
+static const char kNoReportURI[] = "";
+
 static const char* const kTestAcceptableCerts[] = {
   kSPKIHash_TestSPKI,
   NULL,
@@ -666,17 +669,18 @@ static const char* const kSpideroakAcceptableCerts[] = {
 struct Pinset {
   const char *const *const accepted_pins;
   const char *const *const rejected_pins;
+  const char *const report_uri;
 };
 
 static const struct Pinset kPinsets[] = {
-  {kTestAcceptableCerts, kNoRejectedPublicKeys},
-  {kGoogleAcceptableCerts, kNoRejectedPublicKeys},
-  {kTorAcceptableCerts, kNoRejectedPublicKeys},
-  {kTwitterComAcceptableCerts, kNoRejectedPublicKeys},
-  {kTwitterCDNAcceptableCerts, kNoRejectedPublicKeys},
-  {kDropboxAcceptableCerts, kNoRejectedPublicKeys},
-  {kFacebookAcceptableCerts, kNoRejectedPublicKeys},
-  {kSpideroakAcceptableCerts, kNoRejectedPublicKeys},
+  {kTestAcceptableCerts, kNoRejectedPublicKeys, kNoReportURI},
+  {kGoogleAcceptableCerts, kNoRejectedPublicKeys, kNoReportURI},
+  {kTorAcceptableCerts, kNoRejectedPublicKeys, kNoReportURI},
+  {kTwitterComAcceptableCerts, kNoRejectedPublicKeys, kNoReportURI},
+  {kTwitterCDNAcceptableCerts, kNoRejectedPublicKeys, kNoReportURI},
+  {kDropboxAcceptableCerts, kNoRejectedPublicKeys, kNoReportURI},
+  {kFacebookAcceptableCerts, kNoRejectedPublicKeys, kNoReportURI},
+  {kSpideroakAcceptableCerts, kNoRejectedPublicKeys, kNoReportURI},
 };
 
 // kHSTSHuffmanTree describes a Huffman tree. The nodes of the tree are pairs
