@@ -4,12 +4,12 @@
 
 #include "chrome/browser/chromeos/drive/file_system/create_directory_operation.h"
 
-#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/file_system_core_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "components/drive/drive.pb.h"
+#include "components/drive/file_change.h"
 
 namespace drive {
 namespace file_system {

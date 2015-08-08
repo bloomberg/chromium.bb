@@ -11,8 +11,8 @@
 #include "base/callback_forward.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
+#include "components/drive/file_errors.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 
 namespace google_apis {

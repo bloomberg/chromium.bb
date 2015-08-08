@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
-#include "chrome/browser/chromeos/drive/file_errors.h"
+#include "components/drive/file_errors.h"
 
 namespace drive {
 

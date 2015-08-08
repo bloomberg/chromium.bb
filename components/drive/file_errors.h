@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_ERRORS_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_ERRORS_H_
+#ifndef COMPONENTS_DRIVE_FILE_ERRORS_H_
+#define COMPONENTS_DRIVE_FILE_ERRORS_H_
 
 #include "base/callback_forward.h"
 #include "base/files/file.h"
@@ -47,4 +47,4 @@ FileError GDataToFileError(google_apis::DriveApiErrorCode status);
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_ERRORS_H_
+#endif  // COMPONENTS_DRIVE_FILE_ERRORS_H_

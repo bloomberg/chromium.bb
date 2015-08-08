@@ -10,8 +10,8 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
+#include "components/drive/file_errors.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 
 namespace drive {

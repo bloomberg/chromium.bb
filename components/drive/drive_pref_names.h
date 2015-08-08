@@ -4,8 +4,8 @@
 
 // Constants for the names of preferences related to Google Drive.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_PREF_NAMES_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_PREF_NAMES_H_
+#ifndef COMPONENTS_DRIVE_DRIVE_PREF_NAMES_H_
+#define COMPONENTS_DRIVE_DRIVE_PREF_NAMES_H_
 
 namespace drive {
 namespace prefs {
@@ -17,4 +17,4 @@ extern const char kDisableDriveHostedFiles[];
 }  // namespace prefs
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_PREF_NAMES_H_
+#endif  // COMPONENTS_DRIVE_DRIVE_PREF_NAMES_H_

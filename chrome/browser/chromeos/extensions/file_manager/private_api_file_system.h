@@ -9,10 +9,10 @@
 
 #include <string>
 
-#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
+#include "components/drive/file_errors.h"
 #include "device/media_transfer_protocol/mtp_storage_info.pb.h"
 #include "extensions/browser/extension_function.h"
 #include "storage/browser/fileapi/file_system_url.h"

@@ -5,9 +5,9 @@
 #include "chrome/browser/chromeos/drive/file_system/set_property_operation.h"
 
 #include "base/files/file_path.h"
-#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "components/drive/drive.pb.h"
+#include "components/drive/file_errors.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/drive_api_requests.h"
 #include "google_apis/drive/test_util.h"

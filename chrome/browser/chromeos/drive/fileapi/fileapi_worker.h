@@ -24,7 +24,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/drive/file_errors.h"
+#include "components/drive/file_errors.h"
 #include "storage/browser/blob/scoped_file.h"
 
 namespace base {

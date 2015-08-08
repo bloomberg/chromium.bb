@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_TEST_UTIL_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_TEST_UTIL_H_
+#ifndef COMPONENTS_DRIVE_DRIVE_TEST_UTIL_H_
+#define COMPONENTS_DRIVE_DRIVE_TEST_UTIL_H_
 
 #include <string>
 
@@ -13,7 +13,9 @@
 #include "net/base/io_buffer.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
+#if defined(OS_CHROMEOS)
 #include "third_party/cros_system_api/constants/cryptohome.h"
+#endif
 
 class PrefRegistrySimple;
 
@@ -26,7 +28,11 @@ namespace drive {
 namespace test_util {
 
 // Disk space size used by FakeFreeDiskSpaceGetter.
+#if defined(OS_CHROMEOS)
 const int64 kLotsOfSpace = cryptohome::kMinFreeSpaceInBytes * 10;
+#else
+const int64 kLotsOfSpace = 5ull * 1024ull * 1024ull * 1024ull;  // 5GB
+#endif
 
 // Helper to destroy objects which needs Destroy() to be called on destruction.
 // Note: When using this helper, you should destruct objects before
@@ -81,4 +87,4 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 }  // namespace test_util
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_TEST_UTIL_H_
+#endif  // COMPONENTS_DRIVE_DRIVE_TEST_UTIL_H_

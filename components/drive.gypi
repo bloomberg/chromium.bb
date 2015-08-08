@@ -38,10 +38,18 @@
         'drive/drive_notification_manager.cc',
         'drive/drive_notification_manager.h',
         'drive/drive_notification_observer.h',
+        'drive/drive_pref_names.cc',
+        'drive/drive_pref_names.h',
         'drive/drive_uploader.cc',
         'drive/drive_uploader.h',
         'drive/event_logger.cc',
         'drive/event_logger.h',
+        'drive/file_change.cc',
+        'drive/file_change.h',
+        'drive/file_errors.cc',
+        'drive/file_errors.h',
+        'drive/local_file_reader.cc',
+        'drive/local_file_reader.h',
         'drive/service/drive_api_service.cc',
         'drive/service/drive_api_service.h',
         'drive/service/drive_service_interface.cc',
@@ -71,7 +79,9 @@
       ],
       'dependencies': [
         'drive',
+        'drive_proto',
         '../base/base.gyp:base',
+        '../content/content_shell_and_tests.gyp:test_support_content',
         '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
       ],
@@ -82,16 +92,12 @@
         "drive/service/fake_drive_service.h",
         "drive/service/test_util.cc",
         "drive/service/test_util.h",
+        "drive/drive_test_util.cc",
+        "drive/drive_test_util.h",
       ],
     },
 
     # TODO(lukasza): drive_unittests target.
     # Currently tests are built as part of chrome/chrome_tests_unit.gypi.
-    # Drive files that probably should be moved out of chrome_tests_unit.gypi:
-    #   components/drive/service/drive_api_util_unittest.cc
-    #   components/drive/service/drive_app_registry_unittest.cc
-    #   components/drive/service/drive_uploader_unittest.cc
-    #   components/drive/service/event_logger_unittest.cc
-    #   components/drive/service/fake_drive_service_unittest.cc
   ],
 }

@@ -12,10 +12,10 @@
 
 #include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "components/drive/file_errors.h"
 
 namespace drive {
 class FileCacheEntry;

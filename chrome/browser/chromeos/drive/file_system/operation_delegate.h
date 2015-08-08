@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OPERATION_DELEGATE_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OPERATION_DELEGATE_H_
 
-#include "chrome/browser/chromeos/drive/file_errors.h"
+#include "components/drive/file_errors.h"
 
 namespace base {
 class FilePath;

@@ -12,8 +12,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
+#include "components/drive/file_errors.h"
 
 namespace base {
 class SequencedTaskRunner;

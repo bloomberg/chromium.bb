@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_test_util.h"
+#include "components/drive/drive_test_util.h"
 
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
-#include "chrome/browser/chromeos/drive/drive_pref_names.h"
 #include "components/drive/drive.pb.h"
+#include "components/drive/drive_pref_names.h"
 
 namespace drive {
 namespace test_util {

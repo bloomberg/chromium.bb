@@ -22,11 +22,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/drive/drive_pref_names.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/chromeos/drive/write_on_cache_file.h"
 #include "components/drive/drive.pb.h"
+#include "components/drive/drive_pref_names.h"
 #include "net/base/escape.h"
 
 namespace drive {

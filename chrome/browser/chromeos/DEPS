@@ -1,5 +1,6 @@
 include_rules = [
   "+components/constrained_window",
+  "+components/drive/drive_pref_names.h",
   "+components/pairing",
   "+components/onc",
   "+components/ownership",

@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 #include "components/drive/drive.pb.h"
+#include "components/drive/file_errors.h"
 
 namespace ui {
 struct SelectedFileInfo;

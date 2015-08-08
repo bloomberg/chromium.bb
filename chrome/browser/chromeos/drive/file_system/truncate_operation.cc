@@ -13,11 +13,11 @@
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
-#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "components/drive/drive.pb.h"
+#include "components/drive/file_errors.h"
 
 namespace drive {
 namespace file_system {

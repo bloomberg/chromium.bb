@@ -5,13 +5,13 @@
 #include "chrome/browser/chromeos/drive/sync/entry_revert_performer.h"
 
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
-#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
+#include "components/drive/file_change.h"
 #include "google_apis/drive/drive_api_parser.h"
 
 namespace drive {

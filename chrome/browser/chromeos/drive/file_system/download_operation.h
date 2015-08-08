@@ -8,9 +8,9 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
+#include "components/drive/file_errors.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 
 namespace base {

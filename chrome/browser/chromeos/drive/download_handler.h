@@ -7,8 +7,8 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/download/all_download_item_notifier.h"
+#include "components/drive/file_errors.h"
 #include "content/public/browser/download_manager_delegate.h"
 
 class Profile;

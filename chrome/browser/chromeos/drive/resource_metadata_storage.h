@@ -12,8 +12,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "components/drive/drive.pb.h"
+#include "components/drive/file_errors.h"
 
 namespace base {
 class SequencedTaskRunner;

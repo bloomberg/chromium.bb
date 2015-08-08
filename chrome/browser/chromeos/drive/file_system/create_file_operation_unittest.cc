@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
 
-#include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
+#include "components/drive/file_change.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

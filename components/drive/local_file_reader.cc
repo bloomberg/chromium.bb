@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/local_file_reader.h"
+#include "components/drive/local_file_reader.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"

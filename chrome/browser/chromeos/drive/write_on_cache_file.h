@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_WRITE_ON_CACHE_FILE_H_
 
 #include "base/callback_forward.h"
-#include "chrome/browser/chromeos/drive/file_errors.h"
+#include "components/drive/file_errors.h"
 
 namespace base {
 class FilePath;

@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/drive/file_errors.h"
+#include "components/drive/file_errors.h"
 
 namespace drive {
 

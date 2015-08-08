@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/local_file_reader.h"
+#include "components/drive/local_file_reader.h"
 
 #include <string>
 
@@ -13,7 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/chromeos/drive/drive_test_util.h"
+#include "components/drive/drive_test_util.h"
 #include "google_apis/drive/test_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"

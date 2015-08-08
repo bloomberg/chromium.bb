@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 
-#include "chrome/browser/chromeos/drive/drive_test_util.h"
+#include "components/drive/drive_test_util.h"
 
 namespace drive {
 

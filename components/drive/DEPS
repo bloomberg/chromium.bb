@@ -21,4 +21,17 @@ specific_include_rules = {
   "drive_uploader\.cc": [
     "+content/public/browser/power_save_blocker.h",
   ],
+
+  # The following test dependencies should be removed to fully componentize this
+  # directory. crbug.com/498951
+  r"(drive_test_util\.h"
+  r")": [
+    "+content/public/test/test_utils.h",
+  ],
+
+  # The dependency below is ok and can stay here for the long-term, because it
+  # is guarded by #if defined(OS_CHROMEOS) in the source code.
+  "drive_test_util\.h": [
+    "+third_party/cros_system_api/constants/cryptohome.h",
+  ],
 }

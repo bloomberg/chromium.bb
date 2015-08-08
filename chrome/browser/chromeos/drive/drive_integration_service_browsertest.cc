@@ -5,10 +5,10 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/chromeos/drive/drive_pref_names.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/drive/drive_pref_names.h"
 
 namespace drive {
 

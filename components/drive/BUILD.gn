@@ -14,10 +14,18 @@ source_set("drive") {
     "drive_notification_manager.cc",
     "drive_notification_manager.h",
     "drive_notification_observer.h",
+    "drive_pref_names.cc",
+    "drive_pref_names.h",
     "drive_uploader.cc",
     "drive_uploader.h",
     "event_logger.cc",
     "event_logger.h",
+    "file_change.cc",
+    "file_change.h",
+    "file_errors.cc",
+    "file_errors.h",
+    "local_file_reader.cc",
+    "local_file_reader.h",
     "service/drive_api_service.cc",
     "service/drive_api_service.h",
     "service/drive_service_interface.cc",
@@ -44,7 +52,6 @@ source_set("drive") {
 }
 
 proto_library("proto") {
-  visibility = [ ":drive" ]
   sources = [
     "drive.proto",
   ]
@@ -53,6 +60,8 @@ proto_library("proto") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "drive_test_util.cc",
+    "drive_test_util.h",
     "service/dummy_drive_service.cc",
     "service/dummy_drive_service.h",
     "service/fake_drive_service.cc",
@@ -62,7 +71,9 @@ source_set("test_support") {
   ]
   deps = [
     ":drive",
+    ":proto",
     "//base:base",
+    "//content/test:test_support",
     "//google_apis:google_apis",
     "//net:net",
   ]
