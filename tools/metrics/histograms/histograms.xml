@@ -52020,6 +52020,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="Discovery start failed"/>
   <int value="4" label="Discovery stop failed"/>
   <int value="5" label="No matching devices found"/>
+  <int value="6" label="Bluetooth Adapter not present"/>
+  <int value="7" label="Bluetooth Adapter was off"/>
 </enum>
 
 <enum name="BookmarksExperimentState" type="int">

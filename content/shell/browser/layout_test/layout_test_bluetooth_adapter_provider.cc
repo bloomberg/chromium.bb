@@ -100,6 +100,10 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     const std::string& fake_adapter_name) {
   if (fake_adapter_name == "BaseAdapter")
     return GetBaseAdapter();
+  else if (fake_adapter_name == "NotPresentAdapter")
+    return GetNotPresentAdapter();
+  else if (fake_adapter_name == "NotPoweredAdapter")
+    return GetNotPoweredAdapter();
   else if (fake_adapter_name == "ScanFilterCheckingAdapter")
     return GetScanFilterCheckingAdapter();
   else if (fake_adapter_name == "EmptyAdapter")
@@ -149,8 +153,44 @@ LayoutTestBluetoothAdapterProvider::GetBaseAdapter() {
 
 // static
 scoped_refptr<NiceMockBluetoothAdapter>
-LayoutTestBluetoothAdapterProvider::GetScanFilterCheckingAdapter() {
+LayoutTestBluetoothAdapterProvider::GetPresentAdapter() {
   scoped_refptr<NiceMockBluetoothAdapter> adapter(GetBaseAdapter());
+  ON_CALL(*adapter, IsPresent()).WillByDefault(Return(true));
+
+  return adapter.Pass();
+}
+
+// static
+scoped_refptr<NiceMockBluetoothAdapter>
+LayoutTestBluetoothAdapterProvider::GetNotPresentAdapter() {
+  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetBaseAdapter());
+  ON_CALL(*adapter, IsPresent()).WillByDefault(Return(false));
+
+  return adapter.Pass();
+}
+
+// static
+scoped_refptr<NiceMockBluetoothAdapter>
+LayoutTestBluetoothAdapterProvider::GetPoweredAdapter() {
+  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetPresentAdapter());
+  ON_CALL(*adapter, IsPowered()).WillByDefault(Return(true));
+
+  return adapter.Pass();
+}
+
+// static
+scoped_refptr<NiceMockBluetoothAdapter>
+LayoutTestBluetoothAdapterProvider::GetNotPoweredAdapter() {
+  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetPresentAdapter());
+  ON_CALL(*adapter, IsPowered()).WillByDefault(Return(false));
+
+  return adapter.Pass();
+}
+
+// static
+scoped_refptr<NiceMockBluetoothAdapter>
+LayoutTestBluetoothAdapterProvider::GetScanFilterCheckingAdapter() {
+  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetPoweredAdapter());
 
   // This fails the test with an error message listing actual and expected UUIDs
   // if StartDiscoverySessionWithFilter() is called with the wrong argument.
@@ -177,7 +217,7 @@ LayoutTestBluetoothAdapterProvider::GetScanFilterCheckingAdapter() {
 // static
 scoped_refptr<NiceMockBluetoothAdapter>
 LayoutTestBluetoothAdapterProvider::GetFailStartDiscoveryAdapter() {
-  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetBaseAdapter());
+  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetPoweredAdapter());
 
   ON_CALL(*adapter, StartDiscoverySessionWithFilterRaw(_, _, _))
       .WillByDefault(RunCallback<2 /* error_callback */>());
@@ -188,7 +228,7 @@ LayoutTestBluetoothAdapterProvider::GetFailStartDiscoveryAdapter() {
 // static
 scoped_refptr<NiceMockBluetoothAdapter>
 LayoutTestBluetoothAdapterProvider::GetEmptyAdapter() {
-  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetBaseAdapter());
+  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetPoweredAdapter());
 
   ON_CALL(*adapter, StartDiscoverySessionWithFilterRaw(_, _, _))
       .WillByDefault(RunCallbackWithResult<1 /* success_callback */>(

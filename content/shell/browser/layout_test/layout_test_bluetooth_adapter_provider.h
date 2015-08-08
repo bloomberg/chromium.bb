@@ -42,8 +42,44 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetBaseAdapter();
 
-  // |ScanFilterCheckingAdapter|
+  // |PresentAdapter|
   // Inherits from |BaseAdapter|
+  // Devices added:
+  //  None.
+  // Mock Functions:
+  //  - IsPresent: Returns true
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetPresentAdapter();
+
+  // |NotPresentAdapter|
+  // Inherits from |BaseAdapter|
+  // Devices added:
+  //  None.
+  // Mock Functions:
+  //  - IsPresent: Returns false
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetNotPresentAdapter();
+
+  // |PoweredAdapter|
+  // Inherits from |PresentAdapter|
+  // Devices added:
+  //  None.
+  // Mock Functions:
+  //  - IsPowered: Returns true
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetPoweredAdapter();
+
+  // |NotPoweredAdapter|
+  // Inherits from |PresentAdapter|
+  // Devices added:
+  //  None.
+  // Mock Functions:
+  //  - IsPowered: Returns false
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetNotPoweredAdapter();
+
+  // |ScanFilterCheckingAdapter|
+  // Inherits from |PoweredAdapter|
   // BluetoothAdapter that asserts that its StartDiscoverySessionWithFilter()
   // method is called with a filter consisting of the standard battery, heart
   // rate, and glucose services.
@@ -58,7 +94,7 @@ class LayoutTestBluetoothAdapterProvider {
   GetScanFilterCheckingAdapter();
 
   // |FailStartDiscoveryAdapter|
-  // Inherits from |BaseAdapter|
+  // Inherits from |PoweredAdapter|
   // Devices added:
   //  None.
   // Mock Functions:
@@ -68,7 +104,7 @@ class LayoutTestBluetoothAdapterProvider {
   GetFailStartDiscoveryAdapter();
 
   // |EmptyAdapter|
-  // Inherits from |BaseAdapter|
+  // Inherits from |PoweredAdapter|
   // Devices Added:
   //  None.
   // Mock Functions:
@@ -116,7 +152,7 @@ class LayoutTestBluetoothAdapterProvider {
   GetGenericAccessAdapter();
 
   // |FailingConnectionsAdapter|
-  // Inherits from |BaseAdapter|
+  // Inherits from |EmptyAdapter|
   // FailingConnectionsAdapter holds a device for each type of connection error
   // that can occur. This way we don’t need to create an adapter for each type
   // of error. Each of the devices has a service with a different UUID so that

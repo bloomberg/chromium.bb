@@ -49,6 +49,8 @@ enum class UMARequestDeviceOutcome {
   DISCOVERY_START_FAILED = 3,
   DISCOVERY_STOP_FAILED = 4,
   NO_MATCHING_DEVICES_FOUND = 5,
+  BLUETOOTH_ADAPTER_NOT_PRESENT = 6,
+  BLUETOOTH_ADAPTER_OFF = 7,
   // NOTE: Add new requestDevice() outcomes immediately above this line. Make
   // sure to update the enum list in
   // tools/metrics/histogram/histograms.xml accordingly.
@@ -295,6 +297,30 @@ void BluetoothDispatcherHost::OnRequestDevice(
                  << ") shouldn't arrive at the same BluetoothDispatcherHost.";
       bad_message::ReceivedBadMessage(
           this, bad_message::BDH_DUPLICATE_REQUEST_DEVICE_ID);
+    }
+    if (!adapter_->IsPresent()) {
+      VLOG(1) << "Bluetooth Adapter not present. Can't serve requestDevice.";
+      RecordRequestDeviceOutcome(
+          UMARequestDeviceOutcome::BLUETOOTH_ADAPTER_NOT_PRESENT);
+      Send(new BluetoothMsg_RequestDeviceError(
+          thread_id, request_id, WebBluetoothError::NoBluetoothAdapter));
+      request_device_sessions_.erase(std::make_pair(thread_id, request_id));
+      return;
+    }
+    // TODO(jyasskin): Once the dialog is available, the dialog should check for
+    // the status of the adapter, i.e. check IsPowered() and
+    // BluetoothAdapter::Observer::PoweredChanged, and inform the user. But
+    // until the dialog is available we log/histogram the status and return
+    // with a message.
+    // https://crbug.com/517237
+    if (!adapter_->IsPowered()) {
+      VLOG(1) << "Bluetooth Adapter is not powered. Can't serve requestDevice.";
+      RecordRequestDeviceOutcome(
+          UMARequestDeviceOutcome::BLUETOOTH_ADAPTER_OFF);
+      Send(new BluetoothMsg_RequestDeviceError(
+          thread_id, request_id, WebBluetoothError::BluetoothAdapterOff));
+      request_device_sessions_.erase(std::make_pair(thread_id, request_id));
+      return;
     }
     adapter_->StartDiscoverySessionWithFilter(
         ComputeScanFilter(filters),
