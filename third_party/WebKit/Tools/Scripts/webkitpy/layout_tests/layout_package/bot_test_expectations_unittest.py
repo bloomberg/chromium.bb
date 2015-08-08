@@ -74,11 +74,15 @@ class BotTestExpectationsTest(unittest.TestCase):
     # All result_string's in this file represent retries from a single run.
     # The left-most entry is the first try, the right-most is the last.
 
-    def _assert_is_flaky(self, results_string, should_be_flaky, only_ignore_very_flaky):
+    def _assert_is_flaky(self, results_string, should_be_flaky, only_ignore_very_flaky, expected=None):
         results_json = self._results_json_from_test_data({})
         expectations = bot_test_expectations.BotTestExpectations(results_json, set('test'))
-        length_encoded = self._results_from_string(results_string)['results']
-        num_actual_results = len(expectations._flaky_types_in_results(length_encoded, only_ignore_very_flaky))
+
+        results_entry = self._results_from_string(results_string)
+        if expected:
+            results_entry[bot_test_expectations.ResultsJSON.EXPECTATIONS_KEY] = expected
+
+        num_actual_results = len(expectations._flaky_types_in_results(results_entry, only_ignore_very_flaky))
         if should_be_flaky:
             self.assertGreater(num_actual_results, 1)
         else:
@@ -97,6 +101,11 @@ class BotTestExpectationsTest(unittest.TestCase):
         self._assert_is_flaky('FFT', should_be_flaky=True, only_ignore_very_flaky=True)
         self._assert_is_flaky('FFF', should_be_flaky=False, only_ignore_very_flaky=False)
         self._assert_is_flaky('FFF', should_be_flaky=False, only_ignore_very_flaky=True)
+
+        self._assert_is_flaky('FT', should_be_flaky=True, only_ignore_very_flaky=False, expected='TIMEOUT')
+        self._assert_is_flaky('FT', should_be_flaky=False, only_ignore_very_flaky=True, expected='TIMEOUT')
+        self._assert_is_flaky('FFT', should_be_flaky=True, only_ignore_very_flaky=False, expected='TIMEOUT')
+        self._assert_is_flaky('FFT', should_be_flaky=True, only_ignore_very_flaky=True, expected='TIMEOUT')
 
     def _results_json_from_test_data(self, test_data):
         test_data[bot_test_expectations.ResultsJSON.FAILURE_MAP_KEY] = self.FAILURE_MAP

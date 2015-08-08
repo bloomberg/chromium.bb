@@ -152,7 +152,7 @@ class BotTestExpectations(object):
     # The JSON can contain results for expectations, not just actual result types.
     NON_RESULT_TYPES = ['S', 'X']  # SLOW, SKIP
 
-    PASS_RESULT = 'P'
+    PASS_EXPECTATION = 'PASS'
 
     # specifiers arg is used in unittests to avoid the static dependency on builders.
     def __init__(self, results_json, specifiers=None):
@@ -175,8 +175,7 @@ class BotTestExpectations(object):
         """Sets test expectations to bot results if there are at least two distinct results."""
         flakes_by_path = {}
         for test_path, entry in self.results_json.walk_results():
-            results_dict = entry[self.results_json.RESULTS_KEY]
-            flaky_types = self._flaky_types_in_results(results_dict, only_ignore_very_flaky)
+            flaky_types = self._flaky_types_in_results(entry, only_ignore_very_flaky)
             if len(flaky_types) <= 1:
                 continue
             flakes_by_path[test_path] = sorted(map(self.results_json.expectation_for_type, flaky_types))
@@ -230,8 +229,7 @@ class BotTestExpectations(object):
     def expectation_lines(self, only_ignore_very_flaky):
         lines = []
         for test_path, entry in self.results_json.walk_results():
-            results_array = entry[self.results_json.RESULTS_KEY]
-            flaky_types = self._flaky_types_in_results(results_array, only_ignore_very_flaky)
+            flaky_types = self._flaky_types_in_results(entry, only_ignore_very_flaky)
             if len(flaky_types) > 1:
                 line = self._line_from_test_and_flaky_types(test_path, flaky_types)
                 lines.append(line)
@@ -249,10 +247,14 @@ class BotTestExpectations(object):
 
         return results
 
-    def _flaky_types_in_results(self, run_length_encoded_results, only_ignore_very_flaky):
+    def _flaky_types_in_results(self, results_entry, only_ignore_very_flaky):
         flaky_results = set()
 
-        for result_item in run_length_encoded_results:
+        latest_expectations = [self.PASS_EXPECTATION]
+        if self.results_json.EXPECTATIONS_KEY in results_entry:
+            latest_expectations = results_entry[self.results_json.EXPECTATIONS_KEY].split(' ')
+
+        for result_item in results_entry[self.results_json.RESULTS_KEY]:
             _, result_types_str = self.results_json.occurances_and_type_from_result_item(result_item)
 
             result_types = []
@@ -265,10 +267,10 @@ class BotTestExpectations(object):
             if len(result_types) <= 1:
                 continue
 
-            # If the test passed after only one retry, it's not very flaky.
+            # If the test ran as expected after only one retry, it's not very flaky.
             # It's only very flaky if it failed the first run and the first retry
-            # and then passed in one of the subsequent retries.
-            if only_ignore_very_flaky and result_types[1] == self.PASS_RESULT:
+            # and then ran as expected in one of the subsequent retries.
+            if only_ignore_very_flaky and self.results_json.expectation_for_type(result_types[1]) in latest_expectations:
                 # Once we get a pass, we don't retry again. So if the first retry passed,
                 # then there should only be 2 entries because we don't do another retry.
                 # TODO(ojan): Reenable this assert once crbug.com/514378 is fixed.
