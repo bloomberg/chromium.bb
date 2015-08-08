@@ -21,7 +21,7 @@ HOST_HASH_VALUE = hashlib.md5(socket.gethostname()).hexdigest()
 SUCCESS_INDICATOR = 'SUCCESS: all tests passed.'
 NATIVE_MESSAGING_DIR = 'NativeMessagingHosts'
 CRD_ID = 'chrome-remote-desktop'  # Used in a few file/folder names
-CHROMOTING_HOST_PATH = '/opt/google/chrome-remote-desktop/chrome-remote-desktop'
+CHROMOTING_HOST_PATH = './remoting/host/linux/linux_me2me_host.py'
 TEST_FAILURE = False
 FAILING_TESTS = ''
 HOST_READY_INDICATOR = 'Host ready to receive connections.'
@@ -29,6 +29,12 @@ BROWSER_NOT_STARTED_ERROR = (
     'Still waiting for the following processes to finish')
 TIME_OUT_INDICATOR = '(TIMED OUT)'
 MAX_RETRIES = 1
+# On a Swarming bot where these tests are executed, a temp folder is created
+# under which the files specified in an .isolate are copied. This temp folder
+# has a random name, which we'll store here for use later.
+# Note that the test-execution always starts from the testing/chromoting folder
+# under the temp folder.
+ISOLATE_TEMP_FOLDER = os.path.abspath(os.path.join(os.getcwd(), '../..'))
 
 
 def LaunchBTCommand(args, command):
@@ -156,10 +162,17 @@ def RestartMe2MeHost():
     False: if HOST_READY_INDICATOR not found in stdout.
   """
 
+  # To start the host, we want to be in the temp-folder for this test execution.
+  # Store the current folder to return back to it later.
+  previous_directory = os.getcwd()
+  os.chdir(ISOLATE_TEMP_FOLDER)
+
   # Stop chromoting host.
   RunCommandInSubProcess(CHROMOTING_HOST_PATH + ' --stop')
   # Start chromoting host.
   results = RunCommandInSubProcess(CHROMOTING_HOST_PATH + ' --start')
+
+  os.chdir(previous_directory)
   # Confirm that the start process completed, and we got:
   # "Host ready to receive connections." in the log.
   if HOST_READY_INDICATOR not in results:
@@ -232,15 +245,12 @@ def main(args):
 
   # All tests completed. Include host-logs in the test results.
   host_log_contents = ''
-  # There should be only 1 log file, as we delete logs on test completion.
-  # Loop through matching files, just in case there are more.
   for log_file in glob.glob('/tmp/chrome_remote_desktop_*'):
     with open(log_file, 'r') as log:
       host_log_contents += '\nHOST LOG %s\n CONTENTS:\n%s' % (
           log_file, log.read())
   print host_log_contents
 
-  # Was there any test failure?
   if TEST_FAILURE:
     print '++++++++++AT LEAST 1 TEST FAILED++++++++++'
     print FAILING_TESTS.rstrip('\n')
