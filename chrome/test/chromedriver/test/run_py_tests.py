@@ -994,16 +994,18 @@ class ChromeDriverTest(ChromeDriverBaseTest):
   def testTouchSingleTapElement(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/touch_action_tests.html'))
+    target = self._driver.FindElement('id', 'target')
+    target.SingleTap()
     events = self._driver.FindElement('id', 'events')
-    events.SingleTap()
     self.assertEquals('events: touchstart touchend', events.GetText())
 
   def testTouchDownMoveUpElement(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/touch_action_tests.html'))
-    events = self._driver.FindElement('id', 'events')
-    location = events.GetLocation()
+    target = self._driver.FindElement('id', 'target')
+    location = target.GetLocation()
     self._driver.TouchDown(location['x'], location['y'])
+    events = self._driver.FindElement('id', 'events')
     self.assertEquals('events: touchstart', events.GetText())
     self._driver.TouchMove(location['x'] + 1, location['y'] + 1)
     self.assertEquals('events: touchstart touchmove', events.GetText())
@@ -1017,8 +1019,8 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     scroll_top = 'return document.body.scrollTop;'
     self.assertEquals(0, self._driver.ExecuteScript(scroll_left))
     self.assertEquals(0, self._driver.ExecuteScript(scroll_top))
-    events = self._driver.FindElement('id', 'events')
-    self._driver.TouchScroll(events, 47, 53)
+    target = self._driver.FindElement('id', 'target')
+    self._driver.TouchScroll(target, 47, 53)
     # https://code.google.com/p/chromedriver/issues/detail?id=1179
     self.assertAlmostEqual(47, self._driver.ExecuteScript(scroll_left), delta=1)
     self.assertAlmostEqual(53, self._driver.ExecuteScript(scroll_top), delta=1)
@@ -1026,16 +1028,18 @@ class ChromeDriverTest(ChromeDriverBaseTest):
   def testTouchDoubleTapElement(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/touch_action_tests.html'))
+    target = self._driver.FindElement('id', 'target')
+    target.DoubleTap()
     events = self._driver.FindElement('id', 'events')
-    events.DoubleTap()
     self.assertEquals('events: touchstart touchend touchstart touchend',
         events.GetText())
 
   def testTouchLongPressElement(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/touch_action_tests.html'))
+    target = self._driver.FindElement('id', 'target')
+    target.LongPress()
     events = self._driver.FindElement('id', 'events')
-    events.LongPress()
     self.assertEquals('events: touchstart touchcancel', events.GetText())
 
   def testTouchFlickElement(self):
