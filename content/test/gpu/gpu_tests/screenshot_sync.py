@@ -16,7 +16,7 @@ from telemetry.util import image_util
 data_path = os.path.join(
     util.GetChromiumSrcDir(), 'content', 'test', 'data', 'gpu')
 
-class _ScreenshotSyncValidator(gpu_test_base.ValidatorBase):
+class ScreenshotSyncValidator(gpu_test_base.ValidatorBase):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--force-gpu-rasterization')
 
@@ -56,7 +56,7 @@ class ScreenshotSyncPage(gpu_test_base.PageBase):
 class ScreenshotSyncProcess(gpu_test_base.TestBase):
   """Tests that screenhots are properly synchronized with the frame one which
   they were requested"""
-  test = _ScreenshotSyncValidator
+  test = ScreenshotSyncValidator
 
   @classmethod
   def Name(cls):

@@ -18,9 +18,9 @@ test_harness_script = r"""
   window.domAutomationController = domAutomationController;
 """
 
-class _GpuProcessValidator(gpu_test_base.ValidatorBase):
+class GpuProcessValidator(gpu_test_base.ValidatorBase):
   def __init__(self):
-    super(_GpuProcessValidator, self).__init__(
+    super(GpuProcessValidator, self).__init__(
         needs_browser_restart_after_each_page=True)
 
   def CustomizeBrowserOptions(self, options):
@@ -37,7 +37,7 @@ class _GpuProcessValidator(gpu_test_base.ValidatorBase):
 
 class GpuProcess(gpu_test_base.TestBase):
   """Tests that accelerated content triggers the creation of a GPU process"""
-  test = _GpuProcessValidator
+  test = GpuProcessValidator
 
   @classmethod
   def Name(cls):

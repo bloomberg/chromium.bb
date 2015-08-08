@@ -116,7 +116,7 @@ class WebglConformancePage(gpu_test_base.PageBase):
   def __init__(self, story_set, test, expectations):
     super(WebglConformancePage, self).__init__(
       url='file://' + test, page_set=story_set, base_dir=story_set.base_dir,
-      shared_page_state_class=shared_page_state.SharedDesktopPageState,
+      shared_page_state_class=gpu_test_base.DesktopGpuSharedPageState,
       name=('WebglConformance.%s' %
               test.replace('/', '_').replace('-', '_').
                  replace('\\', '_').rpartition('.')[0].replace('.', '_')),

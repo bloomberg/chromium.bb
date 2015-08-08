@@ -30,7 +30,7 @@ test_harness_script = r"""
 """
 
 
-class _TraceValidatorBase(gpu_test_base.ValidatorBase):
+class TraceValidatorBase(gpu_test_base.ValidatorBase):
   def GetCategoryName(self):
     raise NotImplementedError("GetCategoryName() Not implemented!")
 
@@ -51,7 +51,7 @@ class _TraceValidatorBase(gpu_test_base.ValidatorBase):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-logging')
 
-  def WillNavigateToPage(self, page, tab):
+  def WillNavigateToPageInner(self, page, tab):
     cat_string = ','.join(TOPLEVEL_CATEGORIES)
     cat_filter = tracing_category_filter.TracingCategoryFilter(cat_string)
     options = tracing_options.TracingOptions()
@@ -62,17 +62,17 @@ class _TraceValidatorBase(gpu_test_base.ValidatorBase):
     return 'Trace markers for GPU category was not found: %s' % category
 
 
-class _TraceValidator(_TraceValidatorBase):
+class _TraceValidator(TraceValidatorBase):
   def GetCategoryName(self):
     return TOPLEVEL_SERVICE_CATEGORY
 
 
-class _DeviceTraceValidator(_TraceValidatorBase):
+class _DeviceTraceValidator(TraceValidatorBase):
   def GetCategoryName(self):
     return TOPLEVEL_DEVICE_CATEGORY
 
 
-class _TraceTestBase(gpu_test_base.TestBase):
+class TraceTestBase(gpu_test_base.TestBase):
   """Base class for the trace tests."""
   def CreateStorySet(self, options):
     # Utilize pixel tests page set as a set of simple pages to load.
@@ -83,7 +83,7 @@ class _TraceTestBase(gpu_test_base.TestBase):
     return story_set
 
 
-class TraceTest(_TraceTestBase):
+class TraceTest(TraceTestBase):
   """Tests GPU traces are plumbed through properly."""
   test = _TraceValidator
   name = 'TraceTest'
@@ -96,7 +96,7 @@ class TraceTest(_TraceTestBase):
     return trace_test_expectations.TraceTestExpectations()
 
 
-class DeviceTraceTest(_TraceTestBase):
+class DeviceTraceTest(TraceTestBase):
   """Tests GPU Device traces show up on devices that support it."""
   test = _DeviceTraceValidator
   name = 'DeviceTraceTest'

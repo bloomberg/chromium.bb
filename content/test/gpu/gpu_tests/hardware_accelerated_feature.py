@@ -24,7 +24,7 @@ test_harness_script = r"""
   };
 """;
 
-class _HardwareAcceleratedFeatureValidator(gpu_test_base.ValidatorBase):
+class HardwareAcceleratedFeatureValidator(gpu_test_base.ValidatorBase):
   def ValidateAndMeasurePageInner(self, page, tab, results):
     feature = page.feature
     if not tab.EvaluateJavaScript('VerifyHardwareAccelerated("%s")' % feature):
@@ -47,7 +47,7 @@ class ChromeGpuPage(gpu_test_base.PageBase):
 
 class HardwareAcceleratedFeature(gpu_test_base.TestBase):
   """Tests GPU acceleration is reported as active for various features"""
-  test = _HardwareAcceleratedFeatureValidator
+  test = HardwareAcceleratedFeatureValidator
 
   @classmethod
   def Name(cls):

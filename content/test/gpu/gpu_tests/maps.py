@@ -19,15 +19,15 @@ from telemetry.page import page_test
 from telemetry import story as story_module
 from telemetry.story import story_set as story_set_module
 
-class _MapsValidator(cloud_storage_test_base.ValidatorBase):
+class MapsValidator(cloud_storage_test_base.ValidatorBase):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
 
-  def ValidateAndMeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePageInner(self, page, tab, results):
     # TODO: This should not be necessary, but it's not clear if the test is
     # failing on the bots in it's absence. Remove once we can verify that it's
     # safe to do so.
-    _MapsValidator.SpinWaitOnRAF(tab, 3)
+    MapsValidator.SpinWaitOnRAF(tab, 3)
 
     if not tab.screenshot_supported:
       raise page_test.Failure('Browser does not support screenshot capture')
@@ -88,7 +88,7 @@ class MapsPage(gpu_test_base.PageBase):
 
 class Maps(cloud_storage_test_base.TestBase):
   """Google Maps pixel tests."""
-  test = _MapsValidator
+  test = MapsValidator
 
   @classmethod
   def Name(cls):

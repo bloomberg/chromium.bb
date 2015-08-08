@@ -30,7 +30,7 @@ test_harness_script = r"""
 def _DidTestSucceed(tab):
   return tab.EvaluateJavaScript('domAutomationController._succeeded')
 
-class _GpuRasterizationValidator(cloud_storage_test_base.ValidatorBase):
+class GpuRasterizationValidator(cloud_storage_test_base.ValidatorBase):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--enable-threaded-compositing',
                                     '--enable-impl-side-painting',
@@ -66,7 +66,7 @@ class _GpuRasterizationValidator(cloud_storage_test_base.ValidatorBase):
 
 class GpuRasterization(cloud_storage_test_base.TestBase):
   """Tests that GPU rasterization produces valid content"""
-  test = _GpuRasterizationValidator
+  test = GpuRasterizationValidator
 
   @classmethod
   def Name(cls):

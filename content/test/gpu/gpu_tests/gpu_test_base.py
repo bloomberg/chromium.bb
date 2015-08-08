@@ -39,11 +39,8 @@ def _PageOperationWrapper(page, tab, expectations,
   if expectations:
     expectation = expectations.GetExpectationForPage(tab.browser, page)
   if expectation == 'skip':
-    if results:
-      results.AddValue(skip.SkipValue(
-        page,
-        "Skipped by test expectations"))
-    return
+    raise Exception(
+      'Skip expectations should have been handled at a higher level')
   try:
     inner_func()
   except:
@@ -93,6 +90,21 @@ class ValidatorBase(page_test.PageTest):
       discard_first_result=discard_first_result,
       clear_cache_before_each_run=clear_cache_before_each_run)
 
+  def WillNavigateToPage(self, page, tab):
+    """Does operations before the page is navigated. Do not override this
+    method. Override WillNavigateToPageInner, below."""
+    _PageOperationWrapper(
+      page, tab, page.GetExpectations(), False,
+      lambda: self.WillNavigateToPageInner(page, tab))
+
+  def DidNavigateToPage(self, page, tab):
+    """Does operations right after the page is navigated and after all
+    waiting for completion has occurred. Do not override this method.
+    Override DidNavigateToPageInner, below."""
+    _PageOperationWrapper(
+      page, tab, page.GetExpectations(), False,
+      lambda: self.DidNavigateToPageInner(page, tab))
+
   def ValidateAndMeasurePage(self, page, tab, results):
     """Validates and measures the page, taking into account test
     expectations. Do not override this method. Override
@@ -108,21 +120,52 @@ class ValidatorBase(page_test.PageTest):
       # iterations don't turn into no-ops.
       page.ClearHadError()
 
+  def WillNavigateToPageInner(self, page, tab):
+    pass
+
+  def DidNavigateToPageInner(self, page, tab):
+    pass
+
   def ValidateAndMeasurePageInner(self, page, tab, results):
     pass
+
+
+# NOTE: if you change this logic you must change the logic in
+# FakeGpuSharedPageState (gpu_test_base_unittest.py) as well.
+def _CanRunOnBrowser(browser_info, page):
+  expectations = page.GetExpectations()
+  return expectations.GetExpectationForPage(
+    browser_info.browser, page) != 'skip'
+
+
+class GpuSharedPageState(shared_page_state.SharedPageState):
+  def CanRunOnBrowser(self, browser_info, page):
+    return _CanRunOnBrowser(browser_info, page)
+
+
+# TODO(kbr): re-evaluate the need for this SharedPageState
+# subclass. It's only used by the WebGL conformance suite.
+class DesktopGpuSharedPageState(
+    shared_page_state.SharedDesktopPageState):
+  def CanRunOnBrowser(self, browser_info, page):
+    return _CanRunOnBrowser(browser_info, page)
 
 
 class PageBase(page_module.Page):
   # The convention is that pages subclassing this class must be
   # configured with the test expectations.
   def __init__(self, url, page_set=None, base_dir=None, name='',
-               shared_page_state_class=shared_page_state.SharedPageState,
+               shared_page_state_class=GpuSharedPageState,
                make_javascript_deterministic=True,
                expectations=None):
     super(PageBase, self).__init__(
       url=url, page_set=page_set, base_dir=base_dir, name=name,
       shared_page_state_class=shared_page_state_class,
       make_javascript_deterministic=make_javascript_deterministic)
+    # TODO(kbr): this is fragile -- if someone changes the
+    # shared_page_state_class to something that doesn't handle skip
+    # expectations, then they'll hit the exception in
+    # _PageOperationWrapper, above. Need to rethink.
     self._expectations = expectations
     self._had_error = False
 

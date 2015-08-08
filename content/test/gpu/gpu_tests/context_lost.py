@@ -48,12 +48,12 @@ harness_script = r"""
   console.log("Harness injected.");
 """
 
-class _ContextLostValidator(gpu_test_base.ValidatorBase):
+class ContextLostValidator(gpu_test_base.ValidatorBase):
   def __init__(self):
     # Strictly speaking this test doesn't yet need a browser restart
     # after each run, but if more tests are added which crash the GPU
     # process, then it will.
-    super(_ContextLostValidator, self).__init__(
+    super(ContextLostValidator, self).__init__(
       needs_browser_restart_after_each_page=True)
 
   def CustomizeBrowserOptions(self, options):
@@ -314,7 +314,7 @@ class WebGLContextLostFromSelectElementPage(gpu_test_base.PageBase):
 
 class ContextLost(gpu_test_base.TestBase):
   enabled = True
-  test = _ContextLostValidator
+  test = ContextLostValidator
 
   @classmethod
   def Name(cls):
