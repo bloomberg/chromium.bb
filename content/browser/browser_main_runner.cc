@@ -38,6 +38,7 @@ namespace content {
 #if defined(OS_WIN)
 namespace {
 
+#if !defined(_WIN64)
 // Pointer to the original CryptVerifyCertificateSignatureEx function.
 net::sha256_interception::CryptVerifyCertificateSignatureExFunc
     g_real_crypt_verify_signature_stub = NULL;
@@ -58,6 +59,7 @@ BOOL WINAPI CryptVerifyCertificateSignatureExStub(
       g_real_crypt_verify_signature_stub, provider, encoding_type, subject_type,
       subject_data, issuer_type, issuer_data, flags, extra);
 }
+#endif  // !defined(_WIN64)
 
 // If necessary, install an interception
 void InstallSha256LegacyHooks() {
