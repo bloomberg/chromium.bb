@@ -186,13 +186,10 @@ AutocompleteController::AutocompleteController(
         new HistoryURLProvider(provider_client_.get(), this);
     providers_.push_back(history_url_provider_);
   }
-  // "Tab to search" can be used on all platforms other than Android.
-#if !defined(OS_ANDROID)
   if (provider_types & AutocompleteProvider::TYPE_KEYWORD) {
     keyword_provider_ = new KeywordProvider(provider_client_.get(), this);
     providers_.push_back(keyword_provider_);
   }
-#endif
   if (provider_types & AutocompleteProvider::TYPE_SEARCH) {
     search_provider_ = new SearchProvider(provider_client_.get(), this);
     providers_.push_back(search_provider_);

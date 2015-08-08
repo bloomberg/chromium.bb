@@ -5,6 +5,7 @@
 #include "components/omnibox/browser/autocomplete_classifier.h"
 
 #include "base/auto_reset.h"
+#include "build/build_config.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -14,14 +15,20 @@
 
 // static
 const int AutocompleteClassifier::kDefaultOmniboxProviders =
-    AutocompleteProvider::TYPE_BOOKMARK |
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+    // Custom search engines cannot be used on mobile..
+    AutocompleteProvider::TYPE_KEYWORD |
+#endif
+#if !defined(OS_IOS)
+    // "Builtin", "Shortcuts" and "Zero Suggest" are not supported on iOS.
     AutocompleteProvider::TYPE_BUILTIN |
+    AutocompleteProvider::TYPE_SHORTCUTS |
+    AutocompleteProvider::TYPE_ZERO_SUGGEST |
+#endif
+    AutocompleteProvider::TYPE_BOOKMARK |
     AutocompleteProvider::TYPE_HISTORY_QUICK |
     AutocompleteProvider::TYPE_HISTORY_URL |
-    AutocompleteProvider::TYPE_KEYWORD |
-    AutocompleteProvider::TYPE_SEARCH |
-    AutocompleteProvider::TYPE_SHORTCUTS |
-    AutocompleteProvider::TYPE_ZERO_SUGGEST;
+    AutocompleteProvider::TYPE_SEARCH;
 
 AutocompleteClassifier::AutocompleteClassifier(
     scoped_ptr<AutocompleteController> controller,
