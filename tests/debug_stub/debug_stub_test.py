@@ -430,16 +430,16 @@ class DebugStubTest(unittest.TestCase):
       self.assertEquals(registers['r6'], 0x60000007)
       self.assertEquals(registers['r7'], 0x70000008)
       self.assertEquals(registers['r8'], 0x80000009)
-      # Skip r9 because it is not supposed to be settable or readable
-      # by untrusted code.
+      self.assertEquals(registers['r9'], 0x00000000)
       self.assertEquals(registers['r10'], 0xa000000b)
       self.assertEquals(registers['r11'], 0xb000000c)
       self.assertEquals(registers['r12'], 0xc000000d)
       # Ensure sp is masked.
       self.assertEquals(registers['r13'], 0x12345678)
       self.assertEquals(registers['r14'], 0xe000000f)
+      # Only the upper 4 bits of cspr are visible.
       self.assertEquals(registers['cpsr'] & ARM_USER_CPSR_FLAGS_MASK,
-                        (1 << 29) | (1 << 27))
+                        (1 << 29))
     elif ARCH == 'mips32':
       # We skip zero register because it cannot be set.
       self.assertEquals(registers['at'], 0x11000220)
@@ -520,7 +520,7 @@ class DebugStubTest(unittest.TestCase):
       read_only_zero_regs = ['cs', 'ds', 'es', 'fs', 'gs', 'ss']
     elif ARCH == 'arm':
       read_only_regs = []
-      read_only_zero_regs = []
+      read_only_zero_regs = ['r9']
     elif ARCH == 'mips32':
       read_only_regs = ['zero', 'k0', 'k1']
       read_only_zero_regs = []
@@ -843,8 +843,8 @@ class DebugStubTest(unittest.TestCase):
       self.assertEqual(reply, 'F-1,%x' % GDB_EBADF)
 
   def test_register_constraints(self):
-    if ARCH != 'x86-32' and ARCH != 'x86-64':
-      # This has only been implemented for x86-32 and x86-64.
+    if ARCH == 'mips':
+      # This has not been implemented for mips.
       return
     with LaunchDebugStub('test_super_instruction') as connection:
       reply = connection.RspRequest('c')
@@ -855,33 +855,53 @@ class DebugStubTest(unittest.TestCase):
       if ARCH == 'x86-32':
         valid_regs = ['eax', 'ebx', 'ecx', 'edx', 'esp',
                       'ebp', 'esi', 'edi', 'eflags']
-        restricted_regs = []
         read_only_regs = ['cs', 'ss', 'ds', 'es', 'fs', 'gs']
         super_inst_len = 5
       elif ARCH == 'x86-64':
         valid_regs = ['rax', 'rbx', 'rcx', 'rdx', 'rsi', 'rdi', 'eflags',
                       'r8', 'r9', 'r10', 'r11', 'r12', 'r13', 'r14']
-        restricted_regs = ['rsp', 'rbp']
         read_only_regs = ['cs', 'ss', 'ds', 'es', 'fs', 'gs', 'r15']
+        super_inst_len = 8
+      elif ARCH == 'arm':
+        valid_regs = ['r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6',
+                      'r7', 'r8', 'r10', 'r11', 'r12', 'r14']
+        read_only_regs = ['r9']
         super_inst_len = 8
       else:
         raise AssertionError('Unknown architecture')
 
       # Allowed to change all valid registers.
       for reg in valid_regs:
-        self.assertEquals(ChangeReg(connection, reg, lambda x: x + 1), 'OK')
+        self.assertEquals(ChangeReg(connection, reg,
+                                    lambda x: (x + 1) % 0xffffffff), 'OK')
 
       # Cannot change read only registers.
       for reg in read_only_regs:
-        self.assertEquals(ChangeReg(connection, reg, lambda x: x + 1), 'E03')
-
-      # Cannot change the upper 32 bits of restricted registers
-      # to non-zero value.
-      for reg in restricted_regs:
-        self.assertEquals(ChangeReg(connection, reg, lambda x: 0), 'OK')
-        self.assertEquals(ChangeReg(connection, reg, lambda x: x), 'OK')
         self.assertEquals(ChangeReg(connection, reg,
-          lambda x: x + 0xf00000000), 'E03')
+                                    lambda x: (x + 1) % 0xffffffff), 'E03')
+
+      if ARCH == 'x86-64':
+        # Cannot change the upper 32 bits of x86-64 restricted registers
+        # to non-zero value.
+        for reg in ['rsp', 'rbp']:
+          self.assertEquals(ChangeReg(connection, reg, lambda x: 0), 'OK')
+          self.assertEquals(ChangeReg(connection, reg, lambda x: x), 'OK')
+          self.assertEquals(ChangeReg(connection, reg,
+            lambda x: x + 0xf00000000), 'E03')
+      elif ARCH == 'arm':
+        # Upper 2 bits of r13 (sp) must be 0.
+        self.assertEquals(ChangeReg(connection, 'r13', lambda x: 0), 'OK')
+        self.assertEquals(ChangeReg(connection, 'r13',
+                                    lambda x: 0x80000000), 'E03')
+        # Only upper 4 bits (NZCV) of cpsr can be set.
+        self.assertEquals(ChangeReg(connection, 'cpsr',
+                                    lambda x: 0xF0000000), 'OK')
+        self.assertEquals(ChangeReg(connection, 'cpsr', lambda x: 1), 'E03')
+        # PC must fall in sandboxed range
+        self.assertEquals(ChangeReg(connection, 'r15',
+                                    lambda x: 0xF0000000), 'E03')
+        # PC must be on inst boundary (insts are 4 bytes)
+        self.assertEquals(ChangeReg(connection, 'r15', lambda x: x + 3), 'E03')
 
       # Next instruction is a super instruction.
       # Therefore cannot jump anywhere in the middle.
@@ -997,7 +1017,8 @@ class DebugStubBreakpointTest(unittest.TestCase):
 
   def test_setting_breakpoint_in_super_instruction(self):
     if ARCH != 'x86-32' and ARCH != 'x86-64':
-      # ARM breakpoints are handled separately.
+      # ARM breakpoints are handled separately, and MIPS has not been
+      # implemented.
       return
     with LaunchDebugStub('test_super_instruction') as connection:
       reply = connection.RspRequest('c')
@@ -1005,8 +1026,15 @@ class DebugStubBreakpointTest(unittest.TestCase):
 
       regs = DecodeRegs(connection.RspRequest('g'))
 
+      if ARCH == 'arm':
+        offset = 4
+      elif ARCH == 'x86-32' or ARCH == 'x86-64':
+        offset = 3
+      else:
+        raise AssertionError('Unknown architecture')
+
       # Next instruction is inside super instruction.
-      invalid_addr = regs[IP_REG[ARCH]] + 3
+      invalid_addr = regs[IP_REG[ARCH]] + offset
 
       # Setting breakpoint here should not be allowed.
       reply = connection.RspRequest('Z0,%x,0' % invalid_addr)
@@ -1022,7 +1050,7 @@ class DebugStubBreakpointTest(unittest.TestCase):
       regs = DecodeRegs(connection.RspRequest('g'))
 
       # First constant pool is next bundle.
-      pc = regs[IP_REG[ARCH]]
+      pc = regs[IP_REG[ARCH]] + 16
 
       # Check we cannot set breakpoint anywhere inside both bundles.
       for addr in range(pc, pc + 32):

@@ -302,8 +302,6 @@ bool Target::IsInitialBreakpointActive() {
 }
 
 bool Target::IsOnValidInstBoundary(uint32_t addr) {
-  // TODO(leslieb): Remove when arm has a validator implementation.
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
   uint8_t code_buf[NACL_INSTR_BLOCK_SIZE];
   // Calculate nearest bundle address.
   uint32_t bundle_addr = addr & ~(NACL_INSTR_BLOCK_SIZE - 1);
@@ -317,19 +315,19 @@ bool Target::IsOnValidInstBoundary(uint32_t addr) {
   if (!IPlatform::GetMemory(code_addr, NACL_INSTR_BLOCK_SIZE, code_buf))
     return false;
 
-  // Bundle boundaries are always valid.
-  if (bundle_addr == addr)
-    return true;
+  // We want the validator validating the original code without breakpoints.
+  EraseBreakpointsFromCopyOfMemory(bundle_addr, code_buf,
+                                   NACL_INSTR_BLOCK_SIZE);
 
+  // The IsOnInstBoundary() validator function hasn't been
+  // implemented for mips. Therefore this will criple debugging
+  // on mips, including breakpoints, until it is implemented in
+  // the validator.
   return nap_->validator->IsOnInstBoundary(
                   bundle_addr, addr,
                   code_buf,
                   NACL_INSTR_BLOCK_SIZE,
                   nap_->cpu_features) == NaClValidationSucceeded;
-#else
-  UNREFERENCED_PARAMETER(addr);
-  return true;
-#endif
 }
 
 void Target::WaitForDebugEvent() {

@@ -33,6 +33,8 @@ class Abi {
   enum RegType {
     GENERAL,
     READ_ONLY,
+    ARM_TRUSTED_PTR,
+    ARM_STATUS,
     X86_64_TRUSTED_PTR,
     READ_ONLY_ZERO,
     REG_TYPE_CNT

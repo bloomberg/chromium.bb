@@ -107,7 +107,7 @@ void set_registers_and_stop(void) {
    */
   regs.stack_ptr = 0xD2345678;
   regs.lr = 0xe000000f;
-  regs.cpsr = (1 << 29) | (1 << 27); /* C and Q flags */
+  regs.cpsr = (1 << 29); /* C flag */
 #elif defined(__mips__)
   /* Skip zero register because it cannot be set. */
   regs.at = 0x11000220;
@@ -258,13 +258,25 @@ void test_suspending_threads(void) {
  */
 void test_super_instruction(void) {
 #if defined(__i386__)
-  __asm__(".p2align 5\n" /* Ensures nacljmp doesnt cross a bundle boundary */
+  __asm__(".p2align 5\n" /* Ensures nacljmp doesn't cross a bundle boundary */
           "hlt\n"
           "nacljmp %ecx\n");
 #elif defined(__x86_64__)
-  __asm__(".p2align 5\n" /* Ensures nacljmp doesnt cross a bundle boundary */
+  __asm__(".p2align 5\n" /* Ensures nacljmp doesn't cross a bundle boundary */
           "hlt\n"
           "nacljmp %ecx, %r15");
+#elif defined(__arm__)
+  __asm__(".p2align 4\n" /* Ensures branch doesn't cross a bundle boundary */
+          /*
+           * Arrange the breakpoint so that the test can skip over it by
+           * jumping to the next bundle.  This means we never have to set the
+           * program counter to within a bundle, which could be unsafe,
+           * because BKPTs guard data literals in the ARM sandbox.
+           */
+          ".word " NACL_TO_STRING(NACL_INSTR_ARM_ABORT_NOW) "\n"
+          ".p2align 4\n"
+          "bic r0, #0xc000000F\n"
+          "bx r0");
 #endif
 }
 
@@ -273,6 +285,13 @@ void test_arm_breakpoint(void) {
   __asm__(".p2align 4\n"
           ".word " NACL_TO_STRING(NACL_INSTR_ARM_ABORT_NOW) "\n"
           ".p2align 4\n"
+          /* Need a code bundle here since we can't step over the breakpoint
+           * into a constant pool. So add NOPS.
+           */
+          ".word " NACL_TO_STRING(NACL_INSTR_ARM_NOP) "\n"
+          ".word " NACL_TO_STRING(NACL_INSTR_ARM_NOP) "\n"
+          ".word " NACL_TO_STRING(NACL_INSTR_ARM_NOP) "\n"
+          ".word " NACL_TO_STRING(NACL_INSTR_ARM_NOP) "\n"
           /* These are the two constant pool markers. */
           ".word " NACL_TO_STRING(NACL_INSTR_ARM_LITERAL_POOL_HEAD) "\n"
           ".p2align 4\n"

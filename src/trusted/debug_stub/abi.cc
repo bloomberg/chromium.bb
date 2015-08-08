@@ -77,14 +77,32 @@ static Abi::RegDef RegsArm[] = {
   MINIDEF(uint32_t, r6, GENERAL),
   MINIDEF(uint32_t, r7, GENERAL),
   MINIDEF(uint32_t, r8, GENERAL),
-  MINIDEF(uint32_t, r9, GENERAL),
+  // TODO(leslieb): Ideally r9 should not be read_only_zero.
+  // Untrusted code has 2 valid uses of r9 which are:
+  //   ldr Rn, [r9]     ; Load user thread pointer.
+  //   ldr Rn, [r9, #4] ; Load IRT thread pointer.
+  //
+  // It is currently like this to err on the side of safety.
+  // The specific address in r9 needs to be hidden from the
+  // debugger and untrusted code since it is in the trusted
+  // address space, however accessing the memory it points to,
+  // which is back in the untrusted space, may be useful for
+  // debugging.
+  //
+  // Since the debugger also does not have access to reading memory
+  // in the trusted address space there isn't an easy solution.
+  // One possible solution is to have reads of r9 return a constant
+  // magic address in the trusted space and have a special case
+  // checking for that address when reading memory and instead
+  // return the memory that r9 actually points to.
+  MINIDEF(uint32_t, r9, READ_ONLY_ZERO),
   MINIDEF(uint32_t, r10, GENERAL),
   MINIDEF(uint32_t, r11, GENERAL),
   MINIDEF(uint32_t, r12, GENERAL),
-  MINIDEF(uint32_t, sp, GENERAL),
+  MINIDEF(uint32_t, sp, ARM_TRUSTED_PTR),
   MINIDEF(uint32_t, lr, GENERAL),
   MINIDEF(uint32_t, pc, GENERAL),
-  MINIDEF(uint32_t, cpsr, GENERAL),
+  MINIDEF(uint32_t, cpsr, ARM_STATUS),
 };
 
 static Abi::RegDef RegsMips[] = {
