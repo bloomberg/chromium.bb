@@ -159,14 +159,14 @@ class BotTestExpectations(object):
         self.results_json = results_json
         self.specifiers = specifiers or set(builders.specifiers_for_builder(results_json.builder_name))
 
-    def _line_from_test_and_flaky_types_and_bug_urls(self, test_path, flaky_types, bug_urls):
+    def _line_from_test_and_flaky_types(self, test_path, flaky_types):
         line = TestExpectationLine()
         line.original_string = test_path
         line.name = test_path
         line.filename = test_path
         line.path = test_path  # FIXME: Should this be normpath?
         line.matching_tests = [test_path]
-        line.bugs = bug_urls if bug_urls else ["Bug(gardener)"]
+        line.bugs = ["crbug.com/FILE_A_BUG_BEFORE_COMMITTING_THIS"]
         line.expectations = sorted(map(self.results_json.expectation_for_type, flaky_types))
         line.specifiers = self.specifiers
         return line
@@ -233,8 +233,7 @@ class BotTestExpectations(object):
             results_array = entry[self.results_json.RESULTS_KEY]
             flaky_types = self._flaky_types_in_results(results_array, only_ignore_very_flaky)
             if len(flaky_types) > 1:
-                bug_urls = entry.get(self.results_json.BUGS_KEY)
-                line = self._line_from_test_and_flaky_types_and_bug_urls(test_path, flaky_types, bug_urls)
+                line = self._line_from_test_and_flaky_types(test_path, flaky_types)
                 lines.append(line)
         return lines
 
