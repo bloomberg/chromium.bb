@@ -40,6 +40,10 @@ class BASE_EXPORT TraceBufferChunk {
 
   void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead* overhead);
 
+  // These values must be kept consistent with the numbers of bits of
+  // chunk_index and event_index fields in TraceEventHandle
+  // (in trace_event_impl.h).
+  static const size_t kMaxChunkIndex = (1u << 26) - 1;
   static const size_t kTraceBufferChunkSize = 64;
 
  private:

@@ -58,10 +58,18 @@ namespace {
 // Controls the number of trace events we will buffer in-memory
 // before throwing them away.
 const size_t kTraceBufferChunkSize = TraceBufferChunk::kTraceBufferChunkSize;
+
 const size_t kTraceEventVectorBigBufferChunks =
     512000000 / kTraceBufferChunkSize;
+static_assert(
+    kTraceEventVectorBigBufferChunks <= TraceBufferChunk::kMaxChunkIndex,
+    "Too many big buffer chunks");
 const size_t kTraceEventVectorBufferChunks = 256000 / kTraceBufferChunkSize;
+static_assert(
+    kTraceEventVectorBufferChunks <= TraceBufferChunk::kMaxChunkIndex,
+    "Too many vector buffer chunks");
 const size_t kTraceEventRingBufferChunks = kTraceEventVectorBufferChunks / 4;
+
 // Can store results for 30 seconds with 1 ms sampling interval.
 const size_t kMonitorTraceEventBufferChunks = 30000 / kTraceBufferChunkSize;
 // ECHO_TO_CONSOLE needs a small buffer to hold the unfinished COMPLETE events.
@@ -167,8 +175,8 @@ void MakeHandle(uint32 chunk_seq,
                 size_t event_index,
                 TraceEventHandle* handle) {
   DCHECK(chunk_seq);
-  DCHECK(chunk_index < (1u << 16));
-  DCHECK(event_index < (1u << 16));
+  DCHECK(chunk_index <= TraceBufferChunk::kMaxChunkIndex);
+  DCHECK(event_index < TraceBufferChunk::kTraceBufferChunkSize);
   handle->chunk_seq = chunk_seq;
   handle->chunk_index = static_cast<uint16>(chunk_index);
   handle->event_index = static_cast<uint16>(event_index);

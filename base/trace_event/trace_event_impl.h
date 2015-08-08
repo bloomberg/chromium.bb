@@ -66,8 +66,11 @@ const int kTraceMaxNumArgs = 2;
 
 struct TraceEventHandle {
   uint32 chunk_seq;
-  uint16 chunk_index;
-  uint16 event_index;
+  // These numbers of bits must be kept consistent with
+  // TraceBufferChunk::kMaxTrunkIndex and
+  // TraceBufferChunk::kTraceBufferChunkSize (in trace_buffer.h).
+  unsigned chunk_index : 26;
+  unsigned event_index : 6;
 };
 
 class BASE_EXPORT TraceEvent {
