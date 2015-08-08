@@ -1159,40 +1159,6 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
   return handled;
 }
 
-bool ShowRebootDialog() {
-  // Get a token for this process.
-  HANDLE token;
-  if (!OpenProcessToken(GetCurrentProcess(),
-                        TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
-                        &token)) {
-    LOG(ERROR) << "Failed to open token.";
-    return false;
-  }
-
-  // Use a ScopedHandle to keep track of and eventually close our handle.
-  // TODO(robertshield): Add a Receive() method to base's ScopedHandle.
-  base::win::ScopedHandle scoped_handle(token);
-
-  // Get the LUID for the shutdown privilege.
-  TOKEN_PRIVILEGES tkp = {0};
-  LookupPrivilegeValue(NULL, SE_SHUTDOWN_NAME, &tkp.Privileges[0].Luid);
-  tkp.PrivilegeCount = 1;
-  tkp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-
-  // Get the shutdown privilege for this process.
-  AdjustTokenPrivileges(token, FALSE, &tkp, 0,
-                        reinterpret_cast<PTOKEN_PRIVILEGES>(NULL), 0);
-  if (GetLastError() != ERROR_SUCCESS) {
-    LOG(ERROR) << "Unable to get shutdown privileges.";
-    return false;
-  }
-
-  // Popup a dialog that will prompt to reboot using the default system message.
-  // TODO(robertshield): Add a localized, more specific string to the prompt.
-  RestartDialog(NULL, NULL, EWX_REBOOT | EWX_FORCEIFHUNG);
-  return true;
-}
-
 // Returns the Custom information for the client identified by the exe path
 // passed in. This information is used for crash reporting.
 google_breakpad::CustomClientInfo* GetCustomInfo(const wchar_t* exe_path) {
