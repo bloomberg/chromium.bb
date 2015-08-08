@@ -250,7 +250,8 @@ void PluginURLFetcher::OnReceivedResponse(const ResourceResponseInfo& info) {
     if (response_code == 206) {
       blink::WebURLResponse response;
       response.initialize();
-      WebURLLoaderImpl::PopulateURLResponse(url_, info, &response);
+      WebURLLoaderImpl::PopulateURLResponse(url_, info, &response,
+                                            false /* report_security_info */);
 
       std::string multipart_boundary;
       if (MultipartResponseDelegate::ReadMultipartBoundary(

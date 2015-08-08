@@ -40,10 +40,10 @@ class CONTENT_EXPORT WebURLLoaderImpl
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~WebURLLoaderImpl() override;
 
-  static void PopulateURLResponse(
-      const GURL& url,
-      const ResourceResponseInfo& info,
-      blink::WebURLResponse* response);
+  static void PopulateURLResponse(const GURL& url,
+                                  const ResourceResponseInfo& info,
+                                  blink::WebURLResponse* response,
+                                  bool report_security_info);
 
   // WebURLLoader methods:
   void loadSynchronously(
