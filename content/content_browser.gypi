@@ -2145,17 +2145,7 @@
         'browser/vr/vr_device_manager.cc',
         'browser/vr/vr_device_manager.h',
         'browser/vr/vr_device_provider.h',
-        'browser/vr/vr_transform_util.cc',
-        'browser/vr/vr_transform_util.h',
       ]
-    }],
-    ['enable_webvr==1 and OS=="android"', {
-      'sources': [
-        'browser/vr/android/cardboard/cardboard_vr_device.cc',
-        'browser/vr/android/cardboard/cardboard_vr_device.h',
-        'browser/vr/android/cardboard/cardboard_vr_device_provider.cc',
-        'browser/vr/android/cardboard/cardboard_vr_device_provider.h',
-      ],
     }],
   ],
 }

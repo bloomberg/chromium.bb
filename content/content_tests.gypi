@@ -763,9 +763,6 @@
       'browser/renderer_host/input/motion_event_android_unittest.cc',
       'renderer/java/gin_java_bridge_value_converter_unittest.cc',
     ],
-    'content_unittests_webvr_sources': [
-      'browser/vr/vr_transform_util_unittest.cc',
-    ],
   },
   'targets': [
     {
@@ -1197,9 +1194,6 @@
           'dependencies': [
             '../third_party/boringssl/boringssl.gyp:boringssl',
           ],
-        }],
-        ['enable_webvr==1', {
-          'sources': [ '<@(content_unittests_webvr_sources)' ],
         }],
       ],
     },

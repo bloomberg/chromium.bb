@@ -4,13 +4,8 @@
 
 #include "content/browser/vr/vr_device_manager.h"
 
-#include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "third_party/WebKit/public/platform/modules/vr/WebVR.h"
-
-#if defined(OS_ANDROID)
-#include "content/browser/vr/android/cardboard/cardboard_vr_device_provider.h"
-#endif
 
 namespace content {
 
@@ -20,14 +15,8 @@ VRDeviceManager* g_vr_device_manager = nullptr;
 
 VRDeviceManager::VRDeviceManager()
     : vr_initialized_(false), keep_alive_(false) {
-  bindings_.set_connection_error_handler(
-      base::Bind(&VRDeviceManager::OnConnectionError, base::Unretained(this)));
+  bindings_.set_error_handler(this);
 // Register VRDeviceProviders for the current platform
-#if defined(OS_ANDROID)
-  scoped_ptr<VRDeviceProvider> cardboard_provider(
-      new CardboardVRDeviceProvider());
-  RegisterProvider(cardboard_provider.Pass());
-#endif
 }
 
 VRDeviceManager::VRDeviceManager(scoped_ptr<VRDeviceProvider> provider)
@@ -81,7 +70,7 @@ mojo::Array<VRDeviceInfoPtr> VRDeviceManager::GetVRDevices() {
 
   std::vector<VRDevice*> devices;
   for (const auto& provider : providers_)
-    provider->GetDevices(&devices);
+    provider->GetDevices(devices);
 
   mojo::Array<VRDeviceInfoPtr> out_devices(0);
   for (const auto& device : devices) {

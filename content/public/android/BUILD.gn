@@ -63,10 +63,6 @@ android_library("content_java") {
   ]
 
   DEPRECATED_java_in_dir = "java/src"
-
-  if (enable_webvr) {
-    deps += [ "//third_party/cardboard-java:cardboard-java" ]
-  }
 }
 
 java_strings_grd("content_strings_grd") {
@@ -161,13 +157,6 @@ generate_jar_jni("jar_jni") {
 generate_jni("content_jni_headers") {
   sources = rebase_path(content_jni_gypi_values.sources, "", "../..")
   jni_package = "content"
-
-  if (enable_webvr) {
-    sources += [ "//content/public/android/java/src/org/chromium/content/browser/input/CardboardVRDevice.java" ]
-    deps = [
-      "//third_party/cardboard-java:cardboard-java",
-    ]
-  }
 }
 
 group("jni") {
