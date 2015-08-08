@@ -37,13 +37,10 @@ class UsbServiceImpl : public UsbService,
 #endif  // OS_WIN
                        public base::MessageLoop::DestructionObserver {
  public:
-  static UsbService* Create(
+  explicit UsbServiceImpl(
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
  private:
-  explicit UsbServiceImpl(
-      PlatformUsbContext context,
-      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
   ~UsbServiceImpl() override;
 
   // device::UsbService implementation

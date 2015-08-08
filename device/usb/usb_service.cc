@@ -31,9 +31,9 @@ void UsbService::Observer::OnDeviceRemovedCleanup(
 UsbService* UsbService::GetInstance(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner) {
   if (!g_service) {
-    // UsbService constructor saves the pointer this returns and UsbServiceImpl
-    // will destroy itself when the current message loop exits.
-    UsbServiceImpl::Create(blocking_task_runner);
+    // The UsbService constructor saves this object and UsbServiceImpl will
+    // destroy itself when the current message loop exits.
+    new UsbServiceImpl(blocking_task_runner);
   }
   return g_service;
 }

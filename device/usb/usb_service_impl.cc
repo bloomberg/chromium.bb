@@ -532,28 +532,9 @@ void EnumerateUdevDevice(scoped_refptr<UsbDeviceImpl> device,
 
 }  // namespace
 
-// static
-UsbService* UsbServiceImpl::Create(
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner) {
-  PlatformUsbContext context = NULL;
-  const int rv = libusb_init(&context);
-  if (rv != LIBUSB_SUCCESS) {
-    USB_LOG(ERROR) << "Failed to initialize libusb: "
-                   << ConvertPlatformUsbErrorToString(rv);
-    return nullptr;
-  }
-  if (!context) {
-    return nullptr;
-  }
-
-  return new UsbServiceImpl(context, blocking_task_runner);
-}
-
 UsbServiceImpl::UsbServiceImpl(
-    PlatformUsbContext context,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-    : context_(new UsbContext(context)),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       blocking_task_runner_(blocking_task_runner),
 #if defined(OS_WIN)
       device_observer_(this),
@@ -561,7 +542,16 @@ UsbServiceImpl::UsbServiceImpl(
       weak_factory_(this) {
   base::MessageLoop::current()->AddDestructionObserver(this);
 
-  int rv = libusb_hotplug_register_callback(
+  PlatformUsbContext platform_context = nullptr;
+  int rv = libusb_init(&platform_context);
+  if (rv != LIBUSB_SUCCESS || !platform_context) {
+    USB_LOG(DEBUG) << "Failed to initialize libusb: "
+                   << ConvertPlatformUsbErrorToString(rv);
+    return;
+  }
+  context_ = new UsbContext(platform_context);
+
+  rv = libusb_hotplug_register_callback(
       context_->context(),
       static_cast<libusb_hotplug_event>(LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED |
                                         LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT),
@@ -604,13 +594,20 @@ scoped_refptr<UsbDevice> UsbServiceImpl::GetDevice(const std::string& guid) {
 void UsbServiceImpl::GetDevices(const GetDevicesCallback& callback) {
   DCHECK(CalledOnValidThread());
 
+  if (!context_) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, std::vector<scoped_refptr<UsbDevice>>()));
+    return;
+  }
+
   if (hotplug_enabled_ && !enumeration_in_progress_) {
     // The device list is updated live when hotplug events are supported.
     std::vector<scoped_refptr<UsbDevice>> devices;
     for (const auto& map_entry : devices_) {
       devices.push_back(map_entry.second);
     }
-    callback.Run(devices);
+    task_runner_->PostTask(FROM_HERE, base::Bind(callback, devices));
   } else {
     pending_enumeration_callbacks_.push_back(callback);
     RefreshDevices();
@@ -649,6 +646,7 @@ void UsbServiceImpl::WillDestroyCurrentMessageLoop() {
 
 void UsbServiceImpl::RefreshDevices() {
   DCHECK(CalledOnValidThread());
+  DCHECK(context_);
 
   if (enumeration_in_progress_) {
     return;
@@ -746,6 +744,7 @@ void UsbServiceImpl::RefreshDevicesComplete() {
 
 void UsbServiceImpl::EnumerateDevice(PlatformUsbDevice platform_device,
                                      const base::Closure& refresh_complete) {
+  DCHECK(context_);
   devices_being_enumerated_.insert(platform_device);
 
   libusb_device_descriptor descriptor;
