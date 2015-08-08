@@ -17,9 +17,11 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "crypto/random.h"
@@ -118,18 +120,9 @@ std::string ConnectionErrorToString(protocol::ErrorCode error) {
   return std::string();
 }
 
-// This flag blocks LOGs to the UI if we're already in the middle of logging
-// to the UI. This prevents a potential infinite loop if we encounter an error
-// while sending the log message to the UI.
-bool g_logging_to_plugin = false;
-bool g_has_logging_instance = false;
-base::LazyInstance<scoped_refptr<base::SingleThreadTaskRunner> >::Leaky
-    g_logging_task_runner = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<base::WeakPtr<ChromotingInstance> >::Leaky
-    g_logging_instance = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<base::Lock>::Leaky
-    g_logging_lock = LAZY_INSTANCE_INITIALIZER;
-logging::LogMessageHandlerFunction g_logging_old_handler = nullptr;
+PP_Instance g_logging_instance = 0;
+base::LazyInstance<base::Lock>::Leaky g_logging_lock =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -588,7 +581,8 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 
   // If we didn't initialize 3D renderer then use the 2D renderer.
   if (!video_renderer_) {
-    LogToWebapp("Initializing 2D renderer.");
+    LOG(WARNING)
+        << "Failed to initialize 3D renderer. Using 2D renderer instead.";
     video_renderer_.reset(new PepperVideoRenderer2D());
     if (!video_renderer_->Initialize(this, context_, this))
       video_renderer_.reset();
@@ -1007,11 +1001,6 @@ void ChromotingInstance::SendPerfStats() {
 void ChromotingInstance::RegisterLogMessageHandler() {
   base::AutoLock lock(g_logging_lock.Get());
 
-  VLOG(1) << "Registering global log handler";
-
-  // Record previous handler so we can call it in a chain.
-  g_logging_old_handler = logging::GetLogMessageHandler();
-
   // Set up log message handler.
   // This is not thread-safe so we need it within our lock.
   logging::SetLogMessageHandler(&LogToUI);
@@ -1019,108 +1008,63 @@ void ChromotingInstance::RegisterLogMessageHandler() {
 
 void ChromotingInstance::RegisterLoggingInstance() {
   base::AutoLock lock(g_logging_lock.Get());
-
-  // Register this instance as the one that will handle all logging calls
-  // and display them to the user.
-  // If multiple plugins are run, then the last one registered will handle all
-  // logging for all instances.
-  g_logging_instance.Get() = weak_factory_.GetWeakPtr();
-  g_logging_task_runner.Get() = plugin_task_runner_;
-  g_has_logging_instance = true;
+  g_logging_instance = pp_instance();
 }
 
 void ChromotingInstance::UnregisterLoggingInstance() {
   base::AutoLock lock(g_logging_lock.Get());
 
   // Don't unregister unless we're the currently registered instance.
-  if (this != g_logging_instance.Get().get())
+  if (pp_instance() != g_logging_instance)
     return;
 
   // Unregister this instance for logging.
-  g_has_logging_instance = false;
-  g_logging_instance.Get().reset();
-  g_logging_task_runner.Get() = nullptr;
-
-  VLOG(1) << "Unregistering global log handler";
+  g_logging_instance = 0;
 }
 
 // static
 bool ChromotingInstance::LogToUI(int severity, const char* file, int line,
                                  size_t message_start,
                                  const std::string& str) {
-  // Note that we're reading |g_has_logging_instance| outside of a lock.
-  // This lockless read is done so that we don't needlessly slow down global
-  // logging with a lock for each log message.
-  //
-  // This lockless read is safe because:
-  //
-  // Misreading a false value (when it should be true) means that we'll simply
-  // skip processing a few log messages.
-  //
-  // Misreading a true value (when it should be false) means that we'll take
-  // the lock and check |g_logging_instance| unnecessarily. This is not
-  // problematic because we always set |g_logging_instance| inside a lock.
-  if (g_has_logging_instance) {
-    scoped_refptr<base::SingleThreadTaskRunner> logging_task_runner;
-    base::WeakPtr<ChromotingInstance> logging_instance;
-
-    {
-      base::AutoLock lock(g_logging_lock.Get());
-      // If we're on the logging thread and |g_logging_to_plugin| is set then
-      // this LOG message came from handling a previous LOG message and we
-      // should skip it to avoid an infinite loop of LOG messages.
-      if (!g_logging_task_runner.Get()->BelongsToCurrentThread() ||
-          !g_logging_to_plugin) {
-        logging_task_runner = g_logging_task_runner.Get();
-        logging_instance = g_logging_instance.Get();
-      }
-    }
-
-    if (logging_task_runner.get()) {
-      std::string message = remoting::GetTimestampString();
-      message += (str.c_str() + message_start);
-
-      logging_task_runner->PostTask(
-          FROM_HERE, base::Bind(&ChromotingInstance::ProcessLogToUI,
-                                logging_instance, message));
-    }
+  PP_LogLevel log_level = PP_LOGLEVEL_ERROR;
+  switch(severity) {
+    case logging::LOG_INFO:
+      log_level = PP_LOGLEVEL_TIP;
+      break;
+    case logging::LOG_WARNING:
+      log_level = PP_LOGLEVEL_WARNING;
+      break;
+    case logging::LOG_ERROR:
+    case logging::LOG_FATAL:
+      log_level = PP_LOGLEVEL_ERROR;
+      break;
   }
 
-  if (g_logging_old_handler)
-    return (g_logging_old_handler)(severity, file, line, message_start, str);
+  PP_Instance pp_instance = 0;
+  {
+    base::AutoLock lock(g_logging_lock.Get());
+    if (g_logging_instance)
+      pp_instance = g_logging_instance;
+  }
+  if (pp_instance) {
+    const PPB_Console* console = reinterpret_cast<const PPB_Console*>(
+        pp::Module::Get()->GetBrowserInterface(PPB_CONSOLE_INTERFACE));
+    if (console)
+      console->Log(pp_instance, log_level, pp::Var(str).pp_var());
+  }
+
+  // If this is a fatal message the log handler is going to crash after this
+  // function returns. In that case sleep for 1 second, Otherwise the plugin
+  // may crash before the message is delivered to the console.
+  if (severity == logging::LOG_FATAL)
+    base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
+
   return false;
-}
-
-void ChromotingInstance::ProcessLogToUI(const std::string& message) {
-  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
-
-  // This flag (which is set only here) is used to prevent LogToUI from posting
-  // new tasks while we're in the middle of servicing a LOG call. This can
-  // happen if the call to LogDebugInfo tries to LOG anything.
-  // Since it is read on the plugin thread, we don't need to lock to set it.
-  g_logging_to_plugin = true;
-  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
-  data->SetString("message", message);
-  PostLegacyJsonMessage("logDebugMessage", data.Pass());
-  g_logging_to_plugin = false;
 }
 
 bool ChromotingInstance::IsConnected() {
   return client_ &&
          (client_->connection_state() == protocol::ConnectionToHost::CONNECTED);
-}
-
-void ChromotingInstance::LogToWebapp(const std::string& message) {
-  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
-
-  LOG(ERROR) << message;
-
-#if !defined(OS_NACL)
-  // Log messages are forwarded to the webapp only in PNaCl version of the
-  // plugin, so ProcessLogToUI() needs to be called explicitly in the non-PNaCl
-  // version.
-  ProcessLogToUI(message);
-#endif  // !defined(OS_NACL)
 }
 
 }  // namespace remoting

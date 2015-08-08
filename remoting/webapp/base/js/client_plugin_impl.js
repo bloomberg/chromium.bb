@@ -192,9 +192,6 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
     if (message.method == 'sendOutgoingIq') {
       handler.onOutgoingIq(base.getStringAttr(message.data, 'iq'));
 
-    } else if (message.method == 'logDebugMessage') {
-      handler.onDebugMessage(base.getStringAttr(message.data, 'message'));
-
     } else if (message.method == 'onConnectionStatus') {
       var stateString = base.getStringAttr(message.data, 'state');
       var state = remoting.ClientSession.State.fromString(stateString);

@@ -220,8 +220,6 @@ class ChromotingInstance : public ClientUserInterface,
 
   void SendPerfStats();
 
-  void ProcessLogToUI(const std::string& message);
-
   // Returns true if there is a ConnectionToHost and it is connected.
   bool IsConnected();
 
@@ -230,9 +228,6 @@ class ChromotingInstance : public ClientUserInterface,
   void FetchSecretFromDialog(
       bool pairing_supported,
       const protocol::SecretFetchedCallback& secret_fetched_callback);
-
-  // Helper to log messages in the JS console in the webapp.
-  void LogToWebapp(const std::string& message);
 
   bool initialized_;
 

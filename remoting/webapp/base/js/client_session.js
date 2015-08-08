@@ -500,10 +500,8 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate =
  * @param {string} connectionType The new connection type.
  * @private
  */
-remoting.ClientSession.prototype.onRouteChanged =
-    function(channel, connectionType) {
-  console.log('plugin: Channel ' + channel + ' using ' +
-              connectionType + ' connection.');
+remoting.ClientSession.prototype.onRouteChanged = function(channel,
+                                                           connectionType) {
   this.logger_.setConnectionType(connectionType);
 };
 
