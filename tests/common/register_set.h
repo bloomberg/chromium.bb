@@ -124,6 +124,7 @@
 # define ASM_WITH_REGS(regs, asm_code) \
     __asm__( \
         ".p2align 4\n" \
+        ".set noat\n" \
         "move $a0, %0\n" \
         "nop\n" \
         /* We skip setting zero register because it's unsettable. */ \
@@ -373,6 +374,7 @@ extern const uint8_t kX86FlagBits[5];
     __asm__( \
         ".pushsection .text, \"ax\", %progbits\n" \
         ".set noreorder\n" \
+        ".set noat\n" \
         ".p2align 4\n" \
         ".global " #def_func "\n"\
         #def_func ":\n" \
