@@ -30,6 +30,22 @@ sequential_promise_test(() => {
 }, 'Discovery session fails to start.');
 
 sequential_promise_test(() => {
+  testRunner.setBluetoothMockDataSet('NotPresentAdapter');
+  return assert_promise_rejects_with_message(
+    requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]}),
+    {name: 'NotFoundError', message: 'Bluetooth adapter not available.'},
+    'Bluetooth adapter is not present.');
+}, 'Reject with NotFoundError if the adapter is not present.');
+
+sequential_promise_test(() => {
+  testRunner.setBluetoothMockDataSet('NotPoweredAdapter');
+  return assert_promise_rejects_with_message(
+    requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]}),
+    {name: 'NotFoundError', message: 'Bluetooth adapter is off.'},
+    'Bluetooth adapter is not powered.');
+}, 'Reject with NotFoundError if the adapter is off.');
+
+sequential_promise_test(() => {
   testRunner.setBluetoothMockDataSet('EmptyAdapter');
   return assert_promise_rejects_with_message(
     requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]}),
