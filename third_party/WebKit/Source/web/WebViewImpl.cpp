@@ -3371,6 +3371,16 @@ float WebViewImpl::maximumPageScaleFactor() const
 
 void WebViewImpl::resetScrollAndScaleState()
 {
+    resetScrollAndScaleState(false);
+}
+
+void WebViewImpl::resetScrollAndScaleStateImmediately()
+{
+    resetScrollAndScaleState(true);
+}
+
+void WebViewImpl::resetScrollAndScaleState(bool immediately)
+{
     page()->frameHost().visualViewport().reset();
 
     if (!page()->mainFrame()->isLocalFrame())
@@ -3384,6 +3394,8 @@ void WebViewImpl::resetScrollAndScaleState()
     }
 
     pageScaleConstraintsSet().setNeedsReset(true);
+    if (immediately)
+        refreshPageScaleFactorAfterLayout();
 
     // Clobber saved scales and scroll offsets.
     if (FrameView* view = page()->deprecatedLocalMainFrame()->document()->view())

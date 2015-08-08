@@ -280,6 +280,7 @@ public:
     float minimumPageScaleFactor() const;
     float maximumPageScaleFactor() const;
     float clampPageScaleFactorToLimits(float) const;
+    void resetScrollAndScaleStateImmediately();
 
     HitTestResult coreHitTestResultAt(const WebPoint&);
     void suppressInvalidations(bool enable);
@@ -535,6 +536,7 @@ private:
 
     float maximumLegiblePageScale() const;
     void refreshPageScaleFactorAfterLayout();
+    void resetScrollAndScaleState(bool immediately);
     void resumeTreeViewCommits();
     IntSize contentsSize() const;
 
