@@ -24,6 +24,7 @@
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
+#include "url/origin.h"
 #include "url/url_constants.h"
 
 using autofill::PasswordForm;
@@ -80,6 +81,8 @@ enum LoginTableColumns {
   COLUMN_SKIP_ZERO_CLICK,
   COLUMN_GENERATION_UPLOAD_STATUS,
 };
+
+enum class HistogramSize { SMALL, LARGE };
 
 void BindAddStatement(const PasswordForm& form,
                       const std::string& encrypted_password,
@@ -159,6 +162,80 @@ void LogTimesUsedStat(const std::string& name, int sample) {
 void LogNumberOfAccountsForScheme(const std::string& scheme, int sample) {
   LogDynamicUMAStat("PasswordManager.TotalAccountsHiRes.WithScheme." + scheme,
                     sample, 1, 1000, 100);
+}
+
+void LogNumberOfAccountsReusingPassword(const std::string& suffix,
+                                        int sample,
+                                        HistogramSize histogram_size) {
+  int max = histogram_size == HistogramSize::LARGE ? 500 : 100;
+  int bucket_count = histogram_size == HistogramSize::LARGE ? 50 : 20;
+  LogDynamicUMAStat("PasswordManager.AccountsReusingPassword." + suffix, sample,
+                    1, max, bucket_count);
+}
+
+// TODO(engedy): Extend url::Origin with an IsScheme() method instead.
+// See: https://crbug.com/517560.
+bool HasScheme(const url::Origin& origin, const char* scheme) {
+  return base::LowerCaseEqualsASCII(origin.scheme(), scheme);
+}
+
+// Records password reuse metrics given the |signon_realms| corresponding to a
+// set of accounts that reuse the same password. See histograms.xml for details.
+void LogPasswordReuseMetrics(const std::vector<url::Origin>& signon_realms) {
+  for (const url::Origin& source_realm : signon_realms) {
+    int same_host_http = 0;
+    int same_host_https = 0;
+    int psl_matching = 0;  // PSL match always implies the scheme is the same.
+    int different_host_http = 0;
+    int different_host_https = 0;
+
+    for (const url::Origin& target_realm : signon_realms) {
+      if (&target_realm == &source_realm)
+        continue;
+      if (source_realm.host() == target_realm.host()) {
+        if (HasScheme(target_realm, url::kHttpScheme))
+          ++same_host_http;
+        else if (HasScheme(target_realm, url::kHttpsScheme))
+          ++same_host_https;
+      } else if (IsPublicSuffixDomainMatch(source_realm.Serialize(),
+                                           target_realm.Serialize())) {
+        ++psl_matching;
+      } else if (HasScheme(target_realm, url::kHttpScheme)) {
+        ++different_host_http;
+      } else if (HasScheme(target_realm, url::kHttpsScheme)) {
+        ++different_host_https;
+      }
+    }
+
+    std::string source_realm_kind;
+    if (HasScheme(source_realm, url::kHttpScheme))
+      source_realm_kind = "FromHttpRealm";
+    else if (HasScheme(source_realm, url::kHttpsScheme))
+      source_realm_kind = "FromHttpsRealm";
+    else
+      continue;
+
+    LogNumberOfAccountsReusingPassword(
+        source_realm_kind + ".OnHttpRealmWithSameHost", same_host_http,
+        HistogramSize::SMALL);
+    LogNumberOfAccountsReusingPassword(
+        source_realm_kind + ".OnHttpsRealmWithSameHost", same_host_https,
+        HistogramSize::SMALL);
+    LogNumberOfAccountsReusingPassword(
+        source_realm_kind + ".OnPSLMatchingRealm", psl_matching,
+        HistogramSize::SMALL);
+
+    LogNumberOfAccountsReusingPassword(
+        source_realm_kind + ".OnHttpRealmWithDifferentHost",
+        different_host_http, HistogramSize::LARGE);
+    LogNumberOfAccountsReusingPassword(
+        source_realm_kind + ".OnHttpsRealmWithDifferentHost",
+        different_host_https, HistogramSize::LARGE);
+
+    LogNumberOfAccountsReusingPassword(
+        source_realm_kind + ".OnAnyRealmWithDifferentHost",
+        different_host_http + different_host_https, HistogramSize::LARGE);
+  }
 }
 
 // Creates a table named |table_name| using our current schema.
@@ -586,6 +663,27 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
   LogNumberOfAccountsForScheme("Http", http_logins);
   LogNumberOfAccountsForScheme("Https", https_logins);
   LogNumberOfAccountsForScheme("Other", other_logins);
+
+  sql::Statement form_based_passwords_statement(
+      db_.GetUniqueStatement("SELECT signon_realm, password_value FROM logins "
+                             "WHERE blacklisted_by_user = 0 AND scheme = 0"));
+
+  std::map<base::string16, std::vector<url::Origin>> passwords_to_realms;
+  while (form_based_passwords_statement.Step()) {
+    std::string signon_realm = form_based_passwords_statement.ColumnString(0);
+    base::string16 decrypted_password;
+    // Note that CryptProtectData() is non-deterministic, so passwords must be
+    // decrypted before checking equality.
+    if (!IsValidAndroidFacetURI(signon_realm) &&
+        DecryptedString(form_based_passwords_statement.ColumnString(1),
+                        &decrypted_password) == ENCRYPTION_RESULT_SUCCESS) {
+      passwords_to_realms[decrypted_password].push_back(
+          url::Origin(GURL(signon_realm)));
+    }
+  }
+
+  for (const auto& password_to_realms : passwords_to_realms)
+    LogPasswordReuseMetrics(password_to_realms.second);
 }
 
 PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {

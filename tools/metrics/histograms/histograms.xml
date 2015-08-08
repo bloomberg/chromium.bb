@@ -28371,6 +28371,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.AccountsReusingPassword" units="accounts">
+  <owner>engedy@chromium.org</owner>
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    Records, for each account, the number of other accounts (across all sites
+    and usernames) that reuse the same password. Only non-blacklisted,
+    HTML-form-based accounts are considered.
+
+    For each account, samples will only be recorded into the histograms that
+    have the first suffix corresponding to whether that account was saved on a
+    secure website or not. The second suffix is used to further categorize the
+    other accounts that reuse the same password based on how they relate to the
+    account in question, and whether they are secure. The number of other
+    accounts in each category will be reported into histogram with the
+    respective second suffixes.
+
+    Metrics are collected once per browser start-up. In case of multiple
+    profiles, the counts are for the profile for which a WebContents is first
+    created.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.ActionsTaken"
     enum="PasswordManagerActionsTaken">
   <obsolete>
@@ -75101,6 +75123,42 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="PasswordManager.SavePasswordPromptDisappearedQuickly"/>
   <affected-histogram name="PasswordManager.SavePasswordPromptDisplayed"/>
   <affected-histogram name="PasswordManager.SavePasswordPromptResponse"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PasswordReuseSourceRealm" separator=".">
+  <suffix name="FromHttpRealm"
+      label="The account in question was saved on an HTTP site."/>
+  <suffix name="FromHttpsRealm"
+      label="The account in question was saved on a HTTPS site (including
+             those with certificate issues)."/>
+  <affected-histogram name="PasswordManager.AccountsReusingPassword"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PasswordReuseTargetRealm" separator=".">
+  <suffix name="OnHttpRealmWithSameHost"
+      label="The number of other accounts whose realms have HTTP scheme and
+             the same host as the account in question."/>
+  <suffix name="OnHttpsRealmWithSameHost"
+      label="The number of other accounts whose realms have HTTPS scheme and
+             the same host as the account in question."/>
+  <suffix name="OnHttpRealmWithDifferentHost"
+      label="The number of other accounts whose realms have HTTP scheme and
+             different hosts than the account in question."/>
+  <suffix name="OnHttpsRealmWithDifferentHost"
+      label="The number of other accounts whose realms have HTTPS scheme and
+             different hosts than the account in question."/>
+  <suffix name="OnAnyRealmWithDifferentHost"
+      label="The number of other accounts whose realms have different hosts
+             than the account in question, and their scheme is either HTTP or
+             HTTPS."/>
+  <suffix name="OnPSLMatching"
+      label="The number of other accounts whose realms are public suffix
+             matches to that of the account in question (the scheme is always
+             the same in these cases)."/>
+  <affected-histogram
+      name="PasswordManager.AccountsReusingPassword.FromHttpRealm"/>
+  <affected-histogram
+      name="PasswordManager.AccountsReusingPassword.FromHttpsRealm"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PasswordScheme" separator=".">
