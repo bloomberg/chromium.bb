@@ -144,4 +144,9 @@ void RemoteFrameClientImpl::forwardInputEvent(Event* event)
     m_webFrame->client()->forwardInputEvent(webEvent.get());
 }
 
+void RemoteFrameClientImpl::frameRectsChanged(const IntRect& frameRect)
+{
+    m_webFrame->client()->frameRectsChanged(frameRect);
+}
+
 } // namespace blink

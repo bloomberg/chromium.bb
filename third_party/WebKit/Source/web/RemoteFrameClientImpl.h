@@ -33,6 +33,7 @@ public:
     void reload(FrameLoadType, ClientRedirectPolicy) override;
     unsigned backForwardLength() override;
     void forwardInputEvent(Event*) override;
+    void frameRectsChanged(const IntRect& frameRect) override;
 
     WebRemoteFrameImpl* webFrame() const { return m_webFrame; }
 

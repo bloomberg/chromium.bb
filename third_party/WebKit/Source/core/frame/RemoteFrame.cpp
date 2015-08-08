@@ -133,6 +133,11 @@ void RemoteFrame::forwardInputEvent(Event* event)
     remoteFrameClient()->forwardInputEvent(event);
 }
 
+void RemoteFrame::frameRectsChanged(const IntRect& frameRect)
+{
+    remoteFrameClient()->frameRectsChanged(frameRect);
+}
+
 void RemoteFrame::setView(PassRefPtrWillBeRawPtr<RemoteFrameView> view)
 {
     // Oilpan: as RemoteFrameView performs no finalization actions,

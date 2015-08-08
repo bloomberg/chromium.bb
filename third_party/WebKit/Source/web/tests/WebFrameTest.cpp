@@ -6993,7 +6993,8 @@ void swapAndVerifyFirstChildConsistency(const char* const message, WebFrame* par
 
 TEST_F(WebFrameSwapTest, SwapFirstChild)
 {
-    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(WebTreeScopeType::Document, nullptr);
+    FrameTestHelpers::TestWebRemoteFrameClient remoteFrameClient;
+    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(WebTreeScopeType::Document, &remoteFrameClient);
     swapAndVerifyFirstChildConsistency("local->remote", mainFrame(), remoteFrame);
 
     FrameTestHelpers::TestWebFrameClient client;
@@ -7031,7 +7032,8 @@ void swapAndVerifyMiddleChildConsistency(const char* const message, WebFrame* pa
 
 TEST_F(WebFrameSwapTest, SwapMiddleChild)
 {
-    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(WebTreeScopeType::Document, nullptr);
+    FrameTestHelpers::TestWebRemoteFrameClient remoteFrameClient;
+    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(WebTreeScopeType::Document, &remoteFrameClient);
     swapAndVerifyMiddleChildConsistency("local->remote", mainFrame(), remoteFrame);
 
     FrameTestHelpers::TestWebFrameClient client;
@@ -7066,7 +7068,8 @@ void swapAndVerifyLastChildConsistency(const char* const message, WebFrame* pare
 
 TEST_F(WebFrameSwapTest, SwapLastChild)
 {
-    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(WebTreeScopeType::Document, nullptr);
+    FrameTestHelpers::TestWebRemoteFrameClient remoteFrameClient;
+    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(WebTreeScopeType::Document, &remoteFrameClient);
     swapAndVerifyLastChildConsistency("local->remote", mainFrame(), remoteFrame);
 
     FrameTestHelpers::TestWebFrameClient client;
@@ -7101,7 +7104,8 @@ void swapAndVerifySubframeConsistency(const char* const message, WebFrame* oldFr
 
 TEST_F(WebFrameSwapTest, SwapParentShouldDetachChildren)
 {
-    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(WebTreeScopeType::Document, nullptr);
+    FrameTestHelpers::TestWebRemoteFrameClient remoteFrameClient1;
+    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(WebTreeScopeType::Document, &remoteFrameClient1);
     WebFrame* targetFrame = mainFrame()->firstChild()->nextSibling();
     EXPECT_TRUE(targetFrame);
     swapAndVerifySubframeConsistency("local->remote", targetFrame, remoteFrame);
@@ -7110,8 +7114,8 @@ TEST_F(WebFrameSwapTest, SwapParentShouldDetachChildren)
     EXPECT_TRUE(targetFrame);
 
     // Create child frames in the target frame before testing the swap.
-    FrameTestHelpers::TestWebRemoteFrameClient remoteFrameClient;
-    WebRemoteFrame* childRemoteFrame = remoteFrame->createRemoteChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &remoteFrameClient);
+    FrameTestHelpers::TestWebRemoteFrameClient remoteFrameClient2;
+    WebRemoteFrame* childRemoteFrame = remoteFrame->createRemoteChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &remoteFrameClient2);
 
     FrameTestHelpers::TestWebFrameClient client;
     WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
@@ -7328,7 +7332,8 @@ public:
 // first navigation occurs.
 TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterNewRemoteToLocalSwap)
 {
-    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(WebTreeScopeType::Document, nullptr);
+    FrameTestHelpers::TestWebRemoteFrameClient remoteFrameClient;
+    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(WebTreeScopeType::Document, &remoteFrameClient);
     WebFrame* targetFrame = mainFrame()->firstChild();
     ASSERT_TRUE(targetFrame);
     targetFrame->swap(remoteFrame);
@@ -7352,7 +7357,8 @@ TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterNewRemoteToLocalSwap)
 // process will inform us via setCommittedFirstRealLoad.
 TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterExistingRemoteToLocalSwap)
 {
-    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(WebTreeScopeType::Document, nullptr);
+    FrameTestHelpers::TestWebRemoteFrameClient remoteFrameClient;
+    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(WebTreeScopeType::Document, &remoteFrameClient);
     WebFrame* targetFrame = mainFrame()->firstChild();
     ASSERT_TRUE(targetFrame);
     targetFrame->swap(remoteFrame);

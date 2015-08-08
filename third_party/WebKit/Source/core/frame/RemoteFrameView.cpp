@@ -53,7 +53,7 @@ void RemoteFrameView::setFrameRect(const IntRect& newRect)
 
 void RemoteFrameView::frameRectsChanged()
 {
-    // FIXME: Notify embedder via WebLocalFrameClient when that is possible.
+    m_remoteFrame->frameRectsChanged(frameRect());
 }
 
 DEFINE_TRACE(RemoteFrameView)

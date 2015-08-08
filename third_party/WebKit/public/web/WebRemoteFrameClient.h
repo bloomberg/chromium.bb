@@ -44,6 +44,8 @@ public:
     // process. See http://crbug.com/339659.
     virtual void forwardInputEvent(const WebInputEvent*) { }
 
+    virtual void frameRectsChanged(const WebRect&) { }
+
     // This frame updated its opener to another frame.
     virtual void didChangeOpener(WebFrame* opener) { }
 };
