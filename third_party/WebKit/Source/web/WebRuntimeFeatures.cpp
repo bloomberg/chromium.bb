@@ -219,6 +219,11 @@ void WebRuntimeFeatures::enableSlimmingPaint(bool enable)
     RuntimeEnabledFeatures::setSlimmingPaintEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableSlimmingPaintV2(bool enable)
+{
+    RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(enable);
+}
+
 void WebRuntimeFeatures::enableTouch(bool enable)
 {
     RuntimeEnabledFeatures::setTouchEnabled(enable);
