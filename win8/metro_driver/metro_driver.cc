@@ -18,6 +18,7 @@
 
 namespace {
 
+#if !defined(NDEBUG)
 LONG WINAPI ErrorReportingHandler(EXCEPTION_POINTERS* ex_info) {
   // See roerrorapi.h for a description of the
   // exception codes and parameters.
@@ -34,6 +35,7 @@ LONG WINAPI ErrorReportingHandler(EXCEPTION_POINTERS* ex_info) {
 
   return EXCEPTION_CONTINUE_SEARCH;
 }
+#endif
 
 void SetMetroReportingFlags() {
 #if !defined(NDEBUG)

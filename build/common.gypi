@@ -3148,6 +3148,9 @@
             # TODO(mgiuca): Move this suppression into individual third-party
             # libraries as required. http://crbug.com/505301.
             '-Wno-overloaded-virtual',
+            # TODO(thakis): Move this suppression into individual third-party
+            # libraries as required. http://crbug.com/505316.
+            '-Wno-unused-function',
             # Lots of third-party libraries have unused variables. Instead of
             # suppressing them individually, we just blanket suppress them here.
             '-Wno-unused-variable',
@@ -5803,7 +5806,6 @@
                   '-Wno-microsoft',  # http://crbug.com/505296
                   '-Wno-switch',  # http://crbug.com/505308
                   '-Wno-unknown-pragmas',  # http://crbug.com/505314
-                  '-Wno-unused-function',  # http://crbug.com/505316
                   '-Wno-unused-value',  # http://crbug.com/505318
                 ],
               },

@@ -31,27 +31,6 @@ static std::string RoleToString(ERole role) {
   }
 }
 
-static std::string GetDeviceId(EDataFlow flow,
-                               ERole role) {
-  ScopedComPtr<IMMDevice> device =
-      CoreAudioUtil::CreateDefaultDevice(flow, role);
-  if (!device.get()) {
-    // Most probable reason for ending up here is that all audio devices are
-    // disabled or unplugged.
-    DVLOG(1) << "CoreAudioUtil::CreateDefaultDevice failed. No device?";
-    return std::string();
-  }
-
-  AudioDeviceName device_name;
-  HRESULT hr = CoreAudioUtil::GetDeviceName(device.get(), &device_name);
-  if (FAILED(hr)) {
-    DVLOG(1) << "Failed to retrieve the device id: " << std::hex << hr;
-    return std::string();
-  }
-
-  return device_name.unique_id;
-}
-
 AudioDeviceListenerWin::AudioDeviceListenerWin(const base::Closure& listener_cb)
     : listener_cb_(listener_cb), tick_clock_(new base::DefaultTickClock()) {
   CHECK(CoreAudioUtil::IsSupported());
