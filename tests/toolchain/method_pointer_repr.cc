@@ -72,7 +72,7 @@ int main() {
   memcpy(&nonvirtual_mpr, &nonvirtual_mp, sizeof(method_ptr));
   memcpy(&virtual_mpr, &virtual_mp, sizeof(method_ptr));
 
-#if defined(__arm__) || defined(__pnacl__)
+#if defined(__arm__) || defined(__pnacl__) || defined(__mips__)
   // In the ARM scheme, adj & 1 indicates whether the method is
   // virtual.  This makes no assumption about the alignment of
   // function pointers.  PNaCl uses the same scheme (see
