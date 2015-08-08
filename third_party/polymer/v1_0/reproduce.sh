@@ -27,6 +27,10 @@ cp ../../web-animations-js/sources/COPYING ../../web-animations-js/LICENSE
 # Remove unused gzipped binary which causes git-cl problems.
 rm ../../web-animations-js/sources/web-animations.min.js.gz
 
+# Remove source mapping directives since we don't compile the maps.
+sed -i 's/^\s*\/\/#\s*sourceMappingURL.*//' \
+  ../../web-animations-js/sources/*.min.js
+
 # These components are needed only for demos and docs.
 rm -rf components/{hydrolysis,marked,marked-element,prism,prism-element,\
 iron-component-page,iron-doc-viewer,webcomponentsjs}
