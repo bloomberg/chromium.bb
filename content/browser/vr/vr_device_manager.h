@@ -20,7 +20,7 @@
 
 namespace content {
 
-class VRDeviceManager : public VRService, public mojo::ErrorHandler {
+class VRDeviceManager : public VRService {
  public:
   ~VRDeviceManager() override;
 
@@ -51,8 +51,8 @@ class VRDeviceManager : public VRService, public mojo::ErrorHandler {
                       const GetSensorStateCallback& callback) override;
   void ResetSensor(uint32_t index) override;
 
-  // mojo::ErrorHandler implementation
-  void OnConnectionError() override;
+  // Mojo connection error handler.
+  void OnConnectionError();
 
   using ProviderList = std::vector<linked_ptr<VRDeviceProvider>>;
   ProviderList providers_;

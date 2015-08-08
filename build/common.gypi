@@ -1034,10 +1034,15 @@
         }, {
           'pkg-config': 'pkg-config'
         }],
-      ],
 
-      # WebVR support disabled until platform implementations have been added
-      'enable_webvr%': 0,
+        # Enable WebVR support by default on Android
+        # Still requires command line flag to access API
+        ['OS=="android"', {
+          'enable_webvr%': 1,
+        }, {
+          'enable_webvr%': 0,
+        }],
+      ],
 
       # Setting this to '0' will cause V8's startup snapshot to be
       # embedded in the binary instead of being a external files.

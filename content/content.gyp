@@ -610,6 +610,16 @@
             'motionevent_jni_headers'
           ],
           'includes': [ 'content_jni.gypi' ],
+          'conditions': [
+            ['enable_webvr==1', {
+              'sources': [
+                'public/android/java/src/org/chromium/content/browser/input/CardboardVRDevice.java',
+              ],
+              'dependencies': [
+                '../third_party/cardboard-java/cardboard.gyp:cardboard_jar',
+              ],
+            }],
+          ],
         },
         {
           'target_name': 'content_icudata',

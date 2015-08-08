@@ -504,6 +504,17 @@ source_set("browser") {
       "vr/vr_device_manager.cc",
       "vr/vr_device_manager.h",
       "vr/vr_device_provider.h",
+      "vr/vr_transform_util.cc",
+      "vr/vr_transform_util.h",
+    ]
+  }
+
+  if (enable_webvr && is_android) {
+    sources += [
+      "vr/android/cardboard/cardboard_vr_device.cc",
+      "vr/android/cardboard/cardboard_vr_device.h",
+      "vr/android/cardboard/cardboard_vr_device_provider.cc",
+      "vr/android/cardboard/cardboard_vr_device_provider.h",
     ]
   }
 }
