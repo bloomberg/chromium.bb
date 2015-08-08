@@ -21,20 +21,7 @@ class DeviceDataManagerTestAPI {
   // Constructs a test api that provides access to the global DeviceDataManager
   // instance that is accessible by DeviceDataManager::GetInstance().
   DeviceDataManagerTestAPI();
-
-  // Will call DeviceDataManager::DeleteInstance() if
-  // CreateDeviceDataManagerInstance() was used to create a new instance.
   ~DeviceDataManagerTestAPI();
-
-  // Creates a new ui::DeviceDataManager and sets it as the global instance.
-  // i.e. It is accessible via ui::DeviceDataManager::GetInstance(). If the
-  // DeviceDataManager already owns an instance it will be deleted using
-  // DeviceDataManager::DeleteInstance().
-  //
-  // Note: The ui::DeviceDataManager is not available on all platforms, thus
-  // this returns true when it is possible to instantiate a
-  // ui::DeviceDataManager instance and false otherwise.
-  bool CreateDeviceDataManagerInstance();
 
   // Wrapper functions to DeviceDataManager.
   void NotifyObserversTouchscreenDeviceConfigurationChanged();
@@ -45,10 +32,6 @@ class DeviceDataManagerTestAPI {
   void OnDeviceListsComplete();
 
  private:
-  // Tracks whether DeviceDataManager::DeleteInstance() should be called during
-  // destruction.
-  bool should_delete_instance_;
-
   DISALLOW_COPY_AND_ASSIGN(DeviceDataManagerTestAPI);
 };
 

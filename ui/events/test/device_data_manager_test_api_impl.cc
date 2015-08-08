@@ -9,20 +9,10 @@
 namespace ui {
 namespace test {
 
-DeviceDataManagerTestAPI::DeviceDataManagerTestAPI()
-    : should_delete_instance_(false) {
+DeviceDataManagerTestAPI::DeviceDataManagerTestAPI() {
 }
 
 DeviceDataManagerTestAPI::~DeviceDataManagerTestAPI() {
-  if (should_delete_instance_)
-    DeviceDataManager::DeleteInstance();
-}
-
-bool DeviceDataManagerTestAPI::CreateDeviceDataManagerInstance() {
-  should_delete_instance_ = true;
-  DeviceDataManager::DeleteInstance();
-  DeviceDataManager::set_instance(new DeviceDataManager());
-  return true;
 }
 
 void DeviceDataManagerTestAPI::

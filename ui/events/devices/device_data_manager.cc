@@ -44,7 +44,7 @@ DeviceDataManager* DeviceDataManager::instance() { return instance_; }
 void DeviceDataManager::set_instance(DeviceDataManager* instance) {
   DCHECK(instance)
       << "Must reset the DeviceDataManager using DeleteInstance().";
-  DCHECK(!instance_) "Can not set multiple instances of DeviceDataManager.";
+  DCHECK(!instance_) << "Can not set multiple instances of DeviceDataManager.";
   instance_ = instance;
 }
 

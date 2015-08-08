@@ -42,7 +42,6 @@ class ChromeBrowserMainExtraPartsMetricsTest : public testing::Test {
 
 ChromeBrowserMainExtraPartsMetricsTest::ChromeBrowserMainExtraPartsMetricsTest()
     : device_data_manager_test_api_() {
-  device_data_manager_test_api_.CreateDeviceDataManagerInstance();
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, &test_screen_);
 }
 
