@@ -22,8 +22,6 @@ if (is_win) {
       "../mini_installer/mini_string.cc",
       "../mini_installer/mini_string.h",
       "../mini_installer/mini_string_test.cc",
-      "../mini_installer/regkey.cc",
-      "../mini_installer/regkey.h",
       "app_launcher_installer.cc",  # Move to lib
       "app_launcher_installer.h",  # Move to lib
       "archive_patch_helper.cc",  # Move to lib

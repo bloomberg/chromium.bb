@@ -46,10 +46,6 @@ const wchar_t kApRegistryValue[] = L"ap";
 // The name of the value in kCleanupRegistryKey that tells the installer not to
 // delete extracted files.
 const wchar_t kCleanupRegistryValue[] = L"ChromeInstallerCleanup";
-// These values provide installer result codes to Omaha.
-const wchar_t kInstallerErrorRegistryValue[] = L"InstallerError";
-const wchar_t kInstallerExtraCode1RegistryValue[] = L"InstallerExtraCode1";
-const wchar_t kInstallerResultRegistryValue[] = L"InstallerResult";
 // The name of an app's Client State registry value that holds the path to its
 // uninstaller.
 const wchar_t kUninstallRegistryValue[] = L"UninstallString";

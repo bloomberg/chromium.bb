@@ -35,8 +35,6 @@
     'mini_installer/mini_string.h',
     'mini_installer/pe_resource.cc',
     'mini_installer/pe_resource.h',
-    'mini_installer/regkey.cc',
-    'mini_installer/regkey.h',
   ],
   # Disable precompiled headers for this project, to avoid
   # linker errors when building with VS 2008.
