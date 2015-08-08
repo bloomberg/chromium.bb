@@ -1496,11 +1496,6 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_ENABLE_EPHEMERAL_APPS_IN_WEBSTORE_DESCRIPTION,
      kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableEphemeralAppsInWebstore)},
-    {"enable-linkable-ephemeral-apps",
-     IDS_FLAGS_ENABLE_LINKABLE_EPHEMERAL_APPS_NAME,
-     IDS_FLAGS_ENABLE_LINKABLE_EPHEMERAL_APPS_DESCRIPTION,
-     kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableLinkableEphemeralApps)},
 #if defined(OS_ANDROID)
     {"disable-click-delay",
      IDS_FLAGS_DISABLE_CLICK_DELAY_NAME,

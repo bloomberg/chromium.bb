@@ -440,9 +440,6 @@ const char kEnableFastUnload[]         = "enable-fast-unload";
 // This is a temporary testing flag.
 const char kEnableInsecureQuic[] = "enable-insecure-quic";
 
-// Enables experimentation with launching ephemeral apps via hyperlinks.
-const char kEnableLinkableEphemeralApps[]   = "enable-linkable-ephemeral-apps";
-
 // Enables an experimental Material Design version of chrome://downloads.
 const char kEnableMaterialDesignDownloads[] = "enable-md-downloads";
 

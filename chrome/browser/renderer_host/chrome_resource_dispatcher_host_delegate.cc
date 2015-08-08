@@ -64,7 +64,6 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/apps/app_url_redirector.h"
-#include "chrome/browser/apps/ephemeral_app_throttle.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "extensions/browser/extension_throttle_manager.h"
@@ -357,15 +356,6 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
         AppUrlRedirector::MaybeCreateThrottleFor(request, io_data);
     if (url_to_app_throttle)
       throttles->push_back(url_to_app_throttle);
-
-    if (!is_prerendering) {
-      // Experimental: Launch ephemeral apps from search results.
-      content::ResourceThrottle* ephemeral_app_throttle =
-          EphemeralAppThrottle::MaybeCreateThrottleForLaunch(
-              request, io_data);
-      if (ephemeral_app_throttle)
-        throttles->push_back(ephemeral_app_throttle);
-    }
   }
 #endif
 
