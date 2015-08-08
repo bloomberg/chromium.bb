@@ -734,7 +734,6 @@ crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-v
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-zero-size-and-border.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled.html [ ImageOnlyFailure ]
-crbug.com/417782 virtual/rootlayerscrolls/fast/history/scroll-restoration/scroll-restoration-push-replace.html [ Crash ]
 
 crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 

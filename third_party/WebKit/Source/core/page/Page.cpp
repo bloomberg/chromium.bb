@@ -310,18 +310,19 @@ void Page::setPageScaleFactor(float scale, const IntPoint& origin)
         return;
 
     FrameView* view = deprecatedLocalMainFrame()->view();
-    VisualViewport& viewport = frameHost().visualViewport();
+    ScrollableArea* layoutViewport = view ? view->layoutViewportScrollableArea() : nullptr;
+    VisualViewport& visualViewport = frameHost().visualViewport();
 
-    if (scale != viewport.scale()) {
-        viewport.setScale(scale);
+    if (scale != visualViewport.scale()) {
+        visualViewport.setScale(scale);
 
         chromeClient().pageScaleFactorChanged();
 
         deprecatedLocalMainFrame()->loader().saveScrollState();
     }
 
-    if (view && view->scrollPosition() != origin)
-        view->setScrollPosition(origin, ProgrammaticScroll);
+    if (layoutViewport && layoutViewport->scrollPosition() != origin)
+        layoutViewport->setScrollPosition(origin, ProgrammaticScroll);
 }
 
 float Page::pageScaleFactor() const
