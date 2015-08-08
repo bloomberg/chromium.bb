@@ -29,6 +29,7 @@
 #include "core/layout/api/LineLayoutListMarker.h"
 #include "core/layout/api/LineLayoutRubyRun.h"
 #include "core/layout/api/LineLayoutSVGInlineText.h"
+#include "core/layout/api/LineLayoutText.h"
 #include "core/layout/api/LineLayoutTextCombine.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
@@ -790,7 +791,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
         }
 
         if (m_collapseWhiteSpace && m_currentCharacterIsSpace && !m_ignoringSpaces)
-            m_trailingObjects.setTrailingWhitespace(toLayoutText(m_current.object()));
+            m_trailingObjects.setTrailingWhitespace(LineLayoutText(m_current.object()));
         else if (!m_currentStyle->collapseWhiteSpace() || !m_currentCharacterIsSpace)
             m_trailingObjects.clear();
 

@@ -61,12 +61,12 @@ void TrailingObjects::updateMidpointsForTrailingObjects(LineMidpointState& lineM
     } else if (!lBreak.object()) {
         ASSERT(collapseFirstSpace == CollapseFirstSpace);
         // Add a new end midpoint that stops right at the very end.
-        unsigned length = m_whitespace->textLength();
+        unsigned length = m_whitespace.textLength();
         unsigned pos = length >= 2 ? length - 2 : UINT_MAX;
-        InlineIterator endMid(0, LineLayoutItem(m_whitespace), pos);
+        InlineIterator endMid(0, m_whitespace, pos);
         lineMidpointState.startIgnoringSpaces(endMid);
         for (size_t i = 0; i < m_objects.size(); ++i) {
-            ensureLineBoxInsideIgnoredSpaces(&lineMidpointState, LineLayoutItem(m_objects[i]));
+            ensureLineBoxInsideIgnoredSpaces(&lineMidpointState, m_objects[i]);
         }
     }
 }

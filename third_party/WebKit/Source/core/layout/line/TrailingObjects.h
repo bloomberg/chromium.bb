@@ -24,13 +24,13 @@
 #ifndef TrailingObjects_h
 #define TrailingObjects_h
 
+#include "core/layout/api/LineLayoutItem.h"
+#include "core/layout/api/LineLayoutText.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
 class InlineIterator;
-class LayoutObject;
-class LayoutText;
 
 struct BidiRun;
 
@@ -59,7 +59,7 @@ public:
     {
     }
 
-    void setTrailingWhitespace(LayoutText* whitespace)
+    void setTrailingWhitespace(LineLayoutText whitespace)
     {
         ASSERT(whitespace);
         m_whitespace = whitespace;
@@ -67,14 +67,14 @@ public:
 
     void clear()
     {
-        m_whitespace = nullptr;
+        m_whitespace = LineLayoutText();
         // Using resize(0) rather than clear() here saves 2% on
         // PerformanceTests/Layout/line-layout.html because we avoid freeing and
         // re-allocating the underlying buffer repeatedly.
         m_objects.resize(0);
     }
 
-    void appendObjectIfNeeded(LayoutObject* object)
+    void appendObjectIfNeeded(LineLayoutItem object)
     {
         if (m_whitespace)
             m_objects.append(object);
@@ -85,8 +85,8 @@ public:
     void updateMidpointsForTrailingObjects(LineMidpointState&, const InlineIterator& lBreak, CollapseFirstSpaceOrNot);
 
 private:
-    LayoutText* m_whitespace;
-    Vector<LayoutObject*, 4> m_objects;
+    LineLayoutText m_whitespace;
+    Vector<LineLayoutItem, 4> m_objects;
 };
 
 }
