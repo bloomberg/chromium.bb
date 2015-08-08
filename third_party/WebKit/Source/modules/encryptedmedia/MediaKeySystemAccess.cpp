@@ -64,22 +64,20 @@ private:
 // NavigatorRequestMediaKeySystemAccess.
 static Vector<String> convertInitDataTypes(const WebVector<WebEncryptedMediaInitDataType>& initDataTypes)
 {
-    Vector<String> result;
-    result.reserveCapacity(initDataTypes.size());
+    Vector<String> result(initDataTypes.size());
     for (size_t i = 0; i < initDataTypes.size(); i++)
-        result.append(EncryptedMediaUtils::convertFromInitDataType(initDataTypes[i]));
+        result[i] = EncryptedMediaUtils::convertFromInitDataType(initDataTypes[i]);
     return result;
 }
 
 static HeapVector<MediaKeySystemMediaCapability> convertCapabilities(const WebVector<WebMediaKeySystemMediaCapability>& capabilities)
 {
-    HeapVector<MediaKeySystemMediaCapability> result;
-    result.reserveCapacity(capabilities.size());
+    HeapVector<MediaKeySystemMediaCapability> result(capabilities.size());
     for (size_t i = 0; i < capabilities.size(); i++) {
         MediaKeySystemMediaCapability capability;
         capability.setContentType(capabilities[i].contentType);
         capability.setRobustness(capabilities[i].robustness);
-        result.append(capability);
+        result[i] = capability;
     }
     return result;
 }
@@ -101,10 +99,9 @@ static String convertMediaKeysRequirement(WebMediaKeySystemConfiguration::Requir
 
 static Vector<String> convertSessionTypes(const WebVector<WebEncryptedMediaSessionType>& sessionTypes)
 {
-    Vector<String> result;
-    result.reserveCapacity(sessionTypes.size());
+    Vector<String> result(sessionTypes.size());
     for (size_t i = 0; i < sessionTypes.size(); i++)
-        result.append(EncryptedMediaUtils::convertFromSessionType(sessionTypes[i]));
+        result[i] = EncryptedMediaUtils::convertFromSessionType(sessionTypes[i]);
     return result;
 }
 
