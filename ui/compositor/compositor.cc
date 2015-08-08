@@ -85,10 +85,12 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
 
   cc::LayerTreeSettings settings;
 
-  // When impl-side painting is enabled, this will ensure PictureLayers always
-  // can have LCD text, to match the previous behaviour with ContentLayers,
-  // where LCD-not-allowed notifications were ignored.
+  // This will ensure PictureLayers always can have LCD text, to match the
+  // previous behaviour with ContentLayers, where LCD-not-allowed notifications
+  // were ignored.
   settings.layers_always_allowed_lcd_text = true;
+  // Use occlusion to allow more overlapping windows to take less memory.
+  settings.use_occlusion_for_tile_prioritization = true;
   settings.renderer_settings.refresh_rate =
       context_factory_->DoesCreateTestContexts() ? kTestRefreshRate
                                                  : kDefaultRefreshRate;

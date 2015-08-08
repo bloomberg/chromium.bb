@@ -33,6 +33,7 @@ void PrioritizedTile::AsValueInto(base::trace_event::TracedValue* value) const {
 
   value->BeginDictionary("combined_priority");
   priority().AsValueInto(value);
+  value->SetBoolean("is_occluded", is_occluded_);
   value->EndDictionary();
 
   value->SetString("resolution", TileResolutionToString(priority().resolution));
