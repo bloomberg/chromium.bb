@@ -59,7 +59,9 @@ using content::RenderViewHost;
 // Flaky on Mac ASAN:
 //    http://crbug.com/428670
 
-#if defined(DISABLE_NACL) || (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
+#if defined(DISABLE_NACL) || \
+    (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)) || \
+    defined(DISABLE_NACL_BROWSERTESTS)
 
 #define MAYBE_PPAPI_NACL(test_name) DISABLED_##test_name
 
@@ -735,10 +737,10 @@ TEST_PPAPI_NACL(UMA)
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, NetAddress) {
   RUN_NETADDRESS_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, NetAddress) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(NetAddress)) {
   RUN_NETADDRESS_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, NetAddress) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_NACL(NetAddress)) {
   RUN_NETADDRESS_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
@@ -777,10 +779,12 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, NetAddressPrivate) {
       LIST_TEST(NetAddressPrivateUntrusted_GetAddress) \
   )
 
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, NetAddressPrivate) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest,
+                       MAYBE_PPAPI_NACL(NetAddressPrivate)) {
   RUN_NETADDRESS_PRIVATE_UNTRUSTED_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, NetAddressPrivate) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest,
+                       MAYBE_PPAPI_NACL(NetAddressPrivate)) {
   RUN_NETADDRESS_PRIVATE_UNTRUSTED_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
@@ -799,10 +803,10 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, NetworkMonitor) {
   RUN_NETWORK_MONITOR_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, NetworkMonitor) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(NetworkMonitor)) {
   RUN_NETWORK_MONITOR_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, NetworkMonitor) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_NACL(NetworkMonitor)) {
   RUN_NETWORK_MONITOR_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
@@ -867,16 +871,16 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, WebSocket1) {
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, WebSocket2) {
   RUN_WEBSOCKET_SUBTESTS_2;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, WebSocket1) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(WebSocket1)) {
   RUN_WEBSOCKET_SUBTESTS_1;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, WebSocket2) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(WebSocket2)) {
   RUN_WEBSOCKET_SUBTESTS_2;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, WebSocket1) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_NACL(WebSocket1)) {
   RUN_WEBSOCKET_SUBTESTS_1;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, WebSocket2) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_NACL(WebSocket2)) {
   RUN_WEBSOCKET_SUBTESTS_2;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
@@ -899,13 +903,13 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, AudioConfig) {
   RUN_AUDIO_CONFIG_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, AudioConfig) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(AudioConfig)) {
   RUN_AUDIO_CONFIG_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(AudioConfig)) {
   RUN_AUDIO_CONFIG_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, AudioConfig) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_NACL(AudioConfig)) {
   RUN_AUDIO_CONFIG_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
@@ -935,13 +939,13 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_Audio) {
   RUN_AUDIO_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, Audio) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(Audio)) {
   RUN_AUDIO_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(Audio)) {
   RUN_AUDIO_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, Audio) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_NACL(Audio)) {
   RUN_AUDIO_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
@@ -955,13 +959,15 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
       LIST_TEST(Audio_AudioThreadCreatorIsCalled) \
   )
 
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, AudioThreadCreator) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest,
+                       MAYBE_PPAPI_NACL(AudioThreadCreator)) {
   RUN_AUDIO_THREAD_CREATOR_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(AudioThreadCreator)) {
   RUN_AUDIO_THREAD_CREATOR_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, AudioThreadCreator) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest,
+                       MAYBE_PPAPI_NACL(AudioThreadCreator)) {
   RUN_AUDIO_THREAD_CREATOR_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
@@ -1051,10 +1057,10 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, InputEvent_AcceptTouchEvent) {
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View) {
   RUN_VIEW_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, View) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(View)) {
   RUN_VIEW_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, View) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_NACL(View)) {
   RUN_VIEW_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest, MAYBE_PNACL_NONSFI(View)) {
@@ -1245,7 +1251,8 @@ class NonSfiPackagedAppTest : public PackagedAppTest {
 
 // Load a packaged app, and wait for it to successfully post a "hello" message
 // back.
-IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest, SuccessfulLoad) {
+IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest,
+                       MAYBE_PPAPI_NACL(SuccessfulLoad)) {
   RunTests("packaged_app");
 }
 
@@ -1254,15 +1261,18 @@ IN_PROC_BROWSER_TEST_F(NonSfiPackagedAppTest,
   RunTests("packaged_app");
 }
 
-IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest, MulticastPermissions) {
+IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest,
+                       MAYBE_PPAPI_NACL(MulticastPermissions)) {
   RunTests("multicast_permissions");
 }
 
-IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest, NoSocketPermissions) {
+IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest,
+                       MAYBE_PPAPI_NACL(NoSocketPermissions)) {
   RunTests("no_socket_permissions");
 }
 
-IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest, SocketPermissions) {
+IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest,
+                       MAYBE_PPAPI_NACL(SocketPermissions)) {
   RunTests("socket_permissions");
 }
 

@@ -174,7 +174,8 @@ class NaClBrowserTestGLibcExtension : public NaClBrowserTestGLibc {
 
 // NaCl glibc tests are included for x86 only, as there is no glibc support
 // for other architectures (ARM/MIPS).
-#if defined(ARCH_CPU_X86_FAMILY)
+#if defined(ARCH_CPU_X86_FAMILY) && \
+    !defined(DISABLE_NACL_BROWSERTESTS)
 #  define MAYBE_GLIBC(test_name) test_name
 #else
 #  define MAYBE_GLIBC(test_name) DISABLED_##test_name
@@ -194,7 +195,8 @@ class NaClBrowserTestGLibcExtension : public NaClBrowserTestGLibc {
 // Similar to MAYBE_NONSFI, this is available only on x86-32, x86-64 or
 // ARM linux.
 #if defined(OS_LINUX) && \
-    (defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARMEL))
+    (defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARMEL)) && \
+    !defined(DISABLE_NACL_BROWSERTESTS)
 #  define MAYBE_PNACL_NONSFI(test_case) test_case
 #else
 #  define MAYBE_PNACL_NONSFI(test_case) DISABLED_##test_case

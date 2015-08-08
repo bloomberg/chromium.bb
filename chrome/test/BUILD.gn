@@ -10,6 +10,11 @@ import("//chrome/chrome_tests.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//testing/test.gni")
 
+declare_args() {
+  # TODO(GYP) http://crbug.com/462791
+  enable_nacl_browsertests = false
+}
+
 # This target exists to reference other test executables to bring these files
 # into the build.
 group("test") {
@@ -678,6 +683,10 @@ if (!is_android) {
 
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
+    if (!enable_nacl_browsertests) {
+      defines += [ "DISABLE_NACL_BROWSERTESTS" ]
+    }
+
     # TODO(GYP) if (is_win) {
     #       ['incremental_chrome_dll==1', {
     #         'UseLibraryDependencyInputs': "true",
@@ -691,7 +700,9 @@ if (!is_android) {
     if (!enable_one_click_signin) {
       sources -= [ "../browser/ui/sync/one_click_signin_bubble_links_delegate_browsertest.cc" ]
     }
-    if (enable_nacl) {
+    if (!enable_nacl_browsertests) {
+      sources -= [ "../browser/extensions/api/hotword_private/hotword_private_apitest.cc" ]
+    } else if (enable_nacl) {
       sources += [
         "../browser/extensions/extension_nacl_browsertest.cc",
         "../browser/nacl_host/test/gdb_debug_stub_browsertest.cc",
@@ -956,7 +967,7 @@ if (!is_android) {
         "../browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc",
       ]
     }
-    if (!is_android && !is_ios) {
+    if (!is_android && !is_ios && enable_nacl_browsertests) {
       sources +=
           [ "../browser/copresence/chrome_whispernet_client_browsertest.cc" ]
       deps += [ "//components/copresence" ]
