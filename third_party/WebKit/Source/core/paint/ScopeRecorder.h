@@ -16,13 +16,12 @@ class LayoutObject;
 
 class CORE_EXPORT ScopeRecorder {
 public:
-    ScopeRecorder(GraphicsContext&, const DisplayItemClientWrapper&);
+    ScopeRecorder(GraphicsContext&);
 
     ~ScopeRecorder();
 
 private:
     DisplayItemList* m_displayItemList;
-    DisplayItemClientWrapper m_object;
 };
 
 } // namespace blink

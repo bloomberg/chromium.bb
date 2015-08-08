@@ -12,15 +12,14 @@
 
 namespace blink {
 
-ScopeRecorder::ScopeRecorder(GraphicsContext& context, const DisplayItemClientWrapper& object)
+ScopeRecorder::ScopeRecorder(GraphicsContext& context)
     : m_displayItemList(context.displayItemList())
-    , m_object(object)
 {
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return;
 
     ASSERT(m_displayItemList);
-    m_displayItemList->beginScope(object.displayItemClient());
+    m_displayItemList->beginScope();
 }
 
 ScopeRecorder::~ScopeRecorder()
@@ -28,7 +27,7 @@ ScopeRecorder::~ScopeRecorder()
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return;
 
-    m_displayItemList->endScope(m_object.displayItemClient());
+    m_displayItemList->endScope();
 }
 
 } // namespace blink

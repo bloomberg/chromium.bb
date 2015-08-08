@@ -79,7 +79,7 @@ void DisplayItemList::processNewItem(DisplayItem* displayItem)
 #endif
 
     if (!m_scopeStack.isEmpty())
-        displayItem->setScope(m_scopeStack.last().id, m_scopeStack.last().client);
+        displayItem->setScope(m_scopeStack.last());
 
 #if ENABLE(ASSERT)
     size_t index = findMatchingItemFromIndex(displayItem->nonCachedId(), m_newDisplayItemIndicesByClient, m_newDisplayItems);
@@ -99,21 +99,14 @@ void DisplayItemList::processNewItem(DisplayItem* displayItem)
         displayItem->setSkippedCache();
 }
 
-void DisplayItemList::beginScope(DisplayItemClient client)
+void DisplayItemList::beginScope()
 {
-    ClientScopeIdMap::iterator it = m_clientScopeIdMap.find(client);
-    int scopeId;
-    if (it == m_clientScopeIdMap.end()) {
-        m_clientScopeIdMap.add(client, 0);
-        scopeId = 0;
-    } else {
-        scopeId = ++it->value;
-    }
-    m_scopeStack.append(Scope(client, scopeId));
+    ASSERT_WITH_SECURITY_IMPLICATION(m_nextScope < UINT_MAX);
+    m_scopeStack.append(m_nextScope++);
     beginSkippingCache();
 }
 
-void DisplayItemList::endScope(DisplayItemClient client)
+void DisplayItemList::endScope()
 {
     m_scopeStack.removeLast();
     endSkippingCache();
@@ -222,9 +215,9 @@ void DisplayItemList::commitNewDisplayItems()
         "num_non_cached_new_items", (int)m_newDisplayItems.size() - m_numCachedItems);
 
     // These data structures are used during painting only.
-    m_clientScopeIdMap.clear();
     ASSERT(m_scopeStack.isEmpty());
     m_scopeStack.clear();
+    m_nextScope = 1;
     ASSERT(!skippingCache());
 #if ENABLE(ASSERT)
     m_newDisplayItemIndicesByClient.clear();

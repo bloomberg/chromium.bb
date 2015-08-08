@@ -49,8 +49,12 @@ public:
         processNewItem(displayItem);
         return *displayItem;
     }
-    void beginScope(DisplayItemClient);
-    void endScope(DisplayItemClient);
+
+    // Scopes must be used to avoid duplicated display item ids when we paint some object
+    // multiple times and generate multiple display items with the same type.
+    // We don't cache display items added in scopes.
+    void beginScope();
+    void endScope();
 
     // True if the last display item is a begin that doesn't draw content.
     bool lastDisplayItemIsNoopBegin() const;
@@ -100,7 +104,8 @@ protected:
         , m_validlyCachedClientsDirty(false)
         , m_constructionDisabled(false)
         , m_skippingCacheCount(0)
-        , m_numCachedItems(0) { }
+        , m_numCachedItems(0)
+        , m_nextScope(1) { }
 
 private:
     friend class DisplayItemListTest;
@@ -153,17 +158,8 @@ private:
 
     int m_numCachedItems;
 
-    // Scope ids are allocated per client to ensure that the ids are stable for non-invalidated
-    // clients between frames, so that we can use the id to match new display items to cached
-    // display items.
-    struct Scope {
-        Scope(DisplayItemClient c, int i) : client(c), id(i) { }
-        DisplayItemClient client;
-        int id;
-    };
-    typedef HashMap<DisplayItemClient, int> ClientScopeIdMap;
-    ClientScopeIdMap m_clientScopeIdMap;
-    Vector<Scope> m_scopeStack;
+    unsigned m_nextScope;
+    Vector<unsigned> m_scopeStack;
 
 #if ENABLE(ASSERT)
     // This is used to check duplicated ids during add(). We could also check during

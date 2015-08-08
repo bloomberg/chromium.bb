@@ -206,7 +206,7 @@ void SVGShapePainter::paintMarkers(const PaintInfo& paintInfo, const FloatRect& 
     markersPaintInfo.rect = LayoutRect::infiniteIntRect();
 
     for (unsigned i = 0; i < size; ++i) {
-        ScopeRecorder scopeRecorder(*markersPaintInfo.context, m_layoutSVGShape);
+        ScopeRecorder scopeRecorder(*markersPaintInfo.context);
         if (LayoutSVGResourceMarker* marker = SVGMarkerData::markerForType((*markerPositions)[i].type, markerStart, markerMid, markerEnd))
             paintMarker(markersPaintInfo, *marker, (*markerPositions)[i], strokeWidth);
     }

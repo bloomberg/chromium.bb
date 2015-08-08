@@ -180,8 +180,7 @@ public:
 
     DisplayItem(const DisplayItemClientWrapper& client, Type type)
         : m_client(client.displayItemClient())
-        , m_scopeContainer(nullptr)
-        , m_scopeId(0)
+        , m_scope(0)
         , m_type(type)
         , m_skippedCache(false)
         , m_ignoredFromList(false)
@@ -192,11 +191,10 @@ public:
 
     // Ids are for matching new DisplayItems with existing DisplayItems.
     struct Id {
-        Id(const DisplayItemClient client, const Type type, const int scopeId, const DisplayItemClient scopeContainer)
+        Id(const DisplayItemClient client, const Type type, const unsigned scope)
             : client(client)
             , type(type)
-            , scopeId(scopeId)
-            , scopeContainer(scopeContainer) { }
+            , scope(scope) { }
 
         bool matches(const DisplayItem& item) const
         {
@@ -205,21 +203,19 @@ public:
             ASSERT(!isCachedType(type));
             return client == item.m_client
                 && type == item.m_type
-                && scopeId == item.m_scopeId
-                && scopeContainer == item.m_scopeContainer;
+                && scope == item.m_scope;
         }
 
         const DisplayItemClient client;
         const Type type;
-        const int scopeId;
-        const DisplayItemClient scopeContainer;
+        const unsigned scope;
     };
 
     // Return the Id with cached types converted to non-cached types
     // (e.g., Type::CachedSVGImage -> Type::SVGImage).
     Id nonCachedId() const
     {
-        return Id(m_client, isCachedType(m_type) ? cachedTypeToDrawingType(m_type) : m_type, m_scopeId, m_scopeContainer);
+        return Id(m_client, isCachedType(m_type) ? cachedTypeToDrawingType(m_type) : m_type, m_scope);
     }
 
     virtual ~DisplayItem() { }
@@ -229,11 +225,7 @@ public:
     DisplayItemClient client() const { return m_client; }
     Type type() const { return m_type; }
 
-    void setScope(int scopeId, DisplayItemClient scopeContainer)
-    {
-        m_scopeId = scopeId;
-        m_scopeContainer = scopeContainer;
-    }
+    void setScope(unsigned scope) { m_scope = scope; }
 
     // For DisplayItemList only. Painters should use DisplayItemCacheSkipper instead.
     void setSkippedCache() { m_skippedCache = true; }
@@ -322,12 +314,11 @@ public:
 
 private:
     // The default DisplayItem constructor is only used by ListContainer::appendByMoving
-    // where an inavlid DisplaItem is constructed at the source location.
+    // where an invalid DisplaItem is constructed at the source location.
     friend DisplayItem* ListContainer<DisplayItem>::appendByMoving<DisplayItem>(DisplayItem*);
     DisplayItem()
         : m_client(nullptr)
-        , m_scopeContainer(nullptr)
-        , m_scopeId(0)
+        , m_scope(0)
         , m_type(UninitializedType)
         , m_skippedCache(false)
         , m_ignoredFromList(true)
@@ -337,8 +328,7 @@ private:
     { }
 
     const DisplayItemClient m_client;
-    DisplayItemClient m_scopeContainer;
-    int m_scopeId;
+    unsigned m_scope;
     static_assert(TypeLast < (1 << 16), "DisplayItem::Type should fit in 16 bits");
     const Type m_type : 16;
     unsigned m_skippedCache : 1;

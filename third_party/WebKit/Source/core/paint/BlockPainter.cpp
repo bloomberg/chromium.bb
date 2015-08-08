@@ -315,7 +315,7 @@ void BlockPainter::paintContinuationOutlines(const PaintInfo& info, const Layout
             cb->addContinuationWithOutline(inlineLayoutObject);
         } else if (!inlineLayoutObject->firstLineBox() || (!inlineEnclosedInSelfPaintingLayer && m_layoutBlock.hasLayer())) {
             // The outline might be painted multiple times if multiple blocks have the same inline element continuation, and the inline has a self-painting layer.
-            ScopeRecorder scopeRecorder(*info.context, *inlineLayoutObject);
+            ScopeRecorder scopeRecorder(*info.context);
             InlinePainter(*inlineLayoutObject).paintOutline(info, paintOffset - m_layoutBlock.locationOffset() + inlineLayoutObject->containingBlock()->location());
         }
     }

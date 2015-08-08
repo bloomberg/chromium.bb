@@ -54,7 +54,7 @@ void TablePainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         LayoutTable::CollapsedBorderValues collapsedBorders = m_layoutTable.collapsedBorders();
         size_t count = collapsedBorders.size();
         for (size_t i = 0; i < count; ++i) {
-            ScopeRecorder scopeRecorder(*info.context, m_layoutTable);
+            ScopeRecorder scopeRecorder(*info.context);
             // FIXME: pass this value into children rather than storing temporarily on the LayoutTable object.
             m_layoutTable.setCurrentBorderValue(&collapsedBorders[i]);
             for (LayoutTableSection* section = m_layoutTable.bottomSection(); section; section = m_layoutTable.sectionAbove(section)) {

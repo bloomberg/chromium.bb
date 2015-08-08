@@ -9,7 +9,7 @@ namespace blink {
 
 struct SameSizeAsDisplayItem {
     virtual ~SameSizeAsDisplayItem() { } // Allocate vtable pointer.
-    void* pointers[2];
+    void* pointer;
     int ints[2]; // Make sure other fields are packed into two ints.
 #ifndef NDEBUG
     WTF::String m_debugString;
@@ -209,8 +209,8 @@ void DisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder)
     stringBuilder.append('"');
     if (m_skippedCache)
         stringBuilder.append(", skippedCache: true");
-    if (m_scopeContainer)
-        stringBuilder.append(String::format(", scope: \"%p,%d\"", m_scopeContainer, m_scopeId));
+    if (m_scope)
+        stringBuilder.append(String::format(", scope: %d", m_scope));
 }
 
 #endif

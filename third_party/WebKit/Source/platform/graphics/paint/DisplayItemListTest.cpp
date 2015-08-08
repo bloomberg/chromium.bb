@@ -575,13 +575,13 @@ TEST_F(DisplayItemListTest, Scope)
 
     drawRect(context, multicol, backgroundDrawingType, FloatRect(100, 200, 100, 100));
 
-    displayItemList().beginScope(multicol.displayItemClient());
+    displayItemList().beginScope();
     drawRect(context, content, foregroundDrawingType, rect1);
-    displayItemList().endScope(multicol.displayItemClient());
+    displayItemList().endScope();
 
-    displayItemList().beginScope(multicol.displayItemClient());
+    displayItemList().beginScope();
     drawRect(context, content, foregroundDrawingType, rect2);
-    displayItemList().endScope(multicol.displayItemClient());
+    displayItemList().endScope();
     displayItemList().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 3,
@@ -595,13 +595,13 @@ TEST_F(DisplayItemListTest, Scope)
     // Draw again with nothing invalidated.
     EXPECT_TRUE(displayItemList().clientCacheIsValid(multicol.displayItemClient()));
     drawRect(context, multicol, backgroundDrawingType, FloatRect(100, 200, 100, 100));
-    displayItemList().beginScope(multicol.displayItemClient());
+    displayItemList().beginScope();
     drawRect(context, content, foregroundDrawingType, rect1);
-    displayItemList().endScope(multicol.displayItemClient());
+    displayItemList().endScope();
 
-    displayItemList().beginScope(multicol.displayItemClient());
+    displayItemList().beginScope();
     drawRect(context, content, foregroundDrawingType, rect2);
-    displayItemList().endScope(multicol.displayItemClient());
+    displayItemList().endScope();
 
     EXPECT_TRUE(isCached(*newPaintListBeforeUpdate().elementAt(0)));
     EXPECT_TRUE(isDrawing(*newPaintListBeforeUpdate().elementAt(1)));
@@ -619,17 +619,17 @@ TEST_F(DisplayItemListTest, Scope)
     displayItemList().invalidate(multicol.displayItemClient());
     drawRect(context, multicol, backgroundDrawingType, FloatRect(100, 100, 100, 100));
 
-    displayItemList().beginScope(multicol.displayItemClient());
+    displayItemList().beginScope();
     drawRect(context, content, foregroundDrawingType, rect1);
-    displayItemList().endScope(multicol.displayItemClient());
+    displayItemList().endScope();
 
-    displayItemList().beginScope(multicol.displayItemClient());
+    displayItemList().beginScope();
     drawRect(context, content, foregroundDrawingType, rect2);
-    displayItemList().endScope(multicol.displayItemClient());
+    displayItemList().endScope();
 
-    displayItemList().beginScope(multicol.displayItemClient());
+    displayItemList().beginScope();
     drawRect(context, content, foregroundDrawingType, rect3);
-    displayItemList().endScope(multicol.displayItemClient());
+    displayItemList().endScope();
 
     // We should repaint everything on invalidation of the scope container.
     EXPECT_TRUE(isDrawing(*newPaintListBeforeUpdate().elementAt(0)));
