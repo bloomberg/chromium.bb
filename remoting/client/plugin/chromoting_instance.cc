@@ -7,10 +7,8 @@
 #include <string>
 #include <vector>
 
-#if defined(OS_NACL)
 #include <nacl_io/nacl_io.h>
 #include <sys/mount.h>
-#endif
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -52,14 +50,7 @@
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
-#include "third_party/webrtc/base/helpers.h"
-#include "third_party/webrtc/base/ssladapter.h"
 #include "url/gurl.h"
-
-// Windows defines 'PostMessage', so we have to undef it.
-#if defined(PostMessage)
-#undef PostMessage
-#endif
 
 namespace remoting {
 
@@ -67,9 +58,6 @@ namespace {
 
 // Default DPI to assume for old clients that use notifyClientResolution.
 const int kDefaultDPI = 96;
-
-// URL scheme used by Chrome apps and extensions.
-const char kChromeExtensionUrlScheme[] = "chrome-extension";
 
 // The boundary value for the FPS histogram: we don't expect video frame-rate to
 // be greater than 40fps. Leaving some room for future improvements, we'll set
@@ -90,13 +78,11 @@ const int kBandwidthHistogramMinBps = 0;
 const int kBandwidthHistogramMaxBps = 10 * 1000 * 1000;
 const int kBandwidthHistogramBuckets = 100;
 
-#if defined(USE_OPENSSL)
-// Size of the random seed blob used to initialize RNG in libjingle. Libjingle
-// uses the seed only for OpenSSL builds. OpenSSL needs at least 32 bytes of
-// entropy (see http://wiki.openssl.org/index.php/Random_Numbers), but stores
-// 1039 bytes of state, so we initialize it with 1k or random data.
+// Size of the random seed blob used to initialize RNG in libjingle. OpenSSL
+// needs at least 32 bytes of entropy (see
+// http://wiki.openssl.org/index.php/Random_Numbers), but stores 1039 bytes of
+// state, so we initialize it with 1k or random data.
 const int kRandomSeedSize = 1024;
-#endif  // defined(USE_OPENSSL)
 
 // TODO(sergeyu): Ideally we should just pass ErrorCode to the webapp
 // and let it handle it, but it would be hard to fix it now because
@@ -161,7 +147,6 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
       text_input_controller_(this),
       use_async_pin_dialog_(false),
       weak_factory_(this) {
-#if defined(OS_NACL)
   // In NaCl global resources need to be initialized differently because they
   // are not shared with Chrome.
   thread_task_runner_handle_.reset(
@@ -172,15 +157,10 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
 
   // Register a global log handler.
   ChromotingInstance::RegisterLogMessageHandler();
-#else
-  jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
-#endif
 
-#if defined(OS_NACL)
   nacl_io_init_ppapi(pp_instance, pp::Module::Get()->get_browser_interface());
   mount("", "/etc", "memfs", 0, "");
   mount("", "/usr", "memfs", 0, "");
-#endif
 
   // Register for mouse, wheel and keyboard events.
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
@@ -192,17 +172,10 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
   // Resister this instance to handle debug log messsages.
   RegisterLoggingInstance();
 
-#if defined(USE_OPENSSL)
   // Initialize random seed for libjingle. It's necessary only with OpenSSL.
   char random_seed[kRandomSeedSize];
   crypto::RandBytes(random_seed, sizeof(random_seed));
   rtc::InitRandom(random_seed, sizeof(random_seed));
-#else
-  // Libjingle's SSL implementation is not really used, but it has to be
-  // initialized for NSS builds to make sure that RNG is initialized in NSS,
-  // because libjingle uses it.
-  rtc::InitializeSSL();
-#endif  // !defined(USE_OPENSSL)
 
   // Send hello message.
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
@@ -235,16 +208,6 @@ bool ChromotingInstance::Init(uint32_t argc,
   initialized_ = true;
 
   VLOG(1) << "Started ChromotingInstance::Init";
-
-  // Check that the calling content is part of an app or extension. This is only
-  // necessary for non-PNaCl version of the plugin. Also PPB_URLUtil_Dev doesn't
-  // work in NaCl at the moment so the check fails in NaCl builds.
-#if !defined(OS_NACL)
-  if (!IsCallerAppOrExtension()) {
-    LOG(ERROR) << "Not an app or extension";
-    return false;
-  }
-#endif
 
   // Start all the threads.
   context_.Start();
@@ -602,7 +565,6 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   VLOG(0) << "Connecting to " << host_jid
           << ". Local jid: " << local_jid << ".";
 
-#if defined(OS_NACL)
   std::string key_filter;
   if (!data.GetString("keyFilter", &key_filter)) {
     NOTREACHED();
@@ -617,13 +579,6 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
     DCHECK(key_filter.empty());
     normalizing_input_filter_.reset(new protocol::InputFilter(&key_mapper_));
   }
-#elif defined(OS_MACOSX)
-  normalizing_input_filter_.reset(new NormalizingInputFilterMac(&key_mapper_));
-#elif defined(OS_CHROMEOS)
-  normalizing_input_filter_.reset(new NormalizingInputFilterCros(&key_mapper_));
-#else
-  normalizing_input_filter_.reset(new protocol::InputFilter(&key_mapper_));
-#endif
   input_handler_.set_input_stub(normalizing_input_filter_.get());
 
   // Try initializing 3D video renderer.
@@ -1148,22 +1103,6 @@ void ChromotingInstance::ProcessLogToUI(const std::string& message) {
   data->SetString("message", message);
   PostLegacyJsonMessage("logDebugMessage", data.Pass());
   g_logging_to_plugin = false;
-}
-
-bool ChromotingInstance::IsCallerAppOrExtension() {
-  const pp::URLUtil_Dev* url_util = pp::URLUtil_Dev::Get();
-  if (!url_util)
-    return false;
-
-  PP_URLComponents_Dev url_components;
-  pp::Var url_var = url_util->GetDocumentURL(this, &url_components);
-  if (!url_var.is_string())
-    return false;
-
-  std::string url = url_var.AsString();
-  std::string url_scheme = url.substr(url_components.scheme.begin,
-                                      url_components.scheme.len);
-  return url_scheme == kChromeExtensionUrlScheme;
 }
 
 bool ChromotingInstance::IsConnected() {

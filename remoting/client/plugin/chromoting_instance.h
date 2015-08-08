@@ -222,9 +222,6 @@ class ChromotingInstance : public ClientUserInterface,
 
   void ProcessLogToUI(const std::string& message);
 
-  // Returns true if the hosting content has the chrome-extension:// scheme.
-  bool IsCallerAppOrExtension();
-
   // Returns true if there is a ConnectionToHost and it is connected.
   bool IsConnected();
 
