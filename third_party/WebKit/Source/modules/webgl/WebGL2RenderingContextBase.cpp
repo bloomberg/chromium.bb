@@ -2196,7 +2196,7 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(Script
         if (pname == GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE)
             return WebGLAny(scriptState, GL_NONE);
         if (pname == GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME)
-            return WebGLAny(scriptState, 0);
+            return ScriptValue::createNull(scriptState);
         synthesizeGLError(GL_INVALID_OPERATION, "getFramebufferAttachmentParameter", "invalid parameter name");
         return ScriptValue::createNull(scriptState);
     }
