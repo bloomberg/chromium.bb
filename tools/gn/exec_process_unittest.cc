@@ -14,6 +14,10 @@
 
 namespace internal {
 
+// TODO(cjhopman): Enable these tests when windows ExecProcess handles stderr.
+// 'python' is not runnable on Windows. Adding ["cmd", "/c"] fails because
+// CommandLine does unusual reordering of args.
+#if !defined(OS_WIN)
 namespace {
 bool ExecPython(const std::string& command,
                 std::string* std_out,
@@ -35,10 +39,6 @@ bool ExecPython(const std::string& command,
 }
 }  // namespace
 
-// TODO(cjhopman): Enable these tests when windows ExecProcess handles stderr.
-// 'python' is not runnable on Windows. Adding ["cmd", "/c"] fails because
-// CommandLine does unusual reordering of args.
-#if !defined(OS_WIN)
 TEST(ExecProcessTest, TestExitCode) {
   std::string std_out, std_err;
   int exit_code;

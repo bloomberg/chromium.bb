@@ -30,6 +30,7 @@ typedef BOOL (WINAPI *GetProcessMitigationPolicyFunction)(
 
 GetProcessMitigationPolicyFunction get_process_mitigation_policy;
 
+#if !defined(_WIN64)
 bool CheckWin8DepPolicy() {
   PROCESS_MITIGATION_DEP_POLICY policy = {};
   if (!get_process_mitigation_policy(::GetCurrentProcess(), ProcessDEPPolicy,
@@ -38,6 +39,7 @@ bool CheckWin8DepPolicy() {
   }
   return policy.Enable && policy.Permanent;
 }
+#endif  // !defined(_WIN64)
 
 #if defined(NDEBUG)
 bool CheckWin8AslrPolicy() {
