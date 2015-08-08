@@ -192,6 +192,7 @@ protected:
     void texSubImage3DImpl(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, Image*, WebGLImageConversion::ImageHtmlDomSource, bool, bool);
 
     /* WebGLRenderingContextBase overrides */
+    unsigned getMaxWebGLLocationLength() const override { return 1024; };
     bool validateCapability(const char* functionName, GLenum) override;
     bool validateBufferTarget(const char* functionName, GLenum target) override;
     bool validateAndUpdateBufferBindTarget(const char* functionName, GLenum, WebGLBuffer*) override;

@@ -799,6 +799,7 @@ protected:
     virtual GLenum boundFramebufferColorFormat();
 
     // Helper function to verify limits on the length of uniform and attribute locations.
+    virtual unsigned getMaxWebGLLocationLength() const { return 256; }
     bool validateLocationLength(const char* functionName, const String&);
 
     // Helper function to check if size is non-negative.

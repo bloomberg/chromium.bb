@@ -5391,7 +5391,7 @@ WebGLTexture* WebGLRenderingContextBase::validateTextureBinding(const char* func
 
 bool WebGLRenderingContextBase::validateLocationLength(const char* functionName, const String& string)
 {
-    const unsigned maxWebGLLocationLength = 256;
+    const unsigned maxWebGLLocationLength = getMaxWebGLLocationLength();
     if (string.length() > maxWebGLLocationLength) {
         synthesizeGLError(GL_INVALID_VALUE, functionName, "location length > 256");
         return false;
