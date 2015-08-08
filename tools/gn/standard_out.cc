@@ -63,10 +63,12 @@ void EnsureInitialized() {
 #endif
 }
 
+#if !defined(OS_WIN)
 void WriteToStdOut(const std::string& output) {
   size_t written_bytes = fwrite(output.data(), 1, output.size(), stdout);
   DCHECK_EQ(output.size(), written_bytes);
 }
+#endif  // !defined(OS_WIN)
 
 void OutputMarkdownDec(TextDecoration dec) {
   // The markdown rendering turns "dim" text to italics and any

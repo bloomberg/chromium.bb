@@ -24,6 +24,7 @@ enum Version {
   VERSION_WIN_LAST,  // Indicates error condition.
 };
 
+#if !defined(_WIN64)
 // Whether a process is running under WOW64 (the wrapper that allows 32-bit
 // processes to run on 64-bit versions of Windows).  This will return
 // WOW64_DISABLED for both "32-bit Chrome on 32-bit Windows" and "64-bit
@@ -42,6 +43,7 @@ WOW64Status GetWOW64StatusForCurrentProcess() {
     return WOW64_UNKNOWN;
   return is_wow64 ? WOW64_ENABLED : WOW64_DISABLED;
 }
+#endif  // !defined(_WIN64)
 
 class OSInfo {
  public:
