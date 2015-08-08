@@ -19,7 +19,7 @@ if 'TRUSTED_ENV' not in env:
   Return()
 
 # The fixed feature CPU mode is currently x86 specific
-if env.Bit('build_arm'):
+if env.Bit('build_arm') or env.Bit('build_mips32'):
   Return()
 
 # For speed, SConstruct disables the validator (using '-cc') for

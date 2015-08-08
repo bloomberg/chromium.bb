@@ -7,8 +7,8 @@ Import('env')
 
 # Test whether the MIPS atomic 64-bit operations are defined.
 
-# Only test MIPS.
-if not env.Bit('build_mips32'):
+# Only test PNaCl MIPS.
+if not (env.Bit('build_mips32') and env.Bit('bitcode')):
   Return()
 
 mips_atomic64_nexe = env.ComponentProgram('mips_atomic64', 'mips_atomic64.c')

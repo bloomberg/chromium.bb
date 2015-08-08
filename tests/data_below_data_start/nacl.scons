@@ -18,7 +18,8 @@ nexe = env.ComponentProgram(
     'data_below_data_start',
     ['data_below_data_start.c'],
     EXTRA_LIBS=['${NONIRT_LIBS}'],
-    EXTRA_LINKFLAGS=['-arch', 'mips32', '--pnacl-allow-native',
+    EXTRA_LINKFLAGS=[['-arch', 'mips32', '--pnacl-allow-native']
+                     if env.Bit('bitcode') else [],
                      '-Wl,-Ttext-segment=0x%x' % text_segment_start,
                      '-Wl,-Trodata-segment=0x%x' % rodata_segment_start])
 

@@ -18,6 +18,10 @@ if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
 if env.Bit('bitcode'):
   Return()
 
+# TODO(petarj): Enable this for MIPS32 once we have appropriate support for it.
+if env.Bit('build_mips32'):
+  Return()
+
 # These tests assume they can allocate address ranges from the dynamic
 # code area themselves.  However, this does not work when ld.so
 # assumes it can do the same.
