@@ -7063,6 +7063,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_PROGRESS_BAR_ANIMATION_DESCRIPTION" desc="Description of the flag to configure Android page loading progress bar animation.">
           Configures Android phone page loading progress bar animation.
         </message>
+        <message name="IDS_FLAGS_PROGRESS_BAR_ANIMATION_LINEAR" desc="Linear progress bar animation style">
+          Linear
+        </message>
         <message name="IDS_FLAGS_PROGRESS_BAR_ANIMATION_SMOOTH" desc="Smooth progress bar animation style">
           Smooth
         </message>
