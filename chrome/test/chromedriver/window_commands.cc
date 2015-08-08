@@ -223,8 +223,20 @@ Status ExecuteWindowCommand(
       return nav_status;
 
     status = command.Run(session, web_view, params, value);
-    if (status.code() != kNoSuchExecutionContext)
-      break;
+    if (status.code() == kNoSuchExecutionContext) {
+      continue;
+    } else if (status.IsError()) {
+      // If the command failed while a new page or frame started loading, retry
+      // the command after the pending navigation has completed.
+      bool is_pending = false;
+      nav_status = web_view->IsPendingNavigation(session->GetCurrentFrameId(),
+                                                 &is_pending);
+      if (nav_status.IsError())
+        return nav_status;
+      else if (is_pending)
+        continue;
+    }
+    break;
   }
 
   nav_status = web_view->WaitForPendingNavigations(

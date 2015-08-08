@@ -23,10 +23,59 @@ void AssertPendingState(NavigationTracker* tracker,
   ASSERT_EQ(expected_is_pending, is_pending);
 }
 
+class DeterminingLoadStateDevToolsClient : public StubDevToolsClient {
+ public:
+  DeterminingLoadStateDevToolsClient(
+      bool has_empty_base_url,
+      bool is_loading,
+      const std::string& send_event_first,
+      base::DictionaryValue* send_event_first_params)
+      : has_empty_base_url_(has_empty_base_url),
+        is_loading_(is_loading),
+        send_event_first_(send_event_first),
+        send_event_first_params_(send_event_first_params) {}
+
+  ~DeterminingLoadStateDevToolsClient() override {}
+
+  Status SendCommandAndGetResult(
+      const std::string& method,
+      const base::DictionaryValue& params,
+      scoped_ptr<base::DictionaryValue>* result) override {
+    if (method == "DOM.getDocument") {
+      base::DictionaryValue result_dict;
+      if (has_empty_base_url_)
+        result_dict.SetString("root.baseURL", std::string());
+      else
+        result_dict.SetString("root.baseURL", "http://test");
+      result->reset(result_dict.DeepCopy());
+      return Status(kOk);
+    }
+
+    if (send_event_first_.length()) {
+      Status status = listeners_.front()
+          ->OnEvent(this, send_event_first_, *send_event_first_params_);
+      if (status.IsError())
+        return status;
+    }
+
+    base::DictionaryValue result_dict;
+    result_dict.SetBoolean("result.value", is_loading_);
+    result->reset(result_dict.DeepCopy());
+    return Status(kOk);
+  }
+
+ private:
+  bool has_empty_base_url_;
+  bool is_loading_;
+  std::string send_event_first_;
+  base::DictionaryValue* send_event_first_params_;
+};
+
 }  // namespace
 
 TEST(NavigationTracker, FrameLoadStartStop) {
-  StubDevToolsClient client;
+  base::DictionaryValue dict;
+  DeterminingLoadStateDevToolsClient client(false, true, std::string(), &dict);
   BrowserInfo browser_info;
   NavigationTracker tracker(&client, &browser_info);
 
@@ -45,7 +94,8 @@ TEST(NavigationTracker, FrameLoadStartStop) {
 // can sometimes see two Page.frameStartedLoading events with only a single
 // Page.frameStoppedLoading event.
 TEST(NavigationTracker, FrameLoadStartStartStop) {
-  StubDevToolsClient client;
+  base::DictionaryValue dict;
+  DeterminingLoadStateDevToolsClient client(false, true, std::string(), &dict);
   BrowserInfo browser_info;
   NavigationTracker tracker(&client, &browser_info);
 
@@ -64,7 +114,8 @@ TEST(NavigationTracker, FrameLoadStartStartStop) {
 }
 
 TEST(NavigationTracker, MultipleFramesLoad) {
-  StubDevToolsClient client;
+  base::DictionaryValue dict;
+  DeterminingLoadStateDevToolsClient client(false, true, std::string(), &dict);
   BrowserInfo browser_info;
   NavigationTracker tracker(&client, &browser_info);
   base::DictionaryValue params;
@@ -102,7 +153,8 @@ TEST(NavigationTracker, MultipleFramesLoad) {
 }
 
 TEST(NavigationTracker, NavigationScheduledThenLoaded) {
-  StubDevToolsClient client;
+  base::DictionaryValue dict;
+  DeterminingLoadStateDevToolsClient client(false, true, std::string(), &dict);
   BrowserInfo browser_info;
   NavigationTracker tracker(
       &client, NavigationTracker::kNotLoading, &browser_info);
@@ -131,7 +183,8 @@ TEST(NavigationTracker, NavigationScheduledThenLoaded) {
 }
 
 TEST(NavigationTracker, NavigationScheduledForOtherFrame) {
-  StubDevToolsClient client;
+  base::DictionaryValue dict;
+  DeterminingLoadStateDevToolsClient client(false, true, std::string(), &dict);
   BrowserInfo browser_info;
   NavigationTracker tracker(
       &client, NavigationTracker::kNotLoading, &browser_info);
@@ -147,7 +200,8 @@ TEST(NavigationTracker, NavigationScheduledForOtherFrame) {
 }
 
 TEST(NavigationTracker, NavigationScheduledThenCancelled) {
-  StubDevToolsClient client;
+  base::DictionaryValue dict;
+  DeterminingLoadStateDevToolsClient client(false, true, std::string(), &dict);
   BrowserInfo browser_info;
   NavigationTracker tracker(
       &client, NavigationTracker::kNotLoading, &browser_info);
@@ -170,7 +224,8 @@ TEST(NavigationTracker, NavigationScheduledThenCancelled) {
 }
 
 TEST(NavigationTracker, NavigationScheduledTooFarAway) {
-  StubDevToolsClient client;
+  base::DictionaryValue dict;
+  DeterminingLoadStateDevToolsClient client(false, true, std::string(), &dict);
   BrowserInfo browser_info;
   NavigationTracker tracker(
       &client, NavigationTracker::kNotLoading, &browser_info);
@@ -186,7 +241,8 @@ TEST(NavigationTracker, NavigationScheduledTooFarAway) {
 }
 
 TEST(NavigationTracker, DiscardScheduledNavigationsOnMainFrameCommit) {
-  StubDevToolsClient client;
+  base::DictionaryValue dict;
+  DeterminingLoadStateDevToolsClient client(false, true, std::string(), &dict);
   BrowserInfo browser_info;
   NavigationTracker tracker(
       &client, NavigationTracker::kNotLoading, &browser_info);
@@ -250,72 +306,6 @@ TEST(NavigationTracker, UnknownStateFailsToDetermineState) {
   ASSERT_EQ(kUnknownError,
             tracker.IsPendingNavigation("f", &is_pending).code());
 }
-
-namespace {
-
-class DeterminingLoadStateDevToolsClient : public StubDevToolsClient {
- public:
-  DeterminingLoadStateDevToolsClient(
-      bool has_empty_base_url,
-      bool is_loading,
-      const std::string& send_event_first,
-      base::DictionaryValue* send_event_first_params)
-      : has_empty_base_url_(has_empty_base_url),
-        is_loading_(is_loading),
-        send_event_first_(send_event_first),
-        send_event_first_params_(send_event_first_params) {}
-
-  ~DeterminingLoadStateDevToolsClient() override {}
-
-  Status SendCommandAndGetResult(
-      const std::string& method,
-      const base::DictionaryValue& params,
-      scoped_ptr<base::DictionaryValue>* result) override {
-    if (method == "DOM.getDocument") {
-      base::DictionaryValue result_dict;
-      if (has_empty_base_url_)
-        result_dict.SetString("root.baseURL", std::string());
-      else
-        result_dict.SetString("root.baseURL", "http://test");
-      result->reset(result_dict.DeepCopy());
-      return Status(kOk);
-    } else if (method == "Runtime.evaluate") {
-      std::string expression;
-      params.GetString("expression", &expression);
-      if (expression == "document.readyState") {
-        base::DictionaryValue result_dict;
-        if (is_loading_) {
-          result_dict.SetString("result.value", "loading");
-          is_loading_ = false;
-        } else {
-          result_dict.SetString("result.value", "complete");
-        }
-        result->reset(result_dict.DeepCopy());
-        return Status(kOk);
-      }
-    }
-
-    if (send_event_first_.length()) {
-      Status status = listeners_.front()
-          ->OnEvent(this, send_event_first_, *send_event_first_params_);
-      if (status.IsError())
-        return status;
-    }
-
-    base::DictionaryValue result_dict;
-    result_dict.SetBoolean("result.value", is_loading_);
-    result->reset(result_dict.DeepCopy());
-    return Status(kOk);
-  }
-
- private:
-  bool has_empty_base_url_;
-  bool is_loading_;
-  std::string send_event_first_;
-  base::DictionaryValue* send_event_first_params_;
-};
-
-}  // namespace
 
 TEST(NavigationTracker, UnknownStatePageNotLoadAtAll) {
   base::DictionaryValue params;

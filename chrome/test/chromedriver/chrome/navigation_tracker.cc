@@ -31,68 +31,57 @@ NavigationTracker::~NavigationTracker() {}
 
 Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
                                               bool* is_pending) {
-  if (!IsExpectingFrameLoadingEvents()) {
-    if (loading_state_ != kLoading) {
-      base::DictionaryValue params;
-      params.SetString("expression", "document.readyState");
-      scoped_ptr<base::DictionaryValue> result;
-      Status status =
-          client_->SendCommandAndGetResult("Runtime.evaluate", params, &result);
-      std::string ready_state;
-      if (status.IsError() || !result->GetString("result.value", &ready_state))
-        return status;
-      loading_state_ = ready_state == "complete" ? kNotLoading : kLoading;
+  if (loading_state_ == kUnknown ||
+      (loading_state_ == kNotLoading && !IsExpectingFrameLoadingEvents())) {
+    // In the case that a http request is sent to server to fetch the page
+    // content and the server hasn't responded at all, a dummy page is created
+    // for the new window. In such case, the baseURL will be empty.
+    base::DictionaryValue empty_params;
+    scoped_ptr<base::DictionaryValue> result;
+    Status status = client_->SendCommandAndGetResult(
+        "DOM.getDocument", empty_params, &result);
+    std::string base_url;
+    if (status.IsError() || !result->GetString("root.baseURL", &base_url))
+      return Status(kUnknownError, "cannot determine loading status", status);
+    if (base_url.empty()) {
+      *is_pending = true;
+      loading_state_ = kLoading;
+      return Status(kOk);
     }
-  } else {
-    if (loading_state_ == kUnknown) {
-      scoped_ptr<base::DictionaryValue> result;
+  }
 
-      // In the case that a http request is sent to server to fetch the page
-      // content and the server hasn't responded at all, a dummy page is created
-      // for the new window. In such case, the baseURL will be empty.
-      base::DictionaryValue empty_params;
-      Status status = client_->SendCommandAndGetResult(
-          "DOM.getDocument", empty_params, &result);
-      std::string base_url;
-      if (status.IsError() || !result->GetString("root.baseURL", &base_url))
-        return Status(kUnknownError, "cannot determine loading status", status);
-      if (base_url.empty()) {
-        *is_pending = true;
-        loading_state_ = kLoading;
-        return Status(kOk);
-      }
+  if (loading_state_ == kUnknown) {
+    // If the loading state is unknown (which happens after first connecting),
+    // force loading to start and set the state to loading. This will cause a
+    // frame start event to be received, and the frame stop event will not be
+    // received until all frames are loaded.  Loading is forced to start by
+    // attaching a temporary iframe.  Forcing loading to start is not
+    // necessary if the main frame is not yet loaded.
+    const char kStartLoadingIfMainFrameNotLoading[] =
+       "var isLoaded = document.readyState == 'complete' ||"
+       "    document.readyState == 'interactive';"
+       "if (isLoaded) {"
+       "  var frame = document.createElement('iframe');"
+       "  frame.src = 'about:blank';"
+       "  document.body.appendChild(frame);"
+       "  window.setTimeout(function() {"
+       "    document.body.removeChild(frame);"
+       "  }, 0);"
+       "}";
+    base::DictionaryValue params;
+    params.SetString("expression", kStartLoadingIfMainFrameNotLoading);
+    scoped_ptr<base::DictionaryValue> result;
+    Status status = client_->SendCommandAndGetResult(
+        "Runtime.evaluate", params, &result);
+    if (status.IsError())
+      return Status(kUnknownError, "cannot determine loading status", status);
 
-      // If the loading state is unknown (which happens after first connecting),
-      // force loading to start and set the state to loading. This will cause a
-      // frame start event to be received, and the frame stop event will not be
-      // received until all frames are loaded.  Loading is forced to start by
-      // attaching a temporary iframe.  Forcing loading to start is not
-      // necessary if the main frame is not yet loaded.
-      const char kStartLoadingIfMainFrameNotLoading[] =
-         "var isLoaded = document.readyState == 'complete' ||"
-         "    document.readyState == 'interactive';"
-         "if (isLoaded) {"
-         "  var frame = document.createElement('iframe');"
-         "  frame.src = 'about:blank';"
-         "  document.body.appendChild(frame);"
-         "  window.setTimeout(function() {"
-         "    document.body.removeChild(frame);"
-         "  }, 0);"
-         "}";
-      base::DictionaryValue params;
-      params.SetString("expression", kStartLoadingIfMainFrameNotLoading);
-      status = client_->SendCommandAndGetResult(
-          "Runtime.evaluate", params, &result);
-      if (status.IsError())
-        return Status(kUnknownError, "cannot determine loading status", status);
-
-      // Between the time the JavaScript is evaluated and
-      // SendCommandAndGetResult returns, OnEvent may have received info about
-      // the loading state.  This is only possible during a nested command. Only
-      // set the loading state if the loading state is still unknown.
-      if (loading_state_ == kUnknown)
-        loading_state_ = kLoading;
-    }
+    // Between the time the JavaScript is evaluated and
+    // SendCommandAndGetResult returns, OnEvent may have received info about
+    // the loading state.  This is only possible during a nested command. Only
+    // set the loading state if the loading state is still unknown.
+    if (loading_state_ == kUnknown)
+      loading_state_ = kLoading;
   }
   *is_pending = loading_state_ == kLoading;
 
@@ -187,10 +176,27 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
       pending_frame_set_.clear();
       scheduled_frame_set_.clear();
     }
-  } else if (method == "Runtime.executionContextsCleared" ||
-             method == "Runtime.executionContextDestroyed") {
-    if (!IsExpectingFrameLoadingEvents())
+  } else if (method == "Runtime.executionContextsCleared") {
+    if (!IsExpectingFrameLoadingEvents()) {
+      execution_context_set_.clear();
       ResetLoadingState(kLoading);
+    }
+  } else if (method == "Runtime.executionContextCreated") {
+    if (!IsExpectingFrameLoadingEvents()) {
+      int execution_context_id;
+      if (!params.GetInteger("context.id", &execution_context_id))
+        return Status(kUnknownError, "missing or invalid 'context.id'");
+      execution_context_set_.insert(execution_context_id);
+    }
+  } else if (method == "Runtime.executionContextDestroyed") {
+    if (!IsExpectingFrameLoadingEvents()) {
+      int execution_context_id;
+      if (!params.GetInteger("executionContextId", &execution_context_id))
+        return Status(kUnknownError, "missing or invalid 'context.id'");
+      execution_context_set_.erase(execution_context_id);
+      if (execution_context_set_.empty())
+        loading_state_ = kLoading;
+    }
   } else if (method == "Page.loadEventFired") {
     if (!IsExpectingFrameLoadingEvents())
       ResetLoadingState(kNotLoading);
