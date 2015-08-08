@@ -53,7 +53,7 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebRemoteFrameImpl.h"
-#include "web/WebViewImpl.h"
+#include "web/WebViewFrameWidget.h"
 
 namespace blink {
 
@@ -63,6 +63,11 @@ WebFrameWidget* WebFrameWidget::create(WebWidgetClient* client, WebLocalFrame* l
 {
     // Pass the WebFrameWidget's self-reference to the caller.
     return WebFrameWidgetImpl::create(client, localRoot);
+}
+
+WebFrameWidget* WebFrameWidget::create(WebView* webView)
+{
+    return new WebViewFrameWidget(*toWebViewImpl(webView));
 }
 
 WebFrameWidgetImpl* WebFrameWidgetImpl::create(WebWidgetClient* client, WebLocalFrame* localRoot)

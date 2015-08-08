@@ -236,6 +236,8 @@
       'WebUserGestureIndicator.cpp',
       'WebUserGestureToken.cpp',
       'WebUserMediaRequest.cpp',
+      'WebViewFrameWidget.cpp',
+      'WebViewFrameWidget.h',
       'WebViewImpl.cpp',
       'WebViewImpl.h',
       'WorkerContentSettingsClient.cpp',

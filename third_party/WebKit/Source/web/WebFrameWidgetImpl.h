@@ -40,6 +40,7 @@
 #include "web/PageWidgetDelegate.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
+#include "wtf/Assertions.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -204,6 +205,8 @@ private:
 
     static const WebInputEvent* m_currentInputEvent;
 };
+
+DEFINE_TYPE_CASTS(WebFrameWidgetImpl, WebFrameWidget, widget, widget->forSubframe(), widget.forSubframe());
 
 } // namespace blink
 

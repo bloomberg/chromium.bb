@@ -495,7 +495,7 @@ void ChromeClientImpl::scheduleAnimationForFrame(LocalFrame* localRoot)
     // a local frame root that doesn't have a WebWidget? During initialization
     // there is no content to draw so this call serves no purpose.
     if (WebLocalFrameImpl::fromFrame(localRoot)->frameWidget())
-        WebLocalFrameImpl::fromFrame(localRoot)->frameWidget()->scheduleAnimation();
+        toWebFrameWidgetImpl(WebLocalFrameImpl::fromFrame(localRoot)->frameWidget())->scheduleAnimation();
 }
 
 IntRect ChromeClientImpl::viewportToScreen(const IntRect& rectInViewport) const
@@ -709,7 +709,7 @@ void ChromeClientImpl::attachRootGraphicsLayer(GraphicsLayer* rootLayer, LocalFr
         }
         ASSERT(webFrame);
         ASSERT(webFrame->frameWidget());
-        webFrame->frameWidget()->setRootGraphicsLayer(rootLayer);
+        toWebFrameWidgetImpl(webFrame->frameWidget())->setRootGraphicsLayer(rootLayer);
     }
 }
 
@@ -729,7 +729,7 @@ void ChromeClientImpl::attachCompositorAnimationTimeline(WebCompositorAnimationT
         }
         ASSERT(webFrame);
         ASSERT(webFrame->frameWidget());
-        webFrame->frameWidget()->attachCompositorAnimationTimeline(compositorTimeline);
+        toWebFrameWidgetImpl(webFrame->frameWidget())->attachCompositorAnimationTimeline(compositorTimeline);
     }
 }
 
@@ -749,7 +749,7 @@ void ChromeClientImpl::detachCompositorAnimationTimeline(WebCompositorAnimationT
         }
         ASSERT(webFrame);
         ASSERT(webFrame->frameWidget());
-        webFrame->frameWidget()->detachCompositorAnimationTimeline(compositorTimeline);
+        toWebFrameWidgetImpl(webFrame->frameWidget())->detachCompositorAnimationTimeline(compositorTimeline);
     }
 }
 

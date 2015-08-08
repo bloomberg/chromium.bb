@@ -283,7 +283,7 @@ PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLoc
     if (!isMainFrame) {
         WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, frame->inspectorOverlay());
         if (frame->frameWidget())
-            agent->layerTreeViewChanged(frame->frameWidget()->layerTreeView());
+            agent->layerTreeViewChanged(toWebFrameWidgetImpl(frame->frameWidget())->layerTreeView());
         return adoptPtrWillBeNoop(agent);
     }
 

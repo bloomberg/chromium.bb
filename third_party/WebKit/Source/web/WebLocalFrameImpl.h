@@ -57,7 +57,7 @@ class WebDataSourceImpl;
 class WebDevToolsAgentImpl;
 class WebDevToolsFrontendImpl;
 class WebFrameClient;
-class WebFrameWidgetImpl;
+class WebFrameWidget;
 class WebNode;
 class WebPerformance;
 class WebPlugin;
@@ -333,8 +333,8 @@ public:
     // Returns a hit-tested VisiblePosition for the given point
     VisiblePosition visiblePositionForViewportPoint(const WebPoint&);
 
-    void setFrameWidget(WebFrameWidgetImpl*);
-    WebFrameWidgetImpl* frameWidget() const;
+    void setFrameWidget(WebFrameWidget*);
+    WebFrameWidget* frameWidget() const;
 
     // DevTools front-end bindings.
     void setDevToolsFrontend(WebDevToolsFrontendImpl* frontend) { m_webDevToolsFrontend = frontend; }
@@ -368,7 +368,7 @@ private:
     OwnPtrWillBeMember<WebDevToolsAgentImpl> m_devToolsAgent;
 
     // This is set if the frame is the root of a local frame tree, and requires a widget for layout.
-    WebFrameWidgetImpl* m_frameWidget;
+    WebFrameWidget* m_frameWidget;
 
     WebFrameClient* m_client;
     WebAutofillClient* m_autofillClient;
