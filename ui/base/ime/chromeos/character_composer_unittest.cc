@@ -153,6 +153,10 @@ TEST_F(CharacterComposerTest, FullyMatchingSequences) {
   ExpectDeadKeyFiltered(kCombiningAcute);
   ExpectUnicodeKeyComposed(VKEY_C, DomCode::KEY_C, EF_NONE, 'c',
                            base::string16(1, 0x00E7));
+  // GREEK SMALL LETTER EPSILON WITH TONOS
+  ExpectDeadKeyFiltered(kCombiningAcute);
+  ExpectUnicodeKeyComposed(VKEY_E, DomCode::KEY_E, EF_NONE, 0x03B5,
+                           base::string16(1, 0x03AD));
 }
 
 TEST_F(CharacterComposerTest, FullyMatchingSequencesAfterMatchingFailure) {
