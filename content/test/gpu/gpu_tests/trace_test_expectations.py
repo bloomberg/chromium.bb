@@ -14,6 +14,11 @@ class TraceTestExpectations(GpuTestExpectations):
 
     self.Skip('TraceTest.Canvas2DRedBox')
     self.Skip('TraceTest.CSS3DBlueBox')
+    # Flaky, mainly on Windows. Leave this un-suppressed on other
+    # platforms for the moment to have at least some test coverage.
+    # Once test expectations are refactored (Issue 495870), this could
+    # be marked flaky.
+    self.Fail('TraceTest.WebGLGreenTriangle', ['win'], bug=517232)
     pass
 
 class DeviceTraceTestExpectations(GpuTestExpectations):
