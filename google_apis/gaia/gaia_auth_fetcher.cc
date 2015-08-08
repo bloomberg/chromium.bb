@@ -76,25 +76,6 @@ const char kGetTokenResponseRequested[] = "get_token";
 
 }  // namespace
 
-// TODO(chron): Add sourceless version of this formatter.
-// static
-const char GaiaAuthFetcher::kClientLoginFormat[] =
-    "Email=%s&"
-    "Passwd=%s&"
-    "PersistentCookie=%s&"
-    "accountType=%s&"
-    "source=%s&"
-    "service=%s";
-// static
-const char GaiaAuthFetcher::kClientLoginCaptchaFormat[] =
-    "Email=%s&"
-    "Passwd=%s&"
-    "PersistentCookie=%s&"
-    "accountType=%s&"
-    "source=%s&"
-    "service=%s&"
-    "logintoken=%s&"
-    "logincaptcha=%s";
 // static
 const char GaiaAuthFetcher::kIssueAuthTokenFormat[] =
     "SID=%s&"
@@ -153,16 +134,6 @@ const char GaiaAuthFetcher::kCaptchaUrlParam[] = "CaptchaUrl";
 const char GaiaAuthFetcher::kCaptchaTokenParam[] = "CaptchaToken";
 
 // static
-const char GaiaAuthFetcher::kCookiePersistence[] = "true";
-// static
-// TODO(johnnyg): When hosted accounts are supported by sync,
-// we can always use "HOSTED_OR_GOOGLE"
-const char GaiaAuthFetcher::kAccountTypeHostedOrGoogle[] =
-    "HOSTED_OR_GOOGLE";
-const char GaiaAuthFetcher::kAccountTypeGoogle[] =
-    "GOOGLE";
-
-// static
 const char GaiaAuthFetcher::kSecondFactor[] = "Info=InvalidSecondFactor";
 // static
 const char GaiaAuthFetcher::kWebLoginRequired[] = "Info=WebLoginRequired";
@@ -195,7 +166,6 @@ GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
     : consumer_(consumer),
       getter_(getter),
       source_(source),
-      client_login_gurl_(GaiaUrls::GetInstance()->client_login_url()),
       issue_auth_token_gurl_(GaiaUrls::GetInstance()->issue_auth_token_url()),
       oauth2_token_gurl_(GaiaUrls::GetInstance()->oauth2_token_url()),
       oauth2_revoke_gurl_(GaiaUrls::GetInstance()->oauth2_revoke_url()),
@@ -263,47 +233,6 @@ void GaiaAuthFetcher::CreateAndStartGaiaFetcher(const std::string& body,
 
   fetch_pending_ = true;
   fetcher_->Start();
-}
-
-// static
-std::string GaiaAuthFetcher::MakeClientLoginBody(
-    const std::string& username,
-    const std::string& password,
-    const std::string& source,
-    const char* service,
-    const std::string& login_token,
-    const std::string& login_captcha,
-    HostedAccountsSetting allow_hosted_accounts) {
-  std::string encoded_username = net::EscapeUrlEncodedData(username, true);
-  std::string encoded_password = net::EscapeUrlEncodedData(password, true);
-  std::string encoded_login_token = net::EscapeUrlEncodedData(login_token,
-                                                              true);
-  std::string encoded_login_captcha = net::EscapeUrlEncodedData(login_captcha,
-                                                                true);
-
-  const char* account_type = allow_hosted_accounts == HostedAccountsAllowed ?
-      kAccountTypeHostedOrGoogle :
-      kAccountTypeGoogle;
-
-  if (login_token.empty() || login_captcha.empty()) {
-    return base::StringPrintf(kClientLoginFormat,
-                              encoded_username.c_str(),
-                              encoded_password.c_str(),
-                              kCookiePersistence,
-                              account_type,
-                              source.c_str(),
-                              service);
-  }
-
-  return base::StringPrintf(kClientLoginCaptchaFormat,
-                            encoded_username.c_str(),
-                            encoded_password.c_str(),
-                            kCookiePersistence,
-                            account_type,
-                            source.c_str(),
-                            service,
-                            encoded_login_token.c_str(),
-                            encoded_login_captcha.c_str());
 }
 
 // static
@@ -562,32 +491,6 @@ bool GaiaAuthFetcher::ParseListIdpSessionsResponse(const std::string& data,
   return true;
 }
 
-void GaiaAuthFetcher::StartClientLogin(
-    const std::string& username,
-    const std::string& password,
-    const char* const service,
-    const std::string& login_token,
-    const std::string& login_captcha,
-    HostedAccountsSetting allow_hosted_accounts) {
-
-  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
-
-  // This class is thread agnostic, so be sure to call this only on the
-  // same thread each time.
-  DVLOG(1) << "Starting new ClientLogin fetch for:" << username;
-
-  // Must outlive fetcher_.
-  request_body_ = MakeClientLoginBody(username,
-                                      password,
-                                      source_,
-                                      service,
-                                      login_token,
-                                      login_captcha,
-                                      allow_hosted_accounts);
-  CreateAndStartGaiaFetcher(request_body_, std::string(), client_login_gurl_,
-                            kLoadFlagsIgnoreCookies);
-}
-
 void GaiaAuthFetcher::StartIssueAuthToken(const std::string& sid,
                                           const std::string& lsid,
                                           const char* const service) {
@@ -805,22 +708,6 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
 
   DLOG(WARNING) << "Incomprehensible response from Google Accounts servers.";
   return GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
-}
-
-void GaiaAuthFetcher::OnClientLoginFetched(const std::string& data,
-                                           const net::URLRequestStatus& status,
-                                           int response_code) {
-  if (status.is_success() && response_code == net::HTTP_OK) {
-    DVLOG(1) << "ClientLogin successful!";
-    std::string sid;
-    std::string lsid;
-    std::string token;
-    ParseClientLoginResponse(data, &sid, &lsid, &token);
-    consumer_->OnClientLoginSuccess(
-        GaiaAuthConsumer::ClientLoginResult(sid, lsid, token, data));
-  } else {
-    consumer_->OnClientLoginFailure(GenerateAuthError(data, status));
-  }
 }
 
 void GaiaAuthFetcher::OnIssueAuthTokenFetched(
@@ -1047,9 +934,7 @@ void GaiaAuthFetcher::DispatchFetchedRequest(
     const net::ResponseCookies& cookies,
     const net::URLRequestStatus& status,
     int response_code) {
-  if (url == client_login_gurl_) {
-    OnClientLoginFetched(data, status, response_code);
-  } else if (url == issue_auth_token_gurl_) {
+  if (url == issue_auth_token_gurl_) {
     OnIssueAuthTokenFetched(data, status, response_code);
   } else if (base::StartsWith(url.spec(),
                               client_login_to_oauth2_gurl_.spec(),
