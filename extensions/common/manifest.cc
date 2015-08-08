@@ -240,11 +240,10 @@ int Manifest::GetManifestVersion() const {
 }
 
 bool Manifest::CanAccessPath(const std::string& path) const {
-  std::vector<std::string> components;
-  base::SplitString(path, '.', &components);
   std::string key;
-  for (size_t i = 0; i < components.size(); ++i) {
-    key += components[i];
+  for (const base::StringPiece& component : base::SplitStringPiece(
+           path, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    component.AppendToString(&key);
     if (!CanAccessKey(key))
       return false;
     key += '.';

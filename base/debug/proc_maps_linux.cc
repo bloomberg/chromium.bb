@@ -96,8 +96,8 @@ bool ParseProcMaps(const std::string& input,
 
   // This isn't async safe nor terribly efficient, but it doesn't need to be at
   // this point in time.
-  std::vector<std::string> lines;
-  SplitString(input, '\n', &lines);
+  std::vector<std::string> lines = SplitString(
+      input, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   for (size_t i = 0; i < lines.size(); ++i) {
     // Due to splitting on '\n' the last line should be empty.

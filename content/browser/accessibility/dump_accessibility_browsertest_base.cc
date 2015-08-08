@@ -89,12 +89,9 @@ void DumpAccessibilityTestBase::ParseHtmlForExtraDirectives(
     const std::string& test_html,
     std::vector<Filter>* filters,
     std::string* wait_for) {
-  std::vector<std::string> lines;
-  base::SplitString(test_html, '\n', &lines);
-  for (std::vector<std::string>::const_iterator iter = lines.begin();
-       iter != lines.end();
-       ++iter) {
-    const std::string& line = *iter;
+  for (const std::string& line :
+       base::SplitString(test_html, "\n", base::TRIM_WHITESPACE,
+                         base::SPLIT_WANT_ALL)) {
     const std::string& allow_empty_str =
         AccessibilityTreeFormatter::GetAllowEmptyString();
     const std::string& allow_str =

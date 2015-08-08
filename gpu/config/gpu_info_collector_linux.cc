@@ -247,8 +247,9 @@ CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {
   std::string gl_version = gpu_info->gl_version;
   if (base::StartsWith(gl_version, "OpenGL ES", base::CompareCase::SENSITIVE))
     gl_version = gl_version.substr(10);
-  std::vector<std::string> pieces;
-  base::SplitStringAlongWhitespace(gl_version, &pieces);
+  std::vector<std::string> pieces = base::SplitString(
+      gl_version, base::kWhitespaceASCII, base::KEEP_WHITESPACE,
+      base::SPLIT_WANT_NONEMPTY);
   // In linux, the gl version string might be in the format of
   //   GLVersion DriverVendor DriverVersion
   if (pieces.size() < 3)

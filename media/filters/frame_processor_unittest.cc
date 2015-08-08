@@ -99,8 +99,8 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
   BufferQueue StringToBufferQueue(const std::string& buffers_to_append,
                                   const TrackId track_id,
                                   const DemuxerStream::Type type) {
-    std::vector<std::string> timestamps;
-    base::SplitString(buffers_to_append, ' ', &timestamps);
+    std::vector<std::string> timestamps = base::SplitString(
+        buffers_to_append, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     BufferQueue buffers;
     for (size_t i = 0; i < timestamps.size(); i++) {
@@ -112,8 +112,8 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
       }
 
       // Use custom decode timestamp if included.
-      std::vector<std::string> buffer_timestamps;
-      base::SplitString(timestamps[i], '|', &buffer_timestamps);
+      std::vector<std::string> buffer_timestamps = base::SplitString(
+          timestamps[i], "|", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       if (buffer_timestamps.size() == 1)
         buffer_timestamps.push_back(buffer_timestamps[0]);
       CHECK_EQ(2u, buffer_timestamps.size());
@@ -193,8 +193,8 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
   // as timestamp_in_ms.
   void CheckReadsThenReadStalls(ChunkDemuxerStream* stream,
                                 const std::string& expected) {
-    std::vector<std::string> timestamps;
-    base::SplitString(expected, ' ', &timestamps);
+    std::vector<std::string> timestamps = base::SplitString(
+        expected, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     std::stringstream ss;
     for (size_t i = 0; i < timestamps.size(); ++i) {
       int loop_count = 0;

@@ -496,7 +496,9 @@ std::vector<base::string16> Label::GetLinesForWidth(int width) const {
   // |width| can be 0 when getting the default text size, in that case
   // the ideal lines (i.e. broken at newline characters) are wanted.
   if (width <= 0) {
-    base::SplitString(render_text_->GetDisplayText(), '\n', &lines);
+    lines = base::SplitString(
+        render_text_->GetDisplayText(), base::string16(1, '\n'),
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   } else {
     gfx::ElideRectangleText(render_text_->GetDisplayText(), font_list(), width,
                             std::numeric_limits<int>::max(),

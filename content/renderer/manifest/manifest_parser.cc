@@ -48,8 +48,9 @@ std::vector<gfx::Size> ParseIconSizesHTML(const base::string16& sizes_str16) {
   std::vector<gfx::Size> sizes;
   std::string sizes_str =
       base::StringToLowerASCII(base::UTF16ToUTF8(sizes_str16));
-  std::vector<std::string> sizes_str_list;
-  base::SplitStringAlongWhitespace(sizes_str, &sizes_str_list);
+  std::vector<std::string> sizes_str_list = base::SplitString(
+      sizes_str, base::kWhitespaceASCII, base::KEEP_WHITESPACE,
+      base::SPLIT_WANT_NONEMPTY);
 
   for (size_t i = 0; i < sizes_str_list.size(); ++i) {
     std::string& size_str = sizes_str_list[i];
@@ -59,8 +60,8 @@ std::vector<gfx::Size> ParseIconSizesHTML(const base::string16& sizes_str16) {
     }
 
     // It is expected that [0] => width and [1] => height after the split.
-    std::vector<std::string> size_list;
-    base::SplitStringDontTrim(size_str, L'x', &size_list);
+    std::vector<std::string> size_list = base::SplitString(
+        size_str, "x", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
     if (size_list.size() != 2)
       continue;
     if (!IsValidIconWidthOrHeight(size_list[0]) ||

@@ -439,8 +439,8 @@ class ChunkDemuxerTest : public ::testing::Test {
   void ParseBlockDescriptions(int track_number,
                               const std::string block_descriptions,
                               std::vector<BlockInfo>* blocks) {
-    std::vector<std::string> timestamps;
-    base::SplitString(block_descriptions, ' ', &timestamps);
+    std::vector<std::string> timestamps = base::SplitString(
+        block_descriptions, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     for (size_t i = 0; i < timestamps.size(); ++i) {
       std::string timestamp_str = timestamps[i];
@@ -1059,8 +1059,8 @@ class ChunkDemuxerTest : public ::testing::Test {
 
   void CheckExpectedBuffers(DemuxerStream* stream,
                             const std::string& expected) {
-    std::vector<std::string> timestamps;
-    base::SplitString(expected, ' ', &timestamps);
+    std::vector<std::string> timestamps = base::SplitString(
+        expected, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     std::stringstream ss;
     for (size_t i = 0; i < timestamps.size(); ++i) {
       // Initialize status to kAborted since it's possible for Read() to return

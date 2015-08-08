@@ -293,9 +293,10 @@ void TraceConfig::InitializeFromStrings(
     const std::string& category_filter_string,
     const std::string& trace_options_string) {
   if (!category_filter_string.empty()) {
-    std::vector<std::string> split;
+    std::vector<std::string> split = base::SplitString(
+        category_filter_string, ",", base::TRIM_WHITESPACE,
+        base::SPLIT_WANT_ALL);
     std::vector<std::string>::iterator iter;
-    base::SplitString(category_filter_string, ',', &split);
     for (iter = split.begin(); iter != split.end(); ++iter) {
       std::string category = *iter;
       // Ignore empty categories.
@@ -331,9 +332,9 @@ void TraceConfig::InitializeFromStrings(
   enable_systrace_ = false;
   enable_argument_filter_ = false;
   if(!trace_options_string.empty()) {
-    std::vector<std::string> split;
+    std::vector<std::string> split = base::SplitString(
+        trace_options_string, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     std::vector<std::string>::iterator iter;
-    base::SplitString(trace_options_string, ',', &split);
     for (iter = split.begin(); iter != split.end(); ++iter) {
       if (*iter == kRecordUntilFull) {
         record_mode_ = RECORD_UNTIL_FULL;

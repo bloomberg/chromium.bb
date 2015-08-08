@@ -171,11 +171,9 @@ bool DisplayManager::InitFromCommandLine() {
     return false;
   const string size_str =
       command_line->GetSwitchValueASCII(switches::kAshHostWindowBounds);
-  vector<string> parts;
-  base::SplitString(size_str, ',', &parts);
-  for (vector<string>::const_iterator iter = parts.begin();
-       iter != parts.end(); ++iter) {
-    info_list.push_back(DisplayInfo::CreateFromSpec(*iter));
+  for (const std::string& part : base::SplitString(
+           size_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    info_list.push_back(DisplayInfo::CreateFromSpec(part));
     info_list.back().set_native(true);
   }
   MaybeInitInternalDisplay(&info_list[0]);

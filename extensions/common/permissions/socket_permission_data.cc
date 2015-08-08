@@ -124,8 +124,9 @@ SocketPermissionEntry& SocketPermissionData::entry() {
 bool SocketPermissionData::Parse(const std::string& permission) {
   Reset();
 
-  std::vector<std::string> tokens;
-  base::SplitStringDontTrim(permission, kColon, &tokens);
+  std::vector<std::string> tokens =
+      base::SplitString(permission, std::string(1, kColon),
+                        base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   if (tokens.empty())
     return false;
 

@@ -52,8 +52,8 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
   //    <file-path> +
   //    ["#" + <name> + ["#" + <description> + ["#" + <version>]]] +
   //    *1( LWS + ";" + LWS + <mime-type> )
-  std::vector<std::string> modules;
-  base::SplitString(value, ',', &modules);
+  std::vector<std::string> modules = base::SplitString(
+      value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   size_t plugins_to_register = modules.size();
   if (plugins_to_register > kMaxPluginsToRegisterFromCommandLine) {
@@ -64,15 +64,15 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
   }
 
   for (size_t i = 0; i < plugins_to_register; ++i) {
-    std::vector<std::string> parts;
-    base::SplitString(modules[i], ';', &parts);
+    std::vector<std::string> parts = base::SplitString(
+        modules[i], ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (parts.size() < 2) {
       DVLOG(1) << "Required mime-type not found";
       continue;
     }
 
-    std::vector<std::string> name_parts;
-    base::SplitString(parts[0], '#', &name_parts);
+    std::vector<std::string> name_parts = base::SplitString(
+        parts[0], "#", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     PepperPluginInfo plugin;
     plugin.is_out_of_process = out_of_process;

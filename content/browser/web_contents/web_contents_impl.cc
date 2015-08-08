@@ -2475,11 +2475,11 @@ void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
   if (headers.empty()) {
     params->set_prefer_cache(true);
   } else {
-    std::vector<std::string> key_value_list;
-    base::SplitString(headers, '\n', &key_value_list);
-    for (const auto& key_value : key_value_list) {
-      std::vector<std::string> pair;
-      base::SplitString(key_value, ':', &pair);
+    for (const base::StringPiece& key_value :
+         base::SplitStringPiece(
+             headers, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+      std::vector<std::string> pair = base::SplitString(
+          key_value, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       DCHECK_EQ(2ul, pair.size());
       params->add_request_header(pair[0], pair[1]);
     }

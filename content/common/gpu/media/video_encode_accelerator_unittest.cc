@@ -304,14 +304,16 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
 static void ParseAndReadTestStreamData(const base::FilePath::StringType& data,
                                        ScopedVector<TestStream>* test_streams) {
   // Split the string to individual test stream data.
-  std::vector<base::FilePath::StringType> test_streams_data;
-  base::SplitString(data, ';', &test_streams_data);
+  std::vector<base::FilePath::StringType> test_streams_data = base::SplitString(
+      data, base::FilePath::StringType(1, ';'),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   CHECK_GE(test_streams_data.size(), 1U) << data;
 
   // Parse each test stream data and read the input file.
   for (size_t index = 0; index < test_streams_data.size(); ++index) {
-    std::vector<base::FilePath::StringType> fields;
-    base::SplitString(test_streams_data[index], ':', &fields);
+    std::vector<base::FilePath::StringType> fields = base::SplitString(
+        test_streams_data[index], base::FilePath::StringType(1, ':'),
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     CHECK_GE(fields.size(), 4U) << data;
     CHECK_LE(fields.size(), 9U) << data;
     TestStream* test_stream = new TestStream();

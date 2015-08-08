@@ -1347,8 +1347,8 @@ v8::Local<v8::Object> Dispatcher::GetOrCreateBindObjectIfAvailable(
     const std::string& api_name,
     std::string* bind_name,
     ScriptContext* context) {
-  std::vector<std::string> split;
-  base::SplitString(api_name, '.', &split);
+  std::vector<std::string> split = base::SplitString(
+      api_name, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   v8::Local<v8::Object> bind_object;
 

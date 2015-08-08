@@ -97,8 +97,8 @@ DesktopMediaID::DesktopMediaID() = default;
 
 // static
 DesktopMediaID DesktopMediaID::Parse(const std::string& str) {
-  std::vector<std::string> parts;
-  base::SplitString(str, ':', &parts);
+  std::vector<std::string> parts = base::SplitString(
+      str, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
 #if defined(USE_AURA)
   if (parts.size() != 3)

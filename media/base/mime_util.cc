@@ -417,9 +417,13 @@ bool MimeUtil::AreSupportedMediaCodecs(
 void MimeUtil::ParseCodecString(const std::string& codecs,
                                 std::vector<std::string>* codecs_out,
                                 bool strip) {
-  std::string no_quote_codecs;
-  base::TrimString(codecs, "\"", &no_quote_codecs);
-  base::SplitString(no_quote_codecs, ',', codecs_out);
+  *codecs_out = base::SplitString(
+      base::TrimString(codecs, "\"", base::TRIM_ALL),
+      ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+
+  // Convert empty or all-whitespace input to 0 results.
+  if (codecs_out->size() == 1 && (*codecs_out)[0].empty())
+    codecs_out->clear();
 
   if (!strip)
     return;

@@ -128,8 +128,9 @@ bool SocketPermissionEntry::ParseHostPattern(
     SocketPermissionRequest::OperationType type,
     const std::string& pattern,
     SocketPermissionEntry* entry) {
-  std::vector<std::string> tokens;
-  base::SplitStringDontTrim(pattern, kColon, &tokens);
+  std::vector<std::string> tokens =
+      base::SplitString(pattern, std::string(1, kColon), base::KEEP_WHITESPACE,
+                        base::SPLIT_WANT_ALL);
   return ParseHostPattern(type, tokens, entry);
 }
 
@@ -168,8 +169,9 @@ bool SocketPermissionEntry::ParseHostPattern(
     result.pattern_.host = base::StringToLowerASCII(result.pattern_.host);
 
     // The first component can optionally be '*' to match all subdomains.
-    std::vector<std::string> host_components;
-    base::SplitString(result.pattern_.host, kDot, &host_components);
+    std::vector<std::string> host_components =
+        base::SplitString(result.pattern_.host, std::string(1, kDot),
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     DCHECK(!host_components.empty());
 
     if (host_components[0] == kWildcard || host_components[0].empty()) {
