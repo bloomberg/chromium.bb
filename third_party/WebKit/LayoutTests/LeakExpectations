@@ -120,7 +120,7 @@ crbug.com/506752 storage/indexeddb/ [ Skip ]
 crbug.com/506754 http/tests/cachestorage/window/cache-put.html [ Leak ]
 crbug.com/506754 http/tests/inspector/filesystem/request-file-content.html [ Leak ]
 crbug.com/506754 http/tests/inspector/network/network-xhr-replay.html [ Leak ]
-crbug.com/506754 http/tests/inspector/service-workers/service-worker-agents.html [ Leak ]
+crbug.com/506754 http/tests/inspector/service-workers/service-worker-agents.html [ Crash Leak ]
 crbug.com/506754 http/tests/security/cross-origin-indexeddb-allowed.html [ Leak ]
 crbug.com/506754 http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
 crbug.com/506754 http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
@@ -135,8 +135,3 @@ crbug.com/506756 inspector/console/only-one-deprecation-warning.html [ Leak ]
 # Untriaged but known leaks of ActiveDOMObject (Web Audio).
 # -----------------------------------------------------------------
 crbug.com/506757 webaudio/mediastreamaudiodestinationnode.html [ Leak ]
-
-# -----------------------------------------------------------------
-# Untriaged
-# -----------------------------------------------------------------
-crbug.com/480769 http/tests/inspector/service-workers/service-worker-agents.html [ Crash Leak ]
