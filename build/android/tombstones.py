@@ -48,6 +48,8 @@ def _ListTombstones(device):
         yield details[-1], t
   except device_errors.CommandFailedError:
     logging.exception('Could not retrieve tombstones.')
+  except device_errors.CommandTimeoutError:
+    logging.exception('Timed out retrieving tombstones.')
 
 
 def _GetDeviceDateTime(device):
