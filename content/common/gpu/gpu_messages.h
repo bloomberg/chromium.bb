@@ -110,9 +110,6 @@ IPC_STRUCT_BEGIN(AcceleratedSurfaceMsg_BufferPresented_Params)
   // If the browser is drawing to the screen, this is the CGL renderer ID of
   // the GL context that the brower is using.
   IPC_STRUCT_MEMBER(int32, renderer_id)
-  // The CGDirectDisplayID on which the content was displayed, to be used for
-  // computing vsync. If vsync is not enabled, this is zero.
-  IPC_STRUCT_MEMBER(uint32, display_id_for_vsync)
 IPC_STRUCT_END()
 #endif
 

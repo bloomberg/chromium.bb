@@ -308,8 +308,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
         params.scale_factor,
         params.damage_rect,
         base::Bind(&OnSurfaceDisplayedCallback, params.surface_id),
-        &ack_params.disable_throttling, &ack_params.renderer_id,
-        &ack_params.display_id_for_vsync);
+        &ack_params.disable_throttling, &ack_params.renderer_id);
   }
   Send(new AcceleratedSurfaceMsg_BufferPresented(params.route_id, ack_params));
 }

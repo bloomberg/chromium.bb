@@ -16,9 +16,9 @@
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
-#include "ui/gl/scoped_api.h"
 
 namespace {
 const size_t kFramesToKeepCAContextAfterDiscard = 2;

@@ -110,12 +110,6 @@ int AcceleratedWidgetMac::GetRendererID() const {
   return 0;
 }
 
-uint32_t AcceleratedWidgetMac::GetDisplayIDForVSync() const {
-  if (view_)
-    return view_->AcceleratedWidgetGetDisplayIDForVSync();
-  return 0;
-}
-
 bool AcceleratedWidgetMac::IsRendererThrottlingDisabled() const {
   if (view_)
     return view_->AcceleratedWidgetShouldIgnoreBackpressure();
@@ -371,7 +365,7 @@ void AcceleratedWidgetMacGotAcceleratedFrame(
     float scale_factor,
     const gfx::Rect& pixel_damage_rect,
     const base::Closure& drawn_callback,
-    bool* disable_throttling, int* renderer_id, uint32_t* display_id) {
+    bool* disable_throttling, int* renderer_id) {
   AcceleratedWidgetMac* accelerated_widget_mac =
       GetHelperFromAcceleratedWidget(widget);
   if (accelerated_widget_mac) {
@@ -381,11 +375,9 @@ void AcceleratedWidgetMacGotAcceleratedFrame(
     *disable_throttling =
         accelerated_widget_mac->IsRendererThrottlingDisabled();
     *renderer_id = accelerated_widget_mac->GetRendererID();
-    *display_id = accelerated_widget_mac->GetDisplayIDForVSync();
   } else {
     *disable_throttling = false;
     *renderer_id = 0;
-    *display_id = 0;
   }
 }
 

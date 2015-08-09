@@ -36,7 +36,6 @@ void ClearGLBindingsGL();
 void SetGLToRealGLApi();
 void SetGLApi(GLApi* api);
 void SetGLApiToNoContext();
-GLApi* GetCurrentGLApi();
 const GLVersionInfo* GetGLVersionInfo();
 
 class GL_EXPORT GLApiBase : public GLApi {
@@ -138,6 +137,15 @@ private:
 
   // The supported extensions being advertised for this virtual context.
   std::string extensions_;
+};
+
+class GL_EXPORT ScopedSetGLToRealGLApi {
+ public:
+  ScopedSetGLToRealGLApi();
+  ~ScopedSetGLToRealGLApi();
+
+ private:
+  GLApi* old_gl_api_;
 };
 
 }  // namespace gfx
