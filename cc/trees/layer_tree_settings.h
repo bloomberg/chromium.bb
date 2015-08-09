@@ -89,6 +89,7 @@ class CC_EXPORT LayerTreeSettings {
   bool use_compositor_animation_timelines;
   bool invert_viewport_scroll_order;
   bool wait_for_beginframe_interval;
+  int max_staging_buffers;
 
   LayerTreeDebugState initial_debug_state;
 

@@ -55,8 +55,7 @@ class TestHooks : public AnimationDelegate {
   virtual void CreateResourceAndTileTaskWorkerPool(
       LayerTreeHostImpl* host_impl,
       scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
-      scoped_ptr<ResourcePool>* resource_pool,
-      scoped_ptr<ResourcePool>* staging_resource_pool);
+      scoped_ptr<ResourcePool>* resource_pool);
   virtual void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
                                           const BeginFrameArgs& args) {}
   virtual void DidFinishImplFrameOnThread(LayerTreeHostImpl* host_impl) {}

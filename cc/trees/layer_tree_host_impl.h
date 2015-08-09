@@ -559,8 +559,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   virtual void CreateResourceAndTileTaskWorkerPool(
       scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
-      scoped_ptr<ResourcePool>* resource_pool,
-      scoped_ptr<ResourcePool>* staging_resource_pool);
+      scoped_ptr<ResourcePool>* resource_pool);
 
   bool prepare_tiles_needed() const { return tile_priorities_dirty_; }
 
@@ -713,7 +712,6 @@ class CC_EXPORT LayerTreeHostImpl
   bool tree_resources_for_gpu_rasterization_dirty_;
   scoped_ptr<TileTaskWorkerPool> tile_task_worker_pool_;
   scoped_ptr<ResourcePool> resource_pool_;
-  scoped_ptr<ResourcePool> staging_resource_pool_;
   scoped_ptr<Renderer> renderer_;
 
   GlobalStateThatImpactsTilePriority global_tile_state_;
