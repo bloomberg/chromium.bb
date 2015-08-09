@@ -265,11 +265,13 @@ class TileTaskWorkerPoolPerfTest
         break;
       case TILE_TASK_WORKER_POOL_TYPE_ONE_COPY:
         Create3dOutputSurfaceAndResourceProvider();
+        staging_resource_pool_ = ResourcePool::Create(resource_provider_.get(),
+                                                      GL_TEXTURE_2D);
         tile_task_worker_pool_ = OneCopyTileTaskWorkerPool::Create(
             task_runner_.get(), task_graph_runner_.get(),
             context_provider_.get(), resource_provider_.get(),
-            std::numeric_limits<int>::max(), false,
-            std::numeric_limits<int>::max());
+            staging_resource_pool_.get(), std::numeric_limits<int>::max(),
+            false);
         break;
       case TILE_TASK_WORKER_POOL_TYPE_GPU:
         Create3dOutputSurfaceAndResourceProvider();
@@ -429,6 +431,7 @@ class TileTaskWorkerPoolPerfTest
     return std::string();
   }
 
+  scoped_ptr<ResourcePool> staging_resource_pool_;
   scoped_ptr<TileTaskWorkerPool> tile_task_worker_pool_;
   TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   TestSharedBitmapManager shared_bitmap_manager_;

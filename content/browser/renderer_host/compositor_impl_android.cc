@@ -674,7 +674,7 @@ void CompositorImpl::CreateOutputSurface() {
         base::ThreadTaskRunnerHandle::Get()));
     scoped_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
         new cc::SurfaceDisplayOutputSurface(
-            manager, surface_id_allocator_.get(), context_provider, nullptr));
+            manager, surface_id_allocator_.get(), context_provider));
 
     display_client_->set_surface_output_surface(surface_output_surface.get());
     surface_output_surface->set_display_client(display_client_.get());

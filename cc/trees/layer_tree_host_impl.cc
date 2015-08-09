@@ -153,6 +153,11 @@ size_t GetMaxTransferBufferUsageBytes(
                   max_transfer_buffer_usage_bytes);
 }
 
+size_t GetMaxStagingResourceCount() {
+  // Upper bound for number of staging resource to allow.
+  return 32;
+}
+
 size_t GetDefaultMemoryAllocationLimit() {
   // TODO(ccameron): (http://crbug.com/137094) This 64MB default is a straggler
   // from the old texture manager and is just to give us a default memory
@@ -1230,13 +1235,22 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
       100);
 
   DCHECK(resource_pool_);
-  resource_pool_->CheckBusyResources();
+  resource_pool_->CheckBusyResources(false);
   // Soft limit is used for resource pool such that memory returns to soft
   // limit after going over.
   resource_pool_->SetResourceUsageLimits(
       global_tile_state_.soft_memory_limit_in_bytes,
       unused_memory_limit_in_bytes,
       global_tile_state_.num_resources_limit);
+
+  // Release all staging resources when invisible.
+  if (staging_resource_pool_) {
+    staging_resource_pool_->CheckBusyResources(false);
+    staging_resource_pool_->SetResourceUsageLimits(
+        std::numeric_limits<size_t>::max(),
+        std::numeric_limits<size_t>::max(),
+        visible_ ? GetMaxStagingResourceCount() : 0);
+  }
 
   DidModifyTilePriorities();
 }
@@ -1451,7 +1465,7 @@ void LayerTreeHostImpl::ReclaimResources(const CompositorFrameAck* ack) {
   // In OOM, we now might be able to release more resources that were held
   // because they were exported.
   if (resource_pool_) {
-    resource_pool_->CheckBusyResources();
+    resource_pool_->CheckBusyResources(false);
     resource_pool_->ReduceResourceUsage();
   }
   // If we're not visible, we likely released resources, so we want to
@@ -2047,7 +2061,8 @@ void LayerTreeHostImpl::CreateAndSetRenderer() {
 }
 
 void LayerTreeHostImpl::CreateTileManagerResources() {
-  CreateResourceAndTileTaskWorkerPool(&tile_task_worker_pool_, &resource_pool_);
+  CreateResourceAndTileTaskWorkerPool(&tile_task_worker_pool_, &resource_pool_,
+                                      &staging_resource_pool_);
   // TODO(vmpstr): Initialize tile task limit at ctor time.
   tile_manager_->SetResources(
       resource_pool_.get(), tile_task_worker_pool_->AsTileTaskRunner(),
@@ -2058,7 +2073,8 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
 
 void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
     scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
-    scoped_ptr<ResourcePool>* resource_pool) {
+    scoped_ptr<ResourcePool>* resource_pool,
+    scoped_ptr<ResourcePool>* staging_resource_pool) {
   DCHECK(GetTaskRunner());
   // TODO(vmpstr): Make this a DCHECK (or remove) when crbug.com/419086 is
   // resolved.
@@ -2108,6 +2124,13 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
   }
 
   if (settings_.use_one_copy) {
+    // Synchronous single-threaded mode depends on tiles being ready to
+    // draw when raster is complete.  Therefore, it must use one of zero
+    // copy, software raster, or GPU raster.
+    DCHECK(!is_synchronous_single_threaded_);
+
+    // We need to create a staging resource pool when using copy rasterizer.
+    *staging_resource_pool = ResourcePool::Create(resource_provider_.get());
     *resource_pool =
         ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
 
@@ -2117,9 +2140,9 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
 
     *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
         GetTaskRunner(), task_graph_runner, context_provider,
-        resource_provider_.get(), max_copy_texture_chromium_size,
-        settings_.use_persistent_map_for_gpu_memory_buffers,
-        settings_.max_staging_buffers);
+        resource_provider_.get(), staging_resource_pool_.get(),
+        max_copy_texture_chromium_size,
+        settings_.use_persistent_map_for_gpu_memory_buffers);
     return;
   }
 
@@ -2162,6 +2185,7 @@ void LayerTreeHostImpl::PostFrameTimingEvents(
 void LayerTreeHostImpl::CleanUpTileManager() {
   tile_manager_->FinishTasksAndCleanUp();
   resource_pool_ = nullptr;
+  staging_resource_pool_ = nullptr;
   tile_task_worker_pool_ = nullptr;
   single_thread_synchronous_task_graph_runner_ = nullptr;
 }
@@ -2195,6 +2219,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
       settings_.renderer_settings.highp_threshold_min,
       settings_.renderer_settings.use_rgba_4444_textures,
       settings_.renderer_settings.texture_id_allocation_chunk_size,
+      settings_.use_persistent_map_for_gpu_memory_buffers,
       settings_.use_image_texture_targets);
 
   CreateAndSetRenderer();
