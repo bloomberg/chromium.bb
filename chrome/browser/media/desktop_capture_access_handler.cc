@@ -22,7 +22,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/media_stream_request.h"
-#include "content/public/common/origin_util.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/constants.h"
@@ -78,8 +77,8 @@ base::string16 GetApplicationTitle(content::WebContents* web_contents,
     return base::UTF8ToUTF16(title);
   }
   GURL url = web_contents->GetURL();
-  title = content::IsOriginSecure(url) ? net::GetHostAndOptionalPort(url)
-                                       : url.GetOrigin().spec();
+  title = url.SchemeIsSecure() ? net::GetHostAndOptionalPort(url)
+                               : url.GetOrigin().spec();
   return base::UTF8ToUTF16(title);
 }
 
@@ -180,7 +179,8 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
       IsBuiltInExtension(request.security_origin);
 
   const bool origin_is_secure =
-      content::IsOriginSecure(request.security_origin) ||
+      request.security_origin.SchemeIsSecure() ||
+      request.security_origin.SchemeIs(extensions::kExtensionScheme) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAllowHttpScreenCapture);
 

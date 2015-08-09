@@ -24,8 +24,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/media_stream_request.h"
-#include "content/public/common/origin_util.h"
-#include "extensions/common/constants.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -156,7 +154,7 @@ GURL MediaStreamDevicesController::GetRequestingHostname() const {
 
 void MediaStreamDevicesController::PermissionGranted() {
   GURL origin(GetSecurityOriginSpec());
-  if (content::IsOriginSecure(origin)) {
+  if (origin.SchemeIsSecure()) {
     UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
                               kAllowHttps, kPermissionActionsMax);
   } else {
@@ -336,6 +334,7 @@ void MediaStreamDevicesController::StorePermission(
     ContentSetting new_audio_setting,
     ContentSetting new_video_setting) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   ContentSettingsPattern primary_pattern =
       ContentSettingsPattern::FromURLNoWildcard(request_.security_origin);
 

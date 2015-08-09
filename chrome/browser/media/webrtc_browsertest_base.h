@@ -46,9 +46,6 @@ class WebRtcTestBase : public InProcessBrowserTest {
   // chrome/test/data/webrtc/getusermedia.js.
   // If an error is reported back from the getUserMedia call, these functions
   // will return false.
-  // The ...AndAccept()/...AndDeny()/...AndDismiss() functions expect that a
-  // prompt will be shown (i.e. the current origin in the tab_contents doesn't
-  // have a saved permission).
   bool GetUserMediaAndAccept(content::WebContents* tab_contents) const;
   bool GetUserMediaWithSpecificConstraintsAndAccept(
       content::WebContents* tab_contents,
@@ -58,10 +55,6 @@ class WebRtcTestBase : public InProcessBrowserTest {
       content::WebContents* tab_contents,
       const std::string& constraints) const;
   void GetUserMediaAndDismiss(content::WebContents* tab_contents) const;
-  void GetUserMediaAndExpectAutoAcceptWithoutPrompt(
-      content::WebContents* tab_contents) const;
-  void GetUserMediaAndExpectAutoDenyWithoutPrompt(
-      content::WebContents* tab_contents) const;
   void GetUserMedia(content::WebContents* tab_contents,
                     const std::string& constraints) const;
 
