@@ -418,6 +418,8 @@ source_set("browser") {
       "renderer_host/compositor_resize_lock_aura.h",
       "renderer_host/input/synthetic_gesture_target_aura.cc",
       "renderer_host/input/synthetic_gesture_target_aura.h",
+      "renderer_host/input/touch_selection_controller_client_aura.cc",
+      "renderer_host/input/touch_selection_controller_client_aura.h",
       "renderer_host/native_web_keyboard_event_aura.cc",
       "renderer_host/render_widget_host_view_aura.cc",
       "renderer_host/render_widget_host_view_aura.h",
@@ -435,8 +437,6 @@ source_set("browser") {
       "web_contents/aura/overscroll_window_delegate.h",
       "web_contents/aura/shadow_layer_delegate.cc",
       "web_contents/aura/shadow_layer_delegate.h",
-      "web_contents/touch_editable_impl_aura.cc",
-      "web_contents/touch_editable_impl_aura.h",
       "web_contents/web_contents_view_aura.cc",
       "web_contents/web_contents_view_aura.h",
     ]

@@ -13,6 +13,7 @@
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/dip_util.h"
+#include "content/browser/renderer_host/input/touch_selection_controller_client_aura.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -21,7 +22,6 @@
 #include "content/browser/renderer_host/web_input_event_aura.h"
 #include "content/browser/web_contents/aura/gesture_nav_simple.h"
 #include "content/browser/web_contents/aura/overscroll_navigation_overlay.h"
-#include "content/browser/web_contents/touch_editable_impl_aura.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_observer.h"
@@ -63,6 +63,7 @@
 #include "ui/gfx/image/image_png_rep.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
+#include "ui/touch_selection/touch_selection_controller.h"
 #include "ui/wm/public/drag_drop_client.h"
 #include "ui/wm/public/drag_drop_delegate.h"
 
@@ -530,8 +531,12 @@ class WebContentsViewAura::WindowObserver
                              const gfx::Rect& new_bounds) override {
     if (window == host_window_ || window == view_->window_) {
       SendScreenRects();
-      if (view_->touch_editable_)
-        view_->touch_editable_->UpdateEditingController();
+      if (old_bounds.origin() != new_bounds.origin()) {
+        TouchSelectionControllerClientAura* selection_controller_client =
+            view_->GetSelectionControllerClient();
+        if (selection_controller_client)
+          selection_controller_client->OnWindowMoved();
+      }
 #if defined(OS_WIN)
     } else {
       UpdateConstrainedWindows(NULL);
@@ -649,7 +654,6 @@ WebContentsViewAura::WebContentsViewAura(WebContentsImpl* web_contents,
       current_overscroll_gesture_(OVERSCROLL_NONE),
       completed_overscroll_gesture_(OVERSCROLL_NONE),
       navigation_overlay_(nullptr),
-      touch_editable_(TouchEditableImplAura::Create()),
       is_or_was_visible_(false) {
 }
 
@@ -666,12 +670,6 @@ WebContentsViewAura::~WebContentsViewAura() {
   // Window needs a valid delegate during its destructor, so we explicitly
   // delete it here.
   window_.reset();
-}
-
-void WebContentsViewAura::SetTouchEditableForTest(
-    TouchEditableImplAura* touch_editable) {
-  touch_editable_.reset(touch_editable);
-  AttachTouchEditableToRenderView();
 }
 
 void WebContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
@@ -723,22 +721,29 @@ void WebContentsViewAura::CompleteOverscrollNavigation(OverscrollMode mode) {
   if (!web_contents_->GetRenderWidgetHostView())
     return;
   navigation_overlay_->relay_delegate()->OnOverscrollComplete(mode);
-  if (touch_editable_)
-    touch_editable_->OverscrollCompleted();
-}
-
-void WebContentsViewAura::AttachTouchEditableToRenderView() {
-  if (!touch_editable_)
-    return;
-  RenderWidgetHostViewAura* rwhva = ToRenderWidgetHostViewAura(
-      web_contents_->GetRenderWidgetHostView());
-  touch_editable_->AttachToView(rwhva);
+  ui::TouchSelectionController* selection_controller = GetSelectionController();
+  if (selection_controller)
+    selection_controller->HideAndDisallowShowingAutomatically();
 }
 
 void WebContentsViewAura::OverscrollUpdateForWebContentsDelegate(
     float delta_y) {
   if (web_contents_->GetDelegate() && IsScrollEndEffectEnabled())
     web_contents_->GetDelegate()->OverscrollUpdate(delta_y);
+}
+
+ui::TouchSelectionController* WebContentsViewAura::GetSelectionController()
+    const {
+  RenderWidgetHostViewAura* view =
+      ToRenderWidgetHostViewAura(web_contents_->GetRenderWidgetHostView());
+  return view ? view->selection_controller() : nullptr;
+}
+
+TouchSelectionControllerClientAura*
+WebContentsViewAura::GetSelectionControllerClient() const {
+  RenderWidgetHostViewAura* view =
+      ToRenderWidgetHostViewAura(web_contents_->GetRenderWidgetHostView());
+  return view ? view->selection_controller_client() : nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -898,7 +903,6 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
     InstallOverscrollControllerDelegate(view);
   }
 
-  AttachTouchEditableToRenderView();
   return view;
 }
 
@@ -915,7 +919,6 @@ void WebContentsViewAura::RenderViewCreated(RenderViewHost* host) {
 }
 
 void WebContentsViewAura::RenderViewSwappedIn(RenderViewHost* host) {
-  AttachTouchEditableToRenderView();
 }
 
 void WebContentsViewAura::SetOverscrollControllerEnabled(bool enabled) {
@@ -940,9 +943,9 @@ void WebContentsViewAura::SetOverscrollControllerEnabled(bool enabled) {
 
 void WebContentsViewAura::ShowContextMenu(RenderFrameHost* render_frame_host,
                                           const ContextMenuParams& params) {
-  if (touch_editable_) {
-    touch_editable_->EndTouchEditing(false);
-  }
+  ui::TouchSelectionController* selection_controller = GetSelectionController();
+  if (selection_controller)
+    selection_controller->HideAndDisallowShowingAutomatically();
   if (delegate_) {
     RenderWidgetHostViewAura* view = ToRenderWidgetHostViewAura(
         web_contents_->GetRenderWidgetHostView());
@@ -966,9 +969,9 @@ void WebContentsViewAura::StartDragging(
     return;
   }
 
-  if (touch_editable_)
-    touch_editable_->EndTouchEditing(false);
-
+  ui::TouchSelectionController* selection_controller = GetSelectionController();
+  if (selection_controller)
+    selection_controller->HideAndDisallowShowingAutomatically();
   ui::OSExchangeData::Provider* provider = ui::OSExchangeData::CreateProvider();
   PrepareDragData(drop_data, provider, web_contents_);
 
@@ -1079,13 +1082,6 @@ void WebContentsViewAura::OnOverscrollModeChange(OverscrollMode old_mode,
                                                  OverscrollMode new_mode) {
   if (old_mode == OVERSCROLL_NORTH || old_mode == OVERSCROLL_SOUTH)
     OverscrollUpdateForWebContentsDelegate(0);
-
-  if (touch_editable_) {
-    if (new_mode == OVERSCROLL_NONE)
-      touch_editable_->OverscrollCompleted();
-    else
-      touch_editable_->OverscrollStarted();
-  }
 
   current_overscroll_gesture_ = new_mode;
   navigation_overlay_->relay_delegate()->OnOverscrollModeChange(old_mode,

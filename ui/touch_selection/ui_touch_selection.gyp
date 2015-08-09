@@ -63,6 +63,17 @@
       ],
     },
     {
+      'target_name': 'ui_touch_selection_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        'ui_touch_selection',
+      ],
+      'sources': [
+        'touch_selection_controller_test_api.cc',
+        'touch_selection_controller_test_api.h',
+      ],
+    },
+    {
       'target_name': 'ui_touch_selection_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
@@ -76,6 +87,7 @@
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_test_support',
         'ui_touch_selection',
+        'ui_touch_selection_test_support',
       ],
       'sources': [
         'longpress_drag_selector_unittest.cc',

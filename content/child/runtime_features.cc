@@ -59,13 +59,16 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   WebRuntimeFeatures::enableOrientationEvent(true);
   WebRuntimeFeatures::enableFastMobileScrolling(true);
   WebRuntimeFeatures::enableMediaCapture(true);
-  WebRuntimeFeatures::enableCompositedSelectionUpdate(true);
   // Android won't be able to reliably support non-persistent notifications, the
   // intended behavior for which is in flux by itself.
   WebRuntimeFeatures::enableNotificationConstructor(false);
 #else
   WebRuntimeFeatures::enableNavigatorContentUtils(true);
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID) || defined(USE_AURA)
+  WebRuntimeFeatures::enableCompositedSelectionUpdate(true);
+#endif
 
 #if !(defined OS_ANDROID || defined OS_CHROMEOS || defined OS_IOS)
     // Only Android, ChromeOS, and IOS support NetInfo right now.

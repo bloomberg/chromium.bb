@@ -1968,10 +1968,20 @@ void RenderWidget::UpdateSelectionBounds() {
   if (handling_ime_event_)
     return;
 
+#if defined(USE_AURA)
+  // TODO(mohsen): For now, always send explicit selection IPC notifications for
+  // Aura beucause composited selection updates are not working for webview tags
+  // which regresses IME inside webview. Remove this when composited selection
+  // updates are fixed for webviews. See, http://crbug.com/510568.
+  bool send_ipc = true;
+#else
   // With composited selection updates, the selection bounds will be reported
   // directly by the compositor, in which case explicit IPC selection
   // notifications should be suppressed.
-  if (!blink::WebRuntimeFeatures::isCompositedSelectionUpdateEnabled()) {
+  bool send_ipc =
+      !blink::WebRuntimeFeatures::isCompositedSelectionUpdateEnabled();
+#endif
+  if (send_ipc) {
     ViewHostMsg_SelectionBounds_Params params;
     GetSelectionBounds(&params.anchor_rect, &params.focus_rect);
     if (selection_anchor_rect_ != params.anchor_rect ||

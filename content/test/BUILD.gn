@@ -375,11 +375,6 @@ if (!is_mac) {
       "//third_party/mesa:osmesa",
     ]
 
-    if (!is_chromeos) {
-      sources -=
-          [ "../browser/web_contents/touch_editable_impl_aura_browsertest.cc" ]
-    }
-
     if (is_win) {
       sources += rebase_path(
               content_tests_gypi_values.content_browsertests_win_sources,
@@ -465,9 +460,16 @@ if (!is_mac) {
               "//content")
     }
 
-    if (!use_aura) {
-      sources -=
-          [ "../browser/web_contents/web_contents_view_aura_browsertest.cc" ]
+    if (use_aura) {
+      deps += [
+        "//ui/touch_selection:test_support",
+        "//ui/touch_selection:touch_selection",
+      ]
+    } else {
+      sources -= [
+        "../browser/renderer_host/input/touch_selection_controller_client_aura_browsertest.cc",
+        "../browser/web_contents/web_contents_view_aura_browsertest.cc",
+      ]
     }
   }
 }

@@ -31,7 +31,6 @@
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/touch/selection_bound.h"
-#include "ui/base/touch/touch_editing_controller.h"
 #include "ui/events/gestures/motion_event_aura.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/geometry/insets.h"
@@ -67,6 +66,7 @@ class CompositorLock;
 class InputMethod;
 class LocatedEvent;
 class Texture;
+class TouchSelectionController;
 }
 
 namespace content {
@@ -78,6 +78,7 @@ class OverscrollController;
 class RenderFrameHostImpl;
 class RenderWidgetHostImpl;
 class RenderWidgetHostView;
+class TouchSelectionControllerClientAura;
 
 // RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
 class CONTENT_EXPORT RenderWidgetHostViewAura
@@ -92,49 +93,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       public aura::client::FocusChangeObserver,
       public aura::client::CursorClientObserver {
  public:
-  // Displays and controls touch editing elements such as selection handles.
-  class TouchEditingClient {
-   public:
-    TouchEditingClient() {}
-
-    // Tells the client to start showing touch editing handles.
-    virtual void StartTouchEditing() = 0;
-
-    // Notifies the client that touch editing is no longer needed. |quick|
-    // determines whether the handles should fade out quickly or slowly.
-    virtual void EndTouchEditing(bool quick) = 0;
-
-    // Notifies the client that the selection bounds need to be updated.
-    virtual void OnSelectionOrCursorChanged(
-        const ui::SelectionBound& anchor,
-        const ui::SelectionBound& focus) = 0;
-
-    // Notifies the client that the current text input type as changed.
-    virtual void OnTextInputTypeChanged(ui::TextInputType type) = 0;
-
-    // Notifies the client that an input event is about to be sent to the
-    // renderer. Returns true if the client wants to stop event propagation.
-    virtual bool HandleInputEvent(const ui::Event* event) = 0;
-
-    // Notifies the client that a gesture event ack was received.
-    virtual void GestureEventAck(int gesture_event_type) = 0;
-
-    // Notifies the client that the fling has ended, so it can activate touch
-    // editing if needed.
-    virtual void DidStopFlinging() = 0;
-
-    // This is called when the view is destroyed, so that the client can
-    // perform any necessary clean-up.
-    virtual void OnViewDestroyed() = 0;
-
-   protected:
-    virtual ~TouchEditingClient() {}
-  };
-
-  void set_touch_editing_client(TouchEditingClient* client) {
-    touch_editing_client_ = client;
-  }
-
   // When |is_guest_view_hack| is true, this view isn't really the view for
   // the |widget|, a RenderWidgetHostViewGuest is.
   //
@@ -344,12 +302,25 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   void SnapToPhysicalPixelBoundary();
 
+  ui::TouchSelectionController* selection_controller() const {
+    return selection_controller_.get();
+  }
+
+  TouchSelectionControllerClientAura* selection_controller_client() const {
+    return selection_controller_client_.get();
+  }
+
   OverscrollController* overscroll_controller() const {
     return overscroll_controller_.get();
   }
 
   // Called when the context menu is about to be displayed.
   void OnShowContextMenu();
+
+  // Used in tests to set a mock client for touch selection controller. It will
+  // create a new touch selection controller for the new client.
+  void SetSelectionControllerClientForTest(
+      scoped_ptr<TouchSelectionControllerClientAura> client);
 
  protected:
   ~RenderWidgetHostViewAura() override;
@@ -510,6 +481,20 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Called when the parent window hierarchy for our window changes.
   void ParentHierarchyChanged();
 
+  // Helper function to be called whenever new selection information is
+  // received. It will update selection controller.
+  void SelectionUpdated(bool is_editable,
+                        bool is_empty_text_form_control,
+                        const ui::SelectionBound& start,
+                        const ui::SelectionBound& end);
+
+  // Helper function to create a selection controller.
+  void CreateSelectionController();
+
+  // Performs gesture handling needed for touch text selection. Sets event as
+  // handled if it should not be further processed.
+  void HandleGestureForTouchSelection(ui::GestureEvent* event);
+
   // The model object.
   RenderWidgetHostImpl* host_;
 
@@ -647,7 +632,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   bool has_snapped_to_boundary_;
 
-  TouchEditingClient* touch_editing_client_;
+  scoped_ptr<TouchSelectionControllerClientAura> selection_controller_client_;
+  scoped_ptr<ui::TouchSelectionController> selection_controller_;
 
   scoped_ptr<OverscrollController> overscroll_controller_;
 
