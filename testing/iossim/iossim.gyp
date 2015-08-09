@@ -4,7 +4,8 @@
 
 {
   'variables': {
-    'mac_deployment_target': '10.8'
+    'mac_deployment_target': '10.9',
+    'mac_sdk_min': '10.9',
   },
   'conditions': [
     ['OS!="ios" or "<(GENERATOR)"!="xcode" or "<(GENERATOR_FLAVOR)"=="ninja"', {

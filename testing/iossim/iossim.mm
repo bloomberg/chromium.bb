@@ -35,6 +35,7 @@
 @class DVTSimulatorApplication;
 @class SimDeviceSet;
 @class SimDeviceType;
+@class SimProfilesPathMonitor;
 @class SimRuntime;
 @class SimServiceConnectionManager;
 #import "CoreSimulator.h"
