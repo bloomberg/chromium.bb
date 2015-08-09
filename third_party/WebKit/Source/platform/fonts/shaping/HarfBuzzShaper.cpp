@@ -212,27 +212,6 @@ float ShapeResult::fillGlyphBufferForRun(GlyphBuffer* glyphBuffer,
     return advanceSoFar - initialAdvance;
 }
 
-static inline unsigned countGraphemesInCluster(const UChar* str,
-    unsigned strLength, uint16_t startIndex, uint16_t endIndex)
-{
-    if (startIndex > endIndex) {
-        uint16_t tempIndex = startIndex;
-        startIndex = endIndex;
-        endIndex = tempIndex;
-    }
-    uint16_t length = endIndex - startIndex;
-    ASSERT(static_cast<unsigned>(startIndex + length) <= strLength);
-    TextBreakIterator* cursorPosIterator = cursorMovementIterator(&str[startIndex], length);
-
-    int cursorPos = cursorPosIterator->current();
-    int numGraphemes = -1;
-    while (0 <= cursorPos) {
-        cursorPos = cursorPosIterator->next();
-        numGraphemes++;
-    }
-    return numGraphemes < 0 ? 0 : numGraphemes;
-}
-
 static inline void addEmphasisMark(GlyphBuffer* buffer,
     const GlyphData* emphasisData, FloatPoint glyphCenter,
     float midGlyphOffset)
@@ -310,7 +289,7 @@ float ShapeResult::fillGlyphBufferForTextEmphasisRun(GlyphBuffer* glyphBuffer,
             else
                 clusterEnd = isRunEnd ? run->m_startIndex + run->m_numCharacters + runOffset : run->glyphToCharacterIndex(i + 1) + runOffset;
 
-            graphemesInCluster = countGraphemesInCluster(textRun.characters16(), textRun.charactersLength(), clusterStart, clusterEnd);
+            graphemesInCluster = countCharactersAndGraphemesInCluster(textRun.characters16(), textRun.charactersLength(), clusterStart, clusterEnd).graphemes;
             if (!graphemesInCluster || !clusterAdvance)
                 continue;
 

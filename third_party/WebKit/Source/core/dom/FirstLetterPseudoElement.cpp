@@ -30,6 +30,7 @@
 #include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTextFragment.h"
+#include "platform/text/TextBreakIterator.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/WTFString.h"
 #include "wtf/text/icu/UnicodeIcu.h"
@@ -77,7 +78,10 @@ unsigned FirstLetterPseudoElement::firstLetterLength(const String& text)
         return 0;
 
     // Account the next character for first letter.
-    length++;
+    const String substring = text.substring(length);
+    const unsigned substringLength = substring.length();
+    const UChar* normalizedBuffer = substring.is8Bit() ? String::make16BitFrom8BitSource(substring.characters8(), substringLength).characters16() : substring.characters16();
+    length += countCharactersAndGraphemesInCluster(normalizedBuffer, substringLength, 0, 1).characters;
 
     // Keep looking for allowed punctuation for the :first-letter.
     for (; length < textLength; ++length) {

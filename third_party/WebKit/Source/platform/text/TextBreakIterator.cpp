@@ -50,6 +50,30 @@ unsigned numGraphemeClusters(const String& string)
     return num;
 }
 
+ClusterData countCharactersAndGraphemesInCluster(const UChar* normalizedBuffer, unsigned normalizedBufferLength, uint16_t startIndex, uint16_t endIndex)
+{
+    if (startIndex > endIndex) {
+        uint16_t tempIndex = startIndex;
+        startIndex = endIndex;
+        endIndex = tempIndex;
+    }
+
+    uint16_t length = endIndex - startIndex;
+    ASSERT(static_cast<unsigned>(startIndex + length) <= normalizedBufferLength);
+    TextBreakIterator* cursorPosIterator = cursorMovementIterator(&normalizedBuffer[startIndex], normalizedBufferLength);
+
+    int cursorPos = cursorPosIterator->current();
+    unsigned numGraphemes = 0;
+    while (cursorPos < length) {
+        cursorPos = cursorPosIterator->next();
+        if (cursorPos == TextBreakDone)
+            return ClusterData(numGraphemes, normalizedBufferLength);
+
+        numGraphemes++;
+    }
+
+    return ClusterData(numGraphemes, cursorPos);
+}
 
 static inline bool isBreakableSpace(UChar ch)
 {
