@@ -428,7 +428,11 @@ int64_t ManifestParser::ParseThemeColor(
       return Manifest::kInvalidOrMissingThemeColor;
   }
 
-  return static_cast<int64_t>(color);
+  // We do this here because Java does not have an unsigned int32 type so colors
+  // with high alpha values will be negative. Instead of doing the conversion
+  // after we pass over to Java, we do it here as it is easier and clearer.
+  int32_t signed_color = reinterpret_cast<int32_t&>(color);
+  return static_cast<int64_t>(signed_color);
 }
 
 base::NullableString16 ManifestParser::ParseGCMSenderID(

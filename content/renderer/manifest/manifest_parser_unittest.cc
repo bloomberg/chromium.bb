@@ -10,6 +10,14 @@
 
 namespace content {
 
+namespace {
+
+uint32_t ExtractColor(int64_t color) {
+  return reinterpret_cast<uint32_t&>(color);
+}
+
+} // anonymous namespace
+
 class ManifestParserTest : public testing::Test  {
  protected:
   ManifestParserTest() {}
@@ -988,7 +996,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
   // Smoke test.
   {
     Manifest manifest = ParseManifest("{ \"theme_color\": \"#FF0000\" }");
-    EXPECT_EQ(manifest.theme_color, 0xFFFF0000);
+    EXPECT_EQ(ExtractColor(manifest.theme_color), 0xFFFF0000);
     EXPECT_FALSE(manifest.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -996,7 +1004,7 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
   // Trim whitespaces.
   {
     Manifest manifest = ParseManifest("{ \"theme_color\": \"  blue   \" }");
-    EXPECT_EQ(manifest.theme_color, 0xFF0000FF);
+    EXPECT_EQ(ExtractColor(manifest.theme_color), 0xFF0000FF);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -1104,35 +1112,35 @@ TEST_F(ManifestParserTest, ThemeColorParserRules) {
   // Accept CSS color keyword format.
   {
     Manifest manifest = ParseManifest("{ \"theme_color\": \"blue\" }");
-    EXPECT_EQ(manifest.theme_color, 0xFF0000FF);
+    EXPECT_EQ(ExtractColor(manifest.theme_color), 0xFF0000FF);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept CSS color keyword format.
   {
     Manifest manifest = ParseManifest("{ \"theme_color\": \"chartreuse\" }");
-    EXPECT_EQ(manifest.theme_color, 0xFF7FFF00);
+    EXPECT_EQ(ExtractColor(manifest.theme_color), 0xFF7FFF00);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept CSS RGB format.
   {
     Manifest manifest = ParseManifest("{ \"theme_color\": \"#FFF\" }");
-    EXPECT_EQ(manifest.theme_color, 0xFFFFFFFF);
+    EXPECT_EQ(ExtractColor(manifest.theme_color), 0xFFFFFFFF);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept CSS RGB format.
   {
     Manifest manifest = ParseManifest("{ \"theme_color\": \"#ABC\" }");
-    EXPECT_EQ(manifest.theme_color, 0xFFAABBCC);
+    EXPECT_EQ(ExtractColor(manifest.theme_color), 0xFFAABBCC);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept CSS RRGGBB format.
   {
     Manifest manifest = ParseManifest("{ \"theme_color\": \"#FF0000\" }");
-    EXPECT_EQ(manifest.theme_color, 0xFFFF0000);
+    EXPECT_EQ(ExtractColor(manifest.theme_color), 0xFFFF0000);
     EXPECT_EQ(0u, GetErrorCount());
   }
 }
