@@ -98,6 +98,9 @@ void GpuSurfacelessBrowserCompositorOutputSurface::Reshape(
 void GpuSurfacelessBrowserCompositorOutputSurface::OnSwapBuffersCompleted(
     const std::vector<ui::LatencyInfo>& latency_info,
     gfx::SwapResult result) {
+#if defined(OS_MACOSX)
+  NOTREACHED();
+#else
   if (result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
     // Even through the swap failed, this is a fixable error so we can pretend
     // it succeeded to the rest of the system.
@@ -106,6 +109,7 @@ void GpuSurfacelessBrowserCompositorOutputSurface::OnSwapBuffersCompleted(
   }
   GpuBrowserCompositorOutputSurface::OnSwapBuffersCompleted(latency_info,
                                                             result);
+#endif
 }
 
 #if defined(OS_MACOSX)

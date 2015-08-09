@@ -39,6 +39,7 @@ class AcceleratedWidgetMacNSView {
  public:
   virtual NSView* AcceleratedWidgetGetNSView() const = 0;
   virtual bool AcceleratedWidgetShouldIgnoreBackpressure() const = 0;
+  virtual uint32_t AcceleratedWidgetGetDisplayIDForVSync() const = 0;
   virtual void AcceleratedWidgetSwapCompleted(
       const std::vector<ui::LatencyInfo>& latency_info) = 0;
   virtual void AcceleratedWidgetHitError() = 0;
@@ -66,6 +67,9 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac
 
   // Return the CGL renderer ID for the surface, if one is available.
   int GetRendererID() const;
+
+  // Return the CG display ID for the surface, if known.
+  uint32_t GetDisplayIDForVSync() const;
 
   // Return true if the renderer should not be throttled by GPU back-pressure.
   bool IsRendererThrottlingDisabled() const;
@@ -161,7 +165,7 @@ void AcceleratedWidgetMacGotAcceleratedFrame(
     float scale_factor,
     const gfx::Rect& pixel_damage_rect,
     const base::Closure& drawn_callback,
-    bool* disable_throttling, int* renderer_id);
+    bool* disable_throttling, int* renderer_id, uint32_t* display_id);
 
 ACCELERATED_WIDGET_MAC_EXPORT
 void AcceleratedWidgetMacGotSoftwareFrame(

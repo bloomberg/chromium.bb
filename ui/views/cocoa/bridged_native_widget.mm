@@ -862,6 +862,10 @@ bool BridgedNativeWidget::AcceleratedWidgetShouldIgnoreBackpressure() const {
   return true;
 }
 
+uint32_t BridgedNativeWidget::AcceleratedWidgetGetDisplayIDForVSync() const {
+  return 0;
+}
+
 void BridgedNativeWidget::AcceleratedWidgetSwapCompleted(
     const std::vector<ui::LatencyInfo>& latency_info) {
   // Ignore frames arriving "late" for an old size. A frame at the new size

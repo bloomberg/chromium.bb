@@ -199,22 +199,12 @@ bool GLImageIOSurface::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                             OverlayTransform transform,
                                             const Rect& bounds_rect,
                                             const RectF& crop_rect) {
-  // Only simple overlay planes are currently supported.
-  DCHECK_EQ(0, z_order);
-  DCHECK_EQ(gfx::RectF(0, 0, 1, 1).ToString(), crop_rect.ToString());
-  DCHECK_EQ(gfx::OVERLAY_TRANSFORM_NONE, transform);
+  NOTREACHED();
+  return false;
+}
 
-  // Convert the phony widget to the appropriate CALayer.
-  auto found = g_widget_to_layer_map.Pointer()->find(widget);
-  if (found == g_widget_to_layer_map.Pointer()->end())
-    return false;
-  CALayer* layer = found->second;
-
-  // Also note that transactions are not disabled. The caller must ensure that
-  // all changes to the CALayer tree happen atomically.
-  [layer setContents:static_cast<id>(io_surface_.get())];
-  [layer setFrame:bounds_rect.ToCGRect()];
-  return true;
+base::ScopedCFTypeRef<IOSurfaceRef> GLImageIOSurface::io_surface() {
+  return io_surface_;
 }
 
 // static

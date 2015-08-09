@@ -45,6 +45,8 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
                             const Rect& bounds_rect,
                             const RectF& crop_rect) override;
 
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface();
+
   static void SetLayerForWidget(gfx::AcceleratedWidget widget,
                                 CALayer* layer);
 
