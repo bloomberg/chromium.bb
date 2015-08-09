@@ -589,6 +589,15 @@ if (!is_android) {
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   }
 
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("browser_tests_run") {
+    testonly = true
+    deps = [
+      ":browser_tests",
+    ]
+  }
+
   test("browser_tests") {
     sources = [
       "base/browser_tests_main.cc",
@@ -603,6 +612,45 @@ if (!is_android) {
             "//chrome")
 
     configs += [ "//build/config:precompiled_headers" ]
+
+    data = [
+      "data/",
+      "//chrome/browser/policy/test/asn1der.py",
+      "//chrome/browser/policy/test/policy_testserver.py",
+      "//chrome/common/extensions/docs/examples/apps/calculator/",
+      "//chrome/third_party/mock4js/",
+      "//content/test/data/",
+      "//google_apis/test/",
+      "//media/test/data/",
+      "//net/data/",
+      "//net/tools/testserver/",
+      "//ppapi/tests/test_case.html",
+      "//ppapi/tests/test_case.html.mock-http-headers",
+      "//ppapi/tests/test_page.css",
+      "//ppapi/tests/test_page.css.mock-http-headers",
+      "//testing/test_env.py",
+      "//third_party/accessibility-audit/axs_testing.js",
+      "//third_party/mocha/mocha.js",
+      "//third_party/pyftpdlib/",
+      "//third_party/pywebsocket/",
+      "//third_party/safe_browsing/",
+      "//third_party/simplejson/",
+      "//third_party/tlslite/",
+      "//ui/webui/resources/js/",
+      "$root_out_dir/pyproto/",
+      "$root_out_dir/browser_tests.pak",
+      "$root_out_dir/chrome_100_percent.pak",
+      "$root_out_dir/locales/",
+      "$root_out_dir/remoting/unittests/",
+      "$root_out_dir/resources.pak",
+      "$root_out_dir/resources/extension/",
+      "$root_out_dir/test_case.html",
+      "$root_out_dir/test_case.html.mock-http-headers",
+      "$root_out_dir/test_data/",
+      "$root_out_dir/test_page.css",
+      "$root_out_dir/test_page.css.mock-http-headers",
+      "$root_out_dir/test_url_loader_data/",
+    ]
 
     deps = [
       ":browser_tests_js_webui",

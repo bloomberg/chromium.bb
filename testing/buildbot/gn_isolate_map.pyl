@@ -70,7 +70,7 @@
   },
   "browser_tests": {
     "label": "//chrome/test:browser_tests",
-    "type": "unknown",
+    "type": "windowed_test_launcher",
   },
   "cacheinvalidation_unittests": {
     "label": "//third_party/cacheinvalidation:cacheinvalidation_unittests",
