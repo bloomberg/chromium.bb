@@ -603,7 +603,7 @@ setup_session(struct weston_launch *wl)
 	env = pam_getenvlist(wl->ph);
 	if (env) {
 		for (i = 0; env[i]; ++i) {
-			if (putenv(env[i]) < 0)
+			if (putenv(env[i]) != 0)
 				error(0, 0, "putenv %s failed", env[i]);
 		}
 		free(env);
