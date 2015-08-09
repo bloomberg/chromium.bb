@@ -21,10 +21,21 @@ WebMemoryDumpProviderAdapter::~WebMemoryDumpProviderAdapter() {
 bool WebMemoryDumpProviderAdapter::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  // TODO(ssid): Expose MemoryDumpArgs to Blink and send args to the dump
-  // providers in Blink (crbug.com/499731).
+  blink::WebMemoryDumpLevelOfDetail level;
+  switch (args.level_of_detail) {
+    case base::trace_event::MemoryDumpArgs::LevelOfDetail::LOW:
+      level = blink::WebMemoryDumpLevelOfDetail::Low;
+      break;
+    case base::trace_event::MemoryDumpArgs::LevelOfDetail::HIGH:
+      level = blink::WebMemoryDumpLevelOfDetail::High;
+      break;
+    default:
+      NOTREACHED();
+      return false;
+  }
   WebProcessMemoryDumpImpl web_pmd_impl(pmd);
-  return web_memory_dump_provider_->onMemoryDump(&web_pmd_impl);
+
+  return web_memory_dump_provider_->onMemoryDump(level, &web_pmd_impl);
 }
 
 }  // namespace content
