@@ -30,15 +30,6 @@
 
 namespace blink {
 
-struct ClusterData {
-    ClusterData(unsigned numGraphemes, unsigned numCharacters)
-        : graphemes(numGraphemes)
-        , characters(numCharacters)
-    { }
-    unsigned graphemes;
-    unsigned characters;
-};
-
 typedef icu::BreakIterator TextBreakIterator;
 
 // Note: The returned iterator is good only until you get another iterator, with the exception of acquireLineBreakIterator.
@@ -264,8 +255,6 @@ private:
 // of a non-combining character and following combining characters is
 // counted as 1 grapheme cluster.
 PLATFORM_EXPORT unsigned numGraphemeClusters(const String&);
-// Counts the number of graphemes and characters.
-PLATFORM_EXPORT ClusterData countCharactersAndGraphemesInCluster(const UChar* normalizedBuffer, unsigned normalizedBufferLength, uint16_t startIndex, uint16_t endIndex);
 
 }
 
