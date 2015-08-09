@@ -25,7 +25,6 @@ const wchar_t* const kModulesToScan[] = {
   L"kernel32.dll",
   L"user32.dll"
 };
-#endif  // !defined(_WIN64)
 
 bool AddressBeyondRange(const ModuleInfo& module, uintptr_t address) {
   return module.base_address + module.size < address;
@@ -73,6 +72,7 @@ void ScanImportAddressTable(
     image_descriptor += sizeof(image_descriptor) / sizeof(uintptr_t);
   }
 }
+#endif  // !defined(_WIN64)
 
 }  // namespace
 
