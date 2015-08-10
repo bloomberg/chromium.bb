@@ -55,8 +55,8 @@ class TestFrameTreeServer : public mandoline::FrameTreeServer {
                       uint32_t frame_id,
                       mojo::Map<mojo::String, mojo::Array<uint8_t>>
                           client_properties) override {}
-  void RequestNavigate(uint32_t frame_id,
-                       mandoline::NavigationTarget target,
+  void RequestNavigate(mandoline::NavigationTargetType target_type,
+                       uint32_t target_frame_id,
                        mojo::URLRequestPtr request) override {}
   void DidNavigateLocally(uint32_t frame_id, const mojo::String& url) override {
   }

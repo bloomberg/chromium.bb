@@ -17,6 +17,7 @@
 #include "mandoline/tab/frame_connection.h"
 #include "mandoline/tab/frame_tree.h"
 #include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
+#include "mandoline/tab/test_frame_tree_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "third_party/mojo_services/src/accessibility/public/interfaces/accessibility.mojom.h"
@@ -87,11 +88,11 @@ class HTMLFrameTest : public ViewManagerTestBase {
   // script) a frame showing the same empty page.
   Frame* LoadEmptyPageAndCreateFrame() {
     View* embed_view = window_manager()->CreateView();
-    FrameConnection* root_connection =
-        InitFrameTree(embed_view, "http://127.0.0.1:%u/files/empty_page2.html");
+    FrameConnection* root_connection = InitFrameTree(
+        embed_view, nullptr, "http://127.0.0.1:%u/files/empty_page2.html");
     const std::string frame_text =
         GetFrameText(root_connection->application_connection());
-    if (frame_text != "child") {
+    if (frame_text != "child2") {
       ADD_FAILURE() << "unexpected text " << frame_text;
       return nullptr;
     }
@@ -133,14 +134,16 @@ class HTMLFrameTest : public ViewManagerTestBase {
     return request.Pass();
   }
 
-  FrameConnection* InitFrameTree(View* view, const std::string& url_string) {
+  FrameConnection* InitFrameTree(View* view,
+                                 mandoline::FrameTreeDelegate* delegate,
+                                 const std::string& url_string) {
     scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
     FrameConnection* result = frame_connection.get();
     ViewManagerClientPtr view_manager_client;
     frame_connection->Init(application_impl(), BuildRequestForURL(url_string),
                            &view_manager_client);
     FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
-    frame_tree_.reset(new FrameTree(view, nullptr, frame_tree_client,
+    frame_tree_.reset(new FrameTree(view, delegate, frame_tree_client,
                                     frame_connection.Pass()));
     view->Embed(view_manager_client.Pass());
     return result;
@@ -204,8 +207,9 @@ TEST_F(HTMLFrameTest, PageWithSingleFrame) {
 
   View* embed_view = window_manager()->CreateView();
 
-  FrameConnection* root_connection = InitFrameTree(
-      embed_view, "http://127.0.0.1:%u/files/page_with_single_frame.html");
+  FrameConnection* root_connection =
+      InitFrameTree(embed_view, nullptr,
+                    "http://127.0.0.1:%u/files/page_with_single_frame.html");
 
   ASSERT_EQ("Page with single frame",
             GetFrameText(root_connection->application_connection()));
@@ -223,6 +227,100 @@ TEST_F(HTMLFrameTest, PageWithSingleFrame) {
   ASSERT_TRUE(child_frame);
 
   ASSERT_EQ("child",
+            GetFrameText(static_cast<FrameConnection*>(child_frame->user_data())
+                             ->application_connection()));
+}
+
+// FrameTreeDelegate that expects one call to RequestNavigate() with a target
+// type of NAVIGATION_TARGET_TYPE_EXISTING_FRAME. The navigation is allowed in
+// the target node.
+class ExistingFrameNavigationDelegate
+    : public mandoline::TestFrameTreeDelegate {
+ public:
+  explicit ExistingFrameNavigationDelegate(mojo::ApplicationImpl* app)
+      : app_(app), frame_tree_(nullptr), got_navigate_(false) {}
+  ~ExistingFrameNavigationDelegate() override {}
+
+  void set_frame_tree(FrameTree* frame_tree) { frame_tree_ = frame_tree; }
+
+  bool WaitForNavigate() {
+    if (got_navigate_)
+      return true;
+
+    return ViewManagerTestBase::DoRunLoopWithTimeout();
+  }
+
+  // TestFrameTreeDelegate:
+  void RequestNavigate(Frame* source,
+                       mandoline::NavigationTargetType target_type,
+                       Frame* target_frame,
+                       mojo::URLRequestPtr request) override {
+    EXPECT_FALSE(got_navigate_);
+    got_navigate_ = true;
+
+    EXPECT_EQ(mandoline::NAVIGATION_TARGET_TYPE_EXISTING_FRAME, target_type);
+    ASSERT_TRUE(target_frame);
+
+    scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
+    mojo::ViewManagerClientPtr view_manager_client;
+    frame_connection->Init(app_, request.Pass(), &view_manager_client);
+    target_frame->view()->Embed(view_manager_client.Pass());
+    FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
+    frame_tree_->CreateOrReplaceFrame(target_frame, target_frame->view(),
+                                      frame_tree_client,
+                                      frame_connection.Pass());
+
+    ignore_result(ViewManagerTestBase::QuitRunLoop());
+  }
+
+ private:
+  mojo::ApplicationImpl* app_;
+  FrameTree* frame_tree_;
+  bool got_navigate_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExistingFrameNavigationDelegate);
+};
+
+// Creates two frames. The parent navigates the child frame by way of changing
+// the location of the child frame.
+TEST_F(HTMLFrameTest, ChangeLocationOfChildFrame) {
+  if (!EnableOOPIFs())
+    return;
+
+  View* embed_view = window_manager()->CreateView();
+
+  ExistingFrameNavigationDelegate frame_tree_delegate(application_impl());
+
+  InitFrameTree(embed_view, &frame_tree_delegate,
+                "http://127.0.0.1:%u/files/page_with_single_frame.html");
+  frame_tree_delegate.set_frame_tree(frame_tree_.get());
+
+  // page_with_single_frame contains a child frame. The child frame should
+  // create a new View and Frame.
+  if (frame_tree_->root()->children().empty() ||
+      !frame_tree_->root()->children().back()->user_data()) {
+    ASSERT_TRUE(WaitForEmbedForDescendant());
+  }
+
+  ASSERT_EQ(
+      "child",
+      GetFrameText(static_cast<FrameConnection*>(
+                       frame_tree_->root()->children().back()->user_data())
+                       ->application_connection()));
+
+  // Change the location and wait for the navigation to occur.
+  const char kNavigateFrame[] =
+      "window.frames[0].location = "
+      "'http://127.0.0.1:%u/files/empty_page2.html'";
+  ExecuteScript(ApplicationConnectionForFrame(frame_tree_->root()),
+                AddPortToString(kNavigateFrame));
+  ASSERT_TRUE(frame_tree_delegate.WaitForNavigate());
+
+  // The navigation should have changed the text of the frame.
+  ASSERT_EQ(1u, frame_tree_->root()->children().size());
+  Frame* child_frame = frame_tree_->root()->children()[0];
+  ASSERT_TRUE(child_frame->user_data());
+  ASSERT_EQ("child2",
             GetFrameText(static_cast<FrameConnection*>(child_frame->user_data())
                              ->application_connection()));
 }

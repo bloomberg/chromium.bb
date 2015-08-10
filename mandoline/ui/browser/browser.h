@@ -62,6 +62,9 @@ class Browser : public mojo::ViewManagerDelegate,
 
   mojo::ApplicationConnection* GetViewManagerConnectionForTesting();
 
+  // Loads |request| in |frame|.
+  void NavigateExistingFrame(Frame* frame, mojo::URLRequestPtr request);
+
   // Overridden from mojo::ViewManagerDelegate:
   void OnEmbed(mojo::View* root) override;
   void OnEmbedForDescendant(mojo::View* view,
@@ -85,7 +88,8 @@ class Browser : public mojo::ViewManagerDelegate,
   void LoadingStateChanged(bool loading) override;
   void ProgressChanged(double progress) override;
   void RequestNavigate(Frame* source,
-                       NavigationTarget target,
+                       NavigationTargetType target_type,
+                       Frame* target_frame,
                        mojo::URLRequestPtr request) override;
 
   // Overridden from mojo::InterfaceFactory<mojo::NavigatorHost>:

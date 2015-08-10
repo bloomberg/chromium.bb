@@ -19,6 +19,7 @@
 #include "mandoline/tab/frame_tree.h"
 #include "mandoline/tab/frame_tree_delegate.h"
 #include "mandoline/tab/frame_user_data.h"
+#include "mandoline/tab/test_frame_tree_delegate.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -124,27 +125,6 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   ViewManager* window_manager_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(FrameTest);
-};
-
-class TestFrameTreeDelegate : public FrameTreeDelegate {
- public:
-  TestFrameTreeDelegate() {}
-  ~TestFrameTreeDelegate() override {}
-
-  // TestFrameTreeDelegate:
-  bool CanPostMessageEventToFrame(const Frame* source,
-                                  const Frame* target,
-                                  MessageEvent* event) override {
-    return false;
-  }
-  void LoadingStateChanged(bool loading) override {}
-  void ProgressChanged(double progress) override {}
-  void RequestNavigate(Frame* source,
-                       NavigationTarget target,
-                       mojo::URLRequestPtr request) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestFrameTreeDelegate);
 };
 
 class TestFrameTreeClient : public FrameTreeClient {

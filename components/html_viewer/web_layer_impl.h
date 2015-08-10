@@ -9,13 +9,15 @@
 
 #include "cc/blink/web_layer_impl.h"
 
-namespace html_viewer {
+namespace mojo {
+class View;
+}
 
-class HTMLFrame;
+namespace html_viewer {
 
 class WebLayerImpl : public cc_blink::WebLayerImpl {
  public:
-  explicit WebLayerImpl(HTMLFrame* frame);
+  explicit WebLayerImpl(mojo::View* view);
   ~WebLayerImpl() override;
 
   // WebLayer implementation.
@@ -23,7 +25,7 @@ class WebLayerImpl : public cc_blink::WebLayerImpl {
   void setPosition(const blink::WebFloatPoint& position) override;
 
  private:
-  HTMLFrame* frame_;
+  mojo::View* view_;
 
   DISALLOW_COPY_AND_ASSIGN(WebLayerImpl);
 };

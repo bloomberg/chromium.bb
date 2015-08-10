@@ -43,6 +43,7 @@ mojo::Array<uint8_t> FrameSandboxFlagsToClientProperty(
 bool FrameSandboxFlagsFromClientProperty(const mojo::Array<uint8_t>& new_data,
                                          blink::WebSandboxFlags* flags);
 
+url::Origin FrameOrigin(blink::WebFrame* frame);
 mojo::Array<uint8_t> FrameOriginToClientProperty(blink::WebFrame* frame);
 url::Origin FrameOriginFromClientProperty(const mojo::Array<uint8_t>& data);
 

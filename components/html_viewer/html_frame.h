@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/html_viewer/html_frame_tree_manager.h"
+#include "components/html_viewer/replicated_frame_state.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -73,6 +74,10 @@ class HTMLFrame : public blink::WebFrameClient,
   void Init(mojo::View* local_view,
             const mojo::Map<mojo::String, mojo::Array<uint8_t>>& properties);
 
+  // Called when another app is embedded in the View this Frame is associated
+  // with.
+  void OnViewUnembed();
+
   // Closes and deletes this Frame.
   void Close();
 
@@ -132,6 +137,9 @@ class HTMLFrame : public blink::WebFrameClient,
   // connection.
   HTMLFrame* GetLocalRoot();
 
+  // Gets the FrameTreeServer to use for this frame.
+  mandoline::FrameTreeServer* GetFrameTreeServer();
+
   // Returns the ApplicationImpl from the local root's delegate.
   mojo::ApplicationImpl* GetLocalRootApp();
 
@@ -151,10 +159,7 @@ class HTMLFrame : public blink::WebFrameClient,
 
   // Swaps this frame from a local frame to remote frame. |request| is the url
   // to load in the frame.
-  void SwapToRemote(const blink::WebURLRequest& request);
-
-  // See comment in SwapToRemote() for details on this.
-  void FinishSwapToRemote();
+  void SwapToRemote();
 
   // Swaps this frame from a remote frame to a local frame.
   void SwapToLocal(
@@ -270,14 +275,17 @@ class HTMLFrame : public blink::WebFrameClient,
   scoped_ptr<WebLayerTreeViewImpl> web_layer_tree_view_impl_;
   scoped_ptr<TouchHandler> touch_handler_;
 
-  blink::WebTreeScopeType scope_;
-
   scoped_ptr<WebLayerImpl> web_layer_;
 
   HTMLFrameDelegate* delegate_;
   scoped_ptr<mojo::Binding<mandoline::FrameTreeClient>>
       frame_tree_client_binding_;
   mandoline::FrameTreeServerPtr server_;
+
+  ReplicatedFrameState state_;
+
+  // Set to non-null for frames that are created locally.
+  mojo::View* owned_view_;
 
   blink::WebTextInputInfo text_input_info_;
 

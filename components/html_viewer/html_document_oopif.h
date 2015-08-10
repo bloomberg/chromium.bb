@@ -93,6 +93,7 @@ class HTMLDocumentOOPIF
 
   // ViewManagerDelegate:
   void OnEmbed(mojo::View* root) override;
+  void OnUnembed() override;
   void OnViewManagerDestroyed(mojo::ViewManager* view_manager) override;
 
   // ViewObserver:

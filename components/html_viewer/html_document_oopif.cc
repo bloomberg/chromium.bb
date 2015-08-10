@@ -168,6 +168,10 @@ void HTMLDocumentOOPIF::OnEmbed(View* root) {
   LoadIfNecessary();
 }
 
+void HTMLDocumentOOPIF::OnUnembed() {
+  frame_->OnViewUnembed();
+}
+
 void HTMLDocumentOOPIF::OnViewManagerDestroyed(
     mojo::ViewManager* view_manager) {
   delete this;

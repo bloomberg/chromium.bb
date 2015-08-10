@@ -91,13 +91,17 @@ bool FrameSandboxFlagsFromClientProperty(const mojo::Array<uint8_t>& new_data,
   return true;
 }
 
-mojo::Array<uint8_t> FrameOriginToClientProperty(blink::WebFrame* frame) {
+url::Origin FrameOrigin(blink::WebFrame* frame) {
   std::string scheme = frame->document().securityOrigin().protocol().utf8();
   if (!url::IsStandard(scheme.c_str(),
                        url::Component(0, static_cast<int>(scheme.length())))) {
-    return mojo::Array<uint8_t>();
+    return url::Origin();
   }
-  const url::Origin origin = frame->document().securityOrigin();
+  return frame->document().securityOrigin();
+}
+
+mojo::Array<uint8_t> FrameOriginToClientProperty(blink::WebFrame* frame) {
+  const url::Origin origin = FrameOrigin(frame);
   base::Pickle pickle;
   pickle.WriteBool(origin.unique());
   pickle.WriteString(origin.scheme());

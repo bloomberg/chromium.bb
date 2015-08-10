@@ -5,7 +5,7 @@
 #include "components/html_viewer/web_layer_impl.h"
 
 #include "cc/layers/layer.h"
-#include "components/html_viewer/html_frame.h"
+#include "components/view_manager/public/cpp/view.h"
 #include "ui/mojo/geometry/geometry.mojom.h"
 
 using blink::WebFloatPoint;
@@ -13,21 +13,21 @@ using blink::WebSize;
 
 namespace html_viewer {
 
-WebLayerImpl::WebLayerImpl(HTMLFrame* frame) : frame_(frame) {}
+WebLayerImpl::WebLayerImpl(mojo::View* view) : view_(view) {}
 
 WebLayerImpl::~WebLayerImpl() {
 }
 
 void WebLayerImpl::setBounds(const WebSize& size) {
-  mojo::Rect rect = frame_->view()->bounds();
+  mojo::Rect rect = view_->bounds();
   rect.width = size.width;
   rect.height = size.height;
-  frame_->view()->SetBounds(rect);
+  view_->SetBounds(rect);
   cc_blink::WebLayerImpl::setBounds(size);
 }
 
 void WebLayerImpl::setPosition(const WebFloatPoint& position) {
-  mojo::Rect rect = frame_->view()->bounds();
+  mojo::Rect rect = view_->bounds();
   rect.x = 0;
   rect.y = 0;
   // TODO(fsamuel): This is a temporary hack until we have a UI process in
@@ -40,7 +40,7 @@ void WebLayerImpl::setPosition(const WebFloatPoint& position) {
     rect.y -= current_layer->scroll_offset().y();
     current_layer = current_layer->parent();
   }
-  frame_->view()->SetBounds(rect);
+  view_->SetBounds(rect);
   cc_blink::WebLayerImpl::setPosition(position);
 }
 

@@ -146,8 +146,8 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
       uint32_t parent_id,
       uint32_t frame_id,
       mojo::Map<mojo::String, mojo::Array<uint8_t>> client_properties) override;
-  void RequestNavigate(uint32_t frame_id,
-                       NavigationTarget target,
+  void RequestNavigate(NavigationTargetType target_type,
+                       uint32_t target_frame_id,
                        mojo::URLRequestPtr request) override;
   void DidNavigateLocally(uint32_t frame_id, const mojo::String& url) override;
 

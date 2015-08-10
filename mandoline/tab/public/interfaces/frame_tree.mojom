@@ -20,16 +20,16 @@ import "network/public/interfaces/url_loader.mojom";
 // TODO(sky): there are likely timing issues here, figure out how to resolve
 // that.
 
-// Expresses a preference for where a navigation will be performed.
-enum NavigationTarget {
-  // No preference
-  DEFAULT,
+// Expresses a preference for where a navigation should occur.
+enum NavigationTargetType {
+  // No preference.
+  NO_PREFERENCE,
 
-  // In the same ViewManager node that the navigation was initiated
-  SOURCE_NODE,
+  // In the specified frame.
+  EXISTING_FRAME,
 
-  // In a new ViewManager node
-  NEW_NODE
+  // In a new frame.
+  NEW_FRAME,
 };
 
 // Provides information about a frame.
@@ -76,9 +76,11 @@ interface FrameTreeServer {
                  uint32 frame_id,
                  map<string, array<uint8>> client_properties);
 
-  // The specified frame is requesting a navigation.
-  RequestNavigate(uint32 frame_id,
-                  NavigationTarget target,
+  // Requests a navigation. If |target_TYPE| is |EXISTING_FRAME|, then
+  // |target_frame_id| identifies the frame to navigate in. Otherwise
+  // |target_frame_id| is unused.
+  RequestNavigate(NavigationTargetType target_type,
+                  uint32 target_frame_id,
                   mojo.URLRequest request);
 
   // The frame navigated locally, for example, pushState() navigations in an

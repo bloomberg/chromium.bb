@@ -362,16 +362,14 @@ void Frame::OnCreatedFrame(
                            client_properties.To<ClientPropertyMap>());
 }
 
-void Frame::RequestNavigate(uint32_t frame_id,
-                            mandoline::NavigationTarget target,
+void Frame::RequestNavigate(mandoline::NavigationTargetType target_type,
+                            uint32_t target_frame_id,
                             mojo::URLRequestPtr request) {
-  Frame* frame = FindFrame(frame_id);
-  if (!frame) {
-    DVLOG(1) << "RequestNavigate for unknown frame " << frame_id;
-    return;
+  Frame* target_frame = tree_->root()->FindFrame(target_frame_id);
+  if (tree_->delegate_) {
+    tree_->delegate_->RequestNavigate(this, target_type, target_frame,
+                                      request.Pass());
   }
-  if (tree_->delegate_)
-    tree_->delegate_->RequestNavigate(frame, target, request.Pass());
 }
 
 void Frame::DidNavigateLocally(uint32_t frame_id, const mojo::String& url) {

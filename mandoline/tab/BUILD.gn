@@ -19,11 +19,24 @@ source_set("tab") {
   deps = [
     "//base",
     "//components/view_manager/public/cpp",
-    "//mandoline/tab/public/interfaces",
     "//mojo/application/public/cpp:sources",
     "//mojo/application/public/interfaces",
     "//mojo/services/network/public/interfaces",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
+  ]
+
+  public_deps = [
+    "//mandoline/tab/public/interfaces",
+  ]
+}
+
+source_set("test_support") {
+  sources = [
+    "test_frame_tree_delegate.cc",
+    "test_frame_tree_delegate.h",
+  ]
+  deps = [
+    ":tab",
   ]
 }
 
@@ -36,6 +49,7 @@ mojo_native_application("mandoline_frame_apptests") {
 
   deps = [
     ":tab",
+    ":test_support",
     "//base",
     "//base/test:test_config",
     "//components/view_manager/public/cpp",

@@ -62,6 +62,16 @@ mojo::ApplicationConnection* Browser::GetViewManagerConnectionForTesting() {
   return view_manager_init_.connection();
 }
 
+void Browser::NavigateExistingFrame(Frame* frame, mojo::URLRequestPtr request) {
+  scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
+  mojo::ViewManagerClientPtr view_manager_client;
+  frame_connection->Init(app_, request.Pass(), &view_manager_client);
+  frame->view()->Embed(view_manager_client.Pass());
+  FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
+  frame_tree_->CreateOrReplaceFrame(frame, frame->view(), frame_tree_client,
+                                    frame_connection.Pass());
+}
+
 void Browser::OnEmbed(mojo::View* root) {
   // Browser does not support being embedded more than once.
   CHECK(!root_);
@@ -214,9 +224,19 @@ void Browser::ShowOmnibox(mojo::URLRequestPtr request) {
 }
 
 void Browser::RequestNavigate(Frame* source,
-                              NavigationTarget target,
+                              NavigationTargetType target_type,
+                              Frame* target_frame,
                               mojo::URLRequestPtr request) {
-  // TODO(sky): we shouldn't always do a top level navigation here.
+  // TODO: this needs security checks.
+  if (target_type == NAVIGATION_TARGET_TYPE_EXISTING_FRAME) {
+    if (target_frame && target_frame != frame_tree_->root() &&
+        target_frame->view()) {
+      NavigateExistingFrame(target_frame, request.Pass());
+      return;
+    }
+    DVLOG(1) << "RequestNavigate() targeted existing frame that doesn't exist.";
+    return;
+  }
   ReplaceContentWithRequest(request.Pass());
 }
 
