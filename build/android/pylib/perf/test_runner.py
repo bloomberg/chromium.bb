@@ -257,7 +257,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     try:
       logging.warning('Unmapping device ports')
       forwarder.Forwarder.UnmapAllDevicePorts(self.device)
-      self.device.old_interface.RestartAdbdOnDevice()
+      self.device.RestartAdbd()
     except Exception as e:
       logging.error('Exception when tearing down device %s', e)
 

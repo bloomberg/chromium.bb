@@ -36,7 +36,7 @@ def CleanupLeftoverProcesses():
   device_utils.RestartServer()
 
   def cleanup_device(d):
-    d.old_interface.RestartAdbdOnDevice()
+    d.RestartAdbd()
     try:
       d.EnableRoot()
     except device_errors.CommandFailedError as e:

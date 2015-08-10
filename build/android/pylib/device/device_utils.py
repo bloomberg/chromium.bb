@@ -76,6 +76,16 @@ _CONTROL_CHARGING_COMMANDS = [
   },
 ]
 
+_RESTART_ADBD_SCRIPT = """
+  trap '' HUP
+  trap '' TERM
+  trap '' PIPE
+  function restart() {
+    stop adbd
+    start adbd
+  }
+  restart &
+"""
 
 _CURRENT_FOCUS_CRASH_RE = re.compile(
     r'\s*mCurrentFocus.*Application (Error|Not Responding): (\S+)}')
@@ -1804,3 +1814,11 @@ class DeviceUtils(object):
 
     return [cls(adb) for adb in adb_wrapper.AdbWrapper.Devices()
             if not blacklisted(adb)]
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def RestartAdbd(self, timeout=None, retries=None):
+    logging.info('Restarting adbd on device.')
+    with device_temp_file.DeviceTempFile(self.adb, suffix='.sh') as script:
+      self.WriteFile(script.name, _RESTART_ADBD_SCRIPT)
+      self.RunShellCommand(['source', script.name], as_root=True)
+      self.adb.WaitForDevice()

@@ -1917,7 +1917,20 @@ class DeviceUtilsHealthyDevicesTest(mock_calls.TestCase):
     self.assertEquals('0123456789abcdef', devices[0].adb.GetDeviceSerial())
 
 
+class DeviceUtilsRestartAdbdTest(DeviceUtilsTest):
+
+  def testAdbdRestart(self):
+    mock_temp_file = '/sdcard/temp-123.sh'
+    with self.assertCalls(
+        (mock.call.pylib.utils.device_temp_file.DeviceTempFile(
+            self.adb, suffix='.sh'), MockTempFile(mock_temp_file)),
+        self.call.device.WriteFile(mock.ANY, mock.ANY),
+        (self.call.device.RunShellCommand(
+            ['source', mock_temp_file ], as_root=True)),
+        self.call.adb.WaitForDevice()):
+      self.device.RestartAdbd()
+
+
 if __name__ == '__main__':
   logging.getLogger().setLevel(logging.DEBUG)
   unittest.main(verbosity=2)
-

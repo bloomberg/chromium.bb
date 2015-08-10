@@ -207,5 +207,14 @@ class DeviceUtilsPushDeleteFilesTest(unittest.TestCase):
     self.device.RunShellCommand(['rm', '-rf',  _DEVICE_DIR])
     cmd_helper.RunCmd(['rm', '-rf', host_tmp_dir])
 
+  def testRestartAdbd(self):
+    old_adbd_pid = self.device.RunShellCommand(
+        ['ps', '|', 'grep', 'adbd'])[1].split()[1]
+    self.device.RestartAdbd()
+    new_adbd_pid = self.device.RunShellCommand(
+        ['ps', '|', 'grep', 'adbd'])[1].split()[1]
+    self.assertNotEqual(old_adbd_pid, new_adbd_pid)
+
+
 if __name__ == '__main__':
   unittest.main()
