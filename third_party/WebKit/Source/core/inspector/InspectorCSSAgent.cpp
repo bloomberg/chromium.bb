@@ -1393,8 +1393,18 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> > InspectorCSSAgent::
     if (!ruleList)
         return result.release();
 
-    for (unsigned i = 0, size = ruleList->length(); i < size; ++i) {
-        CSSStyleRule* rule = asCSSStyleRule(ruleList->item(i));
+    HashSet<CSSStyleRule*> uniqRulesSet;
+    Vector<CSSStyleRule*> uniqRules;
+    for (unsigned i = ruleList->length(); i > 0; --i) {
+        CSSStyleRule* rule = asCSSStyleRule(ruleList->item(i - 1));
+        if (uniqRulesSet.contains(rule))
+            continue;
+        uniqRulesSet.add(rule);
+        uniqRules.append(rule);
+    }
+
+    for (unsigned i = uniqRules.size(); i > 0; --i) {
+        CSSStyleRule* rule = uniqRules.at(i - 1);
         RefPtr<TypeBuilder::CSS::CSSRule> ruleObject = buildObjectForRule(rule);
         if (!ruleObject)
             continue;
