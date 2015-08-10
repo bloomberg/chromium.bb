@@ -1816,13 +1816,13 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
         Folders
       </message>
       <message name="IDS_ENHANCED_BOOKMARK_DRAWER_FILTER_OFFLINE_PAGES" desc="Menu item for showing all bookmarks with an offline pages [CHAR-LIMIT=24]">
-        Saved Offline
+        Saved offline
       </message>
       <message name="IDS_ENHANCED_BOOKMARK_TITLE_BAR_ALL_ITEMS" desc="Title bar text for showing all bookmark items in the enhanced bookmarks UI [CHAR-LIMIT=32]">
         Bookmarks
       </message>
       <message name="IDS_ENHANCED_BOOKMARK_TITLE_BAR_ALL_ITEMS_OFFLINE_PAGES" desc="Title bar text for showing all offline pages bookmarks UI [CHAR-LIMIT=32]">
-        All Saved Pages
+        All saved pages
       </message>
       <message name="IDS_ENHANCED_BOOKMARK_PARENT_FOLDER" desc="Header text for title of parent folder of the bookmark [CHAR-LIMIT=32]">
         Parent folder
