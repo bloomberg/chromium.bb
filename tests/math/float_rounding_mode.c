@@ -95,7 +95,7 @@ void test_round_to_zero(void) {
 }
 
 int main(int ac, char* av[]) {
-#if defined(__MIPS__)
+#if defined(__mips__)
   /* For MIPS, the llvm.flt.rounds intrinsic is stuck at (1), so we cannot
    * test the other cases.  Furthermore, the llvm MIPS asm parser doesn't
    * parse the cfc1 $reg, $31 and ctc1 instructions for setting
@@ -136,7 +136,7 @@ int main(int ac, char* av[]) {
 
   set_round_toward_nearest();
 
-#endif  /* __MIPS__ */
+#endif  /* __mips__ */
   test_flt_rounds(1);
   test_round_to_nearest();
   return 0;
