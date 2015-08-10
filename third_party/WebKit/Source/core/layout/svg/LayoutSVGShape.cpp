@@ -263,8 +263,6 @@ bool LayoutSVGShape::nodeAtFloatPointInternal(const HitTestRequest& request, con
 void LayoutSVGShape::updatePaintInvalidationBoundingBox()
 {
     m_paintInvalidationBoundingBox = strokeBoundingBox();
-    if (strokeWidth() < 1.0f && !m_paintInvalidationBoundingBox.isEmpty())
-        m_paintInvalidationBoundingBox.inflate(1);
     SVGLayoutSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
 }
 
@@ -272,6 +270,15 @@ float LayoutSVGShape::strokeWidth() const
 {
     SVGLengthContext lengthContext(element());
     return lengthContext.valueForLength(style()->svgStyle().strokeWidth());
+}
+
+LayoutRect LayoutSVGShape::clippedOverflowRectForPaintInvalidation(
+    const LayoutBoxModelObject* paintInvalidationContainer,
+    const PaintInvalidationState* paintInvalidationState) const
+{
+    const float strokeWidthForHairlinePadding = style()->svgStyle().hasStroke() ? strokeWidth() : 0;
+    return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(*this,
+        paintInvalidationContainer, paintInvalidationState, strokeWidthForHairlinePadding);
 }
 
 }

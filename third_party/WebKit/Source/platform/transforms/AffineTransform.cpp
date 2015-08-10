@@ -113,21 +113,50 @@ AffineTransform AffineTransform::inverse() const
     return result;
 }
 
+namespace {
 
-// Multiplies this AffineTransform by the provided AffineTransform - i.e.
-// this = this * other;
+// res = t1 * t2
+inline void doMultiply(const AffineTransform& t1, const AffineTransform& t2, AffineTransform* res)
+{
+    res->setA(t1.a() * t2.a() + t1.c() * t2.b());
+    res->setB(t1.b() * t2.a() + t1.d() * t2.b());
+    res->setC(t1.a() * t2.c() + t1.c() * t2.d());
+    res->setD(t1.b() * t2.c() + t1.d() * t2.d());
+    res->setE(t1.a() * t2.e() + t1.c() * t2.f() + t1.e());
+    res->setF(t1.b() * t2.e() + t1.d() * t2.f() + t1.f());
+}
+
+} // anonymous namespace
+
 AffineTransform& AffineTransform::multiply(const AffineTransform& other)
 {
+    if (other.isIdentityOrTranslation()) {
+        if (other.m_transform[4] || other.m_transform[5])
+            translate(other.m_transform[4], other.m_transform[5]);
+        return *this;
+    }
+
     AffineTransform trans;
-
-    trans.m_transform[0] = other.m_transform[0] * m_transform[0] + other.m_transform[1] * m_transform[2];
-    trans.m_transform[1] = other.m_transform[0] * m_transform[1] + other.m_transform[1] * m_transform[3];
-    trans.m_transform[2] = other.m_transform[2] * m_transform[0] + other.m_transform[3] * m_transform[2];
-    trans.m_transform[3] = other.m_transform[2] * m_transform[1] + other.m_transform[3] * m_transform[3];
-    trans.m_transform[4] = other.m_transform[4] * m_transform[0] + other.m_transform[5] * m_transform[2] + m_transform[4];
-    trans.m_transform[5] = other.m_transform[4] * m_transform[1] + other.m_transform[5] * m_transform[3] + m_transform[5];
-
+    doMultiply(*this, other, &trans);
     setMatrix(trans.m_transform);
+
+    return *this;
+}
+
+AffineTransform& AffineTransform::preMultiply(const AffineTransform& other)
+{
+    if (other.isIdentityOrTranslation()) {
+        if (other.m_transform[4] || other.m_transform[5]) {
+            m_transform[4] += other.m_transform[4];
+            m_transform[5] += other.m_transform[5];
+        }
+        return *this;
+    }
+
+    AffineTransform trans;
+    doMultiply(other, *this, &trans);
+    setMatrix(trans.m_transform);
+
     return *this;
 }
 

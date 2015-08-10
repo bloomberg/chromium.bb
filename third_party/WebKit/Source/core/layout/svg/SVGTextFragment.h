@@ -102,9 +102,7 @@ private:
 
         result = transform;
         transformAroundOrigin(result);
-
-        if (!lengthAdjustTransform.isIdentity())
-            result = lengthAdjustTransform * result;
+        result.preMultiply(lengthAdjustTransform);
     }
 };
 

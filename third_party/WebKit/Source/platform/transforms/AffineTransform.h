@@ -88,7 +88,11 @@ public:
 
     void makeIdentity();
 
+    // this' = this * other
     AffineTransform& multiply(const AffineTransform& other);
+    // this' = other * this
+    AffineTransform& preMultiply(const AffineTransform& other);
+
     AffineTransform& scale(double);
     AffineTransform& scale(double sx, double sy);
     AffineTransform& scaleNonUniform(double sx, double sy);

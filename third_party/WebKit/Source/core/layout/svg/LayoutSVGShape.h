@@ -105,6 +105,8 @@ private:
     bool strokeContains(const FloatPoint&, bool requiresStroke = true);
 
     const AffineTransform& localToParentTransform() const final { return m_localTransform ? *m_localTransform : LayoutSVGModelObject::localToParentTransform(); }
+    LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject*,
+        const PaintInvalidationState* = nullptr) const override;
 
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGShape || LayoutSVGModelObject::isOfType(type); }
     void layout() final;

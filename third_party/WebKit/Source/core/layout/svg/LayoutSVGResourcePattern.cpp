@@ -115,9 +115,7 @@ PassOwnPtr<PatternData> LayoutSVGResourcePattern::buildPatternData(const LayoutO
 
     // Compute pattern space transformation.
     patternData->transform.translate(tileBounds.x(), tileBounds.y());
-    AffineTransform patternTransform = attributes.patternTransform();
-    if (!patternTransform.isIdentity())
-        patternData->transform = patternTransform * patternData->transform;
+    patternData->transform.preMultiply(attributes.patternTransform());
 
     return patternData.release();
 }
