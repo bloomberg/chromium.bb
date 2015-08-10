@@ -32,7 +32,6 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/ui/zoom/page_zoom.h"
-#include "content/public/browser/favicon_status.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -390,12 +389,6 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
   file_system_indexer_ = new DevToolsFileSystemIndexer();
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents_);
-
-  // Wipe out page icon so that the default application icon is used.
-  content::NavigationEntry* entry =
-      web_contents_->GetController().GetActiveEntry();
-  entry->GetFavicon().image = gfx::Image();
-  entry->GetFavicon().valid = true;
 
   // Register on-load actions.
   embedder_message_dispatcher_.reset(

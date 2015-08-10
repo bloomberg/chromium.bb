@@ -1692,6 +1692,10 @@ gfx::ImageSkia BrowserView::GetWindowAppIcon() {
 }
 
 gfx::ImageSkia BrowserView::GetWindowIcon() {
+  // Use the default icon for devtools.
+  if (browser_->is_devtools())
+    return gfx::ImageSkia();
+
   if (browser_->is_app() || browser_->is_type_popup())
     return browser_->GetCurrentPageIcon().AsImageSkia();
   return gfx::ImageSkia();
