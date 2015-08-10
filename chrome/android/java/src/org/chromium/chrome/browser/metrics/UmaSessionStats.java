@@ -61,6 +61,11 @@ public class UmaSessionStats implements NetworkChangeNotifier.ConnectionTypeObse
             nativeRecordPageLoadedWithKeyboard();
         }
 
+        // If the session has ended (i.e. chrome is in the background), escape early. Ideally we
+        // could track this number as part of either the previous or next session but this isn't
+        // possible since the TabSelector is needed to figure out the current number of open tabs.
+        if (mTabModelSelector == null) return;
+
         TabModel regularModel = mTabModelSelector.getModel(false);
         nativeRecordTabCountPerLoad(getTabCountFromModel(regularModel));
     }
