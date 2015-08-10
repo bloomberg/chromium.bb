@@ -20,6 +20,10 @@ BASE_EXPORT bool IsRunningOnIOS9OrLater();
 // Returns whether the operating system is at the given version or later.
 BASE_EXPORT bool IsRunningOnOrLater(int32 major, int32 minor, int32 bug_fix);
 
+// Returns whether iOS is signalling that an RTL text direction should be used
+// regardless of the current locale.
+BASE_EXPORT bool IsInForcedRTL();
+
 }  // namespace ios
 }  // namespace base
 

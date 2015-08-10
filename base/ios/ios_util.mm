@@ -4,6 +4,8 @@
 
 #include "base/ios/ios_util.h"
 
+#import <Foundation/Foundation.h>
+
 #include "base/sys_info.h"
 
 namespace {
@@ -37,6 +39,11 @@ bool IsRunningOnOrLater(int32 major, int32 minor, int32 bug_fix) {
       return current_version[i] > version[i];
   }
   return true;
+}
+
+bool IsInForcedRTL() {
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  return [defaults boolForKey:@"AppleTextDirection"];
 }
 
 }  // namespace ios

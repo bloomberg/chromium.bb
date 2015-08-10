@@ -15,6 +15,10 @@
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 
+#if defined(OS_IOS)
+#include "base/ios/ios_util.h"
+#endif
+
 namespace {
 
 // Extract language, country and variant, but ignore keywords.  For example,
@@ -141,6 +145,13 @@ TextDirection GetTextDirectionForLocale(const char* locale_name) {
     if (StartsWith(locale_name, kEnglishLocale, CompareCase::SENSITIVE))
       return LEFT_TO_RIGHT;
   }
+
+  // On iOS, check for RTL forcing.
+#if defined(OS_IOS)
+  if (ios::IsInForcedRTL())
+    return RIGHT_TO_LEFT;
+#endif
+
   UErrorCode status = U_ZERO_ERROR;
   ULayoutType layout_dir = uloc_getCharacterOrientation(locale_name, &status);
   DCHECK(U_SUCCESS(status));
