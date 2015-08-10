@@ -62,6 +62,7 @@ public:
     virtual void getRegistration(const WebURL& documentURL, WebServiceWorkerGetRegistrationCallbacks*) { }
     virtual void getRegistrations(WebServiceWorkerGetRegistrationsCallbacks*) { }
     virtual void getRegistrationForReady(WebServiceWorkerGetRegistrationForReadyCallbacks*) { }
+    virtual bool validateScopeAndScriptURL(const WebURL& scope, const WebURL& scriptURL, WebString* errorMessage) { return false; }
 
     virtual ~WebServiceWorkerProvider() { }
 };

@@ -139,6 +139,11 @@ public:
         ADD_FAILURE() << "the provider should not be called to register a Service Worker";
         delete callbacks;
     }
+
+    bool validateScopeAndScriptURL(const WebURL& scope, const WebURL& scriptURL, WebString* errorMessage)
+    {
+        return true;
+    }
 };
 
 class ServiceWorkerContainerTest : public ::testing::Test {
@@ -293,6 +298,11 @@ private:
             m_owner.m_getRegistrationCallCount++;
             m_owner.m_getRegistrationURL = documentURL;
             m_getRegistrationCallbacksToDelete.append(adoptPtr(callbacks));
+        }
+
+        bool validateScopeAndScriptURL(const WebURL& scope, const WebURL& scriptURL, WebString* errorMessage)
+        {
+            return true;
         }
 
     private:

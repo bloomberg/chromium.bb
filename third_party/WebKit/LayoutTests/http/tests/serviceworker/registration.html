@@ -228,16 +228,25 @@ promise_test(function(t) {
     var scope = 'resources/scope/encoded-slash-in-script-url';
     return assert_promise_rejects(
         navigator.serviceWorker.register(script, {scope: scope}),
-        'SecurityError',
+        new TypeError,
         'URL-encoded slash in the script URL should be rejected.');
   }, 'Script URL including URL-encoded slash');
+
+promise_test(function(t) {
+    var script = 'resources%2Fempty-worker.js';
+    var scope = 'resources/scope/encoded-slash-in-script-url';
+    return assert_promise_rejects(
+        navigator.serviceWorker.register(script, {scope: scope}),
+        new TypeError,
+        'URL-encoded slash in the script URL should be rejected.');
+  }, 'Script URL including uppercase URL-encoded slash');
 
 promise_test(function(t) {
     var script = 'resources/empty-worker.js';
     var scope = 'resources/scope%2fencoded-slash-in-scope';
     return assert_promise_rejects(
         navigator.serviceWorker.register(script, {scope: scope}),
-        'SecurityError',
+        new TypeError,
         'URL-encoded slash in the scope should be rejected.');
   }, 'Scope including URL-encoded slash');
 
@@ -246,16 +255,25 @@ promise_test(function(t) {
     var scope = 'resources/scope/encoded-slash-in-script-url';
     return assert_promise_rejects(
         navigator.serviceWorker.register(script, {scope: scope}),
-        'SecurityError',
+        new TypeError,
         'URL-encoded backslash in the script URL should be rejected.');
   }, 'Script URL including URL-encoded backslash');
+
+promise_test(function(t) {
+    var script = 'resources%5Cempty-worker.js';
+    var scope = 'resources/scope/encoded-slash-in-script-url';
+    return assert_promise_rejects(
+        navigator.serviceWorker.register(script, {scope: scope}),
+        new TypeError,
+        'URL-encoded backslash in the script URL should be rejected.');
+  }, 'Script URL including uppercase URL-encoded backslash');
 
 promise_test(function(t) {
     var script = 'resources/empty-worker.js';
     var scope = 'resources/scope%5cencoded-slash-in-scope';
     return assert_promise_rejects(
         navigator.serviceWorker.register(script, {scope: scope}),
-        'SecurityError',
+        new TypeError,
         'URL-encoded backslash in the scope should be rejected.');
   }, 'Scope including URL-encoded backslash');
 
