@@ -204,6 +204,13 @@ void ServiceWorkerGlobalScopeProxy::didEvaluateWorkerScript(bool success)
     m_client.didEvaluateWorkerScript(success);
 }
 
+void ServiceWorkerGlobalScopeProxy::didInitializeWorkerContext()
+{
+    ASSERT(m_workerGlobalScope);
+    ScriptState::Scope scope(m_workerGlobalScope->script()->scriptState());
+    m_client.didInitializeWorkerContext(m_workerGlobalScope->script()->context(), WebURL(m_document.url()));
+}
+
 void ServiceWorkerGlobalScopeProxy::workerGlobalScopeStarted(WorkerGlobalScope* workerGlobalScope)
 {
     ASSERT(!m_workerGlobalScope);
