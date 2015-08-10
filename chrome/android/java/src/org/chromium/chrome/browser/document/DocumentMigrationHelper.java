@@ -329,7 +329,9 @@ public class DocumentMigrationHelper {
      */
     public static boolean migrateTabsToDocumentForUpgrade(Activity activity,
             int finalizeMode) {
-        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/493157
+        // Allow StrictMode violations here as state file read/write is on the critical path. This
+        // is also a one-time migration, so optimizing further does not improve daily experience.
+        // See http://crbug.com/493157 for more context.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         StrictMode.allowThreadDiskWrites();
         try {
@@ -497,7 +499,7 @@ public class DocumentMigrationHelper {
      */
     public static void migrateTabs(boolean toDocumentMode, final Activity activity,
             boolean terminate) {
-        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/493157
+        // Allowing StrictMode violations as above. See http://crbug.com/493157 for context.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         StrictMode.allowThreadDiskWrites();
         try {
