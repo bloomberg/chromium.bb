@@ -57,3 +57,6 @@ SmartSessionRestoreMRUTest.CorrectLoadingOrder
 
 # https://crbug.com/516368
 PushMessagingBrowserTest.PushEventSuccess
+
+# https://crbug.com/519039
+AppViewTest.KillGuestCommunicatingWithWrongAppView
