@@ -813,10 +813,13 @@ void PictureLayerImpl::AddTilingsForRasterScale() {
   if (!high_res) {
     // We always need a high res tiling, so create one if it doesn't exist.
     high_res = AddTiling(raster_contents_scale_);
-  } else if (high_res->was_ever_low_resolution()) {
+  } else if (high_res->may_contain_low_resolution_tiles()) {
     // If the tiling we find here was LOW_RESOLUTION previously, it may not be
     // fully rastered, so destroy the old tiles.
     high_res->Reset();
+    // Reset the flag now that we'll make it high res, it will have fully
+    // rastered content.
+    high_res->reset_may_contain_low_resolution_tiles();
   }
   high_res->set_resolution(HIGH_RESOLUTION);
 

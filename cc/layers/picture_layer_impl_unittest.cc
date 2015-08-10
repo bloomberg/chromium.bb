@@ -5043,6 +5043,11 @@ TEST_F(PictureLayerImplTest, HighResWasLowResCollision) {
       active_layer_->tilings()->tiling_at(1);
   Tile* old_low_res_tile = active_layer_->tilings()->tiling_at(1)->TileAt(0, 0);
 
+  // The tiling knows it has low res content.
+  EXPECT_TRUE(active_layer_->tilings()
+                  ->tiling_at(1)
+                  ->may_contain_low_resolution_tiles());
+
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
 
   // Zoom in to exactly the low res factor so that the previous low res
@@ -5052,6 +5057,7 @@ TEST_F(PictureLayerImplTest, HighResWasLowResCollision) {
   // 3 tilings. The old high res, the new high res (old low res) and the new low
   // res.
   EXPECT_EQ(3u, active_layer_->num_tilings());
+
   PictureLayerTilingSet* tilings = active_layer_->tilings();
   EXPECT_EQ(page_scale, tilings->tiling_at(0)->contents_scale());
   EXPECT_EQ(low_res, tilings->tiling_at(1)->contents_scale());
@@ -5061,14 +5067,19 @@ TEST_F(PictureLayerImplTest, HighResWasLowResCollision) {
   EXPECT_EQ(HIGH_RESOLUTION, tilings->tiling_at(1)->resolution());
   EXPECT_EQ(LOW_RESOLUTION, tilings->tiling_at(2)->resolution());
 
-  EXPECT_FALSE(tilings->tiling_at(0)->was_ever_low_resolution());
-  EXPECT_TRUE(tilings->tiling_at(1)->was_ever_low_resolution());
-  EXPECT_TRUE(tilings->tiling_at(2)->was_ever_low_resolution());
-
   // The old low res tile was destroyed and replaced.
   EXPECT_EQ(old_low_res_tiling, tilings->tiling_at(1));
   EXPECT_NE(old_low_res_tile, tilings->tiling_at(1)->TileAt(0, 0));
   EXPECT_TRUE(tilings->tiling_at(1)->TileAt(0, 0));
+
+  // New high res tiling.
+  EXPECT_FALSE(tilings->tiling_at(0)->may_contain_low_resolution_tiles());
+  // New low res tiling.
+  EXPECT_TRUE(tilings->tiling_at(2)->may_contain_low_resolution_tiles());
+
+  // This tiling will be high res now, it won't contain low res content since it
+  // was all destroyed.
+  EXPECT_FALSE(tilings->tiling_at(1)->may_contain_low_resolution_tiles());
 }
 
 }  // namespace
