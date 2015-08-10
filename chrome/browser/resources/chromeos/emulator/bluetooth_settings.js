@@ -7,7 +7,10 @@
  * @constructor
  */
 var BluetoothDevice = function() {
+  // The device's address (MAC format, must be unique).
   this.address = '';
+
+  // The label which shows up in the devices list for this device.
   this.alias = '';
 
   // The text label of the selected device class.
@@ -16,15 +19,36 @@ var BluetoothDevice = function() {
   // The uint32 value of the selected device class.
   this.classValue = 0x104;
 
-  this.isTrusted = true;
+  // Whether or not the device shows up in the system tray's observed list of
+  // bluetooth devices.
+  this.discoverable = false;
+
+  // Whether Chrome OS pairs with this device, or this device tries to pair
+  // with Chrome OS.
+  this.incoming = false;
+
+  // A trusted device is one which is plugged directly Chrome OS and therefore
+  // is paired by default, but not connected.
+  this.isTrusted = false;
+
+  // The device's name.This is not the label which shows up in the devices list
+  // here or in the system tray--use |.alias| to edit that label.
   this.name = '';
+
+  // The designated path for the device. Must be unique.
   this.path = '';
+
+  // Whether or not the device is paired with Chrome OS.
+  this.paired = false;
 
   // The label of the selected pairing method option.
   this.pairingMethod = 'None';
 
   // The text containing a PIN key or passkey for pairing.
   this.pairingAuthToken = '';
+
+  // The label of the selected pairing action option.
+  this.pairingAction = '';
 };
 
 Polymer({
@@ -34,18 +58,35 @@ Polymer({
     /**
      * The title to be displayed in a heading element for the element.
      */
-    title: {
-      type: String
-    },
+    title: {type: String},
 
     /**
      * A set of bluetooth devices.
      * @type !Array<!BluetoothDevice>
      */
-    devices: {
-      type: Array,
-      value: function() { return []; }
+    devices: {type: Array, value: function() { return []; }},
+
+    /**
+     * A set of predefined bluetooth devices.
+     * @type !Array<!Bluetooth>
+     */
+    predefinedDevices: {type: Array, value: function() { return []; }},
+
+    /**
+     * A bluetooth device object which is currently being edited.
+     * @type {BluetoothDevice}
+     */
+    currentEditableObject: {
+      type: Object,
+      value: function() { return {}; }
     },
+
+    /**
+     * The index of the bluetooth device object which is currently being edited.
+     * This is initially set to -1 (i.e. no device selected) because not custom
+     * devices exist when the page loads.
+     */
+    currentEditIndex: {type: Number, value: function() { return -1; }},
 
     /**
      * A set of options for the possible bluetooth device classes/types.
@@ -56,12 +97,14 @@ Polymer({
     deviceClassOptions: {
       type: Array,
       value: function() {
-        return [{ text: 'Unknown', value: 0 },
-                { text: 'Mouse', value: 0x2580 },
-                { text: 'Keyboard', value: 0x2540 },
-                { text: 'Audio', value: 0x240408 },
-                { text: 'Phone', value: 0x7a020c },
-                { text: 'Computer', value: 0x104 }];
+        return [
+          {text: 'Unknown', value: 0},
+          {text: 'Mouse', value: 0x2580},
+          {text: 'Keyboard', value: 0x2540},
+          {text: 'Audio', value: 0x240408},
+          {text: 'Phone', value: 0x7a020c},
+          {text: 'Computer', value: 0x104}
+        ];
       }
     },
 
@@ -72,22 +115,126 @@ Polymer({
      */
     deviceAuthenticationMethods: {
       type: Array,
-      value: function() { return ['None', 'PIN Code', 'PassKey']; }
+      value: function() { return []; }
     },
 
     /**
-     * Contains keys for all the device paths which have been discovered. Used
-     * to look up whether or not a device is listed already.
-     * @type {Object}
+     * A set of strings representing the actions which can be done when
+     * a secure device is paired/requests a pair.
+     * @type !Array<string>
      */
-    devicePaths: {
-      type: Object,
-      value: function() { return {}; }
+    deviceAuthenticationActions: {
+      type: Array,
+      value: function() { return []; }
     },
   },
 
-  ready: function() {
-    this.title = 'Bluetooth Settings';
+  /**
+   * Contains keys for all the device paths which have been discovered. Used
+   * to look up whether or not a device is listed already.
+   * @type {Object}
+   */
+  devicePaths: {},
+
+  ready: function() { this.title = 'Bluetooth'; },
+
+  observers: ['currentEditableObjectChanged(currentEditableObject.*)'],
+
+  /**
+   * Called when a property of the currently editable object is edited.
+   * Sets the corresponding property for the object in |this.devices|.
+   * @param {Object} obj An object containing event information (ex. which
+   *     property of |this.currentEditableObject| was changed, what its value
+   *     is, etc.)
+   */
+  currentEditableObjectChanged: function(obj) {
+    if (this.currentEditIndex >= 0) {
+      var prop = obj.path.split('.')[1];
+      this.set('devices.' + this.currentEditIndex.toString() + '.' + prop,
+               obj.value);
+    }
+  },
+
+  /**
+   * Called when the device edit modal is opened. Re-validates necessary input
+   * fields.
+   */
+  editDialogOpened: function() {
+    this.validateAddress();
+    this.validatePath();
+  },
+
+  /**
+   * Called on-input from an input element and on edit modal open.
+   * Validates whether or not the
+   * input's content matches a regular expression. If the input's value
+   * satisfies the regex, then make sure that the address is not already
+   * in use.
+   */
+  validateAddress: function() {
+    var input = this.$.deviceAddressInput;
+    var val = input.value;
+    var exists = false;
+    var addressRegex = RegExp('^([\\da-fA-F]{2}:){5}[\\da-fA-F]{2}$');
+    if (addressRegex.test(val)) {
+      for (var i = 0; i < this.predefinedDevices.length; ++i) {
+        if (this.predefinedDevices[i].address == val) {
+          exists = true;
+          break;
+        }
+      }
+
+      if (!exists) {
+        for (var i = 0; i < this.devices.length; ++i) {
+          if (this.devices[i].address == val && i != this.currentEditIndex) {
+            exists = true;
+            break;
+          }
+        }
+      }
+
+      if (exists) {
+        input.invalid = true;
+        input.errorMessage = 'This address is already being used.';
+      } else {
+        input.invalid = false;
+      }
+    } else {
+      input.invalid = true;
+      input.errorMessage = 'Invalid address.';
+    }
+  },
+
+  /**
+   * Makes sure that a path is not already used.
+   */
+  validatePath: function() {
+    var input = this.$.devicePathInput;
+    var val = input.value;
+    var exists = false;
+
+    for (var i = 0; i < this.predefinedDevices.length; ++i) {
+      if (this.predefinedDevices[i].path == val) {
+        exists = true;
+        break;
+      }
+    }
+
+    if (!exists) {
+      for (var i = 0; i < this.devices.length; ++i) {
+        if (this.devices[i].path == val && i != this.currentEditIndex) {
+          exists = true;
+          break;
+        }
+      }
+    }
+
+    if (exists) {
+      input.invalid = true;
+      input.errorMessage = 'This path is already being used.';
+    } else {
+      input.invalid = false;
+    }
   },
 
   /**
@@ -106,40 +253,135 @@ Polymer({
    * to the main adapter.
    * @param {!Array<!BluetoothDevice>} devices A list of bluetooth devices.
    */
-  updateBluetoothInfo: function(devices) {
+  updateBluetoothInfo: function(predefinedDevices, loadedCustomDevices,
+                                pairingMethodOptions, pairingActionOptions) {
+    this.predefinedDevices = this.loadDevicesFromList(predefinedDevices, true);
+    this.devices = this.loadDevicesFromList(loadedCustomDevices, false);
+    this.deviceAuthenticationMethods = pairingMethodOptions;
+    this.deviceAuthenticationActions = pairingActionOptions;
+  },
+
+  /**
+   * Builds complete BluetoothDevice objects for each element in |devices_list|.
+   * @param {!Array<!BluetoothDevice>} devices_list A list of incomplete
+   *     BluetoothDevice provided by the C++ WebUI.
+   * @param {boolean} predefined Whether or not the device is a predefined one.
+   */
+  loadDevicesFromList: function(devices, predefined) {
     /** @type {!Array<!BluetoothDevice>} */ var deviceList = [];
 
     for (var i = 0; i < devices.length; ++i) {
+      if (this.devicePaths[devices[i].path] != undefined) continue;
+
       // Get the label for the device class which should be selected.
-      devices[i].class = this.getTextForDeviceClass(devices[i]['classValue']);
+      devices[i].class = this.getTextForDeviceClass(devices[i].classValue);
+      devices[i].pairingAuthToken = devices[i].pairingAuthToken.toString();
       deviceList.push(devices[i]);
-      this.devicePaths[devices[i]['path']] = true;
+      this.devicePaths[devices[i].path] = {
+        predefined: predefined,
+        index: deviceList.length - 1
+      };
     }
 
-    this.devices = deviceList;
+    return deviceList;
   },
 
-  pairDevice: function(e) {
-    var device = this.devices[e.path[2].dataIndex];
-    device.classValue = this.getValueForDeviceClass(device.class);
-    this.devicePaths[device.path] = true;
+  /**
+   * Called when a device is paired from the Tray. Checks the paired box for
+   * the device with path |path|.
+   */
+  devicePairedFromTray: function(path) {
+    var obj = this.devicePaths[path];
 
-    // Send device info to the WebUI.
-    chrome.send('requestBluetoothPair', [device]);
+    if (obj == undefined) return;
+
+    var index = obj.index;
+    var devicePath = (obj.predefined ? 'predefinedDevices.' : 'devices.');
+    devicePath += obj.index.toString();
+    this.set(devicePath + '.paired', true);
   },
 
-  discoverDevice: function(e) {
-    var device = this.devices[e.path[2].dataIndex];
-    device.classValue = this.getValueForDeviceClass(device.class);
-    this.devicePaths[device.path] = true;
+  /**
+   * On-change handler for a checkbox in the device list. Pairs/unpairs the
+   * device associated with the box checked/unchecked.
+   * @param {Event} event Contains event data. |event.model.index| is the index
+   *     of the item which the target is contained in.
+   */
+  pairDevice: function(event) {
+    var index = event.model.index;
+    var predefined =
+        /** @type {boolean} */ (event.target.dataset.predefined == 'true');
+    var device =
+        predefined ? this.predefinedDevices[index] : this.devices[index];
 
-    // Send device info to WebUI.
-    chrome.send('requestBluetoothDiscover', [device]);
+    if (event.target.checked) {
+      var devicePath = (predefined ? 'predefinedDevices.' : 'devices.');
+      devicePath += index.toString();
+      this.set(devicePath + '.discoverable', true);
+
+      // Send device info to the WebUI.
+      chrome.send('requestBluetoothPair', [device]);
+      this.devicePaths[device.path] = {predefined: predefined, index: index};
+
+      var devicePath = (predefined ? 'predefinedDevices.' : 'devices.');
+      devicePath += index.toString();
+      this.set(devicePath + '.paired', false);
+    } else {
+      chrome.send('removeBluetoothDevice', [device.path]);
+
+      var devicePath = (predefined ? 'predefinedDevices.' : 'devices.');
+      devicePath += index.toString();
+      this.set(devicePath + '.discoverable', false);
+    }
+  },
+
+  /**
+   * Called from Chrome OS back-end when a pair request fails.
+   * @param {string} path The path of the device which failed to pair.
+   */
+  pairFailed: function(path) {
+    var obj = this.devicePaths[path];
+
+    if (obj == undefined) return;
+
+    var devicePath = (obj.predefined ? 'predefinedDevices.' : 'devices.');
+    devicePath += obj.index.toString();
+    this.set(devicePath + '.paired', false);
+  },
+
+  /**
+   * On-change event handler for a checkbox in the device list.
+   * @param {Event} event Contains event data. |event.model.index| is the index
+   *     of the item which the target is contained in.
+   */
+  discoverDevice: function(event) {
+    var index = event.model.index;
+    var predefined =
+        /** @type {boolean} */ (event.target.dataset.predefined == 'true');
+    var device =
+        predefined ? this.predefinedDevices[index] : this.devices[index];
+
+    if (event.target.checked) {
+      device.classValue = this.getValueForDeviceClass(device.class);
+
+      // Send device info to WebUI.
+      chrome.send('requestBluetoothDiscover', [device]);
+
+      this.devicePaths[device.path] = {predefined: predefined, index: index};
+    } else {
+      chrome.send('removeBluetoothDevice', [device.path]);
+
+      var devicePath = (predefined ? 'predefinedDevices.' : 'devices.');
+      devicePath += index.toString();
+      this.set(devicePath + '.paired', false);
+    }
   },
 
   // Adds a new device with default settings to the list of devices.
   appendNewDevice: function() {
-    this.push('devices', new BluetoothDevice());
+    var newDevice = new BluetoothDevice();
+    newDevice.alias = 'New Device';
+    this.push('devices', newDevice);
   },
 
   /**
@@ -149,28 +391,87 @@ Polymer({
    * @param {BluetoothDevice} device A bluetooth device.
    */
   addBluetoothDevice: function(device) {
-    if (this.devicePaths[device['path']] != undefined)
+    if (this.devicePaths[device.path] != undefined) {
+      var obj = this.devicePaths[device.path];
+      var devicePath = (obj.predefined ? 'predefinedDevices.' : 'devices.');
+      devicePath += obj.index.toString();
+      this.set(devicePath + '.discoverable', true);
       return;
+    }
 
-    device.class = this.getTextForDeviceClass(device['classValue']);
+    device.class = this.getTextForDeviceClass(device.classValue);
+    device.discoverable = true;
     this.push('devices', device);
-    this.devicePaths[device['path']] = true;
+    this.devicePaths[device.path] = {
+      predefined: false,
+      index: this.devices.length - 1
+    };
   },
 
   /**
-   * Removes the bluetooth device with path |path|.
+   * Called on "copy" button from the device list clicked. Creates a copy of
+   * the selected device and adds it to the "custom" devices list.
+   * @param {Event} event Contains event data. |event.model.index| is the index
+   *     of the item which the target is contained in.
+   */
+  copyDevice: function(event) {
+    var predefined = (event.target.dataset.predefined == 'true');
+    var index = event.model.index;
+    var copyDevice =
+        predefined ? this.predefinedDevices[index] : this.devices[index];
+    // Create a deep copy of the selected device.
+    var newDevice = new BluetoothDevice();
+    Object.assign(newDevice, copyDevice);
+    newDevice.path = '';
+    newDevice.address = '';
+    newDevice.name += ' (Copy)';
+    newDevice.alias += ' (Copy)';
+    newDevice.discoverable = false;
+    newDevice.paired = false;
+    this.push('devices', newDevice);
+  },
+
+  /**
+   * Shows a modal dialog to edit the selected device's properties.
+   * @param {Event} event Contains event data. |event.model.index| is the index
+   *     of the item which the target is contained in.
+   */
+  showEditModal: function(event) {
+    var index = event.model.index;
+    this.currentEditIndex = index;
+    this.currentEditableObject = this.devices[index];
+    this.$.editModal.toggle();
+  },
+
+  /**
+   * A click handler for the delete button on bluetooth devices.
+   * @param {Event} event Contains event data. |event.model.index| is the index
+   *     of the item which the target is contained in.
+   */
+  deleteDevice: function(event) {
+    var index = event.model.index;
+    var device = this.devices[index];
+
+    chrome.send('removeBluetoothDevice', [device.path]);
+
+    this.devicePaths[device.path] = undefined;
+    this.splice('devices', index, 1);
+  },
+
+  /**
+   * This function is called when a device is removed from the main bluetooth
+   * adapter's device list. It sets that device's |.discoverable| and |.paired|
+   * attributes to false.
    * @param {string} path A bluetooth device's path.
    */
-  removeBluetoothDevice: function(path) {
-    if (this.devicePaths[path] == undefined)
-      return;
+  deviceRemovedFromMainAdapter: function(path) {
+    if (this.devicePaths[path] == undefined) return;
 
-    for (var i = 0; i < this.devices.length; ++i) {
-      if (this.devices[i].path == path) {
-        this.splice('devices', i, 1);
-        break;
-      }
-    }
+    var obj = this.devicePaths[path];
+    var devicePath = (obj.predefined ? 'predefinedDevices.' : 'devices.');
+    devicePath += obj.index.toString();
+    this.set(devicePath + '.discoverable', false);
+    this.set(devicePath + '.paired', false);
   },
 
   /**

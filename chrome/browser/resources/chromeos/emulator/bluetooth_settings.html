@@ -1,81 +1,163 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 
 <dom-module id="bluetooth-settings">
   <link rel="import" type="css" href="bluetooth_settings.css">
   <template>
-    <div class="layout vertical">
-      <div class="element-label">{{title}}</div>
-      <form id="bluetooth-settings-form">
-        <div class="layout vertical">
-          <span class="form-label">Devices</span>
-          <template is="dom-repeat" items="[[devices]]">
-            <div class="device-container">
-              <div class="bluetooth-device">
-                <div class="element-label">[[item.alias]]</div>
-                <paper-input value="{{item.alias}}"
-                    label="Alias"></paper-input>
-                <paper-input value="{{item.path}}"
-                    label="Path"></paper-input>
-                <paper-input value="{{item.address}}"
-                    label="Address"></paper-input>
-                <paper-input value="{{item.name}}"
-                    label="name"></paper-input>
-                <span class="toggle-button-label">Trusted</span>
-                <paper-toggle-button
-                    checked="{{item.isTrusted}}"></paper-toggle-button>
-                <div class="device-field">
-                  <label>
-                    <span class="form-label">Class/Type</span>
-                    <paper-radio-group selected="{{item.class}}">
-                      <template is="dom-repeat"
-                          items="[[deviceClassOptions]]" as="option"
-                          index-as="option_index">
-                        <paper-radio-button name="[[option.text]]"
-                            >[[option.text]]</paper-radio-button>
-                      </template>
-                    </paper-radio-group>
-                  </label>
-                </div>
-                <div class="device-field">
-                  <label>
-                    <span class="form-label">Pair Authentication Type</span>
-                    <paper-radio-group selected="{{item.pairingMethod}}">
-                      <template is="dom-repeat"
-                          items="[[deviceAuthenticationMethods]]" as="method"
-                          index-as="method_index">
-                        <paper-radio-button name="[[method]]"
-                            >[[method]]</paper-radio-button>
-                      </template>
-                    </paper-radio-group>
-                  </label>
-                </div>
-                <template is="dom-if"
-                    if="[[showAuthToken(item.pairingMethod)]]">
-                  <div class="device-field">
-                    <paper-input value="{{item.pairingAuthToken}}"
-                        label="Code"></paper-input>
-                  </div>
+    <paper-dialog on-iron-overlay-opened="editDialogOpened" modal
+        id="editModal">
+      <div class="element-label">[[currentEditableObject.alias]]</div>
+      <div>
+        <form>
+          <div class="form-field-section">
+            <paper-input value="{{currentEditableObject.alias}}"
+                label="Alias"></paper-input>
+            <paper-input on-input="validatePath"
+                id="devicePathInput"
+                value="{{currentEditableObject.path}}"
+                label="Path" on-input="validatePath"></paper-input>
+            <paper-input value="{{currentEditableObject.name}}"
+                label="Name"></paper-input>
+            <paper-input id="deviceAddressInput" on-input="validateAddress"
+                value="{{currentEditableObject.address}}"
+                label="Address (xx:xx:xx:xx:xx:xx)"></paper-input>
+          </div>
+          <div class="form-field-section">
+            <span class="toggle-button-label">Trusted</span>
+            <paper-checkbox
+                checked="{{currentEditableObject.isTrusted}}"></paper-checkbox>
+          </div>
+          <div class="form-field-section">
+            <span class="toggle-button-label">Incoming Connnection</span>
+            <paper-checkbox
+                checked="{{currentEditableObject.incoming}}"></paper-checkbox>
+          </div>
+          <div class="form-field-section">
+            <div class="form-label">Class</div>
+            <paper-radio-group class="device-class-group"
+                selected="{{currentEditableObject.class}}">
+              <template is="dom-repeat"
+                  items="[[deviceClassOptions]]" as="option">
+                <paper-radio-button name="[[option.text]]"
+                    >[[option.text]]</paper-radio-button>
+              </template>
+            </paper-radio-group>
+          </div>
+          <div class="form-field-section">
+            <label>
+              <span class="form-label">Pair Authentication</span>
+              <paper-radio-group
+                  selected="{{currentEditableObject.pairingMethod}}">
+                <template is="dom-repeat"
+                    items="[[deviceAuthenticationMethods]]" as="method">
+                  <paper-radio-button name="[[method]]"
+                      >[[method]]</paper-radio-button>
                 </template>
-                <paper-button raised class="colored" on-click="pairDevice"
-                    data-index="[[index]]">
-                  Pair
-                </paper-button>
-                <paper-button raised class="colored"
-                    on-click="discoverDevice" data-index="[[index]]">
-                  Make Discoverable
-                </paper-button>
+              </paper-radio-group>
+            </label>
+          </div>
+          <div>
+              <div class="form-field-section"
+                  hidden$=
+                      "[[!showAuthToken(currentEditableObject.pairingMethod)]]"
+                      >
+                <paper-input value="{{currentEditableObject.pairingAuthToken}}"
+                    label="Code"></paper-input>
               </div>
+            <div class="form-field-section">
+              <label>
+                <span class="form-label">Pairing Action</span>
+                <paper-radio-group
+                    selected="{{currentEditableObject.pairingAction}}">
+                  <template is="dom-repeat"
+                      items="[[deviceAuthenticationActions]]">
+                    <paper-radio-button name="[[item]]"
+                        >[[item]]</paper-radio-button>
+                  </template>
+                </paper-radio-group>
+              </label>
             </div>
+          </div>
+        </form>
+      </div>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Close</paper-button>
+      </div>
+    </paper-dialog>
+
+    <div class="layout vertical">
+      <div class="element-label">
+        <paper-icon-button icon="settings-bluetooth"></paper-icon-button>
+        <span>[[title]]</span>
+      </div>
+      <table class="devices-table">
+        <tbody>
+          <tr class="table-section-header">
+            <td colspan="2">Presets</td>
+            <td class="centered-cell-label">Discoverable</td>
+            <td class="centered-cell-label">Paired</td>
+          </tr>
+          <template is="dom-repeat" items="[[predefinedDevices]]">
+            <tr>
+              <td class="alias-cell">[[item.alias]]</td>
+              <td class="icon-cell">
+                <paper-icon-button icon="content-copy"
+                    on-click="copyDevice" data-predefined="true">
+                </paper-icon-button>
+                <paper-icon-button disabled icon="settings"></paper-icon-button>
+                <paper-icon-button disabled icon="delete"></paper-icon-button>
+              </td>
+              <td class="control-cell">
+                <paper-checkbox checked="{{item.discoverable}}"
+                    data-predefined="true"
+                    on-change="discoverDevice"></paper-checkbox>
+              </td>
+              <td class="control-cell">
+                <paper-checkbox on-change="pairDevice" data-predefined="true"
+                    checked="{{item.paired}}"></paper-checkbox>
+              </td>
+            </tr>
           </template>
-          <paper-button on-click="appendNewDevice">
-            [+] New Device
-          </paper-button>
-        </div>
-      </form>
+        </tbody>
+        <tbody>
+          <tr class="table-section-header">
+            <td colspan="4">Custom</td>
+          </tr>
+          <template is="dom-repeat" items="[[devices]]">
+            <tr>
+              <td class="alias-cell">[[item.alias]]</td>
+              <td class="icon-cell">
+                <paper-icon-button icon="content-copy" data-predefined="false"
+                    on-click="copyDevice"></paper-icon-button>
+                <paper-icon-button icon="settings" on-click="showEditModal"
+                    ></paper-icon-button>
+                <paper-icon-button icon="delete" on-click="deleteDevice"
+                    ></paper-icon-button>
+              </td>
+              <td class="control-cell">
+                <paper-checkbox checked="{{item.discoverable}}"
+                    data-predefined="false"
+                    on-change="discoverDevice"></paper-checkbox>
+              </td>
+              <td class="control-cell">
+                <paper-checkbox checked="{{item.paired}}"
+                    data-predefined="false"
+                    on-change="pairDevice"></paper-checkbox>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+      <div class="add-device-container">
+        <paper-button on-click="appendNewDevice">
+          Add Device
+        </paper-button>
+      </div>
     </div>
   </template>
   <script src="bluetooth_settings.js"></script>

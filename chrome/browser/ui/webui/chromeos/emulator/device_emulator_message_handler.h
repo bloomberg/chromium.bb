@@ -32,6 +32,11 @@ class DeviceEmulatorMessageHandler
   // Adds |this| as an observer to all necessary objects.
   void Init();
 
+  // Callback for the "removeBluetoothDevice" message. This is called by
+  // the view to remove a bluetooth device from the FakeBluetoothDeviceClient's
+  // observed list of devices.
+  void HandleRemoveBluetoothDevice(const base::ListValue* args);
+
   // Callback for the "requestBluetoothDiscover" message. This asynchronously
   // requests for the system to discover a certain device. The device's data
   // should be passed into |args| as a dictionary. If the device does not

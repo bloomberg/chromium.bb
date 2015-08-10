@@ -25,6 +25,7 @@ const char kRequestPowerInfo[] = "requestPowerInfo";
 
 // Define update functions that will update the power properties to the
 // variables defined in the web UI.
+const char kRemoveBluetoothDevice[] = "removeBluetoothDevice";
 const char kUpdateBatteryPercent[] = "updateBatteryPercent";
 const char kUpdateBatteryState[] = "updateBatteryState";
 const char kUpdateExternalPower[] = "updateExternalPower";
@@ -35,12 +36,18 @@ const char kUpdateTimeToFull[] = "updateTimeToFull";
 // and the web UI.
 const char kAddBluetoothDeviceJSCallback[] =
     "device_emulator.bluetoothSettings.addBluetoothDevice";
-const char kRemoveBluetoothDeviceJSCallback[] =
-    "device_emulator.bluetoothSettings.removeBluetoothDevice";
+const char kDevicePairedFromTrayJSCallback[] =
+    "device_emulator.bluetoothSettings.devicePairedFromTray";
+const char kDeviceRemovedFromMainAdapterJSCallback[] =
+    "device_emulator.bluetoothSettings.deviceRemovedFromMainAdapter";
+const char kPairFailedJSCallback[] =
+    "device_emulator.bluetoothSettings.pairFailed";
 const char kUpdateBluetoothInfoJSCallback[] =
     "device_emulator.bluetoothSettings.updateBluetoothInfo";
 const char kUpdatePowerPropertiesJSCallback[] =
     "device_emulator.batterySettings.updatePowerProperties";
+
+const char kPairedPropertyName[] = "Paired";
 
 }  // namespace
 
@@ -62,6 +69,10 @@ class DeviceEmulatorMessageHandler::BluetoothObserver
   void DeviceAdded(const dbus::ObjectPath& object_path) override;
 
   // chromeos::BluetoothDeviceClient::Observer.
+  void DevicePropertyChanged(const dbus::ObjectPath& object_path,
+                             const std::string& property_name) override;
+
+  // chromeos::BluetoothDeviceClient::Observer.
   void DeviceRemoved(const dbus::ObjectPath& object_path) override;
 
  private:
@@ -80,10 +91,20 @@ void DeviceEmulatorMessageHandler::BluetoothObserver::DeviceAdded(
       *device);
 }
 
+void DeviceEmulatorMessageHandler::BluetoothObserver::DevicePropertyChanged(
+  const dbus::ObjectPath& object_path,
+  const std::string& property_name) {
+  if (property_name == kPairedPropertyName) {
+    owner_->web_ui()->CallJavascriptFunction(kDevicePairedFromTrayJSCallback,
+        base::StringValue(object_path.value()));
+  }
+}
+
 void DeviceEmulatorMessageHandler::BluetoothObserver::DeviceRemoved(
     const dbus::ObjectPath& object_path) {
-  owner_->web_ui()->CallJavascriptFunction(kRemoveBluetoothDeviceJSCallback,
-      base::StringValue(object_path.value()));
+  owner_->web_ui()->CallJavascriptFunction(
+    kDeviceRemovedFromMainAdapterJSCallback,
+    base::StringValue(object_path.value()));
 }
 
 class DeviceEmulatorMessageHandler::PowerObserver
@@ -145,6 +166,15 @@ void DeviceEmulatorMessageHandler::RequestPowerInfo(
   fake_power_manager_client_->RequestStatusUpdate();
 }
 
+void DeviceEmulatorMessageHandler::HandleRemoveBluetoothDevice(
+    const base::ListValue* args) {
+  std::string path;
+  CHECK(args->GetString(0, &path));
+  fake_bluetooth_device_client_->RemoveDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(path));
+}
+
 void DeviceEmulatorMessageHandler::HandleRequestBluetoothDiscover(
     const base::ListValue* args) {
   CreateBluetoothDeviceFromListValue(args);
@@ -159,15 +189,37 @@ void DeviceEmulatorMessageHandler::HandleRequestBluetoothInfo(
           dbus::ObjectPath(chromeos::FakeBluetoothAdapterClient::kAdapterPath));
 
   base::ListValue devices;
-
   // Get each device's properties.
   for (const dbus::ObjectPath& path : paths) {
     scoped_ptr<base::DictionaryValue> device = GetDeviceInfo(path);
     devices.Append(device.Pass());
   }
 
+  scoped_ptr<base::ListValue> predefined_devices =
+      fake_bluetooth_device_client_->GetBluetoothDevicesAsDictionaries();
+
+  base::ListValue pairing_method_options;
+  pairing_method_options.AppendString(
+      FakeBluetoothDeviceClient::kPairingMethodNone);
+  pairing_method_options.AppendString(
+      FakeBluetoothDeviceClient::kPairingMethodPinCode);
+  pairing_method_options.AppendString(
+      FakeBluetoothDeviceClient::kPairingMethodPassKey);
+
+  base::ListValue pairing_action_options;
+  pairing_action_options.AppendString(
+      FakeBluetoothDeviceClient::kPairingActionDisplay);
+  pairing_action_options.AppendString(
+      FakeBluetoothDeviceClient::kPairingActionRequest);
+  pairing_action_options.AppendString(
+      FakeBluetoothDeviceClient::kPairingActionConfirmation);
+  pairing_action_options.AppendString(
+      FakeBluetoothDeviceClient::kPairingActionFail);
+
   // Send the list of devices to the view.
-  web_ui()->CallJavascriptFunction(kUpdateBluetoothInfoJSCallback, devices);
+  web_ui()->CallJavascriptFunction(kUpdateBluetoothInfoJSCallback,
+      *predefined_devices, devices, pairing_method_options,
+      pairing_action_options);
 }
 
 void DeviceEmulatorMessageHandler::HandleRequestBluetoothPair(
@@ -181,6 +233,10 @@ void DeviceEmulatorMessageHandler::HandleRequestBluetoothPair(
   // by its device ID, which, in this case is the same as its address.
   ash::Shell::GetInstance()->system_tray_delegate()->ConnectToBluetoothDevice(
       props->address.value());
+  if (!props->paired.value()) {
+    web_ui()->CallJavascriptFunction(kPairFailedJSCallback,
+        base::StringValue(path));
+  }
 }
 
 void DeviceEmulatorMessageHandler::UpdateBatteryPercent(
@@ -279,6 +335,10 @@ void DeviceEmulatorMessageHandler::RegisterMessages() {
       kRequestBluetoothInfo,
       base::Bind(&DeviceEmulatorMessageHandler::HandleRequestBluetoothInfo,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kRemoveBluetoothDevice,
+      base::Bind(&DeviceEmulatorMessageHandler::HandleRemoveBluetoothDevice,
+                 base::Unretained(this)));
 }
 
 std::string DeviceEmulatorMessageHandler::CreateBluetoothDeviceFromListValue(
@@ -293,8 +353,10 @@ std::string DeviceEmulatorMessageHandler::CreateBluetoothDeviceFromListValue(
   CHECK(device_dict->GetString("address", &props.device_address));
   CHECK(device_dict->GetString("pairingMethod", &props.pairing_method));
   CHECK(device_dict->GetString("pairingAuthToken", &props.pairing_auth_token));
+  CHECK(device_dict->GetString("pairingAction", &props.pairing_action));
   CHECK(device_dict->GetInteger("classValue", &props.device_class));
   CHECK(device_dict->GetBoolean("isTrusted", &props.is_trusted));
+  CHECK(device_dict->GetBoolean("incoming", &props.incoming));
 
   // Create the device and store it in the FakeBluetoothDeviceClient's observed
   // list of devices.
@@ -322,12 +384,15 @@ scoped_ptr<base::DictionaryValue> DeviceEmulatorMessageHandler::GetDeviceInfo(
   if (options) {
     device->SetString("pairingMethod", options->pairing_method);
     device->SetString("pairingAuthToken", options->pairing_auth_token);
+    device->SetString("pairingAction", options->pairing_action);
   } else {
     device->SetString("pairingMethod", "");
     device->SetString("pairingAuthToken", "");
+    device->SetString("pairingAction", "");
   }
   device->SetInteger("classValue", props->bluetooth_class.value());
   device->SetBoolean("isTrusted", props->trusted.value());
+  device->SetBoolean("incoming", false);
 
   for (const std::string& uuid : props->uuids.value()) {
     uuids->AppendString(uuid);

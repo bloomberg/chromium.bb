@@ -40,8 +40,13 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
   };
 
   struct SimulatedPairingOptions {
+    SimulatedPairingOptions();
+    ~SimulatedPairingOptions();
+
+    bool incoming = false;
     std::string pairing_method;
     std::string pairing_auth_token;
+    std::string pairing_action;
   };
 
   // Stores properties of a device that is about to be created.
@@ -49,14 +54,16 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
     IncomingDeviceProperties();
     ~IncomingDeviceProperties();
 
-    std::string device_name;
-    std::string device_alias;
     std::string device_address;
-    std::string device_path;
-    std::string pairing_method;
-    std::string pairing_auth_token;
+    std::string device_alias;
     int device_class = 0;
+    std::string device_name;
+    std::string device_path;
     bool is_trusted = true;
+    bool incoming = false;
+    std::string pairing_action;
+    std::string pairing_auth_token;
+    std::string pairing_method;
   };
 
   FakeBluetoothDeviceClient();
@@ -111,6 +118,11 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
   void CreateDeviceWithProperties(const dbus::ObjectPath& adapter_path,
                                   const IncomingDeviceProperties& props);
 
+  // Creates and returns a list of scoped_ptr<base::DictionaryValue>
+  // objects, which contain all the data from the constants for devices with
+  // predefined behavior.
+  scoped_ptr<base::ListValue> GetBluetoothDevicesAsDictionaries() const;
+
   SimulatedPairingOptions* GetPairingOptions(
       const dbus::ObjectPath& object_path);
 
@@ -132,6 +144,18 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
   void UpdateConnectionInfo(uint16 connection_rssi,
                             uint16 transmit_power,
                             uint16 max_transmit_power);
+
+  static const char kTestPinCode[];
+  static const int kTestPassKey;
+
+  static const char kPairingMethodNone[];
+  static const char kPairingMethodPinCode[];
+  static const char kPairingMethodPassKey[];
+
+  static const char kPairingActionConfirmation[];
+  static const char kPairingActionDisplay[];
+  static const char kPairingActionFail[];
+  static const char kPairingActionRequest[];
 
   // Object paths, names, addresses and bluetooth classes of the devices
   // we can emulate.
