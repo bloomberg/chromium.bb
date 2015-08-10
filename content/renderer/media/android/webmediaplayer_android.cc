@@ -912,11 +912,6 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
                                media::VIDEO_ROTATION_0)));
     client_->setWebLayer(video_weblayer_.get());
   }
-
-  // TODO(qinmin): This is a hack. We need the media element to stop showing the
-  // poster image by forcing it to call setDisplayMode(video). Should move the
-  // logic into HTMLMediaElement.cpp.
-  client_->timeChanged();
 }
 
 void WebMediaPlayerAndroid::OnTimeUpdate(base::TimeDelta current_timestamp,
