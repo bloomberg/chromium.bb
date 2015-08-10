@@ -414,6 +414,15 @@ void LayoutBoxModelObject::addOutlineRectsForDescendant(const LayoutObject& desc
         return;
     }
 
+    if (descendant.isLayoutInline()) {
+        // As an optimization, an ancestor has added rects for its line boxes covering descendants'
+        // line boxes, so descendants don't need to add line boxes again. For example, if the parent
+        // is a LayoutBlock, it adds rects for its RootOutlineBoxes which cover the line boxes of
+        // this LayoutInline. So the LayoutInline needs to add rects for children and continuations only.
+        toLayoutInline(descendant).addOutlineRectsForChildrenAndContinuations(rects, additionalOffset);
+        return;
+    }
+
     descendant.addOutlineRects(rects, additionalOffset);
 }
 

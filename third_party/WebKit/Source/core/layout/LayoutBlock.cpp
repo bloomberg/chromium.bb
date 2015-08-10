@@ -2597,12 +2597,8 @@ void LayoutBlock::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& 
         }
     }
 
-    if (inlineElementContinuation) {
-        Vector<LayoutRect> inlineOutlineRects;
-        // We need to give the LayoutInline a clean vector to let it add focus ring rects of line boxes.
-        inlineElementContinuation->addOutlineRects(inlineOutlineRects, additionalOffset + (inlineElementContinuation->containingBlock()->location() - location()));
-        rects.appendVector(inlineOutlineRects);
-    }
+    if (inlineElementContinuation)
+        inlineElementContinuation->addOutlineRects(rects, additionalOffset + (inlineElementContinuation->containingBlock()->location() - location()));
 }
 
 void LayoutBlock::computeSelfHitTestRects(Vector<LayoutRect>& rects, const LayoutPoint& layerOffset) const

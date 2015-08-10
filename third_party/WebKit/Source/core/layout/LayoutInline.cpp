@@ -1378,16 +1378,18 @@ public:
 
 void LayoutInline::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
-    // Add line boxes only if this object is the first object of addOutlineRects().
-    // Otherwise the parent (LayoutBlockFlow or LayoutInline) should have added line box rects
-    // covering those of this object.
-    if (rects.isEmpty()) {
-        AbsoluteLayoutRectsIgnoringEmptyRectsGeneratorContext context(rects, additionalOffset);
-        generateLineBoxRects(context);
-    }
-
+    AbsoluteLayoutRectsIgnoringEmptyRectsGeneratorContext context(rects, additionalOffset);
+    generateLineBoxRects(context);
+    addOutlineRectsForChildrenAndContinuations(rects, additionalOffset);
+}
+void LayoutInline::addOutlineRectsForChildrenAndContinuations(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+{
     addOutlineRectsForNormalChildren(rects, additionalOffset);
+    addOutlineRectsForContinuations(rects, additionalOffset);
+}
 
+void LayoutInline::addOutlineRectsForContinuations(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+{
     if (LayoutBoxModelObject* continuation = this->continuation()) {
         if (continuation->isInline())
             continuation->addOutlineRects(rects, additionalOffset + (continuation->containingBlock()->location() - containingBlock()->location()));
