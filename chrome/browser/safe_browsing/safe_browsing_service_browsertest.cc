@@ -318,7 +318,8 @@ class TestProtocolManager :  public SafeBrowsingProtocolManager {
   // life network issues.
   void GetFullHash(const std::vector<SBPrefix>& prefixes,
                    SafeBrowsingProtocolManager::FullHashCallback callback,
-                   bool is_download) override {
+                   bool is_download,
+                   bool is_extended_reporting) override {
     BrowserThread::PostDelayedTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(InvokeFullHashCallback, callback, full_hashes_),

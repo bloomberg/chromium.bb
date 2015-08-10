@@ -35,6 +35,7 @@ const char kBackupNetworkUrlPrefix[] = "https://alt3-prefix.com/foo";
 const char kClient[] = "unittest";
 const char kAppVer[] = "1.0";
 const char kAdditionalQuery[] = "additional_query";
+const char kUrlSuffix[] = "&ext=0";
 
 #if defined(OS_ANDROID)
 const char kDefaultPhishList[] = "goog-mobilephish-shavar";
@@ -97,9 +98,9 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
         SafeBrowsingProtocolManager::Create(delegate, NULL, config));
   }
 
-  void ValidateUpdateFetcherRequest(
-      const net::TestURLFetcher* url_fetcher,
-      const std::string& expected_prefix) {
+  void ValidateUpdateFetcherRequest(const net::TestURLFetcher* url_fetcher,
+                                    const std::string& expected_prefix,
+                                    const std::string& expected_suffix) {
     ASSERT_TRUE(url_fetcher);
     EXPECT_EQ(net::LOAD_DISABLE_CACHE, url_fetcher->GetLoadFlags());
 
@@ -108,12 +109,13 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
                                                   kDefaultMalwareList));
     EXPECT_EQ(expected_lists, url_fetcher->upload_data());
     EXPECT_EQ(GURL(expected_prefix + "/downloads?client=unittest&appver=1.0"
-                   "&pver=3.0" + key_param_),
+                                     "&pver=3.0" +
+                   key_param_ + expected_suffix),
               url_fetcher->GetOriginalURL());
   }
 
   void ValidateUpdateFetcherRequest(const net::TestURLFetcher* url_fetcher) {
-    ValidateUpdateFetcherRequest(url_fetcher, kUrlPrefix);
+    ValidateUpdateFetcherRequest(url_fetcher, kUrlPrefix, kUrlSuffix);
   }
 
   void ValidateRedirectFetcherRequest(const net::TestURLFetcher* url_fetcher,
@@ -261,25 +263,35 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashBackOffTimes) {
 TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashUrl) {
   scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
 
-  EXPECT_EQ("https://prefix.com/foo/gethash?client=unittest&appver=1.0&"
-            "pver=3.0" + key_param_, pm->GetHashUrl().spec());
+  EXPECT_EQ(
+      "https://prefix.com/foo/gethash?client=unittest&appver=1.0&"
+      "pver=3.0" +
+          key_param_ + "&ext=0",
+      pm->GetHashUrl(false).spec());
 
   pm->set_additional_query(kAdditionalQuery);
-  EXPECT_EQ("https://prefix.com/foo/gethash?client=unittest&appver=1.0&"
-            "pver=3.0" + key_param_ + "&additional_query",
-            pm->GetHashUrl().spec());
+  EXPECT_EQ(
+      "https://prefix.com/foo/gethash?client=unittest&appver=1.0&"
+      "pver=3.0" +
+          key_param_ + "&additional_query&ext=1",
+      pm->GetHashUrl(true).spec());
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestUpdateUrl) {
   scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
 
-  EXPECT_EQ("https://prefix.com/foo/downloads?client=unittest&appver=1.0&"
-            "pver=3.0" + key_param_, pm->UpdateUrl().spec());
+  EXPECT_EQ(
+      "https://prefix.com/foo/downloads?client=unittest&appver=1.0&"
+      "pver=3.0" +
+          key_param_ + "&ext=1",
+      pm->UpdateUrl(true).spec());
 
   pm->set_additional_query(kAdditionalQuery);
-  EXPECT_EQ("https://prefix.com/foo/downloads?client=unittest&appver=1.0&"
-            "pver=3.0" + key_param_ + "&additional_query",
-            pm->UpdateUrl().spec());
+  EXPECT_EQ(
+      "https://prefix.com/foo/downloads?client=unittest&appver=1.0&"
+      "pver=3.0" +
+          key_param_ + "&additional_query&ext=0",
+      pm->UpdateUrl(false).spec());
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestNextChunkUrl) {
@@ -350,7 +362,7 @@ void InvokeGetChunksCallback(
     const std::vector<SBListChunkRanges>& ranges,
     bool database_error,
     SafeBrowsingProtocolManagerDelegate::GetChunksCallback callback) {
-  callback.Run(ranges, database_error);
+  callback.Run(ranges, database_error, false);
 }
 
 // |HandleAddChunks| deletes the chunks and asynchronously invokes
@@ -439,7 +451,8 @@ TEST_F(SafeBrowsingProtocolManagerTest, ExistingDatabase) {
                                kDefaultPhishList, kDefaultMalwareList),
             url_fetcher->upload_data());
   EXPECT_EQ(GURL("https://prefix.com/foo/downloads?client=unittest&appver=1.0"
-                 "&pver=3.0" + key_param_),
+                 "&pver=3.0" +
+                 key_param_ + "&ext=0"),
             url_fetcher->GetOriginalURL());
 
   url_fetcher->set_status(net::URLRequestStatus());
@@ -484,8 +497,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseBadBodyBackupSuccess) {
   // There should now be a backup request.
   net::TestURLFetcher* backup_url_fetcher =
       url_fetcher_factory.GetFetcherByID(1);
-  ValidateUpdateFetcherRequest(backup_url_fetcher,
-                               kBackupHttpUrlPrefix);
+  ValidateUpdateFetcherRequest(backup_url_fetcher, kBackupHttpUrlPrefix, "");
 
   // Respond to the backup successfully.
   backup_url_fetcher->set_status(net::URLRequestStatus());
@@ -532,7 +544,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseHttpErrorBackupError) {
   // There should now be a backup request.
   net::TestURLFetcher* backup_url_fetcher =
       url_fetcher_factory.GetFetcherByID(1);
-  ValidateUpdateFetcherRequest(backup_url_fetcher, kBackupHttpUrlPrefix);
+  ValidateUpdateFetcherRequest(backup_url_fetcher, kBackupHttpUrlPrefix, "");
 
   // Respond to the backup unsuccessfully.
   backup_url_fetcher->set_status(net::URLRequestStatus());
@@ -579,8 +591,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseHttpErrorBackupSuccess) {
   // There should now be a backup request.
   net::TestURLFetcher* backup_url_fetcher =
       url_fetcher_factory.GetFetcherByID(1);
-  ValidateUpdateFetcherRequest(backup_url_fetcher,
-                               kBackupHttpUrlPrefix);
+  ValidateUpdateFetcherRequest(backup_url_fetcher, kBackupHttpUrlPrefix, "");
 
   // Respond to the backup successfully.
   backup_url_fetcher->set_status(net::URLRequestStatus());
@@ -627,7 +638,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseHttpErrorBackupTimeout) {
   // There should now be a backup request.
   net::TestURLFetcher* backup_url_fetcher =
       url_fetcher_factory.GetFetcherByID(1);
-  ValidateUpdateFetcherRequest(backup_url_fetcher, kBackupHttpUrlPrefix);
+  ValidateUpdateFetcherRequest(backup_url_fetcher, kBackupHttpUrlPrefix, "");
 
   // Either one or two calls to RunPendingTasks are needed here. The first run
   // of RunPendingTasks will run the canceled timeout task associated with
@@ -677,8 +688,7 @@ TEST_F(SafeBrowsingProtocolManagerTest,
   // There should be a backup URLFetcher now.
   net::TestURLFetcher* backup_url_fetcher =
       url_fetcher_factory.GetFetcherByID(1);
-  ValidateUpdateFetcherRequest(backup_url_fetcher,
-                               kBackupConnectUrlPrefix);
+  ValidateUpdateFetcherRequest(backup_url_fetcher, kBackupConnectUrlPrefix, "");
 
   // Respond to the backup unsuccessfully.
   backup_url_fetcher->set_status(net::URLRequestStatus());
@@ -725,8 +735,7 @@ TEST_F(SafeBrowsingProtocolManagerTest,
   // There should be a backup URLFetcher now.
   net::TestURLFetcher* backup_url_fetcher =
       url_fetcher_factory.GetFetcherByID(1);
-  ValidateUpdateFetcherRequest(backup_url_fetcher,
-                               kBackupConnectUrlPrefix);
+  ValidateUpdateFetcherRequest(backup_url_fetcher, kBackupConnectUrlPrefix, "");
 
   // Respond to the backup unsuccessfully.
   backup_url_fetcher->set_status(net::URLRequestStatus());
@@ -773,8 +782,7 @@ TEST_F(SafeBrowsingProtocolManagerTest,
   // There should be a backup URLFetcher now.
   net::TestURLFetcher* backup_url_fetcher =
       url_fetcher_factory.GetFetcherByID(1);
-  ValidateUpdateFetcherRequest(backup_url_fetcher,
-                               kBackupNetworkUrlPrefix);
+  ValidateUpdateFetcherRequest(backup_url_fetcher, kBackupNetworkUrlPrefix, "");
 
   // Respond to the backup unsuccessfully.
   backup_url_fetcher->set_status(net::URLRequestStatus());
@@ -822,8 +830,7 @@ TEST_F(SafeBrowsingProtocolManagerTest,
   // There should be a backup URLFetcher now.
   net::TestURLFetcher* backup_url_fetcher =
       url_fetcher_factory.GetFetcherByID(1);
-  ValidateUpdateFetcherRequest(backup_url_fetcher,
-                               kBackupNetworkUrlPrefix);
+  ValidateUpdateFetcherRequest(backup_url_fetcher, kBackupNetworkUrlPrefix, "");
 
   // Respond to the backup unsuccessfully.
   backup_url_fetcher->set_status(net::URLRequestStatus());
@@ -867,8 +874,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, UpdateResponseTimeoutBackupSuccess) {
   // There should be a backup URLFetcher now.
   net::TestURLFetcher* backup_url_fetcher =
       url_fetcher_factory.GetFetcherByID(1);
-  ValidateUpdateFetcherRequest(backup_url_fetcher,
-                               kBackupConnectUrlPrefix);
+  ValidateUpdateFetcherRequest(backup_url_fetcher, kBackupConnectUrlPrefix, "");
 
   // Respond to the backup unsuccessfully.
   backup_url_fetcher->set_status(net::URLRequestStatus());

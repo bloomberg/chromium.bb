@@ -77,7 +77,8 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   // synchronously.
   virtual void GetFullHash(const std::vector<SBPrefix>& prefixes,
                            FullHashCallback callback,
-                           bool is_download);
+                           bool is_download,
+                           bool is_extended_reporting);
 
   // Forces the start of next update after |interval| time.
   void ForceScheduleNextUpdate(base::TimeDelta interval);
@@ -90,7 +91,8 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   // manager shouldn't fetch updates since they can't be written to disk.  It
   // should try again later to open the database.
   void OnGetChunksComplete(const std::vector<SBListChunkRanges>& list,
-                           bool database_error);
+                           bool database_error,
+                           bool is_extended_reporting);
 
   // The last time we received an update.
   base::Time last_update() const { return last_update_; }
@@ -196,14 +198,14 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   };
 
   // Generates Update URL for querying about the latest set of chunk updates.
-  GURL UpdateUrl() const;
+  GURL UpdateUrl(bool is_extended_reporting) const;
 
   // Generates backup Update URL for querying about the latest set of chunk
   // updates. |url_prefix| is the base prefix to use.
   GURL BackupUpdateUrl(BackupUpdateReason reason) const;
 
   // Generates GetHash request URL for retrieving full hashes.
-  GURL GetHashUrl() const;
+  GURL GetHashUrl(bool is_extended_reporting) const;
   // Generates URL for reporting safe browsing hits for UMA users.
 
   // Composes a ChunkUrl based on input string.
@@ -404,8 +406,11 @@ class SBProtocolManagerFactory {
 // Delegate interface for the SafeBrowsingProtocolManager.
 class SafeBrowsingProtocolManagerDelegate {
  public:
-  typedef base::Callback<void(const std::vector<SBListChunkRanges>&, bool)>
-      GetChunksCallback;
+  typedef base::Callback<void(
+      const std::vector<SBListChunkRanges>&, /* List of chunks */
+      bool,                                  /* database_error */
+      bool                                   /* is_extended_reporting */
+      )> GetChunksCallback;
   typedef base::Callback<void(void)> AddChunksCallback;
 
   virtual ~SafeBrowsingProtocolManagerDelegate();
