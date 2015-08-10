@@ -145,7 +145,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   ~FeatureInfo();
 
   void AddExtensionString(const char* s);
-  void InitializeBasicState(const base::CommandLine& command_line);
+  void InitializeBasicState(const base::CommandLine* command_line);
   void InitializeFeatures();
 
   Validators validators_;

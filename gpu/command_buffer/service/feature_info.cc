@@ -185,33 +185,38 @@ FeatureInfo::Workarounds::Workarounds() :
 }
 
 FeatureInfo::FeatureInfo() {
-  InitializeBasicState(*base::CommandLine::ForCurrentProcess());
+  InitializeBasicState(base::CommandLine::InitializedForCurrentProcess()
+                           ? base::CommandLine::ForCurrentProcess()
+                           : nullptr);
 }
 
 FeatureInfo::FeatureInfo(const base::CommandLine& command_line) {
-  InitializeBasicState(command_line);
+  InitializeBasicState(&command_line);
 }
 
-void FeatureInfo::InitializeBasicState(const base::CommandLine& command_line) {
-  if (command_line.HasSwitch(switches::kGpuDriverBugWorkarounds)) {
-    std::string types = command_line.GetSwitchValueASCII(
+void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
+  if (!command_line)
+    return;
+
+  if (command_line->HasSwitch(switches::kGpuDriverBugWorkarounds)) {
+    std::string types = command_line->GetSwitchValueASCII(
         switches::kGpuDriverBugWorkarounds);
     StringToWorkarounds(types, &workarounds_);
   }
   feature_flags_.enable_shader_name_hashing =
-      !command_line.HasSwitch(switches::kDisableShaderNameHashing);
+      !command_line->HasSwitch(switches::kDisableShaderNameHashing);
 
   feature_flags_.is_swiftshader =
-      (command_line.GetSwitchValueASCII(switches::kUseGL) == "swiftshader");
+      (command_line->GetSwitchValueASCII(switches::kUseGL) == "swiftshader");
 
   feature_flags_.enable_subscribe_uniform =
-      command_line.HasSwitch(switches::kEnableSubscribeUniformExtension);
+      command_line->HasSwitch(switches::kEnableSubscribeUniformExtension);
 
   enable_unsafe_es3_apis_switch_ =
-      command_line.HasSwitch(switches::kEnableUnsafeES3APIs);
+      command_line->HasSwitch(switches::kEnableUnsafeES3APIs);
 
   enable_gl_path_rendering_switch_ =
-      command_line.HasSwitch(switches::kEnableGLPathRendering);
+      command_line->HasSwitch(switches::kEnableGLPathRendering);
 
   unsafe_es3_apis_enabled_ = false;
 }
