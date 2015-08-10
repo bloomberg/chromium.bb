@@ -1161,10 +1161,6 @@ const char kFullscreenAllowed[] = "fullscreen.allowed";
 const char kLocalDiscoveryNotificationsEnabled[] =
     "local_discovery.notifications_enabled";
 
-// A timestamp (stored in base::Time::ToInternalValue format) of the last time
-// a preference was reset.
-const char kPreferenceResetTime[] = "prefs.preference_reset_time";
-
 // How many Service Workers are registered with the Push API (could be zero).
 const char kPushMessagingRegistrationCount[] =
     "gcm.push_messaging_registration_count";

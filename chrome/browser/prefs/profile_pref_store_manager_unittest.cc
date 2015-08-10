@@ -21,11 +21,11 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/tracked/mock_validation_delegate.h"
-#include "chrome/browser/prefs/tracked/pref_hash_filter.h"
-#include "chrome/browser/prefs/tracked/pref_service_hash_store_contents.h"
-#include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/user_prefs/tracked/mock_validation_delegate.h"
+#include "components/user_prefs/tracked/pref_hash_filter.h"
+#include "components/user_prefs/tracked/pref_names.h"
+#include "components/user_prefs/tracked/pref_service_hash_store_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -114,7 +114,8 @@ class ProfilePrefStoreManagerTest : public testing::Test {
     // registered above for this test as kPreferenceResetTime is already
     // registered in ProfilePrefStoreManager::RegisterProfilePrefs.
     PrefHashFilter::TrackedPreferenceMetadata pref_reset_time_config =
-        {configuration_.rbegin()->reporting_id + 1, prefs::kPreferenceResetTime,
+        {configuration_.rbegin()->reporting_id + 1,
+         user_prefs::kPreferenceResetTime,
          PrefHashFilter::ENFORCE_ON_LOAD,
          PrefHashFilter::TRACKING_STRATEGY_ATOMIC};
     configuration_.push_back(pref_reset_time_config);

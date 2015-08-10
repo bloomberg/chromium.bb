@@ -30,7 +30,6 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/pref_service_syncable_factory.h"
 #include "chrome/browser/prefs/profile_pref_store_manager.h"
-#include "chrome/browser/prefs/tracked/pref_hash_filter.h"
 #include "chrome/browser/profiles/file_path_verifier_win.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
@@ -45,6 +44,7 @@
 #include "components/search_engines/default_search_pref_migration.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/sync_driver/pref_names.h"
+#include "components/user_prefs/tracked/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/browser_resources.h"
@@ -190,7 +190,7 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
     //     a reset in FilterOnLoad and SegregatedPrefStore will not look for it
     //     in the protected JsonPrefStore unless it's declared as a protected
     //     preference here.
-    15, prefs::kPreferenceResetTime,
+    15, user_prefs::kPreferenceResetTime,
     PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
     PrefHashFilter::VALUE_IMPERSONAL

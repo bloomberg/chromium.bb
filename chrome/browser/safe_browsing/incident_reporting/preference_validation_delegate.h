@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/prefs/tracked/tracked_preference_validation_delegate.h"
+#include "components/user_prefs/tracked/tracked_preference_validation_delegate.h"
 
 class Profile;
 
