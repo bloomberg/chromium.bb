@@ -344,6 +344,16 @@ enum PartitionAllocFlags {
     PartitionAllocReturnNull = 1 << 0,
 };
 
+// Struct used to retrieve total memory usage of a partition. Used by
+// PartitionStatsDumper implementation.
+struct PartitionMemoryStats {
+    size_t totalMmappedBytes; // Total bytes mmaped from the system.
+    size_t totalResidentBytes; // Total bytes provisioned by the partition.
+    size_t totalActiveBytes; // Total active bytes in the partition.
+    size_t totalDecommittableBytes; // Total bytes that could be decommitted.
+    size_t totalDiscardableBytes; // Total bytes that could be discarded.
+};
+
 // Struct used to retrieve memory statistics about a partition bucket. Used by
 // PartitionStatsDumper implementation.
 struct PartitionBucketMemoryStats {
@@ -365,6 +375,10 @@ struct PartitionBucketMemoryStats {
 // partitionDumpStatsGeneric for using the memory statistics.
 class WTF_EXPORT PartitionStatsDumper {
 public:
+    // Called to dump total memory used by partition, once per partition.
+    virtual void partitionDumpTotals(const char* partitionName, const PartitionMemoryStats*) = 0;
+
+    // Called to dump stats about buckets, for each bucket.
     virtual void partitionsDumpBucketStats(const char* partitionName, const PartitionBucketMemoryStats*) = 0;
 };
 
@@ -390,8 +404,8 @@ WTF_EXPORT NEVER_INLINE void* partitionAllocSlowPath(PartitionRootBase*, int, si
 WTF_EXPORT NEVER_INLINE void partitionFreeSlowPath(PartitionPage*);
 WTF_EXPORT NEVER_INLINE void* partitionReallocGeneric(PartitionRootGeneric*, void*, size_t);
 
-WTF_EXPORT void partitionDumpStats(PartitionRoot*, const char* partitionName, PartitionStatsDumper*);
-WTF_EXPORT void partitionDumpStatsGeneric(PartitionRootGeneric*, const char* partitionName, PartitionStatsDumper*);
+WTF_EXPORT void partitionDumpStats(PartitionRoot*, const char* partitionName, bool isLightDump, PartitionStatsDumper*);
+WTF_EXPORT void partitionDumpStatsGeneric(PartitionRootGeneric*, const char* partitionName, bool isLightDump, PartitionStatsDumper*);
 
 ALWAYS_INLINE PartitionFreelistEntry* partitionFreelistMask(PartitionFreelistEntry* ptr)
 {

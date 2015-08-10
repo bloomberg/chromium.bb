@@ -16,30 +16,59 @@ namespace {
 
 using namespace WTF;
 
+String getPartitionDumpName(const char* partitionName)
+{
+    return String::format("partition_alloc/thread_%lu/%s", static_cast<unsigned long>(WTF::currentThread()), partitionName);
+}
+
 // This class is used to invert the dependency of PartitionAlloc on the
 // PartitionAllocMemoryDumpProvider. This implements an interface that will
 // be called with memory statistics for each bucket in the allocator.
 class PartitionStatsDumperImpl final : public PartitionStatsDumper {
 public:
-    explicit PartitionStatsDumperImpl(WebProcessMemoryDump* memoryDump)
-        : m_memoryDump(memoryDump), m_uid(0) { }
+    PartitionStatsDumperImpl(WebProcessMemoryDump* memoryDump, WebMemoryDumpLevelOfDetail levelOfDetail)
+        : m_memoryDump(memoryDump)
+        , m_levelOfDetail(levelOfDetail)
+        , m_uid(0) { }
 
     // PartitionStatsDumper implementation.
+    void partitionDumpTotals(const char* partitionName, const PartitionMemoryStats*) override;
     void partitionsDumpBucketStats(const char* partitionName, const PartitionBucketMemoryStats*) override;
 
 private:
     WebProcessMemoryDump* m_memoryDump;
+    WebMemoryDumpLevelOfDetail m_levelOfDetail;
     size_t m_uid;
 };
+
+void PartitionStatsDumperImpl::partitionDumpTotals(const char* partitionName, const PartitionMemoryStats* memoryStats)
+{
+    String dumpName = getPartitionDumpName(partitionName);
+    WebMemoryAllocatorDump* allocatorDump = m_memoryDump->createMemoryAllocatorDump(dumpName);
+    allocatorDump->AddScalar("size", "bytes", memoryStats->totalMmappedBytes);
+    allocatorDump->AddScalar("active_size", "bytes", memoryStats->totalActiveBytes);
+    allocatorDump->AddScalar("resident_size", "bytes", memoryStats->totalResidentBytes);
+    allocatorDump->AddScalar("decommittable_size", "bytes", memoryStats->totalDecommittableBytes);
+    allocatorDump->AddScalar("discardable_size", "bytes", memoryStats->totalDiscardableBytes);
+
+    // If detailed dumps, allocated_objects size will be aggregated from the
+    // children.
+    if (m_levelOfDetail == WebMemoryDumpLevelOfDetail::High)
+        return;
+
+    dumpName = dumpName + "/allocated_objects";
+    WebMemoryAllocatorDump* objectsDump = m_memoryDump->createMemoryAllocatorDump(dumpName);
+    objectsDump->AddScalar("size", "bytes", memoryStats->totalActiveBytes);
+}
 
 void PartitionStatsDumperImpl::partitionsDumpBucketStats(const char* partitionName, const PartitionBucketMemoryStats* memoryStats)
 {
     ASSERT(memoryStats->isValid);
-    String dumpName;
+    String dumpName = getPartitionDumpName(partitionName);
     if (memoryStats->isDirectMap)
-        dumpName = String::format("partition_alloc/thread_%lu/%s/directMap_%lu", static_cast<unsigned long>(WTF::currentThread()), partitionName, static_cast<unsigned long>(++m_uid));
+        dumpName.append(String::format("/directMap_%lu", static_cast<unsigned long>(++m_uid)));
     else
-        dumpName = String::format("partition_alloc/thread_%lu/%s/bucket_%u", static_cast<unsigned long>(WTF::currentThread()), partitionName, static_cast<unsigned>(memoryStats->bucketSlotSize));
+        dumpName.append(String::format("/bucket_%u", static_cast<unsigned>(memoryStats->bucketSlotSize)));
 
     WebMemoryAllocatorDump* allocatorDump = m_memoryDump->createMemoryAllocatorDump(dumpName);
     allocatorDump->AddScalar("size", "bytes", memoryStats->residentBytes);
@@ -69,12 +98,10 @@ PartitionAllocMemoryDumpProvider* PartitionAllocMemoryDumpProvider::instance()
 
 bool PartitionAllocMemoryDumpProvider::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, blink::WebProcessMemoryDump* memoryDump)
 {
-    // TODO(ssid): Use levelOfDetail to create light dumps when requested (crbug.com/499731).
-
-    PartitionStatsDumperImpl partitionStatsDumper(memoryDump);
+    PartitionStatsDumperImpl partitionStatsDumper(memoryDump, levelOfDetail);
 
     // This method calls memoryStats.partitionsDumpBucketStats with memory statistics.
-    WTF::Partitions::dumpMemoryStats(&partitionStatsDumper);
+    WTF::Partitions::dumpMemoryStats(levelOfDetail == WebMemoryDumpLevelOfDetail::Low, &partitionStatsDumper);
     return true;
 }
 

@@ -96,7 +96,7 @@ public:
 
     static void reportMemoryUsageHistogram();
 
-    static void dumpMemoryStats(PartitionStatsDumper*);
+    static void dumpMemoryStats(bool isLightDump, PartitionStatsDumper*);
 
     ALWAYS_INLINE static void* bufferMalloc(size_t n)
     {

@@ -110,16 +110,16 @@ void Partitions::reportMemoryUsageHistogram()
     }
 }
 
-void Partitions::dumpMemoryStats(PartitionStatsDumper* partitionStatsDumper)
+void Partitions::dumpMemoryStats(bool isLightDump, PartitionStatsDumper* partitionStatsDumper)
 {
     // Object model and rendering partitions are not thread safe and can be
     // accessed only on the main thread.
     ASSERT(isMainThread());
 
-    partitionDumpStatsGeneric(fastMallocPartition(), "fast_malloc_partition", partitionStatsDumper);
-    partitionDumpStatsGeneric(bufferPartition(), "buffer_partition", partitionStatsDumper);
-    partitionDumpStats(nodePartition(), "object_model_partition", partitionStatsDumper);
-    partitionDumpStats(layoutPartition(), "layout_partition", partitionStatsDumper);
+    partitionDumpStatsGeneric(fastMallocPartition(), "fast_malloc_partition", isLightDump, partitionStatsDumper);
+    partitionDumpStatsGeneric(bufferPartition(), "buffer_partition", isLightDump, partitionStatsDumper);
+    partitionDumpStats(nodePartition(), "node_partition", isLightDump, partitionStatsDumper);
+    partitionDumpStats(layoutPartition(), "layout_partition", isLightDump, partitionStatsDumper);
 }
 
 } // namespace WTF

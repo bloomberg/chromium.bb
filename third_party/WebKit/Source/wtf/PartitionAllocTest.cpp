@@ -209,7 +209,18 @@ class MockPartitionStatsDumper : public PartitionStatsDumper {
 public:
     MockPartitionStatsDumper()
         : m_totalResidentBytes(0)
-        , m_totalActiveBytes(0) { }
+        , m_totalActiveBytes(0)
+        , m_totalDecommittableBytes(0)
+        , m_totalDiscardableBytes(0) { }
+
+    void partitionDumpTotals(const char* partitionName, const PartitionMemoryStats* memoryStats) override
+    {
+        EXPECT_GE(memoryStats->totalMmappedBytes, memoryStats->totalResidentBytes);
+        EXPECT_EQ(m_totalResidentBytes, memoryStats->totalResidentBytes);
+        EXPECT_EQ(m_totalActiveBytes, memoryStats->totalActiveBytes);
+        EXPECT_EQ(m_totalDecommittableBytes, memoryStats->totalDecommittableBytes);
+        EXPECT_EQ(m_totalDiscardableBytes, memoryStats->totalDiscardableBytes);
+    }
 
     void partitionsDumpBucketStats(const char* partitionName, const PartitionBucketMemoryStats* memoryStats) override
     {
@@ -219,6 +230,8 @@ public:
         m_bucketStats.append(*memoryStats);
         m_totalResidentBytes += memoryStats->residentBytes;
         m_totalActiveBytes += memoryStats->activeBytes;
+        m_totalDecommittableBytes += memoryStats->decommittableBytes;
+        m_totalDiscardableBytes += memoryStats->discardableBytes;
     }
 
     bool IsMemoryAllocationRecorded()
@@ -238,6 +251,8 @@ public:
 private:
     size_t m_totalResidentBytes;
     size_t m_totalActiveBytes;
+    size_t m_totalDecommittableBytes;
+    size_t m_totalDiscardableBytes;
 
     Vector<PartitionBucketMemoryStats> m_bucketStats;
 };
@@ -1349,7 +1364,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
     {
         void* ptr = partitionAlloc(allocator.root(), kTestAllocSize);
         MockPartitionStatsDumper mockStatsDumper;
-        partitionDumpStats(allocator.root(), "mock_allocator", &mockStatsDumper);
+        partitionDumpStats(allocator.root(), "mock_allocator", false /* detailed dump */, &mockStatsDumper);
         EXPECT_TRUE(mockStatsDumper.IsMemoryAllocationRecorded());
 
         partitionFree(ptr);
@@ -1360,7 +1375,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
         void* genericPtr = partitionAllocGeneric(genericAllocator.root(), 2048 - kExtraAllocSize);
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
-            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", false /* detailed dump */, &mockStatsDumperGeneric);
             EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
 
             const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(2048);
@@ -1381,7 +1396,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
 
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
-            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", false /* detailed dump */, &mockStatsDumperGeneric);
             EXPECT_FALSE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
 
             const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(2048);
@@ -1402,7 +1417,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
 
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
-            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", false /* detailed dump */, &mockStatsDumperGeneric);
             EXPECT_FALSE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
 
             const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(2048);
@@ -1434,7 +1449,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
 
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
-            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", false /* detailed dump */, &mockStatsDumperGeneric);
             EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
 
             const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(kPartitionPageSize);
@@ -1464,7 +1479,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
 
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
-            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", false /* detailed dump */, &mockStatsDumperGeneric);
             EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
 
             const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(realSizeSmaller);
@@ -1513,7 +1528,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
 
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
-            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", false /* detailed dump */, &mockStatsDumperGeneric);
             EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
 
             size_t slotSize = 65536 + (65536 / kGenericNumBucketsPerOrder);
@@ -1536,7 +1551,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
 
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
-            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", false /* detailed dump */, &mockStatsDumperGeneric);
             EXPECT_FALSE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
 
             size_t slotSize = 65536 + (65536 / kGenericNumBucketsPerOrder);
@@ -1559,7 +1574,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
 
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
-            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", false /* detailed dump */, &mockStatsDumperGeneric);
             EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
 
             size_t slotSize = 65536 + (65536 / kGenericNumBucketsPerOrder);
@@ -1593,7 +1608,7 @@ TEST(PartitionAllocTest, Purge)
     partitionFreeGeneric(genericAllocator.root(), ptr);
     {
         MockPartitionStatsDumper mockStatsDumperGeneric;
-        partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+        partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", false /* detailed dump */, &mockStatsDumperGeneric);
         EXPECT_FALSE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
 
         const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(2048);
@@ -1605,7 +1620,7 @@ TEST(PartitionAllocTest, Purge)
     partitionPurgeMemoryGeneric(genericAllocator.root(), PartitionPurgeDecommitEmptyPages);
     {
         MockPartitionStatsDumper mockStatsDumperGeneric;
-        partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+        partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", false /* detailed dump */, &mockStatsDumperGeneric);
         EXPECT_FALSE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
 
         const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(2048);
@@ -1695,7 +1710,7 @@ TEST(PartitionAllocTest, PurgeDiscardable)
         EXPECT_EQ(2u, page->numUnprovisionedSlots);
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
-            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", false /* detailed dump */, &mockStatsDumperGeneric);
             EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
 
             const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(kSystemPageSize);
@@ -1720,7 +1735,7 @@ TEST(PartitionAllocTest, PurgeDiscardable)
         partitionFreeGeneric(genericAllocator.root(), ptr1);
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
-            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", false /* detailed dump */, &mockStatsDumperGeneric);
             EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
 
             const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(kSystemPageSize);
@@ -1748,7 +1763,7 @@ TEST(PartitionAllocTest, PurgeDiscardable)
         partitionFreeGeneric(genericAllocator.root(), ptr1);
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
-            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", false /* detailed dump */, &mockStatsDumperGeneric);
             EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
 
             const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(9216);
@@ -1781,7 +1796,7 @@ TEST(PartitionAllocTest, PurgeDiscardable)
         ptr1 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), (61 * kSystemPageSize) - kExtraAllocSize));
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
-            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", false /* detailed dump */, &mockStatsDumperGeneric);
             EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
 
             const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(64 * kSystemPageSize);
@@ -1824,7 +1839,7 @@ TEST(PartitionAllocTest, PurgeDiscardable)
 
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
-            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", false /* detailed dump */, &mockStatsDumperGeneric);
             EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
 
             const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(kSystemPageSize);
@@ -1875,7 +1890,7 @@ TEST(PartitionAllocTest, PurgeDiscardable)
 
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
-            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", false /* detailed dump */, &mockStatsDumperGeneric);
             EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
 
             const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(kSystemPageSize);

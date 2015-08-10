@@ -1305,7 +1305,7 @@ static void partitionDumpBucketStats(PartitionBucketMemoryStats* statsOut, const
     }
 }
 
-void partitionDumpStatsGeneric(PartitionRootGeneric* partition, const char* partitionName, PartitionStatsDumper* partitionStatsDumper)
+void partitionDumpStatsGeneric(PartitionRootGeneric* partition, const char* partitionName, bool isLightDump, PartitionStatsDumper* partitionStatsDumper)
 {
     PartitionBucketMemoryStats bucketStats[kGenericNumBuckets];
     static const size_t kMaxReportableDirectMaps = 4096;
@@ -1338,10 +1338,20 @@ void partitionDumpStatsGeneric(PartitionRootGeneric* partition, const char* part
     // partitionsDumpBucketStats is called after collecting stats because it
     // can try to allocate using PartitionAllocGeneric and it can't obtain the
     // lock.
+    PartitionMemoryStats partitionStats = { 0 };
+    partitionStats.totalMmappedBytes = partition->totalSizeOfSuperPages + partition->totalSizeOfDirectMappedPages;
     for (size_t i = 0; i < kGenericNumBuckets; ++i) {
-        if (bucketStats[i].isValid)
-            partitionStatsDumper->partitionsDumpBucketStats(partitionName, &bucketStats[i]);
+        if (bucketStats[i].isValid) {
+            partitionStats.totalResidentBytes += bucketStats[i].residentBytes;
+            partitionStats.totalActiveBytes += bucketStats[i].activeBytes;
+            partitionStats.totalDecommittableBytes += bucketStats[i].decommittableBytes;
+            partitionStats.totalDiscardableBytes += bucketStats[i].discardableBytes;
+            if (!isLightDump)
+                partitionStatsDumper->partitionsDumpBucketStats(partitionName, &bucketStats[i]);
+        }
     }
+
+    size_t directMappedAllocationsTotalSize = 0;
     for (size_t i = 0; i < numDirectMappedAllocations; ++i) {
         PartitionBucketMemoryStats stats;
         memset(&stats, '\0', sizeof(stats));
@@ -1353,11 +1363,15 @@ void partitionDumpStatsGeneric(PartitionRootGeneric* partition, const char* part
         stats.bucketSlotSize = size;
         stats.activeBytes = size;
         stats.residentBytes = size;
+        directMappedAllocationsTotalSize += size;
         partitionStatsDumper->partitionsDumpBucketStats(partitionName, &stats);
     }
+    partitionStats.totalResidentBytes += directMappedAllocationsTotalSize;
+    partitionStats.totalActiveBytes += directMappedAllocationsTotalSize;
+    partitionStatsDumper->partitionDumpTotals(partitionName, &partitionStats);
 }
 
-void partitionDumpStats(PartitionRoot* partition, const char* partitionName, PartitionStatsDumper* partitionStatsDumper)
+void partitionDumpStats(PartitionRoot* partition, const char* partitionName, bool isLightDump, PartitionStatsDumper* partitionStatsDumper)
 {
     static const size_t kMaxReportableBuckets = 4096 / sizeof(void*);
     PartitionBucketMemoryStats memoryStats[kMaxReportableBuckets];
@@ -1369,10 +1383,20 @@ void partitionDumpStats(PartitionRoot* partition, const char* partitionName, Par
 
     // partitionsDumpBucketStats is called after collecting stats because it
     // can use PartitionAlloc to allocate and this can affect the statistics.
+    PartitionMemoryStats partitionStats = { 0 };
+    partitionStats.totalMmappedBytes = partition->totalSizeOfSuperPages;
+    ASSERT(!partition->totalSizeOfDirectMappedPages);
     for (size_t i = 0; i < partitionNumBuckets; ++i) {
-        if (memoryStats[i].isValid)
-            partitionStatsDumper->partitionsDumpBucketStats(partitionName, &memoryStats[i]);
+        if (memoryStats[i].isValid) {
+            partitionStats.totalResidentBytes += memoryStats[i].residentBytes;
+            partitionStats.totalActiveBytes += memoryStats[i].activeBytes;
+            partitionStats.totalDecommittableBytes += memoryStats[i].decommittableBytes;
+            partitionStats.totalDiscardableBytes += memoryStats[i].discardableBytes;
+            if (!isLightDump)
+                partitionStatsDumper->partitionsDumpBucketStats(partitionName, &memoryStats[i]);
+        }
     }
+    partitionStatsDumper->partitionDumpTotals(partitionName, &partitionStats);
 }
 
 } // namespace WTF
