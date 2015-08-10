@@ -164,8 +164,9 @@ void ShapeResult::RunInfo::setGlyphAndPositions(unsigned index,
     data.offset = FloatSize(offsetX, offsetY);
 }
 
-ShapeResult::ShapeResult(unsigned numCharacters, TextDirection direction)
+ShapeResult::ShapeResult(const Font* font, unsigned numCharacters, TextDirection direction)
     : m_width(0)
+    , m_primaryFont(const_cast<SimpleFontData*>(font->primaryFont()))
     , m_numCharacters(numCharacters)
     , m_numGlyphs(0)
     , m_direction(direction)
@@ -483,6 +484,16 @@ int ShapeResult::offsetForPosition(float targetX)
     return charactersSoFar;
 }
 
+void ShapeResult::fallbackFonts(HashSet<const SimpleFontData*>* fallback) const
+{
+    ASSERT(fallback);
+    ASSERT(m_primaryFont);
+    for (unsigned i = 0; i < m_runs.size(); ++i) {
+        if (m_runs[i] && m_runs[i]->m_fontData != m_primaryFont)
+            fallback->add(m_runs[i]->m_fontData.get());
+    }
+}
+
 unsigned ShapeResult::numberOfRunsForTesting() const
 {
     return m_runs.size();
@@ -569,17 +580,13 @@ static void normalizeCharacters(const TextRun& run, unsigned length, UChar* dest
     }
 }
 
-HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run,
-    HashSet<const SimpleFontData*>* fallbackFonts)
-    : Shaper(font, run, nullptr, fallbackFonts)
+HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run)
+    : Shaper(font, run)
     , m_normalizedBufferLength(0)
     , m_wordSpacingAdjustment(font->fontDescription().wordSpacing())
     , m_letterSpacing(font->fontDescription().letterSpacing())
     , m_expansionOpportunityCount(0)
 {
-    // TODO(eae): Once SimpleShaper is gone the ownership of this should shift
-    // to HarfBuzzShaper.
-    ASSERT(fallbackFonts);
     m_normalizedBuffer = adoptArrayPtr(new UChar[m_textRun.length() + 1]);
     normalizeCharacters(m_textRun, m_textRun.length(), m_normalizedBuffer.get(), &m_normalizedBufferLength);
     setExpansion(m_textRun.expansion());
@@ -940,8 +947,6 @@ void HarfBuzzShaper::addHarfBuzzRun(unsigned startCharacter,
 {
     ASSERT(endCharacter > startCharacter);
     ASSERT(script != USCRIPT_INVALID_CODE);
-    if (m_fallbackFonts)
-        trackNonPrimaryFallbackFont(fontData);
 
     hb_direction_t direction = TextDirectionToHBDirection(m_textRun.direction(),
         m_font->fontDescription().orientation(), fontData);
@@ -982,7 +987,7 @@ static inline void addToHarfBuzzBufferInternal(hb_buffer_t* buffer,
 
 PassRefPtr<ShapeResult> HarfBuzzShaper::shapeHarfBuzzRuns()
 {
-    RefPtr<ShapeResult> result = ShapeResult::create(
+    RefPtr<ShapeResult> result = ShapeResult::create(m_font,
         m_normalizedBufferLength, m_textRun.direction());
     HarfBuzzScopedPtr<hb_buffer_t> harfBuzzBuffer(hb_buffer_create(), hb_buffer_destroy);
 
@@ -1100,8 +1105,6 @@ void HarfBuzzShaper::shapeResult(ShapeResult* result, unsigned index,
     result->m_width += run->m_width;
     result->m_numGlyphs += numGlyphs;
     result->m_runs[index] = run.release();
-    for (auto& fallbackFont : *m_fallbackFonts)
-        result->m_fallbackFonts.add(const_cast<SimpleFontData*>(fallbackFont));
 }
 
 float HarfBuzzShaper::adjustSpacing(ShapeResult::RunInfo* run, size_t glyphIndex, unsigned currentCharacterIndex, float& offset, float& totalAdvance)

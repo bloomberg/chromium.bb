@@ -47,7 +47,7 @@ TEST_F(CachingWordShaperTest, LatinLeftToRightByWord)
     TextRun textRun(reinterpret_cast<const LChar*>("ABC DEF."), 8);
 
     RefPtr<ShapeResult> result;
-    CachingWordShapeIterator iterator(cache, textRun, font, fallbackFonts);
+    CachingWordShapeIterator iterator(cache, textRun, font);
     ASSERT_TRUE(iterator.next(&result));
     ASSERT_TRUE(result->runInfoForTesting(0, startIndex, numGlyphs, script));
     EXPECT_EQ(0u, startIndex);
@@ -76,7 +76,7 @@ TEST_F(CachingWordShaperTest, CommonAccentLeftToRightByWord)
 
     unsigned offset = 0;
     RefPtr<ShapeResult> result;
-    CachingWordShapeIterator iterator(cache, textRun, font, fallbackFonts);
+    CachingWordShapeIterator iterator(cache, textRun, font);
     ASSERT_TRUE(iterator.next(&result));
     ASSERT_TRUE(result->runInfoForTesting(0, startIndex, numGlyphs, script));
     EXPECT_EQ(0u, offset + startIndex);

@@ -37,9 +37,8 @@ namespace blink {
 class CachingWordShapeIterator {
 public:
     CachingWordShapeIterator(ShapeCache* cache, const TextRun& run,
-        const Font* font, HashSet<const SimpleFontData*>* fallbackFonts)
-        : m_shapeCache(cache), m_textRun(run), m_font(font)
-        , m_fallbackFonts(fallbackFonts), m_startIndex(0)
+        const Font* font)
+        : m_shapeCache(cache), m_textRun(run), m_font(font), m_startIndex(0)
     {
         ASSERT(font);
         const FontDescription& fontDescription = font->fontDescription();
@@ -63,7 +62,7 @@ public:
         if (!m_shapeByWord) {
             if (m_startIndex)
                 return false;
-            *wordResult = shapeWord(m_textRun, m_font, m_fallbackFonts);
+            *wordResult = shapeWord(m_textRun, m_font);
             m_startIndex = 1;
             return *wordResult;
         }
@@ -72,7 +71,7 @@ public:
         if (m_startIndex < length) {
             if (m_textRun[m_startIndex] == spaceCharacter) {
                 TextRun wordRun = m_textRun.subRun(m_startIndex, 1);
-                *wordResult = shapeWord(wordRun, m_font, m_fallbackFonts);
+                *wordResult = shapeWord(wordRun, m_font);
                 m_startIndex++;
                 return true;
             }
@@ -81,7 +80,7 @@ public:
                 if (i == length || m_textRun[i] == spaceCharacter) {
                     TextRun wordRun = m_textRun.subRun(m_startIndex,
                         i - m_startIndex);
-                    *wordResult = shapeWord(wordRun, m_font, m_fallbackFonts);
+                    *wordResult = shapeWord(wordRun, m_font);
                     m_startIndex = i;
                     return true;
                 }
@@ -91,28 +90,15 @@ public:
     }
 
 private:
-    void setFallbackFonts(const ShapeResult* wordResult,
-        HashSet<const SimpleFontData*>* fallbackFonts)
-    {
-        if (fallbackFonts) {
-            for (auto& fallbackFont : *wordResult->fallbackFonts())
-                fallbackFonts->add(fallbackFont.get());
-        }
-    }
-
-    PassRefPtr<ShapeResult> shapeWord(const TextRun& wordRun,
-        const Font* font, HashSet<const SimpleFontData*>* fallbackFonts)
+    PassRefPtr<ShapeResult> shapeWord(const TextRun& wordRun, const Font* font)
     {
         ShapeCacheEntry* cacheEntry = m_wordResultCachable
             ? m_shapeCache->add(wordRun, ShapeCacheEntry())
             : nullptr;
-        if (cacheEntry && cacheEntry->m_shapeResult) {
-            setFallbackFonts(cacheEntry->m_shapeResult.get(), fallbackFonts);
+        if (cacheEntry && cacheEntry->m_shapeResult)
             return cacheEntry->m_shapeResult;
-        }
 
-        HashSet<const SimpleFontData*> fallbackFontsForWord;
-        HarfBuzzShaper shaper(font, wordRun, &fallbackFontsForWord);
+        HarfBuzzShaper shaper(font, wordRun);
         RefPtr<ShapeResult> shapeResult = shaper.shapeResult();
         if (!shapeResult)
             return nullptr;
@@ -120,14 +106,12 @@ private:
         if (cacheEntry)
             cacheEntry->m_shapeResult = shapeResult;
 
-        setFallbackFonts(shapeResult.get(), fallbackFonts);
         return shapeResult.release();
     }
 
     ShapeCache* m_shapeCache;
     const TextRun& m_textRun;
     const Font* m_font;
-    HashSet<const SimpleFontData*>* m_fallbackFonts;
     unsigned m_startIndex : 30;
     unsigned m_wordResultCachable : 1;
     unsigned m_shapeByWord : 1;

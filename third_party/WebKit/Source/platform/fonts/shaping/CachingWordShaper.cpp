@@ -54,12 +54,14 @@ float CachingWordShaper::width(const Font* font, const TextRun& run,
 {
     float width = 0;
     RefPtr<ShapeResult> wordResult;
-    CachingWordShapeIterator iterator(m_shapeCache.get(), run, font, fallbackFonts);
+    CachingWordShapeIterator iterator(m_shapeCache.get(), run, font);
     while (iterator.next(&wordResult)) {
         if (wordResult) {
             width += wordResult->width();
             if (glyphBounds)
                 glyphBounds->unite(wordResult->bounds());
+            if (fallbackFonts)
+                wordResult->fallbackFonts(fallbackFonts);
         }
     }
 
@@ -70,13 +72,15 @@ static inline float shapeResultsForRun(ShapeCache* shapeCache, const Font* font,
     const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts,
     Vector<RefPtr<ShapeResult>>* results)
 {
-    CachingWordShapeIterator iterator(shapeCache, run, font, fallbackFonts);
+    CachingWordShapeIterator iterator(shapeCache, run, font);
     RefPtr<ShapeResult> wordResult;
     float totalWidth = 0;
     while (iterator.next(&wordResult)) {
         if (wordResult) {
             results->append(wordResult);
             totalWidth += wordResult->width();
+            if (fallbackFonts)
+                wordResult->fallbackFonts(fallbackFonts);
         }
     }
     return totalWidth;

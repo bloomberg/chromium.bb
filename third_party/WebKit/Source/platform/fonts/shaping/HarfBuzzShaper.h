@@ -53,9 +53,10 @@ class HarfBuzzShaper;
 
 class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 public:
-    static PassRefPtr<ShapeResult> create(unsigned numCharacters, TextDirection direction)
+    static PassRefPtr<ShapeResult> create(const Font* font,
+        unsigned numCharacters, TextDirection direction)
     {
-        return adoptRef(new ShapeResult(numCharacters, direction));
+        return adoptRef(new ShapeResult(font, numCharacters, direction));
     }
     ~ShapeResult();
 
@@ -63,10 +64,7 @@ public:
     FloatRect bounds() { return m_glyphBoundingBox; }
     int offsetForPosition(float targetX);
     unsigned numCharacters() const { return m_numCharacters; }
-    const HashSet<RefPtr<SimpleFontData>>* fallbackFonts() const
-    {
-        return &m_fallbackFonts;
-    }
+    void fallbackFonts(HashSet<const SimpleFontData*>*) const;
 
     static float fillGlyphBuffer(Vector<RefPtr<ShapeResult>>&,
         GlyphBuffer*, const TextRun&, unsigned from, unsigned to);
@@ -86,7 +84,7 @@ public:
 private:
     struct RunInfo;
 
-    ShapeResult(unsigned numCharacters, TextDirection);
+    ShapeResult(const Font*, unsigned numCharacters, TextDirection);
 
     template<TextDirection>
     float fillGlyphBufferForRun(GlyphBuffer*, const RunInfo*,
@@ -99,7 +97,7 @@ private:
     float m_width;
     FloatRect m_glyphBoundingBox;
     Vector<OwnPtr<RunInfo>> m_runs;
-    HashSet<RefPtr<SimpleFontData>> m_fallbackFonts;
+    RefPtr<SimpleFontData> m_primaryFont;
 
     unsigned m_numCharacters;
     unsigned m_numGlyphs : 31;
@@ -114,8 +112,7 @@ private:
 
 class PLATFORM_EXPORT HarfBuzzShaper final : public Shaper {
 public:
-    HarfBuzzShaper(const Font*, const TextRun&,
-        HashSet<const SimpleFontData*>* fallbackFonts);
+    HarfBuzzShaper(const Font*, const TextRun&);
     PassRefPtr<ShapeResult> shapeResult();
     ~HarfBuzzShaper() { }
 
