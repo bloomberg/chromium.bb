@@ -53,6 +53,7 @@ PluginPowerSaverBrowserTest.BackgroundTabPlugins
 # https://crbug.com/504885
 # The test takes too long.
 SmartSessionRestoreMRUTest.PRE_CorrectLoadingOrder
+SmartSessionRestoreMRUTest.CorrectLoadingOrder
 
 # https://crbug.com/516368
 PushMessagingBrowserTest.PushEventSuccess
