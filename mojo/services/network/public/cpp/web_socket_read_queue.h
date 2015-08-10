@@ -23,7 +23,8 @@ class WebSocketReadQueue {
   explicit WebSocketReadQueue(DataPipeConsumerHandle handle);
   ~WebSocketReadQueue();
 
-  void Read(uint32_t num_bytes, base::Callback<void(const char*)> callback);
+  void Read(uint32_t num_bytes,
+            const base::Callback<void(const char*)>& callback);
 
  private:
   struct Operation;
