@@ -603,12 +603,15 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
 
   if (fetch_result == SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK) {
     ServiceWorkerMetrics::RecordFallbackedRequestMode(request_mode_);
-    // When the request_mode is |CORS| or |CORS-with-forced-preflight| we can't
-    // simply fallback to the network in the browser process. It is because the
-    // CORS preflight logic is implemented in the renderer. So we returns a
-    // fall_back_required response to the renderer.
-    if (request_mode_ == FETCH_REQUEST_MODE_CORS ||
-        request_mode_ == FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT) {
+    // When the request_mode is |CORS| or |CORS-with-forced-preflight| and the
+    // origin of the request URL is different from the security origin of the
+    // document, we can't simply fallback to the network in the browser process.
+    // It is because the CORS preflight logic is implemented in the renderer. So
+    // we returns a fall_back_required response to the renderer.
+    if ((request_mode_ == FETCH_REQUEST_MODE_CORS ||
+         request_mode_ == FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT) &&
+        provider_host_->document_url().GetOrigin() !=
+            request()->url().GetOrigin()) {
       fall_back_required_ = true;
       RecordResult(ServiceWorkerMetrics::REQUEST_JOB_FALLBACK_FOR_CORS);
       CreateResponseHeader(
