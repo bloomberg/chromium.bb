@@ -929,7 +929,7 @@ TEST_F('HistoryWebUIRealBackendTest',
     'DISABLED_menuButtonActivatesOneRow', function() {
   var entries = document.querySelectorAll('.entry');
   assertEquals(3, entries.length);
-  assertTrue(entries[0].classList.contains('active'));
+  assertTrue(entries[0].classList.contains(cr.ui.FocusRow.ACTIVE_CLASS));
   assertTrue($('action-menu').hidden);
 
   // Show the menu via mousedown on the menu button.
@@ -937,9 +937,9 @@ TEST_F('HistoryWebUIRealBackendTest',
   menuButton.dispatchEvent(new MouseEvent('mousedown'));
   expectFalse($('action-menu').hidden);
 
-  // Check that the 'active' item has changed.
-  expectTrue(entries[2].classList.contains('active'));
-  expectFalse(entries[0].classList.contains('active'));
+  // Check that the active item has changed.
+  expectTrue(entries[2].classList.contains(cr.ui.FocusRow.ACTIVE_CLASS));
+  expectFalse(entries[0].classList.contains(cr.ui.FocusRow.ACTIVE_CLASS));
 
   testDone();
 });
@@ -947,7 +947,7 @@ TEST_F('HistoryWebUIRealBackendTest',
 TEST_F('HistoryWebUIRealBackendTest', 'shiftClickActivatesOneRow', function() {
   var entries = document.querySelectorAll('.entry');
   assertEquals(3, entries.length);
-  assertTrue(entries[0].classList.contains('active'));
+  assertTrue(entries[0].classList.contains(cr.ui.FocusRow.ACTIVE_CLASS));
 
   entries[0].visit.checkBox.focus();
   assertEquals(entries[0].visit.checkBox, document.activeElement);
@@ -962,8 +962,8 @@ TEST_F('HistoryWebUIRealBackendTest', 'shiftClickActivatesOneRow', function() {
   // Focus shouldn't have changed, but the checkbox should toggle.
   expectEquals(entries[0].visit.checkBox, document.activeElement);
 
-  expectTrue(entries[0].classList.contains('active'));
-  expectFalse(entries[2].classList.contains('active'));
+  expectTrue(entries[0].classList.contains(cr.ui.FocusRow.ACTIVE_CLASS));
+  expectFalse(entries[2].classList.contains(cr.ui.FocusRow.ACTIVE_CLASS));
 
   var shiftDown = new MouseEvent('mousedown', {shiftKey: true, bubbles: true});
   entries[2].visit.checkBox.dispatchEvent(shiftDown);
@@ -973,8 +973,8 @@ TEST_F('HistoryWebUIRealBackendTest', 'shiftClickActivatesOneRow', function() {
   // --test-launcher-jobs=2). Simulate this. TODO(dbeam): fix instead.
   cr.dispatchSimpleEvent(document.activeElement, 'focusin', true, true);
 
-  expectFalse(entries[0].classList.contains('active'));
-  expectTrue(entries[2].classList.contains('active'));
+  expectFalse(entries[0].classList.contains(cr.ui.FocusRow.ACTIVE_CLASS));
+  expectTrue(entries[2].classList.contains(cr.ui.FocusRow.ACTIVE_CLASS));
 
   testDone();
 });

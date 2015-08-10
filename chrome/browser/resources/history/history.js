@@ -918,11 +918,6 @@ HistoryFocusRow.prototype = {
   __proto__: cr.ui.FocusRow.prototype,
 
   /** @override */
-  onActiveStateChanged: function(state) {
-    this.classList.toggle('active', state);
-  },
-
-  /** @override */
   getEquivalentElement: function(element) {
     if (this.contains(element))
       return element;

@@ -422,7 +422,7 @@ html[dir='rtl'] .site-domain {
   min-width: 0;
 }
 
-.active :-webkit-any(.entry-box, .site-domain-row) {
+.focus-row-active :-webkit-any(.entry-box, .site-domain-row) {
   background-color: rgba(0, 0, 0, .05);
 }
 

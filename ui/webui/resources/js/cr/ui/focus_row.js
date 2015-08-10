@@ -83,13 +83,6 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Called when the row's active state changes and it is added/removed from
-     * the focus order.
-     * @param {boolean} state Whether the row has become active or inactive.
-     */
-    onActiveStateChanged: function(state) {},
-
-    /**
      * Find the element that best matches |sampleElement|.
      * @param {Element} sampleElement An element from a row of the same type
      *     which previously held focus.
@@ -145,7 +138,6 @@ cr.define('cr.ui', function() {
       });
 
       this.classList.toggle(FocusRow.ACTIVE_CLASS, active);
-      this.onActiveStateChanged(active);
     },
 
     /** Dereferences nodes and removes event handlers. */
