@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">상위 폴더</translation>
 <translation id="2354750644801399986">'추적 안함'</translation>
 <translation id="2351097562818989364">번역 설정이 재설정되었습니다.</translation>
+<translation id="1557201757634521564">인코딩 자동 감지</translation>
 <translation id="4307992518367153382">기본설정</translation>
 <translation id="8007176423574883786">기기에 대해 사용 중지됨</translation>
 <translation id="119944043368869598">모두 삭제</translation>
@@ -301,6 +302,7 @@
 <translation id="1197267115302279827">북마크 이동</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK"/>Android 설정<ph name="END_LINK"/>에서 Chrome 관련 권한을 설정합니다.</translation>
 <translation id="583891442612896534">Chrome이 Google 서버에 접속할 수 없어 데이터를 압축하지 못했습니다. 데이터 절약이 제한적일 수 있습니다.</translation>
+<translation id="6324360525379265737">문자 인코딩을 자동으로 결정</translation>
 <translation id="4827948050554950725">신용카드 추가</translation>
 <translation id="2316129865977710310">아니요, 괜찮습니다.</translation>
 <translation id="4278390842282768270">허용됨</translation>
@@ -376,8 +378,10 @@
 <translation id="699220179437400583">발생 가능성이 있는 보안 문제의 세부정보를 자동으로 Google에 보고합니다.</translation>
 <translation id="5899349522111170522">새 파일 만들기</translation>
 <translation id="3158619413803296679">북마크 선택</translation>
+<translation id="1832521218263067499">보안 사고</translation>
 <translation id="6138140242378429169">페이지를 모바일 친화적으로 바꾸세요.</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> 삭제됨</translation>
+<translation id="1641113438599504367">안전 브라우징</translation>
 <translation id="2360035970720276770">'http'나 'https' URL만 다운로드할 수 있습니다.</translation>
 <translation id="7926911226829060241">열린 북마크, 방문 기록, 비밀번호 등이 Google 계정과 동기화 중입니다.</translation>
 <translation id="4871370605780490696">북마크 추가</translation>
@@ -441,6 +445,7 @@
 <translation id="1285320974508926690">이 사이트 번역 안함</translation>
 <translation id="4165986682804962316">사이트 설정</translation>
 <translation id="3672452749423051839">탐색 오류 시 추천사항 표시</translation>
+<translation id="307329814453917357">Google 번역을 사용하여 페이지를 번역할 것을 제안합니다.</translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1"/>님과 <ph name="PARENT_NAME_2"/>님이 관리하는 계정입니다.</translation>
 <translation id="780301667611848630">아니요, 괜찮습니다.</translation>
 <translation id="5164482624172255778">다음에 Chrome에서 이 사이트의 <ph name="LANGUAGE"/> 페이지를 번역하시겠습니까?</translation>

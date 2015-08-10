@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">マイクとカメラを使用する</translation>
 <translation id="2857834222104759979">マニフェスト ファイルが無効です。</translation>
 <translation id="6384275966486438344">検索設定を次に変更します: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">USB デバイスの選択</translation>
 <translation id="1445572445564823378">この拡張機能によって <ph name="PRODUCT_NAME"/> の速度が低下しています。<ph name="PRODUCT_NAME"/> のパフォーマンスを回復するには、この拡張機能を無効にしてください。</translation>
 <translation id="7003844668372540529">不明な商品（<ph name="PRODUCT_ID"/>、ベンダー: <ph name="VENDOR_NAME"/>）</translation>
 <translation id="1033780634303702874">シリアル デバイスへのアクセス</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">MIME ハンドラ: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">システムでペア設定されている Bluetooth デバイスの情報へのアクセスと、近くにある Bluetooth デバイスの検出。</translation>
 <translation id="8749863574775030885">不明なベンダーの USB デバイスへのアクセス</translation>
-<translation id="781637217073033149">HID デバイスの選択</translation>
 <translation id="3115238746683532089">不明な商品（<ph name="PRODUCT_ID"/>、ベンダー: <ph name="VENDOR_ID"/>、シリアル番号: <ph name="SERIAL_NUMBER"/>）</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/>、提供元: <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">バックグラウンド スクリプト「<ph name="BACKGROUND_SCRIPT"/>」を読み込めませんでした。</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">拡張機能の解凍機能</translation>
 <translation id="149347756975725155">拡張機能アイコン「<ph name="ICON"/>」を読み込むことができませんでした。</translation>
 <translation id="8825366169884721447">ネットワーク リクエストのリクエスト ヘッダー「<ph name="HEADER_NAME"/>」への変更内容が別の拡張機能（<ph name="EXTENSION_NAME"/>）と競合したため、この拡張機能はヘッダーを変更できませんでした。</translation>
-<translation id="4776856853352853275">USB デバイスの選択</translation>
 <translation id="6731255991101203740">解凍用のディレクトリを作成できませんでした: <ph name="DIRECTORY_PATH"/></translation>
-<translation id="545850661681880228">HID デバイスの選択</translation>
 <translation id="4233778200880751280">情報ページ「<ph name="ABOUT_PAGE"/>」を読み込めませんでした。</translation>
 <translation id="388442998277590542">オプション ページ「<ph name="OPTIONS_PAGE"/>」を読み込むことができませんでした。</translation>
 <translation id="5127881134400491887">ネットワーク接続の管理</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">ネットワーク接続の設定</translation>
 <translation id="7154130902455071009">スタート ページを次に変更します: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">これらの USB デバイスへのアクセス</translation>
-<translation id="2677911863018634147">アプリケーション「<ph name="APP_NAME"/>」がデバイスへのアクセスをリクエストしています。</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/>、<ph name="WEBSITE_2"/> 上にある自分のデータの読み取りと変更</translation>
 <translation id="2159915644201199628">画像をデコードできませんでした: <ph name="IMAGE_NAME"/></translation>
 <translation id="2048182445208425546">ユーザーのネットワーク トラフィックへのアクセス</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">USB 経由での <ph name="PRODUCT_NAME_AND_VENDOR"/> へのアクセス</translation>
 <translation id="1803557475693955505">背景ページ「<ph name="BACKGROUND_PAGE"/>」を読み込むことができませんでした。</translation>
 <translation id="2988488679308982380">パッケージをインストールできませんでした: <ph name="ERROR_CODE"/></translation>
-<translation id="5751530153776468604">アプリケーション「<ph name="APP_NAME"/>」がデバイスへのアクセスをリクエストしています。</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/>（ベンダー: <ph name="VENDOR_ID"/>、シリアル番号: <ph name="SERIAL_NUMBER"/>）</translation>
 <translation id="7972881773422714442">オプション: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">パッケージが無効です。詳細: <ph name="ERROR_MESSAGE"/></translation>

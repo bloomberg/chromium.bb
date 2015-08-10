@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Utilizează microfonul și camera foto</translation>
 <translation id="2857834222104759979">Fișierul manifest nu este valid.</translation>
 <translation id="6384275966486438344">Schimbați setările de căutare la: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Selectează un dispozitiv USB</translation>
 <translation id="1445572445564823378">Această extensie încetinește <ph name="PRODUCT_NAME"/>. Vă recomandăm să o dezactivați pentru a restabili performanțele produsului <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7003844668372540529">Produs necunoscut <ph name="PRODUCT_ID"/> de la <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Accesează dispozitivele seriale</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Handler MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Accesează informațiile despre dispozitivele Bluetooth conectate cu sistemul dvs. și descoperă dispozitivele Bluetooth din apropiere.</translation>
 <translation id="8749863574775030885">Accesează dispozitive USB de la un producător necunoscut</translation>
-<translation id="781637217073033149">Selectează dispozitivele HID</translation>
 <translation id="3115238746683532089">Produs necunoscut <ph name="PRODUCT_ID"/> de la furnizorul <ph name="VENDOR_ID"/> (numărul de serie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> de la <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Scriptul de fundal „<ph name="BACKGROUND_SCRIPT"/>” nu a putut fi încărcat.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Instrument de despachetare a extensiilor</translation>
 <translation id="149347756975725155">Nu se poate încărca pictograma „<ph name="ICON"/>” a extensiei.</translation>
 <translation id="8825366169884721447">Această extensie nu a putut modifica antetul de solicitare „<ph name="HEADER_NAME"/>” al unei solicitări din rețea, deoarece modificarea era în conflict cu o altă extensie (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Selectează dispozitivele USB</translation>
 <translation id="6731255991101203740">Nu s-a putut crea directorul pentru dezarhivare: „<ph name="DIRECTORY_PATH"/>”</translation>
-<translation id="545850661681880228">Selectează un dispozitiv HID</translation>
 <translation id="4233778200880751280">Pagina informativă „<ph name="ABOUT_PAGE"/>” nu s-a putut încărca.</translation>
 <translation id="388442998277590542">Nu se poate încărca pagina cu opțiuni „<ph name="OPTIONS_PAGE"/>”.</translation>
 <translation id="5127881134400491887">Gestionează conexiunile de rețea</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Configurează conexiunile la rețea</translation>
 <translation id="7154130902455071009">Schimbați pagina de start la: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Accesează oricare dintre aceste dispozitive USB</translation>
-<translation id="2677911863018634147">Aplicația „<ph name="APP_NAME"/>” solicită accesul la cel puțin unul dintre dispozitivele tale.</translation>
 <translation id="6698810901424468597">Citește și modifică datele de pe <ph name="WEBSITE_1"/> și <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Imaginea nu a putut fi decodificată: „<ph name="IMAGE_NAME"/>”</translation>
 <translation id="2048182445208425546">Accesează traficul de rețea</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Accesează oricare dispozitive <ph name="PRODUCT_NAME_AND_VENDOR"/> prin USB</translation>
 <translation id="1803557475693955505">Nu se poate încărca pagina de fundal „<ph name="BACKGROUND_PAGE"/>”.</translation>
 <translation id="2988488679308982380">Nu s-a putut instala pachetul: „<ph name="ERROR_CODE"/>”</translation>
-<translation id="5751530153776468604">Aplicația „<ph name="APP_NAME"/>” solicită accesul la unul dintre dispozitivele tale.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> de la furnizorul <ph name="VENDOR_ID"/> (numărul de serie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Opțiuni: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Pachetul nu este valid. Detalii: „<ph name="ERROR_MESSAGE"/>”.</translation>

@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Dossier parent</translation>
 <translation id="2354750644801399986">Interdire le suivi</translation>
 <translation id="2351097562818989364">Les paramètres de traduction ont été réinitialisés.</translation>
+<translation id="1557201757634521564">Détecter automatiquement l'encodage</translation>
 <translation id="4307992518367153382">Options de base</translation>
 <translation id="8007176423574883786">Désactivée pour cet appareil</translation>
 <translation id="119944043368869598">Tout effacer</translation>
@@ -301,6 +302,7 @@ Appuyez sur le bouton &quot;Retour&quot; pour quitter ce mode.</translation>
 <translation id="1197267115302279827">Déplacer les favoris</translation>
 <translation id="3190152372525844641">Activer les autorisations pour Chrome dans les <ph name="BEGIN_LINK"/>paramètres Android<ph name="END_LINK"/></translation>
 <translation id="583891442612896534">Impossible de se connecter aux serveurs de Google dans Chrome pour la compression de données. Les sauvegardes de données peuvent être limitées.</translation>
+<translation id="6324360525379265737">Déterminer automatiquement l'encodage des caractères</translation>
 <translation id="4827948050554950725">Ajouter une carte de paiement</translation>
 <translation id="2316129865977710310">Non merci</translation>
 <translation id="4278390842282768270">Autorisé</translation>
@@ -377,8 +379,10 @@ Appuyez sur le bouton &quot;Retour&quot; pour quitter ce mode.</translation>
 <translation id="699220179437400583">Signaler automatiquement les incidents de sécurité potentiels à Google</translation>
 <translation id="5899349522111170522">Créer un fichier</translation>
 <translation id="3158619413803296679">Sélectionner un favori</translation>
+<translation id="1832521218263067499">Incidents de sécurité</translation>
 <translation id="6138140242378429169">Ouvrir la page adaptée aux mobiles</translation>
 <translation id="5345040418939504969">Le favori &quot;<ph name="BOOKMARK_TITLE"/>&quot; a été supprimé.</translation>
+<translation id="1641113438599504367">Navigation sécurisée</translation>
 <translation id="2360035970720276770">Seules les URL &quot;http&quot; et &quot;https&quot; peuvent être téléchargées.</translation>
 <translation id="7926911226829060241">Vos favoris ouverts, votre historique, vos mots de passe et d'autres éléments sont en cours de synchronisation avec votre compte Google.</translation>
 <translation id="4871370605780490696">Ajouter aux favoris</translation>
@@ -442,6 +446,7 @@ Les statistiques d'utilisation englobent des informations telles que les préfé
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
 <translation id="4165986682804962316">Paramètres du site</translation>
 <translation id="3672452749423051839">Suggestions en cas d'erreur de navigation</translation>
+<translation id="307329814453917357">Proposer de traduire des pages avec Google Traduction</translation>
 <translation id="2956410042958133412">Ce compte est géré par <ph name="PARENT_NAME_1"/> et <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Non merci</translation>
 <translation id="5164482624172255778">Souhaitez-vous que Google Chrome vous propose de traduire les pages de ce site rédigées en <ph name="LANGUAGE"/> lors de votre prochaine visite ?</translation>

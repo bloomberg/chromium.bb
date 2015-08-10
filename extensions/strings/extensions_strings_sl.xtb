@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Uporabite mikrofon in kamero</translation>
 <translation id="2857834222104759979">Datoteka manifesta ni veljavna.</translation>
 <translation id="6384275966486438344">Sprememba nastavitev iskanja na: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Izbira naprave USB</translation>
 <translation id="1445572445564823378">Ta razširitev upočasnjuje <ph name="PRODUCT_NAME"/>. Onemogočite jo, če želite obnoviti delovanje storitve <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7003844668372540529">Neznan izdelek <ph name="PRODUCT_ID"/> dobavitelja <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Dostop do serijskih naprav</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Komponenta mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Dostop do podatkov o napravah Bluetooth, ki so seznanjene z vašim sistemom, in odkrivanje naprav Bluetooth v bližini.</translation>
 <translation id="8749863574775030885">Dostop do naprav USB neznanega prodajalca</translation>
-<translation id="781637217073033149">Izbira naprav HID</translation>
 <translation id="3115238746683532089">Neznan izdelek <ph name="PRODUCT_ID"/> dobavitelja <ph name="VENDOR_ID"/> (serijska številka <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> proizvajalca <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Skripta za ozadje »<ph name="BACKGROUND_SCRIPT"/>« ni bilo mogoče naložiti.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Orodje za odpakiranje razširitev</translation>
 <translation id="149347756975725155">Ikone razširitve »<ph name="ICON"/>« ni bilo mogoče naložiti.</translation>
 <translation id="8825366169884721447">Razširitvi ni uspelo spremeniti glave zahteve »<ph name="HEADER_NAME"/>« omrežne zahteve, ker je sprememba v sporu z drugo razširitvijo (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Izbira naprav USB</translation>
 <translation id="6731255991101203740">Imenika za odpakiranje ni bilo mogoče ustvariti: »<ph name="DIRECTORY_PATH"/>«</translation>
-<translation id="545850661681880228">Izbira naprave HID</translation>
 <translation id="4233778200880751280">Ni bilo mogoče naložiti Vizitke »<ph name="ABOUT_PAGE"/>«.</translation>
 <translation id="388442998277590542">Strani z možnostmi »<ph name="OPTIONS_PAGE"/>« ni bilo mogoče naložiti.</translation>
 <translation id="5127881134400491887">Upravljanje omrežnih povezav</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Konfiguriranje omrežnih povezav</translation>
 <translation id="7154130902455071009">Sprememba začetne strani na: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Dostop do katere koli od teh naprav USB</translation>
-<translation id="2677911863018634147">Aplikacija »<ph name="APP_NAME"/>« zahteva dostop do ene ali več vaših naprav.</translation>
 <translation id="6698810901424468597">Branje in spreminjanje vaših podatkov na spletnih mestih <ph name="WEBSITE_1"/> in <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Slike ni bilo mogoče dekodirati: »<ph name="IMAGE_NAME"/>«</translation>
 <translation id="2048182445208425546">Dostop do vašega omrežnega prometa</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Dostop prek USB-ja do katere koli od teh naprav: <ph name="PRODUCT_NAME_AND_VENDOR"/></translation>
 <translation id="1803557475693955505">Strani za ozadje »<ph name="BACKGROUND_PAGE"/>« ni bilo mogoče naložiti.</translation>
 <translation id="2988488679308982380">Paketa »<ph name="ERROR_CODE"/>« ni bilo mogoče namestiti</translation>
-<translation id="5751530153776468604">Aplikacija »<ph name="APP_NAME"/>« zahteva dostop do ene od vaših naprav.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> dobavitelja <ph name="VENDOR_ID"/> (serijska številka <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Možnosti: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Paket je neveljaven. Podrobnosti: »<ph name="ERROR_MESSAGE"/>«.</translation>

@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Nadradený priečinok</translation>
 <translation id="2354750644801399986">„Nesledovať“</translation>
 <translation id="2351097562818989364">Nastavenia prekladov boli resetované.</translation>
+<translation id="1557201757634521564">Automaticky rozpoznávať kódovanie</translation>
 <translation id="4307992518367153382">Základy</translation>
 <translation id="8007176423574883786">Vypnuté v tomto zariadení</translation>
 <translation id="119944043368869598">Vymazať všetko</translation>
@@ -301,6 +302,7 @@ Toto zobrazenie ukončíte pomocou tlačidla Späť.</translation>
 <translation id="1197267115302279827">Presunúť záložky</translation>
 <translation id="3190152372525844641">Zapnite povolenia pre Chrome v <ph name="BEGIN_LINK"/>nastaveniach Androidu<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Prehliadaču Chrome sa nepodarilo nadviazať spojenie so servermi Google s cieľom vykonať kompresiu údajov. Ukladanie vašich údajov môže byť obmedzené.</translation>
+<translation id="6324360525379265737">Automaticky zisťovať kódovanie znakov</translation>
 <translation id="4827948050554950725">Pridať kreditnú kartu</translation>
 <translation id="2316129865977710310">Nie, ďakujem</translation>
 <translation id="4278390842282768270">Povolené</translation>
@@ -376,8 +378,10 @@ Toto zobrazenie ukončíte pomocou tlačidla Späť.</translation>
 <translation id="699220179437400583">Automaticky hlásiť podrobnosti o možných problémoch so zabezpečením spoločnosti Google</translation>
 <translation id="5899349522111170522">Vytvoriť nový súbor</translation>
 <translation id="3158619413803296679">Vybrať záložku</translation>
+<translation id="1832521218263067499">Bezpečnostné problémy</translation>
 <translation id="6138140242378429169">Upravte stránku, aby bola vhodná pre mobilné zariadenia</translation>
 <translation id="5345040418939504969">Záložka <ph name="BOOKMARK_TITLE"/> bola odstránená</translation>
+<translation id="1641113438599504367">Bezpečné prehliadanie</translation>
 <translation id="2360035970720276770">Stiahnuť sa dajú len webové adresy typu http alebo https</translation>
 <translation id="7926911226829060241">Otvorené záložky, história, heslá a ďalšie údaje sa synchronizujú s vaším účtom Google.</translation>
 <translation id="4871370605780490696">Pridanie záložky</translation>
@@ -441,6 +445,7 @@ Stačí otvoriť Chrome na počítači, prejsť do ponuky a vybrať možnosť Pr
 <translation id="1285320974508926690">Nikdy neprekladať tieto webové stránky</translation>
 <translation id="4165986682804962316">Nastavenia webu</translation>
 <translation id="3672452749423051839">Návrhy v prípade chýb navigácie</translation>
+<translation id="307329814453917357">Ponúkať preklady stránok pomocou Prekladača Google</translation>
 <translation id="2956410042958133412">Tento účet je spravovaný používateľmi <ph name="PARENT_NAME_1"/> a <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Nie, ďakujem</translation>
 <translation id="5164482624172255778">Chcete, aby prehliadač Google Chrome nabudúce ponúkol možnosť prekladu stránok v jazyku <ph name="LANGUAGE"/> z tejto lokality?</translation>

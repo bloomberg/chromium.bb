@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Използване на микрофона и камерата ви</translation>
 <translation id="2857834222104759979">Файлът на манифеста е невалиден.</translation>
 <translation id="6384275966486438344">Променете настройките си за търсене на: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Избор на USB устройство</translation>
 <translation id="1445572445564823378">Това разширение забавя работата на <ph name="PRODUCT_NAME"/>. Трябва да деактивирате <ph name="PRODUCT_NAME"/>, за да възстановите ефективността на браузъра.</translation>
 <translation id="7003844668372540529">Неизвестен продукт <ph name="PRODUCT_ID"/> от <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Достъп до серийните ви устройства</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Манипулатор на MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Да осъществява достъп до информацията за сдвоените със системата ви устройства с Bluetooth и да открива тези, които са наблизо.</translation>
 <translation id="8749863574775030885">Достъп до USB устройства от неизвестен доставчик</translation>
-<translation id="781637217073033149">Избор на HID устройства</translation>
 <translation id="3115238746683532089">Неизвестен продукт <ph name="PRODUCT_ID"/> от доставчик <ph name="VENDOR_ID"/> (сериен номер <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> от <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Не можа да се зареди фоновият скрипт „<ph name="BACKGROUND_SCRIPT"/>“.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Разпакетиране на разширения</translation>
 <translation id="149347756975725155">Не можа да се зареди иконата на разширението „<ph name="ICON"/>“.</translation>
 <translation id="8825366169884721447">Това разширение не успя да промени заглавката „<ph name="HEADER_NAME"/>“ на заявка от мрежата, защото промяната влезе в конфликт с друго разширение (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Избор на USB устройства</translation>
 <translation id="6731255991101203740">Директорията за разархивиране не можа да се създаде: „<ph name="DIRECTORY_PATH"/>“</translation>
-<translation id="545850661681880228">Избор на HID устройство</translation>
 <translation id="4233778200880751280">Страницата с информация <ph name="ABOUT_PAGE"/> не можа да се зареди.</translation>
 <translation id="388442998277590542">Страницата за опции „<ph name="OPTIONS_PAGE"/>“ не можа да се зареди.</translation>
 <translation id="5127881134400491887">Управление на мрежовите връзки</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Конфигуриране на мрежовите връзки</translation>
 <translation id="7154130902455071009">Промяна на началната ви страница на <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Достъп до всяко от тези USB устройства</translation>
-<translation id="2677911863018634147">Приложението „<ph name="APP_NAME"/>“ иска достъп до едно или повече от устройствата ви.</translation>
 <translation id="6698810901424468597">Четене и промяна на данните ви в/ъв <ph name="WEBSITE_1"/> и <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Изображението не можа да се декодира: „<ph name="IMAGE_NAME"/>“</translation>
 <translation id="2048182445208425546">Достъп до трафика ви в мрежата</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Достъп до всяко устройство <ph name="PRODUCT_NAME_AND_VENDOR"/> през USB</translation>
 <translation id="1803557475693955505">Не можа да се зареди фоновата страница „<ph name="BACKGROUND_PAGE"/>“.</translation>
 <translation id="2988488679308982380">Пакетът не можа да се инсталира: „<ph name="ERROR_CODE"/>“</translation>
-<translation id="5751530153776468604">Приложението „<ph name="APP_NAME"/>“ иска достъп до едно от устройствата ви.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> от доставчик <ph name="VENDOR_ID"/> (сериен номер <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Опции: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Пакетът е невалиден. Подробности: „<ph name="ERROR_MESSAGE"/>“.</translation>

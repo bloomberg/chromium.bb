@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">आपला मायक्रोफोन आणि कॅमेरा वापरा</translation>
 <translation id="2857834222104759979">मॅनिफेस्ट फाइल अवैध आहे.</translation>
 <translation id="6384275966486438344">आपल्या शोध सेटिंग्ज यावर बदला: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">एक USB डिव्हाइस निवडा</translation>
 <translation id="1445572445564823378">हा विस्तार <ph name="PRODUCT_NAME"/> मंद होत आहे. <ph name="PRODUCT_NAME"/> चे कार्यप्रदर्शन पुनर्संचयित करण्‍यासाठी आपण ते ‍अक्षम करणे आवश्‍यक आहे.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME"/> कडील <ph name="PRODUCT_ID"/> अज्ञात उत्पादन</translation>
 <translation id="1033780634303702874">आपल्या अनुक्रमिक डिव्हाइसेसवर प्रवेश करा</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">आपल्या सिस्टीमशी जोडलेल्या Bluetooth डिव्हाइसविषयीच्या माहितीवर प्रवेश करा आणि जवळपासचे Bluetooth डिव्हाइसेस शोधा.</translation>
 <translation id="8749863574775030885">अज्ञात विक्रेत्याकडील USB डिव्हाइसेसवर प्रवेश करा</translation>
-<translation id="781637217073033149">HID डिव्‍हाइसेस निवडा</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID"/> विक्रेत्याकडील <ph name="PRODUCT_ID"/> अज्ञात उत्पादन (अनुक्रमांक <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME"/> कडील <ph name="PRODUCT_NAME"/></translation>
 <translation id="657064425229075395">पार्श्वभूमी स्क्रिप्‍ट '<ph name="BACKGROUND_SCRIPT"/>' लोड करू शकले नाही.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">विस्तार अनपॅकर</translation>
 <translation id="149347756975725155">विस्तार प्रतीक '<ph name="ICON"/>' लोड करणे शक्य नाही.</translation>
 <translation id="8825366169884721447">हा विस्तार एका नेटवर्क विनंतीचा &quot;<ph name="HEADER_NAME"/>&quot; हा विनंती शीर्षलेख सुधारित करण्यात अयशस्वी झाला कारण दुसर्‍या (<ph name="EXTENSION_NAME"/>) विस्तारासह सुधारणेचा संघर्ष झाला.</translation>
-<translation id="4776856853352853275">USB डिव्हाइसेस निवडा</translation>
 <translation id="6731255991101203740">अनझिप करण्यासाठी निर्देशिका तयार करणे शक्य झाले नाही: '<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="545850661681880228">एक HID डिव्‍हाइस निवडा</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' पृष्ठाविषयी लोड करू शकलो नाही.</translation>
 <translation id="388442998277590542">पर्याय पृष्ठ '<ph name="OPTIONS_PAGE"/>' लोड करणे शक्य नाही.</translation>
 <translation id="5127881134400491887">नेटवर्क कनेक्शन व्यवस्थापित करा</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">नेटवर्क कनेक्‍शन कॉन्फिगर करा</translation>
 <translation id="7154130902455071009">आपले प्रारंभ पृष्ठ यावर बदला: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">यापैकी कोणत्याही USB डिव्हाइसेसवर प्रवेश करा</translation>
-<translation id="2677911863018634147">&quot;<ph name="APP_NAME"/>&quot; अनुप्रयोग आपल्या एका किंवा अधिक डिव्हाइसेसवर प्रवेशाची विनंती करत आहे.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> आणि <ph name="WEBSITE_2"/> वर आपला डेटा वाचा आणि बदला</translation>
 <translation id="2159915644201199628">प्रतिमा डीकोड करणे शक्य झाले नाही: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="2048182445208425546">आपल्या नेटवर्क रहदारीवर प्रवेश करा</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">USB द्वारे कोणत्याही <ph name="PRODUCT_NAME_AND_VENDOR"/> वर प्रवेश करा</translation>
 <translation id="1803557475693955505">'पार्श्वभूमी पृष्ठ '<ph name="BACKGROUND_PAGE"/>'  लोड करणे शक्य नाही.</translation>
 <translation id="2988488679308982380">हे पॅकेज स्थापित करणे शक्य नाही: '<ph name="ERROR_CODE"/>'</translation>
-<translation id="5751530153776468604">&quot;<ph name="APP_NAME"/>&quot; अनुप्रयोग आपल्या एका डिव्हाइसवर प्रवेशाची विनंती करत आहे.</translation>
 <translation id="3466070586188012397"><ph name="VENDOR_ID"/> विक्रेत्याकडील <ph name="PRODUCT_NAME"/> (अनुक्रमांक <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">पर्याय: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">पॅकेज अवैध आहे. तपशील: '<ph name="ERROR_MESSAGE"/>'.</translation>

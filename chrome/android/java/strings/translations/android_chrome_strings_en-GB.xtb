@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Parent folder</translation>
 <translation id="2354750644801399986">‘Do Not Track’</translation>
 <translation id="2351097562818989364">Your translate settings have been reset.</translation>
+<translation id="1557201757634521564">Auto-detect encoding</translation>
 <translation id="4307992518367153382">Basics</translation>
 <translation id="8007176423574883786">Turned off for this device</translation>
 <translation id="119944043368869598">Clear all</translation>
@@ -301,6 +302,7 @@ Hit the back button to exit.</translation>
 <translation id="1197267115302279827">Move bookmarks</translation>
 <translation id="3190152372525844641">Turn on permissions for Chrome in <ph name="BEGIN_LINK"/>Android Settings<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Chrome is unable to reach Google servers for data compression. Your data savings may be limited.</translation>
+<translation id="6324360525379265737">Automatically determine character encoding</translation>
 <translation id="4827948050554950725">Add credit card</translation>
 <translation id="2316129865977710310">No, thank you</translation>
 <translation id="4278390842282768270">Allowed</translation>
@@ -376,8 +378,10 @@ Hit the back button to exit.</translation>
 <translation id="699220179437400583">Automatically report details of possible security incidents to Google</translation>
 <translation id="5899349522111170522">Create new file</translation>
 <translation id="3158619413803296679">Choose a bookmark</translation>
+<translation id="1832521218263067499">Security incidents</translation>
 <translation id="6138140242378429169">Make page mobile-friendly</translation>
 <translation id="5345040418939504969">Deleted <ph name="BOOKMARK_TITLE"/></translation>
+<translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="2360035970720276770">Can only download http or https URLs</translation>
 <translation id="7926911226829060241">Your open bookmarks, history, passwords and more are being synced with your Google Account.</translation>
 <translation id="4871370605780490696">Add bookmark</translation>
@@ -441,6 +445,7 @@ Just open Chrome on your computer, go to the menu and select “Sign in to Chrom
 <translation id="1285320974508926690">Never translate this site</translation>
 <translation id="4165986682804962316">Site settings</translation>
 <translation id="3672452749423051839">Navigation error suggestions</translation>
+<translation id="307329814453917357">Offer to translate pages using Google Translate</translation>
 <translation id="2956410042958133412">This account is managed by <ph name="PARENT_NAME_1"/> and <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">No, thank you</translation>
 <translation id="5164482624172255778">Would you like Google Chrome to offer to translate <ph name="LANGUAGE"/> pages from this site next time?</translation>

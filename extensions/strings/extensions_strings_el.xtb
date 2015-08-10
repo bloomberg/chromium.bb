@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Χρήση του μικροφώνου και της κάμεράς σας</translation>
 <translation id="2857834222104759979">Το αρχείο δήλωσης δεν είναι έγκυρο.</translation>
 <translation id="6384275966486438344">Αλλαγή των ρυθμίσεων αναζήτησης σε: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Επιλέξτε μία συσκευή USB</translation>
 <translation id="1445572445564823378">Αυτή η επέκταση επιβραδύνει το <ph name="PRODUCT_NAME"/>. Πρέπει να την απενεργοποιήσετε για να επαναφέρετε την απόδοση του <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7003844668372540529">Άγνωστο προϊόν <ph name="PRODUCT_ID"/> από <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Πρόσβαση στις σειριακές συσκευές</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Χειρισμός mime: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Πρόσβαση σε πληροφορίες σχετικά με τις συσκευές Bluetooth που βρίσκονται σε ζεύξη με το σύστημά σας και εντοπισμός κοντινών συσκευών Bluetooth.</translation>
 <translation id="8749863574775030885">Πρόσβαση σε συσκευές USB από έναν άγνωστο προμηθευτή</translation>
-<translation id="781637217073033149">Επιλέξτε συσκευές HID</translation>
 <translation id="3115238746683532089">Άγνωστο προϊόν <ph name="PRODUCT_ID"/> από τον προμηθευτή <ph name="VENDOR_ID"/> (σειριακός αριθμός <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> της <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Δεν ήταν δυνατή η φόρτωση του σεναρίου παρασκηνίου '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Εργαλείο αποσυσκευασίας επεκτάσεων</translation>
 <translation id="149347756975725155">Δεν ήταν δυνατή η φόρτωση του εικονιδίου επέκτασης &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Αυτή η επέκταση απέτυχε να τροποποιήσει την κεφαλίδα αιτήματος &quot;<ph name="HEADER_NAME"/>&quot; κάποιου αιτήματος δικτύου επειδή η τροποποίηση ήρθε σε σύγκρουση με κάποια άλλη επέκταση (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Επιλέξτε συσκευές USB</translation>
 <translation id="6731255991101203740">Δεν ήταν δυνατή η δημιουργία καταλόγου για την αποσυμπίεση: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
-<translation id="545850661681880228">Επιλέξτε μια συσκευή HID</translation>
 <translation id="4233778200880751280">Δεν ήταν δυνατή η φόρτωση της σελίδας πληροφοριών &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
 <translation id="388442998277590542">Δεν ήταν δυνατή η φόρτωση της σελίδας επιλογών &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
 <translation id="5127881134400491887">Διαχείριση συνδέσεων δικτύου</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Διαμόρφωση συνδέσεων δικτύου</translation>
 <translation id="7154130902455071009">Αλλαγή της σελίδας έναρξης σε: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Πρόσβαση σε οποιαδήποτε από αυτές τις συσκευές USB</translation>
-<translation id="2677911863018634147">Η εφαρμογή &quot;<ph name="APP_NAME"/>&quot; ζητάει πρόσβαση σε μία ή περισσότερες συσκευές σας.</translation>
 <translation id="6698810901424468597">Διαβάστε και αλλάξτε τα δεδομένα σας στο <ph name="WEBSITE_1"/> και το <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Δεν ήταν δυνατή η αποκωδικοποίηση της εικόνας: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
 <translation id="2048182445208425546">Πρόσβαση στην επισκεψιμότητά σας δικτύου</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Πρόσβαση σε οποιοδήποτε <ph name="PRODUCT_NAME_AND_VENDOR"/> μέσω USB</translation>
 <translation id="1803557475693955505">Δεν ήταν δυνατή η φόρτωση της σελίδας φόντου &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
 <translation id="2988488679308982380">Δεν ήταν δυνατή η εγκατάσταση του πακέτου: '<ph name="ERROR_CODE"/>'</translation>
-<translation id="5751530153776468604">Η εφαρμογή &quot;<ph name="APP_NAME"/>&quot; ζητάει πρόσβαση σε μία από τις συσκευές σας.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> από τον προμηθευτή <ph name="VENDOR_ID"/> (σειριακός ρυθμός <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Επιλογές: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Μη έγκυρο πακέτο. Λεπτομέρειες: '<ph name="ERROR_MESSAGE"/>'.</translation>

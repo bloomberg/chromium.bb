@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2354750644801399986">&quot;No realizar seguimiento&quot;</translation>
 <translation id="2351097562818989364">Se restableció la configuración de traducción.</translation>
+<translation id="1557201757634521564">Autodetectar codificación</translation>
 <translation id="4307992518367153382">Básicas</translation>
 <translation id="8007176423574883786">Desactivado para este dispositivo</translation>
 <translation id="119944043368869598">Borrar todo</translation>
@@ -301,6 +302,7 @@ Para salir de esta vista, presiona el botón Atrás.</translation>
 <translation id="1197267115302279827">Mover marcadores</translation>
 <translation id="3190152372525844641">Activa los permisos para Chrome en <ph name="BEGIN_LINK"/>Configuración de Android<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Chrome no puede acceder a los servidores de Google para la compresión de datos. Es posible que el ahorro de datos esté reducido.</translation>
+<translation id="6324360525379265737">Determinar automáticamente la codificación de caracteres</translation>
 <translation id="4827948050554950725">Agregar tarjeta de crédito</translation>
 <translation id="2316129865977710310">No, gracias</translation>
 <translation id="4278390842282768270">Permitido</translation>
@@ -377,8 +379,10 @@ Para salir de esta vista, presiona el botón Atrás.</translation>
 <translation id="699220179437400583">Informar automáticamente detalles de posibles incidentes de seguridad a Google</translation>
 <translation id="5899349522111170522">Crear un archivo nuevo</translation>
 <translation id="3158619413803296679">Elegir un marcador</translation>
+<translation id="1832521218263067499">Incidentes de seguridad</translation>
 <translation id="6138140242378429169">Optimizar la página para celulares</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> borrado</translation>
+<translation id="1641113438599504367">Navegación segura</translation>
 <translation id="2360035970720276770">Solo se pueden descargar URL &quot;http&quot; o &quot;https&quot;.</translation>
 <translation id="7926911226829060241">Se están sincronizando los marcadores abiertos, el historial, las contraseñas y más elementos con tu cuenta de Google.</translation>
 <translation id="4871370605780490696">Agregar marcador</translation>
@@ -442,6 +446,7 @@ Las estadísticas de uso incluyen información, como las preferencias, los clics
 <translation id="1285320974508926690">Nunca traducir este sitio</translation>
 <translation id="4165986682804962316">Configuración del sitio</translation>
 <translation id="3672452749423051839">Sugerencias relacionadas con errores de navegación</translation>
+<translation id="307329814453917357">Ofrecer traducir las páginas con Google Traductor</translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1"/> y <ph name="PARENT_NAME_2"/> administran esta cuenta.</translation>
 <translation id="780301667611848630">No, gracias</translation>
 <translation id="5164482624172255778">¿Quieres que Google Chrome te ofrezca traducir las páginas de este sitio que estén en <ph name="LANGUAGE"/> la próxima vez?</translation>

@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Основна папка</translation>
 <translation id="2354750644801399986">„Do Not Track“</translation>
 <translation id="2351097562818989364">Настройките ви за превод са нулирани.</translation>
+<translation id="1557201757634521564">Автоматично откриване на кодирането</translation>
 <translation id="4307992518367153382">Основни положения</translation>
 <translation id="8007176423574883786">Изключено за това устройство</translation>
 <translation id="119944043368869598">Изчистване на всички</translation>
@@ -301,6 +302,7 @@
 <translation id="1197267115302279827">Преместване на отметки</translation>
 <translation id="3190152372525844641">Включете разрешенията за Chrome от <ph name="BEGIN_LINK"/>настройките на Android<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Chrome не може да установи връзка с компресиращите сървъри на Google. Икономията на данни може да е ограничена.</translation>
+<translation id="6324360525379265737">Автоматично определяне на кодирането на знаците</translation>
 <translation id="4827948050554950725">Добавяне на кредитна карта</translation>
 <translation id="2316129865977710310">Не, благодаря</translation>
 <translation id="4278390842282768270">Разрешено</translation>
@@ -376,8 +378,10 @@
 <translation id="699220179437400583">Автоматично съобщаване на Google на подробности за евентуални инциденти, свързани със сигурността</translation>
 <translation id="5899349522111170522">Създаване на нов файл</translation>
 <translation id="3158619413803296679">Избиране на отметка</translation>
+<translation id="1832521218263067499">Инциденти, свързани със сигурността</translation>
 <translation id="6138140242378429169">Направете страницата удобна за мобилни устройства</translation>
 <translation id="5345040418939504969">Изтрихте „<ph name="BOOKMARK_TITLE"/>“</translation>
+<translation id="1641113438599504367">Безопасно сърфиране</translation>
 <translation id="2360035970720276770">Могат да се изтеглят само URL адреси, започващи с „http“ или „https“</translation>
 <translation id="7926911226829060241">Вашите отворени отметки, история, пароли и др. се синхронизират с профила ви в Google.</translation>
 <translation id="4871370605780490696">Добавяне на отметка</translation>
@@ -441,6 +445,7 @@
 <translation id="1285320974508926690">Този сайт да не се превежда никога</translation>
 <translation id="4165986682804962316">Настройки за сайта</translation>
 <translation id="3672452749423051839">Предложения в случай на грешки при сърфиране</translation>
+<translation id="307329814453917357">Извеждане на предложения за превод на страниците посредством Google Преводач</translation>
 <translation id="2956410042958133412">Този профил се управлява от <ph name="PARENT_NAME_1"/> и <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Не, благодаря</translation>
 <translation id="5164482624172255778">Искате ли следващия път Google Chrome да предложи да преведе от <ph name="LANGUAGE"/> страниците от този сайт?</translation>

@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">আপনার মাইক্রোফোন ও ক্যামেরা ব্যবহার করুন</translation>
 <translation id="2857834222104759979">তালিকা ফাইল অবৈধ৷</translation>
 <translation id="6384275966486438344">আপনার অনুসন্ধানের সেটিংস এ পরিবর্তন করুন: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">একটি USB ডিভাইস নির্বাচন করুন</translation>
 <translation id="1445572445564823378">এই এক্সটেনশানটির গতি কমে যাচ্ছে <ph name="PRODUCT_NAME"/>৷ আপনাকে <ph name="PRODUCT_NAME"/>-এর সম্পাদনা পুনঃস্থাপন করার জন্য এটিকে অক্ষম করা উচিত৷</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME"/> এর থেকে অজানা পণ্য <ph name="PRODUCT_ID"/></translation>
 <translation id="1033780634303702874">আপনার সিরিয়াল ডিভাইসগুলি অ্যাক্সেস করুন</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">মাইমহ্যান্ডলার: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">আপনার সিস্টেমের সঙ্গে যুক্ত করা Bluetooth ডিভাইসগুলির সম্পর্কে তথ্য অ্যাক্সেস করুন এবং কাছাকাছি  Bluetooth ডিভাইসগুলি খুঁজুন।</translation>
 <translation id="8749863574775030885">একটি অজানা বিক্রেতা থেকে USB ডিভাইস অ্যাক্সেস করুন</translation>
-<translation id="781637217073033149">HID ডিভাইসগুলি নির্বাচন করুন</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID"/> বিক্রেতার থেকেঅজানা পণ্য <ph name="PRODUCT_ID"/> (সিরিয়াল নম্বর <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME"/> এর <ph name="PRODUCT_NAME"/></translation>
 <translation id="657064425229075395">পশ্চাদপট লিপি '<ph name="BACKGROUND_SCRIPT"/>' লোড করা যায়নি৷</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">এক্সটেনশান আনপ্যাকার</translation>
 <translation id="149347756975725155">এক্সটেনশান আইকন '<ph name="ICON"/>' লোড করা যায়নি৷</translation>
 <translation id="8825366169884721447">এই এক্সটেনশনটি একটি নেটওয়ার্ক অনুরোধের অনুরোধ শীর্ষক &quot;<ph name="HEADER_NAME"/>&quot; এর সংশোধন করতে ব্যর্থ হয়েছে কারণ সংশোধনটির অন্য এক্সটেনশন (<ph name="EXTENSION_NAME"/>) এর সঙ্গে বিরোধ আছে৷</translation>
-<translation id="4776856853352853275">USB ডিভাইসগুলি নির্বাচন করুন</translation>
 <translation id="6731255991101203740">এটিকে আনজিপ করার জন্য ডিরেক্টরি তৈরি করা যায়নি: '<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="545850661681880228">একটি HID ডিভাইস নির্বাচন করুন</translation>
 <translation id="4233778200880751280"><ph name="ABOUT_PAGE"/> সম্পর্কিত পৃষ্ঠা লোড করা গেল না।</translation>
 <translation id="388442998277590542">বিকল্প পৃষ্ঠা '<ph name="OPTIONS_PAGE"/>' লোড করা যায়নি৷</translation>
 <translation id="5127881134400491887">নেটওয়ার্ক সংযোগগুলি পরিচালনা করুন</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">নেটওয়ার্ক সংযোগ কনফিগার করুন</translation>
 <translation id="7154130902455071009">আপনার সূচনা পৃষ্ঠাকে এতে পরিবর্তন করুন: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">এই USB ডিভাইসগুলির মধ্যে যে কোনোটি অ্যাক্সেস করুন</translation>
-<translation id="2677911863018634147">&quot;<ph name="APP_NAME"/>&quot; অ্যাপ্লিকেশানটি আপনার ডিভাইস ছাড়াও অরেকটি ডিভাইসে অ্যাক্সেসের জন্য অনুরোধ করছে৷</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> ও <ph name="WEBSITE_2"/> এ আপনার ডেটা পড়ুন এবং পরিবর্তন করুন</translation>
 <translation id="2159915644201199628">চিত্র ডিকোড করা যায়নি: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="2048182445208425546">আপনার নেটওয়ার্ক ট্রাফিক অ্যাক্সেস করে</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">USB এর মাধ্যমে যেকোনো <ph name="PRODUCT_NAME_AND_VENDOR"/> অ্যাক্সেস করুন</translation>
 <translation id="1803557475693955505">পৃষ্ঠভূমি পৃষ্ঠা '<ph name="BACKGROUND_PAGE"/>' লোড করা যায়নি৷</translation>
 <translation id="2988488679308982380">এই প্যাকেজটি ইনস্টল করতে পারেনি: '<ph name="ERROR_CODE"/>'</translation>
-<translation id="5751530153776468604">&quot;<ph name="APP_NAME"/>&quot; অ্যাপ্লিকেশানটি আপনার ডিভাইসগুলির একটিকে অ্যাক্সেস করার অনুরোর করছে৷</translation>
 <translation id="3466070586188012397"><ph name="VENDOR_ID"/> বিক্রেতার থেকে <ph name="PRODUCT_NAME"/> (সিরিয়াল নম্বর <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">বিকল্পগুলি: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">প্যাকেজটি অবৈধ৷ বিশদ বিবরণ: '<ph name="ERROR_MESSAGE"/>'৷</translation>

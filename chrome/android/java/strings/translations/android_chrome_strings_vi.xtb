@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Thư mục gốc</translation>
 <translation id="2354750644801399986">'Không theo dõi'</translation>
 <translation id="2351097562818989364">Đã đặt lại cài đặt dịch của bạn.</translation>
+<translation id="1557201757634521564">Tự động phát hiện mã hóa</translation>
 <translation id="4307992518367153382">Cơ bản</translation>
 <translation id="8007176423574883786">Tắt cho thiết bị này</translation>
 <translation id="119944043368869598">Xóa tất cả</translation>
@@ -301,6 +302,7 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="1197267115302279827">Di chuyển dấu trang</translation>
 <translation id="3190152372525844641">Bật quyền cho Chrome trong <ph name="BEGIN_LINK"/>Cài đặt Android<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Chrome không thể kết nối với máy chủ của Google để nén dữ liệu. Các khoản tiết kiệm đối với dữ liệu của bạn có thể bị giới hạn.</translation>
+<translation id="6324360525379265737">Tự động xác định mã hóa ký tự</translation>
 <translation id="4827948050554950725">Thêm thẻ tín dụng</translation>
 <translation id="2316129865977710310">Không, cảm ơn</translation>
 <translation id="4278390842282768270">Được cho phép</translation>
@@ -376,8 +378,10 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="699220179437400583">Tự động báo cáo với Google chi tiết về sự cố bảo mật có thể xảy ra</translation>
 <translation id="5899349522111170522">Tạo tệp mới</translation>
 <translation id="3158619413803296679">Chọn dấu trang</translation>
+<translation id="1832521218263067499">Sự cố bảo mật</translation>
 <translation id="6138140242378429169">Đặt trang ở chế độ thân thiện với thiết bị di động</translation>
 <translation id="5345040418939504969">Đã xóa <ph name="BOOKMARK_TITLE"/></translation>
+<translation id="1641113438599504367">Duyệt web an toàn</translation>
 <translation id="2360035970720276770">Chỉ có thể tải xuống URL http hoặc https</translation>
 <translation id="7926911226829060241">Lịch sử, mật khẩu, dấu trang đang mở và nhiều nội dung khác đang được đồng bộ hóa với Tài khoản Google của bạn.</translation>
 <translation id="4871370605780490696">Thêm dấu trang</translation>
@@ -441,6 +445,7 @@ Số liệu thống kê sử dụng bao gồm thông tin chẳng hạn như tùy
 <translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
 <translation id="4165986682804962316">Cài đặt trang web</translation>
 <translation id="3672452749423051839">Đề xuất lỗi điều hướng</translation>
+<translation id="307329814453917357">Đề xuất dịch các trang bằng Google Dịch</translation>
 <translation id="2956410042958133412">Tài khoản này do <ph name="PARENT_NAME_1"/> và <ph name="PARENT_NAME_2"/> quản lý.</translation>
 <translation id="780301667611848630">Không, cảm ơn</translation>
 <translation id="5164482624172255778">Bạn có muốn Google Chrome đề xuất dịch các trang <ph name="LANGUAGE"/> từ trang web này vào lần tiếp theo không?</translation>

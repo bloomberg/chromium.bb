@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Ihr Mikrofon und Ihre Kamera verwenden</translation>
 <translation id="2857834222104759979">Manifest-Datei ist ungültig.</translation>
 <translation id="6384275966486438344">Sucheinstellungen in <ph name="SEARCH_HOST"/> ändern</translation>
-<translation id="8658591203505835552">USB-Gerät auswählen</translation>
 <translation id="1445572445564823378">Diese Erweiterung verlangsamt die Ausführung von <ph name="PRODUCT_NAME"/>. Deaktivieren Sie sie, um die Leistung von <ph name="PRODUCT_NAME"/> nicht zu beeinträchtigen.</translation>
 <translation id="7003844668372540529">Unbekanntes Produkt <ph name="PRODUCT_ID"/> von <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Auf Ihre seriellen Geräte zugreifen</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Auf Informationen zu Bluetooth-Geräten mit Pairing mit Ihrem System zugreifen und Bluetooth-Geräte in der Nähe finden</translation>
 <translation id="8749863574775030885">Auf USB-Geräte von einem unbekannten Anbieter zugreifen</translation>
-<translation id="781637217073033149">HID-Geräte auswählen</translation>
 <translation id="3115238746683532089">Unbekanntes Produkt <ph name="PRODUCT_ID"/> von Anbieter <ph name="VENDOR_ID"/> (Seriennummer <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> von <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Hintergrundskript &quot;<ph name="BACKGROUND_SCRIPT"/>&quot; konnte nicht geladen werden.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Erweiterungsentpacker</translation>
 <translation id="149347756975725155">Erweiterungssymbol &quot;<ph name="ICON"/>&quot; kann nicht geladen werden.</translation>
 <translation id="8825366169884721447">Die Erweiterung konnte den Anfrage-Header &quot;<ph name="HEADER_NAME"/>&quot; einer Netzwerkanfrage nicht modifizieren, da die Modifikation einen Konflikt mit einer anderen Erweiterung (<ph name="EXTENSION_NAME"/>) verursacht.</translation>
-<translation id="4776856853352853275">USB-Geräte auswählen</translation>
 <translation id="6731255991101203740">Fehler beim Erstellen von Verzeichnis zum Entpacken: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
-<translation id="545850661681880228">HID-Gerät auswählen</translation>
 <translation id="4233778200880751280">Infoseite &quot;<ph name="ABOUT_PAGE"/>&quot; konnte nicht geladen werden.</translation>
 <translation id="388442998277590542">Optionsseite &quot;<ph name="OPTIONS_PAGE"/>&quot; konnte nicht geladen werden.</translation>
 <translation id="5127881134400491887">Netzwerkverbindungen verwalten</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Netzwerkverbindungen konfigurieren</translation>
 <translation id="7154130902455071009">Startseite in <ph name="START_PAGE"/> ändern</translation>
 <translation id="1036511912703768636">Auf alle diese USB-Geräte zugreifen</translation>
-<translation id="2677911863018634147">Die Anwendung &quot;<ph name="APP_NAME"/>&quot; fordert Zugriff auf eines oder mehrere Ihrer Geräte an.</translation>
 <translation id="6698810901424468597">Eigene Daten auf <ph name="WEBSITE_1"/> und <ph name="WEBSITE_2"/> lesen und ändern</translation>
 <translation id="2159915644201199628">Bild konnte nicht decodiert werden: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
 <translation id="2048182445208425546">Auf Ihren Netzwerkverkehr zugreifen</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Auf <ph name="PRODUCT_NAME_AND_VENDOR"/> per USB zugreifen</translation>
 <translation id="1803557475693955505">Hintergrundseite &quot;<ph name="BACKGROUND_PAGE"/>&quot; konnte nicht geladen werden.</translation>
 <translation id="2988488679308982380">Paket konnte nicht installiert werden: &quot;<ph name="ERROR_CODE"/>&quot;.</translation>
-<translation id="5751530153776468604">Die Anwendung &quot;<ph name="APP_NAME"/>&quot; fordert Zugriff auf eines Ihrer Geräte an.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> von Anbieter <ph name="VENDOR_ID"/> (Seriennummer <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Paket ist ungültig. Details: &quot;<ph name="ERROR_MESSAGE"/>&quot;</translation>

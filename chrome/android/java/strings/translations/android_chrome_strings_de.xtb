@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Übergeordneter Ordner</translation>
 <translation id="2354750644801399986">&quot;Do Not Track&quot;</translation>
 <translation id="2351097562818989364">Übersetzungseinstellungen zurückgesetzt</translation>
+<translation id="1557201757634521564">Codierung automatisch erkennen</translation>
 <translation id="4307992518367153382">Grundeinstellungen</translation>
 <translation id="8007176423574883786">Für dieses Gerät deaktiviert</translation>
 <translation id="119944043368869598">Alle löschen</translation>
@@ -301,6 +302,7 @@ Zum Verlassen die Zurück-Taste drücken</translation>
 <translation id="1197267115302279827">Lesezeichen verschieben</translation>
 <translation id="3190152372525844641">Berechtigungen für Chrome in den <ph name="BEGIN_LINK"/>Android-Einstellungen<ph name="END_LINK"/> aktivieren</translation>
 <translation id="583891442612896534">Chrome kann die Google-Server für die Datenkomprimierung nicht erreichen. Ihre Einsparungen bei der Datennutzung können begrenzt sein.</translation>
+<translation id="6324360525379265737">Zeichencodierung automatisch ermitteln</translation>
 <translation id="4827948050554950725">Kreditkarte hinzufügen</translation>
 <translation id="2316129865977710310">Kein Interesse</translation>
 <translation id="4278390842282768270">Zugelassen</translation>
@@ -376,8 +378,10 @@ Zum Verlassen die Zurück-Taste drücken</translation>
 <translation id="699220179437400583">Details zu möglichen sicherheitsrelevanten Zwischenfällen automatisch an Google senden</translation>
 <translation id="5899349522111170522">Neue Datei erstellen</translation>
 <translation id="3158619413803296679">Lesezeichen auswählen</translation>
+<translation id="1832521218263067499">Sicherheitsrelevante Zwischenfälle</translation>
 <translation id="6138140242378429169">Für Mobilgeräte optimierte Seite</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> gelöscht</translation>
+<translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="2360035970720276770">Nur Download von URLs mit &quot;http&quot; oder &quot;https&quot; möglich</translation>
 <translation id="7926911226829060241">Ihre Lesezeichen, Ihr Verlauf, Ihre Passwörter und andere Inhalte werden mit Ihrem Google-Konto synchronisiert.</translation>
 <translation id="4871370605780490696">Lesezeichen hinzufügen</translation>
@@ -441,6 +445,7 @@ Nutzungsstatistiken enthalten Informationen wie Einstellungen, Klicks auf Schalt
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
 <translation id="4165986682804962316">Website-Einstellungen</translation>
 <translation id="3672452749423051839">Vorschläge bei Navigationsfehlern</translation>
+<translation id="307329814453917357">Übersetzung der Seiten mithilfe von Google Übersetzer anbieten</translation>
 <translation id="2956410042958133412">Dieses Konto wird von <ph name="PARENT_NAME_1"/> und <ph name="PARENT_NAME_2"/> verwaltet.</translation>
 <translation id="780301667611848630">Kein Interesse</translation>
 <translation id="5164482624172255778">Soll Google Chrome ab dem nächsten Aufruf eine Übersetzung von Seiten dieser Website anbieten, die auf <ph name="LANGUAGE"/> sind?</translation>

@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Cartella principale</translation>
 <translation id="2354750644801399986">&quot;Non tenere traccia&quot;</translation>
 <translation id="2351097562818989364">Le impostazioni di traduzione sono state reimpostate.</translation>
+<translation id="1557201757634521564">Rileva automaticamente la codifica</translation>
 <translation id="4307992518367153382">Impostazioni di base</translation>
 <translation id="8007176423574883786">Disattivata per questo dispositivo</translation>
 <translation id="119944043368869598">Cancella tutto</translation>
@@ -301,6 +302,7 @@ Per uscire premi il pulsante Indietro.</translation>
 <translation id="1197267115302279827">Sposta i Preferiti</translation>
 <translation id="3190152372525844641">Abilita le autorizzazioni per Chrome in <ph name="BEGIN_LINK"/>Impostazioni Android<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Chrome non riesce a contattare i server di Google per la compressione dei dati. I salvataggi di dati potrebbero essere limitati.</translation>
+<translation id="6324360525379265737">Viene stabilita automaticamente la codifica dei caratteri</translation>
 <translation id="4827948050554950725">Aggiungi carta di credito</translation>
 <translation id="2316129865977710310">No, grazie</translation>
 <translation id="4278390842282768270">Consentiti</translation>
@@ -376,8 +378,10 @@ Per uscire premi il pulsante Indietro.</translation>
 <translation id="699220179437400583">Segnala automaticamente a Google dettagli dei possibili incidenti di sicurezza</translation>
 <translation id="5899349522111170522">Crea nuovo file</translation>
 <translation id="3158619413803296679">Scegli un Preferito</translation>
+<translation id="1832521218263067499">Incidenti di sicurezza</translation>
 <translation id="6138140242378429169">Ottimizza la pagina per i dispositivi mobili</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> eliminato</translation>
+<translation id="1641113438599504367">Navigazione sicura</translation>
 <translation id="2360035970720276770">È possibile scaricare soltanto URL http o https</translation>
 <translation id="7926911226829060241">I Preferiti aperti, la cronologia, le password e altri dati sono in fase di sincronizzazione con il tuo account Google.</translation>
 <translation id="4871370605780490696">Aggiungi preferito</translation>
@@ -441,6 +445,7 @@ Le statistiche sull'utilizzo includono informazioni quali preferenze, clic sui p
 <translation id="1285320974508926690">Non tradurre mai questo sito</translation>
 <translation id="4165986682804962316">Impostazioni sito</translation>
 <translation id="3672452749423051839">Suggerimenti per gli errori di navigazione</translation>
+<translation id="307329814453917357">Proponi di tradurre le pagine utilizzando Google Traduttore</translation>
 <translation id="2956410042958133412">Questo account è gestito da <ph name="PARENT_NAME_1"/> e <ph name="PARENT_NAME_2"/></translation>
 <translation id="780301667611848630">No grazie</translation>
 <translation id="5164482624172255778">Vuoi che Google Chrome ti proponga di tradurre le pagine in <ph name="LANGUAGE"/> di questo sito al prossimo accesso?</translation>

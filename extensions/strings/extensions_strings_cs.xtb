@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Používat mikrofon a fotoaparát</translation>
 <translation id="2857834222104759979">Soubor manifestu je neplatný.</translation>
 <translation id="6384275966486438344">Změňte nastavení vyhledávání na: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Vyberte zařízení USB</translation>
 <translation id="1445572445564823378">Toto rozšíření zpomaluje prohlížeč <ph name="PRODUCT_NAME"/>. Chcete-li výkon prohlížeče <ph name="PRODUCT_NAME"/> obnovit, měli byste rozšíření zakázat.</translation>
 <translation id="7003844668372540529">Neznámý produkt <ph name="PRODUCT_ID"/> od dodavatele <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Přistupovat k zařízením připojeným pomocí sériového portu</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Obslužná rutina typu MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Přístup k informacím o zařízeních Bluetooth spárovaných s vaším systémem a objevování zařízení Bluetooth v okolí</translation>
 <translation id="8749863574775030885">Přístup k zařízením USB od neznámého dodavatele</translation>
-<translation id="781637217073033149">Výběr zařízení HID</translation>
 <translation id="3115238746683532089">Neznámý produkt <ph name="PRODUCT_ID"/> od dodavatele <ph name="VENDOR_ID"/> (sériové číslo <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223">Zařízení <ph name="PRODUCT_NAME"/> od dodavatele <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Nelze načíst skript pozadí <ph name="BACKGROUND_SCRIPT"/>.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Rozbalovač rozšíření</translation>
 <translation id="149347756975725155">Nelze načíst ikonu rozšíření <ph name="ICON"/>.</translation>
 <translation id="8825366169884721447">Tomuto rozšíření se nepodařilo změnit záhlaví <ph name="HEADER_NAME"/> síťového požadavku, protože změna byla v konfliktu s jiným rozšířením (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Výběr zařízení USB</translation>
 <translation id="6731255991101203740">Nepodařilo se vytvořit adresář pro rozbalení: <ph name="DIRECTORY_PATH"/></translation>
-<translation id="545850661681880228">Vyberte zařízení HID</translation>
 <translation id="4233778200880751280">Načtení stránky s informacemi <ph name="ABOUT_PAGE"/> se nezdařilo.</translation>
 <translation id="388442998277590542">Nelze načíst stránku možností „<ph name="OPTIONS_PAGE"/>“.</translation>
 <translation id="5127881134400491887">Správa síťových připojení</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Konfigurovat síťová připojení</translation>
 <translation id="7154130902455071009">Změnit úvodní stránku na: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Přístup ke kterýmkoliv z těchto zařízení USB</translation>
-<translation id="2677911863018634147">Aplikace <ph name="APP_NAME"/> žádá o přístup k jednomu nebo více z vašich zařízení.</translation>
 <translation id="6698810901424468597">Čtení a úprava dat na webu <ph name="WEBSITE_1"/> a <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Nepodařilo se dekódovat obrázek: <ph name="IMAGE_NAME"/></translation>
 <translation id="2048182445208425546">Přístup k provozu na síti</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Přístup k libovolnému zařízení <ph name="PRODUCT_NAME_AND_VENDOR"/> prostřednictvím USB</translation>
 <translation id="1803557475693955505">Nelze načíst stránku pozadí „<ph name="BACKGROUND_PAGE"/>“.</translation>
 <translation id="2988488679308982380">Nepodařilo se nainstalovat balíček: <ph name="ERROR_CODE"/></translation>
-<translation id="5751530153776468604">Aplikace <ph name="APP_NAME"/> žádá o přístup k jednomu z vašich zařízení.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> od dodavatele <ph name="VENDOR_ID"/> (sériové číslo <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Možnosti: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Balíček je neplatný. Podrobnosti: <ph name="ERROR_MESSAGE"/></translation>

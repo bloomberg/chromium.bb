@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Naudoti mikrofoną ir kamerą</translation>
 <translation id="2857834222104759979">Neteisingas deklaracijos failas.</translation>
 <translation id="6384275966486438344">Pakeiskite paieškos nustatymus į: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Pasirinkite USB įrenginį</translation>
 <translation id="1445572445564823378">Dėl šio plėtinio lėčiau veikia „<ph name="PRODUCT_NAME"/>“. Kad atkurtumėte „<ph name="PRODUCT_NAME"/>“ našumą, turite jo neleisti.</translation>
 <translation id="7003844668372540529">Nežinomas produktas „<ph name="PRODUCT_ID"/>“ iš „<ph name="VENDOR_NAME"/>“</translation>
 <translation id="1033780634303702874">Pasiekti nuosekliuosius įtaisus</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">MIME tvarkyklė: „<ph name="MIMEHANDLERVIEW_TAG_NAME"/>“</translation>
 <translation id="6241530762627360640">Pasiekti informaciją apie „Bluetooth“ įrenginius, susietus su sistema, ir aptikti netoliese esančius „Bluetooth“ įrenginius.</translation>
 <translation id="8749863574775030885">Pasiekti nežinomų tiekėjų USB įrenginius</translation>
-<translation id="781637217073033149">Pasirinkite HID įrenginius</translation>
 <translation id="3115238746683532089">Nežinomas produktas „<ph name="PRODUCT_ID"/>“ iš teikėjo „<ph name="VENDOR_ID"/>“ (serijos numeris: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223">„<ph name="PRODUCT_NAME"/>“ iš „<ph name="VENDOR_NAME"/>“</translation>
 <translation id="657064425229075395">Nepavyko įkelti foninio scenarijaus „<ph name="BACKGROUND_SCRIPT"/>“.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Plėtinių išskleidimo priemonė</translation>
 <translation id="149347756975725155">Nepavyko įkelti „<ph name="ICON"/>“ plėtinio piktogramos.</translation>
 <translation id="8825366169884721447">Šiam plėtiniui keičiant tinklo užklausos antraštę „<ph name="HEADER_NAME"/>“ įvyko klaida, nes dėl pakeitimo kilo konfliktas su kitu plėtiniu („<ph name="EXTENSION_NAME"/>“).</translation>
-<translation id="4776856853352853275">Pasirinkite USB įrenginius</translation>
 <translation id="6731255991101203740">Nepavyko sukurti išarchyvavimo katalogo: „<ph name="DIRECTORY_PATH"/>“</translation>
-<translation id="545850661681880228">Pasirinkite HID įrenginį</translation>
 <translation id="4233778200880751280">Nepavyko įkelti informacijos puslapio „<ph name="ABOUT_PAGE"/>“.</translation>
 <translation id="388442998277590542">Nepavyko įkelti parinkčių puslapio „<ph name="OPTIONS_PAGE"/>“.</translation>
 <translation id="5127881134400491887">Valdyti tinklo ryšius</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Konfigūruoti tinklo ryšius</translation>
 <translation id="7154130902455071009">Pakeiskite pradžios puslapį į: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Pasiekti bet kurį iš šių USB įrenginių</translation>
-<translation id="2677911863018634147">Programa „<ph name="APP_NAME"/>“ prašo leidimo pasiekti vieną ar daugiau iš jūsų įrenginių.</translation>
 <translation id="6698810901424468597">Skaityti ir keisti duomenis <ph name="WEBSITE_1"/> ir <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Nepavyko iššifruoti vaizdo: „<ph name="IMAGE_NAME"/>“</translation>
 <translation id="2048182445208425546">Pasiekti tinklo srautą</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Pasiekti bet kokį „<ph name="PRODUCT_NAME_AND_VENDOR"/>“ įrenginį per USB</translation>
 <translation id="1803557475693955505">Nepavyko įkelti fono puslapio „<ph name="BACKGROUND_PAGE"/>“.</translation>
 <translation id="2988488679308982380">Nepavyko įdiegti paketo: „<ph name="ERROR_CODE"/>“</translation>
-<translation id="5751530153776468604">Programa „<ph name="APP_NAME"/>“ prašo leidimo pasiekti vieną iš jūsų įrenginių.</translation>
 <translation id="3466070586188012397">„<ph name="PRODUCT_NAME"/>“ iš teikėjo „<ph name="VENDOR_ID"/>“ (serijos numeris: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Parinktys: „<ph name="EXTENSIONOPTIONS_TAG_NAME"/>“</translation>
 <translation id="8636666366616799973">Paketas netinkamas. Išsami informacija: „<ph name="ERROR_MESSAGE"/>“.</translation>

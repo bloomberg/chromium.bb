@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Gamitin ang iyong mikropono at camera</translation>
 <translation id="2857834222104759979">Di-wasto ang manifest file.</translation>
 <translation id="6384275966486438344">Gawing ito ang iyong mga setting ng paghahanap: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Pumili ng USB device</translation>
 <translation id="1445572445564823378">Pinapabagal ng extension na ito ang <ph name="PRODUCT_NAME"/>. Dapat mo itong huwag paganahin upang ipanumbalik ang pagganap ng <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7003844668372540529">Hindi kilalang produkto na <ph name="PRODUCT_ID"/> mula sa <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">I-access ang iyong mga serial device</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Mag-access ng impormasyon tungkol sa mga Bluetooth device na nakapares sa iyong system at tumuklas ng mga kalapit na Bluetooth device.</translation>
 <translation id="8749863574775030885">Mag-access ng mga USB device mula sa isang hindi kilalang vendor</translation>
-<translation id="781637217073033149">Piliin ang mga HID device</translation>
 <translation id="3115238746683532089">Hindi kilalang produkto na <ph name="PRODUCT_ID"/> mula sa vendor na <ph name="VENDOR_ID"/> (serial number na <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> mula sa <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Hindi ma-load ang script ng background na '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Pang-unpack ng Extension</translation>
 <translation id="149347756975725155">Maaaring hindi mai-load ang icon ng extension '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">Nabigo ang extension na ito na baguhin ang header ng kahilingan na &quot;<ph name="HEADER_NAME"/>&quot; ng isang kahilingan sa network dahil sumalungat ang pagbabago sa isa pang extension (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Pumili ng mga USB device</translation>
 <translation id="6731255991101203740">Hindi malikha ang direktoryo para sa pag-unzip: '<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="545850661681880228">Pumili ng HID device</translation>
 <translation id="4233778200880751280">Hindi ma-load ang page na tungkol dito na '<ph name="ABOUT_PAGE"/>'.</translation>
 <translation id="388442998277590542">Hindi ma-load ang pahina ng mga pagpipilian na '<ph name="OPTIONS_PAGE"/>'.</translation>
 <translation id="5127881134400491887">Pamahalaan ang mga koneksyon ng network</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">I-configure ang mga koneksyon sa network</translation>
 <translation id="7154130902455071009">Gawing ito ang iyong panimulang pahina: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">I-access ang anuman sa mga USB device na ito</translation>
-<translation id="2677911863018634147">Humihiling ang application na &quot;<ph name="APP_NAME"/>&quot; ng access sa isa o higit pa sa iyong mga device.</translation>
 <translation id="6698810901424468597">Basahin at baguhin ang iyong data sa <ph name="WEBSITE_1"/> at <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Hindi ma-decode ang larawan: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="2048182445208425546">I-access ang trapiko ng iyong network</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">I-access ang anumang <ph name="PRODUCT_NAME_AND_VENDOR"/> sa pamamagitan ng USB</translation>
 <translation id="1803557475693955505">Maaaring hindi mai-load ang pahina ng background '<ph name="BACKGROUND_PAGE"/>'.</translation>
 <translation id="2988488679308982380">Hindi ma-install ang package: '<ph name="ERROR_CODE"/>'</translation>
-<translation id="5751530153776468604">Humihiling ang application na &quot;<ph name="APP_NAME"/>&quot; ng access sa isa sa iyong mga device.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> mula sa vendor na <ph name="VENDOR_ID"/> (serial number na <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Mga Opsyon: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Di-wasto ang package. Mga Detalye: '<ph name="ERROR_MESSAGE"/>'.</translation>

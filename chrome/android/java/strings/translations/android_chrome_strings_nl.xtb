@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Bovenliggende map</translation>
 <translation id="2354750644801399986">'Niet bijhouden'</translation>
 <translation id="2351097562818989364">Je vertaalinstellingen zijn opnieuw ingesteld.</translation>
+<translation id="1557201757634521564">Codering automatisch detecteren</translation>
 <translation id="4307992518367153382">Basisinstellingen</translation>
 <translation id="8007176423574883786">Uitgeschakeld voor dit apparaat</translation>
 <translation id="119944043368869598">Alles wissen</translation>
@@ -301,6 +302,7 @@ Klik op de knop 'Terug' om te sluiten.</translation>
 <translation id="1197267115302279827">Bladwijzers verplaatsen</translation>
 <translation id="3190152372525844641">Schakel rechten in voor Chrome via de <ph name="BEGIN_LINK"/>Android-instellingen<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Chrome kan de Google-servers niet bereiken voor gegevenscompressie. De besparing op je gegevensgebruik is mogelijk beperkt.</translation>
+<translation id="6324360525379265737">Tekencodering automatisch detecteren</translation>
 <translation id="4827948050554950725">Een creditcard toevoegen</translation>
 <translation id="2316129865977710310">Nee, bedankt</translation>
 <translation id="4278390842282768270">Toegestaan</translation>
@@ -376,8 +378,10 @@ Klik op de knop 'Terug' om te sluiten.</translation>
 <translation id="699220179437400583">Automatisch informatie over mogelijke beveiligingsincidenten aan Google melden</translation>
 <translation id="5899349522111170522">Nieuw bestand maken</translation>
 <translation id="3158619413803296679">Een bladwijzer kiezen</translation>
+<translation id="1832521218263067499">Beveiligingsincidenten</translation>
 <translation id="6138140242378429169">Pagina geschikt maken voor mobiele apparaten</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> is verwijderd</translation>
+<translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="2360035970720276770">Kan alleen URL's met 'http' of 'https' downloaden</translation>
 <translation id="7926911226829060241">Je geopende bladwijzers, geschiedenis, wachtwoorden en meer worden gesynchroniseerd met je Google-account.</translation>
 <translation id="4871370605780490696">Bladwijzer toevoegen</translation>
@@ -441,6 +445,7 @@ Gebruiksstatistieken omvatten informatie zoals voorkeuren, klikken op knoppen en
 <translation id="1285320974508926690">Deze site nooit vertalen</translation>
 <translation id="4165986682804962316">Site-instellingen</translation>
 <translation id="3672452749423051839">Suggesties bij navigatiefouten</translation>
+<translation id="307329814453917357">Aanbieden pagina's te vertalen met Google Translate</translation>
 <translation id="2956410042958133412">Dit account wordt beheerd door <ph name="PARENT_NAME_1"/> en <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Nee, bedankt</translation>
 <translation id="5164482624172255778">Wil je dat Google Chrome de volgende keer aanbiedt om pagina's in het <ph name="LANGUAGE"/> op deze site te vertalen?</translation>

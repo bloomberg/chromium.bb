@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Viršaplankis</translation>
 <translation id="2354750644801399986">Nestebėti</translation>
 <translation id="2351097562818989364">Vertimo nustatymai buvo nustatyti iš naujo.</translation>
+<translation id="1557201757634521564">Automatiškai aptikti koduotę</translation>
 <translation id="4307992518367153382">Pagrindai</translation>
 <translation id="8007176423574883786">Išjungta šiame įrenginyje</translation>
 <translation id="119944043368869598">Valyti viską</translation>
@@ -301,6 +302,7 @@ Spustelėkite mygtuką „Atgal“, kad išeitumėte.</translation>
 <translation id="1197267115302279827">Perkelti žymes</translation>
 <translation id="3190152372525844641">Įjunkite „Chrome“ leidimus <ph name="BEGIN_LINK"/>„Android“ nustatymuose<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">„Chrome“ negali pasiekti „Google“ serverių dėl duomenų glaudinimo. Duomenų išsaugojimas gali būti apribotas.</translation>
+<translation id="6324360525379265737">Automatiškai nustatyti ženklų koduotę</translation>
 <translation id="4827948050554950725">Pridėti kredito kortelę</translation>
 <translation id="2316129865977710310">Ačiū, ne</translation>
 <translation id="4278390842282768270">Leidžiama</translation>
@@ -377,8 +379,10 @@ Spustelėkite mygtuką „Atgal“, kad išeitumėte.</translation>
 <translation id="699220179437400583">Automatiškai pateikti išsamią informaciją apie galimas saugos problemas „Google“.</translation>
 <translation id="5899349522111170522">Sukurti naują failą</translation>
 <translation id="3158619413803296679">Pasirinkti žymę</translation>
+<translation id="1832521218263067499">Su sauga susiję įvykiai</translation>
 <translation id="6138140242378429169">Padarykite, kad puslapis būtų skirtas mobiliesiems</translation>
 <translation id="5345040418939504969">Ištrinta „<ph name="BOOKMARK_TITLE"/>“</translation>
+<translation id="1641113438599504367">Saugus naršymas</translation>
 <translation id="2360035970720276770">Galima atsisiųsti tik iš HTTP arba HTTPS protokolo URL</translation>
 <translation id="7926911226829060241">Atidarytos žymės, istorija, slaptažodžiai ir kiti duomenys yra sinchronizuojami „Google“ paskyroje.</translation>
 <translation id="4871370605780490696">Žymės pridėjimas</translation>
@@ -442,6 +446,7 @@ Naudojimo statistika yra įvairi informacija, įskaitant nuostatas, mygtukų pas
 <translation id="1285320974508926690">Niekada neversti šios svetainės</translation>
 <translation id="4165986682804962316">Svetainės nustatymai</translation>
 <translation id="3672452749423051839">Naršymo klaidų pasiūlymai</translation>
+<translation id="307329814453917357">Siūlyti versti puslapius naudojant „Google“ vertėją</translation>
 <translation id="2956410042958133412">Šią paskyrą tvarko <ph name="PARENT_NAME_1"/> ir <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Ačiū, ne</translation>
 <translation id="5164482624172255778">Ar norėtumėte, kad kitą kartą „Google Chrome“ būtų siūloma išversti šios svetainės puslapius <ph name="LANGUAGE"/> k.?</translation>

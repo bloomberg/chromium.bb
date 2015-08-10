@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Overordnet mappe</translation>
 <translation id="2354750644801399986">Ikke spor</translation>
 <translation id="2351097562818989364">Oversettelsesinnstillingene dine er tilbakestilt.</translation>
+<translation id="1557201757634521564">Gjenkjenn omgjøring til kode automatisk</translation>
 <translation id="4307992518367153382">Generelt</translation>
 <translation id="8007176423574883786">Slått av for denne enheten</translation>
 <translation id="119944043368869598">Fjern alle</translation>
@@ -301,6 +302,7 @@ Trykk på tilbake-knappen for å avslutte.</translation>
 <translation id="1197267115302279827">Flytt bokmerker</translation>
 <translation id="3190152372525844641">Slå på tillatelsene for Chrome i <ph name="BEGIN_LINK"/>Android-innstillingene<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Chrome kunne ikke kontakte Google-tjenerne for datakomprimering. Det kan hende at du bare oppnår begrenset datasparing.</translation>
+<translation id="6324360525379265737">Fastslå tegnkoding automatisk</translation>
 <translation id="4827948050554950725">Legg til et kredittkort</translation>
 <translation id="2316129865977710310">Nei takk</translation>
 <translation id="4278390842282768270">Tillatt</translation>
@@ -376,8 +378,10 @@ Trykk på tilbake-knappen for å avslutte.</translation>
 <translation id="699220179437400583">Rapportér detaljer om mulige sikkerhetsbrudd til Google automatisk</translation>
 <translation id="5899349522111170522">Opprett en ny fil</translation>
 <translation id="3158619413803296679">Velg et bokmerke</translation>
+<translation id="1832521218263067499">Sikkerhetshendelser</translation>
 <translation id="6138140242378429169">Gjør siden mobilvennlig</translation>
 <translation id="5345040418939504969">Slettet <ph name="BOOKMARK_TITLE"/></translation>
+<translation id="1641113438599504367">Sikker surfing</translation>
 <translation id="2360035970720276770">Kan bare laste ned nettadresser som begynner på «http» eller «https».</translation>
 <translation id="7926911226829060241">Bokmerkene, loggen, passordene og annet som du har åpent, synkroniseres med Google-kontoen din.</translation>
 <translation id="4871370605780490696">Legg til bokmerke</translation>
@@ -441,6 +445,7 @@ Bruksstatistikken inneholder informasjon om for eksempel innstillinger, knappekl
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
 <translation id="4165986682804962316">Nettstedsinnstillinger</translation>
 <translation id="3672452749423051839">Forslag ved navigasjonsfeil</translation>
+<translation id="307329814453917357">Tilby oversettelse av nettsider ved hjelp av Google Oversetter</translation>
 <translation id="2956410042958133412">Denne kontoen er administrert av <ph name="PARENT_NAME_1"/> og <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Nei takk</translation>
 <translation id="5164482624172255778">Vil du at Google Chrome skal tilby seg å oversette sider på <ph name="LANGUAGE"/> fra dette nettstedet neste gang?</translation>

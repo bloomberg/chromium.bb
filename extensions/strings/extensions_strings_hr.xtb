@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">upotrijebiti vaš mikrofon i kameru</translation>
 <translation id="2857834222104759979">Datoteka manifesta nije važeća.</translation>
 <translation id="6384275966486438344">promijeniti postavke pretraživanja u: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Odaberite USB uređaj</translation>
 <translation id="1445572445564823378">Ovo proširenje usporava uslugu <ph name="PRODUCT_NAME"/>. Trebali biste ga onemogućiti da biste vratili uspješan rad usluge <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7003844668372540529">Nepoznati proizvod <ph name="PRODUCT_ID"/>, <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">pristupiti vašim serijski spojenim uređajima</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">pristupiti informacijama o Bluetooth uređajima uparenim s vašim sustavom i otkrivati Bluetooth uređaje u blizini</translation>
 <translation id="8749863574775030885">pristupiti USB uređajima nepoznatog dobavljača</translation>
-<translation id="781637217073033149">Odabir HID uređaja</translation>
 <translation id="3115238746683532089">Nepoznati proizvod <ph name="PRODUCT_ID"/> dobavljača <ph name="VENDOR_ID"/> (serijski broj <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> od dobavljača <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Nije bilo moguće učitati pozadinsku skriptu &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Otpakiravanje proširenja</translation>
 <translation id="149347756975725155">Nije uspjelo učitavanje ikone proširenja &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Ovo proširenje nije uspjelo izmijeniti zaglavlje zahtjeva &quot;<ph name="HEADER_NAME"/>&quot; mrežnog zahtjeva jer je izmjena sukobljena s drugim proširenjem (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Odaberite USB uređaje</translation>
 <translation id="6731255991101203740">Nije uspjelo stvaranje direktorija za raspakiravanje: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
-<translation id="545850661681880228">Odabir HID uređaja</translation>
 <translation id="4233778200880751280">Nije uspjelo učitavanje stranice s informacijama &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
 <translation id="388442998277590542">Nije uspjelo učitavanje stranice opcija &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
 <translation id="5127881134400491887">upravljati mrežnim vezama</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Konfiguracija mrežnih veza</translation>
 <translation id="7154130902455071009">promijeniti vašu početnu stranicu u: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">pristupiti bilo kojem od ovih USB uređaja</translation>
-<translation id="2677911863018634147">Aplikacija &quot;<ph name="APP_NAME"/>&quot; zahtijeva pristup nekom od vaših uređaja.</translation>
 <translation id="6698810901424468597">čitati i mijenjati vaše podatke na web-lokacijama <ph name="WEBSITE_1"/> i <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Nije uspjelo dekodiranje slike: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
 <translation id="2048182445208425546">pristupiti vašem mrežnom prometu</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">pristupiti bilo kojem uređaju <ph name="PRODUCT_NAME_AND_VENDOR"/> putem USB-a</translation>
 <translation id="1803557475693955505">Nije uspjelo učitavanje pozadinske stranice &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
 <translation id="2988488679308982380">Nije moguće instaliranje paketa: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
-<translation id="5751530153776468604">Aplikacija &quot;<ph name="APP_NAME"/>&quot; zahtijeva pristup jednom od vaših uređaja.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> dobavljača <ph name="VENDOR_ID"/> (serijski broj <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Opcije: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Paket je nevažeći. Pojedinosti &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>

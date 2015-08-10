@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">โฟลเดอร์ระดับบนสุด</translation>
 <translation id="2354750644801399986">&quot;ไม่ติดตาม&quot;</translation>
 <translation id="2351097562818989364">รีเซ็ตการตั้งค่าการแปลภาษาของคุณแล้ว</translation>
+<translation id="1557201757634521564">ตรวจหาการเข้ารหัสโดยอัตโนมัติ</translation>
 <translation id="4307992518367153382">พื้นฐาน</translation>
 <translation id="8007176423574883786">ปิดสำหรับอุปกรณ์นี้</translation>
 <translation id="119944043368869598">ล้างทั้งหมด</translation>
@@ -301,6 +302,7 @@
 <translation id="1197267115302279827">ย้ายบุ๊กมาร์ก</translation>
 <translation id="3190152372525844641">เปิดการใช้สิทธิ์สำหรับ Chrome ใน<ph name="BEGIN_LINK"/>การตั้งค่า Android<ph name="END_LINK"/></translation>
 <translation id="583891442612896534">Chrome ไม่สามารถเข้าถึงเซิร์ฟเวอร์ Google เพื่อบีบอัดข้อมูล การประหยัดอินเทอร์เน็ตของคุณอาจมีข้อจำกัด</translation>
+<translation id="6324360525379265737">ระบุการเข้ารหัสอักขระโดยอัตโนมัติ</translation>
 <translation id="4827948050554950725">เพิ่มบัตรเครดิต</translation>
 <translation id="2316129865977710310">ไม่ ขอบคุณ</translation>
 <translation id="4278390842282768270">อนุญาตแล้ว</translation>
@@ -376,8 +378,10 @@
 <translation id="699220179437400583">รายงานรายละเอียดของเหตุการณ์ความปลอดภัยที่เป็นไปได้ต่อ Google โดยอัตโนมัติ</translation>
 <translation id="5899349522111170522">สร้างไฟล์ใหม่</translation>
 <translation id="3158619413803296679">เลือกบุ๊กมาร์ก</translation>
+<translation id="1832521218263067499">เหตุการณ์ด้านความปลอดภัย</translation>
 <translation id="6138140242378429169">ทำให้หน้าเหมาะกับอุปกรณ์เคลื่อนที่</translation>
 <translation id="5345040418939504969">ลบ <ph name="BOOKMARK_TITLE"/> แล้ว</translation>
+<translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="2360035970720276770">ดาวน์โหลดได้เฉพาะ URL แบบ HTTP หรือ HTTPS</translation>
 <translation id="7926911226829060241">กำลังซิงค์บุ๊กมาร์กที่เปิด ประวัติการเข้าชม รหัสผ่าน และอื่นๆ กับบัญชี Google</translation>
 <translation id="4871370605780490696">เพิ่มบุ๊กมาร์ก</translation>
@@ -441,6 +445,7 @@
 <translation id="1285320974508926690">ไม่ต้องแปลไซต์นี้</translation>
 <translation id="4165986682804962316">การตั้งค่าไซต์</translation>
 <translation id="3672452749423051839">คำแนะนำเมื่อเกิดข้อผิดพลาดในการนำทาง</translation>
+<translation id="307329814453917357">เสนอให้แปลหน้าเว็บโดยใช้ Google แปลภาษา</translation>
 <translation id="2956410042958133412">บัญชีนี้ได้รับการจัดการโดย <ph name="PARENT_NAME_1"/> และ <ph name="PARENT_NAME_2"/></translation>
 <translation id="780301667611848630">ไม่ ขอบคุณ</translation>
 <translation id="5164482624172255778">คุณต้องการให้ Google Chrome เสนอการแปลหน้าเว็บภาษา<ph name="LANGUAGE"/>จากไซต์นี้ในครั้งต่อไปไหม</translation>

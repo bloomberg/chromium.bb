@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Nadređena mapa</translation>
 <translation id="2354750644801399986">&quot;Nemoj pratiti&quot;</translation>
 <translation id="2351097562818989364">Vaše su postavke prevođenja vraćene na zadano.</translation>
+<translation id="1557201757634521564">Automatski otkrij kodiranje</translation>
 <translation id="4307992518367153382">Osnove</translation>
 <translation id="8007176423574883786">Isključeno za ovaj uređaj</translation>
 <translation id="119944043368869598">Očisti sve</translation>
@@ -301,6 +302,7 @@ Za izlazak pritisnite gumb Natrag.</translation>
 <translation id="1197267115302279827">Premjesti oznake</translation>
 <translation id="3190152372525844641">Uključite dopuštenja za Chrome u <ph name="BEGIN_LINK"/>Postavkama Androida<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Chrome ne može pristupiti Googleovim poslužiteljima za kompresiju podataka. Ušteda na prijenosu podataka može biti ograničena.</translation>
+<translation id="6324360525379265737">Automatsko određivanje kodiranja znakova</translation>
 <translation id="4827948050554950725">Dodaj kreditnu karticu</translation>
 <translation id="2316129865977710310">Ne, hvala</translation>
 <translation id="4278390842282768270">Dopušteno</translation>
@@ -376,8 +378,10 @@ Za izlazak pritisnite gumb Natrag.</translation>
 <translation id="699220179437400583">Automatski prijavi Googleu pojedinosti o mogućim sigurnosnim incidentima</translation>
 <translation id="5899349522111170522">Napravi novu datoteku</translation>
 <translation id="3158619413803296679">Odaberite oznaku</translation>
+<translation id="1832521218263067499">Sigurnosni incidenti</translation>
 <translation id="6138140242378429169">Prilagodite stranicu mobilnim uređajima</translation>
 <translation id="5345040418939504969">Izbrisana je oznaka <ph name="BOOKMARK_TITLE"/></translation>
+<translation id="1641113438599504367">Sigurno pregledavanje</translation>
 <translation id="2360035970720276770">Mogu se preuzeti samo http ili https URL-ovi</translation>
 <translation id="7926911226829060241">Otvorene oznake, povijest, zaporke i brojni drugi podaci sinkroniziraju se s vašim Google računom.</translation>
 <translation id="4871370605780490696">Dodavanje oznake</translation>
@@ -441,6 +445,7 @@ Samo otvorite Chrome na računalu, otvorite izbornik i odaberite &quot;Prijava n
 <translation id="1285320974508926690">Nikad nemoj prevoditi ovu web-lokaciju</translation>
 <translation id="4165986682804962316">Postavke web-lokacije</translation>
 <translation id="3672452749423051839">Prijedlozi pogreške kretanja</translation>
+<translation id="307329814453917357">Ponudi prijevod stranica pomoću Google prevoditelja</translation>
 <translation id="2956410042958133412">Računom upravljaju <ph name="PARENT_NAME_1"/> i <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="5164482624172255778">Želite li da Google Chrome sljedeći put ponudi prijevod stranica s ove web-lokacije za <ph name="LANGUAGE"/> jezik?</translation>

@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Використовувати ваш мікрофон і камеру</translation>
 <translation id="2857834222104759979">Файл маніфесту недійсний.</translation>
 <translation id="6384275966486438344">Використовувати пошукову систему <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Вибрати пристрій USB</translation>
 <translation id="1445572445564823378">Це розширення сповільнює <ph name="PRODUCT_NAME"/>. Щоб відновити ефективність <ph name="PRODUCT_NAME"/>, потрібно його вимкнути.</translation>
 <translation id="7003844668372540529">Невідомий продукт <ph name="PRODUCT_ID"/> від постачальника <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Отримувати доступ до серійних пристроїв</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Обробник MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Переглядати інформацію про пристрої Bluetooth, підключені до вашої системи, і знаходити пристрої Bluetooth поблизу.</translation>
 <translation id="8749863574775030885">Отримувати доступ до пристроїв USB від невідомого постачальника</translation>
-<translation id="781637217073033149">Вибрати пристрої HID</translation>
 <translation id="3115238746683532089">Невідомий продукт <ph name="PRODUCT_ID"/> від постачальника <ph name="VENDOR_ID"/> (серійний номер: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> від постачальника <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Не вдалося завантажити фоновий сценарій &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Засіб розпакування розширень</translation>
 <translation id="149347756975725155">Не вдалося завантажити піктограму розширення &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Це розширення не змінило заголовок запиту &quot;<ph name="HEADER_NAME"/>&quot; в запиті мережі, оскільки виник конфлікт з іншим розширенням (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Вибрати пристрої USB</translation>
 <translation id="6731255991101203740">Не вдалося створити каталог для розпакування: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
-<translation id="545850661681880228">Вибрати пристрій HID</translation>
 <translation id="4233778200880751280">Не вдалося завантажити сторінку з інформацією про &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
 <translation id="388442998277590542">Не вдалося завантажити сторінку параметрів &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
 <translation id="5127881134400491887">Керувати мережевими з’єднаннями</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Налаштувати з’єднання з мережею</translation>
 <translation id="7154130902455071009">Зробити <ph name="START_PAGE"/> домашньою сторінкою</translation>
 <translation id="1036511912703768636">Отримувтаи доступ до цих пристроїв USB</translation>
-<translation id="2677911863018634147">Додаток <ph name="APP_NAME"/> запитує доступ до одного або кількох ваших пристроїв.</translation>
 <translation id="6698810901424468597">Читати та змінювати свої дані на веб-сайтах <ph name="WEBSITE_1"/> і <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Не вдалося декодувати зображення: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
 <translation id="2048182445208425546">Отримувати доступ до трафіку мережі</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Отримувтаи доступ до продукту <ph name="PRODUCT_NAME_AND_VENDOR"/> через USB</translation>
 <translation id="1803557475693955505">Не вдалося завантажити фонову сторінку &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
 <translation id="2988488679308982380">Неможливо встановити пакет: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
-<translation id="5751530153776468604">Додаток <ph name="APP_NAME"/> запитує доступ до одного з ваших пристроїв.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> від постачальника <ph name="VENDOR_ID"/> (серійний номер: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Параметри: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Пакет недійсний. Деталі: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>

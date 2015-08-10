@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">તમારા માઇક્રોફોનનો અને કૅમેરાનો ઉપયોગ કરો</translation>
 <translation id="2857834222104759979">મેનિફેસ્ટ ફાઇલ અમાન્ય છે.</translation>
 <translation id="6384275966486438344">આ પર તમારી શોધ સેટિંગ્સ બદલો: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">એક USB ઉપકરણ પસંદ કરો</translation>
 <translation id="1445572445564823378">આ એક્સ્ટેંશન <ph name="PRODUCT_NAME"/> ને ધીમુ કરી રહ્યું છે. <ph name="PRODUCT_NAME"/> ના પ્રદર્શનને પુનર્સ્થાપિત કરવા માટે તમારે તેને અક્ષમ કરવું જોઈએ. </translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME"/> નું અજાણ્યું ઉત્પાદન <ph name="PRODUCT_ID"/></translation>
 <translation id="1033780634303702874">તમારા સીરિયલ ઉપકરણોને ઍક્સેસ કરો</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">તમારા સિસ્ટમ સાથે જોડી બનાવેલા Bluetooth ઉપકરણો વિશેની માહિતી ઍક્સેસ કરો અને નજીકના Bluetooth ઉપકરણોની શોધ કરો.</translation>
 <translation id="8749863574775030885">અજાણ્યા વિક્રેતા પાસેથી USB ઉપકરણો ઍક્સેસ કરો</translation>
-<translation id="781637217073033149">HID ઉપકરણો પસંદ કરો</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID"/> વિક્રેતાનું અજાણ્યું ઉત્પાદન <ph name="PRODUCT_ID"/> (શૃંખલા ક્રમાંક <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME"/> તરફથી <ph name="PRODUCT_NAME"/></translation>
 <translation id="657064425229075395">પૃષ્ઠભૂમિ સ્ક્રિપ્ટ '<ph name="BACKGROUND_SCRIPT"/>' લોડ કરી શકાઈ નથી.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">વિસ્તાર અનપેકર</translation>
 <translation id="149347756975725155">એક્સ્ટેંશન આયકન '<ph name="ICON"/>' લોડ કરી શકાયું નથી.</translation>
 <translation id="8825366169884721447">આ એક્સટેન્શન એક નેટવર્ક વિનંતીની વિનંતી હેડર &quot;<ph name="HEADER_NAME"/>&quot; ને સંશોધિત કરવામાં નિષ્ફળ થયુ કારણ કે સંશોધિકરણ અન્ય એક્સટેન્શન (<ph name="EXTENSION_NAME"/>) સાથે વિરોધાભાસી છે.</translation>
-<translation id="4776856853352853275">USB ઉપકરણો પસંદ કરો</translation>
 <translation id="6731255991101203740">આને અનઝિપ કરવા માટે નિર્દેશિકા બનાવી શક્યાં નથી: '<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="545850661681880228">એક HID ઉપકરણ પસંદ કરો</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' વિશે પૃષ્ઠ લોડ કરી શકાયું નથી.</translation>
 <translation id="388442998277590542">વિકલ્પોનું પૃષ્ઠ '<ph name="OPTIONS_PAGE"/>' લોડ કરી શકાયું નથી.</translation>
 <translation id="5127881134400491887">નેટવર્ક કનેક્શન્સનું સંચાલન કરો</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">નેટવર્ક કનેક્શન્સ ગોઠવો</translation>
 <translation id="7154130902455071009">તમારા પ્રારંભ પૃષ્ઠને આ પર બદલો: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">આ USB ઉપકરણોમાંથી કોઈપણ ઍક્સેસ કરો</translation>
-<translation id="2677911863018634147">એપ્લિકેશન &quot;<ph name="APP_NAME"/>&quot; તમારા એક અથવા વધુ ઉપકરણો પરની ઍક્સેસની વિનંતી કરી રહી છે.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> અને <ph name="WEBSITE_2"/> પર તમારો ડેટા વાંચો અને બદલો</translation>
 <translation id="2159915644201199628">છબીને ડિકોડ કરી શક્યાં નથી: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="2048182445208425546">તમારા નેટવર્ક ટ્રાફિકની ઍક્સેસ</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">USB દ્વારા કોઈપણ <ph name="PRODUCT_NAME_AND_VENDOR"/> ઍક્સેસ કરો</translation>
 <translation id="1803557475693955505">પૃષ્ઠભૂમિ પૃષ્ઠ '<ph name="BACKGROUND_PAGE"/>' લોડ કરી શકાયું નથી.</translation>
 <translation id="2988488679308982380">પૅકેજ ઇન્સ્ટોલ કરી શકાયું નહીં: '<ph name="ERROR_CODE"/>'</translation>
-<translation id="5751530153776468604">એપ્લિકેશન &quot;<ph name="APP_NAME"/>&quot; તમારા ઉપકરણો પૈકી એક પરની ઍક્સેસની વિનંતી કરી રહી છે.</translation>
 <translation id="3466070586188012397"><ph name="VENDOR_ID"/> વિક્રેતા તરફથી <ph name="PRODUCT_NAME"/> (શૃંખલા ક્રમાંક <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">વિકલ્પો: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">પૅકેજ અમાન્ય છે. વિગતો: '<ph name="ERROR_MESSAGE"/>'.</translation>

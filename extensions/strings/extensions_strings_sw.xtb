@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Tumia kipazasauti na kamera yako</translation>
 <translation id="2857834222104759979">Faili ya ratiba sio halali.</translation>
 <translation id="6384275966486438344">Badilisha mipangilio yako ya kutafuta iwe: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Chagua kifaa cha USB</translation>
 <translation id="1445572445564823378">Kiendelezi hiki kinapunguza kasi ya <ph name="PRODUCT_NAME"/>. Unafa kukilemaza ili kurejesha upya utendaji wa <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7003844668372540529">Bidhaa isiyojulikana <ph name="PRODUCT_ID"/> kutoka kwa <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Fikia vifaa vyako tambulishi</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Kishikilio cha Mime: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Fikia maelezo kuhusu vifaa vya Bluetooth vilivyooanishwa na mfumo wako na ugundue vifaa vya karibu vya Bluetooth.</translation>
 <translation id="8749863574775030885">Fikia vifaa vya USB kutoka kwa mchuuzi asiyejulikana</translation>
-<translation id="781637217073033149">Chagua vifaa vya HID</translation>
 <translation id="3115238746683532089">Bidhaa isiyojulikana <ph name="PRODUCT_ID"/> kutoka kwa mchuuzi <ph name="VENDOR_ID"/> (nambari tambulishi <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> kutoka <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Haikuweza kupakia hati ya mandharinyuma '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Kipakuaji cha Viendelezi</translation>
 <translation id="149347756975725155">Aikoni '<ph name="ICON"/>' ya kiendelezi haikuweza kupakiwa.</translation>
 <translation id="8825366169884721447">Kiendelezi hiki kimeshindwa kuboresha kichwa cha ombi &quot;<ph name="HEADER_NAME"/>&quot; cha ombi la mtandao kwa sababu uboreshaji umekinzana na kiendelezi kingine (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Chagua vifaa vya USB</translation>
 <translation id="6731255991101203740">Isingeweza kuunda saraka ya kufungua: '<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="545850661681880228">Chagua kifaa cha HID</translation>
 <translation id="4233778200880751280">Haikuweza kupakia ukurasa wa kuhusu '<ph name="ABOUT_PAGE"/>'.</translation>
 <translation id="388442998277590542">Isingeweza kupakia ukurasa wa chaguo <ph name="OPTIONS_PAGE"/> '.</translation>
 <translation id="5127881134400491887">Dhibiti miunganisho ya mtandao</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Sanidi miunganisho ya mtandao</translation>
 <translation id="7154130902455071009">Badilisha ukurasa wako uwe: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Fikia chochote kati ya vifaa hivi vya USB</translation>
-<translation id="2677911863018634147">Programu &quot;<ph name="APP_NAME"/>&quot; inaomba uwezo wa kufikia kifaa chako kimoja au zaidi.</translation>
 <translation id="6698810901424468597">Kusoma na kubadilisha data yako kwenye <ph name="WEBSITE_1"/> na <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Isingeweza kusimbua picha: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="2048182445208425546">Fikia trafiki ya mtandao wako</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Fikia <ph name="PRODUCT_NAME_AND_VENDOR"/> chochote kupitia USB</translation>
 <translation id="1803557475693955505">Ukurasa wa mandhari '<ph name="BACKGROUND_PAGE"/>' haukuweza kupakiwa.</translation>
 <translation id="2988488679308982380">Isingeweza kusakinisha furushi: '<ph name="ERROR_CODE"/>'</translation>
-<translation id="5751530153776468604">Programu &quot;<ph name="APP_NAME"/>&quot; inaomba uwezo wa kufikia mojawapo ya vifaa vyako.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> kutoka kwa mchuuzi <ph name="VENDOR_ID"/> (nambari tambulishi <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Chaguzi: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Furushi ni batili. Maelezo: '<ph name="ERROR_MESSAGE"/>'.</translation>

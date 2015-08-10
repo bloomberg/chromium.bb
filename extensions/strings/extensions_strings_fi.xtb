@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Käyttää mikrofonia ja kameraa</translation>
 <translation id="2857834222104759979">Luettelotiedosto on virheellinen.</translation>
 <translation id="6384275966486438344">Ota käyttöön seuraava hakukone: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Valitse USB-laite</translation>
 <translation id="1445572445564823378">Tämä laajennus hidastaa tuotetta <ph name="PRODUCT_NAME"/>. Poista laajennus käytöstä tehostaaksesi tuotteen <ph name="PRODUCT_NAME"/> toimintaa.</translation>
 <translation id="7003844668372540529">Tuntematon tuote <ph name="PRODUCT_ID"/> toimittajalta <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Käyttää sarjaporttilaitteitasi</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Käyttää järjestelmäsi kanssa laitepariksi liitettyjen Bluetooth-laitteiden tietoja ja löytää lähellä olevia Bluetooth-laitteita.</translation>
 <translation id="8749863574775030885">Käyttää tuntemattoman myyjän USB-laitteita.</translation>
-<translation id="781637217073033149">Valitse HID-laitteet</translation>
 <translation id="3115238746683532089">Tuntematon tuote <ph name="PRODUCT_ID"/> toimittajalta <ph name="VENDOR_ID"/> (sarjanumero <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> myyjältä <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Taustakoodin <ph name="BACKGROUND_SCRIPT"/> lataaminen epäonnistui.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Laajennuksien purkaja</translation>
 <translation id="149347756975725155">Laajennuskuvakkeen <ph name="ICON"/> lataaminen ei onnistunut.</translation>
 <translation id="8825366169884721447">Tämä laajennus ei muokannut verkkopyynnön otsikkoa <ph name="HEADER_NAME"/>, koska muokkaus oli ristiriidassa toisen laajennuksen (<ph name="EXTENSION_NAME"/>) kanssa.</translation>
-<translation id="4776856853352853275">Valitse USB-laitteita</translation>
 <translation id="6731255991101203740">Ei voitu luoda hakemistoa <ph name="DIRECTORY_PATH"/> laajennuksen purkamista varten:</translation>
-<translation id="545850661681880228">Valitse HID-laite</translation>
 <translation id="4233778200880751280">Tietosivun <ph name="ABOUT_PAGE"/> lataus epäonnistui.</translation>
 <translation id="388442998277590542">Asetussivun <ph name="OPTIONS_PAGE"/> lataaminen epäonnistui.</translation>
 <translation id="5127881134400491887">hallinnoida verkkoyhteyksiä</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Määrittää verkkoyhteydet</translation>
 <translation id="7154130902455071009">Vaihda aloitussivuksi <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Käyttää kaikkia näitä USB-laitteita</translation>
-<translation id="2677911863018634147">Sovellus <ph name="APP_NAME"/> pyytää käyttölupaa yhteen tai useampaan laitteeseesi.</translation>
 <translation id="6698810901424468597">lukea ja muuttaa tietojasi sivustoissa <ph name="WEBSITE_1"/> ja <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Kuvan koodin purkaminen epäonnistui: <ph name="IMAGE_NAME"/></translation>
 <translation id="2048182445208425546">Käyttää verkkoliikennettäsi</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Käyttää kohdetta <ph name="PRODUCT_NAME_AND_VENDOR"/> USB:n kautta.</translation>
 <translation id="1803557475693955505">Taustasivun <ph name="BACKGROUND_PAGE"/> lataaminen ei onnistunut.</translation>
 <translation id="2988488679308982380">Paketin <ph name="ERROR_CODE"/> asentaminen epäonnistui.</translation>
-<translation id="5751530153776468604">Sovellus <ph name="APP_NAME"/> pyytää käyttöoikeutta yhteen laitteistasi.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> toimittajalta <ph name="VENDOR_ID"/> (sarjanumero <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Vaihtoehdot: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Paketti on virheellinen. Tietoja: <ph name="ERROR_MESSAGE"/>.</translation>

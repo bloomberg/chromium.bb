@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">നിങ്ങളുടെ മൈക്രോഫോണും ക്യാമറയും ഉപയോഗിക്കുക</translation>
 <translation id="2857834222104759979">മാനിഫെസ്റ്റ് ഫയല്‍ അസാധുവാണ്.</translation>
 <translation id="6384275966486438344">നിങ്ങളുടെ തിരയൽ ക്രമീകരണങ്ങൾ മാറ്റുക: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">ഒരു USB ഉപകരണം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="1445572445564823378">ഈ വിപുലീകരണം <ph name="PRODUCT_NAME"/>-നെ മന്ദഗതിയിലാക്കുന്നു. <ph name="PRODUCT_NAME"/>-ന്റെ പ്രകടനം പുനഃസംഭരിക്കുന്നതിനായി നിങ്ങൾ അതിനെ അപ്രാപ്തമാക്കണം.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME"/> എന്നതിൽ നിന്നുള്ള അജ്ഞാത ഉൽപ്പന്നം <ph name="PRODUCT_ID"/></translation>
 <translation id="1033780634303702874">നിങ്ങളുടെ സീരിയൽ ഉപകരണങ്ങൾ ആക്‌സസ്സുചെയ്യുക</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">മൈംഹാൻഡ്‌ലർ: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">നിങ്ങളുടെ സിസ്റ്റവുമായി ജോടിയാക്കിയ Bluetooth ഉപകരണങ്ങളെക്കുറിച്ചുള്ള വിവരങ്ങൾ ആക്‌സസ്സുചെയ്ത് സമീപമുള്ള Bluetooth ഉപകരണങ്ങൾ കണ്ടെത്തുക.</translation>
 <translation id="8749863574775030885">ഒരു അജ്ഞാത വെണ്ടറിൽ നിന്നും USB ഉപകരണങ്ങൾ ആക്‌സസ്സുചെയ്യുക</translation>
-<translation id="781637217073033149">HID ഉപകരണങ്ങൾ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID"/> വെൻഡറിൽ നിന്നുള്ള അജ്ഞാത ഉൽപ്പന്നം <ph name="PRODUCT_ID"/> (സീരിയൽ നമ്പർ <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME"/> എന്നതിൽ നിന്നുള്ള <ph name="PRODUCT_NAME"/></translation>
 <translation id="657064425229075395">പശ്ചാത്തല സ്‌ക്രിപ്റ്റ് '<ph name="BACKGROUND_SCRIPT"/>' ലോഡുചെയ്യാൻ കഴിഞ്ഞില്ല.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">വിപുലീകരണ അൺ‌പാക്കർ</translation>
 <translation id="149347756975725155">വിപുലീകരണ ഐക്കണ്‍ '<ph name="ICON"/>' ലോഡുചെയ്യാനായില്ല.</translation>
 <translation id="8825366169884721447">പരിഷ്‌ക്കാരം മറ്റൊരു (<ph name="EXTENSION_NAME"/>) വിപുലീകരണവുമായി വൈരുദ്ധ്യം സൃഷ്‌ടിക്കുന്നതിനാൽ ഒരു നെറ്റ്‌വർക്ക് അഭ്യർത്ഥനയുടെ അഭ്യർത്ഥന തലക്കെട്ട് &quot;<ph name="HEADER_NAME"/>&quot; പരിഷ്‌ക്കരിക്കുന്നതിൽ ഈ വിപുലീകരണം പരാജയപ്പെട്ടു.</translation>
-<translation id="4776856853352853275">USB ഉപകരണങ്ങൾ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6731255991101203740">അൺസിപ്പ് ചെയ്യാനായി ഡയറക്‌ടറി സൃഷ്‌ടിക്കാൻ കഴിഞ്ഞില്ല: '<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="545850661681880228">ഒരു HID ഉപകരണം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' എന്ന ആമുഖം പേജ് ലോഡുചെയ്യാൻ കഴിഞ്ഞില്ല.</translation>
 <translation id="388442998277590542">'<ph name="OPTIONS_PAGE"/>' ഓപ്ഷനുകള്‍ പേജ് ലോഡുചെയ്യാന്‍ കഴിഞ്ഞില്ല.</translation>
 <translation id="5127881134400491887">നെറ്റ്‌വർക്ക് കണക്ഷനുകൾ നിയന്ത്രിക്കുക</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">നെറ്റ്‌വർക്ക് കണക്ഷനുകൾ കോൺഫിഗർ ചെയ്യുക</translation>
 <translation id="7154130902455071009">നിങ്ങളുടെ ആരംഭ പേജ് ഇതായി മാറ്റുക: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">ഈ USB ഉപകരണങ്ങളിലേതിലേക്കെങ്കിലും ആക്സസ്സുചെയ്യുക</translation>
-<translation id="2677911863018634147">നിങ്ങളുടെ ഒന്നോ അതിലധികമോ ഉപകരണങ്ങളിലേക്കുള്ള ആക്‌സസ്സിന് &quot;<ph name="APP_NAME"/>&quot; അപ്ലിക്കേഷൻ അഭ്യർത്ഥിക്കുന്നു.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> എന്നിവയിലെ നിങ്ങളുടെ ഡാറ്റ വായിക്കുക, മാറ്റുക</translation>
 <translation id="2159915644201199628">ചിത്രം ഡീകോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="2048182445208425546">നിങ്ങളുടെ നെറ്റ്‌വർക്ക് ട്രാഫിക്ക് ആക്‌സസ്സുചെയ്യുക</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">എതെങ്കിലും <ph name="PRODUCT_NAME_AND_VENDOR"/> മുഖേന USB ആക്‌സസ്സുചെയ്യുക</translation>
 <translation id="1803557475693955505">പശ്ചാത്തല പേജ് '<ph name="BACKGROUND_PAGE"/>' ലോഡുചെയ്യാന്‍ കഴിഞ്ഞില്ല.</translation>
 <translation id="2988488679308982380">പാക്കേജ് ഇന്‍സ്റ്റാള്‍ ചെയ്യാന്‍ കഴിഞ്ഞില്ല: '<ph name="ERROR_CODE"/>'</translation>
-<translation id="5751530153776468604">നിങ്ങളുടെ ഉപകരണങ്ങളൊന്നിലേക്കുള്ള ആക്‌സസ്സിന് &quot;<ph name="APP_NAME"/>&quot; അപ്ലിക്കേഷൻ അഭ്യർത്ഥിക്കുന്നു.</translation>
 <translation id="3466070586188012397"><ph name="VENDOR_ID"/> വെൻഡറിൽ നിന്നുള്ള <ph name="PRODUCT_NAME"/> (സീരിയൽ നമ്പർ <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">ഓപ്‌ഷനുകൾ: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">പാക്കേജ് അസാധുവാണ്. വിശദാംശങ്ങള്‍: '<ph name="ERROR_MESSAGE"/>'.</translation>

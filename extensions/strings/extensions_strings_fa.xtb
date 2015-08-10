@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">استفاده از میکروفون و دوربین خود</translation>
 <translation id="2857834222104759979">فایل اظهارنامه نامعتبر است.</translation>
 <translation id="6384275966486438344">تغییر تنظیمات جستجویتان به: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">‏انتخاب دستگاه USB</translation>
 <translation id="1445572445564823378">این برنامهٔ افزودنی سرعت <ph name="PRODUCT_NAME"/> را پایین می‌آورد. شما باید برای بازیابی عملکرد <ph name="PRODUCT_NAME"/> این برنامه را غیرفعال کنید.</translation>
 <translation id="7003844668372540529">محصول نامشخص <ph name="PRODUCT_ID"/> از <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">دسترسی به دستگاه‌های سریال خودتان</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">دسترسی به اطلاعات دستگاه‌های بلوتوث مرتبط شده با سیستم شما و کشف دستگاه‌های بلوتوث در این نزدیکی.</translation>
 <translation id="8749863574775030885">‏دسترسی به دستگاه‌های USB از ارائه‌دهنده ناشناس</translation>
-<translation id="781637217073033149">‏انتخاب دستگاه‌های HID</translation>
 <translation id="3115238746683532089">محصول نامشخص <ph name="PRODUCT_ID"/> از فروشنده <ph name="VENDOR_ID"/> (شماره سریال <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> از <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">بارگیری اسکریپت پس‌زمینه &quot;<ph name="BACKGROUND_SCRIPT"/>&quot; ممکن نیست.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">بازکننده بسته افزونه</translation>
 <translation id="149347756975725155">بارکردن نماد پسوند &quot;<ph name="ICON"/>&quot; ممکن نیست.</translation>
 <translation id="8825366169884721447">این فایل افزودنی نتوانست عنوان درخواست «<ph name="HEADER_NAME"/>» درخواست شبکه را تغییر دهد چون تغییر با فایل افزودنی دیگر (<ph name="EXTENSION_NAME"/>) تناقض داشت.</translation>
-<translation id="4776856853352853275">‏انتخاب دستگاه‌های USB</translation>
 <translation id="6731255991101203740">ایجاد دایرکتوری برای خارج کردن «<ph name="DIRECTORY_PATH"/>» از حالت زیپ امکان‌پذیر نیست</translation>
-<translation id="545850661681880228">‏انتخاب دستگاه HID</translation>
 <translation id="4233778200880751280">صفحه درباره «<ph name="ABOUT_PAGE"/>» بارگیری نشد.</translation>
 <translation id="388442998277590542">صفحه گزینه‌ها &quot;<ph name="OPTIONS_PAGE"/>&quot; بارگیری نشد.</translation>
 <translation id="5127881134400491887">مدیریت اتصالات شبکه</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">پیکربندی اتصالات شبکه</translation>
 <translation id="7154130902455071009">تغییر صفحه شروعتان به: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">‏دسترسی به هر یک از این دستگاه‌های USB</translation>
-<translation id="2677911863018634147">برنامه «<ph name="APP_NAME"/>» درخواست دسترسی به یک یا چند دستگاه شما را دارد.</translation>
 <translation id="6698810901424468597">خواندن و تغییر اطلاعات شما در <ph name="WEBSITE_1"/> و <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">رمزگشایی تصویر امکان‌پذیر نیست: «<ph name="IMAGE_NAME"/>»</translation>
 <translation id="2048182445208425546">دسترسی به ترافیک شبکه شما</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">‏دسترسی به هر <ph name="PRODUCT_NAME_AND_VENDOR"/> از طریق USB</translation>
 <translation id="1803557475693955505">بارگیری صفحه پس‌زمینه &quot;<ph name="BACKGROUND_PAGE"/>&quot; ممکن نیست.</translation>
 <translation id="2988488679308982380">بسته نصب نشد: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
-<translation id="5751530153776468604">برنامه «<ph name="APP_NAME"/>» درخواست دسترسی به یکی از دستگاه‌هایتان را دارد.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> از فروشنده <ph name="VENDOR_ID"/> (شماره سریال <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">گزینه‌ها: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">بسته نامعتبر است. جزئیات: &quot;<ph name="ERROR_MESSAGE"/>&quot;</translation>

@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">親フォルダ</translation>
 <translation id="2354750644801399986">トラッキング拒否</translation>
 <translation id="2351097562818989364">翻訳設定をリセットしました。</translation>
+<translation id="1557201757634521564">エンコードを自動検出する</translation>
 <translation id="4307992518367153382">基本設定</translation>
 <translation id="8007176423574883786">このデバイスに対して無効</translation>
 <translation id="119944043368869598">すべてクリア</translation>
@@ -301,6 +302,7 @@
 <translation id="1197267115302279827">ブックマークを移動</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK"/>Android の設定<ph name="END_LINK"/>で Chrome の権限を有効にしてください。</translation>
 <translation id="583891442612896534">データ圧縮のために Chrome から Google サーバーにアクセスすることができません。データ使用量をあまり削減できない可能性があります。</translation>
+<translation id="6324360525379265737">文字エンコードを自動判定します</translation>
 <translation id="4827948050554950725">クレジット カードを追加</translation>
 <translation id="2316129865977710310">いいえ</translation>
 <translation id="4278390842282768270">許可</translation>
@@ -376,8 +378,10 @@
 <translation id="699220179437400583">セキュリティに関する事象についての詳細を Google に自動送信する</translation>
 <translation id="5899349522111170522">新しいファイルを作成</translation>
 <translation id="3158619413803296679">ブックマークの選択</translation>
+<translation id="1832521218263067499">セキュリティに関する事象</translation>
 <translation id="6138140242378429169">ページをモバイル向け画面で表示</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> を削除しました</translation>
+<translation id="1641113438599504367">セーフ ブラウジング</translation>
 <translation id="2360035970720276770">ダウンロードできるのは http または https の URL のみです</translation>
 <translation id="7926911226829060241">開いているブックマーク、履歴、パスワード、その他の設定を Google アカウントに同期しています。</translation>
 <translation id="4871370605780490696">ブックマークを追加</translation>
@@ -441,6 +445,7 @@
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
 <translation id="4165986682804962316">サイトの設定</translation>
 <translation id="3672452749423051839">アクセスエラー時の候補表示</translation>
+<translation id="307329814453917357">Google 翻訳を使ってページを翻訳するかどうかを尋ねます</translation>
 <translation id="2956410042958133412">このアカウントは <ph name="PARENT_NAME_1"/> と <ph name="PARENT_NAME_2"/> によって管理されています。</translation>
 <translation id="780301667611848630">いいえ</translation>
 <translation id="5164482624172255778">次回から Google Chrome でこのサイトの<ph name="LANGUAGE"/>ページの翻訳を表示しますか？</translation>

@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Usar tu micrófono y tu cámara</translation>
 <translation id="2857834222104759979">Archivo de manifiesto no válido.</translation>
 <translation id="6384275966486438344">Cambiar la configuración de búsqueda por <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Selecciona un dispositivo USB</translation>
 <translation id="1445572445564823378">Esta extensión está ralentizando <ph name="PRODUCT_NAME"/>. Deberías inhabilitarla para restaurar el rendimiento de <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7003844668372540529">Producto desconocido <ph name="PRODUCT_ID"/> de <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Acceder a tus dispositivos en serie</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Controlador MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Acceder a la información sobre los dispositivos Bluetooth sincronizados con el sistema y detectar dispositivos Bluetooth cercanos.</translation>
 <translation id="8749863574775030885">Acceder a dispositivos USB de un proveedor desconocido</translation>
-<translation id="781637217073033149">Seleccionar dispositivos HID</translation>
 <translation id="3115238746683532089">Producto desconocido <ph name="PRODUCT_ID"/> del proveedor <ph name="VENDOR_ID"/> (número de serie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> en <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">No se pudo cargar la secuencia de comandos en segundo plano &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Desempaquetador de extensiones</translation>
 <translation id="149347756975725155">No se pudo cargar el ícono de extensión '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">Esta extensión no pudo modificar el encabezado de solicitud &quot;<ph name="HEADER_NAME"/>&quot; de una solicitud de red porque la modificación entró en conflicto con otra extensión (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Seleccionar dispositivos USB</translation>
 <translation id="6731255991101203740">No se pudo crear un directorio para descomprimir &quot;<ph name="DIRECTORY_PATH"/>&quot;.</translation>
-<translation id="545850661681880228">Seleccionar un dispositivo HID</translation>
 <translation id="4233778200880751280">No se pudo cargar la página de información &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
 <translation id="388442998277590542">No se pudo cargar la página de opciones '<ph name="OPTIONS_PAGE"/>'.</translation>
 <translation id="5127881134400491887">Administrar conexiones de red</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Configurar las conexiones de red</translation>
 <translation id="7154130902455071009">Cambiar la página de inicio por <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Acceder a cualquiera de estos dispositivos USB</translation>
-<translation id="2677911863018634147">La aplicación &quot;<ph name="APP_NAME"/>&quot; está solicitando acceso a uno o más de tus dispositivos.</translation>
 <translation id="6698810901424468597">Leer y modificar tus datos en <ph name="WEBSITE_1"/> y <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">No se pudo decodificar la imagen &quot;<ph name="IMAGE_NAME"/>&quot;.</translation>
 <translation id="2048182445208425546">Acceder al tráfico de la red</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Acceder a cualquier <ph name="PRODUCT_NAME_AND_VENDOR"/> mediante USB</translation>
 <translation id="1803557475693955505">No se pudo cargar la página de fondo '<ph name="BACKGROUND_PAGE"/>'.</translation>
 <translation id="2988488679308982380">No se pudo instalar el paquete: '<ph name="ERROR_CODE"/>'</translation>
-<translation id="5751530153776468604">La aplicación &quot;<ph name="APP_NAME"/>&quot; está solicitando acceso a uno de tus dispositivos.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> del proveedor <ph name="VENDOR_ID"/> (número de serie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Opciones: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">El paquete no es válido. Detalles: '<ph name="ERROR_MESSAGE"/>'.</translation>

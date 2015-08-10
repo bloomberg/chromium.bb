@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Коришћење микрофона и камере</translation>
 <translation id="2857834222104759979">Датотека манифеста је неважећа.</translation>
 <translation id="6384275966486438344">Промените подешавања претраге на: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Изаберите USB уређај</translation>
 <translation id="1445572445564823378">Овај додатак успорава <ph name="PRODUCT_NAME"/>. Требало би да га онемогућите да би се учинак производа <ph name="PRODUCT_NAME"/> вратио.</translation>
 <translation id="7003844668372540529">Непознати производ <ph name="PRODUCT_ID"/> продавца <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Приступ серијским уређајима</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Руковалац за MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Приступање информацијама о Bluetooth уређајима упареним са вашим системом и откривање оближњих Bluetooth уређаја.</translation>
 <translation id="8749863574775030885">Приступ USB уређајима непознатог продавца</translation>
-<translation id="781637217073033149">Изаберите уређаје са интерфејсом за људе</translation>
 <translation id="3115238746683532089">Непознати производ <ph name="PRODUCT_ID"/> продавца <ph name="VENDOR_ID"/> (серијски број <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> продавца <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Није могуће учитати скрипту у позадини „<ph name="BACKGROUND_SCRIPT"/>“.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Распакивање додатака</translation>
 <translation id="149347756975725155">Није могуће учитати икону додатка „<ph name="ICON"/>“.</translation>
 <translation id="8825366169884721447">Овај додатак није успео да измени заглавље захтева „<ph name="HEADER_NAME"/>“ за захтев мреже јер измена није била у складу са другим додатком (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Изаберите USB уређаје</translation>
 <translation id="6731255991101203740">Није могуће направити директоријум за распакивање: „<ph name="DIRECTORY_PATH"/>“</translation>
-<translation id="545850661681880228">Изаберите уређај са интерфејсом за људе</translation>
 <translation id="4233778200880751280">Није могуће учитати страницу са основним подацима „<ph name="ABOUT_PAGE"/>“.</translation>
 <translation id="388442998277590542">Није могуће учитати страницу опција „<ph name="OPTIONS_PAGE"/>“.</translation>
 <translation id="5127881134400491887">Управљање мрежним везама</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Конфигуриши мрежне везе</translation>
 <translation id="7154130902455071009">Промените почетну страницу у: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Приступ било ком од ових USB уређаја</translation>
-<translation id="2677911863018634147">Апликација „<ph name="APP_NAME"/>“ захтева приступ за један уређај или више њих.</translation>
 <translation id="6698810901424468597">Читање и мењање података на <ph name="WEBSITE_1"/> и <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Није могуће декодирати слику: „<ph name="IMAGE_NAME"/>“</translation>
 <translation id="2048182445208425546">Приступ мрежном саобраћају</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Приступ било ком производу <ph name="PRODUCT_NAME_AND_VENDOR"/> преко USB-а</translation>
 <translation id="1803557475693955505">Није могуће учитати страницу у позадини „<ph name="BACKGROUND_PAGE"/>“.</translation>
 <translation id="2988488679308982380">Инсталација пакета није била могућа: „<ph name="ERROR_CODE"/>“</translation>
-<translation id="5751530153776468604">Апликација „<ph name="APP_NAME"/>“ захтева приступ неком од уређаја.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> продавца <ph name="VENDOR_ID"/> (серијски број <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Опције: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Пакет је неважећи. Детаљи: „<ph name="ERROR_MESSAGE"/>“.</translation>

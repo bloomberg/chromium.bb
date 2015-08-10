@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">使用您的麥克風和相機</translation>
 <translation id="2857834222104759979">資訊清單檔案無效。</translation>
 <translation id="6384275966486438344">將您的搜尋設定變更為：<ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">選取一個 USB 裝置</translation>
 <translation id="1445572445564823378">這個擴充功能使得 <ph name="PRODUCT_NAME"/> 運作變慢。建議您停用這個擴充功能，以恢復 <ph name="PRODUCT_NAME"/> 的效能。</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME"/> 提供的不明產品 <ph name="PRODUCT_ID"/></translation>
 <translation id="1033780634303702874">存取您的序列裝置</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">MIME 處理常式：<ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">存取與系統配對的藍牙裝置資訊並搜尋附近的藍牙裝置。</translation>
 <translation id="8749863574775030885">存取製造商不明的 USB 裝置</translation>
-<translation id="781637217073033149">選取多個 HID 裝置</translation>
 <translation id="3115238746683532089">供應商 <ph name="VENDOR_ID"/> 提供的不明產品 <ph name="PRODUCT_ID"/> (序號：<ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> (供應商：<ph name="VENDOR_NAME"/>)</translation>
 <translation id="657064425229075395">無法載入背景指令碼「<ph name="BACKGROUND_SCRIPT"/>」。</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">擴充功能解壓縮工具</translation>
 <translation id="149347756975725155">無法載入擴充功能圖示「<ph name="ICON"/>」。</translation>
 <translation id="8825366169884721447">這個擴充功能無法修改網路要求的「<ph name="HEADER_NAME"/>」要求標頭，因為修改動作與其他擴充功能 (<ph name="EXTENSION_NAME"/>) 發生衝突。</translation>
-<translation id="4776856853352853275">選取一或多個 USB 裝置</translation>
 <translation id="6731255991101203740">無法建立解壓縮目錄：「<ph name="DIRECTORY_PATH"/>」</translation>
-<translation id="545850661681880228">選取一個 HID 裝置</translation>
 <translation id="4233778200880751280">無法載入簡介網頁「<ph name="ABOUT_PAGE"/>」。</translation>
 <translation id="388442998277590542">無法載入「<ph name="OPTIONS_PAGE"/>」選項頁面。</translation>
 <translation id="5127881134400491887">管理網路連線</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">設定網路連線</translation>
 <translation id="7154130902455071009">將您的起始網頁變更為：<ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">存取下列任一 USB 裝置</translation>
-<translation id="2677911863018634147">「<ph name="APP_NAME"/>」應用程式要求存取您的一或多個裝置。</translation>
 <translation id="6698810901424468597">讀取及變更您在 <ph name="WEBSITE_1"/> 和 <ph name="WEBSITE_2"/> 網站上的資料</translation>
 <translation id="2159915644201199628">無法將圖片解碼：「<ph name="IMAGE_NAME"/>」</translation>
 <translation id="2048182445208425546">存取您的網路流量</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">透過 USB 存取任一 <ph name="PRODUCT_NAME_AND_VENDOR"/></translation>
 <translation id="1803557475693955505">無法載入背景頁面「<ph name="BACKGROUND_PAGE"/>」。</translation>
 <translation id="2988488679308982380">無法安裝套件：<ph name="ERROR_CODE"/></translation>
-<translation id="5751530153776468604">「<ph name="APP_NAME"/>」應用程式要求存取您的其中一個裝置。</translation>
 <translation id="3466070586188012397">供應商 <ph name="VENDOR_ID"/> 提供的 <ph name="PRODUCT_NAME"/> (序號：<ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">選項：<ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">套件無效，詳細資料：<ph name="ERROR_MESSAGE"/>。</translation>

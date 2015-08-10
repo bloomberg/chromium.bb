@@ -71,11 +71,11 @@
 <translation id="8628626585870903697">Chromium no inclou el lector de PDF que és necessari perquè la previsualització funcioni.</translation>
 <translation id="7138853919861947730">Chromium pot utilitzar serveis web per millorar l'experiència de navegació dels usuaris.</translation>
 <translation id="4743926867934016338">Accepta i cerca</translation>
-<translation id="2636877269779209383">Chromium necessita tenir accés a la càmera per compartir-la amb aquest lloc.</translation>
+<translation id="2636877269779209383">Chromium necessita accedir a la càmera per compartir-la amb aquest lloc.</translation>
 <translation id="2347108572062610441">Aquesta extensió ha canviat la pàgina que es mostra quan inicieu Chromium.</translation>
 <translation id="3849925841547750267">Lamentablement, la vostra configuració de Mozilla Firefox no està disponible mentre el navegador estigui en funcionament. Per importar la configuració a Chromium, deseu el treball i tanqueu totes les finestres de Firefox. A continuació, feu clic a Continua.</translation>
 <translation id="7027298027173928763">No s'ha pogut fer l'actualització de Chromium a la versió més recent, de manera que esteu perdent funcions noves i correccions de seguretat magnífiques. Heu de tornar a instal·lar Chromium manualment.</translation>
-<translation id="1816404578968201294">Chromium necessita tenir accés a la ubicació per compartir-la amb aquest lloc.</translation>
+<translation id="1816404578968201294">Chromium necessita accedir a la ubicació per compartir-la amb aquest lloc.</translation>
 <translation id="2718390899429598676">Per més seguretat, Chromium encriptarà les vostres dades.</translation>
 <translation id="8897323336392112261">També controla la pàgina que es mostra quan inicieu Chromium o quan feu clic al botó Inici.</translation>
 <translation id="4330585738697551178">Se sap que aquest mòdul entra en conflicte amb Chromium.</translation>
@@ -221,12 +221,12 @@
 <translation id="705851970750939768">Actualitza Chromium</translation>
 <translation id="5772805321386874569">(cal <ph name="BEGIN_BUTTON"/>reiniciar<ph name="END_BUTTON"/> Chromium)</translation>
 <translation id="1688750314291223739">Configureu la sincronització per desar al web les funcions personalitzades del navegador i per accedir-hi des de qualsevol equip mitjançant Chromium.</translation>
-<translation id="8033665941300843262">Chromium necessita tenir permisos d'accés per compartir-los amb aquest lloc.</translation>
+<translation id="8033665941300843262">Chromium necessita accedir als permisos per compartir-los amb aquest lloc.</translation>
 <translation id="8610831143142469229">Configureu el tallafoc o l'antivirus per permetre que Chrome accedeixi a la xarxa.</translation>
 <translation id="6424492062988593837">Chrome ara és millor. Hi ha una versió nova disponible.</translation>
 <translation id="811857857463334932">Aquest ordinador ja no rebrà més actualitzacions de Chromium perquè el seu maquinari ja no s'admet.</translation>
 <translation id="2910007522516064972">Quant a &amp;Chromium</translation>
-<translation id="6637001341228460105">Chromium necessita tenir accés al micròfon per compartir-lo amb aquest lloc.</translation>
+<translation id="6637001341228460105">Chromium necessita accedir al micròfon per compartir-lo amb aquest lloc.</translation>
 <translation id="8453117565092476964">L'arxiu d'instal·lació està malmès o no és vàlid. Torneu a baixar Chromium.</translation>
 <translation id="2558641060352364164">Aquest lloc fa servir el connector Chromium Frame que aviat deixarà de ser compatible. Desinstal·leu-lo i instal·leu un navegador més modern.</translation>
 <translation id="3889543394854987837">Feu clic al vostre nom per obrir Chromium i començar a navegar.</translation>

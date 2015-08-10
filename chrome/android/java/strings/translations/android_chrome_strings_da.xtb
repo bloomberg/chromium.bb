@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Overordnet mappe</translation>
 <translation id="2354750644801399986">&quot;Do Not Track&quot;</translation>
 <translation id="2351097562818989364">Dine oversættelsesindstillinger er nulstillet.</translation>
+<translation id="1557201757634521564">Registrer kodning automatisk</translation>
 <translation id="4307992518367153382">Grundlæggende valgmuligheder</translation>
 <translation id="8007176423574883786">Deaktiveret på denne enhed</translation>
 <translation id="119944043368869598">Ryd alle</translation>
@@ -301,6 +302,7 @@ Tryk på tilbagetasten for at afslutte.</translation>
 <translation id="1197267115302279827">Flyt bogmærker</translation>
 <translation id="3190152372525844641">Aktivér tilladelse for Chrome i <ph name="BEGIN_LINK"/>Indstillinger for Android<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Chrome kan ikke komme i kontakt med Googles servere i forbindelse med datakomprimering. Dine sparede data kan være begrænsede.</translation>
+<translation id="6324360525379265737">Registrer tegnkodning automatisk</translation>
 <translation id="4827948050554950725">Tilføj kreditkort</translation>
 <translation id="2316129865977710310">Nej tak</translation>
 <translation id="4278390842282768270">Tilladt</translation>
@@ -376,8 +378,10 @@ Tryk på tilbagetasten for at afslutte.</translation>
 <translation id="699220179437400583">Rapportér automatisk oplysninger om mulige sikkerhedshændelser til Google.</translation>
 <translation id="5899349522111170522">Opret en ny fil</translation>
 <translation id="3158619413803296679">Vælg et bogmærke</translation>
+<translation id="1832521218263067499">Sikkerhedshændelser</translation>
 <translation id="6138140242378429169">Gør siden mobilvenlig</translation>
 <translation id="5345040418939504969">Slettede <ph name="BOOKMARK_TITLE"/></translation>
+<translation id="1641113438599504367">Sikker browsing</translation>
 <translation id="2360035970720276770">Der kan kun downloades webadresser med &quot;http&quot; eller &quot;https&quot;</translation>
 <translation id="7926911226829060241">Åbne bogmærker, historik, adgangskoder m.m. er ved at blive synkroniseret med din Google-konto.</translation>
 <translation id="4871370605780490696">Tilføj bogmærke</translation>
@@ -441,6 +445,7 @@ Brugsstatistik indeholder oplysninger, såsom præferencer, antal klik på en kn
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
 <translation id="4165986682804962316">Indstillinger for website</translation>
 <translation id="3672452749423051839">Forslag ved navigationsfejl</translation>
+<translation id="307329814453917357">Tilbyd at oversætte sider ved hjælp af Google Oversæt</translation>
 <translation id="2956410042958133412">Denne konto administreres af <ph name="PARENT_NAME_1"/> og <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Nej tak</translation>
 <translation id="5164482624172255778">Skal Google Chrome tilbyde at oversætte sider på <ph name="LANGUAGE"/> fra dette website næste gang?</translation>

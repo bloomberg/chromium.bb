@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Ylätason kansio</translation>
 <translation id="2354750644801399986">Do Not Track</translation>
 <translation id="2351097562818989364">Käännösasetukset on nollattu.</translation>
+<translation id="1557201757634521564">Havaitse merkistökoodaus automaattisesti</translation>
 <translation id="4307992518367153382">Perustiedot</translation>
 <translation id="8007176423574883786">Ei käytössä tällä laitteella</translation>
 <translation id="119944043368869598">Tyhjennä kaikki</translation>
@@ -301,6 +302,7 @@ Palaa painamalla edellinen-painiketta.</translation>
 <translation id="1197267115302279827">Siirrä kirjanmerkkejä</translation>
 <translation id="3190152372525844641">Ota käyttöoikeudet käyttöön Chromelle <ph name="BEGIN_LINK"/>Android-asetuksissa<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Chrome ei saa yhteyttä Googlen palvelimiin tietojen pakkausta varten. Tietojen tallentaminen voi olla rajoitettua.</translation>
+<translation id="6324360525379265737">Tunnista merkistökoodaus automaattisesti.</translation>
 <translation id="4827948050554950725">Lisää luottokortti</translation>
 <translation id="2316129865977710310">Ei kiitos</translation>
 <translation id="4278390842282768270">Sallittu</translation>
@@ -376,8 +378,10 @@ Palaa painamalla edellinen-painiketta.</translation>
 <translation id="699220179437400583">Ilmoita mahdollisista turvallisuusongelmista Googlelle automaattisesti</translation>
 <translation id="5899349522111170522">Luo uusi tiedosto.</translation>
 <translation id="3158619413803296679">Valitse kirjanmerkki</translation>
+<translation id="1832521218263067499">Tietoturvatapaukset</translation>
 <translation id="6138140242378429169">Tee sivusta mobiililaitteisiin sopiva</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> poistettiin.</translation>
+<translation id="1641113438599504367">Selaussuoja</translation>
 <translation id="2360035970720276770">Vain http- tai https-alkuisista URL-osoitteista voi ladata.</translation>
 <translation id="7926911226829060241">Avoimet kirjanmerkit, historia, salasanat ja muita tietoja synkronoidaan Google-tilillesi.</translation>
 <translation id="4871370605780490696">Lisää kirjanmerkki</translation>
@@ -441,6 +445,7 @@ Käyttötilastot sisältävät tietoja esimerkiksi asetuksista, painetuista pain
 <translation id="1285320974508926690">Älä käännä tätä sivustoa</translation>
 <translation id="4165986682804962316">Sivustoasetukset</translation>
 <translation id="3672452749423051839">Selausvirheiden ehdotukset</translation>
+<translation id="307329814453917357">Tarjoa sivujen kääntämistä Google Kääntäjällä.</translation>
 <translation id="2956410042958133412">Tätä tiliä hallinnoivat <ph name="PARENT_NAME_1"/> ja <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Ei kiitos</translation>
 <translation id="5164482624172255778">Haluatko Google Chromen ehdottavan sivuston kielellä <ph name="LANGUAGE"/> kirjoitettujen sivujen kääntämistä seuraavalla kerralla?</translation>

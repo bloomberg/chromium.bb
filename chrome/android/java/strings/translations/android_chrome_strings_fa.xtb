@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">پوشه اصلی</translation>
 <translation id="2354750644801399986">«ردیابی نشود»</translation>
 <translation id="2351097562818989364">تنظیمات ترجمه شما بازنشانی شده است.</translation>
+<translation id="1557201757634521564">شناسایی خودکار کدبندی</translation>
 <translation id="4307992518367153382">موارد اصلی</translation>
 <translation id="8007176423574883786">برای این دستگاه غیرفعال شد</translation>
 <translation id="119944043368869598">پاک کردن همه</translation>
@@ -298,6 +299,7 @@
 <translation id="1197267115302279827">انتقال نشانک‌ها</translation>
 <translation id="3190152372525844641">‏مجوزهای Chrome را در <ph name="BEGIN_LINK"/>تنظیمات Android <ph name="END_LINK"/> روشن کنید.</translation>
 <translation id="583891442612896534">‏Chrome نمی‌تواند برای فشرده کردن داده‌ها به سرورهای Google دسترسی پیدا کند. ممکن است صرفه‌جویی در مصرف داده محدود شود.</translation>
+<translation id="6324360525379265737">تعیین کدبندی نویسه به‌صورت خودکار</translation>
 <translation id="4827948050554950725">افزودن کارت اعتباری</translation>
 <translation id="2316129865977710310">خیر، سپاسگزارم</translation>
 <translation id="4278390842282768270">مجاز است</translation>
@@ -373,8 +375,10 @@
 <translation id="699220179437400583">‏گزارش خودکار جزئیات حوادث امنیتی احتمالی به Google.</translation>
 <translation id="5899349522111170522">ایجاد فایل جدید</translation>
 <translation id="3158619413803296679">انتخاب نشانک</translation>
+<translation id="1832521218263067499">حوادث امنیتی</translation>
 <translation id="6138140242378429169">تبدیل صفحه به حالت مناسب دستگاه همراه</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> حذف شد</translation>
+<translation id="1641113438599504367">مرور ایمن</translation>
 <translation id="2360035970720276770">‏فقط می‌توانید نشانی‌های اینترنتی «http» یا «https» را دانلود کنید</translation>
 <translation id="7926911226829060241">‏نشانک‌های باز، سابقه، گذرواژه‌ها و موارد بیشتر در حال همگام‌سازی با حساب Google شما هستند.</translation>
 <translation id="4871370605780490696">افزودن نشانک</translation>
@@ -438,6 +442,7 @@
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
 <translation id="4165986682804962316">تنظیمات سایت</translation>
 <translation id="3672452749423051839">پیشنهادات خطای پیمایش</translation>
+<translation id="307329814453917357">‏پیشنهاد ترجمه صفحه‌ها با استفاده از Google Translate</translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1"/> و <ph name="PARENT_NAME_2"/> این حساب را مدیریت می‌کنند.</translation>
 <translation id="780301667611848630">خیر، سپاسگزارم</translation>
 <translation id="5164482624172255778">‏آیا مایلید دفعه بعد Google Chrome ترجمه صفحاتی به زبان <ph name="LANGUAGE"/> در این سایت را پیشنهاد دهد؟</translation>

@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">父文件夹</translation>
 <translation id="2354750644801399986">“不跟踪”</translation>
 <translation id="2351097562818989364">您的翻译设置已重置。</translation>
+<translation id="1557201757634521564">自动检测编码</translation>
 <translation id="4307992518367153382">基本设置</translation>
 <translation id="8007176423574883786">已对此设备停用</translation>
 <translation id="119944043368869598">全部清除</translation>
@@ -301,6 +302,7 @@
 <translation id="1197267115302279827">移动书签</translation>
 <translation id="3190152372525844641">在 <ph name="BEGIN_LINK"/>Android 设置<ph name="END_LINK"/>中为 Chrome 启用这些权限。</translation>
 <translation id="583891442612896534">Chrome 无法连接到 Google 服务器来进行数据压缩，因此您节省的数据流量可能有限。</translation>
+<translation id="6324360525379265737">自动判断字符编码</translation>
 <translation id="4827948050554950725">添加信用卡</translation>
 <translation id="2316129865977710310">不用了，谢谢</translation>
 <translation id="4278390842282768270">允许的 Cookie</translation>
@@ -376,8 +378,10 @@
 <translation id="699220179437400583">自动向Google报告可能出现的安全事件详情</translation>
 <translation id="5899349522111170522">创建新文件</translation>
 <translation id="3158619413803296679">选择书签</translation>
+<translation id="1832521218263067499">安全事件</translation>
 <translation id="6138140242378429169">使网页适合移动设备</translation>
 <translation id="5345040418939504969">已删除“<ph name="BOOKMARK_TITLE"/>”</translation>
+<translation id="1641113438599504367">安全浏览</translation>
 <translation id="2360035970720276770">只能从 http 或 https 网址下载</translation>
 <translation id="7926911226829060241">正在将您保存的书签、历史记录、密码等同步到您的 Google 帐户。</translation>
 <translation id="4871370605780490696">添加书签</translation>
@@ -441,6 +445,7 @@
 <translation id="1285320974508926690">一律不翻译此网站</translation>
 <translation id="4165986682804962316">网站设置</translation>
 <translation id="3672452749423051839">导航错误建议</translation>
+<translation id="307329814453917357">询问是否要使用“Google 翻译”来翻译网页内容</translation>
 <translation id="2956410042958133412">该帐户由 <ph name="PARENT_NAME_1"/> 和 <ph name="PARENT_NAME_2"/> 管理。</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="5164482624172255778">下次访问这个网站时，您希望 Google Chrome 翻译此网站的<ph name="LANGUAGE"/>网页吗？</translation>
@@ -528,7 +533,7 @@
 <translation id="4056223980640387499">棕色调</translation>
 <translation id="8310344678080805313">标准标签页</translation>
 <translation id="5530766185686772672">关闭隐身标签页</translation>
-<translation id="8396312449826231789">仅限获批的网站</translation>
+<translation id="8396312449826231789">只能访问经过批准的网站</translation>
 <translation id="17513872634828108">目前打开的标签页</translation>
 <translation id="411254640334432676">下载失败。</translation>
 <translation id="6277522088822131679">打印该页面时出现问题，请重试。</translation>

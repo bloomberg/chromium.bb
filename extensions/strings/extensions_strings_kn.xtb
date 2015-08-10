@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">ನಿಮ್ಮ ಮೈಕ್ರೊಫೋನ್ ಮತ್ತು ಕ್ಯಾಮರಾವನ್ನು ಬಳಸಿ</translation>
 <translation id="2857834222104759979">ಮ್ಯಾನಿಫೆಸ್ಟ್ ಫೈಲ್ ಮಾನ್ಯತೆ ಪಡೆದಿಲ್ಲ.</translation>
 <translation id="6384275966486438344">ನಿಮ್ಮ ಹುಡುಕಾಟದ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಹೀಗೆ ಬದಲಾಯಿಸಿ: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">USB ಸಾಧನವನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="1445572445564823378">ಈ ವಿಸ್ತರಣೆಯು <ph name="PRODUCT_NAME"/> ಅನ್ನು ನಿಧಾನವಾಗಿಸುತ್ತಿದೆ. ನೀವು <ph name="PRODUCT_NAME"/> ರ ಕಾರ್ಯಾಚರಣೆಯನ್ನು ಮತ್ತೊಮ್ಮೆ ಪ್ರಾರಂಭಿಸಲು ಇದನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸುವುದು ಅವಶ್ಯಕ.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME"/> ಅವರಿಂದ <ph name="PRODUCT_ID"/> ಅಪರಿಚಿತ ಉತ್ಪನ್ನ</translation>
 <translation id="1033780634303702874">ನಿಮ್ಮ ಸರಣಿ ಸಾಧನಗಳನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">ಮೈಮ್‌ಹ್ಯಾಂಡ್ಲರ್: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">ನಿಮ್ಮ ಸಿಸ್ಟಂ ಜೊತೆಗೆ ಜೋಡಿಯಾಗಿರುವ ಬ್ಲೂಟೂತ್ ಸಾಧನಗಳ ಕುರಿತ ಮಾಹಿತಿಯನ್ನು ಪ್ರವೇಶಿಸಿ ಮತ್ತು ಹತ್ತಿರದ ಬ್ಲೂಟೂತ್ ಸಾಧನಗಳನ್ನು ಪತ್ತೆಹಚ್ಚಿ.</translation>
 <translation id="8749863574775030885">ಅಜ್ಞಾತ ಮಾರಾಟಗಾರರಿಂದ USB ಸಾಧನಗಳನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
-<translation id="781637217073033149">HID ಸಾಧನಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID"/> ಮಾರಾಟಗಾರರಿಂದ <ph name="PRODUCT_ID"/> ಅಪರಿಚಿತ ಉತ್ಪನ್ನ (ಕ್ರಮ ಸಂಖ್ಯೆ <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME"/> ರಿಂದ <ph name="PRODUCT_NAME"/></translation>
 <translation id="657064425229075395">'<ph name="BACKGROUND_SCRIPT"/>' ಹಿನ್ನೆಲೆ ಪುಟವನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">ವಿಸ್ತರಣೆ ಅನ್‌ಪ್ಯಾಕರ್‌‌</translation>
 <translation id="149347756975725155">'<ph name="ICON"/>' ಎಕ್ಸ್‌ಟೆನ್ಷನ್ ಐಕಾನ್  ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ.</translation>
 <translation id="8825366169884721447">ಮತ್ತೊಂದು ವಿಸ್ತರಣೆ (<ph name="EXTENSION_NAME"/>) ಯೊಂದಿಗೆ ಮಾರ್ಪಡಿಸುವಿಕೆಯು ಸಂಘರ್ಷಗೊಂಡಿರುವ ಕಾರಣ ಈ ವಿಸ್ತರಣೆಯು ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಯ  ವಿನಂತಿಯ ಶಿರೋನಾಮೆ &quot;<ph name="HEADER_NAME"/>&quot; ಯನ್ನು ಮಾರ್ಪಡಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
-<translation id="4776856853352853275">USB ಸಾಧನಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="6731255991101203740">ಅನ್ ಜಿಪ್ ಮಾಡುವುದಕ್ಕಾಗಿ ಡೈರೆಕ್ಟರಿ ರಚಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ: '<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="545850661681880228">HID ಸಾಧನವನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' ಪುಟದ ಕುರಿತು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ.</translation>
 <translation id="388442998277590542">ಆಯ್ಕೆಗಳ ಪುಟ '<ph name="OPTIONS_PAGE"/>' ವನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="5127881134400491887">ನೆಟ್‌ವರ್ಕ್‌ ಸಂಪರ್ಕಗಳನ್ನು ನಿರ್ವಹಿಸಿ</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕಗಳನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಿ</translation>
 <translation id="7154130902455071009">ನಿಮ್ಮ ಪ್ರಾರಂಭ ಪುಟವನ್ನು ಇದಕ್ಕೆ ಬದಲಾಯಿಸಿ: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">ಇವುಗಳಲ್ಲಿನ ಯಾವುದಾದರೂ USB ಸಾಧನಗಳನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
-<translation id="2677911863018634147">&quot;<ph name="APP_NAME"/>&quot; ಅಪ್ಲಿಕೇಶನ್ ನಿಮ್ಮ ಸಾಧನಗಳಲ್ಲಿ ಒಂದು ಅಥವಾ ಹೆಚ್ಚಿನ ಸಾಧನಗಳಿಗೆ ಪ್ರವೇಶವನ್ನು ವಿನಂತಿಸುತ್ತಿದೆ.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> ಮತ್ತು <ph name="WEBSITE_2"/> ನಲ್ಲಿ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಓದಿ ಮತ್ತು ಬದಲಾಯಿಸಿ</translation>
 <translation id="2159915644201199628">ಚಿತ್ರವನ್ನು ಡಿಕೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="2048182445208425546">ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್ ಟ್ರ್ಯಾಫಿಕ್ ಅನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">USB ಮೂಲಕ ಯಾವುದೇ <ph name="PRODUCT_NAME_AND_VENDOR"/> ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="1803557475693955505">'<ph name="BACKGROUND_PAGE"/>' ಹಿನ್ನಲೆ ಪುಟವನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="2988488679308982380">ಪ್ಯಾಕೇಜ್ ಅನ್ನು ಸ್ಥಾಪಿಸಲಾಗುವುದಿಲ್ಲ: '<ph name="ERROR_CODE"/>'</translation>
-<translation id="5751530153776468604">&quot;<ph name="APP_NAME"/>&quot; ಅಪ್ಲಿಕೇಶನ್ ನಿಮ್ಮ ಸಾಧನಗಳಲ್ಲಿ ಒಂದಕ್ಕೆ ಪ್ರವೇಶವನ್ನು ವಿನಂತಿಸುತ್ತಿದೆ.</translation>
 <translation id="3466070586188012397"><ph name="VENDOR_ID"/> ಮಾರಾಟಗಾರರಿಂದ <ph name="PRODUCT_NAME"/> (ಕ್ರಮ ಸಂಖ್ಯೆ <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">ಆಯ್ಕೆಗಳು: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">ಪ್ಯಾಕೇಜ್ ಅಮಾನ್ಯವಾಗಿದೆ. ವಿವರಗಳು: '<ph name="ERROR_MESSAGE"/>'.</translation>

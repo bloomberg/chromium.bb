@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Батьківська папка</translation>
 <translation id="2354750644801399986">&quot;Не відстежувати&quot;</translation>
 <translation id="2351097562818989364">Налаштування перекладу скинуто.</translation>
+<translation id="1557201757634521564">Автоматично визначати кодування</translation>
 <translation id="4307992518367153382">Основи</translation>
 <translation id="8007176423574883786">Вимкнено для цього пристрою</translation>
 <translation id="119944043368869598">Очистити все</translation>
@@ -301,6 +302,7 @@
 <translation id="1197267115302279827">Перемістити закладки</translation>
 <translation id="3190152372525844641">Увімкніть дозволи для Chrome у <ph name="BEGIN_LINK"/>налаштуваннях Android<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Chrome не може зв’язатись із серверами Google для стиснення даних. Можливо, у вас обмежене заощадження даних.</translation>
+<translation id="6324360525379265737">Автоматично визначати кодування символів</translation>
 <translation id="4827948050554950725">Додати кредитну картку</translation>
 <translation id="2316129865977710310">Ні, дякую</translation>
 <translation id="4278390842282768270">Дозволено</translation>
@@ -376,8 +378,10 @@
 <translation id="699220179437400583">Автоматично повідомляти Google деталі щодо можливих порушень безпеки</translation>
 <translation id="5899349522111170522">Створити файл</translation>
 <translation id="3158619413803296679">Вибрати закладку</translation>
+<translation id="1832521218263067499">Випадки порушення безпеки</translation>
 <translation id="6138140242378429169">Налаштувати сторінку для мобільних пристроїв</translation>
 <translation id="5345040418939504969">Закладку &quot;<ph name="BOOKMARK_TITLE"/>&quot; видалено</translation>
+<translation id="1641113438599504367">Безпечний перегляд</translation>
 <translation id="2360035970720276770">Можна завантажувати лише URL-адреси, які починаються з &quot;http&quot; або &quot;https&quot;</translation>
 <translation id="7926911226829060241">Відкриті закладки, історія, паролі тощо синхронізуються з вашим обліковим записом Google.</translation>
 <translation id="4871370605780490696">Додати закладку</translation>
@@ -441,6 +445,7 @@
 <translation id="1285320974508926690">Ніколи не перекладати цей сайт</translation>
 <translation id="4165986682804962316">Налаштування сайту</translation>
 <translation id="3672452749423051839">Пропозиції у випадку помилок навігації</translation>
+<translation id="307329814453917357">Пропонувати перекладати сторінки в Перекладачі Google</translation>
 <translation id="2956410042958133412">Цим обліковим записом керують <ph name="PARENT_NAME_1"/> і <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Ні, дякую</translation>
 <translation id="5164482624172255778">Хочете, щоб Google Chrome наступного разу пропонував перекласти сторінки цього сайту, написані такою мовою: <ph name="LANGUAGE"/>?</translation>

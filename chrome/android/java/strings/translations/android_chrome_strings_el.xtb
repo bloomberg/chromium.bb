@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Γονικός φάκελος</translation>
 <translation id="2354750644801399986">&quot;Να μη γίνεται εντοπισμός&quot;</translation>
 <translation id="2351097562818989364">Έγινε επαναφορά ρυθμίσεων μετάφρασης.</translation>
+<translation id="1557201757634521564">Αυτόματος εντοπισμός κωδικοποίησης</translation>
 <translation id="4307992518367153382">Βασικά στοιχεία</translation>
 <translation id="8007176423574883786">Έχει απενεργοποιηθεί για αυτήν τη συσκευή</translation>
 <translation id="119944043368869598">Διαγραφή όλων</translation>
@@ -301,6 +302,7 @@
 <translation id="1197267115302279827">Μετακίνηση σελιδοδεικτών</translation>
 <translation id="3190152372525844641">Ενεργοποίηση των αδειών για το Chrome στις <ph name="BEGIN_LINK"/>Ρυθμίσεις Android<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Το Chrome δεν είναι δυνατό να επικοινωνήσει με τους διακομιστές της Google για συμπίεση δεδομένων. Η εξοικονόμηση δεδομένων πιθανώς να είναι περιορισμένη.</translation>
+<translation id="6324360525379265737">Αυτόματος καθορισμός κωδικοποίησης χαρακτήρων</translation>
 <translation id="4827948050554950725">Προσθήκη πιστωτικής κάρτας</translation>
 <translation id="2316129865977710310">Όχι, ευχαριστώ</translation>
 <translation id="4278390842282768270">Επιτρέπεται</translation>
@@ -377,8 +379,10 @@
 <translation id="699220179437400583">Αυτόματη αναφορά στην Google των λεπτομερειών πιθανών περιστατικών ασφάλειας</translation>
 <translation id="5899349522111170522">Δημιουργία νέου αρχείου</translation>
 <translation id="3158619413803296679">Επιλέξτε σελιδοδείκτη</translation>
+<translation id="1832521218263067499">Συμβάντα ασφαλείας</translation>
 <translation id="6138140242378429169">Ρύθμιση σελίδας ώστε να είναι φιλική προς κινητά</translation>
 <translation id="5345040418939504969">Ο σελιδοδείκτης <ph name="BOOKMARK_TITLE"/> διαγράφηκε</translation>
+<translation id="1641113438599504367">Ασφαλής περιήγηση</translation>
 <translation id="2360035970720276770">Επιτρέπεται μόνο η λήψη διευθύνσεων URL http ή https</translation>
 <translation id="7926911226829060241">Οι ανοικτοί σελιδοδείκτες, το ιστορικό, οι κωδικοί πρόσβασης καθώς και άλλα δεδομένα συγχρονίζονται με το Λογαριασμό σας Google.</translation>
 <translation id="4871370605780490696">Προσθήκη σελιδοδείκτη</translation>
@@ -442,6 +446,7 @@
 <translation id="1285320974508926690">Να μην γίνεται ποτέ μετάφραση αυτού του ιστότοπου</translation>
 <translation id="4165986682804962316">Ρυθμίσεις ιστότοπου</translation>
 <translation id="3672452749423051839">Προτάσεις σφάλματος πλοήγησης</translation>
+<translation id="307329814453917357">Πρόταση μετάφρασης σελίδων χρησιμοποιώντας τη Μετάφραση Google</translation>
 <translation id="2956410042958133412">Αυτός ο λογαριασμός τελεί υπό τη διαχείριση των γονέων <ph name="PARENT_NAME_1"/> και <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Όχι, ευχαριστώ</translation>
 <translation id="5164482624172255778">Θέλετε το Google Chrome να προσφέρεται να μεταφράσει τις σελίδες <ph name="LANGUAGE"/> από αυτόν τον ιστότοπο την επόμενη φορά;</translation>

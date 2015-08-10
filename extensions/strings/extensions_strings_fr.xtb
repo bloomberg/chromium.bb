@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Utiliser votre micro et votre caméra</translation>
 <translation id="2857834222104759979">Le fichier manifeste est incorrect.</translation>
 <translation id="6384275966486438344">Modifier les paramètres de la recherche pour utiliser l'adresse <ph name="SEARCH_HOST"/>.</translation>
-<translation id="8658591203505835552">Sélectionner un appareil USB</translation>
 <translation id="1445572445564823378">Cette extension ralentit <ph name="PRODUCT_NAME"/>. Vous devez la désactiver pour rétablir les performances de <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7003844668372540529">Produit inconnu <ph name="PRODUCT_ID"/> fourni par <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Accéder à vos appareils reliés via le port série</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Mimehandler : <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Accéder aux informations relatives aux appareils Bluetooth associés à votre système et détecter les appareils Bluetooth à proximité</translation>
 <translation id="8749863574775030885">Accéder à des appareils USB d'un fournisseur inconnu</translation>
-<translation id="781637217073033149">Sélectionner des appareils HID</translation>
 <translation id="3115238746683532089">Produit inconnu <ph name="PRODUCT_ID"/> du fournisseur <ph name="VENDOR_ID"/> (numéro de série : <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> de <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Impossible de charger le script d'arrière-plan &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Décompression d'extensions</translation>
 <translation id="149347756975725155">Impossible de charger l'icône de l'extension &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Le titre de demande d'une requête réseau (&quot;<ph name="HEADER_NAME"/>&quot;) n'a pas pu être modifié à partir de cette extension, car la modification demandée était en conflit avec une autre extension (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Sélectionner des appareils USB</translation>
 <translation id="6731255991101203740">Impossible de créer le répertoire de décompression : &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
-<translation id="545850661681880228">Sélectionner un appareil HID</translation>
 <translation id="4233778200880751280">Impossible de charger la page &quot;À propos&quot; <ph name="ABOUT_PAGE"/>.</translation>
 <translation id="388442998277590542">Impossible de charger la page d'options &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
 <translation id="5127881134400491887">Gérer les connexions réseau</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Configurer les connexions réseau</translation>
 <translation id="7154130902455071009">Utiliser l'adresse <ph name="START_PAGE"/> comme page de démarrage ?</translation>
 <translation id="1036511912703768636">Accéder à n'importe lequel de ces appareils USB</translation>
-<translation id="2677911863018634147">L'application &quot;<ph name="APP_NAME"/>&quot; demande l'accès à un ou plusieurs de vos appareils.</translation>
 <translation id="6698810901424468597">Accéder aux données des sites <ph name="WEBSITE_1"/> et <ph name="WEBSITE_2"/>, et les modifier</translation>
 <translation id="2159915644201199628">Impossible de décoder l'image : &quot;<ph name="IMAGE_NAME"/>&quot;.</translation>
 <translation id="2048182445208425546">Accéder au trafic de votre réseau</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Accéder à tous les <ph name="PRODUCT_NAME_AND_VENDOR"/> via USB</translation>
 <translation id="1803557475693955505">Impossible de charger la page d'arrière-plan &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
 <translation id="2988488679308982380">Impossible d'installer le package : &quot;<ph name="ERROR_CODE"/>&quot;</translation>
-<translation id="5751530153776468604">L'application &quot;<ph name="APP_NAME"/>&quot; demande l'accès à l'un de vos appareils.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> du fournisseur <ph name="VENDOR_ID"/> (numéro de série : <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Options : <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Package incorrect. Détails : &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>

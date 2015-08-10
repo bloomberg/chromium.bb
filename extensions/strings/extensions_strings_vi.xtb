@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Sử dụng micrô và máy ảnh của bạn</translation>
 <translation id="2857834222104759979">Tệp kê khai không hợp lệ.</translation>
 <translation id="6384275966486438344">Thay đổi cài đặt tìm kiếm của bạn thành: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Chọn thiết bị USB</translation>
 <translation id="1445572445564823378">Tiện ích này đang làm chậm <ph name="PRODUCT_NAME"/>. Bạn phải tắt tiện ích để khôi phục hiệu suất của <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7003844668372540529">Sản phẩm không xác định <ph name="PRODUCT_ID"/> từ <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Truy cập thiết bị tuần tự của bạn</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Truy cập thông tin về thiết bị Bluetooth được ghép nối với hệ thống của bạn và khám phá các thiết bị Bluetooth lân cận.</translation>
 <translation id="8749863574775030885">Truy cập thiết bị USB từ nhà cung cấp không xác định</translation>
-<translation id="781637217073033149">Chọn thiết bị HID</translation>
 <translation id="3115238746683532089">Sản phẩm không xác định <ph name="PRODUCT_ID"/> từ nhà cung cấp <ph name="VENDOR_ID"/> (số sê-ri <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> từ <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Không thể tải tập lệnh nền '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Trình giải nén tiện ích</translation>
 <translation id="149347756975725155">Không thể tải biểu tượng tiện ích '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">Tiện ích này không thể sửa đổi tiêu đề yêu cầu &quot;<ph name="HEADER_NAME"/>&quot; của một yêu cầu mạng do sửa đổi đã xung đột với một tiện ích khác (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Chọn thiết bị USB</translation>
 <translation id="6731255991101203740">Không thể tạo thư mục để giải nén: '<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="545850661681880228">Chọn thiết bị HID</translation>
 <translation id="4233778200880751280">Không thể tải trang giới thiệu '<ph name="ABOUT_PAGE"/>'.</translation>
 <translation id="388442998277590542">Không thể tải trang tùy chọn '<ph name="OPTIONS_PAGE"/>'.</translation>
 <translation id="5127881134400491887">Quản lý kết nối mạng</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Định cấu hình kết nối mạng</translation>
 <translation id="7154130902455071009">Thay đổi trang chủ của bạn thành: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Truy cập bất kỳ trong số các thiết bị USB này</translation>
-<translation id="2677911863018634147">Ứng dụng &quot;<ph name="APP_NAME"/>&quot; đang yêu cầu quyền truy cập vào một hoặc nhiều thiết bị của bạn.</translation>
 <translation id="6698810901424468597">Đọc và thay đổi dữ liệu của bạn trên <ph name="WEBSITE_1"/> và <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Không thể giải mã hình ảnh: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="2048182445208425546">Truy cập lưu lượng mạng của bạn</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Truy cập bất kỳ <ph name="PRODUCT_NAME_AND_VENDOR"/> nào qua USB</translation>
 <translation id="1803557475693955505">Không thể tải trang nền '<ph name="BACKGROUND_PAGE"/>'.</translation>
 <translation id="2988488679308982380">Không thể cài đặt gói: '<ph name="ERROR_CODE"/>'</translation>
-<translation id="5751530153776468604">Ứng dụng &quot;<ph name="APP_NAME"/>&quot; đang yêu cầu quyền truy cập vào một trong các thiết bị của bạn.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> từ nhà cung cấp <ph name="VENDOR_ID"/> (số sê-ri <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Tùy chọn: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Gói không hợp lệ. Chi tiết: '<ph name="ERROR_MESSAGE"/>'.</translation>

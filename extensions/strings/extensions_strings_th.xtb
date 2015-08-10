@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">ใช้ไมโครโฟนและกล้องถ่ายรูปของคุณ</translation>
 <translation id="2857834222104759979">ไฟล์มานิเฟสต์ไม่ถูกต้อง</translation>
 <translation id="6384275966486438344">เปลี่ยนการตั้งค่าการค้นหาของคุณเป็น: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">เลือกอุปกรณ์ USB</translation>
 <translation id="1445572445564823378">ส่วนขยายนี้จะทำให้ <ph name="PRODUCT_NAME"/> ทำงานช้าลง คุณควรปิดใช้งานส่วนขยายเพื่อให้ประสิทธิภาพการทำงานของ <ph name="PRODUCT_NAME"/> กลับมาเป็นปกติ</translation>
 <translation id="7003844668372540529">ผลิตภัณฑ์ที่ไม่รู้จัก <ph name="PRODUCT_ID"/> จาก <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">เข้าถึงอุปกรณ์ซีเรียล</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">เครื่องจัดการ MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">เข้าถึงข้อมูลเกี่ยวกับอุปกรณ์บลูทูธที่จับคู่กับระบบของคุณ และสำรวจอุปกรณ์บลูทูธใกล้เคียง</translation>
 <translation id="8749863574775030885">เข้าถึงอุปกรณ์ USB จากผู้ขายที่ไม่รู้จัก</translation>
-<translation id="781637217073033149">เลือกอุปกรณ์ HID</translation>
 <translation id="3115238746683532089">ผลิตภัณฑ์ที่ไม่รู้จัก <ph name="PRODUCT_ID"/> จากผู้ขาย <ph name="VENDOR_ID"/> (หมายเลขซีเรียล <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> จาก <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">ไม่สามารถโหลดสคริปต์พื้นหลัง &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">ตัวแตกไฟล์ส่วนขยาย</translation>
 <translation id="149347756975725155">ไม่สามารถโหลดไอคอนส่วนขยาย &quot;<ph name="ICON"/>&quot;</translation>
 <translation id="8825366169884721447">ส่วนขยายนี้ไม่สามารถแก้ไขส่วนหัวคำขอ &quot;<ph name="HEADER_NAME"/>&quot; ของคำขอเครือข่ายได้เนื่องจากการแก้ไขขัดแย้งกับส่วนขยายอื่น (<ph name="EXTENSION_NAME"/>)</translation>
-<translation id="4776856853352853275">เลือกอุปกรณ์ USB</translation>
 <translation id="6731255991101203740">ไม่สามารถสร้างไดเรกทอรีสำหรับการแตกไฟล์ซิป: '<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="545850661681880228">เลือกอุปกรณ์ HID</translation>
 <translation id="4233778200880751280">ไม่สามารถโหลดหน้าเกี่ยวกับ &quot;<ph name="ABOUT_PAGE"/>&quot;</translation>
 <translation id="388442998277590542">ไม่สามารถโหลดหน้าตัวเลือก &quot;<ph name="OPTIONS_PAGE"/>&quot;</translation>
 <translation id="5127881134400491887">จัดการการเชื่อมต่อเครือข่าย</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">กำหนดค่าการเชื่อมต่อเครือข่าย</translation>
 <translation id="7154130902455071009">เปลี่ยนหน้าเริ่มต้นของคุณเป็น: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">เข้าถึงอุปกรณ์ USB ใดๆ ก็ได้เหล่านี้</translation>
-<translation id="2677911863018634147">แอปพลิเคชัน &quot;<ph name="APP_NAME"/>&quot; กำลังขอสิทธิ์ในการเข้าถึงอุปกรณ์ของคุณอย่างน้อย 1 เครื่อง</translation>
 <translation id="6698810901424468597">อ่านและเปลี่ยนแปลงข้อมูลของคุณใน <ph name="WEBSITE_1"/> และ <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">ไม่สามารถถอดรหัสภาพ: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="2048182445208425546">เข้าถึงปริมาณการใช้งานเครือข่าย</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">เข้าถึง <ph name="PRODUCT_NAME_AND_VENDOR"/> ใดๆ ก็ได้ผ่าน USB</translation>
 <translation id="1803557475693955505">ไม่สามารถโหลดหน้าพื้นหลัง &quot;<ph name="BACKGROUND_PAGE"/>&quot;</translation>
 <translation id="2988488679308982380">ไม่สามารถติดตั้งแพ็กเกจ: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
-<translation id="5751530153776468604">แอปพลิเคชัน &quot;<ph name="APP_NAME"/>&quot; กำลังขอสิทธิ์ในการเข้าถึงอุปกรณ์เครื่องใดเครื่องหนึ่งของคุณ</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> จากผู้ขาย <ph name="VENDOR_ID"/> (หมายเลขซีเรียล <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">ตัวเลือก: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">แพ็กเกจไม่ถูกต้อง รายละเอียด: &quot;<ph name="ERROR_MESSAGE"/>&quot;</translation>

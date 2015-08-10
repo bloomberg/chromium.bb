@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Pangunahing folder</translation>
 <translation id="2354750644801399986">‘Huwag Subaybayan’</translation>
 <translation id="2351097562818989364">Na-reset ang iyong mga setting sa pag-translate.</translation>
+<translation id="1557201757634521564">Awtomatikong i-detect ang pag-e-encode</translation>
 <translation id="4307992518367153382">Mga Pangunahing Kaalaman</translation>
 <translation id="8007176423574883786">Naka-off para sa device na ito</translation>
 <translation id="119944043368869598">I-clear lahat</translation>
@@ -301,6 +302,7 @@ Pindutin ang button na bumalik upang lumabas.</translation>
 <translation id="1197267115302279827">Ilipat ang mga bookmark</translation>
 <translation id="3190152372525844641">I-on ang mga pahintulot para sa Chrome sa <ph name="BEGIN_LINK"/>Mga Setting ng Android<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Hindi magawa ng Chrome na makipag-ugnayan sa mga server ng Google para sa pag-compress ng data. Maaaring limitado lang ang matipid mo sa data.</translation>
+<translation id="6324360525379265737">Awtomatikong tukuyin ang pag-e-encode ng character</translation>
 <translation id="4827948050554950725">Magdagdag ng credit card</translation>
 <translation id="2316129865977710310">Hindi, salamat</translation>
 <translation id="4278390842282768270">Pinapayagan</translation>
@@ -376,8 +378,10 @@ Pindutin ang button na bumalik upang lumabas.</translation>
 <translation id="699220179437400583">Awtomatikong iulat sa Google ang mga detalye ng mga posibleng isyu sa seguridad</translation>
 <translation id="5899349522111170522">Gumawa ng bagong file</translation>
 <translation id="3158619413803296679">Pumili ng bookmark</translation>
+<translation id="1832521218263067499">Mga insidenteng nauugnay sa seguridad</translation>
 <translation id="6138140242378429169">Gawing pang-mobile ang page</translation>
 <translation id="5345040418939504969">Na-delete ang <ph name="BOOKMARK_TITLE"/></translation>
+<translation id="1641113438599504367">Ligtas na Pagba-browse</translation>
 <translation id="2360035970720276770">Mga URL na http o https lang ang mada-download</translation>
 <translation id="7926911226829060241">Isini-sync ang iyong mga nakabukas na bookmark, history, password at higit pa sa iyong Google Account.</translation>
 <translation id="4871370605780490696">Magdagdag ng bookmark</translation>
@@ -441,6 +445,7 @@ Kasama sa mga istatistika sa paggamit ang impormasyon tulad ng mga kagustuhan, p
 <translation id="1285320974508926690">Huwag isalin kailanman ang site na ito</translation>
 <translation id="4165986682804962316">Mga setting ng site</translation>
 <translation id="3672452749423051839">Mga suhestyon para sa error sa pag-navigate</translation>
+<translation id="307329814453917357">Mag-alok na magsalin ng mga page sa pamamagitan ng Google Translate</translation>
 <translation id="2956410042958133412">Pinapamahalaan ang account na ito ng <ph name="PARENT_NAME_1"/> at <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Hindi salamat</translation>
 <translation id="5164482624172255778">Gusto mo bang i-alok ng Google Chrome na isalin ang mga pahinang <ph name="LANGUAGE"/> mula sa site na ito sa susunod na pagkakataon?</translation>

@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Nadrejena mapa</translation>
 <translation id="2354750644801399986">»Ne sledi«</translation>
 <translation id="2351097562818989364">Nastavitve za prevajanje so ponastavljene.</translation>
+<translation id="1557201757634521564">Samodejno zaznavanje kodiranja</translation>
 <translation id="4307992518367153382">Osnove</translation>
 <translation id="8007176423574883786">Izklopljeno za to napravo</translation>
 <translation id="119944043368869598">Izbriši vse</translation>
@@ -301,6 +302,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="1197267115302279827">Premakni zavihke</translation>
 <translation id="3190152372525844641">V <ph name="BEGIN_LINK"/>nastavitvah za Android<ph name="END_LINK"/> vklopite dovoljenja za Chrome.</translation>
 <translation id="583891442612896534">Chrome ne more dostopati do Googlovih strežnikov za stiskanje podatkov. Prihranek podatkov bo morda omejen.</translation>
+<translation id="6324360525379265737">Samodejno ugotavljanje kodiranja znakov</translation>
 <translation id="4827948050554950725">Dodaj kreditno kartico</translation>
 <translation id="2316129865977710310">Ne, hvala</translation>
 <translation id="4278390842282768270">Dovoljeno</translation>
@@ -376,8 +378,10 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="699220179437400583">Samodejno poročanje podrobnosti morebitnih varnostnih dogodkov Googlu</translation>
 <translation id="5899349522111170522">Ustvari novo datoteko</translation>
 <translation id="3158619413803296679">Izbira zaznamka</translation>
+<translation id="1832521218263067499">Varnostni dogodki</translation>
 <translation id="6138140242378429169">Prikaži stran v pogledu, prilagojenem mobilnim napravam</translation>
 <translation id="5345040418939504969">Izbrisano: <ph name="BOOKMARK_TITLE"/></translation>
+<translation id="1641113438599504367">Varno brskanje</translation>
 <translation id="2360035970720276770">Prenesete lahko samo URL-je »http« ali »https«</translation>
 <translation id="7926911226829060241">Odprti zaznamki, zgodovina, gesla in drugi podatki se sinhronizirajo z Google Računom.</translation>
 <translation id="4871370605780490696">Dodajanje zaznamka</translation>
@@ -441,6 +445,7 @@ Statistični podatki o uporabi vključujejo podatke, kot so nastavitve, kliki gu
 <translation id="1285320974508926690">Nikoli ne prevedi tega spletnega mesta</translation>
 <translation id="4165986682804962316">Nastavitve spletnega mesta</translation>
 <translation id="3672452749423051839">Predlogi za napake pri krmarjenju</translation>
+<translation id="307329814453917357">Ponudi prevajanje strani z Google Prevajalnikom</translation>
 <translation id="2956410042958133412">Ta računa upravljata <ph name="PARENT_NAME_1"/> in <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="5164482624172255778">Želite, da Google Chrome naslednjič ponudi prevod strani v jeziku <ph name="LANGUAGE"/> s tega spletnega mesta?</translation>

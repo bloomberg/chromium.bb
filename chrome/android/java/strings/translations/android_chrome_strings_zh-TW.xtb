@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">上層資料夾</translation>
 <translation id="2354750644801399986">「不追蹤」</translation>
 <translation id="2351097562818989364">您的翻譯設定已重設。</translation>
+<translation id="1557201757634521564">自動偵測編碼</translation>
 <translation id="4307992518367153382">基本選項</translation>
 <translation id="8007176423574883786">已在這個裝置上關閉</translation>
 <translation id="119944043368869598">全部清除</translation>
@@ -301,6 +302,7 @@
 <translation id="1197267115302279827">移動書籤</translation>
 <translation id="3190152372525844641">請在 <ph name="BEGIN_LINK"/>Android 設定<ph name="END_LINK"/>中為 Chrome 啟用這些權限。</translation>
 <translation id="583891442612896534">Chrome 無法連上 Google 的伺服器進行資料壓縮，這可能會導致您無法節省某些數據流量。</translation>
+<translation id="6324360525379265737">自動判定字元編碼</translation>
 <translation id="4827948050554950725">新增信用卡</translation>
 <translation id="2316129865977710310">不，謝謝</translation>
 <translation id="4278390842282768270">允許</translation>
@@ -376,8 +378,10 @@
 <translation id="699220179437400583">自動將疑似安全性事件的詳細資料回報給 Google</translation>
 <translation id="5899349522111170522">建立新檔案</translation>
 <translation id="3158619413803296679">選擇書籤</translation>
+<translation id="1832521218263067499">安全性事件</translation>
 <translation id="6138140242378429169">讓網頁適合透過行動裝置瀏覽</translation>
 <translation id="5345040418939504969">已刪除的「<ph name="BOOKMARK_TITLE"/>」</translation>
+<translation id="1641113438599504367">安全瀏覽</translation>
 <translation id="2360035970720276770">只能透過 http 或 https 網址下載檔案</translation>
 <translation id="7926911226829060241">系統正在將您的書籤、歷史紀錄、密碼和其他設定同步傳送到您的 Google 帳戶。</translation>
 <translation id="4871370605780490696">新增書籤</translation>
@@ -441,6 +445,7 @@
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
 <translation id="4165986682804962316">網站設定</translation>
 <translation id="3672452749423051839">瀏覽錯誤建議</translation>
+<translation id="307329814453917357">可使用「Google 翻譯」翻譯網頁內容</translation>
 <translation id="2956410042958133412">這個帳戶受 <ph name="PARENT_NAME_1"/> 和 <ph name="PARENT_NAME_2"/> 管理。</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="5164482624172255778">下次造訪這個網站時，需要 Google Chrome 為您翻譯其中的<ph name="LANGUAGE"/>網頁嗎？</translation>

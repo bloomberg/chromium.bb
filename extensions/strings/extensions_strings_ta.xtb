@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">உங்கள் மைக்ரோஃபோன் மற்றும் கேமராவைப் பயன்படுத்தலாம்</translation>
 <translation id="2857834222104759979">அமைப்புக் கோப்பு  செல்லுபடியாகாதது.</translation>
 <translation id="6384275966486438344">உங்கள் தேடல் அமைப்புகளை இதற்கு மாற்றவும்: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">USB சாதனத்தைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="1445572445564823378">இந்த நீட்டிப்பு, <ph name="PRODUCT_NAME"/> ஐ மந்தமாக்குகிறது. <ph name="PRODUCT_NAME"/> இன்
 செயல்திறனை மீட்டமைக்க, இதை நீங்கள் முடக்க வேண்டும்.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME"/> அனுப்பிய <ph name="PRODUCT_ID"/> தயாரிப்பை அறிய முடியவில்லை</translation>
@@ -22,7 +21,6 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">உங்கள் கணினியுடன் இணைக்கப்பட்ட புளூடூத் சாதனங்கள் பற்றிய தகவலை அணுகுதல் மற்றும் அருகிலுள்ள புளூடூத் சாதனங்களைக் கண்டறிதல்.</translation>
 <translation id="8749863574775030885">அறியப்படாத விற்பனையாளரிடமிருந்து USB சாதனங்களை அணுகு</translation>
-<translation id="781637217073033149">HID சாதனங்களைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID"/> விற்பனையாளர் அனுப்பிய <ph name="PRODUCT_ID"/> (சீரியல் எண் <ph name="SERIAL_NUMBER"/>) தயாரிப்பை அறிய முடியவில்லை</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME"/> இன் <ph name="PRODUCT_NAME"/></translation>
 <translation id="657064425229075395">'<ph name="BACKGROUND_SCRIPT"/>' என்ற பின்புல ஸ்கிரிப்டை ஏற்ற முடியவில்லை.</translation>
@@ -38,9 +36,7 @@
 <translation id="8712265948125780616">எக்ஸ்டன்ஷன் அன்பேக்கர்</translation>
 <translation id="149347756975725155">நீட்டிப்புப் படவுரு '<ph name="ICON"/>' ஐ ஏற்ற முடியவில்லை.</translation>
 <translation id="8825366169884721447">(<ph name="EXTENSION_NAME"/>) என்ற வேறொரு நீட்டிப்புடன் ஏற்பட்ட திருத்த முரண்பாட்டால் &quot;<ph name="HEADER_NAME"/>&quot; கோரிக்கை மேற்தலைப்பைத் திருத்துவதில் இந்த நீட்டிப்பு தோல்வியடைந்தது.</translation>
-<translation id="4776856853352853275">USB சாதனங்களைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="6731255991101203740">இதன் ஜிப்பை திறப்பதற்குக் கோப்பகத்தை உருவாக்க முடியவில்லை: '<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="545850661681880228">HID சாதனத்தைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' பக்கத்தை ஏற்ற முடியவில்லை.</translation>
 <translation id="388442998277590542">'<ph name="OPTIONS_PAGE"/>' என்ற விருப்பங்கள் பக்கத்தை ஏற்ற முடியவில்லை.</translation>
 <translation id="5127881134400491887">நெட்வொர்க் இணைப்புகளை நிர்வகி</translation>
@@ -81,7 +77,6 @@
 <translation id="8620765578342452535">நெட்வொர்க் இணைப்புகளை உள்ளமைக்கவும்</translation>
 <translation id="7154130902455071009">உங்கள் தொடக்கப் பக்கத்தை இதற்கு மாற்றவும்: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">இந்த USB சாதனங்கள் எதையும் அணுகலாம்</translation>
-<translation id="2677911863018634147">உங்கள் சாதனங்களின் ஒன்று அல்லது அதற்கு மேற்பட்டவற்றின் அணுகலை &quot;<ph name="APP_NAME"/>&quot; கோருகிறது.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> மற்றும் <ph name="WEBSITE_2"/> இல் உள்ள உங்கள் தரவைப் படித்தல் மற்றும் திருத்துதல்</translation>
 <translation id="2159915644201199628">இந்தப் படத்தை குறிநீக்க முடியவில்லை: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="2048182445208425546">உங்கள் நெட்வொர்க் ட்ராஃபிக்கை அணுகுதல்</translation>
@@ -92,7 +87,6 @@
 <translation id="2087653731648927289">USB வழியாக எந்த <ph name="PRODUCT_NAME_AND_VENDOR"/>ஐயும் அணுகலாம்</translation>
 <translation id="1803557475693955505">'<ph name="BACKGROUND_PAGE"/>' என்ற பின்புலப் பக்கத்தை ஏற்ற முடியவில்லை.</translation>
 <translation id="2988488679308982380">இந்த தொகுப்பை நிறுவமுடியாது: '<ph name="ERROR_CODE"/>'</translation>
-<translation id="5751530153776468604">உங்கள் சாதனங்களின் ஒன்றின் அணுகலை &quot;<ph name="APP_NAME"/>&quot; கோருகிறது.</translation>
 <translation id="3466070586188012397">விற்பனையாளர் <ph name="VENDOR_ID"/> அனுப்பிய <ph name="PRODUCT_NAME"/> (சீரியல் எண் <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">விருப்பங்கள்: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">தொகுப்பு செல்லாதது. விவரங்கள்: '<ph name="ERROR_MESSAGE"/>'.</translation>

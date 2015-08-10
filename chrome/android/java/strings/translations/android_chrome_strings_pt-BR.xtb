@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Pasta mãe</translation>
 <translation id="2354750644801399986">&quot;Não rastrear&quot;</translation>
 <translation id="2351097562818989364">As configurações de tradução foram redefinidas.</translation>
+<translation id="1557201757634521564">Detectar codificação automaticamente</translation>
 <translation id="4307992518367153382">Básicas</translation>
 <translation id="8007176423574883786">Desativado neste dispositivo</translation>
 <translation id="119944043368869598">Limpar tudo</translation>
@@ -300,6 +301,7 @@ Aperte o botão &quot;Voltar&quot; para sair.</translation>
 <translation id="1197267115302279827">Mover favoritos</translation>
 <translation id="3190152372525844641">Ative as permissões para o Chrome nas <ph name="BEGIN_LINK"/>configurações do Android<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Não foi possível acessar os servidores do Google para realizar a compactação de dados a partir do Google Chrome. Seu espaço para salvar dados pode estar limitado.</translation>
+<translation id="6324360525379265737">Determinar automaticamente a codificação de caracteres</translation>
 <translation id="4827948050554950725">Adicionar cartão de crédito</translation>
 <translation id="2316129865977710310">Não.</translation>
 <translation id="4278390842282768270">Permitido</translation>
@@ -375,8 +377,10 @@ Aperte o botão &quot;Voltar&quot; para sair.</translation>
 <translation id="699220179437400583">Informar automaticamente ao Google detalhes de possíveis incidentes de segurança.</translation>
 <translation id="5899349522111170522">Criar novo arquivo</translation>
 <translation id="3158619413803296679">Escolher um favorito</translation>
+<translation id="1832521218263067499">Incidentes de segurança</translation>
 <translation id="6138140242378429169">Tornar a página otimizada para dispositivos móveis</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> excluído</translation>
+<translation id="1641113438599504367">Navegação segura</translation>
 <translation id="2360035970720276770">Só é permitido o download de URLs http ou https</translation>
 <translation id="7926911226829060241">Favoritos abertos, histórico, senhas e outros itens estão sendo sincronizados com sua Conta do Google.</translation>
 <translation id="4871370605780490696">Adicionar favorito</translation>
@@ -440,6 +444,7 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="4165986682804962316">Configurações do site</translation>
 <translation id="3672452749423051839">Sugestões de erro de navegação</translation>
+<translation id="307329814453917357">Oferecer para traduzir páginas usando o Google Tradutor</translation>
 <translation id="2956410042958133412">Esta conta é gerenciada por <ph name="PARENT_NAME_1"/> e <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Não</translation>
 <translation id="5164482624172255778">Deseja que na próxima vez o Google Chrome ofereça a tradução de páginas em <ph name="LANGUAGE"/> deste site?</translation>

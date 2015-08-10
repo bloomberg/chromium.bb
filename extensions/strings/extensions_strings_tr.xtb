@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Mikrofonunuzu ve kameranızı kullanma</translation>
 <translation id="2857834222104759979">Bildiri dosyası geçersiz.</translation>
 <translation id="6384275966486438344">Arama ayarlarınızı <ph name="SEARCH_HOST"/> olarak değiştirin.</translation>
-<translation id="8658591203505835552">Bir USB cihaz seçin</translation>
 <translation id="1445572445564823378">Bu uzantı <ph name="PRODUCT_NAME"/> uygulamasını yavaşlatıyor. <ph name="PRODUCT_NAME"/> uygulamasının performansını eski haline getirmek için bu uzantıyı devre dışı bırakmalısınız.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME"/> tarafından sağlanan <ph name="PRODUCT_ID"/> ürün kimliğine sahip bilinmeyen ürün</translation>
 <translation id="1033780634303702874">Seri cihazlarınıza erişme</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Sisteminizle eşlenen Bluetooth cihazlarıyla ilgili bilgilere erişme ve yakındaki Bluetooth cihazlarını keşfetme.</translation>
 <translation id="8749863574775030885">Bilinmeyen bir tedarikçinin USB cihazlarına erişim</translation>
-<translation id="781637217073033149">HID cihazları seçin</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID"/> adlı satıcı firma tarafından sağlanan <ph name="PRODUCT_ID"/> ürün kimliğine sahip bilinmeyen ürün (seri numarası: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME"/> adlı firmadan <ph name="PRODUCT_NAME"/></translation>
 <translation id="657064425229075395">Arka plan komut dosyası '<ph name="BACKGROUND_SCRIPT"/>' yüklenemedi.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Uzantı Açıcı</translation>
 <translation id="149347756975725155">'<ph name="ICON"/>' uzantı simgesi yüklenemedi.</translation>
 <translation id="8825366169884721447">Bu uzantı bir ağ isteğinin &quot;<ph name="HEADER_NAME"/>&quot; adlı istek başlığını değiştiremedi, çünkü söz konusu değişiklik başka bir uzantı (<ph name="EXTENSION_NAME"/>) ile çakışıyordu.</translation>
-<translation id="4776856853352853275">USB cihazları seçin</translation>
 <translation id="6731255991101203740">Açma dizini oluşturulamadı: '<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="545850661681880228">Bir HID cihazı seçin</translation>
 <translation id="4233778200880751280">Hakkında sayfası (&quot;<ph name="ABOUT_PAGE"/>&quot;) yüklenemedi.</translation>
 <translation id="388442998277590542">'<ph name="OPTIONS_PAGE"/>' seçenekler sayfası yüklenemedi.</translation>
 <translation id="5127881134400491887">Ağ bağlantılarını yönet</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Ağ bağlantılarını yapılandırma</translation>
 <translation id="7154130902455071009">Başlangıç sayfanızı <ph name="START_PAGE"/> olarak değiştirin</translation>
 <translation id="1036511912703768636">Bu USB cihazların herhangi birine erişim</translation>
-<translation id="2677911863018634147">&quot;<ph name="APP_NAME"/>&quot; uygulaması, cihazlarınızın birine veya birkaçına erişim izni istiyor.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> ve <ph name="WEBSITE_2"/> web sitelerinde verilerinizi okuma ve değiştirme</translation>
 <translation id="2159915644201199628">Resmin kodu çözülemedi: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="2048182445208425546">Ağ trafiğinize erişme</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">USB aracılığıyla herhangi bir <ph name="PRODUCT_NAME_AND_VENDOR"/> cihazına erişim</translation>
 <translation id="1803557475693955505">'<ph name="BACKGROUND_PAGE"/>' arka plan sayfası yüklenemedi.</translation>
 <translation id="2988488679308982380">Paket yüklenemedi: '<ph name="ERROR_CODE"/>'</translation>
-<translation id="5751530153776468604">&quot;<ph name="APP_NAME"/>&quot; uygulaması cihazlarınızdan birine erişim isteğinde bulunuyor.</translation>
 <translation id="3466070586188012397"><ph name="VENDOR_ID"/> kimliğine sahip üretici firma tarafından sağlanan <ph name="PRODUCT_NAME"/> (seri numarası: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Seçenekler: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Paket geçersiz. Ayrıntılar: '<ph name="ERROR_MESSAGE"/>'</translation>

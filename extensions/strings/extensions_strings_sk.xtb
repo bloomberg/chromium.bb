@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Používať mikrofón a fotoaparát</translation>
 <translation id="2857834222104759979">Súbor manifestu je neplatný.</translation>
 <translation id="6384275966486438344">Zmeniť nastavenia vyhľadávania na: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Výber zariadenia USB</translation>
 <translation id="1445572445564823378">Toto rozšírenie spomaľuje prehliadač <ph name="PRODUCT_NAME"/>. Ak chcete obnoviť výkonnosť prehliadača <ph name="PRODUCT_NAME"/>, zakážte ho.</translation>
 <translation id="7003844668372540529">Neznámy produkt <ph name="PRODUCT_ID"/> od dodávateľa <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Mať prístup k zariadeniam pripojeným cez sériový port</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Obslužný nástroj štandardu MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Prístup k informáciám o zariadeniach Bluetooth spárovaných s vaším systémom a objavovanie zariadení Bluetooth v blízkosti.</translation>
 <translation id="8749863574775030885">Prístup k zariadeniam USB od neznámeho dodávateľa</translation>
-<translation id="781637217073033149">Výber zariadení HID</translation>
 <translation id="3115238746683532089">Neznámy produkt <ph name="PRODUCT_ID"/> od dodávateľa <ph name="VENDOR_ID"/> (sériové číslo: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> od dodávateľa <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Nepodarilo sa načítať skript na pozadí „<ph name="BACKGROUND_SCRIPT"/>“.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Extension Unpacker</translation>
 <translation id="149347756975725155">Nepodarilo sa načítať ikonu rozšírenia „<ph name="ICON"/>“.</translation>
 <translation id="8825366169884721447">Tomuto rozšíreniu sa nepodarilo upraviť hlavičku <ph name="HEADER_NAME"/> žiadosti o sieť, pretože táto úprava kolidovala s iným rozšírením (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Výber zariadení USB</translation>
 <translation id="6731255991101203740">Nepodarilo sa vytvoriť adresár na rozbalenie: <ph name="DIRECTORY_PATH"/></translation>
-<translation id="545850661681880228">Výber zariadenia HID</translation>
 <translation id="4233778200880751280">Informačnú stránku <ph name="ABOUT_PAGE"/> sa nepodarilo načítať.</translation>
 <translation id="388442998277590542">Nepodarilo sa načítať stránku s možnosťami „<ph name="OPTIONS_PAGE"/>“.</translation>
 <translation id="5127881134400491887">Spravovať sieťové pripojenia</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Konfigurovať sieťové pripojenia</translation>
 <translation id="7154130902455071009">Zmeniť úvodnú stránku na: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Prístup ku ktorýmkoľvek z týchto zariadení USB</translation>
-<translation id="2677911863018634147">Aplikácia <ph name="APP_NAME"/> žiada o prístup k jednému alebo viacerým vašim zariadeniam.</translation>
 <translation id="6698810901424468597">Čítanie a úprava údajov na weboch <ph name="WEBSITE_1"/> a <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Nepodarilo sa dekódovať obrázok: <ph name="IMAGE_NAME"/></translation>
 <translation id="2048182445208425546">Prístup k sieťovej premávke</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Prístup k ľubovoľnému zariadeniu <ph name="PRODUCT_NAME_AND_VENDOR"/> prostredníctvom USB</translation>
 <translation id="1803557475693955505">Nepodarilo sa načítať stránku na pozadí „<ph name="BACKGROUND_PAGE"/>“.</translation>
 <translation id="2988488679308982380">Nepodarilo sa nainštalovať balík: <ph name="ERROR_CODE"/></translation>
-<translation id="5751530153776468604">Aplikácia <ph name="APP_NAME"/> žiada o prístup k jednému z vašich zariadení.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> od dodávateľa <ph name="VENDOR_ID"/> (sériové číslo: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Možnosti: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Package is invalid. Details: '<ph name="ERROR_MESSAGE"/>'.</translation>

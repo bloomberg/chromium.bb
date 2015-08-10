@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Nadřazená složka</translation>
 <translation id="2354750644801399986">Do Not Track</translation>
 <translation id="2351097562818989364">Nastavení překladů bylo resetováno.</translation>
+<translation id="1557201757634521564">Automaticky rozpoznávat kódování</translation>
 <translation id="4307992518367153382">Základy</translation>
 <translation id="8007176423574883786">Vypnuto v tomto zařízení</translation>
 <translation id="119944043368869598">Vymazat vše</translation>
@@ -301,6 +302,7 @@ Ukončíte jej stisknutím tlačítka Zpět.</translation>
 <translation id="1197267115302279827">Přesunutí záložek</translation>
 <translation id="3190152372525844641">Oprávnění pro Chrome zapnete v <ph name="BEGIN_LINK"/>Nastavení pro Android<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Chrome se nemůže připojit k serverům společnosti Google pro kompresi dat. Úspora dat může být omezena.</translation>
+<translation id="6324360525379265737">Automaticky určovat kódování znaků</translation>
 <translation id="4827948050554950725">Přidat platební kartu</translation>
 <translation id="2316129865977710310">Ne, děkuji</translation>
 <translation id="4278390842282768270">Povoleno</translation>
@@ -376,8 +378,10 @@ Ukončíte jej stisknutím tlačítka Zpět.</translation>
 <translation id="699220179437400583">Automaticky Googlu hlásit podrobnosti možných bezpečnostních incidentů</translation>
 <translation id="5899349522111170522">Vytvořit nový soubor</translation>
 <translation id="3158619413803296679">Vyberte záložku</translation>
+<translation id="1832521218263067499">Narušení zabezpečení</translation>
 <translation id="6138140242378429169">Optimalizovat stránku pro mobily</translation>
 <translation id="5345040418939504969">Záložka <ph name="BOOKMARK_TITLE"/> byla smazána</translation>
+<translation id="1641113438599504367">Bezpečné prohlížení</translation>
 <translation id="2360035970720276770">Lze stahovat jen adresy URL typu http nebo https</translation>
 <translation id="7926911226829060241">Záložky, historie, hesla a další údaje se synchronizují s vaším účtem Google.</translation>
 <translation id="4871370605780490696">Přidat záložku</translation>
@@ -441,6 +445,7 @@ Statistiky využití obsahují informace, jako jsou předvolby, kliknutí na tla
 <translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
 <translation id="4165986682804962316">Nastavení webu</translation>
 <translation id="3672452749423051839">Návrhy při chybách navigace</translation>
+<translation id="307329814453917357">Nabízet překlad stránek pomocí Překladače Google</translation>
 <translation id="2956410042958133412">Tento účet spravují uživatelé <ph name="PARENT_NAME_1"/> a <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Ne, děkuji</translation>
 <translation id="5164482624172255778">Chcete, aby Google Chrome při příští návštěvě nabízel překlad stránek v jazyce <ph name="LANGUAGE"/> z tohoto webu?</translation>

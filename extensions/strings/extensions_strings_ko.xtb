@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">마이크와 카메라 사용</translation>
 <translation id="2857834222104759979">매니페스트 파일이 잘못되었습니다.</translation>
 <translation id="6384275966486438344">다음으로 검색 설정 변경: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">USB 기기 선택</translation>
 <translation id="1445572445564823378">이 확장 프로그램은 <ph name="PRODUCT_NAME"/>의 성능을 저하시킵니다. <ph name="PRODUCT_NAME"/>의 성능을 복원하려면 확장 프로그램을 사용중지해야 합니다.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME"/>의 알 수 없는 제품 <ph name="PRODUCT_ID"/></translation>
 <translation id="1033780634303702874">직렬 기기에 액세스</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">시스템과 페어링된 블루투스 기기 관련 정보에 액세스하고 근처의 블루투스 기기를 검색합니다.</translation>
 <translation id="8749863574775030885">알 수 없는 공급업체의 USB 기기에 액세스</translation>
-<translation id="781637217073033149">HID 기기 선택</translation>
 <translation id="3115238746683532089">공급업체 <ph name="VENDOR_ID"/>의 알 수 없는 제품 <ph name="PRODUCT_ID"/>(일련번호 <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME"/>의 <ph name="PRODUCT_NAME"/></translation>
 <translation id="657064425229075395">백그라운드 스크립트('<ph name="BACKGROUND_SCRIPT"/>')를 로드하지 못했습니다.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">확장 프로그램 압축 해제 프로그램</translation>
 <translation id="149347756975725155">확장 프로그램 아이콘('<ph name="ICON"/>')을 로드하지 못했습니다.</translation>
 <translation id="8825366169884721447">이 확장프로그램이 네트워크 요청의 요청 헤더 '<ph name="HEADER_NAME"/>을(를) 수정하는 데 실패했습니다. 수정 요청이 다른 확장 프로그램(<ph name="EXTENSION_NAME"/>)와(과) 충돌했습니다.</translation>
-<translation id="4776856853352853275">USB 기기 선택</translation>
 <translation id="6731255991101203740">'<ph name="DIRECTORY_PATH"/>'의 압축을 해제하기 위한 디렉토리를 만들지 못했습니다.</translation>
-<translation id="545850661681880228">HID 기기 선택</translation>
 <translation id="4233778200880751280">정보 페이지 '<ph name="ABOUT_PAGE"/>'을(를) 로드할 수 없습니다.</translation>
 <translation id="388442998277590542">옵션 페이지('<ph name="OPTIONS_PAGE"/>')를 로드하지 못했습니다.</translation>
 <translation id="5127881134400491887">네트워크 연결 관리</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">네트워크 연결 구성</translation>
 <translation id="7154130902455071009">다음으로 시작 페이지 변경: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">이 USB 기기에 액세스</translation>
-<translation id="2677911863018634147">애플리케이션 '<ph name="APP_NAME"/>'이(가) 사용자의 기기 하나 이상에 대한 액세스 권한을 요청하고 있습니다.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> 및 <ph name="WEBSITE_2"/>의 데이터를 읽고 변경</translation>
 <translation id="2159915644201199628">'<ph name="IMAGE_NAME"/>' 이미지를 디코딩하지 못했습니다.</translation>
 <translation id="2048182445208425546">네트워크 트래픽에 액세스</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">USB를 통해 <ph name="PRODUCT_NAME_AND_VENDOR"/>에 액세스</translation>
 <translation id="1803557475693955505">배경 페이지('<ph name="BACKGROUND_PAGE"/>')를 로드하지 못했습니다.</translation>
 <translation id="2988488679308982380">패키지를 설치할 수 없습니다. '<ph name="ERROR_CODE"/>'</translation>
-<translation id="5751530153776468604">애플리케이션 '<ph name="APP_NAME"/>'이(가) 사용자의 기기 중 하나에 대한 액세스 권한을 요청하고 있습니다.</translation>
 <translation id="3466070586188012397">공급업체 <ph name="VENDOR_ID"/>의 <ph name="PRODUCT_NAME"/>(일련번호 <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">옵션: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">패키지가 잘못되었습니다. 세부정보: '<ph name="ERROR_MESSAGE"/>'.</translation>

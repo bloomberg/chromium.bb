@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Pasta superior</translation>
 <translation id="2354750644801399986">&quot;Não Monitorizar&quot;</translation>
 <translation id="2351097562818989364">As definições de tradução foram repostas.</translation>
+<translation id="1557201757634521564">Deteção automática de codificação</translation>
 <translation id="4307992518367153382">Noções básicas</translation>
 <translation id="8007176423574883786">Desativada para este dispositivo</translation>
 <translation id="119944043368869598">Limpar tudo</translation>
@@ -301,6 +302,7 @@ Clique no botão de retrocesso para sair.</translation>
 <translation id="1197267115302279827">Mover marcadores</translation>
 <translation id="3190152372525844641">Ative as autorizações para o Chrome nas <ph name="BEGIN_LINK"/>Definições do Android<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">O Chrome não consegue comunicar com os servidores da Google para a compressão de dados. A poupança de dados pode ser limitada.</translation>
+<translation id="6324360525379265737">Determinar a codificação de carateres automaticamente</translation>
 <translation id="4827948050554950725">Adicionar cartão de crédito</translation>
 <translation id="2316129865977710310">Não, obrigado</translation>
 <translation id="4278390842282768270">Permitidos:</translation>
@@ -376,8 +378,10 @@ Clique no botão de retrocesso para sair.</translation>
 <translation id="699220179437400583">Comunicar automaticamente detalhes de possíveis incidentes de segurança à Google</translation>
 <translation id="5899349522111170522">Criar novo ficheiro</translation>
 <translation id="3158619413803296679">Escolher um marcador</translation>
+<translation id="1832521218263067499">Incidentes de segurança</translation>
 <translation id="6138140242378429169">Tornar a página compatível com dispositivos móveis</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> eliminado</translation>
+<translation id="1641113438599504367">Navegação segura</translation>
 <translation id="2360035970720276770">Só é possível transferir URLs com http ou https</translation>
 <translation id="7926911226829060241">Os marcadores abertos, o histórico, as palavras-passe e muito mais estão a ser sincronizados com a sua Conta Google.</translation>
 <translation id="4871370605780490696">Adicionar marcador</translation>
@@ -441,6 +445,7 @@ As estatísticas de utilização incluem informações como preferências, cliqu
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="4165986682804962316">Definições de sites</translation>
 <translation id="3672452749423051839">Sugestões de erros de navegação</translation>
+<translation id="307329814453917357">Oferecer-se para traduzir páginas com o Google Tradutor</translation>
 <translation id="2956410042958133412">Esta conta é gerida por <ph name="PARENT_NAME_1"/> e por <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Não, obrigado</translation>
 <translation id="5164482624172255778">Pretende que o Google Chrome se ofereça para traduzir as páginas em <ph name="LANGUAGE"/> deste site da próxima vez?</translation>

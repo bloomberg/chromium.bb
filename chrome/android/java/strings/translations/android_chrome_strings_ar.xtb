@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">المجلد الرئيسي</translation>
 <translation id="2354750644801399986">&quot;عدم التتبع&quot;</translation>
 <translation id="2351097562818989364">تم إعادة ضبط إعداداتك للترجمة.</translation>
+<translation id="1557201757634521564">الاكتشاف التلقائي للتشفير</translation>
 <translation id="4307992518367153382">أساسيّات</translation>
 <translation id="8007176423574883786">تم إيقافه لهذا الجهاز</translation>
 <translation id="119944043368869598">محو جميع التنزيلات</translation>
@@ -299,6 +300,7 @@
 <translation id="1197267115302279827">نقل الإشارات المرجعية</translation>
 <translation id="3190152372525844641">‏تشغيل الأذونات لـ Chrome في <ph name="BEGIN_LINK"/>إعدادات Android<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">‏لا يمكن لمتصفح Chrome الوصول إلى خوادم Google لضغط البيانات. قد تكون خيارات توفير البيانات محدودة.</translation>
+<translation id="6324360525379265737">يحدد تلقائيا ترميز الأحرف</translation>
 <translation id="4827948050554950725">إضافة بطاقة ائتمان</translation>
 <translation id="2316129865977710310">لا، شكرًا</translation>
 <translation id="4278390842282768270">مسموح بها</translation>
@@ -374,8 +376,10 @@
 <translation id="699220179437400583">‏إبلاغ Google تلقائيًا بتفاصيل أي مخاطر أمنية محتملة</translation>
 <translation id="5899349522111170522">إنشاء ملف جديد</translation>
 <translation id="3158619413803296679">اختيار إشارة مرجعية</translation>
+<translation id="1832521218263067499">حوادث تتعلق بالأمن</translation>
 <translation id="6138140242378429169">جعل الصفحة متوافقة مع الجوّال</translation>
 <translation id="5345040418939504969">تم حذف <ph name="BOOKMARK_TITLE"/></translation>
+<translation id="1641113438599504367">التصفح الآمن</translation>
 <translation id="2360035970720276770">‏يمكن تنزيل عناوين URL بالبادئة &quot;http&quot; أو &quot;https&quot; فقط</translation>
 <translation id="7926911226829060241">‏تتم مزامنة الإشارات المرجعية المفتوحة والسجل وكلمات المرور وغير ذلك الكثير مع حسابك في Google.</translation>
 <translation id="4871370605780490696">إضافة إشارة مرجعية</translation>
@@ -439,6 +443,7 @@
 <translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
 <translation id="4165986682804962316">إعدادات الموقع</translation>
 <translation id="3672452749423051839">اقتراحات أخطاء التنقل</translation>
+<translation id="307329814453917357">‏عرض ترجمة الصفحات باستخدام ترجمة Google.</translation>
 <translation id="2956410042958133412">تتم إدارة هذا الحساب بواسطة <ph name="PARENT_NAME_1"/> و <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">لا، شكرًا</translation>
 <translation id="5164482624172255778">‏هل تريد أن يعرض Google Chrome ترجمة الصفحات باللغة <ph name="LANGUAGE"/> من هذا الموقع مرة أخرى؟</translation>

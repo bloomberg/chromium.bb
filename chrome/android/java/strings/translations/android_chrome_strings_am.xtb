@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">ወላጅ አቃፊ</translation>
 <translation id="2354750644801399986">ዱካ አትከታተል</translation>
 <translation id="2351097562818989364">የትርጉም ቅንብሮችዎ ዳግም እንዲጀምሩ ተደርገዋል።</translation>
+<translation id="1557201757634521564">ምስጠራን በራስ እወቅ</translation>
 <translation id="4307992518367153382">መሠረታዊ</translation>
 <translation id="8007176423574883786">ለዚህ መሣሪያ ጠፍቷል</translation>
 <translation id="119944043368869598">ሁሉንም አጽዳ</translation>
@@ -301,6 +302,7 @@
 <translation id="1197267115302279827">ዕልባቶችን ውሰድ</translation>
 <translation id="3190152372525844641">በ<ph name="BEGIN_LINK"/>Android ቅንብሮች<ph name="END_LINK"/> ውስጥ ፍቃዶችን ለChrome ያብሩ።</translation>
 <translation id="583891442612896534">Chrome ለውሂብ እመቃ የGoogle አገልጋዮችን መድረስ አልቻለም። የውሂብ ቁጠባዎችዎ የተገደቡ ሊሆኑ ይችላሉ።</translation>
+<translation id="6324360525379265737">የየቁምፊ ምስጠራን በራስ ሰር እወቅ</translation>
 <translation id="4827948050554950725">ክሬዲት ካርድ አክል</translation>
 <translation id="2316129865977710310">አይ፣ አመሰግናለሁ</translation>
 <translation id="4278390842282768270">ተፈቅዷል</translation>
@@ -376,8 +378,10 @@
 <translation id="699220179437400583">የደህንነት ሊሆኑ የሚችሉ የክስተቶች ዝርዝር በራስ-ሰር ለGoogle ሪፖርት አድርግ</translation>
 <translation id="5899349522111170522">አዲስ ፋይል ይፍጠሩ</translation>
 <translation id="3158619413803296679">ዕልባት ይምረጡ</translation>
+<translation id="1832521218263067499">የደህንነት ክስተቶች</translation>
 <translation id="6138140242378429169">ገጹ ለሞባይል-አመቺ እንዲሆን ያድርጉ</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> ተሰርዟል</translation>
+<translation id="1641113438599504367">የጥንቃቄ አሰሳ</translation>
 <translation id="2360035970720276770">የኤችቲቲፒ ወይም ኤችቲቲፒኤስ ዩአርኤሎችን ብቻ ነው ማውረድ የሚቻለው</translation>
 <translation id="7926911226829060241">የእርስዎ ክፍት ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ተጨማሪ ነገሮችዎ ከGoogle መለያዎ ጋር በመስመር ላይ ናቸው።</translation>
 <translation id="4871370605780490696">ዕልባት ያክሉ</translation>
@@ -441,6 +445,7 @@
 <translation id="1285320974508926690">ይህን ጣቢያ በጭራሽ አትተርጉም</translation>
 <translation id="4165986682804962316">የጣቢያ ቅንብሮች</translation>
 <translation id="3672452749423051839">የአሰሳ ስህተት ጥቆማ አስተያየቶች</translation>
+<translation id="307329814453917357">Google ትርጉምን በመጠቀም ገጾችን ለመተርጎም የቀረበ ሃሳብ</translation>
 <translation id="2956410042958133412">ይህ መለያ የሚቀናበረው በ<ph name="PARENT_NAME_1"/> እና <ph name="PARENT_NAME_2"/> ነው።</translation>
 <translation id="780301667611848630">አይ፣ አመሰግናለሁ</translation>
 <translation id="5164482624172255778">Google Chrome በሚቀጥለው ጊዜ ላይ በዚህ ጣቢያ ላይ ያሉ የ<ph name="LANGUAGE"/> ገጾች እንዲተረጎምልዎ ይፈልጋሉ?</translation>

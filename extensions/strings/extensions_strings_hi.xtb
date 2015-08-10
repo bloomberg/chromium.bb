@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">अपना माइक्रोफ़ोन और कैमरा उपयोग करें</translation>
 <translation id="2857834222104759979">मालसूची फ़ाइल अमान्य है.</translation>
 <translation id="6384275966486438344">अपनी खोज सेटिंग इसमें बदलें: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">कोई USB डिवाइस चुनें</translation>
 <translation id="1445572445564823378">यह एक्‍सटेंशन धीमा हो रहा है <ph name="PRODUCT_NAME"/>. आपको <ph name="PRODUCT_NAME"/> का निष्पादन पुनर्स्‍थापित करने के लिए इसे अक्षम करना चाहिए.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME"/> की ओर से अज्ञात <ph name="PRODUCT_ID"/> उत्पाद</translation>
 <translation id="1033780634303702874">अपने सीरियल डिवाइस को एक्सेस करें</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">माइमहैंडलर: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">अपने सिस्टम के साथ युग्मित ब्लूटूथ डिवाइस से संबंधित जानकारी एक्सेस करें और आस-पास के ब्लूटूथ डिवाइस की खोज करें.</translation>
 <translation id="8749863574775030885">किसी अज्ञात विक्रेता के USB डिवाइस ऐक्‍सेस करें</translation>
-<translation id="781637217073033149">HID डिवाइस चुनें</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID"/> (क्रमांक <ph name="SERIAL_NUMBER"/>) विक्रेता की ओर से <ph name="PRODUCT_ID"/> अज्ञात उत्पाद</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME"/> की ओर से <ph name="PRODUCT_NAME"/></translation>
 <translation id="657064425229075395">पृष्ठभूमि स्क्रिप्ट '<ph name="BACKGROUND_SCRIPT"/>' लोड नहीं की जा सकी.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">एक्‍सटेंशन अनपैकर</translation>
 <translation id="149347756975725155">एक्सटेंशन आइकन '<ph name="ICON"/>' लोड नहीं कर सका.</translation>
 <translation id="8825366169884721447">यह एक्सटेंशन किसी नेटवर्क अनुरोध के अनुरोध शीर्षलेख &quot;<ph name="HEADER_NAME"/>&quot; को बदलने में विफल रहा क्योंकि बदलाव का एक अन्य एक्सटेंशन (<ph name="EXTENSION_NAME"/>) के साथ विरोध हुआ था.</translation>
-<translation id="4776856853352853275">USB डिवाइस चुनें</translation>
 <translation id="6731255991101203740">अनज़िप करने के लिए निर्देशिका नहीं बनाई जा सकी: '<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="545850661681880228">HID डिवाइस चुनें</translation>
 <translation id="4233778200880751280">संक्षिप्त विवरण पृष्ठ '<ph name="ABOUT_PAGE"/>' लोड नहीं हो सका.</translation>
 <translation id="388442998277590542">विकल्‍प पृष्ठ '<ph name="OPTIONS_PAGE"/>' लोड नहीं कर सका.</translation>
 <translation id="5127881134400491887">नेटवर्क कनेक्शन प्रबंधित करें</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">नेटवर्क कनेक्‍शन कॉन्‍फ़िगर करें</translation>
 <translation id="7154130902455071009">अपना आरंभ पृष्ठ इसमें बदलें: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">इनमें से कोई भी USB डिवाइस ऐक्‍सेस करें</translation>
-<translation id="2677911863018634147">&quot;<ph name="APP_NAME"/>&quot; ऐप्‍लिकेशन आपके एक या अधिक डिवाइस की ऐक्‍सेस का अनुरोध कर रहा है.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> और <ph name="WEBSITE_2"/> पर मौजूद अपना डेटा पढ़ें और बदलें</translation>
 <translation id="2159915644201199628">चित्र को डीकोड नहीं किया जा सका: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="2048182445208425546">अपना नेटवर्क ट्रैफ़िक ऐक्‍सेस करें</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">USB के द्वारा कोई भी <ph name="PRODUCT_NAME_AND_VENDOR"/> ऐक्‍सेस करें</translation>
 <translation id="1803557475693955505">पृष्ठभूमि पृष्ठ '<ph name="BACKGROUND_PAGE"/>' को लोड नहीं कर सका.</translation>
 <translation id="2988488679308982380">पैकेज इंस्टॉल नहीं कर सका: '<ph name="ERROR_CODE"/>'</translation>
-<translation id="5751530153776468604">&quot;<ph name="APP_NAME"/>&quot; ऐप्‍लिकेशन आपके किसी एक डिवाइस की ऐक्‍सेस का अनुरोध कर रहा है.</translation>
 <translation id="3466070586188012397"><ph name="VENDOR_ID"/> (क्रमांक <ph name="SERIAL_NUMBER"/>) विक्रेता की ओर से <ph name="PRODUCT_NAME"/></translation>
 <translation id="7972881773422714442">विकल्‍प: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">पैकेज अमान्य है. विवरण: '<ph name="ERROR_MESSAGE"/>'.</translation>

@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Bruge din mikrofon og dit kamera</translation>
 <translation id="2857834222104759979">Manifestfilen er ugyldig.</translation>
 <translation id="6384275966486438344">Skifte dine søgeindstillinger til: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Vælg en USB-enhed</translation>
 <translation id="1445572445564823378">Denne udvidelse gør <ph name="PRODUCT_NAME"/> langsommere. Du bør deaktivere den for at gøre <ph name="PRODUCT_NAME"/> hurtig igen.</translation>
 <translation id="7003844668372540529">Ukendt produkt, <ph name="PRODUCT_ID"/>, fra <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Få adgang til dine serieenheder</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Få adgang til oplysninger om Bluetooth-enheder, der er parret med dit system, og registrér Bluetooth-enheder i nærheden.</translation>
 <translation id="8749863574775030885">Få adgang til USB-enheder fra en ukendt leverandør</translation>
-<translation id="781637217073033149">Vælg HID-enheder</translation>
 <translation id="3115238746683532089">Ukendt produkt, <ph name="PRODUCT_ID"/>, fra leverandøren <ph name="VENDOR_ID"/> (serienummer <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> fra <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Baggrundsscriptet  &quot;<ph name="BACKGROUND_SCRIPT"/>&quot; kunne ikke indlæses.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Værktøj til udpakning af udvidelser</translation>
 <translation id="149347756975725155">Udvidelsesikonet '<ph name="ICON"/>' kunne ikke indlæses.</translation>
 <translation id="8825366169884721447">Denne udvidelse kunne ikke ændre anmodningsheaderen &quot;<ph name="HEADER_NAME"/>&quot; for en netværksanmodning, fordi ændringen var i strid med en anden udvidelse. (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Vælg USB-enheder</translation>
 <translation id="6731255991101203740">Mappen til udpakning kunne ikke oprettet: '<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="545850661681880228">Vælg en HID-enhed</translation>
 <translation id="4233778200880751280">Siden &quot;<ph name="ABOUT_PAGE"/>&quot; kunne ikke indlæses.</translation>
 <translation id="388442998277590542">Siden med valgmuligheder '<ph name="OPTIONS_PAGE"/>' kunne ikke indlæses.</translation>
 <translation id="5127881134400491887">Administrere netværksforbindelser</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Konfigurer netværksforbindelser</translation>
 <translation id="7154130902455071009">Skifte din startside til: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Få adgang til alle disse USB-enheder</translation>
-<translation id="2677911863018634147">Applikationen &quot;<ph name="APP_NAME"/>&quot; anmoder om adgang til en eller flere af dine enheder.</translation>
 <translation id="6698810901424468597">Læse og redigere dine data på <ph name="WEBSITE_1"/> og <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Billedet kunne afkodes: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="2048182445208425546">Få adgang til din netværkstrafik</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Få adgang til alle <ph name="PRODUCT_NAME_AND_VENDOR"/> via USB</translation>
 <translation id="1803557475693955505">Baggrundssiden '<ph name="BACKGROUND_PAGE"/>' kunne ikke indlæses.</translation>
 <translation id="2988488679308982380">Pakken kunne ikke installeres: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
-<translation id="5751530153776468604">Applikationen &quot;<ph name="APP_NAME"/>&quot; anmoder om adgang til en af dine enheder.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> fra leverandøren <ph name="VENDOR_ID"/> (serienummer <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Valgmuligheder: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Pakken er ugyldig. Oplysninger: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>

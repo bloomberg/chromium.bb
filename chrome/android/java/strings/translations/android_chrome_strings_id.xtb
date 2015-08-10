@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Folder induk</translation>
 <translation id="2354750644801399986">‘Jangan Lacak’</translation>
 <translation id="2351097562818989364">Setelan terjemah telah disetel ulang.</translation>
+<translation id="1557201757634521564">Deteksi otomatis enkode</translation>
 <translation id="4307992518367153382">Dasar-Dasar</translation>
 <translation id="8007176423574883786">Dinonaktifkan untuk perangkat ini</translation>
 <translation id="119944043368869598">Hapus semua</translation>
@@ -301,6 +302,7 @@ Tekan tombol kembali untuk keluar.</translation>
 <translation id="1197267115302279827">Pindahkan bookmark</translation>
 <translation id="3190152372525844641">Aktifkan izin untuk Chrome di <ph name="BEGIN_LINK"/>Setelan Android<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Chrome tidak dapat menjangkau server Google untuk mengompresi data. Penyimpanan data Anda mungkin dibatasi.</translation>
+<translation id="6324360525379265737">Menentukan enkode karakter secara otomatis</translation>
 <translation id="4827948050554950725">Tambahkan kartu kredit</translation>
 <translation id="2316129865977710310">Lain kali</translation>
 <translation id="4278390842282768270">Diizinkan</translation>
@@ -376,8 +378,10 @@ Tekan tombol kembali untuk keluar.</translation>
 <translation id="699220179437400583">Otomatis melaporkan detail kemungkinan insiden keamanan ke Google</translation>
 <translation id="5899349522111170522">Buat file baru</translation>
 <translation id="3158619413803296679">Pilih bookmark</translation>
+<translation id="1832521218263067499">Insiden keamanan</translation>
 <translation id="6138140242378429169">Buat laman mobile-friendly</translation>
 <translation id="5345040418939504969">Menghapus <ph name="BOOKMARK_TITLE"/></translation>
+<translation id="1641113438599504367">Penelusuran Aman</translation>
 <translation id="2360035970720276770">Hanya dapat mengunduh URL http atau https</translation>
 <translation id="7926911226829060241">Bookmark yang dibuka, riwayat, sandi, dan lainnya sedang disinkronkan dengan Akun Google Anda.</translation>
 <translation id="4871370605780490696">Tambahkan bookmark</translation>
@@ -441,6 +445,7 @@ Statistik penggunaan mencakup informasi seperti preferensi, klik tombol, dan pen
 <translation id="1285320974508926690">Jangan pernah terjemahkan situs ini</translation>
 <translation id="4165986682804962316">Setelan situs</translation>
 <translation id="3672452749423051839">Saran kesalahan navigasi</translation>
+<translation id="307329814453917357">Tawarkan untuk menerjemahkan laman menggunakan Google Terjemahan</translation>
 <translation id="2956410042958133412">Akun ini dikelola oleh <ph name="PARENT_NAME_1"/> dan <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Lain kali</translation>
 <translation id="5164482624172255778">Ingin Google Chrome menawarkan untuk menerjemahkan laman berbahasa <ph name="LANGUAGE"/> dari situs ini saat Anda mengunjunginya lagi?</translation>

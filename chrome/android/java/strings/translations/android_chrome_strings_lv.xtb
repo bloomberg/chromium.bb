@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Vecākmape</translation>
 <translation id="2354750644801399986">“Nesekot”</translation>
 <translation id="2351097562818989364">Tulkošanas iestatījumi ir atiestatīti.</translation>
+<translation id="1557201757634521564">Kodējuma automātiska noteikšana</translation>
 <translation id="4307992518367153382">Pamata</translation>
 <translation id="8007176423574883786">Izslēgts šai ierīcei</translation>
 <translation id="119944043368869598">Notīrīt visu</translation>
@@ -301,6 +302,7 @@ Lai izietu, nospiediet pogu “Atpakaļ”.</translation>
 <translation id="1197267115302279827">Pārvietot grāmatzīmes</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK"/>Android iestatījumos<ph name="END_LINK"/> ieslēdziet atļaujas pārlūkam Chrome.</translation>
 <translation id="583891442612896534">Chrome nevar sasniegt Google serverus, lai veiktu datu saspiešanu. Datu lietojuma samazinājums var būt ierobežots.</translation>
+<translation id="6324360525379265737">Automātiski noteikt rakstzīmju kodējumu</translation>
 <translation id="4827948050554950725">Pievienot kredītkarti</translation>
 <translation id="2316129865977710310">Nē, paldies</translation>
 <translation id="4278390842282768270">Atļauts</translation>
@@ -376,8 +378,10 @@ Lai izietu, nospiediet pogu “Atpakaļ”.</translation>
 <translation id="699220179437400583">Automātiski nosūtīt Google serveriem informāciju par iespējamām drošības problēmām</translation>
 <translation id="5899349522111170522">Izveidot jaunu failu</translation>
 <translation id="3158619413803296679">Grāmatzīmes izvēlēšanās</translation>
+<translation id="1832521218263067499">Drošības problēmas</translation>
 <translation id="6138140242378429169">Padarīt lapu piemērotu mobilajām ierīcēm</translation>
 <translation id="5345040418939504969">Grāmatzīme <ph name="BOOKMARK_TITLE"/> tika dzēsta</translation>
+<translation id="1641113438599504367">Droša pārlūkošana</translation>
 <translation id="2360035970720276770">Var lejupielādēt tikai tos URL, kuri sākas ar “http” vai “https”.</translation>
 <translation id="7926911226829060241">Jūsu atvērtās grāmatzīmes, vēsture, paroles un citi dati tiek sinhronizēti ar jūsu Google kontu.</translation>
 <translation id="4871370605780490696">Pievienot grāmatzīmi</translation>
@@ -441,6 +445,7 @@ Lietojuma statistikas datos tiek ietverta tāda informācija kā preferences, kl
 <translation id="1285320974508926690">Nekad netulkot šo vietni</translation>
 <translation id="4165986682804962316">Vietnes iestatījumi</translation>
 <translation id="3672452749423051839">Navigācijas kļūdu ieteikumi</translation>
+<translation id="307329814453917357">Piedāvāt lapu tulkošanu, izmantojot Google tulkotāju</translation>
 <translation id="2956410042958133412">Šo kontu pārvalda <ph name="PARENT_NAME_1"/> un <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Nē, paldies</translation>
 <translation id="5164482624172255778">Vai vēlaties, lai Google Chrome nākamreiz piedāvātu tulkot šīs vietnes lapas, kuru saturs ir šādā valodā: <ph name="LANGUAGE"/>?</translation>

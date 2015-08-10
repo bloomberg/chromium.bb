@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Menggunakan mikrofon dan kamera Anda</translation>
 <translation id="2857834222104759979">File manifes tidak valid.</translation>
 <translation id="6384275966486438344">Ubah setelan penelusuran Anda menjadi: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Pilih perangkat USB</translation>
 <translation id="1445572445564823378">Ekstensi ini memperlambat <ph name="PRODUCT_NAME"/>. Anda harus menonaktifkannya agar dapat memulihkan kinerja <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7003844668372540529">Produk <ph name="PRODUCT_ID"/> tak dikenal dari <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Mengakses perangkat seri Anda</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Mengakses informasi tentang perangkat Bluetooth yang disandingkan dengan sistem Anda dan menemukan perangkat Bluetooth di sekitarnya.</translation>
 <translation id="8749863574775030885">Akses perangkat USB dari vendor tak dikenal</translation>
-<translation id="781637217073033149">Pilih perangkat HID</translation>
 <translation id="3115238746683532089">Produk <ph name="PRODUCT_ID"/> tak dikenal dari vendor <ph name="VENDOR_ID"/> (nomor seri <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> dari <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Tidak dapat memuat skrip latar belakang '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Pembuka Ekstensi</translation>
 <translation id="149347756975725155">Tidak dapat memuat ikon ekstensi '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">Ekstensi ini gagal memodifikasi tajuk permintaan &quot;<ph name="HEADER_NAME"/>&quot; dari suatu permintaan jaringan karena modifikasi bertentangan dengan ekstensi lain (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Pilih perangkat USB</translation>
 <translation id="6731255991101203740">Tidak dapat membuat direktori untuk pengekstrakan: '<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="545850661681880228">Pilih perangkat HID</translation>
 <translation id="4233778200880751280">Tidak dapat memuat laman tentang '<ph name="ABOUT_PAGE"/>'.</translation>
 <translation id="388442998277590542">Tidak dapat memuat laman opsi '<ph name="OPTIONS_PAGE"/>'.</translation>
 <translation id="5127881134400491887">Mengelola sambungan jaringan</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Konfigurasi sambungan jaringan</translation>
 <translation id="7154130902455071009">Ubah laman awal Anda menjadi: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Akses salah satu perangkat USB ini</translation>
-<translation id="2677911863018634147">Aplikasi &quot;<ph name="APP_NAME"/>&quot; meminta akses ke salah satu atau beberapa perangkat Anda.</translation>
 <translation id="6698810901424468597">Membaca dan mengubah data Anda di <ph name="WEBSITE_1"/> dan <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Tidak dapat mendekode gambar: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="2048182445208425546">Mengakses lalu lintas jaringan Anda</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Akses salah satu <ph name="PRODUCT_NAME_AND_VENDOR"/> melalui USB</translation>
 <translation id="1803557475693955505">Tidak dapat memuat laman latar belakang '<ph name="BACKGROUND_PAGE"/>'.</translation>
 <translation id="2988488679308982380">Tidak dapat memasang paket: '<ph name="ERROR_CODE"/>'</translation>
-<translation id="5751530153776468604">Aplikasi &quot;<ph name="APP_NAME"/>&quot; meminta akses ke salah satu perangkat Anda.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> dari vendor <ph name="VENDOR_ID"/> (nomor seri <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Opsi: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Paket tidak valid. Detail: '<ph name="ERROR_MESSAGE"/>'.</translation>

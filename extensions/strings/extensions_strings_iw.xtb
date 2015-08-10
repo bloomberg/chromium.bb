@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">להשתמש במיקרופון ובמצלמה</translation>
 <translation id="2857834222104759979">קובץ המניספט לא חוקי.</translation>
 <translation id="6384275966486438344">שנה את הגדרות החיפוש שלך ל: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">‏בחר התקן USB</translation>
 <translation id="1445572445564823378">תוסף זה מאט את <ph name="PRODUCT_NAME"/>. עליך להשבית אותו כדי לשחזר את הביצועים של <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7003844668372540529">מוצר לא ידוע <ph name="PRODUCT_ID"/> מאת <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">גישה להתקנים הסיריאליים שלך</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">‏מטפל MIME:‏ <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">‏פרטי גישה של מכשירי Bluetooth המותאמים למערכת שלך ומגלים מכשירי Bluetooth קרובים.</translation>
 <translation id="8749863574775030885">‏גש למכשירי USB מספק לא ידוע</translation>
-<translation id="781637217073033149">‏בחר מכשירי HID</translation>
 <translation id="3115238746683532089">מוצר לא ידוע <ph name="PRODUCT_ID"/> מהספק <ph name="VENDOR_ID"/> (מספר סידורי <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> מאת <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">לא ניתן להעלות את סקריפט הרקע '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">פורק התוספים</translation>
 <translation id="149347756975725155">לא היתה אפשרות לטעון את אייקון התוסף '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">תוסף זה נכשל בשינוי כותרת הבקשה '<ph name="HEADER_NAME"/>' של בקשת רשת מכיוון שהשינוי התנגש עם תוסף אחר (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">‏בחר התקני USB</translation>
 <translation id="6731255991101203740">לא ניתן ליצור ספריה עבור ביטול הדחיסה: '<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="545850661681880228">‏בחר מכשיר HID</translation>
 <translation id="4233778200880751280">לא ניתן לטעון את דף המידע '<ph name="ABOUT_PAGE"/>'.</translation>
 <translation id="388442998277590542">לא היתה אפשרות לטעון את דף האפשרויות '<ph name="OPTIONS_PAGE"/>'.</translation>
 <translation id="5127881134400491887">ניהול חיבורי רשת</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">הגדרת חיבורי רשת</translation>
 <translation id="7154130902455071009">שנה את דף הפתיחה ל: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">‏גש לכל אחד מהתקני ה-USB האלה</translation>
-<translation id="2677911863018634147">האפליקציה &quot;<ph name="APP_NAME"/>&quot; מבקשת גישה למכשיר אחד או יותר.</translation>
 <translation id="6698810901424468597">לקרוא ולשנות את הנתונים שלך ב-<ph name="WEBSITE_1"/> וב-<ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">לא ניתן לפענח תמונה: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="2048182445208425546">גישה לתנועת הרשת שלך</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">‏גש לכל אחד מהתקני <ph name="PRODUCT_NAME_AND_VENDOR"/> באמצעות USB</translation>
 <translation id="1803557475693955505">לא היתה אפשרות לטעון את דף הרקע '<ph name="BACKGROUND_PAGE"/>'.</translation>
 <translation id="2988488679308982380">לא ניתן להתקין את החבילה: '<ph name="ERROR_CODE"/>'</translation>
-<translation id="5751530153776468604">האפליקציה &quot;<ph name="APP_NAME"/>&quot; מבקשת גישה לאחד מהמכשירים שלך.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> מהספק <ph name="VENDOR_ID"/> (מספר סידורי <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">אפשרויות: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">החבילה לא חוקית. פרטים: '<ph name="ERROR_MESSAGE"/>'.</translation>

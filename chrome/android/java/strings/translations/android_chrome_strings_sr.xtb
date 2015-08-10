@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Надређени директоријум</translation>
 <translation id="2354750644801399986">„Не прати“</translation>
 <translation id="2351097562818989364">Подешавања за превођење су ресетована.</translation>
+<translation id="1557201757634521564">Аутоматски откривај кодирање</translation>
 <translation id="4307992518367153382">Основне</translation>
 <translation id="8007176423574883786">Искључено је за овај уређај</translation>
 <translation id="119944043368869598">Обриши све</translation>
@@ -301,6 +302,7 @@
 <translation id="1197267115302279827">Премести обележиваче</translation>
 <translation id="3190152372525844641">Укључите дозволе за Chrome у <ph name="BEGIN_LINK"/>Android подешавањима<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Chrome није успео да контактира Google сервере ради компримовања података. Уштеда података може да буде ограничена.</translation>
+<translation id="6324360525379265737">Аутоматски утврђује кодирање знакова</translation>
 <translation id="4827948050554950725">Додајте кредитну картицу</translation>
 <translation id="2316129865977710310">Не, хвала</translation>
 <translation id="4278390842282768270">Дозвољено</translation>
@@ -376,8 +378,10 @@
 <translation id="699220179437400583">Аутоматски пријави Google-у детаље о могућим безбедносним инцидентима</translation>
 <translation id="5899349522111170522">Направи нову датотеку</translation>
 <translation id="3158619413803296679">Изабери обележивач</translation>
+<translation id="1832521218263067499">Инциденти у вези са безбедношћу</translation>
 <translation id="6138140242378429169">Прилагодите страницу мобилним уређајима</translation>
 <translation id="5345040418939504969">Обележивач <ph name="BOOKMARK_TITLE"/> је избрисан</translation>
+<translation id="1641113438599504367">Безбедно прегледање</translation>
 <translation id="2360035970720276770">Могуће је преузети само URL-ове који садрже http или https</translation>
 <translation id="7926911226829060241">Отворени обележивачи, историја, лозинке и други садржај се синхронизују са Google налогом.</translation>
 <translation id="4871370605780490696">Додавање обележивача</translation>
@@ -441,6 +445,7 @@
 <translation id="1285320974508926690">Никад не преводи овај сајт</translation>
 <translation id="4165986682804962316">Подешавања сајта</translation>
 <translation id="3672452749423051839">Предлози за грешке при навигацији</translation>
+<translation id="307329814453917357">Нуди превод страница помоћу Google преводиоца</translation>
 <translation id="2956410042958133412">Овим налогом управљају <ph name="PARENT_NAME_1"/> и <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Не, хвала</translation>
 <translation id="5164482624172255778">Желите ли да Google Chrome следећи пут понуди да преведе странице са овог сајта чији је језик <ph name="LANGUAGE"/>?</translation>

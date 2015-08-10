@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">استخدام الميكروفون والكاميرا</translation>
 <translation id="2857834222104759979">ملف البيان غير صالح.</translation>
 <translation id="6384275966486438344">تغيير إعدادات البحث لـ: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">‏تحديد جهاز USB</translation>
 <translation id="1445572445564823378">تتسبب هذه الإضافة في بطء <ph name="PRODUCT_NAME"/>. يجب تعطيلها لاستعادة أداء <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7003844668372540529">المنتج غير معروف <ph name="PRODUCT_ID"/> من <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">الوصول إلى الأجهزة التسلسلية</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">‏معالج Mime: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">الوصول إلى معلومات حول أجهزة البلوتوث المقترنة بنظامك واكتشاف أجهزة البلوتوث القريبة.</translation>
 <translation id="8749863574775030885">‏الدخول إلى أجهزة USB من مورد غير معروف</translation>
-<translation id="781637217073033149">‏تحديد أجهزة واجهة بشرية (HID)</translation>
 <translation id="3115238746683532089">المنتج غير معروف <ph name="PRODUCT_ID"/> من المورّد <ph name="VENDOR_ID"/> (الرقم التسلسلي <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> من <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">تعذر تحميل النص البرمجي للخلفية '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">أداة فك ضغط الإضافات</translation>
 <translation id="149347756975725155">تعذر تحميل رمز الإضافة '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">أخفقت الإضافة في تعديل عنوان الطلب &quot;<ph name="HEADER_NAME"/>&quot; لأحد طلبات الشبكة نظرًا لتعارض التعديل مع إضافة أخرى (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">‏تحديد أجهزة USB</translation>
 <translation id="6731255991101203740">تعذر إنشاء دليل لفك ضغط: '<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="545850661681880228">‏تحديد جهاز واجهة بشرية (HID)</translation>
 <translation id="4233778200880751280">تعذر تحميل حول الصفحة &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
 <translation id="388442998277590542">تعذر تحميل صفحة الخيارات &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
 <translation id="5127881134400491887">إدارة اتصالات الشبكة</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">تهيئة اتصالات الشبكة</translation>
 <translation id="7154130902455071009">تغيير الصفحة الرئيسية إلى: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">‏الدخول إلى أي من أجهزة USB هذه</translation>
-<translation id="2677911863018634147">يطلب تطبيق &quot;<ph name="APP_NAME"/>&quot; الدخول إلى واحد أو أكثر من أجهزتك.</translation>
 <translation id="6698810901424468597">قراءة بياناتك وتغييرها في <ph name="WEBSITE_1"/>و <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">تعذر فك تشفير الصورة: '<ph name="IMAGE_NAME"/>'</translation>
 <translation id="2048182445208425546">الدخول إلى عدد زيارات شبكتك</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">‏الدخول إلى أي <ph name="PRODUCT_NAME_AND_VENDOR"/> عن طريق USB</translation>
 <translation id="1803557475693955505">تعذر تحميل صفحة الخلفية '<ph name="BACKGROUND_PAGE"/>'.</translation>
 <translation id="2988488679308982380">تعذر تثبيت الحزمة: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
-<translation id="5751530153776468604">يطلب تطبيق &quot;<ph name="APP_NAME"/>&quot; الدخول إلى واحد من أجهزتك.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> من المورّد <ph name="VENDOR_ID"/> (الرقم التسلسلي <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">الخيارات: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">الحزمة غير صالحة. التفاصيل: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>

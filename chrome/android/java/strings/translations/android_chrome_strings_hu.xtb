@@ -76,6 +76,7 @@
 <translation id="2842985007712546952">Szülőmappa</translation>
 <translation id="2354750644801399986">„Nincs nyomon követés”</translation>
 <translation id="2351097562818989364">A fordítási beállítások visszaállítása megtörtént.</translation>
+<translation id="1557201757634521564">Kódolás automatikus felismerése</translation>
 <translation id="4307992518367153382">Alapok</translation>
 <translation id="8007176423574883786">Kikapcsolva ezen az eszközön</translation>
 <translation id="119944043368869598">Összes törlése</translation>
@@ -301,6 +302,7 @@ A kilépéshez nyomja meg a vissza billentyűt.</translation>
 <translation id="1197267115302279827">Könyvjelzők áthelyezése</translation>
 <translation id="3190152372525844641">A Chrome-ra vonatkozó engedélyek aktiválása az <ph name="BEGIN_LINK"/>Android beállításaiban<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">A Chrome nem tudja elérni a Google szervereit az adatok tömörítése céljából. Az adatforgalmi megtakarítás korlátozva lehet.</translation>
+<translation id="6324360525379265737">Karakterkódolás automatikus meghatározása</translation>
 <translation id="4827948050554950725">Hitelkártya hozzáadása</translation>
 <translation id="2316129865977710310">Köszönöm, nem</translation>
 <translation id="4278390842282768270">Engedélyezve</translation>
@@ -376,8 +378,10 @@ A kilépéshez nyomja meg a vissza billentyűt.</translation>
 <translation id="699220179437400583">Az esetleges biztonsági események automatikus jelentése a Google-nak</translation>
 <translation id="5899349522111170522">Új fájl létrehozása</translation>
 <translation id="3158619413803296679">Válasszon könyvjelzőt</translation>
+<translation id="1832521218263067499">Biztonsággal kapcsolatos események</translation>
 <translation id="6138140242378429169">Az oldal mobilbaráttá alakítása</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> törölve</translation>
+<translation id="1641113438599504367">Biztonságos Böngészés</translation>
 <translation id="2360035970720276770">Csak „http” vagy „https” URL-ekről tölthet le</translation>
 <translation id="7926911226829060241">Folyamatban van a könyvjelzők, az előzmények és egyebek szinkronizálása a Google-fiókjával.</translation>
 <translation id="4871370605780490696">Könyvjelzõ hozzáadása</translation>
@@ -441,6 +445,7 @@ A használati statisztika részét alkotják például a beállítások, a gombo
 <translation id="1285320974508926690">Ezt a webhelyet soha ne fordítsa le</translation>
 <translation id="4165986682804962316">Webhelybeállítások</translation>
 <translation id="3672452749423051839">Navigálási hibákkal kapcsolatos javaslatok</translation>
+<translation id="307329814453917357">Az oldalak Google Fordítóval történő lefordításának felajánlása</translation>
 <translation id="2956410042958133412">A fiók kezelői: <ph name="PARENT_NAME_1"/> és <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Köszönöm, nem</translation>
 <translation id="5164482624172255778">Szeretné, hogy a Google Chrome a jövőben felajánlja e webhely <ph name="LANGUAGE"/> nyelvű oldalainak fordítását?</translation>

@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Korzystać z Twojego mikrofonu i kamery</translation>
 <translation id="2857834222104759979">Plik manifestu jest nieprawidłowy.</translation>
 <translation id="6384275966486438344">Zmień ustawienia wyszukiwania na: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Wybierz urządzenie USB</translation>
 <translation id="1445572445564823378">To rozszerzenie spowalnia pracę <ph name="PRODUCT_NAME"/>. Wyłącz je, aby przywrócić wydajność przeglądarki <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7003844668372540529">Nieznany produkt <ph name="PRODUCT_ID"/> firmy <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Dostęp do urządzeń szeregowych</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Moduł obsługi MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Uzyskiwać dostęp do informacji o urządzeniach Bluetooth sparowanych z systemem oraz wykrywać urządzenia Bluetooth w pobliżu.</translation>
 <translation id="8749863574775030885">Uzyskaj dostęp do urządzeń USB od nieznanego dostawcy</translation>
-<translation id="781637217073033149">Wybierz urządzenia HID</translation>
 <translation id="3115238746683532089">Nieznany produkt <ph name="PRODUCT_ID"/>, którego producent to <ph name="VENDOR_ID"/> (numer seryjny <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> od <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Nie udało się wczytać skryptu działającego w tle „<ph name="BACKGROUND_SCRIPT"/>”.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Program do rozpakowywania rozszerzeń</translation>
 <translation id="149347756975725155">Nie można wczytać ikony rozszerzenia „<ph name="ICON"/>”.</translation>
 <translation id="8825366169884721447">Rozszerzenie nie zmodyfikowało nagłówka żądania „<ph name="HEADER_NAME"/>” żądania sieciowego, bo zmiana powodowałaby konflikt z innym rozszerzeniem (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Wybierz urządzenia USB</translation>
 <translation id="6731255991101203740">Nie można utworzyć katalogu do rozpakowania: „<ph name="DIRECTORY_PATH"/>”</translation>
-<translation id="545850661681880228">Wybierz urządzenie HID</translation>
 <translation id="4233778200880751280">Nie udało się załadować strony z informacjami: „<ph name="ABOUT_PAGE"/>”.</translation>
 <translation id="388442998277590542">Nie można wczytać strony opcji „<ph name="OPTIONS_PAGE"/>”.</translation>
 <translation id="5127881134400491887">Zarządzać połączeniami sieciowymi</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Skonfiguruj połączenia sieciowe</translation>
 <translation id="7154130902455071009">Zmień stronę startową na: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Uzyskaj dostęp do dowolnego z tych urządzeń USB</translation>
-<translation id="2677911863018634147">Aplikacja „<ph name="APP_NAME"/>” żąda dostępu do co najmniej jednego Twojego urządzenia.</translation>
 <translation id="6698810901424468597">Odczytywanie i modyfikowanie Twoich danych na: <ph name="WEBSITE_1"/> i <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Nie można odkodować obrazu: „<ph name="IMAGE_NAME"/>”</translation>
 <translation id="2048182445208425546">Dostęp do ruchu sieciowego</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Uzyskaj dostęp do <ph name="PRODUCT_NAME_AND_VENDOR"/> przez USB</translation>
 <translation id="1803557475693955505">Nie można wczytać strony w tle „<ph name="BACKGROUND_PAGE"/>”.</translation>
 <translation id="2988488679308982380">Nie można zainstalować pakietu: „<ph name="ERROR_CODE"/>”</translation>
-<translation id="5751530153776468604">Aplikacja „<ph name="APP_NAME"/>” żąda dostępu do jednego z Twoich urządzeń.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> wyprodukowany przez <ph name="VENDOR_ID"/> (numer seryjny <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Opcje: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Pakiet jest nieprawidłowy. Szczegółowe informacje: „<ph name="ERROR_MESSAGE"/>”.</translation>

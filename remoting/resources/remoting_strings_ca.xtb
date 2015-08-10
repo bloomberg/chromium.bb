@@ -70,6 +70,7 @@ Host</translation>
 <translation id="2813770873348017932">S'han bloquejat temporalment les connexions a l'ordinador remot perquè algú ha provat de connectar-hi amb un PIN no vàlid. Torneu-ho a provar més tard.</translation>
 <translation id="6746493157771801606">Esborra l'historial</translation>
 <translation id="4430435636878359009">Desactiva les connexions remotes a aquest ordinador</translation>
+<translation id="3244258558056547981">Mostra la visualització de Cardboard</translation>
 <translation id="2314101195544969792">La vostra sessió de <ph name="APPLICATION_NAME"/> ha estat inactiva durant una estona i es desconnectarà aviat.</translation>
 <translation id="6001953797859482435">Preferències de l'amfitrió de l'escriptori remot de Chrome</translation>
 <translation id="225614027745146050">Benvingut</translation>
@@ -174,7 +175,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="4361728918881830843">Per activar les connexions remotes a un altre ordinador, instal·leu-hi l'escriptori remot de Chrome i feu clic a <ph name="BUTTON_NAME"/>.</translation>
 <translation id="7444276978508498879">Client connectat: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="189172778771606813">Tanca el tauler de navegació</translation>
-<translation id="4913529628896049296">s'està esperant la connexió...</translation>
+<translation id="4913529628896049296">s'està esperant que hi hagi connexió...</translation>
 <translation id="811307782653349804">Accediu al vostre ordinador des de qualsevol lloc.</translation>
 <translation id="2939145106548231838">Autenticació a l'amfitrió</translation>
 <translation id="2366718077645204424">No es pot connectar amb l'amfitrió. Probablement, això passa a causa de la configuració de la xarxa que esteu fent servir.</translation>

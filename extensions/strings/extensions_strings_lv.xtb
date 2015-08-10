@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Izmantot jūsu mikrofonu un videokameru</translation>
 <translation id="2857834222104759979">Manifesta fails nav derīgs.</translation>
 <translation id="6384275966486438344">Mainiet savus meklēšanas iestatījumus uz šiem: <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">USB ierīces atlasīšana</translation>
 <translation id="1445572445564823378">Šis paplašinājums palēnina <ph name="PRODUCT_NAME"/> darbību. Atspējojiet to, lai atjaunotu <ph name="PRODUCT_NAME"/> veiktspēju.</translation>
 <translation id="7003844668372540529">Nezināms produkts (ID: <ph name="PRODUCT_ID"/>), ko piedāvā <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Piekļūt jūsu seriālajām ierīcēm</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">MIME apdarinātājs: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Piekļūt informācijai par Bluetooth ierīcēm, kuras savienotas pārī ar jūsu sistēmu, un atrast tuvumā esošas Bluetooth ierīces.</translation>
 <translation id="8749863574775030885">Piekļūt USB ierīcēm, ko piedāvā nezināms ražotājs</translation>
-<translation id="781637217073033149">HID ierīču atlasīšana</translation>
 <translation id="3115238746683532089">Nezināms produkts (ID: <ph name="PRODUCT_ID"/>), ko piedāvā <ph name="VENDOR_ID"/> (sērijas numurs: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> no <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Nevarēja ielādēt fona skriptu <ph name="BACKGROUND_SCRIPT"/>.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Paplašinājumu pakotņu atvērējs</translation>
 <translation id="149347756975725155">Nevarēja ielādēt paplašinājuma ikonu “<ph name="ICON"/>”.</translation>
 <translation id="8825366169884721447">Šis paplašinājums nevarēja mainīt tīkla pieprasījuma galveni “<ph name="HEADER_NAME"/>”, jo izmaiņas radīja konfliktu ar citu paplašinājumu (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">USB ierīču atlasīšana</translation>
 <translation id="6731255991101203740">Nevarēja izveidot direktoriju izgūšanai no ZIP arhīva: <ph name="DIRECTORY_PATH"/></translation>
-<translation id="545850661681880228">HID ierīces atlasīšana</translation>
 <translation id="4233778200880751280">Nevarēja ielādēt lapu “Par” (<ph name="ABOUT_PAGE"/>).</translation>
 <translation id="388442998277590542">Nevarēja ielādēt opciju lapu “<ph name="OPTIONS_PAGE"/>”.</translation>
 <translation id="5127881134400491887">Pārvaldīt tīkla savienojumus</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Konfigurēt tīkla savienojumus</translation>
 <translation id="7154130902455071009">Mainiet savu sākumlapu uz šo: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Piekļūt jebkurai no šīm USB ierīcēm</translation>
-<translation id="2677911863018634147">Lietojumprogramma “<ph name="APP_NAME"/>” pieprasa piekļuvi vienai vai vairākām jūsu ierīcēm.</translation>
 <translation id="6698810901424468597">Lasīt un mainīt jūsu datus vietnēs <ph name="WEBSITE_1"/> un <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Nevarēja dekodēt attēlu: <ph name="IMAGE_NAME"/></translation>
 <translation id="2048182445208425546">Piekļūt jūsu tīkla datplūsmai</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Piekļūt jebkuram <ph name="PRODUCT_NAME_AND_VENDOR"/> produktam, izmantojot USB</translation>
 <translation id="1803557475693955505">Nevarēja ielādēt fona lapu “<ph name="BACKGROUND_PAGE"/>”.</translation>
 <translation id="2988488679308982380">Nevarēja instalēt pakotni: <ph name="ERROR_CODE"/>.</translation>
-<translation id="5751530153776468604">Lietojumprogramma “<ph name="APP_NAME"/>” pieprasa piekļuvi kādai jūsu ierīcei.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/>, ko piedāvā <ph name="VENDOR_ID"/> (sērijas numurs: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Iespējas: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Pakotne nav derīga. Detaļas: <ph name="ERROR_MESSAGE"/>.</translation>

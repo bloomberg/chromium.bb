@@ -8,7 +8,6 @@
 <translation id="1005274289863221750">Использование микрофона и камеры</translation>
 <translation id="2857834222104759979">Недопустимый файл манифеста.</translation>
 <translation id="6384275966486438344">Использование поисковой системы <ph name="SEARCH_HOST"/></translation>
-<translation id="8658591203505835552">Выбор USB-устройства</translation>
 <translation id="1445572445564823378">Это расширение замедляет работу <ph name="PRODUCT_NAME"/>. Чтобы восстановить нормальную работу <ph name="PRODUCT_NAME"/>, отключите его.</translation>
 <translation id="7003844668372540529">Неизвестный продукт <ph name="PRODUCT_ID"/> от <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Доступ к последовательным устройствам</translation>
@@ -21,7 +20,6 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Доступ к информации об устройствах Bluetooth, связанных с вашей системой, и обнаружение устройств Bluetooth рядом с вами.</translation>
 <translation id="8749863574775030885">Доступ к USB-устройствам от неизвестного поставщика</translation>
-<translation id="781637217073033149">Выбор устройств HID</translation>
 <translation id="3115238746683532089">Неизвестный продукт <ph name="PRODUCT_ID"/> от поставщика <ph name="VENDOR_ID"/> (серийный номер <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> от <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Не удалось загрузить фоновый скрипт <ph name="BACKGROUND_SCRIPT"/>.</translation>
@@ -37,9 +35,7 @@
 <translation id="8712265948125780616">Распаковщик расширений</translation>
 <translation id="149347756975725155">Не удается загрузить значок расширения &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Это расширение не может изменить заголовок запроса (<ph name="HEADER_NAME"/>) из-за конфликта с другим расширением (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4776856853352853275">Выбор USB-устройств</translation>
 <translation id="6731255991101203740">Не удалось создать каталог для распаковки: <ph name="DIRECTORY_PATH"/></translation>
-<translation id="545850661681880228">Выберите устройство HID</translation>
 <translation id="4233778200880751280">Не удалось загрузить страницу <ph name="ABOUT_PAGE"/>.</translation>
 <translation id="388442998277590542">Не удалось загрузить страницу параметров <ph name="OPTIONS_PAGE"/>.</translation>
 <translation id="5127881134400491887">Управление сетевыми подключениями</translation>
@@ -80,7 +76,6 @@
 <translation id="8620765578342452535">Настройка сетевых подключений</translation>
 <translation id="7154130902455071009">Смена стартовой страницы на <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Доступ к этим USB-устройствам</translation>
-<translation id="2677911863018634147">Приложение &quot;<ph name="APP_NAME"/>&quot; запрашивает доступ к нескольким устройствам.</translation>
 <translation id="6698810901424468597">Просмотр и изменение данные на сайтах <ph name="WEBSITE_1"/> и <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Не удалось декодировать изображение: <ph name="IMAGE_NAME"/></translation>
 <translation id="2048182445208425546">Доступ к сетевому трафику</translation>
@@ -91,7 +86,6 @@
 <translation id="2087653731648927289">Доступ ко всем устройствам <ph name="PRODUCT_NAME_AND_VENDOR"/> с помощью USB</translation>
 <translation id="1803557475693955505">Не удалось загрузить страницу фона &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
 <translation id="2988488679308982380">Не удается установить пакет: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
-<translation id="5751530153776468604">Приложение &quot;<ph name="APP_NAME"/>&quot; запрашивает доступ к устройству.</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> от поставщика <ph name="VENDOR_ID"/> (серийный номер <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8636666366616799973">Недопустимый пакет. Подробные сведения: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
