@@ -570,10 +570,9 @@ void NetErrorHelperCore::OnCommitLoad(FrameType frame_type, const GURL& url) {
           pending_error_page_info_->error.unreachableURL) {
     DCHECK(navigation_from_button_ == RELOAD_BUTTON ||
            navigation_from_button_ == SHOW_SAVED_COPY_BUTTON);
-    chrome_common_net::RecordEvent(
-        navigation_from_button_ == RELOAD_BUTTON ?
-            chrome_common_net::NETWORK_ERROR_PAGE_RELOAD_BUTTON_ERROR :
-            chrome_common_net::NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_ERROR);
+    RecordEvent(navigation_from_button_ == RELOAD_BUTTON ?
+        chrome_common_net::NETWORK_ERROR_PAGE_RELOAD_BUTTON_ERROR :
+        chrome_common_net::NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_ERROR);
   }
   navigation_from_button_ = NO_BUTTON;
 
@@ -601,26 +600,22 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
 
   committed_error_page_info_->is_finished_loading = true;
 
-  chrome_common_net::RecordEvent(chrome_common_net::NETWORK_ERROR_PAGE_SHOWN);
+  RecordEvent(chrome_common_net::NETWORK_ERROR_PAGE_SHOWN);
   if (committed_error_page_info_->reload_button_in_page) {
-    chrome_common_net::RecordEvent(
-        chrome_common_net::NETWORK_ERROR_PAGE_RELOAD_BUTTON_SHOWN);
+    RecordEvent(chrome_common_net::NETWORK_ERROR_PAGE_RELOAD_BUTTON_SHOWN);
   }
   if (committed_error_page_info_->show_saved_copy_button_in_page) {
-    chrome_common_net::RecordEvent(
+    RecordEvent(
         chrome_common_net::NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_SHOWN);
   }
   if (committed_error_page_info_->reload_button_in_page &&
       committed_error_page_info_->show_saved_copy_button_in_page) {
-    chrome_common_net::RecordEvent(
-        chrome_common_net::NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN);
+    RecordEvent(chrome_common_net::NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN);
   }
   if (committed_error_page_info_->show_cached_copy_button_in_page) {
-    chrome_common_net::RecordEvent(
-        chrome_common_net::NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_SHOWN);
+    RecordEvent(chrome_common_net::NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_SHOWN);
   } else if (committed_error_page_info_->show_cached_page_button_in_page) {
-    chrome_common_net::RecordEvent(
-        chrome_common_net::NETWORK_ERROR_PAGE_CACHED_PAGE_BUTTON_SHOWN);
+    RecordEvent(chrome_common_net::NETWORK_ERROR_PAGE_CACHED_PAGE_BUTTON_SHOWN);
   }
 
   delegate_->EnablePageHelperFunctions();
@@ -834,8 +829,7 @@ blink::WebURLError NetErrorHelperCore::GetUpdatedError(
   }
 
   blink::WebURLError updated_error;
-  updated_error.domain = blink::WebString::fromUTF8(
-      chrome_common_net::kDnsProbeErrorDomain);
+  updated_error.domain = blink::WebString::fromUTF8(kDnsProbeErrorDomain);
   updated_error.reason = last_probe_status_;
   updated_error.unreachableURL = error.unreachableURL;
   updated_error.staleCopyInCache = error.staleCopyInCache;
@@ -963,21 +957,20 @@ void NetErrorHelperCore::ExecuteButtonPress(bool is_error_page, Button button) {
 
   switch (button) {
     case RELOAD_BUTTON:
-      chrome_common_net::RecordEvent(
-          chrome_common_net::NETWORK_ERROR_PAGE_RELOAD_BUTTON_CLICKED);
+      RecordEvent(chrome_common_net::NETWORK_ERROR_PAGE_RELOAD_BUTTON_CLICKED);
       if (committed_error_page_info_->show_saved_copy_button_in_page) {
-        chrome_common_net::RecordEvent(
+        RecordEvent(
             chrome_common_net::NETWORK_ERROR_PAGE_BOTH_BUTTONS_RELOAD_CLICKED);
       }
       navigation_from_button_ = RELOAD_BUTTON;
       Reload();
       return;
     case SHOW_SAVED_COPY_BUTTON:
-      chrome_common_net::RecordEvent(
+      RecordEvent(
           chrome_common_net::NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_CLICKED);
       navigation_from_button_ = SHOW_SAVED_COPY_BUTTON;
       if (committed_error_page_info_->reload_button_in_page) {
-        chrome_common_net::RecordEvent(chrome_common_net::
+        RecordEvent(chrome_common_net::
             NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN_SAVED_COPY_CLICKED);
       }
       delegate_->LoadPageFromCache(
@@ -985,24 +978,21 @@ void NetErrorHelperCore::ExecuteButtonPress(bool is_error_page, Button button) {
       return;
     case MORE_BUTTON:
       // Visual effects on page are handled in Javascript code.
-      chrome_common_net::RecordEvent(
-          chrome_common_net::NETWORK_ERROR_PAGE_MORE_BUTTON_CLICKED);
+      RecordEvent(chrome_common_net::NETWORK_ERROR_PAGE_MORE_BUTTON_CLICKED);
       return;
     case EASTER_EGG:
-      chrome_common_net::RecordEvent(
-          chrome_common_net::NETWORK_ERROR_EASTER_EGG_ACTIVATED);
+      RecordEvent(chrome_common_net::NETWORK_ERROR_EASTER_EGG_ACTIVATED);
       return;
     case SHOW_CACHED_COPY_BUTTON:
-      chrome_common_net::RecordEvent(
+      RecordEvent(
           chrome_common_net::NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_CLICKED);
       return;
     case SHOW_CACHED_PAGE_BUTTON:
-      chrome_common_net::RecordEvent(
+      RecordEvent(
           chrome_common_net::NETWORK_ERROR_PAGE_CACHED_PAGE_BUTTON_CLICKED);
       return;
     case DIAGNOSE_ERROR:
-      chrome_common_net::RecordEvent(
-          chrome_common_net::NETWORK_ERROR_DIAGNOSE_BUTTON_CLICKED);
+      RecordEvent(chrome_common_net::NETWORK_ERROR_DIAGNOSE_BUTTON_CLICKED);
       delegate_->DiagnoseError(
           committed_error_page_info_->error.unreachableURL);
       return;

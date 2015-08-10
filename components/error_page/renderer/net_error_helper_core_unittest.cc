@@ -30,8 +30,6 @@ namespace {
 
 using blink::WebURLError;
 using chrome_common_net::DnsProbeStatus;
-using chrome_common_net::DnsProbeStatusToString;
-using error_page::ErrorPageParams;
 
 const char kFailedUrl[] = "http://failed/";
 const char kFailedHttpsUrl[] = "https://failed/";
@@ -120,8 +118,7 @@ std::string ErrorToString(const WebURLError& error, bool is_failed_post) {
 WebURLError ProbeError(DnsProbeStatus status) {
   WebURLError error;
   error.unreachableURL = GURL(kFailedUrl);
-  error.domain = blink::WebString::fromUTF8(
-      chrome_common_net::kDnsProbeErrorDomain);
+  error.domain = blink::WebString::fromUTF8(kDnsProbeErrorDomain);
   error.reason = status;
   return error;
 }

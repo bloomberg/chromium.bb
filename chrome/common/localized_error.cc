@@ -473,7 +473,7 @@ const LocalizedErrorMap* LookupErrorMap(const std::string& error_domain,
     return FindErrorMapInArray(http_error_options,
                                arraysize(http_error_options),
                                error_code);
-  } else if (error_domain == chrome_common_net::kDnsProbeErrorDomain) {
+  } else if (error_domain == error_page::kDnsProbeErrorDomain) {
     const LocalizedErrorMap* map =
         FindErrorMapInArray(dns_probe_error_options,
                             arraysize(dns_probe_error_options),
@@ -503,7 +503,7 @@ const char* GetIconClassForError(const std::string& error_domain,
   if ((error_code == net::ERR_INTERNET_DISCONNECTED &&
        error_domain == net::kErrorDomain) ||
       (error_code == chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET &&
-       error_domain == chrome_common_net::kDnsProbeErrorDomain))
+       error_domain == error_page::kDnsProbeErrorDomain))
     return "icon-offline";
 
   return "icon-generic";
@@ -615,9 +615,9 @@ void LocalizedError::GetStrings(int error_code,
   if (error_domain == net::kErrorDomain) {
     // Non-internationalized error string, for debugging Chrome itself.
     error_string = base::ASCIIToUTF16(net::ErrorToShortString(error_code));
-  } else if (error_domain == chrome_common_net::kDnsProbeErrorDomain) {
+  } else if (error_domain == error_page::kDnsProbeErrorDomain) {
     std::string ascii_error_string =
-        chrome_common_net::DnsProbeStatusToString(error_code);
+        error_page::DnsProbeStatusToString(error_code);
     error_string = base::ASCIIToUTF16(ascii_error_string);
   } else {
     DCHECK_EQ(LocalizedError::kHttpErrorDomain, error_domain);

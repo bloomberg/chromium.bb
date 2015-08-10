@@ -83,6 +83,10 @@ enum DnsProbeStatus {
   DNS_PROBE_MAX
 };
 
+}  // namespace chrome_common_net
+
+namespace error_page {
+
 // Returns a string representing |status|.  It should be simply the name of
 // the value as a string, but don't rely on that.  This is presented to the
 // user as part of the DNS error page (as the error code, at the bottom),
@@ -94,15 +98,15 @@ enum DnsProbeStatus {
 const char* DnsProbeStatusToString(int status);
 
 // Returns true if |status| is one of the DNS_PROBE_FINISHED_* statuses.
-bool DnsProbeStatusIsFinished(DnsProbeStatus status);
+bool DnsProbeStatusIsFinished(chrome_common_net::DnsProbeStatus status);
 
 // Record specific error page events.
-void RecordEvent(NetworkErrorPageEvent event);
+void RecordEvent(chrome_common_net::NetworkErrorPageEvent event);
 
 // The error domain used to pass DNS probe statuses to the localized error
 // code.
 extern const char kDnsProbeErrorDomain[];
 
-}  // namespace chrome_common_net
+}  // namespace error_page
 
 #endif  // COMPONENTS_ERROR_PAGE_COMMON_NET_ERROR_INFO_H_

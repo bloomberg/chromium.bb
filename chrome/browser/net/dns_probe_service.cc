@@ -76,7 +76,7 @@ DnsProbeStatus EvaluateResults(DnsProbeRunner::Result system_result,
 }
 
 void HistogramProbe(DnsProbeStatus status, base::TimeDelta elapsed) {
-  DCHECK(chrome_common_net::DnsProbeStatusIsFinished(status));
+  DCHECK(error_page::DnsProbeStatusIsFinished(status));
 
   UMA_HISTOGRAM_ENUMERATION("DnsProbe.ProbeResult", status,
                             chrome_common_net::DNS_PROBE_MAX);
@@ -198,7 +198,7 @@ void DnsProbeService::OnProbeComplete() {
 
 void DnsProbeService::CallCallbacks() {
   DCHECK_EQ(STATE_RESULT_CACHED, state_);
-  DCHECK(chrome_common_net::DnsProbeStatusIsFinished(cached_result_));
+  DCHECK(error_page::DnsProbeStatusIsFinished(cached_result_));
   DCHECK(!pending_callbacks_.empty());
 
   std::vector<ProbeCallback> callbacks;

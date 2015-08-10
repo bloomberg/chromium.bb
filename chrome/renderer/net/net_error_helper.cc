@@ -42,12 +42,12 @@
 
 using base::JSONWriter;
 using chrome_common_net::DnsProbeStatus;
-using chrome_common_net::DnsProbeStatusToString;
 using content::DocumentState;
+using content::kUnreachableWebDataURL;
 using content::RenderFrame;
 using content::RenderFrameObserver;
 using content::RenderThread;
-using content::kUnreachableWebDataURL;
+using error_page::DnsProbeStatusToString;
 using error_page::ErrorPageParams;
 using error_page::NetErrorHelperCore;
 

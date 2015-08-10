@@ -24,13 +24,13 @@
 #include "url/gurl.h"
 
 using chrome_common_net::DnsProbeStatus;
-using chrome_common_net::DnsProbeStatusToString;
 using content::BrowserContext;
 using content::BrowserThread;
-using ui::PageTransition;
 using content::RenderViewHost;
 using content::WebContents;
 using content::WebContentsObserver;
+using error_page::DnsProbeStatusToString;
+using ui::PageTransition;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(chrome_browser_net::NetErrorTabHelper);
 
@@ -101,7 +101,7 @@ void NetErrorTabHelper::DidStartNavigationToPendingEntry(
 
   // Only record reloads.
   if (reload_type != content::NavigationController::NO_RELOAD) {
-    chrome_common_net::RecordEvent(
+    error_page::RecordEvent(
         chrome_common_net::NETWORK_ERROR_PAGE_BROWSER_INITIATED_RELOAD);
   }
 }
@@ -217,7 +217,7 @@ void NetErrorTabHelper::StartDnsProbe() {
 void NetErrorTabHelper::OnDnsProbeFinished(DnsProbeStatus result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(chrome_common_net::DNS_PROBE_STARTED, dns_probe_status_);
-  DCHECK(chrome_common_net::DnsProbeStatusIsFinished(result));
+  DCHECK(error_page::DnsProbeStatusIsFinished(result));
 
   DVLOG(1) << "Finished DNS probe with result "
            << DnsProbeStatusToString(result) << ".";
