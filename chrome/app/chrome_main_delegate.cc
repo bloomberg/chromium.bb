@@ -458,7 +458,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
     return true;
   }
 
-  InstallCloseHandleHooks();
+  InstallHandleHooks();
 #endif
 
   chrome::RegisterPathProvider();
@@ -873,7 +873,7 @@ void ChromeMainDelegate::ProcessExiting(const std::string& process_type) {
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-  RemoveCloseHandleHooks();
+  RemoveHandleHooks();
 #endif
 }
 

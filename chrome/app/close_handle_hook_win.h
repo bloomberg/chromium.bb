@@ -6,9 +6,9 @@
 #define CHROME_APP_CLOSE_HANDLE_HOOK_WIN_H_
 
 // Installs the hooks required to debug use of improper handles.
-void InstallCloseHandleHooks();
+void InstallHandleHooks();
 
-// Removes the hooks installed by InstallCloseHandleHooks().
-void RemoveCloseHandleHooks();
+// Removes the hooks installed by InstallHandleHooks().
+void RemoveHandleHooks();
 
 #endif  // CHROME_APP_CLOSE_HANDLE_HOOK_WIN_H_

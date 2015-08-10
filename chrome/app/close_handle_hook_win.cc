@@ -20,7 +20,17 @@
 namespace {
 
 typedef BOOL (WINAPI* CloseHandleType) (HANDLE handle);
+
+typedef BOOL (WINAPI* DuplicateHandleType)(HANDLE source_process,
+                                           HANDLE source_handle,
+                                           HANDLE target_process,
+                                           HANDLE* target_handle,
+                                           DWORD desired_access,
+                                           BOOL inherit_handle,
+                                           DWORD options);
+
 CloseHandleType g_close_function = NULL;
+DuplicateHandleType g_duplicate_function = NULL;
 
 // The entry point for CloseHandle interception. This function notifies the
 // verifier about the handle that is being closed, and calls the original
@@ -28,6 +38,23 @@ CloseHandleType g_close_function = NULL;
 BOOL WINAPI CloseHandleHook(HANDLE handle) {
   base::win::OnHandleBeingClosed(handle);
   return g_close_function(handle);
+}
+
+BOOL WINAPI DuplicateHandleHook(HANDLE source_process,
+                                HANDLE source_handle,
+                                HANDLE target_process,
+                                HANDLE* target_handle,
+                                DWORD desired_access,
+                                BOOL inherit_handle,
+                                DWORD options) {
+  if ((options & DUPLICATE_CLOSE_SOURCE) &&
+      (GetProcessId(source_process) == ::GetCurrentProcessId())) {
+    base::win::OnHandleBeingClosed(source_handle);
+  }
+
+  return g_duplicate_function(source_process, source_handle, target_process,
+                              target_handle, desired_access, inherit_handle,
+                              options);
 }
 
 // Provides a simple way to temporarily change the protection of a memory page.
@@ -122,11 +149,42 @@ void EATPatch(HMODULE module, const char* function_name,
 #pragma warning(pop)
 }
 
-// Keeps track of all the hooks needed to intercept CloseHandle.
-class CloseHandleHooks {
+// Performs an IAT interception.
+base::win::IATPatchFunction* IATPatch(HMODULE module, const char* function_name,
+                                      void* new_function, void** old_function) {
+  if (!module)
+    return NULL;
+
+  base::win::IATPatchFunction* patch = new base::win::IATPatchFunction;
+  __try {
+    // There is no guarantee that |module| is still loaded at this point.
+    if (patch->PatchFromModule(module, "kernel32.dll", function_name,
+                               new_function)) {
+      delete patch;
+      return NULL;
+    }
+  } __except((GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION ||
+              GetExceptionCode() == EXCEPTION_GUARD_PAGE ||
+              GetExceptionCode() == EXCEPTION_IN_PAGE_ERROR) ?
+             EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
+    // Leak the patch.
+    return NULL;
+  }
+
+  if (!(*old_function)) {
+    // Things are probably messed up if each intercepted function points to
+    // a different place, but we need only one function to call.
+    *old_function = patch->original_function();
+  }
+  return patch;
+}
+
+// Keeps track of all the hooks needed to intercept functions which could
+// possibly close handles.
+class HandleHooks {
  public:
-  CloseHandleHooks() {}
-  ~CloseHandleHooks() {}
+  HandleHooks() {}
+  ~HandleHooks() {}
 
   void AddIATPatch(HMODULE module);
   void AddEATPatch();
@@ -134,46 +192,38 @@ class CloseHandleHooks {
 
  private:
   std::vector<base::win::IATPatchFunction*> hooks_;
-  DISALLOW_COPY_AND_ASSIGN(CloseHandleHooks);
+  DISALLOW_COPY_AND_ASSIGN(HandleHooks);
 };
-base::LazyInstance<CloseHandleHooks> g_hooks = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<HandleHooks> g_hooks = LAZY_INSTANCE_INITIALIZER;
 
-void CloseHandleHooks::AddIATPatch(HMODULE module) {
+void HandleHooks::AddIATPatch(HMODULE module) {
   if (!module)
     return;
 
-  base::win::IATPatchFunction* patch = new base::win::IATPatchFunction;
-  __try {
-    // There is no guarantee that |module| is still loaded at this point.
-    if (patch->PatchFromModule(module, "kernel32.dll", "CloseHandle",
-                               CloseHandleHook)) {
-      delete patch;
-      return;
-    }
-  } __except((GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION ||
-              GetExceptionCode() == EXCEPTION_GUARD_PAGE ||
-              GetExceptionCode() == EXCEPTION_IN_PAGE_ERROR) ?
-             EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
-    // Leak the patch.
+  base::win::IATPatchFunction* patch = NULL;
+  patch = IATPatch(module, "CloseHandle", &CloseHandleHook,
+                   reinterpret_cast<void**>(&g_close_function));
+  if (!patch)
     return;
-  }
-
   hooks_.push_back(patch);
-  if (!g_close_function) {
-    // Things are probably messed up if each intercepted function points to
-    // a different place, but we need only one function to call.
-    g_close_function =
-      reinterpret_cast<CloseHandleType>(patch->original_function());
-  }
+
+  patch = IATPatch(module, "DuplicateHandle", &DuplicateHandleHook,
+                   reinterpret_cast<void**>(&g_duplicate_function));
+  if (!patch)
+    return;
+  hooks_.push_back(patch);
 }
 
-void CloseHandleHooks::AddEATPatch() {
+void HandleHooks::AddEATPatch() {
   // An attempt to restore the entry on the table at destruction is not safe.
   EATPatch(GetModuleHandleA("kernel32.dll"), "CloseHandle",
            &CloseHandleHook, reinterpret_cast<void**>(&g_close_function));
+  EATPatch(GetModuleHandleA("kernel32.dll"), "DuplicateHandle",
+           &DuplicateHandleHook,
+           reinterpret_cast<void**>(&g_duplicate_function));
 }
 
-void CloseHandleHooks::Unpatch() {
+void HandleHooks::Unpatch() {
   for (std::vector<base::win::IATPatchFunction*>::iterator it = hooks_.begin();
        it != hooks_.end(); ++it) {
     (*it)->Unpatch();
@@ -198,7 +248,7 @@ bool UseHooks() {
 #endif
 }
 
-void PatchLoadedModules(CloseHandleHooks* hooks) {
+void PatchLoadedModules(HandleHooks* hooks) {
   const DWORD kSize = 256;
   DWORD returned;
   scoped_ptr<HMODULE[]> modules(new HMODULE[kSize]);
@@ -216,9 +266,9 @@ void PatchLoadedModules(CloseHandleHooks* hooks) {
 
 }  // namespace
 
-void InstallCloseHandleHooks() {
+void InstallHandleHooks() {
   if (UseHooks()) {
-    CloseHandleHooks* hooks = g_hooks.Pointer();
+    HandleHooks* hooks = g_hooks.Pointer();
 
     // Performing EAT interception first is safer in the presence of other
     // threads attempting to call CloseHandle.
@@ -227,7 +277,7 @@ void InstallCloseHandleHooks() {
   }
 }
 
-void RemoveCloseHandleHooks() {
+void RemoveHandleHooks() {
   // We are partching all loaded modules without forcing them to stay in memory,
   // removing patches is not safe.
 }
