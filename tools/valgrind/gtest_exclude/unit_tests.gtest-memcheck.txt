@@ -22,3 +22,6 @@ StatusUploaderTest.NoUploadAfterVideoCapture
 
 # Flaky test: crbug.com/493187
 DesktopMediaListAshTest.WindowOnly
+
+# Crashing test: https://crbug.com/515031
+NetErrorTabHelperTest.*
