@@ -36,6 +36,7 @@ class ToughScrollingCasesPageSet(story.StorySet):
     fast_scrolling_page_name_list = [
       'text',
       'text_hover',
+      'text_constant_full_page_raster',
       'canvas'
     ]
 
