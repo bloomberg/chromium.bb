@@ -75177,7 +75177,7 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="The number of other accounts whose realms have different hosts
              than the account in question, and their scheme is either HTTP or
              HTTPS."/>
-  <suffix name="OnPSLMatching"
+  <suffix name="OnPSLMatchingRealm"
       label="The number of other accounts whose realms are public suffix
              matches to that of the account in question (the scheme is always
              the same in these cases)."/>
