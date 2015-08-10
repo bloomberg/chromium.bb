@@ -228,6 +228,7 @@ class VIEWS_EXPORT BridgedNativeWidget
   // Overridden from ui::AcceleratedWidgetMac:
   NSView* AcceleratedWidgetGetNSView() const override;
   bool AcceleratedWidgetShouldIgnoreBackpressure() const override;
+  uint32_t AcceleratedWidgetGetDisplayIDForVSync() const override;
   void AcceleratedWidgetSwapCompleted(
       const std::vector<ui::LatencyInfo>& latency_info) override;
   void AcceleratedWidgetHitError() override;

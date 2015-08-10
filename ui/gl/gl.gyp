@@ -115,6 +115,8 @@
         'gpu_switching_observer.h',
         'gpu_timing.cc',
         'gpu_timing.h',
+        'scoped_api.cc',
+        'scoped_api.h',
         'scoped_binders.cc',
         'scoped_binders.h',
         'scoped_make_current.cc',

@@ -614,13 +614,4 @@ void VirtualGLApi::glFinishFn() {
   GLApiBase::glFinishFn();
 }
 
-ScopedSetGLToRealGLApi::ScopedSetGLToRealGLApi()
-    : old_gl_api_(GetCurrentGLApi()) {
-  SetGLToRealGLApi();
-}
-
-ScopedSetGLToRealGLApi::~ScopedSetGLToRealGLApi() {
-  SetGLApi(old_gl_api_);
-}
-
 }  // namespace gfx

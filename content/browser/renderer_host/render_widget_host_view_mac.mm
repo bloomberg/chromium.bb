@@ -515,6 +515,13 @@ bool RenderWidgetHostViewMac::AcceleratedWidgetShouldIgnoreBackpressure()
   return false;
 }
 
+uint32_t RenderWidgetHostViewMac::AcceleratedWidgetGetDisplayIDForVSync()
+    const {
+  if (display_link_)
+    return display_link_->display_id();
+  return 0;
+}
+
 void RenderWidgetHostViewMac::AcceleratedWidgetSwapCompleted(
     const std::vector<ui::LatencyInfo>& all_latency_info) {
   if (!render_widget_host_)
