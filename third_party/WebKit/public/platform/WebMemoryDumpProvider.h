@@ -32,9 +32,6 @@ public:
     // on success or false if anything went wrong and the dump should be
     // considered invalid.
     virtual bool onMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*) = 0;
-
-    // Deprecated: Remove this method once the call site in chromium is removed (crbug.com/499731).
-    virtual bool onMemoryDump(WebProcessMemoryDump*) = 0;
 };
 
 } // namespace blink

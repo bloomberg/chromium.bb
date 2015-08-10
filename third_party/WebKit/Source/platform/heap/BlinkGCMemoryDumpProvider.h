@@ -20,7 +20,6 @@ public:
 
     // WebMemoryDumpProvider implementation.
     bool onMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*) override;
-    bool onMemoryDump(WebProcessMemoryDump*) override;
 
     // The returned WebMemoryAllocatorDump is owned by
     // BlinkGCMemoryDumpProvider, and should not be retained (just used to

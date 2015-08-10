@@ -70,11 +70,7 @@ PartitionAllocMemoryDumpProvider* PartitionAllocMemoryDumpProvider::instance()
 bool PartitionAllocMemoryDumpProvider::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, blink::WebProcessMemoryDump* memoryDump)
 {
     // TODO(ssid): Use levelOfDetail to create light dumps when requested (crbug.com/499731).
-    return onMemoryDump(memoryDump);
-}
 
-bool PartitionAllocMemoryDumpProvider::onMemoryDump(blink::WebProcessMemoryDump* memoryDump)
-{
     PartitionStatsDumperImpl partitionStatsDumper(memoryDump);
 
     // This method calls memoryStats.partitionsDumpBucketStats with memory statistics.
