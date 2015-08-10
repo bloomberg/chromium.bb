@@ -131,4 +131,10 @@ public interface ContextualSearchPanelDelegate {
      * @return ContextualSearchControl The Android View that renders the BottomBar text.
      */
     ContextualSearchControl getContextualSearchControl();
+
+    /**
+     * @return {@code true} Whether the close animation should run when the the panel is closed
+     *                      due the panel being promoted to a tab.
+     */
+    boolean shouldAnimatePanelCloseOnPromoteToTab();
 }

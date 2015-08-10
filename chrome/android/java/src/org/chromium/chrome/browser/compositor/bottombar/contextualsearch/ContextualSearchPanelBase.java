@@ -231,6 +231,11 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      */
     private ContextualSearchManagementDelegate mManagementDelegate;
 
+    /**
+     * The {@link ContextualSearchPanelFeatures} for this panel.
+     */
+    protected ContextualSearchPanelFeatures mSearchPanelFeatures;
+
 
     // ============================================================================================
     // Constructor
@@ -282,7 +287,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     // ============================================================================================
 
     /**
-     * Sets the {@code ContextualSearchManagementDelegate} associated with this Layout.
+     * Sets the {@code ContextualSearchManagementDelegate} associated with this panel.
      * @param delegate The {@code ContextualSearchManagementDelegate}.
      */
     public void setManagementDelegate(ContextualSearchManagementDelegate delegate) {
@@ -655,7 +660,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      * @return Whether the search icon is visible.
      */
     public boolean isSearchIconVisible() {
-        return ContextualSearchPanelFeatures.isSearchIconAvailable();
+        return mSearchPanelFeatures.isSearchIconAvailable();
     }
 
     /**
@@ -684,6 +689,13 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      */
     public float getArrowIconRotation() {
         return mArrowIconRotation;
+    }
+
+    /**
+     * @return Whether the close icon is visible.
+     */
+    public boolean isCloseIconVisible() {
+        return mSearchPanelFeatures.isCloseButtonAvailable();
     }
 
     /**
@@ -861,6 +873,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      * Initializes the UI state.
      */
     protected void initializeUiState() {
+        mSearchPanelFeatures = new ContextualSearchPanelFeatures(mManagementDelegate.isCustomTab());
         mIsShowing = false;
 
         // Static values.
@@ -1242,7 +1255,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         // fading out should use the same percentage.
         float fadingOutPercentage = percentage;
         float fadingInPercentage = percentage;
-        if (isArrowIconVisible() && ContextualSearchPanelFeatures.isCloseButtonAvailable()) {
+        if (isArrowIconVisible() && mSearchPanelFeatures.isCloseButtonAvailable()) {
             fadingOutPercentage = Math.min(percentage, .5f) / .5f;
             fadingInPercentage = Math.max(percentage - .5f, 0.f) / .5f;
         }

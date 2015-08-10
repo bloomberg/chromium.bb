@@ -40,11 +40,6 @@ static void SetCustomTabVisible(JNIEnv* env,
   custom_tab_visible = visible;
 }
 
-static jboolean GetCustomTabVisible(JNIEnv* env,
-                                jclass clazz) {
-  return custom_tab_visible;
-}
-
 bool RegisterFeatureUtilities(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

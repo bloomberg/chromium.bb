@@ -225,10 +225,10 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
             } else if (isExpanded()) {
                 peekPanel(StateChangeReason.SEARCH_BAR_TAP);
             } else if (isMaximized()) {
-                if (ContextualSearchPanelFeatures.isSearchTermRefiningAvailable()) {
+                if (mSearchPanelFeatures.isSearchTermRefiningAvailable()) {
                     getManagementDelegate().promoteToTab(true);
                 }
-                if (ContextualSearchPanelFeatures.isCloseButtonAvailable()
+                if (mSearchPanelFeatures.isCloseButtonAvailable()
                         && isCoordinateInsideCloseButton(x, y)) {
                     closePanel(StateChangeReason.CLOSE_BUTTON, true);
                 }
@@ -502,5 +502,10 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     public ContextualSearchControl getContextualSearchControl() {
         // NOTE(pedrosimonetti): exposing superclass method to the interface.
         return super.getContextualSearchControl();
+    }
+
+    @Override
+    public boolean shouldAnimatePanelCloseOnPromoteToTab() {
+        return mSearchPanelFeatures.shouldAnimatePanelCloseOnPromoteToTab();
     }
 }

@@ -92,6 +92,11 @@ public class CustomTabActivity extends ChromeActivity {
     }
 
     @Override
+    public boolean isCustomTab() {
+        return true;
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
         CustomTabsConnection.getInstance(getApplication())

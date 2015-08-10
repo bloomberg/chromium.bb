@@ -70,7 +70,6 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager.ContextualSearchTabPromotionDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTab;
-import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.dom_distiller.DistilledPagePrefsView;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeActivityDelegate;
@@ -618,8 +617,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     /**
      * @return Whether the given activity contains a {@link CustomTab}.
      */
-    private boolean isCustomTab() {
-        return this instanceof CustomTabActivity;
+    public boolean isCustomTab() {
+        return false;
     }
 
     @Override

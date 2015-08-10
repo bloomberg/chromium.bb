@@ -118,4 +118,9 @@ public interface ContextualSearchManagementDelegate {
      * @return The resource id that contains how large the top controls are.
      */
     int getControlContainerHeightResource();
+
+    /**
+     * @return Whether the current activity contains a {@link CustomTab}.
+     */
+    boolean isCustomTab();
 }

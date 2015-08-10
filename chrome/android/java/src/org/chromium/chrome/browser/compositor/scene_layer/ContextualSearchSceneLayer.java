@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.compositor.scene_layer;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelFeatures;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -67,7 +66,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
         float arrowIconOpacity = mSearchPanel.getArrowIconOpacity();
         float arrowIconRotation = mSearchPanel.getArrowIconRotation();
 
-        boolean closeIconVisible = ContextualSearchPanelFeatures.isCloseButtonAvailable();
+        boolean closeIconVisible = mSearchPanel.isCloseIconVisible();
         float closeIconOpacity = mSearchPanel.getCloseIconOpacity();
 
         boolean isProgressBarVisible = mSearchPanel.isProgressBarVisible();
