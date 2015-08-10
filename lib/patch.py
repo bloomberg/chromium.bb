@@ -713,8 +713,6 @@ class PatchQuery(object):
              other.gerrit_number, other.change_id, other.sha1))
 
 
-ORIGINAL_HEADS = {}
-
 class GitRepoPatch(PatchQuery):
   """Representing a patch from a branch of a local or remote git repository."""
 
@@ -987,12 +985,11 @@ class GitRepoPatch(PatchQuery):
 
     reset_target = None if leave_dirty else 'HEAD'
     try:
-      git.RunGit(git_repo, cmd, capture_output=False)
+      git.RunGit(git_repo, cmd)
       self._AmendCommitMessage(git_repo)
       reset_target = None
       return
     except cros_build_lib.RunCommandError as error:
-      logging.error('Encountered an error when cherry-picking: %s', error)
       ret = error.result.returncode
       if ret not in (1, 2):
         logging.error('Unknown cherry-pick exit code %s; %s', ret, error)
