@@ -91,6 +91,8 @@ component("ozone") {
     "common/gpu/ozone_gpu_messages.h",
     "common/native_display_delegate_ozone.cc",
     "common/native_display_delegate_ozone.h",
+    "common/stub_client_native_pixmap_factory.cc",
+    "common/stub_client_native_pixmap_factory.h",
     "common/stub_overlay_manager.cc",
     "common/stub_overlay_manager.h",
     "platform_selection.cc",
