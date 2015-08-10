@@ -19,13 +19,12 @@ import org.chromium.base.Log;
  * Wrapper around Android's InputMethodManager
  */
 public class InputMethodManagerWrapper {
-    private static final String TAG = "cr.InputMethodManager";
-    private static final boolean DEBUG = false;
+    private static final String TAG = "cr.Ime";
 
     private final Context mContext;
 
     public InputMethodManagerWrapper(Context context) {
-        if (DEBUG) Log.w(TAG, "Constructor");
+        Log.d(TAG, "Constructor");
         mContext = context;
     }
 
@@ -37,7 +36,7 @@ public class InputMethodManagerWrapper {
      * @see android.view.inputmethod.InputMethodManager#restartInput(View)
      */
     public void restartInput(View view) {
-        if (DEBUG) Log.w(TAG, "restartInput");
+        Log.d(TAG, "restartInput");
         getInputMethodManager().restartInput(view);
     }
 
@@ -45,7 +44,7 @@ public class InputMethodManagerWrapper {
      * @see android.view.inputmethod.InputMethodManager#showSoftInput(View, int, ResultReceiver)
      */
     public void showSoftInput(View view, int flags, ResultReceiver resultReceiver) {
-        if (DEBUG) Log.w(TAG, "showSoftInput");
+        Log.d(TAG, "showSoftInput");
         getInputMethodManager().showSoftInput(view, flags, resultReceiver);
     }
 
@@ -54,7 +53,7 @@ public class InputMethodManagerWrapper {
      */
     public boolean isActive(View view) {
         final boolean active = getInputMethodManager().isActive(view);
-        if (DEBUG) Log.w(TAG, "isActive: " + active);
+        Log.d(TAG, "isActive: " + active);
         return active;
     }
 
@@ -63,7 +62,7 @@ public class InputMethodManagerWrapper {
      */
     public boolean hideSoftInputFromWindow(IBinder windowToken, int flags,
             ResultReceiver resultReceiver) {
-        if (DEBUG) Log.w(TAG, "hideSoftInputFromWindow");
+        Log.d(TAG, "hideSoftInputFromWindow");
         return getInputMethodManager().hideSoftInputFromWindow(windowToken, flags, resultReceiver);
     }
 
@@ -72,10 +71,8 @@ public class InputMethodManagerWrapper {
      */
     public void updateSelection(View view, int selStart, int selEnd,
             int candidatesStart, int candidatesEnd) {
-        if (DEBUG) {
-            Log.w(TAG, "updateSelection: SEL [%d, %d], COM [%d, %d]", selStart, selEnd,
-                    candidatesStart, candidatesEnd);
-        }
+        Log.d(TAG, "updateSelection: SEL [%d, %d], COM [%d, %d]", selStart, selEnd,
+                candidatesStart, candidatesEnd);
         getInputMethodManager().updateSelection(view, selStart, selEnd, candidatesStart,
                 candidatesEnd);
     }
@@ -86,7 +83,7 @@ public class InputMethodManagerWrapper {
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void updateCursorAnchorInfo(View view, CursorAnchorInfo cursorAnchorInfo) {
-        if (DEBUG) Log.w(TAG, "updateCursorAnchorInfo");
+        Log.d(TAG, "updateCursorAnchorInfo");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getInputMethodManager().updateCursorAnchorInfo(view, cursorAnchorInfo);
         }
