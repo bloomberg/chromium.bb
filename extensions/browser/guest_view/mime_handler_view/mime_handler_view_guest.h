@@ -64,13 +64,8 @@ class MimeHandlerViewGuest :
                          const WebContentsCreatedCallback& callback) override;
   void DidAttachToEmbedder() override;
   void DidInitialize(const base::DictionaryValue& create_params) override;
+  bool ShouldHandleFindRequestsForEmbedder() const override;
   bool ZoomPropagatesFromEmbedderToGuest() const override;
-
-  // content::BrowserPluginGuestDelegate implementation
-  bool Find(int request_id,
-            const base::string16& search_text,
-            const blink::WebFindOptions& options) override;
-  bool StopFinding(content::StopFindAction action) override;
 
   // WebContentsDelegate implementation.
   content::WebContents* OpenURLFromTab(

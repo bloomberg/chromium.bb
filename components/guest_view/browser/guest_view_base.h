@@ -277,6 +277,10 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void DidAttach(int guest_proxy_routing_id) final;
   void DidDetach() final;
   content::WebContents* GetOwnerWebContents() const final;
+  bool Find(int request_id,
+            const base::string16& search_text,
+            const blink::WebFindOptions& options) final;
+  bool StopFinding(content::StopFindAction action) final;
   void GuestSizeChanged(const gfx::Size& new_size) final;
   void SetGuestHost(content::GuestHost* guest_host) final;
   void WillAttach(content::WebContents* embedder_web_contents,
@@ -353,6 +357,11 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // immediately, but derived class can override this if they need to do
   // asynchronous setup.
   virtual void SignalWhenReady(const base::Closure& callback);
+
+  // Returns true if this guest should handle find requests for its
+  // embedder. This should generally be true for guests that make up the
+  // entirety of the embedder's content.
+  virtual bool ShouldHandleFindRequestsForEmbedder() const;
 
  private:
   class OwnerContentsObserver;

@@ -407,6 +407,24 @@ void GuestViewBase::DidDetach() {
   element_instance_id_ = kInstanceIDNone;
 }
 
+bool GuestViewBase::Find(int request_id,
+                         const base::string16& search_text,
+                         const blink::WebFindOptions& options) {
+  if (ShouldHandleFindRequestsForEmbedder()) {
+    web_contents()->Find(request_id, search_text, options);
+    return true;
+  }
+  return false;
+}
+
+bool GuestViewBase::StopFinding(content::StopFindAction action) {
+  if (ShouldHandleFindRequestsForEmbedder()) {
+    web_contents()->StopFinding(action);
+    return true;
+  }
+  return false;
+}
+
 WebContents* GuestViewBase::GetOwnerWebContents() const {
   return owner_web_contents_;
 }
@@ -511,6 +529,10 @@ void GuestViewBase::SignalWhenReady(const base::Closure& callback) {
   // The default behavior is to call the |callback| immediately. Derived classes
   // can implement an alternative signal for readiness.
   callback.Run();
+}
+
+bool GuestViewBase::ShouldHandleFindRequestsForEmbedder() const {
+  return false;
 }
 
 int GuestViewBase::LogicalPixelsToPhysicalPixels(double logical_pixels) const {

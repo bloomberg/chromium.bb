@@ -960,6 +960,10 @@ void WebViewGuest::SignalWhenReady(const base::Closure& callback) {
   manager->SignalOnScriptsLoaded(callback);
 }
 
+bool WebViewGuest::ShouldHandleFindRequestsForEmbedder() const {
+  return web_view_guest_delegate_->ShouldHandleFindRequestsForEmbedder();
+}
+
 void WebViewGuest::WillAttachToEmbedder() {
   rules_registry_id_ = GetOrGenerateRulesRegistryID(
       owner_web_contents()->GetRenderProcessHost()->GetID(),

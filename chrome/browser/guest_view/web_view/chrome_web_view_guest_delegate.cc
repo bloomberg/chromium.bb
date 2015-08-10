@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
+#include "chrome/common/url_constants.h"
 #include "components/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "components/renderer_context_menu/context_menu_delegate.h"
@@ -100,6 +101,13 @@ void ChromeWebViewGuestDelegate::OnShowContextMenu(
   ContextMenuDelegate* menu_delegate =
       ContextMenuDelegate::FromWebContents(guest_web_contents());
   menu_delegate->ShowMenu(pending_menu_.Pass());
+}
+
+bool ChromeWebViewGuestDelegate::ShouldHandleFindRequestsForEmbedder() const {
+  // Find requests will be handled by the guest for the Chrome signin page.
+  return web_view_guest_->owner_web_contents()->GetWebUI() != nullptr &&
+         web_view_guest_->GetOwnerSiteURL().GetOrigin().spec() ==
+             chrome::kChromeUIChromeSigninURL;
 }
 
 void ChromeWebViewGuestDelegate::InjectChromeVoxIfNeeded(

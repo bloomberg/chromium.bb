@@ -150,25 +150,11 @@ void MimeHandlerViewGuest::DidInitialize(
   ExtensionsAPIClient::Get()->AttachWebContentsHelpers(web_contents());
 }
 
+bool MimeHandlerViewGuest::ShouldHandleFindRequestsForEmbedder() const {
+  return is_full_page_plugin();
+}
+
 bool MimeHandlerViewGuest::ZoomPropagatesFromEmbedderToGuest() const {
-  return false;
-}
-
-bool MimeHandlerViewGuest::Find(int request_id,
-                                const base::string16& search_text,
-                                const blink::WebFindOptions& options) {
-  if (is_full_page_plugin()) {
-    web_contents()->Find(request_id, search_text, options);
-    return true;
-  }
-  return false;
-}
-
-bool MimeHandlerViewGuest::StopFinding(content::StopFindAction action) {
-  if (is_full_page_plugin()) {
-    web_contents()->StopFinding(action);
-    return true;
-  }
   return false;
 }
 
