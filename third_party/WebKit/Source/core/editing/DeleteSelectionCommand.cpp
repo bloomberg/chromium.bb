@@ -467,7 +467,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
             deleteTextFromNode(text, caretMaxOffset(startNode), text->length() - caretMaxOffset(startNode));
     }
 
-    if (startOffset >= lastOffsetForEditing(startNode)) {
+    if (startOffset >= EditingStrategy::lastOffsetForEditing(startNode)) {
         startNode = NodeTraversal::nextSkippingChildren(*startNode);
         startOffset = 0;
     }

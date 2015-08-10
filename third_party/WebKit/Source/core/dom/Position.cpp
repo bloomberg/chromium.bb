@@ -412,7 +412,9 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::next(PositionMoveType m
     if (Node* child = Strategy::childAt(*node, offset))
         return firstPositionInOrBeforeNode(child);
 
-    if (!Strategy::hasChildren(*node) && offset < lastOffsetForEditing(node)) {
+    // TODO(yosin) We should use |Strategy::lastOffsetForEditing()| instead of
+    // DOM tree version.
+    if (!Strategy::hasChildren(*node) && offset < EditingStrategy::lastOffsetForEditing(node)) {
         // There are two reasons child might be 0:
         //   1) The node is node like a text node that is not an element, and therefore has no children.
         //      Going forward one character at a time is correct.
@@ -459,7 +461,9 @@ bool PositionAlgorithm<Strategy>::atFirstEditingPositionForNode() const
         return true;
     case PositionAnchorType::AfterChildren:
     case PositionAnchorType::AfterAnchor:
-        return !lastOffsetForEditing(anchorNode());
+        // TODO(yosin) We should use |Strategy::lastOffsetForEditing()| instead
+        // of DOM tree version.
+        return !EditingStrategy::lastOffsetForEditing(anchorNode());
     }
     ASSERT_NOT_REACHED();
     return false;
@@ -470,9 +474,12 @@ bool PositionAlgorithm<Strategy>::atLastEditingPositionForNode() const
 {
     if (isNull())
         return true;
-    // FIXME: Position after anchor shouldn't be considered as at the first editing position for node
-    // since that position resides outside of the node.
-    return isAfterAnchorOrAfterChildren() || m_offset >= lastOffsetForEditing(anchorNode());
+    // TODO(yosin): Position after anchor shouldn't be considered as at the
+    // first editing position for node since that position resides outside of
+    // the node.
+    // TODO(yosin) We should use |Strategy::lastOffsetForEditing()| instead of
+    // DOM tree version.
+    return isAfterAnchorOrAfterChildren() || m_offset >= EditingStrategy::lastOffsetForEditing(anchorNode());
 }
 
 // A position is considered at editing boundary if one of the following is true:
@@ -535,7 +542,9 @@ bool PositionAlgorithm<Strategy>::atEndOfTree() const
 {
     if (isNull())
         return true;
-    return !Strategy::parent(*anchorNode()) && m_offset >= lastOffsetForEditing(anchorNode());
+    // TODO(yosin) We should use |Strategy::lastOffsetForEditing()| instead of
+    // DOM tree version.
+    return !Strategy::parent(*anchorNode()) && m_offset >= EditingStrategy::lastOffsetForEditing(anchorNode());
 }
 
 template <typename Strategy>

@@ -204,8 +204,9 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
 
     // topNode defines the whole range we want to operate on
     ContainerNode* topNode = highestEditableRoot(position);
-    // FIXME: lastOffsetForEditing() is wrong here if editingIgnoresContent(highestEditableRoot()) returns true (e.g. a <table>)
-    spellingSearchEnd = createLegacyEditingPosition(topNode, lastOffsetForEditing(topNode));
+    // TODO(yosin): |lastOffsetForEditing()| is wrong here if
+    // |editingIgnoresContent(highestEditableRoot())| returns true, e.g. <table>
+    spellingSearchEnd = createLegacyEditingPosition(topNode, EditingStrategy::lastOffsetForEditing(topNode));
 
     // If spellingSearchRange starts in the middle of a word, advance to the next word so we start checking
     // at a word boundary. Going back by one char and then forward by a word does the trick.

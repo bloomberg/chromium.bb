@@ -101,7 +101,6 @@ inline ContainerNode* parentCrossingShadowBoundaries<EditingInComposedTreeStrate
 
 // offset functions on Node
 
-int lastOffsetForEditing(const Node*);
 int caretMinOffset(const Node*);
 int caretMaxOffset(const Node*);
 

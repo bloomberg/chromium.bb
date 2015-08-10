@@ -26,6 +26,12 @@ public:
     // of |Node*|.
     static bool isEmptyNonEditableNodeInEditable(const Node*);
     static bool editingIgnoresContent(const Node*);
+
+    // This method is used to create positions in the DOM. It returns the
+    // maximum valid offset in a node. It returns 1 for some elements even
+    // though they do not have children, which creates technically invalid DOM
+    // Positions. Be sure to call |parentAnchoredEquivalent()| on a Position
+    // before using it to create a DOM Range, or an exception will be thrown.
     static int lastOffsetForEditing(const Node*);
 };
 
