@@ -56,7 +56,7 @@ bool IdBelongsToFrame(uint64 id, int render_frame_id) {
 template <typename... T>
 class CdmPromiseInternal : public media::CdmPromiseTemplate<T...> {
  public:
-  CdmPromiseInternal(BrowserCdmManager* manager,
+  CdmPromiseInternal(const base::WeakPtr<BrowserCdmManager>& manager,
                      int render_frame_id,
                      int cdm_id,
                      uint32_t promise_id)
@@ -76,14 +76,16 @@ class CdmPromiseInternal : public media::CdmPromiseTemplate<T...> {
               uint32_t system_code,
               const std::string& error_message) final {
     MarkPromiseSettled();
-    manager_->RejectPromise(render_frame_id_, cdm_id_, promise_id_, exception,
-                            system_code, error_message);
+    if (manager_) {
+      manager_->RejectPromise(render_frame_id_, cdm_id_, promise_id_, exception,
+                              system_code, error_message);
+    }
   }
 
  private:
   using media::CdmPromiseTemplate<T...>::MarkPromiseSettled;
 
-  BrowserCdmManager* const manager_;
+  base::WeakPtr<BrowserCdmManager> const manager_;
   const int render_frame_id_;
   const int cdm_id_;
   const uint32_t promise_id_;
@@ -92,14 +94,17 @@ class CdmPromiseInternal : public media::CdmPromiseTemplate<T...> {
 template <>
 void CdmPromiseInternal<>::resolve() {
   MarkPromiseSettled();
-  manager_->ResolvePromise(render_frame_id_, cdm_id_, promise_id_);
+  if (manager_)
+    manager_->ResolvePromise(render_frame_id_, cdm_id_, promise_id_);
 }
 
 template <>
 void CdmPromiseInternal<std::string>::resolve(const std::string& session_id) {
   MarkPromiseSettled();
-  manager_->ResolvePromiseWithSession(render_frame_id_, cdm_id_, promise_id_,
-                                      session_id);
+  if (manager_) {
+    manager_->ResolvePromiseWithSession(render_frame_id_, cdm_id_, promise_id_,
+                                        session_id);
+  }
 }
 
 typedef CdmPromiseInternal<> SimplePromise;
@@ -347,8 +352,8 @@ void BrowserCdmManager::OnSetServerCertificate(
     const std::vector<uint8_t>& certificate) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-  scoped_ptr<SimplePromise> promise(
-      new SimplePromise(this, render_frame_id, cdm_id, promise_id));
+  scoped_ptr<SimplePromise> promise(new SimplePromise(
+      weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
 
   BrowserCdm* cdm = GetCdm(render_frame_id, cdm_id);
   if (!cdm) {
@@ -372,7 +377,8 @@ void BrowserCdmManager::OnCreateSessionAndGenerateRequest(
   int cdm_id = params.cdm_id;
   const std::vector<uint8>& init_data = params.init_data;
   scoped_ptr<NewSessionPromise> promise(
-      new NewSessionPromise(this, render_frame_id, cdm_id, params.promise_id));
+      new NewSessionPromise(weak_ptr_factory_.GetWeakPtr(),
+                            render_frame_id, cdm_id, params.promise_id));
 
   if (init_data.size() > media::limits::kMaxInitDataLength) {
     LOG(WARNING) << "InitData for ID: " << cdm_id
@@ -429,8 +435,8 @@ void BrowserCdmManager::OnLoadSession(
     const std::string& session_id) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-  scoped_ptr<NewSessionPromise> promise(
-      new NewSessionPromise(this, render_frame_id, cdm_id, promise_id));
+  scoped_ptr<NewSessionPromise> promise(new NewSessionPromise(
+      weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
 
   BrowserCdm* cdm = GetCdm(render_frame_id, cdm_id);
   if (!cdm) {
@@ -453,8 +459,8 @@ void BrowserCdmManager::OnUpdateSession(int render_frame_id,
                                         const std::vector<uint8>& response) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-  scoped_ptr<SimplePromise> promise(
-      new SimplePromise(this, render_frame_id, cdm_id, promise_id));
+  scoped_ptr<SimplePromise> promise(new SimplePromise(
+      weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
 
   BrowserCdm* cdm = GetCdm(render_frame_id, cdm_id);
   if (!cdm) {
@@ -483,8 +489,8 @@ void BrowserCdmManager::OnCloseSession(int render_frame_id,
                                        const std::string& session_id) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-  scoped_ptr<SimplePromise> promise(
-      new SimplePromise(this, render_frame_id, cdm_id, promise_id));
+  scoped_ptr<SimplePromise> promise(new SimplePromise(
+      weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
 
   BrowserCdm* cdm = GetCdm(render_frame_id, cdm_id);
   if (!cdm) {
@@ -501,8 +507,8 @@ void BrowserCdmManager::OnRemoveSession(int render_frame_id,
                                         const std::string& session_id) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-  scoped_ptr<SimplePromise> promise(
-      new SimplePromise(this, render_frame_id, cdm_id, promise_id));
+  scoped_ptr<SimplePromise> promise(new SimplePromise(
+      weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
 
   BrowserCdm* cdm = GetCdm(render_frame_id, cdm_id);
   if (!cdm) {
@@ -532,8 +538,8 @@ void BrowserCdmManager::AddCdm(int render_frame_id,
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!GetCdm(render_frame_id, cdm_id));
 
-  scoped_ptr<SimplePromise> promise(
-      new SimplePromise(this, render_frame_id, cdm_id, promise_id));
+  scoped_ptr<SimplePromise> promise(new SimplePromise(
+      weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
 
   scoped_ptr<BrowserCdm> cdm(media::CreateBrowserCdm(
       key_system, use_hw_secure_codecs,
