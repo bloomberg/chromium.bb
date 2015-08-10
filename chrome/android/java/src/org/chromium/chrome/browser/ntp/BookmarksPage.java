@@ -535,6 +535,7 @@ public class BookmarksPage implements NativePage, InvalidationAwareThumbnailProv
      */
     @Override
     public void destroy() {
+        assert !mIsDestroyed;
         if (mFaviconHelper != null) {
             mFaviconHelper.destroy();
             mFaviconHelper = null;

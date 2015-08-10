@@ -25,7 +25,7 @@ public class EnhancedBookmarkPage implements NativePage, EnhancedBookmarkStateCh
     private final Tab mTab;
     private final String mTitle;
     private final int mBackgroundColor;
-    private final EnhancedBookmarkManager mManager;
+    private EnhancedBookmarkManager mManager;
 
     /**
      * Create a new instance of an enhanced bookmark page.
@@ -91,6 +91,7 @@ public class EnhancedBookmarkPage implements NativePage, EnhancedBookmarkStateCh
     @Override
     public void destroy() {
         mManager.destroy();
+        mManager = null;
     }
 
     @Override
