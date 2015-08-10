@@ -15,6 +15,7 @@
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/common/cache_storage/cache_storage_messages.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/origin_util.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerCacheError.h"
 
@@ -41,6 +42,10 @@ blink::WebServiceWorkerCacheError ToWebServiceWorkerCacheError(
   }
   NOTREACHED();
   return blink::WebServiceWorkerCacheErrorNotImplemented;
+}
+
+bool OriginCanAccessCacheStorage(const GURL& url) {
+  return IsOriginSecure(url);
 }
 
 }  // namespace
@@ -104,6 +109,10 @@ void CacheStorageDispatcherHost::OnCacheStorageHas(
     const GURL& origin,
     const base::string16& cache_name) {
   TRACE_EVENT0("CacheStorage", "CacheStorageDispatcherHost::OnCacheStorageHas");
+  if (!OriginCanAccessCacheStorage(origin)) {
+    bad_message::ReceivedBadMessage(this, bad_message::CSDH_INVALID_ORIGIN);
+    return;
+  }
   context_->cache_manager()->HasCache(
       origin, base::UTF16ToUTF8(cache_name),
       base::Bind(&CacheStorageDispatcherHost::OnCacheStorageHasCallback, this,
@@ -117,6 +126,10 @@ void CacheStorageDispatcherHost::OnCacheStorageOpen(
     const base::string16& cache_name) {
   TRACE_EVENT0("CacheStorage",
                "CacheStorageDispatcherHost::OnCacheStorageOpen");
+  if (!OriginCanAccessCacheStorage(origin)) {
+    bad_message::ReceivedBadMessage(this, bad_message::CSDH_INVALID_ORIGIN);
+    return;
+  }
   context_->cache_manager()->OpenCache(
       origin, base::UTF16ToUTF8(cache_name),
       base::Bind(&CacheStorageDispatcherHost::OnCacheStorageOpenCallback, this,
@@ -130,6 +143,10 @@ void CacheStorageDispatcherHost::OnCacheStorageDelete(
     const base::string16& cache_name) {
   TRACE_EVENT0("CacheStorage",
                "CacheStorageDispatcherHost::OnCacheStorageDelete");
+  if (!OriginCanAccessCacheStorage(origin)) {
+    bad_message::ReceivedBadMessage(this, bad_message::CSDH_INVALID_ORIGIN);
+    return;
+  }
   context_->cache_manager()->DeleteCache(
       origin, base::UTF16ToUTF8(cache_name),
       base::Bind(&CacheStorageDispatcherHost::OnCacheStorageDeleteCallback,
@@ -141,6 +158,10 @@ void CacheStorageDispatcherHost::OnCacheStorageKeys(int thread_id,
                                                     const GURL& origin) {
   TRACE_EVENT0("CacheStorage",
                "CacheStorageDispatcherHost::OnCacheStorageKeys");
+  if (!OriginCanAccessCacheStorage(origin)) {
+    bad_message::ReceivedBadMessage(this, bad_message::CSDH_INVALID_ORIGIN);
+    return;
+  }
   context_->cache_manager()->EnumerateCaches(
       origin,
       base::Bind(&CacheStorageDispatcherHost::OnCacheStorageKeysCallback, this,
@@ -155,7 +176,10 @@ void CacheStorageDispatcherHost::OnCacheStorageMatch(
     const CacheStorageCacheQueryParams& match_params) {
   TRACE_EVENT0("CacheStorage",
                "CacheStorageDispatcherHost::OnCacheStorageMatch");
-
+  if (!OriginCanAccessCacheStorage(origin)) {
+    bad_message::ReceivedBadMessage(this, bad_message::CSDH_INVALID_ORIGIN);
+    return;
+  }
   scoped_ptr<ServiceWorkerFetchRequest> scoped_request(
       new ServiceWorkerFetchRequest(request.url, request.method,
                                     request.headers, request.referrer,

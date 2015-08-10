@@ -488,6 +488,7 @@ bool ChromeContentClient::GetSandboxProfileForSandboxType(
 void ChromeContentClient::AddSecureSchemesAndOrigins(
     std::set<std::string>* schemes,
     std::set<GURL>* origins) {
+  schemes->insert(chrome::kChromeSearchScheme);
   schemes->insert(content::kChromeUIScheme);
   schemes->insert(extensions::kExtensionScheme);
   schemes->insert(extensions::kExtensionResourceScheme);
