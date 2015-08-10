@@ -75,29 +75,7 @@ check_targets = [
 
   #"//jingle/*",
   #"//media/*",  # Lots of errors.
-  "mojo/android/*",
-  "mojo/application/*",
-  "mojo/build/*",
-  "mojo/cc/*",
-  "mojo/common/*",
-  "mojo/converters/*",
-  "mojo/environment/*",
-
-  # TODO(sky): resolve this.
-  # "mojo/gles2/*",
-  "mojo/gpu/*",
-  "mojo/message_pump/*",
-  "mojo/nacl/*",
-
-  # TODO(sky): resolve this.
-  # "mojo/platform_handle/*",
-  "mojo/public/*",
-  "mojo/runner/*",
-  "mojo/services/*",
-  "mojo/shell/*",
-  "mojo/test/*",
-  "mojo/tools/*",
-  "mojo/util/*",
+  "mojo/*",
 
   #"//native_client/*",
   #"//net/*",  # Needs GN binary changes to work on Android.

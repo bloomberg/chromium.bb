@@ -43,6 +43,7 @@ source_set("gles2") {
     "//gpu/command_buffer/service:service_sources",
     "//gpu/command_buffer/common",
     "//mojo/environment:chromium",
+    "//mojo/platform_handle:defs",
     "//third_party/mojo/src/mojo/public/c/gles2:headers",
     "//third_party/mojo/src/mojo/public/c/system",
     "//third_party/mojo/src/mojo/public/cpp/bindings",

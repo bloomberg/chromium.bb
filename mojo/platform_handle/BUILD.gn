@@ -9,21 +9,33 @@ source_set("platform_handle") {
   ]
 
   deps = [
-    ":defs",
     "//third_party/mojo/src/mojo/public/c/system",
+  ]
+
+  public_deps = [
+    ":defs",
   ]
 
   defines = [ "PLATFORM_HANDLE_IMPLEMENTATION" ]
 }
 
-# Only targets that are registering the thunks should depend upon this.
+# Only targets that are registering the thunks or get linked into the runner
+# depend upon this target. The rest should use the |platform_handle| target
+# above.
 source_set("defs") {
   visibility = [
     ":platform_handle",
+    "//mojo/gles2",
     "//mojo/runner:native_application_support",
   ]
+
   sources = [
-    "native_exports.h",
+    "platform_handle.h",
+    "platform_handle_exports.h",
     "platform_handle_functions.h",
+  ]
+
+  deps = [
+    "//third_party/mojo/src/mojo/public/c/system",
   ]
 }
