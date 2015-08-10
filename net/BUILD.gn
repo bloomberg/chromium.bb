@@ -457,6 +457,8 @@ component("net") {
     # files.
     set_sources_assignment_filter([])
     sources += [
+      "base/mac/url_conversions.h",
+      "base/mac/url_conversions.mm",
       "base/network_change_notifier_mac.cc",
       "base/network_config_watcher_mac.cc",
       "base/network_interfaces_mac.cc",
@@ -680,6 +682,8 @@ source_set("test_support") {
     "test/spawned_test_server/spawned_test_server.h",
     "test/spawned_test_server/spawner_communicator.cc",
     "test/spawned_test_server/spawner_communicator.h",
+    "test/url_request/ssl_certificate_error_job.cc",
+    "test/url_request/ssl_certificate_error_job.h",
     "test/url_request/url_request_failed_job.cc",
     "test/url_request/url_request_failed_job.h",
     "test/url_request/url_request_mock_data_job.cc",
@@ -1286,29 +1290,30 @@ source_set("simple_quic_tools") {
   ]
 }
 
-executable("quic_client") {
-  sources = [
-    "tools/quic/quic_simple_client_bin.cc",
-  ]
-  deps = [
-    ":net",
-    ":simple_quic_tools",
-    "//base",
-    "//url",
-  ]
-}
-
-executable("quic_server") {
-  sources = [
-    "tools/quic/quic_simple_server_bin.cc",
-  ]
-  deps = [
-    ":net",
-    ":simple_quic_tools",
-    "//base",
-    "//third_party/boringssl",
-    "//third_party/protobuf:protobuf_lite",
-  ]
+if (!is_ios) {
+  executable("quic_client") {
+    sources = [
+      "tools/quic/quic_simple_client_bin.cc",
+    ]
+    deps = [
+      ":net",
+      ":simple_quic_tools",
+      "//base",
+      "//url",
+    ]
+  }
+  executable("quic_server") {
+    sources = [
+      "tools/quic/quic_simple_server_bin.cc",
+    ]
+    deps = [
+      ":net",
+      ":simple_quic_tools",
+      "//base",
+      "//third_party/boringssl",
+      "//third_party/protobuf:protobuf_lite",
+    ]
+  }
 }
 
 # TODO(GYP): Delete this after we've converted everything to GN.
@@ -1322,6 +1327,14 @@ group("net_unittests_run") {
 
 test("net_unittests") {
   sources = gypi_values.net_test_sources
+
+  if (is_ios) {
+    sources -= [
+      "websockets/websocket_stream_cookie_test.cc",
+      "websockets/websocket_stream_create_test_base.cc",
+      "websockets/websocket_stream_create_test_base.h",
+    ]
+  }
 
   configs += [
     "//build/config:precompiled_headers",
