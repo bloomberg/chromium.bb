@@ -8,13 +8,15 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/file.h"
+#include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
 enum ProcessOutputType {
   PROCESS_OUTPUT_TYPE_OUT,
-  PROCESS_OUTPUT_TYPE_ERR,
   PROCESS_OUTPUT_TYPE_EXIT
 };
 
@@ -23,31 +25,24 @@ typedef base::Callback<void(ProcessOutputType, const std::string&)>
 
 // Observes output on |out_fd| and invokes |callback| when some output is
 // detected. It assumes UTF8 output.
-// If output is detected in |stop_fd|, the watcher is stopped.
-// This class should live on its own thread because running class makes
-// underlying thread block. It deletes itself when watching is stopped.
-class CHROMEOS_EXPORT ProcessOutputWatcher {
+class CHROMEOS_EXPORT ProcessOutputWatcher
+    : public base::MessageLoopForIO::Watcher {
  public:
-  // Verifies that fds that we got are properly set.
-  static bool VerifyFileDescriptor(int fd);
+  ProcessOutputWatcher(int out_fd, const ProcessOutputCallback& callback);
+  ~ProcessOutputWatcher() override;
 
-  ProcessOutputWatcher(int out_fd, int stop_fd,
-                       const ProcessOutputCallback& callback);
-
-  // This will block current thread!!!!
   void Start();
 
  private:
-  // The object will destroy itself when it stops watching process output.
-  ~ProcessOutputWatcher();
+  // MessageLoopForIO::Watcher overrides:
+  void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override;
 
-  // Listens to output from supplied fds. It guarantees data written to one fd
-  // will be reported in order that it has been written (this is not true across
-  // fds, it would be nicer if it was).
+  // Listens to output from fd passed to the constructor.
   void WatchProcessOutput();
 
-  // Reads data from fd, and when it's done, invokes callback function.
-  void ReadFromFd(ProcessOutputType type, int* fd);
+  // Reads data from fd and invokes callback |on_read_callback_| with read data.
+  void ReadFromFd(int fd);
 
   // Checks if the read buffer has any trailing incomplete UTF8 characters and
   // returns the read buffer size without them.
@@ -57,21 +52,20 @@ class CHROMEOS_EXPORT ProcessOutputWatcher {
   // output.
   void ReportOutput(ProcessOutputType type, size_t new_bytes_count);
 
-  // It will just delete this.
-  void OnStop();
-
   char read_buffer_[256];
   // Maximum read buffer content size.
   size_t read_buffer_capacity_;
   // Current read bufferi content size.
   size_t read_buffer_size_;
 
-  int out_fd_;
-  int stop_fd_;
-  int max_fd_;
+  // Contains file descsriptor to which watched process output is written.
+  base::File process_output_file_;
+  base::MessageLoopForIO::FileDescriptorWatcher output_file_watcher_;
 
   // Callback that will be invoked when some output is detected.
   ProcessOutputCallback on_read_callback_;
+
+  base::WeakPtrFactory<ProcessOutputWatcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessOutputWatcher);
 };

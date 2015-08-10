@@ -17,15 +17,9 @@
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "base/threading/thread.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 
 namespace {
-
-enum PipeEnd {
-  PIPE_END_READ,
-  PIPE_END_WRITE
-};
 
 enum PseudoTerminalFd {
   PT_MASTER_FD,
@@ -34,16 +28,18 @@ enum PseudoTerminalFd {
 
 const int kInvalidFd = -1;
 
+void StopOutputWatcher(scoped_ptr<chromeos::ProcessOutputWatcher> watcher) {
+  // Just deleting |watcher| if sufficient to stop it.
+}
+
 }  // namespace
 
 namespace chromeos {
 
-ProcessProxy::ProcessProxy(): process_launched_(false),
-                              callback_set_(false),
-                              watcher_started_(false) {
+ProcessProxy::ProcessProxy() : process_launched_(false), callback_set_(false) {
   // Set pipes to initial, invalid value so we can easily know if a pipe was
   // opened by us.
-  ClearAllFdPairs();
+  ClearFdPair(pt_pair_);
 }
 
 bool ProcessProxy::Open(const std::string& command, pid_t* pid) {
@@ -67,45 +63,33 @@ bool ProcessProxy::Open(const std::string& command, pid_t* pid) {
   return process_launched_;
 }
 
-bool ProcessProxy::StartWatchingOnThread(
-    base::Thread* watch_thread,
+bool ProcessProxy::StartWatchingOutput(
+    const scoped_refptr<base::SingleThreadTaskRunner>& watcher_runner,
     const ProcessOutputCallback& callback) {
   DCHECK(process_launched_);
-  if (watcher_started_)
-    return false;
-  if (pipe(shutdown_pipe_) ||
-      !ProcessOutputWatcher::VerifyFileDescriptor(
-          shutdown_pipe_[PIPE_END_READ])) {
-    return false;
-  }
+  CHECK(!output_watcher_.get());
 
   // We give ProcessOutputWatcher a copy of master to make life easier during
   // tear down.
   // TODO(tbarzic): improve fd managment.
   int master_copy = HANDLE_EINTR(dup(pt_pair_[PT_MASTER_FD]));
-  if (!ProcessOutputWatcher::VerifyFileDescriptor(master_copy))
+  if (master_copy < 0)
     return false;
 
   callback_set_ = true;
   callback_ = callback;
   callback_runner_ = base::ThreadTaskRunnerHandle::Get();
+  watcher_runner_ = watcher_runner;
 
   // This object will delete itself once watching is stopped.
   // It also takes ownership of the passed fds.
-  ProcessOutputWatcher* output_watcher =
-      new ProcessOutputWatcher(master_copy,
-                               shutdown_pipe_[PIPE_END_READ],
-                               base::Bind(&ProcessProxy::OnProcessOutput,
-                                          this));
+  output_watcher_.reset(new ProcessOutputWatcher(
+      master_copy, base::Bind(&ProcessProxy::OnProcessOutput, this)));
 
-  // Output watcher took ownership of the read end of shutdown pipe.
-  shutdown_pipe_[PIPE_END_READ] = -1;
-
-  // |watch| thread is blocked by |output_watcher| from now on.
-  watch_thread->task_runner()->PostTask(
+  watcher_runner_->PostTask(
       FROM_HERE, base::Bind(&ProcessOutputWatcher::Start,
-                            base::Unretained(output_watcher)));
-  watcher_started_ = true;
+                            base::Unretained(output_watcher_.get())));
+
   return true;
 }
 
@@ -131,14 +115,13 @@ void ProcessProxy::CallOnProcessOutputCallback(ProcessOutputType type,
     callback_.Run(type, output);
 }
 
-bool ProcessProxy::StopWatching() {
-  if (!watcher_started_)
-    return true;
-  // Signal Watcher that we are done. We use self-pipe trick to unblock watcher.
-  // Anything may be written to the pipe.
-  const char message[] = "q";
-  return base::WriteFileDescriptor(shutdown_pipe_[PIPE_END_WRITE],
-                                   message, sizeof(message));
+void ProcessProxy::StopWatching() {
+  if (!output_watcher_.get())
+    return;
+
+  watcher_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&StopOutputWatcher, base::Passed(&output_watcher_)));
 }
 
 void ProcessProxy::Close() {
@@ -153,10 +136,8 @@ void ProcessProxy::Close() {
   base::Process process = base::Process::DeprecatedGetProcessFromHandle(pid_);
   process.Terminate(0, true /* wait */);
 
-  // TODO(tbarzic): What if this fails?
   StopWatching();
-
-  CloseAllFdPairs();
+  CloseFdPair(pt_pair_);
 }
 
 bool ProcessProxy::Write(const std::string& text) {
@@ -183,13 +164,7 @@ bool ProcessProxy::OnTerminalResize(int width, int height) {
 }
 
 ProcessProxy::~ProcessProxy() {
-  // In case watcher did not started, we may get deleted without calling Close.
-  // In that case we have to clean up created pipes. If watcher had been
-  // started, there will be a callback with our reference owned by
-  // process_output_watcher until Close is called, so we know Close has been
-  // called  by now (and pipes have been cleaned).
-  if (!watcher_started_)
-    CloseAllFdPairs();
+  Close();
 }
 
 bool ProcessProxy::CreatePseudoTerminalPair(int *pt_pair) {
@@ -246,14 +221,9 @@ bool ProcessProxy::LaunchProcess(const std::string& command, int slave_fd,
   return process.IsValid();
 }
 
-void ProcessProxy::CloseAllFdPairs() {
-  CloseFdPair(pt_pair_);
-  CloseFdPair(shutdown_pipe_);
-}
-
 void ProcessProxy::CloseFdPair(int* pipe) {
-  CloseFd(&(pipe[PIPE_END_READ]));
-  CloseFd(&(pipe[PIPE_END_WRITE]));
+  CloseFd(&(pipe[PT_MASTER_FD]));
+  CloseFd(&(pipe[PT_SLAVE_FD]));
 }
 
 void ProcessProxy::CloseFd(int* fd) {
@@ -264,14 +234,9 @@ void ProcessProxy::CloseFd(int* fd) {
   *fd = kInvalidFd;
 }
 
-void ProcessProxy::ClearAllFdPairs() {
-  ClearFdPair(pt_pair_);
-  ClearFdPair(shutdown_pipe_);
-}
-
 void ProcessProxy::ClearFdPair(int* pipe) {
-  pipe[PIPE_END_READ] = kInvalidFd;
-  pipe[PIPE_END_WRITE] = kInvalidFd;
+  pipe[PT_MASTER_FD] = kInvalidFd;
+  pipe[PT_SLAVE_FD] = kInvalidFd;
 }
 
 }  // namespace chromeos

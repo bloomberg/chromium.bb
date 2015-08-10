@@ -21,6 +21,8 @@
 
 namespace chromeos {
 
+namespace {
+
 struct TestCase {
   TestCase(const std::string& input, bool send_terminating_null)
       : input(input),
@@ -83,6 +85,12 @@ class ProcessWatcherExpectations {
   size_t received_from_out_;
 };
 
+void StopProcessOutputWatcher(scoped_ptr<ProcessOutputWatcher> watcher) {
+  // Just deleting |watcher| if sufficient.
+}
+
+}  // namespace
+
 class ProcessOutputWatcherTest : public testing::Test {
  public:
   ProcessOutputWatcherTest() : output_watch_thread_started_(false),
@@ -94,13 +102,6 @@ class ProcessOutputWatcherTest : public testing::Test {
   void TearDown() override {
     if (output_watch_thread_started_)
       output_watch_thread_->Stop();
-  }
-
-  void StartWatch(int pt, int stop) {
-    // This will delete itself.
-    ProcessOutputWatcher* crosh_watcher = new ProcessOutputWatcher(pt, stop,
-        base::Bind(&ProcessOutputWatcherTest::OnRead, base::Unretained(this)));
-    crosh_watcher->Start();
   }
 
   void OnRead(ProcessOutputType type, const std::string& output) {
@@ -134,17 +135,20 @@ class ProcessOutputWatcherTest : public testing::Test {
   void RunTest(const std::vector<TestCase>& test_cases) {
     ASSERT_FALSE(output_watch_thread_started_);
     output_watch_thread_.reset(new base::Thread("ProcessOutpuWatchThread"));
-    output_watch_thread_started_ = output_watch_thread_->Start();
+    output_watch_thread_started_ = output_watch_thread_->StartWithOptions(
+        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
     ASSERT_TRUE(output_watch_thread_started_);
 
-    int pt_pipe[2], stop_pipe[2];
+    int pt_pipe[2];
     ASSERT_FALSE(HANDLE_EINTR(pipe(pt_pipe)));
-    ASSERT_FALSE(HANDLE_EINTR(pipe(stop_pipe)));
+
+    scoped_ptr<ProcessOutputWatcher> crosh_watcher(new ProcessOutputWatcher(
+        pt_pipe[0],
+        base::Bind(&ProcessOutputWatcherTest::OnRead, base::Unretained(this))));
 
     output_watch_thread_->task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ProcessOutputWatcherTest::StartWatch,
-                   base::Unretained(this), pt_pipe[0], stop_pipe[0]));
+        FROM_HERE, base::Bind(&ProcessOutputWatcher::Start,
+                              base::Unretained(crosh_watcher.get())));
 
     for (size_t i = 0; i < test_cases.size(); i++) {
       expectations_.SetTestCase(test_cases[i]);
@@ -168,10 +172,10 @@ class ProcessOutputWatcherTest : public testing::Test {
         break;
     }
 
-    // Send stop signal. It is not important which string we send.
-    EXPECT_TRUE(base::WriteFileDescriptor(stop_pipe[1], "q", 1));
+    output_watch_thread_->task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&StopProcessOutputWatcher, base::Passed(&crosh_watcher)));
 
-    EXPECT_NE(-1, IGNORE_EINTR(close(stop_pipe[1])));
     EXPECT_NE(-1, IGNORE_EINTR(close(pt_pipe[1])));
   }
 

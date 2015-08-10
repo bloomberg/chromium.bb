@@ -15,9 +15,13 @@
 #include "chromeos/process_proxy/process_output_watcher.h"
 
 namespace base {
+class SingleThreadTaskRunner;
 class TaskRunner;
-class Thread;
 }  // namespace base
+
+namespace chromeos {
+class ProcessOutputWatcher;
+}  // namespace chromeos
 
 namespace chromeos {
 
@@ -32,11 +36,9 @@ class ProcessProxy : public base::RefCountedThreadSafe<ProcessProxy> {
   // Opens a process using command |command|. |pid| is set to new process' pid.
   bool Open(const std::string& command, pid_t* pid);
 
-  // Triggers watcher object on |watch_thread|. |watch_thread| gets blocked, so
-  // it should not be one of commonly used threads. It should be thread created
-  // specifically for running process output watcher.
-  bool StartWatchingOnThread(base::Thread* watch_thread,
-                             const ProcessOutputCallback& callback);
+  bool StartWatchingOutput(
+      const scoped_refptr<base::SingleThreadTaskRunner>& watcher_runner,
+      const ProcessOutputCallback& callback);
 
   // Sends some data to the process.
   bool Write(const std::string& text);
@@ -67,15 +69,12 @@ class ProcessProxy : public base::RefCountedThreadSafe<ProcessProxy> {
   void CallOnProcessOutputCallback(ProcessOutputType type,
                                    const std::string& output);
 
-  bool StopWatching();
+  void StopWatching();
 
-  // Methods for cleaning up pipes.
-  void CloseAllFdPairs();
   // Expects array of 2 file descripters.
   void CloseFdPair(int* pipe);
   // Expects pointer to single file descriptor.
   void CloseFd(int* fd);
-  void ClearAllFdPairs();
   // Expects array of 2 file descripters.
   void ClearFdPair(int* pipe);
 
@@ -85,11 +84,11 @@ class ProcessProxy : public base::RefCountedThreadSafe<ProcessProxy> {
   bool callback_set_;
   ProcessOutputCallback callback_;
   scoped_refptr<base::TaskRunner> callback_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> watcher_runner_;
 
-  bool watcher_started_;
+  scoped_ptr<ProcessOutputWatcher> output_watcher_;
 
   int pt_pair_[2];
-  int shutdown_pipe_[2];
 
   DISALLOW_COPY_AND_ASSIGN(ProcessProxy);
 };

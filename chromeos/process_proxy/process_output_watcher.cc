@@ -4,34 +4,19 @@
 
 #include "chromeos/process_proxy/process_output_watcher.h"
 
-#include <sys/ioctl.h>
-#include <sys/select.h>
-#include <unistd.h>
-
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
-
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/single_thread_task_runner.h"
 #include "base/third_party/icu/icu_utf.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/time/time.h"
 
 namespace {
-
-void InitReadFdSet(int out_fd, int stop_fd, fd_set* set) {
-  FD_ZERO(set);
-  if (out_fd != -1)
-    FD_SET(out_fd, set);
-  FD_SET(stop_fd, set);
-}
-
-void CloseFd(int* fd) {
-  if (*fd >= 0) {
-    if (IGNORE_EINTR(close(*fd)) != 0)
-      DPLOG(WARNING) << "close fd " << *fd << " failed.";
-  }
-  *fd = -1;
-}
 
 // Gets byte size for a UTF8 character given it's leading byte. The character
 // size is encoded as number of leading '1' bits in the character's leading
@@ -55,87 +40,77 @@ size_t UTF8SizeFromLeadingByte(uint8 leading_byte) {
 
 namespace chromeos {
 
-// static
-bool ProcessOutputWatcher::VerifyFileDescriptor(int fd) {
-  return (fd >= 0) && (fd < FD_SETSIZE);
-}
-
 ProcessOutputWatcher::ProcessOutputWatcher(
     int out_fd,
-    int stop_fd,
     const ProcessOutputCallback& callback)
     : read_buffer_size_(0),
-      out_fd_(out_fd),
-      stop_fd_(stop_fd),
-      on_read_callback_(callback) {
-  CHECK(VerifyFileDescriptor(out_fd_));
-  CHECK(VerifyFileDescriptor(stop_fd_));
-  max_fd_ = std::max(out_fd_, stop_fd_);
+      process_output_file_(out_fd),
+      on_read_callback_(callback),
+      weak_factory_(this) {
+  CHECK_GE(out_fd, 0);
   // We want to be sure we will be able to add 0 at the end of the input, so -1.
   read_buffer_capacity_ = arraysize(read_buffer_) - 1;
 }
 
+ProcessOutputWatcher::~ProcessOutputWatcher() {}
+
 void ProcessOutputWatcher::Start() {
   WatchProcessOutput();
-  OnStop();
 }
 
-ProcessOutputWatcher::~ProcessOutputWatcher() {
-  CloseFd(&out_fd_);
-  CloseFd(&stop_fd_);
+void ProcessOutputWatcher::OnFileCanReadWithoutBlocking(int fd) {
+  DCHECK_EQ(process_output_file_.GetPlatformFile(), fd);
+
+  output_file_watcher_.StopWatchingFileDescriptor();
+  ReadFromFd(fd);
+}
+
+void ProcessOutputWatcher::OnFileCanWriteWithoutBlocking(int fd) {
+  NOTREACHED();
 }
 
 void ProcessOutputWatcher::WatchProcessOutput() {
-  while (true) {
-    // This has to be reset with every watch cycle.
-    fd_set rfds;
-    DCHECK_GE(stop_fd_, 0);
-    InitReadFdSet(out_fd_, stop_fd_, &rfds);
-
-    int select_result =
-        HANDLE_EINTR(select(max_fd_ + 1, &rfds, NULL, NULL, NULL));
-
-    if (select_result < 0) {
-      DPLOG(WARNING) << "select failed";
-      return;
-    }
-
-    // Check if we were stopped.
-    if (FD_ISSET(stop_fd_, &rfds)) {
-      return;
-    }
-
-    if (out_fd_ != -1 && FD_ISSET(out_fd_, &rfds)) {
-      ReadFromFd(PROCESS_OUTPUT_TYPE_OUT, &out_fd_);
-    }
-  }
+  base::MessageLoopForIO::current()->WatchFileDescriptor(
+      process_output_file_.GetPlatformFile(), false,
+      base::MessageLoopForIO::WATCH_READ, &output_file_watcher_, this);
 }
 
-void ProcessOutputWatcher::ReadFromFd(ProcessOutputType type, int* fd) {
+void ProcessOutputWatcher::ReadFromFd(int fd) {
   // We don't want to necessary read pipe until it is empty so we don't starve
   // other streams in case data is written faster than we read it. If there is
   // more than read_buffer_size_ bytes in pipe, it will be read in the next
   // iteration.
   DCHECK_GT(read_buffer_capacity_, read_buffer_size_);
   ssize_t bytes_read =
-      HANDLE_EINTR(read(*fd,
-                        &read_buffer_[read_buffer_size_],
+      HANDLE_EINTR(read(fd, &read_buffer_[read_buffer_size_],
                         read_buffer_capacity_ - read_buffer_size_));
+
+  if (bytes_read > 0) {
+    ReportOutput(PROCESS_OUTPUT_TYPE_OUT, bytes_read);
+
+    // Delay next read to make the process less likely to flood IPC channel
+    // when output is reported to terminal extension via terminalPrivate API
+    // (which is the only client of this code).
+    // TODO(tbarzic): Properly fix this!! Provide a mechanism for clients to
+    //     ack reported output and continue watching the process when ack is
+    //     received. https://crbug.com/398901
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&ProcessOutputWatcher::WatchProcessOutput,
+                              weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(10));
+
+    return;
+  }
+
   if (bytes_read < 0)
     DPLOG(WARNING) << "read from buffer failed";
 
-  if (bytes_read > 0)
-    ReportOutput(type, bytes_read);
-
   // If there is nothing on the output the watched process has exited (slave end
   // of pty is closed).
-  if (bytes_read <= 0) {
-    // Slave pseudo terminal has been closed, we won't need master fd anymore.
-    CloseFd(fd);
+  on_read_callback_.Run(PROCESS_OUTPUT_TYPE_EXIT, "");
 
-    // We have lost contact with the process, so report it.
-    on_read_callback_.Run(PROCESS_OUTPUT_TYPE_EXIT, "");
-  }
+  // Cancel pending |WatchProcessOutput| calls.
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 size_t ProcessOutputWatcher::OutputSizeWithoutIncompleteUTF8() {
@@ -189,10 +164,6 @@ void ProcessOutputWatcher::ReportOutput(ProcessOutputType type,
     }
   }
   read_buffer_size_ -= output_to_report;
-}
-
-void ProcessOutputWatcher::OnStop() {
-  delete this;
 }
 
 }  // namespace chromeos

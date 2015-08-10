@@ -208,6 +208,8 @@ class ProcessProxyTest : public testing::Test {
       process.Terminate(0, true);
     }
 
+    registry_->ShutDown();
+
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::MessageLoop::QuitClosure());
   }

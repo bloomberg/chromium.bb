@@ -6,6 +6,7 @@
 #define CHROMEOS_PROCESS_PROXY_PROCESS_PROXY_REGISTRY_H_
 
 #include <map>
+#include <string>
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
@@ -28,7 +29,6 @@ class CHROMEOS_EXPORT ProcessProxyRegistry : public base::NonThreadSafe {
   // Info we need about a ProcessProxy instance.
   struct ProcessProxyInfo {
     scoped_refptr<ProcessProxy> proxy;
-    scoped_ptr<base::Thread> watcher_thread;
     ProcessOutputCallbackWithPid callback;
     pid_t process_id;
 
@@ -50,6 +50,9 @@ class CHROMEOS_EXPORT ProcessProxyRegistry : public base::NonThreadSafe {
   // Reports terminal resize to process proxy.
   bool OnTerminalResize(pid_t pid, int width, int height);
 
+  // Shuts down registry, closing all associated processed.
+  void ShutDown();
+
   // Currently used for testing.
   void SetOutputCallback(const ProcessOutputCallback& callback);
 
@@ -64,8 +67,12 @@ class CHROMEOS_EXPORT ProcessProxyRegistry : public base::NonThreadSafe {
                        ProcessOutputType type,
                        const std::string& data);
 
+  bool EnsureWatcherThreadStarted();
+
   // Map of all existing ProcessProxies.
   std::map<pid_t, ProcessProxyInfo> proxy_map_;
+
+  scoped_ptr<base::Thread> watcher_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessProxyRegistry);
 };

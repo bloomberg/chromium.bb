@@ -13,15 +13,12 @@ namespace {
 const char kWatcherThreadName[] = "ProcessWatcherThread";
 
 const char kStdoutOutputType[] = "stdout";
-const char kStderrOutputType[] = "stderr";
 const char kExitOutputType[] = "exit";
 
 const char* ProcessOutputTypeToString(ProcessOutputType type) {
   switch (type) {
     case PROCESS_OUTPUT_TYPE_OUT:
       return kStdoutOutputType;
-    case PROCESS_OUTPUT_TYPE_ERR:
-      return kStderrOutputType;
     case PROCESS_OUTPUT_TYPE_EXIT:
       return kExitOutputType;
     default:
@@ -40,7 +37,7 @@ ProcessProxyRegistry::ProcessProxyInfo::ProcessProxyInfo() {
 ProcessProxyRegistry::ProcessProxyInfo::ProcessProxyInfo(
     const ProcessProxyInfo& other) {
   // This should be called with empty info only.
-  DCHECK(!other.proxy.get() && !other.watcher_thread.get());
+  DCHECK(!other.proxy.get());
 }
 
 ProcessProxyRegistry::ProcessProxyInfo::~ProcessProxyInfo() {
@@ -54,9 +51,18 @@ ProcessProxyRegistry::~ProcessProxyRegistry() {
   // on a different thread (it's a LazyInstance).
   DetachFromThread();
 
+  ShutDown();
+}
+
+void ProcessProxyRegistry::ShutDown() {
   // Close all proxies we own.
   while (!proxy_map_.empty())
     CloseProcess(proxy_map_.begin()->first);
+
+  if (watcher_thread_) {
+    watcher_thread_->Stop();
+    watcher_thread_.reset();
+  }
 }
 
 // static
@@ -70,13 +76,8 @@ bool ProcessProxyRegistry::OpenProcess(
     const ProcessOutputCallbackWithPid& callback) {
   DCHECK(CalledOnValidThread());
 
-  // TODO(tbarzic): Instead of creating a new thread for each new process proxy,
-  // use one thread for all processes.
-  // We will need new thread for proxy's outpu watcher.
-  scoped_ptr<base::Thread> watcher_thread(new base::Thread(kWatcherThreadName));
-  if (!watcher_thread->Start()) {
+  if (!EnsureWatcherThreadStarted())
     return false;
-  }
 
   // Create and open new proxy.
   scoped_refptr<ProcessProxy> proxy(new ProcessProxy());
@@ -85,12 +86,12 @@ bool ProcessProxyRegistry::OpenProcess(
 
   // Kick off watcher.
   // We can use Unretained because proxy will stop calling callback after it is
-  // closed, which is done befire this object goes away.
-  if (!proxy->StartWatchingOnThread(watcher_thread.get(),
-           base::Bind(&ProcessProxyRegistry::OnProcessOutput,
-                      base::Unretained(this), *pid))) {
+  // closed, which is done before this object goes away.
+  if (!proxy->StartWatchingOutput(
+          watcher_thread_->task_runner(),
+          base::Bind(&ProcessProxyRegistry::OnProcessOutput,
+                     base::Unretained(this), *pid))) {
     proxy->Close();
-    watcher_thread->Stop();
     return false;
   }
 
@@ -100,7 +101,6 @@ bool ProcessProxyRegistry::OpenProcess(
   // created because we don't know |pid| then.
   ProcessProxyInfo& info = proxy_map_[*pid];
   info.proxy.swap(proxy);
-  info.watcher_thread.reset(watcher_thread.release());
   info.process_id = *pid;
   info.callback = callback;
   return true;
@@ -123,7 +123,6 @@ bool ProcessProxyRegistry::CloseProcess(pid_t pid) {
     return false;
 
   it->second.proxy->Close();
-  it->second.watcher_thread->Stop();
   proxy_map_.erase(it);
   return true;
 }
@@ -154,6 +153,18 @@ void ProcessProxyRegistry::OnProcessOutput(pid_t pid,
   // the process.
   if (type == PROCESS_OUTPUT_TYPE_EXIT)
     CloseProcess(pid);
+}
+
+bool ProcessProxyRegistry::EnsureWatcherThreadStarted() {
+  if (watcher_thread_.get())
+    return true;
+
+  // TODO(tbarzic): Change process output watcher to watch for fd readability on
+  //    FILE thread, and move output reading to worker thread instead of
+  //    spinning a new thread.
+  watcher_thread_.reset(new base::Thread(kWatcherThreadName));
+  return watcher_thread_->StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 }
 
 }  // namespace chromeos
