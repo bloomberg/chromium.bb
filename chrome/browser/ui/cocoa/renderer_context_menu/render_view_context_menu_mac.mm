@@ -246,9 +246,22 @@ void RenderViewContextMenuMac::InitToolkitMenu() {
     return;
 
   if (params_.link_url.is_empty()) {
+    // In case the user has selected a word that triggers spelling suggestions,
+    // show the dictionary lookup under the group that contains the command to
+    // “Add to Dictionary.”
+    int index = menu_model_.GetIndexOfCommandId(
+        IDC_SPELLCHECK_ADD_TO_DICTIONARY);
+    if (index < 0) {
+      index = 0;
+    } else {
+      while (menu_model_.GetTypeAt(index) != ui::MenuModel::TYPE_SEPARATOR) {
+        index++;
+      }
+      index += 1; // Place it below the separator.
+    }
+
     base::string16 printable_selection_text = PrintableSelectionText();
     EscapeAmpersands(&printable_selection_text);
-    int index = 0;
     menu_model_.InsertItemAt(
         index++,
         IDC_CONTENT_CONTEXT_LOOK_UP,
