@@ -8,33 +8,36 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_LOW_END_D
 
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.document.DocumentModeTestBase;
+import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 
 /**
  * Tests that ChromeTabbedActivity is hardware accelerated only high-end devices.
  */
-@CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
-public class ChromeTabbedActivityHWATest extends DocumentModeTestBase {
+public class ChromeTabbedActivityHWATest extends ChromeTabbedActivityTestBase {
+
+    private static final String URL = UrlUtils.encodeHtmlDataUri(
+            "<html>"
+            + "  <head>"
+            + "    <title>Test Page</title>"
+            + "  </head>"
+            + "  <body style='margin: 0em; background: #ffff00;'></body>"
+            + "</html>");
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityWithURL(URL);
+    }
 
     @SmallTest
     public void testHardwareAcceleration() throws Exception {
-        Utils.assertHardwareAcceleration(startAndWaitActivity());
+        Utils.assertHardwareAcceleration(getActivity());
     }
 
     @Restriction(RESTRICTION_TYPE_LOW_END_DEVICE)
     @SmallTest
     public void testNoRenderThread() throws Exception {
-        startAndWaitActivity();
         Utils.assertNoRenderThread();
-    }
-
-    private ChromeTabbedActivity startAndWaitActivity() throws Exception {
-        ChromeTabbedActivity activity = startTabbedActivity(URL_1);
-        waitForFullLoad(activity, "Page 1");
-        return activity;
     }
 }
