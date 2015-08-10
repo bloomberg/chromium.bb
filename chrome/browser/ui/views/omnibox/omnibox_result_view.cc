@@ -26,6 +26,7 @@
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -554,7 +555,8 @@ gfx::ImageSkia OmniboxResultView::GetIcon() const {
 
   int icon = model_->IsStarredMatch(match_) ?
       IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match_.type);
-  if (GetState() == SELECTED) {
+  if (GetState() == SELECTED &&
+      !ui::MaterialDesignController::IsModeMaterial()) {
     switch (icon) {
       case IDR_OMNIBOX_CALCULATOR:
         icon = IDR_OMNIBOX_CALCULATOR_SELECTED;
@@ -582,8 +584,11 @@ gfx::ImageSkia OmniboxResultView::GetIcon() const {
 const gfx::ImageSkia* OmniboxResultView::GetKeywordIcon() const {
   // NOTE: If we ever begin returning icons of varying size, then callers need
   // to ensure that |keyword_icon_| is resized each time its image is reset.
-  return location_bar_view_->GetThemeProvider()->GetImageSkiaNamed(
-      (GetState() == SELECTED) ? IDR_OMNIBOX_TTS_SELECTED : IDR_OMNIBOX_TTS);
+  int icon = IDR_OMNIBOX_TTS;
+  if (GetState() == SELECTED && !ui::MaterialDesignController::IsModeMaterial())
+    icon = IDR_OMNIBOX_TTS_SELECTED;
+
+  return location_bar_view_->GetThemeProvider()->GetImageSkiaNamed(icon);
 }
 
 bool OmniboxResultView::ShowOnlyKeywordMatch() const {
