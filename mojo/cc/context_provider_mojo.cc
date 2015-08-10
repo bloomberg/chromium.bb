@@ -12,7 +12,8 @@ namespace mojo {
 
 ContextProviderMojo::ContextProviderMojo(
     ScopedMessagePipeHandle command_buffer_handle)
-    : command_buffer_handle_(command_buffer_handle.Pass()) {
+    : command_buffer_handle_(command_buffer_handle.Pass()),
+      context_(nullptr) {
   // Enabled the CHROMIUM_image extension to use GpuMemoryBuffers. The
   // implementation of which is used in CommandBufferDriver.
   capabilities_.gpu.image = true;
