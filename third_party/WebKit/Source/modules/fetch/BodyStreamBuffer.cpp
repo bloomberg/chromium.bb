@@ -13,40 +13,52 @@
 
 namespace blink {
 
-class BodyStreamBuffer::LoaderHolder final : public GarbageCollectedFinalized<LoaderHolder>, public FetchDataLoader::Client {
+class BodyStreamBuffer::LoaderHolder final : public GarbageCollectedFinalized<LoaderHolder>, public ActiveDOMObject, public FetchDataLoader::Client {
     WTF_MAKE_NONCOPYABLE(LoaderHolder);
     USING_GARBAGE_COLLECTED_MIXIN(LoaderHolder);
 public:
-    LoaderHolder(BodyStreamBuffer* buffer, FetchDataLoader* loader, FetchDataLoader::Client* client) : m_buffer(buffer), m_loader(loader), m_client(client) {}
+    LoaderHolder(ExecutionContext* executionContext, BodyStreamBuffer* buffer, FetchDataLoader* loader, FetchDataLoader::Client* client)
+        : ActiveDOMObject(executionContext)
+        , m_buffer(buffer)
+        , m_loader(loader)
+        , m_client(client)
+    {
+        suspendIfNeeded();
+    }
 
     void start(PassOwnPtr<FetchDataConsumerHandle> handle) { m_loader->start(handle.get(), this); }
 
     void didFetchDataLoadedBlobHandle(PassRefPtr<BlobDataHandle> blobDataHandle) override
     {
+        m_loader.clear();
         m_buffer->endLoading(this, EndLoadingDone);
         m_client->didFetchDataLoadedBlobHandle(blobDataHandle);
     }
 
     void didFetchDataLoadedArrayBuffer(PassRefPtr<DOMArrayBuffer> arrayBuffer) override
     {
+        m_loader.clear();
         m_buffer->endLoading(this, EndLoadingDone);
         m_client->didFetchDataLoadedArrayBuffer(arrayBuffer);
     }
 
     void didFetchDataLoadedString(const String& string) override
     {
+        m_loader.clear();
         m_buffer->endLoading(this, EndLoadingDone);
         m_client->didFetchDataLoadedString(string);
     }
 
     void didFetchDataLoadedStream() override
     {
+        m_loader.clear();
         m_buffer->endLoading(this, EndLoadingDone);
         m_client->didFetchDataLoadedStream();
     }
 
     void didFetchDataLoadFailed() override
     {
+        m_loader.clear();
         m_buffer->endLoading(this, EndLoadingErrored);
         m_client->didFetchDataLoadFailed();
     }
@@ -56,10 +68,20 @@ public:
         visitor->trace(m_buffer);
         visitor->trace(m_loader);
         visitor->trace(m_client);
+        ActiveDOMObject::trace(visitor);
         FetchDataLoader::Client::trace(visitor);
     }
 
 private:
+    void stop() override
+    {
+        if (m_loader) {
+            m_loader->cancel();
+            m_loader.clear();
+            m_buffer->endLoading(this, EndLoadingErrored);
+        }
+    }
+
     Member<BodyStreamBuffer> m_buffer;
     Member<FetchDataLoader> m_loader;
     Member<FetchDataLoader::Client> m_client;
@@ -114,7 +136,7 @@ PassOwnPtr<FetchDataConsumerHandle> BodyStreamBuffer::lock(ExecutionContext* exe
 void BodyStreamBuffer::startLoading(ExecutionContext* executionContext, FetchDataLoader* loader, FetchDataLoader::Client* client)
 {
     OwnPtr<FetchDataConsumerHandle> handle = lock(executionContext);
-    auto holder = new LoaderHolder(this, loader, client);
+    auto holder = new LoaderHolder(executionContext, this, loader, client);
     m_loaders.add(holder);
     holder->start(handle.release());
 }
