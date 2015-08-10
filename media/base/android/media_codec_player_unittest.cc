@@ -639,7 +639,8 @@ TEST_F(MediaCodecPlayerTest, VideoPlayTillCompletion) {
   EXPECT_LE(duration, manager_.pts_stat_.max());
 }
 
-TEST_F(MediaCodecPlayerTest, AudioSeekAfterStop) {
+// http://crbug.com/518900
+TEST_F(MediaCodecPlayerTest, DISABLED_AudioSeekAfterStop) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Play for 300 ms, then Pause, then Seek to beginning. The playback should
@@ -771,7 +772,8 @@ TEST_F(MediaCodecPlayerTest, AudioSeekThenPlayThenConfig) {
       &MockMediaPlayerManager::IsSeekCompleted, base::Unretained(&manager_))));
 }
 
-TEST_F(MediaCodecPlayerTest, AudioSeekWhilePlaying) {
+// http://crbug.com/518900
+TEST_F(MediaCodecPlayerTest, DISABLED_AudioSeekWhilePlaying) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Play for 300 ms, then issue several Seek commands in the row.
@@ -899,7 +901,8 @@ TEST_F(MediaCodecPlayerTest, VideoRemoveAndSetSurface) {
   EXPECT_LE(max_pts_before_removal, manager_.pts_stat_.max());
 }
 
-TEST_F(MediaCodecPlayerTest, VideoReleaseAndStart) {
+// http://crbug.com/518900
+TEST_F(MediaCodecPlayerTest, DISABLED_VideoReleaseAndStart) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1000);

@@ -459,7 +459,8 @@ TEST_F(MediaCodecDecoderTest, AudioStartWithoutConfigure) {
   EXPECT_FALSE(decoder_->Start(base::TimeDelta::FromMilliseconds(0)));
 }
 
-TEST_F(MediaCodecDecoderTest, AudioPlayTillCompletion) {
+// http://crbug.com/518900
+TEST_F(MediaCodecDecoderTest, DISABLED_AudioPlayTillCompletion) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   CreateAudioDecoder();
@@ -600,7 +601,8 @@ TEST_F(MediaCodecDecoderTest, VideoStopAndResume) {
   EXPECT_EQ(data_factory_->last_pts(), pts_stat_.max());
 }
 
-TEST_F(MediaCodecDecoderTest, AudioStarvationAndStop) {
+// http://crbug.com/518900
+TEST_F(MediaCodecDecoderTest, DISABLED_AudioStarvationAndStop) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   CreateAudioDecoder();
