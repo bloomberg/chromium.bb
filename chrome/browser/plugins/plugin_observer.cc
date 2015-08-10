@@ -418,19 +418,6 @@ void PluginObserver::OnNPAPINotSupported(const std::string& identifier) {
   DCHECK(base::win::IsMetroProcess());
 #endif
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  if (profile->IsOffTheRecord())
-    return;
-  HostContentSettingsMap* content_settings =
-      profile->GetHostContentSettingsMap();
-  if (content_settings->GetContentSetting(
-      web_contents()->GetURL(),
-      web_contents()->GetURL(),
-      CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP,
-      std::string()) == CONTENT_SETTING_BLOCK)
-    return;
-
   scoped_ptr<PluginMetadata> plugin;
   bool ret = PluginFinder::GetInstance()->FindPluginWithIdentifier(
       identifier, NULL, &plugin);

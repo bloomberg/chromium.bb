@@ -85,10 +85,6 @@ WebsiteSettingsRegistry::WebsiteSettingsRegistry() {
 
   // Deprecated.
   RegisterWebsiteSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM, "media-stream");
-#if defined(OS_WIN)
-  RegisterContentSetting(CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP,
-                         "metro-switch-to-desktop", CONTENT_SETTING_ASK);
-#endif
 }
 
 WebsiteSettingsRegistry::~WebsiteSettingsRegistry() {}

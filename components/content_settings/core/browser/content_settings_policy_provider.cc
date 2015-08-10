@@ -41,9 +41,7 @@ const char* kPrefToManageType[] = {
   nullptr,  // No policy for default value of MIDI system exclusive requests
   nullptr,  // No policy for default value of push messaging requests
   nullptr,  // No policy for default value of SSL certificate decisions
-#if defined(OS_WIN)
-  nullptr,  // No policy for default value of "switch to desktop"
-#elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   nullptr,  // No policy for default value of protected media identifier
 #endif
   nullptr,  // No policy for default value of app banners

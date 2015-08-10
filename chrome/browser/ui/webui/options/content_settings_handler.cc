@@ -767,10 +767,6 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
       // supposed to be set by flags and field trials only, thus there is no
       // user facing UI for this content type and we skip it here.
       break;
-#if defined(OS_WIN)
-    case CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP:
-      break;
-#endif
     case CONTENT_SETTINGS_TYPE_APP_BANNER:
       // The content settings type CONTENT_SETTINGS_TYPE_APP_BANNER is used to
       // track whether app banners should be shown or not, and is not a user
@@ -798,9 +794,6 @@ void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
     case CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE:
     case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
-#if defined(OS_WIN)
-    case CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP:
-#endif
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
