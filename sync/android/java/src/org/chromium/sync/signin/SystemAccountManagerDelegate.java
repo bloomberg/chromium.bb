@@ -9,14 +9,18 @@ import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorDescription;
+import android.accounts.AuthenticatorException;
+import android.accounts.OperationCanceledException;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -64,7 +68,17 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
 
     @Override
     public AccountManagerFuture<Boolean> hasFeatures(Account account, String[] features,
-            AccountManagerCallback<Boolean> callback, Handler handler) {
+            final AccountManagerCallback<Boolean> callback, Handler handler) {
+        if (!AccountManagerHelper.get(mApplicationContext).hasGetAccountsPermission()) {
+            final FakeFalseAccountManagerFuture future = new FakeFalseAccountManagerFuture();
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    callback.run(future);
+                }
+            });
+            return future;
+        }
         return mAccountManager.hasFeatures(account, features, callback, handler);
     }
 
@@ -79,5 +93,35 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     protected static void recordElapsedTimeHistogram(String histogramName, long elapsedMs) {
         if (!LibraryLoader.isInitialized()) return;
         RecordHistogram.recordTimesHistogram(histogramName, elapsedMs, TimeUnit.MILLISECONDS);
+    }
+
+    private static final class FakeFalseAccountManagerFuture
+            implements AccountManagerFuture<Boolean> {
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return false;
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return false;
+        }
+
+        @Override
+        public boolean isDone() {
+            return true;
+        }
+
+        @Override
+        public Boolean getResult()
+                throws OperationCanceledException, IOException, AuthenticatorException {
+            return false;
+        }
+
+        @Override
+        public Boolean getResult(long timeout, TimeUnit unit)
+                throws OperationCanceledException, IOException, AuthenticatorException {
+            return getResult();
+        }
     }
 }
