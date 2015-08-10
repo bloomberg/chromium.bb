@@ -4,19 +4,15 @@
 import sys
 import unittest
 
-from telemetry.core import util
 from telemetry import decorators
 from telemetry.page import page
 from telemetry.testing import options_for_unittests
 from telemetry.testing import page_test_test_case
+from telemetry.third_party import mock
 from telemetry.util import wpr_modes
 from telemetry.value import scalar
 
 from measurements import smoothness
-
-# TODO(eakuefner): Replace this when crbug.com/517500 is fixed.
-util.AddDirToPythonPath(util.GetTelemetryDir(), 'third_party', 'mock')
-import mock  # pylint: disable=import-error
 
 
 class FakeTracingController(object):
