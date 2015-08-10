@@ -28,7 +28,7 @@ private:
     RawPtrWillBeMember<Node> m_parent;
     bool m_pushed;
     StyleResolverParentScope* m_previous;
-    StyleResolver& m_resolver;
+    RawPtrWillBeMember<StyleResolver> m_resolver;
 
     static StyleResolverParentScope* s_currentScope;
 };
@@ -37,22 +37,22 @@ inline StyleResolverParentScope::StyleResolverParentScope(Node& parent)
     : m_parent(parent)
     , m_pushed(false)
     , m_previous(s_currentScope)
-    , m_resolver(*parent.document().styleResolver())
+    , m_resolver(parent.document().styleResolver())
 {
     ASSERT(parent.document().inStyleRecalc());
     ASSERT(parent.isElementNode() || parent.isShadowRoot());
     s_currentScope = this;
-    m_resolver.increaseStyleSharingDepth();
+    m_resolver->increaseStyleSharingDepth();
 }
 
 inline StyleResolverParentScope::~StyleResolverParentScope()
 {
     s_currentScope = m_previous;
-    m_resolver.decreaseStyleSharingDepth();
+    m_resolver->decreaseStyleSharingDepth();
     if (!m_pushed)
         return;
     if (parent().isElementNode())
-        m_resolver.popParentElement(toElement(parent()));
+        m_resolver->popParentElement(toElement(parent()));
 }
 
 inline void StyleResolverParentScope::ensureParentStackIsPushed()
@@ -68,7 +68,7 @@ inline void StyleResolverParentScope::pushParentIfNeeded()
     if (m_previous)
         m_previous->pushParentIfNeeded();
     if (parent().isElementNode())
-        m_resolver.pushParentElement(toElement(parent()));
+        m_resolver->pushParentElement(toElement(parent()));
     m_pushed = true;
 }
 

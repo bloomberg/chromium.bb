@@ -35,11 +35,18 @@
 #include "WebCryptoAlgorithm.h"
 #include "WebVector.h"
 
+#if INSIDE_BLINK
+#include "platform/heap/Handle.h"
+#endif
+
 namespace blink {
 
 // Interface used for serializing WebCryptoKeyAlgorithmParams to a javascript
 // dictionary.
 class WebCryptoKeyAlgorithmDictionary {
+#if INSIDE_BLINK
+    STACK_ALLOCATED();
+#endif
 public:
     virtual ~WebCryptoKeyAlgorithmDictionary() { }
 

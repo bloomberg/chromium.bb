@@ -58,7 +58,7 @@ public:
     {
         return adoptRef(new AudioParamHandler(context, defaultValue));
     }
-    DECLARE_TRACE();
+
     // This should be used only in audio rendering thread.
     AbstractAudioContext* context() const;
 
@@ -121,6 +121,7 @@ private:
 
     // We can't make this Persistent because of a reference cycle. It's safe to
     // access this field only when we're rendering audio.
+    GC_PLUGIN_IGNORE("509911")
     AbstractAudioContext& m_context;
 };
 

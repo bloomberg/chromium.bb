@@ -100,7 +100,7 @@ private:
 
     float getComputedSizeFromSpecifiedSize(FontDescription&, float effectiveZoom, float specifiedSize);
 
-    const Document& m_document;
+    RawPtrWillBeMember<const Document> m_document;
     FontDescription m_fontDescription;
 
     enum class PropertySetFlag {

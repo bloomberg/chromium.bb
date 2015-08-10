@@ -5,12 +5,15 @@
 #ifndef CSSSupportsParser_h
 #define CSSSupportsParser_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
 class CSSParserImpl;
 class CSSParserTokenRange;
 
 class CSSSupportsParser {
+    STACK_ALLOCATED();
 public:
     enum SupportsResult {
         Unsupported = false,

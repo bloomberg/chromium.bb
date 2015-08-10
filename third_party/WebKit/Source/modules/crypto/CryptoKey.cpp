@@ -99,6 +99,7 @@ WebCryptoKeyUsageMask keyUsageStringToMask(const String& usageString)
 }
 
 class DictionaryBuilder : public WebCryptoKeyAlgorithmDictionary {
+    STACK_ALLOCATED();
 public:
     explicit DictionaryBuilder(V8ObjectBuilder& builder)
         : m_builder(builder)

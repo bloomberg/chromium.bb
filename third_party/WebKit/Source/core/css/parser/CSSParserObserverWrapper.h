@@ -10,9 +10,10 @@
 namespace blink {
 
 class CSSParserObserverWrapper {
+    STACK_ALLOCATED();
 public:
-    CSSParserObserverWrapper(CSSParserObserver& observer)
-    : m_observer(observer)
+    explicit CSSParserObserverWrapper(CSSParserObserver& observer)
+        : m_observer(observer)
     { }
 
     unsigned startOffset(const CSSParserTokenRange&);

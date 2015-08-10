@@ -285,7 +285,7 @@ bool SharedStyleFinder::documentContainsValidCandidate() const
 
 inline Element* SharedStyleFinder::findElementForStyleSharing() const
 {
-    StyleSharingList& styleSharingList = m_styleResolver.styleSharingList();
+    StyleSharingList& styleSharingList = m_styleResolver->styleSharingList();
     for (StyleSharingList::iterator it = styleSharingList.begin(); it != styleSharingList.end(); ++it) {
         Element& candidate = **it;
         if (!canShareStyleWithElement(candidate))
@@ -297,7 +297,7 @@ inline Element* SharedStyleFinder::findElementForStyleSharing() const
         }
         return &candidate;
     }
-    m_styleResolver.addToStyleSharingList(element());
+    m_styleResolver->addToStyleSharingList(element());
     return 0;
 }
 
@@ -305,13 +305,13 @@ bool SharedStyleFinder::matchesRuleSet(RuleSet* ruleSet)
 {
     if (!ruleSet)
         return false;
-    ElementRuleCollector collector(m_context, m_styleResolver.selectorFilter());
+    ElementRuleCollector collector(m_context, m_styleResolver->selectorFilter());
     return collector.hasAnyMatchingRules(ruleSet);
 }
 
 ComputedStyle* SharedStyleFinder::findSharedStyle()
 {
-    INCREMENT_STYLE_STATS_COUNTER(m_styleResolver, sharedStyleLookups, 1);
+    INCREMENT_STYLE_STATS_COUNTER(*m_styleResolver, sharedStyleLookups, 1);
 
     if (!element().supportsStyleSharing())
         return 0;
@@ -322,26 +322,26 @@ ComputedStyle* SharedStyleFinder::findSharedStyle()
     Element* shareElement = findElementForStyleSharing();
 
     if (!shareElement) {
-        if (m_styleResolver.stats() && m_styleResolver.stats()->allCountersEnabled() && documentContainsValidCandidate())
-            INCREMENT_STYLE_STATS_COUNTER(m_styleResolver, sharedStyleMissed, 1);
+        if (m_styleResolver->stats() && m_styleResolver->stats()->allCountersEnabled() && documentContainsValidCandidate())
+            INCREMENT_STYLE_STATS_COUNTER(*m_styleResolver, sharedStyleMissed, 1);
         return 0;
     }
 
-    INCREMENT_STYLE_STATS_COUNTER(m_styleResolver, sharedStyleFound, 1);
+    INCREMENT_STYLE_STATS_COUNTER(*m_styleResolver, sharedStyleFound, 1);
 
     if (matchesRuleSet(m_siblingRuleSet)) {
-        INCREMENT_STYLE_STATS_COUNTER(m_styleResolver, sharedStyleRejectedBySiblingRules, 1);
+        INCREMENT_STYLE_STATS_COUNTER(*m_styleResolver, sharedStyleRejectedBySiblingRules, 1);
         return 0;
     }
 
     if (matchesRuleSet(m_uncommonAttributeRuleSet)) {
-        INCREMENT_STYLE_STATS_COUNTER(m_styleResolver, sharedStyleRejectedByUncommonAttributeRules, 1);
+        INCREMENT_STYLE_STATS_COUNTER(*m_styleResolver, sharedStyleRejectedByUncommonAttributeRules, 1);
         return 0;
     }
 
     // Tracking child index requires unique style for each node. This may get set by the sibling rule match above.
     if (!element().parentElementOrShadowRoot()->childrenSupportStyleSharing()) {
-        INCREMENT_STYLE_STATS_COUNTER(m_styleResolver, sharedStyleRejectedByParent, 1);
+        INCREMENT_STYLE_STATS_COUNTER(*m_styleResolver, sharedStyleRejectedByParent, 1);
         return 0;
     }
 

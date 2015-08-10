@@ -46,7 +46,7 @@ public:
         , m_features(features)
         , m_siblingRuleSet(siblingRuleSet)
         , m_uncommonAttributeRuleSet(uncommonAttributeRuleSet)
-        , m_styleResolver(styleResolver)
+        , m_styleResolver(&styleResolver)
         , m_context(context)
     { }
 
@@ -74,7 +74,7 @@ private:
     const RuleFeatureSet& m_features;
     RawPtrWillBeMember<RuleSet> m_siblingRuleSet;
     RawPtrWillBeMember<RuleSet> m_uncommonAttributeRuleSet;
-    StyleResolver& m_styleResolver;
+    RawPtrWillBeMember<StyleResolver> m_styleResolver;
     const ElementResolveContext& m_context;
 };
 

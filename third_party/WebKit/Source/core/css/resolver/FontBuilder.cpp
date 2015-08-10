@@ -37,7 +37,7 @@
 namespace blink {
 
 FontBuilder::FontBuilder(const Document& document)
-    : m_document(document)
+    : m_document(&document)
     , m_flags(0)
 {
     ASSERT(document.frame());
@@ -45,8 +45,8 @@ FontBuilder::FontBuilder(const Document& document)
 
 void FontBuilder::setInitial(float effectiveZoom)
 {
-    ASSERT(m_document.settings());
-    if (!m_document.settings())
+    ASSERT(m_document->settings());
+    if (!m_document->settings())
         return;
 
     setFamilyDescription(m_fontDescription, FontBuilder::initialFamilyDescription());
@@ -77,7 +77,7 @@ FontFamily FontBuilder::standardFontFamily() const
 
 AtomicString FontBuilder::standardFontFamilyName() const
 {
-    Settings* settings = m_document.settings();
+    Settings* settings = m_document->settings();
     if (settings)
         return settings->genericFontFamilySettings().standard();
     return AtomicString();
@@ -227,10 +227,10 @@ float FontBuilder::getComputedSizeFromSpecifiedSize(FontDescription& fontDescrip
 {
     float zoomFactor = effectiveZoom;
     // FIXME: Why is this here!!!!?!
-    if (LocalFrame* frame = m_document.frame())
+    if (LocalFrame* frame = m_document->frame())
         zoomFactor *= frame->textZoomFactor();
 
-    return FontSize::getComputedSizeFromSpecifiedSize(&m_document, zoomFactor, fontDescription.isAbsoluteSize(), specifiedSize);
+    return FontSize::getComputedSizeFromSpecifiedSize(m_document, zoomFactor, fontDescription.isAbsoluteSize(), specifiedSize);
 }
 
 static FontOrientation fontOrientation(const ComputedStyle& style)
@@ -281,9 +281,9 @@ void FontBuilder::checkForGenericFamilyChange(const FontDescription& oldDescript
     // multiplying by our scale factor.
     float size;
     if (newDescription.keywordSize()) {
-        size = FontSize::fontSizeForKeyword(&m_document, newDescription.keywordSize(), newDescription.isMonospace());
+        size = FontSize::fontSizeForKeyword(m_document, newDescription.keywordSize(), newDescription.isMonospace());
     } else {
-        Settings* settings = m_document.settings();
+        Settings* settings = m_document->settings();
         float fixedScaleFactor = (settings && settings->defaultFixedFontSize() && settings->defaultFontSize())
             ? static_cast<float>(settings->defaultFixedFontSize()) / settings->defaultFontSize()
             : 1;
@@ -300,7 +300,7 @@ void FontBuilder::updateSpecifiedSize(FontDescription& fontDescription, const Co
     float specifiedSize = fontDescription.specifiedSize();
 
     if (!specifiedSize && fontDescription.keywordSize())
-        specifiedSize = FontSize::fontSizeForKeyword(&m_document, fontDescription.keywordSize(), fontDescription.isMonospace());
+        specifiedSize = FontSize::fontSizeForKeyword(m_document, fontDescription.keywordSize(), fontDescription.isMonospace());
 
     fontDescription.setSpecifiedSize(specifiedSize);
 
