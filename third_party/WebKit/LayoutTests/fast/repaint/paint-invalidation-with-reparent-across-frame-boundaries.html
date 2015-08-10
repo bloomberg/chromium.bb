@@ -5,12 +5,11 @@ in the source and destination frame. Succeeds if there is no invalidation of the
 <div id="target"></div>
 <script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <script>
-
-var target = document.getElementById("target");
-var iframeElement = document.getElementById("iframe");
 function repaintTest() {
+    var target = document.getElementById("target");
+    var iframeElement = document.getElementById("iframe");
     var textNode = iframeElement.contentDocument.getElementById("inner-target");
     target.appendChild(textNode);
 }
-iframeElement.onload = runRepaintTest;
+onload = runRepaintTest;
 </script>
