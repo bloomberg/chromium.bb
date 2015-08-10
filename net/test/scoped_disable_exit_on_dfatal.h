@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_TEST_TOOLS_SCOPED_DISABLE_EXIT_ON_DFATAL_H_
-#define NET_QUIC_TEST_TOOLS_SCOPED_DISABLE_EXIT_ON_DFATAL_H_
+#ifndef NET_TEST_SCOPED_DISABLE_EXIT_ON_DFATAL_H_
+#define NET_TEST_SCOPED_DISABLE_EXIT_ON_DFATAL_H_
 
 #include "base/logging.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -36,4 +36,4 @@ class ScopedDisableExitOnDFatal {
 }  // namespace test
 }  // namespace net
 
-#endif  // NET_QUIC_TEST_TOOLS_SCOPED_DISABLE_EXIT_ON_DFATAL_H_
+#endif  // NET_TEST_SCOPED_DISABLE_EXIT_ON_DFATAL_H_

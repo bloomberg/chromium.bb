@@ -4,8 +4,8 @@
 //
 // Testing utilities that extend gtest.
 
-#ifndef NET_QUIC_TEST_TOOLS_GTEST_UTIL_H_
-#define NET_QUIC_TEST_TOOLS_GTEST_UTIL_H_
+#ifndef NET_TEST_GTEST_UTIL_H_
+#define NET_TEST_GTEST_UTIL_H_
 
 #include "base/test/mock_log.h"
 #include "net/test/scoped_disable_exit_on_dfatal.h"
@@ -95,4 +95,4 @@ namespace test {
 }  // namespace test
 }  // namespace net
 
-#endif  // NET_QUIC_TEST_TOOLS_GTEST_UTIL_H_
+#endif  // NET_TEST_GTEST_UTIL_H_
