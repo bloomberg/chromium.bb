@@ -30,6 +30,16 @@ public:
         toRubyRun()->getOverhang(firstLine, startLayoutItem, endLayoutItem, startOverhang, endOverhang);
     }
 
+    LayoutRubyText* rubyText() const
+    {
+        return toRubyRun()->rubyText();
+    }
+
+    LayoutRubyBase* rubyBase() const
+    {
+        return toRubyRun()->rubyBase();
+    }
+
 private:
     LayoutRubyRun* toRubyRun()
     {

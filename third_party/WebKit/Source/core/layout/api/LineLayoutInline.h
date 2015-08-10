@@ -75,6 +75,21 @@ public:
         return toInline()->hasInlineDirectionBordersPaddingOrMargin();
     }
 
+    bool hitTestCulledInline(HitTestResult& hitTestResult, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset)
+    {
+        return toInline()->hitTestCulledInline(hitTestResult, locationInContainer, accumulatedOffset);
+    }
+
+    LineBoxList* lineBoxes()
+    {
+        return toInline()->lineBoxes();
+    }
+
+    LineLayoutBoxModel continuation() const
+    {
+        return LineLayoutBoxModel(toInline()->continuation());
+    }
+
 protected:
     LayoutInline* toInline()
     {
