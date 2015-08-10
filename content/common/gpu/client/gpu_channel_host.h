@@ -58,25 +58,6 @@ namespace content {
 class CommandBufferProxyImpl;
 class GpuChannelHost;
 
-struct GpuListenerInfo {
-  GpuListenerInfo();
-  ~GpuListenerInfo();
-
-  base::WeakPtr<IPC::Listener> listener;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner;
-};
-
-struct ProxyFlushInfo {
-  ProxyFlushInfo();
-  ~ProxyFlushInfo();
-
-  bool flush_pending;
-  int route_id;
-  int32 put_offset;
-  unsigned int flush_count;
-  std::vector<ui::LatencyInfo> latency_info;
-};
-
 class CONTENT_EXPORT GpuChannelHostFactory
     : virtual public IPC::SupportsAttachmentBrokering {
  public:
@@ -107,6 +88,8 @@ class GpuChannelHost : public IPC::Sender,
       base::WaitableEvent* shutdown_event,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
+  static const int32 kDefaultStreamId = 0;
+
   bool IsLost() const {
     DCHECK(channel_filter_.get());
     return channel_filter_->IsLost();
@@ -120,9 +103,10 @@ class GpuChannelHost : public IPC::Sender,
 
   // Set an ordering barrier.  AsyncFlushes any pending barriers on other
   // routes. Combines multiple OrderingBarriers into a single AsyncFlush.
-  void OrderingBarrier(int route_id,
+  void OrderingBarrier(int32 route_id,
+                       int32 stream_id,
                        int32 put_offset,
-                       unsigned int flush_count,
+                       uint32 flush_count,
                        const std::vector<ui::LatencyInfo>& latency_info,
                        bool put_offset_changed,
                        bool do_flush);
@@ -131,6 +115,7 @@ class GpuChannelHost : public IPC::Sender,
   scoped_ptr<CommandBufferProxyImpl> CreateViewCommandBuffer(
       int32 surface_id,
       CommandBufferProxyImpl* share_group,
+      int32 stream_id,
       const std::vector<int32>& attribs,
       const GURL& active_url,
       gfx::GpuPreference gpu_preference);
@@ -139,6 +124,7 @@ class GpuChannelHost : public IPC::Sender,
   scoped_ptr<CommandBufferProxyImpl> CreateOffscreenCommandBuffer(
       const gfx::Size& size,
       CommandBufferProxyImpl* share_group,
+      int32 stream_id,
       const std::vector<int32>& attribs,
       const GURL& active_url,
       gfx::GpuPreference gpu_preference);
@@ -186,16 +172,11 @@ class GpuChannelHost : public IPC::Sender,
   // Generate a route ID guaranteed to be unique for this channel.
   int32 GenerateRouteID();
 
+  // Generate a stream ID guaranteed to be unique for this channel.
+  int32 GenerateStreamID();
+
  private:
   friend class base::RefCountedThreadSafe<GpuChannelHost>;
-  GpuChannelHost(GpuChannelHostFactory* factory,
-                 const gpu::GPUInfo& gpu_info,
-                 gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
-  ~GpuChannelHost() override;
-  void Connect(const IPC::ChannelHandle& channel_handle,
-               base::WaitableEvent* shutdown_event);
-  bool InternalSend(IPC::Message* msg);
-  void InternalFlush();
 
   // A filter used internally to route incoming messages from the IO thread
   // to the correct message loop. It also maintains some shared state between
@@ -205,11 +186,11 @@ class GpuChannelHost : public IPC::Sender,
     MessageFilter();
 
     // Called on the IO thread.
-    void AddRoute(int route_id,
+    void AddRoute(int32 route_id,
                   base::WeakPtr<IPC::Listener> listener,
                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
     // Called on the IO thread.
-    void RemoveRoute(int route_id);
+    void RemoveRoute(int32 route_id);
 
     // IPC::MessageFilter implementation
     // (called on the IO thread):
@@ -222,12 +203,19 @@ class GpuChannelHost : public IPC::Sender,
     bool IsLost() const;
 
    private:
+    struct ListenerInfo {
+      ListenerInfo();
+      ~ListenerInfo();
+
+      base::WeakPtr<IPC::Listener> listener;
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner;
+    };
+
     ~MessageFilter() override;
 
     // Threading notes: |listeners_| is only accessed on the IO thread. Every
     // other field is protected by |lock_|.
-    typedef base::hash_map<int, GpuListenerInfo> ListenerMap;
-    ListenerMap listeners_;
+    base::hash_map<int32, ListenerInfo> listeners_;
 
     // Protects all fields below this one.
     mutable base::Lock lock_;
@@ -236,12 +224,33 @@ class GpuChannelHost : public IPC::Sender,
     bool lost_;
   };
 
+  struct StreamFlushInfo {
+    StreamFlushInfo();
+    ~StreamFlushInfo();
+
+    bool flush_pending;
+    int32 route_id;
+    int32 put_offset;
+    uint32 flush_count;
+    std::vector<ui::LatencyInfo> latency_info;
+  };
+
+  GpuChannelHost(GpuChannelHostFactory* factory,
+                 const gpu::GPUInfo& gpu_info,
+                 gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
+  ~GpuChannelHost() override;
+  void Connect(const IPC::ChannelHandle& channel_handle,
+               base::WaitableEvent* shutdown_event);
+  bool InternalSend(IPC::Message* msg);
+  void InternalFlush(int32 stream_id);
+
   // Threading notes: all fields are constant during the lifetime of |this|
   // except:
   // - |next_transfer_buffer_id_|, atomic type
   // - |next_image_id_|, atomic type
   // - |next_route_id_|, atomic type
-  // - |channel_| and |flush_info_|, protected by |context_lock_|
+  // - |next_stream_id_|, atomic type
+  // - |channel_| and |stream_flush_info_|, protected by |context_lock_|
   GpuChannelHostFactory* const factory_;
 
   const gpu::GPUInfo gpu_info_;
@@ -262,10 +271,13 @@ class GpuChannelHost : public IPC::Sender,
   // Route IDs are allocated in sequence.
   base::AtomicSequenceNumber next_route_id_;
 
-  // Protects channel_ and flush_info_.
+  // Stream IDs are allocated in sequence.
+  base::AtomicSequenceNumber next_stream_id_;
+
+  // Protects channel_ and stream_flush_info_.
   mutable base::Lock context_lock_;
   scoped_ptr<IPC::SyncChannel> channel_;
-  ProxyFlushInfo flush_info_;
+  base::hash_map<int32, StreamFlushInfo> stream_flush_info_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelHost);
 };

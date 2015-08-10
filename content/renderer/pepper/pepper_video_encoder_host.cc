@@ -501,8 +501,8 @@ bool PepperVideoEncoderHost::EnsureGpuChannel() {
 
   std::vector<int32> attribs(1, PP_GRAPHICS3DATTRIB_NONE);
   command_buffer_ = channel_->CreateOffscreenCommandBuffer(
-      gfx::Size(), nullptr, attribs, GURL::EmptyGURL(),
-      gfx::PreferIntegratedGpu);
+      gfx::Size(), nullptr, GpuChannelHost::kDefaultStreamId, attribs,
+      GURL::EmptyGURL(), gfx::PreferIntegratedGpu);
   if (!command_buffer_) {
     Close();
     return false;

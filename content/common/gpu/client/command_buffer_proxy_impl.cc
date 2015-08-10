@@ -28,10 +28,12 @@
 namespace content {
 
 CommandBufferProxyImpl::CommandBufferProxyImpl(GpuChannelHost* channel,
-                                               int route_id)
+                                               int32 route_id,
+                                               int32 stream_id)
     : lock_(nullptr),
       channel_(channel),
       route_id_(route_id),
+      stream_id_(stream_id),
       flush_count_(0),
       last_put_offset_(-1),
       last_barrier_put_offset_(-1),
@@ -220,7 +222,7 @@ void CommandBufferProxyImpl::Flush(int32 put_offset) {
   last_barrier_put_offset_ = put_offset;
 
   if (channel_) {
-    channel_->OrderingBarrier(route_id_, put_offset, ++flush_count_,
+    channel_->OrderingBarrier(route_id_, stream_id_, put_offset, ++flush_count_,
                               latency_info_, put_offset_changed, true);
   }
 
@@ -239,7 +241,7 @@ void CommandBufferProxyImpl::OrderingBarrier(int32 put_offset) {
   last_barrier_put_offset_ = put_offset;
 
   if (channel_) {
-    channel_->OrderingBarrier(route_id_, put_offset, ++flush_count_,
+    channel_->OrderingBarrier(route_id_, stream_id_, put_offset, ++flush_count_,
                               latency_info_, put_offset_changed, false);
   }
 

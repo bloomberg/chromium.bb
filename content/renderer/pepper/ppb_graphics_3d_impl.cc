@@ -290,7 +290,8 @@ bool PPB_Graphics3D_Impl::InitRaw(
   }
 
   command_buffer_ = channel_->CreateOffscreenCommandBuffer(
-      surface_size, share_buffer, attribs, GURL::EmptyGURL(), gpu_preference);
+      surface_size, share_buffer, GpuChannelHost::kDefaultStreamId, attribs,
+      GURL::EmptyGURL(), gpu_preference);
   if (!command_buffer_)
     return false;
   if (!command_buffer_->Initialize())

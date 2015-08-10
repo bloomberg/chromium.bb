@@ -183,10 +183,12 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
   if (onscreen) {
     command_buffer_ =
         host_->CreateViewCommandBuffer(surface_id_, share_group_command_buffer,
+                                       GpuChannelHost::kDefaultStreamId,
                                        attribs, active_url_, gpu_preference_);
   } else {
     command_buffer_ = host_->CreateOffscreenCommandBuffer(
-        gfx::Size(1, 1), share_group_command_buffer, attribs, active_url_,
+        gfx::Size(1, 1), share_group_command_buffer,
+        GpuChannelHost::kDefaultStreamId, attribs, active_url_,
         gpu_preference_);
   }
 

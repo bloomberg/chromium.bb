@@ -62,7 +62,9 @@ class CommandBufferProxyImpl
   typedef base::Callback<void(
       const std::string& msg, int id)> GpuConsoleMessageCallback;
 
-  CommandBufferProxyImpl(GpuChannelHost* channel, int route_id);
+  CommandBufferProxyImpl(GpuChannelHost* channel,
+                         int32 route_id,
+                         int32 stream_id);
   ~CommandBufferProxyImpl() override;
 
   // Sends an IPC message to create a GpuVideoDecodeAccelerator. Creates and
@@ -153,7 +155,9 @@ class CommandBufferProxyImpl
   // CommandBufferProxyImpl implementation.
   gpu::error::Error GetLastError() override;
 
-  int route_id() const { return route_id_; }
+  int32 route_id() const { return route_id_; }
+
+  int32 stream_id() const { return stream_id_; }
 
   GpuChannelHost* channel() const { return channel_; }
 
@@ -207,8 +211,9 @@ class CommandBufferProxyImpl
   // |*this| is owned by |*channel_| and so is always outlived by it, so using a
   // raw pointer is ok.
   GpuChannelHost* channel_;
-  const int route_id_;
-  unsigned int flush_count_;
+  const int32 route_id_;
+  const int32 stream_id_;
+  uint32 flush_count_;
   int32 last_put_offset_;
   int32 last_barrier_put_offset_;
 
