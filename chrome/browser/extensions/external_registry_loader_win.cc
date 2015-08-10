@@ -98,8 +98,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
       continue;
     }
 
-    std::string id = base::UTF16ToASCII(*it);
-    base::StringToLowerASCII(&id);
+    std::string id = base::ToLowerASCII(base::UTF16ToASCII(*it));
     if (!crx_file::id_util::IdIsValid(id)) {
       LOG(ERROR) << "Invalid id value " << id
                  << " for key " << key_path << ".";

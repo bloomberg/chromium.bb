@@ -78,7 +78,7 @@ class FirefoxURLParameterFilter : public TemplateURLParser::ParameterFilter {
   // TemplateURLParser::ParameterFilter method.
   bool KeepParameter(const std::string& key,
                      const std::string& value) override {
-    std::string low_value = base::StringToLowerASCII(value);
+    std::string low_value = base::ToLowerASCII(value);
     if (low_value.find("mozilla") != std::string::npos ||
         low_value.find("firefox") != std::string::npos ||
         low_value.find("moz:") != std::string::npos) {

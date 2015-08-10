@@ -105,7 +105,7 @@ class LocalExtensionCacheTest : public testing::Test {
     uint8 output[crypto::kSHA256Length];
     hash->Finish(output, sizeof(output));
     const std::string hex_hash =
-        base::StringToLowerASCII(base::HexEncode(output, sizeof(output)));
+        base::ToLowerASCII(base::HexEncode(output, sizeof(output)));
     delete hash;
 
     const base::FilePath file =

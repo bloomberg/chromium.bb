@@ -1061,23 +1061,22 @@ bool PersonalDataManager::IsCountryOfInterest(const std::string& country_code)
   const std::vector<AutofillProfile*>& profiles = web_profiles();
   std::list<std::string> country_codes;
   for (size_t i = 0; i < profiles.size(); ++i) {
-    country_codes.push_back(base::StringToLowerASCII(base::UTF16ToASCII(
+    country_codes.push_back(base::ToLowerASCII(base::UTF16ToASCII(
         profiles[i]->GetRawInfo(ADDRESS_HOME_COUNTRY))));
   }
 
   std::string timezone_country = CountryCodeForCurrentTimezone();
   if (!timezone_country.empty())
-    country_codes.push_back(base::StringToLowerASCII(timezone_country));
+    country_codes.push_back(base::ToLowerASCII(timezone_country));
 
   // Only take the locale into consideration if all else fails.
   if (country_codes.empty()) {
-    country_codes.push_back(base::StringToLowerASCII(
+    country_codes.push_back(base::ToLowerASCII(
         AutofillCountry::CountryCodeForLocale(app_locale())));
   }
 
   return std::find(country_codes.begin(), country_codes.end(),
-                   base::StringToLowerASCII(country_code)) !=
-                       country_codes.end();
+                   base::ToLowerASCII(country_code)) != country_codes.end();
 }
 
 const std::string& PersonalDataManager::GetDefaultCountryCodeForNewAddress()

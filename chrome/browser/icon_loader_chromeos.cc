@@ -183,7 +183,7 @@ int IconSizeToDIPSize(IconLoader::IconSize size) {
 // static
 IconGroupID IconLoader::ReadGroupIDFromFilepath(
     const base::FilePath& filepath) {
-  return base::StringToLowerASCII(filepath.Extension());
+  return base::ToLowerASCII(filepath.Extension());
 }
 
 // static

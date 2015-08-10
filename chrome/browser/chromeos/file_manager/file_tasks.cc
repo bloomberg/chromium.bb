@@ -169,7 +169,7 @@ void UpdateDefaultTask(PrefService* pref_service,
         iter != suffixes.end(); ++iter) {
       base::StringValue* value = new base::StringValue(task_id);
       // Suffixes are case insensitive.
-      std::string lower_suffix = base::StringToLowerASCII(*iter);
+      std::string lower_suffix = base::ToLowerASCII(*iter);
       mime_type_pref->SetWithoutPathExpansion(lower_suffix, value);
     }
   }
@@ -197,7 +197,7 @@ std::string GetDefaultTaskIdFromPrefs(const PrefService& pref_service,
       pref_service.GetDictionary(prefs::kDefaultTasksBySuffix);
   DCHECK(suffix_task_prefs);
   LOG_IF(ERROR, !suffix_task_prefs) << "Unable to open suffix prefs";
-  std::string lower_suffix = base::StringToLowerASCII(suffix);
+  std::string lower_suffix = base::ToLowerASCII(suffix);
   if (suffix_task_prefs)
     suffix_task_prefs->GetStringWithoutPathExpansion(lower_suffix, &task_id);
   VLOG_IF(1, !task_id.empty()) << "Found suffix default handler: " << task_id;

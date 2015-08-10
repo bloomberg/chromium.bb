@@ -62,7 +62,7 @@ std::string AudioTypeToString(AudioType audio_type) {
 }
 
 bool ReadBooleanFlag(const std::string& flag, bool default_value) {
-  const std::string flag_value = base::StringToLowerASCII(
+  const std::string flag_value = base::ToLowerASCII(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(flag));
   if (flag_value == "true" || flag_value == "1")
     return true;

@@ -151,8 +151,7 @@ bool GetFileTypesFromAcceptOption(
     for (std::vector<std::string>::const_iterator iter = list->begin();
          iter != list->end(); ++iter) {
       std::vector<base::FilePath::StringType> inner;
-      std::string accept_type = *iter;
-      base::StringToLowerASCII(&accept_type);
+      std::string accept_type = base::ToLowerASCII(*iter);
       net::GetExtensionsForMimeType(accept_type, &inner);
       if (inner.empty())
         continue;
@@ -176,8 +175,7 @@ bool GetFileTypesFromAcceptOption(
     std::vector<std::string>* list = accept_option.extensions.get();
     for (std::vector<std::string>::const_iterator iter = list->begin();
          iter != list->end(); ++iter) {
-      std::string extension = *iter;
-      base::StringToLowerASCII(&extension);
+      std::string extension = base::ToLowerASCII(*iter);
 #if defined(OS_WIN)
       extension_set.insert(base::UTF8ToWide(*iter));
 #else

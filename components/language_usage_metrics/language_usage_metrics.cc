@@ -42,8 +42,7 @@ int LanguageUsageMetrics::ToLanguageCode(const std::string& locale) {
   if (!parts.GetNext())
     return 0;
 
-  std::string language_part = parts.token();
-  base::StringToLowerASCII(&language_part);
+  std::string language_part = base::ToLowerASCII(parts.token());
 
   int language_code = 0;
   for (std::string::iterator it = language_part.begin();

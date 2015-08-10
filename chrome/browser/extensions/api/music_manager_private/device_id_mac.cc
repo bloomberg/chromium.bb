@@ -133,7 +133,7 @@ class MacAddressProcessor {
     if (!is_valid_mac_address_.Run(mac_address, mac_address_size))
       return keep_going;
 
-    std::string mac_address_string = base::StringToLowerASCII(base::HexEncode(
+    std::string mac_address_string = base::ToLowerASCII(base::HexEncode(
         mac_address, mac_address_size));
 
     base::ScopedCFTypeRef<CFStringRef> provider_class(

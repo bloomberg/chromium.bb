@@ -40,7 +40,7 @@ std::string GenerateId(const std::string& input) {
   uint8 hash[kIdSize];
   crypto::SHA256HashString(input, hash, sizeof(hash));
   std::string output =
-      base::StringToLowerASCII(base::HexEncode(hash, sizeof(hash)));
+      base::ToLowerASCII(base::HexEncode(hash, sizeof(hash)));
   ConvertHexadecimalToIDAlphabet(&output);
 
   return output;
@@ -83,7 +83,7 @@ bool IdIsValid(const std::string& id) {
 
   // We only support lowercase IDs, because IDs can be used as URL components
   // (where GURL will lowercase it).
-  std::string temp = base::StringToLowerASCII(id);
+  std::string temp = base::ToLowerASCII(id);
   for (size_t i = 0; i < temp.size(); i++)
     if (temp[i] < 'a' || temp[i] > 'p')
       return false;

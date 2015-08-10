@@ -343,7 +343,7 @@ void NexeLoadManager::InitializePlugin(
   }
 
   // Store mime_type_ at initialization time since we make it lowercase.
-  mime_type_ = base::StringToLowerASCII(LookupAttribute(args_, kTypeAttribute));
+  mime_type_ = base::ToLowerASCII(LookupAttribute(args_, kTypeAttribute));
 }
 
 void NexeLoadManager::ReportStartupOverhead() const {

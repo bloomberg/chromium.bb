@@ -1559,7 +1559,7 @@ class PexeDownloader : public blink::WebURLLoaderClient {
 
     for (const std::string& cur : base::SplitString(
              cache_control, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-      if (base::StringToLowerASCII(cur) == "no-store")
+      if (base::ToLowerASCII(cur) == "no-store")
         has_no_store_header = true;
     }
 

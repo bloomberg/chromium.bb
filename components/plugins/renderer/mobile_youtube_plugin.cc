@@ -49,15 +49,16 @@ bool IsValidYouTubeVideo(const std::string& path) {
   if (path.length() <= len)
     return false;
 
-  std::string str = base::StringToLowerASCII(path);
   // Youtube flash url can start with /v/ or /e/.
-  if (strncmp(str.data(), kSlashVSlash, len) != 0 &&
-      strncmp(str.data(), kSlashESlash, len) != 0)
+  if (!base::StartsWith(path, kSlashVSlash,
+                        base::CompareCase::INSENSITIVE_ASCII) ||
+      !base::StartsWith(path, kSlashESlash,
+                        base::CompareCase::INSENSITIVE_ASCII))
     return false;
 
   // Start after /v/
   for (unsigned i = len; i < path.length(); i++) {
-    char c = str[i];
+    char c = path[i];
     if (isalpha(c) || isdigit(c) || c == '_' || c == '-')
       continue;
     // The url can have more parameters such as &hl=en after the video id.

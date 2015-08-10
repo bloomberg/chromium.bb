@@ -95,8 +95,8 @@ SystemSaltGetter* SystemSaltGetter::Get() {
 // static
 std::string SystemSaltGetter::ConvertRawSaltToHexString(
     const std::vector<uint8>& salt) {
-  return base::StringToLowerASCII(base::HexEncode(
-      reinterpret_cast<const void*>(salt.data()), salt.size()));
+  return base::ToLowerASCII(
+      base::HexEncode(reinterpret_cast<const void*>(salt.data()), salt.size()));
 }
 
 }  // namespace chromeos

@@ -35,7 +35,7 @@ bool ValidateTicket(const std::string& ticket) {
 }
 
 std::string GenerateId() {
-  return base::StringToLowerASCII(base::GenerateGUID());
+  return base::ToLowerASCII(base::GenerateGUID());
 }
 
 }  // namespace

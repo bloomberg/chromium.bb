@@ -152,13 +152,11 @@ namespace {
 // Early versions of Chrome incorrectly registered a chromehtml: URL handler,
 // which gives us nothing but trouble. Avoid launching chrome this way since
 // some apps fail to properly escape arguments.
-bool HasDeprecatedArguments(const std::wstring& command_line) {
+bool HasDeprecatedArguments(const base::string16& command_line) {
   const wchar_t kChromeHtml[] = L"chromehtml:";
-  std::wstring command_line_lower = command_line;
+  base::string16 command_line_lower = base::ToLowerASCII(command_line);
   // We are only searching for ASCII characters so this is OK.
-  base::StringToLowerASCII(&command_line_lower);
-  std::wstring::size_type pos = command_line_lower.find(kChromeHtml);
-  return (pos != std::wstring::npos);
+  return (command_line_lower.find(kChromeHtml) != base::string16::npos);
 }
 
 // If we try to access a path that is not currently available, we want the call

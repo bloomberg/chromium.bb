@@ -1145,7 +1145,7 @@ void UserSessionManager::InitializeStartUrls() const {
       const char* url = kChromeVoxTutorialURLPattern;
       PrefService* prefs = g_browser_process->local_state();
       const std::string current_locale =
-          base::StringToLowerASCII(prefs->GetString(prefs::kApplicationLocale));
+          base::ToLowerASCII(prefs->GetString(prefs::kApplicationLocale));
       std::string vox_url = base::StringPrintf(url, current_locale.c_str());
       start_urls.push_back(vox_url);
       can_show_getstarted_guide = false;

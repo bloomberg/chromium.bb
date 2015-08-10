@@ -722,14 +722,14 @@ namespace internal {
 const char kNewSessionPathPattern[] = "session";
 
 bool MatchesMethod(HttpMethod command_method, const std::string& method) {
-  std::string lower_method = base::StringToLowerASCII(method);
+  std::string lower_method = base::ToLowerASCII(method);
   switch (command_method) {
-  case kGet:
-    return lower_method == "get";
-  case kPost:
-    return lower_method == "post" || lower_method == "put";
-  case kDelete:
-    return lower_method == "delete";
+    case kGet:
+      return lower_method == "get";
+    case kPost:
+      return lower_method == "post" || lower_method == "put";
+    case kDelete:
+      return lower_method == "delete";
   }
   return false;
 }

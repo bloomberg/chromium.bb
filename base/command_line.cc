@@ -267,7 +267,7 @@ void CommandLine::SetProgram(const FilePath& program) {
 }
 
 bool CommandLine::HasSwitch(const base::StringPiece& switch_string) const {
-  DCHECK_EQ(StringToLowerASCII(switch_string.as_string()), switch_string);
+  DCHECK_EQ(ToLowerASCII(switch_string), switch_string);
   return switches_by_stringpiece_.find(switch_string) !=
          switches_by_stringpiece_.end();
 }
@@ -297,7 +297,7 @@ FilePath CommandLine::GetSwitchValuePath(
 
 CommandLine::StringType CommandLine::GetSwitchValueNative(
     const base::StringPiece& switch_string) const {
-  DCHECK_EQ(StringToLowerASCII(switch_string.as_string()), switch_string);
+  DCHECK_EQ(ToLowerASCII(switch_string), switch_string);
   auto result = switches_by_stringpiece_.find(switch_string);
   return result == switches_by_stringpiece_.end() ? StringType()
                                                   : *(result->second);
@@ -315,7 +315,7 @@ void CommandLine::AppendSwitchPath(const std::string& switch_string,
 void CommandLine::AppendSwitchNative(const std::string& switch_string,
                                      const CommandLine::StringType& value) {
 #if defined(OS_WIN)
-  const std::string switch_key = StringToLowerASCII(switch_string);
+  const std::string switch_key = ToLowerASCII(switch_string);
   StringType combined_switch_string(ASCIIToUTF16(switch_key));
 #elif defined(OS_POSIX)
   const std::string& switch_key = switch_string;

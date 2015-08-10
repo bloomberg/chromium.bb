@@ -228,7 +228,7 @@ GURL SpellcheckHunspellDictionary::GetDictionaryURL() {
   DCHECK(!bdict_file.empty());
 
   return GURL(std::string(kDownloadServerUrl) +
-              base::StringToLowerASCII(bdict_file));
+              base::ToLowerASCII(bdict_file));
 }
 
 void SpellcheckHunspellDictionary::DownloadDictionary(GURL url) {

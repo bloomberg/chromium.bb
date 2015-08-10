@@ -514,7 +514,7 @@ void ServicesCustomizationDocument::StartFetching() {
                                       &customization_id) &&
         !customization_id.empty()) {
       url_ = GURL(base::StringPrintf(
-          kManifestUrl, base::StringToLowerASCII(customization_id).c_str()));
+          kManifestUrl, base::ToLowerASCII(customization_id).c_str()));
     } else {
       // Remember that there is no customization ID in VPD.
       OnCustomizationNotFound();

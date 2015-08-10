@@ -319,7 +319,7 @@ base::string16 GetFirefoxImporterName(const base::FilePath& app_path) {
     }
   }
 
-  base::StringToLowerASCII(&branding_name);
+  branding_name = base::ToLowerASCII(branding_name);
   if (branding_name.find("iceweasel") != std::string::npos)
     return l10n_util::GetStringUTF16(IDS_IMPORT_FROM_ICEWEASEL);
   return l10n_util::GetStringUTF16(IDS_IMPORT_FROM_FIREFOX);

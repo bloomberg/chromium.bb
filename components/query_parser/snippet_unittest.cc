@@ -96,7 +96,7 @@ base::string16 BuildSnippet(const std::string& document,
   // |document|. We need to add more test cases and change this function
   // to be more generic depending on how we deal with 'folding for match'
   // in history.
-  const std::string document_folded = base::StringToLowerASCII(document);
+  const std::string document_folded = base::ToLowerASCII(document);
 
   // Manually construct match_positions of the document.
   Snippet::MatchPositions match_positions;

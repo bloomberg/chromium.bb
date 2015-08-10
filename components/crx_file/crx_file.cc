@@ -61,7 +61,7 @@ CrxFile::ValidateError FinalizeHash(const std::string& extension_id,
   uint8 output[crypto::kSHA256Length] = {};
   hash->Finish(output, sizeof(output));
   std::string hash_base64 =
-      base::StringToLowerASCII(base::HexEncode(output, sizeof(output)));
+      base::ToLowerASCII(base::HexEncode(output, sizeof(output)));
   if (hash_base64 != expected_hash) {
     LOG(ERROR) << "Hash check failed for extension: " << extension_id
                << ", expected " << expected_hash << ", got " << hash_base64;

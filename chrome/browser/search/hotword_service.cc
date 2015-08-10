@@ -268,8 +268,7 @@ class HotwordNotificationDelegate : public NotificationDelegate {
 // static
 bool HotwordService::DoesHotwordSupportLanguage(Profile* profile) {
   std::string normalized_locale =
-      l10n_util::NormalizeLocale(GetCurrentLocale(profile));
-  base::StringToLowerASCII(&normalized_locale);
+      base::ToLowerASCII(l10n_util::NormalizeLocale(GetCurrentLocale(profile)));
 
   // For M43, we are limiting always-on to en_us only.
   // TODO(kcarattini): Remove this once

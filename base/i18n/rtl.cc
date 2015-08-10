@@ -36,11 +36,8 @@ std::string GetLocaleString(const icu::Locale& locale) {
     result += country;
   }
 
-  if (variant != NULL && *variant != '\0') {
-    std::string variant_str(variant);
-    base::StringToLowerASCII(&variant_str);
-    result += '@' + variant_str;
-  }
+  if (variant != NULL && *variant != '\0')
+    result += '@' + base::ToLowerASCII(variant);
 
   return result;
 }

@@ -220,7 +220,7 @@ void GetFormat(const std::string& format_string,
 }
 
 LogType LogTypeFromString(const std::string& desc) {
-  std::string desc_lc = base::StringToLowerASCII(desc);
+  std::string desc_lc = base::ToLowerASCII(desc);
   if (desc_lc == "network")
     return LOG_TYPE_NETWORK;
   if (desc_lc == "power")

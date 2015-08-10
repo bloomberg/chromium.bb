@@ -75,7 +75,7 @@ LocalExtensionCache::CacheMap::iterator LocalExtensionCache::FindExtension(
     const std::string& expected_hash) {
   CacheHit hit = cache.equal_range(id);
   CacheMap::iterator empty_hash = cache.end();
-  std::string hash = base::StringToLowerASCII(expected_hash);
+  std::string hash = base::ToLowerASCII(expected_hash);
   for (CacheMap::iterator it = hit.first; it != hit.second; ++it) {
     if (expected_hash.empty() || it->second.expected_hash == hash) {
       return it;
@@ -437,7 +437,7 @@ void LocalExtensionCache::BackendCheckCacheContentsInternal(
     }
 
     // Enforce a lower-case id.
-    id = base::StringToLowerASCII(id);
+    id = base::ToLowerASCII(id);
     if (!crx_file::id_util::IdIsValid(id)) {
       LOG(ERROR) << "Bad extension id in cache: " << id;
       id.clear();
@@ -486,7 +486,7 @@ std::string LocalExtensionCache::ExtensionFileName(
     const std::string& expected_hash) {
   std::string filename = id + "-" + version;
   if (!expected_hash.empty())
-    filename += "-" + base::StringToLowerASCII(expected_hash);
+    filename += "-" + base::ToLowerASCII(expected_hash);
   filename += kCRXFileExtension;
   return filename;
 }
@@ -612,7 +612,7 @@ LocalExtensionCache::CacheItemInfo::CacheItemInfo(
     uint64 size,
     const base::FilePath& file_path)
     : version(version),
-      expected_hash(base::StringToLowerASCII(expected_hash)),
+      expected_hash(base::ToLowerASCII(expected_hash)),
       last_used(last_used),
       size(size),
       file_path(file_path) {

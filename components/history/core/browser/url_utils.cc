@@ -88,7 +88,6 @@ GURL ToggleHTTPAndHTTPS(const GURL& url) {
 
 std::string HostForTopHosts(const GURL& url) {
   std::string host = url.host();
-  base::StringToLowerASCII(&host);
   if (base::StartsWith(host, "www.", base::CompareCase::SENSITIVE))
     host.assign(host, 4, std::string::npos);
   return host;

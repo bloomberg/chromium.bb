@@ -151,8 +151,7 @@ MimeUtil::MimeUtil() {
 }
 
 bool MimeUtil::IsSupportedImageMimeType(const std::string& mime_type) const {
-  return image_types_.find(base::StringToLowerASCII(mime_type)) !=
-         image_types_.end();
+  return image_types_.find(base::ToLowerASCII(mime_type)) != image_types_.end();
 }
 
 bool MimeUtil::IsSupportedNonImageMimeType(const std::string& mime_type) const {

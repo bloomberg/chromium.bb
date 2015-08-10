@@ -118,7 +118,7 @@ std::string AwContentBrowserClient::GetAcceptLangsImpl() {
 
   // If we're not en-US, add in en-US which will be
   // used with a lower q-value.
-  if (base::StringToLowerASCII(langs) != "en-us") {
+  if (base::ToLowerASCII(langs) != "en-us") {
     langs += ",en-US";
   }
   return langs;

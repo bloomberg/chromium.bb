@@ -113,7 +113,7 @@ void ExtractLoadedModuleNameDigests(
     std::string module_name;
     if (!module_dictionary->GetString("name", &module_name))
       continue;
-    base::StringToLowerASCII(&module_name);
+    module_name = base::ToLowerASCII(module_name);
     module_name_digests->AppendString(base::MD5String(module_name));
   }
 }

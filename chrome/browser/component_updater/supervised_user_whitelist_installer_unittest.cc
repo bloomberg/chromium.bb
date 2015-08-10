@@ -259,7 +259,7 @@ TEST_F(SupervisedUserWhitelistInstallerTest, GetHashFromCrxId) {
 
   {
     std::string extension_id = "aBcDeFgHiJkLmNoPpOnMlKjIhGfEdCbA";
-    ASSERT_EQ(base::StringToLowerASCII(extension_id),
+    ASSERT_EQ(base::ToLowerASCII(extension_id),
               CrxIdToHashToCrxId(extension_id));
   }
 

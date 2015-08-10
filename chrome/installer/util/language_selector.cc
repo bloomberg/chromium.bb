@@ -243,13 +243,9 @@ bool LanguageSelector::SelectIf(const std::vector<std::wstring>& candidates,
                                 SelectPred_Fn select_predicate,
                                 std::wstring* matched_name,
                                 int* matched_offset) {
-  std::wstring candidate;
-  for (std::vector<std::wstring>::const_iterator scan = candidates.begin(),
-          end = candidates.end(); scan != end; ++scan) {
-    candidate.assign(*scan);
-    base::StringToLowerASCII(&candidate);
-    if (select_predicate(candidate, matched_offset)) {
-      matched_name->assign(*scan);
+  for (const std::wstring& scan : candidates) {
+    if (select_predicate(base::ToLowerASCII(scan), matched_offset)) {
+      matched_name->assign(scan);
       return true;
     }
   }

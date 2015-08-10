@@ -349,7 +349,7 @@ static void GenerateHash(const std::string& input, std::string* output) {
 
   uint8 hash[4];
   crypto::SHA256HashString(input, hash, sizeof(hash));
-  *output = base::StringToLowerASCII(base::HexEncode(hash, sizeof(hash)));
+  *output = base::ToLowerASCII(base::HexEncode(hash, sizeof(hash)));
 }
 
 // -----------------------------------------------------------------------------

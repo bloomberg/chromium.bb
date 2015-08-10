@@ -44,7 +44,7 @@ TEST(BlacklistLoadAnalyzer, TestBlacklistBypass) {
   EXPECT_TRUE(GetLoadedBlacklistedModules(&module_names));
   ASSERT_EQ(1, module_names.size());
   EXPECT_STREQ(kTestDllName,
-               base::StringToLowerASCII(
+               base::ToLowerASCII(
                    base::FilePath(module_names[0]).BaseName().value()).c_str());
 }
 

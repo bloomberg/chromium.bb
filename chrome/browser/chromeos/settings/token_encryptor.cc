@@ -88,9 +88,9 @@ std::string CryptohomeTokenEncryptor::EncryptTokenWithKey(
     return std::string();
   }
 
-  return base::StringToLowerASCII(base::HexEncode(
-      reinterpret_cast<const void*>(encoded_token.data()),
-      encoded_token.size()));
+  return base::ToLowerASCII(
+      base::HexEncode(reinterpret_cast<const void*>(encoded_token.data()),
+                      encoded_token.size()));
 }
 
 std::string CryptohomeTokenEncryptor::DecryptTokenWithKey(

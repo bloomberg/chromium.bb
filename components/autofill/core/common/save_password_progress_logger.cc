@@ -43,7 +43,7 @@ bool IsUnwantedInElementID(char c) {
 std::string ScrubElementID8Bit(std::string element_id) {
   std::replace_if(
       element_id.begin(), element_id.end(), IsUnwantedInElementID, ' ');
-  return base::StringToLowerASCII(element_id);
+  return base::ToLowerASCII(element_id);
 }
 
 SavePasswordProgressLogger::StringID FormSchemeToStringID(

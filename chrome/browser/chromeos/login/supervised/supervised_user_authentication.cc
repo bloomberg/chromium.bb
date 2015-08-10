@@ -40,9 +40,8 @@ const int kMasterKeySize = 32;
 std::string CreateSalt() {
     char result[kSaltSize];
     crypto::RandBytes(&result, sizeof(result));
-    return base::StringToLowerASCII(base::HexEncode(
-        reinterpret_cast<const void*>(result),
-        sizeof(result)));
+    return base::ToLowerASCII(
+        base::HexEncode(reinterpret_cast<const void*>(result), sizeof(result)));
 }
 
 std::string BuildRawHMACKey() {
@@ -164,7 +163,7 @@ bool SupervisedUserAuthentication::FillDataForNewUser(
 std::string SupervisedUserAuthentication::GenerateMasterKey() {
   char master_key_bytes[kMasterKeySize];
   crypto::RandBytes(&master_key_bytes, sizeof(master_key_bytes));
-  return base::StringToLowerASCII(
+  return base::ToLowerASCII(
       base::HexEncode(reinterpret_cast<const void*>(master_key_bytes),
                       sizeof(master_key_bytes)));
 }

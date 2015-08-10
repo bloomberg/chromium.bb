@@ -24,7 +24,7 @@ bool ComputeHmacSha256(const std::string& key,
   bool result = hmac.Init(key) &&
       hmac.Sign(text, &digest[0], digest.size());
   if (result) {
-    *signature_return = base::StringToLowerASCII(
+    *signature_return = base::ToLowerASCII(
         base::HexEncode(digest.data(), digest.size()));
   }
   return result;

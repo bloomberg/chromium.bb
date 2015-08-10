@@ -67,7 +67,7 @@ const char* GcmResultToError(gcm::GCMClient::Result result) {
 }
 
 bool IsMessageKeyValid(const std::string& key) {
-  std::string lower = base::StringToLowerASCII(key);
+  std::string lower = base::ToLowerASCII(key);
   return !key.empty() &&
          key.compare(0, arraysize(kCollapseKey) - 1, kCollapseKey) != 0 &&
          lower.compare(0,
