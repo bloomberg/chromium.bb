@@ -504,12 +504,6 @@ void WebPluginContainerImpl::loadFrameRequest(const WebURLRequest& request, cons
     frame->loader().load(frameRequest);
 }
 
-void WebPluginContainerImpl::zoomLevelChanged(double zoomLevel)
-{
-    WebViewImpl* view = WebViewImpl::fromPage(m_element->document().frame()->page());
-    view->fullFramePluginZoomLevelChanged(zoomLevel);
-}
-
 bool WebPluginContainerImpl::isRectTopmost(const WebRect& rect)
 {
     // Disallow access to the frame during dispose(), because it is not guaranteed to

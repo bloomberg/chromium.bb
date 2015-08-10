@@ -2974,10 +2974,7 @@ double WebViewImpl::setZoomLevel(double zoomLevel)
         m_zoomLevel = zoomLevel;
 
     LocalFrame* frame = mainFrameImpl()->frame();
-    WebPluginContainerImpl* pluginContainer = WebLocalFrameImpl::pluginContainerFromFrame(frame);
-    if (pluginContainer)
-        pluginContainer->plugin()->setZoomLevel(m_zoomLevel, false);
-    else {
+    if (!WebLocalFrameImpl::pluginContainerFromFrame(frame)) {
         float zoomFactor = m_zoomFactorOverride ? m_zoomFactorOverride : static_cast<float>(zoomLevelToZoomFactor(m_zoomLevel));
         frame->setPageZoomFactor(zoomFactor);
     }
@@ -3007,15 +3004,6 @@ float WebViewImpl::setTextZoomFactor(float textZoomFactor)
     frame->setTextZoomFactor(textZoomFactor);
 
     return textZoomFactor;
-}
-
-void WebViewImpl::fullFramePluginZoomLevelChanged(double zoomLevel)
-{
-    if (zoomLevel == m_zoomLevel)
-        return;
-
-    m_zoomLevel = std::max(std::min(zoomLevel, m_maximumZoomLevel), m_minimumZoomLevel);
-    m_client->zoomLevelChanged();
 }
 
 double WebView::zoomLevelToZoomFactor(double zoomLevel)

@@ -106,10 +106,6 @@ public:
     virtual void loadFrameRequest(
         const WebURLRequest&, const WebString& target, bool notifyNeeded, void* notifyData) = 0;
 
-    // Notifies that the zoom level has changed.
-    // Note, this does NOT affect pageScaleFactor or pageZoomFactor
-    virtual void zoomLevelChanged(double zoomLevel) = 0;
-
     // Determines whether the given rectangle in this plugin is above all other
     // content. The rectangle is in the plugin's coordinate system.
     virtual bool isRectTopmost(const WebRect&) = 0;

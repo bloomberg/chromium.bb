@@ -156,9 +156,6 @@ public:
     // Otherwise an empty url is returned.
     virtual WebURL linkAtPosition(const WebPoint& position) const { return WebURL(); }
 
-    // Used for zooming of full page plugins.
-    virtual void setZoomLevel(double level, bool textOnly) { }
-
     // Find interface.
     // Start a new search.  The plugin should search for a little bit at a time so that it
     // doesn't block the thread in case of a large document.  The results, along with the

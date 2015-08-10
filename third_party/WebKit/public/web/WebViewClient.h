@@ -237,10 +237,6 @@ public:
     // the default values.
     virtual void zoomLimitsChanged(double minimumLevel, double maximumLevel) { }
 
-    // Informs the browser that the zoom level has changed as a result of an
-    // action that wasn't initiated by the client.
-    virtual void zoomLevelChanged() { }
-
     // Informs the browser that the page scale has changed.
     virtual void pageScaleFactorChanged() { }
 
