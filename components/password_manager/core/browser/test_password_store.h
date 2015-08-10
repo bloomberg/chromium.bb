@@ -36,10 +36,6 @@ class TestPasswordStore : public PasswordStore {
  protected:
   ~TestPasswordStore() override;
 
-  // Helper function to determine if forms are considered equivalent.
-  bool FormsAreEquivalent(const autofill::PasswordForm& lhs,
-                          const autofill::PasswordForm& rhs);
-
   // PasswordStore interface
   PasswordStoreChangeList AddLoginImpl(
       const autofill::PasswordForm& form) override;

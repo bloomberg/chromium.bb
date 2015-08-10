@@ -45,7 +45,8 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
       const autofill::PasswordForm& form) override;
   bool UpdateLogin(const autofill::PasswordForm& form,
                    password_manager::PasswordStoreChangeList* changes) override;
-  bool RemoveLogin(const autofill::PasswordForm& form) override;
+  bool RemoveLogin(const autofill::PasswordForm& form,
+                   password_manager::PasswordStoreChangeList* changes) override;
   bool RemoveLoginsCreatedBetween(
       base::Time delete_begin,
       base::Time delete_end,

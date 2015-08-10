@@ -136,6 +136,15 @@ bool PasswordForm::operator!=(const PasswordForm& form) const {
   return !operator==(form);
 }
 
+bool ArePasswordFormUniqueKeyEqual(const autofill::PasswordForm& left,
+                                   const autofill::PasswordForm& right) {
+  return (left.signon_realm == right.signon_realm &&
+          left.origin == right.origin &&
+          left.username_element == right.username_element &&
+          left.username_value == right.username_value &&
+          left.password_element == right.password_element);
+}
+
 std::ostream& operator<<(std::ostream& os, PasswordForm::Layout layout) {
   switch (layout) {
     case PasswordForm::Layout::LAYOUT_OTHER:

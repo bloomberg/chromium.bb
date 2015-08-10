@@ -37,15 +37,6 @@ bool TestPasswordStore::IsEmpty() const {
   return number_of_passwords == 0u;
 }
 
-bool TestPasswordStore::FormsAreEquivalent(const autofill::PasswordForm& lhs,
-                                           const autofill::PasswordForm& rhs) {
-  return lhs.origin == rhs.origin &&
-      lhs.username_element == rhs.username_element &&
-      lhs.username_value == rhs.username_value &&
-      lhs.password_element == rhs.password_element &&
-      lhs.signon_realm == rhs.signon_realm;
-}
-
 PasswordStoreChangeList TestPasswordStore::AddLoginImpl(
     const autofill::PasswordForm& form) {
   PasswordStoreChangeList changes;
@@ -61,7 +52,7 @@ PasswordStoreChangeList TestPasswordStore::UpdateLoginImpl(
       stored_passwords_[form.signon_realm];
   for (std::vector<autofill::PasswordForm>::iterator it = forms.begin();
        it != forms.end(); ++it) {
-    if (FormsAreEquivalent(form, *it)) {
+    if (ArePasswordFormUniqueKeyEqual(form, *it)) {
       *it = form;
       changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
     }
@@ -76,7 +67,7 @@ PasswordStoreChangeList TestPasswordStore::RemoveLoginImpl(
       stored_passwords_[form.signon_realm];
   std::vector<autofill::PasswordForm>::iterator it = forms.begin();
   while (it != forms.end()) {
-    if (FormsAreEquivalent(form, *it)) {
+    if (ArePasswordFormUniqueKeyEqual(form, *it)) {
       it = forms.erase(it);
       changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
     } else {

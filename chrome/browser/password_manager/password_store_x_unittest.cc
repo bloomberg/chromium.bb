@@ -65,7 +65,10 @@ class FailingBackend : public PasswordStoreX::NativeBackend {
                    PasswordStoreChangeList* changes) override {
     return false;
   }
-  bool RemoveLogin(const PasswordForm& form) override { return false; }
+  bool RemoveLogin(const PasswordForm& form,
+                   PasswordStoreChangeList* changes) override {
+    return false;
+  }
 
   bool RemoveLoginsCreatedBetween(
       base::Time delete_begin,
@@ -127,19 +130,25 @@ class MockBackend : public PasswordStoreX::NativeBackend {
 
   bool UpdateLogin(const PasswordForm& form,
                    PasswordStoreChangeList* changes) override {
-    for (size_t i = 0; i < all_forms_.size(); ++i)
-      if (CompareForms(all_forms_[i], form, true)) {
+    for (size_t i = 0; i < all_forms_.size(); ++i) {
+      if (ArePasswordFormUniqueKeyEqual(all_forms_[i], form)) {
         all_forms_[i] = form;
         changes->push_back(PasswordStoreChange(PasswordStoreChange::UPDATE,
                                                form));
       }
+    }
     return true;
   }
 
-  bool RemoveLogin(const PasswordForm& form) override {
-    for (size_t i = 0; i < all_forms_.size(); ++i)
-      if (CompareForms(all_forms_[i], form, false))
+  bool RemoveLogin(const PasswordForm& form,
+                   PasswordStoreChangeList* changes) override {
+    for (size_t i = 0; i < all_forms_.size(); ++i) {
+      if (ArePasswordFormUniqueKeyEqual(all_forms_[i], form)) {
+        changes->push_back(PasswordStoreChange(PasswordStoreChange::REMOVE,
+                                               form));
         erase(i--);
+      }
+    }
     return true;
   }
 
@@ -200,17 +209,6 @@ class MockBackend : public PasswordStoreX::NativeBackend {
     if (index < all_forms_.size() - 1)
       all_forms_[index] = all_forms_[all_forms_.size() - 1];
     all_forms_.pop_back();
-  }
-
-  bool CompareForms(const PasswordForm& a, const PasswordForm& b, bool update) {
-    // An update check doesn't care about the submit element.
-    if (!update && a.submit_element != b.submit_element)
-      return false;
-    return a.origin           == b.origin &&
-           a.password_element == b.password_element &&
-           a.signon_realm     == b.signon_realm &&
-           a.username_element == b.username_element &&
-           a.username_value   == b.username_value;
   }
 
   std::vector<PasswordForm> all_forms_;

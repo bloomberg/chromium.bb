@@ -411,11 +411,7 @@ scoped_ptr<PasswordForm> PasswordStore::GetLoginImpl(
   ScopedVector<PasswordForm> candidates(
       FillMatchingLogins(primary_key, DISALLOW_PROMPT));
   for (PasswordForm*& candidate : candidates) {
-    if (candidate->signon_realm == primary_key.signon_realm &&
-        candidate->username_element == primary_key.username_element &&
-        candidate->username_value == primary_key.username_value &&
-        candidate->password_element == primary_key.password_element &&
-        candidate->origin == primary_key.origin &&
+    if (ArePasswordFormUniqueKeyEqual(*candidate, primary_key) &&
         !candidate->IsPublicSuffixMatch()) {
       scoped_ptr<PasswordForm> result(candidate);
       candidate = nullptr;

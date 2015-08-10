@@ -45,23 +45,6 @@ const char kKLauncherServiceName[] = "org.kde.klauncher";
 const char kKLauncherPath[] = "/KLauncher";
 const char kKLauncherInterface[] = "org.kde.KLauncher";
 
-// Compares two PasswordForms and returns true if they are the same.
-// If |update_check| is false, we only check the fields that are checked by
-// LoginDatabase::UpdateLogin() when updating logins; otherwise, we check the
-// fields that are checked by LoginDatabase::RemoveLogin() for removing them.
-bool CompareForms(const autofill::PasswordForm& a,
-                  const autofill::PasswordForm& b,
-                  bool update_check) {
-  // An update check doesn't care about the submit element.
-  if (!update_check && a.submit_element != b.submit_element)
-    return false;
-  return a.origin           == b.origin &&
-         a.password_element == b.password_element &&
-         a.signon_realm     == b.signon_realm &&
-         a.username_element == b.username_element &&
-         a.username_value   == b.username_value;
-}
-
 // Checks a serialized list of PasswordForms for sanity. Returns true if OK.
 // Note that |realm| is only used for generating a useful warning message.
 bool CheckSerializedValue(const uint8_t* byte_array,
@@ -457,23 +440,19 @@ password_manager::PasswordStoreChangeList NativeBackendKWallet::AddLogin(
   if (!GetLoginsList(form.signon_realm, wallet_handle, &forms))
     return password_manager::PasswordStoreChangeList();
 
-  // We search for a login to update, rather than unconditionally appending the
-  // login, because in some cases (especially involving sync) we can be asked to
-  // add a login that already exists. In these cases we want to just update.
-  bool updated = false;
+  auto it = std::partition(forms.begin(), forms.end(),
+                           [&form](const PasswordForm* current_form) {
+    return !ArePasswordFormUniqueKeyEqual(form, *current_form);
+  });
   password_manager::PasswordStoreChangeList changes;
-  for (size_t i = 0; i < forms.size(); ++i) {
-    // Use the more restrictive removal comparison, so that we never have
-    // duplicate logins that would all be removed together by RemoveLogin().
-    if (CompareForms(form, *forms[i], false)) {
-      changes.push_back(password_manager::PasswordStoreChange(
-          password_manager::PasswordStoreChange::REMOVE, *forms[i]));
-      *forms[i] = form;
-      updated = true;
-    }
+  if (it != forms.end()) {
+    // It's an update.
+    changes.push_back(password_manager::PasswordStoreChange(
+        password_manager::PasswordStoreChange::REMOVE, **it));
+    forms.erase(it, forms.end());
   }
-  if (!updated)
-    forms.push_back(new PasswordForm(form));
+
+  forms.push_back(new PasswordForm(form));
   changes.push_back(password_manager::PasswordStoreChange(
       password_manager::PasswordStoreChange::ADD, form));
 
@@ -488,7 +467,6 @@ bool NativeBackendKWallet::UpdateLogin(
     const PasswordForm& form,
     password_manager::PasswordStoreChangeList* changes) {
   DCHECK(changes);
-  changes->clear();
   int wallet_handle = WalletHandle();
   if (wallet_handle == kInvalidKWalletHandle)
     return false;
@@ -497,16 +475,16 @@ bool NativeBackendKWallet::UpdateLogin(
   if (!GetLoginsList(form.signon_realm, wallet_handle, &forms))
     return false;
 
-  bool updated = false;
-  for (size_t i = 0; i < forms.size(); ++i) {
-    if (CompareForms(form, *forms[i], true)) {
-      *forms[i] = form;
-      updated = true;
-    }
-  }
-  if (!updated)
+  auto it = std::partition(forms.begin(), forms.end(),
+                           [&form](const PasswordForm* current_form) {
+    return !ArePasswordFormUniqueKeyEqual(form, *current_form);
+  });
+
+  if (it == forms.end())
     return true;
 
+  forms.erase(it, forms.end());
+  forms.push_back(new PasswordForm(form));
   if (SetLoginsList(forms.get(), form.signon_realm, wallet_handle)) {
     changes->push_back(password_manager::PasswordStoreChange(
         password_manager::PasswordStoreChange::UPDATE, form));
@@ -516,7 +494,10 @@ bool NativeBackendKWallet::UpdateLogin(
   return false;
 }
 
-bool NativeBackendKWallet::RemoveLogin(const PasswordForm& form) {
+bool NativeBackendKWallet::RemoveLogin(
+    const PasswordForm& form,
+    password_manager::PasswordStoreChangeList* changes) {
+  DCHECK(changes);
   int wallet_handle = WalletHandle();
   if (wallet_handle == kInvalidKWalletHandle)
     return false;
@@ -528,14 +509,19 @@ bool NativeBackendKWallet::RemoveLogin(const PasswordForm& form) {
   ScopedVector<autofill::PasswordForm> kept_forms;
   kept_forms.reserve(all_forms.size());
   for (auto& saved_form : all_forms) {
-    if (!CompareForms(form, *saved_form, false)) {
+    if (!ArePasswordFormUniqueKeyEqual(form, *saved_form)) {
       kept_forms.push_back(saved_form);
       saved_form = nullptr;
     }
   }
 
-  // Update the entry in the wallet, possibly deleting it.
-  return SetLoginsList(kept_forms.get(), form.signon_realm, wallet_handle);
+  if (kept_forms.size() != all_forms.size()) {
+    changes->push_back(password_manager::PasswordStoreChange(
+        password_manager::PasswordStoreChange::REMOVE, form));
+    return SetLoginsList(kept_forms.get(), form.signon_realm, wallet_handle);
+  }
+
+  return true;
 }
 
 bool NativeBackendKWallet::RemoveLoginsCreatedBetween(

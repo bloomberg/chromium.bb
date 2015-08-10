@@ -79,8 +79,7 @@ PasswordStoreChangeList PasswordStoreX::RemoveLoginImpl(
     const PasswordForm& form) {
   CheckMigration();
   PasswordStoreChangeList changes;
-  if (use_native_backend() && backend_->RemoveLogin(form)) {
-    changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
+  if (use_native_backend() && backend_->RemoveLogin(form, &changes)) {
     allow_fallback_ = false;
   } else if (allow_default_store()) {
     changes = PasswordStoreDefault::RemoveLoginImpl(form);

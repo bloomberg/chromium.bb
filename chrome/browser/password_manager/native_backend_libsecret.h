@@ -61,7 +61,8 @@ class NativeBackendLibsecret : public PasswordStoreX::NativeBackend,
       const autofill::PasswordForm& form) override;
   bool UpdateLogin(const autofill::PasswordForm& form,
                    password_manager::PasswordStoreChangeList* changes) override;
-  bool RemoveLogin(const autofill::PasswordForm& form) override;
+  bool RemoveLogin(const autofill::PasswordForm& form,
+                   password_manager::PasswordStoreChangeList* changes) override;
   bool RemoveLoginsCreatedBetween(
       base::Time delete_begin,
       base::Time delete_end,
@@ -82,15 +83,10 @@ class NativeBackendLibsecret : public PasswordStoreX::NativeBackend,
     SYNC_TIMESTAMP,
   };
 
-  enum AddUpdateLoginSearchOptions {
-    SEARCH_USE_SUBMIT,
-    SEARCH_IGNORE_SUBMIT,
-  };
-
-  // Returns credentials matching |lookup_form| and |options|.
-  ScopedVector<autofill::PasswordForm> AddUpdateLoginSearch(
+  // Returns credentials matching |lookup_form| via |forms|.
+  bool AddUpdateLoginSearch(
       const autofill::PasswordForm& lookup_form,
-      AddUpdateLoginSearchOptions options);
+      ScopedVector<autofill::PasswordForm>* forms);
 
   // Adds a login form without checking for one to replace first.
   bool RawAddLogin(const autofill::PasswordForm& form);

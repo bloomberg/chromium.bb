@@ -68,7 +68,7 @@ bool LibsecretLoader::LoadLibsecret() {
     // We wanted to use libsecret, but we couldn't load it. Warn, because
     // either the user asked for this, or we autodetected it incorrectly. (Or
     // the system has broken libraries, which is also good to warn about.)
-    VLOG(1) << "Could not load libsecret-1.so.0: " << dlerror();
+    LOG(WARNING) << "Could not load libsecret-1.so.0: " << dlerror();
     return false;
   }
 
@@ -292,23 +292,25 @@ bool NativeBackendLibsecret::Init() {
 password_manager::PasswordStoreChangeList NativeBackendLibsecret::AddLogin(
     const PasswordForm& form) {
   // Based on LoginDatabase::AddLogin(), we search for an existing match based
-  // on origin_url, username_element, username_value, password_element, submit
-  // element, and signon_realm first, remove that, and then add the new entry.
-  // We'd add the new one first, and then delete the original, but then the
-  // delete might actually delete the newly-added entry!
-  ScopedVector<autofill::PasswordForm> forms =
-      AddUpdateLoginSearch(form, SEARCH_USE_SUBMIT);
+  // on origin_url, username_element, username_value, password_element and
+  // signon_realm first, remove that, and then add the new entry.
   password_manager::PasswordStoreChangeList changes;
-  if (forms.size() > 0) {
-    if (forms.size() > 1) {
-      VLOG(1) << "Adding login when there are " << forms.size()
-              << " matching logins already! Will replace only the first.";
-    }
+  ScopedVector<autofill::PasswordForm> forms;
+  if (!AddUpdateLoginSearch(form, &forms))
+    return changes;
 
-    if (RemoveLogin(*forms[0])) {
-      changes.push_back(password_manager::PasswordStoreChange(
-          password_manager::PasswordStoreChange::REMOVE, *forms[0]));
+  if (forms.size() > 0) {
+    password_manager::PasswordStoreChangeList temp_changes;
+    if (forms.size() > 1) {
+      LOG(WARNING) << "Adding login when there are " << forms.size()
+                   << " matching logins already!";
     }
+    for (const PasswordForm* old_form : forms) {
+      if (!RemoveLogin(*old_form, &temp_changes))
+        return changes;
+    }
+    changes.push_back(password_manager::PasswordStoreChange(
+        password_manager::PasswordStoreChange::REMOVE, *forms[0]));
   }
   if (RawAddLogin(form)) {
     changes.push_back(password_manager::PasswordStoreChange(
@@ -327,19 +329,23 @@ bool NativeBackendLibsecret::UpdateLogin(
   // then add the new entry. We'd add the new one first, and then delete the
   // original, but then the delete might actually delete the newly-added entry!
   DCHECK(changes);
-  changes->clear();
+  ScopedVector<autofill::PasswordForm> forms;
+  if (!AddUpdateLoginSearch(form, &forms))
+    return false;
+  if (forms.empty())
+    return true;
 
-  ScopedVector<autofill::PasswordForm> forms =
-      AddUpdateLoginSearch(form, SEARCH_IGNORE_SUBMIT);
-
-  bool removed = false;
-  for (size_t i = 0; i < forms.size(); ++i) {
-    if (*forms[i] != form) {
-      RemoveLogin(*forms[i]);
-      removed = true;
+  bool already_exists = false;
+  for (const PasswordForm* keychain_form : forms) {
+    password_manager::PasswordStoreChangeList temp_changes;
+    if (already_exists || *keychain_form != form) {
+      if (!RemoveLogin(*keychain_form, &temp_changes))
+        return false;
+    } else {
+      already_exists = true;
     }
   }
-  if (!removed)
+  if (already_exists)
     return true;
 
   if (RawAddLogin(form)) {
@@ -351,19 +357,25 @@ bool NativeBackendLibsecret::UpdateLogin(
   return false;
 }
 
-bool NativeBackendLibsecret::RemoveLogin(const autofill::PasswordForm& form) {
+bool NativeBackendLibsecret::RemoveLogin(
+    const autofill::PasswordForm& form,
+    password_manager::PasswordStoreChangeList* changes) {
+  DCHECK(changes);
   GError* error = nullptr;
-  secret_password_clear_sync(
-      &kLibsecretSchema, nullptr, &error, "origin_url",
-      form.origin.spec().c_str(), "username_element",
-      UTF16ToUTF8(form.username_element).c_str(), "username_value",
-      UTF16ToUTF8(form.username_value).c_str(), "password_element",
-      UTF16ToUTF8(form.password_element).c_str(), "submit_element",
-      UTF16ToUTF8(form.submit_element).c_str(), "signon_realm",
-      form.signon_realm.c_str(), "application", app_string_.c_str(), nullptr);
+  if (secret_password_clear_sync(
+          &kLibsecretSchema, nullptr, &error,
+          "origin_url", form.origin.spec().c_str(),
+          "username_element", UTF16ToUTF8(form.username_element).c_str(),
+          "username_value", UTF16ToUTF8(form.username_value).c_str(),
+          "password_element", UTF16ToUTF8(form.password_element).c_str(),
+          "signon_realm", form.signon_realm.c_str(),
+          "application", app_string_.c_str(), nullptr)) {
+    changes->push_back(password_manager::PasswordStoreChange(
+        password_manager::PasswordStoreChange::REMOVE, form));
+  }
 
   if (error) {
-    VLOG(1) << "Libsecret delete failed: " << error->message;
+    LOG(ERROR) << "Libsecret delete failed: " << error->message;
     g_error_free(error);
     return false;
   }
@@ -391,17 +403,14 @@ bool NativeBackendLibsecret::GetLogins(
   return GetLoginsList(&form, ALL_LOGINS, forms);
 }
 
-ScopedVector<autofill::PasswordForm>
-NativeBackendLibsecret::AddUpdateLoginSearch(
+bool NativeBackendLibsecret::AddUpdateLoginSearch(
     const autofill::PasswordForm& lookup_form,
-    AddUpdateLoginSearchOptions options) {
+    ScopedVector<autofill::PasswordForm>* forms) {
   LibsecretAttributesBuilder attrs;
   attrs.Append("origin_url", lookup_form.origin.spec());
   attrs.Append("username_element", UTF16ToUTF8(lookup_form.username_element));
   attrs.Append("username_value", UTF16ToUTF8(lookup_form.username_value));
   attrs.Append("password_element", UTF16ToUTF8(lookup_form.password_element));
-  if (options == SEARCH_USE_SUBMIT)
-    attrs.Append("submit_element", UTF16ToUTF8(lookup_form.submit_element));
   attrs.Append("signon_realm", lookup_form.signon_realm);
   attrs.Append("application", app_string_);
 
@@ -412,14 +421,15 @@ NativeBackendLibsecret::AddUpdateLoginSearch(
                                             nullptr,  // no cancellable ojbect
                                             &error);
   if (error) {
-    VLOG(1) << "Unable to get logins " << error->message;
+    LOG(ERROR) << "Unable to get logins " << error->message;
     g_error_free(error);
     if (found)
       g_list_free(found);
-    return ScopedVector<autofill::PasswordForm>();
+    return false;
   }
 
-  return ConvertFormList(found, &lookup_form);
+  *forms = ConvertFormList(found, &lookup_form);
+  return true;
 }
 
 bool NativeBackendLibsecret::RawAddLogin(const PasswordForm& form) {
@@ -463,7 +473,7 @@ bool NativeBackendLibsecret::RawAddLogin(const PasswordForm& form) {
       "application", app_string_.c_str(), nullptr);
 
   if (error) {
-    VLOG(1) << "Libsecret add raw login failed: " << error->message;
+    LOG(ERROR) << "Libsecret add raw login failed: " << error->message;
     g_error_free(error);
     return false;
   }
@@ -501,7 +511,7 @@ bool NativeBackendLibsecret::GetLoginsList(
                                             nullptr,  // no cancellable ojbect
                                             &error);
   if (error) {
-    VLOG(1) << "Unable to get logins " << error->message;
+    LOG(ERROR) << "Unable to get logins " << error->message;
     g_error_free(error);
     if (found)
       g_list_free(found);
@@ -548,16 +558,11 @@ bool NativeBackendLibsecret::RemoveLoginsBetween(
   if (!GetLoginsBetween(get_begin, get_end, date_to_compare, &forms))
     return false;
 
-  bool ok = true;
   for (size_t i = 0; i < forms.size(); ++i) {
-    if (RemoveLogin(*forms[i])) {
-      changes->push_back(password_manager::PasswordStoreChange(
-          password_manager::PasswordStoreChange::REMOVE, *forms[i]));
-    } else {
-      ok = false;
-    }
+    if (!RemoveLogin(*forms[i], changes))
+      return false;
   }
-  return ok;
+  return true;
 }
 
 ScopedVector<autofill::PasswordForm> NativeBackendLibsecret::ConvertFormList(
@@ -572,7 +577,7 @@ ScopedVector<autofill::PasswordForm> NativeBackendLibsecret::ConvertFormList(
     SecretItem* secretItem = static_cast<SecretItem*>(element->data);
     LibsecretLoader::secret_item_load_secret_sync(secretItem, nullptr, &error);
     if (error) {
-      VLOG(1) << "Unable to load secret item" << error->message;
+      LOG(ERROR) << "Unable to load secret item" << error->message;
       g_error_free(error);
       error = nullptr;
       continue;
@@ -599,7 +604,7 @@ ScopedVector<autofill::PasswordForm> NativeBackendLibsecret::ConvertFormList(
         form->password_value = UTF8ToUTF16(secret_value_get_text(secretValue));
         secret_value_unref(secretValue);
       } else {
-        VLOG(1) << "Unable to access password from list element!";
+        LOG(WARNING) << "Unable to access password from list element!";
       }
       forms.push_back(form.Pass());
     } else {

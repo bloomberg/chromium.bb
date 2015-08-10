@@ -53,17 +53,6 @@ ScopedVector<const autofill::PasswordForm> ConstifyVector(
   return ret.Pass();
 }
 
-// True if the unique keys for the forms are the same. The unique key is
-// (origin, username_element, username_value, password_element, signon_realm).
-bool IsEqualUniqueKey(const autofill::PasswordForm& left,
-                      const autofill::PasswordForm& right) {
-  return left.signon_realm == right.signon_realm &&
-      left.origin == right.origin &&
-      left.username_element == right.username_element &&
-      left.username_value == right.username_value &&
-      left.password_element == right.password_element;
-}
-
 // Updates one form in |forms| that has the same unique key as |updated_form|.
 // Returns true if the form was found and updated.
 bool UpdateFormInVector(const autofill::PasswordForm& updated_form,
@@ -71,7 +60,7 @@ bool UpdateFormInVector(const autofill::PasswordForm& updated_form,
   ScopedVector<const autofill::PasswordForm>::iterator it = std::find_if(
       forms->begin(), forms->end(),
       [&updated_form](const autofill::PasswordForm* form) {
-    return IsEqualUniqueKey(*form, updated_form);
+    return ArePasswordFormUniqueKeyEqual(*form, updated_form);
   });
   if (it != forms->end()) {
     delete *it;
@@ -88,7 +77,7 @@ void RemoveFormFromVector(const autofill::PasswordForm& form_to_delete,
   typename Vector::iterator it = std::find_if(
       forms->begin(), forms->end(),
       [&form_to_delete](const autofill::PasswordForm* form) {
-    return IsEqualUniqueKey(*form, form_to_delete);
+    return ArePasswordFormUniqueKeyEqual(*form, form_to_delete);
   });
   if (it != forms->end())
     forms->erase(it);
@@ -259,7 +248,7 @@ bool ManagePasswordsState::UpdateForm(const autofill::PasswordForm& form) {
     std::vector<const autofill::PasswordForm*>::iterator it = std::find_if(
         current_forms_weak_.begin(), current_forms_weak_.end(),
         [&form](const autofill::PasswordForm* current_form) {
-      return IsEqualUniqueKey(form, *current_form);
+      return ArePasswordFormUniqueKeyEqual(form, *current_form);
     });
     if (it != current_forms_weak_.end()) {
       RemoveFormFromVector(form, &local_credentials_forms_);

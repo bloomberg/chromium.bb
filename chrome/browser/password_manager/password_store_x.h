@@ -41,10 +41,18 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
 
     virtual password_manager::PasswordStoreChangeList AddLogin(
         const autofill::PasswordForm& form) = 0;
+    // Updates |form| and appends the changes to |changes|. |changes| shouldn't
+    // be null. Returns false iff the operation failed due to a system backend
+    // error.
     virtual bool UpdateLogin(
         const autofill::PasswordForm& form,
         password_manager::PasswordStoreChangeList* changes) = 0;
-    virtual bool RemoveLogin(const autofill::PasswordForm& form) = 0;
+    // Removes |form| and appends the changes to |changes|. |changes| shouldn't
+    // be null. Returns false iff the operation failed due to a system backend
+    // error.
+    virtual bool RemoveLogin(
+        const autofill::PasswordForm& form,
+        password_manager::PasswordStoreChangeList* changes) = 0;
 
     // Removes all logins created/synced from |delete_begin| onwards (inclusive)
     // and before |delete_end|. You may use a null Time value to do an unbounded

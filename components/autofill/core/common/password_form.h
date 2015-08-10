@@ -291,6 +291,11 @@ struct PasswordForm {
   ~PasswordForm();
 };
 
+// True if the unique keys for the forms are the same. The unique key is
+// (origin, username_element, username_value, password_element, signon_realm).
+bool ArePasswordFormUniqueKeyEqual(const autofill::PasswordForm& left,
+                                   const autofill::PasswordForm& right);
+
 // Map username to PasswordForm* for convenience. See password_form_manager.h.
 typedef base::ScopedPtrMap<base::string16, scoped_ptr<PasswordForm>>
     PasswordFormMap;
