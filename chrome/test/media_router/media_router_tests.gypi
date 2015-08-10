@@ -9,6 +9,8 @@
       'resources/common.js',
       'resources/fail_create_route.html',
       'resources/fail_create_route.json',
+      'resources/fail_join_session.html',
+      'resources/fail_join_session.json',
       'resources/no_provider.html',
       'resources/no_provider.json',
     ],

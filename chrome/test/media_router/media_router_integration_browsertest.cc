@@ -21,15 +21,22 @@
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace media_router {
+
 namespace {
 // The path relative to <chromium src>/out/<build config> for media router
 // browser test resources.
 const base::FilePath::StringPieceType kResourcePath = FILE_PATH_LITERAL(
     "media_router/browser_test_resources/");
+
+void GetStartedSessionId(content::WebContents* web_contents,
+                         std::string* session_id) {
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents, "window.domAutomationController.send(startedSession.id)",
+      session_id));
+}
+
 }  // namespace
-
-
-namespace media_router {
 
 MediaRouterIntegrationBrowserTest::MediaRouterIntegrationBrowserTest() {
 }
@@ -182,9 +189,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_JoinSession) {
   ChooseSink(web_contents, "id1");
   ExecuteJavaScriptAPI(web_contents, "checkSession();");
   std::string session_id;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents, "window.domAutomationController.send(startedSession.id)",
-      &session_id));
+  GetStartedSessionId(web_contents, &session_id);
 
   OpenTestPageInNewTab(FILE_PATH_LITERAL("basic_test.html"));
   content::WebContents* new_web_contents =
@@ -199,6 +204,32 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_JoinSession) {
       new_web_contents, "window.domAutomationController.send(joinedSession.id)",
       &joined_session_id));
   ASSERT_EQ(session_id, joined_session_id);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MANUAL_Fail_JoinSession) {
+  OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  ExecuteJavaScriptAPI(web_contents, "waitUntilDeviceAvailable();");
+  content::TestNavigationObserver test_navigation_observer(web_contents, 1);
+  test_navigation_observer.StartWatchingNewWebContents();
+  ExecuteJavaScriptAPI(web_contents, "startSession();");
+  test_navigation_observer.Wait();
+  ChooseSink(web_contents, "id1");
+  ExecuteJavaScriptAPI(web_contents, "checkSession();");
+  std::string session_id;
+  GetStartedSessionId(web_contents, &session_id);
+
+  SetTestData(FILE_PATH_LITERAL("fail_join_session.json"));
+  OpenTestPage(FILE_PATH_LITERAL("fail_join_session.html"));
+  content::WebContents* new_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(new_web_contents);
+  ExecuteJavaScriptAPI(
+      new_web_contents,
+      base::StringPrintf("checkJoinSessionFails('%s');", session_id.c_str()));
 }
 
 }  // namespace media_router

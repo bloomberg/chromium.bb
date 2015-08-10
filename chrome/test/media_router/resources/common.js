@@ -95,6 +95,26 @@ function joinSession(sessionId) {
 }
 
 /**
+ * Calls join() and verify that it fails.
+ * @param {!string} sessionId ID of session to join.
+ * @param {!string} expectedErrorMessage
+ */
+function joinSessionAndExpectFailure(sessionId, expectedErrorMessage) {
+  var joinSessionRequest = new PresentationRequest(presentationUrl);
+  joinSessionRequest.join(sessionId).then(function(session) {
+    sendResult(false, 'join() unexpectedly succeeded.');
+  }).catch(function(error) {
+    if (error.message.indexOf(expectedErrorMessage) > -1) {
+      sendResult(true, '');
+    } else {
+      sendResult(false,
+        'Error message mismatch. Expected: ' + expectedErrorMessage +
+        ', actual: ' + error.message);
+    }
+  });
+}
+
+/**
  * Sends the test result back to browser test.
  * @param passed true if test passes, otherwise false.
  * @param errorMessage empty string if test passes, error message if test
