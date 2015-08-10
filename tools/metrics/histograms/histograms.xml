@@ -45578,7 +45578,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Metric to track counts of actions related to tab discarding. Namely, we get
     an event for every tab switch, split into two groups, whether it was a
-    discarded tab not. We also get an event whenever a tab gets discarded.
+    discarded tab not. We also get an event whenever a tab gets discarded as
+    well as when a tab that's playing audio gets discarded.
   </summary>
 </histogram>
 
@@ -70463,6 +70464,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Switched to an active tab"/>
   <int value="1" label="Switched to a discarded tab"/>
   <int value="2" label="Discarded a tab"/>
+  <int value="3"
+      label="Discarded a tab playing audio (included in the previous one)"/>
 </enum>
 
 <enum name="TabRendererCrashStatus" type="int">
