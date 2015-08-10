@@ -257,9 +257,18 @@ function main() {
 <h3 id="relaxing-inline-script">Inline Script</h3>
 
 <p>
-  There is no mechanism for relaxing the restriction against executing inline
-  JavaScript. In particular, setting a script policy that includes
-  <code>'unsafe-inline'</code> will have no effect.
+  Up until Chrome 45, there was no mechanism for relaxing the restriction
+  against executing inline JavaScript. In particular, setting a script policy
+  that includes <code>'unsafe-inline'</code> will have no effect.
+</p>
+
+<p>
+  As of Chrome 46, inline scripts can be whitelisted by specifying the
+  base64-encoded hash of the source code in the policy. This hash must be
+  prefixed by the used hash algorithm (sha256, sha384 or sha512).
+  See
+  <a href="http://www.w3.org/TR/2015/CR-CSP2-20150721/#script-src-hash-usage">
+    Hash usage for &lt;script&gt; elements</a> for an example.
 </p>
 
 <h3 id="relaxing-remote-script">Remote Script</h3>

@@ -43,6 +43,15 @@ const char* const kSandboxedPluginTypes[] = {
   "application/x-pnacl"
 };
 
+// List of CSP hash-source prefixes that are accepted. Blink is a bit more
+// lenient, but we only accept standard hashes to be forward-compatible.
+// http://www.w3.org/TR/2015/CR-CSP2-20150721/#hash_algo
+const char* const kHashSourcePrefixes[] = {
+  "'sha256-",
+  "'sha384-",
+  "'sha512-"
+};
+
 struct DirectiveStatus {
   explicit DirectiveStatus(const char* name)
       : directive_name(name), seen_in_policy(false) {}
@@ -113,6 +122,30 @@ bool isNonWildcardTLD(const std::string& url,
   return registry_length != 0;
 }
 
+// Checks whether the source is a syntactically valid hash.
+bool IsHashSource(const std::string& source) {
+  size_t hash_end = source.length() - 1;
+  if (source.empty() || source[hash_end] != '\'') {
+    return false;
+  }
+
+  for (const char* prefix : kHashSourcePrefixes) {
+    if (base::StartsWith(source, prefix,
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+      for (size_t i = strlen(prefix); i < hash_end; ++i) {
+        const char c = source[i];
+        // The hash must be base64-encoded. Do not allow any other characters.
+        if (!base::IsAsciiAlpha(c) && !base::IsAsciiDigit(c) && c != '+' &&
+            c != '/' && c != '=') {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
 InstallWarning CSPInstallWarning(const std::string& csp_warning) {
   return InstallWarning(csp_warning, manifest_keys::kContentSecurityPolicy);
 }
@@ -124,38 +157,39 @@ void GetSecureDirectiveValues(const std::string& directive_name,
                               std::vector<InstallWarning>* warnings) {
   sane_csp_parts->push_back(directive_name);
   while (tokenizer->GetNext()) {
-    std::string source = tokenizer->token();
-    base::StringToLowerASCII(&source);
+    std::string source_literal = tokenizer->token();
+    std::string source_lower = base::ToLowerASCII(source_literal);
     bool is_secure_csp_token = false;
 
     // We might need to relax this whitelist over time.
-    if (source == "'self'" || source == "'none'" ||
-        source == "http://127.0.0.1" ||
-        base::LowerCaseEqualsASCII(source, "blob:") ||
-        base::LowerCaseEqualsASCII(source, "filesystem:") ||
-        base::LowerCaseEqualsASCII(source, "http://localhost") ||
-        base::StartsWith(source, "http://127.0.0.1:",
+    if (source_lower == "'self'" || source_lower == "'none'" ||
+        source_lower == "http://127.0.0.1" || source_lower == "blob:" ||
+        source_lower == "filesystem:" || source_lower == "http://localhost" ||
+        base::StartsWith(source_lower, "http://127.0.0.1:",
                          base::CompareCase::SENSITIVE) ||
-        base::StartsWith(source, "http://localhost:",
+        base::StartsWith(source_lower, "http://localhost:",
                          base::CompareCase::SENSITIVE) ||
-        isNonWildcardTLD(source, "https://", true) ||
-        isNonWildcardTLD(source, "chrome://", false) ||
-        isNonWildcardTLD(source, std::string(extensions::kExtensionScheme) +
-                                     url::kStandardSchemeSeparator,
+        isNonWildcardTLD(source_lower, "https://", true) ||
+        isNonWildcardTLD(source_lower, "chrome://", false) ||
+        isNonWildcardTLD(source_lower,
+                         std::string(extensions::kExtensionScheme) +
+                             url::kStandardSchemeSeparator,
                          false) ||
-        base::StartsWith(source, "chrome-extension-resource:",
+        IsHashSource(source_literal) ||
+        base::StartsWith(source_lower, "chrome-extension-resource:",
                          base::CompareCase::SENSITIVE)) {
       is_secure_csp_token = true;
     } else if ((options & OPTIONS_ALLOW_UNSAFE_EVAL) &&
-               source == "'unsafe-eval'") {
+               source_lower == "'unsafe-eval'") {
       is_secure_csp_token = true;
     }
 
     if (is_secure_csp_token) {
-      sane_csp_parts->push_back(source);
+      sane_csp_parts->push_back(source_literal);
     } else if (warnings) {
       warnings->push_back(CSPInstallWarning(ErrorUtils::FormatErrorMessage(
-          manifest_errors::kInvalidCSPInsecureValue, source, directive_name)));
+          manifest_errors::kInvalidCSPInsecureValue, source_literal,
+          directive_name)));
     }
   }
   // End of CSP directive that was started at the beginning of this method. If

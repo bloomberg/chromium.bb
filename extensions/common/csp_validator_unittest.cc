@@ -311,9 +311,9 @@ TEST(ExtensionCSPValidator, IsSecure) {
       "default-src 'self' http://127.0.0.1;", OPTIONS_ALLOW_UNSAFE_EVAL));
   EXPECT_TRUE(CheckSanitizeCSP(
       "default-src 'self' http://localhost;", OPTIONS_ALLOW_UNSAFE_EVAL));
-  EXPECT_TRUE(CheckSanitizeCSP(
-      "default-src 'self' http://lOcAlHoSt;", OPTIONS_ALLOW_UNSAFE_EVAL,
-      "default-src 'self' http://localhost;"));
+  EXPECT_TRUE(CheckSanitizeCSP("default-src 'self' http://lOcAlHoSt;",
+                               OPTIONS_ALLOW_UNSAFE_EVAL,
+                               "default-src 'self' http://lOcAlHoSt;"));
   EXPECT_TRUE(CheckSanitizeCSP(
       "default-src 'self' http://127.0.0.1:9999;", OPTIONS_ALLOW_UNSAFE_EVAL));
   EXPECT_TRUE(CheckSanitizeCSP(
@@ -333,16 +333,14 @@ TEST(ExtensionCSPValidator, IsSecure) {
       "default-src 'self' blob:;", OPTIONS_ALLOW_UNSAFE_EVAL));
   EXPECT_TRUE(CheckSanitizeCSP(
       "default-src 'self' blob:http://example.com/XXX",
-      OPTIONS_ALLOW_UNSAFE_EVAL,
-      "default-src 'self';",
-      InsecureValueWarning("default-src", "blob:http://example.com/xxx")));
+      OPTIONS_ALLOW_UNSAFE_EVAL, "default-src 'self';",
+      InsecureValueWarning("default-src", "blob:http://example.com/XXX")));
   EXPECT_TRUE(CheckSanitizeCSP(
       "default-src 'self' filesystem:;", OPTIONS_ALLOW_UNSAFE_EVAL));
   EXPECT_TRUE(CheckSanitizeCSP(
       "default-src 'self' filesystem:http://example.com/XX",
-      OPTIONS_ALLOW_UNSAFE_EVAL,
-      "default-src 'self';",
-      InsecureValueWarning("default-src", "filesystem:http://example.com/xx")));
+      OPTIONS_ALLOW_UNSAFE_EVAL, "default-src 'self';",
+      InsecureValueWarning("default-src", "filesystem:http://example.com/XX")));
 
   EXPECT_TRUE(CheckSanitizeCSP(
       "default-src 'self' https://*.googleapis.com;",
@@ -393,6 +391,32 @@ TEST(ExtensionCSPValidator, IsSecure) {
       OPTIONS_ALLOW_INSECURE_OBJECT_SRC,
       "script-src; object-src *; plugin-types application/pdf;",
       InsecureValueWarning("script-src", "*")));
+
+  EXPECT_TRUE(CheckSanitizeCSP(
+      "default-src; script-src"
+      " 'sha256-hndjYvzUzy2Ykuad81Cwsl1FOXX/qYs/aDVyUyNZwBw='"
+      " 'sha384-bSVm1i3sjPBRM4TwZtYTDjk9JxZMExYHWbFmP1SxDhJH4ue0Wu9OPOkY5hcqRcS"
+      "t'"
+      " 'sha512-440MmBLtj9Kp5Bqloogn9BqGDylY8vFsv5/zXL1zH2fJVssCoskRig4gyM+9Kqw"
+      "vCSapSz5CVoUGHQcxv43UQg==';",
+      OPTIONS_NONE));
+
+  // Reject non-standard algorithms, even if they are still supported by Blink.
+  EXPECT_TRUE(CheckSanitizeCSP(
+      "default-src; script-src 'sha1-eYyYGmKWdhpUewohaXk9o8IaLSw=';",
+      OPTIONS_NONE, "default-src; script-src;",
+      InsecureValueWarning("script-src",
+                           "'sha1-eYyYGmKWdhpUewohaXk9o8IaLSw='")));
+
+  EXPECT_TRUE(CheckSanitizeCSP(
+      "default-src; script-src 'sha256-hndjYvzUzy2Ykuad81Cwsl1FOXX/qYs/aDVyUyNZ"
+      "wBw= sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=';",
+      OPTIONS_NONE, "default-src; script-src;",
+      InsecureValueWarning(
+          "script-src", "'sha256-hndjYvzUzy2Ykuad81Cwsl1FOXX/qYs/aDVyUyNZwBw="),
+      InsecureValueWarning(
+          "script-src",
+          "sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng='")));
 }
 
 TEST(ExtensionCSPValidator, IsSandboxed) {
