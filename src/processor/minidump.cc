@@ -2517,6 +2517,7 @@ bool MinidumpModuleList::Read(uint32_t expected_size) {
     // MinidumpModule::ReadAuxiliaryData seeks around, and if it were
     // included in the loop above, additional seeks would be needed where
     // none are now to read contiguous data.
+    uint64_t last_end_address = 0;
     for (unsigned int module_index = 0;
          module_index < module_count;
          ++module_index) {
@@ -2554,12 +2555,29 @@ bool MinidumpModuleList::Read(uint32_t expected_size) {
         const string kDevAshmem("/dev/ashmem/");
         if (module->code_file().compare(
             0, kDevAshmem.length(), kDevAshmem) != 0) {
-          BPLOG(ERROR) << "MinidumpModuleList could not store module " <<
-                          module_index << "/" << module_count << ", " <<
-                          module->code_file() << ", " <<
-                          HexString(base_address) << "+" <<
-                          HexString(module_size);
-          return false;
+          if (base_address < last_end_address) {
+            // If failed due to apparent range overlap the cause may be
+            // the client correction applied for Android packed relocations.
+            // If this is the case, back out the client correction and retry.
+            module_size -= last_end_address - base_address;
+            base_address = last_end_address;
+            if (!range_map_->StoreRange(base_address,
+                                        module_size, module_index)) {
+              BPLOG(ERROR) << "MinidumpModuleList could not store module " <<
+                              module_index << "/" << module_count << ", " <<
+                              module->code_file() << ", " <<
+                              HexString(base_address) << "+" <<
+                              HexString(module_size) << ", after adjusting";
+              return false;
+            }
+          } else {
+            BPLOG(ERROR) << "MinidumpModuleList could not store module " <<
+                            module_index << "/" << module_count << ", " <<
+                            module->code_file() << ", " <<
+                            HexString(base_address) << "+" <<
+                            HexString(module_size);
+            return false;
+          }
         } else {
           BPLOG(INFO) << "MinidumpModuleList ignoring overlapping module " <<
                           module_index << "/" << module_count << ", " <<
@@ -2568,6 +2586,7 @@ bool MinidumpModuleList::Read(uint32_t expected_size) {
                           HexString(module_size);
         }
       }
+      last_end_address = base_address + module_size;
     }
 
     modules_ = modules.release();
