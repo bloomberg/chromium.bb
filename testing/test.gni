@@ -121,11 +121,17 @@ template("test") {
 
         forward_variables_from(invoker,
                                [
+                                 "cflags",
+                                 "cflags_c",
+                                 "cflags_cc",
+                                 "cflags_objc",
+                                 "cflags_objcc",
                                  "data",
-                                 "deps",
                                  "data_deps",
                                  "datadeps",
                                  "defines",
+                                 "deps",
+                                 "include_dirs",
                                  "includes",
                                ])
       }
@@ -154,7 +160,6 @@ template("test") {
                                "cflags_objcc",
                                "check_includes",
                                "forward_dependent_configs_from",
-                               "include_dirs",
                                "ldflags",
                                "libs",
                                "output_extension",
