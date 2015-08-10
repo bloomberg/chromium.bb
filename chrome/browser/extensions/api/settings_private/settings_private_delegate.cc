@@ -29,7 +29,11 @@ SettingsPrivateDelegate::~SettingsPrivateDelegate() {
 
 scoped_ptr<base::Value> SettingsPrivateDelegate::GetPref(
     const std::string& name) {
-  return prefs_util_->GetPref(name)->ToValue();
+  scoped_ptr<api::settings_private::PrefObject> pref =
+      prefs_util_->GetPref(name);
+  if (!pref)
+    return base::Value::CreateNullValue();
+  return pref->ToValue();
 }
 
 scoped_ptr<base::Value> SettingsPrivateDelegate::GetAllPrefs() {
@@ -37,7 +41,9 @@ scoped_ptr<base::Value> SettingsPrivateDelegate::GetAllPrefs() {
 
   const TypedPrefMap& keys = prefs_util_->GetWhitelistedKeys();
   for (const auto& it : keys) {
-    prefs->Append(GetPref(it.first).release());
+    scoped_ptr<base::Value> pref = GetPref(it.first);
+    if (!pref->IsType(base::Value::TYPE_NULL))
+      prefs->Append(pref.release());
   }
 
   return prefs.Pass();

@@ -140,17 +140,16 @@ scoped_ptr<api::settings_private::PrefObject> PrefsUtil::GetCrosSettingsPref(
 
 scoped_ptr<api::settings_private::PrefObject> PrefsUtil::GetPref(
     const std::string& name) {
-  scoped_ptr<api::settings_private::PrefObject> pref_object(
-      new api::settings_private::PrefObject());
-
   if (IsCrosSetting(name))
     return GetCrosSettingsPref(name);
 
   PrefService* pref_service = FindServiceForPref(name);
   const PrefService::Preference* pref = pref_service->FindPreference(name);
   if (!pref)
-    return pref_object.Pass();
+    return nullptr;
 
+  scoped_ptr<api::settings_private::PrefObject> pref_object(
+      new api::settings_private::PrefObject());
   pref_object->key = pref->name();
   pref_object->type = GetType(name, pref->GetType());
   pref_object->value.reset(pref->GetValue()->DeepCopy());

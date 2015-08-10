@@ -63,7 +63,11 @@ ExtensionFunction::ResponseAction SettingsPrivateGetPrefFunction::Run() {
   SettingsPrivateDelegate* delegate =
       SettingsPrivateDelegateFactory::GetForBrowserContext(browser_context());
 
-  return RespondNow(OneArgument(delegate->GetPref(parameters->name).release()));
+  scoped_ptr<base::Value> value = delegate->GetPref(parameters->name);
+  if (value->IsType(base::Value::TYPE_NULL))
+    return RespondNow(Error("Pref * does not exist", parameters->name));
+  else
+    return RespondNow(OneArgument(value.release()));
 }
 
 }  // namespace extensions
