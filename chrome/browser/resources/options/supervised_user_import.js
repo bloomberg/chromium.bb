@@ -186,7 +186,8 @@ cr.define('options', function() {
 
       $('supervised-user-list').dataModel = new ArrayDataModel(supervisedUsers);
       if (supervisedUsers.length == 0) {
-        this.onError_(loadTimeData.getString('noExistingSupervisedUsers'));
+        this.onErrorInternal_(
+            loadTimeData.getString('noExistingSupervisedUsers'));
         $('supervised-user-import-ok').disabled = true;
       } else {
         // Hide the error bubble.
@@ -196,7 +197,8 @@ cr.define('options', function() {
 
     onSigninError_: function() {
       $('supervised-user-list').dataModel = null;
-      this.onError_(loadTimeData.getString('supervisedUserImportSigninError'));
+      this.onErrorInternal_(
+          loadTimeData.getString('supervisedUserImportSigninError'));
     },
 
     /**
@@ -207,10 +209,19 @@ cr.define('options', function() {
      * @private
      */
     onError_: function(error) {
+      this.onErrorInternal_(error);
+      this.updateImportInProgress_(false);
+    },
+
+    /**
+     * Displays an error message.
+     * @param {string} error The error message to display.
+     * @private
+     */
+    onErrorInternal_: function(error) {
       var errorBubble = $('supervised-user-import-error-bubble');
       errorBubble.hidden = false;
       errorBubble.textContent = error;
-      this.updateImportInProgress_(false);
     },
 
     /**
