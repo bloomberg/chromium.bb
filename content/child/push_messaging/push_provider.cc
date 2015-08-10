@@ -183,7 +183,7 @@ void PushProvider::OnUnsubscribeSuccess(int request_id, bool did_unsubscribe) {
   if (!callbacks)
     return;
 
-  callbacks->onSuccess(&did_unsubscribe);
+  callbacks->onSuccess(did_unsubscribe);
 
   unsubscribe_callbacks_.Remove(request_id);
 }
@@ -197,9 +197,8 @@ void PushProvider::OnUnsubscribeError(
   if (!callbacks)
     return;
 
-  scoped_ptr<blink::WebPushError> error(new blink::WebPushError(
+  callbacks->onError(blink::WebPushError(
       error_type, blink::WebString::fromUTF8(error_message)));
-  callbacks->onError(error.release());
 
   unsubscribe_callbacks_.Remove(request_id);
 }

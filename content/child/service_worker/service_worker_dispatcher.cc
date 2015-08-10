@@ -423,7 +423,7 @@ void ServiceWorkerDispatcher::OnUnregistered(int thread_id,
   DCHECK(callbacks);
   if (!callbacks)
     return;
-  callbacks->onSuccess(&is_success);
+  callbacks->onSuccess(is_success);
   pending_unregistration_callbacks_.Remove(request_id);
 }
 
@@ -557,7 +557,7 @@ void ServiceWorkerDispatcher::OnUpdateError(
   if (!callbacks)
     return;
 
-  callbacks->onError(new WebServiceWorkerError(error_type, message));
+  callbacks->onError(WebServiceWorkerError(error_type, message));
   pending_update_callbacks_.Remove(request_id);
 }
 
@@ -580,9 +580,7 @@ void ServiceWorkerDispatcher::OnUnregistrationError(
   if (!callbacks)
     return;
 
-  scoped_ptr<WebServiceWorkerError> error(
-      new WebServiceWorkerError(error_type, message));
-  callbacks->onError(error.release());
+  callbacks->onError(WebServiceWorkerError(error_type, message));
   pending_unregistration_callbacks_.Remove(request_id);
 }
 

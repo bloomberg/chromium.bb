@@ -166,7 +166,7 @@ void GeofencingDispatcher::OnRegisterRegionComplete(int thread_id,
   if (status == GEOFENCING_STATUS_OK) {
     callbacks->onSuccess();
   } else {
-    callbacks->onError(new WebGeofencingError(
+    callbacks->onError(WebGeofencingError(
         WebGeofencingError::ErrorTypeAbort,
         blink::WebString::fromUTF8(GeofencingStatusToString(status))));
   }
@@ -183,7 +183,7 @@ void GeofencingDispatcher::OnUnregisterRegionComplete(int thread_id,
   if (status == GEOFENCING_STATUS_OK) {
     callbacks->onSuccess();
   } else {
-    callbacks->onError(new WebGeofencingError(
+    callbacks->onError(WebGeofencingError(
         WebGeofencingError::ErrorTypeAbort,
         blink::WebString::fromUTF8(GeofencingStatusToString(status))));
   }
@@ -200,18 +200,17 @@ void GeofencingDispatcher::OnGetRegisteredRegionsComplete(
   DCHECK(callbacks);
 
   if (status == GEOFENCING_STATUS_OK) {
-    scoped_ptr<blink::WebVector<blink::WebGeofencingRegistration>> result(
-        new blink::WebVector<blink::WebGeofencingRegistration>(regions.size()));
+    blink::WebVector<blink::WebGeofencingRegistration> result(regions.size());
     size_t index = 0;
     for (GeofencingRegistrations::const_iterator it = regions.begin();
          it != regions.end();
          ++it, ++index) {
-      (*result)[index].id = blink::WebString::fromUTF8(it->first);
-      (*result)[index].region = it->second;
+      result[index].id = blink::WebString::fromUTF8(it->first);
+      result[index].region = it->second;
     }
-    callbacks->onSuccess(result.release());
+    callbacks->onSuccess(result);
   } else {
-    callbacks->onError(new WebGeofencingError(
+    callbacks->onError(WebGeofencingError(
         WebGeofencingError::ErrorTypeAbort,
         blink::WebString::fromUTF8(GeofencingStatusToString(status))));
   }

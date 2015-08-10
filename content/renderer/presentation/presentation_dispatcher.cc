@@ -225,7 +225,7 @@ void PresentationDispatcher::getAvailability(
     const blink::WebString& presentationUrl,
     blink::WebPresentationAvailabilityCallbacks* callbacks) {
   if (listening_state_ == ListeningState::Active) {
-    callbacks->onSuccess(new bool(last_known_availability_));
+    callbacks->onSuccess(last_known_availability_);
     delete callbacks;
     return;
   }
@@ -277,7 +277,7 @@ void PresentationDispatcher::OnScreenAvailabilityUpdated(bool available) {
 
   for (AvailabilityCallbacksMap::iterator iter(&availability_callbacks_);
        !iter.IsAtEnd(); iter.Advance()) {
-    iter.GetCurrentValue()->onSuccess(new bool(available));
+    iter.GetCurrentValue()->onSuccess(available);
   }
   availability_callbacks_.Clear();
 
@@ -289,7 +289,7 @@ void PresentationDispatcher::OnScreenAvailabilityNotSupported() {
 
   for (AvailabilityCallbacksMap::iterator iter(&availability_callbacks_);
        !iter.IsAtEnd(); iter.Advance()) {
-    iter.GetCurrentValue()->onError(new blink::WebPresentationError(
+    iter.GetCurrentValue()->onError(blink::WebPresentationError(
         blink::WebPresentationError::ErrorTypeAvailabilityNotSupported,
         blink::WebString::fromUTF8(
             "getAvailability() isn't supported at the moment. It can be due to"
@@ -325,14 +325,15 @@ void PresentationDispatcher::OnSessionCreated(
   DCHECK(callback);
   if (!error.is_null()) {
     DCHECK(session_info.is_null());
-    callback->onError(new blink::WebPresentationError(
+    callback->onError(blink::WebPresentationError(
         GetWebPresentationErrorTypeFromMojo(error->error_type),
         blink::WebString::fromUTF8(error->message)));
     return;
   }
 
   DCHECK(!session_info.is_null());
-  callback->onSuccess(new PresentationSessionClient(session_info.Clone()));
+  callback->onSuccess(
+      blink::adoptWebPtr(new PresentationSessionClient(session_info.Clone())));
   presentation_service_->ListenForSessionMessages(session_info.Pass());
 }
 

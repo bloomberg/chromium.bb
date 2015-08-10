@@ -41,6 +41,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/WebCrossOriginServiceWorkerClient.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
+#include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerClientQueryOptions.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerRequest.h"
@@ -793,14 +794,13 @@ void ServiceWorkerContextClient::OnDidGetClients(
     NOTREACHED() << "Got stray response: " << request_id;
     return;
   }
-  scoped_ptr<blink::WebServiceWorkerClientsInfo> info(
-      new blink::WebServiceWorkerClientsInfo);
+  blink::WebServiceWorkerClientsInfo info;
   blink::WebVector<blink::WebServiceWorkerClientInfo> convertedClients(
       clients.size());
   for (size_t i = 0; i < clients.size(); ++i)
     convertedClients[i] = ToWebServiceWorkerClientInfo(clients[i]);
-  info->clients.swap(convertedClients);
-  callbacks->onSuccess(info.release());
+  info.clients.swap(convertedClients);
+  callbacks->onSuccess(info);
   context_->clients_callbacks.Remove(request_id);
 }
 
@@ -821,7 +821,7 @@ void ServiceWorkerContextClient::OnOpenWindowResponse(
     web_client.reset(new blink::WebServiceWorkerClientInfo(
         ToWebServiceWorkerClientInfo(client)));
   }
-  callbacks->onSuccess(web_client.release());
+  callbacks->onSuccess(adoptWebPtr(web_client.release()));
   context_->client_callbacks.Remove(request_id);
 }
 
@@ -836,11 +836,9 @@ void ServiceWorkerContextClient::OnOpenWindowError(
     NOTREACHED() << "Got stray response: " << request_id;
     return;
   }
-  scoped_ptr<blink::WebServiceWorkerError> error(
-      new blink::WebServiceWorkerError(
-          blink::WebServiceWorkerError::ErrorTypeUnknown,
-          blink::WebString::fromUTF8(message)));
-  callbacks->onError(error.release());
+  callbacks->onError(blink::WebServiceWorkerError(
+      blink::WebServiceWorkerError::ErrorTypeUnknown,
+      blink::WebString::fromUTF8(message)));
   context_->client_callbacks.Remove(request_id);
 }
 
@@ -859,13 +857,11 @@ void ServiceWorkerContextClient::OnFocusClientResponse(
     scoped_ptr<blink::WebServiceWorkerClientInfo> web_client (
         new blink::WebServiceWorkerClientInfo(
             ToWebServiceWorkerClientInfo(client)));
-    callback->onSuccess(web_client.release());
+    callback->onSuccess(adoptWebPtr(web_client.release()));
   } else {
-    scoped_ptr<blink::WebServiceWorkerError> error(
-        new blink::WebServiceWorkerError(
-            blink::WebServiceWorkerError::ErrorTypeNotFound,
-            "The WindowClient was not found."));
-    callback->onError(error.release());
+    callback->onError(blink::WebServiceWorkerError(
+        blink::WebServiceWorkerError::ErrorTypeNotFound,
+        "The WindowClient was not found."));
   }
 
   context_->client_callbacks.Remove(request_id);
@@ -888,7 +884,7 @@ void ServiceWorkerContextClient::OnNavigateClientResponse(
     web_client.reset(new blink::WebServiceWorkerClientInfo(
         ToWebServiceWorkerClientInfo(client)));
   }
-  callbacks->onSuccess(web_client.release());
+  callbacks->onSuccess(adoptWebPtr(web_client.release()));
   context_->client_callbacks.Remove(request_id);
 }
 
@@ -903,11 +899,9 @@ void ServiceWorkerContextClient::OnNavigateClientError(int request_id,
     return;
   }
   std::string message = "Cannot navigate to URL: " + url.spec();
-  scoped_ptr<blink::WebServiceWorkerError> error(
-      new blink::WebServiceWorkerError(
-          blink::WebServiceWorkerError::ErrorTypeUnknown,
-          blink::WebString::fromUTF8(message)));
-  callbacks->onError(error.release());
+  callbacks->onError(blink::WebServiceWorkerError(
+      blink::WebServiceWorkerError::ErrorTypeUnknown,
+      blink::WebString::fromUTF8(message)));
   context_->client_callbacks.Remove(request_id);
 }
 
@@ -949,9 +943,7 @@ void ServiceWorkerContextClient::OnClaimClientsError(
     NOTREACHED() << "Got stray response: " << request_id;
     return;
   }
-  scoped_ptr<blink::WebServiceWorkerError> error(
-      new blink::WebServiceWorkerError(error_type, message));
-  callbacks->onError(error.release());
+  callbacks->onError(blink::WebServiceWorkerError(error_type, message));
   context_->claim_clients_callbacks.Remove(request_id);
 }
 

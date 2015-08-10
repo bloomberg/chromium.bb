@@ -136,6 +136,17 @@ void ClearCallbacksMapWithErrors(T* callbacks_map) {
   }
 }
 
+template <typename T>
+void ClearCallbacksMapWithErrorsNonPtr(T* callbacks_map) {
+  typename T::iterator iter(callbacks_map);
+  while (!iter.IsAtEnd()) {
+    iter.GetCurrentValue()->onError(blink::WebServiceWorkerCacheError(
+        blink::WebServiceWorkerCacheErrorNotFound));
+    callbacks_map->Remove(iter.GetCurrentKey());
+    iter.Advance();
+  }
+}
+
 }  // namespace
 
 // The WebCache object is the Chromium side implementation of the Blink
@@ -206,7 +217,7 @@ CacheStorageDispatcher::~CacheStorageDispatcher() {
   ClearCallbacksMapWithErrors(&cache_match_callbacks_);
   ClearCallbacksMapWithErrors(&cache_match_all_callbacks_);
   ClearCallbacksMapWithErrors(&cache_keys_callbacks_);
-  ClearCallbacksMapWithErrors(&cache_batch_callbacks_);
+  ClearCallbacksMapWithErrorsNonPtr(&cache_batch_callbacks_);
 
   g_cache_storage_dispatcher_tls.Pointer()->Set(kHasBeenDeleted);
 }
@@ -518,7 +529,7 @@ void CacheStorageDispatcher::OnCacheBatchError(
   DCHECK_EQ(thread_id, CurrentWorkerId());
   blink::WebServiceWorkerCache::CacheBatchCallbacks* callbacks =
       cache_batch_callbacks_.Lookup(request_id);
-  callbacks->onError(new blink::WebServiceWorkerCacheError(reason));
+  callbacks->onError(blink::WebServiceWorkerCacheError(reason));
   cache_batch_callbacks_.Remove(request_id);
   cache_batch_times_.erase(request_id);
 }

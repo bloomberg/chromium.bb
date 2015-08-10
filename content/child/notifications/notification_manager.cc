@@ -291,9 +291,8 @@ void NotificationManager::OnDidGetNotifications(
   if (!callbacks)
     return;
 
-  scoped_ptr<blink::WebVector<blink::WebPersistentNotificationInfo>>
-      notifications(new blink::WebVector<blink::WebPersistentNotificationInfo>(
-          notification_infos.size()));
+  blink::WebVector<blink::WebPersistentNotificationInfo> notifications(
+      notification_infos.size());
 
   for (size_t i = 0; i < notification_infos.size(); ++i) {
     blink::WebPersistentNotificationInfo web_notification_info;
@@ -301,10 +300,10 @@ void NotificationManager::OnDidGetNotifications(
     web_notification_info.data =
         ToWebNotificationData(notification_infos[i].second);
 
-    (*notifications)[i] = web_notification_info;
+    notifications[i] = web_notification_info;
   }
 
-  callbacks->onSuccess(notifications.release());
+  callbacks->onSuccess(notifications);
 
   pending_get_notification_requests_.Remove(request_id);
 }

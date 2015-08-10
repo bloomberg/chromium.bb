@@ -11,6 +11,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/bluetooth/bluetooth_messages.h"
 #include "device/bluetooth/bluetooth_uuid.h"
+#include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothDevice.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothError.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTCharacteristic.h"
@@ -240,11 +241,11 @@ void BluetoothDispatcher::OnRequestDeviceSuccess(
     uuids[i] = WebString::fromUTF8(device.uuids[i].c_str());
 
   pending_requests_.Lookup(request_id)
-      ->onSuccess(new WebBluetoothDevice(
+      ->onSuccess(blink::adoptWebPtr(new WebBluetoothDevice(
           WebString::fromUTF8(device.instance_id), WebString(device.name),
           device.device_class, GetWebVendorIdSource(device.vendor_id_source),
           device.vendor_id, device.product_id, device.product_version,
-          device.paired, uuids));
+          device.paired, uuids)));
   pending_requests_.Remove(request_id);
 }
 
@@ -252,7 +253,7 @@ void BluetoothDispatcher::OnRequestDeviceError(int thread_id,
                                                int request_id,
                                                WebBluetoothError error) {
   DCHECK(pending_requests_.Lookup(request_id)) << request_id;
-  pending_requests_.Lookup(request_id)->onError(new WebBluetoothError(error));
+  pending_requests_.Lookup(request_id)->onError(WebBluetoothError(error));
   pending_requests_.Remove(request_id);
 }
 
@@ -262,8 +263,8 @@ void BluetoothDispatcher::OnConnectGATTSuccess(
     const std::string& device_instance_id) {
   DCHECK(pending_connect_requests_.Lookup(request_id)) << request_id;
   pending_connect_requests_.Lookup(request_id)
-      ->onSuccess(new WebBluetoothGATTRemoteServer(
-          WebString::fromUTF8(device_instance_id), true /* connected */));
+      ->onSuccess(blink::adoptWebPtr(new WebBluetoothGATTRemoteServer(
+          WebString::fromUTF8(device_instance_id), true /* connected */)));
   pending_connect_requests_.Remove(request_id);
 }
 
@@ -272,7 +273,7 @@ void BluetoothDispatcher::OnConnectGATTError(int thread_id,
                                              WebBluetoothError error) {
   DCHECK(pending_connect_requests_.Lookup(request_id)) << request_id;
   pending_connect_requests_.Lookup(request_id)
-      ->onError(new WebBluetoothError(error));
+      ->onError(WebBluetoothError(error));
   pending_connect_requests_.Remove(request_id);
 }
 
@@ -283,9 +284,9 @@ void BluetoothDispatcher::OnGetPrimaryServiceSuccess(
   DCHECK(pending_primary_service_requests_.Lookup(request_id)) << request_id;
   BluetoothPrimaryServiceRequest* request =
       pending_primary_service_requests_.Lookup(request_id);
-  request->callbacks->onSuccess(new WebBluetoothGATTService(
+  request->callbacks->onSuccess(blink::adoptWebPtr(new WebBluetoothGATTService(
       WebString::fromUTF8(service_instance_id), request->service_uuid,
-      true /* isPrimary */, request->device_instance_id));
+      true /* isPrimary */, request->device_instance_id)));
   pending_primary_service_requests_.Remove(request_id);
 }
 
@@ -305,7 +306,7 @@ void BluetoothDispatcher::OnGetPrimaryServiceError(int thread_id,
   }
 
   pending_primary_service_requests_.Lookup(request_id)
-      ->callbacks->onError(new WebBluetoothError(error));
+      ->callbacks->onError(WebBluetoothError(error));
   pending_primary_service_requests_.Remove(request_id);
 }
 
@@ -317,9 +318,10 @@ void BluetoothDispatcher::OnGetCharacteristicSuccess(
 
   BluetoothCharacteristicRequest* request =
       pending_characteristic_requests_.Lookup(request_id);
-  request->callbacks->onSuccess(new WebBluetoothGATTCharacteristic(
-      WebString::fromUTF8(characteristic_instance_id),
-      request->service_instance_id, request->characteristic_uuid));
+  request->callbacks->onSuccess(
+      blink::adoptWebPtr(new WebBluetoothGATTCharacteristic(
+          WebString::fromUTF8(characteristic_instance_id),
+          request->service_instance_id, request->characteristic_uuid)));
 
   pending_characteristic_requests_.Remove(request_id);
 }
@@ -337,7 +339,7 @@ void BluetoothDispatcher::OnGetCharacteristicError(int thread_id,
         ->callbacks->onSuccess(nullptr);
   } else {
     pending_characteristic_requests_.Lookup(request_id)
-        ->callbacks->onError(new WebBluetoothError(error));
+        ->callbacks->onError(WebBluetoothError(error));
   }
   pending_characteristic_requests_.Remove(request_id);
 }
@@ -350,8 +352,7 @@ void BluetoothDispatcher::OnReadValueSuccess(
 
   // WebArrayBuffer is not accessible from Source/modules so we pass a
   // WebVector instead.
-  pending_read_value_requests_.Lookup(request_id)
-      ->onSuccess(new WebVector<uint8_t>(value));
+  pending_read_value_requests_.Lookup(request_id)->onSuccess(value);
 
   pending_read_value_requests_.Remove(request_id);
 }
@@ -362,7 +363,7 @@ void BluetoothDispatcher::OnReadValueError(int thread_id,
   DCHECK(pending_read_value_requests_.Lookup(request_id)) << request_id;
 
   pending_read_value_requests_.Lookup(request_id)
-      ->onError(new WebBluetoothError(error));
+      ->onError(WebBluetoothError(error));
 
   pending_read_value_requests_.Remove(request_id);
 }
@@ -381,7 +382,7 @@ void BluetoothDispatcher::OnWriteValueError(int thread_id,
   DCHECK(pending_write_value_requests_.Lookup(request_id)) << request_id;
 
   pending_write_value_requests_.Lookup(request_id)
-      ->onError(new WebBluetoothError(error));
+      ->onError(WebBluetoothError(error));
 
   pending_write_value_requests_.Remove(request_id);
 }
