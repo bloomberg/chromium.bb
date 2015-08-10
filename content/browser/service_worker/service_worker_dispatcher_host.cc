@@ -332,10 +332,7 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
   std::string error_message;
   if (ServiceWorkerUtils::ContainsDisallowedCharacter(pattern, script_url,
                                                       &error_message)) {
-    Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
-        thread_id, request_id, WebServiceWorkerError::ErrorTypeSecurity,
-        base::ASCIIToUTF16(kServiceWorkerRegisterErrorPrefix) +
-            base::UTF8ToUTF16(error_message)));
+    bad_message::ReceivedBadMessage(this, bad_message::SWDH_REGISTER_CANNOT);
     return;
   }
 

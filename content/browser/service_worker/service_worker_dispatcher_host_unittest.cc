@@ -310,6 +310,38 @@ TEST_F(ServiceWorkerDispatcherHostTest, Register_CrossOriginShouldFail) {
   EXPECT_EQ(6, dispatcher_host_->bad_messages_received_count_);
 }
 
+TEST_F(ServiceWorkerDispatcherHostTest, Register_BadCharactersShouldFail) {
+  const int64 kProviderId = 99;  // Dummy value
+  scoped_ptr<ServiceWorkerProviderHost> host(
+      CreateServiceWorkerProviderHost(kProviderId));
+  host->SetDocumentUrl(GURL("https://www.example.com/"));
+  context()->AddProviderHost(host.Pass());
+
+  SendRegister(kProviderId, GURL("https://www.example.com/%2f"),
+               GURL("https://www.example.com/"));
+  EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
+
+  SendRegister(kProviderId, GURL("https://www.example.com/%2F"),
+               GURL("https://www.example.com/"));
+  EXPECT_EQ(2, dispatcher_host_->bad_messages_received_count_);
+
+  SendRegister(kProviderId, GURL("https://www.example.com/"),
+               GURL("https://www.example.com/%2f"));
+  EXPECT_EQ(3, dispatcher_host_->bad_messages_received_count_);
+
+  SendRegister(kProviderId, GURL("https://www.example.com/%5c"),
+               GURL("https://www.example.com/"));
+  EXPECT_EQ(4, dispatcher_host_->bad_messages_received_count_);
+
+  SendRegister(kProviderId, GURL("https://www.example.com/"),
+               GURL("https://www.example.com/%5c"));
+  EXPECT_EQ(5, dispatcher_host_->bad_messages_received_count_);
+
+  SendRegister(kProviderId, GURL("https://www.example.com/"),
+               GURL("https://www.example.com/%5C"));
+  EXPECT_EQ(6, dispatcher_host_->bad_messages_received_count_);
+}
+
 TEST_F(ServiceWorkerDispatcherHostTest,
        Register_FileSystemDocumentShouldFail) {
   const int64 kProviderId = 99;  // Dummy value
