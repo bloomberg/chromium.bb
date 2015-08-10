@@ -128,6 +128,7 @@ WebPreferences::WebPreferences()
       strict_mixed_content_checking(false),
       strict_powerful_feature_restrictions(false),
       strictly_block_blockable_mixed_content(false),
+      block_mixed_plugin_content(false),
       password_echo_enabled(false),
       should_print_backgrounds(false),
       should_clear_document_background(true),

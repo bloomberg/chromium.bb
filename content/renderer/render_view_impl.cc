@@ -1068,6 +1068,9 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setStrictlyBlockBlockableMixedContent(
       prefs.strictly_block_blockable_mixed_content);
 
+  settings->setStrictMixedContentCheckingForPlugin(
+      prefs.block_mixed_plugin_content);
+
   settings->setStrictPowerfulFeatureRestrictions(
       prefs.strict_powerful_feature_restrictions);
   settings->setPasswordEchoEnabled(prefs.password_echo_enabled);

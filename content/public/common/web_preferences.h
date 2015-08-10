@@ -141,6 +141,7 @@ struct CONTENT_EXPORT WebPreferences {
   bool strict_powerful_feature_restrictions;
   // Disallow user opt-in for blockable mixed content.
   bool strictly_block_blockable_mixed_content;
+  bool block_mixed_plugin_content;
   bool password_echo_enabled;
   bool should_print_backgrounds;
   bool should_clear_document_background;
