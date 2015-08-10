@@ -29,7 +29,8 @@ LazyInstance<scoped_ptr<ContentMainDelegate> > g_content_main_delegate =
 }  // namespace
 
 static void InitApplicationContext(JNIEnv* env, jclass clazz, jobject context) {
-  base::android::ScopedJavaLocalRef<jobject> scoped_context(env, context);
+  base::android::ScopedJavaLocalRef<jobject> scoped_context(
+      env, env->NewLocalRef(context));
   base::android::InitApplicationContext(env, scoped_context);
 }
 

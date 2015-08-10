@@ -133,11 +133,11 @@ class SurfaceTextureManagerImpl : public SurfaceTextureManager,
 // processes such as renderers, plugins, etc.
 void InternalInitChildProcess(JNIEnv* env,
                               jclass clazz,
-                              jobject context,
                               jobject service_in,
                               jint cpu_count,
                               jlong cpu_features) {
-  base::android::ScopedJavaLocalRef<jobject> service(env, service_in);
+  base::android::ScopedJavaLocalRef<jobject> service(
+      env, env->NewLocalRef(service_in));
 
   // Set the CPU properties.
   android_setCpu(cpu_count, cpu_features);
@@ -160,12 +160,10 @@ void RegisterGlobalFileDescriptor(JNIEnv* env,
 
 void InitChildProcess(JNIEnv* env,
                       jclass clazz,
-                      jobject context,
                       jobject service,
                       jint cpu_count,
                       jlong cpu_features) {
-  InternalInitChildProcess(env, clazz, context, service, cpu_count,
-                           cpu_features);
+  InternalInitChildProcess(env, clazz, service, cpu_count, cpu_features);
 }
 
 void ExitChildProcess(JNIEnv* env, jclass clazz) {

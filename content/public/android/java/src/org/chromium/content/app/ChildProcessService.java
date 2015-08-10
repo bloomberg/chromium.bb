@@ -203,8 +203,7 @@ public class ChildProcessService extends Service {
                         nativeRegisterGlobalFileDescriptor(
                                 fdInfo.mId, fdInfo.mFd.detachFd(), fdInfo.mOffset, fdInfo.mSize);
                     }
-                    nativeInitChildProcess(sContext.get().getApplicationContext(),
-                            ChildProcessService.this, mCpuCount, mCpuFeatures);
+                    nativeInitChildProcess(ChildProcessService.this, mCpuCount, mCpuFeatures);
                     if (mActivitySemaphore.tryAcquire()) {
                         ContentMain.start();
                         nativeExitChildProcess();
@@ -388,11 +387,10 @@ public class ChildProcessService extends Service {
      * The main entry point for a child process. This should be called from a new thread since
      * it will not return until the child process exits. See child_process_service.{h,cc}
      *
-     * @param applicationContext The Application Context of the current process.
      * @param service The current ChildProcessService object.
      * renderer.
      */
-    private static native void nativeInitChildProcess(Context applicationContext,
+    private static native void nativeInitChildProcess(
             ChildProcessService service, int cpuCount, long cpuFeatures);
 
     /**
