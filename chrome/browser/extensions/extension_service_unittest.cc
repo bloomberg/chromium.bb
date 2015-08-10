@@ -7853,7 +7853,9 @@ TEST_F(ExtensionServiceTest, ExternalInstallInitiallyDisabled) {
 
 // Test that installing multiple external extensions works.
 // Flaky on windows; http://crbug.com/295757 .
-#if defined(OS_WIN)
+// Causes race conditions with an in-process utility thread, so disable under
+// TSan: https://crbug.com/518957
+#if defined(OS_WIN) || defined(THREAD_SANITIZER)
 #define MAYBE_ExternalInstallMultiple DISABLED_ExternalInstallMultiple
 #else
 #define MAYBE_ExternalInstallMultiple ExternalInstallMultiple
