@@ -204,9 +204,6 @@ public:
 
     void postLayoutTimerFired(Timer<FrameView>*);
 
-    bool wasScrolledByUser() const;
-    void setWasScrolledByUser(bool);
-
     bool safeToPropagateScrollToParent() const { return m_safeToPropagateScrollToParent; }
     void setSafeToPropagateScrollToParent(bool isSafe) { m_safeToPropagateScrollToParent = isSafe; }
 
@@ -760,9 +757,6 @@ private:
 
     AtomicString m_mediaType;
     AtomicString m_mediaTypeWhenNotPrinting;
-
-    // TODO(skobes): Move this to DocumentLoader::InitialScrollState.
-    bool m_wasScrolledByUser;
 
     bool m_safeToPropagateScrollToParent;
 

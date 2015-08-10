@@ -237,7 +237,7 @@ void FrameLoader::saveScrollState()
         return;
 
     // Shouldn't clobber anything if we might still restore later.
-    if (needsHistoryItemRestore(m_loadType) && !m_frame->view()->wasScrolledByUser())
+    if (needsHistoryItemRestore(m_loadType) && !documentLoader()->initialScrollState().wasScrolledByUser)
         return;
 
     if (ScrollableArea* layoutScrollableArea = m_frame->view()->layoutViewportScrollableArea())
@@ -694,7 +694,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     m_documentLoader->setIsClientRedirect(clientRedirect == ClientRedirect);
     updateForSameDocumentNavigation(url, SameDocumentNavigationDefault, nullptr, ScrollRestorationAuto, type);
 
-    m_frame->view()->setWasScrolledByUser(false);
+    m_documentLoader->initialScrollState().wasScrolledByUser = false;
 
     checkCompleted();
 
@@ -1118,7 +1118,8 @@ void FrameLoader::restoreScrollPositionAndViewState()
     // because that may be because the page will never reach its previous
     // height.
     bool canRestoreWithoutClamping = view->clampOffsetAtScale(m_currentItem->scrollPoint(), 1) == m_currentItem->scrollPoint();
-    bool canRestoreWithoutAnnoyingUser = !view->wasScrolledByUser() && (canRestoreWithoutClamping || m_frame->isLoading());
+    bool canRestoreWithoutAnnoyingUser = !documentLoader()->initialScrollState().wasScrolledByUser
+        && (canRestoreWithoutClamping || m_frame->isLoading());
     if (!canRestoreWithoutAnnoyingUser)
         return;
 

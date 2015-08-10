@@ -118,7 +118,6 @@ FrameView::FrameView(LocalFrame* frame)
     , m_isTransparent(false)
     , m_baseBackgroundColor(Color::white)
     , m_mediaType(MediaTypeNames::screen)
-    , m_wasScrolledByUser(false)
     , m_safeToPropagateScrollToParent(true)
     , m_isTrackingPaintInvalidations(false)
     , m_scrollCorner(nullptr)
@@ -203,7 +202,6 @@ void FrameView::reset()
     m_updateWidgetsTimer.stop();
     m_firstLayout = true;
     m_firstLayoutCallbackPending = false;
-    m_wasScrolledByUser = false;
     m_safeToPropagateScrollToParent = true;
     m_lastViewportSize = IntSize();
     m_lastZoomFactor = 1.0f;
@@ -2414,16 +2412,6 @@ FrameView* FrameView::parentFrameView() const
         return toLocalFrame(parentFrame)->view();
 
     return nullptr;
-}
-
-bool FrameView::wasScrolledByUser() const
-{
-    return m_wasScrolledByUser;
-}
-
-void FrameView::setWasScrolledByUser(bool wasScrolledByUser)
-{
-    m_wasScrolledByUser = wasScrolledByUser;
 }
 
 bool FrameView::isPainting() const

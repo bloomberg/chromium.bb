@@ -66,6 +66,7 @@
 #include "core/layout/LayoutFullScreen.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -5630,49 +5631,50 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage)
     webViewHelper.webView()->layout();
 
     WebLocalFrameImpl* frameImpl = webViewHelper.webViewImpl()->mainFrameImpl();
-    FrameView* view = frameImpl->frameView();
+    DocumentLoader::InitialScrollState& initialScrollState =
+        frameImpl->frame()->loader().documentLoader()->initialScrollState();
 
     EXPECT_FALSE(client.wasFrameScrolled());
-    EXPECT_FALSE(view->wasScrolledByUser());
+    EXPECT_FALSE(initialScrollState.wasScrolledByUser);
 
     // Do a compositor scroll, verify that this is counted as a user scroll.
     webViewHelper.webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(0, 1), WebFloatSize(), 1.7f, 0);
     EXPECT_TRUE(client.wasFrameScrolled());
-    EXPECT_TRUE(view->wasScrolledByUser());
+    EXPECT_TRUE(initialScrollState.wasScrolledByUser);
 
     client.reset();
-    view->setWasScrolledByUser(false);
+    initialScrollState.wasScrolledByUser = false;
 
     // The page scale 1.0f and scroll.
     webViewHelper.webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(0, 1), WebFloatSize(), 1.0f, 0);
     EXPECT_TRUE(client.wasFrameScrolled());
-    EXPECT_TRUE(view->wasScrolledByUser());
+    EXPECT_TRUE(initialScrollState.wasScrolledByUser);
     client.reset();
-    view->setWasScrolledByUser(false);
+    initialScrollState.wasScrolledByUser = false;
 
     // No scroll event if there is no scroll delta.
     webViewHelper.webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(), 1.0f, 0);
     EXPECT_FALSE(client.wasFrameScrolled());
-    EXPECT_FALSE(view->wasScrolledByUser());
+    EXPECT_FALSE(initialScrollState.wasScrolledByUser);
     client.reset();
 
     // Non zero page scale and scroll.
     webViewHelper.webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(9, 13), WebFloatSize(), 0.6f, 0);
     EXPECT_TRUE(client.wasFrameScrolled());
-    EXPECT_TRUE(view->wasScrolledByUser());
+    EXPECT_TRUE(initialScrollState.wasScrolledByUser);
     client.reset();
-    view->setWasScrolledByUser(false);
+    initialScrollState.wasScrolledByUser = false;
 
     // Programmatic scroll.
     frameImpl->executeScript(WebScriptSource("window.scrollTo(0, 20);"));
     EXPECT_TRUE(client.wasFrameScrolled());
-    EXPECT_FALSE(view->wasScrolledByUser());
+    EXPECT_FALSE(initialScrollState.wasScrolledByUser);
     client.reset();
 
     // Programmatic scroll to same offset. No scroll event should be generated.
     frameImpl->executeScript(WebScriptSource("window.scrollTo(0, 20);"));
     EXPECT_FALSE(client.wasFrameScrolled());
-    EXPECT_FALSE(view->wasScrolledByUser());
+    EXPECT_FALSE(initialScrollState.wasScrolledByUser);
     client.reset();
 }
 

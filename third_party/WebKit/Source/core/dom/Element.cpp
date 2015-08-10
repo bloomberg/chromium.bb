@@ -107,6 +107,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -538,8 +539,10 @@ void Element::applyScroll(ScrollState& scrollState)
     // that if JS overrides one of these methods, but not the
     // other, this bookkeeping remains accurate.
     scrollState.setCurrentNativeScrollingElement(this);
-    if (scrollState.fromUserInput())
-        document().frame()->view()->setWasScrolledByUser(true);
+    if (scrollState.fromUserInput()) {
+        if (DocumentLoader* documentLoader = document().loader())
+            documentLoader->initialScrollState().wasScrolledByUser = true;
+    }
 };
 
 static float localZoomForLayoutObject(LayoutObject& layoutObject)

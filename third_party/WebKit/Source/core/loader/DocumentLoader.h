@@ -130,11 +130,12 @@ public:
 
     struct InitialScrollState {
         InitialScrollState()
-            : didRestoreFromHistory(false)
+            : wasScrolledByUser(false)
+            , didRestoreFromHistory(false)
         {
         }
 
-        // TODO(skobes): Move FrameView::m_wasScrolledByUser into here.
+        bool wasScrolledByUser;
         bool didRestoreFromHistory;
     };
     InitialScrollState& initialScrollState() { return m_initialScrollState; }

@@ -64,6 +64,7 @@
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/layout/LayoutView.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/AutoscrollController.h"
@@ -3418,8 +3419,8 @@ void EventHandler::capsLockStateMayHaveChanged()
 
 void EventHandler::setFrameWasScrolledByUser()
 {
-    if (FrameView* view = m_frame->view())
-        view->setWasScrolledByUser(true);
+    if (DocumentLoader* documentLoader = m_frame->loader().documentLoader())
+        documentLoader->initialScrollState().wasScrolledByUser = true;
 }
 
 bool EventHandler::passMousePressEventToScrollbar(MouseEventWithHitTestResults& mev)

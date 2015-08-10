@@ -4231,7 +4231,8 @@ void WebViewImpl::applyViewportDeltas(
 
     if (layoutViewport->scrollPositionDouble() != layoutViewportPosition) {
         layoutViewport->setScrollPosition(layoutViewportPosition, CompositorScroll);
-        frameView->setWasScrolledByUser(true);
+        if (DocumentLoader* documentLoader = mainFrameImpl()->frame()->loader().documentLoader())
+            documentLoader->initialScrollState().wasScrolledByUser = true;
     }
 }
 
