@@ -7,8 +7,6 @@
 
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/bluetooth/WebBluetoothError.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -21,8 +19,8 @@ class BluetoothError {
     WTF_MAKE_NONCOPYABLE(BluetoothError);
 public:
     // Interface required by CallbackPromiseAdapter:
-    using WebType = OwnPtr<WebBluetoothError>;
-    static DOMException* take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothError>);
+    using WebType = const WebBluetoothError&;
+    static DOMException* take(ScriptPromiseResolver*, const WebBluetoothError&);
 
 private:
     BluetoothError() = delete;

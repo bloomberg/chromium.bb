@@ -7,7 +7,6 @@
 
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/presentation/WebPresentationError.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -19,9 +18,9 @@ class PresentationError final {
     WTF_MAKE_NONCOPYABLE(PresentationError);
 public:
     // For CallbackPromiseAdapter.
-    using WebType = OwnPtr<WebPresentationError>;
+    using WebType = const WebPresentationError&;
 
-    static DOMException* take(ScriptPromiseResolver*, PassOwnPtr<WebPresentationError>);
+    static DOMException* take(ScriptPromiseResolver*, const WebPresentationError&);
 
 private:
     PresentationError() = delete;

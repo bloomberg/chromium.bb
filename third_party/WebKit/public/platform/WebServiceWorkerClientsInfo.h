@@ -40,8 +40,8 @@ struct WebServiceWorkerClientsInfo {
 };
 
 // Two WebCallbacks, one for one client, one for a WebVector of clients.
-using WebServiceWorkerClientCallbacks = WebCallbacks<WebPassOwnPtr<WebServiceWorkerClientInfo>, WebPassOwnPtr<WebServiceWorkerError>>;
-using WebServiceWorkerClientsCallbacks = WebCallbacks<WebPassOwnPtr<WebServiceWorkerClientsInfo>, WebPassOwnPtr<WebServiceWorkerError>>;
+using WebServiceWorkerClientCallbacks = WebCallbacks<WebPassOwnPtr<WebServiceWorkerClientInfo>, const WebServiceWorkerError&>;
+using WebServiceWorkerClientsCallbacks = WebCallbacks<const WebServiceWorkerClientsInfo&, const WebServiceWorkerError&>;
 
 } // namespace blink
 

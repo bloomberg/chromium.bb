@@ -10,19 +10,19 @@
 
 namespace blink {
 
-DOMException* PushError::take(ScriptPromiseResolver*, PassOwnPtr<WebPushError> webError)
+DOMException* PushError::take(ScriptPromiseResolver*, const WebPushError& webError)
 {
-    switch (webError->errorType) {
+    switch (webError.errorType) {
     case WebPushError::ErrorTypeAbort:
-        return DOMException::create(AbortError, webError->message);
+        return DOMException::create(AbortError, webError.message);
     case WebPushError::ErrorTypeNetwork:
-        return DOMException::create(NetworkError, webError->message);
+        return DOMException::create(NetworkError, webError.message);
     case WebPushError::ErrorTypeNotFound:
-        return DOMException::create(NotFoundError, webError->message);
+        return DOMException::create(NotFoundError, webError.message);
     case WebPushError::ErrorTypeNotSupported:
-        return DOMException::create(NotSupportedError, webError->message);
+        return DOMException::create(NotSupportedError, webError.message);
     case WebPushError::ErrorTypeUnknown:
-        return DOMException::create(UnknownError, webError->message);
+        return DOMException::create(UnknownError, webError.message);
     }
     ASSERT_NOT_REACHED();
     return DOMException::create(UnknownError);

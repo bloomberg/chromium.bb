@@ -30,7 +30,7 @@ void PushPermissionStatusCallbacks::onError(WebPushError* error)
     OwnPtr<WebPushError> ownError = adoptPtr(error);
     if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
         return;
-    m_resolver->reject(PushError::take(m_resolver.get(), ownError.release()));
+    m_resolver->reject(PushError::take(m_resolver.get(), *ownError));
 }
 
 // static

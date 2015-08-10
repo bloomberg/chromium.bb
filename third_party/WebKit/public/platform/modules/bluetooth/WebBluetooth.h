@@ -21,22 +21,22 @@ struct WebBluetoothGATTService;
 struct WebRequestDeviceOptions;
 
 // Success and failure callbacks for requestDevice.
-using WebBluetoothRequestDeviceCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothDevice>, WebPassOwnPtr<WebBluetoothError>>;
+using WebBluetoothRequestDeviceCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothDevice>, const WebBluetoothError&>;
 
 // Success and failure callbacks for connectGATT.
-using WebBluetoothConnectGATTCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothGATTRemoteServer>, WebPassOwnPtr<WebBluetoothError>>;
+using WebBluetoothConnectGATTCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothGATTRemoteServer>, const WebBluetoothError&>;
 
 // Success and failure callbacks for getPrimaryService.
-using WebBluetoothGetPrimaryServiceCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothGATTService>, WebPassOwnPtr<WebBluetoothError>>;
+using WebBluetoothGetPrimaryServiceCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothGATTService>, const WebBluetoothError&>;
 
 // Success and failure callbacks for getCharacteristic.
-using WebBluetoothGetCharacteristicCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothGATTCharacteristic>, WebPassOwnPtr<WebBluetoothError>>;
+using WebBluetoothGetCharacteristicCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothGATTCharacteristic>, const WebBluetoothError&>;
 
 // Success and failure callbacks for readValue.
-using WebBluetoothReadValueCallbacks = WebCallbacks<WebPassOwnPtr<WebVector<uint8_t>>, WebPassOwnPtr<WebBluetoothError>>;
+using WebBluetoothReadValueCallbacks = WebCallbacks<const WebVector<uint8_t>&, const WebBluetoothError&>;
 
 // Success and failure callbacks for writeValue.
-using WebBluetoothWriteValueCallbacks = WebCallbacks<void, WebPassOwnPtr<WebBluetoothError>>;
+using WebBluetoothWriteValueCallbacks = WebCallbacks<void, const WebBluetoothError&>;
 
 class WebBluetooth {
 public:

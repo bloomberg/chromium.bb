@@ -28,12 +28,12 @@ namespace {
 // For CallbackPromiseAdapter to convert a WebVector of regions to a HeapVector.
 class RegionArray {
 public:
-    using WebType = OwnPtr<WebVector<WebGeofencingRegistration>>;
-    static HeapVector<Member<GeofencingRegion>> take(ScriptPromiseResolver* resolver, PassOwnPtr<WebVector<WebGeofencingRegistration>> webRegions)
+    using WebType = const WebVector<WebGeofencingRegistration>&;
+    static HeapVector<Member<GeofencingRegion>> take(ScriptPromiseResolver* resolver, const WebVector<WebGeofencingRegistration>& webRegions)
     {
         HeapVector<Member<GeofencingRegion>> regions;
-        for (size_t i = 0; i < webRegions->size(); ++i)
-            regions.append(CircularGeofencingRegion::create((*webRegions)[i].id, (*webRegions)[i].region));
+        for (size_t i = 0; i < webRegions.size(); ++i)
+            regions.append(CircularGeofencingRegion::create(webRegions[i].id, webRegions[i].region));
         return regions;
     }
 

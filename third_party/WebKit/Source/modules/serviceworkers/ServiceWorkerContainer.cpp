@@ -77,7 +77,7 @@ public:
         OwnPtr<WebServiceWorkerError> error = adoptPtr(errorRaw);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error.release()));
+        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), *error));
     }
 
 private:
@@ -109,7 +109,7 @@ public:
         OwnPtr<WebServiceWorkerError> error = adoptPtr(errorRaw);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error.release()));
+        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), *error));
     }
 
 private:
@@ -138,7 +138,7 @@ public:
         OwnPtr<WebServiceWorkerError> error = adoptPtr(errorRaw);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error.release()));
+        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), *error));
     }
 
 private:

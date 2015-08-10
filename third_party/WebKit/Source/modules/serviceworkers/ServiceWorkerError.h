@@ -33,8 +33,6 @@
 
 #include "platform/heap/Handle.h"
 #include "public/platform/WebServiceWorkerError.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -44,8 +42,8 @@ class ScriptPromiseResolver;
 class ServiceWorkerError {
 public:
     // For CallbackPromiseAdapter
-    using WebType = OwnPtr<WebServiceWorkerError>;
-    static DOMException* take(ScriptPromiseResolver*, PassOwnPtr<WebServiceWorkerError> webError);
+    using WebType = const WebServiceWorkerError&;
+    static DOMException* take(ScriptPromiseResolver*, const WebServiceWorkerError& webError);
 
 private:
     WTF_MAKE_NONCOPYABLE(ServiceWorkerError);

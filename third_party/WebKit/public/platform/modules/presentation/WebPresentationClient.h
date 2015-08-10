@@ -20,10 +20,10 @@ struct WebPresentationError;
 // If session was created, callback's onSuccess() is invoked with the information about the
 // presentation session created by the embedder. Otherwise, onError() is invoked with the error code
 // and message.
-using WebPresentationSessionClientCallbacks = WebCallbacks<WebPassOwnPtr<WebPresentationSessionClient>, WebPassOwnPtr<WebPresentationError>>;
+using WebPresentationSessionClientCallbacks = WebCallbacks<WebPassOwnPtr<WebPresentationSessionClient>, const WebPresentationError&>;
 
 // Callback for .getAvailability().
-using WebPresentationAvailabilityCallbacks = WebCallbacks<WebPassOwnPtr<bool>, WebPassOwnPtr<WebPresentationError>>;
+using WebPresentationAvailabilityCallbacks = WebCallbacks<bool, const WebPresentationError&>;
 
 // The implementation the embedder has to provide for the Presentation API to work.
 class WebPresentationClient {

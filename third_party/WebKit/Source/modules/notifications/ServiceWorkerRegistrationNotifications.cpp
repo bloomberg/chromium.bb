@@ -27,12 +27,12 @@ namespace {
 // getNotifications() promise with a HeapVector owning Notifications.
 class NotificationArray {
 public:
-    using WebType = OwnPtr<WebVector<WebPersistentNotificationInfo>>;
+    using WebType = const WebVector<WebPersistentNotificationInfo>&;
 
-    static HeapVector<Member<Notification>> take(ScriptPromiseResolver* resolver, PassOwnPtr<WebVector<WebPersistentNotificationInfo>> notificationInfos)
+    static HeapVector<Member<Notification>> take(ScriptPromiseResolver* resolver, const WebVector<WebPersistentNotificationInfo>& notificationInfos)
     {
         HeapVector<Member<Notification>> notifications;
-        for (const WebPersistentNotificationInfo& notificationInfo : *notificationInfos)
+        for (const WebPersistentNotificationInfo& notificationInfo : notificationInfos)
             notifications.append(Notification::create(resolver->executionContext(), notificationInfo.persistentId, notificationInfo.data));
         return notifications;
     }

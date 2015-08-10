@@ -96,13 +96,12 @@ public:
         m_resolver.clear();
     }
 
-    void onError(WebPassOwnPtr<WebServiceWorkerCacheError> rawReason) override
+    void onError(WebServiceWorkerCacheError reason) override
     {
-        OwnPtr<WebServiceWorkerCacheError> reason = rawReason.release();
-        if (*reason == WebServiceWorkerCacheErrorNotFound)
+        if (reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve(false);
         else
-            m_resolver->reject(CacheStorageError::createException(*reason));
+            m_resolver->reject(CacheStorageError::createException(reason));
         m_resolver.clear();
     }
 

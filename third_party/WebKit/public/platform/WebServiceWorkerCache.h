@@ -7,7 +7,6 @@
 
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebCommon.h"
-#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebServiceWorkerCacheError.h"
 #include "public/platform/WebServiceWorkerRequest.h"
 #include "public/platform/WebServiceWorkerResponse.h"
@@ -24,7 +23,7 @@ public:
     using CacheMatchCallbacks = WebCallbacks<WebServiceWorkerResponse*, WebServiceWorkerCacheError*>;
     using CacheWithResponsesCallbacks = WebCallbacks<WebVector<WebServiceWorkerResponse>*, WebServiceWorkerCacheError*>;
     using CacheWithRequestsCallbacks = WebCallbacks<WebVector<WebServiceWorkerRequest>*, WebServiceWorkerCacheError*>;
-    using CacheBatchCallbacks = WebCallbacks<void, WebPassOwnPtr<WebServiceWorkerCacheError>>;
+    using CacheBatchCallbacks = WebCallbacks<void, WebServiceWorkerCacheError>;
 
     virtual ~WebServiceWorkerCache() { }
 

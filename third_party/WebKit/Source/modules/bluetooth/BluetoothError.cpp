@@ -10,9 +10,9 @@
 
 namespace blink {
 
-DOMException* BluetoothError::take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothError> webError)
+DOMException* BluetoothError::take(ScriptPromiseResolver*, const WebBluetoothError& webError)
 {
-    switch (*webError) {
+    switch (webError) {
 #define MAP_ERROR(enumeration, name, message) \
     case WebBluetoothError::enumeration:      \
         return DOMException::create(name, message)

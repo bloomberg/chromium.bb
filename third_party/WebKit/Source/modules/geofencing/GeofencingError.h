@@ -19,8 +19,8 @@ class GeofencingError {
     WTF_MAKE_NONCOPYABLE(GeofencingError);
 public:
     // For CallbackPromiseAdapter.
-    using WebType = OwnPtr<WebGeofencingError>;
-    static DOMException* take(ScriptPromiseResolver*, PassOwnPtr<WebGeofencingError> webError);
+    using WebType = const WebGeofencingError&;
+    static DOMException* take(ScriptPromiseResolver*, const WebGeofencingError& webError);
 
 private:
     GeofencingError() = delete;

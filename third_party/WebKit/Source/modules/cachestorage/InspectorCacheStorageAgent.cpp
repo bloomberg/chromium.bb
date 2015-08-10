@@ -91,9 +91,9 @@ PassOwnPtr<WebServiceWorkerCacheStorage> assertCacheStorageAndNameForId(ErrorStr
     return assertCacheStorage(errorString, securityOrigin);
 }
 
-CString serviceWorkerCacheErrorString(WebServiceWorkerCacheError* error)
+CString serviceWorkerCacheErrorString(WebServiceWorkerCacheError error)
 {
-    switch (*error) {
+    switch (error) {
     case WebServiceWorkerCacheErrorNotImplemented:
         return CString("not implemented.");
         break;
@@ -138,7 +138,7 @@ public:
 
     void onError(WebServiceWorkerCacheError* error)
     {
-        m_callback->sendFailure(String::format("Error requesting cache names: %s", serviceWorkerCacheErrorString(error).data()));
+        m_callback->sendFailure(String::format("Error requesting cache names: %s", serviceWorkerCacheErrorString(*error).data()));
     }
 
 private:
@@ -236,7 +236,7 @@ public:
 
     void onError(WebServiceWorkerCacheError* error)
     {
-        m_callback->sendFailure(String::format("Error requesting responses for cache  %s: %s", m_params.cacheName.utf8().data(), serviceWorkerCacheErrorString(error).data()));
+        m_callback->sendFailure(String::format("Error requesting responses for cache  %s: %s", m_params.cacheName.utf8().data(), serviceWorkerCacheErrorString(*error).data()));
     }
 
 private:
@@ -276,7 +276,7 @@ public:
 
     void onError(WebServiceWorkerCacheError* error)
     {
-        m_callback->sendFailure(String::format("Error requesting requests for cache %s: %s", m_params.cacheName.utf8().data(), serviceWorkerCacheErrorString(error).data()));
+        m_callback->sendFailure(String::format("Error requesting requests for cache %s: %s", m_params.cacheName.utf8().data(), serviceWorkerCacheErrorString(*error).data()));
     }
 
 private:
@@ -305,7 +305,7 @@ public:
 
     void onError(WebServiceWorkerCacheError* error)
     {
-        m_callback->sendFailure(String::format("Error requesting cache %s: %s", m_params.cacheName.utf8().data(), serviceWorkerCacheErrorString(error).data()));
+        m_callback->sendFailure(String::format("Error requesting cache %s: %s", m_params.cacheName.utf8().data(), serviceWorkerCacheErrorString(*error).data()));
     }
 
 private:
@@ -330,7 +330,7 @@ public:
 
     void onError(WebServiceWorkerCacheError* error)
     {
-        m_callback->sendFailure(String::format("Error requesting cache names: %s", serviceWorkerCacheErrorString(error).data()));
+        m_callback->sendFailure(String::format("Error requesting cache names: %s", serviceWorkerCacheErrorString(*error).data()));
     }
 
 private:
@@ -352,10 +352,9 @@ public:
         m_callback->sendSuccess();
     }
 
-    void onError(WebPassOwnPtr<WebServiceWorkerCacheError> e)
+    void onError(WebServiceWorkerCacheError error)
     {
-        OwnPtr<WebServiceWorkerCacheError> error = e.release();
-        m_callback->sendFailure(String::format("Error requesting cache names: %s", serviceWorkerCacheErrorString(error.get()).data()));
+        m_callback->sendFailure(String::format("Error requesting cache names: %s", serviceWorkerCacheErrorString(error).data()));
     }
 
 private:
@@ -388,7 +387,7 @@ public:
 
     void onError(WebServiceWorkerCacheError* error)
     {
-        m_callback->sendFailure(String::format("Error requesting cache %s: %s", m_cacheName.utf8().data(), serviceWorkerCacheErrorString(error).data()));
+        m_callback->sendFailure(String::format("Error requesting cache %s: %s", m_cacheName.utf8().data(), serviceWorkerCacheErrorString(*error).data()));
     }
 
 private:

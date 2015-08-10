@@ -143,7 +143,7 @@ public:
         checkBatchOperationsIfProvided(batchOperations);
 
         OwnPtr<CacheBatchCallbacks> ownedCallbacks(adoptPtr(callbacks));
-        return callbacks->onError(new WebServiceWorkerCacheError(m_error));
+        return callbacks->onError(m_error);
     }
 
 protected:

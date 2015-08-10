@@ -6,13 +6,12 @@
 #define WebServiceWorkerClientsClaimCallbacks_h
 
 #include "public/platform/WebCallbacks.h"
-#include "public/platform/WebPassOwnPtr.h"
 
 namespace blink {
 
 struct WebServiceWorkerError;
 
-using WebServiceWorkerClientsClaimCallbacks = WebCallbacks<void, WebPassOwnPtr<WebServiceWorkerError>>;
+using WebServiceWorkerClientsClaimCallbacks = WebCallbacks<void, const WebServiceWorkerError&>;
 
 } // namespace blink
 

@@ -7,12 +7,11 @@
 
 namespace blink {
 
-PassRefPtr<DOMArrayBuffer> ConvertWebVectorToArrayBuffer::take(ScriptPromiseResolver*, PassOwnPtr<WebVector<uint8_t>> webVector)
+PassRefPtr<DOMArrayBuffer> ConvertWebVectorToArrayBuffer::take(ScriptPromiseResolver*, const WebVector<uint8_t>& webVector)
 {
-    static_assert(sizeof(*webVector->data()) == 1, "uint8_t should be a single byte");
-    ASSERT(webVector);
+    static_assert(sizeof(*webVector.data()) == 1, "uint8_t should be a single byte");
 
-    RefPtr<DOMArrayBuffer> domBuffer = DOMArrayBuffer::create(webVector->data(), webVector->size());
+    RefPtr<DOMArrayBuffer> domBuffer = DOMArrayBuffer::create(webVector.data(), webVector.size());
 
     return domBuffer;
 }

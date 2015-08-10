@@ -16,7 +16,6 @@
 #include "modules/serviceworkers/ServiceWorkerWindowClient.h"
 #include "public/platform/WebServiceWorkerClientQueryOptions.h"
 #include "public/platform/WebServiceWorkerClientsInfo.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -27,12 +26,12 @@ namespace {
 
 class ClientArray {
 public:
-    using WebType = OwnPtr<WebServiceWorkerClientsInfo>;
-    static HeapVector<Member<ServiceWorkerClient>> take(ScriptPromiseResolver*, PassOwnPtr<WebServiceWorkerClientsInfo> webClients)
+    using WebType = const WebServiceWorkerClientsInfo&;
+    static HeapVector<Member<ServiceWorkerClient>> take(ScriptPromiseResolver*, const WebServiceWorkerClientsInfo& webClients)
     {
         HeapVector<Member<ServiceWorkerClient>> clients;
-        for (size_t i = 0; i < webClients->clients.size(); ++i) {
-            const WebServiceWorkerClientInfo& client = webClients->clients[i];
+        for (size_t i = 0; i < webClients.clients.size(); ++i) {
+            const WebServiceWorkerClientInfo& client = webClients.clients[i];
             if (client.clientType == WebServiceWorkerClientTypeWindow)
                 clients.append(ServiceWorkerWindowClient::create(client));
             else
