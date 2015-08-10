@@ -34,10 +34,7 @@ class SyncErrorFactory;
 class ExtensionSyncService : public syncer::SyncableService,
                              public KeyedService {
  public:
-  ExtensionSyncService(Profile* profile,
-                       extensions::ExtensionPrefs* extension_prefs,
-                       ExtensionService* extension_service);
-
+  explicit ExtensionSyncService(Profile* profile);
   ~ExtensionSyncService() override;
 
   // Convenience function to get the ExtensionSyncService for a BrowserContext.
@@ -62,16 +59,23 @@ class ExtensionSyncService : public syncer::SyncableService,
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
-  // |flare| provides a StartSyncFlare to the SyncableService. See
-  // sync_start_util for more. Public for testing.
-  void SetSyncStartFlare(const syncer::SyncableService::StartSyncFlare& flare);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(TwoClientAppsSyncTest, UnexpectedLaunchType);
   FRIEND_TEST_ALL_PREFIXES(ExtensionDisabledGlobalErrorTest,
                            HigherPermissionsFromSync);
   FRIEND_TEST_ALL_PREFIXES(ExtensionDisabledGlobalErrorTest, RemoteInstall);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
+                           DeferredSyncStartupPreInstalledComponent);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
+                           DeferredSyncStartupPreInstalledNormal);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
+                           DeferredSyncStartupOnInstall);
   friend class EphemeralAppBrowserTest;
+
+  void SetSyncStartFlareForTesting(
+      const syncer::SyncableService::StartSyncFlare& flare);
+
+  ExtensionService* extension_service() const;
 
   // Gets the SyncBundle for the given |type|.
   extensions::SyncBundle* GetSyncBundle(syncer::ModelType type);
@@ -111,13 +115,8 @@ class ExtensionSyncService : public syncer::SyncableService,
   void ApplyBookmarkAppSyncData(
       const extensions::ExtensionSyncData& extension_sync_data);
 
-  // The normal profile associated with this ExtensionService.
+  // The normal profile associated with this ExtensionSyncService.
   Profile* profile_;
-
-  // Preferences for the owning profile.
-  extensions::ExtensionPrefs* extension_prefs_;
-
-  ExtensionService* extension_service_;
 
   extensions::SyncBundle app_sync_bundle_;
   extensions::SyncBundle extension_sync_bundle_;

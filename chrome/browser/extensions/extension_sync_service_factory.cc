@@ -37,11 +37,7 @@ ExtensionSyncServiceFactory::~ExtensionSyncServiceFactory() {}
 
 KeyedService* ExtensionSyncServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
-  return new ExtensionSyncService(
-      profile,
-      extensions::ExtensionPrefsFactory::GetForBrowserContext(context),
-      extensions::ExtensionSystem::Get(profile)->extension_service());
+  return new ExtensionSyncService(Profile::FromBrowserContext(context));
 }
 
 content::BrowserContext* ExtensionSyncServiceFactory::GetBrowserContextToUse(

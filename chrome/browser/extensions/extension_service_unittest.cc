@@ -5797,7 +5797,7 @@ TEST_F(ExtensionServiceTest, DeferredSyncStartupPreInstalledComponent) {
   bool flare_was_called = false;
   syncer::ModelType triggered_type(syncer::UNSPECIFIED);
   base::WeakPtrFactory<ExtensionServiceTest> factory(this);
-  extension_sync_service()->SetSyncStartFlare(
+  extension_sync_service()->SetSyncStartFlareForTesting(
       base::Bind(&ExtensionServiceTest::MockSyncStartFlare,
                  factory.GetWeakPtr(),
                  &flare_was_called,  // Safe due to WeakPtrFactory scope.
@@ -5823,7 +5823,7 @@ TEST_F(ExtensionServiceTest, DeferredSyncStartupPreInstalledNormal) {
   bool flare_was_called = false;
   syncer::ModelType triggered_type(syncer::UNSPECIFIED);
   base::WeakPtrFactory<ExtensionServiceTest> factory(this);
-  extension_sync_service()->SetSyncStartFlare(
+  extension_sync_service()->SetSyncStartFlareForTesting(
       base::Bind(&ExtensionServiceTest::MockSyncStartFlare,
                  factory.GetWeakPtr(),
                  &flare_was_called,  // Safe due to WeakPtrFactory scope.
@@ -5847,7 +5847,7 @@ TEST_F(ExtensionServiceTest, DeferredSyncStartupOnInstall) {
   bool flare_was_called = false;
   syncer::ModelType triggered_type(syncer::UNSPECIFIED);
   base::WeakPtrFactory<ExtensionServiceTest> factory(this);
-  extension_sync_service()->SetSyncStartFlare(
+  extension_sync_service()->SetSyncStartFlareForTesting(
       base::Bind(&ExtensionServiceTest::MockSyncStartFlare,
                  factory.GetWeakPtr(),
                  &flare_was_called,  // Safe due to WeakPtrFactory scope.
