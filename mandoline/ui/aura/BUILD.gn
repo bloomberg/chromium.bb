@@ -50,4 +50,8 @@ source_set("aura") {
     "//ui/mojo/init",
     "//ui/views",
   ]
+
+  if (is_linux && !is_android) {
+    deps += [ "//components/font_service/public/cpp" ]
+  }
 }

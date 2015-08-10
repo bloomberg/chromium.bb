@@ -6,8 +6,24 @@
 
 #include "components/font_service/public/cpp/font_service_thread.h"
 #include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/application/public/cpp/connect.h"
+#include "mojo/application/public/interfaces/shell.mojom.h"
 
 namespace font_service {
+
+FontLoader::FontLoader(mojo::Shell* shell) {
+  mojo::ServiceProviderPtr font_service_provider;
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From("mojo:font_service");
+  FontServicePtr font_service;
+  shell->ConnectToApplication(request.Pass(),
+                              GetProxy(&font_service_provider),
+                              nullptr,
+                              nullptr);
+  mojo::ConnectToService(font_service_provider.get(), &font_service);
+
+  thread_ = new internal::FontServiceThread(font_service.Pass());
+}
 
 FontLoader::FontLoader(mojo::ApplicationImpl* application_impl) {
   mojo::URLRequestPtr request(mojo::URLRequest::New());

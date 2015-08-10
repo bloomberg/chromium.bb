@@ -381,7 +381,7 @@ void ApplicationManager::HandleFetchCallback(
   // TODO(erg): Have a better way of switching the sandbox on. For now, switch
   // it on hard coded when we're using some of the sandboxable core services.
   bool start_sandboxed = false;
-  if (app_url == GURL("mojo://core_services/") && qualifier == "Sandboxed Core")
+  if (app_url == GURL("mojo://core_services/") && qualifier == "Core")
     start_sandboxed = true;
   else if (app_url == GURL("mojo://html_viewer/"))
     start_sandboxed = true;
