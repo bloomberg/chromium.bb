@@ -345,10 +345,10 @@ ProfileImplIOData::Handle::GetIsolatedMediaRequestContextGetter(
   return context;
 }
 
-DevToolsNetworkController*
-ProfileImplIOData::Handle::GetDevToolsNetworkController() const {
+DevToolsNetworkControllerHandle*
+ProfileImplIOData::Handle::GetDevToolsNetworkControllerHandle() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return io_data_->network_controller();
+  return io_data_->network_controller_handle();
 }
 
 void ProfileImplIOData::Handle::ClearNetworkingHistorySince(

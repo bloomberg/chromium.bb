@@ -90,7 +90,8 @@ class FakeProfile : public Profile {
 
   PrefProxyConfigTracker* GetProxyConfigTracker() override;
   chrome_browser_net::Predictor* GetNetworkPredictor() override;
-  DevToolsNetworkController* GetDevToolsNetworkController() override;
+  DevToolsNetworkControllerHandle* GetDevToolsNetworkControllerHandle()
+      override;
   void ClearNetworkingHistorySince(base::Time time,
                                    const base::Closure& completion) override;
   GURL GetHomePage() override;

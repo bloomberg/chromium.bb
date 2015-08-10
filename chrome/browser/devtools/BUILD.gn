@@ -36,6 +36,8 @@ static_library("devtools") {
     "devtools_network_conditions.h",
     "devtools_network_controller.cc",
     "devtools_network_controller.h",
+    "devtools_network_controller_handle.cc",
+    "devtools_network_controller_handle.h",
     "devtools_network_interceptor.cc",
     "devtools_network_interceptor.h",
     "devtools_network_protocol_handler.cc",

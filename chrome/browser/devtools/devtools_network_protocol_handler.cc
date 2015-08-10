@@ -6,7 +6,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/devtools/devtools_network_conditions.h"
-#include "chrome/browser/devtools/devtools_network_controller.h"
+#include "chrome/browser/devtools/devtools_network_controller_handle.h"
 #include "chrome/browser/devtools/devtools_protocol_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -100,7 +100,7 @@ void DevToolsNetworkProtocolHandler::UpdateNetworkState(
       agent_host->GetBrowserContext());
   if (!profile)
     return;
-  profile->GetDevToolsNetworkController()->SetNetworkState(
+  profile->GetDevToolsNetworkControllerHandle()->SetNetworkState(
       agent_host->GetId(), conditions.Pass());
 }
 

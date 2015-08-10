@@ -7,18 +7,14 @@
 #include "chrome/browser/devtools/devtools_network_conditions.h"
 #include "chrome/browser/devtools/devtools_network_interceptor.h"
 #include "chrome/browser/devtools/devtools_network_transaction.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/http/http_request_info.h"
-
-using content::BrowserThread;
 
 DevToolsNetworkController::DevToolsNetworkController()
     : default_interceptor_(new DevToolsNetworkInterceptor()),
-      appcache_interceptor_(new DevToolsNetworkInterceptor()),
-      weak_ptr_factory_(this) {
-}
+      appcache_interceptor_(new DevToolsNetworkInterceptor()) {}
 
 DevToolsNetworkController::~DevToolsNetworkController() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 base::WeakPtr<DevToolsNetworkInterceptor>
@@ -47,20 +43,6 @@ DevToolsNetworkController::GetInterceptor(
 void DevToolsNetworkController::SetNetworkState(
     const std::string& client_id,
     scoped_ptr<DevToolsNetworkConditions> conditions) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &DevToolsNetworkController::SetNetworkStateOnIO,
-          weak_ptr_factory_.GetWeakPtr(),
-          client_id,
-          base::Passed(&conditions)));
-}
-
-void DevToolsNetworkController::SetNetworkStateOnIO(
-    const std::string& client_id,
-    scoped_ptr<DevToolsNetworkConditions> conditions) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   DevToolsNetworkInterceptor* interceptor = interceptors_.get(client_id);
@@ -68,7 +50,8 @@ void DevToolsNetworkController::SetNetworkStateOnIO(
     DCHECK(conditions);
     if (!conditions)
       return;
-    Interceptor new_interceptor = Interceptor(new DevToolsNetworkInterceptor());
+    scoped_ptr<DevToolsNetworkInterceptor> new_interceptor(
+        new DevToolsNetworkInterceptor());
     new_interceptor->UpdateConditions(conditions.Pass());
     interceptors_.set(client_id, new_interceptor.Pass());
   } else {
@@ -83,7 +66,7 @@ void DevToolsNetworkController::SetNetworkStateOnIO(
   }
 
   bool has_offline_interceptors = false;
-  Interceptors::iterator it = interceptors_.begin();
+  InterceptorMap::iterator it = interceptors_.begin();
   for (; it != interceptors_.end(); ++it) {
     if (it->second->conditions()->offline()) {
       has_offline_interceptors = true;

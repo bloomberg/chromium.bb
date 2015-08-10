@@ -1314,11 +1314,10 @@ scoped_ptr<net::HttpCache> ProfileIOData::CreateMainHttpFactory(
   if (data_reduction_proxy_io_data_.get())
     params.proxy_delegate = data_reduction_proxy_io_data_->proxy_delegate();
 
-  network_controller_.reset(new DevToolsNetworkController());
-
   net::HttpNetworkSession* session = new net::HttpNetworkSession(params);
   return scoped_ptr<net::HttpCache>(new net::HttpCache(
-      new DevToolsNetworkTransactionFactory(network_controller_.get(), session),
+      new DevToolsNetworkTransactionFactory(
+          network_controller_handle_.GetController(), session),
       context->net_log(), main_backend));
 }
 
@@ -1327,7 +1326,7 @@ scoped_ptr<net::HttpCache> ProfileIOData::CreateHttpFactory(
     net::HttpCache::BackendFactory* backend) const {
   return scoped_ptr<net::HttpCache>(new net::HttpCache(
       new DevToolsNetworkTransactionFactory(
-          network_controller_.get(), shared_session),
+          network_controller_handle_.GetController(), shared_session),
       shared_session->net_log(), backend));
 }
 

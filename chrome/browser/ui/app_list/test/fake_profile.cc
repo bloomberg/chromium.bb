@@ -191,7 +191,8 @@ chrome_browser_net::Predictor* FakeProfile::GetNetworkPredictor() {
   return nullptr;
 }
 
-DevToolsNetworkController* FakeProfile::GetDevToolsNetworkController() {
+DevToolsNetworkControllerHandle*
+FakeProfile::GetDevToolsNetworkControllerHandle() {
   return nullptr;
 }
 

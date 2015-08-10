@@ -17,7 +17,7 @@
 #include "content/public/browser/content_browser_client.h"
 
 class ChromeAppCacheService;
-class DevToolsNetworkController;
+class DevToolsNetworkControllerHandle;
 class ExtensionSpecialStoragePolicy;
 class HostContentSettingsMap;
 class PrefProxyConfigTracker;
@@ -287,8 +287,9 @@ class Profile : public content::BrowserContext {
   // Returns the Predictor object used for dns prefetch.
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() = 0;
 
-  // Returns the DevToolsNetworkController for this profile.
-  virtual DevToolsNetworkController* GetDevToolsNetworkController() = 0;
+  // Returns the DevToolsNetworkControllerHandle for this profile.
+  virtual DevToolsNetworkControllerHandle*
+  GetDevToolsNetworkControllerHandle() = 0;
 
   // Deletes all network related data since |time|. It deletes transport
   // security state since |time| and it also deletes HttpServerProperties data.

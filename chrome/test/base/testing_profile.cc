@@ -928,7 +928,8 @@ chrome_browser_net::Predictor* TestingProfile::GetNetworkPredictor() {
   return NULL;
 }
 
-DevToolsNetworkController* TestingProfile::GetDevToolsNetworkController() {
+DevToolsNetworkControllerHandle*
+TestingProfile::GetDevToolsNetworkControllerHandle() {
   return NULL;
 }
 

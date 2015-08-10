@@ -147,10 +147,10 @@ OffTheRecordProfileIOData::Handle::CreateIsolatedAppRequestContextGetter(
   return context;
 }
 
-DevToolsNetworkController*
-OffTheRecordProfileIOData::Handle::GetDevToolsNetworkController() const {
+DevToolsNetworkControllerHandle*
+OffTheRecordProfileIOData::Handle::GetDevToolsNetworkControllerHandle() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return io_data_->network_controller();
+  return io_data_->network_controller_handle();
 }
 
 void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
