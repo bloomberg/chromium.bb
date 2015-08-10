@@ -95,6 +95,24 @@ Viewport.PAGE_SHADOW = {top: 3, bottom: 7, left: 5, right: 5};
 
 Viewport.prototype = {
   /**
+   * Returns the zoomed and rounded document dimensions for the given zoom.
+   * Rounding is necessary when interacting with the renderer which tends to
+   * operate in integral values (for example for determining if scrollbars
+   * should be shown).
+   * @param {number} zoom The zoom to use to compute the scaled dimensions.
+   * @return {Object} A dictionary with scaled 'width'/'height' of the document.
+   * @private
+   */
+  getZoomedDocumentDimensions_: function(zoom) {
+    if (!this.documentDimensions_)
+      return null;
+    return {
+      width: Math.round(this.documentDimensions_.width * zoom),
+      height: Math.round(this.documentDimensions_.height * zoom)
+    };
+  },
+
+  /**
    * @private
    * Returns true if the document needs scrollbars at the given zoom level.
    * @param {number} zoom compute whether scrollbars are needed at this zoom
@@ -103,25 +121,24 @@ Viewport.prototype = {
    *     respectively.
    */
   documentNeedsScrollbars_: function(zoom) {
-    if (!this.documentDimensions_) {
+    var zoomedDimensions = this.getZoomedDocumentDimensions_(zoom);
+    if (!zoomedDimensions) {
       return {
         horizontal: false,
         vertical: false
       };
     }
-    var documentWidth = this.documentDimensions_.width * zoom;
-    var documentHeight = this.documentDimensions_.height * zoom;
 
     // If scrollbars are required for one direction, expand the document in the
     // other direction to take the width of the scrollbars into account when
     // deciding whether the other direction needs scrollbars.
-    if (documentWidth > this.window_.innerWidth)
-      documentHeight += this.scrollbarWidth_;
-    else if (documentHeight > this.window_.innerHeight)
-      documentWidth += this.scrollbarWidth_;
+    if (zoomedDimensions.width > this.window_.innerWidth)
+      zoomedDimensions.height += this.scrollbarWidth_;
+    else if (zoomedDimensions.height > this.window_.innerHeight)
+      zoomedDimensions.width += this.scrollbarWidth_;
     return {
-      horizontal: documentWidth > this.window_.innerWidth,
-      vertical: documentHeight > this.window_.innerHeight
+      horizontal: zoomedDimensions.width > this.window_.innerWidth,
+      vertical: zoomedDimensions.height > this.window_.innerHeight
     };
   },
 
@@ -140,10 +157,10 @@ Viewport.prototype = {
    * Helper function called when the zoomed document size changes.
    */
   contentSizeChanged_: function() {
-    if (this.documentDimensions_) {
-      this.sizer_.style.width =
-          this.documentDimensions_.width * this.zoom_ + 'px';
-      this.sizer_.style.height = this.documentDimensions_.height * this.zoom_ +
+    var zoomedDimensions = this.getZoomedDocumentDimensions_(this.zoom_);
+    if (zoomedDimensions) {
+      this.sizer_.style.width = zoomedDimensions.width + 'px';
+      this.sizer_.style.height = zoomedDimensions.height +
           this.topToolbarHeight_ + 'px';
     }
   },
@@ -359,10 +376,7 @@ Viewport.prototype = {
     if (!needsScrollbars.horizontal && !needsScrollbars.vertical)
       return zoom;
 
-    var zoomedDimensions = {
-      width: this.documentDimensions_.width * zoom,
-      height: this.documentDimensions_.height * zoom
-    };
+    var zoomedDimensions = this.getZoomedDocumentDimensions_(zoom);
 
     // Check if adding a scrollbar will result in needing the other scrollbar.
     var scrollbarWidth = this.scrollbarWidth_;

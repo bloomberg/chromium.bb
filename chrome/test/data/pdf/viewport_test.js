@@ -14,10 +14,15 @@ var tests = [
     chrome.test.assertFalse(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
 
-    viewport.setDocumentDimensions(new MockDocumentDimensions(100, 100));
+    viewport.setDocumentDimensions(new MockDocumentDimensions(100.49, 100.49));
     scrollbars = viewport.documentNeedsScrollbars_(1);
     chrome.test.assertFalse(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
+
+    viewport.setDocumentDimensions(new MockDocumentDimensions(100.5, 100.5));
+    scrollbars = viewport.documentNeedsScrollbars_(1);
+    chrome.test.assertTrue(scrollbars.vertical);
+    chrome.test.assertTrue(scrollbars.horizontal);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(110, 110));
     scrollbars = viewport.documentNeedsScrollbars_(1);
