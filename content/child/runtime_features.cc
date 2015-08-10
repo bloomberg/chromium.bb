@@ -62,6 +62,7 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   // Android won't be able to reliably support non-persistent notifications, the
   // intended behavior for which is in flux by itself.
   WebRuntimeFeatures::enableNotificationConstructor(false);
+  WebRuntimeFeatures::enableNewMediaPlaybackUi(true);
 #else
   WebRuntimeFeatures::enableNavigatorContentUtils(true);
 #endif  // defined(OS_ANDROID)

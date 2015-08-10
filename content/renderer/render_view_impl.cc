@@ -1163,6 +1163,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       prefs.ignore_main_frame_overflow_hidden_quirk);
   settings->setReportScreenSizeInPhysicalPixelsQuirk(
       prefs.report_screen_size_in_physical_pixels_quirk);
+  settings->setPreferHiddenVolumeControls(true);
 
   bool record_full_layer =
       RenderViewImpl::FromWebView(web_view)
