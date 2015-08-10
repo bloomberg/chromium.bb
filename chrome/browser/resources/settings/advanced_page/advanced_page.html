@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://md-settings/a11y_page/a11y_page.html">
+<link rel="import" href="chrome://md-settings/certificate_manager_page/certificate_manager_page.html">
 <link rel="import" href="chrome://md-settings/downloads_page/downloads_page.html">
 <link rel="import" href="chrome://md-settings/privacy_page/privacy_page.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_section.html">
@@ -21,6 +22,12 @@
     <cr-settings-section route="privacy" icon="lock"
         i18n-values="page-title:privacyPageTitle">
       <cr-settings-privacy-page prefs="{{prefs}}"></cr-settings-privacy-page>
+    </cr-settings-section>
+
+    <cr-settings-section route="certificate-manager" icon="lock"
+        i18n-values="page-title:certificateManagerPageTitle">
+      <cr-settings-certificate-manager-page>
+      </cr-settings-certificate-manager-page>
     </cr-settings-section>
 
     <cr-settings-section route="downloads" icon="file-download"

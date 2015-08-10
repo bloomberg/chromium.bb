@@ -1,0 +1,66 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html">
+
+<dom-module id="cr-settings-certificate-manager-page">
+  <link rel="import" type="css" href="certificate_manager_page.css">
+  <template>
+    <paper-tabs selected="{{selected}}">
+      <paper-tab i18n-content="certificateManagerYourCertificates"></paper-tab>
+      <paper-tab i18n-content="certificateManagerServers"></paper-tab>
+      <paper-tab i18n-content="certificateManagerAuthorities"></paper-tab>
+      <paper-tab i18n-content="certificateManagerOthers"></paper-tab>
+    </paper-tabs>
+
+    <iron-pages selected="{{selected}}">
+      <div>
+        <div i18n-content="certificateManagerYourCertificatesSubtitle"></div>
+        <div class="privacy-buttons layout horizontal end-justified">
+          <cr-button i18n-content="certificateManagerView"></cr-button>
+          <cr-button i18n-content="certificateManagerImport"></cr-button>
+          <cr-button i18n-content="certificateManagerImportAndBind"></cr-button>
+          <cr-button i18n-content="certificateManagerExport"></cr-button>
+          <cr-button i18n-content="certificateManagerDelete"></cr-button>
+          <span class="flex"></span>
+          <cr-button raised i18n-content="certificateManagerDone"></cr-button>
+        </div>
+      </div>
+      <div>
+        <div i18n-content="certificateManagerServersSubtitle"></div>
+        <div class="privacy-buttons layout horizontal end-justified">
+          <cr-button disabled i18n-content="certificateManagerView"></cr-button>
+          <cr-button i18n-content="certificateManagerImport"></cr-button>
+          <cr-button disabled i18n-content="certificateManagerExport">
+          </cr-button>
+          <cr-button disabled i18n-content="certificateManagerDelete">
+          </cr-button>
+          <span class="flex"></span>
+          <cr-button raised  i18n-content="certificateManagerDone"></cr-button>
+        </div>
+      </div>
+      <div>
+        <div i18n-content="certificateManagerAuthoritiesSubtitle"></div>
+        <div class="privacy-buttons layout horizontal end-justified">
+          <cr-button i18n-content="certificateManagerView"></cr-button>
+          <cr-button i18n-content="certificateManagerImport"></cr-button>
+          <cr-button i18n-content="certificateManagerExport"></cr-button>
+          <cr-button i18n-content="certificateManagerDelete"></cr-button>
+          <span class="flex"></span>
+          <cr-button raised i18n-content="certificateManagerDone"></cr-button>
+        </div>
+      </div>
+      <div>
+        <div i18n-content="certificateManagerOthersSubtitle"></div>
+        <div class="privacy-buttons layout horizontal end-justified">
+          <cr-button disabled i18n-content="certificateManagerView"></cr-button>
+          <cr-button disabled i18n-content="certificateManagerExport">
+          </cr-button>
+          <cr-button disabled i18n-content="certificateManagerDelete">
+          </cr-button>
+          <span class="flex"></span>
+          <cr-button raised i18n-content="certificateManagerDone"></cr-button>
+        </div>
+      </div>
+    </iron-pages>
+  </template>
+  <script src="certificate_manager_page.js"></script>
+</dom-module>

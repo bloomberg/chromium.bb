@@ -109,6 +109,15 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_UI_JS"
                  file="settings_ui/settings_ui.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_CERTIFICATE_MANAGER_PAGE_CSS"
+                 file="certificate_manager_page/certificate_manager_page.css"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CERTIFICATE_MANAGER_PAGE_HTML"
+                 file="certificate_manager_page/certificate_manager_page.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CERTIFICATE_MANAGER_PAGE_JS"
+                 file="certificate_manager_page/certificate_manager_page.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_CSS"
                  file="downloads_page/downloads_page.css"
                  type="chrome_html" />
