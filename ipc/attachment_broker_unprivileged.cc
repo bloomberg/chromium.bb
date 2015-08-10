@@ -5,7 +5,7 @@
 #include "ipc/attachment_broker_unprivileged.h"
 
 #include "ipc/ipc_channel.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/ipc_endpoint.h"
 
 namespace IPC {
 
@@ -15,19 +15,11 @@ AttachmentBrokerUnprivileged::AttachmentBrokerUnprivileged()
 AttachmentBrokerUnprivileged::~AttachmentBrokerUnprivileged() {}
 
 void AttachmentBrokerUnprivileged::DesignateBrokerCommunicationChannel(
-    IPC::Channel* channel) {
-  DCHECK(channel);
+    Endpoint* endpoint) {
+  DCHECK(endpoint);
   DCHECK(!sender_);
-  sender_ = channel;
-  channel->set_attachment_broker_endpoint(true);
-}
-
-void AttachmentBrokerUnprivileged::DesignateBrokerCommunicationChannel(
-    IPC::ChannelProxy* proxy) {
-  DCHECK(proxy);
-  DCHECK(!sender_);
-  sender_ = proxy;
-  proxy->SetAttachmentBrokerEndpoint(true);
+  sender_ = endpoint;
+  endpoint->SetAttachmentBrokerEndpoint(true);
 }
 
 }  // namespace IPC

@@ -280,7 +280,7 @@ TEST_F(IPCAttachmentBrokerPrivilegedWinTest, SendHandleToSelf) {
   CommonSetUp();
   // Technically, the channel is an endpoint, but we need the proxy listener to
   // receive the messages so that it can quit the message loop.
-  channel()->set_attachment_broker_endpoint(false);
+  channel()->SetAttachmentBrokerEndpoint(false);
   get_proxy_listener()->set_listener(get_broker());
 
   HANDLE h = CreateTempFile();

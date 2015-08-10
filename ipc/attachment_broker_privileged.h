@@ -12,7 +12,8 @@
 
 namespace IPC {
 
-class Channel;
+class Endpoint;
+class Sender;
 
 // This abstract subclass of AttachmentBroker is intended for use in a
 // privileged process . When unprivileged processes want to send attachments,
@@ -27,15 +28,16 @@ class IPC_EXPORT AttachmentBrokerPrivileged : public IPC::AttachmentBroker {
   // communicates attachment information with the broker process. In the broker
   // process, these channels must be registered and deregistered with the
   // Attachment Broker as they are created and destroyed.
-  void RegisterCommunicationChannel(Channel* channel);
-  void DeregisterCommunicationChannel(Channel* channel);
+  void RegisterCommunicationChannel(Endpoint* endpoint);
+  void DeregisterCommunicationChannel(Endpoint* endpoint);
 
  protected:
-  // Returns nullptr if no channel is found.
-  Channel* GetChannelWithProcessId(base::ProcessId id);
+  // Returns the sender whose peer's process id is |id|.
+  // Returns nullptr if no sender is found.
+  Sender* GetSenderWithProcessId(base::ProcessId id);
 
  private:
-  std::vector<Channel*> channels_;
+  std::vector<Endpoint*> endpoints_;
   DISALLOW_COPY_AND_ASSIGN(AttachmentBrokerPrivileged);
 };
 

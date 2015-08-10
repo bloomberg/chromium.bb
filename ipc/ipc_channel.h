@@ -15,8 +15,8 @@
 #include "base/files/scoped_file.h"
 #include "base/process/process.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_endpoint.h"
 #include "ipc/ipc_message.h"
-#include "ipc/ipc_sender.h"
 
 namespace IPC {
 
@@ -40,7 +40,7 @@ class Listener;
 // the channel with the mode set to one of the NAMED modes. NAMED modes are
 // currently used by automation and service processes.
 
-class IPC_EXPORT Channel : public Sender {
+class IPC_EXPORT Channel : public Endpoint {
   // Security tests need access to the pipe handle.
   friend class ChannelTest;
 
@@ -165,7 +165,6 @@ class IPC_EXPORT Channel : public Sender {
       Listener* listener,
       AttachmentBroker* broker = nullptr);
 
-  Channel() : attachment_broker_endpoint_(false) {}
   ~Channel() override;
 
   // Connect the pipe.  On the server side, this will initiate
@@ -181,17 +180,6 @@ class IPC_EXPORT Channel : public Sender {
   // new connections. If you just want to close the currently accepted
   // connection and listen for new ones, use ResetToAcceptingConnectionState.
   virtual void Close() = 0;
-
-  // Get the process ID for the connected peer.
-  //
-  // Returns base::kNullProcessId if the peer is not connected yet. Watch out
-  // for race conditions. You can easily get a channel to another process, but
-  // if your process has not yet processed the "hello" message from the remote
-  // side, this will fail. You should either make sure calling this is either
-  // in response to a message from the remote side (which guarantees that it's
-  // been connected), or you wait for the "connected" notification on the
-  // listener.
-  virtual base::ProcessId GetPeerPID() const = 0;
 
   // Get its own process id. This value is told to the peer.
   virtual base::ProcessId GetSelfPID() const = 0;
@@ -252,18 +240,6 @@ class IPC_EXPORT Channel : public Sender {
   // process such that it acts similar to if it was exec'd, for tests.
   static void NotifyProcessForkedForTesting();
 #endif
-
-  void set_attachment_broker_endpoint(bool is_endpoint) {
-    attachment_broker_endpoint_ = is_endpoint;
-  }
-
- protected:
-  bool is_attachment_broker_endpoint() { return attachment_broker_endpoint_; }
-
- private:
-  // Whether this channel is used as an endpoint for sending and receiving
-  // brokerable attachment messages to/from the broker process.
-  bool attachment_broker_endpoint_;
 };
 
 #if defined(OS_POSIX)

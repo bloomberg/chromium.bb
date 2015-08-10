@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "ipc/ipc_channel.h"
+#include "ipc/ipc_endpoint.h"
 
 namespace IPC {
 
@@ -15,25 +15,24 @@ AttachmentBrokerPrivileged::AttachmentBrokerPrivileged() {}
 AttachmentBrokerPrivileged::~AttachmentBrokerPrivileged() {}
 
 void AttachmentBrokerPrivileged::RegisterCommunicationChannel(
-    Channel* channel) {
-  channel->set_attachment_broker_endpoint(true);
-  auto it = std::find(channels_.begin(), channels_.end(), channel);
-  DCHECK(channels_.end() == it);
-  channels_.push_back(channel);
+    Endpoint* endpoint) {
+  endpoint->SetAttachmentBrokerEndpoint(true);
+  auto it = std::find(endpoints_.begin(), endpoints_.end(), endpoint);
+  DCHECK(endpoints_.end() == it);
+  endpoints_.push_back(endpoint);
 }
 
 void AttachmentBrokerPrivileged::DeregisterCommunicationChannel(
-    Channel* channel) {
-  auto it = std::find(channels_.begin(), channels_.end(), channel);
-  if (it != channels_.end())
-    channels_.erase(it);
+    Endpoint* endpoint) {
+  auto it = std::find(endpoints_.begin(), endpoints_.end(), endpoint);
+  if (it != endpoints_.end())
+    endpoints_.erase(it);
 }
 
-Channel* AttachmentBrokerPrivileged::GetChannelWithProcessId(
-    base::ProcessId id) {
-  auto it = std::find_if(channels_.begin(), channels_.end(),
-                         [id](Channel* c) { return c->GetPeerPID() == id; });
-  if (it == channels_.end())
+Sender* AttachmentBrokerPrivileged::GetSenderWithProcessId(base::ProcessId id) {
+  auto it = std::find_if(endpoints_.begin(), endpoints_.end(),
+                         [id](Endpoint* c) { return c->GetPeerPID() == id; });
+  if (it == endpoints_.end())
     return nullptr;
   return *it;
 }

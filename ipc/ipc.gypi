@@ -43,6 +43,8 @@
           'ipc_channel_win.cc',
           'ipc_channel_win.h',
           'ipc_descriptors.h',
+          'ipc_endpoint.cc',
+          'ipc_endpoint.h',
           'ipc_export.h',
           'ipc_handle_win.cc',
           'ipc_handle_win.h',

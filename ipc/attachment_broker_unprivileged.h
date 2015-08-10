@@ -10,8 +10,7 @@
 
 namespace IPC {
 
-class Channel;
-class ChannelProxy;
+class Endpoint;
 class Sender;
 
 // This abstract subclass of AttachmentBroker is intended for use in
@@ -23,8 +22,7 @@ class IPC_EXPORT AttachmentBrokerUnprivileged : public IPC::AttachmentBroker {
 
   // In each unprivileged process, exactly one channel should be used to
   // communicate brokerable attachments with the broker process.
-  void DesignateBrokerCommunicationChannel(IPC::Channel* channel);
-  void DesignateBrokerCommunicationChannel(IPC::ChannelProxy* proxy);
+  void DesignateBrokerCommunicationChannel(Endpoint* endpoint);
 
  protected:
   IPC::Sender* get_sender() { return sender_; }

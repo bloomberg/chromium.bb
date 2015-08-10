@@ -13,6 +13,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_endpoint.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 
@@ -63,7 +64,7 @@ class SendCallbackHelper;
 // |channel_lifetime_lock_| is used to protect it. The locking overhead is only
 // paid if the underlying channel supports thread-safe |Send|.
 //
-class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
+class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
  public:
 #if defined(ENABLE_IPC_FUZZER)
   // Interface for a filter to be imposed on outgoing messages which can
@@ -147,17 +148,15 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   // Called to clear the pointer to the IPC task runner when it's going away.
   void ClearIPCTaskRunner();
 
-  // Get the process ID for the connected peer.
-  // Returns base::kNullProcessId if the peer is not connected yet.
-  base::ProcessId GetPeerPID() const { return context_->peer_pid_; }
+  // Endpoint overrides.
+  base::ProcessId GetPeerPID() const override;
+  void OnSetAttachmentBrokerEndpoint() override;
 
 #if defined(OS_POSIX) && !defined(OS_NACL_SFI)
   // Calls through to the underlying channel's methods.
   int GetClientFileDescriptor();
   base::ScopedFD TakeClientFileDescriptor();
 #endif
-
-  void SetAttachmentBrokerEndpoint(bool is_endpoint);
 
  protected:
   class Context;
