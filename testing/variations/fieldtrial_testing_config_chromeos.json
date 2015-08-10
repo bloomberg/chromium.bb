@@ -45,5 +45,10 @@
         {
             "group_name": "Enabled"
         }
+    ],
+    "UseDelayAgnosticAEC": [
+        {
+            "group_name": "DefaultEnabled"
+        }
     ]
 }
