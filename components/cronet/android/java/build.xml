@@ -1,6 +1,7 @@
 <project>
   <target name="doc" description="generate documentation">
       <javadoc destdir="${doc.dir}"
+               overview="${overview}"
                windowtitle="Cronet API"
                nohelp="yes"
                notree="yes"

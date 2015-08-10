@@ -59,7 +59,8 @@ def FormatPage(markdown_html, title):
   return TEMPLATE.format(title=title, body=markdown_html)
 
 
-def ProcessDocs(input_filenames, input_pathname, output_pathname):
+def ProcessDocs(input_filenames, input_pathname, output_pathname,
+                extensions=None):
   """Processes a list of Markdown documentation files.
 
   If input_pathname and output_pathname are specified, outputs HTML files
@@ -73,6 +74,7 @@ def ProcessDocs(input_filenames, input_pathname, output_pathname):
           can be placed in the same relative path in the output path.)
       output_pathname: The output directory into which rendered Markdown files
           go, using that relative path.
+      extensions: a list of Markdown.extensions to apply if any.
 
   Returns:
       nothing
@@ -84,7 +86,10 @@ def ProcessDocs(input_filenames, input_pathname, output_pathname):
 
   outputting = (input_pathname is not None) and (output_pathname is not None)
 
-  markdown_parser = markdown.Markdown()
+  if extensions:
+    markdown_parser = markdown.Markdown(extensions)
+  else:
+    markdown_parser = markdown.Markdown()
 
   for input_filename in input_filenames:
     markdown_text = ReadFile(input_filename)

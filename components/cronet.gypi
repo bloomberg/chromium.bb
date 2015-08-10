@@ -563,9 +563,10 @@
               'action': [
                 'python',
                 '<@(_inputs)',
-                '--source-dir=src',
-                '--output-dir=<(package_dir)/javadoc',
-                '--working-dir=cronet/android/java',
+                '--output-dir=<(package_dir)',
+                '--input-dir=cronet/',
+                '--overview-file=<(package_dir)/README.md.html',
+                '--readme-file=cronet/README.md',
               ],
               'message': 'Generating Javadoc',
             },
