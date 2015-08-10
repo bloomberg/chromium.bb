@@ -56,6 +56,17 @@ const int kMarginRightOfMatchCountLabel = 1;
 const int kMarginLeftOfFindTextfield = 12;
 const int kMarginVerticalFindTextfield = 6;
 
+// Constants for the MD layout, all in dp.
+// The horizontal and vertical insets for the bar.
+const int kInteriorPadding = 8;
+// Default spacing between child views.
+const int kInterChildSpacing = 4;
+// Additional spacing around the separator.
+const int kSeparatorLeftSpacing = 12 - kInterChildSpacing;
+const int kSeparatorRightSpacing = 8 - kInterChildSpacing;
+// Extra space around the buttons to increase their event target size.
+const int kButtonExtraTouchSize = 4;
+
 // The margins around the match count label (We add extra space so that the
 // background highlight extends beyond just the text).
 const int kMatchCountExtraWidth = 9;
@@ -74,6 +85,12 @@ const SkColor kBackgroundColorMatch = SkColorSetARGB(0, 255, 255, 255);
 
 // The background color of the match count label when no results are found.
 const SkColor kBackgroundColorNoMatch = SkColorSetRGB(255, 102, 102);
+
+// The color of the match count label for Material Design.
+const SkColor kMatchTextColorMD = SkColorSetRGB(0x96, 0x96, 0x96);
+
+// Color of the vertical separator between match count and buttons. (MD only.)
+const SkColor kSeparatorColor = SkColorSetARGB(0x26, 0, 0, 0);
 
 // The default number of average characters that the text box will be. This
 // number brings the width on a "regular fonts" system to about 300px.
@@ -508,7 +525,6 @@ void FindBarView::InitViewsForNonMaterial() {
 
 void FindBarView::InitViewsForMaterial() {
   // The background color is not used since there's no arrow.
-  // TODO(estade): this shadow is not quite the same as in the mocks.
   SetBorder(make_scoped_ptr(new views::BubbleBorder(
       views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
       SK_ColorGREEN)));
@@ -520,16 +536,12 @@ void FindBarView::InitViewsForMaterial() {
 
   views::Separator* separator =
       new views::Separator(views::Separator::VERTICAL);
-  // TODO(estade): refine these constants.
-  separator->SetColor(SkColorSetRGB(0xD5, 0xD5, 0xD5));
-  separator->SetBorder(views::Border::CreateEmptyBorder(4, 10, 4, 10));
+  separator->SetColor(kSeparatorColor);
+  separator->SetBorder(views::Border::CreateEmptyBorder(
+      0, kSeparatorLeftSpacing, 0, kSeparatorRightSpacing));
   AddChildViewAt(separator, 2);
 
   find_text_->SetBorder(views::Border::NullBorder());
-  // Reserve horizontal space. Note that |find_text_| will only be allotted
-  // what space remains after other elements have been laid out, but this
-  // setting is still used when calculating the overall find bar's width.
-  find_text_->set_default_width_in_chars(30);
 
   struct {
     views::ImageButton* button;
@@ -543,27 +555,24 @@ void FindBarView::InitViewsForMaterial() {
   SkColor grey;
   ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_ChromeIconGrey,
                                 &grey);
-  SkColor blue;
-  ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_GoogleBlue, &blue);
   for (size_t i = 0; i < arraysize(button_images); ++i) {
     views::ImageButton* button = button_images[i].button;
+    button->SetBorder(views::Border::CreateEmptyBorder(
+        kButtonExtraTouchSize, kButtonExtraTouchSize, kButtonExtraTouchSize,
+        kButtonExtraTouchSize));
     button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                               views::ImageButton::ALIGN_MIDDLE);
 
     gfx::ImageSkia image = gfx::CreateVectorIcon(button_images[i].id, 16, grey);
     button->SetImage(views::CustomButton::STATE_NORMAL, &image);
-    image = gfx::CreateVectorIcon(button_images[i].id, 16, blue);
-    button->SetImage(views::CustomButton::STATE_PRESSED, &image);
-    // TODO(estade): I don't think the buttons are ever disabled, so this image
-    // is never visible. Consider removing this image or setting the buttons to
-    // disabled at sensible times.
     image = gfx::CreateVectorIcon(button_images[i].id, 16,
                                   SkColorSetA(grey, 0xff / 2));
     button->SetImage(views::CustomButton::STATE_DISABLED, &image);
   }
 
   views::BoxLayout* manager =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+      new views::BoxLayout(views::BoxLayout::kHorizontal, kInteriorPadding,
+                           kInteriorPadding, kInterChildSpacing);
   SetLayoutManager(manager);
   manager->SetFlexForView(find_text_, 1);
 }
@@ -605,6 +614,13 @@ void FindBarView::Find(const base::string16& search_text) {
 }
 
 void FindBarView::UpdateMatchCountAppearance(bool no_match) {
+  bool enable_buttons = !match_count_text_->text().empty() && !no_match;
+  find_previous_button_->SetEnabled(enable_buttons);
+  find_next_button_->SetEnabled(enable_buttons);
+
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return;
+
   if (no_match) {
     match_count_text_->SetBackgroundColor(kBackgroundColorNoMatch);
     match_count_text_->SetEnabledColor(kTextColorNoMatch);
@@ -650,4 +666,5 @@ void FindBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
       theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
   set_background(views::Background::CreateSolidBackground(color));
   match_count_text_->SetBackgroundColor(color);
+  match_count_text_->SetEnabledColor(kMatchTextColorMD);
 }
