@@ -6,17 +6,12 @@
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
-#include "ash/test/ash_test_base.h"
+#include "ash/test/ash_interactive_ui_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
-#include "base/path_service.h"
 #include "base/run_loop.h"
-#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/test/ui_controls.h"
-#include "ui/base/ui_base_paths.h"
-#include "ui/gl/test/gl_surface_test_support.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
@@ -26,33 +21,7 @@
 
 namespace ash {
 
-class AshNativeCursorManagerTest : public test::AshTestBase {
- public:
-  AshNativeCursorManagerTest() {}
-  ~AshNativeCursorManagerTest() override {}
-
-  void SetUp() override {
-    gfx::GLSurfaceTestSupport::InitializeOneOff();
-
-    ui::RegisterPathProvider();
-    ui::ResourceBundle::InitSharedInstanceWithLocale(
-        "en-US", NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
-    base::FilePath resources_pack_path;
-    PathService::Get(base::DIR_MODULE, &resources_pack_path);
-    resources_pack_path =
-        resources_pack_path.Append(FILE_PATH_LITERAL("resources.pak"));
-    ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-        resources_pack_path, ui::SCALE_FACTOR_NONE);
-    aura::Env::CreateInstance(true);
-
-    test::AshTestBase::SetUp();
-  }
-
-  void TearDown() override {
-    test::AshTestBase::TearDown();
-    aura::Env::DeleteInstance();
-  }
-};
+using AshNativeCursorManagerTest = test::AshInteractiveUITestBase;
 
 namespace {
 

@@ -478,7 +478,7 @@ if (!is_android) {
               chrome_tests_gypi_values.chrome_interactive_ui_test_ash_sources,
               ".",
               "//chrome")
-      deps += [ "//ash:test_support" ]
+      deps += [ "//ash:interactive_ui_test_support" ]
     }
 
     if (enable_notifications) {

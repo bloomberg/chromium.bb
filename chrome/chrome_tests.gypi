@@ -1617,7 +1617,7 @@
         ['use_ash==1', {
           'sources': [ '<@(chrome_interactive_ui_test_ash_sources)' ],
           'dependencies': [
-            '../ash/ash.gyp:ash_test_support',
+            '../ash/ash.gyp:ash_interactive_ui_test_support',
           ],
         }],
         ['OS=="mac"', {

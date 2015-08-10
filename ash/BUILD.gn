@@ -213,6 +213,25 @@ source_set("test_support") {
   }
 }
 
+source_set("interactive_ui_test_support") {
+  testonly = true
+  configs += [ "//build/config:precompiled_headers" ]
+  public_deps = [
+    ":ash",
+    ":test_support",
+  ]
+  sources = [
+    "test/ash_interactive_ui_test_base.cc",
+    "test/ash_interactive_ui_test_base.h",
+  ]
+  deps = [
+    ":ash",
+    ":test_support",
+    "//skia",
+    "//testing/gtest",
+  ]
+}
+
 static_library("ash_shell_lib") {
   testonly = true
   sources = gypi_values.ash_shell_lib_sources

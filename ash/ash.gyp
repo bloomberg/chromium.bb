@@ -1104,6 +1104,21 @@
       ],
     },
     {
+      # GN version: //ash:interactive_ui_test_support
+      'target_name': 'ash_interactive_ui_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../skia/skia.gyp:skia',
+        '../testing/gtest.gyp:gtest',
+        'ash',
+        'ash_test_support',
+      ],
+      'sources': [
+        'test/ash_interactive_ui_test_base.cc',
+        'test/ash_interactive_ui_test_base.h',
+      ],
+    },
+    {
       # GN version: //ash:ash_unittests
       'target_name': 'ash_unittests',
       'type': 'executable',
