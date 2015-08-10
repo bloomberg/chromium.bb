@@ -83,11 +83,11 @@ void AppLifetimeHelper::AddRef() {
 void AppLifetimeHelper::Release() {
   if (!--ref_count_) {
     if (app_)
-      app_->Terminate();
+      app_->Quit();
   }
 }
 
-void AppLifetimeHelper::ApplicationTerminated() {
+void AppLifetimeHelper::OnQuit() {
   app_ = nullptr;
 }
 

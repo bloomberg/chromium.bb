@@ -432,7 +432,7 @@ class PDFView : public mojo::ApplicationDelegate,
     delete it->second;
     embedder_for_roots_.erase(it);
     if (embedder_for_roots_.size() == 0)
-      app_.Terminate();
+      app_.Quit();
   }
 
   void DrawBitmap(EmbedderData* embedder_data) {

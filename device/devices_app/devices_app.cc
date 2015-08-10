@@ -156,7 +156,7 @@ void DevicesApp::StartIdleTimer() {
   // Passing unretained |app_impl_| is safe here because |app_impl_| is
   // guaranteed to outlive |this|, and the callback is canceled if |this| is
   // destroyed.
-  idle_timeout_callback_.Reset(base::Bind(&mojo::ApplicationImpl::Terminate,
+  idle_timeout_callback_.Reset(base::Bind(&mojo::ApplicationImpl::Quit,
                                           base::Unretained(app_impl_)));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, idle_timeout_callback_.callback(),

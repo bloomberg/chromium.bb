@@ -55,25 +55,11 @@ ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
       in_destructor_(false),
       weak_factory_(this) {}
 
-void ApplicationImpl::ClearConnections() {
-  // Copy the ServiceRegistryLists because they will be mutated by
-  // ApplicationConnection::CloseConnection.
-  ServiceRegistryList incoming_service_registries(incoming_service_registries_);
-  for (internal::ServiceRegistry* registry : incoming_service_registries)
-    registry->CloseConnection();
-  DCHECK(incoming_service_registries_.empty());
-
-  ServiceRegistryList outgoing_service_registries(outgoing_service_registries_);
-  for (internal::ServiceRegistry* registry : outgoing_service_registries)
-    registry->CloseConnection();
-  DCHECK(outgoing_service_registries_.empty());
-}
-
 ApplicationImpl::~ApplicationImpl() {
   DCHECK(!in_destructor_);
   in_destructor_ = true;
   ClearConnections();
-  app_lifetime_helper_.ApplicationTerminated();
+  app_lifetime_helper_.OnQuit();
 }
 
 ApplicationConnection* ApplicationImpl::ConnectToApplication(
@@ -140,7 +126,7 @@ void ApplicationImpl::UnbindConnections(
   shell->Bind(shell_.PassInterface());
 }
 
-void ApplicationImpl::Terminate() {
+void ApplicationImpl::Quit() {
   // We can't quit immediately, since there could be in-flight requests from the
   // shell. So check with it first.
   if (shell_) {
@@ -149,11 +135,6 @@ void ApplicationImpl::Terminate() {
   } else {
     QuitNow();
   }
-}
-
-void ApplicationImpl::QuitNow() {
-  delegate_->Quit();
-  termination_closure_.Run();
 }
 
 void ApplicationImpl::AcceptConnection(
@@ -199,6 +180,25 @@ void ApplicationImpl::OnConnectionError() {
   if (!ptr)
     return;
   shell_ = nullptr;
+}
+
+void ApplicationImpl::ClearConnections() {
+  // Copy the ServiceRegistryLists because they will be mutated by
+  // ApplicationConnection::CloseConnection.
+  ServiceRegistryList incoming_service_registries(incoming_service_registries_);
+  for (internal::ServiceRegistry* registry : incoming_service_registries)
+    registry->CloseConnection();
+  DCHECK(incoming_service_registries_.empty());
+
+  ServiceRegistryList outgoing_service_registries(outgoing_service_registries_);
+  for (internal::ServiceRegistry* registry : outgoing_service_registries)
+    registry->CloseConnection();
+  DCHECK(outgoing_service_registries_.empty());
+}
+
+void ApplicationImpl::QuitNow() {
+  delegate_->Quit();
+  termination_closure_.Run();
 }
 
 }  // namespace mojo

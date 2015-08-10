@@ -93,7 +93,7 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
 
   if (!resource_loader_.BlockUntilLoaded()) {
     // Assume on error we're being shut down.
-    app_->Terminate();
+    app_->Quit();
     return;
   }
 
