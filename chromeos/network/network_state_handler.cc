@@ -370,8 +370,7 @@ void NetworkStateHandler::SetCheckPortalList(
 }
 
 void NetworkStateHandler::SetWakeOnLanEnabled(bool enabled) {
-  NET_LOG_EVENT("SetWakeOnLanEnabled",
-                base::StringPrintf("%s", enabled ? "true" : "false"));
+  NET_LOG_EVENT("SetWakeOnLanEnabled", enabled ? "true" : "false");
   shill_property_handler_->SetWakeOnLanEnabled(enabled);
 }
 
