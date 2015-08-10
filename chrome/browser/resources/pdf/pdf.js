@@ -35,7 +35,12 @@ function getFilenameFromURL(url) {
  * @param {string} url The url to be opened in the current tab.
  */
 function onNavigateInCurrentTab(url) {
-  window.location.href = url;
+  // Prefer the tabs API because it can navigate from one file:// URL to
+  // another.
+  if (chrome.tabs)
+    chrome.tabs.update({url: url});
+  else
+    window.location.href = url;
 }
 
 /**
@@ -46,7 +51,7 @@ function onNavigateInNewTab(url) {
   // Prefer the tabs API because it guarantees we can just open a new tab.
   // window.open doesn't have this guarantee.
   if (chrome.tabs)
-    chrome.tabs.create({ url: url});
+    chrome.tabs.create({url: url});
   else
     window.open(url);
 }
