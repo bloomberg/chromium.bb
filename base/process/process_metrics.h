@@ -247,11 +247,11 @@ BASE_EXPORT void SetFdLimit(unsigned int max_descriptors);
 // Data about system-wide memory consumption. Values are in KB. Available on
 // Windows, Mac, Linux, Android and Chrome OS.
 //
-// Total/free memory are available on all platforms. Total/free swap memory are
-// available on all platforms except on Mac. Buffers/cached/active_anon/
-// inactive_anon/active_file/inactive_file/dirty/pswpin/pswpout/pgmajfault are
-// available on Linux/Android/Chrome OS. Shmem/slab/gem_objects/gem_size are
-// Chrome OS specific.
+// Total/free memory are available on all platforms that implement
+// GetSystemMemoryInfo(). Total/free swap memory are available on all platforms
+// except on Mac. Buffers/cached/active_anon/inactive_anon/active_file/
+// inactive_file/dirty/pswpin/pswpout/pgmajfault are available on
+// Linux/Android/Chrome OS. Shmem/slab/gem_objects/gem_size are Chrome OS only.
 struct BASE_EXPORT SystemMemoryInfoKB {
   SystemMemoryInfoKB();
 

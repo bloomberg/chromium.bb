@@ -307,7 +307,7 @@ TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
   // and gem_size cannot be tested here.
 #endif
 }
-#endif  // defined(OS_WIN) || (defined(OS_MACOSX)  && !defined(OS_IOS)) ||
+#endif  // defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) ||
         // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
