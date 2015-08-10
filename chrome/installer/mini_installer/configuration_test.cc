@@ -14,13 +14,38 @@ using mini_installer::Configuration;
 
 class TestConfiguration : public Configuration {
  public:
-  explicit TestConfiguration(const wchar_t* command_line) : Configuration() {
+  explicit TestConfiguration(const wchar_t* command_line)
+      : Configuration(),
+        open_registry_key_result_(false),
+        read_registry_value_result_(0),
+        read_registry_value_(L"") {
     Initialize(command_line);
   }
+  explicit TestConfiguration(const wchar_t* command_line,
+                             LONG ret, const wchar_t* value)
+      : Configuration(),
+        open_registry_key_result_(true),
+        read_registry_value_result_(ret),
+        read_registry_value_(value) {
+    Initialize(command_line);
+  }
+  void SetRegistryResults(bool openkey, LONG ret, const wchar_t* value) {
+  }
  private:
+  bool open_registry_key_result_;
+  LONG read_registry_value_result_;
+  const wchar_t* read_registry_value_ = L"";
+
   void Initialize(const wchar_t* command_line) {
     Clear();
     ASSERT_TRUE(ParseCommandLine(command_line));
+  }
+  bool ReadClientStateRegistryValue(
+      const HKEY root_key, const wchar_t* app_guid,
+      LONG* retval, ValueString& value) override {
+    *retval = read_registry_value_result_;
+    value.assign(read_registry_value_);
+    return open_registry_key_result_;
   }
 };
 
@@ -72,13 +97,29 @@ TEST(MiniInstallerConfigurationTest, ChromeAppGuid) {
               TestConfiguration(L"spam.exe").chrome_app_guid());
   EXPECT_TRUE(std::wstring(google_update::kAppGuid) ==
               TestConfiguration(L"spam.exe --chrome").chrome_app_guid());
-  EXPECT_TRUE(std::wstring(google_update::kAppGuid) ==
-              TestConfiguration(L"spam.exe --multi-install --chrome")
-                  .chrome_app_guid());
-  EXPECT_TRUE(std::wstring(google_update::kAppGuid) ==
+  EXPECT_TRUE(std::wstring(google_update::kChromeFrameAppGuid) ==
               TestConfiguration(L"spam.exe --chrome-frame").chrome_app_guid());
   EXPECT_TRUE(std::wstring(google_update::kSxSAppGuid) ==
               TestConfiguration(L"spam.exe --chrome-sxs").chrome_app_guid());
+  EXPECT_TRUE(std::wstring(google_update::kMultiInstallAppGuid) ==
+              TestConfiguration(L"spam.exe --multi-install --chrome")
+                  .chrome_app_guid());
+  EXPECT_TRUE(std::wstring(google_update::kMultiInstallAppGuid) ==
+              TestConfiguration(L"spam.exe --multi-install --chrome",
+                                ERROR_INVALID_FUNCTION, L"")
+                  .chrome_app_guid());
+  EXPECT_TRUE(std::wstring(google_update::kAppGuid) ==
+              TestConfiguration(L"spam.exe --multi-install --chrome",
+                                ERROR_FILE_NOT_FOUND, L"")
+                  .chrome_app_guid());
+  EXPECT_TRUE(std::wstring(google_update::kAppGuid) ==
+              TestConfiguration(L"spam.exe --multi-install --chrome",
+                                ERROR_SUCCESS, L"foo-bar")
+                  .chrome_app_guid());
+  EXPECT_TRUE(std::wstring(google_update::kMultiInstallAppGuid) ==
+              TestConfiguration(L"spam.exe --multi-install --chrome",
+                                ERROR_SUCCESS, L"foo-multi")
+                  .chrome_app_guid());
 }
 
 TEST(MiniInstallerConfigurationTest, HasChrome) {

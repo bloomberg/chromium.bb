@@ -338,9 +338,13 @@
             'installer/mini_installer/decompress.cc',
             'installer/mini_installer/decompress.h',
             'installer/mini_installer/decompress_test.cc',
+            'installer/mini_installer/mini_installer_constants.cc',
+            'installer/mini_installer/mini_installer_constants.h',
             'installer/mini_installer/mini_string.cc',
             'installer/mini_installer/mini_string.h',
             'installer/mini_installer/mini_string_test.cc',
+            'installer/mini_installer/regkey.cc',
+            'installer/mini_installer/regkey.h',
             'installer/setup/app_launcher_installer.cc',  # Move to lib
             'installer/setup/app_launcher_installer.h',  # Move to lib
             'installer/setup/archive_patch_helper.cc',  # Move to lib
