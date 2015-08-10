@@ -572,25 +572,25 @@ InspectorTest.dumpElementsTree = function(rootNode, depth, resultsArray)
         return name + ":[" + result.join(",") + "]";
     }
 
-    function userPropertyDataDump(treeItem)
+    function markersDataDump(treeItem)
     {
         if (treeItem._elementCloseTag)
             return "";
 
-        var userProperties = "";
+        var markers = "";
         var node = treeItem._node;
         if (node) {
-            userProperties += dumpMap("userProperties", node._userProperties);
-            var dump = dumpMap("descendantUserAttributeCounters", node._descendantUserPropertyCounters);
+            markers += dumpMap("markers", node._markers);
+            var dump = node._subtreeMarkerCount ? "subtreeMarkerCount:" + node._subtreeMarkerCount : "";
             if (dump) {
-                if (userProperties)
-                    userProperties += ", ";
-                userProperties += dump;
+                if (markers)
+                    markers += ", ";
+                markers += dump;
             }
-            if (userProperties)
-                userProperties = " [" + userProperties + "]";
+            if (markers)
+                markers = " [" + markers + "]";
         }
-        return userProperties;
+        return markers;
     }
 
     function print(treeItem, prefix, depth)
@@ -605,8 +605,8 @@ InspectorTest.dumpElementsTree = function(rootNode, depth, resultsArray)
             } else
                 expander = "  ";
 
-            var userProperties = userPropertyDataDump(treeItem);
-            var value = prefix + expander + beautify(treeItem.listItemElement) + userProperties;
+            var markers = markersDataDump(treeItem);
+            var value = prefix + expander + beautify(treeItem.listItemElement) + markers;
             if (treeItem.shadowHostToolbar) {
                 value = prefix + expander + "shadow-root ";
                 for (var i = 0; i < treeItem.shadowHostToolbar.children.length; ++i) {

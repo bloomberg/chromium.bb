@@ -4,6 +4,18 @@
 <script src="../../http/tests/inspector/elements-test.js"></script>
 <script>
 
+function pseudoVisibility(resolve, reject, pseudo)
+{
+    var parentNode = document.getElementById("parent-node");
+    resolve(getComputedStyle(parentNode, ":" + pseudo).visibility);
+}
+
+function pseudoIframeVisibility(resolve, reject)
+{
+    var parentNode = frames[0].document.getElementById("frame-node");
+    resolve(getComputedStyle(parentNode).visibility);
+}
+
 function test()
 {
     var treeOutline;
@@ -113,15 +125,12 @@ function test()
 
             function callback()
             {
-                InspectorTest.addResult("=== Added hide shortcut in frame ===");
-                InspectorTest.cssModel.computedStylePromise(frameNode.id).then(callback2);
-            }
-
-            function callback2(style)
-            {
-                InspectorTest.addResult("=== Frame node is hidden ===");
-                InspectorTest.addResult(style.getLiveProperty("visibility").propertyText);
-                next();
+                InspectorTest.invokePageFunctionPromise("pseudoIframeVisibility", []).then(function(result) {
+                    InspectorTest.addResult("=== Added hide shortcut in frame ===");
+                    InspectorTest.addResult("=== Frame node is hidden ===");
+                    InspectorTest.addResult("visibility: " + result + ";");
+                    next();
+                });
             }
         }
     ]);
@@ -129,16 +138,12 @@ function test()
     function testPseudoToggle(pseudoNode, next)
     {
         treeOutline.toggleHideElement(pseudoNode, callback);
-
         function callback()
         {
-            InspectorTest.cssModel.computedStylePromise(pseudoNode.id).then(callback2);
-        }
-
-        function callback2(style)
-        {
-            InspectorTest.addResult("::" + pseudoNode.pseudoType() + " node visibility: '" + style.getLiveProperty("visibility").value + "'");
-            next();
+            InspectorTest.invokePageFunctionPromise("pseudoVisibility", [pseudoNode.pseudoType()]).then(function(result) {
+                InspectorTest.addResult("::" + pseudoNode.pseudoType() + " node visibility: '" + result + "'");
+                next();
+            });
         }
     }
 }

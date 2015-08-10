@@ -14,27 +14,27 @@ function test()
         child2Node = InspectorTest.expandedNodeWithId("child2");
         aNode = InspectorTest.expandedNodeWithId("aNode");
 
-        aNode.setUserProperty("attr1", true);
+        aNode.setMarker("attr1", true);
         InspectorTest.addResult("attr1 set on aNode");
         InspectorTest.dumpElementsTree(null);
 
-        child2Node.setUserProperty("attr2", "value");
+        child2Node.setMarker("attr2", "value");
         InspectorTest.addResult("attr2 set on child2");
         InspectorTest.dumpElementsTree(null);
 
-        child2Node.setUserProperty("attr1", true);
+        child2Node.setMarker("attr1", true);
         InspectorTest.addResult("attr1 set on child2");
         InspectorTest.dumpElementsTree(null);
 
-        aNode.setUserProperty("attr1", "anotherValue");
+        aNode.setMarker("attr1", "anotherValue");
         InspectorTest.addResult("attr1 modified on aNode");
         InspectorTest.dumpElementsTree(null);
 
-        child2Node.setUserProperty("attr2", "anotherValue");
+        child2Node.setMarker("attr2", "anotherValue");
         InspectorTest.addResult("attr2 modified on child2");
         InspectorTest.dumpElementsTree(null);
 
-        aNode.removeUserProperty("attr1");
+        aNode.setMarker("attr1", null);
         InspectorTest.addResult("attr1 removed from aNode");
         InspectorTest.dumpElementsTree(null);
 
