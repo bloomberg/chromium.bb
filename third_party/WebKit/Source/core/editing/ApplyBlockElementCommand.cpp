@@ -227,7 +227,7 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
         }
 
         // If end is in the middle of a text node, split.
-        if (!endStyle->collapseWhiteSpace() && end.offsetInContainerNode() && end.offsetInContainerNode() < end.computeContainerNode()->maxCharacterOffset()) {
+        if (endStyle->userModify() != READ_ONLY && !endStyle->collapseWhiteSpace() && end.offsetInContainerNode() && end.offsetInContainerNode() < end.computeContainerNode()->maxCharacterOffset()) {
             RefPtrWillBeRawPtr<Text> endContainer = toText(end.computeContainerNode());
             splitTextNode(endContainer, end.offsetInContainerNode());
             if (isStartAndEndOnSameNode)
