@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/prefs/scoped_user_pref_update.h"
+#include "base/time/time.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -26,6 +28,35 @@ class PrefRegistrySyncable;
 namespace translate {
 
 class TranslateAcceptLanguages;
+
+// Allows updating denial times for a specific language while maintaining the
+// maximum list size and ensuring PrefObservers are notified of change values.
+class DenialTimeUpdate {
+ public:
+  DenialTimeUpdate(PrefService* prefs,
+                   const std::string& language,
+                   size_t max_denial_count);
+  ~DenialTimeUpdate();
+
+  // Gets the list of timestamps when translation was denied. Guaranteed to
+  // be non-null, potentially inserts a new listvalue into the dictionary if
+  // necessary.
+  base::ListValue* GetDenialTimes();
+
+  // Gets the oldest denial time on record. Will return base::Time::max() if
+  // no denial time has been recorded yet.
+  base::Time GetOldestDenialTime();
+
+  // Records a new denial time. Does not ensure ordering of denial times - it is
+  // up to the user to ensure times are in monotonic order.
+  void AddDenialTime(base::Time denial_time);
+
+ private:
+  DictionaryPrefUpdate denial_time_dict_update_;
+  std::string language_;
+  size_t max_denial_count_;
+  base::ListValue* time_list_;  // Weak, owned by the containing prefs service.
+};
 
 // The wrapper of PrefService object for Translate.
 //

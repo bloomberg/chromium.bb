@@ -93,6 +93,60 @@ void ExpandLanguageCodes(const std::vector<std::string>& languages,
 
 }  // namespace
 
+DenialTimeUpdate::DenialTimeUpdate(PrefService* prefs,
+                                   const std::string& language,
+                                   size_t max_denial_count)
+    : denial_time_dict_update_(
+          prefs,
+          TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage),
+      language_(language),
+      max_denial_count_(max_denial_count),
+      time_list_(nullptr) {}
+
+DenialTimeUpdate::~DenialTimeUpdate() {}
+
+// Gets the list of timestamps when translation was denied.
+base::ListValue* DenialTimeUpdate::GetDenialTimes() {
+  if (time_list_)
+    return time_list_;
+
+  // Any consumer of GetDenialTimes _will_ write to them, so let's get an
+  // update started.
+  base::DictionaryValue* denial_time_dict = denial_time_dict_update_.Get();
+  DCHECK(denial_time_dict);
+
+  base::Value* denial_value = nullptr;
+  bool has_value = denial_time_dict->Get(language_, &denial_value);
+  bool has_list = has_value && denial_value->GetAsList(&time_list_);
+
+  if (!has_list) {
+    time_list_ = new base::ListValue();
+    double oldest_denial_time = 0;
+    bool has_old_style =
+        has_value && denial_value->GetAsDouble(&oldest_denial_time);
+    if (has_old_style)
+      time_list_->AppendDouble(oldest_denial_time);
+    denial_time_dict->Set(language_, make_scoped_ptr(time_list_));
+  }
+  return time_list_;
+}
+
+base::Time DenialTimeUpdate::GetOldestDenialTime() {
+  double oldest_time;
+  bool result = GetDenialTimes()->GetDouble(0, &oldest_time);
+  if (!result)
+    return base::Time();
+  return base::Time::FromJsTime(oldest_time);
+}
+
+void DenialTimeUpdate::AddDenialTime(base::Time denial_time) {
+  DCHECK(GetDenialTimes());
+  GetDenialTimes()->AppendDouble(denial_time.ToJsTime());
+
+  while (GetDenialTimes()->GetSize() >= max_denial_count_)
+    GetDenialTimes()->Remove(0, nullptr);
+}
+
 TranslatePrefs::TranslatePrefs(PrefService* user_prefs,
                                const char* accept_languages_pref,
                                const char* preferred_languages_pref)
@@ -277,20 +331,15 @@ void TranslatePrefs::UpdateLastDeniedTime(const std::string& language) {
   if (IsTooOftenDenied(language))
     return;
 
-  const base::DictionaryValue* last_denied_time_dict =
-      prefs_->GetDictionary(kPrefTranslateLastDeniedTimeForLanguage);
-  double time = 0;
-  bool denied_before = last_denied_time_dict->GetDouble(language, &time);
-  base::Time last_closed_time = base::Time::FromJsTime(time);
+  DenialTimeUpdate update(prefs_, language, 2);
   base::Time now = base::Time::Now();
+  base::Time oldest_denial_time = update.GetOldestDenialTime();
+  update.AddDenialTime(now);
 
-  DictionaryPrefUpdate update(prefs_, kPrefTranslateLastDeniedTimeForLanguage);
-  update.Get()->SetDouble(language, now.ToJsTime());
-
-  if (!denied_before)
+  if (oldest_denial_time.is_null())
     return;
 
-  if (now - last_closed_time <= base::TimeDelta::FromDays(1)) {
+  if (now - oldest_denial_time <= base::TimeDelta::FromDays(1)) {
     DictionaryPrefUpdate update(prefs_,
                                 kPrefTranslateTooOftenDeniedForLanguage);
     update.Get()->SetBoolean(language, true);
