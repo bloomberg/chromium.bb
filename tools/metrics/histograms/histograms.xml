@@ -59880,6 +59880,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="ALLOWED_TRUNCATED_HEADERS"/>
   <int value="3" label="SKIPPED_WS_PREFIX"/>
   <int value="4" label="SKIPPED_NON_WS_PREFIX"/>
+  <int value="5" label="HTTP_09_RESPONSE_OVER_HTTP"/>
+  <int value="6" label="HTTP_09_RESPONSE_OVER_SSL"/>
+  <int value="7" label="HEADER_HTTP_09_ON_REUSED_SOCKET"/>
 </enum>
 
 <enum name="HttpPipelineStatus" type="int">

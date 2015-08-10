@@ -28,10 +28,13 @@ namespace {
 
 enum HttpHeaderParserEvent {
   HEADER_PARSER_INVOKED = 0,
-  HEADER_HTTP_09_RESPONSE = 1,
+  // Obsolete: HEADER_HTTP_09_RESPONSE = 1,
   HEADER_ALLOWED_TRUNCATED_HEADERS = 2,
   HEADER_SKIPPED_WS_PREFIX = 3,
   HEADER_SKIPPED_NON_WS_PREFIX = 4,
+  HEADER_HTTP_09_RESPONSE_OVER_HTTP = 5,
+  HEADER_HTTP_09_RESPONSE_OVER_SSL = 6,
+  HEADER_HTTP_09_ON_REUSED_SOCKET = 7,
   NUM_HEADER_EVENTS
 };
 
@@ -942,7 +945,14 @@ int HttpStreamParser::ParseResponseHeaders(int end_offset) {
   } else {
     // Enough data was read -- there is no status line.
     headers = new HttpResponseHeaders(std::string("HTTP/0.9 200 OK"));
-    RecordHeaderParserEvent(HEADER_HTTP_09_RESPONSE);
+
+    if (request_->url.SchemeIsCryptographic()) {
+      RecordHeaderParserEvent(HEADER_HTTP_09_RESPONSE_OVER_SSL);
+    } else {
+      RecordHeaderParserEvent(HEADER_HTTP_09_RESPONSE_OVER_HTTP);
+    }
+    if (connection_->is_reused())
+      RecordHeaderParserEvent(HEADER_HTTP_09_ON_REUSED_SOCKET);
   }
 
   // Check for multiple Content-Length headers with no Transfer-Encoding header.
