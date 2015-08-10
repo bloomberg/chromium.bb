@@ -183,8 +183,9 @@ body.fakebox-focused #cursor {
 }
 
 .thumb-ntp #mv-tiles {
-  height: calc(2 * 146px);
-  line-height: 146px;
+  /* we need a 16px margin and the tiles have 130px height. */
+  height: calc(2*130px + 16px);
+  line-height: calc(130px + 16px);
 }
 
 .icon-ntp #mv-tiles {
