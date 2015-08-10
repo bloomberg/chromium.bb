@@ -540,7 +540,7 @@ bool IDNToUnicodeOneComponent(const base::char16* comp,
   // Only transform if the input can be an IDN component.
   static const base::char16 kIdnPrefix[] = {'x', 'n', '-', '-'};
   if ((comp_len > arraysize(kIdnPrefix)) &&
-      !memcmp(comp, kIdnPrefix, arraysize(kIdnPrefix) * sizeof(base::char16))) {
+      !memcmp(comp, kIdnPrefix, sizeof(kIdnPrefix))) {
     UIDNA* uidna = g_uidna.Get().value;
     DCHECK(uidna != NULL);
     size_t original_length = out->length();
