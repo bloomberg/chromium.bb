@@ -46,7 +46,7 @@ void LayoutPagedFlowThread::layout()
     LayoutMultiColumnSet* columnSet = firstMultiColumnSet();
     if (!columnSet)
         return;
-    LayoutUnit pageLogicalHeight = columnSet->pageLogicalHeight();
+    LayoutUnit pageLogicalHeight = columnSet->pageLogicalHeightForOffset(LayoutUnit());
     if (!pageLogicalHeight)
         return; // Page height not calculated yet. Happens in the first layout pass when height is auto.
     // Ensure uniform page height. We don't want the last page to be shorter than the others,

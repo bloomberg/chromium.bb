@@ -518,7 +518,7 @@ unsigned MultiColumnFragmentainerGroup::columnIndexAtVisualPoint(const LayoutPoi
 {
     bool isColumnProgressionInline = m_columnSet.multiColumnFlowThread()->progressionIsInline();
     bool isHorizontalWritingMode = m_columnSet.isHorizontalWritingMode();
-    LayoutUnit columnLengthInColumnProgressionDirection = isColumnProgressionInline ? m_columnSet.pageLogicalWidth() : m_columnSet.pageLogicalHeight();
+    LayoutUnit columnLengthInColumnProgressionDirection = isColumnProgressionInline ? m_columnSet.pageLogicalWidth() : logicalHeight();
     LayoutUnit offsetInColumnProgressionDirection = isHorizontalWritingMode == isColumnProgressionInline ? visualPoint.x() : visualPoint.y();
     if (!m_columnSet.style()->isLeftToRightDirection() && isColumnProgressionInline)
         offsetInColumnProgressionDirection = m_columnSet.logicalWidth() - offsetInColumnProgressionDirection;

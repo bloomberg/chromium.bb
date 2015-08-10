@@ -116,27 +116,18 @@ LayoutUnit LayoutFlowThread::pageLogicalHeightForOffset(LayoutUnit offset)
 {
     LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(offset);
     if (!columnSet)
-        return 0;
+        return LayoutUnit();
 
-    return columnSet->pageLogicalHeight();
+    return columnSet->pageLogicalHeightForOffset(offset);
 }
 
 LayoutUnit LayoutFlowThread::pageRemainingLogicalHeightForOffset(LayoutUnit offset, PageBoundaryRule pageBoundaryRule)
 {
     LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(offset);
     if (!columnSet)
-        return 0;
+        return LayoutUnit();
 
-    LayoutUnit pageLogicalTop = columnSet->pageLogicalTopForOffset(offset);
-    LayoutUnit pageLogicalHeight = columnSet->pageLogicalHeight();
-    LayoutUnit pageLogicalBottom = pageLogicalTop + pageLogicalHeight;
-    LayoutUnit remainingHeight = pageLogicalBottom - offset;
-    if (pageBoundaryRule == IncludePageBoundary) {
-        // If IncludePageBoundary is set, the line exactly on the top edge of a
-        // columnSet will act as being part of the previous columnSet.
-        remainingHeight = intMod(remainingHeight, pageLogicalHeight);
-    }
-    return remainingHeight;
+    return columnSet->pageRemainingLogicalHeightForOffset(offset, pageBoundaryRule);
 }
 
 void LayoutFlowThread::generateColumnSetIntervalTree()

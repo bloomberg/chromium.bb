@@ -68,10 +68,29 @@ const MultiColumnFragmentainerGroup& LayoutMultiColumnSet::fragmentainerGroupAtV
     return m_fragmentainerGroups.first();
 }
 
-LayoutUnit LayoutMultiColumnSet::pageLogicalHeight() const
+LayoutUnit LayoutMultiColumnSet::pageLogicalHeightForOffset(LayoutUnit offsetInFlowThread) const
 {
-    // FIXME: pageLogicalHeight() needs to take a flow thread offset parameter, so that we can
-    // locate the right row.
+    return fragmentainerGroupAtFlowThreadOffset(offsetInFlowThread).logicalHeight();
+}
+
+LayoutUnit LayoutMultiColumnSet::pageRemainingLogicalHeightForOffset(LayoutUnit offsetInFlowThread, PageBoundaryRule pageBoundaryRule) const
+{
+    const MultiColumnFragmentainerGroup& row = fragmentainerGroupAtFlowThreadOffset(offsetInFlowThread);
+    LayoutUnit pageLogicalHeight = row.logicalHeight();
+    ASSERT(pageLogicalHeight); // It's not allowed to call this method if the height is unknown.
+    LayoutUnit pageLogicalBottom = row.columnLogicalTopForOffset(offsetInFlowThread) + pageLogicalHeight;
+    LayoutUnit remainingLogicalHeight = pageLogicalBottom - offsetInFlowThread;
+
+    if (pageBoundaryRule == IncludePageBoundary) {
+        // If IncludePageBoundary is set, the line exactly on the top edge of a
+        // column will act as being part of the previous column.
+        remainingLogicalHeight = intMod(remainingLogicalHeight, pageLogicalHeight);
+    }
+    return remainingLogicalHeight;
+}
+
+bool LayoutMultiColumnSet::isPageLogicalHeightKnown() const
+{
     return firstFragmentainerGroup().logicalHeight();
 }
 

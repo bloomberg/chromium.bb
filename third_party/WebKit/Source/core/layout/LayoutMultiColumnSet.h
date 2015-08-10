@@ -73,7 +73,9 @@ public:
 
     // Return the width and height of a single column or page in the set.
     LayoutUnit pageLogicalWidth() const { return flowThread()->logicalWidth(); }
-    LayoutUnit pageLogicalHeight() const;
+    LayoutUnit pageLogicalHeightForOffset(LayoutUnit) const;
+    LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit, PageBoundaryRule) const;
+    bool isPageLogicalHeightKnown() const;
 
     LayoutFlowThread* flowThread() const { return m_flowThread; }
 

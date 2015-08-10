@@ -919,7 +919,7 @@ bool LayoutMultiColumnFlowThread::addForcedColumnBreak(LayoutUnit offset, Layout
 bool LayoutMultiColumnFlowThread::isPageLogicalHeightKnown() const
 {
     if (LayoutMultiColumnSet* columnSet = lastMultiColumnSet())
-        return columnSet->pageLogicalHeight();
+        return columnSet->isPageLogicalHeightKnown();
     return false;
 }
 
