@@ -82,6 +82,11 @@ class RemoteDeviceGtestTestRun(remote_device_test_run.RemoteDeviceTestRun):
         results.AddResult(base_test_result.BaseTestResult(
             'Remote Service detected native crash.',
             base_test_result.ResultType.CRASH))
+      elif self._DidDeviceGoOffline():
+        self._LogLogcat()
+        self._LogAdbTraceLog()
+        raise remote_device_helper.RemoteDeviceError(
+            'Remote service unable to reach device.', is_infra_error=True)
       else:
         results.AddResult(base_test_result.BaseTestResult(
             'Remote Service detected error.',

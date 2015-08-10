@@ -7,6 +7,7 @@
 import json
 import logging
 import os
+import re
 import shutil
 import string
 import tempfile
@@ -18,6 +19,9 @@ from pylib.remote.device import appurify_constants
 from pylib.remote.device import appurify_sanitized
 from pylib.remote.device import remote_device_helper
 from pylib.utils import zip_utils
+
+_DEVICE_OFFLINE_RE = re.compile('error: device not found')
+
 
 class RemoteDeviceTestRun(test_run.TestRun):
   """Run tests on a remote device."""
@@ -340,3 +344,18 @@ class RemoteDeviceTestRun(test_run.TestRun):
           logging.log(level, line)
       except KeyError:
         logging.error('No logcat found.')
+
+  def _LogAdbTraceLog(self):
+    zip_file = self._DownloadTestResults(None)
+    with zipfile.ZipFile(zip_file) as z:
+      adb_trace_log = z.read('adb_trace.log')
+      for line in adb_trace_log.splitlines():
+        logging.critical(line)
+
+  def _DidDeviceGoOffline(self):
+    zip_file = self._DownloadTestResults(None)
+    with zipfile.ZipFile(zip_file) as z:
+      adb_trace_log = z.read('adb_trace.log')
+      if any(_DEVICE_OFFLINE_RE.search(l) for l in adb_trace_log.splitlines()):
+        return True
+    return False
