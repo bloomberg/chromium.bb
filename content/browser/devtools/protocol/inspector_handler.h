@@ -25,6 +25,7 @@ class InspectorHandler {
   void SetRenderFrameHost(RenderFrameHostImpl* host);
 
   void TargetCrashed();
+  void TargetDetached(const std::string& reason);
 
   Response Enable();
 

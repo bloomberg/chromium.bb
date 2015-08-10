@@ -31,6 +31,10 @@ void InspectorHandler::TargetCrashed() {
   client_->TargetCrashed(TargetCrashedParams::Create());
 }
 
+void InspectorHandler::TargetDetached(const std::string& reason) {
+  client_->Detached(DetachedParams::Create()->set_reason(reason));
+}
+
 Response InspectorHandler::Enable() {
   if (host_ && !host_->IsRenderFrameLive())
     client_->TargetCrashed(TargetCrashedParams::Create());

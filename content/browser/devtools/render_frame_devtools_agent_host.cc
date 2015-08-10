@@ -534,6 +534,7 @@ void RenderFrameDevToolsAgentHost::RenderProcessGone(
       current_frame_crashed_ = true;
       break;
     default:
+      inspector_handler_->TargetDetached("Render process gone.");
       break;
   }
 }
