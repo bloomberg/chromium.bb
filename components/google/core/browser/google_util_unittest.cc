@@ -96,9 +96,9 @@ TEST(GoogleUtilTest, BadHomePages) {
   EXPECT_FALSE(IsHomePage("https://www.google.com:5678"));
 
   // Invalid TLDs.
-  EXPECT_FALSE(IsHomePage("http://www.google.abc"));
-  EXPECT_FALSE(IsHomePage("http://www.google.com.abc"));
-  EXPECT_FALSE(IsHomePage("http://www.google.abc.com"));
+  EXPECT_FALSE(IsHomePage("http://www.google.example"));
+  EXPECT_FALSE(IsHomePage("http://www.google.com.example"));
+  EXPECT_FALSE(IsHomePage("http://www.google.example.com"));
   EXPECT_FALSE(IsHomePage("http://www.google.ab.cd"));
   EXPECT_FALSE(IsHomePage("http://www.google.uk.qq"));
 
