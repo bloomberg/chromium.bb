@@ -28910,7 +28910,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PasswordManager.TotalAccountsHighRes.WithScheme"
+<histogram name="PasswordManager.TotalAccountsHiRes.WithScheme"
     units="accounts">
   <owner>engedy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
@@ -75193,7 +75193,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Http" label="The scheme of the origin is HTTP."/>
   <suffix name="Https" label="The scheme of the origin is HTTPS."/>
   <suffix name="Other" label="The scheme of the origin is something else."/>
-  <affected-histogram name="PasswordManager.TotalAccountsHighRes.WithScheme"/>
+  <affected-histogram name="PasswordManager.TotalAccountsHiRes.WithScheme"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PerformanceMonitor" separator=".">
