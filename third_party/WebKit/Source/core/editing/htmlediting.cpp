@@ -334,12 +334,16 @@ template <typename Strategy>
 PositionAlgorithm<Strategy> nextCandidateAlgorithm(const PositionAlgorithm<Strategy>& position)
 {
     PositionIteratorAlgorithm<Strategy> p(position);
+
+    p.increment();
     while (!p.atEnd()) {
-        p.increment();
         PositionAlgorithm<Strategy> candidate = p.computePosition();
         if (candidate.isCandidate())
             return candidate;
+
+        p.increment();
     }
+
     return PositionAlgorithm<Strategy>();
 }
 
@@ -359,15 +363,20 @@ PositionInComposedTree nextCandidate(const PositionInComposedTree& position)
 Position nextVisuallyDistinctCandidate(const Position& position)
 {
     if (position.isNull())
-        return position;
+        return Position();
+
     PositionIterator p(position);
     Position downstreamStart = position.downstream();
+
+    p.increment();
     while (!p.atEnd()) {
-        p.increment();
         Position candidate = p.computePosition();
         if (candidate.isCandidate() && candidate.downstream() != downstreamStart)
             return candidate;
+
+        p.increment();
     }
+
     return Position();
 }
 
@@ -375,12 +384,16 @@ template <typename Strategy>
 PositionAlgorithm<Strategy> previousCandidateAlgorithm(const PositionAlgorithm<Strategy>& position)
 {
     PositionIteratorAlgorithm<Strategy> p(position);
+
+    p.decrement();
     while (!p.atStart()) {
-        p.decrement();
         PositionAlgorithm<Strategy> candidate = p.computePosition();
         if (candidate.isCandidate())
             return candidate;
+
+        p.decrement();
     }
+
     return PositionAlgorithm<Strategy>();
 }
 
@@ -401,15 +414,20 @@ template <typename Strategy>
 PositionAlgorithm<Strategy> previousVisuallyDistinctCandidateAlgorithm(const PositionAlgorithm<Strategy>& position)
 {
     if (position.isNull())
-        return position;
+        return PositionAlgorithm<Strategy>();
+
     PositionIteratorAlgorithm<Strategy> p(position);
     PositionAlgorithm<Strategy> downstreamStart = position.downstream();
+
+    p.decrement();
     while (!p.atStart()) {
-        p.decrement();
         PositionAlgorithm<Strategy> candidate = p.computePosition();
         if (candidate.isCandidate() && candidate.downstream() != downstreamStart)
             return candidate;
+
+        p.decrement();
     }
+
     return PositionAlgorithm<Strategy>();
 }
 
