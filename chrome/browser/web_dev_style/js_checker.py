@@ -249,8 +249,6 @@ class JSChecker(object):
       results.append(self.output_api.PresubmitNotifyResult(
           'See the JavaScript style guide at '
           'http://www.chromium.org/developers/web-development-style-guide'
-          '#TOC-JavaScript and if you have any feedback about the JavaScript '
-          'PRESUBMIT check, contact tbreisacher@chromium.org or '
-          'dbeam@chromium.org'))
+          '#TOC-JavaScript'))
 
     return results

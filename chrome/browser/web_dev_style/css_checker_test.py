@@ -50,9 +50,6 @@ class CssCheckerTest(SuperMoxTestBase):
 
   def VerifyContentsProducesOutput(self, contents, output):
     self.fake_file.NewContents().AndReturn(contents.splitlines())
-    author_msg = ('Was the CSS checker useful? '
-                  'Send feedback or hate mail to dbeam@chromium.org.')
-    self.output_api.PresubmitNotifyResult(author_msg).AndReturn(None)
     self.output_api.PresubmitPromptWarning(
         self.fake_file_name + ':\n' + output.strip()).AndReturn(None)
     self.mox.ReplayAll()
