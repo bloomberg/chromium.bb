@@ -156,24 +156,19 @@ static bool IsSupportedPlaybackToMemoryFormat(ResourceFormat format) {
 
 class SkipImageFilter : public SkDrawFilter {
  public:
-  bool PaintHasBitmap(const SkPaint& paint) {
-    SkShader* shader = paint.getShader();
-    if (!shader)
-      return false;
-    if (shader->asAGradient(nullptr) == SkShader::kNone_GradientType)
-      return false;
-    if (shader->asABitmap(nullptr, nullptr, nullptr) !=
-        SkShader::kNone_BitmapType)
-      return true;
-    return false;
-  }
-
   bool filter(SkPaint* paint, Type type) override {
     if (type == kBitmap_Type)
       return false;
-    if (PaintHasBitmap(*paint))
-      return false;
-    return true;
+
+    SkShader* shader = paint->getShader();
+    if (!shader)
+      return true;
+    SkShader::BitmapType bitmap_type =
+        shader->asABitmap(nullptr, nullptr, nullptr);
+    // The kDefault_BitmapType is returned for images. Other bitmap types are
+    // simply bitmap representations of colors such as gradients. So, we can
+    // return true and draw for any case except kDefault_BitmapType.
+    return bitmap_type != SkShader::kDefault_BitmapType;
   }
 };
 
