@@ -175,12 +175,20 @@ static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> 
         // https://w3c.github.io/IndexedDB/#dfn-convert-a-value-to-a-key
         if (value->IsArrayBuffer()) {
             DOMArrayBuffer* buffer = V8ArrayBuffer::toImpl(value.As<v8::Object>());
+            if (buffer->isNeutered()) {
+                exceptionState.throwTypeError("The ArrayBuffer is neutered.");
+                return nullptr;
+            }
             const char* start = static_cast<const char*>(buffer->data());
             size_t length = buffer->byteLength();
             return IDBKey::createBinary(SharedBuffer::create(start, length));
         }
         if (value->IsArrayBufferView()) {
             DOMArrayBufferView* view = V8ArrayBufferView::toImpl(value.As<v8::Object>());
+            if (view->buffer()->isNeutered()) {
+                exceptionState.throwTypeError("The viewed ArrayBuffer is neutered.");
+                return nullptr;
+            }
             const char* start = static_cast<const char*>(view->baseAddress());
             size_t length = view->byteLength();
             return IDBKey::createBinary(SharedBuffer::create(start, length));

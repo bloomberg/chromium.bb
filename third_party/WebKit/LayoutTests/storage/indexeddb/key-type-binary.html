@@ -96,4 +96,49 @@ value_test('ArrayBuffer', buffer);
 value_test('DataView', new DataView(buffer));
 value_test('Offset DataView', new DataView(buffer), 3, 3);
 value_test('Offset Uint8Array', new Uint8Array(buffer), 3, 3);
+
+indexeddb_test(
+    function(t, db) {
+        db.createObjectStore('store');
+    },
+    function(t, db) {
+        var tx = db.transaction('store', 'readwrite');
+        var store = tx.objectStore('store');
+
+        var b = new Uint8Array([1,2,3,4]).buffer;
+        assert_equals(b.byteLength, 4);
+
+        // Neuter the ArrayBuffer by transferring it to a worker.
+        var w = new Worker(URL.createObjectURL(new Blob([])));
+        w.postMessage('', [b]);
+        assert_equals(b.byteLength, 0);
+
+        assert_throws(new TypeError, function() { store.put('', b); });
+        t.done();
+    },
+    'Neutered ArrayBuffer'
+);
+
+indexeddb_test(
+    function(t, db) {
+        db.createObjectStore('store');
+    },
+    function(t, db) {
+        var tx = db.transaction('store', 'readwrite');
+        var store = tx.objectStore('store');
+
+        var a = new Uint8Array([1,2,3,4]);
+        assert_equals(a.length, 4);
+
+        // Neuter the ArrayBuffer by transferring it to a worker.
+        var w = new Worker(URL.createObjectURL(new Blob([])));
+        w.postMessage('', [a.buffer]);
+        assert_equals(a.length, 0);
+
+        assert_throws(new TypeError, function() { store.put('', a); });
+        t.done();
+    },
+    'Neutered ArrayBufferView'
+);
+
 </script>
