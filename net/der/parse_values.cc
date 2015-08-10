@@ -63,7 +63,6 @@ bool DecimalStringToUint(ByteReader& in, size_t digits, UINT* out) {
 // 0 and 60 (to allow for leap seconds; no validation is done that a leap
 // second is on a day that could be a leap second).
 bool ValidateGeneralizedTime(const GeneralizedTime& time) {
-  CHECK(time.year > 0 && time.year < 9999);
   if (time.month < 1 || time.month > 12)
     return false;
   if (time.day < 1)
@@ -249,19 +248,20 @@ bool ParseUTCTimeRelaxed(const Input& in, GeneralizedTime* value) {
   if (zulu == 'Z' && !zulu_reader.HasMore()) {
     time.seconds = 0;
     *value = time;
-    return true;
+  } else {
+    if (!DecimalStringToUint(reader, 2, &time.seconds))
+      return false;
+    if (!reader.ReadByte(&zulu) || zulu != 'Z' || reader.HasMore())
+      return false;
   }
-  if (!DecimalStringToUint(reader, 2, &time.seconds))
-    return false;
-  if (!reader.ReadByte(&zulu) || zulu != 'Z' || reader.HasMore())
-    return false;
-  if (!ValidateGeneralizedTime(time))
-    return false;
+
   if (time.year < 50) {
     time.year += 2000;
   } else {
     time.year += 1900;
   }
+  if (!ValidateGeneralizedTime(time))
+    return false;
   *value = time;
   return true;
 }
@@ -280,13 +280,13 @@ bool ParseUTCTime(const Input& in, GeneralizedTime* value) {
   uint8_t zulu;
   if (!reader.ReadByte(&zulu) || zulu != 'Z' || reader.HasMore())
     return false;
-  if (!ValidateGeneralizedTime(time))
-    return false;
   if (time.year < 50) {
     time.year += 2000;
   } else {
     time.year += 1900;
   }
+  if (!ValidateGeneralizedTime(time))
+    return false;
   *value = time;
   return true;
 }
