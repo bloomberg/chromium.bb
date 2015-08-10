@@ -228,7 +228,8 @@ class MetaBuildWrapper(object):
         errs.append('Unreferenced mixin "%s".' % mixin)
 
     if errs:
-      raise MBErr('mb config file %s has problems:\n  ' + '\n  '.join(errs))
+      raise MBErr(('mb config file %s has problems:' % self.args.config_file) +
+                    + '\n  ' + '\n  '.join(errs))
 
     if not self.args.quiet:
       self.Print('mb config file %s looks ok.' % self.args.config_file)

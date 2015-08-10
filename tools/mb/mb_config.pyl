@@ -149,6 +149,11 @@
       'gyp_defines': 'goma=1 gomadir=$(goma_dir)',
     },
 
+    'gpu_tests': {
+      'gn_args': 'archive_gpu_tests=true',
+      'gyp_defines': 'archive_gpu_tests=1',
+    },
+
     'gyp': {'type': 'gyp'},
 
     'minimal_symbols': {
