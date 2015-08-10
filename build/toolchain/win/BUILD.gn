@@ -147,8 +147,7 @@ template("msvc_toolchain") {
 
     tool("solink") {
       dllname = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"  # e.g. foo.dll
-      libname =
-          "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.lib"  # e.g. foo.dll.lib
+      libname = "${dllname}.lib"  # e.g. foo.dll.lib
       rspfile = "${dllname}.rsp"
 
       link_command = "$python_path gyp-win-tool link-wrapper $env False link.exe /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:${dllname}.pdb @$rspfile"

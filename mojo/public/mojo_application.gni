@@ -2,10 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/toolchain/toolchain.gni")
 import("mojo.gni")
-if (is_android) {
-  import("//build/config/android/config.gni")
-}
 
 # Generate a binary Mojo application in a self-named directory.
 # Application resources are copied to a "resources" directory alongside the app.
@@ -41,26 +39,7 @@ template("mojo_native_application") {
   if (!is_nacl) {
     output = base_target_name + ".mojo"
     library_target_name = base_target_name + "_library"
-
-    if (is_linux) {
-      library_name = "lib${library_target_name}.so"
-    } else if (is_android) {
-      library_name = "lib${library_target_name}${android_product_extension}"
-    } else if (is_win) {
-      library_name = "${library_target_name}.dll"
-    } else if (is_mac) {
-      library_name = "lib${library_target_name}.dylib"
-    } else {
-      assert(false, "Platform not supported.")
-    }
-
-    if (is_android) {
-      # On android, use the stripped version of the library, because
-      # applications are always fetched over the network.
-      library_dir = "${root_out_dir}/lib.stripped"
-    } else {
-      library_dir = root_out_dir
-    }
+    library_name = "${shlib_prefix}${library_target_name}${shlib_extension}"
 
     shared_library(library_target_name) {
       if (defined(invoker.cflags)) {
@@ -166,7 +145,7 @@ template("mojo_native_application") {
       ]
 
       sources = [
-        "${library_dir}/${library_name}",
+        "${root_shlib_dir}/${library_name}",
       ]
       outputs = [
         "${root_out_dir}/${base_target_name}/${output}",

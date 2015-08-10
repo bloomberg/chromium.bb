@@ -11,7 +11,8 @@ if (is_android) {
   java_library_path = "$target_out_dir/java_library.dex.jar"
 
   mojo_android_application("resource_provider") {
-    input_so = "$root_out_dir/lib.stripped/libresource_provider_lib$android_product_extension"
+    input_so =
+        "$root_shlib_dir/${shlib_prefix}resource_provider_lib$shlib_extension"
     input_dex_jar = java_library_path
     deps = [
       ":java_library",

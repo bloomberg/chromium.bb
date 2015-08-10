@@ -167,12 +167,8 @@ if (is_android) {
   android_libcpp_root = "$android_ndk_root/sources/cxx-stl/llvm-libc++"
   if (is_component_build) {
     android_libcpp_library = "c++_shared"
-    # By appending .cr, we prevent name collisions with libraries already
-    # loaded by the Android zygote.
-    android_product_extension = ".cr.so"
   } else {
     android_libcpp_library = "c++_static"
-    android_product_extension = ".so"
   }
 
   # ABI ------------------------------------------------------------------------

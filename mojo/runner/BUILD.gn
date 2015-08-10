@@ -310,8 +310,8 @@ if (is_android) {
     ]
 
     sources = [
-      "$root_out_dir/lib.stripped/libbootstrap$android_product_extension",
       "$root_out_dir/obj/mojo/runner/bootstrap_java.dex.jar",
+      "$root_shlib_dir/${shlib_prefix}bootstrap$shlib_extension",
     ]
 
     apptest_outputs = [
@@ -341,10 +341,10 @@ if (is_android) {
 
   copy("copy_mojo_runner") {
     sources = [
-      "$root_out_dir/exe.stripped/mojo_runner",
+      "$root_out_dir/mojo_runner",
     ]
     outputs = [
-      "$root_out_dir/lib.stripped/libmojo_runner$android_product_extension",
+      "$root_shlib_dir/${shlib_prefix}mojo_runner$shlib_extension",
     ]
     deps = [
       ":mojo_runner",
@@ -372,7 +372,7 @@ if (is_android) {
     testonly = true
     apk_name = "MojoRunnerApptests"
     android_manifest = "android/apk/AndroidManifest.xml"
-    native_libs = [ "libmojo_runner$android_product_extension" ]
+    native_libs = [ "${shlib_prefix}mojo_runner$shlib_extension" ]
     asset_location = mojo_runner_apptests_assets_dir
 
     deps = [

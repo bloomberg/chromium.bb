@@ -11,7 +11,7 @@ if (is_android) {
 
   mojo_android_application("network") {
     output_name = "network_service"
-    input_so = "$root_out_dir/lib.stripped/libnetwork_service$android_product_extension"
+    input_so = "$root_shlib_dir/${shlib_prefix}network_service$shlib_extension"
     input_dex_jar = java_library_path
     deps = [
       ":java_library",

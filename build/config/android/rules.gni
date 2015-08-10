@@ -5,6 +5,7 @@
 import("//base/android/linker/config.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/internal_rules.gni")
+import("//build/toolchain/toolchain.gni")
 import("//third_party/android_platform/config.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -1438,7 +1439,7 @@ template("android_apk") {
     }
 
     if (is_component_build) {
-      _native_libs += [ "$root_out_dir/lib.stripped/libc++_shared.so" ]
+      _native_libs += [ "$root_shlib_dir/libc++_shared.so" ]
       _chromium_linker_dep += [ "//build/android:cpplib_stripped" ]
     }
 
@@ -1447,12 +1448,13 @@ template("android_apk") {
         process_file_template(invoker.native_libs, "{{source_name_part}}")
     _native_libs += process_file_template(
             _first_ext_removed,
-            "$root_build_dir/lib.stripped/{{source_name_part}}$android_product_extension")
+            "$root_shlib_dir/{{source_name_part}}$shlib_extension")
 
     _native_libs_dir = base_path + "/libs"
 
     if (_use_chromium_linker) {
-      _native_libs += [ "$root_build_dir/lib.stripped/libchromium_android_linker$android_product_extension" ]
+      _native_libs +=
+          [ "$root_shlib_dir/libchromium_android_linker$shlib_extension" ]
     }
 
     _enable_relocation_packing = false
@@ -1663,7 +1665,7 @@ template("android_apk") {
 
       skip_packing_list = [
         "gdbserver",
-        "libchromium_android_linker$android_product_extension",
+        "libchromium_android_linker$shlib_extension",
       ]
 
       enable_packing_arg = 0
@@ -1947,7 +1949,7 @@ template("unittest_apk") {
   if (defined(invoker.unittests_binary)) {
     unittests_binary = invoker.unittests_binary
   } else {
-    unittests_binary = "lib${test_suite_name}${android_product_extension}"
+    unittests_binary = "lib${test_suite_name}${shlib_extension}"
   }
 
   if (defined(invoker.apk_name)) {
@@ -2081,7 +2083,7 @@ template("android_aidl") {
 # Example
 #   create_native_executable_dist("foo_dist") {
 #     dist_dir = "$root_build_dir/foo_dist"
-#     binary = "$root_build_dir/exe.stripped/foo"
+#     binary = "$root_build_dir/foo"
 #     deps = [ ":the_thing_that_makes_foo" ]
 #   }
 template("create_native_executable_dist") {
@@ -2100,7 +2102,6 @@ template("create_native_executable_dist") {
   find_deps_target_name = "${template_name}__find_library_dependencies"
   copy_target_name = "${template_name}__copy_libraries_and_exe"
 
-  stripped_libraries_dir = "$root_build_dir/lib.stripped"
   action(find_deps_target_name) {
     visibility = [ ":$copy_target_name" ]
 
@@ -2120,7 +2121,7 @@ template("create_native_executable_dist") {
       rebase_path(depfile, root_build_dir),
       "--input-libraries=$rebased_binaries",
       "--libraries-dir",
-      rebase_path(stripped_libraries_dir, root_build_dir),
+      rebase_path(root_shlib_dir, root_build_dir),
       "--output",
       rebase_path(libraries_list, root_build_dir),
       "--readelf",

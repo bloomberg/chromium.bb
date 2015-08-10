@@ -41,10 +41,10 @@ copy("copy_mandoline_runner") {
     ":mandoline_runner",
   ]
   sources = [
-    "$root_out_dir/exe.stripped/mandoline_runner",
+    "$root_out_dir/mandoline_runner",
   ]
   outputs = [
-    "$root_out_dir/lib.stripped/libmandoline_runner$android_product_extension",
+    "$root_shlib_dir/${shlib_prefix}mandoline_runner$shlib_extension",
   ]
 }
 
@@ -61,8 +61,8 @@ copy_ex("copy_mandoline_assets") {
     "//mojo/services/network",
   ]
   sources = [
-    "$root_out_dir/lib.stripped/libbootstrap$android_product_extension",
     "$root_out_dir/obj/mojo/runner/bootstrap_java.dex.jar",
+    "$root_shlib_dir/${shlib_prefix}bootstrap$shlib_extension",
   ]
 
   # Directories can't be specified as sources so pass manually to the script.
@@ -117,7 +117,7 @@ android_apk("mandoline_apk") {
 
   android_manifest = "apk/AndroidManifest.xml"
 
-  native_libs = [ "libmandoline_runner$android_product_extension" ]
+  native_libs = [ "${shlib_prefix}mandoline_runner$shlib_extension" ]
 
   asset_location = mandoline_assets_dir
 

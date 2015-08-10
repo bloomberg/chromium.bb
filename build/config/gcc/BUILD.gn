@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/toolchain/toolchain.gni")
+
 # This config causes functions not to be automatically exported from shared
 # libraries. By default, all symbols are exported but this means there are
 # lots of exports that slow everything down. In general we explicitly mark
@@ -26,11 +28,15 @@ config("executable_ldconfig") {
       "-Wl,-z,nocopyreloc",
     ]
   } else {
-    # Android doesn't support rpath.
+    # Note: Android doesn't support rpath.
+    rpath_link = ""
+    if (shlib_subdir != ".") {
+      rpath_link = "${shlib_subdir}/"
+    }
     ldflags = [
       # Want to pass "\$". GN will re-escape as required for ninja.
-      "-Wl,-rpath=\$ORIGIN/",
-      "-Wl,-rpath-link=",
+      "-Wl,-rpath=\$ORIGIN/${rpath_link}",
+      "-Wl,-rpath-link=${rpath_link}",
 
       # Newer binutils don't set DT_RPATH unless you disable "new" dtags
       # and the new DT_RUNPATH doesn't work without --no-as-needed flag.

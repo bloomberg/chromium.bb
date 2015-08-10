@@ -52,7 +52,7 @@ if (current_toolchain == default_toolchain) {
   # GYP: //tools/android/forwarder2/forwarder.gyp:forwarder2
   create_native_executable_dist("device_forwarder_prepare_dist") {
     dist_dir = "$root_build_dir/forwarder_dist"
-    binary = "$root_build_dir/exe.stripped/device_forwarder"
+    binary = "$root_build_dir/device_forwarder"
     deps = [
       ":device_forwarder",
     ]

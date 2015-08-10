@@ -6,6 +6,7 @@
 # we ship with.
 
 import("//build/config/ui.gni")
+import("//build/toolchain/toolchain.gni")
 import("//mojo/public/mojo_application.gni")
 
 mojo_native_application("core_services") {
@@ -17,8 +18,8 @@ mojo_native_application("core_services") {
   if (is_win) {
     copy("copy_files") {
       sources = [
-        "$root_out_dir/libEGL.dll",
-        "$root_out_dir/libGLESv2.dll",
+        "$root_shlib_dir/libEGL.dll",
+        "$root_shlib_dir/libGLESv2.dll",
       ]
       outputs = [
         "$root_out_dir/core_services/{{source_file_part}}",
