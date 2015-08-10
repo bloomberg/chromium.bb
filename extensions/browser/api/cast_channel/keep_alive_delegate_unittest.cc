@@ -6,7 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/simple_test_tick_clock.h"
+#include "base/test/simple_test_clock.h"
 #include "base/timer/mock_timer.h"
 #include "extensions/browser/api/cast_channel/cast_test_util.h"
 #include "net/base/net_errors.h"
@@ -51,9 +51,8 @@ class KeepAliveDelegateTest : public testing::Test {
  protected:
   void SetUp() override {
     inner_delegate_ = new MockCastTransportDelegate;
-    logger_ =
-        new Logger(scoped_ptr<base::TickClock>(new base::SimpleTestTickClock),
-                   base::TimeTicks());
+    logger_ = new Logger(scoped_ptr<base::Clock>(new base::SimpleTestClock),
+                         base::Time());
     keep_alive_.reset(new KeepAliveDelegate(
         &socket_, logger_, make_scoped_ptr(inner_delegate_),
         base::TimeDelta::FromMilliseconds(kTestPingTimeoutMillis),

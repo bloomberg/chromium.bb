@@ -9,7 +9,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/simple_test_tick_clock.h"
+#include "base/test/simple_test_clock.h"
 #include "extensions/browser/api/cast_channel/cast_framer.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/api/cast_channel/cast_test_util.h"
@@ -144,9 +144,9 @@ class MockSocket : public net::Socket {
 class CastTransportTest : public testing::Test {
  public:
   CastTransportTest()
-      : logger_(new Logger(
-            scoped_ptr<base::TickClock>(new base::SimpleTestTickClock),
-            base::TimeTicks())) {
+      : logger_(
+            new Logger(make_scoped_ptr<base::Clock>(new base::SimpleTestClock),
+                       base::Time())) {
     delegate_ = new MockCastTransportDelegate;
     transport_.reset(new CastTransportImpl(&mock_socket_, kChannelId,
                                            CreateIPEndPointForTest(),

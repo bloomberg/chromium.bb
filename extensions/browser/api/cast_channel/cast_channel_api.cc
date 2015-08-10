@@ -11,7 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/time/default_tick_clock.h"
+#include "base/time/default_clock.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/cast_channel/cast_auth_ica.h"
@@ -107,9 +107,8 @@ bool IsValidConnectInfoIpAddress(const ConnectInfo& connect_info) {
 
 CastChannelAPI::CastChannelAPI(content::BrowserContext* context)
     : browser_context_(context),
-      logger_(
-          new Logger(scoped_ptr<base::TickClock>(new base::DefaultTickClock),
-                     base::TimeTicks::UnixEpoch())) {
+      logger_(new Logger(make_scoped_ptr<base::Clock>(new base::DefaultClock),
+                         base::Time::UnixEpoch())) {
   DCHECK(browser_context_);
 }
 

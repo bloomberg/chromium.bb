@@ -19,7 +19,7 @@
 #include "net/base/ip_endpoint.h"
 
 namespace base {
-class TickClock;
+class Clock;
 }
 
 namespace extensions {
@@ -38,9 +38,12 @@ class Logger : public base::RefCounted<Logger> {
  public:
   // |clock|: Clock used for generating timestamps for the events. Owned by
   // this class.
-  // |unix_epoch_time_ticks|: The TimeTicks that corresponds to Unix epoch.
-  Logger(scoped_ptr<base::TickClock> clock,
-         base::TimeTicks unix_epoch_time_ticks);
+  // |unix_epoch_time|: The Time that corresponds to the Unix epoch.
+  // Can be set to other values (e.g. zero) for testing purposes.
+  //
+  // See crbug.com/518951 for information on why base::Clock
+  // is used instead of base::TickClock.
+  Logger(scoped_ptr<base::Clock> clock, base::Time unix_epoch_time);
 
   // For newly created sockets. Will create an event and log a
   // CAST_SOCKET_CREATED event.
@@ -124,9 +127,9 @@ class Logger : public base::RefCounted<Logger> {
       int channel_id,
       const proto::SocketEvent& socket_event);
 
-  scoped_ptr<base::TickClock> clock_;
+  scoped_ptr<base::Clock> clock_;
   AggregatedSocketEventLogMap aggregated_socket_events_;
-  base::TimeTicks unix_epoch_time_ticks_;
+  base::Time unix_epoch_time_;
 
   // Log proto holding global statistics.
   proto::Log log_;
