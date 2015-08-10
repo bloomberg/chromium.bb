@@ -132,6 +132,7 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//cc/blink",
@@ -155,6 +156,7 @@ source_set("lib") {
     "//media/blink",
     "//media/mojo",
     "//mojo/application/public/cpp",
+    "//mojo/application/public/interfaces",
     "//mojo/cc",
     "//mojo/common",
     "//mojo/converters/surfaces",
@@ -165,6 +167,9 @@ source_set("lib") {
     "//net",
     "//skia",
     "//third_party/mojo_services/src/accessibility/public/interfaces",
+    "//third_party/WebKit/public:image_resources",
+    "//third_party/WebKit/public:resources",
+    "//ui/base:base",
     "//ui/mojo/events:interfaces",
     "//ui/events",
     "//ui/events:gesture_detection",
@@ -172,6 +177,7 @@ source_set("lib") {
     "//ui/events/gestures/blink",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/mojo/geometry:interfaces_cpp_sources",
     "//ui/mojo/init",
     "//ui/native_theme",
     "//url",
@@ -205,6 +211,7 @@ mojo_native_application("html_viewer") {
   deps = [
     ":lib",
     ":pak",
+    "//mojo/application/public/cpp:sources",
     "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
   ]
   resources = [ "$root_out_dir/html_viewer.pak" ]
@@ -232,10 +239,13 @@ mojo_native_application("layout_test_html_viewer") {
   deps = [
     ":lib",
     ":pak",
+    "//cc",
     "//components/test_runner",
+    "//mojo/application/public/cpp:sources",
     "//third_party/WebKit/public:blink",
     "//third_party/WebKit/public:test_support",
     "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
+    "//ui/base",
     "//url",
   ]
   resources = [ "$root_out_dir/html_viewer.pak" ]
@@ -286,7 +296,11 @@ test("html_viewer_unittests") {
     ":lib",
     ":pak",
     "//base/test:test_support",
+    "//components/scheduler",
+    "//gin",
+    "//testing/gtest:gtest",
     "//third_party/mojo/src/mojo/edk/system",
+    "//ui/base",
     "//ui/mojo/init",
   ]
 
@@ -308,10 +322,13 @@ mojo_native_application("apptests") {
   deps = [
     "//base",
     "//components/html_viewer/public/interfaces",
+    "//components/scheduler",
+    "//components/view_manager/public/cpp",
     "//components/view_manager/public/cpp/tests:test_support",
     "//mandoline/tab",
     "//mandoline/tab:test_support",
     "//mandoline/tab/public/interfaces",
+    "//mojo/application/public/cpp:sources",
     "//mojo/application/public/cpp:test_support",
     "//net:test_support",
     "//testing/gtest",

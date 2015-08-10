@@ -37,6 +37,7 @@ check_targets = [
   "//components/autofill/*",
   "//components/bookmarks/*",
   "//components/google/*",
+  "//components/html_viewer/*",
   "//components/omnibox/*",
   "//components/os_crypt/*",
   "//components/pref_registry/*",
