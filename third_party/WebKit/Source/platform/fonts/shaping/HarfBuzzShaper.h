@@ -62,10 +62,11 @@ public:
 
     float width() { return m_width; }
     FloatRect bounds() { return m_glyphBoundingBox; }
-    int offsetForPosition(float targetX);
     unsigned numCharacters() const { return m_numCharacters; }
     void fallbackFonts(HashSet<const SimpleFontData*>*) const;
 
+    static int offsetForPosition(Vector<RefPtr<ShapeResult>>&,
+        const TextRun&, float targetX);
     static float fillGlyphBuffer(Vector<RefPtr<ShapeResult>>&,
         GlyphBuffer*, const TextRun&, unsigned from, unsigned to);
     static float fillGlyphBufferForTextEmphasis(Vector<RefPtr<ShapeResult>>&,
@@ -86,6 +87,7 @@ private:
 
     ShapeResult(const Font*, unsigned numCharacters, TextDirection);
 
+    int offsetForPosition(float targetX);
     template<TextDirection>
     float fillGlyphBufferForRun(GlyphBuffer*, const RunInfo*,
         float initialAdvance, unsigned from, unsigned to, unsigned runOffset);

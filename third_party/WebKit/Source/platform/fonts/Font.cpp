@@ -704,11 +704,8 @@ float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFon
 int Font::offsetForPositionForComplexText(const TextRun& run, float xFloat,
     bool includePartialGlyphs) const
 {
-    HarfBuzzShaper shaper(this, run);
-    RefPtr<ShapeResult> shapeResult = shaper.shapeResult();
-    if (!shapeResult)
-        return 0;
-    return shapeResult->offsetForPosition(xFloat);
+    CachingWordShaper& shaper = m_fontFallbackList->cachingWordShaper();
+    return shaper.offsetForPosition(this, run, xFloat);
 }
 
 // Return the rectangle for selecting the given range of code-points in the TextRun.

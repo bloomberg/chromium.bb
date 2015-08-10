@@ -86,6 +86,14 @@ static inline float shapeResultsForRun(ShapeCache* shapeCache, const Font* font,
     return totalWidth;
 }
 
+int CachingWordShaper::offsetForPosition(const Font* font, const TextRun& run, float targetX)
+{
+    Vector<RefPtr<ShapeResult>> results;
+    shapeResultsForRun(m_shapeCache.get(), font, run, nullptr, &results);
+
+    return ShapeResult::offsetForPosition(results, run, targetX);
+}
+
 float CachingWordShaper::fillGlyphBuffer(const Font* font, const TextRun& run,
     HashSet<const SimpleFontData*>* fallbackFonts,
     GlyphBuffer* glyphBuffer, unsigned from, unsigned to)

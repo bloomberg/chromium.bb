@@ -446,6 +446,39 @@ FloatRect ShapeResult::selectionRect(Vector<RefPtr<ShapeResult>>& results,
     return FloatRect(point.x() + toX, point.y(), fromX - toX, height);
 }
 
+int ShapeResult::offsetForPosition(Vector<RefPtr<ShapeResult>>& results,
+    const TextRun& run, float targetX)
+{
+    RefPtr<ShapeResult> wordResult;
+    unsigned totalOffset;
+    if (run.rtl()) {
+        totalOffset = run.length();
+        for (auto& wordResult : results) {
+            if (!wordResult)
+                continue;
+            totalOffset -= wordResult->numCharacters();
+            if (targetX >= 0 && targetX <= wordResult->width()) {
+                int offsetForWord = wordResult->offsetForPosition(targetX);
+                return totalOffset + offsetForWord;
+            }
+            targetX -= wordResult->width();
+        }
+    } else {
+        totalOffset = 0;
+        for (auto& wordResult : results) {
+            if (!wordResult)
+                continue;
+            int offsetForWord = wordResult->offsetForPosition(targetX);
+            ASSERT(offsetForWord >= 0);
+            totalOffset += offsetForWord;
+            if (targetX >= 0 && targetX <= wordResult->width())
+                return totalOffset;
+            targetX -= wordResult->width();
+        }
+    }
+    return totalOffset;
+}
+
 int ShapeResult::offsetForPosition(float targetX)
 {
     int charactersSoFar = 0;
