@@ -23,7 +23,8 @@ public abstract class PathUtils {
     private static final int DATA_DIRECTORY = 0;
     private static final int DATABASE_DIRECTORY = 1;
     private static final int CACHE_DIRECTORY = 2;
-    private static final int NUM_DIRECTORIES = 3;
+    private static final int DOWNLOADS_DIRECTORY = 3;
+    private static final int NUM_DIRECTORIES = 4;
     private static AsyncTask<String, Void, String[]> sDirPathFetchTask;
 
     private static File sThumbnailDirectory;
@@ -49,7 +50,10 @@ public abstract class PathUtils {
                 paths[DATABASE_DIRECTORY] = appContext.getDatabasePath("foo").getParent();
                 // TODO(wnwen): Find a way to avoid calling this function in renderer process.
                 if (appContext.getCacheDir() != null) {
+                    // These paths are only available in the browser process.
                     paths[CACHE_DIRECTORY] = appContext.getCacheDir().getPath();
+                    paths[DOWNLOADS_DIRECTORY] = Environment.getExternalStoragePublicDirectory(
+                            Environment.DIRECTORY_DOWNLOADS).getPath();
                 }
                 return paths;
             }
@@ -115,8 +119,8 @@ public abstract class PathUtils {
     @SuppressWarnings("unused")
     @CalledByNative
     private static String getDownloadsDirectory(Context appContext) {
-        return Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DOWNLOADS).getPath();
+        assert sDirPathFetchTask != null : "setDataDirectorySuffix must be called first.";
+        return getDirectoryPath(DOWNLOADS_DIRECTORY);
     }
 
     /**
