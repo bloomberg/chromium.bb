@@ -233,12 +233,6 @@ def RunLDSandboxed():
   # Have a list of everything else.
   other_inputs = all_inputs[:first_mainfile] + all_inputs[first_extra:]
 
-  # We use colons as separators, so they can't appear in the filenames.
-  # (However, there are other special characters that we don't handle
-  # cleanly.)
-  for filename in llc_outputs:
-    assert ':' not in filename, filename
-
   if driver_tools.GetBuildOS() == 'linux':
     sel_ldr_command = ('${BOOTSTRAP_LDR} ${SEL_LDR} --reserved_at_zero=0x%s'
                        % ('X' * 16))
@@ -246,14 +240,18 @@ def RunLDSandboxed():
     sel_ldr_command = '${SEL_LDR}'
 
   native_libs_dirname = pathtools.tosys(GetNativeLibsDirname(other_inputs))
-  Run('${SEL_LDR_PREFIX} ' + sel_ldr_command + ' ' +
-      '${SEL_LDR_FLAGS} -a ' +
-      '-E NACL_IRT_PNACL_TRANSLATOR_LINK_INPUTS=%s ' % ':'.join(llc_outputs) +
-      '-E NACL_IRT_PNACL_TRANSLATOR_LINK_OUTPUT=%s ' % outfile +
-      '-E NACL_IRT_OPEN_RESOURCE_BASE=' + native_libs_dirname + ' ' +
-      '-E NACL_IRT_OPEN_RESOURCE_REMAP=' +
-      'libpnacl_irt_shim.a:libpnacl_irt_shim_dummy.a' +
-      ' -- ${LD_SB}',
+  command = ['${SEL_LDR_PREFIX}', sel_ldr_command, '${SEL_LDR_FLAGS}', '-a']
+  for index, filename in enumerate(llc_outputs):
+    command.extend(
+        ['-E', 'NACL_IRT_PNACL_TRANSLATOR_LINK_INPUT_%d=%s'
+         % (index, filename)])
+  command.extend([
+      '-E', 'NACL_IRT_PNACL_TRANSLATOR_LINK_OUTPUT=%s ' % outfile,
+      '-E', 'NACL_IRT_OPEN_RESOURCE_BASE=%s' % native_libs_dirname,
+      '-E', 'NACL_IRT_OPEN_RESOURCE_REMAP=%s'
+      % 'libpnacl_irt_shim.a:libpnacl_irt_shim_dummy.a',
+      '--', '${LD_SB}'])
+  Run(' '.join(command),
       # stdout/stderr will be automatically dumped
       # upon failure
       redirect_stderr=subprocess.PIPE,
