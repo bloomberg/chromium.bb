@@ -559,6 +559,9 @@ bool DrmDevice::CommitProperties(drmModePropertySet* properties,
       return true;
     page_flip_manager_->RegisterCallback(id, callback);
 
+    if (watcher_)
+      watcher_->SetPaused(is_sync);
+
     // If the flip was requested synchronous or if no watcher has been installed
     // yet, then synchronously handle the page flip events.
     if (is_sync || !watcher_) {
