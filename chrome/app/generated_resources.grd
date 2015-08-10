@@ -6256,6 +6256,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_SLIMMING_PAINT_DESCRIPTION" desc="Description for the flag to disable slimming paint.">
         Do not use the slimming paint display lists for drawing. Note the enable-slimming-paint flag takes precedence over this flag if both are present.
       </message>
+      <message name="IDS_FLAGS_ENABLE_SLIMMING_PAINT_V2_NAME" desc="Title for the flag to enable slimming paint phase 2.">
+        Enable slimming paint phase 2.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SLIMMING_PAINT_V2_DESCRIPTION" desc="Description for the flag to enable slimming paint phase 2.">
+        Enable slimming paint phase 2 (display list based layerization, sub-tree painting optimization, etc.) Requires slimming paint enabled.
+      </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_SECURITY_FEATURES_NAME" desc="Name for the flag to enable experimental security features.">
         Enable potentially annoying security features.
       </message>

@@ -425,6 +425,9 @@ const char kEnableSkiaBenchmarking[]        = "enable-skia-benchmarking";
 // Overrides kDisableSlimmingPaint if both are present.
 const char kEnableSlimmingPaint[]           = "enable-slimming-paint";
 
+// Enables slimming paint phase 2: http://www.chromium.org/blink/slimming-paint
+const char kEnableSlimmingPaintV2[]         = "enable-slimming-paint-v2";
+
 // On platforms that support it, enables smooth scroll animation.
 const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";
 

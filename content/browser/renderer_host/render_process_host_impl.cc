@@ -1303,6 +1303,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableSeccompFilterSandbox,
     switches::kEnableSkiaBenchmarking,
     switches::kEnableSlimmingPaint,
+    switches::kEnableSlimmingPaintV2,
     switches::kEnableSmoothScrolling,
     switches::kEnableStaleWhileRevalidate,
     switches::kEnableStatsTable,
