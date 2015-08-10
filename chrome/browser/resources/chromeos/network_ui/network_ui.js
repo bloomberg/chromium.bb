@@ -197,24 +197,6 @@ var NetworkUI = (function() {
    *     A list of network state information for each visible network.
    */
   var onVisibleNetworksReceived = function(states) {
-    /** @type {chrome.networkingPrivate.NetworkStateProperties} */ var
-        defaultState;
-    if (states.length > 0)
-      defaultState = states[0];
-    var icon = /** @type {CrNetworkIconElement} */($('default-network-icon'));
-    if (defaultState && defaultState.Type != CrOnc.Type.VPN) {
-      $('default-network-text').textContent =
-          loadTimeData.getStringF('defaultNetworkText',
-                                  defaultState.Name,
-                                  defaultState.ConnectionState);
-      icon.networkState = defaultState;
-    } else {
-      $('default-network-text').textContent =
-          loadTimeData.getString('noNetworkText');
-      // Show the disconnected wifi icon if there are no networks.
-      icon.networkType = CrOnc.Type.WIFI;
-    }
-
     createStateTable('network-state-table', NETWORK_STATE_FIELDS, states);
   };
 

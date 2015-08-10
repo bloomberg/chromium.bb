@@ -11,17 +11,21 @@
 /**
  * TODO(stevenjb): Replace getText with a proper localization function that
  * handles string substitution.
- * Performs argument substitution, replacing %1, %2, etc in 'text' with
+ * Performs argument substitution, replacing $1, $2, etc in 'text' with
  * corresponding entries in |args|.
  * @param {string} text The string to perform the substitution on.
- * @param {?Array<string>} args The arguments to replace %1, %2, etc with.
+ * @param {?Array<string>} args The arguments to replace $1, $2, etc with.
  */
 function getText(text, args) {
-  var res = text;
+  var res;
+  if (loadTimeData && loadTimeData.data_)
+    res = loadTimeData.getString(text) || text;
+  else
+    res = text;
   if (!args)
     return res;
   for (var i = 0; i < args.length; ++i) {
-    var key = '%' + (i + 1);
+    var key = '$' + (i + 1);
     res = res.replace(key, args[i]);
   }
   return res;
@@ -34,20 +38,20 @@ function getText(text, args) {
  */
 function getConnectionStateText(state, name) {
   if (state == CrOnc.ConnectionState.CONNECTED)
-    return getText('Connected to %1', [name]);
+    return getText('networkConnected', [name]);
   if (state == CrOnc.ConnectionState.CONNECTING)
-    return getText('Connecting to %1...', [name]);
+    return getText('networkConnecting', [name]);
   if (state == CrOnc.ConnectionState.NOT_CONNECTED)
-    return getText('Not Connected');
+    return getText('networkNotConnected');
   return getText(state);
 };
 
 /**
- * Polymer class definition for 'network-list-item'.
- * @element network-list-item
+ * Polymer class definition for 'cr-network-list-item'.
+ * @element cr-network-list-item
  */
 Polymer({
-  is: 'network-list-item',
+  is: 'cr-network-list-item',
 
   properties: {
     /**
@@ -86,27 +90,27 @@ Polymer({
     var isDisconnected =
         network.ConnectionState == CrOnc.ConnectionState.NOT_CONNECTED;
     if (this.isListItem) {
-      var name = getText(network.Name) || getText(network.Type);
+      var name = network.Name || getText('OncType' + network.Type);
       this.$.networkName.textContent = name;
       this.$.networkName.classList.toggle('connected', !isDisconnected);
       return;
     }
     if (network.Name && network.ConnectionState) {
-      this.$.networkName.textContent = getText(network.Type);
+      this.$.networkName.textContent = getText('OncType' + network.Type);
       this.$.networkName.classList.toggle('connected', false);
       this.$.networkStateText.textContent =
           getConnectionStateText(network.ConnectionState, network.Name);
       this.$.networkStateText.classList.toggle('connected', !isDisconnected);
       return;
     }
-    this.$.networkName.textContent = getText(network.Type);
+    this.$.networkName.textContent = getText('OncType' + network.Type);
     this.$.networkName.classList.toggle('connected', false);
-    this.$.networkStateText.textContent = getText('Disabled');
+    this.$.networkStateText.textContent = getText('networkDisabled');
     this.$.networkStateText.classList.toggle('connected', false);
 
     if (network.Type == CrOnc.Type.CELLULAR) {
       if (!network.GUID)
-        this.$.networkStateText.textContent = getText('Uninitialized');
+        this.$.networkStateText.textContent = getText('networkDisabled');
     }
   },
 

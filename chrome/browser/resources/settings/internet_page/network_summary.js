@@ -339,7 +339,7 @@ Polymer({
   },
 
   /**
-   * Sets 'networkStates[type]' which will update the network-list-item
+   * Sets 'networkStates[type]' which will update the cr-network-list-item
    * associated with 'type'.
    * @param {string} type The network type.
    * @param {?CrOnc.NetworkStateProperties} state The state properties for the

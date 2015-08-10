@@ -199,13 +199,13 @@
       <message name="IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR" desc="Message for the status area when initializing the cellular device.">
         Initializing cellular modem...
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING" desc="Message for the network tray tooltip and default menu text when activating a network.">
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING" desc="Message for the network tray tooltip and network list when activating a network.">
         Activating <ph name="NAME">$1<ex>YBH Cellular</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED" desc="Message for the network tray tooltip and default menu text when connected to a network.">
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED" desc="Message for the network tray tooltip and network list when connected to a network.">
         Connected to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING" desc="Message for the network tray tooltip and default menu text when connecting to a network.">
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING" desc="Message for the network tray tooltip and network list when connecting to a network.">
         Connecting to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATE" desc="Message for the network list to activate the network.">
@@ -217,7 +217,7 @@
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_CONNECTING" desc="Message for the network list when connecting to a network.">
         <ph name="NAME">$1<ex>GoogleGuest</ex></ph>: Connecting...
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED" desc="Description in status area or network dropdown when no network is connected.">
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED" desc="Description in status area or network list when no network is connected.">
         No network
       </message>
 

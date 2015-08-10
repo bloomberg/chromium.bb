@@ -2,8 +2,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_toggle_button/cr_toggle_button.html">
-<link rel="import" href="network_list.html">
-<link rel="import" href="network_list_item.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_network_list.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_network_list_item.html">
 
 <dom-module name="network-summary-item">
   <link rel="import" type="css" href="network_summary_item.css">
@@ -11,9 +11,9 @@
     <div class="layout vertical" hidden$="[[isHidden]]">
       <div id="details" class="layout horizontal center"
           on-click="onDetailsClicked_">
-        <network-list-item id="detailsItem"
+        <cr-network-list-item id="detailsItem"
             network-state="[[networkState]]">
-        </network-list-item>
+        </cr-network-list-item>
         <paper-spinner active="[[showScanning_(deviceState)]]"></paper-spinner>
         <span class="flex"></span>
         <div id="buttons" class="layout horizontal">
@@ -28,12 +28,12 @@
           </cr-toggle-button>
         </div>
       </div>
-      <network-list id="networkList" class="layout vertical"
+      <cr-network-list id="networkList" class="layout vertical"
           max-height="[[maxHeight]]"
           networks="[[networkStateList]]"
           on-selected="onListItemSelected_"
           opened="{{expanded}}">
-      </network-list>
+      </cr-network-list>
     </div>
   </template>
   <script src="network_summary_item.js"></script>

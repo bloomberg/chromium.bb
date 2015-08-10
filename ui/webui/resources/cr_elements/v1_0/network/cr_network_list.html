@@ -1,0 +1,21 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_collapse/cr_collapse.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_network_list_item.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_onc_types.html">
+
+<dom-module id="cr-network-list">
+  <link rel="import" type="css" href="cr_network_list.css">
+  <template>
+    <cr-collapse on-core-resize="onResized_" opened="{{opened}}">
+      <div id="container" class="layout vertical flex">
+        <template is="dom-repeat" items="[[networks]]">
+          <cr-network-list-item network-state="[[item]]" is-list-item
+              on-click="onSelected_">
+          </cr-network-list-item>
+        </template>
+      </div>
+    </cr-collapse>
+  </template>
+  <script src="cr_network_list.js"></script>
+</dom-module>

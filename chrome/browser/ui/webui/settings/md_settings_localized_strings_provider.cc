@@ -13,6 +13,10 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_CHROMEOS)
+#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
+#endif
+
 namespace {
 
 // Note that md_settings.html contains a <script> tag which imports a script of
@@ -150,6 +154,23 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       "internetPageTitle", IDS_SETTINGS_INTERNET);
   html_source->AddLocalizedString(
       "internetDetailPageTitle", IDS_SETTINGS_INTERNET_DETAIL);
+
+  // Required by cr_network_list_item.js. TODO(stevenjb): Add to
+  // settings_strings.grdp or provide an alternative translation method.
+  // crbug.com/512214.
+  html_source->AddLocalizedString("networkConnected",
+                                  IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED);
+  html_source->AddLocalizedString("networkConnecting",
+                                  IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING);
+  html_source->AddLocalizedString("networkDisabled",
+                                  IDS_OPTIONS_SETTINGS_NETWORK_DISABLED);
+  html_source->AddLocalizedString("networkNotConnected",
+                                  IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED);
+  html_source->AddLocalizedString("OncTypeCellular", IDS_NETWORK_TYPE_CELLULAR);
+  html_source->AddLocalizedString("OncTypeEthernet", IDS_NETWORK_TYPE_ETHERNET);
+  html_source->AddLocalizedString("OncTypeVPN", IDS_NETWORK_TYPE_VPN);
+  html_source->AddLocalizedString("OncTypeWiFi", IDS_NETWORK_TYPE_WIFI);
+  html_source->AddLocalizedString("OncTypeWimax", IDS_NETWORK_TYPE_WIMAX);
 }
 #endif
 

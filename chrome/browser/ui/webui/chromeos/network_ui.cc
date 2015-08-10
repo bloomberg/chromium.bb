@@ -22,6 +22,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 
 namespace chromeos {
 
@@ -158,14 +159,24 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   html->AddLocalizedString("stateFormatOption", IDS_NETWORK_UI_FORMAT_STATE);
   html->AddLocalizedString("shillFormatOption", IDS_NETWORK_UI_FORMAT_SHILL);
 
-  html->AddLocalizedString("defaultNetworkText",
-                           IDS_NETWORK_UI_DEFAULT_NETWORK);
-  html->AddLocalizedString("noNetworkText",
-                           IDS_STATUSBAR_NO_NETWORKS_MESSAGE);
   html->AddLocalizedString("visibleNetworksLabel",
                            IDS_NETWORK_UI_VISIBLE_NETWORKS);
   html->AddLocalizedString("favoriteNetworksLabel",
                            IDS_NETWORK_UI_FAVORITE_NETWORKS);
+
+  html->AddLocalizedString("networkConnected",
+                           IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED);
+  html->AddLocalizedString("networkConnecting",
+                           IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING);
+  html->AddLocalizedString("networkDisabled",
+                           IDS_OPTIONS_SETTINGS_NETWORK_DISABLED);
+  html->AddLocalizedString("networkNotConnected",
+                           IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED);
+  html->AddLocalizedString("OncTypeCellular", IDS_NETWORK_TYPE_CELLULAR);
+  html->AddLocalizedString("OncTypeEthernet", IDS_NETWORK_TYPE_ETHERNET);
+  html->AddLocalizedString("OncTypeVPN", IDS_NETWORK_TYPE_VPN);
+  html->AddLocalizedString("OncTypeWiFi", IDS_NETWORK_TYPE_WIFI);
+  html->AddLocalizedString("OncTypeWimax", IDS_NETWORK_TYPE_WIMAX);
 
   html->SetJsonPath("strings.js");
   html->AddResourcePath("network_ui.css", IDR_NETWORK_UI_CSS);

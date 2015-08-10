@@ -6106,9 +6106,6 @@ All users must sign out to continue.
   <message name="IDS_NETWORK_UI_FORMAT_SHILL" desc="Label in network property format dropdown for Shill properties">
     Shill
   </message>
-  <message name="IDS_NETWORK_UI_DEFAULT_NETWORK" desc="Text for the name and status of the default network">
-    Default Network: <ph name="NETWORK">$1<ex>Linksys</ex></ph> State: <ph name="STATE">$2<ex>Connected</ex></ph>
-  </message>
   <message name="IDS_NETWORK_UI_VISIBLE_NETWORKS" desc="Label for list of visible networks">
     Visible Networks:
   </message>

@@ -1,9 +1,9 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_types.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_network_icon/cr_network_icon.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_network_icon.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_onc_types.html">
 
-<dom-module id="network-list-item">
-  <link rel="import" type="css" href="network_list_item.css">
+<dom-module id="cr-network-list-item">
+  <link rel="import" type="css" href="cr_network_list_item.css">
   <template>
     <div id="divOuter" class$="[[isListItemClass_(isListItem)]]">
       <div id="divIcon">
@@ -17,5 +17,5 @@
       </div>
     </div>
   </template>
-  <script src="network_list_item.js"></script>
+  <script src="cr_network_list_item.js"></script>
 </dom-module>

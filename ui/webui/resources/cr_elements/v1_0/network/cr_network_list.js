@@ -9,12 +9,12 @@
 (function() {
 
 /**
- * Polymer class definition for 'network-list'.
+ * Polymer class definition for 'cr-network-list'.
  * TODO(stevenjb): Update with iron-list(?) once implemented in Polymer 1.0.
- * @element network-list
+ * @element cr-network-list
  */
 Polymer({
-  is: 'network-list',
+  is: 'cr-network-list',
 
   properties: {
     /**

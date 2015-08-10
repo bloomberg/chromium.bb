@@ -18,7 +18,7 @@
 var IconParams;
 
 /** @const {string} */ var RESOURCE_IMAGE_BASE =
-    'chrome://resources/cr_elements/cr_network_icon/';
+    'chrome://resources/cr_elements/network/';
 
 /** @const {string} */ var RESOURCE_IMAGE_EXT = '.png';
 

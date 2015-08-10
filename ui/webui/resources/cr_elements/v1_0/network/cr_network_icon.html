@@ -1,5 +1,5 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_types.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_onc_types.html">
 
 <dom-module id="cr-network-icon">
   <link rel="import" type="css" href="cr_network_icon.css">
@@ -8,10 +8,10 @@
     <img id="technology" alt="" src$="[[toBadgeImageSrc_(technology_)]]"
         hidden$="[[!technology_]]">
     <img id="roaming" alt=""
-        src="chrome://resources/cr_elements/cr_network_icon/badge_roaming.png"
+        src="chrome://resources/cr_elements/network/badge_roaming.png"
         hidden$="[[!roaming_]]">
     <img id="secure" alt=""
-        src="chrome://resources/cr_elements/cr_network_icon/badge_secure.png"
+        src="chrome://resources/cr_elements/network/badge_secure.png"
         hidden$="[[!secure_]]">
   </template>
   <script src="cr_network_icon.js"></script>

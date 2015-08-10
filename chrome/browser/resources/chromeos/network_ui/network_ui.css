@@ -20,21 +20,14 @@ paper-button[raised].colored {
   width: 40px;
 }
 
-#default-network {
-  align-items: center;
-  display: flex;
-  flex-direction: row;
-  padding: 4px;
-}
-
-#default-network-text {
-  -webkit-padding-start: 8px;
-  font-size: 14px;
-  font-weight: bold;
+cr-network-select {
+  padding: 5px;
+  width: 500px;
 }
 
 #refresh {
-  margin: 4px;
+  margin-top: 10px;
+  padding: 5px;
 }
 
 .state-table {
