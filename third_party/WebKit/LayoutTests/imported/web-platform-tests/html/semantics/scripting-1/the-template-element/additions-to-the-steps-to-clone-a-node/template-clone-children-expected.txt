@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL Clone template node. Test call to cloneNode(true) newHTMLDocument is not defined
+FAIL Clone template node. Test call to cloneNode() with the default parameter (false by default) newHTMLDocument is not defined
+FAIL Clone template node. Test call to cloneNode(false) newHTMLDocument is not defined
+Harness: the test ran to completion.
+
