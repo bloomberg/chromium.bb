@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.offline_pages;
 
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
@@ -44,7 +45,11 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         loadAllPages(LoadResult.SUCCESS, /* expected count */ 0);
     }
 
+    /*
     @MediumTest
+    Bug 518758
+    */
+    @FlakyTest
     public void testAddOfflinePageAndLoad() throws Exception {
         loadUrl(TEST_PAGE);
         savePage(SavePageResult.SUCCESS, TEST_PAGE);
