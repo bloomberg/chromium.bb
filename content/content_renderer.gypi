@@ -614,6 +614,8 @@
       'renderer/media/media_stream_video_track.h',
       'renderer/media/peer_connection_identity_service.cc',
       'renderer/media/peer_connection_identity_service.h',
+      'renderer/media/peer_connection_identity_store.cc',
+      'renderer/media/peer_connection_identity_store.h',
       'renderer/media/peer_connection_tracker.cc',
       'renderer/media/peer_connection_tracker.h',
       'renderer/media/remote_media_stream_impl.cc',

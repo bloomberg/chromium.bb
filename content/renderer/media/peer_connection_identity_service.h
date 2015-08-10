@@ -19,6 +19,7 @@ namespace content {
 
 // This class is associated with a peer connection and handles WebRTC DTLS
 // identity requests by delegating to the per-renderer WebRTCIdentityProxy.
+// TODO(hbos): Delete this after rolling webrtc CL 1176383004.
 class PeerConnectionIdentityService
     : public webrtc::DTLSIdentityServiceInterface {
  public:

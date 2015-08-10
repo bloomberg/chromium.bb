@@ -20,6 +20,7 @@
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/peer_connection_identity_service.h"
+#include "content/renderer/media/peer_connection_identity_store.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/rtc_video_decoder_factory.h"
@@ -412,6 +413,10 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
       new PeerConnectionIdentityService(
           GURL(web_frame->document().url()),
           GURL(web_frame->document().firstPartyForCookies()));
+  rtc::scoped_ptr<PeerConnectionIdentityStore> identity_store(
+      new PeerConnectionIdentityStore(
+          GURL(web_frame->document().url()),
+          GURL(web_frame->document().firstPartyForCookies())));
 
   if (web_frame && web_frame->view()) {
     RenderViewImpl* renderer_view_impl =
@@ -432,6 +437,7 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
                                               constraints,
                                               pa_factory.get(),
                                               identity_service,
+                                              identity_store.Pass(),
                                               observer).get();
 }
 
