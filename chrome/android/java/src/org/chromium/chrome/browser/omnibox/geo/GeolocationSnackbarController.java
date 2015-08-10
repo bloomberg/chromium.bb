@@ -15,6 +15,7 @@ import android.view.View;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.preferences.MainPreferences;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -41,7 +42,8 @@ import org.chromium.ui.text.SpanApplier.SpanInfo;
 public class GeolocationSnackbarController implements SnackbarController {
 
     private static final String GEOLOCATION_SNACKBAR_SHOWN_PREF = "geolocation_snackbar_shown";
-    private static final int SNACKBAR_DURATION_MS = 5000;
+    private static final int SNACKBAR_DURATION_MS = 8000;
+    private static final int ACCESSIBILITY_SNACKBAR_DURATION_MS = 15000;
 
     private static Boolean sGeolocationSnackbarShown;
 
@@ -78,10 +80,12 @@ public class GeolocationSnackbarController implements SnackbarController {
         SpannableString message = SpanApplier.applySpans(messageWithoutSpans,
                 new SpanInfo("<b>", "</b>", robotoMediumSpan));
         String settings = context.getResources().getString(R.string.preferences);
+        int durationMs = DeviceClassManager.isAccessibilityModeEnabled(view.getContext())
+                ? ACCESSIBILITY_SNACKBAR_DURATION_MS : SNACKBAR_DURATION_MS;
         final Snackbar snackbar = Snackbar.make(message, new GeolocationSnackbarController())
                 .setAction(settings, view)
                 .setSingleLine(false)
-                .setDuration(SNACKBAR_DURATION_MS);
+                .setDuration(durationMs);
 
         view.postDelayed(new Runnable() {
             @Override
