@@ -3425,15 +3425,21 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
 }
 
 void BrowserAccessibilityWin::UpdateStep2ComputeHypertext() {
+  if (!PlatformChildCount()) {
+    win_attributes_->hypertext += name();
+    return;
+  }
+
   // Construct the hypertext for this node, which contains the concatenation
-  // of all of the static text of this node's children and an embedded object
-  // character for all non-static-text children. Build up a map from the
-  // character index of each embedded object character to the id of the
+  // of all of the static text and widespace of this node's children and an
+  // embedded object character for all the other children. Build up a map from
+  // the character index of each embedded object character to the id of the
   // child object it points to.
   for (unsigned int i = 0; i < PlatformChildCount(); ++i) {
     BrowserAccessibilityWin* child =
         PlatformGetChild(i)->ToBrowserAccessibilityWin();
-    if (child->GetRole() == ui::AX_ROLE_STATIC_TEXT) {
+    DCHECK(child);
+    if (child->IsTextOnlyObject()) {
       win_attributes_->hypertext += child->name();
     } else {
       int32 char_offset = hypertext().size();
@@ -3523,8 +3529,7 @@ void BrowserAccessibilityWin::UpdateStep3FireEvents(bool is_subtree_creation) {
     // Changing a static text node can affect the IAccessibleText hypertext
     // of the parent node, so force an update on the parent.
     BrowserAccessibilityWin* parent = GetParent()->ToBrowserAccessibilityWin();
-    if (parent &&
-        GetRole() == ui::AX_ROLE_STATIC_TEXT &&
+    if (parent && IsTextOnlyObject() &&
         name() != old_win_attributes_->name) {
       parent->UpdateStep1ComputeWinAttributes();
       parent->UpdateStep2ComputeHypertext();
@@ -3696,16 +3701,21 @@ int BrowserAccessibilityWin::GetSelectionAnchor() const {
   if (!anchor_object)
     return -1;
 
-  if (anchor_object->IsDescendantOf(this))
-    return GetHypertextOffsetFromDescendant(*anchor_object);
-
-  if (IsDescendantOf(anchor_object)) {
+  // Includes the case when anchor_object == this.
+  if (IsDescendantOf(anchor_object) ||
+      // Text only objects that are direct descendants should behave as if they
+      // are part of this object when computing hypertext.
+      (anchor_object->GetParent() == this &&
+      anchor_object->IsTextOnlyObject())) {
     int anchor_offset;
     if (!root->GetIntAttribute(ui::AX_ATTR_ANCHOR_OFFSET, &anchor_offset))
       return -1;
 
     return anchor_offset;
   }
+
+  if (anchor_object->IsDescendantOf(this))
+    return GetHypertextOffsetFromDescendant(*anchor_object);
 
   return -1;
 }
@@ -3721,16 +3731,20 @@ int BrowserAccessibilityWin::GetSelectionFocus() const {
   if (!focus_object)
     return -1;
 
-  if (focus_object->IsDescendantOf(this))
-    return GetHypertextOffsetFromDescendant(*focus_object);
-
-  if (IsDescendantOf(focus_object)) {
+  // Includes the case when focus_object == this.
+  if (IsDescendantOf(focus_object) ||
+      // Text only objects that are direct descendants should behave as if they
+      // are part of this object when computing hypertext.
+      (focus_object->GetParent() == this && focus_object->IsTextOnlyObject())) {
     int focus_offset;
     if (!root->GetIntAttribute(ui::AX_ATTR_FOCUS_OFFSET, &focus_offset))
       return -1;
 
     return focus_offset;
   }
+
+  if (focus_object->IsDescendantOf(this))
+    return GetHypertextOffsetFromDescendant(*focus_object);
 
   return -1;
 }
@@ -3782,9 +3796,13 @@ base::string16 BrowserAccessibilityWin::GetValueText() {
 }
 
 base::string16 BrowserAccessibilityWin::TextForIAccessibleText() {
-  if (IsEditableText() || GetRole() == ui::AX_ROLE_MENU_LIST_OPTION)
-    return value();
-  return (GetRole() == ui::AX_ROLE_STATIC_TEXT) ? name() : hypertext();
+  switch (GetRole()) {
+    case ui::AX_ROLE_TEXT_FIELD:
+    case ui::AX_ROLE_MENU_LIST_OPTION:
+      return value();
+    default:
+      return hypertext();
+  }
 }
 
 bool BrowserAccessibilityWin::IsSameHypertextCharacter(size_t old_char_index,

@@ -89,6 +89,11 @@ bool BrowserAccessibility::IsDescendantOf(
   return false;
 }
 
+bool BrowserAccessibility::IsTextOnlyObject() const {
+  return GetRole() == ui::AX_ROLE_STATIC_TEXT ||
+      GetRole() == ui::AX_ROLE_LINE_BREAK;
+}
+
 BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
     uint32 child_index) const {
   DCHECK(child_index < PlatformChildCount());

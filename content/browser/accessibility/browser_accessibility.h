@@ -69,6 +69,9 @@ class CONTENT_EXPORT BrowserAccessibility {
   // Return true if this object is equal to or a descendant of |ancestor|.
   bool IsDescendantOf(const BrowserAccessibility* ancestor) const;
 
+  // Returns true if this object is used only for representing text.
+  bool IsTextOnlyObject() const;
+
   // Returns true if this is a leaf node on this platform, meaning any
   // children should not be exposed to this platform's native accessibility
   // layer. Each platform subclass should implement this itself.

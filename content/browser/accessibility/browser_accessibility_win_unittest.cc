@@ -916,7 +916,7 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndSelectionInSimpleFields) {
   ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
 }
 
-TEST_F(BrowserAccessibilityTest, DISABLED_TestCaretInContentEditables) {
+TEST_F(BrowserAccessibilityTest, TestCaretInContentEditables) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;

@@ -93,15 +93,15 @@ void AccessibilityTreeFormatter::AddProperties(
   IAccessibleStateToStringVector(ia_state, &state_strings);
   IAccessible2StateToStringVector(ax_object->ia2_state(), &state_strings);
   base::ListValue* states = new base::ListValue;
-  for (auto it = state_strings.begin(); it != state_strings.end(); ++it)
-    states->AppendString(base::UTF16ToUTF8(*it));
+  for (const auto& state_string : state_strings)
+    states->AppendString(base::UTF16ToUTF8(state_string));
   dict->Set("states", states);
 
   const std::vector<base::string16>& ia2_attributes =
       ax_object->ia2_attributes();
   base::ListValue* attributes = new base::ListValue;
-  for (auto it = ia2_attributes.begin(); it != ia2_attributes.end(); ++it)
-    attributes->AppendString(base::UTF16ToUTF8(*it));
+  for (const auto& ia2_attribute : ia2_attributes)
+    attributes->AppendString(base::UTF16ToUTF8(ia2_attribute));
   dict->Set("attributes", attributes);
 
   dict->SetString("role_name", ax_object->role_name());
