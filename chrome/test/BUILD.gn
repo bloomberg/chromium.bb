@@ -247,6 +247,7 @@ if (!is_android) {
     configs += [ "//build/config:precompiled_headers" ]
 
     data = [
+      "data/",
       "//net/data/ssl/certificates/",
       "//net/tools/testserver/",
       "//ppapi/tests/test_case.html",
@@ -262,21 +263,15 @@ if (!is_android) {
       "$root_out_dir/resources.pak",
       "$root_out_dir/ui_test.pak",
     ]
-    if (is_android || is_linux || is_win) {
-      data += [
-        "$root_out_dir/chrome_100_percent.pak",
-        "$root_out_dir/locales/en-US.pak",
-      ]
-    }
-    if (is_linux) {
-      data += [ "$root_out_dir/libppapi_tests.so" ]
-    }
     if (is_linux || is_win) {
       data += [
         "$root_out_dir/chrome_100_percent.pak",
         "$root_out_dir/locales/en-US.pak",
         "$root_out_dir/locales/fr.pak",
       ]
+    }
+    if (is_linux) {
+      data += [ "$root_out_dir/libppapi_tests.so" ]
     }
 
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
