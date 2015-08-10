@@ -8,12 +8,12 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.accessibility.CaptioningManager.CaptionStyle;
 
-
 import org.chromium.base.VisibleForTesting;
 import org.chromium.content.browser.accessibility.captioning.SystemCaptioningBridge.SystemCaptioningBridgeListener;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -196,22 +196,35 @@ public class CaptioningChangeDelegate {
         // The list of fonts are obtained from apps/Settings/res/values/arrays.xml
         // in Android settings app.
         // Fonts in Lollipop and above
-        DEFAULT (""),
-        SANS_SERIF ("sans-serif"),
-        SANS_SERIF_CONDENSED ("sans-serif-condensed"),
-        SANS_SERIF_MONOSPACE ("sans-serif-monospace"),
-        SERIF ("serif"),
-        SERIF_MONOSPACE ("serif-monospace"),
-        CASUAL ("casual"),
-        CURSIVE ("cursive"),
-        SANS_SERIF_SMALLCAPS ("sans-serif-smallcaps"),
-        // Fronts in Kitkat
-        MONOSPACE("monospace");
+        DEFAULT ("", EnumSet.noneOf(Flags.class)),
+        SANS_SERIF ("sans-serif", EnumSet.of(Flags.SANS_SERIF)),
+        SANS_SERIF_CONDENSED ("sans-serif-condensed", EnumSet.of(Flags.SANS_SERIF)),
+        SANS_SERIF_MONOSPACE ("sans-serif-monospace",
+                EnumSet.of(Flags.SANS_SERIF, Flags.MONOSPACE)),
+        SERIF ("serif", EnumSet.of(Flags.SERIF)),
+        SERIF_MONOSPACE ("serif-monospace", EnumSet.of(Flags.SERIF, Flags.MONOSPACE)),
+        CASUAL ("casual", EnumSet.noneOf(Flags.class)),
+        CURSIVE ("cursive", EnumSet.noneOf(Flags.class)),
+        SANS_SERIF_SMALLCAPS ("sans-serif-smallcaps", EnumSet.of(Flags.SANS_SERIF)),
+        // Fonts in KitKat
+        MONOSPACE("monospace", EnumSet.of(Flags.MONOSPACE));
+
+        /**
+         * Describes certain properties of a font, used to verify that captioning fonts
+         * with the correct properties are mapped to system typefaces.
+         */
+        @VisibleForTesting
+        /* package */ enum Flags {
+            SANS_SERIF, SERIF, MONOSPACE
+        }
 
         private final String mFontFamily;
+        @VisibleForTesting
+        /* package */ final EnumSet<Flags> mFlags;
 
-        private ClosedCaptionFont(String fontFamily) {
+        private ClosedCaptionFont(String fontFamily, EnumSet<Flags> flags) {
             mFontFamily = fontFamily;
+            mFlags = flags;
         }
 
         /**

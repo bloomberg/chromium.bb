@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content.browser.accessibility.captioning;
 
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.content.browser.accessibility.captioning.CaptioningChangeDelegate;
 import org.chromium.content.browser.accessibility.captioning.CaptioningChangeDelegate.ClosedCaptionEdgeAttribute;
 import org.chromium.content.browser.accessibility.captioning.CaptioningChangeDelegate.ClosedCaptionFont;
 import org.chromium.content_shell_apk.ContentShellTestBase;
@@ -119,40 +118,67 @@ public class CaptioningChangeDelegateTest extends ContentShellTestBase {
     }
 
     /**
+     * Verifies that certain system fonts always correspond to the default captioning font.
+     */
+    @SmallTest
+    public void testClosedCaptionDefaultFonts() {
+        final ClosedCaptionFont nullFont = ClosedCaptionFont.fromSystemFont(null);
+        assertEquals(
+                "Null typeface should return the default font family.",
+                DEFAULT_CAPTIONING_PREF_VALUE, nullFont.getFontFamily());
+
+        final ClosedCaptionFont defaultFont = ClosedCaptionFont.fromSystemFont(Typeface.DEFAULT);
+        assertEquals(
+                "Typeface.DEFAULT should return the default font family.",
+                DEFAULT_CAPTIONING_PREF_VALUE, defaultFont.getFontFamily());
+
+        final ClosedCaptionFont defaultBoldFont = ClosedCaptionFont.fromSystemFont(
+                Typeface.DEFAULT_BOLD);
+        assertEquals(
+                "Typeface.BOLD should return the default font family.",
+                DEFAULT_CAPTIONING_PREF_VALUE, defaultBoldFont.getFontFamily());
+    }
+
+    /**
      * Typeface.DEFAULT may be equivalent to another Typeface such as Typeface.SANS_SERIF
      * so this test ensures that each typeface returns DEFAULT_CAPTIONING_PREF_VALUE if it is
      * equal to Typeface.DEFAULT or returns an explicit font family otherwise.
      */
     @SmallTest
-    public void testClosedCaptionFont() {
-        ClosedCaptionFont font = ClosedCaptionFont.fromSystemFont(null);
-        assertEquals(DEFAULT_CAPTIONING_PREF_VALUE, font.getFontFamily());
-
-        font = ClosedCaptionFont.fromSystemFont(Typeface.DEFAULT);
-        assertEquals(DEFAULT_CAPTIONING_PREF_VALUE, font.getFontFamily());
-
-        font = ClosedCaptionFont.fromSystemFont(Typeface.DEFAULT_BOLD);
-        assertEquals(DEFAULT_CAPTIONING_PREF_VALUE, font.getFontFamily());
-
-        font = ClosedCaptionFont.fromSystemFont(Typeface.MONOSPACE);
+    public void testClosedCaptionNonDefaultFonts() {
+        final ClosedCaptionFont monospaceFont = ClosedCaptionFont.fromSystemFont(
+                Typeface.MONOSPACE);
         if (Typeface.MONOSPACE.equals(Typeface.DEFAULT)) {
-            assertEquals(DEFAULT_CAPTIONING_PREF_VALUE, font.getFontFamily());
+            assertEquals(
+                    "Since the default font is monospace, the default family should be returned.",
+                    DEFAULT_CAPTIONING_PREF_VALUE, monospaceFont.getFontFamily());
         } else {
-            assertEquals("monospace", font.getFontFamily());
+            assertTrue(
+                    "Typeface.MONOSPACE should return a monospace font family.",
+                    monospaceFont.mFlags.contains(ClosedCaptionFont.Flags.MONOSPACE));
         }
 
-        font = ClosedCaptionFont.fromSystemFont(Typeface.SANS_SERIF);
+        final ClosedCaptionFont sansSerifFont = ClosedCaptionFont.fromSystemFont(
+                Typeface.SANS_SERIF);
         if (Typeface.SANS_SERIF.equals(Typeface.DEFAULT)) {
-            assertEquals(DEFAULT_CAPTIONING_PREF_VALUE, font.getFontFamily());
+            assertEquals(
+                    "Since the default font is sans-serif, the default family should be returned.",
+                    DEFAULT_CAPTIONING_PREF_VALUE, sansSerifFont.getFontFamily());
         } else {
-            assertEquals("sans-serif", font.getFontFamily());
+            assertTrue(
+                    "Typeface.SANS_SERIF should return a sans-serif font family.",
+                    sansSerifFont.mFlags.contains(ClosedCaptionFont.Flags.SANS_SERIF));
         }
 
-        font = ClosedCaptionFont.fromSystemFont(Typeface.SERIF);
+        final ClosedCaptionFont serifFont = ClosedCaptionFont.fromSystemFont(Typeface.SERIF);
         if (Typeface.SERIF.equals(Typeface.DEFAULT)) {
-            assertEquals(DEFAULT_CAPTIONING_PREF_VALUE, font.getFontFamily());
+            assertEquals(
+                    "Since the default font is serif, the default font family should be returned.",
+                    DEFAULT_CAPTIONING_PREF_VALUE, serifFont.getFontFamily());
         } else {
-            assertEquals("serif", font.getFontFamily());
+            assertTrue(
+                    "Typeface.SERIF should return a serif font family.",
+                    serifFont.mFlags.contains(ClosedCaptionFont.Flags.SERIF));
         }
     }
 }
