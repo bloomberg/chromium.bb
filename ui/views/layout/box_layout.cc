@@ -61,10 +61,13 @@ void BoxLayout::Layout(View* host) {
     View* child = host->child_at(i);
     if (!child->visible())
       continue;
-    total_main_axis_size +=
-        MainAxisSizeForView(child, child_area.width()) + between_child_spacing_;
+    int flex = GetFlexForView(child);
+    int child_main_axis_size = MainAxisSizeForView(child, child_area.width());
+    if (child_main_axis_size == 0 && flex == 0)
+      continue;
+    total_main_axis_size += child_main_axis_size + between_child_spacing_;
     ++num_visible;
-    flex_sum += GetFlexForView(child);
+    flex_sum += flex;
   }
 
   if (!num_visible)
