@@ -130,12 +130,36 @@ void ApplyVisualConstraints(NSArray* constraints,
                             NSDictionary* subviewsDictionary,
                             UIView* parentView);
 
+// Applies all |constraints| with |options| to all views in |subviewsDictionary|
+// in the superview |parentView|.
+void ApplyVisualConstraintsWithOptions(NSArray* constraints,
+                                       NSDictionary* subviewsDictionary,
+                                       NSLayoutFormatOptions options,
+                                       UIView* parentView);
+
 // Applies all |constraints| with |metrics| to all views in |subviewsDictionary|
 // in the superview |parentView|
 void ApplyVisualConstraintsWithMetrics(NSArray* constraints,
                                        NSDictionary* subviewsDictionary,
                                        NSDictionary* metrics,
                                        UIView* parentView);
+
+// Applies all |constraints| with |metrics| and |options| to all views in
+// |subviewsDictionary| in the superview |parentView|
+void ApplyVisualConstraintsWithMetricsAndOptions(
+    NSArray* constraints,
+    NSDictionary* subviewsDictionary,
+    NSDictionary* metrics,
+    NSLayoutFormatOptions options,
+    UIView* parentView);
+
+// Returns the correct NSLayoutFormatOption for the current OS and built. This
+// will return NSLayoutFormatDirectionLeadingToTrailing when a full RTL flip
+// is correct, and NSLayoutFormatDirectionLeftToRight when layout should not
+// change with text direction.
+// Generally speaking this option should be applied to any whole-page layouts;
+// smaller sections of views should be determined case by case.
+NSLayoutFormatOptions LayoutOptionForRTLSupport();
 
 // Adds a constraint that |subview| is center aligned horizontally in
 // |parentView|.

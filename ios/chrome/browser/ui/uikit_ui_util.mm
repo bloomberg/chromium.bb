@@ -426,23 +426,52 @@ UIColor* InterpolateFromColorToColor(UIColor* firstColor,
 void ApplyVisualConstraints(NSArray* constraints,
                             NSDictionary* subviewsDictionary,
                             UIView* parentView) {
-  ApplyVisualConstraintsWithMetrics(constraints, subviewsDictionary, nil,
-                                    parentView);
+  ApplyVisualConstraintsWithMetricsAndOptions(constraints, subviewsDictionary,
+                                              nil, 0, parentView);
+}
+
+void ApplyVisualConstraintsWithOptions(NSArray* constraints,
+                                       NSDictionary* subviewsDictionary,
+                                       NSLayoutFormatOptions options,
+                                       UIView* parentView) {
+  ApplyVisualConstraintsWithMetricsAndOptions(constraints, subviewsDictionary,
+                                              nil, options, parentView);
 }
 
 void ApplyVisualConstraintsWithMetrics(NSArray* constraints,
                                        NSDictionary* subviewsDictionary,
                                        NSDictionary* metrics,
                                        UIView* parentView) {
+  ApplyVisualConstraintsWithMetricsAndOptions(constraints, subviewsDictionary,
+                                              metrics, 0, parentView);
+}
+
+void ApplyVisualConstraintsWithMetricsAndOptions(
+    NSArray* constraints,
+    NSDictionary* subviewsDictionary,
+    NSDictionary* metrics,
+    NSLayoutFormatOptions options,
+    UIView* parentView) {
   for (NSString* constraint in constraints) {
     DCHECK([constraint isKindOfClass:[NSString class]]);
     [parentView
         addConstraints:[NSLayoutConstraint
                            constraintsWithVisualFormat:constraint
-                                               options:0
+                                               options:options
                                                metrics:metrics
                                                  views:subviewsDictionary]];
   }
+}
+
+NSLayoutFormatOptions LayoutOptionForRTLSupport() {
+// Under iOS9 when full RTL support is available return LeadingToTrailing.
+// Otherwise return LeftToRight
+#if __IPHONE_9_0
+  if (base::ios::IsRunningOnIOS9OrLater()) {
+    return NSLayoutFormatDirectionLeadingToTrailing;
+  }
+#endif
+  return NSLayoutFormatDirectionLeftToRight;
 }
 
 void AddSameCenterXConstraint(UIView* parentView, UIView* subview) {
