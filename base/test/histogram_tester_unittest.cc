@@ -11,6 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::ElementsAre;
+using ::testing::IsEmpty;
 
 namespace {
 
@@ -108,6 +109,11 @@ TEST_F(HistogramTesterTest, TestGetAllSamples) {
 
   EXPECT_THAT(tester.GetAllSamples(kHistogram5),
               ElementsAre(Bucket(2, 1), Bucket(3, 2), Bucket(5, 1)));
+}
+
+TEST_F(HistogramTesterTest, TestGetAllSamples_NoSamples) {
+  HistogramTester tester;
+  EXPECT_THAT(tester.GetAllSamples(kHistogram5), IsEmpty());
 }
 
 }  // namespace base

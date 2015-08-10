@@ -79,11 +79,13 @@ std::vector<Bucket> HistogramTester::GetAllSamples(
   std::vector<Bucket> samples;
   scoped_ptr<HistogramSamples> snapshot =
       GetHistogramSamplesSinceCreation(name);
-  for (auto it = snapshot->Iterator(); !it->Done(); it->Next()) {
-    HistogramBase::Sample sample;
-    HistogramBase::Count count;
-    it->Get(&sample, nullptr, &count);
-    samples.push_back(Bucket(sample, count));
+  if (snapshot) {
+    for (auto it = snapshot->Iterator(); !it->Done(); it->Next()) {
+      HistogramBase::Sample sample;
+      HistogramBase::Count count;
+      it->Get(&sample, nullptr, &count);
+      samples.push_back(Bucket(sample, count));
+    }
   }
   return samples;
 }
