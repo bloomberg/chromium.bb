@@ -2829,12 +2829,15 @@ void LayerTreeHostImpl::ScrollEnd() {
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
-  if (!active_tree_->CurrentlyScrollingLayer())
+  if (!CurrentlyScrollingLayer())
     return SCROLL_IGNORED;
 
-  if (!wheel_scrolling_) {
+  bool currently_scrolling_viewport =
+      CurrentlyScrollingLayer() == OuterViewportScrollLayer() ||
+      CurrentlyScrollingLayer() == InnerViewportScrollLayer();
+  if (!wheel_scrolling_ && !currently_scrolling_viewport) {
     // Allow the fling to lock to the first layer that moves after the initial
-    // fling |ScrollBy()| event.
+    // fling |ScrollBy()| event, unless we're already scrolling the viewport.
     did_lock_scrolling_layer_ = false;
     should_bubble_scrolls_ = false;
   }
