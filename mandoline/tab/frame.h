@@ -123,8 +123,12 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   Frame* FindTargetFrame(uint32_t frame_id);
 
   // Notifies the client and all descendants as appropriate.
-  void NotifyAdded(const Frame* source, const Frame* added_node);
-  void NotifyRemoved(const Frame* source, const Frame* removed_node);
+  void NotifyAdded(const Frame* source,
+                   const Frame* added_node,
+                   uint32_t change_id);
+  void NotifyRemoved(const Frame* source,
+                     const Frame* removed_node,
+                     uint32_t change_id);
   void NotifyClientPropertyChanged(const Frame* source,
                                    const mojo::String& name,
                                    const mojo::Array<uint8_t>& value);

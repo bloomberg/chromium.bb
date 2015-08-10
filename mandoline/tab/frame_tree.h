@@ -35,6 +35,8 @@ class FrameTree {
 
   Frame* root() { return &root_; }
 
+  uint32_t change_id() const { return change_id_; }
+
   Frame* CreateAndAddFrame(mojo::View* view,
                            Frame* parent,
                            FrameTreeClient* client,
@@ -60,6 +62,9 @@ class FrameTree {
  private:
   friend class Frame;
 
+  // Increments the change id, returning the new value.
+  uint32_t AdvanceChangeID();
+
   Frame* CreateAndAddFrameImpl(
       mojo::View* view,
       uint32_t frame_id,
@@ -81,6 +86,8 @@ class FrameTree {
   Frame root_;
 
   double progress_;
+
+  uint32_t change_id_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTree);
 };

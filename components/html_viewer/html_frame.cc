@@ -551,18 +551,20 @@ void HTMLFrame::OnViewFocusChanged(mojo::View* gained_focus,
 }
 
 void HTMLFrame::OnConnect(mandoline::FrameTreeServerPtr server,
+                          uint32_t change_id,
                           mojo::Array<mandoline::FrameDataPtr> frame_data) {
   // OnConnect() is only sent once, and has been received (by
   // DocumentResourceWaiter) by the time we get here.
   NOTREACHED();
 }
 
-void HTMLFrame::OnFrameAdded(mandoline::FrameDataPtr frame_data) {
-  frame_tree_manager_->ProcessOnFrameAdded(this, frame_data.Pass());
+void HTMLFrame::OnFrameAdded(uint32_t change_id,
+                             mandoline::FrameDataPtr frame_data) {
+  frame_tree_manager_->ProcessOnFrameAdded(this, change_id, frame_data.Pass());
 }
 
-void HTMLFrame::OnFrameRemoved(uint32_t frame_id) {
-  frame_tree_manager_->ProcessOnFrameRemoved(this, frame_id);
+void HTMLFrame::OnFrameRemoved(uint32_t change_id, uint32_t frame_id) {
+  frame_tree_manager_->ProcessOnFrameRemoved(this, change_id, frame_id);
 }
 
 void HTMLFrame::OnFrameClientPropertyChanged(uint32_t frame_id,

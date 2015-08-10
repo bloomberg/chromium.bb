@@ -59,8 +59,9 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
   mojo::InterfaceRequest<mandoline::FrameTreeClient> frame_tree_client_request;
   mandoline::FrameTreeServerPtr frame_tree_server;
   mojo::Array<mandoline::FrameDataPtr> frame_data;
+  uint32_t change_id;
   resource_waiter->Release(&frame_tree_client_request, &frame_tree_server,
-                           &frame_data);
+                           &frame_data, &change_id);
   resource_waiter.reset();
 
   HTMLFrameTreeManager* frame_tree = nullptr;
@@ -73,7 +74,7 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
 
   if (!frame_tree) {
     frame_tree = new HTMLFrameTreeManager(global_state);
-    frame_tree->Init(delegate, view, frame_data);
+    frame_tree->Init(delegate, view, frame_data, change_id);
     if (frame_data[0]->frame_id == view->id())
       (*instances_)[frame_data[0]->frame_id] = frame_tree;
   } else {
@@ -117,12 +118,20 @@ void HTMLFrameTreeManager::OnFrameDestroyed(HTMLFrame* frame) {
   if (frame == local_root_)
     local_root_ = nullptr;
 
+  if (!in_process_on_frame_removed_)
+    pending_remove_ids_.insert(frame->id());
+
   if (!local_root_ || !local_root_->HasLocalDescendant())
     delete this;
 }
 
 HTMLFrameTreeManager::HTMLFrameTreeManager(GlobalState* global_state)
-    : global_state_(global_state), root_(nullptr), local_root_(nullptr) {}
+    : global_state_(global_state),
+      root_(nullptr),
+      local_root_(nullptr),
+      change_id_(0u),
+      in_process_on_frame_removed_(false),
+      weak_factory_(this) {}
 
 HTMLFrameTreeManager::~HTMLFrameTreeManager() {
   DCHECK(!root_ || !local_root_);
@@ -132,7 +141,9 @@ HTMLFrameTreeManager::~HTMLFrameTreeManager() {
 void HTMLFrameTreeManager::Init(
     HTMLFrameDelegate* delegate,
     mojo::View* local_view,
-    const mojo::Array<mandoline::FrameDataPtr>& frame_data) {
+    const mojo::Array<mandoline::FrameDataPtr>& frame_data,
+    uint32_t change_id) {
+  change_id_ = change_id;
   root_ = BuildFrameTree(delegate, frame_data, local_view->id(), local_view);
   local_root_ = root_->FindFrame(local_view->id());
   CHECK(local_root_);
@@ -181,10 +192,29 @@ void HTMLFrameTreeManager::RemoveFromInstances() {
   }
 }
 
+bool HTMLFrameTreeManager::PrepareForStructureChange(HTMLFrame* source,
+                                                     uint32_t change_id) {
+  // The change ids may differ if multiple HTMLDocuments are attached to the
+  // same tree (which means we have multiple FrameTreeClients for the same
+  // tree).
+  if (change_id != (change_id_ + 1))
+    return false;
+
+  // We only process changes for the topmost local root.
+  if (source != local_root_)
+    return false;
+
+  // Update the id as the change is going to be applied (or we can assume it
+  // will be applied if we get here).
+  change_id_ = change_id;
+  return true;
+}
+
 void HTMLFrameTreeManager::ProcessOnFrameAdded(
     HTMLFrame* source,
+    uint32_t change_id,
     mandoline::FrameDataPtr frame_data) {
-  if (source != local_root_)
+  if (!PrepareForStructureChange(source, change_id))
     return;
 
   HTMLFrame* parent = root_->FindFrame(frame_data->parent_id);
@@ -199,6 +229,12 @@ void HTMLFrameTreeManager::ProcessOnFrameAdded(
     return;
   }
 
+  // Because notification is async it's entirely possible for us to create a
+  // new frame, and remove it before we get the add from the server. This check
+  // ensures we don't add back a frame we explicitly removed.
+  if (pending_remove_ids_.count(frame_data->frame_id))
+    return;
+
   HTMLFrame::CreateParams params(this, parent, frame_data->frame_id);
   // |parent| takes ownership of |frame|.
   HTMLFrame* frame = new HTMLFrame(params);
@@ -206,9 +242,12 @@ void HTMLFrameTreeManager::ProcessOnFrameAdded(
 }
 
 void HTMLFrameTreeManager::ProcessOnFrameRemoved(HTMLFrame* source,
+                                                 uint32_t change_id,
                                                  uint32_t frame_id) {
-  if (source != local_root_)
+  if (!PrepareForStructureChange(source, change_id))
     return;
+
+  pending_remove_ids_.erase(frame_id);
 
   HTMLFrame* frame = root_->FindFrame(frame_id);
   if (!frame) {
@@ -227,7 +266,14 @@ void HTMLFrameTreeManager::ProcessOnFrameRemoved(HTMLFrame* source,
   if (frame->IsLocal())
     return;
 
+  DCHECK(!in_process_on_frame_removed_);
+  in_process_on_frame_removed_ = true;
+  base::WeakPtr<HTMLFrameTreeManager> ref(weak_factory_.GetWeakPtr());
   frame->Close();
+  if (!ref)
+    return;  // We were deleted.
+
+  in_process_on_frame_removed_ = false;
 }
 
 void HTMLFrameTreeManager::ProcessOnFrameClientPropertyChanged(

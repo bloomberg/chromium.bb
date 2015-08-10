@@ -140,15 +140,16 @@ class TestFrameTreeClient : public FrameTreeClient {
 
   // TestFrameTreeClient:
   void OnConnect(FrameTreeServerPtr server,
+                 uint32_t change_id,
                  mojo::Array<FrameDataPtr> frames) override {
     connect_count_++;
     connect_frames_ = frames.Pass();
     server_ = server.Pass();
   }
-  void OnFrameAdded(FrameDataPtr frame) override {
+  void OnFrameAdded(uint32_t change_id, FrameDataPtr frame) override {
     adds_.push_back(frame.Pass());
   }
-  void OnFrameRemoved(uint32_t frame_id) override {}
+  void OnFrameRemoved(uint32_t change_id, uint32_t frame_id) override {}
   void OnFrameClientPropertyChanged(uint32_t frame_id,
                                     const mojo::String& name,
                                     mojo::Array<uint8_t> new_data) override {}
@@ -201,8 +202,8 @@ TEST_F(FrameTest, SingleChild) {
   EXPECT_EQ(child_frame->view()->id(), frames_in_child[1]->frame_id);
   EXPECT_EQ(tree.root()->view()->id(), frames_in_child[1]->parent_id);
 
-  // The root did the add, so it shouldn't get an add.
-  EXPECT_EQ(0u, root_client.adds().size());
+  // We should have gotten notification of the add.
+  EXPECT_EQ(1u, root_client.adds().size());
 }
 
 }  // namespace mandoline

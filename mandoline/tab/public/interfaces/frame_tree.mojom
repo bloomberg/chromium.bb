@@ -17,8 +17,12 @@ import "network/public/interfaces/url_loader.mojom";
 // frame_ids are the same as views ids. This means that when a client creates
 // a new view to be part of the frame tree it immediately knows the id to use
 // for FrameTreeServer calls.
-// TODO(sky): there are likely timing issues here, figure out how to resolve
-// that.
+//
+// The server provides an id that may be used to identify the state of the
+// tree. The change id is an integer that is incremented every time the
+// structure of the tree changes. The change id is not used by the server; the
+// server only updates the change id and notifies clients of the new id (by
+// way of structure change functions such as OnFrameAdded()).
 
 // Expresses a preference for where a navigation should occur.
 enum NavigationTargetType {
@@ -90,15 +94,15 @@ interface FrameTreeServer {
 
 interface FrameTreeClient {
   // Called once per client. |frame_data| gives the contents of the tree.
-  OnConnect(FrameTreeServer server, array<FrameData> frame_data);
+  OnConnect(FrameTreeServer server,
+            uint32 change_id,
+            array<FrameData> frame_data);
 
-  // Called when a new frame is added to the tree. This is not called on the
-  // originator of the change.
-  OnFrameAdded(FrameData frame_data);
+  // Called when a new frame is added to the tree.
+  OnFrameAdded(uint32 change_id, FrameData frame_data);
 
-  // Called when a frame is removed from the tree. This is not called on the
-  // originator of the change.
-  OnFrameRemoved(uint32 frame_id);
+  // Called when a frame is removed from the tree.
+  OnFrameRemoved(uint32 change_id, uint32 frame_id);
 
   // Called when a client property changes.
   OnFrameClientPropertyChanged(uint32 frame_id,

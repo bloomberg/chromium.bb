@@ -18,8 +18,8 @@ DocumentResourceWaiter::DocumentResourceWaiter(GlobalState* global_state,
       document_(document),
       response_(response.Pass()),
       root_(nullptr),
-      frame_tree_client_binding_(this) {
-}
+      change_id_(0u),
+      frame_tree_client_binding_(this) {}
 
 DocumentResourceWaiter::~DocumentResourceWaiter() {
 }
@@ -28,11 +28,13 @@ void DocumentResourceWaiter::Release(
     mojo::InterfaceRequest<mandoline::FrameTreeClient>*
         frame_tree_client_request,
     mandoline::FrameTreeServerPtr* frame_tree_server,
-    mojo::Array<mandoline::FrameDataPtr>* frame_data) {
+    mojo::Array<mandoline::FrameDataPtr>* frame_data,
+    uint32_t* change_id) {
   DCHECK(IsReady());
   *frame_tree_client_request = frame_tree_client_request_.Pass();
   *frame_tree_server = server_.Pass();
   *frame_data = frame_data_.Pass();
+  *change_id = change_id_;
 }
 
 mojo::URLResponsePtr DocumentResourceWaiter::ReleaseURLResponse() {
@@ -55,8 +57,10 @@ void DocumentResourceWaiter::Bind(
 
 void DocumentResourceWaiter::OnConnect(
     mandoline::FrameTreeServerPtr server,
+    uint32 change_id,
     mojo::Array<mandoline::FrameDataPtr> frame_data) {
   DCHECK(frame_data_.is_null());
+  change_id_ = change_id;
   server_ = server.Pass();
   frame_data_ = frame_data.Pass();
   CHECK(frame_data_.size() > 0u);
@@ -65,12 +69,14 @@ void DocumentResourceWaiter::OnConnect(
     document_->LoadIfNecessary();
 }
 
-void DocumentResourceWaiter::OnFrameAdded(mandoline::FrameDataPtr frame_data) {
+void DocumentResourceWaiter::OnFrameAdded(uint32 change_id,
+                                          mandoline::FrameDataPtr frame_data) {
   // It is assumed we receive OnConnect() (which unbinds) before anything else.
   NOTREACHED();
 }
 
-void DocumentResourceWaiter::OnFrameRemoved(uint32_t frame_id) {
+void DocumentResourceWaiter::OnFrameRemoved(uint32 change_id,
+                                            uint32_t frame_id) {
   // It is assumed we receive OnConnect() (which unbinds) before anything else.
   NOTREACHED();
 }

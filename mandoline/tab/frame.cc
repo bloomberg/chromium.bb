@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/auto_reset.h"
 #include "base/stl_util.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_property.h"
@@ -75,8 +76,14 @@ Frame::~Frame() {
 }
 
 void Frame::Init(Frame* parent) {
-  if (parent)
-    parent->Add(this);
+  {
+    // Set the FrameTreeClient to null so that we don't notify the client of the
+    // add before OnConnect().
+    base::AutoReset<FrameTreeClient*> frame_tree_client_resetter(
+        &frame_tree_client_, nullptr);
+    if (parent)
+      parent->Add(this);
+  }
 
   InitClient();
 }
@@ -150,8 +157,10 @@ void Frame::InitClient() {
   // TODO(sky): error handling.
   FrameTreeServerPtr frame_tree_server_ptr;
   frame_tree_server_binding_.Bind(GetProxy(&frame_tree_server_ptr).Pass());
-  if (frame_tree_client_)
-    frame_tree_client_->OnConnect(frame_tree_server_ptr.Pass(), array.Pass());
+  if (frame_tree_client_) {
+    frame_tree_client_->OnConnect(frame_tree_server_ptr.Pass(),
+                                  tree_->change_id(), array.Pass());
+  }
 }
 
 void Frame::SetView(mojo::View* view) {
@@ -174,7 +183,7 @@ void Frame::Add(Frame* node) {
   node->parent_ = this;
   children_.push_back(node);
 
-  tree_->root()->NotifyAdded(this, node);
+  tree_->root()->NotifyAdded(this, node, tree_->AdvanceChangeID());
 }
 
 void Frame::Remove(Frame* node) {
@@ -184,7 +193,7 @@ void Frame::Remove(Frame* node) {
   node->parent_ = nullptr;
   children_.erase(iter);
 
-  tree_->root()->NotifyRemoved(this, node);
+  tree_->root()->NotifyRemoved(this, node, tree_->AdvanceChangeID());
 }
 
 void Frame::LoadingStartedImpl() {
@@ -241,26 +250,24 @@ Frame* Frame::FindTargetFrame(uint32_t frame_id) {
   return frame;
 }
 
-void Frame::NotifyAdded(const Frame* source, const Frame* added_node) {
-  if (added_node == this)
-    return;
-
-  if (source != this && frame_tree_client_)
-    frame_tree_client_->OnFrameAdded(FrameToFrameData(added_node));
+void Frame::NotifyAdded(const Frame* source,
+                        const Frame* added_node,
+                        uint32_t change_id) {
+  if (frame_tree_client_)
+    frame_tree_client_->OnFrameAdded(change_id, FrameToFrameData(added_node));
 
   for (Frame* child : children_)
-    child->NotifyAdded(source, added_node);
+    child->NotifyAdded(source, added_node, change_id);
 }
 
-void Frame::NotifyRemoved(const Frame* source, const Frame* removed_node) {
-  if (removed_node == this)
-    return;
-
-  if (source != this && frame_tree_client_)
-    frame_tree_client_->OnFrameRemoved(removed_node->id());
+void Frame::NotifyRemoved(const Frame* source,
+                          const Frame* removed_node,
+                          uint32_t change_id) {
+  if (frame_tree_client_)
+    frame_tree_client_->OnFrameRemoved(change_id, removed_node->id());
 
   for (Frame* child : children_)
-    child->NotifyRemoved(source, removed_node);
+    child->NotifyRemoved(source, removed_node, change_id);
 }
 
 void Frame::NotifyClientPropertyChanged(const Frame* source,

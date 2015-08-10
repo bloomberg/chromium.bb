@@ -22,7 +22,8 @@ FrameTree::FrameTree(mojo::View* view,
             root_client,
             user_data.Pass(),
             Frame::ClientPropertyMap()),
-      progress_(0.f) {
+      progress_(0.f),
+      change_id_(1u) {
   root_.Init(nullptr);
 }
 
@@ -64,6 +65,10 @@ void FrameTree::CreateSharedFrame(
   // the case the View will be connected to the Frame in Frame::OnTreeChanged.
   CreateAndAddFrameImpl(frame_view, frame_id, parent, nullptr, nullptr,
                         client_properties);
+}
+
+uint32_t FrameTree::AdvanceChangeID() {
+  return ++change_id_;
 }
 
 Frame* FrameTree::CreateAndAddFrameImpl(
