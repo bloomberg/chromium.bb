@@ -16503,9 +16503,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Midi.InputPorts" units="devices">
+  <owner>toyoshim@chromium.org</owner>
+  <summary>Connected input port numbers on the initialization.</summary>
+</histogram>
+
+<histogram name="Media.Midi.OutputPorts" units="devices">
+  <owner>toyoshim@chromium.org</owner>
+  <summary>Connected output port numbers on the initialization.</summary>
+</histogram>
+
 <histogram name="Media.Midi.ResultOnShutdown" enum="MidiResult">
   <owner>toyoshim@chromium.org</owner>
   <summary>The final status of MidiManager on browser shutdown.</summary>
+</histogram>
+
+<histogram name="Media.Midi.Usage" enum="MidiUsage">
+  <owner>toyoshim@chromium.org</owner>
+  <summary>MidiManager usages to understand the API use case.</summary>
 </histogram>
 
 <histogram name="Media.MSE.AudioCodec" enum="MSECodec">
@@ -63239,6 +63254,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Successfully initialized"/>
   <int value="2" label="Not supported"/>
   <int value="3" label="Generic initialization error"/>
+</enum>
+
+<enum name="MidiUsage" type="int">
+  <int value="0" label="Instantiated"/>
+  <int value="1" label="Instantiated on unsupported platforms"/>
+  <int value="2" label="Session is started"/>
+  <int value="3" label="Session is ended"/>
+  <int value="4" label="Initialized"/>
+  <int value="5" label="Input port is added"/>
+  <int value="6" label="Output port is added"/>
 </enum>
 
 <enum name="MigrationNssToPemNetworkTypes" type="int">

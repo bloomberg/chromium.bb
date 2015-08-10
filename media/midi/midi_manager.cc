@@ -12,24 +12,58 @@
 namespace media {
 namespace midi {
 
+namespace {
+
+using Sample = base::HistogramBase::Sample;
+
+// If many users have more devices, this number will be increased.
+// But the number is expected to be big enough for now.
+const Sample kMaxUmaDevices = 31;
+
+// Used to count events for usage histogram.
+enum class Usage {
+  CREATED,
+  CREATED_ON_UNSUPPORTED_PLATFORMS,
+  SESSION_STARTED,
+  SESSION_ENDED,
+  INITIALIZED,
+  INPUT_PORT_ADDED,
+  OUTPUT_PORT_ADDED,
+
+  // New items should be inserted here, and |MAX| should point the last item.
+  MAX = INITIALIZED,
+};
+
+void ReportUsage(Usage usage) {
+  UMA_HISTOGRAM_ENUMERATION("Media.Midi.Usage",
+                            static_cast<Sample>(usage),
+                            static_cast<Sample>(Usage::MAX) + 1);
+}
+
+}  // namespace
+
 MidiManager::MidiManager()
     : initialized_(false), result_(Result::NOT_INITIALIZED) {
+  ReportUsage(Usage::CREATED);
 }
 
 MidiManager::~MidiManager() {
   UMA_HISTOGRAM_ENUMERATION("Media.Midi.ResultOnShutdown",
-                            static_cast<int>(result_),
-                            static_cast<int>(Result::MAX) + 1);
+                            static_cast<Sample>(result_),
+                            static_cast<Sample>(Result::MAX) + 1);
 }
 
 #if !defined(OS_MACOSX) && !defined(OS_WIN) && \
     !(defined(USE_ALSA) && defined(USE_UDEV)) && !defined(OS_ANDROID)
 MidiManager* MidiManager::Create() {
+  ReportUsage(Usage::CREATED_ON_UNSUPPORTED_PLATFORMS);
   return new MidiManager;
 }
 #endif
 
 void MidiManager::StartSession(MidiManagerClient* client) {
+  ReportUsage(Usage::SESSION_STARTED);
+
   bool session_is_ready;
   bool session_needs_initialization = false;
   bool too_many_pending_clients_exist = false;
@@ -90,6 +124,8 @@ void MidiManager::StartSession(MidiManagerClient* client) {
 }
 
 void MidiManager::EndSession(MidiManagerClient* client) {
+  ReportUsage(Usage::SESSION_ENDED);
+
   // At this point, |client| can be in the destruction process, and calling
   // any method of |client| is dangerous.
   base::AutoLock auto_lock(lock_);
@@ -129,6 +165,7 @@ void MidiManager::CompleteInitialization(Result result) {
 }
 
 void MidiManager::AddInputPort(const MidiPortInfo& info) {
+  ReportUsage(Usage::INPUT_PORT_ADDED);
   base::AutoLock auto_lock(lock_);
   input_ports_.push_back(info);
   for (auto client : clients_)
@@ -136,6 +173,7 @@ void MidiManager::AddInputPort(const MidiPortInfo& info) {
 }
 
 void MidiManager::AddOutputPort(const MidiPortInfo& info) {
+  ReportUsage(Usage::OUTPUT_PORT_ADDED);
   base::AutoLock auto_lock(lock_);
   output_ports_.push_back(info);
   for (auto client : clients_)
@@ -171,6 +209,13 @@ void MidiManager::ReceiveMidiData(
 
 void MidiManager::CompleteInitializationInternal(Result result) {
   TRACE_EVENT0("midi", "MidiManager::CompleteInitialization");
+  ReportUsage(Usage::INITIALIZED);
+  UMA_HISTOGRAM_ENUMERATION("Media.Midi.InputPorts",
+                            static_cast<Sample>(input_ports_.size()),
+                            kMaxUmaDevices + 1);
+  UMA_HISTOGRAM_ENUMERATION("Media.Midi.OutputPorts",
+                            static_cast<Sample>(output_ports_.size()),
+                            kMaxUmaDevices + 1);
 
   base::AutoLock auto_lock(lock_);
   DCHECK(clients_.empty());
