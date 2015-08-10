@@ -185,6 +185,9 @@ class ExpandableContainerView : public views::View,
   // Expand/Collapse the detail section for this ExpandableContainerView.
   void ToggleDetailLevel();
 
+  // Updates |arrow_toggle_| according to the given state.
+  void UpdateArrowToggle(bool expanded);
+
   // The dialog that owns |this|. It's also an ancestor in the View hierarchy.
   ExtensionInstallDialogView* owner_;
 

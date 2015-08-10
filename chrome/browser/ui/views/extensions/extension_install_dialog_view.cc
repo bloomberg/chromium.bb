@@ -28,10 +28,12 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/gfx/vector_icons_public2.h"
+#include "ui/native_theme/common_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
@@ -531,8 +533,6 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
   views::ImageView* icon = new views::ImageView();
   icon->SetImageSize(size);
   icon->SetImage(*image);
-  icon->SetHorizontalAlignment(views::ImageView::CENTER);
-  icon->SetVerticalAlignment(views::ImageView::CENTER);
 
   int icon_row_span = 1;  // Always span the title.
   if (prompt_->has_webstore_data()) {
@@ -724,20 +724,14 @@ ExpandableContainerView::ExpandableContainerView(
   for (size_t i = 0; i < details.size(); ++i)
     details_view_->AddDetail(details[i]);
 
-  views::Link* link = new views::Link(
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
-
   // Make sure the link width column is as wide as needed for both Show and
   // Hide details, so that the arrow doesn't shift horizontally when we
   // toggle.
-  int link_col_width =
-      views::kRelatedControlHorizontalSpacing +
-      std::max(gfx::GetStringWidth(
-                   l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_DETAILS),
-                   link->font_list()),
-               gfx::GetStringWidth(
-                   l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS),
-                   link->font_list()));
+  views::Link* link = new views::Link(
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_DETAILS));
+  int link_col_width = link->GetPreferredSize().width();
+  link->SetText(l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
+  link_col_width = std::max(link_col_width, link->GetPreferredSize().width());
 
   column_set = layout->AddColumnSet(++column_set_id);
   // Padding to the left of the More Details column. If the parent is using
@@ -756,7 +750,7 @@ ExpandableContainerView::ExpandableContainerView(
                         link_col_width);
   // The Up/Down arrow column.
   column_set->AddColumn(views::GridLayout::LEADING,
-                        views::GridLayout::LEADING,
+                        views::GridLayout::TRAILING,
                         0,
                         views::GridLayout::USE_PREF,
                         0,
@@ -770,10 +764,8 @@ ExpandableContainerView::ExpandableContainerView(
   layout->AddView(more_details_);
 
   // Add the arrow after the More Details link.
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   arrow_toggle_ = new views::ImageButton(this);
-  arrow_toggle_->SetImage(views::Button::STATE_NORMAL,
-                          rb.GetImageSkiaNamed(IDR_DOWN_ARROW));
+  UpdateArrowToggle(false);
   layout->AddView(arrow_toggle_);
 }
 
@@ -798,19 +790,8 @@ void ExpandableContainerView::AnimationProgressed(
 }
 
 void ExpandableContainerView::AnimationEnded(const gfx::Animation* animation) {
-  if (arrow_toggle_) {
-    if (animation->GetCurrentValue() != 0.0) {
-      arrow_toggle_->SetImage(
-          views::Button::STATE_NORMAL,
-          ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-              IDR_UP_ARROW));
-    } else {
-      arrow_toggle_->SetImage(
-          views::Button::STATE_NORMAL,
-          ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-              IDR_DOWN_ARROW));
-    }
-  }
+  if (arrow_toggle_)
+    UpdateArrowToggle(animation->GetCurrentValue() != 0.0);
   if (more_details_) {
     more_details_->SetText(expanded_ ?
         l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_DETAILS) :
@@ -829,6 +810,20 @@ void ExpandableContainerView::ToggleDetailLevel() {
     slide_animation_.Hide();
   else
     slide_animation_.Show();
+}
+
+void ExpandableContainerView::UpdateArrowToggle(bool expanded) {
+  SkColor icon_color;
+  ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_ChromeIconGrey,
+                                &icon_color);
+  gfx::ImageSkia icon = gfx::CreateVectorIcon(expanded ?
+          gfx::VectorIconId::FIND_PREV :
+          gfx::VectorIconId::FIND_NEXT,
+          16,
+          icon_color);
+  arrow_toggle_->SetImage(
+      views::Button::STATE_NORMAL,
+      &icon);
 }
 
 // static
