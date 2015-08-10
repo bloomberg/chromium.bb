@@ -28,28 +28,4 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerProviderClient_h
-#define WebServiceWorkerProviderClient_h
-
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebMessagePortChannel.h"
-
-namespace blink {
-
-class WebServiceWorker;
-class WebString;
-
-// This class is the interface for embedders to talk to
-// ServiceWorkerContainer.
-class BLINK_PLATFORM_EXPORT WebServiceWorkerProviderClient {
-public:
-    virtual ~WebServiceWorkerProviderClient() { }
-
-    virtual void setController(WebServiceWorker*, bool shouldNotifyControllerChange) = 0;
-
-    virtual void dispatchMessageEvent(WebServiceWorker*, const WebString& message, const WebMessagePortChannelArray& channels) = 0;
-};
-
-} // namespace blink
-
-#endif // WebServiceWorkerProviderClient_h
+#include "public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"

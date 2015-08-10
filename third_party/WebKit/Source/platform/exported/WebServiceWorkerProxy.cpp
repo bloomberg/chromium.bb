@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "public/platform/WebServiceWorkerProxy.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerProxy.h"
 
 // This WebServiceWorkerProxy.cpp, which includes only config.h and
 // WebServiceWorkerProxy.h, should be in Source/platform/exported,

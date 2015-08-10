@@ -14,7 +14,7 @@
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/NotImplemented.h"
-#include "public/platform/WebServiceWorkerEventResult.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "wtf/Assertions.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"

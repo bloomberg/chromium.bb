@@ -28,36 +28,4 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerNetworkProvider_h
-#define WebServiceWorkerNetworkProvider_h
-
-namespace blink {
-
-class WebDataSource;
-class WebURLRequest;
-
-// This interface is implemented by the client and is only called on the main thread.
-// Used by ServiceWorker and SharedWorker. isControlledByServiceWorker() and
-// serviceWorkerID() are to be implemented only by SharedWorker's provider,
-// as they are needed only for controllee workers.
-class WebServiceWorkerNetworkProvider {
-public:
-    virtual ~WebServiceWorkerNetworkProvider() { }
-
-    // A request is about to be sent out, and the client may modify it. Request
-    // is writable, and changes to the URL, for example, will change the request
-    // made.
-    virtual void willSendRequest(WebDataSource*, WebURLRequest&) { }
-
-    // Whether the document associated with WebDataSource is controlled by the
-    // ServiceWorker.
-    virtual bool isControlledByServiceWorker(WebDataSource&) { return false; }
-
-    // Returns an identifier of the service worker controlling the document
-    // associated with the WebDataSource.
-    virtual int64_t serviceWorkerID(WebDataSource&) { return -1; }
-};
-
-} // namespace blink
-
-#endif // WebServiceWorkerNetworkProvider_h
+#include "public/web/modules/serviceworker/WebServiceWorkerNetworkProvider.h"

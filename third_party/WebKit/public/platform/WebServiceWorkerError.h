@@ -28,35 +28,4 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerError_h
-#define WebServiceWorkerError_h
-
-#include "WebString.h"
-
-namespace blink {
-
-struct WebServiceWorkerError {
-    enum ErrorType {
-        ErrorTypeAbort = 0,
-        ErrorTypeActivate,
-        ErrorTypeDisabled,
-        ErrorTypeInstall,
-        ErrorTypeNetwork,
-        ErrorTypeNotFound,
-        ErrorTypeSecurity,
-        ErrorTypeState,
-        ErrorTypeTimeout,
-        ErrorTypeUnknown,
-        ErrorTypeLast = ErrorTypeUnknown
-    };
-
-    WebServiceWorkerError(ErrorType errorType, const WebString& message)
-        : errorType(errorType), message(message) { }
-
-    ErrorType errorType;
-    WebString message;
-};
-
-} // namespace blink
-
-#endif
+#include "public/platform/modules/serviceworker/WebServiceWorkerError.h"

@@ -28,45 +28,4 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerProvider_h
-#define WebServiceWorkerProvider_h
-
-#include "public/platform/WebCallbacks.h"
-#include "public/platform/WebServiceWorkerRegistration.h"
-#include "public/platform/WebVector.h"
-
-namespace blink {
-
-class WebURL;
-class WebServiceWorker;
-class WebServiceWorkerProviderClient;
-struct WebServiceWorkerError;
-
-// Created on the main thread, and may be passed to another script context
-// thread (e.g. worker thread) later. All methods of this class must be called
-// on the single script context thread.
-class WebServiceWorkerProvider {
-public:
-    // Called when a client wants to start listening to the service worker
-    // events. Must be cleared before the client becomes invalid.
-    virtual void setClient(WebServiceWorkerProviderClient*) { }
-
-    // The WebServiceWorkerRegistration and WebServiceWorkerError ownership are
-    // passed to the WebServiceWorkerRegistrationCallbacks implementation.
-    typedef WebCallbacks<WebServiceWorkerRegistration*, WebServiceWorkerError*> WebServiceWorkerRegistrationCallbacks;
-    typedef WebCallbacks<WebServiceWorkerRegistration*, WebServiceWorkerError*> WebServiceWorkerGetRegistrationCallbacks;
-    typedef WebCallbacks<WebVector<WebServiceWorkerRegistration*>*, WebServiceWorkerError*> WebServiceWorkerGetRegistrationsCallbacks;
-    typedef WebCallbacks<WebServiceWorkerRegistration*, void> WebServiceWorkerGetRegistrationForReadyCallbacks;
-
-    virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptUrl, WebServiceWorkerRegistrationCallbacks*) { }
-    virtual void getRegistration(const WebURL& documentURL, WebServiceWorkerGetRegistrationCallbacks*) { }
-    virtual void getRegistrations(WebServiceWorkerGetRegistrationsCallbacks*) { }
-    virtual void getRegistrationForReady(WebServiceWorkerGetRegistrationForReadyCallbacks*) { }
-    virtual bool validateScopeAndScriptURL(const WebURL& scope, const WebURL& scriptURL, WebString* errorMessage) { return false; }
-
-    virtual ~WebServiceWorkerProvider() { }
-};
-
-} // namespace blink
-
-#endif
+#include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"

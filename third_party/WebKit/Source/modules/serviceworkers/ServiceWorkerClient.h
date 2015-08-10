@@ -10,7 +10,7 @@
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebServiceWorkerClientsInfo.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
 #include "wtf/Forward.h"
 
 namespace blink {

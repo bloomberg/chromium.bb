@@ -37,8 +37,8 @@
 #include "core/events/Event.h"
 #include "modules/EventTargetModules.h"
 #include "public/platform/WebMessagePortChannel.h"
-#include "public/platform/WebServiceWorkerState.h"
 #include "public/platform/WebString.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerState.h"
 
 namespace blink {
 

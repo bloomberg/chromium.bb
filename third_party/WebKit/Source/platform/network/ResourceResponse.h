@@ -34,7 +34,7 @@
 #include "platform/network/ResourceLoadInfo.h"
 #include "platform/network/ResourceLoadTiming.h"
 #include "platform/weborigin/KURL.h"
-#include "public/platform/WebServiceWorkerResponseType.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/CString.h"
