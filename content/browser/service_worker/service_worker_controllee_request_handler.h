@@ -68,6 +68,8 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   // For sub resource case.
   void PrepareForSubResource();
 
+  void FallbackToNetwork();
+
   bool is_main_resource_load_;
   scoped_refptr<ServiceWorkerURLRequestJob> job_;
   FetchRequestMode request_mode_;
