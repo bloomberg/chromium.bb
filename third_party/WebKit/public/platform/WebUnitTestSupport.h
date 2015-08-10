@@ -36,8 +36,17 @@ namespace blink {
 
 class WebLayerTreeView;
 class WebURL;
+class WebURLLoader;
 class WebURLResponse;
+class WebURLLoaderClient;
 struct WebURLError;
+
+class WebURLLoaderTestDelegate {
+public:
+    ~WebURLLoaderTestDelegate() { }
+
+    virtual void didReceiveData(WebURLLoaderClient* originalClient, WebURLLoader*, const char* data, int dataLength, int encodedDataLength) { }
+};
 
 class WebUnitTestSupport {
 public:
@@ -53,6 +62,9 @@ public:
     // Causes all pending asynchronous requests to be served. When this method
     // returns all the pending requests have been processed.
     virtual void serveAsynchronousMockedRequests() { }
+
+    // Set a delegate that allows callbacks for all WebURLLoaderClients to be intercepted.
+    virtual void setLoaderDelegate(WebURLLoaderTestDelegate*) {}
 
     // Returns the root directory of the WebKit code.
     virtual WebString webKitRootDir() { return WebString(); }
