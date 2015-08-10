@@ -1051,10 +1051,8 @@ bool PositionAlgorithm<Strategy>::rendersInDifferentPosition(const PositionAlgor
         if (deprecatedEditingOffset() == pos.deprecatedEditingOffset())
             return false;
 
-        if (!anchorNode()->isTextNode() && !pos.anchorNode()->isTextNode()) {
-            if (deprecatedEditingOffset() != pos.deprecatedEditingOffset())
-                return true;
-        }
+        if (!anchorNode()->isTextNode() && !pos.anchorNode()->isTextNode())
+            return true;
     }
 
     if (isHTMLBRElement(*anchorNode()) && pos.isCandidate())
