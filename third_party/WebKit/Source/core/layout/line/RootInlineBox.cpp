@@ -161,7 +161,7 @@ bool RootInlineBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
 {
     if (hasEllipsisBox() && visibleToHitTestRequest(result.hitTestRequest())) {
         if (ellipsisBox()->nodeAtPoint(result, locationInContainer, accumulatedOffset, lineTop, lineBottom)) {
-            layoutObject().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
+            lineLayoutItem().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
             return true;
         }
     }
@@ -206,7 +206,7 @@ LayoutUnit RootInlineBox::alignBoxesInBlockDirection(LayoutUnit heightOfBlock, G
     bool setMaxDescent = false;
 
     // Figure out if we're in no-quirks mode.
-    bool noQuirksMode = layoutObject().document().inNoQuirksMode();
+    bool noQuirksMode = lineLayoutItem().document().inNoQuirksMode();
 
     m_baselineType = dominantBaseline();
 
@@ -254,7 +254,7 @@ LayoutUnit RootInlineBox::beforeAnnotationsAdjustment() const
 {
     LayoutUnit result = 0;
 
-    if (!layoutObject().style()->isFlippedLinesWritingMode()) {
+    if (!lineLayoutItem().style()->isFlippedLinesWritingMode()) {
         // Annotations under the previous line may push us down.
         if (prevRootBox() && prevRootBox()->hasAnnotationsAfter())
             result = prevRootBox()->computeUnderAnnotationAdjustment(lineTop());
@@ -315,11 +315,11 @@ GapRects RootInlineBox::lineSelectionGap(const LayoutBlock* rootBlock, const Lay
         for (InlineBox* box = firstBox->nextLeafChild(); box; box = box->nextLeafChild()) {
             if (box->selectionState() != SelectionNone) {
                 LayoutRect logicalRect(lastLogicalLeft, selTop, box->logicalLeft() - lastLogicalLeft, selHeight);
-                logicalRect.move(layoutObject().isHorizontalWritingMode() ? offsetFromRootBlock : LayoutSize(offsetFromRootBlock.height(), offsetFromRootBlock.width()));
+                logicalRect.move(lineLayoutItem().isHorizontalWritingMode() ? offsetFromRootBlock : LayoutSize(offsetFromRootBlock.height(), offsetFromRootBlock.width()));
                 LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, logicalRect);
                 if (isPreviousBoxSelected && gapRect.width() > 0 && gapRect.height() > 0) {
-                    if (paintInfo && box->parent()->layoutObject().style()->visibility() == VISIBLE)
-                        paintInfo->context->fillRect(gapRect, box->parent()->layoutObject().selectionBackgroundColor());
+                    if (paintInfo && box->parent()->lineLayoutItem().style()->visibility() == VISIBLE)
+                        paintInfo->context->fillRect(gapRect, box->parent()->lineLayoutItem().selectionBackgroundColor());
                     // VisibleSelection may be non-contiguous, see comment above.
                     result.uniteCenter(gapRect);
                 }
@@ -381,9 +381,9 @@ LayoutUnit RootInlineBox::selectionTop() const
     LayoutUnit selectionTop = m_lineTop;
 
     if (m_hasAnnotationsBefore)
-        selectionTop -= !layoutObject().style()->isFlippedLinesWritingMode() ? computeOverAnnotationAdjustment(m_lineTop) : computeUnderAnnotationAdjustment(m_lineTop);
+        selectionTop -= !lineLayoutItem().style()->isFlippedLinesWritingMode() ? computeOverAnnotationAdjustment(m_lineTop) : computeUnderAnnotationAdjustment(m_lineTop);
 
-    if (layoutObject().style()->isFlippedLinesWritingMode() || !prevRootBox())
+    if (lineLayoutItem().style()->isFlippedLinesWritingMode() || !prevRootBox())
         return selectionTop;
 
     LayoutUnit prevBottom = prevRootBox()->selectionBottom();
@@ -432,9 +432,9 @@ LayoutUnit RootInlineBox::selectionBottom() const
     LayoutUnit selectionBottom = m_selectionBottom;
 
     if (m_hasAnnotationsAfter)
-        selectionBottom += !layoutObject().style()->isFlippedLinesWritingMode() ? computeUnderAnnotationAdjustment(m_lineBottom) : computeOverAnnotationAdjustment(m_lineBottom);
+        selectionBottom += !lineLayoutItem().style()->isFlippedLinesWritingMode() ? computeUnderAnnotationAdjustment(m_lineBottom) : computeOverAnnotationAdjustment(m_lineBottom);
 
-    if (!layoutObject().style()->isFlippedLinesWritingMode() || !nextRootBox())
+    if (!lineLayoutItem().style()->isFlippedLinesWritingMode() || !nextRootBox())
         return selectionBottom;
 
     LayoutUnit nextTop = nextRootBox()->selectionTop();
@@ -465,7 +465,7 @@ LayoutBlockFlow& RootInlineBox::block() const
 
 static bool isEditableLeaf(InlineBox* leaf)
 {
-    return leaf && leaf->layoutObject().node() && leaf->layoutObject().node()->hasEditableStyle();
+    return leaf && leaf->lineLayoutItem().node() && leaf->lineLayoutItem().node()->hasEditableStyle();
 }
 
 InlineBox* RootInlineBox::closestLeafChildForPoint(const LayoutPoint& pointInContents, bool onlyEditableLeaves)
@@ -489,13 +489,13 @@ InlineBox* RootInlineBox::closestLeafChildForLogicalLeftPosition(LayoutUnit left
         return firstLeaf;
 
     // Avoid returning a list marker when possible.
-    if (leftPosition <= firstLeaf->logicalLeft() && !firstLeaf->layoutObject().isListMarker() && (!onlyEditableLeaves || isEditableLeaf(firstLeaf))) {
+    if (leftPosition <= firstLeaf->logicalLeft() && !firstLeaf->lineLayoutItem().isListMarker() && (!onlyEditableLeaves || isEditableLeaf(firstLeaf))) {
         // The leftPosition coordinate is less or equal to left edge of the firstLeaf.
         // Return it.
         return firstLeaf;
     }
 
-    if (leftPosition >= lastLeaf->logicalRight() && !lastLeaf->layoutObject().isListMarker() && (!onlyEditableLeaves || isEditableLeaf(lastLeaf))) {
+    if (leftPosition >= lastLeaf->logicalRight() && !lastLeaf->lineLayoutItem().isListMarker() && (!onlyEditableLeaves || isEditableLeaf(lastLeaf))) {
         // The leftPosition coordinate is greater or equal to right edge of the lastLeaf.
         // Return it.
         return lastLeaf;
@@ -503,7 +503,7 @@ InlineBox* RootInlineBox::closestLeafChildForLogicalLeftPosition(LayoutUnit left
 
     InlineBox* closestLeaf = nullptr;
     for (InlineBox* leaf = firstLeaf; leaf; leaf = leaf->nextLeafChildIgnoringLineBreak()) {
-        if (!leaf->layoutObject().isListMarker() && (!onlyEditableLeaves || isEditableLeaf(leaf))) {
+        if (!leaf->lineLayoutItem().isListMarker() && (!onlyEditableLeaves || isEditableLeaf(leaf))) {
             closestLeaf = leaf;
             if (leftPosition < leaf->logicalRight()) {
                 // The x coordinate is less than the right edge of the box.

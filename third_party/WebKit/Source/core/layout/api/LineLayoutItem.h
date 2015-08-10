@@ -275,6 +275,11 @@ public:
         return m_layoutObject->hitTest(result, locationInContainer, accumulatedOffset, filter);
     }
 
+    Color selectionBackgroundColor() const
+    {
+        return m_layoutObject->selectionBackgroundColor();
+    }
+
 protected:
     LayoutObject* layoutObject() { return m_layoutObject; }
     const LayoutObject* layoutObject() const { return m_layoutObject; }
