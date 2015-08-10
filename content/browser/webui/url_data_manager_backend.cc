@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/appcache/view_appcache_internals_job.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/histogram_internals_request_job.h"
 #include "content/browser/net/view_blob_internals_job_factory.h"
@@ -478,6 +479,13 @@ class ChromeProtocolHandler
     if (ViewHttpCacheJobFactory::IsSupportedURL(request->url()))
       return ViewHttpCacheJobFactory::CreateJobForRequest(request,
                                                           network_delegate);
+
+    // Next check for chrome://appcache-internals/, which uses its own job type.
+    if (request->url().SchemeIs(kChromeUIScheme) &&
+        request->url().host() == kChromeUIAppCacheInternalsHost) {
+      return ViewAppCacheInternalsJobFactory::CreateJobForRequest(
+          request, network_delegate, appcache_service_);
+    }
 
     // Next check for chrome://blob-internals/, which uses its own job type.
     if (ViewBlobInternalsJobFactory::IsSupportedURL(request->url())) {

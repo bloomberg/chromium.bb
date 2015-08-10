@@ -5,7 +5,6 @@
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 
 #include "content/browser/accessibility/accessibility_ui.h"
-#include "content/browser/appcache/appcache_internals_ui.h"
 #include "content/browser/gpu/gpu_internals_ui.h"
 #include "content/browser/indexed_db/indexed_db_internals_ui.h"
 #include "content/browser/media/media_internals_ui.h"
@@ -35,8 +34,7 @@ WebUI::TypeID ContentWebUIControllerFactory::GetWebUIType(
       url.host() == kChromeUIIndexedDBInternalsHost ||
       url.host() == kChromeUIMediaInternalsHost ||
       url.host() == kChromeUIServiceWorkerInternalsHost ||
-      url.host() == kChromeUIAccessibilityHost ||
-      url.host() == kChromeUIAppCacheInternalsHost) {
+      url.host() == kChromeUIAccessibilityHost) {
     return const_cast<ContentWebUIControllerFactory*>(this);
   }
   return WebUI::kNoWebUI;
@@ -57,8 +55,6 @@ WebUIController* ContentWebUIControllerFactory::CreateWebUIControllerForURL(
   if (!url.SchemeIs(kChromeUIScheme))
     return nullptr;
 
-  if (url.host() == kChromeUIAppCacheInternalsHost)
-    return new AppCacheInternalsUI(web_ui);
   if (url.host() == kChromeUIGpuHost)
     return new GpuInternalsUI(web_ui);
   if (url.host() == kChromeUIIndexedDBInternalsHost)

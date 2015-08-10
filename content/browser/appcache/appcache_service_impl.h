@@ -172,10 +172,6 @@ class CONTENT_EXPORT AppCacheServiceImpl
 
   AppCacheStorage* storage() const { return storage_.get(); }
 
-  base::WeakPtr<AppCacheServiceImpl> AsWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
-
   // Disables the exit-time deletion of session-only data.
   void set_force_keep_session_state() { force_keep_session_state_ = true; }
   bool force_keep_session_state() const { return force_keep_session_state_; }
@@ -217,9 +213,6 @@ class CONTENT_EXPORT AppCacheServiceImpl
   base::TimeDelta next_reinit_delay_;
   base::OneShotTimer<AppCacheServiceImpl> reinit_timer_;
   base::ObserverList<Observer> observers_;
-
- private:
-  base::WeakPtrFactory<AppCacheServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheServiceImpl);
 };

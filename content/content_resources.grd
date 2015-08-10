@@ -14,9 +14,6 @@
       <include name="IDR_ACCESSIBILITY_HTML" file="browser/resources/accessibility/accessibility.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_ACCESSIBILITY_CSS" file="browser/resources/accessibility/accessibility.css" type="BINDATA" />
       <include name="IDR_ACCESSIBILITY_JS" file="browser/resources/accessibility/accessibility.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_APPCACHE_INTERNALS_HTML" file="browser/resources/appcache/appcache_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_APPCACHE_INTERNALS_JS" file="browser/resources/appcache/appcache_internals.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_APPCACHE_INTERNALS_CSS" file="browser/resources/appcache/appcache_internals.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_DEVTOOLS_PINCH_CURSOR_ICON" file="browser/resources/devtools/devtools_pinch_cursor.png" type="BINDATA" />
       <include name="IDR_DEVTOOLS_PINCH_CURSOR_ICON_2X" file="browser/resources/devtools/devtools_pinch_cursor_2x.png" type="BINDATA" />
       <include name="IDR_DEVTOOLS_TOUCH_CURSOR_ICON" file="browser/resources/devtools/devtools_touch_cursor.png" type="BINDATA" />
