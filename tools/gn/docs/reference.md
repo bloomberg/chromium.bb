@@ -767,7 +767,7 @@
       Display a reverse dependency tree to get to the given file. This
       will show how dependencies will reference that file.
 
-  gn refs out/Debug //base/macros.h //base/basictypes.h --all
+  gn refs out/Debug //base/macros.h //base/at_exit.h --all
       Display all unique targets with some dependency path to a target
       containing either of the given files as a source.
 

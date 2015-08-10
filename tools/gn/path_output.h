@@ -8,7 +8,7 @@
 #include <iosfwd>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "tools/gn/escape.h"
 #include "tools/gn/source_dir.h"

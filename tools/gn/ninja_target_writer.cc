@@ -18,6 +18,7 @@
 #include "tools/gn/output_file.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/string_utils.h"
+#include "tools/gn/substitution_type.h"
 #include "tools/gn/substitution_writer.h"
 #include "tools/gn/target.h"
 #include "tools/gn/trace.h"

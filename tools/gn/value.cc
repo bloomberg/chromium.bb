@@ -29,7 +29,7 @@ Value::Value(const ParseNode* origin, bool bool_val)
       origin_(origin) {
 }
 
-Value::Value(const ParseNode* origin, int64 int_val)
+Value::Value(const ParseNode* origin, int64_t int_val)
     : type_(INTEGER),
       boolean_value_(false),
       int_value_(int_val),

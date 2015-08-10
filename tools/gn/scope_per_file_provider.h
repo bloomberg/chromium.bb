@@ -5,10 +5,9 @@
 #ifndef TOOLS_GN_SCOPE_PER_FILE_PROVIDER_H_
 #define TOOLS_GN_SCOPE_PER_FILE_PROVIDER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "tools/gn/scope.h"
-#include "tools/gn/source_file.h"
 
 // ProgrammaticProvider for a scope to provide it with per-file built-in
 // variable support.

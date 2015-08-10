@@ -5,11 +5,12 @@
 #ifndef TOOLS_GN_ARGS_H_
 #define TOOLS_GN_ARGS_H_
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "tools/gn/err.h"
 #include "tools/gn/scope.h"
+
+class Err;
 
 extern const char kBuildArgs_Help[];
 
@@ -101,7 +102,7 @@ class Args {
   // toolchain may define variables in different locations.
   mutable DeclaredArgumentsPerToolchain declared_arguments_per_toolchain_;
 
-  Args& operator=(const Args& other);  // Disallow assignment.
+  DISALLOW_ASSIGN(Args);
 };
 
 #endif  // TOOLS_GN_ARGS_H_

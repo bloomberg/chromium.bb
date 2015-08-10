@@ -5,12 +5,12 @@
 #ifndef TOOLS_GN_VALUE_H_
 #define TOOLS_GN_VALUE_H_
 
+#include <stdint.h>
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/strings/string_piece.h"
 #include "tools/gn/err.h"
 
 class ParseNode;
@@ -31,7 +31,7 @@ class Value {
   Value();
   Value(const ParseNode* origin, Type t);
   Value(const ParseNode* origin, bool bool_val);
-  Value(const ParseNode* origin, int64 int_val);
+  Value(const ParseNode* origin, int64_t int_val);
   Value(const ParseNode* origin, std::string str_val);
   Value(const ParseNode* origin, const char* str_val);
   // Values "shouldn't" have null scopes when type == Scope, so be sure to
@@ -64,11 +64,11 @@ class Value {
     return boolean_value_;
   }
 
-  int64& int_value() {
+  int64_t& int_value() {
     DCHECK(type_ == INTEGER);
     return int_value_;
   }
-  const int64& int_value() const {
+  const int64_t& int_value() const {
     DCHECK(type_ == INTEGER);
     return int_value_;
   }
@@ -122,7 +122,7 @@ class Value {
   Type type_;
   std::string string_value_;
   bool boolean_value_;
-  int64 int_value_;
+  int64_t int_value_;
   std::vector<Value> list_value_;
   scoped_ptr<Scope> scope_value_;
 

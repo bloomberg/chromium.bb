@@ -7,8 +7,7 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
-#include "base/strings/string_piece.h"
+#include "base/macros.h"
 #include "tools/gn/label_pattern.h"
 #include "tools/gn/source_dir.h"
 

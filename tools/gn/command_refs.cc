@@ -375,7 +375,7 @@ const char kRefs_Help[] =
     "      Display a reverse dependency tree to get to the given file. This\n"
     "      will show how dependencies will reference that file.\n"
     "\n"
-    "  gn refs out/Debug //base/macros.h //base/basictypes.h --all\n"
+    "  gn refs out/Debug //base/macros.h //base/at_exit.h --all\n"
     "      Display all unique targets with some dependency path to a target\n"
     "      containing either of the given files as a source.\n"
     "\n"

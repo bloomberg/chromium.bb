@@ -5,10 +5,7 @@
 #ifndef TOOLS_GN_CONFIG_VALUES_GENERATOR_H_
 #define TOOLS_GN_CONFIG_VALUES_GENERATOR_H_
 
-#include <string>
-#include <vector>
-
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "tools/gn/source_dir.h"
 
 class ConfigValues;

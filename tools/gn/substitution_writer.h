@@ -8,7 +8,6 @@
 #include <iosfwd>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "tools/gn/substitution_type.h"
 
 struct EscapeOptions;

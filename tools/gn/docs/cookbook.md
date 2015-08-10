@@ -317,7 +317,7 @@ Notes:
 GN is much more strict about header file checking. You may encounter
 errors that your target doesn't depend on the target containing a
 certain header file. The most common example is including
-`base/basictypes.h` without having `//base` in your project's dependency
+`base/macros.h` without having `//base` in your project's dependency
 list. The solution is to just add the missing dependency.
 
 The dependency tree must be a DAG. Some components might share headers
