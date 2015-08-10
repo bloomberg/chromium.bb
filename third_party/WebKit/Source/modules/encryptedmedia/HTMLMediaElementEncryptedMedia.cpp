@@ -290,7 +290,7 @@ DEFINE_TRACE(SetMediaKeysHandler)
 }
 
 HTMLMediaElementEncryptedMedia::HTMLMediaElementEncryptedMedia(HTMLMediaElement& element)
-    : m_mediaElement(element)
+    : m_mediaElement(&element)
     , m_emeMode(EmeModeNotSelected)
     , m_isWaitingForKey(false)
 {
@@ -500,8 +500,8 @@ void HTMLMediaElementEncryptedMedia::keyAdded(const WebString& keySystem, const 
     initializer.setSessionId(sessionId);
 
     RefPtrWillBeRawPtr<Event> event = MediaKeyEvent::create(EventTypeNames::webkitkeyadded, initializer);
-    event->setTarget(&m_mediaElement);
-    m_mediaElement.scheduleEvent(event.release());
+    event->setTarget(m_mediaElement);
+    m_mediaElement->scheduleEvent(event.release());
 }
 
 void HTMLMediaElementEncryptedMedia::keyError(const WebString& keySystem, const WebString& sessionId, WebMediaPlayerEncryptedMediaClient::MediaKeyErrorCode errorCode, unsigned short systemCode)
@@ -537,8 +537,8 @@ void HTMLMediaElementEncryptedMedia::keyError(const WebString& keySystem, const 
     initializer.setSystemCode(systemCode);
 
     RefPtrWillBeRawPtr<Event> event = MediaKeyEvent::create(EventTypeNames::webkitkeyerror, initializer);
-    event->setTarget(&m_mediaElement);
-    m_mediaElement.scheduleEvent(event.release());
+    event->setTarget(m_mediaElement);
+    m_mediaElement->scheduleEvent(event.release());
 }
 
 void HTMLMediaElementEncryptedMedia::keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL)
@@ -552,8 +552,8 @@ void HTMLMediaElementEncryptedMedia::keyMessage(const WebString& keySystem, cons
     initializer.setDefaultURL(KURL(defaultURL));
 
     RefPtrWillBeRawPtr<Event> event = MediaKeyEvent::create(EventTypeNames::webkitkeymessage, initializer);
-    event->setTarget(&m_mediaElement);
-    m_mediaElement.scheduleEvent(event.release());
+    event->setTarget(m_mediaElement);
+    m_mediaElement->scheduleEvent(event.release());
 }
 
 void HTMLMediaElementEncryptedMedia::encrypted(WebEncryptedMediaInitDataType initDataType, const unsigned char* initData, unsigned initDataLength)
@@ -563,7 +563,7 @@ void HTMLMediaElementEncryptedMedia::encrypted(WebEncryptedMediaInitDataType ini
     if (RuntimeEnabledFeatures::encryptedMediaEnabled()) {
         // Send event for WD EME.
         RefPtrWillBeRawPtr<Event> event;
-        if (m_mediaElement.isMediaDataCORSSameOrigin(m_mediaElement.executionContext()->securityOrigin())) {
+        if (m_mediaElement->isMediaDataCORSSameOrigin(m_mediaElement->executionContext()->securityOrigin())) {
             event = createEncryptedEvent(initDataType, initData, initDataLength);
         } else {
             // Current page is not allowed to see content from the media file,
@@ -571,15 +571,15 @@ void HTMLMediaElementEncryptedMedia::encrypted(WebEncryptedMediaInitDataType ini
             event = createEncryptedEvent(WebEncryptedMediaInitDataType::Unknown, nullptr, 0);
         }
 
-        event->setTarget(&m_mediaElement);
-        m_mediaElement.scheduleEvent(event.release());
+        event->setTarget(m_mediaElement);
+        m_mediaElement->scheduleEvent(event.release());
     }
 
     if (RuntimeEnabledFeatures::prefixedEncryptedMediaEnabled()) {
         // Send event for v0.1b EME.
         RefPtrWillBeRawPtr<Event> event = createWebkitNeedKeyEvent(initData, initDataLength);
-        event->setTarget(&m_mediaElement);
-        m_mediaElement.scheduleEvent(event.release());
+        event->setTarget(m_mediaElement);
+        m_mediaElement->scheduleEvent(event.release());
     }
 }
 
@@ -597,8 +597,8 @@ void HTMLMediaElementEncryptedMedia::didBlockPlaybackWaitingForKey()
     //    to fire a simple event named waitingforkey at the media element.
     if (!m_isWaitingForKey) {
         RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::waitingforkey);
-        event->setTarget(&m_mediaElement);
-        m_mediaElement.scheduleEvent(event.release());
+        event->setTarget(m_mediaElement);
+        m_mediaElement->scheduleEvent(event.release());
     }
 
     // 3. Set the media element's waiting for key value to true.
@@ -625,6 +625,7 @@ WebContentDecryptionModule* HTMLMediaElementEncryptedMedia::contentDecryptionMod
 
 DEFINE_TRACE(HTMLMediaElementEncryptedMedia)
 {
+    visitor->trace(m_mediaElement);
     visitor->trace(m_mediaKeys);
     WillBeHeapSupplement<HTMLMediaElement>::trace(visitor);
 }

@@ -82,7 +82,7 @@ private:
     // (v0.1b or WD). Returns whether the mode is allowed and successfully set.
     bool setEmeMode(EmeMode);
 
-    HTMLMediaElement& m_mediaElement;
+    RawPtrWillBeMember<HTMLMediaElement> m_mediaElement;
     EmeMode m_emeMode;
 
     bool m_isWaitingForKey;
