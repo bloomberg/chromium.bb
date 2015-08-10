@@ -261,15 +261,15 @@ NSString* GetHTMLForZoomState(const web::PageZoomState& zoom_state,
                               PageScalabilityType scalability_type) {
   NSString* const kHTMLFormat =
       @"<html><head><meta name='viewport' content="
-       "'width=%f,maximum-scale=%f,initial-scale=%f,"
+       "'width=%f,minimum-scale=%f,maximum-scale=%f,initial-scale=%f,"
        "user-scalable=%@'/></head><body>Test</body></html>";
   CGFloat width = CGRectGetWidth([UIScreen mainScreen].bounds) /
       zoom_state.minimum_zoom_scale();
   BOOL scalability_enabled = scalability_type == PAGE_SCALABILITY_ENABLED;
-  return [NSString stringWithFormat:kHTMLFormat, width,
-                                    zoom_state.maximum_zoom_scale(),
-                                    zoom_state.zoom_scale(),
-                                    scalability_enabled ? @"yes" : @"no"];
+  return [NSString
+      stringWithFormat:kHTMLFormat, width, zoom_state.minimum_zoom_scale(),
+                       zoom_state.maximum_zoom_scale(), zoom_state.zoom_scale(),
+                       scalability_enabled ? @"yes" : @"no"];
 }
 
 // Forces |webController|'s view to render and waits until |webController|'s
