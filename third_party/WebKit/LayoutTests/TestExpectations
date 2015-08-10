@@ -661,6 +661,10 @@ crbug.com/422670 [ Linux ] fast/text/emphasis-ellipsis-complextext.html [ NeedsR
 crbug.com/422670 [ Mac ] fast/css/vertical-text-overflow-ellipsis-text-align-center.html [ NeedsRebaseline ]
 crbug.com/422670 [ Linux Mac ] fast/css/vertical-text-overflow-ellipsis-text-align-left.html [ NeedsRebaseline ]
 crbug.com/422670 [ Linux ] fast/text/international/draw-complex-text-from-to.html [ NeedsRebaseline ]
+crbug.com/422670 [ XP ] fast/css/vertical-text-overflow-ellipsis-text-align-center.html [ NeedsRebaseline ]
+crbug.com/422670 [ XP ] fast/css/vertical-text-overflow-ellipsis-text-align-left.html [ NeedsRebaseline ]
+crbug.com/422670 [ Mac Win ] fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
+
 
 crbug.com/400841 media/video-canvas-draw.html [ ImageOnlyFailure ]
 crbug.com/400829 media/video-object-fit.html [ ImageOnlyFailure ]
