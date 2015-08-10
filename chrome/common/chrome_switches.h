@@ -362,6 +362,7 @@ extern const char kDisableMacViewsNativeAppWindows[];
 extern const char kEnableAppInfoDialogMac[];
 extern const char kEnableAppWindowCycling[];
 extern const char kEnableMacViewsNativeAppWindows[];
+extern const char kEnableMacViewsDialogs[];
 extern const char kEnableTranslateNewUX[];
 extern const char kMetricsClientID[];
 extern const char kRelauncherProcess[];

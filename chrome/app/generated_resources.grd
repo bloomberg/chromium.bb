@@ -7027,6 +7027,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_APP_WINDOW_CYCLING_DESCRIPTION" desc="Description of flag to enable or disable custom Cmd+` App window cycling on Mac.">
           Changes the behavior of Cmd+` when a Chrome App becomes active. When enabled, Chrome Apps will not be cycled when Cmd+` is pressed from a browser window, and browser windows will not be cycled when a Chrome App is active.
         </message>
+        <message name="IDS_FLAGS_MAC_VIEWS_DIALOGS_NAME" desc="Name of the flag to enable toolkit-views browser dialogs on Mac.">
+          Toolkit-Views Browser Dialogs.
+        </message>
+        <message name="IDS_FLAGS_MAC_VIEWS_DIALOGS_DESCRIPTION" desc="Description of the flag to enable toolkit-views browser dialogs on Mac.">
+          Causes Chrome on Mac to use a toolkit-views browser dialog when available, in place of the equivalent Cocoa dialog.
+        </message>
       </if>
       <if expr="chromeos">
         <message name="IDS_FLAGS_DISABLE_ACCELERATED_MJPEG_DECODE_NAME" desc="Name of the flag to disable accelerated mjpeg decode for captured frame where available.">

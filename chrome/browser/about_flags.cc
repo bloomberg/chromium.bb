@@ -2041,6 +2041,11 @@ const Experiment kExperiments[] = {
      kOsMac,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAppWindowCycling,
                                switches::kDisableAppWindowCycling)},
+    {"mac-views-dialogs",
+     IDS_FLAGS_MAC_VIEWS_DIALOGS_NAME,
+     IDS_FLAGS_MAC_VIEWS_DIALOGS_DESCRIPTION,
+     kOsMac,
+     SINGLE_VALUE_TYPE(switches::kEnableMacViewsDialogs)},
 #endif
 #if defined(ENABLE_WEBVR)
     {"enable-webvr",

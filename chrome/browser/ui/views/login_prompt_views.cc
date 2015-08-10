@@ -138,8 +138,11 @@ class LoginHandlerViews : public LoginHandler, public views::DialogDelegate {
   DISALLOW_COPY_AND_ASSIGN(LoginHandlerViews);
 };
 
-// static
-LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
-                                   net::URLRequest* request) {
+namespace chrome {
+
+LoginHandler* CreateLoginHandlerViews(net::AuthChallengeInfo* auth_info,
+                                      net::URLRequest* request) {
   return new LoginHandlerViews(auth_info, request);
 }
+
+}  // namespace chrome
