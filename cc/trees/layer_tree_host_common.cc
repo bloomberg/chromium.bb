@@ -2489,6 +2489,17 @@ void VerifyPropertyTreeValuesForLayer(LayerImpl* current_layer,
   CHECK_EQ(current_layer->screen_space_transform_is_animating(),
            ScreenSpaceTransformIsAnimatingFromPropertyTrees(
                current_layer, property_trees->transform_tree));
+
+  const bool drawable_content_rects_match =
+      ApproximatelyEqual(current_layer->drawable_content_rect(),
+                         DrawableContentRectFromPropertyTrees(
+                             current_layer, property_trees->transform_tree));
+  CHECK(drawable_content_rects_match)
+      << "expected: " << current_layer->drawable_content_rect().ToString()
+      << " actual: "
+      << DrawableContentRectFromPropertyTrees(current_layer,
+                                              property_trees->transform_tree)
+             .ToString();
 }
 
 void VerifyPropertyTreeValues(

@@ -111,7 +111,8 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
     data_for_children->ancestor_clips_subtree = ancestor_clips_subtree;
   }
 
-  if (LayerClipsSubtree(layer))
+  bool layer_clips_subtree = LayerClipsSubtree(layer);
+  if (layer_clips_subtree)
     data_for_children->ancestor_clips_subtree = true;
 
   if (has_unclipped_surface)
@@ -137,6 +138,11 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
     node.data.inherit_parent_target_space_clip =
         !data_for_children->ancestor_clips_subtree &&
         layer->has_render_surface() && ancestor_clips_subtree;
+    node.data.requires_tight_clip_rect =
+        ancestor_clips_subtree &&
+        (!layer->render_surface() ||
+         (layer->render_surface() && !layer_clips_subtree &&
+          layer->num_unclipped_descendants()));
     data_for_children->clip_tree_parent =
         data_for_children->clip_tree->Insert(node, parent_id);
   }

@@ -48,6 +48,7 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
       content_to_target.Translate(layer->offset_to_transform_parent().x(),
                                   layer->offset_to_transform_parent().y());
 
+      gfx::Rect combined_clip_rect_in_target_space;
       gfx::Rect clip_rect_in_target_space;
       gfx::Transform clip_to_target;
       bool success = true;
@@ -65,26 +66,41 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
           // animation, so we still need to compute a visible rect. In this
           // situation, we treat the entire layer as visible.
           layer->set_visible_rect_from_property_trees(gfx::Rect(layer_bounds));
+          layer->set_clip_rect_in_target_space_from_property_trees(
+              gfx::ToEnclosingRect(clip_node->data.combined_clip));
           continue;
         }
 
-        clip_rect_in_target_space =
+        combined_clip_rect_in_target_space =
             gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
                 clip_to_target, clip_node->data.combined_clip));
+        clip_rect_in_target_space = gfx::ToEnclosingRect(
+            MathUtil::ProjectClippedRect(clip_to_target, clip_node->data.clip));
       } else {
         // Computing a transform to an ancestor should always succeed.
         DCHECK(success);
-        clip_rect_in_target_space =
+        combined_clip_rect_in_target_space =
             gfx::ToEnclosingRect(MathUtil::MapClippedRect(
                 clip_to_target, clip_node->data.combined_clip));
+        clip_rect_in_target_space = gfx::ToEnclosingRect(
+            MathUtil::MapClippedRect(clip_to_target, clip_node->data.clip));
       }
 
       gfx::Rect layer_content_rect = gfx::Rect(layer_bounds);
       gfx::Rect layer_content_bounds_in_target_space =
           MathUtil::MapEnclosingClippedRect(content_to_target,
                                             layer_content_rect);
+      combined_clip_rect_in_target_space.Intersect(
+          layer_content_bounds_in_target_space);
       clip_rect_in_target_space.Intersect(layer_content_bounds_in_target_space);
-      if (clip_rect_in_target_space.IsEmpty()) {
+      if (clip_node->data.requires_tight_clip_rect) {
+        layer->set_clip_rect_in_target_space_from_property_trees(
+            combined_clip_rect_in_target_space);
+      } else {
+        layer->set_clip_rect_in_target_space_from_property_trees(
+            clip_rect_in_target_space);
+      }
+      if (combined_clip_rect_in_target_space.IsEmpty()) {
         layer->set_visible_rect_from_property_trees(gfx::Rect());
         continue;
       }
@@ -93,7 +109,8 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
       // visible. Since clip_rect_in_target_space has already been intersected
       // with layer_content_bounds_in_target_space, the layer is fully contained
       // within the clip iff these rects are equal.
-      if (clip_rect_in_target_space == layer_content_bounds_in_target_space) {
+      if (combined_clip_rect_in_target_space ==
+          layer_content_bounds_in_target_space) {
         layer->set_visible_rect_from_property_trees(gfx::Rect(layer_bounds));
         continue;
       }
@@ -122,13 +139,15 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
       target_to_content.PreconcatTransform(target_to_layer);
 
       gfx::Rect visible_rect = MathUtil::ProjectEnclosingClippedRect(
-          target_to_content, clip_rect_in_target_space);
+          target_to_content, combined_clip_rect_in_target_space);
 
       visible_rect.Intersect(gfx::Rect(layer_bounds));
 
       layer->set_visible_rect_from_property_trees(visible_rect);
     } else {
       layer->set_visible_rect_from_property_trees(gfx::Rect(layer_bounds));
+      layer->set_clip_rect_in_target_space_from_property_trees(
+          gfx::Rect(layer_bounds));
     }
   }
 }
@@ -754,6 +773,19 @@ bool CanUseLcdTextFromPropertyTrees(const LayerImpl* layer,
       layer->offset_to_transform_parent().y())
     return false;
   return true;
+}
+
+gfx::Rect DrawableContentRectFromPropertyTrees(
+    const LayerImpl* layer,
+    const TransformTree& transform_tree) {
+  gfx::Rect drawable_content_rect = MathUtil::MapEnclosingClippedRect(
+      DrawTransformFromPropertyTrees(layer, transform_tree),
+      gfx::Rect(layer->bounds()));
+  if (layer->is_clipped() && layer->clip_tree_index() > 0) {
+    drawable_content_rect.Intersect(
+        layer->clip_rect_in_target_space_from_property_trees());
+  }
+  return drawable_content_rect;
 }
 
 }  // namespace cc

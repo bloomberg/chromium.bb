@@ -97,7 +97,8 @@ void TransformNodeData::update_post_local_transform(
 ClipNodeData::ClipNodeData()
     : transform_id(-1),
       target_id(-1),
-      inherit_parent_target_space_clip(false) {}
+      inherit_parent_target_space_clip(false),
+      requires_tight_clip_rect(true) {}
 
 OpacityNodeData::OpacityNodeData() : opacity(1.f), screen_space_opacity(1.f) {
 }

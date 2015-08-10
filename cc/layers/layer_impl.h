@@ -180,6 +180,14 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     visible_rect_from_property_trees_ = rect;
   }
 
+  const gfx::Rect& clip_rect_in_target_space_from_property_trees() const {
+    return clip_rect_in_target_space_from_property_trees_;
+  }
+  void set_clip_rect_in_target_space_from_property_trees(
+      const gfx::Rect& rect) {
+    clip_rect_in_target_space_from_property_trees_ = rect;
+  }
+
   void set_should_flatten_transform_from_property_tree(bool should_flatten) {
     should_flatten_transform_from_property_tree_ = should_flatten;
     SetNeedsPushProperties();
@@ -804,6 +812,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   int num_descendants_that_draw_content_;
 
   gfx::Rect visible_rect_from_property_trees_;
+  gfx::Rect clip_rect_in_target_space_from_property_trees_;
   int transform_tree_index_;
   int opacity_tree_index_;
   int clip_tree_index_;
