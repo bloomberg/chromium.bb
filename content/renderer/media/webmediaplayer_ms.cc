@@ -25,7 +25,6 @@
 #include "media/base/video_rotation.h"
 #include "media/base/video_util.h"
 #include "media/blink/webmediaplayer_delegate.h"
-#include "media/blink/webmediaplayer_util.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -387,7 +386,7 @@ bool WebMediaPlayerMS::didPassCORSAccessCheck() const {
 }
 
 double WebMediaPlayerMS::mediaTimeForTimeValue(double timeValue) const {
-  return media::ConvertSecondsToTimestamp(timeValue).InSecondsF();
+  return base::TimeDelta::FromSecondsD(timeValue).InSecondsF();
 }
 
 unsigned WebMediaPlayerMS::decodedFrameCount() const {

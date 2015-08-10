@@ -25,12 +25,6 @@ STATIC_ASSERT_MATCHING_ENUM(Unknown);
 STATIC_ASSERT_MATCHING_ENUM(Client);
 #undef STATIC_ASSERT_MATCHING_ENUM
 
-base::TimeDelta ConvertSecondsToTimestamp(double seconds) {
-  double microseconds = seconds * base::Time::kMicrosecondsPerSecond;
-  return base::TimeDelta::FromMicroseconds(
-      microseconds > 0 ? microseconds + 0.5 : ceil(microseconds - 0.5));
-}
-
 blink::WebTimeRanges ConvertToWebTimeRanges(
     const Ranges<base::TimeDelta>& ranges) {
   blink::WebTimeRanges result(ranges.size());

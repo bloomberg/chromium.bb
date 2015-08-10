@@ -20,12 +20,6 @@
 
 namespace media {
 
-// Platform independent method for converting and rounding floating point
-// seconds to an int64 timestamp.
-//
-// Refer to https://bugs.webkit.org/show_bug.cgi?id=52697 for details.
-base::TimeDelta MEDIA_EXPORT ConvertSecondsToTimestamp(double seconds);
-
 blink::WebTimeRanges MEDIA_EXPORT ConvertToWebTimeRanges(
     const Ranges<base::TimeDelta>& ranges);
 

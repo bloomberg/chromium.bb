@@ -655,7 +655,7 @@ base::TimeDelta MediaSourceDelegate::GetDuration() const {
   if (duration == std::numeric_limits<double>::infinity())
     return media::kInfiniteDuration();
 
-  return media::ConvertSecondsToTimestamp(duration);
+  return base::TimeDelta::FromSecondsD(duration);
 }
 
 void MediaSourceDelegate::OnDemuxerOpened() {
