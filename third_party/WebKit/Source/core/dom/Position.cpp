@@ -119,7 +119,6 @@ PositionAlgorithm<Strategy>::PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anch
     : m_anchorNode(anchorNode)
     , m_offset(0)
     , m_anchorType(anchorType)
-    , m_isLegacyEditingPosition(false)
 {
     if (!m_anchorNode) {
         m_anchorType = PositionAnchorType::OffsetInAnchor;
@@ -138,7 +137,6 @@ PositionAlgorithm<Strategy>::PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anch
     : m_anchorNode(anchorNode)
     , m_offset(offset)
     , m_anchorType(PositionAnchorType::OffsetInAnchor)
-    , m_isLegacyEditingPosition(false)
 {
     ASSERT(canBeAnchorNode(m_anchorNode.get()));
 }
@@ -148,7 +146,6 @@ PositionAlgorithm<Strategy>::PositionAlgorithm(const PositionAlgorithm& other)
     : m_anchorNode(other.m_anchorNode)
     , m_offset(other.m_offset)
     , m_anchorType(other.m_anchorType)
-    , m_isLegacyEditingPosition(other.m_isLegacyEditingPosition)
 {
 }
 
@@ -231,23 +228,17 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::toOffsetInAnchor() cons
 template <typename Strategy>
 int PositionAlgorithm<Strategy>::computeEditingOffset() const
 {
-    if (m_isLegacyEditingPosition) {
-        int offset = Strategy::lastOffsetForEditing(m_anchorNode.get());
-        ASSERT(m_offset == offset);
-        return offset;
-    }
-
     if (isAfterAnchorOrAfterChildren())
         return Strategy::lastOffsetForEditing(m_anchorNode.get());
     return m_offset;
 }
 
+// TODO(yosin) We should replace all usage of |deprecatedEditingOffset()| by
+// |computeEditingOffset()|.
 template <typename Strategy>
 int PositionAlgorithm<Strategy>::deprecatedEditingOffset() const
 {
-    if (m_isLegacyEditingPosition || !isAfterAnchorOrAfterChildren())
-        return m_offset;
-    return Strategy::lastOffsetForEditing(m_anchorNode.get());
+    return computeEditingOffset();
 }
 
 template <typename Strategy>
@@ -1359,11 +1350,11 @@ void PositionAlgorithm<Strategy>::debugPosition(const char* msg) const
 
     const char* anchorType = anchorTypes[std::min(static_cast<size_t>(m_anchorType), WTF_ARRAY_LENGTH(anchorTypes) - 1)];
     if (m_anchorNode->isTextNode()) {
-        fprintf(stderr, "Position [%s]: %s%s [%p] %s, (%s) at %d\n", msg, m_isLegacyEditingPosition ? "LEGACY, " : "", anchorNode()->nodeName().utf8().data(), anchorNode(), anchorType, m_anchorNode->nodeValue().utf8().data(), m_offset);
+        fprintf(stderr, "Position [%s]: %s [%p] %s, (%s) at %d\n", msg, anchorNode()->nodeName().utf8().data(), anchorNode(), anchorType, m_anchorNode->nodeValue().utf8().data(), m_offset);
         return;
     }
 
-    fprintf(stderr, "Position [%s]: %s%s [%p] %s at %d\n", msg, m_isLegacyEditingPosition ? "LEGACY, " : "", anchorNode()->nodeName().utf8().data(), anchorNode(), anchorType, m_offset);
+    fprintf(stderr, "Position [%s]: %s [%p] %s at %d\n", msg, anchorNode()->nodeName().utf8().data(), anchorNode(), anchorType, m_offset);
 }
 
 PositionInComposedTree toPositionInComposedTree(const Position& pos)
@@ -1462,8 +1453,6 @@ void PositionAlgorithm<Strategy>::formatForDebugger(char* buffer, unsigned lengt
 template <typename Strategy>
 void PositionAlgorithm<Strategy>::showAnchorTypeAndOffset() const
 {
-    if (m_isLegacyEditingPosition)
-        fputs("legacy, ", stderr);
     switch (anchorType()) {
     case PositionAnchorType::OffsetInAnchor:
         fputs("offset", stderr);

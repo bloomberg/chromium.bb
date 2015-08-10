@@ -84,7 +84,6 @@ public:
     PositionAlgorithm()
         : m_offset(0)
         , m_anchorType(PositionAnchorType::OffsetInAnchor)
-        , m_isLegacyEditingPosition(false)
     {
     }
 
@@ -256,7 +255,6 @@ private:
     // and m_offset > 0 as "after the anchor node".  See parentAnchoredEquivalent for more info.
     int m_offset;
     PositionAnchorType m_anchorType;
-    bool m_isLegacyEditingPosition;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionAlgorithm<EditingStrategy>;
