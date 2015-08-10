@@ -73,5 +73,41 @@ TEST_F(NativeViewAccessibilityTest, LabelIsChildOfButton) {
             label_accessibility_->GetParent());
 }
 
+// Subclass of NativeViewAccessibility that destroys itself when its
+// parent widget is destroyed, for the purposes of making sure this
+// doesn't lead to a crash.
+class TestNativeViewAccessibility : public NativeViewAccessibility {
+ public:
+  explicit TestNativeViewAccessibility(View* view)
+      : NativeViewAccessibility(view) {}
+
+  void OnWidgetDestroying(Widget* widget) override {
+    bool is_destroying_parent_widget = (parent_widget_ == widget);
+    NativeViewAccessibility::OnWidgetDestroying(widget);
+    if (is_destroying_parent_widget)
+      delete this;
+  }
+};
+
+TEST_F(NativeViewAccessibilityTest, CrashOnWidgetDestroyed) {
+  scoped_ptr<Widget> parent_widget(new Widget);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(50, 50, 650, 650);
+  parent_widget->Init(params);
+
+  scoped_ptr<Widget> child_widget(new Widget);
+  child_widget->Init(params);
+
+  // Make sure that deleting the parent widget can't cause a crash
+  // due to NativeViewAccessibility not unregistering itself as a
+  // WidgetObserver. Note that TestNativeViewAccessibility is a subclass
+  // defined above that destroys itself when its parent widget is destroyed.
+  TestNativeViewAccessibility* child_accessible =
+      new TestNativeViewAccessibility(child_widget->GetRootView());
+  child_accessible->SetParentWidget(parent_widget.get());
+  parent_widget.reset();
+}
+
 }  // namespace test
 }  // namespace views

@@ -203,8 +203,10 @@ bool NativeViewAccessibility::SetStringValue(const base::string16& new_value) {
 }
 
 void NativeViewAccessibility::OnWidgetDestroying(Widget* widget) {
-  if (parent_widget_ == widget)
+  if (parent_widget_ == widget) {
+    parent_widget_->RemoveObserver(this);
     parent_widget_ = nullptr;
+  }
 }
 
 void NativeViewAccessibility::SetParentWidget(Widget* parent_widget) {
