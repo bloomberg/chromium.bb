@@ -164,8 +164,6 @@ Bug(gardener) [ Debug Win7 ] fast/forms/time-multiple-fields/time-multiple-field
 crbug.com/393098 Bug(gardener) [ Release Win7 ] fast/forms/week-multiple-fields/week-multiple-fields-mouse-events.html [ Failure Pass ]
 crbug.com/393098 [ Debug Win7 ] fast/forms/week-multiple-fields/week-multiple-fields-mouse-events.html [ Failure Pass ]
 Bug(gardener) [ Debug SnowLeopard ] fast/history/saves-state-after-frame-nav.html [ Failure Pass ]
-crbug.com/432129 [ Debug Win7 ] fast/html/marquee-scroll.html [ Failure Pass ]
-crbug.com/432129 [ Release XP ] fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/421283 [ Release Linux ] fast/html/marquee-scrollamount.html [ Failure Pass ]
 crbug.com/421283 [ Release Win7 ] fast/html/marquee-scrollamount.html [ Failure Pass ]
 crbug.com/421283 [ Debug Win7 ] fast/html/marquee-scrollamount.html [ Failure Pass ]
