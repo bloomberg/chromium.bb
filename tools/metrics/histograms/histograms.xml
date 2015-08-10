@@ -62204,6 +62204,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1930901873" label="disable-sync-app-list"/>
   <int value="1939413645" label="enable-invalid-cert-collection"/>
   <int value="1944156526" label="sync-url"/>
+  <int value="1955677113" label="trace-export-events-to-etw"/>
   <int value="1961425320" label="force-qtkit"/>
   <int value="1966730288" label="disable-threaded-compositing"/>
   <int value="1969604362" label="enable-pinch-virtual-viewport"/>

@@ -2138,6 +2138,13 @@ const Experiment kExperiments[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableNTPPopularSites,
                                switches::kDisableNTPPopularSites)},
 #endif  // defined(OS_ANDROID)
+#if defined(OS_WIN)
+     {"trace-export-events-to-etw",
+      IDS_FLAGS_TRACE_EXPORT_EVENTS_TO_ETW_NAME,
+      IDS_FLAGS_TRACE_EXPORT_EVENTS_TO_ETW_DESRIPTION,
+      kOsWin,
+      SINGLE_VALUE_TYPE(switches::kTraceExportEventsToETW)},
+#endif  // defined(OS_WIN)
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

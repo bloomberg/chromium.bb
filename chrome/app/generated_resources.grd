@@ -15928,6 +15928,16 @@ After you create a new supervised user, you can manage their settings at any tim
       </message>
     </if>
 
+    <if expr="is_win">
+      <!-- Exporting tracing events to ETW -->
+      <message name="IDS_FLAGS_TRACE_EXPORT_EVENTS_TO_ETW_NAME" desc="Name for the flag to enable exporting of tracing events to ETW.">
+        Enable exporting of tracing events to ETW.
+      </message>
+      <message name="IDS_FLAGS_TRACE_EXPORT_EVENTS_TO_ETW_DESRIPTION" desc="Description for the flag to enable exporting of tracing events to ETW.">
+        If enabled, trace events are exported to ETW and can be captured by either UIForETW or Xperf.
+      </message>
+    </if>
+
     </messages>
   </release>
 </grit>
