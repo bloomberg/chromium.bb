@@ -97,6 +97,11 @@ public class EnhancedBookmarkContentView extends RelativeLayout implements
     }
 
     @Override
+    public void onFilterStateSet(EnhancedBookmarkFilter filter) {
+        mLoadingView.hideLoadingUI();
+    }
+
+    @Override
     public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
     }
 }

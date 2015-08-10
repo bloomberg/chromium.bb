@@ -273,6 +273,11 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     }
 
     @Override
+    public void onFilterStateSet(EnhancedBookmarkFilter filter) {
+        // TODO(fgorski): mDelegate.getModel().getBookmarksForFilter(filter);
+    }
+
+    @Override
     public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {}
 
     private static class ItemViewHolder extends RecyclerView.ViewHolder {

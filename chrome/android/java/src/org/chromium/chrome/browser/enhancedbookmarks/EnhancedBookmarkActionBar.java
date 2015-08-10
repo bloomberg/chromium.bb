@@ -227,6 +227,14 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
     }
 
     @Override
+    public void onFilterStateSet(EnhancedBookmarkFilter filter) {
+        assert filter == EnhancedBookmarkFilter.OFFLINE_PAGES;
+        setTitle(R.string.enhanced_bookmark_title_bar_all_items_offline_pages);
+        setNavigationButton(NAVIGATION_BUTTON_MENU);
+        getMenu().findItem(R.id.edit_menu_id).setVisible(false);
+    }
+
+    @Override
     public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
         boolean wasSelectionEnabled = mIsSelectionEnabled;
         mIsSelectionEnabled = mDelegate.isSelectionEnabled();

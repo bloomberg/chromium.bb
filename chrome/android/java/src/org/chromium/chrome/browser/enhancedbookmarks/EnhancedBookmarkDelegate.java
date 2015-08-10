@@ -40,6 +40,13 @@ interface EnhancedBookmarkDelegate {
     void openFolder(BookmarkId folder);
 
     /**
+     * Corresponds to any filter named list item in the side drawer. Shows bookmarks that match
+     * that filter.
+     * @param filter A filter that will narrow down a list of bookmarks to show.
+     */
+    void openFilter(EnhancedBookmarkFilter filter);
+
+    /**
      * Clear all selected items. After this call, {@link #isSelectionEnabled()} will return false.
      */
     void clearSelection();

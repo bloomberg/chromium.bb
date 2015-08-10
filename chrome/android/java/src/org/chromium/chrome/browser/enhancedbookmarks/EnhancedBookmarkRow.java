@@ -253,6 +253,10 @@ abstract class EnhancedBookmarkRow extends FrameLayout implements EnhancedBookma
     }
 
     @Override
+    public void onFilterStateSet(EnhancedBookmarkFilter filter) {
+    }
+
+    @Override
     public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
         updateSelectionState();
     }

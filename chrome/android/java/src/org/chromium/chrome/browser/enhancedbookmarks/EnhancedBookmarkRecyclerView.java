@@ -111,6 +111,11 @@ public class EnhancedBookmarkRecyclerView extends RecyclerView implements
     }
 
     @Override
+    public void onFilterStateSet(EnhancedBookmarkFilter filter) {
+        scrollToPosition(0);
+    }
+
+    @Override
     public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
         if (!mDelegate.isSelectionEnabled()) {
             for (int i = 0; i < getLayoutManager().getChildCount(); ++i) {

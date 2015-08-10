@@ -301,6 +301,11 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
     }
 
     @Override
+    public void openFilter(EnhancedBookmarkFilter filter) {
+        setState(UIState.createFilterState(filter, mEnhancedBookmarksModel));
+    }
+
+    @Override
     public void clearSelection() {
         mSelectedBookmarks.clear();
         for (EnhancedBookmarkUIObserver observer : mUIObservers) {
@@ -350,6 +355,9 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
                 // In loading state, onEnhancedBookmarkDelegateInitialized() is not called for all
                 // UIObservers, which means that there will be no observers at the time. Do nothing.
                 assert mUIObservers.isEmpty();
+                break;
+            case UIState.STATE_FILTER:
+                observer.onFilterStateSet(mStateStack.peek().mFilter);
                 break;
             default:
                 assert false : "State not valid";
@@ -435,6 +443,7 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
         private int mState;
         private String mUrl;
         private BookmarkId mFolder;
+        private EnhancedBookmarkFilter mFilter;
 
         private static UIState createLoadingState(String url) {
             UIState state = new UIState();
@@ -453,6 +462,12 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
                     bookmarkModel);
         }
 
+        private static UIState createFilterState(
+                EnhancedBookmarkFilter filter, EnhancedBookmarksModel bookmarkModel) {
+            return createStateFromUrl(
+                    UrlConstants.BOOKMARKS_FILTER_URL + filter.toString(), bookmarkModel);
+        }
+
         /**
          * @return A state corresponding to the url. If the url is not valid, return all_bookmarks.
          */
@@ -469,6 +484,12 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
                 if (!suffix.isEmpty()) {
                     state.mFolder = BookmarkId.getBookmarkIdFromString(suffix);
                     state.mState = STATE_FOLDER;
+                }
+            } else if (url.startsWith(UrlConstants.BOOKMARKS_FILTER_URL)) {
+                String suffix = decodeSuffix(url, UrlConstants.BOOKMARKS_FILTER_URL);
+                if (!suffix.isEmpty()) {
+                    state.mState = STATE_FILTER;
+                    state.mFilter = EnhancedBookmarkFilter.valueOf(suffix);
                 }
             }
 
