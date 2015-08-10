@@ -743,6 +743,33 @@ static inline LayoutUnit calculateMinimumPageHeight(const ComputedStyle& style, 
     return lastLine.lineBottomWithLeading() - firstLine->lineTopWithLeading();
 }
 
+static inline bool shouldSetStrutOnBlock(const LayoutBlockFlow& block, const RootInlineBox& lineBox, LayoutUnit lineLogicalOffset, int lineIndex, LayoutUnit remainingLogicalHeight)
+{
+    bool wantsStrutOnBlock = false;
+    if (!block.style()->hasAutoOrphans() && block.style()->orphans() >= lineIndex) {
+        // Not enough orphans here. Push the entire block to the next column / page as an
+        // attempt to better satisfy the orphans requirement.
+        wantsStrutOnBlock = true;
+    } else if (lineBox == block.firstRootBox() && lineLogicalOffset == block.borderAndPaddingBefore()) {
+        // This is the first line in the block. We can take the whole block with us to the next page
+        // or column, rather than keeping a content-less portion of it in the previous one. Only do
+        // this if the line is flush with the content edge of the block, though. If it isn't, it
+        // means that the line was pushed downwards by preceding floats that didn't fit beside the
+        // line, and we don't want to move all that, since it has already been established that it
+        // fits nicely where it is.
+        LayoutUnit lineHeight = lineBox.lineBottomWithLeading() - lineBox.lineTopWithLeading();
+        LayoutUnit totalLogicalHeight = lineHeight + std::max<LayoutUnit>(0, lineLogicalOffset);
+        LayoutUnit pageLogicalHeightAtNewOffset = block.pageLogicalHeightForOffset(lineLogicalOffset + remainingLogicalHeight);
+        // It's rather pointless to break before the block if the current line isn't going to
+        // fit in the same column or page, so check that as well.
+        if (totalLogicalHeight < pageLogicalHeightAtNewOffset)
+            wantsStrutOnBlock = true;
+    }
+    // If we want to break before the block, one final check is needed, since some block object
+    // types cannot handle struts.
+    return wantsStrutOnBlock && !block.isOutOfFlowPositioned() && !block.isTableCell();
+}
+
 void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, LayoutUnit& delta)
 {
     // TODO(mstensho): Pay attention to line overflow. It should be painted in the same column as
@@ -774,15 +801,20 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
 
     int lineIndex = lineCount(&lineBox);
     if (remainingLogicalHeight < lineHeight || (shouldBreakAtLineToAvoidWidow() && lineBreakToAvoidWidow() == lineIndex)) {
+        // We need to insert a break now, either because there's no room for the line in the
+        // current column / page, or because we have determined that we need a break to satisfy
+        // widow requirements.
         if (shouldBreakAtLineToAvoidWidow() && lineBreakToAvoidWidow() == lineIndex) {
             clearShouldBreakAtLineToAvoidWidow();
             setDidBreakAtLineToAvoidWidow();
         }
-        LayoutUnit totalLogicalHeight = lineHeight + std::max<LayoutUnit>(0, logicalOffset);
-        LayoutUnit pageLogicalHeightAtNewOffset = pageLogicalHeightForOffset(logicalOffset + remainingLogicalHeight);
         setPageBreak(logicalOffset, lineHeight - remainingLogicalHeight);
-        if (((lineBox == firstRootBox() && totalLogicalHeight < pageLogicalHeightAtNewOffset) || (!style()->hasAutoOrphans() && style()->orphans() >= lineIndex))
-            && !isOutOfFlowPositioned() && !isTableCell()) {
+        if (shouldSetStrutOnBlock(*this, lineBox, logicalOffset, lineIndex, remainingLogicalHeight)) {
+            // Note that when setting the strut on a block, it may be propagated to parent blocks
+            // later on, if a block's logical top is flush with that of its parent. We don't want
+            // content-less portions (struts) at the beginning of a block before a break, if it can
+            // be avoided. After all, that's the reason for setting struts on blocks and not lines
+            // in the first place.
             setPaginationStrut(remainingLogicalHeight + std::max<LayoutUnit>(0, logicalOffset));
         } else {
             delta += remainingLogicalHeight;
