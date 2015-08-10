@@ -14,8 +14,7 @@
 #include "net/base/net_export.h"
 #include "net/spdy/hpack/hpack_entry.h"
 
-// All section references below are to
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-08
+// All section references below are to http://tools.ietf.org/html/rfc7541.
 
 namespace net {
 
@@ -25,7 +24,7 @@ namespace test {
 class HpackHeaderTablePeer;
 }  // namespace test
 
-// A data structure for the static table (3.3.1) and the header table (3.3.2).
+// A data structure for the static table (2.3.1) and the dynamic table (2.3.2).
 class NET_EXPORT_PRIVATE HpackHeaderTable {
  public:
   friend class test::HpackHeaderTablePeer;
@@ -51,11 +50,11 @@ class NET_EXPORT_PRIVATE HpackHeaderTable {
 
   ~HpackHeaderTable();
 
-  // Last-aknowledged value of SETTINGS_HEADER_TABLE_SIZE.
+  // Last-acknowledged value of SETTINGS_HEADER_TABLE_SIZE.
   size_t settings_size_bound() { return settings_size_bound_; }
 
   // Current and maximum estimated byte size of the table, as described in
-  // 5.1. Notably, this is /not/ the number of entries in the table.
+  // 4.1. Notably, this is /not/ the number of entries in the table.
   size_t size() const { return size_; }
   size_t max_size() const { return max_size_; }
 
@@ -80,7 +79,7 @@ class NET_EXPORT_PRIVATE HpackHeaderTable {
   void SetSettingsHeaderTableSize(size_t settings_size);
 
   // Determine the set of entries which would be evicted by the insertion
-  // of |name| & |value| into the table, as per section 3.3.3. No eviction
+  // of |name| & |value| into the table, as per section 4.4. No eviction
   // actually occurs. The set is returned via range [begin_out, end_out).
   void EvictionSet(StringPiece name,
                    StringPiece value,
@@ -117,7 +116,7 @@ class NET_EXPORT_PRIVATE HpackHeaderTable {
   size_t settings_size_bound_;
 
   // Estimated current and maximum byte size of the table.
-  // |max_size_| <= |settings_header_table_size_|
+  // |max_size_| <= |settings_size_bound_|
   size_t size_;
   size_t max_size_;
 

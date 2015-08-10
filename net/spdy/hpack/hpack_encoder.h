@@ -19,7 +19,7 @@
 #include "net/spdy/spdy_protocol.h"
 
 // An HpackEncoder encodes header sets as outlined in
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-08
+// http://tools.ietf.org/html/rfc7541.
 
 namespace net {
 

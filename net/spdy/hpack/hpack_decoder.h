@@ -18,7 +18,7 @@
 #include "net/spdy/spdy_protocol.h"
 
 // An HpackDecoder decodes header sets as outlined in
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-08
+// http://tools.ietf.org/html/rfc7541.
 
 namespace net {
 
@@ -73,17 +73,17 @@ class NET_EXPORT_PRIVATE HpackDecoder {
 
  private:
   // Adds the header representation to |decoded_block_|, applying the
-  // following rules, as per sections 8.1.3.3 & 8.1.3.4 of the HTTP2 draft
-  // specification:
+  // following rules:
   //  - Multiple values of the Cookie header are joined, delmited by '; '.
-  //    This reconstruction is required to properly handle Cookie crumbling.
+  //    This reconstruction is required to properly handle Cookie crumbling
+  //    (as per section 8.1.2.5 in RFC 7540).
   //  - Multiple values of other headers are joined and delimited by '\0'.
   //    Note that this may be too accomodating, as the sender's HTTP2 layer
   //    should have already joined and delimited these values.
   //
   // Returns false if a pseudo-header field follows a regular header one, which
-  // MUST be treated as malformed, as per sections 8.1.2.1. of the HTTP2 draft
-  // specification.
+  // MUST be treated as malformed, as per sections 8.1.2.3. of the HTTP2
+  // specification (RFC 7540).
   //
   // TODO(jgraettinger): This method will eventually emit to the
   // SpdyHeadersHandlerInterface visitor.
