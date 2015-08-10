@@ -9618,6 +9618,7 @@
     },
     "lakitu_mobbuild-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "lakitu_mobbuild"
         ],
@@ -9665,6 +9666,7 @@
     },
     "lakitu_mobbuild-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "afdo_use": false,
         "boards": [
             "lakitu_mobbuild"

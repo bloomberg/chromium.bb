@@ -620,6 +620,9 @@ _waterfall_config_map = {
     ]),
 
     constants.WATERFALL_INTERNAL: frozenset([
+        # Experimental Paladins
+        'lakitu_mobbuild-paladin',
+
         # Experimental Canaries (Group)
         'auron-b-release-group',
         'glados-release-group',
@@ -637,6 +640,7 @@ _waterfall_config_map = {
         'bobcat-release',
         'daisy_winter-release',
         'kayle-release',
+        'lakitu_mobbuild-release',
         'nyan_freon-release',
         'panther_moblab-release',
         'rush_ryu-release',
