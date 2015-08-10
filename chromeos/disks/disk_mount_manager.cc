@@ -500,8 +500,8 @@ class DiskMountManagerImpl : public DiskMountManager {
         devices[index],
         base::Bind(&DiskMountManagerImpl::RefreshAfterGetDeviceProperties,
                    weak_ptr_factory_.GetWeakPtr(), devices, index + 1),
-        base::Bind(&DiskMountManagerImpl::RefreshCompleted,
-                   weak_ptr_factory_.GetWeakPtr(), false));
+        base::Bind(&DiskMountManagerImpl::RefreshDeviceAtIndex,
+                   weak_ptr_factory_.GetWeakPtr(), devices, index + 1));
   }
 
   // Part of EnsureMountInfoRefreshed().
