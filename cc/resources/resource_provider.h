@@ -448,6 +448,8 @@ class CC_EXPORT ResourceProvider
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
+  int tracing_id() const { return tracing_id_; }
+
  protected:
   ResourceProvider(OutputSurface* output_surface,
                    SharedBitmapManager* shared_bitmap_manager,
@@ -616,6 +618,10 @@ class CC_EXPORT ResourceProvider
   // Fence used for CopyResource if CHROMIUM_sync_query is not supported.
   scoped_refptr<SynchronousFence> synchronous_fence_;
   std::vector<unsigned> use_image_texture_targets_;
+
+  // A process-unique ID used for disambiguating memory dumps from different
+  // resource providers.
+  int tracing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceProvider);
 };

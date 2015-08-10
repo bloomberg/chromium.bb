@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/atomic_sequence_num.h"
 #include "base/containers/hash_tables.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_math.h"
@@ -245,6 +246,10 @@ class CopyTextureFence : public ResourceProvider::Fence {
 
   DISALLOW_COPY_AND_ASSIGN(CopyTextureFence);
 };
+
+// Generates process-unique IDs to use for tracing a ResourceProvider's
+// resources.
+base::StaticAtomicSequenceNumber g_next_resource_provider_tracing_id;
 
 }  // namespace
 
@@ -1116,7 +1121,8 @@ ResourceProvider::ResourceProvider(
       use_sync_query_(false),
       use_persistent_map_for_gpu_memory_buffers_(
           use_persistent_map_for_gpu_memory_buffers),
-      use_image_texture_targets_(use_image_texture_targets) {
+      use_image_texture_targets_(use_image_texture_targets),
+      tracing_id_(g_next_resource_provider_tracing_id.GetNext()) {
   DCHECK(output_surface_->HasClient());
   DCHECK(id_allocation_chunk_size_);
 }
@@ -1990,9 +1996,11 @@ bool ResourceProvider::OnMemoryDump(
   for (const auto& resource_entry : resources_) {
     const auto& resource = resource_entry.second;
 
-    // TODO(ericrk): Add per-compositor ID in name.
-    std::string dump_name = base::StringPrintf("cc/resource_memory/resource_%d",
-                                               resource_entry.first);
+    // Resource IDs are not process-unique, so log with the ResourceProvider's
+    // unique id.
+    std::string dump_name = base::StringPrintf(
+        "cc/resource_memory/resource_provider_%d/resource_%d", tracing_id_,
+        resource_entry.first);
     base::trace_event::MemoryAllocatorDump* dump =
         pmd->CreateAllocatorDump(dump_name);
 

@@ -18,12 +18,16 @@ namespace cc {
 
 void ResourcePool::PoolResource::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd,
+    const ResourceProvider* resource_provider,
     bool is_free) const {
-  // TODO(ericrk): Add per-compositor ID in name.
+  // Resource IDs are not process-unique, so log with the ResourceProvider's
+  // unique id.
   std::string parent_node =
-      base::StringPrintf("cc/resource_memory/resource_%d", resource->id());
+      base::StringPrintf("cc/resource_memory/resource_provider_%d/resource_%d",
+                         resource_provider->tracing_id(), resource->id());
   std::string dump_name =
-      base::StringPrintf("cc/tile_memory/resource_%d", resource->id());
+      base::StringPrintf("cc/tile_memory/resource_provider_%d/resource_%d",
+                         resource_provider->tracing_id(), resource->id());
   base::trace_event::MemoryAllocatorDump* dump =
       pmd->CreateAllocatorDump(dump_name);
 
@@ -219,10 +223,10 @@ void ResourcePool::DidFinishUsingResource(ScopedResource* resource,
 bool ResourcePool::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                                 base::trace_event::ProcessMemoryDump* pmd) {
   for (const auto& resource : unused_resources_) {
-    resource.OnMemoryDump(pmd, true /* is_free */);
+    resource.OnMemoryDump(pmd, resource_provider_, true /* is_free */);
   }
   for (const auto& resource : busy_resources_) {
-    resource.OnMemoryDump(pmd, false /* is_free */);
+    resource.OnMemoryDump(pmd, resource_provider_, false /* is_free */);
   }
   // TODO(ericrk): Dump vended out resources once that data is available.
   // crbug.com/516541

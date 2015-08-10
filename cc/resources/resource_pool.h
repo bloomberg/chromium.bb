@@ -83,6 +83,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
     PoolResource(ScopedResource* resource, uint64_t content_id)
         : resource(resource), content_id(content_id) {}
     void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                      const ResourceProvider* resource_provider,
                       bool is_free) const;
 
     ScopedResource* resource;
