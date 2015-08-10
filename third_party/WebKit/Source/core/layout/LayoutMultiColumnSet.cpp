@@ -265,6 +265,14 @@ void LayoutMultiColumnSet::paintObject(const PaintInfo& paintInfo, const LayoutP
     MultiColumnSetPainter(*this).paintObject(paintInfo, paintOffset);
 }
 
+LayoutRect LayoutMultiColumnSet::fragmentsBoundingBox(const LayoutRect& boundingBoxInFlowThread) const
+{
+    LayoutRect result;
+    for (const auto& group : m_fragmentainerGroups)
+        result.unite(group.fragmentsBoundingBox(boundingBoxInFlowThread));
+    return result;
+}
+
 void LayoutMultiColumnSet::collectLayerFragments(DeprecatedPaintLayerFragments& fragments, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect)
 {
     for (const auto& group : m_fragmentainerGroups)

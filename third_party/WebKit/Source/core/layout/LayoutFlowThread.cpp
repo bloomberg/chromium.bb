@@ -166,16 +166,8 @@ LayoutRect LayoutFlowThread::fragmentsBoundingBox(const LayoutRect& layerBoundin
     ASSERT(!m_columnSetsInvalidated);
 
     LayoutRect result;
-    for (auto* columnSet : m_multiColumnSetList) {
-        DeprecatedPaintLayerFragments fragments;
-        columnSet->collectLayerFragments(fragments, layerBoundingBox, LayoutRect(LayoutRect::infiniteIntRect()));
-        for (const auto& fragment : fragments) {
-            LayoutRect fragmentRect(layerBoundingBox);
-            fragmentRect.intersect(fragment.paginationClip);
-            fragmentRect.moveBy(fragment.paginationOffset);
-            result.unite(fragmentRect);
-        }
-    }
+    for (auto* columnSet : m_multiColumnSetList)
+        result.unite(columnSet->fragmentsBoundingBox(layerBoundingBox));
 
     return result;
 }

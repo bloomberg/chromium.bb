@@ -145,6 +145,8 @@ public:
     // The top of the page nearest to the specified block offset. All in flowthread coordinates.
     LayoutUnit pageLogicalTopForOffset(LayoutUnit offset) const;
 
+    LayoutRect fragmentsBoundingBox(const LayoutRect& boundingBoxInFlowThread) const;
+
     void collectLayerFragments(DeprecatedPaintLayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect);
 
     LayoutUnit columnGap() const;
