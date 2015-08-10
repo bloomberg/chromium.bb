@@ -33,8 +33,9 @@ class UsbContext : public base::RefCountedThreadSafe<UsbContext> {
 
  private:
   class UsbEventHandler;
+
   PlatformUsbContext context_;
-  UsbEventHandler* event_handler_;
+  scoped_ptr<UsbEventHandler> event_handler_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbContext);
