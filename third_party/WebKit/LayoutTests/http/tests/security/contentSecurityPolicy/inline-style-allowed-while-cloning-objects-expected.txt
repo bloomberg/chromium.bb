@@ -1,6 +1,6 @@
 CONSOLE ERROR: Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'self'". Either the 'unsafe-inline' keyword, a hash ('sha256-SKwGvORdKBYTYiM4lxIkanDyKH8J0qJ5Ix8LGkKsbhw='), or a nonce ('nonce-...') is required to enable inline execution.
 
-CONSOLE ERROR: line 77: Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'self'". Either the 'unsafe-inline' keyword, a hash ('sha256-E8Yv3p3nivzZKSVWxu7y2Pr-w7Nco7lvx8r5nBVoLFA='), or a nonce ('nonce-...') is required to enable inline execution.
+CONSOLE ERROR: line 77: Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'self'". Either the 'unsafe-inline' keyword, a hash ('sha256-E8Yv3p3nivzZKSVWxu7y2Pr+w7Nco7lvx8r5nBVoLFA='), or a nonce ('nonce-...') is required to enable inline execution.
 
 PASS successfullyParsed is true
 

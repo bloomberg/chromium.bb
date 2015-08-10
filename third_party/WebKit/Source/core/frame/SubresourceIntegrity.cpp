@@ -61,8 +61,7 @@ static bool DigestsEqual(const DigestValue& digest1, const DigestValue& digest2)
 
 static String digestToString(const DigestValue& digest)
 {
-    // We always output base64url encoded data, even though we use base64 internally.
-    return base64URLEncode(reinterpret_cast<const char*>(digest.data()), digest.size(), Base64DoNotInsertLFs);
+    return base64Encode(reinterpret_cast<const char*>(digest.data()), digest.size(), Base64DoNotInsertLFs);
 }
 
 
