@@ -23,13 +23,6 @@ import xvfb
 XVFB_DISPLAY_ID = 9
 
 
-def set_color():
-  '''Run gtests with color on TTY, unless its environment variable is set.'''
-  if sys.stdout.isatty() and 'GTEST_COLOR' not in os.environ:
-    logging.getLogger().debug('Setting GTEST_COLOR=yes')
-    os.environ['GTEST_COLOR'] = 'yes'
-
-
 def run_apptest(config, shell, args, apptest, isolate):
   '''Run the apptest; optionally isolating fixtures across shell invocations.
 
@@ -155,6 +148,9 @@ def _build_command_line(config, args, apptest):
 def _run_test_with_xvfb(config, shell, args, apptest):
   '''Run the test with xvfb; return the output or raise an exception.'''
   env = os.environ.copy()
+  # Make sure gtest doesn't try to add color to the output. Color is done via
+  # escape sequences which confuses the code that searches the gtest output.
+  env['GTEST_COLOR'] = 'no'
   if (config.target_os != Config.OS_LINUX or '--gtest_list_tests' in args
       or not xvfb.should_start_xvfb(env)):
     return _run_test_with_timeout(config, shell, args, apptest, env)

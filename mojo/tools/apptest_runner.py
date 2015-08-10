@@ -33,7 +33,6 @@ def main():
                       default=APPTESTS, help='The file listing tests to run.')
   args = parser.parse_args()
 
-  gtest.set_color()
   logger = logging.getLogger()
   logging.basicConfig(stream=sys.stdout, format='%(levelname)s:%(message)s')
   logger.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
