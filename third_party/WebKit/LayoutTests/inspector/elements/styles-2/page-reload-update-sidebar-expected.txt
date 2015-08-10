@@ -5,6 +5,7 @@ Text
 Running: selectInspectedNode
 
 Running: startEditingAndReloadPage
+Page reloaded.
 
 Running: onPageReloaded
 

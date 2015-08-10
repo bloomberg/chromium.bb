@@ -23,8 +23,10 @@ function test()
             var treeElement = InspectorTest.getElementStylePropertyTreeItem("color");
             var currentDocumentId = stylesSidebarPane.node().ownerDocument.id;
             treeElement.startEditing(treeElement.valueElement);
+            var nodeRebuiltHappened = false;
+            var pageReloadHappened = false;
             InspectorTest.addSniffer(WebInspector.StylesSidebarPane.prototype, "_nodeStylesUpdatedForTest", onNodeRebuilt);
-            InspectorTest.reloadPage();
+            InspectorTest.reloadPage(reloadedCallback);
 
             function onNodeRebuilt(node, rebuild)
             {
@@ -33,7 +35,20 @@ function test()
                     InspectorTest.completeTest();
                     return;
                 }
-                next();
+                nodeRebuiltHappened = true;
+                maybeNext();
+            }
+
+            function reloadedCallback()
+            {
+                pageReloadHappened = true;
+                maybeNext();
+            }
+
+            function maybeNext()
+            {
+                if (nodeRebuiltHappened && pageReloadHappened)
+                    next();
             }
         },
 
