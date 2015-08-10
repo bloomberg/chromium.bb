@@ -843,12 +843,17 @@ void URLRequestJob::RecordBytesRead(int bytes_read) {
   DCHECK_GT(bytes_read, 0);
   prefilter_bytes_read_ += bytes_read;
 
-  // Notify NetworkQualityEstimator.
+  // On first read, notify NetworkQualityEstimator that response headers have
+  // been received.
   // TODO(tbansal): Move this to url_request_http_job.cc. This may catch
   // Service Worker jobs twice.
-  if (request_ && request_->context()->network_quality_estimator()) {
-    request_->context()->network_quality_estimator()->NotifyDataReceived(
-        *request_, prefilter_bytes_read_, bytes_read);
+  // If prefilter_bytes_read_ is equal to bytes_read, it indicates this is the
+  // first raw read of the response body. This is used as the signal that
+  // response headers have been received.
+  if (request_ && request_->context()->network_quality_estimator() &&
+      prefilter_bytes_read_ == bytes_read) {
+    request_->context()->network_quality_estimator()->NotifyHeadersReceived(
+        *request_);
   }
 
   if (!filter_.get())

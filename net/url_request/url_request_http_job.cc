@@ -25,6 +25,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/network_delegate.h"
+#include "net/base/network_quality_estimator.h"
 #include "net/base/sdch_manager.h"
 #include "net/base/sdch_net_log_params.h"
 #include "net/cert/cert_status_flags.h"
@@ -1550,6 +1551,15 @@ void URLRequestHttpJob::DoneWithRequest(CompletionCause reason) {
   if (done_)
     return;
   done_ = true;
+
+  // Notify NetworkQualityEstimator.
+  if (request() && (reason == FINISHED || reason == ABORTED)) {
+    NetworkQualityEstimator* network_quality_estimator =
+        request()->context()->network_quality_estimator();
+    if (network_quality_estimator)
+      network_quality_estimator->NotifyRequestCompleted(*request());
+  }
+
   RecordPerfHistograms(reason);
   if (request_)
     request_->set_received_response_content_length(prefilter_bytes_read());

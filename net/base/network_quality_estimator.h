@@ -22,6 +22,8 @@
 
 namespace net {
 
+class URLRequest;
+
 // NetworkQualityEstimator provides network quality estimates (quality of the
 // full paths to all origins that have been connected to).
 // The estimates are based on the observed organic traffic.
@@ -62,15 +64,13 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // estimated downlink throughput (in Kilobits per second).
   bool GetDownlinkThroughputKbpsEstimate(int32_t* kbps) const;
 
-  // Notifies NetworkQualityEstimator that a response has been received.
-  // |cumulative_prefilter_bytes_read| is the count of the bytes received prior
-  // to applying filters (e.g. decompression, SDCH) from request creation time
-  // until now.
-  // |prefiltered_bytes_read| is the count of the bytes received prior
-  // to applying filters in the most recent read.
-  void NotifyDataReceived(const URLRequest& request,
-                          int64_t cumulative_prefilter_bytes_read,
-                          int64_t prefiltered_bytes_read);
+  // Notifies NetworkQualityEstimator that the response header of |request| has
+  // been received.
+  void NotifyHeadersReceived(const URLRequest& request);
+
+  // Notifies NetworkQualityEstimator that the response body of |request| has
+  // been received.
+  void NotifyRequestCompleted(const URLRequest& request);
 
   // Returns the weighted median of RTT observations available since
   // |begin_timestamp|.
@@ -340,6 +340,11 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   void RecordRTTUMA(int32_t estimated_value_msec,
                     int32_t actual_value_msec) const;
 
+  // Returns true only if |request| can be used for network quality estimation.
+  // Only the requests that go over network are considered to provide useful
+  // observations.
+  bool RequestProvidesUsefulObservations(const URLRequest& request) const;
+
   // Determines if the requests to local host can be used in estimating the
   // network quality. Set to true only for tests.
   const bool allow_localhost_requests_;
@@ -367,7 +372,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   CachedNetworkQualities cached_network_qualities_;
 
   // Buffer that holds Kbps observations sorted by timestamp.
-  ObservationBuffer kbps_observations_;
+  ObservationBuffer downstream_throughput_kbps_observations_;
 
   // Buffer that holds RTT (in milliseconds) observations sorted by timestamp.
   ObservationBuffer rtt_msec_observations_;
