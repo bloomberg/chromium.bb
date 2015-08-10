@@ -89,6 +89,8 @@ void Frame::Swap(FrameTreeClient* frame_tree_client,
   user_data_ = user_data.Pass();
   frame_tree_client_ = frame_tree_client;
   frame_tree_server_binding_.Close();
+  loading_ = false;
+  progress_ = 0.f;
 
   InitClient();
 }
