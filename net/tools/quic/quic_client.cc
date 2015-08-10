@@ -15,7 +15,9 @@
 #include "net/base/net_util.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_connection.h"
+#include "net/quic/quic_crypto_client_stream.h"
 #include "net/quic/quic_data_reader.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
 #include "net/tools/balsa/balsa_headers.h"
@@ -36,6 +38,12 @@ namespace net {
 namespace tools {
 
 const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
+
+void QuicClient::ClientQuicDataToResend::Resend() {
+  client_->SendRequest(*headers_, body_, fin_);
+  delete headers_;
+  headers_ = nullptr;
+}
 
 QuicClient::QuicClient(IPEndPoint server_address,
                        const QuicServerId& server_id,
@@ -65,18 +73,29 @@ QuicClient::QuicClient(IPEndPoint server_address,
       supported_versions_(supported_versions),
       store_response_(false),
       latest_response_code_(-1),
-      initial_max_packet_length_(0) {}
+      initial_max_packet_length_(0),
+      num_stateless_rejects_received_(0),
+      num_sent_client_hellos_(0),
+      connection_error_(QUIC_NO_ERROR),
+      connected_or_attempting_connect_(false) {}
 
 QuicClient::~QuicClient() {
   if (connected()) {
     session()->connection()->SendConnectionClose(QUIC_PEER_GOING_AWAY);
   }
+  STLDeleteElements(&data_to_resend_on_connect_);
+  STLDeleteElements(&data_sent_before_handshake_);
 
   CleanUpUDPSocketImpl();
 }
 
 bool QuicClient::Initialize() {
   DCHECK(!initialized_);
+
+  num_sent_client_hellos_ = 0;
+  num_stateless_rejects_received_ = 0;
+  connection_error_ = QUIC_NO_ERROR;
+  connected_or_attempting_connect_ = false;
 
   // If an initial flow control window has not explicitly been set, then use the
   // same values that Chrome uses.
@@ -113,6 +132,16 @@ QuicPacketWriter* QuicClient::DummyPacketWriterFactory::Create(
   return writer_;
 }
 
+QuicClient::QuicDataToResend::QuicDataToResend(BalsaHeaders* headers,
+                                               StringPiece body,
+                                               bool fin)
+    : headers_(headers), body_(body), fin_(fin) {}
+
+QuicClient::QuicDataToResend::~QuicDataToResend() {
+  if (headers_) {
+    delete headers_;
+  }
+}
 
 bool QuicClient::CreateUDPSocket() {
   int address_family = server_address_.GetSockAddrFamily();
@@ -180,9 +209,36 @@ bool QuicClient::CreateUDPSocket() {
 }
 
 bool QuicClient::Connect() {
-  StartConnect();
-  while (EncryptionBeingEstablished()) {
-    WaitForEvents();
+  // Attempt multiple connects until the maximum number of client hellos have
+  // been sent.
+  while (!connected() &&
+         GetNumSentClientHellos() <= QuicCryptoClientStream::kMaxClientHellos) {
+    StartConnect();
+    while (EncryptionBeingEstablished()) {
+      WaitForEvents();
+    }
+    if (FLAGS_enable_quic_stateless_reject_support && connected() &&
+        !data_to_resend_on_connect_.empty()) {
+      // A connection has been established and there was previously queued data
+      // to resend.  Resend it and empty the queue.
+      for (QuicDataToResend* data : data_to_resend_on_connect_) {
+        data->Resend();
+      }
+      STLDeleteElements(&data_to_resend_on_connect_);
+    }
+    if (session_.get() != nullptr &&
+        session_->error() != QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
+      // We've successfully created a session but we're not connected, and there
+      // is no stateless reject to recover from.  Give up trying.
+      break;
+    }
+  }
+  if (!connected() &&
+      GetNumSentClientHellos() > QuicCryptoClientStream::kMaxClientHellos &&
+      session_ != nullptr &&
+      session_->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
+    // The overall connection failed due too many stateless rejects.
+    connection_error_ = QUIC_CRYPTO_TOO_MANY_REJECTS;
   }
   return session_->connection()->connected();
 }
@@ -203,9 +259,24 @@ void QuicClient::StartConnect() {
 
   DummyPacketWriterFactory factory(writer);
 
+  if (connected_or_attempting_connect_) {
+    // Before we destroy the last session and create a new one, gather its stats
+    // and update the stats for the overall connection.
+    num_sent_client_hellos_ += session_->GetNumSentClientHellos();
+    if (session_->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
+      // If the last error was due to a stateless reject, queue up the data to
+      // be resent on the next successful connection.
+      // TODO(jokulik): I'm a little bit concerned about ordering here.  Maybe
+      // we should just maintain one queue?
+      ++num_stateless_rejects_received_;
+      DCHECK(data_to_resend_on_connect_.empty());
+      data_to_resend_on_connect_.swap(data_sent_before_handshake_);
+    }
+  }
+
   session_.reset(CreateQuicClientSession(
       config_,
-      new QuicConnection(GenerateConnectionId(), server_address_, helper_.get(),
+      new QuicConnection(GetNextConnectionId(), server_address_, helper_.get(),
                          factory,
                          /* owns_writer= */ false, Perspective::IS_CLIENT,
                          server_id_.is_https(), supported_versions_),
@@ -221,6 +292,7 @@ void QuicClient::StartConnect() {
   }
   session_->Initialize();
   session_->CryptoConnect();
+  connected_or_attempting_connect_ = true;
 }
 
 bool QuicClient::EncryptionBeingEstablished() {
@@ -234,6 +306,8 @@ void QuicClient::Disconnect() {
   if (connected()) {
     session()->connection()->SendConnectionClose(QUIC_PEER_GOING_AWAY);
   }
+  STLDeleteElements(&data_to_resend_on_connect_);
+  STLDeleteElements(&data_sent_before_handshake_);
 
   CleanUpUDPSocket();
 
@@ -261,10 +335,33 @@ void QuicClient::SendRequest(const BalsaHeaders& headers,
     LOG(DFATAL) << "stream creation failed!";
     return;
   }
+  stream->set_visitor(this);
   stream->SendRequest(
       SpdyBalsaUtils::RequestHeadersToSpdyHeaders(headers, stream->version()),
       body, fin);
-  stream->set_visitor(this);
+  if (FLAGS_enable_quic_stateless_reject_support) {
+    // Record this in case we need to resend.
+    auto new_headers = new BalsaHeaders;
+    new_headers->CopyFrom(headers);
+    auto data_to_resend =
+        new ClientQuicDataToResend(new_headers, body, fin, this);
+    MaybeAddQuicDataToResend(data_to_resend);
+  }
+}
+
+void QuicClient::MaybeAddQuicDataToResend(QuicDataToResend* data_to_resend) {
+  DCHECK(FLAGS_enable_quic_stateless_reject_support);
+  if (session_->IsCryptoHandshakeConfirmed()) {
+    // The handshake is confirmed.  No need to continue saving requests to
+    // resend.
+    STLDeleteElements(&data_sent_before_handshake_);
+    delete data_to_resend;
+    return;
+  }
+
+  // The handshake is not confirmed.  Push the data onto the queue of data to
+  // resend if statelessly rejected.
+  data_sent_before_handshake_.push_back(data_to_resend);
 }
 
 void QuicClient::SendRequestAndWaitForResponse(
@@ -313,6 +410,16 @@ bool QuicClient::WaitForEvents() {
   DCHECK(connected());
 
   epoll_server_->WaitForEventsAndExecuteCallbacks();
+
+  DCHECK(session_ != nullptr);
+  if (!connected() &&
+      session_->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
+    DCHECK(FLAGS_enable_quic_stateless_reject_support);
+    DVLOG(1) << "Detected stateless reject while waiting for events.  "
+             << "Attempting to reconnect.";
+    Connect();
+  }
+
   return session_->num_active_requests() != 0;
 }
 
@@ -358,6 +465,7 @@ void QuicClient::OnEvent(int fd, EpollEvent* event) {
 }
 
 void QuicClient::OnClose(QuicDataStream* stream) {
+  DCHECK(stream != nullptr);
   QuicSpdyClientStream* client_stream =
       static_cast<QuicSpdyClientStream*>(stream);
   BalsaHeaders headers;
@@ -401,7 +509,46 @@ const string& QuicClient::latest_response_body() const {
   return latest_response_body_;
 }
 
-QuicConnectionId QuicClient::GenerateConnectionId() {
+int QuicClient::GetNumSentClientHellos() {
+  // If we are not actively attempting to connect, the session object
+  // corresponds to the previous connection and should not be used.
+  const int current_session_hellos = !connected_or_attempting_connect_
+                                         ? 0
+                                         : session_->GetNumSentClientHellos();
+  return num_sent_client_hellos_ + current_session_hellos;
+}
+
+QuicErrorCode QuicClient::connection_error() const {
+  // Return the high-level error if there was one.  Otherwise, return the
+  // connection error from the last session.
+  if (connection_error_ != QUIC_NO_ERROR) {
+    return connection_error_;
+  }
+  if (session_.get() == nullptr) {
+    return QUIC_NO_ERROR;
+  }
+  return session_->error();
+}
+
+QuicConnectionId QuicClient::GetNextConnectionId() {
+  QuicConnectionId server_designated_id = GetNextServerDesignatedConnectionId();
+  return server_designated_id ? server_designated_id
+                              : GenerateNewConnectionId();
+}
+
+QuicConnectionId QuicClient::GetNextServerDesignatedConnectionId() {
+  QuicCryptoClientConfig::CachedState* cached =
+      crypto_config_.LookupOrCreate(server_id_);
+  // If the cached state indicates that we should use a server-designated
+  // connection ID, then return that connection ID.
+  CHECK(cached != nullptr) << "QuicClientCryptoConfig::LookupOrCreate returned "
+                           << "unexpected nullptr.";
+  return cached->has_server_designated_connection_id()
+             ? cached->GetNextServerDesignatedConnectionId()
+             : 0;
+}
+
+QuicConnectionId QuicClient::GenerateNewConnectionId() {
   return QuicRandom::GetInstance()->RandUint64();
 }
 

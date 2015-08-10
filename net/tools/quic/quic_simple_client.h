@@ -52,6 +52,36 @@ class QuicSimpleClient : public QuicDataStream::Visitor,
                                     const std::string& response_body) = 0;
   };
 
+  // The client uses these objects to keep track of any data to resend upon
+  // receipt of a stateless reject.  Recall that the client API allows callers
+  // to optimistically send data to the server prior to handshake-confirmation.
+  // If the client subsequently receives a stateless reject, it must tear down
+  // its existing session, create a new session, and resend all previously sent
+  // data.  It uses these objects to keep track of all the sent data, and to
+  // resend the data upon a subsequent connection.
+  class QuicDataToResend {
+   public:
+    // Takes ownership of |headers|.  |headers| may be null, since it's possible
+    // to send data without headers.
+    QuicDataToResend(HttpRequestInfo* headers,
+                     base::StringPiece body,
+                     bool fin);
+
+    virtual ~QuicDataToResend();
+
+    // Must be overridden by specific classes with the actual method for
+    // re-sending data.
+    virtual void Resend() = 0;
+
+   protected:
+    HttpRequestInfo* headers_;
+    base::StringPiece body_;
+    bool fin_;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(QuicDataToResend);
+  };
+
   // Create a quic client, which will have events managed by an externally owned
   // EpollServer.
   QuicSimpleClient(IPEndPoint server_address,
@@ -127,6 +157,11 @@ class QuicSimpleClient : public QuicDataStream::Visitor,
   // QuicDataStream::Visitor
   void OnClose(QuicDataStream* stream) override;
 
+  // If the crypto handshake has not yet been confirmed, adds the data to the
+  // queue of data to resend if the client receives a stateless reject.
+  // Otherwise, deletes the data.  Takes ownerership of |data_to_resend|.
+  void MaybeAddQuicDataToResend(QuicDataToResend* data_to_resend);
+
   QuicClientSession* session() { return session_.get(); }
 
   bool connected() const;
@@ -193,8 +228,38 @@ class QuicSimpleClient : public QuicDataStream::Visitor,
     initial_max_packet_length_ = initial_max_packet_length;
   }
 
+  int num_stateless_rejects_received() const {
+    return num_stateless_rejects_received_;
+  }
+
+  // The number of client hellos sent, taking stateless rejects into
+  // account.  In the case of a stateless reject, the initial
+  // connection object may be torn down and a new one created.  The
+  // user cannot rely upon the latest connection object to get the
+  // total number of client hellos sent, and should use this function
+  // instead.
+  int GetNumSentClientHellos();
+
+  // Returns any errors that occurred at the connection-level (as
+  // opposed to the session-level).  When a stateless reject occurs,
+  // the error of the last session may not reflect the overall state
+  // of the connection.
+  QuicErrorCode connection_error() const;
+
  protected:
-  virtual QuicConnectionId GenerateConnectionId();
+  // Generates the next ConnectionId for |server_id_|.  By default, if the
+  // cached server config contains a server-designated ID, that ID will be
+  // returned.  Otherwise, the next random ID will be returned.
+  QuicConnectionId GetNextConnectionId();
+
+  // Returns the next server-designated ConnectionId from the cached config for
+  // |server_id_|, if it exists.  Otherwise, returns 0.
+  QuicConnectionId GetNextServerDesignatedConnectionId();
+
+  // Generates a new, random connection ID (as opposed to a server-designated
+  // connection ID).
+  virtual QuicConnectionId GenerateNewConnectionId();
+
   virtual QuicConnectionHelper* CreateQuicConnectionHelper();
   virtual QuicPacketWriter* CreateQuicPacketWriter();
 
@@ -217,6 +282,29 @@ class QuicSimpleClient : public QuicDataStream::Visitor,
 
    private:
     QuicPacketWriter* writer_;
+  };
+
+  // Specific QuicClient class for storing data to resend.
+  class ClientQuicDataToResend : public QuicDataToResend {
+   public:
+    // Takes ownership of |headers|.
+    ClientQuicDataToResend(HttpRequestInfo* headers,
+                           base::StringPiece body,
+                           bool fin,
+                           QuicSimpleClient* client)
+        : QuicDataToResend(headers, body, fin), client_(client) {
+      DCHECK(headers);
+      DCHECK(client);
+    }
+
+    ~ClientQuicDataToResend() override {}
+
+    void Resend() override;
+
+   private:
+    QuicSimpleClient* client_;
+
+    DISALLOW_COPY_AND_ASSIGN(ClientQuicDataToResend);
   };
 
   // Used during initialization: creates the UDP socket FD, sets socket options,
@@ -297,6 +385,34 @@ class QuicSimpleClient : public QuicDataStream::Visitor,
   // The initial value of maximum packet size of the connection.  If set to
   // zero, the default is used.
   QuicByteCount initial_max_packet_length_;
+
+  // The number of stateless rejects received during the current/latest
+  // connection.
+  // TODO(jokulik): Consider some consistent naming scheme (or other) for member
+  // variables that are kept per-request, per-connection, and over the client's
+  // lifetime.
+  int num_stateless_rejects_received_;
+
+  // The number of hellos sent during the current/latest connection.
+  int num_sent_client_hellos_;
+
+  // Used to store any errors that occurred with the overall connection (as
+  // opposed to that associated with the last session object).
+  QuicErrorCode connection_error_;
+
+  // True when the client is attempting to connect or re-connect the session (in
+  // the case of a stateless reject).  Set to false  between a call to
+  // Disconnect() and the subsequent call to StartConnect().  When
+  // connected_or_attempting_connect_ is false, the session object corresponds
+  // to the previous client-level connection.
+  bool connected_or_attempting_connect_;
+
+  // Keeps track of any data sent before the handshake.
+  std::vector<QuicDataToResend*> data_sent_before_handshake_;
+
+  // Once the client receives a stateless reject, keeps track of any data that
+  // must be resent upon a subsequent successful connection.
+  std::vector<QuicDataToResend*> data_to_resend_on_connect_;
 
   // The log used for the sockets.
   NetLog net_log_;
