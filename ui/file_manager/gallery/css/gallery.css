@@ -8,6 +8,10 @@ body {
   margin: 0;
 }
 
+button {
+  cursor: pointer;
+}
+
 input:focus, button:focus {
   outline: 1px solid rgb(77, 144, 254);
 }
