@@ -2479,8 +2479,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframePostMessage) {
 
 // Check that postMessage can be sent from a subframe on a cross-process opener
 // tab, and that its event.source points to a valid proxy.
+// Very flaky on windows (crbug.com/518729).
+#if defined(OS_WIN)
+#define MAYBE_PostMessageWithSubframeOnOpenerChain \
+    DISABLED_PostMessageWithSubframeOnOpenerChain
+#else
+#define MAYBE_PostMessageWithSubframeOnOpenerChain \
+    PostMessageWithSubframeOnOpenerChain
+#endif  // defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       PostMessageWithSubframeOnOpenerChain) {
+                       MAYBE_PostMessageWithSubframeOnOpenerChain) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_post_message_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
