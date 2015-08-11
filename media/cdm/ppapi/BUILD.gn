@@ -55,7 +55,7 @@ process_version("clearkeycdmadapter_resources") {
     "//media/clearkeycdmadapter.ver",
     "external_clear_key/BRANDING",
   ]
-  output =  "$target_gen_dir/clearkeycdmadapter_version.rc"
+  output = "$target_gen_dir/clearkeycdmadapter_version.rc"
 }
 
 cdm_adapter("clearkeycdmadapter") {
@@ -66,11 +66,4 @@ cdm_adapter("clearkeycdmadapter") {
     ":clearkeycdmadapter_resources",
     "//ppapi/cpp",
   ]
-
-  if (is_posix && !is_mac && enable_pepper_cdms) {
-    # Because clearkeycdm has type 'loadable_module', we must explicitly
-    # specify this dependency.
-    ldflags = [ rebase_path("$root_out_dir/libclearkeycdm.so", root_build_dir) ]
-    libs = [ "rt" ]
-  }
 }
