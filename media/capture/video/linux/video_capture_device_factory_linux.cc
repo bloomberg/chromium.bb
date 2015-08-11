@@ -16,7 +16,6 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/scoped_file.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/strings/stringprintf.h"
 #if defined(OS_CHROMEOS)
 #include "media/capture/video/linux/video_capture_device_chromeos.h"
 #endif
@@ -185,7 +184,7 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceNames(
          !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT_MPLANE)) &&
         HasUsableFormats(fd.get(), cap.capabilities)) {
       device_names->push_back(VideoCaptureDevice::Name(
-          base::StringPrintf("%s", cap.card), unique_id,
+          reinterpret_cast<char*>(cap.card), unique_id,
           (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE_MPLANE)
               ? VideoCaptureDevice::Name::V4L2_MULTI_PLANE
               : VideoCaptureDevice::Name::V4L2_SINGLE_PLANE));
