@@ -1059,7 +1059,7 @@ TEST_F(NativeBackendGnomeTest, UpdateSameLogin) {
   if (mock_keyring_items.size() > 0)
     CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome-42");
 
-  // Attempt to update the same login without changin anything.
+  // Attempt to update the same login without changing anything.
   PasswordStoreChangeList changes;
   PasswordStoreChangeList expected_changes;
   BrowserThread::PostTaskAndReplyWithResult(

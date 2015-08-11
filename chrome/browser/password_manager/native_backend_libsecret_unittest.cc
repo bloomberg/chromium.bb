@@ -789,7 +789,7 @@ TEST_F(NativeBackendLibsecretTest, UpdateSameLogin) {
                         "chrome-42");
   }
 
-  // Attempt to update the same login without changin anything.
+  // Attempt to update the same login without changing anything.
   PasswordStoreChangeList changes;
   EXPECT_TRUE(backend.UpdateLogin(form_google_, &changes));
   CheckPasswordChanges(PasswordStoreChangeList(), changes);

@@ -334,19 +334,17 @@ bool NativeBackendLibsecret::UpdateLogin(
     return false;
   if (forms.empty())
     return true;
-
-  bool already_exists = false;
-  for (const PasswordForm* keychain_form : forms) {
-    password_manager::PasswordStoreChangeList temp_changes;
-    if (already_exists || *keychain_form != form) {
-      if (!RemoveLogin(*keychain_form, &temp_changes))
-        return false;
-    } else {
-      already_exists = true;
-    }
-  }
-  if (already_exists)
+  if (forms.size() == 1 && *forms.front() == form)
     return true;
+
+  password_manager::PasswordStoreChangeList temp_changes;
+  for (const PasswordForm* keychain_form : forms) {
+    // Remove all the obsolete forms. Note that RemoveLogin can remove any form
+    // matching the unique key. Thus, it's important to call it the right number
+    // of times.
+    if (!RemoveLogin(*keychain_form, &temp_changes))
+      return false;
+  }
 
   if (RawAddLogin(form)) {
     password_manager::PasswordStoreChange change(
