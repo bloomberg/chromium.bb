@@ -229,8 +229,7 @@ cr.define('extensions', function() {
       this.querySelector('#no-errors-span').hidden = true;
       this.errors_.push(error);
       var focusRow = new ExtensionError(error, this.listContents_);
-      this.listContents_.appendChild(document.createElement('li')).
-          appendChild(focusRow);
+      this.listContents_.appendChild(focusRow);
       this.focusGrid_.addRow(focusRow);
     },
 
