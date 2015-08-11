@@ -555,21 +555,22 @@ bool PositionAlgorithm<Strategy>::atEndOfTree() const
 template <typename Strategy>
 int PositionAlgorithm<Strategy>::renderedOffset() const
 {
+    const int offset = computeEditingOffset();
     if (!anchorNode()->isTextNode())
-        return m_offset;
+        return offset;
 
     if (!anchorNode()->layoutObject())
-        return m_offset;
+        return offset;
 
     int result = 0;
     LayoutText* textLayoutObject = toLayoutText(anchorNode()->layoutObject());
     for (InlineTextBox *box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
         int start = box->start();
         int end = box->start() + box->len();
-        if (m_offset < start)
+        if (offset < start)
             return result;
-        if (m_offset <= end) {
-            result += m_offset - start;
+        if (offset <= end) {
+            result += offset - start;
             return result;
         }
         result += box->len();

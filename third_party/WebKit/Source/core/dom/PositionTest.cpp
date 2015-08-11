@@ -113,6 +113,18 @@ TEST_F(PositionTest, rendersInDifferentPositionAfterAnchor)
     EXPECT_FALSE(Position::lastPositionInNode(sample.get()).rendersInDifferentPosition(Position(sample.get(), 1)));
 }
 
+TEST_F(PositionTest, renderedOffset)
+{
+    const char* bodyContent = "<div contenteditable><span id='sample1'>1</span><span id='sample2'>22</span></div>";
+    setBodyContent(bodyContent);
+    updateLayoutAndStyleForPainting();
+    RefPtrWillBeRawPtr<Element> sample1 = document().getElementById("sample1");
+    RefPtrWillBeRawPtr<Element> sample2 = document().getElementById("sample2");
+
+    EXPECT_FALSE(Position::afterNode(sample1->firstChild()).rendersInDifferentPosition(Position(sample2->firstChild(), 0)));
+    EXPECT_FALSE(Position::lastPositionInNode(sample1->firstChild()).rendersInDifferentPosition(Position(sample2->firstChild(), 0)));
+}
+
 TEST_F(PositionTest, ToPositionInComposedTreeWithActiveInsertionPoint)
 {
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";
