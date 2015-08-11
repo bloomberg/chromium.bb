@@ -21,7 +21,7 @@ namespace {
 
 const char kPopularSitesFilename[] = "ntp-popular-sites.json";
 const char kPopularSitesURL[] =
-    "https://www.gstatic.com/chrome/ntp/suggested_sites_IN_0.json";
+    "https://www.gstatic.com/chrome/ntp/suggested_sites_IN_1.json";
 
 base::FilePath GetPopularSitesPath() {
   base::FilePath dir;
@@ -55,7 +55,9 @@ scoped_ptr<std::vector<PopularSites::Site>> ReadAndParseJsonFile(
     std::string url;
     if (!item->GetString("title", &title) || !item->GetString("url", &url))
       continue;
-    sites->push_back(PopularSites::Site(title, GURL(url)));
+    std::string favicon_url;
+    item->GetString("favicon_url", &favicon_url);
+    sites->push_back(PopularSites::Site(title, GURL(url), GURL(favicon_url)));
   }
 
   return sites.Pass();
@@ -63,8 +65,10 @@ scoped_ptr<std::vector<PopularSites::Site>> ReadAndParseJsonFile(
 
 }  // namespace
 
-PopularSites::Site::Site(const base::string16& title, const GURL& url)
-    : title(title), url(url) {}
+PopularSites::Site::Site(const base::string16& title,
+                         const GURL& url,
+                         const GURL& favicon_url)
+    : title(title), url(url), favicon_url(favicon_url) {}
 
 PopularSites::PopularSites(net::URLRequestContextGetter* request_context,
                            const FinishedCallback& callback)

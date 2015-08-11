@@ -24,10 +24,22 @@ public class MostVisitedSites {
          * Parameters guaranteed to be non-null.
          *
          * @param titles Array of most visited url page titles.
-         * @param urls Array of most visited urls.
+         * @param urls Array of most visited URLs, including popular URLs if
+         *            available and necessary (i.e. there aren't enough most
+         *            visited URLs).
          */
         @CalledByNative("MostVisitedURLsObserver")
         public void onMostVisitedURLsAvailable(String[] titles, String[] urls);
+
+        /**
+         * This is called when the list of popular URLs is initially available or updated.
+         * Parameters guaranteed to be non-null.
+         *
+         * @param urls Array of popular URLs.
+         * @param faviconUrls Array of URLs for the corresponding favicons (if known).
+         */
+        @CalledByNative("MostVisitedURLsObserver")
+        public void onPopularURLsAvailable(String[] urls, String[] faviconUrls);
     }
 
     /**
@@ -77,6 +89,13 @@ public class MostVisitedSites {
                 // Don't notify observer if we've already been destroyed.
                 if (mNativeMostVisitedSites != 0) {
                     observer.onMostVisitedURLsAvailable(titles, urls);
+                }
+            }
+            @Override
+            public void onPopularURLsAvailable(String[] urls, String[] faviconUrls) {
+                // Don't notify observer if we've already been destroyed.
+                if (mNativeMostVisitedSites != 0) {
+                    observer.onPopularURLsAvailable(urls, faviconUrls);
                 }
             }
         };

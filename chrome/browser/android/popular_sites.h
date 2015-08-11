@@ -30,10 +30,11 @@ class FileDownloader;
 class PopularSites {
  public:
   struct Site {
-    Site(const base::string16& title, const GURL& url);
+    Site(const base::string16& title, const GURL& url, const GURL& favicon_url);
 
     base::string16 title;
     GURL url;
+    GURL favicon_url;
   };
 
   using FinishedCallback = base::Callback<void(bool /* success */)>;

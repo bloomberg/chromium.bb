@@ -9,6 +9,7 @@ import android.graphics.Color;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * This is a helper class to use favicon_service.cc's functionality.
@@ -39,6 +40,19 @@ public class FaviconHelper {
          */
         @CalledByNative("FaviconImageCallback")
         public void onFaviconAvailable(Bitmap image, String iconUrl);
+    }
+
+    /**
+     * Callback interface for the result of the ensureFaviconIsAvailable method.
+     */
+    public interface FaviconAvailabilityCallback {
+        /**
+         * This method will be called when the availability of the favicon has been checked.
+         * @param newlyAvailable true if the favicon was downloaded and is now available,
+         *            false if the favicon was already there or the download failed.
+         */
+        @CalledByNative("FaviconAvailabilityCallback")
+        public void onFaviconAvailabilityChecked(boolean newlyAvailable);
     }
 
     /**
@@ -124,6 +138,13 @@ public class FaviconHelper {
         return nativeGetSyncedFaviconImageForURL(mNativeFaviconHelper, profile, pageUrl);
     }
 
+    public void ensureFaviconIsAvailable(
+            Profile profile, WebContents webContents, String pageUrl, String faviconUrl,
+            FaviconAvailabilityCallback callback) {
+        nativeEnsureFaviconIsAvailable(
+                mNativeFaviconHelper, profile, webContents, pageUrl, faviconUrl, callback);
+    }
+
     private static native long nativeInit();
     private static native void nativeDestroy(long nativeFaviconHelper);
     private static native boolean nativeGetLocalFaviconImageForURL(long nativeFaviconHelper,
@@ -135,4 +156,7 @@ public class FaviconHelper {
     private static native Bitmap nativeGetSyncedFaviconImageForURL(long nativeFaviconHelper,
             Profile profile, String pageUrl);
     private static native int nativeGetDominantColorForBitmap(Bitmap image);
+    private static native void nativeEnsureFaviconIsAvailable(
+            long nativeFaviconHelper, Profile profile, WebContents webContents, String pageUrl,
+            String faviconUrl, FaviconAvailabilityCallback callback);
 }

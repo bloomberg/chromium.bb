@@ -6,6 +6,8 @@
 
 #include <jni.h>
 
+#include <vector>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -18,15 +20,19 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/favicon/core/favicon_service.h"
+#include "components/favicon_base/favicon_util.h"
+#include "components/favicon_base/select_favicon_frames.h"
 #include "components/sync_driver/open_tabs_ui_delegate.h"
+#include "content/public/browser/web_contents.h"
 #include "jni/FaviconHelper_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/favicon_size.h"
+#include "ui/gfx/image/image_skia.h"
 
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
@@ -86,6 +92,53 @@ void OnFaviconRawBitmapResultAvailable(
                                                j_favicon_image_callback->obj(),
                                                j_favicon_bitmap.obj(),
                                                j_icon_url.obj());
+}
+
+void OnFaviconDownloaded(
+    const ScopedJavaGlobalRef<jobject>& j_availability_callback,
+    Profile* profile,
+    const GURL& page_url,
+    int download_request_id,
+    int http_status_code,
+    const GURL& image_url,
+    const std::vector<SkBitmap>& bitmaps,
+    const std::vector<gfx::Size>& original_sizes) {
+  bool success = !bitmaps.empty();
+  if (success) {
+    gfx::Image image = gfx::Image(CreateFaviconImageSkia(bitmaps,
+                                                         original_sizes,
+                                                         gfx::kFaviconSize,
+                                                         nullptr));
+    favicon_base::SetFaviconColorSpace(&image);
+    favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
+        profile, ServiceAccessType::IMPLICIT_ACCESS);
+    service->SetFavicons(page_url, image_url, favicon_base::FAVICON, image);
+  }
+
+  JNIEnv* env = AttachCurrentThread();
+  Java_FaviconAvailabilityCallback_onFaviconAvailabilityChecked(
+      env, j_availability_callback.obj(), success);
+}
+
+void OnFaviconImageResultAvailable(
+    const ScopedJavaGlobalRef<jobject>& j_availability_callback,
+    Profile* profile,
+    content::WebContents* web_contents,
+    const GURL& page_url,
+    const GURL& favicon_url,
+    const favicon_base::FaviconImageResult& result) {
+  // If there already is a favicon, return immediately.
+  if (!result.image.IsEmpty()) {
+    JNIEnv* env = AttachCurrentThread();
+    Java_FaviconAvailabilityCallback_onFaviconAvailabilityChecked(
+        env, j_availability_callback.obj(), false);
+    return;
+  }
+
+  web_contents->DownloadImage(favicon_url, true, 0, false,
+                              base::Bind(OnFaviconDownloaded,
+                                         j_availability_callback,
+                                         profile, page_url));
 }
 
 }  // namespace
@@ -210,6 +263,34 @@ ScopedJavaLocalRef<jobject> FaviconHelper::GetSyncedFaviconImageForURL(
   return gfx::ConvertToJavaBitmap(&favicon_bitmap);
 }
 
+void FaviconHelper::EnsureFaviconIsAvailable(
+    JNIEnv* env,
+    jobject obj,
+    jobject j_profile,
+    jobject j_web_contents,
+    jstring j_page_url,
+    jstring j_favicon_url,
+    jobject j_availability_callback) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  DCHECK(profile);
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  DCHECK(web_contents);
+  GURL page_url(ConvertJavaStringToUTF8(env, j_page_url));
+  GURL favicon_url(ConvertJavaStringToUTF8(env, j_favicon_url));
+
+  // TODO(treib): Optimize this by creating a FaviconService::HasFavicon method
+  // so that we don't have to actually get the image.
+  ScopedJavaGlobalRef<jobject> j_scoped_callback(env, j_availability_callback);
+  favicon_base::FaviconImageCallback callback_runner =
+      base::Bind(&OnFaviconImageResultAvailable, j_scoped_callback,
+                 profile, web_contents, page_url, favicon_url);
+  favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
+      profile, ServiceAccessType::IMPLICIT_ACCESS);
+  service->GetFaviconImage(favicon_url, callback_runner,
+                           cancelable_task_tracker_.get());
+}
+
 FaviconHelper::~FaviconHelper() {}
 
 static jint GetDominantColorForBitmap(JNIEnv* env,
@@ -218,9 +299,9 @@ static jint GetDominantColorForBitmap(JNIEnv* env,
   if (!bitmap)
     return 0;
 
-    gfx::JavaBitmap bitmap_lock(bitmap);
-    SkBitmap skbitmap = gfx::CreateSkBitmapFromJavaBitmap(bitmap_lock);
-    return color_utils::CalculateKMeanColorOfBitmap(skbitmap);
+  gfx::JavaBitmap bitmap_lock(bitmap);
+  SkBitmap skbitmap = gfx::CreateSkBitmapFromJavaBitmap(bitmap_lock);
+  return color_utils::CalculateKMeanColorOfBitmap(skbitmap);
 }
 
 // static

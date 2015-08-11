@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareT
 import org.chromium.chrome.browser.document.DocumentMetricIds;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
+import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
@@ -341,11 +342,19 @@ public class NewTabPage
         }
 
         @Override
+        public void ensureFaviconIsAvailable(String pageUrl, String faviconUrl,
+                FaviconAvailabilityCallback callback) {
+            if (mIsDestroyed) return;
+            if (mFaviconHelper == null) mFaviconHelper = new FaviconHelper();
+            mFaviconHelper.ensureFaviconIsAvailable(mProfile, mTab.getWebContents(), pageUrl,
+                    faviconUrl, callback);
+        }
+
+        @Override
         public void openLogoLink() {
             if (mIsDestroyed) return;
             if (mOnLogoClickUrl == null) return;
-            mTab.loadUrl(
-                    new LoadUrlParams(mOnLogoClickUrl, PageTransition.LINK));
+            mTab.loadUrl(new LoadUrlParams(mOnLogoClickUrl, PageTransition.LINK));
         }
 
         @Override

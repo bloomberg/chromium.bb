@@ -34,6 +34,13 @@ class FaviconHelper {
       jobject obj,
       jobject jprofile,
       jstring j_page_url);
+  void EnsureFaviconIsAvailable(JNIEnv* env,
+                                jobject obj,
+                                jobject j_profile,
+                                jobject j_web_contents,
+                                jstring j_page_url,
+                                jstring j_favicon_url,
+                                jobject j_availability_callback);
   static bool RegisterFaviconHelper(JNIEnv* env);
 
  private:

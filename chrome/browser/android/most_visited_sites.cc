@@ -452,8 +452,21 @@ void MostVisitedSites::OnPopularSitesAvailable(bool success) {
     return;
   }
 
-  if (!observer_.is_null())
-    QueryMostVisitedURLs();
+  if (observer_.is_null())
+    return;
+
+  std::vector<std::string> urls;
+  std::vector<std::string> favicon_urls;
+  for (const PopularSites::Site& popular_site : popular_sites_->sites()) {
+    urls.push_back(popular_site.url.spec());
+    favicon_urls.push_back(popular_site.favicon_url.spec());
+  }
+  JNIEnv* env = AttachCurrentThread();
+  Java_MostVisitedURLsObserver_onPopularURLsAvailable(
+      env, observer_.obj(), ToJavaArrayOfStrings(env, urls).obj(),
+      ToJavaArrayOfStrings(env, favicon_urls).obj());
+
+  QueryMostVisitedURLs();
 }
 
 void MostVisitedSites::RecordUMAMetrics() {

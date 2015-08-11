@@ -38,6 +38,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
@@ -186,6 +187,16 @@ public class NewTabPageView extends FrameLayout
          * @param callback The callback to be notified when the icon is available.
          */
         void getLargeIconForUrl(String url, int size, LargeIconCallback callback);
+
+        /**
+         * Checks if a favicon with the given faviconUrl is available. If not,
+         * downloads it and stores it as a favicon for the given pageUrl.
+         * @param pageUrl The URL of the site whose icon is being requested.
+         * @param faviconUrl The URL of the favicon.
+         * @param callback The callback to be notified when the favicon has been checked.
+         */
+        void ensureFaviconIsAvailable(String pageUrl, String faviconUrl,
+                FaviconAvailabilityCallback callback);
 
         /**
          * Navigates to a URL chosen by the search provider when the user clicks on the logo.
@@ -766,6 +777,25 @@ public class NewTabPageView extends FrameLayout
         mSnapshotMostVisitedChanged = true;
     }
 
+    @Override
+    public void onPopularURLsAvailable(String[] urls, String[] faviconUrls) {
+        for (int i = 0; i < urls.length; i++) {
+            final String url = urls[i];
+            final String faviconUrl = faviconUrls[i];
+            if (faviconUrl.isEmpty()) continue;
+
+            FaviconAvailabilityCallback callback = new FaviconAvailabilityCallback() {
+                @Override
+                public void onFaviconAvailabilityChecked(boolean newlyAvailable) {
+                    if (newlyAvailable) {
+                        mMostVisitedDesign.onFaviconUpdated(url);
+                    }
+                }
+            };
+            mManager.ensureFaviconIsAvailable(url, faviconUrl, callback);
+        }
+    }
+
     /**
      * Shows the most visited placeholder ("Nothing to see here") if there are no most visited
      * items and there is no search provider logo.
@@ -805,6 +835,7 @@ public class NewTabPageView extends FrameLayout
         void setSearchProviderHasLogo(View mostVisitedLayout, boolean hasLogo);
         View createMostVisitedItemView(LayoutInflater inflater, String url, String title,
                 String displayTitle, int index, boolean isInitialLoad);
+        void onFaviconUpdated(String url);
         void onLoadingComplete();
     }
 
@@ -886,6 +917,28 @@ public class NewTabPageView extends FrameLayout
         }
 
         @Override
+        public void onFaviconUpdated(final String url) {
+            // Find a matching most visited item.
+            for (MostVisitedItem item : mMostVisitedItems) {
+                if (!item.getUrl().equals(url)) continue;
+
+                final MostVisitedItemView view = (MostVisitedItemView) item.getView();
+                FaviconImageCallback faviconCallback = new FaviconImageCallback() {
+                    @Override
+                    public void onFaviconAvailable(Bitmap image, String iconUrl) {
+                        if (image == null) {
+                            image = mFaviconGenerator.generateIconForUrl(url);
+                        }
+                        view.setFavicon(image);
+                        mSnapshotMostVisitedChanged = true;
+                    }
+                };
+                mManager.getLocalFaviconImageForURL(url, mDesiredFaviconSize, faviconCallback);
+                break;
+            }
+        }
+
+        @Override
         public void onLoadingComplete() {}
     }
 
@@ -948,6 +1001,48 @@ public class NewTabPageView extends FrameLayout
             mostVisitedLayout.setPadding(0, paddingTop, 0, 0);
         }
 
+        class LargeIconCallbackImpl implements LargeIconCallback {
+            private String mUrl;
+            private IconMostVisitedItemView mView;
+            private boolean mIsInitialLoad;
+
+            public LargeIconCallbackImpl(String url, IconMostVisitedItemView view,
+                    boolean isInitialLoad) {
+                mUrl = url;
+                mView = view;
+                mIsInitialLoad = isInitialLoad;
+            }
+
+            @Override
+            public void onLargeIconAvailable(Bitmap icon, int fallbackColor) {
+                if (icon == null) {
+                    mIconGenerator.setBackgroundColor(fallbackColor);
+                    icon = mIconGenerator.generateIconForUrl(mUrl);
+                    mView.setIcon(new BitmapDrawable(getResources(), icon));
+                    if (mIsInitialLoad) {
+                        if (fallbackColor == ICON_BACKGROUND_COLOR) {
+                            mNumGrayIcons++;
+                        } else {
+                            mNumColorIcons++;
+                        }
+                    }
+                } else {
+                    RoundedBitmapDrawable roundedIcon = RoundedBitmapDrawableFactory.create(
+                            getResources(), icon);
+                    int cornerRadius = Math.round(ICON_CORNER_RADIUS_DP
+                            * getResources().getDisplayMetrics().density * icon.getWidth()
+                            / mDesiredIconSize);
+                    roundedIcon.setCornerRadius(cornerRadius);
+                    roundedIcon.setAntiAlias(true);
+                    roundedIcon.setFilterBitmap(true);
+                    mView.setIcon(roundedIcon);
+                    if (mIsInitialLoad) mNumRealIcons++;
+                }
+                mSnapshotMostVisitedChanged = true;
+                if (mIsInitialLoad) loadTaskCompleted();
+            }
+        };
+
         @Override
         public View createMostVisitedItemView(LayoutInflater inflater, final String url,
                 String title, String displayTitle, int index, final boolean isInitialLoad) {
@@ -955,40 +1050,24 @@ public class NewTabPageView extends FrameLayout
                     R.layout.icon_most_visited_item, mMostVisitedLayout, false);
             view.setTitle(displayTitle);
 
-            LargeIconCallback iconCallback = new LargeIconCallback() {
-                @Override
-                public void onLargeIconAvailable(Bitmap icon, int fallbackColor) {
-                    if (icon == null) {
-                        mIconGenerator.setBackgroundColor(fallbackColor);
-                        icon = mIconGenerator.generateIconForUrl(url);
-                        view.setIcon(new BitmapDrawable(getResources(), icon));
-                        if (isInitialLoad) {
-                            if (fallbackColor == ICON_BACKGROUND_COLOR) {
-                                mNumGrayIcons++;
-                            } else {
-                                mNumColorIcons++;
-                            }
-                        }
-                    } else {
-                        RoundedBitmapDrawable roundedIcon = RoundedBitmapDrawableFactory.create(
-                                getResources(), icon);
-                        int cornerRadius = Math.round(ICON_CORNER_RADIUS_DP
-                                * getResources().getDisplayMetrics().density * icon.getWidth()
-                                / mDesiredIconSize);
-                        roundedIcon.setCornerRadius(cornerRadius);
-                        roundedIcon.setAntiAlias(true);
-                        roundedIcon.setFilterBitmap(true);
-                        view.setIcon(roundedIcon);
-                        if (isInitialLoad) mNumRealIcons++;
-                    }
-                    mSnapshotMostVisitedChanged = true;
-                    if (isInitialLoad) loadTaskCompleted();
-                }
-            };
+            LargeIconCallback iconCallback = new LargeIconCallbackImpl(url, view, isInitialLoad);
             if (isInitialLoad) mPendingLoadTasks++;
             mManager.getLargeIconForUrl(url, mMinIconSize, iconCallback);
 
             return view;
+        }
+
+        @Override
+        public void onFaviconUpdated(final String url) {
+            // Find a matching most visited item.
+            for (MostVisitedItem item : mMostVisitedItems) {
+                if (!item.getUrl().equals(url)) continue;
+
+                final IconMostVisitedItemView view = (IconMostVisitedItemView) item.getView();
+                LargeIconCallback iconCallback = new LargeIconCallbackImpl(url, view, false);
+                mManager.getLargeIconForUrl(url, mMinIconSize, iconCallback);
+                break;
+            }
         }
 
         @Override
