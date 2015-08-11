@@ -45,6 +45,9 @@ struct MappedMemoryRegion {
   // "[heap]" and "[stack]" are used to represent the location of the process'
   // heap and stack, respectively.
   string path;
+
+  // The line from /proc/<pid>/maps that this struct represents.
+  string line;
 };
 
 // Parses /proc/<pid>/maps input data and stores in |regions|. Returns true

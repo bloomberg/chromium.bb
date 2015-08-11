@@ -4004,7 +4004,7 @@ void MinidumpLinuxMaps::Print() {
     BPLOG(ERROR) << "MinidumpLinuxMaps cannot print invalid data";
     return;
   }
-  std::cout << GetPathname() << std::endl;
+  std::cout << region_.line << std::endl;
 }
 
 //

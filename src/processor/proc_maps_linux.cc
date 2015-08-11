@@ -94,6 +94,7 @@ bool ParseProcMaps(const std::string& input,
     // Pushing then assigning saves us a string copy.
     regions.push_back(region);
     regions.back().path.assign(line + path_index);
+    regions.back().line.assign(line);
   }
 
   regions_out->swap(regions);
