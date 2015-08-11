@@ -85,6 +85,16 @@ public:
         return toInline()->lineBoxes();
     }
 
+    bool alwaysCreateLineBoxes() const
+    {
+        return toInline()->alwaysCreateLineBoxes();
+    }
+
+    InlineBox* firstLineBoxIncludingCulling() const
+    {
+        return toInline()->firstLineBoxIncludingCulling();
+    }
+
     LineLayoutBoxModel continuation() const
     {
         return LineLayoutBoxModel(toInline()->continuation());

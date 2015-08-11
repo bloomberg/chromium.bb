@@ -30,10 +30,9 @@
 #include "core/layout/line/LineBoxList.h"
 
 #include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutView.h"
 #include "core/layout/api/LineLayoutBox.h"
 #include "core/layout/api/LineLayoutBoxModel.h"
+#include "core/layout/api/LineLayoutInline.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/RootInlineBox.h"
@@ -237,8 +236,8 @@ void LineBoxList::dirtyLinesFromChangedChild(LineLayoutItem container, LineLayou
     if (!container.parent() || (container.isLayoutBlock() && (container.selfNeedsLayout() || !container.isLayoutBlockFlow())))
         return;
 
-    LayoutInline* inlineContainer = container.isLayoutInline() ? toLayoutInline(container) : 0;
-    InlineBox* firstBox = inlineContainer ? inlineContainer->firstLineBoxIncludingCulling() : firstLineBox();
+    LineLayoutInline inlineContainer = container.isLayoutInline() ? LineLayoutInline(container) : LineLayoutInline();
+    InlineBox* firstBox = inlineContainer ? inlineContainer.firstLineBoxIncludingCulling() : firstLineBox();
 
     // If we have no first line box, then just bail early.
     if (!firstBox) {
@@ -278,15 +277,15 @@ void LineBoxList::dirtyLinesFromChangedChild(LineLayoutItem container, LineLayou
             break;
     }
     if (!box) {
-        if (inlineContainer && !inlineContainer->alwaysCreateLineBoxes()) {
+        if (inlineContainer && !inlineContainer.alwaysCreateLineBoxes()) {
             // https://bugs.webkit.org/show_bug.cgi?id=60778
             // We may have just removed a <br> with no line box that was our first child. In this case
             // we won't find a previous sibling, but firstBox can be pointing to a following sibling.
             // This isn't good enough, since we won't locate the root line box that encloses the removed
             // <br>. We have to just over-invalidate a bit and go up to our parent.
-            if (!inlineContainer->ancestorLineBoxDirty()) {
-                inlineContainer->parent()->dirtyLinesFromChangedChild(inlineContainer);
-                inlineContainer->setAncestorLineBoxDirty(); // Mark the container to avoid dirtying the same lines again across multiple destroy() calls of the same subtree.
+            if (!inlineContainer.ancestorLineBoxDirty()) {
+                inlineContainer.parent().dirtyLinesFromChangedChild(inlineContainer);
+                inlineContainer.setAncestorLineBoxDirty(); // Mark the container to avoid dirtying the same lines again across multiple destroy() calls of the same subtree.
             }
             return;
         }
