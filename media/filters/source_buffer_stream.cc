@@ -381,11 +381,13 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
 
     track_buffer_.insert(track_buffer_.end(), deleted_buffers.begin(),
                          deleted_buffers.end());
-    DVLOG(3) << __FUNCTION__ << " Added " << deleted_buffers.size()
-             << " deleted buffers to track buffer. TB size is now "
+    DVLOG(3) << __FUNCTION__ << " " << GetStreamTypeName() << " Added "
+             << deleted_buffers.size()
+             << " buffers to track buffer. TB size is now "
              << track_buffer_.size();
   } else {
-    DVLOG(3) << __FUNCTION__ << " No deleted buffers for track buffer";
+    DVLOG(3) << __FUNCTION__ << " " << GetStreamTypeName()
+             << " No deleted buffers for track buffer";
   }
 
   // Prune any extra buffers in |track_buffer_| if new keyframes
@@ -920,6 +922,9 @@ void SourceBufferStream::PruneTrackBuffer(const DecodeTimestamp timestamp) {
          track_buffer_.back()->GetDecodeTimestamp() >= timestamp) {
     track_buffer_.pop_back();
   }
+  DVLOG(3) << __FUNCTION__ << " " << GetStreamTypeName()
+           << " Removed all buffers with DTS >= " << timestamp.InSecondsF()
+           << ". New track buffer size:" << track_buffer_.size();
 }
 
 void SourceBufferStream::MergeWithAdjacentRangeIfNecessary(
