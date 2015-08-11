@@ -608,6 +608,7 @@ public:
     virtual bool canAccelerate2dCanvas() { return false; }
 
     virtual bool isThreadedCompositingEnabled() { return false; }
+    virtual bool isThreadedAnimationEnabled() { return true; }
 
     virtual WebCompositorSupport* compositorSupport() { return nullptr; }
 

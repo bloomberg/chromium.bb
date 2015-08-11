@@ -479,6 +479,11 @@ bool Internals::isCompositedAnimation(Animation* animation)
     return animation->hasActiveAnimationsOnCompositor();
 }
 
+void Internals::disableCompositedAnimation(Animation* animation)
+{
+    animation->disableCompositedAnimationForTesting();
+}
+
 void Internals::advanceTimeForImage(Element* image, double deltaTimeInSeconds, ExceptionState& exceptionState)
 {
     ASSERT(image);

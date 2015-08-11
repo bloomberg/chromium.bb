@@ -62,18 +62,12 @@ public:
     virtual void attachCompositedLayers(const Element&, const Animation&);
 
     virtual bool getAnimatedBoundingBox(FloatBox&, const EffectModel&, double minValue, double maxValue) const;
+
 protected:
-    CompositorAnimations() { }
+    CompositorAnimations();
 
 private:
-    static CompositorAnimations* instance(CompositorAnimations* newInstance)
-    {
-        static CompositorAnimations* instance = new CompositorAnimations();
-        if (newInstance) {
-            instance = newInstance;
-        }
-        return instance;
-    }
+    static CompositorAnimations* instance(CompositorAnimations* newInstance);
 };
 
 } // namespace blink

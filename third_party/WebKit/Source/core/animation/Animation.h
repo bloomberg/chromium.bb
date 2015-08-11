@@ -144,6 +144,8 @@ public:
     // Pausing via this method is not reflected in the value returned by
     // paused() and must never overlap with pausing via pause().
     void pauseForTesting(double pauseTime);
+    void disableCompositedAnimationForTesting();
+
     // This should only be used for CSS
     void unpause();
 
@@ -237,6 +239,7 @@ private:
     bool m_paused;
     bool m_held;
     bool m_isPausedForTesting;
+    bool m_isCompositedAnimationDisabledForTesting;
 
     // This indicates timing information relevant to the animation's effect
     // has changed by means other than the ordinary progression of time

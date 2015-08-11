@@ -139,6 +139,19 @@ bool hasIncompatibleAnimations(const Element& targetElement, const Animation& an
 
 }
 
+CompositorAnimations::CompositorAnimations()
+{
+}
+
+CompositorAnimations* CompositorAnimations::instance(CompositorAnimations* newInstance)
+{
+    static CompositorAnimations* instance = new CompositorAnimations();
+    if (newInstance) {
+        instance = newInstance;
+    }
+    return instance;
+}
+
 bool CompositorAnimations::isCompositableProperty(CSSPropertyID property)
 {
     for (CSSPropertyID id : compositableProperties) {
@@ -311,6 +324,8 @@ void CompositorAnimations::cancelIncompatibleAnimationsOnCompositor(const Elemen
 
 bool CompositorAnimations::canStartAnimationOnCompositor(const Element& element)
 {
+    if (!Platform::current()->isThreadedAnimationEnabled())
+        return false;
     return element.layoutObject() && element.layoutObject()->compositingState() == PaintsIntoOwnBacking;
 }
 

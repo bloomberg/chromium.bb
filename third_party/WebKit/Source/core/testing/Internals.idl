@@ -72,6 +72,7 @@
     // Animation testing.
     [RaisesException] void pauseAnimations(double pauseTime);
     bool isCompositedAnimation(Animation animation);
+    void disableCompositedAnimation(Animation animation);
 
     // Modifies m_desiredFrameStartTime in BitmapImage to advance the next frame time
     // for testing whether animated images work properly.

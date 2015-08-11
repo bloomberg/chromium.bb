@@ -90,6 +90,7 @@ Animation::Animation(ExecutionContext* executionContext, AnimationTimeline& time
     , m_paused(false)
     , m_held(true)
     , m_isPausedForTesting(false)
+    , m_isCompositedAnimationDisabledForTesting(false)
     , m_outdated(false)
     , m_finished(true)
     , m_compositorState(nullptr)
@@ -702,6 +703,9 @@ void Animation::setOutdated()
 
 bool Animation::canStartAnimationOnCompositor() const
 {
+    if (m_isCompositedAnimationDisabledForTesting)
+        return false;
+
     // FIXME: Timeline playback rates should be compositable
     if (m_playbackRate == 0 || (std::isinf(effectEnd()) && m_playbackRate < 0) || (timeline() && timeline()->playbackRate() != 1))
         return false;
@@ -919,7 +923,8 @@ void Animation::endUpdatingState()
 
 void Animation::createCompositorPlayer()
 {
-    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() && !m_compositorPlayer && Platform::current()->compositorSupport()) {
+    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() && Platform::current()->isThreadedAnimationEnabled() && !m_compositorPlayer) {
+        ASSERT(Platform::current()->compositorSupport());
         m_compositorPlayer = adoptPtr(Platform::current()->compositorSupport()->createAnimationPlayer());
         ASSERT(m_compositorPlayer);
         m_compositorPlayer->setAnimationDelegate(this);
@@ -1081,6 +1086,12 @@ void Animation::pauseForTesting(double pauseTime)
         toKeyframeEffect(m_content.get())->pauseAnimationForTestingOnCompositor(currentTimeInternal());
     m_isPausedForTesting = true;
     pause();
+}
+
+void Animation::disableCompositedAnimationForTesting()
+{
+    m_isCompositedAnimationDisabledForTesting = true;
+    cancelAnimationOnCompositor();
 }
 
 DEFINE_TRACE(Animation)
