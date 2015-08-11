@@ -2024,7 +2024,7 @@ TEST_F(WidgetTest, CloseWidgetWhileAnimating) {
   widget->Init(params);
   AnimationEndObserver animation_observer;
   WidgetBoundsObserver widget_observer;
-  gfx::Rect bounds(0, 0, 50, 50);
+  gfx::Rect bounds(100, 100, 50, 50);
   {
     // Normal animations for tests have ZERO_DURATION, make sure we are actually
     // animating the movement.
