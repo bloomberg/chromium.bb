@@ -51,6 +51,7 @@ source_set("sources") {
     "//mojo/message_pump",
     "//mojo/services/tracing:lib",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//url",
   ]
 
   if (!is_android) {

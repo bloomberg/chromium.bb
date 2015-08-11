@@ -37,6 +37,7 @@ source_set("test_support") {
   ]
   deps = [
     ":tab",
+    "//base",
   ]
 }
 
@@ -55,6 +56,7 @@ mojo_native_application("mandoline_frame_apptests") {
     "//components/view_manager/public/cpp",
     "//components/view_manager/public/interfaces",
     "//mandoline/tab/public/interfaces",
+    "//mojo/application/public/cpp:sources",
     "//mojo/application/public/cpp:test_support",
     "//ui/mojo/geometry:interfaces",
     "//ui/mojo/geometry:util",

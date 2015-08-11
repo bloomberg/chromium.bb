@@ -49,5 +49,6 @@ source_set("aura") {
     "//ui/gl",
     "//ui/mojo/init",
     "//ui/views",
+    "//ui/wm",
   ]
 }
