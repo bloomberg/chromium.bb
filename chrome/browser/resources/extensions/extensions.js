@@ -392,9 +392,6 @@ cr.define('extensions', function() {
         lastFocused = document.activeElement;
 
       $('overlay').addEventListener('cancelOverlay', function f() {
-        console.log('cancelOverlay');
-        console.log('lastFocused', lastFocused);
-        console.log('focusOutlineManager.visible', focusOutlineManager.visible);
         if (lastFocused && focusOutlineManager.visible)
           lastFocused.focus();
 
