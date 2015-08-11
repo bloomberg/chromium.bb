@@ -1693,6 +1693,8 @@
             'inspector/ScriptCallStack.h',
             'inspector/ScriptDebuggerBase.cpp',
             'inspector/ScriptDebuggerBase.h',
+            'inspector/V8DebuggerAgent.cpp',
+            'inspector/V8DebuggerAgent.h',
             'inspector/V8AsyncCallTracker.cpp',
             'inspector/V8AsyncCallTracker.h',
             'inspector/v8/InspectorWrapper.cpp',

@@ -5,7 +5,7 @@
 #ifndef AsyncOperationMap_h
 #define AsyncOperationMap_h
 
-#include "core/inspector/InspectorDebuggerAgent.h"
+#include "core/inspector/V8DebuggerAgent.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
@@ -18,7 +18,7 @@ class AsyncOperationMap final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     using MapType = WillBeHeapHashMap<K, int>;
-    explicit AsyncOperationMap(InspectorDebuggerAgent* debuggerAgent)
+    explicit AsyncOperationMap(V8DebuggerAgent* debuggerAgent)
         : m_debuggerAgent(debuggerAgent)
     {
     }
@@ -80,7 +80,7 @@ public:
     }
 
 private:
-    RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
+    RawPtrWillBeMember<V8DebuggerAgent> m_debuggerAgent;
     MapType m_asyncOperations;
 };
 
