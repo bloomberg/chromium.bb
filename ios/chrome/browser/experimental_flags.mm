@@ -25,6 +25,7 @@ NSString* const kEnableAlertOnBackgroundUpload =
     @"EnableAlertsOnBackgroundUpload";
 NSString* const kEnableBookmarkRefreshImageOnEachVisit =
     @"EnableBookmarkRefreshImageOnEachVisit";
+NSString* const kEnableViewCopyPasswords = @"EnableViewCopyPasswords";
 }  // namespace
 
 namespace experimental_flags {
@@ -92,6 +93,14 @@ bool IsWKWebViewEnabled() {
   // Check if the finch experiment is turned on.
   return base::StartsWith(group_name, "Enabled",
                           base::CompareCase::INSENSITIVE_ASCII);
+}
+
+bool IsViewCopyPasswordsEnabled() {
+  NSString* viewCopyPasswordFlag = [[NSUserDefaults standardUserDefaults]
+      objectForKey:kEnableViewCopyPasswords];
+  if ([viewCopyPasswordFlag isEqualToString:@"Enabled"])
+    return true;
+  return false;
 }
 
 size_t MemoryWedgeSizeInMB() {

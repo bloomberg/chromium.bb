@@ -27,6 +27,9 @@ bool IsBookmarkImageFetchingOnVisitEnabled();
 // Whether the app uses WKWebView instead of UIWebView.
 bool IsWKWebViewEnabled();
 
+// Whether viewing and copying passwords is enabled.
+bool IsViewCopyPasswordsEnabled();
+
 // Returns the size in MB of the memory wedge to insert during a cold start.
 // If 0, no memory wedge should be inserted.
 size_t MemoryWedgeSizeInMB();
