@@ -68,6 +68,7 @@ public:
     unsigned glyphLength() const { return m_currentGlyphLength; }
 
 private:
+    bool isValidSurrogatePair(UChar32&);
     bool consumeSurrogatePair(UChar32&);
     void consumeMultipleUChar();
 

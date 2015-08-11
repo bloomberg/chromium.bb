@@ -48,11 +48,8 @@ UTF16TextIterator::UTF16TextIterator(const UChar* characters, int currentCharact
 {
 }
 
-bool UTF16TextIterator::consumeSurrogatePair(UChar32& character)
+bool UTF16TextIterator::isValidSurrogatePair(UChar32& character)
 {
-    if (!U16_IS_SURROGATE(character))
-        return true;
-
     // If we have a surrogate pair, make sure it starts with the high part.
     if (!U16_IS_SURROGATE_LEAD(character))
         return false;
@@ -66,7 +63,20 @@ bool UTF16TextIterator::consumeSurrogatePair(UChar32& character)
     UChar low = m_characters[1];
     if (!U16_IS_TRAIL(low))
         return false;
+    return true;
+}
 
+bool UTF16TextIterator::consumeSurrogatePair(UChar32& character)
+{
+    if (!U16_IS_SURROGATE(character))
+        return true;
+
+    if (!isValidSurrogatePair(character)) {
+        character = replacementCharacter;
+        return true;
+    }
+
+    UChar low = m_characters[1];
     character = U16_GET_SUPPLEMENTARY(character, low);
     m_currentGlyphLength = 2;
     return true;
