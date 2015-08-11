@@ -57,6 +57,24 @@ cr.define('cr.ui', function() {
   /** @const {string} */
   FocusRow.ACTIVE_CLASS = 'focus-row-active';
 
+  /**
+   * Whether it's possible that |element| can be focused.
+   * @param {Element} element
+   * @return {boolean} Whether the item is focusable.
+   */
+  FocusRow.isFocusable = function isFocusable(element) {
+    if (!element)
+      return false;
+
+    // Hidden elements are not focusable.
+    var style = window.getComputedStyle(element);
+    if (style.visibility == 'hidden' || style.display == 'none')
+      return false;
+
+    // Verify all ancestors are focusable.
+    return !element.parentElement || isFocusable(element.parentElement);
+  };
+
   FocusRow.prototype = {
     __proto__: HTMLElement.prototype,
 

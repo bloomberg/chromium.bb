@@ -133,7 +133,7 @@ cr.define('downloads', function() {
       var focusRow = this.decorateItem_(item);
 
       if (focusRow.contains(activeElement) &&
-          !downloads.FocusRow.shouldFocus(activeElement)) {
+          !cr.ui.FocusRow.isFocusable(activeElement)) {
         focusRow.getEquivalentElement(activeElement).focus();
       }
     },
@@ -154,7 +154,7 @@ cr.define('downloads', function() {
         this.focusGrid_.addRow(focusRow);
 
         if (focusRow.contains(activeElement) &&
-            !downloads.FocusRow.shouldFocus(activeElement)) {
+            !cr.ui.FocusRow.isFocusable(activeElement)) {
           focusRow.getEquivalentElement(activeElement).focus();
         }
       }, this);
