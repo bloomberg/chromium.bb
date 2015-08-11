@@ -12,6 +12,10 @@
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
+#if defined(OS_MACOSX)
+typedef struct CGRect CGRect;
+#endif
+
 namespace gfx {
 
 class InsetsF;
@@ -26,6 +30,12 @@ class GFX_EXPORT RectF {
   explicit RectF(const SizeF& size) : size_(size) {}
   RectF(const PointF& origin, const SizeF& size)
       : origin_(origin), size_(size) {}
+
+#if defined(OS_MACOSX)
+  explicit RectF(const CGRect& r);
+  // Construct an equivalent CoreGraphics object.
+  CGRect ToCGRect() const;
+#endif
 
   ~RectF() {}
 

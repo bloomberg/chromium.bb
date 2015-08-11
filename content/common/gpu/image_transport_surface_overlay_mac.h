@@ -79,6 +79,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   scoped_ptr<ImageTransportHelper> helper_;
   base::scoped_nsobject<CAContext> ca_context_;
   base::scoped_nsobject<CALayer> layer_;
+  base::scoped_nsobject<CALayer> partial_damage_layer_;
 
   gfx::Size pixel_size_;
   float scale_factor_;
@@ -93,6 +94,10 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   // have not yet been displayed. This queue is checked at the beginning of
   // every swap and also by a callback.
   std::deque<linked_ptr<PendingSwap>> pending_swaps_;
+
+  // The union of the damage rects of SwapBuffersInternal since the last
+  // non-partial swap.
+  gfx::Rect accumulated_partial_damage_pixel_rect_;
 
   // The display link used to compute the time for callbacks.
   scoped_refptr<ui::DisplayLinkMac> display_link_mac_;

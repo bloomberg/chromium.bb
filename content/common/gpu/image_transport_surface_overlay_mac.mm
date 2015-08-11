@@ -64,6 +64,10 @@ class ImageTransportSurfaceOverlayMac::PendingSwap {
   float scale_factor;
   std::vector<ui::LatencyInfo> latency_info;
 
+  // If true, the partial damage rect for the frame.
+  bool use_partial_damage;
+  gfx::Rect pixel_partial_damage_rect;
+
   // The IOSurface with new content for this swap.
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
 
@@ -105,6 +109,9 @@ bool ImageTransportSurfaceOverlayMac::Initialize() {
   [layer_ setGeometryFlipped:YES];
   [layer_ setOpaque:YES];
   [ca_context_ setLayer:layer_];
+
+  partial_damage_layer_.reset([[CALayer alloc] init]);
+  [partial_damage_layer_ setOpaque:YES];
   return true;
 }
 
@@ -180,6 +187,36 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
     new_swap->latest_allowed_draw_time = now;
   }
 
+  // Determine if this will be a full or partial damage, and compute the rects
+  // for the damage.
+  {
+    // Grow the partial damage rect to include the new damage.
+    accumulated_partial_damage_pixel_rect_.Union(pixel_damage_rect);
+    // Compute the fraction of the full layer that has been damaged. If this
+    // fraction is very large (>85%), just damage the full layer, and don't
+    // bother with the partial layer.
+    const double kMaximumFractionOfFullDamage = 0.85;
+    double fraction_of_full_damage =
+        accumulated_partial_damage_pixel_rect_.size().GetArea() /
+            static_cast<double>(pixel_size_.GetArea());
+    // Compute the fraction of the accumulated partial damage rect that has been
+    // damaged. If this gets too small (<75%), just re-damage the full window,
+    // so we can re-create a smaller partial damage layer next frame.
+    const double kMinimumFractionOfPartialDamage = 0.75;
+    double fraction_of_partial_damage =
+        pixel_damage_rect.size().GetArea() / static_cast<double>(
+            accumulated_partial_damage_pixel_rect_.size().GetArea());
+    if (fraction_of_full_damage < kMaximumFractionOfFullDamage &&
+        fraction_of_partial_damage > kMinimumFractionOfPartialDamage) {
+      new_swap->use_partial_damage = true;
+      new_swap->pixel_partial_damage_rect =
+          accumulated_partial_damage_pixel_rect_;
+    } else {
+      new_swap->use_partial_damage = false;
+      accumulated_partial_damage_pixel_rect_ = gfx::Rect();
+    }
+  }
+
   pending_swaps_.push_back(new_swap);
   PostCheckPendingSwapsCallbackIfNeeded(now);
   return gfx::SwapResult::SWAP_ACK;
@@ -246,12 +283,44 @@ void ImageTransportSurfaceOverlayMac::DisplayFirstPendingSwapImmediately() {
     ScopedCAActionDisabler disabler;
 
     id new_contents = static_cast<id>(swap->io_surface.get());
-    [layer_ setContents:new_contents];
+    if (swap->use_partial_damage) {
+      if (![partial_damage_layer_ superlayer])
+        [layer_ addSublayer:partial_damage_layer_];
+      [partial_damage_layer_ setContents:new_contents];
 
-    CGRect new_frame = gfx::ConvertRectToDIP(
-        swap->scale_factor, gfx::Rect(swap->pixel_size)).ToCGRect();
-    if (!CGRectEqualToRect([layer_ frame], new_frame))
-      [layer_ setFrame:new_frame];
+      CGRect new_frame = gfx::ConvertRectToDIP(
+          swap->scale_factor, swap->pixel_partial_damage_rect).ToCGRect();
+      if (!CGRectEqualToRect([partial_damage_layer_ frame], new_frame))
+        [partial_damage_layer_ setFrame:new_frame];
+
+      gfx::RectF contents_rect =
+          gfx::RectF(swap->pixel_partial_damage_rect);
+      contents_rect.Scale(
+          1. / swap->pixel_size.width(), 1. / swap->pixel_size.height());
+      CGRect cg_contents_rect = CGRectMake(
+          contents_rect.x(), contents_rect.y(),
+          contents_rect.width(), contents_rect.height());
+      [partial_damage_layer_ setContentsRect:cg_contents_rect];
+    } else {
+      // Remove the partial damage layer.
+      if ([partial_damage_layer_ superlayer]) {
+        [partial_damage_layer_ removeFromSuperlayer];
+        [partial_damage_layer_ setContents:nil];
+      }
+
+      // Note that calling setContents with the same IOSurface twice will result
+      // in the screen not being updated, even if the IOSurface's content has
+      // changed. Avoid this by calling setContentsChanged.
+      if ([layer_ contents] == new_contents)
+        [layer_ setContentsChanged];
+      else
+        [layer_ setContents:new_contents];
+
+      CGRect new_frame = gfx::ConvertRectToDIP(
+          swap->scale_factor, gfx::Rect(swap->pixel_size)).ToCGRect();
+      if (!CGRectEqualToRect([layer_ frame], new_frame))
+        [layer_ setFrame:new_frame];
+    }
   }
 
   // Send acknowledgement to the browser.
