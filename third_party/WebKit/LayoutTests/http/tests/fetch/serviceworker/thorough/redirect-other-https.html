@@ -1,0 +1,22 @@
+<!doctype html>
+<head>
+<meta name="timeout" content="long"></meta>
+<script src = "/resources/testharness.js"></script>
+<script src = "/resources/testharnessreport.js"></script>
+<script src = "/serviceworker/resources/test-helpers.js"></script>
+</head>
+<body>
+<script>
+function start(t) {
+  service_worker_test(
+    '/fetch/script-tests/thorough/redirect.js?-other-https',
+    'redirect');
+  t.done();
+}
+function init(test) {
+  return login(test)
+    .then(function() {return login_https(test);});
+}
+</script>
+<script src = "/fetch/resources/init.js"></script>
+</body>

@@ -26,51 +26,51 @@ import sys
 top_path = os.path.dirname(os.path.abspath(__file__))
 script_tests_path = os.path.join(top_path, 'script-tests')
 
-def generate(templatename, context, testname, options):
-    template_path = os.path.join(
-        script_tests_path, templatename + '-' + context + '.html')
 
+def generate(output_path, template_path, context, testname, options):
     output_basename = testname + options + '.html'
 
-    output_path = os.path.join(top_path, context, output_basename)
     with open(template_path, 'r') as template_file:
         template_data = template_file.read()
         output_data = re.sub(r'TESTNAME', testname, template_data)
         output_data = re.sub(r'OPTIONS', options, output_data)
 
-    with open(output_path, 'w') as output_file:
+    with open(os.path.join(output_path, output_basename), 'w') as output_file:
         output_file.write(output_data)
 
-def main():
-    basic_contexts = ['window', 'workers', 'serviceworker']
 
-    for script in os.listdir(script_tests_path):
+def generate_directory(relative_path, contexts, original_options):
+    directory_path = os.path.join(script_tests_path, relative_path)
+    for script in os.listdir(directory_path):
         if script.startswith('.') or not script.endswith('.js'):
             continue
         testname = re.sub(r'\.js$', '', os.path.basename(script))
-        templatename = 'TEMPLATE'
-        contexts = list(basic_contexts)
-        options = ['', '-base-https-other-https']
-
-        # fetch-access-control tests.
-        if script.startswith('fetch-access-control'):
-            templatename = 'TEMPLATE-fetch-access-control'
-            contexts.append('serviceworker-proxied')
-            options = ['', '-other-https', '-base-https-other-https']
+        options = original_options
 
         # Read OPTIONS list.
-        with open(os.path.join(script_tests_path, script), 'r') as script_file:
+        with open(os.path.join(directory_path, script), 'r') as script_file:
             script = script_file.read()
             m = re.search(r'// *OPTIONS: *([a-z\-,]*)', script)
             if m:
                 options = re.split(',', m.group(1))
 
         for context in contexts:
+            template_path = os.path.join(
+                directory_path, 'TEMPLATE-' + context + '.html')
             for option in options:
-                assert(option in ['', '-other-https', '-base-https',
-                                  '-base-https-other-https'])
-                generate(templatename, context, testname, option)
+                generate(os.path.join(top_path, context, relative_path),
+                         template_path, context, testname, option)
 
+
+def main():
+    basic_contexts = ['window', 'workers', 'serviceworker']
+
+    generate_directory('', ['window', 'workers', 'serviceworker'],
+                       ['', '-base-https-other-https'])
+    generate_directory(
+        'thorough',
+        ['window', 'workers', 'serviceworker', 'serviceworker-proxied'],
+        ['', '-other-https', '-base-https-other-https'])
     return 0
 
 if __name__ == "__main__":

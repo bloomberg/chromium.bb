@@ -119,6 +119,6 @@ sequential_promise_test(function() {
         });
   }, 'CORS filtered response with Access-Control-Expose-Headers');
 
-// Opaque filtered response is tested in fetch-access-control*
+// Opaque filtered response is tested in thorough tests.
 
 done();

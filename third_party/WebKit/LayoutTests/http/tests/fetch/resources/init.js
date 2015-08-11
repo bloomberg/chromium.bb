@@ -19,8 +19,8 @@ if (window.testRunner) {
 // How tests starts:
 // 1. http://127.0.0.1:8000/.../X.html is loaded.
 // 2. init(): Do initialization.
-//    In fetch-access-control* tests
-//    (see init() in fetch-access-control-util.js):
+//    In thorough/* tests
+//    (see init() in thorough-util.js):
 //    - Login to HTTP pages.
 //      This is done first from HTTP origin to avoid mixed content blocking.
 //    - Login to HTTPS pages.
@@ -34,7 +34,7 @@ var t = async_test('Startup');
 if (location.protocol != 'https:') {
   init(t)
     .then(function() {
-        // Initialization done. In fetch-access-control* tests, login done.
+        // Initialization done. In thorough/* tests, login done.
         if (location.pathname.indexOf('base-https') >= 0) {
           // Step 3b. For base-https tests, redirect to HTTPS page here.
           location = 'https://127.0.0.1:8443' + location.pathname;
