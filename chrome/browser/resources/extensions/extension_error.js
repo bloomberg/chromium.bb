@@ -59,14 +59,8 @@ cr.define('extensions', function() {
 
     /** @override */
     getEquivalentElement: function(element) {
-      if (element.classList.contains('extension-error-metadata'))
-        return this;
-      if (element.classList.contains('error-delete-button')) {
-        return /** @type {!HTMLElement} */ (this.querySelector(
-            '.error-delete-button'));
-      }
-      assertNotReached();
-      return element;
+      return element.classList.contains('error-delete-button') ?
+          this.deleteButton_ : this.messageSpan_;
     },
 
     /**
@@ -111,27 +105,27 @@ cr.define('extensions', function() {
       iconNode.alt = '';
       this.insertBefore(iconNode, this.firstChild);
 
-      var messageSpan = this.querySelector('.extension-error-message');
-      messageSpan.textContent = error.message;
+      this.messageSpan_ = this.querySelector('.extension-error-message');
+      this.messageSpan_.textContent = error.message;
 
-      var deleteButton = this.querySelector('.error-delete-button');
-      deleteButton.addEventListener('click', function(e) {
+      this.deleteButton_ = this.querySelector('.error-delete-button');
+      this.deleteButton_.addEventListener('click', function(e) {
         this.dispatchEvent(
             new CustomEvent('deleteExtensionError',
                             {bubbles: true, detail: this.error}));
       }.bind(this));
 
       this.addEventListener('click', function(e) {
-        if (e.target != deleteButton)
+        if (e.target != this.deleteButton_)
           this.requestActive_();
       }.bind(this));
       this.addEventListener('keydown', function(e) {
-        if (e.keyIdentifier == 'Enter' && e.target != deleteButton)
+        if (e.keyIdentifier == 'Enter' && e.target != this.deleteButton_)
           this.requestActive_();
       });
 
-      this.addFocusableElement(this);
-      this.addFocusableElement(deleteButton);
+      this.addFocusableElement(this.messageSpan_);
+      this.addFocusableElement(this.deleteButton_);
     },
 
     /**
@@ -178,6 +172,8 @@ cr.define('extensions', function() {
       this.listContents_ = this.querySelector('.extension-error-list-contents');
 
       errors.forEach(this.addError_, this);
+
+      this.focusGrid_.ensureRowActive();
 
       this.addEventListener('highlightExtensionError', function(e) {
         this.setActiveErrorNode_(e.target);
@@ -250,6 +246,14 @@ cr.define('extensions', function() {
 
       this.errors_.splice(index, 1);
       var listElement = errorList.children[index];
+
+      var focusRow = assertInstanceof(listElement, ExtensionError);
+      this.focusGrid_.removeRow(focusRow);
+      this.focusGrid_.ensureRowActive();
+      focusRow.destroy();
+
+      // TODO(dbeam): in a world where this UI is actually used, we should
+      // probably move the focus before removing |listElement|.
       listElement.parentNode.removeChild(listElement);
 
       if (wasActive) {

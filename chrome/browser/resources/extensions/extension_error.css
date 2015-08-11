@@ -70,7 +70,9 @@
 }
 
 .extension-error-metadata > .error-delete-button {
+  -webkit-appearance: none;
   background: url(chrome://theme/IDR_CLOSE_DIALOG) center no-repeat;
+  border: none;
   height: 14px;
   opacity: 0.6;
   width: 14px;
