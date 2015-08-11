@@ -186,5 +186,5 @@ XSLT status=stable
 SVG1DOM status=stable
 smil status=stable
 ScrollCustomization
-ScrollRestoration status=experimental
+ScrollRestoration status=stable
 WakeLock status=experimental

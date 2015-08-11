@@ -2908,7 +2908,7 @@ interface Headers
     method values
 interface History
     getter length
-    getter options
+    getter scrollRestoration
     getter state
     method back
     method constructor
@@ -2916,6 +2916,7 @@ interface History
     method go
     method pushState
     method replaceState
+    setter scrollRestoration
 interface IDBCursor
     getter direction
     getter key
