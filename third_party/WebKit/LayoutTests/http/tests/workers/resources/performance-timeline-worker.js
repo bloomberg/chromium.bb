@@ -53,12 +53,12 @@ promise_test(function(test) {
               assert_greater_than(entry.responseEnd, entry.startTime);
           }
           return new Promise(function(resolve) {
-              performance.onwebkitresourcetimingbufferfull = resolve;
-              performance.webkitSetResourceTimingBufferSize(expectedResources.length);
+              performance.onresourcetimingbufferfull = resolve;
+              performance.setResourceTimingBufferSize(expectedResources.length);
             });
         })
       .then(function() {
-          performance.webkitClearResourceTimings();
+          performance.clearResourceTimings();
           assert_equals(performance.getEntriesByType('resource').length, 0);
         })
   }, 'Resource Timing');

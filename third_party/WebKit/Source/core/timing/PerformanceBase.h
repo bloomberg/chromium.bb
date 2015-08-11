@@ -66,9 +66,10 @@ public:
     PerformanceEntryVector getEntriesByType(const String& entryType);
     PerformanceEntryVector getEntriesByName(const String& name, const String& entryType);
 
-    void webkitClearResourceTimings();
-    void webkitSetResourceTimingBufferSize(unsigned);
+    void clearResourceTimings();
+    void setResourceTimingBufferSize(unsigned);
 
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(resourcetimingbufferfull);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitresourcetimingbufferfull);
 
     void clearFrameTimings();

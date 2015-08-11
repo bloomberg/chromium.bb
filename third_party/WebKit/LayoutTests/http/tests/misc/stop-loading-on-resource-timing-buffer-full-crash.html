@@ -7,12 +7,12 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 
-performance.addEventListener('webkitresourcetimingbufferfull', function(event) {
+performance.addEventListener('resourcetimingbufferfull', function(event) {
   document.body.innerHTML = "PASS. No crash when stop loading on resource timing buffer full.";
   setTimeout("testRunner.notifyDone()", 0);
 });
 
-performance.webkitSetResourceTimingBufferSize(1);
+performance.setResourceTimingBufferSize(1);
 </script>
 </body>
 </html>

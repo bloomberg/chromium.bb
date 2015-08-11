@@ -812,6 +812,7 @@ public:
         LinkRelPrefetch = 917,
         LinkRelPrerender = 918,
         LinkRelNext = 919,
+        PrefixedPerformanceResourceTimingBufferFull = 920,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

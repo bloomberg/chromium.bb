@@ -3582,11 +3582,13 @@ interface Performance
     getter memory
     getter navigation
     getter onframetimingbufferfull
+    getter onresourcetimingbufferfull
     getter onwebkitresourcetimingbufferfull
     getter timing
     method clearFrameTimings
     method clearMarks
     method clearMeasures
+    method clearResourceTimings
     method constructor
     method getEntries
     method getEntriesByName
@@ -3595,9 +3597,11 @@ interface Performance
     method measure
     method now
     method setFrameTimingBufferSize
+    method setResourceTimingBufferSize
     method webkitClearResourceTimings
     method webkitSetResourceTimingBufferSize
     setter onframetimingbufferfull
+    setter onresourcetimingbufferfull
     setter onwebkitresourcetimingbufferfull
 interface PerformanceCompositeTiming
     getter sourceFrame

@@ -1,5 +1,6 @@
 CONSOLE WARNING: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 CONSOLE WARNING: 'webkitIndexedDB' is deprecated. Please use 'indexedDB' instead.
+CONSOLE WARNING: 'Performance.onwebkitresourcetimingbufferfull' is deprecated. Please use 'Performance.onresourcetimingbufferfull' instead.
 Tests access of cached DOMWindow properties after the associated frame is navigated. Test should not crash and properties should be set to sane defaults.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -53,6 +54,7 @@ PASS window.cached_navigator_serviceWorker.onmessage is null
 PASS window.cached_navigator_services.onclose is null
 PASS window.cached_navigator_services.onmessage is null
 PASS window.cached_performance.onframetimingbufferfull is null
+PASS window.cached_performance.onresourcetimingbufferfull is null
 PASS window.cached_performance.onwebkitresourcetimingbufferfull is null
 PASS window.cached_performance_navigation.redirectCount is 0
 PASS window.cached_performance_navigation.type is 0

@@ -48,10 +48,9 @@
 
     // Resource Timing
     // https://w3c.github.io/resource-timing/#extensions-performance-interface
-    // TODO(philipj): Unprefix these APIs.
-    [RuntimeEnabled=ServiceWorkerPerformanceTimeline, MeasureAs=PrefixedPerformanceClearResourceTimings] void webkitClearResourceTimings();
-    [RuntimeEnabled=ServiceWorkerPerformanceTimeline, MeasureAs=PrefixedPerformanceSetResourceTimingBufferSize] void webkitSetResourceTimingBufferSize(unsigned long maxSize);
-    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] attribute EventHandler onwebkitresourcetimingbufferfull;
+    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] void clearResourceTimings();
+    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] void setResourceTimingBufferSize(unsigned long maxSize);
+    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] attribute EventHandler onresourcetimingbufferfull;
 
     // User Timing
     // https://w3c.github.io/user-timing/#extensions-performance-interface

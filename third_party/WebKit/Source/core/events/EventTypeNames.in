@@ -180,6 +180,7 @@ removetrack
 repeatEvent
 reset
 resize
+resourcetimingbufferfull
 result
 resume
 scroll

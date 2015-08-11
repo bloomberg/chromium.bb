@@ -47,10 +47,14 @@ interface Performance : EventTarget {
 
     // Resource Timing
     // https://w3c.github.io/resource-timing/#extensions-performance-interface
-    // TODO(philipj): Unprefix these APIs.
-    [MeasureAs=PrefixedPerformanceClearResourceTimings] void webkitClearResourceTimings();
-    [MeasureAs=PrefixedPerformanceSetResourceTimingBufferSize] void webkitSetResourceTimingBufferSize(unsigned long maxSize);
-    attribute EventHandler onwebkitresourcetimingbufferfull;
+    void clearResourceTimings();
+    void setResourceTimingBufferSize(unsigned long maxSize);
+    attribute EventHandler onresourcetimingbufferfull;
+
+    // TODO(ksakamoto): Remove these prefixed APIs.
+    [DeprecateAs=PrefixedPerformanceClearResourceTimings, ImplementedAs=clearResourceTimings] void webkitClearResourceTimings();
+    [DeprecateAs=PrefixedPerformanceSetResourceTimingBufferSize, ImplementedAs=setResourceTimingBufferSize] void webkitSetResourceTimingBufferSize(unsigned long maxSize);
+    [DeprecateAs=PrefixedPerformanceResourceTimingBufferFull] attribute EventHandler onwebkitresourcetimingbufferfull;
 
     // Navigation Timing
     // https://w3c.github.io/navigation-timing/#extensions-to-the-performance-interface

@@ -9,7 +9,7 @@ var bufferFullCount = 0;
 var parameter;
 
 function onBufferFull(event) {
-    shouldBeNull('performance.onwebkitresourcetimingbufferfull');
+    shouldBeNull('performance.onresourcetimingbufferfull');
     parameter = event;
     shouldBe('parameter.__proto__', 'Event.prototype');
     bufferFullCount++;
@@ -17,9 +17,9 @@ function onBufferFull(event) {
 
 shouldBe('Performance.prototype.__proto__', 'EventTarget.prototype');
 
-performance.addEventListener('webkitresourcetimingbufferfull', onBufferFull);
-shouldBeNull('performance.onwebkitresourcetimingbufferfull');
-performance.webkitSetResourceTimingBufferSize(2);
+performance.addEventListener('resourcetimingbufferfull', onBufferFull);
+shouldBeNull('performance.onresourcetimingbufferfull');
+performance.setResourceTimingBufferSize(2);
 </script>
 </head>
 <body>
@@ -27,7 +27,7 @@ performance.webkitSetResourceTimingBufferSize(2);
 function test() {
     // Make sure the onBufferFull callback was called exactly 1 time.
     shouldBe('bufferFullCount', '1');
-    performance.removeEventListener('webkitresourcetimingbufferfull', onBufferFull);
+    performance.removeEventListener('resourcetimingbufferfull', onBufferFull);
     finishJSTest();
 }
 

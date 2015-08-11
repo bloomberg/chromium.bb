@@ -960,6 +960,15 @@ String UseCounter::deprecationMessage(Feature feature)
     case ElementOffsetHeight:
         return "'Element.offsetHeight' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
 
+    case PrefixedPerformanceClearResourceTimings:
+        return replacedBy("Performance.webkitClearResourceTimings", "Performance.clearResourceTimings");
+
+    case PrefixedPerformanceSetResourceTimingBufferSize:
+        return replacedBy("Performance.webkitSetResourceTimingBufferSize", "Performance.setResourceTimingBufferSize");
+
+    case PrefixedPerformanceResourceTimingBufferFull:
+        return replacedBy("Performance.onwebkitresourcetimingbufferfull", "Performance.onresourcetimingbufferfull");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
