@@ -70,7 +70,7 @@ if config.target_os != config.OS_ANDROID:
       'name': 'mojo:html_viewer_apptests OOPIFS new frame',
       'type': 'gtest_isolated',
       'args': ['--use-test-config', '--oopifs',
-              'oopif-always-create-new-frame-tree',
+               '--oopif-always-create-new-frame-tree',
                '--enable-html-viewer-test-interface']
     },
     {
