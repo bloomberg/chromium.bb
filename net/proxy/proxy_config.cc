@@ -231,7 +231,7 @@ void ProxyConfig::ClearAutomaticSettings() {
   pac_url_ = GURL();
 }
 
-base::DictionaryValue* ProxyConfig::ToValue() const {
+scoped_ptr<base::DictionaryValue> ProxyConfig::ToValue() const {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   // Output the automatic settings.
@@ -286,7 +286,7 @@ base::DictionaryValue* ProxyConfig::ToValue() const {
   // Output the source.
   dict->SetString("source", ProxyConfigSourceToString(source_));
 
-  return dict.release();
+  return dict.Pass();
 }
 
 }  // namespace net
