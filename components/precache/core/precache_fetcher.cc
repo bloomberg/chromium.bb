@@ -162,7 +162,14 @@ PrecacheFetcher::Fetcher::Fetcher(
     : callback_(callback), response_bytes_(0), network_response_bytes_(0) {
   url_fetcher_ = URLFetcher::Create(url, URLFetcher::GET, this);
   url_fetcher_->SetRequestContext(request_context);
-  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+  // LOAD_VALIDATE_CACHE allows us to refresh the cache by updating Date
+  // headers, without costing network bytes, as cache hits will return 304s.
+  // LOAD_DO_NOT_*_COOKIES is for privacy reasons. If a user clears their
+  // cookies, but a tracking beacon is prefetched and the beacon specifies its
+  // source URL in a URL param, the beacon site would be able to rebuild a
+  // profile of the user.
+  url_fetcher_->SetLoadFlags(net::LOAD_VALIDATE_CACHE |
+                             net::LOAD_DO_NOT_SAVE_COOKIES |
                              net::LOAD_DO_NOT_SEND_COOKIES);
   if (ignore_response_body) {
     scoped_ptr<URLFetcherNullWriter> null_writer(new URLFetcherNullWriter);
