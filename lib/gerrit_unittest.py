@@ -50,7 +50,6 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     """
     (revision, changeid) = self.createCommit(clone_path, **kwargs)
     self.uploadChange(clone_path)
-    # TODO(phobbs): there is a race condition here.  We need to retry this.
     def PatchQuery():
       return self._GetHelper().QuerySingleRecord(
           change=changeid, project=project, branch='master')
