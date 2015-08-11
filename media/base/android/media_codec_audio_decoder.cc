@@ -128,13 +128,14 @@ MediaCodecDecoder::ConfigStatus MediaCodecAudioDecoder::ConfigureInternal() {
                configs_.audio_seek_preroll_ns,
                true,
                GetMediaCrypto().obj())) {
-    DVLOG(1) << class_name() << "::" << __FUNCTION__ << " failed";
+    DVLOG(0) << class_name() << "::" << __FUNCTION__
+             << " failed: cannot start audio codec";
 
     media_codec_bridge_.reset();
     return kConfigFailure;
   }
 
-  DVLOG(1) << class_name() << "::" << __FUNCTION__ << " succeeded";
+  DVLOG(0) << class_name() << "::" << __FUNCTION__ << " succeeded";
 
   SetVolumeInternal();
 

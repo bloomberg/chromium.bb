@@ -148,11 +148,12 @@ MediaCodecDecoder::ConfigStatus MediaCodecVideoDecoder::ConfigureInternal() {
       GetMediaCrypto().obj()));
 
   if (!media_codec_bridge_) {
-    DVLOG(1) << class_name() << "::" << __FUNCTION__ << " failed";
+    DVLOG(0) << class_name() << "::" << __FUNCTION__
+             << " failed: cannot create video codec";
     return kConfigFailure;
   }
 
-  DVLOG(1) << class_name() << "::" << __FUNCTION__ << " succeeded";
+  DVLOG(0) << class_name() << "::" << __FUNCTION__ << " succeeded";
 
   media_task_runner_->PostTask(FROM_HERE, codec_created_cb_);
 

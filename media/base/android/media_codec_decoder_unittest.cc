@@ -150,7 +150,7 @@ class MediaCodecDecoderTest : public testing::Test {
   void OnDataRequested();
   void OnStarvation() { is_starved_ = true; }
   void OnStopDone() { is_stopped_ = true; }
-  void OnError() {}
+  void OnError() { DVLOG(0) << "MediaCodecDecoderTest::" << __FUNCTION__; }
   void OnUpdateCurrentTime(base::TimeDelta now_playing,
                            base::TimeDelta last_buffered) {
     // Add the |last_buffered| value for PTS. For video it is the same as
@@ -460,8 +460,10 @@ TEST_F(MediaCodecDecoderTest, AudioStartWithoutConfigure) {
 }
 
 // http://crbug.com/518900
-TEST_F(MediaCodecDecoderTest, DISABLED_AudioPlayTillCompletion) {
+TEST_F(MediaCodecDecoderTest, AudioPlayTillCompletion) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  DVLOG(0) << "AudioPlayTillCompletion started";
 
   CreateAudioDecoder();
 
@@ -493,6 +495,8 @@ TEST_F(MediaCodecDecoderTest, DISABLED_AudioPlayTillCompletion) {
   // Last buffered timestamp should be no less than PTS.
   EXPECT_EQ(22, pts_stat_.num_values());
   EXPECT_LE(data_factory_->last_pts(), pts_stat_.max());
+
+  DVLOG(0) << "AudioPlayTillCompletion stopping";
 }
 
 TEST_F(MediaCodecDecoderTest, VideoPlayTillCompletion) {

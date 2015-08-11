@@ -256,10 +256,12 @@ bool MediaCodecDecoder::Start(base::TimeDelta current_time) {
 
   // Start the decoder thread
   if (!decoder_thread_.Start()) {
-    DVLOG(1) << class_name() << "::" << __FUNCTION__
+    DVLOG(0) << class_name() << "::" << __FUNCTION__
              << ": cannot start decoder thread";
     return false;
   }
+
+  DVLOG(0) << class_name() << "::" << __FUNCTION__ << " decoder thread started";
 
   SetState(kRunning);
 
@@ -326,7 +328,7 @@ void MediaCodecDecoder::RequestToStop() {
 void MediaCodecDecoder::OnLastFrameRendered(bool completed) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  DVLOG(1) << class_name() << "::" << __FUNCTION__
+  DVLOG(0) << class_name() << "::" << __FUNCTION__
            << " completed:" << completed;
 
   decoder_thread_.Stop();  // synchronous
@@ -656,7 +658,7 @@ bool MediaCodecDecoder::DepleteOutputBufferQueue() {
   }
 
   if (status == MEDIA_CODEC_ERROR) {
-    DVLOG(1) << class_name() << "::" << __FUNCTION__
+    DVLOG(0) << class_name() << "::" << __FUNCTION__
              << " MediaCodec error, stopping frame processing";
     return false;
   }
