@@ -60,3 +60,6 @@ PushMessagingBrowserTest.PushEventSuccess
 
 # https://crbug.com/519039
 AppViewTest.KillGuestCommunicatingWithWrongAppView
+
+# https://crbug.com/519087
+ExtensionTabsTest.GetAllWindowsAllTypes
