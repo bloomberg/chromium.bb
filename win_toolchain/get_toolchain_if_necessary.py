@@ -213,13 +213,15 @@ def DoTreeMirror(target_dir, tree_sha1):
 
 
 def main():
-  if not sys.platform.startswith(('cygwin', 'win32')):
-    return 0
-
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option('--output-json', metavar='FILE',
                     help='write information about toolchain to FILE')
+  parser.add_option('--force', action='store_true',
+                    help='force script to run on non-Windows hosts')
   options, args = parser.parse_args()
+
+  if not (sys.platform.startswith(('cygwin', 'win32')) or options.force):
+    return 0
 
   if sys.platform == 'cygwin':
     # This script requires Windows Python, so invoke with depot_tools' Python.
