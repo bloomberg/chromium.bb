@@ -82,7 +82,6 @@ crbug.com/469657 [ XP ] fast/events/mouse-event-buttons-attribute.html [ Failure
 crbug.com/473626 fast/forms/form-submission-cancelable.html [ Pass Timeout ]
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
-crbug.com/518926 fast/repaint/paint-invalidation-with-reparent-across-frame-boundaries.html [ Pass Timeout ]
 crbug.com/518928 fast/transforms/selection-bounds-in-transformed-view.html [ Failure Pass Timeout ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/obsolete-error-events.html [ Failure Pass Timeout ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/remove-cache.html [ Failure Pass ]
