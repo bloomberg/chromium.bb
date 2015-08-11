@@ -25273,6 +25273,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.MigrationNssToPem"
     enum="MigrationNssToPemNetworkTypes">
+  <obsolete>
+    Deprecated 8/2015.
+  </obsolete>
   <owner>pneubeck@chromium.org</owner>
   <summary>
     Chrome OS metric counting the number of network configurations that
