@@ -1631,3 +1631,13 @@ void ChromeContentRendererClient::AddImageContextMenuProperties(
         data_reduction_proxy::chrome_proxy_lo_fi_directive();
   }
 }
+
+void
+ChromeContentRendererClient::DidInitializeServiceWorkerContextOnWorkerThread(
+    v8::Local<v8::Context> context,
+    const GURL& url) {
+#if defined(ENABLE_EXTENSIONS)
+  extensions::Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
+      context, url);
+#endif
+}

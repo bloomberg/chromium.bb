@@ -297,6 +297,12 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual void AddImageContextMenuProperties(
       const blink::WebURLResponse& response,
       std::map<std::string, std::string>* properties) {}
+
+  // Notifies that a service worker context has been created. This function
+  // is called from the worker thread.
+  virtual void DidInitializeServiceWorkerContextOnWorkerThread(
+      v8::Local<v8::Context> context,
+      const GURL& url) {}
 };
 
 }  // namespace content
