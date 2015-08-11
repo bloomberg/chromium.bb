@@ -44,9 +44,9 @@ WebGLExtensionName EXTFragDepth::name() const
     return EXTFragDepthName;
 }
 
-EXTFragDepth* EXTFragDepth::create(WebGLRenderingContextBase* context)
+PassRefPtrWillBeRawPtr<EXTFragDepth> EXTFragDepth::create(WebGLRenderingContextBase* context)
 {
-    return new EXTFragDepth(context);
+    return adoptRefWillBeNoop(new EXTFragDepth(context));
 }
 
 bool EXTFragDepth::supported(WebGLRenderingContextBase* context)

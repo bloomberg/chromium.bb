@@ -4,6 +4,6 @@
 
 [
     NoInterfaceObject,
-    GarbageCollected,
+    WillBeGarbageCollected,
 ] interface CHROMIUMValuebuffer {
 };

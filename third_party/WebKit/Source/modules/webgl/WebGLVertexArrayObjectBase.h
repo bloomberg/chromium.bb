@@ -8,6 +8,7 @@
 #include "modules/webgl/WebGLBuffer.h"
 #include "modules/webgl/WebGLContextObject.h"
 #include "platform/heap/Handle.h"
+#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -23,7 +24,7 @@ public:
     Platform3DObject object() const { return m_object; }
 
     // Cached values for vertex attrib range checks
-    class VertexAttribState final : public GarbageCollected<VertexAttribState> {
+    class VertexAttribState final : public NoBaseWillBeGarbageCollected<VertexAttribState> {
     public:
         VertexAttribState()
             : enabled(false)
@@ -41,7 +42,7 @@ public:
         DECLARE_TRACE();
 
         bool enabled;
-        Member<WebGLBuffer> bufferBinding;
+        RefPtrWillBeMember<WebGLBuffer> bufferBinding;
         GLsizei bytesPerElement;
         GLint size;
         GLenum type;
@@ -57,12 +58,12 @@ public:
     bool hasEverBeenBound() const { return object() && m_hasEverBeenBound; }
     void setHasEverBeenBound() { m_hasEverBeenBound = true; }
 
-    WebGLBuffer* boundElementArrayBuffer() const { return m_boundElementArrayBuffer; }
-    void setElementArrayBuffer(WebGLBuffer*);
+    PassRefPtrWillBeRawPtr<WebGLBuffer> boundElementArrayBuffer() const { return m_boundElementArrayBuffer; }
+    void setElementArrayBuffer(PassRefPtrWillBeRawPtr<WebGLBuffer>);
 
     VertexAttribState* getVertexAttribState(size_t);
-    void setVertexAttribState(GLuint, GLsizei, GLint, GLenum, GLboolean, GLsizei, GLintptr, WebGLBuffer*);
-    void unbindBuffer(WebGLBuffer*);
+    void setVertexAttribState(GLuint, GLsizei, GLint, GLenum, GLboolean, GLsizei, GLintptr, PassRefPtrWillBeRawPtr<WebGLBuffer>);
+    void unbindBuffer(PassRefPtrWillBeRawPtr<WebGLBuffer>);
     void setVertexAttribDivisor(GLuint index, GLuint divisor);
 
     DECLARE_VIRTUAL_TRACE();
@@ -79,9 +80,11 @@ private:
 
     VaoType m_type;
     bool m_hasEverBeenBound;
+#if ENABLE(OILPAN)
     bool m_destructionInProgress;
-    Member<WebGLBuffer> m_boundElementArrayBuffer;
-    HeapVector<Member<VertexAttribState>> m_vertexAttribState;
+#endif
+    RefPtrWillBeMember<WebGLBuffer> m_boundElementArrayBuffer;
+    WillBeHeapVector<OwnPtrWillBeMember<VertexAttribState>> m_vertexAttribState;
 };
 
 } // namespace blink

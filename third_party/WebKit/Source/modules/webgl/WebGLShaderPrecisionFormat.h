@@ -30,13 +30,15 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/heap/Handle.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace blink {
 
-class WebGLShaderPrecisionFormat final : public GarbageCollected<WebGLShaderPrecisionFormat>, public ScriptWrappable {
+class WebGLShaderPrecisionFormat final : public RefCountedWillBeGarbageCollected<WebGLShaderPrecisionFormat>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static WebGLShaderPrecisionFormat* create(GLint rangeMin, GLint rangeMax, GLint precision);
+    static PassRefPtrWillBeRawPtr<WebGLShaderPrecisionFormat> create(GLint rangeMin, GLint rangeMax, GLint precision);
 
     GLint rangeMin() const;
     GLint rangeMax() const;

@@ -6,6 +6,7 @@
 #define WebGLFenceSync_h
 
 #include "modules/webgl/WebGLSync.h"
+#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -15,7 +16,7 @@ class WebGLFenceSync : public WebGLSync {
 public:
     ~WebGLFenceSync() override;
 
-    static WebGLSync* create(WebGL2RenderingContextBase*, GLenum condition, GLbitfield flags);
+    static PassRefPtrWillBeRawPtr<WebGLSync> create(WebGL2RenderingContextBase*, GLenum condition, GLbitfield flags);
 
 protected:
     WebGLFenceSync(WebGL2RenderingContextBase*, GLenum condition, GLbitfield flags);

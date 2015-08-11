@@ -31,24 +31,28 @@
 #include "modules/webgl/WebGLExtensionName.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
 #include "platform/heap/Handle.h"
+#include "wtf/RefCounted.h"
 
 namespace blink {
 
-class WebGLExtensionScopedContext final {
-    STACK_ALLOCATED();
+class WebGLExtensionScopedContext : public NoBaseWillBeGarbageCollectedFinalized<WebGLExtensionScopedContext> {
     WTF_MAKE_NONCOPYABLE(WebGLExtensionScopedContext);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WebGLExtensionScopedContext);
 public:
-    explicit WebGLExtensionScopedContext(WebGLExtension*);
-    ~WebGLExtensionScopedContext();
+    WebGLExtensionScopedContext(WebGLExtension*);
+    virtual ~WebGLExtensionScopedContext();
 
-    bool isLost() const { return !m_context; }
+    bool isLost() { return !m_context; }
     WebGLRenderingContextBase* context() const { return m_context.get(); }
+
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     RefPtrWillBeMember<WebGLRenderingContextBase> m_context;
 };
 
-class WebGLExtension : public GarbageCollectedFinalized<WebGLExtension>, public ScriptWrappable {
+class WebGLExtension : public RefCountedWillBeGarbageCollectedFinalized<WebGLExtension>, public ScriptWrappable {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WebGLExtension);
 public:
     virtual ~WebGLExtension();
     virtual WebGLExtensionName name() const = 0;

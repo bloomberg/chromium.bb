@@ -27,13 +27,14 @@
 #define OESElementIndexUint_h
 
 #include "modules/webgl/WebGLExtension.h"
+#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
 class OESElementIndexUint final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static OESElementIndexUint* create(WebGLRenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<OESElementIndexUint> create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 

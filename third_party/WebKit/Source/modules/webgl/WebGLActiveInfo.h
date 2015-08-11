@@ -28,15 +28,18 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/graphics/GraphicsTypes3D.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class WebGLActiveInfo final : public GarbageCollectedFinalized<WebGLActiveInfo>, public ScriptWrappable {
+class WebGLActiveInfo final : public RefCountedWillBeGarbageCollectedFinalized<WebGLActiveInfo>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static WebGLActiveInfo* create(const String& name, GLenum type, GLint size)
+    static PassRefPtrWillBeRawPtr<WebGLActiveInfo> create(const String& name, GLenum type, GLint size)
     {
-        return new WebGLActiveInfo(name, type, size);
+        return adoptRefWillBeNoop(new WebGLActiveInfo(name, type, size));
     }
     String name() const { return m_name; }
     GLenum type() const { return m_type; }

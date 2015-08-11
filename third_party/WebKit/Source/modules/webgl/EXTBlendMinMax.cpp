@@ -23,9 +23,9 @@ WebGLExtensionName EXTBlendMinMax::name() const
     return EXTBlendMinMaxName;
 }
 
-EXTBlendMinMax* EXTBlendMinMax::create(WebGLRenderingContextBase* context)
+PassRefPtrWillBeRawPtr<EXTBlendMinMax> EXTBlendMinMax::create(WebGLRenderingContextBase* context)
 {
-    return new EXTBlendMinMax(context);
+    return adoptRefWillBeNoop(new EXTBlendMinMax(context));
 }
 
 bool EXTBlendMinMax::supported(WebGLRenderingContextBase* context)

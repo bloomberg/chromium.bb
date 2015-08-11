@@ -24,6 +24,6 @@
  */
 
 [
-    GarbageCollected,
+    WillBeGarbageCollected,
 ] interface WebGLTexture {
 };

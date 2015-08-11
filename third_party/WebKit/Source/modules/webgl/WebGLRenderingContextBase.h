@@ -173,12 +173,12 @@ public:
     void copyTexImage2D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
     void copyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
 
-    WebGLBuffer* createBuffer();
-    WebGLFramebuffer* createFramebuffer();
-    WebGLProgram* createProgram();
-    WebGLRenderbuffer* createRenderbuffer();
-    WebGLShader* createShader(GLenum type);
-    WebGLTexture* createTexture();
+    PassRefPtrWillBeRawPtr<WebGLBuffer> createBuffer();
+    PassRefPtrWillBeRawPtr<WebGLFramebuffer> createFramebuffer();
+    PassRefPtrWillBeRawPtr<WebGLProgram> createProgram();
+    PassRefPtrWillBeRawPtr<WebGLRenderbuffer> createRenderbuffer();
+    PassRefPtrWillBeRawPtr<WebGLShader> createShader(GLenum type);
+    PassRefPtrWillBeRawPtr<WebGLTexture> createTexture();
 
     void cullFace(GLenum mode);
 
@@ -210,10 +210,10 @@ public:
     void frontFace(GLenum mode);
     void generateMipmap(GLenum target);
 
-    WebGLActiveInfo* getActiveAttrib(WebGLProgram*, GLuint index);
-    WebGLActiveInfo* getActiveUniform(WebGLProgram*, GLuint index);
-    bool getAttachedShaders(WebGLProgram*, HeapVector<Member<WebGLShader>>&);
-    Nullable<HeapVector<Member<WebGLShader>>> getAttachedShaders(WebGLProgram*);
+    PassRefPtrWillBeRawPtr<WebGLActiveInfo> getActiveAttrib(WebGLProgram*, GLuint index);
+    PassRefPtrWillBeRawPtr<WebGLActiveInfo> getActiveUniform(WebGLProgram*, GLuint index);
+    bool getAttachedShaders(WebGLProgram*, WillBeHeapVector<RefPtrWillBeMember<WebGLShader>>&);
+    Nullable<WillBeHeapVector<RefPtrWillBeMember<WebGLShader>>> getAttachedShaders(WebGLProgram*);
     GLint getAttribLocation(WebGLProgram*, const String& name);
     ScriptValue getBufferParameter(ScriptState*, GLenum target, GLenum pname);
     void getContextAttributes(Nullable<WebGLContextAttributes>&);
@@ -226,12 +226,12 @@ public:
     ScriptValue getRenderbufferParameter(ScriptState*, GLenum target, GLenum pname);
     ScriptValue getShaderParameter(ScriptState*, WebGLShader*, GLenum pname);
     String getShaderInfoLog(WebGLShader*);
-    WebGLShaderPrecisionFormat* getShaderPrecisionFormat(GLenum shaderType, GLenum precisionType);
+    PassRefPtrWillBeRawPtr<WebGLShaderPrecisionFormat> getShaderPrecisionFormat(GLenum shaderType, GLenum precisionType);
     String getShaderSource(WebGLShader*);
     Nullable<Vector<String>> getSupportedExtensions();
     virtual ScriptValue getTexParameter(ScriptState*, GLenum target, GLenum pname);
     ScriptValue getUniform(ScriptState*, WebGLProgram*, const WebGLUniformLocation*);
-    WebGLUniformLocation* getUniformLocation(WebGLProgram*, const String&);
+    PassRefPtrWillBeRawPtr<WebGLUniformLocation> getUniformLocation(WebGLProgram*, const String&);
     ScriptValue getVertexAttrib(ScriptState*, GLuint index, GLenum pname);
     long long getVertexAttribOffset(GLuint index, GLenum pname);
 
@@ -372,7 +372,7 @@ public:
     unsigned maxVertexAttribs() const { return m_maxVertexAttribs; }
 
     // GL_CHROMIUM_subscribe_uniform
-    CHROMIUMValuebuffer* createValuebufferCHROMIUM();
+    PassRefPtrWillBeRawPtr<CHROMIUMValuebuffer> createValuebufferCHROMIUM();
     void deleteValuebufferCHROMIUM(CHROMIUMValuebuffer*);
     GLboolean isValuebufferCHROMIUM(CHROMIUMValuebuffer*);
     void bindValuebufferCHROMIUM(GLenum target, CHROMIUMValuebuffer*);
@@ -392,10 +392,10 @@ public:
     class TextureUnitState {
         ALLOW_ONLY_INLINE_ALLOCATION();
     public:
-        Member<WebGLTexture> m_texture2DBinding;
-        Member<WebGLTexture> m_textureCubeMapBinding;
-        Member<WebGLTexture> m_texture3DBinding;
-        Member<WebGLTexture> m_texture2DArrayBinding;
+        RefPtrWillBeMember<WebGLTexture> m_texture2DBinding;
+        RefPtrWillBeMember<WebGLTexture> m_textureCubeMapBinding;
+        RefPtrWillBeMember<WebGLTexture> m_texture3DBinding;
+        RefPtrWillBeMember<WebGLTexture> m_texture2DArrayBinding;
 
         DECLARE_TRACE();
     };
@@ -481,17 +481,17 @@ protected:
     Timer<WebGLRenderingContextBase> m_restoreTimer;
 
     bool m_markedCanvasDirty;
-    PersistentHeapHashSetWillBeHeapHashSet<WeakMember<WebGLContextObject>> m_contextObjects;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<WebGLContextObject>> m_contextObjects;
 
-    PersistentWillBeMember<WebGLRenderingContextLostCallback> m_contextLostCallbackAdapter;
-    PersistentWillBeMember<WebGLRenderingContextErrorMessageCallback> m_errorMessageCallbackAdapter;
+    OwnPtrWillBeMember<WebGLRenderingContextLostCallback> m_contextLostCallbackAdapter;
+    OwnPtrWillBeMember<WebGLRenderingContextErrorMessageCallback> m_errorMessageCallbackAdapter;
 
     // List of bound VBO's. Used to maintain info about sizes for ARRAY_BUFFER and stored values for ELEMENT_ARRAY_BUFFER
-    PersistentWillBeMember<WebGLBuffer> m_boundArrayBuffer;
+    RefPtrWillBeMember<WebGLBuffer> m_boundArrayBuffer;
 
-    PersistentWillBeMember<WebGLVertexArrayObjectBase> m_defaultVertexArrayObject;
-    PersistentWillBeMember<WebGLVertexArrayObjectBase> m_boundVertexArrayObject;
-    void setBoundVertexArrayObject(WebGLVertexArrayObjectBase* arrayObject)
+    RefPtrWillBeMember<WebGLVertexArrayObjectBase> m_defaultVertexArrayObject;
+    RefPtrWillBeMember<WebGLVertexArrayObjectBase> m_boundVertexArrayObject;
+    void setBoundVertexArrayObject(PassRefPtrWillBeRawPtr<WebGLVertexArrayObjectBase> arrayObject)
     {
         if (arrayObject)
             m_boundVertexArrayObject = arrayObject;
@@ -530,23 +530,23 @@ protected:
     };
     Vector<VertexAttribValue> m_vertexAttribValue;
     unsigned m_maxVertexAttribs;
-    PersistentWillBeMember<WebGLBuffer> m_vertexAttrib0Buffer;
+    RefPtrWillBeMember<WebGLBuffer> m_vertexAttrib0Buffer;
     long m_vertexAttrib0BufferSize;
     GLfloat m_vertexAttrib0BufferValue[4];
     bool m_forceAttrib0BufferRefill;
     bool m_vertexAttrib0UsedBefore;
 
-    PersistentWillBeMember<WebGLProgram> m_currentProgram;
-    PersistentWillBeMember<WebGLFramebuffer> m_framebufferBinding;
-    PersistentWillBeMember<WebGLRenderbuffer> m_renderbufferBinding;
-    PersistentWillBeMember<CHROMIUMValuebuffer> m_valuebufferBinding;
+    RefPtrWillBeMember<WebGLProgram> m_currentProgram;
+    RefPtrWillBeMember<WebGLFramebuffer> m_framebufferBinding;
+    RefPtrWillBeMember<WebGLRenderbuffer> m_renderbufferBinding;
+    RefPtrWillBeMember<CHROMIUMValuebuffer> m_valuebufferBinding;
 
     GC_PLUGIN_IGNORE("crbug.com/496496")
-    PersistentHeapVectorWillBeHeapVector<TextureUnitState> m_textureUnits;
+    WillBeHeapVector<TextureUnitState> m_textureUnits;
     unsigned long m_activeTextureUnit;
 
-    PersistentWillBeMember<WebGLTexture> m_blackTexture2D;
-    PersistentWillBeMember<WebGLTexture> m_blackTextureCubeMap;
+    RefPtrWillBeMember<WebGLTexture> m_blackTexture2D;
+    RefPtrWillBeMember<WebGLTexture> m_blackTextureCubeMap;
 
     Vector<GLenum> m_compressedTextureFormats;
 
@@ -615,13 +615,19 @@ protected:
         DraftExtension                  = 0x01,
     };
 
-    class ExtensionTracker : public GarbageCollected<ExtensionTracker> {
+    class ExtensionTracker : public NoBaseWillBeGarbageCollected<ExtensionTracker> {
     public:
         ExtensionTracker(ExtensionFlags flags, const char* const* prefixes)
             : m_draft(flags & DraftExtension)
             , m_prefixes(prefixes)
         {
         }
+
+#if !ENABLE(OILPAN)
+        virtual ~ExtensionTracker()
+        {
+        }
+#endif
 
         bool draft() const
         {
@@ -631,10 +637,10 @@ protected:
         const char* const* prefixes() const;
         bool matchesNameWithPrefixes(const String&) const;
 
-        virtual WebGLExtension* getExtension(WebGLRenderingContextBase*) = 0;
+        virtual PassRefPtrWillBeRawPtr<WebGLExtension> getExtension(WebGLRenderingContextBase*) = 0;
         virtual bool supported(WebGLRenderingContextBase*) const = 0;
         virtual const char* extensionName() const = 0;
-        virtual void loseExtension(bool) = 0;
+        virtual void loseExtension() = 0;
 
         DEFINE_INLINE_VIRTUAL_TRACE() { }
 
@@ -646,12 +652,22 @@ protected:
     template <typename T>
     class TypedExtensionTracker final : public ExtensionTracker {
     public:
-        static TypedExtensionTracker<T>* create(PersistentWillBeMember<T>& extensionField, ExtensionFlags flags, const char* const* prefixes)
+        static PassOwnPtrWillBeRawPtr<TypedExtensionTracker<T>> create(RefPtrWillBeMember<T>& extensionField, ExtensionFlags flags, const char* const* prefixes)
         {
-            return new TypedExtensionTracker<T>(extensionField, flags, prefixes);
+            return adoptPtrWillBeNoop(new TypedExtensionTracker<T>(extensionField, flags, prefixes));
         }
 
-        WebGLExtension* getExtension(WebGLRenderingContextBase* context) override
+#if !ENABLE(OILPAN)
+        ~TypedExtensionTracker() override
+        {
+            if (m_extension) {
+                m_extension->lose(true);
+                m_extension = nullptr;
+            }
+        }
+#endif
+
+        PassRefPtrWillBeRawPtr<WebGLExtension> getExtension(WebGLRenderingContextBase* context) override
         {
             if (!m_extension) {
                 m_extension = T::create(context);
@@ -671,10 +687,10 @@ protected:
             return T::extensionName();
         }
 
-        void loseExtension(bool force) override
+        void loseExtension() override
         {
             if (m_extension) {
-                m_extension->lose(force);
+                m_extension->lose(false);
                 if (m_extension->isLost())
                     m_extension = nullptr;
             }
@@ -687,23 +703,23 @@ protected:
         }
 
     private:
-        TypedExtensionTracker(PersistentWillBeMember<T>& extensionField, ExtensionFlags flags, const char* const* prefixes)
+        TypedExtensionTracker(RefPtrWillBeMember<T>& extensionField, ExtensionFlags flags, const char* const* prefixes)
             : ExtensionTracker(flags, prefixes)
             , m_extensionField(extensionField)
         {
         }
 
-        PersistentWillBeMember<T>& m_extensionField;
+        RefPtrWillBeMember<T>& m_extensionField;
         // ExtensionTracker holds it's own reference to the extension to ensure
         // that it is not deleted before this object's destructor is called
-        Member<T> m_extension;
+        RefPtrWillBeMember<T> m_extension;
     };
 
     bool m_extensionEnabled[WebGLExtensionNameCount];
-    PersistentHeapVectorWillBeHeapVector<Member<ExtensionTracker>> m_extensions;
+    WillBeHeapVector<OwnPtrWillBeMember<ExtensionTracker>> m_extensions;
 
     template <typename T>
-    void registerExtension(PersistentWillBeMember<T>& extensionPtr, ExtensionFlags flags = ApprovedExtension, const char* const* prefixes = nullptr)
+    void registerExtension(RefPtrWillBeMember<T>& extensionPtr, ExtensionFlags flags = ApprovedExtension, const char* const* prefixes = 0)
     {
         m_extensions.append(TypedExtensionTracker<T>::create(extensionPtr, flags, prefixes));
     }

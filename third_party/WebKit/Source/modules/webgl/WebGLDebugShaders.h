@@ -27,6 +27,7 @@
 #define WebGLDebugShaders_h
 
 #include "modules/webgl/WebGLExtension.h"
+#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -35,7 +36,7 @@ class WebGLShader;
 class WebGLDebugShaders final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static WebGLDebugShaders* create(WebGLRenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<WebGLDebugShaders> create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 

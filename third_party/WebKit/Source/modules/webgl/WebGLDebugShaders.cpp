@@ -46,9 +46,9 @@ WebGLExtensionName WebGLDebugShaders::name() const
     return WebGLDebugShadersName;
 }
 
-WebGLDebugShaders* WebGLDebugShaders::create(WebGLRenderingContextBase* context)
+PassRefPtrWillBeRawPtr<WebGLDebugShaders> WebGLDebugShaders::create(WebGLRenderingContextBase* context)
 {
-    return new WebGLDebugShaders(context);
+    return adoptRefWillBeNoop(new WebGLDebugShaders(context));
 }
 
 String WebGLDebugShaders::getTranslatedShaderSource(WebGLShader* shader)

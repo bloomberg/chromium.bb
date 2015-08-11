@@ -29,13 +29,15 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/webgl/WebGLProgram.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace blink {
 
-class WebGLUniformLocation final : public GarbageCollected<WebGLUniformLocation>, public ScriptWrappable {
+class WebGLUniformLocation final : public RefCountedWillBeGarbageCollected<WebGLUniformLocation>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static WebGLUniformLocation* create(WebGLProgram*, GLint location);
+    static PassRefPtrWillBeRawPtr<WebGLUniformLocation> create(WebGLProgram*, GLint location);
 
     WebGLProgram* program() const;
 
@@ -47,7 +49,7 @@ protected:
     WebGLUniformLocation(WebGLProgram*, GLint location);
 
 private:
-    Member<WebGLProgram> m_program;
+    RefPtrWillBeMember<WebGLProgram> m_program;
     GLint m_location;
     unsigned m_linkCount;
 };

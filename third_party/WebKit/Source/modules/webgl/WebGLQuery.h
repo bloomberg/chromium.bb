@@ -6,6 +6,7 @@
 #define WebGLQuery_h
 
 #include "modules/webgl/WebGLSharedPlatform3DObject.h"
+#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -16,7 +17,7 @@ class WebGLQuery : public WebGLSharedPlatform3DObject {
 public:
     ~WebGLQuery() override;
 
-    static WebGLQuery* create(WebGL2RenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<WebGLQuery> create(WebGL2RenderingContextBase*);
 
     void setTarget(GLenum);
     GLenum getTarget() const { return m_target; }

@@ -25,9 +25,9 @@ WebGLExtensionName EXTsRGB::name() const
     return EXTsRGBName;
 }
 
-EXTsRGB* EXTsRGB::create(WebGLRenderingContextBase* context)
+PassRefPtrWillBeRawPtr<EXTsRGB> EXTsRGB::create(WebGLRenderingContextBase* context)
 {
-    return new EXTsRGB(context);
+    return adoptRefWillBeNoop(new EXTsRGB(context));
 }
 
 bool EXTsRGB::supported(WebGLRenderingContextBase* context)

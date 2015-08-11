@@ -38,7 +38,7 @@ namespace {
 
 class WebGLRenderbufferAttachment final : public WebGLFramebuffer::WebGLAttachment {
 public:
-    static WebGLFramebuffer::WebGLAttachment* create(WebGLRenderbuffer*);
+    static PassRefPtrWillBeRawPtr<WebGLFramebuffer::WebGLAttachment> create(WebGLRenderbuffer*);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -57,12 +57,12 @@ private:
     void attach(WebGraphicsContext3D*, GLenum target, GLenum attachment) override;
     void unattach(WebGraphicsContext3D*, GLenum target, GLenum attachment) override;
 
-    Member<WebGLRenderbuffer> m_renderbuffer;
+    RefPtrWillBeMember<WebGLRenderbuffer> m_renderbuffer;
 };
 
-WebGLFramebuffer::WebGLAttachment* WebGLRenderbufferAttachment::create(WebGLRenderbuffer* renderbuffer)
+PassRefPtrWillBeRawPtr<WebGLFramebuffer::WebGLAttachment> WebGLRenderbufferAttachment::create(WebGLRenderbuffer* renderbuffer)
 {
-    return new WebGLRenderbufferAttachment(renderbuffer);
+    return adoptRefWillBeNoop(new WebGLRenderbufferAttachment(renderbuffer));
 }
 
 DEFINE_TRACE(WebGLRenderbufferAttachment)
@@ -140,13 +140,12 @@ void WebGLRenderbufferAttachment::unattach(WebGraphicsContext3D* context, GLenum
 
 GLenum WebGLRenderbufferAttachment::type() const
 {
-    notImplemented();
     return 0;
 }
 
 class WebGLTextureAttachment final : public WebGLFramebuffer::WebGLAttachment {
 public:
-    static WebGLFramebuffer::WebGLAttachment* create(WebGLTexture*, GLenum target, GLint level);
+    static PassRefPtrWillBeRawPtr<WebGLFramebuffer::WebGLAttachment> create(WebGLTexture*, GLenum target, GLint level);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -165,14 +164,14 @@ private:
     void attach(WebGraphicsContext3D*, GLenum target, GLenum attachment) override;
     void unattach(WebGraphicsContext3D*, GLenum target, GLenum attachment) override;
 
-    Member<WebGLTexture> m_texture;
+    RefPtrWillBeMember<WebGLTexture> m_texture;
     GLenum m_target;
     GLint m_level;
 };
 
-WebGLFramebuffer::WebGLAttachment* WebGLTextureAttachment::create(WebGLTexture* texture, GLenum target, GLint level)
+PassRefPtrWillBeRawPtr<WebGLFramebuffer::WebGLAttachment> WebGLTextureAttachment::create(WebGLTexture* texture, GLenum target, GLint level)
 {
-    return new WebGLTextureAttachment(texture, target, level);
+    return adoptRefWillBeNoop(new WebGLTextureAttachment(texture, target, level));
 }
 
 DEFINE_TRACE(WebGLTextureAttachment)
@@ -325,9 +324,9 @@ WebGLFramebuffer::WebGLAttachment::~WebGLAttachment()
 {
 }
 
-WebGLFramebuffer* WebGLFramebuffer::create(WebGLRenderingContextBase* ctx)
+PassRefPtrWillBeRawPtr<WebGLFramebuffer> WebGLFramebuffer::create(WebGLRenderingContextBase* ctx)
 {
-    return new WebGLFramebuffer(ctx);
+    return adoptRefWillBeNoop(new WebGLFramebuffer(ctx));
 }
 
 WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx)
@@ -340,11 +339,14 @@ WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx)
 
 WebGLFramebuffer::~WebGLFramebuffer()
 {
-    // Attachments in |m_attachments| will be deleted from other places, so we
-    // clear it to avoid deleting those attachments in detachAndDeleteObject().
-    m_attachments.clear();
-
-    // See the comment in WebGLObject::detachAndDeleteObject().
+    // Delete the platform framebuffer resource. Explicit detachment
+    // is for the benefit of Oilpan, where the framebuffer object
+    // isn't detached when it and the WebGLRenderingContextBase object
+    // it is registered with are both finalized. Without Oilpan, the
+    // object will have been detached.
+    //
+    // To keep the code regular, the trivial detach()ment is always
+    // performed.
     detachAndDeleteObject();
 }
 
@@ -579,11 +581,17 @@ bool WebGLFramebuffer::hasStencilBuffer() const
 
 void WebGLFramebuffer::deleteObjectImpl(WebGraphicsContext3D* context3d)
 {
-    // Both the AttachmentMap and its WebGLAttachment objects are GCed
-    // objects and cannot be accessed, as they may have been finalized
+#if !ENABLE(OILPAN)
+    // With Oilpan, both the AttachmentMap and its WebGLAttachment objects are
+    // GCed objects and cannot be accessed, as they may have been finalized
     // already during the same GC sweep.
+    //
+    // The WebGLAttachment-derived classes instead handle detachment
+    // on their own when finalizing, so the explicit notification is
+    // not needed.
     for (const auto& attachment : m_attachments)
         attachment.value->onDetached(context3d);
+#endif
 
     context3d->deleteFramebuffer(m_object);
     m_object = 0;
@@ -655,7 +663,9 @@ bool WebGLFramebuffer::getReadBufferFormatAndType(GLenum* format, GLenum* type) 
 
 DEFINE_TRACE(WebGLFramebuffer)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_attachments);
+#endif
     WebGLContextObject::trace(visitor);
 }
 

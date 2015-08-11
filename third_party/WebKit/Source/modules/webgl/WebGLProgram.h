@@ -38,7 +38,7 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
 public:
     ~WebGLProgram() override;
 
-    static WebGLProgram* create(WebGLRenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<WebGLProgram> create(WebGLRenderingContextBase*);
 
     unsigned numActiveAttribLocations();
     GLint getActiveAttribLocation(GLuint index);
@@ -80,8 +80,8 @@ private:
     // program or not.
     unsigned m_linkCount;
 
-    Member<WebGLShader> m_vertexShader;
-    Member<WebGLShader> m_fragmentShader;
+    RefPtrWillBeMember<WebGLShader> m_vertexShader;
+    RefPtrWillBeMember<WebGLShader> m_fragmentShader;
 
     bool m_infoValid;
 };

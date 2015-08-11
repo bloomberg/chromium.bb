@@ -27,6 +27,7 @@
 #define WebGLShader_h
 
 #include "modules/webgl/WebGLSharedPlatform3DObject.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -36,7 +37,7 @@ class WebGLShader final : public WebGLSharedPlatform3DObject {
 public:
     ~WebGLShader() override;
 
-    static WebGLShader* create(WebGLRenderingContextBase*, GLenum);
+    static PassRefPtrWillBeRawPtr<WebGLShader> create(WebGLRenderingContextBase*, GLenum);
 
     GLenum type() const { return m_type; }
     const String& source() const { return m_source; }

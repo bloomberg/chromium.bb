@@ -44,9 +44,9 @@ WebGLExtensionName OESTextureHalfFloatLinear::name() const
     return OESTextureHalfFloatLinearName;
 }
 
-OESTextureHalfFloatLinear* OESTextureHalfFloatLinear::create(WebGLRenderingContextBase* context)
+PassRefPtrWillBeRawPtr<OESTextureHalfFloatLinear> OESTextureHalfFloatLinear::create(WebGLRenderingContextBase* context)
 {
-    return new OESTextureHalfFloatLinear(context);
+    return adoptRefWillBeNoop(new OESTextureHalfFloatLinear(context));
 }
 
 bool OESTextureHalfFloatLinear::supported(WebGLRenderingContextBase* context)

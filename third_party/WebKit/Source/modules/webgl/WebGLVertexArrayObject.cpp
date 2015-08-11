@@ -10,9 +10,9 @@
 
 namespace blink {
 
-WebGLVertexArrayObject* WebGLVertexArrayObject::create(WebGLRenderingContextBase* ctx, VaoType type)
+PassRefPtrWillBeRawPtr<WebGLVertexArrayObject> WebGLVertexArrayObject::create(WebGLRenderingContextBase* ctx, VaoType type)
 {
-    return new WebGLVertexArrayObject(ctx, type);
+    return adoptRefWillBeNoop(new WebGLVertexArrayObject(ctx, type));
 }
 
 WebGLVertexArrayObject::WebGLVertexArrayObject(WebGLRenderingContextBase* ctx, VaoType type)

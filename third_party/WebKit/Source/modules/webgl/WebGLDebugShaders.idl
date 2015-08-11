@@ -26,7 +26,7 @@
 [
     NoInterfaceObject,
     TypeChecking=Interface,
-    GarbageCollected,
+    WillBeGarbageCollected,
     SetWrapperReferenceFrom=canvas,
 ] interface WebGLDebugShaders {
     DOMString? getTranslatedShaderSource(WebGLShader? shader);

@@ -27,13 +27,14 @@
 #define EXTTextureFilterAnisotropic_h
 
 #include "modules/webgl/WebGLExtension.h"
+#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
 class EXTTextureFilterAnisotropic final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static EXTTextureFilterAnisotropic* create(WebGLRenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<EXTTextureFilterAnisotropic> create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 

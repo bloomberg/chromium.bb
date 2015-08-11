@@ -20,7 +20,7 @@ ScriptValue WebGLAny(ScriptState*, unsigned value);
 ScriptValue WebGLAny(ScriptState*, int64_t value);
 ScriptValue WebGLAny(ScriptState*, float value);
 ScriptValue WebGLAny(ScriptState*, String value);
-ScriptValue WebGLAny(ScriptState*, WebGLObject* value);
+ScriptValue WebGLAny(ScriptState*, PassRefPtrWillBeRawPtr<WebGLObject> value);
 ScriptValue WebGLAny(ScriptState*, PassRefPtr<DOMFloat32Array> value);
 ScriptValue WebGLAny(ScriptState*, PassRefPtr<DOMInt32Array> value);
 ScriptValue WebGLAny(ScriptState*, PassRefPtr<DOMUint8Array> value);

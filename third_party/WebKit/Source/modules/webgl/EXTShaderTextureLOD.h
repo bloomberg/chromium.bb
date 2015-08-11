@@ -6,13 +6,14 @@
 #define EXTShaderTextureLOD_h
 
 #include "modules/webgl/WebGLExtension.h"
+#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
 class EXTShaderTextureLOD final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static EXTShaderTextureLOD* create(WebGLRenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<EXTShaderTextureLOD> create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 

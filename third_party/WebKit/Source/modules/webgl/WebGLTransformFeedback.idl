@@ -4,6 +4,6 @@
 
 [
     RuntimeEnabled=UnsafeES3APIs,
-    GarbageCollected
+    WillBeGarbageCollected
 ] interface WebGLTransformFeedback {
 };

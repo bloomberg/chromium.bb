@@ -27,13 +27,14 @@
 #define OESTextureFloatLinear_h
 
 #include "modules/webgl/WebGLExtension.h"
+#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
 class OESTextureFloatLinear final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static OESTextureFloatLinear* create(WebGLRenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<OESTextureFloatLinear> create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 

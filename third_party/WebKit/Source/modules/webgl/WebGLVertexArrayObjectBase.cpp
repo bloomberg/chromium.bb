@@ -15,7 +15,9 @@ WebGLVertexArrayObjectBase::WebGLVertexArrayObjectBase(WebGLRenderingContextBase
     , m_object(0)
     , m_type(type)
     , m_hasEverBeenBound(false)
+#if ENABLE(OILPAN)
     , m_destructionInProgress(false)
+#endif
     , m_boundElementArrayBuffer(nullptr)
 {
     m_vertexAttribState.reserveCapacity(ctx->maxVertexAttribs());
@@ -31,12 +33,18 @@ WebGLVertexArrayObjectBase::WebGLVertexArrayObjectBase(WebGLRenderingContextBase
 
 WebGLVertexArrayObjectBase::~WebGLVertexArrayObjectBase()
 {
+#if ENABLE(OILPAN)
     m_destructionInProgress = true;
+#endif
 
-    // Delete the platform framebuffer resource, in case
-    // where this vertex array object isn't detached when it and
-    // the WebGLRenderingContextBase object it is registered with
-    // are both finalized.
+    // Delete the platform framebuffer resource. Explicit detachment
+    // is for the benefit of Oilpan, where this vertex array object
+    // isn't detached when it and the WebGLRenderingContextBase object
+    // it is registered with are both finalized. Without Oilpan, the
+    // object will have been detached.
+    //
+    // To keep the code regular, the trivial detach()ment is always
+    // performed.
     detachAndDeleteObject();
 }
 
@@ -63,15 +71,20 @@ void WebGLVertexArrayObjectBase::deleteObjectImpl(WebGraphicsContext3D* context3
         break;
     }
 
-    // Member<> objects must not be accessed during the destruction,
-    // since they could have been already finalized.
-    // The finalizers of these objects will handle their detachment
-    // by themselves.
+#if ENABLE(OILPAN)
+    // These m_boundElementArrayBuffer and m_vertexAttribState heap
+    // objects must not be accessed during destruction in the oilpan
+    // build. They could have been already finalized. The finalizers
+    // of these objects (and their elements) will themselves handle
+    // detachment.
     if (!m_destructionInProgress)
         dispatchDetached(context3d);
+#else
+    dispatchDetached(context3d);
+#endif
 }
 
-void WebGLVertexArrayObjectBase::setElementArrayBuffer(WebGLBuffer* buffer)
+void WebGLVertexArrayObjectBase::setElementArrayBuffer(PassRefPtrWillBeRawPtr<WebGLBuffer> buffer)
 {
     if (buffer)
         buffer->onAttached();
@@ -85,12 +98,12 @@ WebGLVertexArrayObjectBase::VertexAttribState* WebGLVertexArrayObjectBase::getVe
     ASSERT(index < context()->maxVertexAttribs());
     // Lazily create the vertex attribute states.
     for (size_t i = m_vertexAttribState.size(); i <= index; i++)
-        m_vertexAttribState.append(new VertexAttribState);
+        m_vertexAttribState.append(adoptPtrWillBeNoop(new VertexAttribState()));
     return m_vertexAttribState[index].get();
 }
 
 void WebGLVertexArrayObjectBase::setVertexAttribState(
-    GLuint index, GLsizei bytesPerElement, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLintptr offset, WebGLBuffer* buffer)
+    GLuint index, GLsizei bytesPerElement, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLintptr offset, PassRefPtrWillBeRawPtr<WebGLBuffer> buffer)
 {
     GLsizei validatedStride = stride ? stride : bytesPerElement;
     VertexAttribState* state = getVertexAttribState(index);
@@ -110,7 +123,7 @@ void WebGLVertexArrayObjectBase::setVertexAttribState(
     state->offset = offset;
 }
 
-void WebGLVertexArrayObjectBase::unbindBuffer(WebGLBuffer* buffer)
+void WebGLVertexArrayObjectBase::unbindBuffer(PassRefPtrWillBeRawPtr<WebGLBuffer> buffer)
 {
     if (m_boundElementArrayBuffer == buffer) {
         m_boundElementArrayBuffer->onDetached(context()->webContext());
@@ -118,7 +131,7 @@ void WebGLVertexArrayObjectBase::unbindBuffer(WebGLBuffer* buffer)
     }
 
     for (size_t i = 0; i < m_vertexAttribState.size(); ++i) {
-        VertexAttribState* state = m_vertexAttribState[i];
+        VertexAttribState* state = m_vertexAttribState[i].get();
         if (state->bufferBinding == buffer) {
             buffer->onDetached(context()->webContext());
             state->bufferBinding = nullptr;

@@ -27,13 +27,14 @@
 #define WebGLDepthTexture_h
 
 #include "modules/webgl/WebGLExtension.h"
+#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
 class WebGLDepthTexture final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static WebGLDepthTexture* create(WebGLRenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<WebGLDepthTexture> create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 

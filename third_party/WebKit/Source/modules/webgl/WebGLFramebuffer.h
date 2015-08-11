@@ -28,6 +28,8 @@
 
 #include "modules/webgl/WebGLContextObject.h"
 #include "modules/webgl/WebGLSharedObject.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace blink {
 
@@ -37,7 +39,7 @@ class WebGLTexture;
 class WebGLFramebuffer final : public WebGLContextObject {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    class WebGLAttachment : public GarbageCollectedFinalized<WebGLAttachment> {
+    class WebGLAttachment : public RefCountedWillBeGarbageCollectedFinalized<WebGLAttachment> {
     public:
         virtual ~WebGLAttachment();
 
@@ -64,7 +66,7 @@ public:
 
     ~WebGLFramebuffer() override;
 
-    static WebGLFramebuffer* create(WebGLRenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<WebGLFramebuffer> create(WebGLRenderingContextBase*);
 
     Platform3DObject object() const { return m_object; }
 
@@ -132,7 +134,7 @@ private:
 
     Platform3DObject m_object;
 
-    typedef HeapHashMap<GLenum, Member<WebGLAttachment>> AttachmentMap;
+    typedef WillBeHeapHashMap<GLenum, RefPtrWillBeMember<WebGLAttachment>> AttachmentMap;
 
     AttachmentMap m_attachments;
 

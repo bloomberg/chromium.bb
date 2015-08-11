@@ -39,6 +39,10 @@ WebGLContextObject::WebGLContextObject(WebGLRenderingContextBase* context)
 
 WebGLContextObject::~WebGLContextObject()
 {
+#if !ENABLE(OILPAN)
+    if (m_context)
+        m_context->removeContextObject(this);
+#endif
 }
 
 void WebGLContextObject::detachContext()
@@ -53,7 +57,7 @@ void WebGLContextObject::detachContext()
 
 WebGraphicsContext3D* WebGLContextObject::getAWebGraphicsContext3D() const
 {
-    return m_context ? m_context->webContext() : nullptr;
+    return m_context ? m_context->webContext() : 0;
 }
 
 DEFINE_TRACE(WebGLContextObject)

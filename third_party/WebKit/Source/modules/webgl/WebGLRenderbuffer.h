@@ -36,7 +36,7 @@ class WebGLRenderbuffer final : public WebGLSharedPlatform3DObject {
 public:
     ~WebGLRenderbuffer() override;
 
-    static WebGLRenderbuffer* create(WebGLRenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<WebGLRenderbuffer> create(WebGLRenderingContextBase*);
 
     void setInternalFormat(GLenum internalformat)
     {
@@ -56,8 +56,8 @@ public:
 
     void setHasEverBeenBound() { m_hasEverBeenBound = true; }
 
-    void setEmulatedStencilBuffer(WebGLRenderbuffer* buffer) { m_emulatedStencilBuffer = buffer; }
-    WebGLRenderbuffer* emulatedStencilBuffer() const { return m_emulatedStencilBuffer; }
+    void setEmulatedStencilBuffer(PassRefPtrWillBeRawPtr<WebGLRenderbuffer> buffer) { m_emulatedStencilBuffer = buffer; }
+    WebGLRenderbuffer* emulatedStencilBuffer() const { return m_emulatedStencilBuffer.get(); }
     void deleteEmulatedStencilBuffer(WebGraphicsContext3D* context3d);
 
     DECLARE_VIRTUAL_TRACE();
@@ -75,7 +75,7 @@ private:
 
     bool m_hasEverBeenBound;
 
-    Member<WebGLRenderbuffer> m_emulatedStencilBuffer;
+    RefPtrWillBeMember<WebGLRenderbuffer> m_emulatedStencilBuffer;
 };
 
 } // namespace blink

@@ -69,11 +69,18 @@ void WebGLObject::detach()
 
 void WebGLObject::detachAndDeleteObject()
 {
-    // To ensure that all platform objects are deleted after being detached,
-    // this method does them together.
+    // Helper method that pairs detachment with platform object
+    // deletion.
     //
-    // The individual WebGL destructors need to call detachAndDeleteObject()
-    // rather than do it based on Oilpan GC.
+    // With Oilpan enabled, objects may end up being finalized without
+    // having been detached first. Consequently, the objects force
+    // detachment first before deleting the platform object. Without
+    // Oilpan, the objects will have been detached from the 'parent'
+    // objects first and do not separately require it when finalizing.
+    //
+    // However, as detach() is trivial, the individual WebGL
+    // destructors will always call detachAndDeleteObject() rather
+    // than do it based on Oilpan being enabled.
     detach();
     deleteObject(nullptr);
 }

@@ -46,7 +46,7 @@ Platform3DObject objectOrZero(const T* object)
     return object ? object->object() : 0;
 }
 
-class WebGLObject : public GarbageCollectedFinalized<WebGLObject>, public ScriptWrappable {
+class WebGLObject : public RefCountedWillBeGarbageCollectedFinalized<WebGLObject>, public ScriptWrappable {
 public:
     virtual ~WebGLObject();
 

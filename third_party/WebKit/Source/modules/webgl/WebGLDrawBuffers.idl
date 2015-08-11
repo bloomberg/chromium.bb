@@ -28,7 +28,7 @@ typedef unsigned long GLenum;
 [
     NoInterfaceObject,
     DoNotCheckConstants,
-    GarbageCollected,
+    WillBeGarbageCollected,
     SetWrapperReferenceFrom=canvas,
 ] interface WebGLDrawBuffers {
     const GLenum COLOR_ATTACHMENT0_WEBGL = 0x8CE0;

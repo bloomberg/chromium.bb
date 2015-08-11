@@ -6,13 +6,14 @@
 #define EXTBlendMinMax_h
 
 #include "modules/webgl/WebGLExtension.h"
+#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
 class EXTBlendMinMax final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static EXTBlendMinMax* create(WebGLRenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<EXTBlendMinMax> create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 

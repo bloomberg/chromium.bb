@@ -28,7 +28,7 @@ typedef unsigned long GLenum;
 [
     NoInterfaceObject,
     DoNotCheckConstants,
-    GarbageCollected,
+    WillBeGarbageCollected,
     SetWrapperReferenceFrom=canvas,
 ] interface OESTextureHalfFloat {
     const GLenum HALF_FLOAT_OES                 = 0x8D61;

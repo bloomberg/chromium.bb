@@ -10,9 +10,9 @@
 
 namespace blink {
 
-WebGLSync* WebGLFenceSync::create(WebGL2RenderingContextBase* ctx, GLenum condition, GLbitfield flags)
+PassRefPtrWillBeRawPtr<WebGLSync> WebGLFenceSync::create(WebGL2RenderingContextBase* ctx, GLenum condition, GLbitfield flags)
 {
-    return new WebGLFenceSync(ctx, condition, flags);
+    return adoptRefWillBeNoop(new WebGLFenceSync(ctx, condition, flags));
 }
 
 WebGLFenceSync::~WebGLFenceSync()

@@ -17,7 +17,7 @@ class WebGLTransformFeedback : public WebGLSharedPlatform3DObject {
 public:
     ~WebGLTransformFeedback() override;
 
-    static WebGLTransformFeedback* create(WebGL2RenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<WebGLTransformFeedback> create(WebGL2RenderingContextBase*);
 
     GLenum getTarget() const { return m_target; }
     void setTarget(GLenum);
