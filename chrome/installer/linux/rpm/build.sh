@@ -126,6 +126,9 @@ do_package() {
   # https://qa.mandriva.com/show_bug.cgi?id=55714
   # https://bugzilla.redhat.com/show_bug.cgi?id=538158
   # https://bugzilla.novell.com/show_bug.cgi?id=556248
+  #
+  # We want to depend on liberation-fonts as well, but there is no such package
+  # for Fedora. https://bugzilla.redhat.com/show_bug.cgi?id=1252564
   DEPENDS="lsb >= 4.0, \
   libcurl.so.4${EMPTY_VERSION}${PKG_ARCH}, \
   libnss3.so(NSS_3.14.3)${PKG_ARCH}, \
