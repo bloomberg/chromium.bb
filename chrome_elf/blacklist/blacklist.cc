@@ -32,6 +32,7 @@ namespace blacklist{
 // NOTE: Please remember to update the DllHash enum in histograms.xml when
 //       adding a new value to the blacklist.
 const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
+  L"949ba8b6a9.dll",                    // Coupon Time.
   L"activedetect32.dll",                // Lenovo One Key Theater.
                                         // See crbug.com/379218.
   L"activedetect64.dll",                // Lenovo One Key Theater.
