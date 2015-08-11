@@ -535,17 +535,20 @@ config("compiler") {
       "-funwind-tables",
       "-fno-short-enums",
     ]
+    if (!is_clang) {
+      # Clang doesn't support these flags.
+      cflags += [ "-finline-limit=64" ]
+    }
     if (is_clang) {
       rebased_android_toolchain_root =
           rebase_path(android_toolchain_root, root_build_dir)
-      cflags += [
-        # TODO(hans) Enable integrated-as (crbug.com/124610).
-        "-no-integrated-as",
-        "-B${rebased_android_toolchain_root}/bin",  # Else /usr/bin/as gets picked up.
-      ]
-    } else {
-      # Clang doesn't support these flags.
-      cflags += [ "-finline-limit=64" ]
+      if (current_cpu == "arm") {
+        cflags += [
+          # TODO(hans) Enable integrated-as (crbug.com/124610).
+          "-no-integrated-as",
+          "-B${rebased_android_toolchain_root}/bin",  # Else /usr/bin/as gets picked up.
+        ]
+      }
     }
     if (is_asan) {
       # Android build relies on -Wl,--gc-sections removing unreachable code.
@@ -556,6 +559,10 @@ config("compiler") {
     }
 
     defines += [ "ANDROID" ]
+    if (is_clang) {
+      # GCC provides this as a built-in macro, but clang does not.
+      defines += [ "__ANDROID__" ]
+    }
 
     # The NDK has these things, but doesn't define the constants
     # to say that it does. Define them here instead.
@@ -592,24 +599,33 @@ config("compiler") {
 
     if (is_clang) {
       if (current_cpu == "arm") {
-        cflags += [
-          "-target",
-          "arm-linux-androideabi",
-        ]
-        ldflags += [
-          "-target",
-          "arm-linux-androideabi",
-        ]
+        _abi_target = "arm-linux-androideabi"
       } else if (current_cpu == "x86") {
-        cflags += [
-          "-target",
-          "i686-linux-androideabi",
-        ]
-        ldflags += [
-          "-target",
-          "i686-linux-androideabi",
-        ]
+        _abi_target = "i686-linux-androideabi"
+      } else if (current_cpu == "arm64") {
+        # Place holder for arm64 support, not tested.
+        _abi_target = "aarch64-linux-androideabi"
+      } else if (current_cpu == "x64") {
+        # Place holder for x64 support, not tested.
+        # TODO: Enable clang support for Android x64. http://crbug.com/346626
+        _abi_target = "x86_64-linux-androideabi"
+      } else if (current_cpu == "mipsel") {
+        # Place holder for mips support, not tested.
+        _abi_target = "mipsel-linux-androideabi"
+      } else if (current_cpu == "mips64el") {
+        # Place holder for mips64 support, not tested.
+        _abi_target = "mips64el-linux-androideabi"
+      } else {
+        assert(false, "Architecture not supported")
       }
+      cflags += [
+        "-target",
+        _abi_target,
+      ]
+      ldflags += [
+        "-target",
+        _abi_target,
+      ]
     }
   }
 
@@ -994,7 +1010,8 @@ config("chromium_code") {
       "__STDC_FORMAT_MACROS",
     ]
 
-    if (!using_sanitizer && (!is_linux || !is_clang || is_official_build)) {
+    if (!is_debug && !using_sanitizer &&
+        (!is_linux || !is_clang || is_official_build)) {
       # _FORTIFY_SOURCE isn't really supported by Clang now, see
       # http://llvm.org/bugs/show_bug.cgi?id=16821.
       # It seems to work fine with Ubuntu 12 headers though, so use it in
