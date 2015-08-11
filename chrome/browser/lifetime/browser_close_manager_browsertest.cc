@@ -546,8 +546,9 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
 
 // Test that tabs created during shutdown with beforeunload handlers can cancel
 // the shutdown.
+// Disabled for being flaky tests: crbug.com/519646
 IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
-                       TestAddTabWithBeforeUnloadDuringShutdown) {
+                       DISABLED_TestAddTabWithBeforeUnloadDuringShutdown) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   browsers_.push_back(CreateBrowser(browser()->profile()));
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
