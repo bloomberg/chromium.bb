@@ -61,6 +61,8 @@ static bool canBeAnchorNode(Node* node)
 }
 #endif
 
+// TODO(yosin) We should move |nextRenderedEditable()| to "htmlediting.cpp" with
+// |rendersInDifferentPosition()|.
 static Node* nextRenderedEditable(Node* node)
 {
     for (node = nextAtomicLeafNode(*node); node; node = nextAtomicLeafNode(*node)) {
@@ -75,6 +77,8 @@ static Node* nextRenderedEditable(Node* node)
     return 0;
 }
 
+// TODO(yosin) We should move |previousRenderedEditable()| to "htmlediting.cpp"
+// with |rendersInDifferentPosition()|.
 static Node* previousRenderedEditable(Node* node)
 {
     for (node = previousAtomicLeafNode(*node); node; node = previousAtomicLeafNode(*node)) {
@@ -549,18 +553,17 @@ bool PositionAlgorithm<Strategy>::atEndOfTree() const
     return !Strategy::parent(*anchorNode()) && m_offset >= EditingStrategy::lastOffsetForEditing(anchorNode());
 }
 
-template <typename Strategy>
-int PositionAlgorithm<Strategy>::renderedOffset() const
+// TODO(yosin) We should move |renderedOffsetOf()| to "htmlediting.cpp" with
+// |rendersInDifferentPosition()|.
+static int renderedOffsetOf(const Position& position)
 {
-    const int offset = computeEditingOffset();
-    if (!anchorNode()->isTextNode())
-        return offset;
-
-    if (!anchorNode()->layoutObject())
+    const int offset = position.computeEditingOffset();
+    Node* const anchorNode = position.anchorNode();
+    if (!anchorNode->isTextNode() || !anchorNode->layoutObject())
         return offset;
 
     int result = 0;
-    LayoutText* textLayoutObject = toLayoutText(anchorNode()->layoutObject());
+    LayoutText* textLayoutObject = toLayoutText(anchorNode->layoutObject());
     for (InlineTextBox *box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
         int start = box->start();
         int end = box->start() + box->len();
@@ -1029,17 +1032,18 @@ bool PositionAlgorithm<Strategy>::isRenderedCharacter() const
     return false;
 }
 
-template <typename Strategy>
-bool PositionAlgorithm<Strategy>::rendersInDifferentPosition(const PositionAlgorithm<Strategy> &pos) const
+// TODO(yosin) We should move |rendersInDifferentPosition()to "htmlediting.cpp"
+// with |renderedOffsetOf()|.
+bool rendersInDifferentPosition(const Position& position1, const Position& position2)
 {
-    if (isNull() || pos.isNull())
+    if (position1.isNull() || position2.isNull())
         return false;
 
-    LayoutObject* layoutObject = anchorNode()->layoutObject();
+    LayoutObject* layoutObject = position1.anchorNode()->layoutObject();
     if (!layoutObject)
         return false;
 
-    LayoutObject* posLayoutObject = pos.anchorNode()->layoutObject();
+    LayoutObject* posLayoutObject = position2.anchorNode()->layoutObject();
     if (!posLayoutObject)
         return false;
 
@@ -1047,47 +1051,47 @@ bool PositionAlgorithm<Strategy>::rendersInDifferentPosition(const PositionAlgor
         || posLayoutObject->style()->visibility() != VISIBLE)
         return false;
 
-    if (anchorNode() == pos.anchorNode()) {
-        if (isHTMLBRElement(*anchorNode()))
+    if (position1.anchorNode() == position2.anchorNode()) {
+        if (isHTMLBRElement(*position1.anchorNode()))
             return false;
 
-        if (deprecatedEditingOffset() == pos.deprecatedEditingOffset())
+        if (position1.deprecatedEditingOffset() == position2.deprecatedEditingOffset())
             return false;
 
-        if (!anchorNode()->isTextNode() && !pos.anchorNode()->isTextNode())
+        if (!position1.anchorNode()->isTextNode() && !position2.anchorNode()->isTextNode())
             return true;
     }
 
-    if (isHTMLBRElement(*anchorNode()) && pos.isCandidate())
+    if (isHTMLBRElement(*position1.anchorNode()) && position2.isCandidate())
         return true;
 
-    if (isHTMLBRElement(*pos.anchorNode()) && isCandidate())
+    if (isHTMLBRElement(*position2.anchorNode()) && position1.isCandidate())
         return true;
 
-    if (!inSameContainingBlockFlowElement(anchorNode(), pos.anchorNode()))
+    if (!inSameContainingBlockFlowElement(position1.anchorNode(), position2.anchorNode()))
         return true;
 
-    if (anchorNode()->isTextNode() && !inRenderedText())
+    if (position1.anchorNode()->isTextNode() && !position1.inRenderedText())
         return false;
 
-    if (pos.anchorNode()->isTextNode() && !pos.inRenderedText())
+    if (position2.anchorNode()->isTextNode() && !position2.inRenderedText())
         return false;
 
-    int thisRenderedOffset = renderedOffset();
-    int posRenderedOffset = pos.renderedOffset();
+    const int renderedOffset1 = renderedOffsetOf(position1);
+    const int renderedOffset2 = renderedOffsetOf(position2);
 
-    if (layoutObject == posLayoutObject && thisRenderedOffset == posRenderedOffset)
+    if (layoutObject == posLayoutObject && renderedOffset1 == renderedOffset2)
         return false;
 
-    InlineBoxPosition boxPosition1 = computeInlineBoxPosition(DOWNSTREAM);
-    InlineBoxPosition boxPosition2 = pos.computeInlineBoxPosition(DOWNSTREAM);
+    InlineBoxPosition boxPosition1 = position1.computeInlineBoxPosition(DOWNSTREAM);
+    InlineBoxPosition boxPosition2 = position2.computeInlineBoxPosition(DOWNSTREAM);
 
-    WTF_LOG(Editing, "layoutObject:           %p [%p]\n", layoutObject, boxPosition1.inlineBox);
-    WTF_LOG(Editing, "thisRenderedOffset:     %d\n", thisRenderedOffset);
-    WTF_LOG(Editing, "posLayoutObject:        %p [%p]\n", posLayoutObject, boxPosition2.inlineBox);
-    WTF_LOG(Editing, "posRenderedOffset:      %d\n", posRenderedOffset);
-    WTF_LOG(Editing, "node min/max:           %d:%d\n", caretMinOffset(anchorNode()), caretMaxOffset(anchorNode()));
-    WTF_LOG(Editing, "pos node min/max:       %d:%d\n", caretMinOffset(pos.anchorNode()), caretMaxOffset(pos.anchorNode()));
+    WTF_LOG(Editing, "layoutObject1:   %p [%p]\n", layoutObject, boxPosition1.inlineBox);
+    WTF_LOG(Editing, "renderedOffset1: %d\n", renderedOffset1);
+    WTF_LOG(Editing, "layoutObject2:   %p [%p]\n", posLayoutObject, boxPosition2.inlineBox);
+    WTF_LOG(Editing, "renderedOffset2: %d\n", renderedOffset2);
+    WTF_LOG(Editing, "node1 min/max:   %d:%d\n", caretMinOffset(position1.anchorNode()), caretMaxOffset(position1.anchorNode()));
+    WTF_LOG(Editing, "node2 min/max:   %d:%d\n", caretMinOffset(position2.anchorNode()), caretMaxOffset(position2.anchorNode()));
     WTF_LOG(Editing, "----------------------------------------------------------------------\n");
 
     if (!boxPosition1.inlineBox || !boxPosition2.inlineBox) {
@@ -1098,13 +1102,13 @@ bool PositionAlgorithm<Strategy>::rendersInDifferentPosition(const PositionAlgor
         return true;
     }
 
-    if (nextRenderedEditable(anchorNode()) == pos.anchorNode()
-        && thisRenderedOffset == caretMaxOffset(anchorNode()) && !posRenderedOffset) {
+    if (nextRenderedEditable(position1.anchorNode()) == position2.anchorNode()
+        && renderedOffset1 == caretMaxOffset(position1.anchorNode()) && !renderedOffset2) {
         return false;
     }
 
-    if (previousRenderedEditable(anchorNode()) == pos.anchorNode()
-        && !thisRenderedOffset && posRenderedOffset == caretMaxOffset(pos.anchorNode())) {
+    if (previousRenderedEditable(position1.anchorNode()) == position2.anchorNode()
+        && !renderedOffset1 && renderedOffset2 == caretMaxOffset(position2.anchorNode())) {
         return false;
     }
 

@@ -206,7 +206,6 @@ public:
     bool isCandidate() const;
     bool inRenderedText() const;
     bool isRenderedCharacter() const;
-    bool rendersInDifferentPosition(const PositionAlgorithm<Strategy>&) const;
 
     InlineBoxPosition computeInlineBoxPosition(EAffinity) const;
     InlineBoxPosition computeInlineBoxPosition(EAffinity, TextDirection primaryDirection) const;
@@ -246,8 +245,6 @@ private:
     {
         return isAfterAnchor() || isAfterChildren();
     }
-
-    int renderedOffset() const;
 
     RefPtrWillBeMember<Node> m_anchorNode;
     // m_offset can be the offset inside m_anchorNode, or if editingIgnoresContent(m_anchorNode)
@@ -457,6 +454,10 @@ inline PositionInComposedTree fromPositionInDOMTree<EditingInComposedTreeStrateg
 {
     return toPositionInComposedTree(position);
 }
+
+// TODO(yosin) We should move |rendersInDifferentPosition()| into
+// "htmlediting.cpp", since it is used only in "editing/".
+CORE_EXPORT bool rendersInDifferentPosition(const Position&, const Position&);
 
 } // namespace blink
 

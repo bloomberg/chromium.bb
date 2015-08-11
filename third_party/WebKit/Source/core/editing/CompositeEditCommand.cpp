@@ -1098,7 +1098,7 @@ void CompositeEditCommand::cleanupAfterDeletion(VisiblePosition destination)
         } else if (isBlock(node)) {
             // If caret position after deletion and destination position coincides,
             // node should not be removed.
-            if (!position.rendersInDifferentPosition(destination.deepEquivalent())) {
+            if (!rendersInDifferentPosition(position, destination.deepEquivalent())) {
                 prune(node, destinationNode);
                 return;
             }

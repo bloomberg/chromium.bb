@@ -109,8 +109,8 @@ TEST_F(PositionTest, rendersInDifferentPositionAfterAnchor)
     updateLayoutAndStyleForPainting();
     RefPtrWillBeRawPtr<Element> sample = document().getElementById("sample");
 
-    EXPECT_FALSE(Position::afterNode(sample.get()).rendersInDifferentPosition(Position(sample.get(), 1)));
-    EXPECT_FALSE(Position::lastPositionInNode(sample.get()).rendersInDifferentPosition(Position(sample.get(), 1)));
+    EXPECT_FALSE(rendersInDifferentPosition(Position::afterNode(sample.get()), Position(sample.get(), 1)));
+    EXPECT_FALSE(rendersInDifferentPosition(Position::lastPositionInNode(sample.get()), Position(sample.get(), 1)));
 }
 
 TEST_F(PositionTest, renderedOffset)
@@ -121,8 +121,8 @@ TEST_F(PositionTest, renderedOffset)
     RefPtrWillBeRawPtr<Element> sample1 = document().getElementById("sample1");
     RefPtrWillBeRawPtr<Element> sample2 = document().getElementById("sample2");
 
-    EXPECT_FALSE(Position::afterNode(sample1->firstChild()).rendersInDifferentPosition(Position(sample2->firstChild(), 0)));
-    EXPECT_FALSE(Position::lastPositionInNode(sample1->firstChild()).rendersInDifferentPosition(Position(sample2->firstChild(), 0)));
+    EXPECT_FALSE(rendersInDifferentPosition(Position::afterNode(sample1->firstChild()), Position(sample2->firstChild(), 0)));
+    EXPECT_FALSE(rendersInDifferentPosition(Position::lastPositionInNode(sample1->firstChild()), Position(sample2->firstChild(), 0)));
 }
 
 TEST_F(PositionTest, ToPositionInComposedTreeWithActiveInsertionPoint)

@@ -1143,7 +1143,7 @@ static Position previousCharacterPosition(const Position& position, EAffinity af
         if (atStartOfLine || !rendered) {
             if (currentPos.isCandidate())
                 return currentPos;
-        } else if (position.rendersInDifferentPosition(currentPos)) {
+        } else if (rendersInDifferentPosition(position, currentPos)) {
             return currentPos;
         }
     }
