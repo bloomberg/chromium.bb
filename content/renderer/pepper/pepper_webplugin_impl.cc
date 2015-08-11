@@ -64,7 +64,8 @@ PepperWebPluginImpl::PepperWebPluginImpl(
       full_frame_(params.loadManually),
       throttler_(throttler.Pass()),
       instance_object_(PP_MakeUndefined()),
-      container_(NULL) {
+      container_(NULL),
+      weak_factory_(this) {
   DCHECK(plugin_module);
   init_data_->module = plugin_module;
   init_data_->render_frame = render_frame;
@@ -97,12 +98,28 @@ bool PepperWebPluginImpl::initialize(WebPluginContainer* container) {
   // Enable script objects for this plugin.
   container->allowScriptObjects();
 
+  auto weak_this = weak_factory_.GetWeakPtr();
   bool success =
       instance_->Initialize(init_data_->arg_names, init_data_->arg_values,
                             full_frame_, throttler_.Pass());
+  // The above call to Initialize can result in re-entrancy and destruction of
+  // the plugin instance. In this case it's quite unclear whether this object
+  // could also have been destroyed. We could return false here, but it would be
+  // better if this object was guaranteed to outlast the recursive call.
+  // Otherwise, the caller of this function would also have to take care that,
+  // in the case of the object being deleted, we never access it again, and we
+  // would just keep passing that responsibility further up the call stack.
+  // Classes tend not to be written with this possibility in mind so it's best
+  // to make this assumption as far down the call stack (as close to the
+  // re-entrant call) as possible. Also take care not to access the plugin
+  // instance again in that case. crbug.com/487146.
+  CHECK(weak_this);
+
   if (!success) {
-    instance_->Delete();
-    instance_ = NULL;
+    if (instance_) {
+      instance_->Delete();
+      instance_ = NULL;
+    }
 
     blink::WebPlugin* replacement_plugin =
         GetContentClient()->renderer()->CreatePluginReplacement(

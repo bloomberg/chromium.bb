@@ -105,6 +105,7 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   gfx::Rect plugin_rect_;
   PP_Var instance_object_;
   blink::WebPluginContainer* container_;
+  base::WeakPtrFactory<PepperWebPluginImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperWebPluginImpl);
 };
