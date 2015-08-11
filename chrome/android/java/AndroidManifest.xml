@@ -325,12 +325,17 @@ by a child template that "extends" this file.
                                that users don't have any instances of the original Activity still
                                running.
         -->
-        <activity-alias android:name="com.google.android.apps.chrome.webapps.WebappManager"
-            android:targetActivity="org.chromium.chrome.browser.document.ChromeLauncherActivity">
+        <activity android:name="org.chromium.chrome.browser.webapps.WebappLauncherActivity"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:taskAffinity=""
+            android:excludeFromRecents="true">
             <intent-filter>
                 <action android:name="com.google.android.apps.chrome.webapps.WebappManager.ACTION_START_WEBAPP" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+        </activity>
+        <activity-alias android:name="com.google.android.apps.chrome.webapps.WebappManager"
+            android:targetActivity="org.chromium.chrome.browser.webapps.WebappLauncherActivity">
         </activity-alias>
         <activity android:name="org.chromium.chrome.browser.webapps.WebappActivity"
             android:theme="@style/MainTheme"

@@ -23,7 +23,6 @@ import android.os.Bundle;
 import android.provider.Browser;
 import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.util.Log;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -37,7 +36,6 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
-import org.chromium.chrome.browser.WebappAuthenticator;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
@@ -58,11 +56,8 @@ import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.webapps.WebappActivity;
-import org.chromium.chrome.browser.webapps.WebappInfo;
 import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.ui.base.PageTransition;
 
 import java.lang.ref.WeakReference;
@@ -74,20 +69,6 @@ import java.util.List;
  */
 public class ChromeLauncherActivity extends Activity
         implements IntentHandler.IntentHandlerDelegate {
-    /**
-     * Action fired when an Intent is trying to launch a WebappActivity.
-     * Never change the package name or the Intents will fail to launch.
-     */
-    public static final String ACTION_START_WEBAPP =
-            "com.google.android.apps.chrome.webapps.WebappManager.ACTION_START_WEBAPP";
-
-    /**
-     * Extra indicating that a Tab is trying to bring its WebappActivity to the foreground.
-     * Never change the package name or the Intents will fail to launch.
-     */
-    public static final String EXTRA_BRING_WEBAPP_TO_FRONT =
-            "com.google.android.apps.chrome.EXTRA_BRING_WEBAPP_TO_FRONT";
-
     /**
      * Extra indicating launch mode used.
      */
@@ -169,19 +150,6 @@ public class ChromeLauncherActivity extends Activity
         if (handleCustomTabActivityIntent()) {
             finish();
             return;
-        }
-
-        // Check if we should launch a WebappActivity.
-        if (IntentUtils.safeGetBooleanExtra(getIntent(), EXTRA_BRING_WEBAPP_TO_FRONT, false)
-                || TextUtils.equals(getIntent().getAction(), ACTION_START_WEBAPP)) {
-            Intent fallbackIntent = launchWebapp(getIntent());
-            if (fallbackIntent == null) {
-                ApiCompatibilityUtils.finishAndRemoveTask(this);
-                return;
-            } else {
-                // Try to launch the URL as a regular VIEW intent.
-                setIntent(fallbackIntent);
-            }
         }
 
         // Check if we should launch the ChromeTabbedActivity.
@@ -770,52 +738,6 @@ public class ChromeLauncherActivity extends Activity
             sMoveToFrontExceptionHistogram.recordHit();
         }
         return false;
-    }
-
-    /**
-     * Tries to launch a WebappActivity for the given Intent.
-     * @return Intent to fire if the webapp Intent failed to launch because of security checks,
-     *         null otherwise.
-     */
-    private Intent launchWebapp(Intent intent) {
-        String webappId = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ID);
-        String webappUrl = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_URL);
-        String webappIcon = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ICON);
-        int webappOrientation = IntentUtils.safeGetIntExtra(intent,
-                ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.DEFAULT);
-        int webappSource = IntentUtils.safeGetIntExtra(intent,
-                ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
-
-        String webappName = WebappInfo.nameFromIntent(intent);
-        String webappShortName = WebappInfo.shortNameFromIntent(intent);
-
-        if (webappId != null && webappUrl != null) {
-            String webappMacString = IntentUtils.safeGetStringExtra(
-                    intent, ShortcutHelper.EXTRA_MAC);
-            byte[] webappMac =
-                    webappMacString == null ? null : Base64.decode(webappMacString, Base64.DEFAULT);
-
-            if (webappMac != null && WebappAuthenticator.isUrlValid(this, webappUrl, webappMac)) {
-                if (TextUtils.equals(ACTION_START_WEBAPP, intent.getAction())) {
-                    LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(
-                            webappUrl, webappSource);
-                }
-
-                WebappActivity.launchInstance(this, webappId, webappUrl,
-                        webappIcon, webappName, webappShortName, webappOrientation, webappSource);
-            } else {
-                Log.e(TAG, "Shortcut (" + webappUrl + ") opened in Chrome.");
-
-                // Tried and failed.  Change the intent action and try the URL with a VIEW Intent.
-                Intent fallbackIntent = new Intent(intent);
-                fallbackIntent.setAction(Intent.ACTION_VIEW);
-                fallbackIntent.setData(Uri.parse(webappUrl));
-                fallbackIntent.putExtra(BookmarkUtils.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
-                fallbackIntent.putExtra(ShortcutHelper.EXTRA_SOURCE, webappSource);
-                return fallbackIntent;
-            }
-        }
-        return null;
     }
 
     /**

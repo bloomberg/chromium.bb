@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextmenu.ContextMenuHelper;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
-import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
@@ -317,9 +316,8 @@ public class FullScreenActivityTab extends ChromeTab {
             String url = webAppInfo.uri().toString();
 
             Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_MAIN);
+            intent.setAction(WebappLauncherActivity.ACTION_START_WEBAPP);
             intent.setPackage(mActivity.getPackageName());
-            intent.putExtra(ChromeLauncherActivity.EXTRA_BRING_WEBAPP_TO_FRONT, true);
 
             intent.putExtra(ShortcutHelper.EXTRA_ICON, webAppInfo.getEncodedIcon());
             intent.putExtra(ShortcutHelper.EXTRA_ID, webAppInfo.id());
