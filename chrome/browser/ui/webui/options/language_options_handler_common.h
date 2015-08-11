@@ -33,12 +33,10 @@ class LanguageOptionsHandlerCommon
   void RegisterMessages() override;
 
   // SpellcheckHunspellDictionary::Observer implementation.
-  void OnHunspellDictionaryInitialized(const std::string& language) override;
-  void OnHunspellDictionaryDownloadBegin(const std::string& language) override;
-  void OnHunspellDictionaryDownloadSuccess(
-      const std::string& language) override;
-  void OnHunspellDictionaryDownloadFailure(
-      const std::string& language) override;
+  void OnHunspellDictionaryInitialized() override;
+  void OnHunspellDictionaryDownloadBegin() override;
+  void OnHunspellDictionaryDownloadSuccess() override;
+  void OnHunspellDictionaryDownloadFailure() override;
 
   // The following static methods are public for ease of testing.
 
@@ -77,16 +75,21 @@ class LanguageOptionsHandlerCommon
   void SpellCheckLanguageChangeCallback(const base::ListValue* args);
 
   // Called when the user clicks "Retry" button for a spellcheck dictionary that
-  // has failed to download. |args| will contain the language code as a string
-  // (ex. "fr").
+  // has failed to download.
   void RetrySpellcheckDictionaryDownload(const base::ListValue* args);
 
   // Called when the user saves the language list preferences.
   void UpdateLanguageListCallback(const base::ListValue* args);
 
-  // Returns a pointer to the browser SpellcheckService. Can be null if the
-  // service has already shut down.
-  SpellcheckService* GetSpellcheckService();
+  // Updates the hunspell dictionary that is used for spellchecking.
+  void RefreshHunspellDictionary();
+
+  // Returns the hunspell dictionary that is used for spellchecking. Null when
+  // no languages are selected for spellchecking.
+  base::WeakPtr<SpellcheckHunspellDictionary>& GetHunspellDictionary();
+
+  // The hunspell dictionary that is used for spellchecking. Might be null.
+  base::WeakPtr<SpellcheckHunspellDictionary> hunspell_dictionary_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageOptionsHandlerCommon);
 };

@@ -258,21 +258,17 @@ void SpellcheckService::OnCustomDictionaryChanged(
   }
 }
 
-void SpellcheckService::OnHunspellDictionaryInitialized(
-    const std::string& language) {
+void SpellcheckService::OnHunspellDictionaryInitialized() {
   InitForAllRenderers();
 }
 
-void SpellcheckService::OnHunspellDictionaryDownloadBegin(
-    const std::string& language) {
+void SpellcheckService::OnHunspellDictionaryDownloadBegin() {
 }
 
-void SpellcheckService::OnHunspellDictionaryDownloadSuccess(
-    const std::string& language) {
+void SpellcheckService::OnHunspellDictionaryDownloadSuccess() {
 }
 
-void SpellcheckService::OnHunspellDictionaryDownloadFailure(
-    const std::string& language) {
+void SpellcheckService::OnHunspellDictionaryDownloadFailure() {
 }
 
 // static

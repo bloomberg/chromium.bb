@@ -92,7 +92,7 @@ TEST_F('LanguagesOptionsDictionaryDownloadWebUITest',
 TEST_F('LanguagesOptionsDictionaryDownloadWebUITest',
        'testdictionaryDownloadRetry',
        function() {
-  this.mockHandler.expects(once()).retryDictionaryDownload('en-US').
+  this.mockHandler.expects(once()).retryDictionaryDownload().
       will(callFunction(function() {
         options.LanguageOptions.onDictionaryDownloadBegin('en-US');
       }));
