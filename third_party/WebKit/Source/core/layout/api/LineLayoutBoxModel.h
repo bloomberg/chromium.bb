@@ -83,6 +83,16 @@ public:
         return toBoxModel()->marginRight();
     }
 
+    LayoutUnit lineHeight(bool firstLine, LineDirectionMode lineDirectionMode, LinePositionMode linePositionMode) const
+    {
+        return toBoxModel()->lineHeight(firstLine, lineDirectionMode, linePositionMode);
+    }
+
+    int baselinePosition(FontBaseline fontBaseline, bool firstLine, LineDirectionMode lineDirectionMode, LinePositionMode linePositionMode) const
+    {
+        return toBoxModel()->baselinePosition(fontBaseline, firstLine, lineDirectionMode, linePositionMode);
+    }
+
 private:
     LayoutBoxModelObject* toBoxModel() { return toLayoutBoxModelObject(layoutObject()); }
     const LayoutBoxModelObject* toBoxModel() const { return toLayoutBoxModelObject(layoutObject()); }

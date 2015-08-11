@@ -215,6 +215,11 @@ public:
         return m_layoutObject->isRubyRun();
     }
 
+    bool isRubyBase() const
+    {
+        return m_layoutObject->isRubyBase();
+    }
+
     bool isSVGInlineText() const
     {
         return m_layoutObject->isSVGInlineText();
@@ -279,6 +284,22 @@ public:
     {
         return m_layoutObject->selectionBackgroundColor();
     }
+
+#ifndef NDEBUG
+
+    const char* name() const
+    {
+        return m_layoutObject->name();
+    }
+
+    // Intentionally returns a void* to avoid exposing LayoutObject* to the line
+    // layout code.
+    void* debugPointer() const
+    {
+        return m_layoutObject;
+    }
+
+#endif
 
 protected:
     LayoutObject* layoutObject() { return m_layoutObject; }

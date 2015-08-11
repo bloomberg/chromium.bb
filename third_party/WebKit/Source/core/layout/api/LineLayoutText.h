@@ -27,6 +27,21 @@ public:
 
     LineLayoutText() { }
 
+    void extractTextBox(InlineTextBox* inlineTextBox)
+    {
+        toText()->extractTextBox(inlineTextBox);
+    }
+
+    void attachTextBox(InlineTextBox* inlineTextBox)
+    {
+        toText()->attachTextBox(inlineTextBox);
+    }
+
+    void removeTextBox(InlineTextBox* inlineTextBox)
+    {
+        toText()->removeTextBox(inlineTextBox);
+    }
+
     bool isWordBreak() const
     {
         return toText()->isWordBreak();
@@ -87,9 +102,24 @@ public:
         return toText()->width(from, len, font, xPos, textDirection, fallbackFonts, glyphBounds);
     }
 
+    float width(unsigned from, unsigned len, LayoutUnit xPos, TextDirection textDirection, bool firstLine) const
+    {
+        return toText()->width(from, len, xPos, textDirection, firstLine);
+    }
+
     float hyphenWidth(const Font& font, TextDirection textDirection)
     {
         return toText()->hyphenWidth(font, textDirection);
+    }
+
+    SelectionState selectionState() const
+    {
+        return toText()->selectionState();
+    }
+
+    void selectionStartEnd(int& spos, int& epos) const
+    {
+        return toText()->selectionStartEnd(spos, epos);
     }
 
 private:
