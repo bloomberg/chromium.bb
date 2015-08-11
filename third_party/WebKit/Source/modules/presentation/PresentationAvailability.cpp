@@ -41,7 +41,7 @@ PresentationAvailability* PresentationAvailability::take(ScriptPromiseResolver* 
 
 PresentationAvailability::PresentationAvailability(ExecutionContext* executionContext, bool value)
     : ActiveDOMObject(executionContext)
-    , DocumentVisibilityObserver(*toDocument(executionContext))
+    , PageLifecycleObserver(toDocument(executionContext)->page())
     , m_value(value)
     , m_state(State::Active)
 {
@@ -50,7 +50,6 @@ PresentationAvailability::PresentationAvailability(ExecutionContext* executionCo
 
 PresentationAvailability::~PresentationAvailability()
 {
-    setState(State::Inactive);
 }
 
 const AtomicString& PresentationAvailability::interfaceName() const
@@ -92,7 +91,7 @@ void PresentationAvailability::stop()
     setState(State::Inactive);
 }
 
-void PresentationAvailability::didChangeVisibilityState(PageVisibilityState visibility)
+void PresentationAvailability::pageVisibilityChanged()
 {
     updateListening();
 }
@@ -123,7 +122,7 @@ bool PresentationAvailability::value() const
 DEFINE_TRACE(PresentationAvailability)
 {
     RefCountedGarbageCollectedEventTargetWithInlineData<PresentationAvailability>::trace(visitor);
-    DocumentVisibilityObserver::trace(visitor);
+    PageLifecycleObserver::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

@@ -6,8 +6,8 @@
 #define PresentationAvailability_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/DocumentVisibilityObserver.h"
 #include "core/events/EventTarget.h"
+#include "core/page/PageLifecycleObserver.h"
 #include "public/platform/modules/presentation/WebPresentationAvailabilityObserver.h"
 
 namespace blink {
@@ -22,7 +22,7 @@ class ScriptPromiseResolver;
 class PresentationAvailability final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<PresentationAvailability>
     , public ActiveDOMObject
-    , public DocumentVisibilityObserver
+    , public PageLifecycleObserver
     , public WebPresentationAvailabilityObserver {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PresentationAvailability);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PresentationAvailability);
@@ -47,8 +47,8 @@ public:
     void resume() override;
     void stop() override;
 
-    // DocumentVisibilityObserver implementation.
-    void didChangeVisibilityState(PageVisibilityState) override;
+    // PageLifecycleObserver implementation.
+    void pageVisibilityChanged() override;
 
     bool value() const;
 
