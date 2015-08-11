@@ -54,6 +54,9 @@ const String getMessageForResponseError(WebServiceWorkerResponseError error, con
     case WebServiceWorkerResponseErrorResponseTypeOpaqueForClientRequest:
         errorMessage = errorMessage + "an \"opaque\" response was used for a client request.";
         break;
+    case WebServiceWorkerResponseErrorResponseTypeOpaqueRedirect:
+        errorMessage = errorMessage + "an \"opaqueredirect\" type response was used for a request which is not a navigation request.";
+        break;
     case WebServiceWorkerResponseErrorUnknown:
     default:
         errorMessage = errorMessage + "an unexpected error occurred.";
@@ -62,9 +65,14 @@ const String getMessageForResponseError(WebServiceWorkerResponseError error, con
     return errorMessage;
 }
 
+bool isNavigationRequest(WebURLRequest::FrameType frameType)
+{
+    return frameType != WebURLRequest::FrameTypeNone;
+}
+
 bool isClientRequest(WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext)
 {
-    return frameType != WebURLRequest::FrameTypeNone || requestContext == WebURLRequest::RequestContextSharedWorker || requestContext == WebURLRequest::RequestContextWorker;
+    return isNavigationRequest(frameType) || requestContext == WebURLRequest::RequestContextSharedWorker || requestContext == WebURLRequest::RequestContextWorker;
 }
 
 class NoopLoaderClient final : public GarbageCollectedFinalized<NoopLoaderClient>, public FetchDataLoader::Client {
@@ -209,6 +217,10 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
             responseWasRejected(WebServiceWorkerResponseErrorResponseTypeOpaqueForClientRequest);
             return;
         }
+    }
+    if (!isNavigationRequest(m_frameType) && responseType == FetchResponseData::OpaqueRedirectType) {
+        responseWasRejected(WebServiceWorkerResponseErrorResponseTypeOpaqueRedirect);
+        return;
     }
     if (response->bodyUsed()) {
         responseWasRejected(WebServiceWorkerResponseErrorBodyUsed);

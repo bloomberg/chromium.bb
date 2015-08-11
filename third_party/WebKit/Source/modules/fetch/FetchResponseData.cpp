@@ -36,6 +36,9 @@ WebServiceWorkerResponseType fetchTypeToWebType(FetchResponseData::Type fetchTyp
     case FetchResponseData::OpaqueType:
         webType = WebServiceWorkerResponseTypeOpaque;
         break;
+    case FetchResponseData::OpaqueRedirectType:
+        webType = WebServiceWorkerResponseTypeOpaqueRedirect;
+        break;
     }
     return webType;
 }
@@ -120,6 +123,17 @@ FetchResponseData* FetchResponseData::createOpaqueFilteredResponse()
     return response;
 }
 
+FetchResponseData* FetchResponseData::createOpaqueRedirectFilteredResponse()
+{
+    // "An opaque-redirect filtered response is a filtered response whose type
+    // is |opaqueredirect|, status is 0, status message is the empty byte
+    // sequence, header list is the empty list, body is null, and cache state is
+    // |none|.
+    FetchResponseData* response = new FetchResponseData(OpaqueRedirectType, 0, "");
+    response->m_internalResponse = this;
+    return response;
+}
+
 String FetchResponseData::mimeType() const
 {
     return m_mimeType;
@@ -183,6 +197,7 @@ FetchResponseData* FetchResponseData::clone(ExecutionContext* executionContext)
         ASSERT(!m_buffer->hasBody());
         break;
     case OpaqueType:
+    case OpaqueRedirectType:
         ASSERT(m_internalResponse);
         ASSERT(!m_buffer->hasBody());
         ASSERT(m_internalResponse->m_type == DefaultType);

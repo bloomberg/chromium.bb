@@ -49,6 +49,7 @@ public:
     String referrer() const;
     String mode() const;
     String credentials() const;
+    String redirect() const;
 
     // From Request.idl:
     Request* clone(ExceptionState&);

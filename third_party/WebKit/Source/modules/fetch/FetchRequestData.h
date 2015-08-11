@@ -81,6 +81,8 @@ public:
     WebURLRequest::FetchRequestMode mode() const { return m_mode; }
     void setCredentials(WebURLRequest::FetchCredentialsMode credentials) { m_credentials = credentials; }
     WebURLRequest::FetchCredentialsMode credentials() const { return m_credentials; }
+    void setRedirect(WebURLRequest::FetchRedirectMode redirect) { m_redirect = redirect; }
+    WebURLRequest::FetchRedirectMode redirect() const { return m_redirect; }
     void setResponseTainting(Tainting tainting) { m_responseTainting = tainting; }
     Tainting tainting() const { return m_responseTainting; }
     FetchHeaderList* headerList() const { return m_headerList.get(); }
@@ -112,8 +114,8 @@ private:
     // FIXME: Support m_synchronousFlag;
     WebURLRequest::FetchRequestMode m_mode;
     WebURLRequest::FetchCredentialsMode m_credentials;
+    WebURLRequest::FetchRedirectMode m_redirect;
     // FIXME: Support m_useURLCredentialsFlag;
-    // FIXME: Support m_manualRedirectFlag;
     // FIXME: Support m_redirectCount;
     Tainting m_responseTainting;
     Member<BodyStreamBuffer> m_buffer;

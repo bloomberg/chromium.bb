@@ -52,6 +52,9 @@ FetchResponseData* createFetchResponseDataFromWebResponse(ExecutionContext* exec
     case WebServiceWorkerResponseTypeOpaque:
         response = response->createOpaqueFilteredResponse();
         break;
+    case WebServiceWorkerResponseTypeOpaqueRedirect:
+        response = response->createOpaqueRedirectFilteredResponse();
+        break;
     case WebServiceWorkerResponseTypeDefault:
         break;
     case WebServiceWorkerResponseTypeError:
@@ -290,6 +293,8 @@ String Response::type() const
         return "error";
     case FetchResponseData::OpaqueType:
         return "opaque";
+    case FetchResponseData::OpaqueRedirectType:
+        return "opaqueredirect";
     }
     ASSERT_NOT_REACHED();
     return "";

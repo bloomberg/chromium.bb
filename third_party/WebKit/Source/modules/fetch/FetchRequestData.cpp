@@ -36,6 +36,7 @@ FetchRequestData* FetchRequestData::create(ExecutionContext* executionContext, c
     request->m_referrer.setURL(webRequest.referrer());
     request->setMode(webRequest.mode());
     request->setCredentials(webRequest.credentialsMode());
+    request->setRedirect(webRequest.redirectMode());
     request->setMIMEType(request->m_headerList->extractMIMEType());
     return request;
 }
@@ -53,6 +54,7 @@ FetchRequestData* FetchRequestData::cloneExceptBody()
     request->m_referrer = m_referrer;
     request->m_mode = m_mode;
     request->m_credentials = m_credentials;
+    request->m_redirect = m_redirect;
     request->m_responseTainting = m_responseTainting;
     request->m_mimeType = m_mimeType;
     return request;
@@ -93,6 +95,7 @@ FetchRequestData::FetchRequestData()
     , m_sameOriginDataURLFlag(false)
     , m_mode(WebURLRequest::FetchRequestModeNoCORS)
     , m_credentials(WebURLRequest::FetchCredentialsModeOmit)
+    , m_redirect(WebURLRequest::FetchRedirectModeFollow)
     , m_responseTainting(BasicTainting)
     , m_buffer(new BodyStreamBuffer)
 {

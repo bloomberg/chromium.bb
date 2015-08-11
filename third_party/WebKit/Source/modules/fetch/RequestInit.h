@@ -28,6 +28,7 @@ public:
     RefPtr<BlobDataHandle> bodyBlobHandle;
     String mode;
     String credentials;
+    String redirect;
 };
 
 }

@@ -17,6 +17,7 @@ public:
     WebServiceWorkerRequestPrivate()
         : m_mode(WebURLRequest::FetchRequestModeNoCORS)
         , m_credentialsMode(WebURLRequest::FetchCredentialsModeOmit)
+        , m_redirectMode(WebURLRequest::FetchRedirectModeFollow)
         , m_requestContext(WebURLRequest::RequestContextUnspecified)
         , m_frameType(WebURLRequest::FrameTypeNone)
         , m_isReload(false)
@@ -29,6 +30,7 @@ public:
     Referrer m_referrer;
     WebURLRequest::FetchRequestMode m_mode;
     WebURLRequest::FetchCredentialsMode m_credentialsMode;
+    WebURLRequest::FetchRedirectMode m_redirectMode;
     WebURLRequest::RequestContext m_requestContext;
     WebURLRequest::FrameType m_frameType;
     bool m_isReload;
@@ -144,6 +146,16 @@ void WebServiceWorkerRequest::setCredentialsMode(WebURLRequest::FetchCredentials
 WebURLRequest::FetchCredentialsMode WebServiceWorkerRequest::credentialsMode() const
 {
     return m_private->m_credentialsMode;
+}
+
+void WebServiceWorkerRequest::setRedirectMode(WebURLRequest::FetchRedirectMode redirectMode)
+{
+    m_private->m_redirectMode = redirectMode;
+}
+
+WebURLRequest::FetchRedirectMode WebServiceWorkerRequest::redirectMode() const
+{
+    return m_private->m_redirectMode;
 }
 
 void WebServiceWorkerRequest::setRequestContext(WebURLRequest::RequestContext requestContext)

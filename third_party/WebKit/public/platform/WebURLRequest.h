@@ -123,6 +123,12 @@ public:
         FetchCredentialsModeInclude
     };
 
+    enum FetchRedirectMode {
+        FetchRedirectModeFollow,
+        FetchRedirectModeError,
+        FetchRedirectModeManual
+    };
+
     // Used to report performance metrics timed from the UI action that
     // triggered them (as opposed to navigation start time used in the
     // Navigation Timing API).
@@ -257,6 +263,10 @@ public:
     // The credentials mode which will be passed to the ServiceWorker.
     BLINK_PLATFORM_EXPORT FetchCredentialsMode fetchCredentialsMode() const;
     BLINK_PLATFORM_EXPORT void setFetchCredentialsMode(FetchCredentialsMode);
+
+    // The redirect mode which is used in Fetch API.
+    BLINK_PLATFORM_EXPORT FetchRedirectMode fetchRedirectMode() const;
+    BLINK_PLATFORM_EXPORT void setFetchRedirectMode(FetchRedirectMode);
 
     // Extra data associated with the underlying resource request. Resource
     // requests can be copied. If non-null, each copy of a resource requests

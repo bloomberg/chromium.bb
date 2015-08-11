@@ -61,6 +61,7 @@ PassOwnPtr<ResourceRequest> ResourceRequest::adopt(PassOwnPtr<CrossThreadResourc
     request->setFrameType(data->m_frameType);
     request->setFetchRequestMode(data->m_fetchRequestMode);
     request->setFetchCredentialsMode(data->m_fetchCredentialsMode);
+    request->setFetchRedirectMode(data->m_fetchRedirectMode);
     request->m_referrerPolicy = data->m_referrerPolicy;
     request->m_didSetHTTPReferrer = data->m_didSetHTTPReferrer;
     request->m_checkForBrowserSideNavigation = data->m_checkForBrowserSideNavigation;
@@ -100,6 +101,7 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
     data->m_frameType = m_frameType;
     data->m_fetchRequestMode = m_fetchRequestMode;
     data->m_fetchCredentialsMode = m_fetchCredentialsMode;
+    data->m_fetchRedirectMode = m_fetchRedirectMode;
     data->m_referrerPolicy = m_referrerPolicy;
     data->m_didSetHTTPReferrer = m_didSetHTTPReferrer;
     data->m_checkForBrowserSideNavigation = m_checkForBrowserSideNavigation;
@@ -444,6 +446,7 @@ void ResourceRequest::initialize(const KURL& url)
     // with CORS modes in updateRequestForAccessControl if we're called in a
     // context which requires it.
     m_fetchCredentialsMode = WebURLRequest::FetchCredentialsModeSameOrigin;
+    m_fetchRedirectMode = WebURLRequest::FetchRedirectModeFollow;
     m_referrerPolicy = ReferrerPolicyDefault;
     m_didSetHTTPReferrer = false;
     m_checkForBrowserSideNavigation = true;

@@ -37,6 +37,15 @@
 
 namespace blink {
 
+namespace {
+
+bool IsRedirectStatusCode(int statusCode)
+{
+    return (statusCode == 301 || statusCode == 302 || statusCode == 303 || statusCode == 307 || statusCode == 308);
+}
+
+} // namespace
+
 class FetchManager::Loader final : public NoBaseWillBeGarbageCollectedFinalized<FetchManager::Loader>, public ThreadableLoaderClient, public ContextLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FetchManager::Loader);
 public:
@@ -130,17 +139,39 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
     responseData->setURL(response.url());
     responseData->setMIMEType(response.mimeType());
 
-    FetchResponseData* taintedResponse = responseData;
-    switch (m_request->tainting()) {
-    case FetchRequestData::BasicTainting:
-        taintedResponse = responseData->createBasicFilteredResponse();
-        break;
-    case FetchRequestData::CORSTainting:
-        taintedResponse = responseData->createCORSFilteredResponse();
-        break;
-    case FetchRequestData::OpaqueTainting:
-        taintedResponse = responseData->createOpaqueFilteredResponse();
-        break;
+    FetchResponseData* taintedResponse = nullptr;
+
+    if (IsRedirectStatusCode(m_responseHttpStatusCode)) {
+        Vector<String> locations;
+        responseData->headerList()->getAll("location", locations);
+        if (locations.size() > 1) {
+            performNetworkError("Multiple Location header.");
+            return;
+        }
+        if (locations.size() == 1) {
+            KURL locationURL(m_request->url(), locations[0]);
+            if (!locationURL.isValid()) {
+                performNetworkError("Invalid Location header.");
+                return;
+            }
+            ASSERT(m_request->redirect() == WebURLRequest::FetchRedirectModeManual);
+            taintedResponse = responseData->createOpaqueRedirectFilteredResponse();
+        }
+        // When the location header doesn't exist, we don't treat the response
+        // as a redirect response, and execute tainting.
+    }
+    if (!taintedResponse) {
+        switch (m_request->tainting()) {
+        case FetchRequestData::BasicTainting:
+            taintedResponse = responseData->createBasicFilteredResponse();
+            break;
+        case FetchRequestData::CORSTainting:
+            taintedResponse = responseData->createCORSFilteredResponse();
+            break;
+        case FetchRequestData::OpaqueTainting:
+            taintedResponse = responseData->createOpaqueFilteredResponse();
+            break;
+        }
     }
     Response* r = Response::create(m_resolver->executionContext(), taintedResponse);
     r->headers()->setGuard(Headers::ImmutableGuard);
@@ -335,7 +366,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
             request.setHTTPBody(httpBody);
         }
     }
-
+    request.setFetchRedirectMode(m_request->redirect());
     request.setUseStreamOnResponse(true);
 
     // "2. Append `Referer`/empty byte sequence, if |HTTPRequest|'s |referrer|

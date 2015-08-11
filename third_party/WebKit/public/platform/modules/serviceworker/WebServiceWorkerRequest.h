@@ -67,6 +67,9 @@ public:
     void setCredentialsMode(WebURLRequest::FetchCredentialsMode);
     WebURLRequest::FetchCredentialsMode credentialsMode() const;
 
+    void setRedirectMode(WebURLRequest::FetchRedirectMode);
+    WebURLRequest::FetchRedirectMode redirectMode() const;
+
     void setRequestContext(WebURLRequest::RequestContext);
     WebURLRequest::RequestContext requestContext() const;
 

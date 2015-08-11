@@ -19,7 +19,8 @@ enum WebServiceWorkerResponseError {
     WebServiceWorkerResponseErrorResponseTypeNotBasicOrDefault,
     WebServiceWorkerResponseErrorBodyUsed,
     WebServiceWorkerResponseErrorResponseTypeOpaqueForClientRequest,
-    WebServiceWorkerResponseErrorLast = WebServiceWorkerResponseErrorResponseTypeOpaqueForClientRequest
+    WebServiceWorkerResponseErrorResponseTypeOpaqueRedirect,
+    WebServiceWorkerResponseErrorLast = WebServiceWorkerResponseErrorResponseTypeOpaqueRedirect
 };
 
 } // namespace blink

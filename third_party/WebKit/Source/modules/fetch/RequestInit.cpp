@@ -31,6 +31,7 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
     }
     DictionaryHelper::get(options, "mode", mode);
     DictionaryHelper::get(options, "credentials", credentials);
+    DictionaryHelper::get(options, "redirect", redirect);
 
     v8::Local<v8::Value> body;
     if (!DictionaryHelper::get(options, "body", body) || body->IsUndefined() || body->IsNull())

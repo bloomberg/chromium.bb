@@ -209,6 +209,9 @@ public:
     WebURLRequest::FetchCredentialsMode fetchCredentialsMode() const { return m_fetchCredentialsMode; }
     void setFetchCredentialsMode(WebURLRequest::FetchCredentialsMode mode) { m_fetchCredentialsMode = mode; }
 
+    WebURLRequest::FetchRedirectMode fetchRedirectMode() const { return m_fetchRedirectMode; }
+    void setFetchRedirectMode(WebURLRequest::FetchRedirectMode redirect) { m_fetchRedirectMode = redirect; }
+
     bool cacheControlContainsNoCache() const;
     bool cacheControlContainsNoStore() const;
     bool hasCacheValidatorFields() const;
@@ -261,6 +264,7 @@ private:
     WebURLRequest::FrameType m_frameType;
     WebURLRequest::FetchRequestMode m_fetchRequestMode;
     WebURLRequest::FetchCredentialsMode m_fetchCredentialsMode;
+    WebURLRequest::FetchRedirectMode m_fetchRedirectMode;
     ReferrerPolicy m_referrerPolicy;
     bool m_didSetHTTPReferrer;
     bool m_checkForBrowserSideNavigation;
@@ -310,6 +314,7 @@ public:
     WebURLRequest::FrameType m_frameType;
     WebURLRequest::FetchRequestMode m_fetchRequestMode;
     WebURLRequest::FetchCredentialsMode m_fetchCredentialsMode;
+    WebURLRequest::FetchRedirectMode m_fetchRedirectMode;
     ReferrerPolicy m_referrerPolicy;
     bool m_didSetHTTPReferrer;
     bool m_checkForBrowserSideNavigation;
