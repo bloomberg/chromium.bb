@@ -35,8 +35,8 @@ layer at (8,44) size 327x209 clip at (9,45) size 310x207
       LayoutText {#text} at (2,0) size 70x21
         text run at (2,0) width 70 RTL: "\x{627}\x{644}\x{644}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629}"
     LayoutBlockFlow {OPTION} at (1,139) size 310x23
-      LayoutText {#text} at (2,0) size 126x21
-        text run at (2,0) width 126: "Et volia\x{300}: ATSUI!"
+      LayoutText {#text} at (2,0) size 125x21
+        text run at (2,0) width 125: "Et volia\x{300}: ATSUI!"
     LayoutBlockFlow {OPTION} at (1,162) size 310x23
       LayoutText {#text} at (2,0) size 282x21
         text run at (2,0) width 90: "Directional "

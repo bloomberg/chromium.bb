@@ -802,8 +802,6 @@ crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html 
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ ImageOnlyFailure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ ImageOnlyFailure ]
 
-crbug.com/422670 [ Linux Win ] fast/text/drawBidiText.html [ NeedsRebaseline ]
-
 crbug.com/466200 svg/custom/repaint-on-constant-size-change.svg [ Failure ]
 
 # Temporary until we start generating Trusty baselines.
