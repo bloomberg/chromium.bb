@@ -282,16 +282,6 @@ img {
   margin-left: 15px;
 }
 
-.warning {
-  background-image: -webkit-image-set(url(chrome://theme/IDR_WARNING) 1x,
-                                      url(chrome://theme/IDR_WARNING@2x) 2x);
-  background-position: 0 center;
-  background-repeat: no-repeat;
-  background-size: 24px 21px;
-  margin-top: 5px;
-  padding-left: 25px;
-}
-
 #port-forwarding-config::backdrop {
   background-color: rgba(255, 255, 255, 0.75);
 }
