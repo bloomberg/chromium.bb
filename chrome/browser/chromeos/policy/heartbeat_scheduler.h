@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client.h"
+#include "components/policy/core/common/cloud/cloud_policy_client.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -37,9 +38,11 @@ class HeartbeatScheduler : public gcm::GCMAppHandler {
   // Default interval for how often we send up a heartbeat.
   static const int64 kDefaultHeartbeatIntervalMs;
 
-  // Constructor. |driver| can be null for tests.
+  // Constructor. |cloud_policy_client| will be used to send registered GCM id
+  // to DM server, and can be null. |driver| can be null for tests.
   HeartbeatScheduler(
       gcm::GCMDriver* driver,
+      policy::CloudPolicyClient* cloud_policy_client,
       const std::string& enrollment_domain,
       const std::string& device_id,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
@@ -86,6 +89,9 @@ class HeartbeatScheduler : public gcm::GCMAppHandler {
   // Shuts down our GCM connection (called when heartbeats are disabled).
   void ShutdownGCM();
 
+  // Callback for the GCM id update request.
+  void OnGcmIdUpdateRequestSent(bool status);
+
   // TaskRunner used for scheduling heartbeats.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
@@ -115,6 +121,8 @@ class HeartbeatScheduler : public gcm::GCMAppHandler {
 
   // Callback invoked via a delay to send a heartbeat.
   base::CancelableClosure heartbeat_callback_;
+
+  policy::CloudPolicyClient* cloud_policy_client_;
 
   // The GCMDriver used to send heartbeat messages.
   gcm::GCMDriver* const gcm_driver_;

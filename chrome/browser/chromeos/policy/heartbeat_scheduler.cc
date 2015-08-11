@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
@@ -160,6 +162,7 @@ void HeartbeatRegistrationHelper::OnRegisterAttemptComplete(
 
 HeartbeatScheduler::HeartbeatScheduler(
     gcm::GCMDriver* driver,
+    policy::CloudPolicyClient* cloud_policy_client,
     const std::string& enrollment_domain,
     const std::string& device_id,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
@@ -167,8 +170,9 @@ HeartbeatScheduler::HeartbeatScheduler(
       enrollment_domain_(enrollment_domain),
       device_id_(device_id),
       heartbeat_enabled_(false),
-      heartbeat_interval_(base::TimeDelta::FromMilliseconds(
-          kDefaultHeartbeatIntervalMs)),
+      heartbeat_interval_(
+          base::TimeDelta::FromMilliseconds(kDefaultHeartbeatIntervalMs)),
+      cloud_policy_client_(cloud_policy_client),
       gcm_driver_(driver),
       weak_factory_(this) {
   // If no GCMDriver (e.g. this is loaded as part of an unrelated unit test)
@@ -297,6 +301,15 @@ void HeartbeatScheduler::OnRegistrationComplete(
   registration_helper_.reset();
   registration_id_ = registration_id;
 
+  if (cloud_policy_client_) {
+    // TODO(binjin): Avoid sending the same GCM id to the server.
+    // See http://crbug.com/516375
+    cloud_policy_client_->UpdateGcmId(
+        registration_id,
+        base::Bind(&HeartbeatScheduler::OnGcmIdUpdateRequestSent,
+                   weak_factory_.GetWeakPtr()));
+  }
+
   // Now that GCM registration is complete, start sending heartbeats.
   ScheduleNextHeartbeat();
 }
@@ -370,6 +383,11 @@ void HeartbeatScheduler::OnSendError(
 void HeartbeatScheduler::OnSendAcknowledged(const std::string& app_id,
                                             const std::string& message_id) {
   DVLOG(1) << "Heartbeat sent with message_id: " << message_id;
+}
+
+void HeartbeatScheduler::OnGcmIdUpdateRequestSent(bool success) {
+  // TODO(binjin): Handle the failure, probably by exponential backoff.
+  LOG_IF(WARNING, !success) << "Failed to send GCM id to DM server";
 }
 
 }  // namespace policy

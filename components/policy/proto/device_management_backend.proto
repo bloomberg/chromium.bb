@@ -1021,6 +1021,15 @@ message DeviceAttributeUpdateResponse {
   optional ResultType result = 1;
 }
 
+// Sent by the client to server to update the mapping from GCM id to device_id
+// on the server side.
+message GcmIdUpdateRequest {
+  optional string gcm_id = 1;
+}
+
+// Response for GcmIdUpdateRequest, an empty message for now.
+message GcmIdUpdateResponse {}
+
 // Request from the DMAgent on the device to the DMServer.  This is
 // container for all requests from device to server.  The overall HTTP
 // request MUST be in the following format:
@@ -1043,6 +1052,7 @@ message DeviceAttributeUpdateResponse {
 //     * remote_commands
 //     * attribute_update_permission
 //     * attribute_update
+//     * gcm_id_update
 //
 //   * devicetype: MUST BE "1" for Android or "2" for Chrome OS.
 //   * apptype: MUST BE Android or Chrome.
@@ -1052,7 +1062,8 @@ message DeviceAttributeUpdateResponse {
 //   * For register and ping requests
 //     Authorization: GoogleLogin auth=<auth cookie for Mobile Sync>
 //
-//   * For unregister, policy, status, cert_upload and remote commands requests
+//   * For unregister, policy, status, cert_upload, remote commands requests,
+//     and gcm id update requests
 //      Authorization: GoogleDMToken token=<dm token from register>
 //
 //   * The Authorization header isn't used for enterprise_check
@@ -1075,6 +1086,7 @@ message DeviceAttributeUpdateResponse {
 //   remote_commands: remote_command_request
 //   attribute_update_permission: device_attribute_update_permission_request
 //   attribute_update: device_attribute_update_request
+//   gcm_id_update: gcm_id_update_request
 //
 message DeviceManagementRequest {
   // Register request.
@@ -1121,6 +1133,9 @@ message DeviceManagementRequest {
   // Update device attribute.
   optional DeviceAttributeUpdateRequest device_attribute_update_request
       = 15;
+
+  // Update the GCM id to device_id mapping.
+  optional GcmIdUpdateRequest gcm_id_update_request = 16;
 }
 
 // Response from server to device.
@@ -1185,4 +1200,7 @@ message DeviceManagementResponse {
 
   // Response to update device attribute.
   optional DeviceAttributeUpdateResponse device_attribute_update_response = 16;
+
+  // Response to GCM id update request.
+  optional GcmIdUpdateResponse gcm_id_update_response = 17;
 }
