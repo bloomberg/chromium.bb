@@ -62,7 +62,7 @@ bool WillDispatchDeviceEvent(base::WeakPtr<HidDeviceManager> device_manager,
                              scoped_refptr<device::HidDeviceInfo> device_info,
                              content::BrowserContext* context,
                              const Extension* extension,
-                             base::ListValue* event_args,
+                             Event* event,
                              const base::DictionaryValue* listener_filter) {
   if (device_manager && extension) {
     return device_manager->HasPermission(extension, device_info, false);

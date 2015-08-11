@@ -46,7 +46,7 @@ bool WillDispatchTabUpdatedEvent(
     const base::DictionaryValue* changed_properties,
     content::BrowserContext* context,
     const Extension* extension,
-    base::ListValue* event_args,
+    Event* event,
     const base::DictionaryValue* listener_filter) {
   // Overwrite the second argument with the appropriate properties dictionary,
   // depending on extension permissions.
@@ -54,10 +54,11 @@ bool WillDispatchTabUpdatedEvent(
   ExtensionTabUtil::ScrubTabValueForExtension(contents,
                                               extension,
                                               properties_value);
-  event_args->Set(1, properties_value);
+  event->event_args->Set(1, properties_value);
 
   // Overwrite the third arg with our tab value as seen by this extension.
-  event_args->Set(2, ExtensionTabUtil::CreateTabValue(contents, extension));
+  event->event_args->Set(2,
+                         ExtensionTabUtil::CreateTabValue(contents, extension));
   return true;
 }
 
@@ -211,12 +212,12 @@ static bool WillDispatchTabCreatedEvent(
     bool active,
     content::BrowserContext* context,
     const Extension* extension,
-    base::ListValue* event_args,
+    Event* event,
     const base::DictionaryValue* listener_filter) {
   base::DictionaryValue* tab_value = ExtensionTabUtil::CreateTabValue(
       contents, extension);
-  event_args->Clear();
-  event_args->Append(tab_value);
+  event->event_args->Clear();
+  event->event_args->Append(tab_value);
   tab_value->SetBoolean(tabs_constants::kSelectedKey, active);
   return true;
 }

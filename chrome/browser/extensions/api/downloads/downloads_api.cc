@@ -878,7 +878,7 @@ bool OnDeterminingFilenameWillDispatchCallback(
     ExtensionDownloadsEventRouterData* data,
     content::BrowserContext* context,
     const Extension* extension,
-    base::ListValue* event_args,
+    Event* event,
     const base::DictionaryValue* listener_filter) {
   *any_determiners = true;
   base::Time installed =

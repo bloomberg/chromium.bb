@@ -27,7 +27,7 @@ namespace {
 bool WillDispatchDeviceEvent(scoped_refptr<UsbDevice> device,
                              content::BrowserContext* browser_context,
                              const Extension* extension,
-                             base::ListValue* event_args,
+                             Event* event,
                              const base::DictionaryValue* listener_filter) {
   // Check install-time and optional permissions.
   UsbDevicePermission::CheckParam param(

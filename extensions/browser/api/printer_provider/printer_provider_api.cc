@@ -287,7 +287,7 @@ class PrinterProviderAPIImpl : public PrinterProviderAPI,
   bool WillRequestPrinters(int request_id,
                            content::BrowserContext* browser_context,
                            const Extension* extension,
-                           base::ListValue* args,
+                           Event* event,
                            const base::DictionaryValue* listener_filter);
 
   content::BrowserContext* browser_context_;
@@ -742,7 +742,7 @@ bool PrinterProviderAPIImpl::WillRequestPrinters(
     int request_id,
     content::BrowserContext* browser_context,
     const Extension* extension,
-    base::ListValue* args,
+    Event* event,
     const base::DictionaryValue* listener_filter) {
   if (!extension)
     return false;

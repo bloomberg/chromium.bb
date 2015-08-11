@@ -628,8 +628,7 @@ void EventRouter::DispatchEventToProcess(
 
   if (!event->will_dispatch_callback.is_null() &&
       !event->will_dispatch_callback.Run(listener_context, extension,
-                                         event->event_args.get(),
-                                         listener_filter)) {
+                                         event.get(), listener_filter)) {
     return;
   }
 
@@ -677,8 +676,7 @@ bool EventRouter::MaybeLoadLazyBackgroundPageToDispatchEvent(
     if (!event->will_dispatch_callback.is_null()) {
       dispatched_event.reset(event->DeepCopy());
       if (!dispatched_event->will_dispatch_callback.Run(
-              context, extension, dispatched_event->event_args.get(),
-              listener_filter)) {
+              context, extension, dispatched_event.get(), listener_filter)) {
         // The event has been canceled.
         return true;
       }

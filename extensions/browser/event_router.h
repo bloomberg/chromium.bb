@@ -354,7 +354,7 @@ struct Event {
   // given context and extension, and false otherwise.
   typedef base::Callback<bool(content::BrowserContext*,
                               const Extension*,
-                              base::ListValue*,
+                              Event*,
                               const base::DictionaryValue*)>
       WillDispatchCallback;
 

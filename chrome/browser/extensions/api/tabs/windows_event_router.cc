@@ -141,7 +141,7 @@ static bool WillDispatchWindowFocusedEvent(
     WindowController* window_controller,
     BrowserContext* context,
     const Extension* extension,
-    base::ListValue* event_args,
+    Event* event,
     const base::DictionaryValue* listener_filter) {
   int window_id = window_controller ? window_controller->GetWindowId()
                                     : extension_misc::kUnknownWindowId;
@@ -154,12 +154,12 @@ static bool WillDispatchWindowFocusedEvent(
   // See crbug.com/46610.
   if (new_active_context && new_active_context != context &&
       !util::CanCrossIncognito(extension, context)) {
-    event_args->Clear();
-    event_args->Append(new base::FundamentalValue(
-        extension_misc::kUnknownWindowId));
+    event->event_args->Clear();
+    event->event_args->Append(
+        new base::FundamentalValue(extension_misc::kUnknownWindowId));
   } else {
-    event_args->Clear();
-    event_args->Append(new base::FundamentalValue(window_id));
+    event->event_args->Clear();
+    event->event_args->Append(new base::FundamentalValue(window_id));
   }
   return true;
 }
