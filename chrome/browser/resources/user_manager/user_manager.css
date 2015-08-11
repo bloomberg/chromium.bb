@@ -162,7 +162,7 @@ html[dir=rtl] .main-pane {
   display: none;
 }
 
-.pod.focused.locked .password-entry-container {
+.pod[auth-type='offlinePassword'].focused.locked .password-entry-container {
   display: flex;
   flex: auto;
 }

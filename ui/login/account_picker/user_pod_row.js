@@ -1930,11 +1930,15 @@ cr.define('login', function() {
     __proto__: UserPod.prototype,
 
     /** @override */
-    get mainInput() {
-      if (this.user.needsSignin)
-        return this.passwordElement;
-      else
-        return this.nameElement;
+    initialize: function() {
+      if (this.user.needsSignin) {
+        if (this.user.hasLocalCreds) {
+          this.user.initialAuthType = AUTH_TYPE.OFFLINE_PASSWORD;
+        } else {
+          this.user.initialAuthType = AUTH_TYPE.ONLINE_SIGN_IN;
+        }
+      }
+      UserPod.prototype.initialize.call(this);
     },
 
     /** @override */
@@ -1965,18 +1969,10 @@ cr.define('login', function() {
     },
 
     /** @override */
-    focusInput: function() {
-      // Move tabIndex from the whole pod to the main input.
-      this.tabIndex = -1;
-      this.mainInput.tabIndex = UserPodTabOrder.POD_INPUT;
-      this.mainInput.focus();
-    },
-
-    /** @override */
     activate: function(e) {
       if (!this.user.needsSignin) {
         Oobe.launchUser(this.user.profilePath);
-      } else if (!this.passwordElement.value) {
+      } else if (this.user.hasLocalCreds && !this.passwordElement.value) {
         return false;
       } else {
         chrome.send('authenticatedLaunchUser',
@@ -1996,10 +1992,13 @@ cr.define('login', function() {
       Oobe.clearErrors();
       this.parentNode.lastFocusedPod_ = this;
 
-      // If this is an unlocked pod, then open a browser window. Otherwise
-      // just activate the pod and show the password field.
-      if (!this.user.needsSignin && !this.isActionBoxMenuActive)
+      // If this is a locked pod and there are local credentials, show the
+      // password field.  Otherwise call activate() which will open up a browser
+      // window or show the reauth dialog, as needed.
+      if (!(this.user.needsSignin && this.user.hasLocalCreds) &&
+          !this.isActionBoxMenuActive) {
         this.activate(e);
+      }
 
       if (this.isAuthTypeUserClick)
         chrome.send('attemptUnlock', [this.user.emailAddress]);

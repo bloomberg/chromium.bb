@@ -70,6 +70,7 @@ const char kKeyIsOwner[] = "isOwner";
 const char kKeyIsDesktop[] = "isDesktopUser";
 const char kKeyAvatarUrl[] = "userImage";
 const char kKeyNeedsSignin[] = "needsSignin";
+const char kKeyHasLocalCreds[] = "hasLocalCreds";
 
 // JS API callback names.
 const char kJsApiUserManagerInitialize[] = "userManagerInitialize";
@@ -425,28 +426,34 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
     return;
 
   authenticating_profile_path_ = profile_path;
-
-  size_t profile_index = info_cache.GetIndexOfProfileWithPath(profile_path);
-  if (LocalAuth::ValidateLocalAuthCredentials(profile_index, password)) {
-    ReportAuthenticationResult(true, ProfileMetrics::AUTH_LOCAL);
-    return;
-  }
-
   email_address_ = base::UTF16ToUTF8(email_address);
-  password_attempt_ = password;
 
-  // This could be a mis-typed password or typing a new password while we
-  // still have a hash of the old one.  The new way of checking a password
-  // change makes use of a token so we do that... if it's available.
-  if (!oauth_client_) {
-    oauth_client_.reset(new gaia::GaiaOAuthClient(
-        web_ui()->GetWebContents()->GetBrowserContext()->GetRequestContext()));
-  }
+  // Only try to validate locally or check the password change detection
+  // if we actually have a local credential saved.
+  size_t profile_index = info_cache.GetIndexOfProfileWithPath(profile_path);
+  const bool has_local_credential =
+      !info_cache.GetLocalAuthCredentialsOfProfileAtIndex(profile_index)
+          .empty();
+  if (has_local_credential) {
+    if (LocalAuth::ValidateLocalAuthCredentials(profile_index, password)) {
+      ReportAuthenticationResult(true, ProfileMetrics::AUTH_LOCAL);
+      return;
+    }
 
-  std::string token = entry->GetPasswordChangeDetectionToken();
-  if (!token.empty()) {
-    oauth_client_->GetTokenHandleInfo(token, kMaxOAuthRetries, this);
-    return;
+    // This could be a mis-typed password or typing a new password while we
+    // still have a hash of the old one.  The new way of checking a password
+    // change makes use of a token so we do that... if it's available.
+    if (!oauth_client_) {
+      oauth_client_.reset(new gaia::GaiaOAuthClient(
+          web_ui()->GetWebContents()->GetBrowserContext()
+              ->GetRequestContext()));
+    }
+
+    const std::string token = entry->GetPasswordChangeDetectionToken();
+    if (!token.empty()) {
+      oauth_client_->GetTokenHandleInfo(token, kMaxOAuthRetries, this);
+      return;
+    }
   }
 
   // In order to support the upgrade case where we have a local hash but no
@@ -742,6 +749,9 @@ void UserManagerScreenHandler::SendUserList() {
         kKeyChildUser, info_cache->ProfileIsChildAtIndex(i));
     profile_value->SetBoolean(
         kKeyNeedsSignin, info_cache->ProfileIsSigninRequiredAtIndex(i));
+    profile_value->SetBoolean(
+        kKeyHasLocalCreds,
+        !info_cache->GetLocalAuthCredentialsOfProfileAtIndex(i).empty());
     profile_value->SetBoolean(kKeyIsOwner, false);
     profile_value->SetBoolean(kKeyCanRemove, can_remove);
     profile_value->SetBoolean(kKeyIsDesktop, true);
@@ -765,7 +775,6 @@ void UserManagerScreenHandler::ReportAuthenticationResult(
     ProfileMetrics::ProfileAuth auth) {
   ProfileMetrics::LogProfileAuthResult(auth);
   email_address_.clear();
-  password_attempt_.clear();
 
   if (success) {
     profiles::SwitchToProfile(

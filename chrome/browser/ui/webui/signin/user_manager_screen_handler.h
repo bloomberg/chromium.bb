@@ -114,9 +114,8 @@ class UserManagerScreenHandler
   // The path of the profile currently being authenticated.
   base::FilePath authenticating_profile_path_;
 
-  // Login email and password, held during on-line auth for later use.
+  // Login email held during on-line auth for later use.
   std::string email_address_;
-  std::string password_attempt_;
 
   // URL hash, used to key post-profile actions if present.
   std::string url_hash_;
