@@ -84,7 +84,7 @@ class Browser : public mojo::ViewManagerDelegate,
   // Overridden from FrameTreeDelegate:
   bool CanPostMessageEventToFrame(const Frame* source,
                                   const Frame* target,
-                                  MessageEvent* event) override;
+                                  HTMLMessageEvent* event) override;
   void LoadingStateChanged(bool loading) override;
   void ProgressChanged(double progress) override;
   void RequestNavigate(Frame* source,

@@ -186,7 +186,7 @@ void Browser::Embed(mojo::URLRequestPtr request) {
 
 bool Browser::CanPostMessageEventToFrame(const Frame* source,
                                          const Frame* target,
-                                         MessageEvent* event) {
+                                         HTMLMessageEvent* event) {
   return true;
 }
 

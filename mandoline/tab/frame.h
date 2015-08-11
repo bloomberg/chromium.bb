@@ -103,6 +103,10 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
 
   void SetView(mojo::View* view);
 
+  // Returns the first ancestor (starting at |this|) that has a
+  // FrameTreeClient.
+  Frame* GetAncestorWithFrameTreeClient();
+
   // Adds this to |frames| and recurses through the children calling the
   // same function.
   void BuildFrameTree(std::vector<const Frame*>* frames) const;
@@ -138,8 +142,9 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   void OnViewDestroying(mojo::View* view) override;
 
   // FrameTreeServer:
-  void PostMessageEventToFrame(uint32_t frame_id,
-                               MessageEventPtr event) override;
+  void PostMessageEventToFrame(uint32_t source_frame_id,
+                               uint32_t target_frame_id,
+                               HTMLMessageEventPtr event) override;
   void LoadingStarted(uint32_t frame_id) override;
   void LoadingStopped(uint32_t frame_id) override;
   void ProgressChanged(uint32_t frame_id, double progress) override;

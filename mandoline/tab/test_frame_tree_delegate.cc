@@ -10,10 +10,11 @@ TestFrameTreeDelegate::TestFrameTreeDelegate() {}
 
 TestFrameTreeDelegate::~TestFrameTreeDelegate() {}
 
-bool TestFrameTreeDelegate::CanPostMessageEventToFrame(const Frame* source,
-                                                       const Frame* target,
-                                                       MessageEvent* event) {
-  return false;
+bool TestFrameTreeDelegate::CanPostMessageEventToFrame(
+    const Frame* source,
+    const Frame* target,
+    HTMLMessageEvent* event) {
+  return true;
 }
 
 void TestFrameTreeDelegate::LoadingStateChanged(bool loading) {}

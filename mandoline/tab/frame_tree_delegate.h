@@ -11,13 +11,16 @@
 namespace mandoline {
 
 class Frame;
-class MessageEvent;
+class HTMLMessageEvent;
 
 class FrameTreeDelegate {
  public:
+  // Returns whether a request to post a message from |source| to |target|
+  // is allowed. |source| and |target| are never null.
   virtual bool CanPostMessageEventToFrame(const Frame* source,
                                           const Frame* target,
-                                          MessageEvent* event) = 0;
+                                          HTMLMessageEvent* event) = 0;
+
   virtual void LoadingStateChanged(bool loading) = 0;
   virtual void ProgressChanged(double progress) = 0;
 

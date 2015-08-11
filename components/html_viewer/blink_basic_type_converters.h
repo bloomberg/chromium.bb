@@ -31,6 +31,10 @@ template <>
 struct TypeConverter<Array<uint8_t>, blink::WebString> {
   static Array<uint8_t> Convert(const blink::WebString& input);
 };
+template <>
+struct TypeConverter<blink::WebString, Array<uint8_t>> {
+  static blink::WebString Convert(const Array<uint8_t>& input);
+};
 
 template <>
 struct TypeConverter<RectPtr, blink::WebRect> {

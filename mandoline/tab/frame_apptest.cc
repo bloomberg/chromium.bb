@@ -153,6 +153,9 @@ class TestFrameTreeClient : public FrameTreeClient {
   void OnFrameClientPropertyChanged(uint32_t frame_id,
                                     const mojo::String& name,
                                     mojo::Array<uint8_t> new_data) override {}
+  void PostMessage(uint32_t source_frame_id,
+                   uint32_t target_frame_id,
+                   HTMLMessageEventPtr event) override {}
 
  private:
   int connect_count_;

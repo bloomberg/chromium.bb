@@ -43,8 +43,9 @@ class TestFrameTreeServer : public mandoline::FrameTreeServer {
   ~TestFrameTreeServer() override {}
 
   // mandoline::FrameTreeServer:
-  void PostMessageEventToFrame(uint32_t frame_id,
-                               mandoline::MessageEventPtr event) override {}
+  void PostMessageEventToFrame(uint32_t source_frame_id,
+                               uint32_t target_frame_id,
+                               mandoline::HTMLMessageEventPtr event) override {}
   void LoadingStarted(uint32_t frame_id) override {}
   void LoadingStopped(uint32_t frame_id) override {}
   void ProgressChanged(uint32_t frame_id, double progress) override {}

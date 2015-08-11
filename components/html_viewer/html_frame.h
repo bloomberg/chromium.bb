@@ -197,6 +197,9 @@ class HTMLFrame : public blink::WebFrameClient,
   void OnFrameClientPropertyChanged(uint32_t frame_id,
                                     const mojo::String& name,
                                     mojo::Array<uint8_t> new_value) override;
+  void PostMessage(uint32_t source_frame_id,
+                   uint32_t target_frame_id,
+                   mandoline::HTMLMessageEventPtr serialized_event) override;
 
   // WebViewClient methods:
   virtual blink::WebStorageNamespace* createSessionStorageNamespace();
@@ -251,8 +254,8 @@ class HTMLFrame : public blink::WebFrameClient,
 
   // blink::WebRemoteFrameClient:
   virtual void frameDetached(blink::WebRemoteFrameClient::DetachType type);
-  virtual void postMessageEvent(blink::WebLocalFrame* source_frame,
-                                blink::WebRemoteFrame* target_frame,
+  virtual void postMessageEvent(blink::WebLocalFrame* source_web_frame,
+                                blink::WebRemoteFrame* target_web_frame,
                                 blink::WebSecurityOrigin target_origin,
                                 blink::WebDOMMessageEvent event);
   virtual void initializeChildFrame(const blink::WebRect& frame_rect,

@@ -48,13 +48,28 @@ struct FrameData {
   map<string, array<uint8>>? client_properties;
 };
 
-struct MessageEvent {
-  // TODO(sky): add details.
+// TODO(sky): decide which bits of this make sense for all frames, and move the
+// html specific parts into properties.
+struct HTMLMessageEvent {
+  // The serialized script value.
+  array<uint8>? data;
+
+  // The origin of the source frame.
+  string source_origin;
+
+  // The origin for the message's target.
+  string? target_origin;
+
+  // TODO(sky): these two are not implemented. Figure out what they should be.
+  // Information about the MessagePorts this message contains.
+  // IPC_STRUCT_MEMBER(std::vector<content::TransferredMessagePort>, message_ports)
+  // IPC_STRUCT_MEMBER(std::vector<int>, new_routing_ids)
 };
 
 interface FrameTreeServer {
-  // TODO(sky): make these real.
-  PostMessageEventToFrame(uint32 frame_id, MessageEvent event);
+  PostMessageEventToFrame(uint32 source_frame_id,
+                          uint32 target_frame_id,
+                          HTMLMessageEvent event);
 
   // Notifies the server that a load has started or stopped in this frame.
   // When loading is started, progress is reset to 0, but when loading is
@@ -108,4 +123,8 @@ interface FrameTreeClient {
   OnFrameClientPropertyChanged(uint32 frame_id,
                                string name,
                                array<uint8>? new_value);
+
+  PostMessage(uint32 source_frame_id,
+              uint32 target_frame_id,
+              HTMLMessageEvent event);
 };

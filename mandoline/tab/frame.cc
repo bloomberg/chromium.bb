@@ -171,6 +171,13 @@ void Frame::SetView(mojo::View* view) {
   view_->AddObserver(this);
 }
 
+Frame* Frame::GetAncestorWithFrameTreeClient() {
+  Frame* frame = this;
+  while (frame && !frame->frame_tree_client_)
+    frame = frame->parent_;
+  return frame;
+}
+
 void Frame::BuildFrameTree(std::vector<const Frame*>* frames) const {
   frames->push_back(this);
   for (const Frame* frame : children_)
@@ -307,13 +314,19 @@ void Frame::OnViewDestroying(mojo::View* view) {
   delete this;
 }
 
-void Frame::PostMessageEventToFrame(uint32_t frame_id, MessageEventPtr event) {
-  Frame* target = tree_->root()->FindFrame(frame_id);
-  if (!target ||
-      !tree_->delegate_->CanPostMessageEventToFrame(this, target, event.get()))
+void Frame::PostMessageEventToFrame(uint32_t source_frame_id,
+                                    uint32_t target_frame_id,
+                                    HTMLMessageEventPtr event) {
+  Frame* source = tree_->root()->FindFrame(source_frame_id);
+  Frame* target = tree_->root()->FindFrame(target_frame_id);
+  if (!target || !source || source == target || !tree_->delegate_ ||
+      !tree_->delegate_->CanPostMessageEventToFrame(source, target,
+                                                    event.get()))
     return;
 
-  NOTIMPLEMENTED();
+  DCHECK(target->GetAncestorWithFrameTreeClient());
+  target->GetAncestorWithFrameTreeClient()->frame_tree_client_->PostMessage(
+      source_frame_id, target_frame_id, event.Pass());
 }
 
 void Frame::LoadingStarted(uint32_t frame_id) {

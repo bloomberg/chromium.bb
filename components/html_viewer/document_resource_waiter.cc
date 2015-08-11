@@ -9,6 +9,10 @@
 #include "components/html_viewer/html_frame_tree_manager.h"
 #include "components/view_manager/public/cpp/view.h"
 
+#if defined(OS_WIN) && defined(PostMessage)
+#undef PostMessage
+#endif
+
 namespace html_viewer {
 
 DocumentResourceWaiter::DocumentResourceWaiter(GlobalState* global_state,
@@ -85,6 +89,13 @@ void DocumentResourceWaiter::OnFrameClientPropertyChanged(
     uint32_t frame_id,
     const mojo::String& name,
     mojo::Array<uint8_t> new_value) {
+  // It is assumed we receive OnConnect() (which unbinds) before anything else.
+  NOTREACHED();
+}
+
+void DocumentResourceWaiter::PostMessage(uint32_t source_frame_id,
+                                         uint32_t target_frame_id,
+                                         mandoline::HTMLMessageEventPtr event) {
   // It is assumed we receive OnConnect() (which unbinds) before anything else.
   NOTREACHED();
 }

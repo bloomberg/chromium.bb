@@ -86,10 +86,10 @@ class HTMLFrameTest : public ViewManagerTestBase {
  protected:
   // Creates the frame tree showing an empty page at the root and adds (via
   // script) a frame showing the same empty page.
-  Frame* LoadEmptyPageAndCreateFrame() {
+  Frame* LoadEmptyPageAndCreateFrame(mandoline::FrameTreeDelegate* delegate) {
     View* embed_view = window_manager()->CreateView();
     FrameConnection* root_connection = InitFrameTree(
-        embed_view, nullptr, "http://127.0.0.1:%u/files/empty_page2.html");
+        embed_view, delegate, "http://127.0.0.1:%u/files/empty_page2.html");
     const std::string frame_text =
         GetFrameText(root_connection->application_connection());
     if (frame_text != "child2") {
@@ -329,7 +329,7 @@ TEST_F(HTMLFrameTest, DynamicallyAddFrameAndVerifyParent) {
   if (!EnableOOPIFs())
     return;
 
-  Frame* child_frame = LoadEmptyPageAndCreateFrame();
+  Frame* child_frame = LoadEmptyPageAndCreateFrame(nullptr);
   ASSERT_TRUE(child_frame);
 
   mojo::ApplicationConnection* child_frame_connection =
@@ -354,7 +354,7 @@ TEST_F(HTMLFrameTest, DynamicallyAddFrameAndSeeNameChange) {
   if (!EnableOOPIFs())
     return;
 
-  Frame* child_frame = LoadEmptyPageAndCreateFrame();
+  Frame* child_frame = LoadEmptyPageAndCreateFrame(nullptr);
   ASSERT_TRUE(child_frame);
 
   mojo::ApplicationConnection* child_frame_connection =
@@ -393,7 +393,7 @@ TEST_F(HTMLFrameTest, FrameTreeOfThreeLevels) {
     return;
 
   // Create a child frame, and in that child frame create another child frame.
-  Frame* child_frame = LoadEmptyPageAndCreateFrame();
+  Frame* child_frame = LoadEmptyPageAndCreateFrame(nullptr);
   ASSERT_TRUE(child_frame);
 
   ASSERT_TRUE(CreateEmptyChildFrame(child_frame));
@@ -445,6 +445,54 @@ TEST_F(HTMLFrameTest, FrameTreeOfThreeLevels) {
            base::TimeTicks::Now() - start_time <
                TestTimeouts::action_timeout());
   ASSERT_EQ("0", child_child_frame_count);
+}
+
+// Verifies PostMessage() works across frames.
+TEST_F(HTMLFrameTest, PostMessage) {
+  if (!EnableOOPIFs())
+    return;
+
+  mandoline::TestFrameTreeDelegate frame_tree_delegate;
+  Frame* child_frame = LoadEmptyPageAndCreateFrame(&frame_tree_delegate);
+  ASSERT_TRUE(child_frame);
+
+  mojo::ApplicationConnection* child_frame_connection =
+      ApplicationConnectionForFrame(child_frame);
+  ASSERT_EQ("child", GetFrameText(child_frame_connection));
+
+  // Register an event handler in the child frame.
+  const char kRegisterPostMessageHandler[] =
+      "window.messageData = null;"
+      "function messageFunction(event) {"
+      "  window.messageData = event.data;"
+      "}"
+      "window.addEventListener('message', messageFunction, false);";
+  ExecuteScript(child_frame_connection, kRegisterPostMessageHandler);
+
+  // Post a message from the parent to the child.
+  const char kPostMessageFromParent[] =
+      "window.frames[0].postMessage('hello from parent', '*');";
+  ExecuteScript(ApplicationConnectionForFrame(frame_tree_->root()),
+                kPostMessageFromParent);
+
+  // Wait for the child frame to see the message.
+  const base::TimeTicks start_time(base::TimeTicks::Now());
+  std::string message_in_child;
+  do {
+    const char kGetMessageData[] = "window.messageData;";
+    scoped_ptr<base::Value> script_value(
+        ExecuteScript(child_frame_connection, kGetMessageData));
+    if (script_value->IsType(base::Value::TYPE_LIST)) {
+      base::ListValue* script_value_as_list;
+      if (script_value->GetAsList(&script_value_as_list) &&
+          script_value_as_list->GetSize() == 1) {
+        script_value_as_list->GetString(0u, &message_in_child);
+      }
+    }
+  } while (message_in_child != "hello from parent" &&
+           base::TimeTicks::Now() - start_time <
+               TestTimeouts::action_timeout());
+  EXPECT_EQ("hello from parent", message_in_child);
 }
 
 }  // namespace mojo

@@ -46,6 +46,7 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebRemoteFrame.h"
@@ -61,6 +62,8 @@
 #include "ui/gfx/geometry/size.h"
 #include "url/origin.h"
 
+using mandoline::HTMLMessageEvent;
+using mandoline::HTMLMessageEventPtr;
 using mojo::AxProvider;
 using mojo::Rect;
 using mojo::ServiceProviderPtr;
@@ -574,6 +577,54 @@ void HTMLFrame::OnFrameClientPropertyChanged(uint32_t frame_id,
                                                            new_value.Pass());
 }
 
+void HTMLFrame::PostMessage(uint32_t source_frame_id,
+                            uint32_t target_frame_id,
+                            HTMLMessageEventPtr serialized_event) {
+  NOTIMPLEMENTED();  // For message ports.
+
+  HTMLFrame* target = frame_tree_manager_->root_->FindFrame(target_frame_id);
+  HTMLFrame* source = frame_tree_manager_->root_->FindFrame(source_frame_id);
+  if (!target || !source) {
+    DVLOG(1) << "Invalid source or target for PostMessage";
+    return;
+  }
+
+  if (!target->IsLocal()) {
+    DVLOG(1) << "Target for PostMessage is not lot local";
+    return;
+  }
+
+  blink::WebFrame* target_web_frame = target->web_frame_;
+
+  blink::WebSerializedScriptValue serialized_script_value;
+  serialized_script_value = blink::WebSerializedScriptValue::fromString(
+      serialized_event->data.To<blink::WebString>());
+
+  blink::WebMessagePortChannelArray channels;
+
+  // Create an event with the message.  The next-to-last parameter to
+  // initMessageEvent is the last event ID, which is not used with postMessage.
+  blink::WebDOMEvent event =
+      target_web_frame->document().createEvent("MessageEvent");
+  blink::WebDOMMessageEvent msg_event = event.to<blink::WebDOMMessageEvent>();
+  msg_event.initMessageEvent(
+      "message",
+      // |canBubble| and |cancellable| are always false
+      false, false, serialized_script_value,
+      serialized_event->source_origin.To<blink::WebString>(),
+      source->web_frame_, "", channels);
+
+  // We must pass in the target_origin to do the security check on this side,
+  // since it may have changed since the original postMessage call was made.
+  blink::WebSecurityOrigin target_origin;
+  if (!serialized_event->target_origin.is_null()) {
+    target_origin = blink::WebSecurityOrigin::createFromString(
+        serialized_event->target_origin.To<blink::WebString>());
+  }
+  target_web_frame->dispatchMessageEventWithOriginCheck(target_origin,
+                                                        msg_event);
+}
+
 blink::WebStorageNamespace* HTMLFrame::createSessionStorageNamespace() {
   return new WebStorageNamespaceImpl();
 }
@@ -830,11 +881,27 @@ void HTMLFrame::UpdateTextInputState(bool show_ime) {
   }
 }
 
-void HTMLFrame::postMessageEvent(blink::WebLocalFrame* source_frame,
-                                 blink::WebRemoteFrame* target_frame,
+void HTMLFrame::postMessageEvent(blink::WebLocalFrame* source_web_frame,
+                                 blink::WebRemoteFrame* target_web_frame,
                                  blink::WebSecurityOrigin target_origin,
-                                 blink::WebDOMMessageEvent event) {
-  NOTIMPLEMENTED();
+                                 blink::WebDOMMessageEvent web_event) {
+  NOTIMPLEMENTED();  // message_ports aren't implemented yet.
+
+  HTMLFrame* source_frame =
+      frame_tree_manager_->root_->FindFrameWithWebFrame(source_web_frame);
+  DCHECK(source_frame);
+  HTMLFrame* target_frame =
+      frame_tree_manager_->root_->FindFrameWithWebFrame(target_web_frame);
+  DCHECK(target_frame);
+
+  HTMLMessageEventPtr event(HTMLMessageEvent::New());
+  event->data = mojo::Array<uint8_t>::From(web_event.data().toString());
+  event->source_origin = mojo::String::From(web_event.origin());
+  if (!target_origin.isNull())
+    event->target_origin = mojo::String::From(target_origin.toString());
+
+  GetFrameTreeServer()->PostMessageEventToFrame(
+      source_frame->id_, target_frame->id_, event.Pass());
 }
 
 void HTMLFrame::initializeChildFrame(const blink::WebRect& frame_rect,
