@@ -1,9 +1,9 @@
-# Copyright (c) 2014 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Utility script to run chromoting test driver tests on the Chromoting bot."""
 
-"""Utility script to launch browser-tests on the Chromoting bot."""
 import argparse
 
 from chromoting_test_utilities import InitialiseTestMachineForLinux
@@ -13,59 +13,50 @@ from chromoting_test_utilities import RunCommandInSubProcess
 from chromoting_test_utilities import TestCaseSetup
 from chromoting_test_utilities import TestMachineCleanup
 
-SUCCESS_INDICATOR = 'SUCCESS: all tests passed.'
-TEST_FAILURE = False
-FAILING_TESTS = ''
-BROWSER_NOT_STARTED_ERROR = (
-    'Still waiting for the following processes to finish')
-TIME_OUT_INDICATOR = '(TIMED OUT)'
-MAX_RETRIES = 1
+TEST_ENVIRONMENT_TEAR_DOWN_INDICATOR = 'Global test environment tear-down'
+FAILED_INDICATOR = '[  FAILED  ]'
 
 
-def LaunchBTCommand(args, command):
-  """Launches the specified browser-test command.
+def LaunchCTDCommand(args, command):
+  """Launches the specified chromoting test driver command.
 
-      If the execution failed because a browser-instance was not launched, retry
-      once.
   Args:
     args: Command line args, used for test-case startup tasks.
-    command: Browser-test command line.
+    command: Chromoting Test Driver command line.
+  Returns:
+    "command" if there was a test environment failure, otherwise a string of the
+    names of failed tests.
   """
-  global TEST_FAILURE, FAILING_TESTS
 
-  retries = 0
-  while retries <= MAX_RETRIES:
-    TestCaseSetup(args)
-    results = RunCommandInSubProcess(command)
+  TestCaseSetup(args)
+  results = RunCommandInSubProcess(command)
 
-    if SUCCESS_INDICATOR in results:
-      # Test passed.
-      break
+  tear_down_index = results.find(TEST_ENVIRONMENT_TEAR_DOWN_INDICATOR)
+  if tear_down_index == -1:
+    # The test environment did not tear down. Something went horribly wrong.
+    return '[Command failed]: ' + command
 
-    # Sometimes, during execution of browser-tests, a browser instance is
-    # not started and the test times out. See http://crbug/480025.
-    # To work around it, check if this execution failed owing to that
-    # problem and retry.
-    # There are 2 things to look for in the results:
-    # A line saying "Still waiting for the following processes to finish",
-    # and, because sometimes that line gets logged even if the test
-    # eventually passes, we'll also look for "(TIMED OUT)", before retrying.
-    if not (
-        BROWSER_NOT_STARTED_ERROR in results and TIME_OUT_INDICATOR in results):
-      # Test failed for some other reason. Let's not retry.
-      break
-    retries += 1
+  end_results_list = results[tear_down_index:].split('\n')
+  failed_tests_list = []
+  for result in end_results_list:
+    if result.startswith(FAILED_INDICATOR):
+      failed_tests_list.append(result)
 
-  # Check that the test passed.
-  if SUCCESS_INDICATOR not in results:
-    TEST_FAILURE = True
-    # Add this command-line to list of tests that failed.
-    FAILING_TESTS += command
+  if failed_tests_list:
+    test_result = '[Command]: ' + command
+    # Note: Skipping the first one is intentional.
+    for i in range(1, len(failed_tests_list)):
+      test_result += '    ' + failed_tests_list[i]
+    return test_result
+
+  # All tests passed!
+  return ''
 
 
 def main(args):
-
   InitialiseTestMachineForLinux(args.cfg_file)
+
+  failed_tests = ''
 
   with open(args.commands_file) as f:
     for line in f:
@@ -73,19 +64,18 @@ def main(args):
       # the passed in value.
       line = line.replace(PROD_DIR_ID, args.prod_dir)
       # Launch specified command line for test.
-      LaunchBTCommand(args, line)
+      failed_tests += LaunchCTDCommand(args, line)
 
   # All tests completed. Include host-logs in the test results.
   PrintHostLogContents()
 
-  if TEST_FAILURE:
-    print '++++++++++AT LEAST 1 TEST FAILED++++++++++'
-    print FAILING_TESTS.rstrip('\n')
-    print '++++++++++++++++++++++++++++++++++++++++++'
+  if failed_tests:
+    print '++++++++++FAILED TESTS++++++++++'
+    print failed_tests.rstrip('\n')
+    print '++++++++++++++++++++++++++++++++'
     raise Exception('At least one test failed.')
 
 if __name__ == '__main__':
-
   parser = argparse.ArgumentParser()
   parser.add_argument('-f', '--commands_file',
                       help='path to file listing commands to be launched.')

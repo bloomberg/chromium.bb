@@ -6,8 +6,8 @@
 """The test controller for the chromoting localhost browser_tests.
 
 This test uses the legion framework to setup this controller which will run
-the chromoting_integration_tests on a task machine. This is intended to be an
-example Legion-based test for the chromoting team.
+the chromoting_browser_tests on a task machine. This is intended to
+be an example Legion-based test for the chromoting team.
 
 The controller will start a task machine to run browser_tests_launcher on. The
 output of these tests are streamed back to the test controller to be output

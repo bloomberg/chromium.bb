@@ -21,6 +21,15 @@
                 'app_remoting_integration_tests.isolate',
               ],
             },  # target_name: 'app_remoting_integration_tests_run'
+            {
+              'target_name': 'chromoting_integration_tests_run',
+              'includes': [
+                './dependencies.gypi',
+              ],
+              'sources': [
+                'chromoting_integration_tests.isolate',
+              ],
+            },  # target_name: 'chromoting_integration_tests_run'
           ],
         }],
         ['run_multi_machine_tests==1', {
@@ -40,12 +49,12 @@
       ],
       'targets': [
         {
-          'target_name': 'chromoting_integration_tests_run',
+          'target_name': 'chromoting_browser_tests_run',
           'includes': [
             './dependencies.gypi',
           ],
           'sources': [
-            'chromoting_integration_tests.isolate',
+            'chromoting_browser_tests.isolate',
           ],
           'conditions': [
             ['OS=="linux"', {
@@ -76,7 +85,7 @@
               ],
             }],
           ],
-        },  # target_name: 'chromoting_integration_tests_run'
+        },  # target_name: 'chromoting_browser_integration_tests_run'
       ],
     }],
   ],

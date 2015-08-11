@@ -4,7 +4,7 @@
 
 {
   'includes': [
-    '../chromoting_integration_tests.isolate',
+    '../chromoting_browser_tests.isolate',
     '../../legion/legion.isolate',
     '../../../chrome/chrome.isolate',
     '../../../remoting/tools/remote_test_helper/remote_test_helper.isolate',

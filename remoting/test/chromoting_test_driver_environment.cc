@@ -257,19 +257,21 @@ bool ChromotingTestDriverEnvironment::RetrieveHostList() {
 
   // If the host or command line parameters are not setup correctly, we want to
   // let the user fix the issue before continuing.
+  bool found_host_name = false;
   auto host_info_iter = std::find_if(host_list_.begin(), host_list_.end(),
-      [this](const remoting::test::HostInfo& host_info) {
-          return host_info.host_name == host_name_;
+      [this, &found_host_name](const remoting::test::HostInfo& host_info) {
+          if (host_info.host_name == host_name_) {
+            found_host_name = true;
+            return host_info.IsReadyForConnection();
+          }
+          return false;
       });
-
   if (host_info_iter == host_list_.end()) {
-    LOG(ERROR) << "Could not find " << this->host_name_ << " in host list.";
-    DisplayHostList();
-    return false;
-  }
-
-  if (!host_info_iter->IsReadyForConnection()) {
-    LOG(ERROR) << this->host_name_ << " is not ready to connect!";
+    if (found_host_name) {
+      LOG(ERROR) << this->host_name_ << " is not ready to connect.";
+    } else {
+      LOG(ERROR) << this->host_name_ << " was not found in the host list.";
+    }
     DisplayHostList();
     return false;
   }

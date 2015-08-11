@@ -16,6 +16,7 @@
   'conditions': [
     ['OS=="linux"', {
       'dependencies': [
+        '../../remoting/remoting.gyp:chromoting_test_driver',
         '../../remoting/remoting.gyp:remoting_me2me_host_archive',
         '../../remoting/internal/app_remoting_all.gyp:app_remoting_all_apps',
         '../../remoting/internal/app_remoting_all.gyp:ar_test_driver',
