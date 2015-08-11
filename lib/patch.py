@@ -985,7 +985,7 @@ class GitRepoPatch(PatchQuery):
 
     reset_target = None if leave_dirty else 'HEAD'
     try:
-      git.RunGit(git_repo, cmd)
+      git.RunGit(git_repo, cmd, capture_output=False)
       self._AmendCommitMessage(git_repo)
       reset_target = None
       return
