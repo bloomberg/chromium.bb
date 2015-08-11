@@ -15,6 +15,7 @@ paper-toolbar {
   @apply(--shadow-elevation-4dp);
   background-color: rgb(63, 85, 102);
   position: relative;
+  z-index: 10;
 }
 
 paper-drawer-panel {

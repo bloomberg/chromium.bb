@@ -23,8 +23,10 @@
     </cr-settings-section>
 
     <cr-settings-section route="search" icon="search"
-        i18n-values="page-title:searchPageTitle">
-      <cr-settings-search-page></cr-settings-search-page>
+        i18n-values="page-title:searchPageTitle"
+        expanded="{{searchExpanded}}" expand-container="{{expandContainer}}">
+      <cr-settings-search-page in-subpage="{{searchExpanded}}">
+      </cr-settings-search-page>
     </cr-settings-section>
 
 <if expr="chromeos">

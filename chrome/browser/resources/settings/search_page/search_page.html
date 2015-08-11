@@ -2,26 +2,40 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/more-routing/more-routing.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
+<link rel="import" href="chrome://md-settings/search_engines_page/search_engines_page.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 
 <dom-module id="cr-settings-search-page">
   <link rel="import" type="css"
       href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="search_page.css">
   <template>
-    <p i18n-content="searchExplanation"></p>
+    <cr-settings-animated-pages id="pages" in-subpage="{{inSubpage}}">
+      <neon-animatable id="main">
+        <p i18n-content="searchExplanation"></p>
 
-    <div class="search-engines">
-      <select id="searchEnginesMenu" on-change="defaultEngineGuidChanged_">
-        <template is="dom-repeat" items="[[searchEngines]]">
-          <option value="[[item.guid]]">{{item.name}}</option>
-        </template>
-      </select>
+        <div class="search-engines">
+          <select id="searchEnginesMenu" on-change="defaultEngineGuidChanged_">
+            <template is="dom-repeat" items="[[searchEngines]]">
+              <option value="[[item.guid]]">{{item.name}}</option>
+            </template>
+          </select>
 
-      <cr-button class="manage-search-engines"
-          i18n-content="searchManageButtonLabel"
-          on-click="manageSearchEngines_" raised>
-      </cr-button>
-    </div>
+          <cr-button class="manage-search-engines"
+              i18n-content="searchManageButtonLabel"
+              on-click="manageSearchEngines_" raised>
+          </cr-button>
+        </div>
+      </neon-animatable>
+      <neon-animatable id="search-engines">
+        <div class="subheader">
+          <paper-icon-button icon="arrow-back" on-tap="handleBack_">
+          </paper-icon-button>
+          <h2 i18n-content="searchEnginesLabel"></h2>
+        </div>
+        <cr-settings-search-engines-page></cr-settings-search-engines-page>
+      </neon-animatable>
+    </cr-settings-animated-pages>
   </template>
   <script src="search_page.js"></script>
 </dom-module>

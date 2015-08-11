@@ -19,6 +19,16 @@
   border-radius: 2px;
 }
 
+.subheader {
+  @apply(--layout-center);
+  @apply(--layout-horizontal);
+  margin-bottom: 16px;
+}
+
+.subheader h2 {
+  @apply(--paper-font-subhead);
+}
+
 .page-content {
   width: 760px;
 }

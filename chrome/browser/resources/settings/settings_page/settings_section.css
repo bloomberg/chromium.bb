@@ -6,14 +6,15 @@
  * @fileoverview
  * Common styles for Settings pages.
  */
-:host > paper-material {
+#section {
   @apply(--shadow-elevation-4dp);
   background-color: white;
+  height: 100%;
   margin-bottom: 16px;
   width: 605px;
 }
 
-.header {
+#header {
   @apply(--layout-horizontal);
   @apply(--layout-center);
   background-color: #f8f8f8;
@@ -21,15 +22,15 @@
   padding: 16px;
 }
 
-.header iron-icon {
+#header iron-icon {
   -webkit-padding-end: 16px;
   color: rgba(0, 0, 0, .87);
 }
 
-.header .title {
+#header .title {
   @apply(--paper-font-body2);
 }
 
-div.content-container {
+#content-container {
   padding: 16px;
 }

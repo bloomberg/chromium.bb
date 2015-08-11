@@ -4,7 +4,6 @@
 <link rel="import" href="chrome://md-settings/routes.html">
 <link rel="import" href="chrome://md-settings/advanced_page/advanced_page.html">
 <link rel="import" href="chrome://md-settings/basic_page/basic_page.html">
-<link rel="import" href="chrome://md-settings/search_engines_page/search_engines_page.html">
 
 <if expr="chromeos">
 <link rel="import" href="chrome://md-settings/internet_page/internet_detail_page.html">
@@ -18,7 +17,8 @@
       <more-route-selector selected-params="{{params}}">
         <iron-pages id="pageContainer" selected-item="{{selectedPage}}"
             on-iron-select="onIronSelect_" attr-for-selected="PAGE_ID">
-          <cr-settings-basic-page prefs="{{prefs}}" route="basic">
+          <cr-settings-basic-page prefs="{{prefs}}" route="basic"
+              expand-container="{{expandContainer}}">
           </cr-settings-basic-page>
           <cr-settings-advanced-page prefs="{{prefs}}" route="advanced">
           </cr-settings-advanced-page>
@@ -28,8 +28,6 @@
               selected-page="[[selectedPage]]">
           </cr-settings-internet-detail-page>
 </if>
-          <cr-settings-search-engines-page route="search-engines">
-          </cr-settings-search-engines-page>
         </iron-pages>
       </more-route-selector>
     </div>

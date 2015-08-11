@@ -59,10 +59,19 @@ Polymer({
       value: '',
       observer: 'selectedPageIdChanged_',
     },
+
+    /**
+     * Container that determines the sizing of expanded sections.
+     */
+    expandContainer: {
+      type: Object,
+    },
   },
 
   /** @override */
   ready: function() {
+    this.expandContainer = this.$.mainContainer;
+
     var observer = new MutationObserver(this.pageContainerUpdated_.bind(this));
     observer.observe(this.$.pageContainer,
                      /** @type {MutationObserverInit} */ {

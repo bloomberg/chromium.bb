@@ -1,0 +1,18 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animation-runner-behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animated-pages.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
+
+<dom-module id="cr-settings-animated-pages">
+  <link rel="import" type="css" href="settings_animated_pages.css">
+  <template>
+    <neon-animated-pages id="animatedPages" attr-for-selected="id"
+        selected="{{selectedPage}}" entry-animation="[[entryAnimation]]"
+        exit-animation="[[exitAnimation]]">
+      <content select="*"></content>
+    </neon-animated-pages>
+  </template>
+  <script src="settings_animations.js"></script>
+  <script src="settings_animated_pages.js"></script>
+</dom-module>
