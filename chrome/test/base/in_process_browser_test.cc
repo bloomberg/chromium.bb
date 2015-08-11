@@ -18,6 +18,7 @@
 #include "base/test/test_file_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/non_thread_safe.h"
+#include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -537,6 +538,8 @@ base::CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
 #endif
 
 void InProcessBrowserTest::RunTestOnMainThreadLoop() {
+  AfterStartupTaskUtils::SetBrowserStartupIsComplete();
+
   // Pump startup related events.
   content::RunAllPendingInMessageLoop();
 

@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/trace_event/trace_event.h"
+#include "chrome/browser/after_startup_task_utils_android.h"
 #include "chrome/browser/android/accessibility/font_size_prefs_android.h"
 #include "chrome/browser/android/accessibility_util.h"
 #include "chrome/browser/android/appmenu/app_menu_drag_helper.h"
@@ -168,6 +169,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"AccessibilityUtils", AccessibilityUtil::Register},
     {"AccountChooserInfoBar", RegisterAccountChooserInfoBar},
     {"AccountManagementScreenHelper", AccountManagementScreenHelper::Register},
+    {"AfterStartupTaskUtils", RegisterAfterStartupTaskUtilsJNI},
     {"AnswersImageBridge", RegisterAnswersImageBridge},
     {"AppBannerInfoBarAndroid", RegisterAppBannerInfoBarAndroid},
     {"AppBannerInfoBarDelegateAndroid",

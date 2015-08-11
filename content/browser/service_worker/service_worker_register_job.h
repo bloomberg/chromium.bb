@@ -105,6 +105,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
 
   void SetPhase(Phase phase);
 
+  void StartImpl();
   void ContinueWithRegistration(
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);

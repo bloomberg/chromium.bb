@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -82,6 +83,12 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, ExternalConnectionFail) {
     EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, observer.error_code());
     EXPECT_EQ(url, observer.validated_url());
   }
+}
+
+// Verify that AfterStartupTaskUtils considers startup to be complete
+// prior to test execution so tasks posted by tests are never deferred.
+IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, AfterStartupTaskUtils) {
+  EXPECT_TRUE(AfterStartupTaskUtils::IsBrowserStartupComplete());
 }
 
 // Paths are to very simple HTML files. One is accessible, the other is not.

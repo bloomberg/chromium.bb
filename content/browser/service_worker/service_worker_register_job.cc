@@ -16,6 +16,7 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 
 namespace content {
@@ -86,6 +87,13 @@ void ServiceWorkerRegisterJob::AddCallback(
 }
 
 void ServiceWorkerRegisterJob::Start() {
+  BrowserThread::PostAfterStartupTask(
+      FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&ServiceWorkerRegisterJob::StartImpl,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void ServiceWorkerRegisterJob::StartImpl() {
   SetPhase(START);
   ServiceWorkerStorage::FindRegistrationCallback next_step;
   if (job_type_ == REGISTRATION_JOB) {

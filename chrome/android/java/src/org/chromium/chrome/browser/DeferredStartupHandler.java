@@ -101,6 +101,8 @@ public class DeferredStartupHandler {
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
+        AfterStartupTaskUtils.setStartupComplete();
+
         // TODO(aruslan): http://b/6397072 This will be moved elsewhere
         PartnerBookmarksShim.kickOffReading(application);
 

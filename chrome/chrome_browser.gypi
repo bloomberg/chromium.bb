@@ -22,6 +22,8 @@
       'browser/about_flags.h',
       'browser/after_startup_task_utils.cc',
       'browser/after_startup_task_utils.h',
+      'browser/after_startup_task_utils_android.cc',
+      'browser/after_startup_task_utils_android.h',
       'browser/android/accessibility/font_size_prefs_android.cc',
       'browser/android/accessibility/font_size_prefs_android.h',
       'browser/android/accessibility_util.cc',
@@ -1681,6 +1683,7 @@
     ],
     'chrome_browser_jni_sources': [
       'android/java/src/org/chromium/chrome/browser/AccessibilityUtil.java',
+      'android/java/src/org/chromium/chrome/browser/AfterStartupTaskUtils.java',
       'android/java/src/org/chromium/chrome/browser/ApplicationLifetime.java',
       'android/java/src/org/chromium/chrome/browser/accessibility/FontSizePrefs.java',
       'android/java/src/org/chromium/chrome/browser/appmenu/AppMenuDragHelper.java',
