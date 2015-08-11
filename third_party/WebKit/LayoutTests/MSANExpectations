@@ -39,7 +39,6 @@ crbug.com/454329 [ Linux ] virtual/gpu/fast/canvas/canvas-ellipse-360-winding.ht
 # Flaky under MSAN (hang forever)
 crbug.com/456525 [ Linux ] inspector/sources/debugger [ Skip ]
 
-crbug.com/461041 [ Linux ] fast/forms/calendar-picker/month-picker-ax.html [ Timeout Pass ]
 crbug.com/243871 [ Linux ] virtual/threaded_animation_timelines/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Timeout Pass ]
 crbug.com/517704 [ Linux ] imported/web-platform-tests/encoding/api-invalid-label.html [ Timeout Pass ]
 
