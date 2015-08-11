@@ -660,7 +660,7 @@ decode_mcu_fast (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
   ASSIGN_STATE(state, entropy->saved);
 
   for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
-    JBLOCKROW block = MCU_data[blkn];
+    JBLOCKROW block = MCU_data ? MCU_data[blkn] : NULL;
     d_derived_tbl * dctbl = entropy->dc_cur_tbls[blkn];
     d_derived_tbl * actbl = entropy->ac_cur_tbls[blkn];
     register int s, k, r, l;
