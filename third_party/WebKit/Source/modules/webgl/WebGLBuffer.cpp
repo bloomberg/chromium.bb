@@ -31,9 +31,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<WebGLBuffer> WebGLBuffer::create(WebGLRenderingContextBase* ctx)
+WebGLBuffer* WebGLBuffer::create(WebGLRenderingContextBase* ctx)
 {
-    return adoptRefWillBeNoop(new WebGLBuffer(ctx));
+    return new WebGLBuffer(ctx);
 }
 
 WebGLBuffer::WebGLBuffer(WebGLRenderingContextBase* ctx)
@@ -45,15 +45,7 @@ WebGLBuffer::WebGLBuffer(WebGLRenderingContextBase* ctx)
 
 WebGLBuffer::~WebGLBuffer()
 {
-    // Delete the buffer's platform object. This object will have been
-    // detached from the WebGLContextGroup if the group object was
-    // finalized first. With Oilpan not enabled, it always will be,
-    // but with Oilpan enabled, the WebGLBuffer might end up being
-    // finalized first. In which case detachment is needed to ensure
-    // that the platform object is indeed deleted.
-    //
-    // To keep the code regular, the trivial detach()ment is always
-    // performed.
+    // See the comment in WebGLObject::detachAndDeleteObject().
     detachAndDeleteObject();
 }
 

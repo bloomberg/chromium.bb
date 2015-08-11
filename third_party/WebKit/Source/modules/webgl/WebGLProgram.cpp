@@ -32,9 +32,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<WebGLProgram> WebGLProgram::create(WebGLRenderingContextBase* ctx)
+WebGLProgram* WebGLProgram::create(WebGLRenderingContextBase* ctx)
 {
-    return adoptRefWillBeNoop(new WebGLProgram(ctx));
+    return new WebGLProgram(ctx);
 }
 
 WebGLProgram::WebGLProgram(WebGLRenderingContextBase* ctx)
@@ -48,21 +48,14 @@ WebGLProgram::WebGLProgram(WebGLRenderingContextBase* ctx)
 
 WebGLProgram::~WebGLProgram()
 {
-#if ENABLE(OILPAN)
     // These heap objects handle detachment on their own. Clear out
     // the references to prevent deleteObjectImpl() from trying to do
     // same, as we cannot safely access other heap objects from this
     // destructor.
     m_vertexShader = nullptr;
     m_fragmentShader = nullptr;
-#endif
-    // Always call detach here to ensure that platform object deletion
-    // happens with Oilpan enabled. It keeps the code regular to do it
-    // with or without Oilpan enabled.
-    //
-    // See comment in WebGLBuffer's destructor for additional
-    // information on why this is done for WebGLSharedObject-derived
-    // objects.
+
+    // See the comment in WebGLObject::detachAndDeleteObject().
     detachAndDeleteObject();
 }
 
@@ -120,9 +113,9 @@ WebGLShader* WebGLProgram::getAttachedShader(GLenum type)
 {
     switch (type) {
     case GL_VERTEX_SHADER:
-        return m_vertexShader.get();
+        return m_vertexShader;
     case GL_FRAGMENT_SHADER:
-        return m_fragmentShader.get();
+        return m_fragmentShader;
     default:
         return 0;
     }

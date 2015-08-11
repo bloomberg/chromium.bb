@@ -30,9 +30,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<WebGLUniformLocation> WebGLUniformLocation::create(WebGLProgram* program, GLint location)
+WebGLUniformLocation* WebGLUniformLocation::create(WebGLProgram* program, GLint location)
 {
-    return adoptRefWillBeNoop(new WebGLUniformLocation(program, location));
+    return new WebGLUniformLocation(program, location);
 }
 
 WebGLUniformLocation::WebGLUniformLocation(WebGLProgram* program, GLint location)
@@ -49,7 +49,7 @@ WebGLProgram* WebGLUniformLocation::program() const
     // longer valid.
     if (m_program->linkCount() != m_linkCount)
         return 0;
-    return m_program.get();
+    return m_program;
 }
 
 GLint WebGLUniformLocation::location() const

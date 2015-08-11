@@ -51,16 +51,17 @@ WebGLExtensionName WebGLLoseContext::name() const
     return WebGLLoseContextName;
 }
 
-PassRefPtrWillBeRawPtr<WebGLLoseContext> WebGLLoseContext::create(WebGLRenderingContextBase* context)
+WebGLLoseContext* WebGLLoseContext::create(WebGLRenderingContextBase* context)
 {
-    return adoptRefWillBeNoop(new WebGLLoseContext(context));
+    return new WebGLLoseContext(context);
 }
 
 void WebGLLoseContext::loseContext()
 {
     WebGLExtensionScopedContext scoped(this);
-    if (!scoped.isLost())
+    if (!scoped.isLost()) {
         scoped.context()->forceLostContext(WebGLRenderingContextBase::WebGLLoseContextLostContext, WebGLRenderingContextBase::Manual);
+    }
 }
 
 void WebGLLoseContext::restoreContext()

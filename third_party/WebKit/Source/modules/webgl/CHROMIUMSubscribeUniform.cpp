@@ -25,9 +25,9 @@ WebGLExtensionName CHROMIUMSubscribeUniform::name() const
     return CHROMIUMSubscribeUniformName;
 }
 
-PassRefPtrWillBeRawPtr<CHROMIUMSubscribeUniform> CHROMIUMSubscribeUniform::create(WebGLRenderingContextBase* context)
+CHROMIUMSubscribeUniform* CHROMIUMSubscribeUniform::create(WebGLRenderingContextBase* context)
 {
-    return adoptRefWillBeNoop(new CHROMIUMSubscribeUniform(context));
+    return new CHROMIUMSubscribeUniform(context);
 }
 
 bool CHROMIUMSubscribeUniform::supported(WebGLRenderingContextBase* context)
@@ -40,7 +40,7 @@ const char* CHROMIUMSubscribeUniform::extensionName()
     return "CHROMIUM_subscribe_uniform";
 }
 
-PassRefPtrWillBeRawPtr<CHROMIUMValuebuffer> CHROMIUMSubscribeUniform::createValuebufferCHROMIUM()
+CHROMIUMValuebuffer* CHROMIUMSubscribeUniform::createValuebufferCHROMIUM()
 {
     WebGLExtensionScopedContext scoped(this);
     if (scoped.isLost())

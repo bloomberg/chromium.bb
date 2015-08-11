@@ -27,7 +27,6 @@
 #define WebGLTexture_h
 
 #include "modules/webgl/WebGLSharedPlatform3DObject.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -42,7 +41,7 @@ public:
     };
     ~WebGLTexture() override;
 
-    static PassRefPtrWillBeRawPtr<WebGLTexture> create(WebGLRenderingContextBase*);
+    static WebGLTexture* create(WebGLRenderingContextBase*);
 
     void setTarget(GLenum target, GLint maxLevel);
     void setParameteri(GLenum pname, GLint param);

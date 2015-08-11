@@ -27,7 +27,6 @@
 #define OESVertexArrayObject_h
 
 #include "modules/webgl/WebGLExtension.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -37,14 +36,14 @@ class WebGLVertexArrayObjectOES;
 class OESVertexArrayObject final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<OESVertexArrayObject> create(WebGLRenderingContextBase*);
+    static OESVertexArrayObject* create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
     ~OESVertexArrayObject() override;
     WebGLExtensionName name() const override;
 
-    PassRefPtrWillBeRawPtr<WebGLVertexArrayObjectOES> createVertexArrayOES();
+    WebGLVertexArrayObjectOES* createVertexArrayOES();
     void deleteVertexArrayOES(WebGLVertexArrayObjectOES*);
     GLboolean isVertexArrayOES(WebGLVertexArrayObjectOES*);
     void bindVertexArrayOES(WebGLVertexArrayObjectOES*);

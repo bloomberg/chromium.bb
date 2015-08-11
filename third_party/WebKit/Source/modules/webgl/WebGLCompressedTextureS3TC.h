@@ -27,14 +27,13 @@
 #define WebGLCompressedTextureS3TC_h
 
 #include "modules/webgl/WebGLExtension.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
 class WebGLCompressedTextureS3TC final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<WebGLCompressedTextureS3TC> create(WebGLRenderingContextBase*);
+    static WebGLCompressedTextureS3TC* create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 

@@ -31,24 +31,17 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<WebGLRenderbuffer> WebGLRenderbuffer::create(WebGLRenderingContextBase* ctx)
+WebGLRenderbuffer* WebGLRenderbuffer::create(WebGLRenderingContextBase* ctx)
 {
-    return adoptRefWillBeNoop(new WebGLRenderbuffer(ctx));
+    return new WebGLRenderbuffer(ctx);
 }
 
 WebGLRenderbuffer::~WebGLRenderbuffer()
 {
-#if ENABLE(OILPAN)
     // This render buffer (heap) object must finalize itself.
     m_emulatedStencilBuffer.clear();
-#endif
-    // Always call detach here to ensure that platform object deletion
-    // happens with Oilpan enabled. It keeps the code regular to do it
-    // with or without Oilpan enabled.
-    //
-    // See comment in WebGLBuffer's destructor for additional
-    // information on why this is done for WebGLSharedObject-derived
-    // objects.
+
+    // See the comment in WebGLObject::detachAndDeleteObject().
     detachAndDeleteObject();
 }
 

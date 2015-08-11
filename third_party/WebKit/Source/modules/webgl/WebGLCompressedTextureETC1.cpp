@@ -25,9 +25,9 @@ WebGLExtensionName WebGLCompressedTextureETC1::name() const
     return WebGLCompressedTextureETC1Name;
 }
 
-PassRefPtrWillBeRawPtr<WebGLCompressedTextureETC1> WebGLCompressedTextureETC1::create(WebGLRenderingContextBase* context)
+WebGLCompressedTextureETC1* WebGLCompressedTextureETC1::create(WebGLRenderingContextBase* context)
 {
-    return adoptRefWillBeNoop(new WebGLCompressedTextureETC1(context));
+    return new WebGLCompressedTextureETC1(context);
 }
 
 bool WebGLCompressedTextureETC1::supported(WebGLRenderingContextBase* context)

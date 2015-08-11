@@ -45,9 +45,9 @@ WebGLExtensionName WebGLDrawBuffers::name() const
     return WebGLDrawBuffersName;
 }
 
-PassRefPtrWillBeRawPtr<WebGLDrawBuffers> WebGLDrawBuffers::create(WebGLRenderingContextBase* context)
+WebGLDrawBuffers* WebGLDrawBuffers::create(WebGLRenderingContextBase* context)
 {
-    return adoptRefWillBeNoop(new WebGLDrawBuffers(context));
+    return new WebGLDrawBuffers(context);
 }
 
 // static
@@ -57,6 +57,7 @@ bool WebGLDrawBuffers::supported(WebGLRenderingContextBase* context)
         && satisfiesWebGLRequirements(context));
 }
 
+// static
 const char* WebGLDrawBuffers::extensionName()
 {
     return "WEBGL_draw_buffers";

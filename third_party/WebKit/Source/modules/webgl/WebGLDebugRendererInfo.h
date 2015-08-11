@@ -27,7 +27,6 @@
 #define WebGLDebugRendererInfo_h
 
 #include "modules/webgl/WebGLExtension.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -39,7 +38,7 @@ public:
         UNMASKED_RENDERER_WEBGL = 0x9246
     };
 
-    static PassRefPtrWillBeRawPtr<WebGLDebugRendererInfo> create(WebGLRenderingContextBase*);
+    static WebGLDebugRendererInfo* create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 

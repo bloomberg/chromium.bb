@@ -4,6 +4,6 @@
 
 [
     RuntimeEnabled=UnsafeES3APIs,
-    WillBeGarbageCollected
+    GarbageCollected
 ] interface WebGLQuery {
 };

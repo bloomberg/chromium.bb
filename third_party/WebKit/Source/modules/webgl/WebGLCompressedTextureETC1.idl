@@ -5,7 +5,7 @@
 [
     NoInterfaceObject,
     DoNotCheckConstants,
-    WillBeGarbageCollected,
+    GarbageCollected,
     SetWrapperReferenceFrom=canvas,
 ] interface WebGLCompressedTextureETC1 {
     /* Compressed Texture Formats */

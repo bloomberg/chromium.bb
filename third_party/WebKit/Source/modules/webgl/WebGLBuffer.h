@@ -27,8 +27,6 @@
 #define WebGLBuffer_h
 
 #include "modules/webgl/WebGLSharedPlatform3DObject.h"
-#include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -37,7 +35,7 @@ class WebGLBuffer final : public WebGLSharedPlatform3DObject {
 public:
     ~WebGLBuffer() override;
 
-    static PassRefPtrWillBeRawPtr<WebGLBuffer> create(WebGLRenderingContextBase*);
+    static WebGLBuffer* create(WebGLRenderingContextBase*);
 
     GLenum getInitialTarget() const { return m_initialTarget; }
     void setInitialTarget(GLenum);

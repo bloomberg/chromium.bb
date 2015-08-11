@@ -23,9 +23,9 @@ WebGLExtensionName EXTShaderTextureLOD::name() const
     return EXTShaderTextureLODName;
 }
 
-PassRefPtrWillBeRawPtr<EXTShaderTextureLOD> EXTShaderTextureLOD::create(WebGLRenderingContextBase* context)
+EXTShaderTextureLOD* EXTShaderTextureLOD::create(WebGLRenderingContextBase* context)
 {
-    return adoptRefWillBeNoop(new EXTShaderTextureLOD(context));
+    return new EXTShaderTextureLOD(context);
 }
 
 bool EXTShaderTextureLOD::supported(WebGLRenderingContextBase* context)

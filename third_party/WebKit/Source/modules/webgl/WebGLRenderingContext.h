@@ -61,29 +61,29 @@ private:
     WebGLRenderingContext(HTMLCanvasElement*, PassOwnPtr<WebGraphicsContext3D>, const WebGLContextAttributes&);
 
     // Enabled extension objects.
-    RefPtrWillBeMember<ANGLEInstancedArrays> m_angleInstancedArrays;
-    RefPtrWillBeMember<CHROMIUMSubscribeUniform> m_chromiumSubscribeUniform;
-    RefPtrWillBeMember<EXTBlendMinMax> m_extBlendMinMax;
-    RefPtrWillBeMember<EXTFragDepth> m_extFragDepth;
-    RefPtrWillBeMember<EXTShaderTextureLOD> m_extShaderTextureLOD;
-    RefPtrWillBeMember<EXTsRGB> m_extsRGB;
-    RefPtrWillBeMember<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
-    RefPtrWillBeMember<OESTextureFloat> m_oesTextureFloat;
-    RefPtrWillBeMember<OESTextureFloatLinear> m_oesTextureFloatLinear;
-    RefPtrWillBeMember<OESTextureHalfFloat> m_oesTextureHalfFloat;
-    RefPtrWillBeMember<OESTextureHalfFloatLinear> m_oesTextureHalfFloatLinear;
-    RefPtrWillBeMember<OESStandardDerivatives> m_oesStandardDerivatives;
-    RefPtrWillBeMember<OESVertexArrayObject> m_oesVertexArrayObject;
-    RefPtrWillBeMember<OESElementIndexUint> m_oesElementIndexUint;
-    RefPtrWillBeMember<WebGLLoseContext> m_webglLoseContext;
-    RefPtrWillBeMember<WebGLDebugRendererInfo> m_webglDebugRendererInfo;
-    RefPtrWillBeMember<WebGLDebugShaders> m_webglDebugShaders;
-    RefPtrWillBeMember<WebGLDrawBuffers> m_webglDrawBuffers;
-    RefPtrWillBeMember<WebGLCompressedTextureATC> m_webglCompressedTextureATC;
-    RefPtrWillBeMember<WebGLCompressedTextureETC1> m_webglCompressedTextureETC1;
-    RefPtrWillBeMember<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
-    RefPtrWillBeMember<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
-    RefPtrWillBeMember<WebGLDepthTexture> m_webglDepthTexture;
+    PersistentWillBeMember<ANGLEInstancedArrays> m_angleInstancedArrays;
+    PersistentWillBeMember<CHROMIUMSubscribeUniform> m_chromiumSubscribeUniform;
+    PersistentWillBeMember<EXTBlendMinMax> m_extBlendMinMax;
+    PersistentWillBeMember<EXTFragDepth> m_extFragDepth;
+    PersistentWillBeMember<EXTShaderTextureLOD> m_extShaderTextureLOD;
+    PersistentWillBeMember<EXTsRGB> m_extsRGB;
+    PersistentWillBeMember<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
+    PersistentWillBeMember<OESTextureFloat> m_oesTextureFloat;
+    PersistentWillBeMember<OESTextureFloatLinear> m_oesTextureFloatLinear;
+    PersistentWillBeMember<OESTextureHalfFloat> m_oesTextureHalfFloat;
+    PersistentWillBeMember<OESTextureHalfFloatLinear> m_oesTextureHalfFloatLinear;
+    PersistentWillBeMember<OESStandardDerivatives> m_oesStandardDerivatives;
+    PersistentWillBeMember<OESVertexArrayObject> m_oesVertexArrayObject;
+    PersistentWillBeMember<OESElementIndexUint> m_oesElementIndexUint;
+    PersistentWillBeMember<WebGLLoseContext> m_webglLoseContext;
+    PersistentWillBeMember<WebGLDebugRendererInfo> m_webglDebugRendererInfo;
+    PersistentWillBeMember<WebGLDebugShaders> m_webglDebugShaders;
+    PersistentWillBeMember<WebGLDrawBuffers> m_webglDrawBuffers;
+    PersistentWillBeMember<WebGLCompressedTextureATC> m_webglCompressedTextureATC;
+    PersistentWillBeMember<WebGLCompressedTextureETC1> m_webglCompressedTextureETC1;
+    PersistentWillBeMember<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
+    PersistentWillBeMember<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
+    PersistentWillBeMember<WebGLDepthTexture> m_webglDepthTexture;
 };
 
 DEFINE_TYPE_CASTS(WebGLRenderingContext, CanvasRenderingContext, context,

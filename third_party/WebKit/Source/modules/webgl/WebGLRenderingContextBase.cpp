@@ -246,7 +246,7 @@ public:
 
 private:
     DrawingBuffer* m_drawingBuffer;
-    RawPtrWillBeMember<WebGLFramebuffer> m_readFramebufferBinding;
+    Member<WebGLFramebuffer> m_readFramebufferBinding;
 };
 
 GLint clamp(GLint value, GLint min, GLint max)
@@ -501,12 +501,11 @@ private:
     RawPtrWillBeMember<WebGLRenderingContextBase> m_context;
 };
 
-class WebGLRenderingContextLostCallback final : public NoBaseWillBeGarbageCollectedFinalized<WebGLRenderingContextLostCallback>, public WebGraphicsContext3D::WebGraphicsContextLostCallback {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WebGLRenderingContextLostCallback);
+class WebGLRenderingContextLostCallback final : public GarbageCollectedFinalized<WebGLRenderingContextLostCallback>, public WebGraphicsContext3D::WebGraphicsContextLostCallback {
 public:
-    static PassOwnPtrWillBeRawPtr<WebGLRenderingContextLostCallback> create(WebGLRenderingContextBase* context)
+    static WebGLRenderingContextLostCallback* create(WebGLRenderingContextBase* context)
     {
-        return adoptPtrWillBeNoop(new WebGLRenderingContextLostCallback(context));
+        return new WebGLRenderingContextLostCallback(context);
     }
 
     ~WebGLRenderingContextLostCallback() override { }
@@ -525,12 +524,11 @@ private:
     RawPtrWillBeMember<WebGLRenderingContextBase> m_context;
 };
 
-class WebGLRenderingContextErrorMessageCallback final : public NoBaseWillBeGarbageCollectedFinalized<WebGLRenderingContextErrorMessageCallback>, public WebGraphicsContext3D::WebGraphicsErrorMessageCallback {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WebGLRenderingContextErrorMessageCallback);
+class WebGLRenderingContextErrorMessageCallback final : public GarbageCollectedFinalized<WebGLRenderingContextErrorMessageCallback>, public WebGraphicsContext3D::WebGraphicsErrorMessageCallback {
 public:
-    static PassOwnPtrWillBeRawPtr<WebGLRenderingContextErrorMessageCallback> create(WebGLRenderingContextBase* context)
+    static WebGLRenderingContextErrorMessageCallback* create(WebGLRenderingContextBase* context)
     {
-        return adoptPtrWillBeNoop(new WebGLRenderingContextErrorMessageCallback(context));
+        return new WebGLRenderingContextErrorMessageCallback(context);
     }
 
     ~WebGLRenderingContextErrorMessageCallback() override { }
@@ -1121,6 +1119,9 @@ WebGLRenderingContextBase::~WebGLRenderingContextBase()
     detachAndRemoveAllObjects();
 
     // Release all extensions now.
+    for (ExtensionTracker* tracker : m_extensions) {
+        tracker->loseExtension(true);
+    }
     m_extensions.clear();
 
     // Context must be removed from the group prior to the destruction of the
@@ -1930,49 +1931,49 @@ void WebGLRenderingContextBase::copyTexSubImage2D(GLenum target, GLint level, GL
     webContext()->copyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
 }
 
-PassRefPtrWillBeRawPtr<WebGLBuffer> WebGLRenderingContextBase::createBuffer()
+WebGLBuffer* WebGLRenderingContextBase::createBuffer()
 {
     if (isContextLost())
         return nullptr;
-    RefPtrWillBeRawPtr<WebGLBuffer> o = WebGLBuffer::create(this);
-    addSharedObject(o.get());
-    return o.release();
+    WebGLBuffer* o = WebGLBuffer::create(this);
+    addSharedObject(o);
+    return o;
 }
 
-PassRefPtrWillBeRawPtr<WebGLFramebuffer> WebGLRenderingContextBase::createFramebuffer()
+WebGLFramebuffer* WebGLRenderingContextBase::createFramebuffer()
 {
     if (isContextLost())
         return nullptr;
-    RefPtrWillBeRawPtr<WebGLFramebuffer> o = WebGLFramebuffer::create(this);
-    addContextObject(o.get());
-    return o.release();
+    WebGLFramebuffer* o = WebGLFramebuffer::create(this);
+    addContextObject(o);
+    return o;
 }
 
-PassRefPtrWillBeRawPtr<WebGLTexture> WebGLRenderingContextBase::createTexture()
+WebGLTexture* WebGLRenderingContextBase::createTexture()
 {
     if (isContextLost())
         return nullptr;
-    RefPtrWillBeRawPtr<WebGLTexture> o = WebGLTexture::create(this);
-    addSharedObject(o.get());
-    return o.release();
+    WebGLTexture* o = WebGLTexture::create(this);
+    addSharedObject(o);
+    return o;
 }
 
-PassRefPtrWillBeRawPtr<WebGLProgram> WebGLRenderingContextBase::createProgram()
+WebGLProgram* WebGLRenderingContextBase::createProgram()
 {
     if (isContextLost())
         return nullptr;
-    RefPtrWillBeRawPtr<WebGLProgram> o = WebGLProgram::create(this);
-    addSharedObject(o.get());
-    return o.release();
+    WebGLProgram* o = WebGLProgram::create(this);
+    addSharedObject(o);
+    return o;
 }
 
-PassRefPtrWillBeRawPtr<WebGLRenderbuffer> WebGLRenderingContextBase::createRenderbuffer()
+WebGLRenderbuffer* WebGLRenderingContextBase::createRenderbuffer()
 {
     if (isContextLost())
         return nullptr;
-    RefPtrWillBeRawPtr<WebGLRenderbuffer> o = WebGLRenderbuffer::create(this);
-    addSharedObject(o.get());
-    return o.release();
+    WebGLRenderbuffer* o = WebGLRenderbuffer::create(this);
+    addSharedObject(o);
+    return o;
 }
 
 WebGLRenderbuffer* WebGLRenderingContextBase::ensureEmulatedStencilBuffer(GLenum target, WebGLRenderbuffer* renderbuffer)
@@ -1987,7 +1988,7 @@ WebGLRenderbuffer* WebGLRenderingContextBase::ensureEmulatedStencilBuffer(GLenum
     return renderbuffer->emulatedStencilBuffer();
 }
 
-PassRefPtrWillBeRawPtr<WebGLShader> WebGLRenderingContextBase::createShader(GLenum type)
+WebGLShader* WebGLRenderingContextBase::createShader(GLenum type)
 {
     if (isContextLost())
         return nullptr;
@@ -1996,9 +1997,9 @@ PassRefPtrWillBeRawPtr<WebGLShader> WebGLRenderingContextBase::createShader(GLen
         return nullptr;
     }
 
-    RefPtrWillBeRawPtr<WebGLShader> o = WebGLShader::create(this, type);
-    addSharedObject(o.get());
-    return o.release();
+    WebGLShader* o = WebGLShader::create(this, type);
+    addSharedObject(o);
+    return o;
 }
 
 void WebGLRenderingContextBase::cullFace(GLenum mode)
@@ -2454,7 +2455,7 @@ void WebGLRenderingContextBase::generateMipmap(GLenum target)
     tex->generateMipmapLevelInfo();
 }
 
-PassRefPtrWillBeRawPtr<WebGLActiveInfo> WebGLRenderingContextBase::getActiveAttrib(WebGLProgram* program, GLuint index)
+WebGLActiveInfo* WebGLRenderingContextBase::getActiveAttrib(WebGLProgram* program, GLuint index)
 {
     if (isContextLost() || !validateWebGLObject("getActiveAttrib", program))
         return nullptr;
@@ -2464,7 +2465,7 @@ PassRefPtrWillBeRawPtr<WebGLActiveInfo> WebGLRenderingContextBase::getActiveAttr
     return WebGLActiveInfo::create(info.name, info.type, info.size);
 }
 
-PassRefPtrWillBeRawPtr<WebGLActiveInfo> WebGLRenderingContextBase::getActiveUniform(WebGLProgram* program, GLuint index)
+WebGLActiveInfo* WebGLRenderingContextBase::getActiveUniform(WebGLProgram* program, GLuint index)
 {
     if (isContextLost() || !validateWebGLObject("getActiveUniform", program))
         return nullptr;
@@ -2474,12 +2475,12 @@ PassRefPtrWillBeRawPtr<WebGLActiveInfo> WebGLRenderingContextBase::getActiveUnif
     return WebGLActiveInfo::create(info.name, info.type, info.size);
 }
 
-Nullable<WillBeHeapVector<RefPtrWillBeMember<WebGLShader>>> WebGLRenderingContextBase::getAttachedShaders(WebGLProgram* program)
+Nullable<HeapVector<Member<WebGLShader>>> WebGLRenderingContextBase::getAttachedShaders(WebGLProgram* program)
 {
     if (isContextLost() || !validateWebGLObject("getAttachedShaders", program))
         return nullptr;
 
-    WillBeHeapVector<RefPtrWillBeMember<WebGLShader>> shaderObjects;
+    HeapVector<Member<WebGLShader>> shaderObjects;
     const GLenum shaderType[] = {
         GL_VERTEX_SHADER,
         GL_FRAGMENT_SHADER
@@ -2605,11 +2606,11 @@ bool WebGLRenderingContextBase::extensionSupportedAndAllowed(const ExtensionTrac
 
 ScriptValue WebGLRenderingContextBase::getExtension(ScriptState* scriptState, const String& name)
 {
-    RefPtrWillBeRawPtr<WebGLExtension> extension = nullptr;
+    WebGLExtension* extension = nullptr;
 
     if (!isContextLost()) {
         for (size_t i = 0; i < m_extensions.size(); ++i) {
-            ExtensionTracker* tracker = m_extensions[i].get();
+            ExtensionTracker* tracker = m_extensions[i];
             if (tracker->matchesNameWithPrefixes(name)) {
                 if (extensionSupportedAndAllowed(tracker)) {
                     extension = tracker->getExtension(this);
@@ -2650,7 +2651,7 @@ ScriptValue WebGLRenderingContextBase::getFramebufferAttachmentParameter(ScriptS
         case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:
             return WebGLAny(scriptState, GL_TEXTURE);
         case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME:
-            return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(attachmentObject));
+            return WebGLAny(scriptState, attachmentObject);
         case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL:
         case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE:
             {
@@ -2675,7 +2676,7 @@ ScriptValue WebGLRenderingContextBase::getFramebufferAttachmentParameter(ScriptS
         case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:
             return WebGLAny(scriptState, GL_RENDERBUFFER);
         case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME:
-            return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(attachmentObject));
+            return WebGLAny(scriptState, attachmentObject);
         case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT:
             if (extensionEnabled(EXTsRGBName) || isWebGL2OrHigher()) {
                 GLint value = 0;
@@ -2706,7 +2707,7 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* scriptState, GL
     case GL_ALPHA_BITS:
         return getIntParameter(scriptState, pname);
     case GL_ARRAY_BUFFER_BINDING:
-        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_boundArrayBuffer.get()));
+        return WebGLAny(scriptState, m_boundArrayBuffer.get());
     case GL_BLEND:
         return getBooleanParameter(scriptState, pname);
     case GL_BLEND_COLOR:
@@ -2736,7 +2737,7 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* scriptState, GL
     case GL_CULL_FACE_MODE:
         return getUnsignedIntParameter(scriptState, pname);
     case GL_CURRENT_PROGRAM:
-        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_currentProgram.get()));
+        return WebGLAny(scriptState, m_currentProgram.get());
     case GL_DEPTH_BITS:
         if (!m_framebufferBinding && !m_requestedAttributes.depth())
             return WebGLAny(scriptState, intZero);
@@ -2754,9 +2755,9 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* scriptState, GL
     case GL_DITHER:
         return getBooleanParameter(scriptState, pname);
     case GL_ELEMENT_ARRAY_BUFFER_BINDING:
-        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_boundVertexArrayObject->boundElementArrayBuffer()));
+        return WebGLAny(scriptState, m_boundVertexArrayObject->boundElementArrayBuffer());
     case GL_FRAMEBUFFER_BINDING:
-        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_framebufferBinding.get()));
+        return WebGLAny(scriptState, m_framebufferBinding.get());
     case GL_FRONT_FACE:
         return getUnsignedIntParameter(scriptState, pname);
     case GL_GENERATE_MIPMAP_HINT:
@@ -2805,7 +2806,7 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* scriptState, GL
     case GL_RED_BITS:
         return getIntParameter(scriptState, pname);
     case GL_RENDERBUFFER_BINDING:
-        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_renderbufferBinding.get()));
+        return WebGLAny(scriptState, m_renderbufferBinding.get());
     case GL_RENDERER:
         return WebGLAny(scriptState, String("WebKit WebGL"));
     case GL_SAMPLE_BUFFERS:
@@ -2861,9 +2862,9 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* scriptState, GL
     case GL_SUBPIXEL_BITS:
         return getIntParameter(scriptState, pname);
     case GL_TEXTURE_BINDING_2D:
-        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_textureUnits[m_activeTextureUnit].m_texture2DBinding.get()));
+        return WebGLAny(scriptState, m_textureUnits[m_activeTextureUnit].m_texture2DBinding.get());
     case GL_TEXTURE_BINDING_CUBE_MAP:
-        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_textureUnits[m_activeTextureUnit].m_textureCubeMapBinding.get()));
+        return WebGLAny(scriptState, m_textureUnits[m_activeTextureUnit].m_textureCubeMapBinding.get());
     case GL_UNPACK_ALIGNMENT:
         return getIntParameter(scriptState, pname);
     case GC3D_UNPACK_FLIP_Y_WEBGL:
@@ -2896,7 +2897,7 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* scriptState, GL
     case GL_VERTEX_ARRAY_BINDING_OES: // OES_vertex_array_object
         if (extensionEnabled(OESVertexArrayObjectName) || isWebGL2OrHigher()) {
             if (!m_boundVertexArrayObject->isDefaultObject())
-                return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_boundVertexArrayObject.get()));
+                return WebGLAny(scriptState, m_boundVertexArrayObject.get());
             return ScriptValue::createNull(scriptState);
         }
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, OES_vertex_array_object not enabled");
@@ -3048,7 +3049,7 @@ String WebGLRenderingContextBase::getShaderInfoLog(WebGLShader* shader)
     return ensureNotNull(webContext()->getShaderInfoLog(objectOrZero(shader)));
 }
 
-PassRefPtrWillBeRawPtr<WebGLShaderPrecisionFormat> WebGLRenderingContextBase::getShaderPrecisionFormat(GLenum shaderType, GLenum precisionType)
+WebGLShaderPrecisionFormat* WebGLRenderingContextBase::getShaderPrecisionFormat(GLenum shaderType, GLenum precisionType)
 {
     if (isContextLost())
         return nullptr;
@@ -3344,7 +3345,7 @@ ScriptValue WebGLRenderingContextBase::getUniform(ScriptState* scriptState, WebG
     return ScriptValue::createNull(scriptState);
 }
 
-PassRefPtrWillBeRawPtr<WebGLUniformLocation> WebGLRenderingContextBase::getUniformLocation(WebGLProgram* program, const String& name)
+WebGLUniformLocation* WebGLRenderingContextBase::getUniformLocation(WebGLProgram* program, const String& name)
 {
     if (isContextLost() || !validateWebGLObject("getUniformLocation", program))
         return nullptr;
@@ -3382,7 +3383,7 @@ ScriptValue WebGLRenderingContextBase::getVertexAttrib(ScriptState* scriptState,
     case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING:
         if (!state->bufferBinding || !state->bufferBinding->object())
             return ScriptValue::createNull(scriptState);
-        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(state->bufferBinding.get()));
+        return WebGLAny(scriptState, state->bufferBinding.get());
     case GL_VERTEX_ATTRIB_ARRAY_ENABLED:
         return WebGLAny(scriptState, state->enabled);
     case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
@@ -3976,13 +3977,13 @@ void WebGLRenderingContextBase::stencilOpSeparate(GLenum face, GLenum fail, GLen
     webContext()->stencilOpSeparate(face, fail, zfail, zpass);
 }
 
-PassRefPtrWillBeRawPtr<CHROMIUMValuebuffer> WebGLRenderingContextBase::createValuebufferCHROMIUM()
+CHROMIUMValuebuffer* WebGLRenderingContextBase::createValuebufferCHROMIUM()
 {
     if (isContextLost())
         return nullptr;
-    RefPtrWillBeRawPtr<CHROMIUMValuebuffer> o = CHROMIUMValuebuffer::create(this);
-    addSharedObject(o.get());
-    return o.release();
+    CHROMIUMValuebuffer* o = CHROMIUMValuebuffer::create(this);
+    addSharedObject(o);
+    return o;
 }
 
 void WebGLRenderingContextBase::deleteValuebufferCHROMIUM(CHROMIUMValuebuffer *valuebuffer)
@@ -5076,8 +5077,8 @@ void WebGLRenderingContextBase::loseContextImpl(WebGLRenderingContextBase::LostC
 
     // Lose all the extensions.
     for (size_t i = 0; i < m_extensions.size(); ++i) {
-        ExtensionTracker* tracker = m_extensions[i].get();
-        tracker->loseExtension();
+        ExtensionTracker* tracker = m_extensions[i];
+        tracker->loseExtension(false);
     }
 
     for (size_t i = 0; i < WebGLExtensionNameCount; ++i)
@@ -5167,7 +5168,9 @@ void WebGLRenderingContextBase::addContextObject(WebGLContextObject* object)
 void WebGLRenderingContextBase::detachAndRemoveAllObjects()
 {
     while (m_contextObjects.size() > 0) {
-        WillBeHeapHashSet<RawPtrWillBeWeakMember<WebGLContextObject>>::iterator it = m_contextObjects.begin();
+        // Following detachContext() will remove the iterated object from
+        // |m_contextObjects|, and thus we need to look up begin() every time.
+        auto it = m_contextObjects.begin();
         (*it)->detachContext();
     }
 }
@@ -6069,7 +6072,7 @@ WebGLBuffer* WebGLRenderingContextBase::validateBufferDataTarget(const char* fun
     WebGLBuffer* buffer = nullptr;
     switch (target) {
     case GL_ELEMENT_ARRAY_BUFFER:
-        buffer = m_boundVertexArrayObject->boundElementArrayBuffer().get();
+        buffer = m_boundVertexArrayObject->boundElementArrayBuffer();
         break;
     case GL_ARRAY_BUFFER:
         buffer = m_boundArrayBuffer.get();
@@ -6595,7 +6598,6 @@ DEFINE_TRACE(WebGLRenderingContextBase::TextureUnitState)
 
 DEFINE_TRACE(WebGLRenderingContextBase)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_contextObjects);
     visitor->trace(m_contextLostCallbackAdapter);
     visitor->trace(m_errorMessageCallbackAdapter);
@@ -6610,9 +6612,7 @@ DEFINE_TRACE(WebGLRenderingContextBase)
     visitor->trace(m_textureUnits);
     visitor->trace(m_blackTexture2D);
     visitor->trace(m_blackTextureCubeMap);
-    visitor->trace(m_requestedAttributes);
     visitor->trace(m_extensions);
-#endif
     CanvasRenderingContext::trace(visitor);
 }
 

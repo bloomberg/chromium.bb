@@ -10,20 +10,14 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<WebGLSampler> WebGLSampler::create(WebGL2RenderingContextBase* ctx)
+WebGLSampler* WebGLSampler::create(WebGL2RenderingContextBase* ctx)
 {
-    return adoptRefWillBeNoop(new WebGLSampler(ctx));
+    return new WebGLSampler(ctx);
 }
 
 WebGLSampler::~WebGLSampler()
 {
-    // Always call detach here to ensure that platform object deletion
-    // happens with Oilpan enabled. It keeps the code regular to do it
-    // with or without Oilpan enabled.
-    //
-    // See comment in WebGLBuffer's destructor for additional
-    // information on why this is done for WebGLSharedObject-derived
-    // objects.
+    // See the comment in WebGLObject::detachAndDeleteObject().
     detachAndDeleteObject();
 }
 
