@@ -2408,11 +2408,15 @@ bool LayoutBox::skipContainingBlockForPercentHeightCalculation(const LayoutBox* 
     if (isHorizontalWritingMode() != containingBlock->isHorizontalWritingMode())
         return false;
 
-    // Anonymous layout objects are invisible to the DOM, so whatever they're doing there, they
-    // should not impede percentage resolution on a child. Examples of such anonymous layout objects
-    // are multicol flow threads and ruby runs.
-    if (containingBlock->isAnonymous())
-        return true;
+    // Anonymous blocks should not impede percentage resolution on a child. Examples of such
+    // anonymous blocks are blocks wrapped around inlines that have block siblings (from the CSS
+    // spec) and multicol flow threads (an implementation detail). Another implementation detail,
+    // ruby runs, create anonymous inline-blocks, so skip those too. All other types of anonymous
+    // objects, such as table-cells, will be treated just as if they were non-anonymous.
+    if (containingBlock->isAnonymous()) {
+        EDisplay display = containingBlock->styleRef().display();
+        return display == BLOCK || display == INLINE_BLOCK;
+    }
 
     // For quirks mode, we skip most auto-height containing blocks when computing percentages.
     return document().inQuirksMode() && !containingBlock->isTableCell() && !containingBlock->isOutOfFlowPositioned() && containingBlock->style()->logicalHeight().isAuto();
