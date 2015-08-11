@@ -19,7 +19,7 @@
   background-color: white;
   color: rgb(49, 102, 212);
   font-size: 13px;
-  font-weight: bold;
+  font-weight: 500;
 }
 
 /* Header welcome banner. */
@@ -70,7 +70,7 @@
 
 .drive-welcome.header .drive-welcome-title {
   font-size: 21px;
-  font-weight: bold;
+  font-weight: 500;
   margin-bottom: 4px;
   overflow: hidden;
   text-overflow: ellipsis;
