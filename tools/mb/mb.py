@@ -24,7 +24,6 @@ import sys
 import subprocess
 import tempfile
 
-
 def main(args):
   mbw = MetaBuildWrapper()
   mbw.ParseArgs(args)
@@ -438,7 +437,8 @@ class MetaBuildWrapper(object):
       self.Print()
 
     cmd = self.GYPCmd(output_dir, vals['gyp_defines'], config=gyp_config)
-    cmd.extend(['-G', 'config_path=%s' % self.args.input_path[0],
+    cmd.extend(['-f', 'analyzer',
+                '-G', 'config_path=%s' % self.args.input_path[0],
                 '-G', 'analyzer_output_path=%s' % self.args.output_path[0]])
     ret, _, _ = self.Run(cmd)
     if not ret and self.args.verbose:

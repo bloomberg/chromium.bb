@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -5,6 +6,7 @@
 """Tests for mb.py."""
 
 import json
+import StringIO
 import sys
 import unittest
 
@@ -212,8 +214,12 @@ class UnitTest(unittest.TestCase):
   def test_gn_gen_swarming(self):
     files = {
       '/tmp/swarming_targets': 'base_unittests\n',
-      '/fake_src/testing/buildbot/ninja_to_gn.pyl': (
-          "{'base_unittests': '//base:base_unittests'}\n"
+      '/fake_src/testing/buildbot/gn_isolate_map.pyl': (
+          "{'base_unittests': {"
+          "  'label': '//base:base_unittests',"
+          "  'type': 'raw',"
+          "  'args': [],"
+          "}}\n"
       ),
       '/fake_src/out/Default/base_unittests.runtime_deps': (
           "base_unittests\n"
@@ -239,9 +245,10 @@ class UnitTest(unittest.TestCase):
                     "goma_dir=\"/foo\"'\n" ))
 
   def test_gyp_analyze(self):
-    self.check(['analyze', '-c', 'gyp_rel_bot', '//out/Release',
-                '/tmp/in.json', '/tmp/out.json'],
-               ret=0)
+    mbw = self.check(['analyze', '-c', 'gyp_rel_bot', '//out/Release',
+                     '/tmp/in.json', '/tmp/out.json'],
+                     ret=0)
+    self.assertIn('analyzer', mbw.calls[0])
 
   def test_gyp_gen(self):
     self.check(['gen', '-c', 'gyp_rel_bot', '//out/Release'], ret=0)
@@ -257,9 +264,15 @@ class UnitTest(unittest.TestCase):
                     "-G config=Release -D goma=1 -D gomadir=/foo\n"))
 
   def test_help(self):
-    self.assertRaises(SystemExit, self.check, ['-h'])
-    self.assertRaises(SystemExit, self.check, ['help'])
-    self.assertRaises(SystemExit, self.check, ['help', 'gen'])
+    orig_stdout = sys.stdout
+    try:
+      sys.stdout = StringIO.StringIO()
+      self.assertRaises(SystemExit, self.check, ['-h'])
+      self.assertRaises(SystemExit, self.check, ['help'])
+      self.assertRaises(SystemExit, self.check, ['help', 'gen'])
+    finally:
+      sys.stdout = orig_stdout
+
 
   def test_validate(self):
     self.check(['validate'], ret=0)
