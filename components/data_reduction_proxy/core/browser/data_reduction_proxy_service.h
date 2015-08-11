@@ -119,7 +119,6 @@ class DataReductionProxyService
   // Bridge methods to safely call to the UI thread objects.
   // Virtual for testing.
   virtual void SetProxyPrefs(bool enabled, bool at_startup);
-  void RetrieveConfig();
 
   void LoadCurrentDataUsageBucket(
       const OnLoadDataUsageBucketCallback& onLoadDataUsageBucket);

@@ -150,6 +150,7 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
       config_storer_(config_storer),
       backoff_entry_(&backoff_policy),
       config_service_url_(AddApiKeyToUrl(params::GetConfigServiceURL())),
+      enabled_(false),
       use_local_config_(!config_service_url_.is_valid()),
       remote_config_applied_(false),
       url_request_context_getter_(nullptr),
@@ -177,6 +178,9 @@ void DataReductionProxyConfigServiceClient::InitializeOnIOThread(
 
 void DataReductionProxyConfigServiceClient::RetrieveConfig() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (!enabled_)
+    return;
+
   bound_net_log_ = net::BoundNetLog::Make(
       net_log_, net::NetLog::SOURCE_DATA_REDUCTION_PROXY);
   // Strip off query string parameters

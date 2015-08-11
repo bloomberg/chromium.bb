@@ -65,8 +65,6 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   virtual void SetDataReductionProxyService(
       base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service);
 
-  void RetrieveConfig();
-
   // Creates an interceptor suitable for following the Data Reduction Proxy
   // bypass protocol.
   scoped_ptr<net::URLRequestInterceptor> CreateInterceptor();

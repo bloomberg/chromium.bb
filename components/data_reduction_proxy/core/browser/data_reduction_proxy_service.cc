@@ -248,17 +248,6 @@ void DataReductionProxyService::SetProxyPrefs(bool enabled, bool at_startup) {
                             enabled, at_startup));
 }
 
-void DataReductionProxyService::RetrieveConfig() {
-  DCHECK(CalledOnValidThread());
-  if (io_task_runner_->BelongsToCurrentThread()) {
-    io_data_->RetrieveConfig();
-    return;
-  }
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&DataReductionProxyIOData::RetrieveConfig, io_data_));
-}
-
 void DataReductionProxyService::LoadCurrentDataUsageBucket(
     const OnLoadDataUsageBucketCallback& onLoadDataUsageBucket) {
   scoped_ptr<DataUsageBucket> bucket(new DataUsageBucket());

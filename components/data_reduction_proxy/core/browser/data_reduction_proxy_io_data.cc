@@ -209,12 +209,6 @@ bool DataReductionProxyIOData::IsEnabled() const {
   return enabled_;
 }
 
-void DataReductionProxyIOData::RetrieveConfig() {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  if (config_client_)
-    config_client_->RetrieveConfig();
-}
-
 scoped_ptr<net::URLRequestInterceptor>
 DataReductionProxyIOData::CreateInterceptor() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -245,6 +239,11 @@ void DataReductionProxyIOData::SetProxyPrefs(bool enabled, bool at_startup) {
   DCHECK(url_request_context_getter_->GetURLRequestContext()->proxy_service());
   enabled_ = enabled;
   config_->SetProxyConfig(enabled, at_startup);
+  if (config_client_) {
+    config_client_->SetEnabled(enabled);
+    if (enabled)
+      config_client_->RetrieveConfig();
+  }
 
   // If Data Saver is disabled, reset data reduction proxy state.
   if (!enabled) {

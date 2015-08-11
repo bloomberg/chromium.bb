@@ -138,6 +138,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     context_.Init();
     ResetBackoffEntryReleaseTime();
     test_context_->test_config_client()->SetNow(base::Time::UnixEpoch());
+    test_context_->test_config_client()->SetEnabled(true);
     enabled_proxies_for_http_ =
         test_context_->test_params()->proxies_for_http();
 
@@ -484,6 +485,30 @@ TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChange) {
   config_client()->RetrieveConfig();
   RunUntilIdle();
   VerifyRemoteSuccess();
+}
+
+TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChangeDisabled) {
+  config_client()->SetEnabled(false);
+  config_client()->SetConfigServiceURL(GURL("http://configservice.com"));
+  SetDataReductionProxyEnabled(true);
+  config_client()->RetrieveConfig();
+  EXPECT_CALL(*request_options(), PopulateConfigResponse(testing::_)).Times(0);
+
+  static const int kFailureCount = 5;
+
+  for (int i = 0; i < kFailureCount; ++i) {
+    config_client()->RetrieveConfig();
+    RunUntilIdle();
+  }
+
+  EXPECT_EQ(0, config_client()->GetBackoffErrorCount());
+  config_client()->OnIPAddressChanged();
+  EXPECT_EQ(0, config_client()->GetBackoffErrorCount());
+
+  config_client()->RetrieveConfig();
+  RunUntilIdle();
+
+  EXPECT_TRUE(request_options()->GetSecureSession().empty());
 }
 
 TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {

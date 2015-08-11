@@ -70,6 +70,9 @@ class DataReductionProxyConfigServiceClient
   void InitializeOnIOThread(
       net::URLRequestContextGetter* url_request_context_getter);
 
+  // Sets whether the configuration should be retrieved or not.
+  void SetEnabled(bool enabled) { enabled_ = enabled; }
+
   // Request the retrieval of the Data Reduction Proxy configuration. This
   // operation takes place asynchronously.
   void RetrieveConfig();
@@ -107,6 +110,8 @@ class DataReductionProxyConfigServiceClient
                            TestConstructStaticResponse);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigServiceClientTest,
                            OnIPAddressChange);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigServiceClientTest,
+                           OnIPAddressChangeDisabled);
   friend class TestDataReductionProxyConfigServiceClient;
 
   // Override of net::NetworkChangeNotifier::IPAddressObserver.
@@ -169,6 +174,9 @@ class DataReductionProxyConfigServiceClient
 
   // The URL for retrieving the Data Reduction Proxy configuration.
   GURL config_service_url_;
+
+  // True if the Data Reduction Proxy configuration should be retrieved.
+  bool enabled_;
 
   // Whether to use |params_| to obtain the Data Reduction Proxy configuration
   // or the remote server specified by |config_service_url_|.
