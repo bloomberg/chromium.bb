@@ -19,6 +19,7 @@ import re
 import shutil
 import sys
 import tempfile
+import threading
 import time
 import zipfile
 
@@ -1092,8 +1093,15 @@ class DeviceUtils(object):
     return ret
 
   def _ComputeStaleApks(self, package_name, host_apk_paths):
-    host_checksums = md5sum.CalculateHostMd5Sums(host_apk_paths)
+    host_checksums_holder = [None]
+    def compute_host_checksums():
+      host_checksums_holder[0] = md5sum.CalculateHostMd5Sums(host_apk_paths)
+
+    host_thread = threading.Thread(target=compute_host_checksums)
+    host_thread.start()
     device_checksums = self._ComputeDeviceChecksumsForApks(package_name)
+    host_thread.join()
+    host_checksums = host_checksums_holder[0]
     stale_apks = [k for (k, v) in host_checksums.iteritems()
                   if v not in device_checksums]
     return stale_apks, set(host_checksums.values())
