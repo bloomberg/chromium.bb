@@ -17,35 +17,42 @@ SubtreeRecorder::SubtreeRecorder(GraphicsContext& context, const LayoutObject& s
     : m_displayItemList(context.displayItemList())
     , m_subtreeRoot(subtreeRoot)
     , m_paintPhase(paintPhase)
-    , m_begun(false)
+    , m_canUseCache(false)
+#if ENABLE(ASSERT)
+    , m_checkedCanUseCache(false)
+#endif
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return;
 
     ASSERT(m_displayItemList);
+
+    // TODO(wangxianzhu): Implement subtree caching.
+
+    if (!m_canUseCache)
+        m_displayItemList->createAndAppend<BeginSubtreeDisplayItem>(m_subtreeRoot, DisplayItem::paintPhaseToBeginSubtreeType(paintPhase));
 }
 
 SubtreeRecorder::~SubtreeRecorder()
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return;
 
-    if (m_begun) {
-        if (m_displayItemList->lastDisplayItemIsNoopBegin())
-            m_displayItemList->removeLastDisplayItem();
-        else
-            m_displayItemList->createAndAppend<EndSubtreeDisplayItem>(m_subtreeRoot, DisplayItem::paintPhaseToEndSubtreeType(m_paintPhase));
-    }
+    ASSERT(m_checkedCanUseCache);
+    if (m_canUseCache)
+        m_displayItemList->createAndAppend<SubtreeCachedDisplayItem>(m_subtreeRoot, DisplayItem::paintPhaseToSubtreeCachedType(m_paintPhase));
+    else if (m_displayItemList->lastDisplayItemIsNoopBegin())
+        m_displayItemList->removeLastDisplayItem();
+    else
+        m_displayItemList->createAndAppend<EndSubtreeDisplayItem>(m_subtreeRoot, DisplayItem::paintPhaseToEndSubtreeType(m_paintPhase));
 }
 
-void SubtreeRecorder::begin()
+bool SubtreeRecorder::canUseCache() const
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
-        return;
-    if (m_displayItemList->displayItemConstructionIsDisabled())
-        return;
-    m_displayItemList->createAndAppend<BeginSubtreeDisplayItem>(m_subtreeRoot, DisplayItem::paintPhaseToBeginSubtreeType(m_paintPhase));
-    m_begun = true;
+#if ENABLE(ASSERT)
+    m_checkedCanUseCache = true;
+#endif
+    return m_canUseCache;
 }
 
 } // namespace blink

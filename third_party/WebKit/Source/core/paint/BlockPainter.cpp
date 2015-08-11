@@ -8,6 +8,7 @@
 #include "core/editing/DragCaretController.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/Settings.h"
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutInline.h"
 #include "core/page/Page.h"
@@ -21,13 +22,29 @@
 #include "core/paint/ScopeRecorder.h"
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
+#include "core/paint/SubtreeRecorder.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "wtf/Optional.h"
 
 namespace blink {
 
+// We need to balance the benefit of subtree optimization and the cost of subtree display items.
+// Only output subtree information if the block has multiple children or multiple line boxes.
+static bool needsSubtreeRecorder(const LayoutBlock& layoutBlock)
+{
+    return (layoutBlock.firstChild() && layoutBlock.firstChild()->nextSibling())
+        || (layoutBlock.isLayoutBlockFlow() && toLayoutBlockFlow(layoutBlock).firstLineBox() && toLayoutBlockFlow(layoutBlock).firstLineBox()->nextLineBox());
+}
+
 void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
+    Optional<SubtreeRecorder> subtreeRecorder;
+    if (needsSubtreeRecorder(m_layoutBlock)) {
+        subtreeRecorder.emplace(*paintInfo.context, m_layoutBlock, paintInfo.phase);
+        if (subtreeRecorder->canUseCache())
+            return;
+    }
+
     PaintInfo localPaintInfo(paintInfo);
 
     LayoutPoint adjustedPaintOffset = paintOffset + m_layoutBlock.location();

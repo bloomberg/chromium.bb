@@ -21,22 +21,18 @@ class LayoutObject;
 class SubtreeRecorder {
 public:
     SubtreeRecorder(GraphicsContext&, const LayoutObject& root, PaintPhase);
-
     ~SubtreeRecorder();
 
-    // This method should be called before we actually paint the subtree, then we'll
-    // issue a pair of BeginSubtree/EndSubtree display items to enclose all display
-    // items when we paint the subtree.
-    // Omit this call if we skip painting of the whole subtree (when e.g. the subtree
-    // is out of the viewport, or the whole subtree is not invalidated), then we'll
-    // issue a SubtreeCached display item.
-    void begin();
+    bool canUseCache() const;
 
 private:
     DisplayItemList* m_displayItemList;
     const LayoutObject& m_subtreeRoot;
     const PaintPhase m_paintPhase;
-    bool m_begun;
+    bool m_canUseCache;
+#if ENABLE(ASSERT)
+    mutable bool m_checkedCanUseCache;
+#endif
 };
 
 } // namespace blink

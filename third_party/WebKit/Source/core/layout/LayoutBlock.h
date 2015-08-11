@@ -80,6 +80,7 @@ public:
 
     LayoutUnit minLineHeightForReplacedObject(bool isFirstLine, LayoutUnit replacedHeight) const;
 
+    const LineBoxList& lineBoxes() const { return m_lineBoxes; }
     LineBoxList* lineBoxes() { return &m_lineBoxes; }
 
     const char* name() const override;

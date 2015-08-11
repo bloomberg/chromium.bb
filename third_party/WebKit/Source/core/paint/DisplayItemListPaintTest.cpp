@@ -27,7 +27,7 @@ class DisplayItemListPaintTest : public RenderingTest {
 public:
     DisplayItemListPaintTest()
         : m_layoutView(nullptr)
-        , m_originalSlimmingPaintEnabled(RuntimeEnabledFeatures::slimmingPaintEnabled()) { }
+        , m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled()) { }
 
 protected:
     LayoutView& layoutView() { return *m_layoutView; }
@@ -37,7 +37,8 @@ protected:
 private:
     void SetUp() override
     {
-        RuntimeEnabledFeatures::setSlimmingPaintEnabled(true);
+        ASSERT_TRUE(RuntimeEnabledFeatures::slimmingPaintEnabled());
+        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
 
         RenderingTest::SetUp();
         enableCompositing();
@@ -48,11 +49,11 @@ private:
 
     void TearDown() override
     {
-        RuntimeEnabledFeatures::setSlimmingPaintEnabled(m_originalSlimmingPaintEnabled);
+        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_originalSlimmingPaintV2Enabled);
     }
 
     LayoutView* m_layoutView;
-    bool m_originalSlimmingPaintEnabled;
+    bool m_originalSlimmingPaintV2Enabled;
 };
 
 class TestDisplayItem : public DisplayItem {
@@ -150,10 +151,12 @@ TEST_F(DisplayItemListPaintTest, InlineRelayout)
     InlineTextBox& newFirstTextBox = *newText.firstTextBox();
     InlineTextBox& secondTextBox = *newText.firstTextBox()->nextTextBox();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 3,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 5,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
+        TestDisplayItem(divBlock, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
         TestDisplayItem(newFirstTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
-        TestDisplayItem(secondTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
+        TestDisplayItem(secondTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(divBlock, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)));
 }
 
 } // namespace blink
