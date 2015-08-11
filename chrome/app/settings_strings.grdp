@@ -291,13 +291,13 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_FULLSCREEN" desc="Label for the fullscreen site settings.">
     Fullscreen
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES_OPTION" desc="Label for the cookies option description site settings.">
+  <message name="IDS_SETTINGS_SITE_SETTINGS_MAY_SAVE_COOKIES" desc="Label for the cookies option description site settings.">
     Sites can save and read cookie data
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST_OPTION" desc="Label for ask first option in site settings.">
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST" desc="Label for ask first option in site settings.">
     Ask first
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_LOCATION_OPTION" desc="Label for location option in site settings.">
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ASK_BEFORE_ACCESSING" desc="Label for location option in site settings.">
     Ask before accessing (recommended)
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_ALLOW" desc="Label for allow sites in site settings.">

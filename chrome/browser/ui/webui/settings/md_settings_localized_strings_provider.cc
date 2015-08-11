@@ -269,12 +269,13 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_SITE_SETTINGS_POPUPS);
   html_source->AddLocalizedString("siteSettingsFullscreen",
                                   IDS_SETTINGS_SITE_SETTINGS_FULLSCREEN);
-  html_source->AddLocalizedString("siteSettingsCookiesOption",
-                                  IDS_SETTINGS_SITE_SETTINGS_COOKIES_OPTION);
-  html_source->AddLocalizedString("siteSettingsAskFirstOption",
-                                  IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST_OPTION);
-  html_source->AddLocalizedString("siteSettingsLocationOption",
-                                  IDS_SETTINGS_SITE_SETTINGS_LOCATION_OPTION);
+  html_source->AddLocalizedString("siteSettingsMaySaveCookies",
+                                  IDS_SETTINGS_SITE_SETTINGS_MAY_SAVE_COOKIES);
+  html_source->AddLocalizedString("siteSettingsAskFirst",
+                                  IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST);
+  html_source->AddLocalizedString(
+      "siteSettingsAskBeforeAccessing",
+      IDS_SETTINGS_SITE_SETTINGS_ASK_BEFORE_ACCESSING);
   html_source->AddLocalizedString("siteSettingsAllow",
                                   IDS_SETTINGS_SITE_SETTINGS_ALLOW);
   html_source->AddLocalizedString("siteSettingsBlock",

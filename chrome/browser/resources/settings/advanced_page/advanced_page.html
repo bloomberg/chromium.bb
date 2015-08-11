@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://md-settings/certificate_manager_page/certificate_manager_page.html">
 <link rel="import" href="chrome://md-settings/downloads_page/downloads_page.html">
 <link rel="import" href="chrome://md-settings/privacy_page/privacy_page.html">
+<link rel="import" href="chrome://md-settings/site_settings_page/site_settings_page.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_section.html">
 <link rel="import" href="chrome://md-settings/sync_page/sync_page.html">
 
@@ -28,6 +29,12 @@
         i18n-values="page-title:certificateManagerPageTitle">
       <cr-settings-certificate-manager-page>
       </cr-settings-certificate-manager-page>
+    </cr-settings-section>
+
+    <cr-settings-section route="site-settings" icon="lock"
+        i18n-values="page-title:siteSettingsPageTitle">
+      <cr-settings-site-settings-page prefs="{{prefs}}">
+      </cr-settings-site-settings-page>
     </cr-settings-section>
 
     <cr-settings-section route="downloads" icon="file-download"

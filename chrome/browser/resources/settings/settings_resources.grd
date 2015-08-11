@@ -168,6 +168,15 @@
       <structure name="IDR_SETTINGS_ROUTES_HTML"
                  file="routes.html"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_SITE_SETTINGS_PAGE_CSS"
+                 file="site_settings_page/site_settings_page.css"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_SITE_SETTINGS_PAGE_HTML"
+                 file="site_settings_page/site_settings_page.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_SITE_SETTINGS_PAGE_JS"
+                 file="site_settings_page/site_settings_page.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_SEARCH_ENGINE_ADDER_JS"
                  file="search_engines_page/search_engine_adder.js"
                  type="chrome_html" />

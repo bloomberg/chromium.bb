@@ -1,0 +1,54 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/image-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/communication-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/social-icons.html">
+
+<dom-module id="cr-settings-site-settings-page">
+  <link rel="import" type="css" href="site_settings_page.css">
+  <template>
+    <div class="settings-list">
+      <paper-icon-item>
+        <iron-icon icon="list" item-icon></iron-icon>
+        <div class="flex" i18n-content="siteSettingsAllSites"></div>
+      </paper-icon-item>
+      <paper-icon-item>
+        <iron-icon icon="communication:import-export" item-icon></iron-icon>
+        <div class="flex" i18n-content="siteSettingsCookies"></div>
+        <div class="option-value" i18n-content="siteSettingsMaySaveCookies">
+        </div>
+      </paper-icon-item>
+      <paper-icon-item>
+        <iron-icon icon="communication:location-on" item-icon></iron-icon>
+        <div class="flex" i18n-content="siteSettingsLocation"></div>
+        <div class="option-value" i18n-content="siteSettingsAskFirst"></div>
+      </paper-icon-item>
+      <paper-icon-item>
+        <iron-icon icon="social:notifications" item-icon></iron-icon>
+        <div class="flex" i18n-content="siteSettingsNotifications"></div>
+        <div class="option-value" i18n-content="siteSettingsAskFirst"></div>
+      </paper-icon-item>
+      <paper-icon-item>
+        <iron-icon icon="image:photo" item-icon></iron-icon>
+        <div class="flex" i18n-content="siteSettingsImages"></div>
+        <div class="option-value" i18n-content="siteSettingsAskFirst"></div>
+      </paper-icon-item>
+      <paper-icon-item>
+        <iron-icon icon="input" item-icon></iron-icon>
+        <div class="flex" i18n-content="siteSettingsJavascript"></div>
+        <div class="option-value" i18n-content="siteSettingsAskFirst"></div>
+      </paper-icon-item>
+      <paper-icon-item>
+        <iron-icon icon="launch" item-icon></iron-icon>
+        <div class="flex" i18n-content="siteSettingsPopups"></div>
+        <div class="option-value" i18n-content="siteSettingsAskFirst"></div>
+      </paper-icon-item>
+      <paper-icon-item>
+        <iron-icon icon="fullscreen" item-icon></iron-icon>
+        <div class="flex" i18n-content="siteSettingsFullscreen"></div>
+        <div class="option-value" i18n-content="siteSettingsAskFirst"></div>
+      </paper-icon-item>
+    </div>
+  </template>
+  <script src="site_settings_page.js"></script>
+</dom-module>
