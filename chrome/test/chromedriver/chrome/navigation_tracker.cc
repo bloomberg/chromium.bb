@@ -31,8 +31,7 @@ NavigationTracker::~NavigationTracker() {}
 
 Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
                                               bool* is_pending) {
-  if (loading_state_ == kUnknown ||
-      (loading_state_ == kNotLoading && !IsExpectingFrameLoadingEvents())) {
+  if (loading_state_ == kUnknown) {
     // In the case that a http request is sent to server to fetch the page
     // content and the server hasn't responded at all, a dummy page is created
     // for the new window. In such case, the baseURL will be empty.
@@ -48,9 +47,7 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
       loading_state_ = kLoading;
       return Status(kOk);
     }
-  }
 
-  if (loading_state_ == kUnknown) {
     // If the loading state is unknown (which happens after first connecting),
     // force loading to start and set the state to loading. This will cause a
     // frame start event to be received, and the frame stop event will not be
@@ -70,8 +67,7 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
        "}";
     base::DictionaryValue params;
     params.SetString("expression", kStartLoadingIfMainFrameNotLoading);
-    scoped_ptr<base::DictionaryValue> result;
-    Status status = client_->SendCommandAndGetResult(
+    status = client_->SendCommandAndGetResult(
         "Runtime.evaluate", params, &result);
     if (status.IsError())
       return Status(kUnknownError, "cannot determine loading status", status);
