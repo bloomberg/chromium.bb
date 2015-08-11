@@ -224,7 +224,8 @@ public class AnimationHelper implements ViewTreeObserver.OnGlobalLayoutListener 
                         || mAnimationType == ANIMATION_TYPE_SWAP)) {
                     TextView messageView = (TextView) mToShow.findViewById(R.id.infobar_message);
                     if (messageView != null) {
-                        mToShow.announceForAccessibility(messageView.getText());
+                        mToShow.announceForAccessibility(mInfoBar.getContext().getString(
+                                        R.string.infobar_screen_position, messageView.getText()));
                     }
                 }
             }

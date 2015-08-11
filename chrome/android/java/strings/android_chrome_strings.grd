@@ -1086,6 +1086,10 @@ You are signing in with a managed account and giving its administrator control o
         Close
       </message>
 
+      <message desc="Accessibility label to inform users about the InfoBar location" name="IDS_INFOBAR_SCREEN_POSITION">
+        %1$s. Options available near bottom of the screen
+      </message>
+
       <!-- Account chooser infobar strings. -->
       <message name="IDS_ACCOUNT_CHOOSER_INFOBAR_TITLE" desc="The title text for Account chooser infobar.">
         Choose an account from your Google Smart Lock.
