@@ -235,10 +235,10 @@ void PresentationFrame::ListenForSessionMessages(
 MediaSource PresentationFrame::GetMediaSourceFromListener(
     content::PresentationScreenAvailabilityListener* listener) const {
   // If the default presentation URL is empty then fall back to tab mirroring.
-  std::string presentation_url(listener->GetPresentationUrl());
-  return presentation_url.empty()
+  std::string availability_url(listener->GetAvailabilityUrl());
+  return availability_url.empty()
              ? MediaSourceForTab(SessionTabHelper::IdForTab(web_contents_))
-             : MediaSourceForPresentationUrl(presentation_url);
+             : MediaSourceForPresentationUrl(availability_url);
 }
 
 // Used by PresentationServiceDelegateImpl to manage PresentationFrames.

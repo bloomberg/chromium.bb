@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "content/browser/presentation/presentation_type_converters.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_details.h"
@@ -166,55 +167,44 @@ void PresentationServiceImpl::SetClient(
   client_ = client.Pass();
 }
 
-void PresentationServiceImpl::ListenForScreenAvailability() {
-  DVLOG(2) << "ListenForScreenAvailability";
+void PresentationServiceImpl::ListenForScreenAvailability(
+      const mojo::String& url) {
+  DVLOG(2) << "ListenForScreenAvailability " << url;
   if (!delegate_)
     return;
 
-  if (screen_availability_listener_.get() &&
-      screen_availability_listener_->GetPresentationUrl() ==
-          default_presentation_url_) {
+  const std::string& availability_url = url.get();
+  if (screen_availability_listeners_.count(availability_url))
     return;
-  }
 
-  ResetScreenAvailabilityListener(default_presentation_url_);
-}
-
-void PresentationServiceImpl::ResetScreenAvailabilityListener(
-    const std::string& presentation_url) {
-  DCHECK(delegate_);
-  DCHECK(!screen_availability_listener_.get() ||
-         presentation_url != default_presentation_url_);
-
-  // (1) Unregister old listener with delegate
-  StopListeningForScreenAvailability();
-
-  // (2) Replace old listener with new listener
-  screen_availability_listener_.reset(new ScreenAvailabilityListenerImpl(
-      presentation_url, this));
-
-  // (3) Register new listener with delegate
-  if (!delegate_->AddScreenAvailabilityListener(
+  scoped_ptr<ScreenAvailabilityListenerImpl> listener(
+      new ScreenAvailabilityListenerImpl(availability_url, this));
+  if (delegate_->AddScreenAvailabilityListener(
       render_process_id_,
       render_frame_id_,
-      screen_availability_listener_.get())) {
+      listener.get())) {
+    screen_availability_listeners_.set(availability_url, listener.Pass());
+  } else {
     DVLOG(1) << "AddScreenAvailabilityListener failed. Ignoring request.";
-    screen_availability_listener_.reset();
   }
 }
 
-void PresentationServiceImpl::StopListeningForScreenAvailability() {
-  DVLOG(2) << "StopListeningForScreenAvailability";
+void PresentationServiceImpl::StopListeningForScreenAvailability(
+    const mojo::String& url) {
+  DVLOG(2) << "StopListeningForScreenAvailability " << url;
   if (!delegate_)
     return;
 
-  if (screen_availability_listener_.get()) {
-    delegate_->RemoveScreenAvailabilityListener(
-        render_process_id_,
-        render_frame_id_,
-        screen_availability_listener_.get());
-    screen_availability_listener_.reset();
-  }
+  const std::string& availability_url = url.get();
+  auto listener_it = screen_availability_listeners_.find(availability_url);
+  if (listener_it == screen_availability_listeners_.end())
+    return;
+
+  delegate_->RemoveScreenAvailabilityListener(
+      render_process_id_,
+      render_frame_id_,
+      listener_it->second);
+  screen_availability_listeners_.erase(listener_it);
 }
 
 void PresentationServiceImpl::ListenForDefaultSessionStart(
@@ -345,26 +335,19 @@ void PresentationServiceImpl::RunAndEraseJoinSessionMojoCallback(
 }
 
 void PresentationServiceImpl::SetDefaultPresentationURL(
-    const mojo::String& default_presentation_url) {
+    const mojo::String& url) {
   DVLOG(2) << "SetDefaultPresentationURL";
   if (!delegate_)
     return;
 
-  const std::string& old_default_url = default_presentation_url_;
-  const std::string& new_default_url = default_presentation_url.get();
-
-  if (old_default_url == new_default_url)
+  const std::string& new_default_url = url.get();
+  if (default_presentation_url_ == new_default_url)
     return;
-
-  // Replace screen availability listeners if any.
-  if (screen_availability_listener_.get())
-    ResetScreenAvailabilityListener(new_default_url);
-
   delegate_->SetDefaultPresentationUrl(
       render_process_id_,
       render_frame_id_,
-      default_presentation_url);
-  default_presentation_url_ = default_presentation_url;
+      new_default_url);
+  default_presentation_url_ = new_default_url;
 }
 
 void PresentationServiceImpl::SendSessionMessage(
@@ -505,7 +488,7 @@ void PresentationServiceImpl::Reset() {
 
   default_presentation_url_.clear();
 
-  screen_availability_listener_.reset();
+  screen_availability_listeners_.clear();
 
   start_session_request_id_ = kInvalidRequestSessionId;
   pending_start_session_cb_.reset();
@@ -542,9 +525,9 @@ void PresentationServiceImpl::OnDefaultPresentationStarted(
 
 PresentationServiceImpl::ScreenAvailabilityListenerImpl
 ::ScreenAvailabilityListenerImpl(
-    const std::string& presentation_url,
+    const std::string& availability_url,
     PresentationServiceImpl* service)
-    : presentation_url_(presentation_url),
+    : availability_url_(availability_url),
       service_(service) {
   DCHECK(service_);
   DCHECK(service_->client_.get());
@@ -555,13 +538,13 @@ PresentationServiceImpl::ScreenAvailabilityListenerImpl::
 }
 
 std::string PresentationServiceImpl::ScreenAvailabilityListenerImpl
-    ::GetPresentationUrl() const {
-  return presentation_url_;
+    ::GetAvailabilityUrl() const {
+  return availability_url_;
 }
 
 void PresentationServiceImpl::ScreenAvailabilityListenerImpl
-    ::OnScreenAvailabilityChanged(bool available) {
-  service_->client_->OnScreenAvailabilityUpdated(available);
+::OnScreenAvailabilityChanged(bool available) {
+  service_->client_->OnScreenAvailabilityUpdated(availability_url_, available);
 }
 
 PresentationServiceImpl::NewSessionMojoCallbackWrapper

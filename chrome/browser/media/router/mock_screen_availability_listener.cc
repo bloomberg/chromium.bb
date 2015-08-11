@@ -7,15 +7,15 @@
 namespace media_router {
 
 MockScreenAvailabilityListener::MockScreenAvailabilityListener(
-    const std::string& presentation_url)
-    : presentation_url_(presentation_url) {
+    const std::string& availability_url)
+    : availability_url_(availability_url) {
 }
 
 MockScreenAvailabilityListener::~MockScreenAvailabilityListener() {
 }
 
-std::string MockScreenAvailabilityListener::GetPresentationUrl() const {
-  return presentation_url_;
+std::string MockScreenAvailabilityListener::GetAvailabilityUrl() const {
+  return availability_url_;
 }
 
 }  // namespace media_router

@@ -18,10 +18,10 @@ class CONTENT_EXPORT PresentationScreenAvailabilityListener {
  public:
   virtual ~PresentationScreenAvailabilityListener() {}
 
-  // Returns the Presentation URL associated with this listener.
+  // Returns the screen availability URL associated with this listener.
   // Empty string means this object is listening for screen availability
   // for "1-UA" mode, i.e. offscreen tab rendering.
-  virtual std::string GetPresentationUrl() const = 0;
+  virtual std::string GetAvailabilityUrl() const = 0;
 
   // Called when screen availability for the associated Presentation URL has
   // changed to |available|.
@@ -31,4 +31,3 @@ class CONTENT_EXPORT PresentationScreenAvailabilityListener {
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_PRESENTATION_SCREEN_AVAILABILITY_LISTENER_H_
-

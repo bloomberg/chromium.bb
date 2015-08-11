@@ -16,6 +16,7 @@
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/string.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;
@@ -34,8 +35,8 @@ MATCHER_P(Equals, expected, "") {
   return expected.Equals(arg);
 }
 
-const char kPresentationId[] = "presentationId";
-const char kPresentationUrl[] = "http://foo.com/index.html";
+const char *const kPresentationId = "presentationId";
+const char *const kPresentationUrl = "http://foo.com/index.html";
 
 bool ArePresentationSessionsEqual(
     const presentation::PresentationSessionInfo& expected,
@@ -133,8 +134,8 @@ class MockPresentationServiceDelegate : public PresentationServiceDelegate {
 class MockPresentationServiceClient :
     public presentation::PresentationServiceClient {
  public:
-  MOCK_METHOD1(OnScreenAvailabilityUpdated, void(bool available));
-
+  MOCK_METHOD2(OnScreenAvailabilityUpdated,
+      void(const mojo::String& url, bool available));
   void OnSessionStateChanged(
       presentation::PresentationSessionInfoPtr session_info,
       presentation::PresentationSessionState new_state) override {
@@ -143,8 +144,7 @@ class MockPresentationServiceClient :
   MOCK_METHOD2(OnSessionStateChanged,
                void(const presentation::PresentationSessionInfo& session_info,
                     presentation::PresentationSessionState new_state));
-
-  void OnScreenAvailabilityNotSupported() override {
+  void OnScreenAvailabilityNotSupported(const mojo::String& url) override {
     NOTIMPLEMENTED();
   }
 
@@ -188,7 +188,8 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     RenderViewHostImplTestHarness::TearDown();
   }
 
-  void ListenForScreenAvailabilityAndWait(bool delegate_success) {
+  void ListenForScreenAvailabilityAndWait(
+      const mojo::String& url, bool delegate_success) {
     base::RunLoop run_loop;
     // This will call to |service_impl_| via mojo. Process the message
     // using RunLoop.
@@ -198,7 +199,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
         .WillOnce(DoAll(
             InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
             Return(delegate_success)));
-    service_ptr_->ListenForScreenAvailability();
+    service_ptr_->ListenForScreenAvailability(url);
     run_loop.Run();
 
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_delegate_));
@@ -218,14 +219,16 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     run_loop_quit_closure_.Reset();
   }
 
-  void SimulateScreenAvailabilityChangeAndWait(bool available) {
-    auto* listener = service_impl_->screen_availability_listener_.get();
-    ASSERT_TRUE(listener);
+  void SimulateScreenAvailabilityChangeAndWait(
+      const std::string& url, bool available) {
+    auto listener_it = service_impl_->screen_availability_listeners_.find(url);
+    ASSERT_TRUE(listener_it->second);
 
     base::RunLoop run_loop;
-    EXPECT_CALL(mock_client_, OnScreenAvailabilityUpdated(available))
-        .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-    listener->OnScreenAvailabilityChanged(available);
+    EXPECT_CALL(mock_client_,
+                OnScreenAvailabilityUpdated(mojo::String(url), available))
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+    listener_it->second->OnScreenAvailabilityChanged(available);
     run_loop.Run();
   }
 
@@ -235,7 +238,9 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
 
   void ExpectCleanState() {
     EXPECT_TRUE(service_impl_->default_presentation_url_.empty());
-    EXPECT_FALSE(service_impl_->screen_availability_listener_.get());
+    EXPECT_EQ(
+        service_impl_->screen_availability_listeners_.find(kPresentationUrl),
+        service_impl_->screen_availability_listeners_.end());
     EXPECT_FALSE(service_impl_->default_session_start_context_.get());
     EXPECT_FALSE(service_impl_->on_session_messages_callback_.get());
   }
@@ -357,15 +362,15 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
 };
 
 TEST_F(PresentationServiceImplTest, ListenForScreenAvailability) {
-  ListenForScreenAvailabilityAndWait(true);
+  ListenForScreenAvailabilityAndWait(kPresentationUrl, true);
 
-  SimulateScreenAvailabilityChangeAndWait(true);
-  SimulateScreenAvailabilityChangeAndWait(false);
-  SimulateScreenAvailabilityChangeAndWait(true);
+  SimulateScreenAvailabilityChangeAndWait(kPresentationUrl, true);
+  SimulateScreenAvailabilityChangeAndWait(kPresentationUrl, false);
+  SimulateScreenAvailabilityChangeAndWait(kPresentationUrl, true);
 }
 
 TEST_F(PresentationServiceImplTest, Reset) {
-  ListenForScreenAvailabilityAndWait(true);
+  ListenForScreenAvailabilityAndWait(kPresentationUrl, true);
 
   ExpectReset();
   service_impl_->Reset();
@@ -373,7 +378,7 @@ TEST_F(PresentationServiceImplTest, Reset) {
 }
 
 TEST_F(PresentationServiceImplTest, DidNavigateThisFrame) {
-  ListenForScreenAvailabilityAndWait(true);
+  ListenForScreenAvailabilityAndWait(kPresentationUrl, true);
 
   ExpectReset();
   service_impl_->DidNavigateAnyFrame(
@@ -384,7 +389,7 @@ TEST_F(PresentationServiceImplTest, DidNavigateThisFrame) {
 }
 
 TEST_F(PresentationServiceImplTest, DidNavigateOtherFrame) {
-  ListenForScreenAvailabilityAndWait(true);
+  ListenForScreenAvailabilityAndWait(kPresentationUrl, true);
 
   // TODO(imcheng): How to get a different RenderFrameHost?
   service_impl_->DidNavigateAnyFrame(
@@ -394,11 +399,11 @@ TEST_F(PresentationServiceImplTest, DidNavigateOtherFrame) {
 
   // Availability is reported and callback is invoked since it was not
   // removed.
-  SimulateScreenAvailabilityChangeAndWait(true);
+  SimulateScreenAvailabilityChangeAndWait(kPresentationUrl, true);
 }
 
 TEST_F(PresentationServiceImplTest, ThisRenderFrameDeleted) {
-  ListenForScreenAvailabilityAndWait(true);
+  ListenForScreenAvailabilityAndWait(kPresentationUrl, true);
 
   ExpectReset();
 
@@ -409,19 +414,21 @@ TEST_F(PresentationServiceImplTest, ThisRenderFrameDeleted) {
 }
 
 TEST_F(PresentationServiceImplTest, OtherRenderFrameDeleted) {
-  ListenForScreenAvailabilityAndWait(true);
+  ListenForScreenAvailabilityAndWait(kPresentationUrl, true);
 
   // TODO(imcheng): How to get a different RenderFrameHost?
   service_impl_->RenderFrameDeleted(nullptr);
 
   // Availability is reported and callback should be invoked since listener
   // has not been deleted.
-  SimulateScreenAvailabilityChangeAndWait(true);
+  SimulateScreenAvailabilityChangeAndWait(kPresentationUrl, true);
 }
 
 TEST_F(PresentationServiceImplTest, DelegateFails) {
-  ListenForScreenAvailabilityAndWait(false);
-  ASSERT_FALSE(service_impl_->screen_availability_listener_.get());
+  ListenForScreenAvailabilityAndWait(kPresentationUrl, false);
+  ASSERT_EQ(
+      service_impl_->screen_availability_listeners_.find(kPresentationUrl),
+      service_impl_->screen_availability_listeners_.end());
 }
 
 TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrl) {
@@ -432,32 +439,13 @@ TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrl) {
   service_impl_->SetDefaultPresentationURL(url1);
   EXPECT_EQ(url1, service_impl_->default_presentation_url_);
 
-  // Now there should be a listener for DPU = |url1|.
-  ListenForScreenAvailabilityAndWait(true);
-  auto* listener = service_impl_->screen_availability_listener_.get();
-  ASSERT_TRUE(listener);
-  EXPECT_EQ(url1, listener->GetPresentationUrl());
-
   std::string url2("http://barUrl");
   // Sets different DPU.
-  // Adds listener for url2 and removes listener for url1.
-  EXPECT_CALL(
-      mock_delegate_,
-      AddScreenAvailabilityListener(_, _, _))
-      .WillOnce(Return(true));
-  EXPECT_CALL(
-      mock_delegate_,
-      RemoveScreenAvailabilityListener(_, _, _))
-      .Times(1);
   EXPECT_CALL(mock_delegate_,
       SetDefaultPresentationUrl(_, _, Eq(url2)))
       .Times(1);
   service_impl_->SetDefaultPresentationURL(url2);
   EXPECT_EQ(url2, service_impl_->default_presentation_url_);
-
-  listener = service_impl_->screen_availability_listener_.get();
-  ASSERT_TRUE(listener);
-  EXPECT_EQ(url2, listener->GetPresentationUrl());
 }
 
 TEST_F(PresentationServiceImplTest, SetSameDefaultPresentationUrl) {

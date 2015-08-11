@@ -6,8 +6,10 @@
 #define CONTENT_RENDERER_PRESENTATION_PRESENTATION_DISPATCHER_H_
 
 #include "base/compiler_specific.h"
+#include "base/containers/scoped_ptr_map.h"
 #include "base/id_map.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/presentation/presentation_service.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -54,7 +56,6 @@ class CONTENT_EXPORT PresentationDispatcher
   // WebPresentationClient implementation.
   virtual void setController(
       blink::WebPresentationController* controller);
-  virtual void updateAvailableChangeWatched(bool watched);
   virtual void startSession(
       const blink::WebString& presentationUrl,
       blink::WebPresentationSessionClientCallbacks* callback);
@@ -80,10 +81,16 @@ class CONTENT_EXPORT PresentationDispatcher
       const blink::WebString& presentationUrl,
       const blink::WebString& presentationId);
   virtual void getAvailability(
-      const blink::WebString& presentationUrl,
+      const blink::WebString& availabilityUrl,
       blink::WebPresentationAvailabilityCallbacks* callbacks);
+  // TODO(mfoltz): Remove (http://crbug.com/510814)
   virtual void startListening(blink::WebPresentationAvailabilityObserver*);
+  virtual void startListening(const blink::WebString& availabilityUrl,
+                              blink::WebPresentationAvailabilityObserver*);
+  // TODO(mfoltz): Remove (http://crbug.com/510814)
   virtual void stopListening(blink::WebPresentationAvailabilityObserver*);
+  virtual void stopListening(const blink::WebString& availabilityUrl,
+                             blink::WebPresentationAvailabilityObserver*);
   virtual void setDefaultPresentationUrl(const blink::WebString& url);
 
   // RenderFrameObserver implementation.
@@ -92,11 +99,12 @@ class CONTENT_EXPORT PresentationDispatcher
       bool is_same_page_navigation) override;
 
   // presentation::PresentationServiceClient
-  void OnScreenAvailabilityUpdated(bool available) override;
+  void OnScreenAvailabilityNotSupported(const mojo::String& url) override;
+  void OnScreenAvailabilityUpdated(const mojo::String& url,
+                                   bool available) override;
   void OnSessionStateChanged(
       presentation::PresentationSessionInfoPtr session_info,
       presentation::PresentationSessionState new_state) override;
-  void OnScreenAvailabilityNotSupported() override;
   void OnSessionMessagesReceived(
       presentation::PresentationSessionInfoPtr session_info,
       mojo::Array<presentation::SessionMessagePtr> messages) override;
@@ -128,22 +136,40 @@ class CONTENT_EXPORT PresentationDispatcher
   using MessageRequestQueue = std::queue<linked_ptr<SendMessageRequest>>;
   MessageRequestQueue message_request_queue_;
 
-  enum class ListeningState {
-    Inactive,
-    Waiting,
-    Active,
-  };
+  // TODO(mfoltz): Remove |default_presentation_url_| when Blink passes the
+  // presentation URL with startListening() (http://crbug.com/510814)
+  std::string default_presentation_url_;
 
-  ListeningState listening_state_;
-  bool last_known_availability_;
+  enum class ListeningState {
+    INACTIVE,
+    WAITING,
+    ACTIVE,
+  };
 
   using AvailabilityCallbacksMap =
       IDMap<blink::WebPresentationAvailabilityCallbacks, IDMapOwnPointer>;
-  AvailabilityCallbacksMap availability_callbacks_;
-
   using AvailabilityObserversSet =
       std::set<blink::WebPresentationAvailabilityObserver*>;
-  AvailabilityObserversSet availability_observers_;
+
+  // Tracks status of presentation displays availability for |availability_url|.
+  struct AvailabilityStatus {
+    explicit AvailabilityStatus(const std::string& availability_url);
+    ~AvailabilityStatus();
+
+    const std::string url;
+    bool last_known_availability;
+    ListeningState listening_state;
+    AvailabilityCallbacksMap availability_callbacks;
+    AvailabilityObserversSet availability_observers;
+  };
+
+  using AvailabilityStatusMap =
+    base::ScopedPtrMap<std::string, scoped_ptr<AvailabilityStatus>>;
+  AvailabilityStatusMap availability_status_;
+
+  // Updates the listening state of availability for |status| and notifies the
+  // client.
+  void UpdateListeningState(AvailabilityStatus* status);
 
   DISALLOW_COPY_AND_ASSIGN(PresentationDispatcher);
 };

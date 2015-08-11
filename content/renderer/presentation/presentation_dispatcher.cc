@@ -57,9 +57,8 @@ namespace content {
 PresentationDispatcher::PresentationDispatcher(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
       controller_(nullptr),
-      binding_(this),
-      listening_state_(ListeningState::Inactive),
-      last_known_availability_(false) {}
+      binding_(this) {
+}
 
 PresentationDispatcher::~PresentationDispatcher() {
   // Controller should be destroyed before the dispatcher when frame is
@@ -75,14 +74,6 @@ void PresentationDispatcher::setController(
   // The controller is set to null when the frame is about to be detached.
   // Nothing is listening for screen availability anymore but the Mojo service
   // will know about the frame being detached anyway.
-}
-
-void PresentationDispatcher::updateAvailableChangeWatched(bool watched) {
-  ConnectToPresentationServiceIfNeeded();
-  if (watched)
-    presentation_service_->ListenForScreenAvailability();
-  else
-    presentation_service_->StopListeningForScreenAvailability();
 }
 
 void PresentationDispatcher::startSession(
@@ -222,35 +213,76 @@ void PresentationDispatcher::closeSession(
 }
 
 void PresentationDispatcher::getAvailability(
-    const blink::WebString& presentationUrl,
+    const blink::WebString& availabilityUrl,
     blink::WebPresentationAvailabilityCallbacks* callbacks) {
-  if (listening_state_ == ListeningState::Active) {
-    callbacks->onSuccess(last_known_availability_);
+  const std::string& availability_url = availabilityUrl.utf8();
+  AvailabilityStatus* status = nullptr;
+  auto status_it = availability_status_.find(availability_url);
+  if (status_it == availability_status_.end()) {
+    status = new AvailabilityStatus(availability_url);
+    availability_status_.set(availability_url, make_scoped_ptr(status));
+  } else {
+    status = status_it->second;
+  }
+  DCHECK(status);
+
+  if (status->listening_state == ListeningState::ACTIVE) {
+    callbacks->onSuccess(status->last_known_availability);
     delete callbacks;
     return;
   }
 
-  availability_callbacks_.Add(callbacks);
-  UpdateListeningState();
+  status->availability_callbacks.Add(callbacks);
+  UpdateListeningState(status);
 }
 
 void PresentationDispatcher::startListening(
     blink::WebPresentationAvailabilityObserver* observer) {
-    availability_observers_.insert(observer);
-    UpdateListeningState();
+  if (default_presentation_url_.empty())
+    return;
+  startListening(blink::WebString::fromUTF8(default_presentation_url_),
+                 observer);
+}
+
+void PresentationDispatcher::startListening(
+    const blink::WebString& availabilityUrl,
+    blink::WebPresentationAvailabilityObserver* observer) {
+  auto status_it = availability_status_.find(availabilityUrl.utf8());
+  if (status_it == availability_status_.end()) {
+    DLOG(WARNING) << "Start listening for availability for unknown URL "
+                  << availabilityUrl.utf8();
+    return;
+  }
+  status_it->second->availability_observers.insert(observer);
+  UpdateListeningState(status_it->second);
 }
 
 void PresentationDispatcher::stopListening(
     blink::WebPresentationAvailabilityObserver* observer) {
-    availability_observers_.erase(observer);
-    UpdateListeningState();
+  if (default_presentation_url_.empty())
+    return;
+  stopListening(blink::WebString::fromUTF8(default_presentation_url_),
+                observer);
+}
+
+void PresentationDispatcher::stopListening(
+    const blink::WebString& availabilityUrl,
+    blink::WebPresentationAvailabilityObserver* observer) {
+  auto status_it = availability_status_.find(availabilityUrl.utf8());
+  if (status_it == availability_status_.end()) {
+    DLOG(WARNING) << "Stop listening for availability for unknown URL "
+                  << availabilityUrl.utf8();
+    return;
+  }
+  status_it->second->availability_observers.erase(observer);
+  UpdateListeningState(status_it->second);
 }
 
 void PresentationDispatcher::setDefaultPresentationUrl(
-    const blink::WebString& url)
-{
-    ConnectToPresentationServiceIfNeeded();
-    presentation_service_->SetDefaultPresentationURL(url.utf8());
+    const blink::WebString& url) {
+  default_presentation_url_ = url.utf8();
+  ConnectToPresentationServiceIfNeeded();
+  presentation_service_->SetDefaultPresentationURL(default_presentation_url_);
 }
 
 void PresentationDispatcher::DidCommitProvisionalLoad(
@@ -266,39 +298,52 @@ void PresentationDispatcher::DidCommitProvisionalLoad(
   std::swap(message_request_queue_, empty);
 }
 
-void PresentationDispatcher::OnScreenAvailabilityUpdated(bool available) {
-  last_known_availability_ = available;
+void PresentationDispatcher::OnScreenAvailabilityUpdated(
+    const mojo::String& url, bool available) {
+  const std::string& availability_url = url.get();
+  auto status_it = availability_status_.find(availability_url);
+  if (status_it == availability_status_.end())
+    return;
+  AvailabilityStatus* status = status_it->second;
+  DCHECK(status);
 
-  if (listening_state_ == ListeningState::Waiting)
-    listening_state_ = ListeningState::Active;
+  if (status->listening_state == ListeningState::WAITING)
+    status->listening_state = ListeningState::ACTIVE;
 
-  for (auto observer : availability_observers_)
+  for (auto observer : status->availability_observers)
     observer->availabilityChanged(available);
 
-  for (AvailabilityCallbacksMap::iterator iter(&availability_callbacks_);
+  for (AvailabilityCallbacksMap::iterator iter(&status->availability_callbacks);
        !iter.IsAtEnd(); iter.Advance()) {
     iter.GetCurrentValue()->onSuccess(available);
   }
-  availability_callbacks_.Clear();
-
-  UpdateListeningState();
+  status->last_known_availability = available;
+  status->availability_callbacks.Clear();
+  UpdateListeningState(status);
 }
 
-void PresentationDispatcher::OnScreenAvailabilityNotSupported() {
-  DCHECK(listening_state_ == ListeningState::Waiting);
+void PresentationDispatcher::OnScreenAvailabilityNotSupported(
+    const mojo::String& url) {
+  const std::string& availability_url = url.get();
+  auto status_it = availability_status_.find(availability_url);
+  if (status_it == availability_status_.end())
+    return;
+  AvailabilityStatus* status = status_it->second;
+  DCHECK(status);
+  DCHECK(status->listening_state == ListeningState::WAITING);
 
-  for (AvailabilityCallbacksMap::iterator iter(&availability_callbacks_);
+  const blink::WebString& not_supported_error = blink::WebString::fromUTF8(
+      "getAvailability() isn't supported at the moment. It can be due to "
+      "a permanent or temporary system limitation. It is recommended to "
+      "try to blindly start a session in that case.");
+  for (AvailabilityCallbacksMap::iterator iter(&status->availability_callbacks);
        !iter.IsAtEnd(); iter.Advance()) {
     iter.GetCurrentValue()->onError(blink::WebPresentationError(
         blink::WebPresentationError::ErrorTypeAvailabilityNotSupported,
-        blink::WebString::fromUTF8(
-            "getAvailability() isn't supported at the moment. It can be due to"
-            "a permanent or temporary system limitation. It is recommended to"
-            "try to blindly start a session in that case.")));
+        not_supported_error));
   }
-  availability_callbacks_.Clear();
-
-  UpdateListeningState();
+  status->availability_callbacks.Clear();
+  UpdateListeningState(status);
 }
 
 void PresentationDispatcher::OnDefaultSessionStarted(
@@ -401,21 +446,21 @@ void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
   presentation_service_->ListenForSessionStateChange();
 }
 
-void PresentationDispatcher::UpdateListeningState() {
-  bool should_listen = !availability_callbacks_.IsEmpty() ||
-                       !availability_observers_.empty();
-  bool is_listening = listening_state_ != ListeningState::Inactive;
+void PresentationDispatcher::UpdateListeningState(AvailabilityStatus* status) {
+  bool should_listen = !status->availability_callbacks.IsEmpty() ||
+                       !status->availability_observers.empty();
+  bool is_listening = status->listening_state != ListeningState::INACTIVE;
 
   if (should_listen == is_listening)
     return;
 
   ConnectToPresentationServiceIfNeeded();
   if (should_listen) {
-    listening_state_ = ListeningState::Waiting;
-    presentation_service_->ListenForScreenAvailability();
+    status->listening_state = ListeningState::WAITING;
+    presentation_service_->ListenForScreenAvailability(status->url);
   } else {
-    listening_state_ = ListeningState::Inactive;
-    presentation_service_->StopListeningForScreenAvailability();
+    status->listening_state = ListeningState::INACTIVE;
+    presentation_service_->StopListeningForScreenAvailability(status->url);
   }
 }
 
@@ -464,6 +509,14 @@ PresentationDispatcher::CreateSendBinaryMessageRequest(
   std::vector<uint8> tmp_data_vector(data, data + length);
   session_message->data.Swap(&tmp_data_vector);
   return new SendMessageRequest(session_info.Pass(), session_message.Pass());
+}
+
+PresentationDispatcher::AvailabilityStatus::AvailabilityStatus(
+    const std::string& availability_url) :
+  url(availability_url), last_known_availability(false) {
+}
+
+PresentationDispatcher::AvailabilityStatus::~AvailabilityStatus() {
 }
 
 }  // namespace content

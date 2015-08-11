@@ -47,15 +47,15 @@ interface PresentationService {
   // Sets the PresentationServiceClient.
   SetClient(PresentationServiceClient client);
 
-  // Starts listening for screen availability for the current default
-  // presentation URL. Availability results will be returned to the client
-  // via PresentationServiceClient::OnScreenAvailabilityUpdated.
-  ListenForScreenAvailability();
+  // Starts listening for screen availability for presentation of
+  // |url|. Availability results will be returned to the client via
+  // PresentationServiceClient::OnScreenAvailabilityUpdated.
+  ListenForScreenAvailability(string url);
 
-  // Stops listening for screen availability for the current default
-  // default presentation URL. The client will stop receiving availability
-  // updates.
-  StopListeningForScreenAvailability();
+  // Stops listening for screen availability for the presentation of |url|. The
+  // PresentationServiceClient will stop receiving availability updates for
+  // |url|.
+  StopListeningForScreenAvailability(string url);
 
   // Called when the renderer is ready to receive the browser initiated
   // session. If the default session is started by the embedder before this
@@ -107,17 +107,17 @@ interface PresentationService {
 };
 
 interface PresentationServiceClient {
-  // Called when the client tries to listen for screen availability changes but
-  // it is not supported by the device or underlying platform. This can also be
-  // called if the device is currently in a mode where it can't do screen
-  // discoveries (eg. low battery).
-  OnScreenAvailabilityNotSupported();
+  // Called when the client tries to listen for screen availability changes for
+  // presentation of |url| but it is not supported by the device or underlying
+  // platform. This can also be called if the device is currently in a mode
+  // where it can't do screen discoveries (eg. low battery).
+  OnScreenAvailabilityNotSupported(string url);
 
-  // Called when the client is listening for screen availability and the state
-  // changes. When the client starts to listen for screen availability, this
-  // method will always be called to give the current known state. It will then
-  // be called to notify of state updates.
-  OnScreenAvailabilityUpdated(bool available);
+  // Called when the client is listening for screen availability for
+  // presentation of |url| and the state changes. When the client starts to
+  // listen for screen availability, this method will always be called to give
+  // the current known state. It will then be called to notify of state updates.
+  OnScreenAvailabilityUpdated(string url, bool available);
 
   // See PresentationService::ListenForSessionStateChange.
   OnSessionStateChanged(PresentationSessionInfo sessionInfo,
