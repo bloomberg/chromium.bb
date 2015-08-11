@@ -431,7 +431,7 @@ class MetaBuildWrapper(object):
                   'GYP configuration specified in the config (%s), and '
                   'it does not.' % (gyp_config, vals['gyp_config']))
     if self.args.verbose:
-      inp = self.GetAnalyzeInput()
+      inp = self.ReadInputJSON(['files', 'targets'])
       self.Print()
       self.Print('analyze input:')
       self.PrintJSON(inp)
