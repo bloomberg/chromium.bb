@@ -36,6 +36,35 @@
 #import <wtf/HashSet.h>
 #import <wtf/text/AtomicStringHash.h>
 
+#include "platform/fonts/FontTraits.h"
+#include "platform/LayoutTestSupport.h"
+#include "platform/mac/VersionUtilMac.h"
+
+ @interface NSFont (YosemiteAdditions)
+ + (NSFont*)systemFontOfSize:(CGFloat)size weight:(CGFloat)weight;
+ @end
+
+ namespace {
+
+ static CGFloat toYosemiteFontWeight(blink::FontWeight fontWeight)
+ {
+     static uint64_t nsFontWeights[] = {
+         0xbfe99999a0000000, // NSFontWeightUltraLight
+         0xbfe3333340000000, // NSFontWeightThin
+         0xbfd99999a0000000, // NSFontWeightLight
+         0x0000000000000000, // NSFontWeightRegular
+         0x3fcd70a3e0000000, // NSFontWeightMedium
+         0x3fd3333340000000, // NSFontWeightSemibold
+         0x3fd99999a0000000, // NSFontWeightBold
+         0x3fe1eb8520000000, // NSFontWeightHeavy
+         0x3fe3d70a40000000, // NSFontWeightBlack
+     };
+     ASSERT(fontWeight >= 0 && fontWeight <= 8);
+     CGFloat* weight = reinterpret_cast<CGFloat*>(&nsFontWeights[fontWeight]);
+     return *weight;
+ }
+ }
+
 namespace blink {
 
 const NSFontTraitMask SYNTHESIZED_FONT_TRAITS = (NSBoldFontMask | NSItalicFontMask);
@@ -101,8 +130,41 @@ static BOOL betterChoice(NSFontTraitMask desiredTraits, int desiredWeight,
 // Family name is somewhat of a misnomer here.  We first attempt to find an exact match
 // comparing the desiredFamily to the PostScript name of the installed fonts.  If that fails
 // we then do a search based on the family names of the installed fonts.
-NSFont* MatchNSFontFamily(NSString* desiredFamily, NSFontTraitMask desiredTraits, int desiredWeight, float size)
+NSFont* MatchNSFontFamily(NSString* desiredFamily, NSFontTraitMask desiredTraits, FontWeight desiredWeight, float size)
 {
+    if ([desiredFamily isEqualToString:@"BlinkMacSystemFont"]) {
+        // On OSX 10.9, the default system font depends on the SDK version. When
+        // compiled against the OSX 10.10 SDK, the font is .LucidaGrandeUI. When
+        // compiled against the OSX 10.6 SDK, the font is Lucida Grande. Layout
+        // tests don't support different expectations based on the SDK version,
+        // so force layout tests to use "Lucida Grande". Once the 10.10 SDK
+        // switch is made, this should be changed to return .LucidaGrandeUI and
+        // the Layout Expectations should be updated. http://crbug.com/515836.
+        if (LayoutTestSupport::isRunningLayoutTest() && IsOSMavericks()) {
+            if (desiredWeight >= blink::FontWeightBold)
+                return [NSFont fontWithName:@"Lucida Grande Bold" size:size];
+            else
+                return [NSFont fontWithName:@"Lucida Grande" size:size];
+        }
+
+        NSFont* font = nil;
+        if (IsOSMavericksOrEarlier()) {
+            // On older OSX versions, only bold and regular are available.
+            if (desiredWeight >= blink::FontWeightBold)
+                font = [NSFont boldSystemFontOfSize:size];
+            else
+                font = [NSFont systemFontOfSize:size];
+        }
+        else {
+            // On OSX 10.10+, the default system font has more weights.
+            font = [NSFont systemFontOfSize:size weight:toYosemiteFontWeight(desiredWeight)];
+        }
+
+        if (desiredTraits & IMPORTANT_FONT_TRAITS)
+            font = [[NSFontManager sharedFontManager] convertFont:font toHaveTrait:desiredTraits];
+        return font;
+    }
+
     NSFontManager *fontManager = [NSFontManager sharedFontManager];
 
     // Do a simple case insensitive search for a matching font family.
@@ -115,12 +177,13 @@ NSFont* MatchNSFontFamily(NSString* desiredFamily, NSFontTraitMask desiredTraits
             break;
     }
 
+    int appKitFontWeight = toAppKitFontWeight(desiredWeight);
     if (!availableFamily) {
         // Match by PostScript name.
         NSEnumerator *availableFonts = [[fontManager availableFonts] objectEnumerator];
         NSString *availableFont;
         NSFont *nameMatchedFont = nil;
-        NSFontTraitMask desiredTraitsForNameMatch = desiredTraits | (desiredWeight >= 7 ? NSBoldFontMask : 0);
+        NSFontTraitMask desiredTraitsForNameMatch = desiredTraits | (appKitFontWeight >= 7 ? NSBoldFontMask : 0);
         while ((availableFont = [availableFonts nextObject])) {
             if ([desiredFamily caseInsensitiveCompare:availableFont] == NSOrderedSame) {
                 nameMatchedFont = [NSFont fontWithName:availableFont size:size];
@@ -162,7 +225,7 @@ NSFont* MatchNSFontFamily(NSString* desiredFamily, NSFontTraitMask desiredTraits
         if (!choseFont)
             newWinner = acceptableChoice(desiredTraits, fontTraits);
         else
-            newWinner = betterChoice(desiredTraits, desiredWeight, chosenTraits, chosenWeight, fontTraits, fontWeight);
+            newWinner = betterChoice(desiredTraits, appKitFontWeight, chosenTraits, chosenWeight, fontTraits, fontWeight);
 
         if (newWinner) {
             choseFont = YES;
@@ -170,7 +233,7 @@ NSFont* MatchNSFontFamily(NSString* desiredFamily, NSFontTraitMask desiredTraits
             chosenTraits = fontTraits;
             chosenFullName = fontFullName;
 
-            if (chosenWeight == desiredWeight && (chosenTraits & IMPORTANT_FONT_TRAITS) == (desiredTraits & IMPORTANT_FONT_TRAITS))
+            if (chosenWeight == appKitFontWeight && (chosenTraits & IMPORTANT_FONT_TRAITS) == (desiredTraits & IMPORTANT_FONT_TRAITS))
                 break;
         }
     }
@@ -188,7 +251,7 @@ NSFont* MatchNSFontFamily(NSString* desiredFamily, NSFontTraitMask desiredTraits
         actualTraits = [fontManager traitsOfFont:font];
     int actualWeight = [fontManager weightOfFont:font];
 
-    bool syntheticBold = desiredWeight >= 7 && actualWeight < 7;
+    bool syntheticBold = appKitFontWeight >= 7 && actualWeight < 7;
     bool syntheticItalic = (desiredTraits & NSFontItalicTrait) && !(actualTraits & NSFontItalicTrait);
 
     // There are some malformed fonts that will be correctly returned by -fontWithFamily:traits:weight:size: as a match for a particular trait,
@@ -211,6 +274,22 @@ NSFont* MatchNSFontFamily(NSString* desiredFamily, NSFontTraitMask desiredTraits
     }
 
     return font;
+}
+
+int toAppKitFontWeight(FontWeight fontWeight)
+{
+    static int appKitFontWeights[] = {
+        2, // FontWeight100
+        3, // FontWeight200
+        4, // FontWeight300
+        5, // FontWeight400
+        6, // FontWeight500
+        8, // FontWeight600
+        9, // FontWeight700
+        10, // FontWeight800
+        12, // FontWeight900
+    };
+    return appKitFontWeights[fontWeight];
 }
 
 } // namespace blink
