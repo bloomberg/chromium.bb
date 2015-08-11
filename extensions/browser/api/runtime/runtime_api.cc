@@ -54,7 +54,7 @@ const char kInstallReasonUpdate[] = "update";
 const char kInstallReasonInstall[] = "install";
 const char kInstallReasonSharedModuleUpdate[] = "shared_module_update";
 const char kInstallPreviousVersion[] = "previousVersion";
-const char kInvalidUrlError[] = "Invalid URL.";
+const char kInvalidUrlError[] = "Invalid URL: \"*\".";
 const char kPlatformInfoUnavailable[] = "Platform information unavailable.";
 
 const char kUpdatesDisabledError[] = "Autoupdate is not enabled.";
@@ -405,8 +405,11 @@ void RuntimeEventRouter::OnExtensionUninstalled(
   GURL uninstall_url(
       GetUninstallURL(ExtensionPrefs::Get(context), extension_id));
 
-  if (uninstall_url.is_empty())
+  if (!uninstall_url.SchemeIsHTTPOrHTTPS()) {
+    // Previous versions of Chrome allowed non-http(s) URLs to be stored in the
+    // prefs. Now they're disallowed, but the old data may still exist.
     return;
+  }
 
   RuntimeAPI::GetFactoryInstance()->Get(context)->OpenURL(uninstall_url);
 }
@@ -448,10 +451,8 @@ ExtensionFunction::ResponseAction RuntimeSetUninstallURLFunction::Run() {
   std::string url_string;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url_string));
 
-  GURL url(url_string);
-  if (!url.is_valid()) {
-    return RespondNow(
-        Error(ErrorUtils::FormatErrorMessage(kInvalidUrlError, url_string)));
+  if (!url_string.empty() && !GURL(url_string).SchemeIsHTTPOrHTTPS()) {
+    return RespondNow(Error(kInvalidUrlError, url_string));
   }
   SetUninstallURL(
       ExtensionPrefs::Get(browser_context()), extension_id(), url_string);

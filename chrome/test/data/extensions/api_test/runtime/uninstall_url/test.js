@@ -28,5 +28,17 @@ chrome.test.runTests([
       }
       chrome.test.assertTrue(uninstalled);
     });
+  },
+  function setEmptyUrl() {
+    chrome.runtime.setUninstallURL('', function() {
+      chrome.test.assertNoLastError();
+      chrome.test.succeed();
+    });
+  },
+  function uninstallInvalidURLNonHttpOrHttps() {
+    chrome.runtime.setUninstallURL('chrome://newtab', function() {
+      chrome.test.assertLastError('Invalid URL: "chrome://newtab".');
+      chrome.test.succeed();
+    });
   }
 ]);

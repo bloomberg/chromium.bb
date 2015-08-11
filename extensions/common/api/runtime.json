@@ -191,7 +191,15 @@
           {
             "type": "string",
             "name": "url",
-            "maxLength": 255
+            "maxLength": 255,
+            "description": "URL to be opened after the extension is uninstalled. This URL must have an http: or https: scheme. Set an empty string to not open a new tab upon uninstallation."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when the uninstall URL is set. If the given URL is invalid, $(ref:runtime.lastError) will be set.",
+            "parameters": []
           }
         ]
       },
