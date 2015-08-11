@@ -17,7 +17,7 @@ namespace html_viewer {
 
 class WebLayerImpl : public cc_blink::WebLayerImpl {
  public:
-  explicit WebLayerImpl(mojo::View* view);
+  WebLayerImpl(mojo::View* view, float device_pixel_ratio);
   ~WebLayerImpl() override;
 
   // WebLayer implementation.
@@ -26,6 +26,7 @@ class WebLayerImpl : public cc_blink::WebLayerImpl {
 
  private:
   mojo::View* view_;
+  const float device_pixel_ratio_;
 
   DISALLOW_COPY_AND_ASSIGN(WebLayerImpl);
 };

@@ -450,8 +450,10 @@ void HTMLFrame::SwapToRemote() {
   // it.
   web_frame_->swap(remote_frame);
   // TODO(sky): this isn't quite right, but WebLayerImpl is temporary.
-  if (owned_view_)
-    web_layer_.reset(new WebLayerImpl(owned_view_));
+  if (owned_view_) {
+    web_layer_.reset(
+        new WebLayerImpl(owned_view_, global_state()->device_pixel_ratio()));
+  }
   remote_frame->setRemoteWebLayer(web_layer_.get());
   remote_frame->setReplicatedName(state_.name);
   remote_frame->setReplicatedOrigin(state_.origin);
@@ -906,13 +908,13 @@ void HTMLFrame::postMessageEvent(blink::WebLocalFrame* source_web_frame,
 
 void HTMLFrame::initializeChildFrame(const blink::WebRect& frame_rect,
                                      float scale_factor) {
-  // TODO(sky): frame_rect is in dips. Need to convert.
-  mojo::Rect rect;
-  rect.x = frame_rect.x;
-  rect.y = frame_rect.y;
-  rect.width = frame_rect.width;
-  rect.height = frame_rect.height;
-  view_->SetBounds(rect);
+  // NOTE: |scale_factor| is always 1.
+  const gfx::Rect rect_in_dip(frame_rect.x, frame_rect.y, frame_rect.width,
+                              frame_rect.height);
+  const gfx::Rect rect_in_pixels(gfx::ConvertRectToPixel(
+      global_state()->device_pixel_ratio(), rect_in_dip));
+  const mojo::RectPtr mojo_rect_in_pixels(mojo::Rect::From(rect_in_pixels));
+  view_->SetBounds(*mojo_rect_in_pixels);
 }
 
 void HTMLFrame::navigate(const blink::WebURLRequest& request,
