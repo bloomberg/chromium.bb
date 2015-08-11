@@ -15,4 +15,4 @@ layer at (0,0) size 800x198
             text run at (25,28) width 107 RTL: "\x{5D0}\x{5D9}\x{5DF} \x{5DC}\x{5D9} \x{5E9}\x{5DD}."
       LayoutBlockFlow {PRE} at (0,182.34) size 784x0
 selection start: position 5 of child 0 {#text} of child 1 {P} of child 3 {DIV} of body
-selection end:   position 6 of child 2 {#text} of child 1 {P} of child 3 {DIV} of body
+selection end:   position 4 of child 2 {#text} of child 1 {P} of child 3 {DIV} of body

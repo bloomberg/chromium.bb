@@ -706,17 +706,7 @@ crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ ImageOnlyFailur
 
 crbug.com/506525 [ XP ] paint/masks/fieldset-mask.html [ ImageOnlyFailure ]
 
-crbug.com/422670 [ Mac ] editing/selection/vertical-rl-rtl-extend-line-backward-br.html [ NeedsRebaseline ]
-crbug.com/422670 [ Mac ] editing/selection/vertical-rl-rtl-extend-line-backward-p.html [ NeedsRebaseline ]
-crbug.com/422670 [ Mac ] editing/selection/vertical-rl-rtl-extend-line-forward-br.html [ NeedsRebaseline ]
 crbug.com/422670 [ SnowLeopard Lion MountainLion Mavericks Retina ] editing/selection/vertical-rl-rtl-extend-line-forward-p.html [ NeedsRebaseline ]
-crbug.com/422670 [ Linux ] fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
-crbug.com/422670 [ Mac ] fast/css/vertical-text-overflow-ellipsis-text-align-center.html [ NeedsRebaseline ]
-crbug.com/422670 [ Linux Mac ] fast/css/vertical-text-overflow-ellipsis-text-align-left.html [ NeedsRebaseline ]
-crbug.com/422670 [ Linux ] fast/text/international/draw-complex-text-from-to.html [ NeedsRebaseline ]
-crbug.com/422670 [ XP ] fast/css/vertical-text-overflow-ellipsis-text-align-center.html [ NeedsRebaseline ]
-crbug.com/422670 [ XP ] fast/css/vertical-text-overflow-ellipsis-text-align-left.html [ NeedsRebaseline ]
-crbug.com/422670 [ Mac Win ] fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
 
 crbug.com/518918 fast/writing-mode/box-shadow-horizontal-bt.html [ NeedsRebaseline ]
 crbug.com/518918 fast/forms/calendar-picker/calendar-picker-appearance.html [ NeedsRebaseline ]
