@@ -12,7 +12,6 @@ option optimize_for = LITE_RUNTIME;
 
 import "annotations.proto";
 import "dom.proto";
-import "math.proto";
 
 // Data present in feedbacks sent from web extension.
 message WebData {

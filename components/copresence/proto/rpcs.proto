@@ -3,7 +3,6 @@ package copresence;
 option optimize_for = LITE_RUNTIME;
 import "codes.proto";
 import "config_data.proto";
-import "enums.proto";
 import "data.proto";
 message RequestHeader {
   optional ClientVersion client_version = 4;
