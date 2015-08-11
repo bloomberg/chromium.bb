@@ -23,7 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://rawgit.com/w3c/touch-events/v1-errata/touchevents.html#touch-interface
+// https://w3c.github.io/touch-events/#touch-interface
+
+// TODO(rbyers): Touch should have a constructor. http://crbug.com/508675
 
 [
     WillBeGarbageCollected,
@@ -36,9 +38,6 @@
     readonly attribute double clientY;
     readonly attribute double pageX;
     readonly attribute double pageY;
-
-    // Touch Events Extensions
-    // http://rawgit.com/w3c/touch-events/master/touchevents.html#touch-interface
     readonly attribute float radiusX;
     readonly attribute float radiusY;
     readonly attribute float rotationAngle;

@@ -23,7 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/touch-events/#touchevent-interface
+// https://w3c.github.io/touch-events/#touchevent-interface
+
+// TODO(rbyers): TouchEvent should have a constructor. http://crbug.com/508675
 
 interface TouchEvent : UIEvent {
     readonly attribute TouchList touches;
@@ -34,7 +36,7 @@ interface TouchEvent : UIEvent {
     readonly attribute boolean ctrlKey;
     readonly attribute boolean shiftKey;
 
-    // FIXME: initTouch() is not yet standardized.
+    // FIXME: initTouchEvent() is not standardized. http://crbug.com/518868
     [CallWith=ScriptState, Measure] void initTouchEvent([Default=Undefined] optional TouchList touches,
                                                         [Default=Undefined] optional TouchList targetTouches,
                                                         [Default=Undefined] optional TouchList changedTouches,
