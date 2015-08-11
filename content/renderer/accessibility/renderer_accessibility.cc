@@ -508,6 +508,14 @@ void RendererAccessibility::OnSetTextSelection(
   }
 
   obj.setSelectedTextRange(start_offset, end_offset);
+  WebAXObject root = document.accessibilityObject();
+  if (root.isDetached()) {
+#ifndef NDEBUG
+    LOG(WARNING) << "OnSetAccessibilityFocus but root is invalid";
+#endif
+    return;
+  }
+  HandleAXEvent(root, ui::AX_EVENT_LAYOUT_COMPLETE);
 }
 
 void RendererAccessibility::OnSetValue(

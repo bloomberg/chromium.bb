@@ -532,9 +532,11 @@ var boolAttributes = [
     'updateLocationOnly'];
 
 var intAttributes = [
+    'anchorOffset',
     'backgroundColor',
     'color',
     'colorValue',
+    'focusOffset',
     'hierarchicalLevel',
     'invalidState',
     'posInSet',
@@ -561,6 +563,8 @@ var intAttributes = [
 
 var nodeRefAttributes = [
     ['activedescendantId', 'activedescendant'],
+    ['anchorObjectId', 'anchorObject'],
+    ['focusObjectId', 'focusObject'],
     ['tableColumnHeaderId', 'tableColumnHeader'],
     ['tableHeaderId', 'tableHeader'],
     ['tableRowHeaderId', 'tableRowHeader'],
