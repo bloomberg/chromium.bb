@@ -39,8 +39,24 @@
 
 namespace blink {
 
+static double toTimeOrigin(LocalFrame* frame)
+{
+    if (!frame)
+        return 0.0;
+
+    Document* document = frame->document();
+    if (!document)
+        return 0.0;
+
+    DocumentLoader* loader = document->loader();
+    if (!loader)
+        return 0.0;
+
+    return loader->timing().referenceMonotonicTime();
+}
+
 Performance::Performance(LocalFrame* frame)
-    : PerformanceBase(frame && frame->host() ? frame->document()->loader()->timing().referenceMonotonicTime() : 0.0)
+    : PerformanceBase(toTimeOrigin(frame))
     , DOMWindowProperty(frame)
 {
 }
