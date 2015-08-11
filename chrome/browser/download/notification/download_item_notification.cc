@@ -293,13 +293,17 @@ void DownloadItemNotification::UpdateNotificationData(
     notification_->set_message(GetWarningText());
 
     // Show icon.
-    if (model.MightBeMalicious())
+    if (model.MightBeMalicious()) {
       SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_WARNING_BAD);
-    else
+      notification_->set_priority(message_center::DEFAULT_PRIORITY);
+    } else {
       SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_WARNING_UNWANTED);
+      notification_->set_priority(message_center::HIGH_PRIORITY);
+    }
   } else {
     notification_->set_title(GetTitle());
     notification_->set_message(model.GetStatusText());
+    notification_->set_priority(message_center::DEFAULT_PRIORITY);
 
     bool is_off_the_record = item_->GetBrowserContext() &&
                              item_->GetBrowserContext()->IsOffTheRecord();
