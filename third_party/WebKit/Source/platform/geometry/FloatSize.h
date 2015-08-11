@@ -29,6 +29,7 @@
 #define FloatSize_h
 
 #include "platform/geometry/IntPoint.h"
+#include "third_party/skia/include/core/SkSize.h"
 #include "wtf/MathExtras.h"
 
 #if OS(MACOSX)
@@ -49,6 +50,7 @@ public:
     FloatSize() : m_width(0), m_height(0) { }
     FloatSize(float width, float height) : m_width(width), m_height(height) { }
     FloatSize(const IntSize& size) : m_width(size.width()), m_height(size.height()) { }
+    FloatSize(const SkSize& size) : m_width(size.width()), m_height(size.height()) { }
     explicit FloatSize(const LayoutSize&);
 
     static FloatSize narrowPrecision(double width, double height);
@@ -126,6 +128,8 @@ public:
     operator NSSize() const;
 #endif
 #endif
+
+    operator SkSize() const { return SkSize::Make(m_width, m_height); }
 
 private:
     float m_width, m_height;

@@ -73,12 +73,6 @@ inline SkScalar WebCoreDoubleToSkScalar(double d)
     return SkDoubleToScalar(std::isfinite(d) ? d : 0);
 }
 
-inline SkRect WebCoreFloatRectToSKRect(const FloatRect& rect)
-{
-    return SkRect::MakeLTRB(SkFloatToScalar(rect.x()), SkFloatToScalar(rect.y()),
-        SkFloatToScalar(rect.maxX()), SkFloatToScalar(rect.maxY()));
-}
-
 inline bool WebCoreFloatNearlyEqual(float a, float b)
 {
     return SkScalarNearlyEqual(WebCoreFloatToSkScalar(a), WebCoreFloatToSkScalar(b));

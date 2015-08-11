@@ -19,7 +19,7 @@ void BeginCompositingDisplayItem::replay(GraphicsContext& context)
 
 void BeginCompositingDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
-    SkRect bounds = WebCoreFloatRectToSKRect(m_bounds);
+    SkRect bounds = m_bounds;
     list->appendCompositingItem(m_opacity, m_xferMode, m_hasBounds ? &bounds : nullptr, GraphicsContext::WebCoreColorFilterToSkiaColorFilter(m_colorFilter).get());
 }
 

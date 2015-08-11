@@ -1349,7 +1349,7 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
         image->draw(c, imagePaint, dstRect, srcRect, DoNotRespectImageOrientation, Image::DoNotClampImageToSourceRect);
     } else {
         c->save();
-        c->clipRect(WebCoreFloatRectToSKRect(dstRect));
+        c->clipRect(dstRect);
         c->translate(dstRect.x(), dstRect.y());
         c->scale(dstRect.width() / srcRect.width(), dstRect.height() / srcRect.height());
         c->translate(-srcRect.x(), -srcRect.y());
@@ -1533,7 +1533,7 @@ bool CanvasRenderingContext2D::computeDirtyRect(const FloatRect& localRect, cons
     }
 
     SkIRect canvasIRect;
-    WebCoreFloatRectToSKRect(canvasRect).roundOut(&canvasIRect);
+    static_cast<SkRect>(canvasRect).roundOut(&canvasIRect);
     if (!canvasIRect.intersect(transformedClipBounds))
         return false;
 

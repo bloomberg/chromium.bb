@@ -29,6 +29,7 @@
 
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntPoint.h"
+#include "third_party/skia/include/core/SkPoint.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
 
@@ -39,8 +40,6 @@ typedef struct CGPoint CGPoint;
 #import <Foundation/Foundation.h>
 #endif
 #endif
-
-struct SkPoint;
 
 namespace blink {
 
@@ -149,7 +148,10 @@ public:
 #endif
 #endif
 
+    // Can we remove this one?
     SkPoint data() const;
+
+    operator SkPoint() const { return SkPoint::Make(m_x, m_y); }
 
 private:
     float m_x, m_y;
