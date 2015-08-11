@@ -246,7 +246,8 @@
       // TODO(joaodasilva): remove these two once we have the new policy to
       // grant auto approval by ID. http://crbug.com/399392
       "A8208CCC87F8261AFAEB6B85D5E8D47372DDEA6B",
-      "A4577D8C2AF4CF26F40CBCA83FFA4251D6F6C8F8"
+      "A4577D8C2AF4CF26F40CBCA83FFA4251D6F6C8F8",
+      "EFCF5358672FEE04789FD2EC3638A67ADEDB6C8C"  // http://crbug.com/514696
     ]
   },
   "offline_enabled": {

@@ -159,7 +159,8 @@
       // so are safe, and can be removed when the whitelist on that
       // capability is lifted. See crbug.com/436489 for context.
       "A4577D8C2AF4CF26F40CBCA83FFA4251D6F6C8F8",  // http://crbug.com/497301
-      "A8208CCC87F8261AFAEB6B85D5E8D47372DDEA6B"   // http://crbug.com/497301
+      "A8208CCC87F8261AFAEB6B85D5E8D47372DDEA6B",  // http://crbug.com/497301
+      "EFCF5358672FEE04789FD2EC3638A67ADEDB6C8C"   // http://crbug.com/514696
     ],
     "contexts": ["blessed_extension"]
   }],
