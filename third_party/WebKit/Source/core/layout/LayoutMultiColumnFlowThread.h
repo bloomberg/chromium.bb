@@ -224,6 +224,10 @@ private:
     bool m_isBeingEvacuated;
 };
 
+// Cannot use DEFINE_LAYOUT_OBJECT_TYPE_CASTS here, because isMultiColumnFlowThread() is defined in
+// LayoutFlowThread, not in LayoutObject.
+DEFINE_TYPE_CASTS(LayoutMultiColumnFlowThread, LayoutFlowThread, object, object->isLayoutMultiColumnFlowThread(), object.isLayoutMultiColumnFlowThread());
+
 } // namespace blink
 
 #endif // LayoutMultiColumnFlowThread_h

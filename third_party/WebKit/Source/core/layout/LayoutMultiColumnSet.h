@@ -80,11 +80,7 @@ public:
     LayoutFlowThread* flowThread() const { return m_flowThread; }
 
     LayoutBlockFlow* multiColumnBlockFlow() const { return toLayoutBlockFlow(parent()); }
-    LayoutMultiColumnFlowThread* multiColumnFlowThread() const
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!flowThread() || flowThread()->isLayoutMultiColumnFlowThread());
-        return static_cast<LayoutMultiColumnFlowThread*>(flowThread());
-    }
+    LayoutMultiColumnFlowThread* multiColumnFlowThread() const { return toLayoutMultiColumnFlowThread(flowThread()); }
 
     LayoutMultiColumnSet* nextSiblingMultiColumnSet() const;
     LayoutMultiColumnSet* previousSiblingMultiColumnSet() const;
