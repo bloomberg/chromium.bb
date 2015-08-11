@@ -6,41 +6,28 @@
 
 #include <map>
 
+#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram.h"
-#include "base/metrics/histogram_samples.h"
-#include "base/metrics/statistics_recorder.h"
+#include "base/metrics/histogram_base.h"
+#include "base/test/histogram_tester.h"
 #include "base/time/time.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace {
 
+using ::testing::ContainerEq;
+using ::testing::ElementsAre;
+using base::Bucket;
+
 const GURL kURL("http://url.com");
-const base::TimeDelta kLatency = base::TimeDelta::FromMilliseconds(500);
+const base::TimeDelta kLatency = base::TimeDelta::FromMilliseconds(5);
 const base::Time kFetchTime = base::Time() + base::TimeDelta::FromHours(1000);
 const base::Time kOldFetchTime = kFetchTime - base::TimeDelta::FromDays(1);
 const int64 kSize = 5000;
-
-const char* kHistogramNames[] = {"Precache.DownloadedPrecacheMotivated",
-                                 "Precache.DownloadedNonPrecache",
-                                 "Precache.DownloadedNonPrecache.Cellular",
-                                 "Precache.Latency.Prefetch",
-                                 "Precache.Latency.NonPrefetch",
-                                 "Precache.Saved",
-                                 "Precache.Saved.Cellular"};
-
-scoped_ptr<base::HistogramSamples> GetHistogramSamples(
-    const char* histogram_name) {
-  base::HistogramBase* histogram =
-      base::StatisticsRecorder::FindHistogram(histogram_name);
-
-  EXPECT_NE(static_cast<base::HistogramBase*>(NULL), histogram);
-
-  return histogram->SnapshotSamples().Pass();
-}
 
 std::map<GURL, base::Time> BuildURLTableMap(const GURL& url,
                                             const base::Time& precache_time) {
@@ -60,31 +47,12 @@ class PrecacheDatabaseTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    base::StatisticsRecorder::Initialize();
     precache_database_ = new PrecacheDatabase();
 
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     base::FilePath db_path = scoped_temp_dir_.path().Append(
         base::FilePath(FILE_PATH_LITERAL("precache_database")));
     precache_database_->Init(db_path);
-
-    // Log a sample for each histogram, to ensure that they are all created.
-    // This has to be done here, and not in the for loop below, because of the
-    // way that UMA_HISTOGRAM_COUNTS uses static variables.
-    UMA_HISTOGRAM_COUNTS("Precache.DownloadedPrecacheMotivated", 0);
-    UMA_HISTOGRAM_COUNTS("Precache.DownloadedNonPrecache", 0);
-    UMA_HISTOGRAM_COUNTS("Precache.DownloadedNonPrecache.Cellular", 0);
-    UMA_HISTOGRAM_TIMES("Precache.Latency.Prefetch", base::TimeDelta());
-    UMA_HISTOGRAM_TIMES("Precache.Latency.NonPrefetch", base::TimeDelta());
-    UMA_HISTOGRAM_COUNTS("Precache.Saved", 0);
-    UMA_HISTOGRAM_COUNTS("Precache.Saved.Cellular", 0);
-
-    for (size_t i = 0; i < arraysize(kHistogramNames); i++) {
-      initial_histogram_samples_[i] =
-          GetHistogramSamples(kHistogramNames[i]).Pass();
-      initial_histogram_samples_map_[kHistogramNames[i]] =
-          initial_histogram_samples_[i].get();
-    }
   }
 
   std::map<GURL, base::Time> GetActualURLTableMap() {
@@ -98,29 +66,6 @@ class PrecacheDatabaseTest : public testing::Test {
 
   PrecacheURLTable* precache_url_table() {
     return &precache_database_->precache_url_table_;
-  }
-
-  scoped_ptr<base::HistogramSamples> GetHistogramSamplesDelta(
-      const char* histogram_name) {
-    scoped_ptr<base::HistogramSamples> delta_samples(
-        GetHistogramSamples(histogram_name));
-    delta_samples->Subtract(*initial_histogram_samples_map_[histogram_name]);
-
-    return delta_samples.Pass();
-  }
-
-  void ExpectNewSample(const char* histogram_name,
-                       base::HistogramBase::Sample sample) {
-    scoped_ptr<base::HistogramSamples> delta_samples(
-        GetHistogramSamplesDelta(histogram_name));
-    EXPECT_EQ(1, delta_samples->TotalCount()) << histogram_name;
-    EXPECT_EQ(1, delta_samples->GetCount(sample)) << histogram_name;
-  }
-
-  void ExpectNoNewSamples(const char* histogram_name) {
-    scoped_ptr<base::HistogramSamples> delta_samples(
-        GetHistogramSamplesDelta(histogram_name));
-    EXPECT_EQ(0, delta_samples->TotalCount()) << histogram_name;
   }
 
   // Convenience methods for recording different types of URL fetches. These
@@ -150,9 +95,19 @@ class PrecacheDatabaseTest : public testing::Test {
 
   scoped_refptr<PrecacheDatabase> precache_database_;
   base::ScopedTempDir scoped_temp_dir_;
-  scoped_ptr<base::HistogramSamples> initial_histogram_samples_
-      [arraysize(kHistogramNames)];
-  std::map<std::string, base::HistogramSamples*> initial_histogram_samples_map_;
+  base::HistogramTester histograms_;
+  base::HistogramTester::CountsMap expected_histogram_counts_;
+
+  void ExpectNewSample(const std::string& histogram_name,
+                       base::HistogramBase::Sample sample) {
+    histograms_.ExpectUniqueSample(histogram_name, sample, 1);
+    expected_histogram_counts_[histogram_name]++;
+  }
+
+  void ExpectNoOtherSamples() {
+    EXPECT_THAT(histograms_.GetTotalCountsForPrefix("Precache."),
+                ContainerEq(expected_histogram_counts_));
+  }
 };
 
 void PrecacheDatabaseTest::RecordPrecacheFromNetwork(
@@ -214,11 +169,8 @@ TEST_F(PrecacheDatabaseTest, PrecacheOverNetwork) {
   EXPECT_EQ(BuildURLTableMap(kURL, kFetchTime), GetActualURLTableMap());
 
   ExpectNewSample("Precache.DownloadedPrecacheMotivated", kSize);
-  ExpectNoNewSamples("Precache.DownloadedNonPrecache");
-  ExpectNoNewSamples("Precache.DownloadedNonPrecache.Cellular");
   ExpectNewSample("Precache.Latency.Prefetch", kLatency.InMilliseconds());
-  ExpectNoNewSamples("Precache.Saved");
-  ExpectNoNewSamples("Precache.Saved.Cellular");
+  ExpectNoOtherSamples();
 }
 
 TEST_F(PrecacheDatabaseTest, PrecacheFromCacheWithURLTableEntry) {
@@ -229,12 +181,8 @@ TEST_F(PrecacheDatabaseTest, PrecacheFromCacheWithURLTableEntry) {
   // timestamp.
   EXPECT_EQ(BuildURLTableMap(kURL, kFetchTime), GetActualURLTableMap());
 
-  ExpectNoNewSamples("Precache.DownloadedPrecacheMotivated");
-  ExpectNoNewSamples("Precache.DownloadedNonPrecache");
-  ExpectNoNewSamples("Precache.DownloadedNonPrecache.Cellular");
   ExpectNewSample("Precache.Latency.Prefetch", 0);
-  ExpectNoNewSamples("Precache.Saved");
-  ExpectNoNewSamples("Precache.Saved.Cellular");
+  ExpectNoOtherSamples();
 }
 
 TEST_F(PrecacheDatabaseTest, PrecacheFromCacheWithoutURLTableEntry) {
@@ -242,12 +190,8 @@ TEST_F(PrecacheDatabaseTest, PrecacheFromCacheWithoutURLTableEntry) {
 
   EXPECT_TRUE(GetActualURLTableMap().empty());
 
-  ExpectNoNewSamples("Precache.DownloadedPrecacheMotivated");
-  ExpectNoNewSamples("Precache.DownloadedNonPrecache");
-  ExpectNoNewSamples("Precache.DownloadedNonPrecache.Cellular");
   ExpectNewSample("Precache.Latency.Prefetch", 0);
-  ExpectNoNewSamples("Precache.Saved");
-  ExpectNoNewSamples("Precache.Saved.Cellular");
+  ExpectNoOtherSamples();
 }
 
 TEST_F(PrecacheDatabaseTest, FetchOverNetwork_NonCellular) {
@@ -255,12 +199,9 @@ TEST_F(PrecacheDatabaseTest, FetchOverNetwork_NonCellular) {
 
   EXPECT_TRUE(GetActualURLTableMap().empty());
 
-  ExpectNoNewSamples("Precache.DownloadedPrecacheMotivated");
   ExpectNewSample("Precache.DownloadedNonPrecache", kSize);
-  ExpectNoNewSamples("Precache.DownloadedNonPrecache.Cellular");
   ExpectNewSample("Precache.Latency.NonPrefetch", kLatency.InMilliseconds());
-  ExpectNoNewSamples("Precache.Saved");
-  ExpectNoNewSamples("Precache.Saved.Cellular");
+  ExpectNoOtherSamples();
 }
 
 TEST_F(PrecacheDatabaseTest, FetchOverNetwork_Cellular) {
@@ -268,12 +209,10 @@ TEST_F(PrecacheDatabaseTest, FetchOverNetwork_Cellular) {
 
   EXPECT_TRUE(GetActualURLTableMap().empty());
 
-  ExpectNoNewSamples("Precache.DownloadedPrecacheMotivated");
   ExpectNewSample("Precache.DownloadedNonPrecache", kSize);
   ExpectNewSample("Precache.DownloadedNonPrecache.Cellular", kSize);
   ExpectNewSample("Precache.Latency.NonPrefetch", kLatency.InMilliseconds());
-  ExpectNoNewSamples("Precache.Saved");
-  ExpectNoNewSamples("Precache.Saved.Cellular");
+  ExpectNoOtherSamples();
 }
 
 TEST_F(PrecacheDatabaseTest, FetchOverNetworkWithURLTableEntry) {
@@ -283,12 +222,9 @@ TEST_F(PrecacheDatabaseTest, FetchOverNetworkWithURLTableEntry) {
   // The URL table entry should have been deleted.
   EXPECT_TRUE(GetActualURLTableMap().empty());
 
-  ExpectNoNewSamples("Precache.DownloadedPrecacheMotivated");
   ExpectNewSample("Precache.DownloadedNonPrecache", kSize);
-  ExpectNoNewSamples("Precache.DownloadedNonPrecache.Cellular");
   ExpectNewSample("Precache.Latency.NonPrefetch", kLatency.InMilliseconds());
-  ExpectNoNewSamples("Precache.Saved");
-  ExpectNoNewSamples("Precache.Saved.Cellular");
+  ExpectNoOtherSamples();
 }
 
 TEST_F(PrecacheDatabaseTest, FetchFromCacheWithURLTableEntry_NonCellular) {
@@ -298,12 +234,9 @@ TEST_F(PrecacheDatabaseTest, FetchFromCacheWithURLTableEntry_NonCellular) {
   // The URL table entry should have been deleted.
   EXPECT_TRUE(GetActualURLTableMap().empty());
 
-  ExpectNoNewSamples("Precache.DownloadedPrecacheMotivated");
-  ExpectNoNewSamples("Precache.DownloadedNonPrecache");
-  ExpectNoNewSamples("Precache.DownloadedNonPrecache.Cellular");
   ExpectNewSample("Precache.Latency.NonPrefetch", 0);
   ExpectNewSample("Precache.Saved", kSize);
-  ExpectNoNewSamples("Precache.Saved.Cellular");
+  ExpectNoOtherSamples();
 }
 
 TEST_F(PrecacheDatabaseTest, FetchFromCacheWithURLTableEntry_Cellular) {
@@ -313,12 +246,10 @@ TEST_F(PrecacheDatabaseTest, FetchFromCacheWithURLTableEntry_Cellular) {
   // The URL table entry should have been deleted.
   EXPECT_TRUE(GetActualURLTableMap().empty());
 
-  ExpectNoNewSamples("Precache.DownloadedPrecacheMotivated");
-  ExpectNoNewSamples("Precache.DownloadedNonPrecache");
-  ExpectNoNewSamples("Precache.DownloadedNonPrecache.Cellular");
   ExpectNewSample("Precache.Latency.NonPrefetch", 0);
   ExpectNewSample("Precache.Saved", kSize);
   ExpectNewSample("Precache.Saved.Cellular", kSize);
+  ExpectNoOtherSamples();
 }
 
 TEST_F(PrecacheDatabaseTest, FetchFromCacheWithoutURLTableEntry) {
@@ -326,12 +257,8 @@ TEST_F(PrecacheDatabaseTest, FetchFromCacheWithoutURLTableEntry) {
 
   EXPECT_TRUE(GetActualURLTableMap().empty());
 
-  ExpectNoNewSamples("Precache.DownloadedPrecacheMotivated");
-  ExpectNoNewSamples("Precache.DownloadedNonPrecache");
-  ExpectNoNewSamples("Precache.DownloadedNonPrecache.Cellular");
   ExpectNewSample("Precache.Latency.NonPrefetch", 0);
-  ExpectNoNewSamples("Precache.Saved");
-  ExpectNoNewSamples("Precache.Saved.Cellular");
+  ExpectNoOtherSamples();
 }
 
 TEST_F(PrecacheDatabaseTest, DeleteExpiredPrecacheHistory) {
@@ -350,15 +277,15 @@ TEST_F(PrecacheDatabaseTest, DeleteExpiredPrecacheHistory) {
 
 TEST_F(PrecacheDatabaseTest, SampleInteraction) {
   const GURL kURL1("http://url1.com");
-  const int64 kSize1 = 1000;
+  const int64 kSize1 = 1;
   const GURL kURL2("http://url2.com");
-  const int64 kSize2 = 2000;
+  const int64 kSize2 = 2;
   const GURL kURL3("http://url3.com");
-  const int64 kSize3 = 3000;
+  const int64 kSize3 = 3;
   const GURL kURL4("http://url4.com");
-  const int64 kSize4 = 4000;
+  const int64 kSize4 = 4;
   const GURL kURL5("http://url5.com");
-  const int64 kSize5 = 5000;
+  const int64 kSize5 = 5;
 
   RecordPrecacheFromNetwork(kURL1, kLatency, kFetchTime, kSize1);
   RecordPrecacheFromNetwork(kURL2, kLatency, kFetchTime, kSize2);
@@ -381,38 +308,28 @@ TEST_F(PrecacheDatabaseTest, SampleInteraction) {
   RecordFetchFromCache(kURL3, kFetchTime, kSize3);
   RecordFetchFromCache(kURL5, kFetchTime, kSize5);
 
-  scoped_ptr<base::HistogramSamples> downloaded_precache_motivated_bytes(
-      GetHistogramSamplesDelta("Precache.DownloadedPrecacheMotivated"));
-  EXPECT_EQ(5, downloaded_precache_motivated_bytes->TotalCount());
-  EXPECT_EQ(1, downloaded_precache_motivated_bytes->GetCount(kSize1));
-  EXPECT_EQ(2, downloaded_precache_motivated_bytes->GetCount(kSize2));
-  EXPECT_EQ(1, downloaded_precache_motivated_bytes->GetCount(kSize3));
-  EXPECT_EQ(1, downloaded_precache_motivated_bytes->GetCount(kSize4));
+  EXPECT_THAT(histograms_.GetAllSamples("Precache.DownloadedPrecacheMotivated"),
+              ElementsAre(Bucket(kSize1, 1), Bucket(kSize2, 2),
+                          Bucket(kSize3, 1), Bucket(kSize4, 1)));
 
-  scoped_ptr<base::HistogramSamples> downloaded_non_precache_bytes(
-      GetHistogramSamplesDelta("Precache.DownloadedNonPrecache"));
-  EXPECT_EQ(3, downloaded_non_precache_bytes->TotalCount());
-  EXPECT_EQ(2, downloaded_non_precache_bytes->GetCount(kSize2));
-  EXPECT_EQ(1, downloaded_non_precache_bytes->GetCount(kSize5));
+  EXPECT_THAT(histograms_.GetAllSamples("Precache.DownloadedNonPrecache"),
+              ElementsAre(Bucket(kSize2, 2), Bucket(kSize5, 1)));
 
-  scoped_ptr<base::HistogramSamples> downloaded_non_precache_bytes_cellular(
-      GetHistogramSamplesDelta("Precache.DownloadedNonPrecache.Cellular"));
-  EXPECT_EQ(2, downloaded_non_precache_bytes_cellular->TotalCount());
-  EXPECT_EQ(1, downloaded_non_precache_bytes_cellular->GetCount(kSize2));
-  EXPECT_EQ(1, downloaded_non_precache_bytes_cellular->GetCount(kSize5));
+  EXPECT_THAT(
+      histograms_.GetAllSamples("Precache.DownloadedNonPrecache.Cellular"),
+      ElementsAre(Bucket(kSize2, 1), Bucket(kSize5, 1)));
 
-  // TODO(twifkak): Add Latency checks.
+  EXPECT_THAT(histograms_.GetAllSamples("Precache.Latency.Prefetch"),
+              ElementsAre(Bucket(0, 3), Bucket(kLatency.InMilliseconds(), 5)));
 
-  scoped_ptr<base::HistogramSamples> saved_bytes(
-      GetHistogramSamplesDelta("Precache.Saved"));
-  EXPECT_EQ(2, saved_bytes->TotalCount());
-  EXPECT_EQ(1, saved_bytes->GetCount(kSize1));
-  EXPECT_EQ(1, saved_bytes->GetCount(kSize3));
+  EXPECT_THAT(histograms_.GetAllSamples("Precache.Latency.NonPrefetch"),
+              ElementsAre(Bucket(0, 6), Bucket(kLatency.InMilliseconds(), 3)));
 
-  scoped_ptr<base::HistogramSamples> saved_bytes_cellular(
-      GetHistogramSamplesDelta("Precache.Saved.Cellular"));
-  EXPECT_EQ(1, saved_bytes_cellular->TotalCount());
-  EXPECT_EQ(1, saved_bytes_cellular->GetCount(kSize1));
+  EXPECT_THAT(histograms_.GetAllSamples("Precache.Saved"),
+              ElementsAre(Bucket(kSize1, 1), Bucket(kSize3, 1)));
+
+  EXPECT_THAT(histograms_.GetAllSamples("Precache.Saved.Cellular"),
+              ElementsAre(Bucket(kSize1, 1)));
 }
 
 }  // namespace
