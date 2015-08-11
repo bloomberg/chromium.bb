@@ -377,8 +377,6 @@ bool DisassemblerWin32X86::ParseAbs32Relocs() {
   if (!ParseRelocs(&abs32_locations_))
     return false;
 
-  std::sort(abs32_locations_.begin(), abs32_locations_.end());
-
 #if COURGETTE_HISTOGRAM_TARGETS
   for (size_t i = 0;  i < abs32_locations_.size(); ++i) {
     RVA rva = abs32_locations_[i];

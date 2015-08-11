@@ -5,6 +5,7 @@
 #include "courgette/disassembler_win32_x86.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
 #include "courgette/base_test_unittest.h"
 
 class DisassemblerWin32X86Test : public BaseTest {
@@ -41,6 +42,7 @@ void DisassemblerWin32X86Test::TestExe() const {
   std::vector<courgette::RVA> relocs;
   bool can_parse_relocs = disassembler->ParseRelocs(&relocs);
   EXPECT_TRUE(can_parse_relocs);
+  EXPECT_TRUE(base::STLIsSorted(relocs));
 
   const uint8* offset_p = disassembler->OffsetToPointer(0);
   EXPECT_EQ(reinterpret_cast<const void*>(file1.c_str()),
