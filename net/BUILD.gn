@@ -522,7 +522,6 @@ grit("net_resources") {
   outputs = [
     "grit/net_resources.h",
     "net_resources.pak",
-    "net_resources.rc",
   ]
 }
 
