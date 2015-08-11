@@ -22,7 +22,6 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
-#include "net/base/network_quality.h"
 #include "net/base/network_quality_estimator.h"
 #include "net/proxy/proxy_server.h"
 #include "net/url_request/url_fetcher.h"
@@ -414,22 +413,19 @@ bool DataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
 
   network_quality_last_updated_ = base::TimeTicks::Now();
 
-  net::NetworkQuality network_quality;
+  // Initialize to fastest RTT and fastest bandwidth.
+  base::TimeDelta rtt = base::TimeDelta();
+  int32_t kbps = INT32_MAX;
 
-  if (!network_quality_estimator->GetEstimate(&network_quality))
+  if (!network_quality_estimator->GetRTTEstimate(&rtt) ||
+      !network_quality_estimator->GetDownlinkThroughputKbpsEstimate(&kbps)) {
     return false;
+  }
 
   // Network is prohibitvely slow if either the downlink bandwidth is too low
   // or the RTT is too high.
-  if ((network_quality.downstream_throughput_kbps() > 0 &&
-       network_quality.downstream_throughput_kbps() <
-           auto_lofi_maximum_kbps_) ||
-      (network_quality.rtt() != base::TimeDelta::Max() &&
-       network_quality.rtt() > auto_lofi_minimum_rtt_)) {
-    network_prohibitively_slow_ = true;
-  } else {
-    network_prohibitively_slow_ = false;
-  }
+  network_prohibitively_slow_ =
+      kbps < auto_lofi_maximum_kbps_ || rtt > auto_lofi_minimum_rtt_;
   return network_prohibitively_slow_;
 }
 
