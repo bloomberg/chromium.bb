@@ -133,7 +133,6 @@
               '-lirt_browser',
               '-lpnacl_irt_shim_for_irt',
               '-lppapi_proxy_nacl',
-              '-lmojo_irt',
               '-lppapi_ipc_nacl',
               '-lppapi_shared_nacl',
               '-lgles2_implementation_nacl',
@@ -174,7 +173,6 @@
               ['target_arch=="ia32" or target_arch=="x64"', {
                 'extra_deps_newlib64': [
                   '>(tc_lib_dir_irt64)/libppapi_proxy_nacl.a',
-                  '>(tc_lib_dir_irt64)/libmojo_irt.a',
                   '>(tc_lib_dir_irt64)/libppapi_ipc_nacl.a',
                   '>(tc_lib_dir_irt64)/libppapi_shared_nacl.a',
                   '>(tc_lib_dir_irt64)/libgles2_implementation_nacl.a',
@@ -196,7 +194,6 @@
                 ],
                 'extra_deps_newlib32': [
                   '>(tc_lib_dir_irt32)/libppapi_proxy_nacl.a',
-                  '>(tc_lib_dir_irt32)/libmojo_irt.a',
                   '>(tc_lib_dir_irt32)/libppapi_ipc_nacl.a',
                   '>(tc_lib_dir_irt32)/libppapi_shared_nacl.a',
                   '>(tc_lib_dir_irt32)/libgles2_implementation_nacl.a',
@@ -220,7 +217,6 @@
               ['target_arch=="arm"', {
                 'extra_deps_arm': [
                   '>(tc_lib_dir_irt_arm)/libppapi_proxy_nacl.a',
-                  '>(tc_lib_dir_irt_arm)/libmojo_irt.a',
                   '>(tc_lib_dir_irt_arm)/libppapi_ipc_nacl.a',
                   '>(tc_lib_dir_irt_arm)/libppapi_shared_nacl.a',
                   '>(tc_lib_dir_irt_arm)/libgles2_implementation_nacl.a',
@@ -244,7 +240,6 @@
               ['target_arch=="mipsel"', {
                 'extra_deps_mips': [
                   '>(tc_lib_dir_irt_mips)/libppapi_proxy_nacl.a',
-                  '>(tc_lib_dir_irt_mips)/libmojo_irt.a',
                   '>(tc_lib_dir_irt_mips)/libppapi_ipc_nacl.a',
                   '>(tc_lib_dir_irt_mips)/libppapi_shared_nacl.a',
                   '>(tc_lib_dir_irt_mips)/libgles2_implementation_nacl.a',
@@ -282,7 +277,6 @@
             '../../ipc/ipc_nacl.gyp:ipc_nacl',
             '../../base/base_nacl.gyp:base_nacl',
             '../../media/media_nacl.gyp:shared_memory_support_nacl',
-            '../../mojo/mojo_nacl_untrusted.gyp:libmojo_irt',
             '../../native_client/src/untrusted/irt/irt.gyp:irt_browser_lib',
             '../../native_client/src/shared/srpc/srpc.gyp:srpc_lib',
             '../../native_client/src/shared/platform/platform.gyp:platform_lib',

@@ -12,9 +12,6 @@
 # type 'ninja gyp_all' and then 'ninja all', the second build should do
 # nothing. 'gyp_all' should just depend on the other four targets.
 #
-# 'gyp_only' lists any targets that are not meant to be ported over to the GN
-# build.
-#
 # 'gyp_remaining' lists all of the targets that still need to be converted,
 # i.e., all of the other (non-empty) targets that a GYP build will build.
 #
@@ -28,7 +25,6 @@
       'type': 'none',
       'dependencies': [
         'both_gn_and_gyp',
-        'gyp_only',
         'gyp_remaining',
       ]
     },
@@ -486,21 +482,6 @@
             '../third_party/pdfium/samples/samples.gyp:pdfium_diff',
             '../win8/win8.gyp:metro_viewer',
           ],
-        }],
-      ],
-    },
-    {
-      'target_name': 'gyp_only',
-      'type': 'none',
-      'conditions': [
-        ['OS=="linux" or OS=="win"', {
-          'conditions': [
-            ['disable_nacl==0 and disable_nacl_untrusted==0', {
-              'dependencies': [
-                '../mojo/mojo_nacl.gyp:monacl_shell',  # This should not be built in chromium.
-              ]
-            }],
-          ]
         }],
       ],
     },

@@ -1,5 +1,0 @@
-include_rules = [
-  "+native_client/src/public",
-  "+native_client/src/trusted/desc",
-  "+native_client/src/trusted/service_runtime",
-]

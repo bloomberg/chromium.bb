@@ -1,9 +1,6 @@
 include_rules = [
   "+components/tracing",
 
-  # Required for Mojo IRT support.
-  "+mojo/nacl/mojo_irt.h",
-
   # We don't want the proxy to depend on the C++ layer, which is appropriate
   # for plugins only.
   "-ppapi/cpp",
