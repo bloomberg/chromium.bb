@@ -391,8 +391,13 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::previous(PositionMoveTy
         }
     }
 
-    if (ContainerNode* parent = Strategy::parent(*node))
-        return createLegacyEditingPosition(parent, node->nodeIndex());
+    if (ContainerNode* parent = Strategy::parent(*node)) {
+        if (editingIgnoresContent(parent))
+            return beforeNode(parent);
+        // TODO(yosin) We should use |Strategy::index(Node&)| instead of
+        // |Node::nodeIndex()|.
+        return PositionAlgorithm<Strategy>(parent, node->nodeIndex());
+    }
     return PositionAlgorithm<Strategy>(*this);
 }
 
