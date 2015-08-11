@@ -13,8 +13,7 @@ namespace blink {
 
 class PLATFORM_EXPORT BeginFixedPositionContainerDisplayItem : public PairedBeginDisplayItem {
 public:
-    BeginFixedPositionContainerDisplayItem(const DisplayItemClientWrapper& client)
-        : PairedBeginDisplayItem(client, BeginFixedPositionContainer, sizeof(*this)) { }
+    BeginFixedPositionContainerDisplayItem(const DisplayItemClientWrapper& client) : PairedBeginDisplayItem(client, BeginFixedPositionContainer) { }
 
     void replay(GraphicsContext&) final { }
     void appendToWebDisplayItemList(WebDisplayItemList*) const final;
@@ -22,8 +21,7 @@ public:
 
 class PLATFORM_EXPORT EndFixedPositionContainerDisplayItem : public PairedEndDisplayItem {
 public:
-    EndFixedPositionContainerDisplayItem(const DisplayItemClientWrapper& client)
-        : PairedEndDisplayItem(client, EndFixedPositionContainer, sizeof(*this)) { }
+    EndFixedPositionContainerDisplayItem(const DisplayItemClientWrapper& client) : PairedEndDisplayItem(client, EndFixedPositionContainer) { }
 
     void replay(GraphicsContext&) final { }
     void appendToWebDisplayItemList(WebDisplayItemList*) const final;

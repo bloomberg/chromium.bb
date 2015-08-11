@@ -75,9 +75,9 @@ TEST_F(LayerClipRecorderTest, Single)
     drawRectInClip(context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().commitNewDisplayItems();
     EXPECT_EQ((size_t)3, rootDisplayItemList().displayItems().size());
-    EXPECT_TRUE(DisplayItem::isClipType(rootDisplayItemList().displayItems()[0].type()));
-    EXPECT_TRUE(DisplayItem::isDrawingType(rootDisplayItemList().displayItems()[1].type()));
-    EXPECT_TRUE(DisplayItem::isEndClipType(rootDisplayItemList().displayItems()[2].type()));
+    EXPECT_TRUE(DisplayItem::isClipType(rootDisplayItemList().displayItems().elementAt(0)->type()));
+    EXPECT_TRUE(DisplayItem::isDrawingType(rootDisplayItemList().displayItems().elementAt(1)->type()));
+    EXPECT_TRUE(DisplayItem::isEndClipType(rootDisplayItemList().displayItems().elementAt(2)->type()));
 }
 
 TEST_F(LayerClipRecorderTest, Empty)

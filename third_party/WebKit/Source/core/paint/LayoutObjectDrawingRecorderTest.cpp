@@ -86,7 +86,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, Nothing)
     drawNothing(context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().commitNewDisplayItems();
     EXPECT_EQ((size_t)1, rootDisplayItemList().displayItems().size());
-    const auto& item = rootDisplayItemList().displayItems()[0];
+    const auto& item = *rootDisplayItemList().displayItems().elementAt(0);
     ASSERT_TRUE(isDrawing(item));
     EXPECT_FALSE(static_cast<const DrawingDisplayItem&>(item).picture());
 }
@@ -98,7 +98,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, Rect)
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().commitNewDisplayItems();
     EXPECT_EQ((size_t)1, rootDisplayItemList().displayItems().size());
-    EXPECT_TRUE(isDrawing(rootDisplayItemList().displayItems()[0]));
+    EXPECT_TRUE(isDrawing(*rootDisplayItemList().displayItems().elementAt(0)));
 }
 
 TEST_F(LayoutObjectDrawingRecorderTest, Cached)
@@ -109,18 +109,18 @@ TEST_F(LayoutObjectDrawingRecorderTest, Cached)
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().commitNewDisplayItems();
     EXPECT_EQ((size_t)2, rootDisplayItemList().displayItems().size());
-    EXPECT_TRUE(isDrawing(rootDisplayItemList().displayItems()[0]));
-    EXPECT_TRUE(isDrawing(rootDisplayItemList().displayItems()[1]));
+    EXPECT_TRUE(isDrawing(*rootDisplayItemList().displayItems().elementAt(0)));
+    EXPECT_TRUE(isDrawing(*rootDisplayItemList().displayItems().elementAt(1)));
 
     drawNothing(context, layoutView(), PaintPhaseBlockBackground, bound);
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
     EXPECT_EQ((size_t)2, newDisplayItemsBeforeUpdate().size());
-    EXPECT_TRUE(isCached(newDisplayItemsBeforeUpdate()[0]));
-    EXPECT_TRUE(isCached(newDisplayItemsBeforeUpdate()[1]));
+    EXPECT_TRUE(isCached(*newDisplayItemsBeforeUpdate().elementAt(0)));
+    EXPECT_TRUE(isCached(*newDisplayItemsBeforeUpdate().elementAt(1)));
     rootDisplayItemList().commitNewDisplayItems();
     EXPECT_EQ((size_t)2, rootDisplayItemList().displayItems().size());
-    EXPECT_TRUE(isDrawing(rootDisplayItemList().displayItems()[0]));
-    EXPECT_TRUE(isDrawing(rootDisplayItemList().displayItems()[1]));
+    EXPECT_TRUE(isDrawing(*rootDisplayItemList().displayItems().elementAt(0)));
+    EXPECT_TRUE(isDrawing(*rootDisplayItemList().displayItems().elementAt(1)));
 }
 
 } // namespace

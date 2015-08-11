@@ -16,7 +16,7 @@ namespace blink {
 class PLATFORM_EXPORT BeginClipPathDisplayItem : public PairedBeginDisplayItem {
 public:
     BeginClipPathDisplayItem(const DisplayItemClientWrapper& client, const Path& clipPath)
-        : PairedBeginDisplayItem(client, BeginClipPath, sizeof(*this))
+        : PairedBeginDisplayItem(client, BeginClipPath)
         , m_clipPath(clipPath.skPath()) { }
 
     void replay(GraphicsContext&) override;
@@ -32,7 +32,7 @@ private:
 class PLATFORM_EXPORT EndClipPathDisplayItem : public PairedEndDisplayItem {
 public:
     EndClipPathDisplayItem(const DisplayItemClientWrapper& client)
-        : PairedEndDisplayItem(client, EndClipPath, sizeof(*this)) { }
+        : PairedEndDisplayItem(client, EndClipPath) { }
 
     void replay(GraphicsContext&) override;
     void appendToWebDisplayItemList(WebDisplayItemList*) const override;

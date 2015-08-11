@@ -17,7 +17,7 @@ class RoundedRect;
 class PLATFORM_EXPORT FloatClipDisplayItem : public PairedBeginDisplayItem {
 public:
     FloatClipDisplayItem(const DisplayItemClientWrapper& client, Type type, const FloatRect& clipRect)
-        : PairedBeginDisplayItem(client, type, sizeof(*this))
+        : PairedBeginDisplayItem(client, type)
         , m_clipRect(clipRect)
     {
         ASSERT(isFloatClipType(type));
@@ -37,7 +37,7 @@ private:
 class PLATFORM_EXPORT EndFloatClipDisplayItem : public PairedEndDisplayItem {
 public:
     EndFloatClipDisplayItem(const DisplayItemClientWrapper& client, Type type)
-        : PairedEndDisplayItem(client, type, sizeof(*this))
+        : PairedEndDisplayItem(client, type)
     {
         ASSERT(isEndFloatClipType(type));
     }

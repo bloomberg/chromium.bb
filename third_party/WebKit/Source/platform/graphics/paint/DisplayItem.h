@@ -6,7 +6,7 @@
 #define DisplayItem_h
 
 #include "platform/PlatformExport.h"
-#include "platform/graphics/ContiguousContainer.h"
+#include "platform/graphics/ListContainer.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
@@ -178,22 +178,16 @@ public:
         TypeLast = UninitializedType
     };
 
-    DisplayItem(const DisplayItemClientWrapper& client, Type type, size_t derivedSize)
+    DisplayItem(const DisplayItemClientWrapper& client, Type type)
         : m_client(client.displayItemClient())
         , m_scope(0)
         , m_type(type)
-        , m_derivedSize(derivedSize)
         , m_skippedCache(false)
         , m_ignoredFromList(false)
 #ifndef NDEBUG
         , m_clientDebugString(client.debugName())
 #endif
-    {
-        // derivedSize must fit in m_derivedSize.
-        // If it doesn't, enlarge m_derivedSize and fix this assert.
-        ASSERT_WITH_SECURITY_IMPLICATION(derivedSize < (1 << 8));
-        ASSERT_WITH_SECURITY_IMPLICATION(derivedSize >= sizeof(*this));
-    }
+    { }
 
     // Ids are for matching new DisplayItems with existing DisplayItems.
     struct Id {
@@ -232,12 +226,6 @@ public:
     Type type() const { return m_type; }
 
     void setScope(unsigned scope) { m_scope = scope; }
-
-    // Size of this object in memory, used to move it with memcpy.
-    // This is not sizeof(*this), because it needs to account for the size of
-    // the derived class (i.e. runtime type). Derived classes are expected to
-    // supply this to the DisplayItem constructor.
-    size_t derivedSize() const { return m_derivedSize; }
 
     // For DisplayItemList only. Painters should use DisplayItemCacheSkipper instead.
     void setSkippedCache() { m_skippedCache = true; }
@@ -325,16 +313,13 @@ public:
 #endif
 
 private:
-    // The default DisplayItem constructor is only used by
-    // ContiguousContainer::appendByMoving where an invalid DisplaItem is
-    // constructed at the source location.
-    template <typename T, unsigned alignment> friend class ContiguousContainer;
-
+    // The default DisplayItem constructor is only used by ListContainer::appendByMoving
+    // where an invalid DisplaItem is constructed at the source location.
+    friend DisplayItem* ListContainer<DisplayItem>::appendByMoving<DisplayItem>(DisplayItem*);
     DisplayItem()
         : m_client(nullptr)
         , m_scope(0)
         , m_type(UninitializedType)
-        , m_derivedSize(sizeof(*this))
         , m_skippedCache(false)
         , m_ignoredFromList(true)
 #ifndef NDEBUG
@@ -346,7 +331,6 @@ private:
     unsigned m_scope;
     static_assert(TypeLast < (1 << 16), "DisplayItem::Type should fit in 16 bits");
     const Type m_type : 16;
-    unsigned m_derivedSize : 8; // size of the actual derived class
     unsigned m_skippedCache : 1;
     unsigned m_ignoredFromList : 1;
 
@@ -357,7 +341,7 @@ private:
 
 class PLATFORM_EXPORT PairedBeginDisplayItem : public DisplayItem {
 protected:
-    PairedBeginDisplayItem(const DisplayItemClientWrapper& client, Type type, size_t derivedSize) : DisplayItem(client, type, derivedSize) { }
+    PairedBeginDisplayItem(const DisplayItemClientWrapper& client, Type type) : DisplayItem(client, type) { }
 
 private:
     bool isBegin() const final { return true; }
@@ -365,7 +349,7 @@ private:
 
 class PLATFORM_EXPORT PairedEndDisplayItem : public DisplayItem {
 protected:
-    PairedEndDisplayItem(const DisplayItemClientWrapper& client, Type type, size_t derivedSize) : DisplayItem(client, type, derivedSize) { }
+    PairedEndDisplayItem(const DisplayItemClientWrapper& client, Type type) : DisplayItem(client, type) { }
 
 #if ENABLE(ASSERT)
     bool isEndAndPairedWith(DisplayItem::Type otherType) const override = 0;

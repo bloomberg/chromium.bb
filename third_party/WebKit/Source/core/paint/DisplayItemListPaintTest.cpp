@@ -57,7 +57,7 @@ private:
 
 class TestDisplayItem : public DisplayItem {
 public:
-    TestDisplayItem(const DisplayItemClientWrapper& client, Type type) : DisplayItem(client, type, sizeof(*this)) { }
+    TestDisplayItem(const DisplayItemClientWrapper& client, Type type) : DisplayItem(client, type) { }
 
     void replay(GraphicsContext&) final { ASSERT_NOT_REACHED(); }
     void appendToWebDisplayItemList(WebDisplayItemList*) const final { ASSERT_NOT_REACHED(); }
@@ -78,9 +78,9 @@ public:
             break; \
         const TestDisplayItem expected[] = { __VA_ARGS__ }; \
         for (size_t index = 0; index < std::min<size_t>(actual.size(), expectedSize); index++) { \
-            TRACE_DISPLAY_ITEMS(index, expected[index], actual[index]); \
-            EXPECT_EQ(expected[index].client(), actual[index].client()); \
-            EXPECT_EQ(expected[index].type(), actual[index].type()); \
+            TRACE_DISPLAY_ITEMS(index, expected[index], *actual.elementAt(index)); \
+            EXPECT_EQ(expected[index].client(), actual.elementAt(index)->client()); \
+            EXPECT_EQ(expected[index].type(), actual.elementAt(index)->type()); \
         } \
     } while (false);
 

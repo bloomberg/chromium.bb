@@ -6,10 +6,9 @@
 #define DisplayItemList_h
 
 #include "platform/PlatformExport.h"
-#include "platform/graphics/ContiguousContainer.h"
+#include "platform/graphics/ListContainer.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
-#include "wtf/Alignment.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Utility.h"
@@ -19,15 +18,10 @@ namespace blink {
 
 class GraphicsContext;
 
-// kDisplayItemAlignment must be a multiple of alignof(derived display item) for
-// each derived display item; the ideal value is the least common multiple.
-// Currently the limiting factor is TransformtionMatrix (in
-// BeginTransform3DDisplayItem), which requests 16-byte alignment.
-static const size_t kDisplayItemAlignment = WTF_ALIGN_OF(BeginTransform3DDisplayItem);
+using DisplayItems = ListContainer<DisplayItem>;
+
 static const size_t kInitialDisplayItemsCapacity = 64;
 static const size_t kMaximumDisplayItemSize = sizeof(BeginTransform3DDisplayItem);
-
-using DisplayItems = ContiguousContainer<DisplayItem, kDisplayItemAlignment>;
 
 class PLATFORM_EXPORT DisplayItemList {
     WTF_MAKE_NONCOPYABLE(DisplayItemList);
@@ -51,9 +45,9 @@ public:
         static_assert(sizeof(DisplayItemClass) <= kMaximumDisplayItemSize,
             "DisplayItem subclass is larger than kMaximumDisplayItemSize.");
 
-        DisplayItemClass& displayItem = m_newDisplayItems.allocateAndConstruct<DisplayItemClass>(WTF::forward<Args>(args)...);
-        processNewItem(&displayItem);
-        return displayItem;
+        DisplayItemClass* displayItem = m_newDisplayItems.allocateAndConstruct<DisplayItemClass>(WTF::forward<Args>(args)...);
+        processNewItem(displayItem);
+        return *displayItem;
     }
 
     // Scopes must be used to avoid duplicated display item ids when we paint some object
@@ -106,7 +100,7 @@ public:
 protected:
     DisplayItemList()
         : m_currentDisplayItems(kMaximumDisplayItemSize, 0)
-        , m_newDisplayItems(kMaximumDisplayItemSize, kInitialDisplayItemsCapacity * kMaximumDisplayItemSize)
+        , m_newDisplayItems(kMaximumDisplayItemSize, kInitialDisplayItemsCapacity)
         , m_validlyCachedClientsDirty(false)
         , m_constructionDisabled(false)
         , m_skippingCacheCount(0)
@@ -134,8 +128,8 @@ private:
 
     static size_t findMatchingItemFromIndex(const DisplayItem::Id&, const DisplayItemIndicesByClientMap&, const DisplayItems&);
     static void addItemToIndex(DisplayItemClient, DisplayItem::Type, size_t index, DisplayItemIndicesByClientMap&);
-    DisplayItems::iterator findOutOfOrderCachedItem(DisplayItems::iterator currentIt, const DisplayItem::Id&, DisplayItemIndicesByClientMap&);
-    DisplayItems::iterator findOutOfOrderCachedItemForward(DisplayItems::iterator currentIt, const DisplayItem::Id&, DisplayItemIndicesByClientMap&);
+    DisplayItems::Iterator findOutOfOrderCachedItem(DisplayItems::Iterator currentIt, const DisplayItem::Id&, DisplayItemIndicesByClientMap&);
+    DisplayItems::Iterator findOutOfOrderCachedItemForward(DisplayItems::Iterator currentIt, const DisplayItem::Id&, DisplayItemIndicesByClientMap&);
 
 #if ENABLE(ASSERT)
     // The following two methods are for checking under-invalidations
