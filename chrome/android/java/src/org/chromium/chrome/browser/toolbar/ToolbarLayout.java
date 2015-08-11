@@ -226,19 +226,18 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     /**
      * Shows the content description toast for items on the toolbar.
      * @param view The view to anchor the toast.
-     * @param stringResId The resource id for the string in the toast.
+     * @param description The string shown in the toast.
      * @return Whether a toast has been shown successfully.
      */
-    protected boolean showAccessibilityToast(View view, int stringResId) {
-        if (stringResId == 0) return false;
+    protected boolean showAccessibilityToast(View view, CharSequence description) {
+        if (description == null) return false;
 
         final int screenWidth = getResources().getDisplayMetrics().widthPixels;
         final int[] screenPos = new int[2];
         view.getLocationOnScreen(screenPos);
         final int width = view.getWidth();
 
-        Toast toast = Toast.makeText(
-                getContext(), getResources().getString(stringResId), Toast.LENGTH_SHORT);
+        Toast toast = Toast.makeText(getContext(), description, Toast.LENGTH_SHORT);
         toast.setGravity(
                 Gravity.TOP | Gravity.END,
                 screenWidth - screenPos[0] - width / 2,
@@ -385,10 +384,12 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
 
     /**
      * Adds a custom action button to the {@link ToolbarLayout} if it is supported.
+     * @param description  The content description for the button.
+     * @param listener     The {@link OnClickListener} to use for clicks to the button.
      * @param buttonSource The {@link Bitmap} resource to use as the source for the button.
-     * @param listener The {@link OnClickListener} to use for clicks to the button.
      */
-    public void addCustomActionButton(Drawable drawable, OnClickListener listener) { }
+    public void addCustomActionButton(Drawable drawable, String description,
+            OnClickListener listener) { }
 
     /**
      * Triggered when the content view for the specified tab has changed.

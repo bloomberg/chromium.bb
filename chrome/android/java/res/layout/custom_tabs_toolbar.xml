@@ -68,7 +68,7 @@
         android:layout_marginEnd="42dp"
         android:layout_gravity="center_vertical|end"
         android:visibility="gone"
-        android:contentDescription="@string/accessibility_toolbar_btn_custom" />
+        android:contentDescription="@null" />
     <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/menu_button"
         style="@style/ToolbarButton"

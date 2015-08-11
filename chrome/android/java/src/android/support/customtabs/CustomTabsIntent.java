@@ -51,6 +51,12 @@ public class CustomTabsIntent {
     public static final String KEY_ICON = "android.support.customtabs.customaction.ICON";
 
     /**
+     * Key that specifies the content description for the custom action button.
+     */
+    public static final String KEY_DESCRIPTION =
+            "android.support.customtabs.customaction.DESCRIPTION";
+
+    /**
      * Key that specifies the PendingIntent to launch when the action button or menu item was
      * clicked. The custom tab will be calling {@link PendingIntent#send()} on clicks after adding
      * the url as data. The client app can call {@link Intent#getDataString()} to get the url.

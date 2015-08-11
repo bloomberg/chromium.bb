@@ -145,7 +145,7 @@ public class CustomTabActivity extends ChromeActivity {
         ApiCompatibilityUtils.setTaskDescription(this, null, null, toolbarColor);
         if (mIntentDataProvider.shouldShowActionButton()) {
             getToolbarManager().addCustomActionButton(mIntentDataProvider.getActionButtonIcon(),
-                    new OnClickListener() {
+                    mIntentDataProvider.getActionButtonDescription(), new OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             mIntentDataProvider.sendButtonPendingIntentWithUrl(

@@ -399,13 +399,13 @@ public class ToolbarPhone extends ToolbarLayout
 
     @Override
     public boolean onLongClick(View v) {
-        int stringResourceId = 0;
+        CharSequence description = null;
         if (v == mToggleTabStackButton) {
-            stringResourceId = R.string.open_tabs;
+            description = getResources().getString(R.string.open_tabs);
         } else {
             return false;
         }
-        return showAccessibilityToast(v, stringResourceId);
+        return showAccessibilityToast(v, description);
     }
 
     @Override

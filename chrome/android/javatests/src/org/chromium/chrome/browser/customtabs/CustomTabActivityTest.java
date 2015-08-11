@@ -125,13 +125,14 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      * Adds an action button to the custom tab toolbar.
      * @return The {@link PendingIntent} that will be triggered when the action button is clicked.
      */
-    private PendingIntent addActionButtonToIntent(Intent intent, Bitmap icon) {
+    private PendingIntent addActionButtonToIntent(Intent intent, Bitmap icon, String description) {
         Intent actionIntent = new Intent();
         actionIntent.setClass(getInstrumentation().getContext(), DummyBroadcastReceiver.class);
         actionIntent.setAction(TEST_ACTION);
 
         Bundle bundle = new Bundle();
         bundle.putParcelable(CustomTabsIntent.KEY_ICON, icon);
+        bundle.putString(CustomTabsIntent.KEY_DESCRIPTION, description);
         PendingIntent pi = PendingIntent.getBroadcast(getInstrumentation().getTargetContext(), 0,
                 actionIntent, 0);
         bundle.putParcelable(CustomTabsIntent.KEY_PENDING_INTENT, pi);
@@ -315,7 +316,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 (int) (iconHeightDp * density), Bitmap.Config.ARGB_8888);
 
         Intent intent = createMinimalCustomTabIntent();
-        final PendingIntent pi = addActionButtonToIntent(intent, expectedIcon);
+        final PendingIntent pi = addActionButtonToIntent(intent, expectedIcon, "Good test");
         startCustomTabActivityWithIntent(intent);
 
         final OnFinishedForTest onFinished = new OnFinishedForTest(pi);
@@ -363,7 +364,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 (int) (iconHeightDp * density), Bitmap.Config.ARGB_8888);
 
         Intent intent = createMinimalCustomTabIntent();
-        addActionButtonToIntent(intent, expectedIcon);
+        addActionButtonToIntent(intent, expectedIcon, "Good test");
         startCustomTabActivityWithIntent(intent);
 
         View toolbarView = getActivity().findViewById(R.id.toolbar);

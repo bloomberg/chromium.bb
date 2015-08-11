@@ -80,8 +80,9 @@ public class CustomTabIntentDataProvider {
     private final int mTitleVisibilityState;
     private int mToolbarColor;
     private Drawable mCustomButtonIcon;
+    private String mCustomButtonDescription;
+    private PendingIntent mCustomButtonPendingIntent;
     private Drawable mCloseButtonIcon;
-    private PendingIntent mActionButtonPendingIntent;
     private List<Pair<String, PendingIntent>> mMenuEntries = new ArrayList<>();
     private Bundle mAnimationBundle;
     // OnFinished listener for PendingIntents. Used for testing only.
@@ -106,7 +107,7 @@ public class CustomTabIntentDataProvider {
                 bitmap.recycle();
                 bitmap = null;
             } else if (bitmap != null) {
-                mActionButtonPendingIntent = IntentUtils.safeGetParcelable(
+                mCustomButtonPendingIntent = IntentUtils.safeGetParcelable(
                         actionButtonBundle, CustomTabsIntent.KEY_PENDING_INTENT);
                 boolean shouldTint = IntentUtils.safeGetBooleanExtra(intent,
                         EXTRA_TINT_ACTION_BUTTON, false);
@@ -116,6 +117,8 @@ public class CustomTabIntentDataProvider {
                 } else {
                     mCustomButtonIcon = new BitmapDrawable(context.getResources(), bitmap);
                 }
+                mCustomButtonDescription = IntentUtils.safeGetString(actionButtonBundle,
+                        CustomTabsIntent.KEY_DESCRIPTION);
             }
         }
 
@@ -210,7 +213,8 @@ public class CustomTabIntentDataProvider {
      *         action button.
      */
     public boolean shouldShowActionButton() {
-        return mCustomButtonIcon != null && mActionButtonPendingIntent != null;
+        return mCustomButtonIcon != null && mCustomButtonPendingIntent != null
+                && !TextUtils.isEmpty(mCustomButtonDescription);
     }
 
     /**
@@ -221,12 +225,19 @@ public class CustomTabIntentDataProvider {
     }
 
     /**
+     * @return The content description for the custom action button.
+     */
+    public String getActionButtonDescription() {
+        return mCustomButtonDescription;
+    }
+
+    /**
      * @return The {@link PendingIntent} that will be sent when the user clicks the action button.
      *         For testing only.
      */
     @VisibleForTesting
     public PendingIntent getActionButtonPendingIntentForTest() {
-        return mActionButtonPendingIntent;
+        return mCustomButtonPendingIntent;
     }
 
     /**
@@ -297,11 +308,11 @@ public class CustomTabIntentDataProvider {
      * @param url The url to attach as additional data to the {@link PendingIntent}.
      */
     public void sendButtonPendingIntentWithUrl(Context context, String url) {
-        assert mActionButtonPendingIntent != null;
+        assert mCustomButtonPendingIntent != null;
         Intent addedIntent = new Intent();
         addedIntent.setData(Uri.parse(url));
         try {
-            mActionButtonPendingIntent.send(context, 0, addedIntent, mOnFinished, null);
+            mCustomButtonPendingIntent.send(context, 0, addedIntent, mOnFinished, null);
         } catch (CanceledException e) {
             Log.e(TAG, "CanceledException while sending pending intent in custom tab");
         }

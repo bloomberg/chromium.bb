@@ -2056,9 +2056,6 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_HOME" desc="Content description for the home button.">
         Home
       </message>
-      <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_CUSTOM" desc="Content description for the custom action button.">
-        Custom action button
-      </message>
       <message name="IDS_ACCESSIBILITY_BTN_REFRESH" desc="Content description for the refresh page button.">
         Refresh page
       </message>
