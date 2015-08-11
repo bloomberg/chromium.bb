@@ -39,6 +39,9 @@ const char kNotServedFromSecureOrigin[] =
 const char kIgnoredNotSupportedOnAndroid[] =
     " application ignored: not supported on Android";
 const char kIgnoredNoId[] = "play application ignored: no id provided";
+const char kIgnoredIdsDoNotMatch[] =
+    "play application ignored: app URL and id fields were specified in the "
+    "manifest, but they do not match";
 
 void OutputDeveloperNotShownMessage(content::WebContents* web_contents,
                                     const std::string& message) {

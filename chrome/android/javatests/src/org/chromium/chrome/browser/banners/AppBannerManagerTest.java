@@ -71,7 +71,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
 
         @Override
         protected void getAppDetailsAsynchronously(
-                Observer observer, String url, String packageName, int iconSize) {
+                Observer observer, String url, String packageName, String referrer, int iconSize) {
             mNumRetrieved += 1;
             mObserver = observer;
             mInstallIntent = new Intent(INSTALL_ACTION);

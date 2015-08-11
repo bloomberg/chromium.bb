@@ -63,6 +63,9 @@ class AppBannerManagerAndroid : public AppBannerManager {
 
   bool CheckFetcherMatchesContents();
 
+  std::string ExtractQueryValueForName(const GURL& url,
+                                       const std::string& name);
+
   // AppBannerManager on the Java side.
   JavaObjectWeakGlobalRef weak_java_banner_view_manager_;
 

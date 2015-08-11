@@ -27,6 +27,7 @@ extern const char kManifestMissingSuitableIcon[];
 extern const char kNotServedFromSecureOrigin[];
 extern const char kIgnoredNotSupportedOnAndroid[];
 extern const char kIgnoredNoId[];
+extern const char kIgnoredIdsDoNotMatch[];
 
 // Logs a message to the main console if a banner could not be shown
 // and the engagement checks have been bypassed.

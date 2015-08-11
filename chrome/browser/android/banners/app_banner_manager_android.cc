@@ -21,7 +21,11 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
 
 namespace {
+
 const char kPlayPlatform[] = "play";
+const char kReferrerName[] = "referrer";
+const char kIdName[] = "id";
+
 }  // anonymous namespace
 
 namespace banners {
@@ -62,12 +66,24 @@ bool AppBannerManagerAndroid::HandleNonWebApp(const std::string& platform,
   if (jobj.is_null())
     return false;
 
+  std::string id_from_app_url = ExtractQueryValueForName(url, kIdName);
+  if (id_from_app_url.size() && id != id_from_app_url) {
+    banners::OutputDeveloperDebugMessage(web_contents(),
+                                         banners::kIgnoredIdsDoNotMatch);
+    return false;
+  }
+
+  std::string referrer = ExtractQueryValueForName(url, kReferrerName);
+
   ScopedJavaLocalRef<jstring> jurl(
       ConvertUTF8ToJavaString(env, data_fetcher()->validated_url().spec()));
   ScopedJavaLocalRef<jstring> jpackage(
       ConvertUTF8ToJavaString(env, id));
-  Java_AppBannerManager_fetchAppDetails(
-      env, jobj.obj(), jurl.obj(), jpackage.obj(), ideal_icon_size());
+  ScopedJavaLocalRef<jstring> jreferrer(
+      ConvertUTF8ToJavaString(env, referrer));
+  Java_AppBannerManager_fetchAppDetails(env, jobj.obj(), jurl.obj(),
+                                        jpackage.obj(), jreferrer.obj(),
+                                        ideal_icon_size());
   return true;
 }
 
@@ -86,9 +102,9 @@ bool AppBannerManagerAndroid::CheckPlatformAndId(const std::string& platform,
 }
 
 bool AppBannerManagerAndroid::CheckFetcherMatchesContents() {
-  if (!web_contents()) {
+  if (!web_contents())
     return false;
-  }
+
   if (!data_fetcher() ||
       data_fetcher()->validated_url() != web_contents()->GetURL()) {
     banners::OutputDeveloperNotShownMessage(
@@ -96,6 +112,22 @@ bool AppBannerManagerAndroid::CheckFetcherMatchesContents() {
     return false;
   }
   return true;
+}
+
+std::string AppBannerManagerAndroid::ExtractQueryValueForName(
+    const GURL& url,
+    const std::string& name) {
+  url::Component query = url.parsed_for_possibly_invalid_spec().query;
+  url::Component key, value;
+  const char* url_spec = url.spec().c_str();
+
+  while (url::ExtractQueryKeyValue(url_spec, &query, &key, &value)) {
+    std::string key_str(url_spec, key.begin, key.len);
+    std::string value_str(url_spec, value.begin, value.len);
+    if (key_str == name)
+      return value_str;
+  }
+  return "";
 }
 
 AppBannerDataFetcher* AppBannerManagerAndroid::CreateAppBannerDataFetcher(
