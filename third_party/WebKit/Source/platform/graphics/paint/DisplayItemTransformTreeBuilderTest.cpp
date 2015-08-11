@@ -26,7 +26,7 @@ struct DummyClient {
 
 class DummyDisplayItem : public DisplayItem {
 public:
-    DummyDisplayItem(const DummyClient& client) : DisplayItem(client, DisplayItem::DrawingFirst) { }
+    DummyDisplayItem(const DummyClient& client) : DisplayItem(client, DisplayItem::DrawingFirst, sizeof(*this)) { }
 };
 
 class DisplayItemTransformTreeBuilderTest : public ::testing::Test {

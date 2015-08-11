@@ -29,7 +29,7 @@ public:
         , UnderInvalidationCheckingMode underInvalidationCheckingMode = CheckPicture
 #endif
         )
-        : DisplayItem(client, type)
+        : DisplayItem(client, type, sizeof(*this))
         , m_picture(picture && picture->approximateOpCount() ? picture : nullptr)
 #if ENABLE(ASSERT)
         , m_underInvalidationCheckingMode(underInvalidationCheckingMode)

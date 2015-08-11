@@ -19,7 +19,7 @@ namespace blink {
 class PLATFORM_EXPORT BeginCompositingDisplayItem : public PairedBeginDisplayItem {
 public:
     BeginCompositingDisplayItem(const DisplayItemClientWrapper& client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds, ColorFilter colorFilter = ColorFilterNone)
-        : PairedBeginDisplayItem(client, BeginCompositing)
+        : PairedBeginDisplayItem(client, BeginCompositing, sizeof(*this))
         , m_xferMode(xferMode)
         , m_opacity(opacity)
         , m_hasBounds(bounds)
@@ -46,7 +46,7 @@ private:
 class PLATFORM_EXPORT EndCompositingDisplayItem : public PairedEndDisplayItem {
 public:
     EndCompositingDisplayItem(const DisplayItemClientWrapper& client)
-        : PairedEndDisplayItem(client, EndCompositing) { }
+        : PairedEndDisplayItem(client, EndCompositing, sizeof(*this)) { }
 
     void replay(GraphicsContext&) override;
     void appendToWebDisplayItemList(WebDisplayItemList*) const override;
