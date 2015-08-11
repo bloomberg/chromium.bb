@@ -80,7 +80,7 @@ public:
 
     LineBoxList* lineBoxes() const final;
 
-    LayoutObject* lineBreakObj() const { return m_lineBreakObj; }
+    LineLayoutItem lineBreakObj() const { return m_lineBreakObj; }
     BidiStatus lineBreakBidiStatus() const;
     void setLineBreakInfo(LineLayoutItem, unsigned breakPos, const BidiStatus&);
 

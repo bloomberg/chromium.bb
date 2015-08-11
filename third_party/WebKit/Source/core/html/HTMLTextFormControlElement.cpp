@@ -673,7 +673,7 @@ static void getNextSoftBreak(RootInlineBox*& line, Node*& breakNode, unsigned& b
         next = line->nextRootBox();
         if (next && !line->endsWithBreak()) {
             ASSERT(line->lineBreakObj());
-            breakNode = line->lineBreakObj()->node();
+            breakNode = line->lineBreakObj().node();
             breakOffset = line->lineBreakPos();
             line = next;
             return;
