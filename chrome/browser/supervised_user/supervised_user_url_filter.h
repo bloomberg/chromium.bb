@@ -65,6 +65,10 @@ class SupervisedUserURLFilter
   class Observer {
    public:
     virtual void OnSiteListUpdated() = 0;
+    virtual void OnURLChecked(const GURL& url,
+                              FilteringBehavior behavior,
+                              FilteringBehaviorReason reason,
+                              bool uncertain) {}
   };
 
   struct Contents;
@@ -125,10 +129,12 @@ class SupervisedUserURLFilter
   // Sets the filtering behavior for pages not on a list (default is ALLOW).
   void SetDefaultFilteringBehavior(FilteringBehavior behavior);
 
+  FilteringBehavior GetDefaultFilteringBehavior() const;
+
   // Asynchronously loads the specified site lists and updates the
   // filter to recognize each site on them.
   void LoadWhitelists(
-      const std::vector<scoped_refptr<SupervisedUserSiteList> >& site_lists);
+      const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists);
 
   // Sets the static blacklist of blocked hosts.
   void SetBlacklist(SupervisedUserBlacklist* blacklist);
@@ -154,8 +160,8 @@ class SupervisedUserURLFilter
   // present, and resets the default behavior to "allow".
   void Clear();
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddObserver(Observer* observer) const;
+  void RemoveObserver(Observer* observer) const;
 
   // Sets a different task runner for testing.
   void SetBlockingTaskRunnerForTesting(
@@ -175,7 +181,8 @@ class SupervisedUserURLFilter
                      FilteringBehavior behavior,
                      bool uncertain) const;
 
-  base::ObserverList<Observer> observers_;
+  // This is mutable to allow notification in const member functions.
+  mutable base::ObserverList<Observer> observers_;
 
   FilteringBehavior default_behavior_;
   scoped_ptr<Contents> contents_;

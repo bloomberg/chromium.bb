@@ -350,6 +350,8 @@ bool SupervisedUserURLFilter::GetFilteringBehaviorForURLWithAsyncChecks(
   // Also, if we're blocking anyway, then there's no need to check it.
   if (reason != DEFAULT || behavior == BLOCK || !async_url_checker_) {
     callback.Run(behavior, reason, false);
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnURLChecked(url, behavior, reason, false));
     return true;
   }
 
@@ -384,6 +386,11 @@ void SupervisedUserURLFilter::SetDefaultFilteringBehavior(
     FilteringBehavior behavior) {
   DCHECK(CalledOnValidThread());
   default_behavior_ = behavior;
+}
+
+SupervisedUserURLFilter::FilteringBehavior
+SupervisedUserURLFilter::GetDefaultFilteringBehavior() const {
+  return default_behavior_;
 }
 
 void SupervisedUserURLFilter::LoadWhitelists(
@@ -446,11 +453,11 @@ void SupervisedUserURLFilter::Clear() {
   async_url_checker_.reset();
 }
 
-void SupervisedUserURLFilter::AddObserver(Observer* observer) {
+void SupervisedUserURLFilter::AddObserver(Observer* observer) const {
   observers_.AddObserver(observer);
 }
 
-void SupervisedUserURLFilter::RemoveObserver(Observer* observer) {
+void SupervisedUserURLFilter::RemoveObserver(Observer* observer) const {
   observers_.RemoveObserver(observer);
 }
 
@@ -473,4 +480,6 @@ void SupervisedUserURLFilter::CheckCallback(
   DCHECK(default_behavior_ != BLOCK);
 
   callback.Run(behavior, ASYNC_CHECKER, uncertain);
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnURLChecked(url, behavior, ASYNC_CHECKER, uncertain));
 }
