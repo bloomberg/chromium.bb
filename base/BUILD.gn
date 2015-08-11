@@ -11,11 +11,6 @@ if (is_android) {
 
 config("base_implementation") {
   defines = [ "BASE_IMPLEMENTATION" ]
-
-  if (is_ios) {
-    # base uses routines deprecated in iOS 8
-    cflags = [ "-Wno-deprecated-declarations" ]
-  }
 }
 
 if (is_win) {
