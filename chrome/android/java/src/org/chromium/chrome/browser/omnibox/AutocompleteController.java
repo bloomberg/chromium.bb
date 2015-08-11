@@ -119,7 +119,10 @@ public class AutocompleteController {
      *         be null if the input is invalid.
      */
     public OmniboxSuggestion classify(String text) {
-        return nativeClassify(mNativeAutocompleteControllerAndroid, text);
+        if (mNativeAutocompleteControllerAndroid != 0) {
+            return nativeClassify(mNativeAutocompleteControllerAndroid, text);
+        }
+        return null;
     }
 
     /**
