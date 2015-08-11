@@ -193,6 +193,8 @@ class DeviceUtils(object):
     assert hasattr(self, decorators.DEFAULT_TIMEOUT_ATTR)
     assert hasattr(self, decorators.DEFAULT_RETRIES_ATTR)
 
+    self._ClearCache()
+
   def __eq__(self, other):
     """Checks whether |other| refers to the same device as |self|.
 
@@ -366,6 +368,12 @@ class DeviceUtils(object):
     Returns:
       List of paths to the apks on the device for the given package.
     """
+    return self._GetApplicationPathsInternal(package)
+
+  def _GetApplicationPathsInternal(self, package, skip_cache=False):
+    cached_result = self._cache['package_apk_paths'].get(package)
+    if cached_result is not None and not skip_cache:
+      return list(cached_result)
     # 'pm path' is liable to incorrectly exit with a nonzero number starting
     # in Lollipop.
     # TODO(jbudorick): Check if this is fixed as new Android versions are
@@ -380,6 +388,7 @@ class DeviceUtils(object):
         raise device_errors.CommandFailedError(
             'pm path returned: %r' % '\n'.join(output), str(self))
       apks.append(line[len('package:'):])
+    self._cache['package_apk_paths'][package] = list(apks)
     return apks
 
   @decorators.WithTimeoutAndRetriesFromInstance()
@@ -432,7 +441,7 @@ class DeviceUtils(object):
 
     def pm_ready():
       try:
-        return self.GetApplicationPaths('android')
+        return self._GetApplicationPathsInternal('android', skip_cache=True)
       except device_errors.CommandFailedError:
         return False
 
@@ -502,21 +511,26 @@ class DeviceUtils(object):
       DeviceUnreachableError on missing device.
     """
     package_name = apk_helper.GetPackageName(apk_path)
-    device_paths = self.GetApplicationPaths(package_name)
+    device_paths = self._GetApplicationPathsInternal(package_name)
     if device_paths:
       if len(device_paths) > 1:
         logging.warning(
             'Installing single APK (%s) when split APKs (%s) are currently '
             'installed.', apk_path, ' '.join(device_paths))
-      (files_to_push, _) = self._GetChangedAndStaleFiles(
-          apk_path, device_paths[0])
-      should_install = bool(files_to_push)
+      apks_to_install, host_checksums = (
+          self._ComputeStaleApks(package_name, [apk_path]))
+      should_install = bool(apks_to_install)
       if should_install and not reinstall:
-        self.adb.Uninstall(package_name)
+        self.Uninstall(package_name)
     else:
       should_install = True
+      host_checksums = None
+
     if should_install:
+      # We won't know the resulting device apk names.
+      self._cache['package_apk_paths'].pop(package_name, 0)
       self.adb.Install(apk_path, reinstall=reinstall)
+      self._cache['package_apk_checksums'][package_name] = host_checksums
 
   @decorators.WithTimeoutAndRetriesDefaults(
       INSTALL_DEFAULT_TIMEOUT,
@@ -545,24 +559,54 @@ class DeviceUtils(object):
     all_apks = [base_apk] + split_select.SelectSplits(
         self, base_apk, split_apks)
     package_name = apk_helper.GetPackageName(base_apk)
-    device_apk_paths = self.GetApplicationPaths(package_name)
+    device_apk_paths = self._GetApplicationPathsInternal(package_name)
 
     if device_apk_paths:
       partial_install_package = package_name
-      device_checksums = md5sum.CalculateDeviceMd5Sums(device_apk_paths, self)
-      host_checksums = md5sum.CalculateHostMd5Sums(all_apks)
-      apks_to_install = [k for (k, v) in host_checksums.iteritems()
-                         if v not in device_checksums.values()]
+      apks_to_install, host_checksums = (
+          self._ComputeStaleApks(package_name, all_apks))
       if apks_to_install and not reinstall:
-        self.adb.Uninstall(package_name)
+        self.Uninstall(package_name)
         partial_install_package = None
         apks_to_install = all_apks
     else:
       partial_install_package = None
       apks_to_install = all_apks
+      host_checksums = None
+
     if apks_to_install:
+      # We won't know the resulting device apk names.
+      self._cache['package_apk_paths'].pop(package_name, 0)
       self.adb.InstallMultiple(
-          apks_to_install, partial=partial_install_package, reinstall=reinstall)
+          apks_to_install, partial=partial_install_package,
+          reinstall=reinstall)
+      self._cache['package_apk_checksums'][package_name] = host_checksums
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def Uninstall(self, package_name, keep_data=False, timeout=None,
+                retries=None):
+    """Remove the app |package_name| from the device.
+
+    Args:
+      package_name: The package to uninstall.
+      keep_data: (optional) Whether to keep the data and cache directories.
+      timeout: Timeout in seconds.
+      retries: Number of retries.
+
+    Raises:
+      CommandFailedError if the uninstallation fails.
+      CommandTimeoutError if the uninstallation times out.
+      DeviceUnreachableError on missing device.
+    """
+    try:
+      self.adb.Uninstall(package_name, keep_data)
+      self._cache['package_apk_paths'][package_name] = []
+      self._cache['package_apk_checksums'][package_name] = set()
+    except:
+      # Clear cache since we can't be sure of the state.
+      self._cache['package_apk_paths'].pop(package_name, 0)
+      self._cache['package_apk_checksums'].pop(package_name, 0)
+      raise
 
   def _CheckSdkLevel(self, required_sdk_level):
     """Raises an exception if the device does not have the required SDK level.
@@ -914,7 +958,7 @@ class DeviceUtils(object):
     # may never return.
     if ((self.build_version_sdk >=
          constants.ANDROID_SDK_VERSION_CODES.JELLY_BEAN_MR2)
-        or self.GetApplicationPaths(package)):
+        or self._GetApplicationPathsInternal(package)):
       self.RunShellCommand(['pm', 'clear', package], check_return=True)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
@@ -1037,6 +1081,22 @@ class DeviceUtils(object):
           to_push.append((host_abs_path, device_abs_path))
       to_delete = device_checksums.keys()
       return (to_push, to_delete)
+
+  def _ComputeDeviceChecksumsForApks(self, package_name):
+    ret = self._cache['package_apk_checksums'].get(package_name)
+    if ret is None:
+      device_paths = self._GetApplicationPathsInternal(package_name)
+      file_to_checksums = md5sum.CalculateDeviceMd5Sums(device_paths, self)
+      ret = set(file_to_checksums.values())
+      self._cache['package_apk_checksums'][package_name] = ret
+    return ret
+
+  def _ComputeStaleApks(self, package_name, host_apk_paths):
+    host_checksums = md5sum.CalculateHostMd5Sums(host_apk_paths)
+    device_checksums = self._ComputeDeviceChecksumsForApks(package_name)
+    stale_apks = [k for (k, v) in host_checksums.iteritems()
+                  if v not in device_checksums]
+    return stale_apks, set(host_checksums.values())
 
   def _PushFilesImpl(self, host_device_tuples, files):
     size = sum(host_utils.GetRecursiveDiskUsage(h) for h, _ in files)
@@ -1774,7 +1834,12 @@ class DeviceUtils(object):
     """Clears all caches."""
     for client in self._client_caches:
       self._client_caches[client].clear()
-    self._cache.clear()
+    self._cache = {
+        # Map of packageId -> list of on-device .apk paths
+        'package_apk_paths': {},
+        # Map of packageId -> set of on-device .apk checksums
+        'package_apk_checksums': {},
+    }
 
   @classmethod
   def parallel(cls, devices=None, async=False):

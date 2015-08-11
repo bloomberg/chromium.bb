@@ -311,30 +311,30 @@ class DeviceUtilsGetExternalStoragePathTest(DeviceUtilsTest):
         self.device.GetExternalStoragePath()
 
 
-class DeviceUtilsGetApplicationPathsTest(DeviceUtilsTest):
+class DeviceUtils_GetApplicationPathsInternalTest(DeviceUtilsTest):
 
-  def testGetApplicationPaths_exists(self):
+  def test_GetApplicationPathsInternal_exists(self):
     with self.assertCalls(
         (self.call.adb.Shell('getprop ro.build.version.sdk'), '19\n'),
         (self.call.adb.Shell('pm path android'),
          'package:/path/to/android.apk\n')):
       self.assertEquals(['/path/to/android.apk'],
-                        self.device.GetApplicationPaths('android'))
+                        self.device._GetApplicationPathsInternal('android'))
 
-  def testGetApplicationPaths_notExists(self):
+  def test_GetApplicationPathsInternal_notExists(self):
     with self.assertCalls(
         (self.call.adb.Shell('getprop ro.build.version.sdk'), '19\n'),
         (self.call.adb.Shell('pm path not.installed.app'), '')):
       self.assertEquals([],
-                        self.device.GetApplicationPaths('not.installed.app'))
+          self.device._GetApplicationPathsInternal('not.installed.app'))
 
-  def testGetApplicationPaths_fails(self):
+  def test_GetApplicationPathsInternal_fails(self):
     with self.assertCalls(
         (self.call.adb.Shell('getprop ro.build.version.sdk'), '19\n'),
         (self.call.adb.Shell('pm path android'),
          self.CommandError('ERROR. Is package manager running?\n'))):
       with self.assertRaises(device_errors.CommandFailedError):
-        self.device.GetApplicationPaths('android')
+        self.device._GetApplicationPathsInternal('android')
 
 
 class DeviceUtilsGetApplicationDataDirectoryTest(DeviceUtilsTest):
@@ -366,7 +366,8 @@ class DeviceUtilsWaitUntilFullyBootedTest(DeviceUtilsTest):
         (self.call.device.GetExternalStoragePath(), '/fake/storage/path'),
         (self.call.adb.Shell('test -d /fake/storage/path'), ''),
         # pm_ready
-        (self.call.device.GetApplicationPaths('android'),
+        (self.call.device._GetApplicationPathsInternal('android',
+                                                       skip_cache=True),
          ['package:/some/fake/path']),
         # boot_completed
         (self.call.device.GetProp('sys.boot_completed'), '1')):
@@ -379,7 +380,8 @@ class DeviceUtilsWaitUntilFullyBootedTest(DeviceUtilsTest):
         (self.call.device.GetExternalStoragePath(), '/fake/storage/path'),
         (self.call.adb.Shell('test -d /fake/storage/path'), ''),
         # pm_ready
-        (self.call.device.GetApplicationPaths('android'),
+        (self.call.device._GetApplicationPathsInternal('android',
+                                                       skip_cache=True),
          ['package:/some/fake/path']),
         # boot_completed
         (self.call.device.GetProp('sys.boot_completed'), '1'),
@@ -403,7 +405,8 @@ class DeviceUtilsWaitUntilFullyBootedTest(DeviceUtilsTest):
         (self.call.device.GetExternalStoragePath(), '/fake/storage/path'),
         (self.call.adb.Shell('test -d /fake/storage/path'), ''),
         # pm_ready
-        (self.call.device.GetApplicationPaths('android'),
+        (self.call.device._GetApplicationPathsInternal('android',
+                                                       skip_cache=True),
          ['package:/some/fake/path']),
         # boot_completed
         (self.call.device.GetProp('sys.boot_completed'), '1')):
@@ -440,11 +443,17 @@ class DeviceUtilsWaitUntilFullyBootedTest(DeviceUtilsTest):
         (self.call.device.GetExternalStoragePath(), '/fake/storage/path'),
         (self.call.adb.Shell('test -d /fake/storage/path'), ''),
         # pm_ready
-        (self.call.device.GetApplicationPaths('android'), self.CommandError()),
+        (self.call.device._GetApplicationPathsInternal('android',
+                                                       skip_cache=True),
+         self.CommandError()),
         # pm_ready
-        (self.call.device.GetApplicationPaths('android'), self.CommandError()),
+        (self.call.device._GetApplicationPathsInternal('android',
+                                                       skip_cache=True),
+         self.CommandError()),
         # pm_ready
-        (self.call.device.GetApplicationPaths('android'), self.TimeoutError())):
+        (self.call.device._GetApplicationPathsInternal('android',
+                                                       skip_cache=True),
+         self.TimeoutError())):
       with self.assertRaises(device_errors.CommandTimeoutError):
         self.device.WaitUntilFullyBooted(wifi=False)
 
@@ -455,7 +464,8 @@ class DeviceUtilsWaitUntilFullyBootedTest(DeviceUtilsTest):
         (self.call.device.GetExternalStoragePath(), '/fake/storage/path'),
         (self.call.adb.Shell('test -d /fake/storage/path'), ''),
         # pm_ready
-        (self.call.device.GetApplicationPaths('android'),
+        (self.call.device._GetApplicationPathsInternal('android',
+                                                       skip_cache=True),
          ['package:/some/fake/path']),
         # boot_completed
         (self.call.device.GetProp('sys.boot_completed'), '0'),
@@ -473,7 +483,8 @@ class DeviceUtilsWaitUntilFullyBootedTest(DeviceUtilsTest):
         (self.call.device.GetExternalStoragePath(), '/fake/storage/path'),
         (self.call.adb.Shell('test -d /fake/storage/path'), ''),
         # pm_ready
-        (self.call.device.GetApplicationPaths('android'),
+        (self.call.device._GetApplicationPathsInternal('android',
+                                                       skip_cache=True),
          ['package:/some/fake/path']),
         # boot_completed
         (self.call.device.GetProp('sys.boot_completed'), '1'),
@@ -519,54 +530,52 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
   def testInstall_noPriorInstall(self):
     with self.assertCalls(
         (mock.call.pylib.utils.apk_helper.GetPackageName('/fake/test/app.apk'),
-         'this.is.a.test.package'),
-        (self.call.device.GetApplicationPaths('this.is.a.test.package'), []),
+         'test.package'),
+        (self.call.device._GetApplicationPathsInternal('test.package'), []),
         self.call.adb.Install('/fake/test/app.apk', reinstall=False)):
       self.device.Install('/fake/test/app.apk', retries=0)
 
   def testInstall_differentPriorInstall(self):
     with self.assertCalls(
         (mock.call.pylib.utils.apk_helper.GetPackageName('/fake/test/app.apk'),
-         'this.is.a.test.package'),
-        (self.call.device.GetApplicationPaths('this.is.a.test.package'),
-         ['/fake/data/app/this.is.a.test.package.apk']),
-        (self.call.device._GetChangedAndStaleFiles(
-            '/fake/test/app.apk', '/fake/data/app/this.is.a.test.package.apk'),
-         ([('/fake/test/app.apk', '/fake/data/app/this.is.a.test.package.apk')],
-          [])),
-        self.call.adb.Uninstall('this.is.a.test.package'),
+         'test.package'),
+        (self.call.device._GetApplicationPathsInternal('test.package'),
+         ['/fake/data/app/test.package.apk']),
+        (self.call.device._ComputeStaleApks('test.package',
+            ['/fake/test/app.apk']),
+         (['/fake/test/app.apk'], None)),
+        self.call.adb.Uninstall('test.package', False),
         self.call.adb.Install('/fake/test/app.apk', reinstall=False)):
       self.device.Install('/fake/test/app.apk', retries=0)
 
   def testInstall_differentPriorInstall_reinstall(self):
     with self.assertCalls(
         (mock.call.pylib.utils.apk_helper.GetPackageName('/fake/test/app.apk'),
-         'this.is.a.test.package'),
-        (self.call.device.GetApplicationPaths('this.is.a.test.package'),
-         ['/fake/data/app/this.is.a.test.package.apk']),
-        (self.call.device._GetChangedAndStaleFiles(
-            '/fake/test/app.apk', '/fake/data/app/this.is.a.test.package.apk'),
-         ([('/fake/test/app.apk', '/fake/data/app/this.is.a.test.package.apk')],
-          [])),
+         'test.package'),
+        (self.call.device._GetApplicationPathsInternal('test.package'),
+         ['/fake/data/app/test.package.apk']),
+        (self.call.device._ComputeStaleApks('test.package',
+            ['/fake/test/app.apk']),
+         (['/fake/test/app.apk'], None)),
         self.call.adb.Install('/fake/test/app.apk', reinstall=True)):
       self.device.Install('/fake/test/app.apk', reinstall=True, retries=0)
 
   def testInstall_identicalPriorInstall(self):
     with self.assertCalls(
         (mock.call.pylib.utils.apk_helper.GetPackageName('/fake/test/app.apk'),
-         'this.is.a.test.package'),
-        (self.call.device.GetApplicationPaths('this.is.a.test.package'),
-         ['/fake/data/app/this.is.a.test.package.apk']),
-        (self.call.device._GetChangedAndStaleFiles(
-            '/fake/test/app.apk', '/fake/data/app/this.is.a.test.package.apk'),
-         ([], []))):
+         'test.package'),
+        (self.call.device._GetApplicationPathsInternal('test.package'),
+         ['/fake/data/app/test.package.apk']),
+        (self.call.device._ComputeStaleApks('test.package',
+            ['/fake/test/app.apk']),
+         ([], None))):
       self.device.Install('/fake/test/app.apk', retries=0)
 
   def testInstall_fails(self):
     with self.assertCalls(
         (mock.call.pylib.utils.apk_helper.GetPackageName('/fake/test/app.apk'),
-         'this.is.a.test.package'),
-        (self.call.device.GetApplicationPaths('this.is.a.test.package'), []),
+         'test.package'),
+        (self.call.device._GetApplicationPathsInternal('test.package'), []),
         (self.call.adb.Install('/fake/test/app.apk', reinstall=False),
          self.CommandError('Failure\r\n'))):
       with self.assertRaises(device_errors.CommandFailedError):
@@ -582,8 +591,8 @@ class DeviceUtilsInstallSplitApkTest(DeviceUtilsTest):
             ['split1.apk', 'split2.apk', 'split3.apk']),
          ['split2.apk']),
         (mock.call.pylib.utils.apk_helper.GetPackageName('base.apk'),
-         'this.is.a.test.package'),
-        (self.call.device.GetApplicationPaths('this.is.a.test.package'), []),
+         'test.package'),
+        (self.call.device._GetApplicationPathsInternal('test.package'), []),
         (self.call.adb.InstallMultiple(
             ['base.apk', 'split2.apk'], partial=None, reinstall=False))):
       self.device.InstallSplitApk('base.apk',
@@ -598,18 +607,23 @@ class DeviceUtilsInstallSplitApkTest(DeviceUtilsTest):
          ['split2.apk']),
         (mock.call.pylib.utils.apk_helper.GetPackageName('base.apk'),
          'test.package'),
-        (self.call.device.GetApplicationPaths('test.package'),
+        (self.call.device._GetApplicationPathsInternal('test.package'),
          ['base-on-device.apk', 'split2-on-device.apk']),
-        (mock.call.pylib.utils.md5sum.CalculateDeviceMd5Sums(
-            ['base-on-device.apk', 'split2-on-device.apk'], self.device),
-         {'base-on-device.apk': 'AAA', 'split2-on-device.apk': 'BBB'}),
-        (mock.call.pylib.utils.md5sum.CalculateHostMd5Sums(
-            ['base.apk', 'split2.apk']),
-         {'base.apk': 'AAA', 'split2.apk': 'CCC'}),
+        (self.call.device._ComputeStaleApks('test.package',
+                                            ['base.apk', 'split2.apk']),
+         (['split2.apk'], None)),
         (self.call.adb.InstallMultiple(
             ['split2.apk'], partial='test.package', reinstall=True))):
       self.device.InstallSplitApk('base.apk',
           ['split1.apk', 'split2.apk', 'split3.apk'], reinstall=True, retries=0)
+
+
+class DeviceUtilsUninstallTest(DeviceUtilsTest):
+
+  def testUninstall_callsThrough(self):
+    with self.assertCalls(
+        self.call.adb.Uninstall('test.package', True)):
+      self.device.Uninstall('test.package', True)
 
 
 class DeviceUtilsRunShellCommandTest(DeviceUtilsTest):
@@ -884,55 +898,55 @@ class DeviceUtilsStartActivityTest(DeviceUtilsTest):
 
   def testStartActivity_success(self):
     test_intent = intent.Intent(action='android.intent.action.VIEW',
-                                package='this.is.a.test.package',
+                                package='test.package',
                                 activity='.Main')
     with self.assertCall(
         self.call.adb.Shell('am start '
                             '-a android.intent.action.VIEW '
-                            '-n this.is.a.test.package/.Main'),
+                            '-n test.package/.Main'),
         'Starting: Intent { act=android.intent.action.VIEW }'):
       self.device.StartActivity(test_intent)
 
   def testStartActivity_failure(self):
     test_intent = intent.Intent(action='android.intent.action.VIEW',
-                                package='this.is.a.test.package',
+                                package='test.package',
                                 activity='.Main')
     with self.assertCall(
         self.call.adb.Shell('am start '
                             '-a android.intent.action.VIEW '
-                            '-n this.is.a.test.package/.Main'),
+                            '-n test.package/.Main'),
         'Error: Failed to start test activity'):
       with self.assertRaises(device_errors.CommandFailedError):
         self.device.StartActivity(test_intent)
 
   def testStartActivity_blocking(self):
     test_intent = intent.Intent(action='android.intent.action.VIEW',
-                                package='this.is.a.test.package',
+                                package='test.package',
                                 activity='.Main')
     with self.assertCall(
         self.call.adb.Shell('am start '
                             '-W '
                             '-a android.intent.action.VIEW '
-                            '-n this.is.a.test.package/.Main'),
+                            '-n test.package/.Main'),
         'Starting: Intent { act=android.intent.action.VIEW }'):
       self.device.StartActivity(test_intent, blocking=True)
 
   def testStartActivity_withCategory(self):
     test_intent = intent.Intent(action='android.intent.action.VIEW',
-                                package='this.is.a.test.package',
+                                package='test.package',
                                 activity='.Main',
                                 category='android.intent.category.HOME')
     with self.assertCall(
         self.call.adb.Shell('am start '
                             '-a android.intent.action.VIEW '
                             '-c android.intent.category.HOME '
-                            '-n this.is.a.test.package/.Main'),
+                            '-n test.package/.Main'),
         'Starting: Intent { act=android.intent.action.VIEW }'):
       self.device.StartActivity(test_intent)
 
   def testStartActivity_withMultipleCategories(self):
     test_intent = intent.Intent(action='android.intent.action.VIEW',
-                                package='this.is.a.test.package',
+                                package='test.package',
                                 activity='.Main',
                                 category=['android.intent.category.HOME',
                                           'android.intent.category.BROWSABLE'])
@@ -941,96 +955,96 @@ class DeviceUtilsStartActivityTest(DeviceUtilsTest):
                             '-a android.intent.action.VIEW '
                             '-c android.intent.category.HOME '
                             '-c android.intent.category.BROWSABLE '
-                            '-n this.is.a.test.package/.Main'),
+                            '-n test.package/.Main'),
         'Starting: Intent { act=android.intent.action.VIEW }'):
       self.device.StartActivity(test_intent)
 
   def testStartActivity_withData(self):
     test_intent = intent.Intent(action='android.intent.action.VIEW',
-                                package='this.is.a.test.package',
+                                package='test.package',
                                 activity='.Main',
                                 data='http://www.google.com/')
     with self.assertCall(
         self.call.adb.Shell('am start '
                             '-a android.intent.action.VIEW '
                             '-d http://www.google.com/ '
-                            '-n this.is.a.test.package/.Main'),
+                            '-n test.package/.Main'),
         'Starting: Intent { act=android.intent.action.VIEW }'):
       self.device.StartActivity(test_intent)
 
   def testStartActivity_withStringExtra(self):
     test_intent = intent.Intent(action='android.intent.action.VIEW',
-                                package='this.is.a.test.package',
+                                package='test.package',
                                 activity='.Main',
                                 extras={'foo': 'test'})
     with self.assertCall(
         self.call.adb.Shell('am start '
                             '-a android.intent.action.VIEW '
-                            '-n this.is.a.test.package/.Main '
+                            '-n test.package/.Main '
                             '--es foo test'),
         'Starting: Intent { act=android.intent.action.VIEW }'):
       self.device.StartActivity(test_intent)
 
   def testStartActivity_withBoolExtra(self):
     test_intent = intent.Intent(action='android.intent.action.VIEW',
-                                package='this.is.a.test.package',
+                                package='test.package',
                                 activity='.Main',
                                 extras={'foo': True})
     with self.assertCall(
         self.call.adb.Shell('am start '
                             '-a android.intent.action.VIEW '
-                            '-n this.is.a.test.package/.Main '
+                            '-n test.package/.Main '
                             '--ez foo True'),
         'Starting: Intent { act=android.intent.action.VIEW }'):
       self.device.StartActivity(test_intent)
 
   def testStartActivity_withIntExtra(self):
     test_intent = intent.Intent(action='android.intent.action.VIEW',
-                                package='this.is.a.test.package',
+                                package='test.package',
                                 activity='.Main',
                                 extras={'foo': 123})
     with self.assertCall(
         self.call.adb.Shell('am start '
                             '-a android.intent.action.VIEW '
-                            '-n this.is.a.test.package/.Main '
+                            '-n test.package/.Main '
                             '--ei foo 123'),
         'Starting: Intent { act=android.intent.action.VIEW }'):
       self.device.StartActivity(test_intent)
 
   def testStartActivity_withTraceFile(self):
     test_intent = intent.Intent(action='android.intent.action.VIEW',
-                                package='this.is.a.test.package',
+                                package='test.package',
                                 activity='.Main')
     with self.assertCall(
         self.call.adb.Shell('am start '
                             '--start-profiler test_trace_file.out '
                             '-a android.intent.action.VIEW '
-                            '-n this.is.a.test.package/.Main'),
+                            '-n test.package/.Main'),
         'Starting: Intent { act=android.intent.action.VIEW }'):
       self.device.StartActivity(test_intent,
                                 trace_file_name='test_trace_file.out')
 
   def testStartActivity_withForceStop(self):
     test_intent = intent.Intent(action='android.intent.action.VIEW',
-                                package='this.is.a.test.package',
+                                package='test.package',
                                 activity='.Main')
     with self.assertCall(
         self.call.adb.Shell('am start '
                             '-S '
                             '-a android.intent.action.VIEW '
-                            '-n this.is.a.test.package/.Main'),
+                            '-n test.package/.Main'),
         'Starting: Intent { act=android.intent.action.VIEW }'):
       self.device.StartActivity(test_intent, force_stop=True)
 
   def testStartActivity_withFlags(self):
     test_intent = intent.Intent(action='android.intent.action.VIEW',
-                                package='this.is.a.test.package',
+                                package='test.package',
                                 activity='.Main',
                                 flags='0x10000000')
     with self.assertCall(
         self.call.adb.Shell('am start '
                             '-a android.intent.action.VIEW '
-                            '-n this.is.a.test.package/.Main '
+                            '-n test.package/.Main '
                             '-f 0x10000000'),
         'Starting: Intent { act=android.intent.action.VIEW }'):
       self.device.StartActivity(test_intent)
@@ -1195,9 +1209,9 @@ class DeviceUtilsForceStopTest(DeviceUtilsTest):
 
   def testForceStop(self):
     with self.assertCall(
-        self.call.adb.Shell('am force-stop this.is.a.test.package'),
+        self.call.adb.Shell('am force-stop test.package'),
         ''):
-      self.device.ForceStop('this.is.a.test.package')
+      self.device.ForceStop('test.package')
 
 
 class DeviceUtilsClearApplicationStateTest(DeviceUtilsTest):
@@ -1205,9 +1219,9 @@ class DeviceUtilsClearApplicationStateTest(DeviceUtilsTest):
   def testClearApplicationState_packageDoesntExist(self):
     with self.assertCalls(
         (self.call.adb.Shell('getprop ro.build.version.sdk'), '17\n'),
-        (self.call.device.GetApplicationPaths('this.package.does.not.exist'),
+        (self.call.device._GetApplicationPathsInternal('does.not.exist'),
          [])):
-      self.device.ClearApplicationState('this.package.does.not.exist')
+      self.device.ClearApplicationState('does.not.exist')
 
   def testClearApplicationState_packageDoesntExistOnAndroidJBMR2OrAbove(self):
     with self.assertCalls(
@@ -1219,7 +1233,7 @@ class DeviceUtilsClearApplicationStateTest(DeviceUtilsTest):
   def testClearApplicationState_packageExists(self):
     with self.assertCalls(
         (self.call.adb.Shell('getprop ro.build.version.sdk'), '17\n'),
-        (self.call.device.GetApplicationPaths('this.package.exists'),
+        (self.call.device._GetApplicationPathsInternal('this.package.exists'),
          ['/data/app/this.package.exists.apk']),
         (self.call.adb.Shell('pm clear this.package.exists'),
          'Success\r\n')):
@@ -1848,11 +1862,11 @@ class DeviceUtilsClientCache(DeviceUtilsTest):
     client_cache_one['test'] = 1
     client_cache_two = self.device.GetClientCache('ClientTwo')
     client_cache_two['test'] = 2
-    self.assertEqual(self.device._cache, {'test': 0})
+    self.assertEqual(self.device._cache['test'], 0)
     self.assertEqual(client_cache_one, {'test': 1})
     self.assertEqual(client_cache_two, {'test': 2})
     self.device._ClearCache()
-    self.assertEqual(self.device._cache, {})
+    self.assertTrue('test' not in self.device._cache)
     self.assertEqual(client_cache_one, {})
     self.assertEqual(client_cache_two, {})
 
