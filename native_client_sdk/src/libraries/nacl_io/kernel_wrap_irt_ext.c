@@ -145,8 +145,8 @@ static int ext_seek(int fd, nacl_irt_off_t offset, int whence,
   ERRNO_RTN(*new_offset);
 }
 
-static int ext_fstat(int fd, struct stat *buf) {
-  ERRNO_RTN(ki_fstat(fd, buf));
+static int ext_fstat(int fd, nacl_irt_stat_t *buf) {
+  ERRNO_RTN(ki_fstat(fd, (struct stat*)buf));
 }
 
 static int ext_getdents(int fd, struct dirent *ents, size_t count,
@@ -216,8 +216,8 @@ static int ext_open(const char *pathname, int oflag, mode_t cmode, int *newfd) {
   ERRNO_RTN(*newfd);
 }
 
-static int ext_stat(const char *pathname, struct stat *buf) {
-  ERRNO_RTN(ki_stat(pathname, buf));
+static int ext_stat(const char *pathname, nacl_irt_stat_t *buf) {
+  ERRNO_RTN(ki_stat(pathname, (struct stat*)buf));
 }
 
 static int ext_mkdir(const char *pathname, mode_t mode) {
@@ -246,8 +246,8 @@ static int ext_truncate(const char *pathname, nacl_irt_off_t length) {
   ERRNO_RTN(ki_truncate(pathname, length));
 }
 
-static int ext_lstat(const char *pathname, struct stat *buf) {
-  ERRNO_RTN(ki_lstat(pathname, buf));
+static int ext_lstat(const char *pathname, nacl_irt_stat_t *buf) {
+  ERRNO_RTN(ki_lstat(pathname, (struct stat*)buf));
 }
 
 static int ext_link(const char *pathname, const char *newpath) {
@@ -298,7 +298,7 @@ void _real_exit(int status) {
 
 int _real_fstat(int fd, struct stat *buf) {
   INIT_INTERFACE_ENOSYS(s_irt_fdio);
-  return s_irt_fdio.interface.fstat(fd, buf);
+  return s_irt_fdio.interface.fstat(fd, (nacl_irt_stat_t*)buf);
 }
 
 int _real_getdents(int fd, void *nacl_buf, size_t nacl_count, size_t *nread) {

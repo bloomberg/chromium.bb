@@ -8,10 +8,6 @@
 #if !defined(WIN23)
 #include <signal.h>
 
-#if defined(__arm__) && defined(__GLIBC__)
-#define SIGWINCH 38
-#endif
-
 #if defined(__APPLE__)
 typedef void (*sighandler_t)(int);
 #elif defined(__GLIBC__) || defined(__BIONIC__)
