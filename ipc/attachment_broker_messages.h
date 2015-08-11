@@ -19,9 +19,13 @@
 // ----------------------------------------------------------------------------
 
 #if defined(OS_WIN)
+// Define the serialization for Permissions.
+IPC_ENUM_TRAITS_MAX_VALUE(HandleWin::Permissions, HandleWin::MAX_PERMISSIONS);
+
 IPC_STRUCT_TRAITS_BEGIN(IPC::internal::HandleAttachmentWin::WireFormat)
   IPC_STRUCT_TRAITS_MEMBER(handle)
   IPC_STRUCT_TRAITS_MEMBER(destination_process)
+  IPC_STRUCT_TRAITS_MEMBER(permissions)
   IPC_STRUCT_TRAITS_MEMBER(attachment_id)
 IPC_STRUCT_TRAITS_END()
 #endif  // defined(OS_WIN)

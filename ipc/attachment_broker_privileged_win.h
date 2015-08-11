@@ -29,7 +29,7 @@ class IPC_EXPORT AttachmentBrokerPrivilegedWin
  private:
   using HandleWireFormat = internal::HandleAttachmentWin::WireFormat;
   // IPC message handlers.
-  void OnDuplicateWinHandle(const IPC::Message& message);
+  void OnDuplicateWinHandle(const Message& message);
 
   // Duplicates |wire_Format| from |source_process| into its destination
   // process.

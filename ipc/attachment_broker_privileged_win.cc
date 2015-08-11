@@ -95,6 +95,8 @@ AttachmentBrokerPrivilegedWin::DuplicateWinHandle(
   HandleWireFormat new_wire_format;
   new_wire_format.destination_process = wire_format.destination_process;
   new_wire_format.attachment_id = wire_format.attachment_id;
+  new_wire_format.permissions = wire_format.permissions;
+  new_wire_format.handle = 0;
 
   HANDLE original_handle = LongToHandle(wire_format.handle);
 
@@ -103,15 +105,28 @@ AttachmentBrokerPrivilegedWin::DuplicateWinHandle(
   base::Process dest_process =
       base::Process::OpenWithExtraPrivileges(wire_format.destination_process);
   if (source_process.Handle() && dest_process.Handle()) {
+    DWORD desired_access = 0;
+    DWORD options = 0;
+    switch (wire_format.permissions) {
+      case HandleWin::INVALID:
+        LOG(ERROR) << "Received invalid permissions for duplication.";
+        return new_wire_format;
+      case HandleWin::DUPLICATE:
+        options = DUPLICATE_SAME_ACCESS;
+        break;
+      case HandleWin::FILE_READ_WRITE:
+        desired_access = FILE_GENERIC_READ | FILE_GENERIC_WRITE;
+        break;
+    }
+
     HANDLE new_handle;
     DWORD result = ::DuplicateHandle(source_process.Handle(), original_handle,
-                                     dest_process.Handle(), &new_handle, 0,
-                                     FALSE, DUPLICATE_SAME_ACCESS);
+                                     dest_process.Handle(), &new_handle,
+                                     desired_access, FALSE, options);
 
     new_wire_format.handle = (result != 0) ? HandleToLong(new_handle) : 0;
-  } else {
-    new_wire_format.handle = 0;
   }
+
   return new_wire_format;
 }
 

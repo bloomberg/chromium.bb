@@ -20,7 +20,7 @@ TEST(AttachmentBrokerUnprivilegedWinTest, ReceiveValidMessage) {
   HANDLE handle = LongToHandle(8);
   base::ProcessId destination = base::Process::Current().Pid();
   scoped_refptr<internal::HandleAttachmentWin> attachment(
-      new internal::HandleAttachmentWin(handle));
+      new internal::HandleAttachmentWin(handle, HandleWin::DUPLICATE));
   AttachmentBrokerMsg_WinHandleHasBeenDuplicated msg(
       attachment->GetWireFormat(destination));
   AttachmentBrokerUnprivilegedWin attachment_broker;
@@ -40,7 +40,7 @@ TEST(AttachmentBrokerUnprivilegedWinTest, ReceiveInvalidMessage) {
   HANDLE handle = LongToHandle(8);
   base::ProcessId destination = base::Process::Current().Pid() + 1;
   scoped_refptr<internal::HandleAttachmentWin> attachment(
-      new internal::HandleAttachmentWin(handle));
+      new internal::HandleAttachmentWin(handle, HandleWin::DUPLICATE));
   AttachmentBrokerMsg_WinHandleHasBeenDuplicated msg(
       attachment->GetWireFormat(destination));
   AttachmentBrokerUnprivilegedWin attachment_broker;

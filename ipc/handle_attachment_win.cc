@@ -9,17 +9,20 @@
 namespace IPC {
 namespace internal {
 
-HandleAttachmentWin::HandleAttachmentWin(const HANDLE& handle)
-    : handle_(handle) {
-}
+HandleAttachmentWin::HandleAttachmentWin(const HANDLE& handle,
+                                         HandleWin::Permissions permissions)
+    : handle_(handle), permissions_(permissions) {}
 
 HandleAttachmentWin::HandleAttachmentWin(const WireFormat& wire_format)
     : BrokerableAttachment(wire_format.attachment_id, false),
-      handle_(LongToHandle(wire_format.handle)) {}
+      handle_(LongToHandle(wire_format.handle)),
+      permissions_(wire_format.permissions) {}
 
 HandleAttachmentWin::HandleAttachmentWin(
     const BrokerableAttachment::AttachmentId& id)
-    : BrokerableAttachment(id, true), handle_(INVALID_HANDLE_VALUE) {}
+    : BrokerableAttachment(id, true),
+      handle_(INVALID_HANDLE_VALUE),
+      permissions_(HandleWin::INVALID) {}
 
 HandleAttachmentWin::~HandleAttachmentWin() {
 }
@@ -48,6 +51,7 @@ HandleAttachmentWin::WireFormat HandleAttachmentWin::GetWireFormat(
   format.handle = HandleToLong(handle_);
   format.attachment_id = GetIdentifier();
   format.destination_process = destination;
+  format.permissions = permissions_;
   return format;
 }
 

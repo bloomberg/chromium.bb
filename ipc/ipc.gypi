@@ -26,6 +26,8 @@
           'brokerable_attachment.h',
           'handle_attachment_win.cc',
           'handle_attachment_win.h',
+          'handle_win.cc',
+          'handle_win.h',
           'ipc_channel.cc',
           'ipc_channel.h',
           'ipc_channel_factory.cc',

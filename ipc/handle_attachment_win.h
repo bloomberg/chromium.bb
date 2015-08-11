@@ -9,6 +9,7 @@
 
 #include "base/process/process_handle.h"
 #include "ipc/brokerable_attachment.h"
+#include "ipc/handle_win.h"
 #include "ipc/ipc_export.h"
 
 namespace IPC {
@@ -29,10 +30,12 @@ class IPC_EXPORT HandleAttachmentWin : public BrokerableAttachment {
     int32_t handle;
     // The id of the destination process that the handle is duplicated into.
     base::ProcessId destination_process;
+    // The permissions to use when duplicating the handle.
+    HandleWin::Permissions permissions;
     AttachmentId attachment_id;
   };
 
-  explicit HandleAttachmentWin(const HANDLE& handle);
+  HandleAttachmentWin(const HANDLE& handle, HandleWin::Permissions permissions);
   explicit HandleAttachmentWin(const WireFormat& wire_format);
   explicit HandleAttachmentWin(const BrokerableAttachment::AttachmentId& id);
 
@@ -47,6 +50,7 @@ class IPC_EXPORT HandleAttachmentWin : public BrokerableAttachment {
  private:
   ~HandleAttachmentWin() override;
   HANDLE handle_;
+  HandleWin::Permissions permissions_;
 };
 
 }  // namespace internal

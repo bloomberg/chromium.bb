@@ -13,6 +13,7 @@
 #include "ipc/attachment_broker_privileged_win.h"
 #include "ipc/attachment_broker_unprivileged_win.h"
 #include "ipc/handle_attachment_win.h"
+#include "ipc/handle_win.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_test_base.h"
@@ -191,7 +192,7 @@ class IPCAttachmentBrokerPrivilegedWinTest : public IPCTestBase {
         new IPC::Message(0, 2, IPC::Message::PRIORITY_NORMAL);
     message->WriteInt(message_index_++);
     scoped_refptr<IPC::internal::HandleAttachmentWin> attachment(
-        new IPC::internal::HandleAttachmentWin(h));
+        new IPC::internal::HandleAttachmentWin(h, IPC::HandleWin::DUPLICATE));
     ASSERT_TRUE(message->WriteAttachment(attachment));
     sender()->Send(message);
   }
@@ -305,6 +306,30 @@ TEST_F(IPCAttachmentBrokerPrivilegedWinTest, SendHandleToSelf) {
   CommonTearDown();
 }
 
+// Similar to SendHandle, except this test uses the HandleWin class.
+TEST_F(IPCAttachmentBrokerPrivilegedWinTest, SendHandleWin) {
+  Init("SendHandleWin");
+
+  CommonSetUp();
+  ResultListener result_listener;
+  get_proxy_listener()->set_listener(&result_listener);
+
+  HANDLE h = CreateTempFile();
+  IPC::HandleWin handle_win(h, IPC::HandleWin::FILE_READ_WRITE);
+  IPC::Message* message = new IPC::Message(0, 2, IPC::Message::PRIORITY_NORMAL);
+  message->WriteInt(0);
+  IPC::ParamTraits<IPC::HandleWin>::Write(message, handle_win);
+  sender()->Send(message);
+  base::MessageLoop::current()->Run();
+
+  // Check the result.
+  ASSERT_EQ(ProxyListener::MESSAGE_RECEIVED,
+            get_proxy_listener()->get_reason());
+  ASSERT_EQ(result_listener.get_result(), RESULT_SUCCESS);
+
+  CommonTearDown();
+}
+
 using OnMessageReceivedCallback =
     void (*)(MockObserver* observer,
              IPC::AttachmentBrokerPrivilegedWin* broker,
@@ -397,6 +422,10 @@ void SendHandleToSelfCallback(MockObserver* observer,
 MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendHandleToSelf) {
   return CommonPrivilegedProcessMain(&SendHandleToSelfCallback,
                                      "SendHandleToSelf");
+}
+
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendHandleWin) {
+  return CommonPrivilegedProcessMain(&SendHandleCallback, "SendHandleWin");
 }
 
 }  // namespace
