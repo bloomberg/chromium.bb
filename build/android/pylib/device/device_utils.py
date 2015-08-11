@@ -1568,8 +1568,9 @@ class DeviceUtils(object):
     assert isinstance(value, basestring), "value is not a string: %r" % value
 
     self.RunShellCommand(['setprop', property_name, value], check_return=True)
-    if property_name in self._cache:
-      del self._cache[property_name]
+    cache_key = '_prop:' + property_name
+    if cache_key in self._cache:
+      del self._cache[cache_key]
     # TODO(perezju) remove the option and make the check mandatory, but using a
     # single shell script to both set- and getprop.
     if check and value != self.GetProp(property_name):
