@@ -32,12 +32,12 @@ class DocumentTiming {
 public:
     DocumentTiming();
 
-    void setDomLoading(double);
-    void setDomInteractive(double);
-    void setDomContentLoadedEventStart(double);
-    void setDomContentLoadedEventEnd(double);
-    void setDomComplete(double);
-    void setFirstLayout(double);
+    void markDomLoading();
+    void markDomInteractive();
+    void markDomContentLoadedEventStart();
+    void markDomContentLoadedEventEnd();
+    void markDomComplete();
+    void markFirstLayout();
 
     double domLoading() const { return m_domLoading; }
     double domInteractive() const { return m_domInteractive; }

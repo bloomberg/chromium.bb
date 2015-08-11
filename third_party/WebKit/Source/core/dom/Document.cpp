@@ -1055,16 +1055,16 @@ void Document::setReadyState(ReadyState readyState)
     switch (readyState) {
     case Loading:
         if (!m_documentTiming.domLoading()) {
-            m_documentTiming.setDomLoading(monotonicallyIncreasingTime());
+            m_documentTiming.markDomLoading();
         }
         break;
     case Interactive:
         if (!m_documentTiming.domInteractive())
-            m_documentTiming.setDomInteractive(monotonicallyIncreasingTime());
+            m_documentTiming.markDomInteractive();
         break;
     case Complete:
         if (!m_documentTiming.domComplete())
-            m_documentTiming.setDomComplete(monotonicallyIncreasingTime());
+            m_documentTiming.markDomComplete();
         break;
     }
 
@@ -1908,7 +1908,7 @@ void Document::layoutUpdated()
     // first real or 'paintable' layout.
     if (isRenderingReady() && body() && !styleEngine().hasPendingSheets()) {
         if (!m_documentTiming.firstLayout())
-            m_documentTiming.setFirstLayout(monotonicallyIncreasingTime());
+            m_documentTiming.markFirstLayout();
     }
 }
 
@@ -4611,10 +4611,10 @@ void Document::finishedParsing()
     // FIXME: DOMContentLoaded is dispatched synchronously, but this should be dispatched in a queued task,
     // See https://crbug.com/425790
     if (!m_documentTiming.domContentLoadedEventStart())
-        m_documentTiming.setDomContentLoadedEventStart(monotonicallyIncreasingTime());
+        m_documentTiming.markDomContentLoadedEventStart();
     dispatchEvent(Event::createBubble(EventTypeNames::DOMContentLoaded));
     if (!m_documentTiming.domContentLoadedEventEnd())
-        m_documentTiming.setDomContentLoadedEventEnd(monotonicallyIncreasingTime());
+        m_documentTiming.markDomContentLoadedEventEnd();
     setParsingState(FinishedParsing);
 
     // The microtask checkpoint or the loader's finishedParsing() method may invoke script that causes this object to

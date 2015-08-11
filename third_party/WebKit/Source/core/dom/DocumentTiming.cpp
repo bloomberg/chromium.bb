@@ -19,40 +19,40 @@ DocumentTiming::DocumentTiming()
 {
 }
 
-void DocumentTiming::setDomLoading(double domLoading)
+void DocumentTiming::markDomLoading()
 {
-    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "domLoading", domLoading);
-    m_domLoading = domLoading;
+    m_domLoading = monotonicallyIncreasingTime();
+    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "domLoading", m_domLoading);
 }
 
-void DocumentTiming::setDomInteractive(double domInteractive)
+void DocumentTiming::markDomInteractive()
 {
-    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "domInteractive", domInteractive);
-    m_domInteractive = domInteractive;
+    m_domInteractive = monotonicallyIncreasingTime();
+    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "domInteractive", m_domInteractive);
 }
 
-void DocumentTiming::setDomContentLoadedEventStart(double domContentLoadedEventStart)
+void DocumentTiming::markDomContentLoadedEventStart()
 {
-    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "domContentLoadedEventStart", domContentLoadedEventStart);
-    m_domContentLoadedEventStart = domContentLoadedEventStart;
+    m_domContentLoadedEventStart = monotonicallyIncreasingTime();
+    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "domContentLoadedEventStart", m_domContentLoadedEventStart);
 }
 
-void DocumentTiming::setDomContentLoadedEventEnd(double domContentLoadedEventEnd)
+void DocumentTiming::markDomContentLoadedEventEnd()
 {
-    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "domContentLoadedEventEnd", domContentLoadedEventEnd);
-    m_domContentLoadedEventEnd = domContentLoadedEventEnd;
+    m_domContentLoadedEventEnd = monotonicallyIncreasingTime();
+    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "domContentLoadedEventEnd", m_domContentLoadedEventEnd);
 }
 
-void DocumentTiming::setDomComplete(double domComplete)
+void DocumentTiming::markDomComplete()
 {
-    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "domComplete", domComplete);
-    m_domComplete = domComplete;
+    m_domComplete = monotonicallyIncreasingTime();
+    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "domComplete", m_domComplete);
 }
 
-void DocumentTiming::setFirstLayout(double firstLayout)
+void DocumentTiming::markFirstLayout()
 {
-    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "firstLayout", firstLayout);
-    m_firstLayout = firstLayout;
+    m_firstLayout = monotonicallyIncreasingTime();
+    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "firstLayout", m_firstLayout);
 }
 
 } // namespace blink
