@@ -24,16 +24,15 @@ const char kExtensionCrx[] = "extension-crx";
 const char kExtensionUnpacked[] = "extension-unpacked";
 }  // namespace
 
+
 namespace media_router {
 
 MediaRouterBaseBrowserTest::MediaRouterBaseBrowserTest()
     : extension_load_event_(false, false), extension_host_created_(false) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableMediaRouter);
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      extensions::switches::kEnableExtensionActionRedesign);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnableBlinkFeatures, "Presentation");
+      switches::kEnableExperimentalWebPlatformFeatures, "Presentation");
 }
 
 MediaRouterBaseBrowserTest::~MediaRouterBaseBrowserTest() {
@@ -49,13 +48,13 @@ void MediaRouterBaseBrowserTest::TearDown() {
 }
 
 void MediaRouterBaseBrowserTest::SetUpOnMainThread() {
+  ExtensionBrowserTest::SetUpOnMainThread();
   extensions::ProcessManager* process_manager =
       extensions::ProcessManager::Get(browser()->profile());
   DCHECK(process_manager);
   process_manager->AddObserver(this);
   InstallAndEnableMRExtension();
   extension_load_event_.Wait();
-  ExtensionBrowserTest::SetUpOnMainThread();
 }
 
 void MediaRouterBaseBrowserTest::TearDownOnMainThread() {
