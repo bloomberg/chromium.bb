@@ -618,6 +618,36 @@ class TestPatchSeries(PatchSeriesTestCase):
     self.assertResults(series, patches, patches)
     self.mox.VerifyAll()
 
+  def testResetCheckouts(self):
+    """Tests resetting git repositories to origin."""
+    series = self.GetPatchSeries()
+
+    repo_path, _, _ = self._CommonGitSetup()
+    self.CommitFile(repo_path, 'aoeu', 'asdf')
+
+    def _GetHeadAndRemote():
+      head = git.RunGit(repo_path, ['log', 'HEAD', '-n1']).output
+      remote = git.RunGit(repo_path, ['log', 'cros', '-n1']).output
+      return head, remote
+
+    head, remote = _GetHeadAndRemote()
+    self.assertNotEqual(head, remote)
+
+    series.manifest = mock.Mock()
+    series.manifest.ListCheckouts.return_value = [mock.Mock(
+        GetPath=mock.Mock(return_value=repo_path),
+        __getitem__=lambda _self, k: {'tracking_branch': 'cros/master'}[k]
+    )]
+
+    def _MapStar(f, argss):
+      return [f(*args) for args in argss]
+
+    with mock.patch.object(parallel, 'RunTasksInProcessPool', new=_MapStar):
+      series.ResetCheckouts('master')
+
+    # verify that the checkout is reset.
+    head, remote = _GetHeadAndRemote()
+    self.assertEqual(head, remote)
 
 def MakePool(overlays=constants.PUBLIC_OVERLAYS, build_number=1,
              builder_name='foon', is_master=True, dryrun=True,
@@ -985,6 +1015,8 @@ class TestCoreLogic(MoxBase):
     pool._HandleCouldNotSubmit(patch2, mox.IgnoreArg()).InAnyOrder()
     pool._HandleCouldNotSubmit(patch3, mox.IgnoreArg()).InAnyOrder()
 
+    # pylint: disable=E1120,E1123
+    validation_pool.PatchSeries.Apply(set()).AndReturn(([], [], []))
     self.mox.ReplayAll()
 
     mock_manifest = mock.MagicMock()
@@ -1003,6 +1035,8 @@ class TestCoreLogic(MoxBase):
 
     pool._HandleApplyFailure(failed)
 
+    # pylint: disable=E1120,E1123
+    validation_pool.PatchSeries.Apply(set()).AndReturn(([], [], []))
     self.mox.ReplayAll()
     mock_manifest = mock.MagicMock()
     with mock.patch.object(git.ManifestCheckout, 'Cached', new=mock_manifest):
@@ -1018,9 +1052,78 @@ class TestCoreLogic(MoxBase):
     for patch in patches:
       pool._SubmitChangeUsingGerrit(patch, reason=reason).AndReturn(True)
 
+    # pylint: disable=E1120,E1123
+    validation_pool.PatchSeries.Apply(set()).AndReturn(([], [], []))
+
+    mock_manifest = mock.MagicMock()
     self.mox.ReplayAll()
-    pool.SubmitNonManifestChanges(reason=reason)
+    with mock.patch.object(git.ManifestCheckout, 'Cached', new=mock_manifest):
+      pool.SubmitNonManifestChanges(reason=reason)
     self.mox.VerifyAll()
+
+  def testSubmitAccumulation(self):
+    """Tests ValidationPool.SubmitChanges.
+
+    Tests that it accumulates a mix of local and remote changes that were
+    submitted and rejected.
+    """
+    pool, patches, _failed = self._setUpSubmit()
+    pool.non_manifest_changes = patches[:1]
+    reason = 'fake reason'
+
+    # pylint: disable=E1120,E1123
+    error = mock.Mock(patch=patches[1])
+    validation_pool.PatchSeries.Apply(
+        set(patches[1:])).AndReturn(
+            ([patches[2]],
+             [error],
+             []))
+
+    self.mox.StubOutWithMock(validation_pool.PatchSeries, 'GetGitRepoForChange')
+    for i, patch in enumerate(patches):
+      # pylint: disable=E1120,E1123
+      validation_pool.PatchSeries.GetGitRepoForChange(
+          mox.IgnoreArg(), strict=False
+          ).AndReturn('foo_repo' if i > 0 else None)
+
+    self.mox.StubOutWithMock(validation_pool.ValidationPool,
+                             'SubmitLocalChanges')
+    pool.SubmitLocalChanges(
+        {'foo_repo': set((patches[2],))}, reason
+        ).AndReturn((set((patches[2],)), {}))
+
+    for patch in pool.non_manifest_changes:
+      pool._SubmitChangeUsingGerrit(patch, reason=reason).AndReturn(True)
+
+    pool._HandleCouldNotSubmit(patches[1], error)
+
+    mock_manifest = mock.MagicMock()
+    self.mox.ReplayAll()
+    with mock.patch.object(git.ManifestCheckout, 'Cached', new=mock_manifest):
+      submitted, errors = pool.SubmitChanges(patches, reason=reason)
+
+    self.assertEqual(submitted, set((patches[0], patches[2])))
+    self.assertEqual(errors, {patches[1]: error})
+    self.mox.VerifyAll()
+
+  def testPushRepoBranchPushesOnce(self):
+    """Tests that PushRepoBranch pushes once if there is no error."""
+    pool, patches, _failed = self._setUpSubmit()
+
+    repo = '/fake/path/aoeuidhtns'
+    tracking_branch = git.RemoteRef('cros', 'to_branch')
+
+    context = contextlib.nested(
+        mock.patch.object(git, 'SyncPushBranch'),
+        mock.patch.object(git, 'GitPush'),
+        mock.patch.object(git, 'GetTrackingBranch',
+                          new=lambda _: tracking_branch))
+
+    with context as (sync_func, push_func, _):
+      errors = pool.PushRepoBranch(repo, set(patches), 'from_branch')
+      self.assertEqual({}, errors)
+      self.assertEqual(1, sync_func.call_count)
+      self.assertEqual(1, push_func.call_count)
 
   def testUnhandledExceptions(self):
     """Test that CQ doesn't loop due to unhandled Exceptions."""
@@ -1636,6 +1739,9 @@ class BaseSubmitPoolTestCase(MoxBase):
     self.pool_mock = self.StartPatcher(MockValidationPool(self.manager))
     self.patch_mock = self.StartPatcher(MockPatchSeries())
     self.PatchObject(gerrit.GerritHelper, 'QuerySingleRecord')
+    # This is patched out for performance, not correctness.
+    self.PatchObject(validation_pool.PatchSeries, 'ReapplyChanges',
+                     lambda self, by_repo: (by_repo, {}))
     self.patches = self.GetPatches(2)
 
   def SetUpPatchPool(self, failed_to_apply=False):

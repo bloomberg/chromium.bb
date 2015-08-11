@@ -25,14 +25,15 @@ from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import triage_lib
 from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot import validation_pool
-from chromite.cbuildbot.stages import sync_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
-from chromite.lib import cros_build_lib_unittest
+from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_build_lib_unittest
 from chromite.lib import fake_cidb
 from chromite.lib import gerrit
+from chromite.lib import git
 from chromite.lib import git_unittest
 from chromite.lib import gob_util
 from chromite.lib import osutils
@@ -319,12 +320,14 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
 
     # Block the CQ from contacting GoB.
     self.PatchObject(gerrit.GerritHelper, 'RemoveReady')
-    self.PatchObject(gerrit.GerritHelper, 'SubmitChange')
     self.PatchObject(validation_pool.PaladinMessage, 'Send')
+    self.PatchObject(validation_pool.ValidationPool, 'SubmitChanges')
 
     # If a test is still contacting GoB, something is busted.
     self.PatchObject(gob_util, 'CreateHttpConn',
                      side_effect=AssertionError('Test should not contact GoB'))
+    self.PatchObject(git, 'GitPush',
+                     side_effect=AssertionError('Test should not push.'))
 
     # Create a fake repo / manifest on disk that is used by subclasses.
     for subdir in ('repo', 'manifests'):

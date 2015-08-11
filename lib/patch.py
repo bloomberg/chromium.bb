@@ -964,9 +964,7 @@ class GitRepoPatch(PatchQuery):
 
   def _AmendCommitMessage(self, git_repo):
     """"Amend the commit and update our sha1 with the new commit."""
-    git.RunGit(git_repo, ['commit', '--amend', '-m', self.commit_message],
-               extra_env={'GIT_COMMITTER_NAME': self._committer_name or '',
-                          'GIT_COMMITTER_EMAIL': self._committer_email or ''})
+    git.RunGit(git_repo, ['commit', '--amend', '-m', self.commit_message])
     self.sha1 = ParseSHA1(self._PullData('HEAD', git_repo)[0], error_ok=False)
 
   def CherryPick(self, git_repo, trivial=False, inflight=False,
