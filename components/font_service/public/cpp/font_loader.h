@@ -16,7 +16,6 @@
 
 namespace mojo {
 class ApplicationImpl;
-class Shell;
 }
 
 namespace font_service {
@@ -33,7 +32,6 @@ class FontServiceThread;
 class FontLoader : public SkFontConfigInterface,
                    public internal::MappedFontFile::Observer {
  public:
-  explicit FontLoader(mojo::Shell* shell);
   explicit FontLoader(mojo::ApplicationImpl* application_impl);
   ~FontLoader() override;
 
