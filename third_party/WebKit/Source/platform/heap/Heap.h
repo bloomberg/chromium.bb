@@ -388,7 +388,7 @@ public:
     virtual void checkAndMarkPointer(Visitor*, Address) = 0;
     virtual void markOrphaned();
 
-    virtual void takeSnapshot(String dumpBaseName, size_t pageIndex, size_t* outFreeSize, size_t* outFreeCount) = 0;
+    virtual void takeSnapshot(String dumpBaseName, size_t pageIndex, ThreadState::GCSnapshotInfo&, size_t* outFreeSize, size_t* outFreeCount) = 0;
 #if ENABLE(GC_PROFILING)
     virtual const GCInfo* findGCInfo(Address) = 0;
     virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*) = 0;
@@ -470,7 +470,7 @@ public:
     void checkAndMarkPointer(Visitor*, Address) override;
     void markOrphaned() override;
 
-    void takeSnapshot(String dumpBaseName, size_t pageIndex, size_t* outFreeSize, size_t* outFreeCount) override;
+    void takeSnapshot(String dumpBaseName, size_t pageIndex, ThreadState::GCSnapshotInfo&, size_t* outFreeSize, size_t* outFreeCount) override;
 #if ENABLE(GC_PROFILING)
     const GCInfo* findGCInfo(Address) override;
     void snapshot(TracedValue*, ThreadState::SnapshotInfo*) override;
@@ -535,7 +535,7 @@ public:
     void checkAndMarkPointer(Visitor*, Address) override;
     void markOrphaned() override;
 
-    void takeSnapshot(String dumpBaseName, size_t pageIndex, size_t* outFreeSize, size_t* outFreeCount) override;
+    void takeSnapshot(String dumpBaseName, size_t pageIndex, ThreadState::GCSnapshotInfo&, size_t* outFreeSize, size_t* outFreeCount) override;
 #if ENABLE(GC_PROFILING)
     const GCInfo* findGCInfo(Address) override;
     void snapshot(TracedValue*, ThreadState::SnapshotInfo*) override;
@@ -681,7 +681,7 @@ public:
     virtual ~BaseHeap();
     void cleanupPages();
 
-    void takeSnapshot(const String& dumpBaseName);
+    void takeSnapshot(const String& dumpBaseName, ThreadState::GCSnapshotInfo&);
 #if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
     BasePage* findPageFromAddress(Address);
 #endif

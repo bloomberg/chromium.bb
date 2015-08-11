@@ -386,7 +386,6 @@ private:
     bool m_isGlobalMarkingVisitor;
 };
 
-#if ENABLE(GC_PROFILING)
 template<typename T>
 struct TypenameStringTrait {
     static const String& get()
@@ -395,7 +394,6 @@ struct TypenameStringTrait {
         return typenameString;
     }
 };
-#endif
 
 } // namespace blink
 

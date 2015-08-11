@@ -499,6 +499,16 @@ public:
     // Visit all persistents allocated on this thread.
     void visitPersistents(Visitor*);
 
+    struct GCSnapshotInfo {
+        GCSnapshotInfo(size_t numObjectTypes);
+
+        // Map from gcInfoIndex (vector-index) to count/size.
+        Vector<int> liveCount;
+        Vector<int> deadCount;
+        Vector<size_t> liveSize;
+        Vector<size_t> deadSize;
+    };
+
 #if ENABLE(GC_PROFILING)
     const GCInfo* findGCInfo(Address);
     static const GCInfo* findGCInfoFromAllThreads(Address);

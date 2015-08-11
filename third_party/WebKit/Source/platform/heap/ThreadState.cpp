@@ -33,12 +33,15 @@
 
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
+#include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/CallbackStack.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/MarkingVisitor.h"
 #include "platform/heap/SafePoint.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebMemoryAllocatorDump.h"
+#include "public/platform/WebProcessMemoryDump.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
@@ -375,6 +378,14 @@ void ThreadState::visitPersistents(Visitor* visitor)
         TRACE_EVENT0("blink_gc", "V8GCController::traceDOMWrappers");
         m_traceDOMWrappers(m_isolate, visitor);
     }
+}
+
+ThreadState::GCSnapshotInfo::GCSnapshotInfo(size_t numObjectTypes)
+    : liveCount(Vector<int>(numObjectTypes))
+    , deadCount(Vector<int>(numObjectTypes))
+    , liveSize(Vector<size_t>(numObjectTypes))
+    , deadSize(Vector<size_t>(numObjectTypes))
+{
 }
 
 #if ENABLE(GC_PROFILING)
@@ -1409,22 +1420,27 @@ void ThreadState::takeSnapshot(SnapshotType type)
 {
     ASSERT(isInGC());
 
+    // 0 is used as index for freelist entries. Objects are indexed 1 to
+    // gcInfoIndex.
+    GCSnapshotInfo info(GCInfoTable::gcInfoIndex() + 1);
+    String threadDumpName = String::format("blink_gc/thread_%lu", static_cast<unsigned long>(m_thread));
+    const String heapsDumpName = threadDumpName + "/heaps";
+    const String classesDumpName = threadDumpName + "/classes";
+
     int numberOfHeapsReported = 0;
-#define SNAPSHOT_HEAP(HeapType)                                                                                \
-    {                                                                                                          \
-        numberOfHeapsReported++;                                                                               \
-        String allocatorBaseName;                                                                              \
-        allocatorBaseName = String::format("blink_gc/thread_%lu/heaps/" #HeapType, (unsigned long)(m_thread)); \
-        switch (type) {                                                                                        \
-        case SnapshotType::HeapSnapshot:                                                                       \
-            m_heaps[HeapType##HeapIndex]->takeSnapshot(allocatorBaseName);                                     \
-            break;                                                                                             \
-        case SnapshotType::FreelistSnapshot:                                                                   \
-            m_heaps[HeapType##HeapIndex]->takeFreelistSnapshot(allocatorBaseName);                             \
-            break;                                                                                             \
-        default:                                                                                               \
-            ASSERT_NOT_REACHED();                                                                              \
-        }                                                                                                      \
+#define SNAPSHOT_HEAP(HeapType)                                                                \
+    {                                                                                          \
+        numberOfHeapsReported++;                                                               \
+        switch (type) {                                                                        \
+        case SnapshotType::HeapSnapshot:                                                       \
+            m_heaps[HeapType##HeapIndex]->takeSnapshot(heapsDumpName + "/" #HeapType, info);   \
+            break;                                                                             \
+        case SnapshotType::FreelistSnapshot:                                                   \
+            m_heaps[HeapType##HeapIndex]->takeFreelistSnapshot(heapsDumpName + "/" #HeapType); \
+            break;                                                                             \
+        default:                                                                               \
+            ASSERT_NOT_REACHED();                                                              \
+        }                                                                                      \
     }
 
     SNAPSHOT_HEAP(NormalPage1);
@@ -1444,6 +1460,37 @@ void ThreadState::takeSnapshot(SnapshotType type)
     ASSERT(numberOfHeapsReported == NumberOfHeaps);
 
 #undef SNAPSHOT_HEAP
+
+    if (type == SnapshotType::FreelistSnapshot)
+        return;
+
+    size_t totalLiveCount = 0;
+    size_t totalDeadCount = 0;
+    size_t totalLiveSize = 0;
+    size_t totalDeadSize = 0;
+    for (size_t i = 1; i <= GCInfoTable::gcInfoIndex(); ++i) {
+        String dumpName = classesDumpName + "/" + Heap::gcInfo(i)->className();
+        WebMemoryAllocatorDump* classDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName);
+        classDump->AddScalar("live_count", "objects", info.liveCount[i]);
+        classDump->AddScalar("dead_count", "objects", info.deadCount[i]);
+        classDump->AddScalar("live_size", "bytes", info.liveSize[i]);
+        classDump->AddScalar("dead_size", "bytes", info.deadSize[i]);
+
+        totalLiveCount += info.liveCount[i];
+        totalDeadCount += info.deadCount[i];
+        totalLiveSize += info.liveSize[i];
+        totalDeadSize += info.deadSize[i];
+    }
+
+    WebMemoryAllocatorDump* threadDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(threadDumpName);
+    threadDump->AddScalar("live_count", "objects", totalLiveCount);
+    threadDump->AddScalar("dead_count", "objects", totalDeadCount);
+    threadDump->AddScalar("live_size", "bytes", totalLiveSize);
+    threadDump->AddScalar("dead_size", "bytes", totalDeadSize);
+
+    WebMemoryAllocatorDump* heapsDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(heapsDumpName);
+    WebMemoryAllocatorDump* classesDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(classesDumpName);
+    BlinkGCMemoryDumpProvider::instance()->currentProcessMemoryDump()->AddOwnershipEdge(classesDump->guid(), heapsDump->guid());
 }
 
 #if ENABLE(GC_PROFILING)

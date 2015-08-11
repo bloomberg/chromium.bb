@@ -242,7 +242,7 @@ void BaseHeap::cleanupPages()
     m_firstPage = nullptr;
 }
 
-void BaseHeap::takeSnapshot(const String& dumpBaseName)
+void BaseHeap::takeSnapshot(const String& dumpBaseName, ThreadState::GCSnapshotInfo& info)
 {
     // |dumpBaseName| at this point is "blink_gc/thread_X/heaps/HeapName"
     WebMemoryAllocatorDump* allocatorDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpBaseName);
@@ -252,7 +252,7 @@ void BaseHeap::takeSnapshot(const String& dumpBaseName)
     for (BasePage* page = m_firstUnsweptPage; page; page = page->next()) {
         size_t heapPageFreeSize = 0;
         size_t heapPageFreeCount = 0;
-        page->takeSnapshot(dumpBaseName, pageIndex, &heapPageFreeSize, &heapPageFreeCount);
+        page->takeSnapshot(dumpBaseName, pageIndex, info, &heapPageFreeSize, &heapPageFreeCount);
         heapTotalFreeSize += heapPageFreeSize;
         heapTotalFreeCount += heapPageFreeCount;
         pageIndex++;
@@ -1555,7 +1555,7 @@ void NormalPage::markOrphaned()
     BasePage::markOrphaned();
 }
 
-void NormalPage::takeSnapshot(String dumpName, size_t pageIndex, size_t* outFreeSize, size_t* outFreeCount)
+void NormalPage::takeSnapshot(String dumpName, size_t pageIndex, ThreadState::GCSnapshotInfo& info, size_t* outFreeSize, size_t* outFreeCount)
 {
     dumpName.append(String::format("/pages/page_%lu", static_cast<unsigned long>(pageIndex)));
     WebMemoryAllocatorDump* pageDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName);
@@ -1575,9 +1575,17 @@ void NormalPage::takeSnapshot(String dumpName, size_t pageIndex, size_t* outFree
         } else if (header->isMarked()) {
             liveCount++;
             liveSize += header->size();
+
+            size_t gcInfoIndex = header->gcInfoIndex();
+            info.liveCount[gcInfoIndex]++;
+            info.liveSize[gcInfoIndex] += header->size();
         } else {
             deadCount++;
             deadSize += header->size();
+
+            size_t gcInfoIndex = header->gcInfoIndex();
+            info.deadCount[gcInfoIndex]++;
+            info.deadSize[gcInfoIndex] += header->size();
         }
     }
 
@@ -1766,7 +1774,7 @@ void LargeObjectPage::markOrphaned()
     BasePage::markOrphaned();
 }
 
-void LargeObjectPage::takeSnapshot(String dumpName, size_t pageIndex, size_t* outFreeSize, size_t* outFreeCount)
+void LargeObjectPage::takeSnapshot(String dumpName, size_t pageIndex, ThreadState::GCSnapshotInfo& info, size_t* outFreeSize, size_t* outFreeCount)
 {
     dumpName.append(String::format("/pages/page_%lu", static_cast<unsigned long>(pageIndex)));
     WebMemoryAllocatorDump* pageDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName);
@@ -1776,12 +1784,17 @@ void LargeObjectPage::takeSnapshot(String dumpName, size_t pageIndex, size_t* ou
     size_t liveCount = 0;
     size_t deadCount = 0;
     HeapObjectHeader* header = heapObjectHeader();
+    size_t gcInfoIndex = header->gcInfoIndex();
     if (header->isMarked()) {
         liveCount = 1;
         liveSize += header->payloadSize();
+        info.liveCount[gcInfoIndex]++;
+        info.liveSize[gcInfoIndex] += header->size();
     } else {
         deadCount = 1;
         deadSize += header->payloadSize();
+        info.deadCount[gcInfoIndex]++;
+        info.deadSize[gcInfoIndex] += header->size();
     }
 
     pageDump->AddScalar("live_count", "objects", liveCount);

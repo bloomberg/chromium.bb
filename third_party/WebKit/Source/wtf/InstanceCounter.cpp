@@ -35,8 +35,6 @@
 
 namespace WTF {
 
-#if ENABLE(INSTANCE_COUNTER) || ENABLE(GC_PROFILING)
-
 #if COMPILER(CLANG)
 const size_t extractNameFunctionPrefixLength = sizeof("const char *WTF::extractNameFunction() [T = ") - 1;
 const size_t extractNameFunctionPostfixLength = sizeof("]") - 1;
@@ -64,6 +62,8 @@ String extractTypeNameFromFunctionName(const char* funcName)
     return String("unknown");
 #endif
 }
+
+#if ENABLE(INSTANCE_COUNTER) || ENABLE(GC_PROFILING)
 
 class InstanceCounter {
 public:
