@@ -237,8 +237,10 @@ void URLRequestChromeJob::Start() {
 }
 
 void URLRequestChromeJob::Kill() {
+  weak_factory_.InvalidateWeakPtrs();
   if (backend_)
     backend_->RemoveRequest(this);
+  URLRequestJob::Kill();
 }
 
 bool URLRequestChromeJob::GetMimeType(std::string* mime_type) const {
