@@ -46,20 +46,20 @@ class HTMLTokenizer;
 class SegmentedString;
 
 struct CORE_EXPORT CachedDocumentParameters {
-    static PassOwnPtr<CachedDocumentParameters> create(Document* document, PassRefPtr<MediaValues> mediaValues = nullptr)
+    static PassOwnPtr<CachedDocumentParameters> create(Document* document, PassRefPtrWillBeRawPtr<MediaValues> mediaValues = nullptr)
     {
         return adoptPtr(new CachedDocumentParameters(document, mediaValues));
     }
 
     bool doHtmlPreloadScanning;
-    RefPtr<MediaValues> mediaValues;
+    RefPtrWillBeCrossThreadPersistent<MediaValues> mediaValues;
     Length defaultViewportMinWidth;
     bool viewportMetaZeroValuesQuirk;
     bool viewportMetaEnabled;
     ReferrerPolicy referrerPolicy;
 
 private:
-    CachedDocumentParameters(Document*, PassRefPtr<MediaValues>);
+    CachedDocumentParameters(Document*, PassRefPtrWillBeRawPtr<MediaValues>);
 };
 
 class TokenPreloadScanner {

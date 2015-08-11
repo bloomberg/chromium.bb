@@ -13,9 +13,9 @@ class Document;
 
 class MediaValuesDynamic final : public MediaValues {
 public:
-    static PassRefPtr<MediaValues> create(Document&);
-    static PassRefPtr<MediaValues> create(LocalFrame*);
-    PassRefPtr<MediaValues> copy() const override;
+    static PassRefPtrWillBeRawPtr<MediaValues> create(Document&);
+    static PassRefPtrWillBeRawPtr<MediaValues> create(LocalFrame*);
+    PassRefPtrWillBeRawPtr<MediaValues> copy() const override;
     bool isSafeToSendToAnotherThread() const override;
     bool computeLength(double value, CSSPrimitiveValue::UnitType, int& result) const override;
     bool computeLength(double value, CSSPrimitiveValue::UnitType, double& result) const override;
@@ -38,13 +38,14 @@ public:
     Document* document() const override;
     bool hasValues() const override;
 
+    DECLARE_VIRTUAL_TRACE();
+
 protected:
     MediaValuesDynamic(LocalFrame*);
 
     // This raw ptr is safe, as MediaValues would not outlive MediaQueryEvaluator, and
     // MediaQueryEvaluator is reset on |Document::detach|.
-    // FIXME: Oilpan: This raw ptr should be changed to a Member when LocalFrame is migrated to the heap.
-    LocalFrame* m_frame;
+    RawPtrWillBeMember<LocalFrame> m_frame;
 };
 
 } // namespace

@@ -25,7 +25,7 @@
 
 namespace blink {
 
-PassRefPtr<MediaValues> MediaValues::createDynamicIfFrameExists(LocalFrame* frame)
+PassRefPtrWillBeRawPtr<MediaValues> MediaValues::createDynamicIfFrameExists(LocalFrame* frame)
 {
     if (frame)
         return MediaValuesDynamic::create(frame);

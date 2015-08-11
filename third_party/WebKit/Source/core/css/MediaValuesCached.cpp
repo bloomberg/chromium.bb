@@ -12,29 +12,29 @@
 
 namespace blink {
 
-PassRefPtr<MediaValues> MediaValuesCached::create()
+PassRefPtrWillBeRawPtr<MediaValues> MediaValuesCached::create()
 {
-    return adoptRef(new MediaValuesCached());
+    return adoptRefWillBeNoop(new MediaValuesCached());
 }
 
-PassRefPtr<MediaValues> MediaValuesCached::create(MediaValuesCachedData& data)
+PassRefPtrWillBeRawPtr<MediaValues> MediaValuesCached::create(MediaValuesCachedData& data)
 {
-    return adoptRef(new MediaValuesCached(data));
+    return adoptRefWillBeNoop(new MediaValuesCached(data));
 }
 
-PassRefPtr<MediaValues> MediaValuesCached::create(Document& document)
+PassRefPtrWillBeRawPtr<MediaValues> MediaValuesCached::create(Document& document)
 {
     return MediaValuesCached::create(frameFrom(document));
 }
 
-PassRefPtr<MediaValues> MediaValuesCached::create(LocalFrame* frame)
+PassRefPtrWillBeRawPtr<MediaValues> MediaValuesCached::create(LocalFrame* frame)
 {
     // FIXME - Added an assert here so we can better understand when a frame is present without its view().
     ASSERT(!frame || frame->view());
     if (!frame || !frame->view())
-        return adoptRef(new MediaValuesCached());
+        return adoptRefWillBeNoop(new MediaValuesCached());
     ASSERT(frame->document() && frame->document()->layoutView());
-    return adoptRef(new MediaValuesCached(frame));
+    return adoptRefWillBeNoop(new MediaValuesCached(frame));
 }
 
 MediaValuesCached::MediaValuesCached()
@@ -72,9 +72,9 @@ MediaValuesCached::MediaValuesCached(const MediaValuesCachedData& data)
 {
 }
 
-PassRefPtr<MediaValues> MediaValuesCached::copy() const
+PassRefPtrWillBeRawPtr<MediaValues> MediaValuesCached::copy() const
 {
-    return adoptRef(new MediaValuesCached(m_data));
+    return adoptRefWillBeNoop(new MediaValuesCached(m_data));
 }
 
 bool MediaValuesCached::computeLength(double value, CSSPrimitiveValue::UnitType type, int& result) const
@@ -89,7 +89,15 @@ bool MediaValuesCached::computeLength(double value, CSSPrimitiveValue::UnitType 
 
 bool MediaValuesCached::isSafeToSendToAnotherThread() const
 {
+#if ENABLE(OILPAN)
+    // Oilpan objects are safe to send to another thread as long as the thread
+    // does not outlive the thread used for creation. MediaValues are
+    // allocated on the main thread and may be passed to the parser thread,
+    // so this should be safe.
+    return true;
+#else
     return hasOneRef();
+#endif
 }
 
 int MediaValuesCached::viewportWidth() const

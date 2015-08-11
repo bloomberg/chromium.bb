@@ -12,7 +12,7 @@
 
 namespace blink {
 
-SizesAttributeParser::SizesAttributeParser(PassRefPtr<MediaValues> mediaValues, const String& attribute)
+SizesAttributeParser::SizesAttributeParser(PassRefPtrWillBeRawPtr<MediaValues> mediaValues, const String& attribute)
     : m_mediaValues(mediaValues)
     , m_length(0)
     , m_lengthWasSet(false)

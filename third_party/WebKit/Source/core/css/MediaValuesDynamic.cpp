@@ -14,16 +14,16 @@
 
 namespace blink {
 
-PassRefPtr<MediaValues> MediaValuesDynamic::create(Document& document)
+PassRefPtrWillBeRawPtr<MediaValues> MediaValuesDynamic::create(Document& document)
 {
     return MediaValuesDynamic::create(frameFrom(document));
 }
 
-PassRefPtr<MediaValues> MediaValuesDynamic::create(LocalFrame* frame)
+PassRefPtrWillBeRawPtr<MediaValues> MediaValuesDynamic::create(LocalFrame* frame)
 {
     if (!frame || !frame->view() || !frame->document() || !frame->document()->layoutView())
         return MediaValuesCached::create();
-    return adoptRef(new MediaValuesDynamic(frame));
+    return adoptRefWillBeNoop(new MediaValuesDynamic(frame));
 }
 
 MediaValuesDynamic::MediaValuesDynamic(LocalFrame* frame)
@@ -32,9 +32,9 @@ MediaValuesDynamic::MediaValuesDynamic(LocalFrame* frame)
     ASSERT(m_frame);
 }
 
-PassRefPtr<MediaValues> MediaValuesDynamic::copy() const
+PassRefPtrWillBeRawPtr<MediaValues> MediaValuesDynamic::copy() const
 {
-    return adoptRef(new MediaValuesDynamic(m_frame));
+    return adoptRefWillBeNoop(new MediaValuesDynamic(m_frame));
 }
 
 bool MediaValuesDynamic::computeLength(double value, CSSPrimitiveValue::UnitType type, int& result) const
@@ -145,6 +145,12 @@ Document* MediaValuesDynamic::document() const
 bool MediaValuesDynamic::hasValues() const
 {
     return m_frame;
+}
+
+DEFINE_TRACE(MediaValuesDynamic)
+{
+    visitor->trace(m_frame);
+    MediaValues::trace(visitor);
 }
 
 } // namespace

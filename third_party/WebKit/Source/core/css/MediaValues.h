@@ -18,13 +18,14 @@ class Document;
 class CSSPrimitiveValue;
 class LocalFrame;
 
-class CORE_EXPORT MediaValues : public RefCounted<MediaValues> {
+class CORE_EXPORT MediaValues : public RefCountedWillBeGarbageCollectedFinalized<MediaValues> {
 public:
 
     virtual ~MediaValues() { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
-    static PassRefPtr<MediaValues> createDynamicIfFrameExists(LocalFrame*);
-    virtual PassRefPtr<MediaValues> copy() const = 0;
+    static PassRefPtrWillBeRawPtr<MediaValues> createDynamicIfFrameExists(LocalFrame*);
+    virtual PassRefPtrWillBeRawPtr<MediaValues> copy() const = 0;
     virtual bool isSafeToSendToAnotherThread() const = 0;
 
     static bool computeLengthImpl(double value, CSSPrimitiveValue::UnitType, unsigned defaultFontSize, unsigned viewportWidth, unsigned viewportHeight, double& result);

@@ -51,11 +51,11 @@ public:
         }
     };
 
-    static PassRefPtr<MediaValues> create();
-    static PassRefPtr<MediaValues> create(Document&);
-    static PassRefPtr<MediaValues> create(LocalFrame*);
-    static PassRefPtr<MediaValues> create(MediaValuesCachedData&);
-    PassRefPtr<MediaValues> copy() const override;
+    static PassRefPtrWillBeRawPtr<MediaValues> create();
+    static PassRefPtrWillBeRawPtr<MediaValues> create(Document&);
+    static PassRefPtrWillBeRawPtr<MediaValues> create(LocalFrame*);
+    static PassRefPtrWillBeRawPtr<MediaValues> create(MediaValuesCachedData&);
+    PassRefPtrWillBeRawPtr<MediaValues> copy() const override;
     bool isSafeToSendToAnotherThread() const override;
     bool computeLength(double value, CSSPrimitiveValue::UnitType, int& result) const override;
     bool computeLength(double value, CSSPrimitiveValue::UnitType, double& result) const override;

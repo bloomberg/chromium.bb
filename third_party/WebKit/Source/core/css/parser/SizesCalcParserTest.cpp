@@ -114,7 +114,7 @@ TEST(SizesCalcParserTest, Basic)
     data.mediaType = MediaTypeNames::screen;
     data.strictMode = true;
     data.displayMode = WebDisplayModeBrowser;
-    RefPtr<MediaValues> mediaValues = MediaValuesCached::create(data);
+    RefPtrWillBeRawPtr<MediaValues> mediaValues = MediaValuesCached::create(data);
 
     for (unsigned i = 0; testCases[i].input; ++i) {
         SizesCalcParser calcParser(CSSTokenizer::Scope(testCases[i].input).tokenRange(), mediaValues);

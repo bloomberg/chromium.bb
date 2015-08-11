@@ -34,9 +34,9 @@ struct SizesCalcValue {
 };
 
 class CORE_EXPORT SizesCalcParser {
-
+    STACK_ALLOCATED();
 public:
-    SizesCalcParser(CSSParserTokenRange, PassRefPtr<MediaValues>);
+    SizesCalcParser(CSSParserTokenRange, PassRefPtrWillBeRawPtr<MediaValues>);
 
     float result() const;
     bool isValid() const { return m_isValid; }
@@ -50,7 +50,7 @@ private:
     void appendOperator(const CSSParserToken&);
 
     Vector<SizesCalcValue> m_valueList;
-    RefPtr<MediaValues> m_mediaValues;
+    RefPtrWillBeMember<MediaValues> m_mediaValues;
     bool m_isValid;
     float m_result;
 };

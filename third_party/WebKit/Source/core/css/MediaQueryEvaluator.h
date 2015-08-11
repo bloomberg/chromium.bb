@@ -92,7 +92,7 @@ private:
 
     String m_mediaType;
     bool m_expectedResult;
-    RefPtr<MediaValues> m_mediaValues;
+    RefPtrWillBePersistent<MediaValues> m_mediaValues;
 };
 
 } // namespace

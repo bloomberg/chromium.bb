@@ -108,8 +108,9 @@ static bool mediaAttributeMatches(const MediaValues& mediaValues, const String& 
 }
 
 class TokenPreloadScanner::StartTagScanner {
+    STACK_ALLOCATED();
 public:
-    StartTagScanner(const StringImpl* tagImpl, PassRefPtr<MediaValues> mediaValues)
+    StartTagScanner(const StringImpl* tagImpl, PassRefPtrWillBeRawPtr<MediaValues> mediaValues)
         : m_tagImpl(tagImpl)
         , m_linkIsStyleSheet(false)
         , m_linkIsPreconnect(false)
@@ -409,7 +410,7 @@ private:
     bool m_isCORSEnabled;
     FetchRequest::DeferOption m_defer;
     StoredCredentials m_allowCredentials;
-    RefPtr<MediaValues> m_mediaValues;
+    RefPtrWillBeMember<MediaValues> m_mediaValues;
 };
 
 TokenPreloadScanner::TokenPreloadScanner(const KURL& documentURL, PassOwnPtr<CachedDocumentParameters> documentParameters)
@@ -650,7 +651,7 @@ void HTMLPreloadScanner::scan(ResourcePreloader* preloader, const KURL& starting
     preloader->takeAndPreload(requests);
 }
 
-CachedDocumentParameters::CachedDocumentParameters(Document* document, PassRefPtr<MediaValues> givenMediaValues)
+CachedDocumentParameters::CachedDocumentParameters(Document* document, PassRefPtrWillBeRawPtr<MediaValues> givenMediaValues)
 {
     ASSERT(isMainThread());
     ASSERT(document);

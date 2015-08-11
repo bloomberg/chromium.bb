@@ -17,7 +17,7 @@ namespace blink {
 class CORE_EXPORT SizesAttributeParser {
     STACK_ALLOCATED();
 public:
-    SizesAttributeParser(PassRefPtr<MediaValues>, const String&);
+    SizesAttributeParser(PassRefPtrWillBeRawPtr<MediaValues>, const String&);
 
     float length();
 
@@ -29,7 +29,7 @@ private:
     unsigned effectiveSizeDefaultValue();
 
     RefPtrWillBeMember<MediaQuerySet> m_mediaCondition;
-    RefPtr<MediaValues> m_mediaValues;
+    RefPtrWillBeMember<MediaValues> m_mediaValues;
     float m_length;
     bool m_lengthWasSet;
     bool m_isValid;
