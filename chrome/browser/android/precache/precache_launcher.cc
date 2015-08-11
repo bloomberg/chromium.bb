@@ -12,20 +12,14 @@
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/precache/precache_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "components/keyed_service/core/service_access_type.h"
 #include "components/precache/content/precache_manager.h"
 #include "jni/PrecacheLauncher_jni.h"
 
 using base::android::AttachCurrentThread;
 using precache::PrecacheManager;
-
-namespace history {
-class HistoryService;
-}
 
 namespace {
 
@@ -62,18 +56,14 @@ void PrecacheLauncher::Start(JNIEnv* env, jobject obj) {
   Profile* profile = GetProfile();
 
   PrecacheManager* precache_manager = GetPrecacheManager(profile);
-  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
-      profile, ServiceAccessType::IMPLICIT_ACCESS);
 
-  if (precache_manager == nullptr || hs == nullptr) {
+  if (precache_manager == nullptr) {
     OnPrecacheCompleted(false);
     return;
   }
 
-  precache_manager->StartPrecaching(
-      base::Bind(&PrecacheLauncher::OnPrecacheCompleted,
-                 weak_factory_.GetWeakPtr()),
-      *hs);
+  precache_manager->StartPrecaching(base::Bind(
+      &PrecacheLauncher::OnPrecacheCompleted, weak_factory_.GetWeakPtr()));
 }
 
 void PrecacheLauncher::Cancel(JNIEnv* env, jobject obj) {

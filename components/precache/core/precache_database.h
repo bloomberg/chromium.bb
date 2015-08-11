@@ -50,15 +50,21 @@ class PrecacheDatabase : public base::RefCountedThreadSafe<PrecacheDatabase> {
 
   // Report precache-related metrics in response to a URL being fetched, where
   // the fetch was motivated by precaching.
-  void RecordURLPrecached(const GURL& url, const base::Time& fetch_time,
-                          int64 size, bool was_cached);
+  void RecordURLPrefetch(const GURL& url,
+                         const base::TimeDelta& latency,
+                         const base::Time& fetch_time,
+                         int64 size,
+                         bool was_cached);
 
   // Report precache-related metrics in response to a URL being fetched, where
   // the fetch was not motivated by precaching. |is_connection_cellular|
   // indicates whether the current network connection is a cellular network.
-  void RecordURLFetched(const GURL& url, const base::Time& fetch_time,
-                        int64 size, bool was_cached,
-                        bool is_connection_cellular);
+  void RecordURLNonPrefetch(const GURL& url,
+                            const base::TimeDelta& latency,
+                            const base::Time& fetch_time,
+                            int64 size,
+                            bool was_cached,
+                            bool is_connection_cellular);
 
  private:
   friend class base::RefCountedThreadSafe<PrecacheDatabase>;

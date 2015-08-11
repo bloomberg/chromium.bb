@@ -106,8 +106,11 @@ void ForceGoogleSafeSearchCallbackWrapper(
 
 #if defined(OS_ANDROID)
 void RecordPrecacheStatsOnUIThread(const GURL& url,
-                                   const base::Time& fetch_time, int64 size,
-                                   bool was_cached, void* profile_id) {
+                                   base::TimeDelta latency,
+                                   const base::Time& fetch_time,
+                                   int64 size,
+                                   bool was_cached,
+                                   void* profile_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Profile* profile = reinterpret_cast<Profile*>(profile_id);
@@ -120,7 +123,8 @@ void RecordPrecacheStatsOnUIThread(const GURL& url,
   if (!precache_manager || !precache_manager->WouldRun())
     return;
 
-  precache_manager->RecordStatsForFetch(url, fetch_time, size, was_cached);
+  precache_manager->RecordStatsForFetch(url, latency, fetch_time, size,
+                                        was_cached);
 }
 #endif  // defined(OS_ANDROID)
 
@@ -499,12 +503,13 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
     // specified with the Content-Length header, which may be inaccurate,
     // or missing, as is the case with chunked encoding.
     int64 received_content_length = request->received_response_content_length();
+    base::TimeDelta latency = base::TimeTicks::Now() - request->creation_time();
 
     // Record precache metrics when a fetch is completed successfully, if
     // precaching is allowed.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&RecordPrecacheStatsOnUIThread, request->url(),
+        base::Bind(&RecordPrecacheStatsOnUIThread, request->url(), latency,
                    base::Time::Now(), received_content_length,
                    request->was_cached(), profile_));
 #endif  // defined(OS_ANDROID)

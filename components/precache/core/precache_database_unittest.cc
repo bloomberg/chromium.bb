@@ -19,6 +19,7 @@
 namespace {
 
 const GURL kURL("http://url.com");
+const base::TimeDelta kLatency = base::TimeDelta::FromMilliseconds(500);
 const base::Time kFetchTime = base::Time() + base::TimeDelta::FromHours(1000);
 const base::Time kOldFetchTime = kFetchTime - base::TimeDelta::FromDays(1);
 const int64 kSize = 5000;
@@ -26,6 +27,8 @@ const int64 kSize = 5000;
 const char* kHistogramNames[] = {"Precache.DownloadedPrecacheMotivated",
                                  "Precache.DownloadedNonPrecache",
                                  "Precache.DownloadedNonPrecache.Cellular",
+                                 "Precache.Latency.Prefetch",
+                                 "Precache.Latency.NonPrefetch",
                                  "Precache.Saved",
                                  "Precache.Saved.Cellular"};
 
@@ -71,6 +74,8 @@ class PrecacheDatabaseTest : public testing::Test {
     UMA_HISTOGRAM_COUNTS("Precache.DownloadedPrecacheMotivated", 0);
     UMA_HISTOGRAM_COUNTS("Precache.DownloadedNonPrecache", 0);
     UMA_HISTOGRAM_COUNTS("Precache.DownloadedNonPrecache.Cellular", 0);
+    UMA_HISTOGRAM_TIMES("Precache.Latency.Prefetch", base::TimeDelta());
+    UMA_HISTOGRAM_TIMES("Precache.Latency.NonPrefetch", base::TimeDelta());
     UMA_HISTOGRAM_COUNTS("Precache.Saved", 0);
     UMA_HISTOGRAM_COUNTS("Precache.Saved.Cellular", 0);
 
@@ -108,26 +113,32 @@ class PrecacheDatabaseTest : public testing::Test {
                        base::HistogramBase::Sample sample) {
     scoped_ptr<base::HistogramSamples> delta_samples(
         GetHistogramSamplesDelta(histogram_name));
-    EXPECT_EQ(1, delta_samples->TotalCount());
-    EXPECT_EQ(1, delta_samples->GetCount(sample));
+    EXPECT_EQ(1, delta_samples->TotalCount()) << histogram_name;
+    EXPECT_EQ(1, delta_samples->GetCount(sample)) << histogram_name;
   }
 
   void ExpectNoNewSamples(const char* histogram_name) {
     scoped_ptr<base::HistogramSamples> delta_samples(
         GetHistogramSamplesDelta(histogram_name));
-    EXPECT_EQ(0, delta_samples->TotalCount());
+    EXPECT_EQ(0, delta_samples->TotalCount()) << histogram_name;
   }
 
   // Convenience methods for recording different types of URL fetches. These
   // exist to improve the readability of the tests.
-  void RecordPrecacheFromNetwork(const GURL& url, const base::Time& fetch_time,
+  void RecordPrecacheFromNetwork(const GURL& url,
+                                 base::TimeDelta latency,
+                                 const base::Time& fetch_time,
                                  int64 size);
   void RecordPrecacheFromCache(const GURL& url, const base::Time& fetch_time,
                                int64 size);
-  void RecordFetchFromNetwork(const GURL& url, const base::Time& fetch_time,
+  void RecordFetchFromNetwork(const GURL& url,
+                              base::TimeDelta latency,
+                              const base::Time& fetch_time,
                               int64 size);
   void RecordFetchFromNetworkCellular(const GURL& url,
-                                      const base::Time& fetch_time, int64 size);
+                                      base::TimeDelta latency,
+                                      const base::Time& fetch_time,
+                                      int64 size);
   void RecordFetchFromCache(const GURL& url, const base::Time& fetch_time,
                             int64 size);
   void RecordFetchFromCacheCellular(const GURL& url,
@@ -145,58 +156,67 @@ class PrecacheDatabaseTest : public testing::Test {
 };
 
 void PrecacheDatabaseTest::RecordPrecacheFromNetwork(
-    const GURL& url, const base::Time& fetch_time, int64 size) {
-  precache_database_->RecordURLPrecached(url, fetch_time, size,
-                                         false /* was_cached */);
+    const GURL& url,
+    base::TimeDelta latency,
+    const base::Time& fetch_time,
+    int64 size) {
+  precache_database_->RecordURLPrefetch(url, latency, fetch_time, size,
+                                        false /* was_cached */);
 }
 
 void PrecacheDatabaseTest::RecordPrecacheFromCache(const GURL& url,
                                                    const base::Time& fetch_time,
                                                    int64 size) {
-  precache_database_->RecordURLPrecached(url, fetch_time, size,
-                                         true /* was_cached */);
+  precache_database_->RecordURLPrefetch(url, base::TimeDelta() /* latency */,
+                                        fetch_time, size,
+                                        true /* was_cached */);
 }
 
 void PrecacheDatabaseTest::RecordFetchFromNetwork(const GURL& url,
+                                                  base::TimeDelta latency,
                                                   const base::Time& fetch_time,
                                                   int64 size) {
-  precache_database_->RecordURLFetched(url, fetch_time, size,
-                                       false /* was_cached */,
-                                       false /* is_connection_cellular */);
+  precache_database_->RecordURLNonPrefetch(url, latency, fetch_time, size,
+                                           false /* was_cached */,
+                                           false /* is_connection_cellular */);
 }
 
 void PrecacheDatabaseTest::RecordFetchFromNetworkCellular(
-    const GURL& url, const base::Time& fetch_time, int64 size) {
-  precache_database_->RecordURLFetched(url, fetch_time, size,
-                                       false /* was_cached */,
-                                       true /* is_connection_cellular */);
+    const GURL& url,
+    base::TimeDelta latency,
+    const base::Time& fetch_time,
+    int64 size) {
+  precache_database_->RecordURLNonPrefetch(url, latency, fetch_time, size,
+                                           false /* was_cached */,
+                                           true /* is_connection_cellular */);
 }
 
 void PrecacheDatabaseTest::RecordFetchFromCache(const GURL& url,
                                                 const base::Time& fetch_time,
                                                 int64 size) {
-  precache_database_->RecordURLFetched(url, fetch_time, size,
-                                       true /* was_cached */,
-                                       false /* is_connection_cellular */);
+  precache_database_->RecordURLNonPrefetch(
+      url, base::TimeDelta() /* latency */, fetch_time, size,
+      true /* was_cached */, false /* is_connection_cellular */);
 }
 
 void PrecacheDatabaseTest::RecordFetchFromCacheCellular(
     const GURL& url, const base::Time& fetch_time, int64 size) {
-  precache_database_->RecordURLFetched(url, fetch_time, size,
-                                       true /* was_cached */,
-                                       true /* is_connection_cellular */);
+  precache_database_->RecordURLNonPrefetch(
+      url, base::TimeDelta() /* latency */, fetch_time, size,
+      true /* was_cached */, true /* is_connection_cellular */);
 }
 
 namespace {
 
 TEST_F(PrecacheDatabaseTest, PrecacheOverNetwork) {
-  RecordPrecacheFromNetwork(kURL, kFetchTime, kSize);
+  RecordPrecacheFromNetwork(kURL, kLatency, kFetchTime, kSize);
 
   EXPECT_EQ(BuildURLTableMap(kURL, kFetchTime), GetActualURLTableMap());
 
   ExpectNewSample("Precache.DownloadedPrecacheMotivated", kSize);
   ExpectNoNewSamples("Precache.DownloadedNonPrecache");
   ExpectNoNewSamples("Precache.DownloadedNonPrecache.Cellular");
+  ExpectNewSample("Precache.Latency.Prefetch", kLatency.InMilliseconds());
   ExpectNoNewSamples("Precache.Saved");
   ExpectNoNewSamples("Precache.Saved.Cellular");
 }
@@ -212,6 +232,7 @@ TEST_F(PrecacheDatabaseTest, PrecacheFromCacheWithURLTableEntry) {
   ExpectNoNewSamples("Precache.DownloadedPrecacheMotivated");
   ExpectNoNewSamples("Precache.DownloadedNonPrecache");
   ExpectNoNewSamples("Precache.DownloadedNonPrecache.Cellular");
+  ExpectNewSample("Precache.Latency.Prefetch", 0);
   ExpectNoNewSamples("Precache.Saved");
   ExpectNoNewSamples("Precache.Saved.Cellular");
 }
@@ -224,37 +245,40 @@ TEST_F(PrecacheDatabaseTest, PrecacheFromCacheWithoutURLTableEntry) {
   ExpectNoNewSamples("Precache.DownloadedPrecacheMotivated");
   ExpectNoNewSamples("Precache.DownloadedNonPrecache");
   ExpectNoNewSamples("Precache.DownloadedNonPrecache.Cellular");
+  ExpectNewSample("Precache.Latency.Prefetch", 0);
   ExpectNoNewSamples("Precache.Saved");
   ExpectNoNewSamples("Precache.Saved.Cellular");
 }
 
 TEST_F(PrecacheDatabaseTest, FetchOverNetwork_NonCellular) {
-  RecordFetchFromNetwork(kURL, kFetchTime, kSize);
+  RecordFetchFromNetwork(kURL, kLatency, kFetchTime, kSize);
 
   EXPECT_TRUE(GetActualURLTableMap().empty());
 
   ExpectNoNewSamples("Precache.DownloadedPrecacheMotivated");
   ExpectNewSample("Precache.DownloadedNonPrecache", kSize);
   ExpectNoNewSamples("Precache.DownloadedNonPrecache.Cellular");
+  ExpectNewSample("Precache.Latency.NonPrefetch", kLatency.InMilliseconds());
   ExpectNoNewSamples("Precache.Saved");
   ExpectNoNewSamples("Precache.Saved.Cellular");
 }
 
 TEST_F(PrecacheDatabaseTest, FetchOverNetwork_Cellular) {
-  RecordFetchFromNetworkCellular(kURL, kFetchTime, kSize);
+  RecordFetchFromNetworkCellular(kURL, kLatency, kFetchTime, kSize);
 
   EXPECT_TRUE(GetActualURLTableMap().empty());
 
   ExpectNoNewSamples("Precache.DownloadedPrecacheMotivated");
   ExpectNewSample("Precache.DownloadedNonPrecache", kSize);
   ExpectNewSample("Precache.DownloadedNonPrecache.Cellular", kSize);
+  ExpectNewSample("Precache.Latency.NonPrefetch", kLatency.InMilliseconds());
   ExpectNoNewSamples("Precache.Saved");
   ExpectNoNewSamples("Precache.Saved.Cellular");
 }
 
 TEST_F(PrecacheDatabaseTest, FetchOverNetworkWithURLTableEntry) {
   precache_url_table()->AddURL(kURL, kOldFetchTime);
-  RecordFetchFromNetwork(kURL, kFetchTime, kSize);
+  RecordFetchFromNetwork(kURL, kLatency, kFetchTime, kSize);
 
   // The URL table entry should have been deleted.
   EXPECT_TRUE(GetActualURLTableMap().empty());
@@ -262,6 +286,7 @@ TEST_F(PrecacheDatabaseTest, FetchOverNetworkWithURLTableEntry) {
   ExpectNoNewSamples("Precache.DownloadedPrecacheMotivated");
   ExpectNewSample("Precache.DownloadedNonPrecache", kSize);
   ExpectNoNewSamples("Precache.DownloadedNonPrecache.Cellular");
+  ExpectNewSample("Precache.Latency.NonPrefetch", kLatency.InMilliseconds());
   ExpectNoNewSamples("Precache.Saved");
   ExpectNoNewSamples("Precache.Saved.Cellular");
 }
@@ -276,6 +301,7 @@ TEST_F(PrecacheDatabaseTest, FetchFromCacheWithURLTableEntry_NonCellular) {
   ExpectNoNewSamples("Precache.DownloadedPrecacheMotivated");
   ExpectNoNewSamples("Precache.DownloadedNonPrecache");
   ExpectNoNewSamples("Precache.DownloadedNonPrecache.Cellular");
+  ExpectNewSample("Precache.Latency.NonPrefetch", 0);
   ExpectNewSample("Precache.Saved", kSize);
   ExpectNoNewSamples("Precache.Saved.Cellular");
 }
@@ -290,6 +316,7 @@ TEST_F(PrecacheDatabaseTest, FetchFromCacheWithURLTableEntry_Cellular) {
   ExpectNoNewSamples("Precache.DownloadedPrecacheMotivated");
   ExpectNoNewSamples("Precache.DownloadedNonPrecache");
   ExpectNoNewSamples("Precache.DownloadedNonPrecache.Cellular");
+  ExpectNewSample("Precache.Latency.NonPrefetch", 0);
   ExpectNewSample("Precache.Saved", kSize);
   ExpectNewSample("Precache.Saved.Cellular", kSize);
 }
@@ -302,6 +329,7 @@ TEST_F(PrecacheDatabaseTest, FetchFromCacheWithoutURLTableEntry) {
   ExpectNoNewSamples("Precache.DownloadedPrecacheMotivated");
   ExpectNoNewSamples("Precache.DownloadedNonPrecache");
   ExpectNoNewSamples("Precache.DownloadedNonPrecache.Cellular");
+  ExpectNewSample("Precache.Latency.NonPrefetch", 0);
   ExpectNoNewSamples("Precache.Saved");
   ExpectNoNewSamples("Precache.Saved.Cellular");
 }
@@ -332,24 +360,24 @@ TEST_F(PrecacheDatabaseTest, SampleInteraction) {
   const GURL kURL5("http://url5.com");
   const int64 kSize5 = 5000;
 
-  RecordPrecacheFromNetwork(kURL1, kFetchTime, kSize1);
-  RecordPrecacheFromNetwork(kURL2, kFetchTime, kSize2);
-  RecordPrecacheFromNetwork(kURL3, kFetchTime, kSize3);
-  RecordPrecacheFromNetwork(kURL4, kFetchTime, kSize4);
+  RecordPrecacheFromNetwork(kURL1, kLatency, kFetchTime, kSize1);
+  RecordPrecacheFromNetwork(kURL2, kLatency, kFetchTime, kSize2);
+  RecordPrecacheFromNetwork(kURL3, kLatency, kFetchTime, kSize3);
+  RecordPrecacheFromNetwork(kURL4, kLatency, kFetchTime, kSize4);
 
   RecordFetchFromCacheCellular(kURL1, kFetchTime, kSize1);
   RecordFetchFromCacheCellular(kURL1, kFetchTime, kSize1);
-  RecordFetchFromNetworkCellular(kURL2, kFetchTime, kSize2);
-  RecordFetchFromNetworkCellular(kURL5, kFetchTime, kSize5);
+  RecordFetchFromNetworkCellular(kURL2, kLatency, kFetchTime, kSize2);
+  RecordFetchFromNetworkCellular(kURL5, kLatency, kFetchTime, kSize5);
   RecordFetchFromCacheCellular(kURL5, kFetchTime, kSize5);
 
   RecordPrecacheFromCache(kURL1, kFetchTime, kSize1);
-  RecordPrecacheFromNetwork(kURL2, kFetchTime, kSize2);
+  RecordPrecacheFromNetwork(kURL2, kLatency, kFetchTime, kSize2);
   RecordPrecacheFromCache(kURL3, kFetchTime, kSize3);
   RecordPrecacheFromCache(kURL4, kFetchTime, kSize4);
 
   RecordFetchFromCache(kURL1, kFetchTime, kSize1);
-  RecordFetchFromNetwork(kURL2, kFetchTime, kSize2);
+  RecordFetchFromNetwork(kURL2, kLatency, kFetchTime, kSize2);
   RecordFetchFromCache(kURL3, kFetchTime, kSize3);
   RecordFetchFromCache(kURL5, kFetchTime, kSize5);
 
@@ -372,6 +400,8 @@ TEST_F(PrecacheDatabaseTest, SampleInteraction) {
   EXPECT_EQ(2, downloaded_non_precache_bytes_cellular->TotalCount());
   EXPECT_EQ(1, downloaded_non_precache_bytes_cellular->GetCount(kSize2));
   EXPECT_EQ(1, downloaded_non_precache_bytes_cellular->GetCount(kSize5));
+
+  // TODO(twifkak): Add Latency checks.
 
   scoped_ptr<base::HistogramSamples> saved_bytes(
       GetHistogramSamplesDelta("Precache.Saved"));

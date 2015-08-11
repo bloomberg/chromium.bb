@@ -4,8 +4,11 @@
 
 #include "chrome/browser/precache/precache_manager_factory.h"
 
+#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/core/service_access_type.h"
 #include "components/precache/content/precache_manager.h"
 #include "content/public/browser/browser_context.h"
 
@@ -37,7 +40,10 @@ KeyedService* PrecacheManagerFactory::BuildServiceInstanceFor(
   return new PrecacheManager(
       browser_context,
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
-          browser_context));
+          browser_context),
+      HistoryServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context),
+          ServiceAccessType::IMPLICIT_ACCESS));
 }
 
 }  // namespace precache

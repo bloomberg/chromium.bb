@@ -43,9 +43,11 @@ int NumTopHosts() {
 
 PrecacheManager::PrecacheManager(
     content::BrowserContext* browser_context,
-    const sync_driver::SyncService* const sync_service)
+    const sync_driver::SyncService* const sync_service,
+    const history::HistoryService* const history_service)
     : browser_context_(browser_context),
       sync_service_(sync_service),
+      history_service_(history_service),
       precache_database_(new PrecacheDatabase()),
       is_precaching_(false) {
   base::FilePath db_path(browser_context_->GetPath().Append(
@@ -92,8 +94,7 @@ PrecacheManager::AllowedType PrecacheManager::PrecachingAllowed() const {
 }
 
 void PrecacheManager::StartPrecaching(
-    const PrecacheCompletionCallback& precache_completion_callback,
-    const history::HistoryService& history_service) {
+    const PrecacheCompletionCallback& precache_completion_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (is_precaching_) {
@@ -103,7 +104,7 @@ void PrecacheManager::StartPrecaching(
   }
   precache_completion_callback_ = precache_completion_callback;
 
-  if (ShouldRun()) {
+  if (history_service_ && ShouldRun()) {
     is_precaching_ = true;
 
     BrowserThread::PostTask(
@@ -114,7 +115,7 @@ void PrecacheManager::StartPrecaching(
     // Request NumTopHosts() top hosts. Note that PrecacheFetcher is further
     // bound by the value of PrecacheConfigurationSettings.top_sites_count, as
     // retrieved from the server.
-    history_service.TopHosts(
+    history_service_->TopHosts(
         NumTopHosts(),
         base::Bind(&PrecacheManager::OnHostsReceived, AsWeakPtr()));
   } else {
@@ -152,6 +153,7 @@ bool PrecacheManager::IsPrecaching() const {
 }
 
 void PrecacheManager::RecordStatsForFetch(const GURL& url,
+                                          const base::TimeDelta& latency,
                                           const base::Time& fetch_time,
                                           int64 size,
                                           bool was_cached) {
@@ -170,8 +172,8 @@ void PrecacheManager::RecordStatsForFetch(const GURL& url,
     // by precaching.
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
-        base::Bind(&PrecacheDatabase::RecordURLPrecached, precache_database_,
-                   url, fetch_time, size, was_cached));
+        base::Bind(&PrecacheDatabase::RecordURLPrefetch, precache_database_,
+                   url, latency, fetch_time, size, was_cached));
   } else {
     bool is_connection_cellular =
         net::NetworkChangeNotifier::IsConnectionCellular(
@@ -179,8 +181,9 @@ void PrecacheManager::RecordStatsForFetch(const GURL& url,
 
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
-        base::Bind(&PrecacheDatabase::RecordURLFetched, precache_database_, url,
-                   fetch_time, size, was_cached, is_connection_cellular));
+        base::Bind(&PrecacheDatabase::RecordURLNonPrefetch, precache_database_,
+                   url, latency, fetch_time, size, was_cached,
+                   is_connection_cellular));
   }
 }
 

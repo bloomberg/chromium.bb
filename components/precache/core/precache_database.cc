@@ -87,9 +87,13 @@ void PrecacheDatabase::ClearHistory() {
   Flush();
 }
 
-void PrecacheDatabase::RecordURLPrecached(const GURL& url,
-                                          const base::Time& fetch_time,
-                                          int64 size, bool was_cached) {
+void PrecacheDatabase::RecordURLPrefetch(const GURL& url,
+                                         const base::TimeDelta& latency,
+                                         const base::Time& fetch_time,
+                                         int64 size,
+                                         bool was_cached) {
+  UMA_HISTOGRAM_TIMES("Precache.Latency.Prefetch", latency);
+
   if (!IsDatabaseAccessible()) {
     // Don't track anything if unable to access the database.
     return;
@@ -126,10 +130,14 @@ void PrecacheDatabase::RecordURLPrecached(const GURL& url,
   MaybePostFlush();
 }
 
-void PrecacheDatabase::RecordURLFetched(const GURL& url,
-                                        const base::Time& fetch_time,
-                                        int64 size, bool was_cached,
-                                        bool is_connection_cellular) {
+void PrecacheDatabase::RecordURLNonPrefetch(const GURL& url,
+                                            const base::TimeDelta& latency,
+                                            const base::Time& fetch_time,
+                                            int64 size,
+                                            bool was_cached,
+                                            bool is_connection_cellular) {
+  UMA_HISTOGRAM_TIMES("Precache.Latency.NonPrefetch", latency);
+
   if (!IsDatabaseAccessible()) {
     // Don't track anything if unable to access the database.
     return;

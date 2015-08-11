@@ -57,7 +57,8 @@ class PrecacheManager : public KeyedService,
   typedef base::Callback<void(bool)> PrecacheCompletionCallback;
 
   PrecacheManager(content::BrowserContext* browser_context,
-                  const sync_driver::SyncService* const sync_service);
+                  const sync_driver::SyncService* const sync_service,
+                  const history::HistoryService* const history_service);
   ~PrecacheManager() override;
 
   // Returns true if precaching is allowed for the browser context based on user
@@ -75,8 +76,7 @@ class PrecacheManager : public KeyedService,
   // precaching finishes, and passed false when precaching abort due to failed
   // preconditions, but will not be run if precaching is canceled.
   void StartPrecaching(
-      const PrecacheCompletionCallback& precache_completion_callback,
-      const history::HistoryService& history_service);
+      const PrecacheCompletionCallback& precache_completion_callback);
 
   // Cancels precaching if it is in progress.
   void CancelPrecaching();
@@ -86,6 +86,7 @@ class PrecacheManager : public KeyedService,
 
   // Update precache-related metrics in response to a URL being fetched.
   void RecordStatsForFetch(const GURL& url,
+                           const base::TimeDelta& latency,
                            const base::Time& fetch_time,
                            int64 size,
                            bool was_cached);
@@ -125,6 +126,10 @@ class PrecacheManager : public KeyedService,
   // The sync service corresponding to the browser context. Used to determine
   // whether precache can run. May be null.
   const sync_driver::SyncService* const sync_service_;
+
+  // The history service corresponding to the browser context. Used to determine
+  // the list of top hosts. May be null.
+  const history::HistoryService* const history_service_;
 
   // The PrecacheFetcher used to precache resources. Should only be used on the
   // UI thread.
