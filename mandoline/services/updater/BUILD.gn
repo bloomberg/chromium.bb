@@ -19,6 +19,5 @@ mojo_native_application("updater") {
     "//mojo/application/public/cpp",
     "//mojo/services/updater",
     "//third_party/mojo/src/mojo/public/cpp/system",
-    "//url",
   ]
 }

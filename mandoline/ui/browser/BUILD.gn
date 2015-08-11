@@ -38,14 +38,12 @@ source_set("lib") {
     "//components/view_manager/public/cpp",
     "//mandoline/services/navigation/public/interfaces",
     "//mandoline/tab",
-    "//mojo/application/public/cpp:sources",
-    "//mojo/common:common_base",
+    "//mojo/application/public/interfaces",
     "//mojo/converters/geometry",
     "//skia",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//ui/gfx/geometry",
     "//ui/mojo/events:interfaces",
-    "//url",
   ]
 
   if (is_mac || use_aura) {
@@ -53,11 +51,7 @@ source_set("lib") {
       "desktop/desktop_ui.cc",
       "desktop/desktop_ui.h",
     ]
-    deps += [
-      "//mandoline/ui/aura",
-      "//ui/gfx",
-      "//ui/views",
-    ]
+    deps += [ "//mandoline/ui/aura" ]
   } else {
     assert(is_android)
     sources += [
@@ -77,10 +71,8 @@ mojo_native_application("mandoline_browser_apptests") {
   deps = [
     "//base",
     "//base/test:test_config",
-    "//components/view_manager/public/cpp",
     "//mandoline/tab/public/interfaces",
     "//mandoline/ui/browser:lib",
-    "//mojo/application/public/cpp:sources",
     "//mojo/application/public/cpp:test_support",
   ]
 }

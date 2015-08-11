@@ -31,13 +31,11 @@ source_set("lib") {
     "//mandoline/services/navigation/public/interfaces",
     "//mandoline/ui/aura",
     "//mandoline/ui/browser/public/interfaces",
-    "//mojo/application/public/cpp:sources",
-    "//mojo/common",
+    "//mojo/application/public/interfaces",
     "//mojo/converters/geometry",
     "//skia",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//ui/gfx/geometry",
     "//ui/mojo/events:interfaces",
-    "//ui/views",
   ]
 }

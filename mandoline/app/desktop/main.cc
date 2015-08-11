@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "mandoline/app/desktop/launcher_process.h"
 #include "mojo/runner/child_process.h"
 #include "mojo/runner/init.h"
 #include "mojo/runner/switches.h"
+#include "mojo/shell/native_runner.h"
 
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
