@@ -250,18 +250,16 @@ public class CustomTab extends ChromeTab {
 
         @Override
         public boolean startActivityIfNeeded(Intent intent) {
+            boolean isExternalProtocol = !UrlUtilities.isAcceptedScheme(intent.getDataString());
+            boolean hasDefaultHandler = hasDefaultHandler(intent);
             try {
-                if (resolveDefaultHandlerForIntent(intent)) {
-                    if (getActivity().startActivityIfNeeded(intent, -1)) {
-                        mHasActivityStarted = true;
-                        return true;
-                    } else {
-                        return false;
-                    }
-                } else {
-                    // If we failed to find the default handler of the intent, fall back to chrome.
-                    return false;
-                }
+                // For a url chrome can handle and there is no default set, handle it ourselves.
+                if (!hasDefaultHandler && !isExternalProtocol) return false;
+                // If android fails to find a handler, handle it ourselves.
+                if (!getActivity().startActivityIfNeeded(intent, -1)) return false;
+
+                mHasActivityStarted = true;
+                return true;
             } catch (RuntimeException e) {
                 logTransactionTooLargeOrRethrow(e, intent);
                 return false;
@@ -273,7 +271,7 @@ public class CustomTab extends ChromeTab {
          * @return Whether the default external handler is found: if chrome turns out to be the
          *         default handler, this method will return false.
          */
-        private boolean resolveDefaultHandlerForIntent(Intent intent) {
+        private boolean hasDefaultHandler(Intent intent) {
             try {
                 ResolveInfo info = getActivity().getPackageManager().resolveActivity(intent, 0);
                 if (info != null) {
