@@ -21,3 +21,5 @@ List of changes made to original code:
   - reformatted code to be closer to Google coding standards
   - renamed variables
   - added comments
+  - extracted qsufsort into qsufsort.h in 'courgette::qsuf' namespace
+  - added unit tests for qsufsort
