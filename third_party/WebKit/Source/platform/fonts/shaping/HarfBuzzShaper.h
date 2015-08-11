@@ -58,6 +58,8 @@ public:
     {
         return adoptRef(new ShapeResult(font, numCharacters, direction));
     }
+    static PassRefPtr<ShapeResult> createForTabulationCharacters(const Font*,
+        const TextRun&, float positionOffset, unsigned count);
     ~ShapeResult();
 
     float width() { return m_width; }

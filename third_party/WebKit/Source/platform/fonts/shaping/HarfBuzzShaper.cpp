@@ -1140,6 +1140,31 @@ void HarfBuzzShaper::shapeResult(ShapeResult* result, unsigned index,
     result->m_runs[index] = run.release();
 }
 
+PassRefPtr<ShapeResult> ShapeResult::createForTabulationCharacters(const Font* font,
+    const TextRun& textRun, float positionOffset, unsigned count)
+{
+    const SimpleFontData* fontData = font->primaryFont();
+    OwnPtr<ShapeResult::RunInfo> run = adoptPtr(new ShapeResult::RunInfo(fontData,
+        // Tab characters are always LTR or RTL, not TTB, even when isVerticalAnyUpright().
+        textRun.rtl() ? HB_DIRECTION_RTL : HB_DIRECTION_LTR,
+        HB_SCRIPT_COMMON, 0, count, count));
+    float position = textRun.xPos() + positionOffset;
+    float startPosition = position;
+    for (unsigned i = 0; i < count; i++) {
+        float advance = font->tabWidth(*fontData, textRun.tabSize(), position);
+        run->m_glyphData[i].characterIndex = i;
+        run->setGlyphAndPositions(i, fontData->spaceGlyph(), advance, 0, 0);
+        position += advance;
+    }
+    run->m_width = position - startPosition;
+
+    RefPtr<ShapeResult> result = ShapeResult::create(font, count, textRun.direction());
+    result->m_width = run->m_width;
+    result->m_numGlyphs = count;
+    result->m_runs.append(run.release());
+    return result.release();
+}
+
 float HarfBuzzShaper::adjustSpacing(ShapeResult::RunInfo* run, size_t glyphIndex, unsigned currentCharacterIndex, float& offset, float& totalAdvance)
 {
     float spacing = 0;
