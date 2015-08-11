@@ -449,7 +449,7 @@
           'dependencies': [  # Update duplicate logic in repack_locales.py
             '<(DEPTH)/content/app/resources/content_resources.gyp:content_resources',
             '<(DEPTH)/content/app/strings/content_strings.gyp:content_strings',
-            '<(DEPTH)/device/bluetooth/bluetooth_strings.gyp:device_bluetooth_strings',
+            '<(DEPTH)/device/bluetooth/bluetooth_strings.gyp:bluetooth_strings',
             '<(DEPTH)/third_party/WebKit/public/blink_resources.gyp:blink_resources',
           ],
         }, {  # else

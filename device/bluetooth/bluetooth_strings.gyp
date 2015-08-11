@@ -5,14 +5,14 @@
 {
   'targets': [
     {
-      'target_name': 'device_bluetooth_strings',
+      'target_name': 'bluetooth_strings',
       'type': 'none',
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/device/bluetooth/strings',
       },
       'actions': [
         {
-          'action_name': 'generate_device_bluetooth_strings',
+          'action_name': 'generate_bluetooth_strings',
           'variables': {
             'grit_grd_file': 'bluetooth_strings.grd',
           },

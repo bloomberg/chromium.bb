@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
-#include "grit/device_bluetooth_strings.h"
+#include "grit/bluetooth_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace device {
