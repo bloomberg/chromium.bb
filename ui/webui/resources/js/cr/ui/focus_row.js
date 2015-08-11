@@ -29,7 +29,7 @@ cr.define('cr.ui', function() {
    * any focus change deactivates the row.
    *
    * @constructor
-   * @extends {HTMLDivElement}
+   * @extends {HTMLElement}
    */
   function FocusRow() {}
 
@@ -58,7 +58,7 @@ cr.define('cr.ui', function() {
   FocusRow.ACTIVE_CLASS = 'focus-row-active';
 
   FocusRow.prototype = {
-    __proto__: HTMLDivElement.prototype,
+    __proto__: HTMLElement.prototype,
 
     /**
      * Should be called in the constructor to decorate |this|.
