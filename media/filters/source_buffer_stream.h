@@ -319,6 +319,14 @@ class MEDIA_EXPORT SourceBufferStream {
   // additional processing for splice frame or preroll buffers.
   Status GetNextBufferInternal(scoped_refptr<StreamParserBuffer>* out_buffer);
 
+  // If the next buffer's timestamp is significantly beyond the last output
+  // buffer, and if we just exhausted |track_buffer_| on the previous read, this
+  // method logs a warning to |media_log_| that there could be perceivable
+  // delay. Apps can avoid this behavior by not overlap-appending buffers near
+  // current playback position.
+  void WarnIfTrackBufferExhaustionSkipsForward(
+      const scoped_refptr<StreamParserBuffer>& next_buffer);
+
   // Called by PrepareRangesForNextAppend() before pruning overlapped buffers to
   // generate a splice frame with a small portion of the overlapped buffers.  If
   // a splice frame is generated, the first buffer in |new_buffers| will have
@@ -374,6 +382,10 @@ class MEDIA_EXPORT SourceBufferStream {
   // |track_buffer_| is empty, return buffers from |selected_range_|.
   BufferQueue track_buffer_;
 
+  // If there has been no intervening Seek, this will be true if the last
+  // emitted buffer emptied |track_buffer_|.
+  bool just_exhausted_track_buffer_;
+
   // The start time of the current media segment being appended.
   DecodeTimestamp media_segment_start_time_;
 
@@ -420,10 +432,10 @@ class MEDIA_EXPORT SourceBufferStream {
   // Indicates that splice frame generation is enabled.
   const bool splice_frames_enabled_;
 
-  // To prevent log spam, count the number of splice generation warnings and
-  // successes logged.
+  // To prevent log spam, count the number of warnings and successes logged.
   int num_splice_generation_warning_logs_;
   int num_splice_generation_success_logs_;
+  int num_track_buffer_gap_warning_logs_;
 
   DISALLOW_COPY_AND_ASSIGN(SourceBufferStream);
 };

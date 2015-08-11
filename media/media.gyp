@@ -1603,6 +1603,8 @@
         'base/mock_demuxer_host.h',
         'base/mock_filters.cc',
         'base/mock_filters.h',
+        'base/mock_media_log.cc',
+        'base/mock_media_log.h',
         'base/test_data_util.cc',
         'base/test_data_util.h',
         'base/test_helpers.cc',

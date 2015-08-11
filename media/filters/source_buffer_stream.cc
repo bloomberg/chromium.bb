@@ -19,18 +19,19 @@ namespace media {
 
 namespace {
 
-enum {
-  // An arbitrarily-chosen number to estimate the duration of a buffer if none
-  // is set and there's not enough information to get a better estimate.
-  kDefaultBufferDurationInMs = 125,
+// An arbitrarily-chosen number to estimate the duration of a buffer if none is
+// set and there's not enough information to get a better estimate.
+const int kDefaultBufferDurationInMs = 125;
 
-  // Limit the number of MEDIA_LOG() logs for splice buffer generation warnings
-  // and successes. Though these values are high enough to possibly exhaust the
-  // media internals event cache (along with other events), these logs are
-  // important for debugging splice generation.
-  kMaxSpliceGenerationWarningLogs = 50,
-  kMaxSpliceGenerationSuccessLogs = 20,
-};
+// Limit the number of MEDIA_LOG() logs for splice buffer generation warnings
+// and successes. Though these values are high enough to possibly exhaust the
+// media internals event cache (along with other events), these logs are
+// important for debugging splice generation.
+const int kMaxSpliceGenerationWarningLogs = 50;
+const int kMaxSpliceGenerationSuccessLogs = 20;
+
+// Limit the number of MEDIA_LOG() logs for track buffer time gaps.
+const int kMaxTrackBufferGapWarningLogs = 20;
 
 // Helper method that returns true if |ranges| is sorted in increasing order,
 // false otherwise.
@@ -134,6 +135,7 @@ SourceBufferStream::SourceBufferStream(const AudioDecoderConfig& audio_config,
       end_of_stream_(false),
       seek_buffer_timestamp_(kNoTimestamp()),
       selected_range_(NULL),
+      just_exhausted_track_buffer_(false),
       media_segment_start_time_(kNoDecodeTimestamp()),
       range_for_next_append_(ranges_.end()),
       new_media_segment_(false),
@@ -147,7 +149,8 @@ SourceBufferStream::SourceBufferStream(const AudioDecoderConfig& audio_config,
       pending_buffers_complete_(false),
       splice_frames_enabled_(splice_frames_enabled),
       num_splice_generation_warning_logs_(0),
-      num_splice_generation_success_logs_(0) {
+      num_splice_generation_success_logs_(0),
+      num_track_buffer_gap_warning_logs_(0) {
   DCHECK(audio_config.IsValidConfig());
   audio_configs_.push_back(audio_config);
 }
@@ -162,6 +165,7 @@ SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
       end_of_stream_(false),
       seek_buffer_timestamp_(kNoTimestamp()),
       selected_range_(NULL),
+      just_exhausted_track_buffer_(false),
       media_segment_start_time_(kNoDecodeTimestamp()),
       range_for_next_append_(ranges_.end()),
       new_media_segment_(false),
@@ -175,7 +179,8 @@ SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
       pending_buffers_complete_(false),
       splice_frames_enabled_(splice_frames_enabled),
       num_splice_generation_warning_logs_(0),
-      num_splice_generation_success_logs_(0) {
+      num_splice_generation_success_logs_(0),
+      num_track_buffer_gap_warning_logs_(0) {
   DCHECK(video_config.IsValidConfig());
   video_configs_.push_back(video_config);
 }
@@ -191,6 +196,7 @@ SourceBufferStream::SourceBufferStream(const TextTrackConfig& text_config,
       end_of_stream_(false),
       seek_buffer_timestamp_(kNoTimestamp()),
       selected_range_(NULL),
+      just_exhausted_track_buffer_(false),
       media_segment_start_time_(kNoDecodeTimestamp()),
       range_for_next_append_(ranges_.end()),
       new_media_segment_(false),
@@ -204,7 +210,8 @@ SourceBufferStream::SourceBufferStream(const TextTrackConfig& text_config,
       pending_buffers_complete_(false),
       splice_frames_enabled_(splice_frames_enabled),
       num_splice_generation_warning_logs_(0),
-      num_splice_generation_success_logs_(0) {}
+      num_splice_generation_success_logs_(0),
+      num_track_buffer_gap_warning_logs_(0) {}
 
 SourceBufferStream::~SourceBufferStream() {
   while (!ranges_.empty()) {
@@ -533,6 +540,7 @@ void SourceBufferStream::ResetSeekState() {
   track_buffer_.clear();
   config_change_pending_ = false;
   last_output_buffer_timestamp_ = kNoDecodeTimestamp();
+  just_exhausted_track_buffer_ = false;
   splice_buffers_index_ = 0;
   pending_buffer_ = NULL;
   pending_buffers_complete_ = false;
@@ -1136,12 +1144,15 @@ SourceBufferStream::Status SourceBufferStream::GetNextBufferInternal(
     DVLOG(3) << __FUNCTION__ << " Next buffer coming from track_buffer_";
     *out_buffer = next_buffer;
     track_buffer_.pop_front();
+    WarnIfTrackBufferExhaustionSkipsForward(*out_buffer);
     last_output_buffer_timestamp_ = (*out_buffer)->GetDecodeTimestamp();
 
     // If the track buffer becomes empty, then try to set the selected range
     // based on the timestamp of this buffer being returned.
-    if (track_buffer_.empty())
+    if (track_buffer_.empty()) {
+      just_exhausted_track_buffer_ = true;
       SetSelectedRangeIfNeeded(last_output_buffer_timestamp_);
+    }
 
     return kSuccess;
   }
@@ -1165,8 +1176,32 @@ SourceBufferStream::Status SourceBufferStream::GetNextBufferInternal(
   }
 
   CHECK(selected_range_->GetNextBuffer(out_buffer));
+  WarnIfTrackBufferExhaustionSkipsForward(*out_buffer);
   last_output_buffer_timestamp_ = (*out_buffer)->GetDecodeTimestamp();
   return kSuccess;
+}
+
+void SourceBufferStream::WarnIfTrackBufferExhaustionSkipsForward(
+    const scoped_refptr<StreamParserBuffer>& next_buffer) {
+  if (!just_exhausted_track_buffer_)
+    return;
+
+  just_exhausted_track_buffer_ = false;
+  DCHECK(next_buffer->is_key_frame());
+  DecodeTimestamp next_output_buffer_timestamp =
+      next_buffer->GetDecodeTimestamp();
+  base::TimeDelta delta =
+      next_output_buffer_timestamp - last_output_buffer_timestamp_;
+  DCHECK_GE(delta, base::TimeDelta());
+  if (delta > GetMaxInterbufferDistance()) {
+    LIMITED_MEDIA_LOG(DEBUG, media_log_, num_track_buffer_gap_warning_logs_,
+                      kMaxTrackBufferGapWarningLogs)
+        << "Media append that overlapped current playback position caused time "
+           "gap in playing "
+        << GetStreamTypeName() << " stream because the next keyframe is "
+        << delta.InMilliseconds() << "ms beyond last overlapped frame. Media "
+                                     "may appear temporarily frozen.";
+  }
 }
 
 DecodeTimestamp SourceBufferStream::GetNextBufferTimestamp() {

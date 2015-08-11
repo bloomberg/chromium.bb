@@ -15,10 +15,20 @@
 #include "base/strings/string_util.h"
 #include "media/base/data_buffer.h"
 #include "media/base/media_log.h"
+#include "media/base/mock_media_log.h"
 #include "media/base/test_helpers.h"
 #include "media/base/text_track_config.h"
 #include "media/filters/webvtt_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::HasSubstr;
+using ::testing::InSequence;
+using ::testing::StrictMock;
+
+// Helper macros to reduce boilerplate when verifying media log entries.
+#define EXPECT_MEDIA_LOG_STRING(x) \
+  EXPECT_CALL(*media_log_, DoAddEventLogString((x)))
+#define CONTAINS_STRING(arg, x) (std::string::npos != (arg).find(x))
 
 namespace media {
 
@@ -30,12 +40,46 @@ static const uint8 kDataA = 0x11;
 static const uint8 kDataB = 0x33;
 static const int kDataSize = 1;
 
+// Matchers for verifying common media log entry strings.
+MATCHER(ContainsMissingKeyframeLog, "") {
+  return CONTAINS_STRING(arg,
+                         "Media segment did not begin with key frame. Support "
+                         "for such segments will be available in a future "
+                         "version. Please see https://crbug.com/229412.");
+}
+
+MATCHER(ContainsSameTimestampAt30MillisecondsLog, "") {
+  return CONTAINS_STRING(arg,
+                         "Unexpected combination of buffers with the same "
+                         "timestamp detected at 0.03");
+}
+
+MATCHER_P(ContainsTrackBufferExhaustionSkipLog, skip_milliseconds, "") {
+  return CONTAINS_STRING(arg,
+                         "Media append that overlapped current playback "
+                         "position caused time gap in playing VIDEO stream "
+                         "because the next keyframe is " +
+                             base::IntToString(skip_milliseconds) +
+                             "ms beyond last overlapped frame. Media may "
+                             "appear temporarily frozen.");
+}
+
+MATCHER_P2(ContainsGeneratedSpliceLog,
+           duration_microseconds,
+           time_microseconds,
+           "") {
+  return CONTAINS_STRING(arg, "Generated splice of overlap duration " +
+                                  base::IntToString(duration_microseconds) +
+                                  "us into new buffer at " +
+                                  base::IntToString(time_microseconds) + "us.");
+}
+
 class SourceBufferStreamTest : public testing::Test {
  protected:
-  SourceBufferStreamTest() {
+  SourceBufferStreamTest() : media_log_(new StrictMock<MockMediaLog>()) {
     video_config_ = TestVideoConfig::Normal();
     SetStreamInfo(kDefaultFramesPerSecond, kDefaultKeyframesPerSecond);
-    stream_.reset(new SourceBufferStream(video_config_, new MediaLog(), true));
+    stream_.reset(new SourceBufferStream(video_config_, media_log_, true));
   }
 
   void SetMemoryLimit(size_t buffers_of_data) {
@@ -51,7 +95,7 @@ class SourceBufferStreamTest : public testing::Test {
   void SetTextStream() {
     video_config_ = TestVideoConfig::Invalid();
     TextTrackConfig config(kTextSubtitles, "", "", "");
-    stream_.reset(new SourceBufferStream(config, new MediaLog(), true));
+    stream_.reset(new SourceBufferStream(config, media_log_, true));
     SetStreamInfo(2, 2);
   }
 
@@ -67,7 +111,7 @@ class SourceBufferStreamTest : public testing::Test {
                              false,
                              base::TimeDelta(),
                              0);
-    stream_.reset(new SourceBufferStream(audio_config_, new MediaLog(), true));
+    stream_.reset(new SourceBufferStream(audio_config_, media_log_, true));
 
     // Equivalent to 2ms per frame.
     SetStreamInfo(500, 500);
@@ -375,6 +419,7 @@ class SourceBufferStreamTest : public testing::Test {
   scoped_ptr<SourceBufferStream> stream_;
   VideoDecoderConfig video_config_;
   AudioDecoderConfig audio_config_;
+  scoped_refptr<StrictMock<MockMediaLog>> media_log_;
 
  private:
   base::TimeDelta ConvertToFrameDuration(int frames_per_second) {
@@ -726,6 +771,8 @@ TEST_F(SourceBufferStreamTest, Append_AdjacentRanges) {
 }
 
 TEST_F(SourceBufferStreamTest, Append_DoesNotBeginWithKeyframe) {
+  EXPECT_MEDIA_LOG_STRING(ContainsMissingKeyframeLog()).Times(2);
+
   // Append fails because the range doesn't begin with a keyframe.
   NewSegmentAppend_ExpectFailure(3, 2);
 
@@ -747,6 +794,8 @@ TEST_F(SourceBufferStreamTest, Append_DoesNotBeginWithKeyframe) {
 }
 
 TEST_F(SourceBufferStreamTest, Append_DoesNotBeginWithKeyframe_Adjacent) {
+  EXPECT_MEDIA_LOG_STRING(ContainsMissingKeyframeLog());
+
   // Append 8 buffers at positions 0 through 7.
   NewSegmentAppend(0, 8);
 
@@ -1412,6 +1461,8 @@ TEST_F(SourceBufferStreamTest, End_Overlap_Selected_NoKeyframeAfterNew) {
 // after: |A a a a a A|       |B b b b b B|
 // track:                                 |a|
 TEST_F(SourceBufferStreamTest, End_Overlap_Selected_NoKeyframeAfterNew2) {
+  EXPECT_MEDIA_LOG_STRING(ContainsTrackBufferExhaustionSkipLog(133));
+
   // Append 7 buffers at positions 10 through 16.
   NewSegmentAppend(10, 7, &kDataA);
 
@@ -1676,6 +1727,8 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_BetweenMediaSegments) {
 // new  : 0K   30   60   90   120K
 // after: 0K   30   60   90  *120K*   130K
 TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer) {
+  EXPECT_MEDIA_LOG_STRING(ContainsTrackBufferExhaustionSkipLog(50));
+
   NewSegmentAppendOneByOne("10K 40 70 100K 125 130D30K");
   CheckExpectedRangesByTimestamp("{ [10,160) }");
 
@@ -1706,6 +1759,8 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer) {
 // new  :                     110K    130
 // after: 0K   30   60   90  *110K*   130
 TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer2) {
+  EXPECT_MEDIA_LOG_STRING(ContainsTrackBufferExhaustionSkipLog(40));
+
   NewSegmentAppendOneByOne("10K 40 70 100K 125 130D30K");
   CheckExpectedRangesByTimestamp("{ [10,160) }");
 
@@ -1736,6 +1791,8 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer2) {
 // after: 0K   30   50K   80   110   140 * (waiting for keyframe)
 // track:             70
 TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer3) {
+  EXPECT_MEDIA_LOG_STRING(ContainsTrackBufferExhaustionSkipLog(80));
+
   NewSegmentAppendOneByOne("10K 40 70 100K 125 130D30K");
   CheckExpectedRangesByTimestamp("{ [10,160) }");
 
@@ -1831,6 +1888,8 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer5) {
 // after: 0K   30   60   90  *120K*   130K ... 200K 230 260K 290
 // track:             70
 TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer6) {
+  EXPECT_MEDIA_LOG_STRING(ContainsTrackBufferExhaustionSkipLog(50));
+
   NewSegmentAppendOneByOne("10K 40 70 100K 125 130D30K");
   NewSegmentAppendOneByOne("200K 230");
   CheckExpectedRangesByTimestamp("{ [10,160) [200,260) }");
@@ -2603,6 +2662,8 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_NeedsMoreData) {
 }
 
 TEST_F(SourceBufferStreamTest, GarbageCollection_TrackBuffer) {
+  EXPECT_MEDIA_LOG_STRING(ContainsTrackBufferExhaustionSkipLog(99));
+
   // Set memory limit to 3 buffers.
   SetMemoryLimit(3);
 
@@ -3352,12 +3413,16 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_TwoAppends) {
 // Verify that a non-keyframe followed by a keyframe with the same timestamp
 // is not allowed.
 TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Invalid_1) {
+  EXPECT_MEDIA_LOG_STRING(ContainsSameTimestampAt30MillisecondsLog());
+
   Seek(0);
   NewSegmentAppend("0K 30");
   AppendBuffers_ExpectFailure("30K 60");
 }
 
 TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Invalid_2) {
+  EXPECT_MEDIA_LOG_STRING(ContainsSameTimestampAt30MillisecondsLog());
+
   Seek(0);
   NewSegmentAppend_ExpectFailure("0K 30 30K 60");
 }
@@ -3408,16 +3473,18 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Overlap_3) {
 TEST_F(SourceBufferStreamTest, SameTimestamp_Audio) {
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
                             44100, NULL, 0, false);
-  stream_.reset(new SourceBufferStream(config, new MediaLog(), true));
+  stream_.reset(new SourceBufferStream(config, media_log_, true));
   Seek(0);
   NewSegmentAppend("0K 0K 30K 30 60 60");
   CheckExpectedBuffers("0K 0K 30K 30 60 60");
 }
 
 TEST_F(SourceBufferStreamTest, SameTimestamp_Audio_Invalid_1) {
+  EXPECT_MEDIA_LOG_STRING(ContainsSameTimestampAt30MillisecondsLog());
+
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
                             44100, NULL, 0, false);
-  stream_.reset(new SourceBufferStream(config, new MediaLog(), true));
+  stream_.reset(new SourceBufferStream(config, media_log_, true));
   Seek(0);
   NewSegmentAppend_ExpectFailure("0K 30 30K 60");
 }
@@ -3894,6 +3961,8 @@ TEST_F(SourceBufferStreamTest,
 }
 
 TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_Basic) {
+  EXPECT_MEDIA_LOG_STRING(ContainsGeneratedSpliceLog(3000, 11000));
+
   SetAudioStream();
   Seek(0);
   NewSegmentAppend("0K 2K 4K 6K 8K 10K 12K");
@@ -3903,6 +3972,10 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_Basic) {
 }
 
 TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoExactSplices) {
+  EXPECT_MEDIA_LOG_STRING(
+      HasSubstr("Skipping splice frame generation: first new buffer at 10000us "
+                "begins at or before existing buffer at 10000us."));
+
   SetAudioStream();
   Seek(0);
   NewSegmentAppend("0K 2K 4K 6K 8K 10K 12K");
@@ -3913,6 +3986,12 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoExactSplices) {
 
 // Do not allow splices on top of splices.
 TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoDoubleSplice) {
+  InSequence s;
+  EXPECT_MEDIA_LOG_STRING(ContainsGeneratedSpliceLog(3000, 11000));
+  EXPECT_MEDIA_LOG_STRING(
+      HasSubstr("Skipping splice frame generation: overlapped buffers at "
+                "10000us are in a previously buffered splice."));
+
   SetAudioStream();
   Seek(0);
   NewSegmentAppend("0K 2K 4K 6K 8K 10K 12K");
@@ -3944,6 +4023,8 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoSplice) {
 }
 
 TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_CorrectMediaSegmentStartTime) {
+  EXPECT_MEDIA_LOG_STRING(ContainsGeneratedSpliceLog(5000, 1000));
+
   SetAudioStream();
   Seek(0);
   NewSegmentAppend("0K 2K 4K");
@@ -3957,6 +4038,8 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_CorrectMediaSegmentStartTime) {
 }
 
 TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_ConfigChange) {
+  EXPECT_MEDIA_LOG_STRING(ContainsGeneratedSpliceLog(3000, 5000));
+
   SetAudioStream();
 
   AudioDecoderConfig new_config(kCodecVorbis,
@@ -3980,6 +4063,10 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_ConfigChange) {
 
 // Ensure splices are not created if there are not enough frames to crossfade.
 TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoTinySplices) {
+  EXPECT_MEDIA_LOG_STRING(HasSubstr(
+      "Skipping splice frame generation: not enough samples for splicing new "
+      "buffer at 1000us. Have 1000us, but need 2000us."));
+
   SetAudioStream();
   Seek(0);
 
@@ -3996,11 +4083,15 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoTinySplices) {
 }
 
 TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoMillisecondSplices) {
+  EXPECT_MEDIA_LOG_STRING(
+      HasSubstr("Skipping splice frame generation: not enough samples for "
+                "splicing new buffer at 1250us. Have 750us, but need 1000us."));
+
   video_config_ = TestVideoConfig::Invalid();
   audio_config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
                            CHANNEL_LAYOUT_STEREO, 4000, NULL, 0, false, false,
                            base::TimeDelta(), 0);
-  stream_.reset(new SourceBufferStream(audio_config_, new MediaLog(), true));
+  stream_.reset(new SourceBufferStream(audio_config_, media_log_, true));
   // Equivalent to 0.5ms per frame.
   SetStreamInfo(2000, 2000);
   Seek(0);
@@ -4023,6 +4114,8 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoMillisecondSplices) {
 }
 
 TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_Preroll) {
+  EXPECT_MEDIA_LOG_STRING(ContainsGeneratedSpliceLog(3000, 11000));
+
   SetAudioStream();
   Seek(0);
   NewSegmentAppend("0K 2K 4K 6K 8K 10K 12K");
@@ -4283,6 +4376,64 @@ TEST_F(SourceBufferStreamTest, ConfigChange_ReSeek) {
   CheckExpectedBuffers("2030K 2040 2050D10");
   CheckNoNextBuffer();
   CheckVideoConfig(new_config);
+}
+
+TEST_F(SourceBufferStreamTest, TrackBuffer_ExhaustionWithSkipForward) {
+  NewSegmentAppend("0K 10 20 30 40");
+
+  // Read the first 4 buffers, so next buffer is at time 40.
+  Seek(0);
+  CheckExpectedRangesByTimestamp("{ [0,50) }");
+  CheckExpectedBuffers("0K 10 20 30");
+
+  // Overlap-append, populating track buffer with timestamp 40 from original
+  // append. Confirm there could be a large jump in time until the next key
+  // frame after exhausting the track buffer.
+  NewSegmentAppend(
+      "31K 41 51 61 71 81 91 101 111 121 "
+      "131K 141");
+  CheckExpectedRangesByTimestamp("{ [0,151) }");
+
+  // Confirm the large jump occurs and warning log is generated.
+  // If this test is changed, update
+  // TrackBufferExhaustion_ImmediateNewTrackBuffer accordingly.
+  EXPECT_MEDIA_LOG_STRING(ContainsTrackBufferExhaustionSkipLog(91));
+
+  CheckExpectedBuffers("40 131K 141");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest,
+       TrackBuffer_ExhaustionAndImmediateNewTrackBuffer) {
+  NewSegmentAppend("0K 10 20 30 40");
+
+  // Read the first 4 buffers, so next buffer is at time 40.
+  Seek(0);
+  CheckExpectedRangesByTimestamp("{ [0,50) }");
+  CheckExpectedBuffers("0K 10 20 30");
+
+  // Overlap-append
+  NewSegmentAppend(
+      "31K 41 51 61 71 81 91 101 111 121 "
+      "131K 141");
+  CheckExpectedRangesByTimestamp("{ [0,151) }");
+
+  // Exhaust the track buffer, but don't read any of the overlapping append yet.
+  CheckExpectedBuffers("40");
+
+  // Selected range's next buffer is now the 131K buffer from the overlapping
+  // append. (See TrackBuffer_ExhaustionWithSkipForward for that verification.)
+  // Do another overlap-append to immediately create another track buffer and
+  // verify both track buffer exhaustions skip forward and emit log warnings.
+  NewSegmentAppend("22K 32 42 52 62 72 82 92 102 112 122K 132 142 152K 162");
+  CheckExpectedRangesByTimestamp("{ [0,172) }");
+
+  InSequence s;
+  EXPECT_MEDIA_LOG_STRING(ContainsTrackBufferExhaustionSkipLog(91));
+  EXPECT_MEDIA_LOG_STRING(ContainsTrackBufferExhaustionSkipLog(11));
+
+  CheckExpectedBuffers("131K 141 152K 162");
+  CheckNoNextBuffer();
 }
 
 // TODO(vrk): Add unit tests where keyframes are unaligned between streams.
