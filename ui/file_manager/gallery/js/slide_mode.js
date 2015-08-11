@@ -236,6 +236,15 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
   this.savedLabel_ = queryRequiredElement(this.options_, '.saved');
 
   /**
+   * @private {!PaperCheckboxElement}
+   * @const
+   */
+  this.overwriteOriginalCheckbox_ = /** @type {!PaperCheckboxElement} */
+      (queryRequiredElement(this.options_, '.overwrite-original'));
+  this.overwriteOriginalCheckbox_.addEventListener('change',
+      this.onOverwriteOriginalCheckboxChanged_.bind(this));
+
+  /**
    * @private {!FilesToast}
    * @const
    */
@@ -986,8 +995,16 @@ SlideMode.prototype.itemLoaded_ = function(
     this.printButton_.disabled = false;
   }
 
+  // Saved label is hidden by default.
+  this.savedLabel_.hidden = true;
+
+  // Disable overwrite original checkbox until settings is loaded.
+  this.overwriteOriginalCheckbox_.disabled = true;
+  this.overwriteOriginalCheckbox_.checked = false;
+
   var keys = {};
   keys[SlideMode.OVERWRITE_BUBBLE_KEY] = 0;
+  keys[SlideMode.OVERWRITE_ORIGINAL_KEY] = true;
   chrome.storage.local.get(keys,
       function(values) {
         var times = values[SlideMode.OVERWRITE_BUBBLE_KEY];
@@ -998,6 +1015,15 @@ SlideMode.prototype.itemLoaded_ = function(
             items[SlideMode.OVERWRITE_BUBBLE_KEY] = times + 1;
             chrome.storage.local.set(items);
           }
+        }
+
+        // Users can overwrite original file only if loaded image is original
+        // and writable.
+        if (item.isOriginal() &&
+            item.isWritableFile(this.volumeManager_)) {
+          this.overwriteOriginalCheckbox_.disabled = false;
+          this.overwriteOriginalCheckbox_.checked =
+              values[SlideMode.OVERWRITE_ORIGINAL_KEY];
         }
       }.bind(this));
 
@@ -1227,7 +1253,8 @@ SlideMode.prototype.saveCurrentImage_ = function(item, callback) {
   var savedPromise = this.dataModel_.saveItem(
       this.volumeManager_,
       item,
-      this.imageView_.getCanvas());
+      this.imageView_.getCanvas(),
+      this.overwriteOriginalCheckbox_.checked);
 
   savedPromise.then(function() {
     this.showSpinner_(false);
@@ -1236,6 +1263,13 @@ SlideMode.prototype.saveCurrentImage_ = function(item, callback) {
     // Record UMA for the first edit.
     if (this.imageView_.getContentRevision() === 1)
       ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('Edit'));
+
+    // Users can change overwrite original setting only if there is no undo
+    // stack and item is original and writable.
+    var ableToChangeOverwriteOriginalSetting = !this.editor_.canUndo() &&
+        item.isOriginal() && item.isWritableFile(this.volumeManager_);
+    this.overwriteOriginalCheckbox_.disabled =
+        !ableToChangeOverwriteOriginalSetting;
 
     callback();
   }.bind(this)).catch(function(error) {
@@ -1253,6 +1287,7 @@ SlideMode.prototype.saveCurrentImage_ = function(item, callback) {
  * @private
  */
 SlideMode.prototype.flashSavedLabel_ = function() {
+  this.savedLabel_.hidden = false;
   var setLabelHighlighted =
       ImageUtil.setAttribute.bind(null, this.savedLabel_, 'highlighted');
   setTimeout(setLabelHighlighted.bind(null, true), 0);
@@ -1262,15 +1297,31 @@ SlideMode.prototype.flashSavedLabel_ = function() {
 /**
  * Local storage key for the number of times that
  * the overwrite info bubble has been displayed.
- * @type {string}
+ * @const {string}
  */
 SlideMode.OVERWRITE_BUBBLE_KEY = 'gallery-overwrite-bubble';
 
 /**
+ * Local storage key for overwrite original checkbox value.
+ * @const {string}
+ */
+SlideMode.OVERWRITE_ORIGINAL_KEY = 'gallery-overwrite-original';
+
+/**
  * Max number that the overwrite info bubble is shown.
- * @type {number}
+ * @const {number}
  */
 SlideMode.OVERWRITE_BUBBLE_MAX_TIMES = 5;
+
+/**
+ * Handles change event of overwrite original checkbox.
+ */
+SlideMode.prototype.onOverwriteOriginalCheckboxChanged_ = function() {
+  var items = {};
+  items[SlideMode.OVERWRITE_ORIGINAL_KEY] =
+      this.overwriteOriginalCheckbox_.checked;
+  chrome.storage.local.set(items);
+};
 
 /**
  * Overwrite info bubble close handler.

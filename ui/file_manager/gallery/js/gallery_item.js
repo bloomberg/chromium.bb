@@ -210,13 +210,24 @@ Gallery.Item.prototype.createCopyName_ = function(
 };
 
 /**
- * Return true if the original format is writable format of Gallery.
+ * Returns true if the original format is writable format of Gallery.
  * @return {boolean} True if the original format is writable format.
  */
 Gallery.Item.prototype.isWritableFormat = function() {
   var type = FileType.getType(this.entry_);
   return type.type === 'image' &&
       (type.subtype === 'JPEG' || type.subtype === 'PNG')
+};
+
+/**
+ * Returns true if the entry of item is writable.
+ * @param {!VolumeManagerWrapper} volumeManager Volume manager.
+ * @return {boolean} True if the entry of item is writable.
+ */
+Gallery.Item.prototype.isWritableFile = function(volumeManager) {
+  return this.isWritableFormat() &&
+      !this.locationInfo_.isReadOnly &&
+      !GalleryUtil.isOnMTPVolume(this.entry_, volumeManager);
 };
 
 /**
@@ -249,10 +260,11 @@ Gallery.Item.prototype.getCopyName = function() {
  * @param {DirectoryEntry} fallbackDir Fallback directory in case the current
  *     directory is read only.
  * @param {!HTMLCanvasElement} canvas Source canvas.
+ * @param {boolean} overwrite Set true to overwrite original if it's possible.
  * @param {function(boolean)} callback Callback accepting true for success.
  */
 Gallery.Item.prototype.saveToFile = function(
-    volumeManager, metadataModel, fallbackDir, canvas, callback) {
+    volumeManager, metadataModel, fallbackDir, canvas, overwrite, callback) {
   ImageUtil.metrics.startInterval(ImageUtil.getMetricName('SaveTime'));
 
   var name = this.getFileName();
@@ -361,7 +373,8 @@ Gallery.Item.prototype.saveToFile = function(
   };
 
   var saveToDir = function(dir) {
-    if (!this.locationInfo_.isReadOnly &&
+    if (overwrite &&
+        !this.locationInfo_.isReadOnly &&
         this.isWritableFormat()) {
       checkExistence(dir);
       return;

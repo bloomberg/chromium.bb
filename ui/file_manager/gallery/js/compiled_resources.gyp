@@ -42,8 +42,12 @@
       'variables': {
         'depends': [
           '../../../../third_party/jstemplate/compiled_resources.gyp:jstemplate',
+          '../../../../third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior/iron-a11y-keys-behavior-extracted.js',
+          '../../../../third_party/polymer/v1_0/components-chromium/iron-behaviors/iron-button-state-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/iron-behaviors/iron-control-state-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/iron-form-element-behavior/iron-form-element-behavior-extracted.js',
+          '../../../../third_party/polymer/v1_0/components-chromium/paper-behaviors/paper-inky-focus-behavior-extracted.js',
+          '../../../../third_party/polymer/v1_0/components-chromium/paper-checkbox/paper-checkbox-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/paper-input/paper-input-behavior-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/paper-input/paper-input-container-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/paper-input/paper-input-extracted.js',

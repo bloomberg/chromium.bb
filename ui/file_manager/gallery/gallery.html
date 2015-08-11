@@ -16,6 +16,7 @@
   <script src="chrome://resources/js/util.js"></script>
 
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+  <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
@@ -24,6 +25,14 @@
 
   <script src="js/gallery_scripts.js"></script>
   <style is="custom-style">
+    paper-checkbox {
+      --paper-checkbox-label-color: white;
+      --paper-checkbox-checked-color: white;
+      --paper-checkbox-checked-ink-color: white;
+      --paper-checkbox-checkmark-color: black;
+      --paper-checkbox-unchecked-color: white;
+      --paper-checkbox-unchecked-ink-color: white;
+    }
     paper-input {
       --paper-input-container-color: rgba(255, 255, 255, 0.2);
       --paper-input-container-focus-color: white;
@@ -77,7 +86,10 @@
 
       <div class="edit-mode-toolbar">
         <div class="options">
-          <div class="saved" i18n-content="GALLERY_SAVED"></div>
+          <paper-checkbox class="overwrite-original"
+                          i18n-content="GALLERY_OVERWRITE_ORIGINAL">
+          </paper-checkbox>
+          <div class="saved" i18n-content="GALLERY_SAVED" hidden></div>
         </div>
         <div class="edit-bar-spacer"></div>
       </div>

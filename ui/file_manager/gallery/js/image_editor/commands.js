@@ -123,25 +123,8 @@ CommandQueue.prototype.clearBusy_ = function() {
  * @private
  */
 CommandQueue.prototype.commit_ = function(showUndoAction, opt_delay) {
-  setTimeout(this.saveFunction_.bind(null, function() {
-    this.clearBusy_();
-
-    // Show saved toast.
-    if (!this.UIContext_.toast)
-      return;
-
-    if (showUndoAction) {
-      this.UIContext_.toast.show(strf('GALLERY_SAVED'), {
-        text: 'UNDO',
-        callback: function() {
-          this.undo();
-          this.UIContext_.updateUndoRedo();
-        }.bind(this)});
-    } else {
-      this.UIContext_.toast.show(strf('GALLERY_SAVED'));
-    }
-
-  }.bind(this)), opt_delay || 0);
+  setTimeout(this.saveFunction_.bind(null, this.clearBusy_.bind(this)),
+      opt_delay || 0);
 };
 
 /**

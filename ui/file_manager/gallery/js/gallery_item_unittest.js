@@ -94,7 +94,8 @@ function testSaveToFile(callback) {
           },
           metadataModel,
           /* fallbackDir */ null,
-          document.createElement('canvas'))).then(function() {
+          document.createElement('canvas'),
+          true /* overwrite */)).then(function() {
             assertEquals(200, item.getMetadataItem().size);
             assertTrue(entryChanged);
           }), callback);
@@ -139,7 +140,8 @@ function testSaveToFileWriteFailCase(callback) {
           },
           getMockMetadataModel(),
           /* fallbackDir */ null,
-          document.createElement('canvas'))).then(function(result) {
+          document.createElement('canvas'),
+          true /* overwrite */)).then(function(result) {
             assertFalse(result);
           }), callback);
 }
@@ -191,7 +193,8 @@ function testSaveToFileGetBlobFailCase(callback) {
           },
           getMockMetadataModel(),
           /* fallbackDir */ null,
-          document.createElement('canvas'))).then(function(result) {
+          document.createElement('canvas'),
+          true /* overwrite*/)).then(function(result) {
             assertFalse(result);
             assertFalse(writeOperationRun);
           }), callback);
@@ -243,10 +246,65 @@ function testSaveToFileRaw(callback) {
           },
           metadataModel,
           /* fallbackDir */ null,
-          document.createElement('canvas'))).then(function(success) {
+          document.createElement('canvas'),
+          false /* not overwrite */)).then(function(success) {
             assertTrue(success);
             assertEquals(200, item.getMetadataItem().size);
             assertTrue(entryChanged);
             assertFalse(item.isOriginal());
           }), callback);
 }
+
+function testIsWritableFile() {
+  var downloads = new MockFileSystem('downloads');
+  var removable = new MockFileSystem('removable');
+  var mtp = new MockFileSystem('mtp');
+
+  var volumeTypes = {
+    downloads: VolumeManagerCommon.VolumeType.DOWNLOADS,
+    removable: VolumeManagerCommon.VolumeType.REMOVABLE,
+    mtp: VolumeManagerCommon.VolumeType.MTP
+  };
+
+  // Mock volume manager.
+  var volumeManager = {
+    getVolumeInfo: function(entry) {
+      return {
+        volumeType: volumeTypes[entry.filesystem.name]
+      };
+    }
+  };
+
+  var getGalleryItem = function(path, fileSystem, isReadOnly) {
+    return new Gallery.Item(new MockEntry(fileSystem, path),
+        {isReadOnly: isReadOnly},
+        {size: 100},
+        {},
+        true /* original */);
+  };
+
+  // Jpeg file on downloads.
+  assertTrue(getGalleryItem(
+      '/test.jpg', downloads, false /* not read only */).
+      isWritableFile(volumeManager));
+
+  // Png file on downloads.
+  assertTrue(getGalleryItem(
+      '/test.png', downloads, false /* not read only */).
+      isWritableFile(volumeManager));
+
+  // Webp file on downloads.
+  assertFalse(getGalleryItem(
+      '/test.webp', downloads, false /* not read only */).
+      isWritableFile(volumeManager));
+
+  // Jpeg file on non-writable volume.
+  assertFalse(getGalleryItem(
+      '/test.jpg', removable, true /* read only */).
+      isWritableFile(volumeManager));
+
+  // Jpeg file on mtp volume.
+  assertFalse(getGalleryItem(
+      '/test.jpg', mtp, false /* not read only */).
+      isWritableFile(volumeManager));
+};

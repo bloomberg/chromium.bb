@@ -468,56 +468,36 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
   visibility: visible;
 }
 
-.gallery .edit-mode-toolbar .saved,
-.gallery .edit-mode-toolbar .overwrite-original {
-  cursor: inherit;
-  font-size: 90%;
-  opacity: 0;
-  pointer-events: none;
-  transition: all linear 120ms;
-}
-
 .gallery .edit-mode-toolbar .overwrite-original {
   -webkit-margin-start: 16px;
-  align-items: center;
-  display: flex;
+}
+
+.gallery .edit-mode-toolbar .overwrite-original::shadow #checkboxContainer {
+  transform: scale(0.78, 0.78); /* Make box size to 14px. */
+}
+
+.gallery .edit-mode-toolbar .overwrite-original::shadow #ink {
+  left: -10px;
+  top: -10px;
+}
+
+.gallery .edit-mode-toolbar .overwrite-original::shadow #checkboxLabel {
+  padding-left: 6px;
 }
 
 .gallery .edit-mode-toolbar .saved {
   -webkit-margin-start: 14px;
-}
-
-.gallery .edit-mode-toolbar .overwrite-original > input {
-  float: left;
-  margin: 0;
-}
-
-.gallery .edit-mode-toolbar .overwrite-original > .label {
-  -webkit-margin-start: 8px;
-  color: white;
-  float: left;
+  cursor: inherit;
+  opacity: 0;
+  pointer-events: none;
+  transition-duration: 120ms;
+  transition-property: opacity, transform;
+  transition-timing-function: linear;
 }
 
 .gallery[editing] .edit-mode-toolbar .saved {
   color: white;
   opacity: 0.5;
-}
-
-.gallery[editing] .edit-mode-toolbar .overwrite-original,
-.gallery[editing] .edit-mode-toolbar .overwrite-original > * {
-  cursor: pointer;
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.gallery[editing] .overwrite-original[disabled] {
-  opacity: 0.5;
-}
-
-.gallery[editing] .overwrite-original[disabled],
-.gallery[editing] .overwrite-original[disabled] > * {
-  cursor: default;
-  pointer-events: none;
 }
 
 .gallery .edit-mode-toolbar .saved[highlighted] {

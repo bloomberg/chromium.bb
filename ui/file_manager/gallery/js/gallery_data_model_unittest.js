@@ -43,17 +43,19 @@ function testSaveItemOverwrite(callback) {
       metadataModel,
       fallbackDir,
       canvas,
+      overwrite,
       callback) {
     callback(true);
   };
   model.push(item);
   reportPromise(
-      model.saveItem({}, item, document.createElement('canvas')).
+      model.saveItem({}, item, document.createElement('canvas'),
+          true /* overwrite */).
           then(function() { assertEquals(1, model.length); }),
       callback);
 }
 
-function testSaveItemNewFile(callback) {
+function testSaveItemToNewFile(callback) {
   var item = new Gallery.Item(
       new MockEntry(fileSystem, '/test.webp'),
       null,
@@ -68,6 +70,7 @@ function testSaveItemNewFile(callback) {
       metadataModel,
       fallbackDir,
       canvas,
+      overwrite,
       callback) {
     // Gallery item track new file.
     this.entry_ = new MockEntry(fileSystem, '/test (1).png');
@@ -76,7 +79,8 @@ function testSaveItemNewFile(callback) {
   };
   model.push(item);
   reportPromise(
-      model.saveItem({}, item, document.createElement('canvas')).
+      model.saveItem({}, item, document.createElement('canvas'),
+          false /* not overwrite */).
           then(function() {
             assertEquals(2, model.length);
             assertEquals('test (1).png', model.item(0).getFileName());
