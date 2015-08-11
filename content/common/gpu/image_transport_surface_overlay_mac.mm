@@ -94,6 +94,7 @@ ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
 }
 
 ImageTransportSurfaceOverlayMac::~ImageTransportSurfaceOverlayMac() {
+  Destroy();
 }
 
 bool ImageTransportSurfaceOverlayMac::Initialize() {
