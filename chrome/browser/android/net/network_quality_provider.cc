@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "jni/NetworkQualityProvider_jni.h"
+#include "net/base/network_quality.h"
 
 NetworkQualityProvider::NetworkQualityProvider() {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -43,8 +44,10 @@ bool NetworkQualityProvider::GetRTT(base::TimeDelta* rtt) {
   int32_t milliseconds = Java_NetworkQualityProvider_getRTTMilliseconds(
       env, j_network_quality_provider_.obj());
   DCHECK(milliseconds >= no_value_);
-  if (milliseconds == no_value_)
+  if (milliseconds == no_value_) {
+    *rtt = net::NetworkQuality::InvalidRTT();
     return false;
+  }
   *rtt = base::TimeDelta::FromMilliseconds(milliseconds);
   return true;
 }
@@ -56,8 +59,10 @@ bool NetworkQualityProvider::GetDownstreamThroughputKbps(
   int32_t kbps = Java_NetworkQualityProvider_getDownstreamThroughputKbps(
       env, j_network_quality_provider_.obj());
   DCHECK(kbps >= no_value_);
-  if (kbps == no_value_)
+  if (kbps == no_value_) {
+    *downstream_throughput_kbps = net::NetworkQuality::kInvalidThroughput;
     return false;
+  }
   *downstream_throughput_kbps = kbps;
   return true;
 }
@@ -69,8 +74,10 @@ bool NetworkQualityProvider::GetUpstreamThroughputKbps(
   int32_t kbps = Java_NetworkQualityProvider_getUpstreamThroughputKbps(
       env, j_network_quality_provider_.obj());
   DCHECK(kbps >= no_value_);
-  if (kbps == no_value_)
+  if (kbps == no_value_) {
+    *upstream_throughput_kbps = net::NetworkQuality::kInvalidThroughput;
     return false;
+  }
   *upstream_throughput_kbps = kbps;
   return true;
 }

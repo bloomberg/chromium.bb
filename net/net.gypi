@@ -487,6 +487,8 @@
       'base/network_delegate.h',
       'base/network_delegate_impl.cc',
       'base/network_delegate_impl.h',
+      'base/network_quality.cc',
+      'base/network_quality.h',
       'base/network_quality_estimator.cc',
       'base/network_quality_estimator.h',
       'base/nss_memio.c',

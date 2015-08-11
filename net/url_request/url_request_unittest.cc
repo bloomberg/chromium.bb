@@ -45,6 +45,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_module.h"
 #include "net/base/net_util.h"
+#include "net/base/network_quality.h"
 #include "net/base/network_quality_estimator.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_data_directory.h"
@@ -4114,13 +4115,11 @@ TEST_F(URLRequestTestHTTP, NetworkQualityEstimator) {
 
   base::RunLoop().Run();
 
-  base::TimeDelta rtt;
-  int32_t kbps;
-  EXPECT_TRUE(estimator.GetRTTEstimate(&rtt));
-  EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
-  EXPECT_GE(rtt, base::TimeDelta());
-  EXPECT_LT(rtt, base::TimeDelta::Max());
-  EXPECT_GT(kbps, 0);
+  NetworkQuality network_quality =
+      context.network_quality_estimator()->GetPeakEstimate();
+  EXPECT_GE(network_quality.rtt(), base::TimeDelta());
+  EXPECT_LT(network_quality.rtt(), base::TimeDelta::Max());
+  EXPECT_GT(network_quality.downstream_throughput_kbps(), 0);
 
   // Verify that histograms are not populated. They should populate only when
   // there is a change in ConnectionType.

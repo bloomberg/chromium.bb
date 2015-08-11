@@ -22,6 +22,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/variations/variations_associated_data.h"
+#include "net/base/network_quality.h"
 #include "net/base/network_quality_estimator.h"
 #include "net/http/http_status_code.h"
 #include "net/log/test_net_log.h"
@@ -985,30 +986,25 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
  public:
   explicit TestNetworkQualityEstimator(
       const std::map<std::string, std::string>& variation_params)
-      : NetworkQualityEstimator(variation_params),
-        rtt_estimate_(base::TimeDelta()),
-        downstream_throughput_kbps_estimate_(INT32_MAX) {}
+      : NetworkQualityEstimator(variation_params) {}
 
   ~TestNetworkQualityEstimator() override {}
 
-  bool GetRTTEstimate(base::TimeDelta* rtt) const override {
-    DCHECK(rtt);
-    *rtt = rtt_estimate_;
+  bool GetEstimate(net::NetworkQuality* median) const override {
+    // |median| must not be null.
+    DCHECK(median);
+    *median = network_quality_estimate_;
     return true;
   }
 
-  bool GetDownlinkThroughputKbpsEstimate(int32_t* kbps) const override {
-    DCHECK(kbps);
-    *kbps = downstream_throughput_kbps_estimate_;
-    return true;
+  void SetRTT(base::TimeDelta rtt) {
+    network_quality_estimate_ = net::NetworkQuality(
+        rtt, network_quality_estimate_.downstream_throughput_kbps());
   }
-
-  void SetRTT(base::TimeDelta rtt) { rtt_estimate_ = rtt; }
 
  private:
   // Estimate of the quality of the network.
-  base::TimeDelta rtt_estimate_;
-  int32_t downstream_throughput_kbps_estimate_;
+  net::NetworkQuality network_quality_estimate_;
 };
 
 TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
