@@ -852,7 +852,8 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                    wait_for_results=None, priority=None, timeout_mins=None,
                    retry=None, max_retries=None,
                    minimum_duts=0, suite_min_duts=0,
-                   offload_failures_only=None, debug=True):
+                   offload_failures_only=None, debug=True,
+                   subsystems=None):
   """Run the test suite in the Autotest lab.
 
   Args:
@@ -879,11 +880,13 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                     a suite that has higher priority.
     offload_failures_only: Only offload failed tests to Google Storage.
     debug: Whether we are in debug mode.
+    subsystems: A set of subsystems that the relevant changes affect, for
+                testing purposes.
   """
   cmd = _CreateRunSuiteCommand(build, suite, board, pool, num, file_bugs,
                                wait_for_results, priority, timeout_mins, retry,
                                max_retries, minimum_duts, suite_min_duts,
-                               offload_failures_only)
+                               offload_failures_only, subsystems)
   try:
     HWTestCreateAndWait(cmd, debug)
   except cros_build_lib.RunCommandError as e:
@@ -926,7 +929,8 @@ def _CreateRunSuiteCommand(build, suite, board, pool=None, num=None,
                            file_bugs=None, wait_for_results=None,
                            priority=None, timeout_mins=None,
                            retry=None, max_retries=None, minimum_duts=0,
-                           suite_min_duts=0, offload_failures_only=None):
+                           suite_min_duts=0, offload_failures_only=None,
+                           subsystems=None):
   """Create a proxied run_suite command for the given arguments.
 
   Args:
@@ -975,6 +979,25 @@ def _CreateRunSuiteCommand(build, suite, board, pool=None, num=None,
 
   if offload_failures_only is not None:
     cmd += ['--offload_failures_only', str(offload_failures_only)]
+
+  if subsystems:
+    # set the suite name to suite_attr_wrapper
+    cmd[6] = 'suite_attr_wrapper'
+    subsystem_attr = ['subsystem:%s' % x for x in subsystems]
+    subsystems_attr_str = ' or '.join(subsystem_attr)
+
+    if suite != 'suite_attr_wrapper':
+      if type(suite) is str:
+        suite_attr_str = 'suite:%s' % suite
+      else:
+        suite_attr_str = ' or '.join(['suite:%s' % x for x in suite])
+
+      attr_value = '(%s) and (%s)' % (suite_attr_str, subsystems_attr_str)
+    else:
+      attr_value = subsystems_attr_str
+
+    suite_args_dict = repr({'attr_filter' : attr_value})
+    cmd += ['--suite_args', suite_args_dict]
 
   return cmd
 # pylint: enable=docstring-missing-args

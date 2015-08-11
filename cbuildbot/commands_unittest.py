@@ -356,6 +356,40 @@ The suite job has another 2:39:39.789250 till timeout.
     with self.OutputCapturer():
       self.assertRaises(failures_lib.TestWarning, self.RunHWTestSuite)
 
+  def testCreateRunSuiteCommandWithSubsystems(self):
+    """Test _CreateRunSuiteCommand when subsystems is specified."""
+    result_1 = commands._CreateRunSuiteCommand(build=self._build,
+                                               suite=self._suite,
+                                               board=self._board,
+                                               subsystems=['light'])
+    expected_1 = [commands._AUTOTEST_RPC_CLIENT,
+                  commands._AUTOTEST_RPC_HOSTNAME,
+                  'RunSuite',
+                  '--build', self._build,
+                  '--suite_name', 'suite_attr_wrapper',
+                  '--board', self._board,
+                  '--suite_args',
+                  ("{'attr_filter': '(suite:%s) and (subsystem:light)'}" %
+                   self._suite)]
+
+    # Test with multiple subsystems.
+    result_2 = commands._CreateRunSuiteCommand(build=self._build,
+                                               suite=self._suite,
+                                               board=self._board,
+                                               subsystems=['light', 'power'])
+    expected_2 = [commands._AUTOTEST_RPC_CLIENT,
+                  commands._AUTOTEST_RPC_HOSTNAME,
+                  'RunSuite',
+                  '--build', self._build,
+                  '--suite_name', 'suite_attr_wrapper',
+                  '--board', self._board,
+                  '--suite_args',
+                  ("{'attr_filter': '(suite:%s) and (subsystem:light or "
+                   "subsystem:power)'}" % self._suite)]
+
+    self.assertEqual(result_1, expected_1)
+    self.assertEqual(result_2, expected_2)
+
 
 class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
   """Test general cbuildbot command methods."""

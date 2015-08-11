@@ -292,6 +292,14 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     else:
       debug = self._run.options.debug
 
+    # Get the subsystems set for the board to test
+    per_board_dict = self._run.attrs.metadata.GetDict()['board-metadata']
+    current_board_dict = per_board_dict.get(self._current_board)
+    if current_board_dict:
+      subsystems = set(current_board_dict.get('subsystems_to_test', []))
+    else:
+      subsystems = None
+
     commands.RunHWTestSuite(
         build, self.suite_config.suite, self._current_board,
         pool=self.suite_config.pool, num=self.suite_config.num,
@@ -304,7 +312,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
         minimum_duts=self.suite_config.minimum_duts,
         suite_min_duts=self.suite_config.suite_min_duts,
         offload_failures_only=self.suite_config.offload_failures_only,
-        debug=debug)
+        debug=debug, subsystems=subsystems)
 
 
 class AUTestStage(HWTestStage):
