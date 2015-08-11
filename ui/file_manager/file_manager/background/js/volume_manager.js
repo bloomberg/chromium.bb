@@ -271,8 +271,8 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
   }
 
   console.debug('Requesting file system.');
-  return new Promise(
-      function(resolve, reject) {
+  return util.timeoutPromise(
+      new Promise(function(resolve, reject) {
         chrome.fileSystem.requestFileSystem(
             {
               volumeId: volumeMetadata.volumeId,
@@ -284,7 +284,9 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
               else
                 resolve(isolatedFileSystem);
             });
-      })
+      }),
+      VolumeManager.TIMEOUT,
+      'requestFileSystem timeout: ' + volumeMetadata.volumeId)
   .then(
       /**
        * @param {!FileSystem} isolatedFileSystem
@@ -293,18 +295,21 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
         // Since File System API works on isolated entries only, we need to
         // convert it back to external one.
         // TODO(mtomasz): Make Files app work on isolated entries.
-        return new Promise(function(resolve, reject) {
-          chrome.fileManagerPrivate.resolveIsolatedEntries(
-              [isolatedFileSystem.root],
-              function(entries) {
-                if (chrome.runtime.lastError)
-                  reject(chrome.runtime.lastError.message);
-                else if (!entries[0])
-                  reject('Resolving for external context failed.');
-                else
-                  resolve(entries[0].filesystem);
-              });
-          });
+        return util.timeoutPromise(
+            new Promise(function(resolve, reject) {
+              chrome.fileManagerPrivate.resolveIsolatedEntries(
+                  [isolatedFileSystem.root],
+                  function(entries) {
+                    if (chrome.runtime.lastError)
+                      reject(chrome.runtime.lastError.message);
+                    else if (!entries[0])
+                      reject('Resolving for external context failed.');
+                    else
+                      resolve(entries[0].filesystem);
+                  });
+            }),
+            VolumeManager.TIMEOUT,
+            'resolveIsolatedEntries timeout: ' + volumeMetadata.volumeId);
        })
   .then(
       /**
@@ -717,7 +722,22 @@ VolumeManager.prototype.addVolumeMetadata_ = function(volumeMetadata) {
        * @return {!VolumeInfo}
        */
       function(volumeInfo) {
-        if (this.volumeInfoList.findIndex(volumeInfo.volumeId) === -1) {
+        // We don't show Downloads and Drive on volume list if they have mount
+        // error, since users can do nothing in this situation.
+        // We show Removable and Provided volumes regardless of mount error so
+        // that users can unmount or format the volume.
+        // TODO(fukino): Once Files.app get ready, show erroneous Drive volume
+        // so that users can see auth warning banner on the volume.
+        // crbug.com/517772.
+        var shouldShow = true;
+        switch (volumeInfo.volumeType) {
+          case VolumeManagerCommon.VolumeType.DOWNLOADS:
+          case VolumeManagerCommon.VolumeType.DRIVE:
+            shouldShow = !!volumeInfo.fileSystem;
+            break;
+        }
+        if (shouldShow &&
+            this.volumeInfoList.findIndex(volumeInfo.volumeId) === -1) {
           this.volumeInfoList.add(volumeInfo);
 
           // Update the network connection status, because until the drive is

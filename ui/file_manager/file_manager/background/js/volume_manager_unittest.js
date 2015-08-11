@@ -290,7 +290,7 @@ function testDriveMountedDuringInitialization(callback) {
     eventType: 'mount',
     status: 'success',
     volumeMetadata: {
-      volumeId: 'drive',
+      volumeId: 'drive:drive-foobar%40chromium.org-hash',
       volumeType: VolumeManagerCommon.VolumeType.DRIVE,
       sourcePath: '/drive',
       profile: getMockProfile()

@@ -78,7 +78,7 @@ CommandUtil.getCommandEntries = function(element) {
   } else if (element instanceof DirectoryItem ||
              element instanceof ShortcutItem) {
     // element are sub items in DirectoryTree.
-    return [element.entry];
+    return element.entry ? [element.entry] : [];
   } else if (element instanceof cr.ui.List) {
     // element is a normal List (eg. the file list on the right panel).
     var entries = element.selectedItems;
