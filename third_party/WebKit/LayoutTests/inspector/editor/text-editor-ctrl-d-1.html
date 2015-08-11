@@ -42,37 +42,12 @@ function test()
         ]);
     }
 
-    function dumpSelectionStats()
-    {
-        var listHashMap = {};
-        var sortedKeys = [];
-        var selections = textEditor.selections();
-        for (var i = 0; i < selections.length; ++i) {
-            var selection = selections[i];
-            var text = textEditor.copyRange(selection);
-            if (!listHashMap[text]) {
-                listHashMap[text] = 1;
-                sortedKeys.push(text);
-            } else {
-                ++listHashMap[text];
-            }
-        }
-        for (var i = 0; i < sortedKeys.length; ++i) {
-            var keyName = sortedKeys[i];
-            if (!keyName.length)
-                keyName = "<Empty string>";
-            else
-                keyName = "'" + keyName + "'";
-            InspectorTest.addResult(keyName + ": " + listHashMap[sortedKeys[i]]);
-        }
-    }
-
     var testSuite = [
         function testNextFullWord(next)
         {
             lineSelection(0, 3);
             nextOccurrence(3);
-            dumpSelectionStats();
+            InspectorTest.dumpSelectionStats(textEditor);
             next();
         },
 
@@ -80,7 +55,7 @@ function test()
         {
             lineSelection(0, 9, 13);
             nextOccurrence(3);
-            dumpSelectionStats();
+            InspectorTest.dumpSelectionStats(textEditor);
             next();
         },
 
@@ -88,7 +63,7 @@ function test()
         {
             lineSelection(2, 13);
             nextOccurrence(3);
-            dumpSelectionStats();
+            InspectorTest.dumpSelectionStats(textEditor);
             next();
         },
 
@@ -97,7 +72,7 @@ function test()
             lineSelection(2, 13);
             nextOccurrence(3);
             undoLastSelection();
-            dumpSelectionStats();
+            InspectorTest.dumpSelectionStats(textEditor);
             next();
         },
 
@@ -107,7 +82,7 @@ function test()
             nextOccurrence(3);
             undoLastSelection();
             nextOccurrence(1);
-            dumpSelectionStats();
+            InspectorTest.dumpSelectionStats(textEditor);
             var lastSelection = textEditor.selections().pop();
             InspectorTest.addResult("Last selection: " + lastSelection.toString());
             next();
@@ -119,7 +94,7 @@ function test()
             nextOccurrence(2);
             undoLastSelection();
             nextOccurrence(1);
-            dumpSelectionStats();
+            InspectorTest.dumpSelectionStats(textEditor);
             var lastSelection = textEditor.selections().pop();
             InspectorTest.addResult("Last selection: " + lastSelection.toString());
             next();
@@ -129,79 +104,9 @@ function test()
         {
             lineSelection(17, 45);
             nextOccurrence(5);
-            dumpSelectionStats();
+            InspectorTest.dumpSelectionStats(textEditor);
             next();
         },
-
-        function testCursorInTheWordStart(next)
-        {
-            lineSelection(8, 0);
-            nextOccurrence(1);
-            dumpSelectionStats();
-            next();
-        },
-
-        function testCursorInTheWordEnd(next)
-        {
-            lineSelection(8, 8);
-            nextOccurrence(1);
-            dumpSelectionStats();
-            next();
-        },
-
-        function testNonWordSelection(next)
-        {
-            lineSelection(18, 12, 14);
-            nextOccurrence(8);
-            dumpSelectionStats();
-            next();
-        },
-
-        function testNonWordSelection2(next)
-        {
-            lineSelection(17, 30, 33);
-            nextOccurrence(8);
-            dumpSelectionStats();
-            next();
-        },
-
-        function testNonWordSelection3(next)
-        {
-            InspectorTest.setLineSelections(textEditor, [
-                { line: 14, from: 15, to: 25 },
-                { line: 16, column: 21 },
-                { line: 17, from: 42, to: 47 },
-            ]);
-            var selections = textEditor.selections();
-            nextOccurrence(3);
-            dumpSelectionStats();
-            next();
-        },
-
-        function testNonWordSelection4(next)
-        {
-            InspectorTest.setLineSelections(textEditor, [
-                { line: 14, from: 15, to: 25 },
-                { line: 16, from: 21, to: 23 },
-                { line: 17, from: 42, to: 47 },
-            ]);
-            var selections = textEditor.selections();
-            nextOccurrence(3);
-            dumpSelectionStats();
-            next();
-        },
-
-        function testTriggerWordSearchInMixedCase(next)
-        {
-            InspectorTest.setLineSelections(textEditor, [
-                { line: 9, from: 10, to: 25 },
-                { line: 14, column: 33 }
-            ]);
-            nextOccurrence(5);
-            dumpSelectionStats();
-            next();
-        },
-
     ];
 }
 

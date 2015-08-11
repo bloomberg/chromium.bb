@@ -180,4 +180,29 @@ InspectorTest.fakeKeyEvent = function(editor, originalCode, modifiers, callback)
     editor._codeMirror.on("inputRead", callbackWrapper);
 }
 
+InspectorTest.dumpSelectionStats = function(textEditor)
+{
+    var listHashMap = {};
+    var sortedKeys = [];
+    var selections = textEditor.selections();
+    for (var i = 0; i < selections.length; ++i) {
+        var selection = selections[i];
+        var text = textEditor.copyRange(selection);
+        if (!listHashMap[text]) {
+            listHashMap[text] = 1;
+            sortedKeys.push(text);
+        } else {
+            ++listHashMap[text];
+        }
+    }
+    for (var i = 0; i < sortedKeys.length; ++i) {
+        var keyName = sortedKeys[i];
+        if (!keyName.length)
+            keyName = "<Empty string>";
+        else
+            keyName = "'" + keyName + "'";
+        InspectorTest.addResult(keyName + ": " + listHashMap[sortedKeys[i]]);
+    }
+}
+
 }

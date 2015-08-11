@@ -96,7 +96,6 @@ crbug.com/243492 http/tests/inspector-enabled/injected-script-discard.html [ Slo
 crbug.com/327078 http/tests/inspector/network/long-script-content.html [ Slow ]
 crbug.com/420008 [ Release ] inspector/editor/text-editor-word-jumps.html [ Slow ]
 crbug.com/420008 [ Release ] http/tests/inspector/console-xhr-logging.html [ Slow ]
-crbug.com/512473 [ Release ] inspector/editor/text-editor-ctrl-d.html [ Slow ]
 webkit.org/b/60109 inspector/elements/edit/edit-dom-actions.html [ Slow ]
 webkit.org/b/84735 [ Win ] http/tests/inspector/change-iframe-src.html [ Slow ]
 crbug.com/504565 [ Mac ] http/tests/inspector/search/sources-search-scope.html [ Slow ]
