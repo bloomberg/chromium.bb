@@ -1266,7 +1266,8 @@ bool TabsUpdateFunction::RunAsync() {
 
   if (params->update_properties.muted.get()) {
     TabMutedResult tab_muted_result = chrome::SetTabAudioMuted(
-        contents, *params->update_properties.muted, extension()->id());
+        contents, *params->update_properties.muted,
+        TAB_MUTED_REASON_EXTENSION, extension()->id());
 
     switch (tab_muted_result) {
       case TAB_MUTED_RESULT_SUCCESS:

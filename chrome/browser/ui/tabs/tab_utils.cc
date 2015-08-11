@@ -19,8 +19,9 @@
 
 struct LastMuteMetadata
     : public content::WebContentsUserData<LastMuteMetadata> {
-  std::string cause;  // Extension ID or constant from header file
-                      // or empty string
+  TabMutedReason reason = TAB_MUTED_REASON_NONE;
+  std::string extension_id;
+
  private:
   explicit LastMuteMetadata(content::WebContents* contents) {}
   friend class content::WebContentsUserData<LastMuteMetadata>;
@@ -29,9 +30,6 @@ struct LastMuteMetadata
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(LastMuteMetadata);
 
 namespace chrome {
-
-const char kMutedToggleCauseUser[] = "user";
-const char kMutedToggleCauseCapture[] = "capture";
 
 namespace {
 
@@ -151,7 +149,7 @@ TabMediaState GetTabMediaStateForContents(content::WebContents* contents) {
       return TAB_MEDIA_STATE_RECORDING;
   }
 
-  if (IsTabAudioMutingFeatureEnabled() && contents->IsAudioMuted())
+  if (contents->IsAudioMuted())
     return TAB_MEDIA_STATE_AUDIO_MUTING;
   if (IsPlayingAudio(contents))
     return TAB_MEDIA_STATE_AUDIO_PLAYING;
@@ -247,7 +245,7 @@ base::string16 AssembleTabTooltipText(const base::string16& title,
   return result;
 }
 
-bool IsTabAudioMutingFeatureEnabled() {
+bool AreExperimentalMuteControlsEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTabAudioMuting);
 }
@@ -257,7 +255,7 @@ bool CanToggleAudioMute(content::WebContents* contents) {
     case TAB_MEDIA_STATE_NONE:
     case TAB_MEDIA_STATE_AUDIO_PLAYING:
     case TAB_MEDIA_STATE_AUDIO_MUTING:
-      return IsTabAudioMutingFeatureEnabled();
+      return true;
     case TAB_MEDIA_STATE_RECORDING:
     case TAB_MEDIA_STATE_CAPTURING:
       return false;
@@ -266,39 +264,65 @@ bool CanToggleAudioMute(content::WebContents* contents) {
   return false;
 }
 
-const std::string& GetTabAudioMutedCause(content::WebContents* contents) {
-  LastMuteMetadata::CreateForWebContents(contents);  // Ensure metadata exists
+TabMutedReason GetTabAudioMutedReason(content::WebContents* contents) {
+  LastMuteMetadata::CreateForWebContents(contents);  // Ensures metadata exists.
+  LastMuteMetadata* const metadata =
+      LastMuteMetadata::FromWebContents(contents);
   if (GetTabMediaStateForContents(contents) == TAB_MEDIA_STATE_CAPTURING) {
     // For tab capture, libcontent forces muting off.
-    LastMuteMetadata::FromWebContents(contents)->cause =
-        kMutedToggleCauseCapture;
+    metadata->reason = TAB_MUTED_REASON_MEDIA_CAPTURE;
+    metadata->extension_id.clear();
   }
-  return LastMuteMetadata::FromWebContents(contents)->cause;
+  return metadata->reason;
+}
+
+const std::string& GetExtensionIdForMutedTab(content::WebContents* contents) {
+  DCHECK_EQ(GetTabAudioMutedReason(contents) != TAB_MUTED_REASON_EXTENSION,
+            LastMuteMetadata::FromWebContents(contents)->extension_id.empty());
+  return LastMuteMetadata::FromWebContents(contents)->extension_id;
 }
 
 TabMutedResult SetTabAudioMuted(content::WebContents* contents,
                                 bool mute,
-                                const std::string& cause) {
+                                TabMutedReason reason,
+                                const std::string& extension_id) {
   DCHECK(contents);
+  DCHECK_NE(TAB_MUTED_REASON_NONE, reason);
 
-  if (!IsTabAudioMutingFeatureEnabled())
+  const bool is_experimental_reason =
+      reason == TAB_MUTED_REASON_AUDIO_INDICATOR ||
+      reason == TAB_MUTED_REASON_EXTENSION;
+  if (is_experimental_reason && !AreExperimentalMuteControlsEnabled())
     return TAB_MUTED_RESULT_FAIL_NOT_ENABLED;
 
   if (!chrome::CanToggleAudioMute(contents))
     return TAB_MUTED_RESULT_FAIL_TABCAPTURE;
 
-  LastMuteMetadata::CreateForWebContents(contents);
-  LastMuteMetadata::FromWebContents(contents)->cause = cause;
-
   contents->SetAudioMuted(mute);
+
+  LastMuteMetadata::CreateForWebContents(contents);  // Ensures metadata exists.
+  LastMuteMetadata* const metadata =
+      LastMuteMetadata::FromWebContents(contents);
+  metadata->reason = reason;
+  if (reason == TAB_MUTED_REASON_EXTENSION) {
+    DCHECK(!extension_id.empty());
+    metadata->extension_id = extension_id;
+  } else {
+    metadata->extension_id.clear();
+  }
 
   return TAB_MUTED_RESULT_SUCCESS;
 }
 
-void UnmuteIfCause(content::WebContents* contents, const std::string& cause) {
-  LastMuteMetadata::CreateForWebContents(contents);  // Ensure metadata exists
-  if (LastMuteMetadata::FromWebContents(contents)->cause == cause)
-    SetTabAudioMuted(contents, false, cause);
+void UnmuteIfMutedByExtension(content::WebContents* contents,
+                              const std::string& extension_id) {
+  LastMuteMetadata::CreateForWebContents(contents);  // Ensures metadata exists.
+  LastMuteMetadata* const metadata =
+      LastMuteMetadata::FromWebContents(contents);
+  if (metadata->reason == TAB_MUTED_REASON_EXTENSION &&
+      metadata->extension_id == extension_id) {
+    SetTabAudioMuted(contents, false, TAB_MUTED_REASON_EXTENSION, extension_id);
+  }
 }
 
 bool IsTabAudioMuted(content::WebContents* contents) {

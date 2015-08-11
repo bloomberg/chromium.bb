@@ -2124,7 +2124,7 @@ void Browser::OnExtensionUnloaded(
                ->extension_app() == extension)) {
         tab_strip_model_->CloseWebContentsAt(i, TabStripModel::CLOSE_NONE);
       } else {
-        chrome::UnmuteIfCause(web_contents, extension->id());
+        chrome::UnmuteIfMutedByExtension(web_contents, extension->id());
       }
     }
   }

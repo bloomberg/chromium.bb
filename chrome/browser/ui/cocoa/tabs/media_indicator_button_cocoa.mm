@@ -218,7 +218,7 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
 }
 
 - (void)updateEnabledForMuteToggle {
-  BOOL enable = chrome::IsTabAudioMutingFeatureEnabled() &&
+  BOOL enable = chrome::AreExperimentalMuteControlsEnabled() &&
       (mediaState_ == TAB_MEDIA_STATE_AUDIO_PLAYING ||
        mediaState_ == TAB_MEDIA_STATE_AUDIO_MUTING);
 

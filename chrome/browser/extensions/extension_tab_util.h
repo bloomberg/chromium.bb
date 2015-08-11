@@ -181,6 +181,14 @@ class ExtensionTabUtil {
   // Returns true if the given Browser can report tabs to extensions.
   // Example of Browsers which don't support tabs include apps and devtools.
   static bool BrowserSupportsTabs(Browser* browser);
+
+  // Returns the ID of the extension that last changed a tab's mute state, or
+  // 'user' if a user action caused the change, or 'capture' if media
+  // recording/capture caused the change.  |contents| must not be null.
+  //
+  // TODO(miu): An chrome.tabs API change should be made to split this out into
+  // a "reason" enum and an "extension_id" string.  http://crbug.com/438903
+  static std::string GetTabAudioMutedReason(content::WebContents* contents);
 };
 
 }  // namespace extensions

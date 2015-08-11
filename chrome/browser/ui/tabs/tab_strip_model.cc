@@ -1051,7 +1051,7 @@ void TabStripModel::ExecuteContextMenuCommand(
       for (std::vector<int>::const_iterator i = indices.begin();
            i != indices.end(); ++i) {
         chrome::SetTabAudioMuted(GetWebContentsAt(*i), mute,
-                                 chrome::kMutedToggleCauseUser);
+                                 TAB_MUTED_REASON_CONTEXT_MENU, std::string());
       }
       break;
     }

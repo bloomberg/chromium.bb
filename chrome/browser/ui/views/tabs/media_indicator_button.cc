@@ -119,7 +119,7 @@ void MediaIndicatorButton::TransitionToMediaState(TabMediaState next_state) {
 }
 
 void MediaIndicatorButton::UpdateEnabledForMuteToggle() {
-  bool enable = chrome::IsTabAudioMutingFeatureEnabled() &&
+  bool enable = chrome::AreExperimentalMuteControlsEnabled() &&
       (media_state_ == TAB_MEDIA_STATE_AUDIO_PLAYING ||
        media_state_ == TAB_MEDIA_STATE_AUDIO_MUTING);
 
