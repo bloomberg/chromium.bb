@@ -139,6 +139,10 @@ void SpellcheckHunspellDictionary::Load() {
 void SpellcheckHunspellDictionary::RetryDownloadDictionary(
       net::URLRequestContextGetter* request_context_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (dictionary_file_.file.IsValid()) {
+    NOTREACHED();
+    return;
+  }
   request_context_getter_ = request_context_getter;
   DownloadDictionary(GetDictionaryURL());
 }
@@ -236,7 +240,8 @@ void SpellcheckHunspellDictionary::DownloadDictionary(GURL url) {
   DCHECK(request_context_getter_);
 
   download_status_ = DOWNLOAD_IN_PROGRESS;
-  FOR_EACH_OBSERVER(Observer, observers_, OnHunspellDictionaryDownloadBegin());
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnHunspellDictionaryDownloadBegin(language_));
 
   fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(request_context_getter_);
@@ -348,7 +353,7 @@ void SpellcheckHunspellDictionary::SaveDictionaryDataComplete(
     download_status_ = DOWNLOAD_NONE;
     FOR_EACH_OBSERVER(Observer,
                       observers_,
-                      OnHunspellDictionaryDownloadSuccess());
+                      OnHunspellDictionaryDownloadSuccess(language_));
     Load();
   } else {
     InformListenersOfDownloadFailure();
@@ -357,12 +362,13 @@ void SpellcheckHunspellDictionary::SaveDictionaryDataComplete(
 }
 
 void SpellcheckHunspellDictionary::InformListenersOfInitialization() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnHunspellDictionaryInitialized());
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnHunspellDictionaryInitialized(language_));
 }
 
 void SpellcheckHunspellDictionary::InformListenersOfDownloadFailure() {
   download_status_ = DOWNLOAD_FAILED;
   FOR_EACH_OBSERVER(Observer,
                     observers_,
-                    OnHunspellDictionaryDownloadFailure());
+                    OnHunspellDictionaryDownloadFailure(language_));
 }
