@@ -206,8 +206,10 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
 
 // Test to check that hosted apps have "Find" and "Paste and Match Style" menu
 // items under the "Edit" menu.
+// Disabled until tab versus window apps are properly tested
+// http://crbug.com/517744
 IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
-                       HostedAppHasAdditionalEditMenuItems) {
+                       DISABLED_HostedAppHasAdditionalEditMenuItems) {
   SetUpApps(HOSTED | PACKAGED_1);
 
   // Find the first hosted app window.

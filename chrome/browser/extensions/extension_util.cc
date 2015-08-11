@@ -357,13 +357,8 @@ const gfx::ImageSkia& GetDefaultExtensionIcon() {
 }
 
 bool IsNewBookmarkAppsEnabled() {
-#if defined(OS_MACOSX)
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableNewBookmarkApps);
-#else
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableNewBookmarkApps);
-#endif
 }
 
 bool IsExtensionSupervised(const Extension* extension, Profile* profile) {

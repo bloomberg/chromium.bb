@@ -190,19 +190,20 @@ base::string16 AppContextMenu::GetLabelForCommandId(int command_id) const {
 
   DCHECK_EQ(LAUNCH_NEW, command_id);
 
+#if defined(OS_MACOSX)
+  // Even fullscreen windows launch in a browser tab on Mac.
+  const bool launches_in_tab = true;
+#else
   // If --enable-new-bookmark-apps is enabled, then only check if
   // USE_LAUNCH_TYPE_REGULAR is checked, as USE_LAUNCH_TYPE_PINNED (i.e. open
   // as pinned tab) and fullscreen-by-default windows do not exist.
+  // Opening in a window is currently disabled for Mac.
   if (extensions::util::IsNewBookmarkAppsEnabled()) {
     return IsCommandIdChecked(USE_LAUNCH_TYPE_WINDOW)
                ? l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW)
                : l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_TAB);
   }
 
-#if defined(OS_MACOSX)
-  // Even fullscreen windows launch in a browser tab on Mac.
-  const bool launches_in_tab = true;
-#else
   const bool launches_in_tab = IsCommandIdChecked(USE_LAUNCH_TYPE_PINNED) ||
                                IsCommandIdChecked(USE_LAUNCH_TYPE_REGULAR);
 #endif

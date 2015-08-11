@@ -49,18 +49,17 @@ LaunchType GetLaunchType(const ExtensionPrefs* prefs,
     result = static_cast<LaunchType>(value);
 
 #if defined(OS_MACOSX)
-  // On Mac, opening in a window is only supported if bookmark apps are enabled.
-  if (!extensions::util::IsNewBookmarkAppsEnabled() &&
-      !extension->is_platform_app() && result == LAUNCH_TYPE_WINDOW)
+  // On Mac, opening in a window is currently disabled for non platform apps.
+  if (!extension->is_platform_app() && result == LAUNCH_TYPE_WINDOW)
     result = LAUNCH_TYPE_REGULAR;
-#endif
-
+#else
   if (extensions::util::IsNewBookmarkAppsEnabled()) {
     if (result == LAUNCH_TYPE_PINNED)
       result = LAUNCH_TYPE_REGULAR;
     if (result == LAUNCH_TYPE_FULLSCREEN)
       result = LAUNCH_TYPE_WINDOW;
   }
+#endif
 
   return result;
 }

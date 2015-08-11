@@ -312,8 +312,9 @@ namespace apps {
 #define MAYBE_RebuildShim DISABLED_RebuildShim
 #else
 #define MAYBE_Launch Launch
-#define MAYBE_HostedAppLaunch HostedAppLaunch
+#define MAYBE_HostedAppLaunch DISABLED_HostedAppLaunch
 #define MAYBE_ShowWindow ShowWindow
+// http://crbug.com/517744 HostedAppLaunch fails with open as tab for apps
 // http://crbug.com/509774 this test is flaky so is disabled even in the
 // static build.
 #define MAYBE_RebuildShim DISABLED_RebuildShim

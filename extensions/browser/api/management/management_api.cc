@@ -80,12 +80,16 @@ std::vector<management::LaunchType> GetAvailableLaunchTypes(
   }
 
   launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_REGULAR_TAB);
+
+#if !defined(OS_MACOSX)
+  // Open as window is currently disabled on Mac.
   launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_WINDOW);
 
   if (!delegate->IsNewBookmarkAppsEnabled()) {
     launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_PINNED_TAB);
     launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_FULL_SCREEN);
   }
+#endif
   return launch_type_list;
 }
 
