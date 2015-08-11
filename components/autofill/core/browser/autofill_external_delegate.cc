@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/i18n/case_conversion.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -359,8 +360,16 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
   // The form has been auto-filled, so give the user the chance to clear the
   // form.  Append the 'Clear form' menu item.
   if (query_field_.is_autofilled) {
-    suggestions->push_back(Suggestion(
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM)));
+    base::string16 value =
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM);
+    // TODO(rouslan): Remove manual upper-casing when keyboard accessory becomes
+    // default on Android.
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableAccessorySuggestionView)) {
+      value = base::i18n::ToUpper(value);
+    }
+
+    suggestions->push_back(Suggestion(value));
     suggestions->back().frontend_id = POPUP_ITEM_ID_CLEAR_FORM;
   }
 
