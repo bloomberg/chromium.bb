@@ -79,8 +79,10 @@ if (is_android) {
     sources = [
       "./web/WebInputEvent.h",
       "./web/WebTextInputType.h",
+      "./platform/WebDisplayMode.h",
     ]
     outputs = [
+      "org/chromium/blink_public/platform/WebDisplayMode.java",
       "org/chromium/blink_public/web/WebInputEventModifier.java",
       "org/chromium/blink_public/web/WebInputEventType.java",
       "org/chromium/blink_public/web/WebTextInputFlags.java",
