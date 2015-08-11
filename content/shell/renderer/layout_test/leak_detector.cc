@@ -24,7 +24,7 @@ namespace content {
 const int kInitialNumberOfLiveAudioNodes = 0;
 const int kInitialNumberOfLiveDocuments = 1;
 const int kInitialNumberOfLiveNodes = 4;
-const int kInitialNumberOfLiveRenderObjects = 3;
+const int kInitialNumberOfLiveLayoutObjects = 3;
 const int kInitialNumberOfLiveResources = 0;
 const int kInitialNumberOfScriptPromises = 0;
 const int kInitialNumberOfLiveFrames = 1;
@@ -45,8 +45,8 @@ LeakDetector::LeakDetector(BlinkTestRunner* test_runner)
   previous_result_.numberOfLiveAudioNodes = kInitialNumberOfLiveAudioNodes;
   previous_result_.numberOfLiveDocuments = kInitialNumberOfLiveDocuments;
   previous_result_.numberOfLiveNodes = kInitialNumberOfLiveNodes;
-  previous_result_.numberOfLiveRenderObjects =
-      kInitialNumberOfLiveRenderObjects;
+  previous_result_.numberOfLiveLayoutObjects =
+      kInitialNumberOfLiveLayoutObjects;
   previous_result_.numberOfLiveResources = kInitialNumberOfLiveResources;
   previous_result_.numberOfLiveActiveDOMObjects =
     kInitialNumberOfLiveActiveDOMObject;
@@ -87,12 +87,12 @@ void LeakDetector::onLeakDetectionComplete(
     list->AppendInteger(result.numberOfLiveNodes);
     detail.Set("numberOfLiveNodes", list);
   }
-  if (previous_result_.numberOfLiveRenderObjects <
-      result.numberOfLiveRenderObjects) {
+  if (previous_result_.numberOfLiveLayoutObjects <
+      result.numberOfLiveLayoutObjects) {
     base::ListValue* list = new base::ListValue();
-    list->AppendInteger(previous_result_.numberOfLiveRenderObjects);
-    list->AppendInteger(result.numberOfLiveRenderObjects);
-    detail.Set("numberOfLiveRenderObjects", list);
+    list->AppendInteger(previous_result_.numberOfLiveLayoutObjects);
+    list->AppendInteger(result.numberOfLiveLayoutObjects);
+    detail.Set("numberOfLiveLayoutObjects", list);
   }
   if (previous_result_.numberOfLiveResources < result.numberOfLiveResources) {
     base::ListValue* list = new base::ListValue();
