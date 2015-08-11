@@ -81,28 +81,57 @@ void MacCoordinateConversionTest::TearDown() {
 //  ..             ..
 //   0            199
 TEST_F(MacCoordinateConversionTest, ScreenRectToFromNSRect) {
+  // Window on the primary screen.
   Rect gfx_rect = Rect(10, 20, 30, 40);
   NSRect ns_rect = ScreenRectToNSRect(gfx_rect);
   EXPECT_NSEQ(NSMakeRect(10, 140, 30, 40), ns_rect);
-  EXPECT_EQ(gfx_rect.ToString(), ScreenRectFromNSRect(ns_rect).ToString());
+  EXPECT_EQ(gfx_rect, ScreenRectFromNSRect(ns_rect));
 
   // Window in a screen to the left of the primary screen.
   gfx_rect = Rect(-40, 20, 30, 40);
   ns_rect = ScreenRectToNSRect(gfx_rect);
   EXPECT_NSEQ(NSMakeRect(-40, 140, 30, 40), ns_rect);
-  EXPECT_EQ(gfx_rect.ToString(), ScreenRectFromNSRect(ns_rect).ToString());
+  EXPECT_EQ(gfx_rect, ScreenRectFromNSRect(ns_rect));
 
   // Window in a screen below the primary screen.
   gfx_rect = Rect(10, 220, 30, 40);
   ns_rect = ScreenRectToNSRect(gfx_rect);
   EXPECT_NSEQ(NSMakeRect(10, -60, 30, 40), ns_rect);
-  EXPECT_EQ(gfx_rect.ToString(), ScreenRectFromNSRect(ns_rect).ToString());
+  EXPECT_EQ(gfx_rect, ScreenRectFromNSRect(ns_rect));
 
   // Window in a screen below and to the left primary screen.
   gfx_rect = Rect(-40, 220, 30, 40);
   ns_rect = ScreenRectToNSRect(gfx_rect);
   EXPECT_NSEQ(NSMakeRect(-40, -60, 30, 40), ns_rect);
-  EXPECT_EQ(gfx_rect.ToString(), ScreenRectFromNSRect(ns_rect).ToString());
+  EXPECT_EQ(gfx_rect, ScreenRectFromNSRect(ns_rect));
+}
+
+// Test point conversions using the same setup as ScreenRectToFromNSRect, but
+// using only the origin.
+TEST_F(MacCoordinateConversionTest, ScreenPointToFromNSPoint) {
+  // Point on the primary screen.
+  Point gfx_point = Point(10, 20);
+  NSPoint ns_point = ScreenPointToNSPoint(gfx_point);
+  EXPECT_NSEQ(NSMakePoint(10, 180), ns_point);
+  EXPECT_EQ(gfx_point, ScreenPointFromNSPoint(ns_point));
+
+  // Point in a screen to the left of the primary screen.
+  gfx_point = Point(-40, 20);
+  ns_point = ScreenPointToNSPoint(gfx_point);
+  EXPECT_NSEQ(NSMakePoint(-40, 180), ns_point);
+  EXPECT_EQ(gfx_point, ScreenPointFromNSPoint(ns_point));
+
+  // Point in a screen below the primary screen.
+  gfx_point = Point(10, 220);
+  ns_point = ScreenPointToNSPoint(gfx_point);
+  EXPECT_NSEQ(NSMakePoint(10, -20), ns_point);
+  EXPECT_EQ(gfx_point, ScreenPointFromNSPoint(ns_point));
+
+  // Point in a screen below and to the left primary screen.
+  gfx_point = Point(-40, 220);
+  ns_point = ScreenPointToNSPoint(gfx_point);
+  EXPECT_NSEQ(NSMakePoint(-40, -20), ns_point);
+  EXPECT_EQ(gfx_point, ScreenPointFromNSPoint(ns_point));
 }
 
 }  // namespace gfx
