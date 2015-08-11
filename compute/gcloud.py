@@ -11,6 +11,7 @@ import re
 from chromite.compute import compute_configs
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import osutils
 from chromite.lib import timeout_util
 
 
@@ -82,6 +83,12 @@ class GCContext(object):
     try:
       return cros_build_lib.RunCommand(cmd, **kwargs)
     except cros_build_lib.RunCommandError as e:
+      # We do not get a consistent error if the gcloud SDK is not installed, so
+      # we must always check.
+      if osutils.Which(self.GCLOUD_BASE_COMMAND) is None:
+        logging.error('Could not find command "%s". '
+                      'Have you installed the google cloud SDK?',
+                      self.GCLOUD_BASE_COMMAND)
       raise GCCommandError(e.msg, e.result, e.exception)
 
 
