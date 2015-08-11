@@ -57,6 +57,8 @@ bool ContainsUppercaseAscii(const std::string& str) {
 
 }  // namespace
 
+void SpdyStream::Delegate::OnTrailers(const SpdyHeaderBlock& trailers) {}
+
 // A wrapper around a stream that calls into ProduceSynStreamFrame().
 class SpdyStream::SynStreamBufferProducer : public SpdyBufferProducer {
  public:
@@ -440,12 +442,18 @@ int SpdyStream::OnInitialResponseHeadersReceived(
 int SpdyStream::OnAdditionalResponseHeadersReceived(
     const SpdyHeaderBlock& additional_response_headers) {
   if (type_ == SPDY_REQUEST_RESPONSE_STREAM) {
-    session_->ResetStream(
-        stream_id_, RST_STREAM_PROTOCOL_ERROR,
-        "Additional headers received for request/response stream");
-    return ERR_SPDY_PROTOCOL_ERROR;
-  } else if (type_ == SPDY_PUSH_STREAM &&
-             response_headers_status_ == RESPONSE_HEADERS_ARE_COMPLETE) {
+    if (response_headers_status_ != RESPONSE_HEADERS_ARE_COMPLETE) {
+      session_->ResetStream(
+          stream_id_, RST_STREAM_PROTOCOL_ERROR,
+          "Additional headers received for request/response stream");
+      return ERR_SPDY_PROTOCOL_ERROR;
+    }
+    response_headers_status_ = TRAILERS_RECEIVED;
+    delegate_->OnTrailers(additional_response_headers);
+    return OK;
+  }
+  if (type_ == SPDY_PUSH_STREAM &&
+      response_headers_status_ == RESPONSE_HEADERS_ARE_COMPLETE) {
     session_->ResetStream(
         stream_id_, RST_STREAM_PROTOCOL_ERROR,
         "Additional headers received for push stream");
@@ -481,6 +489,14 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
       // Note: we leave the stream open in the session until the stream
       //       is claimed.
     }
+    return;
+  }
+
+  if (response_headers_status_ == TRAILERS_RECEIVED && buffer) {
+    // TRAILERS_RECEIVED is only used in SPDY_REQUEST_RESPONSE_STREAM.
+    DCHECK_EQ(type_, SPDY_REQUEST_RESPONSE_STREAM);
+    session_->ResetStream(stream_id_, RST_STREAM_PROTOCOL_ERROR,
+                          "Data received after trailers");
     return;
   }
 

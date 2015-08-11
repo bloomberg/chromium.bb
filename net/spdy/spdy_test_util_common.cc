@@ -1105,6 +1105,15 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyPushHeaders(
   return CreateFramer(false)->SerializeFrame(headers);
 }
 
+SpdyFrame* SpdyTestUtil::ConstructSpdyHeaderFrame(int stream_id,
+                                                  const char* const headers[],
+                                                  int header_count) {
+  SpdyHeadersIR spdy_headers(stream_id);
+  AppendToHeaderBlock(headers, header_count,
+                      spdy_headers.mutable_header_block());
+  return CreateFramer(false)->SerializeFrame(spdy_headers);
+}
+
 SpdyFrame* SpdyTestUtil::ConstructSpdySyn(int stream_id,
                                           const SpdyHeaderBlock& block,
                                           RequestPriority priority,

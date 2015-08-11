@@ -496,6 +496,12 @@ void SpdyProxyClientSocket::OnDataSent()  {
                             ResetAndReturn(&write_callback_), rv));
 }
 
+void SpdyProxyClientSocket::OnTrailers(const SpdyHeaderBlock& trailers) {
+  // |spdy_stream_| is of type SPDY_BIDIRECTIONAL_STREAM, so trailers are
+  // combined with response headers and this method will not be calld.
+  NOTREACHED();
+}
+
 void SpdyProxyClientSocket::OnClose(int status)  {
   was_ever_used_ = spdy_stream_->WasEverUsed();
   spdy_stream_.reset();

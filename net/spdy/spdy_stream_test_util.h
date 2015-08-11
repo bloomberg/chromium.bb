@@ -31,6 +31,7 @@ class ClosingDelegate : public SpdyStream::Delegate {
       const SpdyHeaderBlock& response_headers) override;
   void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) override;
   void OnDataSent() override;
+  void OnTrailers(const SpdyHeaderBlock& trailers) override;
   void OnClose(int status) override;
 
   // Returns whether or not the stream is closed.
@@ -52,6 +53,7 @@ class StreamDelegateBase : public SpdyStream::Delegate {
       const SpdyHeaderBlock& response_headers) override;
   void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) override;
   void OnDataSent() override;
+  void OnTrailers(const SpdyHeaderBlock& trailers) override;
   void OnClose(int status) override;
 
   // Waits for the stream to be closed and returns the status passed

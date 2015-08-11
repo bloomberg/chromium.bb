@@ -79,6 +79,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
       const SpdyHeaderBlock& response_headers) override;
   void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) override;
   void OnDataSent() override;
+  void OnTrailers(const SpdyHeaderBlock& trailers) override;
   void OnClose(int status) override;
 
  private:

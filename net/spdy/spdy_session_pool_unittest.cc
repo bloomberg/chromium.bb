@@ -75,6 +75,8 @@ class SessionOpeningDelegate : public SpdyStream::Delegate {
 
   void OnDataSent() override {}
 
+  void OnTrailers(const SpdyHeaderBlock& trailers) override {}
+
   void OnClose(int status) override {
     ignore_result(CreateFakeSpdySession(spdy_session_pool_, key_));
   }

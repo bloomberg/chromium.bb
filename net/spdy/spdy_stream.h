@@ -54,10 +54,15 @@ enum SpdySendStatus {
 };
 
 // Returned by SpdyStream::OnResponseHeadersUpdated() to indicate
-// whether the current response headers are complete or not.
+// whether the current response headers are complete or not, or whether
+// trailers have been received. TRAILERS_RECEIVED denotes the state where
+// headers are received after DATA frames. TRAILERS_RECEIVED is only used for
+// SPDY_REQUEST_RESPONSE_STREAM, and this state also implies that the response
+// headers are complete.
 enum SpdyResponseHeadersStatus {
   RESPONSE_HEADERS_ARE_INCOMPLETE,
-  RESPONSE_HEADERS_ARE_COMPLETE
+  RESPONSE_HEADERS_ARE_COMPLETE,
+  TRAILERS_RECEIVED,
 };
 
 // The SpdyStream is used by the SpdySession to represent each stream known
@@ -119,8 +124,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
     //     before any data is received; any deviation from this is
     //     treated as a protocol error.
     //
-    // TODO(akalin): Treat headers received after data has been
-    // received as a protocol error for non-bidirectional streams.
     // TODO(jgraettinger): This should be at the semantic (HTTP) rather
     // than stream layer. Streams shouldn't have a notion of header
     // completeness. Move to SpdyHttpStream/SpdyWebsocketStream.
@@ -138,6 +141,11 @@ class NET_EXPORT_PRIVATE SpdyStream {
     // Called when data is sent. Must not cause the stream to be
     // closed.
     virtual void OnDataSent() = 0;
+
+    // Called when trailers are received. Note that trailers HEADER frame will
+    // have END_STREAM flag set according to section 8.1 of the HTTP/2 RFC,
+    // so this will be followed by OnClose.
+    virtual void OnTrailers(const SpdyHeaderBlock& trailers) = 0;
 
     // Called when SpdyStream is closed. No other delegate functions
     // will be called after this is called, and the delegate must not

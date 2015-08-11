@@ -463,6 +463,10 @@ class SpdyTestUtil {
                                       const char* const extra_headers[],
                                       int extra_header_count);
 
+  SpdyFrame* ConstructSpdyHeaderFrame(int stream_id,
+                                      const char* const headers[],
+                                      int header_count);
+
   // Construct a SPDY syn (HEADERS or SYN_STREAM, depending on protocol
   // version) carrying exactly the given headers and priority.
   SpdyFrame* ConstructSpdySyn(int stream_id,

@@ -33,6 +33,8 @@ void ClosingDelegate::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {}
 
 void ClosingDelegate::OnDataSent() {}
 
+void ClosingDelegate::OnTrailers(const SpdyHeaderBlock& trailers) {}
+
 void ClosingDelegate::OnClose(int status) {
   DCHECK(stream_);
   stream_->Close();
@@ -68,6 +70,8 @@ void StreamDelegateBase::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
 }
 
 void StreamDelegateBase::OnDataSent() {}
+
+void StreamDelegateBase::OnTrailers(const SpdyHeaderBlock& trailers) {}
 
 void StreamDelegateBase::OnClose(int status) {
   if (!stream_.get())

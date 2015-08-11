@@ -365,6 +365,9 @@ void SpdyHttpStream::OnDataSent() {
   ReadAndSendRequestBodyData();
 }
 
+// TODO(xunjieli): Maybe do something with the trailers. crbug.com/422958.
+void SpdyHttpStream::OnTrailers(const SpdyHeaderBlock& trailers) {}
+
 void SpdyHttpStream::OnClose(int status) {
   if (stream_.get()) {
     stream_closed_ = true;

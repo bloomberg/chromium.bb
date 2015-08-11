@@ -95,6 +95,7 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
       const SpdyHeaderBlock& response_headers) override;
   void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) override;
   void OnDataSent() override;
+  void OnTrailers(const SpdyHeaderBlock& trailers) override;
   void OnClose(int status) override;
 
  private:

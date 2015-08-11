@@ -5467,13 +5467,16 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyWithHeaders) {
   EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, out.rv);
 }
 
-TEST_P(SpdyNetworkTransactionTest, SynReplyWithLateHeaders) {
+// Tests that receiving HEADERS, DATA, HEADERS, and DATA in that sequence will
+// trigger a ERR_SPDY_PROTOCOL_ERROR because trailing HEADERS must not be
+// followed by any DATA frames.
+TEST_P(SpdyNetworkTransactionTest, SyncReplyDataAfterTrailers) {
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   scoped_ptr<SpdyFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0), CreateMockWrite(*rst, 4),
+      CreateMockWrite(*req, 0), CreateMockWrite(*rst, 5),
   };
 
   scoped_ptr<SpdyFrame> stream1_reply(
@@ -5494,10 +5497,8 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyWithLateHeaders) {
   scoped_ptr<SpdyFrame> stream1_body2(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*stream1_reply, 1),
-      CreateMockRead(*stream1_body, 2),
-      CreateMockRead(*stream1_headers, 3),
-      CreateMockRead(*stream1_body2, 5),
+      CreateMockRead(*stream1_reply, 1), CreateMockRead(*stream1_body, 2),
+      CreateMockRead(*stream1_headers, 3), CreateMockRead(*stream1_body2, 4),
       MockRead(ASYNC, 0, 6)  // EOF
   };
 
