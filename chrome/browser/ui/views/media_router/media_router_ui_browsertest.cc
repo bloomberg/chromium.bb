@@ -44,6 +44,12 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
                               browser_actions_container));
   }
 
+  void TearDownOnMainThread() override {
+    toolbar_action_view_.reset();
+    media_router_action_.reset();
+    InProcessBrowserTest::TearDownOnMainThread();
+  }
+
   void OpenMediaRouterDialogAndWaitForNewWebContents() {
     content::TestNavigationObserver nav_observer(NULL);
     nav_observer.StartWatchingNewWebContents();
