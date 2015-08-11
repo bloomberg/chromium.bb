@@ -13,8 +13,7 @@
 #include "build/build_config.h"
 #include "crypto/crypto_export.h"
 
-#if defined(USE_NSS_CERTS) || \
-    (!defined(USE_OPENSSL) && (defined(OS_WIN) || defined(OS_MACOSX)))
+#if !defined(USE_OPENSSL)
 #include "crypto/scoped_nss_types.h"
 #endif
 
@@ -122,7 +121,7 @@ class CRYPTO_EXPORT Encryptor {
                 const base::StringPiece& input,
                 std::string* output);
   std::string iv_;
-#elif defined(USE_NSS_CERTS) || defined(OS_WIN) || defined(OS_MACOSX)
+#else
   bool Crypt(PK11Context* context,
              const base::StringPiece& input,
              std::string* output);
