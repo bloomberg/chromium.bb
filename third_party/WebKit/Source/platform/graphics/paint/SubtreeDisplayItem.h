@@ -14,7 +14,7 @@ namespace blink {
 class PLATFORM_EXPORT SubtreeCachedDisplayItem : public DisplayItem {
 public:
     SubtreeCachedDisplayItem(const DisplayItemClientWrapper& client, Type type)
-        : DisplayItem(client, type)
+        : DisplayItem(client, type, sizeof(*this))
     {
         ASSERT(isSubtreeCachedType(type));
     }
@@ -26,7 +26,7 @@ public:
 class PLATFORM_EXPORT BeginSubtreeDisplayItem : public PairedBeginDisplayItem {
 public:
     BeginSubtreeDisplayItem(const DisplayItemClientWrapper& client, Type type)
-        : PairedBeginDisplayItem(client, type)
+        : PairedBeginDisplayItem(client, type, sizeof(*this))
     {
         ASSERT(isBeginSubtreeType(type));
     }
@@ -35,7 +35,7 @@ public:
 class PLATFORM_EXPORT EndSubtreeDisplayItem : public PairedEndDisplayItem {
 public:
     EndSubtreeDisplayItem(const DisplayItemClientWrapper& client, Type type)
-        : PairedEndDisplayItem(client, type)
+        : PairedEndDisplayItem(client, type, sizeof(*this))
     {
         ASSERT(isEndSubtreeType(type));
     }

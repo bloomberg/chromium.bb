@@ -14,7 +14,7 @@ namespace blink {
 class PLATFORM_EXPORT BeginTransformDisplayItem : public PairedBeginDisplayItem {
 public:
     BeginTransformDisplayItem(const DisplayItemClientWrapper& client, const AffineTransform& transform)
-        : PairedBeginDisplayItem(client, BeginTransform)
+        : PairedBeginDisplayItem(client, BeginTransform, sizeof(*this))
         , m_transform(transform) { }
 
     void replay(GraphicsContext&) override;
@@ -31,7 +31,7 @@ private:
 class PLATFORM_EXPORT EndTransformDisplayItem : public PairedEndDisplayItem {
 public:
     EndTransformDisplayItem(const DisplayItemClientWrapper& client)
-        : PairedEndDisplayItem(client, EndTransform) { }
+        : PairedEndDisplayItem(client, EndTransform, sizeof(*this)) { }
 
     void replay(GraphicsContext&) override;
     void appendToWebDisplayItemList(WebDisplayItemList*) const override;

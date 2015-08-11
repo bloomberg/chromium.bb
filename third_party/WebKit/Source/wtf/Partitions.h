@@ -113,6 +113,11 @@ public:
         partitionFreeGeneric(bufferPartition(), p);
     }
 
+    ALWAYS_INLINE static size_t bufferActualSize(size_t n)
+    {
+        return partitionAllocActualSize(bufferPartition(), n);
+    }
+
 private:
     static int s_initializationLock;
     static bool s_initialized;

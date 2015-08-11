@@ -16,7 +16,7 @@ namespace blink {
 class PLATFORM_EXPORT CachedDisplayItem : public DisplayItem {
 public:
     CachedDisplayItem(const DisplayItemClientWrapper& client, Type type)
-        : DisplayItem(client, type)
+        : DisplayItem(client, type, sizeof(*this))
     {
         ASSERT(isCachedType(type));
     }

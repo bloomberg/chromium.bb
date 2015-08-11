@@ -57,7 +57,7 @@ private:
 
 class TestDisplayItem : public DisplayItem {
 public:
-    TestDisplayItem(const TestDisplayItemClient& client, Type type) : DisplayItem(client, type) { }
+    TestDisplayItem(const TestDisplayItemClient& client, Type type) : DisplayItem(client, type, sizeof(*this)) { }
 
     void replay(GraphicsContext&) final { ASSERT_NOT_REACHED(); }
     void appendToWebDisplayItemList(WebDisplayItemList*) const final { ASSERT_NOT_REACHED(); }
@@ -78,9 +78,9 @@ public:
             break; \
         const TestDisplayItem expected[] = { __VA_ARGS__ }; \
         for (size_t index = 0; index < std::min<size_t>(actual.size(), expectedSize); index++) { \
-            TRACE_DISPLAY_ITEMS(index, expected[index], *actual.elementAt(index)); \
-            EXPECT_EQ(expected[index].client(), actual.elementAt(index)->client()); \
-            EXPECT_EQ(expected[index].type(), actual.elementAt(index)->type()); \
+            TRACE_DISPLAY_ITEMS(index, expected[index], actual[index]); \
+            EXPECT_EQ(expected[index].client(), actual[index].client()); \
+            EXPECT_EQ(expected[index].type(), actual[index].type()); \
         } \
     } while (false);
 
@@ -371,8 +371,8 @@ TEST_F(DisplayItemListTest, CachedDisplayItems)
         TestDisplayItem(second, backgroundDrawingType));
     EXPECT_TRUE(displayItemList().clientCacheIsValid(first.displayItemClient()));
     EXPECT_TRUE(displayItemList().clientCacheIsValid(second.displayItemClient()));
-    const SkPicture* firstPicture = static_cast<const DrawingDisplayItem*>(displayItemList().displayItems().elementAt(0))->picture();
-    const SkPicture* secondPicture = static_cast<const DrawingDisplayItem*>(displayItemList().displayItems().elementAt(1))->picture();
+    const SkPicture* firstPicture = static_cast<const DrawingDisplayItem&>(displayItemList().displayItems()[0]).picture();
+    const SkPicture* secondPicture = static_cast<const DrawingDisplayItem&>(displayItemList().displayItems()[1]).picture();
 
     displayItemList().invalidate(first.displayItemClient());
     EXPECT_FALSE(displayItemList().clientCacheIsValid(first.displayItemClient()));
@@ -386,9 +386,9 @@ TEST_F(DisplayItemListTest, CachedDisplayItems)
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType));
     // The first display item should be updated.
-    EXPECT_NE(firstPicture, static_cast<const DrawingDisplayItem*>(displayItemList().displayItems().elementAt(0))->picture());
+    EXPECT_NE(firstPicture, static_cast<const DrawingDisplayItem&>(displayItemList().displayItems()[0]).picture());
     // The second display item should be cached.
-    EXPECT_EQ(secondPicture, static_cast<const DrawingDisplayItem*>(displayItemList().displayItems().elementAt(1))->picture());
+    EXPECT_EQ(secondPicture, static_cast<const DrawingDisplayItem&>(displayItemList().displayItems()[1]).picture());
     EXPECT_TRUE(displayItemList().clientCacheIsValid(first.displayItemClient()));
     EXPECT_TRUE(displayItemList().clientCacheIsValid(second.displayItemClient()));
 
@@ -588,8 +588,8 @@ TEST_F(DisplayItemListTest, Scope)
         TestDisplayItem(multicol, backgroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType));
-    RefPtr<const SkPicture> picture1 = static_cast<const DrawingDisplayItem*>(displayItemList().displayItems().elementAt(1))->picture();
-    RefPtr<const SkPicture> picture2 = static_cast<const DrawingDisplayItem*>(displayItemList().displayItems().elementAt(2))->picture();
+    RefPtr<const SkPicture> picture1 = static_cast<const DrawingDisplayItem&>(displayItemList().displayItems()[1]).picture();
+    RefPtr<const SkPicture> picture2 = static_cast<const DrawingDisplayItem&>(displayItemList().displayItems()[2]).picture();
     EXPECT_NE(picture1, picture2);
 
     // Draw again with nothing invalidated.
@@ -603,17 +603,17 @@ TEST_F(DisplayItemListTest, Scope)
     drawRect(context, content, foregroundDrawingType, rect2);
     displayItemList().endScope();
 
-    EXPECT_TRUE(isCached(*newPaintListBeforeUpdate().elementAt(0)));
-    EXPECT_TRUE(isDrawing(*newPaintListBeforeUpdate().elementAt(1)));
-    EXPECT_TRUE(isDrawing(*newPaintListBeforeUpdate().elementAt(2)));
+    EXPECT_TRUE(isCached(newPaintListBeforeUpdate()[0]));
+    EXPECT_TRUE(isDrawing(newPaintListBeforeUpdate()[1]));
+    EXPECT_TRUE(isDrawing(newPaintListBeforeUpdate()[2]));
     displayItemList().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 3,
         TestDisplayItem(multicol, backgroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType));
-    EXPECT_NE(picture1, static_cast<const DrawingDisplayItem*>(displayItemList().displayItems().elementAt(1))->picture());
-    EXPECT_NE(picture2, static_cast<const DrawingDisplayItem*>(displayItemList().displayItems().elementAt(2))->picture());
+    EXPECT_NE(picture1, static_cast<const DrawingDisplayItem&>(displayItemList().displayItems()[1]).picture());
+    EXPECT_NE(picture2, static_cast<const DrawingDisplayItem&>(displayItemList().displayItems()[2]).picture());
 
     // Now the multicol becomes 3 columns and repaints.
     displayItemList().invalidate(multicol.displayItemClient());
@@ -632,10 +632,10 @@ TEST_F(DisplayItemListTest, Scope)
     displayItemList().endScope();
 
     // We should repaint everything on invalidation of the scope container.
-    EXPECT_TRUE(isDrawing(*newPaintListBeforeUpdate().elementAt(0)));
-    EXPECT_TRUE(isDrawing(*newPaintListBeforeUpdate().elementAt(1)));
-    EXPECT_TRUE(isDrawing(*newPaintListBeforeUpdate().elementAt(2)));
-    EXPECT_TRUE(isDrawing(*newPaintListBeforeUpdate().elementAt(3)));
+    EXPECT_TRUE(isDrawing(newPaintListBeforeUpdate()[0]));
+    EXPECT_TRUE(isDrawing(newPaintListBeforeUpdate()[1]));
+    EXPECT_TRUE(isDrawing(newPaintListBeforeUpdate()[2]));
+    EXPECT_TRUE(isDrawing(newPaintListBeforeUpdate()[3]));
     displayItemList().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 4,
@@ -643,8 +643,8 @@ TEST_F(DisplayItemListTest, Scope)
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType));
-    EXPECT_NE(picture1, static_cast<const DrawingDisplayItem*>(displayItemList().displayItems().elementAt(1))->picture());
-    EXPECT_NE(picture2, static_cast<const DrawingDisplayItem*>(displayItemList().displayItems().elementAt(2))->picture());
+    EXPECT_NE(picture1, static_cast<const DrawingDisplayItem&>(displayItemList().displayItems()[1]).picture());
+    EXPECT_NE(picture2, static_cast<const DrawingDisplayItem&>(displayItemList().displayItems()[2]).picture());
 }
 
 TEST_F(DisplayItemListTest, OptimizeNoopPairs)
