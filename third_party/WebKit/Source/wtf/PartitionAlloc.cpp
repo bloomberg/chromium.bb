@@ -1340,6 +1340,7 @@ void partitionDumpStatsGeneric(PartitionRootGeneric* partition, const char* part
     // lock.
     PartitionMemoryStats partitionStats = { 0 };
     partitionStats.totalMmappedBytes = partition->totalSizeOfSuperPages + partition->totalSizeOfDirectMappedPages;
+    partitionStats.totalCommittedBytes = partition->totalSizeOfCommittedPages;
     for (size_t i = 0; i < kGenericNumBuckets; ++i) {
         if (bucketStats[i].isValid) {
             partitionStats.totalResidentBytes += bucketStats[i].residentBytes;
@@ -1385,6 +1386,7 @@ void partitionDumpStats(PartitionRoot* partition, const char* partitionName, boo
     // can use PartitionAlloc to allocate and this can affect the statistics.
     PartitionMemoryStats partitionStats = { 0 };
     partitionStats.totalMmappedBytes = partition->totalSizeOfSuperPages;
+    partitionStats.totalCommittedBytes = partition->totalSizeOfCommittedPages;
     ASSERT(!partition->totalSizeOfDirectMappedPages);
     for (size_t i = 0; i < partitionNumBuckets; ++i) {
         if (memoryStats[i].isValid) {

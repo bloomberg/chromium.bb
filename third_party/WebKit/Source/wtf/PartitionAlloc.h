@@ -348,6 +348,7 @@ enum PartitionAllocFlags {
 // PartitionStatsDumper implementation.
 struct PartitionMemoryStats {
     size_t totalMmappedBytes; // Total bytes mmaped from the system.
+    size_t totalCommittedBytes; // Total size of commmitted pages.
     size_t totalResidentBytes; // Total bytes provisioned by the partition.
     size_t totalActiveBytes; // Total active bytes in the partition.
     size_t totalDecommittableBytes; // Total bytes that could be decommitted.

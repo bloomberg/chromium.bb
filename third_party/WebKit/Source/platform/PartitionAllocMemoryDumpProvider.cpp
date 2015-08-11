@@ -46,6 +46,7 @@ void PartitionStatsDumperImpl::partitionDumpTotals(const char* partitionName, co
     String dumpName = getPartitionDumpName(partitionName);
     WebMemoryAllocatorDump* allocatorDump = m_memoryDump->createMemoryAllocatorDump(dumpName);
     allocatorDump->AddScalar("size", "bytes", memoryStats->totalMmappedBytes);
+    allocatorDump->AddScalar("committed_size", "bytes", memoryStats->totalCommittedBytes);
     allocatorDump->AddScalar("active_size", "bytes", memoryStats->totalActiveBytes);
     allocatorDump->AddScalar("resident_size", "bytes", memoryStats->totalResidentBytes);
     allocatorDump->AddScalar("decommittable_size", "bytes", memoryStats->totalDecommittableBytes);
