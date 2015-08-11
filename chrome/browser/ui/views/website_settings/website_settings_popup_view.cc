@@ -277,14 +277,12 @@ void WebsiteSettingsPopupView::ShowPopup(views::View* anchor_view,
                                          Profile* profile,
                                          content::WebContents* web_contents,
                                          const GURL& url,
-                                         const content::SSLStatus& ssl,
-                                         Browser* browser) {
+                                         const content::SSLStatus& ssl) {
   is_popup_showing = true;
   if (InternalChromePage(url)) {
     new InternalPageInfoPopupView(anchor_view);
   } else {
-    new WebsiteSettingsPopupView(anchor_view, profile, web_contents, url, ssl,
-                                 browser);
+    new WebsiteSettingsPopupView(anchor_view, profile, web_contents, url, ssl);
   }
 }
 
@@ -298,11 +296,9 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& url,
-    const content::SSLStatus& ssl,
-    Browser* browser)
+    const content::SSLStatus& ssl)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
       web_contents_(web_contents),
-      browser_(browser),
       header_(nullptr),
       tabbed_pane_(nullptr),
       permissions_tab_(nullptr),
@@ -805,12 +801,9 @@ void WebsiteSettingsPopupView::HandleLinkClickedAsync(views::Link* source) {
         WebsiteSettings::WEBSITE_SETTINGS_CERTIFICATE_DIALOG_OPENED);
     ShowCertificateViewerByID(web_contents_, parent, cert_id_);
   } else if (source == help_center_link_) {
-    browser_->OpenURL(
-        content::OpenURLParams(GURL(chrome::kPageInfoHelpCenterURL),
-                               content::Referrer(),
-                               NEW_FOREGROUND_TAB,
-                               ui::PAGE_TRANSITION_LINK,
-                               false));
+    web_contents_->OpenURL(content::OpenURLParams(
+        GURL(chrome::kPageInfoHelpCenterURL), content::Referrer(),
+        NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK, false));
     presenter_->RecordWebsiteSettingsAction(
         WebsiteSettings::WEBSITE_SETTINGS_CONNECTION_HELP_OPENED);
   } else if (source == site_settings_link_) {
@@ -818,7 +811,7 @@ void WebsiteSettingsPopupView::HandleLinkClickedAsync(views::Link* source) {
     // for now. But on Android, it opens a page specific to a given origin that
     // shows all of the settings for that origin. If/when that's available on
     // desktop we should link to that here, too.
-    browser_->OpenURL(content::OpenURLParams(
+    web_contents_->OpenURL(content::OpenURLParams(
         GURL(chrome::kChromeUIContentSettingsURL), content::Referrer(),
         NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK, false));
     presenter_->RecordWebsiteSettingsAction(
