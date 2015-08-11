@@ -58,4 +58,8 @@ Modifications made:
   glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT_OES) when no
   framebuffer is bound
 
+- Merge http://cgit.freedesktop.org/mesa/mesa/commit/?id=27307a7
+
+- Merge http://cgit.freedesktop.org/mesa/mesa/commit/?id=d2458a4
+
 - Statically link libstdc++ in chromecast build
