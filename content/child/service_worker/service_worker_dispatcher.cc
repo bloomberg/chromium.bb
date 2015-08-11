@@ -119,10 +119,9 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
         owned_callbacks(callbacks);
     std::string error_message(kServiceWorkerRegisterErrorPrefix);
     error_message += "The provided scriptURL or scope is too long.";
-    scoped_ptr<WebServiceWorkerError> error(
+    callbacks->onError(
         new WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity,
                                   blink::WebString::fromUTF8(error_message)));
-    callbacks->onError(error.release());
     return;
   }
 
@@ -170,10 +169,9 @@ void ServiceWorkerDispatcher::GetRegistration(
         owned_callbacks(callbacks);
     std::string error_message(kServiceWorkerGetRegistrationErrorPrefix);
     error_message += "The provided documentURL is too long.";
-    scoped_ptr<WebServiceWorkerError> error(
+    callbacks->onError(
         new WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity,
                                   blink::WebString::fromUTF8(error_message)));
-    callbacks->onError(error.release());
     return;
   }
 
@@ -476,8 +474,8 @@ void ServiceWorkerDispatcher::OnDidGetRegistrations(
 
   typedef blink::WebVector<blink::WebServiceWorkerRegistration*>
       WebServiceWorkerRegistrationArray;
-  scoped_ptr<WebServiceWorkerRegistrationArray>
-      registrations(new WebServiceWorkerRegistrationArray(infos.size()));
+  WebServiceWorkerRegistrationArray* registrations =
+      new WebServiceWorkerRegistrationArray(infos.size());
   for (size_t i = 0; i < infos.size(); ++i) {
     if (infos[i].handle_id != kInvalidServiceWorkerHandleId) {
       ServiceWorkerRegistrationObjectInfo info(infos[i]);
@@ -486,7 +484,7 @@ void ServiceWorkerDispatcher::OnDidGetRegistrations(
     }
   }
 
-  callbacks->onSuccess(registrations.release());
+  callbacks->onSuccess(registrations);
   pending_get_registrations_callbacks_.Remove(request_id);
 }
 
@@ -534,9 +532,7 @@ void ServiceWorkerDispatcher::OnRegistrationError(
   if (!callbacks)
     return;
 
-  scoped_ptr<WebServiceWorkerError> error(
-      new WebServiceWorkerError(error_type, message));
-  callbacks->onError(error.release());
+  callbacks->onError(new WebServiceWorkerError(error_type, message));
   pending_registration_callbacks_.Remove(request_id);
 }
 
@@ -603,9 +599,7 @@ void ServiceWorkerDispatcher::OnGetRegistrationError(
   if (!callbacks)
     return;
 
-  scoped_ptr<WebServiceWorkerError> error(
-      new WebServiceWorkerError(error_type, message));
-  callbacks->onError(error.release());
+  callbacks->onError(new WebServiceWorkerError(error_type, message));
   pending_get_registration_callbacks_.Remove(request_id);
 }
 
@@ -628,9 +622,7 @@ void ServiceWorkerDispatcher::OnGetRegistrationsError(
   if (!callbacks)
     return;
 
-  scoped_ptr<WebServiceWorkerError> error(
-      new WebServiceWorkerError(error_type, message));
-  callbacks->onError(error.release());
+  callbacks->onError(new WebServiceWorkerError(error_type, message));
   pending_get_registrations_callbacks_.Remove(request_id);
 }
 
