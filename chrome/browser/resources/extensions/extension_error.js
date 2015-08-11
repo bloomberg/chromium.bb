@@ -176,9 +176,7 @@ cr.define('extensions', function() {
 
       this.focusGrid_ = new cr.ui.FocusGrid();
       this.listContents_ = this.querySelector('.extension-error-list-contents');
-      this.listContents_.addEventListener('focus', this.onFocus_.bind(this));
-      this.listContents_.addEventListener('focusin',
-                                          this.onFocusin_.bind(this));
+
       errors.forEach(this.addError_, this);
 
       this.addEventListener('highlightExtensionError', function(e) {
@@ -355,25 +353,6 @@ cr.define('extensions', function() {
       this.dispatchEvent(
           new CustomEvent('activeExtensionErrorChanged',
                           {bubbles: true, detail: node ? node.error : null}));
-    },
-
-    /**
-     * The grid should not be focusable once it or an element inside it is
-     * focused. This is necessary to allow tabbing out of the grid in reverse.
-     * @private
-     */
-    onFocusin_: function() {
-      this.listContents_.tabIndex = -1;
-    },
-
-    /**
-     * Focus the first focusable row when tabbing into the grid for the
-     * first time.
-     * @private
-     */
-    onFocus_: function() {
-      var activeRow = this.listContents_.querySelector('.focus-row-active');
-      activeRow.getEquivalentElement(null).focus();
     },
   };
 
