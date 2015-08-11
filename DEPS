@@ -252,7 +252,7 @@ deps = {
    Var('chromium_git') + '/chromium/deps/mesa.git' + '@' + '3918dbd3bced7843af396a0ee9f9da081d968806',
 
   'src/third_party/cld_2/src':
-    Var('chromium_git') + '/external/cld2.git' + '@' + '14d9ef8d4766326f8aa7de54402d1b9c782d4481', # from svn revision 193
+    Var('chromium_git') + '/external/github.com/CLD2Owners/cld2.git' + '@' + '85f0ee72b21ee7009a76476c2c55eafa30f6a378', # from svn revision 193 in old googlecode repository
 
   'src/third_party/libwebm/source':
    Var('chromium_git') + '/webm/libwebm.git' + '@' + '75a6d2da8b63e0c446ec0ce1ac942c2962d959d7',
