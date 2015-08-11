@@ -43,6 +43,30 @@ LayoutFlowThread::LayoutFlowThread()
 {
 }
 
+LayoutFlowThread* LayoutFlowThread::locateFlowThreadContainingBlockOf(const LayoutObject& descendant)
+{
+    ASSERT(descendant.isInsideFlowThread());
+    LayoutObject* curr = const_cast<LayoutObject*>(&descendant);
+    while (curr) {
+        if (curr->isSVG() && !curr->isSVGRoot())
+            return nullptr;
+        if (curr->isLayoutFlowThread())
+            return toLayoutFlowThread(curr);
+        LayoutObject* container = curr->container();
+        curr = curr->parent();
+        while (curr != container) {
+            if (curr->isLayoutFlowThread()) {
+                // The nearest ancestor flow thread isn't in our containing block chain. Then we
+                // aren't really part of any flow thread, and we should stop looking. This happens
+                // when there are out-of-flow objects or column spanners.
+                return nullptr;
+            }
+            curr = curr->parent();
+        }
+    }
+    return nullptr;
+}
+
 void LayoutFlowThread::removeColumnSetFromThread(LayoutMultiColumnSet* columnSet)
 {
     ASSERT(columnSet);

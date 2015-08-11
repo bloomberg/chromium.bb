@@ -56,6 +56,8 @@ public:
 
     bool supportsPaintInvalidationStateCachedOffsets() const override { return false; }
 
+    static LayoutFlowThread* locateFlowThreadContainingBlockOf(const LayoutObject&);
+
     void layout() override;
 
     // Always create a Layer for the LayoutFlowThread so that we

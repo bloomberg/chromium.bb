@@ -669,25 +669,7 @@ LayoutFlowThread* LayoutObject::locateFlowThreadContainingBlock() const
     }
 
     // Not in the middle of layout so have to find the thread the slow way.
-    LayoutObject* curr = const_cast<LayoutObject*>(this);
-    while (curr) {
-        if (curr->isSVG() && !curr->isSVGRoot())
-            return nullptr;
-        if (curr->isLayoutFlowThread())
-            return toLayoutFlowThread(curr);
-        LayoutObject* container = curr->container();
-        curr = curr->parent();
-        while (curr != container) {
-            if (curr->isLayoutFlowThread()) {
-                // The nearest ancestor flow thread isn't in our containing block chain. Then we
-                // aren't really part of any flow thread, and we should stop looking. This happens
-                // when there are out-of-flow objects or column spanners.
-                return nullptr;
-            }
-            curr = curr->parent();
-        }
-    }
-    return nullptr;
+    return LayoutFlowThread::locateFlowThreadContainingBlockOf(*this);
 }
 
 // FIXME: This could be used when changing the size of a layoutObject without children to skip some invalidations.
