@@ -7,6 +7,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
+#include "components/offline_pages/offline_page_model.h"
 
 namespace base {
 class FilePath;
@@ -17,26 +18,25 @@ class BrowserContext;
 }
 
 namespace offline_pages {
-
-class OfflinePageModel;
-
 namespace android {
 
 /**
  * Bridge between C++ and Java for exposing native implementation of offline
  * pages model in managed code.
  */
-class OfflinePageBridge {
+class OfflinePageBridge : public OfflinePageModel::Observer {
  public:
   OfflinePageBridge(JNIEnv* env,
                     jobject obj,
                     content::BrowserContext* browser_context);
   void Destroy(JNIEnv*, jobject);
 
-  void LoadAllPages(JNIEnv* env,
-                    jobject obj,
-                    jobject j_callback_obj,
-                    jobject j_result_obj);
+  // OfflinePageModel::Observer implementation.
+  void OfflinePageModelLoaded(OfflinePageModel* model) override;
+
+  void GetAllPages(JNIEnv* env,
+                   jobject obj,
+                   jobject j_result_obj);
 
   void SavePage(JNIEnv* env,
                 jobject obj,
@@ -45,6 +45,7 @@ class OfflinePageBridge {
                 jlong bookmark_id);
 
  private:
+  void NotifyIfDoneLoading() const;
   base::FilePath GetDownloadsPath() const;
 
   JavaObjectWeakGlobalRef weak_java_ref_;

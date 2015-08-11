@@ -20,7 +20,6 @@
 #include "url/gurl.h"
 
 using SavePageResult = offline_pages::OfflinePageModel::SavePageResult;
-using LoadResult = offline_pages::OfflinePageModel::LoadResult;
 using DeletePageResult = offline_pages::OfflinePageModel::DeletePageResult;
 
 namespace offline_pages {
@@ -152,17 +151,20 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
 
 class OfflinePageModelTest
     : public testing::Test,
+      public OfflinePageModel::Observer,
       public base::SupportsWeakPtr<OfflinePageModelTest> {
  public:
   OfflinePageModelTest();
   ~OfflinePageModelTest() override;
 
   void SetUp() override;
+  void TearDown() override;
+
+  // OfflinePageModel::Observer implementation.
+  void OfflinePageModelLoaded(OfflinePageModel* model) override;
 
   // OfflinePageModel callbacks.
   void OnSavePageDone(SavePageResult result);
-  void OnLoadAllPagesDone(LoadResult result,
-                          const std::vector<OfflinePageItem>& offline_pages);
   void OnDeletePageDone(DeletePageResult result);
 
   scoped_ptr<OfflinePageTestArchiver> BuildArchiver(
@@ -187,16 +189,8 @@ class OfflinePageModelTest
     return last_save_result_;
   }
 
-  LoadResult last_load_result() const {
-    return last_load_result_;
-  }
-
   DeletePageResult last_delete_result() const {
     return last_delete_result_;
-  }
-
-  const std::vector<OfflinePageItem>& last_loaded_pages() const {
-    return last_loaded_pages_;
   }
 
   const base::FilePath& last_archiver_path() { return last_archiver_path_; }
@@ -211,9 +205,7 @@ class OfflinePageModelTest
 
   scoped_ptr<OfflinePageModel> model_;
   SavePageResult last_save_result_;
-  LoadResult last_load_result_;
   DeletePageResult last_delete_result_;
-  std::vector<OfflinePageItem> last_loaded_pages_;
   base::FilePath last_archiver_path_;
 };
 
@@ -255,7 +247,6 @@ void OfflinePageTestArchiver::CompleteCreateArchive() {
 
 OfflinePageModelTest::OfflinePageModelTest()
     : last_save_result_(SavePageResult::CANCELLED),
-      last_load_result_(LoadResult::CANCELLED),
       last_delete_result_(DeletePageResult::CANCELLED) {
 }
 
@@ -265,20 +256,23 @@ OfflinePageModelTest::~OfflinePageModelTest() {
 void OfflinePageModelTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   model_ = BuildModel().Pass();
+  model_->AddObserver(this);
+  PumpLoop();
+}
+
+void OfflinePageModelTest::TearDown() {
+  model_->RemoveObserver(this);
+}
+
+void OfflinePageModelTest::OfflinePageModelLoaded(OfflinePageModel* model) {
+  ASSERT_EQ(model_.get(), model);
+  run_loop_->Quit();
 }
 
 void OfflinePageModelTest::OnSavePageDone(
     OfflinePageModel::SavePageResult result) {
   run_loop_->Quit();
   last_save_result_ = result;
-}
-
-void OfflinePageModelTest::OnLoadAllPagesDone(
-    LoadResult result,
-    const std::vector<OfflinePageItem>& offline_pages) {
-  run_loop_->Quit();
-  last_load_result_ = result;
-  last_loaded_pages_ = offline_pages;
 }
 
 void OfflinePageModelTest::OnDeletePageDone(DeletePageResult result) {
@@ -310,9 +304,7 @@ void OfflinePageModelTest::PumpLoop() {
 
 void OfflinePageModelTest::ResetResults() {
   last_save_result_ = SavePageResult::CANCELLED;
-  last_load_result_ = LoadResult::CANCELLED;
   last_delete_result_ = DeletePageResult::CANCELLED;
-  last_loaded_pages_.clear();
   last_archiver_path_.clear();
 }
 
@@ -341,15 +333,13 @@ TEST_F(OfflinePageModelTest, SavePageSuccessful) {
 
   ResetResults();
 
-  model()->LoadAllPages(base::Bind(&OfflinePageModelTest::OnLoadAllPagesDone,
-                                   AsWeakPtr()));
-  PumpLoop();
-  EXPECT_EQ(LoadResult::SUCCESS, last_load_result());
-  EXPECT_EQ(1UL, last_loaded_pages().size());
-  EXPECT_EQ(kTestUrl, last_loaded_pages()[0].url);
-  EXPECT_EQ(kTestPageBookmarkId1, last_loaded_pages()[0].bookmark_id);
-  EXPECT_EQ(archiver_path, last_loaded_pages()[0].file_path);
-  EXPECT_EQ(kTestFileSize, last_loaded_pages()[0].file_size);
+  const std::vector<OfflinePageItem>& offline_pages = model()->GetAllPages();
+
+  EXPECT_EQ(1UL, offline_pages.size());
+  EXPECT_EQ(kTestUrl, offline_pages[0].url);
+  EXPECT_EQ(kTestPageBookmarkId1, offline_pages[0].bookmark_id);
+  EXPECT_EQ(archiver_path, offline_pages[0].file_path);
+  EXPECT_EQ(kTestFileSize, offline_pages[0].file_size);
 }
 
 TEST_F(OfflinePageModelTest, SavePageOfflineArchiverCancelled) {
@@ -476,37 +466,31 @@ TEST_F(OfflinePageModelTest, SavePageOfflineArchiverTwoPages) {
 
   ResetResults();
 
-  model()->LoadAllPages(base::Bind(&OfflinePageModelTest::OnLoadAllPagesDone,
-                                   AsWeakPtr()));
-  PumpLoop();
-  EXPECT_EQ(LoadResult::SUCCESS, last_load_result());
-  EXPECT_EQ(2UL, last_loaded_pages().size());
-  EXPECT_EQ(kTestUrl2, last_loaded_pages()[0].url);
-  EXPECT_EQ(kTestPageBookmarkId2, last_loaded_pages()[0].bookmark_id);
-  EXPECT_EQ(archiver_path2, last_loaded_pages()[0].file_path);
-  EXPECT_EQ(kTestFileSize, last_loaded_pages()[0].file_size);
-  EXPECT_EQ(kTestUrl, last_loaded_pages()[1].url);
-  EXPECT_EQ(kTestPageBookmarkId1, last_loaded_pages()[1].bookmark_id);
-  EXPECT_EQ(archiver_path, last_loaded_pages()[1].file_path);
-  EXPECT_EQ(kTestFileSize, last_loaded_pages()[1].file_size);
+  const std::vector<OfflinePageItem>& offline_pages = model()->GetAllPages();
+
+  EXPECT_EQ(2UL, offline_pages.size());
+  EXPECT_EQ(kTestUrl2, offline_pages[0].url);
+  EXPECT_EQ(kTestPageBookmarkId2, offline_pages[0].bookmark_id);
+  EXPECT_EQ(archiver_path2, offline_pages[0].file_path);
+  EXPECT_EQ(kTestFileSize, offline_pages[0].file_size);
+  EXPECT_EQ(kTestUrl, offline_pages[1].url);
+  EXPECT_EQ(kTestPageBookmarkId1, offline_pages[1].bookmark_id);
+  EXPECT_EQ(archiver_path, offline_pages[1].file_path);
+  EXPECT_EQ(kTestFileSize, offline_pages[1].file_size);
 }
 
-TEST_F(OfflinePageModelTest, LoadAllPagesStoreEmpty) {
-  model()->LoadAllPages(base::Bind(&OfflinePageModelTest::OnLoadAllPagesDone,
-                                   AsWeakPtr()));
-  PumpLoop();
-  EXPECT_EQ(LoadResult::SUCCESS, last_load_result());
-  EXPECT_EQ(0UL, last_loaded_pages().size());
+TEST_F(OfflinePageModelTest, GetAllPagesStoreEmpty) {
+  const std::vector<OfflinePageItem>& offline_pages = model()->GetAllPages();
+
+  EXPECT_EQ(0UL, offline_pages.size());
 }
 
-TEST_F(OfflinePageModelTest, LoadAllPagesStoreFailure) {
+TEST_F(OfflinePageModelTest, GetAllPagesStoreFailure) {
   GetStore()->set_test_scenario(
       OfflinePageTestStore::TestScenario::LOAD_FAILED);
-  model()->LoadAllPages(base::Bind(&OfflinePageModelTest::OnLoadAllPagesDone,
-                                   AsWeakPtr()));
-  PumpLoop();
-  EXPECT_EQ(LoadResult::STORE_FAILURE, last_load_result());
-  EXPECT_EQ(0UL, last_loaded_pages().size());
+  const std::vector<OfflinePageItem>& offline_pages = model()->GetAllPages();
+
+  EXPECT_EQ(0UL, offline_pages.size());
 }
 
 TEST_F(OfflinePageModelTest, DeletePageSuccessful) {
@@ -566,21 +550,10 @@ TEST_F(OfflinePageModelTest, DeletePageSuccessful) {
   EXPECT_EQ(0u, store->offline_pages().size());
 }
 
-TEST_F(OfflinePageModelTest, DeletePageStoreFailureOnLoad) {
-  GetStore()->set_test_scenario(
-      OfflinePageTestStore::TestScenario::LOAD_FAILED);
-  model()->DeletePage(kTestUrl,
-                      base::Bind(&OfflinePageModelTest::OnDeletePageDone,
-                                 AsWeakPtr()));
-  PumpLoop();
-  EXPECT_EQ(DeletePageResult::STORE_FAILURE, last_delete_result());
-}
-
 TEST_F(OfflinePageModelTest, DeletePageNotFound) {
   model()->DeletePage(kTestUrl,
                       base::Bind(&OfflinePageModelTest::OnDeletePageDone,
                                  AsWeakPtr()));
-  PumpLoop();
   EXPECT_EQ(DeletePageResult::NOT_FOUND, last_delete_result());
 }
 

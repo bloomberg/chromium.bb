@@ -9,16 +9,15 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.offline_pages.OfflinePageBridge.OfflinePageCallback;
+import org.chromium.chrome.browser.offline_pages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
-import org.chromium.components.offline_pages.LoadResult;
 import org.chromium.components.offline_pages.SavePageResult;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -30,8 +29,31 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
     private static final int TIMEOUT_MS = 5000;
     private static final BookmarkId BOOKMARK_ID = new BookmarkId(1234, BookmarkType.NORMAL);
 
+    private OfflinePageBridge mOfflinePageBridge;
+
     public OfflinePageBridgeTest() {
         super(ChromeActivity.class);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        final Semaphore semaphore = new Semaphore(0);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Profile profile = Profile.getLastUsedProfile();
+                mOfflinePageBridge = new OfflinePageBridge(profile);
+                mOfflinePageBridge.addObserver(new OfflinePageModelObserver() {
+                    @Override
+                    public void offlinePageModelLoaded() {
+                        semaphore.release();
+                        mOfflinePageBridge.removeObserver(this);
+                    }
+                });
+            }
+        });
+        assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     @Override
@@ -41,14 +63,16 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @MediumTest
     public void testLoadOfflinePagesWhenEmpty() throws Exception {
-        loadAllPages(LoadResult.SUCCESS, /* expected count */ 0);
+        List<OfflinePageItem> offlinePages = getAllPages();
+        assertEquals("Offline pages count incorrect.", 0, offlinePages.size());
     }
 
     @MediumTest
     public void testAddOfflinePageAndLoad() throws Exception {
         loadUrl(TEST_PAGE);
         savePage(SavePageResult.SUCCESS, TEST_PAGE);
-        List<OfflinePageItem> allPages = loadAllPages(0 /* LoadResult.SUCCESS */, 1);
+        List<OfflinePageItem> allPages = getAllPages();
+        assertEquals("Offline pages count incorrect.", 1, allPages.size());
         assertEquals("Offline page item url incorrect.", TEST_PAGE, allPages.get(0).getUrl());
         assertEquals("Offline page item bookmark ID incorrect.", BOOKMARK_ID,
                 allPages.get(0).getBookmarkId());
@@ -73,16 +97,8 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                 assertNotNull("WebContents is null",
                         getActivity().getActivityTab().getWebContents());
 
-                Profile profile = Profile.getLastUsedProfile();
-                final OfflinePageBridge offlinePageBridge = new OfflinePageBridge(profile);
-                offlinePageBridge.savePage(getActivity().getActivityTab().getWebContents(),
+                mOfflinePageBridge.savePage(getActivity().getActivityTab().getWebContents(),
                         BOOKMARK_ID, new OfflinePageCallback() {
-                            @Override
-                            public void onLoadAllPagesDone(
-                                    int loadResult, List<OfflinePageItem> offlinePages) {
-                                assertTrue("Should have received this callback", false);
-                            }
-
                             @Override
                             public void onSavePageDone(int savePageResult, String url) {
                                 assertEquals(
@@ -97,36 +113,19 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private List<OfflinePageItem> loadAllPages(final int expectedResult, final int expectedCount)
+    private List<OfflinePageItem> getAllPages()
             throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
         final List<OfflinePageItem> result = new ArrayList<OfflinePageItem>();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                Profile profile = Profile.getLastUsedProfile();
-                final OfflinePageBridge offlinePageBridge = new OfflinePageBridge(profile);
-                offlinePageBridge.loadAllPages(new OfflinePageCallback() {
-                    @Override
-                    public void onLoadAllPagesDone(
-                            int loadResult, List<OfflinePageItem> offlinePages) {
-                        assertEquals("Save result incorrect.", expectedResult, loadResult);
-                        assertEquals("Offline pages count incorrect.",
-                                expectedCount, offlinePages.size());
+                result.clear();
+                for (OfflinePageItem item : mOfflinePageBridge.getAllPages()) {
+                    result.add(item);
+                }
 
-                        // Ensuring the result collection has a proper size before copying.
-                        for (int i = 0; i < offlinePages.size(); i++) {
-                            result.add(null);
-                        }
-                        Collections.copy(result, offlinePages);
-                        semaphore.release();
-                    }
-
-                    @Override
-                    public void onSavePageDone(int savePageResult, String url) {
-                        assertTrue("Should have received this callback", false);
-                    }
-                });
+                semaphore.release();
             }
         });
         assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));

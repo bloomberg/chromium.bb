@@ -53,8 +53,11 @@ OfflinePageModel::OfflinePageModel(
     scoped_ptr<OfflinePageMetadataStore> store,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : store_(store.Pass()),
+      is_loaded_(false),
       task_runner_(task_runner),
       weak_ptr_factory_(this) {
+  store_->Load(base::Bind(&OfflinePageModel::OnLoadDone,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 OfflinePageModel::~OfflinePageModel() {
@@ -63,10 +66,19 @@ OfflinePageModel::~OfflinePageModel() {
 void OfflinePageModel::Shutdown() {
 }
 
+void OfflinePageModel::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void OfflinePageModel::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void OfflinePageModel::SavePage(const GURL& url,
                                 int64 bookmark_id,
                                 scoped_ptr<OfflinePageArchiver> archiver,
                                 const SavePageCallback& callback) {
+  DCHECK(is_loaded_);
   DCHECK(archiver.get());
   archiver->CreateArchive(base::Bind(&OfflinePageModel::OnCreateArchiveDone,
                                      weak_ptr_factory_.GetWeakPtr(), url,
@@ -76,15 +88,32 @@ void OfflinePageModel::SavePage(const GURL& url,
 
 void OfflinePageModel::DeletePage(const GURL& url,
                                   const DeletePageCallback& callback) {
-  // First we have to load all entries in order to find out the file path
-  // for the page to be deleted.
-  store_->Load(base::Bind(&OfflinePageModel::OnLoadDoneForDeletion,
-                          weak_ptr_factory_.GetWeakPtr(), url, callback));
+  DCHECK(is_loaded_);
+
+  for (const auto& page : offline_pages_) {
+    if (page.url == url) {
+      bool* success = new bool(false);
+      task_runner_->PostTaskAndReply(
+          FROM_HERE,
+          base::Bind(&OfflinePageModel::DeleteArchiverFile,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     page.file_path,
+                     success),
+          base::Bind(&OfflinePageModel::OnDeleteArchiverFileDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     url,
+                     callback,
+                     base::Owned(success)));
+      return;
+    }
+  }
+
+  callback.Run(DeletePageResult::NOT_FOUND);
 }
 
-void OfflinePageModel::LoadAllPages(const LoadAllPagesCallback& callback) {
-  store_->Load(base::Bind(&OfflinePageModel::OnLoadDone,
-                          weak_ptr_factory_.GetWeakPtr(), callback));
+const std::vector<OfflinePageItem>& OfflinePageModel::GetAllPages() const {
+  DCHECK(is_loaded_);
+  return offline_pages_;
 }
 
 OfflinePageMetadataStore* OfflinePageModel::GetStoreForTesting() {
@@ -120,27 +149,37 @@ void OfflinePageModel::OnCreateArchiveDone(const GURL& requested_url,
   store_->AddOfflinePage(
       offline_page_item,
       base::Bind(&OfflinePageModel::OnAddOfflinePageDone,
-                 weak_ptr_factory_.GetWeakPtr(), archiver, callback));
+                 weak_ptr_factory_.GetWeakPtr(), archiver, callback,
+                 offline_page_item));
 }
 
 void OfflinePageModel::OnAddOfflinePageDone(OfflinePageArchiver* archiver,
                                             const SavePageCallback& callback,
+                                            const OfflinePageItem& offline_page,
                                             bool success) {
-  SavePageResult result =
-      success ? SavePageResult::SUCCESS : SavePageResult::STORE_FAILURE;
+  SavePageResult result;
+  if (success) {
+    offline_pages_.push_back(offline_page);
+    result = SavePageResult::SUCCESS;
+  } else {
+    result = SavePageResult::STORE_FAILURE;
+  }
   InformSavePageDone(callback, result);
   DeletePendingArchiver(archiver);
 }
 
 void OfflinePageModel::OnLoadDone(
-    const LoadAllPagesCallback& callback,
     bool success,
     const std::vector<OfflinePageItem>& offline_pages) {
-  // TODO(fgorski): Cache the values here, if we are comfortable with that
-  // model. This will require extra handling of parallel loads.
-  LoadResult result =
-      success ? LoadResult::SUCCESS : LoadResult::STORE_FAILURE;
-  callback.Run(result, offline_pages);
+  DCHECK(!is_loaded_);
+  is_loaded_ = true;
+
+  // TODO(fgorski): Report the UMA upon failure. Cache should probably start
+  // empty. See if we can do something about it.
+  if (success)
+    offline_pages_ = offline_pages;
+
+  FOR_EACH_OBSERVER(Observer, observers_, OfflinePageModelLoaded(this));
 }
 
 void OfflinePageModel::InformSavePageDone(const SavePageCallback& callback,
@@ -151,37 +190,6 @@ void OfflinePageModel::InformSavePageDone(const SavePageCallback& callback,
 void OfflinePageModel::DeletePendingArchiver(OfflinePageArchiver* archiver) {
   pending_archivers_.erase(std::find(
       pending_archivers_.begin(), pending_archivers_.end(), archiver));
-}
-
-void OfflinePageModel::OnLoadDoneForDeletion(
-    const GURL& url,
-    const DeletePageCallback& callback,
-    bool success,
-    const std::vector<OfflinePageItem>& offline_pages) {
-  if (!success) {
-    callback.Run(DeletePageResult::STORE_FAILURE);
-    return;
-  }
-
-  for (const auto& page : offline_pages) {
-    if (page.url == url) {
-      bool* success = new bool(false);
-      task_runner_->PostTaskAndReply(
-          FROM_HERE,
-          base::Bind(&OfflinePageModel::DeleteArchiverFile,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     page.file_path,
-                     success),
-          base::Bind(&OfflinePageModel::OnDeleteArchiverFileDone,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     url,
-                     callback,
-                     base::Owned(success)));
-      return;
-    }
-  }
-
-  callback.Run(DeletePageResult::NOT_FOUND);
 }
 
 void OfflinePageModel::DeleteArchiverFile(const base::FilePath& file_path,
@@ -206,11 +214,24 @@ void OfflinePageModel::OnDeleteArchiverFileDone(
   store_->RemoveOfflinePage(
       url,
       base::Bind(&OfflinePageModel::OnRemoveOfflinePageDone,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+                 weak_ptr_factory_.GetWeakPtr(), url, callback));
 }
 
 void OfflinePageModel::OnRemoveOfflinePageDone(
-    const DeletePageCallback& callback, bool success) {
+    const GURL& url,
+    const DeletePageCallback& callback,
+    bool success) {
+  // Delete the offline page from the in memory cache regardless of success in
+  // store.
+  for (auto iter = offline_pages_.begin();
+       iter != offline_pages_.end();
+       ++iter) {
+    if (iter->url == url) {
+      offline_pages_.erase(iter);
+      break;
+    }
+  }
+
   callback.Run(
       success ? DeletePageResult::SUCCESS : DeletePageResult::STORE_FAILURE);
 }

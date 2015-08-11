@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/offline_page_archiver.h"
 
@@ -28,10 +29,6 @@ class OfflinePageMetadataStore;
 
 // Service for saving pages offline, storing the offline copy and metadata, and
 // retrieving them upon request.
-//
-// Caller of |SavePage|, |DeletePage| and |LoadAllPages| should provide
-// implementation of |Client|, which will be then used to return a result of
-// respective calls.
 //
 // Example usage:
 //   class ArchiverImpl : public OfflinePageArchiver {
@@ -82,10 +79,18 @@ class OfflinePageModel : public KeyedService {
     STORE_FAILURE,
   };
 
+  // Observer of the OfflinePageModel.
+  class Observer {
+   public:
+    // Invoked when the model has finished loading.
+    virtual void OfflinePageModelLoaded(OfflinePageModel* model) = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   typedef base::Callback<void(SavePageResult)> SavePageCallback;
   typedef base::Callback<void(DeletePageResult)> DeletePageCallback;
-  typedef base::Callback<void(LoadResult, const std::vector<OfflinePageItem>&)>
-      LoadAllPagesCallback;
 
   // All blocking calls/disk access will happen on the provided |task_runner|.
   OfflinePageModel(
@@ -96,25 +101,36 @@ class OfflinePageModel : public KeyedService {
   // KeyedService implementation.
   void Shutdown() override;
 
-  // Attempts to save a page addressed by |url| offline.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  // Attempts to save a page addressed by |url| offline. Requires that the model
+  // is loaded.
   void SavePage(const GURL& url,
                 int64 bookmark_id,
                 scoped_ptr<OfflinePageArchiver> archiver,
                 const SavePageCallback& callback);
 
-  // Deletes an offline page related to the passed |url|.
+  // Deletes an offline page related to the passed |url|. Requires that the
+  // model is loaded
   void DeletePage(const GURL& url, const DeletePageCallback& callback);
 
-  // Loads all of the available offline pages.
-  void LoadAllPages(const LoadAllPagesCallback& callback);
+  // Gets all available offline pages. Requires that the model is loaded.
+  const std::vector<OfflinePageItem>& GetAllPages() const;
 
   // Methods for testing only:
   OfflinePageMetadataStore* GetStoreForTesting();
 
+  bool is_loaded() const { return is_loaded_; }
+
  private:
   typedef ScopedVector<OfflinePageArchiver> PendingArchivers;
 
-  // OfflinePageArchiver callback.
+  // Callback for loading pages from the offline page metadata store.
+  void OnLoadDone(bool success,
+                  const std::vector<OfflinePageItem>& offline_pages);
+
+  // Steps for saving a page offline.
   void OnCreateArchiveDone(const GURL& requested_url,
                            int64 bookmark_id,
                            const SavePageCallback& callback,
@@ -123,35 +139,34 @@ class OfflinePageModel : public KeyedService {
                            const GURL& url,
                            const base::FilePath& file_path,
                            int64 file_size);
-
-  // OfflinePageMetadataStore callbacks.
   void OnAddOfflinePageDone(OfflinePageArchiver* archiver,
                             const SavePageCallback& callback,
+                            const OfflinePageItem& offline_page,
                             bool success);
-  void OnLoadDone(const LoadAllPagesCallback& callback,
-                  bool success,
-                  const std::vector<OfflinePageItem>& offline_pages);
-
   void InformSavePageDone(const SavePageCallback& callback,
                           SavePageResult result);
-
   void DeletePendingArchiver(OfflinePageArchiver* archiver);
 
-  // Serialized steps of deleting files and data for an offline page.
-  void OnLoadDoneForDeletion(const GURL& url,
-                             const DeletePageCallback& callback,
-                             bool success,
-                             const std::vector<OfflinePageItem>& offline_pages);
+  // Steps for deleting files and data for an offline page.
   void DeleteArchiverFile(const base::FilePath& file_path, bool* success);
   void OnDeleteArchiverFileDone(
       const GURL& url,
       const DeletePageCallback& callback,
       const bool* success);
-  void OnRemoveOfflinePageDone(
-      const DeletePageCallback& callback, bool success);
+  void OnRemoveOfflinePageDone(const GURL& url,
+                               const DeletePageCallback& callback,
+                               bool success);
 
   // Persistent store for offline page metadata.
   scoped_ptr<OfflinePageMetadataStore> store_;
+
+  // The observers.
+  base::ObserverList<Observer> observers_;
+
+  bool is_loaded_;
+
+  // In memory copy of the offline page metadata.
+  std::vector<OfflinePageItem> offline_pages_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.offline_pages;
 
+import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -22,6 +23,9 @@ import java.util.List;
 public final class OfflinePageBridge {
 
     private long mNativeOfflinePageBridge;
+    private boolean mIsNativeOfflinePageModelLoaded;
+    private final ObserverList<OfflinePageModelObserver> mObservers =
+            new ObserverList<OfflinePageModelObserver>();
 
     /** Whether the offline pages feature is enabled. */
     private static Boolean sIsEnabled;
@@ -30,17 +34,6 @@ public final class OfflinePageBridge {
      * Interface with callbacks to public calls on OfflinePageBrdige.
      */
     public interface OfflinePageCallback {
-        /**
-         * Delivers result of loading all pages.
-         *
-         * @param loadResult Result of the loading the page. Uses
-         *     {@see org.chromium.components.offline_pages.LoadResult} enum.
-         * @param offlinePages A list of loaded offline pages.
-         * @see OfflinePageBridge#loadAllPages()
-         */
-        @CalledByNative("OfflinePageCallback")
-        void onLoadAllPagesDone(int loadResult, List<OfflinePageItem> offlinePages);
-
         /**
          * Delivers result of saving a page.
          *
@@ -51,6 +44,16 @@ public final class OfflinePageBridge {
          */
         @CalledByNative("OfflinePageCallback")
         void onSavePageDone(int savePageResult, String url);
+    }
+
+    /**
+     * Interface that provides listeners to be notified of changes to the offline page model.
+     */
+    public interface OfflinePageModelObserver {
+        /**
+         * Called when the native side of offline pages is loaded and now in usable state.
+         */
+        void offlinePageModelLoaded();
     }
 
     /**
@@ -79,7 +82,26 @@ public final class OfflinePageBridge {
     public void destroy() {
         assert mNativeOfflinePageBridge != 0;
         nativeDestroy(mNativeOfflinePageBridge);
+        mIsNativeOfflinePageModelLoaded = false;
         mNativeOfflinePageBridge = 0;
+    }
+
+    /**
+     * Adds an observer to offline page model changes.
+     * @param observer The observer to be added.
+     */
+    @VisibleForTesting
+    public void addObserver(OfflinePageModelObserver observer) {
+        mObservers.addObserver(observer);
+    }
+
+    /**
+     * Removes an observer to offline page model changes.
+     * @param observer The observer to be removed.
+     */
+    @VisibleForTesting
+    public void removeObserver(OfflinePageModelObserver observer) {
+        mObservers.removeObserver(observer);
     }
 
     /**
@@ -90,8 +112,11 @@ public final class OfflinePageBridge {
      * @see OfflinePageCallback
      */
     @VisibleForTesting
-    public void loadAllPages(OfflinePageCallback callback) {
-        nativeLoadAllPages(mNativeOfflinePageBridge, callback, new ArrayList<OfflinePageItem>());
+    public List<OfflinePageItem> getAllPages() {
+        assert mIsNativeOfflinePageModelLoaded;
+        List<OfflinePageItem> result = new ArrayList<OfflinePageItem>();
+        nativeGetAllPages(mNativeOfflinePageBridge, result);
+        return result;
     }
 
     /**
@@ -105,7 +130,23 @@ public final class OfflinePageBridge {
     @VisibleForTesting
     public void savePage(
             WebContents webContents, BookmarkId bookmarkId, OfflinePageCallback callback) {
+        assert mIsNativeOfflinePageModelLoaded;
         nativeSavePage(mNativeOfflinePageBridge, callback, webContents, bookmarkId.getId());
+    }
+
+    /**
+     * Whether or not the underlying offline page model is loaded.
+     */
+    public boolean isOfflinePageModelLoaded() {
+        return mIsNativeOfflinePageModelLoaded;
+    }
+
+    @CalledByNative
+    private void offlinePageModelLoaded() {
+        mIsNativeOfflinePageModelLoaded = true;
+        for (OfflinePageModelObserver observer : mObservers) {
+            observer.offlinePageModelLoaded();
+        }
     }
 
     @CalledByNative
@@ -118,8 +159,8 @@ public final class OfflinePageBridge {
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeOfflinePageBridge);
-    private native void nativeLoadAllPages(long nativeOfflinePageBridge,
-            OfflinePageCallback callback, List<OfflinePageItem> offlinePages);
+    private native void nativeGetAllPages(
+            long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages);
     private native void nativeSavePage(long nativeOfflinePageBridge, OfflinePageCallback callback,
             WebContents webContents, long bookmarkId);
 }
