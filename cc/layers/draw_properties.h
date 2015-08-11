@@ -27,10 +27,6 @@ struct CC_EXPORT DrawProperties {
         layer_or_descendant_has_copy_request(false),
         layer_or_descendant_has_input_handler(false),
         has_child_with_a_scroll_parent(false),
-        index_of_first_descendants_addition(0),
-        num_descendants_added(0),
-        index_of_first_render_surface_layer_list_addition(0),
-        num_render_surfaces_added(0),
         last_drawn_render_surface_layer_list_id(0),
         maximum_animation_contents_scale(0.f),
         starting_animation_contents_scale(0.f) {}
@@ -96,14 +92,6 @@ struct CC_EXPORT DrawProperties {
   // lets us avoid work in CalculateDrawPropertiesInternal -- if none of our
   // children have scroll parents, we will not need to recur out of order.
   bool has_child_with_a_scroll_parent;
-
-  // If this layer is visited out of order, its contribution to the descendant
-  // and render surface layer lists will be put aside in a temporary list.
-  // These values will allow for an efficient reordering of these additions.
-  size_t index_of_first_descendants_addition;
-  size_t num_descendants_added;
-  size_t index_of_first_render_surface_layer_list_addition;
-  size_t num_render_surfaces_added;
 
   // Each time we generate a new render surface layer list, an ID is used to
   // identify it. |last_drawn_render_surface_layer_list_id| is set to the ID

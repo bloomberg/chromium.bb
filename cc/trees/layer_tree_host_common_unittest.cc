@@ -6783,11 +6783,9 @@ TEST_F(LayerTreeHostCommonTest, BoundsDeltaAffectVisibleContentRect) {
       root, device_viewport_size, &layer_impl_list);
 
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
-
   EXPECT_EQ(gfx::Rect(root_size), sublayer->visible_layer_rect());
 
   root->SetBoundsDelta(gfx::Vector2dF(0.0, 50.0));
-
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   gfx::Rect affected_by_delta(0, 0, root_size.width(),

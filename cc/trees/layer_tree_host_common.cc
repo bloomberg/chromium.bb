@@ -413,14 +413,7 @@ static inline bool TransformToParentIsKnown(Layer* layer) {
   return !layer->HasPotentiallyRunningTransformAnimation();
 }
 
-static inline bool TransformToScreenIsKnown(LayerImpl* layer) { return true; }
-
-static inline bool TransformToScreenIsKnown(Layer* layer) {
-  return !layer->screen_space_transform_is_animating();
-}
-
-template <typename LayerType>
-static bool LayerShouldBeSkipped(LayerType* layer, bool layer_is_drawn) {
+static bool LayerShouldBeSkipped(LayerImpl* layer, bool layer_is_drawn) {
   // Layers can be skipped if any of these conditions are met.
   //   - is not drawn due to it or one of its ancestors being hidden (or having
   //     no copy requests).
@@ -444,7 +437,7 @@ static bool LayerShouldBeSkipped(LayerType* layer, bool layer_is_drawn) {
   if (!layer->DrawsContent() || layer->bounds().IsEmpty())
     return true;
 
-  LayerType* backface_test_layer = layer;
+  LayerImpl* backface_test_layer = layer;
   if (layer->use_parent_backface_visibility()) {
     DCHECK(layer->parent());
     DCHECK(!layer->parent()->use_parent_backface_visibility());
@@ -454,7 +447,6 @@ static bool LayerShouldBeSkipped(LayerType* layer, bool layer_is_drawn) {
   // The layer should not be drawn if (1) it is not double-sided and (2) the
   // back of the layer is known to be facing the screen.
   if (!backface_test_layer->double_sided() &&
-      TransformToScreenIsKnown(backface_test_layer) &&
       IsLayerBackFaceVisible(backface_test_layer))
     return true;
 
@@ -1057,10 +1049,9 @@ static inline void MarkLayerListWithRenderSurfaceLayerListId(
   }
 }
 
-template <typename LayerType>
 static inline void RemoveSurfaceForEarlyExit(
-    LayerType* layer_to_remove,
-    typename LayerType::RenderSurfaceListType* render_surface_layer_list) {
+    LayerImpl* layer_to_remove,
+    LayerImplList* render_surface_layer_list) {
   DCHECK(layer_to_remove->render_surface());
   // Technically, we know that the layer we want to remove should be
   // at the back of the render_surface_layer_list. However, we have had
@@ -1403,58 +1394,6 @@ static bool SortChildrenForRecursion(std::vector<LayerType*>* out,
   return order_changed;
 }
 
-template <typename LayerType>
-static void GetNewDescendantsStartIndexAndCount(LayerType* layer,
-                                                size_t* start_index,
-                                                size_t* count) {
-  *start_index = layer->draw_properties().index_of_first_descendants_addition;
-  *count = layer->draw_properties().num_descendants_added;
-}
-
-template <typename LayerType>
-static void GetNewRenderSurfacesStartIndexAndCount(LayerType* layer,
-                                                   size_t* start_index,
-                                                   size_t* count) {
-  *start_index = layer->draw_properties()
-                     .index_of_first_render_surface_layer_list_addition;
-  *count = layer->draw_properties().num_render_surfaces_added;
-}
-
-// We need to extract a list from the the two flavors of RenderSurfaceListType
-// for use in the sorting function below.
-static LayerList* GetLayerListForSorting(RenderSurfaceLayerList* rsll) {
-  return &rsll->AsLayerList();
-}
-
-static LayerImplList* GetLayerListForSorting(LayerImplList* layer_list) {
-  return layer_list;
-}
-
-template <typename LayerType, typename GetIndexAndCountType>
-static void SortLayerListContributions(
-    const LayerType& parent,
-    typename LayerType::LayerListType* unsorted,
-    size_t start_index_for_all_contributions,
-    GetIndexAndCountType get_index_and_count) {
-  typename LayerType::LayerListType buffer;
-  for (size_t i = 0; i < parent.children().size(); ++i) {
-    LayerType* child =
-        LayerTreeHostCommon::get_layer_as_raw_ptr(parent.children(), i);
-
-    size_t start_index = 0;
-    size_t count = 0;
-    get_index_and_count(child, &start_index, &count);
-    for (size_t j = start_index; j < start_index + count; ++j)
-      buffer.push_back(unsorted->at(j));
-  }
-
-  DCHECK_EQ(buffer.size(),
-            unsorted->size() - start_index_for_all_contributions);
-
-  for (size_t i = 0; i < buffer.size(); ++i)
-    (*unsorted)[i + start_index_for_all_contributions] = buffer[i];
-}
-
 // Recursively walks the layer tree starting at the given node and computes all
 // the necessary transformations, clip rects, render surfaces, etc.
 template <typename LayerType>
@@ -1462,10 +1401,8 @@ static void CalculateDrawPropertiesInternal(
     LayerType* layer,
     const SubtreeGlobals<LayerType>& globals,
     const DataForRecursion<LayerType>& data_from_ancestor,
-    typename LayerType::RenderSurfaceListType* render_surface_layer_list,
-    typename LayerType::LayerListType* layer_list,
-    std::vector<AccumulatedSurfaceState<LayerType>>* accumulated_surface_state,
-    int current_render_surface_layer_list_id) {
+    std::vector<AccumulatedSurfaceState<LayerType>>*
+        accumulated_surface_state) {
   // This function computes the new matrix transformations recursively for this
   // layer and all its descendants. It also computes the appropriate render
   // surfaces.
@@ -1609,9 +1546,6 @@ static void CalculateDrawPropertiesInternal(
 
   // The root layer cannot skip CalcDrawProperties.
   if (!IsRootLayer(layer) && SubtreeShouldBeSkipped(layer, layer_is_drawn)) {
-    if (layer->render_surface())
-      layer->ClearRenderSurfaceLayerList();
-    layer->draw_properties().render_target = nullptr;
     return;
   }
 
@@ -1797,16 +1731,12 @@ static void CalculateDrawPropertiesInternal(
     // subtree
     if (!layer->double_sided() && TransformToParentIsKnown(layer) &&
         IsSurfaceBackFaceVisible(layer, combined_transform)) {
-      layer->ClearRenderSurfaceLayerList();
-      layer->draw_properties().render_target = nullptr;
       return;
     }
 
     typename LayerType::RenderSurfaceType* render_surface =
         layer->render_surface();
-    layer->ClearRenderSurfaceLayerList();
 
-    layer_draw_properties.render_target = layer;
     if (IsRootLayer(layer)) {
       // The root layer's render surface size is predetermined and so the root
       // layer can't directly support non-identity transforms.  It should just
@@ -1815,7 +1745,7 @@ static void CalculateDrawPropertiesInternal(
 
       // The root surface does not contribute to any other surface, it has no
       // target.
-      layer->render_surface()->set_contributes_to_drawn_surface(false);
+      render_surface->set_contributes_to_drawn_surface(false);
     } else {
       // The owning layer's draw transform has a scale from content to layer
       // space which we do not want; so here we use the combined_transform
@@ -1846,8 +1776,7 @@ static void CalculateDrawPropertiesInternal(
 
       // Even if the |layer_is_drawn|, it only contributes to a drawn surface
       // when the |layer_is_visible|.
-      layer->render_surface()->set_contributes_to_drawn_surface(
-          layer_is_visible);
+      render_surface->set_contributes_to_drawn_surface(layer_is_visible);
     }
 
     // The opacity value is moved from the layer to its surface, so that the
@@ -1871,7 +1800,6 @@ static void CalculateDrawPropertiesInternal(
     if (layer->mask_layer()) {
       DrawProperties<LayerType>& mask_layer_draw_properties =
           layer->mask_layer()->draw_properties();
-      mask_layer_draw_properties.render_target = layer;
       mask_layer_draw_properties.visible_layer_rect =
           gfx::Rect(layer->bounds());
       // Temporarily copy the draw transform of the mask's owning layer into the
@@ -1886,7 +1814,6 @@ static void CalculateDrawPropertiesInternal(
     if (layer->replica_layer() && layer->replica_layer()->mask_layer()) {
       DrawProperties<LayerType>& replica_mask_draw_properties =
           layer->replica_layer()->mask_layer()->draw_properties();
-      replica_mask_draw_properties.render_target = layer;
       replica_mask_draw_properties.visible_layer_rect =
           gfx::Rect(layer->bounds());
       replica_mask_draw_properties.target_space_transform =
@@ -1971,7 +1898,6 @@ static void CalculateDrawPropertiesInternal(
     // cannot use LCD text.
     data_for_children.subtree_can_use_lcd_text = subtree_can_use_lcd_text;
 
-    render_surface_layer_list->push_back(layer);
   } else {
     DCHECK(layer->parent());
 
@@ -1995,10 +1921,6 @@ static void CalculateDrawPropertiesInternal(
     // clipping goes on between layers here.
     clip_rect_of_target_surface_in_target_space =
         data_from_ancestor.clip_rect_of_target_surface_in_target_space;
-
-    // Layers that are not their own render_target will render into the target
-    // of their nearest ancestor.
-    layer_draw_properties.render_target = layer->parent()->render_target();
   }
 
   layer_draw_properties.can_use_lcd_text = layer_can_use_lcd_text;
@@ -2034,26 +1956,6 @@ static void CalculateDrawPropertiesInternal(
     layer_draw_properties.clip_rect = rect_in_target_space;
   }
 
-  typename LayerType::LayerListType& descendants =
-      (render_to_separate_surface ? layer->render_surface()->layer_list()
-                                  : *layer_list);
-
-  // Any layers that are appended after this point are in the layer's subtree
-  // and should be included in the sorting process.
-  size_t sorting_start_index = descendants.size();
-
-  if (!LayerShouldBeSkipped(layer, layer_is_drawn)) {
-    MarkLayerWithRenderSurfaceLayerListId(layer,
-                                          current_render_surface_layer_list_id);
-    descendants.push_back(layer);
-  }
-
-  // Any layers that are appended after this point may need to be sorted if we
-  // visit the children out of order.
-  size_t render_surface_layer_list_child_sorting_start_index =
-      render_surface_layer_list->size();
-  size_t layer_list_child_sorting_start_index = descendants.size();
-
   if (!layer->children().empty()) {
     if (layer == globals.elastic_overscroll_application_layer) {
       data_for_children.parent_matrix.Translate(
@@ -2085,72 +1987,27 @@ static void CalculateDrawPropertiesInternal(
   }
 
   std::vector<LayerType*> sorted_children;
-  bool child_order_changed = false;
   if (layer_draw_properties.has_child_with_a_scroll_parent)
-    child_order_changed = SortChildrenForRecursion(&sorted_children, *layer);
+    SortChildrenForRecursion(&sorted_children, *layer);
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
     // If one of layer's children has a scroll parent, then we may have to
     // visit the children out of order. The new order is stored in
     // sorted_children. Otherwise, we'll grab the child directly from the
     // layer's list of children.
+
     LayerType* child =
         layer_draw_properties.has_child_with_a_scroll_parent
             ? sorted_children[i]
             : LayerTreeHostCommon::get_layer_as_raw_ptr(layer->children(), i);
 
-    child->draw_properties().index_of_first_descendants_addition =
-        descendants.size();
-    child->draw_properties().index_of_first_render_surface_layer_list_addition =
-        render_surface_layer_list->size();
-
     CalculateDrawPropertiesInternal<LayerType>(
-        child,
-        globals,
-        data_for_children,
-        render_surface_layer_list,
-        &descendants,
-        accumulated_surface_state,
-        current_render_surface_layer_list_id);
-    // If the child is its own render target, then it has a render surface.
-    if (child->render_target() == child &&
-        !child->render_surface()->layer_list().empty() &&
-        !child->render_surface()->content_rect().IsEmpty()) {
-      // This child will contribute its render surface, which means
-      // we need to mark just the mask layer (and replica mask layer)
-      // with the id.
-      MarkMasksWithRenderSurfaceLayerListId(
-          child, current_render_surface_layer_list_id);
-      descendants.push_back(child);
-    }
-
-    child->draw_properties().num_descendants_added =
-        descendants.size() -
-        child->draw_properties().index_of_first_descendants_addition;
-    child->draw_properties().num_render_surfaces_added =
-        render_surface_layer_list->size() -
-        child->draw_properties()
-            .index_of_first_render_surface_layer_list_addition;
+        child, globals, data_for_children, accumulated_surface_state);
 
     if (child->layer_or_descendant_is_drawn()) {
       bool layer_or_descendant_is_drawn = true;
       layer->set_layer_or_descendant_is_drawn(layer_or_descendant_is_drawn);
     }
-  }
-
-  // Add the unsorted layer list contributions, if necessary.
-  if (child_order_changed) {
-    SortLayerListContributions(
-        *layer,
-        GetLayerListForSorting(render_surface_layer_list),
-        render_surface_layer_list_child_sorting_start_index,
-        &GetNewRenderSurfacesStartIndexAndCount<LayerType>);
-
-    SortLayerListContributions(
-        *layer,
-        &descendants,
-        layer_list_child_sorting_start_index,
-        &GetNewDescendantsStartIndexAndCount<LayerType>);
   }
 
   // Compute the total drawable_content_rect for this subtree (the rect is in
@@ -2160,12 +2017,6 @@ static void CalculateDrawPropertiesInternal(
   if (render_to_separate_surface) {
     DCHECK(accumulated_surface_state->back().render_target == layer);
     accumulated_surface_state->pop_back();
-  }
-
-  if (render_to_separate_surface && !IsRootLayer(layer) &&
-      layer->render_surface()->layer_list().empty()) {
-    RemoveSurfaceForEarlyExit(layer, render_surface_layer_list);
-    return;
   }
 
   // Compute the layer's drawable content rect (the rect is in target surface
@@ -2220,11 +2071,6 @@ static void CalculateDrawPropertiesInternal(
     clipped_content_rect.set_height(
         std::min(clipped_content_rect.height(), globals.max_texture_size));
 
-    if (clipped_content_rect.IsEmpty()) {
-      RemoveSurfaceForEarlyExit(layer, render_surface_layer_list);
-      return;
-    }
-
     // Layers having a non-default blend mode will blend with the content
     // inside its parent's render target. This render target should be
     // either root_for_isolated_group, or the root of the layer tree.
@@ -2236,6 +2082,10 @@ static void CalculateDrawPropertiesInternal(
            layer->parent()->render_target()->is_root_for_isolated_group());
 
     render_surface->SetContentRect(clipped_content_rect);
+
+    if (clipped_content_rect.IsEmpty()) {
+      return;
+    }
 
     // The owning layer's screen_space_transform has a scale from content to
     // layer space which we need to undo and replace with a scale from the
@@ -2282,19 +2132,8 @@ static void CalculateDrawPropertiesInternal(
 
   SavePaintPropertiesLayer(layer);
 
-  // If neither this layer nor any of its children were added, early out.
-  if (sorting_start_index == descendants.size()) {
-    DCHECK(!render_to_separate_surface || IsRootLayer(layer));
-    return;
-  }
-
   UpdateAccumulatedSurfaceState<LayerType>(
       layer, local_drawable_content_rect_of_subtree, accumulated_surface_state);
-
-  if (layer->HasContributingDelegatedRenderPasses()) {
-    layer->render_target()->render_surface()->
-        AddContributingDelegatedRenderPassLayer(layer);
-  }
 }  // NOLINT(readability/fn_size)
 
 template <typename LayerType, typename RenderSurfaceLayerListType>
@@ -2529,14 +2368,194 @@ enum PropertyTreeOption {
   DONT_BUILD_PROPERTY_TREES
 };
 
+template <typename LayerType>
+void CalculateRenderTargetInternal(LayerType* layer,
+                                   bool subtree_visible_from_ancestor,
+                                   bool can_render_to_separate_surface) {
+  const bool layer_is_visible =
+      subtree_visible_from_ancestor && !layer->hide_layer_and_subtree();
+  const bool layer_is_drawn = layer_is_visible || layer->HasCopyRequest();
+
+  // The root layer cannot be skipped.
+  if (!IsRootLayer(layer) && SubtreeShouldBeSkipped(layer, layer_is_drawn)) {
+    layer->draw_properties().render_target = nullptr;
+    return;
+  }
+
+  bool render_to_separate_surface =
+      IsRootLayer(layer) ||
+      (can_render_to_separate_surface && layer->render_surface());
+
+  if (render_to_separate_surface) {
+    DCHECK(layer->render_surface());
+    layer->draw_properties().render_target = layer;
+
+    if (layer->mask_layer())
+      layer->mask_layer()->draw_properties().render_target = layer;
+
+    if (layer->replica_layer() && layer->replica_layer()->mask_layer())
+      layer->replica_layer()->mask_layer()->draw_properties().render_target =
+          layer;
+
+  } else {
+    DCHECK(layer->parent());
+    layer->draw_properties().render_target = layer->parent()->render_target();
+  }
+
+  for (size_t i = 0; i < layer->children().size(); ++i) {
+    CalculateRenderTargetInternal<LayerType>(
+        LayerTreeHostCommon::get_layer_as_raw_ptr(layer->children(), i),
+        layer_is_drawn, can_render_to_separate_surface);
+  }
+}
+
+void CalculateRenderSurfaceLayerListInternal(
+    LayerImpl* layer,
+    LayerImplList* render_surface_layer_list,
+    LayerImplList* descendants,
+    bool subtree_visible_from_ancestor,
+    const bool can_render_to_separate_surface,
+    const int current_render_surface_layer_list_id) {
+  // This calculates top level Render Surface Layer List, and Layer List for all
+  // Render Surfaces.
+
+  // |layer| is current layer.
+
+  // |render_surface_layer_list| is the top level RenderSurfaceLayerList.
+
+  // |descendants| is used to determine what's in current layer's render
+  // surface's layer list.
+
+  // |subtree_visible_from_ancestor| is set during recursion to affect current
+  // layer's subtree.
+
+  // |can_render_to_separate_surface| and |current_render_surface_layer_list_id|
+  // are settings that should stay the same during recursion.
+
+  // Layers that are marked as hidden will hide themselves and their subtree.
+  // Exception: Layers with copy requests, whether hidden or not, must be drawn
+  // anyway.  In this case, we will inform their subtree they are visible to get
+  // the right results.
+  const bool layer_is_visible =
+      subtree_visible_from_ancestor && !layer->hide_layer_and_subtree();
+  const bool layer_is_drawn = layer_is_visible || layer->HasCopyRequest();
+
+  // The root layer cannot be skipped.
+  if (!IsRootLayer(layer) && SubtreeShouldBeSkipped(layer, layer_is_drawn)) {
+    if (layer->render_surface())
+      layer->ClearRenderSurfaceLayerList();
+    layer->draw_properties().render_target = nullptr;
+    return;
+  }
+
+  bool render_to_separate_surface =
+      IsRootLayer(layer) ||
+      (can_render_to_separate_surface && layer->render_surface());
+
+  if (render_to_separate_surface) {
+    DCHECK(layer->render_surface());
+    if (!layer->double_sided() &&
+        IsSurfaceBackFaceVisible(layer, layer->draw_transform())) {
+      layer->ClearRenderSurfaceLayerList();
+      layer->draw_properties().render_target = nullptr;
+      return;
+    }
+
+    layer->ClearRenderSurfaceLayerList();
+
+    render_surface_layer_list->push_back(layer);
+
+    descendants = &(layer->render_surface()->layer_list());
+  }
+
+  size_t descendants_size = descendants->size();
+
+  if (!LayerShouldBeSkipped(layer, layer_is_drawn)) {
+    MarkLayerWithRenderSurfaceLayerListId(layer,
+                                          current_render_surface_layer_list_id);
+    descendants->push_back(layer);
+  }
+
+  for (auto& child_layer : layer->children()) {
+    CalculateRenderSurfaceLayerListInternal(
+        child_layer, render_surface_layer_list, descendants, layer_is_drawn,
+        can_render_to_separate_surface, current_render_surface_layer_list_id);
+
+    // If the child is its own render target, then it has a render surface.
+    if (child_layer->render_target() == child_layer &&
+        !child_layer->render_surface()->layer_list().empty() &&
+        !child_layer->render_surface()->content_rect().IsEmpty()) {
+      // This child will contribute its render surface, which means
+      // we need to mark just the mask layer (and replica mask layer)
+      // with the id.
+      MarkMasksWithRenderSurfaceLayerListId(
+          child_layer, current_render_surface_layer_list_id);
+      descendants->push_back(child_layer);
+    }
+
+    if (child_layer->layer_or_descendant_is_drawn()) {
+      bool layer_or_descendant_is_drawn = true;
+      layer->set_layer_or_descendant_is_drawn(layer_or_descendant_is_drawn);
+    }
+  }
+
+  if (render_to_separate_surface && !IsRootLayer(layer) &&
+      layer->render_surface()->layer_list().empty()) {
+    RemoveSurfaceForEarlyExit(layer, render_surface_layer_list);
+    return;
+  }
+
+  if (render_to_separate_surface && !IsRootLayer(layer) &&
+      layer->render_surface()->content_rect().IsEmpty()) {
+    RemoveSurfaceForEarlyExit(layer, render_surface_layer_list);
+    return;
+  }
+
+  // If neither this layer nor any of its children were added, early out.
+  if (descendants_size == descendants->size()) {
+    DCHECK(!render_to_separate_surface || IsRootLayer(layer));
+    return;
+  }
+
+  if (layer->HasContributingDelegatedRenderPasses()) {
+    layer->render_target()
+        ->render_surface()
+        ->AddContributingDelegatedRenderPassLayer(layer);
+  }
+}
+
+template <typename LayerType, typename RenderSurfaceLayerListType>
+void CalculateRenderTarget(LayerTreeHostCommon::CalcDrawPropsInputs<
+                           LayerType,
+                           RenderSurfaceLayerListType>* inputs) {
+  // Main thread CalcDrawProps and Impl thread in general needs to calculate
+  // render target.
+  // TODO(weiliangc): Once main thread CDP is turned off, make this impl thread
+  // only.
+  CalculateRenderTargetInternal<LayerType>(
+      inputs->root_layer, true, inputs->can_render_to_separate_surface);
+}
+
+void CalculateRenderSurfaceLayerList(
+    LayerTreeHostCommon::CalcDrawPropsMainInputs* inputs) {}
+
+void CalculateRenderSurfaceLayerList(
+    LayerTreeHostCommon::CalcDrawPropsImplInputs* inputs) {
+  const bool subtree_visible_from_ancestor = true;
+  CalculateRenderSurfaceLayerListInternal(
+      inputs->root_layer, inputs->render_surface_layer_list, nullptr,
+      subtree_visible_from_ancestor, inputs->can_render_to_separate_surface,
+      inputs->current_render_surface_layer_list_id);
+}
+
 template <typename LayerType, typename RenderSurfaceLayerListType>
 void CalculateDrawPropertiesAndVerify(LayerTreeHostCommon::CalcDrawPropsInputs<
                                           LayerType,
                                           RenderSurfaceLayerListType>* inputs,
                                       PropertyTreeOption property_tree_option) {
-  typename LayerType::LayerListType dummy_layer_list;
   SubtreeGlobals<LayerType> globals;
   DataForRecursion<LayerType> data_for_recursion;
+  inputs->render_surface_layer_list->clear();
 
   ProcessCalcDrawPropsInputs(*inputs, &globals, &data_for_recursion);
   UpdateMetaInformationSequenceNumber(inputs->root_layer);
@@ -2597,10 +2616,11 @@ void CalculateDrawPropertiesAndVerify(LayerTreeHostCommon::CalcDrawPropsInputs<
   }
 
   std::vector<AccumulatedSurfaceState<LayerType>> accumulated_surface_state;
-  CalculateDrawPropertiesInternal<LayerType>(
-      inputs->root_layer, globals, data_for_recursion,
-      inputs->render_surface_layer_list, &dummy_layer_list,
-      &accumulated_surface_state, inputs->current_render_surface_layer_list_id);
+  CalculateRenderTarget<LayerType, RenderSurfaceLayerListType>(inputs);
+  CalculateDrawPropertiesInternal<LayerType>(inputs->root_layer, globals,
+                                             data_for_recursion,
+                                             &accumulated_surface_state);
+  CalculateRenderSurfaceLayerList(inputs);
 
   if (should_measure_property_tree_performance) {
     TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
@@ -2610,8 +2630,6 @@ void CalculateDrawPropertiesAndVerify(LayerTreeHostCommon::CalcDrawPropsInputs<
   if (inputs->verify_property_trees)
     VerifyPropertyTreeValues(inputs);
 
-  // The dummy layer list should not have been used.
-  DCHECK_EQ(0u, dummy_layer_list.size());
   // A root layer render_surface should always exist after
   // CalculateDrawProperties.
   DCHECK(inputs->root_layer->render_surface());
