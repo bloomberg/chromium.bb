@@ -942,13 +942,17 @@ void HTMLSelectElement::optionRemoved(const HTMLOptionElement& option)
         setAutofilled(false);
 }
 
+// TODO(tkent): This function is not efficient.  It contains multiple O(N)
+// operations.
 void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
 {
     bool shouldDeselect = !m_multiple || (flags & DeselectOtherOptions);
 
     const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = listItems();
+    // optionToListIndex is O(N).
     int listIndex = optionToListIndex(optionIndex);
 
+    // selectedIndex() is O(N).
     if (selectedIndex() != optionIndex && isAutofilled())
         setAutofilled(false);
 
@@ -956,6 +960,7 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
     if (listIndex >= 0) {
         element = items[listIndex];
         if (isHTMLOptionElement(*element)) {
+            // setActiveSelectionAnchorIndex is O(N).
             if (m_activeSelectionAnchorIndex < 0 || shouldDeselect)
                 setActiveSelectionAnchorIndex(listIndex);
             if (m_activeSelectionEndIndex < 0 || shouldDeselect)
@@ -964,12 +969,14 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
         }
     }
 
+    // deselectItemsWithoutValidation() is O(N).
     if (shouldDeselect)
         deselectItemsWithoutValidation(element);
 
     // For the menu list case, this is what makes the selected element appear.
     if (LayoutObject* layoutObject = this->layoutObject())
         layoutObject->updateFromElement();
+    // PopupMenu::updateFromElement() posts an O(N) task.
     if (popupIsVisible())
         m_popup->updateFromElement();
 
@@ -982,6 +989,8 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
             dispatchInputAndChangeEventForMenuList();
         if (LayoutObject* layoutObject = this->layoutObject()) {
             if (usesMenuList()) {
+                // didSetSelectedIndex() is O(N) because of listToOptionIndex
+                // and optionToListIndex.
                 toLayoutMenuList(layoutObject)->didSetSelectedIndex(listIndex);
             }
         }

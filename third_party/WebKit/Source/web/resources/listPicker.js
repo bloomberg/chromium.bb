@@ -144,6 +144,8 @@ ListPicker.prototype._highlightOption = function(target) {
     if (target.tagName !== "OPTION" || target.selected)
         return;
     var savedScrollTop = this._selectElement.scrollTop;
+    // TODO(tkent): Updating HTMLOptionElement::selected is not efficient. We
+    // should optimize it, or use an alternative way.
     target.selected = true;
     this._selectElement.scrollTop = savedScrollTop;
 };
