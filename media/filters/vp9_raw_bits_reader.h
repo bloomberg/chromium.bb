@@ -37,7 +37,7 @@ class MEDIA_EXPORT Vp9RawBitsReader {
 
   // Reads one bit.
   // If the read goes beyond the end of buffer, the return value is undefined.
-  int ReadBit();
+  bool ReadBool();
 
   // Reads a literal with |bits| bits.
   // If the read goes beyond the end of buffer, the return value is undefined.

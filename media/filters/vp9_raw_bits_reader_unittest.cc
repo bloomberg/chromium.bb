@@ -7,26 +7,26 @@
 
 namespace media {
 
-TEST(Vp9RawBitsReaderTest, ReadBit) {
+TEST(Vp9RawBitsReaderTest, ReadBool) {
   uint8_t data[] = {0xf1};
   Vp9RawBitsReader reader;
   reader.Initialize(data, 1);
 
   EXPECT_TRUE(reader.IsValid());
   EXPECT_EQ(0u, reader.GetBytesRead());
-  EXPECT_EQ(1, reader.ReadBit());
+  EXPECT_TRUE(reader.ReadBool());
   EXPECT_EQ(1u, reader.GetBytesRead());
-  EXPECT_EQ(1, reader.ReadBit());
-  EXPECT_EQ(1, reader.ReadBit());
-  EXPECT_EQ(1, reader.ReadBit());
-  EXPECT_EQ(0, reader.ReadBit());
-  EXPECT_EQ(0, reader.ReadBit());
-  EXPECT_EQ(0, reader.ReadBit());
-  EXPECT_EQ(1, reader.ReadBit());
+  EXPECT_TRUE(reader.ReadBool());
+  EXPECT_TRUE(reader.ReadBool());
+  EXPECT_TRUE(reader.ReadBool());
+  EXPECT_FALSE(reader.ReadBool());
+  EXPECT_FALSE(reader.ReadBool());
+  EXPECT_FALSE(reader.ReadBool());
+  EXPECT_TRUE(reader.ReadBool());
   EXPECT_TRUE(reader.IsValid());
 
   // The return value is undefined.
-  ignore_result(reader.ReadBit());
+  ignore_result(reader.ReadBool());
   EXPECT_FALSE(reader.IsValid());
   EXPECT_EQ(1u, reader.GetBytesRead());
 }

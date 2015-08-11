@@ -21,11 +21,11 @@ void Vp9RawBitsReader::Initialize(const uint8_t* data, size_t size) {
   valid_ = true;
 }
 
-int Vp9RawBitsReader::ReadBit() {
+bool Vp9RawBitsReader::ReadBool() {
   DCHECK(reader_);
   int value = 0;
   valid_ = valid_ && reader_->ReadBits(1, &value);
-  return value;
+  return value == 1;
 }
 
 int Vp9RawBitsReader::ReadLiteral(int bits) {
@@ -38,7 +38,7 @@ int Vp9RawBitsReader::ReadLiteral(int bits) {
 
 int Vp9RawBitsReader::ReadSignedLiteral(int bits) {
   int value = ReadLiteral(bits);
-  return ReadBit() ? -value : value;
+  return ReadBool() ? -value : value;
 }
 
 size_t Vp9RawBitsReader::GetBytesRead() const {
