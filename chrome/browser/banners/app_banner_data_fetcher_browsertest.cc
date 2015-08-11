@@ -142,8 +142,15 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
   base::WeakPtrFactory<AppBannerDataFetcherBrowserTest> weak_factory_;
 };
 
+// http://crbug.com/517307
+#if defined(OS_WIN)
+#define MAYBE_WebAppBannerCreatedDirect \
+  DISABLED_WebAppBannerCreatedDirect
+#else
+#define MAYBE_WebAppBannerCreatedDirect WebAppBannerCreatedDirect
+#endif
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
-                       WebAppBannerCreatedDirect) {
+                       MAYBE_WebAppBannerCreatedDirect) {
   RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_TYPED,
                 1, true);
 }
@@ -328,7 +335,14 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
                 false);
 }
 
-IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, CancelBannerIndirect) {
+// http://crbug.com/517307
+#if defined(OS_WIN)
+#define MAYBE_CancelBannerIndirect DISABLED_CancelBannerIndirect
+#else
+#define MAYBE_CancelBannerIndirect CancelBannerIndirect
+#endif
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       MAYBE_CancelBannerIndirect) {
   AppBannerSettingsHelper::SetEngagementWeights(1, 0.5);
   RunBannerTest("/banners/cancel_test_page.html", ui::PAGE_TRANSITION_TYPED, 3,
                 false);
