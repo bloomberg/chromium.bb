@@ -18,7 +18,6 @@
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
-#include "net/base/network_quality.h"
 
 namespace net {
 
@@ -43,26 +42,14 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   ~NetworkQualityEstimator() override;
 
-  // Returns the peak estimates (fastest RTT and peak throughput) of the
-  // current network.
-  // Virtualized for testing.
-  virtual NetworkQuality GetPeakEstimate() const;
-
-  // Sets |median| to the estimate of median network quality. The estimated
-  // quality is computed using a weighted median algorithm that assigns higher
-  // weight to the recent observations. |median| must not be nullptr. Returns
-  // true only if an estimate of the network quality is available (enough
-  // observations must be available to make an estimate). Virtualized for
-  // testing. If the estimate is not available, |median| is set to the default
-  // value.
-  virtual bool GetEstimate(NetworkQuality* median) const;
-
   // Returns true if RTT is available and sets |rtt| to estimated RTT.
-  bool GetRTTEstimate(base::TimeDelta* rtt) const;
+  // Virtualized for testing.
+  virtual bool GetRTTEstimate(base::TimeDelta* rtt) const;
 
   // Returns true if downlink throughput is available and sets |kbps| to
   // estimated downlink throughput (in Kilobits per second).
-  bool GetDownlinkThroughputKbpsEstimate(int32_t* kbps) const;
+  // Virtualized for testing.
+  virtual bool GetDownlinkThroughputKbpsEstimate(int32_t* kbps) const;
 
   // Notifies NetworkQualityEstimator that the response header of |request| has
   // been received.
@@ -72,10 +59,10 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // been received.
   void NotifyRequestCompleted(const URLRequest& request);
 
-  // Returns the weighted median of RTT observations available since
-  // |begin_timestamp|.
-  base::TimeDelta GetMedianRTTSince(
-      const base::TimeTicks& begin_timestamp) const;
+  // Returns true if median RTT is available and sets |rtt| to the median of
+  // RTT observations since |begin_timestamp|.
+  bool GetMedianRTTSince(const base::TimeTicks& begin_timestamp,
+                         base::TimeDelta* rtt) const;
 
  protected:
   // NetworkID is used to uniquely identify a network.
@@ -155,6 +142,37 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            TestLRUCacheMaximumSize);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestGetMedianRTTSince);
+
+  // NetworkQuality is used to cache the quality of a network connection.
+  class NET_EXPORT_PRIVATE NetworkQuality {
+   public:
+    NetworkQuality();
+    // |rtt| is the estimate of the round trip time.
+    // |downstream_throughput_kbps| is the estimate of the downstream
+    // throughput.
+    NetworkQuality(const base::TimeDelta& rtt,
+                   int32_t downstream_throughput_kbps);
+    NetworkQuality(const NetworkQuality& other);
+    ~NetworkQuality();
+
+    NetworkQuality& operator=(const NetworkQuality& other);
+
+    // Returns the estimate of the round trip time.
+    const base::TimeDelta& rtt() const { return rtt_; }
+
+    // Returns the estimate of the downstream throughput in Kbps (Kilo bits per
+    // second).
+    int32_t downstream_throughput_kbps() const {
+      return downstream_throughput_kbps_;
+    }
+
+   private:
+    // Estimated round trip time.
+    base::TimeDelta rtt_;
+
+    // Estimated downstream throughput in Kbps.
+    int32_t downstream_throughput_kbps_;
+  };
 
   // CachedNetworkQuality stores the quality of a previously seen network.
   class NET_EXPORT_PRIVATE CachedNetworkQuality {
@@ -282,6 +300,11 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // tiny.
   typedef std::map<NetworkID, CachedNetworkQuality> CachedNetworkQualities;
 
+  // Throughput is set to |kInvalidThroughput| if a valid value is
+  // unavailable. Readers should discard throughput value if it is set to
+  // |kInvalidThroughput|.
+  static const int32_t kInvalidThroughput;
+
   // Tiny transfer sizes may give inaccurate throughput results.
   // Minimum size of the transfer over which the throughput is computed.
   static const int kMinTransferSizeInBytes = 10000;
@@ -306,6 +329,10 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Maximum number of observations that can be held in the ObservationBuffer.
   static const size_t kMaximumObservationsBufferSize = 300;
 
+  // Returns the RTT value to be used when the valid RTT is unavailable. Readers
+  // should discard RTT if it is set to the value returned by |InvalidRTT()|.
+  static const base::TimeDelta InvalidRTT();
+
   // Obtains operating parameters from the field trial parameters.
   void ObtainOperatingParams(
       const std::map<std::string, std::string>& variation_params);
@@ -321,8 +348,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // |percentile| is 90, then the network is expected to be faster than the
   // returned estimate with 0.9 probability. Similarly, network is expected to
   // be slower than the returned estimate with 0.1 probability.
-  NetworkQuality GetEstimateInternal(const base::TimeTicks& begin_timestamp,
-                                     int percentile) const;
   base::TimeDelta GetRTTEstimateInternal(const base::TimeTicks& begin_timestamp,
                                          int percentile) const;
   int32_t GetDownlinkThroughputKbpsEstimateInternal(
