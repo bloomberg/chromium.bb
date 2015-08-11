@@ -9,6 +9,9 @@ Test following mouse actions:
 Mouse click to focus field
 Mouse click on spin button
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 = Focus to hour field =
 PASS input.value is "02:23"
 = Focus to minute field =
@@ -28,7 +31,4 @@ PASS input.value is ""
 ==> Reset type attribute, and click on the clear button
 PASS input.value is ""
 
-PASS successfullyParsed is true
-
-TEST COMPLETE
 
