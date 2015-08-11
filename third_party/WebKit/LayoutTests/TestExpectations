@@ -26,12 +26,6 @@ crbug.com/463358 [ Mac Linux Debug ] fast/backgrounds/transformed-body-backgroun
 crbug.com/463358 [ Mac Linux Debug ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ ImageOnlyFailure ]
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon.html [ ImageOnlyFailure ]
 
-# These used to be flaky. Now fail consistently.
-crbug.com/422846 [ Linux ] fast/text/shaping/same-script-different-lang.html [ NeedsRebaseline ]
-Bug(ojan) [ Win7 ] fast/dynamic/first-letter-display-change.html [ NeedsRebaseline ]
-Bug(ojan) [ Win7 ] svg/W3C-SVG-1.1/animate-elem-77-t.svg [ NeedsRebaseline ]
-Bug(ojan) [ Win7 ] fast/inline/justify-emphasis-inline-box.html [ NeedsRebaseline ]
-
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/playing-the-media-resource/pause-remove-from-document-networkState.html [ Timeout ]
 
