@@ -454,11 +454,8 @@ class CONTENT_EXPORT RenderWidget
   void OnSetSurfaceIdNamespace(uint32_t surface_id_namespace);
 
 #if defined(OS_ANDROID)
-  // Whenever an IME event that needs an acknowledgement is sent to the browser,
-  // the number of outstanding IME events that needs acknowledgement should be
-  // incremented. All IME events will be dropped until we receive an ack from
-  // the browser.
-  void IncrementOutstandingImeEventAcks();
+  // Called when we send IME event that expects an ACK.
+  void OnImeEventSentForAck(const blink::WebTextInputInfo& info);
 
   // Called by the browser process for every required IME acknowledgement.
   void OnImeEventAck();
@@ -780,10 +777,11 @@ class CONTENT_EXPORT RenderWidget
   // by script etc., not by user input.
   bool text_field_is_dirty_;
 
-  // A counter for number of outstanding messages from the renderer to the
-  // browser regarding IME-type events that have not been acknowledged by the
-  // browser. If this value is not 0 IME events will be dropped.
-  int outstanding_ime_acks_;
+  // Stores the history of text input infos from the last ACK'ed one from the
+  // current one. The size is the number of pending ACKs plus one, since we
+  // intentionally keep the last ack'd value to know what the browser is
+  // currently aware of.
+  std::deque<blink::WebTextInputInfo> text_input_info_history_;
 
   // The background color of the document body element. This is used as the
   // default background color for filling the screen areas for which we don't

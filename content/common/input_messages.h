@@ -239,6 +239,12 @@ IPC_MESSAGE_ROUTED3(InputMsg_ActivateNearestFindResult,
                     int /* request_id */,
                     float /* x */,
                     float /* y */)
+
+// Sent by the browser as ACK to ViewHostMsg_TextInputState when necessary.
+// NOTE: ImeEventAck and other Ime* messages should be of the same type,
+// otherwise a race condition can happen.
+IPC_MESSAGE_ROUTED0(InputMsg_ImeEventAck)
+
 #endif
 
 IPC_MESSAGE_ROUTED0(InputMsg_SyntheticGestureCompleted)

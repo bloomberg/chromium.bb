@@ -512,7 +512,6 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
       next_output_surface_id_(0),
 #if defined(OS_ANDROID)
       text_field_is_dirty_(false),
-      outstanding_ime_acks_(0),
       body_background_color_(SK_ColorWHITE),
 #endif
       popup_origin_scale_for_emulation_(0.f),
@@ -524,6 +523,9 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
     RenderProcess::current()->AddRefProcess();
   DCHECK(RenderThread::Get());
   device_color_profile_.push_back('0');
+#if defined(OS_ANDROID)
+  text_input_info_history_.push_back(blink::WebTextInputInfo());
+#endif
 }
 
 RenderWidget::~RenderWidget() {
@@ -734,8 +736,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateScreenRects, OnUpdateScreenRects)
     IPC_MESSAGE_HANDLER(ViewMsg_SetSurfaceIdNamespace, OnSetSurfaceIdNamespace)
 #if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(InputMsg_ImeEventAck, OnImeEventAck)
     IPC_MESSAGE_HANDLER(ViewMsg_ShowImeIfNeeded, OnShowImeIfNeeded)
-    IPC_MESSAGE_HANDLER(ViewMsg_ImeEventAck, OnImeEventAck)
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -1764,19 +1766,32 @@ void RenderWidget::OnShowImeIfNeeded() {
 }
 
 #if defined(OS_ANDROID)
-void RenderWidget::IncrementOutstandingImeEventAcks() {
-  ++outstanding_ime_acks_;
+void RenderWidget::OnImeEventSentForAck(const blink::WebTextInputInfo& info) {
+  text_input_info_history_.push_back(info);
 }
 
 void RenderWidget::OnImeEventAck() {
-  --outstanding_ime_acks_;
-  DCHECK(outstanding_ime_acks_ >= 0);
+  DCHECK_GE(text_input_info_history_.size(), 1u);
+  text_input_info_history_.pop_front();
 }
 #endif
 
 bool RenderWidget::ShouldHandleImeEvent() {
 #if defined(OS_ANDROID)
-  return !!webwidget_ && outstanding_ime_acks_ == 0;
+  if (!webwidget_)
+    return false;
+
+  // We cannot handle IME events if there is any chance that the event we are
+  // receiving here from the browser is based on the state that is different
+  // from our current one as indicated by |text_input_info_|.
+  // The states the browser might be in are:
+  // text_input_info_history_[0] - current state ack'd by browser
+  // text_input_info_history_[1...N] - pending state changes
+  for (size_t i = 0u; i < text_input_info_history_.size() - 1u; ++i) {
+    if (text_input_info_history_[i] != text_input_info_)
+      return false;
+  }
+  return true;
 #else
   return !!webwidget_;
 #endif
@@ -1940,7 +1955,7 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
     params.is_non_ime_change = (change_source == FROM_NON_IME) ||
                          text_field_is_dirty_;
     if (params.is_non_ime_change)
-      IncrementOutstandingImeEventAcks();
+      OnImeEventSentForAck(new_info);
     text_field_is_dirty_ = false;
 #endif
     Send(new ViewHostMsg_TextInputStateChanged(routing_id(), params));

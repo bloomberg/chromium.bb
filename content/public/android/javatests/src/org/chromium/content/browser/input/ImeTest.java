@@ -202,6 +202,52 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForSelectActionBarStatus(true);
     }
 
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testLongPressInputWhileComposingText() throws Exception {
+        assertWaitForSelectActionBarStatus(false);
+        setComposingText("Sample Text", 1);
+        waitAndVerifyStatesAndCalls(1, "Sample Text", 11, 11, 0, 11);
+        DOMUtils.longPressNode(this, mContentViewCore, "input_text");
+
+        assertWaitForSelectActionBarStatus(true);
+
+        // Long press will first change selection region, and then trigger IME app to show up.
+        // See RenderFrameImpl::didChangeSelection() and RenderWidget::didHandleGestureEvent().
+        waitAndVerifyStatesAndCalls(2, "Sample Text", 7, 11, 0, 11);
+        waitAndVerifyStatesAndCalls(3, "Sample Text", 7, 11, 0, 11);
+
+        // Now IME app wants to finish composing text because an external selection
+        // change has been detected. At least Google Latin IME and Samsung IME
+        // behave this way.
+        finishComposingText();
+        waitAndVerifyStatesAndCalls(4, "Sample Text", 7, 11, -1, -1);
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testImeShownWhenLongPressOnAlreadySelectedText() throws Exception {
+        assertWaitForSelectActionBarStatus(false);
+        commitText("Sample Text", 1);
+
+        int showCount = mInputMethodManagerWrapper.getShowSoftInputCounter();
+        DOMUtils.longPressNode(this, mContentViewCore, "input_text");
+        assertWaitForSelectActionBarStatus(true);
+        assertEquals(showCount + 1, mInputMethodManagerWrapper.getShowSoftInputCounter());
+
+        // Now long press again. Selection region remains the same, but the logic
+        // should trigger IME to show up. Note that Android does not provide show /
+        // hide status of IME, so we will just check whether showIme() has been triggered.
+        DOMUtils.longPressNode(this, mContentViewCore, "input_text");
+        final int newCount = showCount + 2;
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return newCount == mInputMethodManagerWrapper.getShowSoftInputCounter();
+            }
+        }));
+    }
+
     /*
     @SmallTest
     @Feature({"TextInput"})

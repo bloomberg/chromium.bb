@@ -117,11 +117,6 @@ const int kUndefinedOutputSurfaceId = -1;
 
 static const char kAsyncReadBackString[] = "Compositing.CopyFromSurfaceTime";
 
-// Sends an acknowledgement to the renderer of a processed IME event.
-void SendImeEventAck(RenderWidgetHostImpl* host) {
-  host->Send(new ViewMsg_ImeEventAck(host->GetRoutingID()));
-}
-
 class GLHelperHolder
     : public blink::WebGraphicsContext3D::WebGraphicsContextLostCallback {
  public:
@@ -670,12 +665,10 @@ long RenderWidgetHostViewAndroid::GetNativeImeAdapter() {
 
 void RenderWidgetHostViewAndroid::TextInputStateChanged(
     const ViewHostMsg_TextInputState_Params& params) {
-  // If the change is not originated from IME (e.g. Javascript, autofill),
-  // send back the renderer an acknowledgement, regardless of how we exit from
-  // this method.
-  base::ScopedClosureRunner ack_caller;
-  if (params.is_non_ime_change)
-    ack_caller.Reset(base::Bind(&SendImeEventAck, host_));
+  if (params.is_non_ime_change) {
+    // Sends an acknowledgement to the renderer of a processed IME event.
+    host_->Send(new InputMsg_ImeEventAck(host_->GetRoutingID()));
+  }
 
   if (!IsShowing())
     return;
