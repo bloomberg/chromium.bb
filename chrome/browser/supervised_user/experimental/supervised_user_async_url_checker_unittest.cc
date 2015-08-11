@@ -24,8 +24,7 @@ namespace {
 
 const size_t kCacheSize = 2;
 
-const int kSupervisedUserAsyncURLCheckerSafeURLFetcherID = 0;
-const int kSupervisedUserAsyncURLCheckerUnsafeURLFetcherID = 1;
+const int kSupervisedUserAsyncURLCheckerURLFetcherID = 0;
 
 const char* kURLs[] = {
   "http://www.randomsite1.com",
@@ -39,20 +38,14 @@ const char* kURLs[] = {
   "http://www.randomsite9.com",
 };
 
-std::string BuildResponse(const GURL& url) {
+std::string BuildResponse(bool is_porn) {
   base::DictionaryValue dict;
-  base::DictionaryValue* search_info_dict = new base::DictionaryValue;
-  std::string result_count = url.is_valid() ? "1" : "0";
-  search_info_dict->SetStringWithoutPathExpansion("totalResults",
-                                                  result_count);
-  dict.SetWithoutPathExpansion("searchInformation", search_info_dict);
-  if (result_count != "0") {
-    base::ListValue* results_list = new base::ListValue;
-    base::DictionaryValue* result_dict = new base::DictionaryValue;
-    result_dict->SetStringWithoutPathExpansion("link", url.spec());
-    results_list->Append(result_dict);
-    dict.SetWithoutPathExpansion("items", results_list);
-  }
+  base::DictionaryValue* classification_dict = new base::DictionaryValue;
+  if (is_porn)
+    classification_dict->SetBoolean("pornography", is_porn);
+  base::ListValue* classifications_list = new base::ListValue;
+  classifications_list->Append(classification_dict);
+  dict.SetWithoutPathExpansion("classifications", classifications_list);
   std::string result;
   base::JSONWriter::Write(dict, &result);
   return result;
@@ -87,28 +80,27 @@ class SupervisedUserAsyncURLCheckerTest : public testing::Test {
                    base::Unretained(this)));
   }
 
-  net::TestURLFetcher* GetURLFetcher(bool safe) {
-    int id = safe ? kSupervisedUserAsyncURLCheckerSafeURLFetcherID
-                  : kSupervisedUserAsyncURLCheckerUnsafeURLFetcherID;
-    net::TestURLFetcher* url_fetcher = url_fetcher_factory_.GetFetcherByID(id);
+  net::TestURLFetcher* GetURLFetcher() {
+    net::TestURLFetcher* url_fetcher = url_fetcher_factory_.GetFetcherByID(
+        kSupervisedUserAsyncURLCheckerURLFetcherID);
     EXPECT_TRUE(url_fetcher);
     return url_fetcher;
   }
 
-  void SendResponse(bool safe, net::Error error, const std::string& response) {
-    net::TestURLFetcher* url_fetcher = GetURLFetcher(safe);
+  void SendResponse(net::Error error, const std::string& response) {
+    net::TestURLFetcher* url_fetcher = GetURLFetcher();
     url_fetcher->set_status(net::URLRequestStatus::FromError(error));
     url_fetcher->set_response_code(net::HTTP_OK);
     url_fetcher->SetResponseString(response);
     url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
   }
 
-  void SendValidResponse(bool safe, const GURL& url) {
-    SendResponse(safe, net::OK, BuildResponse(url));
+  void SendValidResponse(bool is_porn) {
+    SendResponse(net::OK, BuildResponse(is_porn));
   }
 
-  void SendFailedResponse(bool safe) {
-    SendResponse(safe, net::ERR_ABORTED, std::string());
+  void SendFailedResponse() {
+    SendResponse(net::ERR_ABORTED, std::string());
   }
 
   size_t next_url_;
@@ -122,41 +114,20 @@ TEST_F(SupervisedUserAsyncURLCheckerTest, Simple) {
   {
     GURL url(GetNewURL());
     EXPECT_FALSE(CheckURL(url));
-    // "URL found" response from safe fetcher should immediately give a
-    // "not blocked" result.
     EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, false));
-    SendValidResponse(true, url);
+    SendValidResponse(false);
   }
   {
     GURL url(GetNewURL());
     EXPECT_FALSE(CheckURL(url));
-    // "URL not found" response from safe fetcher should not immediately give a
-    // result.
-    EXPECT_CALL(*this, OnCheckDone(_, _, _)).Times(0);
-    SendValidResponse(true, GURL());
-    // "URL found" response from unsafe fetcher should give a "blocked" result.
     EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::BLOCK, false));
-    SendValidResponse(false, url);
+    SendValidResponse(true);
   }
   {
     GURL url(GetNewURL());
     EXPECT_FALSE(CheckURL(url));
-    // "URL found" response from unsafe fetcher should not immediately give a
-    // result.
-    EXPECT_CALL(*this, OnCheckDone(_, _, _)).Times(0);
-    SendValidResponse(false, url);
-    // "URL not found" response from safe fetcher should give a "blocked"
-    // result.
-    EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::BLOCK, false));
-    SendValidResponse(true, GURL());
-  }
-  {
-    GURL url(GetNewURL());
-    EXPECT_FALSE(CheckURL(url));
-    // "URL not found" response from unsafe fetcher should immediately give a
-    // "not blocked (but uncertain)" result.
     EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, true));
-    SendValidResponse(false, GURL());
+    SendFailedResponse();
   }
 }
 
@@ -167,7 +138,7 @@ TEST_F(SupervisedUserAsyncURLCheckerTest, Equivalence) {
     GURL url_response("http://www.example.com");
     EXPECT_FALSE(CheckURL(url));
     EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, false));
-    SendValidResponse(true, url_response);
+    SendValidResponse(false);
   }
   // Scheme should be ignored.
   {
@@ -175,7 +146,7 @@ TEST_F(SupervisedUserAsyncURLCheckerTest, Equivalence) {
     GURL url_response("https://www.example2.com");
     EXPECT_FALSE(CheckURL(url));
     EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, false));
-    SendValidResponse(true, url_response);
+    SendValidResponse(false);
   }
   // Both at the same time should work as well.
   {
@@ -183,7 +154,7 @@ TEST_F(SupervisedUserAsyncURLCheckerTest, Equivalence) {
     GURL url_response("https://www.example3.com");
     EXPECT_FALSE(CheckURL(url));
     EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, false));
-    SendValidResponse(true, url_response);
+    SendValidResponse(false);
   }
 }
 
@@ -197,10 +168,10 @@ TEST_F(SupervisedUserAsyncURLCheckerTest, Cache) {
   // Populate the cache.
   EXPECT_FALSE(CheckURL(url1));
   EXPECT_CALL(*this, OnCheckDone(url1, SupervisedUserURLFilter::ALLOW, false));
-  SendValidResponse(true, url1);
+  SendValidResponse(false);
   EXPECT_FALSE(CheckURL(url2));
   EXPECT_CALL(*this, OnCheckDone(url2, SupervisedUserURLFilter::ALLOW, false));
-  SendValidResponse(true, url2);
+  SendValidResponse(false);
 
   // Now we should get results synchronously.
   EXPECT_CALL(*this, OnCheckDone(url2, SupervisedUserURLFilter::ALLOW, false));
@@ -211,11 +182,11 @@ TEST_F(SupervisedUserAsyncURLCheckerTest, Cache) {
   // Now |url2| is the LRU and should be evicted on the next check.
   EXPECT_FALSE(CheckURL(url3));
   EXPECT_CALL(*this, OnCheckDone(url3, SupervisedUserURLFilter::ALLOW, false));
-  SendValidResponse(true, url3);
+  SendValidResponse(false);
 
   EXPECT_FALSE(CheckURL(url2));
   EXPECT_CALL(*this, OnCheckDone(url2, SupervisedUserURLFilter::ALLOW, false));
-  SendValidResponse(true, url2);
+  SendValidResponse(false);
 }
 
 TEST_F(SupervisedUserAsyncURLCheckerTest, CoalesceRequestsToSameURL) {
@@ -226,5 +197,5 @@ TEST_F(SupervisedUserAsyncURLCheckerTest, CoalesceRequestsToSameURL) {
   // A single response should answer both checks.
   EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, false))
       .Times(2);
-  SendValidResponse(true, url);
+  SendValidResponse(false);
 }

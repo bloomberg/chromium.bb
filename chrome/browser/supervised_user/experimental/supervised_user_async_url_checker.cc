@@ -30,145 +30,80 @@ using net::URLRequestStatus;
 
 namespace {
 
-const char kQueryFormat[] = "https://www.googleapis.com/customsearch/v1"
-    "?cx=017993620680222980993%%3A1wdumejvx5i&key=%s&q=inurl%%3A%s";
-const char kQuerySafeParam[] = "&safe=high";
-
-const char kIdSearchInfo[] = "searchInformation";
-const char kIdResultCount[] = "totalResults";
-const char kIdResults[] = "items";
-const char kIdResultURL[] = "link";
+const char kApiUrl[] = "https://safesearch.googleapis.com/v1:classify";
+const char kDataContentType[] = "application/x-www-form-urlencoded";
+const char kDataFormat[] = "key=%s&urls=%s";
 
 const size_t kDefaultCacheSize = 1000;
 
-// Build a normalized version of |url| for comparisons. Sets the scheme to a
-// common default and strips a leading "www." from the host.
-GURL GetNormalizedURL(const GURL& url) {
-  GURL::Replacements replacements;
-  // Set scheme to http.
-  replacements.SetSchemeStr(url::kHttpScheme);
-  // Strip leading "www." (if any).
-  const std::string www("www.");
-  const std::string host(url.host());
-  if (base::StartsWith(host, www, base::CompareCase::SENSITIVE))
-    replacements.SetHostStr(base::StringPiece(host).substr(www.size()));
-  // Strip trailing slash (if any).
-  const std::string path(url.path());
-  if (base::EndsWith(path, "/", base::CompareCase::SENSITIVE))
-    replacements.SetPathStr(base::StringPiece(path).substr(0, path.size() - 1));
-  return url.ReplaceComponents(replacements);
+// Builds the POST data for SafeSearch API requests.
+std::string BuildRequestData(const std::string& api_key, const GURL& url) {
+  std::string query = net::EscapeQueryParamValue(url.spec(), true);
+  return base::StringPrintf(kDataFormat, api_key.c_str(), query.c_str());
 }
 
-// Builds a URL for a web search for |url| (using the "inurl:" query parameter
-// and a Custom Search Engine, using the specified |api_key|). If |safe| is
-// specified, enables the SafeSearch query parameter.
-GURL BuildSearchURL(const std::string& api_key,
-                    const GURL& url,
-                    bool safe) {
-  // Normalize the URL and strip the scheme.
-  std::string query =
-      net::EscapeQueryParamValue(GetNormalizedURL(url).GetContent(), true);
-  std::string search_url = base::StringPrintf(
-      kQueryFormat,
-      api_key.c_str(),
-      query.c_str());
-  if (safe)
-    search_url.append(kQuerySafeParam);
-  return GURL(search_url);
-}
-
-// Creates a URLFetcher for a Google web search for |url|. If |safe| is
-// specified, enables SafeSearch for this request.
-scoped_ptr<net::URLFetcher> CreateFetcher(
-    URLFetcherDelegate* delegate,
-    URLRequestContextGetter* context,
-    const std::string& api_key,
-    const GURL& url,
-    bool safe) {
-  const int kSafeId = 0;
-  const int kUnsafeId = 1;
-  int id = safe ? kSafeId : kUnsafeId;
+// Creates a URLFetcher to call the SafeSearch API for |url|.
+scoped_ptr<net::URLFetcher> CreateFetcher(URLFetcherDelegate* delegate,
+                                          URLRequestContextGetter* context,
+                                          const std::string& api_key,
+                                          const GURL& url) {
   scoped_ptr<net::URLFetcher> fetcher = URLFetcher::Create(
-      id, BuildSearchURL(api_key, url, safe), URLFetcher::GET, delegate);
+      0, GURL(kApiUrl), URLFetcher::POST, delegate);
+  fetcher->SetUploadData(kDataContentType, BuildRequestData(api_key, url));
   fetcher->SetRequestContext(context);
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                         net::LOAD_DO_NOT_SAVE_COOKIES);
   return fetcher.Pass();
 }
 
-// Checks whether the search |response| (in JSON format) contains an entry for
-// the given |url|.
-bool ResponseContainsURL(const std::string& response, const GURL& url) {
+// Parses a SafeSearch API |response| and stores the result in |is_porn|.
+// On errors, returns false and doesn't set |is_porn|.
+bool ParseResponse(const std::string& response, bool* is_porn) {
   scoped_ptr<base::Value> value = base::JSONReader::Read(response);
-  const base::DictionaryValue* dict = NULL;
+  const base::DictionaryValue* dict = nullptr;
   if (!value || !value->GetAsDictionary(&dict)) {
-    DLOG(WARNING) << "ResponseContainsURL failed to parse global dictionary";
+    DLOG(WARNING) << "ParseResponse failed to parse global dictionary";
     return false;
   }
-  const base::DictionaryValue* search_info_dict = NULL;
-  if (!dict->GetDictionary(kIdSearchInfo, &search_info_dict)) {
-    DLOG(WARNING) << "ResponseContainsURL failed to parse search information";
+  const base::ListValue* classifications_list = nullptr;
+  if (!dict->GetList("classifications", &classifications_list)) {
+    DLOG(WARNING) << "ParseResponse failed to parse classifications list";
     return false;
   }
-  std::string result_count;
-  if (!search_info_dict->GetString(kIdResultCount, &result_count)) {
-    DLOG(WARNING) << "ResponseContainsURL failed to parse result count";
+  if (classifications_list->GetSize() != 1) {
+    DLOG(WARNING) << "ParseResponse expected exactly one result";
     return false;
   }
-  if (result_count == "0")
-    return false;
-  const base::ListValue* results_list = NULL;
-  if (!dict->GetList(kIdResults, &results_list)) {
-    DLOG(WARNING) << "ResponseContainsURL failed to parse list of results";
+  const base::DictionaryValue* classification_dict = nullptr;
+  if (!classifications_list->GetDictionary(0, &classification_dict)) {
+    DLOG(WARNING) << "ParseResponse failed to parse classification dict";
     return false;
   }
-  GURL url_normalized = GetNormalizedURL(url);
-  for (const base::Value* entry : *results_list) {
-    const base::DictionaryValue* result_dict = NULL;
-    if (!entry->GetAsDictionary(&result_dict)) {
-      DLOG(WARNING) << "ResponseContainsURL failed to parse result dictionary";
-      return false;
-    }
-    std::string result_url;
-    if (!result_dict->GetString(kIdResultURL, &result_url)) {
-      DLOG(WARNING) << "ResponseContainsURL failed to parse URL from result";
-      return false;
-    }
-    if (url_normalized == GetNormalizedURL(GURL(result_url)))
-      return true;
-  }
-  return false;
+  classification_dict->GetBoolean("pornography", is_porn);
+  return true;
 }
 
 }  // namespace
 
 struct SupervisedUserAsyncURLChecker::Check {
   Check(const GURL& url,
-        scoped_ptr<net::URLFetcher> fetcher_safe,
-        scoped_ptr<net::URLFetcher> fetcher_unsafe,
+        scoped_ptr<net::URLFetcher> fetcher,
         const CheckCallback& callback);
   ~Check();
 
   GURL url;
-  scoped_ptr<net::URLFetcher> fetcher_safe;
-  scoped_ptr<net::URLFetcher> fetcher_unsafe;
+  scoped_ptr<net::URLFetcher> fetcher;
   std::vector<CheckCallback> callbacks;
-  bool safe_done;
-  bool unsafe_done;
   base::Time start_time;
 };
 
 SupervisedUserAsyncURLChecker::Check::Check(
     const GURL& url,
-    scoped_ptr<net::URLFetcher> fetcher_safe,
-    scoped_ptr<net::URLFetcher> fetcher_unsafe,
+    scoped_ptr<net::URLFetcher> fetcher,
     const CheckCallback& callback)
     : url(url),
-      fetcher_safe(fetcher_safe.Pass()),
-      fetcher_unsafe(fetcher_unsafe.Pass()),
+      fetcher(fetcher.Pass()),
       callbacks(1, callback),
-      safe_done(false),
-      unsafe_done(false),
       start_time(base::Time::Now()) {
 }
 
@@ -176,7 +111,7 @@ SupervisedUserAsyncURLChecker::Check::~Check() {}
 
 SupervisedUserAsyncURLChecker::CheckResult::CheckResult(
     SupervisedUserURLFilter::FilteringBehavior behavior, bool uncertain)
-  : behavior(behavior), uncertain(uncertain) {
+    : behavior(behavior), uncertain(uncertain) {
 }
 
 SupervisedUserAsyncURLChecker::SupervisedUserAsyncURLChecker(
@@ -232,30 +167,18 @@ bool SupervisedUserAsyncURLChecker::CheckURL(const GURL& url,
 
   DVLOG(1) << "Checking URL " << url;
   std::string api_key = google_apis::GetSafeSitesAPIKey();
-  scoped_ptr<URLFetcher> fetcher_safe(
-      CreateFetcher(this, context_, api_key, url, true));
-  scoped_ptr<URLFetcher> fetcher_unsafe(
-      CreateFetcher(this, context_, api_key, url, false));
-  fetcher_safe->Start();
-  fetcher_unsafe->Start();
-  checks_in_progress_.push_back(
-      new Check(url, fetcher_safe.Pass(), fetcher_unsafe.Pass(), callback));
+  scoped_ptr<URLFetcher> fetcher(CreateFetcher(this, context_, api_key, url));
+  fetcher->Start();
+  checks_in_progress_.push_back(new Check(url, fetcher.Pass(), callback));
   return false;
 }
 
 void SupervisedUserAsyncURLChecker::OnURLFetchComplete(
     const net::URLFetcher* source) {
   ScopedVector<Check>::iterator it = checks_in_progress_.begin();
-  bool is_safe_search_request = false;
   while (it != checks_in_progress_.end()) {
-    if (source == (*it)->fetcher_safe.get()) {
-      is_safe_search_request = true;
-      (*it)->safe_done = true;
+    if (source == (*it)->fetcher.get())
       break;
-    } else if (source == (*it)->fetcher_unsafe.get()) {
-      (*it)->unsafe_done = true;
-      break;
-    }
     ++it;
   }
   DCHECK(it != checks_in_progress_.end());
@@ -272,45 +195,10 @@ void SupervisedUserAsyncURLChecker::OnURLFetchComplete(
 
   std::string response_body;
   source->GetResponseAsString(&response_body);
-  bool url_in_search_result = ResponseContainsURL(response_body, check->url);
-
-  // We consider a URL as safe if it turns up in a safesearch query. To handle
-  // URLs that aren't in the search index at all, we also allows URLS that don't
-  // turn up even in a non-safesearch query.
+  bool is_porn = false;
+  bool uncertain = !ParseResponse(response_body, &is_porn);
   SupervisedUserURLFilter::FilteringBehavior behavior =
-      SupervisedUserURLFilter::ALLOW;
-  bool uncertain = true;
-  if (is_safe_search_request) {
-    if (url_in_search_result) {
-      // Found the URL with safesearch, don't block.
-      DVLOG(1) << check->url.spec() << " is safe, allowing.";
-      behavior = SupervisedUserURLFilter::ALLOW;
-      uncertain = false;
-    } else if (check->unsafe_done) {
-      // Found the URL only without safesearch, block.
-      DVLOG(1) << check->url.spec() << " is NOT safe, blocking.";
-      behavior = SupervisedUserURLFilter::BLOCK;
-      uncertain = false;
-    } else {
-      // Didn't find the URL with safesearch, have to wait for non-safe result.
-      return;
-    }
-  } else {
-    if (!url_in_search_result) {
-      // Didn't find the URL even without safesearch, have to let through.
-      DVLOG(1) << check->url.spec() << " is unknown, allowing.";
-      behavior = SupervisedUserURLFilter::ALLOW;
-      uncertain = true;
-    } else if (check->safe_done) {
-      // Found the URL only without safesearch, block.
-      DVLOG(1) << check->url.spec() << " is NOT safe, blocking.";
-      behavior = SupervisedUserURLFilter::BLOCK;
-      uncertain = false;
-    } else {
-      // Found the URL without safesearch, wait for safe result.
-      return;
-    }
-  }
+      is_porn ? SupervisedUserURLFilter::BLOCK : SupervisedUserURLFilter::ALLOW;
 
   UMA_HISTOGRAM_TIMES("ManagedUsers.SafeSitesDelay",
                       base::Time::Now() - check->start_time);
