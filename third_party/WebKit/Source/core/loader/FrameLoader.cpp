@@ -338,6 +338,7 @@ void FrameLoader::replaceDocumentWhileExecutingJavaScriptURL(const String& sourc
     if (!m_frame->page())
         return;
 
+    client()->transitionToCommittedForNewPage();
     documentLoader->replaceDocumentWhileExecutingJavaScriptURL(init, source, ownerDocument);
 }
 
