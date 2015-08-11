@@ -9675,9 +9675,12 @@
         "hw_tests": [],
         "hwqual": false,
         "image_test": false,
+        "signer_tests": false,
         "sync_chrome": false,
         "upload_gce_images": true,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "lakitu_mobbuild-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",

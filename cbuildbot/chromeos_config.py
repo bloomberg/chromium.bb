@@ -2378,6 +2378,13 @@ def GetConfig():
   )
 
   site_config.AddConfig(
+      _release, 'lakitu_mobbuild-release',
+      _base_configs['lakitu_mobbuild'],
+      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      signer_tests=False,
+  )
+
+  site_config.AddConfig(
       pre_cq, constants.WIFICELL_PRE_CQ,
       internal,
       boards=['winky', 'veyron_speedy', 'veyron_jerry', 'daisy'],
