@@ -295,6 +295,13 @@ void SetSecurityStyleAndDetails(const GURL& url,
     return;
   }
 
+  // There are cases where an HTTPS request can come in without security
+  // info attached (such as a redirect response).
+  if (security_info.empty()) {
+    response->setSecurityStyle(WebURLResponse::SecurityStyleUnknown);
+    return;
+  }
+
   SSLStatus ssl_status;
   if (!DeserializeSecurityInfo(security_info, &ssl_status)) {
     response->setSecurityStyle(WebURLResponse::SecurityStyleUnknown);
