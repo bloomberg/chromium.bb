@@ -36,6 +36,7 @@ class ExternalProtocolDialog : public views::DialogDelegate {
   views::View* GetContentsView() override;
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
+  ui::ModalType GetModalType() const override;
 
  private:
   const scoped_ptr<const ProtocolDialogDelegate> delegate_;

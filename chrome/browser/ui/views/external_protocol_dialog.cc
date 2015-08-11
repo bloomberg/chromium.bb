@@ -114,6 +114,10 @@ const views::Widget* ExternalProtocolDialog::GetWidget() const {
   return message_box_view_->GetWidget();
 }
 
+ui::ModalType ExternalProtocolDialog::GetModalType() const {
+  return ui::MODAL_TYPE_CHILD;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // ExternalProtocolDialog, private:
 
@@ -130,12 +134,10 @@ ExternalProtocolDialog::ExternalProtocolDialog(
   message_box_view_ = new views::MessageBoxView(params);
   message_box_view_->SetCheckBoxLabel(delegate_->GetCheckboxText());
 
-  // Dialog is top level if we don't have a web_contents associated with us.
   WebContents* web_contents = tab_util::GetWebContentsByID(
       render_process_host_id_, routing_id_);
-  gfx::NativeWindow parent_window = NULL;
+  // Only launch the dialog if there is a web contents associated with the
+  // request.
   if (web_contents)
-    parent_window = web_contents->GetTopLevelNativeWindow();
-  constrained_window::CreateBrowserModalDialogViews(this,
-                                                    parent_window)->Show();
+    constrained_window::ShowWebModalDialogViews(this, web_contents);
 }
