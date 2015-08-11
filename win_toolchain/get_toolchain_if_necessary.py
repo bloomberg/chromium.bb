@@ -57,7 +57,7 @@ def GetFileList(root):
   for base, _, files in os.walk(root):
     paths = [os.path.join(base, f) for f in files]
     file_list.extend(x.lower() for x in paths)
-  return sorted(file_list)
+  return sorted(file_list, key=lambda s: s.replace('/', '\\'))
 
 
 def MakeTimestampsFileName(root):
@@ -93,7 +93,7 @@ def CalculateHash(root):
 
   digest = hashlib.sha1()
   for path in file_list:
-    digest.update(path)
+    digest.update(str(path).replace('/', '\\'))
     with open(path, 'rb') as f:
       digest.update(f.read())
   return digest.hexdigest()
