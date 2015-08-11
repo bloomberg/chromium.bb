@@ -768,8 +768,8 @@ MatchUSBID::MatchUSBID(const std::string& arg) : MatchCriteria(arg) {
     }
     std::vector<std::string> tokens = base::SplitString(
         args_[i], ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    vid_patterns_.push_back(base::StringToLowerASCII(tokens[0]));
-    pid_patterns_.push_back(base::StringToLowerASCII(tokens[1]));
+    vid_patterns_.push_back(base::ToLowerASCII(tokens[0]));
+    pid_patterns_.push_back(base::ToLowerASCII(tokens[1]));
   }
   if (vid_patterns_.empty()) {
     LOG(ERROR) << "No valid USB ID pattern found, will be ignored: \"" << arg

@@ -1506,11 +1506,10 @@ TEST_F(RenderTextTest, StringSizeRespectsFontListMetrics) {
   // Check that Arial and Symbol have different font metrics.
   Font arial_font("Arial", 16);
   ASSERT_EQ("arial",
-            base::StringToLowerASCII(arial_font.GetActualFontNameForTesting()));
+            base::ToLowerASCII(arial_font.GetActualFontNameForTesting()));
   Font symbol_font("Symbol", 16);
   ASSERT_EQ("symbol",
-            base::StringToLowerASCII(
-                symbol_font.GetActualFontNameForTesting()));
+            base::ToLowerASCII(symbol_font.GetActualFontNameForTesting()));
   EXPECT_NE(arial_font.GetHeight(), symbol_font.GetHeight());
   EXPECT_NE(arial_font.GetBaseline(), symbol_font.GetBaseline());
   // "a" should be rendered with Arial, not with Symbol.
@@ -2897,9 +2896,9 @@ TEST_F(RenderTextTest, HarfBuzz_FontListFallback) {
   const std::vector<Font>& fonts = font_list.GetFonts();
   ASSERT_EQ(2u, fonts.size());
   ASSERT_EQ("arial",
-            base::StringToLowerASCII(fonts[0].GetActualFontNameForTesting()));
+            base::ToLowerASCII(fonts[0].GetActualFontNameForTesting()));
   ASSERT_EQ("symbol",
-            base::StringToLowerASCII(fonts[1].GetActualFontNameForTesting()));
+            base::ToLowerASCII(fonts[1].GetActualFontNameForTesting()));
 
   // "⊕" (CIRCLED PLUS) should be rendered with Symbol rather than falling back
   // to some other font that's present on the system.

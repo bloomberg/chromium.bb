@@ -820,7 +820,7 @@ int FtpNetworkTransaction::ProcessResponseSYST(
       // comparisons easily. If it is not ASCII, we leave the system type
       // as unknown.
       if (base::IsStringASCII(line)) {
-        line = base::StringToLowerASCII(line);
+        line = base::ToLowerASCII(line);
 
         // Remove all whitespace, to correctly handle cases like fancy "V M S"
         // response instead of "VMS".

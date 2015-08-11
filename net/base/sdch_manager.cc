@@ -112,8 +112,7 @@ void SdchManager::BlacklistDomain(const GURL& url,
                                   SdchProblemCode blacklist_reason) {
   SetAllowLatencyExperiment(url, false);
 
-  BlacklistInfo* blacklist_info =
-      &blacklisted_domains_[base::StringToLowerASCII(url.host())];
+  BlacklistInfo* blacklist_info = &blacklisted_domains_[url.host()];
 
   if (blacklist_info->count > 0)
     return;  // Domain is already blacklisted.
@@ -133,8 +132,7 @@ void SdchManager::BlacklistDomainForever(const GURL& url,
                                          SdchProblemCode blacklist_reason) {
   SetAllowLatencyExperiment(url, false);
 
-  BlacklistInfo* blacklist_info =
-      &blacklisted_domains_[base::StringToLowerASCII(url.host())];
+  BlacklistInfo* blacklist_info = &blacklisted_domains_[url.host()];
   blacklist_info->count = INT_MAX;
   blacklist_info->exponential_count = INT_MAX;
   blacklist_info->reason = blacklist_reason;
@@ -145,14 +143,14 @@ void SdchManager::ClearBlacklistings() {
 }
 
 void SdchManager::ClearDomainBlacklisting(const std::string& domain) {
-  BlacklistInfo* blacklist_info = &blacklisted_domains_[
-      base::StringToLowerASCII(domain)];
+  BlacklistInfo* blacklist_info =
+      &blacklisted_domains_[base::ToLowerASCII(domain)];
   blacklist_info->count = 0;
   blacklist_info->reason = SDCH_OK;
 }
 
 int SdchManager::BlackListDomainCount(const std::string& domain) {
-  std::string domain_lower(base::StringToLowerASCII(domain));
+  std::string domain_lower(base::ToLowerASCII(domain));
 
   if (blacklisted_domains_.end() == blacklisted_domains_.find(domain_lower))
     return 0;
@@ -160,7 +158,7 @@ int SdchManager::BlackListDomainCount(const std::string& domain) {
 }
 
 int SdchManager::BlacklistDomainExponential(const std::string& domain) {
-  std::string domain_lower(base::StringToLowerASCII(domain));
+  std::string domain_lower(base::ToLowerASCII(domain));
 
   if (blacklisted_domains_.end() == blacklisted_domains_.find(domain_lower))
     return 0;
@@ -175,8 +173,7 @@ SdchProblemCode SdchManager::IsInSupportedDomain(const GURL& url) {
   if (blacklisted_domains_.empty())
     return SDCH_OK;
 
-  DomainBlacklistInfo::iterator it =
-      blacklisted_domains_.find(base::StringToLowerASCII(url.host()));
+  auto it = blacklisted_domains_.find(url.host());
   if (blacklisted_domains_.end() == it || it->second.count == 0)
     return SDCH_OK;
 
@@ -374,7 +371,7 @@ SdchProblemCode SdchManager::AddSdchDictionary(
         break;
       std::string name(dictionary_text, line_start, colon_index - line_start);
       std::string value(dictionary_text, value_start, line_end - value_start);
-      name = base::StringToLowerASCII(name);
+      name = base::ToLowerASCII(name);
       if (name == "domain") {
         domain = value;
       } else if (name == "path") {

@@ -24,10 +24,9 @@ class HostnamePatternRule : public ProxyBypassRules::Rule {
   HostnamePatternRule(const std::string& optional_scheme,
                       const std::string& hostname_pattern,
                       int optional_port)
-      : optional_scheme_(base::StringToLowerASCII(optional_scheme)),
-        hostname_pattern_(base::StringToLowerASCII(hostname_pattern)),
-        optional_port_(optional_port) {
-  }
+      : optional_scheme_(base::ToLowerASCII(optional_scheme)),
+        hostname_pattern_(base::ToLowerASCII(hostname_pattern)),
+        optional_port_(optional_port) {}
 
   bool Matches(const GURL& url) const override {
     if (optional_port_ != -1 && url.EffectiveIntPort() != optional_port_)
@@ -38,8 +37,7 @@ class HostnamePatternRule : public ProxyBypassRules::Rule {
 
     // Note it is necessary to lower-case the host, since GURL uses capital
     // letters for percent-escaped characters.
-    return base::MatchPattern(base::StringToLowerASCII(url.host()),
-                              hostname_pattern_);
+    return base::MatchPattern(url.host(), hostname_pattern_);
   }
 
   std::string ToString() const override {

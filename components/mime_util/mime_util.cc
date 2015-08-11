@@ -155,7 +155,7 @@ bool MimeUtil::IsSupportedImageMimeType(const std::string& mime_type) const {
 }
 
 bool MimeUtil::IsSupportedNonImageMimeType(const std::string& mime_type) const {
-  return non_image_types_.find(base::StringToLowerASCII(mime_type)) !=
+  return non_image_types_.find(base::ToLowerASCII(mime_type)) !=
              non_image_types_.end() ||
 #if !defined(OS_IOS)
          media::IsSupportedMediaMimeType(mime_type) ||
@@ -169,7 +169,7 @@ bool MimeUtil::IsSupportedNonImageMimeType(const std::string& mime_type) const {
 }
 
 bool MimeUtil::IsUnsupportedTextMimeType(const std::string& mime_type) const {
-  return unsupported_text_types_.find(base::StringToLowerASCII(mime_type)) !=
+  return unsupported_text_types_.find(base::ToLowerASCII(mime_type)) !=
          unsupported_text_types_.end();
 }
 

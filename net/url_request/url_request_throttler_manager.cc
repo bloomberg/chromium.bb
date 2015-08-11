@@ -142,7 +142,7 @@ std::string URLRequestThrottlerManager::GetIdFromUrl(const GURL& url) const {
     return url.possibly_invalid_spec();
 
   GURL id = url.ReplaceComponents(url_id_replacements_);
-  return base::StringToLowerASCII(id.spec()).c_str();
+  return base::ToLowerASCII(id.spec());
 }
 
 void URLRequestThrottlerManager::GarbageCollectEntriesIfNecessary() {

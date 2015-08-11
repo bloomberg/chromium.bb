@@ -110,7 +110,7 @@ void ExtensionRegistry::TriggerOnUninstalled(const Extension* extension,
 
 const Extension* ExtensionRegistry::GetExtensionById(const std::string& id,
                                                      int include_mask) const {
-  std::string lowercase_id = base::StringToLowerASCII(id);
+  std::string lowercase_id = base::ToLowerASCII(id);
   if (include_mask & ENABLED) {
     const Extension* extension = enabled_extensions_.GetByID(lowercase_id);
     if (extension)

@@ -133,13 +133,13 @@ void HttpUtil::ParseContentType(const std::string& content_type_str,
                   base::StringPiece(begin + type_val, begin + type_end),
                   mime_type->data());
     if (!eq) {
-      mime_type->assign(begin + type_val, begin + type_end);
-      base::StringToLowerASCII(mime_type);
+      *mime_type = base::ToLowerASCII(
+          base::StringPiece(begin + type_val, begin + type_end));
     }
     if ((!eq && *had_charset) || type_has_charset) {
       *had_charset = true;
-      charset->assign(begin + charset_val, begin + charset_end);
-      base::StringToLowerASCII(charset);
+      *charset = base::ToLowerASCII(
+          base::StringPiece(begin + charset_val, begin + charset_end));
     }
   }
 }
@@ -321,7 +321,7 @@ const char* const kForbiddenHeaderFields[] = {
 
 // static
 bool HttpUtil::IsSafeHeader(const std::string& name) {
-  std::string lower_name(base::StringToLowerASCII(name));
+  std::string lower_name(base::ToLowerASCII(name));
   if (base::StartsWith(lower_name, "proxy-", base::CompareCase::SENSITIVE) ||
       base::StartsWith(lower_name, "sec-", base::CompareCase::SENSITIVE))
     return false;
@@ -821,7 +821,7 @@ bool HttpUtil::HeadersIterator::GetNext() {
 
 bool HttpUtil::HeadersIterator::AdvanceTo(const char* name) {
   DCHECK(name != NULL);
-  DCHECK_EQ(0, base::StringToLowerASCII<std::string>(name).compare(name))
+  DCHECK_EQ(0, base::ToLowerASCII(name).compare(name))
       << "the header name must be in all lower case";
 
   while (GetNext()) {

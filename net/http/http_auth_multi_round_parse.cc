@@ -17,7 +17,7 @@ bool SchemeIsValid(const std::string& scheme,
   // There is no guarantee that challenge->scheme() is valid ASCII, but
   // LowerCaseEqualsASCII will do the right thing even if it isn't.
   return base::LowerCaseEqualsASCII(challenge->scheme(),
-                                    base::StringToLowerASCII(scheme).c_str());
+                                    base::ToLowerASCII(scheme));
 }
 
 }  // namespace

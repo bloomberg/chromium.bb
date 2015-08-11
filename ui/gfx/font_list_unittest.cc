@@ -260,8 +260,7 @@ TEST(FontListTest, MAYBE_Fonts_DeriveWithSizeDelta) {
 TEST(FontListTest, MAYBE_Fonts_GetHeight_GetBaseline) {
   // If a font list has only one font, the height and baseline must be the same.
   Font font1("Arial", 16);
-  ASSERT_EQ("arial",
-            base::StringToLowerASCII(font1.GetActualFontNameForTesting()));
+  ASSERT_EQ("arial", base::ToLowerASCII(font1.GetActualFontNameForTesting()));
   FontList font_list1("Arial, 16px");
   EXPECT_EQ(font1.GetHeight(), font_list1.GetHeight());
   EXPECT_EQ(font1.GetBaseline(), font_list1.GetBaseline());
@@ -269,8 +268,7 @@ TEST(FontListTest, MAYBE_Fonts_GetHeight_GetBaseline) {
   // If there are two different fonts, the font list returns the max value
   // for the baseline (ascent) and height.
   Font font2("Symbol", 16);
-  ASSERT_EQ("symbol",
-            base::StringToLowerASCII(font2.GetActualFontNameForTesting()));
+  ASSERT_EQ("symbol", base::ToLowerASCII(font2.GetActualFontNameForTesting()));
   EXPECT_NE(font1.GetBaseline(), font2.GetBaseline());
   // TODO(ananta): Find a size and font pair with reliably distinct descents.
   EXPECT_NE(font1.GetHeight(), font2.GetHeight());

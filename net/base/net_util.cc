@@ -65,7 +65,7 @@ namespace net {
 namespace {
 
 std::string NormalizeHostname(const std::string& host) {
-  std::string result = base::StringToLowerASCII(host);
+  std::string result = base::ToLowerASCII(host);
   if (!result.empty() && *result.rbegin() == '.')
     result.resize(result.size() - 1);
   return result;

@@ -670,7 +670,7 @@ NetworkChangeNotifier::ConnectionTypeFromInterfaceList(
 #endif
     // Remove VMware network interfaces as they're internal and should not be
     // used to determine the network connection type.
-    if (base::StringToLowerASCII(interfaces[i].friendly_name).find("vmnet") !=
+    if (base::ToLowerASCII(interfaces[i].friendly_name).find("vmnet") !=
         std::string::npos) {
       continue;
     }

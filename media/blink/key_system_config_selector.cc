@@ -281,7 +281,7 @@ bool KeySystemConfigSelector::IsSupportedContentType(
     KeySystemConfigSelector::ConfigState* config_state) {
   // TODO(sandersd): Move contentType parsing from Blink to here so that invalid
   // parameters can be rejected. http://crbug.com/417561
-  std::string container_lower = base::StringToLowerASCII(container_mime_type);
+  std::string container_lower = base::ToLowerASCII(container_mime_type);
 
   // Check that |container_mime_type| is supported by Chrome.
   if (!media::IsSupportedMediaMimeType(container_lower))

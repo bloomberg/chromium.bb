@@ -187,7 +187,7 @@ bool VerifiedContents::InitFrom(const base::FilePath& path,
       base::FilePath file_path =
           base::FilePath::FromUTF8Unsafe(file_path_string);
       RootHashes::iterator i = root_hashes_.insert(std::make_pair(
-          base::StringToLowerASCII(file_path.value()), std::string()));
+          base::ToLowerASCII(file_path.value()), std::string()));
       i->second.swap(root_hash);
     }
 
@@ -198,14 +198,14 @@ bool VerifiedContents::InitFrom(const base::FilePath& path,
 
 bool VerifiedContents::HasTreeHashRoot(
     const base::FilePath& relative_path) const {
-  base::FilePath::StringType path = base::StringToLowerASCII(
+  base::FilePath::StringType path = base::ToLowerASCII(
       relative_path.NormalizePathSeparatorsTo('/').value());
   return root_hashes_.find(path) != root_hashes_.end();
 }
 
 bool VerifiedContents::TreeHashRootEquals(const base::FilePath& relative_path,
                                           const std::string& expected) const {
-  base::FilePath::StringType path = base::StringToLowerASCII(
+  base::FilePath::StringType path = base::ToLowerASCII(
       relative_path.NormalizePathSeparatorsTo('/').value());
   for (RootHashes::const_iterator i = root_hashes_.find(path);
        i != root_hashes_.end();

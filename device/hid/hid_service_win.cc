@@ -121,7 +121,7 @@ void HidServiceWin::EnumerateOnFileThread(
           base::SysWideToUTF8(device_interface_detail_data->DevicePath));
       DCHECK(base::IsStringASCII(device_path));
       AddDeviceOnFileThread(service, task_runner,
-                            base::StringToLowerASCII(device_path));
+                            base::ToLowerASCII(device_path));
     }
   }
 

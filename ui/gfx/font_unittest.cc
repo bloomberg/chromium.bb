@@ -58,8 +58,7 @@ TEST_F(FontTest, MAYBE_LoadArial) {
   EXPECT_EQ(cf.GetStyle(), Font::NORMAL);
   EXPECT_EQ(cf.GetFontSize(), 16);
   EXPECT_EQ(cf.GetFontName(), "Arial");
-  EXPECT_EQ("arial",
-            base::StringToLowerASCII(cf.GetActualFontNameForTesting()));
+  EXPECT_EQ("arial", base::ToLowerASCII(cf.GetActualFontNameForTesting()));
 }
 
 #if defined(OS_ANDROID)
@@ -74,8 +73,7 @@ TEST_F(FontTest, MAYBE_LoadArialBold) {
   EXPECT_TRUE(bold.GetNativeFont());
 #endif
   EXPECT_EQ(bold.GetStyle(), Font::BOLD);
-  EXPECT_EQ("arial",
-            base::StringToLowerASCII(cf.GetActualFontNameForTesting()));
+  EXPECT_EQ("arial", base::ToLowerASCII(cf.GetActualFontNameForTesting()));
 }
 
 #if defined(OS_ANDROID)
@@ -139,15 +137,13 @@ TEST_F(FontTest, MAYBE_AvgWidths) {
 // http://crbug.com/347429
 TEST_F(FontTest, MAYBE_GetActualFontNameForTesting) {
   Font arial("Arial", 16);
-  EXPECT_EQ("arial",
-            base::StringToLowerASCII(arial.GetActualFontNameForTesting()))
+  EXPECT_EQ("arial", base::ToLowerASCII(arial.GetActualFontNameForTesting()))
       << "********\n"
       << "Your test environment seems to be missing Arial font, which is "
       << "needed for unittests.  Check if Arial font is installed.\n"
       << "********";
   Font symbol("Symbol", 16);
-  EXPECT_EQ("symbol",
-            base::StringToLowerASCII(symbol.GetActualFontNameForTesting()))
+  EXPECT_EQ("symbol", base::ToLowerASCII(symbol.GetActualFontNameForTesting()))
       << "********\n"
       << "Your test environment seems to be missing Symbol font, which is "
       << "needed for unittests.  Check if Symbol font is installed.\n"
@@ -156,8 +152,7 @@ TEST_F(FontTest, MAYBE_GetActualFontNameForTesting) {
   const char* const invalid_font_name = "no_such_font_name";
   Font fallback_font(invalid_font_name, 16);
   EXPECT_NE(invalid_font_name,
-            base::StringToLowerASCII(
-                fallback_font.GetActualFontNameForTesting()));
+            base::ToLowerASCII(fallback_font.GetActualFontNameForTesting()));
 }
 
 #if defined(OS_WIN)

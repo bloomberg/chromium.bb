@@ -130,7 +130,7 @@ bool NetworkFetcher::ComputeAppId(const base::FilePath& path,
   ctx->Finish(string_as_array(&output), output.size());
   output = base::HexEncode(output.c_str(), output.size());
   // Using lowercase for compatiblity with sha256sum output.
-  *digest_string = base::StringToLowerASCII(output);
+  *digest_string = base::ToLowerASCII(output);
   return true;
 }
 

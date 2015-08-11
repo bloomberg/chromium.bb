@@ -163,10 +163,9 @@ bool IsReservedNameOnWindows(const base::FilePath::StringType& filename) {
       "com5", "com6", "com7", "com8", "com9", "lpt1", "lpt2",  "lpt3",
       "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9", "clock$"};
 #if defined(OS_WIN)
-  std::string filename_lower =
-      base::StringToLowerASCII(base::WideToUTF8(filename));
+  std::string filename_lower = base::ToLowerASCII(base::WideToUTF8(filename));
 #elif defined(OS_POSIX)
-  std::string filename_lower = base::StringToLowerASCII(filename);
+  std::string filename_lower = base::ToLowerASCII(filename);
 #endif
 
   for (size_t i = 0; i < arraysize(known_devices); ++i) {

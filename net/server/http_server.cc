@@ -412,7 +412,7 @@ bool HttpServer::ParseHeaders(const char* data,
           buffer.clear();
           break;
         case ST_NAME:
-          header_name = base::StringToLowerASCII(buffer);
+          header_name = base::ToLowerASCII(buffer);
           buffer.clear();
           break;
         case ST_VALUE:

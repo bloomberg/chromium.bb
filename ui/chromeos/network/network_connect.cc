@@ -609,8 +609,7 @@ base::string16 NetworkConnectImpl::GetShillErrorString(
         IDS_CHROMEOS_NETWORK_ERROR_PPP_AUTH_FAILED);
   }
 
-  if (base::StringToLowerASCII(error) ==
-      base::StringToLowerASCII(std::string(shill::kUnknownString))) {
+  if (base::ToLowerASCII(error) == base::ToLowerASCII(shill::kUnknownString)) {
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
   }
   return l10n_util::GetStringFUTF16(IDS_NETWORK_UNRECOGNIZED_ERROR,

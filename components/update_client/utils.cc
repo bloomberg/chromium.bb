@@ -188,7 +188,7 @@ bool DeleteFileAndEmptyParentDirectory(const base::FilePath& filepath) {
 std::string GetCrxComponentID(const CrxComponent& component) {
   const size_t kCrxIdSize = 16;
   CHECK_GE(component.pk_hash.size(), kCrxIdSize);
-  return HexStringToID(base::StringToLowerASCII(
+  return HexStringToID(base::ToLowerASCII(
       base::HexEncode(&component.pk_hash[0], kCrxIdSize)));
 }
 

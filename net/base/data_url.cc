@@ -43,7 +43,7 @@ bool DataURL::Parse(const GURL& url, std::string* mime_type,
   std::vector<std::string>::iterator iter = meta_data.begin();
   if (iter != meta_data.end()) {
     mime_type->swap(*iter);
-    base::StringToLowerASCII(mime_type);
+    *mime_type = base::ToLowerASCII(*mime_type);
     ++iter;
   }
 

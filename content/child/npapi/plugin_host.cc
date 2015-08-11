@@ -271,7 +271,7 @@ bool PluginHost::SetPostData(const char* buf,
           break;
         case GETVALUE:
           // Got a header.
-          name = base::StringToLowerASCII(std::string(start, ptr - start));
+          name = base::ToLowerASCII(base::StringPiece(start, ptr - start));
           base::TrimWhitespace(name, base::TRIM_ALL, &name);
           start = ptr + 1;
           break;

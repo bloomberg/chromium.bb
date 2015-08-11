@@ -47,7 +47,7 @@ bool UrlHasChromeScheme(NSURL* url) {
 }
 
 bool IsHandledProtocol(const std::string& scheme) {
-  DCHECK_EQ(scheme, base::StringToLowerASCII(scheme));
+  DCHECK_EQ(scheme, base::ToLowerASCII(scheme));
   if (scheme == url::kAboutScheme)
     return true;
   if (scheme == url::kDataScheme)

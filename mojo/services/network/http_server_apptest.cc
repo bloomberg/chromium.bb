@@ -113,12 +113,12 @@ void CheckHeaders(const TestHeaders& expected,
   std::map<std::string, std::string> header_map;
   for (size_t i = 0; i < headers.size(); ++i) {
     std::string lower_name =
-        base::StringToLowerASCII(headers[i]->name.To<std::string>());
+        base::ToLowerASCII(headers[i]->name.To<std::string>());
     header_map[lower_name] = headers[i]->value;
   }
 
   for (const auto& item : expected) {
-    std::string lower_name = base::StringToLowerASCII(item.first);
+    std::string lower_name = base::ToLowerASCII(item.first);
     EXPECT_NE(header_map.end(), header_map.find(lower_name));
     EXPECT_EQ(item.second, header_map[lower_name]);
   }

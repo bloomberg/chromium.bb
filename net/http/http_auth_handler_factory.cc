@@ -106,7 +106,7 @@ void HttpAuthHandlerRegistryFactory::SetURLSecurityManager(
 void HttpAuthHandlerRegistryFactory::RegisterSchemeFactory(
     const std::string& scheme,
     HttpAuthHandlerFactory* factory) {
-  std::string lower_scheme = base::StringToLowerASCII(scheme);
+  std::string lower_scheme = base::ToLowerASCII(scheme);
   FactoryMap::iterator it = factory_map_.find(lower_scheme);
   if (it != factory_map_.end()) {
     delete it->second;
@@ -119,7 +119,7 @@ void HttpAuthHandlerRegistryFactory::RegisterSchemeFactory(
 
 HttpAuthHandlerFactory* HttpAuthHandlerRegistryFactory::GetSchemeFactory(
     const std::string& scheme) const {
-  std::string lower_scheme = base::StringToLowerASCII(scheme);
+  std::string lower_scheme = base::ToLowerASCII(scheme);
   FactoryMap::const_iterator it = factory_map_.find(lower_scheme);
   if (it == factory_map_.end()) {
     return NULL;                  // |scheme| is not registered.
@@ -190,7 +190,7 @@ int HttpAuthHandlerRegistryFactory::CreateAuthHandler(
     handler->reset();
     return ERR_INVALID_RESPONSE;
   }
-  std::string lower_scheme = base::StringToLowerASCII(scheme);
+  std::string lower_scheme = base::ToLowerASCII(scheme);
   FactoryMap::iterator it = factory_map_.find(lower_scheme);
   if (it == factory_map_.end()) {
     handler->reset();

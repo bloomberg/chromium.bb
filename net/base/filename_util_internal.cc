@@ -90,8 +90,7 @@ std::string GetFileNameFromURL(const GURL& url,
 // Returns whether the specified extension is automatically integrated into the
 // windows shell.
 bool IsShellIntegratedExtension(const base::FilePath::StringType& extension) {
-  base::FilePath::StringType extension_lower =
-      base::StringToLowerASCII(extension);
+  base::FilePath::StringType extension_lower = base::ToLowerASCII(extension);
 
   // http://msdn.microsoft.com/en-us/library/ms811694.aspx
   // Right-clicking on shortcuts can be magical.

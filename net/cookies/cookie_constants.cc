@@ -30,8 +30,7 @@ NET_EXPORT const std::string CookiePriorityToString(CookiePriority priority) {
 }
 
 NET_EXPORT CookiePriority StringToCookiePriority(const std::string& priority) {
-  std::string priority_comp(priority);
-  base::StringToLowerASCII(&priority_comp);
+  std::string priority_comp = base::ToLowerASCII(priority);
 
   if (priority_comp == kPriorityHigh)
     return COOKIE_PRIORITY_HIGH;

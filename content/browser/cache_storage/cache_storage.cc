@@ -338,7 +338,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
 
   static std::string HexedHash(const std::string& value) {
     std::string value_hash = base::SHA1HashString(value);
-    std::string valued_hexed_hash = base::StringToLowerASCII(
+    std::string valued_hexed_hash = base::ToLowerASCII(
         base::HexEncode(value_hash.c_str(), value_hash.length()));
     return valued_hexed_hash;
   }

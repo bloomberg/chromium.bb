@@ -396,8 +396,7 @@ void MimeUtil::InitializeMimeTypeMaps() {
 }
 
 bool MimeUtil::IsSupportedMediaMimeType(const std::string& mime_type) const {
-  return media_map_.find(base::StringToLowerASCII(mime_type)) !=
-         media_map_.end();
+  return media_map_.find(base::ToLowerASCII(mime_type)) != media_map_.end();
 }
 
 
@@ -439,14 +438,14 @@ void MimeUtil::ParseCodecString(const std::string& codecs,
 }
 
 bool MimeUtil::IsStrictMediaMimeType(const std::string& mime_type) const {
-  return strict_format_map_.find(base::StringToLowerASCII(mime_type)) !=
+  return strict_format_map_.find(base::ToLowerASCII(mime_type)) !=
          strict_format_map_.end();
 }
 
 SupportsType MimeUtil::IsSupportedStrictMediaMimeType(
     const std::string& mime_type,
     const std::vector<std::string>& codecs) const {
-  const std::string mime_type_lower_case = base::StringToLowerASCII(mime_type);
+  const std::string mime_type_lower_case = base::ToLowerASCII(mime_type);
   StrictMappings::const_iterator it_strict_map =
       strict_format_map_.find(mime_type_lower_case);
   if (it_strict_map == strict_format_map_.end())

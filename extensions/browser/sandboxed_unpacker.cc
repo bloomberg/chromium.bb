@@ -219,7 +219,7 @@ SandboxedUnpacker::SandboxedUnpacker(
     const scoped_refptr<base::SequencedTaskRunner>& unpacker_io_task_runner,
     SandboxedUnpackerClient* client)
     : crx_path_(file.path),
-      package_hash_(base::StringToLowerASCII(file.expected_hash)),
+      package_hash_(base::ToLowerASCII(file.expected_hash)),
       check_crx_hash_(false),
       client_(client),
       extensions_dir_(extensions_dir),

@@ -47,8 +47,7 @@ uint32 GetReasonsForUncacheability(const WebURLResponse& response) {
   }
 
   std::string cache_control_header =
-      response.httpHeaderField("cache-control").utf8();
-  base::StringToLowerASCII(&cache_control_header);
+      base::ToLowerASCII(response.httpHeaderField("cache-control").utf8());
   if (cache_control_header.find("no-cache") != std::string::npos)
     reasons |= kNoCache;
   if (cache_control_header.find("no-store") != std::string::npos)

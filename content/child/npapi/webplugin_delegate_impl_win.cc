@@ -248,8 +248,8 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(WebPlugin* plugin,
   memset(&window_, 0, sizeof(window_));
 
   const WebPluginInfo& plugin_info = instance_->plugin_lib()->plugin_info();
-  std::wstring filename =
-      base::StringToLowerASCII(plugin_info.path.BaseName().value());
+  base::string16 filename =
+      base::ToLowerASCII(plugin_info.path.BaseName().value());
 
   if (instance_->mime_type() == kFlashPluginSwfMimeType ||
       filename == kFlashPlugin) {

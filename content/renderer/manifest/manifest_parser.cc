@@ -47,7 +47,7 @@ std::vector<gfx::Size> ParseIconSizesHTML(const base::string16& sizes_str16) {
 
   std::vector<gfx::Size> sizes;
   std::string sizes_str =
-      base::StringToLowerASCII(base::UTF16ToUTF8(sizes_str16));
+      base::ToLowerASCII(base::UTF16ToUTF8(sizes_str16));
   std::vector<std::string> sizes_str_list = base::SplitString(
       sizes_str, base::kWhitespaceASCII, base::KEEP_WHITESPACE,
       base::SPLIT_WANT_NONEMPTY);

@@ -2758,8 +2758,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_computedStyleForProperties(
   // We only cache a single style property for now: DISPLAY
 
   for (unsigned short i = 0; i < num_style_properties; ++i) {
-    base::string16 name = (LPCWSTR)style_properties[i];
-    base::StringToLowerASCII(&name);
+    base::string16 name = base::ToLowerASCII(
+        reinterpret_cast<const base::char16*>(style_properties[i]));
     if (name == L"display") {
       base::string16 display = GetString16Attribute(
           ui::AX_ATTR_DISPLAY);

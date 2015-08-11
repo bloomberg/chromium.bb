@@ -76,7 +76,7 @@ bool MessageBundle::Init(const CatalogVector& locale_catalogs,
     base::DictionaryValue* catalog = (*it).get();
     for (base::DictionaryValue::Iterator message_it(*catalog);
          !message_it.IsAtEnd(); message_it.Advance()) {
-      std::string key(base::StringToLowerASCII(message_it.key()));
+      std::string key(base::ToLowerASCII(message_it.key()));
       if (!IsValidName(message_it.key()))
         return BadKeyMessage(key, error);
       std::string value;
@@ -191,7 +191,7 @@ bool MessageBundle::GetPlaceholders(const base::DictionaryValue& name_tree,
                                   kContentKey, name_key.c_str());
       return false;
     }
-    (*placeholders)[base::StringToLowerASCII(content_key)] = content;
+    (*placeholders)[base::ToLowerASCII(content_key)] = content;
   }
 
   return true;
@@ -240,7 +240,7 @@ bool MessageBundle::ReplaceVariables(const SubstitutionMap& variables,
     if (beg_index >= message->size())
       return true;
     std::string::size_type end_index =
-      message->find(var_end_delimiter, beg_index);
+        message->find(var_end_delimiter, beg_index);
     if (end_index == message->npos)
       return true;
 
@@ -249,8 +249,7 @@ bool MessageBundle::ReplaceVariables(const SubstitutionMap& variables,
       message->substr(beg_index, end_index - beg_index);
     if (!IsValidName(var_name))
       continue;
-    SubstitutionMap::const_iterator it =
-      variables.find(base::StringToLowerASCII(var_name));
+    auto it = variables.find(base::ToLowerASCII(var_name));
     if (it == variables.end()) {
       *error = base::StringPrintf("Variable %s%s%s used but not defined.",
                                   var_begin_delimiter.c_str(),
@@ -298,8 +297,7 @@ std::string MessageBundle::GetL10nMessage(const std::string& name) const {
 // static
 std::string MessageBundle::GetL10nMessage(const std::string& name,
                                           const SubstitutionMap& dictionary) {
-  SubstitutionMap::const_iterator it =
-      dictionary.find(base::StringToLowerASCII(name));
+  auto it = dictionary.find(base::ToLowerASCII(name));
   if (it != dictionary.end()) {
     return it->second;
   }

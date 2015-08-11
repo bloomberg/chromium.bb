@@ -114,7 +114,7 @@ class DeviceMonitorMessageWindow {
 
       std::string device_path(base::SysWideToUTF8(db->dbcc_name));
       DCHECK(base::IsStringASCII(device_path));
-      device_path = base::StringToLowerASCII(device_path);
+      device_path = base::ToLowerASCII(device_path);
 
       if (wparam == DBT_DEVICEARRIVAL) {
         if (device_monitor) {

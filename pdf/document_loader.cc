@@ -53,7 +53,7 @@ std::string GetMultiPartBoundary(const std::string& headers) {
   net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n");
   while (it.GetNext()) {
     if (base::LowerCaseEqualsASCII(it.name(), "content-type")) {
-      std::string type = base::StringToLowerASCII(it.values());
+      std::string type = base::ToLowerASCII(it.values());
       if (base::StartsWith(type, "multipart/", base::CompareCase::SENSITIVE)) {
         const char* boundary = strstr(type.c_str(), "boundary=");
         if (!boundary) {

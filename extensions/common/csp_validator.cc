@@ -292,9 +292,7 @@ std::string SanitizeContentSecurityPolicy(
     if (!tokenizer.GetNext())
       continue;
 
-    std::string directive_name = tokenizer.token();
-    base::StringToLowerASCII(&directive_name);
-
+    std::string directive_name = base::ToLowerASCII(tokenizer.token_piece());
     if (UpdateStatus(directive_name, &tokenizer, &default_src_status, options,
                      &sane_csp_parts, &default_src_csp_warnings))
       continue;
@@ -348,17 +346,14 @@ bool ContentSecurityPolicyIsSandboxed(
     if (!tokenizer.GetNext())
       continue;
 
-    std::string directive_name = tokenizer.token();
-    base::StringToLowerASCII(&directive_name);
-
+    std::string directive_name = base::ToLowerASCII(tokenizer.token_piece());
     if (directive_name != kSandboxDirectiveName)
       continue;
 
     seen_sandbox = true;
 
     while (tokenizer.GetNext()) {
-      std::string token = tokenizer.token();
-      base::StringToLowerASCII(&token);
+      std::string token = base::ToLowerASCII(tokenizer.token_piece());
 
       // The same origin token negates the sandboxing.
       if (token == kAllowSameOriginToken)

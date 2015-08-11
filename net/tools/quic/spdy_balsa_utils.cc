@@ -50,8 +50,7 @@ void PopulateSpdyHeaderBlock(const BalsaHeaders& headers,
 
     // This unfortunately involves loads of copying, but its the simplest way
     // to sort the headers and leverage the framer.
-    string name = hi->first.as_string();
-    base::StringToLowerASCII(&name);
+    string name = base::ToLowerASCII(hi->first.as_string());
     SpdyHeaderBlock::iterator it = block->find(name);
     if (it != block->end()) {
       it->second.reserve(it->second.size() + 1 + hi->second.size());

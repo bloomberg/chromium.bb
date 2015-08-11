@@ -224,12 +224,12 @@ bool MatchesMimeTypeParameters(const std::string& mime_type_pattern,
     // Put the parameters to maps with the keys converted to lower case.
     StringPairMap pattern_parameter_map;
     for (const auto& pair : pattern_parameters) {
-      pattern_parameter_map[base::StringToLowerASCII(pair.first)] = pair.second;
+      pattern_parameter_map[base::ToLowerASCII(pair.first)] = pair.second;
     }
 
     StringPairMap test_parameter_map;
     for (const auto& pair : test_parameters) {
-      test_parameter_map[base::StringToLowerASCII(pair.first)] = pair.second;
+      test_parameter_map[base::ToLowerASCII(pair.first)] = pair.second;
     }
 
     if (pattern_parameter_map.size() > test_parameter_map.size())
@@ -327,7 +327,7 @@ bool MimeUtil::ParseMimeTypeWithoutParameter(
 }
 
 bool MimeUtil::IsValidTopLevelMimeType(const std::string& type_string) const {
-  std::string lower_type = base::StringToLowerASCII(type_string);
+  std::string lower_type = base::ToLowerASCII(type_string);
   for (size_t i = 0; i < arraysize(legal_top_level_types); ++i) {
     if (lower_type.compare(legal_top_level_types[i]) == 0)
       return true;
@@ -521,7 +521,7 @@ void GetExtensionsForMimeType(
   if (unsafe_mime_type == "*/*" || unsafe_mime_type == "*")
     return;
 
-  const std::string mime_type = base::StringToLowerASCII(unsafe_mime_type);
+  const std::string mime_type = base::ToLowerASCII(unsafe_mime_type);
   base::hash_set<base::FilePath::StringType> unique_extensions;
 
   if (base::EndsWith(mime_type, "/*", base::CompareCase::INSENSITIVE_ASCII)) {

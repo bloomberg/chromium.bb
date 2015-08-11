@@ -553,11 +553,11 @@ WebPluginImpl::WebPluginImpl(
       first_geometry_update_(true),
       ignore_response_error_(false),
       file_path_(file_path),
-      mime_type_(base::UTF16ToASCII(base::StringPiece16(params.mimeType))),
+      mime_type_(base::ToLowerASCII(base::UTF16ToASCII(
+          base::StringPiece16(params.mimeType)))),
       loader_client_(this),
       weak_factory_(this) {
   DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
-  base::StringToLowerASCII(&mime_type_);
 
   for (size_t i = 0; i < params.attributeNames.size(); ++i) {
     arg_names_.push_back(params.attributeNames[i].utf8());

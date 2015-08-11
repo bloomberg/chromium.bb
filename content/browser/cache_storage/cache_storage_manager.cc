@@ -323,7 +323,7 @@ base::FilePath CacheStorageManager::ConstructLegacyOriginPath(
     const base::FilePath& root_path,
     const GURL& origin) {
   const std::string origin_hash = base::SHA1HashString(origin.spec());
-  const std::string origin_hash_hex = base::StringToLowerASCII(
+  const std::string origin_hash_hex = base::ToLowerASCII(
       base::HexEncode(origin_hash.c_str(), origin_hash.length()));
   return root_path.AppendASCII(origin_hash_hex);
 }
@@ -334,7 +334,7 @@ base::FilePath CacheStorageManager::ConstructOriginPath(
     const GURL& origin) {
   const std::string identifier = storage::GetIdentifierFromOrigin(origin);
   const std::string origin_hash = base::SHA1HashString(identifier);
-  const std::string origin_hash_hex = base::StringToLowerASCII(
+  const std::string origin_hash_hex = base::ToLowerASCII(
       base::HexEncode(origin_hash.c_str(), origin_hash.length()));
   return root_path.AppendASCII(origin_hash_hex);
 }

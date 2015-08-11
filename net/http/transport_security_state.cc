@@ -433,8 +433,7 @@ bool DecodeHSTSPreloadRaw(const std::string& search_hostname,
   // |hostname| has already undergone IDN conversion, so should be
   // entirely A-Labels. The preload data is entirely normalized to
   // lower case.
-  base::StringToLowerASCII(&hostname);
-
+  hostname = base::ToLowerASCII(hostname);
   if (hostname.empty()) {
     return true;
   }

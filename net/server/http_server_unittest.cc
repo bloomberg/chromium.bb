@@ -297,7 +297,7 @@ TEST_F(HttpServerTest, RequestWithHeaders) {
   ASSERT_EQ("", GetRequest(0).data);
 
   for (size_t i = 0; i < arraysize(kHeaders); ++i) {
-    std::string field = base::StringToLowerASCII(std::string(kHeaders[i][0]));
+    std::string field = base::ToLowerASCII(std::string(kHeaders[i][0]));
     std::string value = kHeaders[i][2];
     ASSERT_EQ(1u, GetRequest(0).headers.count(field)) << field;
     ASSERT_EQ(value, GetRequest(0).headers[field]) << kHeaders[i][0];
@@ -325,7 +325,7 @@ TEST_F(HttpServerTest, RequestWithDuplicateHeaders) {
   ASSERT_EQ("", GetRequest(0).data);
 
   for (size_t i = 0; i < arraysize(kHeaders); ++i) {
-    std::string field = base::StringToLowerASCII(std::string(kHeaders[i][0]));
+    std::string field = base::ToLowerASCII(std::string(kHeaders[i][0]));
     std::string value = (field == "duplicateheader") ? "2,4" : kHeaders[i][2];
     ASSERT_EQ(1u, GetRequest(0).headers.count(field)) << field;
     ASSERT_EQ(value, GetRequest(0).headers[field]) << kHeaders[i][0];

@@ -303,22 +303,6 @@ BASE_EXPORT bool IsStringASCII(const string16& str);
 BASE_EXPORT bool IsStringASCII(const std::wstring& str);
 #endif
 
-// Converts the elements of the given string.  This version uses a pointer to
-// clearly differentiate it from the non-pointer variant.
-// TODO(brettw) remove this. Callers should use base::ToLowerASCII above.
-template <class str> inline void StringToLowerASCII(str* s) {
-  for (typename str::iterator i = s->begin(); i != s->end(); ++i)
-    *i = ToLowerASCII(*i);
-}
-
-// TODO(brettw) remove this. Callers should use base::ToLowerASCII above.
-template <class str> inline str StringToLowerASCII(const str& s) {
-  // for std::string and std::wstring
-  str output(s);
-  StringToLowerASCII(&output);
-  return output;
-}
-
 // Compare the lower-case form of the given string against the given
 // previously-lower-cased ASCII string (typically a constant).
 BASE_EXPORT bool LowerCaseEqualsASCII(StringPiece str,
