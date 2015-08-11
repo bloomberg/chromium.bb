@@ -34,11 +34,6 @@ crbug.com/474440 [ Mac Debug ] plugins/destroy-reentry.html [ Timeout ]
 # Times out on the windows trybot.
 crbug.com/481269 [ Win ] fast/dom/gc-treescope.html [ Pass Timeout ]
 
-# These tests were marked as flaky and started failing reliably at some point.
-Bug(ojan) [ SnowLeopard ] fast/text/justify-padding-distribution.html [ NeedsRebaseline ]
-Bug(ojan) [ SnowLeopard ] fast/text/shadow-translucent-fill.html [ NeedsRebaseline ]
-Bug(ojan) [ SnowLeopard ] fast/text/text-shadow-no-default-color.html [ NeedsRebaseline ]
-
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure ]
 crbug.com/518965 [ XP ] http/tests/cachestorage/window/cache-put.html [ Pass Timeout ]
 crbug.com/518965 [ XP ] http/tests/cachestorage/window/cache-storage-match.html [ Failure Pass Timeout ]
