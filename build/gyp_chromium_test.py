@@ -14,9 +14,7 @@ sys.path.append(os.path.join(SRC_DIR, 'third_party', 'pymock'))
 
 import mock
 
-# TODO(sbc): Make gyp_chromium more testable by putting the code in
-# a .py file.
-gyp_chromium = __import__('gyp_chromium')
+import gyp_chromium
 
 
 class TestGetOutputDirectory(unittest.TestCase):
