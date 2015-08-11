@@ -28,9 +28,17 @@ class LoasError(Exception):
 class Loas(object):
   """Class for holding all the various LOAS cruft."""
 
-  def __init__(self, user, email_notify):
+  def __init__(self, user, email_notify, email_server=None):
+    """Initialize.
+
+    Args:
+      user: The LOAS account to check.
+      email_notify: The people to notify when the cert is going to expire.
+      email_server: The e-mail server to use when notifying.
+    """
     self.user = user
     self.email_notify = email_notify
+    self.email_server = email_server
     self.enroll_msg = 'become -t -c "prodaccess --sslenroll" %s@%s' % (
         self.user, socket.getfqdn())
     self.last_notification = (
@@ -79,6 +87,7 @@ class Loas(object):
       alerts.SendEmail(
           'Loas certs expiring soon!',
           self.email_notify,
+          server=self.email_server,
           message='Please run:\n %s\n\n%s\n%s' % (
               self.enroll_msg, result.output, result.error))
       self.last_notification = datetime.date.today()
