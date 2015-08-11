@@ -8,9 +8,7 @@
     android:layout_height="wrap_content"
     android:background="#282C32"
     android:minHeight="@dimen/snackbar_min_height"
-    android:orientation="horizontal"
-    android:paddingTop="14dp"
-    android:paddingBottom="14dp" >
+    android:orientation="horizontal" >
 
     <org.chromium.chrome.browser.snackbar.TemplatePreservingTextView
         android:id="@+id/snackbar_message"
@@ -18,19 +16,21 @@
         android:layout_height="wrap_content"
         android:layout_gravity="start|center_vertical"
         android:layout_marginStart="24dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginBottom="14dp"
         android:layout_weight="1"
         android:textAlignment="viewStart"
         android:textColor="@android:color/white"
         android:textSize="14sp" />
 
-    <TextView
+    <Button
         android:id="@+id/snackbar_button"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:fontFamily="sans-serif-medium"
-        android:gravity="center_vertical"
+        android:layout_height="@dimen/snackbar_min_height"
+        android:background="#282C32"
         android:paddingEnd="24dp"
         android:paddingStart="24dp"
+        android:fontFamily="sans-serif-medium"
         android:textAllCaps="true"
         android:textColor="@color/snackbar_button_color"
         android:textSize="14sp" />
