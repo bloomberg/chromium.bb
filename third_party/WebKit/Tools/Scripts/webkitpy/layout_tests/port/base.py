@@ -1292,8 +1292,6 @@ class Port(object):
         paths.append(self._filesystem.join(self.layout_tests_dir(), 'NeverFixTests'))
         paths.append(self._filesystem.join(self.layout_tests_dir(), 'StaleTestExpectations'))
         paths.append(self._filesystem.join(self.layout_tests_dir(), 'SlowTests'))
-        paths.append(self._filesystem.join(self.layout_tests_dir(), 'FlakyTests'))
-
         return paths
 
     def expectations_dict(self):

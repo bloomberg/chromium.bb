@@ -46,11 +46,6 @@ class FakeBotTestExpectationsFactory(object):
         return FakeBotTestExpectations()
 
 
-class ChangedExpectationsMockSCM(MockSCM):
-    def changed_files(self):
-        return ['LayoutTests/FlakyTests']
-
-
 class FlakyTestsTest(CommandsTest):
     def test_merge_lines(self):
         command = flakytests.FlakyTests()
@@ -76,29 +71,11 @@ class FlakyTestsTest(CommandsTest):
         tool = MockTool()
         command.expectations_factory = FakeBotTestExpectationsFactory
         options = MockOptions(upload=True)
-        expected_stdout = """Updated /mock-checkout/third_party/WebKit/LayoutTests/FlakyTests
-LayoutTests/FlakyTests is not changed, not uploading.
-"""
+        expected_stdout = '''
+
+Manually add bug numbers for these and then put the lines in LayoutTests/TestExpectations.
+TODO(ojan): Write a script to file/assign the bugs then create a bot to do this automatically.
+
+'''
+
         self.assert_execute_outputs(command, options=options, tool=tool, expected_stdout=expected_stdout)
-
-        port = tool.port_factory.get()
-        self.assertEqual(tool.filesystem.read_text_file(tool.filesystem.join(port.layout_tests_dir(), 'FlakyTests')), command.FLAKY_TEST_CONTENTS % '')
-
-    def test_integration_uploads(self):
-        command = flakytests.FlakyTests()
-        tool = MockTool()
-        tool.scm = ChangedExpectationsMockSCM
-        command.expectations_factory = FakeBotTestExpectationsFactory
-        reviewer = 'foo@chromium.org'
-        options = MockOptions(upload=True, reviewers=reviewer)
-        expected_stdout = """Updated /mock-checkout/third_party/WebKit/LayoutTests/FlakyTests
-"""
-        self.assert_execute_outputs(command, options=options, tool=tool, expected_stdout=expected_stdout)
-        self.assertEqual(tool.executive.calls,
-            [
-                ['git', 'commit', '-m', command.COMMIT_MESSAGE % reviewer, '/mock-checkout/third_party/WebKit/LayoutTests/FlakyTests'],
-                ['git', 'cl', 'upload', '--send-mail', '-f', '--cc', 'ojan@chromium.org,dpranke@chromium.org,eseidel@chromium.org'],
-            ])
-
-        port = tool.port_factory.get()
-        self.assertEqual(tool.filesystem.read_text_file(tool.filesystem.join(port.layout_tests_dir(), 'FlakyTests')), command.FLAKY_TEST_CONTENTS % '')
