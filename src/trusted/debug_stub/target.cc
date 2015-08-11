@@ -302,6 +302,8 @@ bool Target::IsInitialBreakpointActive() {
 }
 
 bool Target::IsOnValidInstBoundary(uint32_t addr) {
+  // No implementation exists for mips, and this would break breakpoints.
+#if NACL_ARCH(NACL_BUILD_ARCH) != NACL_mips
   uint8_t code_buf[NACL_INSTR_BLOCK_SIZE];
   // Calculate nearest bundle address.
   uint32_t bundle_addr = addr & ~(NACL_INSTR_BLOCK_SIZE - 1);
@@ -328,6 +330,10 @@ bool Target::IsOnValidInstBoundary(uint32_t addr) {
                   code_buf,
                   NACL_INSTR_BLOCK_SIZE,
                   nap_->cpu_features) == NaClValidationSucceeded;
+#else
+  UNREFERENCED_PARAMETER(addr);
+  return true;
+#endif
 }
 
 void Target::WaitForDebugEvent() {
