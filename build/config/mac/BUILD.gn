@@ -9,7 +9,7 @@ config("sdk") {
   common_flags = [
     "-isysroot",
     sysroot,
-    "-mmacosx-version-min=$mac_sdk_min",
+    "-mmacosx-version-min=$mac_deployment_target",
   ]
 
   cflags = common_flags
