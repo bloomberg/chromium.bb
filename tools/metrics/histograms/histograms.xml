@@ -36912,6 +36912,44 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time to store one of the PrefixSet files.</summary>
 </histogram>
 
+<histogram name="SB2.RemoteCall.CanCheckUrl" enum="BooleanCanCheckUrl">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Count of how many URLs were actually checked vs skipped via
+    RemoteSafeBrowsingDatabaseManager because the scheme is not supported by
+    Safe Browsing. Incremented each time a resource load is initiated.
+  </summary>
+</histogram>
+
+<histogram name="SB2.RemoteCall.ChecksPending" units="calls">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Number of outstanding calls for URLs getting classified through
+    RemoteSafeBrowsingDatabaseManager.  The size of the queue is logged before
+    initiating each request.
+  </summary>
+</histogram>
+
+<histogram name="SB2.RemoteCall.Elapsed" units="ms">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Latency of URL-classification API calls from Chrome via
+    RemoteSafeBrowsingDatabaseManager, logged per-request. This includes the
+    time to go through JNI, check the URL, and return the result and includes
+    several thread hops betwetween IO and UI threads. The resource-load will not
+    necessarily be delayed this much (see SB2.Delay for that).
+  </summary>
+</histogram>
+
+<histogram name="SB2.RemoteCall.Result" enum="SB2RemoteCallsResult">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Result of URL-classification API calls from Chrome via
+    RemoteSafeBrowsingApiHandler.  Logged from Java when the remote IPC returns
+    and is judged safe/not-safe, or hits a deadline.
+  </summary>
+</histogram>
+
 <histogram name="SB2.ReportingIsEnabled" enum="BooleanEnabled">
   <obsolete>
     Deprecated 06/2014.  Replaced by SB2.ExtendedReportingIsEnabled.
@@ -52104,6 +52142,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanBlocked" type="int">
   <int value="0" label="Not Blocked"/>
   <int value="1" label="Blocked"/>
+</enum>
+
+<enum name="BooleanCanCheckUrl" type="int">
+  <int value="0" label="Skipped"/>
+  <int value="1" label="Can check"/>
 </enum>
 
 <enum name="BooleanCloseTimeout" type="int">
@@ -67929,6 +67972,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="19" label="BLOOM_MISS_PREFIX_HIT"/>
 </enum>
 
+<enum name="SB2RemoteCallsResult" type="int">
+  <int value="0" label="INTERNAL_ERROR"/>
+  <int value="1" label="TIMEOUT"/>
+  <int value="2" label="SAFE"/>
+  <int value="3" label="UNSAFE"/>
+</enum>
+
 <enum name="SB2SideEffectFreeWhitelistStatus" type="int">
   <int value="0" label="Enabled"/>
   <int value="1" label="Disabled"/>
@@ -76101,15 +76151,53 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Event.Latency.ScrollUpdate.TouchToHandled"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="SecurityInterstitialType" separator="."
+<histogram_suffixes name="SecurityInterstitialSBType" separator="."
     ordering="prefix">
-  <suffix name="bad_clock"/>
   <suffix name="harmful"/>
   <suffix name="harmful_subresource"/>
   <suffix name="malware"/>
   <suffix name="malware_subresource"/>
   <suffix name="phishing"/>
   <suffix name="phishing_subresource"/>
+  <affected-histogram name="interstitial.decision"/>
+  <affected-histogram name="interstitial.decision.repeat_visit"/>
+  <affected-histogram name="interstitial.interaction"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="SecurityInterstitialSBWithSourceType" separator=".">
+  <suffix name="from_data_saver"
+      label="Interstitial for a resource classified as unsafe by the Data
+             Saver service."/>
+  <suffix name="from_device"
+      label="Interstitial for a resource classified as unsafe by the Safe
+             Browsing database via either
+             {Local,Remote}SafeBrowsingDatabaseManager."/>
+  <affected-histogram name="interstitial.harmful.decision"/>
+  <affected-histogram name="interstitial.harmful.decision.repeat_visit"/>
+  <affected-histogram name="interstitial.harmful.interaction"/>
+  <affected-histogram name="interstitial.harmful_subresource.decision"/>
+  <affected-histogram
+      name="interstitial.harmful_subresource.decision.repeat_visit"/>
+  <affected-histogram name="interstitial.harmful_subresource.interaction"/>
+  <affected-histogram name="interstitial.malware.decision"/>
+  <affected-histogram name="interstitial.malware.decision.repeat_visit"/>
+  <affected-histogram name="interstitial.malware.interaction"/>
+  <affected-histogram name="interstitial.malware_subresource.decision"/>
+  <affected-histogram
+      name="interstitial.malware_subresource.decision.repeat_visit"/>
+  <affected-histogram name="interstitial.malware_subresource.interaction"/>
+  <affected-histogram name="interstitial.phishing.decision"/>
+  <affected-histogram name="interstitial.phishing.decision.repeat_visit"/>
+  <affected-histogram name="interstitial.phishing.interaction"/>
+  <affected-histogram name="interstitial.phishing_subresource.decision"/>
+  <affected-histogram
+      name="interstitial.phishing_subresource.decision.repeat_visit"/>
+  <affected-histogram name="interstitial.phishing_subresource.interaction"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="SecurityInterstitialSSLType" separator="."
+    ordering="prefix">
+  <suffix name="bad_clock"/>
   <suffix name="ssl_nonoverridable"/>
   <suffix name="ssl_overridable"/>
   <affected-histogram name="interstitial.decision"/>

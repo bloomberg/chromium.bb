@@ -102,6 +102,7 @@ void DataReductionProxyResourceThrottle::WillRedirectRequest(
       &DataReductionProxyResourceThrottle::OnBlockingPageComplete, AsWeakPtr());
   unsafe_resource.render_process_host_id = info->GetChildID();
   unsafe_resource.render_view_id = info->GetRouteID();
+  unsafe_resource.threat_source = SafeBrowsingUIManager::FROM_DATA_SAVER;
 
   *defer = true;
 

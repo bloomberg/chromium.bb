@@ -38,6 +38,13 @@ class SafeBrowsingUIManager
   // loading an URL.
   typedef base::Callback<void(bool /*proceed*/)> UrlCheckCallback;
 
+  // What service classified this threat as unsafe.
+  enum ThreatSource {
+    FROM_UNKNOWN,
+    FROM_DATA_SAVER,  // From the Data Reduction service.
+    FROM_DEVICE,      // From {Local,Remote}SafeBrowingDatabaseManager.
+  };
+
   // Structure used to pass parameters between the IO and UI thread when
   // interacting with the blocking page.
   struct UnsafeResource {
@@ -54,6 +61,7 @@ class SafeBrowsingUIManager
     UrlCheckCallback callback;  // This is called back on the IO thread.
     int render_process_host_id;
     int render_view_id;
+    ThreatSource threat_source;
   };
 
   // Observer class can be used to get notified when a SafeBrowsing hit

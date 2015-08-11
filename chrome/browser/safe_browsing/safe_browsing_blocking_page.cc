@@ -169,6 +169,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   // This must be done after calculating |interstitial_reason_| above.
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
   reporting_info.metric_prefix = GetMetricPrefix();
+  reporting_info.extra_suffix = GetExtraMetricsSuffix();
   reporting_info.rappor_prefix = GetRapporPrefix();
   reporting_info.rappor_report_type = rappor::SAFEBROWSING_RAPPOR_TYPE;
   set_metrics_helper(new ChromeMetricsHelper(
@@ -525,6 +526,20 @@ std::string SafeBrowsingBlockingPage::GetMetricPrefix() const {
       return primary_subresource ? "harmful_subresource" : "harmful";
     case SB_REASON_PHISHING:
       return primary_subresource ? "phishing_subresource" : "phishing";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
+// We populate a parallel set of metrics to differentiate some threat sources.
+std::string SafeBrowsingBlockingPage::GetExtraMetricsSuffix() const {
+  switch (unsafe_resources_[0].threat_source) {
+    case SafeBrowsingUIManager::FROM_DATA_SAVER:
+      return "from_data_saver";
+    case SafeBrowsingUIManager::FROM_DEVICE:
+      return "from_device";
+    case SafeBrowsingUIManager::FROM_UNKNOWN:
+      break;
   }
   NOTREACHED();
   return std::string();

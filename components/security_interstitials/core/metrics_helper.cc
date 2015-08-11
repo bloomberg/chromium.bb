@@ -10,16 +10,42 @@
 #include "components/rappor/rappor_utils.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
+namespace security_interstitials {
+
 namespace {
+
 // Used for setting bits in Rappor's "interstitial.*.flags"
 enum InterstitialFlagBits {
   DID_PROCEED = 0,
   IS_REPEAT_VISIT = 1,
   HIGHEST_USED_BIT = 1
 };
+
+// Directly adds to the UMA histograms, using the same properties as
+// UMA_HISTOGRAM_ENUMERATION, because the macro doesn't allow non-constant
+// histogram names.
+void RecordSingleDecisionToMetrics(MetricsHelper::Decision decision,
+                                   const std::string& histogram_name) {
+  base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
+      histogram_name, 1, MetricsHelper::MAX_DECISION,
+      MetricsHelper::MAX_DECISION + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->Add(decision);
+}
+
+void RecordSingleInteractionToMetrics(MetricsHelper::Interaction interaction,
+                                      const std::string& histogram_name) {
+  base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
+      histogram_name, 1, MetricsHelper::MAX_INTERACTION,
+      MetricsHelper::MAX_INTERACTION + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->Add(interaction);
+}
+
 }  // namespace
 
-namespace security_interstitials {
+MetricsHelper::ReportDetails::ReportDetails()
+    : rappor_report_type(rappor::NUM_RAPPOR_TYPES) {}
 
 MetricsHelper::MetricsHelper(const GURL& request_url,
                              const ReportDetails settings,
@@ -41,68 +67,70 @@ MetricsHelper::MetricsHelper(const GURL& request_url,
   }
 }
 
-// Directly adds to the UMA histograms, using the same properties as
-// UMA_HISTOGRAM_ENUMERATION, because the macro doesn't allow non-constant
-// histogram names. Reports to Rappor for certain decisions.
 void MetricsHelper::RecordUserDecision(Decision decision) {
-  // UMA
-  const std::string decision_histogram_name(
+  const std::string histogram_name(
       "interstitial." + settings_.metric_prefix + ".decision");
-  base::HistogramBase* decision_histogram = base::LinearHistogram::FactoryGet(
-      decision_histogram_name, 1, MAX_DECISION, MAX_DECISION + 1,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  decision_histogram->Add(decision);
 
-  // Rappor
-  if (rappor_service_ && (decision == PROCEED || decision == DONT_PROCEED)) {
-    scoped_ptr<rappor::Sample> sample =
-        rappor_service_->CreateSample(settings_.rappor_report_type);
-
-    // This will populate, for example, "intersitial.malware.domain" or
-    // "interstitial.ssl2.domain".  |domain| will be empty for hosts w/o TLDs.
-    const std::string domain =
-        rappor::GetDomainAndRegistrySampleFromGURL(request_url_);
-    sample->SetStringField("domain", domain);
-
-    // Only report history and decision if we have history data.
-    if (num_visits_ >= 0) {
-      int flags = 0;
-      if (decision == PROCEED)
-        flags |= 1 << InterstitialFlagBits::DID_PROCEED;
-      if (num_visits_ > 0)
-        flags |= 1 << InterstitialFlagBits::IS_REPEAT_VISIT;
-      // e.g. "interstitial.malware.flags"
-      sample->SetFlagsField("flags", flags,
-                            InterstitialFlagBits::HIGHEST_USED_BIT + 1);
-    }
-    rappor_service_->RecordSampleObj("interstitial." + settings_.rappor_prefix,
-                                     sample.Pass());
+  RecordUserDecisionToMetrics(decision, histogram_name);
+  // Record additional information about sites that users have visited before.
+  // Report |decision| and SHOW together, filtered by the same history state
+  // so they they are paired regardless of when if num_visits_ is populated.
+  if (num_visits_ > 0 && (decision == PROCEED || decision == DONT_PROCEED)) {
+    RecordUserDecisionToMetrics(SHOW, histogram_name + ".repeat_visit");
+    RecordUserDecisionToMetrics(decision, histogram_name + ".repeat_visit");
   }
-
-  // Record additional information about sites that users have
-  // visited before.
-  if (num_visits_ < 1)
-    return;
-  std::string history_histogram_name("interstitial." + settings_.metric_prefix +
-                                     ".decision.repeat_visit");
-  base::HistogramBase* history_histogram = base::LinearHistogram::FactoryGet(
-      history_histogram_name, 1, MAX_DECISION, MAX_DECISION + 1,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  history_histogram->Add(SHOW);
-  history_histogram->Add(decision);
-
+  RecordUserDecisionToRappor(decision);
   RecordExtraUserDecisionMetrics(decision);
 }
 
-void MetricsHelper::RecordUserInteraction(Interaction interaction) {
-  const std::string interaction_histogram_name(
-      "interstitial." + settings_.metric_prefix + ".interaction");
-  base::HistogramBase* interaction_histogram =
-      base::LinearHistogram::FactoryGet(
-          interaction_histogram_name, 1, MAX_INTERACTION, MAX_INTERACTION + 1,
-          base::HistogramBase::kUmaTargetedHistogramFlag);
-  interaction_histogram->Add(interaction);
+void MetricsHelper::RecordUserDecisionToMetrics(
+    Decision decision,
+    const std::string& histogram_name) {
+  // Record the decision, and additionally |with extra_suffix|.
+  RecordSingleDecisionToMetrics(decision, histogram_name);
+  if (!settings_.extra_suffix.empty()) {
+    RecordSingleDecisionToMetrics(
+        decision, histogram_name + "." + settings_.extra_suffix);
+  }
+}
 
+void MetricsHelper::RecordUserDecisionToRappor(Decision decision) {
+  if (!rappor_service_ || (decision != PROCEED && decision != DONT_PROCEED))
+    return;
+
+  scoped_ptr<rappor::Sample> sample =
+      rappor_service_->CreateSample(settings_.rappor_report_type);
+
+  // This will populate, for example, "intersitial.malware.domain" or
+  // "interstitial.ssl2.domain".  |domain| will be empty for hosts w/o TLDs.
+  const std::string domain =
+      rappor::GetDomainAndRegistrySampleFromGURL(request_url_);
+  sample->SetStringField("domain", domain);
+
+  // Only report history and decision if we have history data.
+  if (num_visits_ >= 0) {
+    int flags = 0;
+    if (decision == PROCEED)
+      flags |= 1 << InterstitialFlagBits::DID_PROCEED;
+    if (num_visits_ > 0)
+      flags |= 1 << InterstitialFlagBits::IS_REPEAT_VISIT;
+    // e.g. "interstitial.malware.flags"
+    sample->SetFlagsField("flags", flags,
+                          InterstitialFlagBits::HIGHEST_USED_BIT + 1);
+  }
+  rappor_service_->RecordSampleObj("interstitial." + settings_.rappor_prefix,
+                                   sample.Pass());
+}
+
+void MetricsHelper::RecordUserInteraction(Interaction interaction) {
+  const std::string histogram_name(
+      "interstitial." + settings_.metric_prefix + ".interaction");
+
+  RecordSingleInteractionToMetrics(interaction, histogram_name);
+  if (!settings_.extra_suffix.empty()) {
+    RecordSingleInteractionToMetrics(
+        interaction, histogram_name + "." + settings_.extra_suffix);
+  }
   RecordExtraUserInteractionMetrics(interaction);
 }
 

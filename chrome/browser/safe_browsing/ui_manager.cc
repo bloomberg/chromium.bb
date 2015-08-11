@@ -48,7 +48,8 @@ SafeBrowsingUIManager::UnsafeResource::UnsafeResource()
     : is_subresource(false),
       threat_type(SB_THREAT_TYPE_SAFE),
       render_process_host_id(-1),
-      render_view_id(-1) {
+      render_view_id(-1),
+      threat_source(FROM_UNKNOWN) {
 }
 
 SafeBrowsingUIManager::UnsafeResource::~UnsafeResource() { }

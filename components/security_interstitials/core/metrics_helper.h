@@ -18,15 +18,17 @@ class HistoryService;
 
 namespace security_interstitials {
 
-// MetricsHelper records user warning interactions in a
-// common way via METRICS histograms and, optionally, RAPPOR metrics. The
-// class will generate the following histograms:
-//   METRICS: interstitial.uma_prefix.decision
-//   METRICS: interstitial.uma_prefix.decision.repeat_visit
-//   METRICS: interstitial.uma_prefix.interaction
-//   METRICS: interstitial.uma_prefix.interaction.repeat_visit
-//   RAPPOR:  interstitial.rappor_prefix
-// wherein |uma_prefix| and |rappor_prefix| are specified via ReportDetails.
+// MetricsHelper records user warning interactions in a common way via METRICS
+// histograms and, optionally, RAPPOR metrics. The  class will generate the
+// following histograms:
+//   METRICS: interstitial.<metric_prefix>.decision[.repeat_visit]
+//   METRICS: interstitial.<metric_prefix>.interaction[.repeat_visi]
+//   RAPPOR:  interstitial.<rappor_prefix>
+// wherein |metric_prefix| and |rappor_prefix| are specified via ReportDetails.
+// repeat_visit is also generated if the user has seen the page before.
+//
+// If |extra_suffix| is not empty, MetricsHelper will append ".<extra_suffix>"
+// to generate an additional 2 or 4 more metrics.
 class MetricsHelper {
  public:
   // These enums are used for histograms.  Don't reorder, delete, or insert
@@ -53,15 +55,19 @@ class MetricsHelper {
     MAX_INTERACTION
   };
 
-  // uma_prefix: Histogram prefix for UMA.
-  //             examples: "phishing", "ssl_overridable"
+  // metric_prefix: Histogram prefix for UMA.
+  //                examples: "phishing", "ssl_overridable"
+  // extra_suffix: If not-empty, will generate second set of metrics by
+  //               placing at the end of the metric name.  Examples:
+  //               "from_datasaver", "from_device"
   // rappor_prefix: Metric prefix for Rappor.
   //                examples: "phishing", "ssl2"
   // rappor_report_type: Used to differentiate UMA and Safe Browsing statistics.
   // The rappor preferences can be left blank if rappor_service is not set.
   struct ReportDetails {
-    ReportDetails() : rappor_report_type(rappor::NUM_RAPPOR_TYPES) {}
+    ReportDetails();
     std::string metric_prefix;
+    std::string extra_suffix;
     std::string rappor_prefix;
     rappor::RapporType rappor_report_type;
   };
@@ -81,8 +87,8 @@ class MetricsHelper {
                 rappor::RapporService* rappor_service);
   virtual ~MetricsHelper() {}
 
-  // Records a user decision or interaction to the appropriate UMA histogram
-  // and potentially in a RAPPOR metric.
+  // Records a user decision or interaction to the appropriate UMA metrics
+  // histogram and potentially in a RAPPOR metric.
   void RecordUserDecision(Decision decision);
   void RecordUserInteraction(Interaction interaction);
 
@@ -93,10 +99,13 @@ class MetricsHelper {
   virtual void RecordExtraUserInteractionMetrics(Interaction interaction) = 0;
 
  private:
-  // Used to query the HistoryService to see if the URL is in history.
-  // It will only be invoked if the constructor received |history_service|.
+  // Used to query the HistoryService to see if the URL is in history.  It will
+  // only be invoked if the constructor received |history_service|.
   void OnGotHistoryCount(bool success, int num_visits, base::Time first_visit);
 
+  void RecordUserDecisionToMetrics(Decision decision,
+                                   const std::string& histogram_name);
+  void RecordUserDecisionToRappor(Decision decision);
   const GURL request_url_;
   const ReportDetails settings_;
   rappor::RapporService* rappor_service_;

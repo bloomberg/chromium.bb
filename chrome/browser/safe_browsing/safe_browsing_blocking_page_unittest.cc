@@ -230,6 +230,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
         web_contents()->GetRenderProcessHost()->GetID();
     resource->render_view_id =
         web_contents()->GetRenderViewHost()->GetRoutingID();
+    resource->threat_source = SafeBrowsingUIManager::FROM_DEVICE;
   }
 
   UserResponse user_response_;

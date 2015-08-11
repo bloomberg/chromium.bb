@@ -863,6 +863,8 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   const std::string interaction_histogram =
       "interstitial." + prefix + ".interaction";
 
+  // TODO(nparker): Check for *.from_device as well.
+
   // Histograms should start off empty.
   histograms.ExpectTotalCount(decision_histogram, 0);
   histograms.ExpectTotalCount(interaction_histogram, 0);
@@ -957,6 +959,7 @@ class SafeBrowsingBlockingPageIDNTest
     resource.threat_type = GetParam();
     resource.render_process_host_id = contents->GetRenderProcessHost()->GetID();
     resource.render_view_id = contents->GetRenderViewHost()->GetRoutingID();
+    resource.threat_source = SafeBrowsingUIManager::FROM_DEVICE;
 
     return SafeBrowsingBlockingPage::CreateBlockingPage(
         sb_service->ui_manager().get(), contents, resource);

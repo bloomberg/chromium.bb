@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_api_handler.h"
 #include "content/public/browser/browser_thread.h"
@@ -67,13 +68,14 @@ void RemoteSafeBrowsingDatabaseManager::ClientRequest::OnRequestDone(
            << " ms for client " << client_ << " and URL " << url_;
   client_->OnCheckBrowseUrlResult(url_, matched_threat_type, metadata);
   db_manager_->CancelCheck(client_);
+  UMA_HISTOGRAM_TIMES("SB2.RemoteCall.Elapsed", timer_.Elapsed());
 }
 
 //
 // RemoteSafeBrowsingDatabaseManager methods
 //
 
-// TODO(nparker): Add tests for this class once implemented.
+// TODO(nparker): Add tests for this class
 RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager()
     : enabled_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -152,7 +154,9 @@ bool RemoteSafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
   if (!enabled_)
     return true;
 
-  if (!CanCheckUrl(url))
+  bool can_check_url = CanCheckUrl(url);
+  UMA_HISTOGRAM_BOOLEAN("SB2.RemoteCall.CanCheckUrl", can_check_url);
+  if (!can_check_url)
     return true;  // Safe, continue right away.
 
   scoped_ptr<ClientRequest> req(new ClientRequest(client, this, url));
@@ -160,13 +164,15 @@ bool RemoteSafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
 
   DVLOG(1) << "Checking for client " << client << " and URL " << url;
   SafeBrowsingApiHandler* api_handler = SafeBrowsingApiHandler::GetInstance();
-  // If your build hits this at run time, then you should have either no built
+  // If your build hits this at run time, then you should have either not built
   // with safe_browsing=3, or set a SafeBrowingApiHandler singleton at startup.
   DCHECK(api_handler) << "SafeBrowsingApiHandler was never constructed";
   api_handler->StartURLCheck(
       base::Bind(&ClientRequest::OnRequestDoneWeak, req->GetWeakPtr()), url,
       threat_types);
 
+  UMA_HISTOGRAM_COUNTS_10000("SB2.RemoteCall.ChecksPending",
+                             current_requests_.size());
   current_requests_.push_back(req.release());
 
   // Defer the resource load.
