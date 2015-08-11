@@ -4305,7 +4305,7 @@ TEST(HeapTest, VectorDestructorsWithVtable)
 
     InlinedVectorObjectWithVtable::s_destructorCalls = 0;
     {
-        new InlinedVectorObjectWithVtableWrapper();
+        Persistent<InlinedVectorObjectWithVtableWrapper> vectorWrapper = new InlinedVectorObjectWithVtableWrapper();
         Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
         EXPECT_EQ(3, InlinedVectorObjectWithVtable::s_destructorCalls);
     }
