@@ -185,22 +185,11 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            finish();
+            onBackPressed();
             return true;
         } else if (item == mSaveButton) {
             assert mIsAddMode;
-
-            if (!mFolderTitle.isEmpty()) {
-                mFolderTitle.requestFocus();
-                return true;
-            }
-
-            BookmarkId newFolder = mModel.addFolder(mParentId, 0, mFolderTitle.getTrimmedText());
-            Intent intent = new Intent();
-            intent.putExtra(INTENT_CREATED_BOOKMARK, newFolder.toString());
-            setResult(RESULT_OK, intent);
-            finish();
-
+            if (save()) finish();
             return true;
         } else if (item == mDeleteButton) {
             assert !mIsAddMode;
@@ -214,12 +203,12 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
     }
 
     @Override
-    protected void onStop() {
-        if (!mIsAddMode && mFolderTitle.isEmpty()) {
-            mModel.setBookmarkTitle(mFolderId, mFolderTitle.getTrimmedText());
+    public void onBackPressed() {
+        if (!mIsAddMode) {
+            if (save()) finish();
+        } else {
+            super.onBackPressed();
         }
-
-        super.onStop();
     }
 
     @Override
@@ -239,6 +228,25 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
         mModel.removeObserver(mBookmarkModelObserver);
         mModel.destroy();
         mModel = null;
+    }
+
+    private boolean save() {
+        if (!mFolderTitle.validate()) {
+            mFolderTitle.requestFocus();
+            return false;
+        }
+
+        String folderTitle = mFolderTitle.getTrimmedText();
+        if (mIsAddMode) {
+            BookmarkId newFolder = mModel.addFolder(mParentId, 0, folderTitle);
+            Intent intent = new Intent();
+            intent.putExtra(INTENT_CREATED_BOOKMARK, newFolder.toString());
+            setResult(RESULT_OK, intent);
+        } else {
+            mModel.setBookmarkTitle(mFolderId, folderTitle);
+        }
+
+        return true;
     }
 
     private void updateParent(BookmarkId newParent) {

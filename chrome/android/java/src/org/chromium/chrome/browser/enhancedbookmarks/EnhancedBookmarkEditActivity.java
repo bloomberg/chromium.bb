@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.enhancedbookmarks;
 
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -67,7 +66,6 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
 
         @Override
         public void bookmarkModelChanged() {
-            updateViewContent();
             if (!mEnhancedBookmarksModel.doesBookmarkExist(mBookmarkId)) {
                 Log.wtf(TAG, "The bookmark was deleted somehow during bookmarkModelChange!",
                         new Exception(TAG));
@@ -88,9 +86,8 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
 
         setContentView(R.layout.eb_edit);
         mTitleEditText = (EmptyAlertEditText) findViewById(R.id.title_text);
-        mFolderTextView = (TextView) findViewById(R.id.folder_text);
         mUrlEditText = (EmptyAlertEditText) findViewById(R.id.url_text);
-
+        mFolderTextView = (TextView) findViewById(R.id.folder_text);
         mFolderTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -98,7 +95,6 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
                         EnhancedBookmarkEditActivity.this, mBookmarkId);
             }
         });
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -108,17 +104,10 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
 
     private void updateViewContent() {
         BookmarkItem bookmarkItem = mEnhancedBookmarksModel.getBookmarkById(mBookmarkId);
-
-        if (!TextUtils.equals(mTitleEditText.getTrimmedText(), bookmarkItem.getTitle())) {
-            mTitleEditText.setText(bookmarkItem.getTitle());
-        }
-        String folderTitle = mEnhancedBookmarksModel.getBookmarkTitle(bookmarkItem.getParentId());
-        if (!TextUtils.equals(mFolderTextView.getText(), folderTitle)) {
-            mFolderTextView.setText(folderTitle);
-        }
-        if (!TextUtils.equals(mUrlEditText.getTrimmedText(), bookmarkItem.getUrl())) {
-            mUrlEditText.setText(bookmarkItem.getUrl());
-        }
+        mTitleEditText.setText(bookmarkItem.getTitle());
+        mUrlEditText.setText(bookmarkItem.getUrl());
+        mFolderTextView.setText(
+                mEnhancedBookmarksModel.getBookmarkTitle(bookmarkItem.getParentId()));
     }
 
     @Override
@@ -141,25 +130,27 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
             finish();
             return true;
         } else if (item.getItemId() == android.R.id.home) {
-            finish();
+            onBackPressed();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
-    protected void onStop() {
-        if (mTitleEditText.isEmpty()) {
-            mEnhancedBookmarksModel.setBookmarkTitle(mBookmarkId, mTitleEditText.getTrimmedText());
-        }
+    public void onBackPressed() {
+        String newTitle = mTitleEditText.getTrimmedText();
+        String newUrl = mUrlEditText.getTrimmedText();
+        newUrl = UrlUtilities.fixupUrl(newUrl);
+        if (newUrl == null) newUrl = "";
+        mUrlEditText.setText(newUrl);
 
-        if (mUrlEditText.isEmpty()) {
-            String fixedUrl = UrlUtilities.fixupUrl(mUrlEditText.getTrimmedText());
-            if (fixedUrl != null) mEnhancedBookmarksModel.setBookmarkUrl(mBookmarkId, fixedUrl);
-        }
+        if (!mTitleEditText.validate() || !mUrlEditText.validate()) return;
 
-        super.onStop();
+        mEnhancedBookmarksModel.setBookmarkTitle(mBookmarkId, newTitle);
+        mEnhancedBookmarksModel.setBookmarkUrl(mBookmarkId, newUrl);
+        super.onBackPressed();
     }
+
     @Override
     protected void onDestroy() {
         mEnhancedBookmarksModel.removeObserver(mBookmarkModelObserver);

@@ -43,11 +43,7 @@ public class EmptyAlertEditText extends AppCompatEditText {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (isEmpty()) {
-                    if (getError() != null) setError(null);
-                } else {
-                    setError(mAlertMessage);
-                }
+                if (s.toString().trim().length() != 0 && getError() != null) setError(null);
             }
         });
     }
@@ -67,9 +63,14 @@ public class EmptyAlertEditText extends AppCompatEditText {
     }
 
     /**
+     * Checks whether the content is empty. If empty, an alert message will be shown.
      * @return Whether the content is empty.
      */
-    public boolean isEmpty() {
-        return getTrimmedText().length() > 0;
+    public boolean validate() {
+        if (getTrimmedText().length() == 0) {
+            setError(mAlertMessage);
+            return false;
+        }
+        return true;
     }
 }
