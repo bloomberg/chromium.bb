@@ -131,7 +131,7 @@ cr.define('extensions', function() {
       });
 
       this.addFocusableElement(this);
-      this.addFocusableElement(this.querySelector('.error-delete-button'));
+      this.addFocusableElement(deleteButton);
     },
 
     /**
