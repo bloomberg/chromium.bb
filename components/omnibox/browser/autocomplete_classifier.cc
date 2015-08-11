@@ -24,6 +24,9 @@ const int AutocompleteClassifier::kDefaultOmniboxProviders =
     AutocompleteProvider::TYPE_BUILTIN |
     AutocompleteProvider::TYPE_SHORTCUTS |
     AutocompleteProvider::TYPE_ZERO_SUGGEST |
+#else
+    // "URL from clipboard" can only be used on iOS.
+    AutocompleteProvider::TYPE_CLIPBOARD_URL |
 #endif
     AutocompleteProvider::TYPE_BOOKMARK |
     AutocompleteProvider::TYPE_HISTORY_QUICK |

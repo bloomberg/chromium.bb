@@ -174,7 +174,6 @@
       <part file="dom_distiller_strings.grdp" />
       <part file="error_page_strings.grdp" />
       <part file="omnibox_strings.grdp" />
-      <part file="open_from_clipboard_strings.grdp" />
       <part file="password_manager_strings.grdp" />
       <part file="pdf_strings.grdp" />
       <part file="policy_strings.grdp" />

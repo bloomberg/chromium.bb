@@ -2,23 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OPEN_FROM_CLIPBOARD_CLIPBOARD_URL_PROVIDER_H_
-#define COMPONENTS_OPEN_FROM_CLIPBOARD_CLIPBOARD_URL_PROVIDER_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_CLIPBOARD_URL_PROVIDER_H_
+#define COMPONENTS_OMNIBOX_BROWSER_CLIPBOARD_URL_PROVIDER_H_
 
-#include "base/callback.h"
+#include "base/macros.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 
+class AutocompleteProviderClient;
 class ClipboardRecentContent;
 
 // Autocomplete provider offering content based on the clipboard's content.
 class ClipboardURLProvider : public AutocompleteProvider {
  public:
-  typedef base::Callback<AutocompleteMatch(const AutocompleteInput&)>
-      PlaceholderRequestCallback;
-
-  ClipboardURLProvider(
-      ClipboardRecentContent* clipboard_recent_content,
-      const PlaceholderRequestCallback& placeholder_match_getter);
+  ClipboardURLProvider(AutocompleteProviderClient* client,
+                       ClipboardRecentContent* clipboard_content);
 
   // AutocompleteProvider implementation.
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
@@ -26,10 +23,10 @@ class ClipboardURLProvider : public AutocompleteProvider {
  private:
   ~ClipboardURLProvider() override;
 
-  ClipboardRecentContent* clipboard_recent_content_;
-  PlaceholderRequestCallback placeholder_match_getter_;
+  AutocompleteProviderClient* client_;
+  ClipboardRecentContent* clipboard_content_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardURLProvider);
 };
 
-#endif  // COMPONENTS_OPEN_FROM_CLIPBOARD_CLIPBOARD_URL_PROVIDER_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_CLIPBOARD_URL_PROVIDER_H_

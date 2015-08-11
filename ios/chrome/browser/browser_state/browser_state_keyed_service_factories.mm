@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
 
+#import <Foundation/Foundation.h>
+
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_client_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"

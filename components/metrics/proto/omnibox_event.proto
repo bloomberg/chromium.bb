@@ -167,6 +167,7 @@ message OmniboxEventProto {
     // This enum value is currently only used by Android GSA. It represents
     // a suggestion powered by a Chrome content provider.
     ON_DEVICE_CHROME = 13;
+    CLIPBOARD_URL = 14;  // Suggestion coming from clipboard (iOS only).
   }
 
   // The result set displayed on the completion popup

@@ -21,8 +21,8 @@ class ClipboardRecentContent {
   virtual ~ClipboardRecentContent();
 
   // Returns the global instance of the ClipboardRecentContent singleton. This
-  // method does *not* create the singleton, and an instance must have been set
-  // via a call to SetInstance() before.
+  // method does *not* create the singleton and will return null if no instance
+  // was registered via SetInstance().
   static ClipboardRecentContent* GetInstance();
 
   // Sets the global instance of ClipboardRecentContent singleton.

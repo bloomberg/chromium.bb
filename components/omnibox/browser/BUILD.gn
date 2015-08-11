@@ -30,6 +30,8 @@ source_set("browser") {
     "bookmark_provider.h",
     "builtin_provider.cc",
     "builtin_provider.h",
+    "clipboard_url_provider.cc",
+    "clipboard_url_provider.h",
     "history_provider.cc",
     "history_provider.h",
     "history_quick_provider.cc",
@@ -88,6 +90,8 @@ source_set("browser") {
     "url_index_private_data.h",
     "url_prefix.cc",
     "url_prefix.h",
+    "verbatim_match.cc",
+    "verbatim_match.h",
     "zero_suggest_provider.cc",
     "zero_suggest_provider.h",
   ]
@@ -97,13 +101,13 @@ source_set("browser") {
     "//components/metrics/proto",
   ]
   deps = [
-    ":in_memory_url_index_cache_proto",
     "//base",
     "//base:i18n",
     "//base:prefs",
     "//components/bookmarks/browser",
     "//components/keyed_service/core",
     "//components/omnibox/common",
+    "//components/open_from_clipboard",
     "//components/pref_registry",
     "//components/query_parser",
     "//components/resources",
@@ -122,6 +126,7 @@ source_set("browser") {
     "//ui/base",
     "//ui/gfx",
     "//url",
+    ":in_memory_url_index_cache_proto",
   ]
 }
 
@@ -158,6 +163,7 @@ source_set("unit_tests") {
     "autocomplete_match_unittest.cc",
     "autocomplete_result_unittest.cc",
     "base_search_provider_unittest.cc",
+    "clipboard_url_provider_unittest.cc",
     "in_memory_url_index_types_unittest.cc",
     "keyword_provider_unittest.cc",
     "omnibox_field_trial_unittest.cc",
@@ -166,14 +172,15 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":browser",
-    ":test_support",
     "//base",
+    "//components/open_from_clipboard:test_support",
     "//components/search",
     "//components/search_engines",
     "//components/variations",
     "//testing/gmock",
     "//testing/gtest",
     "//url",
+    ":browser",
+    ":test_support",
   ]
 }

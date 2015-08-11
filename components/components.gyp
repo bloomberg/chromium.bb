@@ -47,6 +47,7 @@
     'offline_pages.gypi',
     'omnibox.gypi',
     'onc.gypi',
+    'open_from_clipboard.gypi',
     'os_crypt.gypi',
     'ownership.gypi',
     'packed_ct_ev_whitelist.gypi',
@@ -110,7 +111,6 @@
     }],
     ['OS == "ios"', {
       'includes': [
-        'open_from_clipboard.gypi',
         'webp_transcode.gypi',
       ],
     }],

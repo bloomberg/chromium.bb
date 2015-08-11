@@ -1,5 +1,0 @@
-include_rules = [
-  "+components/omnibox",
-  "+grit/components_strings.h",
-  "+ui/base/l10n",
-]

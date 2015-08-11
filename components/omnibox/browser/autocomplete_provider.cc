@@ -39,6 +39,8 @@ const char* AutocompleteProvider::TypeToString(Type type) {
       return "Shortcuts";
     case TYPE_ZERO_SUGGEST:
       return "ZeroSuggest";
+    case TYPE_CLIPBOARD_URL:
+      return "ClipboardURL";
     default:
       NOTREACHED() << "Unhandled AutocompleteProvider::Type " << type;
       return "Unknown";
@@ -73,6 +75,8 @@ metrics::OmniboxEventProto_ProviderType AutocompleteProvider::
       return metrics::OmniboxEventProto::SHORTCUTS;
     case TYPE_ZERO_SUGGEST:
       return metrics::OmniboxEventProto::ZERO_SUGGEST;
+    case TYPE_CLIPBOARD_URL:
+      return metrics::OmniboxEventProto::CLIPBOARD_URL;
     default:
       NOTREACHED() << "Unhandled AutocompleteProvider::Type " << type_;
       return metrics::OmniboxEventProto::UNKNOWN_PROVIDER;

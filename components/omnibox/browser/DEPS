@@ -3,6 +3,7 @@ include_rules = [
   "+components/history/core/browser",
   "+components/keyed_service/core",
   "+components/metrics/proto",
+  "+components/open_from_clipboard",
   "+components/pref_registry",
   "+components/query_parser",
   "+components/search",

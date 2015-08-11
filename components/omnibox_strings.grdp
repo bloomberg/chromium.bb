@@ -13,5 +13,7 @@
   <message name="IDS_EMPTY_KEYWORD_VALUE" desc="Shown in the location bar drop down when the user enters a string that matches a chrome keyword, but they haven't entered any text following the chrome keyword">
     &lt;enter query&gt;
   </message>
-
+  <message name="IDS_LINK_FROM_CLIPBOARD" desc="The label in the omnibox dropdown explaining that the link has been extracted from the user's clipboard. [Length: 21em]">
+    Link you copied
+  </message>
 </grit-part>

@@ -4,8 +4,6 @@
 
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 
-#include "base/logging.h"
-
 namespace {
 ClipboardRecentContent* g_clipboard_recent_content = nullptr;
 }
@@ -16,7 +14,6 @@ ClipboardRecentContent::~ClipboardRecentContent() {}
 
 // static
 ClipboardRecentContent* ClipboardRecentContent::GetInstance() {
-  DCHECK(g_clipboard_recent_content);
   return g_clipboard_recent_content;
 }
 

@@ -113,9 +113,6 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   // function to return those |urls|.
   void OnMostVisitedUrlsAvailable(const history::MostVisitedURLList& urls);
 
-  // Returns the relevance score for the verbatim result.
-  int GetVerbatimRelevance() const;
-
   // Whether we can show zero suggest without sending |current_page_url| to
   // |suggest_url| search provider. Also checks that other conditions for
   // non-contextual zero suggest are satisfied.

@@ -178,7 +178,6 @@ per-file onc.gypi=pneubeck@chromium.org
 per-file onc.gypi=stevenjb@chromium.org
 
 per-file open_from_clipboard.gypi=jif@chromium.org
-per-file open_from_clipboard_strings.grdp=jif@chromium.org
 
 per-file ownership.gypi=alemate@chromium.org
 per-file ownership.gypi=dpolukhin@chromium.org

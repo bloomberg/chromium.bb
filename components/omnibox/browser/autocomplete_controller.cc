@@ -13,9 +13,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_controller_delegate.h"
 #include "components/omnibox/browser/bookmark_provider.h"
 #include "components/omnibox/browser/builtin_provider.h"
+#include "components/omnibox/browser/clipboard_url_provider.h"
 #include "components/omnibox/browser/history_quick_provider.h"
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/keyword_provider.h"
@@ -23,6 +25,7 @@
 #include "components/omnibox/browser/search_provider.h"
 #include "components/omnibox/browser/shortcuts_provider.h"
 #include "components/omnibox/browser/zero_suggest_provider.h"
+#include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "grit/components_strings.h"
@@ -201,6 +204,14 @@ AutocompleteController::AutocompleteController(
         ZeroSuggestProvider::Create(provider_client_.get(), this);
     if (zero_suggest_provider_)
       providers_.push_back(zero_suggest_provider_);
+  }
+  if (provider_types & AutocompleteProvider::TYPE_CLIPBOARD_URL) {
+    ClipboardRecentContent* clipboard_recent_content =
+        ClipboardRecentContent::GetInstance();
+    if (clipboard_recent_content) {
+      providers_.push_back(new ClipboardURLProvider(provider_client_.get(),
+                                                    clipboard_recent_content));
+    }
   }
 }
 

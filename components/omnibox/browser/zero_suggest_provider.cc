@@ -25,6 +25,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/omnibox/browser/search_provider.h"
+#include "components/omnibox/browser/verbatim_match.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_formatter.h"
@@ -59,9 +60,6 @@ void LogOmniboxZeroSuggestRequest(
   UMA_HISTOGRAM_ENUMERATION("Omnibox.ZeroSuggestRequests", request_value,
                             ZERO_SUGGEST_MAX_REQUEST_HISTOGRAM_VALUE);
 }
-
-// The maximum relevance of the top match from this provider.
-const int kDefaultVerbatimZeroSuggestRelevance = 1300;
 
 // Relevance value to use if it was not set explicitly by the server.
 const int kDefaultZeroSuggestRelevance = 100;
@@ -410,22 +408,12 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
 }
 
 AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
-  AutocompleteMatch match;
-  client()->GetAutocompleteClassifier()->Classify(
-      permanent_text_, false, true, current_page_classification_, &match, NULL);
-  match.allowed_to_be_default_match = true;
-
   // The placeholder suggestion for the current URL has high relevance so
   // that it is in the first suggestion slot and inline autocompleted. It
   // gets dropped as soon as the user types something.
-  match.relevance = GetVerbatimRelevance();
-
-  return match;
-}
-
-int ZeroSuggestProvider::GetVerbatimRelevance() const {
-  return results_.verbatim_relevance >= 0 ?
-      results_.verbatim_relevance : kDefaultVerbatimZeroSuggestRelevance;
+  return VerbatimMatchForURL(client(), permanent_text_,
+                             current_page_classification_,
+                             results_.verbatim_relevance);
 }
 
 bool ZeroSuggestProvider::ShouldShowNonContextualZeroSuggest(

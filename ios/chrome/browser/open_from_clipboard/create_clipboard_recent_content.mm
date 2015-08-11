@@ -7,7 +7,7 @@
 #import "components/open_from_clipboard/clipboard_recent_content_ios.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
-scoped_ptr<ClipboardRecentContent> CreateClipboadRecentContentIOS() {
+scoped_ptr<ClipboardRecentContent> CreateClipboardRecentContentIOS() {
   return make_scoped_ptr(new ClipboardRecentContentIOS(
       ios::GetChromeBrowserProvider()->GetChromeUIScheme()));
 }
