@@ -1122,26 +1122,34 @@ bool GpuCommandBufferStub::CheckContextLost() {
   gpu::CommandBuffer::State state = command_buffer_->GetLastState();
   bool was_lost = state.error == gpu::error::kLostContext;
 
-  // Work around issues with recovery by allowing a new GPU process to launch.
-  if (was_lost &&
-      context_group_->feature_info()->workarounds().exit_on_context_lost &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kInProcessGPU)) {
-    LOG(ERROR) << "Exiting GPU process because some drivers cannot recover"
-               << " from problems.";
+  if (was_lost) {
+    bool was_lost_by_robustness =
+        decoder_ && decoder_->WasContextLostByRobustnessExtension();
+
+    // Work around issues with recovery by allowing a new GPU process to launch.
+    if ((was_lost_by_robustness ||
+         context_group_->feature_info()->workarounds().exit_on_context_lost) &&
+        !base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSingleProcess) &&
+        !base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kInProcessGPU)) {
+      LOG(ERROR) << "Exiting GPU process because some drivers cannot recover"
+                 << " from problems.";
 #if defined(OS_WIN)
-    base::win::SetShouldCrashOnProcessDetach(false);
+      base::win::SetShouldCrashOnProcessDetach(false);
 #endif
-    exit(0);
+      exit(0);
+    }
+
+    // Lose all other contexts if the reset was triggered by the robustness
+    // extension instead of being synthetic.
+    if (was_lost_by_robustness &&
+        (gfx::GLContext::LosesAllContextsOnContextLost() ||
+         use_virtualized_gl_context_)) {
+      channel_->LoseAllContexts();
+    }
   }
-  // Lose all other contexts if the reset was triggered by the robustness
-  // extension instead of being synthetic.
-  if (was_lost && decoder_ && decoder_->WasContextLostByRobustnessExtension() &&
-      (gfx::GLContext::LosesAllContextsOnContextLost() ||
-       use_virtualized_gl_context_))
-    channel_->LoseAllContexts();
+
   CheckCompleteWaits();
   return was_lost;
 }
