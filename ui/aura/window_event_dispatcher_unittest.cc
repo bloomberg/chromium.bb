@@ -847,6 +847,34 @@ TEST_F(WindowEventDispatcherTest, MouseEventWithoutTargetWindow) {
             recorder_second.mouse_locations()[0].ToString());
 }
 
+// Tests that a mouse exit is dispatched to the last mouse location when
+// the window is hiddden.
+TEST_F(WindowEventDispatcherTest, DispatchMouseExitWhenHidingWindow) {
+  EventFilterRecorder recorder;
+
+  test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      &delegate, 1, gfx::Rect(10, 10, 50, 50), root_window()));
+  window->Show();
+  window->AddPreTargetHandler(&recorder);
+
+  // Dispatch a mouse move event into the window.
+  const gfx::Point event_location(22, 33);
+  ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location,
+                       ui::EventTimeForNow(), 0, 0);
+  DispatchEventUsingWindowDispatcher(&mouse);
+  EXPECT_FALSE(recorder.events().empty());
+  recorder.Reset();
+
+  // Hide the window and verify a mouse exit event's location.
+  window->Hide();
+  EXPECT_FALSE(recorder.events().empty());
+  EXPECT_EQ("MOUSE_EXITED", EventTypesToString(recorder.events()));
+  ASSERT_EQ(1u, recorder.mouse_locations().size());
+  EXPECT_EQ(gfx::Point(12, 23).ToString(),
+            recorder.mouse_locations()[0].ToString());
+}
+
 // Verifies that a direct call to ProcessedTouchEvent() does not cause a crash.
 TEST_F(WindowEventDispatcherTest, CallToProcessedTouchEvent) {
   test::TestWindowDelegate delegate;

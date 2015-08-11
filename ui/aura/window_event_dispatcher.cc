@@ -246,7 +246,7 @@ void WindowEventDispatcher::DispatchMouseExitToHidingWindow(Window* window) {
   if (window->Contains(mouse_moved_handler_) &&
       window->ContainsPointInRoot(last_mouse_location)) {
     DispatchDetails details =
-        DispatchMouseExitAtPoint(window, last_mouse_location);
+        DispatchMouseExitAtPoint(this->window(), last_mouse_location);
     if (details.dispatcher_destroyed)
       return;
   }
