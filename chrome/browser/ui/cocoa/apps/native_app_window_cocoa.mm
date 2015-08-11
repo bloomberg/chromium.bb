@@ -497,7 +497,9 @@ void NativeAppWindowCocoa::Show() {
   }
 
   last_activate_ = now;
-  [BrowserWindowUtils activateWindowForController:window_controller_];
+
+  [window() makeKeyAndOrderFront:nil];
+  [NSApp activateIgnoringOtherApps:YES];
 }
 
 void NativeAppWindowCocoa::ShowInactive() {
