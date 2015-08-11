@@ -42,8 +42,6 @@ public:
         unsigned numberOfLiveAudioNodes;
         unsigned numberOfLiveDocuments;
         unsigned numberOfLiveNodes;
-        // FIXME: Deprecated, remove once chrome is updated.
-        unsigned numberOfLiveRenderObjects;
         unsigned numberOfLiveLayoutObjects;
         unsigned numberOfLiveResources;
         unsigned numberOfLiveActiveDOMObjects;

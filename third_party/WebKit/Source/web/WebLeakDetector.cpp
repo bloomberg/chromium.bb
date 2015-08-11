@@ -142,7 +142,6 @@ void WebLeakDetectorImpl::delayedReport(Timer<WebLeakDetectorImpl>*)
     result.numberOfLiveDocuments = InstanceCounters::counterValue(InstanceCounters::DocumentCounter);
     result.numberOfLiveNodes = InstanceCounters::counterValue(InstanceCounters::NodeCounter);
     result.numberOfLiveLayoutObjects = InstanceCounters::counterValue(InstanceCounters::LayoutObjectCounter);
-    result.numberOfLiveRenderObjects = result.numberOfLiveLayoutObjects;
     result.numberOfLiveResources = InstanceCounters::counterValue(InstanceCounters::ResourceCounter);
     result.numberOfLiveActiveDOMObjects = InstanceCounters::counterValue(InstanceCounters::ActiveDOMObjectCounter);
     result.numberOfLiveScriptPromises = InstanceCounters::counterValue(InstanceCounters::ScriptPromiseCounter);
