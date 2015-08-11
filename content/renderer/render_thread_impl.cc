@@ -647,6 +647,9 @@ void RenderThreadImpl::Init() {
     layer_settings.use_compositor_animation_timelines = true;
   cc_blink::WebLayerImpl::SetLayerSettings(layer_settings);
 
+  is_threaded_animation_enabled_ =
+      !command_line.HasSwitch(cc::switches::kDisableThreadedAnimation);
+
   is_zero_copy_enabled_ = command_line.HasSwitch(switches::kEnableZeroCopy);
   is_one_copy_enabled_ = !command_line.HasSwitch(switches::kDisableOneCopy);
 
@@ -1521,6 +1524,10 @@ cc::TaskGraphRunner* RenderThreadImpl::GetTaskGraphRunner() {
 
 bool RenderThreadImpl::IsGatherPixelRefsEnabled() {
   return is_gather_pixel_refs_enabled_;
+}
+
+bool RenderThreadImpl::IsThreadedAnimationEnabled() {
+  return is_threaded_animation_enabled_;
 }
 
 bool RenderThreadImpl::IsMainThread() {

@@ -40,6 +40,7 @@ class FakeCompositorDependencies : public CompositorDependencies {
       int routing_id) override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   bool IsGatherPixelRefsEnabled() override;
+  bool IsThreadedAnimationEnabled() override;
 
  private:
   cc::TestSharedBitmapManager shared_bitmap_manager_;

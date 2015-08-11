@@ -207,6 +207,7 @@ class CONTENT_EXPORT RenderThreadImpl
       int routing_id) override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   bool IsGatherPixelRefsEnabled() override;
+  bool IsThreadedAnimationEnabled() override;
 
   // Synchronously establish a channel to the GPU plugin if not previously
   // established or if it has been lost (for example if the GPU plugin crashed).
@@ -617,6 +618,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool is_elastic_overscroll_enabled_;
   std::vector<unsigned> use_image_texture_targets_;
   bool is_gather_pixel_refs_enabled_;
+  bool is_threaded_animation_enabled_;
 
   class PendingRenderFrameConnect
       : public base::RefCounted<PendingRenderFrameConnect> {

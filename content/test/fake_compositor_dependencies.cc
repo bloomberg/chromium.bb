@@ -98,4 +98,8 @@ bool FakeCompositorDependencies::IsGatherPixelRefsEnabled() {
   return false;
 }
 
+bool FakeCompositorDependencies::IsThreadedAnimationEnabled() {
+  return true;
+}
+
 }  // namespace content

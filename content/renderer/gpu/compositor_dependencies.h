@@ -56,6 +56,7 @@ class CompositorDependencies {
       int routing_id) = 0;
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
   virtual bool IsGatherPixelRefsEnabled() = 0;
+  virtual bool IsThreadedAnimationEnabled() = 0;
 
   virtual ~CompositorDependencies() {}
 };

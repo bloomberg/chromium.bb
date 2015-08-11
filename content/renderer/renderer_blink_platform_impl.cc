@@ -653,6 +653,11 @@ bool RendererBlinkPlatformImpl::isThreadedCompositingEnabled() {
   return thread && thread->compositor_task_runner().get();
 }
 
+bool RendererBlinkPlatformImpl::isThreadedAnimationEnabled() {
+  RenderThreadImpl* thread = RenderThreadImpl::current();
+  return thread ? thread->IsThreadedAnimationEnabled() : true;
+}
+
 double RendererBlinkPlatformImpl::audioHardwareSampleRate() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   return thread->GetAudioHardwareConfig()->GetOutputSampleRate();

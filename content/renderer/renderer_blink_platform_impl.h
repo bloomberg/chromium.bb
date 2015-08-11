@@ -108,6 +108,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   virtual blink::WebFileSystem* fileSystem();
   virtual bool canAccelerate2dCanvas();
   virtual bool isThreadedCompositingEnabled();
+  virtual bool isThreadedAnimationEnabled();
   virtual double audioHardwareSampleRate();
   virtual size_t audioHardwareBufferSize();
   virtual unsigned audioHardwareOutputChannels();

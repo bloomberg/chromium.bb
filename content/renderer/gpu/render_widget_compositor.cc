@@ -243,7 +243,7 @@ void RenderWidgetCompositor::Initialize() {
       cmd->HasSwitch(cc::switches::kEnableMainFrameBeforeActivation) &&
       !cmd->HasSwitch(cc::switches::kDisableMainFrameBeforeActivation);
   settings.accelerated_animation_enabled =
-      !cmd->HasSwitch(cc::switches::kDisableThreadedAnimation);
+      compositor_deps_->IsThreadedAnimationEnabled();
   const std::string slimming_group =
       base::FieldTrialList::FindFullName("SlimmingPaint");
   settings.use_display_lists =
