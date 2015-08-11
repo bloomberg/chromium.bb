@@ -31,16 +31,22 @@ void BluetoothLowEnergyDiscoveryManagerMac::StartDiscovery(
 
 void BluetoothLowEnergyDiscoveryManagerMac::TryStartDiscovery() {
   if (!discovering_) {
+    VLOG(1) << "TryStartDiscovery !discovering_";
     return;
   }
 
   if (!pending_) {
+    VLOG(1) << "TryStartDiscovery !pending_";
     return;
   }
 
-  // Can only start if the bluetooth power is turned on.
-  if (!central_manager_ ||
-      [central_manager_ state] != CBCentralManagerStatePoweredOn) {
+  if (!central_manager_) {
+    VLOG(1) << "TryStartDiscovery !central_manager_";
+    return;
+  }
+
+  if ([central_manager_ state] != CBCentralManagerStatePoweredOn) {
+    VLOG(1) << "TryStartDiscovery != CBCentralManagerStatePoweredOn";
     return;
   }
 
@@ -57,11 +63,13 @@ void BluetoothLowEnergyDiscoveryManagerMac::TryStartDiscovery() {
     }
   };
 
+  VLOG(1) << "TryStartDiscovery scanForPeripheralsWithServices";
   [central_manager_ scanForPeripheralsWithServices:services options:nil];
   pending_ = false;
 }
 
 void BluetoothLowEnergyDiscoveryManagerMac::StopDiscovery() {
+  VLOG(1) << "StopDiscovery";
   if (discovering_ && !pending_) {
     [central_manager_ stopScan];
   }
@@ -77,6 +85,7 @@ void BluetoothLowEnergyDiscoveryManagerMac::DiscoveredPeripheral(
     CBPeripheral* peripheral,
     NSDictionary* advertisementData,
     int rssi) {
+  VLOG(1) << "DiscoveredPeripheral";
   observer_->LowEnergyDeviceUpdated(peripheral, advertisementData, rssi);
 }
 

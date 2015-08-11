@@ -613,6 +613,11 @@ void BluetoothDispatcherHost::OnDiscoverySessionStopped(int thread_id,
   CHECK(session != request_device_sessions_.end());
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
   for (device::BluetoothDevice* device : devices) {
+    // Remove VLOG when stable. http://crbug.com/519010
+    VLOG(1) << "Device: " << device->GetName();
+    VLOG(1) << "UUIDs: ";
+    for (BluetoothUUID uuid : device->GetUUIDs())
+      VLOG(1) << "\t" << uuid.canonical_value();
     if (MatchesFilters(*device, session->second.filters)) {
       content::BluetoothDevice device_ipc(
           device->GetAddress(),         // instance_id

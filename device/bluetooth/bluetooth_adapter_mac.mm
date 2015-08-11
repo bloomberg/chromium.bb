@@ -458,6 +458,7 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
   // std::map [] operator).
   BluetoothDevice*& device_reference = devices_[device_address];
   if (!device_reference) {
+    VLOG(1) << "LowEnergyDeviceUpdated new device";
     // A new device has been found.
     device_reference =
         new BluetoothLowEnergyDeviceMac(peripheral, advertisement_data, rssi);
@@ -466,9 +467,14 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
     return;
   }
 
-  if (static_cast<BluetoothLowEnergyDeviceMac*>(device_reference)
-          ->GetIdentifier() !=
-      BluetoothLowEnergyDeviceMac::GetPeripheralIdentifier(peripheral)) {
+  std::string stored_device_id = device_reference->GetIdentifier();
+  std::string updated_device_id =
+      BluetoothLowEnergyDeviceMac::GetPeripheralIdentifier(peripheral);
+  if (stored_device_id != updated_device_id) {
+    VLOG(1) << "LowEnergyDeviceUpdated stored_device_id != updated_device_id: "
+            << std::endl
+            << "  " << stored_device_id << std::endl
+            << "  " << updated_device_id;
     // Collision, two identifiers map to the same hash address.  With a 48 bit
     // hash the probability of this occuring with 10,000 devices
     // simultaneously present is 1e-6 (see
@@ -478,6 +484,7 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
   }
 
   // A device has an update.
+  VLOG(2) << "LowEnergyDeviceUpdated";
   static_cast<BluetoothLowEnergyDeviceMac*>(device_reference)
       ->Update(peripheral, advertisement_data, rssi);
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
