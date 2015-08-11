@@ -229,8 +229,10 @@ void HitTestResult::setInnerNode(Node* n)
     if (n && n->isPseudoElement())
         n = toPseudoElement(n)->findAssociatedNode();
     m_innerNode = n;
-    if (HTMLAreaElement* area = imageAreaForImage())
+    if (HTMLAreaElement* area = imageAreaForImage()) {
         m_innerNode = area;
+        m_innerPossiblyPseudoNode = area;
+    }
 }
 
 void HitTestResult::setURLElement(Element* n)
