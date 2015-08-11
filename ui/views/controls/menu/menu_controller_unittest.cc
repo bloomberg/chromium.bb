@@ -9,11 +9,13 @@
 #include "ui/events/event_handler.h"
 #include "ui/events/null_event_targeter.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/events/test/platform_event_source_test_api.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/test/views_test_base.h"
 
 #if defined(USE_AURA)
+#include "ui/aura/env.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/wm/public/dispatcher_client.h"
@@ -25,7 +27,6 @@
 #include <X11/Xlib.h>
 #undef Bool
 #undef None
-#include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #elif defined(USE_OZONE)
 #include "ui/events/event.h"
@@ -55,23 +56,6 @@ class SubmenuViewShown : public SubmenuView {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SubmenuViewShown);
-};
-
-class TestPlatformEventSource : public ui::PlatformEventSource {
- public:
-  TestPlatformEventSource() {
-#if defined(USE_X11)
-    ui::DeviceDataManagerX11::CreateInstance();
-#endif
-  }
-  ~TestPlatformEventSource() override {}
-
-  uint32_t Dispatch(const ui::PlatformEvent& event) {
-    return DispatchEvent(event);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestPlatformEventSource);
 };
 
 #if defined(USE_AURA)
@@ -127,7 +111,9 @@ class TestMenuItemViewShown : public MenuItemView {
 
 class MenuControllerTest : public ViewsTestBase {
  public:
-  MenuControllerTest() : controller_(nullptr) {}
+  MenuControllerTest()
+      : controller_(nullptr),
+        event_source_(ui::PlatformEventSource::GetInstance()) {}
   ~MenuControllerTest() override { ResetMenuController(); }
 
   // Dispatches |count| number of items, each in a separate iteration of the
@@ -307,7 +293,7 @@ class MenuControllerTest : public ViewsTestBase {
   // A weak pointer to the MenuController owned by this class.
   MenuController* controller_;
   scoped_ptr<base::RunLoop> run_loop_;
-  TestPlatformEventSource event_source_;
+  ui::test::PlatformEventSourceTestAPI event_source_;
 #if defined(USE_AURA)
   TestDispatcherClient dispatcher_client_;
 #endif

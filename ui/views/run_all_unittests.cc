@@ -13,6 +13,10 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/env.h"
+#endif
+
 class ViewTestSuite : public base::TestSuite {
  public:
   ViewTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
@@ -26,9 +30,15 @@ class ViewTestSuite : public base::TestSuite {
     base::FilePath ui_test_pak_path;
     ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
     ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
+#if defined(USE_AURA)
+    aura::Env::CreateInstance(true);
+#endif
   }
 
   void Shutdown() override {
+#if defined(USE_AURA)
+    aura::Env::DeleteInstance();
+#endif
     ui::ResourceBundle::CleanupSharedInstance();
     base::TestSuite::Shutdown();
   }

@@ -47,6 +47,11 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource {
   XDisplay* display() { return display_; }
 
  private:
+  // Extracts cookie data from |xevent| if it's of GenericType, and dispatches
+  // the event. This function also frees up the cookie data after dispatch is
+  // complete.
+  uint32_t ExtractCookieDataDispatchEvent(XEvent* xevent);
+
   // PlatformEventSource:
   uint32_t DispatchEvent(XEvent* xevent) override;
   void StopCurrentEventStream() override;

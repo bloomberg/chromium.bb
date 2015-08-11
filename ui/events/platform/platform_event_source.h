@@ -22,6 +22,10 @@ class PlatformEventDispatcher;
 class PlatformEventObserver;
 class ScopedEventDispatcher;
 
+namespace test {
+class PlatformEventSourceTestAPI;
+}
+
 // PlatformEventSource receives events from a source and dispatches the events
 // to the appropriate dispatchers.
 class EVENTS_EXPORT PlatformEventSource {
@@ -73,6 +77,8 @@ class EVENTS_EXPORT PlatformEventSource {
 
  private:
   friend class ScopedEventDispatcher;
+  friend class test::PlatformEventSourceTestAPI;
+
   static PlatformEventSource* instance_;
 
   // This is invoked when the list of dispatchers changes (i.e. a new dispatcher

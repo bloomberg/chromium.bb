@@ -23,6 +23,7 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/events/test/platform_event_source_test_api.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/path.h"
@@ -508,25 +509,11 @@ class MouseEventRecorder : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(MouseEventRecorder);
 };
 
-// A custom event-source that can be used to directly dispatch synthetic X11
-// events.
-class CustomX11EventSource : public ui::X11EventSource {
- public:
-  CustomX11EventSource() : X11EventSource(gfx::GetXDisplay()) {}
-  ~CustomX11EventSource() override {}
-
-  void DispatchSingleEvent(XEvent* xevent) {
-    PlatformEventSource::DispatchEvent(xevent);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CustomX11EventSource);
-};
-
 class DesktopWindowTreeHostX11HighDPITest
     : public DesktopWindowTreeHostX11Test {
  public:
-  DesktopWindowTreeHostX11HighDPITest() {}
+  DesktopWindowTreeHostX11HighDPITest()
+      : event_source_(ui::PlatformEventSource::GetInstance()) {}
   ~DesktopWindowTreeHostX11HighDPITest() override {}
 
   void DispatchSingleEventToWidget(XEvent* event, Widget* widget) {
@@ -535,7 +522,7 @@ class DesktopWindowTreeHostX11HighDPITest
         static_cast<XIDeviceEvent*>(event->xcookie.data);
     device_event->event =
         widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
-    event_source_.DispatchSingleEvent(event);
+    event_source_.Dispatch(event);
   }
 
   void PretendCapture(views::Widget* capture_widget) {
@@ -560,7 +547,7 @@ class DesktopWindowTreeHostX11HighDPITest
     DesktopWindowTreeHostX11Test::SetUp();
   }
 
-  CustomX11EventSource event_source_;
+  ui::test::PlatformEventSourceTestAPI event_source_;
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostX11HighDPITest);
 };
 

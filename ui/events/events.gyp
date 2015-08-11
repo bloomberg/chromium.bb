@@ -333,6 +333,8 @@
         'test/events_test_utils_x11.h',
         'test/motion_event_test_utils.cc',
         'test/motion_event_test_utils.h',
+        'test/platform_event_source_test_api.cc',
+        'test/platform_event_source_test_api.h',
         'test/platform_event_waiter.cc',
         'test/platform_event_waiter.h',
         'test/test_event_handler.cc',

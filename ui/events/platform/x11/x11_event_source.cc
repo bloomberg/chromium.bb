@@ -103,7 +103,7 @@ void X11EventSource::DispatchXEvents() {
   while (XPending(display_) && continue_stream_) {
     XEvent xevent;
     XNextEvent(display_, &xevent);
-    DispatchEvent(&xevent);
+    ExtractCookieDataDispatchEvent(&xevent);
   }
 }
 
@@ -113,29 +113,32 @@ void X11EventSource::BlockUntilWindowMapped(XID window) {
     // Block until there's a message of |event_mask| type on |w|. Then remove
     // it from the queue and stuff it in |event|.
     XWindowEvent(display_, window, StructureNotifyMask, &event);
-    DispatchEvent(&event);
+    ExtractCookieDataDispatchEvent(&event);
   } while (event.type != MapNotify);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // X11EventSource, private
 
-uint32_t X11EventSource::DispatchEvent(XEvent* xevent) {
+uint32_t X11EventSource::ExtractCookieDataDispatchEvent(XEvent* xevent) {
   bool have_cookie = false;
   if (xevent->type == GenericEvent &&
       XGetEventData(xevent->xgeneric.display, &xevent->xcookie)) {
     have_cookie = true;
   }
+  uint32_t action = DispatchEvent(xevent);
+  if (have_cookie)
+    XFreeEventData(xevent->xgeneric.display, &xevent->xcookie);
+  return action;
+}
 
+uint32_t X11EventSource::DispatchEvent(XEvent* xevent) {
   uint32_t action = PlatformEventSource::DispatchEvent(xevent);
   if (xevent->type == GenericEvent &&
       xevent->xgeneric.evtype == XI_HierarchyChanged) {
     ui::UpdateDeviceList();
     hotplug_event_handler_->OnHotplugEvent();
   }
-
-  if (have_cookie)
-    XFreeEventData(xevent->xgeneric.display, &xevent->xcookie);
   return action;
 }
 
