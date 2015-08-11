@@ -56077,6 +56077,37 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="342" label="TYPES_CHROME_SETTING_ON_CHANGE"/>
   <int value="343" label="TYPES_PRIVATE_CHROME_DIRECT_SETTING_ON_CHANGE"/>
   <int value="344" label="WEB_VIEW_INTERNAL_ON_MESSAGE"/>
+  <int value="345" label="EXTENSION_VIEW_INTERNAL_ON_LOAD_COMMIT"/>
+  <int value="346" label="RUNTIME_ON_REQUEST"/>
+  <int value="347" label="RUNTIME_ON_REQUEST_EXTERNAL"/>
+  <int value="348" label="CHROME_WEB_VIEW_INTERNAL_ON_CONTEXT_MENU_SHOW"/>
+  <int value="349" label="WEB_VIEW_INTERNAL_ON_BEFORE_REQUEST"/>
+  <int value="350" label="WEB_VIEW_INTERNAL_ON_BEFORE_SEND_HEADERS"/>
+  <int value="351" label="WEB_VIEW_INTERNAL_ON_CLOSE"/>
+  <int value="352" label="WEB_VIEW_INTERNAL_ON_COMPLETED"/>
+  <int value="353" label="WEB_VIEW_INTERNAL_ON_CONSOLE_MESSAGE"/>
+  <int value="354" label="WEB_VIEW_INTERNAL_ON_CONTENT_LOAD"/>
+  <int value="355" label="WEB_VIEW_INTERNAL_ON_DIALOG"/>
+  <int value="356" label="WEB_VIEW_INTERNAL_ON_DROP_LINK"/>
+  <int value="357" label="WEB_VIEW_INTERNAL_ON_EXIT"/>
+  <int value="358" label="WEB_VIEW_INTERNAL_ON_EXIT_FULLSCREEN"/>
+  <int value="359" label="WEB_VIEW_INTERNAL_ON_FIND_REPLY"/>
+  <int value="360" label="WEB_VIEW_INTERNAL_ON_FRAME_NAME_CHANGED"/>
+  <int value="361" label="WEB_VIEW_INTERNAL_ON_HEADERS_RECEIVED"/>
+  <int value="362" label="WEB_VIEW_INTERNAL_ON_LOAD_ABORT"/>
+  <int value="363" label="WEB_VIEW_INTERNAL_ON_LOAD_COMMIT"/>
+  <int value="364" label="WEB_VIEW_INTERNAL_ON_LOAD_PROGRESS"/>
+  <int value="365" label="WEB_VIEW_INTERNAL_ON_LOAD_REDIRECT"/>
+  <int value="366" label="WEB_VIEW_INTERNAL_ON_LOAD_START"/>
+  <int value="367" label="WEB_VIEW_INTERNAL_ON_LOAD_STOP"/>
+  <int value="368" label="WEB_VIEW_INTERNAL_ON_NEW_WINDOW"/>
+  <int value="369" label="WEB_VIEW_INTERNAL_ON_PERMISSION_REQUEST"/>
+  <int value="370" label="WEB_VIEW_INTERNAL_ON_RESPONSE_STARTED"/>
+  <int value="371" label="WEB_VIEW_INTERNAL_ON_RESPONSIVE"/>
+  <int value="372" label="WEB_VIEW_INTERNAL_ON_SIZE_CHANGED"/>
+  <int value="373" label="WEB_VIEW_INTERNAL_ON_UNRESPONSIVE"/>
+  <int value="374" label="WEB_VIEW_INTERNAL_ON_ZOOM_CHANGE"/>
+  <int value="375" label="GUEST_VIEW_INTERNAL_ON_RESIZE"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">

@@ -271,17 +271,17 @@ class ExtensionWebRequestEventRouter
   // listened to. |sub_event_name| is an internal event uniquely generated in
   // the extension process to correspond to the given filter and
   // extra_info_spec. It returns true on success, false on failure.
-  bool AddEventListener(
-      void* browser_context,
-      const std::string& extension_id,
-      const std::string& extension_name,
-      const std::string& event_name,
-      const std::string& sub_event_name,
-      const RequestFilter& filter,
-      int extra_info_spec,
-      int embedder_process_id,
-      int web_view_instance_id,
-      base::WeakPtr<IPC::Sender> ipc_sender);
+  bool AddEventListener(void* browser_context,
+                        const std::string& extension_id,
+                        const std::string& extension_name,
+                        events::HistogramValue histogram_value,
+                        const std::string& event_name,
+                        const std::string& sub_event_name,
+                        const RequestFilter& filter,
+                        int extra_info_spec,
+                        int embedder_process_id,
+                        int web_view_instance_id,
+                        base::WeakPtr<IPC::Sender> ipc_sender);
 
   // Removes the listener for the given sub-event.
   void RemoveEventListener(

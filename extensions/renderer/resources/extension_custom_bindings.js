@@ -9,8 +9,6 @@ var binding = require('binding').Binding.create('extension');
 var messaging = require('messaging');
 var runtimeNatives = requireNative('runtime');
 var GetExtensionViews = runtimeNatives.GetExtensionViews;
-var OpenChannelToExtension = runtimeNatives.OpenChannelToExtension;
-var OpenChannelToNativeApp = runtimeNatives.OpenChannelToNativeApp;
 var chrome = requireNative('chrome').GetChrome();
 
 var inIncognitoContext = requireNative('process').InIncognitoContext();

@@ -186,8 +186,17 @@ class MessageService : public BrowserContextKeyedAPI,
   typedef std::map<int, PendingLazyBackgroundPageChannel>
       PendingLazyBackgroundPageChannelMap;
 
-  // Common among OpenChannel* variants.
-  void OpenChannelImpl(scoped_ptr<OpenChannelParams> params);
+  // Common implementation for opening a channel configured by |params|.
+  //
+  // |target_extension| will be non-null if |params->target_extension_id| is
+  // non-empty, that is, if the target is an extension, it must exist.
+  //
+  // |did_enqueue| will be true if the channel opening was delayed while
+  // waiting for an event page to start, false otherwise.
+  void OpenChannelImpl(content::BrowserContext* browser_context,
+                       scoped_ptr<OpenChannelParams> params,
+                       const Extension* target_extension,
+                       bool did_enqueue);
 
   void CloseChannelImpl(MessageChannelMap::iterator channel_iter,
                         int port_id,

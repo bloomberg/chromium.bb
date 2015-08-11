@@ -6,6 +6,7 @@
 
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager.h"
+#include "components/guest_view/common/guest_view_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -13,6 +14,7 @@
 #include "extensions/browser/guest_view/app_view/app_view_guest.h"
 #include "extensions/browser/guest_view/extension_options/extension_options_guest.h"
 #include "extensions/browser/guest_view/extension_view/extension_view_guest.h"
+#include "extensions/browser/guest_view/guest_view_events.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/surface_worker/surface_worker_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
@@ -44,14 +46,19 @@ void ExtensionsGuestViewManagerDelegate::DispatchEvent(
   scoped_ptr<base::ListValue> event_args(new base::ListValue());
   event_args->Append(args.release());
 
-  EventRouter::DispatchEvent(
-      guest->owner_web_contents(),
-      guest->browser_context(),
-      guest->owner_host(),
-      event_name,
-      event_args.Pass(),
-      EventRouter::USER_GESTURE_UNKNOWN,
-      info);
+  // GetEventHistogramValue maps guest view event names to their histogram
+  // value. It needs to be like this because the guest view component doesn't
+  // know about extensions, so GuestViewEvent can't have an
+  // extensions::events::HistogramValue as an argument.
+  events::HistogramValue histogram_value =
+      guest_view_events::GetEventHistogramValue(event_name);
+  DCHECK_NE(events::UNKNOWN, histogram_value) << "Event " << event_name
+                                              << " must have a histogram value";
+
+  content::WebContents* owner = guest->owner_web_contents();
+  EventRouter::DispatchEventToSender(
+      owner, guest->browser_context(), guest->owner_host(), histogram_value,
+      event_name, event_args.Pass(), EventRouter::USER_GESTURE_UNKNOWN, info);
 }
 
 bool ExtensionsGuestViewManagerDelegate::IsGuestAvailableToContext(

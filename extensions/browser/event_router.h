@@ -26,6 +26,7 @@
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/event_filtering_info.h"
 #include "ipc/ipc_sender.h"
+#include "url/gurl.h"
 
 class GURL;
 class PrefService;
@@ -85,13 +86,17 @@ class EventRouter : public KeyedService,
 
   // Sends an event via ipc_sender to the given extension. Can be called on any
   // thread.
-  static void DispatchEvent(IPC::Sender* ipc_sender,
-                            void* browser_context_id,
-                            const std::string& extension_id,
-                            const std::string& event_name,
-                            scoped_ptr<base::ListValue> event_args,
-                            UserGestureState user_gesture,
-                            const EventFilteringInfo& info);
+  //
+  // It is very rare to call this function directly. Instead use the instance
+  // methods BroadcastEvent or DispatchEventToExtension.
+  static void DispatchEventToSender(IPC::Sender* ipc_sender,
+                                    void* browser_context_id,
+                                    const std::string& extension_id,
+                                    events::HistogramValue histogram_value,
+                                    const std::string& event_name,
+                                    scoped_ptr<base::ListValue> event_args,
+                                    UserGestureState user_gesture,
+                                    const EventFilteringInfo& info);
 
   // An EventRouter is shared between |browser_context| and its associated
   // incognito context. |extension_prefs| may be NULL in tests.
@@ -185,6 +190,15 @@ class EventRouter : public KeyedService,
   void OnEventAck(content::BrowserContext* context,
                   const std::string& extension_id);
 
+  // Reports UMA for an event dispatched to |extension| with histogram value
+  // |histogram_value|. Must be called on the UI thread.
+  //
+  // |did_enqueue| should be true if the event was queued waiting for a process
+  // to start, like an event page.
+  void ReportEvent(events::HistogramValue histogram_value,
+                   const Extension* extension,
+                   bool did_enqueue);
+
  private:
   friend class EventRouterTest;
 
@@ -229,9 +243,9 @@ class EventRouter : public KeyedService,
                             const std::string& extension_id,
                             const std::string& event_name);
 
-  // Shared by DispatchEvent*. If |restrict_to_extension_id| is empty, the
-  // event is broadcast.
-  // An event that just came off the pending list may not be delayed again.
+  // Shared by all event dispatch methods. If |restrict_to_extension_id| is
+  // empty, the event is broadcast.  An event that just came off the pending
+  // list may not be delayed again.
   void DispatchEventImpl(const std::string& restrict_to_extension_id,
                          const linked_ptr<Event>& event);
 
@@ -250,7 +264,8 @@ class EventRouter : public KeyedService,
                               const GURL& listener_url,
                               content::RenderProcessHost* process,
                               const linked_ptr<Event>& event,
-                              const base::DictionaryValue* listener_filter);
+                              const base::DictionaryValue* listener_filter,
+                              bool did_enqueue);
 
   // Returns false when the event is scoped to a context and the listening
   // extension does not have access to events from that context. Also fills
@@ -292,10 +307,12 @@ class EventRouter : public KeyedService,
                                const std::string& event_name);
 
   // static
-  static void IncrementInFlightEventsOnUI(void* browser_context_id,
-                                          const std::string& extension_id,
-                                          int event_id,
-                                          const std::string& event_name);
+  static void DoDispatchEventToSenderBookkeepingOnUI(
+      void* browser_context_id,
+      const std::string& extension_id,
+      int event_id,
+      events::HistogramValue histogram_value,
+      const std::string& event_name);
 
   void DispatchPendingEvent(const linked_ptr<Event>& event,
                             ExtensionHost* host);

@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -38,6 +39,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/guest_view/guest_view_events.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
@@ -96,8 +98,6 @@ const char* const kWebRequestEvents[] = {
   keys::kOnHeadersReceivedEvent,
 };
 
-const size_t kWebRequestEventsLength = arraysize(kWebRequestEvents);
-
 const char* GetRequestStageAsString(
     ExtensionWebRequestEventRouter::EventTypes type) {
   switch (type) {
@@ -138,10 +138,10 @@ bool IsWebRequestEvent(const std::string& event_name) {
     web_request_event_name.replace(
         0, strlen(webview::kWebViewEventPrefix), kWebRequestEventPrefix);
   }
-  return std::find(
-      kWebRequestEvents,
-      kWebRequestEvents + kWebRequestEventsLength,
-      web_request_event_name) != (kWebRequestEvents + kWebRequestEventsLength);
+  auto web_request_events_end =
+      kWebRequestEvents + arraysize(kWebRequestEvents);
+  return std::find(kWebRequestEvents, web_request_events_end,
+                   web_request_event_name) != web_request_events_end;
 }
 
 // Returns whether |request| has been triggered by an extension in
@@ -372,6 +372,44 @@ void RemoveEventListenerOnIOThread(
       embedder_process_id, web_view_instance_id);
 }
 
+events::HistogramValue GetEventHistogramValue(const std::string& event_name) {
+  // Event names will either be webRequest events, or guest view (probably web
+  // view) events that map to webRequest events. Check webRequest first.
+  static struct ValueAndName {
+    events::HistogramValue histogram_value;
+    const char* event_name;
+  } values_and_names[] = {
+      {events::WEB_REQUEST_ON_BEFORE_REDIRECT, keys::kOnBeforeRedirectEvent},
+      {events::WEB_REQUEST_ON_BEFORE_REQUEST,
+       web_request::OnBeforeRequest::kEventName},
+      {events::WEB_REQUEST_ON_BEFORE_SEND_HEADERS,
+       keys::kOnBeforeSendHeadersEvent},
+      {events::WEB_REQUEST_ON_COMPLETED, keys::kOnCompletedEvent},
+      {events::WEB_REQUEST_ON_ERROR_OCCURRED,
+       web_request::OnErrorOccurred::kEventName},
+      {events::WEB_REQUEST_ON_SEND_HEADERS, keys::kOnSendHeadersEvent},
+      {events::WEB_REQUEST_ON_AUTH_REQUIRED, keys::kOnAuthRequiredEvent},
+      {events::WEB_REQUEST_ON_RESPONSE_STARTED, keys::kOnResponseStartedEvent},
+      {events::WEB_REQUEST_ON_HEADERS_RECEIVED, keys::kOnHeadersReceivedEvent}};
+  COMPILE_ASSERT(arraysize(kWebRequestEvents) == arraysize(values_and_names),
+                 "kWebRequestEvents and values_and_names must be the same");
+  for (const ValueAndName& value_and_name : values_and_names) {
+    if (value_and_name.event_name == event_name)
+      return value_and_name.histogram_value;
+  }
+
+  // If there is no webRequest event, it might be a guest view webRequest event.
+  events::HistogramValue guest_view_histogram_value =
+      guest_view_events::GetEventHistogramValue(event_name);
+  if (guest_view_histogram_value != events::UNKNOWN)
+    return guest_view_histogram_value;
+
+  // There is no histogram value for this event name. It should be added to
+  // either the mapping here, or in guest_view_events.
+  NOTREACHED() << "Event " << event_name << " must have a histogram value";
+  return events::UNKNOWN;
+};
+
 }  // namespace
 
 WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
@@ -429,6 +467,7 @@ void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
 struct ExtensionWebRequestEventRouter::EventListener {
   std::string extension_id;
   std::string extension_name;
+  events::HistogramValue histogram_value;
   std::string sub_event_name;
   RequestFilter filter;
   int extra_info_spec;
@@ -463,10 +502,11 @@ struct ExtensionWebRequestEventRouter::EventListener {
     return false;
   }
 
-  EventListener() :
-      extra_info_spec(0),
-      embedder_process_id(0),
-      web_view_instance_id(0) {}
+  EventListener()
+      : histogram_value(events::UNKNOWN),
+        extra_info_spec(0),
+        embedder_process_id(0),
+        web_view_instance_id(0) {}
 };
 
 // Contains info about requests that are blocked waiting for a response from
@@ -1194,30 +1234,30 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
   // TODO(mpcomplete): Consider consolidating common (extension_id,json_args)
   // pairs into a single message sent to a list of sub_event_names.
   int num_handlers_blocking = 0;
-  for (std::vector<const EventListener*>::const_iterator it = listeners.begin();
-       it != listeners.end(); ++it) {
+  for (const EventListener* listener : listeners) {
     // Filter out the optional keys that this listener didn't request.
     scoped_ptr<base::ListValue> args_filtered(args.DeepCopy());
     base::DictionaryValue* dict = NULL;
     CHECK(args_filtered->GetDictionary(0, &dict) && dict);
-    if (!((*it)->extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS))
+    if (!(listener->extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS))
       dict->Remove(keys::kRequestHeadersKey, NULL);
-    if (!((*it)->extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS))
+    if (!(listener->extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS))
       dict->Remove(keys::kResponseHeadersKey, NULL);
 
-    EventRouter::DispatchEvent(
-        (*it)->ipc_sender.get(), browser_context, (*it)->extension_id,
-        (*it)->sub_event_name, args_filtered.Pass(),
-        EventRouter::USER_GESTURE_UNKNOWN, EventFilteringInfo());
-    if ((*it)->extra_info_spec &
+    EventRouter::DispatchEventToSender(
+        listener->ipc_sender.get(), browser_context, listener->extension_id,
+        listener->histogram_value, listener->sub_event_name,
+        args_filtered.Pass(), EventRouter::USER_GESTURE_UNKNOWN,
+        EventFilteringInfo());
+    if (listener->extra_info_spec &
         (ExtraInfoSpec::BLOCKING | ExtraInfoSpec::ASYNC_BLOCKING)) {
-      (*it)->blocked_requests.insert(request->identifier());
+      listener->blocked_requests.insert(request->identifier());
       // If this is the first delegate blocking the request, go ahead and log
       // it.
       if (num_handlers_blocking == 0) {
-        std::string delegate_info =
-            l10n_util::GetStringFUTF8(IDS_LOAD_STATE_PARAMETER_EXTENSION,
-                                      base::UTF8ToUTF16((*it)->extension_name));
+        std::string delegate_info = l10n_util::GetStringFUTF8(
+            IDS_LOAD_STATE_PARAMETER_EXTENSION,
+            base::UTF8ToUTF16(listener->extension_name));
         // LobAndReport allows extensions that block requests to be displayed in
         // the load status bar.
         request->LogAndReportBlockedBy(delegate_info.c_str());
@@ -1268,6 +1308,7 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
     void* browser_context,
     const std::string& extension_id,
     const std::string& extension_name,
+    events::HistogramValue histogram_value,
     const std::string& event_name,
     const std::string& sub_event_name,
     const RequestFilter& filter,
@@ -1281,6 +1322,7 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
   EventListener listener;
   listener.extension_id = extension_id;
   listener.extension_name = extension_name;
+  listener.histogram_value = histogram_value;
   listener.sub_event_name = sub_event_name;
   listener.filter = filter;
   listener.extra_info_spec = extra_info_spec;
@@ -2244,8 +2286,9 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
   bool success =
       ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
           profile_id(), extension_id_safe(), extension_name,
-          event_name, sub_event_name, filter, extra_info_spec,
-          embedder_process_id, web_view_instance_id, ipc_sender_weak());
+          GetEventHistogramValue(event_name), event_name, sub_event_name,
+          filter, extra_info_spec, embedder_process_id, web_view_instance_id,
+          ipc_sender_weak());
   EXTENSION_FUNCTION_VALIDATE(success);
 
   helpers::ClearCacheOnNavigation();

@@ -665,6 +665,8 @@
       'browser/guest_view/extensions_guest_view_manager_delegate.h',
       'browser/guest_view/extensions_guest_view_message_filter.cc',
       'browser/guest_view/extensions_guest_view_message_filter.h',
+      'browser/guest_view/guest_view_events.cc',
+      'browser/guest_view/guest_view_events.h',
       'browser/guest_view/mime_handler_view/mime_handler_stream_manager.cc',
       'browser/guest_view/mime_handler_view/mime_handler_stream_manager.h',
       'browser/guest_view/mime_handler_view/mime_handler_view_constants.cc',

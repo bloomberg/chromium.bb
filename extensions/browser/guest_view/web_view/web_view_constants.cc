@@ -21,7 +21,10 @@ const char kAPILoadDataInvalidBaseURL[] = "Invalid base URL \"%s\".";
 const char kAPILoadDataInvalidVirtualURL[] = "Invalid virtual URL \"%s\".";
 
 // Events.
+const char kEventBeforeRequest[] = "webViewInternal.onBeforeRequest";
+const char kEventBeforeSendHeaders[] = "webViewInternal.onBeforeSendHeaders";
 const char kEventClose[] = "webViewInternal.onClose";
+const char kEventCompleted[] = "webViewInternal.onCompleted";
 const char kEventConsoleMessage[] = "webViewInternal.onConsoleMessage";
 const char kEventContentLoad[] = "webViewInternal.onContentLoad";
 const char kEventContextMenuShow[] = "chromeWebViewInternal.onContextMenuShow";
@@ -31,6 +34,7 @@ const char kEventExit[] = "webViewInternal.onExit";
 const char kEventExitFullscreen[] = "webViewInternal.onExitFullscreen";
 const char kEventFindReply[] = "webViewInternal.onFindReply";
 const char kEventFrameNameChanged[] = "webViewInternal.onFrameNameChanged";
+const char kEventHeadersReceived[] = "webViewInternal.onHeadersReceived";
 const char kEventLoadAbort[] = "webViewInternal.onLoadAbort";
 const char kEventLoadCommit[] = "webViewInternal.onLoadCommit";
 const char kEventLoadProgress[] = "webViewInternal.onLoadProgress";
@@ -40,6 +44,7 @@ const char kEventLoadStop[] = "webViewInternal.onLoadStop";
 const char kEventMessage[] = "webViewInternal.onMessage";
 const char kEventNewWindow[] = "webViewInternal.onNewWindow";
 const char kEventPermissionRequest[] = "webViewInternal.onPermissionRequest";
+const char kEventResponseStarted[] = "webViewInternal.onResponseStarted";
 const char kEventResponsive[] = "webViewInternal.onResponsive";
 const char kEventSizeChanged[] = "webViewInternal.onSizeChanged";
 const char kEventUnresponsive[] = "webViewInternal.onUnresponsive";
