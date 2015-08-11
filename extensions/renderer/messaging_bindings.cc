@@ -55,7 +55,7 @@ namespace extensions {
 
 using v8_helpers::ToV8String;
 using v8_helpers::ToV8StringUnsafe;
-using v8_helpers::IsEmptyOrUndefined;
+using v8_helpers::IsEmptyOrUndefied;
 
 namespace {
 
@@ -365,7 +365,7 @@ void DispatchOnConnectToScriptContext(
       script_context->module_system()->CallModuleMethod(
           "messaging", "dispatchOnConnect", arraysize(arguments), arguments);
 
-  if (!IsEmptyOrUndefined(retval)) {
+  if (!IsEmptyOrUndefied(retval)) {
     CHECK(retval->IsBoolean());
     *port_created |= retval.As<v8::Boolean>()->Value();
   } else {
@@ -388,7 +388,7 @@ void DeliverMessageToScriptContext(const Message& message,
                                                         1, &port_id_handle);
   // Could be empty/undefined if an exception was thrown.
   // TODO(kalman): Should this be built into CallModuleMethod?
-  if (IsEmptyOrUndefined(has_port))
+  if (IsEmptyOrUndefied(has_port))
     return;
   CHECK(has_port->IsBoolean());
   if (!has_port.As<v8::Boolean>()->Value())

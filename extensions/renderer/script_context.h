@@ -15,6 +15,7 @@
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/request_sender.h"
+#include "extensions/renderer/safe_builtins.h"
 #include "gin/runner.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
@@ -31,7 +32,6 @@ class RenderFrame;
 namespace extensions {
 class Extension;
 class ExtensionSet;
-class SafeBuiltins;
 
 // Extensions wrapper for a v8 context.
 class ScriptContext : public RequestSender::Source {
@@ -87,9 +87,9 @@ class ScriptContext : public RequestSender::Source {
 
   ModuleSystem* module_system() { return module_system_.get(); }
 
-  SafeBuiltins* safe_builtins() { return safe_builtins_.get(); }
+  SafeBuiltins* safe_builtins() { return &safe_builtins_; }
 
-  const SafeBuiltins* safe_builtins() const { return safe_builtins_.get(); }
+  const SafeBuiltins* safe_builtins() const { return &safe_builtins_; }
 
   // Returns the ID of the extension associated with this context, or empty
   // string if there is no such extension.
@@ -213,7 +213,7 @@ class ScriptContext : public RequestSender::Source {
   scoped_ptr<ModuleSystem> module_system_;
 
   // Contains safe copies of builtin objects like Function.prototype.
-  scoped_ptr<SafeBuiltins> safe_builtins_;
+  SafeBuiltins safe_builtins_;
 
   // The set of capabilities granted to this context by extensions.
   APIPermissionSet content_capabilities_;

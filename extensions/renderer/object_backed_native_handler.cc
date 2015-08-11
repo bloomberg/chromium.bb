@@ -10,12 +10,9 @@
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
-#include "extensions/renderer/v8_helpers.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
-
-using namespace v8_helpers;
 
 namespace {
 // Key for the base::Bound routed function.
@@ -46,7 +43,8 @@ void ObjectBackedNativeHandler::Router(
   v8::Local<v8::Value> handler_function_value =
       data->Get(v8::String::NewFromUtf8(args.GetIsolate(), kHandlerFunction));
   // See comment in header file for why we do this.
-  if (IsEmptyOrUndefined(handler_function_value)) {
+  if (handler_function_value.IsEmpty() ||
+      handler_function_value->IsUndefined()) {
     ScriptContext* script_context = ScriptContextSet::GetContextByV8Context(
         args.GetIsolate()->GetCallingContext());
     console::Error(script_context ? script_context->GetRenderFrame() : nullptr,
@@ -63,15 +61,12 @@ void ObjectBackedNativeHandler::RouteFunction(
     const HandlerFunction& handler_function) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> v8_context = context_->v8_context();
-  v8::Context::Scope context_scope(v8_context);
+  v8::Context::Scope context_scope(context_->v8_context());
 
   v8::Local<v8::Object> data = v8::Object::New(isolate);
-  SetProperty(
-      v8_context, data, kHandlerFunction,
+  data->Set(
+      v8::String::NewFromUtf8(isolate, kHandlerFunction),
       v8::External::New(isolate, new HandlerFunction(handler_function)));
-
-  // TODO(kalman): Cache these. See https://crbug.com/478744.
   v8::Local<v8::FunctionTemplate> function_template =
       v8::FunctionTemplate::New(isolate, Router, data);
   v8::Local<v8::ObjectTemplate>::New(isolate, object_template_)
@@ -86,17 +81,16 @@ v8::Isolate* ObjectBackedNativeHandler::GetIsolate() const {
 void ObjectBackedNativeHandler::Invalidate() {
   v8::Isolate* isolate = GetIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> v8_context = context_->v8_context();
-  v8::Context::Scope context_scope(v8_context);
+  v8::Context::Scope context_scope(context_->v8_context());
 
   for (size_t i = 0; i < router_data_.Size(); i++) {
     v8::Local<v8::Object> data = router_data_.Get(i);
     v8::Local<v8::Value> handler_function_value =
-        GetPropertyUnsafe(v8_context, data, kHandlerFunction);
+        data->Get(v8::String::NewFromUtf8(isolate, kHandlerFunction));
     CHECK(!handler_function_value.IsEmpty());
     delete static_cast<HandlerFunction*>(
         handler_function_value.As<v8::External>()->Value());
-    DeletePropertyUnsafe(v8_context, data, kHandlerFunction);
+    data->Delete(v8::String::NewFromUtf8(isolate, kHandlerFunction));
   }
 
   router_data_.Clear();

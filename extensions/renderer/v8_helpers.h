@@ -52,7 +52,7 @@ inline bool IsTrue(v8::Maybe<bool> maybe) {
 }
 
 // Returns true if |value| is empty or undefined.
-inline bool IsEmptyOrUndefined(v8::Local<v8::Value> value) {
+inline bool IsEmptyOrUndefied(v8::Local<v8::Value> value) {
   return value.IsEmpty() || value->IsUndefined();
 }
 
@@ -117,24 +117,6 @@ inline v8::Local<v8::Value> GetPropertyUnsafe(
   return object->Get(context,
                      ToV8StringUnsafe(context->GetIsolate(), key, string_type))
       .ToLocalChecked();
-}
-
-// DeletePropertyUnsafe() family wraps v8::Object::Delete(). They crash when an
-// exception is thrown.
-inline bool DeletePropertyUnsafe(v8::Local<v8::Context> context,
-                                 v8::Local<v8::Object> object,
-                                 v8::Local<v8::Value> key) {
-  return object->Delete(context, key).FromJust();
-}
-
-inline bool DeletePropertyUnsafe(
-    v8::Local<v8::Context> context,
-    v8::Local<v8::Object> object,
-    const char* key,
-    v8::NewStringType string_type = v8::NewStringType::kNormal) {
-  return object->Delete(context, ToV8StringUnsafe(context->GetIsolate(), key,
-                                                  string_type))
-      .FromJust();
 }
 
 // Wraps v8::Function::Call(). Returns true on success.

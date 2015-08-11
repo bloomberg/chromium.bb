@@ -5,21 +5,21 @@
 #ifndef EXTENSIONS_RENDERER_SAFE_BUILTINS_H_
 #define EXTENSIONS_RENDERER_SAFE_BUILTINS_H_
 
-#include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
 class ScriptContext;
 
-// Saves a subset of the JavaScript builtin types, so that they can be used
-// later without extensions tampering with them.
+// A collection of safe builtin objects, in that they won't be tained by
+// extensions overriding methods on them.
 class SafeBuiltins {
  public:
-  ~SafeBuiltins();
+  // Creates the v8::Extension which manages SafeBuiltins instances.
+  static v8::Extension* CreateV8Extension();
 
-  // Creates and immediately installs a SafeBuiltins instance in |context|.
-  static scoped_ptr<SafeBuiltins> Install(ScriptContext* context);
+  explicit SafeBuiltins(ScriptContext* context);
+
+  virtual ~SafeBuiltins();
 
   // Each method returns an object with methods taken from their respective
   // builtin object's prototype, adapted to automatically call() themselves.
@@ -39,13 +39,7 @@ class SafeBuiltins {
   v8::Local<v8::Object> GetError() const;
 
  private:
-  explicit SafeBuiltins(ScriptContext* context);
-
-  v8::Local<v8::Object> Load(const char* name) const;
-
   ScriptContext* context_;
-
-  DISALLOW_COPY_AND_ASSIGN(SafeBuiltins);
 };
 
 }  //  namespace extensions

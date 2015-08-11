@@ -21,7 +21,6 @@
 #include "extensions/common/features/base_feature_provider.h"
 #include "extensions/common/manifest_handlers/sandboxed_page_info.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "extensions/renderer/safe_builtins.h"
 #include "gin/per_context_data.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -101,6 +100,7 @@ ScriptContext::ScriptContext(const v8::Local<v8::Context>& v8_context,
       context_type_(context_type),
       effective_extension_(effective_extension),
       effective_context_type_(effective_context_type),
+      safe_builtins_(this),
       isolate_(v8_context->GetIsolate()),
       url_(web_frame_ ? GetDataSourceURLForFrame(web_frame_) : GURL()),
       runner_(new Runner(this)) {
@@ -108,7 +108,6 @@ ScriptContext::ScriptContext(const v8::Local<v8::Context>& v8_context,
   gin::PerContextData* gin_data = gin::PerContextData::From(v8_context);
   CHECK(gin_data);  // may fail if the v8::Context hasn't been registered yet
   gin_data->set_runner(runner_.get());
-  safe_builtins_ = SafeBuiltins::Install(this);
 }
 
 ScriptContext::~ScriptContext() {

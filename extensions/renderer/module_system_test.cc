@@ -18,6 +18,7 @@
 #include "extensions/common/extension_paths.h"
 #include "extensions/renderer/logging_native_handler.h"
 #include "extensions/renderer/object_backed_native_handler.h"
+#include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/utils_native_handler.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -31,6 +32,30 @@ class FailsOnException : public ModuleSystem::ExceptionHandler {
     FAIL() << "Uncaught exception: " << CreateExceptionString(try_catch);
   }
 };
+
+class V8ExtensionConfigurator {
+ public:
+  V8ExtensionConfigurator()
+      : safe_builtins_(SafeBuiltins::CreateV8Extension()),
+        names_(1, safe_builtins_->name()),
+        configuration_(
+            new v8::ExtensionConfiguration(static_cast<int>(names_.size()),
+                                           vector_as_array(&names_))) {
+    v8::RegisterExtension(safe_builtins_.get());
+  }
+
+  v8::ExtensionConfiguration* GetConfiguration() {
+    return configuration_.get();
+  }
+
+ private:
+  scoped_ptr<v8::Extension> safe_builtins_;
+  std::vector<const char*> names_;
+  scoped_ptr<v8::ExtensionConfiguration> configuration_;
+};
+
+base::LazyInstance<V8ExtensionConfigurator>::Leaky g_v8_extension_configurator =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -102,7 +127,8 @@ ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(v8::Isolate* isolate)
       context_holder_(new gin::ContextHolder(isolate_)),
       handle_scope_(isolate_),
       source_map_(new StringSourceMap()) {
-  context_holder_->SetContext(v8::Context::New(isolate));
+  context_holder_->SetContext(v8::Context::New(
+      isolate, g_v8_extension_configurator.Get().GetConfiguration()));
   context_.reset(new ScriptContext(context_holder_->context(),
                                    nullptr,  // WebFrame
                                    nullptr,  // Extension
