@@ -285,7 +285,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     logging.info('%s : %s', test_name, cmd)
     start_time = time.time()
 
-    timeout = self._tests['steps'][test_name].get('timeout', 5400)
+    timeout = self._tests['steps'][test_name].get('timeout', 3600)
     if self._options.no_timeout:
       timeout = None
     logging.info('Timeout for %s test: %s', test_name, timeout)
