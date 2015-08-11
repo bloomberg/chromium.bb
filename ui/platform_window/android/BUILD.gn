@@ -10,6 +10,7 @@ assert(is_android)
 component("android") {
   output_name = "android_window"
   sources = [
+    "android_window_export.h",
     "platform_ime_controller_android.cc",
     "platform_ime_controller_android.h",
     "platform_window_android.cc",
@@ -21,12 +22,15 @@ component("android") {
   deps = [
     "//base",
     "//skia",
+    "//ui/events:events",
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
     ":jni_headers",
     ":platform_window_java",
   ]
+
+  libs = [ "android" ]
 }
 
 generate_jni("jni_headers") {

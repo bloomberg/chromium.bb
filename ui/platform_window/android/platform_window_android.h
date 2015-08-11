@@ -12,6 +12,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/sequential_id_generator.h"
+#include "ui/platform_window/android/android_window_export.h"
 #include "ui/platform_window/android/platform_ime_controller_android.h"
 #include "ui/platform_window/platform_window.h"
 
@@ -19,7 +20,7 @@ struct ANativeWindow;
 
 namespace ui {
 
-class PlatformWindowAndroid : public PlatformWindow {
+class ANDROID_WINDOW_EXPORT PlatformWindowAndroid : public PlatformWindow {
  public:
   static bool Register(JNIEnv* env);
 
