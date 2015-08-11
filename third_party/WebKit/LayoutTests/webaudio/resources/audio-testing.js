@@ -386,6 +386,23 @@ function createTestingAudioBuffer(context, numChannels, length) {
     return buffer;
 }
 
+// Compute the (linear) signal-to-noise ratio between |actual| and |expected|.  The result is NOT in
+// dB!  If the |actual| and |expected| have different lengths, the shorter length is used.
+function computeSNR(actual, expected)
+{
+    var signalPower = 0;
+    var noisePower = 0;
+
+    var length = Math.min(actual.length, expected.length);
+
+    for (var k = 0; k < length; ++k) {
+        var diff = actual[k] - expected[k];
+        signalPower += expected[k] * expected[k];
+        noisePower += diff * diff;
+    }
+
+    return signalPower / noisePower;
+}
 
 // |Should| JS layout test utility.
 // Dependency: ../resources/js-test.js
@@ -398,6 +415,8 @@ var Should = (function () {
     function ShouldModel(desc, target, opts) {
         this.desc = desc;
         this.target = target;
+        // |_testPassed| and |_testFailed| set this appropriately.
+        this.success = false;
 
         // If the number of errors is greater than this, the rest of error
         // messages are suppressed. the value is fairly arbitrary, but shouldn't
@@ -412,10 +431,12 @@ var Should = (function () {
     // Internal methods starting with a underscore.
     ShouldModel.prototype._testPassed = function (msg) {
         testPassed(this.desc + ' ' + msg + '.');
+        this._success = true;
     };
 
     ShouldModel.prototype._testFailed = function (msg) {
         testFailed(this.desc + ' ' + msg + '.');
+        this._success = false;
     };
 
     ShouldModel.prototype._isArray = function (arg) {
@@ -446,6 +467,7 @@ var Should = (function () {
             this._testPassed('is equal to ' + value);
         else
             this._testFailed('was ' + value + ' instead of ' + this.target);
+        return this._success;
     };
 
     // Check if |target| is not equal to |value|.
@@ -463,12 +485,13 @@ var Should = (function () {
             this._testFailed('should not be equal to ' + value);
         else
             this._testPassed('is not equal to ' + value);
+        return this._success;
     };
 
     // Check if |target| is greater than or equal to |value|.
     //
     // Example:
-    // Should("SNR", snr).greaterThanOrEqualTo(100);
+    // Should("SNR", snr).beGreaterThanOrEqualTo(100);
     // Result:
     // "PASS SNR exceeds 100"
     // "FAIL SNR (n) is not greater than or equal to 100"
@@ -481,6 +504,27 @@ var Should = (function () {
             this._testPassed("is greater than or equal to " + value);
         else
             this._testFailed("(" + this.target + ") is not greater than or equal to " + value);
+        return this._success;
+    }
+
+    // Check if |target| is lest than or equal to |value|.
+    //
+    // Example:
+    // maxError = 1e-6;
+    // Should("max error", maxError).beLessThanOrEqualTo(1e-5);
+    // Should("max error", maxError).beLessThanOrEqualTo(-1);
+    // Result:
+    // "PASS max error is less than or equal to 1e-5"
+    // "FAIL max error (1e-6) is not less than or equal to -1"
+    ShouldModel.prototype.beLessThanOrEqualTo = function (value) {
+        var type = typeof value;
+        this._assert(type === 'number', 'value should be number or string for');
+
+        if (this.target <= value)
+            this._testPassed("is less than or equal to " + value);
+        else
+            this._testFailed("(" + this.target + ") is not less than or equal to " + value);
+        return this._success;
     }
 
     // Check if |target| is close to |value| using the given relative error |threshold|.
@@ -503,6 +547,7 @@ var Should = (function () {
             this._testFailed("is not " + value + " within a relative error of " + relativeErrorThreshold
                              + ": " + this.target);
         }
+        return this._success;
     }
 
     // Check if |func| throws an exception with a certain |errorType| correctly.
@@ -532,6 +577,7 @@ var Should = (function () {
             else
                 this._testFailed('threw ' + error.name + ' instead of ' + exception);
         }
+        return this._success;
     };
 
     // Check if |func| does not throw an exception.
@@ -547,6 +593,7 @@ var Should = (function () {
         } catch (error) {
             this._testFailed('threw ' + error.name + ': ' + error.message);
         }
+        return this._success;
     };
 
     // Check if |target| array is filled with constant values.
@@ -580,6 +627,7 @@ var Should = (function () {
             }
             this._testFailed(failureMessage);
         }
+        return this._success;
     };
 
     // Check if |target| array is identical to |expected| array element-wise.
@@ -618,6 +666,7 @@ var Should = (function () {
 
             this._testFailed(failureMessage);
         }
+        return this._success;
     };
 
     // Check if |target| array is close to |expected| array element-wise within
@@ -662,6 +711,7 @@ var Should = (function () {
 
             this._testFailed(failureMessage);
         }
+        return this._success;
     };
 
     // Check if |target| array contains a set of values in a certain order.
@@ -687,6 +737,7 @@ var Should = (function () {
             this._testPassed('contains all the expected values in the correct order: [' +
             expected + ']');
         }
+        return this._success;
     };
 
     // Check if |target| array does not have any glitches. Note that |threshold|
@@ -701,10 +752,11 @@ var Should = (function () {
             var diff = Math.abs(this.target[i-1] - this.target[i]);
             if (diff >= threshold) {
                 this._testFailed('has a glitch at index ' + i + ' of size ' + diff);
-                return;
+                return this._success;
             }
         }
         this._testPassed('has no glitch above the threshold of ' + threshold);
+        return this._success;
     };
 
     // Should() method.

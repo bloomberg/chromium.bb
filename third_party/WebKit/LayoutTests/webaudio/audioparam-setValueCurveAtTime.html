@@ -22,9 +22,10 @@ description("Test AudioParam setValueCurveAtTime() functionality.");
 // Number of tests to run.
 var numberOfTests = 20;
 
-// Max allowed difference between the rendered data and the expected result.  (The error is zero
-// because the rendered curve should really be exactly the same as the reference.)
-var maxAllowedError = 0;
+// Max allowed difference between the rendered data and the expected result.  Because of the linear
+// interpolation, the rendered curve isn't exactly the same as the reference.  This value is
+// experimentally determined.
+var maxAllowedError = 4.657e-10;
 
 // The amplitude of the sine wave.
 var sineAmplitude = 1;

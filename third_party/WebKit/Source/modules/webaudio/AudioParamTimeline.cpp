@@ -364,9 +364,22 @@ float AudioParamTimeline::valuesForTimeRangeImpl(
                     unsigned numberOfCurvePoints = curve ? curve->length() : 0;
 
                     // Curve events have duration, so don't just use next event time.
-                    float duration = event.duration();
-                    float durationFrames = duration * sampleRate;
-                    float curvePointsPerFrame = static_cast<float>(numberOfCurvePoints) / durationFrames;
+                    double duration = event.duration();
+                    double durationFrames = duration * sampleRate;
+                    // How much to step the curve index for each frame.  We want the curve index to
+                    // be exactly equal to the last index (numberOfCurvePoints - 1) after
+                    // durationFrames - 1 frames.  In this way, the last output value will equal the
+                    // last value in the curve array.
+                    double curvePointsPerFrame;
+
+                    // If the duration is less than a frame, we want to just output the last curve
+                    // value.  Do this by setting curvePointsPerFrame to be more than number of
+                    // points in the curve.  Then the curveVirtualIndex will always exceed the last
+                    // curve index, so that the last curve value will be used.
+                    if (durationFrames > 1)
+                        curvePointsPerFrame = (numberOfCurvePoints - 1) / (durationFrames - 1);
+                    else
+                        curvePointsPerFrame = numberOfCurvePoints + 1;
 
                     if (!curve || !curveData || !numberOfCurvePoints || duration <= 0 || sampleRate <= 0) {
                         // Error condition - simply propagate previous value.
@@ -379,33 +392,50 @@ float AudioParamTimeline::valuesForTimeRangeImpl(
                     // Save old values and recalculate information based on the curve's duration
                     // instead of the next event time.
                     unsigned nextEventFillToFrame = fillToFrame;
-                    float nextEventFillToTime = fillToTime;
+                    double nextEventFillToTime = fillToTime;
                     fillToTime = std::min(endTime, time1 + duration);
                     fillToFrame = AudioUtilities::timeToSampleFrame(fillToTime - startTime, sampleRate);
                     fillToFrame = std::min(fillToFrame, numberOfValues);
 
                     // Index into the curve data using a floating-point value.
                     // We're scaling the number of curve points by the duration (see curvePointsPerFrame).
-                    float curveVirtualIndex = 0;
+                    double curveVirtualIndex = 0;
                     if (time1 < currentTime) {
                         // Index somewhere in the middle of the curve data.
                         // Don't use timeToSampleFrame() since we want the exact floating-point frame.
-                        float frameOffset = (currentTime - time1) * sampleRate;
+                        double frameOffset = (currentTime - time1) * sampleRate;
                         curveVirtualIndex = curvePointsPerFrame * frameOffset;
                     }
 
-                    // Render the stretched curve data using nearest neighbor sampling.
-                    // Oversampled curve data can be provided if smoothness is desired.
-                    for (; writeIndex < fillToFrame; ++writeIndex) {
-                        // Ideally we'd use round() from MathExtras, but we're in a tight loop here
-                        // and we're trading off precision for extra speed.
-                        unsigned curveIndex = static_cast<unsigned>(0.5 + curveVirtualIndex);
+                    // Set the default value in case fillToFrame is 0.
+                    value = curveData[numberOfCurvePoints - 1];
 
-                        curveVirtualIndex += curvePointsPerFrame;
+                    // Render the stretched curve data using linear interpolation.  Oversampled
+                    // curve data can be provided if sharp discontinuities are desired.
+                    for (unsigned k = 0; writeIndex < fillToFrame; ++writeIndex, ++k) {
+                        // Compute current index this way to minimize round-off that would have
+                        // occurred by incrementing the index by curvePointsPerFrame.
+                        double currentVirtualIndex = curveVirtualIndex + k * curvePointsPerFrame;
+                        unsigned curveIndex0;
 
-                        // Bounds check.
-                        if (curveIndex < numberOfCurvePoints)
-                            value = curveData[curveIndex];
+                        // Clamp index to the last element of the array.
+                        if (currentVirtualIndex < numberOfCurvePoints) {
+                            curveIndex0 = static_cast<unsigned>(currentVirtualIndex);
+                        } else {
+                            curveIndex0 = numberOfCurvePoints - 1;
+                        }
+
+                        unsigned curveIndex1 = std::min(curveIndex0 + 1, numberOfCurvePoints - 1);
+
+                        // Linearly interpolate between the two nearest curve points.  |delta| is
+                        // clamped to 1 because currentVirtualIndex can exceed curveIndex0 by more
+                        // than one.  This can happen when we reached the end of the curve but still
+                        // need values to fill out the current rendering quantum.
+                        float c0 = curveData[curveIndex0];
+                        float c1 = curveData[curveIndex1];
+                        double delta = std::min(currentVirtualIndex - curveIndex0, 1.0);
+
+                        value = c0 + (c1 - c0) * delta;
 
                         values[writeIndex] = value;
                     }
