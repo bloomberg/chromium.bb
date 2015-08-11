@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<script src="../../../resources/js-test.js"></script> 
+
+<p id="description"></p>
+<div id="console"></div>
+<script type="text/javascript">
+description('Test that touches created with no target does not crash during dispatch. http://crbug.com/517962');
+
+var event = document.createEvent('TouchEvent');
+event.initTouchEvent(document.createTouchList(document.createTouch()));
+document.body.dispatchEvent(event);
+
+</script>

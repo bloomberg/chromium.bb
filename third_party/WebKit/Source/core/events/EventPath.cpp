@@ -337,8 +337,15 @@ void EventPath::adjustTouchList(const TouchList* touchList, WillBeHeapVector<Raw
         return;
     for (size_t i = 0; i < touchList->length(); ++i) {
         const Touch& touch = *touchList->item(i);
+        if (!touch.target())
+            continue;
+
+        Node* targetNode = touch.target()->toNode();
+        if (!targetNode)
+            continue;
+
         RelatedTargetMap relatedNodeMap;
-        buildRelatedNodeMap(*touch.target()->toNode(), relatedNodeMap);
+        buildRelatedNodeMap(*targetNode, relatedNodeMap);
         for (size_t j = 0; j < treeScopes.size(); ++j) {
             adjustedTouchList[j]->append(touch.cloneWithNewTarget(findRelatedNode(*treeScopes[j], relatedNodeMap)));
         }
