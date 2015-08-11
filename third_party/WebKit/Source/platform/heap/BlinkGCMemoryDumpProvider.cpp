@@ -13,6 +13,23 @@
 #include "wtf/Threading.h"
 
 namespace blink {
+namespace {
+
+void dumpMemoryTotals(blink::WebProcessMemoryDump* memoryDump)
+{
+    String dumpName = String::format("blink_gc");
+    WebMemoryAllocatorDump* allocatorDump = memoryDump->createMemoryAllocatorDump(dumpName);
+    allocatorDump->AddScalar("size", "bytes", Heap::allocatedSpace());
+
+    dumpName.append("/allocated_objects");
+    WebMemoryAllocatorDump* objectsDump = memoryDump->createMemoryAllocatorDump(dumpName);
+
+    // Heap::markedObjectSize() can be underestimated if we're still in the
+    // process of lazy sweeping.
+    objectsDump->AddScalar("size", "bytes", Heap::allocatedObjectSize() + Heap::markedObjectSize());
+}
+
+} // namespace
 
 BlinkGCMemoryDumpProvider* BlinkGCMemoryDumpProvider::instance()
 {
@@ -26,16 +43,13 @@ BlinkGCMemoryDumpProvider::~BlinkGCMemoryDumpProvider()
 
 bool BlinkGCMemoryDumpProvider::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, blink::WebProcessMemoryDump* memoryDump)
 {
-    // TODO(ssid): Use levelOfDetail to create light dumps when requested (crbug.com/499731).
+    if (levelOfDetail == WebMemoryDumpLevelOfDetail::Low) {
+        dumpMemoryTotals(memoryDump);
+        return true;
+    }
 
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::TakeSnapshot, Heap::ForcedGC);
-    String dumpName = String::format("blink_gc/thread_%lu", static_cast<unsigned long>(WTF::currentThread()));
-    WebMemoryAllocatorDump* allocatorDump = memoryDump->createMemoryAllocatorDump(dumpName);
-    allocatorDump->AddScalar("size", "bytes", Heap::allocatedSpace());
-
-    dumpName.append("/allocated_objects");
-    WebMemoryAllocatorDump* objectsDump = memoryDump->createMemoryAllocatorDump(dumpName);
-    objectsDump->AddScalar("size", "bytes", Heap::allocatedObjectSize() + Heap::markedObjectSize());
+    dumpMemoryTotals(memoryDump);
 
     // Merge all dumps collected by Heap::collectGarbage.
     memoryDump->takeAllDumpsFrom(m_currentProcessMemoryDump.get());
