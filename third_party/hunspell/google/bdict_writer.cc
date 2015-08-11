@@ -382,24 +382,6 @@ void SerializeTrie(const DicNode* node, std::string* output) {
     SerializeLookup(node, output);
   }
 }
-/*
-void SerializeStringList(const std::vector<std::string>& list,
-                         std::string* output) {
-  for (size_t i = 0; i < list.size(); i++) {
-    if (i != 0)
-      output->push_back('\n');
-    output->append(list[i]);
-  }
-  output->push_back(0);
-}
-*/
-
-// Appends the given uint32 to the given string.
-void AppendUint32(uint32 a, std::string* output) {
-  size_t offset = output->size();
-  output->resize(offset + 4);
-  memcpy(&(*output)[offset], &a, sizeof(uint32));
-}
 
 // Serializes the given list of strings with 0 bytes separating them. The end
 // will be marked by a double-0.
