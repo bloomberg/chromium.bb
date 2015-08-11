@@ -8,6 +8,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
+import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 
 /**
@@ -21,6 +22,9 @@ public class CustomTabsConnectionService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
+        boolean firstRunNecessary = FirstRunFlowSequencer
+                .checkIfFirstRunIsNecessary(getApplicationContext(), false) != null;
+        if (firstRunNecessary) return null;
         if (!ChromePreferenceManager.getInstance(this).getCustomTabsEnabled()) return null;
 
         return (IBinder) CustomTabsConnection.getInstance(getApplication());
