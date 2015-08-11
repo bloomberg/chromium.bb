@@ -26,18 +26,7 @@ public:
     virtual void proxyStopped() { }
 
     virtual WebURL scope() const { return WebURL(); }
-    // TODO(jungkees):
-    // void update(p) remains temporarily before the chromium-side companion
-    // patch lands: https://codereview.chromium.org/1270513002/.
-    // Before the chromium-side patch lands, the new update(p, c) will
-    // internally call update(provider) to work with the existing code base.
-    // The final changes will be incorporated with the Blink layout patches.
-    virtual void update(WebServiceWorkerProvider*) { }
-    virtual void update(WebServiceWorkerProvider* provider, WebServiceWorkerUpdateCallbacks* callback)
-    {
-        update(provider);
-        callback->onSuccess();
-    }
+    virtual void update(WebServiceWorkerProvider*, WebServiceWorkerUpdateCallbacks*) { }
     virtual void unregister(WebServiceWorkerProvider*, WebServiceWorkerUnregistrationCallbacks*) { }
 };
 
