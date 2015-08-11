@@ -116,7 +116,7 @@ class _OctaneMeasurement(page_test.PageTest):
         'Unexpected result format "%s"' % score_and_name
       if 'Skipped' not in score_and_name[1]:
         name = score_and_name[0]
-        score = int(score_and_name[1])
+        score = float(score_and_name[1])
         results.AddValue(scalar.ScalarValue(
             results.current_page, name, 'score', score, important=False,
             description=DESCRIPTIONS.get(name)))
