@@ -65,7 +65,7 @@ crbug.com/518999 [ Win7 Mac ] plugins/webview-plugin-lifecycle.html [ ImageOnlyF
 crbug.com/519001 storage/indexeddb/pending-version-change-stuck-works-with-terminate.html [ Pass Timeout ]
 crbug.com/519002 storage/indexeddb/pending-version-change-stuck.html [ Pass Timeout ]
 crbug.com/519003 [ Mac ] svg/batik/text/xmlSpace.svg [ Failure Pass ]
-crbug.com/519004 crbug.com/377660 svg/custom/repaint-moving-svg-and-div.xhtml [ Failure Pass ]
+crbug.com/519004 crbug.com/377660 svg/custom/repaint-moving-svg-and-div.xhtml [ NeedsRebaseline ]
 crbug.com/519005 webaudio/stereopannernode-no-glitch.html [ Pass Timeout ]
 crbug.com/519007 webmidi/permission.html [ Failure Pass ]
 crbug.com/519008 webmidi/send-messages.html [ Pass Timeout ]

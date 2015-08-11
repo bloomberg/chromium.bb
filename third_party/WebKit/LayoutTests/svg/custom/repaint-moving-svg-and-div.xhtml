@@ -64,12 +64,12 @@ var htmlLeft = 400;
 var svgTop = 100;
 var htmlTop = 100;
 
-var iterations = 0;
-
 var svgStyle = document.getElementById("svg").style;
 var htmlStyle = document.getElementById("html").style;
 
 window.testIsAsync = true;
+
+var iterations = 0;
 
 function repaintTest() {
     if (iterations < 10) {
@@ -86,7 +86,7 @@ function repaintTest() {
         htmlStyle.top = htmlTop + "px";
 
         ++iterations;
-        window.setTimeout(repaintTest, 0);
+        requestAnimationFrame(repaintTest);
     } else {
         finishRepaintTest();
     }
