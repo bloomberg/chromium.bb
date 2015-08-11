@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -9,6 +11,7 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/ui/browser.h"
@@ -17,6 +20,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -244,7 +248,6 @@ void DeclarativeContentApiTest::CheckBookmarkEvents(bool match_is_bookmarked) {
   NavigateInRenderer(tab, GURL("http://test3/"));
   EXPECT_EQ(!match_is_bookmarked, page_action->GetIsVisible(tab_id));
 }
-
 
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
   ext_dir_.WriteManifest(kDeclarativeContentManifest);
@@ -804,6 +807,48 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
   tab2.reset();
   NavigateInRenderer(tab1, GURL("http://test1/"));
   EXPECT_TRUE(page_action->GetIsVisible(ExtensionTabUtil::GetTabId(tab1)));
+}
+
+// https://crbug.com/517492
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
+                       RemoveAllRulesAfterExtensionUninstall) {
+  ext_dir_.WriteManifest(kDeclarativeContentManifest);
+  ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundHelpers);
+
+  // Load the extension, add a rule, then uninstall the extension.
+  const Extension* extension = LoadExtension(ext_dir_.unpacked_path());
+  ASSERT_TRUE(extension);
+
+  const std::string kAddTestRule =
+      "addRules([{\n"
+      "  id: '1',\n"
+      "  conditions: [],\n"
+      "  actions: [new ShowPageAction()]\n"
+      "}], 'add_rule');\n";
+  EXPECT_EQ("add_rule",
+            ExecuteScriptInBackgroundPage(extension->id(), kAddTestRule));
+
+  ExtensionService* extension_service = extensions::ExtensionSystem::Get(
+      browser()->profile())->extension_service();
+
+  base::string16 error;
+  ASSERT_TRUE(extension_service->UninstallExtension(
+      extension->id(),
+      UNINSTALL_REASON_FOR_TESTING,
+      base::Bind(&base::DoNothing),
+      &error));
+  ASSERT_EQ(base::ASCIIToUTF16(""), error);
+
+  // Reload the extension, then add and remove a rule.
+  extension = LoadExtension(ext_dir_.unpacked_path());
+  ASSERT_TRUE(extension);
+
+  EXPECT_EQ("add_rule",
+            ExecuteScriptInBackgroundPage(extension->id(), kAddTestRule));
+
+  const std::string kRemoveTestRule1 = "removeRule('1', 'remove_rule1');\n";
+  EXPECT_EQ("remove_rule1",
+            ExecuteScriptInBackgroundPage(extension->id(), kRemoveTestRule1));
 }
 
 

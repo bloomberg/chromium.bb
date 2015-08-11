@@ -374,7 +374,7 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
   EvaluationScope evaluation_scope(this);
   const Extension* extension = ExtensionRegistry::Get(browser_context())
       ->GetInstalledExtension(extension_id);
-  DCHECK(extension) << "Must have extension with id " << extension_id;
+  DCHECK(extension);
 
   std::string error;
   RulesMap new_rules;
@@ -397,7 +397,7 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
               base::Unretained(&page_url_condition_tracker_));
 
   for (const linked_ptr<api::events::Rule>& api_rule : api_rules) {
-    ExtensionRuleIdPair rule_id(extension, *api_rule->id);
+    ExtensionIdRuleIdPair rule_id(extension_id, *api_rule->id);
     DCHECK(content_rules_.find(rule_id) == content_rules_.end());
 
     scoped_ptr<const ContentRule> rule(
@@ -441,7 +441,7 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
   // Request evaluation for all WebContents, under the assumption that a
   // non-empty condition has been added.
   for (auto web_contents_rules_pair : active_rules_)
-    EvaluateConditionsForTab(web_contents_rules_pair.first);
+    RequestEvaluation(web_contents_rules_pair.first);
 
   return std::string();
 }
@@ -456,12 +456,10 @@ std::string ChromeContentRulesRegistry::RemoveRulesImpl(
   // URLMatcherConditionSet IDs that can be removed from URLMatcher.
   std::vector<URLMatcherConditionSet::ID> condition_set_ids_to_remove;
 
-  const Extension* extension = ExtensionRegistry::Get(browser_context())
-      ->GetInstalledExtension(extension_id);
   for (const std::string& id : rule_identifiers) {
     // Skip unknown rules.
     RulesMap::iterator content_rules_entry =
-        content_rules_.find(std::make_pair(extension, id));
+        content_rules_.find(std::make_pair(extension_id, id));
     if (content_rules_entry == content_rules_.end())
       continue;
 
@@ -501,11 +499,6 @@ std::string ChromeContentRulesRegistry::RemoveRulesImpl(
 
   UpdateCssSelectorsFromRules();
 
-  // Request evaluation for all WebContents, under the assumption that a
-  // non-empty condition has been removed.
-  for (auto web_contents_rules_pair : active_rules_)
-    EvaluateConditionsForTab(web_contents_rules_pair.first);
-
   return std::string();
 }
 
@@ -514,9 +507,9 @@ std::string ChromeContentRulesRegistry::RemoveAllRulesImpl(
   // Search all identifiers of rules that belong to extension |extension_id|.
   std::vector<std::string> rule_identifiers;
   for (const RulesMap::value_type& id_rule_pair : content_rules_) {
-    const ExtensionRuleIdPair& extension_rule_id_pair = id_rule_pair.first;
-    if (extension_rule_id_pair.first->id() == extension_id)
-      rule_identifiers.push_back(extension_rule_id_pair.second);
+    const ExtensionIdRuleIdPair& extension_id_rule_id_pair = id_rule_pair.first;
+    if (extension_id_rule_id_pair.first == extension_id)
+      rule_identifiers.push_back(extension_id_rule_id_pair.second);
   }
 
   return RemoveRulesImpl(extension_id, rule_identifiers);

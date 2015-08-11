@@ -237,11 +237,12 @@ class ChromeContentRulesRegistry
   bool ShouldEvaluateExtensionRulesForIncognitoRenderer(
       const Extension* extension) const;
 
-  using ExtensionRuleIdPair = std::pair<const Extension*, std::string>;
+  using ExtensionIdRuleIdPair = std::pair<extensions::ExtensionId, std::string>;
   using RuleAndConditionForURLMatcherId =
       std::map<url_matcher::URLMatcherConditionSet::ID,
                std::pair<const ContentRule*, const ContentCondition*>>;
-  using RulesMap = std::map<ExtensionRuleIdPair, linked_ptr<const ContentRule>>;
+  using RulesMap = std::map<ExtensionIdRuleIdPair,
+                            linked_ptr<const ContentRule>>;
 
   // Map that tells us which ContentRules and ContentConditions may
   // match for a URLMatcherConditionSet::ID returned by the |url_matcher_|.
