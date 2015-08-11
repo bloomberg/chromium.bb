@@ -25,6 +25,12 @@ from legion import jsonrpclib
 class ExampleTestController(legion_test_case.TestCase):
   """An example controller using the remote subprocess functions."""
 
+  # We use python from the command line to mimic ls and sleep due to
+  # compatibility issues across OSes.
+  LS = ['python', '-c', 'import os; print os.listdir(".")']
+  SLEEP10 = ['python', '-c', 'import time; time.sleep(10)']
+  SLEEP20 = ['python', '-c', 'import time; time.sleep(20)']
+
   @classmethod
   def setUpClass(cls):
     """Creates the task machine and waits until it connects."""
@@ -46,16 +52,16 @@ class ExampleTestController(legion_test_case.TestCase):
     """Tests that processes can be run and controlled simultaneously."""
     start = time.time()
     logging.info('Starting "sleep 10" and "sleep 20"')
-    sleep10 = self.task.Process(['sleep', '10'])
-    sleep20 = self.task.Process(['sleep', '20'])
+    sleep10 = self.task.Process(self.SLEEP10)
+    sleep20 = self.task.Process(self.SLEEP20)
 
-    logging.info('Waiting for sleep 10 to finish and verifying timing')
+    logging.info('Waiting for "sleep 10" to finish and verifying timing')
     sleep10.Wait()
     elapsed = time.time() - start
     self.assertGreaterEqual(elapsed, 10)
     self.assertLess(elapsed, 11)
 
-    logging.info('Waiting for sleep 20 to finish and verifying timing')
+    logging.info('Waiting for "sleep 20" to finish and verifying timing')
     sleep20.Wait()
     elapsed = time.time() - start
     self.assertGreaterEqual(elapsed, 20)
@@ -68,26 +74,24 @@ class ExampleTestController(legion_test_case.TestCase):
     start = time.time()
 
     logging.info('Starting "sleep 20"')
-    sleep20 = self.task.Process(['sleep', '20'])
+    sleep20 = self.task.Process(self.SLEEP20)
     logging.info('Calling Terminate()')
     sleep20.Terminate()
     try:
-      logging.info('Trying to wait for sleep 20 to complete')
+      logging.info('Trying to wait for "sleep 20" to complete')
       sleep20.Wait()
     except xmlrpclib.Fault:
       pass
     finally:
       sleep20.Delete()
-    logging.info('Checking to make sure sleep 20 was actually terminated')
+    logging.info('Checking to make sure "sleep 20" was actually terminated')
     self.assertLess(time.time() - start, 20)
 
   def testLs(self):
     """Tests that the returned results from a process are correct."""
-    logging.info('Calling "ls"')
-    ls = self.task.Process(['ls'])
-    logging.info('Trying to wait for ls to complete')
+    ls = self.task.Process(self.LS)
+    logging.info('Trying to wait for "ls" to complete')
     ls.Wait()
-    logging.info('Checking that ls completed and returned the correct results')
     self.assertEqual(ls.GetReturncode(), 0)
     self.assertIn('task.isolate', ls.ReadStdout())
 
@@ -97,7 +101,7 @@ class ExampleTestController(legion_test_case.TestCase):
             'sys.stdout.write("Hello stdout")\n'
             'sys.stderr.write("Hello stderr")')
     self.task.rpc.WriteFile('test.py', code)
-    proc = self.task.Process(['python', 'test.py'],)
+    proc = self.task.Process(['python', 'test.py'])
     proc.Wait()
 
     self.CheckProcessOutput('stdout', proc.key, 'Hello stdout')
@@ -117,8 +121,8 @@ class ExampleTestController(legion_test_case.TestCase):
 
   def testKeyReuse(self):
     """Tests that a key cannot be reused."""
-    self.task.Process(['ls'], key='KeyReuse')
-    self.assertRaises(jsonrpclib.Fault, self.task.Process, ['ls'],
+    self.task.Process(self.LS, key='KeyReuse')
+    self.assertRaises(jsonrpclib.Fault, self.task.Process, self.LS,
                       key='KeyReuse')
 
   def CheckProcessOutput(self, pipe, key, expected):
@@ -128,6 +132,7 @@ class ExampleTestController(legion_test_case.TestCase):
     path = self.task.rpc.PathJoin(output_dir, '%s.%s' % (key, pipe))
     actual = self.task.rpc.ReadFile(path)
     self.assertEqual(expected, actual)
+
 
 if __name__ == '__main__':
   legion_test_case.main()

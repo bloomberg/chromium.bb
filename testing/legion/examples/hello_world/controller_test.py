@@ -64,8 +64,8 @@ class ExampleTestController(legion_test_case.TestCase):
 
   def VerifyTaskBinaryLaunched(self, task):
     logging.info(
-        'Calling Process to run "./task_test.py %s"', task.name)
-    proc = task.Process(['./task_test.py', task.name])
+        'Calling Process to run "task_test.py %s"', task.name)
+    proc = task.Process(['python', 'task_test.py', task.name])
     proc.Wait()
     self.assertEqual(proc.GetReturncode(), 0)
     self.assertIn(task.name, proc.ReadStdout())

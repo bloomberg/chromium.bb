@@ -6,6 +6,7 @@
 
 import logging
 import os
+import platform
 import socket
 import sys
 import threading
@@ -86,3 +87,15 @@ class RPCMethods(object):
   def GetHostname(self):
     """Returns the hostname."""
     return socket.gethostname()
+
+  def GetPlatform(self):
+    """Returns the value of platform.platform()."""
+    return platform.platform()
+
+  def GetExecutable(self):
+    """Returns the value of sys.executable."""
+    return sys.executable
+
+  def GetCwd(self):
+    """Returns the value of os.getcwd()."""
+    return os.getcwd()

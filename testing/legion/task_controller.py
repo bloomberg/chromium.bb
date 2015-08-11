@@ -70,6 +70,7 @@ class TaskController(object):
     self._otp = self._CreateOTP()
     self._rpc = None
     self._output_dir = None
+    self._platform = None
 
     run_id = run_id or datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     self._task_name = '%s/%s/%s' % (
@@ -128,6 +129,12 @@ class TaskController(object):
     if not self._output_dir:
       self._output_dir = self.rpc.GetOutputDir()
     return self._output_dir
+
+  @property
+  def platform(self):
+    if not self._platform:
+      self._platform = self._rpc.GetPlatform()
+    return self._platform
 
   @classmethod
   def ReleaseAllTasks(cls):

@@ -13,6 +13,7 @@ import os
 import subprocess
 import sys
 import threading
+import time
 
 #pylint: disable=relative-import
 import common_lib
@@ -23,6 +24,10 @@ sys.path.append(common_lib.SWARMING_DIR)
 from utils import subprocess42
 
 
+class TimeoutError(Exception):
+  pass
+
+
 class ControllerProcessWrapper(object):
   """Controller-side process wrapper class.
 
@@ -31,7 +36,7 @@ class ControllerProcessWrapper(object):
   """
 
   def __init__(self, rpc, cmd, verbose=False, detached=False, cwd=None,
-               key=None):
+               key=None, shell=None):
     logging.info('Creating a process with cmd=%s', cmd)
     self._rpc = rpc
     self._key = rpc.subprocess.Process(cmd, key)
@@ -41,7 +46,9 @@ class ControllerProcessWrapper(object):
     if detached:
       self._rpc.subprocess.SetDetached(self._key)
     if cwd:
-      self._rpc.subprocess.SetCwd(self._rpc, cwd)
+      self._rpc.subprocess.SetCwd(self._key, cwd)
+    if shell:
+      self._rpc.subprocess.SetShell(self._key)
     self._rpc.subprocess.Start(self._key)
 
   @property
@@ -86,15 +93,14 @@ class ControllerProcessWrapper(object):
     """
     return self._rpc.subprocess.ReadOutput(self._key)
 
-  def Wait(self):
-    return self._rpc.subprocess.Wait(self._key)
+  def Wait(self, timeout=None):
+    return self._rpc.subprocess.Wait(self._key, timeout)
 
   def Poll(self):
     return self._rpc.subprocess.Poll(self._key)
 
   def GetPid(self):
     return self._rpc.subprocess.GetPid(self._key)
-
 
 
 class Process(object):
@@ -120,8 +126,10 @@ class Process(object):
     self.cmd = cmd
     self.proc = None
     self.cwd = None
+    self.shell = False
     self.verbose = False
     self.detached = False
+    self.complete = False
     self.data_lock = threading.Lock()
     self.stdout_file = open(self._CreateOutputFilename('stdout'), 'wb+')
     self.stderr_file = open(self._CreateOutputFilename('stderr'), 'wb+')
@@ -148,6 +156,7 @@ class Process(object):
           self.stderr_file.flush()
           if self.verbose:
             sys.stderr.write(data)
+    self.complete = True
 
   @classmethod
   def KillAll(cls):
@@ -170,7 +179,8 @@ class Process(object):
     logging.info('Starting process %s', self)
     self.proc = subprocess42.Popen(self.cmd, stdout=subprocess42.PIPE,
                                    stderr=subprocess42.PIPE,
-                                   detached=self.detached, cwd=self.cwd)
+                                   detached=self.detached, cwd=self.cwd,
+                                   shell=self.shell)
     threading.Thread(target=self._reader).start()
 
   @classmethod
@@ -182,6 +192,12 @@ class Process(object):
     """Sets the process's cwd."""
     logging.debug('Setting %s cwd to %s', key, cwd)
     cls._processes[key].cwd = cwd
+
+  @classmethod
+  def SetShell(cls, key):
+    """Sets the process's shell arg to True."""
+    logging.debug('Setting %s.shell = True', key)
+    cls._processes[key].shell = True
 
   @classmethod
   def SetDetached(cls, key):
@@ -255,8 +271,22 @@ class Process(object):
     return cls.ReadStdout(key), cls.ReadStderr(key)
 
   @classmethod
-  def Wait(cls, key):
-    return cls._processes[key].proc.wait()
+  def Wait(cls, key, timeout=None):
+    """Wait for the process to complete.
+
+    We wait for all of the output to be written before returning. This solves
+    a race condition found on Windows where the output can lag behind the
+    wait call.
+
+    Raises:
+      TimeoutError if the process doesn't finish in the specified timeout.
+    """
+    end = None if timeout is None else timeout + time.time()
+    while end is None or end > time.time():
+      if cls._processes[key].complete:
+        return
+      time.sleep(0.05)
+    raise TimeoutError()
 
   @classmethod
   def Poll(cls, key):
