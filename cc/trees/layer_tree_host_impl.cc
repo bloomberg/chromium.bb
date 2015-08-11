@@ -1847,11 +1847,15 @@ LayerImpl* LayerTreeHostImpl::CurrentlyScrollingLayer() const {
 }
 
 bool LayerTreeHostImpl::IsActivelyScrolling() const {
-  return (did_lock_scrolling_layer_ && CurrentlyScrollingLayer()) ||
-         (InnerViewportScrollLayer() &&
-          InnerViewportScrollLayer()->IsExternalScrollActive()) ||
-         (OuterViewportScrollLayer() &&
-          OuterViewportScrollLayer()->IsExternalScrollActive());
+  if (!CurrentlyScrollingLayer())
+    return false;
+  if (root_layer_scroll_offset_delegate_ &&
+      (CurrentlyScrollingLayer() == InnerViewportScrollLayer() ||
+       CurrentlyScrollingLayer() == OuterViewportScrollLayer())) {
+    // ScrollDelegate cannot determine current scroll, so assume no.
+    return false;
+  }
+  return did_lock_scrolling_layer_;
 }
 
 // Content layers can be either directly scrollable or contained in an outer
