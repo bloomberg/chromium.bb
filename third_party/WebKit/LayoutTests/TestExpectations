@@ -2166,15 +2166,6 @@ crbug.com/509025 [ Yosemite ] virtual/trustedeventsdefaultaction/fast/events/aut
 crbug.com/509025 [ Yosemite ] virtual/trustedeventsdefaultaction/fast/events/context-no-deselect.html [ Failure ]
 crbug.com/509025 [ Yosemite ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/theme-affects-visual-overflow.html [ Failure ]
 
-crbug.com/515836 [ Mac ] fast/css/css2-system-fonts.html [ NeedsRebaseline ]
-crbug.com/515836 [ Mac Linux Win ] fast/forms/text-control-intrinsic-widths.html [ NeedsRebaseline ]
-crbug.com/515836 [ Yosemite ] fast/forms/select/listbox-with-display-none-option.html [ NeedsRebaseline ]
-# Renable this once similar override from crbug.com/518918 has been rebaselined.
-# crbug.com/515836 [ Yosemite ] fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]
-crbug.com/515836 [ Yosemite ] fast/forms/select/optgroup-rendering.html [ NeedsRebaseline ]
-crbug.com/515836 [ Yosemite ] fast/forms/input-placeholder-paint-order.html [ NeedsRebaseline ]
-crbug.com/515836 [ Yosemite ] fast/forms/textarea/textarea-placeholder-paint-order.html [ NeedsRebaseline ]
-
 # GrGLConvolutionEffect optimization causes blink layout test image differences
 crbug.com/505086 css3/filters/effect-blur-hw.html [ NeedsManualRebaseline ]
 crbug.com/505086 css3/filters/effect-brightness-clamping-hw.html [ NeedsManualRebaseline ]
