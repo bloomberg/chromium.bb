@@ -29,6 +29,13 @@
 
 namespace blink {
 
+bool FormDataElement::isSafeToSendToAnotherThread() const
+{
+    return m_filename.isSafeToSendToAnotherThread()
+        && m_blobUUID.isSafeToSendToAnotherThread()
+        && m_fileSystemURL.isSafeToSendToAnotherThread();
+}
+
 inline FormData::FormData()
     : m_identifier(0)
     , m_containsPasswordData(false)
@@ -185,6 +192,17 @@ unsigned long long FormData::sizeInBytes() const
         }
     }
     return size;
+}
+
+bool FormData::isSafeToSendToAnotherThread() const
+{
+    if (!hasOneRef())
+        return false;
+    for (auto& element : m_elements) {
+        if (!element.isSafeToSendToAnotherThread())
+            return false;
+    }
+    return true;
 }
 
 } // namespace blink

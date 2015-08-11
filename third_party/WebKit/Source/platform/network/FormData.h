@@ -40,6 +40,8 @@ public:
     explicit FormDataElement(const String& blobUUID, PassRefPtr<BlobDataHandle> optionalHandle) : m_type(encodedBlob), m_blobUUID(blobUUID), m_optionalBlobDataHandle(optionalHandle) { }
     FormDataElement(const KURL& fileSystemURL, long long start, long long length, double expectedFileModificationTime) : m_type(encodedFileSystemURL), m_fileSystemURL(fileSystemURL), m_fileStart(start), m_fileLength(length), m_expectedFileModificationTime(expectedFileModificationTime) { }
 
+    bool isSafeToSendToAnotherThread() const;
+
     enum Type {
         data,
         encodedFile,
@@ -131,6 +133,8 @@ public:
 
     // Size of the elements making up the FormData.
     unsigned long long sizeInBytes() const;
+
+    bool isSafeToSendToAnotherThread() const;
 
 private:
     FormData();
