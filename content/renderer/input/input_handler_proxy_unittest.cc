@@ -1981,6 +1981,53 @@ TEST_F(InputHandlerProxyTest, NoFlingBoostIfScrollDelayed) {
   VERIFY_AND_RESET_MOCKS();
 }
 
+TEST_F(InputHandlerProxyTest, NoFlingBoostIfNotAnimated) {
+  base::TimeDelta dt = base::TimeDelta::FromMilliseconds(10);
+  base::TimeTicks time = base::TimeTicks() + dt;
+  WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
+  WebPoint fling_point = WebPoint(7, 13);
+  StartFling(
+      time, blink::WebGestureDeviceTouchscreen, fling_delta, fling_point);
+
+  // Animate fling once.
+  time += dt;
+  EXPECT_CALL(mock_input_handler_, ScrollBy(testing::_, testing::_))
+      .WillOnce(testing::Return(scroll_result_did_scroll_));
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput());
+  input_handler_->Animate(time);
+
+  // Cancel the fling after long delay of no animate. The fling cancellation
+  // should be deferred to allow fling boosting events to arrive.
+  time += base::TimeDelta::FromMilliseconds(100);
+  CancelFling(time);
+
+  // The GestureScrollBegin should be swallowed by the fling if it hits the same
+  // scrolling layer.
+  EXPECT_CALL(mock_input_handler_,
+              IsCurrentlyScrollingLayerAt(testing::_, testing::_))
+      .WillOnce(testing::Return(true));
+
+  time += dt;
+  gesture_.timeStampSeconds = InSecondsF(time);
+  gesture_.type = WebInputEvent::GestureScrollBegin;
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // Should exit scroll bosting on GestureScrollUpdate due to long delay
+  // since last animate. Cancel old fling and start new scroll.
+  gesture_.type = WebInputEvent::GestureScrollUpdate;
+  gesture_.data.scrollUpdate.deltaY = -40;
+  EXPECT_CALL(mock_input_handler_, ScrollEnd());
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+  EXPECT_CALL(mock_input_handler_, ScrollBy(testing::_, testing::_))
+      .WillOnce(testing::Return(scroll_result_did_scroll_));
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+
+  VERIFY_AND_RESET_MOCKS();
+}
+
 TEST_F(InputHandlerProxyTest, NoFlingBoostIfFlingInDifferentDirection) {
   base::TimeDelta dt = base::TimeDelta::FromMilliseconds(10);
   base::TimeTicks time = base::TimeTicks() + dt;

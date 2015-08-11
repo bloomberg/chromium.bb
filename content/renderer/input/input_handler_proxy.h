@@ -147,6 +147,8 @@ class CONTENT_EXPORT InputHandlerProxy
 
   bool uma_latency_reporting_enabled_;
 
+  base::TimeTicks last_fling_animate_time_;
+
   DISALLOW_COPY_AND_ASSIGN(InputHandlerProxy);
 };
 

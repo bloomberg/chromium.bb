@@ -4,6 +4,8 @@
 
 #include "content/renderer/input/input_handler_proxy.h"
 
+#include <algorithm>
+
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -51,11 +53,11 @@ const double kMinBoostFlingSpeedSquare = 350. * 350.;
 // fling for which cancellation has been deferred.
 const double kMinBoostTouchScrollSpeedSquare = 150 * 150.;
 
-// Timeout window after which the active fling will be cancelled if no scrolls
-// or flings of sufficient velocity relative to the current fling are received.
-// The default value on Android native views is 40ms, but we use a slightly
-// increased value to accomodate small IPC message delays.
-const double kFlingBoostTimeoutDelaySeconds = 0.045;
+// Timeout window after which the active fling will be cancelled if no animation
+// ticks, scrolls or flings of sufficient velocity relative to the current fling
+// are received. The default value on Android native views is 40ms, but we use a
+// slightly increased value to accomodate small IPC message delays.
+const double kFlingBoostTimeoutDelaySeconds = 0.05;
 
 gfx::Vector2dF ToClientScrollIncrement(const WebFloatSize& increment) {
   return gfx::Vector2dF(-increment.width, -increment.height);
@@ -68,12 +70,16 @@ double InSecondsF(const base::TimeTicks& time) {
 bool ShouldSuppressScrollForFlingBoosting(
     const gfx::Vector2dF& current_fling_velocity,
     const WebGestureEvent& scroll_update_event,
-    double time_since_last_boost_event) {
+    double time_since_last_boost_event,
+    double time_since_last_fling_animate) {
   DCHECK_EQ(WebInputEvent::GestureScrollUpdate, scroll_update_event.type);
 
   gfx::Vector2dF dx(scroll_update_event.data.scrollUpdate.deltaX,
                     scroll_update_event.data.scrollUpdate.deltaY);
   if (gfx::DotProduct(current_fling_velocity, dx) <= 0)
+    return false;
+
+  if (time_since_last_fling_animate > kFlingBoostTimeoutDelaySeconds)
     return false;
 
   if (time_since_last_boost_event < 0.001)
@@ -655,9 +661,12 @@ bool InputHandlerProxy::FilterInputEventForFlingBoosting(
     case WebInputEvent::GestureScrollUpdate: {
       const double time_since_last_boost_event =
           event.timeStampSeconds - last_fling_boost_event_.timeStampSeconds;
+      const double time_since_last_fling_animate = std::max(
+          0.0, event.timeStampSeconds - InSecondsF(last_fling_animate_time_));
       if (ShouldSuppressScrollForFlingBoosting(current_fling_velocity_,
                                                gesture_event,
-                                               time_since_last_boost_event)) {
+                                               time_since_last_boost_event,
+                                               time_since_last_fling_animate)) {
         ExtendBoostedFlingTimeout(gesture_event);
         return true;
       }
@@ -747,6 +756,7 @@ void InputHandlerProxy::Animate(base::TimeTicks time) {
   if (!fling_curve_)
     return;
 
+  last_fling_animate_time_ = time;
   double monotonic_time_sec = InSecondsF(time);
 
   if (deferred_fling_cancel_time_seconds_ &&
