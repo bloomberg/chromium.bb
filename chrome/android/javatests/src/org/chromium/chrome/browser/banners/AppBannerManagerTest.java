@@ -56,6 +56,11 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
 
     private static final String NATIVE_APP_INSTALL_TEXT = "Install this";
 
+    private static final String NATIVE_APP_REFERRER = "chrome_inline";
+
+    private static final String NATIVE_APP_URL_WITH_MANIFEST_URL =
+            TestHttpServerClient.getUrl("chrome/test/data/banners/play_app_url_test_page.html");
+
     private static final String WEB_APP_URL =
             TestHttpServerClient.getUrl("chrome/test/data/banners/manifest_test_page.html");
 
@@ -68,12 +73,14 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         private AppData mAppData;
         private int mNumRetrieved;
         private Intent mInstallIntent;
+        private String mReferrer;
 
         @Override
         protected void getAppDetailsAsynchronously(
                 Observer observer, String url, String packageName, String referrer, int iconSize) {
             mNumRetrieved += 1;
             mObserver = observer;
+            mReferrer = referrer;
             mInstallIntent = new Intent(INSTALL_ACTION);
 
             mAppData = new AppData(url, packageName);
@@ -189,13 +196,12 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    @SmallTest
-    @Feature({"AppBanners"})
-    public void testFullNativeInstallPathway() throws Exception {
+    private void runFullNativeInstallPathway(String url, String expectedReferrer) throws Exception {
         // Visit a site that requests a banner.
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(
-                new TabLoadObserver(getActivity().getActivityTab(), NATIVE_APP_URL)));
+                new TabLoadObserver(getActivity().getActivityTab(), url)));
         assertTrue(waitUntilAppDetailsRetrieved(1));
+        assertEquals(mDetailsDelegate.mReferrer, expectedReferrer);
         assertTrue(waitUntilNoInfoBarsExist());
 
         // Indicate a day has passed, then revisit the page to get the banner to appear.
@@ -204,7 +210,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         container.setAnimationListener(listener);
         AppBannerManager.setTimeDeltaForTesting(1);
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(
-                new TabLoadObserver(getActivity().getActivityTab(), NATIVE_APP_URL)));
+                new TabLoadObserver(getActivity().getActivityTab(), url)));
         assertTrue(waitUntilAppDetailsRetrieved(2));
         assertTrue(waitUntilAppBannerInfoBarAppears(NATIVE_APP_TITLE));
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
@@ -248,6 +254,18 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
                 return TextUtils.equals(button.getText(), openText);
             }
         }));
+    }
+
+    @SmallTest
+    @Feature({"AppBanners"})
+    public void testFullNativeInstallPathwayFromId() throws Exception {
+        runFullNativeInstallPathway(NATIVE_APP_URL, "");
+    }
+
+    @SmallTest
+    @Feature({"AppBanners"})
+    public void testFullNativeInstallPathwayFromUrl() throws Exception {
+        runFullNativeInstallPathway(NATIVE_APP_URL_WITH_MANIFEST_URL, NATIVE_APP_REFERRER);
     }
 
     @MediumTest
