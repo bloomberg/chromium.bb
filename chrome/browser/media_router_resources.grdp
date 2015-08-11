@@ -18,8 +18,4 @@
   <include name="IDR_ROUTE_DETAILS_HTML" file="resources\media_router\elements\route_details\route_details.html" type="BINDATA" />
   <include name="IDR_ROUTE_DETAILS_CSS" file="resources\media_router\elements\route_details\route_details.css" type="BINDATA" />
   <include name="IDR_ROUTE_DETAILS_JS" file="resources\media_router\elements\route_details\route_details.js" type="BINDATA" />
-
-  <!-- Icons -->
-  <include name="IDR_SAD_FACE_ICON" file="resources\media_router\elements\icon\sad-face.png" type="BINDATA" />
-  <include name="IDR_SAD_FACE_2X_ICON" file="resources\media_router\elements\icon\sad-face2x.png" type="BINDATA" />
 </grit-part>

@@ -2,34 +2,25 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.action {
-  /* TODO(apacible): Update to use Chromium paper color. */
-  background-color: rgb(82, 147, 242);
-  color: white;
-}
-
-#blocking-issue-buttons {
-  display: flex;
-}
-
-#blocking-issue-header {
-  display: flex;
+#blocking-issue {
   overflow: hidden;
-  padding-top: 10px;
+  padding-bottom: 15px;
+  padding-top: 15px;
+  position: relative;
+  text-align: center;
+}
+
+#blocking-issue-icon {
+  height: 75px;
+  padding: 15px;
+  width: 75px;
 }
 
 #blocking-issue-message {
-  -webkit-padding-start: 8px;
-  color: rgb(125, 125, 125);
+  color: rgb(150, 150, 150);
   line-height: 1.125em;
+  padding: 10px;
   vertical-align: middle;
-}
-
-#blocking-issue-title {
-  -webkit-padding-start: 8px;
-  font-weight: bold;
-  line-height: 1.125em;
-  vertical-align: top;
 }
 
 .issue-action {
@@ -44,14 +35,4 @@
   line-height: 1.25em;
   padding-bottom: 6px;
   padding-top: 6px;
-}
-
-#sad-face {
-  -webkit-margin-start: 20px;
-  background-image: -webkit-image-set(
-    url(../icon/sad-face.png) 1x,
-    url(../icon/sad-face2x.png) 2x);
-  background-repeat: no-repeat;
-  height: 32px;
-  width: 32px;
 }

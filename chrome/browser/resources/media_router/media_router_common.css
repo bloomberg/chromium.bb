@@ -3,13 +3,7 @@
  * found in the LICENSE file. */
 
 .button {
-  /* TODO(apacible): Update to use Chromium paper color. */
-  background-color: rgb(238, 238, 238);
-  color: rgb(44, 44, 44);
+  color: rgb(33, 150, 243);
   cursor: pointer;
-  font-size: 1em;
-  font-weight: bold;
-  margin: 0;
   text-align: center;
-  width: 100%;
 }

@@ -57,11 +57,10 @@ cr.define('issue_banner', function() {
         assertEquals(expected.trim(), banner.$[elementId].textContent.trim());
       };
 
-      // Checks whether |issue| title and message are equal with the title
-      // and message text in the UI.
+      // Checks whether |issue| message are equal with the message text in the
+      // UI.
       var checkIssueText = function(issue) {
         if (issue) {
-          checkElementText(issue.title, 'blocking-issue-title');
           checkElementText(issue.message, 'blocking-issue-message');
           checkElementText(issue.message, 'non-blocking-message');
 
@@ -81,7 +80,6 @@ cr.define('issue_banner', function() {
                     issue.secondaryActionType]), 'non-blocking-opt');
           }
         } else {
-          checkElementText('', 'blocking-issue-title');
           checkElementText('', 'blocking-issue-message');
           checkElementText('', 'non-blocking-message');
           checkElementText('', 'blocking-default');

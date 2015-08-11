@@ -5,7 +5,9 @@
 #close-route-button {
   background-color: white;
   color: rgb(33, 150, 243);
+  margin: 0;
   text-align: end;
+  width: 100%;
 }
 
 #close-button {

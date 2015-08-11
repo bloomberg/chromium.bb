@@ -9,13 +9,6 @@
 
 namespace {
 
-void AddIcons(content::WebUIDataSource* html_source) {
-  html_source->AddResourcePath("elements/icon/sad-face.png",
-                              IDR_SAD_FACE_ICON);
-  html_source->AddResourcePath("elements/icon/sad-face2x.png",
-                              IDR_SAD_FACE_2X_ICON);
-}
-
 void AddMainWebResources(content::WebUIDataSource* html_source) {
   html_source->AddResourcePath("media_router.js", IDR_MEDIA_ROUTER_JS);
   html_source->AddResourcePath("media_router_common.css",
@@ -63,7 +56,6 @@ void AddPolymerElements(content::WebUIDataSource* html_source) {
 namespace media_router {
 
 void AddMediaRouterUIResources(content::WebUIDataSource* html_source) {
-  AddIcons(html_source);
   AddMainWebResources(html_source);
   AddPolymerElements(html_source);
   html_source->SetDefaultResource(IDR_MEDIA_ROUTER_HTML);
