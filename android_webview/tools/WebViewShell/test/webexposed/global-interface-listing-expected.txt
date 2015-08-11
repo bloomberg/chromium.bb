@@ -3154,10 +3154,12 @@ interface Path2D
 interface Performance
     getter memory
     getter navigation
+    getter onresourcetimingbufferfull
     getter onwebkitresourcetimingbufferfull
     getter timing
     method clearMarks
     method clearMeasures
+    method clearResourceTimings
     method constructor
     method getEntries
     method getEntriesByName
@@ -3165,8 +3167,10 @@ interface Performance
     method mark
     method measure
     method now
+    method setResourceTimingBufferSize
     method webkitClearResourceTimings
     method webkitSetResourceTimingBufferSize
+    setter onresourcetimingbufferfull
     setter onwebkitresourcetimingbufferfull
 interface PerformanceEntry
     getter duration
