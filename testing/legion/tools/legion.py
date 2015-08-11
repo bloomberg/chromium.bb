@@ -48,6 +48,10 @@ class Error(Exception):
   pass
 
 
+class ArgumentError(Error):
+  pass
+
+
 def GetArgs():
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument('action', choices=['run', 'trigger'],
@@ -58,9 +62,9 @@ def GetArgs():
   parser.add_argument('--controller-isolated', required=True,
                       help='The isolated file for the test controller.')
   parser.add_argument('--isolate-server', help='Optional. The isolated server '
-                      'to use.')
+                      'to use.', default=os.environ.get('ISOLATE_SERVER', ''))
   parser.add_argument('--swarming-server', help='Optional. The swarming server '
-                      'to use.')
+                      'to use.', default=os.environ.get('SWARMING_SERVER', ''))
   parser.add_argument('--task-name', help='Optional. The swarming task name '
                       'to use.')
   parser.add_argument('--dimension', action='append', dest='dimensions',
@@ -99,7 +103,7 @@ def RunCommand(cmd, stream_stdout=False):
   return stdout
 
 
-def Archive(isolated, isolate_server=None):
+def Archive(isolated, isolate_server):
   """Calls isolate.py archive with the given args."""
   cmd = [
       sys.executable,
@@ -107,8 +111,7 @@ def Archive(isolated, isolate_server=None):
       'archive',
       '--isolated', isolated,
       ]
-  if isolate_server:
-    cmd.extend(['--isolate-server', isolate_server])
+  cmd.extend(['--isolate-server', isolate_server])
   print ' '.join(cmd)
   return RunCommand(cmd).split()[0] # The isolated hash
 
@@ -121,10 +124,8 @@ def GetSwarmingCommandLine(args):
       args.action,
       args.controller_isolated,
       ]
-  if args.isolate_server:
-    cmd.extend(['--isolate-server', args.isolate_server])
-  if args.swarming_server:
-    cmd.extend(['--swarming', args.swarming_server])
+  cmd.extend(['--isolate-server', args.isolate_server])
+  cmd.extend(['--swarming', args.swarming_server])
   if args.task_name:
     cmd.extend(['--task-name', args.task_name])
   # swarming.py dimensions
@@ -133,6 +134,8 @@ def GetSwarmingCommandLine(args):
 
   cmd.append('--')
 
+  cmd.extend(['--swarming-server', args.swarming_server])
+  cmd.extend(['--isolate-server', args.isolate_server])
   # Specify the output dir
   cmd.extend(['--output-dir', '${ISOLATED_OUTDIR}'])
   # Task name/hash values
@@ -147,6 +150,10 @@ def GetSwarmingCommandLine(args):
 
 def main():
   args = GetArgs()
+  if not args.swarming_server:
+    raise ArgumentError('Missing required argument: --swarming-server')
+  if not args.isolate_server:
+    raise ArgumentError('Missing required argument: --isolate-server')
   logging.basicConfig(
       format='%(asctime)s %(filename)s:%(lineno)s %(levelname)s] %(message)s',
       datefmt='%H:%M:%S',
