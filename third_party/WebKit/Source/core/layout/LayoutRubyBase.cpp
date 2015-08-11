@@ -140,6 +140,10 @@ void LayoutRubyBase::adjustInlineDirectionLineBounds(unsigned expansionOpportuni
     if (maxPreferredLogicalWidth >= logicalWidth)
         return;
 
+    unsigned maxCount = static_cast<unsigned>(LayoutUnit::max().floor());
+    if (expansionOpportunityCount > maxCount)
+        expansionOpportunityCount = maxCount;
+
     // Inset the ruby base by half the inter-ideograph expansion amount.
     LayoutUnit inset = (logicalWidth - maxPreferredLogicalWidth) / (expansionOpportunityCount + 1);
 
