@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.offline_pages;
 
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
@@ -45,11 +44,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         loadAllPages(LoadResult.SUCCESS, /* expected count */ 0);
     }
 
-    /*
     @MediumTest
-    Bug 518758
-    */
-    @FlakyTest
     public void testAddOfflinePageAndLoad() throws Exception {
         loadUrl(TEST_PAGE);
         savePage(SavePageResult.SUCCESS, TEST_PAGE);
@@ -61,7 +56,9 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                 allPages.get(0).getOfflineUrl().startsWith("file:///"));
         assertTrue("Offline page item offline file doesn't have the right name.",
                 allPages.get(0).getOfflineUrl().endsWith("About.mhtml"));
-        assertEquals("Offline page item size incorrect.", 626, allPages.get(0).getFileSize());
+        // BUG(518758): Depending on the bot the result will be either 626 or 627.
+        long size = allPages.get(0).getFileSize();
+        assertTrue("Offline page item size is incorrect: " + size, size == 626 || size == 627);
     }
 
     private void savePage(final int expectedResult, final String expectedUrl)
