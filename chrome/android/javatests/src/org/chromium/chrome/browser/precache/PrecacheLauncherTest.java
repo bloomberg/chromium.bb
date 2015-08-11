@@ -26,7 +26,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
         private boolean mShouldRun = false;
 
         @Override
-        protected void onPrecacheCompleted() {}
+        protected void onPrecacheCompleted(boolean tryAgainSoon) {}
 
         @Override
         boolean nativeShouldRun() {

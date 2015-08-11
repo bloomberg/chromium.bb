@@ -38,8 +38,8 @@ public class PrecacheServiceTest extends ServiceTestCase<MockPrecacheService> {
         public void cancel() {}
 
         @Override
-        protected void onPrecacheCompleted() {
-            mService.handlePrecacheCompleted();
+        protected void onPrecacheCompleted(boolean precacheStarted) {
+            mService.handlePrecacheCompleted(precacheStarted);
         }
     }
 
@@ -125,7 +125,7 @@ public class PrecacheServiceTest extends ServiceTestCase<MockPrecacheService> {
         setupService();
         startAndChangeDeviceState(getService(), true, false, true);
         assertTrue("Precaching should be in progress", getService().isPrecaching());
-        mPrecacheLauncher.onPrecacheCompleted();
+        mPrecacheLauncher.onPrecacheCompleted(true);
         assertFalse("Precaching should not be in progress after completion",
                 getService().isPrecaching());
     }

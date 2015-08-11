@@ -60,15 +60,15 @@ PrecacheManager::PrecacheManager(
 PrecacheManager::~PrecacheManager() {}
 
 bool PrecacheManager::ShouldRun() const {
-  // Verify IsPrecachingAllowed() before calling IsPrecachingEnabled(). This is
+  // Verify PrecachingAllowed() before calling IsPrecachingEnabled(). This is
   // because field trials are only assigned when requested. This allows us to
   // create Control and Experiment groups that are limited to users for whom
-  // IsPrecachingAllowed() is true, thus accentuating the impact of precaching.
-  return IsPrecachingAllowed() && IsPrecachingEnabled();
+  // PrecachingAllowed() is true, thus accentuating the impact of precaching.
+  return PrecachingAllowed() == AllowedType::ALLOWED && IsPrecachingEnabled();
 }
 
 bool PrecacheManager::WouldRun() const {
-  return IsPrecachingAllowed();
+  return PrecachingAllowed() == AllowedType::ALLOWED;
 }
 
 // static
@@ -79,11 +79,16 @@ bool PrecacheManager::IsPrecachingEnabled() {
              switches::kEnablePrecache);
 }
 
-bool PrecacheManager::IsPrecachingAllowed() const {
+PrecacheManager::AllowedType PrecacheManager::PrecachingAllowed() const {
+  if (!(sync_service_ && sync_service_->backend_initialized()))
+    return AllowedType::PENDING;
+
   // SyncService delegates to SyncPrefs, which must be called on the UI thread.
-  return sync_service_ &&
-         sync_service_->GetActiveDataTypes().Has(syncer::SESSIONS) &&
-         !sync_service_->GetEncryptedDataTypes().Has(syncer::SESSIONS);
+  if (sync_service_->GetActiveDataTypes().Has(syncer::SESSIONS) &&
+      !sync_service_->GetEncryptedDataTypes().Has(syncer::SESSIONS))
+    return AllowedType::ALLOWED;
+
+  return AllowedType::DISALLOWED;
 }
 
 void PrecacheManager::StartPrecaching(
@@ -96,11 +101,11 @@ void PrecacheManager::StartPrecaching(
                      "in progress.";
     return;
   }
-  is_precaching_ = true;
-
   precache_completion_callback_ = precache_completion_callback;
 
   if (ShouldRun()) {
+    is_precaching_ = true;
+
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
         base::Bind(&PrecacheDatabase::DeleteExpiredPrecacheHistory,
@@ -113,6 +118,14 @@ void PrecacheManager::StartPrecaching(
         NumTopHosts(),
         base::Bind(&PrecacheManager::OnHostsReceived, AsWeakPtr()));
   } else {
+    if (PrecachingAllowed() != AllowedType::PENDING) {
+      // We are not waiting on the sync backend to be initialized. The user
+      // either is not in the field trial, or does not have sync enabled.
+      // Pretend that precaching started, so that the PrecacheServiceLauncher
+      // doesn't try to start it again.
+      is_precaching_ = true;
+    }
+
     OnDone();
   }
 }
@@ -187,15 +200,13 @@ void PrecacheManager::Shutdown() {
 void PrecacheManager::OnDone() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // If OnDone has been called, then we should just be finishing precaching.
-  DCHECK(is_precaching_);
-  is_precaching_ = false;
-
   precache_fetcher_.reset();
 
-  precache_completion_callback_.Run();
+  precache_completion_callback_.Run(!is_precaching_);
   // Uninitialize the callback so that any scoped_refptrs in it are released.
   precache_completion_callback_.Reset();
+
+  is_precaching_ = false;
 }
 
 void PrecacheManager::OnHostsReceived(

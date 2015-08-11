@@ -20,8 +20,10 @@ class PrecacheLauncher {
 
  private:
   ~PrecacheLauncher();
-  // Called when precaching completes.
-  void OnPrecacheCompleted();
+  // Called when precaching completes. |try_again_soon| is true iff the precache
+  // failed to start due to a transient error and should be attempted again
+  // soon.
+  void OnPrecacheCompleted(bool try_again_soon);
 
   JavaObjectWeakGlobalRef weak_java_precache_launcher_;
 

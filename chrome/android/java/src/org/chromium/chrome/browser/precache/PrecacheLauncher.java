@@ -46,16 +46,24 @@ public abstract class PrecacheLauncher {
         nativeCancel(mNativePrecacheLauncher);
     }
 
-    /** Called when a precache cycle completes. */
-    protected abstract void onPrecacheCompleted();
+    /**
+     * Called when a precache cycle completes.
+     *
+     * @param tryAgainSoon True iff the precache failed to start due to a transient error and should
+     * be attempted again soon.
+     */
+    protected abstract void onPrecacheCompleted(boolean tryAgainSoon);
 
     /**
      * Called by native code when the precache cycle completes. This method exists because an
      * abstract method cannot be directly called from native.
+     *
+     * @param tryAgainSoon True iff the precache failed to start due to a transient error and should
+     * be attempted again soon.
      */
     @CalledByNative
-    private void onPrecacheCompletedCallback() {
-        onPrecacheCompleted();
+    private void onPrecacheCompletedCallback(boolean tryAgainSoon) {
+        onPrecacheCompleted(tryAgainSoon);
     }
 
     /**
@@ -80,8 +88,8 @@ public abstract class PrecacheLauncher {
 
         // privacyPreferencesManager.shouldPrerender() and nativeShouldRun() can only be executed on
         // the UI thread.
-        PrecacheServiceLauncher.setIsPrecachingEnabled(
-                context, privacyPreferencesManager.shouldPrerender() && nativeShouldRun());
+        PrecacheServiceLauncher.setIsPrecachingEnabled(context.getApplicationContext(),
+                privacyPreferencesManager.shouldPrerender() && nativeShouldRun());
         Log.v(TAG, "updateEnabledSync complete");
     }
 
@@ -131,7 +139,7 @@ public abstract class PrecacheLauncher {
 
     private static final PrecacheLauncher sInstance = new PrecacheLauncher() {
         @Override
-        protected void onPrecacheCompleted() {}
+        protected void onPrecacheCompleted(boolean tryAgainSoon) {}
     };
 
     // Initialized by updateEnabled to call updateEnabledSync when the sync

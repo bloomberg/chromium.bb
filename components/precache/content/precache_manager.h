@@ -54,7 +54,7 @@ class PrecacheManager : public KeyedService,
                         public PrecacheFetcher::PrecacheDelegate,
                         public base::SupportsWeakPtr<PrecacheManager> {
  public:
-  typedef base::Closure PrecacheCompletionCallback;
+  typedef base::Callback<void(bool)> PrecacheCompletionCallback;
 
   PrecacheManager(content::BrowserContext* browser_context,
                   const sync_driver::SyncService* const sync_service);
@@ -71,8 +71,9 @@ class PrecacheManager : public KeyedService,
 
   // Starts precaching resources that the user is predicted to fetch in the
   // future. If precaching is already currently in progress, then this method
-  // does nothing. The |precache_completion_callback| will be run when
-  // precaching finishes, but will not be run if precaching is canceled.
+  // does nothing. The |precache_completion_callback| will be passed true when
+  // precaching finishes, and passed false when precaching abort due to failed
+  // preconditions, but will not be run if precaching is canceled.
   void StartPrecaching(
       const PrecacheCompletionCallback& precache_completion_callback,
       const history::HistoryService& history_service);
@@ -94,6 +95,12 @@ class PrecacheManager : public KeyedService,
   void ClearHistory();
 
  private:
+  enum class AllowedType {
+    ALLOWED,
+    DISALLOWED,
+    PENDING
+  };
+
   // From KeyedService.
   void Shutdown() override;
 
@@ -110,7 +117,7 @@ class PrecacheManager : public KeyedService,
   static bool IsPrecachingEnabled();
 
   // Returns true if precaching is allowed for the browser context.
-  bool IsPrecachingAllowed() const;
+  AllowedType PrecachingAllowed() const;
 
   // The browser context that owns this PrecacheManager.
   content::BrowserContext* const browser_context_;

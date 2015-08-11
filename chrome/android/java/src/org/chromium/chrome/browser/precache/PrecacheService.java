@@ -72,15 +72,15 @@ public class PrecacheService extends Service {
     }
 
     @VisibleForTesting
-    void handlePrecacheCompleted() {
-        if (mIsPrecaching) finishPrecaching();
+    void handlePrecacheCompleted(boolean tryAgainSoon) {
+        if (mIsPrecaching) finishPrecaching(tryAgainSoon);
     }
 
     /** PrecacheLauncher used to run precaching. */
     private PrecacheLauncher mPrecacheLauncher = new PrecacheLauncher() {
         @Override
-        protected void onPrecacheCompleted() {
-            handlePrecacheCompleted();
+        protected void onPrecacheCompleted(boolean tryAgainSoon) {
+            handlePrecacheCompleted(tryAgainSoon);
         }
     };
 
@@ -161,9 +161,9 @@ public class PrecacheService extends Service {
     }
 
     /** End a precache cycle. */
-    private void finishPrecaching() {
+    private void finishPrecaching(boolean tryAgainSoon) {
         Log.v(TAG, "Finish precaching");
-        shutdownPrecaching();
+        shutdownPrecaching(tryAgainSoon);
     }
 
     /** Cancel a precache cycle. */
@@ -172,15 +172,16 @@ public class PrecacheService extends Service {
         prepareNativeLibraries();
         mPrecacheLauncher.cancel();
 
-        shutdownPrecaching();
+        shutdownPrecaching(true);
     }
 
     /**
      * Update state to indicate that precaching is no longer in progress, and stop the service.
      */
-    private void shutdownPrecaching() {
+    private void shutdownPrecaching(boolean tryAgainSoon) {
         mIsPrecaching = false;
         releasePrecachingWakeLock();
+        PrecacheServiceLauncher.precachingFinished(getApplicationContext(), tryAgainSoon);
         stopSelf();
     }
 

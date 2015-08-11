@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.precache;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -82,13 +81,6 @@ public class PrecacheServiceLauncherTest extends InstrumentationTestCase {
         }
     }
 
-    private static void checkPrefsExpectations(Context context, long expectedLastTime) {
-        SharedPreferences prefs = context.getSharedPreferences(
-                context.getPackageName() + "_preferences", Context.MODE_PRIVATE);
-        assertEquals(expectedLastTime,
-                prefs.getLong(PrecacheServiceLauncher.PREF_PRECACHE_LAST_TIME, -1L));
-    }
-
     @SmallTest
     @Feature({"Precache"})
     public void testDoNothingIfNotEnabled() {
@@ -99,7 +91,6 @@ public class PrecacheServiceLauncherTest extends InstrumentationTestCase {
         launcher.setElapsedRealtime(PrecacheServiceLauncher.WAIT_UNTIL_NEXT_PRECACHE_MS);
         launcher.onReceive(context, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
         launcher.checkExpectations(false, false, false);
-        checkPrefsExpectations(context, 0L);
     }
 
     @SmallTest
@@ -111,8 +102,7 @@ public class PrecacheServiceLauncherTest extends InstrumentationTestCase {
         Context context = getContext(true, 0L);
         launcher.setElapsedRealtime(PrecacheServiceLauncher.WAIT_UNTIL_NEXT_PRECACHE_MS);
         launcher.onReceive(context, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
-        launcher.checkExpectations(true, false, true);
-        checkPrefsExpectations(context, PrecacheServiceLauncher.WAIT_UNTIL_NEXT_PRECACHE_MS);
+        launcher.checkExpectations(false, false, true);
     }
 
     @SmallTest
@@ -125,7 +115,6 @@ public class PrecacheServiceLauncherTest extends InstrumentationTestCase {
         launcher.setElapsedRealtime(PrecacheServiceLauncher.WAIT_UNTIL_NEXT_PRECACHE_MS - 1);
         launcher.onReceive(context, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
         launcher.checkExpectations(true, false, false);
-        checkPrefsExpectations(context, 0L);
     }
 
     @SmallTest
@@ -138,6 +127,5 @@ public class PrecacheServiceLauncherTest extends InstrumentationTestCase {
         launcher.setElapsedRealtime(PrecacheServiceLauncher.WAIT_UNTIL_NEXT_PRECACHE_MS - 1);
         launcher.onReceive(context, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
         launcher.checkExpectations(false, true, false);
-        checkPrefsExpectations(context, 0L);
     }
 }

@@ -104,9 +104,7 @@ class TestPrecacheCompletionCallback {
  public:
   TestPrecacheCompletionCallback() : was_on_done_called_(false) {}
 
-  void OnDone() {
-    was_on_done_called_ = true;
-  }
+  void OnDone(bool precaching_started) { was_on_done_called_ = true; }
 
   PrecacheManager::PrecacheCompletionCallback GetCallback() {
     return base::Bind(&TestPrecacheCompletionCallback::OnDone,

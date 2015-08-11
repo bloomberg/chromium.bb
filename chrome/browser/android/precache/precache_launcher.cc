@@ -66,7 +66,7 @@ void PrecacheLauncher::Start(JNIEnv* env, jobject obj) {
       profile, ServiceAccessType::IMPLICIT_ACCESS);
 
   if (precache_manager == nullptr || hs == nullptr) {
-    OnPrecacheCompleted();
+    OnPrecacheCompleted(false);
     return;
   }
 
@@ -83,10 +83,11 @@ void PrecacheLauncher::Cancel(JNIEnv* env, jobject obj) {
   precache_manager->CancelPrecaching();
 }
 
-void PrecacheLauncher::OnPrecacheCompleted() {
+void PrecacheLauncher::OnPrecacheCompleted(bool try_again_soon) {
   JNIEnv* env = AttachCurrentThread();
   Java_PrecacheLauncher_onPrecacheCompletedCallback(
-      env, weak_java_precache_launcher_.get(env).obj());
+      env, weak_java_precache_launcher_.get(env).obj(),
+      try_again_soon ? JNI_TRUE : JNI_FALSE);
 }
 
 static jlong Init(JNIEnv* env, jobject obj) {
