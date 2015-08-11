@@ -23,6 +23,10 @@ bool Input::Equals(const Input& other) const {
   return memcmp(data_, other.data_, len_) == 0;
 }
 
+std::string Input::AsString() const {
+  return std::string(reinterpret_cast<const char*>(data_), len_);
+}
+
 ByteReader::ByteReader(const Input& in)
     : data_(in.UnsafeData()), len_(in.Length()) {
 }

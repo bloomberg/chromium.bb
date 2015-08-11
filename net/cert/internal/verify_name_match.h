@@ -15,9 +15,11 @@ class Input;
 }  // namespace der
 
 // Compare DER-encoded X.501 Name values according to RFC 5280 rules.
-// TODO(mattm): Doesn't actually implement RFC 5280 matching yet.
-// Returns true if |a| and |b| match.
-NET_EXPORT bool VerifyNameMatch(const der::Input& a, const der::Input& b);
+// |a_rdn_sequence| and |b_rdn_sequence| should be the DER-encoded RDNSequence
+// values (not including the Sequence tag).
+// Returns true if |a_rdn_sequence| and |b_rdn_sequence| match.
+NET_EXPORT bool VerifyNameMatch(const der::Input& a_rdn_sequence,
+                                const der::Input& b_rdn_sequence);
 
 }  // namespace net
 

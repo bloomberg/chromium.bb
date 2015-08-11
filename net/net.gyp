@@ -370,6 +370,7 @@
                     'data/ssl/certificates/',
                     'data/test.html',
                     'data/url_request_unittest/',
+                    'data/verify_name_match_unittest/names/',
                   ],
                   'test_data_prefix': 'net',
                 },

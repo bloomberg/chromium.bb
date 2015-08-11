@@ -27,6 +27,13 @@ TEST(InputTest, Equals) {
   EXPECT_FALSE(test_truncated.Equals(test));
 }
 
+TEST(InputTest, AsString) {
+  Input input(kInput);
+  std::string expected_string(reinterpret_cast<const char*>(kInput),
+                              arraysize(kInput));
+  EXPECT_EQ(expected_string, input.AsString());
+}
+
 TEST(InputTest, StaticArray) {
   Input input(kInput);
   EXPECT_EQ(arraysize(kInput), input.Length());
