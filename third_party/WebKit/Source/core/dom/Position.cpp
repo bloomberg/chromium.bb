@@ -138,6 +138,7 @@ PositionAlgorithm<Strategy>::PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anch
     , m_offset(offset)
     , m_anchorType(PositionAnchorType::OffsetInAnchor)
 {
+    ASSERT(offset >= 0);
     ASSERT(canBeAnchorNode(m_anchorNode.get()));
 }
 
@@ -201,7 +202,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::parentAnchoredEquivalen
         return PositionAlgorithm<Strategy>();
 
     // FIXME: This should only be necessary for legacy positions, but is also needed for positions before and after Tables
-    if (m_offset <= 0 && !isAfterAnchorOrAfterChildren()) {
+    if (m_offset == 0 && !isAfterAnchorOrAfterChildren()) {
         if (Strategy::parent(*m_anchorNode) && (Strategy::editingIgnoresContent(m_anchorNode.get()) || isRenderedHTMLTableElement(m_anchorNode.get())))
             return inParentBeforeNode(*m_anchorNode);
         return PositionAlgorithm<Strategy>(m_anchorNode.get(), 0);
@@ -369,8 +370,6 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::previous(PositionMoveTy
         return PositionAlgorithm<Strategy>(*this);
 
     int offset = deprecatedEditingOffset();
-    // FIXME: Negative offsets shouldn't be allowed. We should catch this earlier.
-    ASSERT(offset >= 0);
 
     if (offset > 0) {
         if (Node* child = Strategy::childAt(*node, offset - 1))
@@ -411,8 +410,6 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::next(PositionMoveType m
         return PositionAlgorithm<Strategy>(*this);
 
     int offset = deprecatedEditingOffset();
-    // FIXME: Negative offsets shouldn't be allowed. We should catch this earlier.
-    ASSERT(offset >= 0);
 
     if (Node* child = Strategy::childAt(*node, offset))
         return firstPositionInOrBeforeNode(child);
@@ -460,7 +457,7 @@ bool PositionAlgorithm<Strategy>::atFirstEditingPositionForNode() const
     // since that position resides outside of the node.
     switch (m_anchorType) {
     case PositionAnchorType::OffsetInAnchor:
-        return m_offset <= 0;
+        return m_offset == 0;
     case PositionAnchorType::BeforeChildren:
     case PositionAnchorType::BeforeAnchor:
         return true;
@@ -539,7 +536,7 @@ bool PositionAlgorithm<Strategy>::atStartOfTree() const
 {
     if (isNull())
         return true;
-    return !Strategy::parent(*anchorNode()) && m_offset <= 0;
+    return !Strategy::parent(*anchorNode()) && m_offset == 0;
 }
 
 template <typename Strategy>
