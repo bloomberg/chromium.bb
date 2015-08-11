@@ -46,6 +46,12 @@ void OAuth2TokenServiceDelegate::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
+// static
+bool OAuth2TokenServiceDelegate::IsError(const GoogleServiceAuthError& error) {
+  // TODO(rogerta): should we distinguish between transient and persistent?
+  return error.state() != GoogleServiceAuthError::NONE;
+}
+
 void OAuth2TokenServiceDelegate::StartBatchChanges() {
   ++batch_change_depth_;
   if (batch_change_depth_ == 1)
@@ -93,6 +99,11 @@ void OAuth2TokenServiceDelegate::FireRefreshTokensLoaded() {
 net::URLRequestContextGetter* OAuth2TokenServiceDelegate::GetRequestContext()
     const {
   return nullptr;
+}
+
+bool OAuth2TokenServiceDelegate::RefreshTokenHasError(
+    const std::string& account_id) const {
+  return false;
 }
 
 std::vector<std::string> OAuth2TokenServiceDelegate::GetAccounts() {

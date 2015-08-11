@@ -172,6 +172,13 @@ MutableProfileOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
   return new OAuth2AccessTokenFetcherImpl(consumer, getter, refresh_token);
 }
 
+bool MutableProfileOAuth2TokenServiceDelegate::RefreshTokenHasError(
+    const std::string& account_id) const {
+  auto it = refresh_tokens_.find(account_id);
+  return it == refresh_tokens_.end() ? false
+                                     : IsError(it->second->GetAuthStatus());
+}
+
 void MutableProfileOAuth2TokenServiceDelegate::UpdateAuthError(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {

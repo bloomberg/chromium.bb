@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_DELEGATE_ANDROID_OAUTH2_TOKEN_SERVICE_H_
-#define CHROME_BROWSER_SIGNIN_DELEGATE_ANDROID_OAUTH2_TOKEN_SERVICE_H_
+#ifndef CHROME_BROWSER_SIGNIN_OAUTH2_TOKEN_SERVICE_DELEGATE_ANDROID_H_
+#define CHROME_BROWSER_SIGNIN_OAUTH2_TOKEN_SERVICE_DELEGATE_ANDROID_H_
 
 #include <jni.h>
+#include <map>
 #include <string>
 
 #include "base/android/jni_weak_ref.h"
@@ -47,6 +48,7 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
 
   // OAuth2TokenServiceDelegate overrides:
   bool RefreshTokenIsAvailable(const std::string& account_id) const override;
+  bool RefreshTokenHasError(const std::string& account_id) const override;
   void UpdateAuthError(const std::string& account_id,
                        const GoogleServiceAuthError& error) override;
   std::vector<std::string> GetAccounts() override;
@@ -110,6 +112,12 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
   void FireRefreshTokensLoaded() override;
 
  private:
+  struct ErrorInfo {
+    ErrorInfo();
+    explicit ErrorInfo(const GoogleServiceAuthError& error);
+    GoogleServiceAuthError error;
+  };
+
   // Return whether |signed_in_account| is valid and we have access
   // to all the tokens in |curr_account_ids|. If |force_notifications| is true,
   // TokenAvailable notifications will be sent anyway, even if the account was
@@ -123,9 +131,12 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
 
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
+  // Maps account_id to the last error for that account.
+  std::map<std::string, ErrorInfo> errors_;
+
   static bool is_testing_profile_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2TokenServiceDelegateAndroid);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_DELEGATE_ANDROID_OAUTH2_TOKEN_SERVICE_H_
+#endif  // CHROME_BROWSER_SIGNIN_OAUTH2_TOKEN_SERVICE_DELEGATE_ANDROID_H_

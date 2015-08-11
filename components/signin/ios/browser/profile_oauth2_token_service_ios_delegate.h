@@ -30,11 +30,12 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   void Shutdown() override;
 
   bool RefreshTokenIsAvailable(const std::string& account_id) const override;
+  bool RefreshTokenHasError(const std::string& account_id) const override;
+  void UpdateAuthError(const std::string& account_id,
+                       const GoogleServiceAuthError& error) override;
 
   void LoadCredentials(const std::string& primary_account_id) override;
   std::vector<std::string> GetAccounts() override;
-  void UpdateAuthError(const std::string& account_id,
-                       const GoogleServiceAuthError& error) override;
 
   // This method should not be called when using shared authentication.
   void UpdateCredentials(const std::string& account_id,

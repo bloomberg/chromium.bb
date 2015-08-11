@@ -33,6 +33,7 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -88,6 +89,10 @@ class AccountReconcilorTest : public ::testing::TestWithParam<bool> {
   TestingProfile* profile() { return profile_; }
   FakeSigninManagerForTesting* signin_manager() { return signin_manager_; }
   FakeProfileOAuth2TokenService* token_service() { return token_service_; }
+  FakeOAuth2TokenServiceDelegate* token_service_delegate() {
+    return static_cast<FakeOAuth2TokenServiceDelegate*>(
+        token_service_->GetDelegate());
+  }
   TestSigninClient* test_signin_client() { return test_signin_client_; }
   AccountTrackerService* account_tracker() { return account_tracker_; }
   FakeGaiaCookieManagerService* cookie_manager_service() {
@@ -761,6 +766,99 @@ TEST_F(AccountReconcilorTest, AddAccountToCookieCompletedWithBogusAccount) {
                                       GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 }
+
+#if !defined(OS_IOS)
+// These tests don't run on iOS because that platform uses a different
+// implementation of FakeOAuth2TokenServiceDelegate.  However, iOS also removes
+// accounts when an auth error is detected, so the scenarios being tested here
+// do not apply.
+
+TEST_F(AccountReconcilorTest, NoLoopWithBadPrimary) {
+  // Connect profile to a primary account and then add a secondary account.
+  const std::string account_id1 =
+  ConnectProfileToAccount("12345", "user@gmail.com");
+  const std::string account_id2 =
+      PickAccountIdForAccount("67890", "other@gmail.com");
+  token_service()->UpdateCredentials(account_id2, "refresh_token");
+
+  EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction());
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id1));
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id2));
+
+  // The primary account is in auth error, so it is not in the cookie.
+  cookie_manager_service()->SetListAccountsResponseOneAccountWithExpiry(
+      "other@gmail.com", "67890", true);
+
+  AccountReconcilor* reconcilor =
+      AccountReconcilorFactory::GetForProfile(profile());
+  ASSERT_TRUE(reconcilor);
+
+  reconcilor->StartReconcile();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+
+  GoogleServiceAuthError
+      error(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+
+  // The primary cannot be added to cookie, so it fails.
+  SimulateAddAccountToCookieCompleted(
+      reconcilor, account_id1, error);
+  SimulateAddAccountToCookieCompleted(reconcilor, account_id2,
+                                      GoogleServiceAuthError::AuthErrorNone());
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+  ASSERT_TRUE(reconcilor->error_during_last_reconcile_);
+  testing::Mock::VerifyAndClearExpectations(GetMockReconcilor());
+
+  // Now that we've tried once, the token service knows that the primary
+  // account has an auth error.
+  token_service_delegate()->SetLastErrorForAccount(account_id1, error);
+
+  // A second attempt to reconcile should be a noop.
+  reconcilor->StartReconcile();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+  testing::Mock::VerifyAndClearExpectations(GetMockReconcilor());
+}
+
+TEST_F(AccountReconcilorTest, WontMergeAccountsWithError) {
+  // Connect profile to a primary account and then add a secondary account.
+  const std::string account_id1 =
+  ConnectProfileToAccount("12345", "user@gmail.com");
+  const std::string account_id2 =
+      PickAccountIdForAccount("67890", "other@gmail.com");
+  token_service()->UpdateCredentials(account_id2, "refresh_token");
+
+  // Mark the secondary account in auth error state.
+  token_service_delegate()->SetLastErrorForAccount(
+      account_id2,
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+
+  // The cookie starts empty.
+  cookie_manager_service()->SetListAccountsResponseNoAccounts();
+
+  // Since the cookie jar starts empty, the reconcilor should attempt to merge
+  // accounts into it.  However, it should only try accounts not in auth
+  // error state.
+  EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction());
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id1));
+
+  AccountReconcilor* reconcilor =
+      AccountReconcilorFactory::GetForProfile(profile());
+  ASSERT_TRUE(reconcilor);
+
+  reconcilor->StartReconcile();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+
+  SimulateAddAccountToCookieCompleted(
+      reconcilor, account_id1, GoogleServiceAuthError::AuthErrorNone());
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+  ASSERT_FALSE(reconcilor->error_during_last_reconcile_);
+}
+
+#endif  // OS_IOS
 
 INSTANTIATE_TEST_CASE_P(AccountReconcilorMaybeEnabled,
                         AccountReconcilorTest,

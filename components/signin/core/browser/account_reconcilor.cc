@@ -21,7 +21,6 @@
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/gaia_urls.h"
 
-
 namespace {
 
 class AccountEqualToFunc : public std::equal_to<gaia::ListedAccount> {
@@ -258,9 +257,6 @@ void AccountReconcilor::StartReconcile() {
   if (is_reconcile_started_)
     return;
 
-  is_reconcile_started_ = true;
-  error_during_last_reconcile_ = false;
-
   // Reset state for validating gaia cookie.
   gaia_accounts_.clear();
 
@@ -269,6 +265,14 @@ void AccountReconcilor::StartReconcile() {
   chrome_accounts_.clear();
   add_to_cookie_.clear();
   ValidateAccountsFromTokenService();
+
+  if (primary_account_.empty()) {
+    VLOG(1) << "AccountReconcilor::StartReconcile: primary has error";
+    return;
+  }
+
+  is_reconcile_started_ = true;
+  error_during_last_reconcile_ = false;
 
   // Rely on the GCMS to manage calls to and responses from ListAccounts.
   if (cookie_manager_service_->ListAccounts(&gaia_accounts_)) {
@@ -304,6 +308,28 @@ void AccountReconcilor::ValidateAccountsFromTokenService() {
   DCHECK(!primary_account_.empty());
 
   chrome_accounts_ = token_service_->GetAccounts();
+
+  // Remove any accounts that have an error.  There is no point in trying to
+  // reconcile them, since it won't work anyway.  If the list ends up being
+  // empty, or if the primary account is in error, then don't reconcile any
+  // accounts.
+  for (auto i = chrome_accounts_.begin(); i != chrome_accounts_.end(); ++i) {
+    if (token_service_->GetDelegate()->RefreshTokenHasError(*i)) {
+      if (primary_account_ == *i) {
+        primary_account_.clear();
+        chrome_accounts_.clear();
+        break;
+      } else {
+        VLOG(1) << "AccountReconcilor::ValidateAccountsFromTokenService: "
+                << *i << " has error, won't reconcile";
+        i->clear();
+      }
+    }
+  }
+  chrome_accounts_.erase(std::remove(chrome_accounts_.begin(),
+                                     chrome_accounts_.end(),
+                                     std::string()),
+                         chrome_accounts_.end());
 
   VLOG(1) << "AccountReconcilor::ValidateAccountsFromTokenService: "
           << "Chrome " << chrome_accounts_.size() << " accounts, "
