@@ -25,3 +25,6 @@ DesktopMediaListAshTest.WindowOnly
 
 # Crashing test: https://crbug.com/515031
 NetErrorTabHelperTest.*
+
+# Test fail: https://crbug.com/515031
+ChromeBrowserMainExtraPartsMetricsTest.VerifyTouchEventsEnabledIsNotRecordedAfterPostBrowserStart
