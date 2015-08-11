@@ -68,6 +68,7 @@ class MemoryMetric(Metric):
     self._memory_stats = None
     self._histogram_start = dict()
     self._histogram_delta = dict()
+    self._started = False
 
   @classmethod
   def CustomizeBrowserOptions(cls, options):
@@ -91,6 +92,8 @@ class MemoryMetric(Metric):
       logging.warning('Memory metrics not supported.')
       return
 
+    self._started = True
+
     for h in _HISTOGRAMS:
       histogram_data = histogram_util.GetHistogram(
           h['type'], h['name'], tab)
@@ -108,7 +111,7 @@ class MemoryMetric(Metric):
     if not self._browser.supports_memory_metrics:
       return
 
-    assert self._histogram_start, 'Must call Start() first'
+    assert self._started, 'Must call Start() first'
     for h in _HISTOGRAMS:
       # Histogram data may not be available
       if h['name'] not in self._histogram_start:
