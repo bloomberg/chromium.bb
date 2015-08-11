@@ -625,23 +625,6 @@ bool StartsWith(StringPiece16 str,
   return StartsWithT<string16>(str, search_for, case_sensitivity);
 }
 
-bool StartsWith(const string16& str,
-                const string16& search,
-                bool case_sensitive) {
-  if (!case_sensitive) {
-    // This function was originally written using the current locale functions
-    // for case-insensitive comparisons. Emulate this behavior until callers
-    // can be converted either to use the case-insensitive ASCII one (most
-    // callers) or ICU functions in base_i18n.
-    if (search.size() > str.size())
-      return false;
-    return std::equal(search.begin(), search.end(), str.begin(),
-                      CaseInsensitiveCompareDeprecated());
-  }
-  return StartsWith(StringPiece16(str), StringPiece16(search),
-                    CompareCase::SENSITIVE);
-}
-
 template <typename Str>
 bool EndsWithT(BasicStringPiece<Str> str,
                BasicStringPiece<Str> search_for,
@@ -676,26 +659,8 @@ bool EndsWith(StringPiece str,
 
 bool EndsWith(StringPiece16 str,
               StringPiece16 search_for,
-                          CompareCase case_sensitivity) {
+              CompareCase case_sensitivity) {
   return EndsWithT<string16>(str, search_for, case_sensitivity);
-}
-
-bool EndsWith(const string16& str,
-              const string16& search,
-              bool case_sensitive) {
-  if (!case_sensitive) {
-    // This function was originally written using the current locale functions
-    // for case-insensitive comparisons. Emulate this behavior until callers
-    // can be converted either to use the case-insensitive ASCII one (most
-    // callers) or ICU functions in base_i18n.
-    if (search.size() > str.size())
-      return false;
-    return std::equal(search.begin(), search.end(),
-                      str.begin() + (str.size() - search.size()),
-                      CaseInsensitiveCompareDeprecated());
-  }
-  return EndsWith(StringPiece16(str), StringPiece16(search),
-                  CompareCase::SENSITIVE);
 }
 
 char HexDigitToInt(wchar_t c) {
