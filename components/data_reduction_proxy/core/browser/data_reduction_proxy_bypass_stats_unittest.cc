@@ -691,6 +691,8 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
                                             excluded_histograms);
   }
 
+  net::TestDelegate* delegate() { return &delegate_; }
+
  private:
   base::MessageLoopForIO message_loop_;
   net::TestDelegate delegate_;
@@ -789,6 +791,27 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest,
        BypassedBytesShortAudioVideo) {
   InitializeContext();
   base::HistogramTester histogram_tester;
+  CreateAndExecuteRequest(GURL("http://foo.com"),
+                          "HTTP/1.1 502 Bad Gateway\r\n"
+                          "Via: 1.1 Chrome-Compression-Proxy\r\n"
+                          "Chrome-Proxy: block=1\r\n\r\n",
+                          kErrorBody.c_str(),
+                          "HTTP/1.1 200 OK\r\n"
+                          "Content-Type: video/mp4\r\n\r\n",
+                          kBody.c_str());
+
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.BypassedBytes.ShortAudioVideo", kBody.size(), 1);
+  ExpectOtherBypassedBytesHistogramsEmpty(
+      histogram_tester, "DataReductionProxy.BypassedBytes.ShortAudioVideo");
+}
+
+TEST_F(DataReductionProxyBypassStatsEndToEndTest,
+       BypassedBytesShortAudioVideoCancelled) {
+  InitializeContext();
+  base::HistogramTester histogram_tester;
+
+  delegate()->set_cancel_in_received_data(true);
   CreateAndExecuteRequest(GURL("http://foo.com"),
                           "HTTP/1.1 502 Bad Gateway\r\n"
                           "Via: 1.1 Chrome-Compression-Proxy\r\n"

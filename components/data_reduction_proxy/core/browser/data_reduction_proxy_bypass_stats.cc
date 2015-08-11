@@ -300,7 +300,8 @@ void DataReductionProxyBypassStats::RecordBypassedBytesHistograms(
   }
 
   std::string mime_type;
-  request.GetMimeType(&mime_type);
+  if (request.response_headers())
+    request.response_headers()->GetMimeType(&mime_type);
   // MIME types are named by <media-type>/<subtype>. Check to see if the media
   // type is audio or video in order to record audio/video bypasses separately
   // for current bypasses and for the triggering requests of short bypasses.
