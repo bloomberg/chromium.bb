@@ -46,8 +46,6 @@ public:
     {
         return create(buffer()->slice(begin));
     }
-    bool transfer(WTF::ArrayBufferContents& result) { return buffer()->transfer(result); }
-    bool isNeutered() { return buffer()->isNeutered(); }
 
     v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
 
