@@ -7,10 +7,12 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/bind.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
 #include "chromeos/dbus/fake_bluetooth_device_client.h"
+#include "chromeos/dbus/fake_cras_audio_client.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "content/public/browser/web_ui.h"
 #include "device/bluetooth/bluetooth_device_chromeos.h"
@@ -22,6 +24,11 @@ const char kBluetoothDiscoverFunction[] = "requestBluetoothDiscover";
 const char kBluetoothPairFunction[] = "requestBluetoothPair";
 const char kRequestBluetoothInfo[] = "requestBluetoothInfo";
 const char kRequestPowerInfo[] = "requestPowerInfo";
+const char kRequestAudioNodes[] = "requestAudioNodes";
+
+// Define update function that will update the state of the audio ui.
+const char kInsertAudioNode[] = "insertAudioNode";
+const char kRemoveAudioNode[] = "removeAudioNode";
 
 // Define update functions that will update the power properties to the
 // variables defined in the web UI.
@@ -34,6 +41,8 @@ const char kUpdateTimeToFull[] = "updateTimeToFull";
 
 // Define callback functions that will update the JavaScript variable
 // and the web UI.
+const char kUpdateAudioNodes[] =
+    "device_emulator.audioSettings.updateAudioNodes";
 const char kAddBluetoothDeviceJSCallback[] =
     "device_emulator.bluetoothSettings.addBluetoothDevice";
 const char kDevicePairedFromTrayJSCallback[] =
@@ -107,6 +116,30 @@ void DeviceEmulatorMessageHandler::BluetoothObserver::DeviceRemoved(
     base::StringValue(object_path.value()));
 }
 
+class DeviceEmulatorMessageHandler::CrasAudioObserver
+    : public CrasAudioClient::Observer {
+ public:
+  explicit CrasAudioObserver(DeviceEmulatorMessageHandler* owner)
+      : owner_(owner) {
+    owner_->fake_cras_audio_client_->AddObserver(this);
+  }
+
+  ~CrasAudioObserver() override {
+    owner_->fake_cras_audio_client_->RemoveObserver(this);
+  }
+
+  // chromeos::CrasAudioClient::Observer.
+  void NodesChanged() override;
+
+ private:
+  DeviceEmulatorMessageHandler* owner_;
+  DISALLOW_COPY_AND_ASSIGN(CrasAudioObserver);
+};
+
+void DeviceEmulatorMessageHandler::CrasAudioObserver::NodesChanged() {
+  owner_->HandleRequestAudioNodes(nullptr);
+}
+
 class DeviceEmulatorMessageHandler::PowerObserver
     : public PowerManagerClient::Observer {
  public:
@@ -149,6 +182,9 @@ DeviceEmulatorMessageHandler::DeviceEmulatorMessageHandler()
           static_cast<chromeos::FakeBluetoothDeviceClient*>(
               chromeos::DBusThreadManager::Get()
                   ->GetBluetoothDeviceClient())),
+      fake_cras_audio_client_(static_cast<chromeos::FakeCrasAudioClient*>(
+          chromeos::DBusThreadManager::Get()
+              ->GetCrasAudioClient())),
       fake_power_manager_client_(static_cast<chromeos::FakePowerManagerClient*>(
           chromeos::DBusThreadManager::Get()
               ->GetPowerManagerClient())) {}
@@ -158,6 +194,7 @@ DeviceEmulatorMessageHandler::~DeviceEmulatorMessageHandler() {
 
 void DeviceEmulatorMessageHandler::Init() {
   bluetooth_observer_.reset(new BluetoothObserver(this));
+  cras_audio_observer_.reset(new CrasAudioObserver(this));
   power_observer_.reset(new PowerObserver(this));
 }
 
@@ -237,6 +274,55 @@ void DeviceEmulatorMessageHandler::HandleRequestBluetoothPair(
     web_ui()->CallJavascriptFunction(kPairFailedJSCallback,
         base::StringValue(path));
   }
+}
+
+void DeviceEmulatorMessageHandler::HandleRequestAudioNodes(
+    const base::ListValue* args) {
+  // Get every active audio node and create a dictionary to
+  // send it to JavaScript.
+  base::ListValue audio_nodes;
+  for (const AudioNode& node : fake_cras_audio_client_->node_list()) {
+    scoped_ptr<base::DictionaryValue> audio_node(new base::DictionaryValue());
+
+    audio_node->SetBoolean("isInput", node.is_input);
+    audio_node->SetString("id", base::Uint64ToString(node.id));
+    audio_node->SetString("deviceName", node.device_name);
+    audio_node->SetString("type", node.type);
+    audio_node->SetString("name", node.name);
+    audio_node->SetBoolean("active", node.active);
+
+    audio_nodes.Append(audio_node.Pass());
+  }
+  web_ui()->CallJavascriptFunction(kUpdateAudioNodes, audio_nodes);
+}
+
+void DeviceEmulatorMessageHandler::HandleInsertAudioNode(
+    const base::ListValue* args) {
+  AudioNode audio_node;
+  const base::DictionaryValue* device_dict = nullptr;
+
+  CHECK(args->GetDictionary(0, &device_dict));
+  CHECK(device_dict->GetBoolean("isInput", &audio_node.is_input));
+  CHECK(device_dict->GetString("deviceName", &audio_node.device_name));
+  CHECK(device_dict->GetString("type", &audio_node.type));
+  CHECK(device_dict->GetString("name", &audio_node.name));
+  CHECK(device_dict->GetBoolean("active", &audio_node.active));
+
+  std::string tmp_id;
+  CHECK(device_dict->GetString("id", &tmp_id));
+  CHECK(base::StringToUint64(tmp_id, &audio_node.id));
+
+  fake_cras_audio_client_->InsertAudioNodeToList(audio_node);
+}
+
+void DeviceEmulatorMessageHandler::HandleRemoveAudioNode(
+    const base::ListValue* args) {
+  std::string tmp_id;
+  uint64 id;
+  CHECK(args->GetString(0, &tmp_id));
+  CHECK(base::StringToUint64(tmp_id, &id));
+
+  fake_cras_audio_client_->RemoveAudioNodeFromList(id);
 }
 
 void DeviceEmulatorMessageHandler::UpdateBatteryPercent(
@@ -322,6 +408,18 @@ void DeviceEmulatorMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       kUpdateTimeToFull,
       base::Bind(&DeviceEmulatorMessageHandler::UpdateTimeToFull,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kRequestAudioNodes,
+      base::Bind(&DeviceEmulatorMessageHandler::HandleRequestAudioNodes,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kInsertAudioNode,
+      base::Bind(&DeviceEmulatorMessageHandler::HandleInsertAudioNode,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kRemoveAudioNode,
+      base::Bind(&DeviceEmulatorMessageHandler::HandleRemoveAudioNode,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kBluetoothDiscoverFunction,

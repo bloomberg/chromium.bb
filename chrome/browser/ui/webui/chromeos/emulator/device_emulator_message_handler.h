@@ -20,6 +20,7 @@ class ObjectPath;
 namespace chromeos {
 
 class FakeBluetoothDeviceClient;
+class FakeCrasAudioClient;
 class FakePowerManagerClient;
 
 // Handler class for the Device Emulator page operations.
@@ -53,6 +54,19 @@ class DeviceEmulatorMessageHandler
   // exist, then it will be created and attached to the main adapter.
   void HandleRequestBluetoothPair(const base::ListValue* args);
 
+  // Callback for the "requestAudioNodes" message. This asynchronously
+  // requests the audio node that is current set to active. It is possible
+  // that there can be multiple current active nodes.
+  void HandleRequestAudioNodes(const base::ListValue* args);
+
+  // Create a node and add the node to the current AudioNodeList in
+  // |fake_cras_audio_client_|.
+  void HandleInsertAudioNode(const base::ListValue* args);
+
+  // Removes an AudioNode from the current list in |fake_cras_audio_client_|.
+  // based on the node id.
+  void HandleRemoveAudioNode(const base::ListValue* args);
+
   // Callbacks for JS update methods. All these methods work
   // asynchronously.
   void UpdateBatteryPercent(const base::ListValue* args);
@@ -64,13 +78,14 @@ class DeviceEmulatorMessageHandler
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
 
-  // Callback for the "requestPowerInfo" message. This asynchonously requests
+  // Callback for the "requestPowerInfo" message. This asynchronously requests
   // for power settings such as battery percentage, external power, etc. to
   // update the view.
   void RequestPowerInfo(const base::ListValue* args);
 
  private:
   class BluetoothObserver;
+  class CrasAudioObserver;
   class PowerObserver;
 
   // Creates a bluetooth device with the properties given in |args|. |args|
@@ -84,8 +99,12 @@ class DeviceEmulatorMessageHandler
   scoped_ptr<base::DictionaryValue> GetDeviceInfo(
       const dbus::ObjectPath& object_path);
 
-  scoped_ptr<BluetoothObserver> bluetooth_observer_;
   FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
+  scoped_ptr<BluetoothObserver> bluetooth_observer_;
+
+  FakeCrasAudioClient* fake_cras_audio_client_;
+  scoped_ptr<CrasAudioObserver> cras_audio_observer_;
+
   FakePowerManagerClient* fake_power_manager_client_;
   scoped_ptr<PowerObserver> power_observer_;
 

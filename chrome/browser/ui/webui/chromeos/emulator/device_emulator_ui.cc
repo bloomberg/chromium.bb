@@ -27,6 +27,9 @@ content::WebUIDataSource* CreateDeviceEmulatorUIDataSource() {
   // Add resources.
   html->AddResourcePath("device_emulator.css", IDR_DEVICE_EMULATOR_CSS);
   html->AddResourcePath("device_emulator.js", IDR_DEVICE_EMULATOR_JS);
+  html->AddResourcePath("audio_settings.html", IDR_AUDIO_SETTINGS_HTML);
+  html->AddResourcePath("audio_settings.css", IDR_AUDIO_SETTINGS_CSS);
+  html->AddResourcePath("audio_settings.js", IDR_AUDIO_SETTINGS_JS);
   html->AddResourcePath("battery_settings.html", IDR_BATTERY_SETTINGS_HTML);
   html->AddResourcePath("battery_settings.css", IDR_BATTERY_SETTINGS_CSS);
   html->AddResourcePath("battery_settings.js", IDR_BATTERY_SETTINGS_JS);

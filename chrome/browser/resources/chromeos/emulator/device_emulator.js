@@ -5,12 +5,15 @@
 cr.define('device_emulator', function() {
   'use strict';
 
+  var audioSettings = $('audio-settings');
   var batterySettings = $('battery-settings');
   var bluetoothSettings = $('bluetooth-settings');
 
   function initialize() {
-    chrome.send('requestPowerInfo');
+    chrome.send('requestAudioNodes');
     chrome.send('requestBluetoothInfo');
+    chrome.send('requestPowerInfo');
+
 
     var toggles = document.getElementsByClassName('menu-item-toggle');
     for (var i = 0; i < toggles.length; ++i) {
@@ -32,6 +35,7 @@ cr.define('device_emulator', function() {
   // Return an object with all of the exports.
   return {
     initialize: initialize,
+    audioSettings: audioSettings,
     batterySettings: batterySettings,
     bluetoothSettings: bluetoothSettings,
   };

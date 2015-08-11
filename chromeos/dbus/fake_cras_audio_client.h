@@ -38,6 +38,14 @@ class CHROMEOS_EXPORT FakeCrasAudioClient : public CrasAudioClient {
   void RemoveActiveOutputNode(uint64 node_id) override;
   void SwapLeftRight(uint64 node_id, bool swap) override;
 
+  // Modifies an AudioNode from |node_list_| based on |audio_node.id|.
+  // if the |audio_node.id| cannot be found in list, Add an
+  // AudioNode to |node_list_|
+  void InsertAudioNodeToList(const AudioNode& audio_node);
+
+  // Removes an AudioNode from |node_list_| based on |node_id|.
+  void RemoveAudioNodeFromList(const uint64& node_id);
+
   // Updates |node_list_| to contain |audio_nodes|.
   void SetAudioNodesForTesting(const AudioNodeList& audio_nodes);
 
@@ -45,7 +53,14 @@ class CHROMEOS_EXPORT FakeCrasAudioClient : public CrasAudioClient {
   void SetAudioNodesAndNotifyObserversForTesting(
       const AudioNodeList& new_nodes);
 
+  const AudioNodeList& node_list() const { return node_list_; }
+  const uint64& active_input_node_id() const { return active_input_node_id_; }
+  const uint64& active_output_node_id() const { return active_output_node_id_; }
+
  private:
+  // Find a node in the list based on the id.
+  AudioNodeList::iterator FindNode(uint64 node_id);
+
   VolumeState volume_state_;
   AudioNodeList node_list_;
   uint64 active_input_node_id_;

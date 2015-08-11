@@ -1,0 +1,48 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+   Use of this source code is governed by a BSD-style license that can be
+   found in the LICENSE file. */
+
+paper-button[raised].colored {
+  background: rgb(66, 133, 244);
+  color: #fff;
+}
+
+paper-input {
+  -webkit-margin-start: 15px;
+  display: inline-block;
+  width: 200px;
+}
+
+paper-toggle-button {
+  -webkit-margin-start: 15px;
+}
+
+.element-label {
+  -webkit-padding-start: 0;
+  color: rgb(82, 101, 162);
+  display: block;
+  font-size: 24px;
+  font-weight: normal;
+  height: 80px;
+  letter-spacing: 0.05em;
+  line-height: 80px;
+}
+
+.device-container {
+  border-radius: 2px;
+  margin: 10px;
+  width: 80%;
+}
+
+.device-field {
+  margin-bottom: 1em;
+  margin-top: 1em;
+}
+
+.audio-node {
+  margin: 1px;
+}
+
+.toggle-button-label {
+  margin: 15px;
+}
