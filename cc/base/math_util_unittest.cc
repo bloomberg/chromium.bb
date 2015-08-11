@@ -247,7 +247,7 @@ TEST(MathUtilTest, RoundUp) {
   }
 }
 
-TEST(MathUtilTest, RoundUpOverFlow) {
+TEST(MathUtilTest, RoundUpOverflow) {
   // Rounding up 123 by 50 is 150, which overflows int8_t, but fits in uint8_t.
   EXPECT_FALSE(MathUtil::VerifyRoundup<int8_t>(123, 50));
   EXPECT_TRUE(MathUtil::VerifyRoundup<uint8_t>(123, 50));
@@ -279,7 +279,7 @@ TEST(MathUtilTest, RoundDown) {
   }
 }
 
-TEST(MathUtilTest, RoundDownUnderFlow) {
+TEST(MathUtilTest, RoundDownUnderflow) {
   // Rounding down -123 by 50 is -150, which underflows int8_t, but fits in
   // int16_t.
   EXPECT_FALSE(MathUtil::VerifyRoundDown<int8_t>(-123, 50));
