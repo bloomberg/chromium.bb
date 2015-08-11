@@ -18,6 +18,7 @@ void SyncBackendHostMock::Initialize(
     scoped_ptr<base::Thread> sync_thread,
     const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
     const GURL& service_url,
+    const std::string& sync_user_agent,
     const syncer::SyncCredentials& credentials,
     bool delete_sync_data_folder,
     scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,

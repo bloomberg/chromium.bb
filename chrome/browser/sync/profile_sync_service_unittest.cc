@@ -112,6 +112,7 @@ class SyncBackendHostNoReturn : public SyncBackendHostMock {
       scoped_ptr<base::Thread> sync_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
       const GURL& service_url,
+      const std::string& sync_user_agent,
       const syncer::SyncCredentials& credentials,
       bool delete_sync_data_folder,
       scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
@@ -134,6 +135,7 @@ class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
       scoped_ptr<base::Thread> sync_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
       const GURL& service_url,
+      const std::string& sync_user_agent,
       const syncer::SyncCredentials& credentials,
       bool delete_sync_data_folder,
       scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
@@ -145,8 +147,8 @@ class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
       override {
     delete_dir_param_->push_back(delete_sync_data_folder);
     SyncBackendHostMock::Initialize(frontend, sync_thread.Pass(),
-                                    event_handler, service_url, credentials,
-                                    delete_sync_data_folder,
+                                    event_handler, service_url, sync_user_agent,
+                                    credentials, delete_sync_data_folder,
                                     sync_manager_factory.Pass(),
                                     unrecoverable_error_handler,
                                     report_unrecoverable_error_function,

@@ -27,6 +27,11 @@ class LocalDeviceInfoProvider {
   // is destroyed.
   virtual const DeviceInfo* GetLocalDeviceInfo() const = 0;
 
+  // Constructs a user agent string (ASCII) suitable for use by the syncapi
+  // for any HTTP communication. This string is used by the sync backend for
+  // classifying client types when calculating statistics.
+  virtual std::string GetSyncUserAgent() const = 0;
+
   // Returns a GUID string used for creation of the machine tag for
   // this local session; an empty sting if LocalDeviceInfoProvider hasn't been
   // initialized yet.

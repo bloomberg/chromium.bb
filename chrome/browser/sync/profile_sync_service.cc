@@ -238,11 +238,6 @@ ProfileSyncService::ProfileSyncService(
       backup_finished_(false),
       clear_browsing_data_(base::Bind(&ClearBrowsingData)),
       browsing_data_remover_observer_(NULL),
-      sync_stopped_reporter_(
-          new browser_sync::SyncStoppedReporter(
-              sync_service_url_,
-              profile_->GetRequestContext(),
-              browser_sync::SyncStoppedReporter::ResultCallback())),
       weak_factory_(this),
       startup_controller_weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -271,6 +266,12 @@ ProfileSyncService::ProfileSyncService(
 
   DCHECK(factory_.get());
   local_device_ = factory_->CreateLocalDeviceInfoProvider();
+  sync_stopped_reporter_.reset(
+          new browser_sync::SyncStoppedReporter(
+              sync_service_url_,
+              local_device_->GetSyncUserAgent(),
+              profile_->GetRequestContext(),
+              browser_sync::SyncStoppedReporter::ResultCallback())),
   sessions_sync_manager_.reset(
       new SessionsSyncManager(profile, local_device_.get(), router.Pass()));
   device_info_sync_service_.reset(
@@ -526,7 +527,9 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
     ClearStaleErrors();
 
   backend_->Initialize(this, sync_thread_.Pass(), GetJsEventHandler(),
-                       sync_service_url_, credentials, delete_stale_data,
+                       sync_service_url_,
+                       local_device_->GetSyncUserAgent(),
+                       credentials, delete_stale_data,
                        scoped_ptr<syncer::SyncManagerFactory>(
                            new syncer::SyncManagerFactory(GetManagerType()))
                            .Pass(),

@@ -102,6 +102,7 @@ void SyncBackendHostImpl::Initialize(
     scoped_ptr<base::Thread> sync_thread,
     const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
     const GURL& sync_service_url,
+    const std::string& sync_user_agent,
     const syncer::SyncCredentials& credentials,
     bool delete_sync_data_folder,
     scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
@@ -148,7 +149,7 @@ void SyncBackendHostImpl::Initialize(
   scoped_ptr<DoInitializeOptions> init_opts(new DoInitializeOptions(
       registrar_->sync_thread()->message_loop(), registrar_.get(), routing_info,
       workers, extensions_activity_monitor_.GetExtensionsActivity(),
-      event_handler, sync_service_url,
+      event_handler, sync_service_url, sync_user_agent,
       network_resources->GetHttpPostProviderFactory(
           make_scoped_refptr(profile_->GetRequestContext()),
           base::Bind(&UpdateNetworkTime),

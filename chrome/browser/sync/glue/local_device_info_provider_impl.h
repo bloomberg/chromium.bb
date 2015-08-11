@@ -19,18 +19,15 @@ class LocalDeviceInfoProviderImpl
 
   // LocalDeviceInfoProvider implementation.
   const sync_driver::DeviceInfo* GetLocalDeviceInfo() const override;
+  std::string GetSyncUserAgent() const override;
   std::string GetLocalSyncCacheGUID() const override;
   void Initialize(const std::string& cache_guid,
                   const std::string& signin_scoped_device_id) override;
   scoped_ptr<Subscription> RegisterOnInitializedCallback(
       const base::Closure& callback) override;
 
-  // Helper to construct a user agent string (ASCII) suitable for use by
-  // the syncapi for any HTTP communication. This string is used by the sync
-  // backend for classifying client types when calculating statistics.
-  static std::string MakeUserAgentForSyncApi();
-
  private:
+
   void InitializeContinuation(const std::string& guid,
                               const std::string& signin_scoped_device_id,
                               const std::string& session_name);

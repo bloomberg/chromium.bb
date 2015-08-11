@@ -61,6 +61,7 @@ DoInitializeOptions::DoInitializeOptions(
     const scoped_refptr<syncer::ExtensionsActivity>& extensions_activity,
     const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
     const GURL& service_url,
+    const std::string& sync_user_agent,
     scoped_ptr<syncer::HttpPostProviderFactory> http_bridge_factory,
     const syncer::SyncCredentials& credentials,
     const std::string& invalidator_client_id,
@@ -82,6 +83,7 @@ DoInitializeOptions::DoInitializeOptions(
       extensions_activity(extensions_activity),
       event_handler(event_handler),
       service_url(service_url),
+      sync_user_agent(sync_user_agent),
       http_bridge_factory(http_bridge_factory.Pass()),
       credentials(credentials),
       invalidator_client_id(invalidator_client_id),
@@ -423,8 +425,7 @@ void SyncBackendHostCore::DoInitialize(
 
   // Finish initializing the HttpBridgeFactory.  We do this here because
   // building the user agent may block on some platforms.
-  options->http_bridge_factory->Init(
-      LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi());
+  options->http_bridge_factory->Init(options->sync_user_agent);
 
   // Blow away the partial or corrupt sync data folder before doing any more
   // initialization, if necessary.

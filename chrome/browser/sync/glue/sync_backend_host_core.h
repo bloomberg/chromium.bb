@@ -31,6 +31,7 @@ struct DoInitializeOptions {
       const scoped_refptr<syncer::ExtensionsActivity>& extensions_activity,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
       const GURL& service_url,
+      const std::string& sync_user_agent,
       scoped_ptr<syncer::HttpPostProviderFactory> http_bridge_factory,
       const syncer::SyncCredentials& credentials,
       const std::string& invalidator_client_id,
@@ -54,6 +55,7 @@ struct DoInitializeOptions {
   scoped_refptr<syncer::ExtensionsActivity> extensions_activity;
   syncer::WeakHandle<syncer::JsEventHandler> event_handler;
   GURL service_url;
+  std::string sync_user_agent;
   // Overridden by tests.
   scoped_ptr<syncer::HttpPostProviderFactory> http_bridge_factory;
   syncer::SyncCredentials credentials;

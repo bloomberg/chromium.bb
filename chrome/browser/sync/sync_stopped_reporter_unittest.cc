@@ -22,6 +22,7 @@ const char kTestURL[] = "http://chromium.org/test";
 const char kTestURLTrailingSlash[] = "http://chromium.org/test/";
 const char kEventURL[] = "http://chromium.org/test/event";
 
+const char kTestUserAgent[] = "the_fifth_element";
 const char kAuthToken[] = "multipass";
 const char kCacheGuid[] = "leeloo";
 const char kBirthday[] = "2263";
@@ -46,6 +47,10 @@ class SyncStoppedReporterTest : public testing::Test {
     return GURL(kTestURL);
   }
 
+  std::string user_agent() const {
+    return std::string(kTestUserAgent);
+  }
+
   SyncStoppedReporter::ResultCallback callback() {
     return base::Bind(&SyncStoppedReporterTest::RequestFinishedCallback,
                       base::Unretained(this));
@@ -59,10 +64,6 @@ class SyncStoppedReporterTest : public testing::Test {
     return request_context_.get();
   }
 
-  static std::string GetUserAgent() {
-    return browser_sync::LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi();
-  }
-
  private:
   base::MessageLoop message_loop_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
@@ -74,7 +75,8 @@ class SyncStoppedReporterTest : public testing::Test {
 // Test that the event URL gets constructed correctly.
 TEST_F(SyncStoppedReporterTest, EventURL) {
   net::TestURLFetcherFactory factory;
-  SyncStoppedReporter ssr(GURL(kTestURL), request_context(), callback());
+  SyncStoppedReporter ssr(GURL(kTestURL), user_agent(),
+                          request_context(), callback());
   ssr.ReportSyncStopped(kAuthToken, kCacheGuid, kBirthday);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   EXPECT_EQ(kEventURL, fetcher->GetOriginalURL().spec());
@@ -83,7 +85,7 @@ TEST_F(SyncStoppedReporterTest, EventURL) {
 // Test that the event URL gets constructed correctly with a trailing slash.
 TEST_F(SyncStoppedReporterTest, EventURLWithSlash) {
   net::TestURLFetcherFactory factory;
-  SyncStoppedReporter ssr(GURL(kTestURLTrailingSlash),
+  SyncStoppedReporter ssr(GURL(kTestURLTrailingSlash), user_agent(),
                           request_context(), callback());
   ssr.ReportSyncStopped(kAuthToken, kCacheGuid, kBirthday);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -93,7 +95,8 @@ TEST_F(SyncStoppedReporterTest, EventURLWithSlash) {
 // Test that the URLFetcher gets configured correctly.
 TEST_F(SyncStoppedReporterTest, FetcherConfiguration) {
   net::TestURLFetcherFactory factory;
-  SyncStoppedReporter ssr(test_url(), request_context(), callback());
+  SyncStoppedReporter ssr(test_url(), user_agent(),
+                          request_context(), callback());
   ssr.ReportSyncStopped(kAuthToken, kCacheGuid, kBirthday);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
 
@@ -106,7 +109,7 @@ TEST_F(SyncStoppedReporterTest, FetcherConfiguration) {
   auth_header.append(kAuthToken);
   EXPECT_EQ(auth_header, header);
   headers.GetHeader(net::HttpRequestHeaders::kUserAgent, &header);
-  EXPECT_EQ(GetUserAgent(), header);
+  EXPECT_EQ(user_agent(), header);
 
   sync_pb::EventRequest event_request;
   event_request.ParseFromString(fetcher->upload_data());
@@ -118,7 +121,8 @@ TEST_F(SyncStoppedReporterTest, FetcherConfiguration) {
 
 TEST_F(SyncStoppedReporterTest, HappyCase) {
   net::TestURLFetcherFactory factory;
-  SyncStoppedReporter ssr(test_url(), request_context(), callback());
+  SyncStoppedReporter ssr(test_url(), user_agent(),
+                          request_context(), callback());
   ssr.ReportSyncStopped(kAuthToken, kCacheGuid, kBirthday);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   fetcher->set_response_code(net::HTTP_OK);
@@ -130,7 +134,8 @@ TEST_F(SyncStoppedReporterTest, HappyCase) {
 
 TEST_F(SyncStoppedReporterTest, ServerNotFound) {
   net::TestURLFetcherFactory factory;
-  SyncStoppedReporter ssr(test_url(), request_context(), callback());
+  SyncStoppedReporter ssr(test_url(), user_agent(),
+                          request_context(), callback());
   ssr.ReportSyncStopped(kAuthToken, kCacheGuid, kBirthday);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   fetcher->set_response_code(net::HTTP_NOT_FOUND);
@@ -144,7 +149,8 @@ TEST_F(SyncStoppedReporterTest, DestructionDuringRequestHandler) {
   net::TestURLFetcherFactory factory;
   factory.set_remove_fetcher_on_delete(true);
   {
-    SyncStoppedReporter ssr(test_url(), request_context(), callback());
+    SyncStoppedReporter ssr(test_url(), user_agent(),
+                            request_context(), callback());
     ssr.ReportSyncStopped(kAuthToken, kCacheGuid, kBirthday);
     EXPECT_FALSE(factory.GetFetcherByID(0) == nullptr);
   }
@@ -152,7 +158,8 @@ TEST_F(SyncStoppedReporterTest, DestructionDuringRequestHandler) {
 }
 
 TEST_F(SyncStoppedReporterTest, Timeout) {
-  SyncStoppedReporter ssr(test_url(), request_context(), callback());
+  SyncStoppedReporter ssr(test_url(), user_agent(),
+                          request_context(), callback());
 
   // A task runner that can trigger the timeout immediately.
   scoped_refptr<base::TestSimpleTaskRunner> task_runner(
@@ -173,7 +180,7 @@ TEST_F(SyncStoppedReporterTest, Timeout) {
 
 TEST_F(SyncStoppedReporterTest, NoCallback) {
   net::TestURLFetcherFactory factory;
-  SyncStoppedReporter ssr(GURL(kTestURL), request_context(),
+  SyncStoppedReporter ssr(GURL(kTestURL), user_agent(), request_context(),
                           SyncStoppedReporter::ResultCallback());
   ssr.ReportSyncStopped(kAuthToken, kCacheGuid, kBirthday);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -182,7 +189,7 @@ TEST_F(SyncStoppedReporterTest, NoCallback) {
 }
 
 TEST_F(SyncStoppedReporterTest, NoCallbackTimeout) {
-  SyncStoppedReporter ssr(GURL(kTestURL), request_context(),
+  SyncStoppedReporter ssr(GURL(kTestURL), user_agent(), request_context(),
                           SyncStoppedReporter::ResultCallback());
 
   // A task runner that can trigger the timeout immediately.

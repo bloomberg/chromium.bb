@@ -26,6 +26,7 @@ class LocalDeviceInfoProviderMock
   ~LocalDeviceInfoProviderMock() override;
 
   const DeviceInfo* GetLocalDeviceInfo() const override;
+  std::string GetSyncUserAgent() const override;
   std::string GetLocalSyncCacheGUID() const override;
   void Initialize(const std::string& cache_guid,
                   const std::string& signin_scoped_device_id) override;

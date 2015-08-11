@@ -78,9 +78,8 @@ TEST_F(LocalDeviceInfoProviderTest, GetLocalDeviceInfo) {
   EXPECT_EQ(syncer::GetSessionNameSynchronouslyForTesting(),
             local_device_info->client_name());
 
-  EXPECT_EQ(
-      browser_sync::LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi(),
-      local_device_info->sync_user_agent());
+  EXPECT_EQ(provider_->GetSyncUserAgent(),
+            local_device_info->sync_user_agent());
 }
 
 TEST_F(LocalDeviceInfoProviderTest, GetLocalSyncCacheGUID) {

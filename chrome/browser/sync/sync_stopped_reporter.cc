@@ -28,20 +28,17 @@ const char kEventEndpoint[] = "event";
 // perspective either. This seems like a good compromise.
 const int kRequestTimeoutSeconds = 10;
 
-std::string GetUserAgent() {
-  return browser_sync::LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi();
-}
-
 }  // namespace
 
 namespace browser_sync {
 
 SyncStoppedReporter::SyncStoppedReporter(
     const GURL& sync_service_url,
+    const std::string& user_agent,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
     const ResultCallback& callback)
     : sync_event_url_(GetSyncEventURL(sync_service_url)),
-      user_agent_(GetUserAgent()),
+      user_agent_(user_agent),
       request_context_(request_context),
       callback_(callback) {
   DCHECK(!sync_service_url.is_empty());

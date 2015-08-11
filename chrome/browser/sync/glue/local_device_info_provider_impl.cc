@@ -46,23 +46,23 @@ LocalDeviceInfoProviderImpl::LocalDeviceInfoProviderImpl()
 LocalDeviceInfoProviderImpl::~LocalDeviceInfoProviderImpl() {
 }
 
-// static.
-std::string LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi() {
+const sync_driver::DeviceInfo*
+LocalDeviceInfoProviderImpl::GetLocalDeviceInfo() const {
+  return local_device_info_.get();
+}
+
+std::string LocalDeviceInfoProviderImpl::GetSyncUserAgent() const {
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   return MakeDesktopUserAgentForSync();
 #elif defined(OS_CHROMEOS)
   return MakeUserAgentForSync("CROS ");
 #elif defined(OS_ANDROID)
-  if (IsTabletUI())
+  if (IsTabletUI()) {
     return MakeUserAgentForSync("ANDROID-TABLET ");
-  else
+  } else {
     return MakeUserAgentForSync("ANDROID-PHONE ");
+  }
 #endif
-}
-
-const sync_driver::DeviceInfo*
-LocalDeviceInfoProviderImpl::GetLocalDeviceInfo() const {
-  return local_device_info_.get();
 }
 
 std::string LocalDeviceInfoProviderImpl::GetLocalSyncCacheGUID() const {
@@ -97,7 +97,7 @@ void LocalDeviceInfoProviderImpl::InitializeContinuation(
       new sync_driver::DeviceInfo(guid,
                                   session_name,
                                   chrome::GetVersionString(),
-                                  MakeUserAgentForSyncApi(),
+                                  GetSyncUserAgent(),
                                   GetLocalDeviceType(),
                                   signin_scoped_device_id));
 

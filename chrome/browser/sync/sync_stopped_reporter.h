@@ -29,6 +29,7 @@ class SyncStoppedReporter : public net::URLFetcherDelegate {
   typedef base::Callback<void(const Result&)> ResultCallback;
 
   SyncStoppedReporter(const GURL& sync_service_url,
+      const std::string& user_agent,
       const scoped_refptr<net::URLRequestContextGetter>& request_context,
       const ResultCallback& callback);
   ~SyncStoppedReporter() override;

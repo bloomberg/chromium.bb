@@ -215,6 +215,7 @@ class SyncBackendHostTest : public testing::Test {
         scoped_ptr<base::Thread>(),
         syncer::WeakHandle<syncer::JsEventHandler>(),
         GURL(std::string()),
+        std::string(),
         credentials_,
         true,
         fake_manager_factory_.Pass(),
