@@ -36,6 +36,8 @@ public:
 
     void onSuccess(WebServiceWorkerResponse* webResponse) override
     {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
         m_resolver->resolve(Response::create(m_resolver->scriptState()->executionContext(), *webResponse));
         m_resolver.clear();
     }
@@ -44,6 +46,8 @@ public:
     void onError(WebServiceWorkerCacheError* rawReason) override
     {
         OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
         if (*reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve();
         else
@@ -64,6 +68,8 @@ public:
 
     void onSuccess(WebVector<WebServiceWorkerResponse>* webResponses) override
     {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
         HeapVector<Member<Response>> responses;
         for (size_t i = 0; i < webResponses->size(); ++i)
             responses.append(Response::create(m_resolver->scriptState()->executionContext(), (*webResponses)[i]));
@@ -75,6 +81,8 @@ public:
     void onError(WebServiceWorkerCacheError* rawReason) override
     {
         OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
         m_resolver->reject(CacheStorageError::createException(*reason));
         m_resolver.clear();
     }
@@ -92,12 +100,16 @@ public:
 
     void onSuccess() override
     {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
         m_resolver->resolve(true);
         m_resolver.clear();
     }
 
     void onError(WebServiceWorkerCacheError reason) override
     {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
         if (reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve(false);
         else
@@ -118,6 +130,8 @@ public:
 
     void onSuccess(WebVector<WebServiceWorkerRequest>* webRequests) override
     {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
         HeapVector<Member<Request>> requests;
         for (size_t i = 0; i < webRequests->size(); ++i)
             requests.append(Request::create(m_resolver->scriptState()->executionContext(), (*webRequests)[i]));
@@ -129,6 +143,8 @@ public:
     void onError(WebServiceWorkerCacheError* rawReason) override
     {
         OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
         m_resolver->reject(CacheStorageError::createException(*reason));
         m_resolver.clear();
     }
@@ -192,6 +208,8 @@ public:
         ASSERT(index < m_batchOperations.size());
         if (m_completed)
             return;
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
         m_batchOperations[index] = batchOperation;
         if (--m_numberOfRemainingOperations != 0)
             return;
@@ -203,6 +221,8 @@ public:
         if (m_completed)
             return;
         m_completed = true;
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
         ScriptState* state = m_resolver->scriptState();
         ScriptState::Scope scope(state);
         m_resolver->reject(V8ThrowException::createTypeError(state->isolate(), errorMessage));
@@ -263,7 +283,7 @@ private:
     WebServiceWorkerResponse m_webResponse;
 };
 
-Cache* Cache::create(WeakPtr<GlobalFetch::ScopedFetcher> fetcher, WebServiceWorkerCache* webCache)
+Cache* Cache::create(WeakPtr<GlobalFetch::ScopedFetcher> fetcher, PassOwnPtr<WebServiceWorkerCache> webCache)
 {
     return new Cache(fetcher, webCache);
 }
@@ -375,9 +395,9 @@ WebServiceWorkerCache::QueryParams Cache::toWebQueryParams(const CacheQueryOptio
     return webQueryParams;
 }
 
-Cache::Cache(WeakPtr<GlobalFetch::ScopedFetcher> fetcher, WebServiceWorkerCache* webCache)
+Cache::Cache(WeakPtr<GlobalFetch::ScopedFetcher> fetcher, PassOwnPtr<WebServiceWorkerCache> webCache)
     : m_scopedFetcher(fetcher)
-    , m_webCache(adoptPtr(webCache)) { }
+    , m_webCache(webCache) { }
 
 ScriptPromise Cache::matchImpl(ScriptState* scriptState, const Request* request, const CacheQueryOptions& options)
 {

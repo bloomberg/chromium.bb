@@ -207,7 +207,7 @@ public:
 
     Cache* createCache(WebServiceWorkerCache* webCache)
     {
-        return Cache::create(m_scopedFetcherForTests->weakPtr(), webCache);
+        return Cache::create(m_scopedFetcherForTests->weakPtr(), adoptPtr(webCache));
     }
 
     ScriptState* scriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
