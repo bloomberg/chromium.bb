@@ -8135,7 +8135,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseMotionRotation()
         if ((value->id == CSSValueAuto || value->id == CSSValueReverse) && !hasAutoOrReverse) {
             list->append(cssValuePool().createIdentifierValue(value->id));
             hasAutoOrReverse = true;
-        } else if (validUnit(value, FAngle) && !hasAngle) {
+        } else if (!hasAngle && validUnit(value, FAngle)) {
             list->append(createPrimitiveNumericValue(value));
             hasAngle = true;
         } else {
