@@ -42,7 +42,6 @@
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
 #include "sandbox/linux/services/credentials.h"
-#include "sandbox/linux/services/libc_urandom_override.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 
 #if defined(OS_NACL_NONSFI)
@@ -50,6 +49,10 @@
 #else
 #include <link.h>
 #include "components/nacl/loader/nonsfi/irt_exception_handling.h"
+#endif
+
+#if !defined(USE_OPENSSL)
+#include "sandbox/linux/services/libc_urandom_override.h"
 #endif
 
 namespace {
@@ -437,11 +440,10 @@ int main(int argc, char* argv[]) {
   base::AtExitManager exit_manager;
   base::RandUint64();  // acquire /dev/urandom fd before sandbox is raised
 
-#if !defined(OS_NACL_NONSFI)
   // NSS is only needed for SFI NaCl.
+#if !defined(OS_NACL_NONSFI) && !defined(USE_OPENSSL)
   // Allows NSS to fopen() /dev/urandom.
   sandbox::InitLibcUrandomOverrides();
-#if !defined(USE_OPENSSL)
   // Configure NSS for use inside the NaCl process.
   // The fork check has not caused problems for NaCl, but this appears to be
   // best practice (see other places LoadNSSLibraries is called.)
@@ -453,8 +455,7 @@ int main(int argc, char* argv[]) {
   // Load shared libraries before sandbox is raised.
   // NSS is needed to perform hashing for validation caching.
   crypto::LoadNSSLibraries();
-#endif  // !defined(USE_OPENSSL)
-#endif  // defined(OS_NACL_NONSFI)
+#endif  // !defined(OS_NACL_NONSFI) && !defined(USE_OPENSSL)
   const NaClLoaderSystemInfo system_info = {
 #if !defined(OS_NACL_NONSFI)
     // These are not used by nacl_helper_nonsfi.

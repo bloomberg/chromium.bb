@@ -310,7 +310,8 @@
     },
     {
       # We make this its own target so that it does not interfere
-      # with our tests.
+      # with our tests, and so that it may be selectively included
+      # in ports which need it.
       'target_name': 'libc_urandom_override',
       'type': 'static_library',
       'sources': [

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
@@ -190,12 +191,15 @@ if (enable_nacl) {
         "//content/public/common",
         "//crypto",
         "//ipc",
-        "//sandbox/linux:libc_urandom_override",
       ]
 
       cflags = [ "-fPIE" ]
 
       ldflags = [ "-pie" ]
+
+      if (!use_openssl) {
+        deps += [ "//sandbox/linux:libc_urandom_override" ]
+      }
     }
 
     source_set("nacl_linux") {
@@ -252,7 +256,6 @@ if (enable_nacl) {
         "//ppapi/proxy",
         "//ppapi/shared_impl",
         "//sandbox",
-        "//sandbox/linux:libc_urandom_override",
         "//sandbox/linux:sandbox_services_headers",
       ]
 

@@ -245,7 +245,7 @@ source_set("browser") {
     #           ],
   }
 
-  if (is_linux) {
+  if (is_linux && !use_openssl) {
     deps += [ "//sandbox/linux:libc_urandom_override" ]
   }
 

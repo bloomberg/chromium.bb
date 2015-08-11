@@ -1958,7 +1958,7 @@
         '<@(auralinux_browser_sources)',
       ],
     }],
-    ['OS=="linux"', {
+    ['OS=="linux" and use_openssl==0', {
       'dependencies': [
         '../sandbox/sandbox.gyp:libc_urandom_override',
       ],

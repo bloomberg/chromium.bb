@@ -42,7 +42,6 @@
 #include "crypto/nss_util.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/init_process_reaper.h"
-#include "sandbox/linux/services/libc_urandom_override.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
@@ -55,6 +54,8 @@
 
 #if defined(USE_OPENSSL)
 #include <openssl/rand.h>
+#else
+#include "sandbox/linux/services/libc_urandom_override.h"
 #endif
 
 #if defined(ENABLE_PLUGINS)
@@ -341,13 +342,9 @@ static void ZygotePreSandboxInit() {
   // Pass BoringSSL a copy of the /dev/urandom file descriptor so RAND_bytes
   // will work inside the sandbox.
   RAND_set_urandom_fd(base::GetUrandomFD());
-#endif
-#if !defined(USE_OPENSSL) || defined(USE_NSS_CERTS)
+#else
   // NSS libraries are loaded before sandbox is activated. This is to allow
   // successful initialization of NSS which tries to load extra library files.
-  //
-  // TODO(davidben): This can be removed from USE_OPENSSL builds when remoting
-  // no longer depends on it. https://crbug.com/506323.
   crypto::LoadNSSLibraries();
 #endif
 #if defined(ENABLE_PLUGINS)
@@ -526,7 +523,9 @@ static void EnterLayerOneSandbox(LinuxSandbox* linux_sandbox,
 bool ZygoteMain(const MainFunctionParams& params,
                 ScopedVector<ZygoteForkDelegate> fork_delegates) {
   g_am_zygote_or_renderer = true;
+#if !defined(USE_OPENSSL)
   sandbox::InitLibcUrandomOverrides();
+#endif
 
   std::vector<int> fds_to_close_post_fork;
 

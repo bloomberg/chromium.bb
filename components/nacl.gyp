@@ -292,7 +292,6 @@
                 'nacl_switches',
                 '../components/tracing.gyp:tracing',
                 '../crypto/crypto.gyp:crypto',
-                '../sandbox/sandbox.gyp:libc_urandom_override',
                 '../sandbox/sandbox.gyp:sandbox',
                 '../ppapi/ppapi_internal.gyp:ppapi_proxy',
               ],
@@ -318,6 +317,11 @@
                   ],
                 }, {
                   'defines': ['USE_SECCOMP_BPF'],
+                }],
+                ['use_openssl == 0', {
+                  'dependencies': [
+                    '../sandbox/sandbox.gyp:libc_urandom_override',
+                  ],
                 }],
               ],
               'cflags': ['-fPIE'],

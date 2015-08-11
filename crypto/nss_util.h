@@ -33,6 +33,7 @@ CRYPTO_EXPORT void EarlySetupForNSSInit();
 // thread-safe, and NSPR will only ever be initialized once.
 CRYPTO_EXPORT void EnsureNSPRInit();
 
+#if !defined(USE_OPENSSL)
 // Initialize NSS safely for strict sandboxing.  This function tells NSS to not
 // load user security modules, and makes sure NSS will have proper entropy in a
 // restricted, sandboxed environment.
@@ -43,11 +44,14 @@ CRYPTO_EXPORT void EnsureNSPRInit();
 //
 // Make sure to get an LGTM from the Chrome Security Team if you use this.
 CRYPTO_EXPORT void InitNSSSafely();
+#endif  // !defined(USE_OPENSSL)
 
 // Initialize NSS if it isn't already initialized.  This must be called before
 // any other NSS functions.  This function is thread-safe, and NSS will only
 // ever be initialized once.
 CRYPTO_EXPORT void EnsureNSSInit();
+
+#if !defined(USE_OPENSSL)
 
 // Call this before calling EnsureNSSInit() will force NSS to initialize
 // without a persistent DB.  This is used for the special case where access of
@@ -85,6 +89,8 @@ CRYPTO_EXPORT void DisableNSSForkCheck();
 // Note that this does not load libnssckbi.so which contains the root
 // certificates.
 CRYPTO_EXPORT void LoadNSSLibraries();
+
+#endif  // !USE_OPENSSL
 
 // Check if the current NSS version is greater than or equals to |version|.
 // A sample version string is "3.12.3".
