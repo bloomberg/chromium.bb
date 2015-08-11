@@ -8,3 +8,5 @@ SystemGestureEventFilterTest.TwoFingerDragDelayed
 WebNotificationTrayTest.*TouchFeedback*
 # http://crbug.com/504071
 MagnificationControllerTest.CenterTextCaretNotInsideViewport
+# https://crbug.com/516898
+TrayIMETest.PerformActionOnDetailedView
