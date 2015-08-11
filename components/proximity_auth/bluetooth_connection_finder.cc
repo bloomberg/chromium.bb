@@ -54,6 +54,15 @@ scoped_ptr<Connection> BluetoothConnectionFinder::CreateConnection() {
   return scoped_ptr<Connection>(new BluetoothConnection(remote_device_, uuid_));
 }
 
+void BluetoothConnectionFinder::SeekDeviceByAddress(
+    const std::string& bluetooth_address,
+    const base::Closure& callback,
+    const bluetooth_util::ErrorCallback& error_callback) {
+  bluetooth_util::SeekDeviceByAddress(
+      bluetooth_address, callback, error_callback,
+      base::ThreadTaskRunnerHandle::Get().get());
+}
+
 bool BluetoothConnectionFinder::IsReadyToPoll() {
   bool is_adapter_available =
       adapter_.get() && adapter_->IsPresent() && adapter_->IsPowered();
@@ -77,17 +86,60 @@ void BluetoothConnectionFinder::PollIfReady() {
   if (connection_)
     return;
 
-  PA_LOG(INFO) << "Polling for connection...";
-  connection_ = CreateConnection();
-  connection_->AddObserver(this);
-  connection_->Connect();
+  // This SeekDeviceByAddress operation is needed to connect to a device if
+  // it is not already known to the adapter.
+  if (!adapter_->GetDevice(remote_device_.bluetooth_address)) {
+    PA_LOG(INFO) << "Remote device [" << remote_device_.bluetooth_address
+                 << "] is not known. "
+                 << "Seeking device directly by address...";
+
+    SeekDeviceByAddress(
+        remote_device_.bluetooth_address,
+        base::Bind(&BluetoothConnectionFinder::OnSeekedDeviceByAddress,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&BluetoothConnectionFinder::OnSeekedDeviceByAddressError,
+                   weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    PA_LOG(INFO) << "Remote device known, connecting...";
+    connection_ = CreateConnection();
+    connection_->AddObserver(this);
+    connection_->Connect();
+  }
 }
 
-void BluetoothConnectionFinder::DelayedPollIfReady() {
+void BluetoothConnectionFinder::PostDelayedPoll() {
+  if (has_delayed_poll_scheduled_) {
+    PA_LOG(WARNING) << "Delayed poll already scheduled, skipping.";
+    return;
+  }
+
+  PA_LOG(INFO) << "Posting delayed poll..";
+  has_delayed_poll_scheduled_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&BluetoothConnectionFinder::OnDelayedPoll,
+                            weak_ptr_factory_.GetWeakPtr()),
+      polling_interval_);
+}
+
+void BluetoothConnectionFinder::OnDelayedPoll() {
   // Note that there is no longer a pending task, and therefore polling is
   // permitted.
   has_delayed_poll_scheduled_ = false;
   PollIfReady();
+}
+
+void BluetoothConnectionFinder::OnSeekedDeviceByAddress() {
+  // Sanity check that the remote device is now known by the adapter.
+  if (adapter_->GetDevice(remote_device_.bluetooth_address))
+    PollIfReady();
+  else
+    PostDelayedPoll();
+}
+
+void BluetoothConnectionFinder::OnSeekedDeviceByAddressError(
+    const std::string& error_message) {
+  PA_LOG(ERROR) << "Failed to seek device: " << error_message;
+  PostDelayedPoll();
 }
 
 void BluetoothConnectionFinder::UnregisterAsObserver() {
@@ -131,17 +183,24 @@ void BluetoothConnectionFinder::OnConnectionStatusChanged(
     PA_LOG(WARNING) << "Connection found! Elapsed Time: "
                     << elapsed.InMilliseconds() << "ms.";
     UnregisterAsObserver();
-    connection_callback_.Run(connection_.Pass());
+
+    // If we invoke the callback now, the callback function may install its own
+    // observer to |connection_|. Because we are in the ConnectionObserver
+    // callstack, this new observer will receive this connection event.
+    // Therefore, we need to invoke the callback asynchronously.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&BluetoothConnectionFinder::InvokeCallbackAsync,
+                              weak_ptr_factory_.GetWeakPtr()));
   } else if (old_status == Connection::IN_PROGRESS) {
     PA_LOG(WARNING)
         << "Connection failed! Scheduling another polling iteration.";
     connection_.reset();
-    has_delayed_poll_scheduled_ = true;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&BluetoothConnectionFinder::DelayedPollIfReady,
-                              weak_ptr_factory_.GetWeakPtr()),
-        polling_interval_);
+    PostDelayedPoll();
   }
+}
+
+void BluetoothConnectionFinder::InvokeCallbackAsync() {
+  connection_callback_.Run(connection_.Pass());
 }
 
 }  // namespace proximity_auth

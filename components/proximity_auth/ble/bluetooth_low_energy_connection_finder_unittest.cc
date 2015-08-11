@@ -366,9 +366,11 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   connection_finder.DeviceAdded(adapter_.get(), device_.get());
 
   // Creating a connection.
+  base::RunLoop run_loop;
   EXPECT_FALSE(last_found_connection_);
   connection->SetStatus(Connection::IN_PROGRESS);
   connection->SetStatus(Connection::CONNECTED);
+  run_loop.RunUntilIdle();
   EXPECT_TRUE(last_found_connection_);
 }
 
@@ -424,9 +426,11 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   EXPECT_CALL(*last_discovery_session_alias_, Stop(_, _)).Times(AtLeast(1));
 
   // Completing the connection.
+  base::RunLoop run_loop;
   EXPECT_FALSE(last_found_connection_);
   connection->SetStatus(Connection::IN_PROGRESS);
   connection->SetStatus(Connection::CONNECTED);
+  run_loop.RunUntilIdle();
   EXPECT_TRUE(last_found_connection_);
 }
 
@@ -475,9 +479,11 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   EXPECT_CALL(*last_discovery_session_alias_, Stop(_, _)).Times(AtLeast(1));
 
   // Completing the connection.
+  base::RunLoop run_loop;
   ASSERT_FALSE(last_found_connection_);
   connection->SetStatus(Connection::IN_PROGRESS);
   connection->SetStatus(Connection::CONNECTED);
+  run_loop.RunUntilIdle();
   EXPECT_TRUE(last_found_connection_);
 }
 

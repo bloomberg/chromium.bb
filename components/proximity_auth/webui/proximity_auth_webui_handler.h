@@ -30,7 +30,10 @@ namespace proximity_auth {
 
 class Authenticator;
 class BluetoothConnection;
+class BluetoothThrottler;
+class BluetoothLowEnergyDeviceWhitelist;
 class Connection;
+class ConnectionFinder;
 class ClientImpl;
 class ReachablePhoneFlow;
 struct RemoteStatusUpdate;
@@ -100,9 +103,14 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
   void OnPSKDerived(const cryptauth::ExternalDeviceInfo& unlock_key,
                     const std::string& persistent_symmetric_key);
 
-  // Callbacks for bluetooth_util::SeekDeviceByAddress().
-  void OnSeekedDeviceByAddress();
-  void OnSeekedDeviceByAddressError(const std::string& error_message);
+  // Tries to create a classic Bluetooth connection to the unlock key.
+  void FindBluetoothClassicConnection(const RemoteDevice& remote_device);
+
+  // Tries to create a Bluetooth Low Energy connection to the unlock key.
+  void FindBluetoothLowEnergyConnection(const RemoteDevice& remote_device);
+
+  // Called when |connection_finder_| finds a connection.
+  void OnConnectionFound(scoped_ptr<Connection> connection);
 
   // Callback when |authenticator_| completes authentication.
   void OnAuthenticationResult(Authenticator::Result result,
@@ -155,9 +163,6 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
   // The flow for getting a list of reachable phones.
   scoped_ptr<ReachablePhoneFlow> reachable_phone_flow_;
 
-  // True if the WebContents backing the WebUI has been initialized.
-  bool web_contents_initialized_;
-
   // Member variables related to CryptAuth debugging.
   // TODO(tengs): These members are temporarily used for development.
   scoped_ptr<PrefService> pref_service;
@@ -170,7 +175,11 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
   // Member variables for connecting to and authenticating the remote device.
   // TODO(tengs): Support multiple simultaenous connections.
   scoped_ptr<SecureMessageDelegate> secure_message_delegate_;
-  scoped_ptr<BluetoothConnection> bluetooth_connection_;
+  scoped_ptr<BluetoothLowEnergyDeviceWhitelist> ble_device_whitelist_;
+  RemoteDevice selected_remote_device_;
+  scoped_ptr<BluetoothThrottler> bluetooth_throttler_;
+  scoped_ptr<ConnectionFinder> connection_finder_;
+  scoped_ptr<Connection> connection_;
   scoped_ptr<Authenticator> authenticator_;
   scoped_ptr<SecureContext> secure_context_;
   scoped_ptr<ClientImpl> client_;

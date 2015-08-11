@@ -98,6 +98,10 @@ class BluetoothLowEnergyConnectionFinder
   // Restarts the discovery session after creating |connection_| fails.
   void RestartDiscoverySessionWhenReady();
 
+  // Used to invoke |connection_callback_| asynchronously, decoupling the
+  // callback invocation from the ConnectionObserver callstack.
+  void InvokeCallbackAsync();
+
   // Returns the device with |device_address|.
   device::BluetoothDevice* GetDevice(std::string device_address);
 

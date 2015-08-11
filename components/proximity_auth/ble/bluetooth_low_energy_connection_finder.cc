@@ -114,15 +114,17 @@ void BluetoothLowEnergyConnectionFinder::DeviceChanged(
     BluetoothDevice* device) {
   DCHECK_EQ(adapter_.get(), adapter);
   DCHECK(device);
-  PA_LOG(INFO) << "Device changed: " << device->GetAddress();
 
   // Note: Only consider |device| when it was actually added/updated during a
   // scanning, otherwise the device is stale and the GATT connection will fail.
   // For instance, when |adapter_| change status from unpowered to powered,
   // |DeviceAdded| is called for each paired |device|.
   if (adapter_->IsPowered() && discovery_session_ &&
-      discovery_session_->IsActive())
+      discovery_session_->IsActive()) {
+    if (device_whitelist_->HasDeviceWithAddress(device->GetAddress()))
+      PA_LOG(INFO) << "Whitelisted device changed: " << device->GetAddress();
     HandleDeviceUpdated(device);
+  }
 }
 
 void BluetoothLowEnergyConnectionFinder::HandleDeviceUpdated(
@@ -266,11 +268,14 @@ void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(
     adapter_->RemoveObserver(this);
     connection_->RemoveObserver(this);
 
-    // Note: any observer of |connection_| added in |connection_callback_| will
-    // also receive this |OnConnectionStatusChanged| notification (IN_PROGRESS
-    // -> CONNECTED).
-    connection_callback_.Run(connection_.Pass());
-    connection_callback_.Reset();
+    // If we invoke the callback now, the callback function may install its own
+    // observer to |connection_|. Because we are in the ConnectionObserver
+    // callstack, this new observer will receive this connection event.
+    // Therefore, we need to invoke the callback asynchronously.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&BluetoothLowEnergyConnectionFinder::InvokeCallbackAsync,
+                   weak_ptr_factory_.GetWeakPtr()));
   } else if (old_status == Connection::IN_PROGRESS) {
     PA_LOG(WARNING) << "Connection failed. Retrying.";
     RestartDiscoverySessionWhenReady();
@@ -313,6 +318,10 @@ BluetoothDevice* BluetoothLowEnergyConnectionFinder::GetDevice(
       return device;
   }
   return nullptr;
+}
+
+void BluetoothLowEnergyConnectionFinder::InvokeCallbackAsync() {
+  connection_callback_.Run(connection_.Pass());
 }
 
 }  // namespace proximity_auth

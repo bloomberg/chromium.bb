@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/proximity_auth/bluetooth_util.h"
 #include "components/proximity_auth/connection_finder.h"
 #include "components/proximity_auth/connection_observer.h"
 #include "components/proximity_auth/remote_device.h"
@@ -39,6 +40,13 @@ class BluetoothConnectionFinder : public ConnectionFinder,
   // Exposed for mocking out the connection in tests.
   virtual scoped_ptr<Connection> CreateConnection();
 
+  // Calls bluetooth_util::SeekDeviceByAddress. Exposed for testing, as this
+  // utility function is platform dependent.
+  virtual void SeekDeviceByAddress(
+      const std::string& bluetooth_address,
+      const base::Closure& callback,
+      const bluetooth_util::ErrorCallback& error_callback);
+
   // BluetoothAdapter::Observer:
   void AdapterPresentChanged(device::BluetoothAdapter* adapter,
                              bool present) override;
@@ -53,8 +61,14 @@ class BluetoothConnectionFinder : public ConnectionFinder,
   // another iteration of polling.
   void PollIfReady();
 
-  // Wrapper around |PollIfReady()| that can be posted as a delayed task.
-  void DelayedPollIfReady();
+  // Posts a delayed task to call |PollIfReady|. |OnDelayedPoll()| will be
+  // called when the task fires.
+  void PostDelayedPoll();
+  void OnDelayedPoll();
+
+  // Callbacks for bluetooth_util::SeekDeviceByAddress().
+  void OnSeekedDeviceByAddress();
+  void OnSeekedDeviceByAddressError(const std::string& error_message);
 
   // Unregisters |this| instance as an observer from all objects that it might
   // have registered with.
@@ -67,6 +81,10 @@ class BluetoothConnectionFinder : public ConnectionFinder,
   void OnConnectionStatusChanged(Connection* connection,
                                  Connection::Status old_status,
                                  Connection::Status new_status) override;
+
+  // Used to invoke |connection_callback_| asynchronously, decoupling the
+  // callback invocation from the ConnectionObserver callstack.
+  void InvokeCallbackAsync();
 
   // The remote device to connect to.
   const RemoteDevice remote_device_;

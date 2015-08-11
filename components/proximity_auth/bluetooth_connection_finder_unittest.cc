@@ -15,6 +15,7 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
+#include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,12 +81,35 @@ class MockBluetoothConnectionFinder : public BluetoothConnectionFinder {
   using BluetoothConnectionFinder::AdapterPresentChanged;
   using BluetoothConnectionFinder::AdapterPoweredChanged;
 
+  void ClearSeekCallbacks() {
+    seek_callback_ = base::Closure();
+    seek_error_callback_ = bluetooth_util::ErrorCallback();
+  }
+
+  const base::Closure& seek_callback() { return seek_callback_; }
+  const bluetooth_util::ErrorCallback& seek_error_callback() {
+    return seek_error_callback_;
+  }
+
  protected:
+  // BluetoothConnectionFinder:
   scoped_ptr<Connection> CreateConnection() override {
     return make_scoped_ptr(CreateConnectionProxy());
   }
 
+  void SeekDeviceByAddress(
+      const std::string& bluetooth_address,
+      const base::Closure& callback,
+      const bluetooth_util::ErrorCallback& error_callback) override {
+    EXPECT_EQ(kBluetoothAddress, bluetooth_address);
+    seek_callback_ = callback;
+    seek_error_callback_ = error_callback;
+  }
+
  private:
+  base::Closure seek_callback_;
+  bluetooth_util::ErrorCallback seek_error_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(MockBluetoothConnectionFinder);
 };
 
@@ -95,6 +119,13 @@ class ProximityAuthBluetoothConnectionFinderTest : public testing::Test {
  protected:
   ProximityAuthBluetoothConnectionFinderTest()
       : adapter_(new NiceMock<device::MockBluetoothAdapter>),
+        bluetooth_device_(new NiceMock<device::MockBluetoothDevice>(
+            adapter_.get(),
+            device::BluetoothDevice::DEVICE_PHONE,
+            kDeviceName,
+            kBluetoothAddress,
+            true,
+            false)),
         connection_callback_(base::Bind(
             &ProximityAuthBluetoothConnectionFinderTest::OnConnectionFound,
             base::Unretained(this))) {
@@ -104,6 +135,11 @@ class ProximityAuthBluetoothConnectionFinderTest : public testing::Test {
     // can override this as needed.
     ON_CALL(*adapter_, IsPresent()).WillByDefault(Return(true));
     ON_CALL(*adapter_, IsPowered()).WillByDefault(Return(true));
+
+    // By default, the remote device is known to |adapter_| so
+    // |SeekDeviceByAddress()| will not be called.
+    ON_CALL(*adapter_, GetDevice(kBluetoothAddress))
+        .WillByDefault(Return(bluetooth_device_.get()));
   }
 
   MOCK_METHOD1(OnConnectionFoundProxy, void(Connection* connection));
@@ -112,7 +148,29 @@ class ProximityAuthBluetoothConnectionFinderTest : public testing::Test {
     last_found_connection_ = connection.Pass();
   }
 
+  // Starts |connection_finder_|. If |expect_connection| is true, then we set an
+  // expectation that an in-progress connection will be created and returned.
+  MockConnection* StartConnectionFinder(bool expect_connection) {
+    MockConnection* connection = nullptr;
+    if (expect_connection)
+      connection = connection_finder_.ExpectCreateConnection();
+    connection_finder_.Find(connection_callback_);
+    return connection;
+  }
+
+  // Given an in-progress |connection| returned by |StartConnectionFinder()|,
+  // simulate it transitioning to the CONNECTED state.
+  void SimulateDeviceConnection(MockConnection* connection) {
+    connection->SetStatus(Connection::IN_PROGRESS);
+    base::RunLoop run_loop;
+    EXPECT_CALL(*this, OnConnectionFoundProxy(_));
+    connection->SetStatus(Connection::CONNECTED);
+    run_loop.RunUntilIdle();
+  }
+
   scoped_refptr<device::MockBluetoothAdapter> adapter_;
+  StrictMock<MockBluetoothConnectionFinder> connection_finder_;
+  scoped_ptr<device::MockBluetoothDevice> bluetooth_device_;
   ConnectionFinder::ConnectionCallback connection_callback_;
 
  private:
@@ -139,64 +197,45 @@ TEST_F(ProximityAuthBluetoothConnectionFinderTest, Find_NoBluetoothAdapter) {
     return;
 
   // The StrictMock will verify that no connection is created.
-  StrictMock<MockBluetoothConnectionFinder> connection_finder;
-  connection_finder.Find(connection_callback_);
+  StartConnectionFinder(false);
 }
 
 TEST_F(ProximityAuthBluetoothConnectionFinderTest,
        Find_BluetoothAdapterNotPresent) {
   // The StrictMock will verify that no connection is created.
-  StrictMock<MockBluetoothConnectionFinder> connection_finder;
   ON_CALL(*adapter_, IsPresent()).WillByDefault(Return(false));
-  connection_finder.Find(connection_callback_);
+  StartConnectionFinder(false);
 }
 
 TEST_F(ProximityAuthBluetoothConnectionFinderTest,
        Find_BluetoothAdapterNotPowered) {
-  // The StrictMock will verify that no connection is created.
-  StrictMock<MockBluetoothConnectionFinder> connection_finder;
   ON_CALL(*adapter_, IsPowered()).WillByDefault(Return(false));
-  connection_finder.Find(connection_callback_);
+  // The StrictMock will verify that no connection is created.
+  StartConnectionFinder(false);
 }
 
 TEST_F(ProximityAuthBluetoothConnectionFinderTest, Find_ConnectionSucceeds) {
-  StrictMock<MockBluetoothConnectionFinder> connection_finder;
-
-  MockConnection* connection = connection_finder.ExpectCreateConnection();
-  connection_finder.Find(connection_callback_);
-
-  connection->SetStatus(Connection::IN_PROGRESS);
-
-  EXPECT_CALL(*this, OnConnectionFoundProxy(_));
-  connection->SetStatus(Connection::CONNECTED);
+  MockConnection* connection = StartConnectionFinder(true);
+  SimulateDeviceConnection(connection);
 }
 
 TEST_F(ProximityAuthBluetoothConnectionFinderTest,
        Find_ConnectionSucceeds_UnregistersAsObserver) {
-  StrictMock<MockBluetoothConnectionFinder> connection_finder;
+  MockConnection* connection = StartConnectionFinder(true);
+  SimulateDeviceConnection(connection);
 
-  MockConnection* connection = connection_finder.ExpectCreateConnection();
-  connection_finder.Find(connection_callback_);
-
-  connection->SetStatus(Connection::IN_PROGRESS);
-
-  EXPECT_CALL(*this, OnConnectionFoundProxy(_));
-  EXPECT_CALL(*adapter_, RemoveObserver(&connection_finder));
-  connection->SetStatus(Connection::CONNECTED);
-
-  // If for some reason the connection sends more status updates, they should be
-  // ignored.
+  // If for some reason the connection sends more status updates, they should
+  // be ignored.
+  base::RunLoop run_loop;
   EXPECT_CALL(*this, OnConnectionFoundProxy(_)).Times(0);
   connection->SetStatus(Connection::IN_PROGRESS);
   connection->SetStatus(Connection::CONNECTED);
+  run_loop.RunUntilIdle();
 }
 
 TEST_F(ProximityAuthBluetoothConnectionFinderTest,
        Find_ConnectionFails_PostsTaskToPollAgain) {
-  StrictMock<MockBluetoothConnectionFinder> connection_finder;
-
-  MockConnection* connection = connection_finder.ExpectCreateConnection();
-  connection_finder.Find(connection_callback_);
+  MockConnection* connection = StartConnectionFinder(true);
 
   // Simulate a connection that fails to connect.
   connection->SetStatus(Connection::IN_PROGRESS);
@@ -204,40 +243,33 @@ TEST_F(ProximityAuthBluetoothConnectionFinderTest,
 
   // A task should have been posted to poll again.
   base::RunLoop run_loop;
-  connection_finder.ExpectCreateConnection();
+  connection_finder_.ExpectCreateConnection();
   run_loop.RunUntilIdle();
 }
 
 TEST_F(ProximityAuthBluetoothConnectionFinderTest, Find_PollsOnAdapterPresent) {
-  StrictMock<MockBluetoothConnectionFinder> connection_finder;
-
   ON_CALL(*adapter_, IsPresent()).WillByDefault(Return(false));
-  EXPECT_CALL(connection_finder, CreateConnectionProxy()).Times(0);
-  connection_finder.Find(connection_callback_);
+  EXPECT_CALL(connection_finder_, CreateConnectionProxy()).Times(0);
+  connection_finder_.Find(connection_callback_);
 
   ON_CALL(*adapter_, IsPresent()).WillByDefault(Return(true));
-  connection_finder.ExpectCreateConnection();
-  connection_finder.AdapterPresentChanged(adapter_.get(), true);
+  connection_finder_.ExpectCreateConnection();
+  connection_finder_.AdapterPresentChanged(adapter_.get(), true);
 }
 
 TEST_F(ProximityAuthBluetoothConnectionFinderTest, Find_PollsOnAdapterPowered) {
-  StrictMock<MockBluetoothConnectionFinder> connection_finder;
-
   ON_CALL(*adapter_, IsPowered()).WillByDefault(Return(false));
-  EXPECT_CALL(connection_finder, CreateConnectionProxy()).Times(0);
-  connection_finder.Find(connection_callback_);
+  EXPECT_CALL(connection_finder_, CreateConnectionProxy()).Times(0);
+  connection_finder_.Find(connection_callback_);
 
   ON_CALL(*adapter_, IsPowered()).WillByDefault(Return(true));
-  connection_finder.ExpectCreateConnection();
-  connection_finder.AdapterPoweredChanged(adapter_.get(), true);
+  connection_finder_.ExpectCreateConnection();
+  connection_finder_.AdapterPoweredChanged(adapter_.get(), true);
 }
 
 TEST_F(ProximityAuthBluetoothConnectionFinderTest,
        Find_DoesNotPollIfConnectionPending) {
-  StrictMock<MockBluetoothConnectionFinder> connection_finder;
-
-  MockConnection* connection = connection_finder.ExpectCreateConnection();
-  connection_finder.Find(connection_callback_);
+  MockConnection* connection = StartConnectionFinder(true);
 
   connection->SetStatus(Connection::IN_PROGRESS);
 
@@ -245,16 +277,13 @@ TEST_F(ProximityAuthBluetoothConnectionFinderTest,
   // that would normally trigger a new polling iteration should not do so now,
   // because the delay interval between successive polling attempts has not yet
   // expired.
-  EXPECT_CALL(connection_finder, CreateConnectionProxy()).Times(0);
-  connection_finder.AdapterPresentChanged(adapter_.get(), true);
+  EXPECT_CALL(connection_finder_, CreateConnectionProxy()).Times(0);
+  connection_finder_.AdapterPresentChanged(adapter_.get(), true);
 }
 
 TEST_F(ProximityAuthBluetoothConnectionFinderTest,
        Find_ConnectionFails_PostsTaskToPollAgain_PollWaitsForTask) {
-  StrictMock<MockBluetoothConnectionFinder> connection_finder;
-
-  MockConnection* connection = connection_finder.ExpectCreateConnection();
-  connection_finder.Find(connection_callback_);
+  MockConnection* connection = StartConnectionFinder(true);
 
   connection->SetStatus(Connection::IN_PROGRESS);
   connection->SetStatus(Connection::DISCONNECTED);
@@ -263,8 +292,8 @@ TEST_F(ProximityAuthBluetoothConnectionFinderTest,
   // would normally trigger a new polling iteration should not do so now,
   // because the delay interval between successive polling attempts has not yet
   // expired.
-  EXPECT_CALL(connection_finder, CreateConnectionProxy()).Times(0);
-  connection_finder.AdapterPresentChanged(adapter_.get(), true);
+  EXPECT_CALL(connection_finder_, CreateConnectionProxy()).Times(0);
+  connection_finder_.AdapterPresentChanged(adapter_.get(), true);
 
   // Now, allow the pending task to run, but fail early, so that no new task is
   // posted.
@@ -275,8 +304,57 @@ TEST_F(ProximityAuthBluetoothConnectionFinderTest,
 
   // Now that there is no pending task, events should once again trigger new
   // polling iterations.
-  connection_finder.ExpectCreateConnection();
-  connection_finder.AdapterPresentChanged(adapter_.get(), true);
+  connection_finder_.ExpectCreateConnection();
+  connection_finder_.AdapterPresentChanged(adapter_.get(), true);
+}
+
+TEST_F(ProximityAuthBluetoothConnectionFinderTest,
+       Find_DeviceNotKnown_SeekDeviceSucceeds) {
+  // If the BluetoothDevice is not known by the adapter, |connection_finder|
+  // will call SeekDeviceByAddress() first to make it known.
+  ON_CALL(*adapter_, GetDevice(kBluetoothAddress))
+      .WillByDefault(Return(nullptr));
+  connection_finder_.Find(connection_callback_);
+  ASSERT_FALSE(connection_finder_.seek_callback().is_null());
+  EXPECT_FALSE(connection_finder_.seek_error_callback().is_null());
+
+  // After seeking is successful, the normal flow should resume.
+  ON_CALL(*adapter_, GetDevice(kBluetoothAddress))
+      .WillByDefault(Return(bluetooth_device_.get()));
+  MockConnection* connection = connection_finder_.ExpectCreateConnection();
+  connection_finder_.seek_callback().Run();
+  SimulateDeviceConnection(connection);
+}
+
+TEST_F(ProximityAuthBluetoothConnectionFinderTest,
+       Find_DeviceNotKnown_SeekDeviceFailThenSucceeds) {
+  // If the BluetoothDevice is not known by the adapter, |connection_finder|
+  // will call SeekDeviceByAddress() first to make it known.
+  ON_CALL(*adapter_, GetDevice(kBluetoothAddress))
+      .WillByDefault(Return(nullptr));
+  connection_finder_.Find(connection_callback_);
+  EXPECT_FALSE(connection_finder_.seek_callback().is_null());
+  ASSERT_FALSE(connection_finder_.seek_error_callback().is_null());
+
+  // If the seek fails, then |connection_finder| will post a delayed poll to
+  // reattempt the seek.
+  connection_finder_.seek_error_callback().Run("Seek failed for test.");
+  connection_finder_.ClearSeekCallbacks();
+  EXPECT_TRUE(connection_finder_.seek_callback().is_null());
+  EXPECT_TRUE(connection_finder_.seek_error_callback().is_null());
+
+  // Check that seek is reattempted.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  ASSERT_FALSE(connection_finder_.seek_callback().is_null());
+  EXPECT_FALSE(connection_finder_.seek_error_callback().is_null());
+
+  // Successfully connect to the Bluetooth device.
+  ON_CALL(*adapter_, GetDevice(kBluetoothAddress))
+      .WillByDefault(Return(bluetooth_device_.get()));
+  MockConnection* connection = connection_finder_.ExpectCreateConnection();
+  connection_finder_.seek_callback().Run();
+  SimulateDeviceConnection(connection);
 }
 
 }  // namespace proximity_auth
