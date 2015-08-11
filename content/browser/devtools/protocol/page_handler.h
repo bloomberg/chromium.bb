@@ -44,6 +44,8 @@ class PageHandler : public NotificationObserver {
   void SetClient(scoped_ptr<Client> client);
   void Detached();
   void OnSwapCompositorFrame(const cc::CompositorFrameMetadata& frame_metadata);
+  void OnSynchronousSwapCompositorFrame(const cc::CompositorFrameMetadata&
+      frame_metadata);
   void DidAttachInterstitialPage();
   void DidDetachInterstitialPage();
   void SetScreencastListener(ScreencastListener* listener);

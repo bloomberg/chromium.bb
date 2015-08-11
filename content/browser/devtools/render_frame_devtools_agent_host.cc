@@ -692,25 +692,23 @@ void RenderFrameDevToolsAgentHost::OnSwapCompositorFrame(
     page_handler_->OnSwapCompositorFrame(base::get<1>(param).metadata);
   if (input_handler_)
     input_handler_->OnSwapCompositorFrame(base::get<1>(param).metadata);
-  if (frame_trace_recorder_) {
+  if (frame_trace_recorder_ && tracing_handler_->did_initiate_recording()) {
     frame_trace_recorder_->OnSwapCompositorFrame(
         current_ ? current_->host() : nullptr,
-        base::get<1>(param).metadata,
-        tracing_handler_->did_initiate_recording());
+        base::get<1>(param).metadata);
   }
 }
 
 void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
     const cc::CompositorFrameMetadata& frame_metadata) {
   if (page_handler_)
-    page_handler_->OnSwapCompositorFrame(frame_metadata);
+    page_handler_->OnSynchronousSwapCompositorFrame(frame_metadata);
   if (input_handler_)
     input_handler_->OnSwapCompositorFrame(frame_metadata);
-  if (frame_trace_recorder_) {
-    frame_trace_recorder_->OnSwapCompositorFrame(
+  if (frame_trace_recorder_ && tracing_handler_->did_initiate_recording()) {
+    frame_trace_recorder_->OnSynchronousSwapCompositorFrame(
         current_ ? current_->host() : nullptr,
-        frame_metadata,
-        tracing_handler_->did_initiate_recording());
+        frame_metadata);
   }
 }
 

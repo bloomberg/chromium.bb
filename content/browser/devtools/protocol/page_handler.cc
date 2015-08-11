@@ -146,6 +146,16 @@ void PageHandler::Detached() {
 
 void PageHandler::OnSwapCompositorFrame(
     const cc::CompositorFrameMetadata& frame_metadata) {
+  last_compositor_frame_metadata_ = frame_metadata;
+  has_compositor_frame_metadata_ = true;
+
+  if (screencast_enabled_)
+    InnerSwapCompositorFrame();
+  color_picker_->OnSwapCompositorFrame();
+}
+
+void PageHandler::OnSynchronousSwapCompositorFrame(
+    const cc::CompositorFrameMetadata& frame_metadata) {
   last_compositor_frame_metadata_ = has_compositor_frame_metadata_ ?
       next_compositor_frame_metadata_ : frame_metadata;
   next_compositor_frame_metadata_ = frame_metadata;

@@ -14,7 +14,6 @@ class CompositorFrameMetadata;
 
 namespace content {
 
-class DevToolsFrameTraceRecorderData;
 class RenderFrameHostImpl;
 
 class DevToolsFrameTraceRecorder {
@@ -24,12 +23,15 @@ class DevToolsFrameTraceRecorder {
 
   void OnSwapCompositorFrame(
       RenderFrameHostImpl* host,
-      const cc::CompositorFrameMetadata& frame_metadata,
-      bool do_capture);
+      const cc::CompositorFrameMetadata& frame_metadata);
+
+  void OnSynchronousSwapCompositorFrame(
+      RenderFrameHostImpl* host,
+      const cc::CompositorFrameMetadata& frame_metadata);
 
  private:
-  scoped_refptr<DevToolsFrameTraceRecorderData> pending_frame_data_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsFrameTraceRecorder);
+  scoped_ptr<cc::CompositorFrameMetadata> last_metadata_;
 };
 
 }  // namespace content

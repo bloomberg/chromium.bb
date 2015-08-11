@@ -64,59 +64,52 @@ class TraceableDevToolsScreenshot
   SkBitmap frame_;
 };
 
+void FrameCaptured(base::TraceTicks timestamp, const SkBitmap& bitmap,
+    ReadbackResponse response) {
+  if (response != READBACK_SUCCESS)
+    return;
+  int current_frame_count = base::subtle::NoBarrier_Load(&frame_data_count);
+  if (current_frame_count >= kMaximumFrameDataCount)
+    return;
+  if (bitmap.drawsNothing())
+    return;
+  base::subtle::NoBarrier_AtomicIncrement(&frame_data_count, 1);
+  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID_AND_TIMESTAMP(
+      TRACE_DISABLED_BY_DEFAULT("devtools.screenshot"), "Screenshot", 1,
+      timestamp.ToInternalValue(),
+      scoped_refptr<base::trace_event::ConvertableToTraceFormat>(
+          new TraceableDevToolsScreenshot(bitmap)));
+}
+
+void CaptureFrame(RenderFrameHostImpl* host,
+    const cc::CompositorFrameMetadata& metadata) {
+  RenderWidgetHostViewBase* view =
+      static_cast<RenderWidgetHostViewBase*>(host->GetView());
+  if (!view)
+    return;
+  int current_frame_count = base::subtle::NoBarrier_Load(&frame_data_count);
+  if (current_frame_count >= kMaximumFrameDataCount)
+    return;
+  float scale = metadata.page_scale_factor;
+  float area = metadata.scrollable_viewport_size.GetArea();
+  if (area * scale * scale > kFrameAreaLimit)
+    scale = sqrt(kFrameAreaLimit / area);
+  gfx::Size snapshot_size(gfx::ToRoundedSize(gfx::ScaleSize(
+      metadata.scrollable_viewport_size, scale)));
+  view->CopyFromCompositingSurface(
+      gfx::Rect(), snapshot_size,
+      base::Bind(FrameCaptured, base::TraceTicks::Now()),
+      kN32_SkColorType);
+}
+
+bool ScreenshotCategoryEnabled() {
+  bool enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("devtools.screenshot"), &enabled);
+  return enabled;
+}
+
 }  // namespace
-
-class DevToolsFrameTraceRecorderData
-    : public base::RefCounted<DevToolsFrameTraceRecorderData> {
- public:
-  DevToolsFrameTraceRecorderData(const cc::CompositorFrameMetadata& metadata)
-      : metadata_(metadata), timestamp_(base::TraceTicks::Now()) {}
-
-  void FrameCaptured(const SkBitmap& bitmap, ReadbackResponse response) {
-    if (response != READBACK_SUCCESS)
-      return;
-    int current_frame_count = base::subtle::NoBarrier_Load(&frame_data_count);
-    if (current_frame_count >= kMaximumFrameDataCount)
-      return;
-    if (bitmap.drawsNothing())
-      return;
-    base::subtle::NoBarrier_AtomicIncrement(&frame_data_count, 1);
-    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID_AND_TIMESTAMP(
-        TRACE_DISABLED_BY_DEFAULT("devtools.screenshot"), "Screenshot", 1,
-        timestamp_.ToInternalValue(),
-        scoped_refptr<base::trace_event::ConvertableToTraceFormat>(
-            new TraceableDevToolsScreenshot(bitmap)));
-  }
-
-  void CaptureFrame(RenderFrameHostImpl* host) {
-    RenderWidgetHostViewBase* view =
-        static_cast<RenderWidgetHostViewBase*>(host->GetView());
-    if (!view)
-      return;
-    int current_frame_count = base::subtle::NoBarrier_Load(&frame_data_count);
-    if (current_frame_count >= kMaximumFrameDataCount)
-      return;
-    float scale = metadata_.page_scale_factor;
-    float area = metadata_.scrollable_viewport_size.GetArea();
-    if (area * scale * scale > kFrameAreaLimit)
-      scale = sqrt(kFrameAreaLimit / area);
-    gfx::Size snapshot_size(gfx::ToRoundedSize(gfx::ScaleSize(
-        metadata_.scrollable_viewport_size, scale)));
-    view->CopyFromCompositingSurface(
-        gfx::Rect(), snapshot_size,
-        base::Bind(&DevToolsFrameTraceRecorderData::FrameCaptured, this),
-        kN32_SkColorType);
-  }
-
- private:
-  friend class base::RefCounted<DevToolsFrameTraceRecorderData>;
-  ~DevToolsFrameTraceRecorderData() {}
-
-  cc::CompositorFrameMetadata metadata_;
-  base::TraceTicks timestamp_;
-
-  DISALLOW_COPY_AND_ASSIGN(DevToolsFrameTraceRecorderData);
-};
 
 DevToolsFrameTraceRecorder::DevToolsFrameTraceRecorder() { }
 
@@ -124,25 +117,25 @@ DevToolsFrameTraceRecorder::~DevToolsFrameTraceRecorder() { }
 
 void DevToolsFrameTraceRecorder::OnSwapCompositorFrame(
     RenderFrameHostImpl* host,
-    const cc::CompositorFrameMetadata& frame_metadata,
-    bool do_capture) {
-  if (!host)
+    const cc::CompositorFrameMetadata& frame_metadata) {
+  if (!host || !ScreenshotCategoryEnabled())
     return;
+  CaptureFrame(host, frame_metadata);
+}
 
-  bool enabled;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
-      TRACE_DISABLED_BY_DEFAULT("devtools.screenshot"), &enabled);
-  if (!enabled || !do_capture) {
-    pending_frame_data_ = nullptr;
+void DevToolsFrameTraceRecorder::OnSynchronousSwapCompositorFrame(
+    RenderFrameHostImpl* host,
+    const cc::CompositorFrameMetadata& frame_metadata) {
+  if (!host || !ScreenshotCategoryEnabled()) {
+    last_metadata_.reset();
     return;
   }
 
   bool is_new_trace;
   TRACE_EVENT_IS_NEW_TRACE(&is_new_trace);
-  if (!is_new_trace && pending_frame_data_)
-    pending_frame_data_->CaptureFrame(host);
-
-  pending_frame_data_ = new DevToolsFrameTraceRecorderData(frame_metadata);
+  if (!is_new_trace && last_metadata_)
+    CaptureFrame(host, *last_metadata_);
+  last_metadata_.reset(new cc::CompositorFrameMetadata(frame_metadata));
 }
 
 }  // namespace content
