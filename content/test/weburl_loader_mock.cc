@@ -9,6 +9,7 @@
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
+#include "third_party/WebKit/public/platform/WebUnitTestSupport.h"
 
 WebURLLoaderMock::WebURLLoaderMock(WebURLLoaderMockFactory* factory,
                                    blink::WebURLLoader* default_loader)
@@ -28,6 +29,7 @@ WebURLLoaderMock::~WebURLLoaderMock() {
 }
 
 void WebURLLoaderMock::ServeAsynchronousRequest(
+    blink::WebURLLoaderTestDelegate* delegate,
     const blink::WebURLResponse& response,
     const blink::WebData& data,
     const blink::WebURLError& error) {
@@ -50,7 +52,12 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
     client_->didFail(this, error);
     return;
   }
-  client_->didReceiveData(this, data.data(), data.size(), data.size());
+  if (delegate) {
+    delegate->didReceiveData(client_, this, data.data(), data.size(),
+                             data.size());
+  } else {
+    client_->didReceiveData(this, data.data(), data.size(), data.size());
+  }
   client_->didFinishLoading(this, 0, data.size());
 }
 

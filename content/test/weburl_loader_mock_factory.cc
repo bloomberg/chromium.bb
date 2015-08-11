@@ -23,7 +23,7 @@ using blink::WebURLLoader;
 using blink::WebURLRequest;
 using blink::WebURLResponse;
 
-WebURLLoaderMockFactory::WebURLLoaderMockFactory() {}
+WebURLLoaderMockFactory::WebURLLoaderMockFactory() : delegate_(nullptr) {}
 
 WebURLLoaderMockFactory::~WebURLLoaderMockFactory() {}
 
@@ -96,7 +96,7 @@ void WebURLLoaderMockFactory::ServeAsynchronousRequests() {
     }
     // Serve the request if the loader is still active.
     if (IsPending(loader) && !loader->isDeferred())
-      loader->ServeAsynchronousRequest(response, data, error);
+      loader->ServeAsynchronousRequest(delegate_, response, data, error);
     // The loader might have already been removed.
     pending_loaders_.erase(loader);
   }

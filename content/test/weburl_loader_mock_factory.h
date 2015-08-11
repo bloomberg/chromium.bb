@@ -16,6 +16,7 @@
 namespace blink {
 class WebData;
 class WebURLLoader;
+class WebURLLoaderTestDelegate;
 }
 
 class WebURLLoaderMock;
@@ -74,6 +75,10 @@ class WebURLLoaderMockFactory {
   // Removes the loader from the list of pending loaders.
   void CancelLoad(WebURLLoaderMock* loader);
 
+  void set_delegate(blink::WebURLLoaderTestDelegate* delegate) {
+    delegate_ = delegate;
+  }
+
  private:
   struct ResponseInfo {
     blink::WebURLResponse response;
@@ -94,6 +99,8 @@ class WebURLLoaderMockFactory {
   // Reads |m_filePath| and puts its content in |data|.
   // Returns true if it successfully read the file.
   static bool ReadFile(const base::FilePath& file_path, blink::WebData* data);
+
+  blink::WebURLLoaderTestDelegate* delegate_;
 
   // The loaders that have not being served data yet.
   typedef std::map<WebURLLoaderMock*, blink::WebURLRequest> LoaderToRequestMap;

@@ -312,6 +312,11 @@ void TestBlinkWebUnitTestSupport::serveAsynchronousMockedRequests() {
   url_loader_factory_->ServeAsynchronousRequests();
 }
 
+void TestBlinkWebUnitTestSupport::setLoaderDelegate(
+    blink::WebURLLoaderTestDelegate* delegate) {
+  url_loader_factory_->set_delegate(delegate);
+}
+
 blink::WebString TestBlinkWebUnitTestSupport::webKitRootDir() {
   base::FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);

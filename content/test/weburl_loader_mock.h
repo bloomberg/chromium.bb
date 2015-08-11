@@ -13,6 +13,7 @@ namespace blink {
 class WebData;
 struct WebURLError;
 class WebURLLoaderClient;
+class WebURLLoaderTestDelegate;
 class WebURLRequest;
 class WebURLResponse;
 }
@@ -31,7 +32,8 @@ class WebURLLoaderMock : public blink::WebURLLoader {
   virtual ~WebURLLoaderMock();
 
   // Simulates the asynchronous request being served.
-  void ServeAsynchronousRequest(const blink::WebURLResponse& response,
+  void ServeAsynchronousRequest(blink::WebURLLoaderTestDelegate* delegate,
+                                const blink::WebURLResponse& response,
                                 const blink::WebData& data,
                                 const blink::WebURLError& error);
 

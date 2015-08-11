@@ -82,6 +82,7 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
   virtual void unregisterMockedURL(const blink::WebURL& url);
   virtual void unregisterAllMockedURLs();
   virtual void serveAsynchronousMockedRequests();
+  virtual void setLoaderDelegate(blink::WebURLLoaderTestDelegate* delegate);
   virtual blink::WebString webKitRootDir();
   virtual blink::WebLayerTreeView* createLayerTreeViewForTesting();
   virtual blink::WebData readFromFile(const blink::WebString& path);
