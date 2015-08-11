@@ -11,6 +11,7 @@ import android.util.SparseArray;
 import android.view.View;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -32,6 +33,8 @@ import java.util.List;
  */
 @JNINamespace("chrome::android")
 public class TabContentManager {
+    private static final String TAG = "cr.content";
+
     private final Context mContext;
     private final float mThumbnailScale;
     private final int mFullResThumbnailsMaxSize;
@@ -83,6 +86,12 @@ public class TabContentManager {
             val = count;
         }
         return val;
+    }
+
+    protected void finalize() throws Throwable {
+        // TODO(dfalcantara): Remove this log.  crbug.com/513130
+        Log.w(TAG, "Finalizing TabContentManager: " + this);
+        super.finalize();
     }
 
     /**

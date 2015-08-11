@@ -18,12 +18,12 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.StrictMode;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.Pair;
 import android.util.SparseArray;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ImportantFileWriterAndroid;
+import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ApplicationLifetime;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -67,7 +67,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class DocumentMigrationHelper {
-    private static final String TAG = "DocumentMigrationHelper";
+    private static final String TAG = "cr.DocumentMigration";
     private static final int[] ICON_TYPES = {FaviconHelper.FAVICON,
         FaviconHelper.TOUCH_ICON | FaviconHelper.TOUCH_PRECOMPOSED_ICON};
     private static final int DESIRED_ICON_SIZE_DP = 32;
@@ -75,6 +75,9 @@ public class DocumentMigrationHelper {
     public static final int FINALIZE_MODE_NO_ACTION = 0;
     public static final int FINALIZE_MODE_FINISH_ACTIVITY = 1;
     public static final int FINALIZE_MODE_RESTART_APP = 2;
+
+    private static final List<MigrationImageCallback> sMigrationCallbacks =
+            new ArrayList<MigrationImageCallback>();
 
     private static class MigrationTabStateReadCallback implements OnTabStateReadCallback {
         private int mSelectedTabId = Tab.INVALID_TAB_ID;
@@ -175,42 +178,58 @@ public class DocumentMigrationHelper {
         }
     }
 
-    private static class MigrationImageCallback implements FaviconImageCallback {
+    private static class MigrationImageCallback
+            implements FaviconImageCallback, DecompressThumbnailCallback {
+        private final AtomicInteger mCompletedCount;
+        private final Activity mActivity;
         private final TabContentManager mTabContentManager;
+        private final MigrationTabModel mTabModel;
         private final int mTabId;
-        private final DecompressThumbnailCallback mThumbnailCallback;
+        private final String mUrl;
+        private final String mTitle;
+        private final int mFinalizeMode;
+
         private Bitmap mFavicon;
 
         public MigrationImageCallback(final AtomicInteger completedCount, final Activity activity,
                 final TabContentManager tabContentManager, final MigrationTabModel tabModel,
                 final int tabId, final String url, final String title, final int finalizeMode) {
-            mTabId = tabId;
+            mCompletedCount = completedCount;
+            mActivity = activity;
             mTabContentManager = tabContentManager;
+            mTabModel = tabModel;
+            mTabId = tabId;
+            mUrl = url;
+            mTitle = title;
+            mFinalizeMode = finalizeMode;
+        }
 
-            // Even if the favicon or thumbnail are null, we still add the AppTask: the framework
-            // handles null favicons and addAppTask() below handles null thumbnails.
-            mThumbnailCallback = new DecompressThumbnailCallback() {
-                @Override
-                public void onFinishGetBitmap(Bitmap bitmap) {
-                    if (!NativePageFactory.isNativePageUrl(url, false)
-                            && !url.startsWith(UrlConstants.CHROME_SCHEME)) {
-                        addAppTask(activity, tabId,
-                                tabModel.getTabStateForDocument(tabId),
-                                url, title, mFavicon, bitmap);
-                    }
-
-                    if (completedCount.incrementAndGet() == tabModel.getCount()) {
-                        mTabContentManager.destroy();
-                        finalizeMigration(activity, finalizeMode);
-                    }
-                }
-            };
+        protected void finalize() throws Throwable {
+            // TODO(dfalcantara): Remove this log.  crbug.com/513130
+            Log.w(TAG, "Finalizing MigrationImageCallback: " + this);
+            super.finalize();
         }
 
         @Override
         public void onFaviconAvailable(final Bitmap favicon, String iconUrl) {
             mFavicon = favicon;
-            mTabContentManager.getThumbnailForId(mTabId, mThumbnailCallback);
+            mTabContentManager.getThumbnailForId(mTabId, this);
+        }
+
+        @Override
+        public void onFinishGetBitmap(Bitmap bitmap) {
+            // Even if the favicon or thumbnail are null, we still add the AppTask: the framework
+            // handles null favicons and addAppTask() below handles null thumbnails.
+            if (!NativePageFactory.isNativePageUrl(mUrl, false)
+                    && !mUrl.startsWith(UrlConstants.CHROME_SCHEME)) {
+                addAppTask(mActivity, mTabId, mTabModel.getTabStateForDocument(mTabId), mUrl,
+                        mTitle, mFavicon, bitmap);
+            }
+
+            if (mCompletedCount.incrementAndGet() == mTabModel.getCount()) {
+                mTabContentManager.destroy();
+                finalizeMigration(mActivity, mFinalizeMode);
+            }
         }
     }
 
@@ -352,6 +371,8 @@ public class DocumentMigrationHelper {
     }
 
     private static void finalizeMigration(Activity activity, final int mode) {
+        sMigrationCallbacks.clear();
+
         switch(mode) {
             case FINALIZE_MODE_NO_ACTION:
                 return;
@@ -420,6 +441,8 @@ public class DocumentMigrationHelper {
 
     private static void addAppTasksFromFiles(final Activity activity,
             final MigrationTabModel tabModel, final int finalizeMode) {
+        assert sMigrationCallbacks.size() == 0;
+
         if (tabModel.getCount() == 0) {
             finalizeMigration(activity, finalizeMode);
             return;
@@ -448,11 +471,12 @@ public class DocumentMigrationHelper {
             final String url = currentUrl;
             final String title = currentTitle;
 
-            FaviconImageCallback imageCallback = new MigrationImageCallback(completedCount,
+            MigrationImageCallback imageCallback = new MigrationImageCallback(completedCount,
                     activity, contentManager, tabModel, tabId, url, title, finalizeMode);
             faviconHelper.getLargestRawFaviconForUrl(
                     Profile.getLastUsedProfile().getOriginalProfile(),
                     url, ICON_TYPES, DESIRED_ICON_SIZE_DP, imageCallback);
+            sMigrationCallbacks.add(imageCallback);
         }
     }
 
