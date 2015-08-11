@@ -17,10 +17,11 @@
 #
 #  # Create and switch to a new branch
 #  git new-branch depsroll
-#  # Run roll-dep (provided by depot_tools) giving the dep's path and the
-#  # desired SVN revision number (e.g., third_party/foo/bar and a revision such
-#  # number from Subversion)
-#  roll-dep third_party/foo/bar REVISION_NUMBER
+#  # Run roll-dep (provided by depot_tools) giving the dep's path and optionally
+#  # a regex that will match the line in this file that contains the current
+#  # revision. The script ALWAYS rolls the dependency to the latest revision
+#  # in origin/master. The path for the dep should start with src/.
+#  roll-dep src/third_party/foo_package/src foo_package.git
 #  # You should now have a modified DEPS file; commit and upload as normal
 #  git commit -a
 #  git cl upload
