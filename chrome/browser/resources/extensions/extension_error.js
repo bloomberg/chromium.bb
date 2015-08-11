@@ -175,9 +175,9 @@ cr.define('extensions', function() {
       this.errors_ = [];
 
       this.focusGrid_ = new cr.ui.FocusGrid();
-      this.gridBoundary_ = this.querySelector('.extension-error-list-contents');
-      this.gridBoundary_.addEventListener('focus', this.onFocus_.bind(this));
-      this.gridBoundary_.addEventListener('focusin',
+      this.listContents_ = this.querySelector('.extension-error-list-contents');
+      this.listContents_.addEventListener('focus', this.onFocus_.bind(this));
+      this.listContents_.addEventListener('focusin',
                                           this.onFocusin_.bind(this));
       errors.forEach(this.addError_, this);
 
@@ -228,8 +228,8 @@ cr.define('extensions', function() {
     addError_: function(error) {
       this.querySelector('#no-errors-span').hidden = true;
       this.errors_.push(error);
-      var focusRow = new ExtensionError(error, this.gridBoundary_);
-      this.gridBoundary_.appendChild(document.createElement('li')).
+      var focusRow = new ExtensionError(error, this.listContents_);
+      this.listContents_.appendChild(document.createElement('li')).
           appendChild(focusRow);
       this.focusGrid_.addRow(focusRow);
     },
@@ -364,7 +364,7 @@ cr.define('extensions', function() {
      * @private
      */
     onFocusin_: function() {
-      this.gridBoundary_.tabIndex = -1;
+      this.listContents_.tabIndex = -1;
     },
 
     /**
@@ -373,7 +373,7 @@ cr.define('extensions', function() {
      * @private
      */
     onFocus_: function() {
-      var activeRow = this.gridBoundary_.querySelector('.focus-row-active');
+      var activeRow = this.listContents_.querySelector('.focus-row-active');
       activeRow.getEquivalentElement(null).focus();
     },
   };
