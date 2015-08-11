@@ -1,0 +1,39 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef IOS_CHROME_COMMON_APP_GROUP_APP_GROUP_METRICS_MAINAPP_H_
+#define IOS_CHROME_COMMON_APP_GROUP_APP_GROUP_METRICS_MAINAPP_H_
+
+#import <Foundation/Foundation.h>
+
+#include "base/basictypes.h"
+#include "base/mac/scoped_block.h"
+#include "ios/chrome/common/app_group/app_group_constants.h"
+
+namespace app_group {
+
+typedef void (^ProceduralBlockWithData)(NSData*);
+
+// These methods must be called from the Chrome app.
+namespace main_app {
+
+// Iterates through the extensions pending logs and deletes them.
+// Calls |callback| on each log before deleting.
+void ProcessPendingLogs(
+    const base::mac::ScopedBlock<ProceduralBlockWithData>& callback);
+
+// Enables the metrics collecting in extensions. The extensions will
+// use |clientID| as client ID, and |brandCode| as brand code in the logs.
+void EnableMetrics(NSString* client_id,
+                   NSString* brand_code,
+                   int64 installDate,
+                   int64 enableMetricsDate);
+
+// Disabled the metrics collecting in extensions.
+void DisableMetrics();
+
+}  // namespace main_app
+}  // namespace app_group
+
+#endif  // IOS_CHROME_COMMON_APP_GROUP_APP_GROUP_METRICS_MAINAPP_H_

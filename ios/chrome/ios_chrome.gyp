@@ -442,6 +442,7 @@
         '../..',
       ],
       'dependencies': [
+        'app_group_mainapp',
         '../../base/base.gyp:base',
         '../../components/components.gyp:version_info',
       ],
@@ -475,6 +476,55 @@
         ],
       },
     },
+    {   
+      'target_name': 'app_group_common',
+      'type': 'static_library',
+      'sources': [
+        'common/app_group/app_group_constants.h',
+        'common/app_group/app_group_constants.mm',
+        'common/app_group/app_group_metrics.h',
+        'common/app_group/app_group_metrics.mm',
+      ],  
+      'dependencies': [
+        # This target will be included into application extensions and the list
+        # of its dependencies must be kept as short as possible.
+        '../../base/base.gyp:base',
+        '../../components/components.gyp:version_info',
+      ],  
+      'include_dirs': [
+        '../..',
+      ],  
+    },  
+    {   
+      'target_name': 'app_group_client',
+      'type': 'static_library',
+      'sources': [
+        'common/app_group/app_group_metrics_client.h',
+        'common/app_group/app_group_metrics_client.mm',
+      ],  
+      'dependencies': [
+        # This target will be included into application extensions and the list
+        # of its dependencies must be kept as short as possible.
+        'app_group_common',
+      ],  
+      'include_dirs': [
+        '../..',
+      ],  
+    },  
+    {   
+      'target_name': 'app_group_mainapp',
+      'type': 'static_library',
+      'sources': [
+        'common/app_group/app_group_metrics_mainapp.h',
+        'common/app_group/app_group_metrics_mainapp.mm',
+      ],  
+      'dependencies': [
+        'app_group_common',
+      ],  
+      'include_dirs': [
+        '../..',
+      ],  
+    },  
   ],
   'conditions': [
     ['enable_rlz_support==1', {
