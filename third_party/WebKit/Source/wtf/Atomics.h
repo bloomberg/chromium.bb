@@ -233,11 +233,13 @@ ALWAYS_INLINE void releaseStore(volatile unsigned long* ptr, unsigned long value
     MEMORY_BARRIER();
     *ptr = value;
 }
+#if CPU(64BIT)
 ALWAYS_INLINE void releaseStore(volatile unsigned long long* ptr, unsigned long long value)
 {
     MEMORY_BARRIER();
     *ptr = value;
 }
+#endif
 ALWAYS_INLINE void releaseStore(void* volatile* ptr, void* value)
 {
     MEMORY_BARRIER();
@@ -268,12 +270,14 @@ ALWAYS_INLINE unsigned long acquireLoad(volatile const unsigned long* ptr)
     MEMORY_BARRIER();
     return value;
 }
+#if CPU(64BIT)
 ALWAYS_INLINE unsigned long long acquireLoad(volatile const unsigned long long* ptr)
 {
     unsigned long long value = *ptr;
     MEMORY_BARRIER();
     return value;
 }
+#endif
 ALWAYS_INLINE void* acquireLoad(void* volatile const* ptr)
 {
     void* value = *ptr;
