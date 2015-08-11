@@ -554,6 +554,8 @@ void EnrollmentScreenHandler::ShowErrorMessage(const std::string& message,
 void EnrollmentScreenHandler::DoShow() {
   base::DictionaryValue screen_data;
   screen_data.SetString("gaiaUrl", GaiaUrls::GetInstance()->gaia_url().spec());
+  screen_data.SetString("clientId",
+                        GaiaUrls::GetInstance()->oauth2_chrome_client_id());
   screen_data.SetString("enrollment_mode",
                         EnrollmentModeToUIMode(config_.mode));
   screen_data.SetString("management_domain", config_.management_domain);

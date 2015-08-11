@@ -182,6 +182,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       $('inner-container').classList.add('new-gaia-flow');
       var gaiaParams = {};
       gaiaParams.gaiaUrl = data.gaiaUrl;
+      gaiaParams.clientId = data.clientId;
       gaiaParams.gaiaPath = 'embedded/setup/chromeos';
       gaiaParams.isNewGaiaFlowChromeOS = true;
       gaiaParams.needPassword = false;

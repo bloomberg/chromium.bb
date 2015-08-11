@@ -476,6 +476,15 @@ void FakeGaia::HandleServiceLogin(const HttpRequest& request,
 
 void FakeGaia::HandleEmbeddedSetupChromeos(const HttpRequest& request,
                                            BasicHttpResponse* http_response) {
+  GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
+  std::string client_id;
+  if (!GetQueryParameter(request_url.query(), "client_id", &client_id) ||
+      GaiaUrls::GetInstance()->oauth2_chrome_client_id() != client_id) {
+    LOG(ERROR) << "Missing or invalid param 'client_id' in "
+                  "/embedded/setup/chromeos call";
+    return;
+  }
+
   http_response->set_code(net::HTTP_OK);
   http_response->set_content(embedded_setup_chromeos_response_);
   http_response->set_content_type("text/html");
