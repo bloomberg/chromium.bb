@@ -843,7 +843,7 @@ class DebugStubTest(unittest.TestCase):
       self.assertEqual(reply, 'F-1,%x' % GDB_EBADF)
 
   def test_register_constraints(self):
-    if ARCH == 'mips':
+    if ARCH == 'mips32':
       # This has not been implemented for mips.
       return
     with LaunchDebugStub('test_super_instruction') as connection:
