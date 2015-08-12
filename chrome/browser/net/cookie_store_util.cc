@@ -27,16 +27,31 @@ namespace {
 // Use the operating system's mechanisms to encrypt cookies before writing
 // them to persistent store.  Currently this only is done with desktop OS's
 // because ChromeOS and Android already protect the entire profile contents.
-//
-// TODO(bcwhite): Enable on MACOSX -- requires all Cookie tests to call
-// OSCrypt::UseMockKeychain or will hang waiting for user input.
 class CookieOSCryptoDelegate : public net::CookieCryptoDelegate {
  public:
+  bool ShouldEncrypt() override;
   bool EncryptString(const std::string& plaintext,
                      std::string* ciphertext) override;
   bool DecryptString(const std::string& ciphertext,
                      std::string* plaintext) override;
 };
+
+bool CookieOSCryptoDelegate::ShouldEncrypt() {
+#if defined(OS_IOS)
+  // Cookie encryption is not necessary on iOS, due to OS-protected storage.
+  // However, due to https://codereview.chromium.org/135183021/, cookies were
+  // accidentally encrypted. In order to allow these cookies to still be used,a
+  // a CookieCryptoDelegate is provided that can decrypt existing cookies.
+  // However, new cookies will not be encrypted. The alternatives considered
+  // were not supplying a delegate at all (thus invalidating all existing
+  // encrypted cookies) or in migrating all cookies at once, which may impose
+  // startup costs.  Eventually, all cookies will get migrated as they are
+  // rewritten.
+  return false;
+#else
+  return true;
+#endif
+}
 
 bool CookieOSCryptoDelegate::EncryptString(const std::string& plaintext,
                                            std::string* ciphertext) {

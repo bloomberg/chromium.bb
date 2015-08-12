@@ -774,9 +774,9 @@ void SQLitePersistentCookieStore::Backend::MakeCookiesFromSQLStatement(
     std::string value;
     std::string encrypted_value = smt.ColumnString(4);
     if (!encrypted_value.empty() && crypto_) {
-      crypto_->DecryptString(encrypted_value, &value);
+      if (!crypto_->DecryptString(encrypted_value, &value))
+        continue;
     } else {
-      DCHECK(encrypted_value.empty());
       value = smt.ColumnString(3);
     }
     scoped_ptr<CanonicalCookie> cc(new CanonicalCookie(
@@ -1110,10 +1110,11 @@ void SQLitePersistentCookieStore::Backend::Commit() {
         add_smt.BindInt64(0, po->cc().CreationDate().ToInternalValue());
         add_smt.BindString(1, po->cc().Domain());
         add_smt.BindString(2, po->cc().Name());
-        if (crypto_) {
+        if (crypto_ && crypto_->ShouldEncrypt()) {
           std::string encrypted_value;
+          if (!crypto_->EncryptString(po->cc().Value(), &encrypted_value))
+            continue;
           add_smt.BindCString(3, "");  // value
-          crypto_->EncryptString(po->cc().Value(), &encrypted_value);
           // BindBlob() immediately makes an internal copy of the data.
           add_smt.BindBlob(4, encrypted_value.data(),
                            static_cast<int>(encrypted_value.length()));
