@@ -102,7 +102,6 @@ private:
     int m_msaaSampleCount;
     size_t m_bytesAllocated;
     bool m_haveRecordedDrawCommands;
-    bool m_isSurfaceValid;
     int m_framesPending;
     int m_framesSinceMailboxRelease;
     bool m_destructionInProgress;

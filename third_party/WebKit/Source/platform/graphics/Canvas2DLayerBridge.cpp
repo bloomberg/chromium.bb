@@ -93,7 +93,6 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider
     , m_msaaSampleCount(msaaSampleCount)
     , m_bytesAllocated(0)
     , m_haveRecordedDrawCommands(false)
-    , m_isSurfaceValid(true)
     , m_framesPending(0)
     , m_destructionInProgress(false)
     , m_rateLimitingEnabled(false)
@@ -134,7 +133,7 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge()
 void Canvas2DLayerBridge::startRecording()
 {
     m_recorder = adoptPtr(new SkPictureRecorder);
-    m_recorder->beginRecording(m_surface->width(), m_surface->height(), nullptr);
+    m_recorder->beginRecording(m_size.width(), m_size.height(), nullptr);
     if (m_imageBuffer) {
         m_imageBuffer->resetCanvas(m_recorder->getRecordingCanvas());
     }
@@ -147,7 +146,7 @@ SkCanvas* Canvas2DLayerBridge::canvas()
 
 SkCanvas* Canvas2DLayerBridge::immediateCanvas()
 {
-    if (!m_isSurfaceValid)
+    if (!m_surface)
         return nullptr;
     flushRecordingOnly();
 
@@ -200,13 +199,13 @@ void Canvas2DLayerBridge::setIsHidden(bool hidden)
         return;
 
     m_isHidden = newHiddenValue;
-    if (isHidden() && !m_destructionInProgress && m_isSurfaceValid)
+    if (isHidden() && !m_destructionInProgress)
         flush();
 }
 
 bool Canvas2DLayerBridge::writePixels(const SkImageInfo& origInfo, const void* pixels, size_t rowBytes, int x, int y)
 {
-    if (!m_isSurfaceValid)
+    if (!m_surface)
         return false;
     if (x <= 0 && y <= 0 && x + origInfo.width() >= m_size.width() && y + origInfo.height() >= m_size.height()) {
         skipQueuedDrawCommands();
@@ -244,7 +243,7 @@ void Canvas2DLayerBridge::setRateLimitingEnabled(bool enabled)
 void Canvas2DLayerBridge::flushRecordingOnly()
 {
     ASSERT(!m_destructionInProgress);
-    if (m_haveRecordedDrawCommands) {
+    if (m_haveRecordedDrawCommands && m_surface) {
         TRACE_EVENT0("cc", "Canvas2DLayerBridge::flush");
         RefPtr<SkPicture> picture = adoptRef(m_recorder->endRecording());
         m_surface->getCanvas()->restoreToCount(m_initialSurfaceSaveCount); // In case immediateCanvas() was used
@@ -256,7 +255,7 @@ void Canvas2DLayerBridge::flushRecordingOnly()
 
 void Canvas2DLayerBridge::flush()
 {
-    if (!m_isSurfaceValid)
+    if (!m_surface)
         return;
     flushRecordingOnly();
     m_surface->getCanvas()->flush();
@@ -282,10 +281,9 @@ WebGraphicsContext3D* Canvas2DLayerBridge::context()
 bool Canvas2DLayerBridge::checkSurfaceValid()
 {
     ASSERT(!m_destructionInProgress);
-    if (m_destructionInProgress || !m_isSurfaceValid)
+    if (m_destructionInProgress || !m_surface)
         return false;
     if (m_contextProvider->context3d()->isContextLost()) {
-        m_isSurfaceValid = false;
         m_surface.clear();
         for (auto mailboxInfo = m_mailboxes.begin(); mailboxInfo != m_mailboxes.end(); ++mailboxInfo) {
             if (mailboxInfo->m_image)
@@ -295,7 +293,7 @@ bool Canvas2DLayerBridge::checkSurfaceValid()
             m_imageBuffer->notifySurfaceInvalid();
         setRateLimitingEnabled(false);
     }
-    return m_isSurfaceValid;
+    return m_surface;
 }
 
 bool Canvas2DLayerBridge::restoreSurface()
@@ -303,7 +301,7 @@ bool Canvas2DLayerBridge::restoreSurface()
     ASSERT(!m_destructionInProgress);
     if (m_destructionInProgress)
         return false;
-    ASSERT(m_layer && !m_isSurfaceValid);
+    ASSERT(m_layer && !m_surface);
 
     WebGraphicsContext3D* sharedContext = 0;
     m_layer->clearTexture();
@@ -317,12 +315,11 @@ bool Canvas2DLayerBridge::restoreSurface()
         if (surface.get()) {
             m_surface = surface.release();
             m_initialSurfaceSaveCount = m_surface->getCanvas()->getSaveCount();
-            m_isSurfaceValid = true;
             // FIXME: draw sad canvas picture into new buffer crbug.com/243842
         }
     }
 
-    return m_isSurfaceValid;
+    return m_surface;
 }
 
 bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExternalBitmap* bitmap)
@@ -420,7 +417,7 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
 
 void Canvas2DLayerBridge::mailboxReleased(const WebExternalTextureMailbox& mailbox, bool lostResource)
 {
-    bool contextLost = !m_isSurfaceValid || m_contextProvider->context3d()->isContextLost();
+    bool contextLost = !m_surface || m_contextProvider->context3d()->isContextLost();
     ASSERT(m_mailboxes.last().m_parentLayerBridge.get() == this);
 
     // Mailboxes are typically released in FIFO order, so we iterate
