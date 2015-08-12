@@ -450,14 +450,15 @@ def GenerateCoverageReport(line_coverage_file, out_file_path, coverage_dir):
   files_for_coverage = {f: lines
                         for f, lines in potential_files_for_coverage.iteritems()
                         if _EmmaCoverageStats.NeedsCoverage(f)}
-  if not files_for_coverage:
+
+  coverage_results = {}
+  if files_for_coverage:
+    code_coverage = _EmmaCoverageStats(coverage_dir, files_for_coverage.keys())
+    coverage_results = code_coverage.GetCoverageDict(
+        files_for_coverage)
+  else:
     logging.info('No Java files requiring coverage were included in %s.',
                  line_coverage_file)
-    return
-
-  code_coverage = _EmmaCoverageStats(coverage_dir, files_for_coverage.keys())
-  coverage_results = code_coverage.GetCoverageDict(
-      files_for_coverage)
 
   with open(out_file_path, 'w+') as out_status_file:
     json.dump(coverage_results, out_status_file)
