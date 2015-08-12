@@ -151,6 +151,10 @@ void ExtensionOptionsGuest::OnPreferredSizeChanged(const gfx::Size& pref_size) {
       options.ToValue()));
 }
 
+bool ExtensionOptionsGuest::ShouldHandleFindRequestsForEmbedder() const {
+  return true;
+}
+
 content::WebContents* ExtensionOptionsGuest::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
