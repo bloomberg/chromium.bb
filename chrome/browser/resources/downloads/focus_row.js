@@ -26,14 +26,22 @@ cr.define('downloads', function() {
   FocusRow.prototype = {
     __proto__: cr.ui.FocusRow.prototype,
 
-    /** @override */
+    /**
+     * TODO(dbeam): remove all this :not([hidden]) hackery and just create 2 new
+     * methods on cr.ui.FocusRow that get possibly focusable nodes as well as
+     * currently focusable nodes (taking into account visibility).
+     * @override
+     */
     getEquivalentElement: function(element) {
-      if (this.focusableElements.indexOf(element) > -1)
+      if (this.focusableElements.indexOf(element) > -1 &&
+          cr.ui.FocusRow.isFocusable(element)) {
         return assert(element);
+      }
 
       // All elements default to another element with the same type.
       var columnType = element.getAttribute('focus-type');
-      var equivalent = this.querySelector('[focus-type=' + columnType + ']');
+      var equivalent = this.querySelector(
+          '[focus-type=' + columnType + ']:not([hidden])');
 
       if (this.focusableElements.indexOf(equivalent) < 0) {
         equivalent = null;
