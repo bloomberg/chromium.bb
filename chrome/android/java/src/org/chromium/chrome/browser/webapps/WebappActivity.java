@@ -17,6 +17,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -263,6 +264,12 @@ public class WebappActivity extends FullScreenActivity {
                 ? getActivityTab().getTitle() : mWebappInfo.shortName();
         Bitmap icon = mWebappInfo.icon() == null
                 ? getActivityTab().getFavicon() : mWebappInfo.icon();
+
+        if (mBrandColor == null
+                && mWebappInfo.themeColor() != ShortcutHelper.THEME_COLOR_INVALID_OR_MISSING
+                && (mWebappInfo.themeColor() & 0xFF000000L) != 0) {
+            mBrandColor = (int) mWebappInfo.themeColor();
+        }
         int color = mBrandColor == null
                 ? getResources().getColor(R.color.default_primary_color) : mBrandColor;
 

@@ -31,6 +31,7 @@ public class WebappInfo {
     private String mShortName;
     private int mOrientation;
     private int mSource;
+    private long mThemeColor;
 
     public static WebappInfo createEmpty() {
         return new WebappInfo();
@@ -66,11 +67,13 @@ public class WebappInfo {
                 ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.DEFAULT);
         int source = intent.getIntExtra(
                 ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
+        long themeColor = intent.getLongExtra(ShortcutHelper.EXTRA_THEME_COLOR,
+                ShortcutHelper.THEME_COLOR_INVALID_OR_MISSING);
 
         String name = nameFromIntent(intent);
         String shortName = shortNameFromIntent(intent);
 
-        return create(id, url, icon, name, shortName, orientation, source);
+        return create(id, url, icon, name, shortName, orientation, source, themeColor);
     }
 
     /**
@@ -82,9 +85,10 @@ public class WebappInfo {
      * @param shortName The short name of the webapp.
      * @param orientation Orientation of the webapp.
      * @param source Source where the webapp was added from.
+     * @param themeColor The theme color of the webapp.
      */
     public static WebappInfo create(String id, String url, String icon, String name,
-            String shortName, int orientation, int source) {
+            String shortName, int orientation, int source, long themeColor) {
         if (id == null || url == null) {
             Log.e("WebappInfo", "Data passed in was incomplete: " + id + ", " + url);
             return null;
@@ -97,11 +101,11 @@ public class WebappInfo {
         }
 
         Uri uri = Uri.parse(url);
-        return new WebappInfo(id, uri, favicon, name, shortName, orientation, source);
+        return new WebappInfo(id, uri, favicon, name, shortName, orientation, source, themeColor);
     }
 
     private WebappInfo(String id, Uri uri, Bitmap icon, String name,
-            String shortName, int orientation, int source) {
+            String shortName, int orientation, int source, long themeColor) {
         mIcon = icon;
         mId = id;
         mName = name;
@@ -109,6 +113,7 @@ public class WebappInfo {
         mUri = uri;
         mOrientation = orientation;
         mSource = source;
+        mThemeColor = themeColor;
         mIsInitialized = mUri != null;
     }
 
@@ -129,6 +134,7 @@ public class WebappInfo {
         outState.putString(ShortcutHelper.EXTRA_SHORT_NAME, mShortName);
         outState.putInt(ShortcutHelper.EXTRA_ORIENTATION, mOrientation);
         outState.putInt(ShortcutHelper.EXTRA_SOURCE, mSource);
+        outState.putLong(ShortcutHelper.EXTRA_THEME_COLOR, mThemeColor);
     }
 
     /**
@@ -144,6 +150,7 @@ public class WebappInfo {
         mShortName = newInfo.mShortName;
         mOrientation = newInfo.mOrientation;
         mSource = newInfo.mSource;
+        mThemeColor = newInfo.mThemeColor;
     }
 
     public boolean isInitialized() {
@@ -176,6 +183,16 @@ public class WebappInfo {
 
     public int source() {
         return mSource;
+    }
+
+    /**
+     * Theme color is actually a 32 bit unsigned integer which encodes a color
+     * in ARGB format. mThemeColor is a long because we also need to encode the
+     * error state of ShortcutHelper.THEME_COLOR_INVALID_OR_MISSING which is a
+     * negative number.
+     */
+    public long themeColor() {
+        return mThemeColor;
     }
 
     // This is needed for clients that want to send the icon trough an intent.

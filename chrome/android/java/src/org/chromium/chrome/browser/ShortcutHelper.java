@@ -38,6 +38,10 @@ public class ShortcutHelper {
     public static final String EXTRA_URL = "org.chromium.chrome.browser.webapp_url";
     public static final String EXTRA_ORIENTATION = ScreenOrientationConstants.EXTRA_ORIENTATION;
     public static final String EXTRA_SOURCE = "org.chromium.chrome.browser.webapp_source";
+    public static final String EXTRA_THEME_COLOR = "org.chromium.chrome.browser.theme_color";
+
+    // This value is equal to kInvalidOrMissingThemeColor in the C++ content::Manifest struct.
+    public static final long THEME_COLOR_INVALID_OR_MISSING = ((long) Integer.MAX_VALUE) + 1;
 
     /** Observes the data fetching pipeline. */
     public interface ShortcutHelperObserver {
@@ -156,7 +160,8 @@ public class ShortcutHelper {
     @SuppressWarnings("unused")
     @CalledByNative
     private static void addShortcut(Context context, String url, String userTitle, String name,
-            String shortName, Bitmap icon, boolean isWebappCapable, int orientation, int source) {
+            String shortName, Bitmap icon, boolean isWebappCapable, int orientation, int source,
+            long themeColor) {
         Intent shortcutIntent;
         if (isWebappCapable) {
             // Encode the icon as a base64 string (Launcher drops Bitmaps in the Intent).
@@ -178,6 +183,7 @@ public class ShortcutHelper {
             shortcutIntent.putExtra(EXTRA_URL, url);
             shortcutIntent.putExtra(EXTRA_ORIENTATION, orientation);
             shortcutIntent.putExtra(EXTRA_MAC, getEncodedMac(context, url));
+            shortcutIntent.putExtra(EXTRA_THEME_COLOR, themeColor);
         } else {
             // Add the shortcut as a launcher icon to open in the browser Activity.
             shortcutIntent = BookmarkUtils.createShortcutIntent(url);

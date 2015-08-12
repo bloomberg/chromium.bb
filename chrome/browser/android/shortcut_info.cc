@@ -7,14 +7,16 @@
 ShortcutInfo::ShortcutInfo()
     : display(content::Manifest::DISPLAY_MODE_BROWSER),
       orientation(blink::WebScreenOrientationLockDefault),
-      source(SOURCE_ADD_TO_HOMESCREEN) {
+      source(SOURCE_ADD_TO_HOMESCREEN),
+      theme_color(content::Manifest::kInvalidOrMissingThemeColor) {
 }
 
 ShortcutInfo::ShortcutInfo(const GURL& shortcut_url)
     : url(shortcut_url),
       display(content::Manifest::DISPLAY_MODE_BROWSER),
       orientation(blink::WebScreenOrientationLockDefault),
-      source(SOURCE_ADD_TO_HOMESCREEN) {
+      source(SOURCE_ADD_TO_HOMESCREEN),
+      theme_color(content::Manifest::kInvalidOrMissingThemeColor) {
 }
 
 ShortcutInfo::~ShortcutInfo() {
@@ -56,6 +58,10 @@ void ShortcutInfo::UpdateFromManifest(const content::Manifest& manifest) {
     if (display == content::Manifest::DISPLAY_MODE_STANDALONE)
       orientation = manifest.orientation;
   }
+
+  // Set the theme color based on the manifest value, if any.
+  if (manifest.theme_color != content::Manifest::kInvalidOrMissingThemeColor)
+    theme_color = manifest.theme_color;
 }
 
 void ShortcutInfo::UpdateSource(const Source new_source) {

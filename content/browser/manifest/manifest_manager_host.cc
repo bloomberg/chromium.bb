@@ -139,7 +139,8 @@ void ManifestManagerHost::OnRequestManifestResponse(
   // theme_color is a 32 bit unsigned integer with a 64 bit integer simply
   // being used to encode an error occuring. Therefore, any value outside the
   // range of an unsigned 32 bit integer is invalid.
-  if (manifest.theme_color < 0 || manifest.theme_color > 0xFFFFFFFF)
+  if (manifest.theme_color < std::numeric_limits<int32_t>::min() ||
+      manifest.theme_color > std::numeric_limits<int32_t>::max())
     manifest.theme_color = Manifest::kInvalidOrMissingThemeColor;
 
   callback->Run(manifest);

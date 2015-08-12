@@ -44,6 +44,7 @@ struct ShortcutInfo {
   content::Manifest::DisplayMode display;
   blink::WebScreenOrientationLockType orientation;
   Source source;
+  int64_t theme_color;
 };
 
 #endif  // CHROME_BROWSER_ANDROID_SHORTCUT_INFO_H_

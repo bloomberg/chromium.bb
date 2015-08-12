@@ -94,6 +94,8 @@ public class WebappModeTest extends MultiActivityTestBase {
         intent.putExtra(ShortcutHelper.EXTRA_ICON, icon);
         intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.PORTRAIT);
         intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
+        intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR,
+                ShortcutHelper.THEME_COLOR_INVALID_OR_MISSING);
         if (addMac) {
             // Needed for security reasons.  If the MAC is excluded, the URL of the webapp is opened
             // in a browser window, instead.

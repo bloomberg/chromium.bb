@@ -327,6 +327,7 @@ public class FullScreenActivityTab extends ChromeTab {
             intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, webAppInfo.orientation());
             intent.putExtra(ShortcutHelper.EXTRA_MAC, ShortcutHelper.getEncodedMac(mActivity, url));
             intent.putExtra(ShortcutHelper.EXTRA_SOURCE, webAppInfo.source());
+            intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, webAppInfo.themeColor());
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
             getApplicationContext().startActivity(intent);
