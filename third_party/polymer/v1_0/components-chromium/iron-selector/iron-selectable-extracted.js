@@ -1,6 +1,4 @@
-
-
-  /** @polymerBehavior */
+/** @polymerBehavior */
   Polymer.IronSelectableBehavior = {
 
     properties: {
@@ -291,4 +289,3 @@
     }
 
   };
-

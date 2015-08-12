@@ -1,6 +1,6 @@
 {
   "name": "iron-dropdown",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "authors": [
     "The Polymer Authors"
@@ -24,8 +24,7 @@
     "iron-overlay-behavior": "polymerelements/iron-overlay-behavior#^1.0.0",
     "iron-resizable-behavior": "polymerelements/iron-resizable-behavior#^1.0.0",
     "neon-animation": "polymerelements/neon-animation#^1.0.0",
-    "iron-a11y-keys-behavior": "polymerelements/iron-a11y-keys-behavior#^1.0.0",
-    "iron-image": "polymerelements/iron-image#^1.0.0"
+    "iron-a11y-keys-behavior": "polymerelements/iron-a11y-keys-behavior#^1.0.0"
   },
   "devDependencies": {
     "iron-component-page": "polymerelements/iron-component-page#^1.0.0",

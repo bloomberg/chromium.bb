@@ -1,5 +1,4 @@
-
-    Polymer({
+Polymer({
       is: 'paper-checkbox',
 
       behaviors: [
@@ -47,11 +46,14 @@
         }
       },
 
-      ready: function() {
-        if (Polymer.dom(this).textContent == '') {
+      attached: function() {
+        var trimmedText = Polymer.dom(this).textContent.trim();
+        if (trimmedText === '') {
           this.$.checkboxLabel.hidden = true;
-        } else {
-          this.setAttribute('aria-label', Polymer.dom(this).textContent);
+        }
+        // Don't stomp over a user-set aria-label.
+        if (trimmedText !== '' && !this.getAttribute('aria-label')) {
+          this.setAttribute('aria-label', trimmedText);
         }
         this._isReady = true;
       },
@@ -85,5 +87,4 @@
         }
         return '';
       }
-    })
-  
+    });

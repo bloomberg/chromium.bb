@@ -1,6 +1,4 @@
-
-
-  Polymer({
+Polymer({
 
     is: 'paper-button',
 
@@ -37,4 +35,3 @@
       return className;
     }
   });
-

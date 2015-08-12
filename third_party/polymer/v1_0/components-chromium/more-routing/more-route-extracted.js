@@ -1,6 +1,4 @@
-
-
-  Polymer({
+Polymer({
 
     is: 'more-route',
 
@@ -176,4 +174,3 @@
     },
 
   });
-

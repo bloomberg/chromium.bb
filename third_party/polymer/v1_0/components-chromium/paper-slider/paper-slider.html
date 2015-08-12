@@ -47,6 +47,9 @@ Custom property | Description | Default
 `--paper-slider-font-color` | The pin's text color | `#fff`
 `--paper-slider-disabled-active-color` | The disabled progress bar color | `--google-grey-500`
 `--paper-slider-disabled-secondary-color` | The disabled secondary progress bar color | `--google-grey-300`
+`--paper-slider-knob-start-color` | The fill color of the knob at the far left | `transparent`
+`--paper-slider-knob-start-border-color` | The border color of the knob at the far left | `#c8c8c8`
+`--paper-slider-pin-start-color` | The color of the pin at the far left | `#c8c8c8`
 
 @group Paper Elements
 @element paper-slider
@@ -62,7 +65,7 @@ Custom property | Description | Default
     <div id="sliderContainer" class$="[[_getClassNames(disabled, pin, snaps, immediateValue, min, expand, dragging, transiting, editable)]]">
 
       <div class="bar-container">
-        <paper-progress id="sliderBar" aria-hidden="true" min="[[min]]" max="[[max]]" step="[[step]]" value="[[immediateValue]]" secondary-progress="[[secondaryProgress]]" on-down="_bardown" on-up="_resetKnob" on-track="_onTrack">
+        <paper-progress class$="[[_getProgressClass(transiting)]]" id="sliderBar" aria-hidden="true" min="[[min]]" max="[[max]]" step="[[step]]" value="[[immediateValue]]" secondary-progress="[[secondaryProgress]]" on-down="_bardown" on-up="_resetKnob" on-track="_onTrack">
         </paper-progress>
       </div>
 
@@ -75,13 +78,14 @@ Custom property | Description | Default
       </template>
 
       <div id="sliderKnob" class="center-justified center horizontal layout" on-down="_knobdown" on-up="_resetKnob" on-track="_onTrack" on-transitionend="_knobTransitionEnd">
-          <paper-ripple id="ink" class="circle" center="" hidden$="[[!receivedFocusFromKeyboard]]"></paper-ripple>
+          <paper-ripple center="" id="ink" class="circle" hidden$="[[!receivedFocusFromKeyboard]]">
+          </paper-ripple>
           <div id="sliderKnobInner" value$="[[immediateValue]]"></div>
       </div>
     </div>
 
     <template is="dom-if" if="[[editable]]">
-      <paper-input id="input" class="slider-input" disabled$="[[disabled]]" on-change="_inputChange">
+      <paper-input id="input" class="slider-input" disabled$="[[disabled]]" on-change="_inputChange" value="[[_fixForInput(immediateValue)]]">
       </paper-input>
     </template>
   </template>

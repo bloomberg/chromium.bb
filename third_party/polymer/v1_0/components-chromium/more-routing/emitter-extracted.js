@@ -1,4 +1,3 @@
-
 (function(scope) {
 var MoreRouting = scope.MoreRouting = scope.MoreRouting || {};
 MoreRouting.Emitter = Object.create(null);  // Minimal set of properties.

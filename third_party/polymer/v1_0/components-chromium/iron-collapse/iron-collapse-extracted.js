@@ -1,6 +1,4 @@
-
-
-  Polymer({
+Polymer({
 
     is: 'iron-collapse',
 
@@ -56,21 +54,11 @@
     },
 
     show: function() {
-      this.toggleClass('iron-collapse-closed', false);
-      this.updateSize('auto', false);
-      var s = this._calcSize();
-      this.updateSize('0px', false);
-      // force layout to ensure transition will go
-      this.offsetHeight;
-      this.updateSize(s, true);
+      this.opened = true;    
     },
 
     hide: function() {
-      this.toggleClass('iron-collapse-opened', false);
-      this.updateSize(this._calcSize(), false);
-      // force layout to ensure transition will go
-      this.offsetHeight;
-      this.updateSize('0px', true);
+      this.opened = false;    
     },
 
     updateSize: function(size, animated) {
@@ -93,7 +81,22 @@
     },
 
     _openedChanged: function() {
-      this[this.opened ? 'show' : 'hide']();
+      if (this.opened) {
+        this.toggleClass('iron-collapse-closed', false);
+        this.updateSize('auto', false);
+        var s = this._calcSize();
+        this.updateSize('0px', false);
+        // force layout to ensure transition will go
+        /** @suppress {suspiciousCode} */ this.offsetHeight;
+        this.updateSize(s, true);
+      }
+      else {
+        this.toggleClass('iron-collapse-opened', false);
+        this.updateSize(this._calcSize(), false);
+        // force layout to ensure transition will go
+        /** @suppress {suspiciousCode} */ this.offsetHeight;
+        this.updateSize('0px', true);
+      }
       this.setAttribute('aria-expanded', this.opened ? 'true' : 'false');
 
     },
@@ -113,4 +116,3 @@
 
 
   });
-

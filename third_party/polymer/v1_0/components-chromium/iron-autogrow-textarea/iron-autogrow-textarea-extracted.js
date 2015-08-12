@@ -1,6 +1,4 @@
-
-
-  Polymer({
+Polymer({
 
     is: 'iron-autogrow-textarea',
 
@@ -59,8 +57,8 @@
        * Bound to the textarea's `autofocus` attribute.
        */
       autofocus: {
-        type: String,
-        value: 'off'
+        type: Boolean,
+        value: false
       },
 
       /**
@@ -211,4 +209,4 @@
     _computeValue: function() {
       return this.bindValue;
     }
-  })
+  });

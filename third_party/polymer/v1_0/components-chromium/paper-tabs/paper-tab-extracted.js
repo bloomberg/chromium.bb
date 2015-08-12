@@ -1,6 +1,4 @@
-
-
-  Polymer({
+Polymer({
 
     is: 'paper-tab',
 
@@ -39,4 +37,3 @@
       this.noink = !!this.noink || !!this._parentNoink;
     }
   });
-

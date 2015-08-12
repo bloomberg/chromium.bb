@@ -1,4 +1,3 @@
-
 (function() {
 
   Polymer({
@@ -183,7 +182,7 @@
       }
 
       // type="number" hack needed because this.value is empty until it's valid
-      if (value || (inputElement.type === 'number' && !inputElement.checkValidity())) {
+      if (value || value === 0 || (inputElement.type === 'number' && !inputElement.checkValidity())) {
         this._inputHasContent = true;
       } else {
         this._inputHasContent = false;
@@ -219,12 +218,25 @@
     _computeInputContentClass: function(noLabelFloat, alwaysFloatLabel, focused, invalid, _inputHasContent) {
       var cls = 'input-content';
       if (!noLabelFloat) {
+        var label = this.querySelector('label');
+
         if (alwaysFloatLabel || _inputHasContent) {
           cls += ' label-is-floating';
           if (invalid) {
             cls += ' is-invalid';
           } else if (focused) {
             cls += " label-is-highlighted";
+          }
+          // The label might have a horizontal offset if a prefix element exists
+          // which needs to be undone when displayed as a floating label.
+          if (this.$.prefix && label && label.offsetParent &&
+              Polymer.dom(this.$.prefix).getDistributedNodes().length > 0) {
+           label.style.left = -label.offsetParent.offsetLeft + 'px';
+          }
+        } else {
+          // When the label is not floating, it should overlap the input element.
+          if (label) {
+            label.style.left = 0;
           }
         }
       } else {

@@ -1,5 +1,4 @@
-
-    Polymer({
+Polymer({
       is: 'paper-radio-button',
 
       behaviors: [
@@ -47,11 +46,14 @@
         }
       },
 
-      ready: function() {
-        if (Polymer.dom(this).textContent == '') {
+      attached: function() {
+        var trimmedText = Polymer.dom(this).textContent.trim();
+        if (trimmedText === '') {
           this.$.radioLabel.hidden = true;
-        } else {
-          this.setAttribute('aria-label', Polymer.dom(this).textContent);
+        }
+        // Don't stomp over a user-set aria-label.
+        if (trimmedText !== '' && !this.getAttribute('aria-label')) {
+          this.setAttribute('aria-label', trimmedText);
         }
         this._isReady = true;
       },
@@ -70,5 +72,4 @@
         this.active = this.checked;
         this.fire('iron-change');
       }
-    })
-  ;
+    });

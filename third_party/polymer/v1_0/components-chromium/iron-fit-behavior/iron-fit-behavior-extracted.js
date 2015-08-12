@@ -1,5 +1,3 @@
-
-
 /**
 Polymer.IronFitBehavior fits an element in another element using `max-height` and `max-width`, and
 optionally centers it in the window or another element.
@@ -240,4 +238,3 @@ CSS properties               | Action
     }
 
   };
-

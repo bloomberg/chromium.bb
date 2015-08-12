@@ -1,5 +1,4 @@
-
-    Polymer({
+Polymer({
       is: 'paper-toggle-button',
 
       behaviors: [
@@ -111,4 +110,3 @@
       }
 
     });
-  

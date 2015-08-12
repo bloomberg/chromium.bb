@@ -1,6 +1,4 @@
-
-
-  MoreRouting.ContextAware = {
+MoreRouting.ContextAware = {
 
     /** @override */
     ready: function() {
@@ -49,4 +47,3 @@
     },
 
   };
-

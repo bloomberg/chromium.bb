@@ -1,5 +1,4 @@
-
-    (function() {
+(function() {
       'use strict';
 
       Polymer({
@@ -31,6 +30,28 @@
             type: String,
             value: 'top',
             reflectToAttribute: true
+          },
+
+          /**
+           * A pixel value that will be added to the position calculated for the
+           * given `horizontalAlign`. Use a negative value to offset to the
+           * left, or a positive value to offset to the right.
+           */
+          horizontalOffset: {
+            type: Number,
+            value: 0,
+            notify: true
+          },
+
+          /**
+           * A pixel value that will be added to the position calculated for the
+           * given `verticalAlign`. Use a negative value to offset towards the
+           * top, or a positive value to offset towards the bottom.
+           */
+          verticalOffset: {
+            type: Number,
+            value: 0,
+            notify: true
           },
 
           /**
@@ -82,7 +103,7 @@
         },
 
         observers: [
-          '_updateOverlayPosition(verticalAlign, horizontalAlign)'
+          '_updateOverlayPosition(verticalAlign, horizontalAlign, verticalOffset, horizontalOffset)'
         ],
 
         attached: function() {
@@ -125,6 +146,8 @@
             target = this._positionRect.left;
           }
 
+          target += this.horizontalOffset;
+
           return Math.max(target, 0);
         },
 
@@ -136,6 +159,8 @@
           } else {
             target = this._positionRect.top;
           }
+
+          target += this.verticalOffset;
 
           return Math.max(target, 0);
         },
@@ -275,4 +300,3 @@
         }
       });
     })();
-  

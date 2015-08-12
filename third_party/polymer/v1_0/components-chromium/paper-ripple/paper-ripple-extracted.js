@@ -1,5 +1,4 @@
-
-  (function() {
+(function() {
     var Utility = {
       cssColorWithAlpha: function(cssColor, alpha) {
         var parts = cssColor.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);

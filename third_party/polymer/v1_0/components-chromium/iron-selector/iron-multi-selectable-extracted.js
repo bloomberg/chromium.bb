@@ -1,5 +1,4 @@
-
-  /** @polymerBehavior Polymer.IronMultiSelectableBehavior */
+/** @polymerBehavior Polymer.IronMultiSelectableBehavior */
   Polymer.IronMultiSelectableBehaviorImpl = {
     properties: {
 
@@ -103,4 +102,3 @@
     Polymer.IronSelectableBehavior,
     Polymer.IronMultiSelectableBehaviorImpl
   ];
-

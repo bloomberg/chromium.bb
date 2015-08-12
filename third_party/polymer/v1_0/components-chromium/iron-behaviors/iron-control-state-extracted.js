@@ -1,6 +1,4 @@
-
-
-  /**
+/**
    * @demo demo/index.html
    * @polymerBehavior
    */
@@ -48,11 +46,6 @@
     ],
 
     ready: function() {
-      // TODO(sjmiles): ensure read-only property is valued so the compound
-      // observer will fire
-      if (this.focused === undefined) {
-        this._setFocused(false);
-      }
       this.addEventListener('focus', this._boundFocusBlurHandler, true);
       this.addEventListener('blur', this._boundFocusBlurHandler, true);
     },
@@ -63,7 +56,6 @@
         var focused = event.type === 'focus';
         this._setFocused(focused);
       } else if (!this.shadowRoot) {
-        event.stopPropagation();
         this.fire(event.type, {sourceEvent: event}, {
           node: this,
           bubbles: event.bubbles,
@@ -92,4 +84,3 @@
     }
 
   };
-

@@ -1,6 +1,4 @@
-
-
-  /**
+/**
    * `Polymer.IronMenuBehavior` implements accessible menu behavior.
    *
    * @demo demo/index.html
@@ -196,4 +194,3 @@
     Polymer.IronA11yKeysBehavior,
     Polymer.IronMenuBehaviorImpl
   ];
-

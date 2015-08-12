@@ -1,5 +1,4 @@
-
-  Polymer({
+Polymer({
     is: 'paper-menu-grow-height-animation',
 
     behaviors: [

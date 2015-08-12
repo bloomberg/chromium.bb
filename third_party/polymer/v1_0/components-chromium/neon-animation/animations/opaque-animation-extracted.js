@@ -1,6 +1,4 @@
-
-
-  Polymer({
+Polymer({
 
     is: 'opaque-animation',
 
@@ -23,4 +21,3 @@
     }
 
   });
-

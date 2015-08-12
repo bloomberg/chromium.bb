@@ -1,5 +1,3 @@
-
-
 /*
 `<iron-input>` adds two-way binding and custom validators using `Polymer.IronValidatorBehavior`
 to `<input>`.
@@ -109,7 +107,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
     _bindValueChanged: function() {
       if (this.value !== this.bindValue) {
-        this.value = !this.bindValue ? '' : this.bindValue;
+        this.value = !(this.bindValue || this.bindValue === 0) ? '' : this.bindValue;
       }
       // manually notify because we don't want to notify until after setting value
       this.fire('bind-value-changed', {value: this.bindValue});
@@ -144,6 +142,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       // For these keys, ASCII code == browser keycode.
       var anyNonPrintable =
         (event.keyCode == 8)   ||  // backspace
+        (event.keyCode == 9)   ||  // tab
         (event.keyCode == 13)  ||  // enter
         (event.keyCode == 27);     // escape
 
@@ -225,4 +224,3 @@ is separate from validation, and `allowed-pattern` does not affect how the input
   The `iron-input-validate` event is fired whenever `validate()` is called.
   @event iron-input-validate
   */
-

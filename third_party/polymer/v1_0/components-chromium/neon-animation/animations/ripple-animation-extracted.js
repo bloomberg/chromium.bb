@@ -1,6 +1,4 @@
-
-
-  Polymer({
+Polymer({
 
     is: 'ripple-animation',
 
@@ -50,4 +48,3 @@
     }
 
   });
-

@@ -1,5 +1,4 @@
-
-  /**
+/**
    * `IronResizableBehavior` is a behavior that can be used in Polymer elements to
    * coordinate the flow of resize events between "resizers" (elements that control the
    * size or hidden state of their children) and "resizables" (elements that need to be

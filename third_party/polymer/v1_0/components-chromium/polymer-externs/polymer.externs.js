@@ -350,6 +350,20 @@ Polymer.Base.async = function(method, wait) {};
 */
 Polymer.Base.getPropertyInfo = function(property) {};
 
+Polymer.Gestures;
+
+/**
+ * Gets the original target of the given event.
+ * 
+ * Cheaper than Polymer.dom(ev).path[0];
+ * See https://github.com/Polymer/polymer/blob/master/src/standard/gestures.html#L191
+ *
+ * @param {Event} ev .
+ * @return {Element} The original target of the event.
+ */
+Polymer.Gestures.findOriginalTarget = function(ev) {};
+
+
 /**
  * @param {number} handle
  */
@@ -423,6 +437,21 @@ PolymerElement.prototype.arrayDelete = function(array, item) {};
  * @return {string}
  */
 PolymerElement.prototype.resolveUrl = function(url) {};
+
+/**
+ * Re-evaluates and applies custom CSS properties based on dynamic
+ * changes to this element's scope, such as adding or removing classes
+ * in this element's local DOM.
+ *
+ * For performance reasons, Polymer's custom CSS property shim relies
+ * on this explicit signal from the user to indicate when changes have
+ * been made that affect the values of custom properties.
+ *
+ * @param {Object=} properties Properties object which, if provided is mixed 
+ *     into the element's `customStyle` property. This argument provides a 
+ *     shortcut for setting `customStyle` and then calling `updateStyles`.
+ */
+PolymerElement.prototype.updateStyles = function(properties) {};
 
 /**
  * Logs a message to the console.

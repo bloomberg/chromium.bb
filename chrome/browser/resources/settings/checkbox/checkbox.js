@@ -57,6 +57,15 @@ Polymer({
     this.$.events.forward(this.$.checkbox, ['change']);
   },
 
+  /** @override */
+  attached: function() {
+    // HACK(dschuyler): paper-checkbox 1.0.6 will hide the label
+    // if the content is empty.
+    // TODO(dschuyler): rework settings checkbox to use content
+    // rather than spans.
+    this.$.checkbox.$.checkbox.$.checkboxLabel.hidden = false;
+  },
+
   /** @private */
   prefValueChanged_: function(prefValue) {
     // prefValue is initially undefined when Polymer initializes pref.

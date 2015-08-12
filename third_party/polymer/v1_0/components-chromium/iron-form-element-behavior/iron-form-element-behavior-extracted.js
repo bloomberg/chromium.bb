@@ -1,10 +1,9 @@
-
-
-  /**
+/**
+  Polymer.IronFormElementBehavior enables a custom element to be included
+  in an `iron-form`.
 
   @demo demo/index.html
   @polymerBehavior
-
   */
   Polymer.IronFormElementBehavior = {
 
@@ -37,6 +36,19 @@
       },
 
       /**
+       * Set to true to mark the input as required. If used in a form, a
+       * custom element that uses this behavior should also use
+       * Polymer.IronValidatableBehavior and define a custom validation method.
+       * Otherwise, a `required` element will always be considered valid.
+       * It's also strongly recomended to provide a visual style for the element
+       * when it's value is invalid.
+       */
+      required: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
        * The form that the element is registered to.
        */
       _parentForm: {
@@ -57,4 +69,3 @@
     }
 
   };
-

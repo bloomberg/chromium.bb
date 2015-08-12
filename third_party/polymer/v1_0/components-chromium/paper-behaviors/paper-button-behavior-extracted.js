@@ -1,6 +1,4 @@
-
-
-  /** @polymerBehavior */
+/** @polymerBehavior */
   Polymer.PaperButtonBehaviorImpl = {
 
     properties: {
@@ -39,4 +37,3 @@
     Polymer.IronControlState,
     Polymer.PaperButtonBehaviorImpl
   ];
-

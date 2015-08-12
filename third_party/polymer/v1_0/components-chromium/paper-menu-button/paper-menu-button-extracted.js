@@ -1,10 +1,20 @@
-
-  (function() {
+(function() {
     'use strict';
 
     var PaperMenuButton = Polymer({
-
       is: 'paper-menu-button',
+
+      /**
+       * Fired when the dropdown opens.
+       *
+       * @event paper-dropdown-open
+       */
+
+      /**
+       * Fired when the dropdown closes.
+       *
+       * @event paper-dropdown-close
+       */
 
       behaviors: [
         Polymer.IronA11yKeysBehavior,
@@ -43,10 +53,41 @@
         },
 
         /**
+         * A pixel value that will be added to the position calculated for the
+         * given `horizontalAlign`. Use a negative value to offset to the
+         * left, or a positive value to offset to the right.
+         */
+        horizontalOffset: {
+          type: Number,
+          value: 0,
+          notify: true
+        },
+
+        /**
+         * A pixel value that will be added to the position calculated for the
+         * given `verticalAlign`. Use a negative value to offset towards the
+         * top, or a positive value to offset towards the bottom.
+         */
+        verticalOffset: {
+          type: Number,
+          value: 0,
+          notify: true
+        },
+
+        /**
          * Set to true to disable animations when opening and closing the
          * dropdown.
          */
         noAnimations: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * Set to true to disable automatically closing the dropdown after
+         * a selection has been made.
+         */
+        ignoreActivate: {
           type: Boolean,
           value: false
         },
@@ -126,7 +167,10 @@
        * to the dropdown trigger.
        */
       open: function() {
-        this.fire('paper-open');
+        if (this.disabled) {
+          return;
+        }
+
         this.$.dropdown.open();
       },
 
@@ -134,12 +178,48 @@
        * Hide the dropdown content.
        */
       close: function() {
-        this.fire('paper-close');
         this.$.dropdown.close();
       },
 
+      /**
+       * When an `iron-activate` event is received, the dropdown should
+       * automatically close on the assumption that a value has been chosen.
+       *
+       * @param {CustomEvent} event A CustomEvent instance with type
+       * set to `"iron-activate"`.
+       */
       _onIronActivate: function(event) {
-        this.close();
+        if (!this.ignoreActivate) {
+          this.close();
+        }
+      },
+
+      /**
+       * When the dropdown opens, the `paper-menu-button` fires `paper-open`.
+       * When the dropdown closes, the `paper-menu-button` fires `paper-close`.
+       *
+       * @param {boolean} opened True if the dropdown is opened, otherwise false.
+       * @param {boolean} oldOpened The previous value of `opened`.
+       */
+      _openedChanged: function(opened, oldOpened) {
+        if (opened) {
+          this.fire('paper-dropdown-open');
+        } else if (oldOpened != null) {
+          this.fire('paper-dropdown-close');
+        }
+      },
+
+      /**
+       * If the dropdown is open when disabled becomes true, close the
+       * dropdown.
+       *
+       * @param {boolean} disabled True if disabled, otherwise false.
+       */
+      _disabledChanged: function(disabled) {
+        Polymer.IronControlState._disabledChanged.apply(this, arguments);
+        if (disabled && this.opened) {
+          this.close();
+        }
       }
     });
 

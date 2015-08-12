@@ -1,12 +1,9 @@
-
-
-  Polymer({
+Polymer({
     is: 'paper-slider',
 
     behaviors: [
-      Polymer.IronA11yKeysBehavior,
-      Polymer.PaperInkyFocusBehavior,
       Polymer.IronFormElementBehavior,
+      Polymer.PaperInkyFocusBehavior,
       Polymer.IronRangeBehavior
     ],
 
@@ -122,9 +119,9 @@
 
     ready: function() {
       // issue polymer/polymer#1305
+
       this.async(function() {
         this._updateKnob(this.value);
-        this._updateInputValue();
       }, 1);
     },
 
@@ -167,17 +164,15 @@
       } else {
         this.value = this.immediateValue;
       }
-      this._updateInputValue();
     },
 
     _secondaryProgressChanged: function() {
       this.secondaryProgress = this._clampValue(this.secondaryProgress);
     },
 
-    _updateInputValue: function() {
-      if (this.editable) {
-        this.$$('#input').value = this.immediateValue.toString();
-      }
+    _fixForInput: function(immediateValue) {
+      // paper-input/issues/114
+      return this.immediateValue.toString();
     },
 
     _expandKnob: function() {
@@ -206,6 +201,7 @@
     },
 
     _onTrack: function(event) {
+      event.stopPropagation();
       switch (event.detail.state) {
         case 'start':
           this._trackStart(event);
@@ -263,7 +259,7 @@
       this._expandKnob();
 
       // cancel selection
-      event.detail.sourceEvent.preventDefault();
+      event.preventDefault();
 
       // set the focus manually because we will called prevent default
       this.focus();
@@ -294,7 +290,7 @@
       });
 
       // cancel selection
-      event.detail.sourceEvent.preventDefault();
+      event.preventDefault();
     },
 
     _knobTransitionEnd: function(event) {
@@ -312,6 +308,13 @@
       }
     },
 
+    _mergeClasses: function(classes) {
+      return Object.keys(classes).filter(
+        function(className) {
+          return classes[className];
+        }).join(' ');
+    },
+
     _getClassNames: function() {
       var classes = {};
 
@@ -324,10 +327,13 @@
       classes.transiting = this.transiting;
       classes.editable = this.editable;
 
-      return Object.keys(classes).filter(
-        function(className) {
-          return classes[className];
-        }).join(' ');
+      return this._mergeClasses(classes);
+    },
+
+    _getProgressClass: function() {
+      return this._mergeClasses({
+        transiting: this.transiting
+      });
     },
 
     _incrementKey: function(event) {
@@ -369,4 +375,3 @@
    *
    * @event change
    */
-

@@ -1,6 +1,4 @@
-
-
-  Polymer({
+Polymer({
 
     is: 'more-routing-config',
 
@@ -43,4 +41,3 @@
     },
 
   });
-

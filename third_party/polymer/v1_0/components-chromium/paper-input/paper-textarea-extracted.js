@@ -1,5 +1,3 @@
-
-
 (function() {
 
   Polymer({
@@ -20,7 +18,32 @@
       _ariaDescribedBy: {
         observer: '_ariaDescribedByChanged',
         type: String
-      }
+      },
+
+      /**
+       * The initial number of rows.
+       *
+       * @attribute rows
+       * @type number
+       * @default 1
+       */
+      rows: {
+        type: Number,
+        value: 1
+      },
+
+      /**
+       * The maximum number of rows this element can grow to until it
+       * scrolls. 0 means no maximum.
+       *
+       * @attribute maxRows
+       * @type number
+       * @default 0
+       */
+      maxRows: {
+       type: Number,
+       value: 0
+      },
 
     },
 
@@ -35,4 +58,3 @@
   });
 
 })();
-

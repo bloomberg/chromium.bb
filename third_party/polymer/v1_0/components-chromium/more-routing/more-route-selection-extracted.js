@@ -1,6 +1,4 @@
-
-
-  Polymer({
+Polymer({
 
     is: 'more-route-selection',
 
