@@ -31,7 +31,6 @@
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/common/referrer.h"
-#include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
 #include "content/renderer/background_sync/background_sync_client_impl.h"
 #include "content/renderer/devtools/devtools_agent.h"
@@ -379,14 +378,6 @@ void ServiceWorkerContextClient::didEvaluateWorkerScript(bool success) {
   worker_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ServiceWorkerContextClient::SendWorkerStarted,
                             GetWeakPtr()));
-}
-
-void ServiceWorkerContextClient::didInitializeWorkerContext(
-    v8::Local<v8::Context> context,
-    const blink::WebURL& url) {
-  GetContentClient()
-      ->renderer()
-      ->DidInitializeServiceWorkerContextOnWorkerThread(context, GURL(url));
 }
 
 void ServiceWorkerContextClient::willDestroyWorkerContext() {

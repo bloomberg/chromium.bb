@@ -83,7 +83,6 @@
 #include "extensions/renderer/user_gestures_native_handler.h"
 #include "extensions/renderer/utils_native_handler.h"
 #include "extensions/renderer/v8_context_native_handler.h"
-#include "extensions/renderer/v8_helpers.h"
 #include "grit/extensions_renderer_resources.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -304,16 +303,6 @@ void Dispatcher::DidCreateScriptContext(
   }
 
   VLOG(1) << "Num tracked contexts: " << script_context_set_->size();
-}
-
-// static
-void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
-    v8::Local<v8::Context> context,
-    const GURL& url) {
-  if (url.SchemeIs(extensions::kExtensionScheme)) {
-    v8_helpers::SetProperty(context, context->Global(), "chrome",
-                            v8::Object::New(context->GetIsolate()));
-  }
 }
 
 void Dispatcher::WillReleaseScriptContext(

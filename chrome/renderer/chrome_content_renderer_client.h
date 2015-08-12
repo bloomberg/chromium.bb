@@ -15,7 +15,6 @@
 #include "base/strings/string16.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "v8/include/v8.h"
 
 class ChromeExtensionsDispatcherDelegate;
 class ChromeRenderProcessObserver;
@@ -154,9 +153,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   void AddImageContextMenuProperties(
       const blink::WebURLResponse& response,
       std::map<std::string, std::string>* properties) override;
-  void DidInitializeServiceWorkerContextOnWorkerThread(
-      v8::Local<v8::Context> context,
-      const GURL& url) override;
+
 #if defined(ENABLE_EXTENSIONS)
   // Takes ownership.
   void SetExtensionDispatcherForTest(
