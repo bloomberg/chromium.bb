@@ -15,7 +15,6 @@
   POST_MIX_LOOPBACK: 'POST_MIX_LOOPBACK',
   POST_DSP_LOOPBACK: 'POST_DSP_LOOPBACK',
   OTHER: 'OTHER',
-  NONE: '',
 };
 
 /**
@@ -26,8 +25,9 @@ var AudioNode = function() {
   // Whether node will input or output audio.
   this.isInput = false;
 
-  // Node ID. Set to arbitrary default.
-  this.id = '30001';
+  // Node ID. Set to 3000 because predefined output and input
+  // nodes use 10000's and 20000's respectively and |nodeCount| will append it.
+  this.id = '3000';
 
   // Display name of the node. When this is empty, cras will automatically
   // use |this.deviceName| as the display name.
@@ -37,7 +37,7 @@ var AudioNode = function() {
   this.deviceName = 'New Device';
 
   // Based on the AudioNodeType enum.
-  this.type = AudioNodeType.HEADPHONE;
+  this.type = AudioNodeType.OTHER;
 
   // Whether the node is active or not.
   this.active = false;
@@ -51,9 +51,27 @@ Polymer({
 
   properties: {
     /**
-     * The title to be displayed in a heading element for the element.
+     * An AudioNode which is currently being edited.
+     * @type {AudioNode}
      */
-    title: {type: String},
+    currentEditableObject: {
+      type: Object,
+      value: function() { return {}; }
+    },
+
+    /**
+     * The index of the audio node which is currently being edited.
+     * This is initially set to -1 (i.e. no node selected) becuase no devices
+     * have been copied.
+     */
+    currentEditIndex: {type: Number, value: function() { return -1; }},
+
+    /**
+     * A counter that will auto increment everytime a new node is added
+     * or copied and used to set a new id. This allows the |AudioNode.id|
+     * to allows be unique.
+     */
+    nodeCount: {type: Number, value: function() { return 0; }},
 
     /**
      * A set of audio nodes.
@@ -85,6 +103,11 @@ Polymer({
         ];
       }
     },
+
+    /**
+     * The title to be displayed in a heading element for the element.
+     */
+    title: {type: String},
   },
 
   ready: function() {
@@ -95,7 +118,10 @@ Polymer({
    * Adds a new node with default settings to the list of nodes.
    */
   appendNewNode: function() {
-    this.push('nodes', new AudioNode());
+    var newNode = new AudioNode();
+    newNode.id += this.nodeCount;
+    this.nodeCount++;
+    this.push('nodes', newNode);
   },
 
   /**
@@ -105,9 +131,21 @@ Polymer({
    */
   insertAudioNode: function(e) {
     // Create a new audio node and add all the properties from |nodes[i]|.
-    // Also, send the corresponding type value based on the name of |info.type|.
     var info = this.nodes[e.model.index];
     chrome.send('insertAudioNode', [info]);
+  },
+
+  /**
+   * This adds/modifies the audio node |nodes[currentEditIndex]| to/from the
+   * AudioNodeList.
+   * @param {model: {index: number}} e Event with a model containing
+   *     the index in |nodes| to add.
+   */
+  insertEditedAudioNode: function(e) {
+    // Insert a new node or update an existing node using all the properties
+    // in |node|.
+    var node = this.nodes[this.currentEditIndex];
+    chrome.send('insertAudioNode', [node]);
   },
 
   /**
@@ -118,6 +156,36 @@ Polymer({
   removeAudioNode: function(e) {
     var info = this.nodes[e.model.index];
     chrome.send('removeAudioNode', [info.id]);
+  },
+
+  /**
+   * Called on "copy" button from the device list clicked. Creates a copy of
+   * the selected node.
+   * @param {Event} event Contains event data. |event.model.index| is the index
+   *     of the item which the target is contained in.
+   */
+  copyDevice: function(event) {
+    // Create a shallow copy of the selected device.
+    var newNode = new AudioNode();
+    Object.assign(newNode, this.nodes[event.model.index]);
+    newNode.name += ' (Copy)';
+    newNode.deviceName += ' (Copy)';
+    newNode.id += this.nodeCount;
+    this.nodeCount++;
+
+    this.push('nodes', newNode);
+  },
+
+  /**
+   * Shows a modal dialog to edit the selected node's properties.
+   * @param {Event} event Contains event data. |event.model.index| is the index
+   *     of the item which the target is contained in.
+   */
+  showEditModal: function(event) {
+    var index = event.model.index;
+    this.currentEditIndex = index;
+    this.currentEditableObject = this.nodes[index];
+    this.$.editModal.toggle();
   },
 
   /**

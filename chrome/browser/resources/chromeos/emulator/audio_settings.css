@@ -2,19 +2,20 @@
    Use of this source code is governed by a BSD-style license that can be
    found in the LICENSE file. */
 
-paper-button[raised].colored {
-  background: rgb(66, 133, 244);
-  color: #fff;
-}
-
 paper-input {
-  -webkit-margin-start: 15px;
+  -webkit-margin-end: 15px;
   display: inline-block;
   width: 200px;
 }
 
-paper-toggle-button {
+#editModal paper-checkbox {
   -webkit-margin-start: 15px;
+}
+
+paper-dialog {
+  height: 90%;
+  overflow-y: scroll;
+  width: 40%;
 }
 
 .element-label {
@@ -28,21 +29,92 @@ paper-toggle-button {
   line-height: 80px;
 }
 
-.device-container {
-  border-radius: 2px;
-  margin: 10px;
-  width: 80%;
+.form-label {
+  display: block;
 }
 
-.device-field {
-  margin-bottom: 1em;
-  margin-top: 1em;
+.form-field-section {
+  margin-top: 30px;
 }
 
-.audio-node {
-  margin: 1px;
+.form-field-section:first-of-type {
+  margin-top: 0;
 }
 
-.toggle-button-label {
+.icon-cell {
+  text-align: center;
+  width: 45%;
+}
+
+.icon-cell paper-icon-button {
+  color: rgb(82, 101, 162);
+}
+
+.devices-table {
+  border-collapse: collapse;
+  padding: 20px 0;
+}
+
+.devices-table paper-icon-button[disabled] {
+  color: rgb(150, 194, 244);
+}
+
+.devices-table.custom {
+  margin-top: 40px;
+}
+
+.devices-table .icon-cell {
+  width: 45%;
+}
+
+.devices-table .center-cell-label {
+  text-align: center;
+}
+
+.devices-table .control-cell {
+  text-align: center;
+}
+
+.devices-table paper-checkbox {
+  --paper-checkbox-checked-color: rgb(82, 101, 162);
+}
+
+.devices-table td {
+  padding: 10px;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.devices-table tr.table-section-header {
+  font-weight: bold;
+}
+
+.devices-table tbody:first-of-type::before {
+  height: 0;
+}
+
+.devices-table tbody:last-of-type::before {
+  content: '';
+  display: block;
+  height: 30px;
+}
+
+.devices-table tbody tr {
+  border-bottom: 1px solid #dadada;
+}
+
+.devices-table tbody tr:last-of-type {
+  border-bottom: 0;
+}
+
+.add-device-container {
   margin: 15px;
+  text-align: right;
+}
+
+.add-device-container paper-button {
+  color: rgb(82, 101, 162);
+  width: 200px;
 }

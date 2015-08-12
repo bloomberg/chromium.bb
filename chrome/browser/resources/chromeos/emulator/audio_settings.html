@@ -1,59 +1,97 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/av-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 
 <dom-module id="audio-settings">
   <link rel="import" type="css" href="audio_settings.css">
   <template>
+    <paper-dialog on-iron-overlay-opened="editDialogOpened" modal
+        id="editModal">
+      <div class="element-label">[[currentEditableObject.deviceName]]</div>
+      <div>
+        <form>
+          <div class="form-field-section">
+            <paper-input value="{{currentEditableObject.deviceName}}"
+                label="Device Name"></paper-input>
+            <paper-input value="{{currentEditableObject.name}}"
+                label="Tray Name"></paper-input>
+            <paper-input value="{{currentEditableObject.id}}"
+                label="ID" disabled></paper-input>
+          </div>
+          <div class="form-field-section">
+            <span class="toggle-button-label">Is Input</span>
+            <paper-checkbox
+                checked="{{currentEditableObject.isInput}}"></paper-checkbox>
+          </div>
+          <div class="form-field-section">
+            <span class="toggle-button-label">Active</span>
+            <paper-checkbox
+                checked="{{currentEditableObject.active}}"></paper-checkbox>
+          </div>
+          <div class="form-field-section">
+            <div class="form-label">Audio Type</div>
+            <paper-radio-group class="device-class-group"
+                selected="{{currentEditableObject.type}}">
+              <template is="dom-repeat"
+                  items="[[nodeTypeOptions]]" as="option">
+                <paper-radio-button name="[[option.type]]"
+                    >[[option.name]]</paper-radio-button>
+              </template>
+            </paper-radio-group>
+          </div>
+        </form>
+      </div>
+      <div class="buttons">
+        <paper-button on-click="insertEditedAudioNode"
+            dialog-dismiss>Done</paper-button>
+      </div>
+    </paper-dialog>
+
     <div class="layout vertical">
-      <div class="element-label">[[title]]</div>
-      <form id="audio-settings-form">
-        <div class="layout vertical">
-          <span class="form-label">Nodes</span>
+      <div class="element-label">
+        <paper-icon-button icon="av:volume-up"></paper-icon-button>
+        <span>[[title]]</span>
+      </div>
+      <table class="devices-table">
+        <tbody>
+          <tr class="table-section-header">
+            <td colspan="2">Devices</td>
+            <td class="centered-cell-label">Is Input</td>
+            <td class="centered-cell-label">Active</td>
+          </tr>
           <template is="dom-repeat" items="[[nodes]]">
-            <div class="device-container">
-              <div class="audio-node">
-                <div class="element-label">[[item.deviceName]]</div>
-                <paper-input value="{{item.deviceName}}" label="Name">
-                </paper-input>
-                <paper-input value="{{item.id}}" label="ID" pattern="^\d{5}"
-                    error-message="Invalid ID: Must be 5 digits">
-                </paper-input>
-                <span class="toggle-button-label">Is Input</span>
-                <paper-toggle-button checked="{{item.isInput}}">
-                </paper-toggle-button>
-                <span class="toggle-button-label">Active</span>
-                <paper-toggle-button checked="{{item.active}}">
-                </paper-toggle-button>
-                <div class="device-field">
-                  <label>
-                    <span class="form-label">Audio Node Type</span>
-                    <paper-radio-group selected="{{item.type}}">
-                      <template is="dom-repeat"
-                          items="[[nodeTypeOptions]]" as="option">
-                        <paper-radio-button name="[[option.type]]"
-                            >[[option.name]]</paper-radio-button>
-                      </template>
-                    </paper-radio-group>
-                  </label>
-                </div>
-                <paper-button raised class="colored" on-click="insertAudioNode"
-                    event.model.index="[[index]]">Add Node</paper-button>
-                <paper-button raised class="colored" on-click="removeAudioNode"
-                    event.model.index="[[index]]">Remove Node</paper-button>
-              </div>
-            </div>
+            <tr>
+              <td class="alias-cell">[[item.deviceName]]</td>
+              <td class="icon-cell">
+                <paper-icon-button icon="content-copy" data-predefined="false"
+                    on-click="copyDevice"></paper-icon-button>
+                <paper-icon-button icon="settings" on-click="showEditModal"
+                    ></paper-icon-button>
+                <paper-icon-button icon="delete" on-click="removeAudioNode"
+                    ></paper-icon-button>
+              </td>
+              <td class="control-cell">
+                <paper-checkbox checked="{{item.isInput}}"
+                    on-change="insertAudioNode"></paper-checkbox>
+              </td>
+              <td class="control-cell">
+                <paper-checkbox checked="{{item.active}}"
+                    on-change="insertAudioNode"></paper-checkbox>
+              </td>
+            </tr>
           </template>
-          <paper-button on-click="appendNewNode">
-            <paper-icon-button icon="add"></paper-icon-button>
-            <span>New Node</span>
-          </paper-button>
-        </div>
-      </form>
+        </tbody>
+      </table>
+      <div class="add-device-container">
+        <paper-button on-click="appendNewNode">
+          Add Node
+        </paper-button>
+      </div>
     </div>
   </template>
   <script src="audio_settings.js"></script>
