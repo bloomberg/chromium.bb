@@ -57,13 +57,14 @@ UserManagerView* instance_ = NULL;
 bool instance_under_construction_ = false;
 
 class ReauthDelegate : public views::DialogDelegateView,
-                       public content::WebContentsObserver {
+                       public UserManager::ReauthDialogObserver {
  public:
-  ReauthDelegate(content::BrowserContext* browser_context,
+  ReauthDelegate(views::WebView* web_view,
                  const std::string& email_address);
   ~ReauthDelegate() override {}
 
  private:
+  ReauthDelegate();
   // views::DialogDelegate:
   gfx::Size GetPreferredSize() const override;
   bool CanResize() const override;
@@ -75,27 +76,23 @@ class ReauthDelegate : public views::DialogDelegateView,
   base::string16 GetWindowTitle() const override;
   int GetDialogButtons() const override;
 
-  // content::WebContentsObserver:
-  void DidStopLoading() override;
+  // UserManager::ReauthObserver:
+  void CloseReauthDialog() override;
 
-  content::BrowserContext* browser_context_;
   views::WebView* web_view_;
   const std::string email_address_;
 
   DISALLOW_COPY_AND_ASSIGN(ReauthDelegate);
 };
 
-ReauthDelegate::ReauthDelegate(content::BrowserContext* browser_context,
+ReauthDelegate::ReauthDelegate(views::WebView* web_view,
                                const std::string& email_address)
-    : browser_context_(browser_context),
+    : UserManager::ReauthDialogObserver(
+          web_view->GetWebContents(), email_address),
+      web_view_(web_view),
       email_address_(email_address) {
-  web_view_ = new views::WebView(browser_context_);
   AddChildView(web_view_);
   SetLayoutManager(new views::FillLayout());
-
-  // Observe navigations of the web contents so that the dialog can close itself
-  // when the sign in process is done.
-  Observe(web_view_->GetWebContents());
 
   // Load the re-auth URL, prepopulated with the user's email address.
   // Add the index of the profile to the URL so that the inline login page
@@ -141,44 +138,8 @@ int ReauthDelegate::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
-bool AddToSet(std::set<content::WebContents*>* content_set,
-              content::WebContents* web_contents) {
-  content_set->insert(web_contents);
-  return false;
-}
-
-void ReauthDelegate::DidStopLoading() {
-  // If the sign in process reaches the termination URL, close the dialog.
-  // Make sure to remove any parts of the URL that gaia might append during
-  // signin.
-  GURL url = web_contents()->GetURL();
-  url::Replacements<char> replacements;
-  replacements.ClearQuery();
-  replacements.ClearRef();
-  if (url.ReplaceComponents(replacements) ==
-        GaiaUrls::GetInstance()->signin_completed_continue_url()) {
-    GetWidget()->Close();
-    return;
-  }
-
-  // If still observing the top level web contents, try to find the embedded
-  // webview and observe it instead.  The webview may not be found in the
-  // initial page load since it loads asynchronously.
-  if (url.GetOrigin() !=
-        signin::GetReauthURLWithEmail(email_address_).GetOrigin()) {
-    return;
-  }
-
-  std::set<content::WebContents*> content_set;
-  content::WebContents* web_contents = web_view_->GetWebContents();
-  guest_view::GuestViewManager* manager =
-      guest_view::GuestViewManager::FromBrowserContext(
-          web_contents->GetBrowserContext());
-  if (manager)
-    manager->ForEachGuest(web_contents, base::Bind(&AddToSet, &content_set));
-  DCHECK_LE(content_set.size(), 1U);
-  if (!content_set.empty())
-    Observe(*content_set.begin());
+void ReauthDelegate::CloseReauthDialog() {
+  GetWidget()->Close();
 }
 
 } // namespace
@@ -251,9 +212,10 @@ void UserManager::ShowReauthDialog(content::BrowserContext* browser_context,
   if (!IsShowing())
     return;
 
-  // The dialog delegate will be deleted when the dialog closes.
+  // The dialog delegate will be deleted when the dialog closes and the created
+  // WebView's lifetime is managed by the delegate.
   views::DialogDelegate* delegate =
-      new ReauthDelegate(browser_context, email);
+      new ReauthDelegate(new views::WebView(browser_context), email);
   gfx::NativeView parent = instance_->GetWidget()->GetNativeView();
   views::DialogDelegate::CreateDialogWidget(delegate, nullptr, parent);
   delegate->GetWidget()->Show();

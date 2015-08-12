@@ -276,6 +276,7 @@
       'browser/ui/translate/translate_bubble_view_state_transition.cc',
       'browser/ui/translate/translate_bubble_view_state_transition.h',
       'browser/ui/uninstall_browser_prompt.h',
+      'browser/ui/user_manager.cc',
       'browser/ui/user_manager.h',
       'browser/ui/validation_message_bubble.h',
       'browser/ui/view_ids.h',

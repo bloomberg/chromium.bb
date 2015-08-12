@@ -47,6 +47,27 @@ class UserManager {
   static const int kReauthDialogWidth = 360;
   static const int kReauthDialogHeight = 440;
 
+  // This class observes the WebUI used in the UserManager to perform online
+  // reauthentication of locked profiles. Its concretely implemented in
+  // UserManagerMac and UserManagerView to specialize the closing of the UI's
+  // dialog widget.
+  class ReauthDialogObserver : public content::WebContentsObserver {
+   public:
+    ReauthDialogObserver(content::WebContents* web_contents,
+                         const std::string& email_address);
+    ~ReauthDialogObserver() override {}
+
+   private:
+    // content::WebContentsObserver:
+    void DidStopLoading() override;
+
+    virtual void CloseReauthDialog() = 0;
+
+    const std::string email_address_;
+
+    DISALLOW_COPY_AND_ASSIGN(ReauthDialogObserver);
+  };
+
  private:
   DISALLOW_COPY_AND_ASSIGN(UserManager);
 };
