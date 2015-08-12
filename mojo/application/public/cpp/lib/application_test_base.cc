@@ -130,14 +130,18 @@ void ApplicationTestBase::SetUp() {
                                           g_application_request.Pass());
 
   // Fake application initialization.
-  application_impl_->Initialize(g_shell.Pass(), g_url);
+  Application* application = application_impl_;
+  application->Initialize(g_shell.Pass(), g_url);
 }
 
 void ApplicationTestBase::TearDown() {
   MOJO_CHECK(!g_application_request.is_pending());
   MOJO_CHECK(!g_shell);
 
-  application_impl_->UnbindConnections(&g_application_request, &g_shell);
+  {
+    ApplicationImpl::TestApi test_api(application_impl_);
+    test_api.UnbindConnections(&g_application_request, &g_shell);
+  }
   delete application_impl_;
   if (ShouldCreateDefaultRunLoop())
     Environment::DestroyDefaultRunLoop();

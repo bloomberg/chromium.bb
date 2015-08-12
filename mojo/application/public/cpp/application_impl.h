@@ -56,6 +56,20 @@ namespace mojo {
 //
 class ApplicationImpl : public Application {
  public:
+  class TestApi {
+   public:
+    explicit TestApi(ApplicationImpl* application)
+        : application_(application) {}
+
+    void UnbindConnections(InterfaceRequest<Application>* application_request,
+                           ShellPtr* shell) {
+      application_->UnbindConnections(application_request, shell);
+    }
+
+   private:
+    ApplicationImpl* application_;
+  };
+
   // Does not take ownership of |delegate|, which must remain valid for the
   // lifetime of ApplicationImpl.
   ApplicationImpl(ApplicationDelegate* delegate,
@@ -98,24 +112,13 @@ class ApplicationImpl : public Application {
     connection->ConnectToService(ptr);
   }
 
-  // Application implementation.
-  void Initialize(ShellPtr shell, const mojo::String& url) override;
-
-  // Block until the Application is initialized, if it is not already.
-  void WaitForInitialize();
-
-  // Unbinds the Shell and Application connections. Can be used to re-bind the
-  // handles to another implementation of ApplicationImpl, for instance when
-  // running apptests.
-  void UnbindConnections(InterfaceRequest<Application>* application_request,
-                         ShellPtr* shell);
-
   // Initiate shutdown of this application. This may involve a round trip to the
   // Shell to ensure there are no inbound service requests.
   void Quit();
 
  private:
   // Application implementation.
+  void Initialize(ShellPtr shell, const mojo::String& url) override;
   void AcceptConnection(const String& requestor_url,
                         InterfaceRequest<ServiceProvider> services,
                         ServiceProviderPtr exposed_services,
@@ -128,6 +131,12 @@ class ApplicationImpl : public Application {
   // Called from Quit() when there is no Shell connection, or asynchronously
   // from Quit() once the Shell has OK'ed shutdown.
   void QuitNow();
+
+  // Unbinds the Shell and Application connections. Can be used to re-bind the
+  // handles to another implementation of ApplicationImpl, for instance when
+  // running apptests.
+  void UnbindConnections(InterfaceRequest<Application>* application_request,
+                         ShellPtr* shell);
 
   // We track the lifetime of incoming connection registries as it more
   // convenient for the client.

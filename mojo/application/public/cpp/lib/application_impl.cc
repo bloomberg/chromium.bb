@@ -90,18 +90,6 @@ void ApplicationImpl::Initialize(ShellPtr shell, const mojo::String& url) {
   delegate_->Initialize(this);
 }
 
-void ApplicationImpl::WaitForInitialize() {
-  if (!shell_)
-    binding_.WaitForIncomingMethodCall();
-}
-
-void ApplicationImpl::UnbindConnections(
-    InterfaceRequest<Application>* application_request,
-    ShellPtr* shell) {
-  *application_request = binding_.Unbind();
-  shell->Bind(shell_.PassInterface());
-}
-
 void ApplicationImpl::Quit() {
   // We can't quit immediately, since there could be in-flight requests from the
   // shell. So check with it first.
@@ -160,6 +148,13 @@ void ApplicationImpl::OnConnectionError() {
 void ApplicationImpl::QuitNow() {
   delegate_->Quit();
   termination_closure_.Run();
+}
+
+void ApplicationImpl::UnbindConnections(
+    InterfaceRequest<Application>* application_request,
+    ShellPtr* shell) {
+  *application_request = binding_.Unbind();
+  shell->Bind(shell_.PassInterface());
 }
 
 }  // namespace mojo
