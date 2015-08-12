@@ -88,11 +88,10 @@ public:
     void setIsHidden(bool hidden) { m_surface->setIsHidden(hidden); }
 
     // Called by subclasses of ImageBufferSurface to install a new canvas object
-    void resetCanvas(SkCanvas*);
-
-    void willDrawVideo() { m_surface->willDrawVideo(); }
+    void resetCanvas(SkCanvas*) const;
 
     SkCanvas* canvas() const;
+    SkCanvas* immediateCanvas() const;
 
     // Called at the end of a task that rendered a whole frame
     void finalizeFrame(const FloatRect &dirtyRect);

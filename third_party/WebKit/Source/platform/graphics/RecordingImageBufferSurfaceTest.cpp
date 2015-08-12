@@ -55,7 +55,7 @@ public:
         m_imageBuffer->finalizeFrame(dirtyRect);
         ASSERT_FALSE(m_isDirty);
     }
-    void restoreCanvasMatrixClipStack() override { }
+    void restoreCanvasMatrixClipStack(SkCanvas*) const override { }
 
     void fakeDraw()
     {

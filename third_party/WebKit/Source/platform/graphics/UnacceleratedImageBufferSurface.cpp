@@ -52,7 +52,7 @@ UnacceleratedImageBufferSurface::UnacceleratedImageBufferSurface(const IntSize& 
 
 UnacceleratedImageBufferSurface::~UnacceleratedImageBufferSurface() { }
 
-SkCanvas* UnacceleratedImageBufferSurface::canvas() const
+SkCanvas* UnacceleratedImageBufferSurface::immediateCanvas()
 {
     return m_surface->getCanvas();
 }
@@ -60,7 +60,7 @@ SkCanvas* UnacceleratedImageBufferSurface::canvas() const
 const SkBitmap& UnacceleratedImageBufferSurface::deprecatedBitmapForOverwrite()
 {
     m_surface->notifyContentWillChange(SkSurface::kDiscard_ContentChangeMode);
-    return canvas()->getDevice()->accessBitmap(false);
+    return m_surface->getCanvas()->getDevice()->accessBitmap(false);
 }
 
 bool UnacceleratedImageBufferSurface::isValid() const

@@ -106,6 +106,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider
 {
     ASSERT(m_surface);
     ASSERT(m_contextProvider);
+    m_initialSurfaceSaveCount = m_surface->getCanvas()->getSaveCount();
     // Used by browser tests to detect the use of a Canvas2DLayerBridge.
     TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation", TRACE_EVENT_SCOPE_GLOBAL);
     m_layer = adoptPtr(Platform::current()->compositorSupport()->createExternalTextureLayer(this));
@@ -139,9 +140,22 @@ void Canvas2DLayerBridge::startRecording()
     }
 }
 
-SkCanvas* Canvas2DLayerBridge::canvas() const
+SkCanvas* Canvas2DLayerBridge::canvas()
 {
     return m_recorder->getRecordingCanvas();
+}
+
+SkCanvas* Canvas2DLayerBridge::immediateCanvas()
+{
+    if (!m_isSurfaceValid)
+        return nullptr;
+    flushRecordingOnly();
+
+    // install the current matrix/clip stack onto the immediate canvas
+    m_surface->getCanvas()->restoreToCount(m_initialSurfaceSaveCount);
+    m_imageBuffer->resetCanvas(m_surface->getCanvas());
+
+    return m_surface->getCanvas();
 }
 
 void Canvas2DLayerBridge::setImageBuffer(ImageBuffer* imageBuffer)
@@ -200,7 +214,9 @@ bool Canvas2DLayerBridge::writePixels(const SkImageInfo& origInfo, const void* p
         flush();
     }
     ASSERT(!m_haveRecordedDrawCommands);
-    // call write pixels on the surface, not the recording canvas
+    // call write pixels on the surface, not the recording canvas.
+    // No need to call beginDirectSurfaceAccessModeIfNeeded() because writePixels
+    // ignores the matrix and clip state.
     return m_surface->getCanvas()->writePixels(origInfo, pixels, rowBytes, x, y);
 }
 
@@ -225,18 +241,24 @@ void Canvas2DLayerBridge::setRateLimitingEnabled(bool enabled)
     }
 }
 
-void Canvas2DLayerBridge::flush()
+void Canvas2DLayerBridge::flushRecordingOnly()
 {
     ASSERT(!m_destructionInProgress);
-    if (!m_isSurfaceValid)
-        return;
     if (m_haveRecordedDrawCommands) {
         TRACE_EVENT0("cc", "Canvas2DLayerBridge::flush");
         RefPtr<SkPicture> picture = adoptRef(m_recorder->endRecording());
+        m_surface->getCanvas()->restoreToCount(m_initialSurfaceSaveCount); // In case immediateCanvas() was used
         picture->playback(m_surface->getCanvas());
         startRecording();
         m_haveRecordedDrawCommands = false;
     }
+}
+
+void Canvas2DLayerBridge::flush()
+{
+    if (!m_isSurfaceValid)
+        return;
+    flushRecordingOnly();
     m_surface->getCanvas()->flush();
 }
 
@@ -294,6 +316,7 @@ bool Canvas2DLayerBridge::restoreSurface()
         RefPtr<SkSurface> surface(createSkSurface(grCtx, m_size, m_msaaSampleCount, m_opacityMode));
         if (surface.get()) {
             m_surface = surface.release();
+            m_initialSurfaceSaveCount = m_surface->getCanvas()->getSaveCount();
             m_isSurfaceValid = true;
             // FIXME: draw sad canvas picture into new buffer crbug.com/243842
         }

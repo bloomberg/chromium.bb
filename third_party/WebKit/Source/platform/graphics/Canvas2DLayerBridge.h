@@ -64,7 +64,8 @@ public:
     void willWritePixels();
     void willOverwriteAllPixels();
     void willOverwriteCanvas();
-    SkCanvas* canvas() const;
+    SkCanvas* canvas();
+    SkCanvas* immediateCanvas();
     bool checkSurfaceValid();
     bool restoreSurface();
     WebLayer* layer() const;
@@ -90,9 +91,11 @@ private:
     WebGraphicsContext3D* context();
     void startRecording();
     void skipQueuedDrawCommands();
+    void flushRecordingOnly();
 
     OwnPtr<SkPictureRecorder> m_recorder;
     RefPtr<SkSurface> m_surface;
+    int m_initialSurfaceSaveCount;
     OwnPtr<WebExternalTextureLayer> m_layer;
     OwnPtr<WebGraphicsContext3DProvider> m_contextProvider;
     ImageBuffer* m_imageBuffer;

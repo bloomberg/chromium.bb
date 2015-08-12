@@ -34,10 +34,10 @@ public:
     ~RecordingImageBufferSurface() override;
 
     // Implementation of ImageBufferSurface interfaces
-    SkCanvas* canvas() const override;
+    SkCanvas* canvas() override;
+    SkCanvas* immediateCanvas() override;
     PassRefPtr<SkPicture> getPicture() override;
     void flush() override;
-    void willDrawVideo() override;
     void didDraw(const FloatRect&) override;
     bool isValid() const override { return true; }
     bool isRecording() const override { return !m_fallbackSurface; }

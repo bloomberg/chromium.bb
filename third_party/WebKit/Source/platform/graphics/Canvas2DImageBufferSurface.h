@@ -57,7 +57,8 @@ public:
     // ImageBufferSurface implementation
     void finalizeFrame(const FloatRect &dirtyRect) override { m_layerBridge->finalizeFrame(dirtyRect); }
     void willOverwriteCanvas() override { m_layerBridge->willOverwriteCanvas(); }
-    SkCanvas* canvas() const override { return m_layerBridge->canvas(); }
+    SkCanvas* canvas() override { return m_layerBridge->canvas(); }
+    SkCanvas* immediateCanvas() override { return m_layerBridge->immediateCanvas(); }
     bool isValid() const override { return m_layerBridge && m_layerBridge->checkSurfaceValid(); }
     bool restore() override { return m_layerBridge->restoreSurface(); }
     WebLayer* layer() const override { return m_layerBridge->layer(); }

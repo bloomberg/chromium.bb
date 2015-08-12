@@ -93,6 +93,13 @@ SkCanvas* ImageBuffer::canvas() const
     return m_surface->canvas();
 }
 
+SkCanvas* ImageBuffer::immediateCanvas() const
+{
+    if (!isSurfaceValid())
+        return nullptr;
+    return m_surface->immediateCanvas();
+}
+
 bool ImageBuffer::writePixels(const SkImageInfo& info, const void* pixels, size_t rowBytes, int x, int y)
 {
     return m_surface->writePixels(info, pixels, rowBytes, x, y);
@@ -136,10 +143,10 @@ void ImageBuffer::notifySurfaceInvalid()
         m_client->notifySurfaceInvalid();
 }
 
-void ImageBuffer::resetCanvas(SkCanvas* canvas)
+void ImageBuffer::resetCanvas(SkCanvas* canvas) const
 {
     if (m_client)
-        m_client->restoreCanvasMatrixClipStack();
+        m_client->restoreCanvasMatrixClipStack(canvas);
 }
 
 PassRefPtr<SkImage> ImageBuffer::newSkImageSnapshot() const

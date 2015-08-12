@@ -104,13 +104,21 @@ PassRefPtr<SkImage> RecordingImageBufferSurface::newImageSnapshot()
     return m_fallbackSurface->newImageSnapshot();
 }
 
-SkCanvas* RecordingImageBufferSurface::canvas() const
+SkCanvas* RecordingImageBufferSurface::canvas()
 {
     if (m_fallbackSurface)
         return m_fallbackSurface->canvas();
 
     ASSERT(m_currentFrame->getRecordingCanvas());
     return m_currentFrame->getRecordingCanvas();
+}
+
+SkCanvas* RecordingImageBufferSurface::immediateCanvas()
+{
+    if (!m_fallbackSurface)
+        fallBackToRasterCanvas();
+
+    return m_fallbackSurface->canvas();
 }
 
 PassRefPtr<SkPicture> RecordingImageBufferSurface::getPicture()
@@ -195,13 +203,6 @@ bool RecordingImageBufferSurface::finalizeFrameInternal()
 
     m_frameWasCleared = false;
     return true;
-}
-
-void RecordingImageBufferSurface::willDrawVideo()
-{
-    // Video draws need to be synchronous
-    if (!m_fallbackSurface)
-        fallBackToRasterCanvas();
 }
 
 void RecordingImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode op)

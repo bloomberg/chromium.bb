@@ -294,12 +294,11 @@ void CanvasRenderingContext2D::reset()
     validateStateStack();
 }
 
-void CanvasRenderingContext2D::restoreCanvasMatrixClipStack()
+void CanvasRenderingContext2D::restoreCanvasMatrixClipStack(SkCanvas* c) const
 {
-    SkCanvas* c = drawingCanvas();
     if (!c)
         return;
-    WillBeHeapVector<OwnPtrWillBeMember<CanvasRenderingContext2DState>>::iterator currState;
+    WillBeHeapVector<OwnPtrWillBeMember<CanvasRenderingContext2DState>>::const_iterator currState;
     ASSERT(m_stateStack.begin() < m_stateStack.end());
     for (currState = m_stateStack.begin(); currState < m_stateStack.end(); currState++) {
         c->setMatrix(SkMatrix::I());
@@ -835,63 +834,62 @@ static bool isFullCanvasCompositeMode(SkXfermode::Mode op)
 }
 
 template<typename DrawFunc>
-void CanvasRenderingContext2D::compositedDraw(const DrawFunc& drawFunc, CanvasRenderingContext2DState::PaintType paintType, CanvasRenderingContext2DState::ImageType imageType)
+void CanvasRenderingContext2D::compositedDraw(const DrawFunc& drawFunc, SkCanvas* c, CanvasRenderingContext2DState::PaintType paintType, CanvasRenderingContext2DState::ImageType imageType)
 {
     SkImageFilter* filter = state().getFilter(canvas(), accessFont());
     ASSERT(isFullCanvasCompositeMode(state().globalComposite()) || filter);
-    ASSERT(drawingCanvas());
-    SkMatrix ctm = drawingCanvas()->getTotalMatrix();
-    drawingCanvas()->resetMatrix();
+    SkMatrix ctm = c->getTotalMatrix();
+    c->resetMatrix();
     SkPaint compositePaint;
     compositePaint.setXfermodeMode(state().globalComposite());
     if (state().shouldDrawShadows()) {
         // unroll into two independently composited passes if drawing shadows
         SkPaint shadowPaint = *state().getPaint(paintType, DrawShadowOnly, imageType);
-        int saveCount = drawingCanvas()->getSaveCount();
+        int saveCount = c->getSaveCount();
         if (filter) {
             SkPaint filterPaint;
             filterPaint.setImageFilter(filter);
             // TODO(junov): crbug.com/502921 We could use primitive bounds if we knew that the filter
             // does not affect transparent black regions.
-            drawingCanvas()->saveLayer(nullptr, &shadowPaint);
-            drawingCanvas()->saveLayer(nullptr, &filterPaint);
+            c->saveLayer(nullptr, &shadowPaint);
+            c->saveLayer(nullptr, &filterPaint);
             SkPaint foregroundPaint = *state().getPaint(paintType, DrawForegroundOnly, imageType);
-            drawingCanvas()->setMatrix(ctm);
-            drawFunc(&foregroundPaint);
+            c->setMatrix(ctm);
+            drawFunc(c, &foregroundPaint);
         } else {
             ASSERT(isFullCanvasCompositeMode(state().globalComposite()));
-            drawingCanvas()->saveLayer(nullptr, &compositePaint);
+            c->saveLayer(nullptr, &compositePaint);
             shadowPaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
-            drawingCanvas()->setMatrix(ctm);
-            drawFunc(&shadowPaint);
+            c->setMatrix(ctm);
+            drawFunc(c, &shadowPaint);
         }
-        if (!drawingCanvas())
-            return;
-        drawingCanvas()->restoreToCount(saveCount);
+        c->restoreToCount(saveCount);
     }
 
     compositePaint.setImageFilter(filter);
     // TODO(junov): crbug.com/502921 We could use primitive bounds if we knew that the filter
     // does not affect transparent black regions *and* !isFullCanvasCompositeMode
-    drawingCanvas()->saveLayer(nullptr, &compositePaint);
+    c->saveLayer(nullptr, &compositePaint);
     SkPaint foregroundPaint = *state().getPaint(paintType, DrawForegroundOnly, imageType);
     foregroundPaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
-    drawingCanvas()->setMatrix(ctm);
-    drawFunc(&foregroundPaint);
-    if (!drawingCanvas())
-        return;
-    drawingCanvas()->restore();
-    drawingCanvas()->setMatrix(ctm);
+    c->setMatrix(ctm);
+    drawFunc(c, &foregroundPaint);
+    c->restore();
+    c->setMatrix(ctm);
 }
 
 template<typename DrawFunc, typename ContainsFunc>
-bool CanvasRenderingContext2D::draw(const DrawFunc& drawFunc, const ContainsFunc& drawCoversClipBounds, const SkRect& bounds, CanvasRenderingContext2DState::PaintType paintType, CanvasRenderingContext2DState::ImageType imageType)
+bool CanvasRenderingContext2D::draw(const DrawFunc& drawFunc, const ContainsFunc& drawCoversClipBounds, CanvasDeferralMode deferralMode, const SkRect& bounds, CanvasRenderingContext2DState::PaintType paintType, CanvasRenderingContext2DState::ImageType imageType)
 {
     if (!state().isTransformInvertible())
         return false;
 
     SkIRect clipBounds;
-    if (!drawingCanvas() || !drawingCanvas()->getClipDeviceBounds(&clipBounds))
+    // Deliberately not using 'deferralMode' in the call to drawingCanvas below because
+    // a) The call does not write anything so we do not care about the write mode here
+    // b) We want to avoid flushing before the call to checkOverdraw (below), otherwise
+    //    we could be supressing an overdraw optimization.
+    if (!drawingCanvas()->getClipDeviceBounds(&clipBounds))
         return false;
 
     // If gradient size is zero, then paint nothing.
@@ -903,12 +901,12 @@ bool CanvasRenderingContext2D::draw(const DrawFunc& drawFunc, const ContainsFunc
     }
 
     if (isFullCanvasCompositeMode(state().globalComposite()) || state().hasFilter()) {
-        compositedDraw(drawFunc, paintType, imageType);
+        compositedDraw(drawFunc, drawingCanvas(deferralMode), paintType, imageType);
         didDraw(clipBounds);
     } else if (state().globalComposite() == SkXfermode::kSrc_Mode) {
         clearCanvas(); // takes care of checkOvewrdraw()
         const SkPaint* paint = state().getPaint(paintType, DrawForegroundOnly, imageType);
-        drawFunc(paint);
+        drawFunc(drawingCanvas(deferralMode), paint);
         didDraw(clipBounds);
     } else {
         SkIRect dirtyRect;
@@ -916,7 +914,7 @@ bool CanvasRenderingContext2D::draw(const DrawFunc& drawFunc, const ContainsFunc
             const SkPaint* paint = state().getPaint(paintType, DrawShadowAndForeground, imageType);
             if (paintType != CanvasRenderingContext2DState::StrokePaintType && drawCoversClipBounds(clipBounds))
                 checkOverdraw(bounds, paint, imageType, ClipFill);
-            drawFunc(paint);
+            drawFunc(drawingCanvas(deferralMode), paint);
             didDraw(dirtyRect);
         }
     }
@@ -947,18 +945,18 @@ void CanvasRenderingContext2D::drawPathInternal(const Path& path, CanvasRenderin
     if (paintType == CanvasRenderingContext2DState::StrokePaintType)
         inflateStrokeRect(bounds);
 
+    if (!drawingCanvas())
+        return;
+
     if (draw(
-        [&skPath, this](const SkPaint* paint) // draw lambda
+        [&skPath, this](SkCanvas* c, const SkPaint* paint) // draw lambda
         {
-            if (drawingCanvas())
-                drawingCanvas()->drawPath(skPath, *paint);
+            c->drawPath(skPath, *paint);
         },
         [](const SkIRect& rect) // overdraw test lambda
         {
             return false;
-        },
-        bounds, paintType)) {
-
+        }, AllowDeferredCanvas, bounds, paintType)) {
         if (isPathExpensive(path)) {
             ImageBuffer* buffer = canvas()->buffer();
             if (buffer)
@@ -1003,18 +1001,19 @@ void CanvasRenderingContext2D::fillRect(float x, float y, float width, float hei
     if (!validateRectForCanvas(x, y, width, height))
         return;
 
+    if (!drawingCanvas())
+        return;
+
     SkRect rect = SkRect::MakeXYWH(x, y, width, height);
     draw(
-        [&rect, this](const SkPaint* paint) // draw lambda
+        [&rect, this](SkCanvas* c, const SkPaint* paint) // draw lambda
         {
-            if (drawingCanvas())
-                drawingCanvas()->drawRect(rect, *paint);
+            c->drawRect(rect, *paint);
         },
         [&rect, this](const SkIRect& clipBounds) // overdraw test lambda
         {
             return rectContainsTransformedRect(rect, clipBounds);
-        },
-        rect, CanvasRenderingContext2DState::FillPaintType);
+        }, AllowDeferredCanvas, rect, CanvasRenderingContext2DState::FillPaintType);
 }
 
 static void strokeRectOnCanvas(const FloatRect& rect, SkCanvas* canvas, const SkPaint* paint)
@@ -1037,20 +1036,21 @@ void CanvasRenderingContext2D::strokeRect(float x, float y, float width, float h
     if (!validateRectForCanvas(x, y, width, height))
         return;
 
+    if (!drawingCanvas())
+        return;
+
     SkRect rect = SkRect::MakeXYWH(x, y, width, height);
     FloatRect bounds = rect;
     inflateStrokeRect(bounds);
     draw(
-        [&rect, this](const SkPaint* paint) // draw lambda
+        [&rect, this](SkCanvas* c, const SkPaint* paint) // draw lambda
         {
-            if (drawingCanvas())
-                strokeRectOnCanvas(rect, drawingCanvas(), paint);
+            strokeRectOnCanvas(rect, c, paint);
         },
         [](const SkIRect& clipBounds) // overdraw test lambda
         {
             return false;
-        },
-        bounds, CanvasRenderingContext2DState::StrokePaintType);
+        }, AllowDeferredCanvas, bounds, CanvasRenderingContext2DState::StrokePaintType);
 }
 
 void CanvasRenderingContext2D::clipInternal(const Path& path, const String& windingRuleString)
@@ -1311,11 +1311,8 @@ bool CanvasRenderingContext2D::shouldDrawImageAntialiased(const FloatRect& destR
     return destRect.width() * fabs(widthExpansion) < 1 || destRect.height() * fabs(heightExpansion) < 1;
 }
 
-void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource, Image* image, const FloatRect& srcRect, const FloatRect& dstRect, const SkPaint* paint)
+void CanvasRenderingContext2D::drawImageInternal(SkCanvas* c, CanvasImageSource* imageSource, Image* image, const FloatRect& srcRect, const FloatRect& dstRect, const SkPaint* paint)
 {
-    SkCanvas* c = drawingCanvas();
-    ASSERT(c);
-
     int initialSaveCount = c->getSaveCount();
     SkPaint imagePaint = *paint;
 
@@ -1395,20 +1392,19 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
     if (srcRect.isEmpty())
         return;
 
-    if (imageSource->isVideoElement())
-        canvas()->buffer()->willDrawVideo();
+    CanvasDeferralMode deferralMode = imageSource->isVideoElement() ? ForceImmediateCanvas : AllowDeferredCanvas;
+
+    validateStateStack();
 
     draw(
-        [this, &imageSource, &image, &srcRect, dstRect](const SkPaint* paint) // draw lambda
+        [this, &imageSource, &image, &srcRect, dstRect](SkCanvas* c, const SkPaint* paint) // draw lambda
         {
-            drawImageInternal(imageSource, image.get(), srcRect, dstRect, paint);
+            drawImageInternal(c, imageSource, image.get(), srcRect, dstRect, paint);
         },
         [this, &dstRect](const SkIRect& clipBounds) // overdraw test lambda
         {
             return rectContainsTransformedRect(dstRect, clipBounds);
-        },
-        dstRect,
-        CanvasRenderingContext2DState::ImagePaintType,
+        }, deferralMode, dstRect, CanvasRenderingContext2DState::ImagePaintType,
         imageSource->isOpaque() ? CanvasRenderingContext2DState::OpaqueImage : CanvasRenderingContext2DState::NonOpaqueImage);
 
     validateStateStack();
@@ -1557,11 +1553,11 @@ void CanvasRenderingContext2D::didDraw(const SkIRect& dirtyRect)
     canvas()->didDraw(SkRect::Make(dirtyRect));
 }
 
-SkCanvas* CanvasRenderingContext2D::drawingCanvas() const
+SkCanvas* CanvasRenderingContext2D::drawingCanvas(CanvasDeferralMode deferralMode) const
 {
     if (isContextLost())
         return nullptr;
-    return canvas()->drawingCanvas();
+    return deferralMode == ForceImmediateCanvas ? canvas()->immediateDrawingCanvas() : canvas()->drawingCanvas();
 }
 
 ImageData* CanvasRenderingContext2D::createImageData(ImageData* imageData) const
@@ -1952,7 +1948,8 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     // style before grabbing the drawingCanvas.
     canvas()->document().updateLayoutTreeForNodeIfNeeded(canvas());
 
-    if (!drawingCanvas())
+    SkCanvas* c = drawingCanvas();
+    if (!c)
         return;
 
     if (!std::isfinite(x) || !std::isfinite(y))
@@ -2015,16 +2012,15 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     }
 
     draw(
-        [&font, this, &textRunPaintInfo, &location](const SkPaint* paint) // draw lambda
+        [&font, this, &textRunPaintInfo, &location](SkCanvas* c, const SkPaint* paint) // draw lambda
         {
-            if (drawingCanvas())
-                font.drawBidiText(drawingCanvas(), textRunPaintInfo, location, Font::UseFallbackIfFontNotReady, cDeviceScaleFactor, *paint);
+            font.drawBidiText(c, textRunPaintInfo, location, Font::UseFallbackIfFontNotReady, cDeviceScaleFactor, *paint);
         },
         [](const SkIRect& rect) // overdraw test lambda
         {
             return false;
         },
-        textRunPaintInfo.bounds, paintType);
+        AllowDeferredCanvas, textRunPaintInfo.bounds, paintType);
 }
 
 void CanvasRenderingContext2D::inflateStrokeRect(FloatRect& rect) const

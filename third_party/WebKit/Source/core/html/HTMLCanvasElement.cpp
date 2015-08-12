@@ -300,10 +300,10 @@ void HTMLCanvasElement::didFinalizeFrame()
     m_dirtyRect = FloatRect();
 }
 
-void HTMLCanvasElement::restoreCanvasMatrixClipStack()
+void HTMLCanvasElement::restoreCanvasMatrixClipStack(SkCanvas* canvas) const
 {
     if (m_context)
-        m_context->restoreCanvasMatrixClipStack();
+        m_context->restoreCanvasMatrixClipStack(canvas);
 }
 
 void HTMLCanvasElement::doDeferredPaintInvalidation()
@@ -742,6 +742,11 @@ void HTMLCanvasElement::updateExternallyAllocatedMemory() const
 SkCanvas* HTMLCanvasElement::drawingCanvas() const
 {
     return buffer() ? m_imageBuffer->canvas() : nullptr;
+}
+
+SkCanvas* HTMLCanvasElement::immediateDrawingCanvas() const
+{
+    return buffer() ? m_imageBuffer->immediateCanvas() : nullptr;
 }
 
 SkCanvas* HTMLCanvasElement::existingDrawingCanvas() const

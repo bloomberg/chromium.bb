@@ -44,7 +44,7 @@ public:
     AcceleratedImageBufferSurface(const IntSize&, OpacityMode = NonOpaque);
     ~AcceleratedImageBufferSurface() override { }
 
-    SkCanvas* canvas() const override { return m_surface ? m_surface->getCanvas() : 0; }
+    SkCanvas* immediateCanvas() override { return m_surface ? m_surface->getCanvas() : nullptr; }
     bool isValid() const override { return m_surface; }
     bool isAccelerated() const override { return true; }
     PassRefPtr<SkImage> newImageSnapshot() override;

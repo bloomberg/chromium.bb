@@ -58,7 +58,8 @@ class PLATFORM_EXPORT ImageBufferSurface {
 public:
     virtual ~ImageBufferSurface();
 
-    virtual SkCanvas* canvas() const = 0;
+    virtual SkCanvas* canvas() { return immediateCanvas(); }
+    virtual SkCanvas* immediateCanvas() = 0;
     virtual const SkBitmap& deprecatedBitmapForOverwrite();
     virtual void willOverwriteCanvas() { }
     virtual void didDraw(const FloatRect& rect) { }
@@ -73,7 +74,6 @@ public:
     virtual void setImageBuffer(ImageBuffer*) { }
     virtual PassRefPtr<SkPicture> getPicture();
     virtual void finalizeFrame(const FloatRect &dirtyRect) { }
-    virtual void willDrawVideo() { }
     virtual void draw(GraphicsContext*, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode);
     virtual void setHasExpensiveOp() { }
     virtual Platform3DObject getBackingTextureHandleForOverwrite() { return 0; }

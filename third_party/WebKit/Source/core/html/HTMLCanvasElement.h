@@ -120,6 +120,7 @@ public:
     void paint(GraphicsContext*, const LayoutRect&);
 
     SkCanvas* drawingCanvas() const;
+    SkCanvas* immediateDrawingCanvas() const; // Guarantees draws will not be deferred. Use sparingly.
     SkCanvas* existingDrawingCanvas() const;
 
     void setRenderingContext(PassOwnPtrWillBeRawPtr<CanvasRenderingContext>);
@@ -163,7 +164,7 @@ public:
     void notifySurfaceInvalid() override;
     bool isDirty() override { return !m_dirtyRect.isEmpty(); }
     void didFinalizeFrame() override;
-    void restoreCanvasMatrixClipStack() override;
+    void restoreCanvasMatrixClipStack(SkCanvas*) const override;
 
     void doDeferredPaintInvalidation();
 
