@@ -407,7 +407,7 @@ void AVStreamToVideoDecoderConfig(
   }
 
   VideoPixelFormat format =
-      PixelFormatToVideoPixelFormat(stream->codec->pix_fmt);
+      AVPixelFormatToVideoPixelFormat(stream->codec->pix_fmt);
   // The format and coded size may be unknown if FFmpeg is compiled without
   // video decoders.
 #if defined(DISABLE_FFMPEG_VIDEO_DECODERS)
@@ -464,7 +464,7 @@ void VideoDecoderConfigToAVCodecContext(
   codec_context->profile = VideoCodecProfileToProfileID(config.profile());
   codec_context->coded_width = config.coded_size().width();
   codec_context->coded_height = config.coded_size().height();
-  codec_context->pix_fmt = VideoPixelFormatToPixelFormat(config.format());
+  codec_context->pix_fmt = VideoPixelFormatToAVPixelFormat(config.format());
   if (config.color_space() == COLOR_SPACE_JPEG)
     codec_context->color_range = AVCOL_RANGE_JPEG;
 
@@ -547,41 +547,41 @@ ChannelLayout ChannelLayoutToChromeChannelLayout(int64_t layout, int channels) {
   }
 }
 
-VideoPixelFormat PixelFormatToVideoPixelFormat(PixelFormat pixel_format) {
+VideoPixelFormat AVPixelFormatToVideoPixelFormat(AVPixelFormat pixel_format) {
   // The YUVJ alternatives are FFmpeg's (deprecated, but still in use) way to
   // specify a pixel format and full range color combination.
   switch (pixel_format) {
-    case PIX_FMT_YUV422P:
-    case PIX_FMT_YUVJ422P:
+    case AV_PIX_FMT_YUV422P:
+    case AV_PIX_FMT_YUVJ422P:
       return PIXEL_FORMAT_YV16;
-    case PIX_FMT_YUV444P:
-    case PIX_FMT_YUVJ444P:
+    case AV_PIX_FMT_YUV444P:
+    case AV_PIX_FMT_YUVJ444P:
       return PIXEL_FORMAT_YV24;
-    case PIX_FMT_YUV420P:
-    case PIX_FMT_YUVJ420P:
+    case AV_PIX_FMT_YUV420P:
+    case AV_PIX_FMT_YUVJ420P:
       return PIXEL_FORMAT_YV12;
-    case PIX_FMT_YUVA420P:
+    case AV_PIX_FMT_YUVA420P:
       return PIXEL_FORMAT_YV12A;
     default:
-      DVLOG(1) << "Unsupported PixelFormat: " << pixel_format;
+      DVLOG(1) << "Unsupported AVPixelFormat: " << pixel_format;
   }
   return PIXEL_FORMAT_UNKNOWN;
 }
 
-PixelFormat VideoPixelFormatToPixelFormat(VideoPixelFormat video_format) {
+AVPixelFormat VideoPixelFormatToAVPixelFormat(VideoPixelFormat video_format) {
   switch (video_format) {
     case PIXEL_FORMAT_YV16:
-      return PIX_FMT_YUV422P;
+      return AV_PIX_FMT_YUV422P;
     case PIXEL_FORMAT_YV12:
-      return PIX_FMT_YUV420P;
+      return AV_PIX_FMT_YUV420P;
     case PIXEL_FORMAT_YV12A:
-      return PIX_FMT_YUVA420P;
+      return AV_PIX_FMT_YUVA420P;
     case PIXEL_FORMAT_YV24:
-      return PIX_FMT_YUV444P;
+      return AV_PIX_FMT_YUV444P;
     default:
       DVLOG(1) << "Unsupported Format: " << video_format;
   }
-  return PIX_FMT_NONE;
+  return AV_PIX_FMT_NONE;
 }
 
 ColorSpace AVColorSpaceToColorSpace(AVColorSpace color_space,

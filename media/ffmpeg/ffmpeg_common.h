@@ -119,10 +119,10 @@ MEDIA_EXPORT SampleFormat
 
 // Converts FFmpeg's pixel formats to its corresponding supported video format.
 MEDIA_EXPORT VideoPixelFormat
-PixelFormatToVideoPixelFormat(PixelFormat pixel_format);
+AVPixelFormatToVideoPixelFormat(AVPixelFormat pixel_format);
 
 // Converts video formats to its corresponding FFmpeg's pixel formats.
-PixelFormat VideoPixelFormatToPixelFormat(VideoPixelFormat video_format);
+AVPixelFormat VideoPixelFormatToAVPixelFormat(VideoPixelFormat video_format);
 
 ColorSpace AVColorSpaceToColorSpace(AVColorSpace color_space,
                                     AVColorRange color_range);

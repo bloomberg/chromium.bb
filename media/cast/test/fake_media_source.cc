@@ -173,7 +173,7 @@ void FakeMediaSource::SetSourceFile(const base::FilePath& video_file,
       LOG(INFO) << "Source file has audio.";
     } else if (av_codec->type == AVMEDIA_TYPE_VIDEO) {
       VideoPixelFormat format =
-          PixelFormatToVideoPixelFormat(av_codec_context->pix_fmt);
+          AVPixelFormatToVideoPixelFormat(av_codec_context->pix_fmt);
       if (format != PIXEL_FORMAT_YV12) {
         LOG(ERROR) << "Cannot handle non YV12 video format: " << format;
         continue;

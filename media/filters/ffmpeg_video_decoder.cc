@@ -79,7 +79,7 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
   // updated width/height/pix_fmt, which can change for adaptive
   // content.
   const VideoPixelFormat format =
-      PixelFormatToVideoPixelFormat(codec_context->pix_fmt);
+      AVPixelFormatToVideoPixelFormat(codec_context->pix_fmt);
 
   if (format == PIXEL_FORMAT_UNKNOWN)
     return AVERROR(EINVAL);
