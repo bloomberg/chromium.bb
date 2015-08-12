@@ -231,6 +231,7 @@
       'dependencies': [
         '../content/content.gyp:content_common',
         '../content/content.gyp:content_utility',
+        '../skia/skia.gyp:skia',
         '../third_party/zlib/google/zip.gyp:zip',
         'extensions_common',
         'extensions_strings.gyp:extensions_strings',

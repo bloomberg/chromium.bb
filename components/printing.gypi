@@ -51,6 +51,7 @@
       'type': 'static_library',
       'dependencies': [
         '<(DEPTH)/printing/printing.gyp:printing',
+        '<(DEPTH)/skia/skia.gyp:skia',
       ],
       'sources': [
         'printing/browser/print_manager.cc',
