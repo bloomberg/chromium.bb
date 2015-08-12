@@ -30,7 +30,7 @@ BackgroundSyncV2 status=experimental
 // ** DO NOT use this flag unless you know what you are doing. **
 BleedingEdgeFastPaths
 CacheStorageMatchAll status=experimental
-ClientHints status=experimental
+ClientHints status=stable
 ColumnFill status=experimental
 CompositedSelectionUpdate
 CompositorWorker status=experimental
