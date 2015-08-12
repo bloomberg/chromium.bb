@@ -350,6 +350,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                            TimeoutStartingWorker);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionBrowserTest,
                            TimeoutWorkerInEvent);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, StayAliveAfterPush);
 
   class Metrics;
   class PingController;
