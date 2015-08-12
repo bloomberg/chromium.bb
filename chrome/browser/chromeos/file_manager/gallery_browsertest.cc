@@ -221,4 +221,30 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RenameImageInThumbnailModeOnDrive) {
   StartTest();
 }
 
+#if defined(DISABLE_SLOW_FILESAPP_TESTS)
+#define MAYBE_DeleteAllImagesInThumbnailModeOnDownloads \
+  DISABLED_DeleteAllImagesInThumbnailModeOnDownloads
+#else
+#define MAYBE_DeleteAllImagesInThumbnailModeOnDownloads \
+  DeleteAllImagesInThumbnailModeOnDownloads
+#endif
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
+                       MAYBE_DeleteAllImagesInThumbnailModeOnDownloads) {
+  set_test_case_name("deleteAllImagesInThumbnailModeOnDownloads");
+  StartTest();
+}
+
+#if defined(DISABLE_SLOW_FILESAPP_TESTS)
+#define MAYBE_DeleteAllImagesInThumbnailModeOnDrive \
+  DISABLED_DeleteAllImagesInThumbnailModeOnDrive
+#else
+#define MAYBE_DeleteAllImagesInThumbnailModeOnDrive \
+  DeleteAllImagesInThumbnailModeOnDrive
+#endif
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
+                       MAYBE_DeleteAllImagesInThumbnailModeOnDrive) {
+  set_test_case_name("deleteAllImagesInThumbnailModeOnDrive");
+  StartTest();
+}
+
 }  // namespace file_manager

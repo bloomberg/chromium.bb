@@ -5,6 +5,7 @@
 /**
  * Thumbnail Mode.
  * @param {!HTMLElement} container A container.
+ * @param {!ErrorBanner} errorBanner Error banner.
  * @param {!GalleryDataModel} dataModel Gallery data model.
  * @param {!cr.ui.ListSelectionModel} selectionModel List selection model.
  * @param {function()} changeToSlideModeCallback A callback to be called to
@@ -12,9 +13,28 @@
  * @constructor
  * @struct
  */
-function ThumbnailMode(
-    container, dataModel, selectionModel, changeToSlideModeCallback) {
+function ThumbnailMode(container, errorBanner, dataModel, selectionModel,
+    changeToSlideModeCallback) {
+  /**
+   * @private {!ErrorBanner}
+   * @const
+   */
+  this.errorBanner_ = errorBanner;
+
+  /**
+   * @private {!GalleryDataModel}
+   * @const
+   */
+  this.dataModel_ = dataModel;
+
+  /**
+   * @private {function()}
+   * @const
+   */
   this.changeToSlideModeCallback_ = changeToSlideModeCallback;
+
+  this.dataModel_.addEventListener('splice', this.onSplice_.bind(this));
+
   this.thumbnailView_ = new ThumbnailView(container, dataModel, selectionModel);
   this.thumbnailView_.addEventListener(
       'thumbnail-double-click', this.onThumbnailDoubleClick_.bind(this));
@@ -65,6 +85,16 @@ ThumbnailMode.prototype.onKeyDown = function(event) {
   }
 
   return false;
+};
+
+/**
+ * Handles splice event of data model.
+ */
+ThumbnailMode.prototype.onSplice_ = function() {
+  if (this.dataModel_.length === 0)
+    this.errorBanner_.show('GALLERY_NO_IMAGES');
+  else
+    this.errorBanner_.clear();
 };
 
 /**

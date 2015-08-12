@@ -124,6 +124,7 @@ function Gallery(volumeManager) {
 
   this.thumbnailMode_ = new ThumbnailMode(
       assertInstanceof(document.querySelector('.thumbnail-view'), HTMLElement),
+      this.errorBanner_,
       this.dataModel_,
       this.selectionModel_,
       this.changeCurrentMode_.bind(this, this.slideMode_));
