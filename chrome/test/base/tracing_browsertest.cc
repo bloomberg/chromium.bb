@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/tracing.h"
 
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -16,6 +17,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,6 +42,47 @@ class TracingBrowserTest : public InProcessBrowserTest {
         GetActiveWebContents()->GetRenderViewHost();
     ASSERT_TRUE(rvh);
     ASSERT_TRUE(content::ExecuteScript(rvh, ";"));
+  }
+
+  void PerformDumpMemoryTestActions() {
+    std::string json_events;
+    base::TimeDelta no_timeout;
+
+    GURL url1("about:blank");
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), url1, NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+    ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
+
+    // Begin tracing and watch for multiple periodic dump trace events.
+    std::string event_name = base::trace_event::MemoryDumpTypeToString(
+        MemoryDumpType::PERIODIC_INTERVAL);
+    ASSERT_TRUE(BeginTracingWithWatch(
+        MemoryDumpManager::kTraceCategoryForTesting,
+        MemoryDumpManager::kTraceCategoryForTesting, event_name, 10));
+
+    GURL url2("chrome://credits/");
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), url2, NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+    ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
+
+    EXPECT_TRUE(WaitForWatchEvent(no_timeout));
+    ASSERT_TRUE(EndTracing(&json_events));
+
+    // Expect the basic memory dumps to be present in the trace.
+    EXPECT_NE(std::string::npos, json_events.find("process_totals"));
+
+    EXPECT_NE(std::string::npos, json_events.find("v8"));
+    EXPECT_NE(std::string::npos, json_events.find("blink_gc"));
+  }
+};
+
+class SingleProcessTracingBrowserTest : public TracingBrowserTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kSingleProcess);
   }
 };
 
@@ -110,36 +153,14 @@ IN_PROC_BROWSER_TEST_F(TracingBrowserTest, BeginTracingWithWatch) {
   ASSERT_TRUE(EndTracing(&json_events));
 }
 
+// Multi-process mode.
 IN_PROC_BROWSER_TEST_F(TracingBrowserTest, TestMemoryInfra) {
-  std::string json_events;
-  base::TimeDelta no_timeout;
-
-  GURL url1("about:blank");
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url1, NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
-
-  // Begin tracing and watch for multiple periodic dump trace events.
-  std::string event_name = base::trace_event::MemoryDumpTypeToString(
-      MemoryDumpType::PERIODIC_INTERVAL);
-  ASSERT_TRUE(BeginTracingWithWatch(MemoryDumpManager::kTraceCategoryForTesting,
-                                    MemoryDumpManager::kTraceCategoryForTesting,
-                                    event_name, 10));
-
-  GURL url2("chrome://credits/");
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url2, NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
-
-  EXPECT_TRUE(WaitForWatchEvent(no_timeout));
-  ASSERT_TRUE(EndTracing(&json_events));
-
-  // Expect the basic memory dumps to be present in the trace.
-  EXPECT_NE(std::string::npos, json_events.find("process_totals"));
-
-  EXPECT_NE(std::string::npos, json_events.find("v8"));
-  EXPECT_NE(std::string::npos, json_events.find("blink_gc"));
+  PerformDumpMemoryTestActions();
 }
+
+// Single-process mode.
+IN_PROC_BROWSER_TEST_F(SingleProcessTracingBrowserTest, TestMemoryInfra) {
+  PerformDumpMemoryTestActions();
+}
+
 }  // namespace
