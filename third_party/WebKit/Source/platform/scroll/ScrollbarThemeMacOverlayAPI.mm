@@ -50,7 +50,8 @@
 
 - (id)initWithScrollbar:(blink::ScrollbarThemeClient*)scrollbar painter:(ScrollbarPainter)painter
 {
-    [super init];
+    if (!(self = [super init]))
+        return nil;
     _scrollbar = scrollbar;
     _scrollbarPainter = painter;
 
