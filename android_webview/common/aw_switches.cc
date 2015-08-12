@@ -6,6 +6,6 @@
 
 namespace switches {
 
-const char kUseIpcCommandBuffer[] = "use-ipc-command-buffer";
+const char kUseInProcCommandBuffer[] = "use-in-proc-command-buffer";
 
 }  // namespace switches

@@ -7,7 +7,7 @@
 
 namespace switches {
 
-extern const char kUseIpcCommandBuffer[];
+extern const char kUseInProcCommandBuffer[];
 
 }  // namespace switches
 
