@@ -59,12 +59,11 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
 
     mojo::URLRequestPtr request = mojo::URLRequest::New();
     request->url = "mojo:media";
-    mojo::ApplicationConnection* connection =
-        application_impl()->ConnectToApplication(request.Pass());
-    connection->SetRemoteServiceProviderConnectionErrorHandler(
+    connection_ = application_impl()->ConnectToApplication(request.Pass());
+    connection_->SetRemoteServiceProviderConnectionErrorHandler(
         base::Bind(&MediaAppTest::ConnectionClosed, base::Unretained(this)));
 
-    connection->ConnectToService(&service_factory_);
+    connection_->ConnectToService(&service_factory_);
     service_factory_->CreateCdm(mojo::GetProxy(&cdm_));
     service_factory_->CreateRenderer(mojo::GetProxy(&renderer_));
 
@@ -122,6 +121,8 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
   StrictMock<MockDemuxerStream> video_demuxer_stream_;
 
  private:
+  scoped_ptr<mojo::ApplicationConnection> connection_;
+
   DISALLOW_COPY_AND_ASSIGN(MediaAppTest);
 };
 

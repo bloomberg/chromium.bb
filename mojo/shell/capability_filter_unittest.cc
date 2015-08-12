@@ -115,8 +115,8 @@ class ConnectionValidator : public ApplicationLoader,
 // set of interfaces exposed by that service.
 class TestApplication : public ApplicationDelegate {
  public:
-   TestApplication() : app_(nullptr) {}
-   ~TestApplication() override {}
+  TestApplication() : app_(nullptr) {}
+  ~TestApplication() override {}
 
  private:
   // Overridden from ApplicationDelegate:
@@ -129,17 +129,15 @@ class TestApplication : public ApplicationDelegate {
 
     URLRequestPtr request(URLRequest::New());
     request->url = String::From("test:service");
-    ApplicationConnection* connection1 =
-        app_->ConnectToApplication(request.Pass());
-    connection1->SetRemoteServiceProviderConnectionErrorHandler(
+    connection1_ = app_->ConnectToApplication(request.Pass());
+    connection1_->SetRemoteServiceProviderConnectionErrorHandler(
         base::Bind(&TestApplication::ConnectionClosed,
                    base::Unretained(this), "test:service"));
 
     URLRequestPtr request2(URLRequest::New());
     request2->url = String::From("test:service2");
-    ApplicationConnection* connection2 =
-        app_->ConnectToApplication(request2.Pass());
-    connection2->SetRemoteServiceProviderConnectionErrorHandler(
+    connection2_ = app_->ConnectToApplication(request2.Pass());
+    connection2_->SetRemoteServiceProviderConnectionErrorHandler(
         base::Bind(&TestApplication::ConnectionClosed,
                     base::Unretained(this), "test:service2"));
     return true;
@@ -151,6 +149,8 @@ class TestApplication : public ApplicationDelegate {
 
   ApplicationImpl* app_;
   ValidatorPtr validator_;
+  scoped_ptr<ApplicationConnection> connection1_;
+  scoped_ptr<ApplicationConnection> connection2_;
 
   DISALLOW_COPY_AND_ASSIGN(TestApplication);
 };
@@ -181,12 +181,15 @@ class TestContentHandler : public ApplicationDelegate,
   // Overridden from ContentHandler:
   void StartApplication(InterfaceRequest<Application> application,
                         URLResponsePtr response) override {
+    scoped_ptr<ApplicationDelegate> delegate(new TestApplication);
     embedded_apps_.push_back(
-        new ApplicationImpl(new TestApplication, application.Pass()));
+        new ApplicationImpl(delegate.get(), application.Pass()));
+    embedded_app_delegates_.push_back(delegate.Pass());
   }
 
   ApplicationImpl* app_;
   WeakBindingSet<ContentHandler> bindings_;
+  ScopedVector<ApplicationDelegate> embedded_app_delegates_;
   ScopedVector<ApplicationImpl> embedded_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContentHandler);

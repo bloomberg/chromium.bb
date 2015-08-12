@@ -13,10 +13,6 @@
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 
 namespace mojo {
-
-class Application;
-class ApplicationImpl;
-
 namespace internal {
 
 // A ServiceRegistry represents each half of a connection between two
@@ -28,12 +24,12 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   // |allowed_interfaces| are the set of interfaces that the shell has allowed
   // an application to expose to another application. If this set contains only
   // the string value "*" all interfaces may be exposed.
-  ServiceRegistry(ApplicationImpl* application_impl,
-                  const std::string& connection_url,
+  ServiceRegistry(const std::string& connection_url,
                   const std::string& remote_url,
                   ServiceProviderPtr remote_services,
                   InterfaceRequest<ServiceProvider> local_services,
                   const std::set<std::string>& allowed_interfaces);
+  ~ServiceRegistry() override;
 
   // ApplicationConnection overrides.
   void SetServiceConnector(ServiceConnector* service_connector) override;
@@ -45,20 +41,15 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   ServiceProvider* GetLocalServiceProvider() override;
   void SetRemoteServiceProviderConnectionErrorHandler(
       const Closure& handler) override;
+  base::WeakPtr<ApplicationConnection> GetWeakPtr() override;
 
   void RemoveServiceConnectorForName(const std::string& interface_name);
 
  private:
-  ~ServiceRegistry() override;
-
-  // ApplicationConnection overrides.
-  void OnCloseConnection() override;
-
   // ServiceProvider method.
   void ConnectToService(const mojo::String& service_name,
                         ScopedMessagePipeHandle client_handle) override;
 
-  ApplicationImpl* application_impl_;
   const std::string connection_url_;
   const std::string remote_url_;
   Binding<ServiceProvider> local_binding_;
@@ -66,6 +57,7 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   ServiceConnectorRegistry service_connector_registry_;
   const std::set<std::string> allowed_interfaces_;
   const bool allow_all_interfaces_;
+  base::WeakPtrFactory<ApplicationConnection> weak_factory_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ServiceRegistry);
 };

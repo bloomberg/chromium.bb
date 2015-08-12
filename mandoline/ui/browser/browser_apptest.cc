@@ -52,7 +52,6 @@ class BrowserTest : public mojo::test::ApplicationTestBase,
  public:
   BrowserTest()
       : app_(nullptr),
-        last_closed_connection_(nullptr),
         last_browser_closed_(nullptr) {}
 
   // Creates a new Browser object.
@@ -75,19 +74,9 @@ class BrowserTest : public mojo::test::ApplicationTestBase,
     return last_browser;
   }
 
-  // Returns the last ApplicationConnection closed.
-  void* last_closed_connection() {
-    return last_closed_connection_;
-  }
-
   // Overridden from ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override {
     app_ = app;
-  }
-
-  void OnWillCloseConnection(mojo::ApplicationConnection* connection) override {
-    // WARNING: DO NOT FOLLOW THIS POINTER. IT WILL BE DESTROYED.
-    last_closed_connection_ = connection;
   }
 
   // ApplicationTestBase:
@@ -110,7 +99,6 @@ class BrowserTest : public mojo::test::ApplicationTestBase,
 
  private:
   mojo::ApplicationImpl* app_;
-  void* last_closed_connection_;
   std::set<TestBrowser*> browsers_;
   TestBrowser* last_browser_closed_;
   scoped_ptr<base::RunLoop> browser_closed_run_loop_;
@@ -125,9 +113,13 @@ TEST_F(BrowserTest, ClosingBrowserClosesAppConnection) {
   ASSERT_NE(nullptr, browser);
   mojo::ApplicationConnection* view_manager_connection =
       browser->view_manager_init_.connection();
+  mojo::ApplicationConnection::TestApi connection_test_api(
+      view_manager_connection);
   ASSERT_NE(nullptr, view_manager_connection);
+  base::WeakPtr<mojo::ApplicationConnection> ptr =
+      connection_test_api.GetWeakPtr();
   BrowserClosed(browser);
-  EXPECT_EQ(last_closed_connection(), view_manager_connection);
+  EXPECT_FALSE(ptr);
 }
 
 // This test verifies that we can create two Browsers and each Browser has a

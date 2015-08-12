@@ -4,6 +4,7 @@
 
 #include "mojo/application/public/cpp/lib/service_registry.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "mojo/application/public/cpp/service_connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,43 +29,40 @@ TEST(ServiceRegistryTest, Ownership) {
 
   // Destruction.
   {
-    ServiceRegistry* registry = new ServiceRegistry;
-    registry->SetServiceConnectorForName(new TestConnector(&delete_count),
-                                         "TC1");
-    registry->CloseConnection();
+    ServiceRegistry registry;
+    registry.SetServiceConnectorForName(new TestConnector(&delete_count),
+                                        "TC1");
   }
   EXPECT_EQ(1, delete_count);
 
   // Removal.
   {
-    ServiceRegistry* registry = new ServiceRegistry;
+    scoped_ptr<ServiceRegistry> registry(new ServiceRegistry);
     ServiceConnector* c = new TestConnector(&delete_count);
     registry->SetServiceConnectorForName(c, "TC1");
     registry->RemoveServiceConnectorForName("TC1");
-    registry->CloseConnection();
+    registry.reset();
     EXPECT_EQ(2, delete_count);
   }
 
   // Multiple.
   {
-    ServiceRegistry* registry = new ServiceRegistry;
-    registry->SetServiceConnectorForName(new TestConnector(&delete_count),
-                                         "TC1");
-    registry->SetServiceConnectorForName(new TestConnector(&delete_count),
-                                         "TC2");
-    registry->CloseConnection();
+    ServiceRegistry registry;
+    registry.SetServiceConnectorForName(new TestConnector(&delete_count),
+                                        "TC1");
+    registry.SetServiceConnectorForName(new TestConnector(&delete_count),
+                                        "TC2");
   }
   EXPECT_EQ(4, delete_count);
 
   // Re-addition.
   {
-    ServiceRegistry* registry = new ServiceRegistry;
-    registry->SetServiceConnectorForName(new TestConnector(&delete_count),
-                                         "TC1");
-    registry->SetServiceConnectorForName(new TestConnector(&delete_count),
-                                         "TC1");
+    ServiceRegistry registry;
+    registry.SetServiceConnectorForName(new TestConnector(&delete_count),
+                                        "TC1");
+    registry.SetServiceConnectorForName(new TestConnector(&delete_count),
+                                        "TC1");
     EXPECT_EQ(5, delete_count);
-    registry->CloseConnection();
   }
   EXPECT_EQ(6, delete_count);
 }

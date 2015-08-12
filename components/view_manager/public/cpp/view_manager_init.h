@@ -33,7 +33,7 @@ class ViewManagerInit {
   ViewManagerRoot* view_manager_root() { return view_manager_root_.get(); }
 
   // Returns the application connection established with the view manager.
-  ApplicationConnection* connection() { return connection_; }
+  ApplicationConnection* connection() { return connection_.get(); }
 
  private:
   class ClientFactory;
@@ -41,7 +41,7 @@ class ViewManagerInit {
   void OnCreate(InterfaceRequest<ViewManagerClient> request);
 
   ApplicationImpl* app_;
-  ApplicationConnection* connection_;
+  scoped_ptr<ApplicationConnection> connection_;
   ViewManagerDelegate* delegate_;
   scoped_ptr<ClientFactory> client_factory_;
   ViewManagerRootPtr view_manager_root_;

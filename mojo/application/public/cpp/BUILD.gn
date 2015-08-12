@@ -29,7 +29,6 @@ source_set("sources") {
     "interface_factory.h",
     "interface_factory_impl.h",
     "lib/app_lifetime_helper.cc",
-    "lib/application_connection.cc",
     "lib/application_delegate.cc",
     "lib/application_impl.cc",
     "lib/application_runner.cc",

@@ -324,7 +324,7 @@ class UDPSocketAppTest : public test::ApplicationTestBase {
 
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From("mojo:network_service");
-    ApplicationConnection* connection =
+    scoped_ptr<ApplicationConnection> connection =
         application_impl()->ConnectToApplication(request.Pass());
     connection->ConnectToService(&network_service_);
 

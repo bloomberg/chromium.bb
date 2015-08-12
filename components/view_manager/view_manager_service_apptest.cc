@@ -78,7 +78,7 @@ bool EmbedUrl(mojo::ApplicationImpl* app,
   {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From(url);
-    ApplicationConnection* connection =
+    scoped_ptr<ApplicationConnection> connection =
         app->ConnectToApplication(request.Pass());
     mojo::ViewManagerClientPtr client;
     connection->ConnectToService(&client);
@@ -343,7 +343,7 @@ class ViewManagerClientImpl : public mojo::ViewManagerClient,
       const OnEmbedForDescendantCallback& callback) override {
     tracker()->OnEmbedForDescendant(view);
     mojo::ViewManagerClientPtr client;
-    ApplicationConnection* connection =
+    scoped_ptr<ApplicationConnection> connection =
         app_->ConnectToApplication(request.Pass());
     connection->ConnectToService(&client);
     callback.Run(client.Pass());
@@ -562,7 +562,7 @@ class ViewManagerServiceAppTest : public mojo::test::ApplicationTestBase,
     client_factory_.reset(new ViewManagerClientFactory(application_impl()));
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From("mojo:view_manager");
-    ApplicationConnection* vm_connection =
+    scoped_ptr<ApplicationConnection> vm_connection =
         application_impl()->ConnectToApplication(request.Pass());
     vm_connection->AddService(client_factory_.get());
     vm_connection->ConnectToService(&view_manager_root_);

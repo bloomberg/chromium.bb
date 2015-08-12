@@ -6,6 +6,7 @@
 #define MOJO_COMMON_TRACING_IMPL_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/services/tracing/tracing.mojom.h"
 
@@ -26,6 +27,8 @@ class TracingImpl : public InterfaceFactory<tracing::TraceController> {
   // InterfaceFactory<tracing::TraceController> implementation.
   void Create(ApplicationConnection* connection,
               InterfaceRequest<tracing::TraceController> request) override;
+
+  scoped_ptr<ApplicationConnection> connection_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingImpl);
 };

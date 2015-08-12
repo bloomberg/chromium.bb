@@ -274,7 +274,8 @@ class TestAImpl : public TestA {
       : test_context_(test_context), binding_(this, request.Pass()) {
     mojo::URLRequestPtr request2(mojo::URLRequest::New());
     request2->url = mojo::String::From(kTestBURLString);
-    app_impl->ConnectToApplication(request2.Pass())->ConnectToService(&b_);
+    connection_ = app_impl->ConnectToApplication(request2.Pass());
+    connection_->ConnectToService(&b_);
   }
 
   ~TestAImpl() override {
@@ -298,6 +299,7 @@ class TestAImpl : public TestA {
     test_context_->QuitSoon();
   }
 
+  scoped_ptr<ApplicationConnection> connection_;
   TesterContext* test_context_;
   TestBPtr b_;
   StrongBinding<TestA> binding_;

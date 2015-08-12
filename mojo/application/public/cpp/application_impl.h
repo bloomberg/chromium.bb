@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/application/public/cpp/application_connection.h"
@@ -78,26 +79,21 @@ class ApplicationImpl : public Application {
 
   // Requests a new connection to an application. Returns a pointer to the
   // connection if the connection is permitted by this application's delegate,
-  // or nullptr otherwise. Caller does not take ownership. The pointer remains
-  // valid until an error occurs on the connection with the Shell, until the
-  // ApplicationImpl is destroyed, or until the connection is closed through a
-  // call to ApplicationConnection::CloseConnection.
+  // or nullptr otherwise. Caller takes ownership.
   // TODO(beng): consider replacing default value in a separate CL per style
   //             guide.
-  ApplicationConnection* ConnectToApplication(
+  scoped_ptr<ApplicationConnection> ConnectToApplication(
       URLRequestPtr request,
       CapabilityFilterPtr filter = nullptr);
-
-  // Closes the |connection|.
-  void CloseConnection(ApplicationConnection* connection);
 
   // Connect to application identified by |request->url| and connect to the
   // service implementation of the interface identified by |Interface|.
   template <typename Interface>
   void ConnectToService(mojo::URLRequestPtr request,
                         InterfacePtr<Interface>* ptr) {
-    ApplicationConnection* connection = ConnectToApplication(request.Pass());
-    if (!connection)
+    scoped_ptr<ApplicationConnection> connection =
+        ConnectToApplication(request.Pass());
+    if (!connection.get())
       return;
     connection->ConnectToService(ptr);
   }
@@ -129,16 +125,13 @@ class ApplicationImpl : public Application {
 
   void OnConnectionError();
 
-  void ClearConnections();
-
   // Called from Quit() when there is no Shell connection, or asynchronously
   // from Quit() once the Shell has OK'ed shutdown.
   void QuitNow();
 
-  typedef std::vector<internal::ServiceRegistry*> ServiceRegistryList;
-
-  ServiceRegistryList incoming_service_registries_;
-  ServiceRegistryList outgoing_service_registries_;
+  // We track the lifetime of incoming connection registries as it more
+  // convenient for the client.
+  ScopedVector<ApplicationConnection> incoming_connections_;
   ApplicationDelegate* delegate_;
   Binding<Application> binding_;
   ShellPtr shell_;
@@ -146,7 +139,6 @@ class ApplicationImpl : public Application {
   Closure termination_closure_;
   AppLifetimeHelper app_lifetime_helper_;
   bool quit_requested_;
-  bool in_destructor_;
   base::WeakPtrFactory<ApplicationImpl> weak_factory_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ApplicationImpl);

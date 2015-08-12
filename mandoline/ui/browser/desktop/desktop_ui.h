@@ -11,6 +11,7 @@
 #include "ui/views/layout/layout_manager.h"
 
 namespace mojo {
+class ApplicationConnection;
 class Shell;
 class View;
 }
@@ -53,6 +54,7 @@ class DesktopUI : public BrowserUI,
   mojo::View* content_;
   OmniboxPtr omnibox_;
   mojo::Binding<OmniboxClient> client_binding_;
+  scoped_ptr<mojo::ApplicationConnection> omnibox_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopUI);
 };

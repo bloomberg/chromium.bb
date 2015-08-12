@@ -6,6 +6,7 @@
 #define MANDOLINE_TAB_FRAME_CONNECTION_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "mandoline/tab/frame_user_data.h"
 #include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
@@ -33,14 +34,14 @@ class FrameConnection : public FrameUserData {
   FrameTreeClient* frame_tree_client() { return frame_tree_client_.get(); }
 
   mojo::ApplicationConnection* application_connection() {
-    return application_connection_;
+    return application_connection_.get();
   }
 
  private:
   FrameTreeClientPtr frame_tree_client_;
 
   // TODO(sky): needs to be destroyed when connection lost.
-  mojo::ApplicationConnection* application_connection_;
+  scoped_ptr<mojo::ApplicationConnection> application_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameConnection);
 };

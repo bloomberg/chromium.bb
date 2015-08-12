@@ -117,7 +117,7 @@ void Browser::OnEmbedForDescendant(mojo::View* view,
   if (!frame || !frame->HasAncestor(frame_tree_->root())) {
     // TODO(sky): add requestor url so that we can return false if it's not
     // an app we expect.
-    mojo::ApplicationConnection* connection =
+    scoped_ptr<mojo::ApplicationConnection> connection =
         app_->ConnectToApplication(request.Pass());
     connection->ConnectToService(client);
     return;
@@ -215,7 +215,7 @@ void Browser::ShowOmnibox(mojo::URLRequestPtr request) {
     omnibox_->SetBounds(root_->bounds());
   }
   mojo::ViewManagerClientPtr view_manager_client;
-  mojo::ApplicationConnection* connection =
+  scoped_ptr<mojo::ApplicationConnection> connection =
       app_->ConnectToApplication(request.Pass());
   connection->AddService<ViewEmbedder>(this);
   connection->ConnectToService(&view_manager_client);

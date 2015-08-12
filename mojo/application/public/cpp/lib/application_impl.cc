@@ -52,17 +52,13 @@ ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
       termination_closure_(termination_closure),
       app_lifetime_helper_(this),
       quit_requested_(false),
-      in_destructor_(false),
       weak_factory_(this) {}
 
 ApplicationImpl::~ApplicationImpl() {
-  DCHECK(!in_destructor_);
-  in_destructor_ = true;
-  ClearConnections();
   app_lifetime_helper_.OnQuit();
 }
 
-ApplicationConnection* ApplicationImpl::ConnectToApplication(
+scoped_ptr<ApplicationConnection> ApplicationImpl::ConnectToApplication(
     mojo::URLRequestPtr request,
     CapabilityFilterPtr filter) {
   if (!shell_)
@@ -79,32 +75,12 @@ ApplicationConnection* ApplicationImpl::ConnectToApplication(
   //             filter here too?
   std::set<std::string> allowed;
   allowed.insert("*");
-  internal::ServiceRegistry* registry = new internal::ServiceRegistry(
-      this, application_url, application_url, remote_services.Pass(),
-      local_request.Pass(), allowed);
-  if (!delegate_->ConfigureOutgoingConnection(registry)) {
-    registry->CloseConnection();
+  scoped_ptr<ApplicationConnection> registry(new internal::ServiceRegistry(
+      application_url, application_url, remote_services.Pass(),
+      local_request.Pass(), allowed));
+  if (!delegate_->ConfigureOutgoingConnection(registry.get()))
     return nullptr;
-  }
-  outgoing_service_registries_.push_back(registry);
-  return registry;
-}
-
-void ApplicationImpl::CloseConnection(ApplicationConnection* connection) {
-  if (!in_destructor_)
-    delegate_->OnWillCloseConnection(connection);
-  auto outgoing_it = std::find(outgoing_service_registries_.begin(),
-                               outgoing_service_registries_.end(),
-                               connection);
-  if (outgoing_it != outgoing_service_registries_.end()) {
-    outgoing_service_registries_.erase(outgoing_it);
-    return;
-  }
-  auto incoming_it = std::find(incoming_service_registries_.begin(),
-                               incoming_service_registries_.end(),
-                               connection);
- if (incoming_it != incoming_service_registries_.end())
-    incoming_service_registries_.erase(incoming_it);
+  return registry.Pass();
 }
 
 void ApplicationImpl::Initialize(ShellPtr shell, const mojo::String& url) {
@@ -143,19 +119,18 @@ void ApplicationImpl::AcceptConnection(
     ServiceProviderPtr exposed_services,
     Array<String> allowed_interfaces,
     const String& url) {
-  internal::ServiceRegistry* registry = new internal::ServiceRegistry(
-      this, url, requestor_url, exposed_services.Pass(), services.Pass(),
-      allowed_interfaces.To<std::set<std::string>>());
-  if (!delegate_->ConfigureIncomingConnection(registry)) {
-    registry->CloseConnection();
+  scoped_ptr<ApplicationConnection> registry(new internal::ServiceRegistry(
+      url, requestor_url, exposed_services.Pass(), services.Pass(),
+      allowed_interfaces.To<std::set<std::string>>()));
+  if (!delegate_->ConfigureIncomingConnection(registry.get()))
     return;
-  }
-  incoming_service_registries_.push_back(registry);
 
   // If we were quitting because we thought there were no more services for this
   // app in use, then that has changed so cancel the quit request.
   if (quit_requested_)
     quit_requested_ = false;
+
+  incoming_connections_.push_back(registry.Pass());
 }
 
 void ApplicationImpl::OnQuitRequested(const Callback<void(bool)>& callback) {
@@ -180,20 +155,6 @@ void ApplicationImpl::OnConnectionError() {
   if (!ptr)
     return;
   shell_ = nullptr;
-}
-
-void ApplicationImpl::ClearConnections() {
-  // Copy the ServiceRegistryLists because they will be mutated by
-  // ApplicationConnection::CloseConnection.
-  ServiceRegistryList incoming_service_registries(incoming_service_registries_);
-  for (internal::ServiceRegistry* registry : incoming_service_registries)
-    registry->CloseConnection();
-  DCHECK(incoming_service_registries_.empty());
-
-  ServiceRegistryList outgoing_service_registries(outgoing_service_registries_);
-  for (internal::ServiceRegistry* registry : outgoing_service_registries)
-    registry->CloseConnection();
-  DCHECK(outgoing_service_registries_.empty());
 }
 
 void ApplicationImpl::QuitNow() {

@@ -244,7 +244,6 @@
         'application/public/cpp/interface_factory.h',
         'application/public/cpp/interface_factory_impl.h',
         'application/public/cpp/lib/app_lifetime_helper.cc',
-        'application/public/cpp/lib/application_connection.cc',
         'application/public/cpp/lib/application_delegate.cc',
         'application/public/cpp/lib/application_impl.cc',
         'application/public/cpp/lib/application_runner.cc',

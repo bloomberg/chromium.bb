@@ -82,8 +82,8 @@ TEST_F(AXProviderTest, HelloWorld) {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(
       base::StringPrintf("http://127.0.0.1:%u/files/test.html", assigned_port));
-  ApplicationConnection* connection = application_impl()->ConnectToApplication(
-      request.Pass());
+  scoped_ptr<ApplicationConnection> connection =
+      application_impl()->ConnectToApplication(request.Pass());
 
   // Embed the html_viewer in a View.
   ViewManagerClientPtr view_manager_client;

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "mojo/application/public/cpp/lib/interface_factory_connector.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 
@@ -45,11 +46,20 @@ class ServiceConnector;
 // close a connection, call CloseConnection which will destroy this object.
 class ApplicationConnection {
  public:
-  ApplicationConnection();
+  virtual ~ApplicationConnection() {}
 
-  // Closes the connection and destroys this object. This is the only valid way
-  // to destroy this object.
-  void CloseConnection();
+  class TestApi {
+   public:
+    explicit TestApi(ApplicationConnection* connection)
+        : connection_(connection) {
+    }
+    base::WeakPtr<ApplicationConnection> GetWeakPtr() {
+      return connection_->GetWeakPtr();
+    }
+
+   private:
+    ApplicationConnection* connection_;
+  };
 
   // See class description for details.
   virtual void SetServiceConnector(ServiceConnector* connector) = 0;
@@ -107,21 +117,12 @@ class ApplicationConnection {
       const Closure& handler) = 0;
 
  protected:
-  virtual ~ApplicationConnection();
-
-  // Called to give the derived type to perform some cleanup before destruction.
-  virtual void OnCloseConnection() = 0;
-
- private:
   // Returns true if the connector was set, false if it was not set (e.g. by
   // some filtering policy preventing this interface from being exposed).
   virtual bool SetServiceConnectorForName(ServiceConnector* service_connector,
                                           const std::string& name) = 0;
 
-  // Ensures that CloseConnection can only be called once and the
-  // ApplicationConnection's destructor can only be called after the connection
-  // is closed.
-  bool connection_closed_;
+  virtual base::WeakPtr<ApplicationConnection> GetWeakPtr() = 0;
 };
 
 }  // namespace mojo

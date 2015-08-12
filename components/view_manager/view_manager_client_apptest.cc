@@ -184,7 +184,7 @@ class ViewManagerTest : public ViewManagerTestBase {
   void ConnectToApplicationAndEmbed(View* view) {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From(application_impl()->url());
-    ApplicationConnection* connection =
+    scoped_ptr<ApplicationConnection> connection =
         application_impl()->ConnectToApplication(request.Pass());
     mojo::ViewManagerClientPtr client;
     connection->ConnectToService(&client);
@@ -197,7 +197,7 @@ class ViewManagerTest : public ViewManagerTestBase {
                             mojo::ViewManagerClientPtr* client) override {
     on_will_embed_count_++;
     if (on_will_embed_return_value_) {
-      ApplicationConnection* connection =
+      scoped_ptr<ApplicationConnection> connection =
           application_impl()->ConnectToApplication(request.Pass());
       connection->ConnectToService(client);
     } else {

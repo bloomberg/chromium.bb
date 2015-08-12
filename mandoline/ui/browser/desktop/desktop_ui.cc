@@ -151,10 +151,10 @@ void DesktopUI::ButtonPressed(views::Button* sender, const ui::Event& event) {
     DCHECK(!client_binding_.is_bound());
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From("mojo:omnibox");
-    mojo::ApplicationConnection* application_connection =
+    omnibox_connection_ =
         application_impl_->ConnectToApplication(request.Pass());
-    application_connection->AddService<ViewEmbedder>(browser_);
-    application_connection->ConnectToService(&omnibox_);
+    omnibox_connection_->AddService<ViewEmbedder>(browser_);
+    omnibox_connection_->ConnectToService(&omnibox_);
     OmniboxClientPtr client;
     client_binding_.Bind(&client);
     omnibox_->SetClient(client.Pass());

@@ -52,9 +52,7 @@ ViewManagerInit::ViewManagerInit(ApplicationImpl* app,
   }
 }
 
-ViewManagerInit::~ViewManagerInit() {
-  connection_->CloseConnection();
-}
+ViewManagerInit::~ViewManagerInit() {}
 
 void ViewManagerInit::OnCreate(InterfaceRequest<ViewManagerClient> request) {
   // TODO(sky): straighten out lifetime.

@@ -34,10 +34,6 @@ class ApplicationDelegate {
   // Return false to reject the connection entirely.
   virtual bool ConfigureOutgoingConnection(ApplicationConnection* connection);
 
-  // Called when an ApplicationConnection is about to close. After returning,
-  // the |connection| object will be destroyed.
-  virtual void OnWillCloseConnection(ApplicationConnection* connection) {}
-
   // Called when the shell connection has a connection error.
   //
   // Return true to shutdown the application. Return false to skip shutting
