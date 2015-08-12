@@ -7,7 +7,6 @@
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "ipc/message_filter.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/native_widget_types.h"
@@ -47,8 +46,6 @@ class DrmGpuPlatformSupport : public GpuPlatformSupport {
                         ScanoutBufferGenerator* buffer_generator,
                         scoped_ptr<DrmGpuDisplayManager> display_manager);
   ~DrmGpuPlatformSupport() override;
-
-  void AddHandler(scoped_ptr<GpuPlatformSupport> handler);
 
   // GpuPlatformSupport:
   void OnChannelEstablished(IPC::Sender* sender) override;
@@ -95,7 +92,6 @@ class DrmGpuPlatformSupport : public GpuPlatformSupport {
   ScanoutBufferGenerator* buffer_generator_;  // Not owned.
 
   scoped_ptr<DrmGpuDisplayManager> display_manager_;
-  ScopedVector<GpuPlatformSupport> handlers_;
   scoped_refptr<IPC::MessageFilter> filter_;
 };
 

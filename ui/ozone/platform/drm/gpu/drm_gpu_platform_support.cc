@@ -181,15 +181,8 @@ DrmGpuPlatformSupport::DrmGpuPlatformSupport(
 DrmGpuPlatformSupport::~DrmGpuPlatformSupport() {
 }
 
-void DrmGpuPlatformSupport::AddHandler(scoped_ptr<GpuPlatformSupport> handler) {
-  handlers_.push_back(handler.Pass());
-}
-
 void DrmGpuPlatformSupport::OnChannelEstablished(IPC::Sender* sender) {
   sender_ = sender;
-
-  for (size_t i = 0; i < handlers_.size(); ++i)
-    handlers_[i]->OnChannelEstablished(sender);
 }
 
 bool DrmGpuPlatformSupport::OnMessageReceived(const IPC::Message& message) {
@@ -221,12 +214,7 @@ bool DrmGpuPlatformSupport::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_UNHANDLED(handled = false);
   IPC_END_MESSAGE_MAP()
 
-  if (!handled)
-    for (size_t i = 0; i < handlers_.size(); ++i)
-      if (handlers_[i]->OnMessageReceived(message))
-        return true;
-
-  return false;
+  return handled;
 }
 
 void DrmGpuPlatformSupport::OnCreateWindow(gfx::AcceleratedWidget widget) {
