@@ -133,8 +133,7 @@ int SpeechRecognitionManagerImpl::CreateSession(
   remote_engine_config.interim_results = config.interim_results;
   remote_engine_config.max_hypotheses = config.max_hypotheses;
   remote_engine_config.hardware_info = hardware_info;
-  remote_engine_config.origin_url =
-      can_report_metrics ? config.origin_url : std::string();
+  remote_engine_config.origin_url = config.origin_url;
   remote_engine_config.auth_token = config.auth_token;
   remote_engine_config.auth_scope = config.auth_scope;
   remote_engine_config.preamble = config.preamble;
