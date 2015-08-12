@@ -49,8 +49,19 @@ void AXAuraObjCache::Remove(View* view) {
   RemoveInternal(view, view_to_id_map_);
 }
 
+void AXAuraObjCache::RemoveViewSubtree(View* view) {
+  Remove(view);
+  for (int i = 0; i < view->child_count(); ++i)
+    RemoveViewSubtree(view->child_at(i));
+}
+
 void AXAuraObjCache::Remove(Widget* widget) {
   RemoveInternal(widget, widget_to_id_map_);
+
+  // When an entire widget is deleted, it doesn't always send a notification
+  // on each of its views, so we need to explore them recursively.
+  if (widget->GetRootView())
+    RemoveViewSubtree(widget->GetRootView());
 }
 
 void AXAuraObjCache::Remove(aura::Window* window) {

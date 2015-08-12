@@ -28,32 +28,32 @@ AXTreeSourceAura::~AXTreeSourceAura() {
 
 void AXTreeSourceAura::DoDefault(int32 id) {
   AXAuraObjWrapper* obj = AXAuraObjCache::GetInstance()->Get(id);
-  CHECK(obj);
-  obj->DoDefault();
+  if (obj)
+    obj->DoDefault();
 }
 
 void AXTreeSourceAura::Focus(int32 id) {
   AXAuraObjWrapper* obj = AXAuraObjCache::GetInstance()->Get(id);
-  CHECK(obj);
-  obj->Focus();
+  if (obj)
+    obj->Focus();
 }
 
 void AXTreeSourceAura::MakeVisible(int32 id) {
   AXAuraObjWrapper* obj = AXAuraObjCache::GetInstance()->Get(id);
-  CHECK(obj);
-  obj->MakeVisible();
+  if (obj)
+    obj->MakeVisible();
 }
 
 void AXTreeSourceAura::SetSelection(int32 id, int32 start, int32 end) {
   AXAuraObjWrapper* obj = AXAuraObjCache::GetInstance()->Get(id);
-  CHECK(obj);
-  obj->SetSelection(start, end);
+  if (obj)
+    obj->SetSelection(start, end);
 }
 
 void AXTreeSourceAura::ShowContextMenu(int32 id) {
   AXAuraObjWrapper* obj = AXAuraObjCache::GetInstance()->Get(id);
-  CHECK(obj);
-  obj->ShowContextMenu();
+  if (obj)
+    obj->ShowContextMenu();
 }
 
 AXAuraObjWrapper* AXTreeSourceAura::GetRoot() const {

@@ -47,6 +47,9 @@ class VIEWS_EXPORT AXAuraObjCache {
   void Remove(Widget* widget);
   void Remove(aura::Window* window);
 
+  // Removes a view and all of its descendants from the cache.
+  void RemoveViewSubtree(View* view);
+
   // Lookup a cached entry based on an id.
   AXAuraObjWrapper* Get(int32 id);
 
