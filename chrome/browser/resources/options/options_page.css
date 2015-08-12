@@ -448,3 +448,10 @@ html:not([enablePepperFlashSettings]) .pepper-flash-settings {
 .standalone-action-link {
   padding: 0;
 }
+
+:-webkit-any(.checkbox, .radio) label + a {
+  display: inline-block;
+  /* Matches padding of -webkit-any(.checkbox, .radio) */
+  padding-bottom: 7px;
+  vertical-align: bottom;
+}
