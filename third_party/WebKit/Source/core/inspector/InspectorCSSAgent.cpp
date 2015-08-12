@@ -1640,6 +1640,8 @@ void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* e
     if (foundIndex == -1) {
         bool isImportant = inlineStyle->getPropertyPriority(longhand) == "important";
         String newPropertyText = "\n" + longhand + ": " + value + (isImportant ? " !important" : "") + ";";
+        if (!styleText.stripWhiteSpace().endsWith(';'))
+            newPropertyText = ";" + newPropertyText;
         styleText.append(newPropertyText);
     } else {
         CSSPropertySourceData declaration = properties[foundIndex];

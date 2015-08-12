@@ -189,3 +189,16 @@ Running test: testChangeCSSOMEDProperty
         margin-top: 15px !important;
     }
 
+Running test: testAppendWithSeparator
+Dumping inline style: 
+{
+    padding-left: 10px;
+}
+Dumping matched rules: 
+Dumping inherited rules: 
+Resulting styles
+{
+    padding-left: 10px;
+    padding-right: 101px;
+}
+
