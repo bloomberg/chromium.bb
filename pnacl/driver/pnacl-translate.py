@@ -130,9 +130,6 @@ EXTRA_ENV = {
   # (otherwise it will use concurrent file reads when using multithreaded module
   # splitting)
   'STREAM_BITCODE' : '0',
-  # Rate in bits/sec to stream the bitcode from sel_universal over SRPC
-  # for testing. Defaults to 1Gbps (effectively unlimited).
-  'BITCODE_STREAM_RATE' : '1000000000',
   # Default to 'auto', which means unset by the user. In this case the driver
   # will use up to 4 modules if there are enough cores. If the user overrides,
   # use the number of modules as specified (which must be at least 1).
@@ -209,7 +206,6 @@ TranslatorPatterns = [
                        "env.set('SZ_UNSUPPORTED', '1')"),
 
   ( '(--build-id)',    "env.append('LD_FLAGS', $0)"),
-  ( '-bitcode-stream-rate=([0-9]+)', "env.set('BITCODE_STREAM_RATE', $0)"),
   ( '-(split-module|threads)=([0-9]+|auto|seq)', "env.set('SPLIT_MODULE', $1)"),
   ( '-split-module-sched=(.*)', "env.set('SPLIT_MODULE_SCHED', $0)"),
   ( '-stream-bitcode', "env.set('STREAM_BITCODE', '1')"),
@@ -516,23 +512,43 @@ def RunCompiler(infile, outfile, outfiletype, use_sz):
   env.pop()
   return 0
 
+def GetObjectFiles(use_sz):
+  if use_sz:
+    # Subzero only creates one object file when using multiple threads.
+    # Note that, with Subzero, specifying more object files here would
+    # work, but it would be unnecessary: The IRT interface used by the
+    # sandboxed translator would create the extra object files, but they
+    # would be left as empty.
+    obj_file_count = 1
+  else:
+    obj_file_count = int(env.getone('SPLIT_MODULE'))
+  base_filename = env.getone('output')
+  return ([base_filename] +
+          ['%s.module%d' % (base_filename, number)
+           for number in xrange(1, obj_file_count)])
+
 def RunSandboxedCompiler(use_sz):
   driver_tools.CheckTranslatorPrerequisites()
   infile = env.getone('input')
-  outfile = env.getone('output')
   is_pnacl = filetype.IsPNaClBitcode(infile)
   if not is_pnacl and not env.getbool('ALLOW_LLVM_BITCODE_INPUT'):
     Log.Fatal('Translator expects finalized PNaCl bitcode. '
               'Pass --allow-llvm-bitcode-input to override.')
-  script = MakeSelUniversalScriptForCompiler(infile, outfile,
-                                             is_pnacl, use_sz)
-  command = '${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ${SEL_UNIVERSAL_FLAGS} '
+  threads = int(env.getone('SPLIT_MODULE'))
+  command = [driver_tools.SelLdrCommand(),
+             '-a', # Allow file access
+             '-E NACL_IRT_PNACL_TRANSLATOR_COMPILE_INPUT=%s' % infile]
+  driver_tools.AddListToEnv(command, 'NACL_IRT_PNACL_TRANSLATOR_COMPILE_OUTPUT',
+                            GetObjectFiles(use_sz))
+  driver_tools.AddListToEnv(command, 'NACL_IRT_PNACL_TRANSLATOR_COMPILE_ARG',
+                            BuildOverrideCompilerCommandLine(is_pnacl, use_sz))
+  command.extend(['-E NACL_IRT_PNACL_TRANSLATOR_COMPILE_THREADS=%d' % threads,
+                  '--'])
   if use_sz:
-    command += '-- ${PNACL_SZ_SB}'
+    command.append('${PNACL_SZ_SB}')
   else:
-    command += '-- ${LLC_SB}'
-  driver_tools.Run(command,
-                   stdin_contents=script,
+    command.append('${LLC_SB}')
+  driver_tools.Run(' '.join(command),
                    # stdout/stderr will be automatically dumped
                    # upon failure
                    redirect_stderr=subprocess.PIPE,
@@ -550,41 +566,7 @@ def BuildOverrideCompilerCommandLine(is_pnacl, use_sz):
       extra_flags.append(mcpu)
   if not is_pnacl:
     extra_flags.append('-bitcode-format=llvm')
-  # command_line is a NUL (\x00) terminated sequence.
-  kTerminator = '\0'
-  command_line = kTerminator.join(extra_flags) + kTerminator
-  command_line_escaped = command_line.replace(kTerminator, '\\x00')
-  return len(command_line), command_line_escaped
-
-def MakeSelUniversalScriptForCompiler(infile, outfile, is_pnacl, use_sz):
-  script = []
-  script.append('readwrite_file objfile %s' % outfile)
-  if use_sz:
-    modules = 1
-    threads = int(env.getone('SZ_THREADS'))
-    toolname = 'pnacl-sz'
-  else:
-    modules = int(env.getone('SPLIT_MODULE'))
-    threads = modules
-    toolname = 'pnacl-llc'
-  if modules > 1:
-    script.extend(['readwrite_file objfile%d %s.module%d' % (m, outfile, m)
-                   for m in range(1, modules)])
-  stream_rate = int(env.getraw('BITCODE_STREAM_RATE'))
-  assert stream_rate != 0
-  cmdline_len, cmdline_escaped = BuildOverrideCompilerCommandLine(is_pnacl,
-                                                                  use_sz)
-  assert modules in range(1, 17)
-  script.append('rpc StreamInitWithSplit i(%d) h(objfile) ' % threads +
-                ' '.join(['h(objfile%d)' % m for m in range(1, modules)] +
-                         ['h(invalid)' for x in range(modules, 16)]) +
-                ' C(%d,%s) * s()' % (cmdline_len, cmdline_escaped))
-  # specify filename, chunk size and rate in bits/s
-  script.append('stream_file %s %s %s' % (infile, 64 * 1024, stream_rate))
-  script.append('rpc StreamEnd * i() s() s() s()')
-  script.append('echo "%s complete"' % toolname)
-  script.append('')
-  return '\n'.join(script)
+  return extra_flags
 
 def get_help(argv):
   return """

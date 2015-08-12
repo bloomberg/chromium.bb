@@ -45,6 +45,7 @@
     'irt_nonbrowser': [
       'irt_core_resource.c',
       'irt_entry_core.c',
+      'irt_pnacl_translator_common.c',
       'irt_pnacl_translator_compile.c',
       'irt_pnacl_translator_link.c',
     ],

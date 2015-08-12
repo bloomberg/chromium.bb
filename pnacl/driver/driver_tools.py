@@ -833,10 +833,10 @@ def ArchMerge(filename, must_match):
 
 def CheckTranslatorPrerequisites():
   """ Assert that the scons artifacts for running the sandboxed translator
-      exist: sel_universal, sel_ldr, and the IRT blob. """
+      exist: sel_ldr, and the IRT blob. """
   if env.getbool('DRY_RUN'):
     return
-  reqs = ['SEL_UNIVERSAL', 'SEL_LDR', 'IRT_BLOB']
+  reqs = ['SEL_LDR', 'IRT_BLOB']
   # Linux also requires the nacl bootstrap helper.
   if GetBuildOS() == 'linux':
     reqs.append('BOOTSTRAP_LDR')
@@ -844,6 +844,18 @@ def CheckTranslatorPrerequisites():
     needed_file = env.getone(var)
     if not pathtools.exists(needed_file):
       Log.Fatal('Could not find %s [%s]', var, needed_file)
+
+def SelLdrCommand():
+  if GetBuildOS() == 'linux':
+    cmd = '${BOOTSTRAP_LDR} ${SEL_LDR} --reserved_at_zero=0x%s' % ('X' * 16)
+  else:
+    cmd = '${SEL_LDR}'
+  return '${SEL_LDR_PREFIX} %s ${SEL_LDR_FLAGS}' % cmd
+
+def AddListToEnv(command, env_var_prefix, string_list):
+  for index, string in enumerate(string_list):
+    command.append('-E')
+    command.append('%s_%d=%s' % (env_var_prefix, index, string))
 
 class DriverChain(object):
   """ The DriverChain class takes one or more input files,

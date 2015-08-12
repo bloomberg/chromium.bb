@@ -137,11 +137,6 @@ INITIAL_ENV = {
   'SEL_LDR_FLAGS'       : '-B ${IRT_BLOB} ' +
                           '${USE_EMULATOR ? -Q -c -c}',
 
-  'SEL_UNIVERSAL_PREFIX': '${SEL_LDR_PREFIX}',
-  'SEL_UNIVERSAL'       : '${SCONS_STAGING}/sel_universal${EXEC_EXT}',
-  'SEL_UNIVERSAL_FLAGS' : '${SEL_LDR_FLAGS} --abort_on_error ' +
-                          '${USE_EMULATOR ? --command_prefix ${EMULATOR}}',
-
   'IRT_STAGING'         : '${IRT_STAGING_%ARCH%}',
   'IRT_STAGING_X8632'   : '${SCONS_OUT}/nacl_irt-x86-32/staging',
   'IRT_STAGING_X8664'   : '${SCONS_OUT}/nacl_irt-x86-64/staging',

@@ -14,6 +14,7 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/untrusted/irt/irt_dev.h"
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
+#include "native_client/src/untrusted/irt/irt_pnacl_translator_common.h"
 
 static const char kInputVar[] = "NACL_IRT_PNACL_TRANSLATOR_LINK_INPUT";
 static const char kInputsVar[] = "NACL_IRT_PNACL_TRANSLATOR_LINK_INPUTS";
@@ -58,22 +59,6 @@ static size_t count_colon_separators(const char *str) {
       ++count;
   }
   return count;
-}
-
-/*
- * If |env_str| is an environment list entry whose variable name starts
- * with |prefix|, this returns the environment variable's value.
- * Otherwise, this returns NULL.
- */
-static char *env_var_prefix_match(char *env_str, const char *prefix) {
-  size_t prefix_len = strlen(prefix);
-  if (strncmp(env_str, prefix, prefix_len) == 0) {
-    char *match = strchr(env_str + prefix_len, '=');
-    if (match != NULL) {
-      return match + 1;
-    }
-  }
-  return NULL;
 }
 
 static void serve_link_request(int (*func)(int nexe_fd,
@@ -143,13 +128,9 @@ static void serve_link_request(int (*func)(int nexe_fd,
   }
 
   /* Open input files. */
-  size_t inputs_count = 0;
-  char **env;
-  for (env = environ; *env != NULL; env++) {
-    if (env_var_prefix_match(*env, kInputVar) != NULL)
-      ++inputs_count;
-  }
+  size_t inputs_count = env_var_prefix_match_count(kInputVar);
   int input_fds[inputs_count];
+  char **env;
   size_t i = 0;
   for (env = environ; *env != NULL; env++) {
     char *input_filename = env_var_prefix_match(*env, kInputVar);

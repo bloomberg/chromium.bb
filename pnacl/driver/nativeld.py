@@ -233,18 +233,11 @@ def RunLDSandboxed():
   # Have a list of everything else.
   other_inputs = all_inputs[:first_mainfile] + all_inputs[first_extra:]
 
-  if driver_tools.GetBuildOS() == 'linux':
-    sel_ldr_command = ('${BOOTSTRAP_LDR} ${SEL_LDR} --reserved_at_zero=0x%s'
-                       % ('X' * 16))
-  else:
-    sel_ldr_command = '${SEL_LDR}'
-
   native_libs_dirname = pathtools.tosys(GetNativeLibsDirname(other_inputs))
-  command = ['${SEL_LDR_PREFIX}', sel_ldr_command, '${SEL_LDR_FLAGS}', '-a']
-  for index, filename in enumerate(llc_outputs):
-    command.extend(
-        ['-E', 'NACL_IRT_PNACL_TRANSLATOR_LINK_INPUT_%d=%s'
-         % (index, filename)])
+  command = [driver_tools.SelLdrCommand(),
+             '-a'] # Allow file access
+  driver_tools.AddListToEnv(command, 'NACL_IRT_PNACL_TRANSLATOR_LINK_INPUT',
+                            llc_outputs)
   command.extend([
       '-E', 'NACL_IRT_PNACL_TRANSLATOR_LINK_OUTPUT=%s ' % outfile,
       '-E', 'NACL_IRT_OPEN_RESOURCE_BASE=%s' % native_libs_dirname,
