@@ -1,7 +1,5 @@
-The fancy_urllib library was obtained from
-http://googleappengine.googlecode.com/svn/trunk/python/lib/fancy_urllib/fancy_urllib/__init__.py
-under the following license (http://googleappengine.googlecode.com/svn/trunk/python/LICENSE):
-
+The fancy_urllib library was obtained from [1] under the following
+license ([2]):
 
 GOOGLE APP ENGINE SDK
 =====================
@@ -19,3 +17,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+[1] https://github.com/GoogleCloudPlatform/appengine-python-vm-runtime/blob/master/python_vm_runtime/lib/fancy_urllib/fancy_urllib/__init__.py
+[2] https://github.com/GoogleCloudPlatform/appengine-python-vm-runtime/blob/master/python_vm_runtime/LICENSE
