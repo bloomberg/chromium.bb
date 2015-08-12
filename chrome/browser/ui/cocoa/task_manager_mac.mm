@@ -339,6 +339,41 @@ class SortHelper {
   NSInteger newState = oldState == NSOnState ? NSOffState : NSOnState;
   [column setHidden:newState == NSOffState];
   [item setState:newState];
+
+  // If the user hid |column| and it was being used to sort the table (i.e. it
+  // was the primary sort column), make the first visible column the new primary
+  // sort column. If no columns were visible, the primarySortColumnId will be 0,
+  // in which case also make the first visible column the primary sort column.
+  int primarySortColumnId = [[currentSortDescriptor_.get() key] intValue];
+  int columnId = [[column identifier] intValue];
+
+  if (([column isHidden] && primarySortColumnId == columnId) ||
+      primarySortColumnId == 0) {
+    NSTableColumn* firstVisibleColumn = nil;
+    for (NSTableColumn* nextColumn in [tableView_ tableColumns]) {
+      if (![nextColumn isHidden]) {
+        firstVisibleColumn = nextColumn;
+        break;
+      }
+    }
+
+    // Currently the user can hide all of the Task Manager's columns. If that
+    // happens it makes sense to call setSortDescriptors: on |tableView_| with
+    // a nil value, but that causes TaskManagerModel::CompareValues() to fall
+    // through to a NOTREACHED() statement. Calling setSortDescriptors: with an
+    // arbitrary column gets around this problem. Preventing the user from
+    // hiding all columns is addressed in crbug.com/518914, which includes a
+    // note about removing this workaround.
+    if (firstVisibleColumn == nil) {
+      firstVisibleColumn = [[tableView_ tableColumns] objectAtIndex:0];
+    }
+
+    NSSortDescriptor* newSortDescriptor =
+        [firstVisibleColumn sortDescriptorPrototype];
+    [tableView_ setSortDescriptors:
+        [NSArray arrayWithObject:newSortDescriptor]];
+  }
+
   [tableView_ sizeToFit];
   [tableView_ setNeedsDisplay];
 }
@@ -447,10 +482,12 @@ class SortHelper {
 - (void)           tableView:(NSTableView*)tableView
     sortDescriptorsDidChange:(NSArray*)oldDescriptors {
   NSArray* newDescriptors = [tableView sortDescriptors];
-  if ([newDescriptors count] < 1)
-    return;
+  if ([newDescriptors count] < 1) {
+    currentSortDescriptor_.reset(nil);
+  } else {
+    currentSortDescriptor_.reset([[newDescriptors objectAtIndex:0] retain]);
+  }
 
-  currentSortDescriptor_.reset([[newDescriptors objectAtIndex:0] retain]);
   [self reloadData];  // Sorts.
 }
 

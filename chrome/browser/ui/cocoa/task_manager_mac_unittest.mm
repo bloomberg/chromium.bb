@@ -16,6 +16,12 @@
 #include "testing/platform_test.h"
 #include "ui/gfx/image/image_skia.h"
 
+@interface TaskManagerWindowController(UnitTest)
+
+- (void)toggleColumn:(NSMenuItem*)sender;
+
+@end
+
 namespace {
 
 class TestResource : public task_manager::Resource {
@@ -120,6 +126,68 @@ TEST_F(TaskManagerWindowControllerTest, SelectionAdaptsToSorting) {
   EXPECT_EQ(1u, [selection firstIndex]);
 
   // Releases the controller, which in turn deletes |bridge|.
+  [controller close];
+
+  task_manager.RemoveResource(&resource1);
+  task_manager.RemoveResource(&resource2);
+}
+
+TEST_F(TaskManagerWindowControllerTest, EnsureNewPrimarySortColumn) {
+  TaskManager task_manager;
+
+  // Add a couple rows of data.
+  TestResource resource1(base::UTF8ToUTF16("yyy"), 1);
+  TestResource resource2(base::UTF8ToUTF16("aaa"), 2);
+
+  task_manager.AddResource(&resource1);
+  task_manager.AddResource(&resource2);
+
+  TaskManagerMac* bridge(new TaskManagerMac(&task_manager));
+  TaskManagerWindowController* controller = bridge->cocoa_controller();
+  NSTableView* table = [controller tableView];
+  ASSERT_EQ(2, [controller numberOfRowsInTableView:table]);
+
+  // Locate the current first visible column.
+  NSTableColumn* firstVisibleColumn = nil;
+  for (NSTableColumn* nextColumn in [table tableColumns]) {
+    if (![nextColumn isHidden]) {
+      firstVisibleColumn = nextColumn;
+      break;
+    }
+  }
+  ASSERT_TRUE(firstVisibleColumn != nil);
+
+  // Make the first visible column the primary sort column.
+  NSSortDescriptor* sortDescriptor =
+      [firstVisibleColumn sortDescriptorPrototype];
+  ASSERT_TRUE(sortDescriptor != nil);
+  [table setSortDescriptors:[NSArray arrayWithObject:sortDescriptor]];
+
+  // Toggle the first visible column so that it's no longer visible, and make
+  // sure a different column is now the primary sort column.
+  NSMenuItem* menuItem = [[[NSMenuItem alloc]
+                             initWithTitle:@"Temp"
+                                    action:@selector(toggleColumn:)
+                             keyEquivalent:@""] autorelease];
+  [menuItem setRepresentedObject:firstVisibleColumn];
+  [menuItem setState:NSOnState];
+  [controller toggleColumn:menuItem];
+
+  NSTableColumn* newFirstVisibleColumn = nil;
+  for (NSTableColumn* nextColumn in [table tableColumns]) {
+    if (![nextColumn isHidden]) {
+      newFirstVisibleColumn = nextColumn;
+      break;
+    }
+  }
+  ASSERT_TRUE(newFirstVisibleColumn != nil);
+  ASSERT_TRUE(newFirstVisibleColumn != firstVisibleColumn);
+  NSSortDescriptor* newFirstSortDescriptor =
+      [[table sortDescriptors] objectAtIndex:0];
+  EXPECT_TRUE([newFirstSortDescriptor isEqual:
+      [newFirstVisibleColumn sortDescriptorPrototype]]);
+
+  // Release the controller, which in turn deletes |bridge|.
   [controller close];
 
   task_manager.RemoveResource(&resource1);

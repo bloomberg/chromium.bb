@@ -90,6 +90,8 @@ class TaskManager {
   FRIEND_TEST_ALL_PREFIXES(TaskManagerWindowControllerTest, Sort);
   FRIEND_TEST_ALL_PREFIXES(TaskManagerWindowControllerTest,
                            SelectionAdaptsToSorting);
+  FRIEND_TEST_ALL_PREFIXES(TaskManagerWindowControllerTest,
+                           EnsureNewPrimarySortColumn);
 
   // Obtain an instance via GetInstance().
   TaskManager();
