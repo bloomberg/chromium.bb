@@ -4,9 +4,8 @@
 
 #include "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
 
-#include "ios/chrome/browser/autocomplete/autocomplete_classifier_factory.h"
-#include "ios/chrome/browser/autocomplete/in_memory_url_index_factory.h"
-#include "ios/chrome/browser/autocomplete/shortcuts_backend_factory.h"
+#import <Foundation/Foundation.h>
+
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_client_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -57,7 +56,6 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ios::AccountFetcherServiceFactory::GetInstance();
   ios::AccountReconcilorFactory::GetInstance();
   ios::AccountTrackerServiceFactory::GetInstance();
-  ios::AutocompleteClassifierFactory::GetInstance();
   ios::BookmarkModelFactory::GetInstance();
   ios::BookmarkUndoServiceFactory::GetInstance();
   ios::CookieSettingsFactory::GetInstance();
@@ -65,8 +63,6 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ios::GaiaCookieManagerServiceFactory::GetInstance();
   ios::GoogleURLTrackerFactory::GetInstance();
   ios::HistoryServiceFactory::GetInstance();
-  ios::InMemoryURLIndexFactory::GetInstance();
-  ios::ShortcutsBackendFactory::GetInstance();
   ios::SigninErrorControllerFactory::GetInstance();
   ios::SigninManagerFactory::GetInstance();
   ios::StartupTaskRunnerServiceFactory::GetInstance();

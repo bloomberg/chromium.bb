@@ -16,7 +16,6 @@ namespace prefs {
 const char kAcceptLanguages[] = "intl.accept_languages";
 const char kHomePage[] = "homepage";
 const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
-const char kSearchSuggestEnabled[] = "search.suggest_enabled";
 
 }  // namespace prefs
 }  // namespace ios
