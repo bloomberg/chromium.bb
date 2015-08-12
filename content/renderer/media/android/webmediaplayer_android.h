@@ -102,6 +102,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   virtual ~WebMediaPlayerAndroid();
 
   // blink::WebMediaPlayer implementation.
+  virtual bool supportsOverlayFullscreenVideo();
   virtual void enterFullscreen();
 
   // Resource loading.

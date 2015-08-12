@@ -1322,6 +1322,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kExplicitlyAllowedPorts,
     switches::kForceDeviceScaleFactor,
     switches::kForceDisplayList2dCanvas,
+    switches::kForceOverlayFullscreenVideo,
     switches::kFullMemoryCrashReport,
     switches::kIPCConnectionTimeout,
     switches::kJavaScriptFlags,

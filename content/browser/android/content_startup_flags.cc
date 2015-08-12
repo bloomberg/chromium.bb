@@ -59,7 +59,6 @@ void SetContentCommandLineFlags(bool single_process,
   parsed_command_line->AppendSwitch(cc::switches::kEnableBeginFrameScheduling);
 
   parsed_command_line->AppendSwitch(switches::kEnablePinch);
-  parsed_command_line->AppendSwitch(switches::kEnableOverlayFullscreenVideo);
   parsed_command_line->AppendSwitch(switches::kEnableOverlayScrollbar);
   parsed_command_line->AppendSwitch(switches::kValidateInputEventStream);
 

@@ -166,7 +166,6 @@ DefaultCommandLineSwitch g_default_switches[] = {
 #if defined(OS_ANDROID)
   // Disables Chromecast-specific WiFi-related features on ATV for now.
   { switches::kNoWifi, "" },
-  { switches::kEnableOverlayFullscreenVideo, ""},
   { switches::kDisableGestureRequirementForMediaPlayback, ""},
 #endif
   // Always enable HTMLMediaElement logs.

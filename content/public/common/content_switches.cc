@@ -380,6 +380,8 @@ const char kEnableNetworkInformation[]      = "enable-network-information";
 const char kEnableOneCopy[]                 = "enable-one-copy";
 
 // Enables use of hardware overlay for fullscreen video playback. Android only.
+// TODO(watk): Remove this once blink is updated to pass
+// kForceOverlayFullscreenVideo for layout tests. http://crbug.com/511376
 const char kEnableOverlayFullscreenVideo[]  = "enable-overlay-fullscreen-video";
 
 // Enables compositor-accelerated touch-screen pinch gestures.
@@ -522,6 +524,10 @@ const char kForceGpuRasterization[]        = "force-gpu-rasterization";
 // Requires MSAA support on GPU to have an effect. 0 disables MSAA.
 const char kGpuRasterizationMSAASampleCount[] =
     "gpu-rasterization-msaa-sample-count";
+
+// Forces use of hardware overlay for fullscreen video playback. Useful for
+// testing the Android overlay fullscreen functionality on other platforms.
+const char kForceOverlayFullscreenVideo[]  = "force-overlay-fullscreen-video";
 
 // Force renderer accessibility to be on instead of enabling it on demand when
 // a screen reader is detected. The disable-renderer-accessibility switch

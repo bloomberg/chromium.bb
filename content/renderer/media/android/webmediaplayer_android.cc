@@ -1863,6 +1863,10 @@ void WebMediaPlayerAndroid::SetDecryptorReadyCB(
   decryptor_ready_cb_ = decryptor_ready_cb;
 }
 
+bool WebMediaPlayerAndroid::supportsOverlayFullscreenVideo() {
+  return true;
+}
+
 void WebMediaPlayerAndroid::enterFullscreen() {
   if (is_player_initialized_)
     player_manager_->EnterFullscreen(player_id_);

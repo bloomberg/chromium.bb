@@ -156,8 +156,12 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableWebGLImageChromium))
     WebRuntimeFeatures::enableWebGLImageChromium(true);
 
-  if (command_line.HasSwitch(switches::kEnableOverlayFullscreenVideo))
-    WebRuntimeFeatures::enableOverlayFullscreenVideo(true);
+  // TODO(watk): Remove EnableOverlayFullscreenVideo once blink is updated to
+  // use ForceOverlayFullscreenVideo instead. http://crbug.com/511376
+  if (command_line.HasSwitch(switches::kEnableOverlayFullscreenVideo) ||
+      command_line.HasSwitch(switches::kForceOverlayFullscreenVideo)) {
+    WebRuntimeFeatures::forceOverlayFullscreenVideo(true);
+  }
 
   if (ui::IsOverlayScrollbarEnabled())
     WebRuntimeFeatures::enableOverlayScrollbars(true);
