@@ -14,7 +14,7 @@ namespace blink {
 
 class LocalFrame;
 class ScriptState;
-class USBDeviceEnumerationOptions;
+class USBDeviceRequestOptions;
 
 class USB final
     : public GarbageCollectedFinalized<USB>
@@ -28,7 +28,8 @@ public:
 
     explicit USB(LocalFrame& frame);
 
-    ScriptPromise getDevices(ScriptState*, const USBDeviceEnumerationOptions&);
+    ScriptPromise getDevices(ScriptState*);
+    ScriptPromise requestDevice(ScriptState*, const USBDeviceRequestOptions&);
 
     DECLARE_VIRTUAL_TRACE();
 

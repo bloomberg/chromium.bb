@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class ScriptPromiseResolver;
 class USBConfiguration;
 
 class USBDevice
@@ -19,11 +20,16 @@ class USBDevice
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    using WebType = WebUSBDeviceInfo;
+    using WebType = OwnPtr<WebUSBDevice>;
 
     static USBDevice* create(PassOwnPtr<WebUSBDevice> device)
     {
         return new USBDevice(device);
+    }
+
+    static USBDevice* take(ScriptPromiseResolver*, PassOwnPtr<WebUSBDevice> device)
+    {
+        return create(device);
     }
 
     explicit USBDevice(PassOwnPtr<WebUSBDevice> device)

@@ -11,10 +11,11 @@
 namespace blink {
 
 class WebUSBDevice;
-struct WebUSBDeviceEnumerationOptions;
+struct WebUSBDeviceRequestOptions;
 struct WebUSBError;
 
 using WebUSBClientGetDevicesCallbacks = WebCallbacks<WebPassOwnPtr<WebVector<WebUSBDevice*>>, const WebUSBError&>;
+using WebUSBClientRequestDeviceCallbacks = WebCallbacks<WebPassOwnPtr<WebUSBDevice>, const WebUSBError&>;
 
 class WebUSBClient {
 public:
@@ -22,7 +23,11 @@ public:
 
     // Enumerates available devices.
     // Ownership of the WebUSBClientGetDevicesCallbacks is transferred to the client.
-    virtual void getDevices(const WebUSBDeviceEnumerationOptions&, WebUSBClientGetDevicesCallbacks*) = 0;
+    virtual void getDevices(WebUSBClientGetDevicesCallbacks*) = 0;
+
+    // Requests access to a device.
+    // Ownership of the WebUSBClientRequestDeviceCallbacks is transferred to the client.
+    virtual void requestDevice(const WebUSBDeviceRequestOptions&, WebUSBClientRequestDeviceCallbacks*) = 0;
 };
 
 } // namespace blink

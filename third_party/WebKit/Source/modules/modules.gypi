@@ -473,7 +473,7 @@
       'webmidi/MIDIMessageEventInit.idl',
       'webmidi/MIDIOptions.idl',
       'websockets/CloseEventInit.idl',
-      'webusb/USBDeviceEnumerationOptions.idl',
+      'webusb/USBDeviceRequestOptions.idl',
       'webusb/USBDeviceFilter.idl',
     ],
     'generated_modules_files': [
@@ -612,10 +612,10 @@
       '<(blink_modules_output_dir)/webmidi/MIDIOptions.h',
       '<(blink_modules_output_dir)/websockets/CloseEventInit.cpp',
       '<(blink_modules_output_dir)/websockets/CloseEventInit.h',
-      '<(blink_modules_output_dir)/webusb/USBDeviceEnumerationOptions.cpp',
-      '<(blink_modules_output_dir)/webusb/USBDeviceEnumerationOptions.h',
       '<(blink_modules_output_dir)/webusb/USBDeviceFilter.cpp',
       '<(blink_modules_output_dir)/webusb/USBDeviceFilter.h',
+      '<(blink_modules_output_dir)/webusb/USBDeviceRequestOptions.cpp',
+      '<(blink_modules_output_dir)/webusb/USBDeviceRequestOptions.h',
     ],
     'modules_files': [
       '<@(extra_blink_module_files)',

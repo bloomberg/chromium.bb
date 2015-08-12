@@ -9,5 +9,6 @@
     NoInterfaceObject,
     RuntimeEnabled=WebUSB,
 ] interface USB {
-    [CallWith=ScriptState] Promise<sequence<USBDevice>> getDevices(USBDeviceEnumerationOptions options);
+    [CallWith=ScriptState] Promise<sequence<USBDevice>> getDevices();
+    [CallWith=ScriptState] Promise<sequence<USBDevice>> requestDevice(USBDeviceRequestOptions options);
 };

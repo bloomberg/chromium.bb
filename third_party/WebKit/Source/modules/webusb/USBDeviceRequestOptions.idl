@@ -4,6 +4,6 @@
 
 // http://reillyeon.github.io/webusb/#device-enumeration
 
-dictionary USBDeviceEnumerationOptions {
+dictionary USBDeviceRequestOptions {
     required sequence<USBDeviceFilter> filters;
 };
