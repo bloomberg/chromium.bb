@@ -5,6 +5,7 @@
 #include "media/blink/webmediasource_impl.h"
 
 #include "base/guid.h"
+#include "media/base/mime_util.h"
 #include "media/blink/websourcebuffer_impl.h"
 #include "media/filters/chunk_demuxer.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
@@ -44,6 +45,25 @@ WebMediaSource::AddStatus WebMediaSourceImpl::addSourceBuffer(
   WebMediaSource::AddStatus result =
       static_cast<WebMediaSource::AddStatus>(
           demuxer_->AddId(id, type.utf8().data(), new_codecs));
+
+  if (result == WebMediaSource::AddStatusOk)
+    *source_buffer = new WebSourceBufferImpl(id, demuxer_);
+
+  return result;
+}
+
+WebMediaSource::AddStatus WebMediaSourceImpl::addSourceBuffer(
+    const blink::WebString& type,
+    const blink::WebString& codecs,
+    blink::WebSourceBuffer** source_buffer) {
+  std::string id = base::GenerateGUID();
+
+  std::vector<std::string> parsed_codec_ids;
+  media::ParseCodecString(codecs.utf8().data(), &parsed_codec_ids, false);
+
+  WebMediaSource::AddStatus result =
+      static_cast<WebMediaSource::AddStatus>(
+          demuxer_->AddId(id, type.utf8().data(), parsed_codec_ids));
 
   if (result == WebMediaSource::AddStatusOk)
     *source_buffer = new WebSourceBufferImpl(id, demuxer_);
