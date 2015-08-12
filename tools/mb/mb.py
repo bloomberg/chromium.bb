@@ -356,10 +356,16 @@ class MetaBuildWrapper(object):
     ret, _, _ = self.Run(cmd)
 
     for target in swarming_targets:
-      if sys.platform == 'win32':
-        deps_path = self.ToAbsPath(path, target + '.exe.runtime_deps')
+      if gn_isolate_map[target]['type'] == 'gpu_browser_test':
+        runtime_deps_target = 'browser_tests'
       else:
-        deps_path = self.ToAbsPath(path, target + '.runtime_deps')
+        runtime_deps_target = target
+      if sys.platform == 'win32':
+        deps_path = self.ToAbsPath(path,
+                                   runtime_deps_target + '.exe.runtime_deps')
+      else:
+        deps_path = self.ToAbsPath(path,
+                                   runtime_deps_target + '.runtime_deps')
       if not self.Exists(deps_path):
           raise MBErr('did not generate %s' % deps_path)
 
@@ -543,6 +549,19 @@ class MetaBuildWrapper(object):
           '--asan=%d' % asan,
           '--msan=%d' % msan,
           '--tsan=%d' % tsan,
+      ]
+    elif test_type == 'gpu_browser_test':
+      extra_files = [
+          '../../testing/test_env.py'
+      ]
+      gtest_filter = gn_isolate_map[target]['gtest_filter']
+      cmdline = [
+          '../../testing/test_env.py',
+          'browser_tests<(EXECUTABLE_SUFFIX)',
+          '--test-launcher-bot-mode',
+          '--enable-gpu',
+          '--test-launcher-jobs=1',
+          '--gtest_filter=%s' % gtest_filter,
       ]
     elif test_type in ('raw'):
       extra_files = []

@@ -91,6 +91,7 @@ group("both_gn_and_gyp") {
       "//extensions:extensions_unittests",
       "//google_apis/gcm:gcm_unit_tests",
       "//gpu:gpu_unittests",
+      "//gpu/gles2_conform_support:gles2_conform_test",
       "//ipc:ipc_tests",
       "//ipc/mojo:ipc_mojo_unittests",
       "//jingle:jingle_unittests",

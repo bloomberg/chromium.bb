@@ -69,6 +69,13 @@ source_set("test_support") {
   ]
 }
 
+group("gl_tests_run") {
+  testonly = true
+  deps = [
+    ":gl_tests",
+  ]
+}
+
 test("gl_tests") {
   sources = [
     "command_buffer/tests/compressed_texture_test.cc",

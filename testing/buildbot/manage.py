@@ -56,12 +56,19 @@ SKIP = {
 }
 
 
-# TODO(GYP): These targets have not been ported to GN yet.
-SKIP_NINJA_TO_GN_TARGETS = {
+SKIP_GN_ISOLATE_MAP_TARGETS = {
+  # TODO(GYP): These targets have not been ported to GN yet.
   'cast_media_unittests',
   'cast_shell_browser_test',
   'chromevox_tests',
   'nacl_helper_nonsfi_unittests',
+
+  # These targets are run on the bots but not listed in the
+  # buildbot JSON files.
+  'content_gl_tests',
+  'gl_tests',
+  'gles2_conform_test',
+  'tab_capture_end2end_tests',
 }
 
 
@@ -136,7 +143,7 @@ def process_file(mode, test_name, tests_location, filepath, ninja_targets,
 
     for d in data['gtest_tests']:
       if (d['test'] not in ninja_targets and
-          d['test'] not in SKIP_NINJA_TO_GN_TARGETS):
+          d['test'] not in SKIP_GN_ISOLATE_MAP_TARGETS):
         raise Error('%s: %s / %s is not listed in gn_isolate_map.pyl.' %
                     (filename, builder, d['test']))
       elif d['test'] in ninja_targets:
@@ -279,14 +286,15 @@ def main():
                           ninja_targets, ninja_targets_seen):
         result = 1
 
-    extra_targets = set(ninja_targets) - ninja_targets_seen
+    extra_targets = (set(ninja_targets) - ninja_targets_seen -
+                     SKIP_GN_ISOLATE_MAP_TARGETS)
     if extra_targets:
       if len(extra_targets) > 1:
         extra_targets_str = ', '.join(extra_targets) + ' are'
       else:
         extra_targets_str = list(extra_targets)[0] + ' is'
-      raise Error('%s listed in ninja_to_gn.pyl but not in any .json files' %
-                  extra_targets_str)
+      raise Error('%s listed in gn_isolate_map.pyl but not in any .json '
+                  'files' % extra_targets_str)
 
     if args.mode == 'convert':
       print_convert(args.test_name, tests_location)

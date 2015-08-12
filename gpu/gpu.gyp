@@ -711,7 +711,7 @@
     ['OS == "win" or (OS == "linux" and use_x11==1)', {
       'targets': [
         {
-          # TODO(kbr): port this target to the GN build.
+          # TODO(crbug.com/519834): port this target to the GN build.
           'target_name': 'angle_end2end_tests',
           'type': '<(gtest_target_type)',
           'dependencies': [

@@ -732,6 +732,15 @@ if (!is_mac) {  # TODO(GYP) enable on Mac once it links.
     }
   }
 
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("content_gl_tests_run") {
+    testonly = true
+    deps = [
+      ":content_gl_tests",
+    ]
+  }
+
   test("content_gl_tests") {
     sources = [
       "../common/gpu/client/gl_helper_unittest.cc",

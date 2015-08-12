@@ -586,6 +586,15 @@ if (!is_android) {
 
   # TODO(GYP): Delete this after we've converted everything to GN.
   # The _run targets exist only for compatibility w/ GYP.
+  group("tab_capture_end2end_tests_run") {
+    testonly = true
+    deps = [
+      ":browser_tests",
+    ]
+  }
+
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
   group("browser_tests_run") {
     testonly = true
     deps = [

@@ -3259,6 +3259,7 @@
               ],
             },
             {
+              # GN: //gpu:angle_unittests_run
               'target_name': 'angle_unittests_run',
               'type': 'none',
               'dependencies': [
@@ -3270,6 +3271,7 @@
               ],
             },
             {
+              # GN: //gpu:gl_tests_run
               'target_name': 'gl_tests_run',
               'type': 'none',
               'dependencies': [
@@ -3281,6 +3283,7 @@
               ],
             },
             {
+              # GN: //chrome/test:tab_capture_end2end_tests_run
               'target_name': 'tab_capture_end2end_tests_run',
               'type': 'none',
               'dependencies': [
@@ -3308,6 +3311,7 @@
             ['internal_gles2_conform_tests==1', {
               'targets': [
                 {
+                  # GN: //gpu/gles2_conform_support:gles2_conform_test_run
                   'target_name': 'gles2_conform_test_run',
                   'type': 'none',
                   'dependencies': [

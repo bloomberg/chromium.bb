@@ -1259,6 +1259,7 @@
         ['archive_gpu_tests==1', {
           'targets': [
             {
+              # GN: content/test:content_gl_tests_run
               'target_name': 'content_gl_tests_run',
               'type': 'none',
               'dependencies': [
