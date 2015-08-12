@@ -212,19 +212,29 @@ class MockHTTPSURLRequestJob : public net::URLRequestTestJob {
   DISALLOW_COPY_AND_ASSIGN(MockHTTPSURLRequestJob);
 };
 
+const char kRedirectHeaders[] =
+    "HTTP/1.1 302 Found\0"
+    "Location: https://example.test\0"
+    "\0";
+
 class MockHTTPSJobURLRequestInterceptor : public net::URLRequestInterceptor {
  public:
-  MockHTTPSJobURLRequestInterceptor() {}
+  MockHTTPSJobURLRequestInterceptor(bool redirect) : redirect_(redirect) {}
   ~MockHTTPSJobURLRequestInterceptor() override {}
 
   // net::URLRequestInterceptor:
   net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
-    return new MockHTTPSURLRequestJob(request, network_delegate,
-                                      net::URLRequestTestJob::test_headers(),
+    std::string headers =
+        redirect_ ? std::string(kRedirectHeaders, arraysize(kRedirectHeaders))
+                  : net::URLRequestTestJob::test_headers();
+    return new MockHTTPSURLRequestJob(request, network_delegate, headers,
                                       "dummy response", true);
   }
+
+ private:
+  bool redirect_;
 };
 
 // Arbitrary read buffer size.
@@ -244,9 +254,9 @@ class ResourceHandlerStub : public ResourceHandler {
         received_on_will_read_(false),
         received_eof_(false),
         received_response_completed_(false),
+        received_request_redirected_(false),
         total_bytes_downloaded_(0),
-        upload_position_(0) {
-  }
+        upload_position_(0) {}
 
   // If true, defers the resource load in OnWillStart.
   void set_defer_request_on_will_start(bool defer_request_on_will_start) {
@@ -267,8 +277,14 @@ class ResourceHandlerStub : public ResourceHandler {
 
   const GURL& start_url() const { return start_url_; }
   ResourceResponse* response() const { return response_.get(); }
+  ResourceResponse* redirect_response() const {
+    return redirect_response_.get();
+  }
   bool received_response_completed() const {
     return received_response_completed_;
+  }
+  bool received_request_redirected() const {
+    return received_request_redirected_;
   }
   const net::URLRequestStatus& status() const { return status_; }
   int total_bytes_downloaded() const { return total_bytes_downloaded_; }
@@ -298,7 +314,8 @@ class ResourceHandlerStub : public ResourceHandler {
   bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
                            ResourceResponse* response,
                            bool* defer) override {
-    NOTREACHED();
+    redirect_response_ = response;
+    received_request_redirected_ = true;
     return true;
   }
 
@@ -378,9 +395,11 @@ class ResourceHandlerStub : public ResourceHandler {
 
   GURL start_url_;
   scoped_refptr<ResourceResponse> response_;
+  scoped_refptr<ResourceResponse> redirect_response_;
   bool received_on_will_read_;
   bool received_eof_;
   bool received_response_completed_;
+  bool received_request_redirected_;
   net::URLRequestStatus status_;
   int total_bytes_downloaded_;
   scoped_ptr<base::RunLoop> wait_for_progress_loop_;
@@ -601,27 +620,40 @@ class ClientCertResourceLoaderTest : public ResourceLoaderTest {
   }
 };
 
-// A ResourceLoaderTest that intercepts https://example.test URLs and
-// sets SSL info on the responses.
+// A ResourceLoaderTest that intercepts https://example.test and
+// https://example-redirect.test URLs and sets SSL info on the
+// responses. The latter serves a Location: header in the response.
 class HTTPSSecurityInfoResourceLoaderTest : public ResourceLoaderTest {
  public:
   HTTPSSecurityInfoResourceLoaderTest()
-      : ResourceLoaderTest(), test_https_url_("https://example.test") {}
+      : ResourceLoaderTest(),
+        test_https_url_("https://example.test"),
+        test_https_redirect_url_("https://example-redirect.test") {}
 
   ~HTTPSSecurityInfoResourceLoaderTest() override {}
 
-  const GURL& test_https_url() { return test_https_url_; }
+  const GURL& test_https_url() const { return test_https_url_; }
+  const GURL& test_https_redirect_url() const {
+    return test_https_redirect_url_;
+  }
 
  protected:
   void SetUp() override {
     ResourceLoaderTest::SetUp();
+    net::URLRequestFilter::GetInstance()->ClearHandlers();
     net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-        "https", "example.test", scoped_ptr<net::URLRequestInterceptor>(
-                                     new MockHTTPSJobURLRequestInterceptor));
+        "https", "example.test",
+        scoped_ptr<net::URLRequestInterceptor>(
+            new MockHTTPSJobURLRequestInterceptor(false /* redirect */)));
+    net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+        "https", "example-redirect.test",
+        scoped_ptr<net::URLRequestInterceptor>(
+            new MockHTTPSJobURLRequestInterceptor(true /* redirect */)));
   }
 
  private:
   const GURL test_https_url_;
+  const GURL test_https_redirect_url_;
 };
 
 // Tests that client certificates are requested with ClientCertStore lookup.
@@ -1103,6 +1135,48 @@ TEST_F(HTTPSSecurityInfoResourceLoaderTest, SecurityInfoOnHTTPSResource) {
   SSLStatus deserialized;
   ASSERT_TRUE(
       DeserializeSecurityInfo(response->head.security_info, &deserialized));
+
+  // Expect a BROKEN security style because the cert status has errors.
+  EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATION_BROKEN,
+            deserialized.security_style);
+  scoped_refptr<net::X509Certificate> cert;
+  ASSERT_TRUE(
+      CertStore::GetInstance()->RetrieveCert(deserialized.cert_id, &cert));
+  EXPECT_TRUE(cert->Equals(GetTestCert().get()));
+
+  EXPECT_EQ(kTestCertError, deserialized.cert_status);
+  EXPECT_EQ(kTestConnectionStatus, deserialized.connection_status);
+  EXPECT_EQ(kTestSecurityBits, deserialized.security_bits);
+}
+
+// Test that an HTTPS redirect response has the expected security info
+// attached to it.
+TEST_F(HTTPSSecurityInfoResourceLoaderTest,
+       SecurityInfoOnHTTPSRedirectResource) {
+  // Start the request and wait for it to finish.
+  scoped_ptr<net::URLRequest> request(
+      resource_context_.GetRequestContext()->CreateRequest(
+          test_https_redirect_url(), net::DEFAULT_PRIORITY,
+          nullptr /* delegate */));
+  SetUpResourceLoader(request.Pass());
+
+  // Send the request and wait until it completes.
+  loader_->StartRequest();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(net::URLRequestStatus::SUCCESS,
+            raw_ptr_to_request_->status().status());
+  ASSERT_TRUE(raw_ptr_resource_handler_->received_response_completed());
+  ASSERT_TRUE(raw_ptr_resource_handler_->received_request_redirected());
+
+  ResourceResponse* redirect_response =
+      raw_ptr_resource_handler_->redirect_response();
+  ASSERT_TRUE(redirect_response);
+
+  // Deserialize the security info from the redirect response and check
+  // that it is as expected.
+  SSLStatus deserialized;
+  ASSERT_TRUE(DeserializeSecurityInfo(redirect_response->head.security_info,
+                                      &deserialized));
 
   // Expect a BROKEN security style because the cert status has errors.
   EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATION_BROKEN,

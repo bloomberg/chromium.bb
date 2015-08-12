@@ -47,36 +47,6 @@ namespace {
 // The interval for calls to ResourceLoader::ReportUploadProgress.
 const int kUploadProgressIntervalMsec = 100;
 
-void PopulateResourceResponse(ResourceRequestInfoImpl* info,
-                              net::URLRequest* request,
-                              ResourceResponse* response) {
-  response->head.request_time = request->request_time();
-  response->head.response_time = request->response_time();
-  response->head.headers = request->response_headers();
-  request->GetCharset(&response->head.charset);
-  response->head.content_length = request->GetExpectedContentSize();
-  request->GetMimeType(&response->head.mime_type);
-  net::HttpResponseInfo response_info = request->response_info();
-  response->head.was_fetched_via_spdy = response_info.was_fetched_via_spdy;
-  response->head.was_npn_negotiated = response_info.was_npn_negotiated;
-  response->head.npn_negotiated_protocol =
-      response_info.npn_negotiated_protocol;
-  response->head.connection_info = response_info.connection_info;
-  response->head.was_fetched_via_proxy = request->was_fetched_via_proxy();
-  response->head.proxy_server = response_info.proxy_server;
-  response->head.socket_address = request->GetSocketAddress();
-  if (ServiceWorkerRequestHandler* handler =
-          ServiceWorkerRequestHandler::GetHandler(request)) {
-    handler->GetExtraResponseInfo(&response->head);
-  }
-  AppCacheInterceptor::GetExtraResponseInfo(
-      request,
-      &response->head.appcache_id,
-      &response->head.appcache_manifest_url);
-  if (info->is_load_timing_enabled())
-    request->GetLoadTimingInfo(&response->head.load_timing);
-}
-
 void StoreSignedCertificateTimestamps(
     const net::SignedCertificateTimestampAndStatusList& sct_list,
     int process_id,
@@ -112,6 +82,47 @@ void GetSSLStatusForRequest(const GURL& url,
       signed_certificate_timestamp_ids;
   ssl_status->security_style =
       SSLPolicy::GetSecurityStyleForResource(url, *ssl_status);
+}
+
+void PopulateResourceResponse(ResourceRequestInfoImpl* info,
+                              net::URLRequest* request,
+                              ResourceResponse* response) {
+  response->head.request_time = request->request_time();
+  response->head.response_time = request->response_time();
+  response->head.headers = request->response_headers();
+  request->GetCharset(&response->head.charset);
+  response->head.content_length = request->GetExpectedContentSize();
+  request->GetMimeType(&response->head.mime_type);
+  net::HttpResponseInfo response_info = request->response_info();
+  response->head.was_fetched_via_spdy = response_info.was_fetched_via_spdy;
+  response->head.was_npn_negotiated = response_info.was_npn_negotiated;
+  response->head.npn_negotiated_protocol =
+      response_info.npn_negotiated_protocol;
+  response->head.connection_info = response_info.connection_info;
+  response->head.was_fetched_via_proxy = request->was_fetched_via_proxy();
+  response->head.proxy_server = response_info.proxy_server;
+  response->head.socket_address = request->GetSocketAddress();
+  if (ServiceWorkerRequestHandler* handler =
+          ServiceWorkerRequestHandler::GetHandler(request)) {
+    handler->GetExtraResponseInfo(&response->head);
+  }
+  AppCacheInterceptor::GetExtraResponseInfo(
+      request, &response->head.appcache_id,
+      &response->head.appcache_manifest_url);
+  if (info->is_load_timing_enabled())
+    request->GetLoadTimingInfo(&response->head.load_timing);
+
+  if (request->ssl_info().cert.get()) {
+    SSLStatus ssl_status;
+    GetSSLStatusForRequest(request->url(), request->ssl_info(),
+                           info->GetChildID(), &ssl_status);
+    response->head.security_info = SerializeSecurityInfo(ssl_status);
+  } else {
+    // We should not have any SSL state.
+    DCHECK(!request->ssl_info().cert_status &&
+           request->ssl_info().security_bits == -1 &&
+           !request->ssl_info().connection_status);
+  }
 }
 
 }  // namespace
@@ -586,19 +597,6 @@ void ResourceLoader::CompleteResponseStarted() {
   ResourceRequestInfoImpl* info = GetRequestInfo();
   scoped_refptr<ResourceResponse> response(new ResourceResponse());
   PopulateResourceResponse(info, request_.get(), response.get());
-
-  if (request_->ssl_info().cert.get()) {
-    SSLStatus ssl_status;
-    GetSSLStatusForRequest(request_->url(), request_->ssl_info(),
-                           info->GetChildID(), &ssl_status);
-
-    response->head.security_info = SerializeSecurityInfo(ssl_status);
-  } else {
-    // We should not have any SSL state.
-    DCHECK(!request_->ssl_info().cert_status &&
-           request_->ssl_info().security_bits == -1 &&
-           !request_->ssl_info().connection_status);
-  }
 
   delegate_->DidReceiveResponse(this);
 
