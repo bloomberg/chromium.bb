@@ -36,6 +36,8 @@ mojo_native_application("core_services") {
 
 source_set("sources") {
   sources = [
+    "application_delegate_factory.h",
+    "application_delegate_factory_linux.cc",
     "core_services_application_delegate.cc",
     "main.cc",
   ]
@@ -51,9 +53,11 @@ source_set("sources") {
     "//mojo/message_pump",
     "//mojo/services/tracing:lib",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//url",
   ]
 
   if (!is_android) {
+    sources += [ "application_delegate_factory_notandroid.cc" ]
     deps += [
       "//components/resource_provider:lib",
       "//components/view_manager:lib",
@@ -61,8 +65,10 @@ source_set("sources") {
     ]
   }
 
-  if (is_linux && !is_android) {
+  if (is_linux) {
     deps += [ "//components/font_service:lib" ]
+  } else {
+    sources += [ "application_delegate_factory_default.cc" ]
   }
 
   if (use_aura) {
@@ -70,5 +76,6 @@ source_set("sources") {
       "//components/view_manager/public/cpp",
       "//mandoline/ui/omnibox:lib",
     ]
+    sources += [ "application_delegate_factory_aura.cc" ]
   }
 }

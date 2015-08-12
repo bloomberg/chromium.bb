@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MANDOLINE_SERVICES_CORE_SERVICES_APPLICATION_DELEGATE_H_
-#define MANDOLINE_SERVICES_CORE_SERVICES_APPLICATION_DELEGATE_H_
+#ifndef MANDOLINE_SERVICES_CORE_SERVICES_CORE_SERVICES_APPLICATION_DELEGATE_H_
+#define MANDOLINE_SERVICES_CORE_SERVICES_CORE_SERVICES_APPLICATION_DELEGATE_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
@@ -57,4 +57,4 @@ class CoreServicesApplicationDelegate
 
 }  // namespace core_services
 
-#endif  // MANDONLINE_SERVICES_CORE_SERVICES_APPLICATION_DELEGATE_H_
+#endif  // MANDOLINE_SERVICES_CORE_SERVICES_CORE_SERVICES_APPLICATION_DELEGATE_H_

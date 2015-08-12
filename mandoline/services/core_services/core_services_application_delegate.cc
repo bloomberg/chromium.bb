@@ -10,6 +10,7 @@
 #include "components/clipboard/clipboard_application_delegate.h"
 #include "components/filesystem/file_system_app.h"
 #include "components/view_manager/surfaces/surfaces_service_application.h"
+#include "mandoline/services/core_services/application_delegate_factory.h"
 #include "mandoline/ui/browser/browser_manager.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -17,20 +18,6 @@
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/services/tracing/tracing_app.h"
 #include "url/gurl.h"
-
-#if defined(USE_AURA)
-#include "mandoline/ui/omnibox/omnibox_impl.h"
-#endif
-
-#if !defined(OS_ANDROID)
-#include "components/resource_provider/resource_provider_app.h"
-#include "components/view_manager/view_manager_app.h"
-#include "mojo/services/network/network_service_delegate.h"
-#endif
-
-#if defined(OS_LINUX) && !defined(OS_ANDROID)
-#include "components/font_service/font_service_app.h"
-#endif
 
 namespace core_services {
 
@@ -125,7 +112,7 @@ void CoreServicesApplicationDelegate::Create(
 void CoreServicesApplicationDelegate::StartApplication(
     mojo::InterfaceRequest<mojo::Application> request,
     mojo::URLResponsePtr response) {
-  std::string url = response->url;
+  const std::string url = response->url;
 
   scoped_ptr<mojo::ApplicationDelegate> delegate;
   if (url == "mojo://browser/") {
@@ -134,29 +121,23 @@ void CoreServicesApplicationDelegate::StartApplication(
     delegate.reset(new clipboard::ClipboardApplicationDelegate);
   } else if (url == "mojo://filesystem/") {
     delegate.reset(new filesystem::FileSystemApp);
-#if defined(OS_LINUX) && !defined(OS_ANDROID)
-  } else if (url == "mojo://font_service/") {
-    delegate.reset(new font_service::FontServiceApp);
-#endif
   } else if (url == "mojo://surfaces_service/") {
     delegate.reset(new surfaces::SurfacesServiceApplication);
   } else if (url == "mojo://tracing/") {
     delegate.reset(new tracing::TracingApp);
+  } else {
 #if defined(USE_AURA)
-  } else if (url == "mojo://omnibox/") {
-    delegate.reset(new mandoline::OmniboxImpl);
+    delegate = CreateApplicationDelegateAura(url);
 #endif
 #if !defined(OS_ANDROID)
-  } else if (url == "mojo://network_service/") {
-    delegate.reset(new mojo::NetworkServiceDelegate);
-  } else if (url == "mojo://resource_provider/") {
-    delegate.reset(
-        new resource_provider::ResourceProviderApp("mojo:core_services"));
-  } else if (url == "mojo://view_manager/") {
-    delegate.reset(new view_manager::ViewManagerApp);
+    if (!delegate)
+      delegate = CreateApplicationDelegateNotAndroid(url);
 #endif
-  } else {
-    NOTREACHED() << "This application package does not support " << url;
+    if (!delegate)
+      delegate = CreatePlatformSpecificApplicationDelegate(url);
+
+    if (!delegate)
+      NOTREACHED() << "This application package does not support " << url;
   }
 
   scoped_ptr<ApplicationThread> thread(

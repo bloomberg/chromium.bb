@@ -19,9 +19,11 @@ group("android") {
 executable("mandoline_runner") {
   deps = [
     ":jni_headers",
+    "//base",
     "//mandoline/ui/browser/public/interfaces",
     "//mojo/common",
     "//mojo/environment:chromium",
+    "//mojo/runner:lib",
     "//mojo/runner:mojo_runner_lib",
   ]
 
