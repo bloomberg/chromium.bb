@@ -620,9 +620,6 @@ _waterfall_config_map = {
     ]),
 
     constants.WATERFALL_INTERNAL: frozenset([
-        # Experimental Paladins
-        'lakitu_mobbuild-paladin',
-
         # Experimental Canaries (Group)
         'auron-b-release-group',
         'glados-release-group',
@@ -640,7 +637,6 @@ _waterfall_config_map = {
         'bobcat-release',
         'daisy_winter-release',
         'kayle-release',
-        'lakitu_mobbuild-release',
         'nyan_freon-release',
         'panther_moblab-release',
         'rush_ryu-release',
@@ -1644,6 +1640,7 @@ def GetConfig():
       'gizmo',
       'kayle',
       'lakitu',
+      'lakitu_mobbuild',
       'leon',
       'link',
       'lumpy',
@@ -2378,7 +2375,7 @@ def GetConfig():
       _release, 'lakitu-release',
       _base_configs['lakitu'],
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
-      important=True
+      important=True,
   )
 
   site_config.AddConfig(
@@ -2386,6 +2383,7 @@ def GetConfig():
       _base_configs['lakitu_mobbuild'],
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
       signer_tests=False,
+      important=True,
   )
 
   site_config.AddConfig(
