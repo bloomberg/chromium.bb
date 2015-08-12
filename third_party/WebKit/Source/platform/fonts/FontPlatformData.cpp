@@ -21,13 +21,13 @@
 #include "config.h"
 #include "platform/fonts/FontPlatformData.h"
 
-#include "SkEndian.h"
 #include "SkTypeface.h"
 #include "hb-ot.h"
 #include "hb.h"
 #include "platform/fonts/Character.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/shaping/HarfBuzzFace.h"
+#include "wtf/ByteSwap.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
@@ -358,7 +358,7 @@ PassRefPtr<SharedBuffer> FontPlatformData::openTypeTable(uint32_t table) const
 {
     RefPtr<SharedBuffer> buffer;
 
-    SkFontTableTag tag = SkEndianSwap32(table);
+    SkFontTableTag tag = WTF::bswap32(table);
     const size_t tableSize = m_typeface->getTableSize(tag);
     if (tableSize) {
         Vector<char> tableBuffer(tableSize);
