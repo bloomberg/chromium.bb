@@ -131,10 +131,6 @@ bool ShouldTabShowCloseButton(int capacity,
     return capacity >= 3;
 }
 
-bool IsPlayingAudio(content::WebContents* contents) {
-  return contents->WasRecentlyAudible();
-}
-
 TabMediaState GetTabMediaStateForContents(content::WebContents* contents) {
   if (!contents)
     return TAB_MEDIA_STATE_NONE;
@@ -151,7 +147,7 @@ TabMediaState GetTabMediaStateForContents(content::WebContents* contents) {
 
   if (contents->IsAudioMuted())
     return TAB_MEDIA_STATE_AUDIO_MUTING;
-  if (IsPlayingAudio(contents))
+  if (contents->WasRecentlyAudible())
     return TAB_MEDIA_STATE_AUDIO_PLAYING;
 
   return TAB_MEDIA_STATE_NONE;
@@ -325,15 +321,11 @@ void UnmuteIfMutedByExtension(content::WebContents* contents,
   }
 }
 
-bool IsTabAudioMuted(content::WebContents* contents) {
-  return contents && contents->IsAudioMuted();
-}
-
 bool AreAllTabsMuted(const TabStripModel& tab_strip,
                      const std::vector<int>& indices) {
   for (std::vector<int>::const_iterator i = indices.begin(); i != indices.end();
        ++i) {
-    if (!IsTabAudioMuted(tab_strip.GetWebContentsAt(*i)))
+    if (!tab_strip.GetWebContentsAt(*i)->IsAudioMuted())
       return false;
   }
   return true;

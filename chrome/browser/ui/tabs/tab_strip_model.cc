@@ -394,7 +394,7 @@ WebContents* TabStripModel::DiscardWebContentsAt(int index) {
   WebContents* null_contents =
       WebContents::Create(WebContents::CreateParams(profile()));
   WebContents* old_contents = GetWebContentsAtImpl(index);
-  bool is_playing_audio = chrome::IsPlayingAudio(old_contents);
+  bool is_playing_audio = old_contents->WasRecentlyAudible();
   // Copy over the state from the navigation controller so we preserve the
   // back/forward history and continue to display the correct title/favicon.
   null_contents->GetController().CopyStateFrom(old_contents->GetController());

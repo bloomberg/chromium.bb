@@ -45,7 +45,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
             IDS_TAB_CXMENU_AUDIO_UNMUTE_TABS);
   } else {
     const bool will_mute =
-        !chrome::IsTabAudioMuted(tab_strip->GetWebContentsAt(index));
+        !tab_strip->GetWebContentsAt(index)->IsAudioMuted();
     AddItemWithStringId(
         TabStripModel::CommandToggleTabAudioMuted,
         will_mute ? IDS_TAB_CXMENU_AUDIO_MUTE_TAB :

@@ -401,8 +401,8 @@ base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
                    tab_strip && tab_strip->IsTabSelected(tab_index));
   result->SetBoolean(keys::kPinnedKey,
                      tab_strip && tab_strip->IsTabPinned(tab_index));
-  result->SetBoolean(keys::kAudibleKey, chrome::IsPlayingAudio(contents));
-  result->SetBoolean(keys::kMutedKey, chrome::IsTabAudioMuted(contents));
+  result->SetBoolean(keys::kAudibleKey, contents->WasRecentlyAudible());
+  result->SetBoolean(keys::kMutedKey, contents->IsAudioMuted());
   result->SetString(keys::kMutedCauseKey, GetTabAudioMutedReason(contents));
   result->SetBoolean(keys::kIncognitoKey,
                      contents->GetBrowserContext()->IsOffTheRecord());

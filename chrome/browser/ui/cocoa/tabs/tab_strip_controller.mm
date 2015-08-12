@@ -833,7 +833,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   if (!tabStripModel_->ContainsIndex(index))
     return;
   WebContents* contents = tabStripModel_->GetWebContentsAt(index);
-  chrome::SetTabAudioMuted(contents, !chrome::IsTabAudioMuted(contents),
+  chrome::SetTabAudioMuted(contents, !contents->IsAudioMuted(),
                            TAB_MUTED_REASON_AUDIO_INDICATOR, std::string());
 }
 

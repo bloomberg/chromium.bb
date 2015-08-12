@@ -401,7 +401,7 @@ void OomPriorityManager::AddTabStats(BrowserList* browser_list,
         stats.is_app = is_browser_for_app;
         stats.is_internal_page =
             IsInternalPage(contents->GetLastCommittedURL());
-        stats.is_playing_audio = chrome::IsPlayingAudio(contents);
+        stats.is_playing_audio = contents->WasRecentlyAudible();
         stats.is_pinned = model->IsTabPinned(i);
         stats.is_selected = browser_active && model->IsTabSelected(i);
         stats.is_discarded = model->IsTabDiscarded(i);

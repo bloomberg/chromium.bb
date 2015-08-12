@@ -75,10 +75,6 @@ bool ShouldTabShowCloseButton(int capacity,
                               bool is_pinned_tab,
                               bool is_active_tab);
 
-// Returns whether the given |contents| is playing audio. We might choose to
-// show an audio favicon indicator for this tab.
-bool IsPlayingAudio(content::WebContents* contents);
-
 // Returns the media state to be shown by the tab's media indicator.  When
 // multiple states apply (e.g., tab capture with audio playback), the one most
 // relevant to user privacy concerns is selected.
@@ -114,9 +110,6 @@ bool AreExperimentalMuteControlsEnabled();
 // Returns true if audio mute can be activated/deactivated for the given
 // |contents|.
 bool CanToggleAudioMute(content::WebContents* contents);
-
-// Indicates whether all audio output from |contents| is muted.
-bool IsTabAudioMuted(content::WebContents* contents);
 
 // Unmute a tab if it is currently muted at the request of the extension having
 // the given |extension_id|.

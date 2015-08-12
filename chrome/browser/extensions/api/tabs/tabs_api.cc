@@ -979,12 +979,12 @@ bool TabsQueryFunction::RunSync() {
       }
 
       if (!MatchesBool(params->query_info.audible.get(),
-                       chrome::IsPlayingAudio(web_contents))) {
+                       web_contents->WasRecentlyAudible())) {
         continue;
       }
 
       if (!MatchesBool(params->query_info.muted.get(),
-                       chrome::IsTabAudioMuted(web_contents))) {
+                       web_contents->IsAudioMuted())) {
         continue;
       }
 
