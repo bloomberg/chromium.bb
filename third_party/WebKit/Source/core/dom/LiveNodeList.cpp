@@ -28,18 +28,19 @@ namespace blink {
 namespace {
 
 class IsMatch {
+    STACK_ALLOCATED();
 public:
     IsMatch(const LiveNodeList& list)
-        : m_list(list)
+        : m_list(&list)
     { }
 
     bool operator() (const Element& element) const
     {
-        return m_list.elementMatches(element);
+        return m_list->elementMatches(element);
     }
 
 private:
-    const LiveNodeList& m_list;
+    RawPtrWillBeMember<const LiveNodeList> m_list;
 };
 
 } // namespace

@@ -279,18 +279,19 @@ namespace {
 
 template <class HTMLCollectionType>
 class IsMatch {
+    STACK_ALLOCATED();
 public:
     IsMatch(const HTMLCollectionType& list)
-        : m_list(list)
+        : m_list(&list)
     { }
 
     bool operator() (const Element& element) const
     {
-        return m_list.elementMatches(element);
+        return m_list->elementMatches(element);
     }
 
 private:
-    const HTMLCollectionType& m_list;
+    RawPtrWillBeMember<const HTMLCollectionType> m_list;
 };
 
 } // namespace
