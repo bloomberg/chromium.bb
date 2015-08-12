@@ -18,17 +18,36 @@
 // Returns a file name to save net internals logging. This method suffixes
 // the ivar |_counter| to the file name so a new name can be obtained by
 // modifying that.
-- (NSString *)currentNetLogFileName {
+- (NSString*)currentNetLogFileName {
   return [NSString
       stringWithFormat:@"crnet-consumer-net-log%" PRIuNS ".json", _counter];
 }
 
-- (BOOL)application:(UIApplication *)application
-    didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+- (NSString*)SDCHPrefStoreFileName {
+  NSFileManager* manager = [NSFileManager defaultManager];
+  NSArray* possibleURLs = [manager
+      URLsForDirectory:NSApplicationSupportDirectory
+             inDomains:NSUserDomainMask];
+  NSURL* appSupportDir = [possibleURLs firstObject];
+  if (appSupportDir == nil)
+    return nil;
+  NSURL* prefStoreFile = [NSURL URLWithString:@"sdch-prefs.json"
+                                relativeToURL:appSupportDir];
+  NSError* error = nil;
+  [manager createDirectoryAtURL:appSupportDir
+      withIntermediateDirectories:YES
+                       attributes:nil
+                            error:&error];
+  return error != nil ? [prefStoreFile path] : nil;
+}
+
+- (BOOL)application:(UIApplication*)application
+    didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
   [CrNet setPartialUserAgent:@"Dummy/1.0"];
   [CrNet setQuicEnabled:YES];
   // Always use QUIC if able.
   [CrNet setAlternateProtocolThreshold:0.0];
+  [CrNet setSDCHEnabled:YES withPrefStore:[self SDCHPrefStoreFileName]];
   [CrNet install];
   [CrNet startNetLogToFile:[self currentNetLogFileName] logBytes:NO];
 
@@ -57,14 +76,14 @@
   return YES;
 }
 
-- (void)applicationDidEnterBackground:(UIApplication *)application {
+- (void)applicationDidEnterBackground:(UIApplication*)application {
   [CrNet stopNetLog];
   [CrNet clearCacheWithCompletionCallback:^(int error) {
     NSLog(@"Cache cleared: %d\n", error);
   }];
 }
 
-- (void)applicationWillEnterForeground:(UIApplication *)application {
+- (void)applicationWillEnterForeground:(UIApplication*)application {
   _counter++;
   [CrNet startNetLogToFile:[self currentNetLogFileName] logBytes:NO];
 }

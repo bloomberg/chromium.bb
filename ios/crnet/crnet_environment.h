@@ -13,12 +13,15 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
+class JsonPrefStore;
+
 namespace net {
 class HttpCache;
 class NetworkChangeNotifier;
 class NetLog;
 class ProxyConfigService;
 class SdchManager;
+class SdchOwner;
 class URLRequestContextGetter;
 class WriteToFileNetLogObserver;
 }
@@ -84,12 +87,17 @@ class CrNetEnvironment {
   // called.
   void set_spdy_enabled(bool enabled) { spdy_enabled_ = enabled; }
   void set_quic_enabled(bool enabled) { quic_enabled_ = enabled; }
+  void set_sdch_enabled(bool enabled) { sdch_enabled_ = enabled; }
+  void set_sdch_pref_store_filename(const std::string& pref_store) {
+    sdch_pref_store_filename_ = pref_store;
+  }
   void set_alternate_protocol_threshold(double threshold) {
     alternate_protocol_threshold_ = threshold;
   }
 
   bool spdy_enabled() const { return spdy_enabled_; }
   bool quic_enabled() const { return quic_enabled_; }
+  bool sdch_enabled() const { return sdch_enabled_; }
   double alternate_protocol_threshold() const {
     return alternate_protocol_threshold_;
   }
@@ -101,6 +109,10 @@ class CrNetEnvironment {
   // Runs a closure on the network thread.
   void PostToNetworkThread(const tracked_objects::Location& from_here,
                            const base::Closure& task);
+
+  // Configures SDCH on the network thread. If SDCH is enabled, sets up
+  // SdchManager, and configures persistence as needed.
+  void ConfigureSdchOnNetworkThread();
 
   // Performs initialization tasks that must happen on the network thread.
   void InitializeOnNetworkThread();
@@ -126,6 +138,8 @@ class CrNetEnvironment {
 
   bool spdy_enabled_;
   bool quic_enabled_;
+  bool sdch_enabled_;
+  std::string sdch_pref_store_filename_;
   double alternate_protocol_threshold_;
 
   // Helper method that clears the cache on the network thread.
@@ -137,6 +151,9 @@ class CrNetEnvironment {
   scoped_ptr<base::Thread> file_thread_;
   scoped_ptr<base::Thread> file_user_blocking_thread_;
   scoped_ptr<net::SdchManager> sdch_manager_;
+  scoped_ptr<net::SdchOwner> sdch_owner_;
+  scoped_refptr<base::SequencedTaskRunner> pref_store_worker_pool_;
+  scoped_refptr<JsonPrefStore> net_pref_store_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
   scoped_ptr<net::HttpServerProperties> http_server_properties_;

@@ -28,6 +28,13 @@ typedef void(^ClearCacheCallback)(int errorCode);
 // effect before |install| is called.
 + (void)setQuicEnabled:(BOOL)quicEnabled;
 
+// Sets whether SDCH should be supported by CrNet. This method only has any
+// effect before |install| is called. The |filename| argument is used to specify
+// which file should be used for SDCH persistence metadata. If |filename| is
+// nil, persistence is not enabled. The default is for SDCH to be disabled.
++ (void)setSDCHEnabled:(BOOL)sdchEnabled
+         withPrefStore:(NSString*)filename;
+
 // Set the alternate protocol threshold. Servers announce alternate protocols
 // with a probability value; any alternate protocol whose probability value is
 // greater than this value will be used, so |alternateProtocolThreshold| == 0

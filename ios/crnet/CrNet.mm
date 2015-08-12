@@ -5,6 +5,7 @@
 #import "ios/crnet/CrNet.h"
 
 #include "base/logging.h"
+#include "base/strings/sys_string_conversions.h"
 #import "ios/net/crn_http_protocol_handler.h"
 #import "ios/crnet/crnet_environment.h"
 
@@ -12,7 +13,9 @@ static CrNetEnvironment* g_chrome_net = NULL;
 
 static BOOL g_spdy_enabled = YES;
 static BOOL g_quic_enabled = NO;
-static NSString *g_user_agent = nil;
+static BOOL g_sdch_enabled = NO;
+static NSString* g_user_agent = nil;
+static NSString* g_sdch_pref_store_filename = nil;
 static double g_alternate_protocol_threshold = 1.0;
 static RequestFilterBlock g_request_filter_block = nil;
 
@@ -26,6 +29,12 @@ static RequestFilterBlock g_request_filter_block = nil;
   g_quic_enabled = quicEnabled;
 }
 
++ (void)setSDCHEnabled:(BOOL)sdchEnabled
+         withPrefStore:(NSString*)filename {
+  g_sdch_enabled = sdchEnabled;
+  g_sdch_pref_store_filename = filename;
+}
+
 + (void)setPartialUserAgent:(NSString *)userAgent {
   g_user_agent = userAgent;
 }
@@ -36,12 +45,16 @@ static RequestFilterBlock g_request_filter_block = nil;
 
 + (void)installInternal {
   CrNetEnvironment::Initialize();
-  std::string partial_user_agent =
-      [g_user_agent cStringUsingEncoding:NSASCIIStringEncoding];
+  std::string partial_user_agent = base::SysNSStringToUTF8(g_user_agent);
   g_chrome_net = new CrNetEnvironment(partial_user_agent);
 
   g_chrome_net->set_spdy_enabled(g_spdy_enabled);
   g_chrome_net->set_quic_enabled(g_quic_enabled);
+  g_chrome_net->set_sdch_enabled(g_sdch_enabled);
+  if (g_sdch_pref_store_filename) {
+    std::string filename = base::SysNSStringToUTF8(g_sdch_pref_store_filename);
+    g_chrome_net->set_sdch_pref_store_filename(filename);
+  }
   g_chrome_net->set_alternate_protocol_threshold(
       g_alternate_protocol_threshold);
 

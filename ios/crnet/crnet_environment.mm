@@ -18,6 +18,8 @@
 #include "base/mac/scoped_block.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
+#include "base/prefs/json_pref_store.h"
+#include "base/prefs/pref_filter.h"
 #include "base/threading/worker_pool.h"
 #import "components/webp_transcode/webp_network_client_factory.h"
 #include "crypto/nss_util.h"
@@ -40,6 +42,7 @@
 #include "net/log/net_log.h"
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/proxy/proxy_service.h"
+#include "net/sdch/sdch_owner.h"
 #include "net/socket/next_proto.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
@@ -251,7 +254,10 @@ void CrNetEnvironment::CloseAllSpdySessionsInternal() {
 }
 
 CrNetEnvironment::CrNetEnvironment(std::string user_agent_product_name)
-    : main_context_(new net::URLRequestContext),
+    : spdy_enabled_(false),
+      quic_enabled_(false),
+      sdch_enabled_(false),
+      main_context_(new net::URLRequestContext),
       user_agent_product_name_(user_agent_product_name),
       net_log_(new net::NetLog) {
 
@@ -320,6 +326,31 @@ void CrNetEnvironment::SetHTTPProtocolHandlerRegistered(bool registered) {
   }
 }
 
+void CrNetEnvironment::ConfigureSdchOnNetworkThread() {
+  DCHECK(base::MessageLoop::current() == network_io_thread_->message_loop());
+
+  if (!sdch_enabled_) {
+    net::SdchManager::EnableSdchSupport(false);
+    return;
+  }
+
+  sdch_manager_.reset(new net::SdchManager());
+  net::URLRequestContext* context =
+      main_context_getter_->GetURLRequestContext();
+  sdch_owner_.reset(new net::SdchOwner(sdch_manager_.get(), context));
+  if (!sdch_pref_store_filename_.empty()) {
+    base::FilePath path(sdch_pref_store_filename_);
+    pref_store_worker_pool_ = file_user_blocking_thread_->task_runner();
+    net_pref_store_ = new JsonPrefStore(
+        path,
+        pref_store_worker_pool_.get(),
+        scoped_ptr<PrefFilter>());
+    net_pref_store_->ReadPrefsAsync(nullptr);
+    sdch_owner_->EnablePersistentStorage(net_pref_store_.get());
+  }
+  context->set_sdch_manager(sdch_manager_.get());
+}
+
 void CrNetEnvironment::InitializeOnNetworkThread() {
   DCHECK(base::MessageLoop::current() == network_io_thread_->message_loop());
 
@@ -329,16 +360,7 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
           initWithTaskRunner:file_user_blocking_thread_
                                  ->task_runner()] autorelease]);
 
-#if 0
-  // TODO(huey): Re-enable this once SDCH supports SSL and dictionaries from
-  // previous sessions can be used on the first request after a fresh launch.
-  sdch_manager_.reset(new net::SdchManager());
-  sdch_manager_->set_sdch_fetcher(
-      new SdchDictionaryFetcher(main_context_getter_));
-#else
-  // Otherwise, explicitly disable SDCH to avoid a crash.
-  net::SdchManager::EnableSdchSupport(false);
-#endif
+  ConfigureSdchOnNetworkThread();
 
   NSString* bundlePath =
       [[NSBundle mainBundle] pathForResource:@"crnet_resources"
