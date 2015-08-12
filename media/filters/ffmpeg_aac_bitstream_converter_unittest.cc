@@ -23,7 +23,7 @@ class FFmpegAACBitstreamConverterTest : public testing::Test {
 
     // Set up reasonable aac context
     memset(&test_context_, 0, sizeof(AVCodecContext));
-    test_context_.codec_id = CODEC_ID_AAC;
+    test_context_.codec_id = AV_CODEC_ID_AAC;
     test_context_.profile = FF_PROFILE_AAC_MAIN;
     test_context_.channels = 2;
     test_context_.extradata = context_header_;

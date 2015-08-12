@@ -19,7 +19,7 @@ bool GenerateAdtsHeader(
     int private_stream, int channel_configuration, int originality, int home,
     int copyrighted_stream, int copyright_start, int frame_length,
     int buffer_fullness, int number_of_frames_minus_one, uint8* hdr) {
-  DCHECK_EQ(codec, CODEC_ID_AAC);
+  DCHECK_EQ(codec, AV_CODEC_ID_AAC);
 
   memset(reinterpret_cast<void *>(hdr), 0,
          FFmpegAACBitstreamConverter::kAdtsHeaderSize);
