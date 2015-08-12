@@ -11,6 +11,8 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.net.NetError;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Centralizes UMA data collection for Tab management.
  * This will drive our memory optimization efforts, specially tab restoring and
@@ -42,6 +44,15 @@ public class TabUma {
     private static final int TAB_RESTORE_RESULT_FAILURE_NETWORK_CONNECTIVITY = 2;
     private static final int TAB_RESTORE_RESULT_COUNT = 3;
 
+    // TAB_STATE_* are for TabStateTransferTime and TabTransferTarget histograms.
+    // TabState defined in tools/metrics/histograms/histograms.xml.
+    private static final int TAB_STATE_INITIAL = 0;
+    private static final int TAB_STATE_ACTIVE = 1;
+    private static final int TAB_STATE_INACTIVE = 2;
+    private static final int TAB_STATE_DETACHED = 3;
+    private static final int TAB_STATE_CLOSED = 4;
+    private static final int TAB_STATE_MAX = TAB_STATE_CLOSED;
+
     // Counter of tab shows (as per onShow()) for all tabs.
     private static long sAllTabsShowCount = 0;
 
@@ -67,6 +78,9 @@ public class TabUma {
     // Timestamp of the beginning of the current tab restore.
     private long mRestoreStartedAtMillis = -1;
 
+    private long mLastTabStateChangeMillis = -1;
+    private int mLastTabState = TAB_STATE_INITIAL;
+
     /**
      * Constructs a new UMA tracker for a specific tab.
      * @param tab The tab whose metrics we want to track.
@@ -77,6 +91,15 @@ public class TabUma {
         mTab = tab;
         mTabCreationState = creationState;
         mTabModel = model;
+
+        mLastTabStateChangeMillis = System.currentTimeMillis();
+        if (mTabCreationState == TabCreationState.LIVE_IN_FOREGROUND
+                || mTabCreationState == TabCreationState.FROZEN_ON_RESTORE) {
+            updateTabState(TAB_STATE_ACTIVE);
+        } else if (mTabCreationState == TabCreationState.LIVE_IN_BACKGROUND
+                || mTabCreationState == TabCreationState.FROZEN_FOR_LAZY_LOAD) {
+            updateTabState(TAB_STATE_INACTIVE);
+        }
     }
 
     /**
@@ -106,6 +129,57 @@ public class TabUma {
                             TAB_RESTORE_RESULT_FAILURE_OTHER, TAB_RESTORE_RESULT_COUNT);
             }
         }
+    }
+
+    /**
+     * Records a sample in a histogram of times. This is the Java equivalent of the
+     * UMA_HISTOGRAM_LONG_TIMES_100.
+     */
+    void recordLongTimesHistogram100(String name, long duration) {
+        RecordHistogram.recordCustomTimesHistogram(
+                name, TimeUnit.MILLISECONDS.toMillis(duration),
+                TimeUnit.MILLISECONDS.toMillis(1), TimeUnit.HOURS.toMillis(1),
+                TimeUnit.MILLISECONDS, 100);
+    }
+
+    /**
+     * Record the tab state transition into histograms.
+     * @param prevState Previous state of the tab.
+     * @param newState New state of the tab.
+     * @param delta Time elapsed from the last state transition in milliseconds.
+     */
+    void recordTabStateTransition(int prevState, int newState, long delta) {
+        if (prevState == TAB_STATE_ACTIVE && newState == TAB_STATE_INACTIVE) {
+            recordLongTimesHistogram100("TabStateTransferTime.Active.Inactive", delta);
+        } else if (prevState == TAB_STATE_ACTIVE && newState == TAB_STATE_CLOSED) {
+            recordLongTimesHistogram100("TabStateTransferTime.Active.Close", delta);
+        } else if (prevState == TAB_STATE_INACTIVE && newState == TAB_STATE_ACTIVE) {
+            recordLongTimesHistogram100("TabStateTransferTime.Inactive.Active", delta);
+        } else if (prevState == TAB_STATE_INACTIVE && newState == TAB_STATE_CLOSED) {
+            recordLongTimesHistogram100("TabStateTransferTime.Inactive.Close", delta);
+        }
+
+        if (prevState == TAB_STATE_INITIAL) {
+            RecordHistogram.recordEnumeratedHistogram("TabStateTransferTarget.Initial", newState,
+                    TAB_STATE_MAX);
+        } else if (prevState == TAB_STATE_ACTIVE) {
+            RecordHistogram.recordEnumeratedHistogram("TabStateTransferTarget.Active", newState,
+                    TAB_STATE_MAX);
+        } else if (prevState == TAB_STATE_INACTIVE) {
+            RecordHistogram.recordEnumeratedHistogram("TabStateTransferTarget.Inactive", newState,
+                    TAB_STATE_MAX);
+        }
+    }
+
+    /**
+     * Updates saved TabState and its timestamp. Records the state transition into the histogram.
+     * @param newState New state of the tab.
+     */
+    void updateTabState(int newState) {
+        long now = System.currentTimeMillis();
+        recordTabStateTransition(mLastTabState, newState, now - mLastTabStateChangeMillis);
+        mLastTabStateChangeMillis = now;
+        mLastTabState = newState;
     }
 
     /**
@@ -193,6 +267,16 @@ public class TabUma {
         }
 
         mLastShowMillis = now;
+
+        updateTabState(TAB_STATE_ACTIVE);
+    }
+
+    void onHide() {
+        updateTabState(TAB_STATE_INACTIVE);
+    }
+
+    void onDestroy() {
+        updateTabState(TAB_STATE_CLOSED);
     }
 
     /** Called when restore of the corresponding tab is triggered. */

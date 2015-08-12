@@ -1368,6 +1368,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mPreviousFullscreenOverdrawBottomHeight = Float.NaN;
         }
 
+        if (mTabUma != null) mTabUma.onHide();
+
         hideInternal();
 
         for (TabObserver observer : mObservers) observer.onHidden(this);
@@ -1769,6 +1771,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         mIsInitialized = false;
         // Update the title before destroying the tab. http://b/5783092
         updateTitle();
+
+        if (mTabUma != null) mTabUma.onDestroy();
 
         for (TabObserver observer : mObservers) observer.onDestroyed(this);
         mObservers.clear();
