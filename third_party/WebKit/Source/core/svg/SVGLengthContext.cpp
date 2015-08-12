@@ -288,7 +288,7 @@ float SVGLengthContext::convertValueFromUserUnitsToCHS(float value) const
     if (!style)
         return 0;
 
-    float zeroWidth = style->fontMetrics().zeroWidth();
+    float zeroWidth = style->fontMetrics().zeroWidth() / style->effectiveZoom();
     if (!zeroWidth)
         return 0;
 
@@ -301,7 +301,7 @@ float SVGLengthContext::convertValueFromCHSToUserUnits(float value) const
     if (!style)
         return 0;
 
-    return value * style->fontMetrics().zeroWidth();
+    return value * style->fontMetrics().zeroWidth() / style->effectiveZoom();
 }
 
 float SVGLengthContext::convertValueFromUserUnitsToEXS(float value) const
@@ -312,7 +312,7 @@ float SVGLengthContext::convertValueFromUserUnitsToEXS(float value) const
 
     // Use of ceil allows a pixel match to the W3Cs expected output of coords-units-03-b.svg
     // if this causes problems in real world cases maybe it would be best to remove this
-    float xHeight = ceilf(style->fontMetrics().xHeight());
+    float xHeight = ceilf(style->fontMetrics().xHeight() / style->effectiveZoom());
     if (!xHeight)
         return 0;
 
@@ -327,7 +327,7 @@ float SVGLengthContext::convertValueFromEXSToUserUnits(float value) const
 
     // Use of ceil allows a pixel match to the W3Cs expected output of coords-units-03-b.svg
     // if this causes problems in real world cases maybe it would be best to remove this
-    return value * ceilf(style->fontMetrics().xHeight());
+    return value * ceilf(style->fontMetrics().xHeight() / style->effectiveZoom());
 }
 
 bool SVGLengthContext::determineViewport(FloatSize& viewportSize) const
