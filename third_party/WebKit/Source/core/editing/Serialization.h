@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef markup_h
-#define markup_h
+#ifndef Serialization_h
+#define Serialization_h
 
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
@@ -80,4 +80,4 @@ bool propertyMissingOrEqualToNone(StylePropertySet*, CSSPropertyID);
 
 }
 
-#endif // markup_h
+#endif // Serialization_h

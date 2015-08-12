@@ -26,7 +26,7 @@
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/DocumentEncodingData.h"
 #include "core/dom/DocumentFragment.h"
-#include "core/editing/markup.h"
+#include "core/editing/Serialization.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"

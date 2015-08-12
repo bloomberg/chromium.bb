@@ -37,7 +37,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRootRareData.h"
-#include "core/editing/markup.h"
+#include "core/editing/Serialization.h"
 #include "core/html/HTMLShadowElement.h"
 #include "public/platform/Platform.h"
 

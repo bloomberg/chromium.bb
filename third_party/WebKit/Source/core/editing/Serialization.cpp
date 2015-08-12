@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "core/editing/markup.h"
+#include "core/editing/Serialization.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSValueKeywords.h"
@@ -294,9 +294,9 @@ static bool findNodesSurroundingContext(DocumentFragment* fragment, RefPtrWillBe
 {
     for (Node& node : NodeTraversal::startsAt(fragment->firstChild())) {
         if (node.nodeType() == Node::COMMENT_NODE && toComment(node).data() == fragmentMarkerTag) {
-            if (!nodeBeforeContext)
+            if (!nodeBeforeContext) {
                 nodeBeforeContext = &toComment(node);
-            else {
+            } else {
                 nodeAfterContext = &toComment(node);
                 return true;
             }

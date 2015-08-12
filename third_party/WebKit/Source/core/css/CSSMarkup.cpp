@@ -158,7 +158,7 @@ static inline String quoteCSSStringInternal(const CharacterType* characters, uns
     return String::adopt(buffer);
 }
 
-// We use single quotes for now because markup.cpp uses double quotes.
+// We use single quotes for now because Serialization.cpp uses double quotes.
 static String quoteCSSString(const String& string)
 {
     // This function expands each character to at most 3 characters ('\u0010' -> '\' '1' '0') as well as adds

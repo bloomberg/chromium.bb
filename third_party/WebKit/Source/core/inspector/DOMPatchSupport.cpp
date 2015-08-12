@@ -124,7 +124,7 @@ Node* DOMPatchSupport::patchNode(Node* node, const String& markup, ExceptionStat
         targetNode = document().body();
     Element* targetElement = toElement(targetNode);
 
-    // FIXME: This code should use one of createFragment* in markup.h
+    // FIXME: This code should use one of createFragment* in Serialization.h
     if (document().isHTMLDocument())
         fragment->parseHTML(markup, targetElement);
     else

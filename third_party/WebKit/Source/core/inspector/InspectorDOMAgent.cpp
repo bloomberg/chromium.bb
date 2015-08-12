@@ -51,7 +51,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/editing/markup.h"
+#include "core/editing/Serialization.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "core/fileapi/File.h"
