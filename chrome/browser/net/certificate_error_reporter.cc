@@ -145,11 +145,6 @@ void CertificateErrorReporter::SendExtendedReportingReport(
   }
 }
 
-void CertificateErrorReporter::SendPinningViolationReport(
-    const std::string& serialized_report) {
-  certificate_report_sender_->Send(upload_url_, serialized_report);
-}
-
 bool CertificateErrorReporter::IsHttpUploadUrlSupported() {
 #if defined(USE_OPENSSL)
   return true;

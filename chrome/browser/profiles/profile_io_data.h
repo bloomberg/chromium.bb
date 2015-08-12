@@ -62,7 +62,6 @@ class CertificateReportSender;
 class CertVerifier;
 class ChannelIDService;
 class CookieStore;
-class FraudulentCertificateReporter;
 class FtpTransactionFactory;
 class HttpServerProperties;
 class HttpTransactionFactory;
@@ -357,10 +356,6 @@ class ProfileIOData {
       scoped_ptr<data_reduction_proxy::DataReductionProxyIOData>
           data_reduction_proxy_io_data) const;
 
-  net::FraudulentCertificateReporter* fraudulent_certificate_reporter() const {
-    return fraudulent_certificate_reporter_.get();
-  }
-
   net::ProxyService* proxy_service() const {
     return proxy_service_.get();
   }
@@ -544,8 +539,6 @@ class ProfileIOData {
   mutable scoped_ptr<data_reduction_proxy::DataReductionProxyIOData>
       data_reduction_proxy_io_data_;
 
-  mutable scoped_ptr<net::FraudulentCertificateReporter>
-      fraudulent_certificate_reporter_;
   mutable scoped_ptr<net::ProxyService> proxy_service_;
   mutable scoped_ptr<net::TransportSecurityState> transport_security_state_;
   mutable scoped_ptr<net::HttpServerProperties>

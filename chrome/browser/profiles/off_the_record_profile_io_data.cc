@@ -219,8 +219,6 @@ void OffTheRecordProfileIOData::InitializeInternal(
       io_thread_globals->host_resolver.get());
   main_context->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
-  main_context->set_fraudulent_certificate_reporter(
-      fraudulent_certificate_reporter());
   main_context->set_proxy_service(proxy_service());
 
   main_context->set_cert_transparency_verifier(

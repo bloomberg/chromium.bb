@@ -28,7 +28,15 @@ CertificateReportSender::~CertificateReportSender() {
 void CertificateReportSender::Send(const GURL& report_uri,
                                    const std::string& report) {
   scoped_ptr<URLRequest> url_request =
-      CreateURLRequest(request_context_, report_uri);
+      request_context_->CreateRequest(report_uri, DEFAULT_PRIORITY, this);
+
+  int load_flags =
+      LOAD_BYPASS_CACHE | LOAD_DISABLE_CACHE | LOAD_DO_NOT_SEND_AUTH_DATA;
+  if (cookies_preference_ != SEND_COOKIES) {
+    load_flags |= LOAD_DO_NOT_SEND_COOKIES | LOAD_DO_NOT_SAVE_COOKIES;
+  }
+  url_request->SetLoadFlags(load_flags);
+
   url_request->set_method("POST");
 
   scoped_ptr<UploadElementReader> reader(
@@ -54,21 +62,6 @@ void CertificateReportSender::OnResponseStarted(URLRequest* request) {
 void CertificateReportSender::OnReadCompleted(URLRequest* request,
                                               int bytes_read) {
   NOTREACHED();
-}
-
-scoped_ptr<URLRequest> CertificateReportSender::CreateURLRequest(
-    URLRequestContext* context,
-    const GURL& report_uri) {
-  scoped_ptr<URLRequest> request =
-      context->CreateRequest(report_uri, DEFAULT_PRIORITY, this);
-  int load_flags =
-      LOAD_BYPASS_CACHE | LOAD_DISABLE_CACHE | LOAD_DO_NOT_SEND_AUTH_DATA;
-  if (cookies_preference_ != SEND_COOKIES) {
-    load_flags =
-        load_flags | LOAD_DO_NOT_SEND_COOKIES | LOAD_DO_NOT_SAVE_COOKIES;
-  }
-  request->SetLoadFlags(load_flags);
-  return request.Pass();
 }
 
 }  // namespace net

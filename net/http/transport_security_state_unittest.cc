@@ -1414,4 +1414,57 @@ TEST_F(TransportSecurityStateTest, HPKPReportOnlyParseErrors) {
       state.ProcessHPKPReportOnlyHeader(header, host_port_pair, ssl_info));
 }
 
+// Tests that pinning violations on preloaded pins trigger reports when
+// the preloaded pin contains a report URI.
+TEST_F(TransportSecurityStateTest, PreloadedPKPReportUri) {
+  const char kPreloadedPinDomain[] = "www.google.com";
+  const uint16_t kPort = 443;
+  HostPortPair host_port_pair(kPreloadedPinDomain, kPort);
+
+  TransportSecurityState state;
+  MockCertificateReportSender mock_report_sender;
+  state.SetReportSender(&mock_report_sender);
+
+  ASSERT_TRUE(
+      TransportSecurityState::IsGooglePinnedProperty(kPreloadedPinDomain));
+  EnableStaticPins(&state);
+
+  TransportSecurityState::PKPState pkp_state;
+  TransportSecurityState::STSState unused_sts_state;
+  ASSERT_TRUE(state.GetStaticDomainState(kPreloadedPinDomain, &unused_sts_state,
+                                         &pkp_state));
+
+  GURL report_uri = pkp_state.report_uri;
+  ASSERT_TRUE(report_uri.is_valid());
+  ASSERT_FALSE(report_uri.is_empty());
+
+  // Two dummy certs to use as the server-sent and validated chains. The
+  // contents don't matter, as long as they are not the real google.com
+  // certs in the pins.
+  scoped_refptr<X509Certificate> cert1 =
+      ImportCertFromFile(GetTestCertsDirectory(), "test_mail_google_com.pem");
+  scoped_refptr<X509Certificate> cert2 =
+      ImportCertFromFile(GetTestCertsDirectory(), "expired_cert.pem");
+  ASSERT_TRUE(cert1);
+  ASSERT_TRUE(cert2);
+
+  HashValueVector bad_hashes;
+  for (size_t i = 0; kBadPath[i]; i++)
+    EXPECT_TRUE(AddHash(kBadPath[i], &bad_hashes));
+
+  // Trigger a violation and check that it sends a report.
+  std::string failure_log;
+  EXPECT_FALSE(state.CheckPublicKeyPins(
+      host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
+      TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
+
+  EXPECT_EQ(report_uri, mock_report_sender.latest_report_uri());
+
+  std::string report = mock_report_sender.latest_report();
+  ASSERT_FALSE(report.empty());
+  ASSERT_NO_FATAL_FAILURE(CheckHPKPReport(
+      report, host_port_pair, pkp_state.include_subdomains, pkp_state.domain,
+      cert1.get(), cert2.get(), pkp_state.spki_hashes));
+}
+
 }  // namespace net

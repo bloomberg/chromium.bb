@@ -1184,7 +1184,6 @@
       'url_request/data_protocol_handler.h',
       'url_request/file_protocol_handler.cc',
       'url_request/file_protocol_handler.h',
-      'url_request/fraudulent_certificate_reporter.h',
       'url_request/ftp_protocol_handler.cc',
       'url_request/ftp_protocol_handler.h',
       'url_request/http_user_agent_settings.h',

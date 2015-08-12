@@ -45,7 +45,6 @@
 #include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ssl/chrome_fraudulent_certificate_reporter.h"
 #include "chrome/browser/ui/search/new_tab_page_interceptor_service.h"
 #include "chrome/browser/ui/search/new_tab_page_interceptor_service_factory.h"
 #include "chrome/common/chrome_paths.h"
@@ -1055,8 +1054,6 @@ void ProfileIOData::Init(
   network_delegate->set_enable_do_not_track(&enable_do_not_track_);
   network_delegate->set_force_google_safe_search(&force_google_safesearch_);
   network_delegate->set_force_youtube_safety_mode(&force_youtube_safety_mode_);
-  fraudulent_certificate_reporter_.reset(
-      new ChromeFraudulentCertificateReporter(main_request_context_.get()));
 
   // NOTE: Proxy service uses the default io thread network delegate, not the
   // delegate just created.

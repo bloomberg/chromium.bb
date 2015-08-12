@@ -31,7 +31,6 @@ class CertVerifier;
 class ChannelIDService;
 class CookieStore;
 class CTVerifier;
-class FraudulentCertificateReporter;
 class HostResolver;
 class HttpAuthHandlerFactory;
 class HttpTransactionFactory;
@@ -97,14 +96,6 @@ class NET_EXPORT URLRequestContext
   void set_channel_id_service(
       ChannelIDService* channel_id_service) {
     channel_id_service_ = channel_id_service;
-  }
-
-  FraudulentCertificateReporter* fraudulent_certificate_reporter() const {
-    return fraudulent_certificate_reporter_;
-  }
-  void set_fraudulent_certificate_reporter(
-      FraudulentCertificateReporter* fraudulent_certificate_reporter) {
-    fraudulent_certificate_reporter_ = fraudulent_certificate_reporter;
   }
 
   // Get the proxy service for this context.
@@ -239,7 +230,6 @@ class NET_EXPORT URLRequestContext
   HostResolver* host_resolver_;
   CertVerifier* cert_verifier_;
   ChannelIDService* channel_id_service_;
-  FraudulentCertificateReporter* fraudulent_certificate_reporter_;
   HttpAuthHandlerFactory* http_auth_handler_factory_;
   ProxyService* proxy_service_;
   scoped_refptr<SSLConfigService> ssl_config_service_;

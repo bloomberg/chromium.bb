@@ -1032,6 +1032,9 @@ bool TransportSecurityState::GetStaticDomainState(const std::string& host,
       return false;
     const Pinset *pinset = &kPinsets[result.pinset_id];
 
+    if (pinset->report_uri != kNoReportURI)
+      pkp_state->report_uri = GURL(pinset->report_uri);
+
     if (pinset->accepted_pins) {
       const char* const* sha1_hash = pinset->accepted_pins;
       while (*sha1_hash) {

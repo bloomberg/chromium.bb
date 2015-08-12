@@ -551,6 +551,7 @@ static const char* const kGoogleAcceptableCerts[] = {
   kSPKIHash_GeoTrustGlobal,
   NULL,
 };
+static const char kGoogleReportURI[] = "http://clients3.google.com/cert_upload_json";
 static const char* const kTorAcceptableCerts[] = {
   kSPKIHash_RapidSSL,
   kSPKIHash_DigiCertEVRoot,
@@ -674,7 +675,7 @@ struct Pinset {
 
 static const struct Pinset kPinsets[] = {
   {kTestAcceptableCerts, kNoRejectedPublicKeys, kNoReportURI},
-  {kGoogleAcceptableCerts, kNoRejectedPublicKeys, kNoReportURI},
+  {kGoogleAcceptableCerts, kNoRejectedPublicKeys, kGoogleReportURI},
   {kTorAcceptableCerts, kNoRejectedPublicKeys, kNoReportURI},
   {kTwitterComAcceptableCerts, kNoRejectedPublicKeys, kNoReportURI},
   {kTwitterCDNAcceptableCerts, kNoRejectedPublicKeys, kNoReportURI},

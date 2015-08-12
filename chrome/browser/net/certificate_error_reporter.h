@@ -63,11 +63,6 @@ class CertificateErrorReporter {
   virtual void SendExtendedReportingReport(
       const std::string& serialized_report);
 
-  // As |SendExtendedReportingReport|, but does not encrypt reports,
-  // since the pinning violation server is not capable of handling
-  // encrypted reports.
-  virtual void SendPinningViolationReport(const std::string& serialized_report);
-
   // Whether sending reports over HTTP is supported.
   static bool IsHttpUploadUrlSupported();
 

@@ -496,9 +496,6 @@ void ProfileImplIOData::InitializeInternal(
   main_context->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
 
-  main_context->set_fraudulent_certificate_reporter(
-      fraudulent_certificate_reporter());
-
   main_context->set_proxy_service(proxy_service());
   main_context->set_backoff_manager(
       io_thread_globals->url_request_backoff_manager.get());

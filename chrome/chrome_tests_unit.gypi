@@ -226,7 +226,6 @@
       'browser/signin/signin_tracker_unittest.cc',
       'browser/signin/test_signin_client_builder.cc',
       'browser/ssl/certificate_error_report_unittest.cc',
-      'browser/ssl/chrome_fraudulent_certificate_reporter_unittest.cc',
       'browser/ssl/ssl_error_classification_unittest.cc',
       'browser/ssl/ssl_error_handler_unittest.cc',
       'browser/status_icons/status_icon_menu_model_unittest.cc',

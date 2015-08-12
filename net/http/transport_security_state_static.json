@@ -13,6 +13,8 @@
 //   static_spki_hashes: (list of strings) the set of allowed SPKIs hashes
 //   bad_static_spki_hashes: (optional list of strings) the set of forbidden
 //       SPKIs hashes
+//   report_uri: (optional string) the URI to send violation reports to;
+//       reports will be in the format defined in RFC 7469
 //
 // For a given pinset, a certificate is accepted if at least one of the
 // "static_spki_hashes" SPKIs is found in the chain and none of the
@@ -41,7 +43,8 @@
         "GoogleBackup2048",
         "GoogleG2",
         "GeoTrustGlobal"
-      ]
+      ],
+      "report_uri": "http://clients3.google.com/cert_upload_json"
     },
     {
       "name": "tor",

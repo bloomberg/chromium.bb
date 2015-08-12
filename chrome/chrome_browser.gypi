@@ -2728,8 +2728,6 @@
       'browser/ssl/cert_report_helper.h',
       'browser/ssl/certificate_error_report.cc',
       'browser/ssl/certificate_error_report.h',
-      'browser/ssl/chrome_fraudulent_certificate_reporter.cc',
-      'browser/ssl/chrome_fraudulent_certificate_reporter.h',
       'browser/ssl/chrome_ssl_host_state_delegate.cc',
       'browser/ssl/chrome_ssl_host_state_delegate.h',
       'browser/ssl/chrome_ssl_host_state_delegate_factory.cc',
@@ -3854,7 +3852,7 @@
       ],
     },
     {
-      # Protobuf compiler / generator for the fraudulent certificate reporting
+      # Protobuf compiler / generator for the certificate error reporting
       # protocol buffer.
       # GN version: //chrome/browser/ssl:cert_logger_proto
       'target_name': 'cert_logger_proto',

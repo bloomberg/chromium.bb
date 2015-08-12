@@ -21,7 +21,6 @@ URLRequestContext::URLRequestContext()
       host_resolver_(nullptr),
       cert_verifier_(nullptr),
       channel_id_service_(nullptr),
-      fraudulent_certificate_reporter_(nullptr),
       http_auth_handler_factory_(nullptr),
       proxy_service_(nullptr),
       network_delegate_(nullptr),
@@ -47,7 +46,6 @@ void URLRequestContext::CopyFrom(const URLRequestContext* other) {
   set_host_resolver(other->host_resolver_);
   set_cert_verifier(other->cert_verifier_);
   set_channel_id_service(other->channel_id_service_);
-  set_fraudulent_certificate_reporter(other->fraudulent_certificate_reporter_);
   set_http_auth_handler_factory(other->http_auth_handler_factory_);
   set_proxy_service(other->proxy_service_);
   set_ssl_config_service(other->ssl_config_service_.get());

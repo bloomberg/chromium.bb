@@ -49,15 +49,6 @@ class NET_EXPORT CertificateReportSender
   void OnReadCompleted(URLRequest* request, int bytes_read) override;
 
  private:
-  // Creates a URLRequest with which to send a certificate report to the
-  // server.
-  //
-  // TODO(estark): inline this into Send() once
-  // ChromeFraudulentCertificateReporter goes away.
-  virtual scoped_ptr<URLRequest> CreateURLRequest(
-      net::URLRequestContext* context,
-      const GURL& report_uri);
-
   net::URLRequestContext* const request_context_;
 
   CookiesPreference cookies_preference_;

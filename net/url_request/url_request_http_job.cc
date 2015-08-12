@@ -42,7 +42,6 @@
 #include "net/proxy/proxy_info.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config_service.h"
-#include "net/url_request/fraudulent_certificate_reporter.h"
 #include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_backoff_manager.h"
@@ -918,18 +917,6 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
   SetStatus(URLRequestStatus());
 
   const URLRequestContext* context = request_->context();
-
-  if (result == ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN &&
-      transaction_->GetResponseInfo() != NULL) {
-    FraudulentCertificateReporter* reporter =
-      context->fraudulent_certificate_reporter();
-    if (reporter != NULL) {
-      const SSLInfo& ssl_info = transaction_->GetResponseInfo()->ssl_info;
-      const std::string& host = request_->url().host();
-
-      reporter->SendReport(host, ssl_info);
-    }
-  }
 
   if (result == OK) {
     if (transaction_ && transaction_->GetResponseInfo()) {

@@ -63,20 +63,6 @@ class CertificateErrorReporterTest : public ::testing::Test {
   uint8_t server_private_key_[32];
 };
 
-// Test that CertificateErrorReporter::SendPinningViolationReport sends
-// a plaintext report for pinning violation reports.
-TEST_F(CertificateErrorReporterTest, PinningViolationSendReport) {
-  GURL url(kDummyHttpReportUri);
-  MockCertificateReportSender* mock_report_sender =
-      new MockCertificateReportSender();
-  CertificateErrorReporter reporter(url, server_public_key_,
-                                    kServerPublicKeyTestVersion,
-                                    make_scoped_ptr(mock_report_sender));
-  reporter.SendPinningViolationReport(kDummyReport);
-  EXPECT_EQ(mock_report_sender->latest_report_uri(), url);
-  EXPECT_EQ(mock_report_sender->latest_report(), kDummyReport);
-}
-
 // Test that CertificateErrorReporter::SendExtendedReportingReport sends
 // an encrypted or plaintext extended reporting report as appropriate.
 TEST_F(CertificateErrorReporterTest, ExtendedReportingSendReport) {
