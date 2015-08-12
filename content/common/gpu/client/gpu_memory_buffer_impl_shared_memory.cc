@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/numerics/safe_math.h"
-#include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace content {
@@ -150,7 +149,7 @@ bool GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(
     case gfx::BufferFormat::RGBX_8888:
       return true;
     case gfx::BufferFormat::YUV_420: {
-      size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
+      size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format);
       for (size_t i = 0; i < num_planes; ++i) {
         size_t factor = SubsamplingFactor(format, i);
         if (size.width() % factor || size.height() % factor)
@@ -167,7 +166,7 @@ bool GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(
 bool GpuMemoryBufferImplSharedMemory::Map(void** data) {
   DCHECK(!mapped_);
   size_t offset = 0;
-  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format_);
+  size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format_);
   for (size_t i = 0; i < num_planes; ++i) {
     data[i] = reinterpret_cast<uint8*>(shared_memory_->memory()) + offset;
     size_t row_size_in_bytes = 0;
@@ -187,7 +186,7 @@ void GpuMemoryBufferImplSharedMemory::Unmap() {
 }
 
 void GpuMemoryBufferImplSharedMemory::GetStride(int* stride) const {
-  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format_);
+  size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format_);
   for (size_t i = 0; i < num_planes; ++i) {
     size_t row_size_in_bytes = 0;
     bool valid_row_size =

@@ -8,9 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
+#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/gfx/buffer_format_util.h"
-#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace content {
 
@@ -58,7 +57,9 @@ class GpuMemoryBufferBufferHandle
  public:
   GpuMemoryBufferBufferHandle(gfx::GpuMemoryBuffer* gmb, size_t size)
       : gmb_(gmb),
-        data_(new void*[gfx::NumberOfPlanesForBufferFormat(gmb_->GetFormat())]),
+        data_(new void* [GpuMemoryBufferImpl::
+                             NumberOfPlanesForGpuMemoryBufferFormat(
+                                 gmb_->GetFormat())]),
         size_(size) {
     DCHECK(gmb && !gmb_->IsMapped());
     gmb_->Map(data_.get());

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/buffer_format_util.h"
 
 namespace content {
 namespace {
@@ -93,7 +92,8 @@ TEST_P(GpuMemoryBufferImplTest, Map) {
     EXPECT_FALSE(buffer->IsMapped());
 
     size_t num_planes =
-        gfx::NumberOfPlanesForBufferFormat(configuration.format);
+        GpuMemoryBufferImpl::NumberOfPlanesForGpuMemoryBufferFormat(
+            configuration.format);
 
     // Map buffer into user space.
     scoped_ptr<void*[]> mapped_buffers(new void*[num_planes]);
@@ -155,7 +155,8 @@ TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
     EXPECT_FALSE(buffer->IsMapped());
 
     size_t num_planes =
-        gfx::NumberOfPlanesForBufferFormat(configuration.format);
+        GpuMemoryBufferImpl::NumberOfPlanesForGpuMemoryBufferFormat(
+            configuration.format);
 
     // Map buffer into user space.
     scoped_ptr<void* []> mapped_buffers(new void* [num_planes]);

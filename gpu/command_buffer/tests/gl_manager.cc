@@ -30,7 +30,6 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_ref_counted_memory.h"
@@ -39,6 +38,26 @@
 
 namespace gpu {
 namespace {
+
+size_t NumberOfPlanesForGpuMemoryBufferFormat(gfx::BufferFormat format) {
+  switch (format) {
+    case gfx::BufferFormat::ATC:
+    case gfx::BufferFormat::ATCIA:
+    case gfx::BufferFormat::DXT1:
+    case gfx::BufferFormat::DXT5:
+    case gfx::BufferFormat::ETC1:
+    case gfx::BufferFormat::R_8:
+    case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::BGRA_8888:
+      return 1;
+    case gfx::BufferFormat::YUV_420:
+      return 3;
+  }
+  NOTREACHED();
+  return 0;
+}
 
 size_t SubsamplingFactor(gfx::BufferFormat format, int plane) {
   switch (format) {
@@ -97,7 +116,7 @@ size_t StrideInBytes(size_t width, gfx::BufferFormat format, int plane) {
 
 size_t BufferSizeInBytes(const gfx::Size& size, gfx::BufferFormat format) {
   size_t size_in_bytes = 0;
-  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
+  size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format);
   for (size_t i = 0; i < num_planes; ++i) {
     size_in_bytes += StrideInBytes(size.width(), format, i) *
                      (size.height() / SubsamplingFactor(format, i));
@@ -119,7 +138,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   // Overridden from gfx::GpuMemoryBuffer:
   bool Map(void** data) override {
     size_t offset = 0;
-    size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format_);
+    size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format_);
     for (size_t i = 0; i < num_planes; ++i) {
       data[i] = reinterpret_cast<uint8*>(&bytes_->data().front()) + offset;
       offset += StrideInBytes(size_.width(), format_, i) *
@@ -132,7 +151,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   bool IsMapped() const override { return mapped_; }
   gfx::BufferFormat GetFormat() const override { return format_; }
   void GetStride(int* stride) const override {
-    size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format_);
+    size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format_);
     for (size_t i = 0; i < num_planes; ++i)
       stride[i] = StrideInBytes(size_.width(), format_, i);
   }
