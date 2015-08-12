@@ -28,7 +28,6 @@
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGResourcePaintServer.h"
 #include "core/paint/CompositingRecorder.h"
-#include "core/paint/FloatClipRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGClipPainter.h"
 #include "core/paint/SVGFilterPainter.h"
@@ -92,7 +91,6 @@ private:
     LayoutSVGResourceClipper* m_clipper;
     SVGClipPainter::ClipperState m_clipperState;
     LayoutSVGResourceMasker* m_masker;
-    OwnPtr<FloatClipRecorder> m_clipRecorder;
     OwnPtr<CompositingRecorder> m_compositingRecorder;
     OwnPtr<ClipPathRecorder> m_clipPathRecorder;
     OwnPtr<SVGFilterRecordingContext> m_filterRecordingContext;

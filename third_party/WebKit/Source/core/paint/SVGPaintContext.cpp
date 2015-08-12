@@ -111,9 +111,9 @@ void SVGPaintContext::applyCompositingIfNecessary()
     WebBlendMode blendMode = style.hasBlendMode() && m_object->isBlendingAllowed() ?
         style.blendMode() : WebBlendModeNormal;
     if (opacity < 1 || blendMode != WebBlendModeNormal) {
-        m_clipRecorder = adoptPtr(new FloatClipRecorder(*m_paintInfo.context, *m_object, m_paintInfo.phase, m_object->paintInvalidationRectInLocalCoordinates()));
+        const FloatRect compositingBounds = m_object->paintInvalidationRectInLocalCoordinates();
         m_compositingRecorder = adoptPtr(new CompositingRecorder(*m_paintInfo.context, *m_object,
-            WebCoreCompositeToSkiaComposite(CompositeSourceOver, blendMode), opacity));
+            WebCoreCompositeToSkiaComposite(CompositeSourceOver, blendMode), opacity, &compositingBounds));
     }
 }
 
