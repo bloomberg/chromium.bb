@@ -813,6 +813,10 @@ public:
         LinkRelPrerender = 918,
         LinkRelNext = 919,
         PrefixedPerformanceResourceTimingBufferFull = 920,
+        CSSValuePrefixedMinContent = 921,
+        CSSValuePrefixedMaxContent = 922,
+        CSSValuePrefixedFitContent = 923,
+        CSSValuePrefixedFillAvailable = 924,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

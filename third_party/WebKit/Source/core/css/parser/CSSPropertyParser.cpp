@@ -371,10 +371,28 @@ bool CSSPropertyParser::validWidthOrHeight(CSSParserValue* value, Units unitless
     int id = value->id;
     if (id == CSSValueIntrinsic || id == CSSValueMinIntrinsic || id == CSSValueWebkitMinContent || id == CSSValueWebkitMaxContent || id == CSSValueWebkitFillAvailable || id == CSSValueWebkitFitContent) {
         if (m_context.useCounter()) {
-            if (value->id == CSSValueIntrinsic)
+            switch (value->id) {
+            case CSSValueIntrinsic:
                 m_context.useCounter()->count(UseCounter::LegacyCSSValueIntrinsic);
-            else if (value->id == CSSValueMinIntrinsic)
+                break;
+            case CSSValueMinIntrinsic:
                 m_context.useCounter()->count(UseCounter::LegacyCSSValueMinIntrinsic);
+                break;
+            case CSSValueWebkitMinContent:
+                m_context.useCounter()->count(UseCounter::CSSValuePrefixedMinContent);
+                break;
+            case CSSValueWebkitMaxContent:
+                m_context.useCounter()->count(UseCounter::CSSValuePrefixedMaxContent);
+                break;
+            case CSSValueWebkitFillAvailable:
+                m_context.useCounter()->count(UseCounter::CSSValuePrefixedFillAvailable);
+                break;
+            case CSSValueWebkitFitContent:
+                m_context.useCounter()->count(UseCounter::CSSValuePrefixedFitContent);
+                break;
+            default:
+                ASSERT_NOT_REACHED();
+            }
         }
         return true;
     }
