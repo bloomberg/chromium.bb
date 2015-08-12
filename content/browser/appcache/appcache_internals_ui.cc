@@ -4,8 +4,6 @@
 
 #include "content/browser/appcache/appcache_internals_ui.h"
 
-#include <sstream>
-
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -107,12 +105,10 @@ scoped_ptr<base::ListValue> GetListValueFromAppCacheInfoCollection(
 scoped_ptr<base::DictionaryValue> GetDictionaryValueForAppCacheResourceInfo(
     const AppCacheResourceInfo& resource_info) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  dict->Set("url", scoped_ptr<base::StringValue>(
-                       new base::StringValue(resource_info.url.spec())));
-  dict->Set(
+  dict->SetString("url", resource_info.url.spec());
+  dict->SetString(
       "size",
-      scoped_ptr<base::StringValue>(new base::StringValue(base::UTF16ToUTF8(
-          base::FormatBytesUnlocalized(resource_info.size)))));
+      base::UTF16ToUTF8(base::FormatBytesUnlocalized(resource_info.size)));
   dict->SetString("responseId", base::Int64ToString(resource_info.response_id));
   dict->SetBoolean("isExplicit", resource_info.is_explicit);
   dict->SetBoolean("isManifest", resource_info.is_manifest);
