@@ -21,6 +21,10 @@ namespace {
 
 const int kRenderProcessId = 11;
 
+void SaveStatus(ServiceWorkerStatusCode* out, ServiceWorkerStatusCode status) {
+  *out = status;
+}
+
 void SaveStatusAndCall(ServiceWorkerStatusCode* out,
                        const base::Closure& callback,
                        ServiceWorkerStatusCode status) {
@@ -30,10 +34,18 @@ void SaveStatusAndCall(ServiceWorkerStatusCode* out,
 
 }  // namespace
 
-class EmbeddedWorkerInstanceTest : public testing::Test {
+class EmbeddedWorkerInstanceTest : public testing::Test,
+                                   public EmbeddedWorkerInstance::Listener {
  protected:
   EmbeddedWorkerInstanceTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+
+  void OnDetached(EmbeddedWorkerInstance::Status old_status) override {
+    detached_ = true;
+    detached_old_status_ = old_status;
+  }
+
+  bool OnMessageReceived(const IPC::Message& message) override { return false; }
 
   void SetUp() override {
     helper_.reset(
@@ -64,6 +76,9 @@ class EmbeddedWorkerInstanceTest : public testing::Test {
 
   TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+  bool detached_ = false;
+  EmbeddedWorkerInstance::Status detached_old_status_ =
+      EmbeddedWorkerInstance::STOPPED;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstanceTest);
@@ -211,6 +226,38 @@ TEST_F(EmbeddedWorkerInstanceTest, RemoveWorkerInSharedProcess) {
                      worker2->embedded_worker_id()));
 
   worker2->Stop();
+}
+
+// Test detaching in the middle of the start worker sequence.
+TEST_F(EmbeddedWorkerInstanceTest, DetachDuringStart) {
+  scoped_ptr<EmbeddedWorkerInstance> worker =
+      embedded_worker_registry()->CreateWorker();
+  scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params(
+      new EmbeddedWorkerMsg_StartWorker_Params());
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  // Pretend we had a process allocated but then got detached before
+  // the start sequence reached SendStartWorker.
+  worker->process_id_ = -1;
+  worker->SendStartWorker(params.Pass(), base::Bind(&SaveStatus, &status), true,
+                          -1, false);
+  EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT, status);
+}
+
+// Test stopping in the middle of the start worker sequence, before
+// a process is allocated.
+TEST_F(EmbeddedWorkerInstanceTest, StopDuringStart) {
+  scoped_ptr<EmbeddedWorkerInstance> worker =
+      embedded_worker_registry()->CreateWorker();
+  worker->AddListener(this);
+  scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params(
+      new EmbeddedWorkerMsg_StartWorker_Params());
+  // Pretend we stop during starting before we got a process allocated.
+  worker->status_ = EmbeddedWorkerInstance::STARTING;
+  worker->process_id_ = -1;
+  worker->Stop();
+  EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
+  EXPECT_TRUE(detached_);
+  EXPECT_EQ(EmbeddedWorkerInstance::STARTING, detached_old_status_);
 }
 
 }  // namespace content

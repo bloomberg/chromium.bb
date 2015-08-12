@@ -193,13 +193,17 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::Stop() {
   DCHECK(status_ == STARTING || status_ == RUNNING) << status_;
   ServiceWorkerStatusCode status =
       registry_->StopWorker(process_id_, embedded_worker_id_);
-  // StopWorker could fail if we can't talk to the worker, which should
-  // basically means it's being terminated, so unconditionally change
-  // the status to STOPPING.
-  status_ = STOPPING;
-  FOR_EACH_OBSERVER(Listener, listener_list_, OnStopping());
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.SendStopWorker.Status", status,
                             SERVICE_WORKER_ERROR_MAX_VALUE);
+  // StopWorker could fail if we were starting up and don't have a process yet,
+  // or we can no longer communicate with the process. So just detach.
+  if (status != SERVICE_WORKER_OK) {
+    OnDetached();
+    return status;
+  }
+
+  status_ = STOPPING;
+  FOR_EACH_OBSERVER(Listener, listener_list_, OnStopping());
   return status;
 }
 
@@ -310,6 +314,15 @@ void EmbeddedWorkerInstance::SendStartWorker(
     bool is_new_process,
     int worker_devtools_agent_route_id,
     bool wait_for_debugger) {
+  // We may have been detached or stopped at some point during the start up
+  // process, making process_id_ and other state invalid. If that happened,
+  // abort instead of trying to send the IPC.
+  if (status_ != STARTING) {
+    callback.Run(SERVICE_WORKER_ERROR_ABORT);
+    ReleaseProcess();
+    return;
+  }
+
   if (worker_devtools_agent_route_id != MSG_ROUTING_NONE) {
     DCHECK(!devtools_proxy_);
     devtools_proxy_.reset(new DevToolsProxy(process_id_,
@@ -482,7 +495,7 @@ void EmbeddedWorkerInstance::OnNetworkAccessedForScriptLoad() {
 
 void EmbeddedWorkerInstance::ReleaseProcess() {
   devtools_proxy_.reset();
-  if (context_)
+  if (context_ && process_id_ != -1)
     context_->process_manager()->ReleaseWorkerProcess(embedded_worker_id_);
   status_ = STOPPED;
   process_id_ = -1;

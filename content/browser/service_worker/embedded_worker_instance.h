@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_EMBEDDED_WORKER_INSTANCE_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -88,9 +89,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
                                         const base::string16& message,
                                         int line_number,
                                         const GURL& source_url) {}
-    // These should return false if the message is not handled by this
-    // listener. (TODO(kinuko): consider using IPC::Listener interface)
-    // TODO(kinuko): Deprecate OnReplyReceived.
+    // Returns false if the message is not handled by this listener.
     virtual bool OnMessageReceived(const IPC::Message& message) = 0;
   };
 
@@ -152,6 +151,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   class DevToolsProxy;
   friend class EmbeddedWorkerRegistry;
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, StartAndStop);
+  FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, DetachDuringStart);
+  FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, StopDuringStart);
 
   // Constructor is called via EmbeddedWorkerRegistry::CreateWorker().
   // This instance holds a ref of |registry|.

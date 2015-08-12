@@ -611,6 +611,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool skip_recording_startup_time_ = false;
   bool force_bypass_cache_for_scripts_ = false;
   bool is_update_scheduled_ = false;
+  bool in_dtor_ = false;
 
   std::vector<int> pending_skip_waiting_requests_;
   scoped_ptr<net::HttpResponseInfo> main_script_http_info_;

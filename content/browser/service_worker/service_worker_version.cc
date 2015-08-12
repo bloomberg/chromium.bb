@@ -95,7 +95,6 @@ void RunCallbacks(ServiceWorkerVersion* version,
                   const Arg& arg) {
   CallbackArray callbacks;
   callbacks.swap(*callbacks_ptr);
-  scoped_refptr<ServiceWorkerVersion> protect(version);
   for (const auto& callback : callbacks)
     callback.Run(arg);
 }
@@ -547,6 +546,8 @@ ServiceWorkerVersion::ServiceWorkerVersion(
 }
 
 ServiceWorkerVersion::~ServiceWorkerVersion() {
+  in_dtor_ = true;
+
   // The user may have closed the tab waiting for SW to start up.
   if (GetTickDuration(start_time_) >
       base::TimeDelta::FromSeconds(
@@ -1230,6 +1231,7 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
 void ServiceWorkerVersion::OnStartSentAndScriptEvaluated(
     ServiceWorkerStatusCode status) {
   if (status != SERVICE_WORKER_OK) {
+    scoped_refptr<ServiceWorkerVersion> protect(this);
     RunCallbacks(this, &start_callbacks_,
                  DeduceStartWorkerFailureReason(status));
   }
@@ -1963,7 +1965,7 @@ void ServiceWorkerVersion::StopTimeoutTimer() {
   timeout_timer_.Stop();
 
   // Trigger update if worker is stale.
-  if (!stale_time_.is_null()) {
+  if (!in_dtor_ && !stale_time_.is_null()) {
     ClearTick(&stale_time_);
     if (!update_timer_.IsRunning())
       ScheduleUpdate();
@@ -2239,19 +2241,19 @@ void ServiceWorkerVersion::FoundRegistrationForUpdate(
 void ServiceWorkerVersion::OnStoppedInternal(
     EmbeddedWorkerInstance::Status old_status) {
   DCHECK_EQ(STOPPED, running_status());
-  scoped_refptr<ServiceWorkerVersion> protect(this);
+  scoped_refptr<ServiceWorkerVersion> protect;
+  if (!in_dtor_)
+    protect = this;
 
   DCHECK(metrics_);
   metrics_.reset();
 
   bool should_restart = !is_redundant() && !start_callbacks_.empty() &&
-                        (old_status != EmbeddedWorkerInstance::STARTING);
+                        (old_status != EmbeddedWorkerInstance::STARTING) &&
+                        !in_dtor_ && !ping_controller_->IsTimedOut();
 
   ClearTick(&stop_time_);
   StopTimeoutTimer();
-
-  if (ping_controller_->IsTimedOut())
-    should_restart = false;
 
   // Fire all stop callbacks.
   RunCallbacks(this, &stop_callbacks_, SERVICE_WORKER_OK);
