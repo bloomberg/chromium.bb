@@ -63,23 +63,11 @@ public class AccountManagerHelper {
 
     private static final int MAX_TRIES = 3;
 
-    private static AccountManagerDelegate sDefaultAccountManagerDelegate;
-
     private static AccountManagerHelper sAccountManagerHelper;
 
     private final AccountManagerDelegate mAccountManager;
 
     private Context mApplicationContext;
-
-    /**
-     * Provides functionality to set the default {@link AccountManagerDelegate} to be used when
-     * the AccountManagerHelper is created. This may be set during application startup to ensure
-     * all callers get the correct implementation.
-     * @param delegate the default AccountManagerDelegate to use when constructing the instance.
-     */
-    public static void setDefaultAccountManagerDelegate(AccountManagerDelegate delegate) {
-        sDefaultAccountManagerDelegate = delegate;
-    }
 
     /**
      * A simple callback for getAuthToken.
@@ -103,11 +91,24 @@ public class AccountManagerHelper {
     }
 
     /**
-     * A factory method for the AccountManagerHelper.
+     * Initialize AccountManagerHelper with a custom AccountManagerDelegate.
+     * Ensures that the singleton AccountManagerHelper hasn't been created yet.
+     * This can be overriden in tests using the overrideAccountManagerHelperForTests method.
      *
-     * It is possible to override the AccountManager to use in tests for the instance of the
-     * AccountManagerHelper by calling overrideAccountManagerHelperForTests(...) with
-     * your MockAccountManager.
+     * @param context the applicationContext is retrieved from the context used as an argument.
+     * @param delegate the custom AccountManagerDelegate to use.
+     */
+    public static void initializeAccountManagerHelper(
+            Context context, AccountManagerDelegate delegate) {
+        synchronized (sLock) {
+            assert sAccountManagerHelper == null;
+            sAccountManagerHelper = new AccountManagerHelper(context, delegate);
+        }
+    }
+
+    /**
+     * A getter method for AccountManagerHelper singleton which also initializes it if not wasn't
+     * already initialized.
      *
      * @param context the applicationContext is retrieved from the context used as an argument.
      * @return a singleton instance of the AccountManagerHelper
@@ -115,23 +116,26 @@ public class AccountManagerHelper {
     public static AccountManagerHelper get(Context context) {
         synchronized (sLock) {
             if (sAccountManagerHelper == null) {
-                if (sDefaultAccountManagerDelegate == null) {
-                    sAccountManagerHelper = new AccountManagerHelper(context,
-                            new SystemAccountManagerDelegate(context));
-                } else {
-                    sAccountManagerHelper = new AccountManagerHelper(context,
-                            sDefaultAccountManagerDelegate);
-                }
+                sAccountManagerHelper = new AccountManagerHelper(
+                        context, new SystemAccountManagerDelegate(context));
             }
         }
         return sAccountManagerHelper;
     }
 
+    /**
+     * Override AccountManagerHelper with a custom AccountManagerDelegate in tests.
+     * Unlike initializeAccountManagerHelper, this will override the existing instance of
+     * AccountManagerHelper if any. Only for use in Tests.
+     *
+     * @param context the applicationContext is retrieved from the context used as an argument.
+     * @param delegate the custom AccountManagerDelegate to use.
+     */
     @VisibleForTesting
-    public static void overrideAccountManagerHelperForTests(Context context,
-            AccountManagerDelegate accountManager) {
+    public static void overrideAccountManagerHelperForTests(
+            Context context, AccountManagerDelegate delegate) {
         synchronized (sLock) {
-            sAccountManagerHelper = new AccountManagerHelper(context, accountManager);
+            sAccountManagerHelper = new AccountManagerHelper(context, delegate);
         }
     }
 

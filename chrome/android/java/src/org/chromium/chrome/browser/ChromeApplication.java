@@ -211,10 +211,10 @@ public class ChromeApplication extends ContentApplication {
             }
         });
 
-        // Set the default AccountManagerDelegate to ensure it is always used when the instance
-        // of the AccountManagerHelper is created. Must be done before AccountMangerHelper.get(...)
-        // is called.
-        AccountManagerHelper.setDefaultAccountManagerDelegate(createAccountManagerDelegate());
+        // Initialize the AccountManagerHelper with the correct AccountManagerDelegate. Must be done
+        // only once and before AccountMangerHelper.get(...) is called to avoid using the
+        // default AccountManagerDelegate.
+        AccountManagerHelper.initializeAccountManagerHelper(this, createAccountManagerDelegate());
 
         // Set the unique identification generator for invalidations.  The
         // invalidations system can start and attempt to fetch the client ID
