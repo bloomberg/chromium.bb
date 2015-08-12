@@ -117,7 +117,6 @@ crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Failu
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/obsolete-error-events.html [ Failure Pass Timeout ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/remove-cache.html [ Failure Pass ]
 crbug.com/248938 virtual/threaded/transitions/cancel-and-start-new.html [ Pass Failure ]
-crbug.com/377950 svg/repaint/image-animation-with-zoom.html [ NeedsRebaseline ]
 crbug.com/248938 virtual/threaded/animations/change-keyframes-name.html [ Failure Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/change-one-anim.html [ Failure Pass ]
 crbug.com/248938 virtual/threaded/animations/combo-transform-translate+scale.html [ Failure Pass ]
