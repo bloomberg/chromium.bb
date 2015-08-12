@@ -47,6 +47,11 @@ class OfflinePageBridge : public OfflinePageModel::Observer {
                 jobject j_web_contents,
                 jlong bookmark_id);
 
+  void DeletePage(JNIEnv* env,
+                  jobject obj,
+                  jobject j_callback_obj,
+                  jlong bookmark_id);
+
  private:
   void NotifyIfDoneLoading() const;
   base::FilePath GetDownloadsPath() const;

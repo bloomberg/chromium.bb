@@ -47,6 +47,11 @@ SavePageResult ToSavePageResult(ArchiverResult archiver_result) {
   return result;
 }
 
+void DeleteArchiveFile(const base::FilePath& file_path, bool* success) {
+  DCHECK(success);
+  *success = base::DeleteFile(file_path, false);
+}
+
 }  // namespace
 
 OfflinePageModel::OfflinePageModel(
@@ -86,29 +91,36 @@ void OfflinePageModel::SavePage(const GURL& url,
   pending_archivers_.push_back(archiver.Pass());
 }
 
-void OfflinePageModel::DeletePage(const GURL& url,
-                                  const DeletePageCallback& callback) {
+void OfflinePageModel::DeletePageByBookmarkId(
+    int64 bookmark_id,
+    const DeletePageCallback& callback) {
   DCHECK(is_loaded_);
 
   for (const auto& page : offline_pages_) {
-    if (page.url == url) {
-      bool* success = new bool(false);
-      task_runner_->PostTaskAndReply(
-          FROM_HERE,
-          base::Bind(&OfflinePageModel::DeleteArchiverFile,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     page.file_path,
-                     success),
-          base::Bind(&OfflinePageModel::OnDeleteArchiverFileDone,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     url,
-                     callback,
-                     base::Owned(success)));
+    if (page.bookmark_id == bookmark_id) {
+      DeletePage(page, callback);
       return;
     }
   }
 
   callback.Run(DeletePageResult::NOT_FOUND);
+}
+
+void OfflinePageModel::DeletePage(const OfflinePageItem& offline_page,
+                                  const DeletePageCallback& callback) {
+  DCHECK(is_loaded_);
+
+  bool* success = new bool(false);
+  task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&DeleteArchiveFile,
+                 offline_page.file_path,
+                 success),
+      base::Bind(&OfflinePageModel::OnDeleteArchiverFileDone,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 offline_page.url,
+                 callback,
+                 base::Owned(success)));
 }
 
 const std::vector<OfflinePageItem>& OfflinePageModel::GetAllPages() const {
@@ -204,14 +216,6 @@ void OfflinePageModel::InformSavePageDone(const SavePageCallback& callback,
 void OfflinePageModel::DeletePendingArchiver(OfflinePageArchiver* archiver) {
   pending_archivers_.erase(std::find(
       pending_archivers_.begin(), pending_archivers_.end(), archiver));
-}
-
-void OfflinePageModel::DeleteArchiverFile(const base::FilePath& file_path,
-                                          bool* success) {
-  DCHECK(success);
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
-
-  *success = base::DeleteFile(file_path, false);
 }
 
 void OfflinePageModel::OnDeleteArchiverFileDone(

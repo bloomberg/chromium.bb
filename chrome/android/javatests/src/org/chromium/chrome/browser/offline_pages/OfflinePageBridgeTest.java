@@ -15,6 +15,7 @@ import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
+import org.chromium.components.offline_pages.DeletePageResult;
 import org.chromium.components.offline_pages.SavePageResult;
 
 import java.util.ArrayList;
@@ -102,6 +103,18 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                 mOfflinePageBridge.getPageByBookmarkId(new BookmarkId(-42, BookmarkType.NORMAL)));
     }
 
+    @MediumTest
+    public void testDeleteOfflinePage() throws Exception {
+        deletePage(BOOKMARK_ID, DeletePageResult.NOT_FOUND);
+        loadUrl(TEST_PAGE);
+        savePage(SavePageResult.SUCCESS, TEST_PAGE);
+        assertNotNull("Offline page should be available, but it is not.",
+                mOfflinePageBridge.getPageByBookmarkId(BOOKMARK_ID));
+        deletePage(BOOKMARK_ID, DeletePageResult.SUCCESS);
+        assertNull("Offline page should be gone, but it is available.",
+                mOfflinePageBridge.getPageByBookmarkId(BOOKMARK_ID));
+    }
+
     private void savePage(final int expectedResult, final String expectedUrl)
             throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
@@ -124,7 +137,34 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                                         "Save result incorrect.", expectedResult, savePageResult);
                                 semaphore.release();
                             }
+
+                            @Override
+                            public void onDeletePageDone(int deletePageResult) {
+                            }
                         });
+            }
+        });
+        assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void deletePage(BookmarkId bookmarkId, final int expectedResult)
+            throws InterruptedException {
+        final Semaphore semaphore = new Semaphore(0);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mOfflinePageBridge.deletePage(BOOKMARK_ID, new OfflinePageCallback() {
+                    @Override
+                    public void onSavePageDone(int savePageResult, String url) {
+                    }
+
+                    @Override
+                    public void onDeletePageDone(int deletePageResult) {
+                        assertEquals(
+                                "Delete result incorrect.", expectedResult, deletePageResult);
+                        semaphore.release();
+                    }
+                });
             }
         });
         assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));

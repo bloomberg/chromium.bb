@@ -111,9 +111,10 @@ class OfflinePageModel : public KeyedService {
                 scoped_ptr<OfflinePageArchiver> archiver,
                 const SavePageCallback& callback);
 
-  // Deletes an offline page related to the passed |url|. Requires that the
-  // model is loaded
-  void DeletePage(const GURL& url, const DeletePageCallback& callback);
+  // Deletes an offline page related to the passed |bookmark_id|. Requires that
+  // the model is loaded.
+  void DeletePageByBookmarkId(int64 bookmark_id,
+                              const DeletePageCallback& callback);
 
   // Gets all available offline pages. Requires that the model is loaded.
   const std::vector<OfflinePageItem>& GetAllPages() const;
@@ -131,6 +132,9 @@ class OfflinePageModel : public KeyedService {
 
  private:
   typedef ScopedVector<OfflinePageArchiver> PendingArchivers;
+
+  void DeletePage(const OfflinePageItem& offline_page,
+                  const  DeletePageCallback& callback);
 
   // Callback for loading pages from the offline page metadata store.
   void OnLoadDone(bool success,
@@ -154,7 +158,6 @@ class OfflinePageModel : public KeyedService {
   void DeletePendingArchiver(OfflinePageArchiver* archiver);
 
   // Steps for deleting files and data for an offline page.
-  void DeleteArchiverFile(const base::FilePath& file_path, bool* success);
   void OnDeleteArchiverFileDone(
       const GURL& url,
       const DeletePageCallback& callback,
