@@ -71,6 +71,7 @@ class CC_EXPORT DisplayItemList
   bool IsSuitableForGpuRasterization() const;
   int ApproximateOpCount() const;
   size_t ApproximateMemoryUsage() const;
+  bool ShouldBeAnalyzedForSolidColor() const;
 
   bool RetainsIndividualDisplayItems() const;
 

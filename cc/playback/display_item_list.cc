@@ -25,6 +25,10 @@ namespace cc {
 
 namespace {
 
+// We don't perform per-layer solid color analysis when there are too many skia
+// operations.
+const int kOpCountThatIsOkToAnalyze = 10;
+
 bool DisplayItemsTracingEnabled() {
   bool tracing_enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(
@@ -238,6 +242,10 @@ size_t DisplayItemList::ApproximateMemoryUsage() const {
   // contribute to memory usage?
 
   return memory_usage;
+}
+
+bool DisplayItemList::ShouldBeAnalyzedForSolidColor() const {
+  return ApproximateOpCount() <= kOpCountThatIsOkToAnalyze;
 }
 
 scoped_refptr<base::trace_event::ConvertableToTraceFormat>

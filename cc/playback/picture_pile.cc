@@ -18,9 +18,6 @@ namespace {
 // picture that intersects the visible layer rect expanded by this distance
 // will be recorded.
 const int kPixelDistanceToRecord = 8000;
-// We don't perform solid color analysis on images that have more than 10 skia
-// operations.
-const int kOpCountThatIsOkToAnalyze = 10;
 
 // Dimensions of the tiles in this picture pile as well as the dimensions of
 // the base picture in each tile.
@@ -651,7 +648,7 @@ void PicturePile::DetermineIfSolidColor() {
     return;
 
   // Don't bother doing more work if the first image is too complicated.
-  if (picture->ApproximateOpCount() > kOpCountThatIsOkToAnalyze)
+  if (!picture->ShouldBeAnalyzedForSolidColor())
     return;
 
   // Make sure all of the mapped images point to the same picture.

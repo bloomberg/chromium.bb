@@ -19,9 +19,6 @@ namespace {
 // picture that intersects the visible layer rect expanded by this distance
 // will be recorded.
 const int kPixelDistanceToRecord = 8000;
-// We don't perform solid color analysis on images that have more than 10 skia
-// operations.
-const int kOpCountThatIsOkToAnalyze = 10;
 
 // This is the distance, in layer space, by which the recorded viewport has to
 // change before causing a paint of the new content. For example, it means
@@ -245,7 +242,7 @@ void DisplayListRecordingSource::DetermineIfSolidColor() {
   is_solid_color_ = false;
   solid_color_ = SK_ColorTRANSPARENT;
 
-  if (display_list_->ApproximateOpCount() > kOpCountThatIsOkToAnalyze)
+  if (!display_list_->ShouldBeAnalyzedForSolidColor())
     return;
 
   gfx::Size layer_size = GetSize();

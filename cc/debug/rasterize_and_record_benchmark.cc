@@ -20,6 +20,7 @@
 #include "cc/playback/picture_pile.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
+#include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -151,6 +152,11 @@ void RasterizeAndRecordBenchmark::RunOnPictureLayer(
       do {
         picture = Picture::Create(visible_layer_rect, painter, tile_grid_size,
                                   false, mode);
+        if (picture->ShouldBeAnalyzedForSolidColor()) {
+          gfx::Size layer_size = layer->paint_properties().bounds;
+          skia::AnalysisCanvas canvas(layer_size.width(), layer_size.height());
+          picture->Raster(&canvas, nullptr, gfx::Rect(), 1.f);
+        }
         if (memory_used) {
           // Verify we are recording the same thing each time.
           DCHECK(memory_used == picture->ApproximateMemoryUsage());
@@ -220,6 +226,11 @@ void RasterizeAndRecordBenchmark::RunOnDisplayListLayer(
       do {
         display_list = painter->PaintContentsToDisplayList(visible_layer_rect,
                                                            painting_control);
+        if (display_list->ShouldBeAnalyzedForSolidColor()) {
+          gfx::Size layer_size = layer->paint_properties().bounds;
+          skia::AnalysisCanvas canvas(layer_size.width(), layer_size.height());
+          display_list->Raster(&canvas, nullptr, gfx::Rect(), 1.f);
+        }
 
         if (memory_used) {
           // Verify we are recording the same thing each time.

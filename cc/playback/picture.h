@@ -54,6 +54,7 @@ class CC_EXPORT Picture
   bool IsSuitableForGpuRasterization(const char** reason) const;
   int ApproximateOpCount() const;
   size_t ApproximateMemoryUsage() const;
+  bool ShouldBeAnalyzedForSolidColor() const;
 
   bool HasText() const;
 
