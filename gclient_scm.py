@@ -30,6 +30,10 @@ GSUTIL_DEFAULT_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), 'gsutil.py')
 
 
+class NoUsableRevError(gclient_utils.Error):
+  """Raised if requested revision isn't found in checkout."""
+
+
 class DiffFiltererWrapper(object):
   """Simple base class which tracks which file is being diffed and
   replaces instances of its file name in the original and
@@ -717,7 +721,15 @@ class GitWrapper(SCMWrapper):
       deps_revision = default_rev
     if deps_revision.startswith('refs/heads/'):
       deps_revision = deps_revision.replace('refs/heads/', self.remote + '/')
-    deps_revision = self.GetUsableRev(deps_revision, options)
+    try:
+      deps_revision = self.GetUsableRev(deps_revision, options)
+    except NoUsableRevError as e:
+      # If the DEPS entry's url and hash changed, try to update the origin.
+      # See also http://crbug.com/520067.
+      logging.warn(
+          'Couldn\'t find usable revision, will retrying to update instead: %s',
+          e.message)
+      return self.update(options, [], file_list)
 
     if file_list is not None:
       files = self._Capture(['diff', deps_revision, '--name-only']).split()
@@ -755,7 +767,7 @@ class GitWrapper(SCMWrapper):
     will be called on the source."""
     sha1 = None
     if not os.path.isdir(self.checkout_path):
-      raise gclient_utils.Error(
+      raise NoUsableRevError(
           ( 'We could not find a valid hash for safesync_url response "%s".\n'
             'Safesync URLs with a git checkout currently require the repo to\n'
             'be cloned without a safesync_url before adding the safesync_url.\n'
@@ -789,7 +801,7 @@ class GitWrapper(SCMWrapper):
                  'the closest sane git revision, which is:\n'
                  '  %s\n' % (rev, e.message))
         if not sha1:
-          raise gclient_utils.Error(
+          raise NoUsableRevError(
               ( 'It appears that either your git-svn remote is incorrectly\n'
                 'configured or the revision in your safesync_url is\n'
                 'higher than git-svn remote\'s HEAD as we couldn\'t find a\n'
@@ -805,7 +817,7 @@ class GitWrapper(SCMWrapper):
           sha1 = rev
 
     if not sha1:
-      raise gclient_utils.Error(
+      raise NoUsableRevError(
           ( 'We could not find a valid hash for safesync_url response "%s".\n'
             'Safesync URLs with a git checkout currently require a git-svn\n'
             'remote or a safesync_url that provides git sha1s. Please add a\n'
@@ -1590,7 +1602,7 @@ class SVNWrapper(SCMWrapper):
   def GetUsableRev(self, rev, _options):
     """Verifies the validity of the revision for this repository."""
     if not scm.SVN.IsValidRevision(url='%s@%s' % (self.url, rev)):
-      raise gclient_utils.Error(
+      raise NoUsableRevError(
         ( '%s isn\'t a valid revision. Please check that your safesync_url is\n'
           'correct.') % rev)
     return rev
