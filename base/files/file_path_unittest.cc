@@ -10,6 +10,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+#if defined(OS_POSIX)
+#include "base/test/scoped_locale.h"
+#endif
+
 // This macro helps avoid wrapped lines in the test structs.
 #define FPL(x) FILE_PATH_LITERAL(x)
 
@@ -1125,6 +1129,10 @@ TEST_F(FilePathTest, FromUTF8Unsafe_And_AsUTF8Unsafe) {
     { FPL("\uFF21\uFF22\uFF23.txt"),
       "\xEF\xBC\xA1\xEF\xBC\xA2\xEF\xBC\xA3.txt" },
   };
+
+#if !defined(SYSTEM_NATIVE_UTF8) && defined(OS_LINUX)
+  ScopedLocale locale("en_US.UTF-8");
+#endif
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
     // Test FromUTF8Unsafe() works.

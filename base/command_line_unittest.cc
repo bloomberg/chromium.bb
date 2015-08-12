@@ -378,6 +378,9 @@ TEST(CommandLineTest, ProgramQuotes) {
 
 // Calling Init multiple times should not modify the previous CommandLine.
 TEST(CommandLineTest, Init) {
+  // Call Init without checking output once so we know it's been called
+  // whether or not the test runner does so.
+  CommandLine::Init(0, NULL);
   CommandLine* initial = CommandLine::ForCurrentProcess();
   EXPECT_FALSE(CommandLine::Init(0, NULL));
   CommandLine* current = CommandLine::ForCurrentProcess();
