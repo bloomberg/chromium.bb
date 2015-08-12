@@ -1865,8 +1865,7 @@ AXObject::AXRange AXLayoutObject::selection() const
     // Find the closest node that has a corresponding AXObject.
     // This is because some nodes may be aria hidden or might not even have
     // a layout object if they are part of the shadow DOM.
-    while (anchorNode && !(anchorObject = axObjectCache().getOrCreate(anchorNode))
-        && (!anchorObject->isAXLayoutObject() || !anchorObject->node() || anchorObject->accessibilityIsIgnored())) {
+    while (anchorNode && !getUnignoredObjectFromNode(*anchorNode)) {
         if (anchorNode->nextSibling())
             anchorNode = anchorNode->nextSibling();
         else
@@ -1879,8 +1878,7 @@ AXObject::AXRange AXLayoutObject::selection() const
     ASSERT(focusNode);
 
     RefPtrWillBeRawPtr<AXObject> focusObject = nullptr;
-    while (focusNode && !(focusObject = axObjectCache().getOrCreate(focusNode))
-        && (!focusObject->isAXLayoutObject() || !focusObject->node() || focusObject->accessibilityIsIgnored())) {
+    while (focusNode && !getUnignoredObjectFromNode(*focusNode)) {
         if (focusNode->previousSibling())
             focusNode = focusNode->previousSibling();
         else
@@ -1980,6 +1978,22 @@ int AXLayoutObject::indexForVisiblePosition(const VisiblePosition& position) con
 
     return TextIterator::rangeLength(range->startPosition(), range->endPosition());
 }
+
+AXLayoutObject* AXLayoutObject::getUnignoredObjectFromNode(Node& node) const
+{
+    if (isDetached())
+        return nullptr;
+
+    AXObject* axObject = axObjectCache().getOrCreate(&node);
+    if (!axObject)
+        return nullptr;
+
+    if (axObject->isAXLayoutObject() && !axObject->accessibilityIsIgnored())
+        return toAXLayoutObject(axObject);
+
+    return nullptr;
+}
+
 
 //
 // Modify or take an action on an object.

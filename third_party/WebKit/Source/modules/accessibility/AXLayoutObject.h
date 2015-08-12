@@ -227,6 +227,7 @@ private:
     LayoutRect computeElementRect() const;
     AXRange textControlSelection() const;
     int indexForVisiblePosition(const VisiblePosition&) const;
+    AXLayoutObject* getUnignoredObjectFromNode(Node&) const;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXLayoutObject, isAXLayoutObject());
