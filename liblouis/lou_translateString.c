@@ -1114,6 +1114,196 @@ inSequence()
 	return 1;
 }
 
+static int pattern_check_chars(const widechar input, const widechar *expr)
+{
+	int rcrs, rcnt, i;
+
+	rcrs = 0;
+	rcnt = expr[0] + 1;
+	rcrs++;
+
+	for(i = rcrs; i < rcnt; i++)
+	if(input == expr[i])
+		break;
+
+	if(i == rcnt)
+		return 0;
+	return 1;
+}
+
+static int pattern_check(const widechar *input, const widechar *expr, const int off, const int max)
+{
+	int icrs, rcrs;
+	int rnxt;
+	int check;
+	int not;
+
+	icrs = off;
+
+	if(expr[0] == PTN_LAST)
+		return 1;
+
+	not = 0;
+	rnxt = 0;
+	rcrs = 1;
+	while(expr[rnxt])
+	{
+		if(expr[rcrs] == PTN_DELIMIT)
+		if(icrs >= max)
+			return 1;
+		else switch(input[icrs])
+		{
+		case 0:
+		case ' ':  return 1;
+		default:   return 0;
+		}
+		
+		if(icrs >= max)
+			return 0;
+
+		if(expr[rcrs] == PTN_NOT)
+		{
+			not = 1;
+			rcrs++;
+		}
+
+		switch(expr[rcrs])
+		{
+		case PTN_ZERO_MORE:
+
+			/*   check next expression   */
+			check = pattern_check(input, &expr[expr[rnxt]], icrs, max);
+			if(check)
+				return 1;
+
+			else
+
+		case PTN_ONE_MORE:
+
+			/*   check this expression   */
+			while(icrs < max)
+			{
+				//  assert next one is PTN_CHARS
+				check = pattern_check_chars(input[icrs], &expr[rcrs + 2]);
+				if(check && not)
+					return 0;
+				if(!check && !not)
+					return 0;
+				icrs++;
+
+				/*   check next expression again   */
+				check = pattern_check(input, &expr[expr[rnxt]], icrs, max);
+				if(check)
+					return 1;
+			}
+			return 0;
+
+		case PTN_CHARS:
+
+			check = pattern_check_chars(input[icrs], &expr[rcrs + 1]);
+			if(check && not)
+				return 0;
+			if(!check && !not)
+				return 0;
+			icrs++;
+			break;
+		}
+
+		rcrs = rnxt + expr[rnxt];
+		rnxt = rcrs;
+		rcrs++;
+		not = 0;
+	}
+
+	return 1;
+}
+
+static int pattern_check_reverse(const widechar *input, const widechar *expr, const int off, const int min)
+{
+	int icrs, rcrs;
+	int rnxt;
+	int check;
+	int not;
+	
+	icrs = off;
+
+	if(expr[0] == PTN_LAST)
+		return 1;
+
+	not = 0;
+	rnxt = 0;
+	rcrs = 1;
+	while(expr[rnxt])
+	{
+		if(expr[rcrs] == PTN_DELIMIT)
+		if(icrs <= min)
+			return 1;
+		else switch(input[icrs])
+		{
+		case 0:
+		case ' ':  return 1;
+		default:   return 0;
+		}
+		
+		if(icrs <= min)
+			return 0;
+
+		if(expr[rcrs] == PTN_NOT)
+		{
+			not = 1;
+			rcrs++;
+		}
+
+		switch(expr[rcrs])
+		{
+		case PTN_ZERO_MORE:
+
+			/*   check next expression   */
+			check = pattern_check_reverse(input, &expr[expr[rnxt]], icrs, min);
+			if(check)
+				return 1;
+
+			else
+
+		case PTN_ONE_MORE:
+
+			/*   check this expression   */
+			while(icrs > min)
+			{
+				check = pattern_check_chars(input[icrs], &expr[rcrs + 2]);
+				if(check && not)
+					return 0;
+				if(!check && !not)
+					return 0;
+				icrs--;
+
+				/*   check next expression again   */
+				check = pattern_check_reverse(input, &expr[expr[rnxt]], icrs, min);
+				if(check)
+					return 1;
+			}
+			return 0;
+
+		case PTN_CHARS:
+
+			check = pattern_check_chars(input[icrs], &expr[rcrs + 1]);
+			if(check && not)
+				return 0;
+			if(!check && !not)
+				return 0;
+			icrs--;
+			break;
+		}
+
+		rcrs = rnxt + expr[rnxt];
+		rnxt = rcrs;
+		rcrs++;
+		not = 0;
+	}
+
+	return 1;
+}
+
 static void
 for_selectRule ()
 {
@@ -1396,6 +1586,26 @@ for_selectRule ()
 			  break;
 		      }
 		    break;
+		    
+				case CTO_Pattern:
+				{
+					widechar *patterns, *pattern;
+					
+					patterns = (widechar*)&table->ruleArea[transRule->patterns];
+					
+					/*   check before pattern   */
+					pattern = &patterns[1];
+					if(!pattern_check_reverse(currentInput, pattern, src - 1, -1))
+						break;
+					
+					/*   check after pattern   */
+					pattern = &patterns[patterns[0]];
+					if(!pattern_check(currentInput, pattern, src + transRule->charslen, srcmax))
+						break;
+					
+					return;
+				}
+				
 		  default:
 		    break;
 		  }

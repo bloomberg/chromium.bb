@@ -29,8 +29,8 @@ extern "C"
 {
 #endif				/* __cplusplus */
 
-#define widechar @WIDECHAR_TYPE@
-#define formtype unsigned short
+typedef @WIDECHAR_TYPE@ widechar;
+typedef unsigned short formtype;
 
 #ifdef _WIN32
 #define EXPORT_CALL __stdcall

@@ -408,6 +408,7 @@ extern "C"
 	//CTO_Apostrophe,
 	//CTO_Initial,
     CTO_NoBreak,
+	CTO_Pattern,
     CTO_None,
 /*Internal opcodes */
     CTO_CapitalRule,
@@ -538,6 +539,7 @@ extern "C"
     TranslationTableCharacterAttributes after;	/*character types which must foollow */
     TranslationTableCharacterAttributes before;	/*character types which must 
 						   precede */
+	TranslationTableOffset patterns;   /*   before and after patterns   */
     TranslationTableOpcode opcode;	/*rule for testing validity of replacement */
     short charslen;		/*length of string to be replaced */
     short dotslen;		/*length of replacement string */
@@ -731,6 +733,20 @@ extern "C"
     alloc_srcMapping,
     alloc_prevSrcMapping
   } AllocBuf;
+  
+typedef enum
+{
+	PTN_LAST,
+	
+	PTN_DELIMIT,
+
+	PTN_NOT,
+	PTN_ZERO_MORE,
+	PTN_ONE_MORE,
+
+	PTN_CHARS,
+}
+PatternCodes;
 
 /* The following function definitions are hooks into 
 * compileTranslationTable.c. Some are used by other library modules. 

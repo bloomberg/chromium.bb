@@ -42,6 +42,10 @@
 
 #define QUOTESUB 28		/*Stand-in for double quotes in strings */
 
+/*   needed to make debuggin easier   */
+#ifdef DEBUG
+wchar_t wchar;
+#endif
 
 /* Contributed by Michel Such <michel.such@free.fr */
 #ifdef _WIN32
@@ -428,7 +432,8 @@ static const char *opcodeNames[CTO_None] = {
   "hyphen",
 //  "apostrophe",
 //  "initial",
-  "nobreak"
+  "nobreak",
+	"pattern",
 };
 static short opcodeLengths[CTO_None] = { 0 };
 
@@ -1087,7 +1092,8 @@ charactersDefined (FileInfo * nested)
       newRule->opcode == CTO_Replace || newRule->opcode == CTO_MultInd
       || newRule->opcode == CTO_Repeated ||
       ((newRule->opcode >= CTO_Context && newRule->opcode <=
-	CTO_Pass4) && newRule->opcode != CTO_Correct))
+	CTO_Pass4) && newRule->opcode != CTO_Correct)
+		|| newRule->opcode == CTO_Pattern)
     return 1;
   for (k = 0; k < newRule->charslen; k++)
     if (!compile_findCharOrDots (newRule->charsdots[k], 0))
@@ -3843,6 +3849,146 @@ compileNoBreak (FileInfo * nested)
   return 1;
 }
 
+static int pattern_compile(const widechar *input, const int input_max, widechar *expr, const int expr_max)
+{
+	int icrs, rcrs;
+	int iend, rcnt;
+	int inxt, rnxt;
+	int esc;
+	int i;
+
+	rnxt = icrs = 0;
+	rcrs = 1;
+	expr[rnxt] = PTN_LAST;
+	while(icrs < input_max)
+	{
+		if(rcrs >= expr_max)
+			return 0;
+
+		switch(input[icrs])
+		{
+		
+		case '~':
+
+			icrs++;
+			expr[rcrs++] = PTN_DELIMIT;
+			expr[rnxt] = 1;
+			rnxt = rcrs++;
+			expr[rnxt] = PTN_LAST;
+			break;
+			
+		case '!':
+
+			icrs++;
+			expr[rcrs++] = PTN_NOT;
+			break;
+
+		case '[':
+
+			icrs++;
+			esc = 0;
+			for(iend = icrs; input[iend]; iend++)
+			{
+				if(input[iend] == '\\')
+				if(esc)
+					esc = 0;
+				else
+				{
+					esc = 1;
+					continue;
+				}
+
+				if(!esc && input[iend] == ']')
+					break;
+			}
+			if(input[iend] != ']')
+				return 0;
+
+			inxt = iend + 1;
+			if(input[inxt] == '*')
+			{
+				expr[rcrs++] = PTN_ZERO_MORE;
+				inxt++;
+			}
+			else if(input[inxt] == '+')
+			{
+				expr[rcrs++] = PTN_ONE_MORE;
+				inxt++;
+			}
+
+
+			expr[rcrs++] = PTN_CHARS;
+			rcnt = rcrs++;
+
+			expr[rcnt] = 0;
+			esc = 0;
+			for(i = icrs; i < iend; i++)
+			{
+				if(input[i] == '\\')
+				if(esc)
+					esc = 0;
+				else
+				{
+					esc = 1;
+					continue;
+				}
+
+				expr[rcrs++] = (widechar)input[i];
+				expr[rcnt]++;
+			}
+			icrs = inxt;
+
+			expr[rnxt] = rcrs - rnxt;
+			rnxt = rcrs++;
+			expr[rnxt] = PTN_LAST;
+			break;
+
+		default:
+
+			inxt = icrs + 1;
+			if(input[inxt] == '*')
+			{
+				expr[rcrs++] = PTN_ZERO_MORE;
+				inxt++;
+			}
+			else if(input[inxt] == '+')
+			{
+				expr[rcrs++] = PTN_ONE_MORE;
+				inxt++;
+			}
+
+			expr[rcrs++] = PTN_CHARS;
+			expr[rcrs++] = 1;
+			expr[rcrs++] = (widechar)input[icrs];
+			icrs = inxt;
+
+			expr[rnxt] = rcrs - rnxt;
+			rnxt = rcrs++;
+			expr[rnxt] = PTN_LAST;
+			break;
+		}
+	}
+
+	return rcrs;
+}
+
+static widechar* pattern_reverse(const widechar *org, widechar *expr)
+{	
+	int i;
+	
+	if(org[0] == PTN_LAST)
+		return expr;
+	
+	expr = pattern_reverse(&org[org[0]], expr);
+	
+	/*   copy rule   */
+	for(i = 0; i < org[0]; i++)
+		expr[i] = org[i];
+	expr[i] = PTN_LAST;
+	
+	return &expr[i];
+}
+
 static int
 compileCharDef (FileInfo * nested,
 		TranslationTableOpcode opcode,
@@ -3946,6 +4092,57 @@ doOpcode:
 	compileBrailleIndicator (nested, "undefined character opcode",
 				 CTO_Undefined, &table->undefined);
       break;
+
+		case CTO_Pattern:
+		{
+			CharsString ptn_before, ptn_after, ptn_regex;
+			widechar patterns[512], buffer[256];
+			TranslationTableOffset offset;
+			int len, mrk;
+			
+			//noback = 1;
+			getToken(nested, &ptn_before, "before pattern");
+			getToken(nested, &ruleChars, "chars pattern");
+			getToken(nested, &ptn_after, "after pattern");
+			getToken(nested, &ruleDots, "dots pattern");
+			
+			if(!parseDots(nested, &cells, &ruleDots))
+			{
+				ok = 0;
+				break;
+			}			
+			if(!addRule(nested, opcode, &ruleChars, &cells, 0, 0))
+				ok = 0;
+			
+			len = pattern_compile(&ptn_before.chars[0], ptn_before.length, buffer, 256);
+			if(!len)
+			{
+				ok = 0;
+				break;
+			}
+			mrk = patterns[0] = len + 1;
+			pattern_reverse(buffer, &patterns[1]);
+			
+			len = pattern_compile(&ptn_after.chars[0], ptn_after.length, &patterns[mrk], 256);
+			if(!len)
+			{
+				ok = 0;
+				break;
+			}
+			len += mrk;
+			
+			if(!allocateSpaceInTable(nested, &offset, len * sizeof(widechar)))
+			{
+				ok = 0;
+				break;
+			}
+			
+			memcpy(&table->ruleArea[offset], patterns, len * sizeof(widechar));
+			newRule->patterns = offset;
+				
+			break;
+		}
+
 	  case CTO_SingleLetterCaps:
     case CTO_CapitalSign:
       ok =
@@ -5323,7 +5520,7 @@ static char ** (* tableResolver) (const char *tableList, const char *base) =
   &defaultTableResolver;
 
 static char **
-copyStringArray(const char ** array)
+copyStringArray(char ** array)
 {
   int len;
   char ** copy;
