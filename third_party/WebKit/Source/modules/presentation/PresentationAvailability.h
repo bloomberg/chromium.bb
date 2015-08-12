@@ -8,6 +8,8 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "core/page/PageLifecycleObserver.h"
+#include "platform/weborigin/KURL.h"
+#include "public/platform/WebURL.h"
 #include "public/platform/modules/presentation/WebPresentationAvailabilityObserver.h"
 
 namespace blink {
@@ -15,10 +17,10 @@ namespace blink {
 class ExecutionContext;
 class ScriptPromiseResolver;
 
-// Expose whether there is a presentation display available. The object will be
-// initialized with a default value passed via ::take() and will then subscribe
-// to receive callbacks if the status were to change. The object will only
-// listen to changes when required.
+// Expose whether there is a presentation display available for |url|. The
+// object will be initialized with a default value passed via ::take() and will
+// then subscribe to receive callbacks if the status for |url| were to
+// change. The object will only listen to changes when required.
 class PresentationAvailability final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<PresentationAvailability>
     , public ActiveDOMObject
@@ -31,7 +33,7 @@ public:
     // For CallbackPromiseAdapter.
     using WebType = bool;
 
-    static PresentationAvailability* take(ScriptPromiseResolver*, bool);
+    static PresentationAvailability* take(ScriptPromiseResolver*, const KURL&, bool);
     ~PresentationAvailability() override;
 
     // EventTarget implementation.
@@ -40,6 +42,7 @@ public:
 
     // WebPresentationAvailabilityObserver implementation.
     void availabilityChanged(bool) override;
+    const WebURL url() const override;
 
     // ActiveDOMObject implementation.
     bool hasPendingActivity() const override;
@@ -67,11 +70,12 @@ private:
         Inactive,
     };
 
-    PresentationAvailability(ExecutionContext*, bool);
+    PresentationAvailability(ExecutionContext*, const KURL&, bool);
 
     void setState(State);
     void updateListening();
 
+    const KURL m_url;
     bool m_value;
     State m_state;
 };

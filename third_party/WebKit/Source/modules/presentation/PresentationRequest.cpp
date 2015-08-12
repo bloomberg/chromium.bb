@@ -13,6 +13,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/EventTargetModules.h"
 #include "modules/presentation/PresentationAvailability.h"
+#include "modules/presentation/PresentationAvailabilityCallbacks.h"
 #include "modules/presentation/PresentationController.h"
 #include "modules/presentation/PresentationError.h"
 #include "modules/presentation/PresentationSession.h"
@@ -107,8 +108,7 @@ ScriptPromise PresentationRequest::getAvailability(ScriptState* scriptState)
         resolver->reject(DOMException::create(InvalidStateError, "The object is no longer associated to a frame."));
         return promise;
     }
-    client->getAvailability(m_url.string(), new CallbackPromiseAdapter<PresentationAvailability, PresentationError>(resolver));
-
+    client->getAvailability(m_url.string(), new PresentationAvailabilityCallbacks(resolver, m_url));
     return promise;
 }
 

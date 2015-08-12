@@ -31,17 +31,18 @@ WebPresentationClient* presentationClient(ExecutionContext* executionContext)
 } // anonymous namespace
 
 // static
-PresentationAvailability* PresentationAvailability::take(ScriptPromiseResolver* resolver, bool value)
+PresentationAvailability* PresentationAvailability::take(ScriptPromiseResolver* resolver, const KURL& url, bool value)
 {
-    PresentationAvailability* presentationAvailability = new PresentationAvailability(resolver->executionContext(), value);
+    PresentationAvailability* presentationAvailability = new PresentationAvailability(resolver->executionContext(), url, value);
     presentationAvailability->suspendIfNeeded();
     presentationAvailability->updateListening();
     return presentationAvailability;
 }
 
-PresentationAvailability::PresentationAvailability(ExecutionContext* executionContext, bool value)
+PresentationAvailability::PresentationAvailability(ExecutionContext* executionContext, const KURL& url, bool value)
     : ActiveDOMObject(executionContext)
     , PageLifecycleObserver(toDocument(executionContext)->page())
+    , m_url(url)
     , m_value(value)
     , m_state(State::Active)
 {
@@ -112,6 +113,11 @@ void PresentationAvailability::updateListening()
         client->startListening(this);
     else
         client->stopListening(this);
+}
+
+const WebURL PresentationAvailability::url() const
+{
+    return WebURL(m_url);
 }
 
 bool PresentationAvailability::value() const

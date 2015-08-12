@@ -1216,6 +1216,8 @@
       'presentation/Presentation.h',
       'presentation/PresentationAvailability.cpp',
       'presentation/PresentationAvailability.h',
+      'presentation/PresentationAvailabilityCallbacks.cpp',
+      'presentation/PresentationAvailabilityCallbacks.h',
       'presentation/PresentationController.cpp',
       'presentation/PresentationController.h',
       'presentation/PresentationError.cpp',

@@ -53,7 +53,7 @@ public:
     virtual void sendBlobData(const WebString& presentationUrl, const WebString& presentationId, const uint8_t* data, size_t length) = 0;
 
     // Called when the frame requests to close an existing session.
-    virtual void closeSession(const WebString& url, const WebString& presentationId) = 0;
+    virtual void closeSession(const WebString& presentationUrl, const WebString& presentationId) = 0;
 
     // Called when the frame wants to know the availability of a presentation
     // display for |availabilityUrl|.  The ownership of the callbacks argument
@@ -63,24 +63,11 @@ public:
     // Start listening to changes in presentation displays availability. The
     // observer will be notified in case of a change. The observer is
     // respensible to call stopListening() before being destroyed.
-    // TODO(mfoltz): Remove once the version below is implemented: http://crbug.com/510814
     virtual void startListening(WebPresentationAvailabilityObserver*) = 0;
-
-    // Start listening to changes in presentation displays availability for
-    // |availabilityUrl|. The observer will be notified in case of a change. The
-    // observer is responsible for calling stopListening() with matching
-    // arguments before being destroyed.
-    virtual void startListening(const WebString& availabilityUrl, WebPresentationAvailabilityObserver*) {};
 
     // Stop listening to changes in presentation displays availability. The
     // observer will no longer be notified in case of a change.
-    // TODO(mfoltz): Remove once the version below is implemented: http://crbug.com/510814
     virtual void stopListening(WebPresentationAvailabilityObserver*) = 0;
-
-    // Stop listening to changes in presentation displays availability for
-    // |availabilityUrl|. The observer will no longer be notified in case of a
-    // change.
-    virtual void stopListening(const WebString& url, WebPresentationAvailabilityObserver*) {}
 
     // Called when a defaultRequest has been set. It sends the url associated
     // with it for the embedder.
