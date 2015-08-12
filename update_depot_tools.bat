@@ -10,13 +10,13 @@ setlocal
 :: Windows freaks out if a file is overwritten while it's being executed.  Copy
 :: this script off to a temporary location and reinvoke from there before
 :: running any svn or git commands.
-IF %~nx0==update_depot_tools.bat (
-  COPY /Y %~dp0update_depot_tools.bat %TEMP%\update_depot_tools_tmp.bat >nul
+IF "%~nx0"=="update_depot_tools.bat" (
+  COPY /Y "%~dp0update_depot_tools.bat" "%TEMP%\update_depot_tools_tmp.bat" >nul
   if errorlevel 1 goto :EOF
-  %TEMP%\update_depot_tools_tmp.bat %~dp0 %*
+  "%TEMP%\update_depot_tools_tmp.bat" "%~dp0" %*
 )
 
-set DEPOT_TOOLS_DIR=%1
+set DEPOT_TOOLS_DIR=%~1
 SHIFT
 
 set GIT_URL=https://chromium.googlesource.com/chromium/tools/depot_tools.git

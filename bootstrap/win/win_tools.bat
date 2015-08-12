@@ -68,8 +68,8 @@ if %VERMAJOR% lss 5 set GIT_VERSION=%GIT_VERSION%-xp
 if %VERMAJOR% equ 5 if %VERMINOR% lss 2 set GIT_VERSION=%GIT_VERSION%-xp
 
 :: Clean up any release which doesn't match the one we want.
-for /d %%i in (%WIN_TOOLS_ROOT_DIR%\git-*_bin) do (
-  if not %%i == %WIN_TOOLS_ROOT_DIR%\git-%GIT_VERSION%_bin (
+for /d %%i in ("%WIN_TOOLS_ROOT_DIR%\git-*_bin") do (
+  if not "%%i" == "%WIN_TOOLS_ROOT_DIR%\git-%GIT_VERSION%_bin" (
     rmdir /s /q "%%i"
   )
 )
