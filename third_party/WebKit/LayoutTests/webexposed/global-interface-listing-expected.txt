@@ -858,9 +858,6 @@ interface DataView
     method setUint16
     method setUint32
     method setUint8
-interface DefaultSessionStartEvent
-    getter session
-    method constructor
 interface DelayNode
     getter delayTime
     method constructor
@@ -3741,6 +3738,9 @@ interface PresentationSession
     setter binaryType
     setter onmessage
     setter onstatechange
+interface PresentationSessionConnectEvent
+    getter session
+    method constructor
 interface ProcessingInstruction
     getter sheet
     getter target

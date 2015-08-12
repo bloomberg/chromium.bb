@@ -6,8 +6,8 @@
 #include "modules/presentation/PresentationController.h"
 
 #include "core/frame/LocalFrame.h"
-#include "modules/presentation/DefaultSessionStartEvent.h"
 #include "modules/presentation/PresentationSession.h"
+#include "modules/presentation/PresentationSessionConnectEvent.h"
 #include "public/platform/modules/presentation/WebPresentationClient.h"
 
 namespace blink {
@@ -67,7 +67,7 @@ void PresentationController::didStartDefaultSession(WebPresentationSessionClient
 {
     OwnPtr<WebPresentationSessionClient> client = adoptPtr(sessionClient);
     PresentationSession* session = PresentationSession::take(this, client.release());
-    m_defaultRequest->dispatchEvent(DefaultSessionStartEvent::create(EventTypeNames::sessionconnect, session));
+    m_defaultRequest->dispatchEvent(PresentationSessionConnectEvent::create(EventTypeNames::sessionconnect, session));
 }
 
 void PresentationController::didChangeSessionState(WebPresentationSessionClient* sessionClient, WebPresentationSessionState state)

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/presentation-api/#interface-defaultsessionstartevent
+// https://w3c.github.io/presentation-api/#interface-presentationsessionconnectevent
 
 [
-    Constructor(DOMString type, optional DefaultSessionStartEventInit eventInitDict),
+    Constructor(DOMString type, optional PresentationSessionConnectEventInit eventInitDict),
     RuntimeEnabled=Presentation
-] interface DefaultSessionStartEvent : Event {
+] interface PresentationSessionConnectEvent : Event {
     [SameObject] readonly attribute PresentationSession session;
 };
