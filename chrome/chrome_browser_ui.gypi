@@ -759,6 +759,8 @@
       'browser/ui/cocoa/applescript/element_applescript.mm',
       'browser/ui/cocoa/applescript/error_applescript.h',
       'browser/ui/cocoa/applescript/error_applescript.mm',
+      'browser/ui/cocoa/applescript/metrics_applescript.h',
+      'browser/ui/cocoa/applescript/metrics_applescript.mm',
       'browser/ui/cocoa/applescript/tab_applescript.h',
       'browser/ui/cocoa/applescript/tab_applescript.mm',
       'browser/ui/cocoa/applescript/window_applescript.h',

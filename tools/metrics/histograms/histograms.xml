@@ -480,6 +480,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="AppleScript.CommandEvent" enum="AppleScriptCommandEvents">
+  <owner>spqchan@chromium.org</owner>
+  <summary>The number of times an AppleScript event gets called.</summary>
+</histogram>
+
 <histogram name="Apps.AppInfoDialog.Launches" enum="AppInfoDialogLaunchOrigin">
   <owner>sashab@chromium.org</owner>
   <summary>
@@ -51310,6 +51315,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="16" label="SOURCE_KIOSK"/>
   <int value="17" label="SOURCE_CHROME_INTERNAL"/>
   <int value="18" label="SOURCE_TEST"/>
+</enum>
+
+<enum name="AppleScriptCommandEvents" type="int">
+  <int value="0" label="Tab Close"/>
+  <int value="1" label="Tab Copy"/>
+  <int value="2" label="Tab Cut"/>
+  <int value="3" label="Tab Execute Javascript"/>
+  <int value="4" label="Tab Go Back"/>
+  <int value="5" label="Tab Go Forward"/>
+  <int value="6" label="Tab Paste"/>
+  <int value="7" label="Tab Print"/>
+  <int value="8" label="Tab Redo"/>
+  <int value="9" label="Tab Reload"/>
+  <int value="10" label="Tab Save"/>
+  <int value="11" label="Tab Select All"/>
+  <int value="12" label="Tab Stop"/>
+  <int value="13" label="Tab Undo"/>
+  <int value="14" label="Tab View Source"/>
+  <int value="15" label="Window Close"/>
+  <int value="16" label="Window Enter Presentation Mode"/>
+  <int value="17" label="Window Exit Presentation Mode"/>
 </enum>
 
 <enum name="AppListDoodleAction" type="int">
