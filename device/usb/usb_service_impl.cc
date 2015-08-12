@@ -871,7 +871,6 @@ void UsbServiceImpl::OnPlatformDeviceRemoved(
   if (it != platform_devices_.end()) {
     RemoveDevice(it->second);
   } else {
-    DCHECK(ContainsKey(devices_being_enumerated_, platform_device));
     devices_being_enumerated_.erase(platform_device);
   }
   libusb_unref_device(platform_device);
