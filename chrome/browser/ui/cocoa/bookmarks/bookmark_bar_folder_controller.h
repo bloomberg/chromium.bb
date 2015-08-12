@@ -140,6 +140,7 @@ class Profile;
   NSString* typedPrefix_;
 
   Profile* profile_;
+  BOOL isScrolling_;
 }
 
 // Designated initializer.
@@ -200,6 +201,7 @@ class Profile;
 // Return YES if the scroll-up or scroll-down arrows are showing.
 - (BOOL)canScrollUp;
 - (BOOL)canScrollDown;
+- (BOOL)isScrolling;
 - (CGFloat)verticalScrollArrowHeight;
 - (NSView*)visibleView;
 - (NSScrollView*)scrollView;

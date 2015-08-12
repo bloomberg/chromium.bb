@@ -484,6 +484,41 @@ TEST_F(BookmarkBarFolderControllerTest, ChildFolderWidth) {
   EXPECT_GT(wideWidth, thinWidth);
 }
 
+// Scrolling (in this case using keyboard up/down buttons) should
+// not be a cause of item hovering change where the mouse is pointing to.
+// Here we are simulating scrolling by calling -performOneScroll: which
+// indirectly is called by keyboard up/down buttons.
+TEST_F(BookmarkBarFolderControllerTest, ScrollingBehaviorAndMouseMovement){
+  base::scoped_nsobject<BookmarkBarFolderController> bbfc;
+  AddLotsOfNodes();
+  bbfc.reset(SimpleBookmarkBarFolderController());
+  [bbfc showWindow:bbfc.get()];
+  // We should be able to scroll-up otherwise the rest of the test is pointless.
+  ASSERT_TRUE([bbfc canScrollUp]);
+  NSArray* buttons = [bbfc buttons];
+  BookmarkButton* currentButton = [bbfc buttonThatMouseIsIn];
+  // Mouse cursor is not pointing to any button.
+  EXPECT_FALSE(currentButton);
+  BookmarkButton* firstButton = [buttons objectAtIndex:0];
+  [bbfc mouseEnteredButton:firstButton event:nil];
+  // Mouse cursor should be over the first button.
+  EXPECT_EQ(firstButton, [bbfc buttonThatMouseIsIn]);
+  while ([bbfc canScrollUp]) {
+    [bbfc performOneScroll:200 updateMouseSelection:NO];
+    [bbfc mouseEnteredButton:[buttons objectAtIndex:2] event:nil];
+    // -buttonThatMouseIsIn: must return firstButton because we
+    // are still scrolling. i.e. should not be changed when
+    // -mouseEnteredButton: is called.
+    EXPECT_EQ(firstButton,[bbfc buttonThatMouseIsIn]);
+    // We are scrolling unless mouse movement happens.
+    EXPECT_TRUE([bbfc isScrolling]);
+  }
+  [bbfc mouseExitedButton:firstButton event:nil];
+  // If mouse exit from a button scrolling should be stopped.
+  EXPECT_FALSE([bbfc isScrolling]);
+  [bbfc mouseEnteredButton:nil event:nil];
+}
+
 // Simple scrolling tests.
 // Currently flaky due to a changed definition of the correct menu boundaries.
 TEST_F(BookmarkBarFolderControllerTest, DISABLED_SimpleScroll) {

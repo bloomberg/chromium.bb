@@ -934,6 +934,7 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
       index == selectedIndex_);
   NSRect windowFrame = [[self window] frame];
   NSSize newSize = NSMakeSize(NSWidth(windowFrame), 0.0);
+  isScrolling_ = YES;
   [self adjustWindowLeft:windowFrame.origin.x
                     size:newSize
              scrollingBy:finalDelta];
@@ -1340,6 +1341,11 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // Called from BookmarkButton.
 // Unlike bookmark_bar_controller's version, we DO default to being enabled.
 - (void)mouseEnteredButton:(id)sender event:(NSEvent*)event {
+  // Prevent unnecessary button selection change while scrolling due to the
+  // size changing that happens in -performOneScroll:.
+  if (isScrolling_)
+    return;
+
   [[NSCursor arrowCursor] set];
 
   buttonThatMouseIsIn_ = sender;
@@ -1369,6 +1375,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if (buttonThatMouseIsIn_ == sender)
     buttonThatMouseIsIn_ = nil;
     [self setSelectedButtonByIndex:-1];
+
+  // During scrolling -mouseExitedButton: stops scrolling, so update the
+  // corresponding status field to reflect is has stopped.
+  isScrolling_ = NO;
 
   // Stop any timer about opening a new hover-open folder.
 
@@ -2009,6 +2019,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 - (BOOL)canScrollDown {
   return ![scrollDownArrowView_ isHidden];
+}
+
+- (BOOL)isScrolling {
+  return isScrolling_;
 }
 
 - (CGFloat)verticalScrollArrowHeight {
