@@ -119,6 +119,7 @@
 #include "chrome/browser/ui/webui/chromeos/choose_mobile_network_ui.h"
 #include "chrome/browser/ui/webui/chromeos/cryptohome_ui.h"
 #include "chrome/browser/ui/webui/chromeos/drive_internals_ui.h"
+#include "chrome/browser/ui/webui/chromeos/emulator/device_emulator_ui.h"
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_ui.h"
 #include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_ui.h"
 #include "chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.h"
@@ -135,10 +136,6 @@
 #include "chrome/browser/ui/webui/chromeos/slow_ui.h"
 #include "components/proximity_auth/webui/proximity_auth_ui.h"
 #include "components/proximity_auth/webui/url_constants.h"
-#endif
-
-#if !defined(OFFICIAL_BUILD) && defined(OS_CHROMEOS) && !defined(NDEBUG)
-#include "chrome/browser/ui/webui/chromeos/emulator/device_emulator_ui.h"
 #endif
 
 #if !defined(OS_CHROMEOS)
@@ -439,6 +436,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::ChooseMobileNetworkUI>;
   if (url.host() == chrome::kChromeUICryptohomeHost)
     return &NewWebUI<chromeos::CryptohomeUI>;
+  if (!base::SysInfo::IsRunningOnChromeOS()) {
+    if (url.host() == chrome::kChromeUIDeviceEmulatorHost)
+      return &NewWebUI<DeviceEmulatorUI>;
+  }
   if (url.host() == chrome::kChromeUIDriveInternalsHost)
     return &NewWebUI<chromeos::DriveInternalsUI>;
   if (url.host() == chrome::kChromeUIImageBurnerHost)
@@ -472,12 +473,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUISlowTraceHost)
     return &NewWebUI<chromeos::SlowTraceController>;
 #endif  // defined(OS_CHROMEOS)
-#if !defined(OFFICIAL_BUILD) && defined(OS_CHROMEOS) && !defined(NDEBUG)
-  if (!base::SysInfo::IsRunningOnChromeOS()) {
-    if (url.host() == chrome::kChromeUIDeviceEmulatorHost)
-      return &NewWebUI<DeviceEmulatorUI>;
-  }
-#endif // !defined(OFFICIAL_BUILD) && defined(OS_CHROMEOS) && !defined(NDEBUG)
 #if defined(OS_ANDROID) || defined(OS_IOS)
   if (url.host() == chrome::kChromeUINetExportHost)
     return &NewWebUI<NetExportUI>;
