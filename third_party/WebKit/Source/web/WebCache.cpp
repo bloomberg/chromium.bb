@@ -40,10 +40,12 @@ namespace blink {
 static void ToResourceTypeStat(const MemoryCache::TypeStatistic& from,
                                WebCache::ResourceTypeStat& to)
 {
-    to.count = static_cast<size_t>(from.count);
-    to.size = static_cast<size_t>(from.size);
-    to.liveSize = static_cast<size_t>(from.liveSize);
-    to.decodedSize = static_cast<size_t>(from.decodedSize);
+    to.count = from.count;
+    to.size = from.size;
+    to.liveSize = from.liveSize;
+    to.decodedSize = from.decodedSize;
+    to.purgeableSize = from.purgedSize;
+    to.purgedSize = from.purgedSize;
 }
 
 void WebCache::setCapacities(
@@ -86,6 +88,7 @@ void WebCache::getResourceTypeStats(ResourceTypeStats* result)
         ToResourceTypeStat(stats.scripts, result->scripts);
         ToResourceTypeStat(stats.xslStyleSheets, result->xslStyleSheets);
         ToResourceTypeStat(stats.fonts, result->fonts);
+        ToResourceTypeStat(stats.other, result->other);
     } else
         memset(result, 0, sizeof(WebCache::ResourceTypeStats));
 }

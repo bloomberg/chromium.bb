@@ -137,14 +137,14 @@ public:
     DECLARE_TRACE();
 
     struct TypeStatistic {
-        int count;
-        int size;
-        int liveSize;
-        int decodedSize;
-        int encodedSize;
-        int encodedSizeDuplicatedInDataURLs;
-        int purgeableSize;
-        int purgedSize;
+        size_t count;
+        size_t size;
+        size_t liveSize;
+        size_t decodedSize;
+        size_t encodedSize;
+        size_t encodedSizeDuplicatedInDataURLs;
+        size_t purgeableSize;
+        size_t purgedSize;
 
         TypeStatistic()
             : count(0)
