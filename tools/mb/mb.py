@@ -228,7 +228,7 @@ class MetaBuildWrapper(object):
 
     if errs:
       raise MBErr(('mb config file %s has problems:' % self.args.config_file) +
-                    + '\n  ' + '\n  '.join(errs))
+                    '\n  ' + '\n  '.join(errs))
 
     if not self.args.quiet:
       self.Print('mb config file %s looks ok.' % self.args.config_file)

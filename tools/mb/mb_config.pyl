@@ -28,20 +28,22 @@
     'dev_gyp_debug': ['gyp', 'debug', 'shared', 'full_symbols'],
     'dev_gyp_release': ['gyp', 'release', 'shared'],
     'gn_debug_bot': ['gn', 'debug_bot'],
-    'gn_debug_bot_x86': ['gn', 'debug_bot', 'x86'],
+    'gn_debug_bot_minimal_symbols': ['gn', 'debug_bot_minimal_symbols'],
+    'gn_debug_bot_minimal_symbols_x86': ['gn', 'debug_bot_minimal_symbols', 'x86'],
     'gn_debug_static_bot': ['gn', 'debug_static_bot'],
     'gn_linux_upload': ['gn_linux_upload'],
     'gn_release_bot': ['gn', 'release_bot'],
-    'gn_release_bot_x86': ['gn', 'release_bot', 'x86'],
+    'gn_release_bot_minimal_symbols': ['gn', 'release_bot_minimal_symbols'],
+    'gn_release_bot_minimal_symbols_x86': ['gn', 'release_bot_minimal_symbols', 'x86'],
     'gn_release_trybot': ['gn', 'release_trybot'],
     'gn_release_trybot_x86': ['gn', 'release_trybot', 'x86'],
-    'gyp_debug_bot': ['gyp', 'debug_bot'],
     'gyp_debug_bot_no_symbols_x86': ['gyp', 'debug_bot', 'no_symbols', 'x86'],
     'gyp_release_bot': ['gyp', 'release_bot'],
     'gyp_release_bot_arm': ['gyp', 'release_bot', 'arm'],
     'gyp_release_trybot': ['gyp', 'release_trybot'],
     'swarming_gyp_debug_bot': ['swarming', 'gyp', 'debug_bot'],
-    'swarming_gyp_debug_bot_x86': ['swarming', 'gyp', 'debug_bot', 'x86'],
+    'swarming_gyp_debug_trybot': ['swarming', 'gyp', 'debug_trybot'],
+    'swarming_gyp_debug_trybot_x86': ['swarming', 'gyp', 'debug_trybot', 'x86'],
     'swarming_gyp_release_bot': ['swarming', 'gyp', 'release_bot'],
     'swarming_gyp_release_trybot': ['swarming', 'gyp', 'release_trybot'],
     'swarming_gpu_tests_gyp_release_trybot': ['swarming', 'gpu_tests', 'gyp', 'release_trybot'],
@@ -121,10 +123,20 @@
       'gyp_config': 'Debug',
     },
 
-    'debug_bot': {'mixins': ['debug', 'shared', 'minimal_symbols', 'goma']},
+    'debug_bot': {
+      'mixins': ['debug', 'shared', 'goma'],
+    },
+
+    'debug_bot_minimal_symbols': {
+      'mixins': ['debug_bot', 'minimal_symbols'],
+    },
 
     'debug_static_bot': {
       'mixins': ['debug', 'static', 'minimal_symbols', 'goma']
+    },
+
+    'debug_trybot': {
+      'mixins': ['debug_bot_minimal_symbols'],
     },
 
     'full_symbols': {
@@ -172,11 +184,15 @@
     },
 
     'release_bot': {
-      'mixins': ['release', 'static', 'minimal_symbols', 'goma'],
+      'mixins': ['release', 'static', 'goma'],
+    },
+
+    'release_bot_minimal_symbols': {
+      'mixins': ['release_bot', 'minimal_symbols'],
     },
 
     'release_trybot': {
-      'mixins': ['release_bot', 'dcheck_always_on']
+      'mixins': ['release_bot_minimal_symbols', 'dcheck_always_on']
     },
 
     'shared': {
@@ -217,8 +233,8 @@
       'Linux Tests': 'gyp_release_bot',
       'Linux Builder (dbg)(32)': 'gyp_debug_bot_no_symbols_x86',
       'Linux Tests (dbg)(1)(32)': 'gyp_debug_bot_no_symbols_x86',
-      'Linux Builder (dbg)': 'gyp_debug_bot',
-      'Linux Tests (dbg)(1)': 'gyp_debug_bot',
+      'Linux Builder (dbg)': 'swarming_gyp_debug_bot',
+      'Linux Tests (dbg)(1)': 'swarming_gyp_debug_bot',
       'Linux GN': 'gn_release_bot',
       'Linux GN Clobber': 'gn_release_bot',
       'Linux GN (dbg)': 'gn_debug_bot',
@@ -239,11 +255,12 @@
       'Mac GN (dbg)': 'gn_debug_static_bot',
     },
     'chromium.win': {
-      'Win x64 GN': 'gn_release_bot',
-      'Win x64 GN (dbg)': 'gn_debug_bot',
-      'Win8 Aura': 'gn_release_bot_x86',
-      'Win8 GN': 'gn_release_bot_x86',
-      'Win8 GN (dbg)': 'gn_debug_bot_x86',
+      # Windows bots take too long to link w/ full symbols and time out.
+      'Win x64 GN': 'gn_release_bot_minimal_symbols',
+      'Win x64 GN (dbg)': 'gn_debug_bot_minimal_symbols',
+      'Win8 Aura': 'gn_release_bot_minimal_symbols_x86',
+      'Win8 GN': 'gn_release_bot_minimal_symbols_x86',
+      'Win8 GN (dbg)': 'gn_debug_bot_minimal_symbols_x86',
     },
     'chromium.webkit': {
       'Android GN': 'android_gn_release_bot',
@@ -261,8 +278,8 @@
       'Linux GN (dbg)': 'gn_debug_bot',
       'Mac GN': 'gn_release_bot',
       'Mac GN (dbg)': 'gn_debug_static_bot',
-      'Win GN': 'gn_release_bot_x86',
-      'Win GN (dbg)': 'gn_debug_bot_x86',
+      'Win GN': 'gn_release_bot_minimal_symbols_x86',
+      'Win GN (dbg)': 'gn_debug_bot_minimal_symbols_x86',
     },
     'client.skia': {
       'Linux Builder': 'swarming_gyp_release_bot',
@@ -281,19 +298,19 @@
       'linux_chromium_gn_rel': 'gn_release_bot',
     },
     'tryserver.chromium.linux': {
-      'linux_full_bisect_builder': 'swarming_gyp_release_bot',
+      'linux_full_bisect_builder': 'swarming_gyp_release_trybot',
       'linux_chromium_compile_rel_ng': 'swarming_gyp_release_trybot',
       'linux_chromium_rel_ng': 'swarming_gpu_tests_gyp_release_trybot',
       'linux_chromium_gn_rel': 'gn_release_trybot',
       'linux_chromium_gn_chromeos_rel': 'chromeos_gn_release_trybot',
       'android_chromium_gn_compile_rel': 'android_gn_release_trybot',
-      'linux_chromium_compile_dbg_ng': 'swarming_gyp_debug_bot',
-      'linux_chromium_dbg_ng': 'swarming_gyp_debug_bot',
+      'linux_chromium_compile_dbg_ng': 'swarming_gyp_debug_trybot',
+      'linux_chromium_dbg_ng': 'swarming_gyp_debug_trybot',
       'linux_chromium_gn_dbg': 'gn_debug_bot',
       'linux_chromium_gn_chromeos_dbg': 'chromeos_gn_debug_bot',
       'android_chromium_gn_compile_dbg': 'android_gn_debug_bot',
-      'linux_chromium_compile_dbg_32_ng': 'swarming_gyp_debug_bot_x86',
-      'linux_chromium_dbg_32_ng': 'swarming_gyp_debug_bot_x86',
+      'linux_chromium_compile_dbg_32_ng': 'swarming_gyp_debug_trybot_x86',
+      'linux_chromium_dbg_32_ng': 'swarming_gyp_debug_trybot_x86',
       'linux_chromium_clobber_rel_ng': 'gyp_release_trybot',
       'linux_chromium_gn_upload': 'gn_linux_upload',
     },
@@ -306,9 +323,9 @@
       'win_chromium_gn_x64_dbg': 'gn_debug_bot',
       'win_chromium_gn_x64_rel': 'gn_release_trybot',
       'win8_chromium_ng': 'gn_release_trybot_x86',
-      'win8_chromium_gn_dbg': 'gn_debug_bot_x86',
+      'win8_chromium_gn_dbg': 'gn_debug_bot_minimal_symbols_x86',
       'win8_chromium_gn_rel': 'gn_release_trybot_x86',
-      'win8_chromium_gn_upload': 'gn_release_bot',
+      'win8_chromium_gn_upload': 'gn_release_bot_minimal_symbols',
       'win_clang_x64_dbg': 'win_clang_debug_bot',
     },
     'tryserver.v8': {

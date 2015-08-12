@@ -75,13 +75,6 @@ class FakeFile(object):
      self.files[self.name] = self.buf
 
 
-class IntegrationTest(unittest.TestCase):
-  def test_validate(self):
-    # Note that this validates that the actual mb_config.pyl is valid.
-    ret = mb.main(['validate', '--quiet'])
-    self.assertEqual(ret, 0)
-
-
 TEST_CONFIG = """\
 {
   'common_dev_configs': ['gn_debug'],
