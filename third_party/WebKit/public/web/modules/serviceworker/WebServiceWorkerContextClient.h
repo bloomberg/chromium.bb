@@ -37,7 +37,6 @@
 #include "public/platform/WebServiceWorkerEventResult.h"
 #include "public/platform/WebServiceWorkerSkipWaitingCallbacks.h"
 #include "public/platform/WebURL.h"
-#include <v8.h>
 
 namespace blink {
 
@@ -92,9 +91,6 @@ public:
     // Called when the worker script is evaluated. |success| is true if the
     // evaluation completed with no uncaught exception.
     virtual void didEvaluateWorkerScript(bool success) { }
-
-    // Called when the worker context is initialized.
-    virtual void didInitializeWorkerContext(v8::Local<v8::Context> context, const blink::WebURL& url) { }
 
     // Called when the WorkerGlobalScope had an error or an exception.
     virtual void reportException(const WebString& errorMessage, int lineNumber, int columnNumber, const WebString& sourceURL) { }

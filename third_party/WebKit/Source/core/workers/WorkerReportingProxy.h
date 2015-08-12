@@ -55,9 +55,6 @@ public:
     // evaluation completed with no uncaught exception.
     virtual void didEvaluateWorkerScript(bool success) = 0;
 
-    // Invoked when the thread creates a worker script context.
-    virtual void didInitializeWorkerContext() { }
-
     // Invoked when the new WorkerGlobalScope is started.
     virtual void workerGlobalScopeStarted(WorkerGlobalScope*) = 0;
 

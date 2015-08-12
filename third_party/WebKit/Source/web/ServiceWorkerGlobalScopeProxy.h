@@ -87,7 +87,6 @@ public:
     void postMessageToPageInspector(const String&) override;
     void postWorkerConsoleAgentEnabled() override { }
     void didEvaluateWorkerScript(bool success) override;
-    void didInitializeWorkerContext() override;
     void workerGlobalScopeStarted(WorkerGlobalScope*) override;
     void workerGlobalScopeClosed() override;
     void willDestroyWorkerGlobalScope() override;
