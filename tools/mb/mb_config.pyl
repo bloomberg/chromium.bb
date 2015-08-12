@@ -158,7 +158,7 @@
 
     'goma': {
       'gn_args': 'use_goma=true goma_dir="$(goma_dir)"',
-      'gyp_defines': 'goma=1 gomadir=$(goma_dir)',
+      'gyp_defines': 'use_goma=1 gomadir=$(goma_dir)',
     },
 
     'gpu_tests': {
@@ -298,7 +298,7 @@
       'linux_chromium_gn_rel': 'gn_release_bot',
     },
     'tryserver.chromium.linux': {
-      'linux_full_bisect_builder': 'swarming_gyp_release_trybot',
+      'linux_full_bisect_builder': 'swarming_gyp_release_bot',
       'linux_chromium_compile_rel_ng': 'swarming_gyp_release_trybot',
       'linux_chromium_rel_ng': 'swarming_gpu_tests_gyp_release_trybot',
       'linux_chromium_gn_rel': 'gn_release_trybot',
