@@ -11,7 +11,7 @@ function test()
 
     function step2(msg)
     {
-        InspectorTest.log(msg.result.result.value);
+        InspectorTest.logObject(msg);
         InspectorTest.completeTest();
     }
 }

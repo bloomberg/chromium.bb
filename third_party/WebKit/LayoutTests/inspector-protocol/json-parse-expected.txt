@@ -1,2 +1,11 @@
-Привет мир
+{
+    id : 1
+    result : {
+        result : {
+            type : string
+            value : Привет мир
+        }
+        wasThrown : false
+    }
+}
 
