@@ -173,8 +173,6 @@ public:
     bool isNotNull() const { return m_anchorNode; }
     bool isOrphan() const { return m_anchorNode && !m_anchorNode->inDocument(); }
 
-    Element* element() const;
-
     // Move up or down the DOM by one position.
     // Offsets are computed using layout text for nodes that have layoutObjects - but note that even when
     // using composed characters, the result may be inside a single user-visible character if a ligature is formed.
@@ -259,6 +257,10 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionAlgorithm<EditingInCom
 
 using Position = PositionAlgorithm<EditingStrategy>;
 using PositionInComposedTree = PositionAlgorithm<EditingInComposedTreeStrategy>;
+
+// TODO(yosin) We should move |associatedElementOf()| to "hemltediting.cpp",
+// since it is used only in "editing/"
+CORE_EXPORT Element* associatedElementOf(const Position&);
 
 inline Position createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
 {

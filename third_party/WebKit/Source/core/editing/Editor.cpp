@@ -565,7 +565,7 @@ void Editor::clearLastEditCommand()
 
 Element* Editor::findEventTargetFrom(const VisibleSelection& selection) const
 {
-    Element* target = selection.start().element();
+    Element* target = associatedElementOf(selection.start());
     if (!target)
         target = frame().document()->body();
 

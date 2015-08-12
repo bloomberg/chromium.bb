@@ -337,14 +337,12 @@ Node* PositionAlgorithm<Strategy>::commonAncestorContainer(const PositionAlgorit
     return Strategy::commonAncestor(*computeContainerNode(), *other.computeContainerNode());
 }
 
-// FIXME: This method is confusing (does it return anchorNode() or computeContainerNode()?) and should be renamed or removed
-template <typename Strategy>
-Element* PositionAlgorithm<Strategy>::element() const
+Element* associatedElementOf(const Position& position)
 {
-    Node* node = anchorNode();
+    Node* node = position.anchorNode();
     if (!node || node->isElementNode())
         return toElement(node);
-    ContainerNode* parent = Strategy::parent(*node);
+    ContainerNode* parent = NodeTraversal::parent(*node);
     return parent && parent->isElementNode() ? toElement(parent) : nullptr;
 }
 
