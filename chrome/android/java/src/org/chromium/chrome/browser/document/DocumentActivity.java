@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoS
 import org.chromium.chrome.browser.signin.SigninPromoScreen;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
@@ -454,9 +455,10 @@ public class DocumentActivity extends ChromeActivity {
                 ActivityDelegate.getTabIdFromIntent(getIntent()));
         int tabId = determineTabId();
         TabState tabState = mTabModel.getTabStateForDocument(tabId);
+        boolean isInitiallyHidden = asyncParams != null ? asyncParams.isInitiallyHidden() : false;
         mDocumentTab = DocumentTab.create(DocumentActivity.this, isIncognito(), getWindowAndroid(),
                 determineLastKnownUrl(), asyncParams != null ? asyncParams.getWebContents() : null,
-                tabState, asyncParams != null ? asyncParams.isInitiallyHidden() : false);
+                tabState, isInitiallyHidden);
 
         if (asyncParams != null && asyncParams.getWebContents() != null) {
             Intent parentIntent = IntentUtils.safeGetParcelableExtra(getIntent(),
@@ -472,6 +474,8 @@ public class DocumentActivity extends ChromeActivity {
 
         getTabModelSelector().setTab(mDocumentTab);
 
+        TabCreationState creationState = isInitiallyHidden
+                ? TabCreationState.LIVE_IN_BACKGROUND : TabCreationState.LIVE_IN_FOREGROUND;
         if (!mDocumentTab.didRestoreState()
                 || (asyncParams != null && asyncParams.getLoadUrlParams().getUrl() != null)) {
             if (!mDocumentTab.isCreatedWithWebContents()) {
@@ -494,13 +498,17 @@ public class DocumentActivity extends ChromeActivity {
 
                     // Use the URL as the document title until tab is loaded.
                     updateTaskDescription(loadUrlParams.getUrl(), null);
+                    creationState = TabCreationState.FROZEN_FOR_LAZY_LOAD;
                 } else {
                     loadLastKnownUrl(asyncParams);
                 }
             }
             mDocumentTab.setShouldPreserve(IntentUtils.safeGetBooleanExtra(getIntent(),
                     IntentHandler.EXTRA_PRESERVE_TASK, false));
+        } else {
+            creationState = TabCreationState.FROZEN_ON_RESTORE;
         }
+        mDocumentTab.initializeTabUma(creationState);
 
         ToolbarControlContainer controlContainer =
                 (ToolbarControlContainer) findViewById(R.id.control_container);

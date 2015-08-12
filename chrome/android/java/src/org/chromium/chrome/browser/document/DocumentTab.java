@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabUma;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -87,8 +88,7 @@ public class DocumentTab extends ChromeTab {
     private DocumentTab(DocumentActivity activity, boolean incognito,
             WindowAndroid windowAndroid, String url, TabState tabState, int parentTabId) {
         super(ActivityDelegate.getTabIdFromIntent(activity.getIntent()), activity,
-                incognito, windowAndroid, TabLaunchType.FROM_RESTORE, parentTabId,
-                TabCreationState.FROZEN_ON_RESTORE, tabState);
+                incognito, windowAndroid, TabLaunchType.FROM_RESTORE, parentTabId, null, tabState);
         mActivity = activity;
         initialize(url, null, activity.getTabContentManager(), true, false);
     }
@@ -248,5 +248,14 @@ public class DocumentTab extends ChromeTab {
     @VisibleForTesting
     public DocumentActivity getActivity() {
         return mActivity;
+    }
+
+    /**
+     * A helper function to create TabUma and set it to the tab.
+     * @param creationState In what state the tab was created.
+     */
+    public void initializeTabUma(TabCreationState creationState) {
+        setTabUma(new TabUma(this, creationState,
+                mActivity.getTabModelSelector().getModel(mActivity.isIncognito())));
     }
 }

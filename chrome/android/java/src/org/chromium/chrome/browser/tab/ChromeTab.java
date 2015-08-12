@@ -206,12 +206,14 @@ public class ChromeTab extends Tab {
             TabState frozenState) {
         super(id, parentId, incognito, activity, nativeWindow, type, frozenState);
 
-        if (frozenState == null) {
-            assert type != TabLaunchType.FROM_RESTORE
-                    && creationState != TabCreationState.FROZEN_ON_RESTORE;
-        } else {
-            assert type == TabLaunchType.FROM_RESTORE
-                    && creationState == TabCreationState.FROZEN_ON_RESTORE;
+        if (creationState != null) {
+            if (frozenState == null) {
+                assert type != TabLaunchType.FROM_RESTORE
+                        && creationState != TabCreationState.FROZEN_ON_RESTORE;
+            } else {
+                assert type == TabLaunchType.FROM_RESTORE
+                        && creationState == TabCreationState.FROZEN_ON_RESTORE;
+            }
         }
 
         addObserver(mTabObserver);
