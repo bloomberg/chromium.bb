@@ -599,12 +599,10 @@ void PresentationServiceDelegateImpl::StartSession(
     return;
   }
   RenderFrameHostId render_frame_host_id(render_process_id, render_frame_id);
-  const std::string presentation_id = base::GenerateGUID();
 
   scoped_ptr<CreatePresentationSessionRequest> context(
       new CreatePresentationSessionRequest(
-          presentation_url, presentation_id,
-          GetLastCommittedURLForFrame(render_frame_host_id),
+          presentation_url, GetLastCommittedURLForFrame(render_frame_host_id),
           base::Bind(&PresentationServiceDelegateImpl::OnStartSessionSucceeded,
                      weak_factory_.GetWeakPtr(), render_process_id,
                      render_frame_id, success_cb),

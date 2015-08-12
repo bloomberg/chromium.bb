@@ -33,22 +33,20 @@ class CreatePresentationSessionRequest {
   using PresentationSessionErrorCallback =
       content::PresentationServiceDelegate::PresentationSessionErrorCallback;
 
-  // |presentation_url| must be valid.
+  // |presentation_url|: The presentation URL of the request. Must be a valid
+  //                     URL.
+  // |frame_url|: The URL of the frame that initiated the presentation request.
+  // |success_cb|: Callback to invoke when the request succeeds. Must be valid.
+  // |erorr_cb|: Callback to invoke when the request fails. Must be valid.
   CreatePresentationSessionRequest(
       const std::string& presentation_url,
-      const std::string& presentation_id,
       const GURL& frame_url,
       const PresentationSessionSuccessCallback& success_cb,
       const PresentationSessionErrorCallback& error_cb);
   ~CreatePresentationSessionRequest();
 
-  // Gets the MediaSource derived from this instance's presentation URL.
-  const MediaSource& GetMediaSource() const { return media_source_; }
-
+  const MediaSource& media_source() const { return media_source_; }
   const GURL& frame_url() const { return frame_url_; }
-  const content::PresentationSessionInfo& presentation_info() const {
-    return presentation_info_;
-  }
 
   // Invokes |success_cb_| or |error_cb_| with the given arguments.
   // These functions can only be invoked once per instance. Further invocations
@@ -58,9 +56,8 @@ class CreatePresentationSessionRequest {
   void MaybeInvokeErrorCallback(const content::PresentationError& error);
 
  private:
-  content::PresentationSessionInfo presentation_info_;
-  MediaSource media_source_;
-  GURL frame_url_;
+  const MediaSource media_source_;
+  const GURL frame_url_;
   PresentationSessionSuccessCallback success_cb_;
   PresentationSessionErrorCallback error_cb_;
   bool cb_invoked_;

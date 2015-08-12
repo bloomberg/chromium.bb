@@ -58,7 +58,7 @@ void MediaRouterDialogControllerAndroid::CreateMediaRouterDialog() {
 
   ScopedJavaLocalRef<jstring> jsource_urn =
       base::android::ConvertUTF8ToJavaString(
-          env, presentation_request->GetMediaSource().id());
+          env, presentation_request->media_source().id());
 
   Java_ChromeMediaRouterDialogController_createDialog(
       env, java_dialog_controller_.obj(), jsource_urn.obj());

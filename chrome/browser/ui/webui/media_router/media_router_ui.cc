@@ -174,7 +174,7 @@ void MediaRouterUI::InitWithPresentationSessionRequest(
 
   presentation_request_ = presentation_request.Pass();
   presentation_service_delegate_ = delegate;
-  InitCommon(initiator, presentation_request_->GetMediaSource(),
+  InitCommon(initiator, presentation_request_->media_source(),
              presentation_request_->frame_url());
 }
 

@@ -13,12 +13,10 @@ namespace media_router {
 
 CreatePresentationSessionRequest::CreatePresentationSessionRequest(
     const std::string& presentation_url,
-    const std::string& presentation_id,
     const GURL& frame_url,
     const PresentationSessionSuccessCallback& success_cb,
     const PresentationSessionErrorCallback& error_cb)
-    : presentation_info_(presentation_url, presentation_id),
-      media_source_(presentation_url),
+    : media_source_(MediaSourceForPresentationUrl(presentation_url)),
       frame_url_(frame_url),
       success_cb_(success_cb),
       error_cb_(error_cb),
@@ -37,17 +35,20 @@ CreatePresentationSessionRequest::~CreatePresentationSessionRequest() {
 void CreatePresentationSessionRequest::MaybeInvokeSuccessCallback(
     const std::string& presentation_id,
     const MediaRoute::Id& route_id) {
+  DCHECK(!cb_invoked_);
   if (!cb_invoked_) {
     // Overwrite presentation ID.
-    success_cb_.Run(content::PresentationSessionInfo(
-                        presentation_info_.presentation_url, presentation_id),
-                    route_id);
+    success_cb_.Run(
+        content::PresentationSessionInfo(
+            PresentationUrlFromMediaSource(media_source_), presentation_id),
+        route_id);
     cb_invoked_ = true;
   }
 }
 
 void CreatePresentationSessionRequest::MaybeInvokeErrorCallback(
     const content::PresentationError& error) {
+  DCHECK(!cb_invoked_);
   if (!cb_invoked_) {
     error_cb_.Run(error);
     cb_invoked_ = true;
