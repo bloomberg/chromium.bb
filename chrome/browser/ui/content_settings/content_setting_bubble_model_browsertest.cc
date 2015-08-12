@@ -9,6 +9,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -97,4 +98,68 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptTest, Iframe) {
 
   EXPECT_FALSE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
       CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+}
+
+class ContentSettingBubbleModelMediaStreamTest : public InProcessBrowserTest {
+ public:
+  void ManageMediaStreamSettings(
+      TabSpecificContentSettings::MicrophoneCameraState state) {
+    // Open a tab for which we will invoke the media bubble.
+    GURL url(ui_test_utils::GetTestUrl(
+        base::FilePath().AppendASCII("content_setting_bubble"),
+        base::FilePath().AppendASCII("mixed_script.html")));
+    ui_test_utils::NavigateToURL(browser(), url);
+    content::WebContents* original_tab = GetActiveTab();
+
+    // Create a bubble with the given camera and microphone access state.
+    TabSpecificContentSettings::FromWebContents(original_tab)->
+        OnMediaStreamPermissionSet(
+            original_tab->GetLastCommittedURL(),
+            state, std::string(), std::string(), std::string(), std::string());
+    scoped_ptr<ContentSettingBubbleModel> bubble(
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+            browser()->content_setting_bubble_model_delegate(),
+            original_tab,
+            browser()->profile(),
+            CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+
+    // Click the management link, which opens in a new tab or window.
+    // Wait until it loads.
+    bubble->OnManageLinkClicked();
+    ASSERT_NE(GetActiveTab(), original_tab);
+    content::TestNavigationObserver observer(GetActiveTab());
+    observer.Wait();
+  }
+
+  content::WebContents* GetActiveTab() {
+    // First, we need to find the active browser window. It should be at
+    // the same desktop as the browser in which we invoked the bubble.
+    Browser* active_browser = chrome::FindLastActiveWithHostDesktopType(
+        browser()->host_desktop_type());
+    return active_browser->tab_strip_model()->GetActiveWebContents();
+  }
+};
+
+// Tests that clicking on the management link in the media bubble opens
+// the correct section of the settings UI.
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMediaStreamTest, ManageLink) {
+  // For each of the three options, we click the management link and check if
+  // the active tab loads the correct internal url.
+
+  // The microphone bubble links to microphone exceptions.
+  ManageMediaStreamSettings(TabSpecificContentSettings::MICROPHONE_ACCESSED);
+  EXPECT_EQ(GURL("chrome://settings/contentExceptions#media-stream-mic"),
+            GetActiveTab()->GetLastCommittedURL());
+
+  // The camera bubble links to camera exceptions.
+  ManageMediaStreamSettings(TabSpecificContentSettings::CAMERA_ACCESSED);
+  EXPECT_EQ(GURL("chrome://settings/contentExceptions#media-stream-camera"),
+            GetActiveTab()->GetLastCommittedURL());
+
+  // The bubble for both media devices links to the the first section of the
+  // default media content settings, which is the microphone section.
+  ManageMediaStreamSettings(TabSpecificContentSettings::MICROPHONE_ACCESSED |
+                            TabSpecificContentSettings::CAMERA_ACCESSED);
+  EXPECT_EQ(GURL("chrome://settings/content#media-stream-mic"),
+            GetActiveTab()->GetLastCommittedURL());
 }

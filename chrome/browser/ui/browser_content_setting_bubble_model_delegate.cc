@@ -53,6 +53,7 @@ void BrowserContentSettingBubbleModelDelegate::ShowContentSettingsPage(
       // default settings, as those appear first in the list.
       chrome::ShowContentSettings(
           browser_, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+      return;
     default:
       chrome::ShowContentSettingsExceptions(browser_, type);
       return;
