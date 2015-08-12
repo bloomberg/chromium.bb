@@ -27,23 +27,25 @@ const char kMigratedDefaultMediaStreamSetting[] =
 // content settings.
 const char kManagedDefaultCookiesSetting[] =
     "profile.managed_default_content_settings.cookies";
+const char kManagedDefaultGeolocationSetting[] =
+    "profile.managed_default_content_settings.geolocation";
 const char kManagedDefaultImagesSetting[] =
     "profile.managed_default_content_settings.images";
 const char kManagedDefaultJavaScriptSetting[] =
     "profile.managed_default_content_settings.javascript";
-const char kManagedDefaultPluginsSetting[] =
-    "profile.managed_default_content_settings.plugins";
-const char kManagedDefaultPopupsSetting[] =
-    "profile.managed_default_content_settings.popups";
-const char kManagedDefaultGeolocationSetting[] =
-    "profile.managed_default_content_settings.geolocation";
 const char kManagedDefaultNotificationsSetting[] =
     "profile.managed_default_content_settings.notifications";
 const char kManagedDefaultMediaStreamSetting[] =
     "profile.managed_default_content_settings.media_stream";
+const char kManagedDefaultPluginsSetting[] =
+    "profile.managed_default_content_settings.plugins";
+const char kManagedDefaultPopupsSetting[] =
+    "profile.managed_default_content_settings.popups";
 
 // Preferences that are exclusively used to store managed
 // content settings patterns.
+const char kManagedAutoSelectCertificateForUrls[] =
+    "profile.managed_auto_select_certificate_for_urls";
 const char kManagedCookiesAllowedForUrls[] =
     "profile.managed_cookies_allowed_for_urls";
 const char kManagedCookiesBlockedForUrls[] =
@@ -58,6 +60,10 @@ const char kManagedJavaScriptAllowedForUrls[] =
     "profile.managed_javascript_allowed_for_urls";
 const char kManagedJavaScriptBlockedForUrls[] =
     "profile.managed_javascript_blocked_for_urls";
+const char kManagedNotificationsAllowedForUrls[] =
+    "profile.managed_notifications_allowed_for_urls";
+const char kManagedNotificationsBlockedForUrls[] =
+    "profile.managed_notifications_blocked_for_urls";
 const char kManagedPluginsAllowedForUrls[] =
     "profile.managed_plugins_allowed_for_urls";
 const char kManagedPluginsBlockedForUrls[] =
@@ -66,11 +72,5 @@ const char kManagedPopupsAllowedForUrls[] =
     "profile.managed_popups_allowed_for_urls";
 const char kManagedPopupsBlockedForUrls[] =
     "profile.managed_popups_blocked_for_urls";
-const char kManagedNotificationsAllowedForUrls[] =
-    "profile.managed_notifications_allowed_for_urls";
-const char kManagedNotificationsBlockedForUrls[] =
-    "profile.managed_notifications_blocked_for_urls";
-const char kManagedAutoSelectCertificateForUrls[] =
-    "profile.managed_auto_select_certificate_for_urls";
 
 }  // namespace prefs

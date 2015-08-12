@@ -65,13 +65,13 @@ const PrefsForManagedContentSettingsMapEntry
     CONTENT_SETTINGS_TYPE_COOKIES,
     CONTENT_SETTING_ALLOW
   }, {
-    prefs::kManagedCookiesSessionOnlyForUrls,
-    CONTENT_SETTINGS_TYPE_COOKIES,
-    CONTENT_SETTING_SESSION_ONLY
-  }, {
     prefs::kManagedCookiesBlockedForUrls,
     CONTENT_SETTINGS_TYPE_COOKIES,
     CONTENT_SETTING_BLOCK
+  }, {
+    prefs::kManagedCookiesSessionOnlyForUrls,
+    CONTENT_SETTINGS_TYPE_COOKIES,
+    CONTENT_SETTING_SESSION_ONLY
   }, {
     prefs::kManagedImagesAllowedForUrls,
     CONTENT_SETTINGS_TYPE_IMAGES,
@@ -89,6 +89,14 @@ const PrefsForManagedContentSettingsMapEntry
     CONTENT_SETTINGS_TYPE_JAVASCRIPT,
     CONTENT_SETTING_BLOCK
   }, {
+    prefs::kManagedNotificationsAllowedForUrls,
+    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+    CONTENT_SETTING_ALLOW
+  }, {
+    prefs::kManagedNotificationsBlockedForUrls,
+    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+    CONTENT_SETTING_BLOCK
+  }, {
     prefs::kManagedPluginsAllowedForUrls,
     CONTENT_SETTINGS_TYPE_PLUGINS,
     CONTENT_SETTING_ALLOW
@@ -103,14 +111,6 @@ const PrefsForManagedContentSettingsMapEntry
   }, {
     prefs::kManagedPopupsBlockedForUrls,
     CONTENT_SETTINGS_TYPE_POPUPS,
-    CONTENT_SETTING_BLOCK
-  }, {
-    prefs::kManagedNotificationsAllowedForUrls,
-    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-    CONTENT_SETTING_ALLOW
-  }, {
-    prefs::kManagedNotificationsBlockedForUrls,
-    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
     CONTENT_SETTING_BLOCK
   }
 };
@@ -130,29 +130,29 @@ void PolicyProvider::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kManagedImagesBlockedForUrls);
   registry->RegisterListPref(prefs::kManagedJavaScriptAllowedForUrls);
   registry->RegisterListPref(prefs::kManagedJavaScriptBlockedForUrls);
+  registry->RegisterListPref(prefs::kManagedNotificationsAllowedForUrls);
+  registry->RegisterListPref(prefs::kManagedNotificationsBlockedForUrls);
   registry->RegisterListPref(prefs::kManagedPluginsAllowedForUrls);
   registry->RegisterListPref(prefs::kManagedPluginsBlockedForUrls);
   registry->RegisterListPref(prefs::kManagedPopupsAllowedForUrls);
   registry->RegisterListPref(prefs::kManagedPopupsBlockedForUrls);
-  registry->RegisterListPref(prefs::kManagedNotificationsAllowedForUrls);
-  registry->RegisterListPref(prefs::kManagedNotificationsBlockedForUrls);
   // Preferences for default content setting policies. If a policy is not set of
   // the corresponding preferences below is set to CONTENT_SETTING_DEFAULT.
   registry->RegisterIntegerPref(prefs::kManagedDefaultCookiesSetting,
+                                CONTENT_SETTING_DEFAULT);
+  registry->RegisterIntegerPref(prefs::kManagedDefaultGeolocationSetting,
                                 CONTENT_SETTING_DEFAULT);
   registry->RegisterIntegerPref(prefs::kManagedDefaultImagesSetting,
                                 CONTENT_SETTING_DEFAULT);
   registry->RegisterIntegerPref(prefs::kManagedDefaultJavaScriptSetting,
                                 CONTENT_SETTING_DEFAULT);
-  registry->RegisterIntegerPref(prefs::kManagedDefaultPluginsSetting,
-                                CONTENT_SETTING_DEFAULT);
-  registry->RegisterIntegerPref(prefs::kManagedDefaultPopupsSetting,
-                                CONTENT_SETTING_DEFAULT);
-  registry->RegisterIntegerPref(prefs::kManagedDefaultGeolocationSetting,
-                                CONTENT_SETTING_DEFAULT);
   registry->RegisterIntegerPref(prefs::kManagedDefaultNotificationsSetting,
                                 CONTENT_SETTING_DEFAULT);
   registry->RegisterIntegerPref(prefs::kManagedDefaultMediaStreamSetting,
+                                CONTENT_SETTING_DEFAULT);
+  registry->RegisterIntegerPref(prefs::kManagedDefaultPluginsSetting,
+                                CONTENT_SETTING_DEFAULT);
+  registry->RegisterIntegerPref(prefs::kManagedDefaultPopupsSetting,
                                 CONTENT_SETTING_DEFAULT);
 }
 
@@ -165,22 +165,23 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
       base::Bind(&PolicyProvider::OnPreferenceChanged, base::Unretained(this));
   pref_change_registrar_.Add(
       prefs::kManagedAutoSelectCertificateForUrls, callback);
-  pref_change_registrar_.Add(prefs::kManagedCookiesBlockedForUrls, callback);
   pref_change_registrar_.Add(prefs::kManagedCookiesAllowedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedCookiesBlockedForUrls, callback);
   pref_change_registrar_.Add(
       prefs::kManagedCookiesSessionOnlyForUrls, callback);
-  pref_change_registrar_.Add(prefs::kManagedImagesBlockedForUrls, callback);
   pref_change_registrar_.Add(prefs::kManagedImagesAllowedForUrls, callback);
-  pref_change_registrar_.Add(prefs::kManagedJavaScriptBlockedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedImagesBlockedForUrls, callback);
   pref_change_registrar_.Add(prefs::kManagedJavaScriptAllowedForUrls, callback);
-  pref_change_registrar_.Add(prefs::kManagedPluginsBlockedForUrls, callback);
-  pref_change_registrar_.Add(prefs::kManagedPluginsAllowedForUrls, callback);
-  pref_change_registrar_.Add(prefs::kManagedPopupsBlockedForUrls, callback);
-  pref_change_registrar_.Add(prefs::kManagedPopupsAllowedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedJavaScriptBlockedForUrls, callback);
+
   pref_change_registrar_.Add(
       prefs::kManagedNotificationsAllowedForUrls, callback);
   pref_change_registrar_.Add(
       prefs::kManagedNotificationsBlockedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedPluginsAllowedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedPluginsBlockedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedPopupsAllowedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedPopupsBlockedForUrls, callback);
   // The following preferences are only used to indicate if a default content
   // setting is managed and to hold the managed default setting value. If the
   // value for any of the following preferences is set then the corresponding
@@ -189,16 +190,16 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
   // is managed any user defined exceptions (patterns) for this type are
   // ignored.
   pref_change_registrar_.Add(prefs::kManagedDefaultCookiesSetting, callback);
-  pref_change_registrar_.Add(prefs::kManagedDefaultImagesSetting, callback);
-  pref_change_registrar_.Add(prefs::kManagedDefaultJavaScriptSetting, callback);
-  pref_change_registrar_.Add(prefs::kManagedDefaultPluginsSetting, callback);
-  pref_change_registrar_.Add(prefs::kManagedDefaultPopupsSetting, callback);
   pref_change_registrar_.Add(
       prefs::kManagedDefaultGeolocationSetting, callback);
+  pref_change_registrar_.Add(prefs::kManagedDefaultImagesSetting, callback);
+  pref_change_registrar_.Add(prefs::kManagedDefaultJavaScriptSetting, callback);
   pref_change_registrar_.Add(
       prefs::kManagedDefaultNotificationsSetting, callback);
   pref_change_registrar_.Add(
       prefs::kManagedDefaultMediaStreamSetting, callback);
+  pref_change_registrar_.Add(prefs::kManagedDefaultPluginsSetting, callback);
+  pref_change_registrar_.Add(prefs::kManagedDefaultPopupsSetting, callback);
 }
 
 PolicyProvider::~PolicyProvider() {
@@ -444,12 +445,12 @@ void PolicyProvider::OnPreferenceChanged(const std::string& name) {
              name == prefs::kManagedImagesBlockedForUrls ||
              name == prefs::kManagedJavaScriptAllowedForUrls ||
              name == prefs::kManagedJavaScriptBlockedForUrls ||
+             name == prefs::kManagedNotificationsAllowedForUrls ||
+             name == prefs::kManagedNotificationsBlockedForUrls ||
              name == prefs::kManagedPluginsAllowedForUrls ||
              name == prefs::kManagedPluginsBlockedForUrls ||
              name == prefs::kManagedPopupsAllowedForUrls ||
-             name == prefs::kManagedPopupsBlockedForUrls ||
-             name == prefs::kManagedNotificationsAllowedForUrls ||
-             name == prefs::kManagedNotificationsBlockedForUrls) {
+             name == prefs::kManagedPopupsBlockedForUrls) {
     ReadManagedContentSettings(true);
     ReadManagedDefaultSettings();
   }
