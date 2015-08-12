@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.media.ui;
 
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -14,6 +15,7 @@ import android.graphics.drawable.Drawable;
 import android.os.IBinder;
 import android.provider.Browser;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -39,6 +41,8 @@ public class NotificationMediaPlaybackControls {
                 "NotificationMediaPlaybackControls.ListenerService.PLAY";
         private static final String ACTION_PAUSE =
                 "NotificationMediaPlaybackControls.ListenerService.PAUSE";
+        private static final String ACTION_STOP_SELF =
+                "NotificationMediaPlaybackControls.ListenerService.STOP_SELF";
 
         private PendingIntent getPendingIntent(String action) {
             Intent intent = new Intent(this, ListenerService.class);
@@ -80,6 +84,12 @@ public class NotificationMediaPlaybackControls {
             }
 
             String action = intent.getAction();
+
+            if (ACTION_STOP_SELF.equals(action)) {
+                stopSelf();
+                return START_NOT_STICKY;
+            }
+
             if (ACTION_PLAY.equals(action)) {
                 sInstance.mMediaNotificationInfo.listener.onPlay();
                 sInstance.onPlaybackStateChanged(false);
@@ -183,6 +193,9 @@ public class NotificationMediaPlaybackControls {
     }
 
     private void clearNotification() {
+        NotificationManagerCompat manager = NotificationManagerCompat.from(mContext);
+        manager.cancel(R.id.media_playback_notification);
+
         mMediaNotificationInfo = null;
         mContext.stopService(new Intent(mContext, ListenerService.class));
     }
@@ -258,8 +271,9 @@ public class NotificationMediaPlaybackControls {
             mNotificationBuilder = new NotificationCompat.Builder(mContext)
                 .setSmallIcon(R.drawable.audio_playing)
                 .setAutoCancel(false)
-                .setOngoing(true);
+                .setDeleteIntent(mService.getPendingIntent(ListenerService.ACTION_STOP_SELF));
         }
+        mNotificationBuilder.setOngoing(!mMediaNotificationInfo.isPaused);
         mNotificationBuilder.setContentIntent(createContentIntent());
 
         RemoteViews contentView = createContentView();
@@ -289,7 +303,20 @@ public class NotificationMediaPlaybackControls {
                 mMediaNotificationInfo.isPrivate ? NotificationCompat.VISIBILITY_PRIVATE
                                                  : NotificationCompat.VISIBILITY_PUBLIC);
 
-        mService.startForeground(R.id.media_playback_notification, mNotificationBuilder.build());
+        Notification notification = mNotificationBuilder.build();
+
+        // We keep the service as a foreground service while the media is playing. When it is not,
+        // the service isn't stopped but is no longer in foreground, thus at a lower priority.
+        // While the service is in foreground, the associated notification can't be swipped away.
+        // Moving it back to background allows the user to remove the notification.
+        if (mMediaNotificationInfo.isPaused) {
+            mService.stopForeground(false /* removeNotification */);
+
+            NotificationManagerCompat manager = NotificationManagerCompat.from(mContext);
+            manager.notify(R.id.media_playback_notification, notification);
+        } else {
+            mService.startForeground(R.id.media_playback_notification, notification);
+        }
     }
 
     private Bitmap drawableToBitmap(Drawable drawable) {
