@@ -18,6 +18,8 @@
 #include "modules/EventTargetModules.h"
 #include "modules/presentation/Presentation.h"
 #include "modules/presentation/PresentationController.h"
+#include "modules/presentation/PresentationRequest.h"
+#include "modules/presentation/PresentationSessionConnectEvent.h"
 #include "public/platform/modules/presentation/WebPresentationSessionClient.h"
 #include "wtf/Assertions.h"
 #include "wtf/OwnPtr.h"
@@ -114,10 +116,11 @@ PresentationSession::~PresentationSession()
 }
 
 // static
-PresentationSession* PresentationSession::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebPresentationSessionClient> client)
+PresentationSession* PresentationSession::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebPresentationSessionClient> client, PresentationRequest* request)
 {
     ASSERT(resolver);
     ASSERT(client);
+    ASSERT(request);
     ASSERT(resolver->executionContext()->isDocument());
 
     Document* document = toDocument(resolver->executionContext());
@@ -128,14 +131,19 @@ PresentationSession* PresentationSession::take(ScriptPromiseResolver* resolver, 
     if (!controller)
         return nullptr;
 
-    return take(controller, client);
+    return take(controller, client, request);
 }
 
 // static
-PresentationSession* PresentationSession::take(PresentationController* controller, PassOwnPtr<WebPresentationSessionClient> client)
+PresentationSession* PresentationSession::take(PresentationController* controller, PassOwnPtr<WebPresentationSessionClient> client, PresentationRequest* request)
 {
+    ASSERT(controller);
+    ASSERT(request);
+
     PresentationSession* session = new PresentationSession(controller->frame(), client->getId(), client->getUrl());
     controller->registerSession(session);
+    request->dispatchEvent(PresentationSessionConnectEvent::create(EventTypeNames::sessionconnect, session));
+
     return session;
 }
 

@@ -1224,6 +1224,8 @@
       'presentation/PresentationRequest.h',
       'presentation/PresentationSession.cpp',
       'presentation/PresentationSession.h',
+      'presentation/PresentationSessionCallbacks.cpp',
+      'presentation/PresentationSessionCallbacks.h',
       'presentation/PresentationSessionConnectEvent.cpp',
       'presentation/PresentationSessionConnectEvent.h',
       'push_messaging/PushController.cpp',

@@ -16,6 +16,5 @@
     [CallWith=ScriptState] Promise<PresentationSession> join(DOMString id);
     [CallWith=ScriptState] Promise<PresentationAvailability> getAvailability();
 
-    // TODO(mlamouri): implement, see https://crbug.com/510483
     attribute EventHandler onsessionconnect;
 };

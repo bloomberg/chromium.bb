@@ -16,6 +16,7 @@
 #include "modules/presentation/PresentationController.h"
 #include "modules/presentation/PresentationError.h"
 #include "modules/presentation/PresentationSession.h"
+#include "modules/presentation/PresentationSessionCallbacks.h"
 
 namespace blink {
 
@@ -76,7 +77,7 @@ ScriptPromise PresentationRequest::start(ScriptState* scriptState)
         resolver->reject(DOMException::create(InvalidStateError, "The PresentationRequest is no longer associated to a frame."));
         return promise;
     }
-    client->startSession(m_url.string(), new CallbackPromiseAdapter<PresentationSession, PresentationError>(resolver));
+    client->startSession(m_url.string(), new PresentationSessionCallbacks(resolver, this));
 
     return promise;
 }
@@ -91,7 +92,7 @@ ScriptPromise PresentationRequest::join(ScriptState* scriptState, const String& 
         resolver->reject(DOMException::create(InvalidStateError, "The PresentationRequest is no longer associated to a frame."));
         return promise;
     }
-    client->joinSession(m_url.string(), id, new CallbackPromiseAdapter<PresentationSession, PresentationError>(resolver));
+    client->joinSession(m_url.string(), id, new PresentationSessionCallbacks(resolver, this));
 
     return promise;
 }

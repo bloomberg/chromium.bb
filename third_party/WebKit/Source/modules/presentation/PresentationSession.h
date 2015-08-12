@@ -23,6 +23,7 @@ namespace blink {
 class DOMArrayBuffer;
 class DOMArrayBufferView;
 class PresentationController;
+class PresentationRequest;
 
 class PresentationSession final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<PresentationSession>
@@ -34,8 +35,8 @@ public:
     // For CallbackPromiseAdapter.
     using WebType = OwnPtr<WebPresentationSessionClient>;
 
-    static PresentationSession* take(ScriptPromiseResolver*, PassOwnPtr<WebPresentationSessionClient>);
-    static PresentationSession* take(PresentationController*, PassOwnPtr<WebPresentationSessionClient>);
+    static PresentationSession* take(ScriptPromiseResolver*, PassOwnPtr<WebPresentationSessionClient>, PresentationRequest*);
+    static PresentationSession* take(PresentationController*, PassOwnPtr<WebPresentationSessionClient>, PresentationRequest*);
     ~PresentationSession() override;
 
     // EventTarget implementation.
