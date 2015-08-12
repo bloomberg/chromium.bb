@@ -1043,10 +1043,6 @@ def MakeArchSpecificEnv(platform=None):
 
   env.Replace(BUILD_ISA_NAME=platform)
 
-  if env.Bit('build_mips32'):
-    # This is a silent default on MIPS.
-    env.SetBits('bitcode')
-
   # Determine where the object files go
   env.Replace(BUILD_TARGET_NAME=platform)
   # This may be changed later; see target_variant_map, below.

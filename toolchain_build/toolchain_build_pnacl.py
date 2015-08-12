@@ -118,7 +118,7 @@ SANDBOXED_TRANSLATOR_ARCHES = ('x86-32', 'x86-64', 'arm', 'mips32')
 BITCODE_BIASES = tuple(
     bias for bias in ('le32', 'i686_bc', 'x86_64_bc', 'arm_bc'))
 
-DIRECT_TO_NACL_ARCHES = ['x86_64', 'i686', 'arm']
+DIRECT_TO_NACL_ARCHES = ['x86_64', 'i686', 'arm', 'mipsel']
 
 MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 
@@ -636,6 +636,12 @@ def HostTools(host, options):
                   command.path.join('%(output)s', 'bin', 'le32-nacl-' + tool),
                   command.path.join('%(output)s', 'bin', 'arm-nacl-' + tool)])
                for tool in BINUTILS_PROGS] +
+              [command.Command([
+                  'ln', '-f',
+                   command.path.join('%(output)s', 'bin', 'le32-nacl-' + tool),
+                   command.path.join('%(output)s', 'bin',
+                                                   'mipsel-nacl-' + tool)])
+               for tool in BINUTILS_PROGS] +
                # Gold is the default linker for PNaCl, but BFD ld is the default
                # for nacl-clang, so re-link the version that arm-nacl-clang will
                # use.
@@ -647,6 +653,11 @@ def HostTools(host, options):
                     '%(macros)s',
                     os.path.join(
                         '%(output)s', 'arm-nacl', 'lib', 'nacl-arm-macros.s'))]
+               # Gold is the mipsel-nacl linker (do not rely on PNaCl default.)
+               + [command.Command([
+                 'ln', '-f',
+                  command.path.join('%(output)s', 'bin', 'mipsel-nacl-ld.gold'),
+                  command.path.join('%(output)s', 'bin', 'mipsel-nacl-ld')])]
 
       },
       H('driver'): {

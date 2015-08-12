@@ -41,6 +41,14 @@ NACL_TOOL_MAP = {
             'ld_flag': ' -melf_x86_64_nacl',
             },
         },
+    'mips': {
+        '32': {
+            'tooldir': 'mipsel-nacl',
+            'as_flag': '',
+            'cc_flag': '',
+            'ld_flag': '',
+            },
+        },
     }
 
 def _StubOutEnvToolsForBuiltElsewhere(env):

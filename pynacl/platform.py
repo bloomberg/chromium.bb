@@ -81,7 +81,7 @@ ARCH3264_MAP = {
                       'i686', 'ia32', '32'),
     ARCH3264_X86_64: ('x86-64', 'amd64', 'x86_64', 'x8664', '64'),
     ARCH3264_ARM: ('arm', 'armv7', 'armv7l'),
-    ARCH3264_MIPS32: ('mips32', 'mips'),
+    ARCH3264_MIPS32: ('mips32', 'mips', 'mipsel'),
 }
 
 ARCH3264_DICT = dict([(machine, arch_name)

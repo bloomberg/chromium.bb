@@ -147,8 +147,9 @@ def LibCxxCflags(bias_arch):
 
 
 # Build a single object file for the target.
-def BuildTargetObjectCmd(source, output, bias_arch, output_dir='%(cwd)s'):
-  flags = ['-Wall', '-Werror', '-O2', '-c']
+def BuildTargetObjectCmd(source, output, bias_arch, output_dir='%(cwd)s',
+                         extra_flags=[]):
+  flags = ['-Wall', '-Werror', '-O2', '-c'] + extra_flags
   if IsBiasedBCArch(bias_arch):
     flags.extend(BiasedBitcodeTargetFlag(bias_arch))
   flags.extend(NewlibIsystemCflags(bias_arch).split())
@@ -291,6 +292,8 @@ GROUP ( libnacl.a libcrt_common.a )
     format_list = ['elf32-i386-nacl']
   elif arch == 'x86_64':
     format_list = ['%s-x86-64-nacl' % elfclass_x86_64]
+  elif arch == 'mipsel' :
+    format_list = ['elf32-tradlittlemips-nacl']
   else:
     raise Exception('TODO(mcgrathr): OUTPUT_FORMAT for %s' % arch)
   return template % ', '.join(['"' + fmt + '"' for fmt in format_list])
@@ -354,6 +357,49 @@ def LibcxxDirectoryCmds(bias_arch):
       command.RemoveDirectory(os.path.join('%(output)s', 'i686-nacl')),
   ]
 
+def D2NLibsSupportCommands(bias_arch, clang_libdir):
+  def TL(lib):
+    return GSDJoin(lib, pynacl.platform.GetArch3264(bias_arch))
+  def TranslatorFile(lib, filename):
+    return os.path.join('%(' + TL(lib) + ')s', filename)
+  commands = [
+              # Build compiler_rt which is now also used for the PNaCl
+              # translator.
+              command.Command(MakeCommand() + [
+                  '-C', '%(abs_compiler_rt_src)s', 'ProjObjRoot=%(cwd)s',
+                  'VERBOSE=1',
+                  'AR=' + PnaclTool('ar', arch=bias_arch),
+                  'RANLIB=' + PnaclTool('ranlib', arch=bias_arch),
+                  'CC=' + PnaclTool('clang', arch=bias_arch), 'clang_nacl',
+                  'EXTRA_CFLAGS=' + NewlibIsystemCflags(bias_arch)]),
+              command.Mkdir(clang_libdir, parents=True),
+              command.Copy(os.path.join(
+                'clang_nacl',
+                'full-' + bias_arch.replace('i686', 'i386')
+                                   .replace('mipsel', 'mips32'),
+                'libcompiler_rt.a'),
+                 os.path.join('%(output)s', clang_libdir,
+                              'libgcc.a')),
+              command.Copy(
+                  TranslatorFile('libgcc_eh', 'libgcc_eh.a'),
+                  os.path.join('%(output)s', clang_libdir, 'libgcc_eh.a')),
+              BuildTargetObjectCmd('clang_direct/crtbegin.c', 'crtbeginT.o',
+                                   bias_arch, output_dir=clang_libdir),
+              BuildTargetObjectCmd('crtend.c', 'crtend.o',
+                                   bias_arch, output_dir=clang_libdir),
+  ]
+  if bias_arch == "mipsel":
+       commands.extend([
+           BuildTargetObjectCmd('bitcode/pnaclmm.c', 'pnaclmm.o', bias_arch),
+           BuildTargetObjectCmd('clang_direct/nacl-tp-offset.c',
+                                'nacl_tp_offset.o', bias_arch,
+                                extra_flags=['-I%(top_srcdir)s/..']),
+           command.Command([PnaclTool('ar'), 'rc',
+               command.path.join(clang_libdir, 'libpnacl_legacy.a'),
+               command.path.join('pnaclmm.o'),
+               command.path.join('nacl_tp_offset.o')])
+       ])
+  return commands
 
 def TargetLibBuildType(is_canonical):
   return 'build' if is_canonical else 'build_noncanonical'
@@ -527,8 +573,6 @@ def TargetLibs(bias_arch, is_canonical):
     # churning the in-browser translator.
     def TL(lib):
       return GSDJoin(lib, pynacl.platform.GetArch3264(bias_arch))
-    def TranslatorFile(lib, filename):
-      return os.path.join('%(' + TL(lib) + ')s', filename)
     libs.update({
       T('libs_support'): {
           'type': TargetLibBuildType(is_canonical),
@@ -536,32 +580,10 @@ def TargetLibs(bias_arch, is_canonical):
                             GSDJoin('newlib', MultilibArch(bias_arch)),
                             TL('libgcc_eh'),
                             'target_lib_compiler'],
-          'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'support')},
-          'commands': [
-              # Build compiler_rt which is now also used for the PNaCl
-              # translator.
-              command.Command(MakeCommand() + [
-                  '-C', '%(abs_compiler_rt_src)s', 'ProjObjRoot=%(cwd)s',
-                  'VERBOSE=1',
-                  'AR=' + PnaclTool('ar', arch=bias_arch),
-                  'RANLIB=' + PnaclTool('ranlib', arch=bias_arch),
-                  'CC=' + PnaclTool('clang', arch=bias_arch), 'clang_nacl',
-                  'EXTRA_CFLAGS=' + NewlibIsystemCflags(bias_arch)]),
-              command.Mkdir(clang_libdir, parents=True),
-              command.Copy(os.path.join(
-                'clang_nacl',
-                'full-' + bias_arch.replace('i686', 'i386'),
-                'libcompiler_rt.a'),
-                 os.path.join('%(output)s', clang_libdir,
-                              'libgcc.a')),
-              command.Copy(
-                  TranslatorFile('libgcc_eh', 'libgcc_eh.a'),
-                  os.path.join('%(output)s', clang_libdir, 'libgcc_eh.a')),
-              BuildTargetObjectCmd('clang_direct/crtbegin.c', 'crtbeginT.o',
-                                   bias_arch, output_dir=clang_libdir),
-              BuildTargetObjectCmd('crtend.c', 'crtend.o',
-                                   bias_arch, output_dir=clang_libdir),
-          ],
+          'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'support'),
+                      'tls_params': os.path.join(NACL_DIR, 'src', 'untrusted',
+                                                 'nacl', 'tls_params.h')},
+          'commands': D2NLibsSupportCommands(bias_arch, clang_libdir),
       }
     })
 
@@ -669,7 +691,8 @@ def TranslatorLibs(arch, is_canonical, no_nacl_gcc):
                 ' '.join(BiasedBitcodeTargetFlag(bias_arch)))]),
         command.Copy(os.path.join(
                 'clang_nacl',
-                'full-' + bias_arch.replace('i686', 'i386'),
+                'full-' + bias_arch.replace('i686', 'i386')
+                                   .replace('mipsel', 'mips32'),
                 'libcompiler_rt.a'),
             os.path.join('%(output)s', 'libgcc.a')),
     ]

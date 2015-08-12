@@ -762,18 +762,25 @@ if env.Bit('build_mips32'):
   # Use arbitrary non-page-aligned addresses for data and rodata.
   rodata_region_start = 0x10020094
   data_region_start = 0x10030098
-  untrusted_env.Append(CPPFLAGS=['--pnacl-allow-native', '-arch', 'mips32'])
+
+  if env.Bit('bitcode'):
+    pnacl_allow_native_flags=['--pnacl-allow-native', '-arch', 'mips32']
+    wl = "-Wn"
+  else:
+    pnacl_allow_native_flags=[]
+    wl = "-Wl"
+  untrusted_env.Append(CPPFLAGS=pnacl_allow_native_flags)
   unaligned_data_objs = untrusted_env.ComponentObject(
       'arch/mips/unaligned_data_test.S')
   unaligned_data_nexe = untrusted_env.ComponentProgram(
       'unaligned_data.nexe',
       unaligned_data_objs,
       LINKFLAGS=['-nostdlib',
-                 '--pnacl-allow-native', '-arch', 'mips32',
-                 '-Wn,--section-start=.text=0x%x' % (text_region_start),
-                 '-Wn,--section-start=.rodata=0x%x' % (rodata_region_start),
-                 '-Wn,--section-start=.data=0x%x' % (data_region_start)],
-      ASFLAGS=['--pnacl-allow-native', '-arch', 'mips32'])
+                 pnacl_allow_native_flags,
+                 '%s,--section-start=.text=0x%x' % (wl, text_region_start),
+                 '%s,--section-start=.rodata=0x%x' % (wl, rodata_region_start),
+                 '%s,--section-start=.data=0x%x' % (wl, data_region_start)],
+      ASFLAGS=pnacl_allow_native_flags)
 
   rodata_region_start_irt = 0x3eef0000
   text_region_start_irt = 0x0fc00000
@@ -781,10 +788,10 @@ if env.Bit('build_mips32'):
       'unaligned_data_irt.nexe',
       unaligned_data_objs,
       LINKFLAGS=['-nostdlib',
-                 '--pnacl-allow-native', '-arch', 'mips32',
+                 pnacl_allow_native_flags,
                  '-Wl,-Ttext-segment=0x%x' % text_region_start_irt,
                  '-Wl,-Trodata-segment=0x%x' % rodata_region_start_irt],
-      ASFLAGS=['--pnacl-allow-native', '-arch', 'mips32'])
+      ASFLAGS=pnacl_allow_native_flags)
 else:
   unaligned_data_nexe = env.File(os.path.join(arch_testdata_dir,
                                               'unaligned_data.nexe'))

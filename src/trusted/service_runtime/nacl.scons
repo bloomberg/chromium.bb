@@ -31,6 +31,11 @@ if env.Bit('nacl_glibc'):
 if env.Bit('bitcode'):
   Return()
 
+# TODO(petarj): Enable these tests when llvm integrated assembler can handle
+# expressions from nacl_text_pad_test.S.
+if env.Bit('build_mips32') and env.Bit('nacl_clang'):
+  Return()
+
 # ----------------------------------------------------------
 # Tests that require a NaCl module
 # ----------------------------------------------------------
