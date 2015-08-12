@@ -374,6 +374,8 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::previous(PositionMoveTy
     int offset = deprecatedEditingOffset();
 
     if (offset > 0) {
+        if (editingIgnoresContent(node))
+            return beforeNode(node);
         if (Node* child = Strategy::childAt(*node, offset - 1))
             return lastPositionInOrAfterNode(child);
 
@@ -384,11 +386,11 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::previous(PositionMoveTy
         //      Going from 1 to 0 is correct.
         switch (moveType) {
         case CodePoint:
-            return createLegacyEditingPosition(node, offset - 1);
+            return PositionAlgorithm<Strategy>(node, offset - 1);
         case Character:
-            return createLegacyEditingPosition(node, uncheckedPreviousOffset(node, offset));
+            return PositionAlgorithm<Strategy>(node, uncheckedPreviousOffset(node, offset));
         case BackwardDeletion:
-            return createLegacyEditingPosition(node, uncheckedPreviousOffsetForBackwardDeletion(node, offset));
+            return PositionAlgorithm<Strategy>(node, uncheckedPreviousOffsetForBackwardDeletion(node, offset));
         }
     }
 
