@@ -55,6 +55,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutGeometryMap.h"
+#include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutScrollbar.h"
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutTheme.h"
@@ -926,6 +927,28 @@ IntSize DeprecatedPaintLayerScrollableArea::scrollbarOffset(const Scrollbar* scr
 static inline LayoutObject* layoutObjectForScrollbar(LayoutObject& layoutObject)
 {
     if (Node* node = layoutObject.node()) {
+        if (layoutObject.isLayoutView()) {
+            Document& doc = node->document();
+            if (Settings* settings = doc.settings()) {
+                if (!settings->allowCustomScrollbarInMainFrame() && layoutObject.frame() && layoutObject.frame()->isMainFrame())
+                    return &layoutObject;
+            }
+
+            // Try the <body> element first as a scrollbar source.
+            Element* body = doc.body();
+            if (body && body->layoutObject() && body->layoutObject()->style()->hasPseudoStyle(SCROLLBAR))
+                return body->layoutObject();
+
+            // If the <body> didn't have a custom style, then the root element might.
+            Element* docElement = doc.documentElement();
+            if (docElement && docElement->layoutObject() && docElement->layoutObject()->style()->hasPseudoStyle(SCROLLBAR))
+                return docElement->layoutObject();
+
+            // If we have an owning ipage/LocalFrame element, then it can set the custom scrollbar also.
+            LayoutPart* frameLayoutObject = node->document().frame()->ownerLayoutObject();
+            if (frameLayoutObject && frameLayoutObject->style()->hasPseudoStyle(SCROLLBAR))
+                return frameLayoutObject;
+        }
         if (ShadowRoot* shadowRoot = node->containingShadowRoot()) {
             if (shadowRoot->type() == ShadowRootType::UserAgent)
                 return shadowRoot->host()->layoutObject();
