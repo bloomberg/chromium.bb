@@ -74,6 +74,7 @@ class SadTabView : public chrome::SadTab,
   views::LabelButton* action_button_;
   views::Label* title_;
   views::StyledLabel* help_message_;
+  static int total_crashes_;
 
   DISALLOW_COPY_AND_ASSIGN(SadTabView);
 };

@@ -397,8 +397,11 @@ extern const char kOmniboxLearnMoreURL[];
 // "What do these mean?" URL for the Page Info bubble.
 extern const char kPageInfoHelpCenterURL[];
 
-// "Learn more" URL for "Aw snap" page.
+// "Learn more" URL for "Aw snap" page when showing "Reload" button.
 extern const char kCrashReasonURL[];
+
+// "Learn more" URL for "Aw snap" page when showing "Send feedback" button.
+extern const char kCrashReasonFeedbackDisplayedURL[];
 
 // "Learn more" URL for killed tab page.
 extern const char kKillReasonURL[];

@@ -471,6 +471,13 @@ const char kCrashReasonURL[] =
     "https://support.google.com/chrome/?p=e_awsnap";
 #endif
 
+const char kCrashReasonFeedbackDisplayedURL[] =
+#if defined(OS_CHROMEOS)
+    "https://support.google.com/chromebook/?p=e_awsnap_rl";
+#else
+    "https://support.google.com/chrome/?p=e_awsnap_rl";
+#endif
+
 const char kPrivacyLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromebook/?p=settings_privacy";

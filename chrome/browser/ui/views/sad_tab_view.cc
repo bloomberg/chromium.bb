@@ -73,6 +73,8 @@ void RecordKillDisplayedOOM() {
 
 }  // namespace
 
+int SadTabView::total_crashes_ = 0;
+
 SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
     : web_contents_(web_contents),
       kind_(kind),
@@ -88,8 +90,7 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
   // tab discard events in memory::OomPriorityManager so they can be directly
   // compared.
   // TODO(jamescook): Maybe track time between sad tabs?
-  static int total_crashes = 0;
-  total_crashes++;
+  total_crashes_++;
 
   switch (kind_) {
     case chrome::SAD_TAB_KIND_CRASHED: {
@@ -174,7 +175,7 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
   if (web_contents_) {
     // In the cases of multiple crashes in a session the 'Feedback' button
     // replaces the 'Reload' button as primary action.
-    int button_type = total_crashes > kCrashesBeforeFeedbackIsDisplayed ?
+    int button_type = total_crashes_ > kCrashesBeforeFeedbackIsDisplayed ?
         SAD_TAB_BUTTON_FEEDBACK : SAD_TAB_BUTTON_RELOAD;
     action_button_ = new views::BlueButton(this,
         l10n_util::GetStringUTF16(button_type == SAD_TAB_BUTTON_FEEDBACK
@@ -197,7 +198,9 @@ SadTabView::~SadTabView() {}
 
 void SadTabView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK(web_contents_);
-  OpenURLParams params(GURL(chrome::kCrashReasonURL), content::Referrer(),
+  OpenURLParams params(GURL(total_crashes_ > kCrashesBeforeFeedbackIsDisplayed ?
+                       chrome::kCrashReasonFeedbackDisplayedURL :
+                       chrome::kCrashReasonURL), content::Referrer(),
                        CURRENT_TAB, ui::PAGE_TRANSITION_LINK, false);
   web_contents_->OpenURL(params);
 }
