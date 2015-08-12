@@ -377,15 +377,16 @@ void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitTy
     m_currentItem->setScrollPoint(oldItem->scrollPoint());
     m_currentItem->setVisualViewportScrollPoint(oldItem->visualViewportScrollPoint());
     m_currentItem->setPageScaleFactor(oldItem->pageScaleFactor());
-    m_currentItem->setStateObject(oldItem->stateObject());
     m_currentItem->setScrollRestorationType(oldItem->scrollRestorationType());
 
     // The item sequence number determines whether items are "the same", such back/forward navigation
     // between items with the same item sequence number is a no-op. Only treat this as identical if the
     // navigation did not create a back/forward entry and the url is identical or it was loaded via
     // history.replaceState().
-    if (historyCommitType == HistoryInertCommit && (navigationType == HistoryNavigationType::HistoryApi || oldItem->url() == m_currentItem->url()))
+    if (historyCommitType == HistoryInertCommit && (navigationType == HistoryNavigationType::HistoryApi || oldItem->url() == m_currentItem->url())) {
+        m_currentItem->setStateObject(oldItem->stateObject());
         m_currentItem->setItemSequenceNumber(oldItem->itemSequenceNumber());
+    }
 }
 
 static HistoryCommitType loadTypeToCommitType(FrameLoadType type)
