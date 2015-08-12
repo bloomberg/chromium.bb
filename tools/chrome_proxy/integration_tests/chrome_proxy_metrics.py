@@ -230,6 +230,9 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     lo_fi_response_count = 0
 
     for resp in self.IterResponses(tab):
+      if 'favicon.ico' in resp.response.url:
+        continue
+
       if resp.HasChromeProxyLoFiRequest():
         lo_fi_request_count += 1
       else:

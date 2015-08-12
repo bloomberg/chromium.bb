@@ -23,7 +23,7 @@ class LoFiStorySet(story.StorySet):
     super(LoFiStorySet, self).__init__()
 
     urls_list = [
-      'http://check.googlezip.net/image.png',
+      'http://check.googlezip.net/lofi.png',
     ]
 
     for url in urls_list:
