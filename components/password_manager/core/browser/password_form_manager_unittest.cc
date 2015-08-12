@@ -1925,4 +1925,79 @@ TEST_F(PasswordFormManagerTest, NotRemoveOnUpdate) {
   form_manager.Save();
 }
 
+TEST_F(PasswordFormManagerTest, GenerationStatusChangedWithPassword) {
+  TestPasswordManagerClient client_with_store(mock_store());
+
+  TestPasswordManager manager(&client_with_store);
+  PasswordFormManager form_manager(&manager, &client_with_store,
+                                   client_with_store.driver(), *observed_form(),
+                                   false);
+
+  const PasswordStore::AuthorizationPromptPolicy auth_policy =
+      PasswordStore::DISALLOW_PROMPT;
+  EXPECT_CALL(*mock_store(),
+              GetLogins(*observed_form(), auth_policy, &form_manager));
+  form_manager.FetchMatchingLoginsFromPasswordStore(auth_policy);
+
+  scoped_ptr<PasswordForm> generated_form(new PasswordForm(*observed_form()));
+  generated_form->type = PasswordForm::TYPE_GENERATED;
+  generated_form->username_value = ASCIIToUTF16("username");
+  generated_form->password_value = ASCIIToUTF16("password2");
+  generated_form->preferred = true;
+
+  PasswordForm submitted_form(*generated_form);
+  submitted_form.password_value = ASCIIToUTF16("password3");
+
+  ScopedVector<PasswordForm> simulated_results;
+  simulated_results.push_back(generated_form.Pass());
+  form_manager.OnGetPasswordStoreResults(simulated_results.Pass());
+
+  form_manager.ProvisionallySave(
+      submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  PasswordForm new_credentials;
+  EXPECT_CALL(*mock_store(), UpdateLogin(_))
+      .WillOnce(testing::SaveArg<0>(&new_credentials));
+  form_manager.Save();
+
+  EXPECT_EQ(PasswordForm::TYPE_MANUAL, new_credentials.type);
+}
+
+TEST_F(PasswordFormManagerTest, GenerationStatusNotUpdatedIfPasswordUnchanged) {
+  TestPasswordManagerClient client_with_store(mock_store());
+
+  TestPasswordManager manager(&client_with_store);
+  PasswordFormManager form_manager(&manager, &client_with_store,
+                                   client_with_store.driver(), *observed_form(),
+                                   false);
+
+  const PasswordStore::AuthorizationPromptPolicy auth_policy =
+      PasswordStore::DISALLOW_PROMPT;
+  EXPECT_CALL(*mock_store(),
+              GetLogins(*observed_form(), auth_policy, &form_manager));
+  form_manager.FetchMatchingLoginsFromPasswordStore(auth_policy);
+
+  scoped_ptr<PasswordForm> generated_form(new PasswordForm(*observed_form()));
+  generated_form->type = PasswordForm::TYPE_GENERATED;
+  generated_form->username_value = ASCIIToUTF16("username");
+  generated_form->password_value = ASCIIToUTF16("password2");
+  generated_form->preferred = true;
+
+  PasswordForm submitted_form(*generated_form);
+
+  ScopedVector<PasswordForm> simulated_results;
+  simulated_results.push_back(generated_form.Pass());
+  form_manager.OnGetPasswordStoreResults(simulated_results.Pass());
+
+  form_manager.ProvisionallySave(
+      submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  PasswordForm new_credentials;
+  EXPECT_CALL(*mock_store(), UpdateLogin(_))
+      .WillOnce(testing::SaveArg<0>(&new_credentials));
+  form_manager.Save();
+
+  EXPECT_EQ(PasswordForm::TYPE_GENERATED, new_credentials.type);
+}
+
 }  // namespace password_manager

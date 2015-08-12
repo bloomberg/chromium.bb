@@ -932,12 +932,11 @@ void PasswordFormManager::CreatePendingCredentials() {
       pending_credentials_.type == PasswordForm::TYPE_GENERATED &&
       !has_generated_password_) {
     LogPasswordGenerationSubmissionEvent(PASSWORD_OVERRIDDEN);
+    pending_credentials_.type = PasswordForm::TYPE_MANUAL;
   }
 
   if (has_generated_password_)
     pending_credentials_.type = PasswordForm::TYPE_GENERATED;
-  else
-    pending_credentials_.type = PasswordForm::TYPE_MANUAL;
 
   provisionally_saved_form_.reset();
 }
