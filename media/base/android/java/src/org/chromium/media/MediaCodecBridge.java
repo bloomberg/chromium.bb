@@ -394,7 +394,6 @@ class MediaCodecBridge {
                 status = MEDIA_CODEC_OK;
                 index = indexOrStatus;
             } else if (indexOrStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
-                Log.e(TAG, "dequeueInputBuffer: MediaCodec.INFO_TRY_AGAIN_LATER");
                 status = MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER;
             } else {
                 Log.e(TAG, "Unexpected index_or_status: " + indexOrStatus);

@@ -552,6 +552,9 @@ bool MediaCodecDecoder::EnqueueInputBuffer() {
       return false;
 
     case MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER:
+      DVLOG(0)
+          << class_name() << "::" << __FUNCTION__
+          << ": DequeueInputBuffer returned MediaCodec.INFO_TRY_AGAIN_LATER.";
       return true;
 
     default:
