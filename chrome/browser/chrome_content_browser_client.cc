@@ -1434,6 +1434,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kDisableCastStreamingHWEncoding,
       switches::kDisableJavaScriptHarmonyShipping,
       switches::kDisableNewBookmarkApps,
+#if defined(ENABLE_SPELLCHECK) && defined(OS_ANDROID)
+      switches::kEnableAndroidSpellChecker,
+#endif
       switches::kEnableBenchmarking,
       switches::kEnableNaCl,
 #if !defined(DISABLE_NACL)

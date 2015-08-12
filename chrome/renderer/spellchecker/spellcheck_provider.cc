@@ -47,7 +47,7 @@ SpellCheckProvider::SpellCheckProvider(
   DCHECK(spellcheck_);
   if (render_view) {  // NULL in unit tests.
     render_view->GetWebView()->setSpellCheckClient(this);
-    EnableSpellcheck(spellcheck_->is_spellcheck_enabled());
+    EnableSpellcheck(spellcheck_->IsSpellcheckEnabled());
   }
 }
 

@@ -8,10 +8,12 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
@@ -476,4 +478,14 @@ void SpellCheck::CreateTextCheckingResults(
   }
 
   textcheck_results->assign(results);
+}
+
+bool SpellCheck::IsSpellcheckEnabled() {
+#if defined(OS_ANDROID)
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAndroidSpellChecker)) {
+    return false;
+  }
+#endif
+  return spellcheck_enabled_;
 }

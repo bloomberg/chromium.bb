@@ -111,7 +111,7 @@ class SpellCheck : public content::RenderProcessObserver,
       const std::vector<SpellCheckResult>& spellcheck_results,
       blink::WebVector<blink::WebTextCheckingResult>* textcheck_results);
 
-  bool is_spellcheck_enabled() { return spellcheck_enabled_; }
+  bool IsSpellcheckEnabled();
 
  private:
    friend class SpellCheckTest;
