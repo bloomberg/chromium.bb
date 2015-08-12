@@ -18,6 +18,11 @@ class ProximityAuthClient {
 
   // Returns the authenticated username.
   virtual std::string GetAuthenticatedUsername() const = 0;
+
+  // Finalizes an unlock attempt initiated by the user. If |success| is true,
+  // the screen is unlocked; otherwise, the auth attempt is rejected. An auth
+  // attempt must be in progress before calling this function.
+  virtual void FinalizeUnlock(bool success) = 0;
 };
 
 }  // namespace proximity_auth

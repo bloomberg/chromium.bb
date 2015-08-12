@@ -1167,6 +1167,7 @@
             'components.gyp:copresence',
             'components.gyp:copresence_test_support',
             'components.gyp:cryptauth',
+            'components.gyp:cryptauth_proto',
             'components.gyp:cryptauth_test_support',
             'components.gyp:feedback_component',
             'components.gyp:pref_registry_test_support',

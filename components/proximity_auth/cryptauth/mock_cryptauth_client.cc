@@ -4,7 +4,6 @@
 
 #include "base/callback.h"
 #include "components/proximity_auth/cryptauth/mock_cryptauth_client.h"
-#include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 
 namespace proximity_auth {
 

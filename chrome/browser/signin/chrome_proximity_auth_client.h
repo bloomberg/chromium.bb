@@ -19,6 +19,7 @@ class ChromeProximityAuthClient : public proximity_auth::ProximityAuthClient {
 
   // proximity_auth::ProximityAuthClient:
   std::string GetAuthenticatedUsername() const override;
+  void FinalizeUnlock(bool success) override;
 
  private:
   Profile* const profile_;

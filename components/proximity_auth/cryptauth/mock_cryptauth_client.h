@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/proximity_auth/cryptauth/cryptauth_client.h"
+#include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace proximity_auth {

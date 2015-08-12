@@ -537,6 +537,16 @@ void EasyUnlockService::AttemptAuth(const std::string& user_id,
                                                 auth_attempt_type, callback));
   if (!auth_attempt_->Start())
     auth_attempt_.reset();
+
+  // TODO(tengs): We notify ProximityAuthBleSystem whenever unlock attempts are
+  // attempted. However, we ideally should refactor the auth attempt logic to
+  // the proximity_auth component.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery) &&
+      auth_attempt_type == EasyUnlockAuthAttempt::TYPE_UNLOCK &&
+      proximity_auth_ble_system_) {
+    proximity_auth_ble_system_->OnAuthAttempted(user_id);
+  }
 }
 
 void EasyUnlockService::FinalizeUnlock(bool success) {

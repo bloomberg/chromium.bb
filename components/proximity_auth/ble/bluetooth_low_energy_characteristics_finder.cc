@@ -90,15 +90,10 @@ void BluetoothLowEnergyCharacteristicsFinder::ScanRemoteCharacteristics(
     std::vector<BluetoothGattService*> services = device->GetGattServices();
     for (const auto& service : services) {
       if (service->GetUUID() == service_uuid) {
-        PA_LOG(INFO) << "Service " << service_uuid.canonical_value()
-                     << " found.";
         // Right service found, now scaning its characteristics.
         std::vector<device::BluetoothGattCharacteristic*> characteristics =
             service->GetCharacteristics();
         for (const auto& characteristic : characteristics) {
-          PA_LOG(INFO) << "Char: "
-                       << characteristic->GetUUID().canonical_value()
-                       << " found.";
           HandleCharacteristicUpdate(characteristic);
         }
         break;
@@ -113,6 +108,7 @@ void BluetoothLowEnergyCharacteristicsFinder::HandleCharacteristicUpdate(
 
   if (!to_peripheral_char_.id.empty() && !from_peripheral_char_.id.empty() &&
       !success_callback_.is_null()) {
+    PA_LOG(INFO) << "Found write and read characteristics on remote device.";
     success_callback_.Run(remote_service_, to_peripheral_char_,
                           from_peripheral_char_);
     ResetCallbacks();

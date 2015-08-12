@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/signin/chrome_proximity_auth_client.h"
+
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_window.h"
-#include "chrome/browser/signin/chrome_proximity_auth_client.h"
+#include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 
@@ -23,4 +25,8 @@ std::string ChromeProximityAuthClient::GetAuthenticatedUsername() const {
   // created. Otherwise, just crash to collect stack.
   DCHECK(signin_manager);
   return signin_manager->GetAuthenticatedUsername();
+}
+
+void ChromeProximityAuthClient::FinalizeUnlock(bool success) {
+  EasyUnlockService::Get(profile_)->FinalizeUnlock(success);
 }

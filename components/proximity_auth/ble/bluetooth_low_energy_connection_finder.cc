@@ -98,7 +98,6 @@ void BluetoothLowEnergyConnectionFinder::DeviceAdded(BluetoothAdapter* adapter,
                                                      BluetoothDevice* device) {
   DCHECK_EQ(adapter_.get(), adapter);
   DCHECK(device);
-  PA_LOG(INFO) << "Device added: " << device->GetAddress();
 
   // Note: Only consider |device| when it was actually added/updated during a
   // scanning, otherwise the device is stale and the GATT connection will fail.
@@ -120,11 +119,8 @@ void BluetoothLowEnergyConnectionFinder::DeviceChanged(
   // For instance, when |adapter_| change status from unpowered to powered,
   // |DeviceAdded| is called for each paired |device|.
   if (adapter_->IsPowered() && discovery_session_ &&
-      discovery_session_->IsActive()) {
-    if (device_whitelist_->HasDeviceWithAddress(device->GetAddress()))
-      PA_LOG(INFO) << "Whitelisted device changed: " << device->GetAddress();
+      discovery_session_->IsActive())
     HandleDeviceUpdated(device);
-  }
 }
 
 void BluetoothLowEnergyConnectionFinder::HandleDeviceUpdated(
@@ -147,6 +143,7 @@ void BluetoothLowEnergyConnectionFinder::HandleDeviceUpdated(
     connection_->AddObserver(this);
     connection_->Connect();
 
+    adapter_->RemoveObserver(this);
     StopDiscoverySession();
   }
 }
@@ -162,12 +159,6 @@ void BluetoothLowEnergyConnectionFinder::OnAdapterInitialized(
   // temporary MAC may not be resolved automatically (see crbug.com/495402). The
   // Bluetooth adapter will fire |OnDeviceChanged| notifications for all
   // Bluetooth Low Energy devices that are advertising.
-  std::vector<BluetoothDevice*> devices = adapter_->GetDevices();
-  for (auto* device : devices) {
-    PA_LOG(INFO) << "Ignoring device " << device->GetAddress()
-                 << " present when adapter was initialized.";
-  }
-
   StartDiscoverySession();
 }
 
