@@ -37,20 +37,27 @@ PermissionBubbleRequestImpl::~PermissionBubbleRequestImpl() {
 }
 
 gfx::VectorIconId PermissionBubbleRequestImpl::GetVectorIconId() const {
-  switch (type_) {
 #if defined(TOOLKIT_VIEWS)
+  switch (type_) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       return gfx::VectorIconId::LOCATION_ON;
 #if defined(ENABLE_NOTIFICATIONS)
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
       return gfx::VectorIconId::NOTIFICATIONS;
-      break;
 #endif
+#if defined(OS_CHROMEOS)
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
 #endif
-
+    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+      // TODO(estade): add vector icons for these.
+      return gfx::VectorIconId::VECTOR_ICON_NONE;
     default:
+      NOTREACHED();
       return gfx::VectorIconId::VECTOR_ICON_NONE;
   }
+#else  // !defined(TOOLKIT_VIEWS)
+  return gfx::VectorIconId::VECTOR_ICON_NONE;
+#endif
 }
 
 int PermissionBubbleRequestImpl::GetIconID() const {
@@ -66,9 +73,6 @@ int PermissionBubbleRequestImpl::GetIconID() const {
 #endif
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       icon_id = IDR_ALLOWED_MIDI_SYSEX;
-      break;
-    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
-      icon_id = IDR_INFOBAR_WARNING;
       break;
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
